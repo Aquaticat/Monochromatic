@@ -1,7 +1,6 @@
 {
   "name": "@monochromatic.dev/build",
   "description": "Monochromatic dev build system, technically applicable not just to monochromatic.dev",
-  "// private": "Not sure if I should publish this.",
   "private": true,
   "type": "module",
   "module": "dist/final/index.js",

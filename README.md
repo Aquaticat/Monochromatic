@@ -51,7 +51,17 @@ CSS and JS for HTML, built with Vite.
 
 builds content from every directory ending with `monochromatic.dev`
 
-## Temporary Fixes
+## Common Issues
+
+### Cannot install package
+
+```shell
+pnpm i "@monochromatic.dev/package-name-here"
+```
+
+Unfortunately, "monochromatic" org on npmjs is unavailable by the time I found out I need to register an org to publish scoped packages.
+
+Therefore, you have to use quotes around the package specifier when installing.
 
 ### Temporary fix for `npm ERR! 403 403 Forbidden - PUT - You cannot publish over the previously published versions: .`
 
