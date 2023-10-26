@@ -23,6 +23,6 @@ jobs:
       - uses: pnpm/action-setup@v2
         with:
           version: latest
-      - run: pnpm -r publish --workspaces --access public --no-git-checks --force --report-summary
+      - run: pnpm -r publish --access public --no-git-checks --force --report-summary
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
