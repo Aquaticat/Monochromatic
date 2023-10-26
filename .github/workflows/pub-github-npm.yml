@@ -19,10 +19,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 20
-          registry-url: https://npm.pkg.github.com/
       - uses: pnpm/action-setup@v2
         with:
           version: latest
+      - run: pnpm config set registry https://npm.pkg.github.com/
       - run: pnpm -r publish --access public --no-git-checks --force --report-summary
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
