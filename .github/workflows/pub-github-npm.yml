@@ -7,6 +7,9 @@ on:
   release:
     types: [created]
   workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflfows/**'
 
 jobs:
   publish:
@@ -23,6 +26,5 @@ jobs:
         with:
           version: latest
       - run: pnpm config set registry https://npm.pkg.github.com/
+      - run: pnpm config set //npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}
       - run: pnpm -r publish --access public --no-git-checks --force --report-summary
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
