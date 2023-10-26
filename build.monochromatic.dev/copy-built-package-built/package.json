@@ -1,5 +1,6 @@
 {
-  "name": "@monochromatic.dev/copy-built-package-built",
+  "name": "@monochromatic/copy-built-package-built",
+  "private": true,
   "type": "module",
   "module": "dist/final/index.js",
   "types": "dist/final/index.d.ts",

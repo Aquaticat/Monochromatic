@@ -2,7 +2,7 @@ import fs from 'fs';
 
 import path from 'path';
 
-import closestPath from '@monochromatic.dev/closest-path-built';
+import closestPath from '@monochromatic/closest-path-built';
 
 const copyBuiltPackage = (): void => {
   const WORKSPACE_DIR = closestPath(path.resolve(), 'pnpm-workspace.yaml');

@@ -4,7 +4,7 @@
   "scripts": {},
   "private": true,
   "dependencies": {
-    "@monochromatic.dev/transform-content": "workspace:*"
+    "@monochromatic/transform-content": "workspace:*"
   },
   "version": "0.0.2"
 }

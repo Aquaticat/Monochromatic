@@ -1,5 +1,6 @@
 {
-  "name": "@monochromatic.dev/copy-built-package",
+  "name": "@monochromatic/copy-built-package",
+  "private": true,
   "type": "module",
   "module": "dist/final/index.js",
   "types": "dist/final/index.d.ts",
@@ -15,10 +16,10 @@
     "build": "node build.js"
   },
   "devDependencies": {
-    "@monochromatic.dev/build": "workspace:*",
-    "@monochromatic.dev/tsconfig": "workspace:*",
-    "@monochromatic.dev/api-extractor": "workspace:*",
-    "@monochromatic.dev/closest-path-built": "workspace:*"
+    "@monochromatic/build": "workspace:*",
+    "@monochromatic/tsconfig": "workspace:*",
+    "@monochromatic/api-extractor": "workspace:*",
+    "@monochromatic/closest-path-built": "workspace:*"
   },
   "dependencies": {
   },

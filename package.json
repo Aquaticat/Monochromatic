@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "devDependencies": {
-    "@monochromatic.dev/eslint-config": "workspace:*",
-    "@monochromatic.dev/eslint-config-typescript": "workspace:*",
-    "@monochromatic.dev/eslint-config-astro": "workspace:*",
+    "@monochromatic/eslint-config": "workspace:*",
+    "@monochromatic/eslint-config-typescript": "workspace:*",
+    "@monochromatic/eslint-config-astro": "workspace:*",
     "prettier": ">=3.0.3",
     "prettier-plugin-astro": ">=0.12.1"
   }

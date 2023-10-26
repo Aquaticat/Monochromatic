@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic.dev/tsconfig",
+  "name": "@monochromatic/tsconfig",
   "version": "0.0.1",
   "description": "Monochromatic's tsconfig.json",
   "main": "tsconfig.json",

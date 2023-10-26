@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic.dev/vite-sfa",
+  "name": "@monochromatic/vite-sfa",
   "version": "0.0.1",
   "description": "Monochromatic's vite.config.js for Vite Single File Applications",
   "main": "vite.config.js",
@@ -24,6 +24,6 @@
     "browserslist": ">=4.22.1",
     "esbuild-plugin-browserslist": ">=0.10",
     "vite-plugin-singlefile": ">=0.13.5",
-    "@monochromatic.dev/vite": "workspace:*"
+    "@monochromatic/vite": "workspace:*"
   }
 }

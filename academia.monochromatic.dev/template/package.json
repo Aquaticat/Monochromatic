@@ -1,5 +1,7 @@
 {
-  "name": "academia.monochromatic.dev",
+  "name": "@monochromatic/academia-template",
+  "description": "Monochromatic's template for academia profiles.",
+  "// private": "Not a package you can install and use.",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,7 +15,7 @@
     "vite": ">=5.0.0-beta.12",
     "lightningcss": ">=1.22",
     "browserslist": ">=4.22.1",
-    "@monochromatic.dev/tsconfig-vite": "workspace:*",
-    "@monochromatic.dev/vite-sfa": "workspace:*"
+    "@monochromatic/tsconfig-vite": "workspace:*",
+    "@monochromatic/vite-sfa": "workspace:*"
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic.dev/eslint-config-typescript",
+  "name": "@monochromatic/eslint-config-typescript",
   "version": "0.0.1",
   "description": "Monochromatic's ESLint config, TypeScript section, using the new flat config format. Not meant to be used by itself.",
   "main": "eslint.config.js",
@@ -24,6 +24,6 @@
     "typescript": ">=5.2.2"
   },
   "dependencies": {
-    "@monochromatic.dev/eslint-config": "workspace:*"
+    "@monochromatic/eslint-config": "workspace:*"
   }
 }

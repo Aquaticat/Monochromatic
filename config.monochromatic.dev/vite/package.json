@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic.dev/vite",
+  "name": "@monochromatic/vite",
   "version": "0.0.1",
   "description": "Monochromatic's vite.config.js for Vite",
   "type": "module",

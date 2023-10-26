@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic.dev/browserslist-config",
+  "name": "@monochromatic/browserslist-config",
   "version": "0.0.1",
   "description": "Monochromatic's browserslist config",
   "main": "index.js",

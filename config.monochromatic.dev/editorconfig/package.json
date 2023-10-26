@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic.dev/editorconfig",
+  "name": "@monochromatic/editorconfig",
   "version": "0.0.1",
   "description": "Monochromatic's .editorconfig",
   "main": ".editorconfig",

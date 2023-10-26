@@ -61,9 +61,9 @@
         * local files for library1.
         */
   "bundledPackages": [
-    "@monochromatic.dev/closest-path-built",
-    "@monochromatic.dev/copy-built-package",
-    "@monochromatic.dev/increase-version",
+    "@monochromatic/closest-path-built",
+    "@monochromatic/copy-built-package",
+    "@monochromatic/increase-version",
     "closest-path"
   ],
 

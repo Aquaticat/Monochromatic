@@ -1,8 +1,8 @@
-import eslintConfig from '@monochromatic.dev/eslint-config';
+import eslintConfig from '@monochromatic/eslint-config';
 
-import eslintTypescriptConfig from '@monochromatic.dev/eslint-config-typescript';
+import eslintTypescriptConfig from '@monochromatic/eslint-config-typescript';
 
-import eslintAstroConfig from '@monochromatic.dev/eslint-config-astro';
+import eslintAstroConfig from '@monochromatic/eslint-config-astro';
 
 export default [
   ...eslintConfig,

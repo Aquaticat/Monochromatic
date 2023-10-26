@@ -1,5 +1,5 @@
 import {
   build,
-} from '@monochromatic.dev/build';
+} from '@monochromatic/build';
 
 await build();

@@ -1,5 +1,5 @@
 import {
   buildAndRun as bar,
-} from '@monochromatic.dev/build';
+} from '@monochromatic/build';
 
 await bar();

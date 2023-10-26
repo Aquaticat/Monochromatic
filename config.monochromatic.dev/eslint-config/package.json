@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic.dev/eslint-config",
+  "name": "@monochromatic/eslint-config",
   "version": "0.0.1",
   "description": "Monochromatic's ESLint config, using the new flat config format",
   "main": "eslint.config.js",

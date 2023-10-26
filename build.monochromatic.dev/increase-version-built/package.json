@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic.dev/increase-version-built",
+  "name": "@monochromatic/increase-version-built",
   "type": "module",
   "module": "dist/final/index.js",
   "types": "dist/final/index.d.ts",

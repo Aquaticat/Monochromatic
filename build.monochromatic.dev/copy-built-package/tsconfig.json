@@ -1,5 +1,5 @@
 {
-  "extends": "@monochromatic.dev/tsconfig",
+  "extends": "@monochromatic/tsconfig",
 
   "include": ["src"],
 
