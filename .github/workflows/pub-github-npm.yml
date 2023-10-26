@@ -9,18 +9,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  publish-gpr:
+  publish:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-      id-token: write
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: 20
           registry-url: https://npm.pkg.github.com/
-      - run: npm publish --workspaces --provenance --access public
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+      - run: pnpm -r publish --workspaces --access public --no-git-checks --force --report-summary
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
