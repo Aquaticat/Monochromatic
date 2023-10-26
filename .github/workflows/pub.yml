@@ -1,7 +1,7 @@
 # Publish a package to GitHub Packages when a release is created
 # See: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
 
-name: Node.js Package
+name: pub
 
 on:
   release:
@@ -26,6 +26,6 @@ jobs:
       - uses: pnpm/action-setup@v2
         with:
           version: latest
-      - run: pnpm config set registry https://npm.pkg.github.com/
-      - run: pnpm config set //npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}
+      - run: pnpm config set registry https://registry.npmjs.org
+      - run: pnpm config set //registry.npmjs.org/:_authToken=${{secrets.NPM_TOKEN}}
       - run: pnpm -r publish --access public --no-git-checks --force --report-summary
