@@ -1,6 +1,6 @@
 {
   "name": "@monochromatic.dev/eslint-config-typescript",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Monochromatic's ESLint config, TypeScript section, using the new flat config format. Not meant to be used by itself.",
   "main": "eslint.config.js",
   "type": "module",

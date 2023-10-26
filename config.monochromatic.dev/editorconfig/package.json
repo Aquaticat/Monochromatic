@@ -1,6 +1,6 @@
 {
   "name": "@monochromatic.dev/editorconfig",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Monochromatic's .editorconfig",
   "main": ".editorconfig",
   "files": [".editorconfig"],

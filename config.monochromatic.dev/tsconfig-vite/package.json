@@ -1,6 +1,6 @@
 {
   "name": "@monochromatic.dev/tsconfig-vite",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Monochromatic's tsconfig.json for Vite",
   "main": "tsconfig.json",
   "files": [
