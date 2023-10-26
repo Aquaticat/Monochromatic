@@ -1,0 +1,42 @@
+{
+  "indentWidth": 2,
+  "typescript": {
+    "semiColons": "always",
+    "parentheses.preferSingleLine": true,
+    "quoteStyle": "alwaysSingle",
+    "useBraces": "preferNone",
+    "nextControlFlowPosition": "nextLine",
+    "singleBodyPosition": "nextLine",
+    "arrowFunction.useParentheses": "force",
+    "binaryExpression.linePerExpression": true,
+    "module.sortImportDeclarations": "maintain",
+    "module.sortExportDeclarations": "maintain",
+    "exportDeclaration.sortNamedExports": "maintain",
+    "exportDeclaration.forceMultiLine": true,
+    "importDeclaration.sortNamedImports": "maintain",
+    "importDeclaration.forceMultiLine": true,
+    "commentLine.forceSpaceAfterSlashes": false
+  },
+  "json": {
+    "commentLine.forceSpaceAfterSlashes": false,
+    "jsonTrailingCommaFiles": ["tsconfig.json", ".vscode/settings.json", "tsconfig.*.json"]
+  },
+  "markdown": {
+    "lineWidth": 90
+  },
+  "toml": {
+    "comment.forceLeadingSpace": false
+  },
+  "includes": ["**/*.{ts,tsx,js,jsx,cjs,mjs,json,jsonc,md,mdx,toml,dockerfile}", "**/{dockerfile}"],
+  "excludes": [
+    "**/node_modules",
+    "**/dist"
+  ],
+  "plugins": [
+    "https://plugins.dprint.dev/typescript-0.88.3.wasm",
+    "https://plugins.dprint.dev/json-0.19.0.wasm",
+    "https://plugins.dprint.dev/markdown-0.16.2.wasm",
+    "https://plugins.dprint.dev/toml-0.5.4.wasm",
+    "https://plugins.dprint.dev/dockerfile-0.3.0.wasm"
+  ]
+}

@@ -1,0 +1,29 @@
+/** @format */
+
+hr {
+  // Override firefox default user agent stylesheet.
+  color: var(--fg);
+
+  &::before {
+    display: block;
+    content: '';
+    margin-block-start: 0.5em;
+    height: 0.5em;
+    border-block: 0.2em solid currentColor;
+  }
+
+  border: none;
+  block-size: 2em;
+  text-align: center;
+
+  &::after {
+    // '§'
+    content: '\00a7';
+    font-size: 2em;
+    font-weight: bold;
+    background-color: var(--bg);
+    padding-inline: 0.5em;
+    position: relative;
+    top: -1.3em;
+  }
+}

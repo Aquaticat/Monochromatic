@@ -1,0 +1,22 @@
+/** @format */
+
+@use '../../_mixin.scss' as mixin;
+
+header {
+  @include mixin.element_theme_alwaysDark;
+
+  padding-block: clamp(calc(48 * var(--crmp)), calc(64 * var(--crmp)), calc(64 * var(--wp)));
+
+  display: flex;
+  flex: {
+    direction: column;
+  }
+  row-gap: calc(32 * var(--crmp));
+  align-items: center;
+
+  > hgroup {
+    > *:not(h1, h2, h3, h4, h5, h6) {
+      font-size: calc(24 * var(--crmp));
+    }
+  }
+}

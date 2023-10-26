@@ -1,0 +1,43 @@
+{
+  "name": "@monochromatic.dev/transform-content",
+  "type": "module",
+  "module": "./dist/final/index.js",
+  "files": [
+    "dist/final"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "node build.js",
+    "run": "node run.js",
+    "bar": "node bar.js"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/js-beautify": "^1.13.3",
+    "@types/marked": "^4.0.8",
+    "@types/node": "^18.15.11",
+    "@types/shelljs": "^0.8.11",
+    "postcss": "^8.4.21",
+    "postcss-cli": "^10.1.0",
+    "postcss-preset-env": "^8.0.1",
+    "typescript": "^5.0.4",
+    "@monochromatic.dev/tsconfig": "workspace:*",
+    "@monochromatic.dev/api-extractor": "workspace:*",
+    "@monochromatic.dev/build": "workspace:*"
+  },
+  "dependencies": {
+    "@ltd/j-toml": "^1.38.0",
+    "html-minifier-terser": "^7.1.0",
+    "js-beautify": "^1.14.7",
+    "linkedom": "^0.14.25",
+    "marked": "^4.3.0",
+    "node-html-parser": "^6.1.5",
+    "shelljs": "^0.8.5",
+    "closest-path": "workspace:*"
+  },
+  "version": "0.0.2"
+}

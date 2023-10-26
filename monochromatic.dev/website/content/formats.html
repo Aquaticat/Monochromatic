@@ -1,0 +1,118 @@
+<h1>Formats</h1>
+
+<p>We support the following formats:</p>
+
+<h2>HTML</h2>
+
+<p>Files ending in <code>.html</code> are treated as HTML by default.</p>
+
+<p>
+  Declare a different file format by inserting an HTML element
+  <code data-lang="html">&lt;x-variables&gt; format = "md" &lt;/x-variable&gt;</code>.
+</p>
+
+<p>Element content follows toml syntax.</p>
+
+<p>Example: Specifying a file having an extension of <code>.html</code> to be GitHub flavored markdown.</p>
+
+<pre><code data-lang="markdown">
+&lt;x-variables&gt; format = "md" &lt;/x-variable&gt;
+</code></pre>
+
+<h3 data-ol>Flexible formatting of HTML</h3>
+
+<p>There are several ways to write an HTML document:</p>
+
+<h4>Writing content directly</h4>
+
+<p>.</p>
+
+<h4>Writing content inside the <code>&lt;article&gt</code> tag</h4>
+
+<section>
+  <x-summary> Advantage over writing content directly: </x-summary>
+
+  <ol>
+    <li>You can write multiple articles in one page.</li>
+  </ol>
+</section>
+
+<h3 data-ol>Default auto applied transforms:</h3>
+
+<h4>Document starting with <code>&lt;article&gt;</code></h4>
+
+<ol>
+  <li><code>&lt;wrapper-block&gt;</code> is wrapped against the whole document.</li>
+
+  <li>
+    <p>A "in this article" sidebar is generated:</p>
+
+    <pre><code lang="html">
+  &lt;aside id="In_this_article" &gt;
+  &lt;h1&gt;
+    In this article
+  &lt;/h1&gt;
+
+  &lt;ol&gt;
+  &lt;li&gt;
+    &lt;a href="#Article_Name__First_h2" &gt;First h2&lt;/a&gt;
+  &lt;/li&gt;
+
+  &lt;li&gt;
+    &lt;a href="#Article_Name__Second_h2" &gt;Second h2&lt;/a&gt;
+
+    &lt;ol&gt;
+    &lt;li&gt;
+      &lt;a href="#Article_Name__Second_h2__First_h3" &gt;First h3&lt;/a&gt;
+    &lt;/li&gt;
+
+    &lt;li&gt;
+      &lt;a href="#Article_Name__Second_h2__Second_h3" &gt;Second h3&lt;/a&gt;
+    &lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+  &lt;/ol&gt;
+  &lt/aside&gt;
+  </code></pre>
+  </li>
+</ol>
+
+<h4>Document does not start with <code>&lt;article&gt;</code> tag</h4>
+
+<ol>
+  <li><code>&lt;h1&gt;</code> tag is removed from the document and put into header.</li>
+
+  <li><code>&lt;article&gt;</code> tag is wrapped around the document</li>
+</ol>
+
+<p>. . .before continuing to apply other transforms.</p>
+
+<h4>Tags staring with <code>x-</code></h4>
+
+<section>
+  <x-summary> These tags are further transformed into appropriate tags: </x-summary>
+
+  <ol>
+    <li>
+      <code>&lt;x-summary&gt;</code> found in <code>&lt;section&gt;</code>s are transformed into the appropriate heading
+      levels according to their parent heading but given styling of <code>&lt;p&gt;</code>
+    </li>
+  </ol>
+</section>
+
+<h2>Markdown (GitHub flavored markdown)</h2>
+
+<p>Files ending in <code>.md</code> are treated as GitHub flavored markdown by default.</p>
+
+<p>
+  Declare a different file format by inserting an HTML element
+  <code data-lang="html">&lt;x-variables&gt; format = "html" &lt;/x-variable&gt;</code>.
+</p>
+
+<p>Element content follows toml syntax.</p>
+
+<p>Example: Specifying a file having an extension of <code>.md</code> to be HTML.</p>
+
+<pre><code data-lang="html">
+&lt;-- format = "html" --&gt;
+</code></pre>

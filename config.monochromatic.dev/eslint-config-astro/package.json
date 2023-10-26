@@ -1,0 +1,31 @@
+{
+  "name": "@monochromatic.dev/eslint-config-astro",
+  "version": "0.0.1",
+  "description": "Monochromatic's ESLint config, Astro section, using the new flat config format. Not meant to be used by itself.",
+  "main": "eslint.config.js",
+  "type": "module",
+  "files": ["eslint.config.js"],
+  "keywords": [
+    "config",
+    "monochromatic",
+    "eslint",
+    "typescript"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "Apache-2.0",
+  "peerDependencies": {
+    "eslint": ">=8.52",
+    "@typescript-eslint/parser": ">=6.9",
+    "typescript": ">=5.2.2",
+    "eslint-plugin-astro": ">=0.29.1",
+    "astro-eslint-parser": ">=0.16"
+  },
+  "dependencies": {
+    "@monochromatic.dev/eslint-config": "workspace:*",
+    "@monochromatic.dev/eslint-config-typescript": "workspace:*"
+  }
+}

@@ -1,0 +1,82 @@
+/**
+ * FIXME: Still haven't figured out how to prevent flexbox from changing sizes when opening and closing <detail>.
+ *
+ * @format
+ */
+
+details {
+  &:not([open]) {
+    > summary {
+      &::after {
+        content: 'v';
+      }
+    }
+  }
+
+  &[open] {
+    > summary {
+      border: {
+        inline-start-color: var(--fg);
+        block-end-color: var(--bg);
+      }
+
+      &::after {
+        content: 'ᴧ';
+      }
+    }
+  }
+
+  > summary {
+    font-size: calc(16 * var(--crmp));
+    min-block-size: calc(48 * var(--crmp));
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+
+    &::after {
+      text-align: center;
+
+      font-size: calc(48 * var(--crmp));
+      min-inline-size: calc(48 * var(--crmp));
+    }
+
+    > :is(h1, h2, h3) {
+      flex-grow: 1;
+    }
+
+    > h1 {
+      text-align: center;
+    }
+
+    // TODO: Add ::before for #, getting the link to the section.
+  }
+}
+
+main details {
+  > summary {
+    outline: none;
+    border: {
+      style: solid;
+      width: calc(2 * var(--crmp));
+    }
+
+    &:has(:is(h1, h2)) {
+      border-width: calc(4 * var(--crmp));
+    }
+
+    &:has(h4) {
+      border-block-end-color: var(--bg);
+    }
+
+    &:has(h5) {
+      border-block-color: var(--bg);
+    }
+  }
+
+  > wrapper-block {
+    padding-inline: calc(16 * var(--crmp));
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "extends": "stylelint-config-standard-scss",
+
+  "rules": {
+    "declaration-empty-line-before": null,
+    "value-keyword-case": null,
+    "block-no-empty": null,
+    "selector-id-pattern": null,
+    "selector-class-pattern": null,
+
+    "scss/comment-no-empty": null,
+    "scss/double-slash-comment-whitespace-inside": null,
+    "scss/double-slash-comment-empty-line-before": null,
+    "scss/at-mixin-pattern": null
+  }
+}

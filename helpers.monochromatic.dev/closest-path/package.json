@@ -1,0 +1,31 @@
+{
+  "name": "closest-path",
+  "type": "module",
+  "module": "dist/final/index.js",
+  "types": "dist/final/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/final/index.js"
+    }
+  },
+  "files": [
+    "dist/final"
+  ],
+  "scripts": {
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "eslint": ">=8.37",
+    "eslint-config-monochromatic": "^0.0.15",
+    "eslint-config-monochromatic-typescript": "^0.0.13",
+    "@types/node": "^18.15.11",
+    "@types/semver": "^7.3.13",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4",
+    "@monochromatic.dev/build": "workspace:*",
+    "@monochromatic.dev/copy-built-package": "workspace:*"
+  },
+  "dependencies": {
+  },
+  "version": "0.0.1"
+}

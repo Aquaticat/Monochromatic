@@ -1,0 +1,11 @@
+packages:
+  - 'config.monochromatic.dev/*'
+
+  - 'monochromatic.dev/*'
+  - 'academia.monochromatic.dev/*'
+
+  - 'vue.monochromatic.dev/*'
+  - 'components.monochromatic.dev/*'
+
+  - 'helpers.monochromatic.dev/*'
+  - 'build.monochromatic.dev/*'

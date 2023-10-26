@@ -1,0 +1,13 @@
+/** @format */
+
+h1 {
+  text-align: center;
+
+  font: {
+    size: clamp(calc(36 * var(--mp)), calc(60 * var(--mp)), calc(60 * var(--wp)));
+    family: JetBrainsMonoVar, monospace, InterVar, sans-serif;
+    weight: 900;
+  }
+
+  line-height: 2;
+}

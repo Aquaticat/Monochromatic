@@ -1,0 +1,37 @@
+/** @format */
+
+@use '../../_mixin.scss' as mixin;
+
+footer {
+  @include mixin.element_theme_alwaysDark;
+
+  padding-block: clamp(calc(48 * var(--crmp)), calc(64 * var(--crmp)), calc(64 * var(--wp)));
+
+  display: flex;
+  flex: {
+    direction: column;
+  }
+  row-gap: calc(32 * var(--crmp));
+  align-items: center;
+
+  > section {
+    box-sizing: content-box;
+    max-inline-size: 90ch;
+    padding-inline: 16px;
+
+    * {
+      font-size: 1rem;
+      text-align: center;
+      font-weight: normal;
+    }
+
+    > :where(ul, ol) {
+      padding-inline-start: 0;
+      list-style-type: none;
+
+      > li + li {
+        margin-block-start: calc(16 * var(--crmp));
+      }
+    }
+  }
+}

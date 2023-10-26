@@ -1,0 +1,19 @@
+{
+  "name": "@monochromatic.dev/tsconfig",
+  "version": "0.0.1",
+  "description": "Monochromatic's tsconfig.json",
+  "main": "tsconfig.json",
+  "files": ["tsconfig.json"],
+  "keywords": [
+    "config",
+    "monochromatic",
+    "tsconfig",
+    "typescript"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "Apache-2.0"
+}

@@ -1,0 +1,142 @@
+<html lang="en"
+      style="
+      --light: #f9f9f9;
+      --dark: #1b1b1b;
+      background-color: black;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width">
+  <title>Home</title>
+  <link type="text/css"
+        rel="stylesheet"
+        blocking="render"
+        fetchpriority="high"
+        href="/index.scss">
+  <script type="module"
+          rel="script"
+          async
+          src="/index.ts"></script>
+</head>
+<body>
+<nav id="nav">
+  <!-- Set it to open in JavaScript,
+  because we don't want the navbar to be expanded on mobile devices without JavaScript. -->
+  <details>
+  <summary>
+    <h1>
+      <a href="/index.html/#title">Home</a>
+    </h1>
+  </summary>
+
+  <wrapper-block>
+  <a href="#title" id="Skip_to_content">Skip to content</a>
+
+  <section id="nav__pages">
+  <ul>
+    <li>
+      <a href="/a">a</a>
+    </li>
+
+    <li>
+      <a href="/b">a</a>
+    </li>
+  </ul>
+  </section>
+
+  <section id="nav__articles">
+  <h2>
+    On this page:
+  </h2>
+
+  <!-- Using ol here because order is significant. ex: Time. -->
+  <ol>
+    <li>
+      <a href="#b">b</a>
+    </li>
+  </ol>
+  </section>
+
+  <section id="Jump_to_footer">
+  <a href="#footer">Jump to footer</a>
+  </section>
+  </wrapper-block>
+  </details>
+</nav>
+
+<wrapper-block>
+<header>
+<hgroup id="title">
+  <h1>
+    Home
+  </h1>
+  <p>
+    Author
+  </p>
+</hgroup>
+</header>
+
+<main>
+<article id="b">
+<wrapper-block>
+<h1>
+  b
+</h1>
+
+<p>
+</p>
+
+<h2 id="c">
+  c
+</h2>
+
+<p>
+</p>
+</wrapper-block>
+
+<aside id="b__aside">
+  <h1>
+    <a>b</a>
+  </h1>
+
+  <ol>
+    <li>
+      <a href="#c">c</a>
+    </li>
+  </ol>
+</aside>
+</article>
+</main>
+
+<footer id="footer">
+<section id="#Powered_By">
+<h1>
+  Powered By:
+</h1>
+
+<ul>
+  <li>
+    <a href="https://monochromatic.dev/">Monochromatic</a> @ <a href="https://aquati.cat/">Aquaticat</a>
+  </li>
+</ul>
+</section>
+
+<section id="#Copyright">
+<h1>
+  Copyright:
+</h1>
+
+<ul>
+  <li>
+    <a href="https://anonymous.invalid">d</a> ©
+    <address>
+      <a href="https://anonymous.invalid/">e</a>
+      <a href="mailto:anonymous@anonymous.invalid">✉</a>
+    </address>
+  </li>
+</ul>
+</section>
+</footer>
+</wrapper-block>
+</body>
+</html>

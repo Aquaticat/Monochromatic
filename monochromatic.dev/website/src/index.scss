@@ -1,0 +1,209 @@
+/*
+Implementation of html-in-css
+*/
+
+@use 'the-new-css-reset/css/reset.css';
+
+//region Custom elements
+
+@use 'Custom_elements/wrapper-block/_.scss' as wrapper-block;
+@use 'Custom_elements/wrapper-inline/_.scss' as wrapper-inline;
+
+//endregion
+
+//region Heading content
+@use 'Heading_content/h1/_.scss' as h1;
+@use 'Heading_content/h2/_.scss' as h2;
+@use 'Heading_content/h3/_.scss' as h3;
+@use 'Heading_content/h4/_.scss' as h4;
+@use 'Heading_content/h5/_.scss' as h5;
+@use 'Heading_content/h6/_.scss' as h6;
+@use 'Heading_content/hgroup/_.scss' as hgroup;
+//endregion
+
+//region Interactive content
+@use 'Interactive_content/a/_.scss' as a;
+@use 'Interactive_content/button/_.scss' as button;
+@use 'Interactive_content/details/_.scss' as details;
+@use 'Interactive_content/label/_.scss' as label;
+@use 'Interactive_content/label/_id-colorSchemeToggle.scss' as label-id-colorSchemeToggle;
+@use 'Interactive_content/select/_.scss' as select;
+@use 'Interactive_content/textarea/_.scss' as textarea;
+//endregion
+
+//region Phrasing content
+@use 'Phrasing_content/address/_.scss' as address;
+@use 'Phrasing_content/address/_class-email.scss' as address-class-email;
+@use 'Phrasing_content/hr/_.scss' as hr;
+@use 'Phrasing_content/pre_-_code/_.scss' as pre_-_code;
+@use 'Phrasing_content/ol_-_ul/_.scss' as ol_-_ul;
+//endregion
+
+//region Sectioning content
+@use 'Sectioning_content/article/_.scss' as article;
+@use 'Sectioning_content/article/_id-copyright.scss' as article-id-copyright;
+@use 'Sectioning_content/aside/_.scss' as aside;
+@use 'Sectioning_content/footer/_.scss' as footer;
+@use 'Sectioning_content/header/_.scss' as header;
+@use 'Sectioning_content/main/_.scss' as main;
+@use 'Sectioning_content/nav/_.scss' as nav;
+@use 'Sectioning_content/section/_.scss' as section;
+//endregion
+
+@use '_mixin.scss' as *;
+
+//region font-face
+
+@font-face {
+  font-family: InterVar;
+  font-style: oblique 0deg 10deg;
+  font-weight: 100 900;
+  font-display: swap;
+
+  // Sorry, I really don't know what to do to make it display all the characters I need correctly.
+  //noinspection CssUnknownTarget
+  src: url('/Inter.var.woff2') format('woff2');
+}
+
+// From https://www.npmjs.com/package/@fontsource/jetbrains-mono
+// jetbrains-mono-latin-ext-variable-wghtOnly-normal
+@font-face {
+  font-family: JetBrainsMonoVar;
+  font-style: normal;
+  //noinspection CssUnknownTarget
+  src:
+    local(JetbrainsMono),
+    local('Jetbrains Mono'),
+    local('JetbrainsMono NL'),
+    local('Jetbrains Mono NL'),
+    url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-variable-wghtOnly-normal.woff2')
+      format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* jetbrains-mono-latin-ext-variable-wghtOnly-italic */
+@font-face {
+  font-family: JetBrainsMonoVar;
+  font-style: italic;
+  //noinspection CssUnknownTarget
+  src:
+    local(JetbrainsMono),
+    local('Jetbrains Mono'),
+    local('JetbrainsMono NL'),
+    local('Jetbrains Mono NL'),
+    url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-variable-wghtOnly-italic.woff2')
+      format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+// jetbrains-mono-latin-ext-variable-wghtOnly-normal
+@font-face {
+  font-family: JetBrainsMonoVar;
+  font-style: normal;
+  //noinspection CssUnknownTarget
+  src:
+    local(JetbrainsMono),
+    local('Jetbrains Mono'),
+    local('JetbrainsMono NL'),
+    local('Jetbrains Mono NL'),
+    url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-ext-variable-wghtOnly-normal.woff2')
+      format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* jetbrains-mono-latin-ext-variable-wghtOnly-italic */
+@font-face {
+  font-family: JetBrainsMonoVar;
+  font-style: italic;
+  //noinspection CssUnknownTarget
+  src:
+    local(JetbrainsMono),
+    local('Jetbrains Mono'),
+    local('JetbrainsMono NL'),
+    local('Jetbrains Mono NL'),
+    url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-ext-variable-wghtOnly-italic.woff2')
+      format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+//endregion
+
+:is(*, *::before, *::after) {
+  margin: 0;
+
+  box: {
+    decoration-break: clone;
+    sizing: border-box;
+  }
+
+  contain: layout paint;
+}
+
+:root {
+  @media (prefers-color-scheme: light) {
+    --fg: var(--dark);
+    --bg: var(--light);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    --fg: var(--light);
+    --bg: var(--dark);
+  }
+
+  // rem based pixel
+  // em is named M here because https://www.w3.org/Style/LieBos3e/em
+  --rmp: calc(1rem / 16);
+
+  // rem based pixel, clamped so it's never smaller than 1 pixel or larger than 2 pixels.
+  --crmp: clamp(1px, var(--rmp), 2px);
+
+  // vw based pixel. When to shrink some components.
+  --wp: calc(100vw / 720);
+
+  // em based pixel. For use in font box shadow decorations.
+  --mp: calc(1em / 16);
+}
+
+html {
+  min-height: fill-available;
+  height: 100dvh;
+  min-width: 100svw;
+  width: 100dvw;
+  max-width: 100lvw;
+
+  color-scheme: light dark;
+}
+
+body {
+  min-height: 100%;
+  height: 100%;
+  max-height: 100%;
+  min-width: 100%;
+  width: 100%;
+  max-width: 100%;
+
+  color: var(--fg);
+  background-color: var(--bg);
+  font-family: 'Inter V', sans-serif;
+
+  // Because we want the sidebar be always on the left, the content be always on the right.
+  // revert this in main > article
+  direction: ltr;
+  writing-mode: horizontal-tb;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+
+  > * {
+    min-height: 100%;
+    height: 100%;
+    max-height: 100%;
+  }
+
+  > wrapper-block {
+    overflow-block: scroll;
+    overflow-y: scroll;
+  }
+}

@@ -1,0 +1,25 @@
+@mixin element_screenVisibility_hidden {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  left: -9999;
+  top: -9999;
+}
+
+@mixin element_theme_alwaysDark {
+  color: var(--light);
+  background-color: var(--dark);
+  border-color: var(--light);
+
+  // Manually overriding <a> , see the comment under a {}
+  a {
+    &:focus,
+    &:hover,
+    &:active {
+      color: var(--dark);
+      background-color: var(--light);
+      box-shadow: 0 0 0 calc(3 * var(--mp)) var(--light);
+    }
+  }
+}

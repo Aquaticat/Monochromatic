@@ -1,0 +1,18 @@
+{
+  "name": "@monochromatic.dev/dprint",
+  "version": "0.0.1",
+  "description": "Monochromatic's dprint.json",
+  "main": "dprint.json",
+  "files": ["dprint.json"],
+  "keywords": [
+    "config",
+    "monochromatic",
+    "dprint"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "Apache-2.0"
+}

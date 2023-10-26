@@ -1,0 +1,36 @@
+{
+  "name": "@monochromatic.dev/build",
+  "description": "Monochromatic dev build system, technically applicable not just to monochromatic.dev",
+  "type": "module",
+  "module": "dist/final/index.js",
+  "types": "dist/final/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/final/index.js"
+    }
+  },
+  "files": [
+    "dist/final"
+  ],
+  "scripts": {
+    "run": "node run.js",
+    "build": "node build.js",
+    "cab": "node cab.js"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.11"
+  },
+  "dependencies": {
+    "@monochromatic.dev/closest-path-built": "workspace:*",
+    "@monochromatic.dev/copy-built-package-built": "workspace:*",
+    "@monochromatic.dev/increase-version-built": "workspace:*",
+    "@microsoft/api-extractor": "^7.34.4",
+    "esbuild": "^0.17.15",
+    "shelljs": "^0.8.5",
+    "terser": "^5.16.8",
+    "@monochromatic.dev/tsconfig": "workspace:*",
+    "@monochromatic.dev/api-extractor": "workspace:*",
+    "typescript": "^5.0.4"
+  },
+  "version": "0.0.12"
+}

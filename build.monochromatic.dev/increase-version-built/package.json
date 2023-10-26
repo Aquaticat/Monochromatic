@@ -1,0 +1,16 @@
+{
+  "name": "@monochromatic.dev/increase-version-built",
+  "type": "module",
+  "module": "dist/final/index.js",
+  "types": "dist/final/index.d.ts",
+  "files": [
+    "dist/final"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/final/index.js"
+    }
+  },
+  "private": true,
+  "version": "0.0.2"
+}

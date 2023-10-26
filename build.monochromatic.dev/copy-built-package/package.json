@@ -1,0 +1,26 @@
+{
+  "name": "@monochromatic.dev/copy-built-package",
+  "type": "module",
+  "module": "dist/final/index.js",
+  "types": "dist/final/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/final/index.js"
+    }
+  },
+  "files": [
+    "dist/final"
+  ],
+  "scripts": {
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "@monochromatic.dev/build": "workspace:*",
+    "@monochromatic.dev/tsconfig": "workspace:*",
+    "@monochromatic.dev/api-extractor": "workspace:*",
+    "@monochromatic.dev/closest-path-built": "workspace:*"
+  },
+  "dependencies": {
+  },
+  "version": "0.0.1"
+}

@@ -1,0 +1,51 @@
+/** @format */
+
+:where(ol, ul) {
+  line-height: 1.5;
+  list-style: {
+    position: outside;
+  }
+}
+
+li {
+  li {
+    li {
+      line-height: 1.4;
+    }
+  }
+
+  > {
+    ol {
+      list-style-type: upper-roman;
+    }
+
+    ul {
+      list-style-type: square;
+    }
+  }
+}
+
+.ul_direction_inlineStart {
+  list-style: {
+    position: inside;
+  }
+
+  display: flex;
+  flex: {
+    direction: row;
+    wrap: wrap;
+  }
+  row-gap: 1em;
+  column-gap: 2em;
+  align-items: baseline;
+
+  > * + * {
+    margin-block-start: 0;
+  }
+
+  > li {
+    > * {
+      display: inline;
+    }
+  }
+}

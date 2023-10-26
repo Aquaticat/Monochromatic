@@ -1,0 +1,26 @@
+{
+  "name": "@monochromatic.dev/api-extractor",
+  "version": "0.0.1",
+  "description": "Monochromatic's api-extractor.json for generating .d.ts bundles.",
+  "main": "api-extractor.json",
+  "files": ["api-extractor.json"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/tsconfig-monochromatic.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "config",
+    "monochromatic",
+    "typescript",
+    "api-extractor"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "Apache-2.0"
+}

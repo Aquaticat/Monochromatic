@@ -1,0 +1,12 @@
+{
+  "extends": "tsconfig-monochromatic",
+
+  "include": ["src"],
+
+  "compilerOptions": {
+    "traceResolution": false,
+    "rootDir": "src",
+    "emitDeclarationOnly": true,
+    "outDir": "dist/intermediate/1.  tsc",
+  },
+}

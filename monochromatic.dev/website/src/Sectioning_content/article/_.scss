@@ -1,0 +1,235 @@
+/** @format */
+
+main > article {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  // align-content: center;
+  align-items: flex-start;
+
+  > wrapper-block {
+    details {
+      > wrapper-block {
+        padding-inline: 1rem;
+      }
+
+      > summary {
+        padding-block: 0.5em;
+
+        border: {
+          style: solid;
+          color: var(--fg);
+          inline-start-color: var(--bg);
+          width: 0.25rem;
+        }
+      }
+    }
+
+    max-inline-size: 90ch;
+    padding-inline: 16px;
+    box-sizing: content-box;
+    margin-inline: auto;
+    flex-grow: 1;
+
+    // From https://developer.mozilla.org/en-US/docs/Web/HTML/Block-level_elements
+    /* stylelint-disable-next-line no-descending-specificity */
+    *
+      + :is(
+        address,
+        article,
+        aside,
+        blockquote,
+        details,
+        dialog,
+        div,
+        dl,
+        fieldset,
+        figure,
+        form,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        hgroup,
+        hr,
+        ol,
+        pre,
+        section,
+        table,
+        ul
+      ) {
+      margin-block-start: calc(80 * var(--crmp));
+    }
+
+    :is(
+        address,
+        article,
+        aside,
+        blockquote,
+        details,
+        dialog,
+        div,
+        dl,
+        fieldset,
+        figure,
+        form,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        hgroup,
+        hr,
+        ol,
+        pre,
+        section,
+        table,
+        ul
+      ) {
+      *
+        + :is(
+          address,
+          article,
+          aside,
+          blockquote,
+          details,
+          dialog,
+          div,
+          dl,
+          fieldset,
+          figure,
+          form,
+          h1,
+          h2,
+          h3,
+          h4,
+          h5,
+          h6,
+          hgroup,
+          hr,
+          ol,
+          pre,
+          section,
+          table,
+          ul
+        ) {
+        margin-block-start: calc(64 * var(--crmp));
+      }
+    }
+
+    // * + :is(address, article, aside, blockquote, details, dialog, dd, div, dl, dt, fieldset, figcaption, figure, form, h1, h2, h3, h4, h5, h6, hgroup, hr, li, ol, p, pre, section, table, ul) {
+    //   margin-block-start: calc(var(--clam) * 2);
+    // }
+    * + :is(dd, dt, figcaption, h1, h2, h3, h4, h5, h6, hgroup, hr, li, p) {
+      margin-block-start: calc(16 * var(--crmp));
+    }
+
+    :is(
+        address,
+        article,
+        aside,
+        blockquote,
+        details,
+        dialog,
+        div,
+        dl,
+        fieldset,
+        figure,
+        form,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        hgroup,
+        pre,
+        section,
+        table
+      )
+      > :first-child
+      + * {
+      margin-block-start: calc(32 * var(--crmp));
+    }
+
+    li > p:first-child + :is(ul, ol) {
+      margin-block-start: calc(16 * var(--crmp));
+    }
+  }
+
+  > aside {
+    padding-inline: 16px;
+
+    // position: sticky;
+    // top: 25vh;
+    //endregion
+
+    //region Style
+    a {
+      text-decoration-line: none;
+      font-weight: bold;
+    }
+
+    ul {
+      list-style-type: none;
+    }
+
+    //endregion
+
+    //region Child > ul
+    // height: 1px;
+    // overflow-y: visible;
+    //endregion
+
+    //region Children
+    > ul {
+      padding-inline-start: 0;
+      overflow-y: auto;
+      max-block-size: 50vh;
+
+      text-align: end;
+
+      li {
+        padding-inline-end: 1em;
+
+        > ul li {
+          //noinspection CssInvalidPropertyValue
+          border-inline-end: {
+            style: solid;
+            color: var(--fg);
+            width: 0.25rem;
+          }
+        }
+
+        * + ul {
+          margin-block-start: calc(var(--clam) * 2);
+        }
+      }
+
+      /* stylelint-disable-next-line no-descending-specificity */
+      > li {
+        /* stylelint-disable-next-line no-descending-specificity */
+        + * {
+          margin-block-start: calc(var(--clam) * 4);
+        }
+
+        > ul {
+          li + li {
+            margin-block-start: calc(var(--clam) * 1);
+          }
+        }
+      }
+
+      > li > a {
+        font-weight: 900;
+      }
+
+      // TODO: Style scrollbar.
+    }
+
+    //endregion
+  }
+}

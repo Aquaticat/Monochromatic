@@ -1,0 +1,70 @@
+/** @format */
+
+a {
+  color: inherit;
+
+  text-underline-offset: 0.5ex;
+
+  &:focus,
+  &:hover,
+  &:active {
+    background-color: var(--fg);
+    box-shadow: 0 0 0 calc(2 * var(--mp)) var(--fg);
+    color: var(--bg);
+  }
+
+  transition:
+    background-color 0s ease-out 0.5s,
+    color 0s ease-out 0.5s,
+    box-shadow 0s ease-out 0.5s;
+
+  &:hover {
+    transition:
+      background-color 0s ease-out 0s,
+      color 0s ease-out 0s,
+      box-shadow 0s ease-out 0s;
+  }
+
+  &[href^='http'] {
+    position: relative;
+    padding-right: 2ch;
+
+    &::after {
+      position: absolute;
+      // content: '\00a0↗';
+      content: '\00a0\2197';
+      font-weight: 500;
+      font-size: calc(20 * var(--mp));
+      right: 0;
+      bottom: -0.75ex;
+    }
+
+    &:hover::before {
+      content: 'insecure link';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      font-size: 0.5em;
+      border: {
+        style: solid;
+        width: 1px;
+        color: var(--fg);
+      }
+    }
+  }
+
+  :is(&[href^="https://"][href^="https://"], &[href^="#"][href^="#"])
+  {
+    &:hover::before {
+      content: none;
+    }
+  }
+
+  :is(&[href^='#'][href^='#']) {
+    position: revert;
+    padding-right: revert;
+    &::after {
+      content: none;
+    }
+  }
+}

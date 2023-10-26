@@ -1,0 +1,19 @@
+{
+  "name": "academia.monochromatic.dev",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": ">=5.2.2",
+    "vite": ">=5.0.0-beta.12",
+    "lightningcss": ">=1.22",
+    "browserslist": ">=4.22.1",
+    "@monochromatic.dev/tsconfig-vite": "workspace:*",
+    "@monochromatic.dev/vite-sfa": "workspace:*"
+  }
+}

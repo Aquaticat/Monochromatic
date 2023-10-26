@@ -1,0 +1,32 @@
+<h1>Variables</h1>
+<x-comment> Why is this part not getting wrapped? </x-comment>
+
+<h1 data-ol>Overriding Variables</h1>
+
+<p>There are several methods of overriding variables.</p>
+
+<p>In the order of specificity (the more specific one overrides the less specific one):</p>
+
+<h2>
+  <code>content/**/.toml</code>
+</h2>
+
+<p>Applies to all files in folder, recursively.</p>
+
+<h2>
+  <code>content/.extra.toml</code>
+</h2>
+
+<p>Applies to all files in folder, recursively.</p>
+
+<h2>
+  <code>content/Article_Name.toml</code>
+</h2>
+
+<p>Applies to <code>Article_Name.html</code></p>
+
+<h2>
+  <code>content/Article_Name.extra.toml</code>
+</h2>
+
+<h2><code>x-variable</code> in file.</h2>

@@ -1,0 +1,20 @@
+title = 'Monochromatic'
+
+[colors]
+light = '#f9f9f9'
+dark = '#1b1b1b'
+
+light_lighter = '#ffffff'
+light_lightest = '#ffffff'
+
+dark_darker = '#000000'
+dark_darkest = '#000000'
+
+light_darker = '#eeeeee'
+light_darkest = '#dddddd'
+
+dark_lighter = '#333333'
+dark_lightest = '#444444'
+
+light_disabled = '#cccccc'
+dark_disabled = '#555555'

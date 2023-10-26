@@ -1,0 +1,8 @@
+module.exports = [
+  'last 1 Chrome versions',
+  'last 1 ChromeAndroid versions',
+  'last 1 Android versions',
+  'Firefox ESR',
+  'last 1 FirefoxAndroid versions',
+  'Node 20',
+];

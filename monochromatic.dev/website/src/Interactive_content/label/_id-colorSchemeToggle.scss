@@ -1,0 +1,44 @@
+/** @format */
+
+@use '../button/_.scss' as button;
+
+#colorSchemeToggle {
+  @include button.button_importance_tertiary(label);
+
+  &::before {
+    font-size: 1.75em;
+    // content: '☉';
+    content: '\2609';
+    line-height: 1;
+    padding-inline-end: calc(var(--clam) * 0.2);
+    // inline-size: 2ch;
+    // margin-inline-end: 1em;
+    // transform: translateX(-0.1em) translateY(-0.8em);
+  }
+
+  &::after {
+    line-height: 1;
+    content: '=\00a0theme';
+  }
+
+  &:hover {
+    &::after {
+      content: '\00a0!theme';
+    }
+  }
+
+  :where(&:focus, &:has(input[type='checkbox']:focus)) {
+    outline: {
+      color: var(--light);
+      style: dashed;
+      width: 0.25em;
+    }
+  }
+
+  &:has(input[type='checkbox']:checked)::before {
+    font-size: 1.5em;
+    padding-inline-end: calc(var(--clam) * 0.5);
+    // content: '☽';
+    content: '\263d';
+  }
+}

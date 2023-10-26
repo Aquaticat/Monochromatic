@@ -1,0 +1,54 @@
+// FIXME: Couldn't find a way to get (the selector using the input rule)'s HTML tag.
+//        Had to use a Sass variable instead.
+@mixin button_importance_tertiary($tag: undefined) {
+  text-transform: uppercase;
+  font-family: JetBrainsMonoVar, monospace;
+  font-weight: 900;
+  // font-size: calc(var(--clam) * 1.25);
+
+  //noinspection CssInvalidPropertyValue
+  padding: {
+    inline: 0.5em;
+  }
+
+  height: 3em;
+  line-height: 3em;
+
+  border: {
+    style: solid;
+    width: 0.2em;
+  }
+
+  cursor: pointer;
+
+  &:focus {
+    outline: {
+      color: white;
+      style: dashed;
+      width: 0.2em;
+    }
+  }
+
+  // A background color is necessary to make filter: invert(100%) work.
+  background-color: inherit;
+
+  &:hover,
+  &:active {
+    color: var(--bg);
+    background-color: var(--fg);
+    border-color: var(--fg);
+  }
+
+  @if $tag == label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    input {
+      position: absolute;
+      visibility: hidden;
+      height: 2ex;
+      width: 4ch;
+    }
+  }
+}

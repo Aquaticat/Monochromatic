@@ -1,0 +1,347 @@
+/*
+Implementation of html-in-css
+*/
+
+@use 'reset.css';
+
+//region Custom elements
+
+@use '_' as wrapper-block;
+@use '_' as wrapper-inline;
+
+//endregion
+
+//region Heading content
+@use '_' as h1;
+@use '_' as h2;
+@use '_' as h3;
+@use '_' as h4;
+@use '_' as h5;
+@use '_' as h6;
+@use '_' as hgroup;
+//endregion
+
+//region Interactive content
+@use '_' as a;
+@use '_' as button;
+@use '_' as details;
+@use '_' as label;
+@use 'id-colorSchemeToggle' as label-id-colorSchemeToggle;
+@use '_' as select;
+@use '_' as textarea;
+//endregion
+
+//region Phrasing content
+@use '_' as address;
+@use 'class-email' as address-class-email;
+@use '_' as hr;
+@use '_' as pre_-_code;
+@use '_' as ol_-_ul;
+//endregion
+
+//region Sectioning content
+@use '_' as article;
+@use 'id-copyright' as article-id-copyright;
+@use '_' as aside;
+@use '_' as footer;
+@use '_' as header;
+@use '_' as main;
+@use '_' as nav;
+@use '_' as section;
+//endregion
+
+@use 'link/mixin' as *;
+
+//region font-face
+
+@font-face {
+  font-family: InterVar;
+  font-style: oblique 0deg 10deg;
+  font-weight: 100 900;
+  font-display: swap;
+
+  // Sorry, I really don't know what to do to make it display all the characters I need correctly.
+  //noinspection CssUnknownTarget
+  src: url('/Inter.var.woff2') format('woff2');
+}
+
+// From https://www.npmjs.com/package/@fontsource/jetbrains-mono
+// jetbrains-mono-latin-ext-variable-wghtOnly-normal
+@font-face {
+  font-family: JetBrainsMonoVar;
+  font-style: normal;
+  //noinspection CssUnknownTarget
+  src:
+    local(JetbrainsMono),
+    local('Jetbrains Mono'),
+    local('JetbrainsMono NL'),
+    local('Jetbrains Mono NL'),
+    url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-variable-wghtOnly-normal.woff2')
+      format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* jetbrains-mono-latin-ext-variable-wghtOnly-italic */
+@font-face {
+  font-family: JetBrainsMonoVar;
+  font-style: italic;
+  //noinspection CssUnknownTarget
+  src:
+    local(JetbrainsMono),
+    local('Jetbrains Mono'),
+    local('JetbrainsMono NL'),
+    local('Jetbrains Mono NL'),
+    url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-variable-wghtOnly-italic.woff2')
+      format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+// jetbrains-mono-latin-ext-variable-wghtOnly-normal
+@font-face {
+  font-family: JetBrainsMonoVar;
+  font-style: normal;
+  //noinspection CssUnknownTarget
+  src:
+    local(JetbrainsMono),
+    local('Jetbrains Mono'),
+    local('JetbrainsMono NL'),
+    local('Jetbrains Mono NL'),
+    url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-ext-variable-wghtOnly-normal.woff2')
+      format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* jetbrains-mono-latin-ext-variable-wghtOnly-italic */
+@font-face {
+  font-family: JetBrainsMonoVar;
+  font-style: italic;
+  //noinspection CssUnknownTarget
+  src:
+    local(JetbrainsMono),
+    local('Jetbrains Mono'),
+    local('JetbrainsMono NL'),
+    local('Jetbrains Mono NL'),
+    url('https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-ext-variable-wghtOnly-italic.woff2')
+      format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+//endregion
+
+:is(*, *::before, *::after) {
+  margin: 0;
+
+  box: {
+    decoration-break: clone;
+    sizing: border-box;
+  }
+
+  contain: layout paint;
+}
+
+:root {
+  @media (prefers-color-scheme: light) {
+    --fg: var(--dark);
+    --bg: var(--light);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    --fg: var(--light);
+    --bg: var(--dark);
+  }
+
+  --rmp: calc(1rem / 16);
+  --crmp: clamp(1px, var(--rmp), 2px);
+  --wp: calc(100vw / 768);
+
+  --mp: calc(1em / 16);
+}
+
+html {
+  min-height: fill-available;
+  height: 100dvh;
+  min-width: 100svw;
+  width: 100dvw;
+  max-width: 100lvw;
+
+  color-scheme: light dark;
+}
+
+body {
+  min-height: 100%;
+  height: 100%;
+  max-height: 100%;
+  min-width: 100%;
+  width: 100%;
+  max-width: 100%;
+
+  color: var(--fg);
+  background-color: var(--bg);
+  font-family: 'Inter V', sans-serif;
+
+  // Because we want the sidebar be always on the left, the content be always on the right.
+  direction: ltr;
+  writing-mode: horizontal-tb;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+
+  > * {
+    min-height: 100%;
+    height: 100%;
+    max-height: 100%;
+  }
+
+  > #nav {
+    // display: flex;
+
+    a {
+      text-decoration-line: none;
+    }
+
+    > details {
+      min-height: 100%;
+      height: 100%;
+      max-height: 100%;
+
+      // display: flex;
+      // flex-direction: column;
+      // flex-wrap: nowrap;
+
+      > summary {
+        height: calc(64 * var(--crmp));
+
+        > h1 {
+          text-align: left;
+          font-size: calc(48 * var(--crmp));
+        }
+      }
+
+      &[open] {
+        padding-inline: calc(16 * var(--crmp));
+
+        > summary {
+          &::after {
+            content: '<';
+          }
+        }
+      }
+
+      &:not([open]) {
+        > summary {
+          padding-inline: calc(8 * var(--crmp));
+
+          > h1 {
+            @include element_screenVisibility_hidden;
+          }
+
+          &::after {
+            content: '>';
+          }
+        }
+      }
+
+      > wrapper-block {
+        // flex-basis: 0;
+        // flex-grow: 9999;
+
+        margin-top: calc(32 * var(--crmp));
+        height: calc(100% - 96 * var(--crmp));
+        overflow-y: scroll;
+        scrollbar-gutter: stable;
+
+        // contain: layout;
+        // overflow-y: scroll;
+
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+
+        > * {
+          flex-grow: 1;
+        }
+
+        > #Skip_to_content {
+          @include element_screenVisibility_hidden;
+        }
+
+        > #Jump_to_footer {
+          // margin-top: auto;
+          flex-grow: revert;
+        }
+      }
+    }
+  }
+
+  > wrapper-block {
+    // display: flex;
+    // flex-direction: column;
+    flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+
+    > main {
+      flex-grow: 1;
+    }
+  }
+}
+
+a {
+  color: inherit;
+
+  &:hover {
+    background-color: var(--bg);
+    box-shadow: 0 0 0 calc(2 * var(--mp)) var(--bg);
+  }
+}
+
+details {
+  &:not([open]) {
+    > summary {
+      &::after {
+        content: 'v';
+      }
+    }
+  }
+
+  &[open] {
+    > summary {
+      &::after {
+        content: 'ᴧ';
+      }
+    }
+  }
+
+  > summary {
+    min-block-size: calc(48 * var(--crmp));
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+
+    &::marker {
+      // position: absolute;
+      // opacity: 0;
+    }
+
+    &::after {
+      text-align: center;
+
+      font-size: calc(48 * var(--rmp));
+      min-inline-size: calc(48 * var(--crmp));
+    }
+
+    > :is(h1, h2, h3) {
+      flex-grow: 1;
+    }
+
+    > :is(h1, h2) {
+      text-align: center;
+    }
+  }
+}

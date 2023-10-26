@@ -1,0 +1,804 @@
+@charset "UTF-8";
+/***
+    The new CSS reset - version 1.8.4 (last updated 14.2.2023)
+    GitHub page: https://github.com/elad2412/the-new-css-reset
+***/
+/*
+    Remove all the styles of the "User-Agent-Stylesheet", except for the 'display' property
+    - The "symbol *" part is to solve Firefox SVG sprite bug
+ */
+*:where(:not(html, iframe, canvas, img, svg, video, audio):not(svg *, symbol *)) {
+  all: unset;
+  display: revert;
+}
+
+/* Preferred box-sizing value */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Reapply the pointer cursor for anchor tags */
+a, button {
+  cursor: revert;
+}
+
+/* Remove list styles (bullets/numbers) */
+ol, ul, menu {
+  list-style: none;
+}
+
+/* For images to not be able to exceed their container */
+img {
+  max-inline-size: 100%;
+  max-block-size: 100%;
+}
+
+/* removes spacing between cells in tables */
+table {
+  border-collapse: collapse;
+}
+
+/* Safari - solving issue when using user-select:none on the <body> text input doesn't working */
+input, textarea {
+  -webkit-user-select: auto;
+}
+
+/* revert the 'white-space' property for textarea elements on Safari */
+textarea {
+  white-space: revert;
+}
+
+/* minimum style to allow to style meter element */
+meter {
+  -webkit-appearance: revert;
+  appearance: revert;
+}
+
+/* preformatted text - use only for this feature */
+:where(pre) {
+  all: revert;
+}
+
+/* reset default text opacity of input placeholder */
+::placeholder {
+  color: unset;
+}
+
+/* remove default dot (•) sign */
+::marker {
+  content: initial;
+}
+
+/* fix the feature of 'hidden' attribute.
+   display:revert; revert to element instead of attribute */
+:where([hidden]) {
+  display: none;
+}
+
+/* revert for bug in Chromium browsers
+   - fix for the content editable attribute will work properly.
+   - webkit-user-select: auto; added for Safari in case of using user-select:none on wrapper element*/
+:where([contenteditable]:not([contenteditable=false])) {
+  -moz-user-modify: read-write;
+  -webkit-user-modify: read-write;
+  overflow-wrap: break-word;
+  -webkit-line-break: after-white-space;
+  -webkit-user-select: auto;
+}
+
+/* apply back the draggable feature - exist only in Chromium and Safari */
+:where([draggable=true]) {
+  -webkit-user-drag: element;
+}
+
+/* Revert Modal native behavior */
+:where(dialog:modal) {
+  all: revert;
+}
+
+wrapper-block {
+  display: block;
+}
+
+body > wrapper-block {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+body > wrapper-block > main {
+  flex-grow: 1;
+}
+
+wrapper-inline {
+  display: inline flow-root;
+}
+
+/** @format */
+h1 {
+  text-align: center;
+  font-size: clamp(36 * var(--mp), 60 * var(--mp), 60 * var(--wp));
+  font-family: JetBrainsMonoVar, monospace, InterVar, sans-serif;
+  font-weight: 900;
+  line-height: 2;
+}
+
+/** @format */
+h2 {
+  text-align: center;
+  font-size: calc(var(--clam-root) * 3);
+  line-height: 2;
+}
+
+/** @format */
+h3 {
+  font-size: calc(var(--clam-root) * 2);
+  line-height: 1.5;
+}
+
+/** @format */
+h4 {
+  font-size: calc(var(--clam-root) * 1.5);
+  font-weight: normal;
+}
+
+/** @format */
+h5 {
+  font-size: 1.25rem;
+}
+
+/** @format */
+h6 {
+  font-size: 1rem;
+}
+
+/** @format */
+hgroup > :where(h1, h2, h3, h4, h5, h6) + * {
+  margin-block-start: calc(var(--clam-root) * 0.5);
+}
+hgroup > * {
+  text-align: center;
+}
+hgroup > :where(h3, h4, h5, h6) {
+  text-align: unset;
+}
+
+/** @format */
+a {
+  color: inherit;
+  text-underline-offset: 0.5ex;
+  transition: background-color 0s ease-out 0.5s, color 0s ease-out 0.5s, box-shadow 0s ease-out 0.5s;
+}
+a:focus, a:hover, a:active {
+  background-color: var(--fg);
+  box-shadow: 0 0 0 calc(2 * var(--mp)) var(--fg);
+  color: var(--bg);
+}
+a:hover {
+  transition: background-color 0s ease-out 0s, color 0s ease-out 0s, box-shadow 0s ease-out 0s;
+}
+a[href^=http] {
+  position: relative;
+  padding-right: 2ch;
+}
+a[href^=http]::after {
+  position: absolute;
+  content: " ↗";
+  font-weight: 500;
+  font-size: calc(20 * var(--mp));
+  right: 0;
+  bottom: -0.75ex;
+}
+a[href^=http]:hover::before {
+  content: "insecure link";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  font-size: 0.5em;
+  border-style: solid;
+  border-width: 1px;
+  border-color: var(--fg);
+}
+:is(a[href^="https://"][href^="https://"], a[href^="#"][href^="#"]):hover::before {
+  content: none;
+}
+:is(a[href^="#"][href^="#"]) {
+  position: revert;
+  padding-right: revert;
+}
+:is(a[href^="#"][href^="#"])::after {
+  content: none;
+}
+
+/**
+ * FIXME: Still haven't figured out how to prevent flexbox from changing sizes when opening and closing <detail>.
+ *
+ * @format
+ */
+details:not([open]) > summary::after {
+  content: "v";
+}
+details[open] > summary {
+  border-inline-start-color: var(--fg);
+  border-block-end-color: var(--bg);
+}
+details[open] > summary::after {
+  content: "ᴧ";
+}
+details > summary {
+  font-size: calc(16 * var(--crmp));
+  min-block-size: calc(48 * var(--crmp));
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
+}
+details > summary::after {
+  text-align: center;
+  font-size: calc(48 * var(--crmp));
+  min-inline-size: calc(48 * var(--crmp));
+}
+details > summary > :is(h1, h2, h3) {
+  flex-grow: 1;
+}
+details > summary > h1 {
+  text-align: center;
+}
+
+main details > summary {
+  outline: none;
+  border-style: solid;
+  border-width: calc(2 * var(--crmp));
+}
+main details > summary:has(:is(h1, h2)) {
+  border-width: calc(4 * var(--crmp));
+}
+main details > summary:has(h4) {
+  border-block-end-color: var(--bg);
+}
+main details > summary:has(h5) {
+  border-block-color: var(--bg);
+}
+main details > wrapper-block {
+  padding-inline: calc(16 * var(--crmp));
+}
+
+/** @format */ /** @format */
+#colorSchemeToggle {
+  text-transform: uppercase;
+  font-family: JetBrainsMonoVar, monospace;
+  font-weight: 900;
+  padding-inline: 0.5em;
+  height: 3em;
+  line-height: 3em;
+  border-style: solid;
+  border-width: 0.2em;
+  cursor: pointer;
+  background-color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#colorSchemeToggle:focus {
+  outline-color: white;
+  outline-style: dashed;
+  outline-width: 0.2em;
+}
+#colorSchemeToggle:hover, #colorSchemeToggle:active {
+  color: var(--bg);
+  background-color: var(--fg);
+  border-color: var(--fg);
+}
+#colorSchemeToggle input {
+  position: absolute;
+  visibility: hidden;
+  height: 2ex;
+  width: 4ch;
+}
+#colorSchemeToggle::before {
+  font-size: 1.75em;
+  content: "☉";
+  line-height: 1;
+  padding-inline-end: calc(var(--clam) * 0.2);
+}
+#colorSchemeToggle::after {
+  line-height: 1;
+  content: "= theme";
+}
+#colorSchemeToggle:hover::after {
+  content: " !theme";
+}
+:where(#colorSchemeToggle:focus, #colorSchemeToggle:has(input[type=checkbox]:focus)) {
+  outline-color: var(--light);
+  outline-style: dashed;
+  outline-width: 0.25em;
+}
+#colorSchemeToggle:has(input[type=checkbox]:checked)::before {
+  font-size: 1.5em;
+  padding-inline-end: calc(var(--clam) * 0.5);
+  content: "☽";
+}
+
+/** @format */
+address {
+  font-style: normal;
+}
+
+/** @format */
+.email [title="Copy mailto link."],
+.email [title="mailto link copied!"] {
+  border: 0;
+  padding: 0;
+  margin-inline-start: 1ch;
+}
+.email [title="Copy mailto link."] > button,
+.email [title="mailto link copied!"] > button {
+  border: 0;
+  padding: 0;
+  font-size: 1.5em;
+  color: inherit;
+  background-color: inherit;
+  transform: translateY(0.2ex);
+}
+.email [title="Copy mailto link."] > button:hover, .email [title="Copy mailto link."] > button:active,
+.email [title="mailto link copied!"] > button:hover,
+.email [title="mailto link copied!"] > button:active {
+  cursor: pointer;
+}
+.email > * {
+  display: inline-block;
+}
+
+/** @format */
+hr {
+  color: var(--fg);
+  border: none;
+  block-size: 2em;
+  text-align: center;
+}
+hr::before {
+  display: block;
+  content: "";
+  margin-block-start: 0.5em;
+  height: 0.5em;
+  border-block: 0.2em solid currentColor;
+}
+hr::after {
+  content: "§";
+  font-size: 2em;
+  font-weight: bold;
+  background-color: var(--bg);
+  padding-inline: 0.5em;
+  position: relative;
+  top: -1.3em;
+}
+
+:where(pre, code) {
+  font-family: JetBrainsMonoVar, monospace, InterVar, sans-serif;
+}
+
+/** @format */
+:where(ol, ul) {
+  line-height: 1.5;
+  list-style-position: outside;
+}
+
+li li li {
+  line-height: 1.4;
+}
+li > ol {
+  list-style-type: upper-roman;
+}
+li > ul {
+  list-style-type: square;
+}
+
+.ul_direction_inlineStart {
+  list-style-position: inside;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  row-gap: 1em;
+  column-gap: 2em;
+  align-items: baseline;
+}
+.ul_direction_inlineStart > * + * {
+  margin-block-start: 0;
+}
+.ul_direction_inlineStart > li > * {
+  display: inline;
+}
+
+/** @format */ /** @format */ /** @format */ /** @format */
+footer {
+  color: var(--light);
+  background-color: var(--dark);
+  border-color: var(--light);
+  padding-block: clamp(48 * var(--crmp), 64 * var(--crmp), 64 * var(--wp));
+  display: flex;
+  flex-direction: column;
+  row-gap: calc(32 * var(--crmp));
+  align-items: center;
+}
+footer a:focus, footer a:hover, footer a:active {
+  color: var(--dark);
+  background-color: var(--light);
+  box-shadow: 0 0 0 calc(3 * var(--mp)) var(--light);
+}
+footer > section {
+  box-sizing: content-box;
+  max-inline-size: 90ch;
+  padding-inline: 16px;
+}
+footer > section * {
+  font-size: 1rem;
+  text-align: center;
+  font-weight: normal;
+}
+footer > section > :where(ul, ol) {
+  padding-inline-start: 0;
+  list-style-type: none;
+}
+footer > section > :where(ul, ol) > li + li {
+  margin-block-start: calc(16 * var(--crmp));
+}
+
+/** @format */
+header {
+  color: var(--light);
+  background-color: var(--dark);
+  border-color: var(--light);
+  padding-block: clamp(48 * var(--crmp), 64 * var(--crmp), 64 * var(--wp));
+  display: flex;
+  flex-direction: column;
+  row-gap: calc(32 * var(--crmp));
+  align-items: center;
+}
+header a:focus, header a:hover, header a:active {
+  color: var(--dark);
+  background-color: var(--light);
+  box-shadow: 0 0 0 calc(3 * var(--mp)) var(--light);
+}
+header > hgroup > *:not(h1, h2, h3, h4, h5, h6) {
+  font-size: calc(24 * var(--crmp));
+}
+
+/**
+ Disabled Prettier because:
+
+ Prettier is breaking selector into multiple lines.
+ Re-enable Prettier when the GitHub issue
+ Support prettier-ignore-start/end for other languages (not only Markdown)
+ #5287
+ https://github.com/prettier/prettier/issues/5287
+ is resolved.
+
+ But really, I should open an issue for Prettier on that particular problem.
+ */
+main {
+  background-color: var(--bg);
+}
+main hr {
+  inline-size: 100%;
+}
+main details > wrapper-block {
+  padding-inline: 1rem;
+}
+main details > summary {
+  padding-block: 0.5em;
+  border-style: solid;
+  border-color: var(--fg);
+  border-inline-start-color: var(--bg);
+  border-width: 0.25rem;
+}
+main > article {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+main > article > wrapper-block {
+  max-inline-size: 90ch;
+  padding-inline: 16px;
+  box-sizing: content-box;
+  margin-inline: auto;
+  flex-grow: 1;
+  /* stylelint-disable-next-line no-descending-specificity */
+}
+main > article > wrapper-block * + :is(address,
+article,
+aside,
+blockquote,
+details,
+dialog,
+div,
+dl,
+fieldset,
+figure,
+form,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hgroup,
+hr,
+ol,
+pre,
+section,
+table,
+ul) {
+  margin-block-start: calc(80 * var(--crmp));
+}
+main > article > wrapper-block :is(address,
+article,
+aside,
+blockquote,
+details,
+dialog,
+div,
+dl,
+fieldset,
+figure,
+form,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hgroup,
+hr,
+ol,
+pre,
+section,
+table,
+ul) * + :is(address,
+article,
+aside,
+blockquote,
+details,
+dialog,
+div,
+dl,
+fieldset,
+figure,
+form,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hgroup,
+hr,
+ol,
+pre,
+section,
+table,
+ul) {
+  margin-block-start: calc(64 * var(--crmp));
+}
+main > article > wrapper-block * + :is(dd, dt, figcaption, h1, h2, h3, h4, h5, h6, hgroup, hr, li, p) {
+  margin-block-start: calc(16 * var(--crmp));
+}
+main > article > wrapper-block :is(address,
+article,
+aside,
+blockquote,
+details,
+dialog,
+div,
+dl,
+fieldset,
+figure,
+form,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hgroup,
+pre,
+section,
+table) > :first-child + * {
+  margin-block-start: calc(32 * var(--crmp));
+}
+main > article > wrapper-block li > p:first-child + :is(ul, ol) {
+  margin-block-start: calc(16 * var(--crmp));
+}
+main > article > aside {
+  padding-inline: 16px;
+}
+main > article > aside a {
+  text-decoration-line: none;
+  font-weight: bold;
+}
+main > article > aside ul {
+  list-style-type: none;
+}
+main > article > aside > ul {
+  padding-inline-start: 0;
+  overflow-y: auto;
+  max-block-size: 50vh;
+  text-align: end;
+  /* stylelint-disable-next-line no-descending-specificity */
+}
+main > article > aside > ul li {
+  padding-inline-end: 1em;
+}
+main > article > aside > ul li > ul li {
+  border-inline-end-style: solid;
+  border-inline-end-color: var(--fg);
+  border-inline-end-width: 0.25rem;
+}
+main > article > aside > ul li * + ul {
+  margin-block-start: calc(var(--clam) * 2);
+}
+main > article > aside > ul > li {
+  /* stylelint-disable-next-line no-descending-specificity */
+}
+main > article > aside > ul > li + * {
+  margin-block-start: calc(var(--clam) * 4);
+}
+main > article > aside > ul > li > ul li + li {
+  margin-block-start: calc(var(--clam) * 1);
+}
+main > article > aside > ul > li > a {
+  font-weight: 900;
+}
+
+/** @format */
+body > #nav a {
+  text-decoration-line: none;
+}
+body > #nav > details {
+  min-height: 100%;
+  height: 100%;
+  max-height: 100%;
+}
+body > #nav > details > summary {
+  height: calc(64 * var(--crmp));
+}
+body > #nav > details > summary > h1 {
+  text-align: left;
+  font-size: calc(48 * var(--crmp));
+}
+body > #nav > details[open] > summary::after {
+  content: "<";
+}
+body > #nav > details:not([open]) > summary {
+  padding-inline: calc(8 * var(--crmp));
+}
+body > #nav > details:not([open]) > summary > h1 {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  left: -9999;
+  top: -9999;
+}
+body > #nav > details:not([open]) > summary::after {
+  content: ">";
+}
+body > #nav > details > wrapper-block {
+  margin-top: calc(16 * var(--crmp));
+  margin-bottom: calc(16 * var(--crmp));
+  height: calc(100% - 96 * var(--crmp));
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+body > #nav > details > wrapper-block > * {
+  flex-grow: 1;
+}
+body > #nav > details > wrapper-block > #Skip_to_content {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  left: -9999;
+  top: -9999;
+}
+body > #nav > details > wrapper-block > #Jump_to_footer {
+  flex-grow: revert;
+}
+
+/*
+Implementation of html-in-css
+*/
+@font-face {
+  font-family: InterVar;
+  font-style: oblique 0deg 10deg;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/Inter.var.woff2") format("woff2");
+}
+@font-face {
+  font-family: JetBrainsMonoVar;
+  font-style: normal;
+  src: local(JetbrainsMono), local("Jetbrains Mono"), local("JetbrainsMono NL"), local("Jetbrains Mono NL"), url("https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-variable-wghtOnly-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* jetbrains-mono-latin-ext-variable-wghtOnly-italic */
+@font-face {
+  font-family: JetBrainsMonoVar;
+  font-style: italic;
+  src: local(JetbrainsMono), local("Jetbrains Mono"), local("JetbrainsMono NL"), local("Jetbrains Mono NL"), url("https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-variable-wghtOnly-italic.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: JetBrainsMonoVar;
+  font-style: normal;
+  src: local(JetbrainsMono), local("Jetbrains Mono"), local("JetbrainsMono NL"), local("Jetbrains Mono NL"), url("https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-ext-variable-wghtOnly-normal.woff2") format("woff2");
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* jetbrains-mono-latin-ext-variable-wghtOnly-italic */
+@font-face {
+  font-family: JetBrainsMonoVar;
+  font-style: italic;
+  src: local(JetbrainsMono), local("Jetbrains Mono"), local("JetbrainsMono NL"), local("Jetbrains Mono NL"), url("https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-ext-variable-wghtOnly-italic.woff2") format("woff2");
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+:is(*, *::before, *::after) {
+  margin: 0;
+  box-decoration-break: clone;
+  box-sizing: border-box;
+  contain: layout paint;
+}
+
+:root {
+  --rmp: calc(1rem / 16);
+  --crmp: clamp(1px, var(--rmp), 2px);
+  --wp: calc(100vw / 720);
+  --mp: calc(1em / 16);
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --fg: var(--dark);
+    --bg: var(--light);
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg: var(--light);
+    --bg: var(--dark);
+  }
+}
+
+html {
+  min-height: fill-available;
+  height: 100dvh;
+  min-width: 100svw;
+  width: 100dvw;
+  max-width: 100lvw;
+  color-scheme: light dark;
+}
+
+body {
+  min-height: 100%;
+  height: 100%;
+  max-height: 100%;
+  min-width: 100%;
+  width: 100%;
+  max-width: 100%;
+  color: var(--fg);
+  background-color: var(--bg);
+  font-family: "Inter V", sans-serif;
+  direction: ltr;
+  writing-mode: horizontal-tb;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+body > * {
+  min-height: 100%;
+  height: 100%;
+  max-height: 100%;
+}

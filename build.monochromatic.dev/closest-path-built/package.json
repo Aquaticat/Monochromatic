@@ -1,0 +1,15 @@
+{
+  "name": "@monochromatic.dev/closest-path-built",
+  "type": "module",
+  "module": "dist/final/index.js",
+  "types": "dist/final/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/final/index.js"
+    }
+  },
+  "files": [
+    "dist/final"
+  ],
+  "version": "0.0.1"
+}

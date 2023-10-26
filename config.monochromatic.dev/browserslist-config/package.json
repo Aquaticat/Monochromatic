@@ -1,0 +1,24 @@
+{
+  "name": "@monochromatic.dev/browserslist-config",
+  "version": "0.0.1",
+  "description": "Monochromatic's browserslist config",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    ".browserslistrc"
+  ],
+  "keywords": [
+    "config",
+    "monochromatic",
+    "browserslist"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "browserslist": "*"
+  }
+}
