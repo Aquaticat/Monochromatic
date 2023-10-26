@@ -16,8 +16,8 @@
   },
   "devDependencies": {
     "eslint": ">=8.37",
-    "eslint-config-monochromatic": "^0.0.15",
-    "eslint-config-monochromatic-typescript": "^0.0.13",
+    "@monochromatic.dev/eslint-config": "workspace:*",
+    "@monochromatic.dev/eslint-config-typescript": "workspace:*",
     "@types/node": "^18.15.11",
     "@types/semver": "^7.3.13",
     "ts-node": "^10.9.1",
