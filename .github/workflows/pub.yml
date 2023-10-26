@@ -38,7 +38,11 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
+      - name: Set provenance
+        run: pnpm config set provenance true
+
       # See https://github.com/npm/cli/issues/1637#issuecomment-1507559322
-      - run: pnpm -r publish --access public --no-git-checks --force --report-summary
+      - name: Publish workspace
+        run: pnpm -r publish --access public --no-git-checks --force --report-summary
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
