@@ -8,13 +8,13 @@ importers:
 
   .:
     devDependencies:
-      '@monochromatic/eslint-config':
+      '@monochromatic.dev/eslint-config':
         specifier: workspace:*
         version: link:config.monochromatic.dev/eslint-config
-      '@monochromatic/eslint-config-astro':
+      '@monochromatic.dev/eslint-config-astro':
         specifier: workspace:*
         version: link:config.monochromatic.dev/eslint-config-astro
-      '@monochromatic/eslint-config-typescript':
+      '@monochromatic.dev/eslint-config-typescript':
         specifier: workspace:*
         version: link:config.monochromatic.dev/eslint-config-typescript
       prettier:
@@ -26,10 +26,10 @@ importers:
 
   academia.monochromatic.dev/template:
     devDependencies:
-      '@monochromatic/tsconfig-vite':
+      '@monochromatic.dev/tsconfig-vite':
         specifier: workspace:*
         version: link:../../config.monochromatic.dev/tsconfig-vite
-      '@monochromatic/vite-sfa':
+      '@monochromatic.dev/vite-sfa':
         specifier: workspace:*
         version: link:../../config.monochromatic.dev/vite-sfa
       browserslist:
@@ -49,16 +49,16 @@ importers:
 
   build.monochromatic.dev/copy-built-package:
     devDependencies:
-      '@monochromatic/api-extractor':
+      '@monochromatic.dev/api-extractor':
         specifier: workspace:*
         version: link:../../config.monochromatic.dev/api-extractor
-      '@monochromatic/build':
+      '@monochromatic.dev/build':
         specifier: workspace:*
         version: link:../index
-      '@monochromatic/closest-path-built':
+      '@monochromatic.dev/closest-path-built':
         specifier: workspace:*
         version: link:../closest-path-built
-      '@monochromatic/tsconfig':
+      '@monochromatic.dev/tsconfig':
         specifier: workspace:*
         version: link:../../config.monochromatic.dev/tsconfig
 
@@ -66,16 +66,16 @@ importers:
 
   build.monochromatic.dev/increase-version:
     devDependencies:
-      '@monochromatic/api-extractor':
+      '@monochromatic.dev/api-extractor':
         specifier: workspace:*
         version: link:../../config.monochromatic.dev/api-extractor
-      '@monochromatic/build':
+      '@monochromatic.dev/build':
         specifier: workspace:*
         version: link:../index
-      '@monochromatic/closest-path-built':
+      '@monochromatic.dev/closest-path-built':
         specifier: workspace:*
         version: link:../closest-path-built
-      '@monochromatic/tsconfig':
+      '@monochromatic.dev/tsconfig':
         specifier: workspace:*
         version: link:../../config.monochromatic.dev/tsconfig
       '@types/node':
@@ -110,19 +110,19 @@ importers:
       '@microsoft/api-extractor':
         specifier: ^7.34.4
         version: 7.38.0(@types/node@18.18.6)
-      '@monochromatic/api-extractor':
+      '@monochromatic.dev/api-extractor':
         specifier: workspace:*
         version: link:../../config.monochromatic.dev/api-extractor
-      '@monochromatic/closest-path-built':
+      '@monochromatic.dev/closest-path-built':
         specifier: workspace:*
         version: link:../closest-path-built
-      '@monochromatic/copy-built-package-built':
+      '@monochromatic.dev/copy-built-package-built':
         specifier: workspace:*
         version: link:../copy-built-package-built
-      '@monochromatic/increase-version-built':
+      '@monochromatic.dev/increase-version-built':
         specifier: workspace:*
         version: link:../increase-version-built
-      '@monochromatic/tsconfig':
+      '@monochromatic.dev/tsconfig':
         specifier: workspace:*
         version: link:../../config.monochromatic.dev/tsconfig
       esbuild:
@@ -165,10 +165,10 @@ importers:
 
   config.monochromatic.dev/eslint-config-astro:
     dependencies:
-      '@monochromatic/eslint-config':
+      '@monochromatic.dev/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@monochromatic/eslint-config-typescript':
+      '@monochromatic.dev/eslint-config-typescript':
         specifier: workspace:*
         version: link:../eslint-config-typescript
       '@typescript-eslint/parser':
@@ -189,7 +189,7 @@ importers:
 
   config.monochromatic.dev/eslint-config-typescript:
     dependencies:
-      '@monochromatic/eslint-config':
+      '@monochromatic.dev/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
       '@typescript-eslint/eslint-plugin':
@@ -230,7 +230,7 @@ importers:
 
   config.monochromatic.dev/vite-sfa:
     devDependencies:
-      '@monochromatic/vite':
+      '@monochromatic.dev/vite':
         specifier: workspace:*
         version: link:../vite
       browserslist:
@@ -251,10 +251,10 @@ importers:
 
   helpers.monochromatic.dev/closest-path:
     devDependencies:
-      '@monochromatic/build':
+      '@monochromatic.dev/build':
         specifier: workspace:*
         version: link:../../build.monochromatic.dev/index
-      '@monochromatic/copy-built-package':
+      '@monochromatic.dev/copy-built-package':
         specifier: workspace:*
         version: link:../../build.monochromatic.dev/copy-built-package
       '@types/node':
@@ -281,7 +281,7 @@ importers:
 
   monochromatic.dev/index:
     dependencies:
-      '@monochromatic/transform-content':
+      '@monochromatic.dev/transform-content':
         specifier: workspace:*
         version: link:../transform-content
 
@@ -333,13 +333,13 @@ importers:
         specifier: ^0.8.5
         version: 0.8.5
     devDependencies:
-      '@monochromatic/api-extractor':
+      '@monochromatic.dev/api-extractor':
         specifier: workspace:*
         version: link:../../config.monochromatic.dev/api-extractor
-      '@monochromatic/build':
+      '@monochromatic.dev/build':
         specifier: workspace:*
         version: link:../../build.monochromatic.dev/index
-      '@monochromatic/tsconfig':
+      '@monochromatic.dev/tsconfig':
         specifier: workspace:*
         version: link:../../config.monochromatic.dev/tsconfig
       '@types/js-beautify':

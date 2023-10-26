@@ -57,4 +57,7 @@ builds content from every directory ending with `monochromatic.dev`
 
 ```shell
 fastmod -e json '"version": "0.0.1"' '"version": "0.0.2"'
+
+# Update lockfile
+pnpm i
 ```
