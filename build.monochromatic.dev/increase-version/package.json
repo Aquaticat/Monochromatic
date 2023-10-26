@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic/increase-version",
+  "name": "@monochromatic.dev/increase-version",
   "type": "module",
   "module": "dist/final/index.js",
   "types": "dist/final/index.d.ts",
@@ -23,10 +23,10 @@
     "@types/semver": "^7.3.13",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4",
-    "@monochromatic/build": "workspace:*",
-    "@monochromatic/closest-path-built": "workspace:*",
-    "@monochromatic/tsconfig": "workspace:*",
-    "@monochromatic/api-extractor": "workspace:*",
+    "@monochromatic.dev/build": "workspace:*",
+    "@monochromatic.dev/closest-path-built": "workspace:*",
+    "@monochromatic.dev/tsconfig": "workspace:*",
+    "@monochromatic.dev/api-extractor": "workspace:*",
     "semver": "^7.3.8"
   },
   "dependencies": {},

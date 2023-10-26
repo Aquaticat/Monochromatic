@@ -2,7 +2,7 @@ import {
   defineConfig,
   mergeConfig,
 } from 'vite';
-import viteConfig from '@monochromatic/vite';
+import viteConfig from '@monochromatic.dev/vite';
 import {
   viteSingleFile,
 } from 'vite-plugin-singlefile';

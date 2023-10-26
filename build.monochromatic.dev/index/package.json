@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic/build",
+  "name": "@monochromatic.dev/build",
   "description": "Monochromatic dev build system, technically applicable not just to monochromatic.dev",
   "// private": "Not sure if I should publish this.",
   "private": true,
@@ -23,15 +23,15 @@
     "@types/node": "^18.15.11"
   },
   "dependencies": {
-    "@monochromatic/closest-path-built": "workspace:*",
-    "@monochromatic/copy-built-package-built": "workspace:*",
-    "@monochromatic/increase-version-built": "workspace:*",
+    "@monochromatic.dev/closest-path-built": "workspace:*",
+    "@monochromatic.dev/copy-built-package-built": "workspace:*",
+    "@monochromatic.dev/increase-version-built": "workspace:*",
     "@microsoft/api-extractor": "^7.34.4",
     "esbuild": "^0.17.15",
     "shelljs": "^0.8.5",
     "terser": "^5.16.8",
-    "@monochromatic/tsconfig": "workspace:*",
-    "@monochromatic/api-extractor": "workspace:*",
+    "@monochromatic.dev/tsconfig": "workspace:*",
+    "@monochromatic.dev/api-extractor": "workspace:*",
     "typescript": "^5.0.4"
   },
   "version": "0.0.12"

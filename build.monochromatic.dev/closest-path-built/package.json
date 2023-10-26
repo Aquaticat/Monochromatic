@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic/closest-path-built",
+  "name": "@monochromatic.dev/closest-path-built",
   "private": true,
   "type": "module",
   "module": "dist/final/index.js",

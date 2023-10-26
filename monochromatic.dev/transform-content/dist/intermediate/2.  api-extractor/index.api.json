@@ -161,20 +161,20 @@
     }
   },
   "kind": "Package",
-  "canonicalReference": "@monochromatic/transform-content!",
+  "canonicalReference": "@monochromatic.dev/transform-content!",
   "docComment": "",
-  "name": "@monochromatic/transform-content",
+  "name": "@monochromatic.dev/transform-content",
   "preserveMemberOrder": false,
   "members": [
     {
       "kind": "EntryPoint",
-      "canonicalReference": "@monochromatic/transform-content!",
+      "canonicalReference": "@monochromatic.dev/transform-content!",
       "name": "",
       "preserveMemberOrder": false,
       "members": [
         {
           "kind": "Variable",
-          "canonicalReference": "@monochromatic/transform-content!transformContent:var",
+          "canonicalReference": "@monochromatic.dev/transform-content!transformContent:var",
           "docComment": "",
           "excerptTokens": [
             {

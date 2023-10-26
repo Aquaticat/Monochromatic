@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic/api-extractor",
+  "name": "@monochromatic.dev/api-extractor",
   "version": "0.0.1",
   "description": "Monochromatic's api-extractor.json for generating .d.ts bundles.",
   "main": "api-extractor.json",

@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic/ignore",
+  "name": "@monochromatic.dev/ignore",
   "version": "0.0.1",
   "description": "Monochromatic's .ignore files",
   "main": ".gitignore",

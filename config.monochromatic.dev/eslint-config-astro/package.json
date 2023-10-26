@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic/eslint-config-astro",
+  "name": "@monochromatic.dev/eslint-config-astro",
   "version": "0.0.1",
   "description": "Monochromatic's ESLint config, Astro section, using the new flat config format. Not meant to be used by itself.",
   "main": "eslint.config.js",
@@ -25,8 +25,8 @@
     "astro-eslint-parser": ">=0.16"
   },
   "dependencies": {
-    "@monochromatic/eslint-config": "workspace:*",
-    "@monochromatic/eslint-config-typescript": "workspace:*"
+    "@monochromatic.dev/eslint-config": "workspace:*",
+    "@monochromatic.dev/eslint-config-typescript": "workspace:*"
   },
   "repository": {
     "type": "git",

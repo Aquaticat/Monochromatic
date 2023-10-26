@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic/transform-content",
+  "name": "@monochromatic.dev/transform-content",
   "type": "module",
   "module": "./dist/final/index.js",
   "files": [
@@ -25,9 +25,9 @@
     "postcss-cli": "^10.1.0",
     "postcss-preset-env": "^8.0.1",
     "typescript": "^5.0.4",
-    "@monochromatic/tsconfig": "workspace:*",
-    "@monochromatic/api-extractor": "workspace:*",
-    "@monochromatic/build": "workspace:*"
+    "@monochromatic.dev/tsconfig": "workspace:*",
+    "@monochromatic.dev/api-extractor": "workspace:*",
+    "@monochromatic.dev/build": "workspace:*"
   },
   "dependencies": {
     "@ltd/j-toml": "^1.38.0",
