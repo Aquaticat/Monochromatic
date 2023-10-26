@@ -18,6 +18,11 @@
     "url": "https://aquati.cat"
   },
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "config.monochromatic.dev/browserslist-config"
+  },
   "devDependencies": {
     "browserslist": "*"
   }

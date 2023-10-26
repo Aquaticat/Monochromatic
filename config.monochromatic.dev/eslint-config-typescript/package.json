@@ -25,5 +25,10 @@
   },
   "dependencies": {
     "@monochromatic/eslint-config": "workspace:*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "config.monochromatic.dev/eslint-config-typescript"
   }
 }

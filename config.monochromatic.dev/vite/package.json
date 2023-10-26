@@ -23,5 +23,10 @@
     "lightningcss": ">=1.22",
     "browserslist": ">=4.22.1",
     "esbuild-plugin-browserslist": ">=0.10"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "config.monochromatic.dev/vite"
   }
 }
