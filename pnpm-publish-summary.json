@@ -2,59 +2,59 @@
 	"publishedPackages": [
 		{
 			"name": "@monochromatic.dev/api-extractor",
-			"version": "0.0.3"
+			"version": "0.0.4"
 		},
 		{
 			"name": "@monochromatic.dev/browserslist-config",
-			"version": "0.0.3"
+			"version": "0.0.4"
 		},
 		{
 			"name": "@monochromatic.dev/dprint",
-			"version": "0.0.3"
+			"version": "0.0.4"
 		},
 		{
 			"name": "@monochromatic.dev/editorconfig",
-			"version": "0.0.3"
+			"version": "0.0.4"
 		},
 		{
 			"name": "@monochromatic.dev/eslint-config",
-			"version": "0.0.3"
+			"version": "0.0.4"
 		},
 		{
 			"name": "@monochromatic.dev/ignore",
-			"version": "0.0.3"
+			"version": "0.0.4"
 		},
 		{
 			"name": "@monochromatic.dev/ignore",
-			"version": "0.0.3"
+			"version": "0.0.4"
 		},
 		{
 			"name": "@monochromatic.dev/tsconfig",
-			"version": "0.0.3"
+			"version": "0.0.4"
 		},
 		{
 			"name": "@monochromatic.dev/tsconfig-vite",
-			"version": "0.0.3"
+			"version": "0.0.4"
 		},
 		{
 			"name": "@monochromatic.dev/vite",
-			"version": "0.0.3"
+			"version": "0.0.4"
 		},
 		{
 			"name": "@monochromatic.dev/eslint-config-typescript",
-			"version": "0.0.3"
+			"version": "0.0.4"
 		},
 		{
 			"name": "@monochromatic.dev/vite-sfa",
-			"version": "0.0.3"
+			"version": "0.0.4"
 		},
 		{
 			"name": "@monochromatic.dev/eslint-config-astro",
-			"version": "0.0.3"
+			"version": "0.0.4"
 		},
 		{
 			"name": "closest-path",
-			"version": "0.0.3"
+			"version": "0.0.4"
 		}
 	]
 }

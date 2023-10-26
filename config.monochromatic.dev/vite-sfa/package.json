@@ -1,6 +1,6 @@
 {
   "name": "@monochromatic.dev/vite-sfa",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Monochromatic's vite.config.js for Vite Single File Applications",
   "main": "vite.config.js",
   "type": "module",

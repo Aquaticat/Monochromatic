@@ -1,6 +1,6 @@
 {
   "name": "@monochromatic.dev/eslint-config",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Monochromatic's ESLint config, using the new flat config format",
   "main": "eslint.config.js",
   "type": "module",

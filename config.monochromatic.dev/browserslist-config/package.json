@@ -1,6 +1,6 @@
 {
   "name": "@monochromatic.dev/browserslist-config",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Monochromatic's browserslist config",
   "main": "index.js",
   "files": [
