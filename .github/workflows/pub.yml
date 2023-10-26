@@ -10,6 +10,7 @@ on:
   push:
     paths:
       - '.github/workflfows/**'
+      - '**/package.json'
 
 jobs:
   publish:
