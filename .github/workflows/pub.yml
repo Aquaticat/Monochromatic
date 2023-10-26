@@ -28,6 +28,9 @@ jobs:
         with:
           version: latest
 
+      # Otherwise I get cannot resolve workspace protocol error.
+      - run: pnpm i
+
       # From https://github.com/pnpm/pnpm/issues/3141#issuecomment-1305563972
       - name: Set publishing config
         run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
