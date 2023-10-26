@@ -1,3 +1,4 @@
+# Update: Can't get this to work. Always 404 error when publishing. Abandoned.
 # Publish a package to GitHub Packages when a release is created
 # See: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
 
