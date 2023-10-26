@@ -37,7 +37,7 @@
     "marked": "^4.3.0",
     "node-html-parser": "^6.1.5",
     "shelljs": "^0.8.5",
-    "closest-path": "workspace:*"
+    "@monochromatic.dev/closest-path": "workspace:*"
   },
-  "version": "0.0.4"
+  "version": "0.0.5"
 }

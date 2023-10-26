@@ -1,4 +1,4 @@
-import closestPath from '@monochromatic/closest-path-built';
+import closestPath from '@monochromatic.dev/closest-path-built';
 
 import fs from 'fs';
 

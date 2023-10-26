@@ -311,7 +311,7 @@ importers:
       '@ltd/j-toml':
         specifier: ^1.38.0
         version: 1.38.0
-      closest-path:
+      '@monochromatic.dev/closest-path':
         specifier: workspace:*
         version: link:../../helpers.monochromatic.dev/closest-path
       html-minifier-terser:

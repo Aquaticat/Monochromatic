@@ -1,10 +1,10 @@
 // import meow from 'meow';
 
-import closestPath from '@monochromatic/closest-path-built';
+import closestPath from '@monochromatic.dev/closest-path-built';
 
-import copyBuiltPackage from '@monochromatic/copy-built-package-built';
+import copyBuiltPackage from '@monochromatic.dev/copy-built-package-built';
 
-import increaseVersion from '@monochromatic/increase-version-built';
+import increaseVersion from '@monochromatic.dev/increase-version-built';
 
 import fs from 'fs';
 
