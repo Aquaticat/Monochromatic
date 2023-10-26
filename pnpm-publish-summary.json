@@ -1,0 +1,60 @@
+{
+	"publishedPackages": [
+		{
+			"name": "@monochromatic/api-extractor",
+			"version": "0.0.1"
+		},
+		{
+			"name": "@monochromatic/browserslist-config",
+			"version": "0.0.1"
+		},
+		{
+			"name": "@monochromatic/dprint",
+			"version": "0.0.1"
+		},
+		{
+			"name": "@monochromatic/editorconfig",
+			"version": "0.0.1"
+		},
+		{
+			"name": "@monochromatic/eslint-config",
+			"version": "0.0.1"
+		},
+		{
+			"name": "@monochromatic/ignore",
+			"version": "0.0.1"
+		},
+		{
+			"name": "@monochromatic/ignore",
+			"version": "0.0.1"
+		},
+		{
+			"name": "@monochromatic/tsconfig",
+			"version": "0.0.1"
+		},
+		{
+			"name": "@monochromatic/tsconfig-vite",
+			"version": "0.0.1"
+		},
+		{
+			"name": "@monochromatic/vite",
+			"version": "0.0.1"
+		},
+		{
+			"name": "@monochromatic/eslint-config-typescript",
+			"version": "0.0.1"
+		},
+		{
+			"name": "@monochromatic/vite-sfa",
+			"version": "0.0.1"
+		},
+		{
+			"name": "@monochromatic/eslint-config-astro",
+			"version": "0.0.1"
+		},
+		{
+			"name": "closest-path",
+			"version": "0.0.1"
+		}
+	]
+}
