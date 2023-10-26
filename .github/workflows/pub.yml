@@ -26,6 +26,6 @@ jobs:
       - uses: pnpm/action-setup@v2
         with:
           version: latest
-      - run: pnpm config set registry https://registry.npmjs.org
-      - run: pnpm config set //registry.npmjs.org/:_authToken=${{secrets.NPM_TOKEN}}
       - run: pnpm -r publish --access public --no-git-checks --force --report-summary
+        env:
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
