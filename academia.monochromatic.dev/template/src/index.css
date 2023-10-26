@@ -115,7 +115,7 @@ body {
   li {
     --outdent: 0em;
     + li {
-      margin-block-start: 1.5rem;
+      margin-block-start: 1em;
     }
   }
 
