@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "pub": "pnpm -r publish --access public --report-summary"
+    "beforepub": "npm i --package-lock-only"
   },
   "devDependencies": {
     "@monochromatic/eslint-config": "workspace:*",
