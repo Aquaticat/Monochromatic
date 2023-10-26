@@ -3,9 +3,6 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {
-    "beforepub": "npm i --package-lock-only"
-  },
   "devDependencies": {
     "@monochromatic/eslint-config": "workspace:*",
     "@monochromatic/eslint-config-typescript": "workspace:*",

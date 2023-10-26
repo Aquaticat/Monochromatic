@@ -16,7 +16,7 @@
 
     //region Modules
 
-    "module": "esnext",
+    "module": "nodenext",
     "lib": [
       "esnext",
       "DOM",
@@ -25,7 +25,6 @@
 
     "resolveJsonModule": true,
 
-    "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
 
     //endregion

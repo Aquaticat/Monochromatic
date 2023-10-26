@@ -121,8 +121,7 @@
         */
 
     // I had to do this because at this time, api-extractor depends on TypeScript 4.x.x but I'm using TypeScript 5.x.x
-    // TypeScript 5.x.x has the option "bundler" for "moduleResolution", but 4.x.x doesn't have it.
-    // Also "allowImportingTsExtensions", "verbatimModuleSyntax"
+    // TypeScript 5.x.x has "allowImportingTsExtensions", "verbatimModuleSyntax" but 4.x.x doesn't have it.
     // Therefore, I had to override the entire tsconfig here. Sorry.
     // Update: Still required as of 2023 October 24th.
     //         See https://github.com/microsoft/rushstack/issues/4037
@@ -147,13 +146,10 @@
 
         //region Modules
 
-        "module": "esnext",
+        "module": "nodenext",
         "baseUrl": "src",
 
         "resolveJsonModule": true,
-
-        // Here
-        "moduleResolution": "nodenext",
 
         // Here
         // "allowImportingTsExtensions": true,

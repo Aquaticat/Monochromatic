@@ -19,12 +19,11 @@
 
     //region Modules
 
-    "module": "esnext",
+    "module": "nodenext",
     "baseUrl": "src",
 
     "resolveJsonModule": true,
 
-    "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
 
     //endregion
