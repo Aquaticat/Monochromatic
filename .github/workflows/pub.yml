@@ -1,4 +1,3 @@
-# Update: Can't get this to work. Always 404 error when publishing. Abandoned.
 # Publish a package to GitHub Packages when a release is created
 # See: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
 
@@ -34,6 +33,8 @@ jobs:
         run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+      # See https://github.com/npm/cli/issues/1637#issuecomment-1507559322
       - run: pnpm -r publish --access public --no-git-checks --force --report-summary
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
