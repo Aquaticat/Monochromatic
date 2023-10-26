@@ -17,31 +17,31 @@
 :root {
   color-scheme: light dark;
 
-  --literal-light: #f9f9f9;
-  --literal-dark: #111111;
-  --literal-subtle: #8f8f8f;
-  --literal-lighter: #ffffff;
-  --literal-darker: #000000;
-  --literal-primary: #0073e6;
-  --literal-primary-darker: #1165c5;
-  --literal-primary-lighter: #79a7e4;
+  --_light: #f9f9f9;
+  --_dark: #111111;
+  --_subtle: #8f8f8f;
+  --_lighter: #ffffff;
+  --_darker: #000000;
+  --_primary: #0073e6;
+  --_primary-darker: #1165c5;
+  --_primary-lighter: #79a7e4;
 
-  --bg: var(--literal-light);
-  --fg: var(--literal-dark);
-  --subtle: var(--literal-subtle);
-  --fg-plus: var(--literal-darker);
-  --bg-plus: var(--literal-lighter);
-  --primary: var(--literal-primary-darker);
-  --primary-minus: var(--literal-primary-lighter);
+  --bg: var(--_light);
+  --fg: var(--_dark);
+  --subtle: var(--_subtle);
+  --fg-plus: var(--_darker);
+  --bg-plus: var(--_lighter);
+  --primary: var(--_primary-darker);
+  --primary-minus: var(--_primary-lighter);
 
   @media (prefers-color-scheme: dark) {
-    --bg: var(--literal-dark);
-    --fg: var(--literal-light);
-    --subtle: var(--literal-subtle);
-    --fg-plus: var(--literal-lighter);
-    --bg-plus: var(--literal-darker);
-    --primary: var(--literal-primary);
-    --primary-minus: var(--literal-primary-darker);
+    --bg: var(--_dark);
+    --fg: var(--_light);
+    --subtle: var(--_subtle);
+    --fg-plus: var(--_lighter);
+    --bg-plus: var(--_darker);
+    --primary: var(--_primary);
+    --primary-minus: var(--_primary-darker);
   }
 }
 
@@ -136,8 +136,8 @@ body {
 
 header {
   padding-block: 2rem;
-  background-color: var(--literal-primary);
-  color: var(--literal-light);
+  background-color: var(--_primary);
+  color: var(--_light);
   > * + * {
     margin-block-start: 1.5rem;
   }

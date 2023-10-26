@@ -3,7 +3,7 @@
   "description": "Monochromatic's template for academia profiles.",
   "// private": "Not a package you can install and use.",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
