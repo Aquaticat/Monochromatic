@@ -1,7 +1,7 @@
 {
-  "name": "@monochromatic.dev/ignore",
-  "version": "0.0.2",
-  "description": "Monochromatic's .ignore files",
+  "name": "@monochromatic.dev/prettier",
+  "version": "0.0.3",
+  "description": "Monochromatic's prettier configuration",
   "main": ".gitignore",
   "files": [".gitignore", ".npmignore"],
   "keywords": [

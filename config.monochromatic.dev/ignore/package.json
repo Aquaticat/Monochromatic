@@ -1,6 +1,6 @@
 {
   "name": "@monochromatic.dev/ignore",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Monochromatic's .ignore files",
   "main": ".gitignore",
   "files": [".gitignore", ".npmignore"],

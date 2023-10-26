@@ -50,3 +50,11 @@ CSS and JS for HTML, built with Vite.
 #### transform-content
 
 builds content from every directory ending with `monochromatic.dev`
+
+## Temporary Fixes
+
+### Temporary fix for `npm ERR! 403 403 Forbidden - PUT - You cannot publish over the previously published versions: .`
+
+```shell
+fastmod -e json '"version": "0.0.1"' '"version": "0.0.2"'
+```
