@@ -5,7 +5,7 @@
     "parentheses.preferSingleLine": true,
     "quoteStyle": "alwaysSingle",
     "useBraces": "preferNone",
-    "nextControlFlowPosition": "nextLine",
+    "bracePosition": "sameLine",
     "singleBodyPosition": "nextLine",
     "arrowFunction.useParentheses": "force",
     "binaryExpression.linePerExpression": true,

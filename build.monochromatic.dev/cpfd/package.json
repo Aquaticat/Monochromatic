@@ -1,0 +1,36 @@
+{
+  "name": "@monochromatic.dev/cpfd",
+  "version": "0.0.5",
+  "description": "CoPy Files from Dependencies",
+  "main": "index.js",
+  "type": "module",
+  "files": ["index.js", "cpfd.toml"],
+  "keywords": [
+    "config",
+    "monochromatic",
+    "cpfd",
+    "management"
+  ],
+  "scripts": {
+    "run": "node index.js"
+  },
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "build.monochromatic.dev/cpfd"
+  },
+  "devDependencies": {
+    "@monochromatic.dev/ignore": "workspace:*",
+    "@monochromatic.dev/prettier": "workspace:*",
+    "@types/node": "^20.8.9"
+  },
+  "dependencies": {
+    "@ltd/j-toml": ">=1.38"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "extends": "stylelint-config-standard",
+
+  "defaultSeverity": "warning",
+
+  "reportDescriptionlessDisables": true,
+  "reportInvalidScopeDisables": true,
+  "reportNeedlessDisables": true,
+
+  "cache": true,
+
+  "fix": true,
+
+  "rules": {
+    "no-descending-specificity": null,
+    "font-family-no-missing-generic-family-keyword": null,
+    "declaration-empty-line-before": null,
+    "value-keyword-case": null,
+    "block-no-empty": null,
+    "selector-id-pattern": null,
+    "selector-class-pattern": null,
+    "length-zero-no-unit": [true, {
+      "ignore": ["custom-properties"],
+      "ignoreFunctions": ["var", "/^--/"]
+    }],
+    "number-max-precision": null,
+    "declaration-block-no-redundant-longhand-properties": null,
+    "comment-whitespace-inside": null,
+    "custom-property-pattern": null
+  }
+}

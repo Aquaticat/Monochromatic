@@ -1,13 +1,13 @@
 {
-  "name": "@monochromatic.dev/dprint",
+  "name": "@monochromatic.dev/stylelint",
   "version": "0.0.5",
-  "description": "Monochromatic's dprint.json",
-  "main": "dprint.json",
-  "files": ["dprint.json"],
+  "description": "Monochromatic's stylelintrc",
+  "main": ".stylelintrc.json",
+  "files": [".stylelintrc.json"],
   "keywords": [
     "config",
     "monochromatic",
-    "dprint"
+    "stylelint"
   ],
   "author": {
     "name": "Aquaticat",
@@ -18,9 +18,12 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "config.monochromatic.dev/dprint"
+    "directory": "config.monochromatic.dev/stylelint"
   },
   "peerDependencies": {
-    "dprint": ">=0.42.2"
+    "stylelint": ">=15.11"
+  },
+  "dependencies": {
+    "stylelint-config-standard": ">=34"
   }
 }

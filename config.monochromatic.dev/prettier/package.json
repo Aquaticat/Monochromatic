@@ -2,8 +2,8 @@
   "name": "@monochromatic.dev/prettier",
   "version": "0.0.5",
   "description": "Monochromatic's prettier configuration",
-  "main": ".gitignore",
-  "files": [".gitignore", ".npmignore"],
+  "main": ".prettierrc.toml",
+  "files": [".prettierignore", ".prettierrc.toml"],
   "keywords": [
     "config",
     "monochromatic",

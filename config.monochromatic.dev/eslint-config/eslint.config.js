@@ -1,11 +1,18 @@
 import js from '@eslint/js';
 
+import globals from 'globals';
+
 export default [
   js.configs.recommended,
 
   {
     linterOptions: {
       reportUnusedDisableDirectives: true,
+    },
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
     },
 
     // See https://eslint.org/docs/latest/rules/
@@ -118,16 +125,16 @@ export default [
             -16,
             '-16n',
 
-            // Maximum supported rem according to
-            // https://www.w3.org/WAI/GL/UNDERSTANDING-WCAG20/visual-audio-contrast-scale.html
+            /* Maximum supported rem according to
+               https://www.w3.org/WAI/GL/UNDERSTANDING-WCAG20/visual-audio-contrast-scale.html */
             32,
             '32n',
             -32,
             '-32n',
 
-            //region Common window width and height.
-            // Note: Height is only relevant when app is in fullscreen.
-            // Write 1920/2 for half of the width.
+            /* region Common window width and height.
+                Note: Height is only relevant when app is in fullscreen.
+                Write 1920/2 for half of the width. */
 
             // 1920 * 1080
             1920,
@@ -414,8 +421,12 @@ export default [
       /* Clearer for:
        ```if (bool)
             return 1;
-       ```*/
-      'nonblock-statement-body-position': ['error', 'below', { overrides: { do: 'any' } }],
+       ``` */
+      'nonblock-statement-body-position': [
+        'error',
+        'below',
+        { overrides: { do: 'any' } },
+      ],
 
       'object-curly-newline': [
         'error',
@@ -435,7 +446,11 @@ export default [
 
       'object-property-newline': ['error', { allowAllPropertiesOnSameLine: true }],
 
-      'operator-linebreak': ['error', 'before', { overrides: { '=': 'after' } }],
+      'operator-linebreak': [
+        'error',
+        'before',
+        { overrides: { '=': 'after' } },
+      ],
 
       'padded-blocks': [
         'error',
