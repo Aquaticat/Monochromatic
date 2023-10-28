@@ -3,12 +3,12 @@
 ['.+']
 # ignore rules are NOT processed first.
 # Rules are processed from beginning to end.
-'README.md' = false
-'package.json' = false
+'README\.md' = false
+'package\.json' = false
 
 ['.+'.'.+']
-'README.md' = false
-'package.json' = false
+'README\.md' = false
+'package\.json' = false
 
 ['@monochromatic\.dev'.'.+']
 '\.\w+ignore' = true

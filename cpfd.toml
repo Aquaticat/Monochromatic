@@ -1,12 +1,12 @@
 # CoPy Files from Dependencies
 
 ['.+']
-'README.md' = false
-'package.json' = false
+'README\.md' = false
+'package\.json' = false
 
 ['.+'.'.+']
-'README.md' = false
-'package.json' = false
+'README\.md' = false
+'package\.json' = false
 
 ['@monochromatic\.dev'.'.+']
 '\.\w+ignore' = true
