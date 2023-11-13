@@ -1,0 +1,12 @@
+# Sass is abandoned (by me)
+
+**/*.scss
+**/*.sass
+
+# Generic
+
+**/.git
+**/.svn
+**/.hg
+**/node_modules
+**/dist

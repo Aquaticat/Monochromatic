@@ -1,29 +1,29 @@
 {
   "name": "monochromatic",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.27",
   "type": "module",
   "scripts": {
     "pub": "pnpm -r publish --access public --no-git-checks --force --report-summary",
-    "cpfd": "node cpfd"
+    "cpfd": "node node_modules/@monochromatic.dev/cpfd/dist/final/index.js run"
   },
   "devDependencies": {
+    "@monochromatic.dev/browserslist-config": "workspace:*",
     "@monochromatic.dev/cpfd": "workspace:*",
+    "@monochromatic.dev/dprint": "workspace:*",
+    "@monochromatic.dev/editorconfig": "workspace:*",
     "@monochromatic.dev/eslint-config": "workspace:*",
     "@monochromatic.dev/eslint-config-astro": "workspace:*",
     "@monochromatic.dev/eslint-config-typescript": "workspace:*",
-    "@monochromatic.dev/stylelint": "workspace:*",
-    "@monochromatic.dev/dprint": "workspace:*",
     "@monochromatic.dev/prettier": "workspace:*",
-    "@monochromatic.dev/editorconfig": "workspace:*",
-    "@monochromatic.dev/browserslist-config": "workspace:*",
-    "eslint": ">=8.52",
-    "@typescript-eslint/parser": ">=6.9",
-    "@typescript-eslint/eslint-plugin": ">=6.9",
-    "typescript": ">=5.2.2",
-    "stylelint": ">=15.11",
-    "prettier": ">=3.0.3",
-    "prettier-plugin-astro": ">=0.12.1",
-    "dprint": ">=0.42.2"
+    "@monochromatic.dev/stylelint": "workspace:*",
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/parser": "^6.10.0",
+    "dprint": "^0.42.5",
+    "eslint": "^8.53.0",
+    "prettier": "^3.0.3",
+    "prettier-plugin-astro": "^0.12.1",
+    "stylelint": "^15.11.0",
+    "typescript": "^5.2.2"
   }
 }

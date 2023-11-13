@@ -1,14 +1,16 @@
 import closestPath from '@monochromatic.dev/closest-path-built';
 
-import fs from 'fs';
+import * as fs from 'fs';
 
-import path from 'path';
+import * as path from 'path';
 
 import {
   inc,
 } from 'semver';
 
-import shell from 'shelljs';
+import {
+  execa,
+} from 'execa';
 
 const increaseVersion = (): void => {
   const packagePath = closestPath()!;
@@ -69,8 +71,7 @@ const increaseVersion = (): void => {
       }
 
       if (fs.existsSync(builtPackagePath)) {
-        shell.cd(path.join(builtPackagePath, '..', 'index'));
-        shell.exec('pnpm run build');
+        execa('pnpm', ['run', 'build'], { cwd: path.join(builtPackagePath, '..', 'index') });
 
         const builtPackageJson = JSON.parse(
           fs.readFileSync(path.join(builtPackagePath, 'package.json'), { encoding: 'utf8' }),

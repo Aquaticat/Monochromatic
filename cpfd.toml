@@ -4,17 +4,23 @@
 'README\.md' = false
 'package\.json' = false
 
+# We don't wanna tsconfig in workspace root.
+'tsconfig\.json' = false
+'example\.tsconfig\.json' = false
+'api-extractor\.json' = false
+'example\.api-extractor\.json' = false
+
 ['.+'.'.+']
 'README\.md' = false
 'package\.json' = false
+'tsconfig\.json' = false
+'example\.tsconfig\.json' = false
+'api-extractor\.json' = false
+'example\.api-extractor\.json' = false
 
 ['@monochromatic\.dev'.'.+']
 '\.\w+ignore' = true
-'\.\w+config' = true
-'\.\w+rc' = true
-'\.\w+rc\.json' = true
-'\.\w+rc\.toml' = true
-
-'dprint\.json' = true
-
-'example\.(\w+)' = '$1'
+'example\.(\.?\w+\.\w+(?:\.\w+)?)' = '$1'
+'\.editorconfig' = true
+'\.npmrc' = true
+'\.browserslistrc' = true

@@ -16,19 +16,20 @@
   },
   "private": true,
   "devDependencies": {
-    "eslint": "^8.37.0",
-    "@monochromatic.dev/eslint-config": "workspace:*",
-    "@monochromatic.dev/eslint-config-typescript": "workspace:*",
-    "@types/node": "^18.15.11",
-    "@types/semver": "^7.3.13",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.0.4",
+    "@monochromatic.dev/api-extractor": "workspace:*",
     "@monochromatic.dev/build": "workspace:*",
     "@monochromatic.dev/closest-path-built": "workspace:*",
+    "@monochromatic.dev/eslint-config": "workspace:*",
+    "@monochromatic.dev/eslint-config-typescript": "workspace:*",
     "@monochromatic.dev/tsconfig": "workspace:*",
-    "@monochromatic.dev/api-extractor": "workspace:*",
-    "semver": "^7.3.8"
+    "@types/node": ">=18.15.11",
+    "@types/semver": ">=7.3.13",
+    "eslint": ">=8.37.0",
+    "typescript": ">=5.0.4"
   },
-  "dependencies": {},
+  "dependencies": {
+    "execa": ">=8.0.1",
+    "semver": ">=7.3.8"
+  },
   "version": "0.0.5"
 }

@@ -12,4 +12,4 @@
 
 ['@monochromatic\.dev'.'.+']
 '\.\w+ignore' = true
-'example\.(\w+)' = '$1'
+'example\.(\w+\.\w+)' = [true, ['example', '$1']]

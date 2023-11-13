@@ -18,10 +18,9 @@
     "eslint": ">=8.37",
     "@monochromatic.dev/eslint-config": "workspace:*",
     "@monochromatic.dev/eslint-config-typescript": "workspace:*",
-    "@types/node": "^18.15.11",
-    "@types/semver": "^7.3.13",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.0.4",
+    "@types/node": ">=18.15.11",
+    "@types/semver": ">=7.3.13",
+    "typescript": ">=5.0.4",
     "@monochromatic.dev/build": "workspace:*",
     "@monochromatic.dev/copy-built-package": "workspace:*"
   },

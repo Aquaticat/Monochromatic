@@ -12,5 +12,9 @@
     }
   },
   "private": true,
-  "version": "0.0.5"
+  "version": "0.0.5",
+  "dependencies": {
+    "execa": ">=8.0.1",
+    "semver": ">=7.5.4"
+  }
 }

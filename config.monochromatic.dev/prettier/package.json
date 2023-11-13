@@ -2,8 +2,10 @@
   "name": "@monochromatic.dev/prettier",
   "version": "0.0.5",
   "description": "Monochromatic's prettier configuration",
-  "main": ".prettierrc.toml",
-  "files": [".prettierignore", ".prettierrc.toml"],
+  "type": "module",
+  "main": "prettier.config.js",
+  "module": "prettier.config.js",
+  "files": [".prettierignore", ".prettier.config.js", "example.prettier.config.js"],
   "keywords": [
     "config",
     "monochromatic",

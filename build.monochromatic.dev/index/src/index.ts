@@ -1,51 +1,43 @@
-// import meow from 'meow';
-
 import closestPath from '@monochromatic.dev/closest-path-built';
 
 import copyBuiltPackage from '@monochromatic.dev/copy-built-package-built';
 
 import increaseVersion from '@monochromatic.dev/increase-version-built';
 
-import fs from 'fs';
-
-import shell from 'shelljs';
+import * as fs from 'fs';
 
 import * as esbuild from 'esbuild';
 
-import path from 'path';
+import * as path from 'path';
 
-import {
-  minify,
-} from 'terser';
+import * as process from 'process';
 
 import {
   Extractor,
   ExtractorConfig,
 } from '@microsoft/api-extractor';
 
-/*
-// Currently it doesn't matter.
-const cli = meow(`
-node build.js
+import {
+  execa,
+  execaNode
+} from 'execa';
 
-low-level:
-node index.js build src (your index.js dir)
-`,);
-*/
+import {
+  getBinPathSync,
+} from 'get-bin-path';
 
 const ROOT_DIR = closestPath();
 
 const INTERMEDIATE_DIR = path.join(ROOT_DIR, 'dist', 'intermediate');
 
-const ensureDirExist = (dir: string): void => {
-  fs.existsSync(path.join(dir)) || fs.mkdirSync(path.join(dir), { recursive: true });
+const ensureDirExist = (...dir: string[]): void => {
+  fs.existsSync(path.join(...dir)) || fs.mkdirSync(path.join(...dir), { recursive: true });
 };
 
-// eslint-disable-next-line @typescript-eslint/require-await
 const compileTsGenDts = async () => {
-  ensureDirExist(path.join(INTERMEDIATE_DIR, '1.  tsc'));
+  ensureDirExist(INTERMEDIATE_DIR, '1.  tsc');
 
-  const { code: exitCode } = shell.exec('tsc', { fatal: true });
+  const { exitCode } = await execa('tsc');
 
   if (exitCode) {
     throw Error(`
@@ -61,8 +53,8 @@ compileTsGenDts
 `);
 };
 
-const bundleJs = async () => {
-  ensureDirExist(path.join(INTERMEDIATE_DIR, '1.  esbuild'));
+const buildJs = async () => {
+  ensureDirExist(INTERMEDIATE_DIR, '1.  esbuild');
 
   const result = await esbuild.build({
     entryPoints: ['src/index.ts'],
@@ -71,16 +63,25 @@ const bundleJs = async () => {
 
     platform: 'node',
     external: [
-      'shelljs',
       'esbuild',
-      'terser',
       '@microsoft/api-extractor',
+      'typescript',
+      'eslint',
+      'execa',
+      'prettier',
+      'dprint',
+      'get-bin-path',
+      'semver',
+      '@ltd/j-toml',
     ],
     format: 'esm',
-    target: 'esnext',
+    target: 'node20',
 
     metafile: true,
     sourcemap: 'external',
+
+    minifyWhitespace: true,
+    minifySyntax: true,
   });
 
   if (result.errors.length > 0) {
@@ -103,9 +104,8 @@ result.metafile = ${await esbuild.analyzeMetafile(result.metafile)}
 `);
 };
 
-// eslint-disable-next-line @typescript-eslint/require-await
-const bundleDts = async (): Promise<void> => {
-  ensureDirExist(path.join(INTERMEDIATE_DIR, '2.  api-extractor'));
+const bundleDts = () => {
+  ensureDirExist(INTERMEDIATE_DIR, '2.  api-extractor');
 
   const extractorResult = Extractor.invoke(
     ExtractorConfig.loadFileAndPrepare(path.join(ROOT_DIR, 'api-extractor.json')),
@@ -130,66 +130,10 @@ bundleDts
 `);
 };
 
-const minifyJs = async (): Promise<void> => {
-  const { code: codeWithMap, map } = await minify({
-    'index.js': fs.readFileSync(path.join(INTERMEDIATE_DIR, '1.  esbuild', 'index.js'), {
-      encoding: 'utf8',
-    }),
-  }, {
-    sourceMap: {
-      filename: 'index.js',
-      content: fs.readFileSync(path.join(INTERMEDIATE_DIR, '1.  esbuild', 'index.js.map'), 'utf8'),
-      url: 'index.js.map',
-    },
-    ecma: 2020,
-    compress: false,
-    mangle: false,
-    module: true,
-    format: {
-      indent_level: 2,
-      keep_numbers: true,
-      keep_quoted_props: true,
-      quote_style: 3,
-    },
-    keep_classnames: true,
-    keep_fnames: true,
-  });
-
-  const { code } = await minify({
-    'index.js': fs.readFileSync(path.join(INTERMEDIATE_DIR, '1.  esbuild', 'index.js'), {
-      encoding: 'utf8',
-    }),
-  }, {
-    ecma: 2020,
-    compress: false,
-    mangle: false,
-    module: true,
-    format: {
-      indent_level: 2,
-      keep_numbers: true,
-      keep_quoted_props: true,
-      quote_style: 3,
-    },
-    keep_classnames: true,
-    keep_fnames: true,
-  });
-
-  ensureDirExist(path.join(INTERMEDIATE_DIR, '2.  terser'));
-
-  fs.writeFileSync(path.join(ROOT_DIR, 'dist', 'intermediate', '2.  terser', 'mapped.js'), codeWithMap!);
-
-  fs.writeFileSync(path.join(ROOT_DIR, 'dist', 'intermediate', '2.  terser', 'mapped.js.map'), map);
-
-  fs.writeFileSync(path.join(INTERMEDIATE_DIR, '2.  terser', 'index.js'), code!);
-};
-
-const build1 = async (): Promise<void> => {
-  await Promise.all([compileTsGenDts(), bundleJs()]);
-};
-
-const build2 = async (): Promise<void> => {
-  await Promise.all([bundleDts(), minifyJs()]);
-};
+const buildDts = async (): Promise<void> => {
+  await compileTsGenDts();
+  bundleDts();
+}
 
 const postBuild = (): void => {
   copyBuiltPackage();
@@ -198,20 +142,16 @@ const postBuild = (): void => {
 
 // Monochromatic dev build system, technically applicable not just to monochromatic.dev
 const build = async (): Promise<void> => {
-  await build1();
+  await Promise.all([buildDts(), buildJs()]);
 
-  await build2();
-
-  // await build3();
-
-  ensureDirExist(path.join(ROOT_DIR, 'dist', 'final'));
+  ensureDirExist(ROOT_DIR, 'dist', 'final');
 
   fs.copyFileSync(
     path.join(ROOT_DIR, 'dist', 'intermediate', '2.  api-extractor', 'index.d.ts'),
     path.join(ROOT_DIR, 'dist', 'final', 'index.d.ts'),
   );
   fs.copyFileSync(
-    path.join(ROOT_DIR, 'dist', 'intermediate', '2.  terser', 'index.js'),
+    path.join(ROOT_DIR, 'dist', 'intermediate', '1.  esbuild', 'index.js'),
     path.join(ROOT_DIR, 'dist', 'final', 'index.js'),
   );
 
@@ -219,29 +159,20 @@ const build = async (): Promise<void> => {
 };
 
 const clean = (): void => {
-  // await ctx.dispose();
-
-  /*
-  throw new Error(`
-Not implemented!
-There's little need to clean output dir programmatically.
-  `);
-  */
-
   fs.rmSync(path.join(ROOT_DIR, 'dist', 'final'), { recursive: true, force: true });
   fs.rmSync(path.join(ROOT_DIR, 'dist', 'intermediate'), { recursive: true, force: true });
   fs.mkdirSync(path.join(ROOT_DIR, 'dist', 'final'));
   fs.mkdirSync(path.join(ROOT_DIR, 'dist', 'intermediate'));
 };
 
-const run = (): void => {
-  shell.exec('node dist/final/index.js');
+const run = async (): Promise<void> => {
+  await execaNode(getBinPathSync() as string);
 };
 
 const buildAndRun = async (): Promise<void> => {
   await build();
 
-  run();
+  await run();
 };
 
 const cleanAndBuild = async (): Promise<void> => {
@@ -253,8 +184,39 @@ const cleanAndBuild = async (): Promise<void> => {
 const cleanAndBuildAndRun = async (): Promise<void> => {
   await cleanAndBuild();
 
-  run();
+  await run();
 };
+
+const args = process.argv.slice(2);
+
+switch (args.at(0)) {
+  case 'build' || 'b':
+    build();
+    break;
+
+  case 'clean' || 'c':
+    clean();
+    break;
+
+  case 'run' || 'r':
+    run();
+    break;
+
+  case 'build-and-run' || 'bar':
+    buildAndRun();
+    break;
+
+  case 'clean-and-build' || 'cab':
+    cleanAndBuild();
+    break;
+
+  case 'clean-and-build-and-run' || 'cabar':
+    cleanAndBuildAndRun();
+    break;
+
+  default:
+    throw TypeError(`first arg ${args.at(0)} not one of build, clean, build-and-run, clean-and-build, clean-and-build-and-run`);
+}
 
 export {
   build,

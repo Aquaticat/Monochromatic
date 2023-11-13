@@ -1,9 +1,11 @@
 {
   "name": "@monochromatic.dev/stylelint",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "Monochromatic's stylelintrc",
   "main": ".stylelintrc.json",
-  "files": [".stylelintrc.json", ".stylelintignore"],
+  "module": ".stylelintrc.json",
+  "type": "module",
+  "files": [".stylelintrc.json", ".stylelintignore", "example..stylelintrc.json"],
   "keywords": [
     "config",
     "monochromatic",

@@ -19,7 +19,15 @@ export default [
     rules: {
       //region Possible Problems
 
-      'array-callback-return': ['error', { checkForEach: true }],
+      'array-callback-return': [
+        'error',
+        {
+          checkForEach: true,
+
+          // feat: 2023NOV08 add new option in ESLint v8.50.0 - 2023SEP22
+          allowVoid: true,
+        },
+      ],
 
       'no-constant-binary-expression': 'error',
 
@@ -40,6 +48,8 @@ export default [
       'no-unused-private-class-members': 'error',
 
       'no-use-before-define': ['error', { allowNamedExports: true }],
+
+      'require-atomic-updates': ['error', { allowProperties: true }],
 
       //endregion
 
@@ -85,7 +95,14 @@ export default [
 
       'no-floating-decimal': 'error',
 
-      'no-implicit-coercion': 'error',
+      'no-implicit-coercion': [
+        'error',
+
+        /* feat: Otherwise I'd go and log an entire array in console.log
+               then wonder why it's not logged in full.
+               2023NOV08 for ESLint v7.24.0 - 2021APR09 */
+        { disallowTemplateShorthand: true },
+      ],
 
       'no-invalid-this': 'error',
 
@@ -113,7 +130,7 @@ export default [
             -100,
             '-100n',
 
-            // Half of viewport. Example: 50vw is half of the window with.
+            // Half of viewport. Example: 50vw is half of the window width.
             50,
             '50n',
             -50,
@@ -171,7 +188,23 @@ export default [
             '1280n',
             -1280,
             '-1280n',
+            720,
+            '720n',
+            -720,
+            '-720n',
+
             //endregion
+
+            //region Frequently seen in Computer Science
+            2147483647,
+            '2147483647n',
+            -2147483647,
+            '-2147483647n',
+
+            1970,
+            '1970n',
+            -1970,
+            '-1970n',
           ],
 
           ignoreArrayIndexes: true,
@@ -180,6 +213,9 @@ export default [
         },
       ],
 
+      // feat: 2023NOV08 for eslint v7.24.0 - 2021APR09
+      'no-multi-assign': ['error', { ignoreNonDeclaration: true }],
+
       // Use template literals instead.
       'no-multi-str': 'warn',
 
@@ -187,7 +223,8 @@ export default [
 
       'no-new-func': 'error',
 
-      'no-new-object': 'error',
+      // fix: 2023NOV08 Renamed in ESLint v8.50.0 - 2023SEP22
+      'no-object-constructor': 'error',
 
       'no-new-wrappers': 'error',
 
@@ -295,320 +332,9 @@ export default [
 
       //region Layout & Formatting
 
-      /* Let dprint handle it.
-       Edit: No need, keeping this allows eslint to fix it. Also, this somehow doesn't conflict with dprint. */
-      'array-bracket-newline': ['warn', { multiline: true, minItems: 3 }],
-      'array-bracket-spacing': 'warn',
-      'array-element-newline': [
-        'warn',
-
-        {
-          ArrayExpression: { multiline: true, minItems: 3 },
-          ArrayPattern: { multiline: true, minItems: 3 },
-        },
-      ],
-
-      'arrow-parens': 'error',
-      'arrow-spacing': 'error',
-
-      'block-spacing': 'warn',
-
-      'brace-style': 'warn',
-
-      // Let dprint handle it.
-      'comma-dangle': ['off', 'always-multiline'],
-
-      'comma-spacing': 'error',
-      'comma-style': 'error',
-
-      'computed-property-spacing': 'error',
-
-      'dot-location': ['error', 'property'],
-
-      'eol-last': 'error',
-
-      'func-call-spacing': 'error',
-      'function-call-argument-newline': ['error', 'consistent'],
-
-      // Let dprint handle it.
-      'function-paren-newline': ['off', 'never'],
-
-      'generator-star-spacing': 'error',
-
-      // Turned it off because I want to let dprint handle it.
-      'implicit-arrow-linebreak': ['off', 'below'],
-
-      'indent': [
-        // Turned it off because I want to let dprint handle it.
-        'off',
-        2,
-
-        {
-          SwitchCase: 1,
-          VariableDeclarator: 'first',
-          outerIIFEBody: 0,
-          MemberExpression: 1,
-          FunctionDeclaration: { body: 1, parameters: 'first' },
-          FunctionExpression: { body: 1, parameters: 'first' },
-          StaticBlock: { body: 1 },
-          CallExpression: { arguments: 'first' },
-          ArrayExpression: 'first',
-          ObjectExpression: 'first',
-          ImportDeclaration: 'first',
-          flatTernaryExpressions: false,
-          offsetTernaryExpressions: true,
-          ignoreComments: true,
-        },
-      ],
-
-      'key-spacing': 'error',
-
-      'keyword-spacing': 'error',
-
-      'linebreak-style': 'error',
-
-      'lines-around-comment': [
-        'error',
-
-        {
-          beforeBlockComment: true,
-          afterBlockComment: false,
-          beforeLineComment: true,
-          afterLineComment: false,
-          allowBlockStart: true,
-          allowBlockEnd: true,
-          allowObjectStart: true,
-          allowObjectEnd: true,
-          allowArrayStart: true,
-          allowArrayEnd: true,
-          allowClassStart: true,
-          allowClassEnd: true,
-
-          ignorePattern: 'endregion',
-
-          applyDefaultIgnorePatterns: true,
-        },
-      ],
-
-      'lines-between-class-members': 'error',
-
-      'max-statements-per-line': ['error', { max: 3 }],
-
-      'multiline-ternary': ['error', 'always-multiline'],
-
-      'new-parens': 'error',
-
-      'newline-per-chained-call': ['error', { ignoreChainWithDepth: 3 }],
-
-      'no-multi-spaces': 'error',
-
-      'no-multiple-empty-lines': [
-        'error',
-
-        {
-          max: 3,
-          maxEOF: 1,
-          maxBOF: 0,
-        },
-      ],
-
-      'no-tabs': 'error',
-
-      'no-trailing-spaces': 'error',
-
-      'no-whitespace-before-property': 'error',
-
-      /* Clearer for:
-       ```if (bool)
-            return 1;
-       ``` */
-      'nonblock-statement-body-position': [
-        'error',
-        'below',
-        { overrides: { do: 'any' } },
-      ],
-
-      'object-curly-newline': [
-        'error',
-
-        {
-          multiline: true,
-          minProperties: 3,
-          consistent: true,
-        },
-      ],
-
-      'object-curly-spacing': [
-        'error',
-        'always',
-        { arraysInObjects: true, objectsInObjects: true },
-      ],
-
-      'object-property-newline': ['error', { allowAllPropertiesOnSameLine: true }],
-
-      'operator-linebreak': [
-        'error',
-        'before',
-        { overrides: { '=': 'after' } },
-      ],
-
-      'padded-blocks': [
-        'error',
-
-        {
-          blocks: 'never',
-          classes: 'always',
-          switches: 'never',
-        },
-
-        { allowSingleLineBlocks: true },
-      ],
-
-      'padding-line-between-statements': [
-        'error',
-
-        {
-          blankLine: 'always',
-          prev: '*',
-          next: 'block',
-        },
-
-        {
-          blankLine: 'always',
-          prev: 'block',
-          next: '*',
-        },
-
-        {
-          blankLine: 'always',
-          prev: '*',
-          next: 'multiline-block-like',
-        },
-
-        {
-          blankLine: 'always',
-          prev: 'multiline-block-like',
-          next: '*',
-        },
-
-        {
-          blankLine: 'always',
-          prev: '*',
-          next: 'return',
-        },
-
-        {
-          blankLine: 'always',
-          prev: '*',
-          next: 'continue',
-        },
-
-        {
-          blankLine: 'always',
-          prev: '*',
-          next: 'break',
-        },
-
-        {
-          blankLine: 'always',
-
-          prev: [
-            'const',
-            'let',
-            'var',
-          ],
-
-          next: '*',
-        },
-        {
-          blankLine: 'any',
-
-          prev: [
-            'const',
-            'let',
-            'var',
-          ],
-
-          next: [
-            'const',
-            'let',
-            'var',
-          ],
-        },
-
-        {
-          blankLine: 'always',
-          prev: 'directive',
-          next: '*',
-        },
-
-        {
-          blankLine: 'any',
-          prev: 'directive',
-          next: 'directive',
-        },
-
-        {
-          blankLine: 'always',
-          prev: ['case', 'default'],
-          next: '*',
-        },
-
-        {
-          blankLine: 'always',
-          prev: ['import', 'cjs-import'],
-          next: '*',
-        },
-
-        {
-          blankLine: 'always',
-          prev: '*',
-          next: ['export', 'cjs-export'],
-        },
-      ],
-
-      'quotes': ['error', 'single'],
-
-      'rest-spread-spacing': 'error',
-
-      // Let dprint handle it.
-      'semi': ['off', 'always'],
-
-      'semi-spacing': 'error',
-
-      'semi-style': 'error',
-
-      'space-before-blocks': 'error',
-
-      'space-before-function-paren': [
-        'error',
-
-        {
-          anonymous: 'always',
-          named: 'never',
-          asyncArrow: 'always',
-        },
-      ],
-
-      'space-in-parens': 'error',
-
-      'space-infix-ops': ['error', { int32Hint: true }],
-
-      'space-unary-ops': ['error', { words: true, nonwords: false }],
-
-      'switch-colon-spacing': 'error',
-
-      'template-curly-spacing': 'error',
-
-      'template-tag-spacing': 'error',
+      'line-comment-position': 'error',
 
       'unicode-bom': 'error',
-
-      'wrap-iife': 'error',
-
-      'wrap-regex': 'error',
-
-      'yield-star-spacing': ['error', 'before'],
       //endregion
     },
   },

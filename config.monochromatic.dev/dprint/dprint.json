@@ -19,7 +19,7 @@
   },
   "json": {
     "commentLine.forceSpaceAfterSlashes": false,
-    "jsonTrailingCommaFiles": ["tsconfig.json", ".vscode/settings.json", "tsconfig.*.json"]
+    "jsonTrailingCommaFiles": ["tsconfig.json", "settings.json", "tsconfig.*.json"]
   },
   "markdown": {
     "lineWidth": 90

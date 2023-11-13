@@ -1,10 +1,15 @@
 {
   "name": "@monochromatic.dev/cpfd",
-  "version": "0.0.5",
+  "version": "0.0.29",
   "description": "CoPy Files from Dependencies",
-  "main": "index.js",
+  "bin": "dist/final/index.js",
+  "main": "dist/final/index.js",
+  "module": "dist/final/index.js",
   "type": "module",
-  "files": ["index.js", "cpfd.toml"],
+  "files": [
+    "index.js",
+    "cpfd.toml"
+  ],
   "keywords": [
     "config",
     "monochromatic",
@@ -12,7 +17,8 @@
     "management"
   ],
   "scripts": {
-    "run": "node index.js"
+    "build": "node node_modules/@monochromatic.dev/build/dist/final/index.js build",
+    "run": "node dist/final/index.js"
   },
   "author": {
     "name": "Aquaticat",
@@ -26,9 +32,12 @@
     "directory": "build.monochromatic.dev/cpfd"
   },
   "devDependencies": {
+    "@monochromatic.dev/api-extractor": "workspace:*",
+    "@monochromatic.dev/build": "workspace:*",
     "@monochromatic.dev/ignore": "workspace:*",
     "@monochromatic.dev/prettier": "workspace:*",
-    "@types/node": "^20.8.9"
+    "@monochromatic.dev/tsconfig": "workspace:*",
+    "@types/node": ">=20.8.9"
   },
   "dependencies": {
     "@ltd/j-toml": ">=1.38"

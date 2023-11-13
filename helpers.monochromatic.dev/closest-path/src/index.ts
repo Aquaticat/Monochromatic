@@ -1,6 +1,6 @@
-import path from 'path';
+import * as path from 'path';
 
-import fs from 'fs';
+import * as fs from 'fs';
 
 const closestPath = (currentPath: string = path.resolve(), selectors = 'package.json', layers = 1): string => {
   if (fs.existsSync(path.join(currentPath, selectors))) {
