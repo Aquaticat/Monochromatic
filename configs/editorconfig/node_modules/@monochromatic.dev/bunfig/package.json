@@ -1,0 +1,25 @@
+{
+  "name": "@monochromatic.dev/bunfig",
+  "version": "0.0.1",
+  "description": "Monochromatic's bunfig.toml",
+  "main": "bunfig.toml",
+  "module": "bunfig.toml",
+  "type": "module",
+  "files": ["bunfig.toml"],
+  "keywords": [
+    "config",
+    "monochromatic",
+    "bun"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "config/bun"
+  },
+  "license": "Apache-2.0"
+}

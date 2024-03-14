@@ -1,0 +1,16 @@
+{
+  "name": "@monochromatic.dev/academia-template",
+  "description": "Monochromatic's template for academia profiles.",
+  "// private": "Not a package you can install and use.",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+  },
+  "devDependencies": {
+    "typescript": ">=5.2.2",
+    "lightningcss": ">=1.22",
+    "browserslist": ">=4.22.1",
+    "@monochromatic.dev/tsconfig": "workspace:*"
+  }
+}

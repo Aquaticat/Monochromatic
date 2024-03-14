@@ -1,0 +1,6 @@
+{
+  "extends": "@monochromatic.dev/tsconfig",
+  "include": [
+    "src",
+  ],
+}
