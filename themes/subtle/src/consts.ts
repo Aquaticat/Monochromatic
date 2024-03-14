@@ -1,9 +1,6 @@
 // Place any global data in this file.
 // You can import this data from anywhere in your site by using the `import` keyword.
 
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-
 export const TITLE = 'Subtle';
 export const DESCRIPTION = 'Personal Blog Theme for Astro';
 
