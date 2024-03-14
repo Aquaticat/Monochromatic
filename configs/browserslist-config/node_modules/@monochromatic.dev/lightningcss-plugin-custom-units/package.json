@@ -1,7 +1,0 @@
-{
-  "name": "@monochromatic.dev/lightningcss-plugin-custom-units",
-  "keywords": ["lightningcss-plugin"],
-  "main": "index.js",
-  "type": "module",
-  "description": "Stolen from https://github.com/parcel-bundler/lightningcss/blob/master/node/test/visitor.test.mjs at about line 48 to line 120."
-}

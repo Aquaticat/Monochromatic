@@ -1,8 +1,0 @@
-{
-  "name": "@monochromatic.dev/biome-config",
-  "keywords": ["biome", "config", "monochromatic"],
-  "peerDependencies": { "@biomejs/biome": ">=1.5.3" },
-  "exports": {
-    "./index": "./biome.json"
-  }
-}
