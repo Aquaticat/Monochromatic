@@ -1,3 +1,13 @@
+## Project Setup (Meta)
+
+`find . -name '*.sh' -exec chmod +x {} \;`
+
+`rm -f bun.lockb && bun i`
+
+## Themes
+
+Currently we have `themes/subtle`.
+
 ## ~~NueJS (Outdated - switched to Astro instead)~~
 
 ### NueJS doesn't allow specifying LightningCSS configuration yet.
@@ -149,7 +159,7 @@ On my system, `sh` is not found at `/bin/sh`.
 
 For portability, https://stackoverflow.com/a/10383546
 
-## VSCode error `Extension 'Biome' is configured as formater but it cannot format 'TypeScript' files`
+### VSCode error `Extension 'Biome' is configured as formater but it cannot format 'TypeScript' files`
 
 Because when we copied `node_modules` from root to each packages, we didn't let it ignore biome.
 
@@ -158,14 +168,6 @@ And biome needs to find a biome.json, which we don't have when called from subpa
 `cpNM.sh` Script now fixed.
 
 You can also run `rm -rf */*/**/@biomejs/`.
-
-## Project Setup (Meta)
-
-`find . -name '*.sh' -exec chmod +x {} \;`
-
-For packages in `themes`
-
-Change directory into the package and then run `bun run node_modules/nuekit/src/cli.js`.
 
 ## Useful snippets
 
@@ -183,10 +185,6 @@ Stolen from https://stackoverflow.com/a/26304106
 
 `rg -U --passthru -N '\n' -r '' posts/why-this-theme.txt`
 
-## Astro + MDX: Unexpected ExpressionStatement in code: only import/exports are supported.
-
-See https://stackoverflow.com/a/77576891
-
 ## Astro
 
 ### Why I'm opting out scoped CSS feature for most components
@@ -197,7 +195,15 @@ Because I don't want my code to be littered with `:where`
 
 Otherwise Astro may not actually include those CSS properly.
 
+### Why I'm using a custom integration for building globs
+
+`Astro.glob()` only supports plain strings. It doesn't even support template strings. I had to use an integration to generate a JS file to generate `Astro.glob()`.
+
 ## MDX
+
+### Astro + MDX: Unexpected ExpressionStatement in code: only import/exports are supported.
+
+See https://stackoverflow.com/a/77576891
 
 ### Why I'm adding `<S></S>` around headings
 
