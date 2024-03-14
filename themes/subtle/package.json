@@ -1,0 +1,45 @@
+{
+  "name": "@monochromatic.dev/subtle",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "bunx astro dev",
+    "start": "bunx astro dev",
+    "check": "bunx astro check",
+    "build": "bunx astro build",
+    "preview": "bunx astro preview",
+    "astro": "bunx astro"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^2.1.1",
+    "@astrojs/rss": "^4.0.5",
+    "@astrojs/sitemap": "^3.1.1",
+    "astro": "^4.4.13",
+    "@astrojs/check": "^0.5.6",
+    "typescript": "^5.4.2",
+    "@types/bun": "*",
+    "@monochromatic.dev/lightningcss-plugin-apply": "workspace:*",
+    "@monochromatic.dev/lightningcss-plugin-custom-units": "workspace:*",
+    "@monochromatic.dev/lightningcss-plugin-property-lookup": "workspace:*",
+    "@monochromatic.dev/lightningcss-plugin-size": "workspace:*",
+    "@monochromatic.dev/remark-plugin-modified-time": "workspace:*",
+    "@monochromatic.dev/rehype-plugin-summary": "workspace:*",
+    "@monochromatic.dev/snippet-expand-all-details": "workspace:*",
+    "@monochromatic.dev/snippet-main-min-block-size": "workspace:*",
+    "@monochromatic.dev/module-is-lang": "workspace:*",
+    "@monochromatic.dev/module-exists": "workspace:*",
+    "@monochromatic.dev/module-filter-promise": "workspace:*",
+    "@monochromatic.dev/module-trim-end-with": "workspace:*",
+    "@monochromatic.dev/module-supports": "workspace:*",
+    "@monochromatic.dev/style-monochromatic": "workspace:*",
+    "@monochromatic.dev/astro-integration-globs": "workspace:*",
+    "lightningcss": "*",
+    "browserslist": "*",
+    "esbuild-plugin-browserslist": "*",
+    "the-new-css-reset": "*",
+    "glob": "*"
+  },
+  "overrides": {
+    "esbuild": "*"
+  }
+}

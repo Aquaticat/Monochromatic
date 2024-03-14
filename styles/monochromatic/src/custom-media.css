@@ -1,0 +1,5 @@
+@custom-media --xs- (width < calc(360rem / 16));
+@custom-media --xs-s (calc(360rem / 16) <= width < calc(600rem / 16));
+@custom-media --s-m (calc(600rem / 16) <= width < calc(905rem /16));
+@custom-media --m-l (calc(905rem / 16) <= width < calc(1280rem / 16));
+@custom-media --l-plus (width >= calc(1280rem / 16));

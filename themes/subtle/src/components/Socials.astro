@@ -1,0 +1,16 @@
+---
+import { SOCIALS } from '../consts';
+
+const socialsArr = Array.from(SOCIALS);
+---
+
+<ul class="socials-list">
+  { socialsArr.map((social) => (
+    <li>
+      <a href={social[1]}>
+        <span>{social[0]}</span>
+      </a>
+    </li>
+    ))
+  }
+</ul>

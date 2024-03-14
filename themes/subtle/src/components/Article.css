@@ -1,0 +1,152 @@
+.Article {
+    @apply --text;
+    flex-shrink: 1;
+    flex-grow: 999;
+    flex-basis: var(--comfort-text);
+
+    * {
+      + :is(p, li, ol, ul, table, blockquote, figure, hr, pre, video, form) {
+        margin-block-start: var(--gap-s);
+      }
+      + section {
+        margin-block-start: var(--gap-m);
+
+        &:has(h2:first-child) {
+          margin-block-start: var(--gap-xl);
+        }
+      }
+    }
+
+    :is(ol, ul) {
+
+      > li {
+        contain: layout;
+
+        display: list-item;
+
+        margin-inline-start: var(--gap-xl);
+
+        &::marker {
+          line-height: calc(24--p / 0.8);
+          font-family: var(--mono);
+        }
+      }
+
+      ul {
+        list-style-type: wave;
+      }
+    }
+
+    ol {
+      list-style-type: decimal-leading-zero;
+
+      > li {
+        &::marker {
+          /* Magic number here */
+          /* TODO: Make sure it works with all fonts */
+          font-size: 0.8em;
+        }
+      }
+    }
+
+    ul {
+      list-style-type: dash;
+      > li {
+        &::marker {
+          /* Magic number here */
+          /* TODO: Make sure it works with all fonts */
+          font-size: 0.8em;
+        }
+      }
+    }
+
+    :is(del, s) {
+      text-decoration-line: line-through;
+      text-decoration-color: var(--subtle-);
+    }
+
+    mark {
+      background-color: var(--bg-plus);
+      color: var(--fg-plus);
+    }
+
+    kbd {
+      box-shadow: 0 1ep 1ep 1ep rgba(0, 0, 0, 0.1);
+      padding-inline: 2--cp;
+      border-radius: 2--ep;
+    }
+
+    sup {
+      vertical-align: super;
+      font-size: 0.8em;
+    }
+
+    sub {
+      vertical-align: sub;
+      font-size: 0.8em;
+    }
+
+    [title] {
+      text-decoration-color: var(--subtle-);
+      text-decoration-line: underline;
+      text-decoration-style: dotted;
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.8em;
+    }
+
+    table {
+      inline-size: 100%;
+      > thead {
+        font-weight: bolder;
+        + tbody {
+          border-block-start-style: solid;
+          border-block-start-color: var(--subtle-);
+          border-block-start-width: 2--rp;
+        }
+      }
+      :is(th, td) {
+        padding-inline: var(--gap-xs);
+        + :is(th, td) {
+          border-inline-start-style: solid;
+          border-inline-start-color: var(--subtle-);
+          border-inline-start-width: 2--rp;
+        }
+      }
+      > tbody {
+        > tr {
+          + tr {
+                      border-block-start-style: dashed;
+          border-block-start-color: var(--subtle-);
+          border-block-start-width: 2--rp;
+          }
+        }
+      }
+    }
+    hr {
+      border-block-color: var(--subtle-);
+      border-block-style: solid;
+      border-block-width: 1--rp;
+    }
+
+    blockquote {
+      border-inline-start-color: var(--subtle-);
+      border-inline-start-style: solid;
+      border-inline-start-width: 2--rp;
+      padding-inline-start: var(--gap-s);
+    }
+
+    strong {
+      font-weight: bolder;
+    }
+
+    em {
+      font-style: italic;
+    }
+
+    cite {
+      font-style: italic;
+    }
+  }

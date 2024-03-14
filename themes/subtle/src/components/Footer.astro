@@ -1,0 +1,42 @@
+---
+import {AUTHOR} from '../consts';
+import ExistencePeriod from './ExistencePeriod.astro';
+import Socials from './Socials.astro';
+---
+
+<footer>
+  <div>
+    <small>
+      <span>
+        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en">
+          <span>CC-BY-NC-SA</span>
+        </a>
+        <ExistencePeriod></ExistencePeriod>
+      </span>
+      <span>
+        <span>by</span>
+        <a href="/">
+          <span>{ AUTHOR }</span>
+        </a>
+      </span>
+    </small>
+    <Socials></Socials>
+    <small>
+      <span>
+        <a href="https://monochromatic.dev/subtle">
+          <span>Subtle</span>
+        </a>
+        <span>@</span>
+        <a href="https://astro.build">
+          <span>Astro</span>
+        </a>
+      </span>
+      <span>
+        <span>by</span>
+        <a href="https://aquati.cat">
+          <span>Aquaticat</span>
+        </a>
+      </span>
+    </small>
+  </div>
+</footer>

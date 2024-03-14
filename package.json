@@ -1,0 +1,16 @@
+{
+  "name": "monochromatic",
+  "private": true,
+  "workspaces": [
+    "configs/*",
+    "helpers/*",
+    "lightningcss-plugins/*",
+    "remark-plugins/*",
+    "rehype-plugins/*",
+    "themes/*",
+    "snippets/*",
+    "modules/*",
+    "styles/*",
+    "astro-integrations/*"
+  ]
+}

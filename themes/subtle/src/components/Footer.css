@@ -1,0 +1,28 @@
+footer {
+  min-block-size: calc(var(--length-m) + 2 * var(--gap-m));
+  padding-block: var(--gap-m);
+
+  @apply --flex-center;
+  background-color: var(--bg-darker);
+  color: var(--subtle);
+
+  > div {
+    @apply --flex-center;
+    column-gap: var(--gap-l);
+    @apply --text;
+
+    > * {
+      @apply --flex-center;
+      column-gap: var(--gap-s);
+
+      > * {
+        @apply --flex-center;
+        column-gap: var(--gap-s);
+
+        > * {
+          @apply --flex-center;
+        }
+      }
+    }
+  }
+}

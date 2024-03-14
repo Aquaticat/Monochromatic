@@ -1,0 +1,6 @@
+/* Since popover targets just display normally if popover isn't supported, we can just remove the popover trigger if popover isn't supported */
+@supports not selector(:popover-open) {
+  [popovertarget] {
+    display: none;
+  }
+}

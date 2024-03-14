@@ -1,0 +1,20 @@
+{
+  "name": "@monochromatic.dev/module-filter-promise",
+  "description": "Stolen from https://stackoverflow.com/a/63932267 Original articles: https://dev.to/praveenkumarrr/filtering-an-array-using-a-function-that-returns-a-promise-3aa Original author https://github.com/praveen-kumar-rr ",
+  "type": "module",
+  "module": "src/index.ts",
+  "files": ["src/"],
+  "bin": "src/bin.ts",
+  "scripts": {},
+  "devDependencies": {
+    "typescript": ">=5.0.4",
+    "@monochromatic.dev/tsconfig": "workspace:*"
+  },
+  "dependencies": {},
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "modules/filter-promise"
+  }
+}

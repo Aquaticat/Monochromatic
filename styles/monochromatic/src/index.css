@@ -1,0 +1,8 @@
+@import 'the-new-css-reset/css/reset.css';
+@import 'consts/colors.css';
+@import 'consts/fonts.css';
+@import 'consts/typography.css';
+@import 'apply.css';
+@import 'custom-media.css';
+@import 'global.css';
+@import 'fallback.css';

@@ -1,0 +1,14 @@
+---
+const allPosts = await Astro.glob('../pages/post/*.mdx');
+
+const years = allPosts.flatMap(post => [new Date(post.frontmatter.published).getFullYear(), new Date(post.frontmatter.updated).getFullYear()]);
+
+const earliestYear = Math.min(...years);
+const latestYear = Math.max(...years);
+---
+
+<span class="existence-period">
+  <time datetime={earliestYear.toString()}>{earliestYear}</time>
+  -
+  <time datetime={latestYear.toString()}>{latestYear}</time>
+</span>

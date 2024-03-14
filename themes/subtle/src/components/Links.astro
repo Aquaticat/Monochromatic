@@ -1,0 +1,16 @@
+---
+import  {LINKS} from '../consts';
+
+const linksArr = Array.from(LINKS);
+---
+
+<ul class="Links">
+    { linksArr.map((link) => (
+    <li>
+      <a href={link[1]}>
+        <span>{link[0]}</span>
+      </a>
+    </li>
+    ))
+  }
+</ul>

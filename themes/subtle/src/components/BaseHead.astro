@@ -1,0 +1,40 @@
+---
+// Import the global.css file here so that it is included on
+// all pages through the use of the <BaseHead /> component.
+import '../styles/index.css';
+import {TITLE, DESCRIPTION, COLOR} from '../consts';
+
+interface Props {
+	title: string;
+	description?: string;
+  keywords?: string[];
+}
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+const { title, description, keywords } = Astro.props;
+
+const fullTitle = title === TITLE ? title : `${title} | ${TITLE}`;
+const keywordsStr = keywords?.join();
+const descriptionFallback = description || DESCRIPTION;
+---
+
+<!-- Global Metadata -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<meta name="generator" content={Astro.generator} />
+
+<!-- Canonical URL -->
+<link rel="canonical" href={canonicalURL} />
+
+<!-- Primary Meta Tags -->
+<title>{fullTitle}</title>
+<meta name="title" content={title} />
+<meta name="description" content={descriptionFallback} />
+
+<meta name="theme-color" content={COLOR} />
+
+{keywords && <meta name="keywords" content={keywordsStr} />}
+
+<script src="../scripts/index.ts"></script>

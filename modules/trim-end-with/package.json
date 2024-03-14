@@ -1,0 +1,19 @@
+{
+  "name": "@monochromatic.dev/module-trim-end-with",
+  "type": "module",
+  "module": "src/index.ts",
+  "files": ["src/"],
+  "bin": "src/bin.ts",
+  "scripts": {},
+  "devDependencies": {
+    "typescript": ">=5.0.4",
+    "@monochromatic.dev/tsconfig": "workspace:*"
+  },
+  "dependencies": {},
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "modules/trim-end-with"
+  }
+}

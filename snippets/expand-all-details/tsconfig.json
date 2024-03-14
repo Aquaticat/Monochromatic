@@ -1,0 +1,9 @@
+{
+  "extends": "@monochromatic.dev/tsconfig",
+
+  "include": ["src"],
+
+  "compilerOptions": {
+    "rootDir": "src",
+  },
+}

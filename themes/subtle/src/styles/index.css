@@ -1,0 +1,12 @@
+@import '@monochromatic.dev/style-monochromatic/src/index.css';
+@import 'consts/colors.css';
+@import 'consts/fonts.css';
+@import 'consts/typography.css';
+@import '../components/Article.css';
+@import '../components/Aside.css';
+@import '../components/Footer.css';
+@import '../components/Header.css';
+@import '../components/Links.css';
+@import '../components/Main.css';
+@import '../components/Posts.css';
+@import '../components/Post.css';

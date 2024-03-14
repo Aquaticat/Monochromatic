@@ -1,0 +1,39 @@
+---
+import Posts from './Posts.astro';
+import { DEFAULT_LANG, STRINGS } from '../consts';
+import { langsPosts } from './_globs.astro';
+const lang = Astro.currentLocale!;
+const posts = langsPosts.get(lang === DEFAULT_LANG ? '' : lang)!;
+const uniqueTags = [...new Set(posts.flatMap((post) => post.frontmatter.tags))];
+const tagPost = new Map(uniqueTags.map((tag) => [tag, posts.filter((post) => post.frontmatter.tags.includes(tag))]));
+const tagPostArr = Array.from(tagPost);
+---
+
+<header>
+  <div>
+    <a href={`/${lang === DEFAULT_LANG ? '' : lang}`}>
+      <img src="/favicon.svg" alt="avatar">
+    </a>
+    <nav>
+      <button popovertarget="search">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.7441 19.0893L14.03 14.3752M16.8333 9.33333C16.8333 13.0152 13.8486 16 10.1667 16C6.48477 16 3.5 13.0152 3.5 9.33333C3.5 5.65143 6.48477 2.66666 10.1667 2.66666C13.8486 2.66666 16.8333 5.65143 16.8333 9.33333Z" stroke="currentColor" stroke-width="2.5"/>
+        </svg>
+      </button>
+      <div popover id="search">
+        <!-- TODO: Handle get requests to this own site https://my-site/?my-query -->
+        <form method="get">
+          <input autofocus name="q" type="search" required placeholder={STRINGS.get('searchPlaceholder')!.get(lang)}></input>
+        </form>
+        <ul class="Header__tags">
+          {tagPostArr.map(([tag, posts]) => (<li><details><summary><span>{tag}</span></summary>
+          <Posts posts={posts}></Posts>
+            </details></li>))}
+        </ul>
+      </div>
+
+      <a href={`${lang === DEFAULT_LANG ? '' : `/${lang}`}/links`}><span>Links</span></a>
+    </nav>
+  </div>
+</header>
+

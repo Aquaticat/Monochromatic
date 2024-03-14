@@ -1,0 +1,15 @@
+{
+  "name": "@monochromatic.dev/astro-integration-globs",
+  "type": "module",
+  "module": "src/index.js",
+  "files": ["src/"],
+  "scripts": {},
+  "devDependencies": {},
+  "dependencies": {},
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "astro-integrations/globs"
+  }
+}

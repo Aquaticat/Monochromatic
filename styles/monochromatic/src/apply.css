@@ -1,0 +1,113 @@
+/* From https://css-tricks.com/inclusively-hidden/
+   Note that since I'm using this class as a pure composition class :not(:focus) and :not(:active) needs to be accounted for everywhere it's used.
+ */
+--sr-only {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+--touch-target {
+  min-block-size: var(--length-m);
+  min-inline-size: var(--length-m);
+  cursor: pointer;
+}
+
+--flex-center {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+--flex-center-start {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+--flex-start-center {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+--flex-start {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+--flex-between-center {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+--text {
+  max-inline-size: var(--max-text);
+  min-inline-size: var(--min-text);
+}
+
+--p {
+  line-height: 1.5;
+  text-wrap: pretty;
+  hyphens: auto;
+}
+
+--h1 {
+  letter-spacing: calc(-0.01--cp * pow(var(--type-scaler), (var(--h1) - 16)));
+  font-weight: 900;
+  line-height: calc(1 - (pow(var(--type-scaler), (var(--h1) - 16)) / var(--h1)));
+  text-align: center;
+  font-size: calc(var(--h1) * var(--rp));
+  text-wrap: balance;
+  /* When line-height is smaller than the typeface's actual height and contain: paint, may appear cutoff */
+  margin-block-start: var(--gap-xs);
+  contain: layout;
+}
+--h2 {
+  font-size: calc(var(--h2) * var(--rp));
+  font-weight: bold;
+  text-align: center;
+}
+--h3 {
+  font-size: calc(var(--h3) * var(--rp));
+  font-weight: bold;
+}
+--h4 {
+  font-size: calc(var(--h4) * var(--rp));
+  font-weight: bold;
+}
+--h5 {
+  font-size: calc(var(--h5) * var(--rp));
+  font-weight: bold;
+  line-height: calc(1.5 * 16 / var(--h5));
+}
+--h6 {
+  font-size: calc(var(--h6) * var(--rp));
+  line-height: calc(1.5 * 16 / var(--h6));
+  font-weight: bold;
+}
+
+/* Text style suitable for button labels and the like */
+--button-text {
+  text-transform: uppercase;
+  font-weight: bolder;
+  font-size: calc(var(--h6) * var(--rp));
+  line-height: calc(1.5 * 16 / var(--h6));
+  text-decoration: none;
+}

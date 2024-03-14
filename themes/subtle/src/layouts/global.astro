@@ -1,0 +1,23 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Main from '../components/Main.astro';
+import Footer from '../components/Footer.astro';
+
+const { title, description } = Astro.props.frontmatter;
+const lang = Astro.currentLocale;
+---
+
+<html lang={lang}>
+	<head>
+		<BaseHead title={title} description={description} />
+	</head>
+
+	<body>
+		<Header />
+    <Main title={title}>
+      <slot />
+    </Main>
+		<Footer />
+	</body>
+</html>
