@@ -4,6 +4,8 @@
     "strictNullChecks": true,
     "allowJs": true,
     "checkJs": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "jsx": "preserve",
+    "jsxImportSource": "astro"
   }
 }
