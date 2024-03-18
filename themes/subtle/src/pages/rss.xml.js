@@ -1,5 +1,5 @@
 import rss from '@astrojs/rss';
-import { TITLE, DESCRIPTION } from '../consts';
+import { TITLE, DESCRIPTION } from '../../../../bak/scripts/consts';
 
 export async function GET(context) {
   const posts = Object.values(import.meta.glob(['./post/**/*.mdx', './*/post/**/*.mdx'], { eager: true }));

@@ -1,9 +1,9 @@
-import { DEFAULT_LANG, STRINGS } from '../consts';
+import consts from '../../consts';
 
 const i18nStr = (id: string) => {
-  const firstLang = navigator.languages.find((lang) => STRINGS.get(id)!.has(lang));
+  const firstLang = navigator.languages.find((lang) => consts.strings.has(lang) && consts.strings.get(lang).has(id));
 
-  return STRINGS.get(id)!.get(firstLang || DEFAULT_LANG)!;
+  return consts.strings.get(firstLang || consts.langs.defaultLang)!.get(id)!;
 };
 
 export default i18nStr;

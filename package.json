@@ -11,6 +11,9 @@
     "snippets/*",
     "modules/*",
     "styles/*",
-    "astro-integrations/*"
+    "astro-integrations/*",
+    "npm-lifecycles/*",
+    "vite-plugins/*",
+    "schemas/*"
   ]
 }

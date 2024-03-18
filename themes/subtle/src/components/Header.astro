@@ -1,6 +1,6 @@
 ---
 import Posts from './Posts.astro';
-import { DEFAULT_LANG, STRINGS } from '../consts';
+import { DEFAULT_LANG, STRINGS } from '../../../../bak/scripts/consts';
 import { langsPosts } from './_globs.astro';
 const lang = Astro.currentLocale!;
 const posts = langsPosts.get(lang === DEFAULT_LANG ? '' : lang)!;
@@ -37,3 +37,5 @@ const tagPostArr = Array.from(tagPost);
   </div>
 </header>
 
+../../../../bak/consts
+../../../../bak/scripts/consts

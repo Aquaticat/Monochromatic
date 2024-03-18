@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "bunx astro dev",
+    "dev": "bunx astro build && bunx astro dev",
     "start": "bunx astro dev",
     "check": "bunx astro check",
     "build": "bunx astro build",
@@ -11,12 +11,12 @@
     "astro": "bunx astro"
   },
   "dependencies": {
-    "@astrojs/mdx": "^2.1.1",
-    "@astrojs/rss": "^4.0.5",
-    "@astrojs/sitemap": "^3.1.1",
-    "astro": "^4.4.13",
-    "@astrojs/check": "^0.5.6",
-    "typescript": "^5.4.2",
+    "@astrojs/mdx": ">=2.1.1",
+    "@astrojs/rss": ">=4.0.5",
+    "@astrojs/sitemap": ">=3.1.1",
+    "astro": ">=4.4.13",
+    "@astrojs/check": ">=0.5.6",
+    "typescript": ">=5.4.2",
     "@types/bun": "*",
     "@monochromatic.dev/lightningcss-plugin-apply": "workspace:*",
     "@monochromatic.dev/lightningcss-plugin-custom-units": "workspace:*",
@@ -33,11 +33,13 @@
     "@monochromatic.dev/module-supports": "workspace:*",
     "@monochromatic.dev/style-monochromatic": "workspace:*",
     "@monochromatic.dev/astro-integration-globs": "workspace:*",
+    "@monochromatic.dev/astro-integration-gen-consts": "workspace:*",
+    "zod": "*",
+    "smol-toml": "*",
     "lightningcss": "*",
     "browserslist": "*",
     "esbuild-plugin-browserslist": "*",
-    "the-new-css-reset": "*",
-    "glob": "*"
+    "the-new-css-reset": "*"
   },
   "overrides": {
     "esbuild": "*"

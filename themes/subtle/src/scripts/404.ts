@@ -2,7 +2,7 @@
 // or if we are about to redirect user to the supposedly existing page in their own language.
 
 import isLang from '@monochromatic.dev/module-is-lang';
-import { I18N, LANG_PATHS } from '../consts';
+import consts from '../../consts';
 import exists from '@monochromatic.dev/module-exists';
 import trimEndWith from '@monochromatic.dev/module-trim-end-with';
 import filterPromise from '@monochromatic.dev/module-filter-promise';
@@ -13,13 +13,13 @@ const isPotentialCodeLang = isLang(potentialCode);
 if (document.head.querySelector('meta[name="title"]')!.getAttribute('content') === '404') {
   const p = document.querySelector('main p')!;
   if (isPotentialCodeLang) {
-    if (LANG_PATHS.includes(potentialCode)) {
+    if (consts.langs.paths.includes(potentialCode)) {
       // TODO: Change the page content.
       // TODO: Use url builder
       // TODO: Change aside to include potential targets.
 
       const existing = await filterPromise(
-        LANG_PATHS.map(
+        consts.langs.paths.map(
           (langPath) => `${location.origin}/${langPath}${location.pathname.split('/').slice(2).join('/')}`,
         ),
         exists,
@@ -41,18 +41,20 @@ if (document.head.querySelector('meta[name="title"]')!.getAttribute('content') =
   // In this situation, we only want to redirect when potentialCode isn't lang AND when the redirect target actually exists AND when the user isn't already redirected by lang matching AND when the user went back to browse the default lang page after being redirected.
   if (!sessionStorage.getItem('redirectedByLangMatching') && !isPotentialCodeLang) {
     const existing = await filterPromise(
-      LANG_PATHS.map((langPath) => trimEndWith(`${location.origin}/${langPath}${location.pathname}`, '/')),
+      consts.langs.paths.map((langPath) => trimEndWith(`${location.origin}/${langPath}${location.pathname}`, '/')),
       exists,
     );
     const firstLang = navigator.languages.find(
       (lang) =>
-        I18N.has(lang) &&
-        existing.includes(trimEndWith(`${location.origin}/${I18N.get(lang)}${location.pathname}`, '/')),
+        consts.langs.mappings.has(lang) &&
+        existing.includes(
+          trimEndWith(`${location.origin}/${consts.langs.mappings.get(lang)}${location.pathname}`, '/'),
+        ),
     );
 
     // If we don't support any of user's languages, just leave it as is.
     if (firstLang !== undefined) {
-      const i18nPath = I18N.get(firstLang)!;
+      const i18nPath = consts.langs.mappings.get(firstLang)!;
       if (i18nPath !== potentialCode) {
         console.log(`Your lang ${firstLang} is available!
         Redirecting to ${trimEndWith(`${location.origin}/${i18nPath}${location.pathname}`, '/')}`);

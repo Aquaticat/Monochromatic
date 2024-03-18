@@ -1,5 +1,6 @@
 {
   "name": "@monochromatic.dev/rehype-plugin-content",
+  "description": "not ready",
   "type": "module",
   "files": ["src"],
   "dependencies": { "@types/bun": "*", "html-to-text": "*" },

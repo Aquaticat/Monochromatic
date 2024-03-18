@@ -185,6 +185,10 @@ Stolen from https://stackoverflow.com/a/26304106
 
 `rg -U --passthru -N '\n' -r '' posts/why-this-theme.txt`
 
+### Generate a random string
+
+`tr -dc A-Za-z0-9 </dev/urandom | head -c 9999; echo`
+
 ## Astro
 
 ### Why I'm opting out scoped CSS feature for most components

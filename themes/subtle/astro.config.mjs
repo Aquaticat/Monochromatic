@@ -11,12 +11,14 @@ import size from '@monochromatic.dev/lightningcss-plugin-size';
 import remarkPluginModifiedTime from '@monochromatic.dev/remark-plugin-modified-time';
 import rehypePluginSummary from '@monochromatic.dev/rehype-plugin-summary';
 import astroGlobs from '@monochromatic.dev/astro-integration-globs';
-import { LANG_PATHS } from './src/consts';
+import astroGenConsts from '@monochromatic.dev/astro-integration-gen-consts';
+import consts from './consts';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://monochromatic.dev/subtle',
-  integrations: [mdx(), sitemap(), astroGlobs(LANG_PATHS)],
+  site: consts.site,
+  base: `/${consts.base}`,
+  integrations: [astroGenConsts(), mdx(), sitemap(), astroGlobs(consts.langs.paths)],
   scopedStyleStrategy: 'where',
   vite: {
     css: {
@@ -41,25 +43,29 @@ export default defineConfig({
       format: 'es',
     },
     optimizeDeps: {},
+    plugins: [],
   },
   build: {},
+  server: {
+    host: true,
+  },
   prefetch: {
     defaultStrategy: 'viewport',
   },
   markdown: {
     remarkPlugins: [remarkPluginModifiedTime],
-    rehypePlugins: [rehypePluginSummary],
+    rehypePlugins: [],
     shikiConfig: {
       themes: {
-        light: 'github-light',
-        dark: 'github-dark',
+        light: consts.theming.shiki.light,
+        dark: consts.theming.shiki.dark,
       },
       wrap: true,
     },
   },
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en', 'zh'],
+    defaultLocale: consts.langs.defaultLang,
+    locales: [...consts.langs.langs],
   },
   experimental: {},
 });
