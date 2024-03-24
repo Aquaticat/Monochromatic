@@ -14,6 +14,8 @@
     "astro-integrations/*",
     "npm-lifecycles/*",
     "vite-plugins/*",
-    "schemas/*"
-  ]
+    "schemas/*",
+    "temp/*"
+  ],
+  "trustedDependencies": ["@biomejs/biome"]
 }

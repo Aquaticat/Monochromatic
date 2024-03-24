@@ -1,4 +1,12 @@
 node_modules
 .jj
 .dist/dev
+.dist/temp
 bun.lockb
+.tsbuildinfo
+.map
+.bin
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

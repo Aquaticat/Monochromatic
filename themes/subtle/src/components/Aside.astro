@@ -1,10 +1,10 @@
 ---
-import { TITLE } from "../../../../bak/scripts/consts";
+import consts from "../../consts";
 import Posts from './Posts.astro';
 import Links from './Links.astro';
 const {title} = Astro.props;
 
-const isHome = title === TITLE;
+const isHome = title === consts.title;
 const isMeta = title === "Links";
 const is404 = title === "404";
 ---
@@ -19,5 +19,3 @@ const is404 = title === "404";
       : <div class="Related">not</div>
   }
 </aside>
-../../../../bak/consts
-../../../../bak/scripts/consts

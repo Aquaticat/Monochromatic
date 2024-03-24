@@ -1,0 +1,10 @@
+
+      html[lang|="en"] .-MatchLang [lang]:not([lang|="en"]) {
+        display: none;
+      }
+      
+
+      html[lang|="zh"] .-MatchLang [lang]:not([lang|="zh"]) {
+        display: none;
+      }
+      

@@ -12,13 +12,11 @@ import remarkPluginModifiedTime from '@monochromatic.dev/remark-plugin-modified-
 import rehypePluginSummary from '@monochromatic.dev/rehype-plugin-summary';
 import astroGlobs from '@monochromatic.dev/astro-integration-globs';
 import astroGenConsts from '@monochromatic.dev/astro-integration-gen-consts';
-import consts from './consts';
+import genMatchLangCss from '@monochromatic.dev/astro-integration-gen-match-lang-css';
 
 // https://astro.build/config
 export default defineConfig({
-  site: consts.site,
-  base: `/${consts.base}`,
-  integrations: [astroGenConsts(), mdx(), sitemap(), astroGlobs(consts.langs.paths)],
+  integrations: [astroGenConsts(), mdx(), astroGlobs(), sitemap(), genMatchLangCss()],
   scopedStyleStrategy: 'where',
   vite: {
     css: {
@@ -56,16 +54,8 @@ export default defineConfig({
     remarkPlugins: [remarkPluginModifiedTime],
     rehypePlugins: [],
     shikiConfig: {
-      themes: {
-        light: consts.theming.shiki.light,
-        dark: consts.theming.shiki.dark,
-      },
       wrap: true,
     },
-  },
-  i18n: {
-    defaultLocale: consts.langs.defaultLang,
-    locales: [...consts.langs.langs],
   },
   experimental: {},
 });

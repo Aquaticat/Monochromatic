@@ -1,9 +1,10 @@
 ---
 import Posts from './Posts.astro';
-import { DEFAULT_LANG, STRINGS } from '../../../../bak/scripts/consts';
+import consts from '../../consts';
 import { langsPosts } from './_globs.astro';
 const lang = Astro.currentLocale!;
-const posts = langsPosts.get(lang === DEFAULT_LANG ? '' : lang)!;
+const langPath = lang === consts.langs.defaultLang ? '' : lang;
+const posts = langsPosts.get(langPath)!;
 const uniqueTags = [...new Set(posts.flatMap((post) => post.frontmatter.tags))];
 const tagPost = new Map(uniqueTags.map((tag) => [tag, posts.filter((post) => post.frontmatter.tags.includes(tag))]));
 const tagPostArr = Array.from(tagPost);
@@ -11,8 +12,8 @@ const tagPostArr = Array.from(tagPost);
 
 <header>
   <div>
-    <a href={`/${lang === DEFAULT_LANG ? '' : lang}`}>
-      <img src="/favicon.svg" alt="avatar">
+    <a href={`${import.meta.env.BASE_URL}/${lang === consts.langs.defaultLang ? '' : lang}`}>
+      <img src={`${import.meta.env.BASE_URL}/favicon.svg`} alt="avatar">
     </a>
     <nav>
       <button popovertarget="search">
@@ -23,7 +24,7 @@ const tagPostArr = Array.from(tagPost);
       <div popover id="search">
         <!-- TODO: Handle get requests to this own site https://my-site/?my-query -->
         <form method="get">
-          <input autofocus name="q" type="search" required placeholder={STRINGS.get('searchPlaceholder')!.get(lang)}></input>
+          <input autofocus name="q" type="search" required placeholder={consts.strings.get(lang).get('searchPlaceholder')}></input>
         </form>
         <ul class="Header__tags">
           {tagPostArr.map(([tag, posts]) => (<li><details><summary><span>{tag}</span></summary>
@@ -32,10 +33,7 @@ const tagPostArr = Array.from(tagPost);
         </ul>
       </div>
 
-      <a href={`${lang === DEFAULT_LANG ? '' : `/${lang}`}/links`}><span>Links</span></a>
+      <a href={`${import.meta.env.BASE_URL}${langPath === '' ? '' : `/${langPath}`}/links`}><span>Links</span></a>
     </nav>
   </div>
 </header>
-
-../../../../bak/consts
-../../../../bak/scripts/consts

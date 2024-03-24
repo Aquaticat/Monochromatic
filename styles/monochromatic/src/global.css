@@ -67,6 +67,10 @@
   }
 }
 
+[hidden] {
+  display: none !important;
+}
+
 :focus-visible {
   background-image: linear-gradient(var(--bg) 0 100%), repeating-linear-gradient(45deg, transparent 0 var(--gap-xs), var(--subtle-) var(--gap-xs) 2--gap-xs);
   background-size: calc(100% - 2--gap-xxs) calc(100% - 2--gap-xxs), cover;
@@ -187,4 +191,9 @@ img {
   system: cyclic;
   symbols: '~~';
   suffix: '. ';
+}
+
+/* Pure wrappers */
+:is([class^="-"], [class*=" -"]) {
+  display: contents;
 }

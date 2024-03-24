@@ -1,7 +1,7 @@
 ---
-const allPosts = await Astro.glob('../pages/post/*.mdx');
+import { langsPosts } from "./_globs.astro";
 
-const years = allPosts.flatMap(post => [new Date(post.frontmatter.published).getFullYear(), new Date(post.frontmatter.updated).getFullYear()]);
+const years = Array.from(langsPosts.values()).flat().flatMap(post => [new Date(post.frontmatter.published).getFullYear(), new Date(post.frontmatter.updated).getFullYear()]);
 
 const earliestYear = Math.min(...years);
 const latestYear = Math.max(...years);

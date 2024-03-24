@@ -1,8 +1,11 @@
 ## Project Setup (Meta)
 
-`find . -name '*.sh' -exec chmod +x {} \;`
+(Not necessary right now, no shell scripts are required right now) `find . -name '*.sh' -exec chmod +x {} \;`
 
-`rm -f bun.lockb && bun i`
+Ensure your `$TERMINAL` environment variable points to a graphical terminal application.
+// TODO: Add reason.
+
+`rm -f bun.lockb && bun i` (See (Bun)[#bun])
 
 ## Themes
 
@@ -124,7 +127,7 @@ See https://github.com/oven-sh/bun/issues/4628
 
 Tried switching to other `bun i` backends, no luck.
 
-Solution: Manually copy `node_modules` from root to each packages.
+#### Solution: Manually copy `node_modules` from root to each packages.
 
 ```sh
 rsync -rRL --exclude='*/**/node_modules/*' node_modules/ configs/biome-config/
@@ -133,7 +136,7 @@ rsync -rRL --exclude='*/**/node_modules/*' node_modules/ configs/biome-config/
 ~~(Outdated) Um, just ignore those "File name too long" errors.
 Adding the xtype filter to find causes all those files in links to be not found by find, because find doesn't resolve contents in directories that are links.~~
 
-Update: used rsync instead.
+#### Update: used rsync instead.
 
 **You can use this command:** `bun i && ./cpNM.sh`
 
@@ -150,6 +153,10 @@ For example, to extend a tsconfig.
 Therefore, the above script isn't useless, just needs some more exclusions.
 
 TODO: Add some more exclusions to the above script.
+
+### Why are we not using some Bun specific features as of now?
+
+Astro, for example, doesn't work well with Bun, which means some packages written using `Bun` apis cannot run when imported into Astro.
 
 ## Misc
 
@@ -185,6 +192,10 @@ Stolen from https://stackoverflow.com/a/26304106
 
 `rg -U --passthru -N '\n' -r '' posts/why-this-theme.txt`
 
+### esbuild
+
+`esbuild src/bin.ts src/index.ts --bundle --platform=node --charset=utf8 --format=esm --packages=external --preserve-symlinks --target=node20 --drop:debugger --drop-labels=DEV,D --define:process.env.NODE_ENV=\\\"production\\\" --minify-whitespace --minify-syntax --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --log-limit=0 --sourcemap`
+
 ### Generate a random string
 
 `tr -dc A-Za-z0-9 </dev/urandom | head -c 9999; echo`
@@ -201,7 +212,8 @@ Otherwise Astro may not actually include those CSS properly.
 
 ### Why I'm using a custom integration for building globs
 
-`Astro.glob()` only supports plain strings. It doesn't even support template strings. I had to use an integration to generate a JS file to generate `Astro.glob()`.
+`Astro.glob()` only supports plain strings. It doesn't even support template strings.
+I had to use an integration to generate a JS file to generate `Astro.glob()`.
 
 ## MDX
 
@@ -212,3 +224,19 @@ See https://stackoverflow.com/a/77576891
 ### Why I'm adding `<S></S>` around headings
 
 Otherwise there's no inserted sections, making them less easy to navigate in terms of accessibility and making them less easy to style.
+
+## Playwright
+
+### TODO: Add Playwright tests for themes/*
+
+## Git
+
+### Why is there only one .gitignore file in workspace
+
+Git reads all .gitignore files and ignore all the entries specified, no matter where they are.
+Only one .gitignore file makes it more manageable.
+
+### Why are there so many "unknown changes"
+
+Sometimes I forget to commit while I still remember what the changes were.
+I agree, I should do better.

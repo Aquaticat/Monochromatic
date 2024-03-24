@@ -5,26 +5,28 @@
 
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist/intermediate/1.  tsc",
+    "outDir": "dist/temp/tsc",
 
     "strict": true,
     "exactOptionalPropertyTypes": true,
     "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": false,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noPropertyAccessFromIndexSignature": true,
+    "noPropertyAccessFromIndexSignature": false,
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
 
     //region Modules
 
-    "module": "esnext",
+    "allowArbitraryExtensions": true,
+
+    "module": "NodeNext",
 
     // We're using bun, and we want to take advantage of its ability to directly import toml files as JS objects.
-    "moduleResolution": "bundler",
-
-    "baseUrl": "src",
+    // Update: no, we don't. It's still too immature.
+    "moduleResolution": "NodeNext",
 
     "resolveJsonModule": true,
 
@@ -47,6 +49,8 @@
 
     "verbatimModuleSyntax": true,
 
+    "preserveConstEnums": true,
+
     //endregion
 
     //region JavaScript Support
@@ -65,10 +69,13 @@
 
     //region Interop Constraints
 
-    "esModuleInterop": true,
+    // Moving to using only ES Modules.
+    "esModuleInterop": false,
 
     // error TS5104: Option 'isolatedModules' is redundant and cannot be specified with option 'verbatimModuleSyntax'.
     // "isolatedModules": true,
+
+    "preserveSymlinks": true,
 
     //endregion
 
@@ -77,6 +84,8 @@
     "emitDecoratorMetadata": true,
 
     "experimentalDecorators": true,
+
+    "lib": ["ESNext"],
 
     "target": "esnext",
 
@@ -118,6 +127,8 @@
     //endregion
 
     //region Watch Options
+
+    "assumeChangesOnlyAffectDirectDependencies": true
 
     //endregion
 

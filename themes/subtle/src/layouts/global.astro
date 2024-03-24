@@ -3,9 +3,9 @@ import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Main from '../components/Main.astro';
 import Footer from '../components/Footer.astro';
-
+import consts from '../../consts';
 const { title, description } = Astro.props.frontmatter;
-const lang = Astro.currentLocale;
+const lang = Astro.currentLocale || consts.langs.defaultLang;
 ---
 
 <html lang={lang}>

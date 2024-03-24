@@ -2,7 +2,7 @@
 // Import the global.css file here so that it is included on
 // all pages through the use of the <BaseHead /> component.
 import '../styles/index.css';
-import {TITLE, DESCRIPTION, COLOR} from '../../../../bak/scripts/consts';
+import consts from '../../consts';
 
 interface Props {
 	title: string;
@@ -14,16 +14,15 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 const { title, description, keywords } = Astro.props;
 
-const fullTitle = title === TITLE ? title : `${title} | ${TITLE}`;
+const fullTitle = title === consts.title ? title : `${title} | ${consts.title}`;
 const keywordsStr = keywords?.join();
-const descriptionFallback = description || DESCRIPTION;
-console.log(consts);
+const descriptionFallback = description || consts.description;
 ---
 
 <!-- Global Metadata -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}/favicon.svg`} />
 <meta name="generator" content={Astro.generator} />
 
 <!-- Canonical URL -->
@@ -34,10 +33,8 @@ console.log(consts);
 <meta name="title" content={title} />
 <meta name="description" content={descriptionFallback} />
 
-<meta name="theme-color" content={COLOR} />
+<meta name="theme-color" content={consts.theming.color} />
 
 {keywords && <meta name="keywords" content={keywordsStr} />}
 
 <script src="../scripts/index.ts"></script>
-../../../../bak/consts
-../../../../bak/scripts/consts

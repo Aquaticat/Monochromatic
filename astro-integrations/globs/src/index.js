@@ -1,10 +1,15 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import isLang from '@monochromatic.dev/module-is-lang';
 
-export default (langPaths = ['', 'zh'], name = 'post', recursive = false) => ({
+export default (name = 'post', recursive = false) => ({
   name: 'globs',
   hooks: {
     'astro:config:setup': () => {
+      const langPaths = fs
+        .readdirSync(path.join(path.resolve(), 'src', 'pages'))
+        .filter((file) => isLang(file))
+        .concat(['']);
       fs.writeFileSync(
         path.join(path.resolve(), 'src', 'components', '_globs.astro'),
         `

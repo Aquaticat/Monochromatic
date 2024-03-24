@@ -1,0 +1,29 @@
+{
+  "name": "@monochromatic.dev/module-equals",
+  "type": "module",
+  "module": "src/index.ts",
+  "main": "src/index.ts",
+  "typings": "dist/index.d.ts",
+  "files": ["src/", "dist/"],
+  "bin": "src/bin.ts",
+  "scripts": {
+    "build": "api-extractor run --local --verbose"
+  },
+  "devDependencies": {
+    "typescript": ">=5.0.4",
+    "@types/node": ">=20.11.30",
+    "@monochromatic.dev/tsconfig": "workspace:*"
+  },
+  "dependencies": {
+    "zod": "*",
+    "verticalize": "*",
+    "effect": "*",
+    "@monochromatic.dev/module-console": "*"
+  },
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "modules/equals"
+  }
+}

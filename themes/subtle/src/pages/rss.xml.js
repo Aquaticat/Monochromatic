@@ -1,11 +1,12 @@
 import rss from '@astrojs/rss';
-import { TITLE, DESCRIPTION } from '../../../../bak/scripts/consts';
+import consts from '../../consts';
+import c from '@monochromatic.dev/module-console';
 
 export async function GET(context) {
   const posts = Object.values(import.meta.glob(['./post/**/*.mdx', './*/post/**/*.mdx'], { eager: true }));
   return rss({
-    title: TITLE,
-    description: DESCRIPTION,
+    title: consts.title,
+    description: consts.description,
     site: context.site,
     items: posts.map((post) => ({
       link: post.url,

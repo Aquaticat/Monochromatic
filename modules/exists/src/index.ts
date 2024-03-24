@@ -1,5 +1,7 @@
-const exists = async (url: string) =>
-  fetch(url)
-    .then((response) => response.ok)
-    .catch(() => false);
-export default exists;
+export default async (url: string) => {
+  try {
+    return await fetch(url).then((response) => response.ok);
+  } catch {
+    return false;
+  }
+};

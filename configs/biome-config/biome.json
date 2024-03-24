@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.5.3/schema.json",
   "files": {
-    "ignore": ["node_modules/**/*.*", "build/**/*.*", "dist/**/*.*", ".dist/**/*.*", "bak/**/*.*"]
+    "ignore": ["node_modules/**/*.*", "build/**/*.*", "dist/**/*.*", ".dist/**/*.*", "bak/**/*.*", ".astro/**/*.*"]
   },
   "vcs": {
     "enabled": true,
@@ -20,12 +20,14 @@
         "noForEach": "off"
       },
       "correctness": {
-        "noSetterReturn": "off"
+        "noSetterReturn": "off",
+        "noUnusedImports": "off"
       },
       "performance": {
         "noAccumulatingSpread": "off"
       },
       "style": {
+        "noArguments": "off",
         "noNonNullAssertion": "off",
         "useShorthandArrayType": "error",
         "useShorthandAssign": "error",
@@ -33,13 +35,17 @@
       },
       "suspicious": {
         "noAssignInExpressions": "off",
-        "noExtraNonNullAssertion": "off"
+        "noExtraNonNullAssertion": "off",
+        "noExplicitAny": "off"
       }
     }
   },
   "formatter": {
     "indentStyle": "space",
     "lineWidth": 120
+  },
+  "organizeImports": {
+    "enabled": false
   },
   "javascript": {
     "parser": {
