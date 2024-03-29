@@ -15,7 +15,11 @@
     "npm-lifecycles/*",
     "vite-plugins/*",
     "schemas/*",
-    "temp/*"
+    "temp/*",
+    "modified/*"
   ],
-  "trustedDependencies": ["@biomejs/biome"]
+  "trustedDependencies": ["@biomejs/biome"],
+  "monochromatic": {
+    "cpfd": ["@monochromatic.dev/config-api-extractor"]
+  }
 }

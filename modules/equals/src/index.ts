@@ -1,8 +1,7 @@
-import { deepStrictEqual } from 'node:assert/strict';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { z } from 'zod';
-import { pipe } from 'effect';
+import { piped, equals } from 'rambdax';
 import c from '@monochromatic.dev/module-console';
 
 const MapOfNameAndContentFromDirPathObject = z
@@ -13,10 +12,10 @@ const MapOfNameAndContentFromDirPathObject = z
     ext: z.string(),
     name: z.string(),
   })
-  .transform((val) => pipe(val, path.format, path.normalize))
+  .transform((val) => piped(val, path.format, path.normalize))
   .refine((val) => fs.existsSync(val) && fs.lstatSync(val).isDirectory())
   .transform((val) =>
-    pipe(
+    piped(
       val,
       (normalizedPath) =>
         fs
@@ -38,7 +37,7 @@ const ContentFromFilePathObject = z
     ext: z.string(),
     name: z.string(),
   })
-  .transform((val) => pipe(val, path.format, path.normalize))
+  .transform((val) => piped(val, path.format, path.normalize))
   .refine((val) => fs.existsSync(val) && fs.lstatSync(val).isFile())
   .transform((val) => fs.readFileSync(val, { encoding: 'utf8' }));
 
@@ -50,41 +49,17 @@ export default (...args) => {
   try {
     const contents = args.map((arg) => ContentFromFilePathObject.parse(arg));
     c.info(contents);
-    return contents.every((content) => {
-      try {
-        deepStrictEqual(content, contents[0]);
-        return true;
-      } catch (notEqualError) {
-        c.warn(notEqualError);
-        return false;
-      }
-    });
+    return contents.every((content) => equals(content, contents[0]));
   } catch (notFilePathObjectError) {
     c.info(notFilePathObjectError);
     try {
       const maps = args.map((arg) => MapOfNameAndContentFromDirPathObject.parse(arg));
       c.info(maps);
-      return maps.every((map) => {
-        try {
-          deepStrictEqual(map, maps[0]);
-          return true;
-        } catch (notEqualError) {
-          c.warn(notEqualError);
-          return false;
-        }
-      });
+      return maps.every((map) => equals(map, maps[0]));
     } catch (notDirPathObjectError) {
       c.info(notDirPathObjectError);
       c.info(...args);
-      return args.every((arg) => {
-        try {
-          deepStrictEqual(arg, args[0]);
-          return true;
-        } catch (notEqualError) {
-          c.warn(notEqualError);
-          return false;
-        }
-      });
+      return args.every((arg) => equals(arg, args[0]));
     }
   }
 };

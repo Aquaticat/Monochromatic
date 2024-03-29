@@ -1,19 +1,12 @@
 {
-  "name": "@monochromatic.dev/browserslist-config",
+  "name": "@monochromatic.dev/config-browserslist",
   "version": "0.0.5",
   "description": "Monochromatic's browserslist config",
-  "main": "index.js",
-  "module": "index.js",
-  "type": "commonjs",
-  "files": [
-    "index.js",
-    ".browserslistrc"
-  ],
-  "keywords": [
-    "config",
-    "monochromatic",
-    "browserslist"
-  ],
+  "main": "example..browserslistrc",
+  "module": "example..browserslistrc",
+  "type": "module",
+  "files": ["example..browserslistrc"],
+  "keywords": ["config", "monochromatic", "browserslist"],
   "author": {
     "name": "Aquaticat",
     "email": "an@aquati.cat",
@@ -23,9 +16,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "config.monochromatic.dev/browserslist-config"
+    "directory": "configs/browserslist"
   },
-  "devDependencies": {
+  "peerDependencies": {
     "browserslist": "*"
   }
 }

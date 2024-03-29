@@ -43,8 +43,71 @@ export default defineConfig({
     },
 
     {
+      name: 'chromium HiDPI',
+      use: { ...devices['Desktop Chrome HiDPI'] },
+    },
+
+    {
+      name: 'firefox HiDPI',
+      use: { ...devices['Desktop Firefox HiDPI'] },
+    },
+
+    {
       name: 'Mobile Chrome',
-      use: { ...devices['Pixel 6'] },
+      use: { ...devices['Pixel 7'] },
+    },
+
+    {
+      name: 'Mobile Chrome Landscape',
+      use: { ...devices['Pixel 7'] },
+    },
+
+    {
+      name: 'Submobile Chrome HiDPI',
+      use: { ...devices['Galaxy S9+'] },
+    },
+    {
+      name: 'Submobile Chrome HiDPI Landscape',
+      use: { ...devices['Galaxy S9+ landscape'] },
+    },
+
+    {
+      name: 'Tablet Chrome',
+      use: { ...devices['Galaxy Tab S4'] },
+    },
+
+    {
+      name: 'Tablet Chrome Landscape',
+      use: { ...devices['Galaxy Tab S4 landscape'] },
+    },
+
+    {
+      name: 'Mobile Firefox',
+      use: { ...devices['Pixel 7'], defaultBrowserType: 'firefox' },
+    },
+
+    {
+      name: 'Mobile Firefox Landscape',
+      use: { ...devices['Pixel 7'], defaultBrowserType: 'firefox' },
+    },
+
+    {
+      name: 'Submobile Firefox HiDPI',
+      use: { ...devices['Galaxy S9+'], defaultBrowserType: 'firefox' },
+    },
+    {
+      name: 'Submobile Firefox HiDPI Landscape',
+      use: { ...devices['Galaxy S9+ landscape'], defaultBrowserType: 'firefox' },
+    },
+
+    {
+      name: 'Tablet Firefox',
+      use: { ...devices['Galaxy Tab S4'], defaultBrowserType: 'firefox' },
+    },
+
+    {
+      name: 'Tablet Firefox Landscape',
+      use: { ...devices['Galaxy Tab S4 landscape'], defaultBrowserType: 'firefox' },
     },
   ],
 

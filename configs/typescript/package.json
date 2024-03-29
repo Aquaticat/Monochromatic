@@ -1,13 +1,14 @@
 {
-  "name": "@monochromatic.dev/tsconfig",
+  "name": "@monochromatic.dev/config-typescript",
   "version": "0.0.5",
   "description": "Monochromatic's tsconfig.json",
   "main": "tsconfig.json",
-  "files": ["tsconfig.json"],
+  "module": "tsconfig.json",
+  "type": "module",
+  "files": ["tsconfig.json", "example.tsconfig.json"],
   "keywords": [
     "config",
     "monochromatic",
-    "tsconfig",
     "typescript"
   ],
   "author": {
@@ -19,6 +20,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "config/tsconfig"
+    "directory": "config/typescript"
   }
 }

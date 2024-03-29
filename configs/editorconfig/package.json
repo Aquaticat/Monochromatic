@@ -1,14 +1,12 @@
 {
-  "name": "@monochromatic.dev/editorconfig",
+  "name": "@monochromatic.dev/config-editorconfig",
   "version": "0.0.5",
   "description": "Monochromatic's .editorconfig",
-  "main": ".editorconfig",
-  "files": [".editorconfig"],
-  "keywords": [
-    "config",
-    "monochromatic",
-    "editorconfig"
-  ],
+  "main": "example..editorconfig",
+  "module": "example..editorconfig",
+  "type": "module",
+  "files": ["example..editorconfig"],
+  "keywords": ["config", "monochromatic", "editorconfig"],
   "author": {
     "name": "Aquaticat",
     "email": "an@aquati.cat",

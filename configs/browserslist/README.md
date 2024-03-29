@@ -2,17 +2,6 @@
 
 For use in both frontend web projects and small utilities for Node.js.
 
-No `example..browserslistrc` needed.
-Just add
-
-```json
-"browserslist": [
-  "extends @monochromatic.dev/browserslist-config"
-]
-```
-
-in `package.json`.
-
 ## Update
 
 Entry in package.json not working for some reason.

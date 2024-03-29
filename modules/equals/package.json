@@ -16,8 +16,7 @@
   },
   "dependencies": {
     "zod": "*",
-    "verticalize": "*",
-    "effect": "*",
+    "rambdax": "*",
     "@monochromatic.dev/module-console": "*"
   },
   "version": "0.1.0",

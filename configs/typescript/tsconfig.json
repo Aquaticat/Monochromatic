@@ -20,8 +20,6 @@
 
     //region Modules
 
-    "allowArbitraryExtensions": true,
-
     "module": "NodeNext",
 
     // We're using bun, and we want to take advantage of its ability to directly import toml files as JS objects.
@@ -29,8 +27,6 @@
     "moduleResolution": "NodeNext",
 
     "resolveJsonModule": true,
-
-    "allowImportingTsExtensions": true,
 
     //endregion
 

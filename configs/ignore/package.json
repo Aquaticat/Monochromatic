@@ -1,15 +1,12 @@
 {
-  "name": "@monochromatic.dev/ignore",
+  "name": "@monochromatic.dev/config-ignore",
   "version": "0.0.5",
   "description": "Monochromatic's .ignore files",
   "main": ".gitignore",
+  "module": ".gitignore",
+  "type": "module",
   "files": [".gitignore", ".npmignore"],
-  "keywords": [
-    "config",
-    "monochromatic",
-    "gitignore",
-    "ignore"
-  ],
+  "keywords": ["config", "monochromatic", "gitignore", "ignore"],
   "author": {
     "name": "Aquaticat",
     "email": "an@aquati.cat",
