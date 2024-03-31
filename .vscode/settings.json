@@ -1,0 +1,43 @@
+{
+  "dprint.experimentalLsp": true,
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[astro]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  },
+  "[mdx]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  },
+  "[toml]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  },
+  "[js]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[ts]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[mjs]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[mts]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[cjs]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[cts]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  }
+}

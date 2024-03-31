@@ -10,6 +10,8 @@
     "EditorConfig.EditorConfig",
     "tamasfe.even-better-toml",
     "unifiedjs.vscode-mdx",
-    "ms-playwright.playwright"
+    "ms-playwright.playwright",
+    "redhat.vscode-yaml",
+    "dprint.dprint"
   ]
 }

@@ -1,0 +1,16 @@
+{
+  "name": "@monochromatic.dev/style-monochromatic",
+  "files": ["src/"],
+  "scripts": {},
+  "devDependencies": {
+    "dprint": ">=0.45",
+    "@monochromatic.dev/config-dprint": "*"
+  },
+  "dependencies": {},
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/style/monochromatic"
+  }
+}

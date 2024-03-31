@@ -1,0 +1,55 @@
+{
+  "excludes": [
+    "**/node_modules/**/*.*",
+    "**/build/**/*.*",
+    "**/dist/**/*.*",
+    "**/.dist/**/*.*",
+    "**/bak/**/*.*",
+    "**/.astro/**/*.*",
+    "**/*.js",
+    "**/*.ts",
+    "**/*.mjs",
+    "**/*.cjs",
+    "**/*.mts",
+    "**/*.cts",
+    "**/*.json"
+  ],
+  "lineWidth": 120,
+  "useTabs": false,
+  "indentWidth": 2,
+  "newLineKind": "lf",
+  "plugins": [
+    "https://plugins.dprint.dev/toml-0.6.1.wasm",
+    "https://plugins.dprint.dev/g-plane/markup_fmt-v0.6.0.wasm",
+    "https://plugins.dprint.dev/g-plane/malva-v0.2.0.wasm",
+    "https://plugins.dprint.dev/typescript-0.89.3.wasm"
+  ],
+  "toml": {
+    "comment.forceLeadingSpace": false
+  },
+  "malva": {
+    "printWidth": 120,
+    "quotes": "preferSingle",
+    "operatorLinebreak": "before",
+    "blockSelectorLinebreak": "always",
+    "trailingComma": true,
+    "linebreakInPseudoParens": true,
+    "declarationOrder": "smacss"
+  },
+  "markup": {
+    "printWidth": 120,
+    "quotes": "single",
+    "closingBracketSameLine": true,
+    "closingTagLineBreakForEmpty": "always",
+    "maxAttrsPerLine": 1,
+    "astroAttrShorthand": true,
+    "associations": ["**/*.mdx", "**/*.astro", "**/*.html"]
+  },
+  "typescript": {
+    "semiColons": "always",
+    "quoteStyle": "preferSingle",
+    "useBraces": "maintain",
+    "trailingCommas": "always",
+    "commentLine.forceSpaceAfterSlashes": "false"
+  }
+}

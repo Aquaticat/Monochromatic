@@ -194,7 +194,13 @@ Stolen from https://stackoverflow.com/a/26304106
 
 ### esbuild
 
-`esbuild src/bin.ts src/index.ts --bundle --platform=node --charset=utf8 --format=esm --packages=external --preserve-symlinks --target=node20 --drop:debugger --drop-labels=DEV,D --define:process.env.NODE_ENV=\\\"production\\\" --minify-whitespace --minify-syntax --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --log-limit=0 --sourcemap`
+For `eventualConsumer`s:
+
+`esbuild src/bin.ts --bundle --platform=node --charset=utf8 --format=esm --preserve-symlinks --target=node20 --drop:debugger --drop-labels=DEV,D --define:process.env.NODE_ENV=\\\"production\\\" --minify-whitespace --minify-syntax --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --log-limit=0 --sourcemap=external`
+
+Otherwise:
+
+`esbuild src/index.ts --bundle --platform=node --charset=utf8 --format=esm --packages=external --target=node20 --drop:debugger --drop-labels=DEV,D --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --preserve-symlinks --log-limit=0 --sourcemap`
 
 ### Generate a random string
 

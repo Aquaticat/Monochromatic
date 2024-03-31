@@ -1,0 +1,47 @@
+{
+  "name": "@monochromatic.dev/subtle",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "pnpm exec astro build && pnpm exec astro dev",
+    "start": "pnpm exec astro dev",
+    "check": "pnpm exec astro check",
+    "build": "pnpm exec astro build",
+    "preview": "pnpm exec astro preview",
+    "astro": "pnpm exec astro"
+  },
+  "dependencies": {
+    "@astrojs/mdx": ">=2.1.1",
+    "@astrojs/sitemap": ">=3.1.1",
+    "astro": ">=4.4.13",
+    "@astrojs/check": ">=0.5.6",
+    "typescript": ">=5.4.2",
+    "@monochromatic.dev/lightningcss-plugin-apply": "workspace:*",
+    "@monochromatic.dev/lightningcss-plugin-custom-units": "workspace:*",
+    "@monochromatic.dev/lightningcss-plugin-property-lookup": "workspace:*",
+    "@monochromatic.dev/lightningcss-plugin-size": "workspace:*",
+    "@monochromatic.dev/remark-plugin-modified-time": "workspace:*",
+    "@monochromatic.dev/snippet-expand-all-details": "workspace:*",
+    "@monochromatic.dev/snippet-prefers": "workspace:*",
+    "@monochromatic.dev/module-is-lang": "workspace:*",
+    "@monochromatic.dev/module-exists": "workspace:*",
+    "@monochromatic.dev/module-console": "workspace:*",
+    "@monochromatic.dev/module-trim-end-with": "workspace:*",
+    "@monochromatic.dev/module-trim-start-with": "workspace:*",
+    "@monochromatic.dev/module-supports": "workspace:*",
+    "@monochromatic.dev/style-monochromatic": "workspace:*",
+    "@monochromatic.dev/astro-integration-globs": "workspace:*",
+    "@monochromatic.dev/astro-integration-gen-consts": "workspace:*",
+    "zod": "*",
+    "smol-toml": "*",
+    "lightningcss": "*",
+    "browserslist": "*",
+    "esbuild-plugin-browserslist": "*",
+    "the-new-css-reset": "*"
+  },
+  "overrides": {
+    "esbuild": "*"
+  },
+  "broken": true,
+  "private": true
+}
