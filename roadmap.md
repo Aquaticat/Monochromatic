@@ -3,7 +3,7 @@
 I planned to get the project in a reasonable state at the end of March.
 However, that deadline won't be met.
 
-## Potentially replace Bun with pnpm
+## DONE: Replaced! Potentially replace Bun with pnpm
 
 Bun is written in Zig and pnpm is written in TypeScript.
 Using Bun to execute TypeScript directly is nice, but unnecessary.
@@ -12,18 +12,18 @@ which invalidates the point of using an all-in-one package manager and runtime.
 
 Also, see `## Bun` section in `readme.md` (will be migrated to another file).
 
-## Replace [Effect](https://effect.website) with rambdax
+## DONE: Replace [Effect](https://effect.website) with rambdax
 
 Effect is just too large, also,
 I still don't understand why I'd use its way to write code even after reading all its docs.
 
-## Remove obsolete `vite-plugins`
+## DONE: Remove obsolete `vite-plugins`
 
 I wrote the Vite plugin that allows vite to import TOML files,
 but then I thought maybe just using the TOML library itself
 and read the file at runtime makes the code less likely to break should I have to migrate it to use a different bundler.
 
-## Put `consts.js` in a better place and give it types.
+## DONE: Put `consts.js` in a better place and give it types.
 
 It's no good to put files that are not relevant to the user (in this case, the eventual author of the contents of the blog) in front of the user's face.
 
@@ -41,7 +41,7 @@ Add new npm scripts to the target package every time a new package is created.
 
 ## Dim side"bar" (.Aside) when hovering over main
 
-## Astro/CSS formatter
+## DONE: Astro/CSS formatter
 
 [dprint markup_fmt (Astro)](https://github.com/g-plane/markup_fmt)
 
@@ -49,12 +49,13 @@ Add new npm scripts to the target package every time a new package is created.
 
 ## Rewrite Astro RSS endpoint
 
-## Write why we're not including any style or script tags in .astro files
+## feat(docs): Write why we're not including any style or script tags in .astro files
 
 ## Write `monochromatic` cli
 
 ### `monochromatic new <monorepo-name>`
 
+```plantuml
 @startuml
 start
 
@@ -68,23 +69,24 @@ else (doesn't exist on filesystem)
   stop
 endif
 
-@enduml;
+@enduml
+```
 
 ### `monochromatic new <package-category>/<package-name>`
 
+```plantuml
 @startuml
 start
 
-if (<package-category>?) then (exists on filesystem)
+if (packages/<package-category>?) then (exists on filesystem)
   :DO NOTHING ;
 else (doesn't exist on filesystem)
-  :create folder <package-category> on filesystem;
-  :add `- <package-category>/*` to `pnpm-workspace.yaml`;
+  :create folder packages/<package-category> on filesystem;
 endif
 
-:cd <package-category>;
+:cd packages/<package-category>;
 
-if (<package-category>/<package-name>) then (exists on filesystem)
+if (<package-name>) then (exists on filesystem)
   :throw;
   stop
 else (doesn't exist on filesystem)
@@ -94,12 +96,11 @@ else (doesn't exist on filesystem)
 endif
 
 @enduml
+```
 
 ## PlantUML integration
 
-### Devbox
-
-### Dev Containers
+### DONE: Dev Containers
 
 ## Optimize SVG
 
@@ -113,3 +114,32 @@ Notice the redundant height/width attribute on root and all the fill attributes 
 The explicit specification of font-size and so is also bad for accessibility.
 
 ### Write custom Astro Image Local Service
+
+## Switch to Astro Content Collections
+
+Here are some of the reasons.
+I forgot the others.
+
+### Take advantage of Astro incremental build
+
+## Add a way for authors to specify license.
+
+## Find a way to format mdx
+
+## Use pagefind or other tools to pre-generate search results pages.
+
+## TODO: Comment system
+
+### TODO: webmention
+
+### TODO: gisgus
+
+### MAYBE: allow defining 3rd party comment system
+
+## TODO: Migrate from execa to native node child_process exec
+
+## MAYBE: Support lang subtypes.
+
+Currently, the .-MatchLang Astro component doesn't support lang subtypes, which makes it impossible to make a site available in both zh-CN and zh-SC variants.
+
+## TODO: Use multiple, localized 404 pages. #priority:normal

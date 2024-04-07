@@ -1,15 +1,12 @@
 ---
+import consts from '../temp/consts';
+import { langsPosts, } from './_globs.astro';
 import Post from './Post.astro';
-import {langsPosts} from './_globs.astro';
-import consts from '../../consts';
 const lang = Astro.currentLocale!;
-const posts = Astro.props.posts || langsPosts.get(lang === consts.langs.defaultLang ? '' : lang);
+const posts = Astro.props.posts || langsPosts.get(lang === consts.langs.defaultLang ? '' : lang,);
 ---
 
-<ul class="Posts">
-  {
-    posts.map((post) => (
-      <Post post={post}></Post>
-    ))
-  }
+<ul class='Posts'>
+  {posts.map((post,) => <Post {post}></Post>)}
 </ul>
+../temp/consts

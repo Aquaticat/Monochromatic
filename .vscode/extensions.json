@@ -12,6 +12,8 @@
     "unifiedjs.vscode-mdx",
     "ms-playwright.playwright",
     "redhat.vscode-yaml",
-    "dprint.dprint"
+    "dprint.dprint",
+    "ms-vscode-remote.remote-containers",
+    "gruntfuggly.todo-tree"
   ]
 }

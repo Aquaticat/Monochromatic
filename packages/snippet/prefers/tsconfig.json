@@ -1,5 +1,5 @@
 {
-  "extends": "@monochromatic.dev/config-typescript",
+  "extends": "@monochromatic.dev/config-typescript/dom",
 
   "include": ["src"],
 

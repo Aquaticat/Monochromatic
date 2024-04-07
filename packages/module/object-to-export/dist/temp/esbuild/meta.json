@@ -1,0 +1,47 @@
+{
+  "inputs": {
+    "src/index.ts": {
+      "bytes": 1403,
+      "imports": [
+        {
+          "path": "@monochromatic.dev/module-type-of",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "dist/final/index.js.map": {
+      "imports": [],
+      "exports": [],
+      "inputs": {},
+      "bytes": 2746
+    },
+    "dist/final/index.js": {
+      "imports": [
+        {
+          "path": "@monochromatic.dev/module-type-of",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "exports": [
+        "default"
+      ],
+      "entryPoint": "src/index.ts",
+      "inputs": {
+        "src/index.ts": {
+          "bytesInOutput": 1344
+        }
+      },
+      "bytes": 1558
+    }
+  }
+}

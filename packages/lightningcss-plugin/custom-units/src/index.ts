@@ -1,3 +1,5 @@
+import type { Visitor, CustomAtRules } from 'lightningcss';
+
 export default {
   Token: {
     dimension(token) {
@@ -33,6 +35,7 @@ export default {
           },
         };
       }
+      return undefined;
     },
   },
-};
+} satisfies Visitor<CustomAtRules>;

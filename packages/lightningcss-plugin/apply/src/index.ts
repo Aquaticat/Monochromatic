@@ -1,10 +1,11 @@
-const defined = new Map();
+import type { Visitor, CustomAtRules, Declaration, DeclarationBlock } from 'lightningcss';
+const defined: Map<string, DeclarationBlock<Declaration> & Required<DeclarationBlock<Declaration>>> = new Map();
 
 export default {
   Rule: {
     style(rule) {
       for (const selector of rule.value.selectors) {
-        if (selector.length === 1 && selector[0].type === 'type' && selector[0].name.startsWith('--')) {
+        if (selector.length === 1 && selector[0]!.type === 'type' && selector[0].name.startsWith('--')) {
           defined.set(selector[0].name, rule.value.declarations);
           return { type: 'ignored', value: null };
         }
@@ -14,7 +15,7 @@ export default {
         if (child.type === 'unknown' && child.value.name === 'apply') {
           for (const token of child.value.prelude) {
             if (token.type === 'dashed-ident' && defined.has(token.value)) {
-              const r = defined.get(token.value);
+              const r = defined.get(token.value)!;
               const decls = rule.value.declarations;
               decls.declarations.push(...r.declarations);
               decls.importantDeclarations.push(...r.importantDeclarations);
@@ -28,4 +29,4 @@ export default {
       return rule;
     },
   },
-};
+} satisfies Visitor<CustomAtRules>;

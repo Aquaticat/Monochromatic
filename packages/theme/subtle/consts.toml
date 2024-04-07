@@ -3,6 +3,7 @@ description = "Personal Blog Theme for Astro"
 author = "Aquaticat"
 site = 'https://monochromatic.dev'
 base = 'subtle'
+license = 'CC-BY-SA-4.0'
 
 [theming]
 color = '#966783'
@@ -31,14 +32,5 @@ shiki.dark = 'github-dark'
 zh = ['zh', 'zh-CN', 'zh-TW']
 
 [strings]
-en.404 = '''You've landed on an unknown page.'''
-zh.404 = '未知领域'
-
-en.tempUnavailable = 'Sorry, this page is not available in your language yet. Please check back later'
-zh.tempUnavailable = '抱歉，此页暂时无所选语言的版本，请稍后再看。'
-
-en.unsupported = 'Sorry, this site is not available in your language.'
-zh.unsupported = '抱歉，此网站不支持所选语言。'
-
 en.searchPlaceholder = 'Search tags, topics, or snippets with DuckDuckGo'
 zh.searchPlaceholder = '搜索关键词，话题，或文段（DuckDuckGo）'

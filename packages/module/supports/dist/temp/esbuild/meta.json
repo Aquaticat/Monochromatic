@@ -1,0 +1,44 @@
+{
+  "inputs": {
+    "src/index.ts": {
+      "bytes": 2052,
+      "imports": [
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "dist/final/index.js.map": {
+      "imports": [],
+      "exports": [],
+      "inputs": {},
+      "bytes": 2691
+    },
+    "dist/final/index.js": {
+      "imports": [],
+      "exports": [
+        "autoFocus",
+        "containerQuery",
+        "contentVisibility",
+        "default",
+        "has",
+        "logicalOverflow",
+        "logicalViewport",
+        "popover",
+        "textSizeAdjust"
+      ],
+      "entryPoint": "src/index.ts",
+      "inputs": {
+        "src/index.ts": {
+          "bytesInOutput": 964
+        }
+      },
+      "bytes": 1307
+    }
+  }
+}

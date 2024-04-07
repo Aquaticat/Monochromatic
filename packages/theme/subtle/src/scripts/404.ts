@@ -90,12 +90,12 @@ endif
  */
 
 import isLang from '@monochromatic.dev/module-is-lang';
-import consts from '../../consts';
+import consts from '../temp/consts';
 import exists from '@monochromatic.dev/module-exists';
 import trimEndWith from '@monochromatic.dev/module-trim-end-with';
 import trimStartWith from '@monochromatic.dev/module-trim-start-with';
-import filterPromise from '@monochromatic.dev/module-filter-promise';
 import i18nStr from './i18nStr';
+import { filterAsync } from 'rambdax';
 
 /*
 const potentialCode = location.pathname.split('/')[1]!;
@@ -159,66 +159,68 @@ if (document.head.querySelector('meta[name="title"]')!.getAttribute('content') =
 // Ensure this script is loaded after q.ts
 
 // Find first path segment after base
-const pathSegmentAfterBase = trimStartWith(
+export const pathSegmentAfterBase = trimStartWith(
   trimStartWith(trimStartWith(location.pathname, '/'), consts.base),
   '/',
 ) as string;
 
-const firstPathSegmentAfterBase = pathSegmentAfterBase
+export const firstPathSegmentAfterBase = pathSegmentAfterBase
   ? pathSegmentAfterBase.includes('/')
     ? pathSegmentAfterBase.split('/')[0]!
     : pathSegmentAfterBase
   : '';
 
-const isFirstPathSegmentAfterBaseLang = isLang(firstPathSegmentAfterBase) as boolean;
+export const isFirstPathSegmentAfterBaseLang = isLang(firstPathSegmentAfterBase) as boolean;
 
-const pathSegmentAfterBaseWithoutLang = isFirstPathSegmentAfterBaseLang
+export const pathSegmentAfterBaseWithoutLang = isFirstPathSegmentAfterBaseLang
   ? (trimStartWith(trimStartWith(pathSegmentAfterBase, firstPathSegmentAfterBase), '/') as string)
   : (trimStartWith(pathSegmentAfterBase, '/') as string);
 
-const originWithBase = `${location.origin}/${consts.base}`;
+export const originWithBase = `${location.origin}/${consts.base}`;
 
-const originWithBaseWithLang = isFirstPathSegmentAfterBaseLang
+export const originWithBaseWithLang = isFirstPathSegmentAfterBaseLang
   ? `${originWithBase}/${firstPathSegmentAfterBase}`
   : originWithBase;
 
-const is404 = document.head.querySelector('meta[name="title"]')!.getAttribute('content') === '404';
+export const is404 = document.head.querySelector('meta[name="title"]')!.getAttribute('content') === '404';
 
-const urlsOfActualSupportedLangsForPage = (await filterPromise(
+export const urlsOfActualSupportedLangsForPage = (await filterAsync(
+  exists,
   consts.langs.paths.map((langPath) =>
     langPath === ''
       ? `${originWithBase}/${pathSegmentAfterBaseWithoutLang}`
       : `${originWithBase}/${langPath}/${pathSegmentAfterBaseWithoutLang}`,
   ),
-  exists,
 )) as string[];
 
-const actualSupportedLangsForPage: string[] = urlsOfActualSupportedLangsForPage.map((url) => {
+export const actualSupportedLangsForPage: string[] = urlsOfActualSupportedLangsForPage.map((url) => {
   const path = trimEndWith(trimEndWith(trimStartWith(url, `${originWithBase}/`), pathSegmentAfterBaseWithoutLang), '/');
   return path === '' ? consts.langs.defaultLang : path;
 });
 
-const requestedLangs = isFirstPathSegmentAfterBaseLang ? [firstPathSegmentAfterBase] : navigator.languages;
+export const requestedLangs = isFirstPathSegmentAfterBaseLang ? [firstPathSegmentAfterBase] : navigator.languages;
 
-const isSupportedLangsOverlappingWithRequestedLangs: boolean = consts.langs.langs.some((lang) =>
+export const isSupportedLangsOverlappingWithRequestedLangs: boolean = consts.langs.langs.some((lang) =>
   requestedLangs.includes(lang),
 );
 
-const isActualSupportedLangsForPageOverlappingWithRequestedLangs: boolean = actualSupportedLangsForPage.some((lang) =>
-  requestedLangs.includes(lang),
+export const isActualSupportedLangsForPageOverlappingWithRequestedLangs: boolean = actualSupportedLangsForPage.some(
+  (lang) => requestedLangs.includes(lang),
 );
 
-if (isFirstPathSegmentAfterBaseLang) {
-  if (is404) {
-    if (urlsOfActualSupportedLangsForPage.length === 0) {
-    } else {
-      document.querySelectorAll(`[data-id='tempUnavailable']`).forEach((elm) => {
-        elm.removeAttribute('hidden');
-      });
-      document.querySelectorAll(`[data-id='404']`).forEach((elm) => {
-        elm.setAttribute('hidden', 'true');
-      });
+export default function onDomContentLoaded() {
+  if (isFirstPathSegmentAfterBaseLang) {
+    if (is404) {
+      if (urlsOfActualSupportedLangsForPage.length === 0) {
+      } else {
+        document.querySelectorAll(`[data-id='tempUnavailable']`).forEach((elm) => {
+          elm.removeAttribute('hidden');
+        });
+        document.querySelectorAll(`[data-id='404']`).forEach((elm) => {
+          elm.setAttribute('hidden', 'true');
+        });
+      }
     }
+  } else {
   }
-} else {
 }

@@ -13,9 +13,6 @@
   "[html]": {
     "editor.defaultFormatter": "dprint.dprint"
   },
-  "[mdx]": {
-    "editor.defaultFormatter": "dprint.dprint"
-  },
   "[toml]": {
     "editor.defaultFormatter": "dprint.dprint"
   },
@@ -39,5 +36,30 @@
   },
   "[json]": {
     "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "todo-tree.general.enableFileWatcher": true,
+  "todo-tree.general.revealBehaviour": "end of todo",
+  "todo-tree.general.tags": [
+    "BUG",
+    "HACK",
+    "FIXME",
+    "TODO",
+    "XXX",
+    "[ ]",
+    "[x]",
+    "DONE",
+    "FIXED",
+    "MAYBE",
+    "INVALID",
+    "WONTFIX",
+    "UPDATE"
+  ],
+  "todo-tree.filtering.ignoreGitSubmodules": true,
+  "todo-tree.regex.enableMultiLine": true,
+  "todo-tree.highlights.defaultHighlight": {
+    "textDecoration": "underline"
   }
 }

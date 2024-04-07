@@ -1,7 +1,0 @@
-{
-  "packages": ["nodejs-slim@20", "plantuml", "graphviz"],
-  "env": { "DEVBOX_COREPACK_ENABLED": "true" },
-  "shell": {
-    "init_hook": ["pnpm install"]
-  }
-}

@@ -2,9 +2,7 @@
   "name": "monochromatic",
   "private": true,
   "trustedDependencies": ["@biomejs/biome"],
-  "scripts": {
-    "preinstall": "npx only-allow pnpm"
-  },
+  "scripts": {},
   "engines": {
     "node": ">=20.12",
     "pnpm": ">=8.15"
@@ -13,6 +11,7 @@
     "dprint": ">=0.45",
     "@biomejs/biome": ">=1.6",
     "@monochromatic.dev/config-dprint": "*",
-    "@monochromatic.dev/config-biome": "*"
+    "@monochromatic.dev/config-biome": "*",
+    "typescript": ">=5.4"
   }
 }

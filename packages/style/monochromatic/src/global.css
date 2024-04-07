@@ -1,8 +1,7 @@
 :root {
-  color-scheme: light dark;
   print-color-adjust: economy;
+  color-scheme: light dark;
   scroll-behavior: smooth;
-
   --bg-plus: var(--lighter);
   --bg: var(--light);
   --bg-: var(--light-darker);
@@ -21,14 +20,13 @@
     --bg-: var(--dark-lighter);
     --bg-lighter: var(--dark-lighter);
     --bg-darker: var(--darker);
-    --fg-plus:  var(--lighter);
+    --fg-plus: var(--lighter);
     --fg: var(--light);
     --primary-plus: var(--primary-lighter);
     --primary-: var(--primary-darker);
     --subtle-plus: var(--subtle-lighter);
     --subtle-: var(--subtle-darker);
   }
-
   --p: calc(1 / 16);
   --rp: calc(1rem / 16);
   --ep: calc(1em / 16);
@@ -39,7 +37,6 @@
     --xp: calc(1ex / 16);
     --cp: calc(1ch / 16);
   }
-
   --length-xxs: 16--rp;
   --length-xs: 24--rp;
   --length-s: 32--rp;
@@ -47,7 +44,6 @@
   --length-l: 64--rp;
   --length-xl: 96--rp;
   --length-xxl: 128--rp;
-
   --gap-xxs: 2--rp;
   --gap-xs: 4--rp;
   --gap-s: 8--rp;
@@ -55,11 +51,9 @@
   --gap-l: 24--rp;
   --gap-xl: 32--rp;
   --gap-xxl: 48--rp;
-
   --max-text: 768--ep;
   --comfort-text: 512--ep;
   --min-text: 256--ep;
-
   --max-ui: 1024--rp;
 
   @media (prefers-reduced-motion) {
@@ -72,23 +66,25 @@
 }
 
 :focus-visible {
-  background-image: linear-gradient(var(--bg) 0 100%), repeating-linear-gradient(45deg, transparent 0 var(--gap-xs), var(--subtle-) var(--gap-xs) 2--gap-xs);
-  background-size: calc(100% - 2--gap-xxs) calc(100% - 2--gap-xxs), cover;
+  background-image:
+    linear-gradient(var(--bg) 0 100%),
+    repeating-linear-gradient(45deg, transparent 0 var(--gap-xs), var(--subtle-) var(--gap-xs) 2--gap-xs);
   background-position: center, center;
+  background-size: calc(100% - 2--gap-xxs) calc(100% - 2--gap-xxs), cover;
   background-repeat: no-repeat;
 }
 
 :is(*, *::before, *::after) {
   box-sizing: border-box;
-  accent-color: var(--primary);
-  box-decoration-break: clone;
-  caret-color: var(--primary);
   contain: layout paint;
-  hanging-punctuation: first allow-end last;
-  hyphens: auto;
+  box-decoration-break: clone;
   orphans: 2;
-  word-break: auto-phrase;
+  hanging-punctuation: first allow-end last;
+  accent-color: var(--primary);
+  caret-color: var(--primary);
+  hyphens: auto;
   text-decoration-skip-ink: all;
+  word-break: auto-phrase;
 }
 
 :is(body, html) {
@@ -111,11 +107,11 @@ html {
 }
 
 body {
+  background-color: var(--bg);
+  color: var(--fg);
   font-family: var(--sans);
   font-variant-numeric: slashed-zero tabular-nums;
   text-rendering: optimizeLegibility;
-  background-color: var(--bg);
-  color: var(--fg);
 }
 
 :is(summary, button, a):not(p a) {
@@ -132,11 +128,10 @@ a:not(:has(h2)) {
     color: var(--primary-);
   }
   &:hover {
-    color: var(--primary-plus);
     background-image: radial-gradient(var(--bg-plus), transparent);
+    color: var(--primary-plus);
   }
 }
-
 
 p {
   @apply --p;
@@ -146,31 +141,25 @@ p {
   color: var(--subtle-plus);
 }
 
-
 h1 {
   @apply --h1;
 }
-
 
 h2:not(.a h2) {
   @apply --h2;
 }
 
-
 h3 {
   @apply --h3;
 }
-
 
 h4 {
   @apply --h4;
 }
 
-
 h5 {
   @apply --h5;
 }
-
 
 h6 {
   @apply --h6;
@@ -194,6 +183,6 @@ img {
 }
 
 /* Pure wrappers */
-:is([class^="-"], [class*=" -"]) {
+:is([class^='-'], [class*=' -']) {
   display: contents;
 }

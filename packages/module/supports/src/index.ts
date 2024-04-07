@@ -16,7 +16,7 @@ export const has = () => CSS.supports('selector(body:has(p))');
 export const logicalViewport = () => CSS.supports('inline-size', '1dvi');
 
 // Firefox ESR doesn't
-// TODOne?: Just try not to use container queries. Many things I thought can only be implemented with container queries turned out can be elegantly implemented without them.
+// MAYBE: Just try not to use container queries. Many things I thought can only be implemented with container queries turned out can be elegantly implemented without them.
 export const containerQuery = () => CSS.supports('inline-size', '1cqi');
 
 // Firefox ESR doesn't
@@ -24,7 +24,7 @@ export const containerQuery = () => CSS.supports('inline-size', '1cqi');
 export const contentVisibility = () => CSS.supports('content-visibility', 'auto');
 
 // Chrome doesn't
-// TODOne: added overflow-block supports check inside CSS and given the overflow-y fallback
+// DONE: added overflow-block supports check inside CSS and given the overflow-y fallback
 export const logicalOverflow = () => CSS.supports('overflow-block', 'auto');
 
 // Firefox ESR doesn't

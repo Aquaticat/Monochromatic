@@ -1,22 +1,36 @@
-const prefers: ReadonlyMap<string, ReadonlySet<string>> = new Map(
-  // @ts-ignore unresolvable "may have fewer than 2"
+import { piped } from 'rambdax';
+
+export const prefers: ReadonlyMap<string, ReadonlySet<string>> = piped(
   [
-    ['contrast', 'reduced-motion', 'reduced-data', 'reduced-transparency'].map((val) =>
-      Object.freeze([val, Object.freeze(new Set(['toggle', 'true', 'false']))]),
+    piped(['contrast', 'reduced-motion', 'reduced-data', 'reduced-transparency'], (val) =>
+      val.map((directive): [string, ReadonlySet<string>] => [
+        directive,
+        piped(['toggle', 'true', 'false'], (val) => new Set(val)),
+      ]),
     ),
-    ['color-scheme'].map((val) => Object.freeze([val, Object.freeze(new Set(['toggle', 'light', 'dark']))])),
-  ].flat(),
-) as ReadonlyMap<string, ReadonlySet<string>>;
+    piped(['color-scheme'], (val) =>
+      val.map((directive): [string, ReadonlySet<string>] => [
+        directive,
+        piped(['toggle', 'light', 'dark'], (val) => new Set(val)),
+      ]),
+    ),
+  ],
+  (val) => val.flat(),
+  (val) => new Map(val),
+);
 
-prefers.forEach((possibleVals, prefer) => {
-  const preferVal = new URLSearchParams(location.search).get(prefer);
+export default function onDomContentLoaded() {
+  prefers.forEach((possibleVals, prefer) => {
+    const preferVal = new URLSearchParams(location.search).get(prefer);
 
-  if (preferVal) {
-    if (possibleVals.has(preferVal)) {
-      document.documentElement.setAttribute(`data-${prefer}`, preferVal);
-    } else {
-      throw TypeError(`query param ${prefer}'s value must be one of ${JSON.stringify(possibleVals)}, got ${preferVal}`);
+    if (preferVal) {
+      if (possibleVals.has(preferVal)) {
+        document.documentElement.setAttribute(`data-${prefer}`, preferVal);
+      } else {
+        throw TypeError(
+          `query param ${prefer}'s value must be one of ${JSON.stringify(possibleVals)}, got ${preferVal}`,
+        );
+      }
     }
-  }
-});
-
+  });
+}

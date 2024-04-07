@@ -1,0 +1,18 @@
+{
+  "extends": "astro/tsconfigs/strictest",
+  "exclude": ["**/node_modules", "**/dist"],
+  "compilerOptions": {
+    "strictNullChecks": true,
+    "allowJs": true,
+    "checkJs": true,
+    "noImplicitAny": false,
+    "jsx": "preserve",
+    "jsxImportSource": "astro",
+    "skipLibCheck": true,
+
+    "paths": {
+      "@components/*": ["./src/components/*"],
+      "@layouts/*": ["./src/layouts/*"]
+    }
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "name": "@monochromatic.dev/subtle",
+  "name": "@monochromatic.dev/theme-subtle",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -10,38 +10,45 @@
     "preview": "pnpm exec astro preview",
     "astro": "pnpm exec astro"
   },
+  "files": ["dist/temp", "src", "consts.toml", "tsconfig.json", "astro.config.mjs", "public"],
   "dependencies": {
     "@astrojs/mdx": ">=2.1.1",
     "@astrojs/sitemap": ">=3.1.1",
     "astro": ">=4.4.13",
     "@astrojs/check": ">=0.5.6",
     "typescript": ">=5.4.2",
-    "@monochromatic.dev/lightningcss-plugin-apply": "workspace:*",
-    "@monochromatic.dev/lightningcss-plugin-custom-units": "workspace:*",
-    "@monochromatic.dev/lightningcss-plugin-property-lookup": "workspace:*",
-    "@monochromatic.dev/lightningcss-plugin-size": "workspace:*",
-    "@monochromatic.dev/remark-plugin-modified-time": "workspace:*",
-    "@monochromatic.dev/snippet-expand-all-details": "workspace:*",
-    "@monochromatic.dev/snippet-prefers": "workspace:*",
-    "@monochromatic.dev/module-is-lang": "workspace:*",
-    "@monochromatic.dev/module-exists": "workspace:*",
-    "@monochromatic.dev/module-console": "workspace:*",
-    "@monochromatic.dev/module-trim-end-with": "workspace:*",
-    "@monochromatic.dev/module-trim-start-with": "workspace:*",
-    "@monochromatic.dev/module-supports": "workspace:*",
-    "@monochromatic.dev/style-monochromatic": "workspace:*",
-    "@monochromatic.dev/astro-integration-globs": "workspace:*",
-    "@monochromatic.dev/astro-integration-gen-consts": "workspace:*",
+    "@monochromatic.dev/lightningcss-plugin-apply": "*",
+    "@monochromatic.dev/lightningcss-plugin-custom-units": "*",
+    "@monochromatic.dev/lightningcss-plugin-property-lookup": "*",
+    "@monochromatic.dev/lightningcss-plugin-size": "*",
+    "@monochromatic.dev/remark-plugin-modified-time": "*",
+    "@monochromatic.dev/snippet-expand-all-details": "*",
+    "@monochromatic.dev/snippet-prefers": "*",
+    "@monochromatic.dev/snippet-q-duckduckgo": "*",
+    "@monochromatic.dev/snippet-data-id": "*",
+    "@monochromatic.dev/module-is-lang": "*",
+    "@monochromatic.dev/module-exists": "*",
+    "@monochromatic.dev/module-console": "*",
+    "@monochromatic.dev/module-trim-end-with": "*",
+    "@monochromatic.dev/module-trim-start-with": "*",
+    "@monochromatic.dev/module-supports": "*",
+    "@monochromatic.dev/style-monochromatic": "*",
+    "@monochromatic.dev/astro-integration-globs": "*",
+    "@monochromatic.dev/astro-integration-gen-consts": "*",
     "zod": "*",
     "smol-toml": "*",
     "lightningcss": "*",
     "browserslist": "*",
     "esbuild-plugin-browserslist": "*",
-    "the-new-css-reset": "*"
-  },
-  "overrides": {
-    "esbuild": "*"
+    "the-new-css-reset": "*",
+    "@monochromatic.dev/astro-component--match-lang": "*",
+    "@monochromatic.dev/astro-component-s": "*",
+    "rambdax": "*"
   },
   "broken": true,
-  "private": true
+  "private": true,
+  "exports": {
+    "./components": "./src/components/index.ts",
+    "./layouts": "./src/layouts/index.ts"
+  }
 }

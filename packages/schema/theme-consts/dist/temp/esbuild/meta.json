@@ -1,0 +1,73 @@
+{
+  "inputs": {
+    "src/index.ts": {
+      "bytes": 3083,
+      "imports": [
+        {
+          "path": "zod",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-is-lang",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "spdx-license-list",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "dist/final/index.js.map": {
+      "imports": [],
+      "exports": [],
+      "inputs": {},
+      "bytes": 5472
+    },
+    "dist/final/index.js": {
+      "imports": [
+        {
+          "path": "zod",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-is-lang",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "spdx-license-list",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "exports": [
+        "default",
+        "typescriptType"
+      ],
+      "entryPoint": "src/index.ts",
+      "inputs": {
+        "src/index.ts": {
+          "bytesInOutput": 2655
+        }
+      },
+      "bytes": 2760
+    }
+  }
+}

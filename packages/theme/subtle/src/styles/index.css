@@ -1,4 +1,5 @@
 @import '@monochromatic.dev/style-monochromatic/src/index.css';
+@import '@monochromatic.dev/astro-component--match-lang/src/index.css';
 @import 'consts/colors.css';
 @import 'consts/fonts.css';
 @import 'consts/typography.css';

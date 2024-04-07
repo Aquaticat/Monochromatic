@@ -1,0 +1,44 @@
+{
+  "admin": {
+    "disabled": true,
+    "config": {
+      "persist": false
+    }
+  },
+  "storage": {
+    "module": "file_system",
+    "root": "./temp"
+  },
+  "apps": {
+    "http": {
+      "servers": {
+        "example": {
+          "listen": [":5173"],
+          "routes": [
+            {
+              "match": [
+                {
+                  "client_ip": {
+                    "ranges": ["127.0.0.0/8", "192.168.0.0/16", "172.16.0.0/12", "10.0.0.0/8", "::1/128", "fc00::/7"]
+                  }
+                }
+              ],
+              "handle": [
+                {
+                  "handler": "file_server",
+                  "root": "./temp",
+                  "browse": {},
+                  "canonical_uris": false
+                }
+              ]
+            }
+          ],
+          "automatic_https": {
+            "disable": true
+          },
+          "logs": {}
+        }
+      }
+    }
+  }
+}

@@ -43,7 +43,14 @@
     "closingTagLineBreakForEmpty": "always",
     "maxAttrsPerLine": 1,
     "astroAttrShorthand": true,
-    "associations": ["**/*.mdx", "**/*.astro", "**/*.html"]
+    "associations": [
+      /* mdx files get messed up.
+         Mainly, the frontmatter is flattened into a single line.
+         Disabled until author adds support for mdx. */
+      // "**/*.mdx",
+      "**/*.astro",
+      "**/*.html"
+    ]
   },
   "typescript": {
     "semiColons": "always",

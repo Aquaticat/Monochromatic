@@ -31,7 +31,8 @@
         "noNonNullAssertion": "off",
         "useShorthandArrayType": "error",
         "useShorthandAssign": "error",
-        "useSingleCaseStatement": "error"
+        "useSingleCaseStatement": "error",
+        "noUnusedTemplateLiteral": "off"
       },
       "suspicious": {
         "noAssignInExpressions": "off",

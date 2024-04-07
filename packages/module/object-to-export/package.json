@@ -24,6 +24,11 @@
   "dependencies": {
     "@monochromatic.dev/module-type-of": "workspace:*"
   },
+  "module": "dist/final/index.js",
+  "main": "dist/final/index.js",
+  "typings": "dist/final/index.d.ts",
+  "files": ["dist/final"],
+  "type": "module",
   "version": "0.1.0",
   "repository": {
     "type": "git",

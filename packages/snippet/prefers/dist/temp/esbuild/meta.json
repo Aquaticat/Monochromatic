@@ -1,0 +1,48 @@
+{
+  "inputs": {
+    "src/index.ts": {
+      "bytes": 1110,
+      "imports": [
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "dist/final/index.js.map": {
+      "imports": [],
+      "exports": [],
+      "inputs": {},
+      "bytes": 2108
+    },
+    "dist/final/index.js": {
+      "imports": [
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "exports": [
+        "default",
+        "prefers"
+      ],
+      "entryPoint": "src/index.ts",
+      "inputs": {
+        "src/index.ts": {
+          "bytesInOutput": 1040
+        }
+      },
+      "bytes": 1275
+    }
+  }
+}

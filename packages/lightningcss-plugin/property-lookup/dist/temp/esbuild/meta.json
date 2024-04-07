@@ -1,0 +1,30 @@
+{
+  "inputs": {
+    "src/index.ts": {
+      "bytes": 1225,
+      "imports": [],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "dist/final/index.js.map": {
+      "imports": [],
+      "exports": [],
+      "inputs": {},
+      "bytes": 2044
+    },
+    "dist/final/index.js": {
+      "imports": [],
+      "exports": [
+        "default"
+      ],
+      "entryPoint": "src/index.ts",
+      "inputs": {
+        "src/index.ts": {
+          "bytesInOutput": 998
+        }
+      },
+      "bytes": 1085
+    }
+  }
+}

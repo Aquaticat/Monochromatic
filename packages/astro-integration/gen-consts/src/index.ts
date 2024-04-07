@@ -1,10 +1,15 @@
 import { parse } from 'smol-toml';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import themeConstsSchema from '../../../schemas/theme-consts/src';
+import { readFileSync as fsReadFileSync, writeFileSync as fsWriteFileSync } from 'node:fs';
+import { join as pathJoin, resolve as pathResolve } from 'node:path';
 import objectToExport from '@monochromatic.dev/module-object-to-export';
+import themeConstsSchema, { typescriptType as themeConstsTypescriptType } from '@monochromatic.dev/schema-theme-consts';
 
-export default (file = 'consts.toml') => ({
+import type { AstroIntegration } from 'astro';
+
+const fs = { readFileSync: fsReadFileSync, writeFileSync: fsWriteFileSync };
+const path = { join: pathJoin, resolve: pathResolve };
+
+export default (file = 'consts.toml'): AstroIntegration => ({
   name: 'gen-consts',
   hooks: {
     'astro:config:setup': ({ updateConfig }) => {
@@ -13,13 +18,19 @@ export default (file = 'consts.toml') => ({
       );
       const exportedObj = objectToExport(consts);
       fs.writeFileSync(
-        path.join(path.resolve(), file.split('.').toSpliced(-1, 1, 'js').join('.')),
-        `export default ${exportedObj}`,
+        path.join(path.resolve(), 'src', 'temp', file.split('.').toSpliced(-1, 1, 'ts').join('.')),
+        `type constsType = ${themeConstsTypescriptType};
+
+const consts: constsType = ${exportedObj} as constsType;
+
+export default consts;`,
       );
 
       updateConfig({
         site: consts.site,
         base: `/${consts.base}`,
+        // @ts-expect-error Type 'string' is not assignable to type 'DeepPartial<URL>'.ts(2322) schema.d.ts(399, 5): The expected type comes from property 'outDir' which is declared here on type 'DeepPartial<AstroConfig>'
+        outDir: consts.base ? `./dist/temp/${consts.base}` : './dist/temp/',
         markdown: {
           shikiConfig: {
             themes: {

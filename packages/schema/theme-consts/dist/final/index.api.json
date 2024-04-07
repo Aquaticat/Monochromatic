@@ -1,0 +1,944 @@
+{
+  "metadata": {
+    "toolPackage": "@microsoft/api-extractor",
+    "toolVersion": "7.43.0",
+    "schemaVersion": 1011,
+    "oldestForwardsCompatibleVersion": 1001,
+    "tsdocConfig": {
+      "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+      "noStandardTags": true,
+      "tagDefinitions": [
+        {
+          "tagName": "@alpha",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@beta",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@defaultValue",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@decorator",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@deprecated",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@eventProperty",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@example",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@experimental",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@inheritDoc",
+          "syntaxKind": "inline"
+        },
+        {
+          "tagName": "@internal",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@label",
+          "syntaxKind": "inline"
+        },
+        {
+          "tagName": "@link",
+          "syntaxKind": "inline",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@override",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@packageDocumentation",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@param",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@privateRemarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@public",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@readonly",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@remarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@returns",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@sealed",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@see",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@throws",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@typeParam",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@virtual",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@betaDocumentation",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@internalRemarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@preapproved",
+          "syntaxKind": "modifier"
+        }
+      ],
+      "supportForTags": {
+        "@alpha": true,
+        "@beta": true,
+        "@defaultValue": true,
+        "@decorator": true,
+        "@deprecated": true,
+        "@eventProperty": true,
+        "@example": true,
+        "@experimental": true,
+        "@inheritDoc": true,
+        "@internal": true,
+        "@label": true,
+        "@link": true,
+        "@override": true,
+        "@packageDocumentation": true,
+        "@param": true,
+        "@privateRemarks": true,
+        "@public": true,
+        "@readonly": true,
+        "@remarks": true,
+        "@returns": true,
+        "@sealed": true,
+        "@see": true,
+        "@throws": true,
+        "@typeParam": true,
+        "@virtual": true,
+        "@betaDocumentation": true,
+        "@internalRemarks": true,
+        "@preapproved": true
+      },
+      "reportUnsupportedHtmlElements": false
+    }
+  },
+  "kind": "Package",
+  "canonicalReference": "@monochromatic.dev/schema-theme-consts!",
+  "docComment": "",
+  "name": "@monochromatic.dev/schema-theme-consts",
+  "preserveMemberOrder": false,
+  "members": [
+    {
+      "kind": "EntryPoint",
+      "canonicalReference": "@monochromatic.dev/schema-theme-consts!",
+      "name": "",
+      "preserveMemberOrder": false,
+      "members": [
+        {
+          "kind": "Variable",
+          "canonicalReference": "@monochromatic.dev/schema-theme-consts!_default:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "_default: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodObject",
+              "canonicalReference": "zod!ZodObject:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n    title: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    description: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    author: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    site: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    base: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", string, string>;\n    license: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", string, string>, {\n        name: string;\n        url: string;\n    }, string>>;\n    theming: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodObject",
+              "canonicalReference": "zod!ZodObject:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n        color: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", string, string>;\n        shiki: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodObject",
+              "canonicalReference": "zod!ZodObject:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n            light: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n            dark: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n        }, \"strip\", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodTypeAny",
+              "canonicalReference": "zod!ZodTypeAny:type"
+            },
+            {
+              "kind": "Content",
+              "text": ", {\n            light: string;\n            dark: string;\n        }, {\n            light: string;\n            dark: string;\n        }>>;\n    }, \"strip\", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodTypeAny",
+              "canonicalReference": "zod!ZodTypeAny:type"
+            },
+            {
+              "kind": "Content",
+              "text": ", {\n        color: string;\n        shiki: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n            light: string;\n            dark: string;\n        }>;\n    }, {\n        color: string;\n        shiki: {\n            light: string;\n            dark: string;\n        };\n    }>>;\n    socials: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodRecord",
+              "canonicalReference": "zod!ZodRecord:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>>;\n    links: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodRecord",
+              "canonicalReference": "zod!ZodRecord:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>>;\n    langs: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodRecord",
+              "canonicalReference": "zod!ZodRecord:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodArray",
+              "canonicalReference": "zod!ZodArray:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", string, string>, \"atleastone\">>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, readonly [string, ...string[]]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, [string, ...string[]]>>, {\n        defaultLang: string;\n        paths: readonly string[];\n        langs: readonly string[];\n        mappings: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<unknown>;\n    }, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, [string, ...string[]]>>>;\n    strings: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodRecord",
+              "canonicalReference": "zod!ZodRecord:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodRecord",
+              "canonicalReference": "zod!ZodRecord:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>>>;\n}, \"strip\", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodTypeAny",
+              "canonicalReference": "zod!ZodTypeAny:type"
+            },
+            {
+              "kind": "Content",
+              "text": ", {\n    title: string;\n    description: string;\n    author: string;\n    site: string;\n    base: string;\n    license: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    theming: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n        color: string;\n        shiki: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n            light: string;\n            dark: string;\n        }>;\n    }>;\n    socials: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ReadonlyMap",
+              "canonicalReference": "!ReadonlyMap:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>;\n    links: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ReadonlyMap",
+              "canonicalReference": "!ReadonlyMap:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>;\n    langs: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n        defaultLang: string;\n        paths: readonly string[];\n        langs: readonly string[];\n        mappings: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<unknown>;\n    }>;\n    strings: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ReadonlyMap",
+              "canonicalReference": "!ReadonlyMap:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>>;\n}, {\n    title: string;\n    description: string;\n    author: string;\n    site: string;\n    base: string;\n    license: string;\n    theming: {\n        color: string;\n        shiki: {\n            light: string;\n            dark: string;\n        };\n    };\n    socials: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>;\n    links: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>;\n    langs: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, [string, ...string[]]>;\n    strings: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>;\n}>>"
+            }
+          ],
+          "fileUrlPath": "src/index.ts",
+          "isReadonly": true,
+          "releaseTag": "Public",
+          "name": "_default",
+          "variableTypeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 161
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "@monochromatic.dev/schema-theme-consts!typescriptType:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "typescriptType = "
+            },
+            {
+              "kind": "Content",
+              "text": "\"{\\n  title: string;\\n  description: string;\\n  author: string;\\n  site: string;\\n  base: string;\\n  license: {\\n    name: string;\\n    url: string;\\n  };\\n  theming: { color: string; shiki: { light: string; dark: string } };\\n  socials: ReadonlyMap<string, string>;\\n  links: ReadonlyMap<string, string>;\\n  langs: {\\n    defaultLang: string;\\n    paths: readonly ['', ...string[]];\\n    langs: readonly string[];\\n    mappings: ReadonlyMap<string, string>;\\n  };\\n  strings: ReadonlyMap<string, ReadonlyMap<string, string>>;\\n}\""
+            }
+          ],
+          "fileUrlPath": "src/index.ts",
+          "initializerTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "isReadonly": true,
+          "releaseTag": "Public",
+          "name": "typescriptType",
+          "variableTypeTokenRange": {
+            "startIndex": 0,
+            "endIndex": 0
+          }
+        }
+      ]
+    }
+  ]
+}

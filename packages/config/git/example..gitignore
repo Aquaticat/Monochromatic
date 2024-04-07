@@ -2,6 +2,8 @@ node_modules
 .jj
 .dist/dev
 .dist/temp
+dist/dev
+dist/temp
 *.tsbuildinfo
 *.map
 .bin
@@ -9,6 +11,13 @@ test-results
 playwright-report
 blob-report
 .cache
+/temp
+src/temp
+.pnpm-store
+pnpm.sh
+packages/*/*/temp
+locks
+pnpm-lock.yaml
 
 #region Created by https://www.toptal.com/developers/gitignore/api/node,astro,macos,linux,windows,visualstudiocode,jetbrains
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,astro,macos,linux,windows,visualstudiocode,jetbrains
@@ -45,7 +54,8 @@ Icon
 
 
 # Thumbnails
-._*
+# USER: That's not just thumbnails! Commented.
+# ._*
 
 # Files that might appear in the root of a volume
 .DocumentRevisions-V100

@@ -21,6 +21,11 @@
     "@microsoft/api-extractor": "*",
     "chokidar-cli": "*"
   },
+  "type": "module",
+  "module": "dist/final/index.js",
+  "main": "dist/final/index.js",
+  "typings": "dist/final/index.d.ts",
+  "files": ["dist/final"],
   "dependencies": {},
   "version": "0.1.0",
   "repository": {

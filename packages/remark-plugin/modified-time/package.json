@@ -1,7 +1,10 @@
 {
   "name": "@monochromatic.dev/remark-plugin-modified-time",
   "type": "module",
-  "files": ["src"],
+  "module": "dist/final/index.js",
+  "main": "dist/final/index.js",
+  "typings": "dist/final/index.d.ts",
+  "files": ["dist/final"],
   "scripts": {
     "build:tsc": "tsc",
     "build:esbuild": "esbuild src/index.ts --bundle --platform=node --charset=utf8 --format=esm --packages=external --target=node20 --drop:debugger --drop-labels=DEV,D --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --preserve-symlinks --log-limit=0 --sourcemap",
@@ -21,7 +24,8 @@
     "@monochromatic.dev/config-api-extractor": "*",
     "esbuild": "*",
     "@microsoft/api-extractor": "*",
-    "chokidar-cli": "*"
+    "chokidar-cli": "*",
+    "@types/node": ">=20"
   },
   "module": "src/index.js",
   "main": "src/index.js",

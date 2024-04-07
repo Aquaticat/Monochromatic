@@ -1,0 +1,93 @@
+{
+  "name": "monochromatic",
+  "forwardPorts": ["5173"],
+  "image": "opensuse/tumbleweed",
+  "containerEnv": {
+    "SHELL": "/bin/bash"
+  },
+  "onCreateCommand": {
+    "node": "zypper in -y which awk && chmod +x .devcontainer/pnpm-install.sh && ./.devcontainer/pnpm-install.sh && ln -sf bash /bin/sh && chsh -s /bin/bash && source ~/.bashrc && pnpm --version && pnpm env use --global iron && node .devcontainer/on-create.mjs"
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "dprint.experimentalLsp": true,
+        "typescript.preferences.preferTypeOnlyAutoImports": true,
+        "[yaml]": {
+          "editor.defaultFormatter": "redhat.vscode-yaml"
+        },
+        "[astro]": {
+          "editor.defaultFormatter": "dprint.dprint"
+        },
+        "[css]": {
+          "editor.defaultFormatter": "dprint.dprint"
+        },
+        "[html]": {
+          "editor.defaultFormatter": "dprint.dprint"
+        },
+        "[toml]": {
+          "editor.defaultFormatter": "dprint.dprint"
+        },
+        "[js]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[ts]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[mjs]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[mts]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[cjs]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[cts]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[json]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[jsonc]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "todo-tree.general.enableFileWatcher": true,
+        "todo-tree.general.revealBehaviour": "end of todo",
+        "todo-tree.general.tags": [
+          "BUG",
+          "HACK",
+          "FIXME",
+          "TODO",
+          "XXX",
+          "[ ]",
+          "[x]",
+          "DONE",
+          "FIXED",
+          "MAYBE",
+          "INVALID",
+          "WONTFIX",
+          "UPDATE"
+        ],
+        "todo-tree.filtering.ignoreGitSubmodules": true,
+        "todo-tree.regex.enableMultiLine": true,
+        "todo-tree.highlights.defaultHighlight": {
+          "textDecoration": "underline"
+        }
+      },
+      "extensions": [
+        "astro-build.astro-vscode",
+        "biomejs.biome",
+        "oven.bun-vscode",
+        "EditorConfig.EditorConfig",
+        "tamasfe.even-better-toml",
+        "unifiedjs.vscode-mdx",
+        "ms-playwright.playwright",
+        "redhat.vscode-yaml",
+        "dprint.dprint",
+        "ms-vscode-remote.remote-containers",
+        "Gruntfuggly.todo-tree"
+      ]
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "@monochromatic.dev/config-caddy",
+  "keywords": ["caddy", "config", "monochromatic"],
+  "peerDependencies": { "@biomejs/biome": "*" },
+  "main": "index.jsonc",
+  "module": "index.jsonc",
+  "type": "module",
+  "files": ["index.jsonc"],
+  "devDependencies": {
+    "@monochromatic.dev/theme-subtle": "*"
+  },
+  "scripts": {
+    "build": "pnpm run build:cp && pnpm run build:caddy",
+    "// build:caddy": "migrate to a .js to provide this command",
+    "build:caddy": "xcaddy || go install xcaddy && mkdir temp || true && test -f ./temp/caddy || xcaddy build --with github.com/mholt/caddy-events-exec --with github.com/mholt/caddy-webdav --with github.com/mholt/caddy-l4 --with github.com/porech/caddy-maxmind-geolocation --with github.com/mholt/caddy-ratelimit --with github.com/caddyserver/cache-handler --with github.com/caddyserver/jsonc-adapter --with github.com/caddy-dns/porkbun --with github.com/caddy-dns/njalla && mv caddy temp/ && chmod +x temp/caddy && ./temp/caddy --version",
+    "build:cp": "cp -r node_modules/@monochromatic.dev/theme-subtle/dist/temp/* temp/"
+  },
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/config/caddy"
+  },
+  "private": true
+}

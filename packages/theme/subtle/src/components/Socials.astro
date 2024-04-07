@@ -1,16 +1,18 @@
 ---
-import consts from'../../consts';
+import consts from '../temp/consts';
 
-const socialsArr = Array.from(consts.socials) as string[];
+const socialsArr = Array.from(consts.socials) as [string, string][];
 ---
 
-<ul class="socials-list">
-  { socialsArr.map((social) => (
-    <li>
-      <a href={social[1]}>
-        <span>{social[0]}</span>
-      </a>
-    </li>
+<ul class='socials-list'>
+  {
+    socialsArr.map((social,) => (
+      <li>
+        <a href={social[1]}>
+          <span>{social[0]}</span>
+        </a>
+      </li>
     ))
   }
 </ul>
+../temp/consts

@@ -1,5 +1,10 @@
 {
   "name": "@monochromatic.dev/module-trim-end-with",
+  "type": "module",
+  "module": "dist/final/index.js",
+  "main": "dist/final/index.js",
+  "typings": "dist/final/index.d.ts",
+  "files": ["dist/final"],
   "scripts": {
     "build:tsc": "tsc",
     "build:esbuild": "esbuild src/index.ts --bundle --platform=node --charset=utf8 --format=esm --packages=external --target=node20 --drop:debugger --drop-labels=DEV,D --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --preserve-symlinks --log-limit=0 --sourcemap",

@@ -2,7 +2,9 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import isLang from '@monochromatic.dev/module-is-lang';
 
-export default (name = 'post', recursive = false) => ({
+import type { AstroIntegration } from 'astro';
+
+export default (name = 'post', recursive = false): AstroIntegration => ({
   name: 'globs',
   hooks: {
     'astro:config:setup': () => {

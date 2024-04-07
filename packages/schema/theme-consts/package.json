@@ -31,6 +31,8 @@
   "version": "0.0.5",
   "dependencies": {
     "zod": "*",
-    "@monochromatic.dev/module-is-lang": "workspace:*"
+    "rambdax": ">=11.0",
+    "@monochromatic.dev/module-is-lang": "workspace:*",
+    "spdx-license-list": ">=6.9"
   }
 }

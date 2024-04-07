@@ -27,6 +27,7 @@
     "@microsoft/api-extractor": "*",
     "chokidar-cli": "*"
   },
+  "dependencies": { "rambdax": ">=11.1" },
   "version": "0.1.0",
   "repository": {
     "type": "git",
