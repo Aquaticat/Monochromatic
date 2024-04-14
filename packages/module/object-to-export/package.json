@@ -13,13 +13,13 @@
     "watch": "pnpm run watch:api-extractor & pnpm run watch:tsc & pnpm run watch:esbuild"
   },
   "devDependencies": {
-    "@biomejs/biome": ">=1.6",
-    "typescript": ">=5.4",
-    "@monochromatic.dev/config-typescript": "*",
-    "@monochromatic.dev/config-api-extractor": "*",
-    "esbuild": "*",
+    "@biomejs/biome": "1.6.4",
     "@microsoft/api-extractor": "*",
-    "chokidar-cli": "*"
+    "@monochromatic.dev/config-api-extractor": "*",
+    "@monochromatic.dev/config-typescript": "*",
+    "chokidar-cli": "*",
+    "esbuild": "*",
+    "typescript": "5.4.4"
   },
   "dependencies": {
     "@monochromatic.dev/module-type-of": "workspace:*"
@@ -27,7 +27,9 @@
   "module": "dist/final/index.js",
   "main": "dist/final/index.js",
   "typings": "dist/final/index.d.ts",
-  "files": ["dist/final"],
+  "files": [
+    "dist/final"
+  ],
   "type": "module",
   "version": "0.1.0",
   "repository": {

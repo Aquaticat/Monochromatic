@@ -1,3 +1,16 @@
 {
-  "type": "module"
+  "name": "@monochromatic.dev/devcontainer",
+  "type": "module",
+  "version": "0.0.1",
+  "files": ["devcontainer.json", "src", "pnpm-install.sh"],
+  "dependencies": {
+    "zx": ">=8.0"
+  },
+  "devDependencies": {
+    "@types/node": ">=20.12",
+    "@monochromatic.dev/config-typescript": "*"
+  },
+  "broken": true,
+  "// private": "FIXME: not finished fixing yet",
+  "private": true
 }

@@ -10,10 +10,12 @@
     "jsxImportSource": "astro",
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "noUnusedLocals": false,
 
     "paths": {
       "@components/*": ["./src/components/*"],
-      "@layouts/*": ["./src/layouts/*"]
-    }
+      "@layouts/*": ["./src/layouts/*"],
+      "@root/*": ["./*"],
+    },
   }
 }

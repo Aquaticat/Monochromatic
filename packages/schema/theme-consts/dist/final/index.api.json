@@ -219,12 +219,48 @@
             },
             {
               "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodObject",
+              "canonicalReference": "zod!ZodObject:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n        name: "
+            },
+            {
+              "kind": "Reference",
               "text": "z.ZodString",
               "canonicalReference": "zod!ZodString:class"
             },
             {
               "kind": "Content",
-              "text": ";\n    site: "
+              "text": ";\n        url: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    }, \"strip\", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodTypeAny",
+              "canonicalReference": "zod!ZodTypeAny:type"
+            },
+            {
+              "kind": "Content",
+              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>;\n    site: "
             },
             {
               "kind": "Reference",
@@ -252,6 +288,15 @@
             {
               "kind": "Content",
               "text": ", string, string>;\n    license: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
             },
             {
               "kind": "Reference",
@@ -287,7 +332,52 @@
             },
             {
               "kind": "Content",
-              "text": ", string, string>, {\n        name: string;\n        url: string;\n    }, string>>;\n    theming: "
+              "text": ", string, string>, {\n        name: string;\n        url: string;\n    }, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodObject",
+              "canonicalReference": "zod!ZodObject:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n        name: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n        url: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    }, \"strip\", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodTypeAny",
+              "canonicalReference": "zod!ZodTypeAny:type"
+            },
+            {
+              "kind": "Content",
+              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>]>;\n    theming: "
             },
             {
               "kind": "Reference",
@@ -512,133 +602,7 @@
             },
             {
               "kind": "Content",
-              "text": "<string, string>>>;\n    langs: "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodReadonly",
-              "canonicalReference": "zod!ZodReadonly:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodEffects",
-              "canonicalReference": "zod!ZodEffects:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodEffects",
-              "canonicalReference": "zod!ZodEffects:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodRecord",
-              "canonicalReference": "zod!ZodRecord:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodEffects",
-              "canonicalReference": "zod!ZodEffects:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
-            },
-            {
-              "kind": "Content",
-              "text": ", string, string>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodReadonly",
-              "canonicalReference": "zod!ZodReadonly:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodArray",
-              "canonicalReference": "zod!ZodArray:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodEffects",
-              "canonicalReference": "zod!ZodEffects:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
-            },
-            {
-              "kind": "Content",
-              "text": ", string, string>, \"atleastone\">>>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "Record",
-              "canonicalReference": "!Record:type"
-            },
-            {
-              "kind": "Content",
-              "text": "<string, readonly [string, ...string[]]>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "Record",
-              "canonicalReference": "!Record:type"
-            },
-            {
-              "kind": "Content",
-              "text": "<string, [string, ...string[]]>>, {\n        defaultLang: string;\n        paths: readonly string[];\n        langs: readonly string[];\n        mappings: "
-            },
-            {
-              "kind": "Reference",
-              "text": "Readonly",
-              "canonicalReference": "!Readonly:type"
-            },
-            {
-              "kind": "Content",
-              "text": "<unknown>;\n    }, "
-            },
-            {
-              "kind": "Reference",
-              "text": "Record",
-              "canonicalReference": "!Record:type"
-            },
-            {
-              "kind": "Content",
-              "text": "<string, [string, ...string[]]>>>;\n    strings: "
+              "text": "<string, string>>>;\n    strings: "
             },
             {
               "kind": "Reference",
@@ -764,7 +728,7 @@
             },
             {
               "kind": "Content",
-              "text": ", {\n    title: string;\n    description: string;\n    author: string;\n    site: string;\n    base: string;\n    license: "
+              "text": ", {\n    title: string;\n    description: string;\n    author: "
             },
             {
               "kind": "Reference",
@@ -773,7 +737,43 @@
             },
             {
               "kind": "Content",
-              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    theming: "
+              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    site: string;\n    base: string;\n    license: ("
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n        name: string;\n        url: string;\n    }> | "
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n        name: string;\n        url: string;\n    }>) & ("
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n        name: string;\n        url: string;\n    }> | "
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n        name: string;\n        url: string;\n    }> | undefined);\n    theming: "
             },
             {
               "kind": "Reference",
@@ -809,25 +809,7 @@
             },
             {
               "kind": "Content",
-              "text": "<string, string>;\n    langs: "
-            },
-            {
-              "kind": "Reference",
-              "text": "Readonly",
-              "canonicalReference": "!Readonly:type"
-            },
-            {
-              "kind": "Content",
-              "text": "<{\n        defaultLang: string;\n        paths: readonly string[];\n        langs: readonly string[];\n        mappings: "
-            },
-            {
-              "kind": "Reference",
-              "text": "Readonly",
-              "canonicalReference": "!Readonly:type"
-            },
-            {
-              "kind": "Content",
-              "text": "<unknown>;\n    }>;\n    strings: "
+              "text": "<string, string>;\n    strings: "
             },
             {
               "kind": "Reference",
@@ -854,7 +836,7 @@
             },
             {
               "kind": "Content",
-              "text": "<string, string>>>;\n}, {\n    title: string;\n    description: string;\n    author: string;\n    site: string;\n    base: string;\n    license: string;\n    theming: {\n        color: string;\n        shiki: {\n            light: string;\n            dark: string;\n        };\n    };\n    socials: "
+              "text": "<string, string>>>;\n}, {\n    title: string;\n    description: string;\n    author: {\n        name: string;\n        url: string;\n    };\n    site: string;\n    base: string;\n    license: (string | {\n        name: string;\n        url: string;\n    }) & (string | {\n        name: string;\n        url: string;\n    } | undefined);\n    theming: {\n        color: string;\n        shiki: {\n            light: string;\n            dark: string;\n        };\n    };\n    socials: "
             },
             {
               "kind": "Reference",
@@ -872,16 +854,7 @@
             },
             {
               "kind": "Content",
-              "text": "<string, string>;\n    langs: "
-            },
-            {
-              "kind": "Reference",
-              "text": "Record",
-              "canonicalReference": "!Record:type"
-            },
-            {
-              "kind": "Content",
-              "text": "<string, [string, ...string[]]>;\n    strings: "
+              "text": "<string, string>;\n    strings: "
             },
             {
               "kind": "Reference",
@@ -908,7 +881,7 @@
           "name": "_default",
           "variableTypeTokenRange": {
             "startIndex": 1,
-            "endIndex": 161
+            "endIndex": 155
           }
         },
         {
@@ -922,7 +895,7 @@
             },
             {
               "kind": "Content",
-              "text": "\"{\\n  title: string;\\n  description: string;\\n  author: string;\\n  site: string;\\n  base: string;\\n  license: {\\n    name: string;\\n    url: string;\\n  };\\n  theming: { color: string; shiki: { light: string; dark: string } };\\n  socials: ReadonlyMap<string, string>;\\n  links: ReadonlyMap<string, string>;\\n  langs: {\\n    defaultLang: string;\\n    paths: readonly ['', ...string[]];\\n    langs: readonly string[];\\n    mappings: ReadonlyMap<string, string>;\\n  };\\n  strings: ReadonlyMap<string, ReadonlyMap<string, string>>;\\n}\""
+              "text": "\"{\\n  title: string;\\n  description: string;\\n  author: {\\n    name: string;\\n    url: string;\\n  };\\n  site: string;\\n  base: string;\\n  license: {\\n    name: string;\\n    url: string;\\n  };\\n  theming: { color: string; shiki: { light: string; dark: string } };\\n  socials: ReadonlyMap<string, string>;\\n  links: ReadonlyMap<string, string>;\\n  strings: ReadonlyMap<string, ReadonlyMap<string, string>>;\\n}\""
             }
           ],
           "fileUrlPath": "src/index.ts",

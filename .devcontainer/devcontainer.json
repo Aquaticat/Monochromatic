@@ -3,10 +3,10 @@
   "forwardPorts": ["5173"],
   "image": "opensuse/tumbleweed",
   "containerEnv": {
-    "SHELL": "/bin/bash"
+    "SHELL": "/bin/bash",
   },
   "onCreateCommand": {
-    "node": "zypper in -y which awk && chmod +x .devcontainer/pnpm-install.sh && ./.devcontainer/pnpm-install.sh && ln -sf bash /bin/sh && chsh -s /bin/bash && source ~/.bashrc && pnpm --version && pnpm env use --global iron && node .devcontainer/on-create.mjs"
+    "node": "zypper in -y which awk && chmod +x .devcontainer/pnpm-install.sh && ./.devcontainer/pnpm-install.sh && ln -sf bash /bin/sh && chsh -s /bin/bash && source ~/.bashrc && pnpm env use --global iron && pnpm i -g zx && zx .devcontainer/src/on-create.mts",
   },
   "customizations": {
     "vscode": {
@@ -14,43 +14,43 @@
         "dprint.experimentalLsp": true,
         "typescript.preferences.preferTypeOnlyAutoImports": true,
         "[yaml]": {
-          "editor.defaultFormatter": "redhat.vscode-yaml"
+          "editor.defaultFormatter": "redhat.vscode-yaml",
         },
         "[astro]": {
-          "editor.defaultFormatter": "dprint.dprint"
+          "editor.defaultFormatter": "dprint.dprint",
         },
         "[css]": {
-          "editor.defaultFormatter": "dprint.dprint"
+          "editor.defaultFormatter": "dprint.dprint",
         },
         "[html]": {
-          "editor.defaultFormatter": "dprint.dprint"
+          "editor.defaultFormatter": "dprint.dprint",
         },
         "[toml]": {
-          "editor.defaultFormatter": "dprint.dprint"
+          "editor.defaultFormatter": "dprint.dprint",
         },
         "[js]": {
-          "editor.defaultFormatter": "biomejs.biome"
+          "editor.defaultFormatter": "biomejs.biome",
         },
         "[ts]": {
-          "editor.defaultFormatter": "biomejs.biome"
+          "editor.defaultFormatter": "biomejs.biome",
         },
         "[mjs]": {
-          "editor.defaultFormatter": "biomejs.biome"
+          "editor.defaultFormatter": "biomejs.biome",
         },
         "[mts]": {
-          "editor.defaultFormatter": "biomejs.biome"
+          "editor.defaultFormatter": "biomejs.biome",
         },
         "[cjs]": {
-          "editor.defaultFormatter": "biomejs.biome"
+          "editor.defaultFormatter": "biomejs.biome",
         },
         "[cts]": {
-          "editor.defaultFormatter": "biomejs.biome"
+          "editor.defaultFormatter": "biomejs.biome",
         },
         "[json]": {
-          "editor.defaultFormatter": "biomejs.biome"
+          "editor.defaultFormatter": "biomejs.biome",
         },
         "[jsonc]": {
-          "editor.defaultFormatter": "biomejs.biome"
+          "editor.defaultFormatter": "biomejs.biome",
         },
         "todo-tree.general.enableFileWatcher": true,
         "todo-tree.general.revealBehaviour": "end of todo",
@@ -67,13 +67,14 @@
           "MAYBE",
           "INVALID",
           "WONTFIX",
-          "UPDATE"
+          "UPDATE",
+          "DOING",
         ],
         "todo-tree.filtering.ignoreGitSubmodules": true,
         "todo-tree.regex.enableMultiLine": true,
         "todo-tree.highlights.defaultHighlight": {
-          "textDecoration": "underline"
-        }
+          "textDecoration": "underline",
+        },
       },
       "extensions": [
         "astro-build.astro-vscode",
@@ -86,8 +87,8 @@
         "redhat.vscode-yaml",
         "dprint.dprint",
         "ms-vscode-remote.remote-containers",
-        "Gruntfuggly.todo-tree"
-      ]
-    }
-  }
+        "Gruntfuggly.todo-tree",
+      ],
+    },
+  },
 }

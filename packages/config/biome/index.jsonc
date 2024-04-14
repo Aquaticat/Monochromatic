@@ -1,0 +1,114 @@
+{
+  // VSCode cannot resolve schemas in node_modules with package import syntax yet.
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+
+  "files": {
+    "ignore": [
+      "**/node_modules/**/*.*",
+      "**/build/**/*.*",
+      "**/dist/**/*.*",
+      "**/.dist/**/*.*",
+      "**/bak/**/*.*",
+      "**/.astro/**/*.*",
+    ],
+    "include": ["**/*.js", "**/*.ts", "**/*.mjs", "**/*.mts", "**/*.cjs", "**/*.cts", "**/*.json", "**/*.jsonc"],
+  },
+
+  "vcs": {
+    "enabled": true,
+    "useIgnoreFile": true,
+    "clientKind": "git",
+  },
+
+  "linter": {
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        // Sometimes we need them.
+        "noAccessKey": "off",
+        "noAutofocus": "off",
+        "noSvgWithoutTitle": "off",
+      },
+      "complexity": {
+        // I like writing for each.
+        "noForEach": "off",
+      },
+      "correctness": {
+        // So we can do method chaining.
+        "noSetterReturn": "off",
+
+        // It will be used.
+        "noUnusedImports": "off",
+      },
+      "performance": {
+        // Syntax suger > performance.
+        "noAccumulatingSpread": "off",
+      },
+      "style": {
+        // Sometimes we need them.
+        "noArguments": "off",
+        "noNonNullAssertion": "off",
+
+        // Why not?
+        "useShorthandArrayType": "error",
+        "useShorthandAssign": "error",
+        "useSingleCaseStatement": "error",
+
+        // If you know the string may have quotes in them in the future.
+        "noUnusedTemplateLiteral": "off",
+      },
+      "suspicious": {
+        // Sometimes we need them.
+        "noAssignInExpressions": "off",
+        "noExtraNonNullAssertion": "off",
+        "noExplicitAny": "off",
+      },
+    },
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 120,
+    "attributePosition": "multiline",
+  },
+  "organizeImports": {
+    // Sometimes we need the imports to be of certain order.
+    "enabled": false,
+  },
+  "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true,
+    },
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "single",
+      "trailingComma": "all",
+      "bracketSameLine": true,
+    },
+    "globals": ["Astro"],
+  },
+
+  "overrides": [
+    {
+      "include": [
+        ".vscode/**",
+        "**/api-extractor.json",
+        "**/*.tsconfig.json",
+        "**/tsconfig.*.json",
+        "**/tsconfig.json",
+        "**/devcontainer.json",
+        "**/*.jsonc",
+        "**/dprint.json",
+        "**/dprint/index.json",
+      ],
+      "json": {
+        "parser": {
+          "allowComments": true,
+          "allowTrailingCommas": true,
+        },
+        "formatter": {
+          "trailingCommas": "all",
+        },
+      },
+    },
+  ],
+}

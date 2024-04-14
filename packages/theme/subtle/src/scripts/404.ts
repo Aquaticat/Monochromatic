@@ -95,7 +95,8 @@ import exists from '@monochromatic.dev/module-exists';
 import trimEndWith from '@monochromatic.dev/module-trim-end-with';
 import trimStartWith from '@monochromatic.dev/module-trim-start-with';
 import i18nStr from './i18nStr';
-import { filterAsync } from 'rambdax';
+import { filterAsync, piped } from 'rambdax';
+import c from '@monochromatic.dev/module-console';
 
 /*
 const potentialCode = location.pathname.split('/')[1]!;
@@ -158,11 +159,12 @@ if (document.head.querySelector('meta[name="title"]')!.getAttribute('content') =
 
 // Ensure this script is loaded after q.ts
 
-// Find first path segment after base
-export const pathSegmentAfterBase = trimStartWith(
-  trimStartWith(trimStartWith(location.pathname, '/'), consts.base),
-  '/',
-) as string;
+export const pathSegmentAfterBase = piped(
+  location.pathname,
+  (val) => trimStartWith(val, '/'),
+  (val) => trimStartWith(val, consts.base),
+  (val) => trimStartWith(val, '/'),
+);
 
 export const firstPathSegmentAfterBase = pathSegmentAfterBase
   ? pathSegmentAfterBase.includes('/')
@@ -170,11 +172,15 @@ export const firstPathSegmentAfterBase = pathSegmentAfterBase
     : pathSegmentAfterBase
   : '';
 
-export const isFirstPathSegmentAfterBaseLang = isLang(firstPathSegmentAfterBase) as boolean;
+export const isFirstPathSegmentAfterBaseLang = isLang(firstPathSegmentAfterBase);
 
 export const pathSegmentAfterBaseWithoutLang = isFirstPathSegmentAfterBaseLang
-  ? (trimStartWith(trimStartWith(pathSegmentAfterBase, firstPathSegmentAfterBase), '/') as string)
-  : (trimStartWith(pathSegmentAfterBase, '/') as string);
+  ? piped(
+      pathSegmentAfterBase,
+      (val) => trimStartWith(val, firstPathSegmentAfterBase),
+      (val) => trimStartWith(val, '/'),
+    )
+  : trimStartWith(pathSegmentAfterBase, '/');
 
 export const originWithBase = `${location.origin}/${consts.base}`;
 
@@ -184,17 +190,22 @@ export const originWithBaseWithLang = isFirstPathSegmentAfterBaseLang
 
 export const is404 = document.head.querySelector('meta[name="title"]')!.getAttribute('content') === '404';
 
-export const urlsOfActualSupportedLangsForPage = (await filterAsync(
+export const urlsOfActualSupportedLangsForPage = await filterAsync(
   exists,
   consts.langs.paths.map((langPath) =>
     langPath === ''
       ? `${originWithBase}/${pathSegmentAfterBaseWithoutLang}`
       : `${originWithBase}/${langPath}/${pathSegmentAfterBaseWithoutLang}`,
   ),
-)) as string[];
+);
 
 export const actualSupportedLangsForPage: string[] = urlsOfActualSupportedLangsForPage.map((url) => {
-  const path = trimEndWith(trimEndWith(trimStartWith(url, `${originWithBase}/`), pathSegmentAfterBaseWithoutLang), '/');
+  const path = piped(
+    url,
+    (val) => trimStartWith(val, `${originWithBase}/`),
+    (val) => trimEndWith(val, pathSegmentAfterBaseWithoutLang),
+    (val) => trimEndWith(val, '/'),
+  );
   return path === '' ? consts.langs.defaultLang : path;
 });
 
@@ -208,19 +219,62 @@ export const isActualSupportedLangsForPageOverlappingWithRequestedLangs: boolean
   (lang) => requestedLangs.includes(lang),
 );
 
+// Only matters if isActualSupportedLangsForPageOverlappingWithRequestedLangs
+export const firstActualSupportedRequestedLang = requestedLangs.find((lang) =>
+  actualSupportedLangsForPage.includes(lang),
+);
+
+export const allHomepages = consts.langs.paths.map((path) => (path ? `${originWithBase}/${path}` : originWithBase));
+
 export default function onDomContentLoaded() {
   if (isFirstPathSegmentAfterBaseLang) {
+    const requestedLang = firstPathSegmentAfterBase;
     if (is404) {
-      if (urlsOfActualSupportedLangsForPage.length === 0) {
+      if (actualSupportedLangsForPage.length === 0) {
+        if (consts.langs.langs.includes(requestedLang)) {
+          c.log(`${originWithBase}/${requestedLang}`);
+        } else {
+          document.querySelectorAll(`[data-id='unsupported']`).forEach((elm) => {
+            elm.removeAttribute('hidden');
+          });
+          document.querySelectorAll(`[data-id='404']`).forEach((elm) => {
+            elm.setAttribute('hidden', 'true');
+          });
+          c.log(allHomepages);
+        }
       } else {
-        document.querySelectorAll(`[data-id='tempUnavailable']`).forEach((elm) => {
-          elm.removeAttribute('hidden');
-        });
-        document.querySelectorAll(`[data-id='404']`).forEach((elm) => {
-          elm.setAttribute('hidden', 'true');
-        });
+        if (consts.langs.langs.includes(requestedLang)) {
+          document.querySelectorAll(`[data-id='tempUnavailable']`).forEach((elm) => {
+            elm.removeAttribute('hidden');
+          });
+          document.querySelectorAll(`[data-id='404']`).forEach((elm) => {
+            elm.setAttribute('hidden', 'true');
+          });
+        } else {
+          document.querySelectorAll(`[data-id='unsupported']`).forEach((elm) => {
+            elm.removeAttribute('hidden');
+          });
+          document.querySelectorAll(`[data-id='404']`).forEach((elm) => {
+            elm.setAttribute('hidden', 'true');
+          });
+        }
+
+        /* TODO: Better communicate to user that those are available versions of this page.
+                 Maybe use an aside.
+                 Maybe we'll have to implement https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Internationalization */
+        c.log(urlsOfActualSupportedLangsForPage);
       }
     }
   } else {
+    if (is404) {
+      if (actualSupportedLangsForPage.length === 0) {
+      } else {
+        if (isActualSupportedLangsForPageOverlappingWithRequestedLangs) {
+          c.log(`${originWithBase}/${firstActualSupportedRequestedLang}`);
+        }
+      }
+    }
   }
 }
+
+// TODO: Migrate the fetch-to-check-existance logic to Astro's build step.

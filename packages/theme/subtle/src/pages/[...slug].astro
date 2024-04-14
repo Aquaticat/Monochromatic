@@ -1,0 +1,26 @@
+---
+import PostLayout from '@layouts/global.astro';
+import trimStartWith from '@monochromatic.dev/module-trim-start-with';
+import { getCollection, } from 'astro:content';
+import { piped, } from 'rambdax';
+import astroConfig from '@root/astro.config.mjs';
+
+export async function getStaticPaths() {
+  const postEntries = await getCollection('post',);
+  return postEntries.map(entry => ({
+    // MAYBE: Here?
+    // TODO: Correct path order.
+    params: {
+      slug: entry.lang === astroConfig.i18n!.defaultLocale ? `post/${entry.fileNameWithoutExtension}` : `${entry.lang}/post/${entry.fileNameWithoutExtension}`,
+    },
+    props: { entry, },
+  }));
+}
+
+const { entry, } = Astro.props;
+const { Content, } = await entry.render();
+---
+
+<PostLayout frontmatter={entry.data}>
+  <Content />
+</PostLayout>

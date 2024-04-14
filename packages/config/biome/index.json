@@ -1,7 +1,24 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
-    "ignore": ["node_modules/**/*.*", "build/**/*.*", "dist/**/*.*", ".dist/**/*.*", "bak/**/*.*", ".astro/**/*.*"]
+    "ignore": [
+      "**/node_modules/**/*.*",
+      "**/build/**/*.*",
+      "**/dist/**/*.*",
+      "**/.dist/**/*.*",
+      "**/bak/**/*.*",
+      "**/.astro/**/*.*"
+    ],
+    "include": [
+      "**/*.js",
+      "**/*.ts",
+      "**/*.mjs",
+      "**/*.mts",
+      "**/*.cjs",
+      "**/*.cts",
+      "**/*.json",
+      "**/*.jsonc"
+    ]
   },
   "vcs": {
     "enabled": true,
@@ -43,7 +60,8 @@
   },
   "formatter": {
     "indentStyle": "space",
-    "lineWidth": 120
+    "lineWidth": 120,
+    "attributePosition": "multiline"
   },
   "organizeImports": {
     "enabled": false
@@ -58,12 +76,32 @@
       "trailingComma": "all",
       "bracketSameLine": true
     },
-    "globals": ["Astro"]
+    "globals": [
+      "Astro"
+    ]
   },
-  "json": {
-    "parser": {
-      "allowComments": true,
-      "allowTrailingCommas": true
+  "overrides": [
+    {
+      "include": [
+        ".vscode/**",
+        "**/api-extractor.json",
+        "**/*.tsconfig.json",
+        "**/tsconfig.*.json",
+        "**/tsconfig.json",
+        "**/devcontainer.json",
+        "**/*.jsonc",
+        "**/dprint.json",
+        "**/dprint/index.json"
+      ],
+      "json": {
+        "parser": {
+          "allowComments": true,
+          "allowTrailingCommas": true
+        },
+        "formatter": {
+          "trailingCommas": "all"
+        }
+      }
     }
-  }
+  ]
 }

@@ -5,7 +5,9 @@
   "module": "dist/final/index.js",
   "main": "dist/final/index.js",
   "typings": "dist/final/index.d.ts",
-  "files": ["dist/final"],
+  "files": [
+    "dist/final"
+  ],
   "scripts": {
     "build:tsc": "tsc",
     "build:esbuild": "esbuild src/index.ts --bundle --platform=node --charset=utf8 --format=esm --packages=external --target=node20 --drop:debugger --drop-labels=DEV,D --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --preserve-symlinks --log-limit=0 --sourcemap",
@@ -19,20 +21,20 @@
     "watch": "pnpm run watch:api-extractor & pnpm run watch:tsc & pnpm run watch:esbuild"
   },
   "devDependencies": {
-    "@biomejs/biome": ">=1.6",
-    "typescript": ">=5.4",
-    "@monochromatic.dev/config-typescript": "*",
-    "@monochromatic.dev/config-biome": "*",
-    "@monochromatic.dev/config-api-extractor": "*",
-    "esbuild": "*",
+    "@biomejs/biome": "1.6.4",
     "@microsoft/api-extractor": "*",
-    "chokidar-cli": "*"
+    "@monochromatic.dev/config-api-extractor": "*",
+    "@monochromatic.dev/config-biome": "*",
+    "@monochromatic.dev/config-typescript": "*",
+    "chokidar-cli": "*",
+    "esbuild": "*",
+    "typescript": "5.4.4"
   },
   "version": "0.0.5",
   "dependencies": {
-    "zod": "*",
-    "rambdax": ">=11.0",
     "@monochromatic.dev/module-is-lang": "workspace:*",
-    "spdx-license-list": ">=6.9"
+    "rambdax": "11.1.0",
+    "spdx-license-list": ">=6.9",
+    "zod": "*"
   }
 }

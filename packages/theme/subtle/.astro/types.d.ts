@@ -135,41 +135,55 @@ declare module 'astro:content' {
 	>;
 
 	type ContentEntryMap = {
-		"blog": {
-"first-post.md": {
-	id: "first-post.md";
-  slug: "first-post";
+		"post": {
+"ca/only-ca-fr.mdx": {
+	id: "ca/only-ca-fr.mdx";
+  slug: "ca/only-ca-fr";
   body: string;
-  collection: "blog";
-  data: InferEntrySchema<"blog">
-} & { render(): Render[".md"] };
-"markdown-style-guide.md": {
-	id: "markdown-style-guide.md";
-  slug: "markdown-style-guide";
+  collection: "post";
+  data: InferEntrySchema<"post">
+} & { render(): Render[".mdx"] };
+"ca/only-en-ca.mdx": {
+	id: "ca/only-en-ca.mdx";
+  slug: "ca/only-en-ca";
   body: string;
-  collection: "blog";
-  data: InferEntrySchema<"blog">
-} & { render(): Render[".md"] };
-"second-post.md": {
-	id: "second-post.md";
-  slug: "second-post";
+  collection: "post";
+  data: InferEntrySchema<"post">
+} & { render(): Render[".mdx"] };
+"en/mdx.mdx": {
+	id: "en/mdx.mdx";
+  slug: "en/mdx";
   body: string;
-  collection: "blog";
-  data: InferEntrySchema<"blog">
-} & { render(): Render[".md"] };
-"third-post.md": {
-	id: "third-post.md";
-  slug: "third-post";
+  collection: "post";
+  data: InferEntrySchema<"post">
+} & { render(): Render[".mdx"] };
+"en/only-en-ca.mdx": {
+	id: "en/only-en-ca.mdx";
+  slug: "en/only-en-ca";
   body: string;
-  collection: "blog";
-  data: InferEntrySchema<"blog">
-} & { render(): Render[".md"] };
-"using-mdx.mdx": {
-	id: "using-mdx.mdx";
-  slug: "using-mdx";
+  collection: "post";
+  data: InferEntrySchema<"post">
+} & { render(): Render[".mdx"] };
+"fr/only-ca-fr.mdx": {
+	id: "fr/only-ca-fr.mdx";
+  slug: "fr/only-ca-fr";
   body: string;
-  collection: "blog";
-  data: InferEntrySchema<"blog">
+  collection: "post";
+  data: InferEntrySchema<"post">
+} & { render(): Render[".mdx"] };
+"zh-CN/mdx.mdx": {
+	id: "zh-CN/mdx.mdx";
+  slug: "zh-cn/mdx";
+  body: string;
+  collection: "post";
+  data: InferEntrySchema<"post">
+} & { render(): Render[".mdx"] };
+"zh-TW/mdx.mdx": {
+	id: "zh-TW/mdx.mdx";
+  slug: "zh-tw/mdx";
+  body: string;
+  collection: "post";
+  data: InferEntrySchema<"post">
 } & { render(): Render[".mdx"] };
 };
 

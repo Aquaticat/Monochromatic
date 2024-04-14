@@ -1,6 +1,7 @@
 title = "Subtle"
 description = "Personal Blog Theme for Astro"
-author = "Aquaticat"
+author.name = "Aquaticat"
+author.url = 'https://aquati.cat'
 site = 'https://monochromatic.dev'
 base = 'subtle'
 license = 'CC-BY-SA-4.0'
@@ -26,10 +27,6 @@ shiki.dark = 'github-dark'
 'dummy4' = 'https://example.com'
 'dummy5' = 'https://example.com'
 'dummy6' = 'https://example.com'
-
-[langs]
-'' = ['en', 'en-US', 'en-CA', 'en-UK', 'en-GB']
-zh = ['zh', 'zh-CN', 'zh-TW']
 
 [strings]
 en.searchPlaceholder = 'Search tags, topics, or snippets with DuckDuckGo'

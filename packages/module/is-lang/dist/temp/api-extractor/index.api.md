@@ -5,8 +5,14 @@
 ```ts
 
 // @public (undocumented)
+export const isFullLang: (str: string) => boolean;
+
+// @public (undocumented)
 function isLang(str: string): boolean;
 export default isLang;
+
+// @public (undocumented)
+export const isShortLang: (str: string) => boolean;
 
 // (No @packageDocumentation comment for this package)
 

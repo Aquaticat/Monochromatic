@@ -9,7 +9,6 @@
   "devDependencies": {
     "astro": ">=4.5"
   },
-  "dependencies": {},
   "peerDependencies": {
     "astro": ">=4.5"
   },

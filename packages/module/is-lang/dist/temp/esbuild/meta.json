@@ -1,7 +1,7 @@
 {
   "inputs": {
     "src/index.ts": {
-      "bytes": 158,
+      "bytes": 339,
       "imports": [
         {
           "path": "<runtime>",
@@ -17,20 +17,22 @@
       "imports": [],
       "exports": [],
       "inputs": {},
-      "bytes": 391
+      "bytes": 738
     },
     "dist/final/index.js": {
       "imports": [],
       "exports": [
-        "default"
+        "default",
+        "isFullLang",
+        "isShortLang"
       ],
       "entryPoint": "src/index.ts",
       "inputs": {
         "src/index.ts": {
-          "bytesInOutput": 157
+          "bytesInOutput": 385
         }
       },
-      "bytes": 369
+      "bytes": 626
     }
   }
 }

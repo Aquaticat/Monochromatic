@@ -1,11 +1,15 @@
 {
   "name": "@monochromatic.dev/lightningcss-plugin-size",
-  "keywords": ["lightningcss-plugin"],
+  "keywords": [
+    "lightningcss-plugin"
+  ],
   "type": "module",
   "module": "dist/final/index.js",
   "main": "dist/final/index.js",
   "typings": "dist/final/index.d.ts",
-  "files": ["dist/final"],
+  "files": [
+    "dist/final"
+  ],
   "scripts": {
     "build:tsc": "tsc",
     "build:esbuild": "esbuild src/index.ts --bundle --platform=node --charset=utf8 --format=esm --packages=external --target=node20 --drop:debugger --drop-labels=DEV,D --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --preserve-symlinks --log-limit=0 --sourcemap",
@@ -21,18 +25,16 @@
   "peerDependencies": {
     "lightningcss": ">=1.24"
   },
-  "dependencies": {
-  },
   "devDependencies": {
-    "lightningcss": ">=1.24",
-    "@biomejs/biome": ">=1.6",
-    "esbuild": ">=0.20",
-    "typescript": ">=5.4",
-    "@types/node": ">=20.12",
+    "@biomejs/biome": "1.6.4",
+    "@microsoft/api-extractor": ">=7.43",
+    "@monochromatic.dev/config-api-extractor": "*",
+    "@monochromatic.dev/config-typescript": "*",
+    "@types/node": "20.12.5",
     "chokidar-cli": ">=3.0",
-    "@microsoft/api-extractor":">=7.43",
-    "@monochromatic.dev/config-api-extractor":"*",
-    "@monochromatic.dev/config-typescript":"*"
+    "esbuild": ">=0.20",
+    "lightningcss": ">=1.24",
+    "typescript": "5.4.4"
   },
   "description": "Stolen from https://github.com/parcel-bundler/lightningcss/blob/master/node/test/visitor.test.mjs at about line 719 to line 745."
 }

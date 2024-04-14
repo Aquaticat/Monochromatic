@@ -1,0 +1,39 @@
+{
+  "inputs": {
+    "src/index.ts": {
+      "bytes": 1160,
+      "imports": [
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "dist/final/index.js.map": {
+      "imports": [],
+      "exports": [],
+      "inputs": {},
+      "bytes": 1932
+    },
+    "dist/final/index.js": {
+      "imports": [],
+      "exports": [
+        "notFalsyOrThrow",
+        "notNullOrThrow",
+        "notNullishOrThrow",
+        "notUndefinedOrThrow"
+      ],
+      "entryPoint": "src/index.ts",
+      "inputs": {
+        "src/index.ts": {
+          "bytesInOutput": 1038
+        }
+      },
+      "bytes": 1310
+    }
+  }
+}

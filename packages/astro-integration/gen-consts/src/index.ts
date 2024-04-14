@@ -1,12 +1,16 @@
 import { parse } from 'smol-toml';
-import { readFileSync as fsReadFileSync, writeFileSync as fsWriteFileSync } from 'node:fs';
+import {
+  readFileSync as fsReadFileSync,
+  writeFileSync as fsWriteFileSync,
+  readdirSync as fsReaddirSync,
+} from 'node:fs';
 import { join as pathJoin, resolve as pathResolve } from 'node:path';
 import objectToExport from '@monochromatic.dev/module-object-to-export';
 import themeConstsSchema, { typescriptType as themeConstsTypescriptType } from '@monochromatic.dev/schema-theme-consts';
 
 import type { AstroIntegration } from 'astro';
 
-const fs = { readFileSync: fsReadFileSync, writeFileSync: fsWriteFileSync };
+const fs = { readFileSync: fsReadFileSync, writeFileSync: fsWriteFileSync, readdirSync: fsReaddirSync };
 const path = { join: pathJoin, resolve: pathResolve };
 
 export default (file = 'consts.toml'): AstroIntegration => ({
@@ -40,8 +44,7 @@ export default consts;`,
           },
         },
         i18n: {
-          defaultLocale: consts.langs.defaultLang,
-          locales: [...consts.langs.langs],
+          locales: fs.readdirSync(path.join(path.resolve(), 'src', 'content', 'post')),
         },
       });
     },

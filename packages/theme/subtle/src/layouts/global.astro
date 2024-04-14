@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import Main from '../components/Main.astro';
 const { title, description, } = Astro.props.frontmatter;
-const lang = Astro.currentLocale || consts.langs.defaultLang;
+const lang = Astro.currentLocale!;
 ---
 
 <html {lang}>
@@ -24,4 +24,3 @@ const lang = Astro.currentLocale || consts.langs.defaultLang;
     <Footer />
   </body>
 </html>
-../temp/consts

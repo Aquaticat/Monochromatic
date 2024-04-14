@@ -5,7 +5,9 @@
   "main": "dist/final/index.js",
   "bin": "dist/final/bin.js",
   "typings": "dist/final/index.d.ts",
-  "files": ["dist/final"],
+  "files": [
+    "dist/final"
+  ],
   "scripts": {
     "build:tsc": "tsc",
     "build:esbuild": "esbuild src/index.ts --bundle --platform=node --charset=utf8 --format=esm --packages=external --target=node20 --drop:debugger --drop-labels=DEV,D --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --preserve-symlinks --log-limit=0 --sourcemap",
@@ -20,22 +22,20 @@
     "watch:esbuild_bin": "$TERMINAL esbuild src/bin.ts --bundle --platform=node --charset=utf8 --format=esm --preserve-symlinks --target=node20 --drop:debugger --drop-labels=DEV,D --define:process.env.NODE_ENV=\\\"production\\\" --minify-whitespace --minify-syntax --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --log-limit=0 --sourcemap=external --watch",
     "watch": "pnpm run watch:api-extractor & pnpm run watch:tsc & pnpm run watch:esbuild & pnpm run watch:esbuild_bin"
   },
-  "peerDependencies": {
-  },
   "dependencies": {
-    "zod": "*",
-    "rambdax": "*",
-    "@monochromatic.dev/module-console": "*"
+    "@monochromatic.dev/module-console": "*",
+    "rambdax": "^11.1.0",
+    "zod": "*"
   },
   "devDependencies": {
-    "@biomejs/biome": ">=1.6",
-    "esbuild": ">=0.20",
-    "typescript": ">=5.4",
-    "@types/node": ">=20.12",
+    "@biomejs/biome": "1.6.4",
+    "@microsoft/api-extractor": ">=7.43",
+    "@monochromatic.dev/config-api-extractor": "*",
+    "@monochromatic.dev/config-typescript": "*",
+    "@types/node": "20.12.5",
     "chokidar-cli": ">=3.0",
-    "@microsoft/api-extractor":">=7.43",
-    "@monochromatic.dev/config-api-extractor":"*",
-    "@monochromatic.dev/config-typescript":"*"
+    "esbuild": ">=0.20",
+    "typescript": "5.4.4"
   },
   "version": "0.1.0",
   "repository": {

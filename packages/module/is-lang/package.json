@@ -19,18 +19,17 @@
   },
   "devDependencies": {
     "@biomejs/biome": ">=1.6",
-    "typescript": ">=5.4",
-    "@monochromatic.dev/config-typescript": "*",
-    "@monochromatic.dev/config-api-extractor": "*",
-    "esbuild": "*",
     "@microsoft/api-extractor": "*",
-    "chokidar-cli": "*"
+    "@monochromatic.dev/config-api-extractor": "*",
+    "@monochromatic.dev/config-typescript": "*",
+    "chokidar-cli": "*",
+    "esbuild": "*",
+    "typescript": ">=5.4"
   },
-  "dependencies": {},
   "version": "0.1.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "modules/is-lang"
+    "directory": "module/is-lang"
   }
 }

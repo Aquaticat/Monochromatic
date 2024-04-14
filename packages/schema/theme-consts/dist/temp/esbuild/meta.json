@@ -1,7 +1,7 @@
 {
   "inputs": {
     "src/index.ts": {
-      "bytes": 3083,
+      "bytes": 2301,
       "imports": [
         {
           "path": "zod",
@@ -10,11 +10,6 @@
         },
         {
           "path": "@monochromatic.dev/module-is-lang",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "rambdax",
           "kind": "import-statement",
           "external": true
         },
@@ -32,7 +27,7 @@
       "imports": [],
       "exports": [],
       "inputs": {},
-      "bytes": 5472
+      "bytes": 4189
     },
     "dist/final/index.js": {
       "imports": [
@@ -43,11 +38,6 @@
         },
         {
           "path": "@monochromatic.dev/module-is-lang",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "rambdax",
           "kind": "import-statement",
           "external": true
         },
@@ -64,10 +54,10 @@
       "entryPoint": "src/index.ts",
       "inputs": {
         "src/index.ts": {
-          "bytesInOutput": 2655
+          "bytesInOutput": 1935
         }
       },
-      "bytes": 2760
+      "bytes": 2040
     }
   }
 }

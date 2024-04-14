@@ -12,7 +12,7 @@
     "**/*.cjs",
     "**/*.mts",
     "**/*.cts",
-    "**/*.json"
+    "**/*.json",
   ],
   "lineWidth": 120,
   "useTabs": false,
@@ -22,10 +22,10 @@
     "https://plugins.dprint.dev/toml-0.6.1.wasm",
     "https://plugins.dprint.dev/g-plane/markup_fmt-v0.6.0.wasm",
     "https://plugins.dprint.dev/g-plane/malva-v0.2.0.wasm",
-    "https://plugins.dprint.dev/typescript-0.89.3.wasm"
+    "https://plugins.dprint.dev/typescript-0.89.3.wasm",
   ],
   "toml": {
-    "comment.forceLeadingSpace": false
+    "comment.forceLeadingSpace": false,
   },
   "malva": {
     "printWidth": 120,
@@ -34,7 +34,7 @@
     "blockSelectorLinebreak": "always",
     "trailingComma": true,
     "linebreakInPseudoParens": true,
-    "declarationOrder": "smacss"
+    "declarationOrder": "smacss",
   },
   "markup": {
     "printWidth": 120,
@@ -49,14 +49,14 @@
          Disabled until author adds support for mdx. */
       // "**/*.mdx",
       "**/*.astro",
-      "**/*.html"
-    ]
+      "**/*.html",
+    ],
   },
   "typescript": {
     "semiColons": "always",
     "quoteStyle": "preferSingle",
     "useBraces": "maintain",
     "trailingCommas": "always",
-    "commentLine.forceSpaceAfterSlashes": "false"
-  }
+    "commentLine.forceSpaceAfterSlashes": "false",
+  },
 }

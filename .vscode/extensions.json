@@ -14,6 +14,6 @@
     "redhat.vscode-yaml",
     "dprint.dprint",
     "ms-vscode-remote.remote-containers",
-    "gruntfuggly.todo-tree"
-  ]
+    "gruntfuggly.todo-tree",
+  ],
 }

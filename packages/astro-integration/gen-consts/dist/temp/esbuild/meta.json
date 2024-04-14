@@ -1,7 +1,7 @@
 {
   "inputs": {
     "src/index.ts": {
-      "bytes": 1467,
+      "bytes": 1973,
       "imports": [
         {
           "path": "smol-toml",
@@ -42,7 +42,7 @@
       "imports": [],
       "exports": [],
       "inputs": {},
-      "bytes": 2572
+      "bytes": 3227
     },
     "dist/final/index.js": {
       "imports": [
@@ -78,10 +78,10 @@
       "entryPoint": "src/index.ts",
       "inputs": {
         "src/index.ts": {
-          "bytesInOutput": 1423
+          "bytesInOutput": 1928
         }
       },
-      "bytes": 1640
+      "bytes": 2145
     }
   }
 }

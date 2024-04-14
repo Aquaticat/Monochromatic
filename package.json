@@ -8,10 +8,10 @@
     "pnpm": ">=8.15"
   },
   "devDependencies": {
-    "dprint": ">=0.45",
     "@biomejs/biome": ">=1.6",
-    "@monochromatic.dev/config-dprint": "*",
     "@monochromatic.dev/config-biome": "*",
+    "@monochromatic.dev/config-dprint": "*",
+    "dprint": ">=0.45",
     "typescript": ">=5.4"
   }
 }

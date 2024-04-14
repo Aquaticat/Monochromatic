@@ -115,7 +115,7 @@ The explicit specification of font-size and so is also bad for accessibility.
 
 ### Write custom Astro Image Local Service
 
-## Switch to Astro Content Collections
+## DOING: Switch to Astro Content Collections
 
 Here are some of the reasons.
 I forgot the others.
@@ -124,9 +124,9 @@ I forgot the others.
 
 ## Add a way for authors to specify license.
 
-## Find a way to format mdx
+## MAYBE: Find a way to format mdx priority:low
 
-## Use pagefind or other tools to pre-generate search results pages.
+## MAYBE: Use pagefind or other tools to pre-generate search results pages.
 
 ## TODO: Comment system
 
@@ -143,3 +143,22 @@ I forgot the others.
 Currently, the .-MatchLang Astro component doesn't support lang subtypes, which makes it impossible to make a site available in both zh-CN and zh-SC variants.
 
 ## TODO: Use multiple, localized 404 pages. #priority:normal
+
+## MAYBE: Migrate to named function expressions
+
+for easier debugging.
+
+## MAYBE: Write a polyfill for [text fragments](https://developer.mozilla.org/en-US/docs/Web/Text_fragments)
+
+Or maybe not.
+
+Firefox Nightly 126.0a1 now has the `about:config` option `dom.text_fragments.enabled`,
+which [implements first version of text fragments](https://bugzilla.mozilla.org/show_bug.cgi?id=1867939).
+
+If we target Firefox ESR 128, which is to be released on July 9th, we can skip this.
+
+## MAYBE: Integrate automatic translation #priority:low
+
+[deepl-node](https://github.com/DeepLcom/deepl-node)
+
+## TODO: Set default modified date by `git log`

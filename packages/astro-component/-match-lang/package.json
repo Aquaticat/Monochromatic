@@ -6,9 +6,9 @@
   "files": ["src/", "index.ts"],
   "scripts": {},
   "devDependencies": {
+    "@types/node": ">=20.12",
     "astro": ">=4.5"
   },
-  "dependencies": {},
   "peerDependencies": {
     "astro": ">=4.5"
   },

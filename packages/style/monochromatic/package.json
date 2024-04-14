@@ -1,12 +1,13 @@
 {
   "name": "@monochromatic.dev/style-monochromatic",
-  "files": ["src/"],
+  "files": [
+    "src/"
+  ],
   "scripts": {},
   "devDependencies": {
-    "dprint": ">=0.45",
-    "@monochromatic.dev/config-dprint": "*"
+    "@monochromatic.dev/config-dprint": "*",
+    "dprint": "0.45.1"
   },
-  "dependencies": {},
   "version": "0.1.0",
   "repository": {
     "type": "git",
