@@ -1,0 +1,5 @@
+:root {
+  --sans: Arial, Helvertica, 'LXGW Fasmart Gothic', 'LXGW Neo XiHei', 'Noto Sans CJK', system-ui, sans-serif;
+  --serif: Georgia, 'Times New Roman', Times, 'LXGW WenKai GB', 'LXGW WenKai', 'Noto Serif CJK', serif;
+  --mono: 'Noto Mono', 'Roboto Mono', 'JetBrains Mono', 'Courier New', Courier, monospace;
+}

@@ -28,7 +28,7 @@
     "@monochromatic.dev/config-typescript": "*",
     "chokidar-cli": "*",
     "esbuild": "*",
-    "typescript": "5.4.4"
+    "typescript": ">=5.4.4"
   },
   "version": "0.0.5",
   "dependencies": {

@@ -7,7 +7,7 @@
     "checkJs": true,
     "noImplicitAny": false,
     "jsx": "preserve",
-    "jsxImportSource": "astro",
+    "jsxImportSource": "vue",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "noUnusedLocals": false,

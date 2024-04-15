@@ -1,0 +1,17 @@
+---
+import consts from '../temp/consts';
+const linksArr = Array.from(consts.links) as [string, string][];
+---
+
+<ul class='Links'>
+  {
+    linksArr.map((link,) => (
+      <li>
+        <a href={link[1]}>
+          <span>{link[0]}</span>
+        </a>
+      </li>
+    ))
+  }
+</ul>
+../temp/consts
