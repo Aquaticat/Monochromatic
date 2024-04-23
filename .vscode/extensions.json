@@ -4,7 +4,6 @@
 
   // List of extensions which should be recommended for users of this workspace.
   "recommendations": [
-    "astro-build.astro-vscode",
     "biomejs.biome",
     "oven.bun-vscode",
     "EditorConfig.EditorConfig",
@@ -15,5 +14,7 @@
     "dprint.dprint",
     "ms-vscode-remote.remote-containers",
     "gruntfuggly.todo-tree",
+    "vue.volar",
+    "ms-azuretools.vscode-docker",
   ],
 }

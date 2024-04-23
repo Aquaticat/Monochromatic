@@ -1,80 +1,333 @@
-import { z } from 'zod';
+import {
+  fs,
+  path,
+} from '@monochromatic.dev/module-fs-path';
 import isLang from '@monochromatic.dev/module-is-lang';
-import spdxLicenseList from 'spdx-license-list';
+import * as chrono from 'chrono-node';
+import { findUp } from 'find-up';
+import { fromMarkdown } from 'mdast-util-from-markdown';
+import { toString as mdastToString } from 'mdast-util-to-string';
+import { tryCatchAsync } from 'rambdax';
+import * as spdxLicenseList from 'spdx-license-list/spdx.json' with { type: 'json' };
+import { z } from 'zod';
 
-export default z
+// @ts-expect-error No, spdxLicenseList is in fact wrapped in a default json.
+const spdxLicenseMap = new Map(Object.entries(spdxLicenseList.default));
+
+export const zChronoDate = z
+  .union([
+    z.string().transform((maybeDate) => (chrono.parseDate(maybeDate))),
+    z.coerce.date(),
+  ])
+  .pipe(
+    z.date(),
+  );
+
+export const zAuthor = z.object({ name: z.string(), url: z.string().url() }).strict();
+
+export const zBlame = z.object({ date: zChronoDate, author: zAuthor }).strict().pipe(
+  z.object({ date: z.date(), author: zAuthor }),
+);
+
+export const zBlames = z.array(zBlame).nonempty().pipe(
+  z.array(z.object({ date: z.date(), author: zAuthor })).nonempty(),
+);
+
+const zPost = z
   .object({
-    title: z.string(),
-    description: z.string(),
-    author: z.object({ name: z.string(), url: z.string().url() }).readonly(),
-    site: z.string().url(),
-    base: z.string().transform((val) => {
-      let result = val;
-      if (result.startsWith('/')) result = result.slice(1);
-      if (result.endsWith('/')) result = result.slice(0, -1);
-      return result;
-    }),
-    license: z.union([
-      z
-        .string()
-        .refine((val) => Object.hasOwn(spdxLicenseList, val))
-        .transform((val) => ({ name: spdxLicenseList[val]!.name, url: spdxLicenseList[val]!.url }))
-        .readonly(),
-      z.object({ name: z.string(), url: z.string().url() }).readonly(),
-    ]),
-    theming: z
-      .object({
-        color: z.string().refine((val) => /#[\da-zA-Z]{6}/.test(val)),
-        shiki: z
-          .object({
-            light: z.string(),
-            dark: z.string(),
-          })
-          .readonly(),
-      })
-      .readonly(),
-    socials: z
-      .record(z.string(), z.string().url())
-      .transform((val) => new Map(Object.entries(val)))
-      .readonly(),
-    links: z
-      .record(z.string(), z.string().url())
-      .transform((val) => new Map(Object.entries(val)))
-      .readonly(),
-    strings: z
-      .record(
-        z.string().refine((val) => isLang(val)),
-        z.record(z.string(), z.string()),
-      )
-      .transform(
-        (val) =>
-          new Map(
-            Object.entries(val).map(([lang, stringsLang]) => [
-              lang,
-              Object.freeze(new Map(Object.entries(stringsLang))),
-            ]),
-          ),
-      )
-      .readonly(),
-  })
-  .readonly();
+    //region Injected by @monochromatic.dev/esbuild-plugin-toml
 
-// The expected TypeScript type, as a string, after zod had transformed the source file.
-  export const typescriptType = `{
-  title: string;
-  description: string;
-  author: {
-    name: string;
-    url: string;
-  };
-  site: string;
-  base: string;
-  license: {
-    name: string;
-    url: string;
-  };
-  theming: { color: string; shiki: { light: string; dark: string } };
-  socials: ReadonlyMap<string, string>;
-  links: ReadonlyMap<string, string>;
-  strings: ReadonlyMap<string, ReadonlyMap<string, string>>;
-}`;
+    path: z.object({ dir: z.string(), name: z.string() }),
+
+    pkgJsonAbsPath: z.string(),
+
+    //endregion
+
+    author: zAuthor,
+
+    earliest: z.optional(zChronoDate),
+
+    lang: z.string(),
+
+    latest: z.optional(zChronoDate),
+
+    license: z
+      .union([
+        z
+          .string()
+          .transform((val, ctx) => {
+            const license = spdxLicenseMap.get(val);
+
+            if (!license) {
+              ctx.addIssue(
+                {
+                  code: z.ZodIssueCode.custom,
+                  message: `${val} not one of ${JSON.stringify(Array.from(spdxLicenseMap.keys()))}`,
+                },
+              );
+              return z.NEVER;
+            }
+
+            return license;
+          }),
+        z.object({ name: z.string(), url: z.string().url() }),
+      ])
+      .pipe(z.object({ name: z.string(), url: z.string().url() }).readonly()),
+
+    updated: z.optional(z.unknown()),
+
+    published: z.optional(z.unknown()),
+
+    site: z.string().url(),
+
+    siteTitle: z.string(),
+
+    socials: z.record(z.string(), z.string().url()).readonly(),
+
+    tags: z.array(z.string()).default([]),
+
+    theming: z
+      .object({ color: z.string(), shiki: z.object({ light: z.string(), dark: z.string() }) }),
+
+    title: z.string(),
+  })
+  .passthrough()
+  .transform(async function ensureDependents(zBase) {
+    return {
+      ...zBase,
+
+      defaultLang: zBase.lang,
+
+      description: z.string().default(zBase.title).parse(zBase.description),
+
+      earliest: zBase.earliest
+        ? zBase.earliest
+        : await zChronoDate.parseAsync((await fs.stat(zBase.pkgJsonAbsPath)).ctime),
+
+      fullTitle: zBase.title === zBase.siteTitle ? zBase.title : `${zBase.title} | ${zBase.siteTitle}`,
+
+      fullUrlWIndexWExt: new URL(
+        path.relative(
+          path.join(zBase.pkgJsonAbsPath, 'dist', 'temp', 'gen-html'),
+          path.join(zBase.path.dir, `${zBase.path.name}.html`),
+        ),
+        zBase.site,
+      ),
+
+      fullUrlWIndexWoExt: new URL(
+        path.relative(
+          path.join(zBase.pkgJsonAbsPath, 'dist', 'temp', 'gen-html'),
+          path.join(zBase.path.dir, zBase.path.name),
+        ),
+        zBase.site,
+      ),
+
+      isHome: zBase.path.name === 'index',
+      isLinks: zBase.path.name === 'links',
+      is404: zBase.path.name === '404',
+      isPost: !['index', 'links', '404'].includes(zBase.path.name),
+
+      lang: z.string().default(zBase.lang).parse(
+        await findUp(async function matchedLang(pathEndingWPotentialLang) {
+          const name = (await path.parseFs(pathEndingWPotentialLang)).name;
+          if (isLang(name)) {
+            return pathEndingWPotentialLang;
+          }
+          return;
+        }, { cwd: zBase.path.dir, stopAt: zBase.pkgJsonAbsPath }),
+      ),
+
+      latest: zBase.latest ? zBase.latest : new Date(),
+
+      mdxContent: await fs.readFileU(path.join(zBase.path.dir, `${zBase.path.name}.mdx`)),
+
+      updated: await z
+        .union([
+          zChronoDate.transform((date) => [{ date: date, author: zBase.author }]),
+          zBlame.transform((obj) => [obj]),
+          z.array(zChronoDate.transform((date) => ({ date: date, author: zBase.author }))).nonempty(),
+          zBlames,
+        ])
+        .transform((updated) => updated.toSorted((a, b) => a.date.getTime() - b.date.getTime()))
+        .readonly()
+        .catch([
+          {
+            date: await zChronoDate.parseAsync(
+              (await fs.stat(
+                `${path.join(zBase.path.dir, zBase.path.name)}.mdx`,
+              ))
+                .mtime,
+            ),
+            author: zBase.author,
+          },
+        ])
+        .parseAsync(zBase.updated),
+
+      published: await z
+        .union([
+          zChronoDate.transform((date) => [{ date: date, author: zBase.author }]),
+          zBlame.transform((obj) => [obj]),
+          z.array(zChronoDate.transform((date) => ({ date: date, author: zBase.author }))).nonempty(),
+          zBlames,
+        ])
+        .transform((published) => published.toSorted((a, b) => a.date.getTime() - b.date.getTime()))
+        .readonly()
+        .catch([
+          {
+            date: await zChronoDate.parseAsync(
+              (await fs.stat(
+                `${path.join(zBase.path.dir, zBase.path.name)}.mdx`,
+              ))
+                .ctime,
+            ),
+            author: zBase.author,
+          },
+        ])
+        .parseAsync(zBase.published),
+
+      slugWIndexWExt: path.relative(
+        path.join(zBase.pkgJsonAbsPath, 'dist', 'temp', 'gen-html'),
+        path.join(zBase.path.dir, `${zBase.path.name}.html`),
+      ),
+      slugWIndexWoExt: path.relative(
+        path.join(zBase.pkgJsonAbsPath, 'dist', 'temp', 'gen-html'),
+        path.join(zBase.path.dir, `${zBase.path.name}`),
+      ),
+
+      siteBase: await tryCatchAsync(
+        async () => {
+          await fs.access(path.join(zBase.pkgJsonAbsPath, 'dist', 'temp', 'gen-html', 'index.mdx'));
+          return '';
+        },
+        path.split(path.relative(path.join(zBase.pkgJsonAbsPath, 'dist', 'temp', 'gen-html'), zBase.path.dir))[0]!,
+      )(null),
+    };
+  })
+  .transform(async function ensure2(z1) {
+    return {
+      ...z1,
+
+      canonicalUrl: z1.fullUrlWIndexWoExt.pathname.endsWith('/index')
+        ? new URL(z1.fullUrlWIndexWoExt.pathname.slice(0, -'/index'.length), z1.site)
+        : z1.fullUrlWIndexWoExt,
+
+      siteWithBase: z1.siteBase ? new URL(z1.siteBase, z1.site) : z1.site,
+
+      slashSiteBase: z1.siteBase ? `/${z1.siteBase}` : z1.siteBase,
+
+      slug: z1.slugWIndexWoExt.endsWith('/index') ? z1.slugWIndexWoExt.slice(0, -'/index'.length) : z1.slugWIndexWoExt,
+
+      summary: z1
+        .mdxContent
+        .split('\n\n')
+        .filter((ln) => ln)
+        .map((ln) => mdastToString(fromMarkdown(ln)))
+        .filter((ln) => ln)
+        .join(' ')
+        .slice(0, 512)
+        .trim(),
+    };
+  })
+  .transform(async function ensure3(z2) {
+    return {
+      ...z2,
+
+      slashSiteBaseWSlash: z2.slashSiteBase ? `${z2.slashSiteBase}/` : z2.slashSiteBase,
+
+      slashSiteBaseWLang: z2.defaultLang === z2.lang ? z2.slashSiteBase : `${z2.slashSiteBase}/${z2.lang}`,
+    };
+  })
+  .transform(async function ensure4(z3) {
+    return {
+      ...z3,
+
+      slashSiteBaseWLangWSlash: z3.slashSiteBaseWLang ? `${z3.slashSiteBaseWLang}/` : z3.slashSiteBaseWLang,
+    };
+  })
+  .pipe(
+    z.object({
+      //region: Injected by @monochromatic.dev/esbuild-plugin-toml
+
+      path: z.object({ dir: z.string(), name: z.string() }).readonly(),
+
+      //endregion
+
+      author: z.object({ name: z.string(), url: z.string().url() }).readonly(),
+
+      canonicalUrl: z.coerce.string().url(),
+
+      defaultLang: z.string(),
+
+      description: z.string(),
+
+      earliest: z.date(),
+
+      fullTitle: z.string(),
+
+      fullUrlWIndexWExt: z.coerce.string().url(),
+
+      fullUrlWIndexWoExt: z.coerce.string().url(),
+
+      isHome: z.boolean(),
+
+      isLinks: z.boolean(),
+
+      is404: z.boolean(),
+
+      isPost: z.boolean(),
+
+      lang: z.string(),
+
+      latest: z.date(),
+
+      license: z.object({ name: z.string(), url: z.string().url() }).readonly(),
+
+      mdxContent: z.string(),
+
+      published: z
+        .array(z.object({ date: z.date(), author: z.object({ name: z.string(), url: z.string().url() }).readonly() }))
+        .nonempty()
+        .readonly(),
+
+      slashSiteBase: z.string(),
+
+      slashSiteBaseWSlash: z.string(),
+
+      slashSiteBaseWLang: z.string(),
+
+      slashSiteBaseWLangWSlash: z.string(),
+
+      site: z.coerce.string().url(),
+
+      siteBase: z.string(),
+
+      siteTitle: z.string(),
+
+      siteWithBase: z.coerce.string().url(),
+
+      slugWIndexWExt: z.string(),
+
+      slugWIndexWoExt: z.string(),
+
+      slug: z.string(),
+
+      socials: z.record(z.string(), z.string().url()).readonly(),
+
+      summary: z.string(),
+
+      tags: z.array(z.string()),
+
+      theming: z
+        .object({ color: z.string(), shiki: z.object({ light: z.string(), dark: z.string() }).readonly() })
+        .readonly(),
+
+      title: z.string(),
+
+      updated: z
+        .array(z.object({ date: z.date(), author: z.object({ name: z.string(), url: z.string().url() }).readonly() }))
+        .nonempty()
+        .readonly(),
+    }),
+  );
+
+export default zPost;

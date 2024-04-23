@@ -1,6 +1,6 @@
-import equals from './index.js';
-import { pipe } from 'effect';
 import c from '@monochromatic.dev/module-console';
+import { pipe } from 'effect';
+import equals from './index.js';
 
 const positionals = process.argv.slice(2);
 

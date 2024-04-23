@@ -1,15 +1,1 @@
-var __defProp = Object.defineProperty;
-var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
-
-// src/index.ts
-var src_default = /* @__PURE__ */ __name(async (url) => {
-  try {
-    return await fetch(url).then((response) => response.ok);
-  } catch {
-    return false;
-  }
-}, "default");
-export {
-  src_default as default
-};
-//# sourceMappingURL=index.js.map
+var a=Object.defineProperty;var e=(t,r)=>a(t,"name",{value:r,configurable:true});var o=e(async t=>{try{return(await fetch(t)).ok}catch{return false}},"default");export{o as default};

@@ -20,6 +20,8 @@
 
     //region Modules
 
+    "allowImportingTsExtensions": true,
+
     "module": "NodeNext",
 
     // We're using bun, and we want to take advantage of its ability to directly import toml files as JS objects.
@@ -27,6 +29,8 @@
     "moduleResolution": "NodeNext",
 
     "resolveJsonModule": true,
+
+    "types": ["node", "vite/client"],
 
     //endregion
 
@@ -65,13 +69,12 @@
 
     //region Interop Constraints
 
-    // Moving to using only ES Modules.
-    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": false,
+
+    "esModuleInterop": true,
 
     // error TS5104: Option 'isolatedModules' is redundant and cannot be specified with option 'verbatimModuleSyntax'.
     // "isolatedModules": true,
-
-    "preserveSymlinks": true,
 
     //endregion
 
@@ -80,6 +83,14 @@
     "emitDecoratorMetadata": true,
 
     "experimentalDecorators": true,
+
+    "jsx": "preserve",
+
+    "jsxImportSource": "vue",
+
+    "jsxFactory": "h",
+
+    "jsxFragmentFactory": "Fragment",
 
     "lib": ["ESNext"],
 
@@ -94,7 +105,8 @@
 
     "listEmittedFiles": true,
 
-    "listFiles": true,
+    // Too much noise. Enable on demand.
+    // "listFiles": true,
 
     // Too much noise. Enable on demand.
     // "traceResolution": true,
@@ -116,6 +128,7 @@
     //region Completeness
 
     "skipLibCheck": true,
+
     //endregion
 
     //region Command Line
@@ -124,7 +137,7 @@
 
     //region Watch Options
 
-    "assumeChangesOnlyAffectDirectDependencies": true
+    "assumeChangesOnlyAffectDirectDependencies": true,
 
     //endregion
 

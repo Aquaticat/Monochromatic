@@ -1,0 +1,9 @@
+title = "微妙"
+siteTitle = "微妙"
+description = "以 Vue 构建的个人博客生成器 🤔"
+
+[socials]
+'RSS ' = 'https://aquati.cat/rss'
+'邮箱' = 'mailto:an@aquati.cat?subject=给 Monochromatic/Subtle 的作者发邮件'
+'GitHub' = 'https://github.com/Aquaticat'
+'Telegram' = 'https://t.me/Aquaticat'

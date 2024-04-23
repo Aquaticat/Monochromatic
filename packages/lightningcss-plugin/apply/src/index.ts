@@ -1,4 +1,9 @@
-import type { Visitor, CustomAtRules, Declaration, DeclarationBlock } from 'lightningcss';
+import type {
+  CustomAtRules,
+  Declaration,
+  DeclarationBlock,
+  Visitor,
+} from 'lightningcss';
 const defined: Map<string, DeclarationBlock<Declaration> & Required<DeclarationBlock<Declaration>>> = new Map();
 
 export default {

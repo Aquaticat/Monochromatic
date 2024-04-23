@@ -3,14 +3,7 @@
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
 
   "files": {
-    "ignore": [
-      "**/node_modules/**/*.*",
-      "**/build/**/*.*",
-      "**/dist/**/*.*",
-      "**/.dist/**/*.*",
-      "**/bak/**/*.*",
-      "**/.astro/**/*.*",
-    ],
+    "ignore": ["**/node_modules/**/*.*", "**/dist/**/*.*", "**/.dist/**/*.*", "**/bak/**/*.*", "**/.astro/**/*.*"],
     "include": ["**/*.js", "**/*.ts", "**/*.mjs", "**/*.mts", "**/*.cjs", "**/*.cts", "**/*.json", "**/*.jsonc"],
   },
 
@@ -56,6 +49,9 @@
 
         // If you know the string may have quotes in them in the future.
         "noUnusedTemplateLiteral": "off",
+
+        // Maybe we'll remove those default initializers at a later time.
+        "noInferrableTypes": "off",
       },
       "suspicious": {
         // Sometimes we need them.
@@ -79,6 +75,26 @@
       "unsafeParameterDecoratorsEnabled": true,
     },
     "formatter": {
+      /* Too many bugs, sometimes swallows code.
+
+         For example:
+
+         ```ts
+         args.forEach((arg) => {
+           // fix for "sometimes c.log()" outputs quotes around strings.
+           // We don't want it to output quotes around strings ever.
+           if (typeof arg === 'string') {
+             console.log(arg);
+           } else {
+             console.dir(arg);
+           }
+         });
+         ```
+
+         The line `if (typeof arg === 'string') {` would be swallowed.
+
+         Use dprint instead. */
+      "enabled": false,
       "quoteStyle": "single",
       "jsxQuoteStyle": "single",
       "trailingComma": "all",

@@ -2,16 +2,12 @@
   "name": "@monochromatic.dev/config-biome",
   "keywords": ["biome", "config", "monochromatic"],
   "peerDependencies": { "@biomejs/biome": "*" },
-  "main": "index.json",
-  "module": "index.json",
+  "main": "index.jsonc",
+  "module": "index.jsonc",
   "type": "module",
-  "files": ["index.json", "example.biome.jsonc", "index.jsonc", "jsonc-to-json.mjs"],
-  "scripts": {
-    "build": "node jsonc-to-json.mjs"
-  },
-  "devDependencies": {
-    "jsonc-simple-parser": ">=3.0"
-  },
+  "files": ["example.biome.jsonc", "index.jsonc"],
+  "scripts": {},
+  "devDependencies": {},
   "author": {
     "name": "Aquaticat",
     "email": "an@aquati.cat",
@@ -24,6 +20,6 @@
     "directory": "packages/config/biome"
   },
   "exports": {
-    ".": "./index.json"
+    ".": "./index.jsonc"
   }
 }

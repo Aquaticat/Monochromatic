@@ -1,8 +1,11 @@
-import * as path from 'node:path';
-import * as fs from 'node:fs';
-import { z } from 'zod';
-import { piped, equals } from 'rambdax';
 import c from '@monochromatic.dev/module-console';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import {
+  equals,
+  piped,
+} from 'rambdax';
+import { z } from 'zod';
 
 const MapOfNameAndContentFromDirPathObject = z
   .object({
@@ -22,11 +25,11 @@ const MapOfNameAndContentFromDirPathObject = z
           .readdirSync(normalizedPath, { withFileTypes: true, recursive: true })
           .filter((dirent) => dirent.isFile())
           .map((dirent): readonly [string, string] =>
-            Object.freeze([dirent.name, fs.readFileSync(path.join(val, dirent.name), { encoding: 'utf8' })]),
+            Object.freeze([dirent.name, fs.readFileSync(path.join(val, dirent.name), { encoding: 'utf8' })])
           ),
       (mappings) => new Map(mappings),
       (map) => Object.freeze(map),
-    ),
+    )
   );
 
 const ContentFromFilePathObject = z

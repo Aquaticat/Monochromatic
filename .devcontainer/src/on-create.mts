@@ -1,12 +1,15 @@
 #!/usr/bin/env zx
-import { appendFile, mkdir } from 'node:fs/promises';
-import { join } from 'node:path';
+import {
+  appendFile,
+  mkdir,
+} from 'node:fs/promises';
 import { homedir } from 'node:os';
+import { join } from 'node:path';
 import { $ } from 'zx';
 
 console.log('on-create.mts taking over');
 
-$.prefix += 'source ~/.bashrc';
+$.prefix += 'source ~/.bashrc && ';
 
 await Promise.all([
   $`pnpm i -g @mdx-js/language-server remark-language-server typescript-language-server yaml-language-server vscode-langservers-extracted`,
@@ -23,6 +26,10 @@ eval "$(starship init bash)"
 export TERMINAL="zellij run -c -- "
 export EDITOR="helix"
 alias hx="helix"
+alias pe="pnpm exec"
+alias pi="pnpm install"
+alias pr="pnpm run"
+alias pb="pnpm build"
 `,
     );
 
@@ -36,6 +43,11 @@ alias hx="helix"
           `
 [container]
 format='[$symbol](dimmed) '
+
+[time]
+disabled=false
+format='[$time]($style) '
+time_format='%R'
 `,
         );
 

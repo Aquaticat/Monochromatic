@@ -1,0 +1,594 @@
+{
+  "inputs": {
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/detokenize.js": {
+      "bytes": 207,
+      "imports": [
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/context.js": {
+      "bytes": 246,
+      "imports": [],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/reghex@3.0.2/node_modules/reghex/dist/reghex-core.mjs": {
+      "bytes": 4971,
+      "imports": [
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/utils.js": {
+      "bytes": 1447,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/reghex@3.0.2/node_modules/reghex/dist/reghex-core.mjs",
+          "kind": "import-statement",
+          "original": "reghex"
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/grammar.js": {
+      "bytes": 2689,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/utils.js",
+          "kind": "import-statement",
+          "original": "../utils.js"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/tokens.js": {
+      "bytes": 1603,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/utils.js",
+          "kind": "import-statement",
+          "original": "../utils.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/context.js",
+          "kind": "import-statement",
+          "original": "./context.js"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/strip/tokens.js": {
+      "bytes": 992,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/context.js",
+          "kind": "import-statement",
+          "original": "../tokenize/context.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/tokens.js",
+          "kind": "import-statement",
+          "original": "../tokenize/tokens.js"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/strip/parser.js": {
+      "bytes": 211,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/reghex@3.0.2/node_modules/reghex/dist/reghex-core.mjs",
+          "kind": "import-statement",
+          "original": "reghex"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/grammar.js",
+          "kind": "import-statement",
+          "original": "../tokenize/grammar.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/strip/tokens.js",
+          "kind": "import-statement",
+          "original": "./tokens.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/strip/index.js": {
+      "bytes": 213,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/context.js",
+          "kind": "import-statement",
+          "original": "../tokenize/context.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/strip/parser.js",
+          "kind": "import-statement",
+          "original": "./parser.js"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/parse.js": {
+      "bytes": 920,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/strip/index.js",
+          "kind": "import-statement",
+          "original": "./strip/index.js"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/parser.js": {
+      "bytes": 201,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/reghex@3.0.2/node_modules/reghex/dist/reghex-core.mjs",
+          "kind": "import-statement",
+          "original": "reghex"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/grammar.js",
+          "kind": "import-statement",
+          "original": "./grammar.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/tokens.js",
+          "kind": "import-statement",
+          "original": "./tokens.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/index.js": {
+      "bytes": 221,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/context.js",
+          "kind": "import-statement",
+          "original": "./context.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/parser.js",
+          "kind": "import-statement",
+          "original": "./parser.js"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/lookup.js": {
+      "bytes": 4933,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/detokenize.js",
+          "kind": "import-statement",
+          "original": "./detokenize.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/parse.js",
+          "kind": "import-statement",
+          "original": "./parse.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/index.js",
+          "kind": "import-statement",
+          "original": "./tokenize/index.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/utils.js",
+          "kind": "import-statement",
+          "original": "./utils.js"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/stringify.js": {
+      "bytes": 44,
+      "imports": [],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/validate.js": {
+      "bytes": 224,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/parse.js",
+          "kind": "import-statement",
+          "original": "./parse.js"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/index.js": {
+      "bytes": 481,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/detokenize.js",
+          "kind": "import-statement",
+          "original": "./detokenize.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/lookup.js",
+          "kind": "import-statement",
+          "original": "./lookup.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/parse.js",
+          "kind": "import-statement",
+          "original": "./parse.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/stringify.js",
+          "kind": "import-statement",
+          "original": "./stringify.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/strip/index.js",
+          "kind": "import-statement",
+          "original": "./strip/index.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/index.js",
+          "kind": "import-statement",
+          "original": "./tokenize/index.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/validate.js",
+          "kind": "import-statement",
+          "original": "./validate.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/balanced-match@1.0.2/node_modules/balanced-match/index.js": {
+      "bytes": 1219,
+      "imports": [
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "cjs"
+    },
+    "../../../node_modules/.pnpm/brace-expansion@2.0.1/node_modules/brace-expansion/index.js": {
+      "bytes": 4992,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/balanced-match@1.0.2/node_modules/balanced-match/index.js",
+          "kind": "require-call",
+          "original": "balanced-match"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "cjs"
+    },
+    "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/assert-valid-pattern.js": {
+      "bytes": 336,
+      "imports": [
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/brace-expressions.js": {
+      "bytes": 5631,
+      "imports": [
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/unescape.js": {
+      "bytes": 847,
+      "imports": [
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/ast.js": {
+      "bytes": 22588,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/brace-expressions.js",
+          "kind": "import-statement",
+          "original": "./brace-expressions.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/unescape.js",
+          "kind": "import-statement",
+          "original": "./unescape.js"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/escape.js": {
+      "bytes": 848,
+      "imports": [
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/index.js": {
+      "bytes": 39074,
+      "imports": [
+        {
+          "path": "../../../node_modules/.pnpm/brace-expansion@2.0.1/node_modules/brace-expansion/index.js",
+          "kind": "import-statement",
+          "original": "brace-expansion"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/assert-valid-pattern.js",
+          "kind": "import-statement",
+          "original": "./assert-valid-pattern.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/ast.js",
+          "kind": "import-statement",
+          "original": "./ast.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/escape.js",
+          "kind": "import-statement",
+          "original": "./escape.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/unescape.js",
+          "kind": "import-statement",
+          "original": "./unescape.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/ast.js",
+          "kind": "import-statement",
+          "original": "./ast.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/escape.js",
+          "kind": "import-statement",
+          "original": "./escape.js"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/unescape.js",
+          "kind": "import-statement",
+          "original": "./unescape.js"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/index.ts": {
+      "bytes": 5774,
+      "imports": [
+        {
+          "path": "node:path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:fs/promises",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:fs",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/index.js",
+          "kind": "import-statement",
+          "original": "jsonc-simple-parser"
+        },
+        {
+          "path": "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/index.js",
+          "kind": "import-statement",
+          "original": "minimatch"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "dist/final/index.js.map": {
+      "imports": [],
+      "exports": [],
+      "inputs": {},
+      "bytes": 164248
+    },
+    "dist/final/index.js": {
+      "imports": [
+        {
+          "path": "node:path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:fs/promises",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:fs",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "exports": [
+        "default",
+        "packageFilePath",
+        "packageIdentifierSplitter",
+        "prefixOf"
+      ],
+      "entryPoint": "src/index.ts",
+      "inputs": {
+        "../../../node_modules/.pnpm/balanced-match@1.0.2/node_modules/balanced-match/index.js": {
+          "bytesInOutput": 699
+        },
+        "../../../node_modules/.pnpm/brace-expansion@2.0.1/node_modules/brace-expansion/index.js": {
+          "bytesInOutput": 2401
+        },
+        "src/index.ts": {
+          "bytesInOutput": 2301
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/detokenize.js": {
+          "bytesInOutput": 104
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/context.js": {
+          "bytesInOutput": 94
+        },
+        "../../../node_modules/.pnpm/reghex@3.0.2/node_modules/reghex/dist/reghex-core.mjs": {
+          "bytesInOutput": 3564
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/utils.js": {
+          "bytesInOutput": 768
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/grammar.js": {
+          "bytesInOutput": 1469
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/tokens.js": {
+          "bytesInOutput": 899
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/strip/tokens.js": {
+          "bytesInOutput": 428
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/strip/parser.js": {
+          "bytesInOutput": 26
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/strip/index.js": {
+          "bytesInOutput": 54
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/parse.js": {
+          "bytesInOutput": 170
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/parser.js": {
+          "bytesInOutput": 25
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/tokenize/index.js": {
+          "bytesInOutput": 63
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/lookup.js": {
+          "bytesInOutput": 2299
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/stringify.js": {
+          "bytesInOutput": 22
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/validate.js": {
+          "bytesInOutput": 77
+        },
+        "../../../node_modules/.pnpm/jsonc-simple-parser@3.0.0/node_modules/jsonc-simple-parser/dist/index.js": {
+          "bytesInOutput": 97
+        },
+        "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/index.js": {
+          "bytesInOutput": 12297
+        },
+        "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/assert-valid-pattern.js": {
+          "bytesInOutput": 173
+        },
+        "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/brace-expressions.js": {
+          "bytesInOutput": 1793
+        },
+        "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/unescape.js": {
+          "bytesInOutput": 176
+        },
+        "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/ast.js": {
+          "bytesInOutput": 5872
+        },
+        "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/escape.js": {
+          "bytesInOutput": 133
+        }
+      },
+      "bytes": 36699
+    }
+  }
+}

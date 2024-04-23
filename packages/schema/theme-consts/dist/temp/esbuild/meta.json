@@ -1,20 +1,58 @@
 {
   "inputs": {
     "src/index.ts": {
-      "bytes": 2301,
+      "bytes": 8883,
       "imports": [
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-langs",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "chrono-node",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "find-up",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "mdast-util-from-markdown",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "mdast-util-to-string",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "spdx-license-list/spdx.json",
+          "kind": "import-statement",
+          "external": true,
+          "with": {
+            "type": "json"
+          }
+        },
         {
           "path": "zod",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/module-is-lang",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "spdx-license-list",
+          "path": "<runtime>",
           "kind": "import-statement",
           "external": true
         }
@@ -27,37 +65,70 @@
       "imports": [],
       "exports": [],
       "inputs": {},
-      "bytes": 4189
+      "bytes": 16599
     },
     "dist/final/index.js": {
       "imports": [
         {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-langs",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "chrono-node",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "find-up",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "mdast-util-from-markdown",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "mdast-util-to-string",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "spdx-license-list/spdx.json",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
           "path": "zod",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "@monochromatic.dev/module-is-lang",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "spdx-license-list",
           "kind": "import-statement",
           "external": true
         }
       ],
       "exports": [
         "default",
-        "typescriptType"
+        "zAuthor",
+        "zBlame",
+        "zBlames",
+        "zChronoDate"
       ],
       "entryPoint": "src/index.ts",
       "inputs": {
         "src/index.ts": {
-          "bytesInOutput": 1935
+          "bytesInOutput": 8028
         }
       },
-      "bytes": 2040
+      "bytes": 8292
     }
   }
 }

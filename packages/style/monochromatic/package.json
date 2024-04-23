@@ -1,14 +1,25 @@
 {
   "name": "@monochromatic.dev/style-monochromatic",
-  "files": [
-    "src/"
-  ],
+  "files": ["src/", "dist/"],
+  "type": "module",
+  "main": "src/index.css",
   "scripts": {},
   "devDependencies": {
     "@monochromatic.dev/config-dprint": "*",
-    "dprint": "0.45.1"
+    "@monochromatic.dev/config-typescript": "*",
+    "@monochromatic.dev/config-api-extractor": "*",
+    "dprint": ">=0.45.1",
+    "@monochromatic.dev/build": "*",
+    "vite": "*",
+    "@types/node": ">=20.12.7",
+    "vue-tsc": "*",
+    "@types/mdx": "*",
+    "@monochromatic.dev/schema-theme-consts": "*"
   },
   "version": "0.1.0",
+  "dependencies": {
+    "the-new-css-reset": ">=1.11.2"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",

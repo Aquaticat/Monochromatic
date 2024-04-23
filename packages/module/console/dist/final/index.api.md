@@ -5,9 +5,18 @@
 ```ts
 
 // @public (undocumented)
+export const assert: (assertion: boolean, ...objs: any[]) => boolean;
+
+// @public (undocumented)
+export function debug<T1>(arg1: T1): T1;
+
+// @public (undocumented)
+export function debug<T2>(...arg2plus: T2[]): T2[];
+
+// @public (undocumented)
 const _default: Readonly<{
     assert: (assertion: boolean, ...objs: any[]) => boolean;
-    debug: typeof debug_2;
+    debug: typeof debug;
     info: typeof info;
     warn: typeof warn;
     error: typeof error;
@@ -15,13 +24,32 @@ const _default: Readonly<{
 }>;
 export default _default;
 
-// Warnings were encountered during analysis:
-//
-// src/index.ts:96:43 - (ae-forgotten-export) The symbol "debug_2" needs to be exported by the entry point index.d.ts
-// src/index.ts:96:43 - (ae-forgotten-export) The symbol "info" needs to be exported by the entry point index.d.ts
-// src/index.ts:96:43 - (ae-forgotten-export) The symbol "warn" needs to be exported by the entry point index.d.ts
-// src/index.ts:96:43 - (ae-forgotten-export) The symbol "error" needs to be exported by the entry point index.d.ts
-// src/index.ts:96:43 - (ae-forgotten-export) The symbol "log" needs to be exported by the entry point index.d.ts
+// @public (undocumented)
+export function error<T1>(arg1: T1): T1;
+
+// @public (undocumented)
+export function error<T2>(...arg2plus: T2[]): T2[];
+
+// @public (undocumented)
+export function info<T1>(arg1: T1): T1;
+
+// @public (undocumented)
+export function info<T2>(...arg2plus: T2[]): T2[];
+
+// @public (undocumented)
+export const isDirSpecial: () => boolean;
+
+// @public (undocumented)
+export function log<T1>(arg1: T1): T1;
+
+// @public (undocumented)
+export function log<T2>(...arg2plus: T2[]): T2[];
+
+// @public (undocumented)
+export function warn<T1>(arg1: T1): T1;
+
+// @public (undocumented)
+export function warn<T2>(...arg2plus: T2[]): T2[];
 
 // (No @packageDocumentation comment for this package)
 

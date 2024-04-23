@@ -11,7 +11,9 @@
     "tsconfig.dom.json",
     "dom.example.tsconfig.json",
     "tsconfig.worker.json",
-    "worker.example.tsconfig.json"
+    "worker.example.tsconfig.json",
+    "tsconfig.ssg.json",
+    "ssg.example.tsconfig.json"
   ],
   "keywords": ["config", "monochromatic", "typescript"],
   "author": {
@@ -22,7 +24,22 @@
   "exports": {
     ".": "./tsconfig.json",
     "./dom": "./tsconfig.dom.json",
-    "./worker": "./tsconfig.worker.json"
+    "./worker": "./tsconfig.worker.json",
+    "./ssg": "./tsconfig.ssg.json"
+  },
+  "peerDependencies": {
+    "vite": "*",
+    "@types/node": "*",
+    "@types/mdx": ">=2.0.13",
+    "typescript": ">=5.4.5",
+    "@monochromatic.dev/schema-theme-consts": "*"
+  },
+  "dependencies": {
+    "vite": "*",
+    "@types/node": "*",
+    "@types/mdx": ">=2.0.13",
+    "typescript": ">=5.4.5",
+    "@monochromatic.dev/schema-theme-consts": "*"
   },
   "license": "Apache-2.0",
   "repository": {

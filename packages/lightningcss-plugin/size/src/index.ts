@@ -1,4 +1,8 @@
-import type { Visitor, CustomAtRules, Size } from 'lightningcss';
+import type {
+  CustomAtRules,
+  Size,
+  Visitor,
+} from 'lightningcss';
 
 export default {
   Declaration: {

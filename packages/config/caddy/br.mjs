@@ -1,6 +1,6 @@
 import { exec as execOriginal } from 'node:child_process';
-import { promisify } from 'node:util';
 import { readdirSync } from 'node:fs';
+import { promisify } from 'node:util';
 
 const exec = promisify(execOriginal);
 const shell = '/bin/bash';

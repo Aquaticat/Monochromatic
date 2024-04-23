@@ -1,4 +1,4 @@
-@import 'the-new-css-reset/css/reset.css';
+@import 'the-new-css-reset';
 @import 'consts/colors.css';
 @import 'consts/fonts.css';
 @import 'consts/typography.css';

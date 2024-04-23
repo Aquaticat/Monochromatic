@@ -1,0 +1,9 @@
+{
+  "extends": "@monochromatic.dev/config-typescript/worker",
+  "compilerOptions": {
+    "allowArbitraryExtensions": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["node", "vite/client", "mdx", "@monochromatic.dev/schema-theme-consts/toml"],
+  },
+}

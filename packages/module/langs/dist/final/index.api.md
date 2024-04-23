@@ -5,6 +5,10 @@
 ```ts
 
 // @public (undocumented)
+const _default: string[];
+export default _default;
+
+// @public (undocumented)
 export const fullLangs: string[];
 
 // @public (undocumented)

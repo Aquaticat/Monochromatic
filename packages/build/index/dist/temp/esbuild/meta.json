@@ -1,0 +1,403 @@
+{
+  "inputs": {
+    "src/js.ts": {
+      "bytes": 5065,
+      "imports": [
+        {
+          "path": "@hbsnow/rehype-sectionize",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@mdx-js/esbuild",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/esbuild-plugin-jsonc",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/esbuild-plugin-toml",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/esbuild-plugin-yaml",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/schema-theme-consts",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "browserslist",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "esbuild-plugin-browserslist",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "remark-gfm",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "remark-github-beta-blockquote-admonitions",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "remark-smartypants",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/css.ts": {
+      "bytes": 1944,
+      "imports": [
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-apply",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-custom-units",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-property-lookup",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-size",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-resolve",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "browserslist",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "cssnano-preset-default",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "lightningcss",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/index.ts": {
+      "bytes": 9078,
+      "imports": [
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zod",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zod-opts",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "cssnano",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "lightningcss",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "postcss",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "esbuild",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@microsoft/api-extractor",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "find-up",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/js.ts",
+          "kind": "import-statement",
+          "original": "./js.ts"
+        },
+        {
+          "path": "src/css.ts",
+          "kind": "import-statement",
+          "original": "./css.ts"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "dist/final/index.js.map": {
+      "imports": [],
+      "exports": [],
+      "inputs": {},
+      "bytes": 24966
+    },
+    "dist/final/index.js": {
+      "imports": [
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zod",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zod-opts",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "cssnano",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "lightningcss",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "postcss",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "esbuild",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@microsoft/api-extractor",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "find-up",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@hbsnow/rehype-sectionize",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@mdx-js/esbuild",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/esbuild-plugin-jsonc",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/esbuild-plugin-toml",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/esbuild-plugin-yaml",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/schema-theme-consts",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "browserslist",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "esbuild-plugin-browserslist",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "remark-gfm",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "remark-github-beta-blockquote-admonitions",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "remark-smartypants",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-apply",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-custom-units",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-property-lookup",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-size",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-resolve",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "browserslist",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "cssnano-preset-default",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "lightningcss",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "exports": [],
+      "entryPoint": "src/index.ts",
+      "inputs": {
+        "src/index.ts": {
+          "bytesInOutput": 8595
+        },
+        "src/js.ts": {
+          "bytesInOutput": 4799
+        },
+        "src/css.ts": {
+          "bytesInOutput": 1771
+        }
+      },
+      "bytes": 15411
+    }
+  }
+}

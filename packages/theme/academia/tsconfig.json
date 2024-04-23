@@ -1,6 +1,8 @@
 {
-  "extends": "@monochromatic.dev/tsconfig",
-  "include": [
-    "src",
-  ],
+  "extends": "@monochromatic.dev/config-typescript/dom",
+  "include": ["src"],
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist/temp/tsc",
+  },
 }

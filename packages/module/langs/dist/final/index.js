@@ -1,15 +1,1 @@
-// src/index.ts
-var lowercaseLetters = [..."abcdefghijklmnopqrstuvwxyz"];
-var uppercaseLetters = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
-var shortLangs = lowercaseLetters.flatMap(
-  (lowercaseLetter) => lowercaseLetters.map((lowercaseLetter2) => `${lowercaseLetter}${lowercaseLetter2}`)
-);
-var langSubs = uppercaseLetters.flatMap(
-  (uppercaseLetter) => uppercaseLetters.map((uppercaseLetter2) => `${uppercaseLetter}${uppercaseLetter2}`)
-);
-var fullLangs = shortLangs.flatMap((shortLang) => langSubs.map((langSub) => `${shortLang}_${langSub}`));
-export {
-  fullLangs,
-  shortLangs
-};
-//# sourceMappingURL=index.js.map
+var lowercaseLetters=[..."abcdefghijklmnopqrstuvwxyz"],uppercaseLetters=[..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"],shortLangs=lowercaseLetters.flatMap(lowercaseLetter=>lowercaseLetters.map(lowercaseLetter2=>`${lowercaseLetter}${lowercaseLetter2}`)),langSubs=uppercaseLetters.flatMap(uppercaseLetter=>uppercaseLetters.map(uppercaseLetter2=>`${uppercaseLetter}${uppercaseLetter2}`)),fullLangs=shortLangs.flatMap(shortLang=>langSubs.map(langSub=>`${shortLang}_${langSub}`)),src_default=shortLangs.concat(fullLangs);export{src_default as default,fullLangs,shortLangs};

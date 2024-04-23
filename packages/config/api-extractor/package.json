@@ -3,7 +3,9 @@
   "version": "0.0.5",
   "description": "Monochromatic's api-extractor.json",
   "main": "index.json",
-  "files": ["index.json", "example.api-extractor.json"],
+  "module": "index.json",
+  "type": "module",
+  "files": ["index.json", "index.ssg.json", "example.api-extractor.json"],
   "keywords": ["config", "monochromatic", "api-extractor", "typescript"],
   "author": {
     "name": "Aquaticat",
@@ -17,6 +19,6 @@
     "directory": "packages/config/api-extractor"
   },
   "peerDependencies": {
-    "@microsoft/api-extractor": "*"
+    "@microsoft/api-extractor": ">=7.43.1"
   }
 }

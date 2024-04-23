@@ -1,0 +1,738 @@
+{
+  "metadata": {
+    "toolPackage": "@microsoft/api-extractor",
+    "toolVersion": "7.43.0",
+    "schemaVersion": 1011,
+    "oldestForwardsCompatibleVersion": 1001,
+    "tsdocConfig": {
+      "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+      "noStandardTags": true,
+      "tagDefinitions": [
+        {
+          "tagName": "@alpha",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@beta",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@defaultValue",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@decorator",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@deprecated",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@eventProperty",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@example",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@experimental",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@inheritDoc",
+          "syntaxKind": "inline"
+        },
+        {
+          "tagName": "@internal",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@label",
+          "syntaxKind": "inline"
+        },
+        {
+          "tagName": "@link",
+          "syntaxKind": "inline",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@override",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@packageDocumentation",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@param",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@privateRemarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@public",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@readonly",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@remarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@returns",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@sealed",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@see",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@throws",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@typeParam",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@virtual",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@betaDocumentation",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@internalRemarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@preapproved",
+          "syntaxKind": "modifier"
+        }
+      ],
+      "supportForTags": {
+        "@alpha": true,
+        "@beta": true,
+        "@defaultValue": true,
+        "@decorator": true,
+        "@deprecated": true,
+        "@eventProperty": true,
+        "@example": true,
+        "@experimental": true,
+        "@inheritDoc": true,
+        "@internal": true,
+        "@label": true,
+        "@link": true,
+        "@override": true,
+        "@packageDocumentation": true,
+        "@param": true,
+        "@privateRemarks": true,
+        "@public": true,
+        "@readonly": true,
+        "@remarks": true,
+        "@returns": true,
+        "@sealed": true,
+        "@see": true,
+        "@throws": true,
+        "@typeParam": true,
+        "@virtual": true,
+        "@betaDocumentation": true,
+        "@internalRemarks": true,
+        "@preapproved": true
+      },
+      "reportUnsupportedHtmlElements": false
+    }
+  },
+  "kind": "Package",
+  "canonicalReference": "@monochromatic.dev/module-fs-path!",
+  "docComment": "",
+  "name": "@monochromatic.dev/module-fs-path",
+  "preserveMemberOrder": false,
+  "members": [
+    {
+      "kind": "EntryPoint",
+      "canonicalReference": "@monochromatic.dev/module-fs-path!",
+      "name": "",
+      "preserveMemberOrder": false,
+      "members": [
+        {
+          "kind": "Variable",
+          "canonicalReference": "@monochromatic.dev/module-fs-path!fs:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "fs: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n    chmod: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsChmod",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".chmod:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    chown: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsChown",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".chown:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    lchown: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsLchown",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".lchown:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    cp: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsCp",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".cp:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    lutimes: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsLutimes",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".lutimes:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    link: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsLink",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".link:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    lstat: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsLstat",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".lstat:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    mkdtemp: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsMkdtemp",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".mkdtemp:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    readlink: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsReadlink",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".readlink:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    realpath: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsRealpath",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".realpath:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    rename: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsRename",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".rename:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    statfs: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsStatfs",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".statfs:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    symlink: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsSymlink",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".symlink:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    truncate: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsTruncate",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".truncate:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    unlink: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsUnlink",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".unlink:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    utimes: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsUtimes",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".utimes:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    constants: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsC",
+              "canonicalReference": "@monochromatic.dev/module-fs-path!~fsC"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    appendFile: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsAppendFile",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".appendFile:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    writeFile: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsWriteFile",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".writeFile:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    copyFile: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsCopyFile",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".copyFile:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    mkdir: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsMkdir",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".mkdir:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    readdir: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsReaddir",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".readdir:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    access: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsAccess",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".access:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    opendir: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsOpendir",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".opendir:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    rm: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsRm",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".rm:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    C: {\n        S_IAA: number;\n        S_IAUSR: number;\n        S_IAGRP: number;\n        S_IAOTH: number;\n        S_IRA: number;\n        S_IWA: number;\n        S_IXA: number;\n        F_OK: number;\n        R_OK: number;\n        W_OK: number;\n        X_OK: number;\n        COPYFILE_EXCL: number;\n        COPYFILE_FICLONE: number;\n        COPYFILE_FICLONE_FORCE: number;\n        O_RDONLY: number;\n        O_WRONLY: number;\n        O_RDWR: number;\n        O_CREAT: number;\n        O_EXCL: number;\n        O_NOCTTY: number;\n        O_TRUNC: number;\n        O_APPEND: number;\n        O_DIRECTORY: number;\n        O_NOATIME: number;\n        O_NOFOLLOW: number;\n        O_SYNC: number;\n        O_DSYNC: number;\n        O_SYMLINK: number;\n        O_DIRECT: number;\n        O_NONBLOCK: number;\n        S_IFMT: number;\n        S_IFREG: number;\n        S_IFDIR: number;\n        S_IFCHR: number;\n        S_IFBLK: number;\n        S_IFIFO: number;\n        S_IFLNK: number;\n        S_IFSOCK: number;\n        S_IRWXU: number;\n        S_IRUSR: number;\n        S_IWUSR: number;\n        S_IXUSR: number;\n        S_IRWXG: number;\n        S_IRGRP: number;\n        S_IWGRP: number;\n        S_IXGRP: number;\n        S_IRWXO: number;\n        S_IROTH: number;\n        S_IWOTH: number;\n        S_IXOTH: number;\n        UV_FS_O_FILEMAP: number;\n    };\n    readFileU: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsReadFileU",
+              "canonicalReference": "@monochromatic.dev/module-fs-path!~fsReadFileU:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    readFileMU: (path: string) => "
+            },
+            {
+              "kind": "Reference",
+              "text": "ReturnType",
+              "canonicalReference": "!ReturnType:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsReadFileU",
+              "canonicalReference": "@monochromatic.dev/module-fs-path!~fsReadFileU:function"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    stat: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsStat",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".stat:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    accessM: (path: import(\"fs\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "PathLike",
+              "canonicalReference": "!\"\\\"fs\\\"\".PathLike:type"
+            },
+            {
+              "kind": "Content",
+              "text": ", mode?: number | undefined) => "
+            },
+            {
+              "kind": "Reference",
+              "text": "ReturnType",
+              "canonicalReference": "!ReturnType:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsAccess",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".access:function"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    outputFile: (file: import(\"fs\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "PathLike",
+              "canonicalReference": "!\"\\\"fs\\\"\".PathLike:type"
+            },
+            {
+              "kind": "Content",
+              "text": " | import(\"fs/promises\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "FileHandle",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".FileHandle:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", data: string | "
+            },
+            {
+              "kind": "Reference",
+              "text": "NodeJS.ArrayBufferView",
+              "canonicalReference": "@types/node!__global.NodeJS.ArrayBufferView:type"
+            },
+            {
+              "kind": "Content",
+              "text": " | "
+            },
+            {
+              "kind": "Reference",
+              "text": "Iterable",
+              "canonicalReference": "!Iterable:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string | "
+            },
+            {
+              "kind": "Reference",
+              "text": "NodeJS.ArrayBufferView",
+              "canonicalReference": "@types/node!__global.NodeJS.ArrayBufferView:type"
+            },
+            {
+              "kind": "Content",
+              "text": "> | "
+            },
+            {
+              "kind": "Reference",
+              "text": "AsyncIterable",
+              "canonicalReference": "!AsyncIterable:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string | "
+            },
+            {
+              "kind": "Reference",
+              "text": "NodeJS.ArrayBufferView",
+              "canonicalReference": "@types/node!__global.NodeJS.ArrayBufferView:type"
+            },
+            {
+              "kind": "Content",
+              "text": "> | import(\"stream\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "Stream",
+              "canonicalReference": "!\"\\\"stream\\\"\".internal.Stream:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", options?: "
+            },
+            {
+              "kind": "Reference",
+              "text": "BufferEncoding",
+              "canonicalReference": "!\"\\\"buffer\\\"\".__global.BufferEncoding:type"
+            },
+            {
+              "kind": "Content",
+              "text": " | (import(\"fs\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "ObjectEncodingOptions",
+              "canonicalReference": "!\"\\\"fs\\\"\".ObjectEncodingOptions:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " & {\n        mode?: import(\"fs\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "Mode",
+              "canonicalReference": "!\"\\\"fs\\\"\".Mode:type"
+            },
+            {
+              "kind": "Content",
+              "text": " | undefined;\n        flag?: import(\"fs\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "OpenMode",
+              "canonicalReference": "!\"\\\"fs\\\"\".OpenMode:type"
+            },
+            {
+              "kind": "Content",
+              "text": " | undefined;\n        flush?: boolean | undefined;\n    } & import(\"events\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "Abortable",
+              "canonicalReference": "!\"\\\"events\\\"\".EventEmitter.Abortable:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ") | null | undefined) => "
+            },
+            {
+              "kind": "Reference",
+              "text": "ReturnType",
+              "canonicalReference": "!ReturnType:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsWriteFile",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".writeFile:function"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    cpFile: (src: import(\"fs\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "PathLike",
+              "canonicalReference": "!\"\\\"fs\\\"\".PathLike:type"
+            },
+            {
+              "kind": "Content",
+              "text": ", dest: import(\"fs\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "PathLike",
+              "canonicalReference": "!\"\\\"fs\\\"\".PathLike:type"
+            },
+            {
+              "kind": "Content",
+              "text": ", mode?: number | undefined) => "
+            },
+            {
+              "kind": "Reference",
+              "text": "ReturnType",
+              "canonicalReference": "!ReturnType:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsCopyFile",
+              "canonicalReference": "!\"\\\"fs/promises\\\"\".copyFile:function"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    empty: (path: string) => "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<void>;\n}>"
+            }
+          ],
+          "fileUrlPath": "src/index.ts",
+          "isReadonly": true,
+          "releaseTag": "Public",
+          "name": "fs",
+          "variableTypeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 107
+          }
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "@monochromatic.dev/module-fs-path!path:var",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "path: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Readonly",
+              "canonicalReference": "!Readonly:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<{\n    resolve: (...paths: string[]) => string;\n    join: (...paths: string[]) => string;\n    relative: (from: string, to: string) => string;\n    sep: \"\\\\\" | \"/\";\n    format: (pathObject: import(\"path\")."
+            },
+            {
+              "kind": "Reference",
+              "text": "FormatInputPathObject",
+              "canonicalReference": "!\"\\\"path\\\"\".path.FormatInputPathObject:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ") => string;\n    delimiter: \";\" | \":\";\n    normalize: (path: string) => string;\n    parseFs: (path: string) => "
+            },
+            {
+              "kind": "Reference",
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "ReturnType",
+              "canonicalReference": "!ReturnType:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "pathParse",
+              "canonicalReference": "!\"\\\"path\\\"\".path.PlatformPath#parse:member"
+            },
+            {
+              "kind": "Content",
+              "text": ">>;\n    split: (path: string) => string[];\n}>"
+            }
+          ],
+          "fileUrlPath": "src/index.ts",
+          "isReadonly": true,
+          "releaseTag": "Public",
+          "name": "path",
+          "variableTypeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 11
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -7,6 +7,9 @@
   "[astro]": {
     "editor.defaultFormatter": "dprint.dprint",
   },
+  "[vue]": {
+    "editor.defaultFormatter": "dprint.dprint",
+  },
   "[css]": {
     "editor.defaultFormatter": "dprint.dprint",
   },
@@ -17,22 +20,34 @@
     "editor.defaultFormatter": "dprint.dprint",
   },
   "[js]": {
-    "editor.defaultFormatter": "biomejs.biome",
+    "editor.defaultFormatter": "dprint.dprint",
   },
   "[ts]": {
-    "editor.defaultFormatter": "biomejs.biome",
+    "editor.defaultFormatter": "dprint.dprint",
   },
   "[mjs]": {
-    "editor.defaultFormatter": "biomejs.biome",
+    "editor.defaultFormatter": "dprint.dprint",
   },
   "[mts]": {
-    "editor.defaultFormatter": "biomejs.biome",
+    "editor.defaultFormatter": "dprint.dprint",
   },
   "[cjs]": {
-    "editor.defaultFormatter": "biomejs.biome",
+    "editor.defaultFormatter": "dprint.dprint",
   },
   "[cts]": {
-    "editor.defaultFormatter": "biomejs.biome",
+    "editor.defaultFormatter": "dprint.dprint",
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "dprint.dprint",
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "dprint.dprint",
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "dprint.dprint",
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "dprint.dprint",
   },
   "[json]": {
     "editor.defaultFormatter": "biomejs.biome",

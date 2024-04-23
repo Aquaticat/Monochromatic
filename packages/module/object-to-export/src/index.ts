@@ -1,8 +1,8 @@
 import typeOf from '@monochromatic.dev/module-type-of';
 
-const unsupported = Object.freeze(['null', 'undefined', 'NaN', 'bigint', 'symbol', 'date']);
+const unsupported = Object.freeze(['null', 'undefined', 'NaN', 'bigint', 'symbol']);
 
-const primitive = Object.freeze(['boolean', 'string', 'number']);
+const primitive = Object.freeze(['boolean', 'string', 'number', 'date']);
 
 export default function toExport(obj: any): string {
   const objType = typeOf(obj);
@@ -17,7 +17,10 @@ export default function toExport(obj: any): string {
         return String(obj);
       }
       case 'string': {
-        return `\`${obj}\``;
+        return `${JSON.stringify(obj)}`;
+      }
+      case 'date': {
+        return `new Date(${JSON.stringify(obj)})`;
       }
     }
   }
@@ -35,9 +38,11 @@ export default function toExport(obj: any): string {
       return `Object.freeze([${obj.map((i) => toExport(i))}])`;
     }
     case 'object': {
-      return `Object.freeze(Object.fromEntries([${Object.entries(obj).map(
-        ([k, v]) => `[${toExport(k)}, ${toExport(v)}]`,
-      )}]))`;
+      return `Object.freeze(Object.fromEntries([${
+        Object.entries(obj).map(
+          ([k, v]) => `[${toExport(k)}, ${toExport(v)}]`,
+        )
+      }]))`;
     }
     default: {
       throw new TypeError(`Unknown obj ${obj} ${JSON.stringify(obj)} type ${objType}`);

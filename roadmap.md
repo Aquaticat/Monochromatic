@@ -162,3 +162,59 @@ If we target Firefox ESR 128, which is to be released on July 9th, we can skip t
 [deepl-node](https://github.com/DeepLcom/deepl-node)
 
 ## TODO: Set default modified date by `git log`
+
+## TODO: Write custom lightningCSS resolver to correctly resolve node_modules
+
+## TODO: Submit `packageExtensions` to `pnpm`
+
+```json
+  "pnpm": {
+    "packageExtensions": {
+      "fs-extra": {
+        "dependencies": {
+          "universalify": "*"
+        }
+      }
+    }
+  }
+```
+
+Otherwise, when using `api-extractor`:
+
+```text
+[1] > api-extractor run --local --verbose
+[1]
+[1] /workspaces/monochromatic2024MAR06/.pnp.cjs:9732
+[1]     throw firstError;
+[1]     ^
+[1]
+[1] Error: fs-extra tried to access universalify, but it isn't declared in its dependencies; this makes the require call ambiguous and unsound.
+[1]
+[1] Required package: universalify (via "universalify")
+[1] Required by: fs-extra@7.0.1 (via /workspaces/monochromatic2024MAR06/node_modules/.pnpm/fs-extra@7.0.1/node_modules/fs-extra/lib/fs/)
+[1]
+[1] Require stack:
+[1] - /workspaces/monochromatic2024MAR06/node_modules/.pnpm/fs-extra@7.0.1/node_modules/fs-extra/lib/fs/index.js
+[1] - /workspaces/monochromatic2024MAR06/node_modules/.pnpm/fs-extra@7.0.1/node_modules/fs-extra/lib/index.js
+[1] - /workspaces/monochromatic2024MAR06/node_modules/.pnpm/@rushstack+node-core-library@4.0.2_@types+node@20.12.7/node_modules/@rushstack/node-core-library/lib/FileSystem.js
+[1] - /workspaces/monochromatic2024MAR06/node_modules/.pnpm/@rushstack+node-core-library@4.0.2_@types+node@20.12.7/node_modules/@rushstack/node-core-library/lib/Executable.js
+[1] - /workspaces/monochromatic2024MAR06/node_modules/.pnpm/@rushstack+node-core-library@4.0.2_@types+node@20.12.7/node_modules/@rushstack/node-core-library/lib/index.js
+[1] - /workspaces/monochromatic2024MAR06/node_modules/.pnpm/@rushstack+terminal@0.10.0_@types+node@20.12.7/node_modules/@rushstack/terminal/lib/NormalizeNewlinesTextRewriter.js
+[1] - /workspaces/monochromatic2024MAR06/node_modules/.pnpm/@rushstack+terminal@0.10.0_@types+node@20.12.7/node_modules/@rushstack/terminal/lib/index.js
+[1] - /workspaces/monochromatic2024MAR06/node_modules/.pnpm/@microsoft+api-extractor@7.43.0_@types+node@20.12.7/node_modules/@microsoft/api-extractor/lib/start.js
+[1] - /workspaces/monochromatic2024MAR06/node_modules/.pnpm/@microsoft+api-extractor@7.43.0_@types+node@20.12.7/node_modules/@microsoft/api-extractor/bin/api-extractor
+[1]     at internalTools_makeError (/workspaces/monochromatic2024MAR06/.pnp.cjs:9476:34)
+[1]     at resolveToUnqualified (/workspaces/monochromatic2024MAR06/.pnp.cjs:10441:23)
+[1]     at resolveRequest (/workspaces/monochromatic2024MAR06/.pnp.cjs:10533:29)
+[1]     at Object.resolveRequest (/workspaces/monochromatic2024MAR06/.pnp.cjs:10611:26)
+[1]     at external_module_.Module._resolveFilename (/workspaces/monochromatic2024MAR06/.pnp.cjs:9709:34)
+[1]     at external_module_.Module._load (/workspaces/monochromatic2024MAR06/.pnp.cjs:9574:48)
+[1]     at Module.require (node:internal/modules/cjs/loader:1231:19)
+[1]     at require (node:internal/modules/helpers:179:18)
+[1]     at Object.<anonymous> (/workspaces/monochromatic2024MAR06/node_modules/.pnpm/fs-extra@7.0.1/node_modules/fs-extra/lib/fs/index.js:4:11)
+[1]     at Module._compile (node:internal/modules/cjs/loader:1369:14)
+[1]
+[1] Node.js v20.12.0
+[1]  ELIFECYCLE  Command failed with exit code 1.
+[1]  ELIFECYCLE  Command failed with exit code 1.
+```

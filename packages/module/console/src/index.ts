@@ -1,26 +1,8 @@
-const D = (() => {
+export const isDirSpecial = () => {
   if (
-    typeof import.meta === 'undefined' ||
-    typeof import.meta.env === 'undefined' ||
-    typeof import.meta.env.MODE === 'undefined'
-  ) {
-    if (
-      typeof process === 'undefined' ||
-      typeof process.env === 'undefined' ||
-      typeof process.env.NODE_ENV === 'undefined'
-    ) {
-      return false;
-    }
-    return process.env.NODE_ENV === 'development';
-  }
-  return import.meta.env.MODE === 'development';
-})();
-
-const isDirSpecial = () => {
-  if (
-    typeof process === 'undefined' ||
-    typeof process.release === 'undefined' ||
-    typeof process.release.name === 'undefined'
+    typeof process === 'undefined'
+    || typeof process.release === 'undefined'
+    || typeof process.release.name === 'undefined'
   ) {
     return false;
   }
@@ -36,11 +18,17 @@ const _dir = (...args) => {
     });
   } else {
     args.forEach((arg) => {
-      console.dir(arg);
+      /* fix for "sometimes c.log()" outputs quotes around strings.
+         We don't want it to output quotes around strings ever. */
+      if (typeof arg === 'string') {
+        console.log(arg);
+      } else {
+        console.dir(arg);
+      }
     });
   }
 };
-const assert = (assertion: boolean, ...objs) => {
+export const assert = (assertion: boolean, ...objs) => {
   if (!assertion) {
     console.log('ASSERT:');
     console.trace();
@@ -49,10 +37,11 @@ const assert = (assertion: boolean, ...objs) => {
   return assertion;
 };
 
-function debug<T1>(arg1: T1): T1;
-function debug<T2>(...arg2plus: T2[]): T2[];
-function debug<T1, T2>(arg1: T1, ...arg2plus: T2[]): T1 | T2[] {
-  if (D) {
+export function debug<T1,>(arg1: T1): T1;
+export function debug<T2,>(...arg2plus: T2[]): T2[];
+export function debug<T1, T2,>(arg1: T1, ...arg2plus: T2[]): T1 | T2[] {
+  // TODO: Migrate to import.meta.env.MODE
+  if (import.meta.env.DEV) {
     console.debug('DEBUG:');
     console.trace();
     _dir(arg1, ...arg2plus);
@@ -60,10 +49,10 @@ function debug<T1, T2>(arg1: T1, ...arg2plus: T2[]): T1 | T2[] {
   return arguments.length === 1 ? arg1 : arg2plus;
 }
 
-function info<T1>(arg1: T1): T1;
-function info<T2>(...arg2plus: T2[]): T2[];
-function info<T1, T2>(arg1: T1, ...arg2plus: T2[]): T1 | T2[] {
-  if (D) {
+export function info<T1,>(arg1: T1): T1;
+export function info<T2,>(...arg2plus: T2[]): T2[];
+export function info<T1, T2,>(arg1: T1, ...arg2plus: T2[]): T1 | T2[] {
+  if (import.meta.env.DEV) {
     console.info('INFO:');
     console.trace();
     _dir(arg1, ...arg2plus);
@@ -71,18 +60,18 @@ function info<T1, T2>(arg1: T1, ...arg2plus: T2[]): T1 | T2[] {
   return arg2plus.length === 0 ? arg1 : arg2plus;
 }
 
-function warn<T1>(arg1: T1): T1;
-function warn<T2>(...arg2plus: T2[]): T2[];
-function warn<T1, T2>(arg1: T1, ...arg2plus: T2[]): T1 | T2[] {
+export function warn<T1,>(arg1: T1): T1;
+export function warn<T2,>(...arg2plus: T2[]): T2[];
+export function warn<T1, T2,>(arg1: T1, ...arg2plus: T2[]): T1 | T2[] {
   console.warn('WARN:');
   console.trace();
   _dir(arg1, ...arg2plus);
   return arg2plus.length === 0 ? arg1 : arg2plus;
 }
 
-function error<T1>(arg1: T1): T1;
-function error<T2>(...arg2plus: T2[]): T2[];
-function error<T1, T2>(arg1: T1, ...arg2plus: T2[]): T1 | T2[] {
+export function error<T1,>(arg1: T1): T1;
+export function error<T2,>(...arg2plus: T2[]): T2[];
+export function error<T1, T2,>(arg1: T1, ...arg2plus: T2[]): T1 | T2[] {
   console.error('ERROR:');
   if (process.exitCode === 0) {
     process.exitCode = 1;
@@ -92,11 +81,9 @@ function error<T1, T2>(arg1: T1, ...arg2plus: T2[]): T1 | T2[] {
   return arg2plus.length === 0 ? arg1 : arg2plus;
 }
 
-function log<T1>(arg1: T1): T1;
-function log<T2>(...arg2plus: T2[]): T2[];
-function log<T1, T2>(arg1: T1, ...arg2plus: T2[]): T1 | T2[] {
-  console.log('LOG:');
-  console.trace();
+export function log<T1,>(arg1: T1): T1;
+export function log<T2,>(...arg2plus: T2[]): T2[];
+export function log<T1, T2,>(arg1: T1, ...arg2plus: T2[]): T1 | T2[] {
   _dir(arg1, ...arg2plus);
   return arg2plus.length === 0 ? arg1 : arg2plus;
 }

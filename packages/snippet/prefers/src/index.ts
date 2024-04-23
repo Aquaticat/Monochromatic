@@ -2,18 +2,19 @@ import { piped } from 'rambdax';
 
 export const prefers: ReadonlyMap<string, ReadonlySet<string>> = piped(
   [
-    piped(['contrast', 'reduced-motion', 'reduced-data', 'reduced-transparency'], (val) =>
-      val.map((directive): [string, ReadonlySet<string>] => [
-        directive,
-        piped(['toggle', 'true', 'false'], (val) => new Set(val)),
-      ]),
+    piped(
+      ['contrast', 'reduced-motion', 'reduced-data', 'reduced-transparency'],
+      (val) =>
+        val.map((directive): [string, ReadonlySet<string>] => [
+          directive,
+          piped(['toggle', 'true', 'false'], (val) => new Set(val)),
+        ]),
     ),
     piped(['color-scheme'], (val) =>
       val.map((directive): [string, ReadonlySet<string>] => [
         directive,
         piped(['toggle', 'light', 'dark'], (val) => new Set(val)),
-      ]),
-    ),
+      ])),
   ],
   (val) => val.flat(),
   (val) => new Map(val),

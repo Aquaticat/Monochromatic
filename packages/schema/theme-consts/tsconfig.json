@@ -1,10 +1,16 @@
 {
-  "extends": "@monochromatic.dev/config-typescript",
-
-  "include": ["src"],
-
+  "extends": "@monochromatic.dev/config-typescript/ssg",
+  "include": ["src", "dist/temp/gen-html"],
   "compilerOptions": {
+    "rootDir": ".",
+    "rootDirs": ["src", "dist/temp/gen-html"],
     "outDir": "dist/temp/tsc",
-    "rootDir": "src"
-  }
+
+    "types": ["node", "vite/client"],
+
+    "paths": {
+      "@_/*": ["./src/_/*"],
+      "@/*": ["./*"],
+    },
+  },
 }

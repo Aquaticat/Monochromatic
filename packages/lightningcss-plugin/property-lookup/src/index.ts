@@ -1,4 +1,7 @@
-import type { Visitor, CustomAtRules } from 'lightningcss';
+import type {
+  CustomAtRules,
+  Visitor,
+} from 'lightningcss';
 
 export default {
   Rule: {

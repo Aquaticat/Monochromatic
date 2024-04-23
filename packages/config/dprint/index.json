@@ -1,18 +1,17 @@
 {
+  /* This is just the schema for dprint cli options.
+     Find schemas for individual plugins on their own release pages.
+     For example: https://github.com/dprint/dprint-plugin-typescript/releases/download/0.90.3/schema.json
+     TODO: Write a schema merger. */
+  "$schema": "https://dprint.dev/schemas/v0.json",
   "excludes": [
     "**/node_modules/**/*.*",
-    "**/build/**/*.*",
     "**/dist/**/*.*",
     "**/.dist/**/*.*",
     "**/bak/**/*.*",
     "**/.astro/**/*.*",
-    "**/*.js",
-    "**/*.ts",
-    "**/*.mjs",
-    "**/*.cjs",
-    "**/*.mts",
-    "**/*.cts",
     "**/*.json",
+    "**/*.jsonc",
   ],
   "lineWidth": 120,
   "useTabs": false,
@@ -20,9 +19,9 @@
   "newLineKind": "lf",
   "plugins": [
     "https://plugins.dprint.dev/toml-0.6.1.wasm",
-    "https://plugins.dprint.dev/g-plane/markup_fmt-v0.6.0.wasm",
-    "https://plugins.dprint.dev/g-plane/malva-v0.2.0.wasm",
-    "https://plugins.dprint.dev/typescript-0.89.3.wasm",
+    "https://plugins.dprint.dev/g-plane/markup_fmt-v0.7.0.wasm",
+    "https://plugins.dprint.dev/g-plane/malva-v0.3.0.wasm",
+    "https://plugins.dprint.dev/typescript-0.90.3.wasm",
   ],
   "toml": {
     "comment.forceLeadingSpace": false,
@@ -43,20 +42,38 @@
     "closingTagLineBreakForEmpty": "always",
     "maxAttrsPerLine": 1,
     "astroAttrShorthand": true,
+    "vBindStyle": "short",
+    "vOnStyle": "short",
+    "vForDelimiterStyle": "of",
+    "vSlotStyle": "vSlot",
+    "vBindSameNameShortHand": true,
     "associations": [
       /* mdx files get messed up.
          Mainly, the frontmatter is flattened into a single line.
          Disabled until author adds support for mdx. */
       // "**/*.mdx",
       "**/*.astro",
+      "**/*.vue",
       "**/*.html",
     ],
   },
   "typescript": {
     "semiColons": "always",
     "quoteStyle": "preferSingle",
+    "jsx.quoteStyle": "preferSingle",
     "useBraces": "maintain",
-    "trailingCommas": "always",
-    "commentLine.forceSpaceAfterSlashes": "false",
+
+    // For jsx (tsx) compatibility.
+    "typeParameters.trailingCommas": "always",
+
+    "arrowFunction.useParentheses": "force",
+    "binaryExpression.linePerExpression": true,
+    "jsx.bracketPosition": "sameLine",
+    "memberExpression.linePerExpression": true,
+    "commentLine.forceSpaceAfterSlashes": false,
+    "ignoreNodeCommentText": "formatter-ignore",
+    "ignoreFileCommentText": "formatter-ignore-file",
+    "exportDeclaration.forceMultiLine": "whenMultiple",
+    "importDeclaration.forceMultiLine": "whenMultiple",
   },
 }
