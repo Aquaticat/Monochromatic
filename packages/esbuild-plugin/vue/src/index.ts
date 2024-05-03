@@ -1,138 +1,150 @@
-import {fs, path} from '@monochromatic.dev/module-fs-path'
-import type { Plugin } from 'esbuild'
-import {parse, compileScript, compileTemplate, rewriteDefault} from 'vue/compiler-sfc'
+import {
+  fs,
+  path,
+} from '@monochromatic.dev/module-fs-path';
+import resolve from '@monochromatic.dev/module-resolve';
+import type { Plugin } from 'esbuild';
+import {
+  compileScript,
+  parse,
+} from 'vue/compiler-sfc';
+import bigintHash from '@monochromatic.dev/module-bigint-hash';
 
 export default (): Plugin => {
   return {
     name: 'vue',
 
     setup(build) {
-      build.onResolve({ filter: /\.vue$/ }, (args) => {
+      const cache = new Map();
+
+      build.onResolve({ filter: /\.vue$/ }, async (args) => {
         return {
-          path: args.path,
+          path: await resolve(args.path, args.importer),
           namespace: 'vue',
-          pluginData: { resolveDir: args.resolveDir },
-        }
-      })
+        };
+      });
 
-      build.onResolve({ filter: /\?vue&type=template/ }, (args) => {
-        return {
-          path: args.path,
-          namespace: 'vue',
-          pluginData: { resolveDir: args.resolveDir },
-        }
-      })
+      build.onLoad({ filter: /\.*/, namespace: 'vue' }, async (args) => {
+        const input = await fs.readFileU(args.path);
 
-      build.onResolve({ filter: /\?vue&type=script/ }, (args) => {
-        return {
-          path: args.path,
-          namespace: 'vue',
-          pluginData: { resolveDir: args.resolveDir },
-        }
-      })
+        const value = cache.get(args.path);
 
-      build.onResolve({ filter: /\?vue&type=style/ }, (args) => {
-        return {
-          path: args.path,
-          namespace: 'vue',
-          pluginData: { resolveDir: args.resolveDir },
-        }
-      })
-
-      build.onLoad({ filter: /\.vue$/, namespace: 'vue' }, async (args) => {
-        const { resolveDir } = args.pluginData
-        const filepath = formatPath(args.path, resolveDir)
-        const content = await fs.readFileU(filepath)
-        const sfc = parse(content);
-
-        let contents = ``
-
-        const inlineTemplate =
-          !!sfc.descriptor.scriptSetup && !sfc.descriptor.template?.src
-        const isTS =
-          sfc.descriptor.scriptSetup?.lang === 'ts' ||
-          sfc.descriptor.script?.lang === 'ts'
-        const hasScoped = sfc.descriptor.styles.some((s) => s.scoped)
-
-          const scriptResult = compileScript(sfc.descriptor, {
-            inlineTemplate,
-          })
-          contents += rewriteDefault(
-            scriptResult.content,
-            '__sfc_main',
-          )
-
-          contents += `
-          import { render } from "${args.path}?vue&type=template"
-
-          __sfc_main.render = render
-          `
-
-        if (hasScoped) {
-          contents += `__sfc_main.__scopeId = "data-v-${genId(args.path)}"\n`
+        if (value && value.input === input) {
+          return { contents: value.output, loader: 'ts', resolveDir: (await path.parseFs(args.path)).dir };
         }
 
-        contents += `\nexport default __sfc_main`
-        return {
-          contents,
-          resolveDir,
-          loader: 'ts',
-          watchFiles: [filepath],
-        }
-      })
+        const sfcParseResult = parse(input, { filename: args.path });
 
-      build.onLoad(
-        { filter: /\?vue&type=template/, namespace: 'vue' },
-        async (args) => {
-          const { resolveDir } = args.pluginData
-          const relativePath = removeQuery(args.path)
-          const filepath = formatPath(relativePath, resolveDir)
-          const source = await fs.readFileU(filepath)
-          const { descriptor } = parse(source)
-            const hasScoped = descriptor.styles.some((s) => s.scoped)
-            const id = genId(relativePath)
+        if (sfcParseResult.errors.length !== 0) {
+          throw new Error(`
+@monochromatic.dev/esbuild-plugin-vue failed to parse
 
-            const compiled = compileTemplate({
-              source: descriptor.template.content,
-              filename: filepath,
-              id,
-              scoped: hasScoped,
-              isProd: process.env.NODE_ENV === 'production',
-              slotted: descriptor.slotted,
-              compilerOptions: {
-                scopeId: hasScoped ? `data-v-${id}` : undefined,
-                expressionPlugins,
-              },
-            })
-            return {
-              resolveDir,
-              contents: compiled.code,
-            }
-        },
-      )
+\`\`\`${args.path}
+${input}
+\`\`\`
 
-      build.onLoad(
-        { filter: /\?vue&type=script/, namespace: 'vue' },
-        async (args) => {
-          const compiler = await getCompiler(absPath)
-          const { resolveDir } = args.pluginData
-          const relativePath = removeQuery(args.path)
-          const filepath = formatPath(relativePath, resolveDir)
-          const source = await fs.promises.readFile(filepath, 'utf8')
-
-          const { descriptor } = compiler.parse(source, { filename: filepath })
-          if (descriptor.script) {
-            const compiled = compiler.compileScript(descriptor, {
-              id: genId(relativePath),
-            })
-            return {
-              resolveDir,
-              contents: compiled.content,
-              loader: 'ts',
-            }
+with ${sfcParseResult.errors.length} errors:
+${
+            (sfcParseResult.errors.map((error) =>
+              ('code' in error)
+                ? `compiler ${error.message} ${
+                  error.loc
+                    ? `
+\`\`\` ${error.loc.start} to ${error.loc.end}
+${error.loc.source}
+\`\`\`
+`
+                    : ``
+                } vue(${error.code})`
+                : `syntax ${error.message}`
+            ))
+              .join('\n')
           }
-        },
-      )
+
+and result:
+${sfcParseResult.descriptor}
+`);
+        }
+
+        const sfcDescriptor = sfcParseResult.descriptor;
+
+        if (sfcDescriptor.script) {
+          throw new Error(`
+@monochromatic.dev/esbuild-plugin-vue encountered unsupported script on
+
+\`\`\`${args.path}
+${input}
+\`\`\`
+
+with script:
+${sfcDescriptor.script}
+
+and result:
+${sfcDescriptor}
+`);
+        }
+
+        if (sfcDescriptor.customBlocks.length > 0) {
+          throw new Error(`
+@monochromatic.dev/esbuild-plugin-vue encountered unsupported custom blocks on
+
+\`\`\`${args.path}
+${input}
+\`\`\`
+
+with ${sfcDescriptor.customBlocks.length} custom blocks:
+${sfcDescriptor.customBlocks}
+
+and result:
+${sfcDescriptor}
+`);
+        }
+                if (sfcDescriptor.styles.length > 0) {
+          throw new Error(`
+@monochromatic.dev/esbuild-plugin-vue encountered unsupported styles on
+
+\`\`\`${args.path}
+${input}
+\`\`\`
+
+with ${sfcDescriptor.styles.length} styles:
+${sfcDescriptor.styles}
+
+and result:
+${sfcDescriptor}
+`);
+        }                if (sfcDescriptor.cssVars.length > 0) {
+          throw new Error(`
+@monochromatic.dev/esbuild-plugin-vue encountered unsupported css vars on
+
+\`\`\`${args.path}
+${input}
+\`\`\`
+
+with ${sfcDescriptor.cssVars.length} css vars:
+${sfcDescriptor.cssVars}
+
+and result:
+${sfcDescriptor}
+`);
+        }
+
+        const hash = bigintHash(args.path);
+
+        const sfcScriptSetup = compileScript(sfcDescriptor, {id: hash, isProd: false, babelParserPlugins: ['typescript'], inlineTemplate: true, templateOptions: {}});
+
+        const output = sfcScriptSetup.content;
+
+        const newValue = { input, output };
+
+        cache.set(args.path, newValue);
+
+        return { contents: output, loader: 'ts', resolveDir: (await path.parseFs(args.path)).dir };
+      });
+
+      build.onDispose(() => {
+        cache.clear();
+      });
     },
-  }
-}
+  };
+};

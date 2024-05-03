@@ -1,7 +1,396 @@
 {
   "inputs": {
+    "src/dev.ts": {
+      "bytes": 459,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/dts.ts": {
+      "bytes": 919,
+      "imports": [
+        {
+          "path": "@microsoft/api-extractor",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/state.ts": {
+      "bytes": 174,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/g.ts": {
+      "bytes": 586,
+      "imports": [
+        {
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/br.ts": {
+      "bytes": 684,
+      "imports": [
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/state.ts",
+          "kind": "import-statement",
+          "original": "./state.ts"
+        },
+        {
+          "path": "src/g.ts",
+          "kind": "import-statement",
+          "original": "./g.ts"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/caddy.ts": {
+      "bytes": 1667,
+      "imports": [
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/css.ts": {
+      "bytes": 3603,
+      "imports": [
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-apply",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-custom-units",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-property-lookup",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-size",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-resolve",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "browserslist",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "cssnano",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "cssnano-preset-advanced",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "lightningcss",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "lightningcss",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "postcss",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/g.ts",
+          "kind": "import-statement",
+          "original": "./g.ts"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/rehype.ts": {
+      "bytes": 1195,
+      "imports": [
+        {
+          "path": "hast-util-from-html",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "hast-util-to-html",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rehype-remove-comments",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "unified",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/cp.ts": {
+      "bytes": 2351,
+      "imports": [
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/g.ts",
+          "kind": "import-statement",
+          "original": "./g.ts"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/image.ts": {
+      "bytes": 3227,
+      "imports": [
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "sharp",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "svgo",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/favicon.ts": {
+      "bytes": 6066,
+      "imports": [
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-is-lang",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "smol-toml",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/g.ts",
+          "kind": "import-statement",
+          "original": "./g.ts"
+        },
+        {
+          "path": "src/image.ts",
+          "kind": "import-statement",
+          "original": "./image.ts"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/external.ts": {
+      "bytes": 3262,
+      "imports": [],
+      "format": "esm"
+    },
     "src/js.ts": {
-      "bytes": 5065,
+      "bytes": 4037,
       "imports": [
         {
           "path": "@hbsnow/rehype-sectionize",
@@ -24,6 +413,11 @@
           "external": true
         },
         {
+          "path": "@monochromatic.dev/esbuild-plugin-vue",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
           "path": "@monochromatic.dev/esbuild-plugin-yaml",
           "kind": "import-statement",
           "external": true
@@ -35,6 +429,11 @@
         },
         {
           "path": "browserslist",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "esbuild",
           "kind": "import-statement",
           "external": true
         },
@@ -64,6 +463,36 @@
           "external": true
         },
         {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/dev.ts",
+          "kind": "import-statement",
+          "original": "./dev.ts"
+        },
+        {
+          "path": "src/external.ts",
+          "kind": "import-statement",
+          "original": "./external.ts"
+        },
+        {
+          "path": "src/g.ts",
+          "kind": "import-statement",
+          "original": "./g.ts"
+        },
+        {
           "path": "<runtime>",
           "kind": "import-statement",
           "external": true
@@ -71,48 +500,186 @@
       ],
       "format": "esm"
     },
-    "src/css.ts": {
-      "bytes": 1944,
+    "src/frontmatter.ts": {
+      "bytes": 1840,
       "imports": [
         {
-          "path": "@monochromatic.dev/lightningcss-plugin-apply",
+          "path": "@monochromatic.dev/module-fs-path",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/lightningcss-plugin-custom-units",
+          "path": "esbuild",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/lightningcss-plugin-property-lookup",
+          "path": "src/js.ts",
+          "kind": "import-statement",
+          "original": "./js.ts"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/vue.ts": {
+      "bytes": 4872,
+      "imports": [
+        {
+          "path": "@monochromatic.dev/module-console",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/lightningcss-plugin-size",
+          "path": "@monochromatic.dev/module-fs-path",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/module-resolve",
+          "path": "esbuild",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "browserslist",
+          "path": "find-up",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "cssnano-preset-default",
+          "path": "glob",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "lightningcss",
+          "path": "rambdax",
           "kind": "import-statement",
           "external": true
+        },
+        {
+          "path": "zx",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/g.ts",
+          "kind": "import-statement",
+          "original": "./g.ts"
+        },
+        {
+          "path": "src/js.ts",
+          "kind": "import-statement",
+          "original": "./js.ts"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/html.ts": {
+      "bytes": 2554,
+      "imports": [
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/rehype.ts",
+          "kind": "import-statement",
+          "original": "./rehype.ts"
+        },
+        {
+          "path": "src/cp.ts",
+          "kind": "import-statement",
+          "original": "./cp.ts"
+        },
+        {
+          "path": "src/favicon.ts",
+          "kind": "import-statement",
+          "original": "./favicon.ts"
+        },
+        {
+          "path": "src/frontmatter.ts",
+          "kind": "import-statement",
+          "original": "./frontmatter.ts"
+        },
+        {
+          "path": "src/g.ts",
+          "kind": "import-statement",
+          "original": "./g.ts"
+        },
+        {
+          "path": "src/vue.ts",
+          "kind": "import-statement",
+          "original": "./vue.ts"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/staticAndCompress.ts": {
+      "bytes": 610,
+      "imports": [
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/br.ts",
+          "kind": "import-statement",
+          "original": "./br.ts"
+        },
+        {
+          "path": "src/caddy.ts",
+          "kind": "import-statement",
+          "original": "./caddy.ts"
+        },
+        {
+          "path": "src/css.ts",
+          "kind": "import-statement",
+          "original": "./css.ts"
+        },
+        {
+          "path": "src/html.ts",
+          "kind": "import-statement",
+          "original": "./html.ts"
+        },
+        {
+          "path": "src/js.ts",
+          "kind": "import-statement",
+          "original": "./js.ts"
         },
         {
           "path": "<runtime>",
@@ -123,7 +690,7 @@
       "format": "esm"
     },
     "src/index.ts": {
-      "bytes": 9078,
+      "bytes": 1905,
       "imports": [
         {
           "path": "@monochromatic.dev/module-fs-path",
@@ -151,59 +718,29 @@
           "external": true
         },
         {
+          "path": "jsonc-simple-parser",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
           "path": "@monochromatic.dev/module-console",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "cssnano",
+          "path": "src/dev.ts",
           "kind": "import-statement",
-          "external": true
+          "original": "./dev.ts"
         },
         {
-          "path": "lightningcss",
+          "path": "src/dts.ts",
           "kind": "import-statement",
-          "external": true
+          "original": "./dts.ts"
         },
         {
-          "path": "postcss",
+          "path": "src/staticAndCompress.ts",
           "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "esbuild",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "@microsoft/api-extractor",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "find-up",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "glob",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/js.ts",
-          "kind": "import-statement",
-          "original": "./js.ts"
-        },
-        {
-          "path": "src/css.ts",
-          "kind": "import-statement",
-          "original": "./css.ts"
-        },
-        {
-          "path": "<runtime>",
-          "kind": "import-statement",
-          "external": true
+          "original": "./staticAndCompress.ts"
         }
       ],
       "format": "esm"
@@ -214,7 +751,7 @@
       "imports": [],
       "exports": [],
       "inputs": {},
-      "bytes": 24966
+      "bytes": 64347
     },
     "dist/final/index.js": {
       "imports": [
@@ -244,12 +781,147 @@
           "external": true
         },
         {
+          "path": "jsonc-simple-parser",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
           "path": "@monochromatic.dev/module-console",
           "kind": "import-statement",
           "external": true
         },
         {
+          "path": "@microsoft/api-extractor",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-apply",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-custom-units",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-property-lookup",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/lightningcss-plugin-size",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-resolve",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "browserslist",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
           "path": "cssnano",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "cssnano-preset-advanced",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "lightningcss",
           "kind": "import-statement",
           "external": true
         },
@@ -264,22 +936,142 @@
           "external": true
         },
         {
-          "path": "esbuild",
+          "path": "rambdax",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@microsoft/api-extractor",
+          "path": "@monochromatic.dev/module-console",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "find-up",
+          "path": "@monochromatic.dev/module-fs-path",
           "kind": "import-statement",
           "external": true
         },
         {
           "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "hast-util-from-html",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "hast-util-to-html",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rehype-remove-comments",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "unified",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-is-lang",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "smol-toml",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "sharp",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "svgo",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "esbuild",
           "kind": "import-statement",
           "external": true
         },
@@ -304,6 +1096,11 @@
           "external": true
         },
         {
+          "path": "@monochromatic.dev/esbuild-plugin-vue",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
           "path": "@monochromatic.dev/esbuild-plugin-yaml",
           "kind": "import-statement",
           "external": true
@@ -315,6 +1112,11 @@
         },
         {
           "path": "browserslist",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "esbuild",
           "kind": "import-statement",
           "external": true
         },
@@ -344,42 +1146,52 @@
           "external": true
         },
         {
-          "path": "@monochromatic.dev/lightningcss-plugin-apply",
+          "path": "@monochromatic.dev/module-console",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/lightningcss-plugin-custom-units",
+          "path": "@monochromatic.dev/module-fs-path",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/lightningcss-plugin-property-lookup",
+          "path": "glob",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/lightningcss-plugin-size",
+          "path": "@monochromatic.dev/module-console",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/module-resolve",
+          "path": "@monochromatic.dev/module-fs-path",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "browserslist",
+          "path": "esbuild",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "cssnano-preset-default",
+          "path": "find-up",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "lightningcss",
+          "path": "glob",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
           "kind": "import-statement",
           "external": true
         }
@@ -388,16 +1200,58 @@
       "entryPoint": "src/index.ts",
       "inputs": {
         "src/index.ts": {
-          "bytesInOutput": 8595
+          "bytesInOutput": 1829
         },
-        "src/js.ts": {
-          "bytesInOutput": 4799
+        "src/dev.ts": {
+          "bytesInOutput": 422
+        },
+        "src/dts.ts": {
+          "bytesInOutput": 800
+        },
+        "src/staticAndCompress.ts": {
+          "bytesInOutput": 478
+        },
+        "src/br.ts": {
+          "bytesInOutput": 683
+        },
+        "src/g.ts": {
+          "bytesInOutput": 353
+        },
+        "src/caddy.ts": {
+          "bytesInOutput": 1716
         },
         "src/css.ts": {
-          "bytesInOutput": 1771
+          "bytesInOutput": 3432
+        },
+        "src/html.ts": {
+          "bytesInOutput": 2446
+        },
+        "src/rehype.ts": {
+          "bytesInOutput": 1003
+        },
+        "src/cp.ts": {
+          "bytesInOutput": 2471
+        },
+        "src/favicon.ts": {
+          "bytesInOutput": 6021
+        },
+        "src/image.ts": {
+          "bytesInOutput": 1293
+        },
+        "src/frontmatter.ts": {
+          "bytesInOutput": 1821
+        },
+        "src/js.ts": {
+          "bytesInOutput": 3941
+        },
+        "src/external.ts": {
+          "bytesInOutput": 3180
+        },
+        "src/vue.ts": {
+          "bytesInOutput": 4759
         }
       },
-      "bytes": 15411
+      "bytes": 37254
     }
   }
 }

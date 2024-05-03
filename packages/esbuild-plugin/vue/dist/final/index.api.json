@@ -161,108 +161,41 @@
     }
   },
   "kind": "Package",
-  "canonicalReference": "@monochromatic.dev/esbuild-plugin-toml!",
+  "canonicalReference": "@monochromatic.dev/esbuild-plugin-vue!",
   "docComment": "",
-  "name": "@monochromatic.dev/esbuild-plugin-toml",
+  "name": "@monochromatic.dev/esbuild-plugin-vue",
   "preserveMemberOrder": false,
   "members": [
     {
       "kind": "EntryPoint",
-      "canonicalReference": "@monochromatic.dev/esbuild-plugin-toml!",
+      "canonicalReference": "@monochromatic.dev/esbuild-plugin-vue!",
       "name": "",
       "preserveMemberOrder": false,
       "members": [
         {
           "kind": "Function",
-          "canonicalReference": "@monochromatic.dev/esbuild-plugin-toml!toml:function(1)",
+          "canonicalReference": "@monochromatic.dev/esbuild-plugin-vue!_default:function(1)",
           "docComment": "",
           "excerptTokens": [
             {
               "kind": "Content",
-              "text": "export default function toml(mergeParent?: "
-            },
-            {
-              "kind": "Content",
-              "text": "string"
-            },
-            {
-              "kind": "Content",
-              "text": ", schema?: "
-            },
-            {
-              "kind": "Reference",
-              "text": "ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<any, any> | "
-            },
-            {
-              "kind": "Reference",
-              "text": "ZodObject",
-              "canonicalReference": "zod!ZodObject:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<any>"
-            },
-            {
-              "kind": "Content",
-              "text": ", injectMetadata?: "
-            },
-            {
-              "kind": "Content",
-              "text": "boolean"
-            },
-            {
-              "kind": "Content",
-              "text": "): "
+              "text": "_default: () => "
             },
             {
               "kind": "Reference",
               "text": "Plugin",
               "canonicalReference": "esbuild!Plugin:interface"
-            },
-            {
-              "kind": "Content",
-              "text": ";"
             }
           ],
           "fileUrlPath": "src/index.ts",
           "returnTypeTokenRange": {
-            "startIndex": 10,
-            "endIndex": 11
+            "startIndex": 1,
+            "endIndex": 2
           },
           "releaseTag": "Public",
           "overloadIndex": 1,
-          "parameters": [
-            {
-              "parameterName": "mergeParent",
-              "parameterTypeTokenRange": {
-                "startIndex": 1,
-                "endIndex": 2
-              },
-              "isOptional": true
-            },
-            {
-              "parameterName": "schema",
-              "parameterTypeTokenRange": {
-                "startIndex": 3,
-                "endIndex": 7
-              },
-              "isOptional": true
-            },
-            {
-              "parameterName": "injectMetadata",
-              "parameterTypeTokenRange": {
-                "startIndex": 8,
-                "endIndex": 9
-              },
-              "isOptional": true
-            }
-          ],
-          "name": "toml"
+          "parameters": [],
+          "name": "_default"
         }
       ]
     }

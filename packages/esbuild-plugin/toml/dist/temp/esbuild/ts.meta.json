@@ -6480,7 +6480,7 @@
       "format": "esm"
     },
     "src/index.ts": {
-      "bytes": 2588,
+      "bytes": 2711,
       "imports": [
         {
           "path": "@monochromatic.dev/module-fs-path",
@@ -6531,7 +6531,7 @@
       "imports": [],
       "exports": [],
       "inputs": {},
-      "bytes": 218410
+      "bytes": 218599
     },
     "dist/final/index.js": {
       "imports": [
@@ -6562,7 +6562,7 @@
       "entryPoint": "src/index.ts",
       "inputs": {
         "src/index.ts": {
-          "bytesInOutput": 1532
+          "bytesInOutput": 1607
         },
         "../../module/object-to-export/dist/final/index.js": {
           "bytesInOutput": 2005
@@ -6589,7 +6589,7 @@
           "bytesInOutput": 75761
         }
       },
-      "bytes": 80707
+      "bytes": 80782
     }
   }
 }

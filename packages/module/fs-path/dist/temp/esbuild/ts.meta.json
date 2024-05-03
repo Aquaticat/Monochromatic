@@ -6458,7 +6458,7 @@
       "format": "esm"
     },
     "src/index.ts": {
-      "bytes": 5538,
+      "bytes": 6816,
       "imports": [
         {
           "path": "node:fs/promises",
@@ -6494,7 +6494,7 @@
       "imports": [],
       "exports": [],
       "inputs": {},
-      "bytes": 9674
+      "bytes": 11651
     },
     "dist/final/index.js": {
       "imports": [
@@ -6521,13 +6521,13 @@
       "entryPoint": "src/index.ts",
       "inputs": {
         "src/index.ts": {
-          "bytesInOutput": 3826
+          "bytesInOutput": 4782
         },
         "../../../node_modules/.pnpm/rambdax@11.1.0/node_modules/rambdax/src/mapParallelAsync.js": {
           "bytesInOutput": 394
         }
       },
-      "bytes": 4349
+      "bytes": 5305
     }
   }
 }

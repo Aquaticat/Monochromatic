@@ -25,7 +25,13 @@ const fms: {
   published: [{ date: Date; }];
   updated: [{ date: Date; }];
   tags: string[];
+  lang: string;
+  isPost: boolean;
 }[] = inject('frontmatters')!;
+
+const fm: {lang: string} = inject('frontmatter')!;
+
+const fmsMatchedLang = fms.filter((potentialFmMatchedLang) => potentialFmMatchedLang.lang === fm.lang && potentialFmMatchedLang.isPost);
 </script>
 
 <template>
@@ -35,8 +41,8 @@ const fms: {
       v-for='post of posts'
       :post></Post>
     <Post
-      v-else-if='fms'
-      v-for='post of fms'
+      v-else-if='fmsMatchedLang'
+      v-for='post of fmsMatchedLang'
       :post></Post>
     <Error v-else>Could not load either {{ posts }} from props or {{ fms }} from inject</Error>
   </ul>

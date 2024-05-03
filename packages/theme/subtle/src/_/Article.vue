@@ -8,6 +8,6 @@ const fm: { title: string; } = inject('frontmatter')!;
 <template>
   <article class='Article'>
     <h1>{{ fm.title }}</h1>
-    <slot />
+    <slot></slot>
   </article>
 </template>

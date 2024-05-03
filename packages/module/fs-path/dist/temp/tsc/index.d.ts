@@ -5,10 +5,12 @@
 /// <reference types="node" resolution-mode="require"/>
 /// <reference types="node" resolution-mode="require"/>
 /// <reference types="node" resolution-mode="require"/>
+/// <reference types="node" resolution-mode="require"/>
 import { access as fsAccess, appendFile as fsAppendFile, chmod as fsChmod, chown as fsChown, copyFile as fsCopyFile, cp as fsCp, lchown as fsLchown, link as fsLink, lstat as fsLstat, lutimes as fsLutimes, mkdir as fsMkdir, mkdtemp as fsMkdtemp, opendir as fsOpendir, readdir as fsReaddir, readlink as fsReadlink, realpath as fsRealpath, rename as fsRename, rm as fsRm, stat as fsStat, statfs as fsStatfs, symlink as fsSymlink, truncate as fsTruncate, unlink as fsUnlink, utimes as fsUtimes, writeFile as fsWriteFile } from 'node:fs/promises';
-import { parse as pathParse } from 'node:path';
+import { type ParsedPath } from 'node:path';
 import { constants as fsC } from 'node:fs';
 export declare const path: Readonly<{
+    isAbsolute: (path: string) => boolean;
     resolve: (...paths: string[]) => string;
     join: (...paths: string[]) => string;
     relative: (from: string, to: string) => string;
@@ -16,10 +18,11 @@ export declare const path: Readonly<{
     format: (pathObject: import("path").FormatInputPathObject) => string;
     delimiter: ";" | ":";
     normalize: (path: string) => string;
-    parseFs: (path: string) => Promise<ReturnType<typeof pathParse>>;
+    parseFs: (path: string) => Promise<ParsedPath & Pick<URL, 'search' | 'searchParams' | 'hash'>>;
     split: (path: string) => string[];
 }>;
 declare function fsReadFileU(path: string): Promise<string>;
+declare function fsAccessM(...args: Parameters<typeof fsAccess>): ReturnType<typeof fsAccess>;
 export declare const fs: Readonly<{
     chmod: typeof fsChmod;
     chown: typeof fsChown;
@@ -102,7 +105,8 @@ export declare const fs: Readonly<{
     readFileU: typeof fsReadFileU;
     readFileMU: (path: string) => ReturnType<typeof fsReadFileU>;
     stat: typeof fsStat;
-    accessM: (path: import("fs").PathLike, mode?: number | undefined) => ReturnType<typeof fsAccess>;
+    accessM: typeof fsAccessM;
+    exists: (path: import("fs").PathLike, mode?: number | undefined) => Promise<boolean>;
     outputFile: (file: import("fs").PathLike | import("fs/promises").FileHandle, data: string | NodeJS.ArrayBufferView | Iterable<string | NodeJS.ArrayBufferView> | AsyncIterable<string | NodeJS.ArrayBufferView> | import("stream").Stream, options?: BufferEncoding | (import("fs").ObjectEncodingOptions & {
         mode?: import("fs").Mode | undefined;
         flag?: import("fs").OpenMode | undefined;

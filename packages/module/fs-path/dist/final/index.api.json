@@ -449,7 +449,16 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    accessM: (path: import(\"fs\")."
+              "text": ";\n    accessM: typeof "
+            },
+            {
+              "kind": "Reference",
+              "text": "fsAccessM",
+              "canonicalReference": "@monochromatic.dev/module-fs-path!~fsAccessM:function"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    exists: (path: import(\"fs\")."
             },
             {
               "kind": "Reference",
@@ -462,21 +471,12 @@
             },
             {
               "kind": "Reference",
-              "text": "ReturnType",
-              "canonicalReference": "!ReturnType:type"
+              "text": "Promise",
+              "canonicalReference": "!Promise:interface"
             },
             {
               "kind": "Content",
-              "text": "<typeof "
-            },
-            {
-              "kind": "Reference",
-              "text": "fsAccess",
-              "canonicalReference": "!\"\\\"fs/promises\\\"\".access:function"
-            },
-            {
-              "kind": "Content",
-              "text": ">;\n    outputFile: (file: import(\"fs\")."
+              "text": "<boolean>;\n    outputFile: (file: import(\"fs\")."
             },
             {
               "kind": "Reference",
@@ -684,7 +684,7 @@
             },
             {
               "kind": "Content",
-              "text": "<{\n    resolve: (...paths: string[]) => string;\n    join: (...paths: string[]) => string;\n    relative: (from: string, to: string) => string;\n    sep: \"\\\\\" | \"/\";\n    format: (pathObject: import(\"path\")."
+              "text": "<{\n    isAbsolute: (path: string) => boolean;\n    resolve: (...paths: string[]) => string;\n    join: (...paths: string[]) => string;\n    relative: (from: string, to: string) => string;\n    sep: \"\\\\\" | \"/\";\n    format: (pathObject: import(\"path\")."
             },
             {
               "kind": "Reference",
@@ -706,21 +706,30 @@
             },
             {
               "kind": "Reference",
-              "text": "ReturnType",
-              "canonicalReference": "!ReturnType:type"
+              "text": "ParsedPath",
+              "canonicalReference": "!\"\\\"path\\\"\".path.ParsedPath:interface"
             },
             {
               "kind": "Content",
-              "text": "<typeof "
+              "text": " & "
             },
             {
               "kind": "Reference",
-              "text": "pathParse",
-              "canonicalReference": "!\"\\\"path\\\"\".path.PlatformPath#parse:member"
+              "text": "Pick",
+              "canonicalReference": "!Pick:type"
             },
             {
               "kind": "Content",
-              "text": ">>;\n    split: (path: string) => string[];\n}>"
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "URL",
+              "canonicalReference": "!\"\\\"url\\\"\".__global.URL:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", 'search' | 'searchParams' | 'hash'>>;\n    split: (path: string) => string[];\n}>"
             }
           ],
           "fileUrlPath": "src/index.ts",
@@ -729,7 +738,7 @@
           "name": "path",
           "variableTypeTokenRange": {
             "startIndex": 1,
-            "endIndex": 11
+            "endIndex": 13
           }
         }
       ]

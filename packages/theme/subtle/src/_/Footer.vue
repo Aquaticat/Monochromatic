@@ -2,8 +2,8 @@
   setup
   lang='ts'>
 import { inject } from 'vue';
-import ExistencePeriod from './ExistencePeriod.vue';
-import Socials from './Socials.vue';
+import ExistencePeriod from '@_/ExistencePeriod.vue';
+import Socials from '@_/Socials.vue';
 
 const fm: { author: { name: string; url: string; }; license: { name: string; url: string; }; } = inject('frontmatter')!;
 </script>
@@ -32,8 +32,8 @@ const fm: { author: { name: string; url: string; }; license: { name: string; url
             <span>Subtle</span>
           </a>
           <span>@</span>
-          <a href='https://astro.build'>
-            <span>Astro</span>
+          <a href='https://vuejs.org'>
+            <span>Vue JS</span>
           </a>
         </span>
         <span>

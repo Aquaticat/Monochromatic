@@ -1,19 +1,34 @@
 <script
   setup
   lang='ts'>
+import Posts from '@_/Posts.vue';
+
 import { inject } from 'vue';
 
-const fm: { slashSiteBase: string; slashSiteBaseWLang: string; } = inject('frontmatter')!;
+const fm: { slashSiteBase: string; slashSiteBaseWLang: string; lang: string; defaultLang: string; } = inject(
+  'frontmatter',
+)!;
 
-const fms: { tags: string[]; }[] = inject('frontmatters')!;
+const fms: {
+  title: string;
+  slug: string;
+  description: string;
+  summary: string;
+  published: [{ date: Date; }];
+  updated: [{ date: Date; }];
+  tags: string[];
+  isLinks: boolean;
+  isPost: boolean;
+  lang: string;
+}[] = inject('frontmatters')!;
 
 const uniqueTags: ReadonlySet<string> = new Set(fms.flatMap((fm) => fm.tags));
 
 const tagPost = new Map(
-  Array.from(uniqueTags).map((tag) => [tag, fms.filter((fm) => fm.tags.includes(tag))]),
+  Array.from(uniqueTags).map((tag) => [tag, fms.filter((fm) => fm.isPost && fm.tags.includes(tag))]),
 );
 
-// TODO: Set search placeholder dynamically to different langs.
+const searchPlaceholder = new Map([['en', 'Search keyword, topic, or text'], ['zh', '搜索关键词，话题，或文段']]);
 </script>
 
 <template>
@@ -47,7 +62,13 @@ const tagPost = new Map(
               name='q'
               type='search'
               required
-              placeholder='search'
+              :placeholder='searchPlaceholder.get(fm.lang)
+              || searchPlaceholder
+                .get(fm.lang.slice(0, 2))
+              || searchPlaceholder
+                .get(fm.defaultLang)
+              || searchPlaceholder
+                .get(fm.defaultLang.slice(0, 2))!'
             />
           </form>
           <ul class='Header__tags'>
@@ -63,7 +84,12 @@ const tagPost = new Map(
           </ul>
         </div>
 
-        <a :href='`${fm.slashSiteBaseWLang}/links`'><span>Links</span></a>
+        <a :href='`${fm.slashSiteBaseWLang}/links`'><span>{{
+            fms.find((potentialLinks) => potentialLinks.isLinks && potentialLinks.lang === fm.lang)?.title
+            || fms
+              .find((potentialLinks) => potentialLinks.isLinks && potentialLinks.lang === fm.defaultLang)!
+              .title
+          }}</span></a>
       </nav>
     </div>
   </header>

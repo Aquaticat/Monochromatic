@@ -5,7 +5,6 @@
   // List of extensions which should be recommended for users of this workspace.
   "recommendations": [
     "biomejs.biome",
-    "oven.bun-vscode",
     "EditorConfig.EditorConfig",
     "tamasfe.even-better-toml",
     "unifiedjs.vscode-mdx",

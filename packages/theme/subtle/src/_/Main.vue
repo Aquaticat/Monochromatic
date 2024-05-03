@@ -1,17 +1,17 @@
 <script
   setup
   lang='ts'>
-import Article from './Article.vue';
-import Aside from './Aside.vue';
+import Article from '@_/Article.vue';
+import Aside from '@_/Aside.vue';
 </script>
 
 <template>
   <main>
     <div>
       <Article>
-        <slot />
+        <slot></slot>
       </Article>
-      <Aside />
+      <Aside></Aside>
     </div>
   </main>
 </template>

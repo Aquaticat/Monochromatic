@@ -7,7 +7,7 @@ license = 'CC-BY-SA-4.0'
 # Defaults to en.
 lang = 'en'
 
-earliest = 2024
+earliest = 2024-03-06
 
 [author]
 name = "Aquaticat"
@@ -23,3 +23,14 @@ shiki.dark = 'github-dark'
 'Email' = 'mailto:an@aquati.cat?subject=Email author of Monochromatic/Subtle'
 'GitHub' = 'https://github.com/Aquaticat'
 'Telegram' = 'https://t.me/Aquaticat'
+
+[links]
+'Catoverflow' = 'https://c-j.dev'
+'dummy1' = 'https://example.com'
+'big dummy2' = 'https://example.com'
+'big big dummy1' = 'https://example.com'
+'big big dummy2' = 'https://example.com'
+'dummy3' = 'https://example.com'
+'dummy4' = 'https://example.com'
+'dummy5' = 'https://example.com'
+'dummy6' = 'https://example.com'

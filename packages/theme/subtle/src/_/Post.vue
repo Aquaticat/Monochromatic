@@ -23,7 +23,7 @@ const fm: { slashSiteBaseWLang: string; } = inject('frontmatter')!;
   <li class='Post a'>
     <a
       class='overlay'
-      :href='post.slug'>{{ post.title }}</a>
+      :href='`/${post.slug}`'>{{ post.title }}</a>
     <div class='Post__content'>
       <h2>{{ post.title }}</h2>
       <p class='Post__description'>{{ post.description }}</p>

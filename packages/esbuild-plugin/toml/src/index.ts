@@ -43,7 +43,12 @@ export default function toml(
 
         const value = cache.get(args.path);
 
-        if (value && value.input === input) { return { contents: value.output }; }
+        if (value && value.input === input) {
+          return {
+            contents: value.output,
+            resolveDir: (await path.parseFs(args.path)).dir,
+          };
+        }
 
         const ownJson = parse(input);
 
@@ -81,9 +86,8 @@ export default function toml(
         const newValue = { input, output };
 
         cache.set(args.path, newValue);
-        console.log(cache);
 
-        return { contents: output };
+        return { contents: output, resolveDir: (await path.parseFs(args.path)).dir };
       });
 
       build.onDispose(() => {

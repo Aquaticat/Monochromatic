@@ -1,9 +1,13 @@
 node_modules
 .jj
 .dist/dev
+**/dist/dev
 .dist/temp
+**/.dist/temp
 dist/dev
+**/dist/dev
 dist/temp
+**/dist/temp
 *.tsbuildinfo
 *.map
 .bin
@@ -19,6 +23,8 @@ packages/*/*/temp
 locks
 pnpm-lock.yaml
 .pnp.cjs
+*.br
+/caddy
 
 #region Created by https://www.toptal.com/developers/gitignore/api/node,astro,macos,linux,windows,visualstudiocode,jetbrains
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,astro,macos,linux,windows,visualstudiocode,jetbrains

@@ -2,15 +2,17 @@
   "name": "@monochromatic.dev/devcontainer",
   "type": "module",
   "version": "0.0.1",
-  "files": ["devcontainer.json", "src", "pnpm-install.sh"],
-  "dependencies": {
-    "zx": ">=8.0"
+  "files": ["devcontainer.json"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/monochromatic-devcontainer.git",
+    "directory": ".devcontainer"
   },
-  "devDependencies": {
-    "@types/node": ">=20.12",
-    "@monochromatic.dev/config-typescript": "*"
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
   },
-  "broken": true,
-  "// private": "FIXME: not finished fixing yet",
-  "private": true
+  "license": "Apache-2.0",
+  "description": "Devcontainer for Monochromatic.dev . Based on the base devcontainer image ghcr.io/aquaticat/monochromatic with npm package name @monochromatic.dev/devcontainer-base."
 }

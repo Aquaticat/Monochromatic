@@ -11223,7 +11223,7 @@
       "format": "esm"
     },
     "src/index.ts": {
-      "bytes": 9471,
+      "bytes": 9891,
       "imports": [
         {
           "path": "@monochromatic.dev/module-fs-path",
@@ -11239,11 +11239,6 @@
           "path": "../../../node_modules/.pnpm/chrono-node@2.7.5/node_modules/chrono-node/dist/esm/index.js",
           "kind": "import-statement",
           "original": "chrono-node"
-        },
-        {
-          "path": "find-up",
-          "kind": "import-statement",
-          "external": true
         },
         {
           "path": "mdast-util-from-markdown",
@@ -11287,17 +11282,12 @@
       "imports": [],
       "exports": [],
       "inputs": {},
-      "bytes": 593798
+      "bytes": 594759
     },
     "dist/final/index.js": {
       "imports": [
         {
           "path": "@monochromatic.dev/module-fs-path",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "find-up",
           "kind": "import-statement",
           "external": true
         },
@@ -11328,7 +11318,7 @@
           "bytesInOutput": 7963
         },
         "src/index.ts": {
-          "bytesInOutput": 6479
+          "bytesInOutput": 6805
         },
         "../../module/is-lang/dist/final/index.js": {
           "bytesInOutput": 481
@@ -11487,7 +11477,7 @@
           "bytesInOutput": 75789
         }
       },
-      "bytes": 249965
+      "bytes": 250291
     }
   }
 }

@@ -1,0 +1,1 @@
+@supports not selector(:popover-open){[popovertarget]{display:none}}

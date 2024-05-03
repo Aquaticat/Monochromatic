@@ -1,13 +1,8 @@
 {
   "name": "monochromatic",
-  "forwardPorts": ["5173"],
-  "image": "opensuse/tumbleweed",
-  "containerEnv": {
-    "SHELL": "/bin/bash",
-  },
-  "onCreateCommand": {
-    "node": "zypper in -y which awk && chmod +x .devcontainer/pnpm-install.sh && ./.devcontainer/pnpm-install.sh && ln -sf bash /bin/sh && chsh -s /bin/bash && source ~/.bashrc && pnpm env use --global iron && pnpm i -g zx && zx .devcontainer/src/on-create.mts",
-  },
+  "appPort": ["5173:5173/tcp", "5173:5173/udp"],
+  "image": "ghcr.io/aquaticat/monochromatic",
+  "onCreateCommand": "pnpm install",
   "customizations": {
     "vscode": {
       "settings": {
@@ -93,7 +88,6 @@
       },
       "extensions": [
         "biomejs.biome",
-        "oven.bun-vscode",
         "EditorConfig.EditorConfig",
         "tamasfe.even-better-toml",
         "unifiedjs.vscode-mdx",

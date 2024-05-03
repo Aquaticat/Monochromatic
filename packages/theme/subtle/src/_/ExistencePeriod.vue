@@ -5,14 +5,14 @@ import { inject } from 'vue';
 
 const fm: { earliest: Date; latest: Date; lang: string; } = inject('frontmatter')!;
 
-const earliestYear = fm.earliest.toLocaleDateString(fm.lang, { year: 'numeric' });
-const latestYear = fm.latest.toLocaleDateString(fm.lang, { year: 'numeric' });
+const earliestYear = fm.earliest.getFullYear();
+const latestYear = fm.latest.getFullYear();
 </script>
 
 <template>
   <span class='existence-period'>
-    <time :datetime='earliestYear'>{{ earliestYear }}</time>
+    <time :datetime='String(earliestYear)'>{{ earliestYear }}</time>
     -
-    <time :datetime='latestYear'>{{ latestYear }}</time>
+    <time :datetime='String(latestYear)'>{{ latestYear }}</time>
   </span>
 </template>

@@ -20,7 +20,7 @@ import { Mode } from 'fs';
 import { ObjectEncodingOptions } from 'fs';
 import { opendir } from 'node:fs/promises';
 import { OpenMode } from 'fs';
-import { parse } from 'node:path';
+import { ParsedPath } from 'node:path';
 import { PathLike } from 'fs';
 import { readdir } from 'node:fs/promises';
 import { readlink } from 'node:fs/promises';
@@ -118,7 +118,8 @@ export declare const fs: Readonly<{
     readFileU: typeof fsReadFileU;
     readFileMU: (path: string) => ReturnType<typeof fsReadFileU>;
     stat: typeof stat;
-    accessM: (path: PathLike, mode?: number | undefined) => ReturnType<typeof access>;
+    accessM: typeof fsAccessM;
+    exists: (path: PathLike, mode?: number | undefined) => Promise<boolean>;
     outputFile: (file: PathLike | FileHandle, data: string | NodeJS.ArrayBufferView | Iterable<string | NodeJS.ArrayBufferView> | AsyncIterable<string | NodeJS.ArrayBufferView> | Stream, options?: BufferEncoding | (ObjectEncodingOptions & {
         mode?: Mode | undefined;
         flag?: OpenMode | undefined;
@@ -128,9 +129,12 @@ export declare const fs: Readonly<{
     empty: (path: string) => Promise<void>;
 }>;
 
+declare function fsAccessM(...args: Parameters<typeof access>): ReturnType<typeof access>;
+
 declare function fsReadFileU(path: string): Promise<string>;
 
 export declare const path: Readonly<{
+    isAbsolute: (path: string) => boolean;
     resolve: (...paths: string[]) => string;
     join: (...paths: string[]) => string;
     relative: (from: string, to: string) => string;
@@ -138,7 +142,7 @@ export declare const path: Readonly<{
     format: (pathObject: FormatInputPathObject) => string;
     delimiter: ";" | ":";
     normalize: (path: string) => string;
-    parseFs: (path: string) => Promise<ReturnType<typeof parse>>;
+    parseFs: (path: string) => Promise<ParsedPath & Pick<URL, 'search' | 'searchParams' | 'hash'>>;
     split: (path: string) => string[];
 }>;
 

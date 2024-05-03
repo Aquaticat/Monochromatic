@@ -1,7 +1,7 @@
 {
   "inputs": {
     "../console/dist/final/index.js": {
-      "bytes": 1398,
+      "bytes": 1522,
       "imports": [
         {
           "path": "<runtime>",
@@ -6612,7 +6612,7 @@
       "format": "esm"
     },
     "src/index.ts": {
-      "bytes": 9698,
+      "bytes": 9945,
       "imports": [
         {
           "path": "../console/dist/final/index.js",
@@ -6663,7 +6663,7 @@
       "imports": [],
       "exports": [],
       "inputs": {},
-      "bytes": 124217
+      "bytes": 124863
     },
     "dist/final/index.js": {
       "imports": [
@@ -6705,10 +6705,10 @@
           "bytesInOutput": 3244
         },
         "../console/dist/final/index.js": {
-          "bytesInOutput": 1442
+          "bytesInOutput": 1566
         },
         "src/index.ts": {
-          "bytesInOutput": 5996
+          "bytesInOutput": 6222
         },
         "../../../node_modules/.pnpm/minimatch@9.0.4/node_modules/minimatch/dist/esm/index.js": {
           "bytesInOutput": 15421
@@ -6744,7 +6744,7 @@
           "bytesInOutput": 104
         }
       },
-      "bytes": 39308
+      "bytes": 39658
     }
   }
 }

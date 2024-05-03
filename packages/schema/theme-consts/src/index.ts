@@ -14,14 +14,10 @@ import { z } from 'zod';
 // @ts-expect-error No, spdxLicenseList is in fact wrapped in a default json.
 const spdxLicenseMap = new Map(Object.entries(spdxLicenseList.default));
 
-export const zChronoDate = z
-  .union([
-    z.string().transform((maybeDate) => (chrono.parseDate(maybeDate))),
-    z.coerce.date(),
-  ])
-  .pipe(
-    z.date(),
-  );
+export const zChronoDate = z.preprocess(
+  (maybeDate) => maybeDate instanceof Date ? maybeDate : (chrono.parseDate(String(maybeDate))),
+  z.date(),
+);
 
 export const zAuthor = z.object({ name: z.string(), url: z.string().url() }).strict();
 
@@ -46,6 +42,11 @@ const zPost = z
     author: zAuthor,
 
     earliest: z.optional(zChronoDate),
+
+    isHome: z.optional(z.boolean()),
+    isLinks: z.optional(z.boolean()),
+    is404: z.optional(z.boolean()),
+    isPost: z.optional(z.boolean()),
 
     lang: z.string(),
 
@@ -74,6 +75,16 @@ const zPost = z
       ])
       .pipe(z.object({ name: z.string(), url: z.string().url() }).readonly()),
 
+    links: z
+      .union([
+        z
+          .record(z.string(), z.string().url())
+          .transform((val) => new Map(Object.entries(val))),
+        z.map(z.string(), z.string().url()),
+      ])
+      .pipe(z.map(z.string(), z.string().url()))
+      .readonly(),
+
     updated: z.optional(z.unknown()),
 
     published: z.optional(z.unknown()),
@@ -82,7 +93,15 @@ const zPost = z
 
     siteTitle: z.string(),
 
-    socials: z.record(z.string(), z.string().url()).readonly(),
+    socials: z
+      .union([
+        z
+          .record(z.string(), z.string().url())
+          .transform((val) => new Map(Object.entries(val))),
+        z.map(z.string(), z.string().url()),
+      ])
+      .pipe(z.map(z.string(), z.string().url()))
+      .readonly(),
 
     tags: z.array(z.string()).default([]),
 
@@ -102,7 +121,12 @@ const zPost = z
 
       earliest: zBase.earliest
         ? zBase.earliest
-        : await zChronoDate.parseAsync((await fs.stat(zBase.pkgJsonAbsPath)).ctime),
+        : await zChronoDate.parseAsync((await fs.stat(path.join(zBase.pkgJsonAbsPath, 'package.json'))).ctime),
+
+      frontmatterPath: path.relative(
+        path.join(zBase.pkgJsonAbsPath, 'dist', 'temp', 'gen-html'),
+        path.join(zBase.path.dir, `${zBase.path.name}.toml`),
+      ),
 
       fullTitle: zBase.title === zBase.siteTitle ? zBase.title : `${zBase.title} | ${zBase.siteTitle}`,
 
@@ -122,20 +146,16 @@ const zPost = z
         zBase.site,
       ),
 
-      isHome: zBase.path.name === 'index',
-      isLinks: zBase.path.name === 'links',
-      is404: zBase.path.name === '404',
-      isPost: !['index', 'links', '404'].includes(zBase.path.name),
-
-      lang: z.string().default(zBase.lang).parse(
-        await findUp(async function matchedLang(pathEndingWPotentialLang) {
-          const name = (await path.parseFs(pathEndingWPotentialLang)).name;
-          if (isLang(name)) {
-            return pathEndingWPotentialLang;
-          }
-          return;
-        }, { cwd: zBase.path.dir, stopAt: zBase.pkgJsonAbsPath }),
+      layoutPath: path.relative(
+        path.join(zBase.pkgJsonAbsPath, 'dist', 'temp', 'gen-html'),
+        (await findUp('index.vue', { cwd: zBase.path.dir, stopAt: zBase.pkgJsonAbsPath }))!,
       ),
+
+      isHome: zBase.isHome ?? zBase.path.name === 'index',
+      isLinks: zBase.isLinks ?? zBase.path.name === 'links',
+      is404: zBase.is404 ?? zBase.path.name === '404',
+
+      lang: (path.split(zBase.path.dir)).find((pathSeg) => isLang(pathSeg)) || zBase.lang,
 
       latest: zBase.latest ? zBase.latest : new Date(),
 
@@ -211,6 +231,24 @@ const zPost = z
         ? new URL(z1.fullUrlWIndexWoExt.pathname.slice(0, -'/index'.length), z1.site)
         : z1.fullUrlWIndexWoExt,
 
+      frontmatterImportName: z1
+        .frontmatterPath
+        .replaceAll('.', 'ReplacedDot')
+        .replaceAll('/', 'ReplacedSlash')
+        .replaceAll('-', 'ReplacedHyphen'),
+      layoutImportName: z1
+        .layoutPath
+        .replaceAll('.', 'ReplacedDot')
+        .replaceAll('/', 'ReplacedSlash')
+        .replaceAll('-', 'ReplacedHyphen'),
+
+      isPost: z1.isPost ?? !(z1.isHome || z1.isLinks || z1.is404),
+
+      postImportName: `${z1.slugWIndexWoExt}.mdx`
+        .replaceAll('.', 'ReplacedDot')
+        .replaceAll('/', 'ReplacedSlash')
+        .replaceAll('-', 'ReplacedHyphen'),
+
       siteWithBase: z1.siteBase ? new URL(z1.siteBase, z1.site) : z1.site,
 
       slashSiteBase: z1.siteBase ? `/${z1.siteBase}` : z1.siteBase,
@@ -250,6 +288,8 @@ const zPost = z
 
       path: z.object({ dir: z.string(), name: z.string() }).readonly(),
 
+      pkgJsonAbsPath: z.string(),
+
       //endregion
 
       author: z.object({ name: z.string(), url: z.string().url() }).readonly(),
@@ -261,6 +301,10 @@ const zPost = z
       description: z.string(),
 
       earliest: z.date(),
+
+      frontmatterImportName: z.string(),
+
+      frontmatterPath: z.string(),
 
       fullTitle: z.string(),
 
@@ -280,9 +324,17 @@ const zPost = z
 
       latest: z.date(),
 
+      layoutImportName: z.string(),
+
+      layoutPath: z.string(),
+
       license: z.object({ name: z.string(), url: z.string().url() }).readonly(),
 
+      links: z.map(z.string(), z.string().url()).readonly(),
+
       mdxContent: z.string(),
+
+      postImportName: z.string(),
 
       published: z
         .array(z.object({ date: z.date(), author: z.object({ name: z.string(), url: z.string().url() }).readonly() }))
@@ -311,7 +363,7 @@ const zPost = z
 
       slug: z.string(),
 
-      socials: z.record(z.string(), z.string().url()).readonly(),
+      socials: z.map(z.string(), z.string().url()).readonly(),
 
       summary: z.string(),
 

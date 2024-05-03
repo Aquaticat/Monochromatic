@@ -1,14 +1,29 @@
 {
   "name": "monochromatic",
   "private": true,
-  "trustedDependencies": ["@biomejs/biome"],
-  "scripts": {},
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git"
+  },
+  "trustedDependencies": [
+    "@biomejs/biome"
+  ],
+  "scripts": {
+    "dependencies": "monochromatic dependencies"
+  },
   "engines": {
     "node": ">=20.12",
-    "pnpm": ">=9.0.4"
+    "pnpm": ">=9.0.6"
   },
   "devDependencies": {
     "@biomejs/biome": ">=1.7",
+    "@monochromatic.dev/build": "*",
     "@monochromatic.dev/config-biome": "*",
     "@monochromatic.dev/config-dprint": "*",
     "dprint": ">=0.45.1",

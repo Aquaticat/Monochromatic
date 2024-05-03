@@ -10,18 +10,14 @@
     "clean": "monochromatic clean"
   },
   "devDependencies": {
-    "@monochromatic.dev/build": "*",
-    "@biomejs/biome": ">=1.7.0",
     "@microsoft/api-extractor": "*",
+    "@monochromatic.dev/build": "*",
     "@monochromatic.dev/config-api-extractor": "*",
-    "@monochromatic.dev/config-biome": "*",
     "@monochromatic.dev/config-typescript": "*",
-    "chokidar-cli": "*",
-    "esbuild": "*",
     "typescript": ">=5.4.5",
+    "@types/node": ">=20.12.7",
     "vite": "*",
     "vue-tsc": "*",
-    "@types/node": "*",
     "@types/mdx": ">=2.0.13"
   },
   "exports": {

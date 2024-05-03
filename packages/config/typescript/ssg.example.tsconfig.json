@@ -1,9 +1,8 @@
 {
   "extends": "@monochromatic.dev/config-typescript/ssg",
-  "include": ["src", "dist/temp/gen-html"],
+  "include": ["src"],
   "compilerOptions": {
-    "rootDir": ".",
-    "rootDirs": ["src", "dist/temp/gen-html"],
+    "rootDir": "src",
     "outDir": "dist/temp/tsc",
 
     "paths": {

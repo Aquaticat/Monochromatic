@@ -31,9 +31,11 @@ import {
 import {
   delimiter as pathDelimiter,
   format as pathFormat,
+  isAbsolute as pathIsAbsolute,
   join as pathJoin,
   normalize as pathNormalize,
   parse as pathParse,
+  type ParsedPath,
   relative as pathRelative,
   resolve as pathResolve,
   sep as pathSep,
@@ -41,9 +43,13 @@ import {
 
 import { constants as fsC } from 'node:fs';
 
-import { mapParallelAsync } from 'rambdax';
+import {
+  mapParallelAsync,
+  tryCatchAsync,
+} from 'rambdax';
 
 export const path = Object.freeze({
+  isAbsolute: pathIsAbsolute,
   resolve: pathResolve,
   join: pathJoin,
   relative: pathRelative,
@@ -51,27 +57,63 @@ export const path = Object.freeze({
   format: pathFormat,
   delimiter: pathDelimiter,
   normalize: pathNormalize,
-  parseFs: async function pathParseFs(...args: Parameters<typeof pathParse>): Promise<ReturnType<typeof pathParse>> {
+  parseFs: async function pathParseFs(
+    ...args: Parameters<typeof pathParse>
+  ): Promise<ParsedPath & Pick<URL, 'search' | 'searchParams' | 'hash'>> {
+    const pathUrl = new URL(args[0], 'path://');
+    const pathSearch = pathUrl.search;
+    const pathHash = pathUrl.hash;
+    const pathWoTrailingHash = (args[0].endsWith('#')) ? args[0].slice(0, -'#'.length) : args[0];
+    const pathWoHash = pathHash ? pathWoTrailingHash.slice(0, -pathHash.length) : pathWoTrailingHash;
+    const pathWoSearch = pathSearch ? pathWoHash.slice(0, -pathSearch.length) : pathWoHash;
     try {
-      if ((await fsStat(args[0])).isDirectory()) {
-        const eliminatedDots = args[0].replaceAll('.', 'pathParseFs');
+      if ((await fsStat(pathWoSearch)).isDirectory()) {
+        const eliminatedDots = pathWoSearch.replaceAll('.', 'replacedDot');
         const pathObjOfEliminatedDots = pathParse(eliminatedDots);
         return {
           ...pathObjOfEliminatedDots,
-          dir: pathObjOfEliminatedDots.dir.replaceAll('pathParseFs', '.'),
-          base: pathObjOfEliminatedDots.base.replaceAll('pathParseFs', '.'),
-          name: pathObjOfEliminatedDots.name.replaceAll('pathParseFs', '.'),
+          dir: pathObjOfEliminatedDots.dir.replaceAll('replacedDot', '.'),
+          base: pathObjOfEliminatedDots.base.replaceAll('replacedDot', '.'),
+          name: pathObjOfEliminatedDots.name.replaceAll('replacedDot', '.'),
+          search: pathSearch,
+          searchParams: pathUrl.searchParams,
+          hash: pathHash,
         };
       }
-      return pathParse(args[0]);
+      return { ...pathParse(pathWoSearch), search: pathSearch, searchParams: pathUrl.searchParams, hash: pathHash };
     } catch {
-      return pathParse(args[0]);
+      return { ...pathParse(pathWoSearch), search: pathSearch, searchParams: pathUrl.searchParams, hash: pathHash };
     }
   },
   split: function pathSplit(path: string) {
     return path.split(pathSep);
   },
 });
+
+const mFsC = {
+  ...fsC,
+  S_IAA: fsC.S_IRUSR
+    | fsC.S_IWUSR
+    | fsC.S_IXUSR
+    | fsC.S_IRGRP
+    | fsC.S_IWGRP
+    | fsC.S_IXGRP
+    | fsC.S_IROTH
+    | fsC.S_IWOTH
+    | fsC.S_IXOTH,
+  S_IAUSR: fsC.S_IRUSR
+    | fsC.S_IWUSR
+    | fsC.S_IXUSR,
+  S_IAGRP: fsC.S_IRGRP
+    | fsC.S_IWGRP
+    | fsC.S_IXGRP,
+  S_IAOTH: fsC.S_IROTH
+    | fsC.S_IWOTH
+    | fsC.S_IXOTH,
+  S_IRA: fsC.S_IRUSR | fsC.S_IRGRP | fsC.S_IROTH,
+  S_IWA: fsC.S_IWUSR | fsC.S_IWGRP | fsC.S_IWOTH,
+  S_IXA: fsC.S_IXUSR | fsC.S_IXGRP | fsC.S_IXOTH,
+};
 
 async function fsReadFileU(path: string): Promise<string>;
 async function fsReadFileU(...args: Parameters<typeof fsReadFile>): ReturnType<typeof fsReadFile> {
@@ -83,6 +125,29 @@ async function fsReadFileU(...args: Parameters<typeof fsReadFile>): ReturnType<t
   }
   return await fsReadFile(args[0], 'utf8');
 }
+
+async function fsAccessM(...args: Parameters<typeof fsAccess>): ReturnType<typeof fsAccess> {
+  const pathUrl = new URL(args[0], 'path://');
+  const pathSearch = pathUrl.search;
+  const pathHash = pathUrl.hash;
+  const pathWoTrailingHash = (String(args[0]).endsWith('#')) ? String(args[0]).slice(0, -'#'.length) : args[0];
+  const pathWoHash = pathHash ? String(pathWoTrailingHash).slice(0, -pathHash.length) : pathWoTrailingHash;
+  const pathWoSearch = pathSearch ? String(pathWoHash).slice(0, -pathSearch.length) : pathWoHash;
+  try {
+    return await fsAccess(pathWoSearch);
+  } catch {
+    await fsChmod(pathWoSearch, mFsC.S_IAA);
+  }
+  return await fsAccess(pathWoSearch);
+}
+
+const fsExists: (...args: Parameters<typeof fsAccessM>) => Promise<boolean> = tryCatchAsync(
+  async function accessTrue(...args: Parameters<typeof fsAccessM>) {
+    await fs.accessM(...args);
+    return true;
+  },
+  false,
+);
 
 export const fs = Object.freeze({
   chmod: fsChmod,
@@ -110,30 +175,7 @@ export const fs = Object.freeze({
   access: fsAccess,
   opendir: fsOpendir,
   rm: fsRm,
-  C: {
-    ...fsC,
-    S_IAA: fsC.S_IRUSR
-      | fsC.S_IWUSR
-      | fsC.S_IXUSR
-      | fsC.S_IRGRP
-      | fsC.S_IWGRP
-      | fsC.S_IXGRP
-      | fsC.S_IROTH
-      | fsC.S_IWOTH
-      | fsC.S_IXOTH,
-    S_IAUSR: fsC.S_IRUSR
-      | fsC.S_IWUSR
-      | fsC.S_IXUSR,
-    S_IAGRP: fsC.S_IRGRP
-      | fsC.S_IWGRP
-      | fsC.S_IXGRP,
-    S_IAOTH: fsC.S_IROTH
-      | fsC.S_IWOTH
-      | fsC.S_IXOTH,
-    S_IRA: fsC.S_IRUSR | fsC.S_IRGRP | fsC.S_IROTH,
-    S_IWA: fsC.S_IWUSR | fsC.S_IWGRP | fsC.S_IWOTH,
-    S_IXA: fsC.S_IXUSR | fsC.S_IXGRP | fsC.S_IXOTH,
-  },
+  C: mFsC,
   readFileU: fsReadFileU,
   readFileMU: async function fsReadFileMU(...args: Parameters<typeof fsReadFileU>): ReturnType<typeof fsReadFileU> {
     await fs.accessM(args[0]);
@@ -141,15 +183,9 @@ export const fs = Object.freeze({
   },
   stat: fsStat,
 
-  // TODO: Support files ending with url params. Strip the url params and use that as the parameter to call fsAccess.
-  accessM: async function fsAccessM(...args: Parameters<typeof fsAccess>): ReturnType<typeof fsAccess> {
-    try {
-      return await fsAccess(...args);
-    } catch {
-      await fsChmod(args[0], fs.C.S_IAA);
-    }
-    return await fsAccess(...args);
-  },
+  accessM: fsAccessM,
+
+  exists: fsExists,
 
   outputFile: async function fsOutputFile(...args: Parameters<typeof fsWriteFile>): ReturnType<typeof fsWriteFile> {
     if (typeof args[0] === 'string') {

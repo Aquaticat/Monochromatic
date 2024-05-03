@@ -57,7 +57,8 @@ export const packageFilePath = async (potentialPackageWithIdentifier: string): P
   const [pkg, identifier] = potentialPackageWithIdentifier.split(packageIdentifierSplitter);
 
   // TODO: Make this not limited to pnpm.
-  const pkgPath: string = JSON.parse((await $`pnpm list --json ${pkg}`).stdout)[0].dependencies[pkg!].path;
+  const filteredPkgJson = JSON.parse((await $`pnpm list --json ${pkg}`).stdout)[0];
+  const pkgPath: string = filteredPkgJson?.dependencies?.[pkg!].path || filteredPkgJson.devDependencies?.[pkg!].path;
 
   const pkgJson: {
     main?: string;
@@ -166,7 +167,7 @@ export const tsconfigAliasedPath = async (
   }
 
   const matchingAlias = Object.keys(tsconfig.compilerOptions.paths).find((alias) =>
-    minimatch(potentialTsconfigAlias, alias.replaceAll('*', '**'))
+    minimatch(potentialTsconfigAlias, alias.replaceAll(/(?<!\*)\*(?!\*)/g, '**'))
   );
   if (!matchingAlias) {
     throw new RangeError(
@@ -242,8 +243,14 @@ export default async function resolve(
 
   // WONTFIX: Support CJS modules.
 
+  if (!path.isAbsolute(from)) {
+    c.debug(`Relative path ${from} passed in parameter from, converted to absolute path ${path.resolve(from)}`);
+  }
+
+  const absFrom = path.isAbsolute(from) ? from : path.resolve(from);
+
   if (specifier.startsWith('#')) {
-    return await importsPath(specifier, from);
+    return await importsPath(specifier, absFrom);
   }
 
   const pkgJsonAbsPath =
@@ -257,18 +264,16 @@ export default async function resolve(
     return path.join(pkgJsonAbsPath, specifier.slice('@/'.length));
   }
 
-  const file = path.join(from, '..', specifier);
+  const file = path.join(absFrom, '..', specifier);
   try {
     await fs.accessM(file);
     return file;
   } catch (e) {
-    c.debug('no file found', e);
   }
 
   try {
-    return await tsconfigAliasedPath(specifier, from, pkgJsonAbsPath);
+    return await tsconfigAliasedPath(specifier, absFrom, pkgJsonAbsPath);
   } catch (e) {
-    c.debug('no tsconfig alias found', e);
   }
 
   return await packageFilePath(specifier);

@@ -17,7 +17,7 @@
       "imports": [],
       "exports": [],
       "inputs": {},
-      "bytes": 3840
+      "bytes": 3954
     },
     "dist/final/index.js": {
       "imports": [],
@@ -34,10 +34,10 @@
       "entryPoint": "src/index.ts",
       "inputs": {
         "src/index.ts": {
-          "bytesInOutput": 1208
+          "bytesInOutput": 1332
         }
       },
-      "bytes": 1398
+      "bytes": 1522
     }
   }
 }

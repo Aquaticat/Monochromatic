@@ -1,7 +1,7 @@
 {
   "metadata": {
     "toolPackage": "@microsoft/api-extractor",
-    "toolVersion": "7.43.0",
+    "toolVersion": "7.43.1",
     "schemaVersion": 1011,
     "oldestForwardsCompatibleVersion": 1001,
     "tsdocConfig": {
@@ -256,24 +256,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -283,8 +265,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -297,25 +279,7 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": "]>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": ">;\n    author: "
+              "text": ", unknown>;\n    author: "
             },
             {
               "kind": "Reference",
@@ -369,25 +333,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    author: {\n        name: string;\n        url: string;\n    };\n}, {\n    date: (string | "
-            },
-            {
-              "kind": "Reference",
-              "text": "Date",
-              "canonicalReference": "!Date:interface"
-            },
-            {
-              "kind": "Content",
-              "text": ") & (string | "
-            },
-            {
-              "kind": "Reference",
-              "text": "Date",
-              "canonicalReference": "!Date:interface"
-            },
-            {
-              "kind": "Content",
-              "text": " | undefined);\n    author: {\n        name: string;\n        url: string;\n    };\n}>, "
+              "text": ";\n    author: {\n        name: string;\n        url: string;\n    };\n}, {\n    author: {\n        name: string;\n        url: string;\n    };\n    date?: unknown;\n}>, "
             },
             {
               "kind": "Reference",
@@ -477,7 +423,7 @@
           "name": "zBlame",
           "variableTypeTokenRange": {
             "startIndex": 1,
-            "endIndex": 53
+            "endIndex": 41
           }
         },
         {
@@ -527,24 +473,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -554,8 +482,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -568,25 +496,7 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": "]>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": ">;\n    author: "
+              "text": ", unknown>;\n    author: "
             },
             {
               "kind": "Reference",
@@ -640,25 +550,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    author: {\n        name: string;\n        url: string;\n    };\n}, {\n    date: (string | "
-            },
-            {
-              "kind": "Reference",
-              "text": "Date",
-              "canonicalReference": "!Date:interface"
-            },
-            {
-              "kind": "Content",
-              "text": ") & (string | "
-            },
-            {
-              "kind": "Reference",
-              "text": "Date",
-              "canonicalReference": "!Date:interface"
-            },
-            {
-              "kind": "Content",
-              "text": " | undefined);\n    author: {\n        name: string;\n        url: string;\n    };\n}>, "
+              "text": ";\n    author: {\n        name: string;\n        url: string;\n    };\n}, {\n    author: {\n        name: string;\n        url: string;\n    };\n    date?: unknown;\n}>, "
             },
             {
               "kind": "Reference",
@@ -838,7 +730,7 @@
           "name": "zBlames",
           "variableTypeTokenRange": {
             "startIndex": 1,
-            "endIndex": 77
+            "endIndex": 65
           }
         },
         {
@@ -852,24 +744,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -879,8 +753,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -893,25 +767,7 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": "]>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": ">"
+              "text": ", unknown>"
             }
           ],
           "fileUrlPath": "src/index.ts",
@@ -920,7 +776,7 @@
           "name": "zChronoDate",
           "variableTypeTokenRange": {
             "startIndex": 1,
-            "endIndex": 15
+            "endIndex": 7
           }
         },
         {
@@ -1078,24 +934,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -1105,8 +943,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -1119,25 +957,79 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
+              "text": ", unknown>>;\n    isHome: "
             },
             {
               "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
             },
             {
               "kind": "Content",
-              "text": "]>, "
+              "text": "<"
             },
             {
               "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
             },
             {
               "kind": "Content",
-              "text": ">>;\n    lang: "
+              "text": ">;\n    isLinks: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    is404: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    isPost: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    lang: "
             },
             {
               "kind": "Reference",
@@ -1159,24 +1051,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -1186,8 +1060,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -1200,25 +1074,7 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": "]>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": ">>;\n    license: "
+              "text": ", unknown>>;\n    license: "
             },
             {
               "kind": "Reference",
@@ -1335,7 +1191,142 @@
             },
             {
               "kind": "Content",
-              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>>;\n    updated: "
+              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>>;\n    links: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodPipeline",
+              "canonicalReference": "zod!ZodPipeline:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodRecord",
+              "canonicalReference": "zod!ZodRecord:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>>;\n    updated: "
             },
             {
               "kind": "Reference",
@@ -1402,6 +1393,33 @@
             },
             {
               "kind": "Reference",
+              "text": "z.ZodPipeline",
+              "canonicalReference": "zod!ZodPipeline:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
               "text": "z.ZodRecord",
               "canonicalReference": "zod!ZodRecord:class"
             },
@@ -1425,7 +1443,79 @@
             },
             {
               "kind": "Content",
-              "text": ">>;\n    tags: "
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>>;\n    tags: "
             },
             {
               "kind": "Reference",
@@ -1636,24 +1726,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -1663,8 +1735,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -1677,25 +1749,79 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
+              "text": ", unknown>>;\n    isHome: "
             },
             {
               "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
             },
             {
               "kind": "Content",
-              "text": "]>, "
+              "text": "<"
             },
             {
               "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
             },
             {
               "kind": "Content",
-              "text": ">>;\n    lang: "
+              "text": ">;\n    isLinks: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    is404: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    isPost: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    lang: "
             },
             {
               "kind": "Reference",
@@ -1717,24 +1843,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -1744,8 +1852,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -1758,25 +1866,7 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": "]>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": ">>;\n    license: "
+              "text": ", unknown>>;\n    license: "
             },
             {
               "kind": "Reference",
@@ -1893,7 +1983,142 @@
             },
             {
               "kind": "Content",
-              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>>;\n    updated: "
+              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>>;\n    links: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodPipeline",
+              "canonicalReference": "zod!ZodPipeline:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodRecord",
+              "canonicalReference": "zod!ZodRecord:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>>;\n    updated: "
             },
             {
               "kind": "Reference",
@@ -1960,6 +2185,33 @@
             },
             {
               "kind": "Reference",
+              "text": "z.ZodPipeline",
+              "canonicalReference": "zod!ZodPipeline:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
               "text": "z.ZodRecord",
               "canonicalReference": "zod!ZodRecord:class"
             },
@@ -1983,7 +2235,79 @@
             },
             {
               "kind": "Content",
-              "text": ">>;\n    tags: "
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>>;\n    tags: "
             },
             {
               "kind": "Reference",
@@ -2194,24 +2518,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -2221,8 +2527,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -2235,25 +2541,79 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
+              "text": ", unknown>>;\n    isHome: "
             },
             {
               "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
             },
             {
               "kind": "Content",
-              "text": "]>, "
+              "text": "<"
             },
             {
               "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
             },
             {
               "kind": "Content",
-              "text": ">>;\n    lang: "
+              "text": ">;\n    isLinks: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    is404: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    isPost: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    lang: "
             },
             {
               "kind": "Reference",
@@ -2275,24 +2635,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -2302,8 +2644,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -2316,25 +2658,7 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": "]>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": ">>;\n    license: "
+              "text": ", unknown>>;\n    license: "
             },
             {
               "kind": "Reference",
@@ -2451,7 +2775,142 @@
             },
             {
               "kind": "Content",
-              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>>;\n    updated: "
+              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>>;\n    links: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodPipeline",
+              "canonicalReference": "zod!ZodPipeline:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodRecord",
+              "canonicalReference": "zod!ZodRecord:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>>;\n    updated: "
             },
             {
               "kind": "Reference",
@@ -2518,6 +2977,33 @@
             },
             {
               "kind": "Reference",
+              "text": "z.ZodPipeline",
+              "canonicalReference": "zod!ZodPipeline:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
               "text": "z.ZodRecord",
               "canonicalReference": "zod!ZodRecord:class"
             },
@@ -2541,7 +3027,79 @@
             },
             {
               "kind": "Content",
-              "text": ">>;\n    tags: "
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>>;\n    tags: "
             },
             {
               "kind": "Reference",
@@ -2658,7 +3216,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    fullTitle: string;\n    fullUrlWIndexWExt: "
+              "text": ";\n    frontmatterPath: string;\n    fullTitle: string;\n    fullUrlWIndexWExt: "
             },
             {
               "kind": "Reference",
@@ -2676,7 +3234,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    isHome: boolean;\n    isLinks: boolean;\n    is404: boolean;\n    isPost: boolean;\n    lang: string;\n    latest: "
+              "text": ";\n    layoutPath: string;\n    isHome: boolean;\n    isLinks: boolean;\n    is404: boolean;\n    lang: string;\n    latest: "
             },
             {
               "kind": "Reference",
@@ -2712,25 +3270,25 @@
             },
             {
               "kind": "Content",
-              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    site: string;\n    siteTitle: string;\n    socials: "
+              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    links: "
             },
             {
               "kind": "Reference",
-              "text": "Readonly",
-              "canonicalReference": "!Readonly:type"
+              "text": "ReadonlyMap",
+              "canonicalReference": "!ReadonlyMap:interface"
             },
             {
               "kind": "Content",
-              "text": "<"
+              "text": "<string, string>;\n    site: string;\n    siteTitle: string;\n    socials: "
             },
             {
               "kind": "Reference",
-              "text": "Record",
-              "canonicalReference": "!Record:type"
+              "text": "ReadonlyMap",
+              "canonicalReference": "!ReadonlyMap:interface"
             },
             {
               "kind": "Content",
-              "text": "<string, string>>;\n    tags: string[];\n    theming: {\n        color: string;\n        shiki: {\n            light: string;\n            dark: string;\n        };\n    };\n    title: string;\n}, "
+              "text": "<string, string>;\n    tags: string[];\n    theming: {\n        color: string;\n        shiki: {\n            light: string;\n            dark: string;\n        };\n    };\n    title: string;\n    isPost?: boolean | undefined;\n}, "
             },
             {
               "kind": "Reference",
@@ -2833,24 +3391,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -2860,8 +3400,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -2874,25 +3414,79 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
+              "text": ", unknown>>;\n    isHome: "
             },
             {
               "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
             },
             {
               "kind": "Content",
-              "text": "]>, "
+              "text": "<"
             },
             {
               "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
             },
             {
               "kind": "Content",
-              "text": ">>;\n    lang: "
+              "text": ">;\n    isLinks: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    is404: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    isPost: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    lang: "
             },
             {
               "kind": "Reference",
@@ -2914,24 +3508,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -2941,8 +3517,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -2955,25 +3531,7 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": "]>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": ">>;\n    license: "
+              "text": ", unknown>>;\n    license: "
             },
             {
               "kind": "Reference",
@@ -3090,7 +3648,142 @@
             },
             {
               "kind": "Content",
-              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>>;\n    updated: "
+              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>>;\n    links: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodPipeline",
+              "canonicalReference": "zod!ZodPipeline:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodRecord",
+              "canonicalReference": "zod!ZodRecord:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>>;\n    updated: "
             },
             {
               "kind": "Reference",
@@ -3157,6 +3850,33 @@
             },
             {
               "kind": "Reference",
+              "text": "z.ZodPipeline",
+              "canonicalReference": "zod!ZodPipeline:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
               "text": "z.ZodRecord",
               "canonicalReference": "zod!ZodRecord:class"
             },
@@ -3180,7 +3900,79 @@
             },
             {
               "kind": "Content",
-              "text": ">>;\n    tags: "
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>>;\n    tags: "
             },
             {
               "kind": "Reference",
@@ -3297,7 +4089,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    siteWithBase: string | "
+              "text": ";\n    frontmatterImportName: string;\n    layoutImportName: string;\n    isPost: boolean;\n    postImportName: string;\n    siteWithBase: string | "
             },
             {
               "kind": "Reference",
@@ -3315,7 +4107,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    fullTitle: string;\n    fullUrlWIndexWExt: "
+              "text": ";\n    frontmatterPath: string;\n    fullTitle: string;\n    fullUrlWIndexWExt: "
             },
             {
               "kind": "Reference",
@@ -3333,7 +4125,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    isHome: boolean;\n    isLinks: boolean;\n    is404: boolean;\n    isPost: boolean;\n    lang: string;\n    latest: "
+              "text": ";\n    layoutPath: string;\n    isHome: boolean;\n    isLinks: boolean;\n    is404: boolean;\n    lang: string;\n    latest: "
             },
             {
               "kind": "Reference",
@@ -3369,25 +4161,25 @@
             },
             {
               "kind": "Content",
-              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    site: string;\n    siteTitle: string;\n    socials: "
+              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    links: "
             },
             {
               "kind": "Reference",
-              "text": "Readonly",
-              "canonicalReference": "!Readonly:type"
+              "text": "ReadonlyMap",
+              "canonicalReference": "!ReadonlyMap:interface"
             },
             {
               "kind": "Content",
-              "text": "<"
+              "text": "<string, string>;\n    site: string;\n    siteTitle: string;\n    socials: "
             },
             {
               "kind": "Reference",
-              "text": "Record",
-              "canonicalReference": "!Record:type"
+              "text": "ReadonlyMap",
+              "canonicalReference": "!ReadonlyMap:interface"
             },
             {
               "kind": "Content",
-              "text": "<string, string>>;\n    tags: string[];\n    theming: {\n        color: string;\n        shiki: {\n            light: string;\n            dark: string;\n        };\n    };\n    title: string;\n}, "
+              "text": "<string, string>;\n    tags: string[];\n    theming: {\n        color: string;\n        shiki: {\n            light: string;\n            dark: string;\n        };\n    };\n    title: string;\n}, "
             },
             {
               "kind": "Reference",
@@ -3490,24 +4282,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -3517,8 +4291,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -3531,25 +4305,79 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
+              "text": ", unknown>>;\n    isHome: "
             },
             {
               "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
             },
             {
               "kind": "Content",
-              "text": "]>, "
+              "text": "<"
             },
             {
               "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
             },
             {
               "kind": "Content",
-              "text": ">>;\n    lang: "
+              "text": ">;\n    isLinks: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    is404: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    isPost: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    lang: "
             },
             {
               "kind": "Reference",
@@ -3571,24 +4399,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -3598,8 +4408,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -3612,25 +4422,7 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": "]>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": ">>;\n    license: "
+              "text": ", unknown>>;\n    license: "
             },
             {
               "kind": "Reference",
@@ -3747,7 +4539,142 @@
             },
             {
               "kind": "Content",
-              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>>;\n    updated: "
+              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>>;\n    links: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodPipeline",
+              "canonicalReference": "zod!ZodPipeline:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodRecord",
+              "canonicalReference": "zod!ZodRecord:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>>;\n    updated: "
             },
             {
               "kind": "Reference",
@@ -3814,6 +4741,33 @@
             },
             {
               "kind": "Reference",
+              "text": "z.ZodPipeline",
+              "canonicalReference": "zod!ZodPipeline:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
               "text": "z.ZodRecord",
               "canonicalReference": "zod!ZodRecord:class"
             },
@@ -3837,7 +4791,79 @@
             },
             {
               "kind": "Content",
-              "text": ">>;\n    tags: "
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>>;\n    tags: "
             },
             {
               "kind": "Reference",
@@ -3954,7 +4980,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    siteWithBase: string | "
+              "text": ";\n    frontmatterImportName: string;\n    layoutImportName: string;\n    isPost: boolean;\n    postImportName: string;\n    siteWithBase: string | "
             },
             {
               "kind": "Reference",
@@ -3972,7 +4998,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    fullTitle: string;\n    fullUrlWIndexWExt: "
+              "text": ";\n    frontmatterPath: string;\n    fullTitle: string;\n    fullUrlWIndexWExt: "
             },
             {
               "kind": "Reference",
@@ -3990,7 +5016,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    isHome: boolean;\n    isLinks: boolean;\n    is404: boolean;\n    isPost: boolean;\n    lang: string;\n    latest: "
+              "text": ";\n    layoutPath: string;\n    isHome: boolean;\n    isLinks: boolean;\n    is404: boolean;\n    lang: string;\n    latest: "
             },
             {
               "kind": "Reference",
@@ -4026,25 +5052,25 @@
             },
             {
               "kind": "Content",
-              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    site: string;\n    siteTitle: string;\n    socials: "
+              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    links: "
             },
             {
               "kind": "Reference",
-              "text": "Readonly",
-              "canonicalReference": "!Readonly:type"
+              "text": "ReadonlyMap",
+              "canonicalReference": "!ReadonlyMap:interface"
             },
             {
               "kind": "Content",
-              "text": "<"
+              "text": "<string, string>;\n    site: string;\n    siteTitle: string;\n    socials: "
             },
             {
               "kind": "Reference",
-              "text": "Record",
-              "canonicalReference": "!Record:type"
+              "text": "ReadonlyMap",
+              "canonicalReference": "!ReadonlyMap:interface"
             },
             {
               "kind": "Content",
-              "text": "<string, string>>;\n    tags: string[];\n    theming: {\n        color: string;\n        shiki: {\n            light: string;\n            dark: string;\n        };\n    };\n    title: string;\n}, "
+              "text": "<string, string>;\n    tags: string[];\n    theming: {\n        color: string;\n        shiki: {\n            light: string;\n            dark: string;\n        };\n    };\n    title: string;\n}, "
             },
             {
               "kind": "Reference",
@@ -4147,24 +5173,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -4174,8 +5182,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -4188,25 +5196,79 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
+              "text": ", unknown>>;\n    isHome: "
             },
             {
               "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
             },
             {
               "kind": "Content",
-              "text": "]>, "
+              "text": "<"
             },
             {
               "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
             },
             {
               "kind": "Content",
-              "text": ">>;\n    lang: "
+              "text": ">;\n    isLinks: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    is404: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    isPost: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    lang: "
             },
             {
               "kind": "Reference",
@@ -4228,24 +5290,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -4255,8 +5299,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -4269,25 +5313,7 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": "]>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": ">>;\n    license: "
+              "text": ", unknown>>;\n    license: "
             },
             {
               "kind": "Reference",
@@ -4404,7 +5430,142 @@
             },
             {
               "kind": "Content",
-              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>>;\n    updated: "
+              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>>;\n    links: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodPipeline",
+              "canonicalReference": "zod!ZodPipeline:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodRecord",
+              "canonicalReference": "zod!ZodRecord:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>>;\n    updated: "
             },
             {
               "kind": "Reference",
@@ -4471,6 +5632,33 @@
             },
             {
               "kind": "Reference",
+              "text": "z.ZodPipeline",
+              "canonicalReference": "zod!ZodPipeline:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
               "text": "z.ZodRecord",
               "canonicalReference": "zod!ZodRecord:class"
             },
@@ -4494,7 +5682,79 @@
             },
             {
               "kind": "Content",
-              "text": ">>;\n    tags: "
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>>;\n    tags: "
             },
             {
               "kind": "Reference",
@@ -4611,7 +5871,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    siteWithBase: string | "
+              "text": ";\n    frontmatterImportName: string;\n    layoutImportName: string;\n    isPost: boolean;\n    postImportName: string;\n    siteWithBase: string | "
             },
             {
               "kind": "Reference",
@@ -4629,7 +5889,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    fullTitle: string;\n    fullUrlWIndexWExt: "
+              "text": ";\n    frontmatterPath: string;\n    fullTitle: string;\n    fullUrlWIndexWExt: "
             },
             {
               "kind": "Reference",
@@ -4647,7 +5907,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    isHome: boolean;\n    isLinks: boolean;\n    is404: boolean;\n    isPost: boolean;\n    lang: string;\n    latest: "
+              "text": ";\n    layoutPath: string;\n    isHome: boolean;\n    isLinks: boolean;\n    is404: boolean;\n    lang: string;\n    latest: "
             },
             {
               "kind": "Reference",
@@ -4683,25 +5943,25 @@
             },
             {
               "kind": "Content",
-              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    site: string;\n    siteTitle: string;\n    socials: "
+              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    links: "
             },
             {
               "kind": "Reference",
-              "text": "Readonly",
-              "canonicalReference": "!Readonly:type"
+              "text": "ReadonlyMap",
+              "canonicalReference": "!ReadonlyMap:interface"
             },
             {
               "kind": "Content",
-              "text": "<"
+              "text": "<string, string>;\n    site: string;\n    siteTitle: string;\n    socials: "
             },
             {
               "kind": "Reference",
-              "text": "Record",
-              "canonicalReference": "!Record:type"
+              "text": "ReadonlyMap",
+              "canonicalReference": "!ReadonlyMap:interface"
             },
             {
               "kind": "Content",
-              "text": "<string, string>>;\n    tags: string[];\n    theming: {\n        color: string;\n        shiki: {\n            light: string;\n            dark: string;\n        };\n    };\n    title: string;\n}, "
+              "text": "<string, string>;\n    tags: string[];\n    theming: {\n        color: string;\n        shiki: {\n            light: string;\n            dark: string;\n        };\n    };\n    title: string;\n}, "
             },
             {
               "kind": "Reference",
@@ -4804,24 +6064,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -4831,8 +6073,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -4845,25 +6087,79 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
+              "text": ", unknown>>;\n    isHome: "
             },
             {
               "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
             },
             {
               "kind": "Content",
-              "text": "]>, "
+              "text": "<"
             },
             {
               "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
             },
             {
               "kind": "Content",
-              "text": ">>;\n    lang: "
+              "text": ">;\n    isLinks: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    is404: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    isPost: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodOptional",
+              "canonicalReference": "zod!ZodOptional:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodBoolean",
+              "canonicalReference": "zod!ZodBoolean:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">;\n    lang: "
             },
             {
               "kind": "Reference",
@@ -4885,24 +6181,6 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodPipeline",
-              "canonicalReference": "zod!ZodPipeline:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodUnion",
-              "canonicalReference": "zod!ZodUnion:class"
-            },
-            {
-              "kind": "Content",
-              "text": "<["
-            },
-            {
-              "kind": "Reference",
               "text": "z.ZodEffects",
               "canonicalReference": "zod!ZodEffects:class"
             },
@@ -4912,8 +6190,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodString",
-              "canonicalReference": "zod!ZodString:class"
+              "text": "z.ZodDate",
+              "canonicalReference": "zod!ZodDate:class"
             },
             {
               "kind": "Content",
@@ -4926,25 +6204,7 @@
             },
             {
               "kind": "Content",
-              "text": " | null, string>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": "]>, "
-            },
-            {
-              "kind": "Reference",
-              "text": "z.ZodDate",
-              "canonicalReference": "zod!ZodDate:class"
-            },
-            {
-              "kind": "Content",
-              "text": ">>;\n    license: "
+              "text": ", unknown>>;\n    license: "
             },
             {
               "kind": "Reference",
@@ -5061,7 +6321,142 @@
             },
             {
               "kind": "Content",
-              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>>;\n    updated: "
+              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>>;\n    links: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodPipeline",
+              "canonicalReference": "zod!ZodPipeline:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodRecord",
+              "canonicalReference": "zod!ZodRecord:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>>;\n    updated: "
             },
             {
               "kind": "Reference",
@@ -5128,6 +6523,33 @@
             },
             {
               "kind": "Reference",
+              "text": "z.ZodPipeline",
+              "canonicalReference": "zod!ZodPipeline:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodUnion",
+              "canonicalReference": "zod!ZodUnion:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<["
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodEffects",
+              "canonicalReference": "zod!ZodEffects:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
               "text": "z.ZodRecord",
               "canonicalReference": "zod!ZodRecord:class"
             },
@@ -5151,7 +6573,79 @@
             },
             {
               "kind": "Content",
-              "text": ">>;\n    tags: "
+              "text": ">, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "Record",
+              "canonicalReference": "!Record:type"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">]>, "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>>;\n    tags: "
             },
             {
               "kind": "Reference",
@@ -5313,7 +6807,16 @@
             },
             {
               "kind": "Content",
-              "text": ", {\n        name: string;\n        dir: string;\n    }, {\n        name: string;\n        dir: string;\n    }>>;\n    author: "
+              "text": ", {\n        name: string;\n        dir: string;\n    }, {\n        name: string;\n        dir: string;\n    }>>;\n    pkgJsonAbsPath: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    author: "
             },
             {
               "kind": "Reference",
@@ -5391,6 +6894,24 @@
               "kind": "Reference",
               "text": "z.ZodDate",
               "canonicalReference": "zod!ZodDate:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    frontmatterImportName: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    frontmatterPath: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
             },
             {
               "kind": "Content",
@@ -5475,6 +6996,24 @@
             },
             {
               "kind": "Content",
+              "text": ";\n    layoutImportName: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    layoutPath: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
               "text": ";\n    license: "
             },
             {
@@ -5520,7 +7059,52 @@
             },
             {
               "kind": "Content",
-              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>;\n    mdxContent: "
+              "text": ", {\n        name: string;\n        url: string;\n    }, {\n        name: string;\n        url: string;\n    }>>;\n    links: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodReadonly",
+              "canonicalReference": "zod!ZodReadonly:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ", "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ">>;\n    mdxContent: "
+            },
+            {
+              "kind": "Reference",
+              "text": "z.ZodString",
+              "canonicalReference": "zod!ZodString:class"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n    postImportName: "
             },
             {
               "kind": "Reference",
@@ -5758,8 +7342,8 @@
             },
             {
               "kind": "Reference",
-              "text": "z.ZodRecord",
-              "canonicalReference": "zod!ZodRecord:class"
+              "text": "z.ZodMap",
+              "canonicalReference": "zod!ZodMap:class"
             },
             {
               "kind": "Content",
@@ -6051,7 +7635,7 @@
             },
             {
               "kind": "Content",
-              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    earliest: "
+              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    pkgJsonAbsPath: string;\n    earliest: "
             },
             {
               "kind": "Reference",
@@ -6060,7 +7644,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    lang: string;\n    latest: "
+              "text": ";\n    isHome: boolean;\n    isLinks: boolean;\n    is404: boolean;\n    isPost: boolean;\n    lang: string;\n    latest: "
             },
             {
               "kind": "Reference",
@@ -6078,7 +7662,16 @@
             },
             {
               "kind": "Content",
-              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    updated: readonly [{\n        date: "
+              "text": "<{\n        name: string;\n        url: string;\n    }>;\n    links: "
+            },
+            {
+              "kind": "Reference",
+              "text": "ReadonlyMap",
+              "canonicalReference": "!ReadonlyMap:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>;\n    updated: readonly [{\n        date: "
             },
             {
               "kind": "Reference",
@@ -6154,21 +7747,12 @@
             },
             {
               "kind": "Reference",
-              "text": "Readonly",
-              "canonicalReference": "!Readonly:type"
+              "text": "ReadonlyMap",
+              "canonicalReference": "!ReadonlyMap:interface"
             },
             {
               "kind": "Content",
-              "text": "<"
-            },
-            {
-              "kind": "Reference",
-              "text": "Record",
-              "canonicalReference": "!Record:type"
-            },
-            {
-              "kind": "Content",
-              "text": "<string, string>>;\n    tags: string[];\n    theming: "
+              "text": "<string, string>;\n    tags: string[];\n    theming: "
             },
             {
               "kind": "Reference",
@@ -6186,7 +7770,7 @@
             },
             {
               "kind": "Content",
-              "text": "<{\n            light: string;\n            dark: string;\n        }>;\n    }>;\n    title: string;\n    defaultLang: string;\n    description: string;\n    fullTitle: string;\n    fullUrlWIndexWExt: string;\n    fullUrlWIndexWoExt: string;\n    isHome: boolean;\n    isLinks: boolean;\n    is404: boolean;\n    isPost: boolean;\n    mdxContent: string;\n    slugWIndexWExt: string;\n    slugWIndexWoExt: string;\n    siteBase: string;\n    canonicalUrl: string;\n    siteWithBase: string;\n    slashSiteBase: string;\n    slug: string;\n    summary: string;\n    slashSiteBaseWSlash: string;\n    slashSiteBaseWLang: string;\n    slashSiteBaseWLangWSlash: string;\n}, {\n    path: {\n        name: string;\n        dir: string;\n    };\n    author: {\n        name: string;\n        url: string;\n    };\n    earliest: "
+              "text": "<{\n            light: string;\n            dark: string;\n        }>;\n    }>;\n    title: string;\n    defaultLang: string;\n    description: string;\n    frontmatterPath: string;\n    fullTitle: string;\n    fullUrlWIndexWExt: string;\n    fullUrlWIndexWoExt: string;\n    layoutPath: string;\n    mdxContent: string;\n    slugWIndexWExt: string;\n    slugWIndexWoExt: string;\n    siteBase: string;\n    canonicalUrl: string;\n    frontmatterImportName: string;\n    layoutImportName: string;\n    postImportName: string;\n    siteWithBase: string;\n    slashSiteBase: string;\n    slug: string;\n    summary: string;\n    slashSiteBaseWSlash: string;\n    slashSiteBaseWLang: string;\n    slashSiteBaseWLangWSlash: string;\n}, {\n    path: {\n        name: string;\n        dir: string;\n    };\n    author: {\n        name: string;\n        url: string;\n    };\n    pkgJsonAbsPath: string;\n    earliest: "
             },
             {
               "kind": "Reference",
@@ -6195,7 +7779,7 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    lang: string;\n    latest: "
+              "text": ";\n    isHome: boolean;\n    isLinks: boolean;\n    is404: boolean;\n    isPost: boolean;\n    lang: string;\n    latest: "
             },
             {
               "kind": "Reference",
@@ -6204,7 +7788,16 @@
             },
             {
               "kind": "Content",
-              "text": ";\n    license: {\n        name: string;\n        url: string;\n    };\n    updated: [{\n        date: "
+              "text": ";\n    license: {\n        name: string;\n        url: string;\n    };\n    links: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<string, string>;\n    updated: [{\n        date: "
             },
             {
               "kind": "Reference",
@@ -6244,12 +7837,12 @@
             },
             {
               "kind": "Reference",
-              "text": "Record",
-              "canonicalReference": "!Record:type"
+              "text": "Map",
+              "canonicalReference": "!Map:interface"
             },
             {
               "kind": "Content",
-              "text": "<string, string>;\n    tags: string[];\n    theming: {\n        color: string;\n        shiki: {\n            light: string;\n            dark: string;\n        };\n    };\n    title: string;\n    defaultLang: string;\n    description: string;\n    fullTitle: string;\n    fullUrlWIndexWExt: string;\n    fullUrlWIndexWoExt: string;\n    isHome: boolean;\n    isLinks: boolean;\n    is404: boolean;\n    isPost: boolean;\n    mdxContent: string;\n    slugWIndexWExt: string;\n    slugWIndexWoExt: string;\n    siteBase: string;\n    canonicalUrl: string;\n    siteWithBase: string;\n    slashSiteBase: string;\n    slug: string;\n    summary: string;\n    slashSiteBaseWSlash: string;\n    slashSiteBaseWLang: string;\n    slashSiteBaseWLangWSlash: string;\n}>>"
+              "text": "<string, string>;\n    tags: string[];\n    theming: {\n        color: string;\n        shiki: {\n            light: string;\n            dark: string;\n        };\n    };\n    title: string;\n    defaultLang: string;\n    description: string;\n    frontmatterPath: string;\n    fullTitle: string;\n    fullUrlWIndexWExt: string;\n    fullUrlWIndexWoExt: string;\n    layoutPath: string;\n    mdxContent: string;\n    slugWIndexWExt: string;\n    slugWIndexWoExt: string;\n    siteBase: string;\n    canonicalUrl: string;\n    frontmatterImportName: string;\n    layoutImportName: string;\n    postImportName: string;\n    siteWithBase: string;\n    slashSiteBase: string;\n    slug: string;\n    summary: string;\n    slashSiteBaseWSlash: string;\n    slashSiteBaseWLang: string;\n    slashSiteBaseWLangWSlash: string;\n}>>"
             }
           ],
           "fileUrlPath": "src/index.ts",
@@ -6258,7 +7851,7 @@
           "name": "zPost",
           "variableTypeTokenRange": {
             "startIndex": 1,
-            "endIndex": 1183
+            "endIndex": 1569
           }
         }
       ]
