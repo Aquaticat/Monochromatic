@@ -1,10 +1,10 @@
 {
   "extends": "@monochromatic.dev/config-typescript",
 
-  "include": ["src"],
+  "include": ["src", "src/index.ts"],
 
   "compilerOptions": {
-    "outDir": "dist/temp/tsc",
+    "outDir": "dist/final",
     "rootDir": "src",
     "types": ["node", "vite/client", "hast"],
   },

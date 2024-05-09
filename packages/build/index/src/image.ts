@@ -1,3 +1,4 @@
+import { getLogger } from '@logtape/logtape';
 import {
   fs,
   path,
@@ -5,7 +6,9 @@ import {
 import { mapParallelAsync } from 'rambdax';
 import sharp from 'sharp';
 import { optimize } from 'svgo';
-import { $ } from 'zx';
+import $c, { js } from './child.ts';
+import type { State } from './state.ts';
+const l = getLogger(['build', 'image']);
 
 // Stolen from https://sharp.pixelplumbing.com/api-input
 const getNormalSize = function getNormalSize(width: number, height: number, orientation: number = 0) {
@@ -22,69 +25,105 @@ export const outputFaviconSizes = [32, 180, 192, 512];
 
 export const outputPictureSizes = [768, 1024, 1920];
 
-export const genPngFromSvg = async (inputImageAbsPath: string, lang = 'en', outputSizes = outputFaviconSizes) => {
-  await Promise.all([
-    (async function genPngForOwnSize() {
-      await $`rsvg-convert ${[`--output=${inputImageAbsPath.slice(0, -'.svg'.length)}.png`, inputImageAbsPath]}`;
-    })(),
-    (async function genPngForOutputSizes() {
-      await mapParallelAsync(async function genPngForOutputSize(outputSize) {
-        await $`rsvg-convert ${[
-          `--accept-language=${lang}`,
-          '--keep-aspect-ratio',
-          `--width=${outputSize}`,
-          `--output=${inputImageAbsPath.slice(0, -'.svg'.length)}.${outputSize}.png`,
-          inputImageAbsPath,
-        ]}`;
-      }, outputSizes);
-    })(),
-  ]);
+export const genPngFromSvg = async (
+  inputImageAbsPath: string,
+  lang = 'en',
+  outputSizes = outputFaviconSizes,
+): Promise<State> => {
+  return [
+    'genPngFromSvg',
+    'SUCCESS',
+    await Promise.all([
+      (async function genPngForOwnSize(): Promise<State> {
+        l.debug`gen png for own size`;
+        const { stdoe } = await $c(
+          `rsvg-convert ${
+            [`--output=${inputImageAbsPath.slice(0, -'.svg'.length)}.png`, js(inputImageAbsPath)]
+              .join(' ')
+          }`,
+        );
+        return ['genPngForOwnSize','SUCCESS', ['gen png for own size', stdoe]];
+      })(),
+      (async function genPngForOutputSizes(): Promise<State> {
+        return await mapParallelAsync(async function genPngForOutputSize(outputSize) {
+          l.debug`gen png for output size ${outputSize}`;
+          const { stdoe } = await $c(`rsvg-convert ${
+            [
+              `--accept-language=${lang}`,
+              '--keep-aspect-ratio',
+              `--width=${outputSize}`,
+              `--output=${inputImageAbsPath.slice(0, -'.svg'.length)}.${outputSize}.png`,
+              js(inputImageAbsPath),
+            ]
+              .join(' ')
+          }`);
+          return [`gen png for output size ${outputSize}`,'SUCCESS', stdoe];
+        }, outputSizes);
+      })(),
+    ]),
+  ];
 };
 
 export default async function genOptimizedImages(
   inputImageAbsPath: string,
   outputSizes = outputPictureSizes,
-) {
+): Promise<State> {
   const inputImageExt = (await path.parseFs(inputImageAbsPath)).ext;
 
   if (inputImageExt === '.svg') {
-    await fs.writeFile(
-      `${inputImageAbsPath.slice(0, -inputImageExt.length)}.min.svg`,
-      optimize(await fs.readFileU(inputImageAbsPath), { plugins: [{ name: 'preset-default' }] }).data,
-    );
+    return [
+      'genOptimizedImages',
+      'SUCCESS',
+      await fs.outputFile(
+        `${inputImageAbsPath.slice(0, -inputImageExt.length)}.min.svg`,
+        optimize(await fs.readFileU(inputImageAbsPath), { plugins: [{ name: 'preset-default' }] }).data,
+      ),
+    ];
   }
 
   if (supportedRasterImageExtsWoDot.includes(inputImageExt.slice(1))) {
     const inputImage = sharp(inputImageAbsPath, { pages: -1, limitInputPixels: false });
 
-    await Promise.all([
-      (async function genOptimizedImageForOwnSize() {
-        await inputImage.rotate().avif().toFile(`${inputImageAbsPath.slice(0, -inputImageExt.length)}.min.avif`);
-      })(),
-      (async function genOptimizedImageForOutputSizes() {
-        const metadata = await inputImage.metadata();
+    return [
+      'genOptimizedImages',
+      'SUCCESS',
+      await Promise.all([
+        (async function genOptimizedImageForOwnSize(): Promise<State> {
+          await inputImage.rotate().avif().toFile(`${inputImageAbsPath.slice(0, -inputImageExt.length)}.min.avif`);
+          return ['genOptimizedImagesForOwnSize','SUCCESS', [
+            inputImageAbsPath,
+            `${inputImageAbsPath.slice(0, -inputImageExt.length)}.min.avif`,
+          ]];
+        })(),
+        (async function genOptimizedImageForOutputSizes(): Promise<State> {
+          const metadata = await inputImage.metadata();
 
-        const metadataWSize = {
-          ...metadata,
-          width: metadata.width || Math.max(...outputSizes),
-          height: metadata.height || Math.max(...outputSizes),
-        };
+          const metadataWSize = {
+            ...metadata,
+            width: metadata.width || Math.max(...outputSizes),
+            height: metadata.height || Math.max(...outputSizes),
+          };
 
-        const inputImageWidth = getNormalSize(
-          metadataWSize.width,
-          metadataWSize.height,
-          metadataWSize.orientation,
-        )
-          .width;
+          const inputImageWidth = getNormalSize(
+            metadataWSize.width,
+            metadataWSize.height,
+            metadataWSize.orientation,
+          )
+            .width;
 
-        const filteredOutputSizes = outputSizes.filter((outputSize) => outputSize < inputImageWidth);
-        await mapParallelAsync(async function genOptimizedImage(outputSize) {
-          await inputImage.rotate().avif().toFile(
-            `${inputImageAbsPath.slice(0, -inputImageExt.length)}.${outputSize}.avif`,
-          );
-        }, filteredOutputSizes);
-      })(),
-    ]);
+          const filteredOutputSizes = outputSizes.filter((outputSize) => outputSize < inputImageWidth);
+          return await mapParallelAsync(async function genOptimizedImage(outputSize): Promise<State> {
+            await inputImage.rotate().avif().toFile(
+              `${inputImageAbsPath.slice(0, -inputImageExt.length)}.${outputSize}.avif`,
+            );
+            return [`gen optimized image for size ${outputSize}`,'SUCCESS', [
+              inputImageAbsPath,
+              `${inputImageAbsPath.slice(0, -inputImageExt.length)}.${outputSize}.avif`,
+            ]];
+          }, filteredOutputSizes);
+        })(),
+      ]),
+    ];
   }
 
   throw new TypeError(`unsupported extension ${inputImageExt} of ${inputImageAbsPath}`);

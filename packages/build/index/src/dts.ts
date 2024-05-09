@@ -1,36 +1,27 @@
 import {
-  Extractor,
-  ExtractorConfig,
-  type ExtractorResult,
-} from '@microsoft/api-extractor';
-import c from '@monochromatic.dev/module-console';
-import {
   fs,
   path,
 } from '@monochromatic.dev/module-fs-path';
-import { $ } from 'zx';
+import $c from './child.ts';
+import { indexJsFilePaths } from './g.ts';
 import type { State } from './state.ts';
+import { getLogger } from '@logtape/logtape';
+const l = getLogger(['build', 'dts']);
 
 export default async function dts(): Promise<State> {
+  if (indexJsFilePaths.length === 0) {
+    return ['dts','SKIP', `skipping dts, none of index.js or index.ts exists.`];
+  }
+
   try {
-    await fs.access(path.join('api-extractor.json'));
+    await fs.access(path.join('tsconfig.json'));
   } catch {
-    return ['SKIP', `skipping dts, api-extractor.json doesn't exist.`];
+    return ['dts','SKIP', `skipping dts, tsconfig.json doesn't exist.`];
   }
 
-  c.log('vue-tsc');
-  await $`vue-tsc`.pipe(process.stdout);
+  l.debug`dts`;
 
-  c.log('api-extractor');
+  const { stdoe } = await $c(`vue-tsc`);
 
-  const extractorConfig: ExtractorConfig = ExtractorConfig.loadFileAndPrepare('api-extractor.json');
-
-  const extractorResult: ExtractorResult = Extractor.invoke(extractorConfig, {
-    localBuild: true,
-  });
-  if (!extractorResult.succeeded) {
-    throw new Error(`api-extractor failed with ${extractorResult}`);
-  }
-
-  return 'SUCCESS';
+  return ['dts','SUCCESS', stdoe];
 }

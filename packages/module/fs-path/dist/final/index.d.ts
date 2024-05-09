@@ -1,67 +1,60 @@
 /// <reference types="node" />
-
-import { Abortable } from 'events';
-import { access } from 'node:fs/promises';
-import { appendFile } from 'node:fs/promises';
-import { chmod } from 'node:fs/promises';
-import { chown } from 'node:fs/promises';
-import { constants } from 'node:fs';
-import { copyFile } from 'node:fs/promises';
-import { cp } from 'node:fs/promises';
-import { FileHandle } from 'fs/promises';
-import { FormatInputPathObject } from 'path';
-import { lchown } from 'node:fs/promises';
-import { link } from 'node:fs/promises';
-import { lstat } from 'node:fs/promises';
-import { lutimes } from 'node:fs/promises';
-import { mkdir } from 'node:fs/promises';
-import { mkdtemp } from 'node:fs/promises';
-import { Mode } from 'fs';
-import { ObjectEncodingOptions } from 'fs';
-import { opendir } from 'node:fs/promises';
-import { OpenMode } from 'fs';
-import { ParsedPath } from 'node:path';
-import { PathLike } from 'fs';
-import { readdir } from 'node:fs/promises';
-import { readlink } from 'node:fs/promises';
-import { realpath } from 'node:fs/promises';
-import { rename } from 'node:fs/promises';
-import { rm } from 'node:fs/promises';
-import { stat } from 'node:fs/promises';
-import { statfs } from 'node:fs/promises';
-import { Stream } from 'stream';
-import { symlink } from 'node:fs/promises';
-import { truncate } from 'node:fs/promises';
-import { unlink } from 'node:fs/promises';
-import { utimes } from 'node:fs/promises';
-import { writeFile } from 'node:fs/promises';
-
+/// <reference types="node" />
+/// <reference types="node" />
+/// <reference types="node" />
+/// <reference types="node" />
+/// <reference types="node" />
+/// <reference types="node" />
+/// <reference types="node" />
+import { access as fsAccess, appendFile as fsAppendFile, chmod as fsChmod, chown as fsChown, copyFile as fsCopyFile, cp as fsCp, lchown as fsLchown, link as fsLink, lstat as fsLstat, lutimes as fsLutimes, mkdir as fsMkdir, mkdtemp as fsMkdtemp, opendir as fsOpendir, readdir as fsReaddir, readlink as fsReadlink, realpath as fsRealpath, rename as fsRename, rm as fsRm, stat as fsStat, statfs as fsStatfs, symlink as fsSymlink, truncate as fsTruncate, unlink as fsUnlink, utimes as fsUtimes, writeFile as fsWriteFile } from 'node:fs/promises';
+import { type ParsedPath } from 'node:path';
+import { constants as fsC } from 'node:fs';
+export declare const path: Readonly<{
+    isAbsolute: (path: string) => boolean;
+    resolve: (...paths: string[]) => string;
+    join: (...paths: string[]) => string;
+    relative: (from: string, to: string) => string;
+    sep: "\\" | "/";
+    format: (pathObject: import("path").FormatInputPathObject) => string;
+    delimiter: ";" | ":";
+    normalize: (path: string) => string;
+    parseFs: (path: string) => Promise<ParsedPath & Pick<URL, 'search' | 'searchParams' | 'hash'> & {
+        path: string;
+        absPath: string;
+        absDir: string;
+        currentDir: string;
+        currentAbsDir: string;
+    }>;
+    split: (path: string) => string[];
+}>;
+declare function fsReadFileU(path: string): Promise<string>;
+declare function fsAccessM(...args: Parameters<typeof fsAccess>): ReturnType<typeof fsAccess>;
 export declare const fs: Readonly<{
-    chmod: typeof chmod;
-    chown: typeof chown;
-    lchown: typeof lchown;
-    cp: typeof cp;
-    lutimes: typeof lutimes;
-    link: typeof link;
-    lstat: typeof lstat;
-    mkdtemp: typeof mkdtemp;
-    readlink: typeof readlink;
-    realpath: typeof realpath;
-    rename: typeof rename;
-    statfs: typeof statfs;
-    symlink: typeof symlink;
-    truncate: typeof truncate;
-    unlink: typeof unlink;
-    utimes: typeof utimes;
-    constants: typeof constants;
-    appendFile: typeof appendFile;
-    writeFile: typeof writeFile;
-    copyFile: typeof copyFile;
-    mkdir: typeof mkdir;
-    readdir: typeof readdir;
-    access: typeof access;
-    opendir: typeof opendir;
-    rm: typeof rm;
+    chmod: typeof fsChmod;
+    chown: typeof fsChown;
+    lchown: typeof fsLchown;
+    cp: typeof fsCp;
+    lutimes: typeof fsLutimes;
+    link: typeof fsLink;
+    lstat: typeof fsLstat;
+    mkdtemp: typeof fsMkdtemp;
+    readlink: typeof fsReadlink;
+    realpath: typeof fsRealpath;
+    rename: typeof fsRename;
+    statfs: typeof fsStatfs;
+    symlink: typeof fsSymlink;
+    truncate: typeof fsTruncate;
+    unlink: typeof fsUnlink;
+    utimes: typeof fsUtimes;
+    constants: typeof fsC;
+    appendFile: typeof fsAppendFile;
+    writeFile: typeof fsWriteFile;
+    copyFile: typeof fsCopyFile;
+    mkdir: typeof fsMkdir;
+    readdir: typeof fsReaddir;
+    access: typeof fsAccess;
+    opendir: typeof fsOpendir;
+    rm: typeof fsRm;
     C: {
         S_IAA: number;
         S_IAUSR: number;
@@ -117,33 +110,16 @@ export declare const fs: Readonly<{
     };
     readFileU: typeof fsReadFileU;
     readFileMU: (path: string) => ReturnType<typeof fsReadFileU>;
-    stat: typeof stat;
+    stat: typeof fsStat;
     accessM: typeof fsAccessM;
-    exists: (path: PathLike, mode?: number | undefined) => Promise<boolean>;
-    outputFile: (file: PathLike | FileHandle, data: string | NodeJS.ArrayBufferView | Iterable<string | NodeJS.ArrayBufferView> | AsyncIterable<string | NodeJS.ArrayBufferView> | Stream, options?: BufferEncoding | (ObjectEncodingOptions & {
-        mode?: Mode | undefined;
-        flag?: OpenMode | undefined;
+    exists: (path: import("fs").PathLike, mode?: number | undefined) => Promise<boolean>;
+    outputFile: (file: import("fs").PathLike | import("fs/promises").FileHandle, data: string | NodeJS.ArrayBufferView | Iterable<string | NodeJS.ArrayBufferView> | AsyncIterable<string | NodeJS.ArrayBufferView> | import("stream").Stream, options?: BufferEncoding | (import("fs").ObjectEncodingOptions & {
+        mode?: import("fs").Mode | undefined;
+        flag?: import("fs").OpenMode | undefined;
         flush?: boolean | undefined;
-    } & Abortable) | null | undefined) => ReturnType<typeof writeFile>;
-    cpFile: (src: PathLike, dest: PathLike, mode?: number | undefined) => ReturnType<typeof copyFile>;
+    } & import("events").Abortable) | null | undefined) => Promise<import("fs").PathLike | import("fs/promises").FileHandle>;
+    cpFile: (src: import("fs").PathLike, dest: import("fs").PathLike, mode?: number | undefined) => Promise<import("fs").PathLike>;
     empty: (path: string) => Promise<void>;
 }>;
-
-declare function fsAccessM(...args: Parameters<typeof access>): ReturnType<typeof access>;
-
-declare function fsReadFileU(path: string): Promise<string>;
-
-export declare const path: Readonly<{
-    isAbsolute: (path: string) => boolean;
-    resolve: (...paths: string[]) => string;
-    join: (...paths: string[]) => string;
-    relative: (from: string, to: string) => string;
-    sep: "\\" | "/";
-    format: (pathObject: FormatInputPathObject) => string;
-    delimiter: ";" | ":";
-    normalize: (path: string) => string;
-    parseFs: (path: string) => Promise<ParsedPath & Pick<URL, 'search' | 'searchParams' | 'hash'>>;
-    split: (path: string) => string[];
-}>;
-
-export { }
+export {};
+//# sourceMappingURL=index.d.ts.map

@@ -146,14 +146,18 @@ export const path: Readonly<{
     format: (pathObject: FormatInputPathObject) => string;
     delimiter: ";" | ":";
     normalize: (path: string) => string;
-    parseFs: (path: string) => Promise<ParsedPath & Pick<URL, 'search' | 'searchParams' | 'hash'>>;
+    parseFs: (path: string) => Promise<ParsedPath & Pick<URL, 'search' | 'searchParams' | 'hash'> & {
+        path: string;
+        absPath: string;
+        absDir: string;
+    }>;
     split: (path: string) => string[];
 }>;
 
 // Warnings were encountered during analysis:
 //
-// src/index.ts:152:16 - (ae-forgotten-export) The symbol "fsReadFileU" needs to be exported by the entry point index.d.ts
-// src/index.ts:180:115 - (ae-forgotten-export) The symbol "fsAccessM" needs to be exported by the entry point index.d.ts
+// src/index.ts:173:16 - (ae-forgotten-export) The symbol "fsReadFileU" needs to be exported by the entry point index.d.ts
+// src/index.ts:201:115 - (ae-forgotten-export) The symbol "fsAccessM" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

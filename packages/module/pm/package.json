@@ -1,0 +1,30 @@
+{
+  "name": "@monochromatic.dev/module-pm",
+  "description": "detect which package manager and node linker is used for the specified file or folder inside a npm package",
+  "type": "module",
+  "module": "dist/final/index.js",
+  "main": "dist/final/index.js",
+  "typings": "dist/final/index.d.ts",
+  "files": [
+    "dist/final"
+  ],
+  "devDependencies": {
+    "@monochromatic.dev/config-typescript": "workspace:*",
+    "@types/node": ">=20.12.7",
+    "vite": "*"
+  },
+  "dependencies": {
+    "@logtape/logtape": ">=0.4.0",
+    "@monochromatic.dev/module-fs-path": "workspace:*",
+    "@monochromatic.dev/module-not-or-throw": "workspace:*",
+    "find-up": ">=7.0.0",
+    "rambdax": "*",
+    "zx": "*"
+  },
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "module/pm"
+  }
+}

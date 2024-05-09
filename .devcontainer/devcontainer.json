@@ -2,7 +2,7 @@
   "name": "monochromatic",
   "appPort": ["5173:5173/tcp", "5173:5173/udp"],
   "image": "ghcr.io/aquaticat/monochromatic",
-  "onCreateCommand": "pnpm install",
+  "onCreateCommand": "yarn set version stable && yarn install && yarn dlx @yarnpkg/sdks vscode",
   "customizations": {
     "vscode": {
       "settings": {
@@ -98,6 +98,7 @@
         "Gruntfuggly.todo-tree",
         "Vue.volar",
         "ms-azuretools.vscode-docker",
+        "arcanis.vscode-zipfs",
       ],
     },
   },

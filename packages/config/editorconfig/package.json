@@ -5,8 +5,14 @@
   "main": "example..editorconfig",
   "module": "example..editorconfig",
   "type": "module",
-  "files": ["example..editorconfig"],
-  "keywords": ["config", "monochromatic", "editorconfig"],
+  "files": [
+    "example..editorconfig"
+  ],
+  "keywords": [
+    "config",
+    "monochromatic",
+    "editorconfig"
+  ],
   "author": {
     "name": "Aquaticat",
     "email": "an@aquati.cat",

@@ -4,7 +4,7 @@
   "include": ["src"],
 
   "compilerOptions": {
-    "outDir": "dist/temp/tsc",
-    "rootDir": "src"
+    "outDir": "dist/final",
+    "rootDir": "src",
   }
 }

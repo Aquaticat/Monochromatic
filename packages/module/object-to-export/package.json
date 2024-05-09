@@ -1,15 +1,9 @@
 {
   "name": "@monochromatic.dev/module-object-to-export",
-  "scripts": {},
   "devDependencies": {
-    "@microsoft/api-extractor": "*",
-    "@monochromatic.dev/build": "*",
-    "@monochromatic.dev/config-api-extractor": "*",
-    "@monochromatic.dev/config-typescript": "*",
-    "typescript": ">=5.4.5",
+    "@monochromatic.dev/config-typescript": "workspace:*",
     "@types/node": ">=20.12.7",
-    "vite": "*",
-    "vue-tsc": "*"
+    "vite": "*"
   },
   "dependencies": {
     "@monochromatic.dev/module-type-of": "workspace:*"
@@ -17,7 +11,9 @@
   "module": "dist/final/index.js",
   "main": "dist/final/index.js",
   "typings": "dist/final/index.d.ts",
-  "files": ["dist/final"],
+  "files": [
+    "dist/final"
+  ],
   "type": "module",
   "version": "0.1.0",
   "repository": {

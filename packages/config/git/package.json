@@ -5,8 +5,15 @@
   "main": "example..gitignore",
   "module": "example..gitignore",
   "type": "module",
-  "files": ["example..gitignore", "example..gitattributes"],
-  "keywords": ["config", "monochromatic", "git"],
+  "files": [
+    "example..gitignore",
+    "example..gitattributes"
+  ],
+  "keywords": [
+    "config",
+    "monochromatic",
+    "git"
+  ],
   "author": {
     "name": "Aquaticat",
     "email": "an@aquati.cat",

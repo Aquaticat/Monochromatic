@@ -1,6 +1,5 @@
 {
-  // VSCode cannot resolve schemas in node_modules with package import syntax yet.
-  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "$schema": "https://biomejs.dev/schemas/1.7.3/schema.json",
 
   "files": {
     "ignore": ["**/node_modules/**/*.*", "**/dist/**/*.*", "**/.dist/**/*.*", "**/bak/**/*.*", "**/.astro/**/*.*"],
@@ -123,6 +122,16 @@
         },
         "formatter": {
           "trailingCommas": "all",
+        },
+      },
+    },
+
+    // Yarn will format package.json files.
+    {
+      "include": ["**/package.json"],
+      "json": {
+        "formatter": {
+          "enabled": false,
         },
       },
     },

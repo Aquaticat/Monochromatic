@@ -1,3 +1,8 @@
+import { getLogger } from "@logtape/logtape";
+
+const l = getLogger(['build', 'external']);
+
+
 const hasBabel = ['@babel/*', 'babel', 'babel-*'];
 
 const hasEsbuild = [
@@ -116,6 +121,7 @@ const hasFs = [
   '@monochromatic.dev/module-equals',
   '@monochromatic.dev/module-fs-path',
   '@monochromatic.dev/module-resolve',
+  '@monochromatic.dev/module-pm',
   '@monochromatic.dev/schema-theme-consts',
   'browserslist',
   'chokidar',
@@ -152,4 +158,8 @@ const parsers = ['smol-toml', 'yaml', 'jsonc-simple-parser'];
 
 const specific = ['*/_fms.js', '_fms.js', '/_fms.js', './_fms.js', '/*/_fms.js', './*/_fms.js'];
 
-export default Array.from(new Set([hasBuild, hasNodeOnly, devOnly, parsers, specific].flat()));
+const external = Array.from(new Set([hasBuild, hasNodeOnly, devOnly, parsers, specific].flat()));
+
+l.debug`${external}`;
+
+export default external;

@@ -1,13 +1,15 @@
-// import hastUtilShiki from '@monochromatic.dev/hast-util-shiki';
-// import c from '@monochromatic.dev/module-console';
 import type { Root } from 'hast';
 import { fromHtml } from 'hast-util-from-html';
 import { toHtml } from 'hast-util-to-html';
 import { pipedAsync } from 'rambdax';
 import rehypeRemoveComments from 'rehype-remove-comments';
 import { unified } from 'unified';
+import { getLogger } from '@logtape/logtape';
+const l = getLogger(['build', 'rehype']);
 
 export default async function rehypedHtml(html: string): Promise<string> {
+  l.debug`rehypedHtml`;
+
   return pipedAsync(
     html,
     async (html) =>
@@ -17,8 +19,6 @@ export default async function rehypedHtml(html: string): Promise<string> {
         },
       }),
     async (tree) => await unified().use(rehypeRemoveComments).run(tree) as Root,
-    // FIXME: Some documents give invalid ast when this is applied, but some don't.
-    // async (tree) => await hastUtilShiki(tree),
     (tree) =>
       toHtml(tree, {
         allowDangerousCharacters: true,

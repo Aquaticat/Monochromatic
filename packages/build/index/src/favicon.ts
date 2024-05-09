@@ -1,4 +1,4 @@
-import c from '@monochromatic.dev/module-console';
+import { getLogger } from '@logtape/logtape';
 import {
   fs,
   path,
@@ -10,34 +10,39 @@ import {
   partition,
 } from 'rambdax';
 import { parse } from 'smol-toml';
-import { $ } from 'zx';
 import g, { mdxFilePaths } from './g.ts';
 import {
   genPngFromSvg,
   supportedRasterImageExtsWoDot,
 } from './image.ts';
+const l = getLogger(['build', 'favicon']);
+import type { PathLike } from 'node:fs';
+import $c, { js } from './child.ts';
+import type { State } from './state.ts';
 
-const genFaviconsFor = async (indexAbsDir: string, lang = 'en', globCache = g()) => {
+const genFaviconsFor = async (indexAbsDir: string, lang = 'en', globCache = g()): Promise<State> => {
+  l.debug`gen favicons for ${indexAbsDir} with lang ${lang}`;
+
   const faviconSvgAbsFilePath = `${indexAbsDir}/favicon.svg`;
   const faviconSvgExists = await fs.exists(faviconSvgAbsFilePath);
   if (!faviconSvgExists) {
-    c.warn(faviconSvgAbsFilePath, 'not found', 'only raster images will be used for favicons');
+    l.warn`${faviconSvgAbsFilePath} not found, only raster images will be used for favicons`;
   }
   const faviconIcoAbsFilePath = `${indexAbsDir}/favicon.ico`;
   const faviconIcoExists = await fs.exists(faviconIcoAbsFilePath);
   if (!faviconIcoExists) {
-    c.warn(faviconIcoAbsFilePath, 'not found', 'will be generated from an existing raster image or favicon.svg');
+    l.warn`${faviconIcoAbsFilePath} not found, will be generated from an existing raster image or favicon.svg`;
   }
   const appleTouchIconAbsFilePath = `${indexAbsDir}/apple-touch-icon.png`;
   const appleTouchIconExists = await fs.exists(appleTouchIconAbsFilePath);
   if (!appleTouchIconExists) {
-    c.warn(appleTouchIconAbsFilePath, 'not found', 'will be generated from an existing raster image or favicon.svg');
+    l.warn`${appleTouchIconAbsFilePath} not found, will be generated from an existing raster image or favicon.svg`;
   }
 
   /* If all raster images exist, then we're done.
   All that's left is optimization, which we defer to another function down the road. */
   if (faviconIcoExists && appleTouchIconExists) {
-    return;
+    return ['genFaviconsFor','SKIP', 'All raster images exist'];
   }
 
   // Prefer generating raster images from other raster images.
@@ -61,48 +66,80 @@ const genFaviconsFor = async (indexAbsDir: string, lang = 'en', globCache = g())
     faviconRasterAbsFilePaths.length === 0
     && !(faviconIcoExists || appleTouchIconExists)
   ) {
-    await genPngFromSvg(faviconSvgAbsFilePath, lang);
-    await fs.cpFile(`${faviconSvgAbsFilePath.slice(0, -'.svg'.length)}.180.png`, appleTouchIconAbsFilePath);
-    await $`convert ${[`${faviconSvgAbsFilePath.slice(0, -'.svg'.length)}.32.png`, faviconIcoAbsFilePath]}`;
+    l.debug`gen rasters from vector ${faviconSvgAbsFilePath} with lang ${lang}`;
 
-    return;
+    await genPngFromSvg(faviconSvgAbsFilePath, lang);
+    const cped = await fs.cpFile(
+      `${faviconSvgAbsFilePath.slice(0, -'.svg'.length)}.180.png`,
+      appleTouchIconAbsFilePath,
+    );
+    const { stdoe: converted } = await $c(
+      `convert ${
+        [js(`${faviconSvgAbsFilePath.slice(0, -'.svg'.length)}.32.png`), js(faviconIcoAbsFilePath)].join(' ')
+      }`,
+    );
+
+    return ['genFaviconsFor','SUCCESS', [`gened rasters ${cped}, ${converted} from vector ${faviconSvgAbsFilePath} with lang ${lang}`]];
   }
 
-  await Promise.all([
-    (async function ensureIco() {
+  return await Promise.all([
+    (async function ensureIco(): Promise<State> {
       if (!faviconIcoExists) {
         if (faviconRasterAbsFilePaths.length === 0) {
-          await $`convert ${['-resize', '32x32', appleTouchIconAbsFilePath, faviconIcoAbsFilePath]}`;
-        } else {
-          await $`convert ${[
-            '-resize',
-            '32x32',
-            path.resolve(faviconRasterAbsFilePaths.at(0)!),
-            faviconIcoAbsFilePath,
-          ]}`;
+          return [
+            'ensureIco',
+            'SUCCESS',
+            (await $c(
+              `convert ${['-resize', '32x32', js(appleTouchIconAbsFilePath), js(faviconIcoAbsFilePath)].join(' ')}`,
+            ))
+              .stdoe,
+          ];
         }
+        return [
+          'ensureIco',
+          'SUCCESS',
+          (await $c(`convert ${
+            [
+              '-resize',
+              '32x32',
+              // CHECK: Very brittle, will probably break.
+              js(path.resolve(faviconRasterAbsFilePaths.at(0)!)),
+              js(faviconIcoAbsFilePath),
+            ]
+              .join(' ')
+          }`))
+            .stdoe,
+        ];
       }
+      return ['ensureIco','SKIP', `${faviconIcoAbsFilePath} already exists`];
     })(),
-    (async function ensureAppleTouchIcon() {
+    (async function ensureAppleTouchIcon(): Promise<State> {
       if (!appleTouchIconExists) {
         if (faviconRasterAbsFilePaths.length === 0) {
-          await $`convert ${['-resize', '180x180', faviconIcoAbsFilePath, appleTouchIconAbsFilePath]}`;
-        } else {
-          await $`convert ${[
-            '-resize',
-            '180x180',
-            path.resolve(faviconRasterAbsFilePaths.at(0)!),
-            appleTouchIconAbsFilePath,
-          ]}`;
+          return ['ensureAppleTouchIcon', 'SUCCESS',
+          (await $c(
+            `convert ${['-resize', '180x180', js(faviconIcoAbsFilePath), js(appleTouchIconAbsFilePath)].join(' ')}`,
+          )).stdoe];
         }
+        return ['ensureAppleTouchIcon', 'SUCCESS',
+          (await $c(`convert ${
+            [
+              '-resize',
+              '180x180',
+              js(path.resolve(faviconRasterAbsFilePaths.at(0)!)),
+              js(appleTouchIconAbsFilePath),
+            ]
+              .join(' ')
+          }`)).stdoe];
       }
+      return ['ensureAppleTouchIcon','SKIP', `${appleTouchIconAbsFilePath} already exists`];
     })(),
   ]);
 
   // MAYBE: Also generate a web app manifest.
 };
 
-export default async function genFavicons() {
+export default async function genFavicons(): Promise<State> {
   const indexMdxFilePaths = mdxFilePaths.filter((mdxFilePath) => mdxFilePath.endsWith('index.mdx'));
   const distIndexDirs = await mapParallelAsync(async function getDistIndexDirFromIndexFilePath(indexFilePath) {
     return path.join('dist', 'final', path.relative('src', (await path.parseFs(indexFilePath)).dir));
@@ -118,7 +155,7 @@ export default async function genFavicons() {
     path.resolve(distIndexDirForDefaultLang!),
   ];
 
-  await genFaviconsFor(
+  const genedFaviconsForDefault = await genFaviconsFor(
     distIndexAbsDirForDefaultLang,
     parse(
       await fs.readFileU(path
@@ -126,9 +163,12 @@ export default async function genFavicons() {
     )
       .lang as string,
   );
+  l.debug`gened favicons for default ${genedFaviconsForDefault}`;
 
-  await mapParallelAsync(
-    /* In total, we need three files for each lang.
+  return ['genFavicons', 'SUCCESS', [
+    genedFaviconsForDefault,
+    await mapParallelAsync(
+      /* In total, we need three files for each lang.
     favicon.ico (32x32), favicon.svg, and apple-touch-icon.png (180x180)
     (Credits to https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs )
 
@@ -141,27 +181,38 @@ export default async function genFavicons() {
     Then we generate the missing raster image based on the existing one.
 
     If we only found a svg image, then generate both favicon.ico and apple-touch-icon.png based on it. */
-    async function genFaviconsForOtherLang(indexAbsDir) {
-      try {
-        await genFaviconsFor(indexAbsDir, path.split(indexAbsDir).at(-1)!);
-      } catch (e) {
-        c.warn(e, 'falling back to copying from defaultLang');
+      async function genFaviconsForOtherLang(indexAbsDir): Promise<State> {
         try {
-          await fs.cpFile(`${distIndexAbsDirForDefaultLang}/favicon.svg`, `${indexAbsDir}/favicon.svg`);
+          return await genFaviconsFor(indexAbsDir, path.split(indexAbsDir).at(-1)!);
         } catch (e) {
-          c.warn(e, 'only raster images will be used for favicons for', path.split(indexAbsDir).at(-1)!);
+          l.warn`${e}, falling back to copying from defaultLang`;
+          let cpedDefaultSvg: PathLike = '';
+          let cpedDefaultIco: PathLike = '';
+          let cpedDefaultAppleTouchIcon: PathLike = '';
+          try {
+            cpedDefaultSvg = await fs.cpFile(
+              `${distIndexAbsDirForDefaultLang}/favicon.svg`,
+              `${indexAbsDir}/favicon.svg`,
+            );
+          } catch (e) {
+            l.warn`${e}, only raster images will be used for favicons for', ${path.split(indexAbsDir).at(-1)!}`;
+          }
+          try {
+            cpedDefaultIco = await fs.cpFile(
+              `${distIndexAbsDirForDefaultLang}/favicon.ico`,
+              `${indexAbsDir}/favicon.ico`,
+            );
+            cpedDefaultAppleTouchIcon = await fs.cpFile(
+              `${distIndexAbsDirForDefaultLang}/apple-touch-icon.png`,
+              `${indexAbsDir}/apple-touch-icon.png`,
+            );
+          } catch (e) {
+            l.warn`${e}, only vector images will be used for favicons for', ${path.split(indexAbsDir).at(-1)!}`;
+          }
+          return ['genFaviconsForOtherLang','SUCCESS', [cpedDefaultSvg, cpedDefaultIco, cpedDefaultAppleTouchIcon]];
         }
-        try {
-          await fs.cpFile(`${distIndexAbsDirForDefaultLang}/favicon.ico`, `${indexAbsDir}/favicon.ico`);
-          await fs.cpFile(
-            `${distIndexAbsDirForDefaultLang}/apple-touch-icon.png`,
-            `${indexAbsDir}/apple-touch-icon.png`,
-          );
-        } catch (e) {
-          c.warn(e, 'only vector images will be used for favicons for', path.split(indexAbsDir).at(-1)!);
-        }
-      }
-    },
-    distIndexAbsDirsForOtherLangs,
-  );
+      },
+      distIndexAbsDirsForOtherLangs,
+    ),
+  ]];
 }

@@ -59,7 +59,15 @@ export const path = Object.freeze({
   normalize: pathNormalize,
   parseFs: async function pathParseFs(
     ...args: Parameters<typeof pathParse>
-  ): Promise<ParsedPath & Pick<URL, 'search' | 'searchParams' | 'hash'>> {
+  ): Promise<
+    ParsedPath & Pick<URL, 'search' | 'searchParams' | 'hash'> & {
+      path: string;
+      absPath: string;
+      absDir: string;
+      currentDir: string;
+      currentAbsDir: string;
+    }
+  > {
     const pathUrl = new URL(args[0], 'path://');
     const pathSearch = pathUrl.search;
     const pathHash = pathUrl.hash;
@@ -70,7 +78,7 @@ export const path = Object.freeze({
       if ((await fsStat(pathWoSearch)).isDirectory()) {
         const eliminatedDots = pathWoSearch.replaceAll('.', 'replacedDot');
         const pathObjOfEliminatedDots = pathParse(eliminatedDots);
-        return {
+        const missingAbsDir = {
           ...pathObjOfEliminatedDots,
           dir: pathObjOfEliminatedDots.dir.replaceAll('replacedDot', '.'),
           base: pathObjOfEliminatedDots.base.replaceAll('replacedDot', '.'),
@@ -78,11 +86,45 @@ export const path = Object.freeze({
           search: pathSearch,
           searchParams: pathUrl.searchParams,
           hash: pathHash,
+          path: pathWoSearch,
+          absPath: pathResolve(pathWoSearch),
+        };
+        return {
+          ...missingAbsDir,
+          absDir: pathResolve(missingAbsDir.dir),
+          currentDir: pathWoSearch,
+          currentAbsDir: missingAbsDir.absPath,
         };
       }
-      return { ...pathParse(pathWoSearch), search: pathSearch, searchParams: pathUrl.searchParams, hash: pathHash };
+      const missingAbsDir = {
+        ...pathParse(pathWoSearch),
+        search: pathSearch,
+        searchParams: pathUrl.searchParams,
+        hash: pathHash,
+        path: pathWoSearch,
+        absPath: pathResolve(pathWoSearch),
+      };
+      return {
+        ...missingAbsDir,
+        absDir: pathResolve(missingAbsDir.dir),
+        currentDir: missingAbsDir.dir,
+        currentAbsDir: pathResolve(missingAbsDir.dir),
+      };
     } catch {
-      return { ...pathParse(pathWoSearch), search: pathSearch, searchParams: pathUrl.searchParams, hash: pathHash };
+      const missingAbsDir = {
+        ...pathParse(pathWoSearch),
+        search: pathSearch,
+        searchParams: pathUrl.searchParams,
+        hash: pathHash,
+        path: pathWoSearch,
+        absPath: pathResolve(pathWoSearch),
+      };
+      return {
+        ...missingAbsDir,
+        absDir: pathResolve(missingAbsDir.dir),
+        currentDir: missingAbsDir.dir,
+        currentAbsDir: pathResolve(missingAbsDir.dir),
+      };
     }
   },
   split: function pathSplit(path: string) {
@@ -187,7 +229,7 @@ export const fs = Object.freeze({
 
   exists: fsExists,
 
-  outputFile: async function fsOutputFile(...args: Parameters<typeof fsWriteFile>): ReturnType<typeof fsWriteFile> {
+  outputFile: async function fsOutputFile(...args: Parameters<typeof fsWriteFile>) {
     if (typeof args[0] === 'string') {
       try {
         await fsAccess((await path.parseFs(args[0])).dir);
@@ -199,9 +241,9 @@ export const fs = Object.freeze({
       }
     }
     await fsWriteFile(...args);
-    return;
+    return args[0];
   },
-  cpFile: async function fsCpFile(...args: Parameters<typeof fsCopyFile>): ReturnType<typeof fsCopyFile> {
+  cpFile: async function fsCpFile(...args: Parameters<typeof fsCopyFile>) {
     if (typeof args[1] === 'string') {
       try {
         await fsAccess((await path.parseFs(args[1])).dir);
@@ -213,7 +255,7 @@ export const fs = Object.freeze({
       }
     }
     await fsCopyFile(...args);
-    return;
+    return args[1];
   },
   empty: async function fsEmpty(path: string) {
     if ((await fsStat(path)).isFile()) {

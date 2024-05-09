@@ -1,0 +1,14 @@
+logLevel = 'warn'
+telemetry = false
+
+[test]
+coverage = true
+
+[install]
+auto = 'force'
+print = 'yarn'
+
+[run]
+shell = 'bun'
+bun = false
+silent = true

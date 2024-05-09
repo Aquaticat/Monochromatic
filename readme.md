@@ -246,3 +246,21 @@ Only one .gitignore file makes it more manageable.
 
 Sometimes I forget to commit while I still remember what the changes were.
 I agree, I should do better.
+
+## Why are TypeScript dependencies specified on the workspace only?
+
+Yarn pnp patched TypeScript doesn't work well with packages that depend on TypeScript in monorepo.
+
+[Comment in VSCode repo](https://github.com/microsoft/vscode/issues/182468#issuecomment-1567886944)
+
+## Why not pnpm
+
+Too slow, no matter which mode it's in.
+
+Yarn is slow on initial resolve, but subsequent changes are pretty fast.
+
+## Why not Shiki for code highlighting in html
+
+Gives invalid ast for some code.
+I'm leaning that it's not escaping properly.
+(Unconfirmed)

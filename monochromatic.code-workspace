@@ -1,0 +1,96 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "dprint.experimentalLsp": true,
+    "typescript.preferences.preferTypeOnlyAutoImports": true,
+    "[yaml]": {
+      "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
+    "[astro]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[vue]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[css]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[html]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[toml]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[js]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[ts]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[mjs]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[mts]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[cjs]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[cts]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[javascriptreact]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "dprint.dprint"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[jsonc]": {
+      "editor.defaultFormatter": "biomejs.biome"
+    },
+    "todo-tree.general.enableFileWatcher": true,
+    "todo-tree.general.revealBehaviour": "end of todo",
+    "todo-tree.general.tags": [
+      "BUG",
+      "HACK",
+      "FIXME",
+      "TODO",
+      "XXX",
+      "[ ]",
+      "[x]",
+      "DONE",
+      "FIXED",
+      "MAYBE",
+      "INVALID",
+      "WONTFIX",
+      "UPDATE",
+      "DOING"
+    ],
+    "todo-tree.filtering.ignoreGitSubmodules": true,
+    "todo-tree.regex.enableMultiLine": true,
+    "todo-tree.highlights.defaultHighlight": {
+      "textDecoration": "underline"
+    },
+    "search.exclude": {
+      "**/.yarn": true,
+      "**/.pnp.*": true
+    },
+    "typescript.tsdk": ".yarn/sdks/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "biome.lspBin": "yarn exec biome",
+    "dprint.path": ".yarn/unplugged/dprint-npm-0.45.1-c7e3a6f9b2/node_modules/dprint/bin.js"
+  }
+}

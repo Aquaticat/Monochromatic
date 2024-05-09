@@ -1,8 +1,8 @@
+import { getLogger } from '@logtape/logtape';
 import apply from '@monochromatic.dev/lightningcss-plugin-apply';
 import customUnits from '@monochromatic.dev/lightningcss-plugin-custom-units';
 import propertyLookup from '@monochromatic.dev/lightningcss-plugin-property-lookup';
 import size from '@monochromatic.dev/lightningcss-plugin-size';
-import c from '@monochromatic.dev/module-console';
 import {
   fs,
   path,
@@ -23,6 +23,7 @@ import postcss from 'postcss';
 import { mapParallelAsync } from 'rambdax';
 import { cssFilePaths } from './g.ts';
 import type { State } from './state.ts';
+const l = getLogger(['build', 'css']);
 
 const cssnanoPreset = cssnanoPresetAdvanced({
   autoprefixer: undefined,
@@ -57,10 +58,12 @@ const cssnanoPreset = cssnanoPresetAdvanced({
   zindex: false,
 }) as { plugins: [PluginCreator<any>, false][]; };
 
-const lightningcssOptions = function genLightningcssOptions(
+const lightningcssOptions = (
   filename: string = 'src/index.css',
-): BundleAsyncOptions<CustomAtRules> {
-  return {
+): BundleAsyncOptions<CustomAtRules> => {
+  l.debug`gen lightningcss options with filename ${filename}`;
+
+  const result = {
     filename: filename,
     minify: true,
     sourceMap: true,
@@ -76,36 +79,47 @@ const lightningcssOptions = function genLightningcssOptions(
         return await resolve(specifier, from);
       },
     },
-  };
+  } satisfies BundleAsyncOptions<CustomAtRules>;
+
+  l.debug`lightningcss options ${result}`;
+  return result;
 };
 
-export default async function css(
-): Promise<State> {
+export default async function css(): Promise<State> {
   if (cssFilePaths.length === 0) {
     return [
+      'css',
       'SKIP',
       `skipping css, none of ${cssFilePaths} matched by 'src/**/index.css', {ignore: '**/_*/**'} exist.`,
     ];
   }
-  return await mapParallelAsync(
-    async function lightningcssEach(cssFilePath): Promise<State> {
-      c.log(`lightningcss ${cssFilePath}`);
+  return [
+    'css',
+    'SUCCESS',
+    await mapParallelAsync(
+      async function cssEach(cssFilePath): Promise<State> {
+        const outFilePath = path.join('dist', 'final', path.relative('src', cssFilePath));
 
-      const options = lightningcssOptions(cssFilePath);
-      const { code, map } = await lightningcssBundle(options);
-      const outFilePath = path.join('dist', 'final', path.relative('src', cssFilePath));
+        l.debug`lightningcss ${cssFilePath}`;
 
-      await fs.outputFile(outFilePath, code);
-      c.log(`postcss ${outFilePath}`);
-      const { css: minCode } = await postcss([cssnano(cssnanoPreset)]).process(
-        await fs.readFileU(outFilePath),
-        { from: outFilePath },
-      );
+        const options = lightningcssOptions(cssFilePath);
+        const { code, map } = await lightningcssBundle(options);
+        l.debug`lightningcss gave code for ${cssFilePath}`;
 
-      await fs.outputFile(outFilePath, minCode);
-      await fs.outputFile(`${outFilePath}.map`, map!);
-      return 'SUCCESS';
-    },
-    cssFilePaths,
-  );
+        await fs.outputFile(outFilePath, code.toString());
+
+        l.debug`postcss ${outFilePath}`;
+
+        const { css: minCode } = await postcss([cssnano(cssnanoPreset)]).process(
+          await fs.readFileU(outFilePath),
+          { from: outFilePath },
+        );
+
+        await fs.outputFile(`${outFilePath}.map`, (map!).toString());
+        l.debug`css ${cssFilePath} finished at ${outFilePath}`;
+        return ['cssEach', 'SUCCESS', await fs.outputFile(outFilePath, minCode)];
+      },
+      cssFilePaths,
+    ),
+  ];
 }

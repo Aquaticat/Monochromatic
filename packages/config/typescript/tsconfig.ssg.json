@@ -1,6 +1,7 @@
 {
   "extends": "@monochromatic.dev/config-typescript/worker",
   "compilerOptions": {
+    "lib": ["ESNext", "DOM", "WebWorker"],
     "allowArbitraryExtensions": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",

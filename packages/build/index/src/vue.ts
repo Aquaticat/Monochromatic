@@ -1,23 +1,35 @@
-import c from '@monochromatic.dev/module-console';
+import { getLogger } from '@logtape/logtape';
 import {
   fs,
   path,
 } from '@monochromatic.dev/module-fs-path';
 import * as esbuild from 'esbuild';
-import { $ } from 'zx';
-import { outIndexVueImportPathToNames, outIndexVueImportStr, outMdxImportPathToNames, outMdxImportStr, outTomlImportPathToNames, outTomlImportStr } from './g.ts';
+import $c from './child.ts';
+import {
+  outIndexVueImportPathToNames,
+  outIndexVueImportStr,
+  outMdxImportPathToNames,
+  outMdxImportStr,
+  outTomlImportPathToNames,
+  outTomlImportStr,
+} from './g.ts';
 import { esbuildOptions } from './js.ts';
+import type { State } from './state.ts';
+const l = getLogger(['build', 'vue']);
 
 /*
 dependsOn: genFrontmatters, ???
 TODO: This should also gen vue apps for 404 pages.
  */
-const genVueApps = async function genVueApps() {
-  c.log(`gen vue apps`);
+const genVueApps = async function genVueApps(): Promise<State> {
+  l.debug`gen vue apps`;
 
-  await fs.outputFile(
-    path.join('dist', 'temp', 'gen-html', 'vue.ts'),
-    `
+  return [
+    'genVueApps',
+    'SUCCESS',
+    await fs.outputFile(
+      path.join('dist', 'temp', 'gen-html', 'vue.ts'),
+      `
 import { createSSRApp } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 import { fs, path } from '@monochromatic.dev/module-fs-path';
@@ -28,8 +40,18 @@ ${outMdxImportStr}
 ${outTomlImportStr}
 
 const fms = [${Array.from(outTomlImportPathToNames.values()).join(',\n')}];
-const layouts = new Map([${Array.from(outIndexVueImportPathToNames.values()).map((outIndexVueImportName) => `['${outIndexVueImportName}', ${outIndexVueImportName}]`).join(',\n')}]);
-const posts = new Map([${Array.from(outMdxImportPathToNames.values()).map((outMdxImportName) => `['${outMdxImportName}', ${outMdxImportName}]`).join(',\n')}]);
+const layouts = new Map([${
+        Array
+          .from(outIndexVueImportPathToNames.values())
+          .map((outIndexVueImportName) => `['${outIndexVueImportName}', ${outIndexVueImportName}]`)
+          .join(',\n')
+      }]);
+const posts = new Map([${
+        Array
+          .from(outMdxImportPathToNames.values())
+          .map((outMdxImportName) => `['${outMdxImportName}', ${outMdxImportName}]`)
+          .join(',\n')
+      }]);
 
 await mapParallelAsync(
   async (fm) => {
@@ -122,29 +144,37 @@ await mapParallelAsync(
   }
   , fms);
 `,
-  );
+    ),
+  ];
 };
 
-const buildVueApps = async function buildVueApps() {
-  c.log(`esbuild vue.ts`, 'dist/temp/gen-html/vue.ts');
+const buildVueApps = async function buildVueApps(): Promise<State> {
+  l.debug`build vue apps esbuild vue.ts dist/temp/gen-html/vue.ts`;
   const ctx = await esbuild.context(
     esbuildOptions(['dist/temp/gen-html/vue.ts'], 'dist/temp/gen-html'),
   );
   const result = await ctx.rebuild();
   await ctx.dispose();
-  await fs.outputFile(
-    path.join('dist', 'temp', 'esbuild', 'vue.meta.json'),
-    JSON.stringify(result.metafile, null, 2),
-  );
+  return [
+    'buildVueApps',
+    'SUCCESS',
+    await fs.outputFile(
+      path.join('dist', 'temp', 'esbuild', 'vue.meta.json'),
+      JSON.stringify(result.metafile, null, 2),
+    ),
+  ];
 };
 
-const runVueApps = async function runVueApps() {
-  c.log(`node vue.js`, 'dist/temp/gen-html/vue.js');
-  await $`node ./dist/temp/gen-html/vue.js`;
+const runVueApps = async function runVueApps(): Promise<State> {
+  l.debug`run vue apps node vue.js 'dist/temp/gen-html/vue.js`;
+  const { stdoe } = await $c(`node ./dist/temp/gen-html/vue.js`);
+  return ['runVueApps', 'SUCCESS', stdoe];
 };
 
-export default async function genBuildRunVueApps() {
-  await genVueApps();
-  await buildVueApps();
-  await runVueApps();
+export default async function genBuildRunVueApps(): Promise<State> {
+  l.debug`gen build run vue apps`;
+  const genedVueApps = await genVueApps();
+  const builtVueApps = await buildVueApps();
+  const ranVueApps = await runVueApps();
+  return ['genBuildRunVueApps', 'SUCCESS', [genedVueApps, builtVueApps, ranVueApps]];
 }

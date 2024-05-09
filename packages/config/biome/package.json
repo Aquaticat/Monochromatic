@@ -1,13 +1,21 @@
 {
   "name": "@monochromatic.dev/config-biome",
-  "keywords": ["biome", "config", "monochromatic"],
-  "peerDependencies": { "@biomejs/biome": "*" },
+  "keywords": [
+    "biome",
+    "config",
+    "monochromatic"
+  ],
+  "peerDependencies": {
+    "@biomejs/biome": "*"
+  },
   "main": "index.jsonc",
   "module": "index.jsonc",
   "type": "module",
-  "files": ["example.biome.jsonc", "index.jsonc"],
-  "scripts": {},
-  "devDependencies": {},
+  "files": [
+    "example.biome.jsonc",
+    "index.jsonc",
+    "pnp.example.biome.jsonc"
+  ],
   "author": {
     "name": "Aquaticat",
     "email": "an@aquati.cat",

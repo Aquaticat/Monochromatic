@@ -1,5 +1,8 @@
-import c from '@monochromatic.dev/module-console';
+import { getLogger } from '@logtape/logtape';
 import { fs } from '@monochromatic.dev/module-fs-path';
+import type { State } from './state';
+
+const l = getLogger(['build', 'caddy']);
 
 const caddyOptions = () => ({
   admin: {
@@ -65,15 +68,18 @@ const caddyOptions = () => ({
   },
 });
 
-export default async function writeCaddyConf() {
-  c.log(`write caddy.json`);
+export default async function writeCaddyConf(): Promise<State> {
+  const caddyConfFilePath = 'dist/temp/caddy/index.json';
+  l.debug(`write caddy.json at ${caddyConfFilePath}`);
 
   await fs.outputFile(
-    'dist/temp/caddy/index.json',
+    caddyConfFilePath,
     JSON.stringify(
       caddyOptions(),
       null,
       2,
     ),
   );
+
+  return ['writeCaddyConf','SUCCESS', caddyConfFilePath];
 }

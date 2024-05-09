@@ -5,17 +5,13 @@
   "module": "dist/final/index.js",
   "main": "dist/final/index.js",
   "typings": "dist/final/index.d.ts",
-  "files": ["dist/final"],
-  "scripts": {},
+  "files": [
+    "dist/final"
+  ],
   "devDependencies": {
-    "@microsoft/api-extractor": "*",
-    "@monochromatic.dev/build": "*",
-    "@monochromatic.dev/config-api-extractor": "*",
     "@monochromatic.dev/config-typescript": "*",
-    "typescript": ">=5.4.5",
     "@types/node": ">=20.12.7",
-    "vite": "*",
-    "vue-tsc": "*"
+    "vite": "*"
   },
   "dependencies": {
     "rambdax": "*"

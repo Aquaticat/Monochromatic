@@ -5,85 +5,46 @@ import esbuildPluginToml from '@monochromatic.dev/esbuild-plugin-toml';
 import esbuildPluginVue from '@monochromatic.dev/esbuild-plugin-vue';
 import esbuildPluginYaml from '@monochromatic.dev/esbuild-plugin-yaml';
 import ThemeConsts from '@monochromatic.dev/schema-theme-consts';
-/* import {
-  transformerMetaHighlight,
-  transformerMetaWordHighlight,
-  transformerNotationDiff,
-  transformerNotationErrorLevel,
-  transformerNotationFocus,
-  transformerNotationHighlight,
-  transformerNotationWordHighlight,
-} from '@shikijs/transformers';
-import rehypeShiki, { type RehypeShikiOptions } from '@shikijs/rehype'; */
 import browserslist from 'browserslist';
 import * as esbuild from 'esbuild';
 import { resolveToEsbuildTarget } from 'esbuild-plugin-browserslist';
+import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
 import remarkAdmonitions from 'remark-github-beta-blockquote-admonitions';
 import remarkSmartypants from 'remark-smartypants';
-/* import rehypeShikiFromHighlighter from '@shikijs/rehype/core';
-import { getHighlighterCore } from 'shiki/core';
-import shikiLangCss from 'shiki/langs/css.mjs';
-import shikiLangHtml from 'shiki/langs/html.mjs';
-import shikiLangJavascript from 'shiki/langs/javascript.mjs';
-import shikiLangJson from 'shiki/langs/json.mjs';
-import shikiLangToml from 'shiki/langs/toml.mjs';
-import shikiLangTypescript from 'shiki/langs/typescript.mjs';
-import shikiLangVue from 'shiki/langs/vue.mjs';
-import shikiLangXml from 'shiki/langs/xml.mjs';
-import shikiLangYaml from 'shiki/langs/yaml.mjs';
-import shikiThemeGithubDark from 'shiki/themes/github-dark.mjs';
-import shikiThemeGithubLight from 'shiki/themes/github-light.mjs';
-import shikiWasm from 'shiki/wasm'; */
-import rehypeHighlight from 'rehype-highlight';
 
 import { switcher } from 'rambdax';
 
-import c from '@monochromatic.dev/module-console';
+import { getLogger } from '@logtape/logtape';
 import {
   fs,
   path,
 } from '@monochromatic.dev/module-fs-path';
 
-import { Glob } from 'glob';
 import D from './dev.ts';
 import external from './external.ts';
-import g from './g.ts';
+import { indexJsFilePaths } from './g.ts';
 import type { State } from './state.ts';
 
 import bash from 'highlight.js/lib/languages/bash';
 import css from 'highlight.js/lib/languages/css';
-import html from 'highlight.js/lib/languages/xml';
 import ini from 'highlight.js/lib/languages/ini';
 import javascript from 'highlight.js/lib/languages/javascript';
 import json from 'highlight.js/lib/languages/json';
 import markdown from 'highlight.js/lib/languages/markdown';
 import txt from 'highlight.js/lib/languages/plaintext';
+import html from 'highlight.js/lib/languages/xml';
 import yaml from 'highlight.js/lib/languages/yaml';
 import typescript from 'highlight.js/lib/languages/yaml';
 import type { Options as rehypeHighlightOptions } from 'rehype-highlight';
 
-/* const highlighter = await getHighlighterCore({
-  themes: [shikiThemeGithubLight, shikiThemeGithubDark],
-  langs: [
-    shikiLangCss,
-    shikiLangHtml,
-    shikiLangJavascript,
-    shikiLangJson,
-    shikiLangToml,
-    shikiLangTypescript,
-    shikiLangVue,
-    shikiLangXml,
-    shikiLangYaml,
-  ],
-  loadWasm: shikiWasm,
-}); */
+const l = getLogger(['build', 'js']);
 
-export const esbuildOptions = function genEsbuildOptions(
+export const esbuildOptions = (
   entryPoints: [string, ...string[]] = ['src/index.ts'],
   outdir: string = 'dist/final',
-): esbuild.BuildOptions {
-  return ({
+): esbuild.BuildOptions => {
+  const result = ({
     external,
 
     entryPoints,
@@ -192,6 +153,7 @@ export const esbuildOptions = function genEsbuildOptions(
               json5: json,
               jsonc: json,
               txt,
+              ansi: txt,
               text: txt,
               uml: txt,
               markdown,
@@ -201,24 +163,7 @@ export const esbuildOptions = function genEsbuildOptions(
               mdx: markdown,
             },
           } satisfies rehypeHighlightOptions,
-        ] /* Cannot process MDX file with esbuild???
-         [
-          rehypeShiki,
-          {
-            themes: { light: 'github-light', dark: 'github-dark' },
-            langs: ['css', 'html', 'javascript', 'typescript', 'vue', 'json', 'toml', 'xml', 'yaml'],
-            transformers: [
-              transformerMetaHighlight(),
-              transformerMetaWordHighlight(),
-              transformerNotationDiff(),
-              transformerNotationErrorLevel(),
-              transformerNotationFocus(),
-              transformerNotationHighlight(),
-              transformerNotationWordHighlight(),
-            ],
-            addLanguageClass: true,
-          } satisfies RehypeShikiOptions,
-        ] */],
+        ]],
 
         remarkPlugins: [remarkGfm, remarkSmartypants, remarkAdmonitions],
       }),
@@ -227,27 +172,34 @@ export const esbuildOptions = function genEsbuildOptions(
       esbuildPluginJsonc,
       esbuildPluginVue(),
     ],
-  });
+  }) satisfies esbuild.BuildOptions;
+
+  l.debug`esbuild options ${result}`;
+
+  return result;
 };
 
-export default async function indexJs(globCache = g()): Promise<State> {
-  const indexJsPaths = [...new Glob('src/**/index.{ts,js,mjs,mts,jsx,tsx}', globCache)].filter((potentialIndexJsPath) =>
-    !potentialIndexJsPath.includes('/_')
-  );
-  if (indexJsPaths.length === 0) {
+export default async function indexJs(): Promise<State> {
+  if (indexJsFilePaths.length === 0) {
     return [
+      'indexJs',
       'SKIP',
-      `skipping index.ts, none of ${indexJsPaths} matched by src/**/index.{ts,js,mjs,mts,jsx,tsx} , {ignore: '**/_*/**'} exist`,
+      `skipping index.ts, none of ${indexJsFilePaths} matched by src/**/index.{ts,js} , {ignore: '**/_*/**'} exist`,
     ];
   }
 
-  c.log('esbuild index.js', ...indexJsPaths);
-  const ctx = await esbuild.context(esbuildOptions(indexJsPaths as [string, ...string[]], 'dist/final'));
+  l.debug`esbuild index.js ${indexJsFilePaths}`;
+  const ctx = await esbuild.context(esbuildOptions(indexJsFilePaths as [string, ...string[]], 'dist/final'));
   const result = await ctx.rebuild();
   await ctx.dispose();
-  await fs.outputFile(
-    path.join('dist', 'temp', 'esbuild', 'js.meta.json'),
-    JSON.stringify(result.metafile, null, 2),
-  );
-  return 'SUCCESS';
+  l.debug`esbuild built index.js ${indexJsFilePaths}`;
+
+  return [
+    'indexJs',
+    'SUCCESS',
+    await fs.outputFile(
+      path.join('dist', 'temp', 'esbuild', 'js.meta.json'),
+      JSON.stringify(result.metafile, null, 2),
+    ),
+  ];
 }

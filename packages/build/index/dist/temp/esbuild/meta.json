@@ -5,45 +5,14 @@
       "imports": [],
       "format": "esm"
     },
-    "src/dts.ts": {
-      "bytes": 919,
+    "src/g.ts": {
+      "bytes": 4548,
       "imports": [
-        {
-          "path": "@microsoft/api-extractor",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "@monochromatic.dev/module-console",
-          "kind": "import-statement",
-          "external": true
-        },
         {
           "path": "@monochromatic.dev/module-fs-path",
           "kind": "import-statement",
           "external": true
         },
-        {
-          "path": "zx",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "<runtime>",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
-    "src/state.ts": {
-      "bytes": 174,
-      "imports": [],
-      "format": "esm"
-    },
-    "src/g.ts": {
-      "bytes": 586,
-      "imports": [
         {
           "path": "glob",
           "kind": "import-statement",
@@ -62,8 +31,44 @@
       ],
       "format": "esm"
     },
+    "src/dts.ts": {
+      "bytes": 639,
+      "imports": [
+        {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/g.ts",
+          "kind": "import-statement",
+          "original": "./g.ts"
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/state.ts": {
+      "bytes": 174,
+      "imports": [],
+      "format": "esm"
+    },
     "src/br.ts": {
-      "bytes": 684,
+      "bytes": 748,
       "imports": [
         {
           "path": "@monochromatic.dev/module-console",
@@ -130,7 +135,7 @@
       "format": "esm"
     },
     "src/css.ts": {
-      "bytes": 3603,
+      "bytes": 3413,
       "imports": [
         {
           "path": "@monochromatic.dev/lightningcss-plugin-apply",
@@ -183,11 +188,6 @@
           "external": true
         },
         {
-          "path": "glob",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
           "path": "lightningcss",
           "kind": "import-statement",
           "external": true
@@ -221,7 +221,7 @@
       "format": "esm"
     },
     "src/rehype.ts": {
-      "bytes": 1195,
+      "bytes": 940,
       "imports": [
         {
           "path": "hast-util-from-html",
@@ -257,7 +257,7 @@
       "format": "esm"
     },
     "src/cp.ts": {
-      "bytes": 2351,
+      "bytes": 1750,
       "imports": [
         {
           "path": "@monochromatic.dev/module-console",
@@ -266,11 +266,6 @@
         },
         {
           "path": "@monochromatic.dev/module-fs-path",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "glob",
           "kind": "import-statement",
           "external": true
         },
@@ -293,7 +288,7 @@
       "format": "esm"
     },
     "src/image.ts": {
-      "bytes": 3227,
+      "bytes": 3210,
       "imports": [
         {
           "path": "@monochromatic.dev/module-fs-path",
@@ -329,7 +324,7 @@
       "format": "esm"
     },
     "src/favicon.ts": {
-      "bytes": 6066,
+      "bytes": 6132,
       "imports": [
         {
           "path": "@monochromatic.dev/module-console",
@@ -385,12 +380,18 @@
       "format": "esm"
     },
     "src/external.ts": {
-      "bytes": 3262,
-      "imports": [],
+      "bytes": 3440,
+      "imports": [
+        {
+          "path": "@logtape/logtape",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
       "format": "esm"
     },
     "src/js.ts": {
-      "bytes": 4037,
+      "bytes": 5610,
       "imports": [
         {
           "path": "@hbsnow/rehype-sectionize",
@@ -458,6 +459,11 @@
           "external": true
         },
         {
+          "path": "rehype-highlight",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
           "path": "rambdax",
           "kind": "import-statement",
           "external": true
@@ -469,11 +475,6 @@
         },
         {
           "path": "@monochromatic.dev/module-fs-path",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "glob",
           "kind": "import-statement",
           "external": true
         },
@@ -493,30 +494,54 @@
           "original": "./g.ts"
         },
         {
-          "path": "<runtime>",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
-    "src/frontmatter.ts": {
-      "bytes": 1840,
-      "imports": [
-        {
-          "path": "@monochromatic.dev/module-fs-path",
+          "path": "highlight.js/lib/languages/bash",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "esbuild",
+          "path": "highlight.js/lib/languages/css",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "src/js.ts",
+          "path": "highlight.js/lib/languages/xml",
           "kind": "import-statement",
-          "original": "./js.ts"
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/ini",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/javascript",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/json",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/markdown",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/plaintext",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/yaml",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/yaml",
+          "kind": "import-statement",
+          "external": true
         },
         {
           "path": "<runtime>",
@@ -527,7 +552,7 @@
       "format": "esm"
     },
     "src/vue.ts": {
-      "bytes": 4872,
+      "bytes": 4078,
       "imports": [
         {
           "path": "@monochromatic.dev/module-console",
@@ -541,21 +566,6 @@
         },
         {
           "path": "esbuild",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "find-up",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "glob",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "rambdax",
           "kind": "import-statement",
           "external": true
         },
@@ -583,7 +593,7 @@
       "format": "esm"
     },
     "src/html.ts": {
-      "bytes": 2554,
+      "bytes": 2181,
       "imports": [
         {
           "path": "@monochromatic.dev/module-console",
@@ -621,11 +631,6 @@
           "original": "./favicon.ts"
         },
         {
-          "path": "src/frontmatter.ts",
-          "kind": "import-statement",
-          "original": "./frontmatter.ts"
-        },
-        {
           "path": "src/g.ts",
           "kind": "import-statement",
           "original": "./g.ts"
@@ -644,15 +649,10 @@
       "format": "esm"
     },
     "src/staticAndCompress.ts": {
-      "bytes": 610,
+      "bytes": 596,
       "imports": [
         {
-          "path": "@monochromatic.dev/module-console",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "rambdax",
+          "path": "@logtape/logtape",
           "kind": "import-statement",
           "external": true
         },
@@ -689,8 +689,39 @@
       ],
       "format": "esm"
     },
+    "src/child.ts": {
+      "bytes": 1145,
+      "imports": [
+        {
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic.dev/module-pm",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:child_process",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node:util",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
     "src/index.ts": {
-      "bytes": 1905,
+      "bytes": 2371,
       "imports": [
         {
           "path": "@monochromatic.dev/module-fs-path",
@@ -741,6 +772,16 @@
           "path": "src/staticAndCompress.ts",
           "kind": "import-statement",
           "original": "./staticAndCompress.ts"
+        },
+        {
+          "path": "src/child.ts",
+          "kind": "import-statement",
+          "original": "./child.ts"
+        },
+        {
+          "path": "@logtape/logtape",
+          "kind": "import-statement",
+          "external": true
         }
       ],
       "format": "esm"
@@ -751,7 +792,7 @@
       "imports": [],
       "exports": [],
       "inputs": {},
-      "bytes": 64347
+      "bytes": 69097
     },
     "dist/final/index.js": {
       "imports": [
@@ -791,11 +832,6 @@
           "external": true
         },
         {
-          "path": "@microsoft/api-extractor",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
           "path": "@monochromatic.dev/module-console",
           "kind": "import-statement",
           "external": true
@@ -811,12 +847,22 @@
           "external": true
         },
         {
-          "path": "@monochromatic.dev/module-console",
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "glob",
           "kind": "import-statement",
           "external": true
         },
         {
           "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@logtape/logtape",
           "kind": "import-statement",
           "external": true
         },
@@ -842,16 +888,6 @@
         },
         {
           "path": "zx",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "glob",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "rambdax",
           "kind": "import-statement",
           "external": true
         },
@@ -912,11 +948,6 @@
         },
         {
           "path": "cssnano-preset-advanced",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "glob",
           "kind": "import-statement",
           "external": true
         },
@@ -996,11 +1027,6 @@
           "external": true
         },
         {
-          "path": "glob",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
           "path": "rambdax",
           "kind": "import-statement",
           "external": true
@@ -1066,12 +1092,22 @@
           "external": true
         },
         {
+          "path": "@monochromatic.dev/module-console",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
           "path": "@monochromatic.dev/module-fs-path",
           "kind": "import-statement",
           "external": true
         },
         {
           "path": "esbuild",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zx",
           "kind": "import-statement",
           "external": true
         },
@@ -1141,6 +1177,11 @@
           "external": true
         },
         {
+          "path": "rehype-highlight",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
           "path": "rambdax",
           "kind": "import-statement",
           "external": true
@@ -1156,12 +1197,57 @@
           "external": true
         },
         {
-          "path": "glob",
+          "path": "@logtape/logtape",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/module-console",
+          "path": "highlight.js/lib/languages/bash",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/css",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/xml",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/ini",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/javascript",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/json",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/markdown",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/plaintext",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/yaml",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "highlight.js/lib/languages/yaml",
           "kind": "import-statement",
           "external": true
         },
@@ -1171,27 +1257,22 @@
           "external": true
         },
         {
-          "path": "esbuild",
+          "path": "@monochromatic.dev/module-pm",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "find-up",
+          "path": "node:child_process",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "glob",
+          "path": "node:util",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "rambdax",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "zx",
+          "path": "@logtape/logtape",
           "kind": "import-statement",
           "external": true
         }
@@ -1200,58 +1281,58 @@
       "entryPoint": "src/index.ts",
       "inputs": {
         "src/index.ts": {
-          "bytesInOutput": 1829
+          "bytesInOutput": 2258
         },
         "src/dev.ts": {
           "bytesInOutput": 422
         },
         "src/dts.ts": {
-          "bytesInOutput": 800
-        },
-        "src/staticAndCompress.ts": {
-          "bytesInOutput": 478
-        },
-        "src/br.ts": {
-          "bytesInOutput": 683
+          "bytesInOutput": 557
         },
         "src/g.ts": {
-          "bytesInOutput": 353
+          "bytesInOutput": 4063
+        },
+        "src/staticAndCompress.ts": {
+          "bytesInOutput": 455
+        },
+        "src/br.ts": {
+          "bytesInOutput": 758
         },
         "src/caddy.ts": {
           "bytesInOutput": 1716
         },
         "src/css.ts": {
-          "bytesInOutput": 3432
+          "bytesInOutput": 3222
         },
         "src/html.ts": {
-          "bytesInOutput": 2446
+          "bytesInOutput": 2115
         },
         "src/rehype.ts": {
-          "bytesInOutput": 1003
+          "bytesInOutput": 872
         },
         "src/cp.ts": {
-          "bytesInOutput": 2471
+          "bytesInOutput": 1901
         },
         "src/favicon.ts": {
-          "bytesInOutput": 6021
+          "bytesInOutput": 6076
         },
         "src/image.ts": {
-          "bytesInOutput": 1293
-        },
-        "src/frontmatter.ts": {
-          "bytesInOutput": 1821
-        },
-        "src/js.ts": {
-          "bytesInOutput": 3941
-        },
-        "src/external.ts": {
-          "bytesInOutput": 3180
+          "bytesInOutput": 1273
         },
         "src/vue.ts": {
-          "bytesInOutput": 4759
+          "bytesInOutput": 3955
+        },
+        "src/js.ts": {
+          "bytesInOutput": 5370
+        },
+        "src/external.ts": {
+          "bytesInOutput": 3349
+        },
+        "src/child.ts": {
+          "bytesInOutput": 1019
         }
       },
-      "bytes": 37254
+      "bytes": 39974
     }
   }
 }

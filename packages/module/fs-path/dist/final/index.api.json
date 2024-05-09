@@ -1,7 +1,7 @@
 {
   "metadata": {
     "toolPackage": "@microsoft/api-extractor",
-    "toolVersion": "7.43.0",
+    "toolVersion": "7.43.1",
     "schemaVersion": 1011,
     "oldestForwardsCompatibleVersion": 1001,
     "tsdocConfig": {
@@ -729,7 +729,7 @@
             },
             {
               "kind": "Content",
-              "text": ", 'search' | 'searchParams' | 'hash'>>;\n    split: (path: string) => string[];\n}>"
+              "text": ", 'search' | 'searchParams' | 'hash'> & {\n        path: string;\n        absPath: string;\n        absDir: string;\n    }>;\n    split: (path: string) => string[];\n}>"
             }
           ],
           "fileUrlPath": "src/index.ts",

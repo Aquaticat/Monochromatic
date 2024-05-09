@@ -13,9 +13,14 @@
     "tsconfig.worker.json",
     "worker.example.tsconfig.json",
     "tsconfig.ssg.json",
-    "ssg.example.tsconfig.json"
+    "ssg.example.tsconfig.json",
+    "pnp.example.tsconfig.json"
   ],
-  "keywords": ["config", "monochromatic", "typescript"],
+  "keywords": [
+    "config",
+    "monochromatic",
+    "typescript"
+  ],
   "author": {
     "name": "Aquaticat",
     "email": "an@aquati.cat",
@@ -28,18 +33,16 @@
     "./ssg": "./tsconfig.ssg.json"
   },
   "peerDependencies": {
-    "vite": "*",
-    "@types/node": "*",
+    "@monochromatic.dev/schema-theme-consts": "workspace:*",
     "@types/mdx": ">=2.0.13",
-    "typescript": ">=5.4.5",
-    "@monochromatic.dev/schema-theme-consts": "*"
+    "@types/node": "*",
+    "vite": "*"
   },
   "dependencies": {
-    "vite": "*",
-    "@types/node": "*",
+    "@monochromatic.dev/schema-theme-consts": "workspace:*",
     "@types/mdx": ">=2.0.13",
-    "typescript": ">=5.4.5",
-    "@monochromatic.dev/schema-theme-consts": "*"
+    "@types/node": "*",
+    "vite": "*"
   },
   "license": "Apache-2.0",
   "repository": {

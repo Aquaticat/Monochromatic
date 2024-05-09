@@ -3,7 +3,7 @@
   "include": ["src"],
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist/temp/tsc",
+    "outDir": "dist/final",
     "paths": {
       "@/*": ["./*"],
     },

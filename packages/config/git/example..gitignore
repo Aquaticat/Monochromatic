@@ -25,6 +25,10 @@ pnpm-lock.yaml
 .pnp.cjs
 *.br
 /caddy
+.yarn
+bun.lockb
+package-lock.json
+yarn.lock
 
 #region Created by https://www.toptal.com/developers/gitignore/api/node,astro,macos,linux,windows,visualstudiocode,jetbrains
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,astro,macos,linux,windows,visualstudiocode,jetbrains

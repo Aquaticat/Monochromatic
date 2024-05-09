@@ -1,9 +1,6 @@
-import { PluginBuild } from 'esbuild';
-
 declare const _default: {
     name: string;
-    setup(build: PluginBuild): void;
+    setup(build: import("esbuild").PluginBuild): void;
 };
 export default _default;
-
-export { }
+//# sourceMappingURL=index.d.ts.map

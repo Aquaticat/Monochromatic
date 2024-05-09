@@ -4,37 +4,31 @@
   "module": "dist/final/index.js",
   "main": "dist/final/index.js",
   "typings": "dist/final/index.d.ts",
-  "files": ["dist/final"],
-  "scripts": {},
+  "files": [
+    "dist/final"
+  ],
   "devDependencies": {
-    "@microsoft/api-extractor": "*",
-    "@monochromatic.dev/build": "*",
-    "@monochromatic.dev/config-api-extractor": "*",
-    "@monochromatic.dev/config-typescript": "*",
-    "typescript": ">=5.4.5",
+    "@monochromatic.dev/config-typescript": "workspace:*",
     "@types/node": ">=20.12.7",
-    "vite": "*",
-    "vue-tsc": "*"
+    "vite": "*"
   },
   "dependencies": {
+    "@monochromatic.dev/module-bigint-hash": "workspace:*",
+    "@monochromatic.dev/module-console": "workspace:*",
+    "@monochromatic.dev/module-fs-path": "workspace:*",
+    "@monochromatic.dev/module-object-to-export": "workspace:*",
+    "@monochromatic.dev/module-resolve": "workspace:*",
     "esbuild": "*",
+    "find-up": "*",
+    "glob": "*",
     "rambdax": "*",
     "smol-toml": "*",
-    "find-up": "*",
-    "@monochromatic.dev/module-fs-path": "*",
-    "@monochromatic.dev/module-resolve": "*",
-    "@monochromatic.dev/module-object-to-export": "*",
-    "@monochromatic.dev/module-console": "*",
-    "@monochromatic.dev/module-bigint-hash": "*",
-    "zod": "*",
-    "glob": "*",
     "vue": "*",
-    "vue-tsc": "*"
+    "zod": "*"
   },
   "peerDependencies": {
     "esbuild": "*",
-    "vue": "*",
-    "vue-tsc": "*"
+    "vue": "*"
   },
   "version": "0.1.0",
   "repository": {

@@ -8,6 +8,8 @@ import {
   type GlobOptions,
 } from 'glob';
 import { memoize } from 'rambdax';
+import { getLogger } from '@logtape/logtape';
+const l = getLogger(['build', 'g']);
 
 export const mGlobPatten = ['**/*.*'];
 
@@ -30,12 +32,21 @@ const srcDrs = (await fs.readdir('src', { withFileTypes: true, recursive: true }
 
 const srcFileDrs = srcDrs.filter((srcDr) => srcDr.isFile());
 
+const indexJsFileDrs = srcFileDrs.filter((srcFileDr) => srcFileDr.name === 'index.js' || srcFileDr.name === 'index.ts');
+
+export const indexJsFilePaths = indexJsFileDrs.map((mdxFileDr) =>
+  // @ts-expect-error parentPath is the new name for path
+  path.join(mdxFileDr.parentPath, mdxFileDr.name)
+);
+l.debug`indexJsFilePaths ${indexJsFilePaths}`;
+
 const mdxFileDrs = srcFileDrs.filter((srcFileDr) => srcFileDr.name.endsWith('.mdx'));
 
 export const mdxFilePaths = mdxFileDrs.map((mdxFileDr) =>
   // @ts-expect-error parentPath is the new name for path
   path.join(mdxFileDr.parentPath, mdxFileDr.name)
 );
+l.debug`mdxFilePaths ${mdxFilePaths}`;
 
 const outMdxPaths = mdxFilePaths.map((mdxFilePath) =>
   path.join(
@@ -61,6 +72,7 @@ export const outMdxImportPathToNames = new Map(outMdxPaths.map((outMdxPath) => [
     .replaceAll('/', 'ReplacedSlash')
     .replaceAll('-', 'ReplacedHyphen'),
 ]));
+l.debug`outMdxImportPathToNames ${outMdxImportPathToNames}`
 
 export const outMdxImportStr =
   (Array.from(outMdxImportPathToNames).map(([outMdxImportPath, outMdxImportName]) =>
@@ -69,6 +81,7 @@ export const outMdxImportStr =
     .join(
       '\n',
     );
+l.debug`outMdxImportStr ${outMdxImportStr}`;
 
 const outTomlPaths = outMdxPaths.map((outMdxPath) =>
   `${
@@ -91,12 +104,14 @@ export const outTomlImportPathToNames = new Map(outTomlPaths.map((outTomlPath) =
     .replaceAll('/', 'ReplacedSlash')
     .replaceAll('-', 'ReplacedHyphen'),
 ]));
+l.debug`outTomlImportPathToNames ${outTomlImportPathToNames}`;
 
 export const outTomlImportStr =
   (Array.from(outTomlImportPathToNames).map(([outTomlImportPath, outTomlImportName]) =>
     `import ${outTomlImportName} from '${outTomlImportPath}';`
   ))
     .join('\n');
+l.debug`outTomlImportStr ${outTomlImportStr}`;
 
 const indexVueFileDrs = srcFileDrs.filter((srcFileDr) => srcFileDr.name === 'index.vue');
 
@@ -104,6 +119,7 @@ export const indexVueFilePaths = indexVueFileDrs.map((indexVueFileDr) =>
   // @ts-expect-error parentPath is the new name for path
   path.join(indexVueFileDr.parentPath, indexVueFileDr.name)
 );
+l.debug`indexVueFilePaths ${indexVueFilePaths}`;
 
 const outIndexVuePaths = indexVueFilePaths.map((indexVueFilePath) =>
   path.join(
@@ -129,12 +145,14 @@ export const outIndexVueImportPathToNames = new Map(outIndexVuePaths.map((outInd
     .replaceAll('/', 'ReplacedSlash')
     .replaceAll('-', 'ReplacedHyphen'),
 ]));
+l.debug`outIndexVueImportPathToNames ${outIndexVueImportPathToNames}`;
 
 export const outIndexVueImportStr =
   (Array.from(outIndexVueImportPathToNames).map(([outIndexVueImportPath, outIndexVueImportName]) =>
     `import ${outIndexVueImportName} from '${outIndexVueImportPath}';`
   ))
     .join('\n');
+l.debug`outIndexVueImportStr ${outIndexVueImportStr}`;
 
 const cssFileDrs = srcFileDrs.filter((srcFileDr) => srcFileDr.name.endsWith('.css'));
 
@@ -142,6 +160,7 @@ export const cssFilePaths = cssFileDrs.map((cssFileDr) =>
   // @ts-expect-error parentPath is the new name for path
   path.join(cssFileDr.parentPath, cssFileDr.name)
 );
+l.debug`cssFilePaths ${cssFilePaths}`;
 
 const otherFileDrs = srcFileDrs.filter((srcFileDr) =>
   ![
@@ -163,3 +182,5 @@ export const otherFilePaths = otherFileDrs.map((otherFileDr) =>
   // @ts-expect-error parentPath is the new name for path
   path.join(otherFileDr.parentPath, otherFileDr.name)
 );
+
+l.debug`otherFilePaths ${otherFilePaths}`;

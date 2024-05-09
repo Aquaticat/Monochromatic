@@ -5,8 +5,14 @@
   "main": "example..browserslistrc",
   "module": "example..browserslistrc",
   "type": "module",
-  "files": ["example..browserslistrc"],
-  "keywords": ["config", "monochromatic", "browserslist"],
+  "files": [
+    "example..browserslistrc"
+  ],
+  "keywords": [
+    "config",
+    "monochromatic",
+    "browserslist"
+  ],
   "author": {
     "name": "Aquaticat",
     "email": "an@aquati.cat",

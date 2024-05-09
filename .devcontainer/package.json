@@ -2,7 +2,9 @@
   "name": "@monochromatic.dev/devcontainer",
   "type": "module",
   "version": "0.0.1",
-  "files": ["devcontainer.json"],
+  "files": [
+    "devcontainer.json"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/monochromatic-devcontainer.git",

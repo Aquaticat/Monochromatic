@@ -13,16 +13,50 @@ import { pipedAsync } from 'rambdax';
 
 import JSONC from 'jsonc-simple-parser';
 
-import c from '@monochromatic.dev/module-console';
-
 import D from './dev.ts';
 import dts from './dts.ts';
 import staticAndCompress from './staticAndCompress.ts';
 
+import $c from './child.ts';
+
+import {
+  getLevelFilter,
+  getLogger,
+  withFilter,
+} from '@logtape/logtape';
+
 $.prefix += 'source ~/.bashrc && ';
 
-c.assert(D, 'development');
-c.assert(!D, 'production');
+import {
+  configure,
+  getConsoleSink,
+  getFileSink,
+} from '@logtape/logtape';
+
+await fs.writeFile('build.log', '');
+
+await configure({
+  sinks: {
+    console: getConsoleSink(),
+    consoleInfoPlus: withFilter(getConsoleSink(), getLevelFilter('info')),
+    consoleWarnPlus: withFilter(getConsoleSink(), getLevelFilter('warning')),
+    file: getFileSink('build.log', {
+      formatter(log) {
+        return `${JSON.stringify(log, null, 2)}\n`;
+      },
+    }),
+  },
+  filters: {},
+  loggers: [
+    { category: ['build'], level: 'debug', sinks: ['file', 'consoleInfoPlus'] },
+    { category: ['module'], level: 'debug', sinks: ['file', 'consoleWarnPlus'] },
+    { category: ['logtape', 'meta'], level: 'warning', sinks: ['console'] },
+  ],
+});
+
+const l = getLogger(['build']);
+
+l.info`development ${D}`;
 
 try {
   import.meta.env.DEV = D;
@@ -40,24 +74,23 @@ const parsed = parser()
   .parse();
 
 if (parsed.command === 'build') {
-  c.log('build', path.resolve());
+  l.info`build ${path.resolve()}`;
 
-  await pipedAsync(
+  const buildResult = await Promise.all(
     [
       staticAndCompress(),
       dts(),
     ],
-    async (val) => Promise.allSettled(val),
-    async (val) => {
-      c.log(val);
-      return val;
-    },
   );
+
+  l.info`built ${buildResult}`;
 }
 
 if (parsed.command === 'serve') {
-  c.log(`serve`, path.resolve());
+  l.info`serve ${path.resolve()}`;
 
+  /* MAYBE: Replace this with my own implementation?
+  Need to figure out how to promisify child_process.exec while preserving its Event Emitter properties. */
   await $`caddy run -c ./dist/temp/caddy/index.json`
     .pipe(process.stdout);
 }
@@ -68,7 +101,7 @@ if (parsed.command === 'watch') {
 }
 
 if (parsed.command === 'clean') {
-  c.log(`clean`, path.resolve());
+  l.info`clean ${path.resolve()}`;
   await fs.empty('dist');
 }
 
@@ -84,5 +117,5 @@ if (parsed.command === 'preparse') {
 
 if (parsed.command === 'dependencies') {
   await fs.cpFile('package.json', 'package.jsonc');
-  await $`pnpm exec biome format --write package.jsonc`;
+  await $c(`biome format --write package.jsonc`);
 }

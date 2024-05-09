@@ -18,7 +18,13 @@ export declare const path: Readonly<{
     format: (pathObject: import("path").FormatInputPathObject) => string;
     delimiter: ";" | ":";
     normalize: (path: string) => string;
-    parseFs: (path: string) => Promise<ParsedPath & Pick<URL, 'search' | 'searchParams' | 'hash'>>;
+    parseFs: (path: string) => Promise<ParsedPath & Pick<URL, 'search' | 'searchParams' | 'hash'> & {
+        path: string;
+        absPath: string;
+        absDir: string;
+        currentDir: string;
+        currentAbsDir: string;
+    }>;
     split: (path: string) => string[];
 }>;
 declare function fsReadFileU(path: string): Promise<string>;

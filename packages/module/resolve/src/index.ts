@@ -1,13 +1,16 @@
-import c from '@monochromatic.dev/module-console';
+import { getLogger } from '@logtape/logtape';
 import {
   fs,
   path,
 } from '@monochromatic.dev/module-fs-path';
+import pm from '@monochromatic.dev/module-pm';
 import { findUp } from 'find-up';
 import JSONC from 'jsonc-simple-parser';
 import { minimatch } from 'minimatch';
+import { homedir } from 'node:os';
 import { pipedAsync } from 'rambdax';
-import { $ } from 'zx';
+import $c from './child.ts';
+const l = getLogger(['module', 'resolve']);
 
 /* We can roughly separate importing from a node module into four types:
 
@@ -53,12 +56,57 @@ export const packageIdentifierSplitter = {
   },
 };
 
-export const packageFilePath = async (potentialPackageWithIdentifier: string): Promise<string> => {
+export const packageFilePath = async (
+  potentialPackageWithIdentifier: string,
+  pkgJsonAbsPath: string,
+  fromPm: Awaited<ReturnType<typeof pm>>,
+): Promise<string> => {
+  l
+    .debug`packageFilePath potentialPackageWithIdentifier ${potentialPackageWithIdentifier} pkgJsonAbsPath ${pkgJsonAbsPath} fromPm ${fromPm}`;
   const [pkg, identifier] = potentialPackageWithIdentifier.split(packageIdentifierSplitter);
 
-  // TODO: Make this not limited to pnpm.
-  const filteredPkgJson = JSON.parse((await $`pnpm list --json ${pkg}`).stdout)[0];
-  const pkgPath: string = filteredPkgJson?.dependencies?.[pkg!].path || filteredPkgJson.devDependencies?.[pkg!].path;
+  let pkgPath: string;
+
+  // For pnpm, commands for getting abs target pkg path is the same no matter which node linker it uses.
+  if (fromPm.packageManager === 'pnpm') {
+    const filteredPkgJson = JSON.parse((await $c(`pnpm list --json ${pkg}`)).stdout as string)[0];
+    pkgPath = filteredPkgJson?.dependencies?.[pkg!].path || filteredPkgJson.devDependencies?.[pkg!].path;
+  } else if (['hoisted', 'isolated'].includes(fromPm.nodeLinker)) {
+    pkgPath = (await findUp(async (potentialMatchingNodeModuleAbsDir) => {
+      const hasPkg = await fs.exists(path.join(potentialMatchingNodeModuleAbsDir, pkg!));
+      if (hasPkg) return path.join(potentialMatchingNodeModuleAbsDir, pkg!);
+      return undefined;
+    }, { cwd: path.join(pkgJsonAbsPath, 'node_modules'), stopAt: homedir(), type: 'directory' }))!;
+  } else if (fromPm.nodeLinker === 'pnp') {
+    const yarnInfo = await pipedAsync(
+      await $c(`yarn info --json --cache ${pkg}`),
+      (yarnInfoProcessOutput) => yarnInfoProcessOutput.stdout as string,
+      JSON.parse,
+    );
+
+    if (yarnInfo.value.includes('@workspace:')) {
+      const pkgPathRelWorkspace = yarnInfo.value.split('@workspace:').at(-1);
+      pkgPath = path.join(fromPm.workspaceAbsDir, pkgPathRelWorkspace);
+    } else {
+      const pkgZipAbsPathObj = await pipedAsync(
+        await $c(`yarn info --json --cache ${pkg}`),
+        (yarnInfoProcessOutput) => yarnInfoProcessOutput.stdout as string,
+        JSON.parse,
+        (yarnInfo) => yarnInfo.children.Cache.Path,
+        async (pkgZipAbsPath) => await path.parseFs(pkgZipAbsPath),
+      );
+      const pkgPathWoNmWoPkg = path.join(pkgZipAbsPathObj.absDir, pkgZipAbsPathObj.name);
+      if (!(await fs.exists(pkgPathWoNmWoPkg))) {
+        await $c(`unzip ${pkgZipAbsPathObj.absPath} -d ${pkgPathWoNmWoPkg}`);
+      }
+      pkgPath = path.join(pkgPathWoNmWoPkg, 'node_modules', pkg!);
+    }
+  } else {
+    throw new Error(
+      `unknown packageManager ${fromPm.packageManager} or nodeLinker ${fromPm.nodeLinker} for ${pkgJsonAbsPath} while resolving ${potentialPackageWithIdentifier}`,
+    );
+  }
+  l.debug`packageFilePath pkgPath ${pkgPath}`;
 
   const pkgJson: {
     main?: string;
@@ -244,7 +292,7 @@ export default async function resolve(
   // WONTFIX: Support CJS modules.
 
   if (!path.isAbsolute(from)) {
-    c.debug(`Relative path ${from} passed in parameter from, converted to absolute path ${path.resolve(from)}`);
+    l.info`Relative path ${from} passed in parameter from, converted to absolute path ${path.resolve(from)}`;
   }
 
   const absFrom = path.isAbsolute(from) ? from : path.resolve(from);
@@ -269,12 +317,14 @@ export default async function resolve(
     await fs.accessM(file);
     return file;
   } catch (e) {
+    l.debug`no file found ${e}`;
   }
 
   try {
     return await tsconfigAliasedPath(specifier, absFrom, pkgJsonAbsPath);
   } catch (e) {
+    l.debug`no tsconfig aliased path found ${e}`;
   }
 
-  return await packageFilePath(specifier);
+  return await packageFilePath(specifier, pkgJsonAbsPath, await pm(pkgJsonAbsPath));
 }

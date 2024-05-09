@@ -12,21 +12,29 @@
     "url": "https://github.com/Aquaticat/Monochromatic.git"
   },
   "trustedDependencies": [
-    "@biomejs/biome"
+    "sharp",
+    "@biomejs/biome",
+    "dprint",
+    "esbuild"
   ],
   "scripts": {
     "dependencies": "monochromatic dependencies"
   },
   "engines": {
     "node": ">=20.12",
-    "pnpm": ">=9.0.6"
+    "yarn": ">=4.2.1"
   },
   "devDependencies": {
     "@biomejs/biome": ">=1.7",
-    "@monochromatic.dev/build": "*",
-    "@monochromatic.dev/config-biome": "*",
-    "@monochromatic.dev/config-dprint": "*",
+    "@monochromatic.dev/build": "workspace:*",
+    "@monochromatic.dev/config-biome": "workspace:*",
+    "@monochromatic.dev/config-dprint": "workspace:*",
     "dprint": ">=0.45.1",
-    "typescript": ">=5.4"
-  }
+    "typescript": ">=5.4",
+    "vue-tsc": "*"
+  },
+  "workspaces": [
+    "packages/*/*",
+    ".devcontainer"
+  ]
 }

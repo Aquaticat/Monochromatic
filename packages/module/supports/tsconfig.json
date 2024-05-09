@@ -1,11 +1,10 @@
 {
-  "extends": "@monochromatic.dev/config-typescript",
+  "extends": "@monochromatic.dev/config-typescript/dom",
 
   "include": ["src"],
 
   "compilerOptions": {
-    "lib": ["ESNext", "DOM"],
-    "outDir": "dist/temp/tsc",
-    "rootDir": "src"
-  }
+    "outDir": "dist/final",
+    "rootDir": "src",
+  },
 }

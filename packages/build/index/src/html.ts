@@ -1,4 +1,4 @@
-import c from '@monochromatic.dev/module-console';
+import { getLogger } from '@logtape/logtape';
 import {
   fs,
   path,
@@ -11,80 +11,107 @@ import {
   mapParallelAsync,
   pipedAsync,
 } from 'rambdax';
-import rehypedHtml from './rehype.ts';
 import {
   cpOthers,
   cpSrc,
 } from './cp.ts';
 import genFavicons from './favicon.ts';
 import g, { mdxFilePaths } from './g.ts';
+import rehypedHtml from './rehype.ts';
 import type { State } from './state.ts';
 import genBuildRunVueApps from './vue.ts';
 
-const processHtmlsToFinal = async (globCache = g()) => {
+const l = getLogger(['build', 'html']);
+
+const processHtmlsToFinal = async (globCache = g()): Promise<State> => {
   const htmlFilePaths = [...new Glob('dist/temp/html/**/*.html', globCache)];
-  c.log(`process *.html`, ...htmlFilePaths);
-  await mapParallelAsync(
-    async (htmlFilePath) => {
-      await fs.outputFile(
-        path.join(
-          'dist',
-          'final',
-          path.relative(path.join('dist', 'temp', 'html'), htmlFilePath),
-        ),
-        await pipedAsync(htmlFilePath, fs.readFileU, rehypedHtml),
-      );
-    },
-    htmlFilePaths,
-  );
+  l.debug`process *.html ${htmlFilePaths}`;
+  return [
+    'processHtmlsToFinal',
+    'SUCCESS',
+    await mapParallelAsync(
+      async (htmlFilePath) => {
+        return await fs.outputFile(
+          path.join(
+            'dist',
+            'final',
+            path.relative(path.join('dist', 'temp', 'html'), htmlFilePath),
+          ),
+          await pipedAsync(htmlFilePath, fs.readFileU, rehypedHtml),
+        );
+      },
+      htmlFilePaths,
+    ),
+  ];
 };
 
-const ensureHtmlStructure = async function ensureHtmlStructure() {
+const ensureHtmlStructure = async function ensureHtmlStructure(): Promise<State> {
   const finalHtmlFilePaths = await glob('dist/final/**/*.html', { ignore: '**/index.html' });
-  c.log(`final *.html -> */index.html`, ...finalHtmlFilePaths);
-  await mapParallelAsync(async function cpToDir(finalHtmlFilePath) {
-    await fs.cpFile(
-      finalHtmlFilePath,
-      path.join(
+  l.debug`final *.html -> */index.html ${finalHtmlFilePaths}`;
+  return [
+    'ensureHtmlStructure',
+    'SUCCESS',
+    await mapParallelAsync(async function cpToDir(finalHtmlFilePath) {
+      return await fs.cpFile(
         finalHtmlFilePath,
-        '..',
-        (await path.parseFs(
-          path
-            .split(finalHtmlFilePath)
-            .at(-1)!,
-        ))
-          .name,
-        'index.html',
-      ),
-    );
-  }, finalHtmlFilePaths);
+        path.join(
+          finalHtmlFilePath,
+          '..',
+          (await path.parseFs(
+            path
+              .split(finalHtmlFilePath)
+              .at(-1)!,
+          ))
+            .name,
+          'index.html',
+        ),
+      );
+    }, finalHtmlFilePaths),
+  ];
 };
 
 export default async function genHtml(): Promise<State> {
   if (mdxFilePaths.length === 0) {
     return [
+      'genHtml',
       'SKIP',
       `skipping mdx, none of ${mdxFilePaths} matched by 'src/**/*.mdx', {ignore: '**/_*/**'} exist.`,
     ];
   }
 
-  await cpSrc();
+  const cpedSrc = await cpSrc();
+  l.debug`gen html cped src ${cpedSrc}`;
 
-  await Promise.all([
-    (async function genHtmls() {
-      await genBuildRunVueApps();
+  const genedFinal = await Promise.all([
+    (async function genHtmls(): Promise<State> {
+      l.debug`gen htmls`;
 
-      await processHtmlsToFinal();
+      const ranVue = await genBuildRunVueApps();
+      l.debug`gen htmls ran vue ${ranVue}`;
 
-      await ensureHtmlStructure();
+      const processedHtmlsToFinal = await processHtmlsToFinal();
+      l.debug`gen htmls processed htmls to final ${processedHtmlsToFinal}`;
+
+      const ensuredHtmlStructure = await ensureHtmlStructure();
+      l.debug`gen htmls ensured html structure ${ensuredHtmlStructure}`;
+
+      return ['genHtmls','SUCCESS', [ranVue, processedHtmlsToFinal, ensuredHtmlStructure]];
     })(),
-    (async function genOthers() {
-      await cpOthers();
-      await genFavicons();
+    (async function genOthers(): Promise<State> {
+      l.debug`gen others`;
+
+      const cpedOthers = await cpOthers();
+      l.debug`gen others cped others ${cpedOthers}`;
+
+      const genedFavicons = await genFavicons();
+      l.debug`gen others gened favicons ${genedFavicons}`;
+
+      return ['genOthers','SUCCESS', [cpedOthers, genedFavicons]];
     })(),
   ]);
+  l.debug`gen html gened final ${genedFinal}`;
 
   // TODO: Generate alternate post (404) pages
 
-  return 'SUCCESS';
+  return ['genHtml','SUCCESS', [cpedSrc, genedFinal]];
 }

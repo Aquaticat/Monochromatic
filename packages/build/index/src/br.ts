@@ -1,18 +1,20 @@
-import c from '@monochromatic.dev/module-console';
+import { getLogger } from '@logtape/logtape';
 import { path } from '@monochromatic.dev/module-fs-path';
 import { Glob } from 'glob';
 import { mapParallelAsync } from 'rambdax';
-import { $ } from 'zx';
-import {} from './state.ts';
+import $c from './child.ts';
+import type { State } from './state.ts';
 import g from './g.ts';
 
-export default async function brStatic(globCache = g()) {
-  // FIXME: Glob ignore not working?
+const l = getLogger(['build', 'br']);
+
+export default async function brStatic(globCache = g()): Promise<State> {
+  // TODO: Deprecate glob
   const staticFilePaths = [...new Glob('dist/final/**/*.*', globCache)].filter((staticFilePath) =>
-    !staticFilePath.endsWith('.br')
+    !['br', 'map', 'd.ts'].some((dotlessNoCompressExt) => staticFilePath.endsWith(`.${dotlessNoCompressExt}`))
   );
-  c.log('br', ...staticFilePaths);
-  await mapParallelAsync(async function brStatic(staticFilePath) {
-    await $`brotli -f -q 11 ${path.resolve(staticFilePath)}`;
-  }, staticFilePaths);
+  l.debug`br ${staticFilePaths}`;
+  return ['brStatic','SUCCESS', await mapParallelAsync(async function brStatic(staticFilePath) {
+    return (await $c(`brotli -v -s -f -q 11 ${path.resolve(staticFilePath)}`)).stdout;
+  }, staticFilePaths)];
 }
