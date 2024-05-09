@@ -1,0 +1,20 @@
+name: build on host machine
+
+on:
+  - push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@main
+
+      - uses: actions/setup-node@main
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - run: yarn
+      - run: yarn -T -B monochromatic build
+        working-directory: ./packages/theme/subtle
