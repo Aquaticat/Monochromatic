@@ -28,7 +28,9 @@ pnpm-lock.yaml
 .yarn
 bun.lockb
 package-lock.json
-yarn.lock
+
+# So that actions/setup-node can correctly build yarn cache
+#yarn.lock
 
 #region Created by https://www.toptal.com/developers/gitignore/api/node,astro,macos,linux,windows,visualstudiocode,jetbrains
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,astro,macos,linux,windows,visualstudiocode,jetbrains

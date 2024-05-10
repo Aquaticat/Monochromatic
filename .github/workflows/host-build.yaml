@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - run: yarn set version stable
+
       - uses: actions/checkout@main
 
       - name: remove conflicting yarn path
@@ -15,7 +17,7 @@ jobs:
 
       - uses: actions/setup-node@main
         with:
-          node-version: '20'
+          node-version-file: 'package.json'
           cache: 'yarn'
 
       - run: yarn
