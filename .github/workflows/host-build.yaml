@@ -10,7 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@main
 
-      - run: grep -v 'yarnPath:' .yarnrc.yml > .yarnrc.yml
+      - name: remove conflicting yarn path
+        run: echo "$(grep -v '^yarnPath:' .yarnrc.yml)" > .yarnrc.yml
 
       - uses: actions/setup-node@main
         with:
