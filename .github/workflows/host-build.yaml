@@ -10,6 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@main
 
+      - run: grep -v 'yarnPath:' .yarnrc.yml > .yarnrc.yml
+
       - uses: actions/setup-node@main
         with:
           node-version: '20'
