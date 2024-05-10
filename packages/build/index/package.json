@@ -42,6 +42,7 @@
     "@monochromatic.dev/module-pm": "workspace:*",
     "@monochromatic.dev/module-resolve": "workspace:*",
     "@monochromatic.dev/schema-theme-consts": "workspace:*",
+    "@yarnpkg/shell": ">=4.0.2",
     "browserslist": ">=4.23.0",
     "chrono-node": "*",
     "cssnano": ">=6.1.2",

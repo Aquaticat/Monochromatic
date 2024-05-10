@@ -25,7 +25,7 @@ import {
   withFilter,
 } from '@logtape/logtape';
 
-$.prefix += 'source ~/.bashrc && ';
+import { spawn } from 'node:child_process';
 
 import {
   configure,
@@ -91,8 +91,11 @@ if (parsed.command === 'serve') {
 
   /* MAYBE: Replace this with my own implementation?
   Need to figure out how to promisify child_process.exec while preserving its Event Emitter properties. */
-  await $`caddy run -c ./dist/temp/caddy/index.json`
-    .pipe(process.stdout);
+  /*   await $`caddy run -c ./dist/temp/caddy/index.json`
+    .pipe(process.stdout); */
+
+  // TEST: Works?
+  spawn('caddy', ['run', '-c', './dist/temp/caddy/index.json'], { detached: true, stdio: 'ignore' });
 }
 
 if (parsed.command === 'watch') {
