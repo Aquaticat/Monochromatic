@@ -18,13 +18,13 @@ import staticAndCompress from './staticAndCompress.ts';
 
 import $c from './child.ts';
 
+import { $ } from 'zx';
+
 import {
   getLevelFilter,
   getLogger,
   withFilter,
 } from '@logtape/logtape';
-
-import { spawn } from 'node:child_process';
 
 import {
   configure,
@@ -88,13 +88,15 @@ if (parsed.command === 'build') {
 if (parsed.command === 'serve') {
   l.info`serve ${path.resolve()}`;
 
+  l.warn`The serve command is feature-incomplete. For now, the recommended way to serve the dist files is to manually run
+caddy run -c ./dist/temp/caddy/index.json
+in your terminal. We'll start the process anyway.
+`;
+
   /* MAYBE: Replace this with my own implementation?
   Need to figure out how to promisify child_process.exec while preserving its Event Emitter properties. */
-  /*   await $`caddy run -c ./dist/temp/caddy/index.json`
-    .pipe(process.stdout); */
-
-  // TEST: Works?
-  spawn('caddy', ['run', '-c', './dist/temp/caddy/index.json'], { detached: true, stdio: 'ignore' });
+  await $`caddy run -c ./dist/temp/caddy/index.json`
+    .pipe(process.stdout);
 }
 
 if (parsed.command === 'watch') {

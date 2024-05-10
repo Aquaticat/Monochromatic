@@ -1,4 +1,4 @@
-name: build on host machine
+name: test building themes on host machine
 
 on:
   - push
