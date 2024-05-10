@@ -18,21 +18,21 @@ const peMap = new Map([['bun', 'bun run '], ['npm', 'npm exec -- '], ['pnpm', 'p
 ]]);
 
 const myExecP = async (processedCommand: string, defaultedOptions: Parameters<typeof execP>[1]) => {
-      const result: Awaited<ReturnType<typeof execP>> = Object.fromEntries(
-      Object.entries(await execP(`set -euo pipefail && ${processedCommand}`, defaultedOptions)).map((
-        [stdwhat, stdcontent],
-      ) => [stdwhat, Buffer.isBuffer(stdcontent) ? stdcontent : stdcontent.trim()]),
-    ) as Awaited<ReturnType<typeof execP>>;
+  const result: Awaited<ReturnType<typeof execP>> = Object.fromEntries(
+    Object.entries(await execP(processedCommand, defaultedOptions)).map((
+      [stdwhat, stdcontent],
+    ) => [stdwhat, Buffer.isBuffer(stdcontent) ? stdcontent : stdcontent.trim()]),
+  ) as Awaited<ReturnType<typeof execP>>;
 
-    return {
-      ...result,
-      stdoe: Buffer.isBuffer(result.stdout)
-        ? Buffer.isBuffer(result.stderr) ? Buffer.concat([result.stdout, result.stderr]) : result.stdout
-        : Buffer.isBuffer(result.stderr)
-        ? result.stdout
-        : `${result.stdout}\n${result.stderr}`.trim(),
-    };
-}
+  return {
+    ...result,
+    stdoe: Buffer.isBuffer(result.stdout)
+      ? Buffer.isBuffer(result.stderr) ? Buffer.concat([result.stdout, result.stderr]) : result.stdout
+      : Buffer.isBuffer(result.stderr)
+      ? result.stdout
+      : `${result.stdout}\n${result.stderr}`.trim(),
+  };
+};
 
 export default async function $(...args: Parameters<typeof execP>) {
   const passedOptions: ObjectEncodingOptions & ExecOptions = arguments.length === 1
