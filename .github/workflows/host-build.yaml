@@ -8,12 +8,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: yarn set version stable
 
       - uses: actions/checkout@main
 
       - name: remove conflicting yarn path
         run: echo "$(grep -v '^yarnPath:' .yarnrc.yml)" > .yarnrc.yml
+
+      - run: yarn set version stable
 
       - uses: actions/setup-node@main
         with:
