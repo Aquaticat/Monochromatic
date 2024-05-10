@@ -7,7 +7,6 @@ import {
 
 import { z } from 'zod';
 import { parser } from 'zod-opts';
-import { $ } from 'zx';
 
 import { pipedAsync } from 'rambdax';
 

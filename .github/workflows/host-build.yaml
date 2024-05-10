@@ -13,6 +13,9 @@ jobs:
       - name: remove conflicting yarn path
         run: echo "$(grep -v '^yarnPath:' .yarnrc.yml)" > .yarnrc.yml
 
+      - name: remove unnecessary packageManager field in 'package.json'
+        run: echo "$(grep -v '"packageManager":' package.json)" > package.json
+
       - name: setup correct npm dependencies package manager version
         run: yarn set version stable
 

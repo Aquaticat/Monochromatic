@@ -33,9 +33,5 @@
     "typescript": ">=5.4",
     "vue-tsc": "*"
   },
-  "workspaces": [
-    "packages/*/*",
-    ".devcontainer"
-  ],
-  "packageManager": "yarn@4.2.2"
+  "workspaces": ["packages/*/*", ".devcontainer"]
 }
