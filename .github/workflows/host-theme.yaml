@@ -5,6 +5,10 @@ on:
 
 jobs:
   build:
+    defaults:
+      run:
+        shell: bash
+
     runs-on: ubuntu-latest
 
     steps:

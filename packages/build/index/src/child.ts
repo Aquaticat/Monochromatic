@@ -42,7 +42,7 @@ export default async function $(...args: Parameters<typeof execP>) {
     ...passedOptions,
     timeout: passedOptions?.timeout ?? 5000,
     windowsHide: passedOptions?.windowsHide ?? true,
-    shell: passedOptions?.shell || 'bash',
+    shell: passedOptions?.shell || '/usr/bin/bash',
   };
   try {
     await execP(`command -v ${args.at(0)}`);
