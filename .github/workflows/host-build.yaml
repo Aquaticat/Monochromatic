@@ -8,19 +8,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - uses: actions/checkout@main
 
       - name: remove conflicting yarn path
         run: echo "$(grep -v '^yarnPath:' .yarnrc.yml)" > .yarnrc.yml
 
-      - run: yarn set version stable
+      - name: setup correct npm dependencies package manager version
+        run: yarn set version stable
 
-      - uses: actions/setup-node@main
+      - name: setup correct node version and npm dependencies package manager cache
+        uses: actions/setup-node@main
         with:
           node-version-file: 'package.json'
           cache: 'yarn'
 
-      - run: yarn
-      - run: yarn -T -B monochromatic build
+      - name: install npm dependencies
+        run: yarn
+
+      - name: test building subtle theme
+        run: yarn run -T -B monochromatic build
         working-directory: ./packages/theme/subtle
