@@ -8,6 +8,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: install non-npm dependencies
+        run: |
+          sudo apt-get install brotli caddy graphviz imagemagick patch plantuml librsvg2-2 unzip
+
       - uses: actions/checkout@main
 
       - name: remove conflicting yarn path
