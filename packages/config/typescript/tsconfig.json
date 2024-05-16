@@ -1,11 +1,9 @@
 {
-  "include": [
-    "src",
-  ],
+  "include": ["${configDir}/src"],
 
   "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist/final",
+    "rootDir": "${configDir}/src",
+    "outDir": "${configDir}/dist/final",
 
     "strict": true,
     "exactOptionalPropertyTypes": true,
@@ -15,7 +13,7 @@
     "noImplicitReturns": true,
     "noPropertyAccessFromIndexSignature": false,
     "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "noUnusedParameters": true,
 
     //region Modules
@@ -39,8 +37,7 @@
     "emitDeclarationOnly": true,
 
     "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
+    "isolatedDeclarations": true,
 
     "newLine": "lf",
 
@@ -54,9 +51,9 @@
 
     //region JavaScript Support
 
-    "allowJs": true,
-
-    "checkJs": true,
+    // Conflicts with isolatedDeclarations
+    "allowJs": false,
+    "checkJs": false,
 
     //endregion
 

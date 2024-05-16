@@ -2,7 +2,7 @@
 @import 'consts/colors.css';
 @import 'consts/fonts.css';
 @import 'consts/typography.css';
-@import 'apply.css';
+@import 'mixin.css';
 @import 'custom-media.css';
 @import 'global.css';
 @import 'fallback.css';

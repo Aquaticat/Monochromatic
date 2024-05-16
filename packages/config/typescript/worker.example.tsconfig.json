@@ -1,11 +1,8 @@
 {
   "extends": "@monochromatic.dev/config-typescript/worker",
-  "include": ["src"],
   "compilerOptions": {
-    "rootDir": "src",
-    "outDir": "dist/final",
     "paths": {
       "@/*": ["./*"],
     },
-  }
+  },
 }

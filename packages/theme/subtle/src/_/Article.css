@@ -1,5 +1,5 @@
 .Article {
-  @apply --text;
+  @mixin --text;
 
   flex-shrink: 1;
   flex-grow: 999;
@@ -9,6 +9,7 @@
     + :is(p, li, ol, ul, table, blockquote, figure, hr, pre, video, form) {
       margin-block-start: var(--gap-s);
     }
+
     + section {
       margin-block-start: var(--gap-m);
 
@@ -40,6 +41,7 @@
 
   ol {
     list-style-type: decimal-leading-zero;
+
     > li {
       &::marker {
         font-size: 0.8em;
@@ -49,6 +51,7 @@
 
   ul {
     list-style-type: dash;
+
     > li {
       &::marker {
         font-size: 0.8em;
@@ -97,32 +100,38 @@
 
   table {
     inline-size: 100%;
+
     > thead {
       font-weight: bolder;
+
       + tbody {
         border-block-start-style: solid;
         border-block-start-color: var(--subtle-);
         border-block-start-width: 2--rp;
       }
     }
+
     :is(th, td) {
       padding-inline: var(--gap-xs);
+
       + :is(th, td) {
         border-inline-start-style: solid;
         border-inline-start-color: var(--subtle-);
         border-inline-start-width: 2--rp;
       }
     }
+
     > tbody {
       > tr {
         + tr {
-        border-block-start-style: dashed;
-        border-block-start-color: var(--subtle-);
-        border-block-start-width: 2--rp;
+          border-block-start-style: dashed;
+            border-block-start-color: var(--subtle-);
+            border-block-start-width: 2--rp;
         }
       }
     }
   }
+
   hr {
     border-block-color: var(--subtle-);
     border-block-style: solid;

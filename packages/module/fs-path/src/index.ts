@@ -41,7 +41,7 @@ import {
   sep as pathSep,
 } from 'node:path';
 
-import { constants as fsC } from 'node:fs';
+import { constants as fsC, type PathLike } from 'node:fs';
 
 import {
   mapParallelAsync,
@@ -183,10 +183,10 @@ async function fsAccessM(...args: Parameters<typeof fsAccess>): ReturnType<typeo
   return await fsAccess(pathWoSearch);
 }
 
-const fsExists: (...args: Parameters<typeof fsAccessM>) => Promise<boolean> = tryCatchAsync(
-  async function accessTrue(...args: Parameters<typeof fsAccessM>) {
-    await fs.accessM(...args);
-    return true;
+const fsExists: (...args: Parameters<typeof fsAccess>) => Promise<PathLike|false> = tryCatchAsync(
+  async function accessTrue(...args: Parameters<typeof fsAccessM>): Promise<PathLike|false> {
+    await fsAccessM(...args);
+    return args[0];
   },
   false,
 );
@@ -229,6 +229,12 @@ export const fs = Object.freeze({
 
   exists: fsExists,
 
+  existsDir: async (...args: Parameters<typeof fsAccess>): Promise<PathLike | false> =>
+    await fsExists(...args) && (await fsStat(args[0])).isDirectory() && args[0],
+
+  existsFile: async (...args: Parameters<typeof fsAccess>): Promise<PathLike | false> =>
+    await fsExists(...args) && (await fsStat(args[0])).isFile() && args[0],
+
   outputFile: async function fsOutputFile(...args: Parameters<typeof fsWriteFile>) {
     if (typeof args[0] === 'string') {
       try {
@@ -243,6 +249,7 @@ export const fs = Object.freeze({
     await fsWriteFile(...args);
     return args[0];
   },
+
   cpFile: async function fsCpFile(...args: Parameters<typeof fsCopyFile>) {
     if (typeof args[1] === 'string') {
       try {
@@ -257,6 +264,7 @@ export const fs = Object.freeze({
     await fsCopyFile(...args);
     return args[1];
   },
+
   empty: async function fsEmpty(path: string) {
     if ((await fsStat(path)).isFile()) {
       await fsWriteFile(path, '');

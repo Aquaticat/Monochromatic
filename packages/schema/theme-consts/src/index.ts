@@ -106,7 +106,7 @@ const zPost = z
     tags: z.array(z.string()).default([]),
 
     theming: z
-      .object({ color: z.string(), shiki: z.object({ light: z.string(), dark: z.string() }) }),
+      .object({ color: z.string() }),
 
     title: z.string(),
   })
@@ -370,7 +370,7 @@ const zPost = z
       tags: z.array(z.string()),
 
       theming: z
-        .object({ color: z.string(), shiki: z.object({ light: z.string(), dark: z.string() }).readonly() })
+        .object({ color: z.string() })
         .readonly(),
 
       title: z.string(),

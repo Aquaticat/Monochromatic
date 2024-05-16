@@ -23,6 +23,7 @@
     "zod": "*"
   },
   "devDependencies": {
+    "@logtape/logtape": ">=0.4.0",
     "@mdx-js/vue": "*",
     "@monochromatic.dev/config-typescript": "workspace:*",
     "@monochromatic.dev/schema-theme-consts": "workspace:*",

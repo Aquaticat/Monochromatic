@@ -2,9 +2,9 @@
   "extends": "@monochromatic.dev/config-typescript/worker",
   "compilerOptions": {
     "lib": ["ESNext", "DOM", "WebWorker"],
-    "allowArbitraryExtensions": true,
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
     "types": ["node", "vite/client", "mdx", "@monochromatic.dev/schema-theme-consts/toml"],
+
+    // Doesn't work with .vue yet.
+    "isolatedDeclarations": false,
   },
 }

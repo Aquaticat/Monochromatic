@@ -1,8 +1,8 @@
 {
   "folders": [
     {
-      "path": "."
-    }
+      "path": ".",
+    },
   ],
   "settings": {
     "dprint.experimentalLsp": true,
@@ -14,9 +14,6 @@
       "editor.defaultFormatter": "dprint.dprint"
     },
     "[vue]": {
-      "editor.defaultFormatter": "dprint.dprint"
-    },
-    "[css]": {
       "editor.defaultFormatter": "dprint.dprint"
     },
     "[html]": {
@@ -61,6 +58,9 @@
     "[jsonc]": {
       "editor.defaultFormatter": "biomejs.biome"
     },
+    "[css]": {
+      "editor.defaultFormatter": "vscode.css-language-features"
+    },
     "todo-tree.general.enableFileWatcher": true,
     "todo-tree.general.revealBehaviour": "end of todo",
     "todo-tree.general.tags": [
@@ -77,7 +77,7 @@
       "INVALID",
       "WONTFIX",
       "UPDATE",
-      "DOING"
+      "DOING",
     ],
     "todo-tree.filtering.ignoreGitSubmodules": true,
     "todo-tree.regex.enableMultiLine": true,
@@ -92,5 +92,21 @@
     "typescript.enablePromptUseWorkspaceTsdk": true,
     "biome.lspBin": "yarn exec biome",
     "dprint.path": ".yarn/unplugged/dprint-npm-0.45.1-c7e3a6f9b2/node_modules/dprint/bin.js"
-  }
+  },
+  "extensions": {
+    "recommendations": [
+      "biomejs.biome",
+      "EditorConfig.EditorConfig",
+      "tamasfe.even-better-toml",
+      "unifiedjs.vscode-mdx",
+      "ms-playwright.playwright",
+      "redhat.vscode-yaml",
+      "dprint.dprint",
+      "ms-vscode-remote.remote-containers",
+      "gruntfuggly.todo-tree",
+      "vue.volar",
+      "ms-azuretools.vscode-docker",
+      "arcanis.vscode-zipfs"
+    ],
+  },
 }

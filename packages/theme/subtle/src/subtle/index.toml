@@ -15,8 +15,6 @@ url = 'https://aquati.cat'
 
 [theming]
 color = '#966783'
-shiki.light = 'github-light'
-shiki.dark = 'github-dark'
 
 [socials]
 'RSS Feed' = 'https://aquati.cat/rss'

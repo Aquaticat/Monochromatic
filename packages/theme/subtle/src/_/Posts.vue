@@ -27,11 +27,14 @@ const fms: {
   tags: string[];
   lang: string;
   isPost: boolean;
+  is404: boolean;
 }[] = inject('frontmatters')!;
 
-const fm: {lang: string} = inject('frontmatter')!;
+const fm: { lang: string; } = inject('frontmatter')!;
 
-const fmsMatchedLang = fms.filter((potentialFmMatchedLang) => potentialFmMatchedLang.lang === fm.lang && potentialFmMatchedLang.isPost);
+const fmsMatchedLang = fms.filter((potentialFmMatchedLang) =>
+  potentialFmMatchedLang.lang === fm.lang && !potentialFmMatchedLang.is404 && potentialFmMatchedLang.isPost
+);
 </script>
 
 <template>

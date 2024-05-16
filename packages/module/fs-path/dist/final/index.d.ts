@@ -8,7 +8,7 @@
 /// <reference types="node" />
 import { access as fsAccess, appendFile as fsAppendFile, chmod as fsChmod, chown as fsChown, copyFile as fsCopyFile, cp as fsCp, lchown as fsLchown, link as fsLink, lstat as fsLstat, lutimes as fsLutimes, mkdir as fsMkdir, mkdtemp as fsMkdtemp, opendir as fsOpendir, readdir as fsReaddir, readlink as fsReadlink, realpath as fsRealpath, rename as fsRename, rm as fsRm, stat as fsStat, statfs as fsStatfs, symlink as fsSymlink, truncate as fsTruncate, unlink as fsUnlink, utimes as fsUtimes, writeFile as fsWriteFile } from 'node:fs/promises';
 import { type ParsedPath } from 'node:path';
-import { constants as fsC } from 'node:fs';
+import { constants as fsC, type PathLike } from 'node:fs';
 export declare const path: Readonly<{
     isAbsolute: (path: string) => boolean;
     resolve: (...paths: string[]) => string;
@@ -112,13 +112,15 @@ export declare const fs: Readonly<{
     readFileMU: (path: string) => ReturnType<typeof fsReadFileU>;
     stat: typeof fsStat;
     accessM: typeof fsAccessM;
-    exists: (path: import("fs").PathLike, mode?: number | undefined) => Promise<boolean>;
-    outputFile: (file: import("fs").PathLike | import("fs/promises").FileHandle, data: string | NodeJS.ArrayBufferView | Iterable<string | NodeJS.ArrayBufferView> | AsyncIterable<string | NodeJS.ArrayBufferView> | import("stream").Stream, options?: BufferEncoding | (import("fs").ObjectEncodingOptions & {
+    exists: (path: PathLike, mode?: number | undefined) => Promise<PathLike | false>;
+    existsDir: (path: PathLike, mode?: number | undefined) => Promise<PathLike | false>;
+    existsFile: (path: PathLike, mode?: number | undefined) => Promise<PathLike | false>;
+    outputFile: (file: PathLike | import("fs/promises").FileHandle, data: string | NodeJS.ArrayBufferView | Iterable<string | NodeJS.ArrayBufferView> | AsyncIterable<string | NodeJS.ArrayBufferView> | import("stream").Stream, options?: BufferEncoding | (import("fs").ObjectEncodingOptions & {
         mode?: import("fs").Mode | undefined;
         flag?: import("fs").OpenMode | undefined;
         flush?: boolean | undefined;
-    } & import("events").Abortable) | null | undefined) => Promise<import("fs").PathLike | import("fs/promises").FileHandle>;
-    cpFile: (src: import("fs").PathLike, dest: import("fs").PathLike, mode?: number | undefined) => Promise<import("fs").PathLike>;
+    } & import("events").Abortable) | null | undefined) => Promise<PathLike | import("fs/promises").FileHandle>;
+    cpFile: (src: PathLike, dest: PathLike, mode?: number | undefined) => Promise<PathLike>;
     empty: (path: string) => Promise<void>;
 }>;
 export {};

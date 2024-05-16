@@ -36,4 +36,3 @@ type __VLS_TypePropsToOption<T> = {
         required: true;
     };
 };
-//# sourceMappingURL=Post.vue.d.ts.map

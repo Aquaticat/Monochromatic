@@ -27,6 +27,7 @@
     --subtle-plus: var(--subtle-lighter);
     --subtle-: var(--subtle-darker);
   }
+
   --p: calc(1 / 16);
   --rp: calc(1rem / 16);
   --ep: calc(1em / 16);
@@ -37,6 +38,7 @@
     --xp: calc(1ex / 16);
     --cp: calc(1ch / 16);
   }
+
   --length-xxs: 16--rp;
   --length-xs: 24--rp;
   --length-s: 32--rp;
@@ -95,11 +97,14 @@
 html {
   background-color: var(--bg);
   scrollbar-color: var(--subtle-) var(--bg);
+
   &:has(#search:popover-open) {
     scrollbar-gutter: stable;
+
     @supports (overflow-block: clip) {
       overflow-block: clip;
     }
+
     @supports not (overflow-block: clip) {
       overflow-y: clip;
     }
@@ -115,18 +120,20 @@ body {
 }
 
 :is(summary, button, a):not(p a) {
-  @apply --touch-target;
+  @mixin --touch-target;
 }
 
 article {
-  @apply --text;
+  @mixin --text;
 }
 
 a:not(:has(h2)) {
   color: var(--primary);
+
   &:visited {
     color: var(--primary-);
   }
+
   &:hover {
     background-image: radial-gradient(var(--bg-plus), transparent);
     color: var(--primary-plus);
@@ -134,7 +141,7 @@ a:not(:has(h2)) {
 }
 
 p {
-  @apply --p;
+  @mixin --p;
 }
 
 :is(h1, h2, h3, h4, h5, h6) {
@@ -142,27 +149,27 @@ p {
 }
 
 h1 {
-  @apply --h1;
+  @mixin --h1;
 }
 
 h2:not(.a h2) {
-  @apply --h2;
+  @mixin --h2;
 }
 
 h3 {
-  @apply --h3;
+  @mixin --h3;
 }
 
 h4 {
-  @apply --h4;
+  @mixin --h4;
 }
 
 h5 {
-  @apply --h5;
+  @mixin --h5;
 }
 
 h6 {
-  @apply --h6;
+  @mixin --h6;
 }
 
 img {

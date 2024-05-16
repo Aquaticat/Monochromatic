@@ -1,5 +1,5 @@
 import { z } from 'zod';
-
+export declare const zChronoDate: z.ZodEffects<z.ZodDate, Date, unknown>;
 export declare const zAuthor: z.ZodObject<{
     name: z.ZodString;
     url: z.ZodString;
@@ -10,7 +10,6 @@ export declare const zAuthor: z.ZodObject<{
     name: string;
     url: string;
 }>;
-
 export declare const zBlame: z.ZodPipeline<z.ZodObject<{
     date: z.ZodEffects<z.ZodDate, Date, unknown>;
     author: z.ZodObject<{
@@ -60,7 +59,6 @@ export declare const zBlame: z.ZodPipeline<z.ZodObject<{
         url: string;
     };
 }>>;
-
 export declare const zBlames: z.ZodPipeline<z.ZodArray<z.ZodPipeline<z.ZodObject<{
     date: z.ZodEffects<z.ZodDate, Date, unknown>;
     author: z.ZodObject<{
@@ -134,9 +132,6 @@ export declare const zBlames: z.ZodPipeline<z.ZodArray<z.ZodPipeline<z.ZodObject
         url: string;
     };
 }>, "atleastone">>;
-
-export declare const zChronoDate: z.ZodEffects<z.ZodDate, Date, unknown>;
-
 declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodObject<{
     path: z.ZodObject<{
         dir: z.ZodString;
@@ -194,28 +189,10 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     tags: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
     theming: z.ZodObject<{
         color: z.ZodString;
-        shiki: z.ZodObject<{
-            light: z.ZodString;
-            dark: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            light: string;
-            dark: string;
-        }, {
-            light: string;
-            dark: string;
-        }>;
     }, "strip", z.ZodTypeAny, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }>;
     title: z.ZodString;
 }, "passthrough", z.ZodTypeAny, z.objectOutputType<{
@@ -275,28 +252,10 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     tags: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
     theming: z.ZodObject<{
         color: z.ZodString;
-        shiki: z.ZodObject<{
-            light: z.ZodString;
-            dark: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            light: string;
-            dark: string;
-        }, {
-            light: string;
-            dark: string;
-        }>;
     }, "strip", z.ZodTypeAny, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }>;
     title: z.ZodString;
 }, z.ZodTypeAny, "passthrough">, z.objectInputType<{
@@ -356,28 +315,10 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     tags: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
     theming: z.ZodObject<{
         color: z.ZodString;
-        shiki: z.ZodObject<{
-            light: z.ZodString;
-            dark: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            light: string;
-            dark: string;
-        }, {
-            light: string;
-            dark: string;
-        }>;
     }, "strip", z.ZodTypeAny, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }>;
     title: z.ZodString;
 }, z.ZodTypeAny, "passthrough">>, {
@@ -432,10 +373,6 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     tags: string[];
     theming: {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     };
     title: string;
     isPost?: boolean | undefined;
@@ -496,28 +433,10 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     tags: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
     theming: z.ZodObject<{
         color: z.ZodString;
-        shiki: z.ZodObject<{
-            light: z.ZodString;
-            dark: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            light: string;
-            dark: string;
-        }, {
-            light: string;
-            dark: string;
-        }>;
     }, "strip", z.ZodTypeAny, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }>;
     title: z.ZodString;
 }, z.ZodTypeAny, "passthrough">>, {
@@ -581,10 +500,6 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     tags: string[];
     theming: {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     };
     title: string;
 }, z.objectInputType<{
@@ -644,28 +559,10 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     tags: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
     theming: z.ZodObject<{
         color: z.ZodString;
-        shiki: z.ZodObject<{
-            light: z.ZodString;
-            dark: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            light: string;
-            dark: string;
-        }, {
-            light: string;
-            dark: string;
-        }>;
     }, "strip", z.ZodTypeAny, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }>;
     title: z.ZodString;
 }, z.ZodTypeAny, "passthrough">>, {
@@ -731,10 +628,6 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     tags: string[];
     theming: {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     };
     title: string;
 }, z.objectInputType<{
@@ -794,28 +687,10 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     tags: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
     theming: z.ZodObject<{
         color: z.ZodString;
-        shiki: z.ZodObject<{
-            light: z.ZodString;
-            dark: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            light: string;
-            dark: string;
-        }, {
-            light: string;
-            dark: string;
-        }>;
     }, "strip", z.ZodTypeAny, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }>;
     title: z.ZodString;
 }, z.ZodTypeAny, "passthrough">>, {
@@ -882,10 +757,6 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     tags: string[];
     theming: {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     };
     title: string;
 }, z.objectInputType<{
@@ -945,28 +816,10 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     tags: z.ZodDefault<z.ZodArray<z.ZodString, "many">>;
     theming: z.ZodObject<{
         color: z.ZodString;
-        shiki: z.ZodObject<{
-            light: z.ZodString;
-            dark: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            light: string;
-            dark: string;
-        }, {
-            light: string;
-            dark: string;
-        }>;
     }, "strip", z.ZodTypeAny, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }>;
     title: z.ZodString;
 }, z.ZodTypeAny, "passthrough">>, z.ZodObject<{
@@ -1041,10 +894,10 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
         }>;
     }, {
         date: Date;
-        author: {
+        author: Readonly<{
             name: string;
             url: string;
-        };
+        }>;
     }>, "atleastone">>;
     slashSiteBase: z.ZodString;
     slashSiteBaseWSlash: z.ZodString;
@@ -1062,28 +915,10 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     tags: z.ZodArray<z.ZodString, "many">;
     theming: z.ZodReadonly<z.ZodObject<{
         color: z.ZodString;
-        shiki: z.ZodReadonly<z.ZodObject<{
-            light: z.ZodString;
-            dark: z.ZodString;
-        }, "strip", z.ZodTypeAny, {
-            light: string;
-            dark: string;
-        }, {
-            light: string;
-            dark: string;
-        }>>;
     }, "strip", z.ZodTypeAny, {
         color: string;
-        shiki: Readonly<{
-            light: string;
-            dark: string;
-        }>;
     }, {
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
     }>>;
     title: z.ZodString;
     updated: z.ZodReadonly<z.ZodArray<z.ZodObject<{
@@ -1106,10 +941,10 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
         }>;
     }, {
         date: Date;
-        author: {
+        author: Readonly<{
             name: string;
             url: string;
-        };
+        }>;
     }>, "atleastone">>;
 }, "strip", z.ZodTypeAny, {
     path: Readonly<{
@@ -1165,10 +1000,6 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     tags: string[];
     theming: Readonly<{
         color: string;
-        shiki: Readonly<{
-            light: string;
-            dark: string;
-        }>;
     }>;
     title: string;
     defaultLang: string;
@@ -1194,14 +1025,14 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     slashSiteBaseWLang: string;
     slashSiteBaseWLangWSlash: string;
 }, {
-    path: {
+    path: Readonly<{
         name: string;
         dir: string;
-    };
-    author: {
+    }>;
+    author: Readonly<{
         name: string;
         url: string;
-    };
+    }>;
     pkgJsonAbsPath: string;
     earliest: Date;
     isHome: boolean;
@@ -1210,48 +1041,44 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     isPost: boolean;
     lang: string;
     latest: Date;
-    license: {
+    license: Readonly<{
         name: string;
         url: string;
-    };
-    links: Map<string, string>;
-    updated: [{
+    }>;
+    links: ReadonlyMap<string, string>;
+    updated: readonly [{
         date: Date;
-        author: {
+        author: Readonly<{
             name: string;
             url: string;
-        };
+        }>;
     }, ...{
         date: Date;
-        author: {
+        author: Readonly<{
             name: string;
             url: string;
-        };
+        }>;
     }[]];
-    published: [{
+    published: readonly [{
         date: Date;
-        author: {
+        author: Readonly<{
             name: string;
             url: string;
-        };
+        }>;
     }, ...{
         date: Date;
-        author: {
+        author: Readonly<{
             name: string;
             url: string;
-        };
+        }>;
     }[]];
     site: string;
     siteTitle: string;
-    socials: Map<string, string>;
+    socials: ReadonlyMap<string, string>;
     tags: string[];
-    theming: {
+    theming: Readonly<{
         color: string;
-        shiki: {
-            light: string;
-            dark: string;
-        };
-    };
+    }>;
     title: string;
     defaultLang: string;
     description: string;
@@ -1277,5 +1104,4 @@ declare const zPost: z.ZodPipeline<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodE
     slashSiteBaseWLangWSlash: string;
 }>>;
 export default zPost;
-
-export { }
+//# sourceMappingURL=index.d.ts.map

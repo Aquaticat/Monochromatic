@@ -6,7 +6,7 @@ main {
   > div {
     margin-inline: auto;
     max-inline-size: var(--max-ui);
-    @apply --flex-center-start;
+    @mixin --flex-center-start;
     align-content: space-around;
     column-gap: var(--gap-l);
     row-gap: var(--gap-l);

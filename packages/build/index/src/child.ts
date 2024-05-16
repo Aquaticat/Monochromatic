@@ -1,5 +1,6 @@
 // TODO: Make this into a dedicated package.
 
+import { getLogger } from '@logtape/logtape';
 import { path } from '@monochromatic.dev/module-fs-path';
 import pm from '@monochromatic.dev/module-pm';
 import { Buffer } from 'node:buffer';
@@ -9,8 +10,9 @@ import {
 } from 'node:child_process';
 import type { ObjectEncodingOptions } from 'node:fs';
 import { promisify } from 'node:util';
+const l = getLogger(['app', 'child']);
 
-const execP = promisify(exec);
+const execP: typeof exec.__promisify__ = promisify(exec);
 
 const peMap = new Map([['bun', 'bun run '], ['npm', 'npm exec -- '], ['pnpm', 'pnpm exec '], [
   'yarn',
@@ -34,7 +36,21 @@ const myExecP = async (processedCommand: string, defaultedOptions: Parameters<ty
   };
 };
 
-export default async function $(...args: Parameters<typeof execP>) {
+const commandExists = async (command: string): Promise<boolean> => {
+  try {
+    await execP(`command -v ${command}`);
+    return true;
+  } catch {}
+  l.warn`command ${command} doesn't exist`;
+  return false;
+};
+
+export default async function (...args: Parameters<typeof execP>): Promise<{
+  stdoe: string | Buffer;
+  stdout: string | Buffer;
+  stderr: string | Buffer;
+}> {
+  const command = args[0];
   const passedOptions: ObjectEncodingOptions & ExecOptions = arguments.length === 1
     ? {}
     : args[1] || {};
@@ -44,16 +60,16 @@ export default async function $(...args: Parameters<typeof execP>) {
     windowsHide: passedOptions?.windowsHide ?? true,
     shell: passedOptions?.shell || '/usr/bin/bash',
   };
-  try {
-    await execP(`command -v ${args.at(0)}`);
-    return await myExecP(args[0], defaultedOptions);
-  } catch {
+  if (await commandExists(command)) {
+    return await myExecP(command, defaultedOptions);
   }
+  l.info`trying \${pe} ${command}`;
+
   const { packageManager } = await pm(passedOptions?.cwd ? path.resolve(String(passedOptions.cwd)) : path.resolve());
 
-  return await myExecP(`${peMap.get(packageManager)} ${args.at(0)}`, defaultedOptions);
+  return await myExecP(`${peMap.get(packageManager)} ${command}`, defaultedOptions);
 }
 
 // TODO: Actually migrate to this.
 
-export const js = JSON.stringify;
+export const js: typeof JSON.stringify = JSON.stringify;

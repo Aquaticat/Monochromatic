@@ -31,5 +31,6 @@
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "esbuild-plugin/toml"
-  }
+  },
+  "sideEffects": false
 }

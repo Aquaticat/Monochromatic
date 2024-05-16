@@ -20,12 +20,13 @@ const fms: {
   isLinks: boolean;
   isPost: boolean;
   lang: string;
+  is404: boolean;
 }[] = inject('frontmatters')!;
 
 const uniqueTags: ReadonlySet<string> = new Set(fms.flatMap((fm) => fm.tags));
 
 const tagPost = new Map(
-  Array.from(uniqueTags).map((tag) => [tag, fms.filter((fm) => fm.isPost && fm.tags.includes(tag))]),
+  Array.from(uniqueTags).map((tag) => [tag, fms.filter((fm) => !fm.is404 && fm.isPost && fm.tags.includes(tag))]),
 );
 
 const searchPlaceholder = new Map([['en', 'Search keyword, topic, or text'], ['zh', '搜索关键词，话题，或文段']]);

@@ -10,6 +10,7 @@ type Summary =
   | PathLike
   | FileHandle
   | undefined
+  | false
   | Summary[];
 
 export type State =

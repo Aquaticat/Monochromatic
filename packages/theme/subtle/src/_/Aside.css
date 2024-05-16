@@ -1,5 +1,5 @@
 .Aside {
-  @apply --text;
+  @mixin --text;
   flex-grow: 1;
   flex-basis: min-content;
 

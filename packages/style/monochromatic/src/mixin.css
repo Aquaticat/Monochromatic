@@ -1,0 +1,123 @@
+/* From https://css-tricks.com/inclusively-hidden/
+   Note that since I'm using this class as a pure composition class :not(:focus) and :not(:active) needs to be accounted for everywhere it's used.
+ */
+@define-mixin --sr-only {
+  clip: rect(0 0 0 0);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+@define-mixin --touch-target {
+  min-inline-size: var(--length-m);
+  min-block-size: var(--length-m);
+  cursor: pointer;
+}
+
+@define-mixin --flex-center {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+@define-mixin --flex-center-start {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+@define-mixin --flex-start-center {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+@define-mixin --flex-start {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+@define-mixin --flex-between-center {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+@define-mixin --text {
+  min-inline-size: var(--min-text);
+  max-inline-size: var(--max-text);
+}
+
+@define-mixin --text {
+  min-inline-size: var(--min-text);
+  max-inline-size: var(--max-text);
+}
+
+@define-mixin --p {
+  line-height: 1.5;
+  text-wrap: pretty;
+  hyphens: auto;
+}
+
+@define-mixin --h1 {
+  font-weight: 900;
+  font-size: calc(var(--h1) * var(--rp));
+  line-height: calc(1 - pow(var(--type-scaler), var(--h1) - 16) / var(--h1));
+  letter-spacing: calc(-0.01--cp * pow(var(--type-scaler), var(--h1) - 16));
+  text-align: center;
+  text-wrap: balance;
+  contain: layout;
+  /* When line-height is smaller than the typeface's actual height and contain: paint, may appear cutoff */
+  margin-block-start: var(--gap-xs);
+}
+
+@define-mixin --h2 {
+  font-weight: bold;
+  font-size: calc(var(--h2) * var(--rp));
+  text-align: center;
+}
+
+@define-mixin --h3 {
+  font-weight: bold;
+  font-size: calc(var(--h3) * var(--rp));
+}
+
+@define-mixin --h4 {
+  font-weight: bold;
+  font-size: calc(var(--h4) * var(--rp));
+}
+
+@define-mixin --h5 {
+  font-weight: bold;
+  font-size: calc(var(--h5) * var(--rp));
+  line-height: calc(1.5 * 16 / var(--h5));
+}
+
+@define-mixin --h6 {
+  font-weight: bold;
+  font-size: calc(var(--h6) * var(--rp));
+  line-height: calc(1.5 * 16 / var(--h6));
+}
+
+/* Text style suitable for button labels and the like */
+@define-mixin --button-text {
+  font-weight: bolder;
+  font-size: calc(var(--h6) * var(--rp));
+  line-height: calc(1.5 * 16 / var(--h6));
+  text-decoration: none;
+  text-transform: uppercase;
+}

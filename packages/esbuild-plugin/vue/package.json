@@ -35,5 +35,6 @@
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "esbuild-plugin/vue"
-  }
+  },
+  "sideEffects": false
 }

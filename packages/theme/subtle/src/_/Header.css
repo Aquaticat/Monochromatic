@@ -16,11 +16,11 @@ header {
 
     a {
       display: inline-block;
-      @apply --touch-target;
+      @mixin --touch-target;
     }
 
     > a {
-      @apply --flex-center;
+      @mixin --flex-center;
 
       > img {
         &[alt='avatar'] {
@@ -35,11 +35,11 @@ header {
     }
 
     > nav {
-      @apply --flex-center;
+      @mixin --flex-center;
       column-gap: var(--gap-s);
 
       > button {
-        @apply --flex-center;
+        @mixin --flex-center;
 
         > svg {
           color: var(--primary);
@@ -47,17 +47,17 @@ header {
       }
 
       > a {
-        @apply --button-text;
-
-        @apply --flex-center;
+        @mixin --button-text;
+        @mixin --flex-center;
       }
     }
   }
 }
+
 #search {
   input[name="q"] {
-    @apply --touch-target;
-    @apply --text;
+    @mixin --touch-target;
+    @mixin --text;
     text-align: center;
     font-size: 18--rp;
 
@@ -78,8 +78,9 @@ header {
     block-size: fit-content;
 
     form {
-      @apply --flex-center;
+      @mixin --flex-center;
     }
+
     input[name="q"] {
       border-radius: 8--rp;
       font-size: 2em;
@@ -95,7 +96,7 @@ header {
     }
 
     .Header__tags {
-      @apply --flex-center;
+      @mixin --flex-center;
       column-gap: var(--gap-m);
       row-gap: var(--gap-l);
       max-inline-size: var(--max-ui);
@@ -110,10 +111,11 @@ header {
         > .Posts {
           max-inline-size: var(--max-ui);
         }
+
         > summary {
-          @apply --flex-center;
-          @apply --touch-target;
-          @apply --h5;
+          @mixin --flex-center;
+          @mixin --touch-target;
+          @mixin --h5;
           color: var(--primary);
 
           > span {

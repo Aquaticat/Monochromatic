@@ -29,5 +29,6 @@
   },
   "exports": {
     ".": "./index.jsonc"
-  }
+  },
+  "preferUnplugged": true
 }

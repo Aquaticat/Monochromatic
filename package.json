@@ -30,8 +30,27 @@
     "@monochromatic.dev/config-biome": "workspace:*",
     "@monochromatic.dev/config-dprint": "workspace:*",
     "dprint": ">=0.45.1",
-    "typescript": ">=5.4",
+    "typescript": ">=5.5.0-beta",
     "vue-tsc": "*"
   },
-  "workspaces": ["packages/*/*", ".devcontainer"]
+  "workspaces": [
+    "packages/*/*",
+    ".devcontainer"
+  ],
+  "os": [
+    "linux",
+    "darwin",
+    "win32",
+    "current"
+  ],
+  "cpu": [
+    "x64",
+    "arm64",
+    "current"
+  ],
+  "libc": [
+    "glibc",
+    "musl",
+    "current"
+  ]
 }

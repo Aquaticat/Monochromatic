@@ -12,4 +12,3 @@ type __VLS_TypePropsToOption<T> = {
         required: true;
     };
 };
-//# sourceMappingURL=PrettyDate.vue.d.ts.map

@@ -8,7 +8,10 @@ import { findUp } from 'find-up';
 import JSONC from 'jsonc-simple-parser';
 import { minimatch } from 'minimatch';
 import { homedir } from 'node:os';
-import { pipedAsync } from 'rambdax';
+import {
+  findAsync,
+  pipedAsync,
+} from 'rambdax';
 import $c from './child.ts';
 const l = getLogger(['module', 'resolve']);
 
@@ -44,13 +47,13 @@ export const packageIdentifierSplitter = {
         if (terminatingSlashPos === -1) {
           return [str, ''];
         }
-        return [str.slice(0, terminatingSlashPos), str.slice(terminatingSlashPos)];
+        return [str.slice(0, terminatingSlashPos), str.slice(terminatingSlashPos + 1)];
       }
       throw new TypeError(`${str} is not a valid package identifier, scoped packages must contain a slash.`);
     }
     const terminatingSlashPos = str.indexOf('/');
     if (terminatingSlashPos >= 1) {
-      return [str.slice(0, terminatingSlashPos), str.slice(terminatingSlashPos)];
+      return [str.slice(0, terminatingSlashPos), str.slice(terminatingSlashPos + 1)];
     }
     return [str, ''];
   },
@@ -137,9 +140,11 @@ export const packageFilePath = async (
         return path.join(pkgPath, matchingDotSlashExport.default);
       }
     }
-    throw new TypeError(
-      `could not find matching exporter in package ${pkgPath}, for ${pkg}/${identifier}, tried exports[${identifier}], exports[./${identifier}] *  , import, default`,
-    );
+    l
+      .info`could not find matching exporter in package ${pkgPath}, for ${pkg}/${identifier},
+      tried exports[${identifier}], exports[./${identifier}] *  , import, default,
+      trying resolving identifier as speficier with pkgPath/package.json as from`;
+    return await resolve(identifier, `${pkgPath}/package.json`);
   }
 
   if (pkgJson.exports) {
@@ -170,7 +175,7 @@ export const packageFilePath = async (
   if (pkgJson.main) {
     return path.join(pkgPath, pkgJson.main);
   }
-  throw new TypeError(
+  throw new Error(
     `could not find matching exporter in package ${pkgPath}, for ${pkg}, tried (exports['.'], exports['./'] *  , import, default), module, main`,
   );
 };
@@ -302,7 +307,7 @@ export default async function resolve(
   }
 
   const pkgJsonAbsPath =
-    (await path.parseFs((await findUp('package.json', { cwd: (await path.parseFs(from)).dir }))!)).dir;
+    (await path.parseFs((await findUp('package.json', { cwd: (await path.parseFs(from)).currentAbsDir }))!)).dir;
 
   if (specifier.startsWith('/')) {
     return path.join(pkgJsonAbsPath, specifier.slice('/'.length));
@@ -313,12 +318,28 @@ export default async function resolve(
   }
 
   const file = path.join(absFrom, '..', specifier);
-  try {
-    await fs.accessM(file);
-    return file;
-  } catch (e) {
-    l.debug`no file found ${e}`;
+
+  for (
+    const implicitFileExtension of [
+      '',
+      '.mts',
+      '.ts',
+      '.mjs',
+      '.js',
+      '.json',
+      '/index.mts',
+      '/index.ts',
+      '/index.mjs',
+      '/index.js',
+      '/index.json',
+    ]
+  ) {
+    const fileAbsPath = await fs.existsFile(`${file}${implicitFileExtension}`);
+    if (fileAbsPath) {
+      return String(fileAbsPath);
+    }
   }
+  l.debug`no file found`;
 
   try {
     return await tsconfigAliasedPath(specifier, absFrom, pkgJsonAbsPath);
