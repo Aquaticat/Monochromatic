@@ -7,7 +7,7 @@ import {
 
 export default async (): Promise<State> => {
   if (!(await fs.existsFile(path.join('dist', 'temp', 'server', 'localhost.pem')))) {
-    await fs.outputFile(path.join('dist', 'server', '.tmp'), '');
+    await fs.mkdir(path.join('dist', 'temp', 'server'), { recursive: true });
 
     const { stdoe: genedCert } = await $c(
       [
