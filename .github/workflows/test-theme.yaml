@@ -19,7 +19,7 @@ jobs:
       - uses: cargo-bins/cargo-binstall@main
 
       - name: install non-npm dependency static web server
-        run: cargo binstall static-web-server
+        run: cargo binstall --no-confirm static-web-server
 
       - name: install other non-npm dependencies
         run: |
@@ -62,7 +62,7 @@ jobs:
       - uses: cargo-bins/cargo-binstall@main
 
       - name: install non-npm dependency static web server
-        run: cargo binstall static-web-server
+        run: cargo binstall --no-confirm static-web-server
 
       - name: install non-npm dependency rsvg-convert
         run: |
