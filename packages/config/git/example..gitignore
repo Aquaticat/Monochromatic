@@ -30,6 +30,7 @@ pnpm-lock.yaml
 bun.lockb
 package-lock.json
 yarn.lock
+*.tmp
 
 #region Created by https://www.toptal.com/developers/gitignore/api/node,astro,macos,linux,windows,visualstudiocode,jetbrains
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,astro,macos,linux,windows,visualstudiocode,jetbrains

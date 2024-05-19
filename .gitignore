@@ -29,6 +29,7 @@ pnpm-lock.yaml
 .yarn
 bun.lockb
 package-lock.json
+*.tmp
 
 # So that actions/setup-node can correctly build yarn cache
 #yarn.lock
