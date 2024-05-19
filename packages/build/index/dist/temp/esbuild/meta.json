@@ -1,12 +1,12 @@
 {
   "inputs": {
     "src/dev.ts": {
-      "bytes": 459,
+      "bytes": 468,
       "imports": [],
       "format": "esm"
     },
     "src/child.ts": {
-      "bytes": 2332,
+      "bytes": 2475,
       "imports": [
         {
           "path": "@logtape/logtape",
@@ -47,12 +47,12 @@
       "format": "esm"
     },
     "src/_/external.ts": {
-      "bytes": 3344,
+      "bytes": 3478,
       "imports": [],
       "format": "esm"
     },
     "src/_/esbuildOptions.ts": {
-      "bytes": 5188,
+      "bytes": 5360,
       "imports": [
         {
           "path": "src/child.ts",
@@ -213,7 +213,7 @@
       "format": "esm"
     },
     "src/consts.ts": {
-      "bytes": 5485,
+      "bytes": 5860,
       "imports": [
         {
           "path": "@logtape/logtape",
@@ -299,9 +299,35 @@
       ],
       "format": "esm"
     },
-    "src/_/_/br.ts": {
-      "bytes": 2166,
+    "src/partitionArrAsync.ts": {
+      "bytes": 358,
       "imports": [
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/_/_/compress.ts": {
+      "bytes": 2698,
+      "imports": [
+        {
+          "path": "src/child.ts",
+          "kind": "import-statement",
+          "original": "@/src/child.ts"
+        },
+        {
+          "path": "src/consts.ts",
+          "kind": "import-statement",
+          "original": "@/src/consts"
+        },
+        {
+          "path": "src/partitionArrAsync.ts",
+          "kind": "import-statement",
+          "original": "@/src/partitionArrAsync.ts"
+        },
         {
           "path": "@logtape/logtape",
           "kind": "import-statement",
@@ -309,11 +335,6 @@
         },
         {
           "path": "@monochromatic.dev/module-fs-path",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "glob",
           "kind": "import-statement",
           "external": true
         },
@@ -328,16 +349,6 @@
           "external": true
         },
         {
-          "path": "src/child.ts",
-          "kind": "import-statement",
-          "original": "@/src/child.ts"
-        },
-        {
-          "path": "src/consts.ts",
-          "kind": "import-statement",
-          "original": "@/src/consts.js"
-        },
-        {
           "path": "<runtime>",
           "kind": "import-statement",
           "external": true
@@ -345,9 +356,14 @@
       ],
       "format": "esm"
     },
-    "src/_/_/caddy.ts": {
-      "bytes": 6075,
+    "src/_/_/cssJs.ts": {
+      "bytes": 2625,
       "imports": [
+        {
+          "path": "esbuild",
+          "kind": "import-statement",
+          "external": true
+        },
         {
           "path": "@logtape/logtape",
           "kind": "import-statement",
@@ -355,11 +371,6 @@
         },
         {
           "path": "@monochromatic.dev/module-fs-path",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "rambdax",
           "kind": "import-statement",
           "external": true
         },
@@ -369,73 +380,22 @@
           "original": "@/src/consts.ts"
         },
         {
-          "path": "<runtime>",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
-    "src/_/_/css.ts": {
-      "bytes": 4343,
-      "imports": [
-        {
-          "path": "@logtape/logtape",
+          "path": "@csstools/custom-units",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/lightningcss-plugin-apply",
+          "path": "@csstools/postcss-color-mix-function",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/lightningcss-plugin-custom-units",
+          "path": "@csstools/postcss-oklab-function",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/lightningcss-plugin-property-lookup",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "@monochromatic.dev/lightningcss-plugin-size",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "@monochromatic.dev/module-fs-path",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "@monochromatic.dev/module-resolve",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "browserslist",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "cssnano",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "cssnano-preset-advanced",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "lightningcss",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "lightningcss",
+          "path": "@csstools/postcss-relative-color-syntax",
           "kind": "import-statement",
           "external": true
         },
@@ -445,17 +405,22 @@
           "external": true
         },
         {
-          "path": "rambdax",
+          "path": "postcss-custom-media",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "src/consts.ts",
+          "path": "postcss-custom-selectors",
           "kind": "import-statement",
-          "original": "@/src/consts.js"
+          "external": true
         },
         {
-          "path": "esbuild",
+          "path": "postcss-mixins",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
           "kind": "import-statement",
           "external": true
         },
@@ -499,7 +464,7 @@
       "format": "esm"
     },
     "src/_/_/_/image.ts": {
-      "bytes": 4600,
+      "bytes": 4665,
       "imports": [
         {
           "path": "@logtape/logtape",
@@ -733,13 +698,34 @@
       ],
       "format": "esm"
     },
-    "src/_/_/js.ts": {
-      "bytes": 1036,
+    "src/_/_/_/ensureCrt.ts": {
+      "bytes": 1045,
       "imports": [
         {
-          "path": "esbuild",
+          "path": "src/child.ts",
+          "kind": "import-statement",
+          "original": "@/src/child.ts"
+        },
+        {
+          "path": "@monochromatic.dev/module-fs-path",
           "kind": "import-statement",
           "external": true
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/_/_/server.ts": {
+      "bytes": 1536,
+      "imports": [
+        {
+          "path": "src/consts.ts",
+          "kind": "import-statement",
+          "original": "@/src/consts.ts"
         },
         {
           "path": "@logtape/logtape",
@@ -752,9 +738,19 @@
           "external": true
         },
         {
-          "path": "src/consts.ts",
+          "path": "rambdax",
           "kind": "import-statement",
-          "original": "@/src/consts.ts"
+          "external": true
+        },
+        {
+          "path": "smol-toml",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/_/_/_/ensureCrt.ts",
+          "kind": "import-statement",
+          "original": "./_/ensureCrt.ts"
         },
         {
           "path": "<runtime>",
@@ -765,32 +761,27 @@
       "format": "esm"
     },
     "src/_/staticAndCompress.ts": {
-      "bytes": 794,
+      "bytes": 783,
       "imports": [
+        {
+          "path": "src/consts.ts",
+          "kind": "import-statement",
+          "original": "@/src/consts.js"
+        },
         {
           "path": "@logtape/logtape",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "src/_/_/br.ts",
+          "path": "src/_/_/compress.ts",
           "kind": "import-statement",
-          "original": "./_/br.ts"
+          "original": "./_/compress.ts"
         },
         {
-          "path": "src/_/_/caddy.ts",
+          "path": "src/_/_/cssJs.ts",
           "kind": "import-statement",
-          "original": "./_/caddy.js"
-        },
-        {
-          "path": "src/_/_/css.ts",
-          "kind": "import-statement",
-          "original": "./_/css.ts"
-        },
-        {
-          "path": "src/consts.ts",
-          "kind": "import-statement",
-          "original": "@/src/consts.js"
+          "original": "./_/cssJs.ts"
         },
         {
           "path": "src/_/_/html.ts",
@@ -798,9 +789,9 @@
           "original": "./_/html.ts"
         },
         {
-          "path": "src/_/_/js.ts",
+          "path": "src/_/_/server.ts",
           "kind": "import-statement",
-          "original": "./_/js.ts"
+          "original": "./_/server.ts"
         },
         {
           "path": "<runtime>",
@@ -811,7 +802,7 @@
       "format": "esm"
     },
     "src/build.ts": {
-      "bytes": 349,
+      "bytes": 364,
       "imports": [
         {
           "path": "src/_/publicApi.ts",
@@ -837,7 +828,7 @@
       "format": "esm"
     },
     "src/clean.ts": {
-      "bytes": 114,
+      "bytes": 129,
       "imports": [
         {
           "path": "@monochromatic.dev/module-fs-path",
@@ -853,7 +844,7 @@
       "format": "esm"
     },
     "src/dependencies.ts": {
-      "bytes": 223,
+      "bytes": 238,
       "imports": [
         {
           "path": "@monochromatic.dev/module-fs-path",
@@ -874,7 +865,7 @@
       "format": "esm"
     },
     "src/parsed.ts": {
-      "bytes": 230,
+      "bytes": 254,
       "imports": [
         {
           "path": "zod",
@@ -890,7 +881,7 @@
       "format": "esm"
     },
     "src/preparse.ts": {
-      "bytes": 360,
+      "bytes": 375,
       "imports": [
         {
           "path": "@monochromatic.dev/module-fs-path",
@@ -916,7 +907,7 @@
       "format": "esm"
     },
     "src/serve.ts": {
-      "bytes": 974,
+      "bytes": 797,
       "imports": [
         {
           "path": "src/consts.ts",
@@ -925,6 +916,11 @@
         },
         {
           "path": "@logtape/logtape",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "kill-port-process",
           "kind": "import-statement",
           "external": true
         },
@@ -942,7 +938,7 @@
       "format": "esm"
     },
     "src/watch.ts": {
-      "bytes": 120,
+      "bytes": 136,
       "imports": [
         {
           "path": "<runtime>",
@@ -1014,7 +1010,7 @@
       "imports": [],
       "exports": [],
       "inputs": {},
-      "bytes": 101641
+      "bytes": 95021
     },
     "dist/final/index.js": {
       "imports": [
@@ -1254,11 +1250,6 @@
           "external": true
         },
         {
-          "path": "glob",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
           "path": "hasha",
           "kind": "import-statement",
           "external": true
@@ -1269,6 +1260,11 @@
           "external": true
         },
         {
+          "path": "esbuild",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
           "path": "@logtape/logtape",
           "kind": "import-statement",
           "external": true
@@ -1279,67 +1275,22 @@
           "external": true
         },
         {
-          "path": "rambdax",
+          "path": "@csstools/custom-units",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@logtape/logtape",
+          "path": "@csstools/postcss-color-mix-function",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/lightningcss-plugin-apply",
+          "path": "@csstools/postcss-oklab-function",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@monochromatic.dev/lightningcss-plugin-custom-units",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "@monochromatic.dev/lightningcss-plugin-property-lookup",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "@monochromatic.dev/lightningcss-plugin-size",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "@monochromatic.dev/module-fs-path",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "@monochromatic.dev/module-resolve",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "browserslist",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "cssnano",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "cssnano-preset-advanced",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "lightningcss",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "lightningcss",
+          "path": "@csstools/postcss-relative-color-syntax",
           "kind": "import-statement",
           "external": true
         },
@@ -1349,12 +1300,22 @@
           "external": true
         },
         {
-          "path": "rambdax",
+          "path": "postcss-custom-media",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "esbuild",
+          "path": "postcss-custom-selectors",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "postcss-mixins",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
           "kind": "import-statement",
           "external": true
         },
@@ -1494,12 +1455,22 @@
           "external": true
         },
         {
-          "path": "esbuild",
+          "path": "@logtape/logtape",
           "kind": "import-statement",
           "external": true
         },
         {
-          "path": "@logtape/logtape",
+          "path": "@monochromatic.dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "smol-toml",
           "kind": "import-statement",
           "external": true
         },
@@ -1554,6 +1525,11 @@
           "external": true
         },
         {
+          "path": "kill-port-process",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
           "path": "zx",
           "kind": "import-statement",
           "external": true
@@ -1569,52 +1545,55 @@
           "bytesInOutput": 422
         },
         "src/child.ts": {
-          "bytesInOutput": 2010
+          "bytesInOutput": 2040
         },
         "src/consts.ts": {
-          "bytesInOutput": 4911
+          "bytesInOutput": 4802
         },
         "src/_/external.ts": {
-          "bytesInOutput": 3262
+          "bytesInOutput": 3361
         },
         "src/_/esbuildOptions.ts": {
-          "bytesInOutput": 4934
+          "bytesInOutput": 5066
         },
         "src/_/publicApi.ts": {
-          "bytesInOutput": 1980
+          "bytesInOutput": 1992
         },
         "src/_/staticAndCompress.ts": {
-          "bytesInOutput": 605
+          "bytesInOutput": 607
         },
-        "src/_/_/br.ts": {
-          "bytesInOutput": 1949
+        "src/partitionArrAsync.ts": {
+          "bytesInOutput": 284
         },
-        "src/_/_/caddy.ts": {
-          "bytesInOutput": 6077
+        "src/_/_/compress.ts": {
+          "bytesInOutput": 2462
         },
-        "src/_/_/css.ts": {
-          "bytesInOutput": 3369
+        "src/_/_/cssJs.ts": {
+          "bytesInOutput": 2553
         },
         "src/_/_/html.ts": {
-          "bytesInOutput": 3177
+          "bytesInOutput": 3173
         },
         "src/_/_/_/cp.ts": {
           "bytesInOutput": 2055
         },
         "src/_/_/_/favicon.ts": {
-          "bytesInOutput": 7915
+          "bytesInOutput": 7948
         },
         "src/_/_/_/image.ts": {
-          "bytesInOutput": 1776
+          "bytesInOutput": 1800
         },
         "src/_/_/_/rehype.ts": {
           "bytesInOutput": 1017
         },
         "src/_/_/_/vue.ts": {
-          "bytesInOutput": 7571
+          "bytesInOutput": 7583
         },
-        "src/_/_/js.ts": {
-          "bytesInOutput": 938
+        "src/_/_/server.ts": {
+          "bytesInOutput": 1127
+        },
+        "src/_/_/_/ensureCrt.ts": {
+          "bytesInOutput": 1004
         },
         "src/build.ts": {
           "bytesInOutput": 319
@@ -1623,7 +1602,7 @@
           "bytesInOutput": 164
         },
         "src/dependencies.ts": {
-          "bytesInOutput": 246
+          "bytesInOutput": 258
         },
         "src/parsed.ts": {
           "bytesInOutput": 211
@@ -1632,13 +1611,13 @@
           "bytesInOutput": 429
         },
         "src/serve.ts": {
-          "bytesInOutput": 819
+          "bytesInOutput": 779
         },
         "src/watch.ts": {
           "bytesInOutput": 119
         }
       },
-      "bytes": 58927
+      "bytes": 54296
     }
   }
 }

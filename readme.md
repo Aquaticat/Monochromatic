@@ -5,7 +5,7 @@
 Ensure your `$TERMINAL` environment variable points to a graphical terminal application.
 // TODO: Add reason.
 
-`rm -f bun.lockb && bun i` (See (Bun)[#bun])
+`yarn set version stable && yarn install && yarn dlx @yarnpkg/sdks vscode`
 
 ## Themes
 
@@ -223,14 +223,6 @@ I had to use an integration to generate a JS file to generate `Astro.glob()`.
 
 ## MDX
 
-### Astro + MDX: Unexpected ExpressionStatement in code: only import/exports are supported.
-
-See https://stackoverflow.com/a/77576891
-
-### Why I'm adding `<S></S>` around headings
-
-Otherwise there's no inserted sections, making them less easy to navigate in terms of accessibility and making them less easy to style.
-
 ## Playwright
 
 ### TODO: Add Playwright tests for themes/*
@@ -268,7 +260,7 @@ I'm leaning that it's not escaping properly.
 ## Arch Linux
 
 ```ansi
-pacman -Sy --noconfirm brotli caddy graphviz imagemagick patch plantuml librsvg unzip
+pacman -Sy --noconfirm graphviz imagemagick patch plantuml librsvg unzip
 ```
 
 ## Build Caddy

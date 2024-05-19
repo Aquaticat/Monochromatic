@@ -8,7 +8,7 @@ export declare const mGlobOptions: {
 };
 export type MGlobOptions = typeof mGlobOptions;
 export type MGlob = Glob<Omit<GlobOptions, 'withFileTypes'>>;
-declare const _default_1: (pattern?: string | string[] | undefined, options?: Omit<GlobOptions, "withFileTypes"> | undefined) => MGlob;
+declare const _default_1: (pattern?: string | string[] | undefined, options?: Omit<GlobOptions, 'withFileTypes'> | undefined) => MGlob;
 export default _default_1;
 export declare const indexJsFilePaths: string[];
 export declare const mdxFilePaths: string[];
@@ -23,6 +23,7 @@ export declare const cssFilePaths: string[];
 export declare const cssJsFilePaths: string[];
 export declare const otherFilePaths: string[];
 export declare const caddyConfFilePath: string;
+export declare const staticWebServerConfFilePath: string;
 export { default as external } from './_/external.ts';
 export { default as esbuildOptions } from './_/esbuildOptions.ts';
 export declare const fromPm: Awaited<ReturnType<typeof pm>>;

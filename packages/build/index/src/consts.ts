@@ -30,7 +30,10 @@ const g = (
   options: Omit<Parameters<typeof glob>[1], 'withFileTypes'> = mGlobOptions,
 ): MGlob => new Glob(pattern || mGlobPatten, options || mGlobOptions);
 
-const _default_1: (pattern?: string | string[] | undefined, options?: Omit<GlobOptions, "withFileTypes"> | undefined) => MGlob = memoize(g);
+const _default_1: (
+  pattern?: string | string[] | undefined,
+  options?: Omit<GlobOptions, 'withFileTypes'> | undefined,
+) => MGlob = memoize(g);
 export default _default_1;
 
 const srcDrs = (await fs.readdir('src', { withFileTypes: true, recursive: true })).filter((srcDr) =>
@@ -48,9 +51,7 @@ l.debug`indexJsFilePaths ${indexJsFilePaths}`;
 
 const mdxFileDrs = srcFileDrs.filter((srcFileDr) => srcFileDr.name.endsWith('.mdx'));
 
-export const mdxFilePaths: string[] = mdxFileDrs.map((mdxFileDr) =>
-  path.join(mdxFileDr.parentPath, mdxFileDr.name)
-);
+export const mdxFilePaths: string[] = mdxFileDrs.map((mdxFileDr) => path.join(mdxFileDr.parentPath, mdxFileDr.name));
 l.debug`mdxFilePaths ${mdxFilePaths}`;
 
 const outMdxPaths = mdxFilePaths.map((mdxFilePath) =>
@@ -160,9 +161,7 @@ l.debug`outIndexVueImportStr ${outIndexVueImportStr}`;
 
 const cssFileDrs = srcFileDrs.filter((srcFileDr) => srcFileDr.name === 'index.css');
 
-export const cssFilePaths: string[] = cssFileDrs.map((cssFileDr) =>
-  path.join(cssFileDr.parentPath, cssFileDr.name)
-);
+export const cssFilePaths: string[] = cssFileDrs.map((cssFileDr) => path.join(cssFileDr.parentPath, cssFileDr.name));
 l.debug`cssFilePaths ${cssFilePaths}`;
 
 export const cssJsFilePaths: string[] = cssFilePaths.concat(indexJsFilePaths);
@@ -189,7 +188,8 @@ export const otherFilePaths: string[] = otherFileDrs.map((otherFileDr) =>
 
 l.debug`otherFilePaths ${otherFilePaths}`;
 
-export const caddyConfFilePath: string = path.join('dist', 'temp', 'caddy', 'index.json');
+export const caddyConfFilePath: string = path.join('dist', 'temp', 'server', 'caddy.json');
+export const staticWebServerConfFilePath: string = path.join('dist', 'temp', 'server', 'static-web-server.toml');
 
 export { default as external } from './_/external.ts';
 

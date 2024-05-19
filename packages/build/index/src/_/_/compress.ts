@@ -41,16 +41,15 @@ export default async (): Promise<State> => {
     .from(new Map(staticFilesToCompress).keys());
 
   const [staticFilesCpRes, [compressRes, populateCacheRes]] = await Promise.all([
-    (async () =>
-      await mapParallelAsync(
-        async (staticFileToCp) =>
-          await fs.existsFile(path.join('dist', 'final', staticFileToCp[0])) || await fs
-            .cpFile(path.join(cacheDir, staticFileToCp[1]), path.join('dist', 'final', staticFileToCp[0])),
-        staticFilesToCp,
-      ))(),
+    mapParallelAsync(
+      async (staticFileToCp) =>
+        await fs.existsFile(path.join('dist', 'final', staticFileToCp[0])) || await fs
+          .cpFile(path.join(cacheDir, staticFileToCp[1]), `${staticFileToCp[0]}.zst`),
+      staticFilesToCp,
+    ),
     (async () => {
       const compressRes = (await $c(
-        `zstd -z -f --no-check -T0 --exclude-compressed --no-content-size -- ${
+        `zstd -z -f -v --no-check -T0 --exclude-compressed --no-content-size -- ${
           staticFileToCompressHashs
             .join(' ')
         }`,

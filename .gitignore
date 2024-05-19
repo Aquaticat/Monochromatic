@@ -24,6 +24,7 @@ locks
 pnpm-lock.yaml
 .pnp.cjs
 *.br
+*.zst
 /caddy
 .yarn
 bun.lockb

@@ -133,6 +133,10 @@ const hasProcess = [
   'hasha',
   'zod-opts',
   'zx',
+  'process-*',
+  '*-process',
+  'port-*',
+  'kill-*',
 ];
 
 const hasNodeOnly = Array.from(new Set([hasNative, hasFs, hasProcess].flat()));
@@ -155,9 +159,10 @@ const formatters = [
 
 const devOnly = Array.from(new Set([typeOnly, formatters].flat()));
 
-
 const parsers = ['smol-toml', 'yaml', 'jsonc-simple-parser'];
 
 const specific = ['*/_fms.js', '_fms.js', '/_fms.js', './_fms.js', '/*/_fms.js', './*/_fms.js'];
 
-export default Array.from(new Set([hasBuild, hasNodeOnly, hasEval, devOnly, parsers, specific].flat())) satisfies string[] as string[];
+export default Array.from(
+  new Set([hasBuild, hasNodeOnly, hasEval, devOnly, parsers, specific].flat()),
+) satisfies string[] as string[];
