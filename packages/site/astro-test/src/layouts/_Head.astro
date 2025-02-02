@@ -17,5 +17,7 @@ const { title, lang } = Astro.props;
     href='/favicon.svg'
     type='image/svg+xml'>
   <title>{title} | {i18n.get('siteName')!.get(lang)!}</title>
-  <script src='./_Head.ts'></script>
+  <script>
+  import '@monochromatic-dev/module-dom/redirectingTo.ts';
+  </script>
 </head>
