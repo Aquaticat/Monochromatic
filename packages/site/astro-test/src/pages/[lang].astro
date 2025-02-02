@@ -21,6 +21,8 @@ const { lang } = Astro.params;
   {lang}>
   <main>
     <h1>{i18n.get('siteDescription')!.get(lang)!}</h1>
+
+    <!-- TODO: Find a way to insert lang specific introduction article in here. -->
   </main>
   <aside>
     <Posts

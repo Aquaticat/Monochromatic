@@ -34,6 +34,8 @@ body {
 
     column-gap: calc(var(--gap-3xl) * var(--rp));
 
+    row-gap: calc(var(--gap-3xl) * var(--rp));
+
     > main {
       @mixin --text;
     }
@@ -41,7 +43,10 @@ body {
     > aside {
       min-inline-size: calc(var(--min-text) * var(--rp));
 
-      max-inline-size: calc(var(--max-ui) * var(--rp));
+      max-inline-size: min(
+        calc(var(--max-ui) * var(--rp)),
+        calc(100dvi - calc(2 * var(--gap-3xl) * var(--rp)))
+      );
 
       flex-grow: 1;
     }

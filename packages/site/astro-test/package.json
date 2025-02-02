@@ -32,6 +32,7 @@
     "rehype-stringify": ">=10.0.1",
     "to-vfile": ">=8.0.0",
     "unified": ">=11.0.5",
-    "glob": ">=11.0.1"
+    "glob": ">=11.0.1",
+    "@astrojs/rss": ">=4.0.11"
   }
 }

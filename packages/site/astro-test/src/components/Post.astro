@@ -28,19 +28,27 @@ const { post, lang } = Astro.props;
   a {
     pointer-events: auto;
   }
+
+  display: flex;
+
+  flex-direction: column;
+
+  row-gap: calc(var(--gap-s) * var(--rp));
 }
 
 h2 {
   @mixin --h4;
 
   text-wrap: balance;
+
+  display: -webkit-box;
+
+  -webkit-box-orient: block-axis;
+
+  -webkit-line-clamp: 2;
 }
 
 .description {
-  text-align: justify;
-
-  word-break: break-all;
-
   display: -webkit-box;
 
   -webkit-box-orient: block-axis;
@@ -51,7 +59,7 @@ h2 {
 .tags {
   @mixin --flex-start-center;
 
-  column-gap: var(--gap-s);
+  column-gap: calc(var(--gap-m) * var(--rp));
 
   > li {
     > a {
@@ -64,6 +72,8 @@ h2 {
 
         &::before {
           content: '#';
+
+          color: color-mix(in oklch, var(--primary), var(--subtle));
         }
       }
     }

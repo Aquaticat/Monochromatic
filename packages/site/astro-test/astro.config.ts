@@ -27,7 +27,7 @@ import { unified } from 'unified';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://www.example.com',
+  site: 'https://aquati.cat',
   base: '/',
 
   vite: {
