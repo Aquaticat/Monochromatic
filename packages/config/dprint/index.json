@@ -1,0 +1,102 @@
+{
+  /* This is just the schema for dprint cli options.
+     Find schemas for individual plugins on their own release pages.
+     For example: https://github.com/dprint/dprint-plugin-typescript/releases/download/0.90.3/schema.json
+     TODO: Write a schema merger. */
+  "$schema": "https://dprint.dev/schemas/v0.json",
+  "excludes": [
+    "**/node_modules/**/*.*",
+    "**/dist/**/*.*",
+    "**/.dist/**/*.*",
+    "**/bak/**/*.*",
+    "**/.astro/**/*.*"
+  ],
+  "lineWidth": 90,
+  "useTabs": false,
+  "indentWidth": 2,
+  "newLineKind": "lf",
+  "plugins": [
+    "https://plugins.dprint.dev/toml-0.6.4.wasm",
+    "https://plugins.dprint.dev/g-plane/markup_fmt-v0.18.0.wasm",
+    "https://plugins.dprint.dev/typescript-0.93.3.wasm",
+    "https://plugins.dprint.dev/g-plane/malva-v0.11.1.wasm",
+    "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.5.0.wasm",
+    "https://plugins.dprint.dev/json-0.19.4.wasm"
+  ],
+  "toml": {
+    "comment.forceLeadingSpace": false
+  },
+  "json": {
+    "commentLine.forceSpaceAfterSlashes": false,
+    "jsonTrailingCommaFiles": [
+      "tsconfig.json",
+      "**/.vscode/settings.json",
+      "**/dprint/index.json",
+      "**/oxlint/index.json"
+    ]
+  },
+  "malva": {
+    "printWidth": 90,
+    "hexColorLength": "short",
+    "quotes": "preferSingle",
+    "operatorLinebreak": "before",
+    "blockSelectorLinebreak": "always",
+    "trailingComma": true,
+    "linebreakInPseudoParens": true,
+    "ignoreCommentDirective": "formatter-ignore"
+  },
+  "markup": {
+    "printWidth": 90,
+    "quotes": "single",
+    "closingBracketSameLine": true,
+    "closingTagLineBreakForEmpty": "always",
+    "maxAttrsPerLine": 1,
+    "astroAttrShorthand": true,
+    "vBindStyle": "short",
+    "vOnStyle": "short",
+    "vForDelimiterStyle": "of",
+    "vSlotStyle": "vSlot",
+    "vBindSameNameShortHand": true,
+    "associations": [
+      /* mdx files get messed up.
+         Mainly, the frontmatter is flattened into a single line.
+         Disabled until author adds support for mdx. */
+      // "**/*.mdx",
+      "**/*.vue",
+      "**/*.astro",
+      "**/*.html"
+    ]
+    // [dprint_plugin_markup]: Unknown property in configuration (ignoreCommentDirective)[dprint_plugin_markup]: Error initializing from configuration file. Had 1 diagnostic(s).Had 1 error formatting.
+    // "ignoreCommentDirective": "formatter-ignore",
+  },
+  "yaml": {
+    "quotes": "preferSingle",
+    "indentBlockSequenceInMap": false,
+    "ignoreCommentDirective": "formatter-ignore"
+  },
+  "typescript": {
+    "semiColons": "always",
+    "quoteStyle": "preferSingle",
+    "jsx.quoteStyle": "preferSingle",
+    "useBraces": "maintain",
+
+    // For jsx (tsx) compatibility.
+    "typeParameters.trailingCommas": "always",
+
+    "arrowFunction.useParentheses": "force",
+    "binaryExpression.linePerExpression": true,
+    "jsx.bracketPosition": "sameLine",
+    "memberExpression.linePerExpression": true,
+    "commentLine.forceSpaceAfterSlashes": false,
+
+    "ignoreNodeCommentText": "formatter-ignore",
+    "ignoreFileCommentText": "formatter-ignore-file",
+
+    "exportDeclaration.forceMultiLine": "whenMultiple",
+    "importDeclaration.forceMultiLine": "whenMultiple",
+
+    "typeParameters.preferHanging": "always",
+    "arguments.preferHanging": "always",
+    "parameters.preferHanging": "always"
+  }
+}

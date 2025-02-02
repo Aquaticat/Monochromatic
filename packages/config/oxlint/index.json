@@ -1,0 +1,197 @@
+{
+  "$schema": "../../../node_modules/oxlint/configuration_schema.json",
+
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "pedantic": "warn",
+    "style": "warn"
+  },
+
+  "env": {
+    "browser": true
+  },
+
+  "plugins": [
+    "unicorn", "typescript", "oxc", "import", "jsdoc", "promise", "node"
+  ],
+
+  "rules": {
+    //region correctness
+
+    // import/default, import/named, import/namespace are not enabled because TypeScript already checks for those.
+    "import/default": "off",
+    "import/named": "off",
+    "import/namespace": "off",
+
+    //endregion
+
+    //region perf
+
+    "eslint/no-await-in-loop": "warn",
+
+    "eslint/no-accumulating-spread": "warn",
+
+    "eslint-plugin-unicorn/prefer-set-has": "warn",
+
+    //endregion perf
+
+    //region restriction
+
+    "eslint/default-case": "error",
+
+    "eslint/no-empty": "error",
+
+    "eslint/no-empty-function": "error",
+
+    "eslint/no-eq-null": "error",
+
+    "eslint/no-proto": "error",
+
+    "eslint/no-regex-spaces": "error",
+
+    // logging aren't unused expressions.
+    // "eslint/no-unused-expressions": "error",
+
+    "eslint/no-var": "error",
+
+    "eslint/unicode-bom": "error",
+
+    "import/no-amd": "error",
+
+    "import/no-cycle": "error",
+
+    "import/no-webpack-loader-syntax": "error",
+
+    "jsdoc/check-access": "error",
+
+    "jsdoc/empty-tags": "error",
+
+    "oxc/bad-bitwise-operator": "error",
+
+    "oxc/no-const-enum": "error",
+
+    /* We're not using react. */
+
+    "typescript/no-dynamic-delete": "error",
+
+    "typescript/no-empty-object-type": "error",
+
+    "typescript/no-import-type-side-effects": "error",
+
+    "typescript/no-namespace": "error",
+
+    "typescript/no-non-null-asserted-nullish-coalescing": "error",
+
+    "typescript/no-var-requires": "error",
+
+    "typescript/prefer-literal-enum-member": "error",
+
+    "unicorn/no-abusive-eslint-disable": "error",
+
+    "unicorn/no-length-as-slice-end": "error",
+
+    "unicorn/no-magic-array-flat-depth": "error",
+
+    "unicorn/prefer-modern-math-apis": "error",
+
+    "unicorn/prefer-node-protocol": "error",
+
+    /* TODO: Need observation for this one.
+             My intention is to ban the original global number variables
+             because they have different behavior with new number properties,
+             and then replace the global number variables with my aliases of new number properties. */
+    "unicorn/prefer-number-properties": "error",
+
+    //endregion restriction
+
+    //region suspicious
+
+    //endregion suspicious
+
+    //region pedantic We don't need pedantic rules that are also flacky.
+
+    // unicorn/no-negated-condition is not enabled because we practice early fail
+    "unicorn/no-negated-condition": "off",
+
+    /* unicorn/no-object-as-default-parameter is not enabled
+       because sometimes obj destrcturing just can't. */
+    "unicorn/no-object-as-default-parameter": "off",
+
+    // Sometimes the type-checking if-statement is not for checking type.
+    "unicorn/prefer-type-error": "off",
+
+    "import/max-dependencies": "off",
+
+    "eslint/max-lines": "off",
+
+    "eslint/max-params": "off",
+
+    // Doesn't support eslint parameter allow when intersecting.
+    "typescript/ban-types": "off",
+
+    // Sometimes we need a generic Function type.
+    // Use `(...args: any) => any` instead.
+    "typescript/no-unsafe-function-type": "error",
+
+    //endregion pedantic
+
+    //region style
+
+    // Doesn't matter when the function is a callback with sufficient context.
+    // "eslint/func-names": ["warn", "as-needed"],
+    "eslint/func-names": "off",
+
+    // You shouldn't use for in loops anyway. Use for of loops instead.
+    "eslint/guard-for-in": "error",
+
+    "eslint/no-continue": "off",
+
+    // oxlint doesn't support ignoring specific values yet.
+    // "eslint/no-magic-numbers": ["warn", {"enforceConst": true, "detectObjects": true, "ignoreEnums": true, "ignoreNumericLiteralTypes": true, "ignoreTypeIndexes": true}],
+    "eslint/no-magic-numbers": "off",
+
+    "eslint/no-ternary": "off",
+
+    // Sometimes method chaining is more concise.
+    "eslint/prefer-spread": "off",
+
+    // Doesn't matter.
+    "eslint/sort-imports": "off",
+    "eslint/sort-keys": "off",
+
+    // Too many false positives.
+    "eslint/yoda": "off",
+
+    "typescript/consistent-type-definitions": ["error", "type"],
+
+    "typescript/consistent-indexed-object-style": ["error", "record"],
+
+    "typescript/no-inferrable-types": "off",
+
+    "unicorn/catch-error-name": "off",
+
+    "unicorn/filename-case": "off",
+
+    // Some libraries require null.
+    "unicorn/no-null": "off",
+
+    // Won't exactly be used. You should log any errors anyway.
+    "unicorn/prefer-optional-catch-binding": "error",
+
+    // Always assume property/method not on called.
+    "unicorn/prefer-reflect-apply": "error",
+
+    // Because JS's default Array join separator is not an empty string.
+    "unicorn/require-array-join-separator": "error",
+
+    //endregion style
+
+    // We don't want linters reporting unused vars.
+    // Our editor will report them.
+    // Those vars are often left as code for syntax highlighting or testing purposes,
+    // or they're part of work-in-progress.
+    // Our bundler will remove them in the final bundle.
+    "eslint/no-unused-vars": "off"
+  },
+}

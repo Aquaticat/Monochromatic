@@ -1,0 +1,31 @@
+{
+  "name": "@monochromatic-dev/module-node",
+  "description": "Server-side JS runtime specific functions.",
+  "type": "module",
+  "module": "dist/final/index.js",
+  "exports": {
+    ".": "./dist/final/index.js",
+    "./ts": "./src/index.ts"
+  },
+  "main": "dist/final/index.js",
+  "typings": "dist/final/index.d.ts",
+  "files": [
+    "dist/final"
+  ],
+  "devDependencies": {
+    "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "*",
+    "type-fest": ">=4.24.0"
+  },
+  "dependencies": {
+    "execa": ">=9.3.1"
+  },
+  "version": "0.0.125",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "module/util"
+  },
+  "sideEffects": false
+}

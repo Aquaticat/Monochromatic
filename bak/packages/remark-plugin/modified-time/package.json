@@ -1,0 +1,33 @@
+{
+  "name": "@monochromatic-dev/remark-plugin-modified-time",
+  "type": "module",
+  "module": "src/index.js",
+  "main": "src/index.js",
+  "typings": "dist/final/index.d.ts",
+  "files": [
+    "dist/final"
+  ],
+  "scripts": {
+    "build:tsc": "tsc",
+    "build:esbuild": "esbuild src/index.ts --bundle --platform=node --charset=utf8 --format=esm --packages=external --target=node20 --drop:debugger --drop-labels=DEV,D --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --preserve-symlinks --log-limit=0 --sourcemap",
+    "build:api-extractor": "api-extractor run --local --verbose",
+    "build:Types": "pnpm run build:tsc && pnpm run build:api-extractor",
+    "build:Js": "pnpm run build:esbuild",
+    "build": "pnpm run build:Types & pnpm run build:Js",
+    "watch:api-extractor": "$TERMINAL chokidar \"dist/temp/tsc/**/*.d.ts\" --initial -c \"pnpm run build:api-extractor\"",
+    "watch:tsc": "$TERMINAL tsc --watch",
+    "watch:esbuild": "$TERMINAL esbuild src/index.ts --bundle --platform=node --charset=utf8 --format=esm --packages=external --target=node20 --drop:debugger --drop-labels=DEV,D --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --preserve-symlinks --log-limit=0 --sourcemap --watch",
+    "watch": "pnpm run watch:api-extractor & pnpm run watch:tsc & pnpm run watch:esbuild"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.6.4",
+    "@microsoft/api-extractor": "*",
+    "@monochromatic-dev/config-api-extractor": "*",
+    "@monochromatic-dev/config-typescript": "*",
+    "@types/node": "20.12.5",
+    "chokidar-cli": "*",
+    "esbuild": "*",
+    "typescript": "5.4.4"
+  },
+  "version": "0.0.1"
+}

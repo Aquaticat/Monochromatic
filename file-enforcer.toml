@@ -1,0 +1,7 @@
+[["files"]]
+"./temp/*/*/src/*.ts" = "./packages/*/*/src/*.ts"
+"./temp/.ignore" = ["cat", ["./.ignore", ["cat", ["./.stylelintignore", "./.gitignore"]]]]
+
+[["files"]]
+# For testing if it completely overrides.
+"./temp/build/file-enforcer/src/index.ts" = "./temp/dummy.ts"

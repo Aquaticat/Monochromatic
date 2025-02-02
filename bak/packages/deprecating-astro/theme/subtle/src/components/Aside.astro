@@ -1,0 +1,23 @@
+---
+import consts from '../temp/consts';
+import Links from './Links.astro';
+import Posts from './Posts.astro';
+const { title, } = Astro.props;
+
+const isHome = title === consts.title;
+const isMeta = title === 'Links';
+const is404 = title === '404';
+---
+
+<aside class='Aside'>
+  {
+    isHome
+    ? <Posts />
+    : isMeta
+    ? <Links />
+    : is404
+    ? <div class='FourOFour'>404</div>
+    : <div class='Related'>not</div>
+  }
+</aside>
+../temp/consts

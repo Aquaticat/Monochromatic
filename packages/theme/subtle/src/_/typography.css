@@ -1,0 +1,12 @@
+:root {
+  /* Should be used for calculating letter-spacing and line-height, but couldn't find a good enough formula for it. */
+
+  /* TODO: Find a good enough formula for it. */
+  --type-scaler: 1.05;
+  --h1: 48;
+  --h2: 40;
+  --h3: 32;
+  --h4: 24;
+  --h5: 20;
+  --h6: 18;
+}

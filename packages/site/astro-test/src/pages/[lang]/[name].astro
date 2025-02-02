@@ -1,0 +1,39 @@
+---
+import {
+  i18n,
+  langs,
+  names,
+  posts,
+} from '@/src';
+import Html from '@_/layouts/Html.astro';
+import { render } from 'astro:content';
+
+export async function getStaticPaths() {
+  return langs.flatMap((lang) => (names.map((name) => ({
+    params: { lang, name },
+  }))));
+}
+
+const { lang, name } = Astro.params;
+const potentialPost = posts.find((post) => post.name === name && post.lang === lang);
+const PotentialContent = potentialPost && (await render(potentialPost)).Content;
+const title = potentialPost
+  ? potentialPost.data.title
+  : i18n.get("Post doesn't exist in specified language")!.get(lang)!;
+---
+<Html
+  {title}
+  {lang}>
+  <main>
+    <h1>{title}</h1>
+    {
+      PotentialContent ? <PotentialContent /> : (
+        <p>
+          Redirecting to <a
+            class='redirectingTo'
+            href={`/${name}`}>Choose a language page for {name}</a>
+        </p>
+      )
+    }
+  </main>
+</Html>

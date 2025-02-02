@@ -1,0 +1,280 @@
+@custom-media --xs (width < 22.5rem);
+@custom-media --s (22.5rem <= width < 37.5rem);
+@custom-media --s-s (width < 37.5rem);
+@custom-media --s-l (width >= 22.5rem);
+@custom-media --m (37.5rem <= width < 56.5625rem);
+@custom-media --m-s (width < 56.5625rem);
+@custom-media --m-l (width >= 37.5rem);
+@custom-media --l (56.5625rem <= width < 80rem);
+@custom-media --l-s (width < 80rem);
+@custom-media --l-l (width >= 56.5625rem);
+@custom-media --xl (80rem <= width < 90rem);
+@custom-media --xl-s (width < 90rem);
+@custom-media --xl-l (width >= 80rem);
+@custom-media --xxl (90rem <= width);
+
+/* Variables */
+:root {
+  color-scheme: light dark;
+
+  --_light: #f9f9f9;
+  --_dark: #111;
+  --_subtle: #8f8f8f;
+  --_lighter: #fff;
+  --_darker: #000;
+  --_primary: #0073e6;
+  --_primary-darker: #1165c5;
+  --_primary-lighter: #79a7e4;
+  --bg: var(--_light);
+  --fg: var(--_dark);
+  --subtle: var(--_subtle);
+  --fg-plus: var(--_darker);
+  --bg-plus: var(--_lighter);
+  --primary: var(--_primary-darker);
+  --primary-minus: var(--_primary-lighter);
+
+  @media (prefers-color-scheme: dark) {
+    --bg: var(--_dark);
+    --fg: var(--_light);
+    --subtle: var(--_subtle);
+    --fg-plus: var(--_lighter);
+    --bg-plus: var(--_darker);
+    --primary: var(--_primary);
+    --primary-minus: var(--_primary-darker);
+  }
+}
+
+:is(*, *::before, *::after) {
+  box-sizing: border-box;
+
+  box-decoration-break: clone;
+}
+
+html {
+  block-size: 100%;
+}
+
+body {
+  margin: 0;
+
+  background-color: var(--bg);
+
+  color: var(--fg);
+
+  font-family: Arial, sans-serif;
+
+  text-rendering: optimizelegibility;
+
+  block-size: 100%;
+
+  word-break: break-word;
+
+  text-box-trim: both;
+
+  text-box-edge: text;
+
+  > * + * {
+    margin-block-start: 2rem;
+  }
+
+  p {
+    margin: 0;
+
+    text-wrap: pretty;
+
+    line-height: 1.5;
+  }
+
+  :is(h1, h2, h3, h4, h5, h6) {
+    text-wrap: balance;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 6vi, 2.5rem);
+
+    line-height: calc(5 / 6);
+
+    font-weight: 900;
+
+    margin-block: 0;
+
+    text-align: center;
+  }
+
+  h2 {
+    font-size: clamp(1.2rem, 4vi, 1.8rem);
+
+    line-height: 1;
+
+    font-weight: bold;
+
+    margin-block: 0;
+
+    text-align: center;
+  }
+
+  a {
+    color: var(--primary);
+
+    text-decoration-color: var(--primary-minus);
+  }
+
+  :is(ol, ul) {
+    padding-inline-start: calc(1em + var(--outdent));
+  }
+
+  ul {
+    list-style-type: disclosure-closed;
+
+    > li::marker {
+      color: var(--primary);
+    }
+  }
+
+  li {
+    --outdent: 0em;
+
+    + li {
+      margin-block-start: 1em;
+    }
+  }
+
+  :is(header, footer) {
+    text-align: center;
+
+    border-color: transparent;
+
+    border-style: solid;
+
+    border-inline-width: 2rem;
+
+    @media (--s-s) {
+      border-inline-width: 1rem;
+    }
+
+    a {
+      color: inherit;
+    }
+  }
+}
+
+header {
+  padding-block: 2rem;
+
+  background-color: var(--_primary);
+
+  color: var(--_light);
+
+  > * + * {
+    margin-block-start: 1.5rem;
+  }
+
+  nav {
+    display: flex;
+
+    justify-content: center;
+
+    column-gap: 2rem;
+
+    row-gap: 1rem;
+
+    align-items: baseline;
+
+    flex-wrap: wrap;
+
+    a {
+      text-decoration-line: none;
+
+      svg {
+        transform: translateY(0.2ex);
+      }
+
+      > * + * {
+        margin-inline-start: 0.25em;
+      }
+    }
+  }
+}
+
+footer {
+  padding-block: 1rem;
+
+  color: var(--subtle);
+
+  p {
+    display: inline-block;
+  }
+
+  > * + * {
+    margin-block-start: 0.5em;
+  }
+}
+
+img:is([src='avatar.jpg'], [src='/avatar.jpg']) {
+  max-inline-size: 12rem;
+
+  @media (--xs) {
+    max-inline-size: 8rem;
+  }
+}
+
+main {
+  box-sizing: revert;
+
+  max-inline-size: 60rem;
+
+  margin-inline: auto;
+
+  border-inline-color: transparent;
+
+  border-inline-style: solid;
+
+  border-inline-width: 2rem;
+
+  /* From https://www.oddbird.net/2022/08/04/zero-units/ */
+  --outdent: -1em;
+
+  @media (--s-s) {
+    --outdent: 0em;
+
+    border-inline-width: 1rem;
+  }
+
+  display: grid;
+
+  grid-gap: 2rem;
+
+  grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+
+  > section {
+    p + * {
+      margin-block-start: 1rem;
+    }
+
+    > h2 + * {
+      margin-block-start: 1rem;
+    }
+  }
+}
+
+#about > div > :first-child {
+  float: inline-start;
+
+  margin-block-end: 1rem;
+
+  margin-inline-end: 1rem;
+}
+
+#publications > ul > li > :first-child {
+  font-weight: bold;
+}
+
+.blank-part {
+  color: var(--subtle);
+
+  font-weight: 600;
+
+  > :last-child {
+    color: var(--primary);
+  }
+}

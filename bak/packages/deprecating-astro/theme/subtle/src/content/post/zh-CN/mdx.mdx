@@ -1,0 +1,156 @@
+---
+title: 用 MDX
+description: 以下是在此 Astro 主题中编写 mdx 内容时可以使用的一些语法示例。
+published: 2022-07-01
+tags:
+    - guide
+---
+
+## 段落
+
+这是一段话。
+
+这是一段只有几句话，还有几句话，只是还有几句话，只是还有几句话。
+
+## 图片/视频/音频（本astro主题的功能扩展）
+
+```mdx
+![替代文本](sample-image.png)
+```
+
+```html
+<a href='./sample-image.png'>
+   <picture>
+     <source srcset='sample-image.avif' />
+     <source srcset='sample-image.dark.avif' media='(prefers-color-scheme: dark)' />
+     <img src='sample-image.avif' alt='替代文本' height='1024', width='1024' loading='lazy' />
+   </picture>
+</a>
+```
+
+
+```mdx
+![sample-video.vtt](sample-video.mkv)
+```
+
+```html
+<video controls preload='metadata'>
+  <source src='sample-video.mkv' />
+  <track
+    src='sample-video.vtt'
+    default />
+</video>
+```
+
+```mdx
+![sample-audio.vtt](sample-audio.opus)
+```
+
+```html
+<video controls preload='metadata'>
+  <source src='sample-audio.opus' />
+  <track
+    src='sample-audio.vtt'
+    default />
+</video>
+```
+
+### 例
+
+![favicon](/favicon.svg)
+
+## Blockquotes
+
+```mdx
+> 不要通过共享内存来通信，而是通过通信来共享内存。
+>
+> — <cite>罗布·派克[^1]</cite>
+```
+> 不要通过共享内存来通信，而是通过通信来共享内存。
+>
+> — <cite>罗布·派克[^1]</cite>
+
+[^1]：以上引文摘自 Rob Pike 的 [演讲](https://www.youtube.com/watch?v=PAAkCSZUG1c)
+      Gopherfest，2015 年 11 月 18 日。
+
+## 表格
+
+``mdx
+| 斜体| 粗体 | 代码 |
+| ----- | -------- | ----- |
+| _斜体_ | **粗体** | `代码` |
+| _斜体_ | **粗体** | `代码` |
+````
+
+| 斜体| 粗体 | 代码 |
+| ----- | -------- | ----- |
+| _斜体_ | **粗体** | `代码` |
+| _斜体_ | **粗体** | `代码` |
+
+## UML
+
+```uml
+start
+:你好世界;
+:这是定义在
+**多行**;
+stop
+```
+
+````html
+<a href='./你好世界.pu'>
+  <picture>
+    <source srcset='你好世界.svg' />
+    <source srcset='你好世界.dark.svg' media='(prefers-color-scheme: dark)' />
+    <img src='你好世界.svg' alt='start
+:你好世界;
+:这是定义在
+多行**;
+stop' height='1024', width='1024' loading='lazy' />
+  </picture>
+</a>
+````
+
+## 列表
+
+```mdx
+-   <p>水果</p>
+    -   苹果
+    -   橙子
+    -   香蕉
+    -   <p>乳制品</p>
+        1. 牛奶
+        2. 奶酪
+```
+
+-   <p>水果</p>
+    -   苹果
+    -   橙子
+    -   香蕉
+    -   <p>乳制品</p>
+        1. 牛奶
+        2. 奶酪
+
+## 其它 — abbr、sub、sup、kbd、mark、del
+
+```mdx
+<abbr title='图形交换格式'>GIF</abbr> 是一种位图图像格式。
+
+H<sub>2</sub>O X<sup>n</sup> + Y<sup>n</sup> = Z<sup>n</sup>
+
+按 <kbd>CTRL</kbd> + <kbd>ALT</kbd> + <kbd>Delete</kbd> 结束会话。
+
+大多数<mark>火蜥蜴</mark>都是夜间活动的，捕食昆虫、蠕虫和其他小生物。
+
+~~删除线~~
+```
+
+<abbr title='图形交换格式'>GIF</abbr> 是一种位图图像格式。
+
+H<sub>2</sub>O X<sup>n</sup> + Y<sup>n</sup> = Z<sup>n</sup>
+
+按 <kbd>CTRL</kbd> + <kbd>ALT</kbd> + <kbd>Delete</kbd> 结束会话。
+
+大多数<mark>火蜥蜴</mark>都是夜间活动的，捕食昆虫、蠕虫和其他小生物。
+
+~~删除线~~

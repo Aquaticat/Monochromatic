@@ -1,0 +1,10 @@
+.Links {
+  @apply --flex-start;
+  column-gap: var(--gap-l);
+
+  a {
+    @apply --flex-center;
+    @apply --touch-target;
+    @apply --h6;
+  }
+}

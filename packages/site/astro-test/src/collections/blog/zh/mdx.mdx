@@ -1,0 +1,157 @@
+---
+title: "用 MDX"
+description: "该 Astro 主题中可用的 MDX 语法示例"
+published: 2022-07-01
+updated: 2025-01-19
+tags:
+  - "guide"
+---
+
+## 段落
+
+This is a paragraph.
+
+This is a paragraph with just a few more words and just a few more words and just a few more words and just a few more words.
+
+## Images / Videos/Audios (function extension of this astro theme)
+
+```mdx
+![alt text](sample-image.png)
+```
+
+{ /* TODO: This HTML output needs testing for a11y */ }
+
+```html
+<a href='./sample-image.png'>
+  <picture>
+    <source srcset='sample-image.avif' />
+    <source srcset='sample-image.dark.avif' media='(prefers-color-scheme: dark)' />
+    <img src='sample-image.avif' alt='alt text' height='1024', width='1024' loading='lazy' />
+  </picture>
+</a>
+```
+
+```mdx
+![sample-video.vtt](sample-video.mkv)
+```
+
+This HTML output is stolen from [MDN - Adding Captions and Subtitles to Video](https://developer.mozilla.org/en-US/docs/Web/Media/Audio_and_video_delivery/Adding_captions_and_subtitles_to_HTML5_video).
+
+```html
+<video controls preload='metadata'>
+  <source src='sample-video.mkv' />
+  <track
+    src='sample-video.vtt'
+    default />
+</video>
+```
+
+```mdx
+![sample-audio.vtt](sample-audio.opus)
+```
+
+Using `<video>` instead of `<audio>` here because `<audio>` doesn't support webvtt.
+
+```html
+<video controls preload='metadata'>
+  <source src='sample-audio.opus' />
+  <track
+    src='sample-audio.vtt'
+    default />
+</video>
+```
+
+### Example
+
+![favicon](/favicon.svg)
+
+{/* TODO: List more examples. */}
+
+## Blockquotes
+
+```mdx
+> Don't communicate by sharing memory, share memory by communicating.
+>
+> — <cite>Rob Pike[^1]</cite>
+```
+> Don't communicate by sharing memory, share memory by communicating.
+>
+> — <cite>Rob Pike (The above quote is excerpted from Rob Pike's [talk](https://www.youtube.com/watch?v=PAAkCSZUG1c) during Gopherfest, November 18, 2015.)</cite>
+
+## Tables
+
+```mdx
+| Italics | Bold | Code |
+| --------- | -------- | ------ |
+| _italics_ | **bold** | `code` |
+```
+
+| Italics | Bold | Code |
+| --------- | -------- | ------ |
+| _italics_ | **bold** | `code` |
+| _italics_ | **bold** | `code` |
+
+## UML
+
+```uml
+start
+:Hello world;
+:This is defined on
+several **lines**;
+stop
+```
+
+```html
+<a href='./hello-world.pu'>
+  <picture>
+    <source srcset='hello-world.svg' />
+    <source srcset='hello-world.dark.svg' media='(prefers-color-scheme: dark)' />
+    <img src='hello-world.svg' alt='alt text' height='1024', width='1024' loading='lazy' />
+  </picture>
+</a>
+```
+
+## List
+
+```mdx
+-   <p>Fruit</p>
+    -   Apple
+    -   Orange
+    -   Banana
+    -   <p>Dairy</p>
+        1.  Milk
+        2.  Cheese
+```
+-   <p>Fruit</p>
+    -   Apple
+    -   Orange
+    -   Banana
+    -   <p>Dairy</p>
+        1.  Milk
+        2.  Cheese
+
+## Other — abbr, sub, sup, kbd, mark, del
+
+{/* TODO: reimplement title */}
+
+```mdx
+<abbr title='Graphics Interchange Format'>GIF</abbr> is a bitmap image format.
+
+H<sub>2</sub>O X<sup>n</sup> + Y<sup>n</sup> = Z<sup>n</sup>
+
+Press <kbd>CTRL</kbd> + <kbd>ALT</kbd> + <kbd>Delete</kbd> to end the session.
+
+Most <mark>salamanders</mark> are nocturnal, and hunt for insects, worms, and other small creatures.
+
+~~strikethrough~~
+```
+
+<abbr title='Graphics Interchange Format'>GIF</abbr> is a bitmap image format.
+
+H<sub>2</sub>O X<sup>n</sup> + Y<sup>n</sup> = Z<sup>n</sup>
+
+Press <kbd>CTRL</kbd> + <kbd>ALT</kbd> + <kbd>Delete</kbd> to end the session.
+
+Most <mark>salamanders</mark> are nocturnal, and hunt for insects, worms, and other small creatures.
+
+~~strikethrough~~

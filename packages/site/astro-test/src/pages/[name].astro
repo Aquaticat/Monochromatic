@@ -1,0 +1,36 @@
+---
+import Html from '@_/layouts/Html.astro';
+
+import {
+  names,
+  postsGroupedByName,
+} from '@/src';
+
+export async function getStaticPaths() {
+  return names.map((name) => ({
+    params: { name },
+  }));
+}
+
+const { name } = Astro.params;
+const namePosts = postsGroupedByName[name]!;
+---
+
+<Html
+  title={name}
+  lang='en'>
+  <main>
+    <h1>{name}</h1>
+    <ul>
+      {
+        namePosts.map((
+            post,
+          ) => (
+          <li>
+            <a href={`/${post.id}`}>{post.data.title}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </main>
+</Html>

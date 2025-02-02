@@ -1,0 +1,105 @@
+@property --light-lighter {
+  syntax: '<color>';
+
+  inherits: true;
+
+  initial-value: #f0e9ff;
+}
+
+@property --light {
+  syntax: '<color>';
+
+  inherits: true;
+
+  initial-value: #e1daf0;
+}
+
+@property --light-darker {
+  syntax: '<color>';
+
+  inherits: true;
+
+  initial-value: #c0bacf;
+}
+
+@property --dark-darker {
+  syntax: '<color>';
+
+  inherits: true;
+
+  initial-value: #010004;
+}
+
+@property --dark {
+  syntax: '<color>';
+
+  inherits: true;
+
+  initial-value: #04020b;
+}
+
+@property --dark-lighter {
+  syntax: '<color>';
+
+  inherits: true;
+
+  initial-value: #181322;
+}
+
+@property --subtle {
+  syntax: '<color>';
+
+  inherits: true;
+
+  initial-value: #767090;
+}
+
+@property --primary {
+  syntax: '<color>';
+
+  inherits: true;
+
+  initial-value: #8c5fe8;
+}
+
+:root {
+  --fg: var(--dark);
+  --fg-stronger: var(--dark-darker);
+  --fg-weaker: var(--dark-lighter);
+  --fg-lighter: var(--dark-lighter);
+  --fg-darker: var(--dark-darker);
+  --bg: var(--light);
+  --bg-stronger: var(--light-lighter);
+  --bg-weaker: var(--light-darker);
+  --bg-lighter: var(--light-lighter);
+  --bg-darker: var(--light-darker);
+
+  @media (prefers-color-scheme: dark) {
+    --fg: var(--light);
+    --fg-stronger: var(--light-lighter);
+    --fg-weaker: var(--light-darker);
+    --fg-lighter: var(--light-lighter);
+    --fg-darker: var(--light-darker);
+    --bg: var(--dark);
+    --bg-stronger: var(--dark-darker);
+    --bg-weaker: var(--dark-lighter);
+    --bg-lighter: var(--dark-lighter);
+    --bg-darker: var(--dark-darker);
+
+    :is(.shiki, .astro-code),
+    :is(.shiki, .astro-code) span {
+      color: var(--shiki-dark) !important;
+
+      background-color: var(--shiki-dark-bg) !important;
+
+      --shiki-dark-bg: transparent !important;
+      --shiki-light-bg: transparent !important;
+
+      font-style: var(--shiki-dark-font-style) !important;
+
+      font-weight: var(--shiki-dark-font-weight) !important;
+
+      text-decoration: var(--shiki-dark-text-decoration) !important;
+    }
+  }
+}

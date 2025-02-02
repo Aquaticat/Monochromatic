@@ -1,0 +1,10 @@
+{
+  "name": "@monochromatic-dev/rehype-plugin-content",
+  "description": "not ready",
+  "type": "module",
+  "files": ["src"],
+  "dependencies": { "@types/bun": "*", "html-to-text": "*" },
+  "module": "src/index.js",
+  "main": "src/index.js",
+  "version": "0.0.5"
+}

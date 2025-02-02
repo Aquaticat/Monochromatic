@@ -1,0 +1,165 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+    "[yaml]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[astro]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[vue]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[html]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[toml]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[js]": {
+      "editor.defaultFormatter": "dprint.dprint"
+		},
+		"[ts]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[mjs]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[mts]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[cjs]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[cts]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[javascript]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[typescript]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[javascriptreact]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[typescriptreact]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[json]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[jsonc]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+		"[css]": {
+			"editor.defaultFormatter": "dprint.dprint"
+		},
+
+    "todo-tree.general.enableFileWatcher": true,
+		"todo-tree.general.revealBehaviour": "end of todo",
+		"todo-tree.general.tags": [
+			"BUG",
+			"HACK",
+			"FIXME",
+			"TODO",
+			"XXX",
+			"[ ]",
+			"[x]",
+			"DONE",
+			"FIXED",
+			"MAYBE",
+			"INVALID",
+			"WONTFIX",
+			"UPDATE",
+			"DOING"
+		],
+		"todo-tree.filtering.ignoreGitSubmodules": true,
+		"todo-tree.regex.enableMultiLine": true,
+		"todo-tree.highlights.defaultHighlight": {
+			"textDecoration": "underline"
+		},
+
+		"typescript.enablePromptUseWorkspaceTsdk": true,
+    "typescript.preferences.preferTypeOnlyAutoImports": true,
+
+    "dprint.experimentalLsp": true,
+
+    // TODO: Automatically check this is set correctly on commit via husky git hook.
+    // Commented out when not using Yarn
+		// "dprint.path": ".yarn/unplugged/dprint-npm-0.47.2-8175957bd9/node_modules/dprint/bin.js",
+
+    "files.exclude": {
+      "**/.git": true,
+      "**/.svn": true,
+      "**/.hg": true,
+      "**/CVS": true,
+      "**/.DS_Store": true,
+      "**/Thumbs.db": true,
+      "**/.jj": true,
+      "**/*.map": true
+    },
+
+    "oxc.configPath": "packages/config/pxlint/index.json",
+	},
+
+  "extensions": {
+		"recommendations": [
+			"EditorConfig.EditorConfig",
+			"tamasfe.even-better-toml",
+			"unifiedjs.vscode-mdx",
+			"dprint.dprint",
+			"gruntfuggly.todo-tree",
+			"vue.volar",
+
+      // Commented out when not using Yarn
+			// "arcanis.vscode-zipfs",
+
+      "oxc.oxc-vscode",
+      "stylelint.vscode-stylelint",
+      "oven.bun-vscode",
+      "astro-build.astro-vscode",
+		],
+	},
+
+  "tasks": {
+		"version": "2.0.0",
+
+    "tasks": [
+      // Commented out when not using Yarn
+      /*
+			{
+				"label": "dprint",
+				"command": "yarn",
+
+        "type": "shell",
+				"args": ["run", "-T", "-B", "dprint", "fmt", "${file}"],
+
+        "presentation": {
+					"reveal": "silent"
+				},
+				"problemMatcher": "[ERROR]",
+
+        "osx": {
+					"options": {
+						"shell": {
+							"args": ["-c", "-i"]
+						}
+					}
+				},
+				"linux": {
+					"options": {
+						"shell": {
+							"args": ["-c", "-i"]
+						}
+					}
+				}
+			}
+      */
+		]
+	}
+}

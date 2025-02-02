@@ -1,0 +1,49 @@
+{
+  "name": "@monochromatic-dev/config-typescript",
+  "version": "0.0.5",
+  "description": "Monochromatic's tsconfig.json",
+  "main": "tsconfig.json",
+  "module": "tsconfig.json",
+  "type": "module",
+  "files": [
+    "tsconfig.json",
+    "example.tsconfig.json",
+    "tsconfig.dom.json",
+    "dom.example.tsconfig.json",
+    "tsconfig.worker.json",
+    "worker.example.tsconfig.json",
+    "tsconfig.astro.json",
+    "astro.example.tsconfig.json",
+    "pnp.example.tsconfig.json"
+  ],
+  "keywords": [
+    "config",
+    "monochromatic",
+    "typescript"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "exports": {
+    ".": "./tsconfig.json",
+    "./dom": "./tsconfig.dom.json",
+    "./worker": "./tsconfig.worker.json",
+    "./astro": "./tsconfig.astro.json"
+  },
+  "peerDependencies": {
+    "@types/mdx": ">=2.0.13",
+    "@types/bun": "*"
+  },
+  "dependencies": {
+    "@types/mdx": ">=2.0.13",
+    "@types/bun": "*"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/config/typescript"
+  }
+}

@@ -1,0 +1,12 @@
+---
+import consts from '../temp/consts';
+import Post from './Post.astro';
+import astroConfig from '@root/astro.config.mjs';
+const lang = Astro.currentLocale!;
+const posts = Astro.props.posts;
+---
+
+<ul class='Posts'>
+  {posts.map((post,) => <Post {post}></Post>)}
+</ul>
+../temp/consts

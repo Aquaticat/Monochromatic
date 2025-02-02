@@ -1,0 +1,45 @@
+@font-face {
+  font-family: inter;
+
+  src:
+    local('Inter Variable'),
+    url('/inter.woff2') format('woff2-variations');
+
+  font-weight: 1 1000;
+
+  font-stretch: 50% 200%;
+
+  font-style: normal;
+
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: inter;
+
+  src:
+    local('Inter Variable'),
+    url('/interItalic.woff2') format('woff2-variations');
+
+  font-weight: 1 1000;
+
+  font-stretch: 50% 200%;
+
+  font-style: italic;
+
+  font-display: swap;
+}
+
+@font-face {
+  font-family: monaspaceNeon;
+
+  src:
+    local('Monaspace Neon'),
+    url('/monaspaceNeon.woff2') format('woff2-variations');
+
+  font-weight: 1 1000;
+
+  font-stretch: 50% 200%;
+
+  font-display: swap;
+}

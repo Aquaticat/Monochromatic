@@ -1,0 +1,11 @@
+.Links {
+  @mixin --flex-start;
+
+  column-gap: var(--gap-l);
+
+  a {
+    @mixin --flex-center;
+    @mixin --touch-target;
+    @mixin --h6;
+  }
+}

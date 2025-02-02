@@ -1,0 +1,20 @@
+{
+  "name": "@monochromatic-dev/snippet-data-id",
+  "type": "module",
+  "module": "dist/final/index.js",
+  "main": "dist/final/index.js",
+  "typings": "dist/final/index.d.ts",
+  "files": [
+    "dist/final"
+  ],
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "*"
+  },
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "snippets/data-id"
+  }
+}

@@ -1,0 +1,14 @@
+import type { NegativeInfinity, PositiveInfinity } from 'type-fest';
+import type { Nan } from './numeric.type.nan';
+export declare function isNumber<T>(value: T): value is T extends number ? T : never;
+export declare function isNan(value: any): value is Nan;
+export declare function isInteger<T>(value: T): value is T extends number ? T : never;
+export declare function isFloat<T>(value: T): value is T extends number ? T : never;
+export declare function isNonNanNumber<T>(value: T): value is Exclude<T extends number ? T : never, typeof Number.NaN>;
+export declare function isPositiveInfinity(value: any): value is PositiveInfinity;
+export declare function isNegativeInfinity(value: any): value is PositiveInfinity;
+export declare function isInfinity<T_value>(value: T_value | unknown): value is T_value extends PositiveInfinity ? PositiveInfinity : T_value extends NegativeInfinity ? NegativeInfinity : never;
+export declare function isFinite<T>(value: T): value is Exclude<T extends number ? T : never, PositiveInfinity | NegativeInfinity | typeof Number.NaN>;
+export declare function isSafeNumber<T>(value: T): value is Exclude<T extends number ? T : never, PositiveInfinity | NegativeInfinity | typeof Number.NaN>;
+export declare function isPositiveNumber<T>(value: T): value is T extends number ? T : never;
+export declare function isObjectDate(value: any): value is Date;

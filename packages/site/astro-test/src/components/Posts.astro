@@ -1,0 +1,36 @@
+---
+import Post from '@_/components/Post.astro';
+import type { Post as PostType } from '@_/index.ts';
+
+interface Props {
+  posts: PostType[];
+  lang: string;
+}
+const { posts, lang } = Astro.props;
+---
+
+<style>
+.Posts {
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--min-text) * var(--rp)), 1fr));
+
+  column-gap: calc(var(--gap-l) * var(--rp));
+
+  row-gap: calc(var(--gap-l) * var(--rp));
+
+  inline-size: 100%;
+}
+</style>
+<ul class='Posts'>
+  {
+    posts.map((
+      post,
+    ) => (
+      <Post
+        {post}
+        {lang}
+      />
+    ))
+  }
+</ul>

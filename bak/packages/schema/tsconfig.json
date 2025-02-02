@@ -1,0 +1,15 @@
+{
+  "extends": "@monochromatic-dev/config-typescript/ssg",
+  "include": ["src"],
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist/final",
+
+    "types": ["node", "vite/client"],
+
+    "paths": {
+      "@_/*": ["src/_/*"],
+      "@/*": ["*"],
+    },
+  },
+}

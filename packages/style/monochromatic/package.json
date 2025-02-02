@@ -1,0 +1,28 @@
+{
+  "name": "@monochromatic-dev/style-monochromatic",
+  "files": [
+    "src/",
+    "dist/"
+  ],
+  "type": "module",
+  "main": "src/index.css",
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/mdx": "*",
+    "@types/bun": "*"
+  },
+  "version": "0.1.0",
+  "dependencies": {
+    "the-new-css-reset": ">=1.11.2",
+    "TODS": "github:clagnut/TODS"
+  },
+  "exports": {
+    "./.css": "src/index.css",
+    "./mixin.css": "src/mixin.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/style/monochromatic"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "extends": "@monochromatic-dev/config-typescript",
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM"],
+  },
+}

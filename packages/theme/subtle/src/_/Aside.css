@@ -1,0 +1,21 @@
+.Aside {
+  @mixin --text;
+
+  flex-grow: 1;
+
+  flex-basis: min-content;
+
+  &:has(> .Links) {
+    flex-basis: var(--comfort-text);
+  }
+
+  /* TODO: In the future, this displays a list of suggested articles when 404 is reached. For example, suggesting the homepage or the same page in a language that's available. */
+  &:has(> .FourOFour) {
+    display: none;
+  }
+
+  /* TODO: In the future, this displays a list of related articles. For example, the other articles in a series, or the prev or the next article timeline wise. */
+  &:has(> .Related) {
+    display: none;
+  }
+}

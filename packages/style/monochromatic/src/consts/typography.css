@@ -1,0 +1,111 @@
+@property --h1 {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 48;
+}
+
+@property --h1-lh {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 48;
+}
+
+@property --h2 {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 40;
+}
+
+@property --h2-lh {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 40;
+}
+
+@property --h3 {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 32;
+}
+
+@property --h3-lh {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 32;
+}
+
+@property --h4 {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 24;
+}
+
+@property --h4-lh {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 28;
+}
+
+@property --h5 {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 20;
+}
+
+@property --h5-lh {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 24;
+}
+
+@property --h6 {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 18;
+}
+
+@property --h6-lh {
+  syntax: '<number>';
+
+  inherits: true;
+
+  initial-value: 24;
+}
+
+@property --p {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 16;
+}
+
+@property --p-lh {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 24;
+}

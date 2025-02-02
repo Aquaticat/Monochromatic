@@ -1,0 +1,44 @@
+{
+  "name": "@monochromatic-dev/esbuild-plugin-mdx",
+  "type": "module",
+  "module": "dist/final/index.js",
+  "main": "dist/final/index.js",
+  "typings": "dist/final/index.d.ts",
+  "files": [
+    "dist/final"
+  ],
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/node": ">=20.12.7"
+  },
+  "dependencies": {
+    "@hbsnow/rehype-sectionize": "*",
+    "@mdx-js/mdx": "*",
+    "@monochromatic-dev/esbuild-plugin-data": "workspace:*",
+    "@monochromatic-dev/esbuild-plugin-vue": "workspace:*",
+    "@monochromatic-dev/module-fs-path": "workspace:*",
+    "@monochromatic-dev/module-object-to-export": "workspace:*",
+    "@monochromatic-dev/module-pm": "workspace:*",
+    "@monochromatic-dev/module-resolve": "workspace:*",
+    "esbuild": "*",
+    "find-up": "*",
+    "highlight.js": ">=11.9.0",
+    "memoize-fs": ">=3.0.4",
+    "rambdax": "*",
+    "rehype-highlight": ">=7.0.0",
+    "remark-gfm": "*",
+    "remark-github-beta-blockquote-admonitions": "*",
+    "remark-smartypants": "*",
+    "vfile": ">=6.0.1"
+  },
+  "peerDependencies": {
+    "esbuild": "*"
+  },
+  "version": "0.2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "esbuild-plugin/mdx"
+  },
+  "sideEffects": false
+}

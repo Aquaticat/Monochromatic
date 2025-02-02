@@ -1,0 +1,9 @@
+{
+  "name": "@monochromatic-dev/rehype-plugin-summary",
+  "type": "module",
+  "files": ["src"],
+  "dependencies": { "happy-dom": "*" },
+  "module": "src/index.js",
+  "main": "src/index.js",
+  "version": "0.0.5"
+}

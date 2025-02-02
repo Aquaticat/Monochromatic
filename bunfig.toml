@@ -1,0 +1,21 @@
+logLevel = 'warn'
+telemetry = false
+
+# We're not using Bun's test runner
+# [test]
+# coverage = true
+
+[install]
+auto = 'disable'
+scopes.jsr = 'https://npm.jsr.io'
+saveTextLockfile = true
+
+[run]
+# Always use Bun's shell
+shell = 'bun'
+
+# Disabled: Auto alias node to bun
+# Astro.
+bun = false
+
+silent = true

@@ -1,0 +1,241 @@
+---
+import Posts from '@_/components/Posts.astro';
+import {
+  i18n,
+  postsGroupedByLangThenTag,
+  postsGroupedByTag,
+  tags,
+} from '@_/index.ts';
+interface Props {
+  lang: string;
+}
+const { lang } = Astro.props;
+---
+<style>
+@import '@monochromatic-dev/style-monochromatic/mixin.css';
+
+header {
+  inset-block-start: 0;
+
+  position: sticky;
+
+  /* background-color: var(--bg-lighter); */
+  background-color: oklch(from var(--bg-lighter) l c h / 50%);
+
+  backdrop-filter: blur(calc(var(--blur-m) * var(--rp)));
+
+  display: flex;
+
+  flex-direction: row;
+
+  flex-wrap: nowrap;
+
+  justify-content: space-between;
+
+  padding-inline: calc(var(--gap-l) * var(--rp));
+
+  z-index: 1;
+
+  box-shadow: 0 calc(var(--gap-s) * var(--rp)) calc(var(--blur-m) * var(--rp))
+    calc(var(--gap-s) * var(--rp)) oklch(from var(--subtle) l c h / 20%);
+}
+
+.siteName {
+  @mixin --h6;
+
+  color: var(--primary);
+
+  font-family: var(--mono);
+
+  font-weight: 500;
+}
+
+img[alt='avatar'] {
+  /* magic number 32 */
+  max-inline-size: calc(32 * var(--rp));
+}
+
+:is(button, .brand) {
+  display: flex;
+
+  flex-direction: row;
+
+  flex-wrap: nowrap;
+
+  column-gap: calc(var(--gap-m) * var(--rp));
+
+  align-items: center;
+
+  min-block-size: calc(var(--min-interactive) * var(--rp));
+}
+
+#search {
+  input[name='q'] {
+    @mixin --touch-target;
+    @mixin --text;
+
+    text-align: center;
+
+    font-size: 18--rp;
+
+    &::placeholder {
+      opacity: 0.5;
+    }
+  }
+
+  .Header__tags {
+    display: none;
+  }
+
+  &:popover-open {
+    position: fixed;
+
+    inset-inline: 0;
+
+    inset-block: 0;
+
+    margin-inline: auto;
+
+    margin-block: auto;
+
+    inline-size: fit-content;
+
+    block-size: fit-content;
+
+    display: flex;
+
+    flex-direction: column;
+
+    row-gap: calc(var(--gap-3xl) * var(--rp));
+
+    max-inline-size: calc(var(--max-ui) * var(--rp));
+
+    min-inline-size: calc(var(--min-text) * var(--rp));
+
+    input[name='q'] {
+      @mixin --h3;
+
+      max-inline-size: calc(var(--max-ui) * var(--rp));
+
+      border-width: calc(var(--border-s) * var(--rp));
+
+      border-style: solid;
+
+      border-color: var(--subtle);
+
+      border-radius: calc(var(--border-radius-m) * var(--rp));
+
+      padding-inline: calc(var(--gap-m) * var(--rp));
+
+      padding-block: calc(var(--gap-m) * var(--rp));
+
+      &::-webkit-search-cancel-button {
+        appearance: none;
+      }
+
+      &:focus {
+        background-image: revert;
+
+        border-color: var(--primary);
+
+        font-weight: 800;
+      }
+    }
+
+    .Header__tags {
+      @mixin --flex-center;
+
+      column-gap: var(--gap-m);
+
+      row-gap: var(--gap-l);
+
+      max-inline-size: var(--max-ui);
+
+      > li {
+        &:has(details[open]) {
+          min-inline-size: 100%;
+        }
+      }
+
+      details {
+        > .Posts {
+          max-inline-size: var(--max-ui);
+        }
+
+        > summary {
+          @mixin --flex-center;
+          @mixin --touch-target;
+          @mixin --h5;
+
+          color: var(--primary);
+
+          > span {
+            &::before {
+              content: '#';
+            }
+          }
+        }
+      }
+    }
+
+    &::backdrop {
+      background-color: color(srgb 0 0 0 / 1%);
+
+      backdrop-filter: blur(1vmax);
+    }
+  }
+}
+</style>
+<header>
+  <a
+    href={`/${lang}`}
+    class='brand'>
+    <img
+      src={`/favicon.svg`}
+      alt='avatar'>
+    <span class='siteName'>{i18n.get('siteName')!.get(lang)!}</span>
+  </a>
+  <nav>
+    <button popovertarget='search'>
+      Search <svg
+        width='20'
+        height='20'
+        viewBox='0 0 20 20'
+        fill='none'
+        xmlns='http://www.w3.org/2000/svg'>
+        <path
+          d='M18.7441 19.0893L14.03 14.3752M16.8333 9.33333C16.8333 13.0152 13.8486 16 10.1667 16C6.48477 16 3.5 13.0152 3.5 9.33333C3.5 5.65143 6.48477 2.66666 10.1667 2.66666C13.8486 2.66666 16.8333 5.65143 16.8333 9.33333Z'
+          stroke='currentColor'
+          stroke-width='2'
+        />
+      </svg>
+    </button>
+    <div
+      popover
+      id='search'>
+      <input
+        name='q'
+        type='search'
+        required
+        placeholder={i18n.get('searchPlaceholder')!.get(lang)!}
+      />
+      <ul class='Header__tags'>
+        {
+          tags.map((
+            tag,
+          ) => (
+            <details>
+              <summary>
+                <span>{tag}</span>
+              </summary>
+              <Posts
+                posts={postsGroupedByLangThenTag[lang]![tag]!}
+                {lang}
+              />
+            </details>
+          ))
+        }
+      </ul>
+    </div>
+  </nav>
+</header>

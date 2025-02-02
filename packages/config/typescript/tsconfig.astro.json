@@ -1,0 +1,15 @@
+{
+  "extends": "@monochromatic-dev/config-typescript/dom",
+  "compilerOptions": {
+    "rootDir": "${configDir}/",
+
+    // Astro requirement
+    "allowJs": true,
+    "checkJs": true,
+
+    // Conflicts with allowJs
+    "isolatedDeclarations": false,
+  },
+  "include": ["${configDir}/.astro/types.d.ts", "${configDir}/**/*"],
+  "exclude": ["${configDir}/dist"],
+}

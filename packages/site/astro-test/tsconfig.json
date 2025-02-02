@@ -1,0 +1,9 @@
+{
+  "extends": "@monochromatic-dev/config-typescript/astro",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"],
+      "@_/*": ["./src/*"],
+    },
+  },
+}

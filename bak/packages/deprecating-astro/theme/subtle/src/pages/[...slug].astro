@@ -1,0 +1,24 @@
+---
+import PostLayout from '@layouts/global.astro';
+import { getCollection, } from 'astro:content';
+import astroConfig from '@root/astro.config.mjs';
+
+export async function getStaticPaths() {
+  const postEntries = await getCollection('post',);
+  return postEntries.map(entry => ({
+    // MAYBE: Here?
+    // TODO: Correct path order.
+    params: {
+      slug: entry.data.lang === astroConfig.i18n!.defaultLocale ? `post/${entry.data.basename}` : `${entry.data.lang}/post/${entry.data.basename}`,
+    },
+    props: { entry, },
+  }));
+}
+
+const { entry, } = Astro.props;
+const { Content, } = await entry.render();
+---
+
+<PostLayout frontmatter={entry.data}>
+  <Content />
+</PostLayout>

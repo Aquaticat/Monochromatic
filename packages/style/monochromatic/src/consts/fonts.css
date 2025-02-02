@@ -1,0 +1,63 @@
+@property --sans {
+  syntax: '*';
+
+  inherits: true;
+
+  initial-value:
+    inter,
+    arial,
+    helvertica,
+    'LXGW Fasmart Gothic',
+    'LXGW Neo XiHei',
+    'Noto Sans CJK',
+    system-ui,
+    sans-serif;
+}
+
+@property --serif {
+  syntax: '*';
+
+  inherits: true;
+
+  initial-value:
+    georgia,
+    'Times New Roman',
+    times,
+    'LXGW WenKai GB',
+    'LXGW WenKai',
+    'Noto Serif CJK',
+    serif;
+}
+
+@property --mono {
+  syntax: '*';
+
+  inherits: true;
+
+  initial-value:
+    monaspaceNeon,
+    'MonaspiceNe NF',
+    'JetBrains Mono',
+    'Noto Mono',
+    'Roboto Mono',
+    monospace;
+}
+
+@property --mono-font-feature-settings {
+  syntax: '*';
+
+  inherits: true;
+
+  initial-value:
+    'calt',
+    'ss01',
+    'ss02',
+    'ss03',
+    'ss04',
+    'ss05',
+    'ss06',
+    'ss07',
+    'ss08',
+    'ss09',
+    'liga';
+}

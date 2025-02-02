@@ -1,0 +1,25 @@
+---
+import Header from '@_/components/Header.astro';
+import Head from '@_/layouts/_Head.astro';
+interface Props {
+  title: string;
+  lang: string;
+}
+const { title, lang } = Astro.props;
+---
+<html {lang}>
+  <Head
+    {title}
+    {lang}
+  />
+  <body>
+    <Header {lang} />
+    <div class='between_header_footer'>
+      <!-- Write main and aside inside slotting pages. -->
+      <!-- Don't forget to add a h1 -->
+      <slot />
+    </div>
+    <footer>
+    </footer>
+  </body>
+</html>

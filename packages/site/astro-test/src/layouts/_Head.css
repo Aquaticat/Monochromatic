@@ -1,0 +1,79 @@
+@import '@monochromatic-dev/style-monochromatic/.css';
+
+html {
+  background-image:
+    radial-gradient(at 0% 75%, #d7c1f5 0, transparent 50%),
+    radial-gradient(at 100% 25%, #eed7fb 0, transparent 50%);
+
+  @media (prefers-color-scheme: dark) {
+    background-image:
+      radial-gradient(at 0% 75%, #8c5fe840 0, transparent 50%),
+      radial-gradient(at 100% 25%, #b887f240 0, transparent 50%);
+  }
+}
+
+body {
+  display: flex;
+
+  flex-direction: column;
+
+  row-gap: calc(var(--gap-3xl) * var(--rp));
+
+  > .between_header_footer {
+    flex-grow: 1;
+
+    display: flex;
+
+    flex-direction: row;
+
+    flex-wrap: wrap;
+
+    justify-content: center;
+
+    padding-inline: calc(var(--gap-l) * var(--rp));
+
+    column-gap: calc(var(--gap-3xl) * var(--rp));
+
+    > main {
+      @mixin --text;
+    }
+
+    > aside {
+      min-inline-size: calc(var(--min-text) * var(--rp));
+
+      max-inline-size: calc(var(--max-ui) * var(--rp));
+
+      flex-grow: 1;
+    }
+  }
+}
+
+.astro-code {
+  /* From https://css.glass */
+  background-color: transparent !important;
+
+  border-radius: calc(var(--border-radius-m) * var(--rp));
+
+  padding-block: calc(var(--gap-m) * var(--rp));
+
+  padding-inline: calc(var(--gap-m) * var(--rp));
+
+  /* Doesn't work with box-shadow */
+
+  /*   clip-path: polygon(
+      0% calc(var(--border-radius-m) * var(--rp)),
+      calc(var(--border-radius-m) * var(--rp)) 0%,
+      calc(100% - calc(var(--border-radius-m) * var(--rp))) 0%,
+      100% calc(var(--border-radius-m) * var(--rp)),
+      100% calc(100% - calc(var(--border-radius-m) * var(--rp))),
+      calc(100% - calc(var(--border-radius-m) * var(--rp))) 100%,
+      calc(var(--border-radius-m) * var(--rp)) 100%,
+      0% calc(100% - calc(var(--border-radius-m) * var(--rp)))
+    ); */
+  box-shadow: 0 calc(var(--gap-s) * var(--rp)) calc(var(--blur-m) * var(--rp))
+    calc(var(--gap-s) * var(--rp)) oklch(from var(--subtle) l c h / 20%);
+
+  backdrop-filter: blur(calc(var(--blur-m) * var(--rp))) brightness(110%);
+
+  /* border: 1px solid rgba(255, 255, 255, 0.3); */
+}

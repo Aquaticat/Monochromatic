@@ -1,0 +1,21 @@
+{
+  "name": "@monochromatic-dev/astro-component--match-lang",
+  "type": "module",
+  "module": "index.ts",
+  "main": "index.ts",
+  "files": ["src/", "index.ts"],
+  "scripts": {},
+  "devDependencies": {
+    "@types/node": ">=20.12",
+    "astro": ">=4.5"
+  },
+  "peerDependencies": {
+    "astro": ">=4.5"
+  },
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/astro-component/-match-lang"
+  }
+}

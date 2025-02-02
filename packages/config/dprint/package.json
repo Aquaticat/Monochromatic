@@ -1,0 +1,30 @@
+{
+  "name": "@monochromatic-dev/config-dprint",
+  "keywords": [
+    "dprint",
+    "config",
+    "monochromatic"
+  ],
+  "peerDependencies": {
+    "dprint": ">=0.45"
+  },
+  "main": "index.json",
+  "module": "index.json",
+  "type": "module",
+  "files": [
+    "index.json",
+    "example.dprint.json"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/config/dprint"
+  },
+  "preferUnplugged": true
+}

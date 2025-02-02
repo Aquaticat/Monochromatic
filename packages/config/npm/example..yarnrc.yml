@@ -1,0 +1,58 @@
+cloneConcurrency: 4
+
+defaultSemverRangePrefix: ''
+
+enableGlobalCache: false
+
+enableMessageNames: false
+
+enableTelemetry: false
+
+enableTimers: false
+
+httpTimeout: 6000
+
+logFilters:
+- level: discard
+  text: ESM support for PnP uses the experimental loader API and is therefore experimental
+- level: discard
+  text: Completed
+- level: discard
+  pattern: '* must be built because it never has been before or the last one failed'
+
+nmMode: hardlinks-local
+
+npmScopes:
+  jsr:
+    npmRegistryServer: 'https://npm.jsr.io'
+
+packageExtensions:
+  postcss@*:
+    peerDependencies:
+      postcss-value-parser: '*'
+
+pnpEnableEsmLoader: true
+
+pnpEnableInlining: false
+
+preferReuse: true
+
+supportedArchitectures:
+  cpu:
+  - current
+  - x64
+  - arm64
+  libc:
+  - current
+  - glibc
+  - musl
+  os:
+  - current
+  - linux
+  - win32
+  - darwin
+
+winLinkType: symlinks
+# Set NODE_OPTIONS environment variable to " --abort-on-uncaught-exception --allow-addons --allow-child-process --allow-fs-read=* --allow-fs-write=* --allow-worker --disable-proto=throw --experimental-detect-module --experimental-import-meta-resolve --experimental-permission --experimental-wasm-modules --experimental-websocket --force-context-aware --force-node-api-uncaught-exceptions-policy --pending-deprecation --tls-min-v1.3 --use-largepages=silent --disable-warning=ExperimentalWarning --redirect-warnings=node-warning.log "
+# Note the "disable-proto" flag isn't set because otherwise Yarn fails with:
+# Internal Error: Accessing Object.prototype.__proto__ has been disallowed with --disable-proto=throw    at dP (/home/user/.cache/node/corepack/v1/yarn/4.4.0/yarn.js:138:3322)    at Function.get (/home/user/.cache/node/corepack/v1/yarn/4.4.0/yarn.js:138:2311)    at fg (/home/user/.cache/node/corepack/v1/yarn/4.4.0/yarn.js:140:58707)    at Rt.start (/home/user/.cache/node/corepack/v1/yarn/4.4.0/yarn.js:176:1955)    at lE.execute (/home/user/.cache/node/corepack/v1/yarn/4.4.0/yarn.js:447:18095)    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)    at async lE.validateAndExecute (/home/user/.cache/node/corepack/v1/yarn/4.4.0/yarn.js:94:787)    at async t.run (/home/user/.cache/node/corepack/v1/yarn/4.4.0/yarn.js:98:3249)    at async APt (/home/user/.cache/node/corepack/v1/yarn/4.4.0/yarn.js:735:7743)    at async Wx (/home/user/.cache/node/corepack/v1/yarn/4.4.0/yarn.js:736:142)

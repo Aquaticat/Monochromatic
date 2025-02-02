@@ -1,0 +1,60 @@
+{
+  "name": "monochromatic",
+  "private": true,
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git"
+  },
+  "trustedDependencies": [
+    "sharp",
+    "@biomejs/biome",
+    "dprint",
+    "esbuild",
+    "husky"
+  ],
+  "scripts": {
+    "dependencies": "monochromatic dependencies",
+    "prepare": "husky"
+  },
+  "engines": {
+    "node": ">=22",
+    "bun": ">=1.1.27"
+  },
+  "// devDependencies/esbuild": "For the occasional necessarity of manually running ' yarn run -T -B esbuild src/index.ts --bundle --platform=node --charset=utf8 --format=esm --packages=external --target=node22 --drop:debugger --drop-labels=DEV,D --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --log-limit=0 --sourcemap ' intead of using my own pipeline.",
+  "devDependencies": {
+    "@monochromatic-dev/config-dprint": "workspace:*",
+    "@monochromatic-dev/config-stylelint": "workspace:*",
+    "dprint": ">=0.47.2",
+    "esbuild": ">=0.23.1",
+    "husky": "*",
+    "oxlint": ">=0.9.3",
+    "stylelint": ">=16.9.0",
+    "typescript": ">=5.7",
+    "vue-tsc": "*"
+  },
+  "workspaces": [
+    "packages/*/*"
+  ],
+  "os": [
+    "linux",
+    "darwin",
+    "win32",
+    "current"
+  ],
+  "cpu": [
+    "x64",
+    "arm64",
+    "current"
+  ],
+  "libc": [
+    "glibc",
+    "musl",
+    "current"
+  ]
+}

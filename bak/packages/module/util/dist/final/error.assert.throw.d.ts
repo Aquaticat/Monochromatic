@@ -1,0 +1,14 @@
+import type { Promisable } from 'type-fest';
+import type { NotPromise } from './promise.ts';
+export declare function assertThrowAsync(error: 'TypeError' | 'RangeError' | 'ReferenceError' | 'URIError' | (string & {}) | Error | ((...inputs: unknown[]) => Promisable<Error>), fn: () => Promisable<any>): Promise<void>;
+export declare function assertThrow(error: 'TypeError' | 'RangeError' | 'ReferenceError' | 'URIError' | (string & {}) | Error | ((...inputs: unknown[]) => Promisable<Error>), fn: () => NotPromise): void;
+export declare function assertThrowErrorAsync(fn: () => Promisable<any>): Promise<void>;
+export declare function assertThrowTypeErrorAsync(fn: () => Promisable<any>): Promise<void>;
+export declare function assertThrowRangeErrorAsync(fn: () => Promisable<any>): Promise<void>;
+export declare function assertThrowReferenceErrorAsync(fn: () => Promisable<any>): Promise<void>;
+export declare function assertThrowURIErrorAsync(fn: () => Promisable<any>): Promise<void>;
+export declare function assertThrowError(fn: () => NotPromise): void;
+export declare function assertThrowTypeError(fn: () => NotPromise): void;
+export declare function assertThrowRangeError(fn: () => NotPromise): void;
+export declare function assertThrowReferenceError(fn: () => NotPromise): void;
+export declare function assertThrowURIError(fn: () => NotPromise): void;

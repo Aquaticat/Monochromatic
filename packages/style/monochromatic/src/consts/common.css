@@ -1,0 +1,12 @@
+@property --r {
+  syntax: '<number>';
+
+  inherits: false;
+
+  /* 1/16 */
+  initial-value: 0.0625;
+}
+
+:root {
+  --rp: 0.0625rem;
+}

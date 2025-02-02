@@ -1,0 +1,32 @@
+{
+  "name": "@monochromatic-dev/esbuild-plugin-css",
+  "type": "module",
+  "module": "dist/final/index.js",
+  "main": "dist/final/index.js",
+  "typings": "dist/final/index.d.ts",
+  "files": [
+    "dist/final"
+  ],
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/node": ">=20.12.7"
+  },
+  "dependencies": {
+    "@logtape/logtape": "npm:@jsr/logtape__logtape@*",
+    "@monochromatic-dev/module-fs-path": "workspace:*",
+    "@monochromatic-dev/module-object-to-export": "workspace:*",
+    "@monochromatic-dev/module-resolve": "workspace:*",
+    "esbuild": "*",
+    "rambdax": "*"
+  },
+  "peerDependencies": {
+    "esbuild": "*"
+  },
+  "version": "0.6.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "esbuild-plugin/vue"
+  },
+  "sideEffects": false
+}

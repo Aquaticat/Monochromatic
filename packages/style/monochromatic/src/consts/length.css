@@ -1,0 +1,143 @@
+@property --border-s {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 2;
+}
+
+@property --border-m {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 2;
+}
+
+@property --gap-s {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 4;
+}
+
+@property --gap-m {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 8;
+}
+
+@property --gap-l {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 16;
+}
+
+@property --gap-xl {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 24;
+}
+
+@property --gap-xxl {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 32;
+}
+
+@property --gap-3xl {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 48;
+}
+
+@property --max-text {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 512;
+}
+
+@property --comfort-text {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 384;
+}
+
+@property --min-text {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 256;
+}
+
+@property --max-ui {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 1024;
+}
+
+@property --min-interactive {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 48;
+}
+
+@property --border-radius-s {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 2;
+}
+
+@property --border-radius-m {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 8;
+}
+
+@property --border-radius-l {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 16;
+}
+
+@property --blur-m {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 8;
+}
+
+@property --blur-l {
+  syntax: '<integer>';
+
+  inherits: true;
+
+  initial-value: 16;
+}

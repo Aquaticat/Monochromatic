@@ -1,0 +1,45 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+  "mainEntryPointFilePath": "<projectFolder>/dist/temp/tsc/src/index.d.ts",
+  "newlineKind": "lf",
+  "enumMemberOrder": "preserve",
+
+  "apiReport": {
+    "enabled": true,
+    "reportFolder": "<projectFolder>/dist/final/",
+    "reportTempFolder": "<projectFolder>/dist/temp/api-extractor/",
+    "reportFileName": "index.api.md"
+  },
+
+  "docModel": {
+    "enabled": true,
+    "apiJsonFilePath": "<projectFolder>/dist/final/index.api.json"
+  },
+
+  "dtsRollup": {
+    "enabled": true,
+    "untrimmedFilePath": "<projectFolder>/dist/final/index.d.ts"
+  },
+
+  "tsdocMetadata": {
+    "tsdocMetadataFilePath": "<projectFolder>/dist/final/tsdoc-metadata.json"
+  },
+
+  "messages": {
+    "compilerMessageReporting": {
+      "default": {
+        "addToApiReportFile": true
+      }
+    },
+    "tsdocMessageReporting": {
+      "default": {
+        "addToApiReportFile": true
+      }
+    },
+    "extractorMessageReporting": {
+      "ae-missing-release-tag": {
+        "logLevel": "none"
+      }
+    }
+  }
+}

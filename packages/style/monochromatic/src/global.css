@@ -1,0 +1,103 @@
+:root {
+  print-color-adjust: economy;
+
+  color-scheme: light dark;
+
+  scroll-behavior: smooth;
+
+  word-break: auto-phrase;
+
+  orphans: 2;
+
+  @media (prefers-reduced-motion) {
+    scroll-behavior: revert;
+  }
+
+  background-color: var(--bg);
+
+  scrollbar-color: var(--subtle) var(--bg);
+
+  &:has(#search:popover-open) {
+    scrollbar-gutter: stable;
+
+    @supports (overflow-block: clip) {
+      overflow-block: clip;
+    }
+
+    @supports not (overflow-block: clip) {
+      overflow-y: clip;
+    }
+  }
+
+  color: var(--fg);
+
+  font-family: var(--sans);
+
+  font-variant-numeric: slashed-zero tabular-nums;
+
+  font-variant-ligatures: common-ligatures discretionary-ligatures no-historical-ligatures
+    contextual;
+
+  text-rendering: optimizelegibility;
+
+  text-box: trim-both cap alphabetic;
+}
+
+body {
+  min-block-size: 100dvb;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+:is(*, *::before, *::after) {
+  box-sizing: border-box;
+
+  box-decoration-break: clone;
+
+  hanging-punctuation: first allow-end last;
+
+  accent-color: var(--primary);
+
+  caret-color: var(--primary);
+
+  hyphens: auto;
+
+  text-decoration-skip-ink: all;
+}
+
+:is(summary, button) {
+  @mixin --touch-target;
+}
+
+button {
+  @mixin --button-text;
+}
+
+img {
+  max-inline-size: 100%;
+
+  block-size: auto;
+}
+
+@counter-style dash {
+  system: cyclic;
+
+  symbols: '->';
+
+  suffix: ' ';
+}
+
+@counter-style wave {
+  system: cyclic;
+
+  symbols: '~>';
+
+  suffix: ' ';
+}
+
+/* Pure wrappers */
+:is([class^='-'], [class*=' -']) {
+  display: contents;
+}

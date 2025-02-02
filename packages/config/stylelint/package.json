@@ -1,0 +1,42 @@
+{
+  "name": "@monochromatic-dev/config-stylelint",
+  "keywords": [
+    "stylelint",
+    "config",
+    "monochromatic"
+  ],
+  "peerDependencies": {
+    "stylelint": "*",
+    "postcss-html": ">=1.8.0"
+  },
+  "dependencies": {
+    "stylelint-config-standard": "*",
+    "postcss-html": ">=1.8.0"
+  },
+  "devDependencies": {
+    "stylelint": "*"
+  },
+  "main": "index.mjs",
+  "module": "index.mjs",
+  "type": "module",
+  "files": [
+    "index.mjs",
+    "example.stylelint.mjs",
+    "pnp.example.stylelint.mjs"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/config/stylelint"
+  },
+  "exports": {
+    ".": "./index.mjs"
+  },
+  "preferUnplugged": true
+}

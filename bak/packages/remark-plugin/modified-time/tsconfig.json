@@ -1,0 +1,10 @@
+{
+  "extends": "@monochromatic-dev/config-typescript",
+
+  "include": ["src"],
+
+  "compilerOptions": {
+    "outDir": "dist/temp/tsc",
+    "rootDir": "src"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "extends": "@monochromatic-dev/config-typescript/dom",
+  "include": ["src"],
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist/final",
+
+    "paths": {
+      "@_/*": ["./src/_/*"],
+      "@/*": ["./*"],
+    },
+  },
+}

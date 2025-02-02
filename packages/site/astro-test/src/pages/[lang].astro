@@ -1,0 +1,31 @@
+---
+import Html from '@_/layouts/Html.astro';
+
+import Posts from '@_/components/Posts.astro';
+import {
+  i18n,
+  langs,
+  postsGroupedByLang,
+} from '@_/index.ts';
+export async function getStaticPaths() {
+  return langs.map((lang) => ({
+    params: { lang },
+  }));
+}
+
+const { lang } = Astro.params;
+---
+
+<Html
+  title={i18n.get('siteDescription')!.get(lang)!}
+  {lang}>
+  <main>
+    <h1>{i18n.get('siteDescription')!.get(lang)!}</h1>
+  </main>
+  <aside>
+    <Posts
+      posts={postsGroupedByLang[lang]!}
+      {lang}
+    />
+  </aside>
+</Html>

@@ -1,0 +1,221 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+
+  "files": {
+    "ignore": [
+      "**/node_modules/**/*.*",
+      "**/dist/**/*.*",
+      "**/.dist/**/*.*",
+      "**/bak/**/*.*",
+      "**/.astro/**/*.*",
+
+      // Yarn will format package.json files.
+      "**/package.json",
+
+      // Yarn auto generated file
+      "**/.pnp.data.json",
+      "**/.pnp.loader.mjs",
+    ],
+    "include": [
+      "**/*.js",
+      "**/*.ts",
+      "**/*.mjs",
+      "**/*.mts",
+      "**/*.cjs",
+      "**/*.cts",
+      "**/*.json",
+      "**/*.jsonc",
+      "**/*.css",
+    ],
+  },
+
+  "vcs": {
+    "enabled": true,
+    "useIgnoreFile": true,
+    "clientKind": "git",
+    "defaultBranch": "main",
+  },
+
+  "linter": {
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        // Sometimes we need them.
+        "noAccessKey": "off",
+        "noAutofocus": "off",
+        "noSvgWithoutTitle": "off",
+      },
+      "complexity": {
+        // I like writing for each.
+        "noForEach": "off",
+
+        // Arrow functions don't work with the arguments obj.
+        "useArrowFunction": "off",
+      },
+      "correctness": {
+        // So we can do method chaining.
+        "noSetterReturn": "off",
+
+        // It will be used.
+        "noUnusedImports": "off",
+
+        // Why is this off by default?
+        "noUndeclaredVariables": "error",
+
+        // We don't want linters reporting unused vars.
+        // Our editor will report them.
+        // Those vars are often left as code for syntax highlighting or testing purposes,
+        // or they're part of work-in-progress.
+        // Our bundler will remove them in the final bundle.
+        "noUnusedVariables": "off",
+      },
+      "performance": {
+        // Syntax suger > performance.
+        "noAccumulatingSpread": "off",
+      },
+      "style": {
+        // Sometimes we need them.
+        "noArguments": "off",
+        "noNonNullAssertion": "off",
+
+        // Why not?
+        "useShorthandArrayType": "error",
+        "useShorthandAssign": "error",
+        "useSingleCaseStatement": "error",
+
+        // If you know the string may have quotes in them in the future.
+        "noUnusedTemplateLiteral": "off",
+
+        // Maybe we'll remove those default initializers at a later time.
+        "noInferrableTypes": "off",
+
+        "noNegationElse": "error",
+        "useCollapsedElseIf": "error",
+
+        "useConsistentArrayType": "error",
+      },
+      "suspicious": {
+        // Sometimes we need them.
+        "noAssignInExpressions": "off",
+        "noExtraNonNullAssertion": "off",
+        "noExplicitAny": "off",
+      },
+      "nursery": {
+        "noDuplicateAtImportRules": "error",
+
+        "noDuplicateFontNames": "error",
+
+        "noDuplicateSelectorsKeyframeBlock": "error",
+
+        "noEmptyBlock": "error",
+
+        "noImportantInKeyframe": "error",
+
+        "noInvalidPositionAtImportRule": "error",
+
+        "noUnknownFunction": "error",
+
+        // Cannot whitelist CSS custom media
+        // "noUnknownMediaFeatureName": "error",
+
+        "noUnknownProperty": "error",
+
+        "noUnknownSelectorPseudoElement": "error",
+
+        // Doesn't have option to whitelist CSS custom units
+        // "noUnknownUnit": "error",
+
+        "noUnmatchableAnbSelector": "error",
+
+        // Not supported yet.
+        // "noValueAtRule": "error",
+
+        /* Sometimes we reference a font defined in a font-face rule,
+           which itself contains a generic font name. */
+        "useGenericFontNames": "off",
+      },
+    },
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 120,
+    "attributePosition": "multiline",
+  },
+  "organizeImports": {
+    // Sometimes we need the imports to be of certain order.
+    "enabled": false,
+  },
+  "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true,
+    },
+    "formatter": {
+      /* Too many bugs, sometimes swallows code.
+
+         For example:
+
+         ```ts
+         args.forEach((arg) => {
+           // fix for "sometimes c.log()" outputs quotes around strings.
+           // We don't want it to output quotes around strings ever.
+           if (typeof arg === 'string') {
+             console.log(arg);
+           } else {
+             console.dir(arg);
+           }
+         });
+         ```
+
+         The line `if (typeof arg === 'string') {` would be swallowed.
+
+         Use dprint instead. */
+      "enabled": false,
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "single",
+      "trailingCommas": "all",
+      "bracketSameLine": true,
+    },
+    "globals": ["Astro"],
+  },
+  "css": {
+    "parser": {
+      "cssModules": false,
+    },
+    "formatter": {
+      // Handled by dprint.
+      "enabled": false,
+    },
+    "linter": {
+      // Handled by Stylelint
+      "enabled": false,
+    },
+  },
+
+  "overrides": [
+    {
+      "include": [
+        ".vscode/**",
+        "**/api-extractor.json",
+        "**/*.tsconfig.json",
+        "**/tsconfig.*.json",
+        "**/tsconfig.json",
+        "**/devcontainer.json",
+        "**/*.jsonc",
+        "**/dprint.json",
+        "**/dprint/index.json",
+        "**/oxlint.json",
+        "**/oxlint/index.json",
+        "**/jsr.json",
+      ],
+      "json": {
+        "parser": {
+          "allowComments": true,
+          "allowTrailingCommas": true,
+        },
+        "formatter": {
+          "trailingCommas": "all",
+        },
+      },
+    },
+  ],
+}

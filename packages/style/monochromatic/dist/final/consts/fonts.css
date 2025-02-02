@@ -1,0 +1,17 @@
+@font-face{src:local(noto mono),local(noto sans mono);
+
+size-adjust:90%;
+
+font-family:"Noto Mono M"}
+
+@font-face{src:local(roboto mono);
+
+size-adjust:90%;
+
+font-family:"Roboto Mono M"}
+
+@font-face{src:local(jetbrains mono),local(jetbrainsmono);
+
+size-adjust:80%;
+
+font-family:"JetBrains Mono M"}:root{--sans:arial,helvertica,"LXGW Fasmart Gothic","LXGW Neo XiHei","Noto Sans CJK",system-ui,sans-serif;--serif:georgia,"Times New Roman",times,"LXGW WenKai GB","LXGW WenKai","Noto Serif CJK",serif;--mono:"Noto Mono M","Roboto Mono M","JetBrains Mono M",monospace}

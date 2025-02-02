@@ -1,0 +1,401 @@
+/* From https://css-tricks.com/inclusively-hidden/
+   Note that since I'm using this class as a pure composition class :not(:focus) and :not(:active) needs to be accounted for everywhere it's used.
+ */
+@define-mixin --sr-only {
+  /* stylelint-disable-next-line property-disallowed-list -- copypaste */
+  clip: rect(0 0 0 0);
+
+  position: absolute;
+
+  /* stylelint-disable-next-line property-disallowed-list,unit-disallowed-list -- copypaste */
+  width: 1px;
+
+  /* stylelint-disable-next-line property-disallowed-list,unit-disallowed-list -- copypaste */
+  height: 1px;
+
+  /* stylelint-disable-next-line property-disallowed-list -- copypaste */
+  overflow: hidden;
+
+  white-space: nowrap;
+
+  clip-path: inset(50%);
+}
+
+@define-mixin --touch-target {
+  min-inline-size: calc(var(--length-m) * var(--rp));
+
+  min-block-size: calc(var(--length-m) * var(--rp));
+
+  cursor: pointer;
+}
+
+@define-mixin --flex-center {
+  display: flex;
+
+  flex-direction: row;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+@define-mixin --flex-center-start {
+  display: flex;
+
+  flex-direction: row;
+
+  flex-wrap: wrap;
+
+  align-items: flex-start;
+
+  justify-content: center;
+}
+
+@define-mixin --flex-start-center {
+  display: flex;
+
+  flex-direction: row;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  justify-content: flex-start;
+}
+
+@define-mixin --flex-start {
+  display: flex;
+
+  flex-direction: row;
+
+  flex-wrap: wrap;
+
+  align-items: flex-start;
+
+  justify-content: flex-start;
+}
+
+@define-mixin --flex-between-center {
+  display: flex;
+
+  flex-direction: row;
+
+  flex-wrap: wrap;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+}
+
+@define-mixin --p {
+  font-size: calc(var(--p) * var(--rp));
+
+  line-height: calc(var(--p-lh) / var(--p));
+
+  text-wrap: pretty;
+
+  hyphens: auto;
+}
+
+@define-mixin --h1 {
+  font-weight: 800;
+
+  font-style: italic;
+
+  font-size: calc(var(--h1) * var(--rp));
+
+  line-height: calc(var(--h1-lh) / var(--h1));
+
+  text-align: center;
+
+  text-wrap: balance;
+
+  color: var(--fg-weaker);
+}
+
+@define-mixin --h2 {
+  font-weight: bold;
+
+  font-size: calc(var(--h2) * var(--rp));
+
+  line-height: calc(var(--h2-lh) / var(--h2));
+
+  text-wrap: balance;
+
+  color: var(--fg-weaker);
+}
+
+@define-mixin --h3 {
+  font-weight: bold;
+
+  font-size: calc(var(--h3) * var(--rp));
+
+  line-height: calc(var(--h3-lh) / var(--h3));
+
+  color: var(--fg-weaker);
+}
+
+@define-mixin --h4 {
+  font-weight: bold;
+
+  font-size: calc(var(--h4) * var(--rp));
+
+  line-height: calc(var(--h4-lh) / var(--h4));
+
+  color: var(--fg-weaker);
+}
+
+@define-mixin --h5 {
+  font-weight: bold;
+
+  font-size: calc(var(--h5) * var(--rp));
+
+  line-height: calc(var(--h5-lh) / var(--h5));
+
+  color: var(--fg-weaker);
+}
+
+@define-mixin --h6 {
+  font-weight: 600;
+
+  font-size: calc(var(--h6) * var(--rp));
+
+  line-height: calc(var(--h6-lh) / var(--h6));
+
+  color: var(--fg-weaker);
+}
+
+/* Text style suitable for button labels and the like */
+@define-mixin --button-text {
+  font-weight: 500;
+
+  font-size: calc(var(--h6) * var(--rp));
+
+  line-height: calc(var(--h6-lh) / var(--h6));
+
+  text-decoration: none;
+
+  /* text-transform: uppercase; */
+}
+
+@define-mixin --mono {
+  font-family: var(--mono);
+
+  font-feature-settings: var(--mono-font-feature-settings);
+}
+
+@define-mixin --text {
+  min-inline-size: calc(var(--min-text) * var(--rp));
+
+  max-inline-size: calc(var(--max-text) * var(--rp));
+
+  * + * {
+    margin-block-start: calc(var(--gap-l) * var(--rp));
+  }
+
+  a {
+    color: var(--primary);
+
+    &:visited {
+      color: var(--subtle);
+    }
+
+    &:hover {
+      text-decoration-color: var(--primary);
+    }
+  }
+
+  p {
+    @mixin --p;
+  }
+
+  h1 {
+    @mixin --h1;
+  }
+
+  h2 {
+    @mixin --h2;
+  }
+
+  h3 {
+    @mixin --h3;
+  }
+
+  h4 {
+    @mixin --h4;
+  }
+
+  h5 {
+    @mixin --h5;
+  }
+
+  h6 {
+    @mixin --h6;
+  }
+
+  * + section {
+    &:has(> h2) {
+      margin-block-start: calc(var(--gap-xxl) * var(--rp));
+    }
+
+    &:has(> h3) {
+      margin-block-start: calc(var(--gap-xl) * var(--rp));
+    }
+  }
+
+  :is(ol, ul) {
+    > li {
+      display: list-item;
+
+      margin-inline-start: calc(var(--gap-xl) * var(--rp));
+
+      &::marker {
+        /* line-height: calc(24--p / 0.8); */
+        @mixin --mono;
+      }
+    }
+
+    ul {
+      list-style-type: wave;
+    }
+  }
+
+  ol {
+    list-style-type: decimal-leading-zero;
+
+    > li {
+      &::marker {
+        font-size: 0.8em;
+      }
+    }
+  }
+
+  /* stylelint-disable-next-line no-descending-specificity -- Cannot fix */
+  ul {
+    list-style-type: dash;
+
+    > li {
+      &::marker {
+        font-size: 0.8em;
+      }
+    }
+  }
+
+  :is(del, s) {
+    text-decoration-line: line-through;
+
+    text-decoration-color: var(--subtle);
+  }
+
+  mark {
+    box-shadow: 0 0 2--rp 2--rp oklch(from var(--primary) l c h / 25%);
+
+    background-color: oklch(from var(--primary) l c h / 25%);
+
+    color: var(--fg-stronger);
+
+    padding-inline: 2--rp;
+
+    margin-inline: 2--rp;
+  }
+
+  kbd {
+    box-shadow: 0 2--rp 2--rp 2--rp oklch(from var(--subtle) l c h / 50%);
+
+    padding-inline: 4--rp;
+
+    margin-inline: 2--rp;
+
+    border-radius: 4--rp;
+
+    background-color: oklch(from var(--bg-lighter) l c h / 50%);
+
+    backdrop-filter: blur(calc(var(--blur-m) * var(--rp))) brightness(150%);
+  }
+
+  [title] {
+    text-decoration-color: var(--subtle);
+
+    text-decoration-line: underline;
+
+    text-decoration-style: dotted;
+  }
+
+  code {
+    @mixin --mono;
+
+    font-size: 0.9em;
+  }
+
+  table {
+    inline-size: 100%;
+
+    > thead {
+      font-weight: bolder;
+
+      + tbody {
+        border-block-start-style: solid;
+
+        border-block-start-color: var(--subtle);
+
+        border-block-start-width: 2--rp;
+      }
+    }
+
+    :is(th, td) {
+      padding-inline: calc(var(--gap-s) * var(--rp));
+
+      + :is(th, td) {
+        border-inline-start-style: solid;
+
+        border-inline-start-color: var(--subtle);
+
+        border-inline-start-width: 2--rp;
+      }
+    }
+
+    > tbody {
+      > tr {
+        + tr {
+          border-block-start-style: dashed;
+
+          border-block-start-color: var(--subtle);
+
+          border-block-start-width: 2--rp;
+        }
+      }
+    }
+  }
+
+  hr {
+    border-block-color: var(--subtle);
+
+    border-block-style: solid;
+
+    border-block-width: 1--rp;
+  }
+
+  blockquote {
+    border-inline-start-color: var(--subtle);
+
+    border-inline-start-style: solid;
+
+    border-inline-start-width: 2--rp;
+
+    padding-inline-start: calc(var(--gap-l) * var(--rp));
+  }
+
+  strong {
+    font-weight: bolder;
+  }
+
+  em {
+    font-style: italic;
+  }
+
+  cite {
+    font-style: italic;
+  }
+}

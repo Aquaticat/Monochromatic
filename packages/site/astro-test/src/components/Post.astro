@@ -1,0 +1,119 @@
+---
+import PrettyDate from '@_/components/PrettyDate.astro';
+import type { Post as PostType } from '@_/index.ts';
+interface Props {
+  post: PostType;
+  lang: string;
+}
+const { post, lang } = Astro.props;
+---
+<style>
+@import '@monochromatic-dev/style-monochromatic/mixin.css';
+
+.Post {
+  content-visibility: auto;
+
+  :has(.overlay:hover) {
+    color: var(--fg-plus);
+  }
+
+  max-inline-size: calc(var(--comfort-text) * var(--rp));
+
+  min-inline-size: calc(var(--min-text) * var(--rp));
+}
+
+.content {
+  pointer-events: none;
+
+  a {
+    pointer-events: auto;
+  }
+}
+
+h2 {
+  @mixin --h4;
+
+  text-wrap: balance;
+}
+
+.description {
+  text-align: justify;
+
+  word-break: break-all;
+
+  display: -webkit-box;
+
+  -webkit-box-orient: block-axis;
+
+  -webkit-line-clamp: 4;
+}
+
+.tags {
+  @mixin --flex-start-center;
+
+  column-gap: var(--gap-s);
+
+  > li {
+    > a {
+      @mixin --flex-center;
+
+      > span {
+        @mixin --h6;
+
+        color: var(--primary);
+
+        &::before {
+          content: '#';
+        }
+      }
+    }
+  }
+}
+
+.overlay {
+  color: color(srgb 0 0 0 / 0%);
+
+  display: block;
+
+  inline-size: 100%;
+
+  block-size: 100%;
+
+  position: absolute;
+
+  inset-block: 0;
+
+  inset-inline: 0;
+}
+
+.date {
+  color: var(--subtle);
+}
+</style>
+<li class='Post'>
+  <a
+    class='overlay'
+    href={`/${post.id}`}>{post.data.title}</a>
+  <div class='content'>
+    <h2>{post.data.title}</h2>
+    <p class='description'>{post.data.description}</p>
+    <aside>
+      <ul class='tags'>
+        {
+          post.data.tags.map((tag) => (
+            <li class='Post__tag'>
+              <a href={`#tag__${tag}`}>
+                <span>{tag}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <span class='date'>
+        <PrettyDate date={post.data.published}></PrettyDate>
+        -
+        <PrettyDate date={post.data.updated}></PrettyDate>
+      </span>
+    </aside>
+  </div>
+</li>
