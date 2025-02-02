@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "dependencies": "monochromatic dependencies",
-    "prepare": "husky"
+    "prepare": "husky || echo 'husky does not exist, skipped'"
   },
   "engines": {
     "node": ">=22",
