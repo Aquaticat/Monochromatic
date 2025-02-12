@@ -6,7 +6,6 @@ import {
 } from '@shikijs/transformers';
 // import viteBasicSsl from '@vitejs/plugin-basic-ssl';
 import { defineConfig } from 'astro/config';
-import cssnanoPlugin from 'cssnano';
 import { glob } from 'glob';
 import spawn from 'nano-spawn';
 import { writeFile } from 'node:fs/promises';
@@ -48,16 +47,13 @@ export default defineConfig({
           postcssCustomUnits(),
           postcssCustomMedia(),
           postcssCustomSelectors(),
-          cssnanoPlugin({
-            preset: ['advanced', {
-              autoprefixer: undefined,
-              discardUnused: false,
-              reduceIdents: false,
-              svgo: false,
-              zindex: false,
-            }],
-          }),
         ],
+      },
+      lightningcss: {
+        targets: {
+          firefox: (128 << 16),
+        },
+        cssModules: false,
       },
       preprocessorMaxWorkers: true,
     },
@@ -66,6 +62,7 @@ export default defineConfig({
     },
     build: {
       target: 'firefox128',
+      cssMinify: 'lightningcss',
     },
   },
 
