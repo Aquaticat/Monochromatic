@@ -70,23 +70,6 @@ img[alt='avatar'] {
 }
 
 #search {
-  input[name='q'] {
-    @mixin --touch-target;
-    @mixin --text;
-
-    text-align: center;
-
-    font-size: 18--rp;
-
-    &::placeholder {
-      opacity: 0.5;
-    }
-  }
-
-  .Header__tags {
-    display: none;
-  }
-
   &:popover-open {
     position: fixed;
 
@@ -97,6 +80,8 @@ img[alt='avatar'] {
     margin-inline: auto;
 
     margin-block: auto;
+
+    padding-inline: calc(var(--gap-3xl) * var(--rp));
 
     inline-size: fit-content;
 
@@ -112,44 +97,22 @@ img[alt='avatar'] {
 
     min-inline-size: calc(var(--min-text) * var(--rp));
 
-    input[name='q'] {
-      @mixin --h3;
+    > search {
+      > label {
+        display: block;
 
-      max-inline-size: calc(var(--max-ui) * var(--rp));
-
-      border-width: calc(var(--border-s) * var(--rp));
-
-      border-style: solid;
-
-      border-color: var(--subtle);
-
-      border-radius: calc(var(--border-radius-m) * var(--rp));
-
-      padding-inline: calc(var(--gap-m) * var(--rp));
-
-      padding-block: calc(var(--gap-m) * var(--rp));
-
-      &::-webkit-search-cancel-button {
-        appearance: none;
-      }
-
-      &:focus {
-        background-image: revert;
-
-        border-color: var(--primary);
-
-        font-weight: 800;
+        inline-size: 100%;
       }
     }
 
-    .Header__tags {
+    > .Header__tags {
       @mixin --flex-center;
 
-      column-gap: var(--gap-m);
+      column-gap: calc(var(--gap-m) * var(--rp));
 
-      row-gap: var(--gap-l);
+      row-gap: calc(var(--gap-l) * var(--rp));
 
-      max-inline-size: var(--max-ui);
+      max-inline-size: calc(var(--max-ui) * var(--rp));
 
       > li {
         &:has(details[open]) {
@@ -179,9 +142,7 @@ img[alt='avatar'] {
     }
 
     &::backdrop {
-      background-color: color(srgb 0 0 0 / 1%);
-
-      backdrop-filter: blur(1vmax);
+      backdrop-filter: blur(calc(var(--blur-l) * var(--rp))) brightness(25%);
     }
   }
 }
@@ -213,12 +174,16 @@ img[alt='avatar'] {
     <div
       popover
       id='search'>
-      <input
-        name='q'
-        type='search'
-        required
-        placeholder={i18n.get('searchPlaceholder')!.get(lang)!}
-      />
+      <search>
+        <label>{i18n.get('searchPlaceholder')!.get(lang)!}
+          <input
+            name='q'
+            type='search'
+            required
+            placeholder={i18n.get('searchPlaceholder')!.get(lang)!}
+          />
+        </label>
+      </search>
       <ul class='Header__tags'>
         {
           tags.map((
@@ -239,3 +204,8 @@ img[alt='avatar'] {
     </div>
   </nav>
 </header>
+
+<script>
+// testing popover
+(document.querySelector('#search') as HTMLElement).showPopover();
+</script>

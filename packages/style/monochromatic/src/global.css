@@ -75,10 +75,8 @@ button {
   @mixin --button-text;
 }
 
-img {
+:is(img, iframe) {
   max-inline-size: 100%;
-
-  block-size: auto;
 }
 
 @counter-style dash {
