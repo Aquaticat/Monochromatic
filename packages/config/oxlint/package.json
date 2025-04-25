@@ -15,7 +15,8 @@
   "module": "index.json",
   "type": "module",
   "files": [
-    "index.json"
+    "index.json",
+    ".eslintignore"
   ],
   "author": {
     "name": "Aquaticat",

@@ -23,20 +23,19 @@
     "prepare": "husky || echo 'husky does not exist, skipped'"
   },
   "engines": {
-    "node": ">=22",
-    "bun": ">=1.1.27"
+    "bun": ">=1.2.9"
   },
   "// devDependencies/esbuild": "For the occasional necessarity of manually running ' yarn run -T -B esbuild src/index.ts --bundle --platform=node --charset=utf8 --format=esm --packages=external --target=node22 --drop:debugger --drop-labels=DEV,D --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --log-limit=0 --sourcemap ' intead of using my own pipeline.",
   "devDependencies": {
     "@monochromatic-dev/config-dprint": "workspace:*",
     "@monochromatic-dev/config-stylelint": "workspace:*",
-    "dprint": "^0.49.0",
-    "esbuild": "^0.25.1",
-    "husky": "^9.1.7",
-    "oxlint": "^0.15.13",
-    "stylelint": "^16.15.0",
-    "typescript": "^5.8.2",
-    "vue-tsc": "^2.2.8"
+    "dprint": ">=0.49.1",
+    "esbuild": ">=0.25.2",
+    "husky": ">=9.1.7",
+    "oxlint": ">=0.15.15",
+    "stylelint": ">=16.18.0",
+    "typescript": ">=5.8.3",
+    "vue-tsc": ">=2.2.8"
   },
   "workspaces": [
     "packages/*/*"
@@ -56,8 +55,5 @@
     "glibc",
     "musl",
     "current"
-  ],
-  "dependencies": {
-    "astro": "^5.4.2"
-  }
+  ]
 }

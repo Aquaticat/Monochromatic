@@ -23,7 +23,7 @@ import {
   everyArrayLikeAsync,
 } from './arrayLike.every.ts';
 
-await logtapeConfigure(logtapeConfiguration());
+await logtapeConfigure(await logtapeConfiguration());
 
 describe('everyArrayLike', () => {
   describe('Array', () => {

@@ -1,0 +1,5 @@
+{
+  "extends": [
+    "packages/config/oxlint/index.json"
+  ]
+}

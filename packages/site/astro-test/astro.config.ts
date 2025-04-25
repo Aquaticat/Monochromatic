@@ -34,6 +34,7 @@ export default defineConfig({
       // bun bug https://github.com/oven-sh/bun/issues/14825, commented out for now.
       // viteBasicSsl({}),
     ],
+
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./', import.meta.url)),
@@ -56,6 +57,7 @@ export default defineConfig({
         cssModules: false,
       },
       preprocessorMaxWorkers: true,
+      devSourcemap: true,
     },
     esbuild: {
       minifyIdentifiers: false,
@@ -63,6 +65,9 @@ export default defineConfig({
     build: {
       target: 'firefox128',
       cssMinify: 'lightningcss',
+    },
+    worker: {
+      format: 'es',
     },
   },
 
@@ -73,6 +78,7 @@ export default defineConfig({
         dark: 'github-dark-high-contrast',
       },
       wrap: true,
+      // @ts-expect-error exactOptionalProperties
       transformers: [transformerNotationDiff(), transformerNotationHighlight()],
     },
     remarkPlugins: [[remarkAlert, {}], [remarkSectionize, {}]],
@@ -82,6 +88,10 @@ export default defineConfig({
       removeAccents: true,
     }], [rehypeAutolinkHeadings, {}]],
     // remarkRehype: { allowDangerousHtml: true },
+  },
+
+  image: {
+    experimentalLayout: 'responsive',
   },
 
   /*   i18n: {
@@ -107,7 +117,7 @@ export default defineConfig({
     {
       name: 'astro-rehype',
       hooks: {
-        'astro:build:done': async ({ dir, logger }) => {
+        'astro:build:done': async ({ dir, logger }): Promise<void> => {
           const relativeDir = relative(process.cwd(), fileURLToPath(dir));
           const htmlFilePaths = await glob(`${relativeDir}/**/*.html`);
           htmlFilePaths.forEach(async (htmlFilePath) => {
@@ -124,7 +134,7 @@ export default defineConfig({
     {
       name: 'astro-zstd',
       hooks: {
-        'astro:build:done': async ({ dir, logger }) => {
+        'astro:build:done': async ({ dir, logger }): Promise<void> => {
           const relativeDir = relative(process
             .cwd(), fileURLToPath(dir));
           try {
@@ -152,6 +162,8 @@ export default defineConfig({
   ],
 
   experimental: {
-    svg: true,
+    responsiveImages: true,
+    clientPrerender: true,
+    contentIntellisense: true,
   },
 });

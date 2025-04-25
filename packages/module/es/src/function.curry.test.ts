@@ -9,7 +9,7 @@ import {
   test,
 } from 'bun:test';
 
-await logtapeConfigure(logtapeConfiguration());
+await logtapeConfigure(await logtapeConfiguration());
 
 describe('curry', () => {
   describe('normal', () => {

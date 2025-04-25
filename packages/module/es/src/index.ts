@@ -1,4 +1,4 @@
-/* @__NO_SIDE_EFFECTS__ */ export * from './logtape.ts';
+/* @__NO_SIDE_EFFECTS__ */ export * from '@monochromatic-dev/module-es/logtape.ts';
 
 export * from './fixture.array.0to999.ts';
 export * from './fixture.generator.0to999.ts';

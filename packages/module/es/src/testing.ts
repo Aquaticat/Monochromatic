@@ -205,7 +205,7 @@ type SuiteReturn =
     if (Object.hasOwn(options, 'timeLimit')) {
       timeLimit = typeof options.timeLimit === 'number'
         ? options.timeLimit
-        : await (async () => {
+        : await (async (): Promise<number> => {
           const beforeExecutingTimeLimitReferenceCallback = performance.now();
           try {
             await (options.timeLimit as () => Promisable<unknown>)();

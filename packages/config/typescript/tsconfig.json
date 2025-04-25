@@ -47,6 +47,8 @@
 
     "verbatimModuleSyntax": true,
 
+    "erasableSyntaxOnly": true,
+
     "preserveConstEnums": true,
 
     //endregion
@@ -89,6 +91,8 @@
     "jsxFragmentFactory": "Fragment",
 
     "lib": ["ESNext"],
+
+    "libReplacement": false,
 
     "target": "esnext",
 

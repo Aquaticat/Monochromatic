@@ -13,7 +13,19 @@
   },
 
   "plugins": [
-    "unicorn", "typescript", "oxc", "import", "jsdoc", "promise", "node"
+    "unicorn",
+    "typescript",
+    "oxc",
+    "import",
+
+    // We're using TSDoc, not JSDoc
+    // "jsdoc",
+
+    "promise",
+    "node",
+    "react"
+    // It's flagging code not in test files.
+    // "jest"
   ],
 
   "rules": {
@@ -23,8 +35,48 @@
     "import/default": "off",
     "import/named": "off",
     "import/namespace": "off",
+    "import/group-exports": "off",
+
+    // I love anonymous default exports!
+    "import/no-anonymous-default-export": "off",
+
+    "typescript/triple-slash-reference": "off",
 
     //endregion
+
+    //region Restriction
+
+    "eslint/default-case": "error",
+    "eslint/no-empty": "error",
+    "eslint/no-empty-function": "error",
+    "eslint/no-eq-null": "error",
+    "eslint/no-iterator": "error",
+    "eslint/no-proto": "error",
+
+    // logtape logs are not unused expressions.
+    "eslint/no-unused-expressions": "off",
+
+    "eslint/no-var": "error",
+    "eslint/no-void": "error",
+    "eslint/unicode-bom": "error",
+    "import/no-amd": "error",
+    "import/no-commonjs": "error",
+    "import/unambiguous": "error",
+    "oxc/no-const-enum": "error",
+    "promise/spec-only": "error",
+    "typescript/explicit-function-return-type": "error",
+    "typescript/no-dynamic-delete": "error",
+    "typescript/no-empty-object-type": "error",
+    "typescript/no-import-type-side-effects": "error",
+    "typescript/no-namespace": "error",
+    "typescript/no-non-null-asserted-nullish-coalescing": "error",
+    "unicorn/no-document-cookie": "error",
+    "unicorn/no-length-as-slice-end": "error",
+    "unicorn/prefer-modern-math-apis": "error",
+    "unicorn/prefer-node-protocol": "error",
+    "unicorn/prefer-number-properties": "error",
+
+    //endregion Restriction
 
     //region perf
 
@@ -127,6 +179,15 @@
 
     "eslint/max-params": "off",
 
+    "eslint/max-depth": "off",
+
+    "eslint/max-lines-per-function": "off",
+
+    "eslint/max-nested-callbacks": "off",
+
+    // Conflicts with TypeScript function overloading.
+    "eslint/no-redeclare": "off",
+
     // Doesn't support eslint parameter allow when intersecting.
     "typescript/ban-types": "off",
 
@@ -141,6 +202,9 @@
     // Doesn't matter when the function is a callback with sufficient context.
     // "eslint/func-names": ["warn", "as-needed"],
     "eslint/func-names": "off",
+
+    // TypeScript function overloads work better with function declarations.
+    "eslint/func-style": "off",
 
     // You shouldn't use for in loops anyway. Use for of loops instead.
     "eslint/guard-for-in": "error",
@@ -162,6 +226,9 @@
 
     // Too many false positives.
     "eslint/yoda": "off",
+
+    // Readable enough.
+    "unicorn/no-await-expression-member": "off",
 
     "typescript/consistent-type-definitions": ["error", "type"],
 
@@ -194,4 +261,22 @@
     // Our bundler will remove them in the final bundle.
     "eslint/no-unused-vars": "off"
   },
+
+  "ignorePatterns": ["dist"],
+
+  "overrides": [
+    {
+      "files": ["**/figma-plugin/**"],
+      "globals": {
+        "figma": "readonly"
+      }
+    },
+    {
+      "files": ["**/*.test.ts"],
+      "rules": {
+        // Test files have many functions that don't need explicit return types.
+        "typescript/explicit-function-return-type": "off"
+      }
+    }
+  ]
 }

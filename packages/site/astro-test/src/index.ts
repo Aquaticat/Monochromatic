@@ -58,7 +58,7 @@ export const postsGroupedByLangThenTag = Object.fromEntries(
   ),
 );
 
-export const i18n: Map<string, Map<string, string>> = new Map(
+export const i18n = new Map<string, Map<string, string>>(
   [
     [
       'siteName',

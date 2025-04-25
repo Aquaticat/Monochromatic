@@ -5,7 +5,11 @@
   "module": "dist/final/index.js",
   "exports": {
     ".": "./dist/final/index.js",
-    "./ts": "./src/index.ts"
+    "./ts": "./src/index.ts",
+    "./logtape.ts": {
+      "node": "./src/logtape.node.ts",
+      "default": "./src/logtape.default.ts"
+    }
   },
   "main": "dist/final/index.js",
   "typings": "dist/final/index.d.ts",
@@ -17,7 +21,8 @@
     "type-fest": ">=4.24.0"
   },
   "dependencies": {
-    "@logtape/logtape": "npm:@jsr/logtape__logtape@*"
+    "@logtape/logtape": "npm:@jsr/logtape__logtape@*",
+    "@logtape/file": "npm:@jsr/logtape__file@*"
   },
   "version": "0.0.125",
   "repository": {

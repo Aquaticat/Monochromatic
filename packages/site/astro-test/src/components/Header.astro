@@ -171,9 +171,12 @@ img[alt='avatar'] {
         />
       </svg>
     </button>
+
+    <!-- temporarily hidden. trying to switch to a dedicated page for search -->
     <div
       popover
-      id='search'>
+      id='search'
+      hidden>
       <search>
         <label>{i18n.get('searchPlaceholder')!.get(lang)!}
           <input
@@ -207,5 +210,5 @@ img[alt='avatar'] {
 
 <script>
 // testing popover
-(document.querySelector('#search') as HTMLElement).showPopover();
+// (document.querySelector('#search') as HTMLElement).showPopover();
 </script>

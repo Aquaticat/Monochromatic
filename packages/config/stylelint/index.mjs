@@ -157,7 +157,7 @@ export default {
 
       /padding$/,
 
-      /^place-[\w\-]+$/,
+      /^place-[\w-]+$/,
 
       'scroll-timeline',
 
@@ -183,13 +183,13 @@ export default {
       'contain-intrinsic-height',
       'max-height',
 
-      /^[\w\-]+-top$/,
+      /^[\w-]+-top$/,
 
-      /^[\w\-]+-left$/,
+      /^[\w-]+-left$/,
 
-      /[\w\-]+-right/,
+      /[\w-]+-right/,
 
-      /[\w\-]+-bottom/,
+      /[\w-]+-bottom/,
       //endregion Non-logical
     ],
 
