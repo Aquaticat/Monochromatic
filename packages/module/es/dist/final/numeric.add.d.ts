@@ -1,0 +1,14 @@
+import type { MaybeAsyncIterable } from '@monochromatic-dev/module-es/ts';
+export declare function addNumbersAsync(numbers: MaybeAsyncIterable<number>): Promise<number>;
+export declare function addNumbersAsync(...numbers: number[]): Promise<number>;
+export declare function addNumbers(numbers: Iterable<number>): number;
+export declare function addNumbers(...numbers: number[]): number;
+export declare function addBigintsAsync(bigint: MaybeAsyncIterable<bigint>): Promise<bigint>;
+export declare function addBigintsAsync(...bigints: bigint[]): Promise<bigint>;
+export declare function addBigints(bigints: Iterable<bigint>): bigint;
+export declare function addBigints(...bigints: bigint[]): bigint;
+export type numeric = number | bigint;
+export declare function addNumericsAsync<T extends MaybeAsyncIterable<numeric>>(numerics: T): Promise<T extends (MaybeAsyncIterable<number>) ? number : bigint>;
+export declare function addNumericsAsync<T extends numeric[]>(...numerics: T): Promise<T extends number[] ? number : bigint>;
+export declare function addNumerics<T extends Iterable<numeric>>(numerics: T): T extends Iterable<number> ? number : bigint;
+export declare function addNumerics<T extends numeric[]>(...numerics: T): T extends number[] ? number : bigint;

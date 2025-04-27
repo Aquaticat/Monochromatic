@@ -1,0 +1,3 @@
+export declare function unary<T_param1, T_fn extends (param1: T_param1, ...otherParams: any[]) => any>(fn: T_fn): (param1: T_param1) => ReturnType<T_fn>;
+export declare function binary<T_param1, T_param2, T_fn extends (param1: T_param1, param2: T_param2, ...otherParams: any[]) => any>(fn: T_fn): (param1: T_param1, param2: T_param2) => ReturnType<T_fn>;
+export declare function ternary<T_param1, T_param2, T_param3, T_fn extends (param1: T_param1, param2: T_param2, param3: T_param3, ...otherParams: any[]) => any>(fn: T_fn): (param1: T_param1, param2: T_param2, param3: T_param3) => ReturnType<T_fn>;
