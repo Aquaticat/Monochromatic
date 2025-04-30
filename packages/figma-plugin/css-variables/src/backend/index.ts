@@ -15,6 +15,12 @@ import type {
   VariableValue,
 } from '@figma/plugin-typings/plugin-api-standalone';
 
+const EPSILON = 0.000_01;
+
+const almostEqual = (a: number, b: number): boolean => {
+  return Math.abs(a - b) < EPSILON;
+};
+
 const getCssValueOfFigmaVariableValue = (value: VariableValue,
   resolvedType: VariableResolvedDataType): string =>
 {
@@ -162,6 +168,11 @@ class EnhancedVariable {
 let collections: VariableCollection[] = [];
 let variables: Variable[] = [];
 let enhancedVariables: EnhancedVariable[] = [];
+let styles: [PaintStyle | TextStyle | EffectStyle | GridStyle][] = [];
+let paintStyles: PaintStyle[] = [];
+let textStyles: TextStyle[] = [];
+let effectStyles: EffectStyle[] = [];
+let gridStyles: EffectStyle[] = [];
 
 const populateFigmaVariables = async (): Promise<void> => {
   collections = await figma.variables.getLocalVariableCollectionsAsync();
@@ -205,16 +216,114 @@ type SettingVarMessage = {
 const handleSettingVarMessage = ({
   cssVar,
   computedValue,
+  originalValue,
   varType,
   mode,
 }: SettingVarMessage): void => {
   if (varType === 'number') {
-    console.log(`Setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
+    if (String(computedValue) !== String(originalValue)) {
+      console.log(`Setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
 
+      const variable: EnhancedVariable = enhancedVariables.find((enhancedVariable) =>
+        enhancedVariable.name === cssVar.slice('--'.length)
+      )!;
+      variable.setValueByModeName(computedValue, mode);
+    }
+  } else if (varType === 'boolean') {
+    if (String(computedValue) !== String(originalValue)) {
+      console.log(`Setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
+
+      const variable: EnhancedVariable = enhancedVariables.find((enhancedVariable) =>
+        enhancedVariable.name === cssVar.slice('--'.length)
+      )!;
+      variable.setValueByModeName(computedValue, mode);
+    }
+  } else if (varType === 'color') {
+    const color: RGBA = (function calculateColor() {
+      if (computedValue.startsWith('rgba(')) {
+        const rgba: string[] = computedValue
+          .slice('rgba('.length, -')'.length)
+          .split(',')
+          .map((value) => value.trim());
+        return {
+          r: Number(rgba[0]) / 255,
+          g: Number(rgba[1]) / 255,
+          b: Number(rgba[2]) / 255,
+          a: Number(rgba[3]),
+        };
+      }
+      if (computedValue.startsWith('rgb(')) {
+        const rgb: string[] = computedValue
+          .slice('rgb('.length, -')'.length)
+          .split(',')
+          .map((value) => value.trim());
+        return {
+          r: Number(rgb[0]) / 255,
+          g: Number(rgb[1]) / 255,
+          b: Number(rgb[2]) / 255,
+          a: 1,
+        };
+      }
+      throw new Error(
+        `Unsupported computedValue ${computedValue} color format in mode ${mode}`,
+      );
+    })();
+    const originalColor: RGBA = (function calculateOriginalColor() {
+      if (originalValue.startsWith('rgba(')) {
+        const rgba: string[] = originalValue
+          .slice('rgba('.length, -')'.length)
+          .split(',')
+          .map((value) => value.trim());
+        return {
+          r: Number(rgba[0]) / 255,
+          g: Number(rgba[1]) / 255,
+          b: Number(rgba[2]) / 255,
+          a: Number(rgba[3]),
+        };
+      }
+      throw new Error(
+        `Unsupported originalValue ${originalValue} color format in mode ${mode}`,
+      );
+    })();
+    // TODO: Auto create transparent versions of variables.
+
+    if (
+      almostEqual(color.r, originalColor.r)
+      && almostEqual(color.g, originalColor.g)
+      && almostEqual(color.b, originalColor.b)
+      && almostEqual(color.a, originalColor.a)
+    ) {
+      // console.log(`Skipping setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
+      return;
+    }
+
+    console.log(`Setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
     const variable: EnhancedVariable = enhancedVariables.find((enhancedVariable) =>
       enhancedVariable.name === cssVar.slice('--'.length)
     )!;
-    variable.setValueByModeName(computedValue, mode);
+    variable.setValueByModeName(color, mode);
+  } else if (varType === 'string') {
+    if (computedValue !== originalValue) {
+      const valueToSet = (
+          computedValue.startsWith("'")
+          && computedValue.endsWith("'")
+        )
+        ? computedValue.slice("'".length, -"'".length)
+        : computedValue;
+      console.log(`Setting variable ${cssVar} to ${valueToSet} in mode ${mode}`);
+      const variable: EnhancedVariable = enhancedVariables.find((enhancedVariable) =>
+        enhancedVariable.name === cssVar.slice('--'.length)
+      )!;
+      variable.setValueByModeName(valueToSet, mode);
+    }
+  } else {
+    // TODO: Auto create string versions of non-string variables.
+
+    // We're not really handling box-shadow "variables",
+    // since Figma variables cannot be box shadows.
+    // Only Figma styles can be box shadows,
+    // and you should create the variables to use in the style value anyway.
+    throw new Error(`Unrecognized variable ${cssVar} type ${varType} in mode ${mode}`);
   }
 };
 

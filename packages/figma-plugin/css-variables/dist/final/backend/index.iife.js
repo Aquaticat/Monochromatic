@@ -3,6 +3,10 @@ var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { en
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 (function() {
   "use strict";
+  const EPSILON = 1e-5;
+  const almostEqual = (a, b) => {
+    return Math.abs(a - b) < EPSILON;
+  };
   const getCssValueOfFigmaVariableValue = (value, resolvedType) => {
     switch (resolvedType) {
       case "COLOR": {
@@ -125,15 +129,83 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   const handleSettingVarMessage = ({
     cssVar,
     computedValue,
+    originalValue,
     varType,
     mode
   }) => {
     if (varType === "number") {
+      if (String(computedValue) !== String(originalValue)) {
+        console.log(`Setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
+        const variable = enhancedVariables.find(
+          (enhancedVariable) => enhancedVariable.name === cssVar.slice("--".length)
+        );
+        variable.setValueByModeName(computedValue, mode);
+      }
+    } else if (varType === "boolean") {
+      if (String(computedValue) !== String(originalValue)) {
+        console.log(`Setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
+        const variable = enhancedVariables.find(
+          (enhancedVariable) => enhancedVariable.name === cssVar.slice("--".length)
+        );
+        variable.setValueByModeName(computedValue, mode);
+      }
+    } else if (varType === "color") {
+      const color = function calculateColor() {
+        if (computedValue.startsWith("rgba(")) {
+          const rgba = computedValue.slice("rgba(".length, -")".length).split(",").map((value) => value.trim());
+          return {
+            r: Number(rgba[0]) / 255,
+            g: Number(rgba[1]) / 255,
+            b: Number(rgba[2]) / 255,
+            a: Number(rgba[3])
+          };
+        }
+        if (computedValue.startsWith("rgb(")) {
+          const rgb = computedValue.slice("rgb(".length, -")".length).split(",").map((value) => value.trim());
+          return {
+            r: Number(rgb[0]) / 255,
+            g: Number(rgb[1]) / 255,
+            b: Number(rgb[2]) / 255,
+            a: 1
+          };
+        }
+        throw new Error(
+          `Unsupported computedValue ${computedValue} color format in mode ${mode}`
+        );
+      }();
+      const originalColor = function calculateOriginalColor() {
+        if (originalValue.startsWith("rgba(")) {
+          const rgba = originalValue.slice("rgba(".length, -")".length).split(",").map((value) => value.trim());
+          return {
+            r: Number(rgba[0]) / 255,
+            g: Number(rgba[1]) / 255,
+            b: Number(rgba[2]) / 255,
+            a: Number(rgba[3])
+          };
+        }
+        throw new Error(
+          `Unsupported originalValue ${originalValue} color format in mode ${mode}`
+        );
+      }();
+      if (almostEqual(color.r, originalColor.r) && almostEqual(color.g, originalColor.g) && almostEqual(color.b, originalColor.b) && almostEqual(color.a, originalColor.a)) {
+        return;
+      }
       console.log(`Setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
       const variable = enhancedVariables.find(
         (enhancedVariable) => enhancedVariable.name === cssVar.slice("--".length)
       );
-      variable.setValueByModeName(computedValue, mode);
+      variable.setValueByModeName(color, mode);
+    } else if (varType === "string") {
+      if (computedValue !== originalValue) {
+        const valueToSet = computedValue.startsWith("'") && computedValue.endsWith("'") ? computedValue.slice("'".length, -"'".length) : computedValue;
+        console.log(`Setting variable ${cssVar} to ${valueToSet} in mode ${mode}`);
+        const variable = enhancedVariables.find(
+          (enhancedVariable) => enhancedVariable.name === cssVar.slice("--".length)
+        );
+        variable.setValueByModeName(valueToSet, mode);
+      }
+    } else {
+      throw new Error(`Unrecognized variable ${cssVar} type ${varType} in mode ${mode}`);
     }
   };
   const main = async () => {

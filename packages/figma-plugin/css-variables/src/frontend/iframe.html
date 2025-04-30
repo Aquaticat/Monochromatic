@@ -215,7 +215,7 @@
               originalValue: cssValue,
               computedValue: cssValue.includes('var(--')
                 // TODO: Handle the case where cssValue contains var(--)
-                ? cssValue
+                ? cssValue.replaceAll('var(--', 'var(--')
                 : cssValue,
               varType: 'string',
               mode,
