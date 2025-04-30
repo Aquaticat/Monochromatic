@@ -1,8 +1,7 @@
 import { $ } from 'bun';
 
 await Promise.all([
-  $`bun run watch:frontend:development`,
-  $`bun run watch:backend:development`,
+  $`vite build --config vite.config.iframe.ts --watch --mode development`,
+  $`vite build --config vite.config.frontend.ts --watch --mode development`,
+  $`vite build --config vite.config.backend.ts --watch --mode development`,
 ]);
-
-// TODO: Make this a general purpose package.

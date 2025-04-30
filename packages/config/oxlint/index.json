@@ -185,6 +185,9 @@
 
     "eslint/max-nested-callbacks": "off",
 
+    // I love nested ternaries!
+    "eslint/no-nested-ternary": "off",
+
     // Conflicts with TypeScript function overloading.
     "eslint/no-redeclare": "off",
 

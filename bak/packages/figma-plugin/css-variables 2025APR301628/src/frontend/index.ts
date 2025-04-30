@@ -3,9 +3,7 @@ import {
   logtapeConfigure,
   logtapeGetLogger,
 } from '@monochromatic-dev/module-es/ts';
-// import IndexSrcDoc from '../../dist/final/iframe/index.html?raw' assert {
-//   type: 'string',
-// };
+import iframeSrcDoc from './iframe.html?raw' assert { type: 'string' };
 
 await logtapeConfigure(await logtapeConfiguration());
 
@@ -19,7 +17,7 @@ const iframe = document.querySelector('#authoredCss') as HTMLIFrameElement;
 
 // l.debug`got iframe ${iframe}`;
 
-// iframe.srcdoc = IndexSrcDoc;
+iframe.srcdoc = iframeSrcDoc;
 
 // eslint-disable-next-line require-await We probably need await at some point.
 window.addEventListener('message', async (event): Promise<void> => {

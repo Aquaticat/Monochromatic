@@ -1,8 +1,6 @@
 import { $ } from 'bun';
 
 await Promise.all([
-  $`bun run build:frontend:production`,
-  $`bun run build:backend:production`,
+  $`vite build --config vite.config.iframe.ts --mode production && vite build --config vite.config.frontend.ts --mode production`,
+  $`vite build --config vite.config.backend.ts --mode production`,
 ]);
-
-// TODO: Make this a general purpose package.

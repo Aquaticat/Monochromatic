@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta
+    name='viewport'
+    content='width=device-width, initial-scale=1.0'>
+  <title>iframe authored css</title>
+  <script type="module" crossorigin>(function polyfill() {
+  const relList = document.createElement("link").relList;
+  if (relList && relList.supports && relList.supports("modulepreload")) {
+    return;
+  }
+  for (const link of document.querySelectorAll('link[rel="modulepreload"]')) {
+    processPreload(link);
+  }
+  new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.type !== "childList") {
+        continue;
+      }
+      for (const node of mutation.addedNodes) {
+        if (node.tagName === "LINK" && node.rel === "modulepreload")
+          processPreload(node);
+      }
+    }
+  }).observe(document, { childList: true, subtree: true });
+  function getFetchOpts(link) {
+    const fetchOpts = {};
+    if (link.integrity) fetchOpts.integrity = link.integrity;
+    if (link.referrerPolicy) fetchOpts.referrerPolicy = link.referrerPolicy;
+    if (link.crossOrigin === "use-credentials")
+      fetchOpts.credentials = "include";
+    else if (link.crossOrigin === "anonymous") fetchOpts.credentials = "omit";
+    else fetchOpts.credentials = "same-origin";
+    return fetchOpts;
+  }
+  function processPreload(link) {
+    if (link.ep)
+      return;
+    link.ep = true;
+    const fetchOpts = getFetchOpts(link);
+    fetch(link.href, fetchOpts);
+  }
+})();
+const DEFAULT_ELEMENT_WIDTH_NUMBER = 3840 - 8 * 2;
+async function testCssVar(cssValue, cssVar, mode, depth = 0) {
+  if (depth > 10) {
+    throw new Error("Infinite loop detected");
+  }
+  console.log(
+    `testCssVar(cssValue: ${cssValue}, cssVar: ${cssVar}, mode: ${mode}, depth: ${depth})`
+  );
+  const modeApplier = document.querySelector(`body > [data-mode="${mode}"]`) ?? function createModeApplier() {
+    const createdModeApplier = document.createElement("div");
+    createdModeApplier.dataset.mode = mode;
+    document.body.append(createdModeApplier);
+    return createdModeApplier;
+  }();
+  {
+    const testElementAssumeUnitfulLength = document.createElement("div");
+    testElementAssumeUnitfulLength.style.width = cssValue;
+    testElementAssumeUnitfulLength.style.height = cssValue;
+    modeApplier.append(testElementAssumeUnitfulLength);
+    const computedStyle = window.getComputedStyle(
+      testElementAssumeUnitfulLength
+    );
+    const computedWidth = computedStyle.getPropertyValue(
+      "width"
+    );
+    testElementAssumeUnitfulLength.remove();
+    if (computedWidth === `${DEFAULT_ELEMENT_WIDTH_NUMBER}px`) ;
+    else {
+      return {
+        cssVar,
+        originalValue: cssValue,
+        computedValue: computedWidth.slice(0, -"px".length),
+        cssVarType: "number",
+        mode,
+        error: {
+          message: `Figma doesn't support unitful length values,
+                          consider using a number or string for this value.
+                          If you're relying on the behavior of converting from rem to px,
+                          you can safely ignore this error.`,
+          level: cssValue.includes("em") ? "notice" : "error"
+        }
+      };
+    }
+  }
+  {
+    const testElementAssumeNumber = document.createElement(
+      "div"
+    );
+    testElementAssumeNumber.style.width = `${cssValue}px`;
+    testElementAssumeNumber.style.height = `${cssValue}px`;
+    modeApplier.append(testElementAssumeNumber);
+    const computedStyle = window.getComputedStyle(
+      testElementAssumeNumber
+    );
+    const computedWidth = computedStyle.getPropertyValue(
+      "width"
+    );
+    testElementAssumeNumber.remove();
+    if (computedWidth === `${DEFAULT_ELEMENT_WIDTH_NUMBER}px`) ;
+    else {
+      return {
+        cssVar,
+        originalValue: cssValue,
+        computedValue: computedWidth.slice(0, -"px".length),
+        varType: "number",
+        mode
+      };
+    }
+  }
+  {
+    const testElementAssumeColor = document.createElement(
+      "div"
+    );
+    testElementAssumeColor.style.backgroundColor = cssValue;
+    testElementAssumeColor.style.color = cssValue;
+    document.body.append(testElementAssumeColor);
+    const computedStyle = window.getComputedStyle(
+      testElementAssumeColor
+    );
+    const computedBackgroundColor = computedStyle.getPropertyValue(
+      "background-color"
+    );
+    const computedColor = computedStyle.getPropertyValue(
+      "color"
+    );
+    testElementAssumeColor.remove();
+    if (
+      // If the element's background color and color are different,
+      // it means at least one of them isn't applied.
+      // It means the CSS var isn't a color value.
+      computedBackgroundColor !== computedColor
+    ) ;
+    else {
+      return {
+        cssVar,
+        originalValue: cssValue,
+        computedValue: computedBackgroundColor,
+        varType: "color",
+        mode
+      };
+    }
+  }
+  {
+    const testElementAssumeBoxShadow = document.createElement(
+      "div"
+    );
+    testElementAssumeBoxShadow.style.boxShadow = cssValue;
+    document.body.append(testElementAssumeBoxShadow);
+    const computedStyle = window.getComputedStyle(
+      testElementAssumeBoxShadow
+    );
+    const computedBoxShadow = computedStyle.getPropertyValue(
+      "box-shadow"
+    );
+    testElementAssumeBoxShadow.remove();
+    if (
+      // If the element's background color and color are different,
+      // it means at least one of them isn't applied.
+      // It means the CSS var isn't a color value.
+      computedBoxShadow === "none"
+    ) ;
+    else {
+      return {
+        cssVar,
+        originalValue: cssValue,
+        computedValue: computedBoxShadow,
+        varType: "box-shadow",
+        mode
+      };
+    }
+  }
+  {
+    const testElementAssumeString = document.createElement(
+      "div"
+    );
+    testElementAssumeString.id = `testElementAssumeString${cssVar}`;
+    testElementAssumeString.style.setProperty(cssVar, cssValue);
+    const assumeStringStyleSheet = await new CSSStyleSheet().replace(
+      `#testElementAssumeString${cssVar}::before { content: ${cssValue}; }`
+    );
+    document.adoptedStyleSheets.push(assumeStringStyleSheet);
+    document.body.append(testElementAssumeString);
+    const computedStyle = window.getComputedStyle(
+      testElementAssumeString
+    );
+    const computedContent = computedStyle.getPropertyValue(
+      "content"
+    );
+    if (computedContent === "none") {
+      console.log`${cssVar} isn't a string (CSS content) value.
+              Try treating it as something else.`;
+    } else {
+      return {
+        cssVar,
+        originalValue: cssValue,
+        computedValue: cssValue.includes("var(--") ? cssValue.replaceAll("var(--", "var(--") : cssValue,
+        varType: "string",
+        mode
+      };
+    }
+  }
+  return {
+    cssVar,
+    originalValue: cssValue,
+    computedValue: cssValue,
+    varType: "invalid",
+    mode,
+    error: {
+      message: `${cssVar}'s ${cssValue} cannot be treated as a unitful length,
+             a number, a color, a box-shadow, or a string (CSS content) value.`,
+      level: "error"
+    }
+  };
+}
+const processCssVarRuleStyle = async (ruleStyle, rule, mode) => {
+  const cssVar = ruleStyle;
+  const cssValue = rule.style.getPropertyValue(cssVar);
+  if (!isNaN(cssValue) && !isNaN(parseFloat(cssValue))) {
+    window.parent.postMessage({
+      authoredCss: {
+        cssVar,
+        originalValue: cssValue,
+        computedValue: Number(cssValue),
+        varType: "number",
+        mode
+      }
+    }, "*");
+  } else if (cssValue === "true") {
+    window.parent.postMessage({
+      authoredCss: {
+        cssVar,
+        originalValue: cssValue,
+        computedValue: true,
+        varType: "boolean",
+        mode
+      }
+    }, "*");
+  } else if (cssValue === "false") {
+    window.parent.postMessage({
+      authoredCss: {
+        cssVar,
+        originalValue: cssValue,
+        computedValue: false,
+        varType: "boolean",
+        mode
+      }
+    }, "*");
+  } else {
+    const authoredCss = await testCssVar(cssValue, cssVar, mode, 0);
+    window.parent.postMessage({ authoredCss }, "*");
+  }
+};
+const processBasicRule = async (rule, mode) => {
+  for (const ruleStyle of rule.style) {
+    if (ruleStyle.startsWith("--")) {
+      await processCssVarRuleStyle(ruleStyle, rule, mode);
+    }
+  }
+};
+const processNonBasicRule = (rule) => {
+  console.log(`non-basic rule: ${rule.selectorText}`);
+};
+const processRule = async (rule) => {
+  if (/^\[data-mode=(?:"\w+"|'\w+')]$/.test(rule.selectorText.trim())) {
+    const mode = rule.selectorText.trim().slice('[data-mode="'.length, -'"]'.length);
+    await processBasicRule(rule, mode);
+  } else {
+    processNonBasicRule(rule);
+  }
+};
+const handleReceivingCss = async (event) => {
+  const sheet = await new CSSStyleSheet().replace(event.data.css);
+  document.adoptedStyleSheets = [sheet];
+  event.source.postMessage({ authoredCss: "adopted stylesheets applied" }, "*");
+  const ruleList = sheet.cssRules;
+  for (const rule of ruleList) {
+    await processRule(rule);
+  }
+};
+const messageHandler = async (event) => {
+  if (Object.hasOwn(event.data, "css")) {
+    await handleReceivingCss(event);
+  }
+};
+window.addEventListener("message", messageHandler);</script>
+</head>
+<body>
+</body>
+</html>
