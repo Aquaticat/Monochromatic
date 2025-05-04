@@ -3,45 +3,43 @@ import {
   logtapeConfigure,
   logtapeGetLogger,
 } from '@monochromatic-dev/module-es/ts';
-// import IndexSrcDoc from '../../dist/final/iframe/index.html?raw' assert {
-//   type: 'string',
-// };
+import type {
+  AuthoredCss,
+  PluginMessage,
+} from '../shared/message.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 
 const l = logtapeGetLogger(['a', 'ui']);
 
-// l.debug`ui ready`;
-
-// parent.postMessage({ pluginMessage: 'ui ready' }, '*');
-
 const iframe = document.querySelector('#authoredCss') as HTMLIFrameElement;
 
-// l.debug`got iframe ${iframe}`;
-
-// iframe.srcdoc = IndexSrcDoc;
-
-// eslint-disable-next-line require-await We probably need await at some point.
-window.addEventListener('message', async (event): Promise<void> => {
+const handleMessage = (
+  event: { data: { 'pluginMessage': PluginMessage; } | { 'authoredCss': AuthoredCss; }; },
+): void => {
   if (Object.hasOwn(event.data, 'pluginMessage')) {
-    l.info`got this from plugin ${event.data.pluginMessage}`;
-
-    const pluginMessage: Record<string, string> = event.data.pluginMessage;
+    const pluginMessage: Record<string, string> = (event
+      .data as { pluginMessage: PluginMessage; })
+      .pluginMessage;
+    l.info`got this from plugin ${pluginMessage}`;
 
     if (Object.hasOwn(pluginMessage, 'generatedCssForLocalVariables')) {
       // CSS as authored
       const css = pluginMessage.generatedCssForLocalVariables!;
 
       iframe.contentWindow!.postMessage({ css }, '*');
-
-      //endregion - Get iframe and set authored CSS in it.
     }
   } else if (Object.hasOwn(event.data, 'authoredCss')) {
-    if (Object.hasOwn(event.data.authoredCss, 'cssVar')) {
+    const authoredCss: AuthoredCss = (event
+      .data as { authoredCss: AuthoredCss; })
+      .authoredCss;
+    if (Object.hasOwn(authoredCss, 'cssVar')) {
       // Send data to plugin backend and set the variable value in Figma in specified mode to computed value.
-      window.parent.postMessage({ pluginMessage: event.data.authoredCss }, '*');
+      window.parent.postMessage({ pluginMessage: authoredCss }, '*');
     } else {
-      l.info`got this from authoredCss ${event.data.authoredCss}`;
+      l.info`got this from authoredCss ${authoredCss}`;
     }
   }
-});
+};
+
+window.addEventListener('message', handleMessage);

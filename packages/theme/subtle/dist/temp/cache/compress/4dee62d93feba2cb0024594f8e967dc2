@@ -1,0 +1,47 @@
+<!doctype html><html lang='ca'><head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<link href='/subtle/index.css' rel='preload' as='style'>
+<title>Using MDX | Subtle</title>
+<link href='/subtle/index.css' blocking='render' rel='stylesheet'>
+<link rel='icon' href='/subtle/favicon.ico' sizes='32x32'>
+<link rel='icon' type='image/svg+xml' href='/subtle/favicon.svg'>
+<link rel='apple-touch-icon' href='/subtle/apple-touch-icon.png'>
+<script src='/subtle/index.js' async type='module'></script>
+<meta name='title' content='Using MDX'>
+<meta name='description' content='Here is a sample of some syntax that can be used when writing mdx content in this Astro theme.'>
+<meta name='theme-color' content='#966783'>
+<meta name='keywords' content='guide'>
+<link rel='canonical' href='https://monochromatic.dev/subtle/post/mdx'>
+<meta http-equiv='response' content='404'>
+<link rel='alternate' href='/subtle/post/mdx' hreflang='en'>
+<link rel='alternate' href='/subtle/zh-CN/post/mdx' hreflang='zh-CN'>
+<link rel='alternate' href='/subtle/zh-TW/post/mdx' hreflang='zh-TW'>
+</head>
+<body>
+  <header><div><a href='/subtle'><img src='/subtle/favicon.svg' alt='avatar'></a><nav><button popovertarget='search'><svg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M18.7441 19.0893L14.03 14.3752M16.8333 9.33333C16.8333 13.0152 13.8486 16 10.1667 16C6.48477 16 3.5 13.0152 3.5 9.33333C3.5 5.65143 6.48477 2.66666 10.1667 2.66666C13.8486 2.66666 16.8333 5.65143 16.8333 9.33333Z' stroke='currentColor' stroke-width='2.5'></path></svg></button><div popover id='search'><form method='get'><input name='q' type='search' required placeholder='Search keyword, topic, or text'></form><ul class='Header__tags'><li><details><summary><span>guide</span></summary><ul class='Posts'><li class='Post a'><a class='overlay' href='/subtle/post/mdx'>Using MDX</a><div class='Post__content'><h2>Using MDX</h2><p class='Post__description'>Here is a sample of some syntax that can be used when writing mdx content in this Astro theme.</p><p class='Post__summary'>Paragraph This is a paragraph. This is a paragraph with just a few more words and just a few more words and just a few more words and just a few more words. Images / Videos/Audios (function extension of this astro theme) ![alt text](sample-image.png) { /* TODO: This HTML output needs testing for a11y */ } &#x3C;a href='./sample-image.png'>
+  &#x3C;picture>
+    &#x3C;source srcset='sample-image.avif' />
+    &#x3C;source srcset='sample-image.dark.avif' media='(prefers-color-scheme: dark)' />
+    &#x3C;img src='sample-image.avif' alt=</p><aside><ul class='Post__tags'><li class='Post__tag'><a href='/subtle/tags/guide'><span>guide</span></a></li></ul><span class='date'><time datetime='Fri Jul 01 2022 12:00:00 GMT+0000 (Coordinated Universal Time)'>Jul 01, 2022</time> - <time datetime='Thu May 16 2024 00:45:20 GMT+0000 (Coordinated Universal Time)'>May 16, 2024</time></span></aside></div></li><li class='Post a'><a class='overlay' href='/subtle/zh-CN/post/mdx'>用 MDX</a><div class='Post__content'><h2>用 MDX</h2><p class='Post__description'>以下是在此 Astro 主题中编写 mdx 内容时可以使用的一些语法示例。</p><p class='Post__summary'>段落 这是一段话。 这是一段只有几句话，还有几句话，只是还有几句话，只是还有几句话。 图片/视频/音频（本astro主题的功能扩展） ![替代文本](sample-image.png) &#x3C;a href='./sample-image.png'>
+   &#x3C;picture>
+     &#x3C;source srcset='sample-image.avif' />
+     &#x3C;source srcset='sample-image.dark.avif' media='(prefers-color-scheme: dark)' />
+     &#x3C;img src='sample-image.avif' alt='替代文本' height='1024', width='1024' loading='lazy' />
+   &#x3C;/picture>
+&#x3C;/a> ![sample-video.vtt](sample-video.mkv) &#x3C;video controls preload='metadata'>
+  &#x3C;source src='sample-video.mkv' />
+  &#x3C;track
+    src='sample-vid</p><aside><ul class='Post__tags'><li class='Post__tag'><a href='/subtle/tags/guide'><span>guide</span></a></li></ul><span class='date'><time datetime='Thu May 16 2024 00:45:20 GMT+0000 (Coordinated Universal Time)'>May 16, 2024</time> - <time datetime='Thu May 16 2024 00:45:20 GMT+0000 (Coordinated Universal Time)'>May 16, 2024</time></span></aside></div></li><li class='Post a'><a class='overlay' href='/subtle/zh-TW/post/mdx'>用 MDX</a><div class='Post__content'><h2>用 MDX</h2><p class='Post__description'>以下是在此 Astro 主题中编写 mdx 内容时可以使用的一些语法示例。</p><p class='Post__summary'>段落 這是一段話。 這是一段只有幾句話，還有幾句話，只是還有幾句話，只是還有幾句話。 圖片/影片/音訊（本astro主題的功能擴充） ![替代文字](sample-image.png) &#x3C;a href='./sample-image.png'>
+    &#x3C;picture>
+      &#x3C;source srcset='sample-image.avif' />
+      &#x3C;source srcset='sample-image.dark.avif' media='(prefers-color-scheme: dark)' />
+      &#x3C;img src='sample-image.avif' alt='替代文字' height='1024', width='1024' loading='lazy' />
+    &#x3C;/picture>
+&#x3C;/a> ![sample-video.vtt](sample-video.mkv) &#x3C;video controls preload='metadata'>
+   &#x3C;source src='sample-video.mkv' />
+   &#x3C;track
+     src='sa</p><aside><ul class='Post__tags'><li class='Post__tag'><a href='/subtle/tags/guide'><span>guide</span></a></li></ul><span class='date'><time datetime='Thu May 16 2024 00:45:20 GMT+0000 (Coordinated Universal Time)'>May 16, 2024</time> - <time datetime='Thu May 16 2024 00:45:20 GMT+0000 (Coordinated Universal Time)'>May 16, 2024</time></span></aside></div></li></ul></details></li></ul></div><a href='/subtle/links'><span>Links</span></a></nav></div></header><main><div><article class='Article'><h1>Using MDX</h1><ul><li><p>This page is not yet available in your language. Meanwhile, you can check out</p><a href='/subtle/post/mdx' data-lang='en'>Using MDX</a></li><li><p>This page is not yet available in your language. Meanwhile, you can check out</p><a href='/subtle/zh-CN/post/mdx' data-lang='zh-CN'>用 MDX</a></li><li><p>This page is not yet available in your language. Meanwhile, you can check out</p><a href='/subtle/zh-TW/post/mdx' data-lang='zh-TW'>用 MDX</a></li></ul></article><aside class='Aside'><div class='FourOFour'> 404 </div></aside></div></main><footer><div><small><span><a href='https://creativecommons.org/licenses/by-sa/4.0/legalcode'><span>Creative Commons Attribution Share Alike 4.0 International</span></a><span class='existence-period'><time datetime='2024'>2024</time> - <time datetime='2024'>2024</time></span></span><span><span>by</span><a href='https://aquati.cat'><span>Aquaticat</span></a></span></small><ul class='Socials'><li><a href='https://aquati.cat/rss'><span>RSS Feed</span></a></li><li><a href='mailto:an@aquati.cat?subject=Email author of Monochromatic/Subtle'><span>Email</span></a></li><li><a href='https://github.com/Aquaticat'><span>GitHub</span></a></li><li><a href='https://t.me/Aquaticat'><span>Telegram</span></a></li></ul><small><span><a href='https://monochromatic.dev/subtle'><span>Subtle</span></a><span>@</span><a href='https://vuejs.org'><span>Vue JS</span></a></span><span><span>by</span><a href='https://aquati.cat'><span>Aquaticat</span></a></span></small></div></footer>
+
+
+</body></html>

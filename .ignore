@@ -1,3 +1,7 @@
 # https://github.com/boyter/scc .ignore format
 
 dist
+bak
+
+# Temporarily deprecated, may be reintroduced in the future
+packages/theme/subtle

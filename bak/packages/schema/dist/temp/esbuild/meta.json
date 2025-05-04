@@ -1,0 +1,134 @@
+{
+  "inputs": {
+    "src/index.ts": {
+      "bytes": 8883,
+      "imports": [
+        {
+          "path": "@monochromatic-dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic-dev/module-langs",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "chrono-node",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "find-up",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "mdast-util-from-markdown",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "mdast-util-to-string",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "spdx-license-list/spdx.json",
+          "kind": "import-statement",
+          "external": true,
+          "with": {
+            "type": "json"
+          }
+        },
+        {
+          "path": "zod",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "<runtime>",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "dist/final/index.js.map": {
+      "imports": [],
+      "exports": [],
+      "inputs": {},
+      "bytes": 16599
+    },
+    "dist/final/index.js": {
+      "imports": [
+        {
+          "path": "@monochromatic-dev/module-fs-path",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "@monochromatic-dev/module-langs",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "chrono-node",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "find-up",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "mdast-util-from-markdown",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "mdast-util-to-string",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "rambdax",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "spdx-license-list/spdx.json",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "zod",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "exports": [
+        "default",
+        "zAuthor",
+        "zBlame",
+        "zBlames",
+        "zChronoDate"
+      ],
+      "entryPoint": "src/index.ts",
+      "inputs": {
+        "src/index.ts": {
+          "bytesInOutput": 8028
+        }
+      },
+      "bytes": 8292
+    }
+  }
+}

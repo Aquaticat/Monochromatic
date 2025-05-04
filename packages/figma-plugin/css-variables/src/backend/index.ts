@@ -14,8 +14,9 @@ import type {
   VariableResolvedDataType,
   VariableValue,
 } from '@figma/plugin-typings/plugin-api-standalone';
+import type { AuthoredCss } from '../shared/message.ts';
 
-const EPSILON = 0.000_01;
+const EPSILON = 0.1 ** 5;
 
 const almostEqual = (a: number, b: number): boolean => {
   return Math.abs(a - b) < EPSILON;
@@ -193,36 +194,19 @@ const normalizeVariables = (): void => {
   }
 };
 
-type SettingVarMessage = {
-  cssVar: string;
-  originalValue: string;
-  computedValue: number;
-  varType: 'number';
-  mode: string;
-} | {
-  cssVar: string;
-  originalValue: string;
-  computedValue: string;
-  varType: 'string' | 'color' | 'box-shadow';
-  mode: string;
-} | {
-  cssVar: string;
-  originalValue: string;
-  computedValue: boolean;
-  varType: 'boolean';
-  mode: string;
-};
-
 const handleSettingVarMessage = ({
   cssVar,
   computedValue,
   originalValue,
   varType,
   mode,
-}: SettingVarMessage): void => {
+  originalComputedValue,
+}: AuthoredCss): void => {
   if (varType === 'number') {
     if (String(computedValue) !== String(originalValue)) {
-      console.log(`Setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
+      console.log(
+        `Setting variable ${cssVar} to ${computedValue} in mode ${mode} with original computed value ${originalComputedValue}`,
+      );
 
       const variable: EnhancedVariable = enhancedVariables.find((enhancedVariable) =>
         enhancedVariable.name === cssVar.slice('--'.length)
@@ -231,7 +215,9 @@ const handleSettingVarMessage = ({
     }
   } else if (varType === 'boolean') {
     if (String(computedValue) !== String(originalValue)) {
-      console.log(`Setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
+      console.log(
+        `Setting variable ${cssVar} to ${computedValue} in mode ${mode} with original computed value ${originalComputedValue}`,
+      );
 
       const variable: EnhancedVariable = enhancedVariables.find((enhancedVariable) =>
         enhancedVariable.name === cssVar.slice('--'.length)
@@ -244,7 +230,9 @@ const handleSettingVarMessage = ({
         const rgba: string[] = computedValue
           .slice('rgba('.length, -')'.length)
           .split(',')
-          .map((value) => value.trim());
+          .map(function trimValue(value) {
+            return value.trim();
+          });
         return {
           r: Number(rgba[0]) / 255,
           g: Number(rgba[1]) / 255,
@@ -256,7 +244,9 @@ const handleSettingVarMessage = ({
         const rgb: string[] = computedValue
           .slice('rgb('.length, -')'.length)
           .split(',')
-          .map((value) => value.trim());
+          .map(function trimValue(value) {
+            return value.trim();
+          });
         return {
           r: Number(rgb[0]) / 255,
           g: Number(rgb[1]) / 255,
@@ -297,7 +287,9 @@ const handleSettingVarMessage = ({
       return;
     }
 
-    console.log(`Setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
+    console.log(
+      `Setting variable ${cssVar} to ${computedValue} in mode ${mode} with original computed value ${originalComputedValue}`,
+    );
     const variable: EnhancedVariable = enhancedVariables.find((enhancedVariable) =>
       enhancedVariable.name === cssVar.slice('--'.length)
     )!;
@@ -310,7 +302,9 @@ const handleSettingVarMessage = ({
         )
         ? computedValue.slice("'".length, -"'".length)
         : computedValue;
-      console.log(`Setting variable ${cssVar} to ${valueToSet} in mode ${mode}`);
+      console.log(
+        `Setting variable ${cssVar} to ${computedValue} in mode ${mode} with original computed value ${originalComputedValue}`,
+      );
       const variable: EnhancedVariable = enhancedVariables.find((enhancedVariable) =>
         enhancedVariable.name === cssVar.slice('--'.length)
       )!;
@@ -346,7 +340,7 @@ const main = async (): Promise<void> => {
   figma.ui.onmessage = (message): void => {
     console.log('got this from the UI', message);
     if (message.cssVar) {
-      handleSettingVarMessage(message as SettingVarMessage);
+      handleSettingVarMessage(message as AuthoredCss);
     }
   };
 };

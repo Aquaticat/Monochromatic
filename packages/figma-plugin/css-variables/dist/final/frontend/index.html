@@ -846,22 +846,24 @@ const logtapeConfiguration = /* @__NO_SIDE_EFFECTS__ */ async (appName = "monoch
 await configure(await /* @__PURE__ */ logtapeConfiguration());
 const l = getLogger(["a", "ui"]);
 const iframe = document.querySelector("#authoredCss");
-window.addEventListener("message", async (event) => {
+const handleMessage = (event) => {
   if (Object.hasOwn(event.data, "pluginMessage")) {
-    l.info`got this from plugin ${event.data.pluginMessage}`;
     const pluginMessage = event.data.pluginMessage;
+    l.info`got this from plugin ${pluginMessage}`;
     if (Object.hasOwn(pluginMessage, "generatedCssForLocalVariables")) {
       const css = pluginMessage.generatedCssForLocalVariables;
       iframe.contentWindow.postMessage({ css }, "*");
     }
   } else if (Object.hasOwn(event.data, "authoredCss")) {
-    if (Object.hasOwn(event.data.authoredCss, "cssVar")) {
-      window.parent.postMessage({ pluginMessage: event.data.authoredCss }, "*");
+    const authoredCss = event.data.authoredCss;
+    if (Object.hasOwn(authoredCss, "cssVar")) {
+      window.parent.postMessage({ pluginMessage: authoredCss }, "*");
     } else {
-      l.info`got this from authoredCss ${event.data.authoredCss}`;
+      l.info`got this from authoredCss ${authoredCss}`;
     }
   }
-});</script>
+};
+window.addEventListener("message", handleMessage);</script>
     <style rel="stylesheet" crossorigin>#authoredCss{position:absolute;top:-7680px}.iframeContainer,html{overflow-block:clip;overflow-inline:clip;max-block-size:min(100%,100dvb);max-inline-size:min(100%,100dvi);position:relative;overflow:clip}</style>
   </head>
   <body>
@@ -917,8 +919,81 @@ window.addEventListener("message", async (event) => {
     fetch(link.href, fetchOpts);
   }
 })();
+// @__NO_SIDE_EFFECTS__
+function isString(value) {
+  return typeof value === "string";
+}
+function isDigitString(value) {
+  return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(value);
+}
+function isNo0DigitString(value) {
+  return ["1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(value);
+}
+function isDigitsString(value) {
+  return /* @__PURE__ */ isString(value) && value.length > 0 && [...value].every(isDigitString);
+}
+function isPositiveIntString(value) {
+  if (isDigitString(value)) {
+    return true;
+  }
+  if (!/* @__PURE__ */ isString(value)) {
+    return false;
+  }
+  if (isDigitString(value)) {
+    return true;
+  }
+  if (value.length <= 1) {
+    return false;
+  }
+  if (!isNo0DigitString(value[0])) {
+    return false;
+  }
+  return isDigitsString(value.slice(1));
+}
+function isPositiveFloatString(value) {
+  if (!/* @__PURE__ */ isString(value)) {
+    return false;
+  }
+  if (value.length <= 2) {
+    return false;
+  }
+  const dotIndex = value.indexOf(".");
+  if (dotIndex === -1) {
+    return false;
+  }
+  const intPart = value.slice(0, dotIndex);
+  if (!isPositiveIntString(intPart)) {
+    return false;
+  }
+  const floatPart = value.slice(dotIndex + 1);
+  if ([...floatPart].every(function is0(floatPartDigit) {
+    return floatPartDigit === "0";
+  })) {
+    return false;
+  }
+  return isDigitsString(floatPart);
+}
+function isPositiveNumberString(value) {
+  return isPositiveIntString(value) || isPositiveFloatString(value);
+}
+const a = (t) => ({ [Symbol.iterator]: t }), r = (t) => Boolean(t && "function" == typeof t.then), c = (t) => {
+  if (t.length <= 1 || f.has(t)) return t;
+  const n = s(t, (...n2) => n2.length < t.length ? c(t.bind(null, ...n2)) : t(...n2));
+  return f.add(n), n;
+}, s = (t, n) => Object.defineProperties(n, { length: { value: t.length }, name: { value: t.name } }), f = /* @__PURE__ */ new WeakSet(), l = /* @__PURE__ */ c((t, n) => a(function* () {
+  for (const a2 of n) yield t(a2);
+})), P = (t) => "function" == typeof t ? t : t[Symbol.iterator] ? async (n) => {
+  await Promise.all(l(n, t));
+} : async (n) => {
+  const a2 = [];
+  for await (const e of t) {
+    const t2 = n(e);
+    r(t2) && a2.push(t2);
+  }
+  await Promise.all(a2);
+}, Mn = /* @__PURE__ */ c((t, n) => n(t));
 const DEFAULT_ELEMENT_WIDTH_NUMBER = 3840 - 8 * 2;
-async function testCssVar(cssValue, cssVar, mode, depth = 0) {
+const testCssVar = async (cssValue, cssVar, mode, depth = 0) => {
   if (depth > 10) {
     throw new Error("Infinite loop detected");
   }
@@ -948,8 +1023,8 @@ async function testCssVar(cssValue, cssVar, mode, depth = 0) {
       return {
         cssVar,
         originalValue: cssValue,
-        computedValue: computedWidth.slice(0, -"px".length),
-        cssVarType: "number",
+        computedValue: Number(computedWidth.slice(0, -"px".length)),
+        varType: "number",
         mode,
         error: {
           message: `Figma doesn&apos;t support unitful length values,
@@ -957,7 +1032,8 @@ async function testCssVar(cssValue, cssVar, mode, depth = 0) {
                           If you&apos;re relying on the behavior of converting from rem to px,
                           you can safely ignore this error.`,
           level: cssValue.includes("em") ? "notice" : "error"
-        }
+        },
+        originalComputedValue: computedWidth
       };
     }
   }
@@ -980,9 +1056,10 @@ async function testCssVar(cssValue, cssVar, mode, depth = 0) {
       return {
         cssVar,
         originalValue: cssValue,
-        computedValue: computedWidth.slice(0, -"px".length),
+        computedValue: Number(computedWidth.slice(0, -"px".length)),
         varType: "number",
-        mode
+        mode,
+        originalComputedValue: computedWidth
       };
     }
   }
@@ -1003,19 +1080,14 @@ async function testCssVar(cssValue, cssVar, mode, depth = 0) {
       "color"
     );
     testElementAssumeColor.remove();
-    if (
-      // If the element&apos;s background color and color are different,
-      // it means at least one of them isn&apos;t applied.
-      // It means the CSS var isn&apos;t a color value.
-      computedBackgroundColor !== computedColor
-    ) ;
-    else {
+    if (computedBackgroundColor === computedColor) {
       return {
         cssVar,
         originalValue: cssValue,
         computedValue: computedBackgroundColor,
         varType: "color",
-        mode
+        mode,
+        originalComputedValue: computedBackgroundColor
       };
     }
   }
@@ -1044,7 +1116,8 @@ async function testCssVar(cssValue, cssVar, mode, depth = 0) {
         originalValue: cssValue,
         computedValue: computedBoxShadow,
         varType: "box-shadow",
-        mode
+        mode,
+        originalComputedValue: computedBoxShadow
       };
     }
   }
@@ -1074,7 +1147,8 @@ async function testCssVar(cssValue, cssVar, mode, depth = 0) {
         originalValue: cssValue,
         computedValue: cssValue.includes("var(--") ? cssValue.replaceAll("var(--", "var(--") : cssValue,
         varType: "string",
-        mode
+        mode,
+        originalComputedValue: computedContent
       };
     }
   }
@@ -1088,20 +1162,22 @@ async function testCssVar(cssValue, cssVar, mode, depth = 0) {
       message: `${cssVar}&apos;s ${cssValue} cannot be treated as a unitful length,
              a number, a color, a box-shadow, or a string (CSS content) value.`,
       level: "error"
-    }
+    },
+    originalComputedValue: cssValue
   };
-}
+};
 const processCssVarRuleStyle = async (ruleStyle, rule, mode) => {
   const cssVar = ruleStyle;
   const cssValue = rule.style.getPropertyValue(cssVar);
-  if (!isNaN(cssValue) && !isNaN(parseFloat(cssValue))) {
+  if (isPositiveNumberString(cssValue)) {
     window.parent.postMessage({
       authoredCss: {
         cssVar,
         originalValue: cssValue,
         computedValue: Number(cssValue),
         varType: "number",
-        mode
+        mode,
+        originalComputedValue: cssValue
       }
     }, "*");
   } else if (cssValue === "true") {
@@ -1111,7 +1187,8 @@ const processCssVarRuleStyle = async (ruleStyle, rule, mode) => {
         originalValue: cssValue,
         computedValue: true,
         varType: "boolean",
-        mode
+        mode,
+        originalComputedValue: cssValue
       }
     }, "*");
   } else if (cssValue === "false") {
@@ -1121,7 +1198,8 @@ const processCssVarRuleStyle = async (ruleStyle, rule, mode) => {
         originalValue: cssValue,
         computedValue: false,
         varType: "boolean",
-        mode
+        mode,
+        originalComputedValue: cssValue
       }
     }, "*");
   } else {
@@ -1130,11 +1208,18 @@ const processCssVarRuleStyle = async (ruleStyle, rule, mode) => {
   }
 };
 const processBasicRule = async (rule, mode) => {
-  for (const ruleStyle of rule.style) {
-    if (ruleStyle.startsWith("--")) {
-      await processCssVarRuleStyle(ruleStyle, rule, mode);
-    }
+  const ruleStyles = [];
+  for (let i = 0; i < rule.style.length; i++) {
+    ruleStyles.push(rule.style.item(i));
   }
+  await Mn(
+    async function processRuleStyle(ruleStyle) {
+      if (ruleStyle.startsWith("--")) {
+        await processCssVarRuleStyle(ruleStyle, rule, mode);
+      }
+    },
+    P(ruleStyles)
+  );
 };
 const processNonBasicRule = (rule) => {
   console.log(`non-basic rule: ${rule.selectorText}`);
@@ -1150,11 +1235,19 @@ const processRule = async (rule) => {
 const handleReceivingCss = async (event) => {
   const sheet = await new CSSStyleSheet().replace(event.data.css);
   document.adoptedStyleSheets = [sheet];
-  event.source.postMessage({ authoredCss: "adopted stylesheets applied" }, "*");
+  window.parent.postMessage(
+    { authoredCss: "adopted stylesheets applied" },
+    "*"
+  );
   const ruleList = sheet.cssRules;
-  for (const rule of ruleList) {
-    await processRule(rule);
+  const rules = [];
+  for (let i = 0; i < ruleList.length; i++) {
+    rules.push(ruleList.item(i));
   }
+  await Mn(
+    processRule,
+    P(rules)
+  );
 };
 const messageHandler = async (event) => {
   if (Object.hasOwn(event.data, "css")) {

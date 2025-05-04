@@ -1,0 +1,16 @@
+[general]
+host = "127.0.0.1"
+port = 5173
+root = "dist/final"
+log-level = "info"
+directory-listing = true
+redirect-trailing-slash = false
+compression-static = true
+http2 = true
+http2-tls-cert = "dist/temp/server/localhost.pem"
+http2-tls-key = "dist/temp/server/localhost-key.pem"
+
+[advanced]
+[[advanced.rewrites]]
+source = "/subtle/{*}/{l,li,lin,link,[!l]*,l[!i]*,li[!n]*,lin[!k]*,link[!s]*,links?*}"
+destination = "/subtle/$1/404.html"

@@ -1,13 +1,9 @@
 node_modules
 .jj
 .dist/dev
-**/dist/dev
 .dist/temp
-**/.dist/temp
 dist/dev
-**/dist/dev
 dist/temp
-**/dist/temp
 *.tsbuildinfo
 *.map
 .bin

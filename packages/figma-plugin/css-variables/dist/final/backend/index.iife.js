@@ -3,7 +3,7 @@ var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { en
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 (function() {
   "use strict";
-  const EPSILON = 1e-5;
+  const EPSILON = 0.1 ** 5;
   const almostEqual = (a, b) => {
     return Math.abs(a - b) < EPSILON;
   };
@@ -131,11 +131,14 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     computedValue,
     originalValue,
     varType,
-    mode
+    mode,
+    originalComputedValue
   }) => {
     if (varType === "number") {
       if (String(computedValue) !== String(originalValue)) {
-        console.log(`Setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
+        console.log(
+          `Setting variable ${cssVar} to ${computedValue} in mode ${mode} with original computed value ${originalComputedValue}`
+        );
         const variable = enhancedVariables.find(
           (enhancedVariable) => enhancedVariable.name === cssVar.slice("--".length)
         );
@@ -143,7 +146,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
     } else if (varType === "boolean") {
       if (String(computedValue) !== String(originalValue)) {
-        console.log(`Setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
+        console.log(
+          `Setting variable ${cssVar} to ${computedValue} in mode ${mode} with original computed value ${originalComputedValue}`
+        );
         const variable = enhancedVariables.find(
           (enhancedVariable) => enhancedVariable.name === cssVar.slice("--".length)
         );
@@ -152,7 +157,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     } else if (varType === "color") {
       const color = function calculateColor() {
         if (computedValue.startsWith("rgba(")) {
-          const rgba = computedValue.slice("rgba(".length, -")".length).split(",").map((value) => value.trim());
+          const rgba = computedValue.slice("rgba(".length, -")".length).split(",").map(function trimValue(value) {
+            return value.trim();
+          });
           return {
             r: Number(rgba[0]) / 255,
             g: Number(rgba[1]) / 255,
@@ -161,7 +168,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           };
         }
         if (computedValue.startsWith("rgb(")) {
-          const rgb = computedValue.slice("rgb(".length, -")".length).split(",").map((value) => value.trim());
+          const rgb = computedValue.slice("rgb(".length, -")".length).split(",").map(function trimValue(value) {
+            return value.trim();
+          });
           return {
             r: Number(rgb[0]) / 255,
             g: Number(rgb[1]) / 255,
@@ -190,7 +199,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       if (almostEqual(color.r, originalColor.r) && almostEqual(color.g, originalColor.g) && almostEqual(color.b, originalColor.b) && almostEqual(color.a, originalColor.a)) {
         return;
       }
-      console.log(`Setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
+      console.log(
+        `Setting variable ${cssVar} to ${computedValue} in mode ${mode} with original computed value ${originalComputedValue}`
+      );
       const variable = enhancedVariables.find(
         (enhancedVariable) => enhancedVariable.name === cssVar.slice("--".length)
       );
@@ -198,7 +209,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     } else if (varType === "string") {
       if (computedValue !== originalValue) {
         const valueToSet = computedValue.startsWith("'") && computedValue.endsWith("'") ? computedValue.slice("'".length, -"'".length) : computedValue;
-        console.log(`Setting variable ${cssVar} to ${valueToSet} in mode ${mode}`);
+        console.log(
+          `Setting variable ${cssVar} to ${computedValue} in mode ${mode} with original computed value ${originalComputedValue}`
+        );
         const variable = enhancedVariables.find(
           (enhancedVariable) => enhancedVariable.name === cssVar.slice("--".length)
         );

@@ -1,11 +1,23 @@
+import type {
+  AuthoredCss,
+  ComputedColor,
+} from '../shared/message.ts';
+
+import { isPositiveNumberString } from '@monochromatic-dev/module-es/ts';
+
+import {
+  asConcur,
+  forEachConcur,
+} from 'lfi';
+
 const DEFAULT_ELEMENT_WIDTH_NUMBER = 3840 - 8 * 2;
 
-async function testCssVar(
-  /** @type {string} */ cssValue,
-  /** @type {string} */ cssVar,
-  /** @type {string} */ mode,
-  /** @type {number} */ depth = 0,
-) {
+const testCssVar = async (
+  cssValue: string,
+  cssVar: `--${string}`,
+  mode: string,
+  depth = 0,
+): Promise<AuthoredCss> => {
   if (depth > 10) {
     throw new Error('Infinite loop detected');
   }
@@ -13,14 +25,14 @@ async function testCssVar(
     `testCssVar(cssValue: ${cssValue}, cssVar: ${cssVar}, mode: ${mode}, depth: ${depth})`,
   );
 
-  /** @type {HTMLDivElement} */
-  const modeApplier = document.querySelector(`body > [data-mode="${mode}"]`)
-    ?? (function createModeApplier() {
-      const createdModeApplier = document.createElement('div');
-      createdModeApplier.dataset.mode = mode;
-      document.body.append(createdModeApplier);
-      return createdModeApplier;
-    })();
+  const modeApplier: HTMLDivElement =
+    document.querySelector(`body > [data-mode="${mode}"]`)
+      ?? (function createModeApplier(): HTMLDivElement {
+        const createdModeApplier = document.createElement('div');
+        createdModeApplier.dataset.mode = mode;
+        document.body.append(createdModeApplier);
+        return createdModeApplier;
+      })();
 
   {
     const testElementAssumeUnitfulLength = document.createElement('div');
@@ -48,8 +60,8 @@ async function testCssVar(
       return {
         cssVar,
         originalValue: cssValue,
-        computedValue: computedWidth.slice(0, -('px'.length)),
-        cssVarType: 'number',
+        computedValue: Number(computedWidth.slice(0, -('px'.length))),
+        varType: 'number',
         mode,
         error: {
           message: `Figma doesn't support unitful length values,
@@ -58,6 +70,7 @@ async function testCssVar(
                           you can safely ignore this error.`,
           level: cssValue.includes('em') ? 'notice' : 'error',
         },
+        originalComputedValue: computedWidth,
       };
     }
   }
@@ -88,9 +101,10 @@ async function testCssVar(
       return {
         cssVar,
         originalValue: cssValue,
-        computedValue: computedWidth.slice(0, -('px'.length)),
+        computedValue: Number(computedWidth.slice(0, -('px'.length))),
         varType: 'number',
         mode,
+        originalComputedValue: computedWidth,
       };
     }
   }
@@ -113,24 +127,20 @@ async function testCssVar(
       'color',
     );
     testElementAssumeColor.remove();
-    if (
-      // If the element's background color and color are different,
-      // it means at least one of them isn't applied.
-      // It means the CSS var isn't a color value.
-      computedBackgroundColor
-        !== computedColor
-    ) {
-      /*            console.log(
-        `${cssVar} isn't a color value. Try treating it as something else.`,
-      );*/
-    } else {
+    if (computedBackgroundColor === computedColor) {
+      // eslint-disable-next-line no-else-return
       return {
         cssVar,
         originalValue: cssValue,
-        computedValue: computedBackgroundColor,
+        computedValue: computedBackgroundColor as ComputedColor,
         varType: 'color',
         mode,
+        originalComputedValue: computedBackgroundColor,
       };
+    } else {
+      /*            console.log(
+        `${cssVar} isn't a color value. Try treating it as something else.`,
+      );*/
     }
   }
   {
@@ -166,6 +176,7 @@ async function testCssVar(
         computedValue: computedBoxShadow,
         varType: 'box-shadow',
         mode,
+        originalComputedValue: computedBoxShadow,
       };
     }
   }
@@ -208,6 +219,7 @@ async function testCssVar(
           : cssValue,
         varType: 'string',
         mode,
+        originalComputedValue: computedContent,
       };
     }
   }
@@ -224,24 +236,24 @@ async function testCssVar(
              a number, a color, a box-shadow, or a string (CSS content) value.`,
       level: 'error',
     },
+    originalComputedValue: cssValue,
   };
-}
+};
 
 const processCssVarRuleStyle = async (
-  /** @type { string } */ ruleStyle,
-  /** @type { CSSStyleRule & {selectorText: string} } */ rule,
-  /** @type {string} */ mode,
+  ruleStyle: `--${string}`,
+  rule: CSSStyleRule & { selectorText: string; },
+  mode: string,
 ): Promise<void> => {
   const cssVar = ruleStyle;
-  const cssValue = rule.style.getPropertyValue(cssVar);
+  const cssValue: string = rule.style.getPropertyValue(cssVar);
 
   // low-hanging fruit:
   // If the CSS var is a number at first glance,
   // skip everything and send the value to the backend.
   // noinspection JSCheckFunctionSignatures
   if (
-    !isNaN(cssValue)
-    && !isNaN(parseFloat(cssValue))
+    isPositiveNumberString(cssValue)
   ) {
     window.parent.postMessage({
       authoredCss: {
@@ -250,6 +262,7 @@ const processCssVarRuleStyle = async (
         computedValue: Number(cssValue),
         varType: 'number',
         mode,
+        originalComputedValue: cssValue,
       },
     }, '*');
   } else if (cssValue === 'true') {
@@ -260,6 +273,7 @@ const processCssVarRuleStyle = async (
         computedValue: true,
         varType: 'boolean',
         mode,
+        originalComputedValue: cssValue,
       },
     }, '*');
   } else if (cssValue === 'false') {
@@ -270,6 +284,7 @@ const processCssVarRuleStyle = async (
         computedValue: false,
         varType: 'boolean',
         mode,
+        originalComputedValue: cssValue,
       },
     }, '*');
   } else {
@@ -282,29 +297,44 @@ const processCssVarRuleStyle = async (
 };
 
 const processBasicRule = async (
-  /** @type { CSSStyleRule & {selectorText: string}} */ rule,
-  /** @type {string} */ mode,
-) => {
+  rule: CSSStyleRule & { selectorText: string; },
+  mode: string,
+): Promise<void> => {
   // console.log(rule.style);
+  const ruleStyles: string[] = [];
 
-  for (const /** @type {string} */ ruleStyle of rule.style) {
+  for (let i = 0; i < rule.style.length; i++) {
+    ruleStyles.push(rule.style.item(i));
+  }
+
+  /*  for (const ruleStyle of ruleStyles) {
     if (ruleStyle.startsWith('--')) {
       await processCssVarRuleStyle(ruleStyle, rule, mode);
     } else {
       // console.log(`non-css var: ${ruleStyle}`);
     }
-  }
+  }*/
+  await forEachConcur(
+    async function processRuleStyle(ruleStyle: string) {
+      if (ruleStyle.startsWith('--')) {
+        await processCssVarRuleStyle(ruleStyle as `--${string}`, rule, mode);
+      } else {
+        // console.log(`non-css var: ${ruleStyle}`);
+      }
+    },
+    asConcur(ruleStyles),
+  );
 };
 
 const processNonBasicRule = (
-  /** @type { CSSStyleRule & {selectorText: string}} */ rule,
-) => {
+  rule: CSSStyleRule & { selectorText: string; },
+): void => {
   console.log(`non-basic rule: ${rule.selectorText}`);
 };
 
 const processRule = async (
-  /** @type { CSSStyleRule & {selectorText: string}} */ rule,
-) => /** @type {VoidFunction} */ {
+  rule: CSSStyleRule & { selectorText: string; },
+): Promise<void> => {
   // Basic Rules
   if (/^\[data-mode=(?:"\w+"|'\w+')]$/.test(rule.selectorText.trim())) {
     const mode = rule.selectorText.trim().slice('[data-mode="'.length, -'"]'
@@ -315,22 +345,30 @@ const processRule = async (
   }
 };
 
-const handleReceivingCss = async (/** @type {MessageEvent<any>} */ event) => {
+const handleReceivingCss = async (event: MessageEvent): Promise<void> => {
   // console.log(`inner iframe received message: ${event.data.css}`);
   const sheet = await new CSSStyleSheet().replace(event.data.css);
   document.adoptedStyleSheets = [sheet];
-  event.source.postMessage({ authoredCss: 'adopted stylesheets applied' }, '*');
+  window.parent.postMessage(
+    { authoredCss: 'adopted stylesheets applied' },
+    '*',
+  );
 
   const ruleList = sheet.cssRules;
-  // Have to use jsdoc/tsdoc in this document because this is parsed as JS
-  for (
-    const /** @type {CSSStyleRule & {selectorText: string}} */ rule of ruleList
-  ) {
-    await processRule(rule);
+
+  const rules: (CSSStyleRule & { selectorText: string; })[] = [];
+
+  for (let i = 0; i < ruleList.length; i++) {
+    rules.push(ruleList.item(i) as CSSStyleRule & { selectorText: string; });
   }
+
+  await forEachConcur(
+    processRule,
+    asConcur(rules),
+  );
 };
 
-const messageHandler = async (/** @type {MessageEvent<any>} */ event): Promise<void> => {
+const messageHandler = async (event: MessageEvent): Promise<void> => {
   if (Object.hasOwn(event.data, 'css')) { await handleReceivingCss(event); }
 };
 window.addEventListener('message', messageHandler);

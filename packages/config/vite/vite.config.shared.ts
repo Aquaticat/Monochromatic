@@ -19,6 +19,8 @@ import {
 } from 'vite';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 
+const firefoxVersion = 128 << 16;
+
 function createBaseConfig(configDir: string): UserConfig {
   return {
     plugins: [],
@@ -39,7 +41,7 @@ function createBaseConfig(configDir: string): UserConfig {
       },
       lightningcss: {
         targets: {
-          firefox: (128 << 16),
+          firefox: firefoxVersion,
         },
         cssModules: false,
       },
@@ -53,9 +55,6 @@ function createBaseConfig(configDir: string): UserConfig {
       outDir: 'dist/final',
       emptyOutDir: true,
       rollupOptions: {},
-      watch: {
-        include: [`${configDir}/**`],
-      },
     },
     worker: {
       format: 'es',
@@ -162,13 +161,16 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
       plugins: [
         ...frontendLikeConfigForFigmaFrontend.plugins!,
         (function inlineIframePlugin(): PluginOption {
+          const iframePath = join(configDir, 'dist/final/iframe/index.html');
           return {
             name: 'vite-plugin-inline-iframe',
             enforce: 'post',
+            buildStart() {
+              this.addWatchFile(iframePath);
+            },
             transformIndexHtml(html): string {
               if (html.includes('REPLACE_WITH_IFRAME_INDEX_HTML')) {
                 console.log('replacing iframe');
-                const iframePath = join(configDir, 'dist/final/iframe/index.html');
                 chmodSync(iframePath, constants.constants.S_IRUSR);
                 const iframeFile = readFileSync(iframePath, 'utf8');
                 return html.replace(
