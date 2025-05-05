@@ -1,0 +1,28 @@
+{
+  "name": "@monochromatic-dev/build-time",
+  "description": "Specify the desired layout of configuration files and their source; stop manual micro-management.",
+  "type": "module",
+  "module": "dist/final/index.js",
+  "exports": {
+    ".": "./dist/final/index.js",
+    "./ts": "./src/index.ts"
+  },
+  "main": "dist/final/index.js",
+  "typings": "dist/final/index.d.ts",
+  "files": [
+    "dist/final"
+  ],
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  },
+  "dependencies": {
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "build/file-enforcer"
+  },
+  "sideEffects": false
+}

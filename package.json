@@ -13,29 +13,24 @@
   },
   "trustedDependencies": [
     "sharp",
-    "@biomejs/biome",
     "dprint",
     "esbuild",
     "husky"
   ],
   "scripts": {
-    "dependencies": "monochromatic dependencies",
-    "prepare": "husky || echo 'husky does not exist, skipped'"
+    "prepare": "husky || echo 'husky does not exist, skipped'",
+    "preinstall": "npx only-allow pnpm"
   },
   "engines": {
     "bun": ">=1.2.9"
   },
-  "// devDependencies/esbuild": "For the occasional necessarity of manually running ' yarn run -T -B esbuild src/index.ts --bundle --platform=node --charset=utf8 --format=esm --packages=external --target=node22 --drop:debugger --drop-labels=DEV,D --keep-names --outdir=dist/final/ --metafile=dist/temp/esbuild/meta.json --log-limit=0 --sourcemap ' intead of using my own pipeline.",
   "devDependencies": {
     "@monochromatic-dev/config-dprint": "workspace:*",
     "@monochromatic-dev/config-stylelint": "workspace:*",
-    "dprint": ">=0.49.1",
-    "esbuild": ">=0.25.2",
-    "husky": ">=9.1.7",
-    "oxlint": ">=0.16.9",
-    "stylelint": ">=16.19.1",
-    "typescript": ">=5.8.3",
-    "vue-tsc": ">=2.2.8"
+    "dprint": "catalog:",
+    "husky": "catalog:",
+    "oxlint": "catalog:",
+    "stylelint": "catalog:"
   },
   "workspaces": [
     "packages/*/*"

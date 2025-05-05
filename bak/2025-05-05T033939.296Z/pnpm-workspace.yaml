@@ -14,7 +14,6 @@ onlyBuiltDependencies:
 - dprint
 - esbuild
 - sharp
-- husky
 preferWorkspacePackages: true
 resolutionMode: highest
 savePrefix: ''
@@ -94,38 +93,6 @@ catalog:
   '@csstools/postcss-light-dark-function': '*'
   '@csstools/postcss-oklab-function': '*'
   '@csstools/postcss-relative-color-syntax': '*'
-  '@csstools/custom-units': '*'
-  'postcss-calc': '*'
-  'postcss-color-functional-notation': '*'
-  'postcss-color-hex-alpha': '*'
-  'postcss-convert-values': '*'
-  'postcss-custom-properties': '*'
-  'postcss-custom-media': '*'
-  'postcss-custom-selectors': '*'
-  'postcss-discard-comments': '*'
-  'postcss-discard-duplicates': '*'
-  'postcss-discard-empty': '*'
-  'postcss-discard-overridden': '*'
-  'postcss-discard-unused': '*'
-  'postcss-merge-idents': '*'
-  'postcss-merge-longhand': '*'
-  'postcss-merge-rules': '*'
-  'postcss-minify-font-values': '*'
-  'postcss-minify-gradients': '*'
-  'postcss-minify-params': '*'
-  'postcss-minify-selectors': '*'
-  'postcss-mixins': '*'
-  'postcss-nesting': '*'
-  'postcss-normalize-charset': '*'
-  'postcss-normalize-display-values': '*'
-  'postcss-normalize-positions': '*'
-  'postcss-normalize-repeat-style': '*'
-  'postcss-normalize-string': '*'
-  'postcss-normalize-timing-functions': '*'
-  'postcss-normalize-unicode': '*'
-  'postcss-normalize-url': '*'
-  'postcss-normalize-whitespace': '*'
-  'postcss-ordered-values': '*'
 
   # Figma plugin types
   '@figma/plugin-typings': '*'
@@ -138,60 +105,4 @@ catalog:
 
   # Feature-complete CSS lib
   postcss: '*'
-
-  # Logger
-  '@logtape/logtape': '@jsr/*'
-  '@logtape/file': '@jsr/*'
-
-  # TypeScript extended type helpers
-  'type-fest': '*'
-
-  # Feature-complete child process
-  'execa': '*'
-
-  # Small process spawner
-  'nano-spawn': '*'
-
-  # Astro
-  astro: '*'
-  '@astrojs/mdx': '*'
-  '@astrojs/rss': '*'
-
-  # Syntax highlighter
-  '@shikijs/transformers': '*'
-
-  # local HTTPS server
-  '@vitejs/plugin-basic-ssl': '*'
-
-  # Unified
-  unified: '*'
-  to-vfile: '*'
-  remark-github-blockquote-alert: '*'
-  remark-sectionize: '*'
-  rehype-stringify: '*'
-  rehype-slug-custom-id: '*'
-  rehype-preset-minify: '*'
-  rehype-parse: '*'
-  rehype-autolink-headings: '*'
-
-  # fp library
-  rambdax: '*'
-
-  # Secure code execution environment
-  ses: '*'
-
-  # CSS reset
-  the-new-css-reset: '*'
-  TODS: 'github:clagnut/TODS'
-
-  # MDX with Vue
-  '@mdx-js/vue': '*'
-  'vue': '*'
-
-overrides:
-  'tsconfck>typescript': '*'
-  'zod-to-ts>typescript': '*'
-packageExtensions:
-  'astro':
-    dependencies:
-      typescript: '*'
+  

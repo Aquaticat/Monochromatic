@@ -14,7 +14,6 @@ onlyBuiltDependencies:
 - dprint
 - esbuild
 - sharp
-- husky
 preferWorkspacePackages: true
 resolutionMode: highest
 savePrefix: ''
@@ -187,11 +186,3 @@ catalog:
   # MDX with Vue
   '@mdx-js/vue': '*'
   'vue': '*'
-
-overrides:
-  'tsconfck>typescript': '*'
-  'zod-to-ts>typescript': '*'
-packageExtensions:
-  'astro':
-    dependencies:
-      typescript: '*'

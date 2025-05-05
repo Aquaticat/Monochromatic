@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="manual+auto" pattern="file:pnpm-workspace.yaml" />
+</component>

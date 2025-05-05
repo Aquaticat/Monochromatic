@@ -14,7 +14,6 @@ onlyBuiltDependencies:
 - dprint
 - esbuild
 - sharp
-- husky
 preferWorkspacePackages: true
 resolutionMode: highest
 savePrefix: ''
@@ -166,32 +165,3 @@ catalog:
   # Unified
   unified: '*'
   to-vfile: '*'
-  remark-github-blockquote-alert: '*'
-  remark-sectionize: '*'
-  rehype-stringify: '*'
-  rehype-slug-custom-id: '*'
-  rehype-preset-minify: '*'
-  rehype-parse: '*'
-  rehype-autolink-headings: '*'
-
-  # fp library
-  rambdax: '*'
-
-  # Secure code execution environment
-  ses: '*'
-
-  # CSS reset
-  the-new-css-reset: '*'
-  TODS: 'github:clagnut/TODS'
-
-  # MDX with Vue
-  '@mdx-js/vue': '*'
-  'vue': '*'
-
-overrides:
-  'tsconfck>typescript': '*'
-  'zod-to-ts>typescript': '*'
-packageExtensions:
-  'astro':
-    dependencies:
-      typescript: '*'

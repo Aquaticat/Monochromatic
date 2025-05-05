@@ -14,7 +14,6 @@ onlyBuiltDependencies:
 - dprint
 - esbuild
 - sharp
-- husky
 preferWorkspacePackages: true
 resolutionMode: highest
 savePrefix: ''
