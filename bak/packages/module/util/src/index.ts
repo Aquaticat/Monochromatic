@@ -1,9 +1,0 @@
-/* @__NO_SIDE_EFFECTS__ */ export * from './arrayLike.js';
-/* @__NO_SIDE_EFFECTS__ */ export * from './boolean.ts';
-/* @__NO_SIDE_EFFECTS__ */ export * from './error.ts';
-/* @__NO_SIDE_EFFECTS__ */ export * from './function.ts';
-/* @__NO_SIDE_EFFECTS__ */ export * from './logtape.ts';
-/* @__NO_SIDE_EFFECTS__ */ export * from './numeric.ts';
-/* @__NO_SIDE_EFFECTS__ */ export * from './promise.ts';
-/* @__NO_SIDE_EFFECTS__ */ export * from './string.ts';
-/* @__NO_SIDE_EFFECTS__ */ export * from './testing.ts';

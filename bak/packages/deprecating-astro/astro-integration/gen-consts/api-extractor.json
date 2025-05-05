@@ -1,9 +1,0 @@
-/*
- Many fields are deleted.
- For complete reference, see https://api-extractor.com/pages/configs/api-extractor_json/
- */
-{
-  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
-
-  "extends": "@monochromatic-dev/config-api-extractor/index.json"
-}

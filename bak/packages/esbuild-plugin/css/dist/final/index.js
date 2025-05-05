@@ -1,2 +1,0 @@
-var i=Object.defineProperty;var s=(t,e)=>i(t,"name",{value:e,configurable:!0});import{getLogger as n}from"@logtape/logtape";import o from"@monochromatic-dev/module-resolve";var l=n(["esbuild-plugin","css"]),c=s(()=>({name:"css",setup(t){t.onResolve({filter:/(?:\.css$)|(?:^|[-_.\/@#])(?:css|style)(?:$|[-_\/][^.\s]$)/},async e=>{if(!(["plugin","script",".js",".ts","languages"].some(r=>e.path.includes(r))||e.kind==="entry-point"))return l.debug`${e} triggered resolve`,{path:await o(e.path,e.importer)}})}}),"default");export{c as default};
-//# sourceMappingURL=index.js.map
