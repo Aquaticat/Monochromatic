@@ -21,8 +21,8 @@
     "type-fest": ">=4.24.0"
   },
   "dependencies": {
-    "@logtape/logtape": "npm:@jsr/logtape__logtape@*",
-    "@logtape/file": "npm:@jsr/logtape__file@*"
+    "@logtape/logtape": "jsr:*",
+    "@logtape/file": "jsr:*"
   },
   "version": "0.0.125",
   "repository": {

@@ -11,7 +11,8 @@
   },
   "devDependencies": {
     "vite": ">=6.3.2",
-    "vite-plugin-singlefile": "*"
+    "vite-plugin-singlefile": "*",
+    "@monochromatic-dev/config-typescript": "*"
   },
   "main": "vite.config.shared.ts",
   "module": "vite.config.shared.ts",

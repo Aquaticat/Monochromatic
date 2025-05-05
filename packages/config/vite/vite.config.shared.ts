@@ -1,7 +1,7 @@
 import postcssCustomUnits from '@csstools/custom-units';
-import constants from 'node:fs';
 import {
   chmodSync,
+  constants,
   readFileSync,
 } from 'node:fs';
 import {
@@ -171,7 +171,7 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
             transformIndexHtml(html): string {
               if (html.includes('REPLACE_WITH_IFRAME_INDEX_HTML')) {
                 console.log('replacing iframe');
-                chmodSync(iframePath, constants.constants.S_IRUSR);
+                chmodSync(iframePath, constants.S_IRUSR);
                 const iframeFile = readFileSync(iframePath, 'utf8');
                 return html.replace(
                   'REPLACE_WITH_IFRAME_INDEX_HTML',

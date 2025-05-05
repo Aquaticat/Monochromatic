@@ -1,0 +1,26 @@
+packages:
+  - packages/*/*
+childConcurrency: 16
+dedupeDirectDeps: true
+disallowWorkspaceCycles: true
+hoist: false
+hoistWorkspacePackages: false
+includeWorkspaceRoot: true
+linkWorkspacePackages: true
+managePackageManagerVersions: false
+nodeLinker: isolated
+onlyBuiltDependencies:
+  - dprint
+  - esbuild
+  - sharp
+preferWorkspacePackages: true
+resolutionMode: highest
+savePrefix: ''
+saveWorkspaceProtocol: false
+strictDepBuilds: true
+strictPeerDependencies: true
+supportedArchitectures:
+  os: [win32, darwin, linux, current]
+  cpu: [x64, arm64, current]
+  libc: [glibc, musl, current]
+verifyDepsBeforeRun: install
