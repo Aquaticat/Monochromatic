@@ -15,11 +15,11 @@
   "devDependencies": {
     "@monochromatic-dev/module-es": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
-    "@types/bun": "*",
-    "type-fest": ">=4.24.0"
+    "@types/bun": "catalog:",
+    "type-fest": "catalog:"
   },
   "dependencies": {
-    "execa": ">=9.3.1"
+    "execa": "catalog:"
   },
   "version": "0.0.125",
   "repository": {

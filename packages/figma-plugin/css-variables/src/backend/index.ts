@@ -6,7 +6,7 @@
 // You can access browser APIs in the <script> tag inside "ui.html" which has a
 // full browser environment (See https://www.figma.com/plugin-docs/how-plugins-run).
 
-/// <reference path="../../../../../node_modules/@figma/plugin-typings/index.d.ts" />
+/// <reference types="@figma/plugin-typings" />
 
 // Runs this code if the plugin is run in Figma
 import type {
@@ -173,15 +173,17 @@ let styles: [PaintStyle | TextStyle | EffectStyle | GridStyle][] = [];
 let paintStyles: PaintStyle[] = [];
 let textStyles: TextStyle[] = [];
 let effectStyles: EffectStyle[] = [];
-let gridStyles: EffectStyle[] = [];
+let gridStyles: GridStyle[] = [];
 
 const populateFigmaVariables = async (): Promise<void> => {
   collections = await figma.variables.getLocalVariableCollectionsAsync();
   variables = await figma
     .variables
     .getLocalVariablesAsync();
-  enhancedVariables = variables.map((variable: Variable): EnhancedVariable =>
-    new EnhancedVariable(variable)
+  enhancedVariables = variables.map(
+    function enhanceVariable(variable: Variable): EnhancedVariable {
+      return new EnhancedVariable(variable);
+    },
   );
 };
 
@@ -194,6 +196,25 @@ const normalizeVariables = (): void => {
   }
 };
 
+const parseColorString = (colorStr: string): RGBA => {
+  const isRgba = colorStr.startsWith('rgba(');
+  const isRgb = colorStr.startsWith('rgb(');
+  if (!isRgba && !isRgb) {
+    throw new TypeError(`Invalid color format: ${colorStr}`);
+  }
+  const values = colorStr
+    .slice(isRgba ? 'rgba('.length : 'rgb('.length, -')'.length)
+    .split(',')
+    .map((value) => value.trim());
+
+  return {
+    r: Number(values[0]) / 255,
+    g: Number(values[1]) / 255,
+    b: Number(values[2]) / 255,
+    a: isRgba ? Number(values[3]) : 1,
+  };
+};
+
 const handleSettingVarMessage = ({
   cssVar,
   computedValue,
@@ -202,125 +223,70 @@ const handleSettingVarMessage = ({
   mode,
   originalComputedValue,
 }: AuthoredCss): void => {
-  if (varType === 'number') {
-    if (String(computedValue) !== String(originalValue)) {
-      console.log(
-        `Setting variable ${cssVar} to ${computedValue} in mode ${mode} with original computed value ${originalComputedValue}`,
-      );
+  const getVariable = (): EnhancedVariable => {
+    return enhancedVariables.find((enhancedVariable) =>
+      enhancedVariable.name === cssVar.slice('--'.length)
+    )!;
+  };
 
-      const variable: EnhancedVariable = enhancedVariables.find((enhancedVariable) =>
-        enhancedVariable.name === cssVar.slice('--'.length)
-      )!;
-      variable.setValueByModeName(computedValue, mode);
-    }
-  } else if (varType === 'boolean') {
-    if (String(computedValue) !== String(originalValue)) {
-      console.log(
-        `Setting variable ${cssVar} to ${computedValue} in mode ${mode} with original computed value ${originalComputedValue}`,
-      );
-
-      const variable: EnhancedVariable = enhancedVariables.find((enhancedVariable) =>
-        enhancedVariable.name === cssVar.slice('--'.length)
-      )!;
-      variable.setValueByModeName(computedValue, mode);
-    }
-  } else if (varType === 'color') {
-    const color: RGBA = (function calculateColor() {
-      if (computedValue.startsWith('rgba(')) {
-        const rgba: string[] = computedValue
-          .slice('rgba('.length, -')'.length)
-          .split(',')
-          .map(function trimValue(value) {
-            return value.trim();
-          });
-        return {
-          r: Number(rgba[0]) / 255,
-          g: Number(rgba[1]) / 255,
-          b: Number(rgba[2]) / 255,
-          a: Number(rgba[3]),
-        };
-      }
-      if (computedValue.startsWith('rgb(')) {
-        const rgb: string[] = computedValue
-          .slice('rgb('.length, -')'.length)
-          .split(',')
-          .map(function trimValue(value) {
-            return value.trim();
-          });
-        return {
-          r: Number(rgb[0]) / 255,
-          g: Number(rgb[1]) / 255,
-          b: Number(rgb[2]) / 255,
-          a: 1,
-        };
-      }
-      throw new Error(
-        `Unsupported computedValue ${computedValue} color format in mode ${mode}`,
-      );
-    })();
-    const originalColor: RGBA = (function calculateOriginalColor() {
-      if (originalValue.startsWith('rgba(')) {
-        const rgba: string[] = originalValue
-          .slice('rgba('.length, -')'.length)
-          .split(',')
-          .map((value) => value.trim());
-        return {
-          r: Number(rgba[0]) / 255,
-          g: Number(rgba[1]) / 255,
-          b: Number(rgba[2]) / 255,
-          a: Number(rgba[3]),
-        };
-      }
-      throw new Error(
-        `Unsupported originalValue ${originalValue} color format in mode ${mode}`,
-      );
-    })();
-    // TODO: Auto create transparent versions of variables.
-
-    if (
-      almostEqual(color.r, originalColor.r)
-      && almostEqual(color.g, originalColor.g)
-      && almostEqual(color.b, originalColor.b)
-      && almostEqual(color.a, originalColor.a)
-    ) {
-      // console.log(`Skipping setting variable ${cssVar} to ${computedValue} in mode ${mode}`);
-      return;
-    }
-
+  const logVariableChange = (): void => {
     console.log(
       `Setting variable ${cssVar} to ${computedValue} in mode ${mode} with original computed value ${originalComputedValue}`,
     );
-    const variable: EnhancedVariable = enhancedVariables.find((enhancedVariable) =>
-      enhancedVariable.name === cssVar.slice('--'.length)
-    )!;
-    variable.setValueByModeName(color, mode);
-  } else if (varType === 'string') {
+  };
+
+  const handleSimpleTypeChange = (value: string | number | boolean): void => {
+    if (String(computedValue) !== String(originalValue)) {
+      logVariableChange();
+      getVariable().setValueByModeName(value, mode);
+    }
+  };
+
+  if (varType === 'number' || varType === 'boolean') {
+    handleSimpleTypeChange(computedValue);
+    return;
+  }
+
+  if (varType === 'color') {
+    // If color (computed color) cannot be parsed as a color string,
+    // we know our code has failed, so we're not catching errors here.
+    const color = parseColorString(computedValue);
+
+    try {
+      const originalColor = parseColorString(originalValue);
+
+      if (
+        almostEqual(color.r, originalColor.r)
+        && almostEqual(color.g, originalColor.g)
+        && almostEqual(color.b, originalColor.b)
+        && almostEqual(color.a, originalColor.a)
+      ) {
+        return;
+      }
+    } catch (_e) {
+      // If originalColor cannot be parsed as a color string,
+      // we know for sure we need to actually set the variable.
+    }
+
+    logVariableChange();
+    getVariable().setValueByModeName(color, mode);
+    return;
+  }
+
+  if (varType === 'string') {
     if (computedValue !== originalValue) {
-      const valueToSet = (
-          computedValue.startsWith("'")
-          && computedValue.endsWith("'")
-        )
+      const valueToSet = (computedValue.startsWith("'") && computedValue.endsWith("'"))
         ? computedValue.slice("'".length, -"'".length)
         : computedValue;
-      console.log(
-        `Setting variable ${cssVar} to ${computedValue} in mode ${mode} with original computed value ${originalComputedValue}`,
-      );
-      const variable: EnhancedVariable = enhancedVariables.find((enhancedVariable) =>
-        enhancedVariable.name === cssVar.slice('--'.length)
-      )!;
-      variable.setValueByModeName(valueToSet, mode);
+
+      logVariableChange();
+      getVariable().setValueByModeName(valueToSet, mode);
     }
-  } else {
-    // TODO: Auto create string versions of non-string variables.
-
-    // We're not really handling box-shadow "variables",
-    // since Figma variables cannot be box shadows.
-    // Only Figma styles can be box shadows,
-    // and you should create the variables to use in the style value anyway.
-    throw new Error(`Unrecognized variable ${cssVar} type ${varType} in mode ${mode}`);
+    return;
   }
-};
 
+  throw new Error(`Unrecognized variable ${cssVar} type ${varType} in mode ${mode}`);
+};
 const main = async (): Promise<void> => {
   // Fill the local variable variables.
   await populateFigmaVariables();

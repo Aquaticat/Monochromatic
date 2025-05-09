@@ -25,6 +25,6 @@
     "directory": "packages/config/browserslist"
   },
   "peerDependencies": {
-    "browserslist": "*"
+    "browserslist": "catalog:"
   }
 }

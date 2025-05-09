@@ -5,13 +5,15 @@
     "config",
     "monochromatic"
   ],
-  "peerDependencies": {
-    "vite": "*",
-    "vite-plugin-singlefile": "*"
+  "dependencies": {
+    "vite-plugin-singlefile": "catalog:",
+    "postcss-mixins": "catalog:",
+    "@csstools/custom-units": "catalog:",
+    "postcss-custom-media": "catalog:",
+    "postcss-custom-selectors": "catalog:"
   },
   "devDependencies": {
-    "vite": ">=6.3.2",
-    "vite-plugin-singlefile": "*",
+    "vite": "catalog:",
     "@monochromatic-dev/config-typescript": "*"
   },
   "main": "vite.config.shared.ts",

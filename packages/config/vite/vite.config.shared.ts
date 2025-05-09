@@ -165,7 +165,7 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
           return {
             name: 'vite-plugin-inline-iframe',
             enforce: 'post',
-            buildStart() {
+            buildStart(): void {
               this.addWatchFile(iframePath);
             },
             transformIndexHtml(html): string {

@@ -26,14 +26,7 @@ supportedArchitectures:
   cpu: [x64, arm64, current]
   libc: [glibc, musl, current]
 verifyDepsBeforeRun: install
-shellEmulator: true
 catalog:
-  # Resolve to a set of browsers to support
-  'browserslist': '*'
-
-  # Type checker
-  zod: '*'
-
   # Faster, more customizable formatter than prettier.
   dprint: '*'
 
@@ -165,7 +158,7 @@ catalog:
   '@astrojs/rss': '*'
 
   # Syntax highlighter
-  '@shikijs/transformers': '>=3.3.0'
+  '@shikijs/transformers': '*'
 
   # local HTTPS server
   '@vitejs/plugin-basic-ssl': '*'
@@ -194,9 +187,6 @@ catalog:
   # MDX with Vue
   '@mdx-js/vue': '*'
   'vue': '*'
-
-  # Remove spaces from template strings
-  '@cspotcode/outdent': 'jsr:*'
 
 overrides:
   'tsconfck>typescript': '*'

@@ -33,12 +33,11 @@
     "./astro": "./tsconfig.astro.json"
   },
   "peerDependencies": {
-    "@types/mdx": ">=2.0.13",
-    "@types/bun": "*"
+    "@types/mdx": "catalog:",
+    "@types/bun": "catalog:"
   },
   "dependencies": {
-    "@types/mdx": ">=2.0.13",
-    "@types/bun": "*"
+    "@monochromatic-dev/config-typescript": "workspace:*"
   },
   "license": "Apache-2.0",
   "repository": {

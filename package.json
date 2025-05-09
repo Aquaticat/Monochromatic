@@ -18,7 +18,7 @@
     "husky"
   ],
   "scripts": {
-    "prepare": "husky || echo 'husky does not exist, skipped'",
+    "data-prepare": "husky || echo 'husky does not exist, skipped'",
     "preinstall": "npx only-allow pnpm"
   },
   "engines": {

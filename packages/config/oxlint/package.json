@@ -6,10 +6,10 @@
     "monochromatic"
   ],
   "peerDependencies": {
-    "oxlint": "*"
+    "oxlint": "catalog:"
   },
   "devDependencies": {
-    "oxlint": ">=0.15.3"
+    "oxlint": "catalog:"
   },
   "main": "index.json",
   "module": "index.json",

@@ -1,3 +1,4 @@
+import outdent from '@cspotcode/outdent';
 import type {
   AuthoredCss,
   ComputedColor,
@@ -64,10 +65,11 @@ const testCssVar = async (
         varType: 'number',
         mode,
         error: {
-          message: `Figma doesn't support unitful length values,
-                          consider using a number or string for this value.
-                          If you're relying on the behavior of converting from rem to px,
-                          you can safely ignore this error.`,
+          message: outdent({ newline: ' ' })`
+            Figma doesn't support unitful length values,
+            consider using a number or string for this value.
+            If you're relying on the behavior of converting from rem to px,
+            you can safely ignore this error.`,
           level: cssValue.includes('em') ? 'notice' : 'error',
         },
         originalComputedValue: computedWidth,
@@ -232,8 +234,9 @@ const testCssVar = async (
     varType: 'invalid',
     mode,
     error: {
-      message: `${cssVar}'s ${cssValue} cannot be treated as a unitful length,
-             a number, a color, a box-shadow, or a string (CSS content) value.`,
+      message: outdent({ newline: ' ' })`
+        ${cssVar}'s ${cssValue} cannot be treated as a unitful length,
+        a number, a color, a box-shadow, or a string (CSS content) value.`,
       level: 'error',
     },
     originalComputedValue: cssValue,
