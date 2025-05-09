@@ -25,7 +25,7 @@
   return potentiallyNull as Exclude<T, null>;
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export type falsy = false | null | 0 | -0 | 0n | '';
+/* @__NO_SIDE_EFFECTS__ */ export type falsy = false | null | 0 | 0n | '';
 
 /* @__NO_SIDE_EFFECTS__ */ export function notFalsyOrThrow<T,>(
   potentiallyFalsy: T,

@@ -22,6 +22,32 @@ console.log((function negIntToInt(num: number): string {
 
   return result;
 })(
-  // Max dprint can handle
-  48,
+  10,
+));
+
+console.log((function negIntToIntExclusive(num: number): string {
+  let result =
+    'export type IntsToExclusive<fromInclusive extends number, toExclusive extends number,> =\n';
+
+  // Originally decided to support -100 to 100. But then dprint said call stack exhausted.
+  for (let fromInclusive = -num; fromInclusive <= num; fromInclusive++) {
+    result += `fromInclusive extends ${fromInclusive}\n?`;
+    for (let toExclusive = fromInclusive; toExclusive <= num; toExclusive++) {
+      result += `toExclusive extends ${toExclusive} ? ${
+        toExclusive === fromInclusive
+          ? toExclusive
+          : `(${
+            [...Array.from({ length: toExclusive - fromInclusive }).keys()]
+              .map((current) => current + fromInclusive)
+              .join('|')
+          })`
+      } :`;
+    }
+    result += 'number\n:';
+  }
+  result += 'number;';
+
+  return result;
+})(
+  10,
 ));

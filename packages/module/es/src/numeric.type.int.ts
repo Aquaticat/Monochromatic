@@ -1,0 +1,10 @@
+export type PositiveInt = number & { __brand: 'PositiveInt'; };
+export type PositiveFloat = number & { __brand: 'PositiveFloat'; };
+export type NegativeInt = number & { __brand: 'NegativeInt'; };
+export type NegativeFloat = number & { __brand: 'NegativeFloat'; };
+export type PositiveNumber = PositiveInt | PositiveFloat;
+export type Float = PositiveFloat | NegativeFloat;
+export type Int = PositiveInt | NegativeInt | 0;
+export type NegativeNumber = NegativeInt | NegativeFloat;
+export type NonNegativeInt = PositiveInt | 0;
+export type NonPositiveInt = NegativeInt | 0;

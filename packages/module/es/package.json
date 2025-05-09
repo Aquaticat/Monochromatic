@@ -18,7 +18,8 @@
   ],
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
-    "type-fest": "catalog:"
+    "type-fest": "catalog:",
+    "@types/bun": "catalog:"
   },
   "dependencies": {
     "@logtape/logtape": "catalog:",

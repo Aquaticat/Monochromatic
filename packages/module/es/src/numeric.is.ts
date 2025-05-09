@@ -2,6 +2,11 @@ import type {
   NegativeInfinity,
   PositiveInfinity,
 } from 'type-fest';
+import type {
+  NegativeInt,
+  NonNegativeInt,
+  PositiveInt,
+} from './numeric.type.int.ts';
 import type { Nan } from './numeric.type.nan';
 
 /* @__NO_SIDE_EFFECTS__ */ export function isNumber<T,>(
@@ -16,20 +21,46 @@ import type { Nan } from './numeric.type.nan';
   return Number.isNaN(value);
 }
 
-// Can't really do : value is int here
-// unless we resort to branded types which I'm hesitant about.
-/* @__NO_SIDE_EFFECTS__ */ export function isInteger<T,>(
-  value: T,
-): value is T extends number ? T : never {
+export function isInteger(
+  value: unknown,
+): value is Int {
   return Number.isInteger(value);
 }
 
-// Can't really do : value is int here
-// unless we resort to branded types which I'm hesitant about.
-/* @__NO_SIDE_EFFECTS__ */ export function isFloat<T,>(
-  value: T,
-): value is T extends number ? T : never {
-  return isNonNanNumber(value) && !Number.isInteger(value);
+export function isInt(
+  value: unknown,
+): value is Int {
+  return Number.isInteger(value);
+}
+
+export function isPositiveInt(value: unknown): value is PositiveInt {
+  return isInt(value) && value > 0;
+}
+
+export function isNegativeInt(value: unknown): value is NegativeInt {
+  return isInt(value) && value < 0;
+}
+
+export function isNonNegativeInt(value: unknown): value is NonNegativeInt {
+  return isInt(value) && value >= 0;
+}
+
+export function isFloat(
+  value: unknown,
+): value is Float {
+  return isNonNanNumber(value) && Number.isFinite(value) && !Number.isInteger(value);
+}
+
+export function isPositiveFloat(
+  value: unknown,
+): value is PositiveFloat {
+  return isFloat(value) && value > 0;
+}
+
+export function isNegativeFloat(
+  value: unknown,
+): value is NegativeFloat {
+  return isFloat(value) && value < 0;
 }
 
 /* @__NO_SIDE_EFFECTS__ */ export function isNonNanNumber<T,>(
@@ -47,7 +78,7 @@ import type { Nan } from './numeric.type.nan';
 /* @__NO_SIDE_EFFECTS__ */ export function isNegativeInfinity(
   value: any,
 ): value is PositiveInfinity {
-  return value === Number.POSITIVE_INFINITY;
+  return value === Number.NEGATIVE_INFINITY;
 }
 
 /* @__NO_SIDE_EFFECTS__ */ export function isInfinity<T_value,>(
@@ -64,7 +95,7 @@ import type { Nan } from './numeric.type.nan';
 ): value is Exclude<T extends number ? T : never,
   PositiveInfinity | NegativeInfinity | typeof Number.NaN>
 {
-  return !isInfinity(value);
+  return !isInfinity(value) && isNonNanNumber(value);
 }
 
 // Can't type that range.
@@ -74,13 +105,13 @@ import type { Nan } from './numeric.type.nan';
   PositiveInfinity | NegativeInfinity | typeof Number.NaN>
 {
   return isFiniteNumber(value)
-    && (Number.MAX_SAFE_INTEGER <= value && value <= Number.MAX_SAFE_INTEGER);
+    && (-Number.MAX_SAFE_INTEGER <= value && value <= Number.MAX_SAFE_INTEGER);
 }
 
 /* @__NO_SIDE_EFFECTS__ */ export function isPositiveNumber<T,>(
   value: T,
 ): value is T extends number ? T : never {
-  return isPositiveInfinity(value) || isSafeNumber(value);
+  return isPositiveInfinity(value) || isPositiveInt(value) || isPositiveFloat(value);
 }
 
 /* @__NO_SIDE_EFFECTS__ */ export function isObjectDate(value: any): value is Date {

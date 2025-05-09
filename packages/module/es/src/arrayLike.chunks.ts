@@ -1,12 +1,13 @@
 import {
   arrayIsEmpty,
   arrayIsNonEmpty,
-  type Ints,
   isEmptyArray,
-  logtapeGetLogger,
-  type MaybeAsyncIterable,
-  type Tuple,
-} from '@monochromatic-dev/module-es/ts';
+} from './arrayLike.is.ts';
+import type { Ints } from './arrayLike.type.ints.ts';
+import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
+import type { Tuple } from './arrayLike.type.tuple.ts';
+import { logtapeGetLogger } from './logtape.shared.ts';
+import { isPositiveInt } from './numeric.is.ts';
 
 const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
 
@@ -50,20 +51,32 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
 >(
   array: T_array,
   n: T_n,
-): Generator<Tuple<T_array[number], T_n>> {
+): Generator<
+  Tuple<T_array extends Iterable<infer T_element> ? T_element : never, Ints<1, (T_n)>>
+> {
   if (arrayIsEmpty(array)) {
     throw new RangeError(`What's to be chunked cannot be empty`);
   }
 
   // TODO: Implement throw when n is 0
+  if (n <= 0) {
+    throw new RangeError(`Chunk size cannot be negative or zero`);
+  }
 
   if (n > array.length) {
     throw new RangeError(`Initial chunk index is already out of range.`);
   }
 
   for (let i = 0; i < array.length; i += n) {
-    yield array.slice(i, i + n) as Tuple<T_array[number], T_n>;
+    yield array.slice(i, i + n) as Tuple<
+      T_array extends Iterable<infer T_element> ? T_element : never,
+      T_n
+    >;
   }
+
+  throw new Error(
+    `impossible state. Code reached after having iterated through the array`,
+  );
 }
 
 /* @__NO_SIDE_EFFECTS__ */ export function chunksArrayLike<
@@ -92,33 +105,29 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
 > {
   l.debug`chunksArrayLike(arrayLike: ${arrayLike}, n: ${n})`;
 
-  if (typeof (arrayLike as Iterable<any> & { length: number; })?.length === 'number') {
-    if (isEmptyArray(arrayLike)) {
-      throw new RangeError(
-        `What's to be chunked: ${JSON.stringify(arrayLike)} cannot be empty`,
-      );
-    }
-    if (n > (arrayLike as Iterable<any> & { length: number; }).length) {
-      throw new RangeError(
-        `Initial chunk index: ${n} is already out of range: ${
-          (arrayLike as Iterable<any> & { length: number; }).length
-        }`,
-      );
-    }
-
-    l.debug`arrayLike.length: ${
-      (arrayLike as Iterable<any> & { length: number; }).length
-    }, n: ${n}`;
+  if (isEmptyArray(arrayLike)) {
+    throw new RangeError(
+      `What's to be chunked: ${JSON.stringify(arrayLike)} cannot be empty`,
+    );
   }
+  if (n > (arrayLike as Iterable<any> & { length: number; }).length) {
+    throw new RangeError(
+      `Initial chunk index: ${n} is already out of range: ${
+        (arrayLike as Iterable<any> & { length: number; }).length
+      }`,
+    );
+  }
+  l.debug`arrayLike.length: ${
+    (arrayLike as Iterable<any> & { length: number; }).length
+  }, n: ${n}`;
 
   // TODO: Switch this to lazy.
   //       Do a check on whether it's an array. If so, yield* to chunksArray
   //       If not, iterate as normal and only take what we need.
   const arrayLikeArray:
-    readonly (T_arrayLike extends Iterable<infer T_element> ? T_element : never)[] = Array
-      .from(
-        arrayLike,
-      );
+    readonly (T_arrayLike extends Iterable<infer T_element> ? T_element : never)[] = [
+      ...arrayLike,
+    ];
 
   l.debug`arrayLikeArray: ${arrayLikeArray}`;
 
@@ -178,27 +187,21 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
 
   l.debug`chunksArrayLikeAsync(arrayLike: ${arrayLike}, n: ${n})`;
 
-  if (
-    typeof (arrayLike as MaybeAsyncIterable<any> & { length: number; })?.length
-      === 'number'
-  ) {
-    if (isEmptyArray(arrayLike)) {
-      throw new RangeError(
-        `What's to be chunked: ${JSON.stringify(arrayLike)} cannot be empty`,
-      );
-    }
-    if (n > (arrayLike as MaybeAsyncIterable<any> & { length: number; }).length) {
-      throw new RangeError(
-        `Initial chunk index: ${n} is already out of range: ${
-          (arrayLike as MaybeAsyncIterable<any> & { length: number; }).length
-        }`,
-      );
-    }
-
-    l.debug`arrayLike.length: ${
-      (arrayLike as MaybeAsyncIterable<any> & { length: number; }).length
-    }, n: ${n}`;
+  if (isEmptyArray(arrayLike)) {
+    throw new RangeError(
+      `What's to be chunked: ${JSON.stringify(arrayLike)} cannot be empty`,
+    );
   }
+  if (n > (arrayLike as MaybeAsyncIterable<any> & { length: number; }).length) {
+    throw new RangeError(
+      `Initial chunk index: ${n} is already out of range: ${
+        (arrayLike as MaybeAsyncIterable<any> & { length: number; }).length
+      }`,
+    );
+  }
+  l.debug`arrayLike.length: ${
+    (arrayLike as MaybeAsyncIterable<any> & { length: number; }).length
+  }, n: ${n}`;
 
   const arrayLikeArray:
     readonly (T_arrayLike extends MaybeAsyncIterable<infer T_element> ? T_element

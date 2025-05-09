@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalDependencies">
+    <plugin id="HtmlTools" />
+    <plugin id="JSIntentionPowerPack" />
+    <plugin id="JavaScript" />
+    <plugin id="com.dprint.intellij.plugin" />
+    <plugin id="com.github.oxc.project.oxcintellijplugin" />
+    <plugin id="com.intellij.css" />
+    <plugin id="com.intellij.modules.json" />
+    <plugin id="com.intellij.plugins.watcher" />
+    <plugin id="com.intellij.stylelint" />
+    <plugin id="intellij.javascript.bun" />
+    <plugin id="intellij.vitejs" />
+    <plugin id="mdx.js" />
+    <plugin id="org.editorconfig.editorconfigjetbrains" />
+    <plugin id="org.intellij.plugins.markdown" />
+    <plugin id="org.intellij.plugins.postcss" />
+    <plugin id="org.jetbrains.plugins.astro" />
+    <plugin id="org.jetbrains.plugins.yaml" />
+    <plugin id="org.toml.lang" />
+  </component>
+</project>

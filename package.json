@@ -30,7 +30,8 @@
     "dprint": "catalog:",
     "husky": "catalog:",
     "oxlint": "catalog:",
-    "stylelint": "catalog:"
+    "stylelint": "catalog:",
+    "typescript": "catalog:"
   },
   "workspaces": [
     "packages/*/*"

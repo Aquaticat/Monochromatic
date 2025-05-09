@@ -1,0 +1,32 @@
+diff --git a/nodeUtil.js b/nodeUtil.js
+index 6d7fd23930840b1de7b93b4fbf1c943c9b34a58b..cc308bf10830dd36ad1a2b9367b0d7feb51fedb5 100644
+--- a/nodeUtil.js
++++ b/nodeUtil.js
+@@ -16,8 +16,9 @@ let util = {
+   }
+ };
+ // Only try to import node:util in non-browser environments
+-if (!isBrowser()) {
++// PNPM PATCH: Disable Deno-specific code
++/*if (!isBrowser()) {
+   util = (0, eval)("({ inspect: Deno.inspect })");
+-}
++}*/
+ export default util;
+ //# sourceMappingURL=nodeUtil.js.map
+diff --git a/nodeUtil.ts b/nodeUtil.ts
+index 09aa29551dc57ef4147ecf209530051311fe79be..23cd3af97e80f6a7f35c66adafe30632d487769c 100644
+--- a/nodeUtil.ts
++++ b/nodeUtil.ts
+@@ -32,8 +32,9 @@ let util: UtilInterface = {
+ };
+ 
+ // Only try to import node:util in non-browser environments
+-if (!isBrowser()) {
++// PNPM PATCH: Disable Deno-specific code
++/*if (!isBrowser()) {
+   util = (0, eval)("({ inspect: Deno.inspect })");
+-}
++}*/
+ 
+ export default util;

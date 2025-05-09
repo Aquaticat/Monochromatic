@@ -1,5 +1,5 @@
 export function curry<Parameter0, Parameter1, Returns,>(
-  fn: (parameter0: Parameter0, paramter1: Parameter1) => Returns,
+  fn: (parameter0: Parameter0, parameter1: Parameter1) => Returns,
 ): (parameter0: Parameter0) => (parameter1: Parameter1) => Returns;
 /*   return function fn0To(parameter0: Parameter0): (parameter1: Parameter1) => Returns {
     return function fn1(parameter1: Parameter1): Returns {
@@ -9,13 +9,13 @@ export function curry<Parameter0, Parameter1, Returns,>(
 } */
 
 export function curry<Parameter0, Parameter1, Parameter2, Returns,>(
-  fn: (parameter0: Parameter0, paramter1: Parameter1, parameter2: Parameter2) => Returns,
+  fn: (parameter0: Parameter0, parameter1: Parameter1, parameter2: Parameter2) => Returns,
 ): (
   parameter0: Parameter0,
 ) => (parameter1: Parameter1) => (parameter2: Parameter2) => Returns;
 
 export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Returns,>(
-  fn: (parameter0: Parameter0, paramter1: Parameter1, parameter2: Parameter2,
+  fn: (parameter0: Parameter0, parameter1: Parameter1, parameter2: Parameter2,
     parameter3: Parameter3) => Returns,
 ): (
   parameter0: Parameter0,
@@ -25,7 +25,7 @@ export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Returns,>(
 
 export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4,
   Returns,>(
-  fn: (parameter0: Parameter0, paramter1: Parameter1, parameter2: Parameter2,
+  fn: (parameter0: Parameter0, parameter1: Parameter1, parameter2: Parameter2,
     parameter3: Parameter3, parameter4: Parameter4) => Returns,
 ): (
   parameter0: Parameter0,
@@ -37,7 +37,7 @@ export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4
 
 export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4,
   Parameter5, Returns,>(
-  fn: (parameter0: Parameter0, paramter1: Parameter1, parameter2: Parameter2,
+  fn: (parameter0: Parameter0, parameter1: Parameter1, parameter2: Parameter2,
     parameter3: Parameter3, parameter4: Parameter4, parameter5: Parameter5) => Returns,
 ): (
   parameter0: Parameter0,
@@ -51,7 +51,7 @@ export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4
 
 export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4,
   Parameter5, Parameter6, Returns,>(
-  fn: (parameter0: Parameter0, paramter1: Parameter1, parameter2: Parameter2,
+  fn: (parameter0: Parameter0, parameter1: Parameter1, parameter2: Parameter2,
     parameter3: Parameter3, parameter4: Parameter4, parameter5: Parameter5,
     parameter6: Parameter6) => Returns,
 ): (
@@ -68,7 +68,7 @@ export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4
 
 export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4,
   Parameter5, Parameter6, Parameter7, Returns,>(
-  fn: (parameter0: Parameter0, paramter1: Parameter1, parameter2: Parameter2,
+  fn: (parameter0: Parameter0, parameter1: Parameter1, parameter2: Parameter2,
     parameter3: Parameter3, parameter4: Parameter4, parameter5: Parameter5,
     parameter6: Parameter6, parameter7: Parameter7) => Returns,
 ): (
@@ -87,7 +87,7 @@ export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4
 
 export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4,
   Parameter5, Parameter6, Parameter7, Parameter8, Returns,>(
-  fn: (parameter0: Parameter0, paramter1: Parameter1, parameter2: Parameter2,
+  fn: (parameter0: Parameter0, parameter1: Parameter1, parameter2: Parameter2,
     parameter3: Parameter3, parameter4: Parameter4, parameter5: Parameter5,
     parameter6: Parameter6, parameter7: Parameter7, parameter8: Parameter8) => Returns,
 ): (
@@ -108,7 +108,7 @@ export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4
 
 export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4,
   Parameter5, Parameter6, Parameter7, Parameter8, Parameter9, Returns,>(
-  fn: (parameter0: Parameter0, paramter1: Parameter1, parameter2: Parameter2,
+  fn: (parameter0: Parameter0, parameter1: Parameter1, parameter2: Parameter2,
     parameter3: Parameter3, parameter4: Parameter4, parameter5: Parameter5,
     parameter6: Parameter6, parameter7: Parameter7, parameter8: Parameter8,
     parameter9: Parameter9) => Returns,
@@ -132,7 +132,7 @@ export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4
 
 export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4,
   Parameter5, Parameter6, Parameter7, Parameter8, Parameter9, Returns,>(
-  fn: (parameter0: Parameter0, paramter1: Parameter1, parameter2?: Parameter2,
+  fn: (parameter0: Parameter0, parameter1: Parameter1, parameter2?: Parameter2,
     parameter3?: Parameter3, parameter4?: Parameter4, parameter5?: Parameter5,
     parameter6?: Parameter6, parameter7?: Parameter7, parameter8?: Parameter8,
     parameter9?: Parameter9) => Returns,

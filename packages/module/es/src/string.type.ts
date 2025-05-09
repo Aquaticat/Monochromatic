@@ -154,10 +154,8 @@ export type PositiveIntString =
 
 // Float part: "0.xxx" or non-zero int followed by ".xxx"
 export type PositiveFloatString =
-  | `0.${DigitString}${string & { length?: number; }}`
-  | `${No0DigitString}${string & { length?: number; }}.${DigitString}${string & {
-    length?: number;
-  }}`
+  | `0.${DigitString}${string}`
+  | `${No0DigitString}${string}.${DigitString}${string}`
     & {
       __brand: 'PositiveFloatString';
     };
@@ -165,15 +163,13 @@ export type PositiveFloatString =
 // Negative versions
 export type NegativeIntString =
   | `-0`
-  | `-${No0DigitString}${string & { length?: number; }}` & {
+  | `-${No0DigitString}${string}` & {
     __brand: 'NegativeIntString';
   };
 
 export type NegativeFloatString =
-  | `-0.${DigitString}${string & { length?: number; }}`
-  | `-${No0DigitString}${string & { length?: number; }}.${DigitString}${string & {
-    length?: number;
-  }}`
+  | `-0.${DigitString}${string}`
+  | `-${No0DigitString}${string}.${DigitString}${string}`
     & {
       __brand: 'NegativeFloatString';
     };

@@ -4,6 +4,7 @@ export * from './fixture.array.0to999.ts';
 export * from './fixture.generator.0to999.ts';
 export * from './fixture.promises.0to999.ts';
 
+export * from './any.constant.ts';
 export * from './any.echo.ts';
 export * from './any.toExport.ts';
 export * from './any.typeOf.ts';
@@ -21,8 +22,6 @@ export * from './any.typeOf.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './arrayLike.partition.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './arrayLike.type.ints.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './arrayLike.type.intsTo10.ts';
-/* @__NO_SIDE_EFFECTS__ */ export * from './arrayLike.type.intsTo22.ts';
-/* @__NO_SIDE_EFFECTS__ */ export * from './arrayLike.type.intsTo48.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './arrayLike.type.mapTo.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './arrayLike.type.maybe.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './arrayLike.type.tuple.ts';
@@ -64,3 +63,5 @@ export * from './string.capitalize.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './string.type.ts';
 
 /* @__NO_SIDE_EFFECTS__ */ export * from './testing.ts';
+
+export * from './logtape.shared.ts';

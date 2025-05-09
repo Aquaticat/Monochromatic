@@ -1,15 +1,15 @@
 // TODO: Seriously test the types for this.
 
-import {
-  type Abs,
+import type { ArrayValues } from 'type-fest';
+import type {
   entriesArrayLike,
   entriesArrayLikeAsync,
-  type Ints,
-  type IntsNegative22to22,
-  type MaybeAsyncIterable,
-  type Negative,
-} from '@monochromatic-dev/module-es/ts';
-import type { ArrayValues } from 'type-fest';
+} from './arrayLike.entries.ts';
+import type { Ints } from './arrayLike.type.ints.ts';
+import type { IntsNegative10to10 } from './arrayLike.type.intsTo10.ts';
+import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
+import type { Abs } from './numeric.type.abs.ts';
+import type { Negative } from './numeric.type.negative.ts';
 
 /** The atArrayLikeAsync() function accepting an integer value and an arrayLike
  returns the item at that index,

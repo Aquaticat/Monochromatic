@@ -277,8 +277,23 @@
     {
       "files": ["**/*.test.ts"],
       "rules": {
-        // Test files have many functions that don't need explicit return types.
-        "typescript/explicit-function-return-type": "off"
+        // Many functions that don't need explicit return types.
+        "typescript/explicit-function-return-type": "off",
+
+        // Sometimes we need to test undefined.
+        "unicorn/no-useless-undefined": "off",
+
+        // Many functions are created as needed.
+        "unicorn/consistent-function-scoping": "off",
+
+        // May need to dynamically create promises.
+        "promise/avoid-new": "off",
+
+        // May need fake async functions.
+        "eslint/require-await": "off",
+
+        // Constructing arrays
+        "eslint/no-array-constructor": "off"
       }
     }
   ]

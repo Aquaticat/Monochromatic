@@ -16,9 +16,8 @@ export function typeOf(
   | 'object'
 {
   switch (true) {
-    case obj === null: {
+    case obj === null:
       return 'null';
-    }
 
     case obj === undefined: {
       return 'undefined';

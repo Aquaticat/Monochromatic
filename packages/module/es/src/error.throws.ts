@@ -1,3 +1,4 @@
+// See https://github.com/tc39/proposal-throw-expressions
 // eslint-disable prefer-type-error
 import { getLogger } from '@logtape/logtape';
 

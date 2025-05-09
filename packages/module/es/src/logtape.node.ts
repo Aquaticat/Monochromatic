@@ -1,11 +1,43 @@
-import { getFileSink } from '@logtape/file';
-import {
-  type configure,
-  getConsoleSink,
-  getLevelFilter,
-  withFilter,
+import type {
+  configure,
+  LogRecord,
+  Sink,
 } from '@logtape/logtape';
-import { fallbackConfiguration } from './logtape.shared.ts';
+import {
+  appendFile,
+  rm,
+} from 'node:fs/promises';
+import {
+  createBaseConfig,
+  createMemorySink,
+} from './logtape.shared.ts';
+
+const disposeFileSink = async (): Promise<void> => {
+  // No need to close the file stream, as we're using appendFile
+};
+
+const createFileSink = async (appName: string): Promise<Sink & AsyncDisposable> => {
+  try {
+    const fileName = `${appName}.log.jsonl`;
+
+    // Remove the file if it exists
+    await rm(fileName, { force: true });
+
+    const fileSink: Sink & AsyncDisposable = async (
+      record: LogRecord,
+    ): Promise<void> => {
+      const log = JSON.stringify(record, null, 2) + '\n';
+      await appendFile(fileName, log);
+    };
+
+    fileSink[Symbol.asyncDispose] = disposeFileSink;
+
+    return fileSink;
+  } catch (fsError) {
+    console.log(`fs failed with ${fsError}, storing log in memory in array.`);
+    return createMemorySink();
+  }
+};
 
 /**
  @param [appName='monochromatic'] will be used as the name of log file.
@@ -15,71 +47,24 @@ import { fallbackConfiguration } from './logtape.shared.ts';
  @remarks
  Use it like this in your main executing file:
 
-  ```ts
-  import {
-    configure,
-    getLogger,
-  } from '@logtape/logtape';
-  import {
-    logtapeConfiguration,
-    logtapeId,
-  } from '@monochromatic-dev/module-util';
+ import {
+ logtapeConfiguration,
+ logtapeId,
+ logtapeGetLogger,
+ logtapeConfigure,
+ } from '@monochromatic-dev/module-util';
 
-  await configure(await logtapeConfiguration());
-  const l = getLogger(logtapeId);
-  ```
+ await logtapeConfigure(await logtapeConfiguration());
+ const l = logtapeGetLogger(logtapeId);
 
-  For logger categories, a is short for app, m is short for module, t is short for test
-  Sorry, but terminal space is precious.
-  */
-/* @__NO_SIDE_EFFECTS__ */ export const logtapeConfiguration = (
+ For logger categories, a is short for app, m is short for module, t is short for test
+ Sorry, but terminal space is precious.
+ */
+export const logtapeConfiguration = async (
   appName = 'monochromatic',
-): Parameters<typeof configure>[0] => {
-  try {
-    const fileSink = getFileSink(`${appName}.log`, {
-      formatter(log: any) {
-        return `${JSON.stringify(log, null, 2)}\n`;
-      },
-    });
-
-    return ({
-      reset: true,
-
-      sinks: {
-        console: getConsoleSink(),
-        consoleInfoPlus: withFilter(getConsoleSink(), getLevelFilter('info')),
-        consoleWarnPlus: withFilter(getConsoleSink(), getLevelFilter('warning')),
-        file: fileSink,
-      },
-
-      filters: {},
-
-      loggers: [
-        /* a is short for app, m is short for module, t is short for test
-             Sorry, but terminal space is precious. */
-        { category: ['a'], lowestLevel: 'debug', sinks: ['file', 'consoleInfoPlus'] },
-        { category: ['t'], lowestLevel: 'debug', sinks: ['file', 'consoleInfoPlus'] },
-        { category: ['m'], lowestLevel: 'debug', sinks: ['file', 'consoleWarnPlus'] },
-        {
-          category: ['esbuild-plugin'],
-          lowestLevel: 'debug',
-          sinks: ['file', 'consoleWarnPlus'],
-        },
-        { category: ['logtape', 'meta'], lowestLevel: 'warning', sinks: ['console'] },
-      ],
-    });
-  } catch (error) {
-    console.log(
-      `Running in node but fs is unavailable because of ${error}, falling back to console logging only. App debug messages and module info messages would be logged to console in this mode.`,
-    );
-    return fallbackConfiguration;
-  }
+): Promise<Parameters<typeof configure>[0]> => {
+  const fileSink = await createFileSink(appName);
+  return createBaseConfig(fileSink);
 };
 
-/** Example logger id for your main executing file. */
-/* @__NO_SIDE_EFFECTS__ */ export const logtapeId = ['a', 'index'] as const;
-
-export {
-  configure as logtapeConfigure,
-  getLogger as logtapeGetLogger,
-} from '@logtape/logtape';
+export { logtapeId } from './logtape.shared.ts';

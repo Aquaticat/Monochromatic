@@ -81,16 +81,29 @@ class EnhancedVariable {
   constructor(variable: Variable) {
     const { variableCollectionId: collectionId, name, description, resolvedType, id }:
       Variable = variable;
-    const collection: VariableCollection = collections.find((
+
+    const collection: VariableCollection = collections.find(function collectionIdMatching(
       collection: VariableCollection,
-    ) => collection.id === collectionId)!;
+    ): boolean {
+      return collection.id === collectionId;
+    })!;
+
     const modeIds: string[] = Object.keys(variable.valuesByMode);
-    const modeNames: string[] = modeIds.map((modeIdToFind: string): string =>
-      collection.modes.find(({ modeId }) => modeIdToFind === modeId)!.name
+
+    const modeNames: string[] = modeIds.map(
+      function modeIdToName(modeIdToFind: string): string {
+        return collection.modes.find(function findModeId({ modeId }): boolean {
+          return modeIdToFind === modeId;
+        })!
+          .name;
+      },
     );
+
     const values: VariableValue[] = Object.values(variable.valuesByMode);
     const valuesByModeName: Record<string, VariableValue> = Object.fromEntries(
-      modeNames.map((modeName, index) => [modeName, values[index]!]),
+      modeNames.map(function modeNameWithValue(modeName, index): [string, VariableValue] {
+        return [modeName, values[index]!];
+      }),
     );
 
     this.id = id;
@@ -205,7 +218,9 @@ const parseColorString = (colorStr: string): RGBA => {
   const values = colorStr
     .slice(isRgba ? 'rgba('.length : 'rgb('.length, -')'.length)
     .split(',')
-    .map((value) => value.trim());
+    .map(function trimValue(value): string {
+      return value.trim();
+    });
 
   return {
     r: Number(values[0]) / 255,
@@ -223,9 +238,13 @@ const handleSettingVarMessage = ({
   mode,
   originalComputedValue,
 }: AuthoredCss): void => {
-  const getVariable = (): EnhancedVariable => {
-    return enhancedVariables.find((enhancedVariable) =>
-      enhancedVariable.name === cssVar.slice('--'.length)
+  const getVariable = (cssVar: `--${string}`): EnhancedVariable => {
+    return enhancedVariables.find(
+      function compareVariableByTruncatedName(
+        enhancedVariable: EnhancedVariable,
+      ): boolean {
+        return enhancedVariable.name === cssVar.slice('--'.length);
+      },
     )!;
   };
 
@@ -238,7 +257,7 @@ const handleSettingVarMessage = ({
   const handleSimpleTypeChange = (value: string | number | boolean): void => {
     if (String(computedValue) !== String(originalValue)) {
       logVariableChange();
-      getVariable().setValueByModeName(value, mode);
+      getVariable(cssVar).setValueByModeName(value, mode);
     }
   };
 

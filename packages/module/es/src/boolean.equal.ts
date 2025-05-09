@@ -211,10 +211,7 @@ const l = logtapeGetLogger(['m', 'boolean.equal']);
 
       l.debug`dates a: ${a} b: ${b}`;
 
-      if (a.getTime() === b.getTime()) {
-        return true;
-      }
-      return false;
+      return a.getTime() === b.getTime();
     }
 
     if (
@@ -257,11 +254,7 @@ const l = logtapeGetLogger(['m', 'boolean.equal']);
         return false;
       }
 
-      if (equal(a?.cause, b?.cause)) {
-        return true;
-      }
-
-      return false;
+      return equal(a?.cause, b?.cause);
     }
 
     if (isGenerator(a)) {
