@@ -45,7 +45,7 @@ import type { Negative } from './numeric.type.negative.ts';
 ): Promise<
   // -22 to 22 is maximum stack depth TypeScript can handle.
   // T_index extends Ints<-22, 22> ? T_arrayLike[Abs<T_index>]
-  T_index extends IntsNegative22to22 ? T_arrayLike[T_index]
+  T_index extends IntsNegative10to10 ? T_arrayLike[T_index]
     : T_arrayLike[number] | undefined
 > // Still possible to be one of elements, when index is between -1-Array.length and -1.
 ; // ArrayValues<T_arrayLike> | undefined
