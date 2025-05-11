@@ -1,11 +1,17 @@
-import {
-  equalsOrThrow,
-  logtapeGetLogger,
-  type NotPromise,
-} from '@monochromatic-dev/module-es/ts';
 import type { Promisable } from 'type-fest';
+import { equalsOrThrow } from './function.equals.ts';
+import { logtapeGetLogger } from './logtape.shared.ts';
+import type { NotPromise } from './promise.type.ts';
 
 const l = logtapeGetLogger(['m', 'error.assert.throw']);
+
+type ExpectedError =
+  | 'TypeError'
+  | 'RangeError'
+  | 'ReferenceError'
+  | 'URIError'
+  | string & {}
+  | Error;
 
 /* @__NO_SIDE_EFFECTS__ */ export async function assertThrowAsync(
   error:
@@ -15,43 +21,38 @@ const l = logtapeGetLogger(['m', 'error.assert.throw']);
     | 'URIError'
     | string & {}
     | Error
-    | ((...inputs: unknown[]) => Promisable<Error>),
+    | (() => Promisable<Error>),
   fn: () => Promisable<any>,
 ): Promise<void> {
   try {
     await fn();
   } catch (actualError: any) {
     l.debug`assertThrowAsync(error: ${error}, fn: ${String(fn)}), actualError: ${
-      // TODO: Raise issue on logtape for better stringify of fn and error
-      String(actualError)}`;
+      String(actualError)
+    }`;
 
-    if (typeof error === 'function') {
-      if (!(actualError instanceof error)) {
-        throw new Error(`actualError ${actualError} does not match error: ${error}`);
-      }
-      return;
-    }
+    const expectedError = typeof error === 'function' ? await error() : error;
 
-    const equalErrorOrThrow = equalsOrThrow(error);
+    const equalErrorOrThrow = equalsOrThrow(expectedError);
 
-    if (error instanceof Error) {
+    if (expectedError instanceof Error) {
       equalErrorOrThrow(actualError);
       return;
     }
 
-    if (typeof error !== 'string') {
+    if (typeof expectedError !== 'string') {
       throw new Error(`unexpected type ${typeof error} of expected error: ${error}`);
     }
 
     // Accept any instance of Error
-    if (error === 'Error') {
+    if (expectedError === 'Error') {
       if (!(actualError instanceof Error)) {
         throw new Error(`actualError ${actualError} is not an Error`);
       }
       return;
     }
 
-    if (error.endsWith('Error')) {
+    if (expectedError.endsWith('Error')) {
       // MAYBE: Error.name isn't working? Find all the other instances I used that
       //        and replace it with Object.prototype.toString.call as usual
       equalErrorOrThrow(actualError?.name);
@@ -73,7 +74,7 @@ const l = logtapeGetLogger(['m', 'error.assert.throw']);
     | 'URIError'
     | string & {}
     | Error
-    | ((...inputs: unknown[]) => Promisable<Error>),
+    | (() => Error),
   fn: () => NotPromise,
 ): void {
   try {
@@ -83,33 +84,28 @@ const l = logtapeGetLogger(['m', 'error.assert.throw']);
       String(actualError)
     }`;
 
-    if (typeof error === 'function') {
-      if (!(actualError instanceof error)) {
-        throw new Error(`actualError ${actualError} does not match error: ${error}`);
-      }
-      return;
-    }
+    const expectedError = typeof error === 'function' ? error() : error;
 
-    const equalErrorOrThrow = equalsOrThrow(error);
+    const equalErrorOrThrow = equalsOrThrow(expectedError);
 
-    if (error instanceof Error) {
+    if (expectedError instanceof Error) {
       equalErrorOrThrow(actualError);
       return;
     }
 
-    if (typeof error !== 'string') {
+    if (typeof expectedError !== 'string') {
       throw new Error(`unexpected type ${typeof error} of expected error: ${error}`);
     }
 
     // Accept any instance of Error
-    if (error === 'Error') {
+    if (expectedError === 'Error') {
       if (!(actualError instanceof Error)) {
         throw new Error(`actualError ${actualError} is not an Error`);
       }
       return;
     }
 
-    if (error.endsWith('Error')) {
+    if (expectedError.endsWith('Error')) {
       // MAYBE: Error.name isn't working? Find all the other instances I used that
       //        and replace it with Object.prototype.toString.call as usual
       equalErrorOrThrow(actualError?.name);

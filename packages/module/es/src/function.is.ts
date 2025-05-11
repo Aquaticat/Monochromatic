@@ -15,3 +15,11 @@ import type { Promisable } from 'type-fest';
 ): fn is (...inputs: T_inputs) => T_fnReturnUnwrapped {
   return fn.constructor.name === 'Function';
 }
+
+export function emptyFunction(): void {
+  // No-op
+}
+
+export async function emptyFunctionAsync(): Promise<void> {
+  // No-op
+}

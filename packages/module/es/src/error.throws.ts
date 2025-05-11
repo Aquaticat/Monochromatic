@@ -28,39 +28,37 @@ const l = getLogger(['m', 'error.throws']);
 
   // TODO: Write my own switch expression
   switch (error.name) {
-    case 'Error': {
+    case 'Error':
       if (!error.cause) {
         throw new Error(error.message);
       }
       throw new Error(error.message, { cause: error.cause });
-    }
 
-    case 'RangeError': {
+    case 'RangeError':
       if (!error.cause) {
         throw new RangeError(error.message);
       }
       throw new RangeError(error.message, { cause: error.cause });
-    }
-    case 'ReferenceError': {
+
+    case 'ReferenceError':
       if (!error.cause) {
         throw new ReferenceError(error.message);
       }
       throw new ReferenceError(error.message, { cause: error.cause });
-    }
-    case 'TypeError': {
+
+    case 'TypeError':
       if (!error.cause) {
         throw new TypeError(error.message);
       }
       throw new TypeError(error.message, { cause: error.cause });
-    }
-    case 'URIError': {
+
+    case 'URIError':
       if (!error.cause) {
         throw new URIError(error.message);
       }
       throw new URIError(error.message, { cause: error.cause });
-    }
 
-    default: {
+    default:
       l.warn`error.name ${error.name} not one of:
       throwableErrors = ['Error', 'RangeError', 'ReferenceError', 'TypeError', 'URIError']
       This function doesn't handle custom error types.
@@ -70,6 +68,5 @@ const l = getLogger(['m', 'error.throws']);
         throw new Error(`${error.name}: ${error.message}`);
       }
       throw new Error(`${error.name}: ${error.message}`, { cause: error.cause });
-    }
   }
 }

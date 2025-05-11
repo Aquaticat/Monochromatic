@@ -1,112 +1,185 @@
-import type { MaybeAsyncIterable } from '@monochromatic-dev/module-es/ts';
+import {
+  isIterable,
+  isMaybeAsyncIterable,
+} from './arrayLike.is.ts';
+import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
+import {
+  bigint0,
+  isBigint,
+  isIntBigint,
+  isNumber,
+  isNumeric,
+} from './numeric.is.ts';
+import type { Numeric } from './numeric.type.int.ts';
 
-// The performance cannot be optimized for this function overload signature when calling with an AsyncIterable argument, because we always have to wait for the current number to be retrived.
+// Helper functions to reduce duplication
+function validateAndProcessIterable<T extends number | bigint,>(
+  items: any[],
+  typeValidator: (item: any) => boolean,
+  initialValue: T,
+  converter?: (item: any) => T,
+): T {
+  const items0 = items[0];
+  let total = initialValue;
+
+  if (items.length === 1 && isIterable(items0)) {
+    const items0Arr = [...items0];
+    for (const item of items0Arr) {
+      if (!typeValidator(item)) {
+        throw new Error('invalid arguments');
+      }
+      total = total + (converter ? converter(item) : item) as T;
+    }
+  } else if (items.every(typeValidator)) {
+    for (const item of items) {
+      total = total + (converter ? converter(item) : item) as T;
+    }
+  } else {
+    throw new Error('invalid arguments');
+  }
+
+  return total;
+}
+
+async function validateAndProcessAsyncIterable<T extends number | bigint,>(
+  items: any[],
+  typeValidator: (item: any) => boolean,
+  initialValue: T,
+  converter?: (item: any) => T,
+): Promise<T> {
+  const items0 = items[0];
+  let total = initialValue;
+
+  if (items.length === 1 && isMaybeAsyncIterable(items0)) {
+    const items0Arr = await Array.fromAsync(items0);
+    for (const item of items0Arr) {
+      if (!typeValidator(item)) {
+        throw new Error('invalid arguments');
+      }
+      total = total + (converter ? converter(item) : item) as T;
+    }
+  } else if (items.every(typeValidator)) {
+    for (const item of items) {
+      total = total + (converter ? converter(item) : item) as T;
+    }
+  } else {
+    throw new Error('invalid arguments');
+  }
+
+  return total;
+}
+
+// Numbers
 /* @__NO_SIDE_EFFECTS__ */ export async function addNumbersAsync(
   numbers: MaybeAsyncIterable<number>,
 ): Promise<number>;
 /* @__NO_SIDE_EFFECTS__ */ export async function addNumbersAsync(
   ...numbers: number[]
 ): Promise<number>;
-/**
- Returns the total of an Iterable of numbers as a number, can be passed as a single argument or a argument list.
-
- @remarks
- From https://selfrefactor.github.io/rambdax
- We're not using Iterator helpers. See https://bugzilla.mozilla.org/show_bug.cgi?id=1568906
- */
-/* @__NO_SIDE_EFFECTS__ */ export async function addNumbersAsync(
-  ...numbers: any
-): Promise<number> {
-  let total = 0;
-  for await (const number of numbers) {
-    total += number;
+export async function addNumbersAsync(...numbers: any): Promise<number> {
+  if (!Array.isArray(numbers)) {
+    throw new Error("numbers isn't an iterable");
   }
-  return total;
+
+  return await validateAndProcessAsyncIterable(
+    numbers,
+    isNumber,
+    0,
+  );
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function addNumbers(numbers: Iterable<number>): number;
-/* @__NO_SIDE_EFFECTS__ */ export function addNumbers(...numbers: number[]): number;
-/** {@inheritDoc addNumbersAsync} */
-/* @__NO_SIDE_EFFECTS__ */ export function addNumbers(...numbers: any): number {
-  let total = 0;
-  for (const numberItem of numbers) {
-    total += numberItem;
+/* @__NO_SIDE_EFFECTS__ */ export function addNumbers(
+  numbers: Iterable<number>,
+): number;
+/* @__NO_SIDE_EFFECTS__ */ export function addNumbers(
+  ...numbers: number[]
+): number;
+export function addNumbers(...numbers: any): number {
+  if (!Array.isArray(numbers)) {
+    throw new Error("numbers isn't an iterable");
   }
-  return total;
+
+  return validateAndProcessIterable(
+    numbers,
+    isNumber,
+    0,
+  );
 }
 
+// Bigints
 /* @__NO_SIDE_EFFECTS__ */ export async function addBigintsAsync(
-  bigint: MaybeAsyncIterable<bigint>,
+  bigints: MaybeAsyncIterable<bigint>,
 ): Promise<bigint>;
 /* @__NO_SIDE_EFFECTS__ */ export async function addBigintsAsync(
   ...bigints: bigint[]
 ): Promise<bigint>;
-/**
- Returns the total of an Iterable of bigints as a bigint, can be passed as a single argument or a argument list.
- */
-/* @__NO_SIDE_EFFECTS__ */ export async function addBigintsAsync(
-  ...bigints: any
-): Promise<bigint> {
-  let total = 0n;
-  for await (const bigintItem of bigints) {
-    total += bigintItem;
+export async function addBigintsAsync(...bigints: any): Promise<bigint> {
+  if (!Array.isArray(bigints)) {
+    throw new Error("numbers isn't an iterable");
   }
-  return total;
+
+  return await validateAndProcessAsyncIterable(
+    bigints,
+    isBigint,
+    bigint0,
+  );
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function addBigints(bigints: Iterable<bigint>): bigint;
-/* @__NO_SIDE_EFFECTS__ */ export function addBigints(...bigints: bigint[]): bigint;
-/** {@inheritDoc addBigintsAsync} */
-/* @__NO_SIDE_EFFECTS__ */ export function addBigints(...numbers: any): bigint {
-  let total = 0n;
-  for (const bigintItem of numbers) {
-    total += bigintItem;
+export function addBigints(bigints: Iterable<bigint>): bigint;
+export function addBigints(...bigints: bigint[]): bigint;
+export function addBigints(...bigints: any): bigint {
+  if (!Array.isArray(bigints)) {
+    throw new Error("numbers isn't an iterable");
   }
-  return total;
+
+  return validateAndProcessIterable(
+    bigints,
+    isBigint,
+    bigint0,
+  );
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export type numeric = number | bigint;
-
-/* @__NO_SIDE_EFFECTS__ */ export async function addNumericsAsync<
-  T extends MaybeAsyncIterable<numeric>,
+// Numerics
+export async function addNumericsAsync<
+  T extends MaybeAsyncIterable<Numeric>,
 >(
   numerics: T,
-): Promise<
-  T extends (MaybeAsyncIterable<number>) ? number : bigint
->;
-/* @__NO_SIDE_EFFECTS__ */ export async function addNumericsAsync<T extends numeric[],>(
+): Promise<T extends MaybeAsyncIterable<number> ? number : bigint | number>;
+export async function addNumericsAsync<T extends Numeric[],>(
   ...numerics: T
-): Promise<T extends number[] ? number : bigint>;
-/* @__NO_SIDE_EFFECTS__ */ export async function addNumericsAsync(
-  ...numerics: any
-): Promise<numeric> {
-  // Here is a rare case where dynamic typing saved us.
-  let total: number | bigint = 0;
-  for await (const numericItem of numerics) {
-    if (typeof numericItem === 'bigint' && typeof total !== 'bigint') {
-      total = BigInt(total) + numericItem;
-      continue;
-    }
-    total += numericItem;
+): Promise<T extends number[] ? number : bigint | number>;
+export async function addNumericsAsync(...numerics: any): Promise<Numeric> {
+  if (!Array.isArray(numerics)) {
+    throw new Error("numbers isn't an iterable");
   }
-  return total;
+
+  const total = await validateAndProcessAsyncIterable(
+    numerics,
+    isNumeric,
+    0n,
+    BigInt,
+  );
+
+  return isIntBigint(total) ? Number(total) : total;
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function addNumerics<T extends Iterable<numeric>,>(
+export function addNumerics<T extends Iterable<Numeric>,>(
   numerics: T,
-): T extends Iterable<number> ? number : bigint;
-/* @__NO_SIDE_EFFECTS__ */ export function addNumerics<T extends numeric[],>(
+): T extends Iterable<number> ? number : bigint | number;
+export function addNumerics<T extends Numeric[],>(
   ...numerics: T
-): T extends number[] ? number : bigint;
-/* @__NO_SIDE_EFFECTS__ */ export function addNumerics(...numerics: any): numeric {
-  // Here is a rare case where dynamic typing saved us.
-  let total: number | bigint = 0;
-  for (const numericItem of numerics) {
-    if (typeof numericItem === 'bigint' && typeof total !== 'bigint') {
-      total = BigInt(total) + numericItem;
-      continue;
-    }
-    total += numericItem;
+): T extends number[] ? number : bigint | number;
+export function addNumerics(...numerics: any): Numeric {
+  if (!Array.isArray(numerics)) {
+    throw new Error("numbers isn't an iterable");
   }
-  return total;
+
+  const total = validateAndProcessIterable(
+    numerics,
+    isNumeric,
+    0n,
+    BigInt,
+  );
+
+  return isIntBigint(total) ? Number(total) : total;
 }

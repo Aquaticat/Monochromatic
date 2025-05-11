@@ -68,8 +68,8 @@ catalog:
   lfi: '*'
   lightningcss: '*'
   postcss: '*'
-  '@logtape/logtape': jsr:>=0.9.1
-  '@logtape/file': jsr:>=0.9.1
+  '@logtape/logtape': '>=0.9.1'
+  '@logtape/file': '>=0.9.1'
   type-fest: '*'
   execa: '*'
   nano-spawn: '*'
@@ -94,6 +94,10 @@ catalog:
   '@mdx-js/vue': '*'
   vue: '*'
   '@cspotcode/outdent': jsr:*
+  # To look inside the error and see the stack trace
+  serialize-error: '*'
+  # Promising fp lib that supports concurrency.
+  '@fxts/core': '*'
 childConcurrency: 16
 dedupeDirectDeps: true
 disallowWorkspaceCycles: true
@@ -115,9 +119,6 @@ packageExtensions:
   astro:
     dependencies:
       typescript: '*'
-patchedDependencies:
-  # Logtape is not working for Bun due to a Deno-specific code fragment at the moment. See https://github.com/dahlia/logtape/issues/42
-  '@jsr/logtape__logtape@0.9.1': patches/@jsr__logtape__logtape@0.9.1.patch
 preferWorkspacePackages: true
 resolutionMode: highest
 savePrefix: ''

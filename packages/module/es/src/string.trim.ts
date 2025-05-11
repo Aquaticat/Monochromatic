@@ -1,23 +1,35 @@
 export function trimEndWith(str: string, trimmer: string): string {
-  const reversedTrimmer = trimmer.split('').toReversed().join('');
-  let modifingString = str;
-  while (modifingString.endsWith(trimmer)) {
-    modifingString = modifingString
-      .split('')
-      .toReversed()
-      .join('')
-      .replace(reversedTrimmer, '')
-      .split('')
+  if (trimmer === '') {
+    throw new Error('trimmer cannot be empty');
+  }
+  if (!str.endsWith(trimmer)) {
+    return str;
+  }
+  const reversedTrimmer = [...trimmer].toReversed().join('');
+  let modifyingString = str;
+  while (modifyingString.endsWith(trimmer)) {
+    modifyingString = [
+      ...[...modifyingString]
+        .toReversed()
+        .join('')
+        .replace(reversedTrimmer, ''),
+    ]
       .toReversed()
       .join('');
   }
-  return modifingString;
+  return modifyingString;
 }
 
 export function trimStartWith(str: string, trimmer: string): string {
-  let modifingString = str;
-  while (modifingString.startsWith(trimmer)) {
-    modifingString = modifingString.replace(trimmer, '');
+  if (trimmer === '') {
+    throw new Error('trimmer cannot be empty');
   }
-  return modifingString;
+  if (!str.startsWith(trimmer)) {
+    return str;
+  }
+  let modifyingString = str;
+  while (modifyingString.startsWith(trimmer)) {
+    modifyingString = modifyingString.replace(trimmer, '');
+  }
+  return modifyingString;
 }

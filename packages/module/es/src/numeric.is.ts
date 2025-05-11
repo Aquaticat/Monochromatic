@@ -3,6 +3,7 @@ import type {
   PositiveInfinity,
 } from 'type-fest';
 import type {
+  IntBigint,
   NegativeInt,
   NonNegativeInt,
   PositiveInt,
@@ -117,3 +118,19 @@ export function isNegativeFloat(
 /* @__NO_SIDE_EFFECTS__ */ export function isObjectDate(value: any): value is Date {
   return Object.prototype.toString.call(value) === '[object Date]';
 }
+
+export function isBigint(value: unknown): value is bigint {
+  return typeof value === 'bigint';
+}
+
+export function isNumeric(value: unknown): value is number | bigint {
+  return isNumber(value) || isBigint(value);
+}
+
+export function isIntBigint(value: unknown): value is IntBigint {
+  return isBigint(value)
+    && value >= BigInt(Number.MIN_SAFE_INTEGER)
+    && value <= BigInt(Number.MAX_SAFE_INTEGER);
+}
+
+export const bigint0 = 0n;

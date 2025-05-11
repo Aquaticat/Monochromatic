@@ -7,6 +7,7 @@ export * from './fixture.promises.0to999.ts';
 export * from './any.constant.ts';
 export * from './any.echo.ts';
 export * from './any.toExport.ts';
+export * from './any.type.ts';
 export * from './any.typeOf.ts';
 
 /* @__NO_SIDE_EFFECTS__ */ export * from './arrayLike.at.ts';
@@ -32,12 +33,15 @@ export * from './any.typeOf.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './boolean.equal.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './boolean.not.ts';
 
-/* @__NO_SIDE_EFFECTS__ */ export * from './error.assert.ts';
+/* @__NO_SIDE_EFFECTS__ */ export * from './error.assert.equal.ts';
+/* @__NO_SIDE_EFFECTS__ */ export * from './error.assert.throw.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './error.is.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './error.throw.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './error.throws.ts';
 
+/* @__NO_SIDE_EFFECTS__ */ export * from './function.booleanfy.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './function.curry.ts';
+/* @__NO_SIDE_EFFECTS__ */ export * from './function.ensuring.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './function.equals.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './function.is.ts';
 /* @__NO_SIDE_EFFECTS__ */ export * from './function.nary.ts';

@@ -23,7 +23,9 @@
   },
   "dependencies": {
     "@logtape/logtape": "catalog:",
-    "@logtape/file": "catalog:"
+    "@logtape/file": "catalog:",
+    "serialize-error": "catalog:",
+    "lfi": "catalog:"
   },
   "version": "0.0.125",
   "repository": {

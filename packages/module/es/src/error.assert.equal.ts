@@ -1,8 +1,8 @@
 import {
   equalsAsyncOrThrow,
   equalsOrThrow,
-  type NotPromise,
-} from '@monochromatic-dev/module-es/ts';
+} from './function.equals.ts';
+import type { NotPromise } from './promise.type.ts';
 
 // We need not be so pedantic as to postfix every assert with Equal when equal is implied.
 

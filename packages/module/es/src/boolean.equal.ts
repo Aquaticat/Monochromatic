@@ -1,20 +1,22 @@
 import {
   isAsyncGenerator,
   isAsyncIterable,
-  isError,
   isGenerator,
   isMap,
   isObject,
-  isObjectDate,
-  isObjectRegexp,
-  isPromise,
   isSet,
-  isString,
   isWeakMap,
   isWeakSet,
-  logtapeGetLogger,
-  type NotPromise,
-} from '@monochromatic-dev/module-es/ts';
+} from './arrayLike.is.ts';
+import { isError } from './error.is.ts';
+import { logtapeGetLogger } from './logtape.shared.ts';
+import { isObjectDate } from './numeric.is.ts';
+import { isPromise } from './promise.is.ts';
+import type { NotPromise } from './promise.type.ts';
+import {
+  isObjectRegexp,
+  isString,
+} from './string.is.ts';
 
 const l = logtapeGetLogger(['m', 'boolean.equal']);
 
@@ -228,10 +230,7 @@ const l = logtapeGetLogger(['m', 'boolean.equal']);
 
       l.debug`Boolean wraps a: ${a} b: ${b}`;
 
-      if (a.valueOf() === b.valueOf()) {
-        return true;
-      }
-      return false;
+      return a.valueOf() === b.valueOf();
     }
 
     if (isError(a)) {
@@ -268,7 +267,7 @@ const l = logtapeGetLogger(['m', 'boolean.equal']);
         .info`comparing two Generators would only succeed
         if both of them never takes any parameters.`;
 
-      return equal(Array.from(a), Array.from(b));
+      return equal([...a], [...b]);
     }
 
     if (isObjectRegexp(a)) {
@@ -301,7 +300,7 @@ const l = logtapeGetLogger(['m', 'boolean.equal']);
         return true;
       }
 
-      return equal(Array.from(a), Array.from(b));
+      return equal([...a].toSorted(), [...b].toSorted());
     }
 
     if (isSet(a)) {
@@ -320,7 +319,7 @@ const l = logtapeGetLogger(['m', 'boolean.equal']);
         return true;
       }
 
-      return equal(Array.from(a), Array.from(b));
+      return equal([...a].toSorted(), [...b].toSorted());
     }
 
     if (isWeakMap(a) || isWeakMap(b)) {

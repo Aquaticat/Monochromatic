@@ -8,3 +8,5 @@ export type Int = PositiveInt | NegativeInt | 0;
 export type NegativeNumber = NegativeInt | NegativeFloat;
 export type NonNegativeInt = PositiveInt | 0;
 export type NonPositiveInt = NegativeInt | 0;
+export type IntBigint = bigint & { __brand: 'IntBigint'; };
+export type Numeric = number | bigint;

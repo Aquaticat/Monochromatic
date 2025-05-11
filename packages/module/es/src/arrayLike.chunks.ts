@@ -47,7 +47,7 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
 */
 /* @__NO_SIDE_EFFECTS__ */ export function* chunksArray<
   const T_array extends readonly [any, ...any[]],
-  T_n extends Ints<1, T_array['length']>,
+  const T_n extends Ints<1, T_array['length']>,
 >(
   array: T_array,
   n: T_n,
@@ -73,35 +73,44 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
       T_n
     >;
   }
-
-  throw new Error(
-    `impossible state. Code reached after having iterated through the array`,
-  );
 }
 
 /* @__NO_SIDE_EFFECTS__ */ export function chunksArrayLike<
   // An overload sig cannot be declared as a generator
   const T_arrayLike extends Iterable<any> & { length: number; },
-  T_n extends Ints<1, T_arrayLike['length']>,
+  const T_n extends Ints<1, T_arrayLike['length']>,
+  const YieldType extends Tuple<
+    T_arrayLike extends Iterable<infer T_element> ? T_element : never,
+    T_n
+  >,
 >(arrayLike: T_arrayLike, n: T_n): Generator<
-  Tuple<T_arrayLike extends Iterable<infer T_element> ? T_element : never, T_n>
+  YieldType
 >;
 
 /* @__NO_SIDE_EFFECTS__ */ export function chunksArrayLike<
   // An overload sig cannot be declared as a generator
   const T_arrayLike extends Iterable<any>,
-  T_n extends number,
+  const T_n extends number,
+  const YieldType extends Tuple<
+    T_arrayLike extends Iterable<infer T_element> ? T_element : never,
+    T_n
+  >,
 >(arrayLike: T_arrayLike, n: T_n): Generator<
-  Tuple<T_arrayLike extends Iterable<infer T_element> ? T_element : never, T_n>
+  YieldType
 >;
 
 /* @__NO_SIDE_EFFECTS__ */ export function* chunksArrayLike<
   // An overload sig cannot be declared as a generator
   const T_arrayLike extends Iterable<any> | Iterable<any> & { length: number; },
-  T_n extends T_arrayLike extends { length: number; } ? Ints<1, T_arrayLike['length']>
+  const T_n extends T_arrayLike extends { length: number; }
+    ? Ints<1, T_arrayLike['length']>
     : number,
+  const YieldType extends Tuple<
+    T_arrayLike extends Iterable<infer T_element> ? T_element : never,
+    T_n
+  >,
 >(arrayLike: T_arrayLike, n: T_n): Generator<
-  Tuple<T_arrayLike extends Iterable<infer T_element> ? T_element : never, T_n>
+  YieldType
 > {
   l.debug`chunksArrayLike(arrayLike: ${arrayLike}, n: ${n})`;
 
@@ -144,7 +153,7 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
   }
 
   if (arrayIsNonEmpty(arrayLikeArray)) {
-    yield* chunksArray(arrayLikeArray, n);
+    yield* chunksArray(arrayLikeArray, n) as unknown as Generator<YieldType>;
     return;
   }
 
@@ -154,7 +163,7 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
 /* @__NO_SIDE_EFFECTS__ */ export function chunksArrayLikeAsync<
   // An overload sig cannot be declared as a generator
   const T_arrayLike extends MaybeAsyncIterable<any> & { length: number; },
-  T_n extends Ints<1, T_arrayLike['length']>,
+  const T_n extends Ints<1, T_arrayLike['length']>,
 >(
   arrayLike: T_arrayLike,
   n: T_n,
@@ -165,7 +174,7 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
 /* @__NO_SIDE_EFFECTS__ */ export function chunksArrayLikeAsync<
   // An overload sig cannot be declared as a generator
   const T_arrayLike extends MaybeAsyncIterable<any>,
-  T_n extends number,
+  const T_n extends number,
 >(
   arrayLike: T_arrayLike,
   n: T_n,
@@ -178,10 +187,15 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
   const T_arrayLike extends
     | MaybeAsyncIterable<any>
     | MaybeAsyncIterable<any> & { length: number; },
-  T_n extends T_arrayLike extends { length: number; } ? Ints<1, T_arrayLike['length']>
+  const T_n extends T_arrayLike extends { length: number; }
+    ? Ints<1, T_arrayLike['length']>
     : number,
+  const YieldType extends Tuple<
+    T_arrayLike extends MaybeAsyncIterable<infer T_element> ? T_element : never,
+    T_n
+  >,
 >(arrayLike: T_arrayLike, n: T_n): AsyncGenerator<
-  Tuple<T_arrayLike extends MaybeAsyncIterable<infer T_element> ? T_element : never, T_n>
+  YieldType
 > {
   // TODO: Switch this to lazy.
 
@@ -222,7 +236,7 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
   }
 
   if (arrayIsNonEmpty(arrayLikeArray)) {
-    yield* chunksArray(arrayLikeArray, n);
+    yield* chunksArray(arrayLikeArray, n) as unknown as Generator<YieldType>;
     return;
   }
 

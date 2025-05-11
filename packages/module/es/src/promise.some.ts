@@ -1,90 +1,84 @@
-import {
-  chunksArray,
-  isArray,
-  logtapeGetLogger,
-  mapArrayLike,
-  type MaybeAsyncIterable,
-} from '@monochromatic-dev/module-es/ts';
 import type { Promisable } from 'type-fest';
+import { chunksArray } from './arrayLike.chunks.ts';
+import { isArray } from './arrayLike.is.ts';
+import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
+import { logtapeGetLogger } from './logtape.shared.ts';
 
 const l = logtapeGetLogger(['m', 'promise.some']);
 
-// TODO: Find out if the use of generics here forces promises to be of the same type while calling the function.
-
-// TODO: Write the tests.
-
-// TODO: Make callback be able to accept something returning boolean.
+const processShard = async <const T,>(shard: Promisable<T>[],
+  predicate: (input: T) => Promisable<boolean>): Promise<true> =>
+{
+  try {
+    await Promise.any(
+      shard.map(async function returnTrueOrThrow(input: Promisable<T>): Promise<true> {
+        const resolvedInput = await input;
+        const result = await predicate(resolvedInput);
+        if (!result) {
+          throw new Error('Predicate returned false');
+        }
+        return true;
+      }),
+    );
+    return true;
+  } catch (error) {
+    throw new Error(`No matching items in shard with error ${error}`);
+  }
+};
 
 /**
- @remarks
+ * Checks if any value in an iterable of promises satisfies the predicate.
+ *
+ * @param predicate - Function to test each resolved value
+ * @param promises - Collection of promises or values to check
+ * @param shardSize - Optional size for promise shards (defaults to 1000)
+ * @returns A promise that resolves to true if any value passes the test, false otherwise
  */
-/* @__NO_SIDE_EFFECTS__ */ export async function somePromises<T_input,>(
-  // TODO: Change the type to not allow a Promise-accepting callback to be passed in.
-  //       The callback always operates on unwrapped values.
-  predicate: (input: T_input) => Promisable<boolean>,
-  promises: MaybeAsyncIterable<Promisable<T_input>>,
+export async function somePromises<const T,>(
+  predicate: (input: T) => Promisable<boolean>,
+  promises: MaybeAsyncIterable<Promisable<T>>,
+  shardSize = 1000,
 ): Promise<boolean> {
   if (isArray(promises)) {
-    // Chunks the array of promises
+    // For small arrays, don't bother sharding
+    if (promises.length <= shardSize) {
+      try {
+        await processShard(promises, predicate);
+        return true;
+      } catch (error) {
+        l.info`all shards rejected (all predicates returned false) with error: ${error}`;
+        return false;
+      }
+    }
 
-    // TODO: Figure out the optimal val for shards. Using 2 for now.
-
-    // TODO: Write partial so
-    //       `pipe((chunk) => mapArrayLike(callback, chunk), Promise.race)`
-    //       can be rewritten in point-free form
-
-    // TODO: Promise<false> doesn't mean reject.
-    //       Migrate not-or-throw into this module and use that.
-
-    // FIXME: Why is mapArrayLike inferring any for chunk?
-
-    // TODO: I wrote the algorithm. But is it really faster? Test it.
-
-    /*
-    const chunks = chunksArray(promises, 2);
-    const chunkedResults = mapArrayLike(
-      pipe((chunk: [any, any]) => mapArrayLike(callback, chunk), Promise.race),
-      chunks,
-    );
-    */
+    // For larger arrays, split into chunks and process in parallel
+    const chunks = chunksArray(promises as [any, ...any[]], shardSize);
 
     try {
-      const promiseRaceResult: boolean = await Promise.any(
-        mapArrayLike(
-          async function callbackThrowing(input: T_input) {
-            const awaitedInput = await input;
-            const callbackResult = await predicate(awaitedInput);
-            if (!callbackResult) {
-              throw new Error(
-                `callback ${String(predicate)} evals to false for ${awaitedInput}`,
-              );
-            }
-            return callbackResult;
-          },
-          promises,
-        ),
-      );
-      return promiseRaceResult;
-    } catch (promiseRaceError) {
-      l.info`${promiseRaceError}`;
+      // Use Promise.any to detect the first successful chunk
+      await Promise.any(chunks.map(function processChunk(chunk): Promise<boolean> {
+        return processShard(chunk, predicate);
+      }));
+      return true;
+    } catch (error) {
+      l.info`all shards rejected (all predicates returned false) with error: ${error}`;
       return false;
     }
   }
 
-  // If what we're dealing with is not an array but just a iterable,
-  // iterate per normal.
-  // Cannot really optimize here.
-  // If we try to shard it, we'd have to read the whole iterable first.
-
-  // Turns out even the value is awaited already in for await loops.
-  // It's not just for iterating AsyncIterable
-  for await (const promise of promises) {
+  // Handle AsyncIterable case
+  for await (const item of promises) {
     try {
-      await predicate(promise);
-      return true;
-    } catch (callbackError) {
-      l.info`${callbackError}`;
+      if (await predicate(item)) {
+        return true;
+      }
+    } catch (error) {
+      l.info`Error evaluating predicate: ${error}`;
+      // Continue to next item if predicate throws
     }
   }
+
   return false;
+
+  // Helper function to process a single shard
 }

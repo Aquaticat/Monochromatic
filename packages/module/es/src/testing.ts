@@ -1,5 +1,6 @@
 // eslint-disable prefer-await-to-callbacks
 /** Very basic testing framework
+ @deprecated - Found a proper testing framework in Bun test.
 
  @remarks
  Not using something more sentible like Jest or Mocha because they inject their own global variables.
@@ -11,26 +12,6 @@
 
 import { getLogger } from '@logtape/logtape';
 import type { Promisable } from 'type-fest';
-
-// TODO: Use error cause param to pass error perfectly.
-
-//region From https://www.totaltypescript.com/how-to-test-your-types
-
-// TODO: Use Assert instead of chaining Expect<Equal<T>>
-/* @__NO_SIDE_EFFECTS__ */ export type Expect<T extends true,> = T;
-
-/* @__NO_SIDE_EFFECTS__ */ export type Equal<X, Y,> =
-  (<T,>() => T extends X ? 1 : 2) extends <
-    T,
-  >() => T extends Y ? 1 : 2 ? true
-    : false;
-/* @__NO_SIDE_EFFECTS__ */ export type NotEqual<X, Y,> =
-  (<T,>() => T extends X ? 1 : 2) extends <
-    T,
-  >() => T extends Y ? 1 : 2 ? false
-    : true;
-
-//endregion From https://www.totaltypescript.com/how-to-test-your-types
 
 // MAYBE: Change this at to my at
 // MAYBE: Change this to my path parser.

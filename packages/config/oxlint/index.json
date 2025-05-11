@@ -293,7 +293,10 @@
         "eslint/require-await": "off",
 
         // Constructing arrays
-        "eslint/no-array-constructor": "off"
+        "eslint/no-array-constructor": "off",
+
+        // Allow using Promise keywords
+        "promise/prefer-await-to-then": "off"
       }
     }
   ]

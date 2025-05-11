@@ -1114,10 +1114,6 @@ import type { NotPromise } from './promise.type.ts';
   };
 }
 
-const d = pipeAsync(function<T_input,>(input: T_input): T_input {
-  return input;
-}, Boolean);
-
 /* @__NO_SIDE_EFFECTS__ */ export function pipe<T_inputs extends any[], T_0,>(
   fn0: (...inputs: T_inputs) => T_0,
 ): (...inputs: T_inputs) => T_0;

@@ -11,10 +11,7 @@ import type { MaybeAsyncIterable } from '@monochromatic-dev/module-es/ts';
     return strings.join(separator);
   }
 
-  const stringsArr: string[] = [];
-  for await (const stringElement of strings) {
-    stringsArr.push(stringElement);
-  }
+  const stringsArr: string[] = await Array.fromAsync(strings);
   return stringsArr.join(separator);
 }
 /* @__NO_SIDE_EFFECTS__ */ export function joinStrings(
@@ -25,9 +22,6 @@ import type { MaybeAsyncIterable } from '@monochromatic-dev/module-es/ts';
     return strings.join(separator);
   }
 
-  const stringsArr: string[] = [];
-  for (const stringElement of strings) {
-    stringsArr.push(stringElement);
-  }
+  const stringsArr: string[] = [...strings];
   return stringsArr.join(separator);
 }

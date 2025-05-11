@@ -1,17 +1,6 @@
-// run with
-// bun test ./packages/module/es/src/arrayLike.every.bunTest.ts --timeout 50
-
 import {
-  array0to999,
-  gen0to999,
-  gen0to999Async,
-  gen0to999AsyncSlow,
-  gen0to999error,
-  gen0to999errorAsync,
-  gen0to999errorAsyncSlow,
   logtapeConfiguration,
   logtapeConfigure,
-  wait,
 } from '@monochromatic-dev/module-es/ts';
 import {
   describe,
@@ -22,268 +11,267 @@ import {
   everyArrayLike,
   everyArrayLikeAsync,
 } from './arrayLike.every.ts';
+import { equal } from './boolean.equal.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 
 describe('everyArrayLike', () => {
-  describe('Array', () => {
-    test('empty', () => {
-      // See https://stackoverflow.com/questions/34137250/why-does-array-prototype-every-return-true-on-an-empty-array
-      // for why we're expecting truthiness when running every.
-      expect(everyArrayLike(Boolean, [])).toBe(true);
-    });
-    test('one', () => {
-      expect(everyArrayLike(Boolean, [1])).toBe(true);
-    });
-    test('two', () => {
-      expect(everyArrayLike(Boolean, [1, 2])).toBe(true);
-    });
-    test('two[1] - false', () => {
-      expect(everyArrayLike(Boolean, [1, 0])).toBe(false);
-    });
-    test('two[0] - false', () => {
-      expect(everyArrayLike(Boolean, [0, 1])).toBe(false);
-    });
-
-    // demo of how diff every... and noneFail... is
-    // if (element === 999) {throw new RangeError(`999 is not allowed`)}
-    // return false;
-    // every would not throw an error and return false.
-    // noneFail would throw an error for sure.
-    test('fail fast - testingFn throws on the last element - false', () => {
-      expect(everyArrayLike((element: number) => {
-        if (element === 999) { throw new RangeError(`999 is not allowed`); }
-        return false;
-      }, array0to999))
-        .toBe(false);
-    });
+  test('returns true when all elements pass the test', () => {
+    const array = [2, 4, 6, 8];
+    expect(everyArrayLike((num: number) => num % 2 === 0, array)).toBe(true);
   });
 
-  describe('Iterable', () => {
-    test('empty', () => {
-      expect(everyArrayLike(Boolean, (function*() {
-        // Intentionally left empty for testing.
-      })()))
-        .toBe(true);
-    });
-    test('one', () => {
-      expect(everyArrayLike(Boolean, (function*() {
-        yield 1;
-      })()))
-        .toBe(true);
-    });
-    test('two', () => {
-      expect(everyArrayLike(Boolean, (function*() {
-        yield 1;
-        yield 2;
-      })()))
-        .toBe(true);
-    });
-    test('two[1] - false', () => {
-      expect(everyArrayLike(Boolean, (function*() {
-        yield 1;
-        yield 0;
-      })()))
-        .toBe(false);
-    });
-    test('two[0] - false', () => {
-      expect(everyArrayLike(Boolean, (function*() {
-        yield 0;
-        yield 1;
-      })()))
-        .toBe(false);
-    });
+  test('returns false when any element fails the test', () => {
+    const array = [2, 4, 5, 8];
+    expect(everyArrayLike((num: number) => num % 2 === 0, array)).toBe(false);
+  });
 
-    test('fail fast - false', () => {
-      expect(everyArrayLike((element) => {
-        if (element === 999) { throw new RangeError(`999 is not allowed`); }
-        return false;
-      }, gen0to999()))
-        .toBe(false);
-    });
+  test('short-circuits when finding first failing element', () => {
+    let callCount = 0;
+    const array = [2, 4, 5, 8];
+    everyArrayLike((num: number) => {
+      callCount++;
+      return num % 2 === 0;
+    }, array);
+    expect(callCount).toBe(3); // Only calls until the first false result
+  });
 
-    test('iterable throws - fail fast - false', () => {
-      expect(everyArrayLike(() => false, gen0to999error()))
-        .toBe(false);
-    });
+  test('correctly passes index as second argument', () => {
+    const array = [10, 20, 30];
+    expect(
+      everyArrayLike((num: number, index: number) => num === (index + 1) * 10, array),
+    )
+      .toBe(true);
+  });
+
+  test('correctly passes array as third argument', () => {
+    const array = [1, 2, 3];
+    expect(
+      everyArrayLike((_num: number, _index: number, arr) => equal(arr, array), array),
+    )
+      .toBe(true);
+  });
+
+  test('works with other iterables like Sets', () => {
+    const set = new Set([2, 4, 6, 8]);
+    expect(everyArrayLike((num: number) => num % 2 === 0, set)).toBe(true);
+
+    const failSet = new Set([2, 3, 6, 8]);
+    expect(everyArrayLike((num: number) => num % 2 === 0, failSet)).toBe(false);
+  });
+
+  test('works with strings as iterables', () => {
+    const str = 'aabb';
+    expect(everyArrayLike((char: string) => /[ab]/.test(char), str)).toBe(true);
+
+    const failStr = 'aabc';
+    expect(everyArrayLike((char: string) => /[ab]/.test(char), failStr)).toBe(false);
+  });
+
+  test('throws error when testing function throws', () => {
+    const array = [1, 2, 3];
+    expect(() =>
+      everyArrayLike(() => {
+        throw new Error('Test error');
+      }, array)
+    )
+      .toThrow('Test error');
+  });
+
+  test('returns true for empty arrays', () => {
+    expect(everyArrayLike(() => false, [])).toBe(true);
   });
 });
 
 describe('everyArrayLikeAsync', () => {
-  describe('Array', () => {
-    test('empty', () => {
-      // See https://stackoverflow.com/questions/34137250/why-does-array-prototype-every-return-true-on-an-empty-array
-      // for why we're expecting truthiness when running every.
-      expect(everyArrayLikeAsync(Boolean, [])).resolves.toBe(true);
-    });
-    test('one', () => {
-      expect(everyArrayLikeAsync(Boolean, [1])).resolves.toBe(true);
-    });
-    test('two', () => {
-      expect(everyArrayLikeAsync(Boolean, [1, 2])).resolves.toBe(true);
-    });
-    test('two[1] - false', () => {
-      expect(everyArrayLikeAsync(Boolean, [1, 0])).resolves.toBe(false);
-    });
-    test('two[0] - false', () => {
-      expect(everyArrayLikeAsync(Boolean, [0, 1])).resolves.toBe(false);
-    });
-
-    // demo of how diff every... and noneFail... is
-    // if (element === 999) {throw new RangeError(`999 is not allowed`)}
-    // return false;
-    // every would not throw an error and return false.
-    // noneFail would throw an error for sure.
-    test('fail fast - testingFn throws on the last element - false', () => {
-      expect(everyArrayLikeAsync((element: number) => {
-        if (element === 999) { throw new RangeError(`999 is not allowed`); }
-        return false;
-      }, array0to999))
-        .resolves
-        .toBe(false);
-    });
-    // MAYBE: Add timeLimit-ed tests.
-
-    test.todo('fail fast - testingFn takes too long on some elements - false', () => {
-      expect(everyArrayLikeAsync(async (element: number) => {
-        if (element <= 100) {
-          await wait(1);
-          return true;
-        }
-        if (element < 999) {
-          return true;
-        }
-        return false;
-      }, array0to999))
-        .resolves
-        .toBe(false);
-    });
+  test('returns true when all elements pass the test', async () => {
+    const array = [2, 4, 6, 8];
+    expect(await everyArrayLikeAsync(async (num: number) => num % 2 === 0, array)).toBe(
+      true,
+    );
   });
 
-  describe('Iterable', () => {
-    test('empty', () => {
-      expect(everyArrayLikeAsync(Boolean, (function*() {
-        // Intentionally left empty for testing.
-      })()))
-        .resolves
-        .toBe(true);
-    });
-    test('one', () => {
-      expect(everyArrayLikeAsync(Boolean, (function*() {
-        yield 1;
-      })()))
-        .resolves
-        .toBe(true);
-    });
-    test('two', () => {
-      expect(everyArrayLikeAsync(Boolean, (function*() {
-        yield 1;
-        yield 2;
-      })()))
-        .resolves
-        .toBe(true);
-    });
-    test('two[1] - false', () => {
-      expect(everyArrayLikeAsync(Boolean, (function*() {
-        yield 1;
-        yield 0;
-      })()))
-        .resolves
-        .toBe(false);
-    });
-    test('two[0] - false', () => {
-      expect(everyArrayLikeAsync(Boolean, (function*() {
-        yield 0;
-        yield 1;
-      })()))
-        .resolves
-        .toBe(false);
-    });
-
-    test('fail fast - false', () => {
-      expect(everyArrayLikeAsync((element) => {
-        if (element === 999) { throw new RangeError(`999 is not allowed`); }
-        return false;
-      }, gen0to999()))
-        .resolves
-        .toBe(false);
-    });
-
-    test('iterable throws - fail fast - false', () => {
-      expect(everyArrayLikeAsync(() => false, gen0to999error()))
-        .resolves
-        .toBe(false);
-    });
+  test('returns false when any element fails the test', async () => {
+    const array = [2, 4, 5, 8];
+    expect(everyArrayLikeAsync(async (num: number) => num % 2 === 0, array))
+      .resolves
+      .toBe(
+        false,
+      );
   });
 
-  describe('AsyncIterable', () => {
-    test('empty', () => {
-      expect(everyArrayLikeAsync(Boolean, (async function*() {
-        // Intentionally left empty for testing.
-      })()))
-        .resolves
-        .toBe(true);
-    });
-    test('one', () => {
-      expect(everyArrayLikeAsync(Boolean, (async function*() {
-        yield 1;
-      })()))
-        .resolves
-        .toBe(true);
-    });
-    test('two', () => {
-      expect(everyArrayLikeAsync(Boolean, (async function*() {
-        yield 1;
+  test('correctly passes index as second argument', async () => {
+    const array = [10, 20, 30];
+    expect(
+      await everyArrayLikeAsync(
+        async (num: number, index: number) => num === (index + 1) * 10,
+        array,
+      ),
+    )
+      .toBe(true);
+  });
+
+  test('correctly passes array as third argument', async () => {
+    const array = [1, 2, 3];
+    expect(everyArrayLikeAsync(async (_num, _index, arr) => equal(arr, array), array))
+      .resolves
+      .toBe(true);
+  });
+
+  test('works with async iterables', async () => {
+    const asyncIterable = {
+      async *[Symbol.asyncIterator]() {
         yield 2;
-      })()))
-        .resolves
-        .toBe(true);
-    });
-    test('two[1] - false', () => {
-      expect(everyArrayLikeAsync(Boolean, (async function*() {
-        yield 1;
-        yield 0;
-      })()))
-        .resolves
-        .toBe(false);
-    });
-    test('two[0] - false', () => {
-      expect(everyArrayLikeAsync(Boolean, (async function*() {
-        yield 0;
-        yield 1;
-      })()))
-        .resolves
-        .toBe(false);
-    });
+        yield 4;
+        yield 6;
+      },
+    };
 
-    test('fail fast - false', () => {
-      expect(everyArrayLikeAsync((element) => {
-        if (element === 999) { throw new RangeError(`999 is not allowed`); }
-        return false;
-      }, gen0to999Async()))
-        .resolves
-        .toBe(false);
-    });
+    expect(everyArrayLikeAsync(async (num: number) => num % 2 === 0, asyncIterable))
+      .resolves
+      .toBe(
+        true,
+      );
 
-    test('iterable throws - fail fast - false', () => {
-      expect(everyArrayLikeAsync(() => false, gen0to999errorAsync()))
-        .resolves
-        .toBe(false);
-    });
+    const failAsyncIterable = {
+      async *[Symbol.asyncIterator]() {
+        yield 2;
+        yield 3;
+        yield 6;
+      },
+    };
 
-    test('fail fast - false && fast', () => {
-      expect(everyArrayLikeAsync((element) => {
-        if (element === 999) { throw new RangeError(`999 is not allowed`); }
-        return false;
-      }, gen0to999AsyncSlow()))
-        .resolves
-        .toBe(false);
-    });
+    expect(
+      everyArrayLikeAsync(async (num: number) => num % 2 === 0, failAsyncIterable),
+    )
+      .resolves
+      .toBe(false);
+  });
 
-    test('iterable throws - fail fast - false', () => {
-      expect(everyArrayLikeAsync(() => false, gen0to999errorAsyncSlow()))
-        .resolves
-        .toBe(false);
-    });
+  test('throws error when testing function throws', async () => {
+    const array = [1, 2, 3];
+    expect(everyArrayLikeAsync(async (_element: any) => {
+      throw new Error('Async test error');
+    }, array))
+      .rejects
+      .toThrow('Async test error');
+  });
+
+  test('returns true for empty arrays', async () => {
+    expect(await everyArrayLikeAsync(async () => false, [])).toBe(true);
+  });
+
+  test('handles mixed synchronous and asynchronous predicates', async () => {
+    const array = [1, 2, 3, 4];
+
+    const result = await everyArrayLikeAsync((num: number, index: number) => {
+      if (index % 2 === 0) {
+        return Promise.resolve(num < 5);
+      }
+      return num < 5;
+    }, array);
+
+    expect(result).toBe(true);
+  });
+
+  test('handles delayed async responses correctly', async () => {
+    const array = [1, 2, 3, 4];
+
+    const slowTrue = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      return true;
+    };
+
+    const fastFalse = async () => {
+      return false;
+    };
+
+    // Should return false quickly because of parallel execution
+    const start = performance.now();
+    const result = await everyArrayLikeAsync(async (num: number) => {
+      return num === 3 ? fastFalse() : slowTrue();
+    }, array);
+    const elapsed = performance.now() - start;
+
+    expect(result).toBe(false);
+
+    // This should complete faster than it would take for all slow functions to resolve
+    expect(elapsed).toBeLessThan(40);
+  });
+});
+
+describe('everyArrayLike with mixed predicate behavior', () => {
+  test('should throw error if it encounters throwing item before false item', () => {
+    const array = ['throw', 'false', 'true'];
+
+    expect(() =>
+      everyArrayLike((item: string) => {
+        if (item === 'throw') { throw new Error('Predicate error'); }
+        return item !== 'false';
+      }, array)
+    )
+      .toThrow('Predicate error');
+  });
+
+  test('should return false if it encounters false item before throwing item', () => {
+    const array = ['false', 'throw', 'true'];
+
+    expect(() =>
+      everyArrayLike((item: string) => {
+        if (item === 'throw') { throw new Error('Predicate error'); }
+        return item !== 'false';
+      }, array)
+    )
+      .not
+      .toThrow();
+
+    expect(everyArrayLike((item: string) => {
+      if (item === 'throw') { throw new Error('Predicate error'); }
+      return item !== 'false';
+    }, array))
+      .toBe(false);
+  });
+});
+
+describe('everyArrayLikeAsync with mixed predicate behavior', () => {
+  test('can handle mixed predicate behaviors (true, false, throwing)', async () => {
+    const array = ['true', 'false', 'throw'];
+
+    // Since execution is parallel, either outcome is acceptable
+    try {
+      const result = await everyArrayLikeAsync(async (item) => {
+        if (item === 'throw') { throw new Error('Async predicate error'); }
+        return item !== 'false';
+      }, array);
+
+      // If it completes without throwing, it should be false
+      expect(result).toBe(false);
+    } catch (error: any) {
+      // If it throws, it should be the predicate error
+      expect(error.message).toBe('Async predicate error');
+    }
+  });
+
+  test('ensures non-deterministic result is either false or throws', async () => {
+    const array = ['true', 'false', 'throw'];
+    let threw = false;
+    let resultIfNotThrown: null | boolean = null;
+
+    // Run multiple times to account for race conditions
+    for (let i = 0; i < 5; i++) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        resultIfNotThrown = await everyArrayLikeAsync(async (item: string) => {
+          if (item === 'throw') { throw new Error('Async predicate error'); }
+          return item !== 'false';
+        }, array);
+      } catch {
+        threw = true;
+        break;
+      }
+    }
+
+    // Either it threw at least once, or always returned false
+    expect(threw || resultIfNotThrown === false).toBe(true);
   });
 });

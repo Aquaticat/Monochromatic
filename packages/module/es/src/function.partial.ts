@@ -12,234 +12,60 @@ import type {
 } from '@monochromatic-dev/module-es/ts';
 
 // 10 presetInputs ought to be enough for everyone. Right, right?
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0,
-  T_fn extends (...inputs: [T_0]) => any,>(fn: T_fn,
-  presetInput0: T_0): () => ReturnType<T_fn>;
 
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1,
-  T_fn extends (...inputs: [T_0, T_1]) => any,>(fn: T_fn,
-  presetInput0: T_0): (laterInput1: T_1) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1,
-  T_fn extends (...inputs: [T_0, T_1]) => any,>(fn: T_fn, presetInput0: T_0,
-  presetInput1: T_1): () => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2,
-  T_fn extends (...inputs: [T_0, T_1, T_2]) => any,>(
-  fn: T_fn,
+export function partial<T_0, T_others extends readonly any[], T_returns,>(
+  fn: (input0: T_0, ...rest: T_others) => T_returns,
   presetInput0: T_0,
-): (laterInput1: T_1, laterInput2: T_2) => ReturnType<T_fn>;
+): (...laterInputs: T_others) => T_returns;
 
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2,
-  T_fn extends (...inputs: [T_0, T_1, T_2]) => any,>(
-  fn: T_fn,
+export function partial<T_0, T_1, T_others extends readonly any[], T_returns,>(
+  fn: (input0: T_0, input1: T_1, ...rest: T_others) => T_returns,
   presetInput0: T_0,
   presetInput1: T_1,
-): (laterInput2: T_2) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2,
-  T_fn extends (...inputs: [T_0, T_1, T_2]) => any,>(
-  fn: T_fn,
+): (...laterInputs: T_others) => T_returns;
+export function partial<T_0, T_1, T_2, T_others extends readonly any[], T_returns,>(
+  fn: (input0: T_0, input1: T_1, input2: T_2, ...rest: T_others) => T_returns,
   presetInput0: T_0,
   presetInput1: T_1,
   presetInput2: T_2,
-): () => ReturnType<T_fn>;
+): (...laterInputs: T_others) => T_returns;
 
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-): (laterInput1: T_1, laterInput2: T_2, laterInput3: T_3) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-): (laterInput2: T_2, laterInput3: T_3) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-): (laterInput3: T_3) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3]) => any,>(
-  fn: T_fn,
+export function partial<T_0, T_1, T_2, T_3, T_others extends readonly any[], T_returns,>(
+  fn: (input0: T_0, input1: T_1, input2: T_2, input3: T_3,
+    ...rest: T_others) => T_returns,
   presetInput0: T_0,
   presetInput1: T_1,
   presetInput2: T_2,
   presetInput3: T_3,
-): () => ReturnType<T_fn>;
+): (...laterInputs: T_others) => T_returns;
 
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-): (laterInput1: T_1, laterInput2: T_2, laterInput3: T_3,
-  laterInput4: T_4) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-): (laterInput2: T_2, laterInput3: T_3, laterInput4: T_4) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-): (laterInput3: T_3, laterInput4: T_4) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4]) => any,>(
-  fn: T_fn,
+export function partial<T_0, T_1, T_2, T_3, T_4, T_others extends readonly any[],
+  T_returns,>(
+  fn: (input0: T_0, input1: T_1, input2: T_2, input3: T_3, input4: T_4,
+    ...rest: T_others) => T_returns,
   presetInput0: T_0,
   presetInput1: T_1,
   presetInput2: T_2,
   presetInput3: T_3,
   presetInput4: T_4,
-): () => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-): (laterInput1: T_1, laterInput2: T_2, laterInput3: T_3,
-  laterInput4: T_4) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-): (laterInput2: T_2, laterInput3: T_3, laterInput4: T_4) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-): (laterInput3: T_3, laterInput4: T_4) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-): (laterInput4: T_4) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-): () => ReturnType<T_fn>;
+): (...laterInputs: T_others) => T_returns;
 
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-): (laterInput1: T_1, laterInput2: T_2, laterInput3: T_3, laterInput4: T_4,
-  laterInput5: T_5) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-): (laterInput2: T_2, laterInput3: T_3, laterInput4: T_4,
-  laterInput5: T_5) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-): (laterInput3: T_3, laterInput4: T_4, laterInput5: T_5) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-): (laterInput4: T_4, laterInput5: T_5) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-): (laterInput5: T_5) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5]) => any,>(
-  fn: T_fn,
+export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_others extends readonly any[],
+  T_returns,>(
+  fn: (input0: T_0, input1: T_1, input2: T_2, input3: T_3, input4: T_4, input5: T_5,
+    ...rest: T_others) => T_returns,
   presetInput0: T_0,
   presetInput1: T_1,
   presetInput2: T_2,
   presetInput3: T_3,
   presetInput4: T_4,
   presetInput5: T_5,
-): () => ReturnType<T_fn>;
+): (...laterInputs: T_others) => T_returns;
 
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-): (laterInput1: T_1, laterInput2: T_2, laterInput3: T_3, laterInput4: T_4,
-  laterInput5: T_5, laterInput6: T_6) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-): (laterInput2: T_2, laterInput3: T_3, laterInput4: T_4, laterInput5: T_5,
-  laterInput6: T_6) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-): (laterInput3: T_3, laterInput4: T_4, laterInput5: T_5,
-  laterInput6: T_6) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-): (laterInput4: T_4, laterInput5: T_5, laterInput6: T_6) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-): (laterInput5: T_5, laterInput6: T_6) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-  presetInput5: T_5,
-): (laterInput6: T_6) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6]) => any,>(
-  fn: T_fn,
+export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6,
+  T_others extends readonly any[], T_returns,>(
+  fn: (input0: T_0, input1: T_1, input2: T_2, input3: T_3, input4: T_4, input5: T_5,
+    input6: T_6, ...rest: T_others) => T_returns,
   presetInput0: T_0,
   presetInput1: T_1,
   presetInput2: T_2,
@@ -247,71 +73,12 @@ import type {
   presetInput4: T_4,
   presetInput5: T_5,
   presetInput6: T_6,
-): () => ReturnType<T_fn>;
+): (...laterInputs: T_others) => T_returns;
 
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-): (laterInput1: T_1, laterInput2: T_2, laterInput3: T_3, laterInput4: T_4,
-  laterInput5: T_5, laterInput6: T_6, laterInput7: T_7) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-): (laterInput2: T_2, laterInput3: T_3, laterInput4: T_4, laterInput5: T_5,
-  laterInput6: T_6, laterInput7: T_7) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-): (laterInput3: T_3, laterInput4: T_4, laterInput5: T_5, laterInput6: T_6,
-  laterInput7: T_7) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-): (laterInput4: T_4, laterInput5: T_5, laterInput6: T_6,
-  laterInput7: T_7) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-): (laterInput5: T_5, laterInput6: T_6, laterInput7: T_7) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-  presetInput5: T_5,
-): (laterInput6: T_6, laterInput7: T_7) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-  presetInput5: T_5,
-  presetInput6: T_6,
-): (laterInput7: T_7) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7]) => any,>(
-  fn: T_fn,
+export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
+  T_others extends readonly any[], T_returns,>(
+  fn: (input0: T_0, input1: T_1, input2: T_2, input3: T_3, input4: T_4, input5: T_5,
+    input6: T_6, input7: T_7, ...rest: T_others) => T_returns,
   presetInput0: T_0,
   presetInput1: T_1,
   presetInput2: T_2,
@@ -320,85 +87,12 @@ import type {
   presetInput5: T_5,
   presetInput6: T_6,
   presetInput7: T_7,
-): () => ReturnType<T_fn>;
+): (...laterInputs: T_others) => T_returns;
 
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-): (laterInput1: T_1, laterInput2: T_2, laterInput3: T_3, laterInput4: T_4,
-  laterInput5: T_5, laterInput6: T_6, laterInput7: T_7,
-  laterInput8: T_8) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-): (laterInput2: T_2, laterInput3: T_3, laterInput4: T_4, laterInput5: T_5,
-  laterInput6: T_6, laterInput7: T_7, laterInput8: T_8) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-): (laterInput3: T_3, laterInput4: T_4, laterInput5: T_5, laterInput6: T_6,
-  laterInput7: T_7, laterInput8: T_8) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-): (laterInput4: T_4, laterInput5: T_5, laterInput6: T_6, laterInput7: T_7,
-  laterInput8: T_8) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-): (laterInput5: T_5, laterInput6: T_6, laterInput7: T_7,
-  laterInput8: T_8) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-  presetInput5: T_5,
-): (laterInput6: T_6, laterInput7: T_7, laterInput8: T_8) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-  presetInput5: T_5,
-  presetInput6: T_6,
-): (laterInput7: T_7, laterInput8: T_8) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-  presetInput5: T_5,
-  presetInput6: T_6,
-  presetInput7: T_7,
-): (laterInput8: T_8) => ReturnType<T_fn>;
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8]) => any,>(
-  fn: T_fn,
+export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8,
+  T_others extends readonly any[], T_returns,>(
+  fn: (input0: T_0, input1: T_1, input2: T_2, input3: T_3, input4: T_4, input5: T_5,
+    input6: T_6, input7: T_7, input8: T_8, ...rest: T_others) => T_returns,
   presetInput0: T_0,
   presetInput1: T_1,
   presetInput2: T_2,
@@ -408,206 +102,12 @@ import type {
   presetInput6: T_6,
   presetInput7: T_7,
   presetInput8: T_8,
-): () => ReturnType<T_fn>;
+): (...laterInputs: T_others) => T_returns;
 
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-): (laterInput1: T_1, laterInput2: T_2, laterInput3: T_3, laterInput4: T_4,
-  laterInput5: T_5, laterInput6: T_6, laterInput7: T_7, laterInput8: T_8,
-  laterInput9: T_9) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9, T_others extends any[], T_fn extends (
-  ...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9, ...T_others]
-) => any,>(fn: T_fn,
-  presetInput0: T_0
-): (laterInput1: T_1, laterInput2: T_2, laterInput3: T_3, laterInput4: T_4,
-  laterInput5: T_5, laterInput6: T_6, laterInput7: T_7, laterInput8: T_8,
-  laterInput9: T_9, ...laterInputOthers: T_others) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-): (laterInput2: T_2, laterInput3: T_3, laterInput4: T_4, laterInput5: T_5,
-  laterInput6: T_6, laterInput7: T_7, laterInput8: T_8,
-  laterInput9: T_9) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9, T_others extends any[], T_fn extends (
-  ...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9, ...T_others]
-) => any,>(fn: T_fn, presetInput0: T_0,
-  presetInput1: T_1
-): (laterInput2: T_2, laterInput3: T_3, laterInput4: T_4, laterInput5: T_5,
-  laterInput6: T_6, laterInput7: T_7, laterInput8: T_8, laterInput9: T_9,
-  ...laterInputOthers: T_others) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-): (laterInput3: T_3, laterInput4: T_4, laterInput5: T_5, laterInput6: T_6,
-  laterInput7: T_7, laterInput8: T_8, laterInput9: T_9) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9, T_others extends any[], T_fn extends (
-  ...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9, ...T_others]
-) => any,>(fn: T_fn, presetInput0: T_0, presetInput1: T_1,
-  presetInput2: T_2
-): (laterInput3: T_3, laterInput4: T_4, laterInput5: T_5, laterInput6: T_6,
-  laterInput7: T_7, laterInput8: T_8, laterInput9: T_9,
-  ...laterInputOthers: T_others) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-): (laterInput4: T_4, laterInput5: T_5, laterInput6: T_6, laterInput7: T_7,
-  laterInput8: T_8, laterInput9: T_9) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9, T_others extends any[], T_fn extends (
-  ...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9, ...T_others]
-) => any,>(fn: T_fn, presetInput0: T_0, presetInput1: T_1, presetInput2: T_2,
-  presetInput3: T_3
-): (laterInput4: T_4, laterInput5: T_5, laterInput6: T_6, laterInput7: T_7,
-  laterInput8: T_8, laterInput9: T_9, ...laterInputOthers: T_others) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-): (laterInput5: T_5, laterInput6: T_6, laterInput7: T_7, laterInput8: T_8,
-  laterInput9: T_9) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9, T_others extends any[], T_fn extends (
-  ...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9, ...T_others]
-) => any,>(fn: T_fn, presetInput0: T_0, presetInput1: T_1, presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4
-): (laterInput5: T_5, laterInput6: T_6, laterInput7: T_7, laterInput8: T_8,
-  laterInput9: T_9, ...laterInputOthers: T_others) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-  presetInput5: T_5,
-): (laterInput6: T_6, laterInput7: T_7, laterInput8: T_8,
-  laterInput9: T_9) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9, T_others extends any[], T_fn extends (
-  ...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9, ...T_others]
-) => any,>(fn: T_fn, presetInput0: T_0, presetInput1: T_1, presetInput2: T_2,
-  presetInput3: T_3, presetInput4: T_4,
-  presetInput5: T_5
-): (laterInput6: T_6, laterInput7: T_7, laterInput8: T_8, laterInput9: T_9,
-  ...laterInputOthers: T_others) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-  presetInput5: T_5,
-  presetInput6: T_6,
-): (laterInput7: T_7, laterInput8: T_8, laterInput9: T_9) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9, T_others extends any[], T_fn extends (
-  ...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9, ...T_others]
-) => any,>(fn: T_fn, presetInput0: T_0, presetInput1: T_1, presetInput2: T_2,
-  presetInput3: T_3, presetInput4: T_4, presetInput5: T_5,
-  presetInput6: T_6
-): (laterInput7: T_7, laterInput8: T_8, laterInput9: T_9,
-  ...laterInputOthers: T_others) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-  presetInput5: T_5,
-  presetInput6: T_6,
-  presetInput7: T_7,
-): (laterInput8: T_8, laterInput9: T_9) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9, T_others extends any[], T_fn extends (
-  ...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9, ...T_others]
-) => any,>(fn: T_fn, presetInput0: T_0, presetInput1: T_1, presetInput2: T_2,
-  presetInput3: T_3, presetInput4: T_4, presetInput5: T_5, presetInput6: T_6,
-  presetInput7: T_7
-): (laterInput8: T_8, laterInput9: T_9,
-  ...laterInputOthers: T_others) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9]) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-  presetInput5: T_5,
-  presetInput6: T_6,
-  presetInput7: T_7,
-  presetInput8: T_8,
-): (laterInput9: T_9) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9, T_others extends any[], T_fn extends (
-  ...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9, ...T_others]
-) => any,>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-  presetInput5: T_5,
-  presetInput6: T_6,
-  presetInput7: T_7,
-  presetInput8: T_8,
-): (laterInput9: T_9, ...laterInputOthers: T_others) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9,
-  T_fn extends (...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9]) => any,>(
-  fn: T_fn,
+export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9,
+  T_others extends readonly any[], T_returns,>(
+  fn: (input0: T_0, input1: T_1, input2: T_2, input3: T_3, input4: T_4, input5: T_5,
+    input6: T_6, input7: T_7, input8: T_8, input9: T_9, ...rest: T_others) => T_returns,
   presetInput0: T_0,
   presetInput1: T_1,
   presetInput2: T_2,
@@ -618,365 +118,22 @@ import type {
   presetInput7: T_7,
   presetInput8: T_8,
   presetInput9: T_9,
-): () => ReturnType<T_fn>;
+): (...laterInputs: T_others) => T_returns;
 
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9, T_others extends any[], T_fn extends (
-  ...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9, ...T_others]
-) => any,>(
+/* @__NO_SIDE_EFFECTS__ */
+export function partial<T_0, T_fn extends (input0: T_0, ...rest: any[]) => any,>(
   fn: T_fn,
   presetInput0: T_0,
-  presetInput1: T_1,
-  presetInput2: T_2,
-  presetInput3: T_3,
-  presetInput4: T_4,
-  presetInput5: T_5,
-  presetInput6: T_6,
-  presetInput7: T_7,
-  presetInput8: T_8,
-  presetInput9: T_9,
-): (...laterInputOthers: T_others) => ReturnType<T_fn>;
-
-/* @__NO_SIDE_EFFECTS__ */ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
-  T_8, T_9, T_others extends any[], T_fn extends (
-    | ((...inputs: [T_0]) => any)
-    | ((...inputs: [T_0, T_1]) => any)
-    | ((...inputs: [T_0, T_1, T_2]) => any)
-    | ((...inputs: [T_0, T_1, T_2, T_3]) => any)
-    | ((...inputs: [T_0, T_1, T_2, T_3, T_4]) => any)
-    | ((...inputs: [T_0, T_1, T_2, T_3, T_4, T_5]) => any)
-    | ((...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6]) => any)
-    | ((...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7]) => any)
-    | ((...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8]) => any)
-    | ((...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9]) => any)
-    | ((...inputs: [T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, ...T_others]) => any)
-  ),>(
-  fn: T_fn,
-  presetInput0: T_0,
-  presetInput1?: T_1,
-  presetInput2?: T_2,
-  presetInput3?: T_3,
-  presetInput4?: T_4,
-  presetInput5?: T_5,
-  presetInput6?: T_6,
-  presetInput7?: T_7,
-  presetInput8?: T_8,
-  presetInput9?: T_9,
-):
-  | (() => ReturnType<T_fn>)
-  | ((laterInput1: T_1) => ReturnType<T_fn>)
-  | ((laterInput2: T_2) => ReturnType<T_fn>)
-  | ((laterInput3: T_3) => ReturnType<T_fn>)
-  | ((laterInput4: T_4) => ReturnType<T_fn>)
-  | ((laterInput5: T_5) => ReturnType<T_fn>)
-  | ((laterInput6: T_6) => ReturnType<T_fn>)
-  | ((laterInput7: T_7) => ReturnType<T_fn>)
-  | ((laterInput8: T_8) => ReturnType<T_fn>)
-  | ((laterInput9: T_9) => ReturnType<T_fn>)
-  | ((
-    laterInput1: T_1,
-    laterInput2: T_2,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput2: T_2,
-    laterInput3: T_3,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput3: T_3,
-    laterInput4: T_4,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput4: T_4,
-    laterInput5: T_5,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput5: T_5,
-    laterInput6: T_6,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput6: T_6,
-    laterInput7: T_7,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput7: T_7,
-    laterInput8: T_8,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput8: T_8,
-    laterInput9: T_9,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput1: T_1,
-    laterInput2: T_2,
-    laterInput3: T_3,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput2: T_2,
-    laterInput3: T_3,
-    laterInput4: T_4,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput7: T_7,
-    laterInput8: T_8,
-    laterInput9: T_9,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput1: T_1,
-    laterInput2: T_2,
-    laterInput3: T_3,
-    laterInput4: T_4,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput2: T_2,
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-    laterInput9: T_9,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput1: T_1,
-    laterInput2: T_2,
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput2: T_2,
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-    laterInput9: T_9,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput1: T_1,
-    laterInput2: T_2,
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput2: T_2,
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-    laterInput9: T_9,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput1: T_1,
-    laterInput2: T_2,
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput2: T_2,
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-    laterInput9: T_9,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput1: T_1,
-    laterInput2: T_2,
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput2: T_2,
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-    laterInput9: T_9,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput1: T_1,
-    laterInput2: T_2,
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-    laterInput9: T_9,
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput1: T_1,
-    laterInput2: T_2,
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-    laterInput9: T_9,
-    ...laterInputOthers: T_others
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput2: T_2,
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-    laterInput9: T_9,
-    ...laterInputOthers: T_others
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput3: T_3,
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-    laterInput9: T_9,
-    ...laterInputOthers: T_others
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput4: T_4,
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-    laterInput9: T_9,
-    ...laterInputOthers: T_others
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput5: T_5,
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-    laterInput9: T_9,
-    ...laterInputOthers: T_others
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput6: T_6,
-    laterInput7: T_7,
-    laterInput8: T_8,
-    laterInput9: T_9,
-    ...laterInputOthers: T_others
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput7: T_7,
-    laterInput8: T_8,
-    laterInput9: T_9,
-    ...laterInputOthers: T_others
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput8: T_8,
-    laterInput9: T_9,
-    ...laterInputOthers: T_others
-  ) => ReturnType<T_fn>)
-  | ((
-    laterInput9: T_9,
-    ...laterInputOthers: T_others
-  ) => ReturnType<T_fn>)
-  | ((
-    ...laterInputOthers: T_others
-  ) => ReturnType<T_fn>)
-{
+  presetInput1?: Parameters<T_fn>[1],
+  presetInput2?: Parameters<T_fn>[2],
+  presetInput3?: Parameters<T_fn>[3],
+  presetInput4?: Parameters<T_fn>[4],
+  presetInput5?: Parameters<T_fn>[5],
+  presetInput6?: Parameters<T_fn>[6],
+  presetInput7?: Parameters<T_fn>[7],
+  presetInput8?: Parameters<T_fn>[8],
+  presetInput9?: Parameters<T_fn>[9],
+): (...laterInputs: any[]) => ReturnType<T_fn> {
   if (!presetInput1) {
     return function partiallyApplied(
       ...laterInputs: WithoutFirst<Parameters<T_fn>>

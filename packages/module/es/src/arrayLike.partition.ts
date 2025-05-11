@@ -5,7 +5,7 @@ import type { MaybeAsyncIterable } from '@monochromatic-dev/module-es/ts';
 import type { Promisable } from 'type-fest';
 
 /**
- @deprecated Naming change. Use partitionArrayLikeAsync instead.
+ @deprecated Naming change. Use partitionArrayLikeAsync instead. No need to write tests for it.
  */
 /* @__NO_SIDE_EFFECTS__ */ export async function partitionArrAsync<T_i,>(
   predicate: (i: T_i) => Promise<boolean> | boolean,
@@ -31,9 +31,20 @@ import type { Promisable } from 'type-fest';
 ): Promise<[T_i[], T_i[]]> {
   const yes: T_i[] = [];
   const no: T_i[] = [];
+  const arr = await Array.fromAsync(arrayLike);
 
-  for await (const i of arrayLike) {
-    if (await predicate(i)) {
+  const pairPromises: Promise<[T_i, boolean]>[] = arr.map(
+    function toPairPromise(i: T_i): Promise<[T_i, boolean]> {
+      return (async function pairPromise() {
+        return [i, await predicate(i)];
+      })();
+    },
+  );
+
+  const pairs = await Promise.all(pairPromises);
+
+  for (const [i, isYes] of pairs) {
+    if (isYes) {
       yes.push(i);
     } else {
       no.push(i);

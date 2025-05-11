@@ -1,7 +1,7 @@
 // TODO: Seriously test the types for this.
 
 import type { ArrayValues } from 'type-fest';
-import type {
+import {
   entriesArrayLike,
   entriesArrayLikeAsync,
 } from './arrayLike.entries.ts';
@@ -54,8 +54,10 @@ import type { Negative } from './numeric.type.negative.ts';
 // TODO: Now we have our own non-recursive Ints<A, B>, use that.
 
 /* @__NO_SIDE_EFFECTS__ */ export async function atArrayLikeAsync<
-  T_element,
-  const T_arrayLike extends MaybeAsyncIterable<T_element>,
+  const T_arrayLike extends MaybeAsyncIterable<any>,
+  const T_element extends T_arrayLike extends MaybeAsyncIterable<infer T_element>
+    ? T_element
+    : never,
   const T_index extends number,
 >(
   index: T_index,
@@ -63,8 +65,10 @@ import type { Negative } from './numeric.type.negative.ts';
 ): Promise<T_element | undefined>;
 
 /* @__NO_SIDE_EFFECTS__ */ export async function atArrayLikeAsync<
-  T_element,
-  const T_arrayLike extends MaybeAsyncIterable<T_element>,
+  const T_arrayLike extends MaybeAsyncIterable<any>,
+  const T_element extends T_arrayLike extends MaybeAsyncIterable<infer T_element>
+    ? T_element
+    : never,
   const T_index extends number,
 >(
   index: T_index,
@@ -100,18 +104,21 @@ import type { Negative } from './numeric.type.negative.ts';
 );
 
 /* @__NO_SIDE_EFFECTS__ */ export function atArrayLike<
-  T_element,
-  const T_arrayLike extends Iterable<T_element>,
+  // T_element,
+  const T_arrayLike extends Iterable<unknown>,
   const T_index extends number,
+  const T_element extends T_arrayLike extends Iterable<infer T_element> ? T_element
+    : never,
 >(
   index: T_index,
   arrayLike: T_arrayLike,
 ): T_element | undefined;
 
 /* @__NO_SIDE_EFFECTS__ */ export function atArrayLike<
-  T_element,
-  const T_arrayLike extends Iterable<T_element>,
+  const T_arrayLike extends Iterable<unknown>,
   const T_index extends number,
+  const T_element extends T_arrayLike extends Iterable<infer T_element> ? T_element
+    : never,
 >(
   index: T_index,
   arrayLike: T_arrayLike,
@@ -121,7 +128,11 @@ import type { Negative } from './numeric.type.negative.ts';
   }
 
   const arrayLikeArray: T_element[] = [];
-  for (const [currentIndex, arrayLikeElement] of entriesArrayLike(arrayLike)) {
+  for (
+    const [currentIndex, arrayLikeElement] of entriesArrayLike(arrayLike) as Generator<
+      [number, T_element]
+    >
+  ) {
     if (currentIndex === index) {
       return arrayLikeElement;
     }

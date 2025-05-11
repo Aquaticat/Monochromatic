@@ -1,13 +1,20 @@
 // TODO: Finish the implementation and preferably write a Promise. function that handles this specific case.
 
+import type { Promisable } from 'type-fest';
 import {
-  BooleanNot,
   entriesArrayLike,
   entriesArrayLikeAsync,
-  mapArrayLikeAsync,
-  type MaybeAsyncIterable,
-} from '@monochromatic-dev/module-es/ts';
-import type { Promisable } from 'type-fest';
+} from './arrayLike.entries.ts';
+import type {
+  MappingFunction,
+  MappingFunctionNoArrayPromisable,
+  MappingFunctionPromisable,
+} from './arrayLike.map.ts';
+import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
+import { throws } from './error.throws.ts';
+import { logtapeGetLogger } from './logtape.shared.ts';
+
+const l = logtapeGetLogger(['m', 'arrayLike.every']);
 
 /**
  @remarks
@@ -24,39 +31,78 @@ import type { Promisable } from 'type-fest';
  See noneArrayLikeAsync for a function
  that is guranteed to call testingFn on everything and throws when encountering an error.
  */
-/* @__NO_SIDE_EFFECTS__ */ export async function everyArrayLikeAsync<T_element,
+/* @__NO_SIDE_EFFECTS__ */ export async function everyArrayLikeAsync<const T_element,
   const T_arrayLike extends MaybeAsyncIterable<T_element>,>(
-  testingFn: (element: T_element, index?: number,
-    arrayLike?: T_arrayLike) => Promisable<boolean>,
+  testingFn: MappingFunctionPromisable<T_element, boolean>,
   arrayLike: T_arrayLike,
 ): Promise<boolean> {
-  // Double negative is not exactly positive here:
-  // Doing it using somePromises could potentially help us
-  // avoid unnecessarily waiting for all promises.
-  // MAYBE: Write a inverted somePromises
+  // We do have to collect the arrayLike first because testingFn could take 3 parameters, the 3rd being the array.
+  const arr: T_element[] = await Array.fromAsync(arrayLike);
 
-  // TODO: Reimplement this in a parallel way - when Async Iterator helpers become available.
-  for await (
-    const [index, element] of entriesArrayLikeAsync(arrayLike as AsyncIterable<T_element>)
-  ) {
-    if (!await testingFn(element, index, arrayLike)) {
-      return false;
-    }
+  /*
+   We invert the approach from noneArrayLikeAsync:
+   - Create promises that reject with a sentinel value when predicates return true
+   - And resolve with a signal value when predicates return false
+   - Using Promise.any to detect first false result
+   - Propagate any actual errors from predicates
+  */
+
+  const promises: Promise<'result is false' | Error>[] = arr.map(
+    function mapper(element, index): Promise<'result is false' | Error> {
+      return (async function inner(): Promise<'result is false' | Error> {
+        // Propagate predicate errors
+        const result: boolean | Error =
+          await (async function throwing(): Promise<boolean | Error> {
+            try {
+              return await testingFn(element, index, arr);
+            } catch (error) {
+              // l.warn`${error}`;
+              return error as Error;
+            }
+          })();
+
+        if (result === true) {
+          throw new Error(`result is true`);
+        } else if (result === false) {
+          return 'result is false'; // Short-circuit when predicate returns false
+        } else {
+          return result;
+        }
+      })();
+    },
+  );
+
+  const promiseAnyResult: 'result is false' | Error | 'every item passes predicate' =
+    await (async function orTrue() {
+      try {
+        return await Promise.any(promises);
+      } catch {
+        return 'every item passes predicate';
+      }
+    })();
+  // l.warn`${promiseAnyResult}`;
+
+  if (promiseAnyResult === 'every item passes predicate') {
+    return true;
   }
-  return true;
 
-  /*   if (arrayLike[Symbol.iterator]) {
+  // If any promise resolved with false, short-circuit with false
+  if (promiseAnyResult === 'result is false') {
+    return false;
+  }
 
-  const result = await  Promise.any(Iterator.from(arrayLike as Iterable<T_element>).map(pipeAsync(testingFn, (testingResult: boolean): true => testingResult ? throws(new RangeError('This element passes testingFn. Throwing to signal to Promise.any to ignore this result.')) : true)));
-} */
+  throw promiseAnyResult;
 }
 
-export function everyArrayLike<T_element, const T_arrayLike extends Iterable<T_element>,>(
-  testingFn: (element: T_element, index?: number, arrayLike?: T_arrayLike) => boolean,
+export function everyArrayLike<const T_element,
+  const T_arrayLike extends Iterable<T_element>,>(
+  testingFn: MappingFunction<T_element, boolean>,
   arrayLike: T_arrayLike,
 ): boolean {
-  for (const [index, element] of entriesArrayLike(arrayLike)) {
-    if (!testingFn(element, index, arrayLike)) {
+  // We do have to collect the arrayLike first because testingFn could take 3 parameters, the 3rd being the array.
+  const arr: T_element[] = [...arrayLike];
+  for (const [index, element] of entriesArrayLike(arr)) {
+    if (!testingFn(element, index, arr)) {
       return false;
     }
   }

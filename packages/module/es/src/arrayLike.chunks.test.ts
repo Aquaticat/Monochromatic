@@ -38,7 +38,7 @@ describe('chunksArray', () => {
   });
 
   test('works when chunk size equals array length', () => {
-    const array = [1, 2, 3];
+    const array = [1, 2, 3] as const;
     const chunker = chunksArray(array, 3);
 
     expect([...chunker]).toEqual([[1, 2, 3]]);
@@ -47,7 +47,7 @@ describe('chunksArray', () => {
   test('throws when array is empty', () => {
     expect(() => {
       // @ts-expect-error: Testing runtime error with empty array
-      chunksArray([], 1);
+      const _chunks = [...chunksArray([], 1)];
     })
       .toThrow(RangeError);
   });
@@ -55,7 +55,7 @@ describe('chunksArray', () => {
   test('throws when chunk size is larger than array', () => {
     expect(() => {
       // @ts-expect-error: Testing runtime error with oversized chunk
-      chunksArray([1, 2, 3], 4);
+      const _chunks = [...chunksArray([1, 2, 3], 4)];
     })
       .toThrow(RangeError);
   });
@@ -96,7 +96,7 @@ describe('chunksArrayLike', () => {
 
   test('throws when iterable is empty', () => {
     expect(() => {
-      chunksArrayLike(new Set(), 1);
+      const _chunks = [...chunksArrayLike(new Set(), 1)];
     })
       .toThrow(RangeError);
   });
@@ -114,7 +114,7 @@ describe('chunksArrayLike', () => {
     };
 
     expect(() => {
-      chunksArrayLike(arrayLike, 3);
+      const _chunks = [...chunksArrayLike(arrayLike, 3)];
     })
       .toThrow(RangeError);
   });
@@ -133,7 +133,7 @@ describe('chunksArrayLikeAsync', () => {
     };
 
     const chunker = chunksArrayLikeAsync(asyncIterable, 2);
-    const result = [];
+    const result: any[] = [];
 
     for await (const chunk of chunker) {
       result.push(chunk);
@@ -155,7 +155,7 @@ describe('chunksArrayLikeAsync', () => {
     };
 
     const chunker = chunksArrayLikeAsync(iterable, 2);
-    const result = [];
+    const result: any[] = [];
 
     for await (const chunk of chunker) {
       result.push(chunk);
@@ -166,15 +166,16 @@ describe('chunksArrayLikeAsync', () => {
 
   test('throws when async iterable is empty', async () => {
     const emptyAsync = {
-      async *[Symbol.asyncIterator]() {},
+      async *[Symbol.asyncIterator]() {
+        // No values to yield
+      },
       length: 0,
     };
 
-    await expect(async () => {
+    expect(async () => {
       const chunker = chunksArrayLikeAsync(emptyAsync, 1);
       await chunker.next();
     })
-      .rejects
       .toThrow(RangeError);
   });
 
@@ -187,11 +188,10 @@ describe('chunksArrayLikeAsync', () => {
       length: 2,
     };
 
-    await expect(async () => {
+    expect(async () => {
       const chunker = chunksArrayLikeAsync(asyncIterable, 3);
       await chunker.next();
     })
-      .rejects
       .toThrow(RangeError);
   });
 
@@ -207,7 +207,7 @@ describe('chunksArrayLikeAsync', () => {
     };
 
     const chunker = chunksArrayLikeAsync(asyncIterable, 2);
-    const result = [];
+    const result: any[] = [];
 
     for await (const chunk of chunker) {
       result.push(chunk);
