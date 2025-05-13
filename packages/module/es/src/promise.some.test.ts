@@ -105,7 +105,8 @@ describe('somePromises', () => {
     expect(result).toBe(false);
   });
 
-  describe('performance tests', { timeout: 15_000 }, () => {
+  // We're doing benchmarks instead of performance tests
+  describe('performance tests', { timeout: 15_000, skip: true }, () => {
     const SMALL_SIZE = 100;
     const MEDIUM_SIZE = 100_000;
     const LARGE_SIZE = 1_000_000;
