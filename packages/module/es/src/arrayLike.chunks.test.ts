@@ -6,7 +6,7 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
+} from 'vitest';
 import {
   chunksArray,
   chunksArrayLike,
@@ -69,8 +69,9 @@ describe('chunksArrayLike', () => {
       2: 'c',
       3: 'd',
       length: 4,
-      [Symbol.iterator]: function*() {
+      [Symbol.iterator]: function*(): Generator<string> {
         for (let i = 0; i < this.length; i++) {
+          // @ts-expect-error: TypeScript limitation.
           yield this[i];
         }
       },
@@ -106,8 +107,9 @@ describe('chunksArrayLike', () => {
       0: 'a',
       1: 'b',
       length: 2,
-      [Symbol.iterator]: function*() {
+      [Symbol.iterator]: function*(): Generator<string> {
         for (let i = 0; i < this.length; i++) {
+          // @ts-expect-error: TypeScript limitation.
           yield this[i];
         }
       },
@@ -164,35 +166,48 @@ describe('chunksArrayLikeAsync', () => {
     expect(result).toEqual([[1, 2], [3, 4], [5]]);
   });
 
-  test('throws when async iterable is empty', async () => {
+  test('throws when async iterable is empty', async ({ expect }) => {
     const emptyAsync = {
-      async *[Symbol.asyncIterator]() {
+      [Symbol.asyncIterator]() {
         // No values to yield
+        return {
+          async next(): Promise<IteratorResult<number>> {
+            return { done: true, value: undefined };
+          },
+        };
       },
       length: 0,
-    };
+    } as const;
 
-    expect(async () => {
-      const chunker = chunksArrayLikeAsync(emptyAsync, 1);
-      await chunker.next();
-    })
-      .toThrow(RangeError);
+    const chunker = chunksArrayLikeAsync(emptyAsync, 1);
+
+    await expect(chunker.next()).rejects.toThrow(RangeError);
   });
 
-  test('throws when chunk size is larger than async iterable length', async () => {
+  test('throws when chunk size is larger than async iterable length', async ({ expect }) => {
     const asyncIterable = {
-      async *[Symbol.asyncIterator]() {
-        yield 1;
-        yield 2;
-      },
+      from: 1,
+      to: 2,
       length: 2,
+
+      [Symbol.asyncIterator]() {
+        return {
+          current: this.from,
+          last: this.to,
+
+          async next(): Promise<IteratorResult<number>> {
+            if (this.current <= this.last) {
+              return { done: false, value: this.current++ };
+            }
+            return { done: true, value: undefined };
+          },
+        };
+      },
     };
 
-    expect(async () => {
-      const chunker = chunksArrayLikeAsync(asyncIterable, 3);
-      await chunker.next();
-    })
-      .toThrow(RangeError);
+    const chunker = chunksArrayLikeAsync(asyncIterable, 3);
+
+    await expect(chunker.next()).rejects.toThrow(RangeError);
   });
 
   test('works with different types of values', async () => {

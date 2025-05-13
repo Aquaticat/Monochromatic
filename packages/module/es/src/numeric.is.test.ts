@@ -2,7 +2,7 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
+} from 'vitest';
 import {
   isBigint,
   isFiniteNumber,
@@ -23,7 +23,7 @@ import {
   isPositiveInt,
   isPositiveNumber,
   isSafeNumber,
-} from './numeric.is';
+} from './numeric.is.ts';
 
 describe('isNumber', () => {
   test('should return true for numbers', () => {

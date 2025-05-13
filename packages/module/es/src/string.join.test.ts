@@ -6,7 +6,7 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
+} from 'vitest';
 import { joinStrings, joinStringsAsync } from './string.join.ts';
 
 await logtapeConfigure(await logtapeConfiguration());

@@ -10,8 +10,6 @@
     "example.tsconfig.json",
     "tsconfig.dom.json",
     "dom.example.tsconfig.json",
-    "tsconfig.worker.json",
-    "worker.example.tsconfig.json",
     "tsconfig.astro.json",
     "astro.example.tsconfig.json",
     "pnp.example.tsconfig.json"
@@ -29,7 +27,6 @@
   "exports": {
     ".": "./tsconfig.json",
     "./dom": "./tsconfig.dom.json",
-    "./worker": "./tsconfig.worker.json",
     "./astro": "./tsconfig.astro.json"
   },
   "peerDependencies": {

@@ -6,7 +6,7 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
+} from 'vitest';
 import { partial } from './function.partial.ts';
 
 await logtapeConfigure(await logtapeConfiguration());

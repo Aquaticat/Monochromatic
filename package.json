@@ -19,19 +19,26 @@
   ],
   "scripts": {
     "data-prepare": "husky || echo 'husky does not exist, skipped'",
-    "preinstall": "npx only-allow pnpm"
+    "preinstall": "npx only-allow pnpm",
+    "test": "vitest"
   },
   "engines": {
     "bun": ">=1.2.9"
   },
   "devDependencies": {
     "@monochromatic-dev/config-dprint": "workspace:*",
+    "@monochromatic-dev/config-vite": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/config-stylelint": "workspace:*",
     "dprint": "catalog:",
     "husky": "catalog:",
     "oxlint": "catalog:",
     "stylelint": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "vue-tsc": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "vite": "catalog:"
   },
   "workspaces": [
     "packages/*/*"

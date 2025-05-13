@@ -77,26 +77,36 @@ export function ensuringFalsyAsync<
   };
 }
 
-export function nonThrowing<const T extends (...args: any[]) => NotPromise,
-  const StandIn extends null | false | true,>(
-  fn: T,
+/*export function nonThrowing<const Args extends any[], const Result extends NotPromise,>(
+  fn: (...args: Args) => Result,
+): (...args: Args) => Result | null;
+
+export function nonThrowing<const Args extends any[], const Result extends NotPromise,
+  const StandIn extends boolean | null,>(
+  fn: (...args: Args) => Result,
   standIn: StandIn,
-): (...args: Parameters<T>) => ReturnType<T> | StandIn {
-  return function nonThrowingFn(...args: Parameters<T>): ReturnType<T> | StandIn {
+): (...args: Args) => Result | StandIn;
+
+export function nonThrowing<const Args extends any[], const Result extends NotPromise,
+  const StandIn extends boolean | null,>(
+  fn: (...args: Args) => Result,
+  standIn?: StandIn,
+): (...args: Args) => Result | StandIn | null {
+  return function nonThrowingFn(...args: Args): Result | StandIn | null {
     try {
       return fn(...args);
     } catch {
-      return standIn;
+      return standIn === undefined ? null : standIn;
     }
   };
 }
 
 export function nonThrowingAsync<
   const T extends (...args: any[]) => Promisable<NotPromise>,
-  const StandIn extends null | false | true,
+  const StandIn extends boolean | null,
 >(
   fn: T,
-  standIn: StandIn,
+  standIn?: StandIn,
 ): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>> | StandIn> {
   return async function nonThrowingFn(
     ...args: Parameters<T>
@@ -107,38 +117,74 @@ export function nonThrowingAsync<
       return standIn;
     }
   };
-}
+}*/
 
 export function nonThrowingWithNull<const T extends (...args: any[]) => NotPromise,>(
   fn: T,
 ): (...args: Parameters<T>) => ReturnType<T> | null {
-  return nonThrowing(fn, null);
+  return function safe(...args: Parameters<T>) {
+    try {
+      return fn(...args);
+    } catch {
+      return null;
+    }
+  };
 }
 export function nonThrowingWithNullAsync<
   const T extends (...args: any[]) => Promisable<NotPromise>,
 >(fn: T): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>> | null> {
-  return nonThrowingAsync(fn, null);
+  return async function safe(...args: Parameters<T>) {
+    try {
+      return await fn(...args);
+    } catch {
+      return null;
+    }
+  };
 }
 export function nonThrowingWithFalse<const T extends (...args: any[]) => NotPromise,>(
   fn: T,
 ): (...args: Parameters<T>) => ReturnType<T> | false {
-  return nonThrowing(fn, false);
+  return function safe(...args: Parameters<T>) {
+    try {
+      return fn(...args);
+    } catch {
+      return false;
+    }
+  };
 }
 
 export function nonThrowingWithFalseAsync<
   const T extends (...args: any[]) => Promisable<NotPromise>,
 >(fn: T): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>> | false> {
-  return nonThrowingAsync(fn, false);
+  return async function safe(...args: Parameters<T>) {
+    try {
+      return await fn(...args);
+    } catch {
+      return false;
+    }
+  };
 }
 
 export function nonThrowingWithTrue<const T extends (...args: any[]) => NotPromise,>(
   fn: T,
 ): (...args: Parameters<T>) => ReturnType<T> | true {
-  return nonThrowing(fn, true);
+  return function safe(...args: Parameters<T>) {
+    try {
+      return fn(...args);
+    } catch {
+      return true;
+    }
+  };
 }
 
 export function nonThrowingWithTrueAsync<
   const T extends (...args: any[]) => Promisable<NotPromise>,
 >(fn: T): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>> | true> {
-  return nonThrowingAsync(fn, true);
+  return async function safe(...args: Parameters<T>) {
+    try {
+      return await fn(...args);
+    } catch {
+      return true;
+    }
+  };
 }

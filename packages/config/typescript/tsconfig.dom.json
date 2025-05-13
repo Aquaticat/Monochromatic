@@ -1,7 +1,6 @@
 {
-  "extends": "@monochromatic-dev/config-typescript",
+  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "lib": ["ESNext", "DOM"],
-    "types": ["bun", "vite/client"]
+    "lib": ["ESNext", "DOM", "WebWorker"]
   }
 }

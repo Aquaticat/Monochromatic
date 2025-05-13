@@ -3,9 +3,13 @@ import type {
   PositiveInfinity,
 } from 'type-fest';
 import type {
+  Float,
+  Int,
   IntBigint,
+  NegativeFloat,
   NegativeInt,
   NonNegativeInt,
+  PositiveFloat,
   PositiveInt,
 } from './numeric.type.int.ts';
 import type { Nan } from './numeric.type.nan';

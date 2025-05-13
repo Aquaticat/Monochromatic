@@ -282,13 +282,13 @@ const handleSettingVarMessage = ({
       ) {
         return;
       }
-    } catch (_e) {
+    } catch {
       // If originalColor cannot be parsed as a color string,
       // we know for sure we need to actually set the variable.
     }
 
     logVariableChange();
-    getVariable().setValueByModeName(color, mode);
+    getVariable(cssVar).setValueByModeName(color, mode);
     return;
   }
 
@@ -299,7 +299,7 @@ const handleSettingVarMessage = ({
         : computedValue;
 
       logVariableChange();
-      getVariable().setValueByModeName(valueToSet, mode);
+      getVariable(cssVar).setValueByModeName(valueToSet, mode);
     }
     return;
   }

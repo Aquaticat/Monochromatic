@@ -6,7 +6,7 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
+} from 'vitest';
 import { constant } from './any.constant.ts';
 import { echo } from './any.echo.ts';
 import { identity } from './any.identity.ts';

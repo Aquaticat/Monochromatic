@@ -1,14 +1,23 @@
 {
-  "include": ["${configDir}/src"],
+  "include": [
+    "${configDir}/src",
+    "${configDir}/*.config.ts",
+    "${configDir}/.astro/types.d.ts",
+  ],
+  "exclude": [
+    "dist",
+    "bak",
+    "node_modules",
+  ],
 
   "compilerOptions": {
-    "rootDir": "${configDir}/src",
-    "outDir": "${configDir}/dist/final",
+    "rootDirs": ["${configDir}/src", "${configDir}"],
+    "outDir": "${configDir}/dist/final/types",
 
     "strict": true,
     "exactOptionalPropertyTypes": true,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noPropertyAccessFromIndexSignature": false,
@@ -29,7 +38,10 @@
 
     "resolveJsonModule": true,
 
-    "types": ["bun"],
+    "types": [
+      "bun",
+      "vite/client",
+    ],
 
     //endregion
 

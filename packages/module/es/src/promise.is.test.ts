@@ -6,7 +6,7 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
+} from 'vitest';
 import { isPromise } from './promise.is.ts';
 
 await logtapeConfigure(await logtapeConfiguration());

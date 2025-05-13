@@ -6,7 +6,7 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
+} from 'vitest';
 import { throws } from './error.throws.ts';
 
 await logtapeConfigure(await logtapeConfiguration());

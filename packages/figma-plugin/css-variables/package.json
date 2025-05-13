@@ -9,7 +9,8 @@
     "bp": "pnpm run build:production",
     "build:production": "bun run build-production.ts",
     "wd": "pnpm run watch:development",
-    "watch:development": "bun run watch-development.ts"
+    "watch:development": "bun run watch-development.ts",
+    "w:t": "tsc --watch"
   },
   "author": {
     "name": "Aquaticat",
@@ -28,6 +29,7 @@
     "@monochromatic-dev/config-vite": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
     "vite": "catalog:",
+    "typescript": "catalog:",
     "lightningcss": "catalog:",
     "postcss-nesting": "catalog:",
     "postcss-calc": "catalog:",

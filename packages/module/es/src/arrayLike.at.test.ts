@@ -6,7 +6,7 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
+} from 'vitest';
 import { atArrayLike, atArrayLikeAsync } from './arrayLike.at.ts';
 
 await logtapeConfigure(await logtapeConfiguration());

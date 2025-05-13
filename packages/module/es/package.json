@@ -4,28 +4,48 @@
   "type": "module",
   "module": "dist/final/index.js",
   "exports": {
-    ".": "./dist/final/index.js",
-    "./ts": "./src/index.ts",
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./ts": {
+      "default": "./src/index.ts"
+    },
+    "./.ts": {
+      "default": "./src/index.ts"
+    },
+    "./.js": {
+      "types": "./dist/final/types/src/index.d.ts",
+      "default": "./dist/final/index.js"
+    },
     "./logtape.ts": {
       "node": "./src/logtape.node.ts",
       "default": "./src/logtape.default.ts"
     }
   },
-  "main": "dist/final/index.js",
-  "typings": "dist/final/index.d.ts",
+  "scripts": {
+    "vite": "vite",
+    "wd": "bun run watch-development.ts",
+    "w:t": "tsc --watch"
+  },
   "files": [
-    "dist/final"
+    "dist/final",
+    "src"
   ],
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
     "type-fest": "catalog:",
-    "@types/bun": "catalog:"
-  },
-  "dependencies": {
+    "@types/bun": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
     "@logtape/logtape": "catalog:",
     "@logtape/file": "catalog:",
     "serialize-error": "catalog:",
-    "lfi": "catalog:"
+    "lfi": "catalog:",
+    "nano-spawn": "catalog:"
+  },
+  "dependencies": {
   },
   "version": "0.0.125",
   "repository": {

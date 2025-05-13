@@ -6,7 +6,7 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
+} from 'vitest';
 import { BooleanNot } from './boolean.not.ts';
 
 await logtapeConfigure(await logtapeConfiguration());

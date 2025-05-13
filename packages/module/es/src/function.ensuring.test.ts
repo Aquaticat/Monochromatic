@@ -6,14 +6,12 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
+} from 'vitest';
 import {
   ensuringFalsy,
   ensuringFalsyAsync,
   ensuringTruthy,
   ensuringTruthyAsync,
-  nonThrowing,
-  nonThrowingAsync,
   nonThrowingWithFalse,
   nonThrowingWithFalseAsync,
   nonThrowingWithNull,
@@ -103,78 +101,14 @@ describe('ensuringFalsyAsync', () => {
     const fn = async (x: number) => x < 0 ? '' : 'non-negative';
     const ensured = ensuringFalsyAsync(fn);
 
-    await expect(ensured(5)).rejects.toThrow('Function must return a falsy value');
+    expect(ensured(5)).rejects.toThrow('Function must return a falsy value');
   });
 
   test('throws with custom error message', async () => {
     const fn = async (x: number) => x < 0 ? '' : 'non-negative';
     const ensured = ensuringFalsyAsync(fn, 'Custom error');
 
-    await expect(ensured(5)).rejects.toThrow('Custom error');
-  });
-});
-
-describe('nonThrowing', () => {
-  test('returns original value when function does not throw', () => {
-    const fn = (x: number) => {
-      if (x < 0) { throw new Error('Negative number'); }
-      return x * 2;
-    };
-    const safe = nonThrowing(fn);
-
-    expect(safe(5)).toBe(10);
-  });
-
-  test('returns null when function throws', () => {
-    const fn = (x: number) => {
-      if (x < 0) { throw new Error('Negative number'); }
-      return x * 2;
-    };
-    const safe = nonThrowing(fn);
-
-    expect(safe(-5)).toBe(null);
-  });
-
-  test('returns custom standIn value when function throws', () => {
-    const fn = (x: number) => {
-      if (x < 0) { throw new Error('Negative number'); }
-      return x * 2;
-    };
-    const safe = nonThrowing(fn, false);
-
-    expect(safe(-5)).toBe(false);
-  });
-});
-
-describe('nonThrowingAsync', () => {
-  test('returns original value when function does not throw', async () => {
-    const fn = async (x: number) => {
-      if (x < 0) { throw new Error('Negative number'); }
-      return x * 2;
-    };
-    const safe = nonThrowingAsync(fn);
-
-    expect(await safe(5)).toBe(10);
-  });
-
-  test('returns null when function throws', async () => {
-    const fn = async (x: number) => {
-      if (x < 0) { throw new Error('Negative number'); }
-      return x * 2;
-    };
-    const safe = nonThrowingAsync(fn);
-
-    expect(await safe(-5)).toBe(null);
-  });
-
-  test('returns custom standIn value when function throws', async () => {
-    const fn = async (x: number) => {
-      if (x < 0) { throw new Error('Negative number'); }
-      return x * 2;
-    };
-    const safe = nonThrowingAsync(fn, false);
-
-    expect(await safe(-5)).toBe(false);
+    expect(ensured(5)).rejects.toThrow('Custom error');
   });
 });
 

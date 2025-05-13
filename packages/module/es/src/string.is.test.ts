@@ -11,7 +11,7 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
+} from 'vitest';
 
 await logtapeConfigure(await logtapeConfiguration());
 

@@ -6,7 +6,7 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
+} from 'vitest';
 import {
   mapArrayLike,
   mapArrayLikeAsync,
@@ -51,7 +51,7 @@ describe('mapArrayLike', () => {
   });
 
   test('handles empty arrays', () => {
-    const result = mapArrayLike((x) => x * 2, []);
+    const result = mapArrayLike((x: never) => x * 2, []);
     expect(result).toEqual([]);
   });
 });
@@ -101,14 +101,14 @@ describe('mapArrayLikeAsync', () => {
   });
 
   test('handles empty arrays', async () => {
-    const result = await mapArrayLikeAsync(async (x) => x * 2, []);
+    const result = await mapArrayLikeAsync(async (x: number) => x * 2, []);
     expect(result).toEqual([]);
   });
 });
 
 describe('mapArrayLikeGen', () => {
   test('yields mapped values one by one', () => {
-    const generator = mapArrayLikeGen((x) => x * 2, [1, 2, 3]);
+    const generator = mapArrayLikeGen((x: number) => x * 2, [1, 2, 3]);
     expect(generator.next().value).toBe(2);
     expect(generator.next().value).toBe(4);
     expect(generator.next().value).toBe(6);
@@ -117,7 +117,7 @@ describe('mapArrayLikeGen', () => {
 
   test('works with other iterables', () => {
     const set = new Set(['a', 'b', 'c']);
-    const generator = mapArrayLikeGen((x) => x.toUpperCase(), set);
+    const generator = mapArrayLikeGen((x: string) => x.toUpperCase(), set);
     expect(generator.next().value).toBe('A');
     expect(generator.next().value).toBe('B');
     expect(generator.next().value).toBe('C');
@@ -133,12 +133,12 @@ describe('mapArrayLikeGen', () => {
   });
 
   test('handles empty arrays', () => {
-    const generator = mapArrayLikeGen((x) => x * 2, []);
+    const generator = mapArrayLikeGen((x: never) => x * 2, []);
     expect(generator.next().done).toBe(true);
   });
 
   test('can be consumed with for...of', () => {
-    const generator = mapArrayLikeGen((x) => x * 2, [1, 2, 3]);
+    const generator = mapArrayLikeGen((x: number) => x * 2, [1, 2, 3]);
     const results: any[] = [];
     for (const value of generator) {
       results.push(value);
@@ -149,7 +149,7 @@ describe('mapArrayLikeGen', () => {
 
 describe('mapArrayLikeAsyncGen', () => {
   test('yields mapped values one by one asynchronously', async () => {
-    const generator = mapArrayLikeAsyncGen((x) => x * 2, [1, 2, 3]);
+    const generator = mapArrayLikeAsyncGen((x: number) => x * 2, [1, 2, 3]);
     expect((await generator.next()).value).toBe(2);
     expect((await generator.next()).value).toBe(4);
     expect((await generator.next()).value).toBe(6);

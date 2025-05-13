@@ -1,0 +1,72 @@
+{
+  "category": [
+    "m",
+    "promise.some"
+  ],
+  "level": "info",
+  "message": [
+    "all shards rejected (all predicates returned false) with error: ",
+    {},
+    ""
+  ],
+  "rawMessage": [
+    "all shards rejected (all predicates returned false) with error: ",
+    ""
+  ],
+  "timestamp": 1747103407569,
+  "properties": {}
+}
+{
+  "category": [
+    "m",
+    "promise.some"
+  ],
+  "level": "info",
+  "message": [
+    "all shards rejected (all predicates returned false) with error: ",
+    {},
+    ""
+  ],
+  "rawMessage": [
+    "all shards rejected (all predicates returned false) with error: ",
+    ""
+  ],
+  "timestamp": 1747103407570,
+  "properties": {}
+}
+{
+  "category": [
+    "m",
+    "promise.some"
+  ],
+  "level": "info",
+  "message": [
+    "all shards rejected (all predicates returned false) with error: ",
+    {},
+    ""
+  ],
+  "rawMessage": [
+    "all shards rejected (all predicates returned false) with error: ",
+    ""
+  ],
+  "timestamp": 1747103407574,
+  "properties": {}
+}
+{
+  "category": [
+    "m",
+    "promise.some"
+  ],
+  "level": "info",
+  "message": [
+    "all shards rejected (all predicates returned false) with error: ",
+    {},
+    ""
+  ],
+  "rawMessage": [
+    "all shards rejected (all predicates returned false) with error: ",
+    ""
+  ],
+  "timestamp": 1747103419921,
+  "properties": {}
+}

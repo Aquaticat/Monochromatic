@@ -6,7 +6,7 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
+} from 'vitest';
 import { capitalize } from './string.capitalize.ts';
 
 await logtapeConfigure(await logtapeConfiguration());

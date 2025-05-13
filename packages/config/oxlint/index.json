@@ -275,7 +275,7 @@
       }
     },
     {
-      "files": ["**/*.test.ts"],
+      "files": ["**/*.{test,bench}.ts"],
       "rules": {
         // Many functions that don't need explicit return types.
         "typescript/explicit-function-return-type": "off",

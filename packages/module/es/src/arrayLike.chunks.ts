@@ -206,7 +206,10 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
       `What's to be chunked: ${JSON.stringify(arrayLike)} cannot be empty`,
     );
   }
-  if (n > (arrayLike as MaybeAsyncIterable<any> & { length: number; }).length) {
+  if (
+    Object.hasOwn(arrayLike, 'length')
+    && n > (arrayLike as MaybeAsyncIterable<any> & { length: number; }).length
+  ) {
     throw new RangeError(
       `Initial chunk index: ${n} is already out of range: ${
         (arrayLike as MaybeAsyncIterable<any> & { length: number; }).length
@@ -220,6 +223,16 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
   const arrayLikeArray:
     readonly (T_arrayLike extends MaybeAsyncIterable<infer T_element> ? T_element
       : never)[] = await Array.fromAsync(arrayLike);
+  if (isEmptyArray(arrayLikeArray)) {
+    throw new RangeError(
+      `What's to be chunked: ${JSON.stringify(arrayLikeArray)} cannot be empty`,
+    );
+  }
+  if (n > arrayLikeArray.length) {
+    throw new RangeError(
+      `Initial chunk index: ${n} is already out of range: ${arrayLikeArray.length}`,
+    );
+  }
 
   l.debug`arrayLikeArray: ${arrayLikeArray}`;
 

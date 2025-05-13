@@ -6,7 +6,7 @@ import {
   describe,
   expect,
   test,
-} from 'bun:test';
+} from 'vitest';
 import {
   everyArrayLike,
   everyArrayLikeAsync,
@@ -239,7 +239,7 @@ describe('everyArrayLikeAsync with mixed predicate behavior', () => {
 
     // Since execution is parallel, either outcome is acceptable
     try {
-      const result = await everyArrayLikeAsync(async (item) => {
+      const result = await everyArrayLikeAsync(async (item: string) => {
         if (item === 'throw') { throw new Error('Async predicate error'); }
         return item !== 'false';
       }, array);

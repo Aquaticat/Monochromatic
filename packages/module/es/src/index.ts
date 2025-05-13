@@ -1,3 +1,5 @@
+// run vite build twice.
+
 /* @__NO_SIDE_EFFECTS__ */ export * from '@monochromatic-dev/module-es/logtape.ts';
 
 export * from './fixture.array.0to999.ts';
