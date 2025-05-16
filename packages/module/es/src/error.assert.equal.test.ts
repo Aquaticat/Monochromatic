@@ -1,13 +1,4 @@
 import {
-  logtapeConfiguration,
-  logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
-import {
-  describe,
-  expect,
-  test,
-} from 'vitest';
-import {
   assert,
   assert0,
   assert0Async,
@@ -30,7 +21,14 @@ import {
   assertTrueAsync,
   assertUndefined,
   assertUndefinedAsync,
-} from './error.assert.equal.ts';
+  logtapeConfiguration,
+  logtapeConfigure,
+} from '@monochromatic-dev/module-es/.js';
+import {
+  describe,
+  expect,
+  test,
+} from 'vitest';
 
 await logtapeConfigure(await logtapeConfiguration());
 

@@ -1,20 +1,18 @@
 import {
-  logtapeConfiguration,
-  logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
-import {
-  describe,
-  expect,
-  test,
-} from 'vitest';
-import {
   concatStrings,
   concatStringsAsync,
   concatStringsAsyncWithNewline,
   concatStringsAsyncWithSpace,
   concatStringsWithNewline,
   concatStringsWithSpace,
-} from './string.concat.ts';
+  logtapeConfiguration,
+  logtapeConfigure,
+} from '@monochromatic-dev/module-es/.js';
+import {
+  describe,
+  expect,
+  test,
+} from 'vitest';
 
 await logtapeConfigure(await logtapeConfiguration());
 

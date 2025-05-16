@@ -1,29 +1,27 @@
 import {
+  arrayIsEmpty,
+  arrayIsNonEmpty,
+  isArray,
+  isAsyncGenerator,
+  isAsyncIterable,
+  isEmptyArray,
+  isGenerator,
+  isIterable,
+  isMap,
+  isMaybeAsyncIterable,
+  isNonEmptyArray,
+  isObject,
+  isSet,
+  isWeakMap,
+  isWeakSet,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  isArray,
-  isIterable,
-  isAsyncIterable,
-  isMaybeAsyncIterable,
-  isMap,
-  isWeakMap,
-  isSet,
-  isWeakSet,
-  isObject,
-  isAsyncGenerator,
-  isGenerator,
-  isEmptyArray,
-  arrayIsEmpty,
-  isNonEmptyArray,
-  arrayIsNonEmpty,
-} from './arrayLike.is.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 
@@ -50,7 +48,10 @@ describe('isIterable', () => {
     expect(isIterable('string')).toBe(true);
     expect(isIterable(new Set())).toBe(true);
     expect(isIterable(new Map())).toBe(true);
-    expect(isIterable(function* () { yield 1; }())).toBe(true);
+    expect(isIterable(function*() {
+      yield 1;
+    }()))
+      .toBe(true);
   });
 
   test('rejects non-iterables', () => {
@@ -59,13 +60,19 @@ describe('isIterable', () => {
     expect(isIterable({})).toBe(false);
     expect(isIterable(123)).toBe(false);
     expect(isIterable(Symbol())).toBe(false);
-    expect(isIterable(async function* () { yield 1; }())).toBe(false);
+    expect(isIterable(async function*() {
+      yield 1;
+    }()))
+      .toBe(false);
   });
 });
 
 describe('isAsyncIterable', () => {
   test('identifies async iterables correctly', () => {
-    expect(isAsyncIterable(async function* () { yield 1; }())).toBe(true);
+    expect(isAsyncIterable(async function*() {
+      yield 1;
+    }()))
+      .toBe(true);
 
     const customAsyncIterable = {
       [Symbol.asyncIterator]: () => ({ next: async () => ({ value: 1, done: false }) }),
@@ -81,7 +88,10 @@ describe('isAsyncIterable', () => {
     expect(isAsyncIterable(null)).toBe(false);
     expect(isAsyncIterable(undefined)).toBe(false);
     expect(isAsyncIterable({})).toBe(false);
-    expect(isAsyncIterable(function* () { yield 1; }())).toBe(false);
+    expect(isAsyncIterable(function*() {
+      yield 1;
+    }()))
+      .toBe(false);
   });
 });
 
@@ -91,8 +101,14 @@ describe('isMaybeAsyncIterable', () => {
     expect(isMaybeAsyncIterable('string')).toBe(true);
     expect(isMaybeAsyncIterable(new Set())).toBe(true);
     expect(isMaybeAsyncIterable(new Map())).toBe(true);
-    expect(isMaybeAsyncIterable(function* () { yield 1; }())).toBe(true);
-    expect(isMaybeAsyncIterable(async function* () { yield 1; }())).toBe(true);
+    expect(isMaybeAsyncIterable(function*() {
+      yield 1;
+    }()))
+      .toBe(true);
+    expect(isMaybeAsyncIterable(async function*() {
+      yield 1;
+    }()))
+      .toBe(true);
 
     const customAsyncIterable = {
       [Symbol.asyncIterator]: () => ({ next: async () => ({ value: 1, done: false }) }),
@@ -197,12 +213,16 @@ describe('isObject', () => {
 
 describe('isAsyncGenerator', () => {
   test('identifies async generators correctly', () => {
-    const asyncGen = async function* () { yield 1; }();
+    const asyncGen = async function*() {
+      yield 1;
+    }();
     expect(isAsyncGenerator(asyncGen)).toBe(true);
   });
 
   test('rejects non-async generators', () => {
-    const gen = function* () { yield 1; }();
+    const gen = function*() {
+      yield 1;
+    }();
     expect(isAsyncGenerator(gen)).toBe(false);
     expect(isAsyncGenerator({})).toBe(false);
     expect(isAsyncGenerator([])).toBe(false);
@@ -213,12 +233,16 @@ describe('isAsyncGenerator', () => {
 
 describe('isGenerator', () => {
   test('identifies generators correctly', () => {
-    const gen = function* () { yield 1; }();
+    const gen = function*() {
+      yield 1;
+    }();
     expect(isGenerator(gen)).toBe(true);
   });
 
   test('rejects non-generators', () => {
-    const asyncGen = async function* () { yield 1; }();
+    const asyncGen = async function*() {
+      yield 1;
+    }();
     expect(isGenerator(asyncGen)).toBe(false);
     expect(isGenerator({})).toBe(false);
     expect(isGenerator([])).toBe(false);

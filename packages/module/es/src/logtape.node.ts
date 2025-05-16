@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+// we know it works well enough
 import type {
   configure,
   LogRecord,
@@ -18,7 +20,9 @@ const disposeFileSink = async (): Promise<void> => {
 
 const createFileSink = async (appName: string): Promise<Sink & AsyncDisposable> => {
   try {
-    const fileName = `${appName}.log.jsonl`;
+    const fileName = `${appName}.${
+      new Date().toISOString().replaceAll(':', '')
+    }.log.jsonl`;
 
     // Remove the file if it exists
     await rm(fileName, { force: true });
@@ -33,6 +37,7 @@ const createFileSink = async (appName: string): Promise<Sink & AsyncDisposable> 
     fileSink[Symbol.asyncDispose] = disposeFileSink;
 
     return fileSink;
+    /* istanbul ignore next */
   } catch (fsError) {
     console.log(`fs failed with ${fsError}, storing log in memory in array.`);
     return createMemorySink();

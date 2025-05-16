@@ -7,21 +7,25 @@
   ],
   "dependencies": {
     "vite-plugin-singlefile": "catalog:",
-    "postcss-mixins": "catalog:",
-    "@csstools/custom-units": "catalog:",
-    "postcss-custom-media": "catalog:",
-    "postcss-custom-selectors": "catalog:"
+    "lightningcss": "catalog:",
+    "esbuild": "catalog:"
   },
   "peerDependencies": {
     "vite": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "lightningcss": "catalog:"
   },
   "devDependencies": {
     "vite": "catalog:",
     "@monochromatic-dev/config-typescript": "*",
     "vitest": "catalog:",
     "@types/bun": "catalog:",
-    "@types/postcss-mixins": "catalog:"
+    "@types/postcss-mixins": "catalog:",
+    "nano-spawn": "catalog:",
+    "postcss-mixins": "catalog:",
+    "@csstools/custom-units": "catalog:",
+    "postcss-custom-media": "catalog:",
+    "postcss-custom-selectors": "catalog:"
   },
   "type": "module",
   "files": [
@@ -34,7 +38,12 @@
     "url": "https://aquati.cat"
   },
   "scripts": {
-    "w:t": "tsc --watch"
+    "w:types": "tsc --watch",
+    "b:types": "tsc",
+    "w:js": "vite build --watch",
+    "b:js": "vite build",
+    "b": "pnpm run --stream '/^b:\\w+$/'",
+    "w": "pnpm run --stream '/^w:\\w+$/'"
   },
   "license": "Apache-2.0",
   "repository": {

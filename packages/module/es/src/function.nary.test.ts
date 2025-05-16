@@ -1,17 +1,15 @@
 import {
+  binary,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+  ternary,
+  unary,
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  binary,
-  ternary,
-  unary,
-} from './function.nary.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

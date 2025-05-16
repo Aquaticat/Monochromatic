@@ -6,9 +6,7 @@ import type { NotPromise } from './promise.type.ts';
 
 // We need not be so pedantic as to postfix every assert with Equal when equal is implied.
 
-/* @__NO_SIDE_EFFECTS__ */ export async function assertAsync(expected: any,
-  actual: any): Promise<void>
-{
+export async function assertAsync(expected: any, actual: any): Promise<void> {
   await equalsAsyncOrThrow(expected)(actual);
 }
 
@@ -72,13 +70,12 @@ import type { NotPromise } from './promise.type.ts';
   await assertAsync(-1, actual);
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function assert(expected: NotPromise,
-  actual: NotPromise): void
-{
+// Side effect: throws.
+export function assert(expected: NotPromise, actual: NotPromise): void {
   equalsOrThrow(expected)(actual);
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function assertTrue(actual: NotPromise): void {
+export function assertTrue(actual: NotPromise): void {
   assert(true, actual);
 }
 
@@ -118,4 +115,4 @@ import type { NotPromise } from './promise.type.ts';
   assert(-1, actual);
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export * from './error.assert.equal.type.ts';
+export * from './error.assert.equal.type.ts';

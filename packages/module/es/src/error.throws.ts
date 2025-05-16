@@ -1,6 +1,7 @@
 // See https://github.com/tc39/proposal-throw-expressions
 // eslint-disable prefer-type-error
 import { getLogger } from '@logtape/logtape';
+import { match } from 'ts-pattern';
 
 const l = getLogger(['m', 'error.throws']);
 
@@ -20,53 +21,35 @@ const l = getLogger(['m', 'error.throws']);
   }
 
   if (!error.name) {
-    if (!error.cause) {
-      throw new Error(error.message);
-    }
-    throw new Error(error.message, { cause: error.cause });
+    throw new Error(error.message, error.cause ? { cause: error.cause } : undefined);
   }
 
-  // TODO: Write my own switch expression
-  switch (error.name) {
-    case 'Error':
-      if (!error.cause) {
-        throw new Error(error.message);
-      }
-      throw new Error(error.message, { cause: error.cause });
-
-    case 'RangeError':
-      if (!error.cause) {
-        throw new RangeError(error.message);
-      }
-      throw new RangeError(error.message, { cause: error.cause });
-
-    case 'ReferenceError':
-      if (!error.cause) {
-        throw new ReferenceError(error.message);
-      }
-      throw new ReferenceError(error.message, { cause: error.cause });
-
-    case 'TypeError':
-      if (!error.cause) {
-        throw new TypeError(error.message);
-      }
-      throw new TypeError(error.message, { cause: error.cause });
-
-    case 'URIError':
-      if (!error.cause) {
-        throw new URIError(error.message);
-      }
-      throw new URIError(error.message, { cause: error.cause });
-
-    default:
+  return match(error.name)
+    .with('Error', function handler() {
+      throw new Error(error.message, error.cause ? { cause: error.cause } : undefined);
+    })
+    .with('RangeError', function handler() {
+      throw new RangeError(error.message,
+        error.cause ? { cause: error.cause } : undefined);
+    })
+    .with('ReferenceError', function handler() {
+      throw new ReferenceError(error.message,
+        error.cause ? { cause: error.cause } : undefined);
+    })
+    .with('TypeError', function handler() {
+      throw new TypeError(error.message,
+        error.cause ? { cause: error.cause } : undefined);
+    })
+    .with('URIError', function handler() {
+      throw new URIError(error.message, error.cause ? { cause: error.cause } : undefined);
+    })
+    .otherwise(function handler() {
       l.warn`error.name ${error.name} not one of:
       throwableErrors = ['Error', 'RangeError', 'ReferenceError', 'TypeError', 'URIError']
       This function doesn't handle custom error types.
       Pass in a custom error to throw it.`;
 
-      if (!error.cause) {
-        throw new Error(`${error.name}: ${error.message}`);
-      }
-      throw new Error(`${error.name}: ${error.message}`, { cause: error.cause });
-  }
+      throw new Error(`${error.name}: ${error.message}`,
+        error.cause ? { cause: error.cause } : undefined);
+    });
 }

@@ -6,11 +6,14 @@
   "module": "dist/final/backend/index.iife.js",
   "type": "module",
   "scripts": {
-    "bp": "pnpm run build:production",
-    "build:production": "bun run build-production.ts",
-    "wd": "pnpm run watch:development",
-    "watch:development": "bun run watch-development.ts",
-    "w:t": "tsc --watch"
+    "w:types": "tsc --watch",
+    "b:types": "tsc",
+    "b:iframeFrontend": "vite build --mode production --config vite.config.iframe.ts",
+    "b:backend": "vite build --mode production --config vite.config.backend.ts",
+    "w:iframeFrontend": "vite build --mode production --watch --config vite.config.iframe.ts",
+    "w:backend": "vite build --mode production --watch --config vite.config.backend.ts",
+    "b": "pnpm run --stream '/^b:\\w+$/'",
+    "w": "pnpm run --stream '/^w:\\w+$/'"
   },
   "author": {
     "name": "Aquaticat",

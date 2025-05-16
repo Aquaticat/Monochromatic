@@ -1,16 +1,14 @@
 import {
+  arrayOf,
+  genOf,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  arrayOf,
-  genOf,
-} from './arrayLike.of.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

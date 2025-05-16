@@ -27,6 +27,8 @@
 
     "noUncheckedSideEffectImports": true,
 
+    "preserveWatchOutput": true,
+
     //region Modules
 
     "allowImportingTsExtensions": true,

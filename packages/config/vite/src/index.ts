@@ -1,7 +1,10 @@
 import postcssCustomUnits from '@csstools/custom-units';
+import * as esbuild from 'esbuild';
+import spawn, { type Options } from 'nano-spawn';
 import {
   chmodSync,
   constants,
+  readdirSync,
   readFileSync,
 } from 'node:fs';
 import {
@@ -26,15 +29,34 @@ import {
 
 const firefoxVersion = 128 << 16;
 
+const spawnOptions: Options = {
+  preferLocal: true,
+  stdio: 'inherit',
+};
+
 const rollupExternal = (moduleId: string): boolean => {
   if (
-    ['node:', 'node_modules/'].some(function startingWithPrefix(prefix) {
-      return moduleId.startsWith(prefix);
-    })
+    [
+      'node:',
+      'node_modules/',
+      'oxc-',
+    ]
+      .some(function startingWithPrefix(prefix) {
+        return moduleId.startsWith(prefix);
+      })
   ) {
     return true;
   }
-  return ['vite', 'vitest', 'path', 'fs', 'util', 'os'].includes(moduleId);
+  return [
+    'vite',
+    'vitest',
+    'path',
+    'fs',
+    'util',
+    'os',
+    'esbuild',
+  ]
+    .includes(moduleId);
 };
 
 const createBaseConfig = (configDir: string): UserConfig => ({
@@ -63,7 +85,10 @@ const createBaseConfig = (configDir: string): UserConfig => ({
     preprocessorMaxWorkers: true,
     devSourcemap: true,
   },
-  esbuild: {},
+  esbuild: {
+    // Minifying them make resulting code harder to debug.
+    minifyIdentifiers: false,
+  },
   build: {
     target: 'firefox128',
     cssMinify: 'lightningcss',
@@ -72,10 +97,14 @@ const createBaseConfig = (configDir: string): UserConfig => ({
     rollupOptions: {
       external: rollupExternal,
     },
+    reportCompressedSize: false,
   },
   worker: {
     format: 'es',
   },
+
+  // Causes problems when running many scripts together in watch mode.
+  clearScreen: false,
 });
 
 const createBaseLibConfig = (configDir: string): UserConfig =>
@@ -89,7 +118,39 @@ const createBaseLibConfig = (configDir: string): UserConfig =>
           fileName: 'index',
           formats: ['es'],
         },
+        // So istanbul can know which lines are covered.
+        sourcemap: 'inline',
       },
+
+      plugins: [
+        (function oxcMinifyLibPlugin(): PluginOption {
+          return {
+            name: 'vite-plugin-oxc-minify-lib',
+            enforce: 'post',
+
+            // renderChunk doesn't work for whatever reason.
+            async writeBundle() {
+              const outdir = join(configDir, 'dist', 'final');
+              const entryPointNames = readdirSync(outdir).filter(function isJsFile(file) {
+                return file.endsWith('.js');
+              });
+              const entryPoints: string[] = entryPointNames.map(
+                function fullPath(entryPointName: string): string {
+                  return join(outdir, entryPointName);
+                },
+              );
+              await esbuild.build({
+                entryPoints,
+                // So istanbul can know which lines are covered.
+                sourcemap: 'linked',
+                minifyWhitespace: true,
+                outdir,
+                allowOverwrite: true,
+              });
+            },
+          };
+        })(),
+      ],
     },
   );
 
@@ -115,8 +176,8 @@ const createModeConfig = (
   defineConfig(function enhanceBaseConfig({ mode }) {
     const modes: string[] = mode.split(',');
 
-    const maybeWithNoMinify: UserConfig = modes.every(function notProduction(m) {
-        return m !== 'production';
+    const maybeWithNoMinify: UserConfig = modes.some(function isDev(m) {
+        return m === 'development';
       })
       ? withNoMinify(sharedFactory(configDir))
       : sharedFactory(configDir);
@@ -228,7 +289,27 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
 
 export const getFigmaIframe = (configDir: string): UserConfigFnObject =>
   createModeConfig(configDir, function createFigmaIframeConfig(configDir) {
-    return createFrontendLikeConfig(configDir, 'iframe');
+    return mergeConfig(createFrontendLikeConfig(configDir, 'iframe'), {
+      plugins: [
+        (function buildFrontendPlugin(): PluginOption {
+          return {
+            name: 'vite-plugin-build-figma-frontend',
+            enforce: 'post',
+            writeBundle(): void {
+              spawn(`pnpm`, [
+                'exec',
+                'vite',
+                'build',
+                '--config',
+                'vite.config.frontend.ts',
+                '--mode',
+                'production',
+              ], spawnOptions);
+            },
+          };
+        })(),
+      ],
+    });
   });
 
 export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
@@ -259,8 +340,10 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
     testTimeout: 2000,
     silent: 'passed-only',
     coverage: {
+      provider: 'v8',
       enabled: true,
       excludeAfterRemap: true,
+      reportOnFailure: true,
       skipFull: true,
 
       // We don't really need to see the coverage report every time we run any test.
@@ -271,16 +354,36 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
         // Error: Failed to update coverage thresholds. Configuration file is too complex.
         autoUpdate: false,
       },
-      extension: ['.ts' // Commented out until I see the value of testing non typescript files.
+
+      // Only this works for coverage to follow sourcemap.
+      extension: [
+        '.js',
+        '.ts',
+        // Commented out until I see the value of testing non typescript files.
         // '.vue',
         // '.astro'
       ],
-      include: ['packages/*/*/**/src/**'],
+      include: [
+        'packages/*/*/**/dist/final/**',
+        'packages/*/*/**/src/**',
+      ],
+
       exclude: [
-        '**/{node_modules,dist,bak}/**',
+        '**/{node_modules,bak}/**',
         '**/.{idea,git,cache,output,temp}/**',
+
+        // TypeScript definition files can't be tested.
+        '**/*.d.ts',
+
+        // Not meant to be directly exported or tested.
+        '**/*.shared.ts',
+        '**/*.fixture.*.ts',
+
         // temporarily deprecated. Might be resurrected later.
         '**/theme/subtle/**',
+
+        // deprecated
+        'packages/module/es/src/testing.ts',
       ],
     },
     logHeapUsage: true,

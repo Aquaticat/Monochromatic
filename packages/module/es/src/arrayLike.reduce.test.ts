@@ -1,18 +1,16 @@
 import {
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+  reduceArrayLike,
+  reduceArrayLikeAsync,
+  reduceArrayLikeAsyncGen,
+  reduceArrayLikeGen,
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  reduceArrayLike,
-  reduceArrayLikeAsync,
-  reduceArrayLikeAsyncGen,
-  reduceArrayLikeGen,
-} from './arrayLike.reduce.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

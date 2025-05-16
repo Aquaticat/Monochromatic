@@ -1,18 +1,16 @@
 import {
+  filterArrayLike,
+  filterArrayLikeAsync,
+  filterFailArrayLike,
+  filterFailArrayLikeAsync,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  filterArrayLike,
-  filterArrayLikeAsync,
-  filterFailArrayLike,
-  filterFailArrayLikeAsync,
-} from './arrayLike.filter.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 
@@ -71,13 +69,13 @@ describe('filterArrayLikeAsync', () => {
   test('works with async iterable', async () => {
     const isEven = (x: number) => x % 2 === 0;
     const asyncIterable = {
-      [Symbol.asyncIterator]: async function* () {
+      [Symbol.asyncIterator]: async function*() {
         yield 1;
         yield 2;
         yield 3;
         yield 4;
         yield 5;
-      }
+      },
     };
     const result = await filterArrayLikeAsync(isEven, asyncIterable);
     expect(result).toEqual([2, 4]);
@@ -132,13 +130,13 @@ describe('filterFailArrayLikeAsync', () => {
   test('works with async iterable', async () => {
     const isEven = (x: number) => x % 2 === 0;
     const asyncIterable = {
-      [Symbol.asyncIterator]: async function* () {
+      [Symbol.asyncIterator]: async function*() {
         yield 1;
         yield 2;
         yield 3;
         yield 4;
         yield 5;
-      }
+      },
     };
     const result = await filterFailArrayLikeAsync(isEven, asyncIterable);
     expect(result).toEqual([1, 3, 5]);

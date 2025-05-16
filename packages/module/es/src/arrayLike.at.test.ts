@@ -1,13 +1,14 @@
 import {
+  atArrayLike,
+  atArrayLikeAsync,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import { atArrayLike, atArrayLikeAsync } from './arrayLike.at.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 
@@ -71,7 +72,7 @@ describe('atArrayLike', () => {
         yield 'a';
         yield 'b';
         yield 'c';
-      }
+      },
     };
 
     expect(atArrayLike(0, customIterable)).toBe('a');
@@ -114,7 +115,7 @@ describe('atArrayLikeAsync', () => {
         yield 'a';
         yield 'b';
         yield 'c';
-      }
+      },
     };
 
     expect(await atArrayLikeAsync(0, asyncIterable)).toBe('a');
@@ -142,7 +143,7 @@ describe('atArrayLikeAsync', () => {
         yield 'c';
         iterationCount++;
         yield 'd';
-      }
+      },
     };
 
     // Should return early after finding index 1

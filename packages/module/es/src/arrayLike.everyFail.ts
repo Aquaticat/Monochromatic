@@ -1,9 +1,9 @@
+import type { Promisable } from 'type-fest';
 import {
   entriesArrayLike,
   entriesArrayLikeAsync,
-  type MaybeAsyncIterable,
-} from '@monochromatic-dev/module-es/ts';
-import type { Promisable } from 'type-fest';
+} from './arrayLike.entries.ts';
+import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
 
 /* @__NO_SIDE_EFFECTS__ */ export async function everyFailArrayLikeAsync<T_element,
   const T_arrayLike extends MaybeAsyncIterable<T_element>,>(

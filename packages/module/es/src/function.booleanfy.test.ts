@@ -1,16 +1,14 @@
 import {
+  booleanfy,
+  booleanfyAsync,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  booleanfy,
-  booleanfyAsync,
-} from './function.booleanfy.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

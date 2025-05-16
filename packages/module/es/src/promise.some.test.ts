@@ -1,7 +1,8 @@
 import {
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+  somePromises,
+} from '@monochromatic-dev/module-es/.js';
 import {
   afterAll,
   beforeAll,
@@ -9,7 +10,6 @@ import {
   expect,
   test,
 } from 'vitest';
-import { somePromises } from './promise.some.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

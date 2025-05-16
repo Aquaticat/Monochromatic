@@ -1,17 +1,15 @@
 import {
+  chunksArray,
+  chunksArrayLike,
+  chunksArrayLikeAsync,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  chunksArray,
-  chunksArrayLike,
-  chunksArrayLikeAsync,
-} from './arrayLike.chunks.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

@@ -1,13 +1,13 @@
 import {
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+  partial,
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import { partial } from './function.partial.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

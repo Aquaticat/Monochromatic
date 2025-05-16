@@ -1,9 +1,4 @@
 import {
-  describe,
-  expect,
-  test,
-} from 'vitest';
-import {
   assertThrow,
   assertThrowAsync,
   assertThrowError,
@@ -16,7 +11,12 @@ import {
   assertThrowTypeErrorAsync,
   assertThrowURIError,
   assertThrowURIErrorAsync,
-} from './error.assert.throw.ts';
+} from '@monochromatic-dev/module-es/.js';
+import {
+  describe,
+  expect,
+  test,
+} from 'vitest';
 
 describe('assertThrow', () => {
   test('passes when function throws expected error type', () => {

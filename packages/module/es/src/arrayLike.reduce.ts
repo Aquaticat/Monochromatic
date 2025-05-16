@@ -1,8 +1,6 @@
-import {
-  isEmptyArray,
-  type MaybeAsyncIterable,
-} from '@monochromatic-dev/module-es/ts';
 import type { Promisable } from 'type-fest';
+import { isEmptyArray } from './arrayLike.is.ts';
+import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
 import type { PromisableFunction } from './promise.type.ts';
 
 export type ReducingFunctionWithAccumulatorAndCurrentValue<T_accumulated, T_element,> = (

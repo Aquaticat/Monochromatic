@@ -1,13 +1,13 @@
 import {
+  BooleanNot,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import { BooleanNot } from './boolean.not.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

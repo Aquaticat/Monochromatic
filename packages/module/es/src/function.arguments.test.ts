@@ -1,16 +1,14 @@
 import {
+  gatherArguments,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+  spreadArguments,
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  gatherArguments,
-  spreadArguments,
-} from './function.arguments.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

@@ -1,22 +1,20 @@
 import {
+  ensuringFalsy,
+  ensuringFalsyAsync,
+  ensuringTruthy,
+  ensuringTruthyAsync,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+  nonThrowingWithFalse,
+  nonThrowingWithFalseAsync,
+  nonThrowingWithNull,
+  nonThrowingWithNullAsync,
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  ensuringFalsy,
-  ensuringFalsyAsync,
-  ensuringTruthy,
-  ensuringTruthyAsync,
-  nonThrowingWithFalse,
-  nonThrowingWithFalseAsync,
-  nonThrowingWithNull,
-  nonThrowingWithNullAsync,
-} from './function.ensuring.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

@@ -1,16 +1,14 @@
 import {
+  isAsyncFunction,
+  isSyncFunction,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  isAsyncFunction,
-  isSyncFunction,
-} from './function.is.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

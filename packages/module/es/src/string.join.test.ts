@@ -1,13 +1,14 @@
 import {
+  joinStrings,
+  joinStringsAsync,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import { joinStrings, joinStringsAsync } from './string.join.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 
@@ -48,7 +49,7 @@ describe('joinStringsAsync', () => {
         yield 'a';
         yield 'b';
         yield 'c';
-      }
+      },
     };
     expect(await joinStringsAsync(':', asyncIterable)).toBe('a:b:c');
   });
@@ -61,7 +62,7 @@ describe('joinStringsAsync', () => {
     const emptyAsyncIterable = {
       async *[Symbol.asyncIterator]() {
         // Yields nothing
-      }
+      },
     };
     expect(await joinStringsAsync(',', emptyAsyncIterable)).toBe('');
   });
@@ -70,7 +71,7 @@ describe('joinStringsAsync', () => {
     const singleAsyncIterable = {
       async *[Symbol.asyncIterator]() {
         yield 'single';
-      }
+      },
     };
     expect(await joinStringsAsync('-', singleAsyncIterable)).toBe('single');
   });

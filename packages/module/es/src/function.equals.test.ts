@@ -1,22 +1,18 @@
 import {
+  equal,
+  equalAsync,
+  equals,
+  equalsAsync,
+  equalsAsyncOrThrow,
+  equalsOrThrow,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  equal,
-  equalAsync,
-} from './boolean.equal.ts';
-import {
-  equals,
-  equalsAsync,
-  equalsAsyncOrThrow,
-  equalsOrThrow,
-} from './function.equals.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

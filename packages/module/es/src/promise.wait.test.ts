@@ -1,13 +1,13 @@
 import {
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+  wait,
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import { wait } from './promise.wait.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

@@ -1,20 +1,18 @@
 import {
-  logtapeConfiguration,
-  logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
-import {
-  describe,
-  expect,
-  test,
-} from 'vitest';
-import {
   addBigints,
   addBigintsAsync,
   addNumbers,
   addNumbersAsync,
   addNumerics,
   addNumericsAsync,
-} from './numeric.add.ts';
+  logtapeConfiguration,
+  logtapeConfigure,
+} from '@monochromatic-dev/module-es/.js';
+import {
+  describe,
+  expect,
+  test,
+} from 'vitest';
 
 await logtapeConfigure(await logtapeConfiguration());
 

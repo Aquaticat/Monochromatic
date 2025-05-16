@@ -1,17 +1,17 @@
 import {
+  constant,
+  echo,
+  identity,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+  toExport,
+  typeOf,
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import { constant } from './any.constant.ts';
-import { echo } from './any.echo.ts';
-import { identity } from './any.identity.ts';
-import { toExport } from './any.toExport.ts';
-import { typeOf } from './any.typeOf.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 
@@ -272,7 +272,6 @@ describe('toExport', () => {
   test('converts sets', () => {
     const set = new Set([1, 2, 3]);
     const result = toExport(set);
-    // Fix the expected value - the current implementation seems to treat Set entries incorrectly
     expect(result).toContain('Object.freeze(new Set([');
   });
 
@@ -289,5 +288,13 @@ describe('toExport', () => {
     expect(result).toContain('"test"');
     expect(result).toContain('Object.freeze([');
     expect(result).toContain('new Date(');
+  });
+
+  test('throws on inconvertible structures.', ({ expect }) => {
+    const weakSet = new WeakSet();
+    expect(() => {
+      toExport(weakSet);
+    })
+      .toThrowError();
   });
 });

@@ -1,9 +1,9 @@
+import { awaits } from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import { awaits } from './promise.awaits.ts';
 
 describe('awaits', () => {
   test('correctly awaits a promise', async () => {

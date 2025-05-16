@@ -23,9 +23,14 @@
     }
   },
   "scripts": {
-    "vite": "vite",
-    "wd": "bun run watch-development.ts",
-    "w:t": "tsc --watch"
+    "w:types": "tsc --watch",
+    "b:types": "tsc",
+    "b:js_node": "vite build --mode production,node",
+    "w:js_node": "vite build --mode production,node --watch",
+    "b:js_browser": "vite build --mode production,browser",
+    "w:js_browser": "vite build --mode production,browser --watch",
+    "b": "pnpm run --stream '/^b:\\w+$/'",
+    "w": "pnpm run --stream '/^w:\\w+$/'"
   },
   "files": [
     "dist/final",
@@ -33,6 +38,7 @@
   ],
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-es": "workspace:*",
     "type-fest": "catalog:",
     "@types/bun": "catalog:",
     "vite": "catalog:",
@@ -43,7 +49,9 @@
     "@logtape/file": "catalog:",
     "serialize-error": "catalog:",
     "lfi": "catalog:",
-    "nano-spawn": "catalog:"
+    "nano-spawn": "catalog:",
+    "@total-typescript/ts-reset": "catalog:",
+    "ts-pattern": "catalog:"
   },
   "dependencies": {
   },

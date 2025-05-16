@@ -1,13 +1,13 @@
 import {
+  isPromise,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import { isPromise } from './promise.is.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

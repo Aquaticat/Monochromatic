@@ -1,17 +1,14 @@
 import {
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+  partitionArrayLike,
+  partitionArrayLikeAsync,
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  partitionArrAsync,
-  partitionArrayLike,
-  partitionArrayLikeAsync,
-} from './arrayLike.partition.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

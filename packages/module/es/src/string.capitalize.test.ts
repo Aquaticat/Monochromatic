@@ -1,13 +1,13 @@
 import {
+  capitalize,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import { capitalize } from './string.capitalize.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

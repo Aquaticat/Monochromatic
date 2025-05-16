@@ -67,10 +67,10 @@ catalog:
   lfi: '*'
   lightningcss: '*'
   postcss: '*'
-  '@logtape/logtape': '>=0.9.1'
-  '@logtape/file': '>=0.9.1'
+  '@logtape/logtape': 'jsr:>=0.9.2'
+  '@logtape/file': 'jsr:>=0.9.2'
   type-fest: '*'
-  execa: '*'
+  execa: '>=9.5.3'
   nano-spawn: '*'
   astro: '*'
   '@astrojs/mdx': '*'
@@ -102,7 +102,11 @@ catalog:
   # Type checker used by Vitest that supports Vue
   'vue-tsc': '>=2.2.10'
   '@vitest/coverage-v8': '*'
+  '@vitest/coverage-istanbul': '*'
+  '@total-typescript/ts-reset': '*'
   '@types/postcss-mixins': '*'
+  'ts-pattern': '*'
+  'oxc-minify': '*'
 childConcurrency: 16
 dedupeDirectDeps: true
 disallowWorkspaceCycles: true

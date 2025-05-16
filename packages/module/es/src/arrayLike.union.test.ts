@@ -1,9 +1,9 @@
+import { union } from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   it,
 } from 'vitest';
-import { union } from './arrayLike.union.ts';
 
 describe('union', () => {
   it('returns an empty Set when no arguments are provided', () => {

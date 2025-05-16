@@ -1,16 +1,14 @@
 import {
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+  trimEndWith,
+  trimStartWith,
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  trimEndWith,
-  trimStartWith,
-} from './string.trim.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

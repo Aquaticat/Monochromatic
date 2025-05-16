@@ -1,9 +1,4 @@
 import {
-  describe,
-  expect,
-  test,
-} from 'vitest';
-import {
   isBigint,
   isFiniteNumber,
   isFloat,
@@ -15,6 +10,7 @@ import {
   isNegativeInfinity,
   isNegativeInt,
   isNonNanNumber,
+  isNonNegativeInt,
   isNumber,
   isNumeric,
   isObjectDate,
@@ -23,7 +19,12 @@ import {
   isPositiveInt,
   isPositiveNumber,
   isSafeNumber,
-} from './numeric.is.ts';
+} from '@monochromatic-dev/module-es/.js';
+import {
+  describe,
+  expect,
+  test,
+} from 'vitest';
 
 describe('isNumber', () => {
   test('should return true for numbers', () => {
@@ -105,6 +106,23 @@ describe('isPositiveInt', () => {
     expect(isPositiveInt(3.14)).toBe(false);
     expect(isPositiveInt(Number.NaN)).toBe(false);
     expect(isPositiveInt(Infinity)).toBe(false);
+  });
+});
+
+describe('isNonNegativeInt', () => {
+  test('should return true for positive integers', () => {
+    expect(isNonNegativeInt(1)).toBe(true);
+    expect(isNonNegativeInt(42)).toBe(true);
+    expect(isNonNegativeInt(Number.MAX_SAFE_INTEGER)).toBe(true);
+    expect(isNonNegativeInt(0)).toBe(true);
+  });
+
+  test('should return false for negative integers and non-integers', () => {
+    expect(isNonNegativeInt(-1)).toBe(false);
+    expect(isNonNegativeInt(-42)).toBe(false);
+    expect(isNonNegativeInt(3.14)).toBe(false);
+    expect(isNonNegativeInt(Number.NaN)).toBe(false);
+    expect(isNonNegativeInt(Infinity)).toBe(false);
   });
 });
 

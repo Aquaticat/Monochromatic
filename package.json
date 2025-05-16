@@ -20,11 +20,17 @@
   "scripts": {
     "data-prepare": "husky || echo 'husky does not exist, skipped'",
     "preinstall": "npx only-allow pnpm",
-    "test": "vitest"
+    "w:test": "vitest",
+    "b:test": "vitest --run",
+    "w:bench-slow": "vitest bench",
+    "b:bench-slow": "vitest bench --run",
+    "wr": "pnpm run -r --parallel --stream '/^w:\\w+$/'",
+    "br": "pnpm run -r --stream '/^b:\\w+$/'"
   },
   "engines": {
     "bun": ">=1.2.9"
   },
+  "type": "module",
   "devDependencies": {
     "@monochromatic-dev/config-dprint": "workspace:*",
     "@monochromatic-dev/config-vite": "workspace:*",
@@ -38,7 +44,11 @@
     "vitest": "catalog:",
     "vue-tsc": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "vite": "catalog:"
+    "@vitest/coverage-istanbul": "catalog:",
+    "vite": "catalog:",
+    "@types/bun": "catalog:",
+    "nano-spawn": "catalog:",
+    "execa": "catalog:"
   },
   "workspaces": [
     "packages/*/*"

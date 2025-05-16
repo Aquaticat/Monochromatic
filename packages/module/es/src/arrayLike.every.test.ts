@@ -1,17 +1,15 @@
 import {
+  equal,
+  everyArrayLike,
+  everyArrayLikeAsync,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  everyArrayLike,
-  everyArrayLikeAsync,
-} from './arrayLike.every.ts';
-import { equal } from './boolean.equal.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 

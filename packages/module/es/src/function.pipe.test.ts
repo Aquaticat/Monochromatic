@@ -1,18 +1,16 @@
 import {
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+  pipe,
+  pipeAsync,
+  piped,
+  pipedAsync,
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import {
-  pipe,
-  pipeAsync,
-  piped,
-  pipedAsync,
-} from './function.pipe.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 
