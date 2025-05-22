@@ -15,7 +15,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('identity', () => {
+describe(identity, () => {
   test('returns primitive values unchanged', () => {
     expect(identity(5)).toBe(5);
     expect(identity('test')).toBe('test');
@@ -35,7 +35,7 @@ describe('identity', () => {
   });
 });
 
-describe('constant', () => {
+describe(constant, () => {
   test('returns a function that returns the original value', () => {
     const fn = constant(5) as () => number;
     expect(typeof fn).toBe('function');
@@ -65,7 +65,7 @@ describe('constant', () => {
   });
 });
 
-describe('echo', () => {
+describe(echo, () => {
   test('yields the same value repeatedly', () => {
     const generator = echo(5);
 
@@ -111,7 +111,7 @@ describe('echo', () => {
   });
 });
 
-describe('typeOf', () => {
+describe(typeOf, () => {
   test('identifies null', () => {
     expect(typeOf(null)).toBe('null');
   });
@@ -187,7 +187,7 @@ describe('typeOf', () => {
   });
 });
 
-describe('toExport', () => {
+describe(toExport, () => {
   test('throws for null', () => {
     expect(() => toExport(null)).toThrow(TypeError);
   });

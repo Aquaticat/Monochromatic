@@ -26,6 +26,9 @@ import type { Nan } from './numeric.type.nan';
   return Number.isNaN(value);
 }
 
+/**
+ * @deprecated Use `isInt` instead.
+ */
 export function isInteger(
   value: unknown,
 ): value is Int {

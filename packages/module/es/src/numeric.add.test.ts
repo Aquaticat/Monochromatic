@@ -16,7 +16,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('addNumbers', () => {
+describe(addNumbers, () => {
   test('adds an array of numbers', () => {
     expect(addNumbers([1, 2, 3, 4])).toBe(10);
     expect(addNumbers([0, -5, 10])).toBe(5);

@@ -13,12 +13,12 @@ await logtapeConfigure(await logtapeConfiguration());
 
 describe('wait', () => {
   test('resolves after the specified time', async () => {
-    const startTime = Date.now();
+    const startTime = performance.now();
     const waitTime = 100;
 
     await wait(waitTime);
 
-    const elapsedTime = Date.now() - startTime;
+    const elapsedTime = performance.now() - startTime;
     expect(elapsedTime).toBeGreaterThanOrEqual(waitTime);
   });
 
@@ -31,18 +31,18 @@ describe('wait', () => {
     const timings = [50, 100];
 
     for (const timing of timings) {
-      const startTime = Date.now();
-      // eslint-disable-next-line no-await-in-loop
+      const startTime = performance.now();
+      // oxlint-disable-next-line no-await-in-loop
       await wait(timing);
-      const elapsedTime = Date.now() - startTime;
+      const elapsedTime = performance.now() - startTime;
       expect(elapsedTime).toBeGreaterThanOrEqual(timing);
     }
   });
 
   test('handles zero delay', async () => {
-    const startTime = Date.now();
+    const startTime = performance.now();
     await wait(0);
-    const elapsedTime = Date.now() - startTime;
+    const elapsedTime = performance.now() - startTime;
     expect(elapsedTime).toBeGreaterThanOrEqual(0);
   });
 });

@@ -1,5 +1,5 @@
 {
   "extends": [
-    "packages/config/oxlint/index.json"
+    "packages/config/oxlint/index.jsonc"
   ]
 }

@@ -48,7 +48,10 @@
     "vite": "catalog:",
     "@types/bun": "catalog:",
     "nano-spawn": "catalog:",
-    "execa": "catalog:"
+    "execa": "catalog:",
+    "eslint-p": "catalog:",
+    "eslint": "catalog:",
+    "@monochromatic-dev/config-eslint": "workspace:*"
   },
   "workspaces": [
     "packages/*/*"

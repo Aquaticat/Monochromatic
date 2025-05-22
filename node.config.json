@@ -1,0 +1,25 @@
+{
+  "$schema": "https://nodejs.org/dist/v24.0.2/docs/node-config-schema.json",
+  "nodeOptions": {
+    "addons": true,
+    "allow-addons": true,
+    "allow-child-process": true,
+    "allow-fs-read": "*",
+    "allow-fs-write": "*",
+    "allow-wasi": true,
+    "allow-worker": true,
+    "disable-proto": "throw",
+    "disable-warning": ["ExperimentalWarning"],
+    "enable-source-maps": true,
+    "extra-info-on-fatal-exception": true,
+    "force-context-aware": true,
+    "force-node-api-uncaught-exceptions-policy": true,
+    "frozen-intrinsics": true,
+    "pending-deprecation": true,
+    "permission": true,
+    "tls-min-v1.3": true,
+    "trace-deprecation": true,
+    "use-largepages": "on",
+    "watch-preserve-output": true
+  }
+}

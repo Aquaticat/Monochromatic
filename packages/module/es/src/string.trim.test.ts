@@ -12,7 +12,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('trimStartWith', () => {
+describe(trimStartWith, () => {
   test('removes trimmer from start of string', () => {
     expect(trimStartWith('prefixString', 'prefix')).toBe('String');
   });
@@ -43,7 +43,7 @@ describe('trimStartWith', () => {
   });
 });
 
-describe('trimEndWith', () => {
+describe(trimEndWith, () => {
   test('removes trimmer from end of string', () => {
     expect(trimEndWith('StringSuffix', 'Suffix')).toBe('String');
   });

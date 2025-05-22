@@ -11,11 +11,11 @@
   "devDependencies": {
     "oxlint": "catalog:"
   },
-  "main": "index.json",
-  "module": "index.json",
+  "main": "index.jsonc",
+  "module": "index.jsonc",
   "type": "module",
   "files": [
-    "index.json",
+    "index.jsonc",
     ".eslintignore"
   ],
   "author": {
@@ -30,7 +30,8 @@
     "directory": "packages/config/oxlint"
   },
   "exports": {
-    ".": "./index.json"
+    ".": "./index.jsonc",
+    "./index.jsonc": "./index.jsonc"
   },
   "preferUnplugged": true
 }

@@ -19,7 +19,7 @@ describe('somePromises', () => {
       (val) => val > 5,
       [1, 3, 7, 2],
     );
-    expect(result).toBe(true);
+    expect(result).toBeTruthy();
   });
 
   test('returns false when no values pass the predicate', async () => {
@@ -35,7 +35,7 @@ describe('somePromises', () => {
       (val) => val > 5,
       [Promise.resolve(1), Promise.resolve(7), Promise.resolve(3)],
     );
-    expect(result).toBe(true);
+    expect(result).toBeTruthy();
   });
 
   test('works with async predicates', { timeout: 15_000 }, async ({ expect }) => {
@@ -69,7 +69,7 @@ describe('somePromises', () => {
       (val) => val > 5,
       generator(),
     );
-    expect(result).toBe(true);
+    expect(result).toBeTruthy();
   });
 
   test('continues after predicate throws an error', async () => {
@@ -80,7 +80,7 @@ describe('somePromises', () => {
       },
       [1, 3, 7, 2],
     );
-    expect(result).toBe(true);
+    expect(result).toBeTruthy();
   });
 
   test('handles sharding for large arrays', async () => {
@@ -91,7 +91,7 @@ describe('somePromises', () => {
       largeArray,
       100,
     );
-    expect(result).toBe(true);
+    expect(result).toBeTruthy();
   });
 
   test('returns false if all shards reject', async () => {
@@ -111,11 +111,11 @@ describe('somePromises', () => {
     const MEDIUM_SIZE = 100_000;
     const LARGE_SIZE = 1_000_000;
 
-    // eslint-disable-next-line init-declarations
+    // oxlint-disable-next-line init-declarations
     let smallArray: number[];
-    // eslint-disable-next-line init-declarations
+    // oxlint-disable-next-line init-declarations
     let mediumArray: number[];
-    // eslint-disable-next-line init-declarations
+    // oxlint-disable-next-line init-declarations
     let largeArray: number[];
 
     beforeAll(() => {
@@ -218,7 +218,7 @@ describe('somePromises', () => {
       const endTime = performance.now();
       const elapsedMs = endTime - startTime;
 
-      expect(result).toBe(true);
+      expect(result).toBeTruthy();
       // This should be roughly the time for the first 51 items with 100ms delay each
       // but with parallelization it should be much faster than 5100ms
       expect(elapsedMs).toBeLessThan(300);

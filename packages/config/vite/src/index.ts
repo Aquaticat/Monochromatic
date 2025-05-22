@@ -1,5 +1,5 @@
 import postcssCustomUnits from '@csstools/custom-units';
-import * as esbuild from 'esbuild';
+import { build as esbuildBuild } from 'esbuild';
 import spawn, { type Options } from 'nano-spawn';
 import {
   chmodSync,
@@ -11,6 +11,7 @@ import {
   join,
   resolve,
 } from 'node:path';
+import type { AcceptedPlugin as PostcssPlugin } from 'postcss';
 import postcssCustomMedia from 'postcss-custom-media';
 import postcssCustomSelectors from 'postcss-custom-selectors';
 import postcssMixins from 'postcss-mixins';
@@ -21,6 +22,7 @@ import {
   type UserConfig,
   type UserConfigFnObject,
 } from 'vite';
+import { json5Plugin } from 'vite-plugin-json5';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import {
   defineConfig as defineVitestConfig,
@@ -55,12 +57,18 @@ const rollupExternal = (moduleId: string): boolean => {
     'util',
     'os',
     'esbuild',
+
+    // Too big.
+    'typescript-eslint',
   ]
     .includes(moduleId);
 };
 
 const createBaseConfig = (configDir: string): UserConfig => ({
-  plugins: [],
+  plugins: [
+    // Allow importing JSON5 files directly.
+    json5Plugin(),
+  ],
   resolve: {
     alias: {
       '@': resolve(configDir),
@@ -71,7 +79,7 @@ const createBaseConfig = (configDir: string): UserConfig => ({
     postcss: {
       plugins: [
         postcssMixins(),
-        postcssCustomUnits(),
+        (postcssCustomUnits as () => PostcssPlugin)(),
         postcssCustomMedia(),
         postcssCustomSelectors(),
       ],
@@ -92,7 +100,7 @@ const createBaseConfig = (configDir: string): UserConfig => ({
   build: {
     target: 'firefox128',
     cssMinify: 'lightningcss',
-    outDir: 'dist/final',
+    outDir: join('dist', 'final', 'js'),
     emptyOutDir: true,
     rollupOptions: {
       external: rollupExternal,
@@ -130,7 +138,7 @@ const createBaseLibConfig = (configDir: string): UserConfig =>
 
             // renderChunk doesn't work for whatever reason.
             async writeBundle() {
-              const outdir = join(configDir, 'dist', 'final');
+              const outdir = join(configDir, 'dist', 'final', 'js');
               const entryPointNames = readdirSync(outdir).filter(function isJsFile(file) {
                 return file.endsWith('.js');
               });
@@ -139,7 +147,7 @@ const createBaseLibConfig = (configDir: string): UserConfig =>
                   return join(outdir, entryPointName);
                 },
               );
-              await esbuild.build({
+              await esbuildBuild({
                 entryPoints,
                 // So istanbul can know which lines are covered.
                 sourcemap: 'linked',
@@ -295,8 +303,8 @@ export const getFigmaIframe = (configDir: string): UserConfigFnObject =>
           return {
             name: 'vite-plugin-build-figma-frontend',
             enforce: 'post',
-            writeBundle(): void {
-              spawn(`pnpm`, [
+            async writeBundle(): Promise<void> {
+              await spawn(`pnpm`, [
                 'exec',
                 'vite',
                 'build',
@@ -314,7 +322,7 @@ export const getFigmaIframe = (configDir: string): UserConfigFnObject =>
 
 export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
   test: {
-    workspace: ['packages/*/*'],
+    projects: ['packages/*/*'],
     include: ['packages/*/*/**/src/**/*.test.ts'],
     exclude: ['**/{node_modules,dist,bak}/**', '**/.{idea,git,cache,output,temp}/**'],
     name: 'workspace',
@@ -345,6 +353,8 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
       excludeAfterRemap: true,
       reportOnFailure: true,
       skipFull: true,
+
+      experimentalAstAwareRemapping: true,
 
       // We don't really need to see the coverage report every time we run any test.
       all: false,

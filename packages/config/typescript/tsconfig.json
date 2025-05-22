@@ -35,7 +35,7 @@
 
     /* To work around the fact that some dependent packages export type declaration files with relative path but without extensions.
     For example, execa */
-    "module": "ESNext",
+    "module": "preserve",
     "moduleResolution": "bundler",
 
     "resolveJsonModule": true,

@@ -7,8 +7,10 @@ import type {
 } from '@logtape/logtape';
 import {
   appendFile,
+  mkdir,
   rm,
 } from 'node:fs/promises';
+import { join } from 'node:path';
 import {
   createBaseConfig,
   createMemorySink,
@@ -20,6 +22,7 @@ const disposeFileSink = async (): Promise<void> => {
 
 const createFileSink = async (appName: string): Promise<Sink & AsyncDisposable> => {
   try {
+    await mkdir('logs');
     const fileName = `${appName}.${
       new Date().toISOString().replaceAll(':', '')
     }.log.jsonl`;

@@ -2,6 +2,7 @@ import { union } from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
+  expectTypeOf,
   it,
 } from 'vitest';
 
@@ -41,9 +42,9 @@ describe('union', () => {
     const mixedResult = union([1, 2], ['a', 'b']);
 
     // Type assertions - these won't run at runtime but verify types compile
-    const _numCheck: Set<number> = numResult;
-    const _strCheck: Set<string> = strResult;
-    const _mixedCheck: Set<string | number> = mixedResult;
+    expectTypeOf(numResult).toEqualTypeOf<Set<1 | 2 | 3 | 4 | 5 | 6>>();
+    expectTypeOf(strResult).toEqualTypeOf<Set<'a' | 'b' | 'c' | 'd'>>();
+    expectTypeOf(mixedResult).toEqualTypeOf<Set<1 | 2 | 'a' | 'b'>>();
 
     // Runtime checks
     expect([...numResult]).toEqual([1, 2, 3, 4, 5, 6]);

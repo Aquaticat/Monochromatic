@@ -86,11 +86,11 @@ export type truthy = Exclude<
 
 export function notTruthyOrThrow<const T,>(
   potentiallyTruthy: T,
-): T extends falsy ? T : never {
+): Exclude<T, falsy> {
   if (potentiallyTruthy) {
     throw new TypeError(`${potentiallyTruthy} is truthy`);
   }
-  return potentiallyTruthy as T extends falsy ? T : never;
+  return potentiallyTruthy as Exclude<T, falsy>;
 }
 
 export function notEmptyOrThrow<T extends string | any[] | object,>(

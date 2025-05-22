@@ -4,7 +4,6 @@ import {
   isFloat,
   isInfinity,
   isInt,
-  isInteger,
   isNan,
   isNegativeFloat,
   isNegativeInfinity,
@@ -26,7 +25,7 @@ import {
   test,
 } from 'vitest';
 
-describe('isNumber', () => {
+describe(isNumber, () => {
   test('should return true for numbers', () => {
     expect(isNumber(0)).toBe(true);
     expect(isNumber(42)).toBe(true);
@@ -48,7 +47,7 @@ describe('isNumber', () => {
   });
 });
 
-describe('isNan', () => {
+describe(isNan, () => {
   test('should return true for NaN', () => {
     expect(isNan(Number.NaN)).toBe(true);
     expect(isNan(Number.NaN)).toBe(true);
@@ -64,13 +63,13 @@ describe('isNan', () => {
   });
 });
 
-describe('isInteger and isInt', () => {
+describe(isInt, () => {
   test('should return true for integers', () => {
-    expect(isInteger(0)).toBe(true);
-    expect(isInteger(42)).toBe(true);
-    expect(isInteger(-1)).toBe(true);
-    expect(isInteger(Number.MAX_SAFE_INTEGER)).toBe(true);
-    expect(isInteger(Number.MIN_SAFE_INTEGER)).toBe(true);
+    expect(isInt(0)).toBe(true);
+    expect(isInt(42)).toBe(true);
+    expect(isInt(-1)).toBe(true);
+    expect(isInt(Number.MAX_SAFE_INTEGER)).toBe(true);
+    expect(isInt(Number.MIN_SAFE_INTEGER)).toBe(true);
 
     // isInt should behave identically
     expect(isInt(0)).toBe(true);
@@ -79,11 +78,11 @@ describe('isInteger and isInt', () => {
   });
 
   test('should return false for non-integers', () => {
-    expect(isInteger(3.14)).toBe(false);
-    expect(isInteger(Number.NaN)).toBe(false);
-    expect(isInteger(Infinity)).toBe(false);
-    expect(isInteger(-Infinity)).toBe(false);
-    expect(isInteger('42')).toBe(false);
+    expect(isInt(3.14)).toBe(false);
+    expect(isInt(Number.NaN)).toBe(false);
+    expect(isInt(Infinity)).toBe(false);
+    expect(isInt(-Infinity)).toBe(false);
+    expect(isInt('42')).toBe(false);
 
     // isInt should behave identically
     expect(isInt(3.14)).toBe(false);
@@ -92,7 +91,7 @@ describe('isInteger and isInt', () => {
   });
 });
 
-describe('isPositiveInt', () => {
+describe(isPositiveInt, () => {
   test('should return true for positive integers', () => {
     expect(isPositiveInt(1)).toBe(true);
     expect(isPositiveInt(42)).toBe(true);
@@ -109,7 +108,7 @@ describe('isPositiveInt', () => {
   });
 });
 
-describe('isNonNegativeInt', () => {
+describe(isNonNegativeInt, () => {
   test('should return true for positive integers', () => {
     expect(isNonNegativeInt(1)).toBe(true);
     expect(isNonNegativeInt(42)).toBe(true);
@@ -126,7 +125,7 @@ describe('isNonNegativeInt', () => {
   });
 });
 
-describe('isNegativeInt', () => {
+describe(isNegativeInt, () => {
   test('should return true for negative integers', () => {
     expect(isNegativeInt(-1)).toBe(true);
     expect(isNegativeInt(-42)).toBe(true);
@@ -143,7 +142,7 @@ describe('isNegativeInt', () => {
   });
 });
 
-describe('isFloat', () => {
+describe(isFloat, () => {
   test('should return true for floating point numbers', () => {
     expect(isFloat(3.14)).toBe(true);
     expect(isFloat(-2.5)).toBe(true);
@@ -162,7 +161,7 @@ describe('isFloat', () => {
   });
 });
 
-describe('isPositiveFloat', () => {
+describe(isPositiveFloat, () => {
   test('should return true for positive floating point numbers', () => {
     expect(isPositiveFloat(3.14)).toBe(true);
     expect(isPositiveFloat(0.1)).toBe(true);
@@ -178,7 +177,7 @@ describe('isPositiveFloat', () => {
   });
 });
 
-describe('isNegativeFloat', () => {
+describe(isNegativeFloat, () => {
   test('should return true for negative floating point numbers', () => {
     expect(isNegativeFloat(-3.14)).toBe(true);
     expect(isNegativeFloat(-0.1)).toBe(true);
@@ -194,7 +193,7 @@ describe('isNegativeFloat', () => {
   });
 });
 
-describe('isNonNanNumber', () => {
+describe(isNonNanNumber, () => {
   test('should return true for numbers that are not NaN', () => {
     expect(isNonNanNumber(0)).toBe(true);
     expect(isNonNanNumber(42)).toBe(true);
@@ -212,7 +211,7 @@ describe('isNonNanNumber', () => {
   });
 });
 
-describe('isPositiveInfinity', () => {
+describe(isPositiveInfinity, () => {
   test('should return true for positive infinity', () => {
     expect(isPositiveInfinity(Infinity)).toBe(true);
     expect(isPositiveInfinity(Number.POSITIVE_INFINITY)).toBe(true);
@@ -226,7 +225,7 @@ describe('isPositiveInfinity', () => {
   });
 });
 
-describe('isNegativeInfinity', () => {
+describe(isNegativeInfinity, () => {
   test('should return true for negative infinity', () => {
     expect(isNegativeInfinity(-Infinity)).toBe(true);
     expect(isNegativeInfinity(Number.NEGATIVE_INFINITY)).toBe(true);
@@ -240,7 +239,7 @@ describe('isNegativeInfinity', () => {
   });
 });
 
-describe('isInfinity', () => {
+describe(isInfinity, () => {
   test('should return true for positive and negative infinity', () => {
     expect(isInfinity(Infinity)).toBe(true);
     expect(isInfinity(-Infinity)).toBe(true); // Will fail due to isNegativeInfinity bug
@@ -255,7 +254,7 @@ describe('isInfinity', () => {
   });
 });
 
-describe('isFiniteNumber', () => {
+describe(isFiniteNumber, () => {
   test('should return true for finite numbers', () => {
     expect(isFiniteNumber(0)).toBe(true);
     expect(isFiniteNumber(42)).toBe(true);
@@ -270,7 +269,7 @@ describe('isFiniteNumber', () => {
   });
 });
 
-describe('isSafeNumber', () => {
+describe(isSafeNumber, () => {
   test('should return true for numbers within safe integer range', () => {
     expect(isSafeNumber(0)).toBe(true);
     expect(isSafeNumber(42)).toBe(true);
@@ -288,7 +287,7 @@ describe('isSafeNumber', () => {
   });
 });
 
-describe('isPositiveNumber', () => {
+describe(isPositiveNumber, () => {
   test('should return true for positive numbers', () => {
     expect(isPositiveNumber(1)).toBe(true);
     expect(isPositiveNumber(42)).toBe(true);
@@ -305,7 +304,7 @@ describe('isPositiveNumber', () => {
   });
 });
 
-describe('isObjectDate', () => {
+describe(isObjectDate, () => {
   test('should return true for Date objects', () => {
     expect(isObjectDate(new Date())).toBe(true);
     expect(isObjectDate(new Date('2023-01-01'))).toBe(true);
@@ -320,7 +319,7 @@ describe('isObjectDate', () => {
   });
 });
 
-describe('isBigint', () => {
+describe(isBigint, () => {
   test('returns true for bigint values', () => {
     expect(isBigint(0n)).toBe(true);
     expect(isBigint(1n)).toBe(true);
@@ -348,7 +347,7 @@ describe('isBigint', () => {
   });
 });
 
-describe('isNumeric', () => {
+describe(isNumeric, () => {
   test('returns true for number values', () => {
     expect(isNumeric(0)).toBe(true);
     expect(isNumeric(1)).toBe(true);

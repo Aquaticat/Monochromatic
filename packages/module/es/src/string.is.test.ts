@@ -6,7 +6,6 @@ import {
   logtapeConfiguration,
   logtapeConfigure,
 } from '@monochromatic-dev/module-es/.js';
-
 import {
   describe,
   expect,
@@ -15,277 +14,83 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('isPositiveIntString', () => {
-  describe('digits', () => {
-    test('empty', () => {
-      expect(
-        isPositiveIntString(''),
-      )
-        .toBe(false);
-    });
-    test('0', () => {
-      expect(
-        isPositiveIntString('0'),
-      )
-        .toBe(true);
-    });
-    test('1', () => {
-      expect(
-        isPositiveIntString('1'),
-      )
-        .toBe(true);
-    });
-    test('-0', () => {
-      expect(
-        isPositiveIntString('-0'),
-      )
-        .toBe(false);
-    });
-    test('-1', () => {
-      expect(
-        isPositiveIntString('-1'),
-      )
-        .toBe(false);
-    });
+describe(isPositiveIntString, () => {
+  test('valid cases', () => {
+    expect(isPositiveIntString('0')).toBe(true);
+    expect(isPositiveIntString('1')).toBe(true);
+    expect(isPositiveIntString('10')).toBe(true);
+    expect(isPositiveIntString('11')).toBe(true);
   });
-  describe('two digits', () => {
-    test('01', () => {
-      expect(
-        isPositiveIntString('01'),
-      )
-        .toBe(false);
-    });
-    test('10', () => {
-      expect(
-        isPositiveIntString('10'),
-      )
-        .toBe(true);
-    });
-    test('11', () => {
-      expect(
-        isPositiveIntString('11'),
-      )
-        .toBe(true);
-    });
-    test('-01', () => {
-      expect(
-        isPositiveIntString('-01'),
-      )
-        .toBe(false);
-    });
-    test('-10', () => {
-      expect(
-        isPositiveIntString('-10'),
-      )
-        .toBe(false);
-    });
-    test('-11', () => {
-      expect(
-        isPositiveIntString('-11'),
-      )
-        .toBe(false);
-    });
+
+  test('invalid cases', () => {
+    expect(isPositiveIntString('')).toBe(false);
+    expect(isPositiveIntString('-0')).toBe(false);
+    expect(isPositiveIntString('-1')).toBe(false);
+    expect(isPositiveIntString('01')).toBe(false);
+    expect(isPositiveIntString('-10')).toBe(false);
+    expect(isPositiveIntString('-11')).toBe(false);
   });
 });
 
-describe('isNegativeIntString', () => {
-  describe('digits', () => {
-    test('empty', () => {
-      expect(
-        isNegativeIntString(''),
-      )
-        .toBe(false);
-    });
-    test('0', () => {
-      expect(
-        isNegativeIntString('0'),
-      )
-        .toBe(false);
-    });
-    test('1', () => {
-      expect(
-        isNegativeIntString('1'),
-      )
-        .toBe(false);
-    });
-    test('-0', () => {
-      expect(
-        isNegativeIntString('-0'),
-      )
-        .toBe(true);
-    });
-    test('-1', () => {
-      expect(
-        isNegativeIntString('-1'),
-      )
-        .toBe(true);
-    });
+describe(isNegativeIntString, () => {
+  test('valid cases', () => {
+    expect(isNegativeIntString('-0')).toBe(true);
+    expect(isNegativeIntString('-1')).toBe(true);
+    expect(isNegativeIntString('-10')).toBe(true);
+    expect(isNegativeIntString('-11')).toBe(true);
   });
-  describe('two digits', () => {
-    test('01', () => {
-      expect(
-        isNegativeIntString('01'),
-      )
-        .toBe(false);
-    });
-    test('10', () => {
-      expect(
-        isNegativeIntString('10'),
-      )
-        .toBe(false);
-    });
-    test('11', () => {
-      expect(
-        isNegativeIntString('11'),
-      )
-        .toBe(false);
-    });
-    test('-01', () => {
-      expect(
-        isNegativeIntString('-01'),
-      )
-        .toBe(false);
-    });
-    test('-10', () => {
-      expect(
-        isNegativeIntString('-10'),
-      )
-        .toBe(true);
-    });
-    test('-11', () => {
-      expect(
-        isNegativeIntString('-11'),
-      )
-        .toBe(true);
-    });
+
+  test('invalid cases', () => {
+    expect(isNegativeIntString('')).toBe(false);
+    expect(isNegativeIntString('0')).toBe(false);
+    expect(isNegativeIntString('1')).toBe(false);
+    expect(isNegativeIntString('01')).toBe(false);
+    expect(isNegativeIntString('10')).toBe(false);
+    expect(isNegativeIntString('-01')).toBe(false);
   });
 });
 
-describe('isPositiveFloatString', () => {
-  describe('digits', () => {
-    test('empty', () => {
-      expect(
-        isPositiveFloatString(''),
-      )
-        .toBe(false);
-    });
-    test('0', () => {
-      expect(
-        isPositiveFloatString('0'),
-      )
-        .toBe(false);
-    });
-    test('1', () => {
-      expect(
-        isPositiveFloatString('1'),
-      )
-        .toBe(false);
-    });
-    test('-0', () => {
-      expect(
-        isPositiveFloatString('-0'),
-      )
-        .toBe(false);
-    });
-    test('-1', () => {
-      expect(
-        isPositiveFloatString('-1'),
-      )
-        .toBe(false);
-    });
+describe(isPositiveFloatString, () => {
+  test('valid cases', () => {
+    expect(isPositiveFloatString('0.1')).toBe(true);
+    expect(isPositiveFloatString('0.10')).toBe(true);
+    expect(isPositiveFloatString('10.10')).toBe(true);
   });
-  describe('with dot', () => {
-    test('0.', () => {
-      expect(
-        isPositiveFloatString('0.'),
-      )
-        .toBe(false);
-    });
-    test('0.0', () => {
-      expect(
-        isPositiveFloatString('0.0'),
-      )
-        .toBe(false);
-    });
-    test('1.1.1', () => {
-      expect(
-        isPositiveFloatString('1.1.1'),
-      )
-        .toBe(false);
-    });
-    test('0.1', () => {
-      expect(
-        isPositiveFloatString('0.1'),
-      )
-        .toBe(true);
-    });
-    test('0.00', () => {
-      expect(
-        isPositiveFloatString('0.00'),
-      )
-        .toBe(false);
-    });
-    test('00.0', () => {
-      expect(
-        isPositiveFloatString('00.0'),
-      )
-        .toBe(false);
-    });
-    test('0.10', () => {
-      expect(
-        isPositiveFloatString('0.10'),
-      )
-        .toBe(true);
-    });
-    test('01.10', () => {
-      expect(
-        isPositiveFloatString('01.10'),
-      )
-        .toBe(false);
-    });
-    test('10.10', () => {
-      expect(
-        isPositiveFloatString('10.10'),
-      )
-        .toBe(true);
-    });
+
+  test('invalid cases', () => {
+    expect(isPositiveFloatString('')).toBe(false);
+    expect(isPositiveFloatString('0')).toBe(false);
+    expect(isPositiveFloatString('1')).toBe(false);
+    expect(isPositiveFloatString('-0')).toBe(false);
+    expect(isPositiveFloatString('-1')).toBe(false);
+    expect(isPositiveFloatString('0.')).toBe(false);
+    expect(isPositiveFloatString('0.0')).toBe(false);
+    expect(isPositiveFloatString('1.1.1')).toBe(false);
+    expect(isPositiveFloatString('0.00')).toBe(false);
+    expect(isPositiveFloatString('00.0')).toBe(false);
+    expect(isPositiveFloatString('01.10')).toBe(false);
   });
-  describe('two digits', () => {
-    test('01', () => {
-      expect(
-        isPositiveFloatString('01'),
-      )
-        .toBe(false);
-    });
-    test('10', () => {
-      expect(
-        isPositiveFloatString('10'),
-      )
-        .toBe(false);
-    });
-    test('11', () => {
-      expect(
-        isPositiveFloatString('11'),
-      )
-        .toBe(false);
-    });
-    test('-01', () => {
-      expect(
-        isPositiveFloatString('-01'),
-      )
-        .toBe(false);
-    });
-    test('-10', () => {
-      expect(
-        isPositiveFloatString('-10'),
-      )
-        .toBe(false);
-    });
-    test('-11', () => {
-      expect(
-        isPositiveFloatString('-11'),
-      )
-        .toBe(false);
-    });
+});
+
+describe(isNegativeFloatString, () => {
+  test('valid cases', () => {
+    expect(isNegativeFloatString('-0.1')).toBe(true);
+    expect(isNegativeFloatString('-0.10')).toBe(true);
+    expect(isNegativeFloatString('-10.10')).toBe(true);
+    expect(isNegativeFloatString('-1.2')).toBe(true);
+  });
+
+  test('invalid cases', () => {
+    expect(isNegativeFloatString('')).toBe(false);
+    expect(isNegativeFloatString('0')).toBe(false);
+    expect(isNegativeFloatString('-0')).toBe(false);
+    expect(isNegativeFloatString('-1')).toBe(false);
+    expect(isNegativeFloatString('0.1')).toBe(false);
+    expect(isNegativeFloatString('-0.')).toBe(false);
+    expect(isNegativeFloatString('-0.0')).toBe(false);
+    expect(isNegativeFloatString('-0.00')).toBe(false);
+    expect(isNegativeFloatString('-00.1')).toBe(false);
+    expect(isNegativeFloatString('-01.10')).toBe(false);
+    expect(isNegativeFloatString('-1.1.1')).toBe(false);
   });
 });
