@@ -1,20 +1,20 @@
 // TODO: Finish the implementation and preferably write a Promise. function that handles this specific case.
 
 import type { Promisable } from 'type-fest';
+import { throws } from './error.throws.ts';
 import {
-  entriesArrayLike,
-  entriesArrayLikeAsync,
-} from './arrayLike.entries.ts';
+  entriesIterable,
+  entriesIterableAsync,
+} from './iterable.entries.ts';
 import type {
   MappingFunction,
   MappingFunctionNoArrayPromisable,
   MappingFunctionPromisable,
-} from './arrayLike.map.ts';
-import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
-import { throws } from './error.throws.ts';
+} from './iterable.map.ts';
+import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 import { logtapeGetLogger } from './logtape.shared.ts';
 
-const l = logtapeGetLogger(['m', 'arrayLike.every']);
+const l = logtapeGetLogger(['m', 'iterable.every']);
 
 /**
  @remarks
@@ -23,29 +23,31 @@ const l = logtapeGetLogger(['m', 'arrayLike.every']);
 
  Because of the failfast behavior,
  it cannot be used to assert the testingFn won't throw errors
- when called on every element of the entire arrayLike.
+ when called on every element of the entire iterable.
  This matches the behavior of the standard Array.prototype.every() .
 
  Because it uses parallel processing,
  we cannot even be sure if it would throw error or return false every time it runs.
- See noneArrayLikeAsync for a function
+ See noneIterableAsync for a function
  that is guranteed to call testingFn on everything and throws when encountering an error.
  */
-/* @__NO_SIDE_EFFECTS__ */ export async function everyArrayLikeAsync<const T_element,
-  const T_arrayLike extends MaybeAsyncIterable<T_element>,>(
+
+/* @__NO_SIDE_EFFECTS__ */
+export async function everyIterableAsync<const T_element,
+  const T_iterable extends MaybeAsyncIterable<T_element>,>(
   testingFn: MappingFunctionPromisable<T_element, boolean>,
-  arrayLike: T_arrayLike,
+  iterable: T_iterable,
 ): Promise<boolean> {
-  // We do have to collect the arrayLike first because testingFn could take 3 parameters, the 3rd being the array.
-  const arr: T_element[] = await Array.fromAsync(arrayLike);
+  // We do have to collect the iterable first because testingFn could take 3 parameters, the 3rd being the array.
+  const arr: T_element[] = await Array.fromAsync(iterable);
 
   /*
-   We invert the approach from noneArrayLikeAsync:
+   We invert the approach from noneIterableAsync:
    - Create promises that reject with a sentinel value when predicates return true
    - And resolve with a signal value when predicates return false
    - Using Promise.any to detect first false result
    - Propagate any actual errors from predicates
-  */
+   */
 
   const promises: Promise<'result is false' | Error>[] = arr.map(
     function mapper(element, index): Promise<'result is false' | Error> {
@@ -94,14 +96,14 @@ const l = logtapeGetLogger(['m', 'arrayLike.every']);
   throw promiseAnyResult;
 }
 
-export function everyArrayLike<const T_element,
-  const T_arrayLike extends Iterable<T_element>,>(
+export function everyIterable<const T_element,
+  const T_iterable extends Iterable<T_element>,>(
   testingFn: MappingFunction<T_element, boolean>,
-  arrayLike: T_arrayLike,
+  iterable: T_iterable,
 ): boolean {
-  // We do have to collect the arrayLike first because testingFn could take 3 parameters, the 3rd being the array.
-  const arr: T_element[] = [...arrayLike];
-  for (const [index, element] of entriesArrayLike(arr)) {
+  // We do have to collect the iterable first because testingFn could take 3 parameters, the 3rd being the array.
+  const arr: T_element[] = [...iterable];
+  for (const [index, element] of entriesIterable(arr)) {
     if (!testingFn(element, index, arr)) {
       return false;
     }

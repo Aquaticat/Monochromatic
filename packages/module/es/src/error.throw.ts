@@ -4,6 +4,7 @@
   UnknownSet,
 } from 'type-fest';
 import type { UnknownArrayOrTuple } from 'type-fest/source/internal';
+import { isEmptyArray } from './arrayLike.is.ts';
 
 export function notNullishOrThrow<T,>(
   potentiallyNullish: T,
@@ -38,7 +39,7 @@ export function notNullishOrThrow<T,>(
   potentiallyFalsy: T,
 ): Exclude<T, falsy> {
   if (!potentiallyFalsy) {
-    throw new TypeError(`${potentiallyFalsy} is null`);
+    throw new TypeError(`${potentiallyFalsy} is falsy`);
   }
   return potentiallyFalsy as Exclude<T, falsy>;
 }
@@ -79,7 +80,7 @@ export type truthy = Exclude<
   | UnknownMap
   | UnknownSet
   | UnknownRecord
-  // eslint-disable-next-line no-unsafe-function-type
+  // oxlint-disable-next-line no-unsafe-function-type
   | Function,
   0 | ''
 >;
@@ -88,24 +89,27 @@ export function notTruthyOrThrow<const T,>(
   potentiallyTruthy: T,
 ): Exclude<T, falsy> {
   if (potentiallyTruthy) {
-    throw new TypeError(`${potentiallyTruthy} is truthy`);
+    throw new TypeError(`${JSON.stringify(potentiallyTruthy)} is truthy`);
   }
   return potentiallyTruthy as Exclude<T, falsy>;
 }
 
-export function notEmptyOrThrow<T extends string | any[] | object,>(
+export function notEmptyOrThrow<const T extends string | any[] | object,
+  const T_returns = T extends string ? Exclude<string, ''>
+    : T extends readonly (infer T_element)[] ? [T_element, ...T_element[]]
+    : T extends Readonly<object> ? Exclude<T, Record<PropertyKey, never>>
+    : never,>(
   potentiallyEmpty: T,
-): T {
+): T_returns {
   if (
     (typeof potentiallyEmpty === 'string' && potentiallyEmpty === '')
     || (Array.isArray(potentiallyEmpty) && potentiallyEmpty.length === 0)
     || (typeof potentiallyEmpty === 'object'
-      && potentiallyEmpty !== null
       && Object.keys(potentiallyEmpty).length === 0)
   ) {
-    throw new TypeError(`${potentiallyEmpty} is empty`);
+    throw new TypeError(`${JSON.stringify(potentiallyEmpty)} is empty`);
   }
-  return potentiallyEmpty;
+  return potentiallyEmpty as unknown as T_returns;
 }
 
 export function notArrayOrThrow<T,>(
@@ -124,4 +128,16 @@ export function notStringOrThrow<T,>(
     throw new TypeError(`${potentiallyString} is a string`);
   }
   return potentiallyString as Exclude<T, string>;
+}
+
+export function notEmptyArrayOrThrow<const T,
+  const Result extends T extends readonly (infer T_element)[]
+    ? [T_element, ...T_element[]]
+    : never,>(
+  potentiallyEmptyArray: T,
+): Result {
+  if (isEmptyArray(potentiallyEmptyArray)) {
+    throw new TypeError(`${String(potentiallyEmptyArray)} is an empty array`);
+  }
+  return potentiallyEmptyArray as unknown as Result;
 }

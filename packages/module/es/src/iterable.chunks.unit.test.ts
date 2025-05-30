@@ -1,7 +1,7 @@
 import {
   chunksArray,
-  chunksArrayLike,
-  chunksArrayLikeAsync,
+  chunksIterable,
+  chunksIterableAsync,
   logtapeConfiguration,
   logtapeConfigure,
 } from '@monochromatic-dev/module-es/.js';
@@ -59,15 +59,15 @@ describe('chunksArray', () => {
   });
 });
 
-describe('chunksArrayLike', () => {
-  test('works with array-like objects', () => {
-    const arrayLike = {
+describe('chunksIterable', () => {
+  test('works with iterable objects', () => {
+    const iterable = {
       0: 'a',
       1: 'b',
       2: 'c',
       3: 'd',
       length: 4,
-      [Symbol.iterator]: function*(): Generator<string> {
+      [Symbol.iterator]: function* (): Generator<string> {
         for (let i = 0; i < this.length; i++) {
           // @ts-expect-error: TypeScript limitation.
           yield this[i];
@@ -75,37 +75,37 @@ describe('chunksArrayLike', () => {
       },
     };
 
-    const chunker = chunksArrayLike(arrayLike, 2);
+    const chunker = chunksIterable(iterable, 2);
     expect([...chunker]).toEqual([['a', 'b'], ['c', 'd']]);
   });
 
   test('works with Set objects', () => {
     const set = new Set([1, 2, 3, 4]);
-    const chunker = chunksArrayLike(set, 2);
+    const chunker = chunksIterable(set, 2);
 
     expect([...chunker]).toEqual([[1, 2], [3, 4]]);
   });
 
   test('works with Map.keys()', () => {
     const map = new Map([['a', 1], ['b', 2], ['c', 3], ['d', 4]]);
-    const chunker = chunksArrayLike(map.keys(), 2);
+    const chunker = chunksIterable(map.keys(), 2);
 
     expect([...chunker]).toEqual([['a', 'b'], ['c', 'd']]);
   });
 
   test('throws when iterable is empty', () => {
     expect(() => {
-      const _chunks = [...chunksArrayLike(new Set(), 1)];
+      const _chunks = [...chunksIterable(new Set(), 1)];
     })
       .toThrow(RangeError);
   });
 
   test('throws when chunk size is larger than iterable length', () => {
-    const arrayLike = {
+    const iterable = {
       0: 'a',
       1: 'b',
       length: 2,
-      [Symbol.iterator]: function*(): Generator<string> {
+      [Symbol.iterator]: function* (): Generator<string> {
         for (let i = 0; i < this.length; i++) {
           // @ts-expect-error: TypeScript limitation.
           yield this[i];
@@ -114,16 +114,16 @@ describe('chunksArrayLike', () => {
     };
 
     expect(() => {
-      const _chunks = [...chunksArrayLike(arrayLike, 3)];
+      const _chunks = [...chunksIterable(iterable, 3)];
     })
       .toThrow(RangeError);
   });
 });
 
-describe('chunksArrayLikeAsync', () => {
+describe('chunksIterableAsync', () => {
   test('works with async iterables', async () => {
     const asyncIterable = {
-      async *[Symbol.asyncIterator]() {
+      async* [Symbol.asyncIterator]() {
         yield 1;
         yield 2;
         yield 3;
@@ -132,7 +132,7 @@ describe('chunksArrayLikeAsync', () => {
       length: 4,
     };
 
-    const chunker = chunksArrayLikeAsync(asyncIterable, 2);
+    const chunker = chunksIterableAsync(asyncIterable, 2);
     const result: any[] = [];
 
     for await (const chunk of chunker) {
@@ -144,7 +144,7 @@ describe('chunksArrayLikeAsync', () => {
 
   test('works with regular iterables', async () => {
     const iterable = {
-      *[Symbol.iterator]() {
+      * [Symbol.iterator]() {
         yield 1;
         yield 2;
         yield 3;
@@ -154,7 +154,7 @@ describe('chunksArrayLikeAsync', () => {
       length: 5,
     };
 
-    const chunker = chunksArrayLikeAsync(iterable, 2);
+    const chunker = chunksIterableAsync(iterable, 2);
     const result: any[] = [];
 
     for await (const chunk of chunker) {
@@ -164,25 +164,25 @@ describe('chunksArrayLikeAsync', () => {
     expect(result).toEqual([[1, 2], [3, 4], [5]]);
   });
 
-  test('throws when async iterable is empty', async ({ expect }) => {
+  test('throws when async iterable is empty', async ({expect}) => {
     const emptyAsync = {
       [Symbol.asyncIterator]() {
         // No values to yield
         return {
           async next(): Promise<IteratorResult<number>> {
-            return { done: true, value: undefined };
+            return {done: true, value: undefined};
           },
         };
       },
       length: 0,
     } as const;
 
-    const chunker = chunksArrayLikeAsync(emptyAsync, 1);
+    const chunker = chunksIterableAsync(emptyAsync, 1);
 
     await expect(chunker.next()).rejects.toThrow(RangeError);
   });
 
-  test('throws when chunk size is larger than async iterable length', async ({ expect }) => {
+  test('throws when chunk size is larger than async iterable length', async ({expect}) => {
     const asyncIterable = {
       from: 1,
       to: 2,
@@ -195,37 +195,37 @@ describe('chunksArrayLikeAsync', () => {
 
           async next(): Promise<IteratorResult<number>> {
             if (this.current <= this.last) {
-              return { done: false, value: this.current++ };
+              return {done: false, value: this.current++};
             }
-            return { done: true, value: undefined };
+            return {done: true, value: undefined};
           },
         };
       },
     };
 
-    const chunker = chunksArrayLikeAsync(asyncIterable, 3);
+    const chunker = chunksIterableAsync(asyncIterable, 3);
 
     await expect(chunker.next()).rejects.toThrow(RangeError);
   });
 
   test('works with different types of values', async () => {
     const asyncIterable = {
-      async *[Symbol.asyncIterator]() {
+      async* [Symbol.asyncIterator]() {
         yield 'a';
         yield 2;
         yield true;
-        yield { key: 'value' };
+        yield {key: 'value'};
       },
       length: 4,
     };
 
-    const chunker = chunksArrayLikeAsync(asyncIterable, 2);
+    const chunker = chunksIterableAsync(asyncIterable, 2);
     const result: any[] = [];
 
     for await (const chunk of chunker) {
       result.push(chunk);
     }
 
-    expect(result).toEqual([['a', 2], [true, { key: 'value' }]]);
+    expect(result).toEqual([['a', 2], [true, {key: 'value'}]]);
   });
 });

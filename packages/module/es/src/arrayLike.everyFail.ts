@@ -1,11 +1,12 @@
 import type { Promisable } from 'type-fest';
-import {
-  entriesArrayLike,
-  entriesArrayLikeAsync,
-} from './arrayLike.entries.ts';
 import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
+import {
+  entriesIterable,
+  entriesIterableAsync,
+} from './iterable.entries.ts';
 
-/* @__NO_SIDE_EFFECTS__ */ export async function everyFailArrayLikeAsync<T_element,
+/* @__NO_SIDE_EFFECTS__ */
+export async function everyFailIterableAsync<T_element,
   const T_arrayLike extends MaybeAsyncIterable<T_element>,>(
   testingFn: (element: T_element, index?: number,
     arrayLike?: T_arrayLike) => Promisable<boolean>,
@@ -13,7 +14,7 @@ import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
 ): Promise<boolean> {
   // TODO: Reimplement this in a parallel way - when Async Iterator helpers become available.
   for await (
-    const [index, element] of entriesArrayLikeAsync(arrayLike as AsyncIterable<T_element>)
+    const [index, element] of entriesIterableAsync(arrayLike as AsyncIterable<T_element>)
   ) {
     if (await testingFn(element, index, arrayLike)) {
       return false;
@@ -22,13 +23,13 @@ import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
   return true;
 }
 
-export function everyFailArrayLike<T_element,
+export function everyFailIterable<T_element,
   const T_arrayLike extends Iterable<T_element>,>(
   testingFn: (element: T_element, index?: number, arrayLike?: T_arrayLike) => boolean,
   arrayLike: T_arrayLike,
 ): boolean {
   for (
-    const [index, element] of entriesArrayLike(arrayLike)
+    const [index, element] of entriesIterable(arrayLike)
   ) {
     if (testingFn(element, index, arrayLike)) {
       return false;

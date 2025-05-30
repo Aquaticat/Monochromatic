@@ -1,15 +1,14 @@
 import {
   arrayIsEmpty,
-  arrayIsNonEmpty,
   isEmptyArray,
 } from './arrayLike.is.ts';
 import type { Ints } from './arrayLike.type.ints.ts';
 import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
 import type { Tuple } from './arrayLike.type.tuple.ts';
+import { notEmptyOrThrow } from './error.throw.ts';
 import { logtapeGetLogger } from './logtape.shared.ts';
-import { isPositiveInt } from './numeric.is.ts';
 
-const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
+const l = logtapeGetLogger(['m', 'iterable.chunks']);
 
 // TODO: Remove T_element everywhere and switch to infer.
 
@@ -18,34 +17,36 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
 
  @param array - readonly array of at least 1 element
 
-                readonly here means you can be assured
-                the array won't be changed while inside this function.
+  readonly here means you can be assured
+  the array won't be changed while inside this function.
 
  @param n - how many elements of the array to chunk out at a time
 
-            Cannot be bigger than the length of the array itself.
+  Cannot be bigger than the length of the array itself.
 
  @returns `Generator<Tuple<T_array[number], T_n>>`
 
-          where Tuple returns a new tuple
-          type of length `n` filled with type of `array` elements
-          while n \<= 10,
-          a regular array of type of `array` elements otherwise.
+  where Tuple returns a new tuple
+  type of length `n` filled with type of `array` elements
+  while n \<= 10,
+  a regular array of type of `array` elements otherwise.
 
  @throws RangeError:
 
-         1.  `array` is empty
-         2.  `n` is
-             1.  float
-             2.  negative
-             3.  bigger than the length of the array itself.
+ 1.  `array` is empty
+ 2.  `n` is
+ 1.  float
+ 2.  negative
+ 3.  bigger than the length of the array itself.
 
  @remarks
  From {@link https://stackoverflow.com/a/55435856}
  by {@link https://stackoverflow.com/users/10328101/ikechukwu-eze}
  with CC BY-SA 4.0
-*/
-/* @__NO_SIDE_EFFECTS__ */ export function* chunksArray<
+ */
+
+/* @__NO_SIDE_EFFECTS__ */
+export function* chunksArray<
   const T_array extends readonly [any, ...any[]],
   const T_n extends Ints<1, T_array['length']>,
 >(
@@ -75,7 +76,8 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
   }
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function chunksArrayLike<
+/* @__NO_SIDE_EFFECTS__ */
+export function chunksIterable<
   // An overload sig cannot be declared as a generator
   const T_arrayLike extends Iterable<any> & { length: number; },
   const T_n extends Ints<1, T_arrayLike['length']>,
@@ -87,7 +89,8 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
   YieldType
 >;
 
-/* @__NO_SIDE_EFFECTS__ */ export function chunksArrayLike<
+/* @__NO_SIDE_EFFECTS__ */
+export function chunksIterable<
   // An overload sig cannot be declared as a generator
   const T_arrayLike extends Iterable<any>,
   const T_n extends number,
@@ -99,7 +102,8 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
   YieldType
 >;
 
-/* @__NO_SIDE_EFFECTS__ */ export function* chunksArrayLike<
+/* @__NO_SIDE_EFFECTS__ */
+export function* chunksIterable<
   // An overload sig cannot be declared as a generator
   const T_arrayLike extends Iterable<any> | Iterable<any> & { length: number; },
   const T_n extends T_arrayLike extends { length: number; }
@@ -112,7 +116,7 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
 >(arrayLike: T_arrayLike, n: T_n): Generator<
   YieldType
 > {
-  l.debug`chunksArrayLike(arrayLike: ${arrayLike}, n: ${n})`;
+  l.debug`chunksIterable(arrayLike: ${arrayLike}, n: ${n})`;
 
   if (isEmptyArray(arrayLike)) {
     throw new RangeError(
@@ -146,21 +150,14 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
     );
   }
 
-  if (arrayIsEmpty(arrayLikeArray)) {
-    throw new RangeError(
-      `What's to be chunked: ${JSON.stringify(arrayLikeArray)} cannot be empty`,
-    );
-  }
-
-  if (arrayIsNonEmpty(arrayLikeArray)) {
-    yield* chunksArray(arrayLikeArray, n) as unknown as Generator<YieldType>;
-    return;
-  }
-
-  throw new Error(`impossible state. ${arrayLikeArray} is neither empty nor non-empty`);
+  yield* chunksArray(notEmptyOrThrow(arrayLikeArray), n) as unknown as Generator<
+    YieldType
+  >;
+  return;
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function chunksArrayLikeAsync<
+/* @__NO_SIDE_EFFECTS__ */
+export function chunksIterableAsync<
   // An overload sig cannot be declared as a generator
   const T_arrayLike extends MaybeAsyncIterable<any> & { length: number; },
   const T_n extends Ints<1, T_arrayLike['length']>,
@@ -171,7 +168,8 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
   Tuple<T_arrayLike extends MaybeAsyncIterable<infer T_element> ? T_element : never, T_n>
 >;
 
-/* @__NO_SIDE_EFFECTS__ */ export function chunksArrayLikeAsync<
+/* @__NO_SIDE_EFFECTS__ */
+export function chunksIterableAsync<
   // An overload sig cannot be declared as a generator
   const T_arrayLike extends MaybeAsyncIterable<any>,
   const T_n extends number,
@@ -182,7 +180,8 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
   Tuple<T_arrayLike extends MaybeAsyncIterable<infer T_element> ? T_element : never, T_n>
 >;
 
-/* @__NO_SIDE_EFFECTS__ */ export async function* chunksArrayLikeAsync<
+/* @__NO_SIDE_EFFECTS__ */
+export async function* chunksIterableAsync<
   // An overload sig cannot be declared as a generator
   const T_arrayLike extends
     | MaybeAsyncIterable<any>
@@ -199,7 +198,7 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
 > {
   // TODO: Switch this to lazy.
 
-  l.debug`chunksArrayLikeAsync(arrayLike: ${arrayLike}, n: ${n})`;
+  l.debug`chunksIterableAsync(arrayLike: ${arrayLike}, n: ${n})`;
 
   if (isEmptyArray(arrayLike)) {
     throw new RangeError(
@@ -242,16 +241,8 @@ const l = logtapeGetLogger(['m', 'arrayLike.chunks']);
     );
   }
 
-  if (arrayIsEmpty(arrayLikeArray)) {
-    throw new RangeError(
-      `What's to be chunked: ${JSON.stringify(arrayLikeArray)} cannot be empty`,
-    );
-  }
-
-  if (arrayIsNonEmpty(arrayLikeArray)) {
-    yield* chunksArray(arrayLikeArray, n) as unknown as Generator<YieldType>;
-    return;
-  }
-
-  throw new Error(`impossible state. ${arrayLikeArray} is neither empty nor non-empty`);
+  yield* chunksArray(notEmptyOrThrow(arrayLikeArray), n) as unknown as Generator<
+    YieldType
+  >;
+  return;
 }

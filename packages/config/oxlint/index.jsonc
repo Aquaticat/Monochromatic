@@ -114,6 +114,7 @@
     "eslint/max-depth": "off",
     "eslint/max-lines-per-function": "off",
     "eslint/max-nested-callbacks": "off",
+    "eslint/max-class-per-file": "off",
     // I love nested ternaries!
     "eslint/no-nested-ternary": "off",
     // Conflicts with TypeScript function overloading.

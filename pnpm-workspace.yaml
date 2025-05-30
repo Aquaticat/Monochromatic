@@ -63,6 +63,7 @@ catalog:
   postcss-normalize-url: '*'
   postcss-normalize-whitespace: '*'
   postcss-ordered-values: '*'
+  '@csstools/css-tokenizer': '>=3.0.3'
   '@figma/plugin-typings': '*'
   lfi: '*'
   lightningcss: '*'
@@ -98,11 +99,13 @@ catalog:
   # Promising fp lib that supports concurrency.
   '@fxts/core': '*'
   # Fast, concurrent testing framework
-  vitest: '>=3.2.0-beta.1'
+  vitest: '>=3.2.0-beta.2'
   # Type checker used by Vitest that supports Vue
   'vue-tsc': '>=2.2.10'
-  '@vitest/coverage-v8': '>=3.2.0-beta.1'
-  '@vitest/coverage-istanbul': '>=3.2.0-beta.1'
+  '@vitest/browser': '>=3.2.0-beta.2'
+  'playwright': '>=1.52.0'
+  '@vitest/coverage-v8': '>=3.2.0-beta.2'
+  '@vitest/coverage-istanbul': '>=3.2.0-beta.2'
   '@total-typescript/ts-reset': '*'
   '@types/postcss-mixins': '*'
   'ts-pattern': '*'
@@ -116,6 +119,7 @@ catalog:
   '@eslint/js': '>=9.27.0'
   'typescript-eslint': '>=8.32.1'
   'vite-plugin-json5': '>=1.1.9'
+  'happy-rusty': '*'
 childConcurrency: 16
 dedupeDirectDeps: true
 disallowWorkspaceCycles: true
@@ -141,7 +145,8 @@ preferWorkspacePackages: true
 resolutionMode: highest
 savePrefix: ''
 saveWorkspaceProtocol: false
-shellEmulator: true
+# TOO SLOW
+shellEmulator: false
 strictDepBuilds: true
 strictPeerDependencies: true
 supportedArchitectures:

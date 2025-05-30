@@ -49,6 +49,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var outdent_1 = require("@cspotcode/outdent");
 var ts_1 = require("@monochromatic-dev/module-es/ts");
 var lfi_1 = require("lfi");
 var DEFAULT_ELEMENT_WIDTH_NUMBER = 3840 - 8 * 2;
@@ -97,7 +98,7 @@ var testCssVar = function (cssValue_1, cssVar_1, mode_1) {
                                     varType: 'number',
                                     mode: mode,
                                     error: {
-                                        message: "Figma doesn't support unitful length values,\n                          consider using a number or string for this value.\n                          If you're relying on the behavior of converting from rem to px,\n                          you can safely ignore this error.",
+                                        message: (0, outdent_1.default)({ newline: ' ' })(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n            Figma doesn't support unitful length values,\n            consider using a number or string for this value.\n            If you're relying on the behavior of converting from rem to px,\n            you can safely ignore this error."], ["\n            Figma doesn't support unitful length values,\n            consider using a number or string for this value.\n            If you're relying on the behavior of converting from rem to px,\n            you can safely ignore this error."]))),
                                         level: cssValue.includes('em') ? 'notice' : 'error',
                                     },
                                     originalComputedValue: computedWidth,
@@ -199,7 +200,7 @@ var testCssVar = function (cssValue_1, cssVar_1, mode_1) {
                         .getPropertyValue('content');
                     if (computedContent === 'none') {
                         console
-                            .log(templateObject_1 || (templateObject_1 = __makeTemplateObject(["", " isn't a string (CSS content) value.\n              Try treating it as something else."], ["", " isn't a string (CSS content) value.\n              Try treating it as something else."])), cssVar);
+                            .log(templateObject_2 || (templateObject_2 = __makeTemplateObject(["", " isn't a string (CSS content) value.\n              Try treating it as something else."], ["", " isn't a string (CSS content) value.\n              Try treating it as something else."])), cssVar);
                     }
                     else {
                         return [2 /*return*/, {
@@ -222,7 +223,7 @@ var testCssVar = function (cssValue_1, cssVar_1, mode_1) {
                             varType: 'invalid',
                             mode: mode,
                             error: {
-                                message: "".concat(cssVar, "'s ").concat(cssValue, " cannot be treated as a unitful length,\n             a number, a color, a box-shadow, or a string (CSS content) value."),
+                                message: (0, outdent_1.default)({ newline: ' ' })(templateObject_3 || (templateObject_3 = __makeTemplateObject(["\n        ", "'s ", " cannot be treated as a unitful length,\n        a number, a color, a box-shadow, or a string (CSS content) value."], ["\n        ", "'s ", " cannot be treated as a unitful length,\n        a number, a color, a box-shadow, or a string (CSS content) value."])), cssVar, cssValue),
                                 level: 'error',
                             },
                             originalComputedValue: cssValue,
@@ -387,4 +388,4 @@ var messageHandler = function (event) { return __awaiter(void 0, void 0, void 0,
     });
 }); };
 window.addEventListener('message', messageHandler);
-var templateObject_1;
+var templateObject_1, templateObject_2, templateObject_3;

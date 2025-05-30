@@ -6,15 +6,13 @@ import {
   mkdir,
   stat,
   writeFile,
-} from './fs.fs.default.ts';
-import { trimPathLeadingSlash } from './fs.pathJoin.default.ts';
-import { pathParse } from './fs.pathParse.default.ts';
+} from '@monochromatic-dev/module-es/fs.fs.ts';
+import { pathParse } from '@monochromatic-dev/module-es/fs.pathParse.ts';
+import { trimPathLeadingSlash } from './fs.pathJoin.shared.ts';
 import { tryCatchAsync } from './function.tryCatch.ts';
 import { logtapeGetLogger } from './logtape.shared.ts';
 
-const l = logtapeGetLogger(['m', 'fs', 'ensurePath.default']);
-
-// TODO: Rewrite this to use opfs in browser.
+const l = logtapeGetLogger(['m', 'fs', 'ensurePath']);
 
 export async function ensurePath(path: string): Promise<string> {
   const cleanPath: string = trimPathLeadingSlash(new URL(path, 'file:').pathname);
@@ -32,7 +30,7 @@ export async function ensureDir(path: string): Promise<string> {
   const pathStat = await tryCatchAsync(async function tryer(): Promise<Stats> {
     return await stat(path);
   }, async function catcher(error): Promise<boolean> {
-    if (error.code === 'ENOENT') {
+    if ((error as { code: string; }).code === 'ENOENT') {
       l.info`stat error ${error}, path ${path} does not exist. Need to create it.`;
       await mkdir(path, { recursive: true });
       return true; // Signal that retry is possible
@@ -65,10 +63,10 @@ export async function ensureFile(path: string): Promise<string> {
   const pathStat = await tryCatchAsync(async function tryer(): Promise<Stats> {
     return await stat(path);
   }, async function catcher(error): Promise<boolean> {
-    if (error.code === 'ENOENT') {
+    if ((error as { code: string; }).code === 'ENOENT') {
       l.info`stat error ${error}, path ${path} does not exist. Need to create it.`;
       await ensureDir(parsedPath.dir);
-      await writeFile(cleanPath, '', { flag: 'wx' });
+      await writeFile(cleanPath, '', { flag: 'w' });
 
       // Signal that retry is possible
       return true;

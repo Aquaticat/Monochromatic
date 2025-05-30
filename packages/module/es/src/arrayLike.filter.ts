@@ -1,7 +1,8 @@
 import type { MaybeAsyncIterable } from '@monochromatic-dev/module-es/ts';
 import type { Promisable } from 'type-fest';
 
-/* @__NO_SIDE_EFFECTS__ */ export async function filterArrayLikeAsync<T_i,>(
+/* @__NO_SIDE_EFFECTS__ */
+export async function filterIterableAsync<T_i,>(
   predicate: (i: T_i) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_i>,
 ): Promise<T_i[]> {
@@ -18,7 +19,8 @@ import type { Promisable } from 'type-fest';
   return yes;
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function filterArrayLike<T_i,>(
+/* @__NO_SIDE_EFFECTS__ */
+export function filterIterable<T_i,>(
   predicate: (i: T_i) => boolean,
   arrayLike: Iterable<T_i>,
 ): T_i[] {
@@ -33,7 +35,8 @@ import type { Promisable } from 'type-fest';
   return yes;
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export async function filterFailArrayLikeAsync<T_i,>(
+/* @__NO_SIDE_EFFECTS__ */
+export async function filterFailIterableAsync<T_i,>(
   predicate: (i: T_i) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_i>,
 ): Promise<T_i[]> {
@@ -48,7 +51,8 @@ import type { Promisable } from 'type-fest';
   return no;
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function filterFailArrayLike<T_i,>(
+/* @__NO_SIDE_EFFECTS__ */
+export function filterFailIterable<T_i,>(
   predicate: (i: T_i) => boolean,
   arrayLike: Iterable<T_i>,
 ): T_i[] {

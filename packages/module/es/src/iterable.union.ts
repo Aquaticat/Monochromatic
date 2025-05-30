@@ -70,11 +70,11 @@ export function union<const Param1, const Param2, const Param3, const Param4,
   ]
 ): Set<Param1 | Param2 | Param3 | Param4 | Param5 | Param6 | Param7 | Param8 | Param9>;
 export function union<const T,>(...arrays: Iterable<T>[]): Set<T>;
-export function union(...arrays: Iterable<unknown>[]): Set<unknown> {
-  if (arrays.length === 0) {
+export function union(...iterables: Iterable<unknown>[]): Set<unknown> {
+  if (iterables.length === 0) {
     return new Set();
   }
-  const trueArrays: unknown[][] = arrays.map(
+  const trueArrays: unknown[][] = iterables.map(
     function toArray(array: Iterable<unknown>): unknown[] {
       return Array.isArray(array) ? array : [...array];
     },
@@ -82,3 +82,5 @@ export function union(...arrays: Iterable<unknown>[]): Set<unknown> {
   const flatArray: unknown[] = trueArrays.flat();
   return new Set(flatArray);
 }
+
+// TODO: Write iterable.pick

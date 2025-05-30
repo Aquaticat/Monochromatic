@@ -1,17 +1,17 @@
 import {
+  isError,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/ts';
+} from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-import { isError } from './error.is.ts';
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('isError', () => {
+describe(isError, () => {
   test('identifies Error instances', () => {
     expect(isError(new Error())).toBe(true);
     expect(isError(new Error('test message'))).toBe(true);

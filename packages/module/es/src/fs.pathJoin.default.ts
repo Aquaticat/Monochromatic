@@ -1,3 +1,4 @@
+import { trimPathTrailingSlash } from './fs.pathJoin.shared.ts';
 import { trimIterable } from './iterable.trim.ts';
 
 const DOT_DOT_PATTERN = /(?<=^|\/)(?!\.\.)[^\/\n]+?\/\.\.(?=$|\/)/vg;
@@ -38,16 +39,9 @@ export function pathJoin(...segments: string[]): string {
     .replaceAll(DUPLICATE_SLASH_PATTERN, '/')
     .replaceAll(DOT_SLASH_PATTERN, '');
 
+  /* v8 ignore next -- @preserve */
   if (normalized === '') { return '.'; }
 
   // Resolve parent directory references
   return resolveParentReferences(normalized, isAbsolute);
-}
-
-export function trimPathTrailingSlash(path: string): string {
-  return path !== '/' && path.endsWith('/') ? path.slice(0, -1) : path;
-}
-
-export function trimPathLeadingSlash(path: string): string {
-  return path !== '/' && path.startsWith('/') ? path.slice(1) : path;
 }

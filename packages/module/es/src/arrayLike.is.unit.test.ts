@@ -29,7 +29,7 @@ describe('isArray', () => {
   test('identifies arrays correctly', () => {
     expect(isArray([])).toBe(true);
     expect(isArray([1, 2, 3])).toBe(true);
-    expect(isArray(new Array(5))).toBe(true);
+    expect(isArray(Array.from({length: 5}))).toBe(true);
   });
 
   test('rejects non-arrays', () => {
@@ -48,7 +48,7 @@ describe('isIterable', () => {
     expect(isIterable('string')).toBe(true);
     expect(isIterable(new Set())).toBe(true);
     expect(isIterable(new Map())).toBe(true);
-    expect(isIterable(function*() {
+    expect(isIterable(function* () {
       yield 1;
     }()))
       .toBe(true);
@@ -59,8 +59,8 @@ describe('isIterable', () => {
     expect(isIterable(undefined)).toBe(false);
     expect(isIterable({})).toBe(false);
     expect(isIterable(123)).toBe(false);
-    expect(isIterable(Symbol())).toBe(false);
-    expect(isIterable(async function*() {
+    expect(isIterable(Symbol('nope'))).toBe(false);
+    expect(isIterable(async function* () {
       yield 1;
     }()))
       .toBe(false);
@@ -69,13 +69,13 @@ describe('isIterable', () => {
 
 describe('isAsyncIterable', () => {
   test('identifies async iterables correctly', () => {
-    expect(isAsyncIterable(async function*() {
+    expect(isAsyncIterable(async function* () {
       yield 1;
     }()))
       .toBe(true);
 
     const customAsyncIterable = {
-      [Symbol.asyncIterator]: () => ({ next: async () => ({ value: 1, done: false }) }),
+      [Symbol.asyncIterator]: () => ({next: async () => ({value: 1, done: false})}),
     };
     expect(isAsyncIterable(customAsyncIterable)).toBe(true);
   });
@@ -88,7 +88,7 @@ describe('isAsyncIterable', () => {
     expect(isAsyncIterable(null)).toBe(false);
     expect(isAsyncIterable(undefined)).toBe(false);
     expect(isAsyncIterable({})).toBe(false);
-    expect(isAsyncIterable(function*() {
+    expect(isAsyncIterable(function* () {
       yield 1;
     }()))
       .toBe(false);
@@ -101,17 +101,17 @@ describe('isMaybeAsyncIterable', () => {
     expect(isMaybeAsyncIterable('string')).toBe(true);
     expect(isMaybeAsyncIterable(new Set())).toBe(true);
     expect(isMaybeAsyncIterable(new Map())).toBe(true);
-    expect(isMaybeAsyncIterable(function*() {
+    expect(isMaybeAsyncIterable(function* () {
       yield 1;
     }()))
       .toBe(true);
-    expect(isMaybeAsyncIterable(async function*() {
+    expect(isMaybeAsyncIterable(async function* () {
       yield 1;
     }()))
       .toBe(true);
 
     const customAsyncIterable = {
-      [Symbol.asyncIterator]: () => ({ next: async () => ({ value: 1, done: false }) }),
+      [Symbol.asyncIterator]: () => ({next: async () => ({value: 1, done: false})}),
     };
     expect(isMaybeAsyncIterable(customAsyncIterable)).toBe(true);
   });
@@ -196,7 +196,7 @@ describe('isWeakSet', () => {
 describe('isObject', () => {
   test('identifies objects correctly', () => {
     expect(isObject({})).toBe(true);
-    expect(isObject({ a: 1, b: 2 })).toBe(true);
+    expect(isObject({a: 1, b: 2})).toBe(true);
     expect(isObject(Object.create(null))).toBe(true);
   });
 
@@ -213,14 +213,14 @@ describe('isObject', () => {
 
 describe('isAsyncGenerator', () => {
   test('identifies async generators correctly', () => {
-    const asyncGen = async function*() {
+    const asyncGen = async function* () {
       yield 1;
     }();
     expect(isAsyncGenerator(asyncGen)).toBe(true);
   });
 
   test('rejects non-async generators', () => {
-    const gen = function*() {
+    const gen = function* () {
       yield 1;
     }();
     expect(isAsyncGenerator(gen)).toBe(false);
@@ -233,14 +233,14 @@ describe('isAsyncGenerator', () => {
 
 describe('isGenerator', () => {
   test('identifies generators correctly', () => {
-    const gen = function*() {
+    const gen = function* () {
       yield 1;
     }();
     expect(isGenerator(gen)).toBe(true);
   });
 
   test('rejects non-generators', () => {
-    const asyncGen = async function*() {
+    const asyncGen = async function* () {
       yield 1;
     }();
     expect(isGenerator(asyncGen)).toBe(false);

@@ -31,7 +31,9 @@
   },
   "peerDependencies": {
     "@types/mdx": "catalog:",
-    "@types/bun": "catalog:"
+    "@types/bun": "catalog:",
+    "vite": "catalog:",
+    "@vitest/browser": "catalog:"
   },
   "dependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*"

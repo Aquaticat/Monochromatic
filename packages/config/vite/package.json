@@ -27,7 +27,8 @@
     "postcss-custom-media": "catalog:",
     "postcss-custom-selectors": "catalog:",
     "vite-plugin-json5": "catalog:",
-    "postcss": "catalog:"
+    "postcss": "catalog:",
+    "@vitest/browser": "catalog:"
   },
   "type": "module",
   "files": [
@@ -42,8 +43,8 @@
   "scripts": {
     "w:types": "tsc --watch",
     "b:types": "tsc",
-    "w:js": "vite build --watch",
-    "b:js": "vite build",
+    "w:js": "vite build --config vite.config.ts  --watch",
+    "b:js": "vite build  --config vite.config.ts ",
     "b": "pnpm run --stream '/^b:\\w+$/'",
     "w": "pnpm run --stream '/^w:\\w+$/'"
   },

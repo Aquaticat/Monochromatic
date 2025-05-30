@@ -2,11 +2,9 @@ import postcssCustomUnits from '@csstools/custom-units';
 import { build as esbuildBuild } from 'esbuild';
 import spawn, { type Options } from 'nano-spawn';
 import {
-  chmodSync,
-  constants,
-  readdirSync,
-  readFileSync,
-} from 'node:fs';
+  readdir,
+  readFile,
+} from 'node:fs/promises';
 import {
   join,
   resolve,
@@ -26,6 +24,7 @@ import { json5Plugin } from 'vite-plugin-json5';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import {
   defineConfig as defineVitestConfig,
+  defineProject,
   type ViteUserConfig as VitestUserConfig,
 } from 'vitest/config';
 
@@ -35,6 +34,27 @@ const spawnOptions: Options = {
   preferLocal: true,
   stdio: 'inherit',
 };
+
+const vitestExcludeCommon = [
+  '**/{node_modules,bak}/**',
+  '**/.{idea,git,cache,output,temp}/**',
+
+  // 'packages/*/*/**/src/**/*.browser.test.ts',
+  'packages/*/*/**/src/**/*.js',
+
+  // TypeScript definition files can't be tested.
+  '**/*.d.ts',
+
+  // Not meant to be directly exported or tested.
+  '**/*.shared.ts',
+  '**/*.fixture.*.ts',
+
+  // temporarily deprecated. Might be resurrected later.
+  '**/theme/subtle/**',
+
+  // deprecated
+  'packages/module/es/src/testing.ts',
+];
 
 const rollupExternal = (moduleId: string): boolean => {
   if (
@@ -101,10 +121,16 @@ const createBaseConfig = (configDir: string): UserConfig => ({
     target: 'firefox128',
     cssMinify: 'lightningcss',
     outDir: join('dist', 'final', 'js'),
-    emptyOutDir: true,
+
+    // Sometimes removes important files.
+    // Sometimes crashes because node rmSync doesn't work properly.
+    emptyOutDir: false,
+
     rollupOptions: {
       external: rollupExternal,
     },
+
+    // A little bit faster builds.
     reportCompressedSize: false,
   },
   worker: {
@@ -139,9 +165,11 @@ const createBaseLibConfig = (configDir: string): UserConfig =>
             // renderChunk doesn't work for whatever reason.
             async writeBundle() {
               const outdir = join(configDir, 'dist', 'final', 'js');
-              const entryPointNames = readdirSync(outdir).filter(function isJsFile(file) {
-                return file.endsWith('.js');
-              });
+              const entryPointNames = (await readdir(outdir)).filter(
+                function isJsFile(file) {
+                  return file.endsWith('.js');
+                },
+              );
               const entryPoints: string[] = entryPointNames.map(
                 function fullPath(entryPointName: string): string {
                   return join(outdir, entryPointName);
@@ -243,6 +271,89 @@ const createFrontendLikeConfig = (configDir: string, subDir: string): UserConfig
     },
   });
 
+// TODO: Check if this is necessary.
+const vitestCommonToAllProjects = defineVitestConfig(
+  {
+    test: {
+      projects: ['packages/*/*'],
+      include: ['packages/*/*/**/src/**/*.test.ts'],
+      exclude: vitestExcludeCommon,
+      name: 'workspace',
+      deps: {
+        // We're never importing CJS module's default export via `import {x} from 'y'`.
+        interopDefault: false,
+      },
+      benchmark: {
+        outputJson: join('bak', new Date().toISOString().replaceAll(':', ''),
+          'vitest.benchmark.json'),
+      },
+      outputFile: join('bak', new Date().toISOString().replaceAll(':', ''),
+        'vitest.result.json'),
+      pool: 'threads',
+      poolOptions: {
+        threads: {
+          useAtomics: true,
+        },
+        vmThreads: {
+          useAtomics: true,
+        },
+      },
+      testTimeout: 2000,
+      silent: 'passed-only',
+      coverage: {
+        provider: 'v8',
+        enabled: true,
+        excludeAfterRemap: true,
+        reportOnFailure: true,
+        skipFull: true,
+
+        experimentalAstAwareRemapping: true,
+
+        // We don't really need to see the coverage report every time we run any test.
+        all: false,
+
+        thresholds: {
+          perFile: true,
+          // Error: Failed to update coverage thresholds. Configuration file is too complex.
+          autoUpdate: false,
+        },
+
+        // Only this works for coverage to follow sourcemap.
+        extension: [
+          '.js',
+          '.ts',
+          // Commented out until I see the value of testing non typescript files.
+          // '.vue',
+          // '.astro'
+        ],
+        include: [
+          'packages/*/*/**/dist/final/**',
+          'packages/*/*/**/src/**',
+        ],
+
+        exclude: [...vitestExcludeCommon, 'packages/*/*/**/src/**/*.browser.test.ts'],
+      },
+      logHeapUsage: true,
+      maxConcurrency: 16,
+      sequence: {
+        concurrent: true,
+      },
+      typecheck: {
+        enabled: true,
+
+        // Overwrite this to vue-tsc in packages that use Vue.
+        checker: 'tsc',
+      },
+      chaiConfig: {
+        includeStack: true,
+      },
+      expect: {
+        requireAssertions: true,
+      },
+    },
+  },
+);
+
 /**
  @remarks
  Use it like:
@@ -277,11 +388,11 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
             buildStart(): void {
               this.addWatchFile(iframePath);
             },
-            transformIndexHtml(html): string {
+            async transformIndexHtml(html): Promise<string> {
               if (html.includes('REPLACE_WITH_IFRAME_INDEX_HTML')) {
                 console.log('replacing iframe');
-                chmodSync(iframePath, constants.S_IRUSR);
-                const iframeFile = readFileSync(iframePath, 'utf8');
+                // chmodSync(iframePath, constants.S_IRUSR);
+                const iframeFile = await readFile(iframePath, 'utf8');
                 return html.replace(
                   'REPLACE_WITH_IFRAME_INDEX_HTML',
                   iframeFile.replaceAll("'", '&apos;'),
@@ -322,9 +433,33 @@ export const getFigmaIframe = (configDir: string): UserConfigFnObject =>
 
 export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
   test: {
-    projects: ['packages/*/*'],
-    include: ['packages/*/*/**/src/**/*.test.ts'],
-    exclude: ['**/{node_modules,dist,bak}/**', '**/.{idea,git,cache,output,temp}/**'],
+    projects: [
+      // 'packages/*/*',
+      {
+        test: {
+          name: 'browser',
+          include: ['packages/*/*/**/src/**/*.browser.test.ts'],
+          exclude: [...vitestExcludeCommon, '*.unit.test.ts'],
+          browser: {
+            provider: 'playwright',
+            enabled: true,
+            headless: true,
+            instances: [
+              { browser: 'chromium' },
+              // @vitest/coverage-v8 does not work with firefox.
+              // { browser: 'firefox' },
+            ],
+          },
+        },
+      },
+      {
+        test: {
+          name: { label: 'unit', color: 'black' },
+          include: ['packages/*/*/**/src/**/*.unit.test.ts'],
+          exclude: [...vitestExcludeCommon, '*.browser.test.ts'],
+        },
+      },
+    ],
     name: 'workspace',
     deps: {
       // We're never importing CJS module's default export via `import {x} from 'y'`.
@@ -375,25 +510,7 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
       ],
       include: [
         'packages/*/*/**/dist/final/**',
-        'packages/*/*/**/src/**',
-      ],
-
-      exclude: [
-        '**/{node_modules,bak}/**',
-        '**/.{idea,git,cache,output,temp}/**',
-
-        // TypeScript definition files can't be tested.
-        '**/*.d.ts',
-
-        // Not meant to be directly exported or tested.
-        '**/*.shared.ts',
-        '**/*.fixture.*.ts',
-
-        // temporarily deprecated. Might be resurrected later.
-        '**/theme/subtle/**',
-
-        // deprecated
-        'packages/module/es/src/testing.ts',
+        'packages/*/*/**/src/**/*.ts',
       ],
     },
     logHeapUsage: true,

@@ -75,6 +75,7 @@ import type { UnknownRecord } from 'type-fest';
 }
 
 /* @__NO_SIDE_EFFECTS__ */ export function isNonEmptyArray<T_value,>(
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- unknown is required.
   value: T_value | unknown,
 ): value is [
   T_value extends (infer Element)[] ? Element : never,
@@ -86,6 +87,7 @@ import type { UnknownRecord } from 'type-fest';
 /* @__NO_SIDE_EFFECTS__ */ export function arrayIsNonEmpty<
   T_value extends readonly any[],
 >(
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- unknown is required.
   value: T_value | unknown,
 ): value is [
   T_value extends (infer Element)[] ? Element : never,

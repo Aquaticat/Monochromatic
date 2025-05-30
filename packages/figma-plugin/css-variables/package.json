@@ -71,6 +71,7 @@
     "postcss-normalize-url": "catalog:",
     "postcss-normalize-whitespace": "catalog:",
     "postcss-ordered-values": "catalog:",
-    "lfi": "catalog:"
+    "lfi": "catalog:",
+    "@vitest/browser": "catalog:"
   }
 }

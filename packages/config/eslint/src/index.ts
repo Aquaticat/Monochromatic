@@ -15,6 +15,8 @@ import {
 import tseslint from 'typescript-eslint';
 import type { ConfigArray } from 'typescript-eslint';
 
+const extraFileExtensions = ['vue', 'astro', 'mdx'];
+
 const myConfigArray: ConfigArray = tseslint.config(
   {
     ignores: [
@@ -37,11 +39,15 @@ const myConfigArray: ConfigArray = tseslint.config(
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
+        jsx: true,
+        emcaVersion: 'latest',
+        extraFileExtensions,
+        lib: ['esnext', 'dom', 'webworker'],
       },
     },
 
-    // Turn off rules already supported by oxlint.
     rules: {
+      //region oxlint -- Turn off rules already supported by oxlint.
       ...eslintRules,
       ...importRules,
       ...jsdocRules,
@@ -52,6 +58,55 @@ const myConfigArray: ConfigArray = tseslint.config(
       ...typescriptRules,
       ...unicornRules,
       ...vitestRules,
+      //endregion oxlint -- Turn off rules already supported by oxlint.
+
+      '@typescript-eslint/no-unnecessary-condition': ['error', {
+        allowConstantLoopConditions: 'only-allowed-literals',
+      }],
+      '@typescript-eslint/restrict-template-expressions': ['error', {
+        // Always use JSON.stringify
+      }],
+
+      /* Has too many false positives. For example:
+      ```ts
+       export async function atArrayLikeAsync<
+        const T_arrayLike extends MaybeAsyncIterable<any>,
+        const T_element extends T_arrayLike extends MaybeAsyncIterable<infer T_element>
+          ? T_element
+          : never,
+        const T_index extends number,
+      >(
+        index: T_index,
+        arrayLike: T_arrayLike,
+      ): Promise<T_element | undefined>;
+
+      export async function atArrayLikeAsync<
+        const T_arrayLike extends MaybeAsyncIterable<any>,
+        const T_element extends T_arrayLike extends MaybeAsyncIterable<infer T_element>
+          ? T_element
+          : never,
+        const T_index extends number,
+      >(
+        index: T_index,
+        arrayLike: T_arrayLike,
+      ): Promise<T_element | undefined> {
+        if (Array.isArray(arrayLike)) {
+          const arrArrayLike = arrayLike as T_element[];
+          return arrayLike.at(index) as T_index extends IntsNegative10to10 ? (typeof arrArrayLike)[T_index]
+            : (typeof arrArrayLike)[number] | undefined;
+        }
+      ```
+
+      Just because I didn't use the type parameter in the function signature doesn't mean I won't use it in the function body.
+       */
+      '@typescript-eslint/no-unnecessary-type-parameters': 'off',
+    },
+  },
+  {
+    files: ['**/*.{test,bench}.ts'],
+
+    rules: {
+      '@typescript-eslint/require-await': 'off',
     },
   },
 );

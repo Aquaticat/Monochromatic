@@ -15,6 +15,7 @@
     },
     "./.js": {
       "types": "./dist/final/types/src/index.d.ts",
+      "node": "./dist/final/js/index.node.js",
       "default": "./dist/final/js/index.js"
     },
     "./logtape.ts": {
@@ -28,15 +29,23 @@
     "./fs.fs.ts": {
       "node": "./src/fs.fs.node.ts",
       "default": "./src/fs.fs.default.ts"
+    },
+    "./fs.pathJoin.ts": {
+      "node": "./src/fs.pathJoin.node.ts",
+      "default": "./src/fs.pathJoin.default.ts"
+    },
+    "./fs.pathParse.ts": {
+      "node": "./src/fs.pathParse.node.ts",
+      "default": "./src/fs.pathParse.default.ts"
     }
   },
   "scripts": {
     "w:types": "tsc --watch",
     "b:types": "tsc",
-    "b:js_node": "vite build --mode production,node",
-    "w:js_node": "vite build --mode production,node --watch",
-    "b:js_browser": "vite build --mode production,browser",
-    "w:js_browser": "vite build --mode production,browser --watch",
+    "b:js_node": "vite build --config vite.config.ts --mode production,node",
+    "w:js_node": "vite build --config vite.config.ts --mode production,node --watch",
+    "b:js_browser": "vite build --config vite.config.ts --mode production,browser",
+    "w:js_browser": "vite build --config vite.config.ts --mode production,browser --watch",
     "b": "pnpm run --stream '/^b:\\w+$/'",
     "w": "pnpm run --stream '/^w:\\w+$/'"
   },
@@ -60,7 +69,10 @@
     "nano-spawn": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
     "ts-pattern": "catalog:",
-    "happy-opfs": "catalog:"
+    "happy-opfs": "catalog:",
+    "@vitest/browser": "catalog:",
+    "happy-rusty": "catalog:",
+    "@csstools/css-tokenizer": "catalog:"
   },
   "dependencies": {
   },

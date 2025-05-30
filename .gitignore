@@ -27,6 +27,8 @@ package-lock.json
 *.tmp
 *.log.jsonl
 *.log
+*.js
+!*.config.js
 
 # So that actions/setup-node can correctly build yarn cache
 #yarn.lock

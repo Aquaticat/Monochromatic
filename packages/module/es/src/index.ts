@@ -3,6 +3,8 @@
 export * from '@monochromatic-dev/module-es/logtape.ts';
 
 export * from '@monochromatic-dev/module-es/fs.ts';
+export * from './fs.emptyPath.ts';
+export * from './fs.ensurePath.ts';
 
 export * from './fixture.array.0to999.ts';
 export * from './fixture.generator.0to999.ts';
@@ -15,9 +17,6 @@ export * from './any.toExport.ts';
 export * from './any.type.ts';
 export * from './any.typeOf.ts';
 
-export * from './arrayLike.at.ts';
-export * from './arrayLike.chunks.ts';
-export * from './arrayLike.entries.ts';
 export * from './arrayLike.every.ts';
 export * from './arrayLike.everyFail.ts';
 export * from './arrayLike.filter.ts';
@@ -34,8 +33,11 @@ export * from './arrayLike.type.mapTo.ts';
 export * from './arrayLike.type.maybe.ts';
 export * from './arrayLike.type.tuple.ts';
 export * from './arrayLike.type.withoutFirst.ts';
-export * from './arrayLike.union.ts';
+export * from './iterable.at.ts';
+export * from './iterable.chunks.ts';
+export * from './iterable.entries.ts';
 export * from './iterable.trim.ts';
+export * from './iterable.union.ts';
 
 // TODO: Write joinArrayLike. The speced one uses ',' as the sep, which could be surprising.
 
@@ -77,9 +79,14 @@ export * from './string.capitalize.ts';
 export * from './string.concat.ts';
 export * from './string.is.ts';
 export * from './string.join.ts';
+export * from './string.singleQuoted.ts';
 export * from './string.trim.ts';
 export * from './string.type.ts';
 
 export * from './testing.ts';
 
 export * from './logtape.shared.ts';
+
+export * from './result.unwrap.ts';
+
+export * from './other.limitedGetComputedCss.ts';

@@ -5,10 +5,8 @@ import {
   expect,
   test,
 } from 'vitest';
-import {
-  pathJoin,
-  trimPathTrailingSlash,
-} from './fs.pathJoin.default.ts';
+import { pathJoin } from './fs.pathJoin.default.ts';
+import { trimPathTrailingSlash } from './fs.pathJoin.shared.ts';
 
 describe(pathJoin, () => {
   // Define test cases covering various scenarios

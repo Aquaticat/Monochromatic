@@ -8,9 +8,15 @@ import type {
 import {
   appendFile,
   mkdir,
+  readFile,
   rm,
 } from 'node:fs/promises';
 import { join } from 'node:path';
+import {
+  emptyDir,
+  removeEmptyFilesInDir,
+} from './fs.emptyPath.ts';
+import { ensureFile } from './fs.ensurePath.ts';
 import {
   createBaseConfig,
   createMemorySink,
@@ -22,26 +28,27 @@ const disposeFileSink = async (): Promise<void> => {
 
 const createFileSink = async (appName: string): Promise<Sink & AsyncDisposable> => {
   try {
-    await mkdir('logs');
     const fileName = `${appName}.${
       new Date().toISOString().replaceAll(':', '')
     }.log.jsonl`;
+    const filePath = join('logs', fileName);
 
-    // Remove the file if it exists
-    await rm(fileName, { force: true });
+    await ensureFile(filePath);
 
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- Not really a misused promise. An async function assigned to a variable.
     const fileSink: Sink & AsyncDisposable = async (
       record: LogRecord,
     ): Promise<void> => {
       const log = JSON.stringify(record, null, 2) + '\n';
-      await appendFile(fileName, log);
+
+      // It is, in fact, working correctly.
+      await appendFile(filePath, log);
     };
 
     fileSink[Symbol.asyncDispose] = disposeFileSink;
 
     return fileSink;
-    /* istanbul ignore next */
-  } catch (fsError) {
+  } catch (fsError: any) {
     console.log(`fs failed with ${fsError}, storing log in memory in array.`);
     return createMemorySink();
   }

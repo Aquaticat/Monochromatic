@@ -1,3 +1,3 @@
 <component name="DependencyValidationManager">
-  <scope name="manual+auto" pattern="file:pnpm-workspace.yaml||file:readme.md||file:packages/module/es/src/function.partial.ts||file:packages/module/es/src/numeric.add.ts||file:packages/module/es/src/string.concat.ts||file:packages/module/es/src/promise.some.ts||file:packages/module/es/src/arrayLike.everyFail.test.ts||file:packages/module/es/src/arrayLike.every.test.ts||file:packages/module/es/src/fs.pathJoin.default.ts" />
+  <scope name="manual+auto" pattern="file:pnpm-workspace.yaml||file:readme.md||file:packages/module/es/src/function.partial.ts||file:packages/module/es/src/numeric.add.ts||file:packages/module/es/src/string.concat.ts||file:packages/module/es/src/promise.some.ts||file:packages/module/es/src/arrayLike.everyFail.test.ts||file:packages/module/es/src/arrayLike.every.test.ts||file:packages/module/es/src/fs.pathJoin.default.ts||file:packages/module/es/src/other.limitedGetComputedCss.ts" />
 </component>

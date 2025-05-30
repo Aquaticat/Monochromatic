@@ -68,7 +68,7 @@ export type ReducingFunctionNoArrayPromisable<T_accumulated, T_element,> =
   let accumulator: T_accumulated = initialValue;
 
   for (const [internalCurrentIndex, arrayLikeElement] of arrayLikeArray.entries()) {
-    // eslint-disable-next-line no-await-in-loop -- Sequential processing is necessary for reduce semantics.
+    // oxlint-disable-next-line no-await-in-loop -- Sequential processing is necessary for reduce semantics.
     accumulator = await reducer(
       accumulator,
       arrayLikeElement,

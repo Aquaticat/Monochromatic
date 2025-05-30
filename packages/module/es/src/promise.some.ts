@@ -1,14 +1,13 @@
-import type { Promisable } from 'type-fest';
-import { chunksArray } from './arrayLike.chunks.ts';
-import { isArray } from './arrayLike.is.ts';
-import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
-import { logtapeGetLogger } from './logtape.shared.ts';
+import type {Promisable} from 'type-fest';
+import {chunksArray} from './iterable.chunks.ts';
+import {isArray} from './arrayLike.is.ts';
+import type {MaybeAsyncIterable} from './arrayLike.type.maybe.ts';
+import {logtapeGetLogger} from './logtape.shared.ts';
 
 const l = logtapeGetLogger(['m', 'promise.some']);
 
-const processShard = async <const T,>(shard: Promisable<T>[],
-  predicate: (input: T) => Promisable<boolean>): Promise<true> =>
-{
+const processShard = async <const T, >(shard: Promisable<T>[],
+                                       predicate: (input: T) => Promisable<boolean>): Promise<true> => {
   try {
     await Promise.any(
       shard.map(async function returnTrueOrThrow(input: Promisable<T>): Promise<true> {
@@ -21,7 +20,7 @@ const processShard = async <const T,>(shard: Promisable<T>[],
       }),
     );
     return true;
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(`No matching items in shard with error ${error}`);
   }
 };
@@ -34,7 +33,7 @@ const processShard = async <const T,>(shard: Promisable<T>[],
  * @param shardSize - Optional size for promise shards
  * @returns A promise that resolves to true if any value passes the test, false otherwise
  */
-export async function somePromises<const T,>(
+export async function somePromises<const T, >(
   predicate: (input: T) => Promisable<boolean>,
   promises: MaybeAsyncIterable<Promisable<T>>,
   shardSize = 1000,

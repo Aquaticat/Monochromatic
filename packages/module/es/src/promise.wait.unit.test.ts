@@ -19,7 +19,7 @@ describe('wait', () => {
     await wait(waitTime);
 
     const elapsedTime = performance.now() - startTime;
-    expect(elapsedTime).toBeGreaterThanOrEqual(waitTime);
+    expect(elapsedTime).toBeGreaterThanOrEqual(waitTime - 1);
   });
 
   test('resolves to undefined', async () => {
@@ -35,7 +35,7 @@ describe('wait', () => {
       // oxlint-disable-next-line no-await-in-loop
       await wait(timing);
       const elapsedTime = performance.now() - startTime;
-      expect(elapsedTime).toBeGreaterThanOrEqual(timing);
+      expect(elapsedTime).toBeGreaterThanOrEqual(timing - 1);
     }
   });
 

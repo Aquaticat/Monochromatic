@@ -83,15 +83,17 @@ import {
   mkdir,
   move,
   readDir,
-  readFile,
+  type ReadDirEntry,
   readTextFile,
   remove,
   stat,
   writeFile,
 } from 'happy-opfs';
+import { unwrapResult } from './result.unwrap.ts';
 
 async function myMkdir(path: string, _options: { recursive: true; }): Promise<string> {
-  await mkdir(path);
+  const absPath = path.startsWith('/') ? path : `/${path}`;
+  unwrapResult(await mkdir(absPath));
 
   return path;
 }
@@ -101,7 +103,8 @@ async function myStat(
 ): Promise<
   { handle: FileSystemHandle; } & FsStats
 > {
-  const fsHandle: FileSystemHandle = (await stat(path)).unwrap();
+  const absPath = path.startsWith('/') ? path : `/${path}`;
+  const fsHandle = unwrapResult(await stat(absPath));
 
   return {
     handle: fsHandle,
@@ -140,10 +143,10 @@ const fsConstants = {
    O_EXCL: 128,
    UV_FS_O_FILEMAP: 0,
    O_TRUNC: 512,
-   O_APPEND: 1024,
-   S_IRUSR: 256,
-   S_IWUSR: 128,
-   F_OK: 0,*/
+   O_APPEND: 1024,*/
+  S_IRUSR: 256,
+  // S_IWUSR: 128,
+  // F_OK: 0,
   R_OK: 4,
   W_OK: 2,
   /*  X_OK: 1,
@@ -157,7 +160,9 @@ const fsConstants = {
 
 async function access(path: string, _mode: number): Promise<void> {
   // no-op for opfs because opfs doesn't have permissions.
-  const pathExists: boolean = (await exists(path)).unwrap();
+  const absPath = path.startsWith('/') ? path : `/${path}`;
+
+  const pathExists: boolean = unwrapResult(await exists(absPath));
 
   if (!pathExists) {
     throw new Error(`Path ${path} does not exist.`);
@@ -166,7 +171,9 @@ async function access(path: string, _mode: number): Promise<void> {
 
 async function chmod(path: string, _mode: number): Promise<void> {
   // no-op for opfs because opfs doesn't have permissions.
-  const pathExists: boolean = (await exists(path)).unwrap();
+  const absPath = path.startsWith('/') ? path : `/${path}`;
+
+  const pathExists: boolean = unwrapResult(await exists(absPath));
 
   if (!pathExists) {
     throw new Error(`Path ${path} does not exist.`);
@@ -176,26 +183,90 @@ async function chmod(path: string, _mode: number): Promise<void> {
 async function myWriteFile(path: string, data: string,
   options: { flag: 'w' | 'wx' | 'a' | 'ax'; } = { flag: 'w' }): Promise<void>
 {
+  const absPath = path.startsWith('/') ? path : `/${path}`;
+
   const append = options.flag.includes('a');
-  const create = !options.flag.includes('x');
-  return (await writeFile(path, data, { append, create })).unwrap();
+  const create = true;
+  unwrapResult(await writeFile(absPath, data, { append, create }));
+}
+
+async function myAppendFile(path: string, data: string): Promise<void> {
+  const absPath = path.startsWith('/') ? path : `/${path}`;
+
+  unwrapResult(await appendFile(absPath, data));
+}
+
+async function cp(
+  src: string,
+  dest: string,
+  options: { recursive: boolean; } = { recursive: false },
+): Promise<void> {
+  const absSrc = src.startsWith('/') ? src : `/${src}`;
+  const absDest = dest.startsWith('/') ? dest : `/${dest}`;
+  if (options.recursive) {
+    unwrapResult(await copy(absSrc, absDest));
+  } else {
+    throw new Error('Copying non-recursively is not supported.');
+  }
+}
+
+async function myExists(path: string): Promise<boolean> {
+  const absPath = path.startsWith('/') ? path : `/${path}`;
+  return unwrapResult(await exists(absPath));
+}
+
+async function myReadDir(path: string,
+  options: { withFileTypes: true; recursive: boolean; }): Promise<ReadDirEntry[]>;
+async function myReadDir(path: string,
+  options: { withFileTypes: false; recursive: boolean; }): Promise<string[]>;
+async function myReadDir(path: string,
+  options: { withFileTypes: boolean; recursive: boolean; } = {
+    withFileTypes: false,
+    recursive: false,
+  }): Promise<string[] | ReadDirEntry[]>
+{
+  const absPath = path.startsWith('/') ? path : `/${path}`;
+  const result = unwrapResult(await readDir(absPath, { recursive: options.recursive }));
+
+  const entries = await Array.fromAsync(result);
+
+  return options.withFileTypes ? entries : entries.map(function getPathOnly(entry) {
+    return entry.path;
+  });
+}
+
+async function myReadTextFile(path: string): Promise<string> {
+  const absPath = path.startsWith('/') ? path : `/${path}`;
+  return unwrapResult(await readTextFile(absPath));
+}
+
+async function rm(path: string,
+  options: { force: boolean; recursive: true; }): Promise<void>
+{
+  const absPath = path.startsWith('/') ? path : `/${path}`;
+  try {
+    unwrapResult(await remove(absPath));
+  } catch (e) {
+    if (!options.force) {
+      throw e;
+    }
+  }
 }
 
 export {
   access,
-  appendFile,
   chmod,
-  copy,
+  cp,
   createFile,
-  exists,
   fsConstants,
   type FsStats,
   move,
+  myAppendFile as appendFile,
+  myExists as exists,
   myMkdir as mkdir,
+  myReadDir as readdir,
+  myReadTextFile as readTextFile,
   myStat as stat,
   myWriteFile as writeFile,
-  readDir,
-  readFile,
-  readTextFile,
-  remove,
+  rm,
 };

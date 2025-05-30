@@ -1,12 +1,12 @@
-import type { Promisable } from 'type-fest';
+import type {Promisable} from 'type-fest';
 import {
   // BooleanNot,
   entriesArrayLike,
   entriesArrayLikeAsync,
   // mapArrayLikeAsync,
-} from './arrayLike.entries.ts';
-import type { MappingFunction } from './arrayLike.map.ts';
-import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
+} from './iterable.entries.ts';
+import type {MappingFunction} from './arrayLike.map.ts';
+import type {MaybeAsyncIterable} from './arrayLike.type.maybe.ts';
 import {
   ensuringFalsyAsync,
   ensuringTruthyAsync,
@@ -22,8 +22,10 @@ import {
  when being passed to the predicate, return true.
  When one of the predicates returns true, the function short-circuits and returns false.
  */
-/* @__NO_SIDE_EFFECTS__ */ export async function noneArrayLikeAsync<T_element,
-  T_arrayLike extends MaybeAsyncIterable<T_element>,>(
+
+/* @__NO_SIDE_EFFECTS__ */
+export async function noneArrayLikeAsync<T_element,
+  T_arrayLike extends MaybeAsyncIterable<T_element>, >(
   testingFn: MappingFunction<T_element, Promisable<boolean>>,
   arrayLike: T_arrayLike,
 ): Promise<boolean> {
@@ -36,7 +38,7 @@ import {
    which means the whole noneArray test should return false.
    Otherwise, Promise.any rejects, which means all the predicates rejected,
    so the whole noneArray test should return true.
-  */
+   */
   const ensuredTruthyAsync = ensuringTruthyAsync(testingFn);
   const results = arr.map(
     function toPromise(element: T_element, index: number): Promisable<boolean> {
@@ -51,7 +53,7 @@ import {
   }
 }
 
-export function noneArrayLike<T_element, T_arrayLike extends Iterable<T_element>,>(
+export function noneArrayLike<T_element, T_arrayLike extends Iterable<T_element>, >(
   testingFn: MappingFunction<T_element, boolean>,
   arrayLike: T_arrayLike,
 ): boolean {
@@ -64,11 +66,11 @@ export function noneArrayLike<T_element, T_arrayLike extends Iterable<T_element>
   }
   return true;
   /*
-  let result = true;
-  for (const [index, element] of entriesArrayLike(arrayLike)) {
-    if (testingFn(element, index, arrayLike)) {
-      result = false;
-    }
-  }
-  return result;*/
+   let result = true;
+   for (const [index, element] of entriesArrayLike(arrayLike)) {
+   if (testingFn(element, index, arrayLike)) {
+   result = false;
+   }
+   }
+   return result;*/
 }

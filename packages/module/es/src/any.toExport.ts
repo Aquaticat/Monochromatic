@@ -26,7 +26,7 @@ export function toExport(obj: any): string {
       })
       .with('string', function handler() {
         const stringObj = obj as string;
-        return `${JSON.stringify(stringObj)}`;
+        return JSON.stringify(stringObj);
       })
       .with('date', function handler() {
         const dateObj = obj as Date;
@@ -75,7 +75,7 @@ export function toExport(obj: any): string {
     })
     .otherwise(
       function thrower() {
-        /* v8 ignore next */
+        /* v8 ignore next -- @preserve */
         throw new TypeError(`Unknown obj ${obj} ${JSON.stringify(obj)} type ${objType}`);
       },
     );

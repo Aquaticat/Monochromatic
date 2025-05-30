@@ -14,7 +14,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('filterArrayLike', () => {
+describe(filterArrayLike, () => {
   test('filters values based on predicate', () => {
     const isEven = (x: number) => x % 2 === 0;
     const result = filterArrayLike(isEven, [1, 2, 3, 4, 5]);
@@ -47,7 +47,7 @@ describe('filterArrayLike', () => {
   });
 });
 
-describe('filterArrayLikeAsync', () => {
+describe(filterArrayLikeAsync, () => {
   test('filters values based on async predicate', async () => {
     const isEvenAsync = async (x: number) => x % 2 === 0;
     const result = await filterArrayLikeAsync(isEvenAsync, [1, 2, 3, 4, 5]);
@@ -69,7 +69,7 @@ describe('filterArrayLikeAsync', () => {
   test('works with async iterable', async () => {
     const isEven = (x: number) => x % 2 === 0;
     const asyncIterable = {
-      [Symbol.asyncIterator]: async function*() {
+      [Symbol.asyncIterator]: async function* () {
         yield 1;
         yield 2;
         yield 3;
@@ -130,7 +130,7 @@ describe('filterFailArrayLikeAsync', () => {
   test('works with async iterable', async () => {
     const isEven = (x: number) => x % 2 === 0;
     const asyncIterable = {
-      [Symbol.asyncIterator]: async function*() {
+      [Symbol.asyncIterator]: async function* () {
         yield 1;
         yield 2;
         yield 3;

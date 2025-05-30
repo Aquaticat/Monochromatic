@@ -35,6 +35,10 @@ import {
   writeFile,
 } from 'node:fs/promises';
 
+async function readTextFile(path: string): Promise<string> {
+  return await readFile(path, { encoding: 'utf8' });
+}
+
 export {
   access,
   appendFile,
@@ -56,6 +60,7 @@ export {
   readdir,
   readFile,
   readlink,
+  readTextFile,
   realpath,
   rename,
   rm,
