@@ -1,12 +1,12 @@
+import type { Tuple } from './array.type.tuple.ts';
+import { notEmptyOrThrow } from './error.throw.ts';
 import {
   arrayIsEmpty,
   isEmptyArray,
-} from './arrayLike.is.ts';
-import type { Ints } from './arrayLike.type.ints.ts';
-import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
-import type { Tuple } from './arrayLike.type.tuple.ts';
-import { notEmptyOrThrow } from './error.throw.ts';
+} from './iterable.is.ts';
+import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 import { logtapeGetLogger } from './logtape.shared.ts';
+import type { Ints } from './numeric.type.ints.ts';
 
 const l = logtapeGetLogger(['m', 'iterable.chunks']);
 

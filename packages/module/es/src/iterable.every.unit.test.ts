@@ -13,7 +13,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('everyIterable', () => {
+describe(everyIterable, () => {
   test('returns true when all elements pass the test', () => {
     const array = [2, 4, 6, 8];
     expect(everyIterable((num: number) => num % 2 === 0, array)).toBe(true);
@@ -81,7 +81,7 @@ describe('everyIterable', () => {
   });
 });
 
-describe('everyIterableAsync', () => {
+describe(everyIterableAsync, () => {
   test('returns true when all elements pass the test', async () => {
     const array = [2, 4, 6, 8];
     expect(await everyIterableAsync(async (num: number) => num % 2 === 0, array)).toBe(

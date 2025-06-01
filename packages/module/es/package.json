@@ -5,7 +5,9 @@
   "module": "dist/final/index.js",
   "exports": {
     ".": {
-      "default": "./src/index.ts"
+      "types": "./dist/final/types/src/index.d.ts",
+      "node": "./dist/final/js/index.node.js",
+      "default": "./dist/final/js/index.js"
     },
     "./ts": {
       "default": "./src/index.ts"
@@ -41,7 +43,7 @@
   },
   "scripts": {
     "w:types": "tsc --watch",
-    "b:types": "tsc",
+    "b:types": "tsc --build --force --verbose",
     "b:js_node": "vite build --config vite.config.ts --mode production,node",
     "w:js_node": "vite build --config vite.config.ts --mode production,node --watch",
     "b:js_browser": "vite build --config vite.config.ts --mode production,browser",

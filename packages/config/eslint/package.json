@@ -14,6 +14,12 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "eslint-plugin-oxlint": "catalog:",
+    "eslint-plugin-jsdoc": "catalog:",
+    "eslint-plugin-n": "catalog:",
+    "@vitest/eslint-plugin": "catalog:",
+    "eslint-plugin-unicorn": "catalog:",
+    "eslint-plugin-astro": "catalog:",
+    "eslint-plugin-jsx-a11y": "catalog:",
     "vite": "catalog:",
     "@monochromatic-dev/config-typescript": "*",
     "@monochromatic-dev/config-vite": "*",

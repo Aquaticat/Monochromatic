@@ -12,7 +12,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('arrayOf', () => {
+describe(arrayOf, () => {
   test('returns an array with the provided elements', () => {
     expect(arrayOf(1, 2, 3)).toEqual([1, 2, 3]);
     expect(arrayOf('a', 'b', 'c')).toEqual(['a', 'b', 'c']);
@@ -35,7 +35,7 @@ describe('arrayOf', () => {
   });
 });
 
-describe('genOf', () => {
+describe(genOf, () => {
   test('yields each provided element', () => {
     const generator = genOf(1, 2, 3);
 

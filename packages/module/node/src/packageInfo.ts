@@ -1,18 +1,18 @@
-import { getLogger } from '@logtape/logtape';
+import {getLogger} from '@logtape/logtape';
 import {
-  mapArrayLikeAsync,
+  mapIterableAsync,
   notUndefinedOrThrow,
   pipedAsync,
   throws,
 } from '@monochromatic-dev/module-es/ts';
-import { parse as jsoncParse } from '@std/jsonc';
-import { findUp } from 'find-up';
-import { homedir } from 'node:os';
+import {parse as jsoncParse} from '@std/jsonc';
+import {findUp} from 'find-up';
+import {homedir} from 'node:os';
 import type {
   PackageJson,
   TsConfigJson,
 } from 'type-fest';
-import { exec } from './child_process.ts';
+import {exec} from './child_process.ts';
 import {
   fs,
   path,
@@ -25,83 +25,83 @@ export type PackageInfo =
     // TODO: Support inferring current runtime.
     // Consider if to support Deno depending on how well it handles package.json files.
     | {
-      packageManager: 'pnpm';
-      pe: 'pnpm exec';
-      pr: 'pnpm run';
-      nodeLinker: 'isolated' | 'hoisted' | 'pnp';
-      runtime: 'node';
-    }
+    packageManager: 'pnpm';
+    pe: 'pnpm exec';
+    pr: 'pnpm run';
+    nodeLinker: 'isolated' | 'hoisted' | 'pnp';
+    runtime: 'node';
+  }
     | {
-      packageManager: 'bun';
-      pe: 'bun run';
-      pr: 'bun run';
-      nodeLinker: 'hoisted';
-      runtime: 'bun';
-    }
+    packageManager: 'bun';
+    pe: 'bun run';
+    pr: 'bun run';
+    nodeLinker: 'hoisted';
+    runtime: 'bun';
+  }
     | {
-      packageManager: 'yarn';
-      pe: 'yarn run -T -B';
-      pr: 'yarn run';
-      nodeLinker: 'isolated' | 'hoisted' | 'pnp';
-      runtime: 'yarn node';
-    }
+    packageManager: 'yarn';
+    pe: 'yarn run -T -B';
+    pr: 'yarn run';
+    nodeLinker: 'isolated' | 'hoisted' | 'pnp';
+    runtime: 'yarn node';
+  }
     | {
-      packageManager: 'npm';
-      pe: 'npm exec --';
-      pr: 'npm run';
-      nodeLinker: 'hoisted';
-      runtime: 'node';
-    }
-  )
+    packageManager: 'npm';
+    pe: 'npm exec --';
+    pr: 'npm run';
+    nodeLinker: 'hoisted';
+    runtime: 'node';
+  }
+    )
   & ({
-    isInWorkspace: boolean;
-    packageAbsDir: string;
-    workspaceAbsDir: string;
-    tsconfigJson: false | TsConfigJson;
-    packageJson: PackageJson;
-    // TODO: Add runtime args
-    runtimeArgs: string[];
-  });
+  isInWorkspace: boolean;
+  packageAbsDir: string;
+  workspaceAbsDir: string;
+  tsconfigJson: false | TsConfigJson;
+  packageJson: PackageJson;
+  // TODO: Add runtime args
+  runtimeArgs: string[];
+});
 
 // TODO: Make this more modular.
 //       Support defining new package managers separately.
 
 /** Detect which pm and install strategy is used for the specified file or folder inside a npm package
 
-@remarks
-Does not support yarn classic.
-Supports independent packages or package in workspace.
+ @remarks
+ Does not support yarn classic.
+ Supports independent packages or package in workspace.
 
-@param fileOrFolderInPkgAbsPath - string of absolute path of any file or folder in package, defaults to path.resolve()
+ @param fileOrFolderInPkgAbsPath - string of absolute path of any file or folder in package, defaults to path.resolve()
 
-@returns an object containing:
-packageManager and nodeLinker, as specified by https://pnpm.io/npmrc#node-linker
-pe - command prefix of current package manager to execute a binary
-pr - command prefix of current package manager to execute a npm script
+ @returns an object containing:
+  packageManager and nodeLinker, as specified by https://pnpm.io/npmrc#node-linker
+  pe - command prefix of current package manager to execute a binary
+  pr - command prefix of current package manager to execute a npm script
  */
 async function packageInfoFn(
   fileOrFolderInPkgAbsPath: string = path.resolve(),
 ): Promise<PackageInfo> {
   const fileOrFolderInPkgAbsPathObj = await path.parseFs(fileOrFolderInPkgAbsPath);
   /* First, we check packageManager field in package.json, stopping at any workspace or user home dir.
-  Special case: if any workspace specification file is found, we use that package manager. */
+   Special case: if any workspace specification file is found, we use that package manager. */
 
   const result:
     & Partial<PackageInfo>
     & Pick<PackageInfo, 'packageAbsDir'> = {
-      packageAbsDir: notUndefinedOrThrow(
-        await findUp(async (potentialPackageDir) => {
-          if (!await fs.exists(path.join(potentialPackageDir, 'package.json'))) {
-            return;
-          }
-          return potentialPackageDir;
-        }, {
-          cwd: fileOrFolderInPkgAbsPathObj.currentAbsDir,
-          stopAt: homedir(),
-          type: 'directory',
-        }),
-      ),
-    };
+    packageAbsDir: notUndefinedOrThrow(
+      await findUp(async (potentialPackageDir) => {
+        if (!await fs.exists(path.join(potentialPackageDir, 'package.json'))) {
+          return;
+        }
+        return potentialPackageDir;
+      }, {
+        cwd: fileOrFolderInPkgAbsPathObj.currentAbsDir,
+        stopAt: homedir(),
+        type: 'directory',
+      }),
+    ),
+  };
   l.debug`result ${result}`;
 
   const [tsconfigJson, packageJson]: [
@@ -152,48 +152,48 @@ async function packageInfoFn(
   const resultWWorkspaceWTsConfigJson:
     & typeof result
     & Pick<PackageInfo,
-      'tsconfigJson' | 'packageJson' | 'isInWorkspace' | 'workspaceAbsDir'> =
-      potentialWorkspaceAbsDir
-        ? {
-          ...result,
-          tsconfigJson,
-          packageJson,
-          isInWorkspace: true,
-          workspaceAbsDir: potentialWorkspaceAbsDir,
-        }
-        : {
-          ...result,
-          tsconfigJson,
-          packageJson,
-          isInWorkspace: false,
-          workspaceAbsDir: result.packageAbsDir,
-        };
+    'tsconfigJson' | 'packageJson' | 'isInWorkspace' | 'workspaceAbsDir'> =
+    potentialWorkspaceAbsDir
+      ? {
+        ...result,
+        tsconfigJson,
+        packageJson,
+        isInWorkspace: true,
+        workspaceAbsDir: potentialWorkspaceAbsDir,
+      }
+      : {
+        ...result,
+        tsconfigJson,
+        packageJson,
+        isInWorkspace: false,
+        workspaceAbsDir: result.packageAbsDir,
+      };
   l.debug`resultWWorkspaceWTsConfigJson ${resultWWorkspaceWTsConfigJson}`;
 
   const [
     pnpmLockExists,
     bunLockExists,
     /* Just because yarn.lock exists doesn't mean it's yarn.
-    Could be bun, when the option to generate a yarn.lock file is enabled. */
+     Could be bun, when the option to generate a yarn.lock file is enabled. */
     yarnLockExists,
     packageLockExists,
     pnpExists,
     nodeModulesPnpmExists,
     nodeModulesYarnExists,
   ] = await // TODO: Change mapParallelAsync here to my own map
-  mapArrayLikeAsync(
-    async (base: string) =>
-      await fs.exists(path.join(resultWWorkspaceWTsConfigJson.workspaceAbsDir, base)),
-    [
-      'pnpm-lock.yaml',
-      'bun.lock',
-      'yarn.lock',
-      'package-json.lock',
-      '.pnp.cjs',
-      path.join('node_modules', '.pnpm'),
-      path.join('node_modules', '.store'),
-    ],
-  );
+    mapIterableAsync(
+      async (base: string) =>
+        await fs.exists(path.join(resultWWorkspaceWTsConfigJson.workspaceAbsDir, base)),
+      [
+        'pnpm-lock.yaml',
+        'bun.lock',
+        'yarn.lock',
+        'package-json.lock',
+        '.pnp.cjs',
+        path.join('node_modules', '.pnpm'),
+        path.join('node_modules', '.store'),
+      ],
+    );
 
   if (bunLockExists) {
     return {
@@ -310,7 +310,7 @@ async function packageInfoFn(
   /* If there's .pnpm folder in node_modules, we know for sure pnpm installed it and the node linker is isolated. */
 
   /* If any package manager specific configuration file or configuration is found, we use that package manager.
-  Not making this a first check since the configuration file may just be placed there but unused. */
+   Not making this a first check since the configuration file may just be placed there but unused. */
 }
 
 export const packageInfo: typeof packageInfoFn & PackageInfo = Object.assign(

@@ -1,17 +1,17 @@
-import type {Promisable} from 'type-fest';
-import {
-  // BooleanNot,
-  entriesArrayLike,
-  entriesArrayLikeAsync,
-  // mapArrayLikeAsync,
-} from './iterable.entries.ts';
-import type {MappingFunction} from './arrayLike.map.ts';
-import type {MaybeAsyncIterable} from './arrayLike.type.maybe.ts';
+import type { Promisable } from 'type-fest';
 import {
   ensuringFalsyAsync,
   ensuringTruthyAsync,
   nonThrowingWithFalse,
 } from './function.ensuring.ts';
+import {
+  // BooleanNot,
+  entriesIterable,
+  entriesIterableAsync,
+  // mapArrayLikeAsync,
+} from './iterable.entries.ts';
+import type { MappingFunction } from './iterable.map.ts';
+import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 /**
  @remarks
@@ -24,8 +24,8 @@ import {
  */
 
 /* @__NO_SIDE_EFFECTS__ */
-export async function noneArrayLikeAsync<T_element,
-  T_arrayLike extends MaybeAsyncIterable<T_element>, >(
+export async function noneIterableAsync<T_element,
+  T_arrayLike extends MaybeAsyncIterable<T_element>,>(
   testingFn: MappingFunction<T_element, Promisable<boolean>>,
   arrayLike: T_arrayLike,
 ): Promise<boolean> {
@@ -53,13 +53,13 @@ export async function noneArrayLikeAsync<T_element,
   }
 }
 
-export function noneArrayLike<T_element, T_arrayLike extends Iterable<T_element>, >(
+export function noneIterable<T_element, T_arrayLike extends Iterable<T_element>,>(
   testingFn: MappingFunction<T_element, boolean>,
   arrayLike: T_arrayLike,
 ): boolean {
   const arr: T_element[] = [...arrayLike];
   const nonThrowingFn = nonThrowingWithFalse(testingFn);
-  for (const [index, element] of entriesArrayLike(arr)) {
+  for (const [index, element] of entriesIterable(arr)) {
     if (nonThrowingFn(element, index, arr)) {
       return false;
     }

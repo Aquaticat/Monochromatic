@@ -14,7 +14,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('mapIterable', () => {
+describe(mapIterable, () => {
   test('maps simple array values', () => {
     const result = mapIterable((x: number) => x * 2, [1, 2, 3]);
     expect(result).toEqual([2, 4, 6]);
@@ -44,7 +44,8 @@ describe('mapIterable', () => {
   });
 
   test('provides array argument', () => {
-    const result = mapIterable((_x: string, _i, arr) => arr.length, ['a', 'b', 'c']);
+    const result = mapIterable((_x: string, _i: number, arr) => arr.length,
+      ['a', 'b', 'c'] as const);
     expect(result).toEqual([3, 3, 3]);
   });
 
@@ -54,7 +55,7 @@ describe('mapIterable', () => {
   });
 });
 
-describe('mapIterableAsync', () => {
+describe(mapIterableAsync, () => {
   test('maps simple array values asynchronously', async () => {
     const result = await mapIterableAsync(async (x: number) => x * 2, [1, 2, 3]);
     expect(result).toEqual([2, 4, 6]);

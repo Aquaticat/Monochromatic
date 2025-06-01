@@ -1,6 +1,6 @@
 import type { Promisable } from 'type-fest';
-import { isEmptyArray } from './arrayLike.is.ts';
-import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
+import { isEmptyArray } from './iterable.is.ts';
+import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 import type { PromisableFunction } from './promise.type.ts';
 
 export type ReducingFunctionWithAccumulatorAndCurrentValue<T_accumulated, T_element,> = (
@@ -53,8 +53,8 @@ export type ReducingFunctionNoArrayPromisable<T_accumulated, T_element,> =
     ReducingFunctionWithAccumulatorAndCurrentValueAndIndex<T_accumulated, T_element>
   >;
 
-/* @__NO_SIDE_EFFECTS__ */ export async function reduceArrayLikeAsync<const T_accumulated,
-  const T_element,>(
+/* @__NO_SIDE_EFFECTS__ */
+export async function reduceIterableAsync<const T_accumulated, const T_element,>(
   initialValue: T_accumulated,
   reducer: ReducingFunctionPromisable<T_accumulated, T_element>,
   arrayLike: MaybeAsyncIterable<T_element>,
@@ -80,7 +80,8 @@ export type ReducingFunctionNoArrayPromisable<T_accumulated, T_element,> =
   return accumulator;
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function reduceArrayLike<T_accumulated, T_element,>(
+/* @__NO_SIDE_EFFECTS__ */
+export function reduceIterable<T_accumulated, T_element,>(
   initialValue: T_accumulated,
   reducer: ReducingFunction<T_accumulated, T_element>,
   arrayLike: Iterable<T_element>,
@@ -94,7 +95,7 @@ export type ReducingFunctionNoArrayPromisable<T_accumulated, T_element,> =
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export function* reduceArrayLikeGen<const T_accumulated, const T_element,>(
+export function* reduceIterableGen<const T_accumulated, const T_element,>(
   initialValue: T_accumulated,
   reducer: ReducingFunctionNoArray<T_accumulated, T_element>,
   arrayLike: Iterable<T_element>,
@@ -112,7 +113,7 @@ export function* reduceArrayLikeGen<const T_accumulated, const T_element,>(
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export async function* reduceArrayLikeAsyncGen<const T_accumulated, const T_element,>(
+export async function* reduceIterableAsyncGen<const T_accumulated, const T_element,>(
   initialValue: T_accumulated,
   reducer: ReducingFunctionNoArrayPromisable<T_accumulated, T_element>,
   arrayLike: MaybeAsyncIterable<T_element>,

@@ -58,7 +58,9 @@
 
     "newLine": "lf",
 
-    "noEmitOnError": true,
+    // Sometimes we're importing types in a test file, which needs tsc to emit the types before the errors disappear.
+    // Setting this to true will cause a deadlock.
+    "noEmitOnError": false,
 
     "verbatimModuleSyntax": true,
 

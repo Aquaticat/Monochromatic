@@ -5,7 +5,7 @@ import {
   test,
 } from 'vitest';
 
-describe('awaits', () => {
+describe(awaits, () => {
   test('correctly awaits a promise', async () => {
     const promise = Promise.resolve(42);
     const result = await awaits(promise);

@@ -25,11 +25,11 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('isArray', () => {
+describe(isArray, () => {
   test('identifies arrays correctly', () => {
     expect(isArray([])).toBe(true);
     expect(isArray([1, 2, 3])).toBe(true);
-    expect(isArray(Array.from({length: 5}))).toBe(true);
+    expect(isArray(Array.from({ length: 5 }))).toBe(true);
   });
 
   test('rejects non-arrays', () => {
@@ -42,13 +42,13 @@ describe('isArray', () => {
   });
 });
 
-describe('isIterable', () => {
+describe(isIterable, () => {
   test('identifies iterables correctly', () => {
     expect(isIterable([])).toBe(true);
     expect(isIterable('string')).toBe(true);
     expect(isIterable(new Set())).toBe(true);
     expect(isIterable(new Map())).toBe(true);
-    expect(isIterable(function* () {
+    expect(isIterable(function*() {
       yield 1;
     }()))
       .toBe(true);
@@ -60,22 +60,22 @@ describe('isIterable', () => {
     expect(isIterable({})).toBe(false);
     expect(isIterable(123)).toBe(false);
     expect(isIterable(Symbol('nope'))).toBe(false);
-    expect(isIterable(async function* () {
+    expect(isIterable(async function*() {
       yield 1;
     }()))
       .toBe(false);
   });
 });
 
-describe('isAsyncIterable', () => {
+describe(isAsyncIterable, () => {
   test('identifies async iterables correctly', () => {
-    expect(isAsyncIterable(async function* () {
+    expect(isAsyncIterable(async function*() {
       yield 1;
     }()))
       .toBe(true);
 
     const customAsyncIterable = {
-      [Symbol.asyncIterator]: () => ({next: async () => ({value: 1, done: false})}),
+      [Symbol.asyncIterator]: () => ({ next: async () => ({ value: 1, done: false }) }),
     };
     expect(isAsyncIterable(customAsyncIterable)).toBe(true);
   });
@@ -88,30 +88,30 @@ describe('isAsyncIterable', () => {
     expect(isAsyncIterable(null)).toBe(false);
     expect(isAsyncIterable(undefined)).toBe(false);
     expect(isAsyncIterable({})).toBe(false);
-    expect(isAsyncIterable(function* () {
+    expect(isAsyncIterable(function*() {
       yield 1;
     }()))
       .toBe(false);
   });
 });
 
-describe('isMaybeAsyncIterable', () => {
+describe(isMaybeAsyncIterable, () => {
   test('identifies both sync and async iterables', () => {
     expect(isMaybeAsyncIterable([])).toBe(true);
     expect(isMaybeAsyncIterable('string')).toBe(true);
     expect(isMaybeAsyncIterable(new Set())).toBe(true);
     expect(isMaybeAsyncIterable(new Map())).toBe(true);
-    expect(isMaybeAsyncIterable(function* () {
+    expect(isMaybeAsyncIterable(function*() {
       yield 1;
     }()))
       .toBe(true);
-    expect(isMaybeAsyncIterable(async function* () {
+    expect(isMaybeAsyncIterable(async function*() {
       yield 1;
     }()))
       .toBe(true);
 
     const customAsyncIterable = {
-      [Symbol.asyncIterator]: () => ({next: async () => ({value: 1, done: false})}),
+      [Symbol.asyncIterator]: () => ({ next: async () => ({ value: 1, done: false }) }),
     };
     expect(isMaybeAsyncIterable(customAsyncIterable)).toBe(true);
   });
@@ -125,7 +125,7 @@ describe('isMaybeAsyncIterable', () => {
   });
 });
 
-describe('isMap', () => {
+describe(isMap, () => {
   test('identifies maps correctly', () => {
     expect(isMap(new Map())).toBe(true);
     expect(isMap(new Map([['key', 'value']]))).toBe(true);
@@ -159,7 +159,7 @@ describe('isWeakMap', () => {
   });
 });
 
-describe('isSet', () => {
+describe(isSet, () => {
   test('identifies sets correctly', () => {
     expect(isSet(new Set())).toBe(true);
     expect(isSet(new Set([1, 2, 3]))).toBe(true);
@@ -175,7 +175,7 @@ describe('isSet', () => {
   });
 });
 
-describe('isWeakSet', () => {
+describe(isWeakSet, () => {
   test('identifies weak sets correctly', () => {
     expect(isWeakSet(new WeakSet())).toBe(true);
     const obj = {};
@@ -193,10 +193,10 @@ describe('isWeakSet', () => {
   });
 });
 
-describe('isObject', () => {
+describe(isObject, () => {
   test('identifies objects correctly', () => {
     expect(isObject({})).toBe(true);
-    expect(isObject({a: 1, b: 2})).toBe(true);
+    expect(isObject({ a: 1, b: 2 })).toBe(true);
     expect(isObject(Object.create(null))).toBe(true);
   });
 
@@ -211,16 +211,16 @@ describe('isObject', () => {
   });
 });
 
-describe('isAsyncGenerator', () => {
+describe(isAsyncGenerator, () => {
   test('identifies async generators correctly', () => {
-    const asyncGen = async function* () {
+    const asyncGen = async function*() {
       yield 1;
     }();
     expect(isAsyncGenerator(asyncGen)).toBe(true);
   });
 
   test('rejects non-async generators', () => {
-    const gen = function* () {
+    const gen = function*() {
       yield 1;
     }();
     expect(isAsyncGenerator(gen)).toBe(false);
@@ -231,16 +231,16 @@ describe('isAsyncGenerator', () => {
   });
 });
 
-describe('isGenerator', () => {
+describe(isGenerator, () => {
   test('identifies generators correctly', () => {
-    const gen = function* () {
+    const gen = function*() {
       yield 1;
     }();
     expect(isGenerator(gen)).toBe(true);
   });
 
   test('rejects non-generators', () => {
-    const asyncGen = async function* () {
+    const asyncGen = async function*() {
       yield 1;
     }();
     expect(isGenerator(asyncGen)).toBe(false);
@@ -251,7 +251,7 @@ describe('isGenerator', () => {
   });
 });
 
-describe('isEmptyArray', () => {
+describe(isEmptyArray, () => {
   test('identifies empty arrays correctly', () => {
     expect(isEmptyArray([])).toBe(true);
     expect(isEmptyArray(new Array())).toBe(true);
@@ -269,7 +269,7 @@ describe('isEmptyArray', () => {
   });
 });
 
-describe('arrayIsEmpty', () => {
+describe(arrayIsEmpty, () => {
   test('identifies empty arrays correctly', () => {
     expect(arrayIsEmpty([])).toBe(true);
     expect(arrayIsEmpty(new Array())).toBe(true);
@@ -283,7 +283,7 @@ describe('arrayIsEmpty', () => {
   });
 });
 
-describe('isNonEmptyArray', () => {
+describe(isNonEmptyArray, () => {
   test('identifies non-empty arrays correctly', () => {
     expect(isNonEmptyArray([1])).toBe(true);
     expect(isNonEmptyArray([null])).toBe(true);
@@ -302,7 +302,7 @@ describe('isNonEmptyArray', () => {
   });
 });
 
-describe('arrayIsNonEmpty', () => {
+describe(arrayIsNonEmpty, () => {
   test('identifies non-empty arrays correctly', () => {
     expect(arrayIsNonEmpty([1])).toBe(true);
     expect(arrayIsNonEmpty([null])).toBe(true);

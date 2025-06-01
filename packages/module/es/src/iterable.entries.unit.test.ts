@@ -12,7 +12,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('entriesIterable', () => {
+describe(entriesIterable, () => {
   test('yields indices and elements for arrays', () => {
     const arr = [10, 20, 30];
     const result = [...entriesIterable(arr)];
@@ -59,7 +59,7 @@ describe('entriesIterable', () => {
 
   test('maintains order of the original iterable', () => {
     const iterable = {
-      * [Symbol.iterator]() {
+      *[Symbol.iterator]() {
         yield 'first';
         yield 'second';
         yield 'third';
@@ -71,7 +71,7 @@ describe('entriesIterable', () => {
   });
 });
 
-describe('entriesIterableAsync', () => {
+describe(entriesIterableAsync, () => {
   test('yields indices and elements for arrays', async () => {
     const arr = [10, 20, 30];
     const result: [number, number][] = [];
@@ -95,7 +95,7 @@ describe('entriesIterableAsync', () => {
 
   test('works with async iterables', async () => {
     const asyncIterable = {
-      async* [Symbol.asyncIterator]() {
+      async *[Symbol.asyncIterator]() {
         yield 'first';
         yield 'second';
         yield 'third';
@@ -113,7 +113,7 @@ describe('entriesIterableAsync', () => {
 
   test('works with mixed delay async iterables', async () => {
     const asyncIterable = {
-      async* [Symbol.asyncIterator]() {
+      async *[Symbol.asyncIterator]() {
         yield 'quick';
         await new Promise((resolve) => setTimeout(resolve, 10));
         yield 'delayed';

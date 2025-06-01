@@ -37,8 +37,8 @@ export type MappingFunctionNoArrayPromisable<T_element, T_mappedElement,> =
   | PromisableFunction<MappingFunctionWithElement<T_element, T_mappedElement>>
   | PromisableFunction<MappingFunctionWithElementAndIndex<T_element, T_mappedElement>>;
 
-/* @__NO_SIDE_EFFECTS__ */ export async function mapArrayLikeAsync<const T_element,
-  const T_mappedElement,
+/* @__NO_SIDE_EFFECTS__ */
+export async function mapIterableAsync<const T_element, const T_mappedElement,
   const T_arrayLike extends MaybeAsyncIterable<T_element> & { length: number; },>(
   mappingFn: MappingFunctionPromisable<T_element, T_mappedElement>,
   arrayLike: T_arrayLike,
@@ -46,14 +46,16 @@ export type MappingFunctionNoArrayPromisable<T_element, T_mappedElement,> =
   Tuple<T_mappedElement, T_arrayLike['length']>
 >;
 
-/* @__NO_SIDE_EFFECTS__ */ export async function mapArrayLikeAsync<const T_element,
-  const T_mappedElement, const T_arrayLike extends MaybeAsyncIterable<T_element>,>(
+/* @__NO_SIDE_EFFECTS__ */
+export async function mapIterableAsync<const T_element, const T_mappedElement,
+  const T_arrayLike extends MaybeAsyncIterable<T_element>,>(
   mappingFn: MappingFunctionPromisable<T_element, T_mappedElement>,
   arrayLike: T_arrayLike,
 ): Promise<T_mappedElement[]>;
 
-/* @__NO_SIDE_EFFECTS__ */ export async function mapArrayLikeAsync<const T_element,
-  const T_mappedElement, const T_arrayLike extends MaybeAsyncIterable<T_element>,>(
+/* @__NO_SIDE_EFFECTS__ */
+export async function mapIterableAsync<const T_element, const T_mappedElement,
+  const T_arrayLike extends MaybeAsyncIterable<T_element>,>(
   mappingFn: MappingFunctionPromisable<T_element, T_mappedElement>,
   arrayLike: T_arrayLike,
 ): Promise<T_mappedElement[]> {
@@ -69,21 +71,22 @@ export type MappingFunctionNoArrayPromisable<T_element, T_mappedElement,> =
   );
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function mapArrayLike<const T_element,
-  const T_mappedElement,
+/* @__NO_SIDE_EFFECTS__ */
+export function mapIterable<const T_element, const T_mappedElement,
   const T_arrayLike extends Iterable<T_element> & { length: number; },>(
   mappingFn: MappingFunction<T_element, T_mappedElement>,
   arrayLike: T_arrayLike,
 ): Tuple<T_mappedElement, T_arrayLike['length']>;
 
-/* @__NO_SIDE_EFFECTS__ */ export function mapArrayLike<const T_element,
-  const T_mappedElement, const T_arrayLike extends Iterable<T_element>,>(
+/* @__NO_SIDE_EFFECTS__ */
+export function mapIterable<const T_element, const T_mappedElement,
+  const T_arrayLike extends Iterable<T_element>,>(
   mappingFn: MappingFunction<T_element, T_mappedElement>,
   arrayLike: T_arrayLike,
 ): T_mappedElement[];
 
-/* @__NO_SIDE_EFFECTS__ */ export function mapArrayLike<const T_element,
-  const T_mappedElement,
+/* @__NO_SIDE_EFFECTS__ */
+export function mapIterable<const T_element, const T_mappedElement,
   const T_arrayLike
     extends (Iterable<T_element> | Iterable<T_element> & { length: number; }),>(
   mappingFn: MappingFunction<T_element, T_mappedElement>,
@@ -94,7 +97,7 @@ export type MappingFunctionNoArrayPromisable<T_element, T_mappedElement,> =
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export function* mapArrayLikeGen<const T_element, const T_mappedElement,>(
+export function* mapIterableGen<const T_element, const T_mappedElement,>(
   mappingFn: MappingFunctionNoArray<T_element, T_mappedElement>,
   arrayLike: Iterable<T_element>,
 ): Generator<T_mappedElement> {
@@ -105,7 +108,7 @@ export function* mapArrayLikeGen<const T_element, const T_mappedElement,>(
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export async function* mapArrayLikeAsyncGen<const T_element, const T_mappedElement,>(
+export async function* mapIterableAsyncGen<const T_element, const T_mappedElement,>(
   mappingFn: MappingFunctionNoArrayPromisable<T_element, T_mappedElement>,
   arrayLike: MaybeAsyncIterable<T_element>,
 ): AsyncGenerator<T_mappedElement> {

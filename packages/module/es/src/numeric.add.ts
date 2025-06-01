@@ -1,8 +1,8 @@
 import {
   isIterable,
   isMaybeAsyncIterable,
-} from './arrayLike.is.ts';
-import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
+} from './iterable.is.ts';
+import type {MaybeAsyncIterable} from './iterable.type.maybe.ts';
 import {
   bigint0,
   isBigint,
@@ -10,10 +10,10 @@ import {
   isNumber,
   isNumeric,
 } from './numeric.is.ts';
-import type { Numeric } from './numeric.type.int.ts';
+import type {Numeric} from './numeric.type.int.ts';
 
 // Helper functions to reduce duplication
-function validateAndProcessIterable<T extends number | bigint,>(
+function validateAndProcessIterable<T extends number | bigint, >(
   items: any[],
   typeValidator: (item: any) => boolean,
   initialValue: T,
@@ -41,7 +41,7 @@ function validateAndProcessIterable<T extends number | bigint,>(
   return total;
 }
 
-async function validateAndProcessAsyncIterable<T extends number | bigint,>(
+async function validateAndProcessAsyncIterable<T extends number | bigint, >(
   items: any[],
   typeValidator: (item: any) => boolean,
   initialValue: T,
@@ -70,10 +70,12 @@ async function validateAndProcessAsyncIterable<T extends number | bigint,>(
 }
 
 // Numbers
-/* @__NO_SIDE_EFFECTS__ */ export async function addNumbersAsync(
+/* @__NO_SIDE_EFFECTS__ */
+export async function addNumbersAsync(
   numbers: MaybeAsyncIterable<number>,
 ): Promise<number>;
-/* @__NO_SIDE_EFFECTS__ */ export async function addNumbersAsync(
+/* @__NO_SIDE_EFFECTS__ */
+export async function addNumbersAsync(
   ...numbers: number[]
 ): Promise<number>;
 export async function addNumbersAsync(...numbers: any): Promise<number> {
@@ -88,10 +90,12 @@ export async function addNumbersAsync(...numbers: any): Promise<number> {
   );
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function addNumbers(
+/* @__NO_SIDE_EFFECTS__ */
+export function addNumbers(
   numbers: Iterable<number>,
 ): number;
-/* @__NO_SIDE_EFFECTS__ */ export function addNumbers(
+/* @__NO_SIDE_EFFECTS__ */
+export function addNumbers(
   ...numbers: number[]
 ): number;
 export function addNumbers(...numbers: any): number {
@@ -107,10 +111,12 @@ export function addNumbers(...numbers: any): number {
 }
 
 // Bigints
-/* @__NO_SIDE_EFFECTS__ */ export async function addBigintsAsync(
+/* @__NO_SIDE_EFFECTS__ */
+export async function addBigintsAsync(
   bigints: MaybeAsyncIterable<bigint>,
 ): Promise<bigint>;
-/* @__NO_SIDE_EFFECTS__ */ export async function addBigintsAsync(
+/* @__NO_SIDE_EFFECTS__ */
+export async function addBigintsAsync(
   ...bigints: bigint[]
 ): Promise<bigint>;
 export async function addBigintsAsync(...bigints: any): Promise<bigint> {
@@ -145,7 +151,7 @@ export async function addNumericsAsync<
 >(
   numerics: T,
 ): Promise<T extends MaybeAsyncIterable<number> ? number : bigint | number>;
-export async function addNumericsAsync<T extends Numeric[],>(
+export async function addNumericsAsync<T extends Numeric[], >(
   ...numerics: T
 ): Promise<T extends number[] ? number : bigint | number>;
 export async function addNumericsAsync(...numerics: any): Promise<Numeric> {
@@ -163,10 +169,10 @@ export async function addNumericsAsync(...numerics: any): Promise<Numeric> {
   return isIntBigint(total) ? Number(total) : total;
 }
 
-export function addNumerics<T extends Iterable<Numeric>,>(
+export function addNumerics<T extends Iterable<Numeric>, >(
   numerics: T,
 ): T extends Iterable<number> ? number : bigint | number;
-export function addNumerics<T extends Numeric[],>(
+export function addNumerics<T extends Numeric[], >(
   ...numerics: T
 ): T extends number[] ? number : bigint | number;
 export function addNumerics(...numerics: any): Numeric {

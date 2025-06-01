@@ -1,9 +1,9 @@
 import {
   isIterable,
   isMaybeAsyncIterable,
-} from './arrayLike.is.ts';
-import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
-import { isString } from './string.is.ts';
+} from './iterable.is.ts';
+import type {MaybeAsyncIterable} from './iterable.type.maybe.ts';
+import {isString} from './string.is.ts';
 
 /**
  * Base function for synchronous string concatenation
@@ -44,8 +44,7 @@ function concatStringsBaseSync(separator: string, ...strings: any[]): string {
  * Base function for asynchronous string concatenation
  */
 async function concatStringsBaseAsync(separator: string,
-  ...strings: any[]): Promise<string>
-{
+                                      ...strings: any[]): Promise<string> {
   if (!Array.isArray(strings)) {
     throw new Error("strings isn't an iterable");
   }

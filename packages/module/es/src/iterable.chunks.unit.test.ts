@@ -13,7 +13,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('chunksArray', () => {
+describe(chunksArray, () => {
   test('chunks an array into equal parts', () => {
     const array = [1, 2, 3, 4, 5, 6] as const;
     const chunker = chunksArray(array, 2);
@@ -59,7 +59,7 @@ describe('chunksArray', () => {
   });
 });
 
-describe('chunksIterable', () => {
+describe(chunksIterable, () => {
   test('works with iterable objects', () => {
     const iterable = {
       0: 'a',
@@ -67,7 +67,7 @@ describe('chunksIterable', () => {
       2: 'c',
       3: 'd',
       length: 4,
-      [Symbol.iterator]: function* (): Generator<string> {
+      [Symbol.iterator]: function*(): Generator<string> {
         for (let i = 0; i < this.length; i++) {
           // @ts-expect-error: TypeScript limitation.
           yield this[i];
@@ -105,7 +105,7 @@ describe('chunksIterable', () => {
       0: 'a',
       1: 'b',
       length: 2,
-      [Symbol.iterator]: function* (): Generator<string> {
+      [Symbol.iterator]: function*(): Generator<string> {
         for (let i = 0; i < this.length; i++) {
           // @ts-expect-error: TypeScript limitation.
           yield this[i];
@@ -120,10 +120,10 @@ describe('chunksIterable', () => {
   });
 });
 
-describe('chunksIterableAsync', () => {
+describe(chunksIterableAsync, () => {
   test('works with async iterables', async () => {
     const asyncIterable = {
-      async* [Symbol.asyncIterator]() {
+      async *[Symbol.asyncIterator]() {
         yield 1;
         yield 2;
         yield 3;
@@ -144,7 +144,7 @@ describe('chunksIterableAsync', () => {
 
   test('works with regular iterables', async () => {
     const iterable = {
-      * [Symbol.iterator]() {
+      *[Symbol.iterator]() {
         yield 1;
         yield 2;
         yield 3;
@@ -164,13 +164,13 @@ describe('chunksIterableAsync', () => {
     expect(result).toEqual([[1, 2], [3, 4], [5]]);
   });
 
-  test('throws when async iterable is empty', async ({expect}) => {
+  test('throws when async iterable is empty', async ({ expect }) => {
     const emptyAsync = {
       [Symbol.asyncIterator]() {
         // No values to yield
         return {
           async next(): Promise<IteratorResult<number>> {
-            return {done: true, value: undefined};
+            return { done: true, value: undefined };
           },
         };
       },
@@ -182,7 +182,7 @@ describe('chunksIterableAsync', () => {
     await expect(chunker.next()).rejects.toThrow(RangeError);
   });
 
-  test('throws when chunk size is larger than async iterable length', async ({expect}) => {
+  test('throws when chunk size is larger than async iterable length', async ({ expect }) => {
     const asyncIterable = {
       from: 1,
       to: 2,
@@ -195,9 +195,9 @@ describe('chunksIterableAsync', () => {
 
           async next(): Promise<IteratorResult<number>> {
             if (this.current <= this.last) {
-              return {done: false, value: this.current++};
+              return { done: false, value: this.current++ };
             }
-            return {done: true, value: undefined};
+            return { done: true, value: undefined };
           },
         };
       },
@@ -210,11 +210,11 @@ describe('chunksIterableAsync', () => {
 
   test('works with different types of values', async () => {
     const asyncIterable = {
-      async* [Symbol.asyncIterator]() {
+      async *[Symbol.asyncIterator]() {
         yield 'a';
         yield 2;
         yield true;
-        yield {key: 'value'};
+        yield { key: 'value' };
       },
       length: 4,
     };
@@ -226,6 +226,6 @@ describe('chunksIterableAsync', () => {
       result.push(chunk);
     }
 
-    expect(result).toEqual([['a', 2], [true, {key: 'value'}]]);
+    expect(result).toEqual([['a', 2], [true, { key: 'value' }]]);
   });
 });

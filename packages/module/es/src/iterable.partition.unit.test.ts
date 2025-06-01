@@ -1,8 +1,8 @@
 import {
   logtapeConfiguration,
   logtapeConfigure,
-  partitionArrayLike,
-  partitionArrayLikeAsync,
+  partitionIterable,
+  partitionIterableAsync,
 } from '@monochromatic-dev/module-es/.js';
 import {
   describe,
@@ -12,17 +12,17 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('partitionArrayLike', () => {
+describe(partitionIterable, () => {
   test('splits array based on predicate', () => {
     const input = [1, 2, 3, 4, 5];
-    const [evens, odds] = partitionArrayLike((n) => n % 2 === 0, input);
+    const [evens, odds] = partitionIterable((n) => n % 2 === 0, input);
 
     expect(evens).toEqual([2, 4]);
     expect(odds).toEqual([1, 3, 5]);
   });
 
   test('works with empty arrays', () => {
-    const [yes, no] = partitionArrayLike(() => true, []);
+    const [yes, no] = partitionIterable(() => true, []);
 
     expect(yes).toEqual([]);
     expect(no).toEqual([]);
@@ -30,7 +30,7 @@ describe('partitionArrayLike', () => {
 
   test('works when all items pass predicate', () => {
     const input = [2, 4, 6, 8];
-    const [evens, odds] = partitionArrayLike((n) => n % 2 === 0, input);
+    const [evens, odds] = partitionIterable((n) => n % 2 === 0, input);
 
     expect(evens).toEqual([2, 4, 6, 8]);
     expect(odds).toEqual([]);
@@ -38,7 +38,7 @@ describe('partitionArrayLike', () => {
 
   test('works when no items pass predicate', () => {
     const input = [1, 3, 5, 7];
-    const [evens, odds] = partitionArrayLike((n) => n % 2 === 0, input);
+    const [evens, odds] = partitionIterable((n) => n % 2 === 0, input);
 
     expect(evens).toEqual([]);
     expect(odds).toEqual([1, 3, 5, 7]);
@@ -50,7 +50,7 @@ describe('partitionArrayLike', () => {
       { id: 2, active: false },
       { id: 3, active: true },
     ];
-    const [active, inactive] = partitionArrayLike((obj) => obj.active, input);
+    const [active, inactive] = partitionIterable((obj) => obj.active, input);
 
     expect(active).toEqual([{ id: 1, active: true }, { id: 3, active: true }]);
     expect(inactive).toEqual([{ id: 2, active: false }]);
@@ -58,7 +58,7 @@ describe('partitionArrayLike', () => {
 
   test('works with strings', () => {
     const input = ['apple', 'banana', 'cherry', 'date'];
-    const [longWords, shortWords] = partitionArrayLike((word) => word.length > 5, input);
+    const [longWords, shortWords] = partitionIterable((word) => word.length > 5, input);
 
     expect(longWords).toEqual(['banana', 'cherry']);
     expect(shortWords).toEqual(['apple', 'date']);
@@ -66,17 +66,17 @@ describe('partitionArrayLike', () => {
 
   test('works with other iterables', () => {
     const set = new Set([1, 2, 3, 4, 5]);
-    const [evens, odds] = partitionArrayLike((n) => n % 2 === 0, set);
+    const [evens, odds] = partitionIterable((n) => n % 2 === 0, set);
 
     expect(evens).toEqual([2, 4]);
     expect(odds).toEqual([1, 3, 5]);
   });
 });
 
-describe('partitionArrayLikeAsync', () => {
+describe(partitionIterableAsync, () => {
   test('splits array based on async predicate', async () => {
     const input = [1, 2, 3, 4, 5];
-    const [evens, odds] = await partitionArrayLikeAsync(
+    const [evens, odds] = await partitionIterableAsync(
       async (n) => n % 2 === 0,
       input,
     );
@@ -86,7 +86,7 @@ describe('partitionArrayLikeAsync', () => {
   });
 
   test('works with empty arrays', async () => {
-    const [yes, no] = await partitionArrayLikeAsync(async () => true, []);
+    const [yes, no] = await partitionIterableAsync(async () => true, []);
 
     expect(yes).toEqual([]);
     expect(no).toEqual([]);
@@ -97,7 +97,7 @@ describe('partitionArrayLikeAsync', () => {
     const startTime = Date.now();
 
     // Each predicate call takes 100ms, but total should be ~100ms, not 300ms
-    const [yes, no] = await partitionArrayLikeAsync(async (n) => {
+    const [yes, no] = await partitionIterableAsync(async (n) => {
       await new Promise((resolve) => setTimeout(resolve, 100));
       return n > 150;
     }, input);
@@ -116,7 +116,7 @@ describe('partitionArrayLikeAsync', () => {
       yield 3;
     }
 
-    const [evens, odds] = await partitionArrayLikeAsync(
+    const [evens, odds] = await partitionIterableAsync(
       async (n) => n % 2 === 0,
       generator(),
     );
@@ -128,8 +128,8 @@ describe('partitionArrayLikeAsync', () => {
   test('handles errors in predicate', async () => {
     const input = [1, 2, 3];
 
-    expect(
-      partitionArrayLikeAsync(async (n) => {
+    await expect(
+      partitionIterableAsync(async (n) => {
         if (n === 2) { throw new Error('Test error'); }
         return n > 2;
       }, input),

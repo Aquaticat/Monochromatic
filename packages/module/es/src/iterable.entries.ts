@@ -1,4 +1,4 @@
-import type { MaybeAsyncIterable } from '@monochromatic-dev/module-es/ts';
+import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 /**
  @remarks

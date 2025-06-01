@@ -1,16 +1,16 @@
-export function intersection(...arrays: never[]): Set<never>;
-export function intersection<const Param1,>(...arrays: [Iterable<Param1>]): Set<Param1>;
-export function intersection<const Param1, const Param2,>(
+export function intersectionIterables(...arrays: never[]): Set<never>;
+export function intersectionIterables<const Param1, >(...arrays: [Iterable<Param1>]): Set<Param1>;
+export function intersectionIterables<const Param1, const Param2, >(
   ...arrays: [Iterable<Param1>, Iterable<Param2>]
 ): Set<Param1 & Param2>;
-export function intersection<const Param1, const Param2, const Param3,>(
+export function intersectionIterables<const Param1, const Param2, const Param3, >(
   ...arrays: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>]
 ): Set<Param1 & Param2 & Param3>;
-export function intersection<const Param1, const Param2, const Param3, const Param4,>(
+export function intersectionIterables<const Param1, const Param2, const Param3, const Param4, >(
   ...arrays: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>, Iterable<Param4>]
 ): Set<Param1 & Param2 & Param3 & Param4>;
-export function intersection<const Param1, const Param2, const Param3, const Param4,
-  const Param5,>(
+export function intersectionIterables<const Param1, const Param2, const Param3, const Param4,
+  const Param5, >(
   ...arrays: [
     Iterable<Param1>,
     Iterable<Param2>,
@@ -19,8 +19,8 @@ export function intersection<const Param1, const Param2, const Param3, const Par
     Iterable<Param5>,
   ]
 ): Set<Param1 & Param2 & Param3 & Param4 & Param5>;
-export function intersection<const Param1, const Param2, const Param3, const Param4,
-  const Param5, const Param6,>(
+export function intersectionIterables<const Param1, const Param2, const Param3, const Param4,
+  const Param5, const Param6, >(
   ...arrays: [
     Iterable<Param1>,
     Iterable<Param2>,
@@ -30,8 +30,8 @@ export function intersection<const Param1, const Param2, const Param3, const Par
     Iterable<Param6>,
   ]
 ): Set<Param1 & Param2 & Param3 & Param4 & Param5 & Param6>;
-export function intersection<const Param1, const Param2, const Param3, const Param4,
-  const Param5, const Param6, const Param7,>(
+export function intersectionIterables<const Param1, const Param2, const Param3, const Param4,
+  const Param5, const Param6, const Param7, >(
   ...arrays: [
     Iterable<Param1>,
     Iterable<Param2>,
@@ -42,8 +42,8 @@ export function intersection<const Param1, const Param2, const Param3, const Par
     Iterable<Param7>,
   ]
 ): Set<Param1 & Param2 & Param3 & Param4 & Param5 & Param6 & Param7>;
-export function intersection<const Param1, const Param2, const Param3, const Param4,
-  const Param5, const Param6, const Param7, const Param8,>(
+export function intersectionIterables<const Param1, const Param2, const Param3, const Param4,
+  const Param5, const Param6, const Param7, const Param8, >(
   ...arrays: [
     Iterable<Param1>,
     Iterable<Param2>,
@@ -55,8 +55,8 @@ export function intersection<const Param1, const Param2, const Param3, const Par
     Iterable<Param8>,
   ]
 ): Set<Param1 & Param2 & Param3 & Param4 & Param5 & Param6 & Param7 & Param8>;
-export function intersection<const Param1, const Param2, const Param3, const Param4,
-  const Param5, const Param6, const Param7, const Param8, const Param9,>(
+export function intersectionIterables<const Param1, const Param2, const Param3, const Param4,
+  const Param5, const Param6, const Param7, const Param8, const Param9, >(
   ...arrays: [
     Iterable<Param1>,
     Iterable<Param2>,
@@ -69,8 +69,8 @@ export function intersection<const Param1, const Param2, const Param3, const Par
     Iterable<Param9>,
   ]
 ): Set<Param1 & Param2 & Param3 & Param4 & Param5 & Param6 & Param7 & Param8 & Param9>;
-export function intersection<const T,>(...arrays: Iterable<T>[]): Set<T>;
-export function intersection(...arrays: Iterable<unknown>[]): Set<unknown> {
+export function intersectionIterables<const T, >(...arrays: Iterable<T>[]): Set<T>;
+export function intersectionIterables(...arrays: Iterable<unknown>[]): Set<unknown> {
   if (arrays.length === 0) {
     return new Set();
   }

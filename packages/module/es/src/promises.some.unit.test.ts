@@ -13,7 +13,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('somePromises', () => {
+describe(somePromises, () => {
   test('returns true when at least one value passes the predicate', async () => {
     const result = await somePromises(
       (val) => val > 5,

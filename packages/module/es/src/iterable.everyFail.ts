@@ -1,9 +1,9 @@
 import type { Promisable } from 'type-fest';
-import type { MaybeAsyncIterable } from './arrayLike.type.maybe.ts';
 import {
   entriesIterable,
   entriesIterableAsync,
 } from './iterable.entries.ts';
+import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 /* @__NO_SIDE_EFFECTS__ */
 export async function everyFailIterableAsync<T_element,

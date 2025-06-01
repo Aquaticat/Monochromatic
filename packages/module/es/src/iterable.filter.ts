@@ -1,5 +1,5 @@
-import type { MaybeAsyncIterable } from '@monochromatic-dev/module-es/ts';
 import type { Promisable } from 'type-fest';
+import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 /* @__NO_SIDE_EFFECTS__ */
 export async function filterIterableAsync<T_i,>(

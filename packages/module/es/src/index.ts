@@ -17,27 +17,27 @@ export * from './any.toExport.ts';
 export * from './any.type.ts';
 export * from './any.typeOf.ts';
 
-export * from './arrayLike.every.ts';
-export * from './arrayLike.everyFail.ts';
-export * from './arrayLike.filter.ts';
-export * from './arrayLike.is.ts';
-export * from './arrayLike.map.ts';
-export * from './arrayLike.none.ts';
-export * from './arrayLike.noneFail.ts';
-export * from './arrayLike.of.ts';
-export * from './arrayLike.partition.ts';
-export * from './arrayLike.reduce.ts';
-export * from './arrayLike.type.ints.ts';
-export * from './arrayLike.type.intsTo10.ts';
-export * from './arrayLike.type.mapTo.ts';
-export * from './arrayLike.type.maybe.ts';
-export * from './arrayLike.type.tuple.ts';
-export * from './arrayLike.type.withoutFirst.ts';
+export * from './array.of.ts';
+export * from './array.type.mapTo.ts';
+export * from './array.type.tuple.ts';
+export * from './array.type.withoutFirst.ts';
 export * from './iterable.at.ts';
 export * from './iterable.chunks.ts';
 export * from './iterable.entries.ts';
+export * from './iterable.every.ts';
+export * from './iterable.everyFail.ts';
+export * from './iterable.filter.ts';
+export * from './iterable.is.ts';
+export * from './iterable.map.ts';
+export * from './iterable.none.ts';
+export * from './iterable.noneFail.ts';
+export * from './iterable.partition.ts';
+export * from './iterable.reduce.ts';
 export * from './iterable.trim.ts';
-export * from './iterable.union.ts';
+export * from './iterable.type.maybe.ts';
+export * from './iterables.union.ts';
+export * from './numeric.type.ints.ts';
+export * from './numeric.type.intsTo10.ts';
 
 // TODO: Write joinArrayLike. The speced one uses ',' as the sep, which could be surprising.
 
@@ -71,9 +71,9 @@ export * from './numeric.type.negative.ts';
 
 export * from './promise.awaits.ts';
 export * from './promise.is.ts';
-export * from './promise.some.ts';
 export * from './promise.type.ts';
 export * from './promise.wait.ts';
+export * from './promises.some.ts';
 
 export * from './string.capitalize.ts';
 export * from './string.concat.ts';
@@ -89,4 +89,4 @@ export * from './logtape.shared.ts';
 
 export * from './result.unwrap.ts';
 
-export * from './other.limitedGetComputedCss.ts';
+export * from './string.limitedGetComputedCss.ts';

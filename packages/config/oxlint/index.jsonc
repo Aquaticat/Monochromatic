@@ -14,15 +14,13 @@
     "typescript",
     "oxc",
     "import",
-    // We're using TSDoc, not JSDoc
-    // "jsdoc",
+
+    // We're using TSDoc, not JSDoc, but it should support TSDoc anyway. Investigate.
+    "jsdoc",
 
     "promise",
     "node",
     "react",
-    // It's flagging code not in test files.
-    // "jest"
-
     "vitest",
   ],
   "rules": {
@@ -212,6 +210,13 @@
         "eslint/no-array-constructor": "off",
         // Allow using Promise keywords
         "promise/prefer-await-to-then": "off",
+
+        // Some test files just have too many TypeScript errors.
+        "typescript/ban-ts-comment": ["error", {
+          "ts-ignore": "allow-with-description",
+          "ts-nocheck": "allow-with-description",
+          "ts-expect-error": "allow-with-description",
+        }],
       },
     },
   ],

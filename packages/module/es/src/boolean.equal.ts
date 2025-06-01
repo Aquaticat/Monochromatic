@@ -7,12 +7,12 @@ import {
   isSet,
   isWeakMap,
   isWeakSet,
-} from './arrayLike.is.ts';
-import { isError } from './error.is.ts';
-import { logtapeGetLogger } from './logtape.shared.ts';
-import { isObjectDate } from './numeric.is.ts';
-import { isPromise } from './promise.is.ts';
-import type { NotPromise } from './promise.type.ts';
+} from './iterable.is.ts';
+import {isError} from './error.is.ts';
+import {logtapeGetLogger} from './logtape.shared.ts';
+import {isObjectDate} from './numeric.is.ts';
+import {isPromise} from './promise.is.ts';
+import type {NotPromise} from './promise.type.ts';
 import {
   isObjectRegexp,
   isString,
@@ -29,19 +29,21 @@ const l = logtapeGetLogger(['m', 'boolean.equal']);
  @param value any value to check
 
  @returns if the value is primitive.
- We define primitive here in terms of what Object.is considers to be primitive:
+  We define primitive here in terms of what Object.is considers to be primitive:
 
- 1.  undefined
- 2.  null
- 3.  true
- 4.  false
- 5.  string
- 6.  bigint and BigInt
- 7.  symbol
- 8.  number
- 9.  NaN
+  1.  undefined
+  2.  null
+  3.  true
+  4.  false
+  5.  string
+  6.  bigint and BigInt
+  7.  symbol
+  8.  number
+  9.  NaN
  */
-/* @__NO_SIDE_EFFECTS__ */ export function isPrimitive(value: any): boolean {
+
+/* @__NO_SIDE_EFFECTS__ */
+export function isPrimitive(value: any): boolean {
   if (Object.is(value, undefined)) {
     return true;
   }
@@ -73,7 +75,8 @@ const l = logtapeGetLogger(['m', 'boolean.equal']);
   return false;
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function equal(a: NotPromise, b: NotPromise): boolean {
+/* @__NO_SIDE_EFFECTS__ */
+export function equal(a: NotPromise, b: NotPromise): boolean {
   // TODO: Check for object value equality, not strict equality.
   // MAYBE: Switch to @std/assert, and use error handling.
   //        It'd be ugly but at least I'd offload the burden.
@@ -83,23 +86,23 @@ const l = logtapeGetLogger(['m', 'boolean.equal']);
   // TODO: Raise an issue to logtape or do a pr
   //
   /* FTL logtape·meta Failed to emit a log record to sink [Function: sink] {
-  [length]: 1,
-  [name]: 'sink',
-  [Symbol(nodejs.dispose)]: [Function (anonymous)] { [length]: 0, [name]: '' }
-  }: TypeError: Do not know how to serialize a BigInt
-    at JSON.stringify (<anonymous>)
-    at formatter (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/packages/module/util/dist/final/boolean.equal.test.js:2374:26)
-    at sink (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/.yarn/cache/@jsr-logtape__logtape-npm-0.4.2-d81e45c652-a49422555c.zip/node_modules/@jsr/logtape__logtape/logtape/sink.js:91:42)
-    at LoggerImpl.emit (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/.yarn/cache/@jsr-logtape__logtape-npm-0.4.2-d81e45c652-a49422555c.zip/node_modules/@jsr/logtape__logtape/logtape/logger.js:94:9)
-    at LoggerImpl.logTemplate (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/.yarn/cache/@jsr-logtape__logtape-npm-0.4.2-d81e45c652-a49422555c.zip/node_modules/@jsr/logtape__logtape/logtape/logger.js:144:10)
-    at LoggerImpl.debug (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/.yarn/cache/@jsr-logtape__logtape-npm-0.4.2-d81e45c652-a49422555c.zip/node_modules/@jsr/logtape__logtape/logtape/logger.js:158:12)
-    at equal (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/packages/module/util/dist/final/boolean.equal.test.js:2032:10)
-    at file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/packages/module/util/dist/final/boolean.equal.test.js:2513:14
-    at test (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/packages/module/util/dist/final/boolean.equal.test.js:2477:24)
-    at file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/packages/module/util/dist/final/boolean.equal.test.js:2512:5 {
-  [stack]: [Getter/Setter],
-  [message]: 'Do not know how to serialize a BigInt'
-  } */
+   [length]: 1,
+   [name]: 'sink',
+   [Symbol(nodejs.dispose)]: [Function (anonymous)] { [length]: 0, [name]: '' }
+   }: TypeError: Do not know how to serialize a BigInt
+   at JSON.stringify (<anonymous>)
+   at formatter (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/packages/module/util/dist/final/boolean.equal.test.js:2374:26)
+   at sink (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/.yarn/cache/@jsr-logtape__logtape-npm-0.4.2-d81e45c652-a49422555c.zip/node_modules/@jsr/logtape__logtape/logtape/sink.js:91:42)
+   at LoggerImpl.emit (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/.yarn/cache/@jsr-logtape__logtape-npm-0.4.2-d81e45c652-a49422555c.zip/node_modules/@jsr/logtape__logtape/logtape/logger.js:94:9)
+   at LoggerImpl.logTemplate (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/.yarn/cache/@jsr-logtape__logtape-npm-0.4.2-d81e45c652-a49422555c.zip/node_modules/@jsr/logtape__logtape/logtape/logger.js:144:10)
+   at LoggerImpl.debug (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/.yarn/cache/@jsr-logtape__logtape-npm-0.4.2-d81e45c652-a49422555c.zip/node_modules/@jsr/logtape__logtape/logtape/logger.js:158:12)
+   at equal (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/packages/module/util/dist/final/boolean.equal.test.js:2032:10)
+   at file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/packages/module/util/dist/final/boolean.equal.test.js:2513:14
+   at test (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/packages/module/util/dist/final/boolean.equal.test.js:2477:24)
+   at file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/packages/module/util/dist/final/boolean.equal.test.js:2512:5 {
+   [stack]: [Getter/Setter],
+   [message]: 'Do not know how to serialize a BigInt'
+   } */
   l.debug`a: ${String(a)}, b: ${String(b)}`;
 
   // Check for referencial equality and equality of primitive values.
@@ -368,9 +371,10 @@ const l = logtapeGetLogger(['m', 'boolean.equal']);
  1.  Both a and b are Promises
  2.  Both a and b are AsyncGenerators | AsyncIterables
  */
-/* @__NO_SIDE_EFFECTS__ */ export async function equalAsync(a: any,
-  b: any): Promise<boolean>
-{
+
+/* @__NO_SIDE_EFFECTS__ */
+export async function equalAsync(a: any,
+                                 b: any): Promise<boolean> {
   if (isPromise(a) || isPromise(b)) {
     l.debug`Promises a: ${a} b: ${b}`;
 

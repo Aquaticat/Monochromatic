@@ -1,5 +1,9 @@
 import eslint from '@eslint/js';
 // import oxlintrc from '@monochromatic-dev/config-oxlint/index.jsonc';
+import vitest from '@vitest/eslint-plugin';
+import { configs as eslintPluginAstroConfigs } from 'eslint-plugin-astro';
+import jsdoc from 'eslint-plugin-jsdoc';
+import nodePlugin from 'eslint-plugin-n';
 import {
   eslintRules,
   importRules,
@@ -12,6 +16,7 @@ import {
   unicornRules,
   vitestRules,
 } from 'eslint-plugin-oxlint/rules-by-scope';
+import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 import tseslint from 'typescript-eslint';
 import type { ConfigArray } from 'typescript-eslint';
 
@@ -34,6 +39,11 @@ const myConfigArray: ConfigArray = tseslint.config(
   },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
+  jsdoc.configs['flat/recommended-typescript'],
+  nodePlugin.configs['flat/recommended'],
+  eslintPluginUnicorn.configs.all,
+  ...eslintPluginAstroConfigs.recommended,
+  ...eslintPluginAstroConfigs['flat/jsx-a11y-strict'],
   {
     languageOptions: {
       parserOptions: {
@@ -47,19 +57,6 @@ const myConfigArray: ConfigArray = tseslint.config(
     },
 
     rules: {
-      //region oxlint -- Turn off rules already supported by oxlint.
-      ...eslintRules,
-      ...importRules,
-      ...jsdocRules,
-      ...jsxA11yRules,
-      ...nodeRules,
-      ...promiseRules,
-      ...reactRules,
-      ...typescriptRules,
-      ...unicornRules,
-      ...vitestRules,
-      //endregion oxlint -- Turn off rules already supported by oxlint.
-
       '@typescript-eslint/no-unnecessary-condition': ['error', {
         allowConstantLoopConditions: 'only-allowed-literals',
       }],
@@ -105,10 +102,42 @@ const myConfigArray: ConfigArray = tseslint.config(
   {
     files: ['**/*.{test,bench}.ts'],
 
+    plugins: {
+      vitest,
+    },
+
     rules: {
+      ...vitest.configs.all.rules,
       '@typescript-eslint/require-await': 'off',
     },
+
+    settings: {
+      vitest: {
+        typecheck: true,
+      },
+    },
+    languageOptions: {
+      globals: {
+        ...vitest.environments.env.globals,
+      },
+    },
   },
+  //region oxlint -- Turn off rules already supported by oxlint.
+  {
+    rules: {
+      ...eslintRules,
+      ...importRules,
+      ...jsdocRules,
+      ...jsxA11yRules,
+      ...nodeRules,
+      ...promiseRules,
+      ...reactRules,
+      ...typescriptRules,
+      ...unicornRules,
+      ...vitestRules,
+    },
+  },
+  //endregion oxlint -- Turn off rules already supported by oxlint.
 );
 
 export default myConfigArray;

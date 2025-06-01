@@ -1,8 +1,8 @@
 /* TODO: Optimize performance for this function.
          We don't need to await for the current iterated element to be ready before moving on to the next iterated element. */
 
-import type { MaybeAsyncIterable } from '@monochromatic-dev/module-es/ts';
 import type { Promisable } from 'type-fest';
+import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 /**
  @deprecated Naming change. Use partitionArrayLikeAsync instead. No need to write tests for it.
@@ -25,7 +25,7 @@ import type { Promisable } from 'type-fest';
   return [yes, no];
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export async function partitionArrayLikeAsync<T_i,>(
+/* @__NO_SIDE_EFFECTS__ */ export async function partitionIterableAsync<T_i,>(
   predicate: (i: T_i) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_i>,
 ): Promise<[T_i[], T_i[]]> {
@@ -54,7 +54,7 @@ import type { Promisable } from 'type-fest';
   return [yes, no];
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function partitionArrayLike<T_i,>(
+/* @__NO_SIDE_EFFECTS__ */ export function partitionIterable<T_i,>(
   predicate: (i: T_i) => boolean,
   arrayLike: Iterable<T_i>,
 ): [T_i[], T_i[]] {

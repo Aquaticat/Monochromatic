@@ -1,16 +1,16 @@
-/* @__NO_SIDE_EFFECTS__ */ import type {
+import type {
   UnknownMap,
   UnknownRecord,
   UnknownSet,
 } from 'type-fest';
 import type { UnknownArrayOrTuple } from 'type-fest/source/internal';
-import { isEmptyArray } from './arrayLike.is.ts';
+import { isEmptyArray } from './iterable.is.ts';
 
 export function notNullishOrThrow<T,>(
   potentiallyNullish: T,
 ): Exclude<T, null | undefined> {
   if (potentiallyNullish === null || potentiallyNullish === undefined) {
-    throw new TypeError(`${potentiallyNullish} is nullish`);
+    throw new TypeError(`${JSON.stringify(potentiallyNullish)} is nullish`);
   }
   return potentiallyNullish as Exclude<T, null | undefined>;
 }
@@ -19,7 +19,7 @@ export function notNullishOrThrow<T,>(
   potentiallyUndefined: T,
 ): Exclude<T, undefined> {
   if (potentiallyUndefined === undefined) {
-    throw new TypeError(`${potentiallyUndefined} is undefined`);
+    throw new TypeError(`${JSON.stringify(potentiallyUndefined)} is undefined`);
   }
   return potentiallyUndefined as Exclude<T, undefined>;
 }
@@ -28,7 +28,7 @@ export function notNullishOrThrow<T,>(
   potentiallyNull: T,
 ): Exclude<T, null> {
   if (potentiallyNull === null) {
-    throw new TypeError(`${potentiallyNull} is null`);
+    throw new TypeError(`${JSON.stringify(potentiallyNull)} is null`);
   }
   return potentiallyNull as Exclude<T, null>;
 }
@@ -39,7 +39,7 @@ export function notNullishOrThrow<T,>(
   potentiallyFalsy: T,
 ): Exclude<T, falsy> {
   if (!potentiallyFalsy) {
-    throw new TypeError(`${potentiallyFalsy} is falsy`);
+    throw new TypeError(`${JSON.stringify(potentiallyFalsy)} is falsy`);
   }
   return potentiallyFalsy as Exclude<T, falsy>;
 }
@@ -48,7 +48,7 @@ export function notNullishOrThrow<T,>(
   potentiallyFalse: T,
 ): Exclude<T, false> {
   if (potentiallyFalse === false) {
-    throw new TypeError(`${potentiallyFalse} is false`);
+    throw new TypeError(`${JSON.stringify(potentiallyFalse)} is false`);
   }
   return potentiallyFalse as Exclude<T, false>;
 }
@@ -57,7 +57,7 @@ export function notObjOrThrow<T,>(
   potentiallyObj: T,
 ): Exclude<T, object> {
   if (potentiallyObj !== null && typeof potentiallyObj === 'object') {
-    throw new TypeError(`${potentiallyObj} is an object`);
+    throw new TypeError(`${JSON.stringify(potentiallyObj)} is an object`);
   }
   return potentiallyObj as Exclude<T, object>;
 }
@@ -66,7 +66,7 @@ export function notTrueOrThrow<T,>(
   potentiallyTrue: T,
 ): Exclude<T, true> {
   if (potentiallyTrue === true) {
-    throw new TypeError(`${potentiallyTrue} is true`);
+    throw new TypeError(`${JSON.stringify(potentiallyTrue)} is true`);
   }
   return potentiallyTrue as Exclude<T, true>;
 }
@@ -116,7 +116,7 @@ export function notArrayOrThrow<T,>(
   potentiallyArray: T,
 ): Exclude<T, any[]> {
   if (Array.isArray(potentiallyArray)) {
-    throw new TypeError(`${potentiallyArray} is an array`);
+    throw new TypeError(`${JSON.stringify(potentiallyArray)} is an array`);
   }
   return potentiallyArray as Exclude<T, any[]>;
 }
@@ -137,7 +137,7 @@ export function notEmptyArrayOrThrow<const T,
   potentiallyEmptyArray: T,
 ): Result {
   if (isEmptyArray(potentiallyEmptyArray)) {
-    throw new TypeError(`${String(potentiallyEmptyArray)} is an empty array`);
+    throw new TypeError(`${JSON.stringify(potentiallyEmptyArray)} is an empty array`);
   }
   return potentiallyEmptyArray as unknown as Result;
 }

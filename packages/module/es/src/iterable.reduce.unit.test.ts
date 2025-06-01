@@ -1,10 +1,10 @@
 import {
   logtapeConfiguration,
   logtapeConfigure,
-  reduceArrayLike,
-  reduceArrayLikeAsync,
-  reduceArrayLikeAsyncGen,
-  reduceArrayLikeGen,
+  reduceIterable,
+  reduceIterableAsync,
+  reduceIterableAsyncGen,
+  reduceIterableGen,
 } from '@monochromatic-dev/module-es/.js';
 import {
   describe,
@@ -14,44 +14,44 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('reduceArrayLike', () => {
+describe(reduceIterable, () => {
   test('reduces array to a single value', () => {
     const array = [1, 2, 3, 4];
-    const sum = reduceArrayLike(0, (acc: number, val: number) => acc + val, array);
+    const sum = reduceIterable(0, (acc: number, val: number) => acc + val, array);
     expect(sum).toBe(10);
   });
 
   test('works with empty arrays', () => {
     const array: number[] = [];
-    const sum = reduceArrayLike(0, (acc: number, val: number) => acc + val, array);
+    const sum = reduceIterable(0, (acc: number, val: number) => acc + val, array);
     expect(sum).toBe(0);
   });
 
   test('uses index in reducer', () => {
     const array = ['a', 'b', 'c'];
-    const result = reduceArrayLike('',
+    const result = reduceIterable('',
       (acc: string, val: string, idx: number) => acc + val + idx, array);
     expect(result).toBe('a0b1c2');
   });
 
   test('works with non-array iterables', () => {
     const set = new Set([1, 2, 3, 4]);
-    const sum = reduceArrayLike(0, (acc: number, val: number) => acc + val, set);
+    const sum = reduceIterable(0, (acc: number, val: number) => acc + val, set);
     expect(sum).toBe(10);
   });
 });
 
-describe('reduceArrayLikeAsync', () => {
+describe(reduceIterableAsync, () => {
   test('reduces array to a single value asynchronously', async () => {
     const array = [1, 2, 3, 4];
-    const sum = await reduceArrayLikeAsync(0,
+    const sum = await reduceIterableAsync(0,
       async (acc: number, val: number) => acc + val, array);
     expect(sum).toBe(10);
   });
 
   test('works with empty arrays', async () => {
     const array: number[] = [];
-    const sum = await reduceArrayLikeAsync(0,
+    const sum = await reduceIterableAsync(0,
       async (acc: number, val: number) => acc + val, array);
     expect(sum).toBe(0);
   });
@@ -63,7 +63,7 @@ describe('reduceArrayLikeAsync', () => {
       yield 3;
     }
 
-    const sum = await reduceArrayLikeAsync(0,
+    const sum = await reduceIterableAsync(0,
       async (acc: number, val: number) => acc + val, asyncSource());
     expect(sum).toBe(6);
   });
@@ -72,7 +72,7 @@ describe('reduceArrayLikeAsync', () => {
     const array = [1, 2, 3];
     const operations: string[] = [];
 
-    await reduceArrayLikeAsync(0, async (acc: number, val: number) => {
+    await reduceIterableAsync(0, async (acc: number, val: number) => {
       operations.push(`Processing ${val}`);
       return acc + val;
     }, array);
@@ -81,10 +81,10 @@ describe('reduceArrayLikeAsync', () => {
   });
 });
 
-describe('reduceArrayLikeGen', () => {
+describe(reduceIterableGen, () => {
   test('yields each accumulator state', () => {
     const array = [1, 2, 3, 4];
-    const generator = reduceArrayLikeGen(0, (acc: number, val: number) => acc + val,
+    const generator = reduceIterableGen(0, (acc: number, val: number) => acc + val,
       array);
 
     expect(generator.next().value).toBe(0); // Initial value
@@ -97,7 +97,7 @@ describe('reduceArrayLikeGen', () => {
 
   test('works with empty arrays', () => {
     const array: number[] = [];
-    const generator = reduceArrayLikeGen(0, (acc: number, val: number) => acc + val,
+    const generator = reduceIterableGen(0, (acc: number, val: number) => acc + val,
       array);
 
     expect(generator.next().value).toBe(0); // Initial value
@@ -106,7 +106,7 @@ describe('reduceArrayLikeGen', () => {
 
   test('uses index in reducer', () => {
     const array = ['a', 'b', 'c'];
-    const generator = reduceArrayLikeGen('', (acc: string, val, idx) => acc + val + idx,
+    const generator = reduceIterableGen('', (acc: string, val, idx) => acc + val + idx,
       array);
 
     const results: any[] = [];
@@ -118,10 +118,10 @@ describe('reduceArrayLikeGen', () => {
   });
 });
 
-describe('reduceArrayLikeAsyncGen', () => {
+describe(reduceIterableAsyncGen, () => {
   test('yields each accumulator state asynchronously', async () => {
     const array = [1, 2, 3];
-    const generator = reduceArrayLikeAsyncGen(0,
+    const generator = reduceIterableAsyncGen(0,
       async (acc: number, val: number) => acc + val, array);
 
     expect((await generator.next()).value).toBe(0); // Initial value
@@ -138,7 +138,7 @@ describe('reduceArrayLikeAsyncGen', () => {
       yield 3;
     }
 
-    const generator = reduceArrayLikeAsyncGen(0,
+    const generator = reduceIterableAsyncGen(0,
       async (acc: number, val: number) => acc + val, asyncSource());
 
     const results: any[] = [];
@@ -153,7 +153,7 @@ describe('reduceArrayLikeAsyncGen', () => {
     const array = [1, 2, 3];
     const operations: string[] = [];
 
-    const generator = reduceArrayLikeAsyncGen(0, async (acc: number, val: number) => {
+    const generator = reduceIterableAsyncGen(0, async (acc: number, val: number) => {
       operations.push(`Processing ${val}`);
       return acc + val;
     }, array);
