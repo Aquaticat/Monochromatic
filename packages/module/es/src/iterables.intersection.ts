@@ -1,3 +1,5 @@
+import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
+
 export function intersectionIterables(...arrays: never[]): Set<never>;
 export function intersectionIterables<const Param1,>(
   ...arrays: [Iterable<Param1>]
