@@ -1,7 +1,6 @@
 import type { Promisable } from 'type-fest';
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
-/* @__NO_SIDE_EFFECTS__ */
 export async function filterIterableAsync<T_i,>(
   predicate: (i: T_i) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_i>,
@@ -19,7 +18,6 @@ export async function filterIterableAsync<T_i,>(
   return yes;
 }
 
-/* @__NO_SIDE_EFFECTS__ */
 export function filterIterable<T_i,>(
   predicate: (i: T_i) => boolean,
   arrayLike: Iterable<T_i>,
@@ -37,7 +35,6 @@ export function filterIterable<T_i,>(
 
 //  AI! Write Generator versions of all the functions in here by postfixing every one of their names with Gen
 
-/* @__NO_SIDE_EFFECTS__ */
 export async function filterFailIterableAsync<T_i,>(
   predicate: (i: T_i) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_i>,
@@ -53,7 +50,6 @@ export async function filterFailIterableAsync<T_i,>(
   return no;
 }
 
-/* @__NO_SIDE_EFFECTS__ */
 export function filterFailIterable<T_i,>(
   predicate: (i: T_i) => boolean,
   arrayLike: Iterable<T_i>,
