@@ -1,8 +1,13 @@
 import type { Promisable } from 'type-fest';
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
-// AI! Add missing TSDoc
-
+/**
+ * Asynchronously filters an iterable or async iterable based on a predicate.
+ * @param predicate - A function that returns a promisable boolean indicating whether to keep the element.
+ * @param arrayLike - The iterable or async iterable to filter.
+ * @returns A promise that resolves to an array containing elements that satisfy the predicate.
+ * @template T_i - The type of elements in the iterable.
+ */
 export async function filterIterableAsync<T_i,>(
   predicate: (i: T_i) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_i>,
@@ -20,6 +25,13 @@ export async function filterIterableAsync<T_i,>(
   return yes;
 }
 
+/**
+ * Filters an iterable based on a predicate.
+ * @param predicate - A function that returns a boolean indicating whether to keep the element.
+ * @param arrayLike - The iterable to filter.
+ * @returns An array containing elements that satisfy the predicate.
+ * @template T_i - The type of elements in the iterable.
+ */
 export function filterIterable<T_i,>(
   predicate: (i: T_i) => boolean,
   arrayLike: Iterable<T_i>,
@@ -115,6 +127,13 @@ export function* filterFailIterableGen<T_i,>(
   }
 }
 
+/**
+ * Asynchronously filters an iterable or async iterable based on a predicate, returning elements that *do not* satisfy the predicate.
+ * @param predicate - A function that returns a promisable boolean indicating whether an element should be kept (those returning false will be collected).
+ * @param arrayLike - The iterable or async iterable to filter.
+ * @returns A promise that resolves to an array containing elements that *do not* satisfy the predicate.
+ * @template T_i - The type of elements in the iterable.
+ */
 export async function filterFailIterableAsync<T_i,>(
   predicate: (i: T_i) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_i>,
@@ -130,6 +149,13 @@ export async function filterFailIterableAsync<T_i,>(
   return no;
 }
 
+/**
+ * Filters an iterable based on a predicate, returning elements that *do not* satisfy the predicate.
+ * @param predicate - A function that returns a boolean indicating whether an element should be kept (those returning false will be collected).
+ * @param arrayLike - The iterable to filter.
+ * @returns An array containing elements that *do not* satisfy the predicate.
+ * @template T_i - The type of elements in the iterable.
+ */
 export function filterFailIterable<T_i,>(
   predicate: (i: T_i) => boolean,
   arrayLike: Iterable<T_i>,
