@@ -437,8 +437,16 @@ export async function* unionIterablesAsyncGen(
 ): AsyncGenerator<unknown, void, undefined> {
   const yieldedSet = new Set<unknown>();
   for (const iterable of iterables) {
-    // AI! no-await-in-loop
+    // Step 1: Collect all items from the current `iterable`.
+    // This loop is responsible for asynchronously fetching items.
+    const itemsFromCurrentIterable: unknown[] = [];
     for await (const item of iterable) {
+        itemsFromCurrentIterable.push(item);
+    }
+
+    // Step 2: Iterate the collected items and yield unique ones.
+    // This loop processes the collected items synchronously and contains the `yield`.
+    for (const item of itemsFromCurrentIterable) {
       if (!yieldedSet.has(item)) {
         yieldedSet.add(item);
         yield item;
