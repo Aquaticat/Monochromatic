@@ -17,3 +17,9 @@ When writing code in TypeScript, try to:
 - Always include file extensions when importing files.
 - Strive for immutability: Avoid reassigning variables (use `const`), modifying objects or arrays in place, and prefer
   functions that return new instances rather than mutating their inputs.
+- Utilize single quotes for strings (e.g., `'example'`) and JSX attributes, as enforced by dprint.
+- Ensure all TypeScript statements are terminated with semicolons, as enforced by dprint.
+- Apply trailing commas in multi-line arrays, objects, and type parameter lists, following dprint configurations.
+- Prefer `type` aliases (e.g., `type MyType = { /* ... */ };`) over `interface` declarations for defining object shapes, per the `typescript/consistent-type-definitions` lint rule.
+- Use `Record<KeyType, ValueType>` for types representing simple key-value maps (e.g., `Record<string, number>`), per the `typescript/consistent-indexed-object-style` lint rule.
+- Note: The `eslint/no-unused-vars` lint rule is disabled. Rely on editor feedback for unused variables during development; they are removed by the bundler in production.
