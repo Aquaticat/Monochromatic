@@ -1,9 +1,12 @@
 import { notUndefinedOrThrow } from './error.throw.ts';
+import { unary } from './function.nary.ts';
 import {
   isArrayEmpty,
   isArrayOfLength1,
 } from './iterable.is.ts';
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
+
+// AI! Add all missing TSDoc
 
 export function intersectionIterables(...arrays: never[]): Set<never>;
 export function intersectionIterables<const Param1,>(
@@ -250,10 +253,7 @@ export async function intersectionIterablesAsync(
   }
 
   // Convert all subsequent iterables to sets concurrently
-  const subsequentSetsPromises = iterables.slice(1).map(function toSet(iterable) {
-    return setOfIterable(iterable);
-  });
-  const subsequentSets = await Promise.all(subsequentSetsPromises);
+  const subsequentSets = await Promise.all(iterables.slice(1).map(unary(setOfIterable)));
 
   // For each subsequent set
   for (const currentSet of subsequentSets) {
