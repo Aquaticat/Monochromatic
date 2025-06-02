@@ -126,6 +126,11 @@ export function intersectionIterables(...arrays: Iterable<unknown>[]): Set<unkno
   return candidates;
 }
 
+/**
+ * Converts a `MaybeAsyncIterable` to a `Promise<Set<unknown>>`.
+ * @param iterable - The iterable or async iterable to convert.
+ * @returns A promise that resolves to a Set containing all unique elements from the input iterable.
+ */
 export async function setOfIterable(
   iterable: MaybeAsyncIterable<unknown>,
 ): Promise<Set<unknown>> {
