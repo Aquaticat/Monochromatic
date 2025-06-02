@@ -6,8 +6,12 @@ import {
 } from './iterable.is.ts';
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
-// AI! Add all missing TSDoc
-
+/**
+ * Creates a new Set instance that is the intersection of the input iterables.
+ * @param arrays - An array of iterables.
+ * @returns A Set containing elements present in all input iterables.
+ * @template T - The type of elements in the input iterables.
+ */
 export function intersectionIterables(...arrays: never[]): Set<never>;
 export function intersectionIterables<const Param1,>(
   ...arrays: [Iterable<Param1>]
