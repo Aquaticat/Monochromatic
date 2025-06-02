@@ -58,16 +58,29 @@ When writing code in TypeScript, try to:
   and member expressions (e.g., `object.prop1.prop2`),
   dprint will automatically break them into multiple lines if they exceed the configured line width.
   - Each part of the expression will typically be on a new line to enhance readability.
-- Use `region` markers: For example:
-  ```ts
-  //region Doing some complex stuff - Long explanation
+- Use `region` markers to delineate logical sections of code.
+  - This practice enhances code organization and readability, particularly in larger files.
+  - Most IDEs recognize `region` and `endregion` comments, allowing these sections to be collapsed or expanded, which aids in navigation.
+  - The description following `//region` should be concise yet clearly indicate the purpose of the code block.
+  - The `//endregion` comment can optionally repeat the description for better context when the region is collapsed or when scrolling through code.
+  - Example:
+    ```ts
+    //region User Authentication Logic - Handles user login, registration, and session management
 
-  const a = 1;
-  const b = a;
+    function loginUser(credentials: UserCredentials): UserSession {
+      // ... complex login implementation ...
+      return {} as UserSession;
+    }
 
-  //endregion Doing some complex stuff
-  ```
-  // AI! improve this
+    function registerUser(details: UserDetails): UserProfile {
+      // ... complex registration implementation ...
+      return {} as UserProfile;
+    }
+
+    // ... other related functions ...
+
+    //endregion User Authentication Logic
+    ```
 
 ---
 
