@@ -1,5 +1,5 @@
 packages:
-- packages/*/*
+  - packages/*/*
 autoInstallPeers: false
 catalog:
   browserslist: '*'
@@ -68,8 +68,8 @@ catalog:
   lfi: '*'
   lightningcss: '*'
   postcss: '*'
-  '@logtape/logtape': 'jsr:>=0.9.2'
-  '@logtape/file': 'jsr:>=0.9.2'
+  '@logtape/logtape': jsr:>=0.9.2
+  '@logtape/file': jsr:>=0.9.2
   type-fest: '*'
   execa: '>=9.5.3'
   nano-spawn: '*'
@@ -94,43 +94,34 @@ catalog:
   '@mdx-js/vue': '*'
   vue: '*'
   '@cspotcode/outdent': jsr:*
-  # To look inside the error and see the stack trace
   serialize-error: '*'
-  # Promising fp lib that supports concurrency.
   '@fxts/core': '*'
-  # Fast, concurrent testing framework
   vitest: '>=3.2.0-beta.3'
-  # Type checker used by Vitest that supports Vue
-  'vue-tsc': '>=2.2.10'
+  vue-tsc: '>=2.2.10'
   '@vitest/browser': '>=3.2.0-beta.3'
-  'playwright': '>=1.52.0'
+  playwright: '>=1.52.0'
   '@vitest/coverage-v8': '>=3.2.0-beta.3'
   '@vitest/coverage-istanbul': '>=3.2.0-beta.3'
   '@total-typescript/ts-reset': '*'
   '@types/postcss-mixins': '*'
-  'ts-pattern': '*'
-  'oxc-minify': '*'
-  'memfs': '>=4.17.2'
-  'happy-opfs': '>=1.8.6'
-  'eslint-p': '>=0.23.0'
-  'eslint-plugin-oxlint': '>=0.16.11'
-  'jiti': '>=2.4.2'
-  'eslint': '>=9.27.0'
+  ts-pattern: '*'
+  oxc-minify: '*'
+  memfs: '>=4.17.2'
+  happy-opfs: '>=1.8.6'
+  eslint-p: '>=0.23.0'
+  eslint-plugin-oxlint: '>=0.16.11'
+  jiti: '>=2.4.2'
+  eslint: '>=9.27.0'
   '@eslint/js': '>=9.27.0'
-  'typescript-eslint': '>=8.32.1'
-  'vite-plugin-json5': '>=1.1.9'
-  'happy-rusty': '*'
-  # Install directly from GitHub for TypeScript support
-  # Edit: Not using it. Too outdated.
-  # 'eslint-plugin-import': github:import-js/eslint-plugin-import
-  'eslint-plugin-jsdoc': '>=50.6.17'
-  'eslint-plugin-n': '>=17.18.0'
-  # Does not support TypeScript yet.
-  #  'eslint-plugin-promise': '>=7.2.1'
+  typescript-eslint: '>=8.32.1'
+  vite-plugin-json5: '>=1.1.9'
+  happy-rusty: '*'
+  eslint-plugin-jsdoc: '>=50.6.17'
+  eslint-plugin-n: '>=17.18.0'
   '@vitest/eslint-plugin': '>=1.2.1'
-  'eslint-plugin-unicorn': '>=59.0.1'
-  'eslint-plugin-astro': '>=1.3.1'
-  'eslint-plugin-jsx-a11y': '>=6.10.2'
+  eslint-plugin-unicorn: '>=59.0.1'
+  eslint-plugin-astro: '>=1.3.1'
+  eslint-plugin-jsx-a11y: '>=6.10.2'
   '@moonrepo/cli': '>=1.36.3'
 childConcurrency: 16
 dedupeDirectDeps: true
@@ -142,10 +133,11 @@ linkWorkspacePackages: true
 managePackageManagerVersions: false
 nodeLinker: isolated
 onlyBuiltDependencies:
-- dprint
-- esbuild
-- sharp
-- husky
+  - '@moonrepo/cli'
+  - dprint
+  - esbuild
+  - husky
+  - sharp
 overrides:
   tsconfck>typescript: '*'
   zod-to-ts>typescript: '*'
@@ -157,7 +149,6 @@ preferWorkspacePackages: true
 resolutionMode: highest
 savePrefix: ''
 saveWorkspaceProtocol: false
-# TOO SLOW
 shellEmulator: false
 strictDepBuilds: true
 strictPeerDependencies: true
@@ -165,5 +156,3 @@ supportedArchitectures:
   os: [win32, darwin, linux, current]
   cpu: [x64, arm64, current]
   libc: [glibc, musl, current]
-# Too slow, disabled.
-# verifyDepsBeforeRun: install
