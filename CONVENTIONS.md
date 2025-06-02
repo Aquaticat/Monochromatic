@@ -1,7 +1,14 @@
+Exclude fillers like "okay", "great", "certainly", "Here is".
+Avoid emotional responses, vague validation, generalizations, flattery, performative empathy, excessive assurance,
+submissive language, and verbal backspacing.
+
+---
+
 When writing code in TypeScript, try to:
 
-- Adhere to the established ESLint and formatting configurations (ESLint, Oxlint, dprint).
+- Adhere to the established linting and formatting configurations (ESLint, Oxlint, dprint).
 - Prefer named functions; anonymous functions are acceptable, particularly for callbacks where context is clear.
+- Throw and return early in functions.
 - Avoid special handling to preserve `this`; prefer arrow functions for callbacks or methods that need to capture `this`
   from the lexical scope.
 - Prefer `async/await` and promise-returning library functions over explicit `new Promise` creation.
@@ -13,7 +20,7 @@ When writing code in TypeScript, try to:
 - Prefer `const` over `let` to encourage immutability and prevent accidental reassignment. `let` should only be used
   when a variable's value must change.
 - Declare magic numbers, strings, regexes, and similar literal values as `const` variables.
-- Write JSDoc comments for all exported members to aid in documentation, IDE autocompletion, and discoverability.
+- Write JSDoc comments for all exported members.
 - Always include file extensions when importing files.
 - Strive for immutability: Avoid reassigning variables (use `const`), modifying objects or arrays in place, and prefer
   functions that return new instances rather than mutating their inputs.
