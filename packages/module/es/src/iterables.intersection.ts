@@ -1,3 +1,8 @@
+import { notUndefinedOrThrow } from './error.throw.ts';
+import {
+  isArrayEmpty,
+  isArrayOfLength1,
+} from './iterable.is.ts';
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 export function intersectionIterables(...arrays: never[]): Set<never>;
@@ -118,6 +123,16 @@ export function intersectionIterables(...arrays: Iterable<unknown>[]): Set<unkno
   return candidates;
 }
 
+export async function setOfIterable(
+  iterable: MaybeAsyncIterable<unknown>,
+): Promise<Set<unknown>> {
+  const set = new Set<unknown>();
+  for await (const item of iterable) {
+    set.add(item);
+  }
+  return set;
+}
+
 /**
  * Asynchronously creates a new Set instance that is the intersection of the input iterables or async iterables.
  * @param iterables - An array of iterables or async iterables.
@@ -133,7 +148,8 @@ export async function intersectionIterablesAsync<const Param1,>(
 export async function intersectionIterablesAsync<const Param1, const Param2,>(
   ...iterables: [MaybeAsyncIterable<Param1>, MaybeAsyncIterable<Param2>]
 ): Promise<Set<Param1 & Param2>>;
-export async function intersectionIterablesAsync<const Param1, const Param2, const Param3,>(
+export async function intersectionIterablesAsync<const Param1, const Param2,
+  const Param3,>(
   ...iterables: [
     MaybeAsyncIterable<Param1>,
     MaybeAsyncIterable<Param2>,
@@ -217,30 +233,23 @@ export async function intersectionIterablesAsync<const T,>(
 export async function intersectionIterablesAsync(
   ...iterables: MaybeAsyncIterable<unknown>[]
 ): Promise<Set<unknown>> {
-  if (iterables.length === 0) {
+  if (isArrayEmpty(iterables)) {
     return new Set();
   }
 
-  async function iterableToSet(iterable: MaybeAsyncIterable<unknown>): Promise<Set<unknown>> {
-    const set = new Set<unknown>();
-    for await (const item of iterable) {
-      set.add(item);
-    }
-    return set;
-  }
-
-  if (iterables.length === 1) {
-    return iterableToSet(iterables[0]);
+  if (isArrayOfLength1(iterables)) {
+    return setOfIterable(iterables[0]);
   }
 
   // Start with the first iterable as candidates
-  const candidates = await iterableToSet(iterables[0]);
+  const candidates = await setOfIterable(notUndefinedOrThrow(iterables[0]));
 
   // Empty set short-circuit
   if (candidates.size === 0) {
     return candidates;
   }
 
+  //refactor the following to avoid await in loop. Process all the iterables into sets at the same time. AI!
   // For each subsequent iterable
   for (const otherIterable of iterables.slice(1)) {
     // Short-circuit if no candidates remain
@@ -248,7 +257,7 @@ export async function intersectionIterablesAsync(
       return candidates;
     }
 
-    const currentSet = await iterableToSet(otherIterable);
+    const currentSet = await setOfIterable(otherIterable);
 
     // If current iterable is empty, intersection is empty
     if (currentSet.size === 0) {
