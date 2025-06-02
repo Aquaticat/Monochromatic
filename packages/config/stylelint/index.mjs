@@ -302,11 +302,19 @@ export default {
     //endregion Whitespace inside
   },
   /* See example..stylelintignore
-     This way of ignoring files is too slow. */
+     This way of ignoring files is too slow.
+     Update: turns out stylelint can directly use gitignore if the command argument is passed in.
+     */
   // ignoreFiles: [],
 
   overrides: [{
-    files: ['*.astro', '**/*.astro'],
+    files: ['*.astro', '**/*.astro', '*.html', '**/*.html'],
     customSyntax: 'postcss-html',
   }],
+
+  reportDescriptionlessDisables: true,
+  reportInvalidScopeDisables: true,
+  reportNeedlessDisables: true,
+  reportUnscopedDisables: true,
+  cache: true,
 };

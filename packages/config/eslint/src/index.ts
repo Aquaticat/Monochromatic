@@ -51,7 +51,7 @@ const myConfigArray: ConfigArray = tseslint.config(
   nodePlugin.configs['flat/recommended'],
   eslintPluginUnicorn.configs.all,
   ...eslintPluginAstroConfigs.recommended,
-  ...eslintPluginAstroConfigs['flat/jsx-a11y-strict'],
+  ...eslintPluginAstroConfigs['flat/recommended'],
   {
     languageOptions: {
       parserOptions: {

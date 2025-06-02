@@ -2,7 +2,7 @@
   "extends": "@monochromatic-dev/config-typescript",
   "compilerOptions": {
     "paths": {
-      "@/*": ["./*"],
-    },
-  },
+      "@/*": ["./*"]
+    }
+  }
 }

@@ -1,3 +1,4 @@
+import { isError } from './error.is.ts';
 import {
   isAsyncGenerator,
   isAsyncIterable,
@@ -8,11 +9,10 @@ import {
   isWeakMap,
   isWeakSet,
 } from './iterable.is.ts';
-import {isError} from './error.is.ts';
-import {logtapeGetLogger} from './logtape.shared.ts';
-import {isObjectDate} from './numeric.is.ts';
-import {isPromise} from './promise.is.ts';
-import type {NotPromise} from './promise.type.ts';
+import { logtapeGetLogger } from './logtape.shared.ts';
+import { isObjectDate } from './numeric.is.ts';
+import { isPromise } from './promise.is.ts';
+import type { NotPromise } from './promise.type.ts';
 import {
   isObjectRegexp,
   isString,
@@ -373,8 +373,7 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
  */
 
 /* @__NO_SIDE_EFFECTS__ */
-export async function equalAsync(a: any,
-                                 b: any): Promise<boolean> {
+export async function equalAsync(a: any, b: any): Promise<boolean> {
   if (isPromise(a) || isPromise(b)) {
     l.debug`Promises a: ${a} b: ${b}`;
 

@@ -1,6 +1,6 @@
-import type {Promisable} from 'type-fest';
+import type { Promisable } from 'type-fest';
 
-export function tryCatch<const T, >(
+export function tryCatch<const T,>(
   tryer: () => T,
   catcher: (error: any) => boolean,
 ): T {
@@ -15,7 +15,7 @@ export function tryCatch<const T, >(
   }
 }
 
-export async function tryCatchAsync<const T, >(
+export async function tryCatchAsync<const T,>(
   tryer: () => Promisable<T>,
   catcher: (error: any) => Promisable<boolean>,
 ): Promise<T> {

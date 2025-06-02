@@ -15,8 +15,7 @@
   "module": "index.jsonc",
   "type": "module",
   "files": [
-    "index.jsonc",
-    ".eslintignore"
+    "index.jsonc"
   ],
   "author": {
     "name": "Aquaticat",

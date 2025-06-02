@@ -10,7 +10,7 @@ console.log((function negIntToInt(num: number): string {
         toInclusive === fromInclusive
           ? toInclusive
           : `(${
-            [...Array.from({length: toInclusive + 1 - fromInclusive}).keys()]
+            [...Array.from({ length: toInclusive + 1 - fromInclusive }).keys()]
               .map((current) => current + fromInclusive)
               .join('|')
           })`
@@ -37,7 +37,7 @@ console.log((function negIntToIntExclusive(num: number): string {
         toExclusive === fromInclusive
           ? toExclusive
           : `(${
-            [...Array.from({length: toExclusive - fromInclusive}).keys()]
+            [...Array.from({ length: toExclusive - fromInclusive }).keys()]
               .map((current) => current + fromInclusive)
               .join('|')
           })`

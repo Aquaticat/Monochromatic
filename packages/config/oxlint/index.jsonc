@@ -197,6 +197,11 @@
   },
   "ignorePatterns": [
     "dist",
+    "node_modules",
+    "logs",
+    "coverage",
+    "bak",
+    "**/*.js",
   ],
   "overrides": [
     {

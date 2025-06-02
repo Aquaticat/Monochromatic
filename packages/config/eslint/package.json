@@ -12,14 +12,13 @@
     "eslint-plugin-jsdoc": "catalog:",
     "@eslint/js": "catalog:",
     "eslint-plugin-n": "catalog:",
-    "eslint-plugin-jsx-a11y": "catalog:"
+    "@vitest/eslint-plugin": "catalog:",
+    "eslint-plugin-oxlint": "catalog:"
   },
   "peerDependencies": {
     "eslint": "catalog:"
   },
   "devDependencies": {
-    "eslint-plugin-oxlint": "catalog:",
-    "@vitest/eslint-plugin": "catalog:",
     "vite": "catalog:",
     "@monochromatic-dev/config-typescript": "*",
     "@monochromatic-dev/config-vite": "*",
