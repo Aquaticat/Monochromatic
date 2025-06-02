@@ -249,17 +249,20 @@ export async function intersectionIterablesAsync(
     return candidates;
   }
 
-  //refactor the following to avoid await in loop. Process all the iterables into sets at the same time. AI!
-  // For each subsequent iterable
-  for (const otherIterable of iterables.slice(1)) {
+  // Convert all subsequent iterables to sets concurrently
+  const subsequentSetsPromises = iterables.slice(1).map(function toSet(iterable) {
+    return setOfIterable(iterable);
+  });
+  const subsequentSets = await Promise.all(subsequentSetsPromises);
+
+  // For each subsequent set
+  for (const currentSet of subsequentSets) {
     // Short-circuit if no candidates remain
     if (candidates.size === 0) {
       return candidates;
     }
 
-    const currentSet = await setOfIterable(otherIterable);
-
-    // If current iterable is empty, intersection is empty
+    // If current set is empty, intersection is empty
     if (currentSet.size === 0) {
       candidates.clear();
       return candidates;
