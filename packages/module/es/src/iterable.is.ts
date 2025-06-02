@@ -68,13 +68,19 @@ import type { UnknownRecord } from 'type-fest';
   return isArray(value) && value.length === 0;
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function arrayIsEmpty(
+/* @__NO_SIDE_EFFECTS__ */ export function isArrayEmpty(
   value: readonly any[],
 ): value is never[] {
   return value.length === 0;
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function isNonEmptyArray<T_value,>(
+export function isArrayNonEmpty<const T,>(
+  value: readonly T[],
+): value is [T, ...T[]] {
+  return Array.isArray(value) && value.length > 0;
+}
+
+/* @__NO_SIDE_EFFECTS__ */ export function isNonEmptyArray<const T_value,>(
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- unknown is required.
   value: T_value | unknown,
 ): value is [
@@ -119,4 +125,8 @@ export type IsArrayFixedLength<T extends readonly unknown[],> = number extends T
   ? false
   : true;
 
-// export type ArrayAcceptingNumberOfElements<T, N> = T extends ArrayNonFixedLength ? T : T[N] extends
+export function isArrayOfLength1<const T,>(
+  value: readonly T[],
+): value is readonly [T] {
+  return Array.isArray(value) && value.length === 1;
+}

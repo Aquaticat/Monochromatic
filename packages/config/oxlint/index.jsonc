@@ -217,6 +217,9 @@
           "warn",
           "as-needed",
         ],
+
+        // Sometimes we need to test a list of numbers.
+        "eslint/no-magic-numbers": "off",
         // Many functions that don't need explicit return types.
         "typescript/explicit-function-return-type": "off",
         // Sometimes we need to test undefined.

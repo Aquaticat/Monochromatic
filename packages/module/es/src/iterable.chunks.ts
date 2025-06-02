@@ -1,12 +1,12 @@
-import type { Tuple } from './array.type.tuple.ts';
-import { notEmptyOrThrow } from './error.throw.ts';
+import type {Tuple} from './array.type.tuple.ts';
+import {notEmptyOrThrow} from './error.throw.ts';
 import {
-  arrayIsEmpty,
+  isArrayEmpty,
   isEmptyArray,
 } from './iterable.is.ts';
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
-import { logtapeGetLogger } from './logtape.shared.ts';
-import type { Ints } from './numeric.type.ints.ts';
+import type {MaybeAsyncIterable} from './iterable.type.maybe.ts';
+import {logtapeGetLogger} from './logtape.shared.ts';
+import type {Ints} from './numeric.type.ints.ts';
 
 const l = logtapeGetLogger(['m', 'iterable.chunks']);
 
@@ -55,7 +55,7 @@ export function* chunksArray<
 ): Generator<
   Tuple<T_array extends Iterable<infer T_element> ? T_element : never, Ints<1, (T_n)>>
 > {
-  if (arrayIsEmpty(array)) {
+  if (isArrayEmpty(array)) {
     throw new RangeError(`What's to be chunked cannot be empty`);
   }
 
@@ -139,8 +139,8 @@ export function* chunksIterable<
   //       If not, iterate as normal and only take what we need.
   const arrayLikeArray:
     readonly (T_arrayLike extends Iterable<infer T_element> ? T_element : never)[] = [
-      ...arrayLike,
-    ];
+    ...arrayLike,
+  ];
 
   l.debug`arrayLikeArray: ${arrayLikeArray}`;
 
@@ -183,8 +183,7 @@ export function chunksIterableAsync<
 /* @__NO_SIDE_EFFECTS__ */
 export async function* chunksIterableAsync<
   // An overload sig cannot be declared as a generator
-  const T_arrayLike extends
-    | MaybeAsyncIterable<any>
+  const T_arrayLike extends | MaybeAsyncIterable<any>
     | MaybeAsyncIterable<any> & { length: number; },
   const T_n extends T_arrayLike extends { length: number; }
     ? Ints<1, T_arrayLike['length']>

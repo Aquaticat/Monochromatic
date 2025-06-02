@@ -3,7 +3,7 @@ import {
   unionIterablesAsync,
   unionIterablesAsyncGen,
   unionIterablesGen,
-} from '@monochromatic-dev/module-es/.js';
+} from '@monochromatic-dev/module-es';
 import {
   describe,
   expect,
@@ -159,9 +159,15 @@ describe(unionIterablesGen, () => {
     const strResultGen = unionIterablesGen(['a', 'b'], ['c', 'd']);
     const mixedResultGen = unionIterablesGen([1, 2], ['a', 'b']);
 
-    expectTypeOf(numResultGen).toEqualTypeOf<Generator<1 | 2 | 3 | 4 | 5 | 6, void, undefined>>();
-    expectTypeOf(strResultGen).toEqualTypeOf<Generator<'a' | 'b' | 'c' | 'd', void, undefined>>();
-    expectTypeOf(mixedResultGen).toEqualTypeOf<Generator<1 | 2 | 'a' | 'b', void, undefined>>();
+    expectTypeOf(numResultGen).toEqualTypeOf<
+      Generator<1 | 2 | 3 | 4 | 5 | 6, void, undefined>
+    >();
+    expectTypeOf(strResultGen).toEqualTypeOf<
+      Generator<'a' | 'b' | 'c' | 'd', void, undefined>
+    >();
+    expectTypeOf(mixedResultGen).toEqualTypeOf<
+      Generator<1 | 2 | 'a' | 'b', void, undefined>
+    >();
 
     expect([...numResultGen]).toEqual([1, 2, 3, 4, 5, 6]);
     expect([...strResultGen]).toEqual(['a', 'b', 'c', 'd']);
@@ -173,7 +179,7 @@ describe(unionIterablesGen, () => {
 
 describe(unionIterablesAsyncGen, () => {
   it('yields nothing when no arguments are provided', async () => {
-    const result = [];
+    const result: never[] = [];
     for await (const item of unionIterablesAsyncGen()) {
       result.push(item);
     }
@@ -206,7 +212,9 @@ describe(unionIterablesAsyncGen, () => {
       yield 3;
     }
     const result = [];
-    for await (const item of unionIterablesAsyncGen(asyncIterable1(), asyncIterable2(), [3, 4, 1])) {
+    for await (
+      const item of unionIterablesAsyncGen(asyncIterable1(), asyncIterable2(), [3, 4, 1])
+    ) {
       result.push(item);
     }
     expect(result).toEqual([1, 2, 3, 4]);
@@ -238,20 +246,26 @@ describe(unionIterablesAsyncGen, () => {
     const strResultGen = unionIterablesAsyncGen(genStrs(), ['c', 'd']);
     const mixedResultGen = unionIterablesAsyncGen(genNums(), ['a', 'b']);
 
-    expectTypeOf(numResultGen).toEqualTypeOf<AsyncGenerator<1 | 2 | 3 | 4, void, undefined>>();
-    expectTypeOf(strResultGen).toEqualTypeOf<AsyncGenerator<'a' | 'b' | 'c' | 'd', void, undefined>>();
-    expectTypeOf(mixedResultGen).toEqualTypeOf<AsyncGenerator<1 | 2 | 'a' | 'b', void, undefined>>();
+    expectTypeOf(numResultGen).toEqualTypeOf<
+      AsyncGenerator<1 | 2 | 3 | 4, void, undefined>
+    >();
+    expectTypeOf(strResultGen).toEqualTypeOf<
+      AsyncGenerator<'a' | 'b' | 'c' | 'd', void, undefined>
+    >();
+    expectTypeOf(mixedResultGen).toEqualTypeOf<
+      AsyncGenerator<1 | 2 | 'a' | 'b', void, undefined>
+    >();
 
     const numResult = [];
-    for await (const item of numResultGen) numResult.push(item);
+    for await (const item of numResultGen) { numResult.push(item); }
     expect(numResult).toEqual([1, 2, 3, 4]);
 
     const strResult = [];
-    for await (const item of strResultGen) strResult.push(item);
+    for await (const item of strResultGen) { strResult.push(item); }
     expect(strResult).toEqual(['a', 'b', 'c', 'd']);
 
     const mixedResult = [];
-    for await (const item of mixedResultGen) mixedResult.push(item);
+    for await (const item of mixedResultGen) { mixedResult.push(item); }
     expect(mixedResult).toContain(1);
     expect(mixedResult).toContain('a');
   });

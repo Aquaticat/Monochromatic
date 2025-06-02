@@ -25,6 +25,8 @@
     "b:test": "vitest run",
     "w:bench-slow": "vitest bench",
     "b:bench-slow": "vitest bench --run",
+    "//w:lint_eslint": "# eslint is indeed already ran by the IDE, but we want a complete view of all errors too.",
+    "w:lint_eslint": "eslint-p",
     "wr": "pnpm run -r --parallel --stream \"/^w:\\w+$/\"",
     "br": "pnpm run -r --stream \"/^b:\\w+$/\""
   },

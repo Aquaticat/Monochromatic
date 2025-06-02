@@ -1,3 +1,4 @@
+// oxlint-disable-next-line no-unassigned-import -- For side effects.
 import '@total-typescript/ts-reset/array-includes';
 import { match } from 'ts-pattern';
 import { typeOf } from './any.typeOf.ts';

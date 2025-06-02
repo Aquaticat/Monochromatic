@@ -1,10 +1,18 @@
-Exclude fillers like "okay", "great", "certainly", "Here is".
-Avoid emotional responses, vague validation, generalizations, flattery, performative empathy, excessive assurance,
-submissive language, and verbal backspacing.
+## Generally
 
----
+Avoid:
+- apologies
+- vague validation
+- generalizations
+- flattery
+- performative empathy
+- excessive assurance
+- submissive language
+- verbal backspacing
+- fillers like "okay", "great", "certainly", "Here is"
+- self-deprecation
 
-When writing code in TypeScript, try to:
+## TypeScript
 
 - Adhere to the established linting and formatting configurations (ESLint, Oxlint, dprint).
 - Always include file extensions when importing files.
@@ -16,7 +24,7 @@ When writing code in TypeScript, try to:
 - Avoid declaring unused and optional parameters in `Generator<T>` and `AsyncGenerator<T>` types.
 - Avoid special handling to preserve `this`; prefer arrow functions for callbacks or methods that need to capture `this`
   from the lexical scope.
-- Avoid using await in loops.
+- Avoid using await in loops wherever logically sound.
 - Avoid using the generic `Function` type.
   - Prefer more specific function signatures, such as `(...args: any) => any`,
     or ideally, define explicit parameters and return types.
@@ -41,6 +49,10 @@ When writing code in TypeScript, try to:
   - For an async generator, remove both the `async` modifier and the star sign in non-implementation overload signatures.
   - This is so TypeScript can correctly determine they're overloads.
 - Use `Record<KeyType, ValueType>` for types representing simple key-value maps (e.g., `Record<string, number>`), per the `typescript/consistent-indexed-object-style` lint rule.
+- Prefix `readonly` modifier for array parameters.
+- Use generics for `T[]`s, `Iterable<T>`s, `MaybeAsyncIterable<T>`s to ensure the output type doesn't lose fidelity.
+  - Good: `function myFn<const T>(myArr: readonly T[]): T[] { return myArr; }`
+  - Bad: `function myFn(myArr: readonly unknown[]): unknown[] { return myArr; }`
 - Use `region` markers to delineate logical sections of code.
   - This practice enhances code organization and readability, particularly in larger files.
   - Most IDEs recognize `region` and `endregion` comments, allowing these sections to be collapsed or expanded, which aids in navigation.
@@ -69,10 +81,17 @@ When writing code in TypeScript, try to:
   - This includes providing descriptions for parameters and return values.
   - Adhere to the `eslint-plugin-jsdoc` recommended rules, TSDoc variant.
   - Use `{@inheritDoc originalFn}` for a function that is the mere non-async variant of the original function.
+  - Avoid `the`, `a`, `an` in `@param` or `@returns` description.
+    - Good: `@returns Set containing all unique elements from the input iterable.`
+    - Bad: `@returns A set containing all unique elements from the input iterable.`
+  - Avoid repeating the name of the parameter without adding additional context in `@param` description.
+    - Good: `@param iterable - to convert.`
+    - Bad: `@param iterable - iterable to convert.`
+  - For async functions, assume users are using `await` syntax to consume their results and don't need the docs to tell them the function technically returns a promise.
+    - Good: `Converts a Iterable to a Set.`, `@returns Set containing all unique elements from the input iterable.`
+    - Bad: `Converts a Iterable to a Promise<Set>.`, `@returns Promise that resolves to Set containing all unique elements from the input iterable.`
 
----
-
-When writing Markdown files:
+## Markdown
 
 - Ensure each sentence or long phrase is on its own line.
 - Bullet lists use the `-` marker.

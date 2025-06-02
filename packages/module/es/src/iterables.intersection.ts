@@ -131,14 +131,29 @@ export function intersectionIterables(...arrays: Iterable<unknown>[]): Set<unkno
 }
 
 /**
- * Converts a `MaybeAsyncIterable` to a `Promise<Set<unknown>>`.
- * @param iterable - The iterable or async iterable to convert.
- * @returns A promise that resolves to a Set containing all unique elements from the input iterable.
+ * Converts a `Iterable` to a `Set`.
+ * @param iterable - iterable to convert.
+ * @returns Set containing all unique elements from the input iterable.
  */
-export async function setOfIterable(
-  iterable: MaybeAsyncIterable<unknown>,
-): Promise<Set<unknown>> {
-  const set = new Set<unknown>();
+export function setOfIterable<const T,>(
+  iterable: Iterable<T>,
+): Set<T> {
+  const set = new Set<T>();
+  for (const item of iterable) {
+    set.add(item);
+  }
+  return set;
+}
+
+/**
+ * Converts a `MaybeAsyncIterable` to a `Set<unknown>`.
+ * @param iterable - iterable or async iterable to convert.
+ * @returns Set containing all unique elements from the input iterable.
+ */
+export async function setOfIterableAsync<const T,>(
+  iterable: MaybeAsyncIterable<T>,
+): Promise<Set<T>> {
+  const set = new Set<T>();
   for await (const item of iterable) {
     set.add(item);
   }
@@ -250,11 +265,11 @@ export async function intersectionIterablesAsync(
   }
 
   if (isArrayOfLength1(iterables)) {
-    return setOfIterable(iterables[0]);
+    return setOfIterableAsync(iterables[0]);
   }
 
   // Start with the first iterable as candidates
-  const candidates = await setOfIterable(notUndefinedOrThrow(iterables[0]));
+  const candidates = await setOfIterableAsync(notUndefinedOrThrow(iterables[0]));
 
   // Empty set short-circuit
   if (candidates.size === 0) {
@@ -262,7 +277,9 @@ export async function intersectionIterablesAsync(
   }
 
   // Convert all subsequent iterables to sets concurrently
-  const subsequentSets = await Promise.all(iterables.slice(1).map(unary(setOfIterable)));
+  const subsequentSets = await Promise.all(
+    iterables.slice(1).map(unary(setOfIterableAsync)),
+  );
 
   // For each subsequent set
   for (const currentSet of subsequentSets) {

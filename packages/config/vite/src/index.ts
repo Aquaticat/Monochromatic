@@ -28,6 +28,7 @@ import {
   type ViteUserConfig as VitestUserConfig,
 } from 'vitest/config';
 
+// oxlint-disable-next-line no-magic-numbers -- not really a magic number.
 const firefoxVersion = 128 << 16;
 
 const spawnOptions: Options = {
@@ -405,6 +406,8 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
               if (html.includes('REPLACE_WITH_IFRAME_INDEX_HTML')) {
                 console.log('replacing iframe');
                 // chmodSync(iframePath, constants.S_IRUSR);
+                // FIXME: Find out why this fails with a permission issue. Could be a Vite configuration not allowing plugins to read files outside of root dir. Could be something else.
+                //  Update: Probably not due to Vite. Read the docs and only the server isn't allowed to serve files out of root dir.
                 const iframeFile = await readFile(iframePath, 'utf8');
                 return html.replace(
                   'REPLACE_WITH_IFRAME_INDEX_HTML',

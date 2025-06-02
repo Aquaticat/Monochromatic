@@ -39,11 +39,11 @@
   },
   "scripts": {
     "w:types": "tsc --watch",
-    "b:types": "tsc",
+    "b:types": "tsc --build --force --verbose",
     "w:js": "vite build --config vite.config.ts  --watch",
     "b:js": "vite build  --config vite.config.ts ",
-    "b": "pnpm run --stream '/^b:\\w+$/'",
-    "w": "pnpm run --stream '/^w:\\w+$/'"
+    "b": "pnpm run --stream \"/^b:\\w+$/\"",
+    "w": "pnpm run --stream \"/^w:\\w+$/\""
   },
   "license": "Apache-2.0",
   "repository": {
@@ -53,7 +53,8 @@
   },
   "exports": {
     ".": {
-      "default": "./src/index.ts"
+      "types": "./dist/final/types/src/index.d.ts",
+      "default": "./dist/final/js/index.js"
     },
     "./.ts": {
       "default": "./src/index.ts"
