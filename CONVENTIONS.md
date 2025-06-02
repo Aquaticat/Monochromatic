@@ -7,45 +7,40 @@ submissive language, and verbal backspacing.
 When writing code in TypeScript, try to:
 
 - Adhere to the established linting and formatting configurations (ESLint, Oxlint, dprint).
+- Always include file extensions when importing files.
 - Always name functions. Prefer function declarations.
   - For arrow functions, make sure the JavaScript engine can infer a name.
-- Throw and return early in functions.
-- Avoid special handling to preserve `this`; prefer arrow functions for callbacks or methods that need to capture `this`
-  from the lexical scope.
-- Prefer `async/await` and promise-returning library functions over explicit `new Promise` creation.
-- Write a corresponding Vitest file that aims for 100% test coverage.
-- Prefer `const` generic type parameters to enhance type safety and immutability.
-- Prefer function declarations (`function foo() {}`) for hoistability. For readability, aim to declare functions before
-  their first use.
-- Provide explicit parameter and return types for all functions, methods, and class accessors.
-- Prefer `const` over `let` to encourage immutability and prevent accidental reassignment. `let` should only be used
-  when a variable's value must change.
-- Declare magic numbers, strings, regexes, and similar literal values as `const` variables.
-  - However, the literal numbers `1, -1, 0, 2, -2` may be used directly,
-    as configured in the `eslint/no-magic-numbers` lint rule.
-- Avoid using await in loops.
-- Write comprehensive TSDoc comments for all exported members.
-  - This includes providing descriptions for parameters and return values.
-  - Adhere to the `eslint-plugin-jsdoc` recommended rules, TSDoc variant.
-  - Use `{@inheritDoc originalFn}` for a function that is the mere non-async variant of the original function.
-- Always include file extensions when importing files.
-- Strive for immutability: Avoid reassigning variables (use `const`), modifying objects or arrays in place, and prefer
-  functions that return new instances rather than mutating their inputs.
-- Prefer `type` aliases (e.g., `type MyType = { /* ... */ };`) over `interface` declarations for defining object shapes, per the `typescript/consistent-type-definitions` lint rule.
-- Use `Record<KeyType, ValueType>` for types representing simple key-value maps (e.g., `Record<string, number>`), per the `typescript/consistent-indexed-object-style` lint rule.
-- Note: The `eslint/no-unused-vars` lint rule is disabled. Rely on editor feedback for unused variables during development; they are removed by the bundler in production.
 - Always use parentheses around arrow function parameters.
   - This applies even for a single parameter.
   - This is enforced by dprint.
+- Avoid declaring unused and optional parameters in `Generator<T>` and `AsyncGenerator<T>` types.
+- Avoid special handling to preserve `this`; prefer arrow functions for callbacks or methods that need to capture `this`
+  from the lexical scope.
+- Avoid using await in loops.
 - Avoid using the generic `Function` type.
   - Prefer more specific function signatures, such as `(...args: any) => any`,
     or ideally, define explicit parameters and return types.
   - This is guided by the `typescript/no-unsafe-function-type` lint rule.
+- Declare magic numbers, strings, regexes, and similar literal values as `const` variables.
+  - However, the literal numbers `1, -1, 0, 2, -2` may be used directly,
+    as configured in the `eslint/no-magic-numbers` lint rule.
+- Note: The `eslint/no-unused-vars` lint rule is disabled. Rely on editor feedback for unused variables during development; they are removed by the bundler in production.
+- Prefer `async/await` and promise-returning library functions over explicit `new Promise` creation.
+- Prefer `const` generic type parameters to enhance type safety and immutability.
+- Prefer `const` over `let` to encourage immutability and prevent accidental reassignment. `let` should only be used
+  when a variable's value must change.
+- Prefer function declarations (`function foo() {}`) for hoistability. For readability, aim to declare functions before
+  their first use.
+- Prefer `type` aliases (e.g., `type MyType = { /* ... */ };`) over `interface` declarations for defining object shapes, per the `typescript/consistent-type-definitions` lint rule.
+- Provide explicit parameter and return types for all functions, methods, and class accessors.
+- Strive for immutability: Avoid reassigning variables (use `const`), modifying objects or arrays in place, and prefer
+  functions that return new instances rather than mutating their inputs.
+- Throw and return early in functions.
 - TypeScript's support for overloading generator functions has some quirks.
   - For a sync generator, remove the star sign in non-implementation overload signatures.
   - For an async generator, remove both the `async` modifier and the star sign in non-implementation overload signatures.
   - This is so TypeScript can correctly determine they're overloads.
-- Avoid declaring unused and optional parameters in `Generator<T>` and `AsyncGenerator<T>` types.
+- Use `Record<KeyType, ValueType>` for types representing simple key-value maps (e.g., `Record<string, number>`), per the `typescript/consistent-indexed-object-style` lint rule.
 - Use `region` markers to delineate logical sections of code.
   - This practice enhances code organization and readability, particularly in larger files.
   - Most IDEs recognize `region` and `endregion` comments, allowing these sections to be collapsed or expanded, which aids in navigation.
@@ -69,6 +64,11 @@ When writing code in TypeScript, try to:
 
     //endregion User Authentication Logic
     ```
+- Write a corresponding Vitest file that aims for 100% test coverage.
+- Write comprehensive TSDoc comments for all exported members.
+  - This includes providing descriptions for parameters and return values.
+  - Adhere to the `eslint-plugin-jsdoc` recommended rules, TSDoc variant.
+  - Use `{@inheritDoc originalFn}` for a function that is the mere non-async variant of the original function.
 
 ---
 
