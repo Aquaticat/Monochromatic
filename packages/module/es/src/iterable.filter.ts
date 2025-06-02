@@ -35,6 +35,8 @@ export function filterIterable<T_i,>(
   return yes;
 }
 
+//  AI! Write Generator versions of all the functions in here by postfixing every one of their names with Gen
+
 /* @__NO_SIDE_EFFECTS__ */
 export async function filterFailIterableAsync<T_i,>(
   predicate: (i: T_i) => Promisable<boolean>,
