@@ -1,6 +1,11 @@
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
-// AI! Add missing TSDoc
+/**
+ * Creates a new Set instance that is the union of the input iterables.
+ * @param iterables - An array of iterables.
+ * @returns A Set containing all unique elements from the input iterables.
+ * @template ParamTypes - The types of elements in the input iterables.
+ */
 export function unionIterables(...arrays: never[]): Set<never>;
 export function unionIterables<const Param1,>(...arrays: [Iterable<Param1>]): Set<Param1>;
 export function unionIterables<const Param1, const Param2,>(
