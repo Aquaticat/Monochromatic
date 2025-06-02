@@ -130,17 +130,29 @@
     // Sometimes we need to do `import { a, type B } from 'module'`.
     "import/consistent-type-specifier-style": "off",
 
-    // Doesn't matter when the function is a callback with sufficient context.
-    // "eslint/func-names": ["warn", "as-needed"],
-    "eslint/func-names": "off",
+    // We want good traces.
+    "eslint/func-names": ["warn", "as-needed"],
+
     // TypeScript function overloads work better with function declarations.
     "eslint/func-style": "off",
     // You shouldn't use for in loops anyway. Use for of loops instead.
     "eslint/guard-for-in": "error",
     "eslint/no-continue": "off",
-    // oxlint doesn't support ignoring specific values yet.
-    // "eslint/no-magic-numbers": ["warn", {"enforceConst": true, "detectObjects": true, "ignoreEnums": true, "ignoreNumericLiteralTypes": true, "ignoreTypeIndexes": true}],
-    "eslint/no-magic-numbers": "off",
+    // oxlint now supports ignoring specific values!
+    "eslint/no-magic-numbers": [
+      "warn",
+      {
+        "ignore": [1, -1, 0, 2, -2],
+        "enforceConst": true,
+        "detectObjects": false,
+        "ignoreEnums": true,
+        "ignoreNumericLiteralTypes": true,
+        "ignoreTypeIndexes": true,
+        "ignoreReadonlyClassProperties": true,
+        "ignoreClassFieldInitialValues": true,
+        "ignoreDefaultValues": true,
+      },
+    ],
     "eslint/no-ternary": "off",
     // Sometimes method chaining is more concise.
     "eslint/prefer-spread": "off",
@@ -200,6 +212,11 @@
         "**/*.{test,bench}.ts",
       ],
       "rules": {
+        // Test files themselves don't require good traces.
+        "eslint/func-names": [
+          "warn",
+          "as-needed",
+        ],
         // Many functions that don't need explicit return types.
         "typescript/explicit-function-return-type": "off",
         // Sometimes we need to test undefined.

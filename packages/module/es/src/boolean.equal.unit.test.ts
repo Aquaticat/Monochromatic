@@ -4,7 +4,7 @@ import {
   isPrimitive,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/.js';
+} from '@monochromatic-dev/module-es';
 import {
   describe,
   expect,
@@ -13,7 +13,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('isPrimitive', () => {
+describe(isPrimitive, () => {
   test('identifies primitive values', () => {
     expect(isPrimitive(undefined)).toBe(true);
     expect(isPrimitive(null)).toBe(true);
@@ -42,7 +42,7 @@ describe('isPrimitive', () => {
   });
 });
 
-describe('equal', () => {
+describe(equal, () => {
   test('compares primitive values', () => {
     expect(equal(5, 5)).toBe(true);
     expect(equal('test', 'test')).toBe(true);

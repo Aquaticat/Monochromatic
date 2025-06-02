@@ -76,7 +76,7 @@ When writing Markdown files:
 
 - Ensure each sentence or long phrase is on its own line.
 - Bullet lists use the `-` marker.
-- There should be one space after the marker.
+  - There should be one space after the marker.
 - For numbered lists, pad the `1.` marker with enough space after it so it is always 4 characters long.
   - For example:
     1.  This is the first item.

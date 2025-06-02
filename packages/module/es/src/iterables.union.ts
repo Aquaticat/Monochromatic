@@ -436,8 +436,8 @@ export async function* unionIterablesAsyncGen(
   ...iterables: MaybeAsyncIterable<unknown>[]
 ): AsyncGenerator<unknown, void, undefined> {
   const yieldedSet = new Set<unknown>();
-  // AI!
   for (const iterable of iterables) {
+    // oxlint-disable-next-line no-await-in-loop -- await in loop here is necessary for the logic, because this function processes each MaybeAsyncIterable one by one.
     for await (const item of iterable) {
       if (!yieldedSet.has(item)) {
         yieldedSet.add(item);
