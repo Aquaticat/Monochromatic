@@ -58,6 +58,16 @@ When writing code in TypeScript, try to:
   and member expressions (e.g., `object.prop1.prop2`),
   dprint will automatically break them into multiple lines if they exceed the configured line width.
   - Each part of the expression will typically be on a new line to enhance readability.
+- Use `region` markers: For example:
+  ```ts
+  //region Doing some complex stuff - Long explanation
+
+  const a = 1;
+  const b = a;
+
+  //endregion Doing some complex stuff
+  ```
+  // AI! improve this
 
 ---
 
