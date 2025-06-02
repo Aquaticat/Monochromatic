@@ -1,6 +1,8 @@
 import type { Promisable } from 'type-fest';
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
+// AI! Add missing TSDoc
+
 export async function filterIterableAsync<T_i,>(
   predicate: (i: T_i) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_i>,
