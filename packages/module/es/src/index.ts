@@ -39,8 +39,6 @@ export * from './iterables.union.ts';
 export * from './numeric.type.ints.ts';
 export * from './numeric.type.intsTo10.ts';
 
-// TODO: Write joinArrayLike. The speced one uses ',' as the sep, which could be surprising.
-
 export * from './boolean.equal.ts';
 export * from './boolean.not.ts';
 
@@ -90,3 +88,5 @@ export * from './logtape.shared.ts';
 export * from './result.unwrap.ts';
 
 export * from './string.limitedGetComputedCss.ts';
+
+// AI! Reorganize this!
