@@ -344,14 +344,14 @@ export function unionIterablesAsyncGen<const Param1,>(
 export function unionIterablesAsyncGen<const Param1, const Param2,>(
   ...iterables: [MaybeAsyncIterable<Param1>, MaybeAsyncIterable<Param2>]
 ): AsyncGenerator<Param1 | Param2, void, undefined>;
-export async function unionIterablesAsyncGen<const Param1, const Param2, const Param3,>(
+export function unionIterablesAsyncGen<const Param1, const Param2, const Param3,>(
   ...iterables: [
     MaybeAsyncIterable<Param1>,
     MaybeAsyncIterable<Param2>,
     MaybeAsyncIterable<Param3>,
   ]
 ): AsyncGenerator<Param1 | Param2 | Param3, void, undefined>;
-export async function unionIterablesAsyncGen<const Param1, const Param2, const Param3,
+export function unionIterablesAsyncGen<const Param1, const Param2, const Param3,
   const Param4,>(
   ...iterables: [
     MaybeAsyncIterable<Param1>,
@@ -360,7 +360,7 @@ export async function unionIterablesAsyncGen<const Param1, const Param2, const P
     MaybeAsyncIterable<Param4>,
   ]
 ): AsyncGenerator<Param1 | Param2 | Param3 | Param4, void, undefined>;
-export async function unionIterablesAsyncGen<const Param1, const Param2, const Param3,
+export function unionIterablesAsyncGen<const Param1, const Param2, const Param3,
   const Param4, const Param5,>(
   ...iterables: [
     MaybeAsyncIterable<Param1>,
@@ -370,7 +370,7 @@ export async function unionIterablesAsyncGen<const Param1, const Param2, const P
     MaybeAsyncIterable<Param5>,
   ]
 ): AsyncGenerator<Param1 | Param2 | Param3 | Param4 | Param5, void, undefined>;
-export async function unionIterablesAsyncGen<const Param1, const Param2, const Param3,
+export function unionIterablesAsyncGen<const Param1, const Param2, const Param3,
   const Param4, const Param5, const Param6,>(
   ...iterables: [
     MaybeAsyncIterable<Param1>,
@@ -381,7 +381,7 @@ export async function unionIterablesAsyncGen<const Param1, const Param2, const P
     MaybeAsyncIterable<Param6>,
   ]
 ): AsyncGenerator<Param1 | Param2 | Param3 | Param4 | Param5 | Param6, void, undefined>;
-export async function unionIterablesAsyncGen<const Param1, const Param2, const Param3,
+export function unionIterablesAsyncGen<const Param1, const Param2, const Param3,
   const Param4, const Param5, const Param6, const Param7,>(
   ...iterables: [
     MaybeAsyncIterable<Param1>,
@@ -394,7 +394,7 @@ export async function unionIterablesAsyncGen<const Param1, const Param2, const P
   ]
 ): AsyncGenerator<Param1 | Param2 | Param3 | Param4 | Param5 | Param6 | Param7, void,
   undefined>;
-export async function unionIterablesAsyncGen<const Param1, const Param2, const Param3,
+export function unionIterablesAsyncGen<const Param1, const Param2, const Param3,
   const Param4, const Param5, const Param6, const Param7, const Param8,>(
   ...iterables: [
     MaybeAsyncIterable<Param1>,
@@ -429,7 +429,7 @@ export function unionIterablesAsyncGen<const Param1, const Param2, const Param3,
   void,
   undefined
 >;
-export async function unionIterablesAsyncGen<const T,>(
+export function unionIterablesAsyncGen<const T,>(
   ...iterables: MaybeAsyncIterable<T>[]
 ): AsyncGenerator<T, void, undefined>;
 export async function* unionIterablesAsyncGen(
@@ -437,6 +437,7 @@ export async function* unionIterablesAsyncGen(
 ): AsyncGenerator<unknown, void, undefined> {
   const yieldedSet = new Set<unknown>();
   for (const iterable of iterables) {
+    // AI! no-await-in-loop
     for await (const item of iterable) {
       if (!yieldedSet.has(item)) {
         yieldedSet.add(item);
