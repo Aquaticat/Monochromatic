@@ -341,8 +341,7 @@ export function unionIterablesAsyncGen(
 export function unionIterablesAsyncGen<const Param1,>(
   ...iterables: [MaybeAsyncIterable<Param1>]
 ): AsyncGenerator<Param1, void, undefined>;
-// AI! Fix
-export async function unionIterablesAsyncGen<const Param1, const Param2,>(
+export function unionIterablesAsyncGen<const Param1, const Param2,>(
   ...iterables: [MaybeAsyncIterable<Param1>, MaybeAsyncIterable<Param2>]
 ): AsyncGenerator<Param1 | Param2, void, undefined>;
 export async function unionIterablesAsyncGen<const Param1, const Param2, const Param3,>(
