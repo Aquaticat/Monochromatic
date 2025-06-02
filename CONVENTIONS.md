@@ -1,7 +1,7 @@
 When writing code in TypeScript, try to:
 
-- Follow eslint airbnb coding style.
-- Name every function.
+- Adhere to the established ESLint and formatting configurations (ESLint, Oxlint, dprint).
+- Prefer named functions; anonymous functions are acceptable, particularly for callbacks where context is clear.
 - Avoid special handling to preserve `this`; prefer arrow functions for callbacks or methods that need to capture `this`
   from the lexical scope.
 - Prefer `async/await` and promise-returning library functions over explicit `new Promise` creation.
