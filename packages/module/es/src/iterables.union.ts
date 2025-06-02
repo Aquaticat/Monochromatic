@@ -182,6 +182,7 @@ export async function unionIterablesAsync(
   }
   const resultSet = new Set<unknown>();
   for (const iterable of iterables) {
+    // AI! We don't wanna have await in loop.
     for await (const item of iterable) {
       resultSet.add(item);
     }
