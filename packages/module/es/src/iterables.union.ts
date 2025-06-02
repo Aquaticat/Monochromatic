@@ -181,11 +181,25 @@ export async function unionIterablesAsync(
     return new Set();
   }
   const resultSet = new Set<unknown>();
-  for (const iterable of iterables) {
-    // AI! We don't wanna have await in loop.
+
+  // Create a promise for each iterable to collect its items
+  const itemPromises = iterables.map(async (iterable) => {
+    const items: unknown[] = [];
     for await (const item of iterable) {
+      items.push(item);
+    }
+    return items;
+  });
+
+  // Wait for all iterables to be processed
+  const arrayOfItemArrays = await Promise.all(itemPromises);
+
+  // Add all items to the result set
+  for (const itemArray of arrayOfItemArrays) {
+    for (const item of itemArray) {
       resultSet.add(item);
     }
   }
+
   return resultSet;
 }
