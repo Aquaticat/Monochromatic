@@ -44,7 +44,7 @@ const l = getLogger(['m', 'error.throws']);
       throw new URIError(error.message, error.cause ? { cause: error.cause } : undefined);
     })
     .otherwise(function handler() {
-      l.warn`error.name ${error.name} not one of:
+      l.info`error.name ${error.name} not one of:
       throwableErrors = ['Error', 'RangeError', 'ReferenceError', 'TypeError', 'URIError']
       This function doesn't handle custom error types.
       Pass in a custom error to throw it.`;

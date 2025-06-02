@@ -236,3 +236,4 @@ out/
 *.vsix
 
 #endregion https://www.toptal.com/developers/gitignore/api/node,astro,macos,linux,windows,visualstudiocode,jetbrains
+.aider*

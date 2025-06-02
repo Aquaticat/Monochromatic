@@ -1,13 +1,18 @@
 import eslint from '@eslint/js';
 // import oxlintrc from '@monochromatic-dev/config-oxlint/index.jsonc';
 import vitest from '@vitest/eslint-plugin';
+
+// Excluded from bundle because it causes the bundle size to be very big.
 import { configs as eslintPluginAstroConfigs } from 'eslint-plugin-astro';
+
+// Excluded from bundle because it causes the bundle size to be very big.
 import jsdoc from 'eslint-plugin-jsdoc';
+
 import nodePlugin from 'eslint-plugin-n';
 import {
   eslintRules,
   importRules,
-  jsdocRules,
+  // jsdocRules,
   jsxA11yRules,
   nodeRules,
   promiseRules,
@@ -16,7 +21,10 @@ import {
   unicornRules,
   vitestRules,
 } from 'eslint-plugin-oxlint/rules-by-scope';
+
+// Excluded from bundle because it causes the bundle size to be very big.
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
+
 import tseslint from 'typescript-eslint';
 import type { ConfigArray } from 'typescript-eslint';
 
@@ -127,7 +135,10 @@ const myConfigArray: ConfigArray = tseslint.config(
     rules: {
       ...eslintRules,
       ...importRules,
-      ...jsdocRules,
+
+      // Seems like Oxlint doesn't support TSDoc. Disabled. Enabled all Eslint TSDoc rules.
+      // ...jsdocRules,
+
       ...jsxA11yRules,
       ...nodeRules,
       ...promiseRules,

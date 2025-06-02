@@ -91,7 +91,7 @@ describe('assertThrow', () => {
 
 describe('assertThrowAsync', () => {
   test('passes when function throws expected error type', async () => {
-    expect(
+    await expect(
       assertThrowAsync(new TypeError('error'), async () => {
         throw new TypeError('error');
       }),
@@ -101,7 +101,7 @@ describe('assertThrowAsync', () => {
   });
 
   test('throws when function does not throw', async () => {
-    expect(
+    await expect(
       assertThrowAsync('Error', async () => {
         // no error thrown
       }),
@@ -111,7 +111,7 @@ describe('assertThrowAsync', () => {
   });
 
   test('throws when function throws wrong error type', async () => {
-    expect(
+    await expect(
       assertThrowAsync(new RangeError('error'), async () => {
         throw new TypeError('error');
       }),
@@ -121,7 +121,7 @@ describe('assertThrowAsync', () => {
   });
 
   test('handles async functions', async () => {
-    expect(
+    await expect(
       assertThrowAsync('Error', async () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
         throw new Error('delayed error');
@@ -184,7 +184,7 @@ describe('convenience functions', () => {
   });
 
   test('async convenience functions work correctly', async () => {
-    expect(
+    await expect(
       assertThrowErrorAsync(async () => {
         throw new Error('error');
       }),
@@ -192,7 +192,7 @@ describe('convenience functions', () => {
       .resolves
       .toBeUndefined();
 
-    expect(
+    await expect(
       assertThrowTypeErrorAsync(async () => {
         throw new TypeError('error');
       }),
@@ -200,7 +200,7 @@ describe('convenience functions', () => {
       .resolves
       .toBeUndefined();
 
-    expect(
+    await expect(
       assertThrowRangeErrorAsync(async () => {
         throw new RangeError('error');
       }),
@@ -208,7 +208,7 @@ describe('convenience functions', () => {
       .resolves
       .toBeUndefined();
 
-    expect(
+    await expect(
       assertThrowReferenceErrorAsync(async () => {
         throw new ReferenceError('error');
       }),
@@ -216,7 +216,7 @@ describe('convenience functions', () => {
       .resolves
       .toBeUndefined();
 
-    expect(
+    await expect(
       assertThrowURIErrorAsync(async () => {
         throw new URIError('error');
       }),

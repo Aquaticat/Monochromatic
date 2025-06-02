@@ -1,12 +1,15 @@
 import {
   type CSSToken,
+  isToken,
   isTokenCloseParen,
+  isTokenComma,
   isTokenDimension,
   isTokenFunction,
   isTokenIdent,
   isTokenNumber,
   isTokenString,
   isTokenWhitespace,
+  isTokenWhiteSpaceOrComment,
   type TokenIdent,
   tokenize,
 } from '@csstools/css-tokenizer';
@@ -14,6 +17,10 @@ import {
   notEmptyOrThrow,
   notFalsyOrThrow,
 } from './error.throw.ts';
+import {
+  trimIterable,
+  trimIterableWith,
+} from './iterable.trim.ts';
 import { logtapeGetLogger } from './logtape.shared.ts';
 import { toSingleQuotedString } from './string.singleQuoted.ts';
 
@@ -56,7 +63,7 @@ export function lGCC_tokenizeCssValue(cssValue: string): CSSToken[] {
   })
     .slice(0, -1); // Trim EOF token
 
-  l.warn`${cssValue} -> ${tokens}`;
+  l.info`${cssValue} -> ${tokens}`;
   notEmptyOrThrow(tokens);
   return tokens;
 }
@@ -158,7 +165,7 @@ export function lGCC_groupFunctionTokens(tokens: GroupedToken[]): GroupedToken[]
     [],
   );
 
-  l.warn`lGCC_groupFunctionTokens ${tokens} -> ${result}`;
+  l.info`lGCC_groupFunctionTokens ${tokens} -> ${result}`;
 
   return result;
 }
@@ -230,6 +237,13 @@ export function lGCC_handleVarFunction(acc: string,
   );
 }
 
+export function lGCC_isNotWhitespaceOrComment(potentiallyGroupedToken: any): boolean {
+  // checking isFunctionTokenGroup is necessary, because other than narrowing the type of potentiallyGroupedToken down, isToken also asserts it's a regular token, which means we'd erroneously remove function token groups if this check isn't here.
+  return lGCC_isFunctionTokenGroup(potentiallyGroupedToken)
+    || isToken(potentiallyGroupedToken)
+      && !isTokenWhiteSpaceOrComment(potentiallyGroupedToken);
+}
+
 export function lGCC_handleVarIdentifier(acc: string, identToken: TokenIdent,
   args: GroupedToken[]): string
 {
@@ -246,12 +260,30 @@ export function lGCC_handleVarIdentifier(acc: string, identToken: TokenIdent,
     );
   }
 
-  // Fall back to second argument
-  const secondArg = args[3]; // Skip comma and whitespace
-  if (!secondArg) {
-    throw new Error(`No fallback provided for unknown variable ${identTokenValue}`);
+  // tokenValue is undefined, fall back to second argument
+  // Skip whitespace and comments before the comma, find the comma, skip whitespace and comments after the comma.
+  // We're not validating if the structure is correct.
+  // args[0] is the first arg.
+  // FIXME: . w:test:    × lGCC_handleVarFunction > handles var(--unknown, var(--b)) 1ms
+  //  . w:test:      → No fallback provided for unknown variable --unknown or function structure malformed. Please note this function only supports parsing var(--a) or var(--b, --c) functions.
+  const [, ...otherArgs] = args;
+  const trimmedOtherArgs = trimIterableWith(lGCC_isNotWhitespaceOrComment, otherArgs);
+  const [needToBeCommaToken, ...afterCommaTokens] = trimmedOtherArgs;
+  if (!(isToken(needToBeCommaToken) && isTokenComma(needToBeCommaToken))) {
+    throw new Error(
+      `needToBeCommaToken: ${JSON.stringify(needToBeCommaToken)} isn't a comma token.`,
+    );
   }
-
+  const trimmedAfterCommaTokens = trimIterableWith(lGCC_isNotWhitespaceOrComment,
+    afterCommaTokens);
+  if (trimmedAfterCommaTokens.length !== 1) {
+    throw new Error(
+      `trimmedAfterCommaTokens: ${
+        JSON.stringify(trimmedAfterCommaTokens)
+      } isn't of length one. Trimmed from ${JSON.stringify(afterCommaTokens)}`,
+    );
+  }
+  const secondArg = notFalsyOrThrow(trimmedAfterCommaTokens[0]);
   return lGCC_handleVarFallback(acc, secondArg);
 }
 
@@ -295,7 +327,7 @@ export function lGCC_appendString(acc: string, input: string): string {
  * This is a non-exhaustive list of the cases that are not handled: ['calc', 'rgb', 'rgba', 'hsl', 'hsla', 'url', 'color', 'linear-gradient', 'radial-gradient', 'conic-gradient', 'repeating-linear-gradient', 'repeating-radial-gradient', 'repeating-conic-gradient'].
  * `var` is handled, however, because the browser's getComputedValue algorithm does not handle it in `content` values.
  *
- * Throws on malformed CSS values.
+ * Throws or gives incorrect results on malformed CSS values.
  * For examples of how browsers handle var resolution, fallback, erroring, and more in the content property, see: https://codepen.io/aquaticat/pen/dPPzEBX
  */
 export function limitedGetComputedCss(cssValue: string): string | number {

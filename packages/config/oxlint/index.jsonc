@@ -16,7 +16,8 @@
     "import",
 
     // We're using TSDoc, not JSDoc, but it should support TSDoc anyway. Investigate.
-    "jsdoc",
+    // Update: Seems like oxlint doesn't support TSDoc. Disabling, enabled in Eslint.
+    //    "jsdoc",
 
     "promise",
     "node",
@@ -125,6 +126,9 @@
     //endregion pedantic
 
     //region style
+
+    // Sometimes we need to do `import { a, type B } from 'module'`.
+    "import/consistent-type-specifier-style": "off",
 
     // Doesn't matter when the function is a callback with sufficient context.
     // "eslint/func-names": ["warn", "as-needed"],

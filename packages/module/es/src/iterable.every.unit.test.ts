@@ -111,7 +111,9 @@ describe(everyIterableAsync, () => {
 
   test('correctly passes array as third argument', async () => {
     const array = [1, 2, 3];
-    expect(everyIterableAsync(async (_num, _index, arr) => equal(arr, array), array))
+    await expect(
+      everyIterableAsync(async (_num, _index, arr) => equal(arr, array), array),
+    )
       .resolves
       .toBe(true);
   });
@@ -125,7 +127,7 @@ describe(everyIterableAsync, () => {
       },
     };
 
-    expect(everyIterableAsync(async (num: number) => num % 2 === 0, asyncIterable))
+    await expect(everyIterableAsync(async (num: number) => num % 2 === 0, asyncIterable))
       .resolves
       .toBe(
         true,
@@ -139,7 +141,7 @@ describe(everyIterableAsync, () => {
       },
     };
 
-    expect(
+    await expect(
       everyIterableAsync(async (num: number) => num % 2 === 0, failAsyncIterable),
     )
       .resolves
@@ -148,7 +150,7 @@ describe(everyIterableAsync, () => {
 
   test('throws error when testing function throws', async () => {
     const array = [1, 2, 3];
-    expect(everyIterableAsync(async (_element: any) => {
+    await expect(everyIterableAsync(async (_element: any) => {
       throw new Error('Async test error');
     }, array))
       .rejects

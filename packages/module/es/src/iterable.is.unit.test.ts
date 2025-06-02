@@ -1,7 +1,9 @@
 import {
   arrayIsEmpty,
   arrayIsNonEmpty,
+  type ArrayNonFixedLengthOrNever,
   isArray,
+  type IsArrayFixedLength,
   isAsyncGenerator,
   isAsyncIterable,
   isEmptyArray,
@@ -12,18 +14,76 @@ import {
   isNonEmptyArray,
   isObject,
   isSet,
+  type IsTupleArray,
   isWeakMap,
   isWeakSet,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/.js';
+} from '@monochromatic-dev/module-es';
 import {
   describe,
   expect,
+  expectTypeOf,
   test,
 } from 'vitest';
 
 await logtapeConfigure(await logtapeConfiguration());
+
+describe('ArrayFixedLength', () => {
+  test('IsArrayFixedLength', () => {
+    expectTypeOf<IsArrayFixedLength<[number, string]>>().toEqualTypeOf<true>();
+    expectTypeOf<IsArrayFixedLength<[number]>>().toEqualTypeOf<true>();
+    expectTypeOf<IsArrayFixedLength<[number[]]>>().toEqualTypeOf<true>();
+
+    expectTypeOf<IsArrayFixedLength<[...number[]]>>().toEqualTypeOf<false>();
+    expectTypeOf<IsArrayFixedLength<[string, ...number[]]>>().toEqualTypeOf<false>();
+    expectTypeOf<IsArrayFixedLength<any[]>>().toEqualTypeOf<false>();
+  });
+
+  test('ArrayNonFixedLengthOrNever', () => {
+    expectTypeOf<ArrayNonFixedLengthOrNever<[number, string]>>().toBeNever();
+    expectTypeOf<ArrayNonFixedLengthOrNever<[number]>>().toBeNever();
+    expectTypeOf<ArrayNonFixedLengthOrNever<[number[]]>>().toBeNever();
+
+    expectTypeOf<ArrayNonFixedLengthOrNever<[...number[]]>>().toEqualTypeOf<
+      [...number[]]
+    >();
+    expectTypeOf<ArrayNonFixedLengthOrNever<[string, ...number[]]>>().toEqualTypeOf<
+      [string, ...number[]]
+    >();
+    expectTypeOf<ArrayNonFixedLengthOrNever<any[]>>().toEqualTypeOf<any[]>();
+  });
+
+  /*  test('ArrayNonFixedLength', () => {
+    expectTypeOf<[]>().not.toExtend<ArrayNonFixedLength>();
+    expectTypeOf<[number, string]>().not.toExtend<ArrayNonFixedLength>();
+    expectTypeOf<[number]>().not.toExtend<ArrayNonFixedLength>();
+    expectTypeOf<[number[]]>().not.toExtend<ArrayNonFixedLength>();
+
+    expectTypeOf<[...number[]]>().toExtend<ArrayNonFixedLength>();
+    expectTypeOf<[string, ...number[]]>().toExtend<ArrayNonFixedLength>();
+    expectTypeOf<any[]>().toExtend<ArrayNonFixedLength>();
+  });*/
+});
+
+describe('TupleArray', () => {
+  test('IsTupleArray', () => {
+    expectTypeOf<IsTupleArray<[]>>().toEqualTypeOf<true>();
+    expectTypeOf<IsTupleArray<[number, string]>>().toEqualTypeOf<true>();
+    expectTypeOf<IsTupleArray<[string]>>().toEqualTypeOf<true>();
+    expectTypeOf<IsTupleArray<[number, ...string[]]>>().toEqualTypeOf<true>();
+    expectTypeOf<IsTupleArray<[number[]]>>().toEqualTypeOf<true>();
+
+    // This technically looks like a tuple, but it doesn't fulfill why we want a tuple sometimes.
+    // There's no guarantee of anything inside the structure.
+    // Moreover, it's equal to number[].
+    // Therefore, the expected value is false.
+    expectTypeOf<IsTupleArray<[...number[]]>>().toEqualTypeOf<false>();
+
+    expectTypeOf<IsTupleArray<string[]>>().toEqualTypeOf<false>();
+    expectTypeOf<IsTupleArray<any[]>>().toEqualTypeOf<false>();
+  });
+});
 
 describe(isArray, () => {
   test('identifies arrays correctly', () => {
@@ -121,7 +181,7 @@ describe(isMaybeAsyncIterable, () => {
     expect(isMaybeAsyncIterable(undefined)).toBe(false);
     expect(isMaybeAsyncIterable({})).toBe(false);
     expect(isMaybeAsyncIterable(123)).toBe(false);
-    expect(isMaybeAsyncIterable(Symbol())).toBe(false);
+    expect(isMaybeAsyncIterable(Symbol('nope'))).toBe(false);
   });
 });
 
@@ -254,14 +314,13 @@ describe(isGenerator, () => {
 describe(isEmptyArray, () => {
   test('identifies empty arrays correctly', () => {
     expect(isEmptyArray([])).toBe(true);
-    expect(isEmptyArray(new Array())).toBe(true);
   });
 
   test('rejects non-empty arrays and other values', () => {
     expect(isEmptyArray([1])).toBe(false);
     expect(isEmptyArray([null])).toBe(false);
     expect(isEmptyArray([undefined])).toBe(false);
-    expect(isEmptyArray(new Array(1).fill(0))).toBe(false);
+    expect(isEmptyArray(Array.from({ length: 1 }).fill(0))).toBe(false);
     expect(isEmptyArray({})).toBe(false);
     expect(isEmptyArray(null)).toBe(false);
     expect(isEmptyArray(undefined)).toBe(false);
@@ -272,14 +331,13 @@ describe(isEmptyArray, () => {
 describe(arrayIsEmpty, () => {
   test('identifies empty arrays correctly', () => {
     expect(arrayIsEmpty([])).toBe(true);
-    expect(arrayIsEmpty(new Array())).toBe(true);
   });
 
   test('rejects non-empty arrays', () => {
     expect(arrayIsEmpty([1])).toBe(false);
     expect(arrayIsEmpty([null])).toBe(false);
     expect(arrayIsEmpty([undefined])).toBe(false);
-    expect(arrayIsEmpty(new Array(1).fill(0))).toBe(false);
+    expect(arrayIsEmpty(Array.from({ length: 1 }).fill(0))).toBe(false);
   });
 });
 
@@ -289,12 +347,11 @@ describe(isNonEmptyArray, () => {
     expect(isNonEmptyArray([null])).toBe(true);
     expect(isNonEmptyArray([undefined])).toBe(true);
     expect(isNonEmptyArray([1, 2, 3])).toBe(true);
-    expect(isNonEmptyArray(new Array(1).fill(0))).toBe(true);
+    expect(isNonEmptyArray(Array.from({ length: 1 }).fill(0))).toBe(true);
   });
 
   test('rejects empty arrays and other values', () => {
     expect(isNonEmptyArray([])).toBe(false);
-    expect(isNonEmptyArray(new Array())).toBe(false);
     expect(isNonEmptyArray({})).toBe(false);
     expect(isNonEmptyArray(null)).toBe(false);
     expect(isNonEmptyArray(undefined)).toBe(false);
@@ -308,11 +365,10 @@ describe(arrayIsNonEmpty, () => {
     expect(arrayIsNonEmpty([null])).toBe(true);
     expect(arrayIsNonEmpty([undefined])).toBe(true);
     expect(arrayIsNonEmpty([1, 2, 3])).toBe(true);
-    expect(arrayIsNonEmpty(new Array(1).fill(0))).toBe(true);
+    expect(arrayIsNonEmpty(Array.from({ length: 1 }).fill(0))).toBe(true);
   });
 
   test('rejects empty arrays', () => {
     expect(arrayIsNonEmpty([])).toBe(false);
-    expect(arrayIsNonEmpty(new Array())).toBe(false);
   });
 });

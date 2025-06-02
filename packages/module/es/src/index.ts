@@ -76,14 +76,14 @@ export * from './promise.wait.ts';
 export * from './promises.some.ts';
 
 export * from './string.capitalize.ts';
-export * from './string.concat.ts';
 export * from './string.is.ts';
-export * from './string.join.ts';
 export * from './string.singleQuoted.ts';
 export * from './string.trim.ts';
 export * from './string.type.ts';
+export * from './strings.concat.ts';
+export * from './strings.join.ts';
 
-export * from './testing.ts';
+// export * from './deprecated.testing.ts';
 
 export * from './logtape.shared.ts';
 

@@ -1,6 +1,6 @@
 // eslint-disable prefer-await-to-callbacks
 /** Very basic testing framework
- @deprecated - Found a proper testing framework in Bun test.
+ @deprecated - Found a proper testing framework in Bun test, later Vitest.
 
  @remarks
  Not using something more sentible like Jest or Mocha because they inject their own global variables.

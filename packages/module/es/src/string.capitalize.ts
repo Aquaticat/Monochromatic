@@ -6,7 +6,7 @@
  * @param {string} [locale] - The locale to use for uppercasing the first character.
  * @return {string} The capitalized string.
  */
-export function capitalize(str: string, locale?: string): string {
+export function capitalizeString(str: string, locale?: string): string {
   return str.replace(/^\p{CWU}/v, function replacer(char) {
     return char.toLocaleUpperCase(locale);
   });

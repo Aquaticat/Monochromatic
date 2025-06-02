@@ -95,3 +95,28 @@ import type { UnknownRecord } from 'type-fest';
 ] {
   return isArray(value) && value.length > 0;
 }
+
+export type IsTupleArray<T,> = T extends readonly [] ? true
+  : T extends readonly [unknown, ...readonly unknown[]] ? true
+  : false;
+
+export type TupleArray<T,> = T extends readonly [unknown, ...readonly [unknown]] ? T
+  : never;
+
+export type ArrayNonFixedLengthOrNever<T,> = T extends readonly unknown[]
+  ? number extends T['length'] ? T
+  : never
+  : never;
+
+export type ArrayFixedLengthOrNever<T,> = T extends readonly unknown[]
+  ? number extends T['length'] ? never : T
+  : never;
+
+// Impossible.
+// export type ArrayNonFixedLength = ArrayFixedLengthOrNever<any>;
+
+export type IsArrayFixedLength<T extends readonly unknown[],> = number extends T['length']
+  ? false
+  : true;
+
+// export type ArrayAcceptingNumberOfElements<T, N> = T extends ArrayNonFixedLength ? T : T[N] extends

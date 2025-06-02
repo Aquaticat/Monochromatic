@@ -122,11 +122,12 @@ describe(lGCC_tokenizeCssValue, () => {
     ]);
   });
 
-  test('throws MalformedCssValueError for invalid CSS', {
+  // We don't really care about how it handles invalid input.
+  /*  test('throws MalformedCssValueError for invalid CSS', {
     skip: true,
   }, () => {
     expect(() => lGCC_tokenizeCssValue('10px trailing')).toThrow();
-  });
+  });*/
 
   test('throws error for empty string input', () => {
     expect(() => lGCC_tokenizeCssValue('')).toThrow('[] is empty');

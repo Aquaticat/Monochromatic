@@ -1,8 +1,14 @@
+import { binary } from './function.nary.ts';
 import {
   isIterable,
   isMaybeAsyncIterable,
 } from './iterable.is.ts';
-import type {MaybeAsyncIterable} from './iterable.type.maybe.ts';
+import {
+  reduceIterable,
+  reduceIterableAsync,
+  reduceIterableAsyncGen,
+} from './iterable.reduce.ts';
+import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 import {
   bigint0,
   isBigint,
@@ -10,182 +16,84 @@ import {
   isNumber,
   isNumeric,
 } from './numeric.is.ts';
-import type {Numeric} from './numeric.type.int.ts';
+import type { Numeric } from './numeric.type.int.ts';
 
-// Helper functions to reduce duplication
-function validateAndProcessIterable<T extends number | bigint, >(
-  items: any[],
-  typeValidator: (item: any) => boolean,
-  initialValue: T,
-  converter?: (item: any) => T,
-): T {
-  const items0 = items[0];
-  let total = initialValue;
-
-  if (items.length === 1 && isIterable(items0)) {
-    const items0Arr = [...items0];
-    for (const item of items0Arr) {
-      if (!typeValidator(item)) {
-        throw new Error('invalid arguments');
-      }
-      total = total + (converter ? converter(item) : item) as T;
-    }
-  } else if (items.every(typeValidator)) {
-    for (const item of items) {
-      total = total + (converter ? converter(item) : item) as T;
-    }
-  } else {
-    throw new Error('invalid arguments');
-  }
-
-  return total;
+export function addTwoNumbers(previousValue: number, currentValue: number): number {
+  return previousValue + currentValue;
 }
 
-async function validateAndProcessAsyncIterable<T extends number | bigint, >(
-  items: any[],
-  typeValidator: (item: any) => boolean,
-  initialValue: T,
-  converter?: (item: any) => T,
-): Promise<T> {
-  const items0 = items[0];
-  let total = initialValue;
-
-  if (items.length === 1 && isMaybeAsyncIterable(items0)) {
-    const items0Arr = await Array.fromAsync(items0);
-    for (const item of items0Arr) {
-      if (!typeValidator(item)) {
-        throw new Error('invalid arguments');
-      }
-      total = total + (converter ? converter(item) : item) as T;
-    }
-  } else if (items.every(typeValidator)) {
-    for (const item of items) {
-      total = total + (converter ? converter(item) : item) as T;
-    }
-  } else {
-    throw new Error('invalid arguments');
-  }
-
-  return total;
+export function sumNumbers(...numbers: number[]): number {
+  return numbers.reduce(addTwoNumbers, 0);
 }
 
-// Numbers
-/* @__NO_SIDE_EFFECTS__ */
+export function addTwoBigints(previousValue: bigint, currentValue: bigint): bigint {
+  return previousValue + currentValue;
+}
+
+export function sumBigints(...bigints: bigint[]): bigint {
+  return bigints.reduce(addTwoBigints, 0n);
+}
+
+export function addTwoNumerics<const Prev extends number | bigint,
+  const Curr extends number | bigint,
+  const Returns extends Prev extends number ? Curr extends number ? number : bigint
+    : bigint,>(
+  previousValue: Prev,
+  currentValue: Curr,
+): Returns {
+  if (typeof previousValue === 'number' && typeof currentValue === 'number') {
+    return previousValue + currentValue as Returns;
+  }
+
+  return BigInt(previousValue) + BigInt(currentValue) as Returns;
+}
+
+export function sumNumerics<const T extends (bigint | number)[],
+  Returns extends T extends number[] ? number : bigint,>(
+  ...numerics: T
+): Returns {
+  return numerics.reduce(
+    addTwoNumerics,
+    0,
+  ) as Returns;
+}
+
 export async function addNumbersAsync(
   numbers: MaybeAsyncIterable<number>,
-): Promise<number>;
-/* @__NO_SIDE_EFFECTS__ */
-export async function addNumbersAsync(
-  ...numbers: number[]
-): Promise<number>;
-export async function addNumbersAsync(...numbers: any): Promise<number> {
-  if (!Array.isArray(numbers)) {
-    throw new Error("numbers isn't an iterable");
-  }
-
-  return await validateAndProcessAsyncIterable(
-    numbers,
-    isNumber,
-    0,
-  );
+): Promise<number> {
+  return await reduceIterableAsync(0, addTwoNumbers, numbers);
 }
 
-/* @__NO_SIDE_EFFECTS__ */
 export function addNumbers(
   numbers: Iterable<number>,
-): number;
-/* @__NO_SIDE_EFFECTS__ */
-export function addNumbers(
-  ...numbers: number[]
-): number;
-export function addNumbers(...numbers: any): number {
-  if (!Array.isArray(numbers)) {
-    throw new Error("numbers isn't an iterable");
-  }
-
-  return validateAndProcessIterable(
-    numbers,
-    isNumber,
-    0,
-  );
+): number {
+  return reduceIterable(0, addTwoNumbers, numbers);
 }
 
-// Bigints
-/* @__NO_SIDE_EFFECTS__ */
 export async function addBigintsAsync(
   bigints: MaybeAsyncIterable<bigint>,
-): Promise<bigint>;
-/* @__NO_SIDE_EFFECTS__ */
-export async function addBigintsAsync(
-  ...bigints: bigint[]
-): Promise<bigint>;
-export async function addBigintsAsync(...bigints: any): Promise<bigint> {
-  if (!Array.isArray(bigints)) {
-    throw new Error("numbers isn't an iterable");
-  }
-
-  return await validateAndProcessAsyncIterable(
-    bigints,
-    isBigint,
-    bigint0,
-  );
+): Promise<bigint> {
+  return await reduceIterableAsync(0n, addTwoBigints, bigints);
 }
 
-export function addBigints(bigints: Iterable<bigint>): bigint;
-export function addBigints(...bigints: bigint[]): bigint;
-export function addBigints(...bigints: any): bigint {
-  if (!Array.isArray(bigints)) {
-    throw new Error("numbers isn't an iterable");
-  }
-
-  return validateAndProcessIterable(
-    bigints,
-    isBigint,
-    bigint0,
-  );
+export function addBigints(bigints: Iterable<bigint>): bigint {
+  return reduceIterable(0n, addTwoBigints, bigints);
 }
 
-// Numerics
 export async function addNumericsAsync<
-  T extends MaybeAsyncIterable<Numeric>,
+  const T extends MaybeAsyncIterable<Numeric>,
+  const Returns extends T extends MaybeAsyncIterable<number> ? number : bigint,
 >(
   numerics: T,
-): Promise<T extends MaybeAsyncIterable<number> ? number : bigint | number>;
-export async function addNumericsAsync<T extends Numeric[], >(
-  ...numerics: T
-): Promise<T extends number[] ? number : bigint | number>;
-export async function addNumericsAsync(...numerics: any): Promise<Numeric> {
-  if (!Array.isArray(numerics)) {
-    throw new Error("numbers isn't an iterable");
-  }
-
-  const total = await validateAndProcessAsyncIterable(
-    numerics,
-    isNumeric,
-    0n,
-    BigInt,
-  );
-
-  return isIntBigint(total) ? Number(total) : total;
+): Promise<Returns> {
+  return await reduceIterableAsync(0, addTwoNumerics, numerics) as Returns;
 }
 
-export function addNumerics<T extends Iterable<Numeric>, >(
+export function addNumerics<
+  const T extends Iterable<Numeric>,
+  const Returns extends T extends Iterable<number> ? number : bigint,
+>(
   numerics: T,
-): T extends Iterable<number> ? number : bigint | number;
-export function addNumerics<T extends Numeric[], >(
-  ...numerics: T
-): T extends number[] ? number : bigint | number;
-export function addNumerics(...numerics: any): Numeric {
-  if (!Array.isArray(numerics)) {
-    throw new Error("numbers isn't an iterable");
-  }
-
-  const total = validateAndProcessIterable(
-    numerics,
-    isNumeric,
-    0n,
-    BigInt,
-  );
-
-  return isIntBigint(total) ? Number(total) : total;
+): Returns {
+  return reduceIterable(0, addTwoNumerics, numerics) as Returns;
 }

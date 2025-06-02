@@ -103,72 +103,72 @@ describe('synchronous assertions', () => {
 
 describe('asynchronous assertions', () => {
   test('assertAsync compares values correctly', async () => {
-    expect(assertAsync(42, 42)).resolves.toBeUndefined();
-    expect(assertAsync('test', 'test')).resolves.toBeUndefined();
+    await expect(assertAsync(42, 42)).resolves.toBeUndefined();
+    await expect(assertAsync('test', 'test')).resolves.toBeUndefined();
 
-    expect(assertAsync(42, 43)).rejects.toThrow();
-    expect(assertAsync('test', 'other')).rejects.toThrow();
+    await expect(assertAsync(42, 43)).rejects.toThrow();
+    await expect(assertAsync('test', 'other')).rejects.toThrow();
   });
 
   test('assertTrueAsync verifies true values', async () => {
-    expect(assertTrueAsync(true)).resolves.toBeUndefined();
-    expect(assertTrueAsync(Promise.resolve(true))).resolves.toBeUndefined();
+    await expect(assertTrueAsync(true)).resolves.toBeUndefined();
+    await expect(assertTrueAsync(Promise.resolve(true))).resolves.toBeUndefined();
 
-    expect(assertTrueAsync(false)).rejects.toThrow();
-    expect(assertTrueAsync(Promise.resolve(false))).rejects.toThrow();
+    await expect(assertTrueAsync(false)).rejects.toThrow();
+    await expect(assertTrueAsync(Promise.resolve(false))).rejects.toThrow();
   });
 
   test('assertFalseAsync verifies false values', async () => {
-    expect(assertFalseAsync(false)).resolves.toBeUndefined();
-    expect(assertFalseAsync(Promise.resolve(false))).resolves.toBeUndefined();
+    await expect(assertFalseAsync(false)).resolves.toBeUndefined();
+    await expect(assertFalseAsync(Promise.resolve(false))).resolves.toBeUndefined();
 
-    expect(assertFalseAsync(true)).rejects.toThrow();
-    expect(assertFalseAsync(Promise.resolve(true))).rejects.toThrow();
+    await expect(assertFalseAsync(true)).rejects.toThrow();
+    await expect(assertFalseAsync(Promise.resolve(true))).rejects.toThrow();
   });
 
   test('assertUndefinedAsync verifies undefined values', async () => {
-    expect(assertUndefinedAsync(undefined)).resolves.toBeUndefined();
-    expect(assertUndefinedAsync(null)).rejects.toThrow();
+    await expect(assertUndefinedAsync(undefined)).resolves.toBeUndefined();
+    await expect(assertUndefinedAsync(null)).rejects.toThrow();
   });
 
   test('assertNullAsync verifies null values', async () => {
-    expect(assertNullAsync(null)).resolves.toBeUndefined();
-    expect(assertNullAsync(undefined)).rejects.toThrow();
+    await expect(assertNullAsync(null)).resolves.toBeUndefined();
+    await expect(assertNullAsync(undefined)).rejects.toThrow();
   });
 
   test('assertEmptyArrayAsync verifies empty arrays', async () => {
-    expect(assertEmptyArrayAsync([])).resolves.toBeUndefined();
-    expect(assertEmptyArrayAsync([1])).rejects.toThrow();
+    await expect(assertEmptyArrayAsync([])).resolves.toBeUndefined();
+    await expect(assertEmptyArrayAsync([1])).rejects.toThrow();
   });
 
   test('assertEmptyObjectAsync verifies empty objects', async () => {
-    expect(assertEmptyObjectAsync({})).resolves.toBeUndefined();
-    expect(assertEmptyObjectAsync({ a: 1 })).rejects.toThrow();
+    await expect(assertEmptyObjectAsync({})).resolves.toBeUndefined();
+    await expect(assertEmptyObjectAsync({ a: 1 })).rejects.toThrow();
   });
 
   test('assert0Async verifies zero values', async () => {
-    expect(assert0Async(0)).resolves.toBeUndefined();
-    expect(assert0Async(Promise.resolve(0))).resolves.toBeUndefined();
+    await expect(assert0Async(0)).resolves.toBeUndefined();
+    await expect(assert0Async(Promise.resolve(0))).resolves.toBeUndefined();
 
-    expect(assert0Async(1)).rejects.toThrow();
+    await expect(assert0Async(1)).rejects.toThrow();
   });
 
   test('assert1Async verifies one values', async () => {
-    expect(assert1Async(1)).resolves.toBeUndefined();
-    expect(assert1Async(Promise.resolve(1))).resolves.toBeUndefined();
+    await expect(assert1Async(1)).resolves.toBeUndefined();
+    await expect(assert1Async(Promise.resolve(1))).resolves.toBeUndefined();
 
-    expect(assert1Async(0)).rejects.toThrow();
+    await expect(assert1Async(0)).rejects.toThrow();
   });
 
   test('assertNanAsync verifies NaN values', async () => {
-    expect(assertNanAsync(Number.NaN)).resolves.toBeUndefined();
-    expect(assertNanAsync(0)).rejects.toThrow();
+    await expect(assertNanAsync(Number.NaN)).resolves.toBeUndefined();
+    await expect(assertNanAsync(0)).rejects.toThrow();
   });
 
   test('assertNegative1Async verifies -1 values', async () => {
-    expect(assertNegative1Async(-1)).resolves.toBeUndefined();
-    expect(assertNegative1Async(Promise.resolve(-1))).resolves.toBeUndefined();
+    await expect(assertNegative1Async(-1)).resolves.toBeUndefined();
+    await expect(assertNegative1Async(Promise.resolve(-1))).resolves.toBeUndefined();
 
-    expect(assertNegative1Async(0)).rejects.toThrow();
+    await expect(assertNegative1Async(0)).rejects.toThrow();
   });
 });

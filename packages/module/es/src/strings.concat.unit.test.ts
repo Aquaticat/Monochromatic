@@ -7,7 +7,7 @@ import {
   concatStringsWithSpace,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/.js';
+} from '@monochromatic-dev/module-es';
 import {
   describe,
   expect,
@@ -16,7 +16,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('concatStrings', () => {
+describe(concatStrings, () => {
   test('concatenates string arguments without separator', () => {
     expect(concatStrings('hello', 'world')).toBe('helloworld');
     expect(concatStrings('a', 'b', 'c')).toBe('abc');
@@ -34,7 +34,7 @@ describe('concatStrings', () => {
   });
 });
 
-describe('concatStringsWithSpace', () => {
+describe(concatStringsWithSpace, () => {
   test('concatenates string arguments with space separator', () => {
     expect(concatStringsWithSpace('hello', 'world')).toBe('hello world');
     expect(concatStringsWithSpace('a', 'b', 'c')).toBe('a b c');
@@ -52,7 +52,7 @@ describe('concatStringsWithSpace', () => {
   });
 });
 
-describe('concatStringsWithNewline', () => {
+describe(concatStringsWithNewline, () => {
   test('concatenates string arguments with newline separator', () => {
     expect(concatStringsWithNewline('hello', 'world')).toBe('hello\nworld');
     expect(concatStringsWithNewline('a', 'b', 'c')).toBe('a\nb\nc');
@@ -70,7 +70,7 @@ describe('concatStringsWithNewline', () => {
   });
 });
 
-describe('concatStringsAsync', () => {
+describe(concatStringsAsync, () => {
   test('concatenates string arguments without separator asynchronously', async () => {
     expect(await concatStringsAsync('hello', 'world')).toBe('helloworld');
     expect(await concatStringsAsync('a', 'b', 'c')).toBe('abc');
@@ -82,6 +82,7 @@ describe('concatStringsAsync', () => {
       yield 'hello';
       yield 'world';
     }
+
     expect(await concatStringsAsync(asyncGenerator())).toBe('helloworld');
   });
 
@@ -96,7 +97,7 @@ describe('concatStringsAsync', () => {
   });
 });
 
-describe('concatStringsAsyncWithSpace', () => {
+describe(concatStringsAsyncWithSpace, () => {
   test('concatenates string arguments with space separator asynchronously', async () => {
     expect(await concatStringsAsyncWithSpace('hello', 'world')).toBe('hello world');
     expect(await concatStringsAsyncWithSpace('a', 'b', 'c')).toBe('a b c');
@@ -108,6 +109,7 @@ describe('concatStringsAsyncWithSpace', () => {
       yield 'hello';
       yield 'world';
     }
+
     expect(await concatStringsAsyncWithSpace(asyncGenerator())).toBe('hello world');
   });
 
@@ -124,7 +126,7 @@ describe('concatStringsAsyncWithSpace', () => {
   });
 });
 
-describe('concatStringsAsyncWithNewline', () => {
+describe(concatStringsAsyncWithNewline, () => {
   test('concatenates string arguments with newline separator asynchronously', async () => {
     expect(await concatStringsAsyncWithNewline('hello', 'world')).toBe('hello\nworld');
     expect(await concatStringsAsyncWithNewline('a', 'b', 'c')).toBe('a\nb\nc');
@@ -136,6 +138,7 @@ describe('concatStringsAsyncWithNewline', () => {
       yield 'hello';
       yield 'world';
     }
+
     expect(await concatStringsAsyncWithNewline(asyncGenerator())).toBe('hello\nworld');
   });
 

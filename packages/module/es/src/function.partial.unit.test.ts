@@ -11,7 +11,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('partial', () => {
+describe(partial, () => {
   test('partial with 1 argument function', () => {
     const add5 = (x: number): number => x + 5;
     const partialAdd5 = partial(add5, 10);

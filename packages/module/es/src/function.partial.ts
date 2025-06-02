@@ -9,7 +9,7 @@ import type {
   WithoutFirst7,
   WithoutFirst8,
   WithoutFirst9,
-} from '@monochromatic-dev/module-es/ts';
+} from './array.type.withoutFirst.ts';
 
 // 10 presetInputs ought to be enough for everyone. Right, right?
 

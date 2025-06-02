@@ -62,6 +62,9 @@ const rollupExternal = (moduleId: string): boolean => {
       'node:',
       'node_modules/',
       'oxc-',
+      'eslint-plugin-',
+      '@eslint/',
+      '@vitest/',
     ]
       .some(function startingWithPrefix(prefix) {
         return moduleId.startsWith(prefix);
@@ -70,16 +73,26 @@ const rollupExternal = (moduleId: string): boolean => {
     return true;
   }
   return [
+    //region Build
     'vite',
     'vitest',
+    'esbuild',
+    'typescript-eslint',
+    //endregion Build
+
+    //region Node
     'path',
     'fs',
     'util',
     'os',
-    'esbuild',
-
-    // Too big.
-    'typescript-eslint',
+    'constants',
+    'stream',
+    'assert',
+    'module',
+    'events',
+    'url',
+    'crypto',
+    //endregion Node
   ]
     .includes(moduleId);
 };

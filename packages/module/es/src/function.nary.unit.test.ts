@@ -4,7 +4,7 @@ import {
   logtapeConfigure,
   ternary,
   unary,
-} from '@monochromatic-dev/module-es/.js';
+} from '@monochromatic-dev/module-es';
 import {
   describe,
   expect,
