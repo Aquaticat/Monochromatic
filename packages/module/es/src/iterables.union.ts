@@ -6,20 +6,22 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
  * @returns A Set containing all unique elements from the input iterables.
  * @template ParamTypes - The types of elements in the input iterables.
  */
-export function unionIterables(...arrays: never[]): Set<never>;
-export function unionIterables<const Param1,>(...arrays: [Iterable<Param1>]): Set<Param1>;
+export function unionIterables(...iterables: never[]): Set<never>;
+export function unionIterables<const Param1,>(
+  ...iterables: [Iterable<Param1>]
+): Set<Param1>;
 export function unionIterables<const Param1, const Param2,>(
-  ...arrays: [Iterable<Param1>, Iterable<Param2>]
+  ...iterables: [Iterable<Param1>, Iterable<Param2>]
 ): Set<Param1 | Param2>;
 export function unionIterables<const Param1, const Param2, const Param3,>(
-  ...arrays: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>]
+  ...iterables: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>]
 ): Set<Param1 | Param2 | Param3>;
 export function unionIterables<const Param1, const Param2, const Param3, const Param4,>(
-  ...arrays: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>, Iterable<Param4>]
+  ...iterables: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>, Iterable<Param4>]
 ): Set<Param1 | Param2 | Param3 | Param4>;
 export function unionIterables<const Param1, const Param2, const Param3, const Param4,
   const Param5,>(
-  ...arrays: [
+  ...iterables: [
     Iterable<Param1>,
     Iterable<Param2>,
     Iterable<Param3>,
@@ -29,7 +31,7 @@ export function unionIterables<const Param1, const Param2, const Param3, const P
 ): Set<Param1 | Param2 | Param3 | Param4 | Param5>;
 export function unionIterables<const Param1, const Param2, const Param3, const Param4,
   const Param5, const Param6,>(
-  ...arrays: [
+  ...iterables: [
     Iterable<Param1>,
     Iterable<Param2>,
     Iterable<Param3>,
@@ -40,7 +42,7 @@ export function unionIterables<const Param1, const Param2, const Param3, const P
 ): Set<Param1 | Param2 | Param3 | Param4 | Param5 | Param6>;
 export function unionIterables<const Param1, const Param2, const Param3, const Param4,
   const Param5, const Param6, const Param7,>(
-  ...arrays: [
+  ...iterables: [
     Iterable<Param1>,
     Iterable<Param2>,
     Iterable<Param3>,
@@ -52,7 +54,7 @@ export function unionIterables<const Param1, const Param2, const Param3, const P
 ): Set<Param1 | Param2 | Param3 | Param4 | Param5 | Param6 | Param7>;
 export function unionIterables<const Param1, const Param2, const Param3, const Param4,
   const Param5, const Param6, const Param7, const Param8,>(
-  ...arrays: [
+  ...iterables: [
     Iterable<Param1>,
     Iterable<Param2>,
     Iterable<Param3>,
@@ -65,7 +67,7 @@ export function unionIterables<const Param1, const Param2, const Param3, const P
 ): Set<Param1 | Param2 | Param3 | Param4 | Param5 | Param6 | Param7 | Param8>;
 export function unionIterables<const Param1, const Param2, const Param3, const Param4,
   const Param5, const Param6, const Param7, const Param8, const Param9,>(
-  ...arrays: [
+  ...iterables: [
     Iterable<Param1>,
     Iterable<Param2>,
     Iterable<Param3>,
@@ -77,7 +79,7 @@ export function unionIterables<const Param1, const Param2, const Param3, const P
     Iterable<Param9>,
   ]
 ): Set<Param1 | Param2 | Param3 | Param4 | Param5 | Param6 | Param7 | Param8 | Param9>;
-export function unionIterables<const T,>(...arrays: Iterable<T>[]): Set<T>;
+export function unionIterables<const T,>(...iterables: Iterable<T>[]): Set<T>;
 export function unionIterables(...iterables: Iterable<unknown>[]): Set<unknown> {
   if (iterables.length === 0) {
     return new Set();
@@ -100,16 +102,21 @@ export function unionIterables(...iterables: Iterable<unknown>[]): Set<unknown> 
 export async function unionIterablesAsync(
   ...iterables: never[]
 ): Promise<Set<never>>;
-export async function unionIterablesAsync<const Param1, >(
+export async function unionIterablesAsync<const Param1,>(
   ...iterables: [MaybeAsyncIterable<Param1>]
 ): Promise<Set<Param1>>;
-export async function unionIterablesAsync<const Param1, const Param2, >(
+export async function unionIterablesAsync<const Param1, const Param2,>(
   ...iterables: [MaybeAsyncIterable<Param1>, MaybeAsyncIterable<Param2>]
 ): Promise<Set<Param1 | Param2>>;
-export async function unionIterablesAsync<const Param1, const Param2, const Param3, >(
-  ...iterables: [MaybeAsyncIterable<Param1>, MaybeAsyncIterable<Param2>, MaybeAsyncIterable<Param3>]
+export async function unionIterablesAsync<const Param1, const Param2, const Param3,>(
+  ...iterables: [
+    MaybeAsyncIterable<Param1>,
+    MaybeAsyncIterable<Param2>,
+    MaybeAsyncIterable<Param3>,
+  ]
 ): Promise<Set<Param1 | Param2 | Param3>>;
-export async function unionIterablesAsync<const Param1, const Param2, const Param3, const Param4, >(
+export async function unionIterablesAsync<const Param1, const Param2, const Param3,
+  const Param4,>(
   ...iterables: [
     MaybeAsyncIterable<Param1>,
     MaybeAsyncIterable<Param2>,
@@ -117,8 +124,8 @@ export async function unionIterablesAsync<const Param1, const Param2, const Para
     MaybeAsyncIterable<Param4>,
   ]
 ): Promise<Set<Param1 | Param2 | Param3 | Param4>>;
-export async function unionIterablesAsync<const Param1, const Param2, const Param3, const Param4,
-  const Param5, >(
+export async function unionIterablesAsync<const Param1, const Param2, const Param3,
+  const Param4, const Param5,>(
   ...iterables: [
     MaybeAsyncIterable<Param1>,
     MaybeAsyncIterable<Param2>,
@@ -127,8 +134,8 @@ export async function unionIterablesAsync<const Param1, const Param2, const Para
     MaybeAsyncIterable<Param5>,
   ]
 ): Promise<Set<Param1 | Param2 | Param3 | Param4 | Param5>>;
-export async function unionIterablesAsync<const Param1, const Param2, const Param3, const Param4,
-  const Param5, const Param6, >(
+export async function unionIterablesAsync<const Param1, const Param2, const Param3,
+  const Param4, const Param5, const Param6,>(
   ...iterables: [
     MaybeAsyncIterable<Param1>,
     MaybeAsyncIterable<Param2>,
@@ -138,8 +145,8 @@ export async function unionIterablesAsync<const Param1, const Param2, const Para
     MaybeAsyncIterable<Param6>,
   ]
 ): Promise<Set<Param1 | Param2 | Param3 | Param4 | Param5 | Param6>>;
-export async function unionIterablesAsync<const Param1, const Param2, const Param3, const Param4,
-  const Param5, const Param6, const Param7, >(
+export async function unionIterablesAsync<const Param1, const Param2, const Param3,
+  const Param4, const Param5, const Param6, const Param7,>(
   ...iterables: [
     MaybeAsyncIterable<Param1>,
     MaybeAsyncIterable<Param2>,
@@ -150,8 +157,8 @@ export async function unionIterablesAsync<const Param1, const Param2, const Para
     MaybeAsyncIterable<Param7>,
   ]
 ): Promise<Set<Param1 | Param2 | Param3 | Param4 | Param5 | Param6 | Param7>>;
-export async function unionIterablesAsync<const Param1, const Param2, const Param3, const Param4,
-  const Param5, const Param6, const Param7, const Param8, >(
+export async function unionIterablesAsync<const Param1, const Param2, const Param3,
+  const Param4, const Param5, const Param6, const Param7, const Param8,>(
   ...iterables: [
     MaybeAsyncIterable<Param1>,
     MaybeAsyncIterable<Param2>,
@@ -163,8 +170,8 @@ export async function unionIterablesAsync<const Param1, const Param2, const Para
     MaybeAsyncIterable<Param8>,
   ]
 ): Promise<Set<Param1 | Param2 | Param3 | Param4 | Param5 | Param6 | Param7 | Param8>>;
-export async function unionIterablesAsync<const Param1, const Param2, const Param3, const Param4,
-  const Param5, const Param6, const Param7, const Param8, const Param9, >(
+export async function unionIterablesAsync<const Param1, const Param2, const Param3,
+  const Param4, const Param5, const Param6, const Param7, const Param8, const Param9,>(
   ...iterables: [
     MaybeAsyncIterable<Param1>,
     MaybeAsyncIterable<Param2>,
@@ -176,8 +183,10 @@ export async function unionIterablesAsync<const Param1, const Param2, const Para
     MaybeAsyncIterable<Param8>,
     MaybeAsyncIterable<Param9>,
   ]
-): Promise<Set<Param1 | Param2 | Param3 | Param4 | Param5 | Param6 | Param7 | Param8 | Param9>>;
-export async function unionIterablesAsync<const T, >(
+): Promise<
+  Set<Param1 | Param2 | Param3 | Param4 | Param5 | Param6 | Param7 | Param8 | Param9>
+>;
+export async function unionIterablesAsync<const T,>(
   ...iterables: MaybeAsyncIterable<T>[]
 ): Promise<Set<T>>;
 export async function unionIterablesAsync(
@@ -189,7 +198,7 @@ export async function unionIterablesAsync(
   const resultSet = new Set<unknown>();
 
   // Create a promise for each iterable to collect its items
-  const itemPromises = iterables.map(async (iterable) => {
+  const itemPromises = iterables.map(async function toItems(iterable) {
     const items: unknown[] = [];
     for await (const item of iterable) {
       items.push(item);
@@ -209,3 +218,5 @@ export async function unionIterablesAsync(
 
   return resultSet;
 }
+
+// AI! Write generator versions of the functions by postfixing their names with Gen
