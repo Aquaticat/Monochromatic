@@ -1,5 +1,6 @@
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
+// AI! Add missing TSDoc
 export function unionIterables(...arrays: never[]): Set<never>;
 export function unionIterables<const Param1,>(...arrays: [Iterable<Param1>]): Set<Param1>;
 export function unionIterables<const Param1, const Param2,>(
