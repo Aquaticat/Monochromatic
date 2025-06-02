@@ -58,3 +58,15 @@ When writing code in TypeScript, try to:
   and member expressions (e.g., `object.prop1.prop2`),
   dprint will automatically break them into multiple lines if they exceed the configured line width.
   - Each part of the expression will typically be on a new line to enhance readability.
+
+---
+
+When writing Markdown files:
+
+- Ensure each sentence or long phrase is on its own line.
+- Bullet lists use the `-` marker.
+- There should be one space after the marker.
+- For numbered lists, pad the `1.` marker with enough space after it so it is always 4 characters long.
+  - For example:
+    1.  This is the first item.
+    2.  This is the second item.
