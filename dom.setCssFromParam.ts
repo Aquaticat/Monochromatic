@@ -14,11 +14,17 @@
  */
 export function setCssFromUrlParams(allowedProperties?: Iterable<string>): void {
   const params = new URLSearchParams(globalThis.location.search);
-  const allowedSet = allowedProperties ? new Set(allowedProperties) : undefined;
 
-  for (const [key, value] of params.entries()) {
-    // AI? Checking allowedSet exists for every param in the for loop seems unoptimized. Can we filter the params before starting the for loop?
-    if (!allowedSet || allowedSet.has(key)) {
+  if (allowedProperties) {
+    const allowedSet = new Set(allowedProperties);
+    for (const [key, value] of params.entries()) {
+      if (allowedSet.has(key)) {
+        document.documentElement.style.setProperty(key, value);
+      }
+    }
+  } else {
+    // No allowedProperties, so process all parameters
+    for (const [key, value] of params.entries()) {
       document.documentElement.style.setProperty(key, value);
     }
   }
