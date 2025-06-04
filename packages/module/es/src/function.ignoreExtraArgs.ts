@@ -3,6 +3,7 @@
 /**
  * Wraps a function to create a new function that accepts more arguments than the original.
  * The wrapper calls the original function with only the number of arguments it initially expects
+ * // AI! Can we avoid using the length property?
  * (based on its `length` property). Any additional arguments provided to the wrapper are ignored.
  *
  * This is useful for adapting functions to contexts where they might receive more arguments
@@ -37,7 +38,7 @@
  * // lenientParseInt('10', 0, strings) calls strictParseInt('10'), ignoring index and array.
  * ```
  */
-export function ignoreExtraArgs<const F extends (...args: any[]) => any>(
+export function ignoreExtraArgs<const F extends (...args: any[]) => any,>(
   fn: F,
 ): (...allArgs: [...Parameters<F>, ...any[]]) => ReturnType<F> {
   const expectedArgCount = fn.length;

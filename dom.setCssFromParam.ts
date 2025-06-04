@@ -17,9 +17,9 @@ export function setCssFromUrlParams(allowedProperties?: Iterable<string>): void 
   const allowedSet = allowedProperties ? new Set(allowedProperties) : undefined;
 
   for (const [key, value] of params.entries()) {
-    if (allowedSet && !allowedSet.has(key)) {
-      continue;
+    // AI? Checking allowedSet exists for every param in the for loop seems unoptimized. Can we filter the params before starting the for loop?
+    if (!allowedSet || allowedSet.has(key)) {
+      document.documentElement.style.setProperty(key, value);
     }
-    document.documentElement.style.setProperty(key, value);
   }
 }
