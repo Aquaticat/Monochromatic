@@ -1,9 +1,9 @@
 import {
-  arrayIsEmpty,
-  arrayIsNonEmpty,
   type ArrayNonFixedLengthOrNever,
   isArray,
+  isArrayEmpty,
   type IsArrayFixedLength,
+  isArrayNonEmpty,
   isAsyncGenerator,
   isAsyncIterable,
   isEmptyArray,
@@ -328,16 +328,16 @@ describe(isEmptyArray, () => {
   });
 });
 
-describe(arrayIsEmpty, () => {
+describe(isArrayEmpty, () => {
   test('identifies empty arrays correctly', () => {
-    expect(arrayIsEmpty([])).toBe(true);
+    expect(isArrayEmpty([])).toBe(true);
   });
 
   test('rejects non-empty arrays', () => {
-    expect(arrayIsEmpty([1])).toBe(false);
-    expect(arrayIsEmpty([null])).toBe(false);
-    expect(arrayIsEmpty([undefined])).toBe(false);
-    expect(arrayIsEmpty(Array.from({ length: 1 }).fill(0))).toBe(false);
+    expect(isArrayEmpty([1])).toBe(false);
+    expect(isArrayEmpty([null])).toBe(false);
+    expect(isArrayEmpty([undefined])).toBe(false);
+    expect(isArrayEmpty(Array.from({ length: 1 }).fill(0))).toBe(false);
   });
 });
 
@@ -359,16 +359,16 @@ describe(isNonEmptyArray, () => {
   });
 });
 
-describe(arrayIsNonEmpty, () => {
+describe(isArrayNonEmpty, () => {
   test('identifies non-empty arrays correctly', () => {
-    expect(arrayIsNonEmpty([1])).toBe(true);
-    expect(arrayIsNonEmpty([null])).toBe(true);
-    expect(arrayIsNonEmpty([undefined])).toBe(true);
-    expect(arrayIsNonEmpty([1, 2, 3])).toBe(true);
-    expect(arrayIsNonEmpty(Array.from({ length: 1 }).fill(0))).toBe(true);
+    expect(isArrayNonEmpty([1])).toBe(true);
+    expect(isArrayNonEmpty([null])).toBe(true);
+    expect(isArrayNonEmpty([undefined])).toBe(true);
+    expect(isArrayNonEmpty([1, 2, 3])).toBe(true);
+    expect(isArrayNonEmpty(Array.from({ length: 1 }).fill(0))).toBe(true);
   });
 
   test('rejects empty arrays', () => {
-    expect(arrayIsNonEmpty([])).toBe(false);
+    expect(isArrayNonEmpty([])).toBe(false);
   });
 });

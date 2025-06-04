@@ -36,7 +36,8 @@
     "br": "pnpm run -r --stream \"/^b:\\w+$/\""
   },
   "engines": {
-    "bun": ">=1.2.9"
+    "bun": ">=1.2.9",
+    "node": ">=24.0.0"
   },
   "type": "module",
   "devDependencies": {

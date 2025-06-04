@@ -91,3 +91,5 @@ export * from './strings.concat.ts';
 export * from './strings.join.ts';
 
 // export * from './deprecated.testing.ts';
+
+export * from './dom.redirectingTo.ts';

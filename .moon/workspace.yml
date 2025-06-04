@@ -13,6 +13,7 @@ $schema: 'https://moonrepo.dev/schemas/workspace.json'
 # and cannot reference projects located outside the workspace boundary.
 projects:
 - 'packages/*/*'
+- '.'
 
 # Configures the version control system to utilize within the workspace. A VCS
 # is required for determining touched (added, modified, etc) files, calculating file hashes,
@@ -27,8 +28,19 @@ vcs:
   # and must include the remote prefix (before /).
   defaultBranch: 'main'
 
+  hookFormat: 'bash'
+
+  syncHooks: true
+
 codeowners:
   syncOnRun: true
 
 hasher:
   walkStrategy: 'glob'
+
+versionConstraint: '>=1.29.3'
+
+pipeline:
+  # Do not allow Bun to install dependencies, because we're using pnpm as the package manager, bun as the primary runtime, node for Vitest.
+  installDependencies:
+  - 'node'

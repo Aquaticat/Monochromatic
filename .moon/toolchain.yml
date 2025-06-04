@@ -1,0 +1,13 @@
+$schema: 'https://moonrepo.dev/schemas/toolchain.json'
+
+# MAYBE: Moon seems to not be able to setup toolchains when installed locally into the workspace root by pnpm.
+#        Commented. Maybe open a issue.
+
+# bun:
+#  version: '>=1.2.15'
+
+node:
+  #  version: '>=24.1.0'
+  packageManager: 'pnpm'
+#  pnpm:
+#    version: '>=10.11.1'

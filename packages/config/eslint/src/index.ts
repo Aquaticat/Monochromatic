@@ -105,6 +105,9 @@ const myConfigArray: ConfigArray = tseslint.config(
       Just because I didn't use the type parameter in the function signature doesn't mean I won't use it in the function body.
        */
       '@typescript-eslint/no-unnecessary-type-parameters': 'off',
+
+      // We're using Vite bundler.
+      'node/no-unpublished-import': 'off',
     },
   },
   {

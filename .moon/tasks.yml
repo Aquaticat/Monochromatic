@@ -1,0 +1,35 @@
+$schema: 'https://moonrepo.dev/schemas/tasks.json'
+
+implicitInputs:
+- 'package.json'
+# If I uncomment these, moon will consistently give warnings that some of these files are not found in some of the projects, which doesn't break anything, but is super annoying.
+#- 'vite.config.ts'
+#- 'vitest.config.ts'
+#- 'tsconfig.json'
+
+fileGroups:
+  configs:
+  - '*.config.{js,cjs,mjs,ts,yaml,yml}'
+  - '*.json'
+  sources:
+  - 'src/**/*.{ts,astro,html,vue,mjs,js,cjs}'
+  tests:
+  - 'src/**/*.{test,bench}.ts'
+
+tasks:
+  types:
+    command: 'tsc --build --force --verbose'
+    options:
+      outputStyle: 'buffer-only-failure'
+
+  js_default:
+    command: 'vite build --config vite.config.ts --mode production'
+
+#  "w:types": "tsc --watch",
+#  "b:types": "tsc --build --force --verbose",
+#  "b:js_node": "vite build --config vite.config.ts --mode production,node",
+#  "w:js_node": "vite build --config vite.config.ts --mode production,node --watch",
+#  "b:js_browser": "vite build --config vite.config.ts --mode production,browser",
+#  "w:js_browser": "vite build --config vite.config.ts --mode production,browser --watch",
+#  "b": "pnpm run --stream \"/^b:\\w+$/\"",
+#  "w": "pnpm run --stream \"/^w:\\w+$/\""

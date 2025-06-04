@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@astrojs/mdx": "catalog:",
+    "@types/mdx": "catalog:",
     "astro": "catalog:",
     "@shikijs/transformers": "catalog:",
     "remark-github-blockquote-alert": "catalog:",
@@ -22,7 +23,6 @@
     "postcss-custom-selectors": "catalog:",
     "postcss-mixins": "catalog:",
     "@monochromatic-dev/module-es": "workspace:*",
-    "@monochromatic-dev/module-dom": "workspace:*",
     "@vitejs/plugin-basic-ssl": "catalog:",
     "nano-spawn": "catalog:",
     "rehype-preset-minify": "catalog:",

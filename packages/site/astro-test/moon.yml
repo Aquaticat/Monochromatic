@@ -1,0 +1,5 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+tags:
+# FIXME: Temporarily disabled tsc on this project. This tag will be removed when I get to work on this project and fix the types.
+- 'noTypescript'
