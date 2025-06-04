@@ -1,0 +1,1 @@
+// AI! Write function for setting anything found in url params to the cooresponding CSS property. For example, if the url is https://myWebsite.com/myPath?backgroundColor=red , calling this function would set the background-color property on the :root selector to red.
