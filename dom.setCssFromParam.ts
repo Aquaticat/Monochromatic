@@ -9,13 +9,17 @@
  * This will set:
  * document.documentElement.style.setProperty('background-color', 'red');
  * document.documentElement.style.setProperty('font-size', '16px');
+ *
+ * @param allowedProperties Optional iterable of CSS property names. If provided, only properties listed in this iterable will be set from the URL parameters.
  */
-export function setCssFromUrlParams(): void {
+export function setCssFromUrlParams(allowedProperties?: Iterable<string>): void {
   const params = new URLSearchParams(globalThis.location.search);
+  const allowedSet = allowedProperties ? new Set(allowedProperties) : undefined;
 
   for (const [key, value] of params.entries()) {
+    if (allowedSet && !allowedSet.has(key)) {
+      continue;
+    }
     document.documentElement.style.setProperty(key, value);
   }
 }
-
-// AI! Make this function take an optional iterable parameter to make only those properties found in the iterable to be allowed to set. Skip over any properties not allowed.
