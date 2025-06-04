@@ -330,7 +330,22 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
                 //           css-variables:js_default |     at async open (node:internal/fs/promises:633:25)
                 //           css-variables:js_default |     at async writeFile (node:internal/fs/promises:1207:14)
                 //           css-variables:js_default |     at async Queue.work (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rollup@4.40.2/node_modules/rollup/dist/es/shared/node-entry.js:22320:32)
+                //  error during build:
+                //           css-variables:js_default | Build failed with 1 error:
+                //           css-variables:js_default |
+                //           css-variables:js_default | [UNHANDLEABLE_ERROR] Error: Something went wrong inside rolldown, please report this problem at https://github.com/rolldown/rolldown/issues.
+                //           css-variables:js_default | Access is denied. (os error 5)
+                //           css-variables:js_default |
+                //           css-variables:js_default |     at normalizeErrors (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown@1.0.0-beta.11-commit.83d4d62/node_modules/rolldown/dist/shared/src-C1CX2gm4.mjs:2362:18)
+                //           css-variables:js_default |     at handleOutputErrors (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown@1.0.0-beta.11-commit.83d4d62/node_modules/rolldown/dist/shared/src-C1CX2gm4.mjs:3368:34)
+                //           css-variables:js_default |     at transformToRollupOutput (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown@1.0.0-beta.11-commit.83d4d62/node_modules/rolldown/dist/shared/src-C1CX2gm4.mjs:3362:2)
+                //           css-variables:js_default |     at RolldownBuild.write (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown@1.0.0-beta.11-commit.83d4d62/node_modules/rolldown/dist/shared/src-C1CX2gm4.mjs:4623:11)
+                //           css-variables:js_default |     at async buildEnvironment (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/chunks/dep-BVD1pq3j.js:44451:16)
+                //           css-variables:js_default |     at async Object.defaultBuildApp [as buildApp] (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/chunks/dep-BVD1pq3j.js:44957:5)
+                //           css-variables:js_default |     at async CAC.<anonymous> (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/cli.js:864:7)
                 // TODO: Migrate to rolldown-vite and check if that fixes this.
+                //  Merely migrating to rolldown-vite didn't fix this. Might have to try the uglier, retrying way.
+                // AI! Replace the readFile call with a function that has the exact same signature as readfile, but retries 4 times with the backoff of 10ms, 20ms, 40ms, 80ms, respectively.
                 const iframeFile = await readFile(iframePath, 'utf8');
                 return html.replace(
                   'REPLACE_WITH_IFRAME_INDEX_HTML',
