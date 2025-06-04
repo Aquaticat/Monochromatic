@@ -285,89 +285,6 @@ const createFrontendLikeConfig = (configDir: string, subDir: string): UserConfig
     },
   });
 
-// TODO: Check if this is necessary.
-const vitestCommonToAllProjects = defineVitestConfig(
-  {
-    test: {
-      projects: ['packages/*/*'],
-      include: ['packages/*/*/**/src/**/*.test.ts'],
-      exclude: vitestExcludeCommon,
-      name: 'workspace',
-      deps: {
-        // We're never importing CJS module's default export via `import {x} from 'y'`.
-        interopDefault: false,
-      },
-      benchmark: {
-        outputJson: join('bak', new Date().toISOString().replaceAll(':', ''),
-          'vitest.benchmark.json'),
-      },
-      outputFile: join('bak', new Date().toISOString().replaceAll(':', ''),
-        'vitest.result.json'),
-      pool: 'threads',
-      poolOptions: {
-        threads: {
-          useAtomics: true,
-        },
-        vmThreads: {
-          useAtomics: true,
-        },
-      },
-      testTimeout: 2000,
-      silent: 'passed-only',
-      coverage: {
-        provider: 'v8',
-        enabled: true,
-        excludeAfterRemap: true,
-        reportOnFailure: true,
-        skipFull: true,
-
-        experimentalAstAwareRemapping: true,
-
-        // We don't really need to see the coverage report every time we run any test.
-        all: false,
-
-        thresholds: {
-          perFile: true,
-          // Error: Failed to update coverage thresholds. Configuration file is too complex.
-          autoUpdate: false,
-        },
-
-        // Only this works for coverage to follow sourcemap.
-        extension: [
-          '.js',
-          '.ts',
-          // Commented out until I see the value of testing non typescript files.
-          // '.vue',
-          // '.astro'
-        ],
-        include: [
-          'packages/*/*/**/dist/final/**',
-          'packages/*/*/**/src/**',
-        ],
-
-        exclude: [...vitestExcludeCommon, 'packages/*/*/**/src/**/*.browser.test.ts'],
-      },
-      logHeapUsage: true,
-      maxConcurrency: 16,
-      sequence: {
-        concurrent: true,
-      },
-      typecheck: {
-        enabled: true,
-
-        // Overwrite this to vue-tsc in packages that use Vue.
-        checker: 'tsc',
-      },
-      chaiConfig: {
-        includeStack: true,
-      },
-      expect: {
-        requireAssertions: true,
-      },
-    },
-  },
-);
-
 /**
  @remarks
  Use it like:
@@ -408,6 +325,12 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
                 // chmodSync(iframePath, constants.S_IRUSR);
                 // FIXME: Find out why this fails with a permission issue. Could be a Vite configuration not allowing plugins to read files outside of root dir. Could be something else.
                 //  Update: Probably not due to Vite. Read the docs and only the server isn't allowed to serve files out of root dir.
+                //error during build:
+                //           css-variables:js_default | EPERM: operation not permitted, open 'C:\Users\user\Text\Projects\Aquaticat\monochromatic2025MAY24-pnpmTest\packages\figma-plugin\css-variables\dist\final\iframe\index.html'
+                //           css-variables:js_default |     at async open (node:internal/fs/promises:633:25)
+                //           css-variables:js_default |     at async writeFile (node:internal/fs/promises:1207:14)
+                //           css-variables:js_default |     at async Queue.work (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rollup@4.40.2/node_modules/rollup/dist/es/shared/node-entry.js:22320:32)
+                // TODO: Migrate to rolldown-vite and check if that fixes this.
                 const iframeFile = await readFile(iframePath, 'utf8');
                 return html.replace(
                   'REPLACE_WITH_IFRAME_INDEX_HTML',
@@ -451,7 +374,7 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
   test: {
     projects: [
       // 'packages/*/*',
-      {
+      defineProject({
         test: {
           name: 'browser',
           include: ['packages/*/*/**/src/**/*.browser.test.ts'],
@@ -467,14 +390,14 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
             ],
           },
         },
-      },
-      {
+      }),
+      defineProject({
         test: {
           name: { label: 'unit', color: 'black' },
           include: ['packages/*/*/**/src/**/*.unit.test.ts'],
           exclude: [...vitestExcludeCommon, '*.browser.test.ts'],
         },
-      },
+      }),
     ],
     name: 'workspace',
     deps: {

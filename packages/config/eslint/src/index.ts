@@ -108,6 +108,18 @@ const myConfigArray: ConfigArray = tseslint.config(
 
       // We're using Vite bundler.
       'node/no-unpublished-import': 'off',
+
+      // We're using node 24.
+      'node/no-unsupported-features/node-builtins': ['error', {
+        version: '>=24.0.0',
+      }],
+
+      // If readdir is good enough for node, it's good enough for me.
+      'unicorn/prevent-abbreviations': ['error', {
+        replacements: {
+          dir: false,
+        },
+      }],
     },
   },
   {

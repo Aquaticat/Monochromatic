@@ -25,6 +25,10 @@ tasks:
   js_default:
     command: 'vite build --config vite.config.ts --mode production'
 
+  js:
+    deps:
+    - js_default
+
 #  "w:types": "tsc --watch",
 #  "b:types": "tsc --build --force --verbose",
 #  "b:js_node": "vite build --config vite.config.ts --mode production,node",

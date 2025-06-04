@@ -1,4 +1,4 @@
-import type { Promisable } from '../promise.type.js';
+import type { Promisable } from 'type-fest';
 
 //region when -- Synchronous conditional transformation
 
@@ -21,7 +21,7 @@ import type { Promisable } from '../promise.type.js';
  * doubleIfEven(3); // => 3
  * ```
  */
-export function when<const T, const R>(
+export function when<const T, const R,>(
   predicate: (value: T) => boolean,
   onTrue: (value: T) => R,
   value: T,
@@ -63,7 +63,7 @@ export function when<const T, const R>(
  * await doubleIfEvenAsync(3); // => 3
  * ```
  */
-export async function whenAsync<const T, const R>(
+export async function whenAsync<const T, const R,>(
   predicate: (value: T) => Promisable<boolean>,
   onTrue: (value: T) => Promisable<R>,
   value: T,

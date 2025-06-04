@@ -1,0 +1,9 @@
+$schema: 'https://moonrepo.dev/schemas/tasks.json'
+
+taskOptions:
+
+tasks:
+  js:
+    deps: []
+    options:
+      mergeDeps: 'replace'

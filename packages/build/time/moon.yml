@@ -1,9 +1,4 @@
 $schema: 'https://moonrepo.dev/schemas/project.json'
 
-tasks:
-  versionCheck:
-    command: 'pnpm version'
-
 tags:
-- noTypescript
 - 'noJs'

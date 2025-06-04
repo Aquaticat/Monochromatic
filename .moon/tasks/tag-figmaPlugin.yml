@@ -10,3 +10,8 @@ tasks:
   #"b:backend": "vite build --mode production --config vite.config.backend.ts",
   js_backend:
     command: 'vite build --mode production --config vite.config.backend.ts'
+
+  js:
+    deps:
+    - js_default
+    - js_backend
