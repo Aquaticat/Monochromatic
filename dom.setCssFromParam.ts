@@ -17,3 +17,5 @@ export function setCssFromUrlParams(): void {
     document.documentElement.style.setProperty(key, value);
   }
 }
+
+// AI! Make this function take an optional iterable parameter to make only those properties found in the iterable to be allowed to set. Skip over any properties not allowed.
