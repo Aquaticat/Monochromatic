@@ -345,11 +345,28 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
                 //           css-variables:js_default |     at async CAC.<anonymous> (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/cli.js:864:7)
                 // TODO: Migrate to rolldown-vite and check if that fixes this.
                 //  Merely migrating to rolldown-vite didn't fix this. Might have to try the uglier, retrying way.
-                // AI! Replace the readFile call with a function that has the exact same signature as readfile, but retries 4 times with the backoff of 10ms, 20ms, 40ms, 80ms, respectively.
-                const iframeFile = await readFile(iframePath, 'utf8');
+                async function readFileWithRetry(
+                  path: Parameters<typeof readFile>[0],
+                  options: Parameters<typeof readFile>[1],
+                  retries = 4,
+                  delayMs = 10,
+                ): Promise<string> {
+                  try {
+                    // Explicitly type the return as string for 'utf8' encoding
+                    return await readFile(path, options) as string;
+                  } catch (error: any) {
+                    if (error.code === 'EPERM' && retries > 0) {
+                      // console.warn(`Retrying readFile for ${path} due to EPERM... (${retries} retries left, delay ${delayMs}ms)`);
+                      await new Promise(resolve => setTimeout(resolve, delayMs));
+                      return readFileWithRetry(path, options, retries - 1, delayMs * 2);
+                    }
+                    throw error;
+                  }
+                }
+                const iframeFileContent = await readFileWithRetry(iframePath, 'utf8');
                 return html.replace(
                   'REPLACE_WITH_IFRAME_INDEX_HTML',
-                  iframeFile.replaceAll("'", '&apos;'),
+                  iframeFileContent.replaceAll("'", '&apos;'),
                 );
               }
               return html;
