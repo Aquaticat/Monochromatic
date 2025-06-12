@@ -16,7 +16,6 @@ src/temp
 pnpm.sh
 packages/*/*/temp
 locks
-pnpm-lock.yaml
 .pnp.cjs
 *.br
 *.zst

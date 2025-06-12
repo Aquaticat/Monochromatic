@@ -357,7 +357,7 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
                   } catch (error: any) {
                     if (error.code === 'EPERM' && retries > 0) {
                       // console.warn(`Retrying readFile for ${path} due to EPERM... (${retries} retries left, delay ${delayMs}ms)`);
-                      await new Promise(resolve => setTimeout(resolve, delayMs));
+                      await new Promise((resolve) => setTimeout(resolve, delayMs));
                       return readFileWithRetry(path, options, retries - 1, delayMs * 2);
                     }
                     throw error;
@@ -467,7 +467,7 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
 
       thresholds: {
         perFile: true,
-        // Error: Failed to update coverage thresholds. Configuration file is too complex.
+        // Error: Failed to update coverage thresholds. The Configuration file is too complex.
         autoUpdate: false,
       },
 
@@ -475,7 +475,7 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
       extension: [
         '.js',
         '.ts',
-        // Commented out until I see the value of testing non typescript files.
+        // Commented out until I see the value of testing non-TypeScript files.
         // '.vue',
         // '.astro'
       ],
@@ -512,3 +512,5 @@ export const createVitestBaseConfigWorkspace = (configDir: string): VitestUserCo
 
 export const getVitestWorkspace = (configDir: string): UserConfigFnObject =>
   createModeConfig(configDir, createVitestBaseConfigWorkspace);
+
+export type { UserConfigFnObject } from 'vite';

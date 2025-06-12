@@ -21,7 +21,7 @@ catalog:
   '@types/bun': '*'
   postcss-html: '*'
   '@types/mdx': '*'
-  vite: '>=6.3.5'
+  vite: '>=7.0.0-beta.1'
   vite-plugin-singlefile: '*'
   '@csstools/postcss-color-function': '*'
   '@csstools/postcss-color-mix-function': '*'
@@ -67,7 +67,7 @@ catalog:
   '@figma/plugin-typings': '*'
   lfi: '*'
   lightningcss: '*'
-  postcss: '*'
+  postcss: '>=8.5.5'
   '@logtape/logtape': jsr:>=0.9.2
   '@logtape/file': jsr:>=0.9.2
   type-fest: '*'
@@ -127,6 +127,7 @@ childConcurrency: 16
 dedupeDirectDeps: true
 disallowWorkspaceCycles: true
 hoist: false
+resolvePeersFromWorkspaceRoot: false
 hoistWorkspacePackages: false
 includeWorkspaceRoot: true
 linkWorkspacePackages: true
@@ -139,12 +140,19 @@ onlyBuiltDependencies:
 - husky
 - sharp
 overrides:
-  tsconfck>typescript: '*'
-  zod-to-ts>typescript: '*'
+  tsconfck>typescript: 'catalog:'
+  zod-to-ts>typescript: 'catalog:'
+  vitest>vite: 'catalog:'
+  vite>postcss: 'catalog:'
 packageExtensions:
   astro:
     dependencies:
-      typescript: '*'
+      typescript: 'catalog:'
+peerDependencyRules:
+  allowedVersions:
+    '@vitejs/plugin-basic-ssl>vite': '>=7.0.0-beta.1'
+    'vite-plugin-singlefile>vite': '>=7.0.0-beta.1'
+    'vite-plugin-json5>vite': '>=7.0.0-beta.1'
 preferWorkspacePackages: true
 resolutionMode: highest
 savePrefix: ''
@@ -156,3 +164,5 @@ supportedArchitectures:
   os: [win32, darwin, linux, current]
   cpu: [x64, arm64, current]
   libc: [glibc, musl, current]
+enableGlobalVirtualStore: true
+catalogMode: strict
