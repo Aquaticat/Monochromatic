@@ -64,6 +64,12 @@ const myConfigArray: ConfigArray = tseslint.config(
       },
     },
 
+    'settings': {
+      'node': {
+        'version': '>=24.0.0',
+      },
+    },
+
     rules: {
       '@typescript-eslint/no-unnecessary-condition': ['error', {
         allowConstantLoopConditions: 'only-allowed-literals',
@@ -107,12 +113,7 @@ const myConfigArray: ConfigArray = tseslint.config(
       '@typescript-eslint/no-unnecessary-type-parameters': 'off',
 
       // We're using Vite bundler.
-      'node/no-unpublished-import': 'off',
-
-      // We're using node 24.
-      'node/no-unsupported-features/node-builtins': ['error', {
-        version: '>=24.0.0',
-      }],
+      'n/no-unpublished-import': 'off',
 
       // If readdir is good enough for node, it's good enough for me.
       'unicorn/prevent-abbreviations': ['error', {
@@ -132,6 +133,8 @@ const myConfigArray: ConfigArray = tseslint.config(
     rules: {
       ...vitest.configs.all.rules,
       '@typescript-eslint/require-await': 'off',
+      'vitest/prefer-expect-assertions': 'off',
+      'unicorn/prevent-abbreviations': 'off',
     },
 
     settings: {

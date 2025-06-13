@@ -1,4 +1,4 @@
-import { getLib } from '@monochromatic-dev/config-vite/.js';
+import { getLib } from '@monochromatic-dev/config-vite';
 
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';

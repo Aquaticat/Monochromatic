@@ -143,6 +143,7 @@ overrides:
   tsconfck>typescript: 'catalog:'
   zod-to-ts>typescript: 'catalog:'
   vitest>vite: 'catalog:'
+  'vite-node>vite': 'catalog:'
   vite>postcss: 'catalog:'
 packageExtensions:
   astro:

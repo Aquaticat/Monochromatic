@@ -99,14 +99,14 @@ describe('ensuringFalsyAsync', () => {
     const fn = async (x: number) => x < 0 ? '' : 'non-negative';
     const ensured = ensuringFalsyAsync(fn);
 
-    expect(ensured(5)).rejects.toThrow('Function must return a falsy value');
+    await expect(ensured(5)).rejects.toThrow('Function must return a falsy value');
   });
 
   test('throws with custom error message', async () => {
     const fn = async (x: number) => x < 0 ? '' : 'non-negative';
     const ensured = ensuringFalsyAsync(fn, 'Custom error');
 
-    expect(ensured(5)).rejects.toThrow('Custom error');
+    await expect(ensured(5)).rejects.toThrow('Custom error');
   });
 });
 

@@ -329,6 +329,7 @@ overrides:
   tsconfck>typescript: '*'
   zod-to-ts>typescript: '*'
   vitest>vite: '>=7.0.0-beta.1'
+  vite-node>vite: '>=7.0.0-beta.1'
   vite>postcss: '>=8.5.5'
 
 packageExtensionsChecksum: sha256-Z/Q5rsne/J/GgvkDMJ3GRdF2rERQsjFiPzl76MKV3Pg=
@@ -9215,7 +9216,7 @@ snapshots:
       debug: 4.4.1
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 6.3.5(@types/node@22.15.17)(lightningcss@1.29.3)
+      vite: 7.0.0-beta.1(@types/node@22.15.17)(lightningcss@1.29.3)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
