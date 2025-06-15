@@ -20,7 +20,7 @@ export async function filterIterableAsync<T_i,>(
     }
   }
 
-  // We cannot know the length of yes beforehand,
+  // We can't know the length of yes beforehand,
   // no need to define overloads for plain arrays and trying to return a tuple type.
   return yes;
 }
@@ -88,11 +88,11 @@ export function* filterIterableGen<T_i,>(
 }
 
 /**
- * Asynchronously filters an iterable or async iterable based on a predicate, yielding elements that *do not* satisfy the predicate.
+ * Asynchronously filters an iterable or async iterable based on a predicate, yielding elements that *don't* satisfy the predicate.
  * This is a generator version of `filterFailIterableAsync`.
  * @param predicate - A function that returns a promisable boolean indicating whether an element should be kept (those returning false will be yielded).
  * @param arrayLike - The iterable or async iterable to filter.
- * @returns An async generator yielding elements that *do not* satisfy the predicate.
+ * @returns An async generator yielding elements that *don't* satisfy the predicate.
  * @template T_i - The type of elements in the iterable.
  */
 /* @__NO_SIDE_EFFECTS__ */
@@ -108,11 +108,11 @@ export async function* filterFailIterableAsyncGen<T_i,>(
 }
 
 /**
- * Filters an iterable based on a predicate, yielding elements that *do not* satisfy the predicate.
+ * Filters an iterable based on a predicate, yielding elements that *don't* satisfy the predicate.
  * This is a generator version of `filterFailIterable`.
  * @param predicate - A function that returns a boolean indicating whether an element should be kept (those returning false will be yielded).
  * @param arrayLike - The iterable to filter.
- * @returns A generator yielding elements that *do not* satisfy the predicate.
+ * @returns A generator yielding elements that *don't* satisfy the predicate.
  * @template T_i - The type of elements in the iterable.
  */
 /* @__NO_SIDE_EFFECTS__ */
@@ -128,10 +128,10 @@ export function* filterFailIterableGen<T_i,>(
 }
 
 /**
- * Asynchronously filters an iterable or async iterable based on a predicate, returning elements that *do not* satisfy the predicate.
+ * Asynchronously filters an iterable or async iterable based on a predicate, returning elements that *don't* satisfy the predicate.
  * @param predicate - A function that returns a promisable boolean indicating whether an element should be kept (those returning false will be collected).
  * @param arrayLike - The iterable or async iterable to filter.
- * @returns A promise that resolves to an array containing elements that *do not* satisfy the predicate.
+ * @returns A promise that resolves to an array containing elements that *don't* satisfy the predicate.
  * @template T_i - The type of elements in the iterable.
  */
 export async function filterFailIterableAsync<T_i,>(
@@ -150,10 +150,10 @@ export async function filterFailIterableAsync<T_i,>(
 }
 
 /**
- * Filters an iterable based on a predicate, returning elements that *do not* satisfy the predicate.
+ * Filters an iterable based on a predicate, returning elements that *don't* satisfy the predicate.
  * @param predicate - A function that returns a boolean indicating whether an element should be kept (those returning false will be collected).
  * @param arrayLike - The iterable to filter.
- * @returns An array containing elements that *do not* satisfy the predicate.
+ * @returns An array containing elements that *don't* satisfy the predicate.
  * @template T_i - The type of elements in the iterable.
  */
 export function filterFailIterable<T_i,>(

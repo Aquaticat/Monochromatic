@@ -1,11 +1,11 @@
 /**
- @deprecated Use jsr:@rebeccastevens/deepmerge instead. I can never match its quality.
+ @deprecated Use jsr:@rebeccastevens/deepmerge instead. This library can never match its quality.
 
  @remarks
 
  See https://stackoverflow.com/questions/171251/how-can-i-merge-properties-of-two-javascript-objects
 
- Because { ...obj1, ...obj2 } is not a deep merge.
+ Because { ...obj1, ...obj2 } isn't a deep merge.
  Because
  mergeConfig(
  createBaseConfig(configDir),

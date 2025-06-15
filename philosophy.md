@@ -1,6 +1,6 @@
 ## portable/interoperable/detachable
 
-### Write markdown normally, and still enjoy plantuml, picture features.
+### Write markdown normally, and still enjoy plantuml, picture features
 
 ## MAYBE: Target Firefox ESR 128?
 

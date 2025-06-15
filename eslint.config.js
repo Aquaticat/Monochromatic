@@ -12,7 +12,7 @@
  unicornRules,
  vitestRules,
  } from 'eslint-plugin-oxlint/rules-by-scope';*/
-import myConfigArray from '@monochromatic-dev/config-eslint/.js';
+import myConfigArray from '@monochromatic-dev/config-eslint';
 // import tseslint from 'typescript-eslint';
 // import type { ConfigArray } from 'typescript-eslint';
 

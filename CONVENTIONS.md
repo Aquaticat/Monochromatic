@@ -1,4 +1,4 @@
-## Generally
+## General guidelines
 
 Avoid:
 - apologies
@@ -20,26 +20,26 @@ Avoid:
   - For arrow functions, make sure the JavaScript engine can infer a name.
 - Always use parentheses around arrow function parameters.
   - This applies even for a single parameter.
-  - This is enforced by dprint.
+  - dprint enforces this.
 - Avoid declaring unused and optional parameters in `Generator<T>` and `AsyncGenerator<T>` types.
-- Avoid special handling to preserve `this`; prefer arrow functions for callbacks or methods that need to capture `this`
+- Avoid handling to preserve `this`; prefer arrow functions for callbacks or methods that need to capture `this`
   from the lexical scope.
 - Avoid using await in loops wherever logically sound.
 - Avoid using the generic `Function` type.
   - Prefer more specific function signatures, such as `(...args: any) => any`,
     or ideally, define explicit parameters and return types.
-  - This is guided by the `typescript/no-unsafe-function-type` lint rule.
+  - The `typescript/no-unsafe-function-type` lint rule guides this.
 - Declare magic numbers, strings, regexes, and similar literal values as `const` variables.
-  - However, the literal numbers `1, -1, 0, 2, -2` may be used directly,
+  - However, you may use the literal numbers `1, -1, 0, 2, -2` directly,
     as configured in the `eslint/no-magic-numbers` lint rule.
-- Note: The `eslint/no-unused-vars` lint rule is disabled. Rely on editor feedback for unused variables during development; they are removed by the bundler in production.
+- Note: The `eslint/no-unused-vars` lint rule turns off. Rely on editor feedback for unused variables during development; they're removed by the bundler in production.
 - Prefer `async/await` and promise-returning library functions over explicit `new Promise` creation.
 - Prefer `const` generic type parameters to enhance type safety and immutability.
-- Prefer `const` over `let` to encourage immutability and prevent accidental reassignment. `let` should only be used
+- Prefer `const` over `let` to encourage immutability and prevent accidental reassignment. Only use `let`
   when a variable's value must change.
 - Prefer function declarations (`function foo() {}`) for hoistability. For readability, aim to declare functions before
   their first use.
-- Prefer `type` aliases (e.g., `type MyType = { /* ... */ };`) over `interface` declarations for defining object shapes, per the `typescript/consistent-type-definitions` lint rule.
+- Prefer `type` aliases (for example, `type MyType = { /* ... */ };`) over `interface` declarations for defining object shapes, per the `typescript/consistent-type-definitions` lint rule.
 - Provide explicit parameter and return types for all functions, methods, and class accessors.
 - Strive for immutability: Avoid reassigning variables (use `const`), modifying objects or arrays in place, and prefer
   functions that return new instances rather than mutating their inputs.
@@ -48,14 +48,14 @@ Avoid:
   - For a sync generator, remove the star sign in non-implementation overload signatures.
   - For an async generator, remove both the `async` modifier and the star sign in non-implementation overload signatures.
   - This is so TypeScript can correctly determine they're overloads.
-- Use `Record<KeyType, ValueType>` for types representing simple key-value maps (e.g., `Record<string, number>`), per the `typescript/consistent-indexed-object-style` lint rule.
+- Use `Record<KeyType, ValueType>` for types representing key-value maps (for example, `Record<string, number>`), per the `typescript/consistent-indexed-object-style` lint rule.
 - Prefix `readonly` modifier for array parameters.
 - Use generics for `T[]`s, `Iterable<T>`s, `MaybeAsyncIterable<T>`s to ensure the output type doesn't lose fidelity.
   - Good: `function myFn<const T>(myArr: readonly T[]): T[] { return myArr; }`
   - Bad: `function myFn(myArr: readonly unknown[]): unknown[] { return myArr; }`
 - Use `region` markers to delineate logical sections of code.
   - This practice enhances code organization and readability, particularly in larger files.
-  - Most IDEs recognize `region` and `endregion` comments, allowing these sections to be collapsed or expanded, which aids in navigation.
+  - Most IDEs recognize `region` and `endregion` comments, allowing these sections to collapse or expand, which aids in navigation.
   - Following `//region` is the purpose of the code block. Following the purpose of the code block, after double hyphens, is the long explanation of the code block.
   - Following `//endregion` repeats the purpose of the code block.
   - Example:
@@ -80,7 +80,7 @@ Avoid:
 - Write comprehensive TSDoc comments for all exported members.
   - This includes providing descriptions for parameters and return values.
   - Adhere to the `eslint-plugin-jsdoc` recommended rules, TSDoc variant.
-  - Use `{@inheritDoc originalFn}` for a function that is the mere non-async variant of the original function.
+  - Use `{@inheritDoc originalFn}` for a function that's the mere non-async variant of the original function.
   - Avoid `the`, `a`, `an` in `@param` or `@returns` description.
     - Good: `@returns Set containing all unique elements from the input iterable.`
     - Bad: `@returns A set containing all unique elements from the input iterable.`
@@ -96,7 +96,7 @@ Avoid:
 - Ensure each sentence or long phrase is on its own line.
 - Bullet lists use the `-` marker.
   - There should be one space after the marker.
-- For numbered lists, pad the `1.` marker with enough space after it so it is always 4 characters long.
+- For numbered lists, pad the `1.` marker with enough space after it so it's always 4 characters long.
   - For example:
     1.  This is the first item.
     2.  This is the second item.

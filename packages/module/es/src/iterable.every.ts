@@ -22,14 +22,14 @@ const l = logtapeGetLogger(['m', 'iterable.every']);
  Throws errors when testingFn throws errors.
 
  Because of the failfast behavior,
- it cannot be used to assert the testingFn won't throw errors
+ it can't be used to assert the testingFn won't throw errors
  when called on every element of the entire iterable.
  This matches the behavior of the standard Array.prototype.every() .
 
  Because it uses parallel processing,
- we cannot even be sure if it would throw error or return false every time it runs.
+ we can't even be sure if it would throw error or return false every time it runs.
  See noneIterableAsync for a function
- that is guranteed to call testingFn on everything and throws when encountering an error.
+ that's guranteed to call testingFn on everything and throws when encountering an error.
  */
 
 /* @__NO_SIDE_EFFECTS__ */

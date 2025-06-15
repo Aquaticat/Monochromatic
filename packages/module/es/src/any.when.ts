@@ -3,15 +3,15 @@ import type { Promisable } from 'type-fest';
 //region when -- Synchronous conditional transformation
 
 /**
- * Conditionally applies a transformation function to a value if a predicate is met.
- * If the predicate returns true for the given value, `onTrue` function is called with the value, and its result is returned.
- * Otherwise, the original value is returned.
+ * Conditionally applies a transformation function to a value if it meets a predicate.
+ * If the predicate returns true for the given value, it calls the `onTrue` function with the value and returns its result.
+ * Otherwise, it returns the original value.
  *
  * @template T - Type of input value.
- * @template R - Type of result if transformation is applied.
- * @param predicate - Determines if `onTrue` function should be executed based on input `value`.
+ * @template R - Type of result if the transformation applies.
+ * @param predicate - Determines if the `onTrue` function should execute based on input `value`.
  * @param onTrue - Transformation function applied to `value` if `predicate` returns true.
- * @param value - Value to be conditionally transformed.
+ * @param value - Value to conditionally transform.
  * @returns Result of `onTrue(value)` if `predicate(value)` is true; otherwise, original `value`.
  *
  * @example
@@ -37,14 +37,14 @@ export function when<const T, const R,>(
 //region whenAsync -- Asynchronous conditional transformation
 
 /**
- * Asynchronously conditionally applies a transformation function to a value if a predicate is met.
+ * Asynchronously conditionally applies a transformation function to a value if it meets a predicate.
  * If the predicate (which can be async) returns true for the given value,
- * `onTrue` function (which can be async) is called with the value, and its result is returned.
- * Otherwise, the original value is returned.
- * All operations are awaited.
+ * it calls the `onTrue` function (which can be async) with the value and returns its result.
+ * Otherwise, it returns the original value.
+ * It awaits all operations.
  *
  * @template T - Type of input value.
- * @template R - Type of result if transformation is applied.
+ * @template R - Type of result if the transformation applies.
  * @param predicate - Async or sync function determining if `onTrue` should execute based on input `value`.
  * @param onTrue - Async or sync transformation function applied to `value` if `predicate` returns true.
  * @param value - Value to be conditionally transformed.

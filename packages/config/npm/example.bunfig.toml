@@ -1,7 +1,7 @@
 logLevel = 'warn'
 telemetry = false
 
-# We're not using Bun's test runner
+# Not using Bun's test runner
 # [test]
 # coverage = true
 
@@ -11,10 +11,12 @@ scopes.jsr = 'https://npm.jsr.io'
 saveTextLockfile = true
 
 [run]
+# vale Vale.Repetition = NO #
 # Always use Bun's shell
 shell = 'bun'
 
 # Auto alias node to bun
 bun = true
+# vale Vale.Repetition = YES #
 
 silent = true

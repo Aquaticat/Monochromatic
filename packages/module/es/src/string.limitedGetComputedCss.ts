@@ -81,7 +81,7 @@ export function lGCC_handleSimpleToken(token: CSSToken): string | number {
       return tokenValue;
     }
     throw new UnrecognizedSingleCssValueError(
-      `${JSON.stringify(token)} ident token is not none.`,
+      `${JSON.stringify(token)} ident token isn't none.`,
     );
   }
   throw new UnrecognizedSingleCssValueError(
@@ -108,7 +108,7 @@ export function lGCC_isTokenDeeplyContained(tokenToFind: GroupedToken,
       lGCC_isFunctionTokenGroup(item) && lGCC_isTokenDeeplyContained(tokenToFind, item[1])
     ) { return true; }
     // Here, doing `if(lGCC_isFunctionTokenGroup(item)) {return lGCC_isTokenDeeplyContained(tokenToFind, item[1]);}` cause some test failures because it prematurely exits the loop.
-    // If item is a function group, this code immediately returns the result of checking within that item. If tokenToFind is not in this specific item (but might be in a subsequent item in the groupContents array), the function will incorrectly return false without checking the rest of the groupContents.
+    // If item is a function group, this code immediately returns the result of checking within that item. If tokenToFind isn't in this specific item (but might be in a subsequent item in the groupContents array), the function will incorrectly return false without checking the rest of the groupContents.
   }
   return false;
 }
@@ -186,7 +186,7 @@ export function lGCC_reduceTokenToString(acc: string, token: GroupedToken): stri
   }
 
   throw new UnrecognizedSingleCssValueError(
-    `single cssToken ${JSON.stringify(cssToken)} is not a string or whitespace`,
+    `single cssToken ${JSON.stringify(cssToken)} isn't a string or whitespace`,
   );
 }
 
@@ -233,7 +233,7 @@ export function lGCC_handleVarFunction(acc: string,
   }
 
   throw new InCoherentCssValueError(
-    `firstArg ${JSON.stringify(firstArg)} is not a string or ident.`,
+    `firstArg ${JSON.stringify(firstArg)} isn't a string or ident.`,
   );
 }
 
@@ -306,7 +306,7 @@ export function lGCC_handleVarFallback(acc: string, fallbackArg: GroupedToken): 
     );
   }
 
-  throw new InCoherentCssValueError(`Fallback is not a valid token type`);
+  throw new InCoherentCssValueError(`Fallback isn't a valid token type`);
 }
 
 export function lGCC_appendString(acc: string, input: string): string {
@@ -323,9 +323,9 @@ export function lGCC_appendString(acc: string, input: string): string {
  * @remarks
  * Assumes we're parsing the most simplified representation of a CSS value, by the browser's getComputedValue algorithm.
  *
- * For example, it will not parse `calc(1px + 2px)`, but it will parse `1px` and `2px`.
- * This is a non-exhaustive list of the cases that are not handled: ['calc', 'rgb', 'rgba', 'hsl', 'hsla', 'url', 'color', 'linear-gradient', 'radial-gradient', 'conic-gradient', 'repeating-linear-gradient', 'repeating-radial-gradient', 'repeating-conic-gradient'].
- * `var` is handled, however, because the browser's getComputedValue algorithm does not handle it in `content` values.
+ * For example, it won't parse `calc(1px + 2px)`, but it will parse `1px` and `2px`.
+ * This is a non-exhaustive list of the cases that aren't handled: ['calc', 'rgb', 'rgba', 'hsl', 'hsla', 'url', 'color', 'linear-gradient', 'radial-gradient', 'conic-gradient', 'repeating-linear-gradient', 'repeating-radial-gradient', 'repeating-conic-gradient'].
+ * `var` is handled, however, because the browser's getComputedValue algorithm doesn't handle it in `content` values.
  *
  * Throws or gives incorrect results on malformed CSS values.
  * For examples of how browsers handle var resolution, fallback, erroring, and more in the content property, see: https://codepen.io/aquaticat/pen/dPPzEBX

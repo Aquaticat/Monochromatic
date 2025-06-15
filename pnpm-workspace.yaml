@@ -26,7 +26,7 @@ catalog:
   '@csstools/postcss-color-function': '*'
   '@csstools/postcss-color-mix-function': '*'
   '@csstools/postcss-contrast-color-function': '*'
-  '@csstools/postcss-extract': '*'
+  '@csstools/postcss-remove': '*'
   '@csstools/postcss-gradients-interpolation-method': '*'
   '@csstools/postcss-light-dark-function': '*'
   '@csstools/postcss-oklab-function': '*'

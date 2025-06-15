@@ -2,11 +2,11 @@
 
 ### Mutational methods
 
-Methods that mutate the original value passed in or called on are not implemented.
+Methods that mutate the original value passed in or called on aren't implemented.
 
 ### this
 
-The usage of "this" is not implemented where applicable.
+The usage of "this" isn't implemented where applicable.
 
 ### Array
 
@@ -15,7 +15,7 @@ The usage of "this" is not implemented where applicable.
 Don't see a use case for this.
 Plus, it's a mutational method.
 
-Did not implement.
+Didn't implement.
 
 ## Other stuff not included
 

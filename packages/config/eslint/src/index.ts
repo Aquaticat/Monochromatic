@@ -2,10 +2,10 @@ import eslint from '@eslint/js';
 // import oxlintrc from '@monochromatic-dev/config-oxlint/index.jsonc';
 import vitest from '@vitest/eslint-plugin';
 
-// Excluded from bundle because it causes the bundle size to be very big.
+// Excluded from bundle because it causes the bundle size to be large.
 import { configs as eslintPluginAstroConfigs } from 'eslint-plugin-astro';
 
-// Excluded from bundle because it causes the bundle size to be very big.
+// Excluded from bundle because it causes the bundle size to be large.
 import jsdoc from 'eslint-plugin-jsdoc';
 
 import nodePlugin from 'eslint-plugin-n';
@@ -22,7 +22,7 @@ import {
   vitestRules,
 } from 'eslint-plugin-oxlint/rules-by-scope';
 
-// Excluded from bundle because it causes the bundle size to be very big.
+// Excluded from bundle because it causes the bundle size to be large.
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 
 import tseslint from 'typescript-eslint';
@@ -38,7 +38,7 @@ const myConfigArray: ConfigArray = tseslint.config(
       '**/temp/**',
       '**/node_modules/**',
       '**/.astro/**',
-      // We're not linting js files.
+      // Not linting js files.
       '**/*.js',
       '**/*.mjs',
       '**/*.cjs',
@@ -108,17 +108,28 @@ const myConfigArray: ConfigArray = tseslint.config(
         }
       ```
 
-      Just because I didn't use the type parameter in the function signature doesn't mean I won't use it in the function body.
+      Just because the type parameter isn't used in the function signature doesn't mean it won't find use in the function body.
        */
       '@typescript-eslint/no-unnecessary-type-parameters': 'off',
 
-      // We're using Vite bundler.
+      // Using Vite bundler.
       'n/no-unpublished-import': 'off',
 
-      // If readdir is good enough for node, it's good enough for me.
       'unicorn/prevent-abbreviations': ['error', {
         replacements: {
+          // If readdir is good enough for node, it's good enough.
           dir: false,
+
+          //region unambiguious -- Everybody knows what these are.
+          fn: false,
+          lib: false,
+          //endregion umambiguious
+        },
+      }],
+
+      'unicorn/import-style': ['warn', {
+        'styles': {
+          'path': 'false',
         },
       }],
     },
@@ -154,7 +165,7 @@ const myConfigArray: ConfigArray = tseslint.config(
       ...eslintRules,
       ...importRules,
 
-      // Seems like Oxlint doesn't support TSDoc. Disabled. Enabled all Eslint TSDoc rules.
+      // Seems like Oxlint doesn't support TSDoc. Turned off. Enabled all Eslint TSDoc rules.
       // ...jsdocRules,
 
       ...jsxA11yRules,
@@ -172,7 +183,7 @@ const myConfigArray: ConfigArray = tseslint.config(
 export default myConfigArray;
 
 /*
- Cannot use buildFromOxlintConfig because:
+ Can't use buildFromOxlintConfig because:
 
 ```ts
  import eslint from '@eslint/js';
@@ -202,7 +213,7 @@ Would fail with
 
 ```ansi
  . b:js: error during build:
- . b:js: ../../../node_modules/.pnpm/eslint-plugin-oxlint@0.16.11/node_modules/eslint-plugin-oxlint/dist/build-from-oxlint-config/index.mjs (2:7): "default" is not exported by "../../../node_modules/.pnpm/jsonc-parser@3.3.1/node_modules/jsonc-parser/lib/esm/main.js", imported by "../../../node_modules/.pnpm/eslint-plugin-oxlint@0.16.11/node_modules/eslint-plugin-oxlint/dist/build-from-oxlint-config/index.mjs".
+ . b:js: ../../../node_modules/.pnpm/eslint-plugin-oxlint@0.16.11/node_modules/eslint-plugin-oxlint/dist/build-from-oxlint-config/index.mjs (2:7): "default" isn't exported by "../../../node_modules/.pnpm/jsonc-parser@3.3.1/node_modules/jsonc-parser/lib/esm/main.js", imported by "../../../node_modules/.pnpm/eslint-plugin-oxlint@0.16.11/node_modules/eslint-plugin-oxlint/dist/build-from-oxlint-config/index.mjs".
  . b:js: file: C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/eslint-plugin-oxlint@0.16.11/node_modules/eslint-plugin-oxlint/dist/build-from-oxlint-config/index.mjs:2:7
  . b:js:
  . b:js: 1: import fs from "node:fs";

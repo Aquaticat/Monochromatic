@@ -4,7 +4,7 @@ import {
 } from './function.equals.ts';
 import type { NotPromise } from './promise.type.ts';
 
-// We need not be so pedantic as to postfix every assert with Equal when equal is implied.
+// It's not necessary to be so pedantic as to postfix every assert with Equal when equal is implied.
 
 export async function assertAsync(expected: any, actual: any): Promise<void> {
   await equalsAsyncOrThrow(expected)(actual);

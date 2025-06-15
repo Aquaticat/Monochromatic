@@ -56,7 +56,7 @@ describe('isPromise', () => {
     expect(isPromise(async function() {
       // no-op
     }))
-      .toBe(false); // async function itself is not a promise
+      .toBe(false); // async function itself isn't a promise
   });
 
   test('works with async/await functions', async () => {

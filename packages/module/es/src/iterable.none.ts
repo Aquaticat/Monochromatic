@@ -16,7 +16,7 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 /**
  @remarks
  Iterate over the elements in an iterable.
- Does not throw when the predicate throws.
+ Doesn't throw when the predicate throws.
  When the predicate throws, it counts as the predicate being false.
  This function's purpose is to ensure none of the elements in the iterable,
  when being passed to the predicate, return true.

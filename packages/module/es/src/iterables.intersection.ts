@@ -7,7 +7,7 @@ import {
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 /**
- * Creates a new Set instance that is the intersection of the input iterables.
+ * Creates a new Set instance that's the intersection of the input iterables.
  * @param arrays - An array of iterables.
  * @returns A Set containing elements present in all input iterables.
  * @template T - The type of elements in the input iterables.
@@ -161,7 +161,7 @@ export async function setOfIterableAsync<const T,>(
 }
 
 /**
- * Asynchronously creates a new Set instance that is the intersection of the input iterables or async iterables.
+ * Asynchronously creates a new Set instance that's the intersection of the input iterables or async iterables.
  * @param iterables - An array of iterables or async iterables.
  * @returns A promise that resolves to a Set containing elements present in all input iterables.
  * @template ParamTypes - The types of elements in the input iterables.

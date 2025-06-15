@@ -39,7 +39,7 @@ export * from './function.memoize.ts';
 export * from './function.nary.ts';
 export * from './function.partial.ts';
 
-// compose is not provided. Always use pipe.
+// compose isn't provided. Always use pipe.
 export * from './function.pipe.ts';
 
 export * from './function.thunk.ts';
@@ -78,7 +78,7 @@ export * from './promise.type.ts';
 export * from './promise.wait.ts';
 export * from './promises.some.ts';
 
-// Maybe/Option type isn't provided because I find it much easier to have functions just throw when they fail.
+// Maybe/Option type isn't provided because it's much easier to have functions just throw when they fail.
 export * from './result.unwrap.ts';
 
 export * from './string.capitalize.ts';

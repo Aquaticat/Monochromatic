@@ -53,7 +53,7 @@ type ExpectedError =
     }
 
     if (expectedError.endsWith('Error')) {
-      // MAYBE: Error.name isn't working? Find all the other instances I used that
+      // MAYBE: Error.name isn't working? Find all the other instances where this was used
       //        and replace it with Object.prototype.toString.call as usual
       equalErrorOrThrow(actualError?.name);
       return;
@@ -106,7 +106,7 @@ type ExpectedError =
     }
 
     if (expectedError.endsWith('Error')) {
-      // MAYBE: Error.name isn't working? Find all the other instances I used that
+      // MAYBE: Error.name isn't working? Find all the other instances where this was used
       //        and replace it with Object.prototype.toString.call as usual
       equalErrorOrThrow(actualError?.name);
       return;

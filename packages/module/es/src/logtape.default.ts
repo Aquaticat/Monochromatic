@@ -55,7 +55,7 @@ const createBrowserFileSink = async (
       };
 
       sessionStorageSink[Symbol.asyncDispose] =
-        // eslint-disable-next-line require-await -- To keep the signature consistent, we have to make it an async function.
+        // eslint-disable-next-line require-await -- To keep the signature consistent, we've to make it an async function.
         async function disposeSessionStorage(): Promise<void> {
           console.log('disposing sessionStorage sink');
           const lineCount = Number(window.sessionStorage.getItem(`${appName}.line`)!);

@@ -25,8 +25,8 @@ export function trimIterable<const T,>(iterable: Iterable<T>): T[] {
  * If `predicateKeeps` never returns `true` for any element, or if the iterable is empty,
  * an empty array is returned.
  * @template T The type of the elements in the iterable.
- * @param predicateKeeps A function that is called on elements from the iterable.
- *                       Return `true` to indicate an element should be kept (i.e., it's not to be trimmed from an end).
+ * @param predicateKeeps A function that's called on elements from the iterable.
+ *                       Return `true` to indicate an element should be kept (that is, it's not to be trimmed from an end).
  *                       Return `false` to indicate an element should be trimmed if it's at an un-trimmed end.
  * @param iterable The iterable to process.
  * @return A new array containing the trimmed segment of the original iterable.

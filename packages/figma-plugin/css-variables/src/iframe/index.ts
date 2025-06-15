@@ -184,9 +184,9 @@ const testCssVar = async (
   }
 
   // If all else fails, assume it's a string (CSS content value).
-  // MAYBE: Or should I have filtered out the strings before getting them inside the iframe?
+  // MAYBE: Or should the code filter out the strings before they get inside the iframe?
   //
-  // string Figma variables were already exported with quotes
+  // string Figma variables already export with quotes
   // when converting to CSS in the Figma plugin backend script.
   {
     const testElementAssumeString = document.createElement(
@@ -202,7 +202,7 @@ const testCssVar = async (
     const computedStyle = window.getComputedStyle(
       testElementAssumeString,
     );
-    // This is not the resolved content.
+    // This isn't the resolved content.
     const computedContent = computedStyle
       .getPropertyValue(
         'content',
@@ -226,6 +226,7 @@ const testCssVar = async (
     }
   }
 
+  /* vale alex.Ablist = NO */
   // If even assuming it's a string fails, return invalid.
   return {
     cssVar,
@@ -235,12 +236,13 @@ const testCssVar = async (
     mode,
     error: {
       message: outdent({ newline: ' ' })`
-        ${cssVar}'s ${cssValue} cannot be treated as a unitful length,
+        ${cssVar}'s ${cssValue} can't be treated as a unitful length,
         a number, a color, a box-shadow, or a string (CSS content) value.`,
       level: 'error',
     },
     originalComputedValue: cssValue,
   };
+  /* vale alex.Ablist = YES */
 };
 
 const processCssVarRuleStyle = async (
@@ -291,7 +293,7 @@ const processCssVarRuleStyle = async (
       },
     }, '*');
   } else {
-    // create multiple test elements to test the CSS var
+    // creates multiple test elements to test the CSS var
     const authoredCss = await testCssVar(cssValue, cssVar, mode, 0);
 
     // Send the message to the outer iframe

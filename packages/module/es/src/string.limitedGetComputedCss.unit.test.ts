@@ -63,7 +63,7 @@ describe(limitedGetComputedCss, () => {
     expect(() => {
       limitedGetComputedCss('var(--a, var(--b))');
     })
-      .toThrow(); // --a resolves to 0, which is not a string, which means we cannot handle it due to CSS `content` property rules. However, we can handle --b. However, we still throw on this. We follow browsers' implementation, who considers the entire CSS `content` property invalid if any variable resolves to a number at first.
+      .toThrow(); // --a resolves to 0, which isn't a string, which means we can't handle it due to CSS `content` property rules. However, we can handle --b. However, we still throw on this. We follow browsers' implementation, who considers the entire CSS `content` property invalid if any variable resolves to a number at first.
     // For examples of how browsers handle this, see: https://codepen.io/aquaticat/pen/dPPzEBX
     expect(limitedGetComputedCss('var(--unknown, var(--b))')).toBe("'bString'"); // Fallback to --b
   });

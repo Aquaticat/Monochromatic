@@ -1,21 +1,23 @@
 // eslint-disable prefer-await-to-callbacks
-/** Very basic testing framework
+/** Basic testing framework
  @deprecated - Found a proper testing framework in Bun test, later Vitest.
 
  @remarks
  Not using something more sentible like Jest or Mocha because they inject their own global variables.
  Not using 'node:test' because that won't be compatible with bun or deno.
- We also won't need mocking.
+ Mocking won't be needed.
 
- The intentional overuse of the `any` type here may or may not be fixed in the future,
+ The intentional overuse of the `any` type here might require fixing in the future,
  depending on how much impact it has. */
 
 import { getLogger } from '@logtape/logtape';
 import type { Promisable } from 'type-fest';
 
-// MAYBE: Change this at to my at
-// MAYBE: Change this to my path parser.
+// MAYBE: Change this at to the custom at function
+// MAYBE: Change this to the custom path parser.
+/* vale Microsoft.GeneralURL = NO */
 const testFileBasename: string = new URL(import.meta.url).pathname.split('/').at(-1)!;
+/* vale Microsoft.GeneralURL = YES */
 
 const testedFileName: string = testFileBasename.endsWith('.test.js')
   ? testFileBasename.slice(0, -'.test.js'.length)
@@ -52,7 +54,7 @@ type SuiteReturn =
 // todo runs the test or suite, and doesn't throw an error when encountering an error.
 
 // TODO: Implement time constraint. Both number and racing.
-//       Should we still run it until the end when the time limit is broken?
+//       Should it still run until the end when it breaks the time limit?
 //       Is terminating it even possible?
 //       Luckily this applies to single test only.
 
@@ -163,8 +165,11 @@ type SuiteReturn =
     todo?: string;
     /* If number, has to be in ms.
        https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DurationFormat
-       seems to be a way to express a duration more clearly,
-       but it's unsupported for node. */
+       seems to be a way to express a duration more precisely,
+       but it's unsupported for Node. */
+    /* vale Microsoft.GeneralURL = NO */
+    // URL is part of MDN documentation address - technical term that shouldn't be changed
+    /* vale Microsoft.GeneralURL = YES */
     timeLimit?: number | (() => Promisable<unknown>);
   }
 ): Promise<
@@ -192,9 +197,9 @@ type SuiteReturn =
             await (options.timeLimit as () => Promisable<unknown>)();
           } catch (timeLimitFnError) {
             l.info`timeLimit fn threw ${timeLimitFnError}
-            If this is intentional, you can ignore this log.
-            The test will continue,
-            the time it takes would be compared to the time timeLimit fn executed until it errored.`;
+          If this is intentional, this log can be ignored.
+          The test will continue,
+          the time it takes would be compared to the time timeLimit fn executed until it errored.`;
           }
           const afterExecutingTimeLimitReferenceCallback = performance.now();
           return afterExecutingTimeLimitReferenceCallback
@@ -250,8 +255,8 @@ type SuiteReturn =
 
   l.debug`${name} started: ${String(callback).slice(0, 64)}`;
 
-  // May error, and that's okay. We're failing fast here.
-  // Well nope, we do need to catch the error and rethrow, at least to add the name of the test.
+  // May error, and that's okay. The test will fail fast here.
+  // Well nope, the code needs to catch and rethrow the error, at least to add the name of the test.
   try {
     const result = await callback();
 

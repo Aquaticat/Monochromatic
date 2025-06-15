@@ -17,7 +17,7 @@ describe('thunk', () => {
     const mockFn = vi.fn(() => 'result');
     const thunked = thunk(mockFn);
 
-    // Function should not be called yet
+    // Function shouldn't be called yet
     expect(mockFn).not.toHaveBeenCalled();
 
     // Function is called when thunked is invoked

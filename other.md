@@ -1,6 +1,6 @@
 ## Half working
 
-### GitHub MCP server config
+### Github mcp server configuration
 
 ```json
 "github.com/github/github-mcp-server": {

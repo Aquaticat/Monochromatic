@@ -22,7 +22,7 @@ const l = logtapeGetLogger(['m', 'iterable.chunks']);
 
  @param n - how many elements of the array to chunk out at a time
 
-  Cannot be bigger than the length of the array itself.
+  Can't be bigger than the length of the array itself.
 
  @returns `Generator<Tuple<T_array[number], T_n>>`
 
@@ -78,7 +78,7 @@ export function* chunksArray<
 
 /* @__NO_SIDE_EFFECTS__ */
 export function chunksIterable<
-  // An overload sig cannot be declared as a generator
+  // An overload sig can't be declared as a generator
   const T_arrayLike extends Iterable<any> & { length: number; },
   const T_n extends Ints<1, T_arrayLike['length']>,
   const YieldType extends Tuple<
@@ -91,7 +91,7 @@ export function chunksIterable<
 
 /* @__NO_SIDE_EFFECTS__ */
 export function chunksIterable<
-  // An overload sig cannot be declared as a generator
+  // An overload sig can't be declared as a generator
   const T_arrayLike extends Iterable<any>,
   const T_n extends number,
   const YieldType extends Tuple<
@@ -104,7 +104,7 @@ export function chunksIterable<
 
 /* @__NO_SIDE_EFFECTS__ */
 export function* chunksIterable<
-  // An overload sig cannot be declared as a generator
+  // An overload sig can't be declared as a generator
   const T_arrayLike extends Iterable<any> | Iterable<any> & { length: number; },
   const T_n extends T_arrayLike extends { length: number; }
     ? Ints<1, T_arrayLike['length']>
@@ -158,7 +158,7 @@ export function* chunksIterable<
 
 /* @__NO_SIDE_EFFECTS__ */
 export function chunksIterableAsync<
-  // An overload sig cannot be declared as a generator
+  // An overload sig can't be declared as a generator
   const T_arrayLike extends MaybeAsyncIterable<any> & { length: number; },
   const T_n extends Ints<1, T_arrayLike['length']>,
 >(
@@ -170,7 +170,7 @@ export function chunksIterableAsync<
 
 /* @__NO_SIDE_EFFECTS__ */
 export function chunksIterableAsync<
-  // An overload sig cannot be declared as a generator
+  // An overload sig can't be declared as a generator
   const T_arrayLike extends MaybeAsyncIterable<any>,
   const T_n extends number,
 >(
@@ -182,7 +182,7 @@ export function chunksIterableAsync<
 
 /* @__NO_SIDE_EFFECTS__ */
 export async function* chunksIterableAsync<
-  // An overload sig cannot be declared as a generator
+  // An overload sig can't be declared as a generator
   const T_arrayLike extends
     | MaybeAsyncIterable<any>
     | MaybeAsyncIterable<any> & { length: number; },

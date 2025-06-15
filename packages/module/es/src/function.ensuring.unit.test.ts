@@ -18,7 +18,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('ensuringTruthy', () => {
+describe(ensuringTruthy, () => {
   test('returns original value when truthy', () => {
     const fn = (x: number) => x > 0 ? 'positive' : '';
     const ensured = ensuringTruthy(fn);
@@ -41,7 +41,7 @@ describe('ensuringTruthy', () => {
   });
 });
 
-describe('ensuringTruthyAsync', () => {
+describe(ensuringTruthyAsync, () => {
   test('returns original value when truthy', async () => {
     const fn = async (x: number) => x > 0 ? 'positive' : '';
     const ensured = ensuringTruthyAsync(fn);
@@ -64,7 +64,7 @@ describe('ensuringTruthyAsync', () => {
   });
 });
 
-describe('ensuringFalsy', () => {
+describe(ensuringFalsy, () => {
   test('returns original value when falsy', () => {
     const fn = (x: number) => x < 0 ? '' : 'non-negative';
     const ensured = ensuringFalsy(fn);
@@ -87,7 +87,7 @@ describe('ensuringFalsy', () => {
   });
 });
 
-describe('ensuringFalsyAsync', () => {
+describe(ensuringFalsyAsync, () => {
   test('returns original value when falsy', async () => {
     const fn = async (x: number) => x < 0 ? '' : 'non-negative';
     const ensured = ensuringFalsyAsync(fn);
@@ -123,24 +123,28 @@ describe('nonThrowing convenience wrappers', () => {
 
   test('nonThrowingWithNull returns null when function throws', () => {
     const safe = nonThrowingWithNull(throwingFn);
-    expect(safe(-5)).toBe(null);
+
+    expect(safe(-5)).toBeNull();
     expect(safe(5)).toBe(10);
   });
 
   test('nonThrowingWithNullAsync returns null when function throws', async () => {
     const safe = nonThrowingWithNullAsync(throwingAsyncFn);
-    expect(await safe(-5)).toBe(null);
+
+    expect(await safe(-5)).toBeNull();
     expect(await safe(5)).toBe(10);
   });
 
   test('nonThrowingWithFalse returns false when function throws', () => {
     const safe = nonThrowingWithFalse(throwingFn);
+
     expect(safe(-5)).toBe(false);
     expect(safe(5)).toBe(10);
   });
 
   test('nonThrowingWithFalseAsync returns false when function throws', async () => {
     const safe = nonThrowingWithFalseAsync(throwingAsyncFn);
+
     expect(await safe(-5)).toBe(false);
     expect(await safe(5)).toBe(10);
   });

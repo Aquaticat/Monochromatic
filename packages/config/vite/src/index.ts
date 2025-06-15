@@ -28,8 +28,7 @@ import {
   type ViteUserConfig as VitestUserConfig,
 } from 'vitest/config';
 
-// oxlint-disable-next-line no-magic-numbers -- not really a magic number.
-const firefoxVersion = 128 << 16;
+const firefoxVersion = 140;
 
 const spawnOptions: Options = {
   preferLocal: true,
@@ -43,14 +42,14 @@ const vitestExcludeCommon = [
   // 'packages/*/*/**/src/**/*.browser.test.ts',
   'packages/*/*/**/src/**/*.js',
 
-  // TypeScript definition files can't be tested.
+  // TypeScript definition files can't have tests.
   '**/*.d.ts',
 
-  // Not meant to be directly exported or tested.
+  // Not directly exported or tested.
   '**/*.shared.ts',
   '**/*.fixture.*.ts',
 
-  // temporarily deprecated. Might be resurrected later.
+  // temporarily deprecated. Might reappear later.
   '**/theme/subtle/**',
 
   // deprecated
@@ -100,7 +99,7 @@ const rollupExternal = (moduleId: string): boolean => {
 
 const createBaseConfig = (configDir: string): UserConfig => ({
   plugins: [
-    // Allow importing JSON5 files directly.
+    // Allows importing JSON5 files directly.
     json5Plugin(),
   ],
   resolve: {
@@ -120,7 +119,7 @@ const createBaseConfig = (configDir: string): UserConfig => ({
     },
     lightningcss: {
       targets: {
-        firefox: firefoxVersion,
+        firefox: firefoxVersion << 16,
       },
       cssModules: false,
     },
@@ -128,16 +127,16 @@ const createBaseConfig = (configDir: string): UserConfig => ({
     devSourcemap: true,
   },
   esbuild: {
-    // Minifying them make resulting code harder to debug.
+    // Minifying them makes resulting code harder to debug.
     minifyIdentifiers: false,
   },
   build: {
-    target: 'firefox128',
+    target: `firefox${firefoxVersion}`,
     cssMinify: 'lightningcss',
     outDir: join('dist', 'final', 'js'),
 
     // Sometimes removes important files.
-    // Sometimes crashes because node rmSync doesn't work properly.
+    // Sometimes crashes because node rmSync doesn't work.
     emptyOutDir: false,
 
     rollupOptions: {
@@ -166,7 +165,7 @@ const createBaseLibConfig = (configDir: string): UserConfig =>
           fileName: 'index',
           formats: ['es'],
         },
-        // So istanbul can know which lines are covered.
+        // So istanbul knows which lines have coverage.
         sourcemap: 'inline',
       },
 
@@ -191,7 +190,7 @@ const createBaseLibConfig = (configDir: string): UserConfig =>
               );
               await esbuildBuild({
                 entryPoints,
-                // So istanbul can know which lines are covered.
+                // So istanbul knows which lines have coverage.
                 sourcemap: 'linked',
                 minifyWhitespace: true,
                 outdir,
@@ -287,7 +286,7 @@ const createFrontendLikeConfig = (configDir: string, subDir: string): UserConfig
 
 /**
  @remarks
- Use it like:
+ Use it like this:
 
  import { getShared } from '@monochromatic-dev/config-vite';
 
@@ -324,7 +323,7 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
                 console.log('replacing iframe');
                 // chmodSync(iframePath, constants.S_IRUSR);
                 // FIXME: Find out why this fails with a permission issue. Could be a Vite configuration not allowing plugins to read files outside of root dir. Could be something else.
-                //  Update: Probably not due to Vite. Read the docs and only the server isn't allowed to serve files out of root dir.
+                //  Update: Probably not due to Vite. Read the docs and only the server can't serve files out of root dir.
                 //error during build:
                 //           css-variables:js_default | EPERM: operation not permitted, open 'C:\Users\user\Text\Projects\Aquaticat\monochromatic2025MAY24-pnpmTest\packages\figma-plugin\css-variables\dist\final\iframe\index.html'
                 //           css-variables:js_default |     at async open (node:internal/fs/promises:633:25)
@@ -334,7 +333,7 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
                 //           css-variables:js_default | Build failed with 1 error:
                 //           css-variables:js_default |
                 //           css-variables:js_default | [UNHANDLEABLE_ERROR] Error: Something went wrong inside rolldown, please report this problem at https://github.com/rolldown/rolldown/issues.
-                //           css-variables:js_default | Access is denied. (os error 5)
+                //           css-variables:js_default | Access denied. (os error 5)
                 //           css-variables:js_default |
                 //           css-variables:js_default |     at normalizeErrors (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown@1.0.0-beta.11-commit.83d4d62/node_modules/rolldown/dist/shared/src-C1CX2gm4.mjs:2362:18)
                 //           css-variables:js_default |     at handleOutputErrors (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown@1.0.0-beta.11-commit.83d4d62/node_modules/rolldown/dist/shared/src-C1CX2gm4.mjs:3368:34)
@@ -344,7 +343,7 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
                 //           css-variables:js_default |     at async Object.defaultBuildApp [as buildApp] (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/chunks/dep-BVD1pq3j.js:44957:5)
                 //           css-variables:js_default |     at async CAC.<anonymous> (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/cli.js:864:7)
                 // TODO: Migrate to rolldown-vite and check if that fixes this.
-                //  Merely migrating to rolldown-vite didn't fix this. Might have to try the uglier, retrying way.
+                //  Merely migrating to rolldown-vite didn't fix this. Might need to try the uglier, retrying way.
                 async function readFileWithRetry(
                   path: Parameters<typeof readFile>[0],
                   options: Parameters<typeof readFile>[1],
@@ -352,7 +351,7 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
                   delayMs = 10,
                 ): Promise<string> {
                   try {
-                    // Explicitly type the return as string for 'utf8' encoding
+                    // Explicitly types the return as string for 'utf8' encoding
                     return await readFile(path, options) as string;
                   } catch (error: any) {
                     if (error.code === 'EPERM' && retries > 0) {
@@ -417,7 +416,7 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
             headless: true,
             instances: [
               { browser: 'chromium' },
-              // @vitest/coverage-v8 does not work with firefox.
+              // @vitest/coverage-v8 doesn't work with firefox.
               // { browser: 'firefox' },
             ],
           },
@@ -433,7 +432,7 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
     ],
     name: 'workspace',
     deps: {
-      // We're never importing CJS module's default export via `import {x} from 'y'`.
+      // Never importing CJS module's default export via `import {x} from 'y'`.
       interopDefault: false,
     },
     benchmark: {
@@ -462,7 +461,7 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
 
       experimentalAstAwareRemapping: true,
 
-      // We don't really need to see the coverage report every time we run any test.
+      // No need to see the coverage report every time any test runs.
       all: false,
 
       thresholds: {
@@ -475,7 +474,7 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
       extension: [
         '.js',
         '.ts',
-        // Commented out until I see the value of testing non-TypeScript files.
+        // Commented out until the value of testing non-TypeScript files becomes clear.
         // '.vue',
         // '.astro'
       ],

@@ -2,7 +2,7 @@
 
 instead of Nue
 
-## VScode/VScodium or Neovide (Neovim)
+## Vscode/vscodium or neovide (neovim)
 
 instead of WebStorm (JetBrains)
 
@@ -17,15 +17,15 @@ instead of
 1.  [WebdriverIO](https://webdriver.io)
 
     Supports using Firefox ESR, which Playwright doesn't have,
-    but (seemingly) doesn't support
+    but doesn't support
 
     1.  Emulate prefers-contrast and prefers-reduced-motion
 
     2.  Specifying Firefox user.js and Chrome flags
 
-        Can be sidestepped by configuring a browser myself in the host system but you lose reproductivity on other machines.
+        You can avoid this by configuring a browser myself in the host system but you lose reproducibility on other machines.
 
-        Q: Potentially write a script to install and configure those?
+        Q: Write a script to install and configure those?
 
         A: Too much work.
 

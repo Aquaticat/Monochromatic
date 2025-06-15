@@ -1,4 +1,4 @@
-// TODO: Use error cause param to pass error perfectly.
+// TODO: Use error cause param to pass error.
 
 //region From https://www.totaltypescript.com/how-to-test-your-types
 

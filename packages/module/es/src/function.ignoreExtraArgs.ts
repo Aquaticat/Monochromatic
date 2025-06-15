@@ -6,7 +6,7 @@
  * Any additional arguments provided to the wrapper are ignored.
  *
  * This is useful for adapting functions to contexts where they might receive more arguments
- * than they handle, such as in some event listener patterns or callback scenarios (e.g., with `Array.prototype.map`).
+ * than they handle, such as in some event listener patterns or callback scenarios (for example, with `Array.prototype.map`).
  *
  * @template F - Type of the function to wrap. Must be a function type.
  * @param fn - Original function to wrap.
@@ -40,7 +40,7 @@
 export function ignoreExtraArgs<const F extends (...args: any[]) => any,>(
   fn: F,
 ): (...allArgs: [...Parameters<F>, ...any[]]) => ReturnType<F> {
-  // TODO: Avoid using fn.length. \AI can't help me here.
+  // TODO: Avoid using fn.length. AI can't help here.
   const expectedArgCount = fn.length;
 
   return function(...allArgs: [...Parameters<F>, ...any[]]): ReturnType<F> {

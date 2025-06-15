@@ -45,7 +45,7 @@ catalog:
 
   typescript: '*'
 
-  # MAYBE: Investigate if Vue is needed.
+  # MAYBE: Investigate if Vue requires inclusion.
   vue-tsc: '*'
 
   # For serializing data to fs.
@@ -69,14 +69,14 @@ catalog:
   # For building command line apps
   '@kazupon/gunshi': 'jsr:*'
 
-  # types for Bun because we're using Bun.
+  # types for Bun because Bun is in use.
   '@types/bun': '*'
 
   # For postcss processing in Astro files
   postcss-html: '*'
 
   # For MDX usage in Astro
-  # TODO: Check if this is needed.
+  # TODO: Check if this requires inclusion.
   '@types/mdx': '*'
 
   # Feature-complete bundler
@@ -89,7 +89,7 @@ catalog:
   '@csstools/postcss-color-function': '*'
   '@csstools/postcss-color-mix-function': '*'
   '@csstools/postcss-contrast-color-function': '*'
-  '@csstools/postcss-extract': '*'
+  '@csstools/postcss-remove': '*'
   '@csstools/postcss-gradients-interpolation-method': '*'
   '@csstools/postcss-light-dark-function': '*'
   '@csstools/postcss-oklab-function': '*'

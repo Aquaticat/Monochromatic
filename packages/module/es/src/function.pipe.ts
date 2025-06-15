@@ -265,7 +265,7 @@ import type { NotPromise } from './promise.type.ts';
 //
 // TODO: Switch to many layers of Awaited
 //       Or switch to using the whole fn as generics?
-//       I'm beat. I'll fix this another day.
+//       This is complex. This will be fixed another day.
 //
 // MAYBE: Possibly don't need to declare it async
 //        thus returning a fn that has to be unwrapped before using
@@ -897,8 +897,8 @@ import type { NotPromise } from './promise.type.ts';
     // FIXME: TypeScript native Array methods are losing type predicate!
     //        [fn0].every(isSyncFunction) doesn't preserve predicate.
     //        See https://github.com/microsoft/TypeScript/issues/26916
-    //        Probably cannot fix it even if I write my own every
-    // TODO: Replace with my own some/every anyway.
+    //        Probably can't fix it even if a custom every is written
+    // TODO: Replace with a custom some/every anyway.
     return fn0;
   }
 

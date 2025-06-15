@@ -20,7 +20,8 @@ import {
 
 const l = logtapeGetLogger(['m', 'boolean.equal']);
 
-// TODO: Do not consider BigInt a primitive.
+/* vale alex.Race = NO */
+// TODO: Don't consider BigInt a primitive.
 // Write three functions in total to better express the intended purpose.
 
 /**
@@ -29,7 +30,7 @@ const l = logtapeGetLogger(['m', 'boolean.equal']);
  @param value any value to check
 
  @returns if the value is primitive.
-  We define primitive here in terms of what Object.is considers to be primitive:
+  A primitive is defined here in terms of what Object.is considers to be primitive:
 
   1.  undefined
   2.  null
@@ -44,6 +45,7 @@ const l = logtapeGetLogger(['m', 'boolean.equal']);
 
 /* @__NO_SIDE_EFFECTS__ */
 export function isPrimitive(value: any): boolean {
+  /* vale alex.Race = YES */
   if (Object.is(value, undefined)) {
     return true;
   }
@@ -79,17 +81,17 @@ export function isPrimitive(value: any): boolean {
 export function equal(a: NotPromise, b: NotPromise): boolean {
   // TODO: Check for object value equality, not strict equality.
   // MAYBE: Switch to @std/assert, and use error handling.
-  //        It'd be ugly but at least I'd offload the burden.
+  //        It'd be ugly but at least the burden would be offloaded.
 
   // logtape doesn't support serializing BigInt yet,
-  // so we have to do it ourselves before reaching the point we can be sure none is BigInt.
+  // so it has to be done manually before reaching the point where it can be ensured none is BigInt.
   // TODO: Raise an issue to logtape or do a pr
   //
   /* FTL logtape·meta Failed to emit a log record to sink [Function: sink] {
    [length]: 1,
    [name]: 'sink',
    [Symbol(nodejs.dispose)]: [Function (anonymous)] { [length]: 0, [name]: '' }
-   }: TypeError: Do not know how to serialize a BigInt
+   }: TypeError: Don't know how to serialize a BigInt
    at JSON.stringify (<anonymous>)
    at formatter (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/packages/module/util/dist/final/boolean.equal.test.js:2374:26)
    at sink (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/.yarn/cache/@jsr-logtape__logtape-npm-0.4.2-d81e45c652-a49422555c.zip/node_modules/@jsr/logtape__logtape/logtape/sink.js:91:42)
@@ -101,20 +103,20 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
    at test (file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/packages/module/util/dist/final/boolean.equal.test.js:2477:24)
    at file:///home/user/Text/Projects/Aquaticat/monochromatic2024MAR06/packages/module/util/dist/final/boolean.equal.test.js:2512:5 {
    [stack]: [Getter/Setter],
-   [message]: 'Do not know how to serialize a BigInt'
+   [message]: 'Don't know how to serialize a BigInt'
    } */
   l.debug`a: ${String(a)}, b: ${String(b)}`;
 
-  // Check for referencial equality and equality of primitive values.
+  // Check for referential equality and equality of primitive values.
   if (Object.is(a, b)) {
     return true;
   }
 
   l.debug`ref/primitive eq failed on a: ${String(a)}, b: ${String(b)}`;
 
-  // We failed the referencial equality check,
+  // The referential equality check failed,
   // and if any of a and b is a primitive value,
-  // we have determined they are in fact not equal.
+  // it has been determined they're in fact not equal.
   if (isPrimitive(a) || isPrimitive(b)) {
     l.debug`At least one of a: ${String(a)} and b: ${String(b)} is primitive`;
     return false;
@@ -125,8 +127,8 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
   // a and b are both non-primitive values. What now?
   // Let's narrow down the other cases one by one.
 
-  // We cannot handle comparing Promises in this sync version isEqual.
-  // Let's bail.
+  // Comparing Promises can't be handled in this sync version isEqual.
+  // The process will stop here.
   if (isPromise(a) || isPromise(b)) {
     throw new TypeError(`At least one of a: ${a} and b: ${b} is a thenable.
       We cannot handle comparing them in a sync function.
@@ -144,7 +146,7 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
       .warn`cannot compare two functions accurately due to the inherent unpredictability of functions.
     See https://stackoverflow.com/a/32061834 by https://stackoverflow.com/users/1742789/julian-de-bhal
     The string representations of both functions are not normalized before comparison.
-    Nor were the functions converted to there AST form.
+    Nor were the functions converted to their AST form.
     Therefore, this comparison has a high chance of giving a false negative or false positive.
     `;
     return `${a}` === `${b}`;
@@ -166,16 +168,16 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
       return true;
     }
 
-    // Now that we know a and b are arrays of the same length,
-    // let's compare all the values within them.
+    // Now that it's known that a and b are arrays of the same length,
+    // the values within them will be compared.
     return a.every((aValue, aIndex) =>
-      // Have to do a recursion here because the two arrays might not just contain primitives.
+      // A recursion is necessary here because the two arrays might not just contain primitives.
       equal(aValue, b[aIndex])
     );
   }
 
-  // Not providing a predicate for typeof a === 'object'
-  // because it's rarely useful knowing something is an object,
+  // A predicate for typeof a === 'object' isn't provided
+  // because it's not often useful knowing something is an object,
   // but not what subtype of object it is.
   if (typeof a === 'object') {
     if (typeof b !== 'object') {
@@ -196,13 +198,13 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
       || isAsyncGenerator(b)
     ) {
       throw new TypeError(`At least one of a: ${a} and b: ${b} is an AsyncGenerator.
-          We cannot handle comparing them in a sync function.
+          Comparing them cannot be handled in a sync function.
           Try equalAsync()`);
     }
 
     if (isAsyncIterable(a) || isAsyncIterable(b)) {
       throw new TypeError(`At least one of a: ${a} and b: ${b} is an AsyncIterable.
-      We cannot handle comparing them in a sync function.
+      Comparing them cannot be handled in a sync function.
       Try equalAsync()`);
     }
 
@@ -238,7 +240,8 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
 
     if (isError(a)) {
       if (!isError(b)) {
-        l.info`Is it intentional trying to compare a error a: ${a} to not error b: ${b}?`;
+        l
+          .info`Is it intentional trying to compare an error a: ${a} to not error b: ${b}?`;
         return false;
       }
 
@@ -268,7 +271,7 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
 
       l
         .info`comparing two Generators would only succeed
-        if both of them never takes any parameters.`;
+        if both of them never take any parameters.`;
 
       return equal([...a], [...b]);
     }
@@ -282,7 +285,7 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
 
       l.debug`regexps a: ${a} b: ${b}`;
 
-      // TODO: Is this enough? I sure hope so.
+      // TODO: Is this enough? This should be sufficient.
       return `${a}` === `${b}`;
     }
 
@@ -367,7 +370,7 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
 
 /**
  @remarks
- We only handle two additional cases than {@inheritDoc equal}:
+ Two additional cases are handled compared to {@inheritDoc equal}:
  1.  Both a and b are Promises
  2.  Both a and b are AsyncGenerators | AsyncIterables
  */
@@ -387,7 +390,7 @@ export async function equalAsync(a: any, b: any): Promise<boolean> {
     isAsyncGenerator(a) && isAsyncGenerator(b)
   ) {
     l.info`Comparing two Generators or AsyncGenerators can only succeed
-    if both of them never takes any parameters.`;
+    if both of them never take any parameters.`;
     return equal(await Array.fromAsync(a), await Array.fromAsync(b));
   }
 

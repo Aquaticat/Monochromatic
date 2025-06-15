@@ -107,7 +107,7 @@ describe('notObjOrThrow', () => {
   });
 
   test('returns non-object values unchanged', () => {
-    expect(notObjOrThrow(null)).toBe(null); // null is not considered an object here
+    expect(notObjOrThrow(null)).toBe(null); // null isn't considered an object here
     expect(notObjOrThrow(undefined)).toBe(undefined);
     expect(notObjOrThrow(0)).toBe(0);
     expect(notObjOrThrow('')).toBe('');

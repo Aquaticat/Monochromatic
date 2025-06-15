@@ -41,7 +41,7 @@ const createFileSink = async (appName: string): Promise<Sink & AsyncDisposable> 
     ): Promise<void> => {
       const log = JSON.stringify(record, null, 2) + '\n';
 
-      // It is, in fact, working correctly.
+      // It's, in fact, working correctly.
       await appendFile(filePath, log);
     };
 

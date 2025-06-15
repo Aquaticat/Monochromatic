@@ -15,7 +15,7 @@
     "oxc",
     "import",
 
-    // We're using TSDoc, not JSDoc, but it should support TSDoc anyway. Investigate.
+    // Using TSDoc, not JSDoc, but it should support TSDoc anyway. Investigate.
     // Update: Seems like oxlint doesn't support TSDoc. Disabling, enabled in Eslint.
     //    "jsdoc",
 
@@ -27,13 +27,13 @@
   "rules": {
     //region correctness
 
-    // import/default, import/named, import/namespace are not enabled because TypeScript already checks for those.
+    // import/default, import/named, import/namespace aren't enabled because TypeScript already checks for those.
     "import/default": "off",
     "import/named": "off",
     "import/namespace": "off",
     "import/group-exports": "off",
 
-    // I love anonymous default exports!
+    // Anonymous default exports work great!
     "import/no-anonymous-default-export": "off",
     "typescript/triple-slash-reference": "off",
 
@@ -43,7 +43,7 @@
 
     "eslint/no-iterator": "error",
 
-    // logtape logs are not unused expressions.
+    // logtape logs aren't unused expressions.
     "eslint/no-unused-expressions": ["error", { "allowTaggedTemplates": true }],
 
     "eslint/no-void": "error",
@@ -81,9 +81,9 @@
     "unicorn/prefer-modern-math-apis": "error",
     "unicorn/prefer-node-protocol": "error",
     /* TODO: Need observation for this one.
-             My intention is to ban the original global number variables
+             The intention is to ban the original global number variables
              because they have different behavior with new number properties,
-             and then replace the global number variables with my aliases of new number properties. */
+             and then replace the global number variables with aliases of new number properties. */
     "unicorn/prefer-number-properties": "error",
     //endregion Restriction
 
@@ -98,14 +98,14 @@
 
     //endregion suspicious
 
-    //region pedantic - We don't need pedantic rules that are also flacky.
+    //region pedantic - Pedantic rules that are also flacky aren't needed.
 
-    // unicorn/no-negated-condition is not enabled because we practice early fail
+    // unicorn/no-negated-condition isn't enabled because early fail is the practice
     "unicorn/no-negated-condition": "off",
-    /* unicorn/no-object-as-default-parameter is not enabled
+    /* unicorn/no-object-as-default-parameter isn't enabled
        because sometimes obj destructuring just can't. */
     "unicorn/no-object-as-default-parameter": "off",
-    // Sometimes the type-checking if-statement is not for checking type.
+    // Sometimes the type-checking if-statement isn't for checking type.
     "unicorn/prefer-type-error": "off",
     "import/max-dependencies": "off",
     "eslint/max-lines": "off",
@@ -114,28 +114,28 @@
     "eslint/max-lines-per-function": "off",
     "eslint/max-nested-callbacks": "off",
     "eslint/max-class-per-file": "off",
-    // I love nested ternaries!
+    // Nested ternaries work great!
     "eslint/no-nested-ternary": "off",
     // Conflicts with TypeScript function overloading.
     "eslint/no-redeclare": "off",
     // Doesn't support eslint parameter allow when intersecting.
     "typescript/ban-types": "off",
-    // Sometimes we need a generic Function type.
+    // Sometimes a generic Function type is necessary.
     // Use `(...args: any) => any` instead.
     "typescript/no-unsafe-function-type": "error",
     //endregion pedantic
 
     //region style
 
-    // Sometimes we need to do `import { a, type B } from 'module'`.
+    // Sometimes `import { a, type B } from 'module'` is needed.
     "import/consistent-type-specifier-style": "off",
 
-    // We want good traces.
+    // Good traces are desired.
     "eslint/func-names": ["warn", "as-needed"],
 
     // TypeScript function overloads work better with function declarations.
     "eslint/func-style": "off",
-    // You shouldn't use for in loops anyway. Use for of loops instead.
+    // Avoid for in loops. Use for of loops instead.
     "eslint/guard-for-in": "error",
     "eslint/no-continue": "off",
     // oxlint now supports ignoring specific values!
@@ -176,22 +176,22 @@
     "unicorn/filename-case": "off",
     // Some libraries require null.
     "unicorn/no-null": "off",
-    // Won't exactly be used. You should log any errors anyway.
+    // This won't be used exactly. Any errors should be logged anyway.
     "unicorn/prefer-optional-catch-binding": "error",
     // Always assume property/method not on called.
     "unicorn/prefer-reflect-apply": "error",
-    // Because JS's default Array join separator is not an empty string.
+    // Because JS's default Array join separator isn't an empty string.
     "unicorn/require-array-join-separator": "error",
     //endregion style
 
-    // We don't want linters reporting unused vars.
-    // Our editor will report them.
+    // Linters reporting unused vars aren't wanted.
+    // The editor will report them.
     // Those vars are often left as code for syntax highlighting or testing purposes,
     // or they're part of work-in-progress.
-    // Our bundler will remove them in the final bundle.
+    // The bundler will remove them in the final bundle.
     "eslint/no-unused-vars": "off",
 
-    // Sometimes we need to ensure the value is just false or true
+    // Sometimes ensuring the value is just false or true is necessary
     "vitest/prefer-to-be-falsy": "off",
     "vitest/prefer-to-be-truthy": "off",
   },
@@ -223,15 +223,15 @@
           "as-needed",
         ],
 
-        // Sometimes we need to test a list of numbers.
+        // Sometimes testing a list of numbers is necessary.
         "eslint/no-magic-numbers": "off",
         // Many functions that don't need explicit return types.
         "typescript/explicit-function-return-type": "off",
-        // Sometimes we need to test undefined.
+        // Sometimes testing undefined is necessary.
         "unicorn/no-useless-undefined": "off",
         // Many functions are created as needed.
         "unicorn/consistent-function-scoping": "off",
-        // May need to dynamically create promises.
+        // May need to create promises dynamically.
         "promise/avoid-new": "off",
         // May need fake async functions.
         "eslint/require-await": "off",

@@ -152,7 +152,9 @@ export type PositiveIntString =
     __brand: 'PositiveIntString';
   };
 
+/* vale alex.ProfanityMaybe = NO */
 // Float part: "0.xxx" or non-zero int followed by ".xxx"
+/* vale alex.ProfanityMaybe = YES */
 export type PositiveFloatString =
   | `0.${DigitString}${string}`
   | `${No0DigitString}${string}.${DigitString}${string}`

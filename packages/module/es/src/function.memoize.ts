@@ -21,7 +21,7 @@ export function argsAlmostEqual(
  *
  * Supports both synchronous and asynchronous functions.
  * Supports no matter how many arguments the function has.
- * Properties on the function are not preserved.
+ * Properties on the function aren't preserved.
  * If the function returns undefined, this memoization function wouldn't memoize correctly.
  *
  * Function arguments are serialized by JSON.stringify() and compared.

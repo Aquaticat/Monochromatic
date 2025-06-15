@@ -4,4 +4,4 @@
 
 [["files"]]
 # For testing if it completely overrides.
-"./temp/build/file-enforcer/src/index.ts" = "./temp/dummy.ts"
+"./temp/build/file-enforcer/src/index.ts" = "./temp/placeholder.ts"

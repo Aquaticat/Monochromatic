@@ -1,1 +1,1 @@
-# editorconfig
+# git config

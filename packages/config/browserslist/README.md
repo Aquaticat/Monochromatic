@@ -1,4 +1,4 @@
-# browserslist-config
+# Browserslist config
 
 For use in both frontend web projects and small utilities for Node.js.
 
@@ -17,4 +17,4 @@ Add this to `cpfd.toml`
 '\.browserslistrc' = true
 ```
 
-and do not add `browserslist` field in `package.json`.
+and don't add `browserslist` field in `package.json`.

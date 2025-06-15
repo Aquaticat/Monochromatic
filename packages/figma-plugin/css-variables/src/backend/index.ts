@@ -1,4 +1,4 @@
-// eslint-disable prefer-string-raw Figma plugin cannot use String.raw
+// eslint-disable prefer-string-raw Figma plugin can't use String.raw
 // eslint-disable prefer-add-event-listener Figma plugin use on...
 
 // This file holds the main code for plugins. Code in this file has access to
@@ -8,7 +8,7 @@
 
 /// <reference types="@figma/plugin-typings" />
 
-// Runs this code if the plugin is run in Figma
+// Runs this code if the plugin runs in Figma
 import type {
   VariableCollection,
   VariableResolvedDataType,
@@ -53,7 +53,7 @@ const getCssValueOfFigmaVariableValue = (value: VariableValue,
     }
 
     case 'BOOLEAN': {
-      // TODO: May or may need special handling here.
+      // TODO: Might need unique handling here.
       const booleanValue = value as boolean;
       return String(booleanValue);
     }
@@ -176,9 +176,9 @@ class EnhancedVariable {
   }
 }
 
-// Will be filled with real variables as soon as getFigmaVariables() is called for the first time,
-// which is when we normalize all variables.
-// Therefore, many variable methods won't need async.
+// Real variables fill this as soon as getFigmaVariables() gets called for the first time,
+// which is when all variables normalize.
+// Therefore, many variable methods don't need async.
 let collections: VariableCollection[] = [];
 let variables: Variable[] = [];
 let enhancedVariables: EnhancedVariable[] = [];
@@ -267,8 +267,8 @@ const handleSettingVarMessage = ({
   }
 
   if (varType === 'color') {
-    // If color (computed color) cannot be parsed as a color string,
-    // we know our code has failed, so we're not catching errors here.
+    // If color (computed color) can't parse as a color string,
+    // the code has failed, so errors aren't caught here.
     const color = parseColorString(computedValue);
 
     try {
@@ -283,8 +283,8 @@ const handleSettingVarMessage = ({
         return;
       }
     } catch {
-      // If originalColor cannot be parsed as a color string,
-      // we know for sure we need to actually set the variable.
+      // If originalColor can't parse as a color string,
+      // the variable needs setting.
     }
 
     logVariableChange();
@@ -331,7 +331,7 @@ const main = async (): Promise<void> => {
 };
 
 if (new Set(['figma', 'slides']).has(figma.editorType)) {
-  // noinspection JSIgnoredPromiseFromCall - Figma plugin API does not support top level await
+  // noinspection JSIgnoredPromiseFromCall - Figma plugin API doesn't support top level await
   main();
 }
 

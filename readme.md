@@ -1,3 +1,3 @@
-## Project Setup (Meta)
+## Project setup (meta)
 
 `pnpm i`

@@ -62,7 +62,7 @@ export function stripJsonc(jsonc: string): string {
     }
 
     if (inString) {
-      // Note: This does not handle escaped backslashes before a quote.
+      // Note: This doesn't handle escaped backslashes before a quote.
       if (char === '"' && jsonc[i - 1] !== '\\') {
         inString = false;
       }

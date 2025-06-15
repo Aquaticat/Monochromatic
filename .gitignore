@@ -29,6 +29,9 @@ package-lock.json
 *.js
 !*.config.js
 
+# Spell linter relies on this.
+.vale
+
 # So that actions/setup-node can correctly build yarn cache
 #yarn.lock
 

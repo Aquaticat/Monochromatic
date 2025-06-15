@@ -7,7 +7,7 @@ let initializePromise: Promise<FsPromisesApi> | null = null;
 
 async function initialize(): Promise<FsPromisesApi> {
   if (!navigator.storage || !navigator.storage.getDirectory) {
-    throw new Error('Origin Private File System is not available.');
+    throw new Error('Origin Private File System isn\'t available.');
   }
   const opfsRoot: FileSystemDirectoryHandle = await navigator.storage.getDirectory();
   const fsaNodeFs = new FsaNodeFs(opfsRoot as unknown as IFileSystemDirectoryHandle);
