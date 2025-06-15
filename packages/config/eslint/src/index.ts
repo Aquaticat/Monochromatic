@@ -130,6 +130,11 @@ const myConfigArray: ConfigArray = tseslint.config(
       'unicorn/import-style': ['warn', {
         'styles': {
           'path': 'false',
+          // If readdir is good enough for node, it's good enough.
+          dir: false,
+
+          // Everybody knows what fn is. It's unambiguious.
+          fn: false,
         },
       }],
     },
