@@ -1,4 +1,10 @@
-import { describe, expect, test } from 'vitest';
+// TODO: Replace this with jsonc.min
+
+import {
+  describe,
+  expect,
+  test,
+} from 'vitest';
 import { stripJsonc } from './jsonc.strip.ts';
 
 describe(stripJsonc, () => {
@@ -15,7 +21,7 @@ describe(stripJsonc, () => {
     `;
     const expected = `
     {
-      
+
       "foo": "bar"
     }
     `;
@@ -32,7 +38,7 @@ describe(stripJsonc, () => {
     `;
     const expected = `
     {
-      
+
       "foo": "bar"
     }
     `;
@@ -80,12 +86,12 @@ describe(stripJsonc, () => {
     `;
     const expected = `
     {
-      
-      "foo": "bar", 
+
+      "foo": "bar",
       "baz": [
         1,
-        2 
-      ] 
+        2
+      ]
     }
     `;
     expect(stripJsonc(jsonc)).toBe(expected.trim());
@@ -110,10 +116,10 @@ describe(stripJsonc, () => {
     `;
     const expected = `
     {
-      "a": "b", 
-      "c": "d,}", 
+      "a": "b",
+      "c": "d,}",
       "e": [
-        
+
         1,
         2
       ]

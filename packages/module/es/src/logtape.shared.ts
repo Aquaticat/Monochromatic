@@ -26,9 +26,7 @@ export const createBaseConfig = (
         const values: unknown[] = [];
         for (let i = 0; i < record.message.length; i++) {
           if (i % 2 === 0) {
-            /* vale Microsoft.FirstPerson = NO */
             // eslint-disable-next-line @typescript-eslint/restrict-plus-operands -- Good enough for defaultConsoleFormatter in logtape library, good enough for the library.
-            /* vale Microsoft.FirstPerson = YES */
             msg += record.message[i];
           } else {
             msg += '%o';
