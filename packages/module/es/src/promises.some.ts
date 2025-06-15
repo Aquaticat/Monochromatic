@@ -32,7 +32,7 @@ const processShard = async <const T,>(shard: Promisable<T>[],
  * @param predicate - Function to test each resolved value
  * @param promises - Collection of promises or values to check
  * @param shardSize - Optional size for promise shards
- * @returns A promise that resolves to true if any value passes the test, false otherwise
+ * @returns true if any value passes the test, false otherwise
  */
 export async function somePromises<const T,>(
   predicate: (input: T) => Promisable<boolean>,

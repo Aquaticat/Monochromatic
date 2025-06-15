@@ -1,32 +1,21 @@
-/* istanbul ignore file */
-// we know it works well enough
 import type {
   configure,
   LogRecord,
   Sink,
 } from '@logtape/logtape';
-import {
-  appendFile,
-  mkdir,
-  readFile,
-  rm,
-} from 'node:fs/promises';
+import { appendFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import {
-  emptyDir,
-  removeEmptyFilesInDir,
-} from './fs.emptyPath.ts';
 import { ensureFile } from './fs.ensurePath.ts';
 import {
   createBaseConfig,
   createMemorySink,
 } from './logtape.shared.ts';
 
-const disposeFileSink = async (): Promise<void> => {
+async function disposeFileSink(): Promise<void> {
   // No need to close the file stream, as we're using appendFile
-};
+}
 
-const createFileSink = async (appName: string): Promise<Sink & AsyncDisposable> => {
+async function createFileSink(appName: string): Promise<Sink & AsyncDisposable> {
   try {
     const fileName = `${appName}.${
       new Date().toISOString().replaceAll(':', '')
@@ -36,9 +25,9 @@ const createFileSink = async (appName: string): Promise<Sink & AsyncDisposable> 
     await ensureFile(filePath);
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises -- Not really a misused promise. An async function assigned to a variable.
-    const fileSink: Sink & AsyncDisposable = async (
+    const fileSink: Sink & AsyncDisposable = async function logToFile(
       record: LogRecord,
-    ): Promise<void> => {
+    ): Promise<void> {
       const log = JSON.stringify(record, null, 2) + '\n';
 
       // It's, in fact, working correctly.
@@ -52,28 +41,69 @@ const createFileSink = async (appName: string): Promise<Sink & AsyncDisposable> 
     console.log(`fs failed with ${fsError}, storing log in memory in array.`);
     return createMemorySink();
   }
-};
+}
 
 /**
- @param [appName='monochromatic'] will be used as the name of log file.
-
- @returns a logtape configuration object with optional specified application name.
-
- @remarks
- Use it like this in your main executing file:
-
- import {
- logtapeConfiguration,
- logtapeId,
- logtapeGetLogger,
- logtapeConfigure,
- } from '@monochromatic-dev/module-util';
-
- await logtapeConfigure(await logtapeConfiguration());
- const l = logtapeGetLogger(logtapeId);
-
- For logger categories, a is short for app, m is short for module, t is short for test
- Sorry, but terminal space is precious.
+ * Creates a logtape configuration object optimized for Node.js environments.
+ *
+ * This function provides a complete logging configuration that automatically
+ * handles file-based logging with timestamped JSONL files. It creates log files
+ * in the './logs' directory with the format `{appName}.{timestamp}.log.jsonl`.
+ * Falls back to in-memory storage if file system operations fail.
+ *
+ * @param appName - Application name used for log file naming (defaults to 'monochromatic')
+ * @returns Configuration object compatible with logtape's configure function
+ *
+ * @example
+ * Basic usage with default app name:
+ * ```ts
+ * import { logtapeConfigure } from '@logtape/logtape';
+ * import { logtapeConfiguration } from '@monochromatic-dev/module-es';
+ *
+ * await logtapeConfigure(await logtapeConfiguration());
+ * ```
+ *
+ * @example
+ * Custom application name:
+ * ```ts
+ * import { logtapeConfigure } from '@logtape/logtape';
+ * import { logtapeConfiguration, logtapeGetLogger, logtapeId } from '@monochromatic-dev/module-es';
+ *
+ * await logtapeConfigure(await logtapeConfiguration('my-server'));
+ * const logger = logtapeGetLogger(logtapeId);
+ *
+ * logger.info('Server started');
+ * ```
+ *
+ * @example
+ * Complete setup in main application file:
+ * ```ts
+ * import {
+ *   logtapeConfiguration,
+ *   logtapeId,
+ *   logtapeGetLogger,
+ *   logtapeConfigure,
+ * } from '@monochromatic-dev/module-es';
+ *
+ * // Initialize logging
+ * await logtapeConfigure(await logtapeConfiguration('my-server'));
+ * const logger = logtapeGetLogger(logtapeId);
+ *
+ * // Logger categories: 'a' (app), 'm' (module), 't' (test)
+ * logger.debug('Debug message', { category: 'a' });
+ * ```
+ *
+ * @remarks
+ * File storage characteristics:
+ * - **Log Directory**: `./logs/` (created automatically)
+ * - **File Format**: `{appName}.{ISO-timestamp}.log.jsonl`
+ * - **Content Format**: Pretty-printed JSON with newlines for readability
+ * - **Fallback**: In-memory array storage if filesystem fails
+ *
+ * Logger category abbreviations are used to save terminal space:
+ * - `a` = app (application-level logging)
+ * - `m` = module (module-level logging)
+ * - `t` = test (testing-related logging)
  */
 export const logtapeConfiguration = async (
   appName = 'monochromatic',

@@ -56,7 +56,7 @@ export function typeOf(
   if (obj instanceof Map) return 'map';
 
   // Handle objects with careful checking to avoid primitive conversion errors
-  if (typeof obj === 'object') {
+  if (typeof obj === 'object' && obj !== null) {
     // Check for null-prototype objects first (like Object.create(null))
     const prototype = Object.getPrototypeOf(obj);
     if (prototype === null) {

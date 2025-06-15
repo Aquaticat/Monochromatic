@@ -5,11 +5,16 @@ taskOptions:
 tasks:
   #"b:iframeFrontend": "vite build --mode production --config vite.config.iframe.ts",
   js_default:
-    command: 'vite build --mode production --config vite.config.iframe.ts'
+    command: 'vite build --mode production --config vite.config.frontend.ts'
+    deps:
+      - js_iframe
 
   #"b:backend": "vite build --mode production --config vite.config.backend.ts",
   js_backend:
     command: 'vite build --mode production --config vite.config.backend.ts'
+
+  js_iframe:
+    command: 'vite build --mode production --config vite.config.iframe.ts'
 
   js:
     deps:

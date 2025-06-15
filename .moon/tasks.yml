@@ -3,9 +3,11 @@ $schema: 'https://moonrepo.dev/schemas/tasks.json'
 implicitInputs:
 - 'package.json'
 # If I uncomment these, moon will consistently give warnings that some of these files are not found in some of the projects, which doesn't break anything, but is super annoying.
-#- 'vite.config.ts'
-#- 'vitest.config.ts'
-#- 'tsconfig.json'
+- 'vite.config.ts'
+- 'vitest.config.ts'
+- 'tsconfig.json'
+- 'src/**/*'
+- 'dist/**/*'
 
 fileGroups:
   configs:

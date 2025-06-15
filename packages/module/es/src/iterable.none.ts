@@ -14,15 +14,60 @@ import type { MappingFunction } from './iterable.map.ts';
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 /**
- @remarks
- Iterate over the elements in an iterable.
- Doesn't throw when the predicate throws.
- When the predicate throws, it counts as the predicate being false.
- This function's purpose is to ensure none of the elements in the iterable,
- when being passed to the predicate, return true.
- When one of the predicates returns true, the function short-circuits and returns false.
+ * Tests if no elements in an async iterable satisfy a predicate function.
+ * This is the async equivalent of Array.prototype.every() with negated logic - returns true only if ALL elements fail the test.
+ * Uses Promise.any for efficient short-circuiting: stops as soon as any element passes the test.
+ * Handles predicate errors gracefully by treating them as false (element fails the test).
+ *
+ * @param testingFn - Predicate function to test each element, can return Promise<boolean> or boolean
+ * @param arrayLike - Async iterable to test elements from
+ * @returns True if no elements satisfy the predicate, false if any element satisfies it
+ *
+ * @example
+ * ```ts
+ * // Test that no numbers are negative
+ * const numbers = [1, 2, 3, 4, 5];
+ * const noNegatives = await noneIterableAsync(x => x < 0, numbers); // true
+ *
+ * // With async iterable and async predicate
+ * async function* asyncNumbers() {
+ *   yield 1; yield -2; yield 3;
+ * }
+ * const hasNegative = await noneIterableAsync(
+ *   async x => x < 0,
+ *   asyncNumbers()
+ * ); // false (because -2 < 0)
+ *
+ * // Error handling - predicate errors count as false
+ * const safeTest = await noneIterableAsync(
+ *   x => {
+ *     if (x === 0) throw new Error('Division by zero');
+ *     return 1 / x > 0.5;
+ *   },
+ *   [0, 1, 2, 3]
+ * ); // true (error on 0 counts as false, others don't satisfy > 0.5)
+ *
+ * // Validation use case
+ * const users = [
+ *   { name: 'Alice', age: 25 },
+ *   { name: 'Bob', age: 30 },
+ *   { name: 'Charlie', age: 35 }
+ * ];
+ * const noMinors = await noneIterableAsync(
+ *   user => user.age < 18,
+ *   users
+ * ); // true
+ *
+ * // Short-circuiting behavior
+ * const shortCircuit = await noneIterableAsync(
+ *   async x => {
+ *     console.log(`Testing ${x}`);
+ *     return x === 2;
+ *   },
+ *   [1, 2, 3, 4] // Only logs "Testing 1" and "Testing 2"
+ * ); // false
+ * ```
  */
-
 /* @__NO_SIDE_EFFECTS__ */
 export async function noneIterableAsync<T_element,
   T_arrayLike extends MaybeAsyncIterable<T_element>,>(
@@ -53,6 +98,63 @@ export async function noneIterableAsync<T_element,
   }
 }
 
+/**
+ * Tests if no elements in an iterable satisfy a predicate function.
+ * This is the synchronous version that returns true only if ALL elements fail the test.
+ * Provides short-circuiting: stops as soon as any element passes the test.
+ * Handles predicate errors gracefully by treating them as false (element fails the test).
+ *
+ * @param testingFn - Predicate function to test each element, receives (element, index?, array?)
+ * @param arrayLike - Iterable to test elements from
+ * @returns True if no elements satisfy the predicate, false if any element satisfies it
+ *
+ * @example
+ * ```ts
+ * // Basic usage - test that no numbers are even
+ * const numbers = [1, 3, 5, 7];
+ * const noEvens = noneIterable(x => x % 2 === 0, numbers); // true
+ *
+ * // With mixed data - test that no elements are strings
+ * const mixed = [1, 2, 3, 4];
+ * const noStrings = noneIterable(x => typeof x === 'string', mixed); // true
+ *
+ * // Using index parameter
+ * const items = ['a', 'b', 'c'];
+ * const noFirstIndex = noneIterable(
+ *   (element, index) => index === 0,
+ *   items
+ * ); // false (first element has index 0)
+ *
+ * // Error handling - predicate errors count as false
+ * const safeTest = noneIterable(
+ *   x => {
+ *     if (x === 0) throw new Error('Can't process zero');
+ *     return x > 10;
+ *   },
+ *   [0, 5, 8] // Error on 0 counts as false, others don't satisfy > 10
+ * ); // true
+ *
+ * // Validation use case
+ * const passwords = ['abc123', 'password123', 'secure456'];
+ * const noWeakPasswords = noneIterable(
+ *   pwd => pwd.length < 6,
+ *   passwords
+ * ); // true (all passwords are 6+ characters)
+ *
+ * // Works with any iterable
+ * const setTest = noneIterable(x => x < 0, new Set([1, 2, 3])); // true
+ * const stringTest = noneIterable(char => char === 'z', 'hello'); // true
+ *
+ * // Short-circuiting behavior
+ * const shortCircuit = noneIterable(
+ *   x => {
+ *     console.log(`Testing ${x}`);
+ *     return x === 2;
+ *   },
+ *   [1, 2, 3, 4] // Only logs "Testing 1" and "Testing 2"
+ * ); // false
+ * ```
+ */
 export function noneIterable<T_element, T_arrayLike extends Iterable<T_element>,>(
   testingFn: MappingFunction<T_element, boolean>,
   arrayLike: T_arrayLike,

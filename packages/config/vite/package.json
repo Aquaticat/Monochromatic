@@ -11,13 +11,13 @@
     "esbuild": "catalog:"
   },
   "peerDependencies": {
-    "vite": "catalog:",
     "vitest": "catalog:",
     "lightningcss": "catalog:"
   },
   "devDependencies": {
     "vite": "catalog:",
     "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-es": "workspace:*",
     "vitest": "catalog:",
     "@types/bun": "catalog:",
     "@types/postcss-mixins": "catalog:",
@@ -27,8 +27,7 @@
     "postcss-custom-media": "catalog:",
     "postcss-custom-selectors": "catalog:",
     "vite-plugin-json5": "catalog:",
-    "postcss": "catalog:",
-    "@vitest/browser": "catalog:"
+    "postcss": "catalog:"
   },
   "type": "module",
   "files": [
@@ -56,7 +55,8 @@
   },
   "exports": {
     ".": {
-      "default": "./src/index.ts"
+      "types": "./dist/final/types/src/index.d.ts",
+      "default": "./dist/final/js/index.js"
     },
     "./.ts": {
       "default": "./src/index.ts"

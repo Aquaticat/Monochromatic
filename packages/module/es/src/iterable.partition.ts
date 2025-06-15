@@ -5,7 +5,21 @@ import type { Promisable } from 'type-fest';
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 /**
- @deprecated Naming change. Use partitionArrayLikeAsync instead. No need to write tests for it.
+ * Partitions an iterable into two arrays based on an async predicate function.
+ *
+ * @deprecated Naming change. Use [`partitionIterableAsync()`](./iterable.partition.ts:28) instead. No need to write tests for it.
+ * @param predicate - Function to test each element (can be sync or async)
+ * @param arrayLike - Iterable to partition
+ * @returns Tuple containing [matching elements, non-matching elements]
+ * @example
+ * ```ts
+ * const numbers = [1, 2, 3, 4, 5];
+ * const [evens, odds] = await partitionArrAsync(
+ *   async (n) => n % 2 === 0,
+ *   numbers
+ * );
+ * // evens: [2, 4], odds: [1, 3, 5]
+ * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export async function partitionArrAsync<T_i,>(
   predicate: (i: T_i) => Promise<boolean> | boolean,
@@ -25,7 +39,48 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
   return [yes, no];
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export async function partitionIterableAsync<T_i,>(
+/**
+ * Partitions an iterable into two arrays based on an async predicate function.
+ * Processes all elements concurrently for optimal performance.
+ *
+ * @param predicate - Function to test each element (can be sync or async)
+ * @param arrayLike - Iterable or async iterable to partition
+ * @returns Tuple containing [matching elements, non-matching elements]
+ * @example
+ * ```ts
+ * const numbers = [1, 2, 3, 4, 5];
+ * const [evens, odds] = await partitionIterableAsync(
+ *   async (n) => n % 2 === 0,
+ *   numbers
+ * );
+ * // evens: [2, 4], odds: [1, 3, 5]
+ * ```
+ * @example
+ * ```ts
+ * // Works with async iterables
+ * async function* asyncNumbers() {
+ *   yield 1; yield 2; yield 3;
+ * }
+ *
+ * const [evens, odds] = await partitionIterableAsync(
+ *   async (n) => n % 2 === 0,
+ *   asyncNumbers()
+ * );
+ * ```
+ * @example
+ * ```ts
+ * // Concurrent processing for better performance
+ * const urls = ['url1', 'url2', 'url3'];
+ * const [valid, invalid] = await partitionIterableAsync(
+ *   async (url) => {
+ *     const response = await fetch(url);
+ *     return response.ok;
+ *   },
+ *   urls
+ * );
+ * ```
+ */
+export async function partitionIterableAsync<T_i,>(
   predicate: (i: T_i) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_i>,
 ): Promise<[T_i[], T_i[]]> {
@@ -54,7 +109,40 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
   return [yes, no];
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function partitionIterable<T_i,>(
+/**
+ * Partitions an iterable into two arrays based on a predicate function.
+ * Synchronous version that processes elements sequentially.
+ *
+ * @param predicate - Function to test each element
+ * @param arrayLike - Iterable to partition
+ * @returns Tuple containing [matching elements, non-matching elements]
+ * @example
+ * ```ts
+ * const numbers = [1, 2, 3, 4, 5];
+ * const [evens, odds] = partitionIterable((n) => n % 2 === 0, numbers);
+ * // evens: [2, 4], odds: [1, 3, 5]
+ * ```
+ * @example
+ * ```ts
+ * // Works with any iterable
+ * const set = new Set([1, 2, 3, 4, 5]);
+ * const [evens, odds] = partitionIterable((n) => n % 2 === 0, set);
+ * ```
+ * @example
+ * ```ts
+ * // Works with objects
+ * const users = [
+ *   { id: 1, active: true },
+ *   { id: 2, active: false },
+ *   { id: 3, active: true }
+ * ];
+ * const [active, inactive] = partitionIterable(
+ *   (user) => user.active,
+ *   users
+ * );
+ * ```
+ */
+export function partitionIterable<T_i,>(
   predicate: (i: T_i) => boolean,
   arrayLike: Iterable<T_i>,
 ): [T_i[], T_i[]] {

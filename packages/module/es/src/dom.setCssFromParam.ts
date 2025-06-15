@@ -1,18 +1,33 @@
 /**
- * Sets CSS properties on the `:root` element based on address query parameters.
+ * Sets CSS properties on the `:root` element based on URL query parameters.
  *
- * For each address query parameter, its name is the CSS property name, and its value is used as the CSS property value.
+ * For each URL query parameter, the parameter name becomes the CSS property name,
+ * and its value becomes the CSS property value. This enables dynamic styling
+ * through URL parameters, useful for theming, debugging, or configuration.
  *
+ * @param allowedProperties - Optional iterable of CSS property names to filter which
+ *   parameters are processed. If provided, only properties listed in this iterable
+ *   will be applied from the URL parameters. If omitted, all URL parameters are
+ *   processed as CSS properties.
+ * @returns Nothing (void). Modifies the document's root element styles directly.
  * @example
- * If the current address is https://example.com/?background-color=red&font-size=16px
- * setCssFromUrlParams();
- * This will set:
- * document.documentElement.style.setProperty('background-color', 'red');
- * document.documentElement.style.setProperty('font-size', '16px');
+ * ```ts
+ * // URL: https://example.com/?background-color=red&font-size=16px&margin=10px
  *
- * @param allowedProperties Optional iterable of CSS property names. If provided, only properties listed in this iterable will be set from the address parameters.
+ * // Apply all URL parameters as CSS properties
+ * onLoadSetCssFromUrlParams();
+ * // Sets: --background-color: red, --font-size: 16px, --margin: 10px
+ *
+ * // Apply only specific allowed properties
+ * onLoadSetCssFromUrlParams(['background-color', 'font-size']);
+ * // Sets: --background-color: red, --font-size: 16px (margin ignored)
+ *
+ * // With no matching parameters
+ * onLoadSetCssFromUrlParams(['non-existent-prop']);
+ * // Sets: nothing (no matching parameters found)
+ * ```
  */
-export function setCssFromUrlParams(allowedProperties?: Iterable<string>): void {
+export function onLoadSetCssFromUrlParams(allowedProperties?: Iterable<string>): void {
   const params = new URLSearchParams(globalThis.location.search);
 
   if (allowedProperties) {

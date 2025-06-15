@@ -85,25 +85,65 @@ const createBrowserFileSink = async (
 };
 
 /**
- @param [appName='monochromatic'] will be used as the name of log file.
-
- @returns a logtape configuration object with optional specified application name.
-
- @remarks
- Use it like this in your main executing file:
-
- import {
- logtapeConfiguration,
- logtapeId,
- logtapeGetLogger,
- logtapeConfigure,
- } from '@monochromatic-dev/module-util';
-
- await logtapeConfigure(await logtapeConfiguration());
- const l = logtapeGetLogger(logtapeId);
-
- For logger categories, a is short for app, m is short for module, t is short for test
- Sorry, but terminal space is precious.
+ * Creates a logtape configuration object optimized for browser environments.
+ *
+ * This function provides a complete logging configuration that automatically
+ * handles different browser storage mechanisms. It attempts to use OPFS (Origin Private File System)
+ * first, falls back to sessionStorage, and finally uses in-memory storage if neither is available.
+ * The configuration includes proper sinks, formatters, and disposal mechanisms for each storage type.
+ *
+ * @param appName - Application name used for log file naming and storage keys (defaults to 'monochromatic')
+ * @returns Configuration object compatible with logtape's configure function
+ *
+ * @example
+ * Basic usage with default app name:
+ * ```ts
+ * import { logtapeConfigure } from '@logtape/logtape';
+ * import { logtapeConfiguration } from '@monochromatic-dev/module-es';
+ *
+ * await logtapeConfigure(await logtapeConfiguration());
+ * ```
+ *
+ * @example
+ * Custom application name:
+ * ```ts
+ * import { logtapeConfigure } from '@logtape/logtape';
+ * import { logtapeConfiguration, logtapeGetLogger, logtapeId } from '@monochromatic-dev/module-es';
+ *
+ * await logtapeConfigure(await logtapeConfiguration('my-app'));
+ * const logger = logtapeGetLogger(logtapeId);
+ *
+ * logger.info('Application started');
+ * ```
+ *
+ * @example
+ * Complete setup in main application file:
+ * ```ts
+ * import {
+ *   logtapeConfiguration,
+ *   logtapeId,
+ *   logtapeGetLogger,
+ *   logtapeConfigure,
+ * } from '@monochromatic-dev/module-es';
+ *
+ * // Initialize logging
+ * await logtapeConfigure(await logtapeConfiguration('my-app'));
+ * const logger = logtapeGetLogger(logtapeId);
+ *
+ * // Logger categories: 'a' (app), 'm' (module), 't' (test)
+ * logger.debug('Debug message', { category: 'a' });
+ * ```
+ *
+ * @remarks
+ * Storage fallback hierarchy:
+ * 1. **OPFS (Origin Private File System)** - Persistent file storage (preferred)
+ * 2. **SessionStorage** - Session-scoped browser storage
+ * 3. **Memory** - In-memory array storage (fallback)
+ *
+ * Logger category abbreviations are used to save terminal space:
+ * - `a` = app (application-level logging)
+ * - `m` = module (module-level logging)
+ * - `t` = test (testing-related logging)
  */
 /* @__NO_SIDE_EFFECTS__ */ export const logtapeConfiguration = async (
   appName = 'monochromatic',

@@ -1,3 +1,33 @@
+/**
+ * Creates a promise that resolves after a specified delay in milliseconds.
+ * Useful for adding delays in async functions, throttling operations, or creating timeouts.
+ *
+ * The promise resolves with `undefined` after the specified time has elapsed.
+ * Uses `setTimeout` internally to create the delay mechanism.
+ *
+ * @param timeInMs - Time to wait in milliseconds before resolving
+ * @returns Promise that resolves to undefined after the specified delay
+ *
+ * @example
+ * ```ts
+ * // Basic usage
+ * await wait(1000); // Wait for 1 second
+ * console.log('1 second has passed');
+ *
+ * // In an async function
+ * async function delayedOperation() {
+ *   console.log('Starting...');
+ *   await wait(500); // Wait 500ms
+ *   console.log('After delay');
+ * }
+ *
+ * // Throttling operations
+ * for (let i = 0; i < 5; i++) {
+ *   console.log(`Step ${i + 1}`);
+ *   await wait(200); // 200ms between each step
+ * }
+ * ```
+ */
 // eslint-disable avoid-new
 export const wait = (timeInMs: number): Promise<undefined> =>
   new Promise(function createTimeout(_resolve) {

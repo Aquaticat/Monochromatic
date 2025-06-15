@@ -9,6 +9,39 @@ const unsupported = Object.freeze(
 
 const primitive = Object.freeze(['boolean', 'string', 'number', 'date'] as const);
 
+/**
+ * Converts any JavaScript value into its string representation as frozen export code.
+ *
+ * This function serializes JavaScript values into code strings that can be used
+ * as export statements. It handles primitive types (boolean, string, number, date)
+ * and complex data structures (Set, Map, Array, Object) by recursively converting
+ * all nested values. All generated objects are wrapped with `Object.freeze()` to
+ * ensure immutability.
+ *
+ * @param obj - Value to convert to export string representation
+ * @returns String representation of the value as frozen export code
+ * @throws {TypeError} When the object type is unsupported (null, undefined, NaN, bigint, symbol)
+ * @throws {TypeError} When an unknown object type is encountered
+ *
+ * @example
+ * ```ts
+ * // Primitive types
+ * toExport(true); // "true"
+ * toExport("hello"); // '"hello"'
+ * toExport(42); // "42"
+ * toExport(new Date('2023-01-01')); // 'new Date("2023-01-01T00:00:00.000Z")'
+ *
+ * // Collections
+ * toExport(new Set([1, 2, 3])); // "Object.freeze(new Set([1,2,3]))"
+ * toExport(new Map([['a', 1]])); // "Object.freeze(new Map([["a",1]]))"
+ * toExport([1, 2, 3]); // "Object.freeze([1,2,3])"
+ * toExport({ a: 1, b: 2 }); // "Object.freeze(Object.fromEntries([["a",1],["b",2]]))"
+ *
+ * // Nested structures
+ * toExport({ users: [{ name: "Alice" }] });
+ * // "Object.freeze(Object.fromEntries([["users",Object.freeze([Object.freeze(Object.fromEntries([["name","Alice"]]))])]]))"
+ * ```
+ */
 export function toExport(obj: any): string {
   const objType = typeOf(obj);
   if (unsupported.includes(objType)) {

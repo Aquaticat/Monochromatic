@@ -1,12 +1,34 @@
+/**
+ * Transforms a multi-parameter function into a curried function that can be called with one argument at a time.
+ * Currying allows partial application of function arguments, creating specialized functions by fixing some parameters.
+ * Supports functions with 2 to 10 parameters.
+ *
+ * @param fn - Function to curry
+ * @returns Curried function that accepts parameters one at a time
+ * @throws {RangeError} If function has unsupported parameter count (not 2-10)
+ *
+ * @example
+ * ```ts
+ * // Basic currying with 2 parameters
+ * const add = (a: number, b: number): number => a + b;
+ * const curriedAdd = curry(add);
+ * const add5 = curriedAdd(5);
+ * console.log(add5(3)); // 8
+ *
+ * // Currying with 3 parameters
+ * const multiply = (a: number, b: number, c: number): number => a * b * c;
+ * const curriedMultiply = curry(multiply);
+ * const multiplyBy2 = curriedMultiply(2);
+ * const multiplyBy2And3 = multiplyBy2(3);
+ * console.log(multiplyBy2And3(4)); // 24
+ *
+ * // Direct chaining
+ * console.log(curriedMultiply(2)(3)(4)); // 24
+ * ```
+ */
 export function curry<Parameter0, Parameter1, Returns,>(
   fn: (parameter0: Parameter0, parameter1: Parameter1) => Returns,
 ): (parameter0: Parameter0) => (parameter1: Parameter1) => Returns;
-/*   return function fn0To(parameter0: Parameter0): (parameter1: Parameter1) => Returns {
-    return function fn1(parameter1: Parameter1): Returns {
-      return fn(parameter0, parameter1);
-    };
-  };
-} */
 
 export function curry<Parameter0, Parameter1, Parameter2, Returns,>(
   fn: (parameter0: Parameter0, parameter1: Parameter1, parameter2: Parameter2) => Returns,

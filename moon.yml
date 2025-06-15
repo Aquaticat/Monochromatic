@@ -1,8 +1,44 @@
 $schema: 'https://moonrepo.dev/schemas/project.json'
 
 tasks:
-  versionCheck:
+  pnpmVersionCheck:
     command: 'pnpm version'
+  test:
+    deps:
+    - testUnit
+    - testBrowser
+  testUnit:
+    command: 'vitest run --config vitest.unit.config.ts'
+  testBrowser:
+    command: 'vitest run --config vitest.browser.config.ts'
+  preparePlaywright:
+    command: 'playwright install'
+  prepareVale:
+    deps:
+    - valeSync
+    - createValeNoopStyle
+  valeSync:
+    command: 'vale sync'
+  createValeNoopStyle:
+    command: 'mkdir -p .vale/noop'
+  prepare:
+    deps:
+    - preparePlaywright
+    - prepareVale
+  buildJs:
+    command: 'moon run :js'
+  buildTypes:
+    command: 'moon run :types'
+  build:
+    deps:
+    - buildJs
+    - buildTypes
+  buildAndTest:
+    deps:
+    - build
+    - test
+    options:
+      runDepsInParallel: false
 
 tags:
 - noTypescript

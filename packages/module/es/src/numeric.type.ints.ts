@@ -1,3 +1,35 @@
+/**
+ * Type-level utility that generates a union of integer literal types within a specified range (inclusive).
+ * Creates a union type containing all integers from `fromInclusive` to `toInclusive`, including both endpoints.
+ * Supports ranges from -10 to 10. For ranges outside this scope, returns the generic `number` type.
+ *
+ * @template fromInclusive - Starting integer (inclusive, must be -10 to 10)
+ * @template toInclusive - Ending integer (inclusive, must be -10 to 10)
+ *
+ * @example
+ * ```ts
+ * type ZeroToThree = Ints<0, 3>;        // 0 | 1 | 2 | 3
+ * type NegativeRange = Ints<-2, 1>;     // -2 | -1 | 0 | 1
+ * type SingleValue = Ints<5, 5>;        // 5
+ * type EmptyRange = Ints<3, 1>;         // never (invalid range)
+ * type LargeRange = Ints<0, 15>;        // number (outside supported range)
+ *
+ * // Practical usage for array indexing
+ * function getElements<T, From extends number, To extends number>(
+ *   arr: T[],
+ *   from: From,
+ *   to: To
+ * ): T[] {
+ *   const indices: Ints<From, To>[] = [];
+ *   // Implementation would populate indices array
+ *   return indices.map(i => arr[i]).filter(Boolean);
+ * }
+ *
+ * // Usage with specific ranges
+ * type DiceRoll = Ints<1, 6>;          // 1 | 2 | 3 | 4 | 5 | 6
+ * type WeekDay = Ints<1, 7>;           // 1 | 2 | 3 | 4 | 5 | 6 | 7
+ * ```
+ */
 export type Ints<fromInclusive extends number, toInclusive extends number,> =
   fromInclusive extends -10 ? toInclusive extends -10 ? -10
     : toInclusive extends -9 ? (-10 | -9)

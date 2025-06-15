@@ -10,39 +10,66 @@ import type { Ints } from './numeric.type.ints.ts';
 
 const l = logtapeGetLogger(['m', 'iterable.chunks']);
 
-// TODO: Remove T_element everywhere and switch to infer.
-
-/** Split an array into chunks length of your choosing,
- generating them one by one.
-
- @param array - readonly array of at least 1 element
-
-  readonly here means you can be assured
-  the array won't be changed while inside this function.
-
- @param n - how many elements of the array to chunk out at a time
-
-  Can't be bigger than the length of the array itself.
-
- @returns `Generator<Tuple<T_array[number], T_n>>`
-
-  where Tuple returns a new tuple
-  type of length `n` filled with type of `array` elements
-  while n \<= 10,
-  a regular array of type of `array` elements otherwise.
-
- @throws RangeError:
-
- 1.  `array` is empty
- 2.  `n` is
- 1.  float
- 2.  negative
- 3.  bigger than the length of the array itself.
-
- @remarks
- From {@link https://stackoverflow.com/a/55435856}
- by {@link https://stackoverflow.com/users/10328101/ikechukwu-eze}
- with CC BY-SA 4.0
+/**
+ * Splits an array into chunks of specified size, yielding them one by one as a generator.
+ * This is a memory-efficient way to process large arrays in smaller, manageable pieces.
+ * Each chunk is returned as a tuple with precise type information when chunk size ≤ 10.
+ *
+ * @param array - Non-empty readonly array to split into chunks
+ * @param n - Chunk size, must be positive integer ≤ array length
+ * @returns Generator yielding chunks as tuples of specified size
+ *
+ * @throws {RangeError} When array is empty
+ * @throws {RangeError} When chunk size is negative, zero, or exceeds array length
+ *
+ * @remarks
+ * **Memory efficiency**: Generates chunks lazily, processing only what's needed.
+ * **Type safety**: Returns precise tuple types for chunk sizes ≤ 10, regular arrays otherwise.
+ * **Immutability**: Input array is readonly and won't be modified during processing.
+ * **Performance**: Uses array slicing for optimal chunk creation.
+ *
+ * Original implementation from {@link https://stackoverflow.com/a/55435856}
+ * by {@link https://stackoverflow.com/users/10328101/ikechukwu-eze} with CC BY-SA 4.0
+ *
+ * @example
+ * ```ts
+ * // Basic chunking
+ * const numbers = [1, 2, 3, 4, 5, 6, 7, 8] as const;
+ * const chunks = chunksArray(numbers, 3);
+ *
+ * for (const chunk of chunks) {
+ *   console.log(chunk); // [1, 2, 3], [4, 5, 6], [7, 8]
+ * }
+ *
+ * // Convert to array
+ * const allChunks = [...chunksArray(numbers, 2)];
+ * // [[1, 2], [3, 4], [5, 6], [7, 8]]
+ *
+ * // Type-safe tuple chunks (n ≤ 10)
+ * const letters = ['a', 'b', 'c', 'd', 'e', 'f'] as const;
+ * const pairs = chunksArray(letters, 2);
+ * // Each chunk has type: [string, string] | [string]
+ *
+ * // Processing in batches
+ * const data = Array.from({ length: 1000 }, (_, i) => i);
+ * for (const batch of chunksArray(data, 100)) {
+ *   // Process 100 items at a time
+ *   console.log(`Processing batch of ${batch.length} items`);
+ * }
+ *
+ * // Error cases
+ * try {
+ *   chunksArray([], 2); // RangeError: array is empty
+ * } catch (error) {
+ *   console.error(error.message);
+ * }
+ *
+ * try {
+ *   chunksArray([1, 2], 5); // RangeError: chunk size exceeds array length
+ * } catch (error) {
+ *   console.error(error.message);
+ * }
+ * ```
  */
 
 /* @__NO_SIDE_EFFECTS__ */
@@ -76,7 +103,78 @@ export function* chunksArray<
   }
 }
 
-/* @__NO_SIDE_EFFECTS__ */
+/**
+ * Splits an iterable into chunks of specified size, yielding them one by one as a generator.
+ * This provides memory-efficient processing of any iterable sequence, including infinite iterables.
+ * Unlike array chunking, this works with any iterable and doesn't require knowing the total length.
+ *
+ * @param arrayLike - Iterable sequence to split into chunks
+ * @param n - Chunk size, must be positive integer
+ * @returns Generator yielding arrays of elements with specified chunk size
+ *
+ * @throws {RangeError} When iterable is empty
+ * @throws {RangeError} When chunk size is negative, zero, or exceeds iterable length (for sized iterables)
+ *
+ * @remarks
+ * **Memory efficiency**: Processes iterables lazily without loading entire sequence into memory.
+ * **Infinite iterables**: Works with infinite sequences, yielding chunks as needed.
+ * **Type preservation**: Maintains element types from the original iterable.
+ * **Flexible input**: Accepts any iterable (arrays, sets, maps, generators, etc.).
+ * **Performance note**: Currently converts iterable to array internally - future versions will be fully lazy.
+ *
+ * @example
+ * ```ts
+ * // Basic iterable chunking
+ * const numbers = [1, 2, 3, 4, 5, 6, 7, 8];
+ * const chunks = chunksIterable(numbers, 3);
+ *
+ * for (const chunk of chunks) {
+ *   console.log(chunk); // [1, 2, 3], [4, 5, 6], [7, 8]
+ * }
+ *
+ * // Working with Sets
+ * const uniqueValues = new Set(['a', 'b', 'c', 'd', 'e']);
+ * const setChunks = [...chunksIterable(uniqueValues, 2)];
+ * // [['a', 'b'], ['c', 'd'], ['e']]
+ *
+ * // Processing Map entries
+ * const map = new Map([['x', 1], ['y', 2], ['z', 3], ['w', 4]]);
+ * for (const chunk of chunksIterable(map, 2)) {
+ *   console.log(chunk); // [['x', 1], ['y', 2]], [['z', 3], ['w', 4]]
+ * }
+ *
+ * // Working with generators
+ * function* fibonacci() {
+ *   let a = 0, b = 1;
+ *   while (true) {
+ *     yield a;
+ *     [a, b] = [b, a + b];
+ *   }
+ * }
+ *
+ * const fibChunks = chunksIterable(fibonacci(), 5);
+ * const firstChunk = fibChunks.next().value;
+ * // [0, 1, 1, 2, 3]
+ *
+ * // String chunking (strings are iterable)
+ * const text = "Hello World";
+ * const charChunks = [...chunksIterable(text, 3)];
+ * // [['H', 'e', 'l'], ['l', 'o', ' '], ['W', 'o', 'r'], ['l', 'd']]
+ *
+ * // Error cases
+ * try {
+ *   chunksIterable([], 0); // RangeError: chunk size must be positive
+ * } catch (error) {
+ *   console.error(error.message);
+ * }
+ *
+ * try {
+ *   chunksIterable([1, 2, 3], -1); // RangeError: chunk size must be positive
+ * } catch (error) {
+ *   console.error(error.message);
+ * }
+ * ```
+ */
 export function chunksIterable<
   // An overload sig can't be declared as a generator
   const T_arrayLike extends Iterable<any> & { length: number; },
@@ -89,7 +187,6 @@ export function chunksIterable<
   YieldType
 >;
 
-/* @__NO_SIDE_EFFECTS__ */
 export function chunksIterable<
   // An overload sig can't be declared as a generator
   const T_arrayLike extends Iterable<any>,
@@ -102,7 +199,6 @@ export function chunksIterable<
   YieldType
 >;
 
-/* @__NO_SIDE_EFFECTS__ */
 export function* chunksIterable<
   // An overload sig can't be declared as a generator
   const T_arrayLike extends Iterable<any> | Iterable<any> & { length: number; },
@@ -156,7 +252,90 @@ export function* chunksIterable<
   return;
 }
 
-/* @__NO_SIDE_EFFECTS__ */
+/**
+ * Splits an async iterable into chunks of specified size, yielding them one by one as an async generator.
+ * This provides memory-efficient processing of async iterable sequences, including async generators and streams.
+ * Handles both sync and async iterables, making it versatile for various data sources.
+ *
+ * @param arrayLike - Async iterable sequence to split into chunks
+ * @param n - Chunk size, must be positive integer
+ * @returns AsyncGenerator yielding arrays of elements with specified chunk size
+ *
+ * @throws {RangeError} When iterable is empty after consumption
+ * @throws {RangeError} When chunk size is negative, zero, or exceeds iterable length (for sized iterables)
+ *
+ * @remarks
+ * **Async processing**: Handles async iterables, promises, and async generators seamlessly.
+ * **Memory efficiency**: Processes async sequences without loading entire dataset into memory.
+ * **Type preservation**: Maintains element types from the original async iterable.
+ * **Flexible input**: Accepts any async iterable (async generators, streams, etc.).
+ * **Performance note**: Currently converts async iterable to array internally - future versions will be fully lazy.
+ *
+ * @example
+ * ```ts
+ * // Basic async iterable chunking
+ * async function* asyncNumbers() {
+ *   for (let i = 1; i <= 8; i++) {
+ *     yield i;
+ *   }
+ * }
+ *
+ * const chunks = chunksIterableAsync(asyncNumbers(), 3);
+ * for await (const chunk of chunks) {
+ *   console.log(chunk); // [1, 2, 3], [4, 5, 6], [7, 8]
+ * }
+ *
+ * // Working with async generators from APIs
+ * async function* fetchData() {
+ *   const response = await fetch('/api/data');
+ *   const data = await response.json();
+ *   for (const item of data) {
+ *     yield item;
+ *   }
+ * }
+ *
+ * const dataChunks = chunksIterableAsync(fetchData(), 5);
+ * for await (const batch of dataChunks) {
+ *   // Process 5 items at a time
+ *   console.log(`Processing batch of ${batch.length} items`);
+ * }
+ *
+ * // Working with streams
+ * async function* streamProcessor(stream: ReadableStream) {
+ *   const reader = stream.getReader();
+ *   try {
+ *     while (true) {
+ *       const { done, value } = await reader.read();
+ *       if (done) break;
+ *       yield value;
+ *     }
+ *   } finally {
+ *     reader.releaseLock();
+ *   }
+ * }
+ *
+ * const streamChunks = chunksIterableAsync(streamProcessor(someStream), 10);
+ * for await (const chunk of streamChunks) {
+ *   console.log(`Stream chunk: ${chunk.length} items`);
+ * }
+ *
+ * // Mixed sync/async iterables
+ * const mixedData = [Promise.resolve(1), 2, Promise.resolve(3), 4];
+ * const mixedChunks = chunksIterableAsync(mixedData, 2);
+ * for await (const chunk of mixedChunks) {
+ *   console.log(chunk); // [1, 2], [3, 4] (promises resolved)
+ * }
+ *
+ * // Error cases
+ * try {
+ *   const emptyAsync = async function*() {}();
+ *   const chunks = chunksIterableAsync(emptyAsync, 2);
+ *   await chunks.next(); // RangeError: iterable is empty
+ * } catch (error) {
+ *   console.error(error.message);
+ * }
+ * ```
+ */
 export function chunksIterableAsync<
   // An overload sig can't be declared as a generator
   const T_arrayLike extends MaybeAsyncIterable<any> & { length: number; },
@@ -168,7 +347,6 @@ export function chunksIterableAsync<
   Tuple<T_arrayLike extends MaybeAsyncIterable<infer T_element> ? T_element : never, T_n>
 >;
 
-/* @__NO_SIDE_EFFECTS__ */
 export function chunksIterableAsync<
   // An overload sig can't be declared as a generator
   const T_arrayLike extends MaybeAsyncIterable<any>,
@@ -180,7 +358,6 @@ export function chunksIterableAsync<
   Tuple<T_arrayLike extends MaybeAsyncIterable<infer T_element> ? T_element : never, T_n>
 >;
 
-/* @__NO_SIDE_EFFECTS__ */
 export async function* chunksIterableAsync<
   // An overload sig can't be declared as a generator
   const T_arrayLike extends

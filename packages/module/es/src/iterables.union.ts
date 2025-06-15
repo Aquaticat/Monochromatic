@@ -1,10 +1,36 @@
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 /**
- * Creates a new Set instance that's the union of the input iterables.
- * @param iterables - An array of iterables.
- * @returns A Set containing all unique elements from the input iterables.
- * @template ParamTypes - The types of elements in the input iterables.
+ * Creates a new Set containing the union of all input iterables, preserving type safety across
+ * multiple iterable sources. Combines elements from all iterables while automatically deduplicating
+ * using Set semantics, making it perfect for merging data from different sources.
+ *
+ * The function uses extensive overloads to maintain precise type information for up to 9 iterables,
+ * with union types that capture all possible element types from the input sources.
+ *
+ * @param iterables - Variable number of iterables to combine into a union set
+ * @returns Set containing all unique elements from input iterables, with precise union typing
+ * @template ParamTypes - Union of element types from all input iterables
+ * @example
+ * ```ts
+ * // Basic union of arrays
+ * const numbers = unionIterables([1, 2, 3], [3, 4, 5]); // Set(5) {1, 2, 3, 4, 5}
+ *
+ * // Union with different types
+ * const mixed = unionIterables(['a', 'b'], [1, 2]); // Set<string | number>
+ *
+ * // Works with any iterables
+ * const set1 = new Set([1, 2, 3]);
+ * const set2 = new Set([3, 4, 5]);
+ * const combined = unionIterables(set1, set2); // Set(5) {1, 2, 3, 4, 5}
+ *
+ * // String characters
+ * const chars = unionIterables('abc', 'bcd'); // Set(4) {'a', 'b', 'c', 'd'}
+ *
+ * // Empty and single iterables
+ * const empty = unionIterables(); // Set(0) {}
+ * const single = unionIterables([1, 2, 2]); // Set(2) {1, 2}
+ * ```
  */
 export function unionIterables(...iterables: never[]): Set<never>;
 export function unionIterables<const Param1,>(
@@ -94,10 +120,40 @@ export function unionIterables(...iterables: Iterable<unknown>[]): Set<unknown> 
 }
 
 /**
- * Asynchronously creates a new Set instance that's the union of the input iterables or async iterables.
- * @param iterables - An array of iterables or async iterables.
- * @returns A promise that resolves to a Set containing all unique elements from the input iterables.
- * @template ParamTypes - The types of elements in the input iterables.
+ * Asynchronously creates a new Set containing the union of all input iterables and async iterables,
+ * handling both synchronous and asynchronous data sources. Perfect for combining data streams,
+ * async generators, or mixed sync/async iterables while maintaining type safety.
+ *
+ * Processes all iterables concurrently using Promise.all for optimal performance, then combines
+ * all elements into a single deduplicated Set.
+ *
+ * @param iterables - Variable number of iterables or async iterables to combine
+ * @returns Promise resolving to Set containing all unique elements from input sources
+ * @template ParamTypes - Union of element types from all input iterables
+ * @example
+ * ```ts
+ * // Basic async union
+ * const result1 = await unionIterablesAsync([1, 2, 3], [3, 4, 5]);
+ * // Set(5) {1, 2, 3, 4, 5}
+ *
+ * // Mix of sync and async iterables
+ * async function* asyncNumbers() {
+ *   yield 10;
+ *   yield 20;
+ * }
+ * const mixed = await unionIterablesAsync([1, 2], asyncNumbers());
+ * // Set(4) {1, 2, 10, 20}
+ *
+ * // Multiple async generators
+ * async function* gen1() { yield 'a'; yield 'b'; }
+ * async function* gen2() { yield 'b'; yield 'c'; }
+ * const chars = await unionIterablesAsync(gen1(), gen2());
+ * // Set(3) {'a', 'b', 'c'}
+ *
+ * // Empty and single async cases
+ * const empty = await unionIterablesAsync(); // Set(0) {}
+ * const single = await unionIterablesAsync(asyncNumbers()); // Set(2) {10, 20}
+ * ```
  */
 export async function unionIterablesAsync(
   ...iterables: never[]
@@ -220,11 +276,43 @@ export async function unionIterablesAsync(
 }
 
 /**
- * Creates a new generator that yields the union of the input iterables.
- * Elements are yielded in the order they appear and only once.
- * @param iterables - An array of iterables.
- * @returns A generator yielding all unique elements from the input iterables.
- * @template ParamTypes - The types of elements in the input iterables.
+ * Creates a memory-efficient generator that yields the union of all input iterables in encounter
+ * order. Elements are yielded as soon as they're discovered and only once, making this perfect
+ * for processing large datasets without loading everything into memory at once.
+ *
+ * Uses a Set internally to track yielded elements for deduplication while maintaining the
+ * lazy evaluation benefits of generators. Elements appear in the order they're first encountered
+ * across the input iterables.
+ *
+ * @param iterables - Variable number of iterables to process in union fashion
+ * @returns Generator yielding unique elements in encounter order
+ * @template ParamTypes - Union of element types from all input iterables
+ * @example
+ * ```ts
+ * // Basic generator union
+ * const gen = unionIterablesGen([1, 2, 3], [3, 4, 5]);
+ * for (const item of gen) {
+ *   console.log(item); // 1, 2, 3, 4, 5 (in encounter order)
+ * }
+ *
+ * // Memory-efficient processing of large datasets
+ * function* largeDataset1() { for(let i = 0; i < 1000000; i++) yield i; }
+ * function* largeDataset2() { for(let i = 500000; i < 1500000; i++) yield i; }
+ * const union = unionIterablesGen(largeDataset1(), largeDataset2());
+ * // Processes without loading all data into memory
+ *
+ * // String processing
+ * const chars = unionIterablesGen('abc', 'bcd', 'cde');
+ * console.log([...chars]); // ['a', 'b', 'c', 'd', 'e']
+ *
+ * // Early termination
+ * const gen2 = unionIterablesGen([1, 2, 3], [4, 5, 6]);
+ * const first3 = [];
+ * for (const item of gen2) {
+ *   first3.push(item);
+ *   if (first3.length === 3) break; // Only processes what's needed
+ * }
+ * ```
  */
 export function unionIterablesGen(
   ...iterables: never[]
@@ -329,11 +417,57 @@ export function* unionIterablesGen(
 }
 
 /**
- * Asynchronously creates a new async generator that yields the union of the input iterables or async iterables.
- * Elements are yielded in the order they appear and only once.
- * @param iterables - An array of iterables or async iterables.
- * @returns An async generator yielding all unique elements from the input iterables.
- * @template ParamTypes - The types of elements in the input iterables.
+ * Creates a memory-efficient async generator that yields the union of all input iterables and
+ * async iterables in encounter order. Handles both synchronous and asynchronous data sources
+ * while maintaining lazy evaluation and memory efficiency for large or infinite data streams.
+ *
+ * Processes iterables sequentially (not concurrently) to maintain encounter order, using a Set
+ * for deduplication. Elements are yielded as soon as they're discovered and only once.
+ *
+ * @param iterables - Variable number of iterables or async iterables to process
+ * @returns AsyncGenerator yielding unique elements in encounter order
+ * @template ParamTypes - Union of element types from all input iterables
+ * @example
+ * ```ts
+ * // Basic async generator union
+ * async function* gen1() { yield 1; yield 2; }
+ * async function* gen2() { yield 2; yield 3; }
+ * const union = unionIterablesAsyncGen(gen1(), gen2());
+ * for await (const item of union) {
+ *   console.log(item); // 1, 2, 3 (in encounter order)
+ * }
+ *
+ * // Mix of sync and async sources
+ * async function* asyncData() { yield 'async1'; yield 'async2'; }
+ * const mixed = unionIterablesAsyncGen(['sync1', 'sync2'], asyncData());
+ * const result = [];
+ * for await (const item of mixed) {
+ *   result.push(item); // ['sync1', 'sync2', 'async1', 'async2']
+ * }
+ *
+ * // Streaming data processing
+ * async function* dataStream1() {
+ *   for (let i = 0; i < 1000; i++) {
+ *     await new Promise(resolve => setTimeout(resolve, 1)); // Simulate delay
+ *     yield `stream1-${i}`;
+ *   }
+ * }
+ * async function* dataStream2() {
+ *   for (let i = 500; i < 1500; i++) {
+ *     yield `stream2-${i}`;
+ *   }
+ * }
+ * const streamUnion = unionIterablesAsyncGen(dataStream1(), dataStream2());
+ * // Memory-efficient processing of streaming data
+ *
+ * // Early termination with async
+ * const asyncGen = unionIterablesAsyncGen(gen1(), gen2());
+ * const first2 = [];
+ * for await (const item of asyncGen) {
+ *   first2.push(item);
+ *   if (first2.length === 2) break; // Stops processing early
+ * }
+ * ```
  */
 export function unionIterablesAsyncGen(
   ...iterables: never[]

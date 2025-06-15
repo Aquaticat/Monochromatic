@@ -26,3 +26,7 @@ Use [`jsr:@rebeccastevens/deepmerge`](https://github.com/RebeccaStevens/deepmerg
 ### match
 
 Use [`ts-pattern`](https://github.com/gvergnaud/ts-pattern) instead.
+
+### jsonc
+
+Use [`jsonc.min`](https://www.npmjs.com/package/jsonc.min/) instead.

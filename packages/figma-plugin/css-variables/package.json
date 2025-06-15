@@ -47,7 +47,6 @@
     "@csstools/postcss-contrast-color-function": "catalog:",
     "postcss-color-hex-alpha": "catalog:",
     "@csstools/postcss-color-function": "catalog:",
-    "@csstools/postcss-extract": "catalog:",
     "postcss-convert-values": "catalog:",
     "postcss-discard-comments": "catalog:",
     "postcss-discard-duplicates": "catalog:",

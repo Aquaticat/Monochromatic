@@ -11,8 +11,38 @@ import type {
   WithoutFirst9,
 } from './array.type.withoutFirst.ts';
 
-// 10 presetInputs ought to be enough for everyone. Right, right?
-
+/**
+ * Creates a function that invokes `fn` with one or more `presetInputs`
+ * prepended to the arguments it receives. This is known as
+ * [partial application](https://en.wikipedia.org/wiki/Partial_application).
+ *
+ * This function is like `curry`, but it doesn't support placeholders and is
+ * not auto-curried.
+ *
+ * @param fn - function to partially apply arguments to.
+ * @param presetInput0 - first argument to prepend to `fn`'s invocation.
+ * @returns new partially applied function.
+ * @example
+ * ```ts
+ * import { partial } from '@monochromatic-dev/module-es';
+ *
+ * const greet = (greeting: string, name: string) => `${greeting}, ${name}!`;
+ *
+ * const sayHelloTo = partial(greet, 'Hello');
+ * console.log(sayHelloTo('Fred'));
+ * // => 'Hello, Fred!'
+ * ```
+ * @example
+ * ```ts
+ * import { partial } from '@monochromatic-dev/module-es';
+ *
+ * const add = (a: number, b: number, c: number) => a + b + c;
+ *
+ * const add5 = partial(add, 2, 3);
+ * console.log(add5(4));
+ * // => 9
+ * ```
+ */
 export function partial<T_0, T_others extends readonly any[], T_returns,>(
   fn: (input0: T_0, ...rest: T_others) => T_returns,
   presetInput0: T_0,
@@ -120,7 +150,7 @@ export function partial<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9,
   presetInput9: T_9,
 ): (...laterInputs: T_others) => T_returns;
 
-/* @__NO_SIDE_EFFECTS__ */
+/** @internal */
 export function partial<T_0, T_fn extends (input0: T_0, ...rest: any[]) => any,>(
   fn: T_fn,
   presetInput0: T_0,

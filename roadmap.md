@@ -1,10 +1,6 @@
 # Roadmap
 
-<!-- vale Microsoft.FirstPerson = NO -->
-<!-- vale Microsoft.FirstPerson = NO -->
 I planned to complete the project by the end of March.
-<!-- vale Microsoft.FirstPerson = YES -->
-<!-- vale Microsoft.FirstPerson = YES -->
 However, I won't meet that deadline.
 
 ## Write `cpfd`
@@ -13,9 +9,7 @@ Copy Files From Dependencies
 
 ## Write `increase-version`
 
-<!-- vale Microsoft.FirstPerson = NO -->
 So every time I publish new changes it's guaranteed to have a new version.
-<!-- vale Microsoft.FirstPerson = YES -->
 
 ## Write `add-scripts`
 

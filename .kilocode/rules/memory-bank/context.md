@@ -58,3 +58,11 @@
   - Created local project MCP configuration file for documentation
   - Server configured to allow filesystem operations within project directory
   - Ready for server restart/reconnection to enable MCP filesystem tools
+
+- **Current session progress (June 15, 2025 2:00 PM):**
+  - Completed comprehensive TSDoc documentation for all array.type.* files:
+    - [`array.type.mapTo.ts`](packages/module/es/src/array.type.mapTo.ts:1) - Added TSDoc for MapArrayToMaybeAsyncIterables and MapArrayToIterables types with descriptions, template parameters, examples, and references
+    - [`array.type.tuple.ts`](packages/module/es/src/array.type.tuple.ts:1) - Added TSDoc for Tuple type with comprehensive documentation covering tuple creation for counts 0-10
+    - [`array.type.withoutFirst.ts`](packages/module/es/src/array.type.withoutFirst.ts:1) - Added TSDoc for all WithoutFirst variants (WithoutFirst through WithoutFirst10) with detailed descriptions, template parameters, and usage examples
+  - All documentation follows TypeScript conventions with proper @template and @example tags
+  - Documentation covers type-level programming concepts, conditional types, and tuple manipulation utilities

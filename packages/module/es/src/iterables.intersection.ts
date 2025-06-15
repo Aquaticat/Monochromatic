@@ -7,10 +7,38 @@ import {
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 /**
- * Creates a new Set instance that's the intersection of the input iterables.
- * @param arrays - An array of iterables.
- * @returns A Set containing elements present in all input iterables.
- * @template T - The type of elements in the input iterables.
+ * Creates a new Set containing the intersection of all input iterables, preserving only elements
+ * that exist in every provided iterable. Uses precise type intersection (T & U & V...) to ensure
+ * type safety across multiple sources, making it perfect for finding common elements across datasets.
+ *
+ * The function optimizes performance with early short-circuiting: if any iterable is empty, the
+ * result is immediately empty. Uses extensive overloads to maintain precise type information for
+ * up to 9 iterables with intersection types.
+ *
+ * @param arrays - Variable number of iterables to find common elements across
+ * @returns Set containing elements present in all input iterables, with precise intersection typing
+ * @template T - Intersection of element types from all input iterables
+ * @example
+ * ```ts
+ * // Basic intersection of arrays
+ * const common = intersectionIterables([1, 2, 3], [2, 3, 4]); // Set(2) {2, 3}
+ *
+ * // Intersection with multiple arrays
+ * const shared = intersectionIterables([1, 2, 3], [2, 3, 4], [3, 4, 5]); // Set(1) {3}
+ *
+ * // Works with any iterables
+ * const set1 = new Set([1, 2, 3]);
+ * const set2 = new Set([2, 3, 4]);
+ * const common2 = intersectionIterables(set1, set2); // Set(2) {2, 3}
+ *
+ * // String characters
+ * const chars = intersectionIterables('abc', 'bcd'); // Set(2) {'b', 'c'}
+ *
+ * // Edge cases
+ * const empty = intersectionIterables(); // Set(0) {}
+ * const single = intersectionIterables([1, 2, 3]); // Set(3) {1, 2, 3}
+ * const noCommon = intersectionIterables([1, 2], [3, 4]); // Set(0) {}
+ * ```
  */
 export function intersectionIterables(...arrays: never[]): Set<never>;
 export function intersectionIterables<const Param1,>(
@@ -131,9 +159,34 @@ export function intersectionIterables(...arrays: Iterable<unknown>[]): Set<unkno
 }
 
 /**
- * Converts a `Iterable` to a `Set`.
- * @param iterable - iterable to convert.
- * @returns Set containing all unique elements from the input iterable.
+ * Converts any iterable to a Set, efficiently deduplicating elements while preserving the original
+ * element type. This utility function provides a simple way to create Sets from various iterable
+ * sources with full type safety and optimal performance.
+ *
+ * @param iterable - Any iterable to convert to a Set
+ * @returns Set containing all unique elements from the input iterable
+ * @template T - Element type of the input iterable, preserved in the output Set
+ * @example
+ * ```ts
+ * // Array to Set
+ * const numbers = setOfIterable([1, 2, 2, 3]); // Set(3) {1, 2, 3}
+ *
+ * // String to Set of characters
+ * const chars = setOfIterable('hello'); // Set(4) {'h', 'e', 'l', 'o'}
+ *
+ * // Generator to Set
+ * function* range(n: number) {
+ *   for (let i = 0; i < n; i++) yield i;
+ * }
+ * const rangeSet = setOfIterable(range(5)); // Set(5) {0, 1, 2, 3, 4}
+ *
+ * // Empty iterable
+ * const empty = setOfIterable([]); // Set(0) {}
+ *
+ * // Already a Set (creates new instance)
+ * const original = new Set([1, 2, 3]);
+ * const copy = setOfIterable(original); // Set(3) {1, 2, 3} (new instance)
+ * ```
  */
 export function setOfIterable<const T,>(
   iterable: Iterable<T>,
@@ -146,9 +199,38 @@ export function setOfIterable<const T,>(
 }
 
 /**
- * Converts a `MaybeAsyncIterable` to a `Set<unknown>`.
- * @param iterable - iterable or async iterable to convert.
- * @returns Set containing all unique elements from the input iterable.
+ * Asynchronously converts any iterable or async iterable to a Set, handling both synchronous and
+ * asynchronous data sources. Perfect for processing async generators, streams, or mixed sync/async
+ * iterables while maintaining type safety and efficient deduplication.
+ *
+ * @param iterable - Any iterable or async iterable to convert to a Set
+ * @returns Promise resolving to Set containing all unique elements from the input iterable
+ * @template T - Element type of the input iterable, preserved in the output Set
+ * @example
+ * ```ts
+ * // Array to Set (async)
+ * const numbers = await setOfIterableAsync([1, 2, 2, 3]); // Set(3) {1, 2, 3}
+ *
+ * // Async generator to Set
+ * async function* asyncRange(n: number) {
+ *   for (let i = 0; i < n; i++) {
+ *     await new Promise(resolve => setTimeout(resolve, 10)); // Simulate delay
+ *     yield i;
+ *   }
+ * }
+ * const rangeSet = await setOfIterableAsync(asyncRange(5)); // Set(5) {0, 1, 2, 3, 4}
+ *
+ * // Mixed sync and async processing
+ * const syncSet = await setOfIterableAsync('hello'); // Set(4) {'h', 'e', 'l', 'o'}
+ *
+ * // Stream processing
+ * async function* dataStream() {
+ *   yield 'item1';
+ *   yield 'item2';
+ *   yield 'item1'; // Duplicate
+ * }
+ * const streamSet = await setOfIterableAsync(dataStream()); // Set(2) {'item1', 'item2'}
+ * ```
  */
 export async function setOfIterableAsync<const T,>(
   iterable: MaybeAsyncIterable<T>,
@@ -161,10 +243,61 @@ export async function setOfIterableAsync<const T,>(
 }
 
 /**
- * Asynchronously creates a new Set instance that's the intersection of the input iterables or async iterables.
- * @param iterables - An array of iterables or async iterables.
- * @returns A promise that resolves to a Set containing elements present in all input iterables.
- * @template ParamTypes - The types of elements in the input iterables.
+ * Asynchronously creates a new Set containing the intersection of all input iterables and async
+ * iterables, finding elements present in every provided source. Handles both synchronous and
+ * asynchronous data sources efficiently using concurrent processing for optimal performance.
+ *
+ * Processes all iterables concurrently using Promise.all to convert them to Sets, then performs
+ * intersection logic with early short-circuiting for empty sets. Perfect for finding common
+ * elements across async data streams or mixed sync/async sources.
+ *
+ * @param iterables - Variable number of iterables or async iterables to find intersection across
+ * @returns Promise resolving to Set containing elements present in all input sources
+ * @template ParamTypes - Intersection of element types from all input iterables
+ * @example
+ * ```ts
+ * // Basic async intersection
+ * const common = await intersectionIterablesAsync([1, 2, 3], [2, 3, 4]);
+ * // Set(2) {2, 3}
+ *
+ * // Mix of sync and async iterables
+ * async function* asyncNumbers() {
+ *   yield 2;
+ *   yield 3;
+ *   yield 4;
+ * }
+ * const mixed = await intersectionIterablesAsync([1, 2, 3], asyncNumbers());
+ * // Set(2) {2, 3}
+ *
+ * // Multiple async generators
+ * async function* gen1() { yield 'a'; yield 'b'; yield 'c'; }
+ * async function* gen2() { yield 'b'; yield 'c'; yield 'd'; }
+ * async function* gen3() { yield 'c'; yield 'd'; yield 'e'; }
+ * const chars = await intersectionIterablesAsync(gen1(), gen2(), gen3());
+ * // Set(1) {'c'}
+ *
+ * // Edge cases
+ * const empty = await intersectionIterablesAsync(); // Set(0) {}
+ * const single = await intersectionIterablesAsync(asyncNumbers()); // Set(3) {2, 3, 4}
+ *
+ * // Real-world: Finding common items across data streams
+ * async function* fetchUserPreferences(userId: string) {
+ *   // Simulate fetching user preferences
+ *   yield 'sports';
+ *   yield 'music';
+ *   yield 'technology';
+ * }
+ * async function* fetchAvailableContent() {
+ *   // Simulate fetching available content categories
+ *   yield 'music';
+ *   yield 'technology';
+ *   yield 'movies';
+ * }
+ * const commonCategories = await intersectionIterablesAsync(
+ *   fetchUserPreferences('user123'),
+ *   fetchAvailableContent()
+ * ); // Set(2) {'music', 'technology'}
+ * ```
  */
 export async function intersectionIterablesAsync(
   ...iterables: never[]

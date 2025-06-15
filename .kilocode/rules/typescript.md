@@ -190,7 +190,7 @@ TypeScript's support for overloading generator functions has some quirks:
 
 ## Documentation standards
 
-Write comprehensive TSDoc comments for all exported members:
+Write comprehensive TSDoc comments for all exported members (functions, types, constants, classes, and everything else):
 - This includes providing descriptions for parameters and return values.
 - Adhere to the `eslint-plugin-jsdoc` recommended rules, TSDoc variant.
 - Use `{@inheritDoc originalFn}` for a function that's the mere non-async variant of the original function.

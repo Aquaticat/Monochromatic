@@ -1,3 +1,5 @@
 ## Project setup (meta)
 
-`pnpm i`
+Install moon globally first.
+
+Then run `moon run prepare`

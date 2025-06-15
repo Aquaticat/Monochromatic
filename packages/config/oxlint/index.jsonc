@@ -37,6 +37,9 @@
     "import/no-anonymous-default-export": "off",
     "typescript/triple-slash-reference": "off",
 
+    // The IDE and TypeScript both already catch it.
+    "eslint/no-unused-vars": "off",
+
     //endregion correctness
 
     //region Restriction

@@ -25,25 +25,47 @@ const l = logtapeGetLogger(['m', 'boolean.equal']);
 // Write three functions in total to better express the intended purpose.
 
 /**
- Warning: BigInt is considered a primitive.
-
- @param value any value to check
-
- @returns if the value is primitive.
-  A primitive is defined here in terms of what Object.is considers to be primitive:
-
-  1.  undefined
-  2.  null
-  3.  true
-  4.  false
-  5.  string
-  6.  bigint and BigInt
-  7.  symbol
-  8.  number
-  9.  NaN
+ * Determines if a value is a primitive type according to Object.is behavior.
+ *
+ * Checks whether the provided value is one of JavaScript's primitive types.
+ * This function considers BigInt as a primitive type, which matches Object.is
+ * semantics but may differ from other primitive type definitions.
+ *
+ * @param value - Value to check for primitive type classification
+ * @returns True if value is primitive, false if it's a complex object type
+ *
+ * @remarks
+ * **Warning**: BigInt is considered a primitive type by this function.
+ *
+ * Primitive types recognized (9 total):
+ * 1. `undefined`
+ * 2. `null`
+ * 3. `boolean` (true/false)
+ * 4. `string`
+ * 5. `bigint` and BigInt object wrapper
+ * 6. `symbol`
+ * 7. `number`
+ * 8. `NaN` (special number value)
+ *
+ * @example
+ * ```ts
+ * // Primitive values return true
+ * isPrimitive(42);           // true (number)
+ * isPrimitive("hello");      // true (string)
+ * isPrimitive(true);         // true (boolean)
+ * isPrimitive(null);         // true (null)
+ * isPrimitive(undefined);    // true (undefined)
+ * isPrimitive(Symbol("s"));  // true (symbol)
+ * isPrimitive(123n);         // true (bigint)
+ * isPrimitive(NaN);          // true (number, even NaN)
+ *
+ * // Complex objects return false
+ * isPrimitive({});           // false (object)
+ * isPrimitive([]);           // false (array)
+ * isPrimitive(() => {});     // false (function)
+ * isPrimitive(new Date());   // false (Date object)
+ * ```
  */
-
-/* @__NO_SIDE_EFFECTS__ */
 export function isPrimitive(value: any): boolean {
   /* vale alex.Race = YES */
   if (Object.is(value, undefined)) {
@@ -77,7 +99,84 @@ export function isPrimitive(value: any): boolean {
   return false;
 }
 
-/* @__NO_SIDE_EFFECTS__ */
+/**
+ * Performs deep equality comparison between two non-Promise values.
+ *
+ * Compares two values for deep structural equality, handling primitives, objects,
+ * arrays, dates, errors, functions, generators, regular expressions, Maps, Sets,
+ * and plain objects. Uses recursive comparison for nested structures. Can't handle
+ * asynchronous values like Promises or AsyncGenerators - use {@link equalAsync} instead.
+ *
+ * @param a - First value to compare (must not be Promise-like)
+ * @param b - Second value to compare (must not be Promise-like)
+ * @returns True if values are deeply equal, false otherwise
+ *
+ * @throws {TypeError} When either value is a Promise, AsyncGenerator, or AsyncIterable
+ * @throws {TypeError} When either value is a WeakMap or WeakSet (not enumerable)
+ * @throws {TypeError} When encountering unhandled object types
+ *
+ * @remarks
+ * **Comparison Rules:**
+ * - Primitives: Uses `Object.is()` for exact equality
+ * - Functions: Compares string representations (unreliable)
+ * - Arrays: Recursive element-by-element comparison
+ * - Objects: Recursive property comparison by keys
+ * - Dates: Compares `getTime()` values
+ * - Errors: Compares `name`, `message`, and `cause` properties
+ * - RegExp: Compares string representations
+ * - Maps/Sets: Converts to sorted arrays then compares
+ * - Generators: Exhausts both and compares resulting arrays
+ *
+ * **Performance Notes:**
+ * - Function comparison is unreliable due to string representation
+ * - Generator comparison consumes the generators completely
+ * - Map/Set comparison uses sorting for consistent ordering
+ *
+ * @example
+ * ```ts
+ * // Primitive comparisons
+ * equal(42, 42);              // true
+ * equal("hello", "hello");    // true
+ * equal(null, null);          // true
+ * equal(NaN, NaN);            // true (unlike ===)
+ * equal(42, "42");            // false
+ *
+ * // Object comparisons
+ * equal({a: 1}, {a: 1});      // true
+ * equal({a: 1}, {b: 1});      // false
+ * equal([1, 2], [1, 2]);      // true
+ * equal([1, 2], [2, 1]);      // false
+ *
+ * // Complex nested structures
+ * equal(
+ *   {users: [{id: 1, name: "Alice"}]},
+ *   {users: [{id: 1, name: "Alice"}]}
+ * );                          // true
+ *
+ * // Date comparisons
+ * const date1 = new Date("2023-01-01");
+ * const date2 = new Date("2023-01-01");
+ * equal(date1, date2);        // true
+ *
+ * // Error comparisons
+ * const err1 = new Error("Failed");
+ * const err2 = new Error("Failed");
+ * equal(err1, err2);          // true (same message and name)
+ *
+ * // Map/Set comparisons
+ * equal(
+ *   new Map([["a", 1], ["b", 2]]),
+ *   new Map([["b", 2], ["a", 1]])
+ * );                          // true (order doesn't matter)
+ *
+ * // Throws for async values
+ * try {
+ *   equal(Promise.resolve(1), Promise.resolve(1));
+ * } catch (error) {
+ *   console.log("Use equalAsync for Promises");
+ * }
+ * ```
+ */
 export function equal(a: NotPromise, b: NotPromise): boolean {
   // TODO: Check for object value equality, not strict equality.
   // MAYBE: Switch to @std/assert, and use error handling.
@@ -369,13 +468,84 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
 }
 
 /**
- @remarks
- Two additional cases are handled compared to {@inheritDoc equal}:
- 1.  Both a and b are Promises
- 2.  Both a and b are AsyncGenerators | AsyncIterables
+ * Performs deep equality comparison between two values, including asynchronous types.
+ *
+ * Extends {@link equal} to handle asynchronous values like Promises, AsyncGenerators,
+ * and AsyncIterables that can't be compared synchronously. For non-async values,
+ * delegates to the synchronous {@link equal} function. Awaits Promise resolution
+ * and exhausts async iterables before performing deep comparison.
+ *
+ * @param a - First value to compare (any type including async)
+ * @param b - Second value to compare (any type including async)
+ * @returns Promise resolving to true if values are deeply equal, false otherwise
+ *
+ * @remarks
+ * **Additional Async Cases Handled:**
+ * 1. **Promises**: Awaits both promises using `Promise.allSettled()` and compares settled results
+ * 2. **AsyncGenerators**: Exhausts both generators with `Array.fromAsync()` and compares arrays
+ * 3. **AsyncIterables**: Converts both to arrays with `Array.fromAsync()` and compares arrays
+ *
+ * **Important Notes:**
+ * - AsyncGenerators and AsyncIterables are fully consumed during comparison
+ * - Promise rejection handling: Compares settled states including rejection reasons
+ * - For non-async values, behavior is identical to {@link equal}
+ * - Generator comparison only succeeds if both never take parameters
+ *
+ * @example
+ * ```ts
+ * // Promise comparisons
+ * const promise1 = Promise.resolve(42);
+ * const promise2 = Promise.resolve(42);
+ * await equalAsync(promise1, promise2);  // true
+ *
+ * const promise3 = Promise.reject(new Error("Failed"));
+ * const promise4 = Promise.reject(new Error("Failed"));
+ * await equalAsync(promise3, promise4);  // true (same rejection)
+ *
+ * // AsyncGenerator comparisons
+ * async function* gen1() {
+ *   yield 1;
+ *   yield 2;
+ * }
+ * async function* gen2() {
+ *   yield 1;
+ *   yield 2;
+ * }
+ * await equalAsync(gen1(), gen2());      // true
+ *
+ * // AsyncIterable comparisons
+ * const asyncIterable1 = {
+ *   async *[Symbol.asyncIterator]() {
+ *     yield "a";
+ *     yield "b";
+ *   }
+ * };
+ * const asyncIterable2 = {
+ *   async *[Symbol.asyncIterator]() {
+ *     yield "a";
+ *     yield "b";
+ *   }
+ * };
+ * await equalAsync(asyncIterable1, asyncIterable2);  // true
+ *
+ * // Mixed async/sync comparisons
+ * await equalAsync({a: Promise.resolve(1)}, {a: Promise.resolve(1)});  // true
+ * await equalAsync([1, 2, 3], [1, 2, 3]);                             // true (delegates to equal)
+ *
+ * // Generator exhaustion example
+ * async function* counter() {
+ *   yield 1;
+ *   yield 2;
+ *   yield 3;
+ * }
+ * const gen1 = counter();
+ * const gen2 = counter();
+ * await equalAsync(gen1, gen2);  // true, but generators are exhausted
+ *
+ * // Trying to use them again would fail:
+ * // await gen1.next();  // { value: undefined, done: true }
+ * ```
  */
-
-/* @__NO_SIDE_EFFECTS__ */
 export async function equalAsync(a: any, b: any): Promise<boolean> {
   if (isPromise(a) || isPromise(b)) {
     l.debug`Promises a: ${a} b: ${b}`;

@@ -5,9 +5,8 @@ import {
   logtapeConfiguration,
   logtapeConfigure,
   rm,
-} from '@monochromatic-dev/module-es/.js';
+} from '@monochromatic-dev/module-es';
 import {
-  afterEach,
   beforeEach,
   describe,
   expect,

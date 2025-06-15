@@ -1,4 +1,5 @@
 import postcssCustomUnits from '@csstools/custom-units';
+import { notFalsyOrThrow } from '@monochromatic-dev/module-es';
 import { build as esbuildBuild } from 'esbuild';
 import spawn, { type Options } from 'nano-spawn';
 import {
@@ -54,6 +55,7 @@ const vitestExcludeCommon = [
 
   // deprecated
   'packages/module/es/src/testing.ts',
+  '**/*.deprecated.*.ts',
 ];
 
 const rollupExternal = (moduleId: string): boolean => {
@@ -269,6 +271,7 @@ const createFigmaBackendConfig = (configDir: string): UserConfig =>
 const createFrontendLikeConfig = (configDir: string, subDir: string): UserConfig =>
   mergeConfig(createBaseConfig(configDir), {
     define: {
+      // So postcss modules can be bundled and correctly working in browsers.
       __filename: '""',
       __dirname: '""',
     },
@@ -278,9 +281,16 @@ const createFrontendLikeConfig = (configDir: string, subDir: string): UserConfig
     plugins: [
       viteSingleFile({}),
     ],
-    root: resolve(configDir, 'src', subDir),
+
+    // Be aware of how Vite resolves paths.
+    root: resolve(configDir),
     build: {
-      outDir: join('..', '..', 'dist', 'final', subDir),
+      rollupOptions: {
+        input: {
+          index: join('src', subDir, 'index.html'),
+        },
+      },
+      outDir: join('dist', 'final', subDir),
     },
   });
 
@@ -342,8 +352,7 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
                 //           css-variables:js_default |     at async buildEnvironment (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/chunks/dep-BVD1pq3j.js:44451:16)
                 //           css-variables:js_default |     at async Object.defaultBuildApp [as buildApp] (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/chunks/dep-BVD1pq3j.js:44957:5)
                 //           css-variables:js_default |     at async CAC.<anonymous> (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/cli.js:864:7)
-                // TODO: Migrate to rolldown-vite and check if that fixes this.
-                //  Merely migrating to rolldown-vite didn't fix this. Might need to try the uglier, retrying way.
+                // TODO: Move this fn to module-es
                 async function readFileWithRetry(
                   path: Parameters<typeof readFile>[0],
                   options: Parameters<typeof readFile>[1],
@@ -376,29 +385,10 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
     });
   });
 
+/** */
 export const getFigmaIframe = (configDir: string): UserConfigFnObject =>
   createModeConfig(configDir, function createFigmaIframeConfig(configDir) {
-    return mergeConfig(createFrontendLikeConfig(configDir, 'iframe'), {
-      plugins: [
-        (function buildFrontendPlugin(): PluginOption {
-          return {
-            name: 'vite-plugin-build-figma-frontend',
-            enforce: 'post',
-            async writeBundle(): Promise<void> {
-              await spawn(`pnpm`, [
-                'exec',
-                'vite',
-                'build',
-                '--config',
-                'vite.config.frontend.ts',
-                '--mode',
-                'production',
-              ], spawnOptions);
-            },
-          };
-        })(),
-      ],
-    });
+    return createFrontendLikeConfig(configDir, 'iframe');
   });
 
 export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
@@ -410,14 +400,24 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
           name: 'browser',
           include: ['packages/*/*/**/src/**/*.browser.test.ts'],
           exclude: [...vitestExcludeCommon, '*.unit.test.ts'],
+
           browser: {
             provider: 'playwright',
             enabled: true,
             headless: true,
+
+            api: {
+              host: '0.0.0.0',
+              port: 3003,
+            },
+
             instances: [
-              { browser: 'chromium' },
-              // @vitest/coverage-v8 doesn't work with firefox.
-              // { browser: 'firefox' },
+              {
+                browser: 'chromium',
+                testTimeout: 1000,
+              },
+              // @vitest/coverage-v8 doesn't work with firefox because Firefox doesn't use v8 engine.
+              { browser: 'firefox', testTimeout: 1000 },
             ],
           },
         },
@@ -431,6 +431,10 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
       }),
     ],
     name: 'workspace',
+    api: {
+      host: '0.0.0.0',
+      port: 3001,
+    },
     deps: {
       // Never importing CJS module's default export via `import {x} from 'y'`.
       interopDefault: false,
@@ -452,6 +456,25 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
     },
     testTimeout: 2000,
     silent: 'passed-only',
+    logHeapUsage: true,
+    maxConcurrency: 16,
+    sequence: {
+      concurrent: true,
+    },
+    typecheck: {
+      enabled: true,
+
+      // Overwrite this to vue-tsc in packages that use Vue.
+      checker: 'tsc',
+    },
+    chaiConfig: {
+      includeStack: true,
+    },
+    expect: {
+      requireAssertions: true,
+    },
+
+    // Coverage configuration at workspace level - only runs for unit tests
     coverage: {
       provider: 'v8',
       enabled: true,
@@ -482,34 +505,56 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
         'packages/*/*/**/dist/final/**',
         'packages/*/*/**/src/**/*.ts',
       ],
-    },
-    logHeapUsage: true,
-    maxConcurrency: 16,
-    sequence: {
-      concurrent: true,
-    },
-    typecheck: {
-      enabled: true,
-
-      // Overwrite this to vue-tsc in packages that use Vue.
-      checker: 'tsc',
-    },
-    chaiConfig: {
-      includeStack: true,
-    },
-    expect: {
-      requireAssertions: true,
+      // Exclude browser test files from coverage collection
+      // exclude: [
+      // ...vitestExcludeCommon,
+      // 'packages/*/*/**/src/**/*.browser.test.ts',
+      // ],
     },
   },
 });
 
-export const createVitestBaseConfigWorkspace = (configDir: string): VitestUserConfig =>
+export const vitestOnlyUnitConfigWorkspace: VitestUserConfig = {
+  test: {
+    ...vitestOnlyConfigWorkspace.test,
+    projects: [notFalsyOrThrow(notFalsyOrThrow(notFalsyOrThrow(vitestOnlyConfigWorkspace
+      .test)
+      .projects)[1])],
+  },
+};
+
+export const vitestOnlyBrowserConfigWorkspace: VitestUserConfig = {
+  test: {
+    ...vitestOnlyConfigWorkspace.test,
+    projects: [notFalsyOrThrow(notFalsyOrThrow(notFalsyOrThrow(vitestOnlyConfigWorkspace
+      .test)
+      .projects)[0])],
+    coverage: {
+      // Turned off for browsers. See https://github.com/vitest-dev/vitest/issues/5477
+      enabled: false,
+    },
+  },
+};
+
+export const createVitestBaseUnitConfigWorkspace = (
+  configDir: string,
+): VitestUserConfig =>
   mergeConfig(
     createBaseConfig(configDir),
-    vitestOnlyConfigWorkspace,
+    vitestOnlyUnitConfigWorkspace,
   );
 
-export const getVitestWorkspace = (configDir: string): UserConfigFnObject =>
-  createModeConfig(configDir, createVitestBaseConfigWorkspace);
+export const createVitestBaseBrowserConfigWorkspace = (
+  configDir: string,
+): VitestUserConfig =>
+  mergeConfig(
+    createBaseConfig(configDir),
+    vitestOnlyBrowserConfigWorkspace,
+  );
+
+export const getVitestUnitWorkspace = (configDir: string): UserConfigFnObject =>
+  createModeConfig(configDir, createVitestBaseUnitConfigWorkspace);
+export const getVitestBrowserWorkspace = (configDir: string): UserConfigFnObject =>
+  createModeConfig(configDir, createVitestBaseBrowserConfigWorkspace);
 
 export type { UserConfigFnObject } from 'vite';

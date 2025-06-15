@@ -1,6 +1,14 @@
+/**
+ * Performs a shallow equality check on two arrays of arguments.
+ *
+ * @param args1 - First array of arguments to compare.
+ * @param args2 - Second array of arguments to compare.
+ * @returns `true` if arrays have the same length and their elements are strictly equal (`===`), `false` otherwise.
+ * @internal
+ */
 export function argsAlmostEqual(
-  args1: unknown[],
-  args2: unknown[],
+  args1: readonly unknown[],
+  args2: readonly unknown[],
 ): boolean {
   if (args1.length !== args2.length) {
     return false;
@@ -14,20 +22,38 @@ export function argsAlmostEqual(
 }
 
 /**
+ * Creates a memoized version of a function that caches its last result only.
+ *
  * @remarks
- * Memoizes a function to cache its last result only.
+ * The cache is invalidated if the arguments of subsequent calls aren't shallowly equal to the arguments of the previous call.
+ * This uses a strict equality check (`===`) on arguments.
  *
- * Throws when the inner function throws.
+ * - Throws when the inner function throws.
+ * - Supports both synchronous and asynchronous functions.
+ * - The properties on the original function aren't preserved.
  *
- * Supports both synchronous and asynchronous functions.
- * Supports no matter how many arguments the function has.
- * Properties on the function aren't preserved.
- * If the function returns undefined, this memoization function wouldn't memoize correctly.
+ * @param fn - Function to memoize.
+ * @returns Memoized function.
+ * @example
+ * ```ts
+ * let i = 0;
+ * const fn = () => ++i;
+ * const memoizedFn = memoize(fn);
  *
- * Function arguments are serialized by JSON.stringify() and compared.
- * This way of comparing function arguments is fast but inaccurate.
+ * memoizedFn(); // 1
+ * memoizedFn(); // 1
+ * i = 10;
+ * memoizedFn(); // 1, still cached, because args are the same (`[]`)
+ *
+ * const fnWithArgs = (a: number, b: string) => `${a} ${b} ${++i}`;
+ * const memoizedFnWithArgs = memoize(fnWithArgs);
+ * memoizedFnWithArgs(1, 'a'); // '1 a 11'
+ * memoizedFnWithArgs(1, 'a'); // '1 a 11'
+ * memoizedFnWithArgs(2, 'b'); // '2 b 12'
+ * memoizedFnWithArgs(2, 'b'); // '2 b 12'
+ * ```
  */
-export function memoize<Args extends any[], Result,>(
+export function memoize<const Args extends readonly unknown[], Result,>(
   fn: (...args: Args) => Result,
 ): (...args: Args) => Result {
   let lastArgs: Args | undefined = undefined;

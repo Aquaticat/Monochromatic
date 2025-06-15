@@ -7,7 +7,7 @@ When encountering Vale hints, warnings, or errors in the project, I will automat
 1. **Immediate Fix Application**: When Vale hints are shown (either from command output, IDE warnings, or error messages), I will:
    - Discard all Vale hints because they can be inaccurate.
    - Run `vale sync`
-   - Use the glob defined in Vale config when running Vale.
+   - Use the glob defined in Vale config when running Vale. To run Vale on all files, add ` .` to the end of the command.
    - Identify the specific Vale rule being violated
    - Identify if the readability would be enhanced by fixing the Vale hint.
         - If not, use vale `CommentDelimiters` to disable the specific rule.
@@ -46,7 +46,9 @@ When encountering Vale hints, warnings, or errors in the project, I will automat
                 Notice: For YAML,TOML, this doesn't make Vale stop emitting errors due to a limitation with how Vale parses its configuration file.
                 Therefore, when encountering such an error after adding the disable comments, silently ignore any more Vale errors related to the same rule in the block.
         - If yes, Apply the appropriate fix to resolve the issue
-        - Ensure the fix maintains the original meaning and intent of the content
+        - Check if the fix maintains the original meaning and intent of the content
+          - If not, try another way to express it.
+          - If still not, use vale `CommentDelimiters` to disable the specific rule.
    - IMPORTANT: Discard all the previous Vale hints and output because they're outdated.
    - Run Vale again immediately to check for more issues and resolve them.
 

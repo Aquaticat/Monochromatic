@@ -17,10 +17,7 @@ import {
   notEmptyOrThrow,
   notFalsyOrThrow,
 } from './error.throw.ts';
-import {
-  trimIterable,
-  trimIterableWith,
-} from './iterable.trim.ts';
+import { trimIterableWith } from './iterable.trim.ts';
 import { logtapeGetLogger } from './logtape.shared.ts';
 import { toSingleQuotedString } from './string.singleQuoted.ts';
 
@@ -53,8 +50,30 @@ const identToValueMap = new Map<string, string | number>([
   ['--b', "'bString'"],
 ]);
 
+/**
+ * Represents either a CSS token or a grouped function token with nested tokens.
+ * Function tokens are grouped with their contents to maintain proper nesting structure
+ * during CSS parsing and evaluation.
+ */
 export type GroupedToken = CSSToken | ['function-token-group', GroupedToken[]];
 
+/**
+ * Tokenizes CSS value string into array of CSS tokens using CSS tokenizer.
+ * Removes the EOF token from the end and validates that tokens were produced.
+ * Throws MalformedCssValueError if parsing fails.
+ *
+ * @param cssValue - CSS value string to tokenize
+ * @returns Array of CSS tokens representing the parsed value
+ * @throws {MalformedCssValueError} When CSS parsing encounters syntax errors
+ * @example
+ * ```ts
+ * const tokens = lGCC_tokenizeCssValue("var(--color)");
+ * // Returns array of tokens representing the var function call
+ *
+ * const simpleTokens = lGCC_tokenizeCssValue("'hello world'");
+ * // Returns array with string token
+ * ```
+ */
 export function lGCC_tokenizeCssValue(cssValue: string): CSSToken[] {
   const tokens = tokenize({ css: cssValue }, {
     onParseError: (error: Error) => {
@@ -68,6 +87,26 @@ export function lGCC_tokenizeCssValue(cssValue: string): CSSToken[] {
   return tokens;
 }
 
+/**
+ * Handles simple CSS tokens by removeing their values.
+ * Supports number, dimension, string, and specific identifier tokens.
+ * For identifier tokens, only 'none' is recognized as valid.
+ *
+ * @param token - CSS token to remove value from
+ * @returns Extracted value as string or number
+ * @throws {UnrecognizedSingleCssValueError} When token type isn't supported or identifier isn't 'none'
+ * @example
+ * ```ts
+ * const numberToken = createNumberToken(42);
+ * lGCC_handleSimpleToken(numberToken); // 42
+ *
+ * const stringToken = createStringToken("hello");
+ * lGCC_handleSimpleToken(stringToken); // "hello"
+ *
+ * const noneToken = createIdentToken("none");
+ * lGCC_handleSimpleToken(noneToken); // "none"
+ * ```
+ */
 export function lGCC_handleSimpleToken(token: CSSToken): string | number {
   if (isTokenNumber(token) || isTokenDimension(token)) {
     return token[4].value;
@@ -89,12 +128,46 @@ export function lGCC_handleSimpleToken(token: CSSToken): string | number {
   );
 }
 
+/**
+ * Type guard that checks if a grouped token represents a function token group.
+ * Function token groups are tuples with 'function-token-group' as first element
+ * and array of nested tokens as second element.
+ *
+ * @param item - Grouped token to check
+ * @returns True if item is a function token group, false otherwise
+ * @example
+ * ```ts
+ * const functionGroup: GroupedToken = ['function-token-group', [varToken, identToken]];
+ * lGCC_isFunctionTokenGroup(functionGroup); // true
+ *
+ * const regularToken: GroupedToken = someToken;
+ * lGCC_isFunctionTokenGroup(regularToken); // false
+ * ```
+ */
 export function lGCC_isFunctionTokenGroup(
   item: GroupedToken,
 ): item is ['function-token-group', GroupedToken[]] {
   return item[0] === 'function-token-group';
 }
 
+/**
+ * Recursively checks if a specific token is contained within a group of tokens.
+ * Performs deep search through function token groups to find nested tokens.
+ * Uses reference equality for direct token comparison.
+ *
+ * @param tokenToFind - Token to search for within group contents
+ * @param groupContents - Array of grouped tokens to search through
+ * @returns True if token is found anywhere in the group hierarchy, false otherwise
+ * @example
+ * ```ts
+ * const targetToken = someToken;
+ * const group = [token1, ['function-token-group', [targetToken, token2]], token3];
+ * lGCC_isTokenDeeplyContained(targetToken, group); // true
+ *
+ * const notInGroup = otherToken;
+ * lGCC_isTokenDeeplyContained(notInGroup, group); // false
+ * ```
+ */
 export function lGCC_isTokenDeeplyContained(tokenToFind: GroupedToken,
   groupContents: GroupedToken[]): boolean
 {
@@ -113,6 +186,20 @@ export function lGCC_isTokenDeeplyContained(tokenToFind: GroupedToken,
   return false;
 }
 
+/**
+ * Groups CSS function tokens with their contents into hierarchical structures.
+ * Processes tokens to identify function boundaries and creates nested groupings
+ * for proper CSS function parsing. Handles nested functions recursively.
+ *
+ * @param tokens - Array of grouped tokens to process into function structures
+ * @returns Array of grouped tokens with functions properly nested
+ * @example
+ * ```ts
+ * const tokens = [identToken, functionToken, argToken, closeParenToken];
+ * const grouped = lGCC_groupFunctionTokens(tokens);
+ * // Returns tokens with function calls grouped with their arguments
+ * ```
+ */
 export function lGCC_groupFunctionTokens(tokens: GroupedToken[]): GroupedToken[] {
   const result = tokens.reduce<GroupedToken[]>(
     function reducer(acc, token: GroupedToken, _, arr: GroupedToken[]) {
@@ -170,6 +257,21 @@ export function lGCC_groupFunctionTokens(tokens: GroupedToken[]): GroupedToken[]
   return result;
 }
 
+/**
+ * Reduces a grouped token to its string representation by processing different token types.
+ * Handles function token groups by delegating to specialized handlers and processes
+ * simple tokens like whitespace and strings directly.
+ *
+ * @param acc - Accumulated string result from previous reductions
+ * @param token - Grouped token to process and convert to string
+ * @returns Updated accumulated string with token's string representation
+ * @throws {UnrecognizedSingleCssValueError} When token type isn't supported
+ * @example
+ * ```ts
+ * const result = lGCC_reduceTokenToString("", stringToken);
+ * // Returns string representation of the token
+ * ```
+ */
 export function lGCC_reduceTokenToString(acc: string, token: GroupedToken): string {
   if (token[0] === 'function-token-group') {
     return lGCC_handleFunctionTokenGroup(acc, token);
@@ -190,6 +292,21 @@ export function lGCC_reduceTokenToString(acc: string, token: GroupedToken): stri
   );
 }
 
+/**
+ * Handles processing of CSS function token groups by delegating to specific function handlers.
+ * Currently supports var() functions and validates function names before processing.
+ * Throws errors for unsupported function types.
+ *
+ * @param acc - Accumulated string result from previous processing
+ * @param token - Function token group to process
+ * @returns Updated accumulated string after processing function
+ * @throws {Error} When function token is invalid or function name is unsupported
+ * @example
+ * ```ts
+ * const result = lGCC_handleFunctionTokenGroup("", varFunctionGroup);
+ * // Returns processed var() function result
+ * ```
+ */
 export function lGCC_handleFunctionTokenGroup(acc: string, token: GroupedToken): string {
   const functionTokenGroup = token[1] as GroupedToken[];
   const functionToken = notFalsyOrThrow(functionTokenGroup[0]) as CSSToken;
@@ -210,6 +327,22 @@ export function lGCC_handleFunctionTokenGroup(acc: string, token: GroupedToken):
   return acc;
 }
 
+/**
+ * Handles CSS var() function processing by resolving variable references and fallbacks.
+ * Processes var() function arguments to resolve CSS custom properties with fallback support.
+ * Validates argument structure and delegates to appropriate handlers.
+ *
+ * @param acc - Accumulated string result from previous processing
+ * @param functionTokenGroup - Array of tokens representing var() function contents
+ * @returns Updated accumulated string with resolved var() function value
+ * @throws {Error} When var() function has no arguments
+ * @throws {InCoherentCssValueError} When first argument isn't string or identifier
+ * @example
+ * ```ts
+ * const result = lGCC_handleVarFunction("", [varToken, identToken, closeParenToken]);
+ * // Returns resolved CSS variable value
+ * ```
+ */
 export function lGCC_handleVarFunction(acc: string,
   functionTokenGroup: GroupedToken[]): string
 {
@@ -237,6 +370,22 @@ export function lGCC_handleVarFunction(acc: string,
   );
 }
 
+/**
+ * Checks if token isn't whitespace or comment, filtering out non-meaningful CSS tokens.
+ * Used to identify tokens that contribute to actual CSS value content during parsing.
+ * Function token groups are always considered meaningful.
+ *
+ * @param potentiallyGroupedToken - CSS token or grouped token to check
+ * @returns True if token is meaningful (not whitespace or comment), false otherwise
+ * @example
+ * ```ts
+ * const isValid = lGCC_isNotWhitespaceOrComment(['function-token-group', tokens]);
+ * // Returns true for function groups
+ *
+ * const isValid2 = lGCC_isNotWhitespaceOrComment(identToken);
+ * // Returns true for meaningful tokens
+ * ```
+ */
 export function lGCC_isNotWhitespaceOrComment(potentiallyGroupedToken: any): boolean {
   // checking isFunctionTokenGroup is necessary, because other than narrowing the type of potentiallyGroupedToken down, isToken also asserts it's a regular token, which means we'd erroneously remove function token groups if this check isn't here.
   return lGCC_isFunctionTokenGroup(potentiallyGroupedToken)
@@ -244,6 +393,23 @@ export function lGCC_isNotWhitespaceOrComment(potentiallyGroupedToken: any): boo
       && !isTokenWhiteSpaceOrComment(potentiallyGroupedToken);
 }
 
+/**
+ * Resolves CSS variable identifier to its computed value using predefined variable mappings.
+ * Handles fallback processing when variable is undefined. Validates browser compatibility
+ * for numeric values in content property context.
+ *
+ * @param acc - Accumulated string result from previous processing
+ * @param identToken - CSS identifier token representing variable name
+ * @param args - Array of tokens representing var() function arguments
+ * @returns Updated accumulated string with resolved variable value or fallback
+ * @throws {Error} When numeric variables are used in content property context
+ * @throws {Error} When fallback structure is malformed
+ * @example
+ * ```ts
+ * const result = lGCC_handleVarIdentifier("", identToken, [identToken, commaToken, fallbackToken]);
+ * // Returns resolved variable value or processes fallback
+ * ```
+ */
 export function lGCC_handleVarIdentifier(acc: string, identToken: TokenIdent,
   args: GroupedToken[]): string
 {
@@ -287,6 +453,25 @@ export function lGCC_handleVarIdentifier(acc: string, identToken: TokenIdent,
   return lGCC_handleVarFallback(acc, secondArg);
 }
 
+/**
+ * Processes CSS var() function fallback values when primary variable resolution fails.
+ * Recursively processes fallback tokens to resolve nested CSS values and functions.
+ * Supports function groups, string tokens, and identifier tokens with predefined mappings.
+ *
+ * @param acc - Accumulated string result from previous processing
+ * @param fallbackArg - Single grouped token representing fallback value
+ * @returns Updated accumulated string with processed fallback value
+ * @throws {UnrecognizedSingleCssValueError} When fallback identifier is undefined or not string
+ * @throws {InCoherentCssValueError} When fallback token type is invalid
+ * @example
+ * ```ts
+ * const result = lGCC_handleVarFallback("", stringToken);
+ * // Returns processed fallback string value
+ *
+ * const result2 = lGCC_handleVarFallback("", functionGroup);
+ * // Returns processed nested function result
+ * ```
+ */
 export function lGCC_handleVarFallback(acc: string, fallbackArg: GroupedToken): string {
   if (lGCC_isFunctionTokenGroup(fallbackArg)) {
     return lGCC_handleFunctionTokenGroup(acc, fallbackArg);
@@ -309,6 +494,24 @@ export function lGCC_handleVarFallback(acc: string, fallbackArg: GroupedToken): 
   throw new InCoherentCssValueError(`Fallback isn't a valid token type`);
 }
 
+/**
+ * Appends string input to accumulated result with proper quote handling and concatenation.
+ * Handles special cases for quote merging when accumulator ends with quoted string.
+ * Ensures proper string formatting for CSS content property values.
+ *
+ * @param acc - Accumulated string result from previous processing
+ * @param input - String value to append to accumulator
+ * @returns Updated accumulated string with properly formatted concatenation
+ * @throws {Error} When accumulator format is malformed for string concatenation
+ * @example
+ * ```ts
+ * const result = lGCC_appendString("", "hello");
+ * // Returns "'hello'"
+ *
+ * const result2 = lGCC_appendString("'start' ", "end");
+ * // Returns "'startend'"
+ * ```
+ */
 export function lGCC_appendString(acc: string, input: string): string {
   if (acc.endsWith("' ") && acc.startsWith("'")) {
     return `${acc.slice(0, -"' ".length)}${toSingleQuotedString(input).slice(1)}`;
@@ -320,6 +523,23 @@ export function lGCC_appendString(acc: string, input: string): string {
 }
 
 /**
+ * Main function that processes CSS values with limited computed style resolution.
+ * Tokenizes CSS input, groups function tokens, and resolves CSS variables using predefined mappings.
+ * Designed specifically for CSS content property values with browser compatibility considerations.
+ *
+ * @param cssValue - CSS value string to process and resolve
+ * @returns Processed CSS value with resolved variables and proper formatting
+ * @throws {Error} When CSS tokenization fails or produces invalid token structure
+ * @throws {UnrecognizedSingleCssValueError} When CSS variables or fallbacks are undefined
+ * @throws {InCoherentCssValueError} When CSS value structure is malformed
+ * @example
+ * ```ts
+ * const result = limitedGetComputedCss("var(--my-var, 'fallback')");
+ * // Returns resolved CSS value based on predefined variable mappings
+ *
+ * const result2 = limitedGetComputedCss("'static string'");
+ * // Returns "'static string'" (no processing needed)
+ * ```
  * @remarks
  * Assumes we're parsing the most simplified representation of a CSS value, by the browser's getComputedValue algorithm.
  *

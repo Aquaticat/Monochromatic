@@ -15,7 +15,7 @@ export function notNullishOrThrow<T,>(
   return potentiallyNullish as Exclude<T, null | undefined>;
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function notUndefinedOrThrow<T,>(
+ export function notUndefinedOrThrow<T,>(
   potentiallyUndefined: T,
 ): Exclude<T, undefined> {
   if (potentiallyUndefined === undefined) {
@@ -24,7 +24,7 @@ export function notNullishOrThrow<T,>(
   return potentiallyUndefined as Exclude<T, undefined>;
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function notNullOrThrow<T,>(
+ export function notNullOrThrow<T,>(
   potentiallyNull: T,
 ): Exclude<T, null> {
   if (potentiallyNull === null) {
@@ -33,9 +33,9 @@ export function notNullishOrThrow<T,>(
   return potentiallyNull as Exclude<T, null>;
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export type falsy = false | null | 0 | 0n | '' | undefined;
+ export type falsy = false | null | 0 | 0n | '' | undefined;
 
-/* @__NO_SIDE_EFFECTS__ */ export function notFalsyOrThrow<T,>(
+ export function notFalsyOrThrow<T,>(
   potentiallyFalsy: T,
 ): Exclude<T, falsy> {
   if (!potentiallyFalsy) {
@@ -44,7 +44,7 @@ export function notNullishOrThrow<T,>(
   return potentiallyFalsy as Exclude<T, falsy>;
 }
 
-/* @__NO_SIDE_EFFECTS__ */ export function notFalseOrThrow<T,>(
+ export function notFalseOrThrow<T,>(
   potentiallyFalse: T,
 ): Exclude<T, false> {
   if (potentiallyFalse === false) {

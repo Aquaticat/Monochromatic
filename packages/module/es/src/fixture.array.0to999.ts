@@ -1,10 +1,65 @@
-/** From 0 to 999 inclusive.
-
- @remarks
- Suitable as test fixture because 0 is falsy, but others are truthy,
- and is straightforward to test for all-truthiness or all-falsiness
- by making the predicate add one or minus 999 to input.
- It's lengthy so it could be used to test performance of different implementations.
+/**
+ * Array containing integers from 0 to 999 inclusive.
+ *
+ * This constant provides a comprehensive test fixture containing 1000 consecutive
+ * integers. It's particularly useful for testing array operations, performance
+ * benchmarking, and creating predictable test data with mixed truthiness values.
+ *
+ * @remarks
+ * This array is ideal as test fixture because 0 is falsy while all other values
+ * are truthy, making it straightforward to test for all-truthiness or all-falsiness
+ * by creating predicates that add one or subtract 999 from input values.
+ *
+ * The array's length (1000 elements) makes it suitable for testing performance
+ * characteristics of different implementations, memory usage patterns, and
+ * algorithmic efficiency comparisons.
+ *
+ * @example
+ * Basic usage for testing array operations:
+ * ```ts
+ * import { array0to999 } from '@monochromatic-dev/module-es';
+ *
+ * // Test array filtering
+ * const evenNumbers = array0to999.filter(n => n % 2 === 0);
+ * console.log(evenNumbers.length); // 500
+ *
+ * // Test array mapping
+ * const doubled = array0to999.map(n => n * 2);
+ * console.log(doubled[500]); // 1000
+ * ```
+ *
+ * @example
+ * Using for truthiness testing:
+ * ```ts
+ * import { array0to999 } from '@monochromatic-dev/module-es';
+ *
+ * // Test all-truthy predicate (adds 1 to make 0 truthy)
+ * const allTruthy = array0to999.every(n => n + 1);
+ * console.log(allTruthy); // true
+ *
+ * // Test all-falsy predicate (subtracts 999 to make only 999 truthy)
+ * const allFalsy = array0to999.every(n => n - 999);
+ * console.log(allFalsy); // false
+ * ```
+ *
+ * @example
+ * Performance testing scenarios:
+ * ```ts
+ * import { array0to999 } from '@monochromatic-dev/module-es';
+ *
+ * // Benchmark different sorting implementations
+ * const testData = [...array0to999].reverse();
+ * const start = performance.now();
+ * testData.sort((a, b) => a - b);
+ * const duration = performance.now() - start;
+ *
+ * // Test memory-intensive operations
+ * const chunks = [];
+ * for (let i = 0; i < array0to999.length; i += 100) {
+ *   chunks.push(array0to999.slice(i, i + 100));
+ * }
+ * console.log(chunks.length); // 10 chunks of 100 elements each
+ * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export const array0to999: number[] = [
   0,
