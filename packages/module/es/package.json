@@ -41,6 +41,9 @@
       "default": "./src/fs.pathParse.default.ts"
     }
   },
+  "bin": {
+    "moon.installVale": "./src/moon.installVale.ts"
+  },
   "scripts": {
     "w:types": "tsc --watch",
     "b:types": "tsc --build --force --verbose",

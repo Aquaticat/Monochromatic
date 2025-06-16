@@ -3,6 +3,8 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 tasks:
   pnpmVersionCheck:
     command: 'pnpm version'
+  pnpmInstall:
+    command: 'bun packages/module/es/src/moon.pnpmInstall.ts'
 
   test:
     deps:
@@ -48,18 +50,31 @@ tasks:
     - '@group(allDists)'
 
   preparePlaywright:
-    command: 'playwright install'
+    command: 'bun packages/module/es/src/moon.preparePlaywright.ts'
+
   prepareVale:
     deps:
+    - installValeDependencyGlobally
+    - installVale
     - valeSync
     - createValeNoopStyle
+    options:
+      runDepsInParallel: false
+  installVale:
+    # command: 'bun packages/module/es/src/moon.installVale.ts'
+    command: 'moon.installVale'
+    toolchain: node
+  installValeDependencyGlobally:
+    command: 'bun install -g mdx2vast'
   valeSync:
-    command: 'vale sync'
+    command: 'packages/module/es/src/moon.valeSync.ts'
+    toolchain: bun
   createValeNoopStyle:
     command: 'mkdir -p .vale/noop'
 
   prepare:
     deps:
+    - pnpmInstall
     - preparePlaywright
     - prepareVale
     options:
@@ -72,7 +87,7 @@ tasks:
     inputs:
     - '@group(allSources)'
     options:
-     outputStyle: buffer-only-failure
+      outputStyle: buffer-only-failure
 
   buildWatch:
     deps:

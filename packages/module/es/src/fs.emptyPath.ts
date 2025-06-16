@@ -18,7 +18,10 @@ import { logtapeGetLogger } from './logtape.shared.ts';
 const l = logtapeGetLogger(['m', 'fs', 'ensurePath']);
 
 export async function emptyPath(path: string): Promise<string> {
-  const cleanPath: string = trimPathLeadingSlash(new URL(path, 'file:').pathname);
+  // Check if path has query parameters (e.g., ?raw or ?vue=css)
+  const queryIndex = path.indexOf('?');
+  const cleanPath = queryIndex > -1 ? path.substring(0, queryIndex) : path;
+  
   const parsedPath = pathParse(cleanPath);
 
   if (parsedPath.ext) {
@@ -26,7 +29,7 @@ export async function emptyPath(path: string): Promise<string> {
     return await emptyFile(path);
   }
 
-  return await emptyDir(path);
+  return await emptyDir(cleanPath);
 }
 
 export async function emptyDir(path: string): Promise<string> {
@@ -44,7 +47,10 @@ export async function emptyDir(path: string): Promise<string> {
 }
 
 export async function emptyFile(path: string): Promise<string> {
-  const cleanPath: string = trimPathLeadingSlash(new URL(path, 'file:').pathname);
+  // Check if path has query parameters (e.g., ?raw or ?vue=css)
+  const queryIndex = path.indexOf('?');
+  const cleanPath = queryIndex > -1 ? path.substring(0, queryIndex) : path;
+  
   await writeFile(cleanPath, '');
   return path;
 }

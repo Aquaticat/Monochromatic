@@ -107,6 +107,7 @@ catalog:
   '@types/postcss-mixins': '*'
   ts-pattern: '*'
   oxc-minify: '*'
+  'mdx2vast': '*'
   memfs: '>=4.17.2'
   happy-opfs: '>=1.8.6'
   eslint-p: '>=0.23.0'

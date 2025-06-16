@@ -506,12 +506,17 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
         'packages/*/*/**/dist/final/**',
         'packages/*/*/**/src/**/*.ts',
       ],
-      // Exclude browser test files from coverage collection
       exclude: [
-      ...vitestExcludeCommon,
-      'packages/*/*/**/src/**/*.browser.test.ts',
-      '**/dom.*',
-      '**/fixture.*'
+        ...vitestExcludeCommon,
+        // Exclude browser test files from coverage collection
+        'packages/*/*/**/src/**/*.browser.test.ts',
+        '**/dom.*',
+
+        // Test fixtures.
+        '**/fixture.*',
+
+        // Moon scripts
+        '**/moon.*',
       ],
     },
   },

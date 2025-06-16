@@ -1,13 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find:*)",
-      "Bash(ls:*)",
-      "Bash(moon run:*)",
-      "Bash(node:*)",
-      "Bash(pnpm vitest run:*)",
-      "Bash(grep:*)",
-      "Bash(git add:*)"
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs"
     ],
     "deny": []
   }

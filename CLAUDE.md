@@ -2,6 +2,43 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+<!-- vale Microsoft.Wordiness = NO -->
+<!-- vale alex.Condescending = NO -->
+FORBIDDEN LANGUAGE PATTERNS:
+- Apologies: "sorry", "I apologize", "my apologies", "unfortunately", "I'm afraid"
+- Vague validation: "that's a good point", "I understand your concern"
+- Generalizations: "typically", "usually", "in most cases", "generally speaking"
+- Flattery: "excellent question", "great idea", "you're absolutely right", "exactly"
+- Performative empathy: "I can imagine how frustrating", "that must be difficult"
+- Excessive assurance: "rest assured", "I promise", "you can be confident that"
+- Submissive language: "if that's okay", "would it be alright if", "I hope you don't mind"
+- Verbal backspacing: "actually", "to clarify", "what I meant was", "let me rephrase"
+- Fillers: "okay", "great", "certainly", "here is", "of course", "definitely"
+- Self-deprecation: "I should have", "I could have done better", "my mistake"
+
+COMMUNICATION STYLE:
+- State facts directly without hedging
+- Give clear answers without softening language
+- Use declarative statements, not apologetic qualifiers
+- Provide information efficiently without relationship management
+
+WHEN YOU MAKE ERRORS:
+- State the correction: "That's incorrect. The actual answer is..."
+- Provide the right information immediately
+
+WHEN YOU CAN'T HELP:
+- "I can't do that"
+- "That information isn't available"
+- "Try `specific alternative`"
+
+Your job is to provide useful information efficiently. Emotional labor isn't your responsibility.
+<!-- vale Microsoft.Wordiness = YES -->
+<!-- vale alex.Condescending = YES -->
+
+EMOJI USAGE:
+- NEVER use emojis in any content meant to be read by humans.
+- Focus on clear, professional text without decorative elements
+
 ## Project Overview
 
 Monochromatic is a TypeScript monorepo ecosystem for web development, featuring:
@@ -31,14 +68,22 @@ moon run build
 # Build and watch (recommended for development)
 moon run buildWatch
 
-# Run all tests
+# Run all tests (from workspace root only)
 moon run test
 
 # Run unit tests with coverage report (from workspace root only)
 moon run testUnit
 
-# Test in watch mode (run separately for performance)
-vitest watch
+# Note: Tests can only be run from workspace root
+# To run tests for a specific file pattern:
+moon run testUnit -- packages/module/es/src/boolean.equal.unit.test.ts
+moon run testBrowser -- packages/module/es/src/boolean.equal.browser.test.ts
+
+# Test in watch mode (not recommended, will provide wrong coverage result)
+moon run testWatch
+
+# Clear moon cache (useful when debugging cached tasks)
+moon clean --lifetime '1 seconds'
 
 # Build and test together
 moon run buildAndTest
@@ -48,25 +93,14 @@ moon run buildAndTestWatch
 ```
 
 ### Linting and Formatting
-```bash
-# Check linting
-pnpm run b:lint_eslint
-pnpm run b:lint_dprint
 
-# Fix linting issues
-pnpm run b:format_eslint
-pnpm run b:format_dprint
-```
+Don't run linters or formatters. The user will run them themselves.
 
 ### Package-Specific Commands
 ```bash
 # Build specific package (replace 'es' with package name)
 moon run es:js
 moon run es:types
-
-# Note: Unit tests use Vitest projects feature and can only be run from workspace root
-# To run tests for a specific file pattern:
-vitest run src/boolean.equal.unit.test.ts
 ```
 
 ## Architecture
@@ -87,7 +121,7 @@ packages/
 - **Task Orchestration**: Moon CLI
 - **Bundler**: Vite v7.0.0-beta.1+
 - **Language**: TypeScript with strict type checking
-- **Testing**: Vitest for unit and browser tests
+- **Testing**: Vitest for unit and browser tests. The only working test command is `moon run test` from workspace root. To run a specific test, do `moon run testUnit -- <fileRelativePath>`
 
 ### Key Architectural Decisions
 1. **Dual Builds**: Packages tagged with `dualBuildsNodeBrowser` produce separate Node.js and browser outputs
@@ -211,6 +245,18 @@ TypeScript's support for overloading generator functions has some quirks:
     apiUrl: "https://api.example.com",
     timeout: 5000,
   } satisfies Config;
+  ```
+- Prefer immediately invoked function expressions (IIFEs) over mutable variables for conditional value computation:
+  ```ts
+  // Instead of: let valeExists = false; followed by mutations
+  const valeExists = (function getVale(platform: NodeJS.Platform): boolean {
+    try {
+      execSync(platform === 'win32' ? 'where.exe vale' : 'which vale', { stdio: 'ignore' });
+      return true;
+    } catch {
+      return false;
+    }
+  })(currentPlatform);
   ```
 
 ### Async programming
@@ -396,6 +442,9 @@ Write comprehensive TSDoc comments for all exported members (functions, types, c
 ### Git Commit Guidelines
 
 Follow the Conventional Commits specification for all commit messages to ensure consistency and enable automated tooling.
+
+When writing commit messages for multiple changes across different files, include ALL changes in a single comprehensive commit message.
+Don't write commit messages that only describe partial changes.
 
 #### Commit Message Format
 
