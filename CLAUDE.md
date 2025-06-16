@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 <!-- vale Microsoft.Wordiness = NO -->
 <!-- vale alex.Condescending = NO -->
-FORBIDDEN LANGUAGE PATTERNS:
+Forbidden language patterns:
 - Apologies: "sorry", "I apologize", "my apologies", "unfortunately", "I'm afraid"
 - Vague validation: "that's a good point", "I understand your concern"
 - Generalizations: "typically", "usually", "in most cases", "generally speaking"
@@ -15,29 +15,33 @@ FORBIDDEN LANGUAGE PATTERNS:
 - Verbal backspacing: "actually", "to clarify", "what I meant was", "let me rephrase"
 - Fillers: "okay", "great", "certainly", "here is", "of course", "definitely"
 - Self-deprecation: "I should have", "I could have done better", "my mistake"
+<!-- vale Microsoft.Wordiness = YES -->
+<!-- vale alex.Condescending = YES -->
 
-COMMUNICATION STYLE:
+Communication style:
 - State facts directly without hedging
 - Give clear answers without softening language
 - Use declarative statements, not apologetic qualifiers
 - Provide information efficiently without relationship management
 
-WHEN YOU MAKE ERRORS:
+When you make errors:
 - State the correction: "That's incorrect. The actual answer is..."
 - Provide the right information immediately
 
-WHEN YOU CAN'T HELP:
+When you can't help:
 - "I can't do that"
 - "That information isn't available"
 - "Try `specific alternative`"
 
-Your job is to provide useful information efficiently. Emotional labor isn't your responsibility.
-<!-- vale Microsoft.Wordiness = YES -->
-<!-- vale alex.Condescending = YES -->
-
-EMOJI USAGE:
+Emoji usage:
 - NEVER use emojis in any content meant to be read by humans.
 - Focus on clear, professional text without decorative elements
+
+Capitalization:
+- NEVER use ALL CAPS for headings or emphasis in documentation
+- Use normal sentence case for headings (e.g., "Communication style" not "COMMUNICATION STYLE")
+- Reserve capitalization for acronyms (NASA, API) and proper nouns only
+- For emphasis, use **bold** formatting instead of capitalization
 
 ## Project Overview
 
@@ -118,7 +122,7 @@ packages/
 
 ### Build System
 - **Package Manager**: pnpm with workspaces and catalog feature
-- **Task Orchestration**: Moon CLI
+- **Task Orchestration**: Moon CLI (runs task dependencies in parallel by default)
 - **Bundler**: Vite v7.0.0-beta.1+
 - **Language**: TypeScript with strict type checking
 - **Testing**: Vitest for unit and browser tests. The only working test command is `moon run test` from workspace root. To run a specific test, do `moon run testUnit -- <fileRelativePath>`
@@ -438,6 +442,36 @@ Write comprehensive TSDoc comments for all exported members (functions, types, c
 2. Add `moon.yml` with appropriate tags
 3. Configure `package.json` with workspace dependencies
 4. Set up dual builds if needed (tag: `dualBuildsNodeBrowser`)
+
+## Markdown Conventions
+
+### Text formatting
+- One sentence per line for better diffs and readability
+- Use **bold** for emphasis, avoid _italics_ 
+- Prefer fenced code blocks with language tags over inline code for multi-line snippets
+- Use inline code \`like this\` for single commands, function names, or short code
+
+### Lists
+- Use `-` for unordered lists with one space after
+- Numbered lists: pad marker to 4 characters (e.g., `1.  `, `10. `)
+- Maintain consistent indentation (2 spaces for nested items)
+- Add blank lines before and after lists
+
+### Code blocks
+- Always specify language for syntax highlighting
+- Use \`\`\`bash for shell commands, \`\`\`ts for TypeScript
+- Include file paths as comments when showing file contents
+
+### Links and references
+- Use reference-style links for repeated URLs
+- Prefer relative links for internal documentation
+- Include descriptive link text, avoid "click here"
+
+### Structure
+- Use ATX-style headers (`#` not underlines)
+- Maximum header depth: 4 levels (####)
+- Add blank line before headers (except first)
+- Keep line length under 120 characters when possible
 
 ### Git Commit Guidelines
 

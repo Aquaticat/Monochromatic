@@ -1,6 +1,11 @@
 $schema: 'https://moonrepo.dev/schemas/project.json'
 
 tasks:
+  # Template for lint/format tasks
+  _lintFormatBase:
+    inputs:
+    - '@group(allSources)'
+    - '@group(configs)'
   pnpmVersionCheck:
     command: 'pnpm version'
   pnpmInstall:
@@ -115,6 +120,73 @@ tasks:
     - testBrowserWatch
     inputs:
     - '@group(allSources)'
+
+  # Linting tasks
+  lint:
+    deps:
+    - lintEslint
+    - lintStylelint
+    - lintDprint
+    - lintOxlint
+
+  lintEslint:
+    extends: '_lintFormatBase'
+    command: 'eslint --cache'
+
+  lintStylelint:
+    extends: '_lintFormatBase'
+    command: 'stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
+  lintDprint:
+    extends: '_lintFormatBase'
+    command: 'dprint check --list-different'
+
+  lintOxlint:
+    extends: '_lintFormatBase'
+    command: 'oxlint'
+
+  # Formatting tasks organized for maximum parallelization
+  format:
+    deps:
+    - formatAllFileTypes
+    - formatLanguageSpecific
+    options:
+      runDepsInParallel: false
+
+  # First pass: dprint formats all file types (ts, astro, css, html, yaml)
+  formatAllFileTypes:
+    deps:
+    - formatDprint
+
+  # Second pass: Language-specific formatters run in parallel
+  formatLanguageSpecific:
+    deps:
+    - formatTypeScript  # TS formatters (sequential)
+    - formatStylelint   # CSS formatter (parallel with TS)
+    # Default is parallel, so formatTypeScript and formatStylelint run simultaneously
+
+  # TypeScript formatters must run sequentially (both process .ts files)
+  formatTypeScript:
+    deps:
+    - formatOxlint
+    - formatEslint
+    options:
+      runDepsInParallel: false
+
+  formatEslint:
+    extends: '_lintFormatBase'
+    command: 'eslint --cache --fix'
+
+  formatStylelint:
+    extends: '_lintFormatBase'
+    command: 'stylelint --ignore-path .gitignore --fix "**/*.{css,astro,html}"'
+
+  formatDprint:
+    extends: '_lintFormatBase'
+    command: 'dprint fmt'
+
+  formatOxlint:
+    extends: '_lintFormatBase'
+    command: 'oxlint --fix'
 
 tags:
 - noTypescript
