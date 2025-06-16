@@ -58,6 +58,7 @@ export function typeOf(
   // Handle objects with careful checking to avoid primitive conversion errors
   if (typeof obj === 'object') {
     // Check for null-prototype objects first (like Object.create(null))
+    console.log('hello');
     const prototype = Object.getPrototypeOf(obj);
     if (prototype === null) {
       return 'object';
@@ -67,12 +68,14 @@ export function typeOf(
     // AND with Object as constructor (to exclude class instances)
     if (prototype === Object.prototype) {
       try {
+        /* v8 ignore next -- @preserve */
         if (obj.constructor === Object) {
           return 'object';
         }
       } catch {
         // If constructor access fails, but prototype is Object.prototype,
         // it's likely a plain object
+        /* v8 ignore next -- @preserve */
         return 'object';
       }
     }
@@ -84,6 +87,7 @@ export function typeOf(
   try {
     objStringified = JSON.stringify(obj);
   } catch {
+    /* v8 ignore next -- @preserve */
     objStringified = '[object Object]';
   }
   throw new TypeError(

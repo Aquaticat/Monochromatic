@@ -11,12 +11,16 @@ import {
   assertThrowTypeErrorAsync,
   assertThrowURIError,
   assertThrowURIErrorAsync,
+  logtapeConfiguration,
+  logtapeConfigure,
 } from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
+
+await logtapeConfigure(await logtapeConfiguration());
 
 describe('assertThrow', () => {
   test('passes when function throws expected error type', () => {
@@ -87,6 +91,25 @@ describe('assertThrow', () => {
       .not
       .toThrow();
   });
+
+  test('throws when expecting Error but actual is not an Error instance', () => {
+    expect(() => {
+      assertThrow('Error', () => {
+        throw 'not an error object';
+      });
+    })
+      .toThrow('actualError not an error object is not an Error');
+  });
+
+  test('matches custom error message strings', () => {
+    expect(() => {
+      assertThrow('custom message without Error suffix', () => {
+        throw new Error('custom message without Error suffix');
+      });
+    })
+      .not
+      .toThrow();
+  });
 });
 
 describe('assertThrowAsync', () => {
@@ -125,6 +148,37 @@ describe('assertThrowAsync', () => {
       assertThrowAsync('Error', async () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
         throw new Error('delayed error');
+      }),
+    )
+      .resolves
+      .toBeUndefined();
+  });
+
+  test('throws when expecting Error but actual is not an Error instance', async () => {
+    await expect(
+      assertThrowAsync('Error', async () => {
+        throw 'not an error object';
+      }),
+    )
+      .rejects
+      .toThrow('actualError not an error object is not an Error');
+  });
+
+  test('matches custom error message strings', async () => {
+    await expect(
+      assertThrowAsync('custom message without Error suffix', async () => {
+        throw new Error('custom message without Error suffix');
+      }),
+    )
+      .resolves
+      .toBeUndefined();
+  });
+
+  test('handles async error function', async () => {
+    const asyncErrorFn = async () => new TypeError('async generated error');
+    await expect(
+      assertThrowAsync(asyncErrorFn, async () => {
+        throw new TypeError('async generated error');
       }),
     )
       .resolves

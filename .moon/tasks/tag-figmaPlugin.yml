@@ -8,15 +8,37 @@ tasks:
     command: 'vite build --mode production --config vite.config.frontend.ts'
     deps:
       - js_iframe
+  js_defaultNoDepWatch:
+    command: 'vite build --mode production --config vite.config.frontend.ts --watch'
+    local: true
 
   #"b:backend": "vite build --mode production --config vite.config.backend.ts",
   js_backend:
     command: 'vite build --mode production --config vite.config.backend.ts'
+    options:
+      outputStyle: buffer-only-failure
+
+  js_backendWatch:
+    command: 'vite build --mode production --config vite.config.backend.ts --watch'
+    local: true
 
   js_iframe:
     command: 'vite build --mode production --config vite.config.iframe.ts'
+    options:
+      outputStyle: buffer-only-failure
+
+  js_iframeWatch:
+    command: 'vite build --mode production --config vite.config.iframe.ts --watch'
+    local: true
 
   js:
     deps:
     - js_default
     - js_backend
+
+  jsWatch:
+    deps:
+    - js_iframeWatch
+    - js_defaultNoDepWatch
+    - js_backendWatch
+    local: true

@@ -2,6 +2,7 @@ import {
   logtapeConfiguration,
   logtapeConfigure,
   notArrayOrThrow,
+  notEmptyArrayOrThrow,
   notEmptyOrThrow,
   notFalseOrThrow,
   notFalsyOrThrow,
@@ -212,5 +213,25 @@ describe('notStringOrThrow', () => {
     expect(notStringOrThrow(true)).toBe(true);
     expect(notStringOrThrow({})).toEqual({});
     expect(notStringOrThrow([])).toEqual([]);
+  });
+});
+
+describe('notEmptyArrayOrThrow', () => {
+  test('throws for empty array', () => {
+    expect(() => notEmptyArrayOrThrow([])).toThrow(TypeError);
+    expect(() => notEmptyArrayOrThrow([])).toThrow('[] is an empty array');
+  });
+
+  test('returns non-empty arrays unchanged', () => {
+    expect(notEmptyArrayOrThrow([1])).toEqual([1]);
+    expect(notEmptyArrayOrThrow([1, 2, 3])).toEqual([1, 2, 3]);
+    expect(notEmptyArrayOrThrow(['a', 'b'])).toEqual(['a', 'b']);
+    const arr = [{ key: 'value' }];
+    expect(notEmptyArrayOrThrow(arr)).toBe(arr);
+  });
+
+  test('returns non-empty tuples unchanged', () => {
+    const tuple: [number, string] = [1, 'a'];
+    expect(notEmptyArrayOrThrow(tuple)).toEqual(tuple);
   });
 });

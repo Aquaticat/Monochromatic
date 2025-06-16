@@ -170,7 +170,7 @@ describe(lGCC_handleSimpleToken, () => {
 
   test('throws for unrecognized ident token', () => {
     const token: TokenIdent = ['ident-token', 'auto', 0, 3, { value: 'auto' }];
-    expect(() => lGCC_handleSimpleToken(token)).toThrow('ident token is not none');
+    expect(() => lGCC_handleSimpleToken(token)).toThrow(/ident token isn't none./v);
   });
 
   test('throws for unsupported token type', () => {

@@ -1,10 +1,107 @@
-# TypeScript conventions
+# CLAUDE.md
 
-## Generally
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Monochromatic is a TypeScript monorepo ecosystem for web development, featuring:
+- Reusable development tool configurations
+- Functional programming utilities library
+- CSS framework (Monochromatic design system)
+- Figma plugin tools
+- Documentation sites
+
+## Essential Commands
+
+### Initial Setup
+```bash
+# Install moon globally first
+npm install -g @moonrepo/cli
+
+# Setup project
+moon run prepare
+pnpm install
+```
+
+### Development Commands
+```bash
+# Build everything
+moon run build
+
+# Build and watch (recommended for development)
+moon run buildWatch
+
+# Run all tests
+moon run test
+
+# Run unit tests with coverage report (from workspace root only)
+moon run testUnit
+
+# Test in watch mode (run separately for performance)
+vitest watch
+
+# Build and test together
+moon run buildAndTest
+
+# Full development mode (build + test watch)
+moon run buildAndTestWatch
+```
+
+### Linting and Formatting
+```bash
+# Check linting
+pnpm run b:lint_eslint
+pnpm run b:lint_dprint
+
+# Fix linting issues
+pnpm run b:format_eslint
+pnpm run b:format_dprint
+```
+
+### Package-Specific Commands
+```bash
+# Build specific package (replace 'es' with package name)
+moon run es:js
+moon run es:types
+
+# Note: Unit tests use Vitest projects feature and can only be run from workspace root
+# To run tests for a specific file pattern:
+vitest run src/boolean.equal.unit.test.ts
+```
+
+## Architecture
+
+### Monorepo Structure
+```
+packages/
+├── config/         # Shareable tool configurations (ESLint, TypeScript, Vite, etc.)
+├── module/es/      # Functional programming utilities with dual Node/browser builds
+├── style/monochromatic/  # CSS framework
+├── site/astro-test/      # Documentation site
+├── figma-plugin/         # Figma integration tools
+└── build/                # Build utilities
+```
+
+### Build System
+- **Package Manager**: pnpm with workspaces and catalog feature
+- **Task Orchestration**: Moon CLI
+- **Bundler**: Vite v7.0.0-beta.1+
+- **Language**: TypeScript with strict type checking
+- **Testing**: Vitest for unit and browser tests
+
+### Key Architectural Decisions
+1. **Dual Builds**: Packages tagged with `dualBuildsNodeBrowser` produce separate Node.js and browser outputs
+2. **Platform-Specific Code**: Use `.node.ts` for Node-only, `.default.ts` for browser/universal
+3. **Output Structure**: `dist/final/` for builds, `dist/final/types/` for type definitions
+4. **Functional Programming**: Pure functions, immutable data, explicit types
+
+## TypeScript conventions
+
+### Generally
 
 - Adhere to the established linting and formatting configurations (ESLint, Oxlint, dprint).
 
-## Code organization
+### Code organization
 
 - Use `region` markers to delineate logical sections of code.
   - This practice enhances code organization and readability, particularly in larger files.
@@ -30,7 +127,7 @@
     //endregion User Authentication Logic
     ```
 
-## Import and module conventions
+### Import and module conventions
 
 - Always include file extensions when importing files.
 - Group imports in the following order:
@@ -43,7 +140,7 @@
 - Prefer named imports over default imports for better tree-shaking.
 - Use `import type` for type-only imports to improve build performance.
 
-## Function declarations
+### Function declarations
 
 - Always name functions. Prefer function declarations.
   - For arrow functions, make sure the JavaScript engine can infer a name.
@@ -57,7 +154,7 @@
   - Place overloads before the implementation.
   - Order overloads from most specific to least specific.
 
-## Type definitions and safety
+### Type definitions and safety
 
 - Provide explicit parameter and return types for all functions, methods, and class accessors.
 - Prefer `type` aliases (for example, `type MyType = { /* ... */ };`) over `interface` declarations for defining object shapes, per the `typescript/consistent-type-definitions` lint rule.
@@ -74,7 +171,7 @@
   type EmailAddress = string & { readonly __brand: unique symbol };
   ```
 
-## Generics and type parameters
+### Generics and type parameters
 
 - Prefer `const` generic type parameters to enhance type safety and immutability.
   - Good: `function processItems<const T extends { id: string }>(items: T[]): T[]`
@@ -95,14 +192,14 @@
   }
   ```
 
-## Generator function overloading
+### Generator function overloading
 
 TypeScript's support for overloading generator functions has some quirks:
 - For a sync generator, remove the star sign in non-implementation overload signatures.
 - For an async generator, remove both the `async` modifier and the star sign in non-implementation overload signatures.
 - This is so TypeScript can correctly determine they're overloads.
 
-## Variable declarations and immutability
+### Variable declarations and immutability
 
 - Prefer `const` over `let` to encourage immutability and prevent accidental reassignment. Only use `let` when a variable's value must change.
 - Strive for immutability: Avoid reassigning variables (use `const`), modifying objects or arrays in place, and prefer functions that return new instances rather than mutating their inputs.
@@ -116,7 +213,7 @@ TypeScript's support for overloading generator functions has some quirks:
   } satisfies Config;
   ```
 
-## Async programming
+### Async programming
 
 - Prefer `async/await` and promise-returning library functions over explicit `new Promise` creation.
 - Avoid using await in loops wherever logically sound.
@@ -125,7 +222,7 @@ TypeScript's support for overloading generator functions has some quirks:
 - Handle promise rejections explicitly with try-catch blocks.
 - Consider using `AbortController` for cancellable async operations.
 
-## Error handling
+### Error handling
 
 - Create custom error classes that extend `Error` for domain-specific errors:
   ```ts
@@ -165,7 +262,7 @@ TypeScript's support for overloading generator functions has some quirks:
   }
   ```
 
-## Class design
+### Class design
 
 - Prefer composition over inheritance.
 - Use `readonly` for properties that shouldn't change after construction.
@@ -174,7 +271,7 @@ TypeScript's support for overloading generator functions has some quirks:
 - Implement interfaces explicitly when a class should conform to a contract.
 - Use abstract classes sparingly, prefer interfaces and composition.
 
-## Performance considerations
+### Performance considerations
 
 - Use `unknown` instead of `any` for better type safety.
 - Prefer type assertions (`as`) over angle bracket syntax (`<Type>`).
@@ -188,7 +285,7 @@ TypeScript's support for overloading generator functions has some quirks:
 - Use `satisfies` instead of type assertions when possible.
 - Consider using `const` assertions for immutable data structures.
 
-## Documentation standards
+### Documentation standards
 
 Write comprehensive TSDoc comments for all exported members (functions, types, constants, classes, and everything else):
 - This includes providing descriptions for parameters and return values.
@@ -220,9 +317,23 @@ Write comprehensive TSDoc comments for all exported members (functions, types, c
   }
   ```
 
-## Testing requirements
+### Testing requirements
 
 - Write a corresponding Vitest file that aims for 100% test coverage.
+- If certain lines or branches cannot be tested (e.g., error handling for impossible states), use v8 ignore comments:
+  ```ts
+  /* v8 ignore next -- @preserve */
+  if (impossibleCondition) {
+    throw new Error('This should never happen');
+  }
+
+  // For multiple lines:
+  /* v8 ignore next 3 -- @preserve */
+  if (untestableCondition) {
+    console.error('Untestable path');
+    return fallbackValue;
+  }
+  ```
 - Use descriptive test names that explain the expected behavior.
 - Group related tests using `describe` blocks.
 - Use `it.each` for parameterized tests.
@@ -268,8 +379,127 @@ Write comprehensive TSDoc comments for all exported members (functions, types, c
   await logtapeConfigure(await logtapeConfiguration());
   ```
 
-## Configuration notes
+## Dependency Management
+- Use `workspace:*` for internal dependencies
+- `strictPeerDependencies: true` enforces exact versions
+- Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`
+- `nodeLinker: isolated` for isolated node_modules
 
-- Avoid non-erasible syntaxes for TypeScript.
-- Since `isolatedDeclarations` is turned on, explicit types for exported members are mandatory.
-- Note: The `eslint/no-unused-vars` lint rule is turned off. Rely on editor feedback for unused variables during development; they're removed by the bundler in production.
+## Common Patterns
+
+### Adding a New Package
+1. Create directory under appropriate category in `packages/`
+2. Add `moon.yml` with appropriate tags
+3. Configure `package.json` with workspace dependencies
+4. Set up dual builds if needed (tag: `dualBuildsNodeBrowser`)
+
+### Git Commit Guidelines
+
+Follow the Conventional Commits specification for all commit messages to ensure consistency and enable automated tooling.
+
+#### Commit Message Format
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+#### Types
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that don't affect code meaning (white-space, formatting)
+- `refactor`: Code change that neither fixes a bug nor adds a feature
+- `perf`: Performance improvement
+- `test`: Adding missing tests or correcting existing tests
+- `build`: Changes to build system or external dependencies
+- `ci`: Changes to CI configuration files and scripts
+- `chore`: Other changes that don't modify src or test files
+- `revert`: Reverts a previous commit
+
+#### Scope
+Use the package name or area of change:
+- `module-es`: For changes in the ES module package
+- `style`: For CSS framework changes
+- `config`: For configuration package changes
+- `*`: For changes affecting multiple packages
+
+#### Subject Line Rules
+- Use imperative mood ("add" not "added" or "adds")
+- Don't capitalize first letter
+- No period at the end
+- Maximum 50 characters
+
+#### Body Guidelines
+- Wrap at 72 characters
+- Explain what and why, not how
+- Include motivation for change and contrast with previous behavior
+
+#### Breaking Changes
+- Add `BREAKING CHANGE:` in footer
+- Or append `!` after type/scope: `feat(api)!: remove deprecated methods`
+
+#### Examples
+
+**Single Change:**
+```
+feat(module-es): add type guards for primitive values
+
+Implements comprehensive type guard functions for checking primitive
+JavaScript values including strings, numbers, booleans, null, and
+undefined. These guards provide both runtime checking and TypeScript
+type narrowing.
+
+Closes #123
+```
+
+**Multiple Changes in One Commit:**
+```
+feat(module-es): enhance error handling utilities
+
+error.assert.throw: add support for async error assertions
+- Implement assertThrowAsync for testing async functions
+- Add convenience methods for common error types
+- Include TypeScript type narrowing for caught errors
+
+error.throw: add comprehensive type assertion guards
+- Implement notNullishOrThrow, notEmptyOrThrow, etc.
+- Provide detailed TypeScript type refinement
+- Include helpful error messages with actual values
+
+test: achieve 100% coverage for error utilities
+- Add unit tests for all error handling functions
+- Use v8 ignore comments for unreachable branches
+- Ensure all edge cases are covered
+```
+
+**Breaking Change:**
+```
+refactor(module-es)!: rename type assertion functions
+
+BREAKING CHANGE: All type assertion functions now follow the
+pattern `not{Type}OrThrow` instead of `assert{Type}`. This provides
+better consistency with the library's naming conventions.
+
+Migration guide:
+- assertNotNull() → notNullOrThrow()
+- assertNotEmpty() → notEmptyOrThrow()
+- assertDefined() → notUndefinedOrThrow()
+```
+
+**Fix with Details:**
+```
+fix(module-es): correct type inference in array utilities
+
+The generic constraint for array.filter was too restrictive, causing
+TypeScript to lose type information when filtering arrays of union
+types. Updated the constraint to preserve full type fidelity.
+
+Previously: filter<T>(arr: T[]) → T[]
+Now: filter<const T>(arr: readonly T[]) → T[]
+
+Fixes #456
+```

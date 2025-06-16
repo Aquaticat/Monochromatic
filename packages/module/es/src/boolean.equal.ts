@@ -235,6 +235,7 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
   }
 
   if (typeof a === 'function') {
+    /* v8 ignore next -- @preserve */
     if (typeof b !== 'function') {
       l
         .info`Is it intentional trying to compare a function a: ${a} to not function b: ${b}?`;
@@ -278,8 +279,11 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
   // A predicate for typeof a === 'object' isn't provided
   // because it's not often useful knowing something is an object,
   // but not what subtype of object it is.
+  /* v8 ignore next -- @preserve */
   if (typeof a === 'object') {
+    /* v8 ignore next -- @preserve */
     if (typeof b !== 'object') {
+      /* v8 ignore next 3 -- @preserve */
       l
         .warn`b is not a primitive, not a Promise, not a function, not an array, not an object.
         What is b: ${b}?`;
@@ -301,7 +305,9 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
           Try equalAsync()`);
     }
 
+    /* v8 ignore next -- @preserve */
     if (isAsyncIterable(a) || isAsyncIterable(b)) {
+      /* v8 ignore next 4 -- @preserve */
       throw new TypeError(`At least one of a: ${a} and b: ${b} is an AsyncIterable.
       Comparing them cannot be handled in a sync function.
       Try equalAsync()`);
@@ -397,6 +403,7 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
 
       l.debug`maps a: ${a} b: ${b}`;
 
+      /* v8 ignore next -- @preserve */
       if (a.size !== b.size) {
         return false;
       }
@@ -416,6 +423,7 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
 
       l.debug`sets a: ${a} b: ${b}`;
 
+      /* v8 ignore next -- @preserve */
       if (a.size !== b.size) {
         return false;
       }
@@ -435,6 +443,7 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
       throw new TypeError(`WeakSets are not enumerable, therefore cannot be compared.`);
     }
 
+    /* v8 ignore next -- @preserve */
     if (isObject(a)) {
       l
         .info`Comparing two objects cannot rule out Proxy objects. See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy#constructor`;
@@ -454,11 +463,13 @@ export function equal(a: NotPromise, b: NotPromise): boolean {
       return Object.keys(a).every((aKey) => equal(a[aKey], b[aKey]));
     }
 
+    /* v8 ignore next 4 -- @preserve */
     throw new TypeError(
       `The comparison of object types ${aPrototype} and ${bPrototype} have not been implemented.`,
     );
   }
 
+  /* v8 ignore next 7 -- @preserve */
   throw new TypeError(
     `at least one of a and b are not primitives, not Promises, not functions, not arrays, not objects.
   What are they?

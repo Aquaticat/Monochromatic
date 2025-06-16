@@ -7,3 +7,7 @@ tasks:
     deps: []
     options:
       mergeDeps: 'replace'
+  jsWatch:
+    deps: []
+    options:
+      mergeDeps: replace

@@ -4,8 +4,8 @@ export * from './any.constant.ts';
 export * from './any.echo.ts';
 export * from './any.identity.ts';
 export * from './any.toExport.ts';
-export * from './any.type.ts';
 export * from './any.typeOf.ts';
+export * from './any.when.ts';
 
 export * from './array.of.ts';
 export * from './array.type.mapTo.ts';

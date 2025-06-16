@@ -1,22 +1,42 @@
 $schema: 'https://moonrepo.dev/schemas/tasks.json'
 
 implicitInputs:
-- 'package.json'
-# If I uncomment these, moon will consistently give warnings that some of these files are not found in some of the projects, which doesn't break anything, but is super annoying.
-- 'vite.config.ts'
-- 'vitest.config.ts'
-- 'tsconfig.json'
-- 'src/**/*'
-- 'dist/**/*'
+- '@group(configs)'
+- '@group(sources)'
 
 fileGroups:
   configs:
-  - '*.config.{js,cjs,mjs,ts,yaml,yml}'
-  - '*.json'
+  - '*.config.{cjs,mjs,ts}'
+  - '*.{json,jsonc,yaml,yml}'
+  - '/packages/config/*'
+  - '/packages/config/src/**/*'
+  - '/packages/config/dist/**/*'
   sources:
   - 'src/**/*.{ts,astro,html,vue,mjs,js,cjs}'
+  unitTests:
+  - 'src/**/*.unit.test.ts'
+  browserTests:
+  - 'src/**/*.browser.test.ts'
   tests:
-  - 'src/**/*.{test,bench}.ts'
+  - 'src/**/*.test.ts'
+  benchs:
+  - 'src/**/*.bench.ts'
+  dists:
+  - 'dist/**/*'
+  allPackages:
+  - '/packages/*/*/*/**/*'
+  allSources:
+  - '/packages/*/*/src/**/*.{ts,astro,html,vue,mjs,js,cjs}'
+  allUnitTests:
+  - '/packages/*/*/src/**/*.unit.test.ts'
+  allBrowserTests:
+  - '/packages/*/*/src/**/*.browser.test.ts'
+  allTests:
+  - '/packages/*/*/src/**/*.test.ts'
+  allBenchs:
+  - '/packages/*/*/src/**/*.bench.ts'
+  allDists:
+  - '/packages/*/*/dist/**/*'
 
 tasks:
   types:
@@ -24,12 +44,29 @@ tasks:
     options:
       outputStyle: 'buffer-only-failure'
 
+  typesWatch:
+    command: 'tsc --watch'
+    local: true
+
   js_default:
     command: 'vite build --config vite.config.ts --mode production'
+    options:
+      outputStyle: 'buffer-only-failure'
+
+  js_defaultWatch:
+    command: 'vite build --config vite.config.ts --mode production --watch'
+    local: true
 
   js:
     deps:
     - js_default
+    options:
+      outputStyle: 'buffer-only-failure'
+
+  jsWatch:
+    deps:
+    - js_defaultWatch
+    local: true
 
 #  "w:types": "tsc --watch",
 #  "b:types": "tsc --build --force --verbose",

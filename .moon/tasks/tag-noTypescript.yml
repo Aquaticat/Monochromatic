@@ -5,3 +5,5 @@ taskOptions:
 tasks:
   types:
     command: 'true'
+  typesWatch:
+    command: 'true'

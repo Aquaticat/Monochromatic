@@ -5,7 +5,7 @@ import {
   mapIterableAsync,
   mapIterableAsyncGen,
   mapIterableGen,
-} from '@monochromatic-dev/module-es/.js';
+} from '@monochromatic-dev/module-es';
 import {
   describe,
   expect,

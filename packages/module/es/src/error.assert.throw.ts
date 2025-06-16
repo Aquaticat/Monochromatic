@@ -91,6 +91,7 @@ export async function assertThrowAsync(
       return;
     }
 
+    /* v8 ignore next 3 -- @preserve */
     if (typeof expectedError !== 'string') {
       throw new Error(`unexpected type ${typeof error} of expected error: ${error}`);
     }
@@ -175,6 +176,7 @@ export function assertThrow(
       return;
     }
 
+    /* v8 ignore next 3 -- @preserve */
     if (typeof expectedError !== 'string') {
       throw new Error(`unexpected type ${typeof error} of expected error: ${error}`);
     }

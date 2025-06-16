@@ -4,7 +4,7 @@ import {
   everyIterableAsync,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/.js';
+} from '@monochromatic-dev/module-es';
 import {
   describe,
   expect,
@@ -91,7 +91,7 @@ describe(everyIterableAsync, () => {
 
   test('returns false when any element fails the test', async () => {
     const array = [2, 4, 5, 8];
-    expect(everyIterableAsync(async (num: number) => num % 2 === 0, array))
+    await expect(everyIterableAsync(async (num: number) => num % 2 === 0, array))
       .resolves
       .toBe(
         false,

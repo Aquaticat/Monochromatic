@@ -1,11 +1,6 @@
 import postcssCustomUnits from '@csstools/custom-units';
 import { notFalsyOrThrow } from '@monochromatic-dev/module-es';
-import { build as esbuildBuild } from 'esbuild';
-import spawn, { type Options } from 'nano-spawn';
-import {
-  readdir,
-  readFile,
-} from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import {
   join,
   resolve,
@@ -30,11 +25,6 @@ import {
 } from 'vitest/config';
 
 const firefoxVersion = 140;
-
-const spawnOptions: Options = {
-  preferLocal: true,
-  stdio: 'inherit',
-};
 
 const vitestExcludeCommon = [
   '**/{node_modules,bak}/**',
@@ -172,7 +162,8 @@ const createBaseLibConfig = (configDir: string): UserConfig =>
       },
 
       plugins: [
-        (function oxcMinifyLibPlugin(): PluginOption {
+        // TODO: Temporarily commented out. Either remove or refine.
+        /*         (function oxcMinifyLibPlugin(): PluginOption {
           return {
             name: 'vite-plugin-oxc-minify-lib',
             enforce: 'post',
@@ -200,7 +191,7 @@ const createBaseLibConfig = (configDir: string): UserConfig =>
               });
             },
           };
-        })(),
+        })(), */
       ],
     },
   );
@@ -225,7 +216,15 @@ const createModeConfig = (
   sharedFactory: (configDir: string) => UserConfig,
 ): UserConfigFnObject =>
   defineConfig(function enhanceBaseConfig({ mode }) {
-    const modes: string[] = mode.split(',');
+    const modes = (function getModes(mode: string) {
+      if (mode.includes(' ')) {
+        return mode.split(' ');
+      }
+      if (mode.includes(' ')) {
+        return mode.split(',');
+      }
+      return [mode];
+    })(mode);
 
     const maybeWithNoMinify: UserConfig = modes.some(function isDev(m) {
         return m === 'development';
@@ -238,6 +237,8 @@ const createModeConfig = (
       })
       ? withNodeResolveConditions(maybeWithNoMinify)
       : maybeWithNoMinify;
+
+    console.log(modes);
 
     return nodeOrBrowser;
   });
@@ -506,10 +507,12 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
         'packages/*/*/**/src/**/*.ts',
       ],
       // Exclude browser test files from coverage collection
-      // exclude: [
-      // ...vitestExcludeCommon,
-      // 'packages/*/*/**/src/**/*.browser.test.ts',
-      // ],
+      exclude: [
+      ...vitestExcludeCommon,
+      'packages/*/*/**/src/**/*.browser.test.ts',
+      '**/dom.*',
+      '**/fixture.*'
+      ],
     },
   },
 });

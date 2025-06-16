@@ -1,4 +1,6 @@
 import {
+  emptyFunction,
+  emptyFunctionAsync,
   isAsyncFunction,
   isSyncFunction,
   logtapeConfiguration,
@@ -87,5 +89,63 @@ describe('function type inference', () => {
       const result = unknownFn().then((val) => val);
       expect(typeof result.then).toBe('function');
     }
+  });
+});
+
+describe('emptyFunction', () => {
+  test('performs no operation and returns undefined', () => {
+    const result = emptyFunction();
+    expect(result).toBeUndefined();
+  });
+
+  test('can be called multiple times without side effects', () => {
+    expect(() => {
+      emptyFunction();
+      emptyFunction();
+      emptyFunction();
+    })
+      .not
+      .toThrow();
+  });
+
+  test('accepts any arguments without error', () => {
+    expect(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (emptyFunction as any)(1, 'test', { foo: 'bar' }, [1, 2, 3]);
+    })
+      .not
+      .toThrow();
+  });
+});
+
+describe('emptyFunctionAsync', () => {
+  test('performs no operation and resolves to undefined', async () => {
+    const result = await emptyFunctionAsync();
+    expect(result).toBeUndefined();
+  });
+
+  test('returns a promise', () => {
+    const result = emptyFunctionAsync();
+    expect(result).toBeInstanceOf(Promise);
+  });
+
+  test('can be called multiple times without side effects', async () => {
+    await expect(Promise.all([
+      emptyFunctionAsync(),
+      emptyFunctionAsync(),
+      emptyFunctionAsync(),
+    ]))
+      .resolves
+      .toEqual([undefined, undefined, undefined]);
+  });
+
+  test('accepts any arguments without error', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await (emptyFunctionAsync as any)(1, 'test', { foo: 'bar' }, [
+      1,
+      2,
+      3,
+    ]);
+    expect(result).toBeUndefined();
   });
 });

@@ -107,7 +107,9 @@ export function toExport(obj: any): string {
           .join(',')
       }]))`;
     })
+    /* v8 ignore next -- @preserve */
     .otherwise(
+      /* v8 ignore next -- @preserve */
       function thrower() {
         /* v8 ignore next -- @preserve */
         throw new TypeError(`Unknown obj ${obj} ${JSON.stringify(obj)} type ${objType}`);

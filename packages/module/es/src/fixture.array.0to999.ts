@@ -1,3 +1,5 @@
+// Don't test fixtures.
+
 /**
  * Array containing integers from 0 to 999 inclusive.
  *

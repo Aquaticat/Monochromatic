@@ -37,6 +37,7 @@ codeowners:
 
 hasher:
   walkStrategy: 'glob'
+  optimization: 'performance'
 
 versionConstraint: '>=1.29.3'
 

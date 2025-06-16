@@ -3,14 +3,50 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 tasks:
   pnpmVersionCheck:
     command: 'pnpm version'
+
   test:
     deps:
     - testUnit
     - testBrowser
+    inputs:
+    - '@group(allTests)'
+    - '@group(allDists)'
+
+  testWatch:
+    deps:
+    - testUnitWatch
+    - testBrowserWatch
+    local: true
+    inputs:
+    - '@group(allTests)'
+    - '@group(allDists)'
+
   testUnit:
     command: 'vitest run --config vitest.unit.config.ts'
+    inputs:
+    - '@group(allUnitTests)'
+    - '@group(allDists)'
+
+  testUnitWatch:
+    command: 'vitest watch --config vitest.unit.config.ts'
+    local: true
+    inputs:
+    - '@group(allUnitTests)'
+    - '@group(allDists)'
+
   testBrowser:
     command: 'vitest run --config vitest.browser.config.ts'
+    inputs:
+    - '@group(allUnitTests)'
+    - '@group(allDists)'
+
+  testBrowserWatch:
+    command: 'vitest watch --config vitest.browser.config.ts'
+    local: true
+    inputs:
+    - '@group(allUnitTests)'
+    - '@group(allDists)'
+
   preparePlaywright:
     command: 'playwright install'
   prepareVale:
@@ -21,24 +57,49 @@ tasks:
     command: 'vale sync'
   createValeNoopStyle:
     command: 'mkdir -p .vale/noop'
+
   prepare:
     deps:
     - preparePlaywright
     - prepareVale
-  buildJs:
-    command: 'moon run :js'
-  buildTypes:
-    command: 'moon run :types'
+    options:
+      outputStyle: buffer-only-failure
+
   build:
     deps:
-    - buildJs
-    - buildTypes
+    - '#package:js'
+    - '#package:types'
+    inputs:
+    - '@group(allSources)'
+    options:
+     outputStyle: buffer-only-failure
+
+  buildWatch:
+    deps:
+    - '#package:jsWatch'
+    - '#package:typesWatch'
+    local: true
+    inputs:
+    - '@group(allSources)'
+
   buildAndTest:
     deps:
     - build
     - test
+    inputs:
+    - '@group(allSources)'
     options:
       runDepsInParallel: false
+
+  buildAndTestWatch:
+    local: true
+    deps:
+    - '#package:jsWatch'
+    - '#package:typesWatch'
+    - testUnitWatch
+    - testBrowserWatch
+    inputs:
+    - '@group(allSources)'
 
 tags:
 - noTypescript
