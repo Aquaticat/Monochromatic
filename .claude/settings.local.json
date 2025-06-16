@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(moon run:*)",
+      "Bash(node:*)",
+      "Bash(pnpm vitest run:*)",
+      "Bash(grep:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}

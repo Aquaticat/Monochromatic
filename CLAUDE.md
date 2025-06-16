@@ -320,7 +320,7 @@ Write comprehensive TSDoc comments for all exported members (functions, types, c
 ### Testing requirements
 
 - Write a corresponding Vitest file that aims for 100% test coverage.
-- If certain lines or branches cannot be tested (e.g., error handling for impossible states), use v8 ignore comments:
+- If certain lines or branches can't be tested (example: error handling for impossible states), use v8 ignore comments:
   ```ts
   /* v8 ignore next -- @preserve */
   if (impossibleCondition) {
@@ -408,98 +408,49 @@ Follow the Conventional Commits specification for all commit messages to ensure 
 ```
 
 #### Types
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation only changes
-- `style`: Changes that don't affect code meaning (white-space, formatting)
-- `refactor`: Code change that neither fixes a bug nor adds a feature
-- `perf`: Performance improvement
-- `test`: Adding missing tests or correcting existing tests
-- `build`: Changes to build system or external dependencies
-- `ci`: Changes to CI configuration files and scripts
-- `chore`: Other changes that don't modify src or test files
-- `revert`: Reverts a previous commit
+- `feat`
+- `fix`
+- `docs`
+- `style`
+- `refactor`
+- `perf`
+- `test`
+- `build`
+- `ci`
+- `chore`
+- `revert`
 
 #### Scope
 Use the package name or area of change:
-- `module-es`: For changes in the ES module package
-- `style`: For CSS framework changes
-- `config`: For configuration package changes
+- `module-es`
 - `*`: For changes affecting multiple packages
-
-#### Subject Line Rules
-- Use imperative mood ("add" not "added" or "adds")
-- Don't capitalize first letter
-- No period at the end
-- Maximum 50 characters
-
-#### Body Guidelines
-- Wrap at 72 characters
-- Explain what and why, not how
-- Include motivation for change and contrast with previous behavior
-
-#### Breaking Changes
-- Add `BREAKING CHANGE:` in footer
-- Or append `!` after type/scope: `feat(api)!: remove deprecated methods`
 
 #### Examples
 
-**Single Change:**
+**Change of one type and scope:**
 ```
-feat(module-es): add type guards for primitive values
+feat(module-es): add a
 
-Implements comprehensive type guard functions for checking primitive
-JavaScript values including strings, numbers, booleans, null, and
-undefined. These guards provide both runtime checking and TypeScript
-type narrowing.
+Description of a
 
 Closes #123
 ```
 
-**Multiple Changes in One Commit:**
+**Change of multiple types and/or scopes**
 ```
 feat(module-es): enhance error handling utilities
 
-error.assert.throw: add support for async error assertions
-- Implement assertThrowAsync for testing async functions
-- Add convenience methods for common error types
-- Include TypeScript type narrowing for caught errors
+error.assert.throw: add a
+- Implement b
+- Include c
 
-error.throw: add comprehensive type assertion guards
-- Implement notNullishOrThrow, notEmptyOrThrow, etc.
-- Provide detailed TypeScript type refinement
-- Include helpful error messages with actual values
+error.throw: add d
+- Implement e
+- Provide f
+- Include g
 
-test: achieve 100% coverage for error utilities
-- Add unit tests for all error handling functions
-- Use v8 ignore comments for unreachable branches
-- Ensure all edge cases are covered
-```
-
-**Breaking Change:**
-```
-refactor(module-es)!: rename type assertion functions
-
-BREAKING CHANGE: All type assertion functions now follow the
-pattern `not{Type}OrThrow` instead of `assert{Type}`. This provides
-better consistency with the library's naming conventions.
-
-Migration guide:
-- assertNotNull() → notNullOrThrow()
-- assertNotEmpty() → notEmptyOrThrow()
-- assertDefined() → notUndefinedOrThrow()
-```
-
-**Fix with Details:**
-```
-fix(module-es): correct type inference in array utilities
-
-The generic constraint for array.filter was too restrictive, causing
-TypeScript to lose type information when filtering arrays of union
-types. Updated the constraint to preserve full type fidelity.
-
-Previously: filter<T>(arr: T[]) → T[]
-Now: filter<const T>(arr: readonly T[]) → T[]
-
-Fixes #456
+test(module-es): achieve 100% coverage for error utilities
+- Add h
+- Use i
+- Ensure j
 ```
