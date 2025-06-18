@@ -21,7 +21,7 @@ export async function emptyPath(path: string): Promise<string> {
   // Check if path has query parameters (e.g., ?raw or ?vue=css)
   const queryIndex = path.indexOf('?');
   const cleanPath = queryIndex > -1 ? path.substring(0, queryIndex) : path;
-  
+
   const parsedPath = pathParse(cleanPath);
 
   if (parsedPath.ext) {
@@ -50,7 +50,7 @@ export async function emptyFile(path: string): Promise<string> {
   // Check if path has query parameters (e.g., ?raw or ?vue=css)
   const queryIndex = path.indexOf('?');
   const cleanPath = queryIndex > -1 ? path.substring(0, queryIndex) : path;
-  
+
   await writeFile(cleanPath, '');
   return path;
 }

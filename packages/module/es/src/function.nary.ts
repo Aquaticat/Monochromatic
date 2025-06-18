@@ -108,7 +108,7 @@ export function binary<
  *   ternaryCombine(acc, curr, '-', index), '');
  * ```
  */
- export function ternary<
+export function ternary<
   const T extends (...args: any[]) => any,
 >(
   fn: CanTakeRequiredArgsOrNever<T, 3>,

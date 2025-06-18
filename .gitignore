@@ -37,6 +37,8 @@ package-lock.json
 # Spell linter relies on this.
 .vale
 
+*.bun-build
+
 # So that actions/setup-node can correctly build yarn cache
 #yarn.lock
 

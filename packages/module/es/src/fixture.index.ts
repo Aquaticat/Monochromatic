@@ -119,7 +119,7 @@
  * [10, 100, 1000].forEach(testArrayProcessing);
  * ```
  */
- export function generateConsecutiveArray(
+export function generateConsecutiveArray(
   count: number,
 ): number[] {
   return Array.from({ length: count }, (_, i) => i);
@@ -215,7 +215,7 @@
  * testWithCustomTimeout(50);  // Should timeout ~50 promises
  * ```
  */
- export function generateProgressivePromises(
+export function generateProgressivePromises(
   count: number,
 ): Promise<number>[] {
   return Array.from(

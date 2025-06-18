@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**IMPORTANT DATE REMINDER**: Always use the current date from the environment information provided in the system prompt. Today's date is shown in the <env> section. Never assume or guess dates.
+
 <!-- vale Microsoft.Wordiness = NO -->
 <!-- vale alex.Condescending = NO -->
 Forbidden language patterns:
@@ -15,6 +17,9 @@ Forbidden language patterns:
 - Verbal backspacing: "actually", "to clarify", "what I meant was", "let me rephrase"
 - Fillers: "okay", "great", "certainly", "here is", "of course", "definitely"
 - Self-deprecation: "I should have", "I could have done better", "my mistake"
+- Collective language in documentation: "we", "our", "we chose", "we use", "our philosophy"
+- Prescriptive language: "should", "must" (except for critical requirements), "ought to"
+- Meta-references: "the project", "this means", "this aligns with"
 <!-- vale Microsoft.Wordiness = YES -->
 <!-- vale alex.Condescending = YES -->
 
@@ -39,9 +44,58 @@ Emoji usage:
 
 Capitalization:
 - NEVER use ALL CAPS for headings or emphasis in documentation
-- Use normal sentence case for headings (e.g., "Communication style" not "COMMUNICATION STYLE")
-- Reserve capitalization for acronyms (NASA, API) and proper nouns only
+- Use sentence case for headings
 - For emphasis, use **bold** formatting instead of capitalization
+
+Handling external changes:
+- When files have been modified externally, acknowledge the change
+- Ask for clarification before reverting or modifying externally changed content
+- Don't proceed with implementing features that won't achieve their intended effect
+- If a tool/command doesn't support the requested functionality, explain this instead of creating non-functional code
+
+Script preferences:
+- NEVER write bash/shell scripts (non-portable, unreadable, unfamiliar)
+- When scripts are needed, create TypeScript files as `moon.<action>.ts` in `packages/module/es/src/`
+- Use Bun to execute TypeScript scripts directly
+- Avoid creating main() functions
+  - Instead of wrapping code in a main() function, write top-level code directly
+  - Bad: `function main() { /* code */ } main();`
+  - Good: Just write the code at the top level
+  - For async operations, use top-level await: `await someAsyncOperation();`
+- Avoid exiting with 0; just let the program naturally run to the end
+  - Bad: `process.exit(0);` at the end of successful execution
+  - Good: Let the script complete naturally
+  - The Node.js/Bun runtime will exit with code 0 automatically when the script finishes
+  - Only use process.exit() for early termination with non-zero exit codes on errors
+
+## Search Tools
+
+- **ripgrep (rg)** is available in this environment for fast text searching
+- Use `rg` directly with Bash tool for searching specific strings, types, or patterns
+- **Don't waste time navigating pnpm's complex node_modules structure** - just search everywhere at once
+- Examples:
+  - `rg "interface AnalyzeOptions" -t ts` (searches all TypeScript files)
+  - `rg "export.*parseForESLint" --type ts`
+  - `rg "functionName" -A 5 -B 5` (show 5 lines before/after matches)
+- This is much faster than:
+  - Using Grep tool
+  - Trying to find the exact path in pnpm's symlinked `.pnpm` directories
+  - Guessing where packages are located
+
+## Third-Party Library Usage
+
+When working with third-party libraries:
+- **Always retrieve documentation from GitHub or npm pages using Exa** when implementing features with third-party libraries
+  - For npm packages: Use Exa to fetch from `https://www.npmjs.com/package/<package-name>`
+  - For GitHub repos: Use Exa to fetch from the library's GitHub page
+  - This ensures you have the most up-to-date API documentation and usage examples
+- Always check the actual type definitions before using APIs
+- **Just use `rg` to search for types** - don't try to navigate pnpm's node_modules maze
+  - `rg "interface TypeName" -t ts`
+  - `rg "export type.*TypeName" -t ts`
+  - `rg "class ClassName" -t ts`
+- Read the actual source types, not just documentation (which may be outdated)
+- When encountering type errors, read the error message carefully - it often shows what's actually expected
 
 ## Project Overview
 
@@ -53,6 +107,8 @@ Monochromatic is a TypeScript monorepo ecosystem for web development, featuring:
 - Documentation sites
 
 ## Essential Commands
+
+**IMPORTANT**: All builds and tasks are managed by Moon. Never run `pnpm exec` or direct package scripts. Always use `moon run` commands.
 
 ### Initial Setup
 ```bash
@@ -168,6 +224,7 @@ packages/
 ### Import and module conventions
 
 - Always include file extensions when importing files.
+- **Use `.ts` extensions in imports when `allowImportingTsExtensions` is enabled** (not `.js`)
 - Group imports in the following order:
   1. Node.js built-in modules
   2. External dependencies
@@ -241,6 +298,13 @@ TypeScript's support for overloading generator functions has some quirks:
 
 - Prefer `const` over `let` to encourage immutability and prevent accidental reassignment. Only use `let` when a variable's value must change.
 - Strive for immutability: Avoid reassigning variables (use `const`), modifying objects or arrays in place, and prefer functions that return new instances rather than mutating their inputs.
+- **Prefer functional approaches over imperative loops**:
+  - Bad: Manual loop with mutable counter to count occurrences
+  - Good: `string.split(delimiter).length - 1` or similar built-in methods
+  - Use array methods (`map`, `filter`, `reduce`) over for loops
+  - Use `for...of` when iteration is unavoidable, not traditional `for` loops
+  - Always check if JavaScript/TypeScript provides a built-in method before writing manual loops
+- Remove unused variables or prefix them with underscore (e.g., `_unusedVar`)
 - Declare magic numbers, strings, regexes, and similar literal values as `const` variables.
   - However, you may use the literal numbers `1, -1, 0, 2, -2` directly, as configured in the `eslint/no-magic-numbers` lint rule.
 - Use `satisfies` operator for type checking without widening:
@@ -250,6 +314,22 @@ TypeScript's support for overloading generator functions has some quirks:
     timeout: 5000,
   } satisfies Config;
   ```
+
+### Export conventions
+
+- **Avoid `Object.assign` for extending typed objects** - create a new const instead
+  - Bad: `const plugin = {}; Object.assign(plugin.configs, {...});`
+  - Good: Create a new const with explicit type that includes all properties:
+    ```ts
+    const plugin: FlatConfig.Plugin = { meta: {...}, configs: {} };
+    const pluginWithConfig: FlatConfig.Plugin & { configs: { recommended: FlatConfig.Config[] } } = {
+      ...plugin,
+      configs: { recommended: [...] }
+    };
+    export default pluginWithConfig;
+    ```
+- This approach provides full type safety and never causes TypeScript complaints
+- Always export at the end after all object construction is complete
 - Prefer immediately invoked function expressions (IIFEs) over mutable variables for conditional value computation:
   ```ts
   // Instead of: let valeExists = false; followed by mutations
@@ -266,6 +346,7 @@ TypeScript's support for overloading generator functions has some quirks:
 ### Async programming
 
 - Prefer `async/await` and promise-returning library functions over explicit `new Promise` creation.
+- Always prefer `async/await` over callbacks; convert callback-based APIs to promises using `util.promisify()` or manual promisification
 - Avoid using await in loops wherever logically sound.
 - Use `Promise.all()` for concurrent operations when order doesn't matter.
 - Use `Promise.allSettled()` when you need results from all promises regardless of failures.
@@ -311,6 +392,12 @@ TypeScript's support for overloading generator functions has some quirks:
     }
   }
   ```
+- When a specific exit code is not required for an error, just use `throw new Error(message)` instead of process.exit()
+  - Bad: `if (error) { console.error('Error occurred'); process.exit(1); }`
+  - Good: `if (error) { throw new Error('Error occurred'); }`
+  - Throwing errors provides better stack traces and allows parent code to handle errors
+  - Only use process.exit() with specific exit codes when required by CLI tool conventions
+  - For scripts, thrown errors will automatically result in non-zero exit codes
 
 ### Class design
 
@@ -337,16 +424,107 @@ TypeScript's support for overloading generator functions has some quirks:
 
 ### Documentation standards
 
+#### Technical documentation writing style
+
+When writing technical documentation (README, philosophy, architecture docs):
+- Write in active voice without collective pronouns
+- State facts directly: "Astro for documentation" instead of "We chose Astro for our documentation"
+- Avoid meta-references: write "Prioritizing portability" instead of "This aligns with the project's philosophy of portability"
+- Use present tense for current state, future tense only for planned features
+- Eliminate unnecessary connecting phrases and transitions
+
+#### TSDoc comments
+
 Write comprehensive TSDoc comments for all exported members (functions, types, constants, classes, and everything else):
 - This includes providing descriptions for parameters and return values.
+- **Use TSDoc format for EVERYTHING that can be documented** - functions, constants, types, interfaces, classes, enums, etc. Not just exported members.
+- Any code element that could benefit from documentation should have TSDoc comments.
 - Adhere to the `eslint-plugin-jsdoc` recommended rules, TSDoc variant.
 - Use `{@inheritDoc originalFn}` for a function that's the mere non-async variant of the original function.
+
+**Use TSDoc where supported, regular comments elsewhere:**
+
+TSDoc (`/** */`) can be used for:
+- Functions, methods, arrow functions
+- Classes and class members (properties, methods)
+- Interfaces and their properties
+- Type aliases
+- Enums and enum members
+- Variables/constants (top-level)
+- Namespaces/modules
+
+TSDoc CANNOT be used for (use `//` or `/* */` instead):
+- Expression statements (assignments, function calls, increments, etc.)
+- Control flow statements (if, for, while, switch)
+- Import/export statements
+- Return statements
+- Individual parameters in signatures
+- Any comment that isn't immediately followed by a declaration
+
+Key rule: TSDoc must directly precede a declaration (variable, function, class, type, etc.), not a statement or expression
+
+**Comment placement:**
+- NEVER use inline comments after code
+- Always place comments on their own line above the code they describe
+
+Examples:
+```ts
+// CORRECT usage
+/** Frontmatter delimiter */
+const DELIMITER = '---';
+
+/** Result of parsing operation */
+type Result = {
+  /** Parsed data */
+  data: string;
+  /** Whether error occurred */
+  error: boolean;
+};
+
+/** Process the input data */
+function process() {
+  // Regular comment for logic inside function
+  if (!valid) {
+    // Handle error case
+    // Return null on error
+    return null;
+  }
+}
+
+// BAD - inline comments
+const x = 5; // This is x
+return null; // Return null on error
+
+// GOOD - comments on their own line
+// This is x
+const x = 5;
+// Return null on error
+return null;
+
+// INCORRECT - Don't use TSDoc where not supported
+function badExample() {
+  /** WRONG - TSDoc not supported inside functions */
+  const x = 5;
+  
+  /** WRONG - TSDoc not supported for if statements */
+  if (x > 0) {
+    /** WRONG - TSDoc not supported for return */
+    return x;
+  }
+}
+```
 - Avoid `the`, `a`, `an` in `@param` or `@returns` description.
   - Good: `@returns Set containing all unique elements from the input iterable.`, `@param iterable - to convert.`
   - Bad: `@returns A set containing all unique elements from the input iterable.`, `@returns The set containing all unique elements from the input iterable.`, `@param iterable - the iterable to convert.`
 - Avoid repeating the name of the parameter without adding additional context in `@param` description.
   - Good: `@param iterable - to convert.`, `@param numerator - to be divided.`
   - Bad: `@param iterable - iterable to convert.`, `@param numerator - number to be divided.`
+- **Comments should explain WHY, not WHAT**:
+  - Good: `/** Mutable counter needed to track newlines encountered while scanning */`
+  - Bad: `/** Line counter starting at 1 */`
+  - Focus on intent, purpose, and design decisions
+  - Explain why something is mutable when using `let`
+  - Don't just restate what the code already shows
 - For async functions, assume users are using `await` syntax to consume their results and don't need the docs to tell them the function technically returns a promise.
   - Good: `Converts Iterable to Set.`, `@returns Set containing all unique elements from the input iterable.`
   - Bad: `Converts Iterable to Promise<Set>.`, `@returns Promise that resolves to Set containing all unique elements from the input iterable.`
@@ -447,7 +625,7 @@ Write comprehensive TSDoc comments for all exported members (functions, types, c
 
 ### Text formatting
 - One sentence per line for better diffs and readability
-- Use **bold** for emphasis, avoid _italics_ 
+- Use **bold** for emphasis, avoid _italics_
 - Prefer fenced code blocks with language tags over inline code for multi-line snippets
 - Use inline code \`like this\` for single commands, function names, or short code
 
@@ -491,17 +669,17 @@ Don't write commit messages that only describe partial changes.
 ```
 
 #### Types
-- `feat`
-- `fix`
-- `docs`
-- `style`
-- `refactor`
-- `perf`
-- `test`
-- `build`
-- `ci`
-- `chore`
-- `revert`
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- `refactor`: Code change that neither fixes a bug nor adds a feature
+- `perf`: Code change that improves performance
+- `test`: Adding missing tests or correcting existing tests
+- `build`: Changes that affect the build system or external dependencies
+- `ci`: Changes to CI configuration files and scripts
+- `chore`: Other changes that don't modify src or test files (removing deprecated files, updating .gitignore, etc)
+- `revert`: Reverts a previous commit
 
 #### Scope
 Use the package name or area of change:
@@ -523,17 +701,24 @@ Closes #123
 ```
 feat(module-es): enhance error handling utilities
 
-error.assert.throw: add a
-- Implement b
-- Include c
+error.assert.throw: add assertion-based error throwing
+- Implement conditional error throwing based on assertions
+- Include TypeScript type narrowing support
 
-error.throw: add d
-- Implement e
-- Provide f
-- Include g
+error.throw: add unified error throwing utility
+- Implement consistent error creation
+- Provide better stack traces
+- Include custom error types
 
 test(module-es): achieve 100% coverage for error utilities
-- Add h
-- Use i
-- Ensure j
+- Add comprehensive test cases
+- Use parameterized tests for edge cases
+- Ensure proper type inference testing
 ```
+
+**Important commit message rules:**
+- Group related changes by type (feat, fix, test, etc.)
+- Don't mix different types in the same scope section
+- Be specific about what changed, not just which files
+- Never use emojis in commit messages
+- Focus on the "what" and "why", not just listing file changes

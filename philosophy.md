@@ -1,19 +1,76 @@
-## portable/interoperable/detachable
+# Philosophy
 
-### Write markdown normally, and still enjoy plantuml, picture features
+## Core principles
 
-## MAYBE: Target Firefox ESR 128?
+### Portability and interoperability
 
-Which comes out on July 9 according to [Firefox Release Calendar](https://whattrainisitnow.com/calendar/).
+Portable, interoperable, detachable.
+No platform-specific solutions.
 
-Which means we'll not have to work around these features lacking in Firefox ESR 115:
+#### Markdown features
 
-1.  `content-visibility`
+Plain markdown readability with optional enhanced tooling.
 
-2.  `:has()`
+## Technical decisions
 
-3.  CSS Nesting
+### Build and execution
 
-    No need to downlevel it.
+#### Bun scripts vs single file executables
 
-4.  Text Fragment
+Direct `bun <script>.ts` execution in moon.yml:
+
+- **Platform portability**: Bun single file executables aren't cross-platform
+- **Industry precedent**: oxlint and dprint use runtime platform detection
+- **Performance**: Acceptable startup cost for portability
+
+### Tool choices
+
+#### Framework: Astro > Nue
+
+Astro: most supported static site generator.
+
+NueJS: requires less common markdown format support.
+
+#### Editor: VSCode/VSCodium/Neovide > WebStorm
+
+WebStorm lacks moon plugin support.
+
+#### Linting and formatting
+
+- **Biome**: insufficient rules
+- **oxlint**: faster than ESLint
+- **ESLint**: fills oxlint gaps
+- **Stylelint**: CSS-specific rules
+- **dprint**: universal formatter
+
+#### Testing: Vitest + Playwright
+
+Alternatives rejected:
+
+1.  **WebdriverIO**
+    - ✓ Firefox ESR support
+    - ✗ No `prefers-contrast`/`prefers-reduced-motion` emulation
+    - ✗ No Firefox user.js/Chrome flags support
+    - ✗ Host configuration breaks reproducibility
+
+2.  **Playwright standalone**
+    - ✗ No unit testing
+
+Vitest + Playwright: unit testing + browser automation + emulation.
+
+## Future considerations
+
+### Browser support
+
+#### Firefox ESR 140 (June 2025)
+
+Modern features without workarounds:
+
+1.  **CSS Container Queries** - `@container` and container units
+2.  **`:has()` selector**
+3.  **CSS Nesting**
+4.  **`content-visibility`**
+5.  **Text Fragments**
+6.  **CSS `@scope`**
+7.  **Popover API**
+8.  **View Transitions API**

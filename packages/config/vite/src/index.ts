@@ -55,6 +55,7 @@ const rollupExternal = (moduleId: string): boolean => {
       'node_modules/',
       'oxc-',
       'eslint-plugin-',
+      '@typescript-eslint/',
       '@eslint/',
       '@vitest/',
     ]

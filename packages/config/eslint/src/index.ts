@@ -3,9 +3,6 @@ import eslint from '@eslint/js';
 import vitest from '@vitest/eslint-plugin';
 
 // Excluded from bundle because it causes the bundle size to be large.
-import { configs as eslintPluginAstroConfigs } from 'eslint-plugin-astro';
-
-// Excluded from bundle because it causes the bundle size to be large.
 import jsdoc from 'eslint-plugin-jsdoc';
 
 import nodePlugin from 'eslint-plugin-n';
@@ -22,12 +19,20 @@ import {
   vitestRules,
 } from 'eslint-plugin-oxlint/rules-by-scope';
 
+// import { searchForWorkspaceRoot } from 'vite';
+
+// eslint-plugin-astro has too many moving parts.
+
 // Excluded from bundle because it causes the bundle size to be large.
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 
 import tseslint from 'typescript-eslint';
 import type { ConfigArray } from 'typescript-eslint';
+import { searchForWorkspaceRoot } from 'vite';
+import astroPlugin from './astro-plugin.ts';
 
+// .astro must be included here for TypeScript ESLint's projectService to work properly
+// See: https://typescript-eslint.io/troubleshooting/typed-linting/performance#changes-to-extrafileextensions-with-projectservice
 const extraFileExtensions = ['vue', 'astro', 'mdx'];
 
 const myConfigArray: ConfigArray = tseslint.config(
@@ -37,6 +42,7 @@ const myConfigArray: ConfigArray = tseslint.config(
       '**/bak/**',
       '**/temp/**',
       '**/node_modules/**',
+      // Astro's auto-generated internal files
       '**/.astro/**',
       // Not linting js files.
       '**/*.js',
@@ -50,27 +56,37 @@ const myConfigArray: ConfigArray = tseslint.config(
   jsdoc.configs['flat/recommended-typescript'],
   nodePlugin.configs['flat/recommended'],
   eslintPluginUnicorn.configs.all,
-  ...eslintPluginAstroConfigs.recommended,
-  ...eslintPluginAstroConfigs['flat/recommended'],
   {
     languageOptions: {
       parserOptions: {
+        parser: '@typescript-eslint/parser',
         projectService: true,
-        tsconfigRootDir: import.meta.dirname,
+        tsconfigRootDir: searchForWorkspaceRoot(process.cwd()),
         jsx: true,
         emcaVersion: 'latest',
         extraFileExtensions,
         lib: ['esnext', 'dom', 'webworker'],
+        sourceType: 'module',
       },
     },
 
     'settings': {
-      'node': {
-        'version': '>=24.0.0',
+      node: {
+        version: '>=24.0.0',
+      },
+      jsdoc: {
+        mode: 'typescript',
       },
     },
 
     rules: {
+      // Redundant with TypeScript
+      'n/no-missing-import': ['off'],
+      'jsdoc/check-tag-names': ['error', {
+        definedTags: ['remarks'],
+        enableFixer: false,
+        typed: true,
+      }],
       '@typescript-eslint/no-unnecessary-condition': ['error', {
         allowConstantLoopConditions: 'only-allowed-literals',
       }],
@@ -123,18 +139,17 @@ const myConfigArray: ConfigArray = tseslint.config(
           //region unambiguious -- Everybody knows what these are.
           fn: false,
           lib: false,
+          temp: false,
+          dev: false,
           //endregion umambiguious
         },
       }],
 
       'unicorn/import-style': ['warn', {
         'styles': {
-          'path': 'false',
-          // If readdir is good enough for node, it's good enough.
-          dir: false,
-
-          // Everybody knows what fn is. It's unambiguious.
-          fn: false,
+          // path does export named imports like join and resolve
+          'path': false,
+          'node:path': false,
         },
       }],
     },
@@ -183,6 +198,10 @@ const myConfigArray: ConfigArray = tseslint.config(
     },
   },
   //endregion oxlint -- Turn off rules already supported by oxlint.
+
+  //region Astro files -- Use astro-internal plugin recommended config
+  ...astroPlugin.configs.recommended,
+  //endregion Astro files
 );
 
 export default myConfigArray;

@@ -76,7 +76,7 @@ export async function someIterableAsync<T_element,>(
  * const noFailures = await someFailIterableAsync(x => false, []); // false
  * ```
  */
- export async function someFailIterableAsync<T_element,>(
+export async function someFailIterableAsync<T_element,>(
   predicate: (element: T_element) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_element>,
 ): Promise<boolean> {

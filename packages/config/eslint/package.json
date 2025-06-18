@@ -6,20 +6,23 @@
     "monochromatic"
   ],
   "dependencies": {
-    "eslint-plugin-astro": "catalog:",
     "typescript-eslint": "catalog:",
     "eslint-plugin-unicorn": "catalog:",
     "eslint-plugin-jsdoc": "catalog:",
     "@eslint/js": "catalog:",
     "eslint-plugin-n": "catalog:",
     "@vitest/eslint-plugin": "catalog:",
-    "eslint-plugin-oxlint": "catalog:"
+    "eslint-plugin-oxlint": "catalog:",
+    "@typescript-eslint/scope-manager": "catalog:",
+    "@typescript-eslint/parser": "catalog:",
+    "@typescript-eslint/types": "catalog:",
+    "@typescript-eslint/utils": "catalog:"
   },
   "peerDependencies": {
-    "eslint": "catalog:"
+    "eslint": "catalog:",
+    "vite": "catalog:"
   },
   "devDependencies": {
-    "vite": "catalog:",
     "@monochromatic-dev/config-typescript": "*",
     "@monochromatic-dev/config-vite": "*",
     "@monochromatic-dev/config-oxlint": "*",

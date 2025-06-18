@@ -6,6 +6,9 @@ tasks:
     inputs:
     - '@group(allSources)'
     - '@group(configs)'
+    options:
+      shell: true
+
   pnpmVersionCheck:
     command: 'pnpm version'
   pnpmInstall:
@@ -66,14 +69,11 @@ tasks:
     options:
       runDepsInParallel: false
   installVale:
-    # command: 'bun packages/module/es/src/moon.installVale.ts'
-    command: 'moon.installVale'
-    toolchain: node
+    command: 'bun packages/module/es/src/moon.installVale.ts'
   installValeDependencyGlobally:
     command: 'bun install -g mdx2vast'
   valeSync:
-    command: 'packages/module/es/src/moon.valeSync.ts'
-    toolchain: bun
+    command: 'bun packages/module/es/src/moon.valeSync.ts'
   createValeNoopStyle:
     command: 'mkdir -p .vale/noop'
 
@@ -93,6 +93,13 @@ tasks:
     - '@group(allSources)'
     options:
       outputStyle: buffer-only-failure
+
+  bunCompile:
+    command: 'bun packages/module/es/src/moon.bunCompile.ts'
+    inputs:
+    - 'packages/module/es/src/moon.*.ts'
+    outputs:
+    - 'packages/module/es/dist/final/moon.*'
 
   buildWatch:
     deps:
@@ -128,21 +135,26 @@ tasks:
     - lintStylelint
     - lintDprint
     - lintOxlint
+    - lintVale
 
   lintEslint:
     extends: '_lintFormatBase'
-    command: 'eslint --cache'
+    command: 'bun run packages/module/es/src/moon.command.ts --allowFailure -- eslint --cache'
 
   lintStylelint:
     extends: '_lintFormatBase'
-    command: 'stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
+    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
   lintDprint:
     extends: '_lintFormatBase'
-    command: 'dprint check --list-different'
+    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- dprint check --list-different'
 
   lintOxlint:
     extends: '_lintFormatBase'
-    command: 'oxlint'
+    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- oxlint'
+
+  lintVale:
+    extends: '_lintFormatBase'
+    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- vale --glob="{*,packages/*/*/*,packages/*/*/src/**/*,.kilocode/rules/**/*}" .'
 
   # Formatting tasks organized for maximum parallelization
   format:
@@ -160,9 +172,9 @@ tasks:
   # Second pass: Language-specific formatters run in parallel
   formatLanguageSpecific:
     deps:
-    - formatTypeScript  # TS formatters (sequential)
-    - formatStylelint   # CSS formatter (parallel with TS)
-    # Default is parallel, so formatTypeScript and formatStylelint run simultaneously
+    - formatTypeScript # TS formatters (sequential)
+    - formatStylelint # CSS formatter (parallel with TS)
+  # Default is parallel, so formatTypeScript and formatStylelint run simultaneously
 
   # TypeScript formatters must run sequentially (both process .ts files)
   formatTypeScript:
@@ -174,19 +186,19 @@ tasks:
 
   formatEslint:
     extends: '_lintFormatBase'
-    command: 'eslint --cache --fix'
+    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- eslint --cache --fix'
 
   formatStylelint:
     extends: '_lintFormatBase'
-    command: 'stylelint --ignore-path .gitignore --fix "**/*.{css,astro,html}"'
+    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- stylelint --ignore-path .gitignore --fix "**/*.{css,astro,html}"'
 
   formatDprint:
     extends: '_lintFormatBase'
-    command: 'dprint fmt'
+    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- dprint fmt'
 
   formatOxlint:
     extends: '_lintFormatBase'
-    command: 'oxlint --fix'
+    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- oxlint --fix'
 
 tags:
 - noTypescript

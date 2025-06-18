@@ -90,9 +90,9 @@ describe('identity', () => {
   });
 
   test('works as default parameter or placeholder function', () => {
-    function processValue<const T>(value: T, transform: (arg0: T)=>any = identity): T {
+    function processValue<const T,>(value: T, transform: (arg0: T) => any = identity): T {
       return transform(value);
-    };
+    }
 
     expect(processValue('test')).toBe('test');
     expect(processValue('test', (s) => s.toUpperCase())).toBe('TEST');

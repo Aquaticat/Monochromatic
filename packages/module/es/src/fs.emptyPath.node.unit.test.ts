@@ -30,15 +30,14 @@ import {
 await logtapeConfigure(await logtapeConfiguration());
 
 describe('fs.emptyPath', () => {
-
   describe('emptyPath', () => {
     test('empties file when path has extension', async () => {
       const testDir = await mkdtemp(join(tmpdir(), 'fs-emptyPath-test-'));
       const filePath = join(testDir, 'test.txt');
       await writeFile(filePath, 'some content');
-      
+
       const result = await emptyPath(filePath);
-      
+
       expect(result).toBe(filePath);
       const content = await readFile(filePath, 'utf8');
       expect(content).toBe('');
@@ -51,9 +50,9 @@ describe('fs.emptyPath', () => {
       const file2 = join(testDir, 'file2.txt');
       await writeFile(file1, 'content1');
       await writeFile(file2, 'content2');
-      
+
       const result = await emptyPath(testDir);
-      
+
       expect(result).toBe(testDir);
       const entries = await readdir(testDir);
       expect(entries).toHaveLength(0);
@@ -65,9 +64,9 @@ describe('fs.emptyPath', () => {
       await mkdir(subDir, { recursive: true });
       const filePath = join(subDir, 'test.txt');
       await writeFile(filePath, 'content');
-      
+
       const result = await emptyPath(filePath);
-      
+
       expect(result).toBe(filePath);
       const content = await readFile(filePath, 'utf8');
       expect(content).toBe('');
@@ -81,9 +80,9 @@ describe('fs.emptyPath', () => {
       const file2 = join(testDir, 'file2.json');
       await writeFile(file1, 'content1');
       await writeFile(file2, 'content2');
-      
+
       const result = await emptyDir(testDir);
-      
+
       expect(result).toBe(testDir);
       const entries = await readdir(testDir);
       expect(entries).toHaveLength(0);
@@ -95,9 +94,9 @@ describe('fs.emptyPath', () => {
       await mkdir(subDir, { recursive: true });
       const nestedFile = join(subDir, 'nested.txt');
       await writeFile(nestedFile, 'nested content');
-      
+
       const result = await emptyDir(testDir);
-      
+
       expect(result).toBe(testDir);
       const entries = await readdir(testDir);
       expect(entries).toHaveLength(0);
@@ -107,9 +106,9 @@ describe('fs.emptyPath', () => {
       const testDir = await mkdtemp(join(tmpdir(), 'fs-emptyPath-test-'));
       const emptySubDir = join(testDir, 'empty');
       await mkdir(emptySubDir, { recursive: true });
-      
+
       const result = await emptyDir(emptySubDir);
-      
+
       expect(result).toBe(emptySubDir);
       const entries = await readdir(emptySubDir);
       expect(entries).toHaveLength(0);
@@ -121,9 +120,9 @@ describe('fs.emptyPath', () => {
       const testDir = await mkdtemp(join(tmpdir(), 'fs-emptyPath-test-'));
       const filePath = join(testDir, 'test.txt');
       await writeFile(filePath, 'existing content');
-      
+
       const result = await emptyFile(filePath);
-      
+
       expect(result).toBe(filePath);
       const content = await readFile(filePath, 'utf8');
       expect(content).toBe('');
@@ -132,9 +131,9 @@ describe('fs.emptyPath', () => {
     test('creates empty file if not exists', async () => {
       const testDir = await mkdtemp(join(tmpdir(), 'fs-emptyPath-test-'));
       const filePath = join(testDir, 'new.txt');
-      
+
       const result = await emptyFile(filePath);
-      
+
       expect(result).toBe(filePath);
       const content = await readFile(filePath, 'utf8');
       expect(content).toBe('');
@@ -146,9 +145,9 @@ describe('fs.emptyPath', () => {
       await mkdir(subDir, { recursive: true });
       const filePath = join(subDir, 'test.txt');
       await writeFile(filePath, 'content');
-      
+
       const result = await emptyFile(filePath);
-      
+
       expect(result).toBe(filePath);
       const content = await readFile(filePath, 'utf8');
       expect(content).toBe('');
@@ -158,10 +157,10 @@ describe('fs.emptyPath', () => {
       const testDir = await mkdtemp(join(tmpdir(), 'fs-emptyPath-test-'));
       const filePath = join(testDir, 'styles.css');
       await writeFile(filePath, '.class { color: red; }');
-      
+
       // Test with ?raw query parameter
       const result = await emptyFile(filePath + '?raw');
-      
+
       expect(result).toBe(filePath + '?raw');
       const content = await readFile(filePath, 'utf8');
       expect(content).toBe('');
@@ -174,13 +173,13 @@ describe('fs.emptyPath', () => {
       const emptyFile1 = join(testDir, 'empty1.txt');
       const emptyFile2 = join(testDir, 'empty2.txt');
       const nonEmptyFile = join(testDir, 'nonempty.txt');
-      
+
       await writeFile(emptyFile1, '');
       await writeFile(emptyFile2, '   '); // whitespace only
       await writeFile(nonEmptyFile, 'content');
-      
+
       const result = await removeEmptyFilesInDir(testDir);
-      
+
       expect(result).toBe(testDir);
       const entries = await readdir(testDir);
       expect(entries).toHaveLength(1);
@@ -191,17 +190,17 @@ describe('fs.emptyPath', () => {
       const testDir = await mkdtemp(join(tmpdir(), 'fs-emptyPath-test-'));
       const subDir = join(testDir, 'subdir');
       const emptyFile = join(testDir, 'empty.txt');
-      
+
       await mkdir(subDir, { recursive: true });
       await writeFile(emptyFile, '');
-      
+
       const result = await removeEmptyFilesInDir(testDir);
-      
+
       expect(result).toBe(testDir);
       const entries = await readdir(testDir);
       expect(entries).toHaveLength(1);
       expect(entries[0]).toBe('subdir');
-      
+
       // Verify directory still exists
       const stats = await stat(join(testDir, 'subdir'));
       expect(stats.isDirectory()).toBe(true);
@@ -211,12 +210,12 @@ describe('fs.emptyPath', () => {
       const testDir = await mkdtemp(join(tmpdir(), 'fs-emptyPath-test-'));
       const file1 = join(testDir, 'file1.txt');
       const file2 = join(testDir, 'file2.txt');
-      
+
       await writeFile(file1, 'content1');
       await writeFile(file2, 'content2');
-      
+
       const result = await removeEmptyFilesInDir(testDir);
-      
+
       expect(result).toBe(testDir);
       const entries = await readdir(testDir);
       expect(entries).toHaveLength(2);
@@ -226,7 +225,7 @@ describe('fs.emptyPath', () => {
     test('handles empty directory', async () => {
       const testDir = await mkdtemp(join(tmpdir(), 'fs-emptyPath-test-'));
       const result = await removeEmptyFilesInDir(testDir);
-      
+
       expect(result).toBe(testDir);
       const entries = await readdir(testDir);
       expect(entries).toHaveLength(0);

@@ -4,22 +4,6 @@ The download of VS Code Server may fail because you're not using the official Mi
 
 [Download latest VS Code Server](https://update.code.visualstudio.com/latest/server-linux-x64/stable)
 
-## Vitest execution fails with missing build artifacts
-
-When running `pnpm exec vitest --run`, you may encounter "failed to fetch dynamically imported module" errors.
-
-### Root cause
-Missing JavaScript build artifacts in `packages/config/vite/dist/final/js` directory. The Vitest configuration tries to dynamically import Vite config modules that haven't been built yet.
-
-### Solution
-Run the complete build process before executing Vitest:
-
-```bash
-pnpm run br
-```
-
-This ensures all JavaScript build artifacts are generated before Vitest attempts to import them.
-
 ## Vitest UI port binding fails on Windows
 
 When running `pnpm exec vitest --ui`, you may encounter permission denied errors:
@@ -62,7 +46,7 @@ export default defineConfig({
 })
 ```
 
-Then simply run: `pnpm exec vitest --ui`
+Then run: `vitest --ui`
 
 ### Security note
 Binding to `0.0.0.0` makes the Vitest UI accessible from other devices on your network at `http://[your-ip]:3000`. This is typically fine for development but be aware of network accessibility.
@@ -84,4 +68,58 @@ packageExtensions:
 
 ## Vitest and Vite type incompatible
 
-Use one version of vite: `"vite": "catalog:"`
+Use one version of vite:
+```yaml name=pnpm-workspace.yaml
+catalog:
+  "vite": "catalog:"
+overrides:
+  vite: 'catalog:'
+```
+
+## Stylelint can't resolve postcss-html
+
+```txt
+Error: Cannot resolve custom syntax module "postcss-html". Check that module "postcss-html" is available and spelled correctly.  Caused by: Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'postcss-html' imported from C:\Users\user\AppData\Local\pnpm\store\v10\links\stylelint\16.19.1\eeb6b75a982c201a8f1cb0d3610228ba6f7b7eefc757c56e6748a193c6779ee7\node_modules\stylelint\lib\utils\dynamicImport.cjs     at getCustomSyntax (C:\Users\user\AppData\Local\pnpm\store\v10\links\stylelint\16.19.1\eeb6b75a982c201a8f1cb0d3610228ba6f7b7eefc757c56e6748a193c6779ee7\node_modules\stylelint\lib\getPostcssResult.cjs:87:11)     at async getPostcssResult (C:\Users\user\AppData\Local\pnpm\store\v10\links\stylelint\16.19.1\eeb6b75a982c201a8f1cb0d3610228ba6f7b7eefc757c56e6748a193c6779ee7\node_modules\stylelint\lib\getPostcssResult.cjs:30:17)     at async lintSource (C:\Users\user\AppData\Local\pnpm\store\v10\links\stylelint\16.19.1\eeb6b75a982c201a8f1cb0d3610228ba6f7b7eefc757c56e6748a193c6779ee7\node_modules\stylelint\lib\lintSource.cjs:87:4)     at async postcssPlugin.standalone [as lint] (C:\Users\user\AppData\Local\pnpm\store\v10\links\stylelint\16.19.1\eeb6b75a982c201a8f1cb0d3610228ba6f7b7eefc757c56e6748a193c6779ee7\node_modules\stylelint\lib\standalone.cjs:150:26)     at async Nm.lintDocument (c:\Users\user\.vscode-oss\extensions\stylelint.vscode-stylelint-1.5.3-universal\dist\start-server.js:73:6761)     at async fy.Rq (c:\Users\user\.vscode-oss\extensions\stylelint.vscode-stylelint-1.5.3-universal\dist\start-server.js:73:66442)     at async Ef.iy (c:\Users\user\.vscode-oss\extensions\stylelint.vscode-stylelint-1.5.3-universal\dist\start-server.js:73:55936)     at async c:\Users\user\.vscode-oss\extensions\stylelint.vscode-stylelint-1.5.3-universal\dist\start-server.js:73:54917
+```
+
+```yaml name=pnpm-workspace.yaml
+packageExtensions:
+  stylelint:
+    dependencies:
+      'postcss-html': '*'
+```
+
+## ESLint Configuration
+
+### Custom Parsers and Processors
+
+1. **Parser vs Processor**: 
+   - Use a custom **parser** when you need to parse a different file format entirely (like .astro, .vue)
+   - Use a **processor** when you need to extract JavaScript/TypeScript from within another file format
+   - Parsers give you full control over the AST and type checking
+
+2. **Plugin Configuration with Type Safety**:
+   - Don't use `Object.assign` to add configs to a plugin - TypeScript can't track the type changes
+   - Instead, create a new const with the full type:
+     ```ts
+     const plugin: FlatConfig.Plugin = { meta: {...}, configs: {} };
+     const pluginWithConfig: FlatConfig.Plugin & { configs: { recommended: FlatConfig.Config[] } } = {
+       ...plugin,
+       configs: { recommended: [...] }
+     };
+     export default pluginWithConfig;
+     ```
+
+3. **Parser Options Inheritance**:
+   - Don't duplicate `languageOptions.parserOptions` in plugin configs if they're already defined in the main config
+   - The main config's parser options will be merged automatically
+
+4. **Type Definitions for ESLint**:
+   - Use `@typescript-eslint/utils/ts-eslint` for proper TypeScript types (`FlatConfig.Plugin`, etc.)
+   - The basic `eslint` package types are incomplete for advanced use cases
+
+5. **Virtual Files and Project Service**:
+   - When creating virtual files (like `file.astro/frontmatter.ts`), TypeScript's projectService won't recognize them
+   - Solutions:
+     - Use a custom parser instead of a processor
+     - Or configure `allowDefaultProject` with specific patterns (but no `**` allowed)

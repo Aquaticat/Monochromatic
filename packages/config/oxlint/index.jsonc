@@ -145,7 +145,7 @@
     "eslint/no-magic-numbers": [
       "warn",
       {
-        "ignore": [1, -1, 0, 2, -2],
+        "ignore": [1, -1, 0, 2, -2, 255, 0.1, 10],
         "enforceConst": true,
         "detectObjects": false,
         "ignoreEnums": true,
@@ -213,6 +213,14 @@
       ],
       "globals": {
         "figma": "readonly",
+      },
+    },
+    {
+      "files": ["**/*.type.*.ts"],
+
+      "rules": {
+        // Those types can use magic numbers.
+        "eslint/no-magic-numbers": "off",
       },
     },
     {

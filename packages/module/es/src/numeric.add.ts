@@ -4,7 +4,6 @@ import {
 } from './iterable.reduce.ts';
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
-
 import type { Numeric } from './numeric.type.int.ts';
 
 /**

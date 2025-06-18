@@ -7,7 +7,7 @@ tasks:
   js_default:
     command: 'vite build --mode production --config vite.config.frontend.ts'
     deps:
-      - js_iframe
+    - js_iframe
   js_defaultNoDepWatch:
     command: 'vite build --mode production --config vite.config.frontend.ts --watch'
     local: true

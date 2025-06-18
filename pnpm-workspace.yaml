@@ -14,9 +14,11 @@ catalog:
   '@ungap/structured-clone': '*'
   find-up: '*'
   glob: '*'
+  tinyglobby: '*'
   oxc-resolver: '*'
   smol-toml: '*'
   zod-opts: '*'
+  '@typescript-eslint/parser': '*'
   '@kazupon/gunshi': jsr:*
   '@types/bun': '*'
   postcss-html: '*'
@@ -92,10 +94,13 @@ catalog:
   the-new-css-reset: '*'
   TODS: github:clagnut/TODS
   '@mdx-js/vue': '*'
+  '@typescript-eslint/utils': '*'
   vue: '*'
   '@cspotcode/outdent': jsr:*
+  '@typescript-eslint/scope-manager': '*'
   serialize-error: '*'
   '@fxts/core': '*'
+  '@typescript-eslint/types': '*'
   vitest: '>=3.2.3'
   vue-tsc: '>=2.2.10'
   '@vitest/browser': '>=3.2.3'
@@ -105,6 +110,7 @@ catalog:
   '@vitest/coverage-istanbul': '>=3.2.3'
   '@total-typescript/ts-reset': '*'
   '@types/postcss-mixins': '*'
+  '@typescript-eslint/eslint-plugin': '*'
   ts-pattern: '*'
   oxc-minify: '*'
   'mdx2vast': '*'
@@ -157,6 +163,9 @@ packageExtensions:
   '@vitest/browser':
     peerDependencies:
       vite: '*'
+  stylelint:
+    dependencies:
+      'postcss-html': '*'
 peerDependencyRules:
   allowedVersions:
     '@vitejs/plugin-basic-ssl>vite': '>=7.0.0-beta.1'

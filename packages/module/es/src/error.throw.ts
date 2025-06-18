@@ -11,11 +11,11 @@ import { isEmptyArray } from './iterable.is.ts';
 /**
  * Asserts that value is not null or undefined.
  * Throws TypeError if value is nullish, otherwise returns value with nullish types excluded.
- * 
+ *
  * @param potentiallyNullish - to validate.
  * @returns Value with null and undefined types excluded.
  * @throws {TypeError} When value is null or undefined.
- * 
+ *
  * @example
  * ```ts
  * const value: string | null = getUserInput();
@@ -35,11 +35,11 @@ export function notNullishOrThrow<T,>(
 /**
  * Asserts that value is not undefined.
  * Throws TypeError if value is undefined, otherwise returns value with undefined type excluded.
- * 
+ *
  * @param potentiallyUndefined - to validate.
  * @returns Value with undefined type excluded.
  * @throws {TypeError} When value is undefined.
- * 
+ *
  * @example
  * ```ts
  * const value: string | undefined = getOptionalConfig();
@@ -59,11 +59,11 @@ export function notUndefinedOrThrow<T,>(
 /**
  * Asserts that value is not null.
  * Throws TypeError if value is null, otherwise returns value with null type excluded.
- * 
+ *
  * @param potentiallyNull - to validate.
  * @returns Value with null type excluded.
  * @throws {TypeError} When value is null.
- * 
+ *
  * @example
  * ```ts
  * const value: string | null = getOptionalValue();
@@ -89,11 +89,11 @@ export type falsy = false | null | 0 | 0n | '' | undefined;
 /**
  * Asserts that value is truthy.
  * Throws TypeError if value is falsy (false, null, 0, 0n, '', undefined), otherwise returns value with falsy types excluded.
- * 
+ *
  * @param potentiallyFalsy - to validate.
  * @returns Value with all falsy types excluded.
  * @throws {TypeError} When value is falsy.
- * 
+ *
  * @example
  * ```ts
  * const value: string | null | undefined = getUserInput();
@@ -113,11 +113,11 @@ export function notFalsyOrThrow<T,>(
 /**
  * Asserts that value is not false.
  * Throws TypeError if value is exactly false, otherwise returns value with false type excluded.
- * 
+ *
  * @param potentiallyFalse - to validate.
  * @returns Value with false type excluded.
  * @throws {TypeError} When value is false.
- * 
+ *
  * @example
  * ```ts
  * const value: boolean = getFeatureFlag();
@@ -137,11 +137,11 @@ export function notFalseOrThrow<T,>(
 /**
  * Asserts that value is not an object.
  * Throws TypeError if value is an object (excluding null), otherwise returns value with object type excluded.
- * 
+ *
  * @param potentiallyObj - to validate.
  * @returns Value with object type excluded.
  * @throws {TypeError} When value is an object.
- * 
+ *
  * @example
  * ```ts
  * const value: string | object = getPrimitiveOrObject();
@@ -161,11 +161,11 @@ export function notObjOrThrow<T,>(
 /**
  * Asserts that value is not true.
  * Throws TypeError if value is exactly true, otherwise returns value with true type excluded.
- * 
+ *
  * @param potentiallyTrue - to validate.
  * @returns Value with true type excluded.
  * @throws {TypeError} When value is true.
- * 
+ *
  * @example
  * ```ts
  * const value: boolean = getInverseFlag();
@@ -205,11 +205,11 @@ export type truthy = Exclude<
  * Asserts that value is falsy.
  * Throws TypeError if value is truthy, otherwise returns value with truthy types excluded.
  * Note: Despite the name suggesting it throws for truthy values, it actually returns falsy values.
- * 
+ *
  * @param potentiallyTruthy - to validate.
  * @returns Value confirmed to be falsy.
  * @throws {TypeError} When value is truthy.
- * 
+ *
  * @example
  * ```ts
  * const value: string | null = maybeGetString();
@@ -230,11 +230,11 @@ export function notTruthyOrThrow<const T,>(
  * Asserts that value is not empty.
  * Throws TypeError if string is empty, array has no elements, or object has no keys.
  * Returns value with appropriate non-empty type constraint.
- * 
+ *
  * @param potentiallyEmpty - String, array, or object to validate.
  * @returns Non-empty value with refined type.
  * @throws {TypeError} When value is empty.
- * 
+ *
  * @example
  * ```ts
  * const str = notEmptyOrThrow('hello'); // typed as non-empty string
@@ -263,11 +263,11 @@ export function notEmptyOrThrow<const T extends string | any[] | object,
 /**
  * Asserts that value is not an array.
  * Throws TypeError if value is an array, otherwise returns value with array types excluded.
- * 
+ *
  * @param potentiallyArray - to validate.
  * @returns Value with array type excluded.
  * @throws {TypeError} When value is an array.
- * 
+ *
  * @example
  * ```ts
  * const value: string | string[] = getStringOrArray();
@@ -287,11 +287,11 @@ export function notArrayOrThrow<T,>(
 /**
  * Asserts that value is not a string.
  * Throws TypeError if value is a string, otherwise returns value with string type excluded.
- * 
+ *
  * @param potentiallyString - to validate.
  * @returns Value with string type excluded.
  * @throws {TypeError} When value is a string.
- * 
+ *
  * @example
  * ```ts
  * const value: string | number = getStringOrNumber();
@@ -311,11 +311,11 @@ export function notStringOrThrow<T,>(
 /**
  * Asserts that array is not empty.
  * Throws TypeError if array has no elements, otherwise returns array typed as having at least one element.
- * 
+ *
  * @param potentiallyEmptyArray - Array to validate.
  * @returns Array typed as non-empty tuple [T, ...T[]].
  * @throws {TypeError} When array is empty.
- * 
+ *
  * @example
  * ```ts
  * const arr: number[] = getNumbers();

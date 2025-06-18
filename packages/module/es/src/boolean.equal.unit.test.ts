@@ -188,11 +188,17 @@ describe(equal, () => {
   });
 
   test('compares functions', () => {
-    const fn1 = function test() { return 1; };
-    const fn2 = function test() { return 1; };
-    const fn3 = function test() { return 2; };
+    const fn1 = function test() {
+      return 1;
+    };
+    const fn2 = function test() {
+      return 1;
+    };
+    const fn3 = function test() {
+      return 2;
+    };
     const fn4 = () => 1;
-    
+
     expect(equal(fn1, fn1)).toBe(true);
     expect(equal(fn1, fn2)).toBe(true);
     expect(equal(fn1, fn3)).toBe(false);
@@ -213,7 +219,7 @@ describe(equal, () => {
       yield 1;
       yield 3;
     }
-    
+
     expect(equal(gen1(), gen2())).toBe(true);
     expect(equal(gen1(), gen3())).toBe(false);
     expect(equal(gen1(), 'not a generator')).toBe(false);
@@ -229,12 +235,12 @@ describe(equal, () => {
     const cause1 = new Error('root cause');
     const cause2 = new Error('root cause');
     const cause3 = new Error('different cause');
-    
+
     const error1 = new Error('test', { cause: cause1 });
     const error2 = new Error('test', { cause: cause2 });
     const error3 = new Error('test', { cause: cause3 });
     const error4 = new Error('test');
-    
+
     expect(equal(error1, error2)).toBe(true);
     expect(equal(error1, error3)).toBe(false);
     expect(equal(error1, error4)).toBe(false);
@@ -293,9 +299,15 @@ describe(equal, () => {
 
   test('handles comparisons with primitive as second arg against async types', () => {
     const promise = Promise.resolve(1);
-    const asyncGen = (async function*() { yield 1; })();
-    const asyncIter = { [Symbol.asyncIterator]: async function*() { yield 1; } };
-    
+    const asyncGen = (async function*() {
+      yield 1;
+    })();
+    const asyncIter = {
+      [Symbol.asyncIterator]: async function*() {
+        yield 1;
+      },
+    };
+
     // When comparing primitive with async types, should return false
     expect(equal(1, promise)).toBe(false);
     expect(equal('string', asyncGen)).toBe(false);
@@ -305,14 +317,14 @@ describe(equal, () => {
   test('handles edge case with Boolean wrapper compared to non-Boolean wrapper', () => {
     const boolWrapper = new Boolean(true);
     const notBoolWrapper = { valueOf: () => true };
-    
+
     expect(equal(boolWrapper, notBoolWrapper)).toBe(false);
   });
 
   test('edge case with error names mismatch', () => {
     const error1 = new Error('test');
     const error2 = new TypeError('test');
-    
+
     expect(equal(error1, error2)).toBe(false);
   });
 
@@ -321,9 +333,9 @@ describe(equal, () => {
     const weirdObj = Object.create(null);
     // Give it properties so isObject returns true but it's not really a standard object
     Object.defineProperty(weirdObj, 'toString', {
-      value: () => '[object WeirdObject]'
+      value: () => '[object WeirdObject]',
     });
-    
+
     expect(equal(weirdObj, 'not an object')).toBe(false);
   });
 
@@ -336,7 +348,7 @@ describe(equal, () => {
     // Testing line 99 - non-primitive debug logging path
     const complexObj = { a: { b: { c: 1 } } };
     const otherObj = { a: { b: { c: 2 } } };
-    
+
     // This triggers the debug logging at line 99 since they're not equal and not primitive
     expect(equal(complexObj, otherObj)).toBe(false);
   });

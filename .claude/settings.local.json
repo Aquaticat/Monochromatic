@@ -3,7 +3,11 @@
     "allow": [
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
-      "Bash(git --no-pager diff CLAUDE.md moon.yml)"
+      "Bash(git --no-pager diff CLAUDE.md moon.yml)",
+      "Bash(bun:*)",
+      "Bash(pnpm list:*)",
+      "mcp__exa__web_search_exa",
+      "Bash(git config:*)"
     ],
     "deny": []
   }

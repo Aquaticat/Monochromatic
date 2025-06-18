@@ -1,6 +1,7 @@
 import {
   logtapeConfiguration,
-  logtapeConfigure,  when,
+  logtapeConfigure,
+  when,
   whenAsync,
 } from '@monochromatic-dev/module-es';
 import {
