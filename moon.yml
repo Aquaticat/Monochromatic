@@ -200,6 +200,24 @@ tasks:
     extends: '_lintFormatBase'
     command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- oxlint --fix'
 
+  # Claude Code conversation indexing tasks
+  indexClaudeMessages:
+    command: 'bun packages/module/es/src/moon.index-claude-user-messages.ts'
+    options:
+      cache: false
+
+  indexClaudeMcpLogs:
+    command: 'bun packages/module/es/src/moon.index-claude-mcp-logs.ts'
+    options:
+      cache: false
+
+  indexClaude:
+    deps:
+      - indexClaudeMessages
+      - indexClaudeMcpLogs
+    options:
+      cache: false
+
 tags:
 - noTypescript
 - 'noJs'

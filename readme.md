@@ -78,6 +78,32 @@ moon run buildAndTestWatch
 moon clean --lifetime '1 seconds'
 ```
 
+### Claude Code Conversation Indexing
+
+**⚠️ SECURITY WARNING**: These commands permanently delete conversation data after successful indexing!
+
+```bash
+# Index all Claude conversations for searchability (DELETES data after indexing)
+moon run indexClaude
+
+# Index only user messages (CLEARS ~/.claude.json history after indexing)
+moon run indexClaudeMessages
+
+# Index only MCP server logs (DELETES log files after indexing)
+moon run indexClaudeMcpLogs
+```
+
+These tasks index Claude Code conversation data into Meilisearch for improved context awareness and searchability.
+
+**How it works**:
+1. Reads conversation data from Claude Code's storage locations
+2. Indexes the data into Meilisearch for searchability
+3. **Automatically deletes the original data for security** (only if indexing succeeds)
+   - User messages: Clears the `history` field in `~/.claude.json`
+   - MCP logs: Deletes log files from `~/.cache/claude-cli-nodejs/`
+
+**Note**: If indexing fails, data is NOT deleted for safety. You can re-run the command after fixing any issues.
+
 ## Project Structure
 
 ```

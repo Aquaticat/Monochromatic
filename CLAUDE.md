@@ -85,17 +85,59 @@ Script preferences:
 ## Third-Party Library Usage
 
 When working with third-party libraries:
-- **Always retrieve documentation from GitHub or npm pages using Exa** when implementing features with third-party libraries
-  - For npm packages: Use Exa to fetch from `https://www.npmjs.com/package/<package-name>`
-  - For GitHub repos: Use Exa to fetch from the library's GitHub page
+- **CRITICAL: IMMEDIATELY retrieve documentation when encountering undefined method errors**
+  - The moment you see errors like "X is not a function", "Cannot read property X of undefined", or "X is undefined"
+  - Use ALL available documentation tools to understand the correct API:
+    - `context7` for library documentation
+    - `exa:crawling` to fetch from `https://www.npmjs.com/package/<package-name>`
+    - `github:search_code` or `github:get_file_contents` to find usage examples
+    - `WebSearch` for recent documentation and examples
+  - NEVER guess or assume API methods exist - always verify first
+- **Always retrieve documentation from GitHub or npm pages** when implementing features with third-party libraries
+  - For npm packages: Use `exa:crawling` to fetch from `https://www.npmjs.com/package/<package-name>`
+  - For GitHub repos: Use `github:get_file_contents` to fetch from the library's GitHub page
   - This ensures you have the most up-to-date API documentation and usage examples
 - Always check the actual type definitions before using APIs
-- **Just use `rg` to search for types** - don't try to navigate pnpm's node_modules maze
+- **Just use `rg` to search for anything** - don't try to navigate pnpm's node_modules maze
   - `rg "interface TypeName" -t ts`
   - `rg "export type.*TypeName" -t ts`
   - `rg "class ClassName" -t ts`
 - Read the actual source types, not just documentation (which may be outdated)
 - When encountering type errors, read the error message carefully - it often shows what's actually expected
+
+## CLI Tool Documentation Analysis
+
+When working with CLI tools and their documentation:
+- **Pay attention to command patterns in examples** - tools often have their own execution conventions
+  - Look for patterns across multiple examples, not just individual commands
+  - Notice what's consistent vs what varies (e.g., `uv run example.py` vs `uv run --with dep example.py`)
+- **Don't assume traditional execution patterns** - modern tools often wrap execution
+  - `uv run script.py` NOT `uv run python script.py`
+  - `npx script.js` NOT `npx node script.js`
+  - Many tools handle interpreter invocation automatically
+- **When you see multiple examples of the same pattern, trust it** - documentation examples are usually correct
+- **Test assumptions with the simplest case first** - try the minimal command before adding complexity
+- **Read error messages carefully** - they often reveal the correct usage pattern
+
+## Working with Third-Party Repositories
+
+When setting up or integrating third-party tools:
+- **Never modify files in cloned third-party repositories**
+  - This breaks git pull/update workflows
+  - Makes it difficult to track upstream changes
+  - Creates merge conflicts when updating
+- **Always prefer configuration-based solutions**
+  - Use external config files (e.g., ~/.claude.json for MCP servers)
+  - Use command-line arguments and environment variables
+  - Create wrapper scripts in a separate location if needed
+- **If modifications seem necessary, find alternatives**
+  - Look for official configuration mechanisms
+  - Use the tool's intended extension points
+  - Create a fork only if you need permanent modifications
+- **Keep third-party repos pristine**
+  - Allows easy updates with `git pull`
+  - Prevents accidental commits to upstream
+  - Maintains clear separation between your code and dependencies
 
 ## Project Overview
 
@@ -392,7 +434,14 @@ TypeScript's support for overloading generator functions has some quirks:
     }
   }
   ```
-- When a specific exit code is not required for an error, just use `throw new Error(message)` instead of process.exit()
+- Use `notNullishOrThrow` for TypeScript type narrowing instead of non-null assertion operator
+  - The non-null assertion operator (`!`) is banned in this codebase
+  - `import { notNullishOrThrow } from '@monochromatic-dev/module-es'` to assert values are non-nullish
+  - Good: `const value = notNullishOrThrow(possiblyUndefined);`
+  - Bad: `const value = possiblyUndefined!;`
+  - If you don't want it to crash, properly check and handle the falsy/nullish value instead
+
+- When a specific exit code isn't required for an error, just use `throw new Error(message)` instead of process.exit()
   - Bad: `if (error) { console.error('Error occurred'); process.exit(1); }`
   - Good: `if (error) { throw new Error('Error occurred'); }`
   - Throwing errors provides better stack traces and allows parent code to handle errors
@@ -505,7 +554,7 @@ return null;
 function badExample() {
   /** WRONG - TSDoc not supported inside functions */
   const x = 5;
-  
+
   /** WRONG - TSDoc not supported for if statements */
   if (x > 0) {
     /** WRONG - TSDoc not supported for return */

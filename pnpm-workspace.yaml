@@ -76,6 +76,7 @@ catalog:
   execa: '>=9.5.3'
   nano-spawn: '*'
   astro: '*'
+  meilisearch: '*'
   '@astrojs/mdx': '*'
   '@astrojs/rss': '*'
   '@shikijs/transformers': '>=3.3.0'

@@ -83,6 +83,7 @@
     "find-up": "catalog:"
   },
   "dependencies": {
+    "meilisearch": "catalog:"
   },
   "version": "0.0.125",
   "repository": {

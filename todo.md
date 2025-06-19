@@ -1,70 +1,80 @@
-## Add util for sum of all numbers in string
+## Generate entire `package.json` automatically from `package.jsonc` and make it bidirectional update.
 
-## Generate entire package.json automatically
+## WSL Debian Distro - Selective Windows Directory Mounting
 
-## Astro ESLint Configuration Challenges
+### Overview
+Configure Debian WSL distro to mount only specific Windows directories instead of auto-mounting all drives, improving security while maintaining access to development files.
 
-### Problem
-When using TypeScript ESLint with `projectService`, it relies on tsconfig.json to determine which files to process. Virtual files created by our custom Astro processor (like `index.astro/frontmatter.ts`) aren't recognized because they don't exist on disk.
+### Required Mount Points
 
-### Potential Solutions
+- `/mnt/c/Users/user/Text/Projects` - Development projects
+- `/mnt/c/Users/user/.pnpm-store` - pnpm global package store
 
-1. **Multiple config blocks with allowDefaultProject** (unclean but works)
-   - Use `allowDefaultProject: ['**/*.astro/*.ts']` in parserOptions
-   - Specify `defaultProject` for each Astro project
-   - Requires separate ESLint config blocks for each project
+### Configuration Steps
 
-2. **Dynamic config discovery** (runtime performance cost)
-   - Discover all Astro projects at config load time
-   - Generate config blocks dynamically
-   - Has acceptable performance overhead
+#### 1. Edit WSL Configuration
+```bash
+sudo nano /etc/wsl.conf
+```
 
-3. **Modify config dynamically in processor** (current approach)
-   - ESLint processors may not have API to modify config
-   - ESLint plugins do have this capability
-   - Need to explore if we can create a plugin that works with our processor
+Add:
+```ini
+[automount]
+enabled = false
+mountFsTab = true
+```
 
-### Current Approach
-Tried option 3 - ESLint processors cannot dynamically modify parser configuration. The ESLint API doesn't expose methods for processors to change parser options at runtime.
+#### 2. Create Mount Points
+```bash
+sudo mkdir -p /mnt/c/Users/user/Text/Projects
+sudo mkdir -p /mnt/c/Users/user/.pnpm-store
+```
 
-### Implemented Solution
-After trying multiple approaches:
-1. **Processor approach**: Limited by ESLint architecture - processors can't modify parser configuration
-2. **Language API**: The `applyInlineConfig()` is for inline ESLint comments, not parser configuration
-3. **Current solution - Custom Parser**: Following the pattern used by vue-eslint-parser
+#### 3. Configure fstab
+```bash
+sudo nano /etc/fstab
+```
 
-Created a custom Astro parser that:
-- Extracts only frontmatter and script content from Astro files
-- Passes the combined TypeScript content to @typescript-eslint/parser
-- Maintains proper line number mapping
-- Works with TypeScript's projectService for full type checking
+Add:
+```
+C:/Users/user/Text/Projects /mnt/c/Users/user/Text/Projects drvfs defaults,uid=1000,gid=1000 0 0
+C:/Users/user/.pnpm-store /mnt/c/Users/user/.pnpm-store drvfs defaults,uid=1000,gid=1000 0 0
+```
 
-Benefits:
-- Full type-aware linting for Astro files
-- No need for complex allowDefaultProject configurations
-- Works with any project structure
-- Follows ESLint's recommended approach for custom file types
+#### 4. Apply Changes Without Full WSL Restart
 
-## temp
+Option A - Restart only Debian distro:
+```powershell
+# From Windows PowerShell
+wsl -t Debian
+```
 
- Did some searches and found promisify can't work with spawn. New plan:
-  1. Use nano-spawn in moon.command.ts You may use Context7 to retrieve its docs.
-  2. (Nope)~~setup vite to auto build moon.*.ts and output moon.*.js to dist/final/ You would probably need to heavily
-  modify the createBaseLibConfig function in config/vite/src/index.ts to make it first glob (use npm `glob`
-  package) and find out all the moon.*.ts files in ${configDir}/src/ and modify the build>lib> to include those.~~
-      Use `bun build packages/module/es/src/moon.<name>.ts --compile --target=<target> packages/module/es/dist/final/moon.<name>.<target>`.
-      Run it across these targets:
-      ```txt
-      --target	Operating System	Architecture	Modern	Baseline	Libc
-        bun-linux-x64	Linux	x64	✅	✅	glibc
-        bun-linux-arm64	Linux	arm64	✅	N/A	glibc
-        bun-windows-x64	Windows	x64	✅	✅	-
-        bun-darwin-x64	macOS	x64	✅	✅	-
-        bun-darwin-arm64	macOS	arm64	✅	N/A	-
-        bun-linux-x64-musl	Linux	x64	✅	✅	musl
-        bun-linux-arm64-musl	Linux	arm64	✅	N/A	musl
-        ```
-        Bun auto appends `.exe` on Windows.
-        Run all commands in parallel.
-  3. setup package.json bin fields for moon.*.js
-  4. make workspace root dependent on module-es and update moon.yml
+Option B - Apply in current session (temporary):
+```bash
+# Unmount existing
+sudo umount /mnt/c 2>/dev/null
+
+# Mount manually
+sudo mount -t drvfs 'C:/Users/user/Text/Projects' /mnt/c/Users/user/Text/Projects -o uid=1000,gid=1000
+sudo mount -t drvfs 'C:/Users/user/.pnpm-store' /mnt/c/Users/user/.pnpm-store -o uid=1000,gid=1000
+```
+
+Option C - With systemd:
+```bash
+sudo systemctl daemon-reload
+sudo mount -a
+```
+
+### Verification
+```bash
+# Check mounted directories
+mount | grep drvfs
+
+# Test access
+ls /mnt/c/Users/user/Text/Projects
+```
+
+### Notes
+- This configuration is specific to the Debian WSL distro only
+- Other WSL distros (including those running Docker/Podman) are unaffected
+- To add more directories later, update `/etc/fstab` and remount

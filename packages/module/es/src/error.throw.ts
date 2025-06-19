@@ -11,6 +11,14 @@ import { isEmptyArray } from './iterable.is.ts';
 /**
  * Asserts that value is not null or undefined.
  * Throws TypeError if value is nullish, otherwise returns value with nullish types excluded.
+ * 
+ * Advantages over non-null assertion operator (!):
+ * - Runtime safety: Actually checks at runtime, not just compile-time
+ * - Better errors: Throws immediately with clear message vs cryptic errors later
+ * - Explicit intent: Shows conscious validation, not just silencing TypeScript
+ * - Debuggable: Stack trace points to exact assertion failure
+ * - Searchable: Easy to find and audit all assertions in codebase
+ * - Works in JavaScript: Functions correctly in non-TypeScript environments and after transpilation (! operator is stripped away during compilation)
  *
  * @param potentiallyNullish - to validate.
  * @returns Value with null and undefined types excluded.
