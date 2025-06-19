@@ -228,6 +228,8 @@ function parseLogFile(filePath: string, server: string, projectPath: string): In
         }
       }
     } catch (parseError) {
+      // Expected error: file content is not valid JSON (plain text log)
+      // But could also be: corrupted JSON, encoding issues, etc.
       console.log(`File ${fileName} is not JSON array, treating as plain text`);
       // Not JSON, treat as plain text and create single entry
       const sanitizedPath = projectPath.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 400);
@@ -307,6 +309,8 @@ async function ensureIndex() {
   try {
     await index.getStats();
   } catch (error) {
+    // Expected error: index doesn't exist yet (404)
+    // But could also be: network error, auth failure, etc.
     console.log('Index does not exist, creating claudeCodeMcpServerLogs index...', error);
     await client.createIndex('claudeCodeMcpServerLogs', { primaryKey: 'logId' });
     

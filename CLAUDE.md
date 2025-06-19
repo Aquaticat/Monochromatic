@@ -454,6 +454,16 @@ TypeScript's support for overloading generator functions has some quirks:
   - Use `console.error()` for errors, include context about what operation failed
   - Good: `catch (error) { console.error('Failed to get index stats:', error); }`
   - Bad: `catch (e) { /* silently ignore */ }` or `catch (e) { createIndex(); /* assume we know the error */ }`
+  - **Document expected errors with comments**:
+    ```ts
+    try {
+      await index.getStats();
+    } catch (error) {
+      // Expected error: index doesn't exist (404)
+      // But could also be: network error, auth failure, etc.
+      console.log('Creating index...', error);
+    }
+    ```
 - **Avoid deprecated JavaScript/TypeScript features**:
   - Use `substring()` or `slice()` instead of deprecated `substr()`
   - Check MDN or TypeScript documentation for deprecation warnings
