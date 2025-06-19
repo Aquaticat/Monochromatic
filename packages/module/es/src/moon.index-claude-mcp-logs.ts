@@ -70,7 +70,9 @@ function parseLogFile(filePath: string, server: string, projectPath: string): In
     
     // Extract timestamp from filename (e.g., 2025-06-18T20-40-33-318Z.txt)
     const timestampMatch = fileName.match(/(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)/);
-    const fileTimestamp = timestampMatch ? timestampMatch[1].replace(/-/g, ':').replace('T', 'T').replace(/(\d{2}):(\d{2}):(\d{2}):(\d{3})Z/, '$1:$2:$3.$4Z') : new Date().toISOString();
+    const fileTimestamp = timestampMatch && timestampMatch[1] 
+      ? timestampMatch[1].replace(/-/g, ':').replace('T', 'T').replace(/(\d{2}):(\d{2}):(\d{2}):(\d{3})Z/, '$1:$2:$3.$4Z') 
+      : new Date().toISOString();
     
     try {
       // Try to parse as JSON array
@@ -79,7 +81,7 @@ function parseLogFile(filePath: string, server: string, projectPath: string): In
       if (Array.isArray(jsonEntries)) {
         for (const entry of jsonEntries) {
           const sanitizedPath = projectPath.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 400);
-          const logId = `${sanitizedPath}_${server}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          const logId = `${sanitizedPath}_${server}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
           
           // Create a clean copy of the entry without duplicated fields
           const cleanEntry = { ...entry };
@@ -157,7 +159,7 @@ function parseLogFile(filePath: string, server: string, projectPath: string): In
                       console.log(`[Level ${level}] Successfully parsed complete JSON at ${path}`);
                       return parseNestedJSON(parsed, level + 1, path);
                     } catch (e) {
-                      console.log(`[Level ${level}] Failed to parse as complete JSON at ${path}`);
+                      console.log(`[Level ${level}] Failed to parse as complete JSON at ${path}: ${e instanceof Error ? e.message : String(e)}`);
                     }
                   }
                   
@@ -213,6 +215,7 @@ function parseLogFile(filePath: string, server: string, projectPath: string): In
                 logEntry.response = response;
               }
             } catch (e) {
+              console.error('Failed to parse Tool call succeeded JSON:', e);
               // If parsing fails, store all fields from cleanEntry
               Object.assign(logEntry, cleanEntry);
             }
@@ -225,9 +228,10 @@ function parseLogFile(filePath: string, server: string, projectPath: string): In
         }
       }
     } catch (parseError) {
+      console.log(`File ${fileName} is not JSON array, treating as plain text`);
       // Not JSON, treat as plain text and create single entry
       const sanitizedPath = projectPath.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 400);
-      const logId = `${sanitizedPath}_${server}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const logId = `${sanitizedPath}_${server}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
       
       // Limit content to 20,000 characters
       let limitedContent = content.trim();
@@ -303,7 +307,7 @@ async function ensureIndex() {
   try {
     await index.getStats();
   } catch (error) {
-    console.log('Creating claudeCodeMcpServerLogs index...');
+    console.log('Index does not exist, creating claudeCodeMcpServerLogs index...', error);
     await client.createIndex('claudeCodeMcpServerLogs', { primaryKey: 'logId' });
     
     // Configure search settings
