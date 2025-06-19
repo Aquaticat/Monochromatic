@@ -43,7 +43,8 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "mcp__meilisearch__get-settings",
       "mcp__meilisearch__update-settings",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

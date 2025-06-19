@@ -82,6 +82,34 @@ Script preferences:
   - Trying to find the exact path in pnpm's symlinked `.pnpm` directories
   - Guessing where packages are located
 
+## Functional Programming Utilities
+
+When composing functions:
+- Use `piped` for synchronous function composition: `piped(input, fn1, fn2, fn3)`
+- Use `pipedAsync` for async function composition: `await pipedAsync(input, fn1, asyncFn2, fn3)`
+- Use `pipe` to create a reusable sync function pipeline: `const pipeline = pipe(fn1, fn2, fn3); pipeline(input)`
+- Use `pipeAsync` to create a reusable async function pipeline: `const pipeline = pipeAsync(fn1, asyncFn2, fn3); await pipeline(input)`
+- Functions generally don't require `.bind()` for `this` context unless specifically documented
+  - Example: `pipedAsync(data, transform, index.addDocuments)` works fine without `.bind(index)`
+  - Instance methods already have their context when referenced as `instance.method`
+
+## Code Simplification Principles
+
+Always question "Do you really need...?" for every construct:
+- **Do you really need that mutable variable?** → Use `const` and immutable patterns
+- **Do you really need that loop?** → Consider `map`, `filter`, `reduce`, or functional helpers
+- **Do you really need that imperative code?** → Look for declarative/functional alternatives
+- **Do you really need that complex solution?** → Start with the simplest approach
+- **Do you really need to create promises directly?** → Use existing promise utilities like `wait()`
+
+Progressive simplification example:
+1. Imperative loop with mutable state → `while` loop with proper conditions
+2. `while` loop → `for` loop with calculated iterations  
+3. `for` loop → Recursive function
+4. Recursive function → Higher-order functions or async iterators
+
+Always extract and name concepts (e.g., `isTaskPending()` instead of inline conditions)
+
 ## Third-Party Library Usage
 
 When working with third-party libraries:

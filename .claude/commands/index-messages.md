@@ -25,6 +25,7 @@ For any search results from claudeCodeMcpServerLogs:
    - Nested JSON is parsed level-by-level up to 16 levels deep
    - Escaped quotes are removed for clean JSON output
    - Tool call results with prefixes like "Documents:" or "Search results:" are properly parsed
+   - All string fields are limited to 20,000 characters to prevent database errors
    - Original log files are deleted after successful indexing for security
 
 Note: Extremely deeply nested JSON (beyond 16 levels) may still contain escaped quotes due to depth limits.

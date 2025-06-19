@@ -1,21 +1,28 @@
-import { readFileSync, readdirSync, statSync, unlinkSync, rmSync } from 'node:fs';
+import { MeiliSearch } from 'meilisearch';
+import {
+  readdirSync,
+  readFileSync,
+  statSync,
+  unlinkSync,
+} from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { MeiliSearch } from 'meilisearch';
 import { notNullishOrThrow } from './error.throw.ts';
+import { pipedAsync } from './function.pipe.ts';
+import { wait } from './promise.wait.ts';
 
 /**
  * MeiliSearch Setup for Claude Code MCP Server Logs
- * 
+ *
  * Index name: claudeCodeMcpServerLogs
  * Primary key: logId
- * 
+ *
  * Index configuration:
  * - searchableAttributes: ['*'] - All fields are searchable
  * - filterableAttributes: Common fields like logId, server, timestamp, debug, etc.
  * - sortableAttributes: ['timestamp'] - Can sort by timestamp
  * - displayedAttributes: ['*'] - All fields are returned in search results
- * 
+ *
  * Log structure:
  * - Metadata fields: logId, server, projectPath, timestamp, logFile, sessionId
  * - Content fields vary based on log type:
@@ -26,7 +33,7 @@ import { notNullishOrThrow } from './error.throw.ts';
  */
 const client = new MeiliSearch({
   host: 'https://meilisearch.local.aquati.cat:3001',
-  apiKey: process.env.MEILISEARCH_API_KEY || process.env.MEILI_MASTER_KEY || ''
+  apiKey: process.env.MEILISEARCH_API_KEY || process.env.MEILI_MASTER_KEY || '',
 });
 
 const index = client.index('claudeCodeMcpServerLogs');
@@ -57,35 +64,91 @@ function extractServerName(dirName: string): string {
 /** Track files to delete after successful indexing */
 const filesToDelete: string[] = [];
 
-/** Parse log file and extract entries */
-function parseLogFile(filePath: string, server: string, projectPath: string): IndexedLog[] {
-  const logs: IndexedLog[] = [];
+/** Maximum time to wait for a Meilisearch task to complete */
+const TASK_TIMEOUT_MS = 10000; // 10 seconds
+
+/** Interval between task status polls */
+const TASK_POLL_INTERVAL_MS = 10; // 10ms
+
+/** Check if a task is still pending */
+function isTaskPending(status: string): boolean {
+  return status === 'enqueued' || status === 'processing';
+}
+
+/** Wait for a Meilisearch task to complete */
+async function waitForTask(taskUid: number, startTime: number = Date.now()): Promise<any> {
+  const taskStatus = await client.tasks.getTask(taskUid);
   
+  if (!isTaskPending(taskStatus.status)) {
+    return taskStatus;
+  }
+  
+  if (Date.now() - startTime > TASK_TIMEOUT_MS) {
+    throw new Error(`Task ${taskUid} timed out after ${TASK_TIMEOUT_MS}ms`);
+  }
+  
+  await wait(TASK_POLL_INTERVAL_MS);
+  return waitForTask(taskUid, startTime);
+}
+
+/** Limit all string fields in an object to 20,000 characters */
+function limitStringFields(obj: any, maxLength: number = 20000): any {
+  if (typeof obj === 'string') {
+    return obj.length > maxLength ? obj.substring(0, maxLength - 3) + '...' : obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => limitStringFields(item, maxLength));
+  }
+
+  if (obj && typeof obj === 'object') {
+    const limited: any = {};
+    for (const key in obj) {
+      limited[key] = limitStringFields(obj[key], maxLength);
+    }
+    return limited;
+  }
+
+  return obj;
+}
+
+/** Parse log file and extract entries */
+function parseLogFile(filePath: string, server: string,
+  projectPath: string): IndexedLog[]
+{
+  const logs: IndexedLog[] = [];
+
   try {
     const content = readFileSync(filePath, 'utf-8');
     const fileName = filePath.split('/').pop() || '';
-    
+
     // Track this file for deletion
     filesToDelete.push(filePath);
-    
-    // Extract timestamp from filename (e.g., 2025-06-18T20-40-33-318Z.txt)
+
+    // Extract timestamp from filename (for example: 2025-06-18T20-40-33-318Z.txt)
     const timestampMatch = fileName.match(/(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)/);
-    const fileTimestamp = timestampMatch && timestampMatch[1] 
-      ? timestampMatch[1].replace(/-/g, ':').replace('T', 'T').replace(/(\d{2}):(\d{2}):(\d{2}):(\d{3})Z/, '$1:$2:$3.$4Z') 
+    const fileTimestamp = timestampMatch && timestampMatch[1]
+      ? timestampMatch[1].replace(/-/g, ':').replace('T', 'T').replace(
+        /(\d{2}):(\d{2}):(\d{2}):(\d{3})Z/,
+        '$1:$2:$3.$4Z',
+      )
       : new Date().toISOString();
-    
+
     try {
       // Try to parse as JSON array
       const jsonEntries = JSON.parse(content);
-      
+
       if (Array.isArray(jsonEntries)) {
         for (const entry of jsonEntries) {
-          const sanitizedPath = projectPath.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 400);
-          const logId = `${sanitizedPath}_${server}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
-          
+          const sanitizedPath = projectPath.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0,
+            400);
+          const logId = `${sanitizedPath}_${server}_${Date.now()}_${
+            Math.random().toString(36).substring(2, 11)
+          }`;
+
           // Create a clean copy of the entry without duplicated fields
           const cleanEntry = { ...entry };
-          
+
           // Remove fields that are stored separately in the index
           delete cleanEntry.timestamp;
           delete cleanEntry.sessionId;
@@ -93,7 +156,7 @@ function parseLogFile(filePath: string, server: string, projectPath: string): In
           if ('projectPath' in cleanEntry) {
             delete cleanEntry.projectPath; // projectPath and cwd are duplicates
           }
-          
+
           // Create base log entry
           const logEntry: IndexedLog = {
             logId,
@@ -101,9 +164,9 @@ function parseLogFile(filePath: string, server: string, projectPath: string): In
             projectPath,
             timestamp: entry.timestamp || fileTimestamp,
             logFile: fileName,
-            sessionId: entry.sessionId
+            sessionId: entry.sessionId,
           };
-          
+
           // Try to clean up nested JSON in debug field
           if (cleanEntry.debug && cleanEntry.debug.includes('Tool call succeeded:')) {
             try {
@@ -111,58 +174,84 @@ function parseLogFile(filePath: string, server: string, projectPath: string): In
               const prefix = 'Tool call succeeded: ';
               const jsonStart = cleanEntry.debug.indexOf(prefix) + prefix.length;
               const jsonContent = cleanEntry.debug.substring(jsonStart);
-              
+
               // Parse the response
               let response = JSON.parse(jsonContent);
-              
+
               // Parse nested JSON level by level (up to 16 levels)
-              function parseNestedJSON(obj: any, level: number = 1, path: string = 'root'): any {
+              function parseNestedJSON(obj: any, level: number = 1,
+                path: string = 'root'
+              ): any {
                 if (level > 16) {
                   console.log(`[Level ${level}] Max depth reached at ${path}`);
                   return obj;
                 }
-                
+
                 if (typeof obj === 'string') {
                   // Log what we're trying to parse
                   if (path.includes('text') || path.includes('content')) {
-                    console.log(`[Level ${level}] String at ${path} starts with: "${obj.substring(0, 50)}..."`);
+                    console.log(
+                      `[Level ${level}] String at ${path} starts with: "${
+                        obj.substring(0, 50)
+                      }..."`,
+                    );
                   }
-                  
+
                   // Look for JSON with a prefix (like "Documents:\n{" or "Search results for 'test':\n{")
-                  const prefixJsonMatch = obj.match(/^(.*?)(\n|\r\n|\r)(\{[\s\S]*\}|\[[\s\S]*\])$/);
+                  const prefixJsonMatch = obj.match(
+                    /^(.*?)(\n|\r\n|\r)(\{[\s\S]*\}|\[[\s\S]*\])$/,
+                  );
                   if (prefixJsonMatch) {
-                    console.log(`[Level ${level}] Found JSON with newline separator at ${path}`);
+                    console.log(
+                      `[Level ${level}] Found JSON with newline separator at ${path}`,
+                    );
                     try {
                       const prefix = prefixJsonMatch[1];
                       const jsonPart = notNullishOrThrow(prefixJsonMatch[3]);
-                      console.log(`[Level ${level}] Prefix: "${prefix}", attempting to parse JSON...`);
+                      console.log(
+                        `[Level ${level}] Prefix: "${prefix}", attempting to parse JSON...`,
+                      );
                       const parsed = JSON.parse(jsonPart);
-                      console.log(`[Level ${level}] Successfully parsed JSON with prefix`);
+                      console.log(
+                        `[Level ${level}] Successfully parsed JSON with prefix`,
+                      );
                       if (prefix && prefix.trim()) {
                         return {
                           message: prefix.trim(),
-                          data: parseNestedJSON(parsed, level + 1, `${path}.data`)
+                          data: parseNestedJSON(parsed, level + 1, `${path}.data`),
                         };
                       }
                       return parseNestedJSON(parsed, level + 1, path);
                     } catch (e) {
-                      console.log(`[Level ${level}] Failed to parse JSON with newline: ${e instanceof Error ? e.message : String(e)}`);
+                      console.log(
+                        `[Level ${level}] Failed to parse JSON with newline: ${
+                          e instanceof Error ? e.message : String(e)
+                        }`,
+                      );
                     }
                   }
-                  
+
                   // Check if entire string is JSON
                   const trimmed = obj.trim();
-                  if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || 
-                      (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+                  if (
+                    (trimmed.startsWith('{') && trimmed.endsWith('}'))
+                    || (trimmed.startsWith('[') && trimmed.endsWith(']'))
+                  ) {
                     try {
                       const parsed = JSON.parse(obj);
-                      console.log(`[Level ${level}] Successfully parsed complete JSON at ${path}`);
+                      console.log(
+                        `[Level ${level}] Successfully parsed complete JSON at ${path}`,
+                      );
                       return parseNestedJSON(parsed, level + 1, path);
                     } catch (e) {
-                      console.log(`[Level ${level}] Failed to parse as complete JSON at ${path}: ${e instanceof Error ? e.message : String(e)}`);
+                      console.log(
+                        `[Level ${level}] Failed to parse as complete JSON at ${path}: ${
+                          e instanceof Error ? e.message : String(e)
+                        }`,
+                      );
                     }
                   }
-                  
+
                   // Look for embedded JSON without newline
                   const embeddedMatch = obj.match(/^(.*?)(\{[\s\S]*\}|\[[\s\S]*\])$/);
                   if (embeddedMatch) {
@@ -175,23 +264,39 @@ function parseLogFile(filePath: string, server: string, projectPath: string): In
                       if (prefix && prefix.trim()) {
                         return {
                           message: prefix.trim(),
-                          data: parseNestedJSON(parsed, level + 1, `${path}.data`)
+                          data: parseNestedJSON(parsed, level + 1, `${path}.data`),
                         };
                       }
                       return parseNestedJSON(parsed, level + 1, path);
                     } catch (e2) {
-                      console.log(`[Level ${level}] Failed to parse embedded JSON: ${e2 instanceof Error ? e2.message : String(e2)}`);
+                      console.log(
+                        `[Level ${level}] Failed to parse embedded JSON: ${
+                          e2 instanceof Error ? e2.message : String(e2)
+                        }`,
+                      );
                     }
                   }
-                  
+
                   // No JSON found, return as-is
-                  console.log(`[Level ${level}] No JSON pattern found at ${path}, keeping as string`);
+                  console.log(
+                    `[Level ${level}] No JSON pattern found at ${path}, keeping as string`,
+                  );
                   return obj;
                 } else if (Array.isArray(obj)) {
-                  console.log(`[Level ${level}] Processing array at ${path} with ${obj.length} items`);
-                  return obj.map((item, i) => parseNestedJSON(item, level + 1, `${path}[${i}]`));
+                  console.log(
+                    `[Level ${level}] Processing array at ${path} with ${obj.length} items`,
+                  );
+                  return obj.map((item, i) =>
+                    parseNestedJSON(item, level + 1, `${path}[${i}]`)
+                  );
                 } else if (obj && typeof obj === 'object') {
-                  console.log(`[Level ${level}] Processing object at ${path} with keys: ${Object.keys(obj).join(', ')}`);
+                  console.log(
+                    `[Level ${level}] Processing object at ${path} with keys: ${
+                      Object
+                        .keys(obj)
+                        .join(', ')
+                    }`,
+                  );
                   const result: any = {};
                   for (const key in obj) {
                     result[key] = parseNestedJSON(obj[key], level + 1, `${path}.${key}`);
@@ -200,14 +305,16 @@ function parseLogFile(filePath: string, server: string, projectPath: string): In
                 }
                 return obj;
               }
-              
+
               // Parse all nested JSON
-              console.log('Starting nested JSON parsing for Tool call succeeded entry...');
+              console.log(
+                'Starting nested JSON parsing for Tool call succeeded entry...',
+              );
               response = parseNestedJSON(response);
-              
+
               // Store parsed fields directly on log entry
               logEntry.debug = prefix.trim();
-              
+
               // If response is an object, spread its properties directly onto logEntry
               if (response && typeof response === 'object' && !Array.isArray(response)) {
                 Object.assign(logEntry, response);
@@ -223,67 +330,70 @@ function parseLogFile(filePath: string, server: string, projectPath: string): In
             // For non-tool-call entries, store all fields from cleanEntry
             Object.assign(logEntry, cleanEntry);
           }
-          
+
           logs.push(logEntry);
         }
       }
     } catch (parseError) {
-      // Expected error: file content is not valid JSON (plain text log)
+      // Expected error: file content isn't valid JSON (plain text log)
       // But could also be: corrupted JSON, encoding issues, etc.
-      console.log(`File ${fileName} is not JSON array, treating as plain text`);
+      console.log(`File ${fileName} is not JSON array, treating as plain text`,
+        parseError);
       // Not JSON, treat as plain text and create single entry
       const sanitizedPath = projectPath.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 400);
-      const logId = `${sanitizedPath}_${server}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
-      
+      const logId = `${sanitizedPath}_${server}_${Date.now()}_${
+        Math.random().toString(36).substring(2, 11)
+      }`;
+
       // Limit content to 20,000 characters
       let limitedContent = content.trim();
       if (limitedContent.length > 20000) {
         limitedContent = limitedContent.substring(0, 19997) + '...';
       }
-      
+
       logs.push({
         logId,
         server,
         projectPath,
         timestamp: fileTimestamp,
         logFile: fileName,
-        plainText: limitedContent
+        plainText: limitedContent,
       });
     }
   } catch (error) {
     console.error(`Failed to parse log file ${filePath}:`, error);
   }
-  
+
   return logs;
 }
 
 /** Scan cache directory for MCP logs */
 function scanForMcpLogs(): IndexedLog[] {
   const allLogs: IndexedLog[] = [];
-  
+
   try {
     // List project directories
     const projectDirs = readdirSync(CLAUDE_CACHE_PATH);
-    
+
     for (const projectDir of projectDirs) {
       const projectPath = join(CLAUDE_CACHE_PATH, projectDir);
       const stat = statSync(projectPath);
-      
+
       if (stat.isDirectory()) {
         // Original project path from directory name
         const originalProjectPath = projectDir.replace(/^-/, '/').replace(/-/g, '/');
-        
+
         // List MCP log directories
         const contents = readdirSync(projectPath);
-        const mcpLogDirs = contents.filter(dir => dir.startsWith('mcp-logs-'));
-        
+        const mcpLogDirs = contents.filter((dir) => dir.startsWith('mcp-logs-'));
+
         for (const mcpLogDir of mcpLogDirs) {
           const logDirPath = join(projectPath, mcpLogDir);
           const serverName = extractServerName(mcpLogDir);
-          
+
           try {
             const logFiles = readdirSync(logDirPath);
-            
+
             for (const logFile of logFiles) {
               if (logFile.endsWith('.txt')) {
                 const logFilePath = join(logDirPath, logFile);
@@ -300,7 +410,7 @@ function scanForMcpLogs(): IndexedLog[] {
   } catch (error) {
     console.error('Failed to scan Claude cache directory:', error);
   }
-  
+
   return allLogs;
 }
 
@@ -313,18 +423,36 @@ async function ensureIndex() {
     // But could also be: network error, auth failure, etc.
     console.log('Index does not exist, creating claudeCodeMcpServerLogs index...', error);
     await client.createIndex('claudeCodeMcpServerLogs', { primaryKey: 'logId' });
-    
+
     // Configure search settings
     await index.updateSettings({
       searchableAttributes: ['*'], // Search all fields
       filterableAttributes: [
-        'logId', 'server', 'projectPath', 'timestamp', 'logFile', 'sessionId',
-        'debug', 'content', 'isError', 'type', 'text', 'message', 'data',
-        'hits', 'query', 'processingTimeMs', 'limit', 'offset', 'estimatedTotalHits',
-        'results', 'total', 'plainText'
+        'logId',
+        'server',
+        'projectPath',
+        'timestamp',
+        'logFile',
+        'sessionId',
+        'debug',
+        'content',
+        'isError',
+        'type',
+        'text',
+        'message',
+        'data',
+        'hits',
+        'query',
+        'processingTimeMs',
+        'limit',
+        'offset',
+        'estimatedTotalHits',
+        'results',
+        'total',
+        'plainText',
       ], // Common fields that can be filtered
       sortableAttributes: ['timestamp'],
-      displayedAttributes: ['*'] // Show all attributes
+      displayedAttributes: ['*'], // Show all attributes
     });
   }
 }
@@ -333,46 +461,51 @@ async function ensureIndex() {
 async function indexMcpLogs() {
   console.log('Ensuring index exists...');
   await ensureIndex();
-  
+
   console.log('Scanning for MCP server logs...');
   const logs = scanForMcpLogs();
-  
+
   if (logs.length === 0) {
     console.log('No MCP logs found to index.');
     return;
   }
-  
+
   console.log(`Found ${logs.length} log entries to index.`);
-  
+
   // Index in batches
   const BATCH_SIZE = 100;
   let allTasksSuccessful = true;
-  
+
   for (let i = 0; i < logs.length; i += BATCH_SIZE) {
     const batch = logs.slice(i, i + BATCH_SIZE);
-    const task = await index.addDocuments(batch);
-    console.log(`Indexed batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(logs.length / BATCH_SIZE)}. Task: ${task.taskUid}`);
-    
+    // Apply field limits to all documents in the batch before indexing
+    const task = await pipedAsync(batch, limitStringFields, index.addDocuments);
+    console.log(
+      `Indexed batch ${Math.floor(i / BATCH_SIZE) + 1}/${
+        Math.ceil(logs.length / BATCH_SIZE)
+      }. Task: ${task.taskUid}`,
+    );
+
     // Wait for task to complete
-    let taskStatus = await client.tasks.getTask(task.taskUid);
-    while (taskStatus.status === 'enqueued' || taskStatus.status === 'processing') {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      taskStatus = await client.tasks.getTask(task.taskUid);
-    }
-    
-    if (taskStatus.status !== 'succeeded') {
-      console.error(`Task ${task.taskUid} failed:`, taskStatus.error);
+    try {
+      const taskStatus = await waitForTask(task.taskUid);
+      if (taskStatus.status !== 'succeeded') {
+        console.error(`Task ${task.taskUid} failed:`, taskStatus.error);
+        allTasksSuccessful = false;
+      }
+    } catch (error) {
+      console.error(error);
       allTasksSuccessful = false;
     }
   }
-  
+
   if (allTasksSuccessful) {
     console.log('All indexing tasks completed successfully!');
-    
+
     // Delete all log files
     let deletedCount = 0;
     let failedDeletes = 0;
-    
+
     for (const filePath of filesToDelete) {
       try {
         unlinkSync(filePath);
@@ -382,7 +515,7 @@ async function indexMcpLogs() {
         failedDeletes++;
       }
     }
-    
+
     console.log(`✅ Deleted ${deletedCount} log files for security`);
     if (failedDeletes > 0) {
       console.log(`⚠️  Failed to delete ${failedDeletes} files`);
@@ -390,15 +523,15 @@ async function indexMcpLogs() {
   } else {
     console.error('❌ Some indexing tasks failed. Log files not deleted for safety.');
   }
-  
+
   // Example search
   const searchResults = await index.search('tool call', {
     limit: 3,
-    sort: ['timestamp:desc']
+    sort: ['timestamp:desc'],
   });
-  
+
   console.log('\nExample search for "tool call":');
-  searchResults.hits.forEach(hit => {
+  searchResults.hits.forEach((hit) => {
     const preview = hit.debug || hit.plainText || JSON.stringify(hit.response || {});
     console.log(`- [${hit.server}] ${hit.logFile}: ${preview.substring(0, 100)}...`);
   });
