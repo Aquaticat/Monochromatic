@@ -447,6 +447,17 @@ TypeScript's support for overloading generator functions has some quirks:
   - Throwing errors provides better stack traces and allows parent code to handle errors
   - Only use process.exit() with specific exit codes when required by CLI tool conventions
   - For scripts, thrown errors will automatically result in non-zero exit codes
+- **Always log errors in catch blocks**:
+  - Every catch block must log the caught error for debugging
+  - Log ALL errors, even "expected" ones - the actual error might be different than expected
+    - Example: You expect "index not found" but get "network timeout" instead
+  - Use `console.error()` for errors, include context about what operation failed
+  - Good: `catch (error) { console.error('Failed to get index stats:', error); }`
+  - Bad: `catch (e) { /* silently ignore */ }` or `catch (e) { createIndex(); /* assume we know the error */ }`
+- **Avoid deprecated JavaScript/TypeScript features**:
+  - Use `substring()` or `slice()` instead of deprecated `substr()`
+  - Check MDN or TypeScript documentation for deprecation warnings
+  - Prefer modern, supported alternatives
 
 ### Class design
 
