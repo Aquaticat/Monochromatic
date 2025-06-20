@@ -39,14 +39,6 @@
     "email": "an@aquati.cat",
     "url": "https://aquati.cat"
   },
-  "scripts": {
-    "w:types": "tsc --watch",
-    "b:types": "tsc",
-    "w:js": "vite build --config vite.config.ts  --watch",
-    "b:js": "vite build  --config vite.config.ts ",
-    "b": "pnpm run --stream '/^b:\\w+$/'",
-    "w": "pnpm run --stream '/^w:\\w+$/'"
-  },
   "license": "Apache-2.0",
   "repository": {
     "type": "git",

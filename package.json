@@ -14,27 +14,8 @@
   "trustedDependencies": [
     "sharp",
     "dprint",
-    "esbuild",
-    "husky"
+    "esbuild"
   ],
-  "scripts": {
-    "data-prepare": "husky || echo 'husky does not exist, skipped'",
-    "preinstall": "npx only-allow pnpm",
-    "//w:test-slow": "# vitest is too slow when run in watch mode inside pnpm run wr. Disabled Vitest in pnpm run wr by adding the hyphen character. Suggestion: Run vitest separately or in your IDE.",
-    "w:test-slow": "vitest watch",
-    "b:test": "vitest run",
-    "w:bench-slow": "vitest bench",
-    "b:bench-slow": "vitest bench --run",
-    "//b:lint_eslint": "# eslint is indeed already ran by the IDE, but we want a complete view of all errors too.",
-    "b:lint_eslint": "eslint --cache",
-    "b:format_eslint": "eslint --cache --fix",
-    "b:lint_stylelint": "stylelint --ignore-path .gitignore \"**/*.{css,astro,html}\"",
-    "b:format_stylelint": "stylelint --ignore-path .gitignore --fix \"**/*.{css,astro,html}\"",
-    "b:lint_dprint": "dprint check --list-different",
-    "b:format_dprint": "dprint fmt",
-    "wr": "pnpm run -r --parallel --stream \"/^w:\\w+$/\"",
-    "br": "pnpm run -r --stream \"/^b:\\w+$/\""
-  },
   "engines": {
     "bun": ">=1.2.9",
     "node": ">=24.1.0"
@@ -46,7 +27,6 @@
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/config-stylelint": "workspace:*",
     "dprint": "catalog:",
-    "husky": "catalog:",
     "oxlint": "catalog:",
     "stylelint": "catalog:",
     "typescript": "catalog:",

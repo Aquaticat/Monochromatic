@@ -44,16 +44,6 @@
   "bin": {
     "moon.installVale": "./src/moon.installVale.ts"
   },
-  "scripts": {
-    "w:types": "tsc --watch",
-    "b:types": "tsc --build --force --verbose",
-    "b:js_node": "vite build --config vite.config.ts --mode production,node",
-    "w:js_node": "vite build --config vite.config.ts --mode production,node --watch",
-    "b:js_browser": "vite build --config vite.config.ts --mode production,browser",
-    "w:js_browser": "vite build --config vite.config.ts --mode production,browser --watch",
-    "b": "pnpm run --stream \"/^b:\\w+$/\"",
-    "w": "pnpm run --stream \"/^w:\\w+$/\""
-  },
   "files": [
     "dist/final",
     "src"

@@ -357,3 +357,25 @@ The progression from imperative loops to recursive functions to (eventually) asy
 - Astro RSS endpoint (fixed upstream)
 - lightningCSS resolver (switched to postcss)
 - fs-extra packageExtensions (no longer using fs-extra)
+
+## Husky to Moon Migration (June 2025)
+
+### Completed
+- [x] Research Moon's VCS hooks capabilities and configuration
+- [x] Back up all package.json files with scripts to `bak/20250619_233329/`
+- [x] Remove scripts from all package.json files
+- [x] Setup Moon MCP server in ~/.claude.json for better task discovery
+
+### To Do
+- [ ] Create migration plan from Husky to Moon hooks
+- [ ] Get second opinion from Zen on the migration plan
+- [ ] Remove Husky configuration and dependencies
+- [ ] Implement Moon VCS hooks configuration
+- [ ] Test the new pre-commit hooks
+
+### Notes
+- Moon supports VCS hooks via `vcs.hooks` in `.moon/workspace.yml`
+- `syncHooks: true` is already configured in the workspace
+- Need to determine which tasks to run in pre-commit hooks
+- Husky is still in dependencies and needs to be removed
+- The old Husky pre-commit hook had: `yarn run -T -B monochromatic precommit` (commented out)

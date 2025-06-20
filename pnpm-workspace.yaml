@@ -6,7 +6,6 @@ catalog:
   zod: '*'
   dprint: '*'
   esbuild: '*'
-  husky: '*'
   oxlint: '>=1.1.0'
   stylelint: '*'
   stylelint-config-standard: '*'
@@ -149,7 +148,6 @@ onlyBuiltDependencies:
 - '@moonrepo/cli'
 - dprint
 - esbuild
-- husky
 - sharp
 overrides:
   tsconfck>typescript: 'catalog:'

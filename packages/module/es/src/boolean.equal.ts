@@ -583,3 +583,4 @@ export async function equalAsync(a: any, b: any): Promise<boolean> {
 }
 
 // TODO: Write a better typeof leveraging Object.prototype.toString.call
+// Test comment to verify pre-commit hook

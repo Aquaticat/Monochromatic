@@ -5,16 +5,6 @@
   "main": "dist/final/backend/index.iife.js",
   "module": "dist/final/backend/index.iife.js",
   "type": "module",
-  "scripts": {
-    "w:types": "tsc --watch",
-    "b:types": "tsc",
-    "b:iframeFrontend": "vite build --mode production --config vite.config.iframe.ts",
-    "b:backend": "vite build --mode production --config vite.config.backend.ts",
-    "w:iframeFrontend": "vite build --mode production --watch --config vite.config.iframe.ts",
-    "w:backend": "vite build --mode production --watch --config vite.config.backend.ts",
-    "b": "pnpm run --stream '/^b:\\w+$/'",
-    "w": "pnpm run --stream '/^w:\\w+$/'"
-  },
   "author": {
     "name": "Aquaticat",
     "email": "an@aquati.cat",
