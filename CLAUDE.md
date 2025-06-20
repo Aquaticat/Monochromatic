@@ -167,6 +167,14 @@ When setting up or integrating third-party tools:
   - Prevents accidental commits to upstream
   - Maintains clear separation between your code and dependencies
 
+## Tool Version Management
+
+- **Only pin tool versions when necessary** with clear justification
+- If pinning is required, always include comments explaining why
+- Example: `# Pin to v1.2.3 - v1.3.0 introduced breaking API changes`
+- Document version requirements in both the pinning file and README
+- Regularly review pinned versions to check if constraints still apply
+
 ## Project Overview
 
 Monochromatic is a TypeScript monorepo ecosystem for web development, featuring:

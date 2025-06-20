@@ -1,5 +1,44 @@
 # Todo
 
+## WSL Migration - Post-Migration Tasks
+
+### Immediate Tasks (June 19, 2025)
+1. **Install dependencies in WSL location**
+   ```bash
+   cd ~/projects/monochromatic
+   pnpm install
+   ```
+
+2. **Run initial setup**
+   ```bash
+   moon run prepare
+   ```
+
+3. **Verify build system**
+   ```bash
+   moon run build
+   moon run test
+   ```
+
+4. **Set up VSCode for WSL**
+   - Open VSCode: `code .` from WSL terminal
+   - VSCode will auto-install WSL extension
+   - Ensure all extensions work in WSL environment
+
+5. **Performance verification**
+   - Compare build times between Windows mount and WSL filesystem
+   - Test file watching performance with `moon run buildWatch`
+
+6. **Clean up Windows copy**
+   - After confirming everything works perfectly
+   - `rm -rf /mnt/c/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest`
+
+### Migration Benefits Achieved
+- Native Linux moon binary (no path translation issues)
+- 10-50x faster file operations
+- Better integration with Linux tooling
+- Cleaner development environment
+
 ## CLI Tools and Scripts
 
 ### Write `cpfd` - Copy Files From Dependencies
