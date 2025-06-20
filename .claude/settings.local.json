@@ -44,7 +44,18 @@
       "mcp__meilisearch__get-settings",
       "mcp__meilisearch__update-settings",
       "Bash(git add:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git push:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(pnpm ls:*)",
+      "Bash(time moon run:*)",
+      "Bash(/dev/null)",
+      "Bash(proto clean:*)",
+      "Bash(proto list:*)",
+      "Bash(moon:*)",
+      "Bash(echo $WSL_DISTRO_NAME)",
+      "Bash(proto activate:*)"
     ],
     "deny": []
   }

@@ -62,8 +62,7 @@
     "nano-spawn": "catalog:",
     "execa": "catalog:",
     "eslint": "catalog:",
-    "@monochromatic-dev/config-eslint": "workspace:*",
-    "@moonrepo/cli": "catalog:"
+    "@monochromatic-dev/config-eslint": "workspace:*"
   },
   "workspaces": [
     "packages/*/*"

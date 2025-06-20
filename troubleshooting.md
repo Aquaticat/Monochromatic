@@ -48,6 +48,45 @@ export default defineConfig({
 
 Then run: `vitest --ui`
 
+## Moon performance in WSL
+
+Moon runs significantly slower in WSL compared to native Windows execution due to file system translation overhead.
+
+### Performance comparison
+- **Build tasks**: ~52 seconds (WSL) vs ~22 seconds (Windows native) - 2.4x slower
+- **Test runs**: ~60 seconds (WSL) vs ~18 seconds (Windows native) - 3.3x slower
+
+### Root causes
+1. WSL file system operations are slower due to translation layer between Linux and Windows
+2. Process spawning has additional overhead in WSL
+3. The `@moonrepo/cli` package adds another layer of indirection when installed in workspace
+
+### Solutions
+
+#### Option 1: Use Windows moon.exe from WSL (Recommended)
+```bash
+# Use the Windows moon executable directly
+/mnt/c/Users/$USER/.proto/shims/moon.exe run build
+
+# Or create an alias in your .bashrc
+echo 'alias moon="/mnt/c/Users/$USER/.proto/shims/moon.exe"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+#### Option 2: Remove @moonrepo/cli from workspace
+The `@moonrepo/cli` package was removed from this workspace to reduce overhead.
+When moon detects this package in the workspace root, it delegates to it instead of running directly, adding extra latency.
+
+```bash
+# Remove if present in your workspace
+pnpm remove @moonrepo/cli
+```
+
+### Trade-offs
+- **Windows moon.exe**: Faster execution but may have issues with path translations for complex scenarios
+- **WSL moon**: Slower but guaranteed compatibility with Linux-specific tools and scripts
+- **No @moonrepo/cli**: Requires global moon installation via proto, but eliminates delegation overhead
+
 ### Security note
 Binding to `0.0.0.0` makes the Vitest UI accessible from other devices on your network at `http://[your-ip]:3000`. This is typically fine for development but be aware of network accessibility.
 
