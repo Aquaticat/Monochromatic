@@ -359,3 +359,97 @@ It will turn `>=` in `package.json` into exact versions.
 ```bash
 ./xcaddy build --with github.com/mholt/caddy-events-exec --with github.com/mholt/caddy-webdav --with github.com/mholt/caddy-l4 --with github.com/porech/caddy-maxmind-geolocation --with github.com/mholt/caddy-ratelimit --with github.com/caddyserver/cache-handler --with github.com/caddyserver/jsonc-adapter --with github.com/caddy-dns/porkbun --with github.com/caddy-dns/njalla
 ```
+
+## Proto Tool Version Management
+
+### Problem: Proto automatically creates version pins
+
+Proto creates a global `.prototools` file at `~/.proto/.prototools` that pins specific versions of tools.
+This causes issues when:
+- Tools are updated but the old version is still used
+- Moon shows "new version available" messages despite having the latest version installed
+- You want to always use the latest versions
+
+### Example Issue
+```bash
+# Moon says there's a new version despite having it installed
+moon run prepare
+# Output: There's a new version of moon available, 1.37.3 (currently on 1.37.2)!
+
+# But the new version is already installed
+proto install moon latest
+# Output: moon 1.37.3 has already been installed!
+
+# The issue: global .prototools is pinning the old version
+cat ~/.proto/.prototools
+# Output:
+# moon = "1.37.2"
+```
+
+### Solutions
+
+#### Option 1: Manual version update
+Edit `~/.proto/.prototools` to update pinned versions:
+```bash
+# Update the version in the file
+sed -i 's/moon = "1.37.2"/moon = "1.37.3"/' ~/.proto/.prototools
+```
+
+#### Option 2: Delete old versions to force updates
+```bash
+# Remove the old version
+rm -rf ~/.proto/tools/moon/1.37.2
+
+# Proto will now use the latest available version
+moon --version
+```
+
+#### Option 3: Use proto's auto-install feature
+Add to your shell configuration:
+```bash
+# ~/.bashrc or ~/.zshrc
+export PROTO_AUTO_INSTALL=true
+```
+
+This will automatically install the version specified in `.prototools` files.
+
+#### Option 4: Use "latest" in .prototools (Recommended)
+The cleanest solution is to use "latest" as the version in `.prototools` files:
+
+```bash
+# First, configure proto to not pin specific versions
+echo 'pin-latest = false' >> ~/.proto/config.toml
+
+# Then create a .prototools file with "latest" versions
+cat > ~/.proto/.prototools << EOF
+bun = "latest"
+moon = "latest"
+node = "latest"
+pnpm = "latest"
+proto = "latest"
+EOF
+```
+
+This approach:
+- Always uses the latest installed version of each tool
+- Doesn't pin to specific versions
+- Avoids "Failed to detect version" errors
+- No environment variables needed
+
+**Important**: You must have `pin-latest = false` in your proto config, otherwise proto will replace "latest" with specific version numbers when you install tools.
+
+### Notes
+- Proto creates `.prototools` automatically when installing tools (unless `pin-latest = false`)
+- The file serves as a global version constraint
+- Project-specific `.prototools` files override the global one
+- Proto contextually detects versions from the environment (e.g., package.json)
+- Without pinned versions, proto will use the latest installed version available
+
+### Related: pnpm url.parse() deprecation warning
+When running pnpm commands, you may see:
+```
+(node:12345) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized...
+```
+
+This is from pnpm 10.12.1's internal dependencies (npm-package-arg).
+It's harmless but cannot be fixed locally - wait for pnpm to update their dependencies.

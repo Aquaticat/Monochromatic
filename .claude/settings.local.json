@@ -55,7 +55,9 @@
       "Bash(proto list:*)",
       "Bash(moon:*)",
       "Bash(echo $WSL_DISTRO_NAME)",
-      "Bash(proto activate:*)"
+      "Bash(proto activate:*)",
+      "Bash(NODE_OPTIONS=\"--trace-deprecation\" pnpm install 2 >& 1)",
+      "Bash(proto pin:*)"
     ],
     "deny": []
   }
