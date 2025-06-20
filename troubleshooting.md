@@ -453,3 +453,46 @@ When running pnpm commands, you may see:
 
 This is from pnpm 10.12.1's internal dependencies (npm-package-arg).
 It's harmless but cannot be fixed locally - wait for pnpm to update their dependencies.
+
+## dprint VSCode Extension Cannot Find dprint in WSL
+
+### Problem
+When using VSCode on Windows connected to a WSL workspace, the dprint extension fails with:
+```
+[Error] dprint client: couldn't create connection to server.
+Launching server using command dprint failed. Error: spawn dprint ENOENT
+```
+
+### Root Cause
+The dprint VSCode extension looks for the `dprint` executable in the system PATH.
+In pnpm workspaces, dprint is installed locally in `node_modules/.bin/` but not globally available.
+
+### Solution
+Configure the extension to use the local dprint installation by adding to your workspace settings:
+
+1. **For `.code-workspace` files**:
+   ```json
+   {
+     "settings": {
+       "dprint.path": "./node_modules/.bin/dprint"
+       // ... other settings
+     }
+   }
+   ```
+
+2. **For `.vscode/settings.json`**:
+   ```json
+   {
+     "dprint.path": "./node_modules/.bin/dprint"
+   }
+   ```
+
+After adding this setting, reload the VSCode window for changes to take effect.
+
+### Alternative Solution
+Install dprint globally in WSL:
+```bash
+npm install -g dprint
+```
+
+This makes dprint available system-wide but requires maintaining a separate global installation.

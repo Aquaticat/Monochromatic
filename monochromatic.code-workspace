@@ -88,6 +88,7 @@
     "typescript.preferences.preferTypeOnlyAutoImports": true,
 
     "dprint.experimentalLsp": true,
+    "dprint.path": "./node_modules/.bin/dprint",
 
     // TODO: Automatically check this is set correctly on commit via husky git hook.
     // Commented out when not using Yarn
