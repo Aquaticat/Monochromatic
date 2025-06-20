@@ -236,3 +236,87 @@ hx --health   # Shows language server status
 - Helix doesn't require a plugin system - language servers provide IDE features
 - Configuration lives in `~/.config/helix/`
 - The health check warnings about missing runtime directories are normal on fresh installs
+
+## Performance Optimizations
+
+### Moon Prepare Optimization - 2025-06-16
+
+#### Problem
+`moon run prepare` taking 50+ seconds due to slow command executions in WSL.
+
+#### Root Causes
+1. WSL file system overhead when executing binaries from `/mnt/c/`
+2. `pnpm exec` commands taking ~27s each in WSL
+3. Unnecessary command executions when simple file checks would suffice
+
+#### Solutions Implemented
+
+##### 1. Created TypeScript scripts to replace shell commands:
+- `moon.preparePlaywright.ts`: Check browser dirs instead of running `playwright install --list`
+- `moon.pnpmInstall.ts`: Auto-decline pnpm reinstall prompt
+- `moon.valeSync.ts`: Check if packages exist before syncing
+- `moon.installVale.ts`: Unified cross-platform vale installation
+
+##### 2. Key optimizations:
+- Use file system checks instead of executing binaries
+- Use native OS commands (`which`, `where.exe`) for existence checks
+- Add PATH updates to `~/.profile` for snap binaries
+
+##### 3. Results:
+- **Before**: 50+ seconds
+- **After**: 1.54 seconds (97% improvement)
+- All bun TypeScript scripts consistently take ~80-100ms
+- Actual work (file checks) takes <10ms per script
+
+##### 4. Moon tips:
+- Clear cache: `moon clean --lifetime '1 seconds'`
+- Run specific test: `moon run testUnit -- <file-path>`
+- Shell commands need `shell: true` option for proper parsing
+
+#### Key Takeaway
+In WSL environments, avoid executing binaries when file system checks suffice. The overhead of process creation and file system translation can turn millisecond operations into 30-second waits.
+
+## Package Management Warnings
+
+### Don't run `pnpm up`
+
+It will turn `>=` in `package.json` into exact versions.
+
+## Configuration Snippets
+
+### GitHub MCP Server Configuration (Half Working)
+
+```json
+"github.com/github/github-mcp-server": {
+"autoApprove": [
+"get_me"
+],
+
+"disabled": false,
+"timeout": 60,
+"type": "stdio",
+"command": "podman",
+"args": [
+"--remote=true",
+"--url",
+"ssh://core@127.0.0.1:62090/run/user/1000/podman/podman.sock",
+"--identity",
+"C:\\Users\\user\\.local\\share\\containers\\podman\\machine\\machine",
+"run",
+"-i",
+"--rm",
+"-e",
+"GITHUB_PERSONAL_ACCESS_TOKEN",
+"ghcr.io/github/github-mcp-server"
+],
+"env": {
+"GITHUB_PERSONAL_ACCESS_TOKEN": "REDACTED"
+}
+}
+```
+
+### Building Caddy with Extensions
+
+```bash
+./xcaddy build --with github.com/mholt/caddy-events-exec --with github.com/mholt/caddy-webdav --with github.com/mholt/caddy-l4 --with github.com/porech/caddy-maxmind-geolocation --with github.com/mholt/caddy-ratelimit --with github.com/caddyserver/cache-handler --with github.com/caddyserver/jsonc-adapter --with github.com/caddy-dns/porkbun --with github.com/caddy-dns/njalla
+```
