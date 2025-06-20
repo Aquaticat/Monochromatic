@@ -1,4 +1,206 @@
-## Meilisearch Task Polling Implementation Evolution
+# Todo
+
+## CLI Tools and Scripts
+
+### Write `cpfd` - Copy Files From Dependencies
+Create a tool to copy files from dependencies into the project.
+
+### Write `increase-version` 
+Automate version bumping to ensure every publish has a new version.
+
+### Write `add-scripts`
+Add new NPM scripts to the target package every time a new package is created.
+
+### Monochromatic CLI Development
+Currently settling on writing a few moon plugins instead of a full CLI.
+
+#### `monochromatic new <monorepo-name>`
+```plantuml
+@startuml
+start
+
+if (<monorepo-name> exists on filesystem?) then (yes)
+  :throw error;
+  stop
+else (no)
+  :TODO: Create monorepo structure;
+  stop
+endif
+@enduml
+```
+
+#### `monochromatic new <package-category>/<package-name>`
+```plantuml
+@startuml
+start
+
+if (packages/<package-category> exists?) then (yes)
+  :DO NOTHING;
+else (no)
+  :create folder packages/<package-category>;
+endif
+
+:cd packages/<package-category>;
+
+if (<package-name> exists?) then (yes)
+  :throw error;
+  stop
+else (no)
+  :create folder <package-name>;
+  :TODO: Initialize package structure;
+  stop
+endif
+@enduml
+```
+
+## Build System and Package Management
+
+### Generate entire `package.json` automatically from `package.jsonc`
+Make it bidirectional update to keep both files in sync.
+
+### Write `package.jsonc` support
+Add JSON with Comments support for package configuration.
+
+### Migrate from execa to native node child_process exec
+Remove external dependency and use Node.js built-in functionality.
+
+### Submit `packageExtensions` to `pnpm`
+Previously needed for fs-extra/universalify dependency issue (no longer using fs-extra, but keeping for reference).
+
+## Documentation and Content
+
+### PlantUML integration
+Add support for PlantUML diagrams in documentation.
+
+### Optimize SVG
+Reduce redundant attributes in PlantUML-generated SVGs:
+- Remove redundant height/width attributes
+- Optimize fill attributes on subelements
+- Make font-size and similar properties more accessible
+
+### Use pagefind or other tools to pre-generate search results pages
+Improve search functionality with pre-generated results.
+
+### Set default modified date by `git log`
+Automatically set document modification dates from git history.
+
+### Localization and Internationalization
+
+#### Use multiple, localized 404 pages
+Priority: normal
+
+#### Integrate automatic translation
+Priority: low
+Consider using [deepl-node](https://github.com/DeepLcom/deepl-node)
+
+## UI/UX Improvements
+
+### Dim sidebar (.Aside) when hovering over main
+Currently on hold - could be annoying for users.
+
+### Comment System Implementation
+
+#### Webmention support
+Implement decentralized web mention protocol.
+
+#### Giscus integration
+Add GitHub Discussions-based commenting.
+
+#### Allow defining 3rd party comment system
+Make comment system pluggable for flexibility.
+
+## Framework Updates
+
+### Rewrite Astro RSS endpoint
+Note: Seems like they've fixed it, so no work needed.
+
+### Find a way to format mdx
+Priority: low
+
+### Write custom lightningCSS resolver
+Note: Switched back to postcss. Holding onto this idea in case future lightningcss updates make it better than postcss.
+
+## Development Environment
+
+### WSL Debian Distro - Selective Windows Directory Mounting
+
+#### Overview
+Configure Debian WSL distro to mount only specific Windows directories instead of auto-mounting all drives, improving security while maintaining access to development files.
+
+#### Required Mount Points
+- `/mnt/c/Users/user/Text/Projects` - Development projects
+- `/mnt/c/Users/user/.pnpm-store` - pnpm global package store
+
+#### Configuration Steps
+
+1. **Edit WSL Configuration**
+   ```bash
+   sudo nano /etc/wsl.conf
+   ```
+   Add:
+   ```ini
+   [automount]
+   enabled = false
+   mountFsTab = true
+   ```
+
+2. **Create Mount Points**
+   ```bash
+   sudo mkdir -p /mnt/c/Users/user/Text/Projects
+   sudo mkdir -p /mnt/c/Users/user/.pnpm-store
+   ```
+
+3. **Configure fstab**
+   ```bash
+   sudo nano /etc/fstab
+   ```
+   Add:
+   ```
+   C:/Users/user/Text/Projects /mnt/c/Users/user/Text/Projects drvfs defaults,uid=1000,gid=1000 0 0
+   C:/Users/user/.pnpm-store /mnt/c/Users/user/.pnpm-store drvfs defaults,uid=1000,gid=1000 0 0
+   ```
+
+4. **Apply Changes Without Full WSL Restart**
+   
+   Option A - Restart only Debian distro:
+   ```powershell
+   # From Windows PowerShell
+   wsl -t Debian
+   ```
+   
+   Option B - Apply in current session (temporary):
+   ```bash
+   # Unmount existing
+   sudo umount /mnt/c 2>/dev/null
+   
+   # Mount manually
+   sudo mount -t drvfs 'C:/Users/user/Text/Projects' /mnt/c/Users/user/Text/Projects -o uid=1000,gid=1000
+   sudo mount -t drvfs 'C:/Users/user/.pnpm-store' /mnt/c/Users/user/.pnpm-store -o uid=1000,gid=1000
+   ```
+   
+   Option C - With systemd:
+   ```bash
+   sudo systemctl daemon-reload
+   sudo mount -a
+   ```
+
+#### Verification
+```bash
+# Check mounted directories
+mount | grep drvfs
+
+# Test access
+ls /mnt/c/Users/user/Text/Projects
+```
+
+#### Notes
+- This configuration is specific to the Debian WSL distro only
+- Other WSL distros (including those running Docker/Podman) are unaffected
+- To add more directories later, update `/etc/fstab` and remount
+
+## Code Quality and Patterns
+
+### Meilisearch Task Polling Implementation Evolution
 
 The user repeatedly asked "Do you really need..." to guide me through progressively simpler implementations:
 
@@ -10,7 +212,7 @@ The user repeatedly asked "Do you really need..." to guide me through progressiv
 
 Next conversation hint: async iterator helper `takeUntil` - likely a functional approach that avoids explicit loops entirely.
 
-### Final Implementation Plan: Simple Array with `findAsync`
+#### Final Implementation Plan: Simple Array with `findAsync`
 
 The simplest approach uses a dummy array with `findAsync`:
 
@@ -47,7 +249,7 @@ try {
 }
 ```
 
-### Late Night Ideas (1am ramblings) and Potential Improvements
+#### Late Night Ideas (1am ramblings) and Potential Improvements
 
 User's thoughts at 1am:
 - The array might be unnecessary with a different utility function (maybe something like `repeatUntil` or `retryAsync`?)
@@ -84,7 +286,7 @@ const completed = await findAsync(
 
 Good night!
 
-### Lessons from "Do you really need..."
+#### Lessons from "Do you really need..."
 
 This questioning pattern taught me to:
 1. **Question every construct** - Each programming construct adds complexity
@@ -96,83 +298,23 @@ This questioning pattern taught me to:
 
 The progression from imperative loops to recursive functions to (eventually) async iterators shows how the same problem can be solved with decreasing complexity and increasing elegance.
 
-## Generate entire `package.json` automatically from `package.jsonc` and make it bidirectional update.
+## Priority Levels
 
-## WSL Debian Distro - Selective Windows Directory Mounting
+### High Priority
+- CLI tools development (cpfd, increase-version, add-scripts)
+- Package.jsonc support and bidirectional sync
 
-### Overview
-Configure Debian WSL distro to mount only specific Windows directories instead of auto-mounting all drives, improving security while maintaining access to development files.
+### Normal Priority
+- Multiple localized 404 pages
+- PlantUML integration
+- SVG optimization
 
-### Required Mount Points
+### Low Priority
+- MDX formatting
+- Automatic translation integration
+- Dim sidebar on hover (on hold)
 
-- `/mnt/c/Users/user/Text/Projects` - Development projects
-- `/mnt/c/Users/user/.pnpm-store` - pnpm global package store
-
-### Configuration Steps
-
-#### 1. Edit WSL Configuration
-```bash
-sudo nano /etc/wsl.conf
-```
-
-Add:
-```ini
-[automount]
-enabled = false
-mountFsTab = true
-```
-
-#### 2. Create Mount Points
-```bash
-sudo mkdir -p /mnt/c/Users/user/Text/Projects
-sudo mkdir -p /mnt/c/Users/user/.pnpm-store
-```
-
-#### 3. Configure fstab
-```bash
-sudo nano /etc/fstab
-```
-
-Add:
-```
-C:/Users/user/Text/Projects /mnt/c/Users/user/Text/Projects drvfs defaults,uid=1000,gid=1000 0 0
-C:/Users/user/.pnpm-store /mnt/c/Users/user/.pnpm-store drvfs defaults,uid=1000,gid=1000 0 0
-```
-
-#### 4. Apply Changes Without Full WSL Restart
-
-Option A - Restart only Debian distro:
-```powershell
-# From Windows PowerShell
-wsl -t Debian
-```
-
-Option B - Apply in current session (temporary):
-```bash
-# Unmount existing
-sudo umount /mnt/c 2>/dev/null
-
-# Mount manually
-sudo mount -t drvfs 'C:/Users/user/Text/Projects' /mnt/c/Users/user/Text/Projects -o uid=1000,gid=1000
-sudo mount -t drvfs 'C:/Users/user/.pnpm-store' /mnt/c/Users/user/.pnpm-store -o uid=1000,gid=1000
-```
-
-Option C - With systemd:
-```bash
-sudo systemctl daemon-reload
-sudo mount -a
-```
-
-### Verification
-```bash
-# Check mounted directories
-mount | grep drvfs
-
-# Test access
-ls /mnt/c/Users/user/Text/Projects
-```
-
-### Notes
-- This configuration is specific to the Debian WSL distro only
-- Other WSL distros (including those running Docker/Podman) are unaffected
-- To add more directories later, update `/etc/fstab` and remount
+### Completed/No Action Needed
+- Astro RSS endpoint (fixed upstream)
+- lightningCSS resolver (switched to postcss)
+- fs-extra packageExtensions (no longer using fs-extra)
