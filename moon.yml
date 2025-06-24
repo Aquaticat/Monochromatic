@@ -85,6 +85,16 @@ tasks:
     options:
       outputStyle: buffer-only-failure
 
+  # Complete setup for fresh clones - prepare environment and build all artifacts
+  # Note: Moon automatically syncs TypeScript project references during build
+  prepareAndBuild:
+    deps:
+    - prepare
+    - build
+    options:
+      runDepsInParallel: false
+      outputStyle: buffer-only-failure
+
   types:
     command: 'tsc --build --verbose'
     options:

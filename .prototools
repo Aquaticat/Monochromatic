@@ -1,0 +1,9 @@
+bun = "latest"
+moon = "latest"
+node = "latest"
+pnpm = "latest"
+proto = "latest"
+
+[settings]
+auto-install = true
+auto-clean = true

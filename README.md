@@ -23,14 +23,11 @@ All tasks must be run through Moon commands:
 ## Initial Setup
 
 ```bash
-# 1. Install Moon globally
-npm install -g @moonrepo/cli
+# 1. Install proto globally. See https://moonrepo.dev/docs/proto/install
+bash <(curl -fsSL https://moonrepo.dev/install/proto.sh)
 
-# 2. Run project setup
-moon run prepare
-
-# 3. Install dependencies
-pnpm install
+# 2. Run project setup and build. Note that proto auto installs moon.
+moon run prepareAndBuild
 ```
 
 ## Essential Commands
