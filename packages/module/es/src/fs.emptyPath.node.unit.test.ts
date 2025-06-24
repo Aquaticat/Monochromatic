@@ -30,7 +30,7 @@ import {
 await logtapeConfigure(await logtapeConfiguration());
 
 describe('fs.emptyPath', () => {
-  describe('emptyPath', () => {
+  describe(emptyPath, () => {
     test('empties file when path has extension', async () => {
       const testDir = await mkdtemp(join(tmpdir(), 'fs-emptyPath-test-'));
       const filePath = join(testDir, 'test.txt');
@@ -73,7 +73,7 @@ describe('fs.emptyPath', () => {
     });
   });
 
-  describe('emptyDir', () => {
+  describe(emptyDir, () => {
     test('removes all files from directory', async () => {
       const testDir = await mkdtemp(join(tmpdir(), 'fs-emptyPath-test-'));
       const file1 = join(testDir, 'file1.txt');
@@ -115,7 +115,7 @@ describe('fs.emptyPath', () => {
     });
   });
 
-  describe('emptyFile', () => {
+  describe(emptyFile, () => {
     test('empties existing file', async () => {
       const testDir = await mkdtemp(join(tmpdir(), 'fs-emptyPath-test-'));
       const filePath = join(testDir, 'test.txt');
@@ -167,7 +167,7 @@ describe('fs.emptyPath', () => {
     });
   });
 
-  describe('removeEmptyFilesInDir', () => {
+  describe(removeEmptyFilesInDir, () => {
     test('removes empty files', async () => {
       const testDir = await mkdtemp(join(tmpdir(), 'fs-emptyPath-test-'));
       const emptyFile1 = join(testDir, 'empty1.txt');

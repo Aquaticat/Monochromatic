@@ -16,7 +16,15 @@ import type {
 } from '@figma/plugin-typings/plugin-api-standalone';
 import type { AuthoredCss } from '../shared/message.ts';
 
-const EPSILON = 0.1 ** 5;
+/** Floating point comparison precision (10^-5) */
+const FLOATING_POINT_PRECISION = 5;
+const EPSILON = 0.1 ** FLOATING_POINT_PRECISION;
+
+/** RGB value indices in parsed array */
+const RGB_RED_INDEX = 0;
+const RGB_GREEN_INDEX = 1;
+const RGB_BLUE_INDEX = 2;
+const RGBA_ALPHA_INDEX = 3;
 
 const almostEqual = (a: number, b: number): boolean => {
   return Math.abs(a - b) < EPSILON;
@@ -223,10 +231,10 @@ const parseColorString = (colorStr: string): RGBA => {
     });
 
   return {
-    r: Number(values[0]) / 255,
-    g: Number(values[1]) / 255,
-    b: Number(values[2]) / 255,
-    a: isRgba ? Number(values[3]) : 1,
+    r: Number(values[RGB_RED_INDEX]) / 255,
+    g: Number(values[RGB_GREEN_INDEX]) / 255,
+    b: Number(values[RGB_BLUE_INDEX]) / 255,
+    a: isRgba ? Number(values[RGBA_ALPHA_INDEX]) : 1,
   };
 };
 

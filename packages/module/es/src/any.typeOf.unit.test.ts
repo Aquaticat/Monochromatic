@@ -5,18 +5,18 @@ import {
   test,
 } from 'vitest';
 
-describe('typeOf', () => {
+describe(typeOf, () => {
   test('should identify null values', () => {
     expect(typeOf(null)).toBe('null');
   });
 
   test('should identify undefined values', () => {
     expect(typeOf(undefined)).toBe('undefined');
-    expect(typeOf(void 0)).toBe('undefined');
+    expect(typeOf(undefined)).toBe('undefined');
   });
 
   test('should identify NaN values', () => {
-    expect(typeOf(NaN)).toBe('NaN');
+    expect(typeOf(Number.NaN)).toBe('NaN');
     expect(typeOf(Number.NaN)).toBe('NaN');
     expect(typeOf(0 / 0)).toBe('NaN');
   });
@@ -50,6 +50,7 @@ describe('typeOf', () => {
     expect(typeOf(Symbol('test'))).toBe('symbol');
     expect(typeOf(Symbol.for('global'))).toBe('symbol');
     expect(typeOf(Symbol.iterator)).toBe('symbol');
+    // eslint-disable-next-line symbol-description -- Testing Symbol without description
     expect(typeOf(Symbol())).toBe('symbol');
   });
 
@@ -64,9 +65,9 @@ describe('typeOf', () => {
   test('should identify array values', () => {
     expect(typeOf([])).toBe('array');
     expect(typeOf([1, 2, 3])).toBe('array');
-    expect(typeOf(new Array(5))).toBe('array');
-    expect(typeOf(Array.from('hello'))).toBe('array');
-    expect(typeOf([null, undefined, NaN])).toBe('array');
+    expect(typeOf(Array.from({ length: 5 }))).toBe('array');
+    expect(typeOf([...'hello'])).toBe('array');
+    expect(typeOf([null, undefined, Number.NaN])).toBe('array');
   });
 
   test('should identify date values', () => {
@@ -97,6 +98,7 @@ describe('typeOf', () => {
     expect(typeOf({})).toBe('object');
     expect(typeOf({ foo: 'bar' })).toBe('object');
     expect(typeOf(Object.create(null))).toBe('object');
+    // eslint-disable-next-line no-object-constructor -- Testing Object constructor
     expect(typeOf(new Object())).toBe('object');
     expect(typeOf({ nested: { object: true } })).toBe('object');
   });

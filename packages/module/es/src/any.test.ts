@@ -20,8 +20,9 @@ describe(identity, () => {
     expect(identity(5)).toBe(5);
     expect(identity('test')).toBe('test');
     expect(identity(true)).toBe(true);
-    expect(identity(null)).toBe(null);
-    expect(identity(undefined)).toBe(undefined);
+    expect(identity(null)).toBeNull();
+    const undefinedResult = identity(undefined);
+    expect(undefinedResult).toBeUndefined();
   });
 
   test('returns objects unchanged', () => {
@@ -103,7 +104,7 @@ describe(echo, () => {
   test('generator never completes', () => {
     const generator = echo(5);
 
-    for (let i = 0; i < 10; i++) {
+    for (let iteration = 0; iteration < 10; iteration++) {
       const result = generator.next();
       expect(result.done).toBe(false);
       expect(result.value).toBe(5);

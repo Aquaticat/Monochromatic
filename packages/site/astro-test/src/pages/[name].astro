@@ -6,7 +6,9 @@ import {
   postsGroupedByName,
 } from '@/src';
 
-export async function getStaticPaths() {
+export async function getStaticPaths(): Promise<
+  { params: { name: string; }; }[]
+> {
   return names.map((name) => ({
     params: { name },
   }));

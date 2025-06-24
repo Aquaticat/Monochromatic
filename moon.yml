@@ -85,10 +85,21 @@ tasks:
     options:
       outputStyle: buffer-only-failure
 
+  types:
+    command: 'tsc --build --verbose'
+    options:
+      outputStyle: buffer-only-failure
+
+  typesWatch:
+    command: 'tsc --watch --verbose'
+    local: true
+
   build:
     deps:
     - '#package:js'
-    - '#package:types'
+    - 'types'
+    # #package:types executes tsc from inside every package.
+    # - '#package:types'
     inputs:
     - '@group(allSources)'
     options:
@@ -104,7 +115,7 @@ tasks:
   buildWatch:
     deps:
     - '#package:jsWatch'
-    - '#package:typesWatch'
+    - 'typesWatch'
     local: true
     inputs:
     - '@group(allSources)'
@@ -122,7 +133,7 @@ tasks:
     local: true
     deps:
     - '#package:jsWatch'
-    - '#package:typesWatch'
+    - 'typesWatch'
     - testUnitWatch
     - testBrowserWatch
     inputs:
@@ -200,6 +211,43 @@ tasks:
     extends: '_lintFormatBase'
     command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- oxlint --fix'
 
+  # Convenience commands
+
+  # Manually run the same checks as the pre-commit hook
+  # Use this when:
+  #   - You want to test what the pre-commit hook will check before committing
+  #   - You've disabled hooks temporarily and want to manually verify
+  #   - You're debugging why a commit was blocked
+  # Don't use this for:
+  #   - Full validation before pushing (use 'validate' instead)
+  #   - As part of CI (use individual tasks)
+  precommit:
+    deps:
+    - lint
+    - test
+    inputs:
+    - '@group(allSources)'
+    - '@group(allTests)'
+    # Lint and test can run in parallel since they don't depend on each other
+
+  # Comprehensive validation: format, build, then test
+  # Use this when:
+  #   - Before pushing to ensure your branch is fully ready
+  #   - After large refactoring to verify everything still works
+  #   - Before opening a PR to avoid CI failures
+  # Don't use this for:
+  #   - Every single commit (too slow, use pre-commit hook instead)
+  #   - In CI pipelines (use individual tasks for better parallelization)
+  validate:
+    deps:
+    - format
+    - build
+    - test
+    inputs:
+    - '@group(allSources)'
+    options:
+      runDepsInParallel: false # Must be sequential: format → build → test
+
   # Claude Code conversation indexing tasks
   indexClaudeMessages:
     command: 'bun packages/module/es/src/moon.index-claude-user-messages.ts'
@@ -213,8 +261,8 @@ tasks:
 
   indexClaude:
     deps:
-      - indexClaudeMessages
-      - indexClaudeMcpLogs
+    - indexClaudeMessages
+    - indexClaudeMcpLogs
     options:
       cache: false
 

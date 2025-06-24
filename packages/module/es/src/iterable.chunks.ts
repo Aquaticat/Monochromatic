@@ -95,8 +95,8 @@ export function* chunksArray<
     throw new RangeError(`Initial chunk index is already out of range.`);
   }
 
-  for (let i = 0; i < array.length; i += n) {
-    yield array.slice(i, i + n) as Tuple<
+  for (let chunkStart = 0; chunkStart < array.length; chunkStart += n) {
+    yield array.slice(chunkStart, chunkStart + n) as Tuple<
       T_array extends Iterable<infer T_element> ? T_element : never,
       T_n
     >;
@@ -275,8 +275,8 @@ export function* chunksIterable<
  * ```ts
  * // Basic async iterable chunking
  * async function* asyncNumbers() {
- *   for (let i = 1; i <= 8; i++) {
- *     yield i;
+ *   for (let value = 1; value <= 8; value++) {
+ *     yield value;
  *   }
  * }
  *

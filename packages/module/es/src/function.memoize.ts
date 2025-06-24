@@ -13,8 +13,8 @@ export function argsAlmostEqual(
   if (args1.length !== args2.length) {
     return false;
   }
-  for (let i = 0; i < args1.length; i++) {
-    if (args1[i] !== args2[i]) {
+  for (let argIndex = 0; argIndex < args1.length; argIndex++) {
+    if (args1[argIndex] !== args2[argIndex]) {
       return false;
     }
   }

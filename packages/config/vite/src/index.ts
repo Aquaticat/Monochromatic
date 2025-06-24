@@ -1,5 +1,4 @@
 import postcssCustomUnits from '@csstools/custom-units';
-import { notFalsyOrThrow } from '@monochromatic-dev/module-es';
 import { readFile } from 'node:fs/promises';
 import {
   join,
@@ -24,7 +23,31 @@ import {
   type ViteUserConfig as VitestUserConfig,
 } from 'vitest/config';
 
+//region Duplicated from module-es to avoid circular dependency
+type falsy = false | null | 0 | 0n | '' | undefined;
+
+// eslint-disable-next-line jsdoc/require-jsdoc
+function notFalsyOrThrow<T,>(
+  potentiallyFalsy: T,
+): Exclude<T, falsy> {
+  if (!potentiallyFalsy) {
+    throw new TypeError(`${JSON.stringify(potentiallyFalsy)} is falsy`);
+  }
+  return potentiallyFalsy as Exclude<T, falsy>;
+}
+
+// eslint-disable-next-line jsdoc/require-jsdoc
+function wait(timeInMs: number): Promise<undefined> {
+  return new Promise(function createTimeout(_resolve) {
+    return setTimeout(_resolve, timeInMs);
+  });
+}
+//endregion Duplicated from module-es to avoid circular dependency
+
 const firefoxVersion = 140;
+
+/** Bit shift for Firefox version encoding in LightningCSS */
+const FIREFOX_VERSION_SHIFT = 16;
 
 const vitestExcludeCommon = [
   '**/{node_modules,bak}/**',
@@ -90,6 +113,32 @@ const rollupExternal = (moduleId: string): boolean => {
     .includes(moduleId);
 };
 
+/**
+ * Read file with retry logic for EPERM errors on Windows.
+ * TODO: Move this fn to module-es
+ */
+async function readFileWithRetry(
+  path: Parameters<typeof readFile>[0],
+  options: Parameters<typeof readFile>[1],
+  retries = 4,
+  delayMs = 10,
+): Promise<string> {
+  try {
+    // Explicitly types the return as string for 'utf8' encoding
+    return await readFile(path, options) as string;
+  } catch (error) {
+    if (
+      error instanceof Error && 'code' in error && error
+          .code === 'EPERM' && retries > 0
+    ) {
+      // console.warn(`Retrying readFile for ${path} due to EPERM... (${retries} retries left, delay ${delayMs}ms)`);
+      await wait(delayMs);
+      return readFileWithRetry(path, options, retries - 1, delayMs * 2);
+    }
+    throw error;
+  }
+}
+
 const createBaseConfig = (configDir: string): UserConfig => ({
   plugins: [
     // Allows importing JSON5 files directly.
@@ -112,7 +161,7 @@ const createBaseConfig = (configDir: string): UserConfig => ({
     },
     lightningcss: {
       targets: {
-        firefox: firefoxVersion << 16,
+        firefox: firefoxVersion << FIREFOX_VERSION_SHIFT,
       },
       cssModules: false,
     },
@@ -217,11 +266,11 @@ const createModeConfig = (
   sharedFactory: (configDir: string) => UserConfig,
 ): UserConfigFnObject =>
   defineConfig(function enhanceBaseConfig({ mode }) {
-    const modes = (function getModes(mode: string) {
+    const modes = (function getModes(mode: string): string[] {
       if (mode.includes(' ')) {
         return mode.split(' ');
       }
-      if (mode.includes(' ')) {
+      if (mode.includes(',')) {
         return mode.split(',');
       }
       return [mode];
@@ -323,7 +372,7 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
     return mergeConfig(createFrontendLikeConfig(configDir, 'frontend'), {
       plugins: [
         (function inlineIframePlugin(): PluginOption {
-          const iframePath = join(configDir, 'dist/final/iframe/index.html');
+          const iframePath = join(configDir, 'dist/final/iframe/src/iframe/index.html');
           return {
             name: 'vite-plugin-inline-iframe',
             enforce: 'post',
@@ -354,25 +403,6 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
                 //           css-variables:js_default |     at async buildEnvironment (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/chunks/dep-BVD1pq3j.js:44451:16)
                 //           css-variables:js_default |     at async Object.defaultBuildApp [as buildApp] (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/chunks/dep-BVD1pq3j.js:44957:5)
                 //           css-variables:js_default |     at async CAC.<anonymous> (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/cli.js:864:7)
-                // TODO: Move this fn to module-es
-                async function readFileWithRetry(
-                  path: Parameters<typeof readFile>[0],
-                  options: Parameters<typeof readFile>[1],
-                  retries = 4,
-                  delayMs = 10,
-                ): Promise<string> {
-                  try {
-                    // Explicitly types the return as string for 'utf8' encoding
-                    return await readFile(path, options) as string;
-                  } catch (error: any) {
-                    if (error.code === 'EPERM' && retries > 0) {
-                      // console.warn(`Retrying readFile for ${path} due to EPERM... (${retries} retries left, delay ${delayMs}ms)`);
-                      await new Promise((resolve) => setTimeout(resolve, delayMs));
-                      return readFileWithRetry(path, options, retries - 1, delayMs * 2);
-                    }
-                    throw error;
-                  }
-                }
                 const iframeFileContent = await readFileWithRetry(iframePath, 'utf8');
                 return html.replace(
                   'REPLACE_WITH_IFRAME_INDEX_HTML',

@@ -266,7 +266,7 @@ describe('everyIterableAsync with mixed predicate behavior', () => {
     let resultIfNotThrown: null | boolean = null;
 
     // Run multiple times to account for race conditions
-    for (let i = 0; i < 5; i++) {
+    for (let attempt = 0; attempt < 5; attempt++) {
       try {
         resultIfNotThrown = await everyIterableAsync(async (item: string) => {
           if (item === 'throw') {

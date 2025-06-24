@@ -10,7 +10,7 @@ import {
 } from './iterable.noneFail.ts';
 
 //region Synchronous noneFailIterable Tests -- Tests for the synchronous version that processes all elements
-describe('noneFailIterable', () => {
+describe(noneFailIterable, () => {
   test('returns true when all elements pass the predicate', () => {
     const numbers = [1, 2, 3, 4, 5];
     const result = noneFailIterable((x: number) => x > 0, numbers);
@@ -125,7 +125,7 @@ describe('noneFailIterable', () => {
 //endregion Synchronous noneFailIterable Tests
 
 //region Asynchronous noneFailIterableAsync Tests -- Tests for the async version that processes all elements
-describe('noneFailIterableAsync', () => {
+describe(noneFailIterableAsync, () => {
   test('returns true when all elements pass the async predicate', async () => {
     const numbers = [1, 2, 3, 4, 5];
     const result = await noneFailIterableAsync(
@@ -226,7 +226,7 @@ describe('noneFailIterableAsync', () => {
     await expect(
       noneFailIterableAsync(
         async (x: number) => {
-          if (x === 2) throw new Error('Test error');
+          if (x === 2) { throw new Error('Test error'); }
           return x > 0;
         },
         numbers,

@@ -16,9 +16,9 @@ let mediumArray: number[];
 let largeArray: number[];
 
 beforeAll(() => {
-  smallArray = Array.from({ length: SMALL_SIZE }, (_, i) => i);
-  mediumArray = Array.from({ length: MEDIUM_SIZE }, (_, i) => i);
-  largeArray = Array.from({ length: LARGE_SIZE }, (_, i) => i);
+  smallArray = Array.from({ length: SMALL_SIZE }, (_, index) => index);
+  mediumArray = Array.from({ length: MEDIUM_SIZE }, (_, index) => index);
+  largeArray = Array.from({ length: LARGE_SIZE }, (_, index) => index);
 });
 
 bench('performs well with matching item at beginning', async () => {

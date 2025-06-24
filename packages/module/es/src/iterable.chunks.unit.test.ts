@@ -68,9 +68,9 @@ describe(chunksIterable, () => {
       3: 'd',
       length: 4,
       [Symbol.iterator]: function*(): Generator<string> {
-        for (let i = 0; i < this.length; i++) {
+        for (let index = 0; index < this.length; index++) {
           // @ts-expect-error: TypeScript limitation.
-          yield this[i];
+          yield this[index];
         }
       },
     };
@@ -106,9 +106,9 @@ describe(chunksIterable, () => {
       1: 'b',
       length: 2,
       [Symbol.iterator]: function*(): Generator<string> {
-        for (let i = 0; i < this.length; i++) {
+        for (let index = 0; index < this.length; index++) {
           // @ts-expect-error: TypeScript limitation.
-          yield this[i];
+          yield this[index];
         }
       },
     };

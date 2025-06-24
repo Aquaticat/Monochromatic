@@ -46,9 +46,11 @@ export const isArray: typeof Array.isArray = Array.isArray;
  * ```
  */
 export function isIterable(
-  value: any,
+  value: unknown,
 ): value is Iterable<any> {
-  return typeof value?.[Symbol.iterator] === 'function';
+  return value !== null
+    && value !== undefined
+    && typeof (value as any)[Symbol.iterator] === 'function';
 }
 
 /**
@@ -83,9 +85,11 @@ export function isIterable(
  * ```
  */
 export function isAsyncIterable(
-  value: any,
+  value: unknown,
 ): value is AsyncIterable<any> {
-  return typeof value?.[Symbol.asyncIterator] === 'function';
+  return value !== null
+    && value !== undefined
+    && typeof (value as any)[Symbol.asyncIterator] === 'function';
 }
 
 /**
@@ -123,10 +127,12 @@ export function isAsyncIterable(
  * ```
  */
 export function isMaybeAsyncIterable(
-  value: any,
+  value: unknown,
 ): value is Iterable<any> | AsyncIterable<any> {
-  return typeof value?.[Symbol.iterator] === 'function'
-    || typeof value?.[Symbol.asyncIterator] === 'function';
+  return value !== null
+    && value !== undefined
+    && (typeof (value as any)[Symbol.iterator] === 'function'
+      || typeof (value as any)[Symbol.asyncIterator] === 'function');
 }
 
 /**
@@ -156,7 +162,7 @@ export function isMaybeAsyncIterable(
  * console.log(isMap(iframeMap)); // true
  * ```
  */
-export function isMap(value: any): value is Map<any, any> {
+export function isMap(value: unknown): value is Map<any, any> {
   return Object.prototype.toString.call(value) === '[object Map]';
 }
 
@@ -185,7 +191,7 @@ export function isMap(value: any): value is Map<any, any> {
  * ```
  */
 export function isWeakMap(
-  value: any,
+  value: unknown,
 ): value is WeakMap<any, any> {
   return Object.prototype.toString.call(value) === '[object WeakMap]';
 }
@@ -216,7 +222,7 @@ export function isWeakMap(
  * }
  * ```
  */
-export function isSet(value: any): value is Set<any> {
+export function isSet(value: unknown): value is Set<any> {
   return Object.prototype.toString.call(value) === '[object Set]';
 }
 
@@ -244,7 +250,7 @@ export function isSet(value: any): value is Set<any> {
  * console.log(isWeakSet(weakSet)); // true
  * ```
  */
-export function isWeakSet(value: any): value is WeakSet<any> {
+export function isWeakSet(value: unknown): value is WeakSet<any> {
   return Object.prototype.toString.call(value) === '[object WeakSet]';
 }
 
@@ -275,7 +281,7 @@ export function isWeakSet(value: any): value is WeakSet<any> {
  * console.log(isObject(new Object())); // true
  * ```
  */
-export function isObject(value: any): value is UnknownRecord {
+export function isObject(value: unknown): value is UnknownRecord {
   return Object.prototype.toString.call(value) === '[object Object]';
 }
 
@@ -315,7 +321,7 @@ export function isObject(value: any): value is UnknownRecord {
  * ```
  */
 export function isAsyncGenerator(
-  value: any,
+  value: unknown,
 ): value is AsyncGenerator {
   return Object.prototype.toString.call(value) === '[object AsyncGenerator]';
 }
@@ -357,7 +363,7 @@ export function isAsyncGenerator(
  * ```
  */
 export function isGenerator(
-  value: any,
+  value: unknown,
 ): value is Generator {
   return Object.prototype.toString.call(value) === '[object Generator]';
 }
@@ -389,7 +395,7 @@ export function isGenerator(
  * }
  * ```
  */
-export function isEmptyArray(value: any): value is never[] {
+export function isEmptyArray(value: unknown): value is never[] {
   return isArray(value) && value.length === 0;
 }
 

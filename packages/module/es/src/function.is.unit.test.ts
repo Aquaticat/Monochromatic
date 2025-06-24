@@ -14,7 +14,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('isAsyncFunction', () => {
+describe(isAsyncFunction, () => {
   test('returns true for async functions', () => {
     const asyncFn = async () => 42;
     expect(isAsyncFunction(asyncFn)).toBe(true);
@@ -36,7 +36,7 @@ describe('isAsyncFunction', () => {
   });
 });
 
-describe('isSyncFunction', () => {
+describe(isSyncFunction, () => {
   test('returns true for sync functions', () => {
     const syncFn = () => 42;
     expect(isSyncFunction(syncFn)).toBe(true);
@@ -92,7 +92,7 @@ describe('function type inference', () => {
   });
 });
 
-describe('emptyFunction', () => {
+describe(emptyFunction, () => {
   test('performs no operation and returns undefined', () => {
     const result = emptyFunction();
     expect(result).toBeUndefined();
@@ -118,7 +118,7 @@ describe('emptyFunction', () => {
   });
 });
 
-describe('emptyFunctionAsync', () => {
+describe(emptyFunctionAsync, () => {
   test('performs no operation and resolves to undefined', async () => {
     const result = await emptyFunctionAsync();
     expect(result).toBeUndefined();

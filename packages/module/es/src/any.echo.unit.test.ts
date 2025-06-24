@@ -6,7 +6,7 @@ import {
 
 import { echo } from '@monochromatic-dev/module-es';
 
-describe('echo', () => {
+describe(echo, () => {
   test('yields the same value infinitely', () => {
     const ones = echo(1);
     expect(ones.next().value).toBe(1);
@@ -43,7 +43,7 @@ describe('echo', () => {
   test('can be used with Array.from to create finite arrays', () => {
     const ones = echo(1);
     const firstFive = [];
-    for (let i = 0; i < 5; i++) {
+    for (let iteration = 0; iteration < 5; iteration++) {
       firstFive.push(ones.next().value);
     }
     expect(firstFive).toEqual([1, 1, 1, 1, 1]);
@@ -61,7 +61,7 @@ describe('echo', () => {
 
   test('generator never ends', () => {
     const endless = echo(42);
-    for (let i = 0; i < 100; i++) {
+    for (let iteration = 0; iteration < 100; iteration++) {
       const result = endless.next();
       expect(result.value).toBe(42);
       expect(result.done).toBe(false);
@@ -75,7 +75,7 @@ describe('echo', () => {
     for (const value of echo(7)) {
       values.push(value);
       count++;
-      if (count >= 3) break;
+      if (count >= 3) { break; }
     }
 
     expect(values).toEqual([7, 7, 7]);

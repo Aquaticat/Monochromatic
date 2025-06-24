@@ -141,9 +141,6 @@ catalogs:
     happy-rusty:
       specifier: '*'
       version: 1.5.0
-    husky:
-      specifier: '*'
-      version: 9.1.7
     lfi:
       specifier: '*'
       version: 3.8.0
@@ -380,9 +377,6 @@ importers:
       execa:
         specifier: 'catalog:'
         version: 9.5.3
-      husky:
-        specifier: 'catalog:'
-        version: 9.1.7
       nano-spawn:
         specifier: 'catalog:'
         version: 0.2.0
@@ -489,13 +483,13 @@ importers:
         version: 8.32.1(eslint@9.27.0)(typescript@5.8.3)
     devDependencies:
       '@monochromatic-dev/config-oxlint':
-        specifier: '*'
+        specifier: workspace:*
         version: link:../oxlint
       '@monochromatic-dev/config-typescript':
-        specifier: '*'
+        specifier: workspace:*
         version: link:../typescript
       '@monochromatic-dev/config-vite':
-        specifier: '*'
+        specifier: workspace:*
         version: link:../vite
       '@types/bun':
         specifier: 'catalog:'
@@ -551,9 +545,6 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../typescript
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@types/bun':
         specifier: 'catalog:'
         version: 1.2.12
@@ -756,6 +747,9 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/config-vite':
+        specifier: workspace:*
+        version: link:../../config/vite
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: 'link:'
@@ -2821,11 +2815,6 @@ packages:
   human-signals@8.0.1:
     resolution: {integrity: sha512-eKCa6bwnJhvxj14kZk5NCPc6Hb6BdsU9DZcOnmQKSnO1VKrfV0zCvtttPZUsBvjmNDn8rpcJfpwSYnHBjc95MQ==}
     engines: {node: '>=18.18.0'}
-
-  husky@9.1.7:
-    resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
-    engines: {node: '>=18'}
-    hasBin: true
 
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
@@ -6831,8 +6820,6 @@ snapshots:
   http-cache-semantics@4.1.1: {}
 
   human-signals@8.0.1: {}
-
-  husky@9.1.7: {}
 
   ieee754@1.2.1: {}
 

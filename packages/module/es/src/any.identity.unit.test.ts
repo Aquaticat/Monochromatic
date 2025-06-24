@@ -5,14 +5,15 @@ import {
   test,
 } from 'vitest';
 
-describe('identity', () => {
+describe(identity, () => {
   test('returns the same value for primitive types', () => {
     expect(identity(42)).toBe(42);
     expect(identity('hello')).toBe('hello');
     expect(identity(true)).toBe(true);
     expect(identity(false)).toBe(false);
-    expect(identity(null)).toBe(null);
-    expect(identity(undefined)).toBe(undefined);
+    expect(identity(null)).toBeNull();
+    const undefinedResult = identity(undefined);
+    expect(undefinedResult).toBeUndefined();
   });
 
   test('returns the same value for special numbers', () => {
@@ -34,7 +35,9 @@ describe('identity', () => {
   test('preserves reference equality for objects', () => {
     const obj = { a: 1, b: 2 };
     const arr = [1, 2, 3];
-    const func = (): void => {};
+    const func = (): void => {
+      // Empty function for testing
+    };
     const date = new Date();
     const regex = /test/;
 

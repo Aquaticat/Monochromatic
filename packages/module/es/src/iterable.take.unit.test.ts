@@ -1,6 +1,7 @@
 import {
   logtapeConfiguration,
   logtapeConfigure,
+  notNullishOrThrow,
   takeIterable,
   takeIterableAsync,
   takeIterableAsyncGen,
@@ -18,7 +19,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('takeIterable', () => {
+describe(takeIterable, () => {
   test('takes first n elements from array', () => {
     expect(takeIterable(3, [1, 2, 3, 4, 5])).toEqual([1, 2, 3]);
     expect(takeIterable(2, ['a', 'b', 'c', 'd'])).toEqual(['a', 'b']);
@@ -62,16 +63,16 @@ describe('takeIterable', () => {
 
   test('stops early for infinite generator', () => {
     function* infiniteGen() {
-      let i = 0;
+      let value = 0;
       while (true) {
-        yield i++;
+        yield value++;
       }
     }
     expect(takeIterable(5, infiniteGen())).toEqual([0, 1, 2, 3, 4]);
   });
 });
 
-describe('takeIterableAsync', () => {
+describe(takeIterableAsync, () => {
   test('takes first n elements from array', async () => {
     expect(await takeIterableAsync(3, [1, 2, 3, 4, 5])).toEqual([1, 2, 3]);
     expect(await takeIterableAsync(2, ['a', 'b', 'c', 'd'])).toEqual(['a', 'b']);
@@ -105,16 +106,16 @@ describe('takeIterableAsync', () => {
 
   test('stops early for infinite async generator', async () => {
     async function* infiniteAsyncGen() {
-      let i = 0;
+      let value = 0;
       while (true) {
-        yield i++;
+        yield value++;
       }
     }
     expect(await takeIterableAsync(5, infiniteAsyncGen())).toEqual([0, 1, 2, 3, 4]);
   });
 });
 
-describe('takeIterableGen', () => {
+describe(takeIterableGen, () => {
   test('yields first n elements lazily', () => {
     const gen = takeIterableGen(3, [1, 2, 3, 4, 5]);
     expect([...gen]).toEqual([1, 2, 3]);
@@ -139,16 +140,16 @@ describe('takeIterableGen', () => {
     const result: number[] = [];
     for (const value of gen) {
       result.push(value);
-      if (value === 3) break;
+      if (value === 3) { break; }
     }
     expect(result).toEqual([1, 2, 3]);
   });
 
   test('works with infinite generator', () => {
     function* infiniteGen() {
-      let i = 0;
+      let value = 0;
       while (true) {
-        yield i++;
+        yield value++;
       }
     }
     const gen = takeIterableGen(5, infiniteGen());
@@ -156,7 +157,7 @@ describe('takeIterableGen', () => {
   });
 });
 
-describe('takeIterableAsyncGen', () => {
+describe(takeIterableAsyncGen, () => {
   test('yields first n elements lazily', async () => {
     const gen = takeIterableAsyncGen(3, [1, 2, 3, 4, 5]);
     const result: number[] = [];
@@ -190,7 +191,9 @@ describe('takeIterableAsyncGen', () => {
       for await (const _ of gen) {
         // Should throw before yielding
       }
-    }).rejects.toThrow(RangeError);
+    })
+      .rejects
+      .toThrow(RangeError);
   });
 
   test('works with async generator', async () => {
@@ -210,65 +213,85 @@ describe('takeIterableAsyncGen', () => {
   });
 });
 
-
-describe('takeWhileIterable', () => {
+describe(takeWhileIterable, () => {
   test('takes elements while predicate is true', () => {
-    expect(takeWhileIterable(x => x < 5, [1, 2, 3, 4, 5, 6, 7])).toEqual([1, 2, 3, 4]);
-    expect(takeWhileIterable(s => s.length > 0, ['hello', 'world', '', 'hidden'])).toEqual(['hello', 'world']);
+    expect(takeWhileIterable((x) => x < 5, [1, 2, 3, 4, 5, 6, 7])).toEqual([1, 2, 3, 4]);
+    expect(takeWhileIterable((s) => s.length > 0, ['hello', 'world', '', 'hidden']))
+      .toEqual(['hello', 'world']);
   });
 
   test('returns empty array when first element fails predicate', () => {
-    expect(takeWhileIterable(x => x > 10, [1, 2, 3])).toEqual([]);
-    expect(takeWhileIterable(s => s === 'z', ['a', 'b', 'c'])).toEqual([]);
+    expect(takeWhileIterable((x) => x > 10, [1, 2, 3])).toEqual([]);
+    expect(takeWhileIterable((s) => s === 'z', ['a', 'b', 'c'] as string[])).toEqual([]);
   });
 
   test('takes all elements when all pass predicate', () => {
-    expect(takeWhileIterable(x => x > 0, [1, 2, 3, 4, 5])).toEqual([1, 2, 3, 4, 5]);
-    expect(takeWhileIterable(s => s.length < 10, ['a', 'bb', 'ccc'])).toEqual(['a', 'bb', 'ccc']);
+    expect(takeWhileIterable((x) => x > 0, [1, 2, 3, 4, 5])).toEqual([1, 2, 3, 4, 5]);
+    expect(takeWhileIterable((s) => s.length < 10, ['a', 'bb', 'ccc'])).toEqual([
+      'a',
+      'bb',
+      'ccc',
+    ]);
   });
 
   test('works with empty iterable', () => {
-    expect(takeWhileIterable(x => x > 0, [])).toEqual([]);
+    expect(takeWhileIterable((x) => x > 0, [])).toEqual([]);
     expect(takeWhileIterable(() => true, [])).toEqual([]);
   });
 
   test('provides index and array to predicate', () => {
     const result = takeWhileIterable(
-      (x, i, arr) => i < 3 && x < arr[arr.length - 1],
-      [1, 2, 3, 4, 5]
+      (x, i, arr) => i < 3 && x < notNullishOrThrow(arr[arr.length - 1]),
+      [1, 2, 3, 4, 5],
     );
     expect(result).toEqual([1, 2, 3]);
   });
 
   test('works with Set', () => {
     const set = new Set([2, 4, 6, 7, 8, 10]);
-    expect(takeWhileIterable(n => n % 2 === 0, set)).toEqual([2, 4, 6]);
+    expect(takeWhileIterable((n) => n % 2 === 0, set)).toEqual([2, 4, 6]);
   });
 
   test('checks ascending order', () => {
     const nums = [1, 3, 5, 4, 7, 2];
     const ascending = takeWhileIterable(
-      (x, i, arr) => i === 0 || x > arr[i - 1],
-      nums
+      (x, i, arr) => i === 0 || x > notNullishOrThrow(arr[i - 1]),
+      nums,
     );
     expect(ascending).toEqual([1, 3, 5]);
   });
 });
 
-describe('takeWhileIterableAsync', () => {
+describe(takeWhileIterableAsync, () => {
   test('takes elements while predicate is true', async () => {
-    expect(await takeWhileIterableAsync(async x => x < 5, [1, 2, 3, 4, 5, 6, 7])).toEqual([1, 2, 3, 4]);
-    expect(await takeWhileIterableAsync(s => s.length > 0, ['hello', 'world', '', 'hidden'])).toEqual(['hello', 'world']);
+    expect(await takeWhileIterableAsync(async (x) => x < 5, [1, 2, 3, 4, 5, 6, 7]))
+      .toEqual([1, 2, 3, 4]);
+    expect(
+      await takeWhileIterableAsync((s) => s.length > 0, ['hello', 'world', '', 'hidden']),
+    )
+      .toEqual(['hello', 'world']);
   });
 
   test('returns empty array when first element fails predicate', async () => {
-    expect(await takeWhileIterableAsync(x => x > 10, [1, 2, 3])).toEqual([]);
-    expect(await takeWhileIterableAsync(async s => s === 'z', ['a', 'b', 'c'])).toEqual([]);
+    expect(await takeWhileIterableAsync((x) => x > 10, [1, 2, 3])).toEqual([]);
+    expect(
+      await takeWhileIterableAsync(async (s) => s === 'z', ['a', 'b', 'c'] as string[]),
+    )
+      .toEqual(
+        [],
+      );
   });
 
   test('takes all elements when all pass predicate', async () => {
-    expect(await takeWhileIterableAsync(x => x > 0, [1, 2, 3, 4, 5])).toEqual([1, 2, 3, 4, 5]);
-    expect(await takeWhileIterableAsync(async s => s.length < 10, ['a', 'bb', 'ccc'])).toEqual(['a', 'bb', 'ccc']);
+    expect(await takeWhileIterableAsync((x) => x > 0, [1, 2, 3, 4, 5])).toEqual([
+      1,
+      2,
+      3,
+      4,
+      5,
+    ]);
+    expect(await takeWhileIterableAsync(async (s) => s.length < 10, ['a', 'bb', 'ccc']))
+      .toEqual(['a', 'bb', 'ccc']);
   });
 
   test('works with async generator', async () => {
@@ -279,54 +302,59 @@ describe('takeWhileIterableAsync', () => {
       yield 4;
       yield 7;
     }
-    expect(await takeWhileIterableAsync(async x => x < 6, asyncGen())).toEqual([1, 3, 5, 4]);
+    expect(await takeWhileIterableAsync(async (x) => x < 6, asyncGen())).toEqual([
+      1,
+      3,
+      5,
+      4,
+    ]);
   });
 
   test('works with mixed sync/async predicates', async () => {
     const nums = [1, 2, 3, 4, 5];
-    const syncResult = await takeWhileIterableAsync(x => x < 4, nums);
-    const asyncResult = await takeWhileIterableAsync(async x => x < 4, nums);
+    const syncResult = await takeWhileIterableAsync((x) => x < 4, nums);
+    const asyncResult = await takeWhileIterableAsync(async (x) => x < 4, nums);
     expect(syncResult).toEqual(asyncResult);
     expect(syncResult).toEqual([1, 2, 3]);
   });
 });
 
-describe('takeWhileIterableGen', () => {
+describe(takeWhileIterableGen, () => {
   test('yields elements while predicate is true', () => {
-    const gen = takeWhileIterableGen(x => x < 5, [1, 2, 3, 4, 5, 6, 7]);
+    const gen = takeWhileIterableGen((x) => x < 5, [1, 2, 3, 4, 5, 6, 7]);
     expect([...gen]).toEqual([1, 2, 3, 4]);
   });
 
   test('yields nothing when first element fails', () => {
-    const gen = takeWhileIterableGen(x => x > 10, [1, 2, 3]);
+    const gen = takeWhileIterableGen((x) => x > 10, [1, 2, 3]);
     expect([...gen]).toEqual([]);
   });
 
   test('allows early termination', () => {
-    const gen = takeWhileIterableGen(x => x < 10, [1, 2, 3, 4, 5, 6, 7]);
+    const gen = takeWhileIterableGen((x) => x < 10, [1, 2, 3, 4, 5, 6, 7]);
     const result: number[] = [];
     for (const value of gen) {
       result.push(value);
-      if (value === 3) break;
+      if (value === 3) { break; }
     }
     expect(result).toEqual([1, 2, 3]);
   });
 
   test('works with infinite generator', () => {
     function* infiniteGen() {
-      let i = 1;
+      let value = 1;
       while (true) {
-        yield i++;
+        yield value++;
       }
     }
-    const gen = takeWhileIterableGen(x => x <= 5, infiniteGen());
+    const gen = takeWhileIterableGen((x) => x <= 5, infiniteGen());
     expect([...gen]).toEqual([1, 2, 3, 4, 5]);
   });
 });
 
-describe('takeWhileIterableAsyncGen', () => {
+describe(takeWhileIterableAsyncGen, () => {
   test('yields elements while predicate is true', async () => {
-    const gen = takeWhileIterableAsyncGen(async x => x < 5, [1, 2, 3, 4, 5, 6, 7]);
+    const gen = takeWhileIterableAsyncGen(async (x) => x < 5, [1, 2, 3, 4, 5, 6, 7]);
     const result: number[] = [];
     for await (const value of gen) {
       result.push(value);
@@ -335,7 +363,7 @@ describe('takeWhileIterableAsyncGen', () => {
   });
 
   test('yields nothing when first element fails', async () => {
-    const gen = takeWhileIterableAsyncGen(x => x > 10, [1, 2, 3]);
+    const gen = takeWhileIterableAsyncGen((x) => x > 10, [1, 2, 3]);
     const result: number[] = [];
     for await (const value of gen) {
       result.push(value);
@@ -352,11 +380,11 @@ describe('takeWhileIterableAsyncGen', () => {
       yield 5;
     }
     const gen = takeWhileIterableAsyncGen(
-      async x => {
-        await new Promise(resolve => setTimeout(resolve, 1));
+      async (x) => {
+        await new Promise((resolve) => setTimeout(resolve, 1));
         return x < 4;
       },
-      asyncGen()
+      asyncGen(),
     );
     const result: number[] = [];
     for await (const value of gen) {
@@ -366,11 +394,11 @@ describe('takeWhileIterableAsyncGen', () => {
   });
 
   test('allows early termination', async () => {
-    const gen = takeWhileIterableAsyncGen(x => x < 10, [1, 2, 3, 4, 5, 6, 7]);
+    const gen = takeWhileIterableAsyncGen((x) => x < 10, [1, 2, 3, 4, 5, 6, 7]);
     const result: number[] = [];
     for await (const value of gen) {
       result.push(value);
-      if (value === 3) break;
+      if (value === 3) { break; }
     }
     expect(result).toEqual([1, 2, 3]);
   });

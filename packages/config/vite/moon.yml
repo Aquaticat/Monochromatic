@@ -2,3 +2,8 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 
 tags:
 - package
+
+toolchain:
+  typescript:
+    # Should depend on no other projects.
+    syncProjectReferences: false

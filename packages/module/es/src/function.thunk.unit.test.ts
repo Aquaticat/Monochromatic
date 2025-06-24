@@ -12,7 +12,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('thunk', () => {
+describe(thunk, () => {
   test('delays execution of functions', () => {
     const mockFn = vi.fn(() => 'result');
     const thunked = thunk(mockFn);

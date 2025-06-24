@@ -2,7 +2,7 @@ import type { Promisable } from 'type-fest';
 
 export function tryCatch<const T,>(
   tryer: () => T,
-  catcher: (error: any) => boolean,
+  catcher: (error: unknown) => boolean,
 ): T {
   try {
     return tryer();
@@ -17,7 +17,7 @@ export function tryCatch<const T,>(
 
 export async function tryCatchAsync<const T,>(
   tryer: () => Promisable<T>,
-  catcher: (error: any) => Promisable<boolean>,
+  catcher: (error: unknown) => Promisable<boolean>,
 ): Promise<T> {
   try {
     return await tryer();

@@ -11,7 +11,7 @@ export type Post = {
   filePath?: string;
 };
 
-export const posts = (await getCollection('blog')).map((post) => ({
+export const posts = (await getCollection('blog')).map((post: any) => ({
   ...post,
   lang: post.id.split('/')[0]!,
   name: post.id.split('/')[1]!,

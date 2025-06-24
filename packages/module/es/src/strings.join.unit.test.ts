@@ -12,7 +12,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('joinStrings', () => {
+describe(joinStrings, () => {
   test('joins array of strings with separator', () => {
     const strings = ['a', 'b', 'c'];
     expect(joinStrings('-', strings)).toBe('a-b-c');
@@ -36,7 +36,7 @@ describe('joinStrings', () => {
   });
 });
 
-describe('joinStringsAsync', () => {
+describe(joinStringsAsync, () => {
   test('joins array of strings with separator', async () => {
     const strings = ['a', 'b', 'c'];
     expect(await joinStringsAsync('-', strings)).toBe('a-b-c');

@@ -105,7 +105,7 @@ describe(mapIterableAsync, () => {
   });
 });
 
-describe('mapIterableGen', () => {
+describe(mapIterableGen, () => {
   test('yields mapped values one by one', () => {
     const generator = mapIterableGen((x: number) => x * 2, [1, 2, 3]);
     expect(generator.next().value).toBe(2);
@@ -146,7 +146,7 @@ describe('mapIterableGen', () => {
   });
 });
 
-describe('mapIterableAsyncGen', () => {
+describe(mapIterableAsyncGen, () => {
   test('yields mapped values one by one asynchronously', async () => {
     const generator = mapIterableAsyncGen((x: number) => x * 2, [1, 2, 3]);
     expect((await generator.next()).value).toBe(2);

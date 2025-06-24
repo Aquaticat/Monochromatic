@@ -58,14 +58,14 @@ type IndexedLog = {
 function extractServerName(dirName: string): string {
   // mcp-logs-context7 -> context7
   // mcp-logs-microsoft.docs -> microsoft_docs
-  return dirName.replace('mcp-logs-', '').replace(/\./g, '_');
+  return dirName.replace('mcp-logs-', '').replaceAll(String.raw`\.`, '_');
 }
 
 /** Track files to delete after successful indexing */
 const filesToDelete: string[] = [];
 
 /** Maximum time to wait for a Meilisearch task to complete */
-const TASK_TIMEOUT_MS = 10000; // 10 seconds
+const TASK_TIMEOUT_MS = 10_000; // 10 seconds
 
 /** Interval between task status polls */
 const TASK_POLL_INTERVAL_MS = 10; // 10ms
@@ -76,36 +76,38 @@ function isTaskPending(status: string): boolean {
 }
 
 /** Wait for a Meilisearch task to complete */
-async function waitForTask(taskUid: number, startTime: number = Date.now()): Promise<any> {
+async function waitForTask(taskUid: number,
+  startTime: number = Date.now()): Promise<any>
+{
   const taskStatus = await client.tasks.getTask(taskUid);
-  
+
   if (!isTaskPending(taskStatus.status)) {
     return taskStatus;
   }
-  
+
   if (Date.now() - startTime > TASK_TIMEOUT_MS) {
     throw new Error(`Task ${taskUid} timed out after ${TASK_TIMEOUT_MS}ms`);
   }
-  
+
   await wait(TASK_POLL_INTERVAL_MS);
   return waitForTask(taskUid, startTime);
 }
 
 /** Limit all string fields in an object to 20,000 characters */
-function limitStringFields(obj: any, maxLength: number = 20000): any {
+function limitStringFields(obj: any, maxLength: number = 20_000): any {
   if (typeof obj === 'string') {
-    return obj.length > maxLength ? obj.substring(0, maxLength - 3) + '...' : obj;
+    return obj.length > maxLength ? obj.slice(0, maxLength - 3) + '...' : obj;
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(item => limitStringFields(item, maxLength));
+    return obj.map((item) => limitStringFields(item, maxLength));
   }
 
   if (obj && typeof obj === 'object') {
     const limited: any = {};
-    for (const key in obj) {
-      limited[key] = limitStringFields(obj[key], maxLength);
-    }
+    Object.entries(obj).forEach(([key, value]) => {
+      limited[key] = limitStringFields(value, maxLength);
+    });
     return limited;
   }
 
@@ -119,7 +121,7 @@ function parseLogFile(filePath: string, server: string,
   const logs: IndexedLog[] = [];
 
   try {
-    const content = readFileSync(filePath, 'utf-8');
+    const content = readFileSync(filePath, 'utf8');
     const fileName = filePath.split('/').pop() || '';
 
     // Track this file for deletion
@@ -128,7 +130,7 @@ function parseLogFile(filePath: string, server: string,
     // Extract timestamp from filename (for example: 2025-06-18T20-40-33-318Z.txt)
     const timestampMatch = fileName.match(/(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)/);
     const fileTimestamp = timestampMatch && timestampMatch[1]
-      ? timestampMatch[1].replace(/-/g, ':').replace('T', 'T').replace(
+      ? timestampMatch[1].replaceAll('-', ':').replace('T', 'T').replace(
         /(\d{2}):(\d{2}):(\d{2}):(\d{3})Z/,
         '$1:$2:$3.$4Z',
       )
@@ -140,10 +142,10 @@ function parseLogFile(filePath: string, server: string,
 
       if (Array.isArray(jsonEntries)) {
         for (const entry of jsonEntries) {
-          const sanitizedPath = projectPath.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0,
+          const sanitizedPath = projectPath.replaceAll(/[^a-zA-Z0-9_-]/g, '_').slice(0,
             400);
           const logId = `${sanitizedPath}_${server}_${Date.now()}_${
-            Math.random().toString(36).substring(2, 11)
+            Math.random().toString(36).slice(2, 11)
           }`;
 
           // Create a clean copy of the entry without duplicated fields
@@ -173,7 +175,7 @@ function parseLogFile(filePath: string, server: string,
               // Extract the "Tool call succeeded: " prefix
               const prefix = 'Tool call succeeded: ';
               const jsonStart = cleanEntry.debug.indexOf(prefix) + prefix.length;
-              const jsonContent = cleanEntry.debug.substring(jsonStart);
+              const jsonContent = cleanEntry.debug.slice(jsonStart);
 
               // Parse the response
               let response = JSON.parse(jsonContent);
@@ -192,7 +194,7 @@ function parseLogFile(filePath: string, server: string,
                   if (path.includes('text') || path.includes('content')) {
                     console.log(
                       `[Level ${level}] String at ${path} starts with: "${
-                        obj.substring(0, 50)
+                        obj.slice(0, 50)
                       }..."`,
                     );
                   }
@@ -222,10 +224,10 @@ function parseLogFile(filePath: string, server: string,
                         };
                       }
                       return parseNestedJSON(parsed, level + 1, path);
-                    } catch (e) {
+                    } catch (error) {
                       console.log(
                         `[Level ${level}] Failed to parse JSON with newline: ${
-                          e instanceof Error ? e.message : String(e)
+                          error instanceof Error ? error.message : String(error)
                         }`,
                       );
                     }
@@ -243,10 +245,10 @@ function parseLogFile(filePath: string, server: string,
                         `[Level ${level}] Successfully parsed complete JSON at ${path}`,
                       );
                       return parseNestedJSON(parsed, level + 1, path);
-                    } catch (e) {
+                    } catch (error) {
                       console.log(
                         `[Level ${level}] Failed to parse as complete JSON at ${path}: ${
-                          e instanceof Error ? e.message : String(e)
+                          error instanceof Error ? error.message : String(error)
                         }`,
                       );
                     }
@@ -282,14 +284,16 @@ function parseLogFile(filePath: string, server: string,
                     `[Level ${level}] No JSON pattern found at ${path}, keeping as string`,
                   );
                   return obj;
-                } else if (Array.isArray(obj)) {
+                }
+                if (Array.isArray(obj)) {
                   console.log(
                     `[Level ${level}] Processing array at ${path} with ${obj.length} items`,
                   );
                   return obj.map((item, i) =>
                     parseNestedJSON(item, level + 1, `${path}[${i}]`)
                   );
-                } else if (obj && typeof obj === 'object') {
+                }
+                if (obj && typeof obj === 'object') {
                   console.log(
                     `[Level ${level}] Processing object at ${path} with keys: ${
                       Object
@@ -298,9 +302,9 @@ function parseLogFile(filePath: string, server: string,
                     }`,
                   );
                   const result: any = {};
-                  for (const key in obj) {
-                    result[key] = parseNestedJSON(obj[key], level + 1, `${path}.${key}`);
-                  }
+                  Object.entries(obj).forEach(([key, value]) => {
+                    result[key] = parseNestedJSON(value, level + 1, `${path}.${key}`);
+                  });
                   return result;
                 }
                 return obj;
@@ -321,8 +325,8 @@ function parseLogFile(filePath: string, server: string,
               } else {
                 logEntry.response = response;
               }
-            } catch (e) {
-              console.error('Failed to parse Tool call succeeded JSON:', e);
+            } catch (error) {
+              console.error('Failed to parse Tool call succeeded JSON:', error);
               // If parsing fails, store all fields from cleanEntry
               Object.assign(logEntry, cleanEntry);
             }
@@ -340,15 +344,15 @@ function parseLogFile(filePath: string, server: string,
       console.log(`File ${fileName} is not JSON array, treating as plain text`,
         parseError);
       // Not JSON, treat as plain text and create single entry
-      const sanitizedPath = projectPath.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 400);
+      const sanitizedPath = projectPath.replaceAll(/[^a-zA-Z0-9_-]/g, '_').slice(0, 400);
       const logId = `${sanitizedPath}_${server}_${Date.now()}_${
-        Math.random().toString(36).substring(2, 11)
+        Math.random().toString(36).slice(2, 11)
       }`;
 
       // Limit content to 20,000 characters
       let limitedContent = content.trim();
-      if (limitedContent.length > 20000) {
-        limitedContent = limitedContent.substring(0, 19997) + '...';
+      if (limitedContent.length > 20_000) {
+        limitedContent = limitedContent.slice(0, 19_997) + '...';
       }
 
       logs.push({
@@ -381,7 +385,7 @@ function scanForMcpLogs(): IndexedLog[] {
 
       if (stat.isDirectory()) {
         // Original project path from directory name
-        const originalProjectPath = projectDir.replace(/^-/, '/').replace(/-/g, '/');
+        const originalProjectPath = projectDir.replace(/^-/, '/').replaceAll('-', '/');
 
         // List MCP log directories
         const contents = readdirSync(projectPath);
@@ -415,7 +419,7 @@ function scanForMcpLogs(): IndexedLog[] {
 }
 
 /** Create index if it doesn't exist */
-async function ensureIndex() {
+async function ensureIndex(): Promise<void> {
   try {
     await index.getStats();
   } catch (error) {
@@ -458,7 +462,7 @@ async function ensureIndex() {
 }
 
 /** Index MCP server logs to Meilisearch */
-async function indexMcpLogs() {
+async function indexMcpLogs(): Promise<void> {
   console.log('Ensuring index exists...');
   await ensureIndex();
 
@@ -533,7 +537,7 @@ async function indexMcpLogs() {
   console.log('\nExample search for "tool call":');
   searchResults.hits.forEach((hit) => {
     const preview = hit.debug || hit.plainText || JSON.stringify(hit.response || {});
-    console.log(`- [${hit.server}] ${hit.logFile}: ${preview.substring(0, 100)}...`);
+    console.log(`- [${hit.server}] ${hit.logFile}: ${preview.slice(0, 100)}...`);
   });
 }
 

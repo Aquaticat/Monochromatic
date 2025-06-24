@@ -46,8 +46,8 @@
  *   const results: number[] = [];
  *
  *   // Process first 10 promises sequentially
- *   for (let i = 0; i < 10; i++) {
- *     const result = await promises0to999[i];
+ *   for (let promiseIndex = 0; promiseIndex < 10; promiseIndex++) {
+ *     const result = await promises0to999[promiseIndex];
  *     results.push(result);
  *   }
  *
@@ -127,8 +127,8 @@
  *
  *   // Test batched execution (5 at a time)
  *   const batchedStart = Date.now();
- *   for (let i = 0; i < testPromises.length; i += 5) {
- *     const batch = testPromises.slice(i, i + 5);
+ *   for (let batchStart = 0; batchStart < testPromises.length; batchStart += 5) {
+ *     const batch = testPromises.slice(batchStart, batchStart + 5);
  *     await Promise.all(batch);
  *   }
  *   const batchedTime = Date.now() - batchedStart;
@@ -159,7 +159,7 @@
  */
 /* @__NO_SIDE_EFFECTS__ */ export const promises0to999: Promise<number>[] = Array.from(
   { length: 1000 },
-  (_, i) => new Promise((resolve) => setTimeout(() => resolve(i), i)),
+  (_, index) => new Promise((resolve) => setTimeout(() => resolve(index), index)),
 );
 
 //endregion Promise Test Fixtures

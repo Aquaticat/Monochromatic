@@ -9,7 +9,7 @@ import {
   everyFailIterableAsync,
 } from './iterable.everyFail.ts';
 
-describe('everyFailIterable', () => {
+describe(everyFailIterable, () => {
   test('returns true when all elements fail the predicate', () => {
     const numbers = [1, 2, 3, 4];
     const result = everyFailIterable((x: number) => x > 100, numbers);
@@ -84,7 +84,7 @@ describe('everyFailIterable', () => {
     const numbers = [1, 2, 3];
     expect(() => {
       everyFailIterable((x: number) => {
-        if (x === 2) throw new Error('Test error');
+        if (x === 2) { throw new Error('Test error'); }
         return x > 100;
       }, numbers);
     })
@@ -98,7 +98,7 @@ describe('everyFailIterable', () => {
   });
 });
 
-describe('everyFailIterableAsync', () => {
+describe(everyFailIterableAsync, () => {
   test('returns true when all elements fail the predicate', async () => {
     const numbers = [1, 2, 3, 4];
     const result = await everyFailIterableAsync((x: number) => x > 100, numbers);
@@ -187,7 +187,7 @@ describe('everyFailIterableAsync', () => {
     const numbers = [1, 2, 3];
     await expect(async () => {
       await everyFailIterableAsync(async (x: number) => {
-        if (x === 2) throw new Error('Test error');
+        if (x === 2) { throw new Error('Test error'); }
         await new Promise((resolve) => setTimeout(resolve, 1));
         return x > 100;
       }, numbers);
@@ -200,7 +200,7 @@ describe('everyFailIterableAsync', () => {
     const numbers = [1, 2, 3];
     await expect(async () => {
       await everyFailIterableAsync((x: number) => {
-        if (x === 2) throw new Error('Test error');
+        if (x === 2) { throw new Error('Test error'); }
         return x > 100;
       }, numbers);
     })
@@ -229,7 +229,7 @@ describe('everyFailIterableAsync', () => {
     const numbers = [1, 2, 3];
     await expect(async () => {
       await everyFailIterableAsync(async (x: number) => {
-        if (x === 2) return Promise.reject(new Error('Promise rejection'));
+        if (x === 2) { throw new Error('Promise rejection'); }
         return x > 100;
       }, numbers);
     })

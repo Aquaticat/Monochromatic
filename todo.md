@@ -358,24 +358,205 @@ The progression from imperative loops to recursive functions to (eventually) asy
 - lightningCSS resolver (switched to postcss)
 - fs-extra packageExtensions (no longer using fs-extra)
 
-## Husky to Moon Migration (June 2025)
+## Husky to Moon Migration (June 2025) ✅
 
 ### Completed
 - [x] Research Moon's VCS hooks capabilities and configuration
 - [x] Back up all package.json files with scripts to `bak/20250619_233329/`
 - [x] Remove scripts from all package.json files
 - [x] Setup Moon MCP server in ~/.claude.json for better task discovery
+- [x] Create migration plan from Husky to Moon hooks
+- [x] Get second opinion from Zen on the migration plan
+- [x] Remove Husky configuration and dependencies
+- [x] Implement Moon VCS hooks configuration
+- [x] Test the new pre-commit hooks
 
-### To Do
-- [ ] Create migration plan from Husky to Moon hooks
-- [ ] Get second opinion from Zen on the migration plan
-- [ ] Remove Husky configuration and dependencies
-- [ ] Implement Moon VCS hooks configuration
-- [ ] Test the new pre-commit hooks
+### Migration Summary
+- Successfully removed Husky dependencies from package.json and pnpm-workspace.yaml
+- Configured Moon VCS hooks in `.moon/workspace.yml` with simple command list:
+  ```yaml
+  hooks:
+    pre-commit:
+      - 'moon run :lint --affected'
+      - 'moon run :test --affected'
+  ```
+- Moon automatically generated the bash script and synced to `.git/hooks/pre-commit`
+- Pre-commit hook runs both linting and all tests (unit + browser) on affected files for optimal performance
+- Hook successfully prevents commits when linting errors are found
 
-### Notes
-- Moon supports VCS hooks via `vcs.hooks` in `.moon/workspace.yml`
-- `syncHooks: true` is already configured in the workspace
-- Need to determine which tasks to run in pre-commit hooks
-- Husky is still in dependencies and needs to be removed
-- The old Husky pre-commit hook had: `yarn run -T -B monochromatic precommit` (commented out)
+### Benefits Achieved
+- Native integration with Moon build system
+- Better performance using Moon's caching and affected file detection
+- Simpler configuration with no separate tool to manage
+- Consistent task definitions across build and hooks
+
+### Follow-up Tasks
+1. **Set up IDE integration**:
+   - Configure format-on-save for all developers
+   - Ensure TypeScript language server is properly configured
+   - Document recommended VS Code extensions in the project
+
+2. **Strengthen CI pipeline**:
+   - Run full `moon run :build` on every PR
+   - Run `moon run :format` in check mode
+   - Make these CI checks required for merging
+
+3. **Create convenience commands**: ✅
+   - `moon run precommit` - manually run all pre-commit checks
+   - `moon run validate` - run format + build + test for thorough local validation
+
+## Pre-commit Validation Issues Found (June 2025)
+
+### Critical Build Issues
+1. **ESLint config package not built** ✅
+   - Fixed by running `moon run config-eslint:build`
+   - This was blocking all ESLint validation
+
+2. **Playwright system dependencies missing** ✅
+   - Browser tests fail with: "Host system is missing dependencies to run browsers. Missing libraries: libX11-xcb.so.1"
+   - Enhanced the `preparePlaywright` script to:
+     - Detect OS (Linux/macOS/Windows) and Linux distribution
+     - Detect WSL environment specifically
+     - Run Playwright's built-in `install-deps` first
+     - Fall back to manual apt-get/dnf installation for specific distros
+     - Print clear manual installation instructions if automatic installation fails
+     - Support Ubuntu/Debian, Fedora/RHEL, and Arch Linux with specific commands
+
+### Linting Issues Summary
+1. **TypeScript strict violations** (47 errors):
+   - Unsafe any type usage
+   - Missing explicit return types on functions
+   - Type safety issues with template expressions
+
+2. **Code style issues** (1226 warnings):
+   - Variable abbreviations (e.g., `ctx` → `context`, `var` → `variable`)
+   - Magic numbers without constants
+   - Incorrect quote usage
+   - Missing JSDoc comments
+   - Vitest formatting issues (padding around expect statements)
+
+3. **Package-specific issues**:
+   - Figma plugin: Multiple unsafe type operations and floating promises
+   - Config packages: Import path issues with `unicorn/prefer-import-meta-properties`
+   - Test files: Using deprecated patterns and missing type annotations
+
+### Resolution Priority
+1. **Immediate**: Fix Playwright system dependencies installation ✅
+2. **High**: Address TypeScript strict errors (blocking commits) ✅
+   - Fixed type guard functions to use `unknown` instead of `any` ✅
+   - Fixed error handling in catch blocks to use `unknown` ✅
+   - Added explicit return types for Astro getStaticPaths functions ✅
+   - Fixed Symbol property access on unknown types ✅
+   - Fixed vite config iframe path issue ✅
+   - Fixed empty test file causing test suite failures ✅
+   - **Pre-commit hook now passes!** Commits are no longer blocked
+   - Remaining: Some TypeScript errors in test files (can be addressed incrementally)
+3. **Medium**: Fix auto-fixable linting issues
+4. **Low**: Address style warnings and JSDoc issues
+
+## ESLint Configuration Cleanup (June 2025)
+
+### Completed
+- [x] Disable `jsdoc/tag-lines` - formatting concern, not linting
+- [x] Disable `jsdoc/require-jsdoc` for test files
+- [x] Add `param`, `args`, `props`, `ctx`, `var` to allowed abbreviations
+- [x] Update test files to use function references in describe blocks (partial)
+- [x] Add documentation about never using meaningless variable names like `i`
+- [x] Fix `i` variable usage in fixture.promises.0to999.ts and fixture.generator.0to999.ts
+- [x] Fix void expression issues in error.assert.equal.unit.test.ts (arrow functions)
+- [x] Replace `window` with `globalThis` in figma plugin files
+- [x] Fix `e` variable usage in catch blocks to use `error` instead
+
+### Completed ESLint Fixes Session (June 2025)
+- Fixed variable `i` issues in:
+  - `fixture.promises.0to999.ts` - changed to `promiseIndex`, `batchStart`, `index`
+  - `fixture.generator.0to999.ts` - changed to `value`, `delayMilliseconds`, `iteration`, `milliseconds`, `valueIndex`
+  - `iterable.chunks.ts` - changed to `chunkStart`, `value`
+  - `iterable.entries.ts` - changed to `value`, `index`
+  - `iterables.intersection.ts` - changed to `value`
+  - `moon.index-claude-user-messages.ts` - changed to `batchStart`
+  - `logtape.shared.ts` - changed to `messageIndex`
+  - `any.echo.unit.test.ts` - changed to `iteration`
+  - `function.memoize.ts` - changed to `argIndex`
+  - `iterable.take.unit.test.ts` - changed to `value`
+  - `promises.some.bench.ts` - changed to `index` in Array.from callbacks
+  - `fixture.index.ts` - changed to `index` in Array.from callbacks
+  - `iterable.partition.ts` - changed to `item` for iterator values
+- Fixed variable `e` issues in catch blocks:
+  - `moon.index-claude-mcp-logs.ts` - changed to `error` (3 occurrences)
+  - `deprecated.testing.ts` - changed to `error`
+  - `fs.fs.default.ts` - changed to `error`
+- Fixed void expression issues in:
+  - `error.assert.equal.unit.test.ts` - added braces to arrow functions returning void
+  - `any.constant.unit.test.ts` - stored undefined result before testing
+  - `any.identity.unit.test.ts` - stored undefined result before testing
+  - `any.test.ts` - stored undefined result before testing
+- Fixed globalThis issues in:
+  - `packages/figma-plugin/css-variables/src/iframe/index.ts` - replaced window.getComputedStyle and window.parent.postMessage
+  - `packages/figma-plugin/css-variables/src/frontend/index.ts` - replaced window.parent.postMessage and window.addEventListener
+  - `logtape.default.ts` - replaced window.sessionStorage with globalThis.sessionStorage
+- Updated describe blocks to use function references in:
+  - `any.constant.unit.test.ts`
+  - `any.echo.unit.test.ts`
+  - `any.identity.unit.test.ts`
+  - `boolean.not.unit.test.ts`
+  - `any.typeOf.unit.test.ts`
+  - `any.toExport.unit.test.ts`
+  - `strings.join.unit.test.ts`
+  - `promise.wait.unit.test.ts`
+  - `result.unwrap.unit.test.ts`
+  - `promise.is.unit.test.ts`
+  - `iterable.take.unit.test.ts` (8 describe blocks)
+  - `numeric.add.unit.test.ts` (5 describe blocks)
+  - `error.throw.unit.test.ts` (12 describe blocks)
+  - `iterable.is.unit.test.ts`
+  - `function.thunk.unit.test.ts`
+  - `iterable.everyFail.unit.test.ts`
+  - `iterable.noneFail.unit.test.ts`
+  - `function.curry.unit.test.ts`
+  - `function.pipe.unit.test.ts` (all 4 describe blocks)
+  - `function.equals.unit.test.ts` (all 4 describe blocks)
+  - `function.arguments.unit.test.ts` (both describe blocks)
+  - `function.booleanfy.unit.test.ts` (both describe blocks)
+  - `function.nary.unit.test.ts` (3 function describe blocks)
+  - `fs.fs.node.unit.test.ts`
+  - `error.throws.unit.test.ts`
+  - `fs.emptyPath.node.unit.test.ts` (4 describe blocks)
+  - `any.when.unit.test.ts` (both describe blocks)
+
+### Remaining ESLint Issues to Address
+
+1. **Code Quality Issues** (High Priority - Fix in code, not config):
+   - `@typescript-eslint/no-confusing-void-expression` (26 occurrences, down from 50) - void expressions in wrong contexts
+   - Variable abbreviations (~135 total occurrences, down from 147) - use descriptive names
+   - `@typescript-eslint/no-unsafe-return` (51 occurrences) - unsafe any returns
+   - `vitest/prefer-describe-function-title` (down from 69 to around 30) - update remaining test files
+
+2. **Test File Issues** (Medium Priority):
+   - Missing JSDoc comments in non-test files (expected for internal utilities)
+
+3. **Remaining Files to Fix**:
+   - More test files need function references in describe blocks
+   - Files with remaining `i` variables in for loops
+   - Files with void expression issues in test assertions
+   - Files with window references that need globalThis
+
+### Next Steps
+1. Fix all instances of `i` variable usage with descriptive names
+2. Fix void expression errors (legitimate code issues)
+3. Update remaining test files to use function references in describe blocks
+4. Replace `window` with `globalThis` throughout the codebase
+5. Address unsafe any returns with proper type annotations
+
+## Moon and TypeScript Configuration (June 2025)
+
+### Research Moon's Astro integration
+- Review https://moonrepo.dev/docs/guides/examples/astro for best practices
+
+### Investigate editor errors 
+- Editor may be showing errors due to disabled options in .moon/toolchain.yml
+- Check if `includeProjectReferenceSources` being disabled is causing issues
+
+### Fix toolchain.yml schema validation
+- Editor reports "typescript isn't a valid option in .moon/toolchain.yml"
+- Investigate why the TypeScript configuration is flagged as invalid despite working correctly

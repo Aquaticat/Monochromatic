@@ -12,7 +12,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('spreadArguments', () => {
+describe(spreadArguments, () => {
   test('spreads array elements as function arguments', () => {
     const sum = (a: number, b: number, c: number) => a + b + c;
     const spreadSum = spreadArguments(sum);
@@ -72,7 +72,7 @@ describe('spreadArguments', () => {
   });
 });
 
-describe('gatherArguments', () => {
+describe(gatherArguments, () => {
   test('gathers individual arguments into an array', () => {
     const processArray = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
     const gatheredProcess = gatherArguments(processArray);

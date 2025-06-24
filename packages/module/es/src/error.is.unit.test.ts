@@ -13,16 +13,23 @@ await logtapeConfigure(await logtapeConfiguration());
 
 describe(isError, () => {
   test('identifies Error instances', () => {
+    // oxlint-disable-next-line unicorn/error-message -- Testing error without message
     expect(isError(new Error())).toBe(true);
     expect(isError(new Error('test message'))).toBe(true);
   });
 
   test('identifies Error subclasses', () => {
+    // oxlint-disable-next-line unicorn/error-message -- Testing error without message
     expect(isError(new TypeError())).toBe(true);
+    // oxlint-disable-next-line unicorn/error-message -- Testing error without message
     expect(isError(new ReferenceError())).toBe(true);
+    // oxlint-disable-next-line unicorn/error-message -- Testing error without message
     expect(isError(new SyntaxError())).toBe(true);
+    // oxlint-disable-next-line unicorn/error-message -- Testing error without message
     expect(isError(new RangeError())).toBe(true);
+    // oxlint-disable-next-line unicorn/error-message -- Testing error without message
     expect(isError(new EvalError())).toBe(true);
+    // oxlint-disable-next-line unicorn/error-message -- Testing error without message
     expect(isError(new URIError())).toBe(true);
   });
 

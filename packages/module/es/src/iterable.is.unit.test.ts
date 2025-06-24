@@ -201,7 +201,7 @@ describe(isMap, () => {
   });
 });
 
-describe('isWeakMap', () => {
+describe(isWeakMap, () => {
   test('identifies weak maps correctly', () => {
     expect(isWeakMap(new WeakMap())).toBe(true);
     const obj = {};

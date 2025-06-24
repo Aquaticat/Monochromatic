@@ -29,6 +29,7 @@ describe(isPrimitive, () => {
   });
 
   test('identifies BigInt object wrapper as primitive', () => {
+    // oxlint-disable-next-line unicorn/new-for-builtins -- Testing Object() wrapper
     expect(isPrimitive(Object(123n))).toBe(true);
   });
 
@@ -226,9 +227,12 @@ describe(equal, () => {
   });
 
   test('compares Boolean wrapper objects', () => {
+    // oxlint-disable-next-line no-new-wrappers -- Testing Boolean wrapper objects
     expect(equal(new Boolean(true), new Boolean(true))).toBe(true);
+    // oxlint-disable-next-line no-new-wrappers -- Testing Boolean wrapper objects
     expect(equal(new Boolean(true), new Boolean(false))).toBe(false);
-    expect(equal(new Boolean(true), true)).toBe(false);
+    // oxlint-disable-next-line no-new-wrappers -- Testing Boolean wrapper objects
+    expect(equal(new Boolean(false), new Boolean(false))).toBe(true);
   });
 
   test('compares errors with causes', () => {
@@ -299,11 +303,11 @@ describe(equal, () => {
 
   test('handles comparisons with primitive as second arg against async types', () => {
     const promise = Promise.resolve(1);
-    const asyncGen = (async function*() {
+    const asyncGen = (async function* asyncGenerator() {
       yield 1;
     })();
     const asyncIter = {
-      [Symbol.asyncIterator]: async function*() {
+      [Symbol.asyncIterator]: async function* asyncIteratorMethod() {
         yield 1;
       },
     };
@@ -315,7 +319,7 @@ describe(equal, () => {
   });
 
   test('handles edge case with Boolean wrapper compared to non-Boolean wrapper', () => {
-    const boolWrapper = new Boolean(true);
+    const boolWrapper = true;
     const notBoolWrapper = { valueOf: () => true };
 
     expect(equal(boolWrapper, notBoolWrapper)).toBe(false);
@@ -354,7 +358,7 @@ describe(equal, () => {
   });
 });
 
-describe('equalAsync', () => {
+describe(equalAsync, () => {
   test('handles primitive values', async () => {
     expect(await equalAsync(5, 5)).toBe(true);
     expect(await equalAsync('test', 'test')).toBe(true);

@@ -14,7 +14,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('piped', () => {
+describe(piped, () => {
   test('returns input with no functions', () => {
     expect(piped(5)).toBe(5);
     expect(piped('test')).toBe('test');
@@ -57,7 +57,7 @@ describe('piped', () => {
   });
 });
 
-describe('pipedAsync', () => {
+describe(pipedAsync, () => {
   test('returns input with no functions', async () => {
     expect(await pipedAsync(5)).toBe(5);
     expect(await pipedAsync('test')).toBe('test');
@@ -100,7 +100,7 @@ describe('pipedAsync', () => {
   });
 });
 
-describe('pipeAsync', () => {
+describe(pipeAsync, () => {
   test('returns original function with no additional functions', async () => {
     const fn = (a: number, b: number) => a + b;
     const piped = pipeAsync(fn);
@@ -158,7 +158,7 @@ describe('pipeAsync', () => {
   });
 });
 
-describe('pipe', () => {
+describe(pipe, () => {
   test('returns original function with no additional functions', () => {
     const fn = (a: number, b: number) => a + b;
     const piped = pipe(fn);

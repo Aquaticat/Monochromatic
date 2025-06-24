@@ -78,7 +78,6 @@ export default defineConfig({
         dark: 'github-dark-high-contrast',
       },
       wrap: true,
-      // @ts-expect-error exactOptionalProperties
       transformers: [transformerNotationDiff(), transformerNotationHighlight()],
     },
     remarkPlugins: [[remarkAlert, {}], [remarkSectionize, {}]],
@@ -91,6 +90,7 @@ export default defineConfig({
   },
 
   image: {
+    // @ts-expect-error - experimentalLayout is a valid option but not in types yet
     experimentalLayout: 'responsive',
   },
 

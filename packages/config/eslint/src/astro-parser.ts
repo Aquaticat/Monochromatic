@@ -1,7 +1,10 @@
+// eslint-disable-next-line import/no-namespace -- Parser needs to be imported as namespace
 import * as tsParser from '@typescript-eslint/parser';
 import { analyze } from '@typescript-eslint/scope-manager';
-import type { TSESTree } from '@typescript-eslint/types';
-import { AST_NODE_TYPES } from '@typescript-eslint/types';
+import {
+  AST_NODE_TYPES,
+  type TSESTree,
+} from '@typescript-eslint/types';
 
 /** Type of result returned by TypeScript ESLint parser */
 type ParseForESLintResult = ReturnType<typeof tsParser.parseForESLint>;
@@ -89,12 +92,12 @@ function extractFrontmatter(code: string): CodeSegment[] {
   while (currentIndex < code.length - FRONTMATTER_DELIMITER.length) {
     if (
       code[currentIndex] === '\n'
-      && code.substring(currentIndex + 1, currentIndex + 1 + FRONTMATTER_DELIMITER.length)
+      && code.slice(currentIndex + 1, currentIndex + 1 + FRONTMATTER_DELIMITER.length)
         === FRONTMATTER_DELIMITER
     ) {
       // Found closing delimiter
       /** Extract content between opening and closing --- */
-      const content = code.substring(startIndex, currentIndex);
+      const content = code.slice(startIndex, currentIndex);
       return [{
         content,
         // Frontmatter content starts on line 2 (after ---)\n
@@ -125,13 +128,13 @@ function extractScriptTags(code: string): CodeSegment[] {
    */
   const getLineNumber = (targetIndex: number): number => {
     // Count newlines in substring from start to targetIndex
-    return code.substring(0, targetIndex).split('\n').length;
+    return code.slice(0, targetIndex).split('\n').length;
   };
 
   /** Scan through the entire source code looking for script tags */
   while (currentIndex < code.length - SCRIPT_TAG_OPEN.length) {
     if (
-      code.substring(currentIndex, currentIndex + SCRIPT_TAG_OPEN.length)
+      code.slice(currentIndex, currentIndex + SCRIPT_TAG_OPEN.length)
         === SCRIPT_TAG_OPEN
     ) {
       // Found opening tag, find closing >
@@ -153,12 +156,12 @@ function extractScriptTags(code: string): CodeSegment[] {
         let contentEndIndex = contentStartIndex;
         while (contentEndIndex < code.length - SCRIPT_TAG_CLOSE.length) {
           if (
-            code.substring(contentEndIndex, contentEndIndex + SCRIPT_TAG_CLOSE.length)
+            code.slice(contentEndIndex, contentEndIndex + SCRIPT_TAG_CLOSE.length)
               === SCRIPT_TAG_CLOSE
           ) {
             // Found closing tag
             /** Extract script content */
-            const content = code.substring(contentStartIndex, contentEndIndex);
+            const content = code.slice(contentStartIndex, contentEndIndex);
             segments.push({
               content,
               startLine: contentStartLine,
@@ -318,4 +321,3 @@ export const meta = {
   name: 'astro-parser',
   version: '1.0.0',
 };
-

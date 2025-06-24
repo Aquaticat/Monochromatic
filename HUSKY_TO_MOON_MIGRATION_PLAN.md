@@ -27,23 +27,16 @@ Based on the available Moon tasks, the pre-commit hook should run:
 These tasks are already well-configured with proper inputs and caching.
 
 ### 4. Hook Configuration
-Create `.moon/hooks/pre-commit` with executable permissions that runs:
-```bash
-#!/usr/bin/env bash
-set -e
-
-# Run linting
-echo "Running linters..."
-moon run lint --affected
-
-# Run unit tests
-echo "Running unit tests..."
-moon run testUnit --affected
-
-echo "Pre-commit checks passed!"
+Simply add the commands to `.moon/workspace.yml`:
+```yaml
+vcs:
+  hooks:
+    pre-commit:
+      - 'moon run :lint --affected'
+      - 'moon run :test --affected'
 ```
 
-The `--affected` flag ensures only changed files are checked, making the hook faster.
+Moon automatically generates the necessary bash script. The `--affected` flag ensures only changed files are checked, making the hook faster.
 
 ### 5. Additional Considerations
 - The TODO comment about checking dprint path configuration can be implemented as a separate Moon task if needed

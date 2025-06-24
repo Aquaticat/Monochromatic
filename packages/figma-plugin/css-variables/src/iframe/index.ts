@@ -1,4 +1,4 @@
-import outdent from '@cspotcode/outdent';
+import { outdent } from '@cspotcode/outdent';
 import type {
   AuthoredCss,
   ComputedColor,
@@ -11,7 +11,13 @@ import {
   forEachConcur,
 } from 'lfi';
 
-const DEFAULT_ELEMENT_WIDTH_NUMBER = 3840 - 8 * 2;
+/** Maximum viewport width for testing */
+const MAX_VIEWPORT_WIDTH = 3840;
+
+/** Padding on each side */
+const SIDE_PADDING = 8;
+
+const DEFAULT_ELEMENT_WIDTH_NUMBER = MAX_VIEWPORT_WIDTH - SIDE_PADDING * 2;
 
 const testCssVar = async (
   cssValue: string,
@@ -41,7 +47,7 @@ const testCssVar = async (
     testElementAssumeUnitfulLength.style.height = cssValue;
     modeApplier.append(testElementAssumeUnitfulLength);
 
-    const computedStyle = window.getComputedStyle(
+    const computedStyle = globalThis.getComputedStyle(
       testElementAssumeUnitfulLength,
     );
     // TODO: Also compute height.
@@ -84,7 +90,7 @@ const testCssVar = async (
     testElementAssumeNumber.style.height = `${cssValue}px`;
     modeApplier.append(testElementAssumeNumber);
 
-    const computedStyle = window.getComputedStyle(
+    const computedStyle = globalThis.getComputedStyle(
       testElementAssumeNumber,
     );
     const computedWidth = computedStyle.getPropertyValue(
@@ -118,7 +124,7 @@ const testCssVar = async (
     testElementAssumeColor.style.color = cssValue;
     document.body.append(testElementAssumeColor);
 
-    const computedStyle = window.getComputedStyle(
+    const computedStyle = globalThis.getComputedStyle(
       testElementAssumeColor,
     );
     const computedBackgroundColor = computedStyle
@@ -152,7 +158,7 @@ const testCssVar = async (
     testElementAssumeBoxShadow.style.boxShadow = cssValue;
     document.body.append(testElementAssumeBoxShadow);
 
-    const computedStyle = window.getComputedStyle(
+    const computedStyle = globalThis.getComputedStyle(
       testElementAssumeBoxShadow,
     );
     const computedBoxShadow = computedStyle
@@ -199,7 +205,7 @@ const testCssVar = async (
     );
     document.adoptedStyleSheets.push(assumeStringStyleSheet);
     document.body.append(testElementAssumeString);
-    const computedStyle = window.getComputedStyle(
+    const computedStyle = globalThis.getComputedStyle(
       testElementAssumeString,
     );
     // This isn't the resolved content.
@@ -260,7 +266,7 @@ const processCssVarRuleStyle = async (
   if (
     isPositiveNumberString(cssValue)
   ) {
-    window.parent.postMessage({
+    globalThis.parent.postMessage({
       authoredCss: {
         cssVar,
         originalValue: cssValue,
@@ -271,7 +277,7 @@ const processCssVarRuleStyle = async (
       },
     }, '*');
   } else if (cssValue === 'true') {
-    window.parent.postMessage({
+    globalThis.parent.postMessage({
       authoredCss: {
         cssVar,
         originalValue: cssValue,
@@ -282,7 +288,7 @@ const processCssVarRuleStyle = async (
       },
     }, '*');
   } else if (cssValue === 'false') {
-    window.parent.postMessage({
+    globalThis.parent.postMessage({
       authoredCss: {
         cssVar,
         originalValue: cssValue,
@@ -297,7 +303,7 @@ const processCssVarRuleStyle = async (
     const authoredCss = await testCssVar(cssValue, cssVar, mode, 0);
 
     // Send the message to the outer iframe
-    window.parent.postMessage({ authoredCss }, '*');
+    globalThis.parent.postMessage({ authoredCss }, '*');
   }
 };
 
@@ -308,8 +314,8 @@ const processBasicRule = async (
   // console.log(rule.style);
   const ruleStyles: string[] = [];
 
-  for (let i = 0; i < rule.style.length; i++) {
-    ruleStyles.push(rule.style.item(i));
+  for (let styleIndex = 0; styleIndex < rule.style.length; styleIndex++) {
+    ruleStyles.push(rule.style.item(styleIndex));
   }
 
   /*  for (const ruleStyle of ruleStyles) {
@@ -354,7 +360,7 @@ const handleReceivingCss = async (event: MessageEvent): Promise<void> => {
   // console.log(`inner iframe received message: ${event.data.css}`);
   const sheet = await new CSSStyleSheet().replace(event.data.css);
   document.adoptedStyleSheets = [sheet];
-  window.parent.postMessage(
+  globalThis.parent.postMessage(
     { authoredCss: 'adopted stylesheets applied' },
     '*',
   );
@@ -363,8 +369,8 @@ const handleReceivingCss = async (event: MessageEvent): Promise<void> => {
 
   const rules: (CSSStyleRule & { selectorText: string; })[] = [];
 
-  for (let i = 0; i < ruleList.length; i++) {
-    rules.push(ruleList.item(i) as CSSStyleRule & { selectorText: string; });
+  for (let ruleIndex = 0; ruleIndex < ruleList.length; ruleIndex++) {
+    rules.push(ruleList.item(ruleIndex) as CSSStyleRule & { selectorText: string; });
   }
 
   await forEachConcur(
@@ -376,4 +382,4 @@ const handleReceivingCss = async (event: MessageEvent): Promise<void> => {
 const messageHandler = async (event: MessageEvent): Promise<void> => {
   if (Object.hasOwn(event.data, 'css')) { await handleReceivingCss(event); }
 };
-window.addEventListener('message', messageHandler);
+globalThis.addEventListener('message', messageHandler);

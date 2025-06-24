@@ -14,7 +14,7 @@ await logtapeConfigure(await logtapeConfiguration());
 
 //region toExport tests -- Tests for JavaScript value to export string conversion
 
-describe('toExport', () => {
+describe(toExport, () => {
   //region Primitive types tests
 
   describe('primitive types', () => {
@@ -35,9 +35,9 @@ describe('toExport', () => {
     test('converts string values', () => {
       expect(toExport('hello')).toBe('"hello"');
       expect(toExport('')).toBe('""');
-      expect(toExport('hello "world"')).toBe('"hello \\"world\\""');
+      expect(toExport('hello "world"')).toBe(String.raw`"hello \"world\""`);
       expect(toExport("it's working")).toBe('"it\'s working"');
-      expect(toExport('line1\nline2')).toBe('"line1\\nline2"');
+      expect(toExport('line1\nline2')).toBe(String.raw`"line1\nline2"`);
     });
 
     test('converts Date values', () => {
@@ -194,8 +194,8 @@ describe('toExport', () => {
     });
 
     test('throws TypeError for NaN', () => {
-      expect(() => toExport(NaN)).toThrow(TypeError);
-      expect(() => toExport(NaN)).toThrow('Unsupported obj NaN null type NaN');
+      expect(() => toExport(Number.NaN)).toThrow(TypeError);
+      expect(() => toExport(Number.NaN)).toThrow('Unsupported obj NaN null type NaN');
     });
 
     test('throws TypeError for bigint', () => {
@@ -232,11 +232,11 @@ describe('toExport', () => {
     });
 
     test('handles special string characters', () => {
-      expect(toExport('\t')).toBe('"\\t"');
-      expect(toExport('\r')).toBe('"\\r"');
-      expect(toExport('\n')).toBe('"\\n"');
-      expect(toExport('\\')).toBe('"\\\\"');
-      expect(toExport('"')).toBe('"\\""');
+      expect(toExport('\t')).toBe(String.raw`"\t"`);
+      expect(toExport('\r')).toBe(String.raw`"\r"`);
+      expect(toExport('\n')).toBe(String.raw`"\n"`);
+      expect(toExport('\\')).toBe(String.raw`"\\"`);
+      expect(toExport('"')).toBe(String.raw`"\""`);
     });
 
     test('handles objects with numeric keys', () => {

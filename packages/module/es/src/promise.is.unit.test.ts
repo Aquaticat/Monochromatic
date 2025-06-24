@@ -11,7 +11,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('isPromise', () => {
+describe(isPromise, () => {
   test('identifies native Promise objects', () => {
     const promise = Promise.resolve(42);
     expect(isPromise(promise)).toBe(true);
@@ -19,6 +19,7 @@ describe('isPromise', () => {
 
   test('identifies Promise-like objects with then method', () => {
     const thenable = {
+      // oxlint-disable-next-line unicorn/no-thenable -- Testing thenable detection
       then: () => {
         // no-op
       },
@@ -49,11 +50,11 @@ describe('isPromise', () => {
       // no-op
     }))
       .toBe(false);
-    expect(isPromise(function() {
+    expect(isPromise(function testFunction() {
       // no-op
     }))
       .toBe(false);
-    expect(isPromise(async function() {
+    expect(isPromise(async function testAsyncFunction() {
       // no-op
     }))
       .toBe(false); // async function itself isn't a promise
@@ -66,9 +67,13 @@ describe('isPromise', () => {
   });
 
   test('rejects object with non-function then property', () => {
+    // oxlint-disable-next-line unicorn/no-thenable -- Testing non-function then property
     expect(isPromise({ then: 'not a function' })).toBe(false);
+    // oxlint-disable-next-line unicorn/no-thenable -- Testing non-function then property
     expect(isPromise({ then: 42 })).toBe(false);
+    // oxlint-disable-next-line unicorn/no-thenable -- Testing non-function then property
     expect(isPromise({ then: true })).toBe(false);
+    // oxlint-disable-next-line unicorn/no-thenable -- Testing non-function then property
     expect(isPromise({ then: {} })).toBe(false);
   });
 });

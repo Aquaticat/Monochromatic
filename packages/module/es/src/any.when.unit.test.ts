@@ -14,7 +14,7 @@ await logtapeConfigure(await logtapeConfiguration());
 
 //region when tests -- Tests for synchronous conditional transformation
 
-describe('when', () => {
+describe(when, () => {
   test('applies transformation when predicate returns true', () => {
     const isEven = (n: number): boolean => n % 2 === 0;
     const double = (n: number): number => n * 2;
@@ -100,7 +100,7 @@ describe('when', () => {
 
 //region whenAsync tests -- Tests for asynchronous conditional transformation
 
-describe('whenAsync', () => {
+describe(whenAsync, () => {
   test('applies transformation when async predicate returns true', async () => {
     const isEvenAsync = async (n: number): Promise<boolean> => n % 2 === 0;
     const doubleAsync = async (n: number): Promise<number> => n * 2;

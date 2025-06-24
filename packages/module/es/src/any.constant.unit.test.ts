@@ -6,7 +6,7 @@ import {
 
 import { constant } from '@monochromatic-dev/module-es';
 
-describe('constant', () => {
+describe(constant, () => {
   test('returns a function that always returns the same value', () => {
     const alwaysFive = constant(5);
     expect(alwaysFive()).toBe(5);
@@ -25,10 +25,11 @@ describe('constant', () => {
     expect(alwaysTrue()).toBe(true);
 
     const alwaysNull = constant(null);
-    expect(alwaysNull()).toBe(null);
+    expect(alwaysNull()).toBeNull();
 
     const alwaysUndefined = constant(undefined);
-    expect(alwaysUndefined()).toBe(undefined);
+    const undefinedResult = alwaysUndefined();
+    expect(undefinedResult).toBeUndefined();
 
     const alwaysObject = constant({ key: 'value' });
     const obj = { key: 'value' };

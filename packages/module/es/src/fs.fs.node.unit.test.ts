@@ -20,7 +20,7 @@ const testContent = 'Hello, World!\nThis is a test file.\n🚀 Unicode support t
 
 //endregion Test Setup
 
-describe('readTextFile', () => {
+describe(readTextFile, () => {
   test('reads UTF-8 text file correctly', async () => {
     // Setup: Create test directory and file
     await mkdir(testDir, { recursive: true });

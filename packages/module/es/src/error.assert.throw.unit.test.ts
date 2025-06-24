@@ -22,7 +22,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('assertThrow', () => {
+describe(assertThrow, () => {
   test('passes when function throws expected error type', () => {
     expect(() => {
       assertThrow(new TypeError('error'), () => {
@@ -95,6 +95,7 @@ describe('assertThrow', () => {
   test('throws when expecting Error but actual is not an Error instance', () => {
     expect(() => {
       assertThrow('Error', () => {
+        // eslint-disable-next-line no-throw-literal -- Testing non-Error throw behavior
         throw 'not an error object';
       });
     })
@@ -112,7 +113,7 @@ describe('assertThrow', () => {
   });
 });
 
-describe('assertThrowAsync', () => {
+describe(assertThrowAsync, () => {
   test('passes when function throws expected error type', async () => {
     await expect(
       assertThrowAsync(new TypeError('error'), async () => {
@@ -157,6 +158,7 @@ describe('assertThrowAsync', () => {
   test('throws when expecting Error but actual is not an Error instance', async () => {
     await expect(
       assertThrowAsync('Error', async () => {
+        // eslint-disable-next-line no-throw-literal -- Testing non-Error throw behavior
         throw 'not an error object';
       }),
     )

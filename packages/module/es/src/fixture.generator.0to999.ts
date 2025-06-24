@@ -51,8 +51,8 @@
  * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export function* gen0to999(): Generator<number> {
-  for (let i = 0; i < 1000; i++) {
-    yield i;
+  for (let value = 0; value < 1000; value++) {
+    yield value;
   }
 }
 
@@ -104,8 +104,8 @@
  * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export function* gen0to999error(): Generator<number> {
-  for (let i = 0; i < 999; i++) {
-    yield i;
+  for (let value = 0; value < 999; value++) {
+    yield value;
   }
   throw new RangeError(`fixture reached 999`);
 }
@@ -169,8 +169,8 @@
 /* @__NO_SIDE_EFFECTS__ */ export async function* gen0to999Async(): AsyncGenerator<
   number
 > {
-  for (let i = 0; i < 1000; i++) {
-    yield i;
+  for (let value = 0; value < 1000; value++) {
+    yield value;
   }
 }
 
@@ -228,8 +228,8 @@
 /* @__NO_SIDE_EFFECTS__ */ export async function* gen0to999errorAsync(): AsyncGenerator<
   number
 > {
-  for (let i = 0; i < 999; i++) {
-    yield i;
+  for (let value = 0; value < 999; value++) {
+    yield value;
   }
   throw new RangeError(`fixture reached 999`);
 }
@@ -280,7 +280,7 @@
  *     );
  *
  *     const values: number[] = [];
- *     for (let i = 0; i < 20; i++) {
+ *     for (let iteration = 0; iteration < 20; iteration++) {
  *       const result = await Promise.race([
  *         iterator.next(),
  *         timeoutPromise
@@ -305,7 +305,7 @@
  *
  *   // Test first 50 values to avoid excessive delay
  *   const results = [];
- *   for (let i = 0; i < 50; i++) {
+ *   for (let milliseconds = 0; milliseconds < 50; milliseconds++) {
  *     const result = await iterator.next();
  *     if (result.done) break;
  *     results.push(result.value);
@@ -319,9 +319,9 @@
 /* @__NO_SIDE_EFFECTS__ */ export async function* gen0to999AsyncSlow(): AsyncGenerator<
   number
 > {
-  for (let i = 0; i < 1000; i++) {
-    await (new Promise((resolve) => setTimeout(resolve, i)));
-    yield i;
+  for (let delayMilliseconds = 0; delayMilliseconds < 1000; delayMilliseconds++) {
+    await (new Promise((resolve) => setTimeout(resolve, delayMilliseconds)));
+    yield delayMilliseconds;
   }
 }
 
@@ -399,7 +399,7 @@
  *   const timings: number[] = [];
  *
  *   try {
- *     for (let i = 0; i < 30; i++) { // Test first 30 to keep reasonable timing
+ *     for (let valueIndex = 0; valueIndex < 30; valueIndex++) { // Test first 30 to keep reasonable timing
  *       const start = Date.now();
  *       const result = await iterator.next();
  *       const elapsed = Date.now() - start;
@@ -417,9 +417,9 @@
 /* @__NO_SIDE_EFFECTS__ */ export async function* gen0to999errorAsyncSlow(): AsyncGenerator<
   number
 > {
-  for (let i = 0; i < 999; i++) {
-    await (new Promise((resolve) => setTimeout(resolve, i)));
-    yield i;
+  for (let delayMilliseconds = 0; delayMilliseconds < 999; delayMilliseconds++) {
+    await (new Promise((resolve) => setTimeout(resolve, delayMilliseconds)));
+    yield delayMilliseconds;
   }
   throw new RangeError(`fixture reached 999`);
 }

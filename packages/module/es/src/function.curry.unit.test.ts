@@ -11,7 +11,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('curry', () => {
+describe(curry, () => {
   describe('error cases', () => {
     test('throws for function with 0 parameters', () => {
       expect(() => {

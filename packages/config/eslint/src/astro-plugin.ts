@@ -1,4 +1,5 @@
 import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint';
+// eslint-disable-next-line import/no-namespace -- Parser needs to be imported as namespace
 import * as astroParser from './astro-parser.ts';
 /**
  * ESLint plugin for Astro files.

@@ -13,7 +13,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('unary', () => {
+describe(unary, () => {
   test('limits a function to taking only one parameter', () => {
     const originalFn = (a: number, b: number, c: number): number => a + b + c;
     const unariedFn = unary(originalFn);
@@ -46,7 +46,7 @@ describe('unary', () => {
   });
 });
 
-describe('binary', () => {
+describe(binary, () => {
   test('limits a function to taking only two parameters', () => {
     const originalFn = (a: number, b: number, c: number): number => a + b + c;
     const binariedFn = binary(originalFn);
@@ -79,7 +79,7 @@ describe('binary', () => {
   });
 });
 
-describe('ternary', () => {
+describe(ternary, () => {
   test('limits a function to taking only three parameters', () => {
     const originalFn = (a: number, b: number, c: number, d: number): number =>
       a + b + c + d;

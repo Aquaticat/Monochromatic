@@ -2,10 +2,10 @@
 import Post from '@_/components/Post.astro';
 import type { Post as PostType } from '@_/index.ts';
 
-interface Props {
+type Props = {
   posts: PostType[];
   lang: string;
-}
+};
 const { posts, lang } = Astro.props;
 ---
 

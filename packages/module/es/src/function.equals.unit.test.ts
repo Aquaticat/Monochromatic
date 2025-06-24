@@ -16,7 +16,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('equals', () => {
+describe(equals, () => {
   test('returns a function that checks equality', () => {
     const isThree = equals(3);
     expect(typeof isThree).toBe('function');
@@ -45,7 +45,7 @@ describe('equals', () => {
   });
 });
 
-describe('equalsAsync', () => {
+describe(equalsAsync, () => {
   test('returns a function that checks equality asynchronously', async () => {
     const isThree = equalsAsync(3);
     expect(typeof isThree).toBe('function');
@@ -72,7 +72,7 @@ describe('equalsAsync', () => {
   });
 });
 
-describe('equalsOrThrow', () => {
+describe(equalsOrThrow, () => {
   test('returns input when equal', () => {
     const checkIsThree = equalsOrThrow(3);
     expect(checkIsThree(3)).toBe(3);
@@ -101,7 +101,7 @@ describe('equalsOrThrow', () => {
   });
 });
 
-describe('equalsAsyncOrThrow', () => {
+describe(equalsAsyncOrThrow, () => {
   test('returns input when equal', async () => {
     const checkIsThree = equalsAsyncOrThrow(3);
     expect(await checkIsThree(3)).toBe(3);

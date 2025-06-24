@@ -87,6 +87,8 @@ const myConfigArray: ConfigArray = tseslint.config(
         enableFixer: false,
         typed: true,
       }],
+      // Tag line spacing is a formatting concern, not a linting concern per ESLint's current philosophy
+      'jsdoc/tag-lines': 'off',
       '@typescript-eslint/no-unnecessary-condition': ['error', {
         allowConstantLoopConditions: 'only-allowed-literals',
       }],
@@ -128,6 +130,16 @@ const myConfigArray: ConfigArray = tseslint.config(
        */
       '@typescript-eslint/no-unnecessary-type-parameters': 'off',
 
+       "@typescript-eslint/no-misused-promises": [
+    "error",
+    {
+      "checksVoidReturn": {
+        // passing a () => Promise<void> to a () => void parameter
+        "arguments": false,
+      }
+    }
+  ],
+
       // Using Vite bundler.
       'n/no-unpublished-import': 'off',
 
@@ -141,6 +153,12 @@ const myConfigArray: ConfigArray = tseslint.config(
           lib: false,
           temp: false,
           dev: false,
+          param: false,
+          args: false,
+          props: false,
+          ctx: false,
+          var: false,
+          l: false, // logger
           //endregion umambiguious
         },
       }],
@@ -166,6 +184,17 @@ const myConfigArray: ConfigArray = tseslint.config(
       '@typescript-eslint/require-await': 'off',
       'vitest/prefer-expect-assertions': 'off',
       'unicorn/prevent-abbreviations': 'off',
+      // Padding is a formatting concern, not a linting concern per ESLint's current philosophy
+      'vitest/padding-around-all': 'off',
+      'vitest/padding-around-expect-groups': 'off',
+      'vitest/padding-around-describe-blocks': 'off',
+      'vitest/padding-around-test-blocks': 'off',
+      'vitest/padding-around-before-all-blocks': 'off',
+      'vitest/padding-around-before-each-blocks': 'off',
+      'vitest/padding-around-after-all-blocks': 'off',
+      'vitest/padding-around-after-each-blocks': 'off',
+      // Test files don't need JSDoc comments
+      'jsdoc/require-jsdoc': 'off',
     },
 
     settings: {

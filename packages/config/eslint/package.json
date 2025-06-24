@@ -23,9 +23,9 @@
     "vite": "catalog:"
   },
   "devDependencies": {
-    "@monochromatic-dev/config-typescript": "*",
-    "@monochromatic-dev/config-vite": "*",
-    "@monochromatic-dev/config-oxlint": "*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/config-vite": "workspace:*",
+    "@monochromatic-dev/config-oxlint": "workspace:*",
     "@types/bun": "catalog:",
     "@vitest/browser": "catalog:"
   },

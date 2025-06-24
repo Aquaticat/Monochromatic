@@ -1,0 +1,152 @@
+{
+  "include": [
+    "${configDir}/src",
+    "${configDir}/*.config.ts",
+    "${configDir}/.astro/types.d.ts",
+  ],
+  "exclude": [
+    "dist",
+    "bak",
+    "node_modules",
+  ],
+  "compilerOptions": {
+    "baseUrl": "${configDir}",
+    "rootDirs": [
+      "${configDir}/src",
+      "${configDir}",
+    ],
+    "outDir": "${configDir}/dist/final/types",
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": true,
+    "noUncheckedSideEffectImports": true,
+    "preserveWatchOutput": true,
+
+    //region Modules
+
+    "allowImportingTsExtensions": true,
+
+    /* To work around the fact that some dependent packages export type declaration files with relative path but without extensions.
+    For example, execa */
+    "module": "preserve",
+    "moduleResolution": "bundler",
+
+    "resolveJsonModule": true,
+    "types": [
+      "bun",
+      "vite/client",
+      "@vitest/browser/providers/playwright",
+    ],
+
+    //endregion
+
+    //region Emit
+
+    // error TS5096: Option 'allowImportingTsExtensions' can only be used when either 'noEmit' or 'emitDeclarationOnly' is set.
+    "emitDeclarationOnly": true,
+
+    "declaration": true,
+    "isolatedDeclarations": true,
+    "newLine": "lf",
+
+    // Sometimes we're importing types in a test file, which needs tsc to emit the types before the errors disappear.
+    // Setting this to true will cause a deadlock.
+    "noEmitOnError": false,
+
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+
+    "preserveConstEnums": true,
+    "allowJs": false,
+    "checkJs": false,
+
+    //endregion
+
+    //region Editor Support
+
+    "disableSizeLimit": true,
+
+    //endregion
+
+    //region Interop Constraints
+
+    "esModuleInterop": true,
+
+    // error TS5104: Option 'isolatedModules' is redundant and cannot be specified with option 'verbatimModuleSyntax'.
+    // "isolatedModules": true,
+
+    //endregion
+
+    //region Language and Environment
+
+    "emitDecoratorMetadata": true,
+
+    "experimentalDecorators": true,
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+
+    "lib": ["ESNext"],
+
+    "libReplacement": false,
+
+    "target": "esnext",
+
+    //endregion
+
+    //region Compiler Diagnostics
+
+    // Too much noise. Enable on demand.
+    // "explainFiles": true,
+
+    "listEmittedFiles": true,
+
+    // Too much noise. Enable on demand.
+    // "listFiles": true,
+
+    // Too much noise. Enable on demand.
+    // "traceResolution": true,
+
+    //endregion
+
+    //region Projects
+
+    "composite": true,
+
+    //endregion
+
+    //region Output Formatting
+
+    "noErrorTruncation": true,
+
+    //endregion
+
+    //region Completeness
+
+    "skipLibCheck": true,
+
+    //endregion
+
+    //region Command Line
+
+    //endregion
+
+    //region Watch Options
+
+    "assumeChangesOnlyAffectDirectDependencies": true,
+    //endregion
+
+    //region Type Acquisition
+
+    //endregion
+  },
+  "$schema": "https://json.schemastore.org/tsconfig",
+}

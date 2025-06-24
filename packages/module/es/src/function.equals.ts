@@ -72,8 +72,8 @@ export function equalsAsync<const T_equalTo,>(
  *
  * try {
  *   ensureIsTwo(3);
- * } catch (e) {
- *   console.error(e.message); // "input 3 isn't equal to 2"
+ * } catch (error) {
+ *   console.error(error.message); // "input 3 isn't equal to 2"
  * }
  * ```
  */
@@ -106,8 +106,8 @@ export function equalsOrThrow<const T_input,>(
  *
  * try {
  *   await ensureIsTwoAsync(3);
- * } catch (e) {
- *   console.error(e.message); // "input 3 isn't equal to 2"
+ * } catch (error) {
+ *   console.error(error.message); // "input 3 isn't equal to 2"
  * }
  * ```
  */

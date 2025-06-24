@@ -241,6 +241,9 @@ moon run es:js
 moon run es:types
 ```
 
+### Building Projects
+**IMPORTANT**: When rebuilding after configuration changes (like ESLint rules), always use `moon run build` to rebuild all projects at once. Moon's caching system ensures this is efficient and won't unnecessarily rebuild unchanged projects. This approach is preferred over building individual packages.
+
 ## Architecture
 
 ### Monorepo Structure
@@ -376,6 +379,11 @@ TypeScript's support for overloading generator functions has some quirks:
 
 - Prefer `const` over `let` to encourage immutability and prevent accidental reassignment. Only use `let` when a variable's value must change.
 - Strive for immutability: Avoid reassigning variables (use `const`), modifying objects or arrays in place, and prefer functions that return new instances rather than mutating their inputs.
+- **NEVER use single-letter variables like `i`, `j`, `k`** - they provide no semantic meaning
+  - Bad: `for (let i = 0; i < items.length; i++)`
+  - Good: `for (let itemIndex = 0; itemIndex < items.length; itemIndex++)`
+  - Good: `items.forEach((item, itemIndex) => ...)`
+  - Exception: Mathematical formulas where single letters have established meaning (e.g., `x`, `y` for coordinates)
 - **Prefer functional approaches over imperative loops**:
   - Bad: Manual loop with mutable counter to count occurrences
   - Good: `string.split(delimiter).length - 1` or similar built-in methods
@@ -828,3 +836,117 @@ test(module-es): achieve 100% coverage for error utilities
 - Be specific about what changed, not just which files
 - Never use emojis in commit messages
 - Focus on the "what" and "why", not just listing file changes
+
+## Linting and Code Quality
+
+### Identifying the linting tool
+When fixing linting issues, first identify which tool reports the error:
+- Check the lint output format: `monochromatic:lintOxlint | ! eslint-plugin-unicorn(error-message)` indicates oxlint
+- ESLint errors show as `eslint(rule-name)`
+- Oxlint errors often include the plugin name like `eslint-plugin-unicorn(rule-name)`
+
+### Common linting fixes
+
+#### Testing intentional violations
+When tests intentionally violate a rule to verify behavior:
+```ts
+// BAD: Adding data to satisfy the linter
+expect(isError(new Error('test message'))).toBe(true);
+
+// GOOD: Use disable comments for intentional violations
+// oxlint-disable-next-line unicorn/error-message -- Testing error without message
+expect(isError(new Error())).toBe(true);
+```
+
+#### Magic numbers
+Define constants for all numeric literals except -2, -1, 0, 1, 2:
+```ts
+// BAD
+const result = value * 100;
+if (array.length > 5) { }
+
+// GOOD
+const PERCENTAGE_BASE = 100;
+const MAX_ARRAY_LENGTH = 5;
+const result = value * PERCENTAGE_BASE;
+if (array.length > MAX_ARRAY_LENGTH) { }
+```
+
+#### Loops and iteration
+Prefer functional approaches over imperative loops:
+```ts
+// BAD: for...in with guard
+for (const key in obj) {
+  if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    result[key] = process(obj[key]);
+  }
+}
+
+// BETTER: for...of with Object.entries
+for (const [key, value] of Object.entries(obj)) {
+  result[key] = process(value);
+}
+
+// BEST: forEach for side effects
+Object.entries(obj).forEach(([key, value]) => {
+  result[key] = process(value);
+});
+
+// For transformations, use map/reduce
+const result = Object.fromEntries(
+  Object.entries(obj).map(([key, value]) => [key, process(value)])
+);
+```
+
+#### Async patterns
+- Use `wait()` from module-es instead of `new Promise(resolve => setTimeout(resolve, ms))`
+- Add `eslint-disable-next-line no-await-in-loop` when sequential processing is required
+- Import and use existing promise utilities instead of creating new promises
+
+#### Type annotations
+Always add explicit return types for functions:
+```ts
+// BAD
+function processData(data: string) {
+  return data.toUpperCase();
+}
+
+// GOOD
+function processData(data: string): string {
+  return data.toUpperCase();
+}
+
+// For async functions
+async function fetchData(): Promise<Data> {
+  return await api.getData();
+}
+```
+
+#### Import patterns
+- When parsers require namespace imports, add disable comment:
+  ```ts
+  // eslint-disable-next-line import/no-namespace -- Parser needs to be imported as namespace
+  import * as tsParser from '@typescript-eslint/parser';
+  ```
+- For CSS imports in Astro components:
+  ```ts
+  // eslint-disable-next-line import/no-unassigned-import -- CSS import for styling
+  import './_Head.css';
+  ```
+
+#### Null checks
+Use explicit comparisons instead of `!=` or `==`:
+```ts
+// BAD
+if (value != null) { }
+
+// GOOD
+if (value !== null && value !== undefined) { }
+```
+
+#### Module disambiguation
+For scripts that might be parsed as CommonJS, add an export:
+```ts
+// At the end of the file
+export {};
+```

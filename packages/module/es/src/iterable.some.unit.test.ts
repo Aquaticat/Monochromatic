@@ -67,8 +67,16 @@ describe(someIterable, () => {
 
   test('works with Maps', () => {
     const map = new Map([[1, 'a'], [2, 'b'], [3, 'c']]);
-    expect(someIterable(([key, _value]) => key === 2, map)).toBe(true);
-    expect(someIterable(([key, _value]) => key === 4, map)).toBe(false);
+    expect(someIterable((entry) => {
+      const [key, _value] = entry as [number, string];
+      return key === 2;
+    }, map))
+      .toBe(true);
+    expect(someIterable((entry) => {
+      const [key, _value] = entry as [number, string];
+      return key === 4;
+    }, map))
+      .toBe(false);
   });
 
   test('works with custom iterables', () => {
@@ -111,13 +119,17 @@ describe(someFailIterable, () => {
       { name: 'Bob', age: 17 },
       { name: 'Charlie', age: 30 },
     ];
-    expect(someFailIterable((user) => user.age >= 18, users)).toBe(true);
+    expect(someFailIterable((user) => (user as { age: number; }).age >= 18, users)).toBe(
+      true,
+    );
 
     const adults = [
       { name: 'Alice', age: 25 },
       { name: 'Charlie', age: 30 },
     ];
-    expect(someFailIterable((user) => user.age >= 18, adults)).toBe(false);
+    expect(someFailIterable((user) => (user as { age: number; }).age >= 18, adults)).toBe(
+      false,
+    );
   });
 
   test('returns false for empty arrays', () => {
@@ -136,17 +148,19 @@ describe(someFailIterable, () => {
 
   test('works with Sets', () => {
     const set = new Set(['a', 'b', 'c']);
-    expect(someFailIterable((x) => /^[a-z]$/.test(x), set)).toBe(false);
+    expect(someFailIterable((x) => /^[a-z]$/.test(x as string), set)).toBe(false);
 
     const mixedSet = new Set(['a', 'B', 'c']);
-    expect(someFailIterable((x) => /^[a-z]$/.test(x), mixedSet)).toBe(true);
+    expect(someFailIterable((x) => /^[a-z]$/.test(x as string), mixedSet)).toBe(true);
   });
 });
 
 describe(someIterableAsync, () => {
   test('returns true when at least one element passes the test', async () => {
     const array = [1, 3, 5, 8];
-    expect(await someIterableAsync(async (num: number) => num % 2 === 0, array)).toBe(true);
+    expect(await someIterableAsync(async (num: number) => num % 2 === 0, array)).toBe(
+      true,
+    );
   });
 
   test('returns false when no elements pass the test', async () => {
@@ -229,7 +243,7 @@ describe(someIterableAsync, () => {
 
   test('properly handles errors from predicate', async () => {
     const array = [1, 2, 3];
-    
+
     // The somePromises implementation catches errors, so it doesn't throw
     const result = await someIterableAsync(async (num: number) => {
       if (num === 2) {
@@ -237,7 +251,7 @@ describe(someIterableAsync, () => {
       }
       return num === 4;
     }, array);
-    
+
     expect(result).toBe(false);
   });
 });
@@ -269,7 +283,9 @@ describe(someFailIterableAsync, () => {
       { name: 'Alice', age: 25 },
       { name: 'Charlie', age: 30 },
     ];
-    expect(await someFailIterableAsync(async (user) => user.age >= 18, adults)).toBe(false);
+    expect(await someFailIterableAsync(async (user) => user.age >= 18, adults)).toBe(
+      false,
+    );
   });
 
   test('returns false for empty arrays', async () => {

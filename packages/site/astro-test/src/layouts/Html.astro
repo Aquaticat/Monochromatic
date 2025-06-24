@@ -1,10 +1,10 @@
 ---
 import Header from '@_/components/Header.astro';
 import Head from '@_/layouts/_Head.astro';
-interface Props {
+type Props = {
   title: string;
   lang: string;
-}
+};
 const { title, lang } = Astro.props;
 ---
 <html {lang}>

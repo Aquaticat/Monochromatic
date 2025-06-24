@@ -1,4 +1,11 @@
 // eslint-disable prefer-await-to-callbacks
+
+/** Percentage calculation base */
+const PERCENTAGE_BASE = 100;
+
+/** Maximum preview length for callbacks in debug messages */
+const CALLBACK_PREVIEW_LENGTH = 64;
+
 /** Basic testing framework
  @deprecated - Found a proper testing framework in Bun test, later Vitest.
 
@@ -220,7 +227,7 @@ type SuiteReturn =
 
         if (result !== undefined && result !== null) {
           if (took > timeLimit) {
-            const tooLongPercentage = 100 * (took - timeLimit) / timeLimit;
+            const tooLongPercentage = PERCENTAGE_BASE * (took - timeLimit) / timeLimit;
             l.error`${name} with todo: ${options.todo} took: ${took}ms, ${
               took - timeLimit
             }ms longer than timeLimit: ${timeLimit}ms, that's ${tooLongPercentage}% too long. finished: ${result}`;
@@ -237,7 +244,9 @@ type SuiteReturn =
         }
 
         if (took > timeLimit) {
-          const tooLongPercentage = Math.round(100 * (took - timeLimit) / timeLimit);
+          const tooLongPercentage = Math.round(
+            PERCENTAGE_BASE * (took - timeLimit) / timeLimit,
+          );
           l.error`${name} with todo: ${options.todo} took: ${Math.round(took)}ms, ${
             Math.round(took - timeLimit)
           }ms longer than timeLimit: ${timeLimit}ms, that's ${tooLongPercentage}% too long.`;
@@ -246,14 +255,14 @@ type SuiteReturn =
 
         l.warn`${name} with todo: ${options.todo} finished`;
         return { name, todo: options.todo! };
-      } catch (e) {
-        l.error`${name} with todo: ${options.todo} errored: ${e}`;
-        return { name, todo: options.todo!, result: e };
+      } catch (error) {
+        l.error`${name} with todo: ${options.todo} errored: ${error}`;
+        return { name, todo: options.todo!, result: error };
       }
     }
   }
 
-  l.debug`${name} started: ${String(callback).slice(0, 64)}`;
+  l.debug`${name} started: ${String(callback).slice(0, CALLBACK_PREVIEW_LENGTH)}`;
 
   // May error, and that's okay. The test will fail fast here.
   // Well nope, the code needs to catch and rethrow the error, at least to add the name of the test.

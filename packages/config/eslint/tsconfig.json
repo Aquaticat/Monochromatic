@@ -1,3 +1,24 @@
 {
-  "extends": "@monochromatic-dev/config-typescript/dom",
+  "extends": "@monochromatic-dev/config-typescript",
+  "references": [
+    {
+      "path": "../typescript"
+    },
+    {
+      "path": "../vite"
+    }
+  ],
+  "compilerOptions": {
+    "paths": {
+      "@monochromatic-dev/config-vite": [
+        "../vite/src/index.ts"
+      ],
+      "@monochromatic-dev/config-vite/*": [
+        "../vite/src/*"
+      ],
+      "@monochromatic-dev/config-typescript/*": [
+        "../typescript/*"
+      ]
+    }
+  }
 }

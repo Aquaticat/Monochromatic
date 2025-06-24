@@ -21,8 +21,8 @@ const processShard = async <const T,>(shard: Promisable<T>[],
       }),
     );
     return true;
-  } catch (error: any) {
-    throw new Error(`No matching items in shard with error ${error}`);
+  } catch (error: unknown) {
+    throw new Error(`No matching items in shard with error ${String(error)}`);
   }
 };
 

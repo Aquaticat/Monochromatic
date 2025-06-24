@@ -65,13 +65,13 @@ export const createBaseConfig = (
         // Copypasted from https://jsr.io/@logtape/logtape/0.10.0/formatter.ts
         let msg = '';
         const values: unknown[] = [];
-        for (let i = 0; i < record.message.length; i++) {
-          if (i % 2 === 0) {
+        for (let messageIndex = 0; messageIndex < record.message.length; messageIndex++) {
+          if (messageIndex % 2 === 0) {
             // eslint-disable-next-line @typescript-eslint/restrict-plus-operands -- Good enough for defaultConsoleFormatter in logtape library, good enough for the library.
-            msg += record.message[i];
+            msg += record.message[messageIndex];
           } else {
             msg += '%o';
-            values.push(record.message[i]);
+            values.push(record.message[messageIndex]);
           }
         }
         const date = new Date(record.timestamp);

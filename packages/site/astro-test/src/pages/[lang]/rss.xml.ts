@@ -1,4 +1,8 @@
 import rss from '@astrojs/rss';
+import type {
+  APIRoute,
+  GetStaticPaths,
+} from 'astro';
 
 import {
   i18n,
@@ -6,24 +10,25 @@ import {
   postsGroupedByLang,
 } from '@_/index.ts';
 
-export async function getStaticPaths() {
-  return langs.map((lang) => ({
+export const getStaticPaths: GetStaticPaths = async () => {
+  return langs.map((lang: string) => ({
     params: { lang },
   }));
-}
+};
 
-export function GET({ site, params }) {
+export const GET: APIRoute = ({ site, params }) => {
+  const lang = params.lang as string;
   return rss({
     // `<title>` field in output xml
-    title: i18n.get('siteName')!.get(params.lang)!,
+    title: i18n.get('siteName')!.get(lang)!,
     // `<description>` field in output xml
-    description: i18n.get('siteDescription')!.get(params.lang)!,
+    description: i18n.get('siteDescription')!.get(lang)!,
     // Pull in your project "site" from the endpoint context
     // https://docs.astro.build/en/reference/api-reference/#site
     site: site,
     // Array of `<item>`s in output xml
     // See "Generating items" section for examples using content collections and glob imports
-    items: postsGroupedByLang[params.lang]!.map((langPost) => ({
+    items: postsGroupedByLang[lang]!.map((langPost: import('@_/index.ts').Post) => ({
       title: langPost.data.title,
       pubDate: langPost.data.published,
       description: langPost.data.description,
@@ -33,4 +38,4 @@ export function GET({ site, params }) {
     // (optional) inject custom xml
     customData: `<language>${params.lang}</language>`,
   });
-}
+};

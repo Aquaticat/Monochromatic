@@ -213,11 +213,11 @@ export function lGCC_groupFunctionTokens(tokens: GroupedToken[]): GroupedToken[]
         // Create a new function group
         const functionGroup: GroupedToken[] = [token];
         let depth = 1; // Track nesting level
-        let i = arr.indexOf(token) + 1;
+        let tokenIndex = arr.indexOf(token) + 1;
 
         // Collect all tokens until matching closing parenthesis
         while (depth > 0) {
-          const currentToken = notFalsyOrThrow(arr[i]);
+          const currentToken = notFalsyOrThrow(arr[tokenIndex]);
           functionGroup.push(currentToken);
 
           // Adjust depth based on parentheses
@@ -228,7 +228,7 @@ export function lGCC_groupFunctionTokens(tokens: GroupedToken[]): GroupedToken[]
             depth--;
           }
 
-          i++;
+          tokenIndex++;
         }
 
         const reducedFunctionGroupInner: GroupedToken[] = functionGroup

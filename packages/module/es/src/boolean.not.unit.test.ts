@@ -11,7 +11,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('BooleanNot', () => {
+describe(BooleanNot, () => {
   test('negates boolean values', () => {
     expect(BooleanNot(true)).toBe(false);
     expect(BooleanNot(false)).toBe(true);

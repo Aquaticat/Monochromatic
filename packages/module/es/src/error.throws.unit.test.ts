@@ -11,14 +11,14 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('throws', () => {
+describe(throws, () => {
   test('throws an Error instance unchanged', () => {
     const error = new Error('test error');
     expect(() => throws(error)).toThrow(Error);
     try {
       throws(error);
-    } catch (e) {
-      expect(e).toBe(error);
+    } catch (caughtError) {
+      expect(caughtError).toBe(error);
     }
   });
 

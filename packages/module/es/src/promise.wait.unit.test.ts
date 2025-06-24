@@ -11,7 +11,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('wait', () => {
+describe(wait, () => {
   test('resolves after the specified time', async () => {
     const startTime = performance.now();
     const waitTime = 100;

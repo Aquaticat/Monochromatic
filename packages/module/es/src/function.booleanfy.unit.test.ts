@@ -12,7 +12,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('booleanfy', () => {
+describe(booleanfy, () => {
   test('converts truthy return values to true', () => {
     const fn1 = booleanfy(() => 'string');
     const fn2 = booleanfy(() => 42);
@@ -57,7 +57,7 @@ describe('booleanfy', () => {
   });
 });
 
-describe('booleanfyAsync', () => {
+describe(booleanfyAsync, () => {
   test('converts truthy return values to true', async () => {
     const fn1 = booleanfyAsync(async () => 'string');
     const fn2 = booleanfyAsync(async () => 42);

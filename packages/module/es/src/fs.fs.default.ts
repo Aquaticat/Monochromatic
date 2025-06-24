@@ -246,9 +246,9 @@ async function rm(path: string,
   const absPath = path.startsWith('/') ? path : `/${path}`;
   try {
     unwrapResult(await remove(absPath));
-  } catch (e) {
+  } catch (error) {
     if (!options.force) {
-      throw e;
+      throw error;
     }
   }
 }

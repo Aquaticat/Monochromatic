@@ -51,6 +51,7 @@
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/config-vite": "workspace:*",
     "type-fest": "catalog:",
     "@types/bun": "catalog:",
     "vite": "catalog:",

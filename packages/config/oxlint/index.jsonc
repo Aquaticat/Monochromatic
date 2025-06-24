@@ -224,6 +224,26 @@
       },
     },
     {
+      "files": ["**/fixture.*"],
+      "rules": {
+        // Fixture files can use magic numbers.
+        "eslint/no-magic-numbers": "off",
+      },
+    },
+    {
+      "files": ["**/*.astro"],
+      "rules": {
+        // Astro components have implicit module context and don't need import/export statements
+        "import/unambiguous": "off",
+
+        // Astro frontmatter requires exports (like getStaticPaths) at the top before component logic
+        "import/exports-last": "off",
+
+        // Astro requires getStaticPaths to be async even when no await is needed
+        "eslint/require-await": "off",
+      },
+    },
+    {
       "files": [
         "**/*.{test,bench}.ts",
       ],

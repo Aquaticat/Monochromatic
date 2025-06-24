@@ -15,19 +15,18 @@
     "lightningcss": "catalog:"
   },
   "devDependencies": {
-    "vite": "catalog:",
+    "@csstools/custom-units": "catalog:",
     "@monochromatic-dev/config-typescript": "workspace:*",
-    "@monochromatic-dev/module-es": "workspace:*",
-    "vitest": "catalog:",
     "@types/bun": "catalog:",
     "@types/postcss-mixins": "catalog:",
     "nano-spawn": "catalog:",
-    "postcss-mixins": "catalog:",
-    "@csstools/custom-units": "catalog:",
+    "postcss": "catalog:",
     "postcss-custom-media": "catalog:",
     "postcss-custom-selectors": "catalog:",
+    "postcss-mixins": "catalog:",
+    "vite": "catalog:",
     "vite-plugin-json5": "catalog:",
-    "postcss": "catalog:"
+    "vitest": "catalog:"
   },
   "type": "module",
   "files": [

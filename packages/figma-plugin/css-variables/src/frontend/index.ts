@@ -35,11 +35,11 @@ const handleMessage = (
       .authoredCss;
     if (Object.hasOwn(authoredCss, 'cssVar')) {
       // Send data to plugin backend and set the variable value in Figma in specified mode to computed value.
-      window.parent.postMessage({ pluginMessage: authoredCss }, '*');
+      globalThis.parent.postMessage({ pluginMessage: authoredCss }, '*');
     } else {
       l.info`got this from authoredCss ${authoredCss}`;
     }
   }
 };
 
-window.addEventListener('message', handleMessage);
+globalThis.addEventListener('message', handleMessage);

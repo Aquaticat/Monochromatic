@@ -1,3 +1,14 @@
+/** Supported parameter counts for curry function */
+const MIN_CURRY_PARAMS = 2;
+const MAX_CURRY_PARAMS = 10;
+const CURRY_PARAMS_3 = 3;
+const CURRY_PARAMS_4 = 4;
+const CURRY_PARAMS_5 = 5;
+const CURRY_PARAMS_6 = 6;
+const CURRY_PARAMS_7 = 7;
+const CURRY_PARAMS_8 = 8;
+const CURRY_PARAMS_9 = 9;
+
 /**
  * Transforms a multi-parameter function into a curried function that can be called with one argument at a time.
  * Currying allows partial application of function arguments, creating specialized functions by fixing some parameters.
@@ -200,7 +211,7 @@ export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4
     };
   }
 
-  if (fn.length === 3) {
+  if (fn.length === CURRY_PARAMS_3) {
     return function fn0To(
       parameter0: Parameter0,
     ): (parameter1: Parameter1) => (parameter2: Parameter2) => Returns {
@@ -212,7 +223,7 @@ export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4
     };
   }
 
-  if (fn.length === 4) {
+  if (fn.length === CURRY_PARAMS_4) {
     return function fn0To(
       parameter0: Parameter0,
     ): (
@@ -232,7 +243,7 @@ export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4
     };
   }
 
-  if (fn.length === 5) {
+  if (fn.length === CURRY_PARAMS_5) {
     return function fn0To(
       parameter0: Parameter0,
     ): (
@@ -260,7 +271,7 @@ export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4
     };
   }
 
-  if (fn.length === 6) {
+  if (fn.length === CURRY_PARAMS_6) {
     return function fn0To(
       parameter0: Parameter0,
     ): (
@@ -299,7 +310,7 @@ export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4
     };
   }
 
-  if (fn.length === 7) {
+  if (fn.length === CURRY_PARAMS_7) {
     return function fn0To(
       parameter0: Parameter0,
     ): (
@@ -350,7 +361,7 @@ export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4
     };
   }
 
-  if (fn.length === 8) {
+  if (fn.length === CURRY_PARAMS_8) {
     return function fn0To(
       parameter0: Parameter0,
     ): (
@@ -415,7 +426,7 @@ export function curry<Parameter0, Parameter1, Parameter2, Parameter3, Parameter4
     };
   }
 
-  if (fn.length === 9) {
+  if (fn.length === CURRY_PARAMS_9) {
     return function fn0To(
       parameter0: Parameter0,
     ): (

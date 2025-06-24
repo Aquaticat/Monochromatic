@@ -1,3 +1,4 @@
+import { notNullishOrThrow } from './error.throw.ts';
 import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 /**
@@ -239,7 +240,6 @@ export function* takeIterableGen<const T,>(
   }
 }
 
-
 /**
  * Takes elements from an async iterable while a predicate returns true, collecting into an array.
  * Stops taking elements as soon as the predicate returns false for the first time.
@@ -338,11 +338,12 @@ export function takeWhileIterable<const T,>(
   const arr = [...iterable];
   const result: T[] = [];
 
-  for (let i = 0; i < arr.length; i++) {
-    if (!predicate(arr[i], i, arr)) {
+  for (let index = 0; index < arr.length; index++) {
+    const element = notNullishOrThrow(arr[index]);
+    if (!predicate(element, index, arr)) {
       break;
     }
-    result.push(arr[i]);
+    result.push(element);
   }
 
   return result;

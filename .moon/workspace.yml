@@ -31,9 +31,10 @@ vcs:
   hookFormat: 'bash'
 
   syncHooks: true
-  
+
   hooks:
-    pre-commit: ['.moon/hooks/pre-commit']
+    pre-commit:
+    - 'moon run precommit'
 
 codeowners:
   syncOnRun: true

@@ -8,3 +8,19 @@ node:
   packageManager: 'pnpm'
   pnpm:
     version: '>=10.11.1'
+
+typescript:
+  syncProjectReferences: true
+
+  rootOptionsConfigFileName: './packages/config/typescript/tsconfig.dom.json'
+
+  # Defaults to false. Might be unnecessary and clutters the tsconfig.json
+  # TODO: Find out if this really is unnecessary.
+  # includeProjectReferenceSources: true
+
+  syncProjectReferencesToPaths: true
+
+  # Defaults to false. If such a package exists and is not ignored, moon should fail.
+  # createMissingConfig: true
+
+  includeSharedTypes: true

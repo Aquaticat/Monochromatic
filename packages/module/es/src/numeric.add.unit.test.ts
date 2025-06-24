@@ -24,7 +24,7 @@ describe(addNumbers, () => {
   });
 });
 
-describe('addNumbersAsync', () => {
+describe(addNumbersAsync, () => {
   test('adds an array of numbers asynchronously', async () => {
     expect(await addNumbersAsync([1, 2, 3, 4])).toBe(10);
     expect(await addNumbersAsync([0, -5, 10])).toBe(5);
@@ -41,7 +41,7 @@ describe('addNumbersAsync', () => {
   });
 });
 
-describe('addBigints', () => {
+describe(addBigints, () => {
   test('adds an array of bigints', () => {
     expect(addBigints([1n, 2n, 3n, 4n])).toBe(10n);
     expect(addBigints([0n, -5n, 10n])).toBe(5n);
@@ -49,7 +49,7 @@ describe('addBigints', () => {
   });
 });
 
-describe('addBigintsAsync', () => {
+describe(addBigintsAsync, () => {
   test('adds an array of bigints asynchronously', async () => {
     expect(await addBigintsAsync([1n, 2n, 3n, 4n])).toBe(10n);
     expect(await addBigintsAsync([0n, -5n, 10n])).toBe(5n);
@@ -66,7 +66,7 @@ describe('addBigintsAsync', () => {
   });
 });
 
-describe('addNumerics', () => {
+describe(addNumerics, () => {
   test('adds an array of numbers', () => {
     expect(addNumerics([1, 2, 3, 4])).toBe(10);
     expect(addNumerics([-5, 10, -2])).toBe(3);
@@ -86,7 +86,7 @@ describe('addNumerics', () => {
   });
 });
 
-describe('addNumericsAsync', () => {
+describe(addNumericsAsync, () => {
   test('adds an array of numbers asynchronously', async () => {
     expect(await addNumericsAsync([1, 2, 3, 4])).toBe(10);
     expect(await addNumericsAsync([-5, 10, -2])).toBe(3);

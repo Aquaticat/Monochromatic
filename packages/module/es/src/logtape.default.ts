@@ -40,15 +40,16 @@ const createBrowserFileSink = async (
     console.log(`opfs failed with ${opfsError}, trying sessionStorage`);
 
     try {
-      window.sessionStorage.setItem('test', 'test');
-      window.sessionStorage.removeItem('test');
+      globalThis.sessionStorage.setItem('test', 'test');
+      globalThis.sessionStorage.removeItem('test');
 
-      window.sessionStorage.setItem(`${appName}.line`, '-1');
+      globalThis.sessionStorage.setItem(`${appName}.line`, '-1');
 
       const sessionStorageSink: Sink & AsyncDisposable = (record: LogRecord): void => {
-        const lineNumber = Number(window.sessionStorage.getItem(`${appName}.line`)!) + 1;
-        window.sessionStorage.setItem(`${appName}.line`, String(lineNumber));
-        window.sessionStorage.setItem(
+        const lineNumber = Number(globalThis.sessionStorage.getItem(`${appName}.line`)!)
+          + 1;
+        globalThis.sessionStorage.setItem(`${appName}.line`, String(lineNumber));
+        globalThis.sessionStorage.setItem(
           `${appName}.${lineNumber}`,
           `${JSON.stringify(record, null, 2)}\n`,
         );
@@ -58,17 +59,17 @@ const createBrowserFileSink = async (
         // eslint-disable-next-line require-await -- To keep the signature consistent, we've to make it an async function.
         async function disposeSessionStorage(): Promise<void> {
           console.log('disposing sessionStorage sink');
-          const lineCount = Number(window.sessionStorage.getItem(`${appName}.line`)!);
+          const lineCount = Number(globalThis.sessionStorage.getItem(`${appName}.line`)!);
 
           const lines = Array
             .from({ length: lineCount + 1 })
             .map(function popLine(_value, lineNumber) {
-              const line = window.sessionStorage.getItem(`${appName}.${lineNumber}`)!;
-              window.sessionStorage.removeItem(`${appName}.${lineNumber}`);
+              const line = globalThis.sessionStorage.getItem(`${appName}.${lineNumber}`)!;
+              globalThis.sessionStorage.removeItem(`${appName}.${lineNumber}`);
               return line;
             });
 
-          window.sessionStorage.removeItem(`${appName}.line`);
+          globalThis.sessionStorage.removeItem(`${appName}.line`);
           const content = lines.join('\n');
           console.log('disposed sessionStorage sink', 'with content length', content
             .length);

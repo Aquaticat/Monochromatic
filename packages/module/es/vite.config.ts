@@ -1,4 +1,6 @@
-import { getLib } from '@monochromatic-dev/config-vite';
+// Cannot use project references because it uses export conditions to build itself.
+// Therefore it has to directly import the source file.
+import { getLib } from '@monochromatic-dev/config-vite/.ts';
 
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';

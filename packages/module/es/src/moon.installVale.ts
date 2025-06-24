@@ -15,11 +15,10 @@ try {
         // Windows: use where.exe
         execSync('where.exe vale', { stdio: 'ignore' });
         return true;
-      } else {
-        // Linux/macOS: use which
-        execSync('which vale', { stdio: 'ignore' });
-        return true;
       }
+      // Linux/macOS: use which
+      execSync('which vale', { stdio: 'ignore' });
+      return true;
     } catch {
       // Command failed, vale not found
       return false;

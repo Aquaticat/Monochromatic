@@ -3,3 +3,8 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 tags:
 - 'dualBuildsNodeBrowser'
 - package
+
+toolchain:
+  typescript:
+    # Cannot use project references because it uses export conditions to build itself.
+    syncProjectReferences: false

@@ -3,3 +3,8 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 tags:
 - 'noTypescript'
 - 'noJs'
+
+toolchain:
+  typescript:
+    # Config only package with no typescript source nor build steps.
+    syncProjectReferences: false

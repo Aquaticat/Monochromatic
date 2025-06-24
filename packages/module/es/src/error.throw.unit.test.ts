@@ -22,7 +22,7 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration());
 
-describe('notNullishOrThrow', () => {
+describe(notNullishOrThrow, () => {
   test('throws for null', () => {
     expect(() => notNullishOrThrow(null)).toThrow(TypeError);
   });
@@ -40,7 +40,7 @@ describe('notNullishOrThrow', () => {
   });
 });
 
-describe('notUndefinedOrThrow', () => {
+describe(notUndefinedOrThrow, () => {
   test('throws for undefined', () => {
     expect(() => notUndefinedOrThrow(undefined)).toThrow(TypeError);
   });
@@ -53,7 +53,7 @@ describe('notUndefinedOrThrow', () => {
   });
 });
 
-describe('notNullOrThrow', () => {
+describe(notNullOrThrow, () => {
   test('throws for null', () => {
     expect(() => notNullOrThrow(null)).toThrow(TypeError);
   });
@@ -66,7 +66,7 @@ describe('notNullOrThrow', () => {
   });
 });
 
-describe('notFalsyOrThrow', () => {
+describe(notFalsyOrThrow, () => {
   test('throws for falsy values', () => {
     expect(() => notFalsyOrThrow(false)).toThrow(TypeError);
     expect(() => notFalsyOrThrow(null)).toThrow(TypeError);
@@ -84,7 +84,7 @@ describe('notFalsyOrThrow', () => {
   });
 });
 
-describe('notFalseOrThrow', () => {
+describe(notFalseOrThrow, () => {
   test('throws for false', () => {
     expect(() => notFalseOrThrow(false)).toThrow(TypeError);
   });
@@ -98,7 +98,7 @@ describe('notFalseOrThrow', () => {
   });
 });
 
-describe('notObjOrThrow', () => {
+describe(notObjOrThrow, () => {
   test('throws for objects', () => {
     expect(() => notObjOrThrow({})).toThrow(TypeError);
     expect(() => notObjOrThrow([])).toThrow(TypeError);
@@ -119,7 +119,7 @@ describe('notObjOrThrow', () => {
   });
 });
 
-describe('notTrueOrThrow', () => {
+describe(notTrueOrThrow, () => {
   test('throws for true', () => {
     expect(() => notTrueOrThrow(true)).toThrow(TypeError);
   });
@@ -136,7 +136,7 @@ describe('notTrueOrThrow', () => {
   });
 });
 
-describe('notTruthyOrThrow', () => {
+describe(notTruthyOrThrow, () => {
   test('throws for truthy values', () => {
     expect(() => notTruthyOrThrow(true)).toThrow(TypeError);
     expect(() => notTruthyOrThrow(1)).toThrow(TypeError);
@@ -162,7 +162,7 @@ describe('notTruthyOrThrow', () => {
   });
 });
 
-describe('notEmptyOrThrow', () => {
+describe(notEmptyOrThrow, () => {
   test('throws for empty string', () => {
     expect(() => notEmptyOrThrow('')).toThrow(TypeError);
   });
@@ -182,7 +182,7 @@ describe('notEmptyOrThrow', () => {
   });
 });
 
-describe('notArrayOrThrow', () => {
+describe(notArrayOrThrow, () => {
   test('throws for arrays', () => {
     expect(() => notArrayOrThrow([])).toThrow(TypeError);
     expect(() => notArrayOrThrow([1, 2, 3])).toThrow(TypeError);
@@ -199,7 +199,7 @@ describe('notArrayOrThrow', () => {
   });
 });
 
-describe('notStringOrThrow', () => {
+describe(notStringOrThrow, () => {
   test('throws for strings', () => {
     expect(() => notStringOrThrow('')).toThrow(TypeError);
     expect(() => notStringOrThrow('hello')).toThrow(TypeError);
@@ -216,7 +216,7 @@ describe('notStringOrThrow', () => {
   });
 });
 
-describe('notEmptyArrayOrThrow', () => {
+describe(notEmptyArrayOrThrow, () => {
   test('throws for empty array', () => {
     expect(() => notEmptyArrayOrThrow([])).toThrow(TypeError);
     expect(() => notEmptyArrayOrThrow([])).toThrow('[] is an empty array');

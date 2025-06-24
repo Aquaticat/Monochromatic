@@ -176,7 +176,7 @@ export function intersectionIterables(...arrays: Iterable<unknown>[]): Set<unkno
  *
  * // Generator to Set
  * function* range(n: number) {
- *   for (let i = 0; i < n; i++) yield i;
+ *   for (let value = 0; value < n; value++) yield value;
  * }
  * const rangeSet = setOfIterable(range(5)); // Set(5) {0, 1, 2, 3, 4}
  *
@@ -213,9 +213,9 @@ export function setOfIterable<const T,>(
  *
  * // Async generator to Set
  * async function* asyncRange(n: number) {
- *   for (let i = 0; i < n; i++) {
+ *   for (let value = 0; value < n; value++) {
  *     await new Promise(resolve => setTimeout(resolve, 10)); // Simulate delay
- *     yield i;
+ *     yield value;
  *   }
  * }
  * const rangeSet = await setOfIterableAsync(asyncRange(5)); // Set(5) {0, 1, 2, 3, 4}

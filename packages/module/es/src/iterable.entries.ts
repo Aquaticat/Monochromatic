@@ -21,8 +21,8 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
  * ```ts
  * // Basic async iterable enumeration
  * async function* asyncNumbers() {
- *   for (let i = 10; i <= 13; i++) {
- *     yield i;
+ *   for (let value = 10; value <= 13; value++) {
+ *     yield value;
  *   }
  * }
  *
@@ -92,11 +92,11 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 >(
   arrayLike: T_arrayLike,
 ): AsyncGenerator<[number, T_element]> {
-  let i = 0;
+  let index = 0;
 
   for await (const arrayLikeElement of arrayLike as AsyncIterable<T_element>) {
-    yield [i, arrayLikeElement];
-    i++;
+    yield [index, arrayLikeElement];
+    index++;
   }
 }
 
@@ -187,10 +187,10 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 >(
   arrayLike: T_arrayLike,
 ): Generator<[number, T_element]> {
-  let i = 0;
+  let index = 0;
 
   for (const arrayLikeElement of arrayLike) {
-    yield [i, arrayLikeElement];
-    i++;
+    yield [index, arrayLikeElement];
+    index++;
   }
 }

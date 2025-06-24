@@ -2,11 +2,11 @@
   "name": "@monochromatic-dev/config-typescript",
   "version": "0.0.5",
   "description": "Monochromatic's tsconfig.json",
-  "main": "tsconfig.json",
-  "module": "tsconfig.json",
+  "main": "tsconfig.options.json",
+  "module": "tsconfig.options.json",
   "type": "module",
   "files": [
-    "tsconfig.json",
+    "tsconfig.options.json",
     "example.tsconfig.json",
     "tsconfig.dom.json",
     "dom.example.tsconfig.json",
@@ -25,7 +25,7 @@
     "url": "https://aquati.cat"
   },
   "exports": {
-    ".": "./tsconfig.json",
+    ".": "./tsconfig.options.json",
     "./dom": "./tsconfig.dom.json",
     "./astro": "./tsconfig.astro.json"
   },

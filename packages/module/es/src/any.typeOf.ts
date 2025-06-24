@@ -40,20 +40,20 @@ export function typeOf(
   | 'object'
 {
   // Early returns for primitives to avoid switch statement evaluation issues
-  if (obj === null) return 'null';
-  if (obj === undefined) return 'undefined';
-  if (typeof obj === 'number' && Number.isNaN(obj)) return 'NaN';
-  if (typeof obj === 'number') return 'number';
-  if (typeof obj === 'boolean') return 'boolean';
-  if (typeof obj === 'bigint') return 'bigint';
-  if (typeof obj === 'symbol') return 'symbol';
-  if (typeof obj === 'string') return 'string';
+  if (obj === null) { return 'null'; }
+  if (obj === undefined) { return 'undefined'; }
+  if (typeof obj === 'number' && Number.isNaN(obj)) { return 'NaN'; }
+  if (typeof obj === 'number') { return 'number'; }
+  if (typeof obj === 'boolean') { return 'boolean'; }
+  if (typeof obj === 'bigint') { return 'bigint'; }
+  if (typeof obj === 'symbol') { return 'symbol'; }
+  if (typeof obj === 'string') { return 'string'; }
 
   // Handle special object types
-  if (Array.isArray(obj)) return 'array';
-  if (obj instanceof Date) return 'date';
-  if (obj instanceof Set) return 'set';
-  if (obj instanceof Map) return 'map';
+  if (Array.isArray(obj)) { return 'array'; }
+  if (obj instanceof Date) { return 'date'; }
+  if (obj instanceof Set) { return 'set'; }
+  if (obj instanceof Map) { return 'map'; }
 
   // Handle objects with careful checking to avoid primitive conversion errors
   if (typeof obj === 'object') {

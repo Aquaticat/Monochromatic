@@ -9,7 +9,7 @@ import {
   test,
 } from 'vitest';
 
-describe('unwrapResult', () => {
+describe(unwrapResult, () => {
   test('returns value from successful Result', () => {
     const successResult = Ok<string, Error>('hello world');
     const value = unwrapResult(successResult);

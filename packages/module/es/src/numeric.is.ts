@@ -99,7 +99,7 @@ import type { Nan } from './numeric.type.nan';
  * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export function isNan(
-  value: any,
+  value: unknown,
 ): value is Nan {
   return Number.isNaN(value);
 }
@@ -534,7 +534,7 @@ export function isNegativeFloat(
  * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export function isPositiveInfinity(
-  value: any,
+  value: unknown,
 ): value is PositiveInfinity {
   return value === Number.POSITIVE_INFINITY;
 }
@@ -579,7 +579,7 @@ export function isNegativeFloat(
  * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export function isNegativeInfinity(
-  value: any,
+  value: unknown,
 ): value is PositiveInfinity {
   return value === Number.NEGATIVE_INFINITY;
 }
@@ -828,7 +828,7 @@ export function isNegativeFloat(
  * const validDates = dates.filter(date => !isNaN(date.getTime()));
  * ```
  */
-/* @__NO_SIDE_EFFECTS__ */ export function isObjectDate(value: any): value is Date {
+/* @__NO_SIDE_EFFECTS__ */ export function isObjectDate(value: unknown): value is Date {
   return Object.prototype.toString.call(value) === '[object Date]';
 }
 

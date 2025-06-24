@@ -122,7 +122,7 @@
 export function generateConsecutiveArray(
   count: number,
 ): number[] {
-  return Array.from({ length: count }, (_, i) => i);
+  return Array.from({ length: count }, (_, index) => index);
 }
 
 /**
@@ -220,7 +220,9 @@ export function generateProgressivePromises(
 ): Promise<number>[] {
   return Array.from(
     { length: count },
-    (_, i) => new Promise<number>((resolve) => setTimeout(() => resolve(i), i)),
+    (_, index) =>
+      // eslint-disable-next-line promise/avoid-new -- Creating promise for test fixture
+      new Promise<number>((resolve) => setTimeout(() => resolve(index), index)),
   );
 }
 
