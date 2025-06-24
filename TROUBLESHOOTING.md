@@ -567,3 +567,79 @@ All vite config files that import from `@monochromatic-dev/config-vite`:
 - `vitest.browser.config.ts`
 - `packages/config/eslint/vite.config.ts`
 - `packages/figma-plugin/css-variables/vite.config.*.ts`
+
+## Fresh Clone Setup: Lessons from the Build Order Saga
+
+### The Journey
+Setting up a monorepo to work correctly from a fresh clone involves multiple layers of complexity that only surface when starting from scratch. This section documents the complete journey of debugging and fixing fresh clone build issues.
+
+### Issue 1: Dependencies Not Installing
+
+**Symptom**: Running `moon run prepare` on a fresh clone would fail with module resolution errors.
+
+**Root Cause**: Moon's automatic dependency installation requires the `language` field in project configurations. Without `language: 'typescript'`, Moon doesn't recognize that projects need Node.js dependencies and won't run the `InstallWorkspaceDeps` action.
+
+**Fix**: Add `language: 'typescript'` to all TypeScript project moon.yml files.
+
+### Issue 2: Build Order Dependencies
+
+**Symptom**: After fixing dependency installation, builds would fail with:
+```
+Failed to resolve entry for package "@monochromatic-dev/config-vite"
+```
+
+**Investigation Path**:
+1. Initially thought it was a moon.yml configuration issue
+2. Tried adding `dependsOn` to project configurations
+3. Discovered that project dependencies affect the project graph but not task dependencies
+4. Attempted to add task-level dependencies but hit a circular dependency
+
+**Root Cause**: The vite config package itself uses vite to build, creating a circular dependency. Packages importing from `@monochromatic-dev/config-vite` were trying to use the built output before it existed.
+
+**Fix**: Import from TypeScript source using the `.ts` export path instead of the built output. This bypasses the build requirement at a small performance cost.
+
+### Key Learnings
+
+1. **Moon's Behavior**:
+   - `language` field is required for automatic dependency installation
+   - Project dependencies (`dependsOn`) != task dependencies
+   - Task dependencies can create circular dependency issues
+   - The `InstallWorkspaceDeps` action is language-aware
+
+2. **Build System Design**:
+   - Circular dependencies in build tools are particularly problematic
+   - Package.json `exports` field can provide escape hatches
+   - Sometimes importing from source is the pragmatic solution
+   - Performance penalties may be acceptable to solve correctness issues
+
+3. **Testing Philosophy**:
+   - Always test with fresh clones before considering a fix complete
+   - Build issues often cascade - fix one to reveal the next
+   - The development environment can mask problems (cached dependencies, built artifacts)
+
+4. **Debugging Approach**:
+   - Start with the simplest possible fix (configuration)
+   - Understand the tool's mental model (project vs task dependencies)
+   - Consider unconventional solutions when conventional ones create new problems
+   - Document the journey for future reference
+
+### Best Practices for Fresh Clone Setup
+
+1. **Configuration**:
+   - Always set `language` field in moon.yml for projects with dependencies
+   - Be explicit about build dependencies even if they seem obvious
+   - Test configuration changes with `moon clean` and fresh clones
+
+2. **Build Architecture**:
+   - Avoid circular dependencies in build tooling
+   - Provide source-based exports for configuration packages
+   - Consider the bootstrap problem: how does a build tool build itself?
+
+3. **Documentation**:
+   - Document non-obvious solutions with context
+   - Explain why unconventional approaches were chosen
+   - Include the problem-solving journey, not just the solution
+
+### The Meta Lesson
+
+Fresh clone setup issues reveal the hidden assumptions in our development workflow. What works in an established development environment may fail catastrophically in a clean environment. Regular fresh clone testing is essential for maintaining a truly reproducible build system.
