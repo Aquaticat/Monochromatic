@@ -140,6 +140,7 @@ export function addTwoBigints(previousValue: bigint, currentValue: bigint): bigi
  * ```
  */
 export function sumBigints(...bigints: bigint[]): bigint {
+  // eslint-disable-next-line no-magic-numbers -- Zero bigint as initial value
   return bigints.reduce(addTwoBigints, 0n);
 }
 
@@ -393,6 +394,7 @@ export function addNumbers(
 export async function addBigintsAsync(
   bigints: MaybeAsyncIterable<bigint>,
 ): Promise<bigint> {
+  // eslint-disable-next-line no-magic-numbers -- Zero bigint as initial value
   return await reduceIterableAsync(0n, addTwoBigints, bigints);
 }
 
@@ -440,6 +442,7 @@ export async function addBigintsAsync(
  * ```
  */
 export function addBigints(bigints: Iterable<bigint>): bigint {
+  // eslint-disable-next-line no-magic-numbers -- Zero bigint as initial value
   return reduceIterable(0n, addTwoBigints, bigints);
 }
 

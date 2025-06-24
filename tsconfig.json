@@ -36,19 +36,19 @@
   "compilerOptions": {
     "paths": {
       "@monochromatic-dev/config-eslint": [
-        "packages/config/eslint/src/index.ts"
+        "./packages/config/eslint/src/index.ts"
       ],
       "@monochromatic-dev/config-eslint/*": [
-        "packages/config/eslint/src/*"
+        "./packages/config/eslint/src/*"
       ],
       "@monochromatic-dev/config-vite": [
-        "packages/config/vite/src/index.ts"
+        "./packages/config/vite/src/index.ts"
       ],
       "@monochromatic-dev/config-vite/*": [
-        "packages/config/vite/src/*"
+        "./packages/config/vite/src/*"
       ],
       "@monochromatic-dev/config-typescript/*": [
-        "packages/config/typescript/*"
+        "./packages/config/typescript/*"
       ]
     }
   }

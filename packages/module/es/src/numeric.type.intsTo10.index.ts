@@ -12,7 +12,7 @@
           toInclusive === fromInclusive
             ? toInclusive
             : `(${
-              [...Array(toInclusive + 1 - fromInclusive).keys()]
+              [...new Array(toInclusive + 1 - fromInclusive).keys()]
                 .map((current) =>
                   current + fromInclusive
                 )

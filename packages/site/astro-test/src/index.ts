@@ -1,4 +1,8 @@
-import { getCollection } from 'astro:content';
+import { 
+  getCollection,
+  type InferEntrySchema,
+  type RenderedContent,
+} from 'astro:content';
 
 export type Post = {
   lang: string;
@@ -6,8 +10,8 @@ export type Post = {
   id: string;
   body?: string;
   collection: 'blog';
-  data: import('astro:content').InferEntrySchema<'blog'>;
-  rendered?: import('astro:content').RenderedContent;
+  data: InferEntrySchema<'blog'>;
+  rendered?: RenderedContent;
   filePath?: string;
 };
 
@@ -110,9 +114,13 @@ export const i18n = new Map<string, Map<string, string>>(
       ]),
     ],
     [
+      // eslint-disable-next-line no-template-curly-in-string -- i18n placeholder
       'Redirecting to choose a language page for ${name}',
-      new Map([['en', 'Redirecting to choose a language page for ${name}'], [
+      new Map([
+        // eslint-disable-next-line no-template-curly-in-string -- i18n placeholder
+        ['en', 'Redirecting to choose a language page for ${name}'], [
         'zh',
+        // eslint-disable-next-line no-template-curly-in-string -- i18n placeholder
         '正在跳转至${name}的语言选择页面',
       ]]),
     ],

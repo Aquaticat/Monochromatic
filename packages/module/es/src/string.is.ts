@@ -104,7 +104,8 @@ import type {
 /* @__NO_SIDE_EFFECTS__ */ export function isLongLangString(
   value: unknown,
 ): value is LongLangString {
-  return isString(value) && value.length === 5 && /^[a-z]{2}-[A-Z]{2}$/.test(value);
+  const LANG_CODE_WITH_REGION_LENGTH = 5;
+  return isString(value) && value.length === LANG_CODE_WITH_REGION_LENGTH && /^[a-z]{2}-[A-Z]{2}$/.test(value);
 }
 
 /**

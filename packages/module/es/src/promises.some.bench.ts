@@ -9,10 +9,13 @@ const SMALL_SIZE = 100;
 const MEDIUM_SIZE = 100_000;
 const LARGE_SIZE = 1_000_000;
 
+// eslint-disable-next-line init-declarations -- Initialized in beforeAll
 let smallArray: number[];
 
+// eslint-disable-next-line init-declarations -- Initialized in beforeAll
 let mediumArray: number[];
 
+// eslint-disable-next-line init-declarations -- Initialized in beforeAll
 let largeArray: number[];
 
 beforeAll(() => {

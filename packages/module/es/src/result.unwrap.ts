@@ -29,7 +29,7 @@ import type { Result } from 'happy-rusty';
  * unwrapResult(notFoundResult); // throws Error with code: 'ENOENT'
  * ```
  */
-export function unwrapResult<Ok, Err extends unknown,>(
+export function unwrapResult<Ok, Err,>(
   result: Result<Ok, Err>,
 ): Ok {
   if (result.isErr()) {
