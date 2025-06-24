@@ -1,3 +1,26 @@
+## TypeScript Path Warnings with dprint
+
+### Problem
+You see warnings when running dprint or other tools:
+```
+warn: Non-relative path "packages/config/eslint/src/index.ts" is not allowed when "baseUrl" is not set (did you forget a leading "./"?)
+```
+
+### Solution
+Set `baseUrl` to `"./"` in your root `tsconfig.json`:
+```json
+{
+  "compilerOptions": {
+    "baseUrl": "./"
+  }
+}
+```
+
+This tells TypeScript to resolve non-relative paths from the project root, which is necessary when using path mappings in a monorepo structure.
+
+### Note
+Setting `baseUrl` may or may not completely resolve the warnings, but it helps TypeScript understand that non-relative paths in the `paths` mapping should be resolved from the project root.
+
 ## Open workspace in development container fails
 
 The download of VS Code Server may fail because you're not using the official Microsoft branded VS Code version.
