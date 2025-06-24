@@ -2,6 +2,9 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 
 language: 'typescript'
 
+dependsOn:
+  - 'vite'
+
 tasks:
   # Template for lint/format tasks
   _lintFormatBase:
