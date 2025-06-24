@@ -95,6 +95,40 @@ tasks:
       runDepsInParallel: false
       outputStyle: buffer-only-failure
 
+  # Validate that the development environment is properly set up
+  validateSetup:
+    deps:
+    - checkTools
+    - checkDependencies
+    - checkBuild
+    - checkGitHooks
+    options:
+      runDepsInParallel: true
+  
+  # Check that required tools are installed
+  checkTools:
+    command: 'bun packages/module/es/src/moon.checkTools.ts'
+    options:
+      outputStyle: buffer-only-failure
+  
+  # Check that dependencies are properly installed
+  checkDependencies:
+    command: 'bun packages/module/es/src/moon.checkDependencies.ts'
+    options:
+      outputStyle: buffer-only-failure
+  
+  # Check that build artifacts exist
+  checkBuild:
+    command: 'bun packages/module/es/src/moon.checkBuild.ts'
+    options:
+      outputStyle: buffer-only-failure
+  
+  # Check that git hooks are installed
+  checkGitHooks:
+    command: 'bun packages/module/es/src/moon.checkGitHooks.ts'
+    options:
+      outputStyle: buffer-only-failure
+
   types:
     command: 'tsc --build --verbose'
     options:
