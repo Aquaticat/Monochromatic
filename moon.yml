@@ -11,8 +11,8 @@ tasks:
 
   pnpmVersionCheck:
     command: 'pnpm version'
-  pnpmInstall:
-    command: 'bun packages/module/es/src/moon.pnpmInstall.ts'
+  # pnpmInstall:
+  #   command: 'bun packages/module/es/src/moon.pnpmInstall.ts'
 
   test:
     deps:
@@ -79,7 +79,7 @@ tasks:
 
   prepare:
     deps:
-    - pnpmInstall
+    # - pnpmInstall  # Commented out to test Moon's automatic dependency installation
     - preparePlaywright
     - prepareVale
     options:
