@@ -1,4 +1,5 @@
 $schema: 'https://moonrepo.dev/schemas/project.json'
+language: 'typescript'
 
 tags:
 - 'dualBuildsNodeBrowser'

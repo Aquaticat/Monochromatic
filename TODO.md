@@ -560,3 +560,72 @@ The progression from imperative loops to recursive functions to (eventually) asy
 ### Fix toolchain.yml schema validation
 - Editor reports "typescript isn't a valid option in .moon/toolchain.yml"
 - Investigate why the TypeScript configuration is flagged as invalid despite working correctly
+
+## Fresh Clone Setup Validation (June 2025)
+
+### Current Task
+Ensure that fresh clones of the repository work correctly when users follow the setup instructions in README.md.
+
+### Setup Instructions Being Tested
+```bash
+# 1. Install proto globally
+bash <(curl -fsSL https://moonrepo.dev/install/proto.sh)
+
+# 2. Run project setup and build
+moon run prepareAndBuild
+```
+
+### Issues Found During Testing
+
+1. **Critical Build Order Problem**: The `js` tasks run before `pnpm install` completes, causing build failures
+   - Root cause: The `js_default` task in `.moon/tasks.yml` calls `vite build` directly without ensuring dependencies are installed
+   - This causes "command not found" errors for tools like `vite` that come from node_modules
+   - Moon allows tasks to start before their implicit dependencies (like installed packages) are ready
+
+2. **Package Build Order Issue**: Packages that depend on `@monochromatic-dev/config-vite` try to build before it's built
+   - The figma plugin packages fail because they can't resolve the vite config package
+   - Workaround: Running `moon run vite:js` manually before `moon run build` helps
+
+3. **TypeScript baseUrl Warnings**: ✅ Fixed by adding `baseUrl: "./"` to all tsconfig files (completed in commit 673787f)
+
+4. **TypeScript Compilation Errors**: Fresh clones have TypeScript errors that block the build:
+   - Missing type declarations for `postcss-mixins`
+   - Cannot find module 'astro:content' (Astro's virtual module)
+
+### Findings and Solutions
+
+#### Tested Commands and Results:
+- `moon run prepareAndBuild` - Fails due to build order issues
+- `moon run prepare` then `moon run build` - Better, but still has ordering problems
+- `moon run prepare`, then `moon run vite:js`, then `moon run build` - Most successful approach
+
+#### Root Cause Analysis:
+The fundamental issue is that Moon's task system doesn't properly sequence the installation of dependencies with tasks that use those dependencies. The `js_default` task assumes `vite` is available in PATH but doesn't declare a dependency on `pnpmInstall`.
+
+### Recommended Fix
+Add explicit dependencies to ensure proper sequencing in `.moon/tasks.yml`:
+```yaml
+js_default:
+  command: 'vite build --config vite.config.ts --mode production'
+  deps:
+    - '~:pnpmInstall'  # Ensure dependencies are installed first
+  options:
+    outputStyle: 'buffer-only-failure'
+```
+
+### Updated Setup Instructions for README
+Until the Moon configuration is fixed, users should run:
+```bash
+# 1. Install proto globally
+bash <(curl -fsSL https://moonrepo.dev/install/proto.sh)
+
+# 2. Setup and build in separate steps
+moon run prepare
+moon run vite:js  # Build config packages first
+moon run build
+```
+
+### Notes
+- The validateSetup task was successfully implemented to help diagnose environment issues
+- All validation scripts (checkTools, checkDependencies, checkBuild, checkGitHooks) are working correctly
+- The baseUrl TypeScript configuration has been documented in TROUBLESHOOTING.md
