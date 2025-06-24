@@ -6,6 +6,7 @@
     }
   ],
   "compilerOptions": {
+    "baseUrl": "./",
     "paths": {
       "@monochromatic-dev/config-typescript/*": [
         "../../config/typescript/*"

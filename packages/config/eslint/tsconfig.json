@@ -9,6 +9,7 @@
     }
   ],
   "compilerOptions": {
+    "baseUrl": "./",
     "paths": {
       "@monochromatic-dev/config-vite": [
         "../vite/src/index.ts"

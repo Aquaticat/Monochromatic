@@ -6,6 +6,7 @@
     }
   ],
   "compilerOptions": {
+    "baseUrl": "./",
     "paths": {
       "@monochromatic-dev/module-es": [
         "../../module/es/src/index.ts"

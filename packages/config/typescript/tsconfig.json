@@ -2,7 +2,8 @@
   "extends": "./tsconfig.options.json",
   "files": [],
   "compilerOptions": {
+    "baseUrl": "./",
     // TS6310: Referenced project may not disable emit
     // "noEmit": true
-  },
+  }
 }

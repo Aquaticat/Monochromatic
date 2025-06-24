@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.dom.json",
   "compilerOptions": {
+    "baseUrl": "./",
     // Astro requirement
     "allowJs": true,
     "checkJs": true,

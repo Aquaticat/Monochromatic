@@ -10,7 +10,7 @@
     "node_modules",
   ],
   "compilerOptions": {
-    "baseUrl": "${configDir}",
+    "baseUrl": "./",
     "rootDirs": [
       "${configDir}/src",
       "${configDir}",
