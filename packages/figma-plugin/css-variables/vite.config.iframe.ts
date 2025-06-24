@@ -1,4 +1,4 @@
-import { getFigmaIframe } from '@monochromatic-dev/config-vite';
+import { getFigmaIframe } from '@monochromatic-dev/config-vite/.ts';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { UserConfigFnObject } from 'vite';

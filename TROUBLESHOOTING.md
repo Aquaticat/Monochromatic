@@ -519,3 +519,51 @@ npm install -g dprint
 ```
 
 This makes dprint available system-wide but requires maintaining a separate global installation.
+
+## Vite Config Build Order in Moon
+
+### Problem
+When running `moon run prepareAndBuild` on a fresh clone, packages that depend on `@monochromatic-dev/config-vite` fail with:
+```
+Failed to resolve entry for package "@monochromatic-dev/config-vite". The package may have incorrect main/module/exports specified in its package.json.
+```
+
+### Root Cause
+Moon's automatic dependency installation works correctly with `language: 'typescript'` configuration, but the build order issue occurs because:
+1. The `js_default` task (inherited by all packages) uses vite to build
+2. Packages that import from `@monochromatic-dev/config-vite` try to use it before it's built
+3. This creates a circular dependency: vite config needs to build itself using vite
+
+### Solution
+Import directly from the TypeScript source file using the `.ts` export path:
+
+```typescript
+// Before - imports from built output
+import { getVitestUnitWorkspace } from '@monochromatic-dev/config-vite';
+
+// After - imports from TypeScript source
+import { getVitestUnitWorkspace } from '@monochromatic-dev/config-vite/.ts';
+```
+
+The `@monochromatic-dev/config-vite` package exports field supports this:
+```json
+"exports": {
+  ".": {
+    "types": "./dist/final/types/src/index.d.ts",
+    "default": "./dist/final/js/index.js"
+  },
+  "./.ts": {
+    "default": "./src/index.ts"
+  }
+}
+```
+
+### Performance Note
+There's a minimal performance penalty as Vite needs to transpile the TypeScript config on-the-fly, but since parent configs are already `.ts` files and vite can't bundle itself into the config, the impact is negligible.
+
+### Affected Files
+All vite config files that import from `@monochromatic-dev/config-vite`:
+- `vitest.unit.config.ts`
+- `vitest.browser.config.ts`
+- `packages/config/eslint/vite.config.ts`
+- `packages/figma-plugin/css-variables/vite.config.*.ts`

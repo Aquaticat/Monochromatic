@@ -1,4 +1,4 @@
-import { getVitestUnitWorkspace } from '@monochromatic-dev/config-vite';
+import { getVitestUnitWorkspace } from '@monochromatic-dev/config-vite/.ts';
 
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';

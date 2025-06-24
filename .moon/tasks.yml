@@ -50,8 +50,6 @@ tasks:
 
   js_default:
     command: 'vite build --config vite.config.ts --mode production'
-    deps:
-      - 'vite:js'
     options:
       outputStyle: 'buffer-only-failure'
 
