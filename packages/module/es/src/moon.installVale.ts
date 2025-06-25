@@ -48,8 +48,13 @@ try {
         try {
           execSync('which snap', { stdio: 'ignore' });
 
-          // Assume snap install works without elevation.
-          execSync('snap install vale', { stdio: 'inherit' });
+          try {
+            // Assume snap install works without elevation first.
+            execSync('snap install vale', { stdio: 'inherit' });
+          } catch {
+            // TODO: Reorganize this file to provide better error messages.
+            execSync('sudo snap install vale', {stdio: 'inherit'});
+          }
         } catch {
           console.error('snap not found. Please install vale manually.');
           process.exit(1);

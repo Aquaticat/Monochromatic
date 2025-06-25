@@ -92,7 +92,6 @@ function installSystemDependencies(): boolean {
       } catch {
         console.warn("⚠️  Playwright's automatic dependency installation failed.");
         console.log('Attempting manual installation...\n');
-      }
 
       // Manual installation based on distro
       if (distro) {
@@ -123,11 +122,25 @@ function installSystemDependencies(): boolean {
           ];
 
           try {
-            execSync('sudo apt-get update', { stdio: 'inherit' });
+            // Not really necessary normally on an up-to-date system, and we assume so.
+            // execSync('sudo apt-get update', { stdio: 'inherit' });
             execSync(`sudo apt-get install -y ${deps.join(' ')}`, { stdio: 'inherit' });
             return true;
           } catch {
             console.error('❌ Failed to install dependencies with apt-get');
+          }   }     else if (distro.name === 'arch') {
+          console.log(`📦 Installing dependencies for ${distro.name}...`);
+          const deps = [
+            'nss', 'nspr' ,'atk', 'at-spi2-atk', 'cups', 'libdrm', 'mesa', 'libxcomposite', 'libxdamage', 'libxrandr' ,'libxkbcommon', 'pango', 'cairo' ,'alsa-lib'
+          ];
+
+          try {
+                        // Not really necessary normally on an up-to-date system, and we assume so.
+            // execSync('sudo pacman -Sy', { stdio: 'inherit' });
+            execSync(`sudo pacman -S ${deps.join(' ')}`, { stdio: 'inherit' });
+            return true;
+          } catch {
+            console.error('❌ Failed to install dependencies with pacman');
           }
         } else if (distro.name === 'fedora' || distro.name === 'rhel') {
           console.log(`📦 Installing dependencies for ${distro.name}...`);
@@ -137,7 +150,7 @@ function installSystemDependencies(): boolean {
           } catch {
             console.error('❌ Failed to install dependencies with dnf');
           }
-        }
+        }}
       }
     } else if (os === 'darwin') {
       console.log('🍎 macOS detected - no additional system dependencies needed');
@@ -159,19 +172,13 @@ function installSystemDependencies(): boolean {
   console.log('\nPlease run ONE of the following commands based on your system:\n');
 
   console.log('For Ubuntu/Debian:');
-  console.log('  sudo apt-get update && sudo apt-get install -y \\');
-  console.log('    libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 \\');
-  console.log('    libdrm2 libdbus-1-3 libatspi2.0-0 libx11-6 libxcomposite1 \\');
-  console.log('    libxdamage1 libxext6 libxfixes3 libxrandr2 libgbm1 libxcb1 \\');
-  console.log('    libxkbcommon0 libpango-1.0-0 libcairo2 libasound2 libx11-xcb1\n');
+  console.log('  sudo apt-get update && sudo apt-get install -y libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libdbus-1-3 libatspi2.0-0 libx11-6 libxcomposite1 libxdamage1 libxext6 libxfixes3 libxrandr2 libgbm1 libxcb1 libxkbcommon0 libpango-1.0-0 libcairo2 libasound2 libx11-xcb1\n');
 
   console.log('For Fedora/RHEL:');
   console.log('  sudo dnf install -y playwright\n');
 
   console.log('For Arch Linux:');
-  console.log('  sudo pacman -S --needed nss nspr atk at-spi2-atk cups libdrm \\');
-  console.log('    mesa libxcomposite libxdamage libxrandr libxkbcommon pango \\');
-  console.log('    cairo alsa-lib\n');
+  console.log('  sudo pacman -S --needed nss nspr atk at-spi2-atk cups libdrm mesa libxcomposite libxdamage libxrandr libxkbcommon pango cairo alsa-lib\n');
 
   console.log("Or try Playwright's official installer:");
   console.log('  pnpm exec playwright install-deps\n');

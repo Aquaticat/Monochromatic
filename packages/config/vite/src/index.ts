@@ -24,6 +24,7 @@ import {
 } from 'vitest/config';
 
 //region Duplicated from module-es to avoid circular dependency
+// TODO: Directly import source in module-es instead.
 type falsy = false | null | 0 | 0n | '' | undefined;
 
 // eslint-disable-next-line jsdoc/require-jsdoc
@@ -44,6 +45,7 @@ function wait(timeInMs: number): Promise<undefined> {
 }
 //endregion Duplicated from module-es to avoid circular dependency
 
+/** Latest ESR (as of Jun 25 2025) */
 const firefoxVersion = 140;
 
 /** Bit shift for Firefox version encoding in LightningCSS */
@@ -276,6 +278,8 @@ const createModeConfig = (
       return [mode];
     })(mode);
 
+    // TODO: Refactor this.
+
     const maybeWithNoMinify: UserConfig = modes.some(function isDev(m) {
         return m === 'development';
       })
@@ -288,7 +292,7 @@ const createModeConfig = (
       ? withNodeResolveConditions(maybeWithNoMinify)
       : maybeWithNoMinify;
 
-    console.log(modes);
+    // console.log(modes);
 
     return nodeOrBrowser;
   });

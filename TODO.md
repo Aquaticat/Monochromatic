@@ -44,7 +44,7 @@
 ### Write `cpfd` - Copy Files From Dependencies
 Create a tool to copy files from dependencies into the project.
 
-### Write `increase-version` 
+### Write `increase-version`
 Automate version bumping to ensure every publish has a new version.
 
 ### Write `add-scripts`
@@ -200,23 +200,23 @@ Configure Debian WSL distro to mount only specific Windows directories instead o
    ```
 
 4. **Apply Changes Without Full WSL Restart**
-   
+
    Option A - Restart only Debian distro:
    ```powershell
    # From Windows PowerShell
    wsl -t Debian
    ```
-   
+
    Option B - Apply in current session (temporary):
    ```bash
    # Unmount existing
    sudo umount /mnt/c 2>/dev/null
-   
+
    # Mount manually
    sudo mount -t drvfs 'C:/Users/user/Text/Projects' /mnt/c/Users/user/Text/Projects -o uid=1000,gid=1000
    sudo mount -t drvfs 'C:/Users/user/.pnpm-store' /mnt/c/Users/user/.pnpm-store -o uid=1000,gid=1000
    ```
-   
+
    Option C - With systemd:
    ```bash
    sudo systemctl daemon-reload
@@ -272,7 +272,7 @@ try {
       return false;
     }
   );
-  
+
   if (completedStatus) {
     if (completedStatus.status !== 'succeeded') {
       console.error(`Task ${task.taskUid} failed:`, completedStatus.error);
@@ -553,7 +553,7 @@ The progression from imperative loops to recursive functions to (eventually) asy
 ### Research Moon's Astro integration
 - Review https://moonrepo.dev/docs/guides/examples/astro for best practices
 
-### Investigate editor errors 
+### Investigate editor errors
 - Editor may be showing errors due to disabled options in .moon/toolchain.yml
 - Check if `includeProjectReferenceSources` being disabled is causing issues
 
@@ -629,3 +629,16 @@ moon run build
 - The validateSetup task was successfully implemented to help diagnose environment issues
 - All validation scripts (checkTools, checkDependencies, checkBuild, checkGitHooks) are working correctly
 - The baseUrl TypeScript configuration has been documented in TROUBLESHOOTING.md
+
+## Write my own moon mcp server
+
+## `append` util
+
+terminal append util that appends a new line to a specified file.
+
+```sh
+append "my new line" --to myfile.md
+append "my new line1" --to myfile.md
+append "my new line1\nMy new line2" --to myfile.md
+append "my new line1" "my new line2" --to myfile.md
+```
