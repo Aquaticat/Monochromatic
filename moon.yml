@@ -12,6 +12,8 @@ tasks:
     - '@group(allSources)'
     - '@group(configs)'
     options:
+      unixShell: 'nu'
+      windowsShell: 'nu'
       shell: true
 
   pnpmVersionCheck:
@@ -215,7 +217,7 @@ tasks:
 
   lintVale:
     extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- vale --glob="{*,packages/*/*/*,packages/*/*/src/**/*,.kilocode/rules/**/*}" .'
+    command: "bun packages/module/es/src/moon.command.ts --allowFailure -- vale --glob='{*,packages/*/*/*,packages/*/*/src/**/*}' ."
 
   # Formatting tasks organized for maximum parallelization
   format:

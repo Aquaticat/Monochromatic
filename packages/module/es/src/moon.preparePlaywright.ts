@@ -131,13 +131,13 @@ function installSystemDependencies(): boolean {
           }   }     else if (distro.name === 'arch') {
           console.log(`📦 Installing dependencies for ${distro.name}...`);
           const deps = [
-            'nss', 'nspr' ,'atk', 'at-spi2-atk', 'cups', 'libdrm', 'mesa', 'libxcomposite', 'libxdamage', 'libxrandr' ,'libxkbcommon', 'pango', 'cairo' ,'alsa-lib'
+            'nss', 'nspr' ,'atk', 'at-spi2-core', 'at-spi2-atk', 'gtk3', 'cups', 'xcb-util', 'libxcb', 'libx11', 'libxcomposite', 'libdrm', 'mesa', 'libxcomposite', 'libxdamage', 'libxrandr' ,'libxkbcommon', 'pango', 'cairo' ,'alsa-lib'
           ];
 
           try {
                         // Not really necessary normally on an up-to-date system, and we assume so.
             // execSync('sudo pacman -Sy', { stdio: 'inherit' });
-            execSync(`sudo pacman -S ${deps.join(' ')}`, { stdio: 'inherit' });
+            execSync(`sudo pacman -S --noconfirm ${deps.join(' ')}`, { stdio: 'inherit' });
             return true;
           } catch {
             console.error('❌ Failed to install dependencies with pacman');
@@ -221,6 +221,8 @@ try {
       if (hasAnyBrowsers) { break; }
     }
   }
+
+  execSync(`pnpm exec playwright install`);
 
   // First, ensure system dependencies are installed (Linux only)
   if (platform() === 'linux') {
