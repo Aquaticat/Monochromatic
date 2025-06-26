@@ -2,7 +2,7 @@
  * Compiles TypeScript scripts to standalone executables for multiple platforms.
  *
  * This script uses Bun's compile feature to create platform-specific executables
- * from TypeScript scripts with supported prefixes (moon, cli, etc.), enabling 
+ * from TypeScript scripts with supported prefixes (moon, cli, etc.), enabling
  * distribution without requiring Bun runtime.
  *
  * Supported prefixes can be extended by modifying the SUPPORTED_PREFIXES array.
@@ -19,6 +19,7 @@ import {
   dirname,
   join,
 } from 'node:path';
+import { serializeError } from 'serialize-error';
 import { glob } from 'tinyglobby';
 
 //region Target definitions -- Platform-specific compilation targets
@@ -86,18 +87,18 @@ const SUPPORTED_PREFIXES = ['moon', 'cli'] as const;
  */
 function extractScriptInfo(filename: string): { prefix: string; scriptName: string; } {
   const base = basename(filename, '.ts');
-  
+
   // Find which prefix matches
   for (const prefix of SUPPORTED_PREFIXES) {
     const prefixWithDot = `${prefix}.`;
     if (base.startsWith(prefixWithDot)) {
       return {
         prefix,
-        scriptName: base.substring(prefixWithDot.length),
+        scriptName: base.slice(prefixWithDot.length),
       };
     }
   }
-  
+
   // This shouldn't happen if glob patterns are correct
   throw new Error(`Unexpected filename format: ${filename}`);
 }
@@ -110,7 +111,9 @@ function extractScriptInfo(filename: string): { prefix: string; scriptName: stri
  * @param packageRoot - root directory of the package.
  * @returns full output path.
  */
-function getOutputPath(prefix: string, scriptName: string, target: string, packageRoot: string): string {
+function getOutputPath(prefix: string, scriptName: string, target: string,
+  packageRoot: string): string
+{
   const outputDir = join(packageRoot, 'dist', 'final');
   // Bun automatically adds .exe on Windows
   return join(outputDir, `${prefix}.${scriptName}.${target}`);
@@ -141,19 +144,15 @@ async function compileScript(scriptPath: string, target: string,
       '--compile',
       `--target=${target}`,
       `--outfile=${outputPath}`,
-    ], {
-      stdout: 'inherit',
-      stderr: 'inherit',
-    });
+    ], { stdio: 'ignore' });
 
     console.log(`✓ Compiled ${basename(scriptPath)} for ${target}`);
-  } catch (error) {
-    console.error(`✗ Failed to compile ${basename(scriptPath)} for ${target}:`);
-    if (error && typeof error === 'object' && 'exitCode' in error) {
-      const subprocessError = error as { exitCode?: number; message: string; };
-      console.error(`  Exit code: ${subprocessError.exitCode}`);
-    }
-    throw error;
+  } catch (error: any) {
+    throw new Error(
+      `✗ Failed to compile ${basename(scriptPath)} for ${target}: ${
+        serializeError(error)
+      }`,
+    );
   }
 }
 
@@ -169,44 +168,38 @@ const srcDir = join(packageRoot, 'src');
 const globPatterns = SUPPORTED_PREFIXES.map((prefix) => `${prefix}.*.ts`);
 const scriptPaths = await glob(globPatterns, {
   cwd: srcDir,
+  ignore: ['**/*.test.ts'],
 });
 
-if (scriptPaths.length === 0) {
-  const prefixList = SUPPORTED_PREFIXES.join(', ');
-  console.log(`No scripts found to compile (looking for: ${prefixList})`);
-} else {
-  console.log(`Found ${scriptPaths.length} script(s) to compile:`);
-  scriptPaths.forEach((script) => {
-    console.log(`  - ${basename(script)}`);
-  });
-  console.log('');
+console.log(`Found ${scriptPaths.length} script(s) to compile:`);
+scriptPaths.forEach((script) => {
+  console.log(`  - ${basename(script)}`);
+});
+console.log('');
 
-  // Create all compilation tasks
-  const compilationTasks = scriptPaths.flatMap((scriptPath) =>
-    targets.map((target) =>
-      compileScript(join(srcDir, scriptPath), target, packageRoot)
-    )
-  );
+// Create all compilation tasks
+const compilationTasks = scriptPaths.flatMap((scriptPath) =>
+  targets.map((target) => compileScript(join(srcDir, scriptPath), target, packageRoot))
+);
 
-  console.log(`Starting compilation of ${compilationTasks.length} targets...\n`);
+console.log(`Starting compilation of ${compilationTasks.length} targets...\n`);
 
-  // Run all compilations in parallel
-  const results = await Promise.allSettled(compilationTasks);
+// Run all compilations in parallel
+const results = await Promise.allSettled(compilationTasks);
 
-  // Report results
-  const successful = results.filter((r) => r.status === 'fulfilled').length;
-  const failed = results.filter((r) => r.status === 'rejected').length;
+// Report results
+const successful = results.filter((r) => r.status === 'fulfilled').length;
+const failed = results.filter((r) => r.status === 'rejected').length;
 
-  console.log('\n=== Compilation Summary ===');
-  console.log(`Total: ${results.length}`);
-  console.log(`Successful: ${successful}`);
-  console.log(`Failed: ${failed}`);
+console.log('\n=== Compilation Summary ===');
+console.log(`Total: ${results.length}`);
+console.log(`Successful: ${successful}`);
+console.log(`Failed: ${failed}`);
 
-  if (failed > 0) {
-    throw new Error(`${failed} compilation(s) failed. See errors above.`);
-  }
-
-  console.log('\nAll compilations completed successfully!');
+if (failed > 0) {
+  throw new Error(`${failed} compilation(s) failed. See errors above.`);
 }
+
+console.log('\nAll compilations completed successfully!');
 
 //endregion Main execution

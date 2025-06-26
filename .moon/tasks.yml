@@ -3,6 +3,7 @@ $schema: 'https://moonrepo.dev/schemas/tasks.json'
 implicitInputs:
 - '@group(configs)'
 - '@group(sources)'
+- '/.prototools'
 
 fileGroups:
   configs:

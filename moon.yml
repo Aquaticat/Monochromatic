@@ -3,7 +3,7 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 language: 'typescript'
 
 dependsOn:
-  - 'vite'
+- 'vite'
 
 tasks:
   # Template for lint/format tasks
@@ -152,6 +152,8 @@ tasks:
   types:
     # --verbose is too chatty
     command: 'tsc --build'
+    inputs:
+    - '@group(allSources)'
     options:
       outputStyle: buffer-only-failure
       # tsc uses its own cache
@@ -167,8 +169,6 @@ tasks:
     - 'types'
     # #package:types executes tsc from inside every package.
     # - '#package:types'
-    inputs:
-    - '@group(allSources)'
     options:
       outputStyle: buffer-only-failure
 
@@ -176,23 +176,24 @@ tasks:
     command: 'bun packages/module/es/src/moon.bunCompile.ts'
     inputs:
     - 'packages/module/es/src/moon.*.ts'
+    - 'packages/module/es/src/cli.*.ts'
     outputs:
     - 'packages/module/es/dist/final/moon.*'
+    - 'packages/module/es/dist/final/cli.*'
+    options:
+      # cache doesn't really work for this, only adds extra time at the end.
+      cache: false
 
   buildWatch:
     deps:
     - '#package:jsWatch'
     - 'typesWatch'
     local: true
-    inputs:
-    - '@group(allSources)'
 
   buildAndTest:
     deps:
     - build
     - test
-    inputs:
-    - '@group(allSources)'
     options:
       runDepsInParallel: false
 
@@ -203,8 +204,6 @@ tasks:
     - 'typesWatch'
     - testUnitWatch
     - testBrowserWatch
-    inputs:
-    - '@group(allSources)'
 
   # Linting tasks
   lint:
@@ -292,9 +291,6 @@ tasks:
     deps:
     - lint
     - test
-    inputs:
-    - '@group(allSources)'
-    - '@group(allTests)'
     # Lint and test can run in parallel since they don't depend on each other
 
   # Comprehensive validation: format, build, then test
@@ -310,8 +306,6 @@ tasks:
     - format
     - build
     - test
-    inputs:
-    - '@group(allSources)'
     options:
       runDepsInParallel: false # Must be sequential: format → build → test
 
