@@ -8,6 +8,8 @@ node:
   packageManager: 'pnpm'
   pnpm:
     version: '>=10.11.1'
+  # Too slow
+  dedupeOnLockfileChange: false
 
 typescript:
   syncProjectReferences: true

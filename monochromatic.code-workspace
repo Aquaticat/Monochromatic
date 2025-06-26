@@ -104,8 +104,6 @@
       "**/.jj": true,
       "**/*.map": true
     },
-
-    "oxc.configPath": "packages/config/pxlint/index.json",
 	},
 
   "extensions": {

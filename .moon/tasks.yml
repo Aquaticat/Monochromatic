@@ -39,6 +39,12 @@ fileGroups:
   - '/packages/*/*/dist/**/*'
 
 tasks:
+  _shell:
+    options:
+      unixShell: 'bash'
+      windowsShell: 'bash'
+      shell: true
+
   types:
     command: 'tsc --build --force --verbose'
     options:

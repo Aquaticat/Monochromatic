@@ -25,7 +25,6 @@
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/config-vite": "workspace:*",
-    "@monochromatic-dev/config-oxlint": "workspace:*",
     "@types/bun": "catalog:",
     "@vitest/browser": "catalog:"
   },

@@ -6,6 +6,7 @@ import {
 } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { match } from 'ts-pattern';
 
 const client = new MeiliSearch({
   host: 'https://meilisearch.local.aquati.cat:3001',
@@ -39,8 +40,7 @@ function readClaudeConfig(): any {
     const content = readFileSync(CLAUDE_CONFIG_PATH, 'utf8');
     return JSON.parse(content);
   } catch (error) {
-    console.error('Failed to read .claude.json:', error);
-    process.exit(1);
+    throw new Error(`Failed to read .claude.json: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -93,10 +93,12 @@ async function indexUserMessages(): Promise<void> {
   console.log('Extracting messages...');
   const messages = extractMessages(config);
 
-  if (messages.length === 0) {
-    console.log('No messages found to index.');
-    return;
-  }
+  match(messages.length)
+    .with(0, () => {
+      console.log('No messages found to index.');
+      return;
+    })
+    .otherwise(() => {});
 
   console.log(`Found ${messages.length} messages to index.`);
 
@@ -125,28 +127,33 @@ async function indexUserMessages(): Promise<void> {
       taskStatus = await client.tasks.getTask(task.taskUid);
     }
 
-    if (taskStatus.status !== 'succeeded') {
-      console.error(`Task ${task.taskUid} failed:`, taskStatus.error);
-      allTasksSuccessful = false;
-    }
+    match(taskStatus.status)
+      .with('succeeded', () => {})
+      .otherwise(() => {
+        console.error(`Task ${task.taskUid} failed:`, taskStatus.error);
+        allTasksSuccessful = false;
+      });
   }
 
-  if (allTasksSuccessful) {
-    console.log('All indexing tasks completed successfully!');
+  match(allTasksSuccessful)
+    .with(true, () => {
+      console.log('All indexing tasks completed successfully!');
 
-    // Clear history from config
-    const clearedConfig = clearHistory(config);
+      // Clear history from config
+      const clearedConfig = clearHistory(config);
 
-    // Write back the cleared config
-    try {
-      writeFileSync(CLAUDE_CONFIG_PATH, JSON.stringify(clearedConfig, null, 2));
-      console.log('✅ Cleared message history from ~/.claude.json for security');
-    } catch (error) {
-      console.error('⚠️  Failed to clear history from config:', error);
-    }
-  } else {
-    console.error('❌ Some indexing tasks failed. History not cleared for safety.');
-  }
+      // Write back the cleared config
+      try {
+        writeFileSync(CLAUDE_CONFIG_PATH, JSON.stringify(clearedConfig, null, 2));
+        console.log('✅ Cleared message history from ~/.claude.json for security');
+      } catch (error) {
+        console.error('⚠️  Failed to clear history from config:', error);
+      }
+    })
+    .with(false, () => {
+      console.error('❌ Some indexing tasks failed. History not cleared for safety.');
+    })
+    .exhaustive();
 
   // Example search
   const searchResults = await index.search('meilisearch', {

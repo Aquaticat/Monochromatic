@@ -1,5 +1,7 @@
+import { outdent } from '@cspotcode/outdent';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { match } from 'ts-pattern';
 
 /**
  * Validates that build artifacts exist
@@ -14,22 +16,25 @@ const buildChecks = [
   // Note: typescript config package has no build artifacts (just config files)
 ];
 
-let hasErrors = false;
-
-for (const check of buildChecks) {
+const checkResults = buildChecks.map((check) => {
   const fullPath = join(process.cwd(), check.path);
-  if (existsSync(fullPath)) {
-    console.log(`✅ ${check.name} exist`);
-  } else {
-    console.error(`❌ ${check.name} missing`);
-    hasErrors = true;
-  }
-}
+  const exists = existsSync(fullPath);
+  
+  match(exists)
+    .with(true, () => console.log(`✅ ${check.name} exist`))
+    .with(false, () => console.error(`❌ ${check.name} missing`))
+    .exhaustive();
+  
+  return { check, exists };
+});
 
-if (hasErrors) {
-  console.log('\n❌ Build artifacts missing!');
-  console.log('Run: moon run build');
-  process.exit(1);
-} else {
-  console.log('\n✨ All build artifacts exist!');
-}
+const missingArtifacts = checkResults.filter((result) => !result.exists);
+
+match(missingArtifacts.length)
+  .with(0, () => console.log('\n✨ All build artifacts exist!'))
+  .otherwise(() => {
+    throw new Error(outdent`
+      ❌ Build artifacts missing!
+      Run: moon run build
+    `);
+  });

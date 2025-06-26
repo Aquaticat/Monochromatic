@@ -642,3 +642,36 @@ append "my new line1" --to myfile.md
 append "my new line1\nMy new line2" --to myfile.md
 append "my new line1" "my new line2" --to myfile.md
 ```
+
+# Replace `vale` with `harper` or another grammar checker.
+
+`vale` gives `EvalSymlinks: too many links` error.
+
+## Pattern Matching Library
+
+### Create async-compatible pattern matching library
+
+Build our own TypeScript pattern matching library that supports async predicates in when clauses, powered by Zod for schema validation.
+
+#### Features
+- Support for async predicates in `.when()` clauses
+- Zod integration for type-safe pattern validation
+- Maintain ts-pattern's excellent type inference
+- Compatible API for migration from ts-pattern
+
+#### Example API
+```typescript
+import { match } from '@monochromatic-dev/module-es';
+import { z } from 'zod';
+
+// Async predicate support
+const result = await match(value)
+  .when(async (v) => await checkDatabase(v), () => 'found in db')
+  .when(z.string().email(), () => 'valid email')
+  .otherwise(() => 'default');
+
+// Or with pre-computed async values
+const result = await match({ hasFeature: await checkFeature() })
+  .with({ hasFeature: true }, () => 'feature enabled')
+  .otherwise(() => 'feature disabled');
+```

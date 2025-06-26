@@ -1,5 +1,5 @@
 {
-  "$schema": "https://nodejs.org/dist/v24.0.2/docs/node-config-schema.json",
+  "$schema": "https://nodejs.org/dist/v24.3.0/docs/node-config-schema.json",
   "nodeOptions": {
     "addons": true,
     "allow-addons": true,
@@ -20,6 +20,9 @@
     "tls-min-v1.3": true,
     "trace-deprecation": true,
     "use-largepages": "on",
-    "watch-preserve-output": true
+    "watch-preserve-output": true,
+    "trace-exit": true,
+    "trace-uncaught": true,
+    "trace-warnings": true
   }
 }

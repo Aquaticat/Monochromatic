@@ -12,8 +12,8 @@ tasks:
     - '@group(allSources)'
     - '@group(configs)'
     options:
-      unixShell: 'nu'
-      windowsShell: 'nu'
+      unixShell: 'bash'
+      windowsShell: 'bash'
       shell: true
 
   pnpmVersionCheck:
@@ -202,22 +202,22 @@ tasks:
 
   lintEslint:
     extends: '_lintFormatBase'
-    command: 'bun run packages/module/es/src/moon.command.ts --allowFailure -- eslint --cache'
+    command: 'bun run packages/module/es/src/cli.command.ts --allowFailure -- eslint --cache'
 
   lintStylelint:
     extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
   lintDprint:
     extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- dprint check --list-different'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- dprint check --list-different'
 
   lintOxlint:
     extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- oxlint'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- oxlint'
 
   lintVale:
     extends: '_lintFormatBase'
-    command: "bun packages/module/es/src/moon.command.ts --allowFailure -- vale --glob='{*,packages/*/*/*,packages/*/*/src/**/*}' ."
+    command: "bun packages/module/es/src/cli.command.ts --allowFailure -- vale --glob='{*,packages/*/*/*,packages/*/*/src/**/*}' ."
 
   # Formatting tasks organized for maximum parallelization
   format:
@@ -249,19 +249,19 @@ tasks:
 
   formatEslint:
     extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- eslint --cache --fix'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- eslint --cache --fix'
 
   formatStylelint:
     extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- stylelint --ignore-path .gitignore --fix "**/*.{css,astro,html}"'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- stylelint --ignore-path .gitignore --fix "**/*.{css,astro,html}"'
 
   formatDprint:
     extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- dprint fmt'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- dprint fmt'
 
   formatOxlint:
     extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/moon.command.ts --allowFailure -- oxlint --fix'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- oxlint --fix'
 
   # Convenience commands
 

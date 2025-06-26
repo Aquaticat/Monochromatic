@@ -7,6 +7,7 @@ import {
 } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { match, P } from 'ts-pattern';
 import { notNullishOrThrow } from './error.throw.ts';
 import { pipedAsync } from './function.pipe.ts';
 import { wait } from './promise.wait.ts';
@@ -72,7 +73,9 @@ const TASK_POLL_INTERVAL_MS = 10; // 10ms
 
 /** Check if a task is still pending */
 function isTaskPending(status: string): boolean {
-  return status === 'enqueued' || status === 'processing';
+  return match(status)
+    .with('enqueued', 'processing', () => true)
+    .otherwise(() => false);
 }
 
 /** Wait for a Meilisearch task to complete */
@@ -95,23 +98,23 @@ async function waitForTask(taskUid: number,
 
 /** Limit all string fields in an object to 20,000 characters */
 function limitStringFields(obj: any, maxLength: number = 20_000): any {
-  if (typeof obj === 'string') {
-    return obj.length > maxLength ? obj.slice(0, maxLength - 3) + '...' : obj;
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map((item) => limitStringFields(item, maxLength));
-  }
-
-  if (obj && typeof obj === 'object') {
-    const limited: any = {};
-    Object.entries(obj).forEach(([key, value]) => {
-      limited[key] = limitStringFields(value, maxLength);
-    });
-    return limited;
-  }
-
-  return obj;
+  return match(obj)
+    .when(
+      (o): o is string => typeof o === 'string',
+      (str) => str.length > maxLength ? str.slice(0, maxLength - 3) + '...' : str
+    )
+    .when(Array.isArray, (arr) => arr.map((item) => limitStringFields(item, maxLength)))
+    .when(
+      (o): o is object => o !== null && typeof o === 'object',
+      (o) => {
+        const limited: any = {};
+        Object.entries(o).forEach(([key, value]) => {
+          limited[key] = limitStringFields(value, maxLength);
+        });
+        return limited;
+      }
+    )
+    .otherwise((o) => o);
 }
 
 /** Parse log file and extract entries */
@@ -493,40 +496,45 @@ async function indexMcpLogs(): Promise<void> {
     // Wait for task to complete
     try {
       const taskStatus = await waitForTask(task.taskUid);
-      if (taskStatus.status !== 'succeeded') {
-        console.error(`Task ${task.taskUid} failed:`, taskStatus.error);
-        allTasksSuccessful = false;
-      }
+      match(taskStatus.status)
+        .with('succeeded', () => {})
+        .otherwise(() => {
+          console.error(`Task ${task.taskUid} failed:`, taskStatus.error);
+          allTasksSuccessful = false;
+        });
     } catch (error) {
       console.error(error);
       allTasksSuccessful = false;
     }
   }
 
-  if (allTasksSuccessful) {
-    console.log('All indexing tasks completed successfully!');
+  match(allTasksSuccessful)
+    .with(true, () => {
+      console.log('All indexing tasks completed successfully!');
 
-    // Delete all log files
-    let deletedCount = 0;
-    let failedDeletes = 0;
+      // Delete all log files
+      let deletedCount = 0;
+      let failedDeletes = 0;
 
-    for (const filePath of filesToDelete) {
-      try {
-        unlinkSync(filePath);
-        deletedCount++;
-      } catch (error) {
-        console.error(`Failed to delete ${filePath}:`, error);
-        failedDeletes++;
+      for (const filePath of filesToDelete) {
+        try {
+          unlinkSync(filePath);
+          deletedCount++;
+        } catch (error) {
+          console.error(`Failed to delete ${filePath}:`, error);
+          failedDeletes++;
+        }
       }
-    }
 
-    console.log(`✅ Deleted ${deletedCount} log files for security`);
-    if (failedDeletes > 0) {
-      console.log(`⚠️  Failed to delete ${failedDeletes} files`);
-    }
-  } else {
-    console.error('❌ Some indexing tasks failed. Log files not deleted for safety.');
-  }
+      console.log(`✅ Deleted ${deletedCount} log files for security`);
+      match(failedDeletes)
+        .with(0, () => {})
+        .otherwise((count) => console.log(`⚠️  Failed to delete ${count} files`));
+    })
+    .with(false, () => {
+      console.error('❌ Some indexing tasks failed. Log files not deleted for safety.');
+    })
+    .exhaustive();
 
   // Example search
   const searchResults = await index.search('tool call', {

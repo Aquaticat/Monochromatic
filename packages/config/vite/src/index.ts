@@ -22,6 +22,9 @@ import {
   defineProject,
   type ViteUserConfig as VitestUserConfig,
 } from 'vitest/config';
+import vitestExcludeCommonConfig from './vitest-exclude-common.json' with {
+  type: 'json',
+};
 
 //region Duplicated from module-es to avoid circular dependency
 // TODO: Directly import source in module-es instead.
@@ -39,6 +42,7 @@ function notFalsyOrThrow<T,>(
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 function wait(timeInMs: number): Promise<undefined> {
+  // oxlint-disable-next-line avoid-new
   return new Promise(function createTimeout(_resolve) {
     return setTimeout(_resolve, timeInMs);
   });
@@ -51,27 +55,7 @@ const firefoxVersion = 140;
 /** Bit shift for Firefox version encoding in LightningCSS */
 const FIREFOX_VERSION_SHIFT = 16;
 
-const vitestExcludeCommon = [
-  '**/{node_modules,bak}/**',
-  '**/.{idea,git,cache,output,temp}/**',
-
-  // 'packages/*/*/**/src/**/*.browser.test.ts',
-  'packages/*/*/**/src/**/*.js',
-
-  // TypeScript definition files can't have tests.
-  '**/*.d.ts',
-
-  // Not directly exported or tested.
-  '**/*.shared.ts',
-  '**/*.fixture.*.ts',
-
-  // temporarily deprecated. Might reappear later.
-  '**/theme/subtle/**',
-
-  // deprecated
-  'packages/module/es/src/testing.ts',
-  '**/*.deprecated.*.ts',
-];
+const vitestExcludeCommon = vitestExcludeCommonConfig.patterns;
 
 const rollupExternal = (moduleId: string): boolean => {
   if (
@@ -156,9 +140,12 @@ const createBaseConfig = (configDir: string): UserConfig => ({
     postcss: {
       plugins: [
         postcssMixins(),
-        (postcssCustomUnits as () => PostcssPlugin)(),
-        postcssCustomMedia(),
-        postcssCustomSelectors(),
+        // TODO: Write lightningcss mixin, custom units, and custom selectors plugins. Lightningcss has custom media support builtin.
+        //region Cause type error
+        // (postcssCustomUnits as () => PostcssPlugin)(),
+        // postcssCustomMedia(),
+        // postcssCustomSelectors(),
+        //endregion Cause type error
       ],
     },
     lightningcss: {
@@ -196,6 +183,10 @@ const createBaseConfig = (configDir: string): UserConfig => ({
 
   // Causes problems when running many scripts together in watch mode.
   clearScreen: false,
+
+  experimental: {
+    enableNativePlugin: true,
+  },
 });
 
 const createBaseLibConfig = (configDir: string): UserConfig =>
@@ -430,6 +421,7 @@ export const getFigmaIframe = (configDir: string): UserConfigFnObject =>
 export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
   test: {
     projects: [
+      // TODO: Use this.
       // 'packages/*/*',
       defineProject({
         test: {
@@ -462,7 +454,7 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
         test: {
           name: { label: 'unit', color: 'black' },
           include: ['packages/*/*/**/src/**/*.unit.test.ts'],
-          exclude: [...vitestExcludeCommon, '*.browser.test.ts'],
+          exclude: [...vitestExcludeCommon, '**/*.browser.test.ts'],
         },
       }),
     ],
@@ -471,6 +463,9 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
       host: '0.0.0.0',
       port: 3001,
     },
+
+    reporters: ['dot'],
+
     deps: {
       // Never importing CJS module's default export via `import {x} from 'y'`.
       interopDefault: false,
@@ -518,10 +513,12 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
       reportOnFailure: true,
       skipFull: true,
 
-      experimentalAstAwareRemapping: true,
-
-      // No need to see the coverage report every time any test runs.
-      all: false,
+      reporter: [
+        join(import.meta.dirname, 'coverage-reporter.cjs'),
+        'html',
+        'clover',
+        'json',
+      ],
 
       thresholds: {
         perFile: true,
@@ -530,28 +527,16 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
       },
 
       // Only this works for coverage to follow sourcemap.
-      extension: [
-        '.js',
-        '.ts',
-        // Commented out until the value of testing non-TypeScript files becomes clear.
-        // '.vue',
-        // '.astro'
-      ],
       include: [
-        'packages/*/*/**/dist/final/**',
+        'packages/*/*/**/dist/final/**/*.js',
         'packages/*/*/**/src/**/*.ts',
       ],
       exclude: [
         ...vitestExcludeCommon,
-        // Exclude browser test files from coverage collection
+        // Exclude browser test files and browser specific implementations from coverage collection
         'packages/*/*/**/src/**/*.browser.test.ts',
+        'packages/*/*/**/src/**/*.browser.ts',
         '**/dom.*',
-
-        // Test fixtures.
-        '**/fixture.*',
-
-        // Moon scripts
-        '**/moon.*',
       ],
     },
   },

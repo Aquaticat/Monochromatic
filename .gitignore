@@ -28,6 +28,7 @@ package-lock.json
 *.log
 *.js
 !*.config.js
+.tmp
 
 .eslintcache
 

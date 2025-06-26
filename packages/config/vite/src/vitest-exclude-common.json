@@ -1,0 +1,23 @@
+{
+  "patterns": [
+    "**/{node_modules,bak}/**",
+    "**/.{idea,git,cache,output,temp}/**",
+    "packages/*/*/**/src/**/*.js",
+    "**/*.d.ts",
+    "**/*.shared.ts",
+    "**/*.index.ts",
+    "**/index.ts",
+    "**/fixture.*.ts",
+    "**/moon.*.ts",
+    "**/theme/subtle/**",
+    "packages/module/es/src/testing.ts",
+    "**/*.deprecated.*.ts",
+    "packages/site/**/*"
+  ],
+  "ignoredExtensions": [".cjs", ".js", ".mjs"],
+  "pathReplacements": [
+    { "pattern": "${cwd}/", "replacement": " " },
+    { "pattern": "packages/", "replacement": " " },
+    { "pattern": "/src", "replacement": " " }
+  ]
+}

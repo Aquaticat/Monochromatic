@@ -4,24 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **IMPORTANT DATE REMINDER**: Always use the current date from the environment information provided in the system prompt. Today's date is shown in the <env> section. Never assume or guess dates.
 
-<!-- vale Microsoft.Wordiness = NO -->
-<!-- vale alex.Condescending = NO -->
 Forbidden language patterns:
 - Apologies: "sorry", "I apologize", "my apologies", "unfortunately", "I'm afraid"
 - Vague validation: "that's a good point", "I understand your concern"
 - Generalizations: "typically", "usually", "in most cases", "generally speaking"
-- Flattery: "excellent question", "great idea", "you're absolutely right", "exactly"
+- Flattery: "excellent question", "great idea", "you're absolutely right", "exactly", "you're right", "you're correct"
 - Performative empathy: "I can imagine how frustrating", "that must be difficult"
 - Excessive assurance: "rest assured", "I promise", "you can be confident that"
 - Submissive language: "if that's okay", "would it be alright if", "I hope you don't mind"
 - Verbal backspacing: "actually", "to clarify", "what I meant was", "let me rephrase"
-- Fillers: "okay", "great", "certainly", "here is", "of course", "definitely"
+- Fillers: "okay", "great", "certainly", "here is", "of course", "definitely", "perfect"
 - Self-deprecation: "I should have", "I could have done better", "my mistake"
 - Collective language in documentation: "we", "our", "we chose", "we use", "our philosophy"
 - Prescriptive language: "should", "must" (except for critical requirements), "ought to"
 - Meta-references: "the project", "this means", "this aligns with"
-<!-- vale Microsoft.Wordiness = YES -->
-<!-- vale alex.Condescending = YES -->
+
+Forbidden acknowledgment patterns:
+- "You're right", "You're correct", "You're absolutely right"
+- "That's right", "That's correct", "Exactly right"
+- "Good point", "Good catch", "Nice catch"
+- Instead: Jump directly to the technical response
 
 Communication style:
 - State facts directly without hedging
@@ -37,6 +39,12 @@ When you can't help:
 - "I can't do that"
 - "That information isn't available"
 - "Try `specific alternative`"
+
+When users point out issues or suggest improvements:
+- Don't acknowledge they're right/correct
+- Don't apologize for the error
+- Simply implement the change and explain what was done
+- Jump directly to fixing the issue or implementing the suggestion
 
 Emoji usage:
 - NEVER use emojis in any content meant to be read by humans.
@@ -66,7 +74,10 @@ Script preferences:
   - Bad: `process.exit(0);` at the end of successful execution
   - Good: Let the script complete naturally
   - The Node.js/Bun runtime will exit with code 0 automatically when the script finishes
-  - Only use process.exit() for early termination with non-zero exit codes on errors
+- NEVER use process.exit() - throw errors instead
+  - Bad: `process.exit(1);`
+  - Good: `throw new Error('Error description');`
+  - Uncaught errors automatically set exit code to 1
 
 ## Search Tools
 
@@ -104,7 +115,7 @@ Always question "Do you really need...?" for every construct:
 
 Progressive simplification example:
 1. Imperative loop with mutable state → `while` loop with proper conditions
-2. `while` loop → `for` loop with calculated iterations  
+2. `while` loop → `for` loop with calculated iterations
 3. `for` loop → Recursive function
 4. Recursive function → Higher-order functions or async iterators
 
@@ -113,7 +124,7 @@ Always extract and name concepts (e.g., `isTaskPending()` instead of inline cond
 ## Third-Party Library Usage
 
 When working with third-party libraries:
-- **CRITICAL: IMMEDIATELY retrieve documentation when encountering undefined method errors**
+- **IMMEDIATELY retrieve documentation when encountering undefined method errors**
   - The moment you see errors like "X is not a function", "Cannot read property X of undefined", or "X is undefined"
   - Use ALL available documentation tools to understand the correct API:
     - `context7` for library documentation
@@ -126,7 +137,7 @@ When working with third-party libraries:
   - For GitHub repos: Use `github:get_file_contents` to fetch from the library's GitHub page
   - This ensures you have the most up-to-date API documentation and usage examples
 - Always check the actual type definitions before using APIs
-- **Just use `rg` to search for anything** - don't try to navigate pnpm's node_modules maze
+- **Just use `rg` to search for anything from the workspace root** - don't try to navigate pnpm's node_modules maze
   - `rg "interface TypeName" -t ts`
   - `rg "export type.*TypeName" -t ts`
   - `rg "class ClassName" -t ts`
@@ -485,12 +496,35 @@ TypeScript's support for overloading generator functions has some quirks:
   - Bad: `const value = possiblyUndefined!;`
   - If you don't want it to crash, properly check and handle the falsy/nullish value instead
 
-- When a specific exit code isn't required for an error, just use `throw new Error(message)` instead of process.exit()
+- **NEVER use process.exit()** - it violates the ESLint n/no-process-exit rule
+  - process.exit() immediately stops the Node.js process without allowing graceful cleanup
+  - This can stop an application at any unexpected moment and doesn't give other parts a chance to handle errors
   - Bad: `if (error) { console.error('Error occurred'); process.exit(1); }`
   - Good: `if (error) { throw new Error('Error occurred'); }`
   - Throwing errors provides better stack traces and allows parent code to handle errors
-  - Only use process.exit() with specific exit codes when required by CLI tool conventions
-  - For scripts, thrown errors will automatically result in non-zero exit codes
+  - **Thrown errors automatically set exit code to 1** - no need to manually set process.exitCode
+- **Combine console.log/error messages into thrown errors**
+  - When you need to log an error message before throwing, include the entire message in the error
+  - Bad: `console.error('Dependencies check failed'); console.error('Run: pnpm install'); throw new Error('Dependencies not installed');`
+  - Good: `throw new Error('Dependencies check failed\nRun: pnpm install');`
+  - This ensures error context is preserved in the error object itself
+- **Use outdent for multi-line error messages**
+  - For error messages with multiple lines, use `outdent` from `@cspotcode/outdent` instead of `\n`
+  - Import: `import { outdent } from '@cspotcode/outdent';`
+  - Bad: `throw new Error('Error message\nLine 2\nLine 3');`
+  - Good:
+    ```ts
+    throw new Error(outdent`
+      Error message
+      Line 2
+      Line 3
+    `);
+    ```
+  - This provides better readability and automatic indentation handling
+- **Use process.exitCode only for non-standard exit codes**
+  - When you need a specific exit code other than 0 (success) or 1 (error), use process.exitCode
+  - Example: `process.exitCode = 2;` for a specific error condition that needs code 2
+  - The process will exit gracefully with your specified code after all async operations complete
 - **Always log errors in catch blocks**:
   - Every catch block must log the caught error for debugging
   - Log ALL errors, even "expected" ones - the actual error might be different than expected

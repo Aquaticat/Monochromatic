@@ -1,77 +1,74 @@
-import { execSync } from 'node:child_process';
+import spawn from 'nano-spawn';
 import { platform } from 'node:os';
+import { match } from 'ts-pattern';
 
 const startTotal = performance.now();
 
-try {
-  console.log('Checking if vale is installed...');
-  const startCheck = performance.now();
+console.log('Checking if vale is installed...');
+const startCheck = performance.now();
 
-  const currentPlatform = platform();
-  const valeExists = (function getVale(currentPlatform: NodeJS.Platform): boolean {
-    try {
-      // Use platform-specific command to check if vale exists
-      if (currentPlatform === 'win32') {
+const currentPlatform = platform();
+const valeExists = await (async function checkVale(platformName: NodeJS.Platform): Promise<boolean> {
+  try {
+    await match(platformName)
+      .with('win32', async () => {
         // Windows: use where.exe
-        execSync('where.exe vale', { stdio: 'ignore' });
-        return true;
-      }
-      // Linux/macOS: use which
-      execSync('which vale', { stdio: 'ignore' });
-      return true;
-    } catch {
-      // Command failed, vale not found
-      return false;
-    }
-  })(currentPlatform);
+        await spawn('where.exe', ['vale'], { stdio: 'ignore' });
+      })
+      .otherwise(async () => {
+        // Linux/macOS: use which
+        await spawn('which', ['vale'], { stdio: 'ignore' });
+      });
+    return true;
+  } catch {
+    // Command failed, vale not found
+    return false;
+  }
+})(currentPlatform);
 
-  console.log(
-    `Vale ${valeExists ? 'found' : 'not found'} in ${
-      (performance.now() - startCheck)
-        .toFixed(2)
-    }ms`,
-  );
+console.log(
+  `Vale ${valeExists ? 'found' : 'not found'} in ${
+    (performance.now() - startCheck)
+      .toFixed(2)
+  }ms`,
+);
 
-  if (!valeExists) {
+await match(valeExists)
+  .with(false, async () => {
     console.log('Installing vale...');
     const startInstall = performance.now();
 
-    switch (currentPlatform) {
-      case 'win32':
-        execSync('winget install errata-ai.Vale', { stdio: 'inherit' });
-        break;
-      case 'darwin':
-        execSync('brew install vale', { stdio: 'inherit' });
-        break;
-      case 'linux':
+    await match(currentPlatform)
+      .with('win32', async () => {
+        await spawn('winget', ['install', 'errata-ai.Vale'], { stdio: 'inherit' });
+      })
+      .with('darwin', async () => {
+        await spawn('brew', ['install', 'vale'], { stdio: 'inherit' });
+      })
+      .with('linux', async () => {
         // Check if snap is available first
         try {
-          execSync('which snap', { stdio: 'ignore' });
+          await spawn('which', ['snap'], { stdio: 'ignore' });
 
           try {
             // Assume snap install works without elevation first.
-            execSync('snap install vale', { stdio: 'inherit' });
+            await spawn('snap', ['install', 'vale'], { stdio: 'inherit' });
           } catch {
             // TODO: Reorganize this file to provide better error messages.
-            execSync('sudo snap install vale', {stdio: 'inherit'});
+            await spawn('sudo', ['snap', 'install', 'vale'], { stdio: 'inherit' });
           }
         } catch {
-          console.error('snap not found. Please install vale manually.');
-          process.exit(1);
+          throw new Error('snap not found. Please install vale manually.');
         }
-        break;
-      default:
-        console.error(`Unsupported platform: ${currentPlatform}`);
-        process.exit(1);
-    }
+      })
+      .otherwise(() => {
+        throw new Error(`Unsupported platform: ${currentPlatform}`);
+      });
 
     console.log(
       `Installation completed in ${(performance.now() - startInstall).toFixed(2)}ms`,
     );
-  }
+  })
+  .otherwise(() => {});
 
-  console.log(`Total time: ${(performance.now() - startTotal).toFixed(2)}ms`);
-} catch (error) {
-  console.error('Error installing vale:', error);
-  process.exit(1);
-}
+console.log(`Total time: ${(performance.now() - startTotal).toFixed(2)}ms`);

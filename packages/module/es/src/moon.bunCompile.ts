@@ -1,8 +1,11 @@
 /**
- * Compiles moon.*.ts scripts to standalone executables for multiple platforms.
+ * Compiles TypeScript scripts to standalone executables for multiple platforms.
  *
  * This script uses Bun's compile feature to create platform-specific executables
- * from TypeScript moon scripts, enabling distribution without requiring Bun runtime.
+ * from TypeScript scripts with supported prefixes (moon, cli, etc.), enabling 
+ * distribution without requiring Bun runtime.
+ *
+ * Supported prefixes can be extended by modifying the SUPPORTED_PREFIXES array.
  *
  * Usage:
  *   bun moon.bunCompile.ts
@@ -20,15 +23,36 @@ import { glob } from 'tinyglobby';
 
 //region Target definitions -- Platform-specific compilation targets
 
-const targets = [
-  { name: 'bun-linux-x64', os: 'Linux', arch: 'x64', libc: 'glibc' },
-  { name: 'bun-linux-arm64', os: 'Linux', arch: 'arm64', libc: 'glibc' },
-  { name: 'bun-windows-x64', os: 'Windows', arch: 'x64', libc: '-' },
-  { name: 'bun-darwin-x64', os: 'macOS', arch: 'x64', libc: '-' },
-  { name: 'bun-darwin-arm64', os: 'macOS', arch: 'arm64', libc: '-' },
-  { name: 'bun-linux-x64-musl', os: 'Linux', arch: 'x64', libc: 'musl' },
-  { name: 'bun-linux-arm64-musl', os: 'Linux', arch: 'arm64', libc: 'musl' },
-] as const;
+/** Linux architectures */
+type LinuxArch = 'x64' | 'arm64';
+
+/** Linux libc variants */
+type LinuxLibc = 'glibc' | 'musl';
+
+/** Linux targets with explicit libc */
+type LinuxTarget = `bun-linux-${LinuxArch}-${LinuxLibc}`;
+
+/** Linux targets with implicit glibc */
+type LinuxTargetImplicit = `bun-linux-${LinuxArch}`;
+
+/** Windows targets */
+type WindowsTarget = 'bun-windows-x64';
+
+/** macOS targets */
+type MacOSTarget = `bun-darwin-${'x64' | 'arm64'}`;
+
+/** All valid compilation targets */
+type CompilationTarget = LinuxTarget | LinuxTargetImplicit | WindowsTarget | MacOSTarget;
+
+const targets: readonly CompilationTarget[] = [
+  'bun-linux-x64',
+  'bun-linux-arm64',
+  'bun-windows-x64',
+  'bun-darwin-x64',
+  'bun-darwin-arm64',
+  'bun-linux-x64-musl',
+  'bun-linux-arm64-musl',
+];
 
 //endregion Target definitions
 
@@ -51,27 +75,45 @@ async function getPackageRoot(): Promise<string> {
 }
 
 /**
- * Extracts script name from filename.
- * @param filename - moon.*.ts filename.
- * @returns script name without moon prefix and .ts extension.
+ * Supported script prefixes that can be compiled.
  */
-function extractScriptName(filename: string): string {
+const SUPPORTED_PREFIXES = ['moon', 'cli'] as const;
+
+/**
+ * Extracts script name and prefix from filename.
+ * @param filename - script filename (e.g., moon.*.ts, cli.*.ts).
+ * @returns object containing prefix and script name.
+ */
+function extractScriptInfo(filename: string): { prefix: string; scriptName: string; } {
   const base = basename(filename, '.ts');
-  // Remove 'moon.' prefix
-  return base.replace(/^moon\./v, '');
+  
+  // Find which prefix matches
+  for (const prefix of SUPPORTED_PREFIXES) {
+    const prefixWithDot = `${prefix}.`;
+    if (base.startsWith(prefixWithDot)) {
+      return {
+        prefix,
+        scriptName: base.substring(prefixWithDot.length),
+      };
+    }
+  }
+  
+  // This shouldn't happen if glob patterns are correct
+  throw new Error(`Unexpected filename format: ${filename}`);
 }
 
 /**
  * Constructs output path for compiled executable.
+ * @param prefix - script prefix (moon, cli, etc.).
  * @param scriptName - name of the script.
  * @param target - compilation target.
  * @param packageRoot - root directory of the package.
  * @returns full output path.
  */
-function getOutputPath(scriptName: string, target: string, packageRoot: string): string {
+function getOutputPath(prefix: string, scriptName: string, target: string, packageRoot: string): string {
   const outputDir = join(packageRoot, 'dist', 'final');
   // Bun automatically adds .exe on Windows
-  return join(outputDir, `moon.${scriptName}.${target}`);
+  return join(outputDir, `${prefix}.${scriptName}.${target}`);
 }
 
 /**
@@ -84,8 +126,8 @@ function getOutputPath(scriptName: string, target: string, packageRoot: string):
 async function compileScript(scriptPath: string, target: string,
   packageRoot: string): Promise<void>
 {
-  const scriptName = extractScriptName(scriptPath);
-  const outputPath = getOutputPath(scriptName, target, packageRoot);
+  const { prefix, scriptName } = extractScriptInfo(scriptPath);
+  const outputPath = getOutputPath(prefix, scriptName, target, packageRoot);
 
   // Ensure output directory exists
   await mkdir(dirname(outputPath), { recursive: true });
@@ -122,14 +164,16 @@ async function compileScript(scriptPath: string, target: string,
 // Get the package root directory
 const packageRoot = await getPackageRoot();
 
-// Find all moon.*.ts files in the src directory
+// Find all scripts with supported prefixes in the src directory
 const srcDir = join(packageRoot, 'src');
-const scriptPaths = await glob('moon.*.ts', {
+const globPatterns = SUPPORTED_PREFIXES.map((prefix) => `${prefix}.*.ts`);
+const scriptPaths = await glob(globPatterns, {
   cwd: srcDir,
 });
 
 if (scriptPaths.length === 0) {
-  console.log('No moon.*.ts scripts found to compile');
+  const prefixList = SUPPORTED_PREFIXES.join(', ');
+  console.log(`No scripts found to compile (looking for: ${prefixList})`);
 } else {
   console.log(`Found ${scriptPaths.length} script(s) to compile:`);
   scriptPaths.forEach((script) => {
@@ -138,15 +182,11 @@ if (scriptPaths.length === 0) {
   console.log('');
 
   // Create all compilation tasks
-  const compilationTasks: Promise<void>[] = [];
-
-  for (const scriptPath of scriptPaths) {
-    // Construct full path to the script
-    const fullScriptPath = join(srcDir, scriptPath);
-    for (const target of targets) {
-      compilationTasks.push(compileScript(fullScriptPath, target.name, packageRoot));
-    }
-  }
+  const compilationTasks = scriptPaths.flatMap((scriptPath) =>
+    targets.map((target) =>
+      compileScript(join(srcDir, scriptPath), target, packageRoot)
+    )
+  );
 
   console.log(`Starting compilation of ${compilationTasks.length} targets...\n`);
 

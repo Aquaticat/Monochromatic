@@ -1,5 +1,7 @@
+import { outdent } from '@cspotcode/outdent';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { match } from 'ts-pattern';
 
 /**
  * Validates that git hooks are properly installed
@@ -10,36 +12,41 @@ const gitHooksPath = join(process.cwd(), '.git', 'hooks');
 const requiredHooks = ['pre-commit'];
 const optionalHooks = ['commit-msg', 'pre-push'];
 
-let hasRequiredHooks = true;
-
 // Check required hooks
 console.log('Required hooks:');
-for (const hook of requiredHooks) {
+const requiredHookResults = requiredHooks.map((hook) => {
   const hookPath = join(gitHooksPath, hook);
-  if (existsSync(hookPath)) {
-    console.log(`✅ ${hook} hook installed`);
-  } else {
-    console.error(`❌ ${hook} hook missing`);
-    hasRequiredHooks = false;
-  }
-}
+  const exists = existsSync(hookPath);
+  
+  match(exists)
+    .with(true, () => console.log(`✅ ${hook} hook installed`))
+    .with(false, () => console.error(`❌ ${hook} hook missing`))
+    .exhaustive();
+  
+  return exists;
+});
 
 // Check optional hooks
 console.log('\nOptional hooks:');
-for (const hook of optionalHooks) {
+optionalHooks.forEach((hook) => {
   const hookPath = join(gitHooksPath, hook);
-  if (existsSync(hookPath)) {
-    console.log(`✅ ${hook} hook installed`);
-  } else {
-    console.log(`⚠️  ${hook} hook not installed (optional)`);
-  }
-}
+  const exists = existsSync(hookPath);
+  
+  match(exists)
+    .with(true, () => console.log(`✅ ${hook} hook installed`))
+    .with(false, () => console.log(`⚠️  ${hook} hook not installed (optional)`))
+    .exhaustive();
+});
 
-if (!hasRequiredHooks) {
-  console.log('\n❌ Required git hooks missing!');
-  console.log('Run: moon run installHooks');
-  console.log('Or: moon sync hooks');
-  process.exit(1);
-} else {
-  console.log('\n✨ Git hooks properly configured!');
-}
+const hasAllRequiredHooks = requiredHookResults.every((exists) => exists);
+
+match(hasAllRequiredHooks)
+  .with(true, () => console.log('\n✨ Git hooks properly configured!'))
+  .with(false, () => {
+    throw new Error(outdent`
+      ❌ Required git hooks missing!
+      Run: moon run installHooks
+      Or: moon sync hooks
+    `);
+  })
+  .exhaustive();

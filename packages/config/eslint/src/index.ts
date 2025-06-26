@@ -87,6 +87,14 @@ const myConfigArray: ConfigArray = tseslint.config(
         enableFixer: false,
         typed: true,
       }],
+
+      'n/hashbang': ['error', {
+        executableMap: {
+          '.js': 'bun',
+          '.ts': 'bun',
+        },
+      }],
+
       // Tag line spacing is a formatting concern, not a linting concern per ESLint's current philosophy
       'jsdoc/tag-lines': 'off',
       '@typescript-eslint/no-unnecessary-condition': ['error', {
@@ -130,15 +138,15 @@ const myConfigArray: ConfigArray = tseslint.config(
        */
       '@typescript-eslint/no-unnecessary-type-parameters': 'off',
 
-       "@typescript-eslint/no-misused-promises": [
-    "error",
-    {
-      "checksVoidReturn": {
-        // passing a () => Promise<void> to a () => void parameter
-        "arguments": false,
-      }
-    }
-  ],
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        {
+          'checksVoidReturn': {
+            // passing a () => Promise<void> to a () => void parameter
+            'arguments': false,
+          },
+        },
+      ],
 
       // Using Vite bundler.
       'n/no-unpublished-import': 'off',
@@ -147,6 +155,7 @@ const myConfigArray: ConfigArray = tseslint.config(
         replacements: {
           // If readdir is good enough for node, it's good enough.
           dir: false,
+          dirs: false,
 
           //region unambiguious -- Everybody knows what these are.
           fn: false,
@@ -159,6 +168,8 @@ const myConfigArray: ConfigArray = tseslint.config(
           ctx: false,
           var: false,
           l: false, // logger
+          src: false,
+          pkg: false,
           //endregion umambiguious
         },
       }],
@@ -195,6 +206,18 @@ const myConfigArray: ConfigArray = tseslint.config(
       'vitest/padding-around-after-each-blocks': 'off',
       // Test files don't need JSDoc comments
       'jsdoc/require-jsdoc': 'off',
+
+      'vitest/require-hook': ['warn', {
+        allowedFunctionCalls: [
+          //region For blackbox testing
+          'readFile',
+          'readTextFile',
+          'execAsync',
+          //endregion For blackbox testing
+          // Extended test
+          'test'
+        ],
+      }],
     },
 
     settings: {

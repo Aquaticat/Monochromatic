@@ -42,7 +42,16 @@
     }
   },
   "bin": {
-    "moon.installVale": "./src/moon.installVale.ts"
+    "installVale": "./src/moon.installVale.ts",
+    "checkBuild": "./src/moon.checkBuild.ts",
+    "checkDependencies": "./src/moon.checkDependencies.ts",
+    "checkGitHooks": "./src/moon.checkGitHooks.ts",
+    "checkTools": "./src/moon.checkTools.ts",
+    "bunCompile": "./src/moon.bunCompile.ts",
+    "pnpmInstall": "./src/moon.pnpmInstall.ts",
+    "preparePlaywright": "./src/moon.preparePlaywright.ts",
+    "append": "./src/cli.append.ts",
+    "command": "./src/cli.command.ts"
   },
   "files": [
     "dist/final",
@@ -71,7 +80,8 @@
     "happy-rusty": "catalog:",
     "@csstools/css-tokenizer": "catalog:",
     "tinyglobby": "catalog:",
-    "find-up": "catalog:"
+    "find-up": "catalog:",
+    "@cspotcode/outdent": "catalog:"
   },
   "dependencies": {
     "meilisearch": "catalog:"

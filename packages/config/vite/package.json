@@ -8,10 +8,19 @@
   "dependencies": {
     "vite-plugin-singlefile": "catalog:",
     "lightningcss": "catalog:",
-    "esbuild": "catalog:"
+    "esbuild": "catalog:",
+    "istanbul-lib-report": "catalog:",
+    "nano-spawn": "catalog:",
+    "postcss": "catalog:",
+    "postcss-custom-media": "catalog:",
+    "postcss-custom-selectors": "catalog:",
+    "postcss-mixins": "catalog:",
+    "vite-plugin-json5": "catalog:",
+    "minimatch": "catalog:"
   },
   "peerDependencies": {
     "vitest": "catalog:",
+    "vite": "catalog:",
     "lightningcss": "catalog:"
   },
   "devDependencies": {
@@ -19,13 +28,9 @@
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@types/bun": "catalog:",
     "@types/postcss-mixins": "catalog:",
-    "nano-spawn": "catalog:",
-    "postcss": "catalog:",
-    "postcss-custom-media": "catalog:",
-    "postcss-custom-selectors": "catalog:",
-    "postcss-mixins": "catalog:",
+
     "vite": "catalog:",
-    "vite-plugin-json5": "catalog:",
+
     "vitest": "catalog:"
   },
   "type": "module",

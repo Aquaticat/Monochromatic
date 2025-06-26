@@ -227,11 +227,11 @@ describe(equal, () => {
   });
 
   test('compares Boolean wrapper objects', () => {
-    // oxlint-disable-next-line no-new-wrappers -- Testing Boolean wrapper objects
+    // oxlint-disable-next-line unicorn/new-for-builtins,no-new-wrappers -- Testing Boolean wrapper objects
     expect(equal(new Boolean(true), new Boolean(true))).toBe(true);
-    // oxlint-disable-next-line no-new-wrappers -- Testing Boolean wrapper objects
+    // oxlint-disable-next-line unicorn/new-for-builtins,no-new-wrappers -- Testing Boolean wrapper objects
     expect(equal(new Boolean(true), new Boolean(false))).toBe(false);
-    // oxlint-disable-next-line no-new-wrappers -- Testing Boolean wrapper objects
+    // oxlint-disable-next-line unicorn/new-for-builtins,no-new-wrappers -- Testing Boolean wrapper objects
     expect(equal(new Boolean(false), new Boolean(false))).toBe(true);
   });
 
