@@ -7,12 +7,18 @@
     "**/*.shared.ts",
     "**/*.index.ts",
     "**/index.ts",
+    "**/logtape.*.ts",
     "**/fixture.*.ts",
     "**/moon.*.ts",
     "**/theme/subtle/**",
-    "packages/module/es/src/testing.ts",
-    "**/*.deprecated.*.ts",
+    "**/deprecated.*.ts",
     "packages/site/**/*"
+  ],
+  "coverageAdditionalPatterns": [
+    "**/cli.*.ts",
+    "**/dom.*.ts",
+    "**/*.browser.ts",
+    "**/*.browser.test.ts"
   ],
   "ignoredExtensions": [".cjs", ".js", ".mjs"],
   "pathReplacements": [

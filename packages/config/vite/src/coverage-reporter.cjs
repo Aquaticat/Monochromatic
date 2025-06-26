@@ -12,6 +12,7 @@ const vitestExcludeCommonConfig = require('./vitest-exclude-common.json');
 
 const FORMAT_COORDINATE_PAD_LENGTH = 3;
 const FORMAT_ENTRY_PAD_LENGTH = 2;
+const INDENT_LENGTH = 4;
 const NUMBER_FILL_STRING = '0';
 const DEBUG = false;
 
@@ -27,14 +28,14 @@ const DEBUG = false;
  * Example output:
  * ```
  * module/es numeric.type.intsTo10.index.ts
- * stmt  00:00: 001:000 030:inf
- *       01:00: 002:002 024:inf
- *       02:00: 004:004 023:inf
- *       03:00: 004:027 004:051
- * fn    00:00: name: intsTo ; decl: 001:010 001:017 ; loc: 001:052 025:inf
- *       01:00: name: (anonymous_1) ; decl: 016:021 016:022 ; loc: 017:018 017:inf
- * br    00:00,00: loc: 005:006 007:inf ; type: if ; locations: 005:006 007:inf,
- *       01:00,00: loc: 010:010 010:inf ; type: cond-expr ; locations: 010:026 010:060, 010:060 010:inf
+ * st  00:00: 001:000 030:inf
+ *     01:00: 002:002 024:inf
+ *     02:00: 004:004 023:inf
+ *     03:00: 004:027 004:051
+ * fn  00:00: name: intsTo ; decl: 001:010 001:017 ; loc: 001:052 025:inf
+ *     01:00: name: (anonymous_1) ; decl: 016:021 016:022 ; loc: 017:018 017:inf
+ * br  00:00,00: loc: 005:006 007:inf ; type: if ; locations: 005:006 007:inf,
+ *     01:00,00: loc: 010:010 010:inf ; type: cond-expr ; locations: 010:026 010:060, 010:060 010:inf
  * ```
  *
  * Format explanation:
@@ -68,15 +69,19 @@ class MyTextReport extends ReportBase {
     // Ignore files matching glob patterns from shared configuration
 
     if (
-      vitestExcludeCommonConfig.patterns.some(
-        function matchPattern(pattern) {
-          const matches = minimatch(cPath, pattern);
-          if (DEBUG) {
-            console.log(`Pattern: ${pattern} | Matches: ${matches} | Path: ${cPath}`);
-          }
-          return matches;
-        },
-      )
+      [
+        ...(vitestExcludeCommonConfig.patterns),
+        ...(vitestExcludeCommonConfig.coverageAdditionalPatterns),
+      ]
+        .some(
+          function matchPattern(pattern) {
+            const matches = minimatch(cPath, pattern);
+            if (DEBUG) {
+              console.log(`Pattern: ${pattern} | Matches: ${matches} | Path: ${cPath}`);
+            }
+            return matches;
+          },
+        )
     ) {
       return;
     }
@@ -105,9 +110,9 @@ class MyTextReport extends ReportBase {
 
       // Process each coverage type
       [
-        ['stmt  ', [statementMap, s]],
-        ['fn    ', [fnMap, f]],
-        ['br    ', [branchMap, b]],
+        ['st'.padEnd(INDENT_LENGTH), [statementMap, s]],
+        ['fn'.padEnd(INDENT_LENGTH), [fnMap, f]],
+        ['br'.padEnd(INDENT_LENGTH), [branchMap, b]],
       ]
         .forEach(function log([name, [coverageMap, countsObj]]) {
           if (Object.keys(coverageMap).length === 0) {
@@ -118,7 +123,7 @@ class MyTextReport extends ReportBase {
           const formattedEntries = Object
             .entries(coverageMap)
             .map(([keyNumber, value]) => formatCoverageEntry(keyNumber, value, counts))
-            .join('\n      ');
+            .join(`\n${''.padEnd(INDENT_LENGTH)}`);
 
           console.log(`${name}${formattedEntries}`);
         });

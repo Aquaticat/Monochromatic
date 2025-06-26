@@ -420,44 +420,6 @@ export const getFigmaIframe = (configDir: string): UserConfigFnObject =>
 
 export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
   test: {
-    projects: [
-      // TODO: Use this.
-      // 'packages/*/*',
-      defineProject({
-        test: {
-          name: 'browser',
-          include: ['packages/*/*/**/src/**/*.browser.test.ts'],
-          exclude: [...vitestExcludeCommon, '*.unit.test.ts'],
-
-          browser: {
-            provider: 'playwright',
-            enabled: true,
-            headless: true,
-
-            api: {
-              host: '0.0.0.0',
-              port: 3003,
-            },
-
-            instances: [
-              {
-                browser: 'chromium',
-                testTimeout: 1000,
-              },
-              // @vitest/coverage-v8 doesn't work with firefox because Firefox doesn't use v8 engine.
-              { browser: 'firefox', testTimeout: 1000 },
-            ],
-          },
-        },
-      }),
-      defineProject({
-        test: {
-          name: { label: 'unit', color: 'black' },
-          include: ['packages/*/*/**/src/**/*.unit.test.ts'],
-          exclude: [...vitestExcludeCommon, '**/*.browser.test.ts'],
-        },
-      }),
-    ],
     name: 'workspace',
     api: {
       host: '0.0.0.0',
@@ -533,10 +495,7 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
       ],
       exclude: [
         ...vitestExcludeCommon,
-        // Exclude browser test files and browser specific implementations from coverage collection
-        'packages/*/*/**/src/**/*.browser.test.ts',
-        'packages/*/*/**/src/**/*.browser.ts',
-        '**/dom.*',
+        ...(vitestExcludeCommonConfig.coverageAdditionalPatterns),
       ],
     },
   },
@@ -545,21 +504,42 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
 export const vitestOnlyUnitConfigWorkspace: VitestUserConfig = {
   test: {
     ...vitestOnlyConfigWorkspace.test,
-    projects: [notFalsyOrThrow(notFalsyOrThrow(notFalsyOrThrow(vitestOnlyConfigWorkspace
-      .test)
-      .projects)[1])],
+    name: 'unit',
+    include: ['packages/*/*/**/src/**/*.unit.test.ts'],
+    exclude: [...vitestExcludeCommon, '**/*.browser.test.ts'],
   },
 };
 
 export const vitestOnlyBrowserConfigWorkspace: VitestUserConfig = {
   test: {
     ...vitestOnlyConfigWorkspace.test,
-    projects: [notFalsyOrThrow(notFalsyOrThrow(notFalsyOrThrow(vitestOnlyConfigWorkspace
-      .test)
-      .projects)[0])],
+
     coverage: {
       // Turned off for browsers. See https://github.com/vitest-dev/vitest/issues/5477
       enabled: false,
+    },
+    name: 'browser',
+    include: ['packages/*/*/**/src/**/*.browser.test.ts'],
+    exclude: [...vitestExcludeCommon, '**/*.unit.test.ts'],
+
+    browser: {
+      provider: 'playwright',
+      enabled: true,
+      headless: true,
+
+      api: {
+        host: '0.0.0.0',
+        port: 3003,
+      },
+
+      instances: [
+        {
+          browser: 'chromium',
+          testTimeout: 1000,
+        },
+        // @vitest/coverage-v8 doesn't work with firefox because Firefox doesn't use v8 engine.
+        { browser: 'firefox', testTimeout: 1000 },
+      ],
     },
   },
 };
