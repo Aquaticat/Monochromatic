@@ -7,11 +7,14 @@ dependsOn:
 
 tasks:
   # Template for lint/format tasks
+  # Note: cache is disabled due to Moon's cache overhead with filesystem-intensive
+  # operations and tasks with large numbers of inputs/outputs from expanded globs
   _lintFormatBase:
     inputs:
     - '@group(allSources)'
     - '@group(configs)'
     options:
+      cache: false
       unixShell: 'bash'
       windowsShell: 'bash'
       shell: true
@@ -38,11 +41,17 @@ tasks:
     - '@group(allTests)'
     - '@group(allDists)'
 
+  # Unit test runner
+  # Note: cache disabled to avoid Moon's cache overhead with large input sets
+  # The @group(allUnitTests) and @group(allDists) expand to many files,
+  # causing significant cache computation time that exceeds test execution time
   testUnit:
     command: 'vitest run --config vitest.unit.config.ts'
     inputs:
     - '@group(allUnitTests)'
     - '@group(allDists)'
+    options:
+      cache: false
 
   testUnitWatch:
     command: 'vitest watch --config vitest.unit.config.ts'
@@ -51,11 +60,15 @@ tasks:
     - '@group(allUnitTests)'
     - '@group(allDists)'
 
+  # Browser test runner
+  # Note: cache disabled for same reasons as testUnit - large input sets
   testBrowser:
     command: 'vitest run --config vitest.browser.config.ts'
     inputs:
     - '@group(allUnitTests)'
     - '@group(allDists)'
+    options:
+      cache: false
 
   testBrowserWatch:
     command: 'vitest watch --config vitest.browser.config.ts'
@@ -141,6 +154,8 @@ tasks:
     command: 'tsc --build'
     options:
       outputStyle: buffer-only-failure
+      # tsc uses its own cache
+      cache: false
 
   typesWatch:
     command: 'tsc --watch'

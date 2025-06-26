@@ -643,3 +643,73 @@ Failed to resolve entry for package "@monochromatic-dev/config-vite"
 ### The Meta Lesson
 
 Fresh clone setup issues reveal the hidden assumptions in our development workflow. What works in an established development environment may fail catastrophically in a clean environment. Regular fresh clone testing is essential for maintaining a truly reproducible build system.
+
+## Moon Cache Performance with Large Input Sets
+
+### Problem
+Tasks like `moon run testUnit` take significantly longer than expected due to Moon's cache computation overhead, not the actual test execution.
+
+### Root Cause
+Moon's caching system experiences performance degradation with:
+1. **Filesystem-intensive operations**: Tasks that need to check many files
+2. **Large input sets from expanded globs**: When `@group()` directives expand to hundreds or thousands of files
+3. **Complex dependency graphs**: Tasks with many transitive dependencies
+
+### Symptoms
+- `moon run testUnit` takes ~33 seconds when the actual vitest execution only takes ~7 seconds
+- The overhead comes from Moon computing cache keys for all expanded input files
+- Performance degrades as the codebase grows
+
+### Solution
+Disable caching for affected tasks by adding `cache: false` to the task options:
+
+```yaml
+testUnit:
+  command: 'vitest run --config vitest.unit.config.ts'
+  inputs:
+    - '@group(allUnitTests)'
+    - '@group(allDists)'
+  options:
+    cache: false  # Disable cache due to performance overhead
+```
+
+### Affected Tasks
+Common tasks that benefit from disabled caching:
+- Test runners (large number of test files)
+- Linters (scan entire codebase)
+- Formatters (process many files)
+- Any task using `@group()` directives that expand to many files
+
+### Trade-offs
+- **With caching**: Slower execution due to cache computation, but skips execution if inputs haven't changed
+- **Without caching**: Faster execution, but runs every time regardless of changes
+
+For frequently-run tasks like tests and linters, the performance gain from disabling cache usually outweighs the benefit of skipping unchanged runs.
+
+### Debugging Tips
+To identify cache-related performance issues:
+1. Time the actual command execution vs the moon task execution
+2. Check if the task has large input sets (many files or glob patterns)
+3. Test with `cache: false` to see if performance improves
+4. Use `moon clean --lifetime '1 seconds'` to clear cache when testing
+
+### The Lesson: Rust Doesn't Make Everything Fast
+
+This issue highlights an important lesson about performance assumptions:
+
+**Just because a tool is written in Rust doesn't mean it's automatically fast for every use case.**
+
+Moon is indeed a high-performance build orchestrator written in Rust, but performance characteristics depend on:
+- **Algorithm complexity**: Cache key computation with thousands of files is inherently expensive
+- **I/O patterns**: Even Rust can't make filesystem operations magically fast
+- **Design trade-offs**: Moon's caching is optimized for avoiding redundant work, not for computing cache keys quickly
+
+In this case, Moon's cache computation takes ~26 seconds for tasks with large input sets, while the actual task execution only takes ~7 seconds. The overhead completely negates the benefit of caching.
+
+**Key takeaways**:
+1. **Measure, don't assume**: Even "fast" tools can have slow paths
+2. **Understand your tools**: Know when features help vs hurt performance
+3. **Question defaults**: Default configurations may not suit your use case
+4. **Profile edge cases**: Tools optimized for common cases may struggle with large inputs
+
+The irony is that Moon's sophisticated caching system, designed to improve performance, actually makes things slower for certain workloads. This is a classic example of how performance optimizations can backfire when applied to the wrong problem domain.
