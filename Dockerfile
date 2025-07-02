@@ -28,11 +28,8 @@ RUN moon run prepareAndBuildAllowFailure
 FROM caddy:alpine
 
 # Copy all built files from builder
-COPY --from=builder /app/packages /srv/packages
-
-# Create a simple Caddyfile for serving the specific project
-RUN echo ":80 { root * /srv/packages/site/exa-search/dist/final/js; file_server }" > /etc/caddy/Caddyfile
+COPY --from=builder /app /srv
 
 EXPOSE 80
 
-CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+CMD ["caddy", "run", "--config", "/srv/Caddyfile", "--adapter", "caddyfile"]

@@ -167,11 +167,23 @@ describe('cli.command', () => {
   });
 
   test('fails when no command is specified', async ({ cliPath }) => {
-    await expect(execAsync(`bun ${cliPath}`)).rejects.toThrow();
+    try {
+      await execAsync(`bun ${cliPath}`);
+      // Should not reach here
+      expect(true).toBe(false);
+    } catch (error: any) {
+      expect(error.code).toBeGreaterThan(0);
+    }
   });
 
   test('fails when only -- is provided without command', async ({ cliPath }) => {
-    await expect(execAsync(`bun ${cliPath} --`)).rejects.toThrow();
+    try {
+      await execAsync(`bun ${cliPath} --`);
+      // Should not reach here
+      expect(true).toBe(false);
+    } catch (error: any) {
+      expect(error.code).toBeGreaterThan(0);
+    }
   });
 
   test('propagates custom exit codes', async ({ cliPath, testScript }) => {
@@ -183,7 +195,13 @@ describe('cli.command', () => {
   });
 
   test('handles non-existent command', async ({ cliPath }) => {
-    await expect(execAsync(`bun ${cliPath} -- nonexistentcommand123`)).rejects.toThrow();
+    try {
+      await execAsync(`bun ${cliPath} -- nonexistentcommand123`);
+      // Should not reach here
+      expect(true).toBe(false);
+    } catch (error: any) {
+      expect(error.code).toBeGreaterThan(0);
+    }
   });
 
   test('handles non-existent command with allowFailure', async ({ cliPath }) => {
@@ -243,5 +261,87 @@ describe('cli.command', () => {
 
     expect(stdout).toContain('combined');
     // Should succeed despite exit 1 due to allowFailure
+  });
+
+  test('executes command with timeout', async ({ cliPath, testScript }) => {
+    const { stdout } = await execAsync(
+      `bun ${cliPath} --timeout 5000 -- node ${testScript} success`,
+    );
+
+    expect(stdout).toContain('Success');
+  });
+
+  test('uses short flag -t for timeout', async ({ cliPath, testScript }) => {
+    const { stdout } = await execAsync(
+      `bun ${cliPath} -t 5000 -- node ${testScript} success`,
+    );
+
+    expect(stdout).toContain('Success');
+  });
+
+  test('timeout terminates long-running command', async ({ cliPath, testDir }) => {
+    // Create a script that runs longer than timeout
+    const longScript = join(testDir, 'long-script.js');
+    writeFileSync(longScript, `
+      console.log('Starting long task');
+      setTimeout(() => {
+        console.log('This should not print');
+      }, 2000);
+    `);
+
+    await expect(
+      execAsync(`bun ${cliPath} --timeout 500 -- node ${longScript}`),
+    ).rejects.toThrow();
+
+    // Clean up
+    if (existsSync(longScript)) {
+      unlinkSync(longScript);
+    }
+  });
+
+  test('timeout with allowFailure exits with 0', async ({ cliPath, testDir }) => {
+    // Create a script that runs longer than timeout
+    const longScript = join(testDir, 'long-script-allow.js');
+    writeFileSync(longScript, `
+      console.log('Starting long task');
+      setTimeout(() => {
+        console.log('This should not print');
+      }, 2000);
+    `);
+
+    const { stdout } = await execAsync(
+      `bun ${cliPath} --allowFailure --timeout 500 -- node ${longScript}`,
+    );
+
+    expect(stdout).toContain('Starting long task');
+
+    // Clean up
+    if (existsSync(longScript)) {
+      unlinkSync(longScript);
+    }
+  });
+
+  test('command without timeout runs to completion', async ({ cliPath, testDir }) => {
+    // Create a script that takes some time but completes
+    const timedScript = join(testDir, 'timed-script.js');
+    writeFileSync(timedScript, `
+      console.log('Start');
+      setTimeout(() => {
+        console.log('End');
+        process.exit(0);
+      }, 100);
+    `);
+
+    const { stdout } = await execAsync(
+      `bun ${cliPath} -- node ${timedScript}`,
+    );
+
+    expect(stdout).toContain('Start');
+    expect(stdout).toContain('End');
+
+    // Clean up
+    if (existsSync(timedScript)) {
+      unlinkSync(timedScript);
+    }
   });
 });

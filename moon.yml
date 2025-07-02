@@ -75,7 +75,7 @@ tasks:
   preparePlaywright:
     command: 'bun packages/module/es/src/moon.preparePlaywright.ts'
   preparePlaywrightAllowFailure:
-    command: 'bun packages/module/es/src/cli.command.ts --allowFailure --shell -- bun packages/module/es/src/moon.preparePlaywright.ts'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure --timeout 30000 --shell -- bun packages/module/es/src/moon.preparePlaywright.ts'
     options:
       shell: true
 

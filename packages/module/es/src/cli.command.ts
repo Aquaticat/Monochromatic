@@ -41,6 +41,11 @@ const moonCommand = define({
       short: 's',
       description: 'Execute command through shell',
     },
+    timeout: {
+      type: 'number',
+      short: 't',
+      description: 'Timeout in milliseconds for the command execution',
+    },
   },
   examples: `# Always exit with 0
 $ bun moon.command.ts --allowFailure -- eslint --cache
@@ -49,9 +54,12 @@ $ bun moon.command.ts --allowFailure -- eslint --cache
 $ bun moon.command.ts -- eslint --cache
 
 # Execute through shell
-$ bun moon.command.ts --shell -- "echo hello && echo world"`,
+$ bun moon.command.ts --shell -- "echo hello && echo world"
+
+# Execute with timeout of 5 seconds
+$ bun moon.command.ts --timeout 5000 -- npm test`,
   run: async (ctx) => {
-    const { allowFailure, shell } = ctx.values;
+    const { allowFailure, shell, timeout } = ctx.values;
 
     // ctx.rest or ctx._ contains arguments after --
     const gunshiRestArgsArray = [ctx.rest, ctx._].find(unary(arrayIsNonEmpty));
@@ -81,6 +89,7 @@ $ bun moon.command.ts --shell -- "echo hello && echo world"`,
         stderr: 'inherit',
         stdin: 'inherit',
         shell,
+        timeout,
       });
 
       // Script ends naturally with exit code 0
@@ -102,7 +111,7 @@ $ bun moon.command.ts --shell -- "echo hello && echo world"`,
               );
 
             // Exit with 0 if allowFailure is true, otherwise use the command's exit code
-            match(allowFailure)
+            match(allowFailure ?? false)
               .with(false, () => {
                 process.exitCode = subprocessError.exitCode ?? 1;
               })
@@ -117,7 +126,7 @@ $ bun moon.command.ts --shell -- "echo hello && echo world"`,
               error instanceof Error ? error.message : String(error)
             }`,
           );
-          match(allowFailure)
+          match(allowFailure ?? false)
             .with(false, () => {
               throw error;
             })

@@ -1,0 +1,4 @@
+:80 {
+  root * /srv/packages/site/exa-search/dist/final/js
+  file_server
+}
