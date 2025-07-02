@@ -4,24 +4,38 @@
 
 :root {
   --dark: #000;
+  --dark-lighter: #222;
   --light: #eee;
+  --light-darker: #ccc;
   --fg: var(--light);
+  --fg-weaker: var(--light-darker);
   --bg: var(--dark);
 }
 
 @media (prefers-color-scheme: light) {
   :root {
     --fg: var(--dark);
+    --fg-weaker: var(--dark-lighter);
     --bg: var(--light);
   }
 }
 
-body {
+html {
   font-family: 'Inter Variable', 'Inter Var', sans-serif;
 
   background-color: var(--bg);
 
   color: var(--fg);
+}
+
+body {
+  max-inline-size: min(87.5dvi, 60rem);
+
+  margin-inline: auto;
+
+  > :not(:nth-child(1)) {
+    margin-block-start: 2rem;
+  }
 }
 
 [data-sr-only] {
@@ -56,4 +70,107 @@ body {
 
 .result__image {
   background-color: #fff;
+
+  inline-size: clamp(min(8rem, 25dvi), 12.5dvi, 16rem);
+}
+
+.result__favicon {
+  inline-size: 1rem;
+
+  block-size: 1rem;
+}
+
+.result__header {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 1rem;
+
+  align-items: baseline;
+}
+
+.result__body {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 1rem;
+
+  align-items: flex-start;
+}
+
+.result__texturalContent {
+  display: flex;
+
+  flex-direction: column;
+
+  flex-shrink: 1;
+
+  flex-basis: 45rem;
+
+  gap: 0.5rem;
+}
+
+.header {
+  display: flex;
+
+  align-items: baseline;
+
+  flex-wrap: wrap;
+
+  gap: 1rem;
+
+  justify-content: space-between;
+}
+
+.headerNav {
+  display: flex;
+
+  gap: 1rem;
+}
+
+p {
+  margin-block: 0;
+}
+
+details {
+  > summary {
+    display: flex;
+
+    flex-direction: column;
+
+    &::marker {
+      content: '';
+    }
+
+    &::after {
+      color: var(--fg-weaker);
+
+      content: '⮟ expand';
+    }
+  }
+
+  &:open {
+    > summary {
+      &::after {
+        content: '⮝ minimize';
+      }
+    }
+  }
+}
+
+::details-content {
+  /* stylelint-disable-next-line property-disallowed-list -- necessary */
+  transition: block-size 0.5s ease, content-visibility 0.5s ease allow-discrete;
+
+  block-size: 0;
+
+  overflow-block: clip;
+
+  interpolate-size: allow-keywords;
+}
+
+[open]::details-content {
+  block-size: auto;
 }

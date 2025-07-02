@@ -1,7 +1,7 @@
 FROM node:20-alpine AS builder
 
 # Install proto
-RUN apk add --no-cache curl bash
+RUN apk add --no-cache curl bash git
 RUN curl -fsSL https://moonrepo.dev/install/proto.sh | bash
 ENV PATH="/root/.proto/bin:/root/.proto/shims:$PATH"
 

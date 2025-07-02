@@ -4,7 +4,7 @@ services:
   exa-search:
     build:
       context: ../../..
-      dockerfile: packages/site/exa-search/Dockerfile
+      dockerfile: Dockerfile.exa-search
     ports:
       - '${PORT:-3000}:80'
     environment:
