@@ -7,3 +7,8 @@ tags:
 
 dependsOn:
 - 'es'
+
+tasks:
+  js_default:
+    deps:
+    - 'es:js'
