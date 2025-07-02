@@ -16,6 +16,8 @@ WORKDIR /app
 # Copy the entire monorepo
 COPY . .
 
+RUN proto install
+
 # Run moon prepare and build (builds all projects)
 # Eventually the tasks would be fixed so we don't need the allowFailure variant.
 # Right now it doesn't build because we're not auto setting up snap when installing Vale.
