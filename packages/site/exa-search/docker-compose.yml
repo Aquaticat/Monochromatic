@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  exa-search:
+    build:
+      context: ../../..
+      dockerfile: packages/site/exa-search/Dockerfile
+    ports:
+      - '${PORT:-3000}:80'
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost/']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "coolify.managed=true"
+      - "coolify.type=application"
+      - "coolify.name=exa-search"
