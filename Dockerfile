@@ -1,10 +1,16 @@
-FROM node:20-alpine AS builder
+FROM ubuntu:24.04 AS builder
 
 # Build argument for which project to build
 ARG PROJECT=exa-search
 
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install proto
-RUN apk add --no-cache curl bash git
 RUN curl -fsSL https://moonrepo.dev/install/proto.sh | bash
 ENV PATH="/root/.proto/bin:/root/.proto/shims:$PATH"
 
