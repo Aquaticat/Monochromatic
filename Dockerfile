@@ -29,13 +29,16 @@ COPY . .
 RUN moon run prepare
 
 # Production stage
-FROM nginx:alpine
+FROM caddy:alpine
 
 ARG PROJECT=exa-search
 
-# Copy built files from builder
-COPY --from=builder /app/packages/site/${PROJECT}/dist/final/js/index.html /usr/share/nginx/html/index.html
+# Copy all built files from builder
+COPY --from=builder /app/packages /srv/packages
+
+# Create a simple Caddyfile for serving the specific project
+RUN echo ":80 { root * /srv/packages/site/${PROJECT}/dist/final/js; file_server }" > /etc/caddy/Caddyfile
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
