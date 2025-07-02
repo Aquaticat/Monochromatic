@@ -44,7 +44,7 @@ await match({ nodeModulesExists, lockfileExists })
       ], {
         stdio: 'inherit',
       });
-      
+
       console.log(
         `pnpm install check completed in ${
           (performance.now() - startInstall).toFixed(2)

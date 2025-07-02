@@ -8,23 +8,24 @@ console.log('Checking if vale is installed...');
 const startCheck = performance.now();
 
 const currentPlatform = platform();
-const valeExists = await (async function checkVale(platformName: NodeJS.Platform): Promise<boolean> {
-  try {
-    await match(platformName)
-      .with('win32', async () => {
-        // Windows: use where.exe
-        await spawn('where.exe', ['vale'], { stdio: 'ignore' });
-      })
-      .otherwise(async () => {
-        // Linux/macOS: use which
-        await spawn('which', ['vale'], { stdio: 'ignore' });
-      });
-    return true;
-  } catch {
-    // Command failed, vale not found
-    return false;
-  }
-})(currentPlatform);
+const valeExists =
+  await (async function checkVale(platformName: NodeJS.Platform): Promise<boolean> {
+    try {
+      await match(platformName)
+        .with('win32', async () => {
+          // Windows: use where.exe
+          await spawn('where.exe', ['vale'], { stdio: 'ignore' });
+        })
+        .otherwise(async () => {
+          // Linux/macOS: use which
+          await spawn('which', ['vale'], { stdio: 'ignore' });
+        });
+      return true;
+    } catch {
+      // Command failed, vale not found
+      return false;
+    }
+  })(currentPlatform);
 
 console.log(
   `Vale ${valeExists ? 'found' : 'not found'} in ${

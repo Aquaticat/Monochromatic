@@ -23,8 +23,8 @@ vcs:
   # Accepts "git". Defaults to "git".
   manager: 'git'
 
-  # The default branch (master/main/trunk) in the repository for comparing the
-  # local branch against. For git, this is is typically "master" or "main",
+  # The default branch in the repository for comparing the
+  # local branch against. For git, this is is typically "main",
   # and must include the remote prefix (before /).
   defaultBranch: 'main'
 
@@ -33,8 +33,8 @@ vcs:
   syncHooks: true
 
   hooks:
-    pre-commit:
-    - 'moon run precommit'
+    pre-push:
+    - 'moon run prepush'
 
 codeowners:
   syncOnRun: true

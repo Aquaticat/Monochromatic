@@ -17,12 +17,12 @@ console.log('Required hooks:');
 const requiredHookResults = requiredHooks.map((hook) => {
   const hookPath = join(gitHooksPath, hook);
   const exists = existsSync(hookPath);
-  
+
   match(exists)
     .with(true, () => console.log(`✅ ${hook} hook installed`))
     .with(false, () => console.error(`❌ ${hook} hook missing`))
     .exhaustive();
-  
+
   return exists;
 });
 
@@ -31,7 +31,7 @@ console.log('\nOptional hooks:');
 optionalHooks.forEach((hook) => {
   const hookPath = join(gitHooksPath, hook);
   const exists = existsSync(hookPath);
-  
+
   match(exists)
     .with(true, () => console.log(`✅ ${hook} hook installed`))
     .with(false, () => console.log(`⚠️  ${hook} hook not installed (optional)`))

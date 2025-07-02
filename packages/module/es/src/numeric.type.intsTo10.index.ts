@@ -13,9 +13,7 @@
             ? toInclusive
             : `(${
               [...new Array(toInclusive + 1 - fromInclusive).keys()]
-                .map((current) =>
-                  current + fromInclusive
-                )
+                .map((current) => current + fromInclusive)
                 .join('|')
             })`
         };`,

@@ -5,18 +5,18 @@
     "${configDir}/src/**/*.mdx",
     "${configDir}/src/**/*.json",
     "${configDir}/*.config.ts",
-    "${configDir}/.astro/types.d.ts",
+    "${configDir}/.astro/types.d.ts"
   ],
   "exclude": [
     "dist",
     "bak",
-    "node_modules",
+    "node_modules"
   ],
   "compilerOptions": {
     "baseUrl": "./",
     "rootDirs": [
       "${configDir}/src",
-      "${configDir}",
+      "${configDir}"
     ],
     "outDir": "${configDir}/dist/final/types",
     "strict": true,
@@ -45,7 +45,7 @@
     "types": [
       "bun",
       "vite/client",
-      "@vitest/browser/providers/playwright",
+      "@vitest/browser/providers/playwright"
     ],
 
     //endregion
@@ -144,12 +144,12 @@
 
     //region Watch Options
 
-    "assumeChangesOnlyAffectDirectDependencies": true,
+    "assumeChangesOnlyAffectDirectDependencies": true
     //endregion
 
     //region Type Acquisition
 
     //endregion
   },
-  "$schema": "https://json.schemastore.org/tsconfig",
+  "$schema": "https://json.schemastore.org/tsconfig"
 }

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8'>
+    <meta
+      name='viewport'
+      content='width=device-width, initial-scale=1.0'>
+    <title>Exa Search</title>
+    <link
+      rel='stylesheet'
+      href='./src/index.css'>
+    <script
+      type='module'
+      src='./src/index.ts'></script>
+  </head>
+  <body>
+    <header class='header'>
+      <h1 class='logo'>Unofficial Exa Search</h1>
+      <nav class='headerNav'>
+        <div class='apiKey'>
+          <button
+            type='button'
+            class='changeApiKey'>
+            Change API Key
+          </button>
+          <dialog class='setApiKey'>
+          </dialog>
+        </div>
+        <div class='numResults'>
+          <label>
+            request
+            <input
+              type='number'
+              name='numResults'
+              value='10'
+              max='100'
+              min='1'>
+            results
+          </label>
+        </div>
+      </nav>
+    </header>
+
+    <main class='main'>
+      <search>
+        <form class='searchForm'>
+          <label
+            for='search'
+            data-sr-only>Search with Exa</label>
+          <input
+            type='text'
+            placeholder='Search with Exa'
+            autocomplete='off'
+            autofocus
+            id='search'>
+          <button
+            type='submit'
+            class='search-button'>
+            Search
+          </button>
+        </form>
+      </search>
+
+      <section class='status'>
+        <p class='metrics' hidden>
+          <span class='number numTotalSearches'>0</span> searches total
+        </p>
+        <p
+          class='processing'
+          hidden>
+          Searching
+        </p>
+        <p
+          class='success'
+          hidden>
+          <span class='number'></span> results in <span class='number'></span> costing
+          <span class='number costDollars'></span> USD
+        </p>
+        <p
+          class='fail'
+          hidden>
+          Error: <span class='message'></span>
+        </p>
+      </section>
+
+      <ol class='results' hidden>
+        <!-- 100 pre-created result containers -->
+        <!-- Example:
+          curl --request POST \
+  --url https://api.exa.ai/search \
+  --header 'x-api-key: <token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "query": "Latest research in LLMs",
+  "type": "auto",
+  "category": "research paper",
+  "numResults": 10,
+  "contents": {
+    "text": true,
+    "summary": {
+      "query": "Main developments"
+    },
+    "subpages": 1,
+    "subpageTarget": "sources",
+    "extras": {
+      "links": 1,
+      "imageLinks": 1
+    }
+  }
+}'
+
+{
+  "requestId": "b5947044c4b78efa9552a7c89b306d95",
+  "resolvedSearchType": "neural",
+  "results": [
+    {
+      "title": "A Comprehensive Overview of Large Language Models",
+      "url": "https://arxiv.org/pdf/2307.06435.pdf",
+      "publishedDate": "2023-11-16T01:36:32.547Z",
+      "author": "Humza  Naveed, University of Engineering and Technology (UET), Lahore, Pakistan",
+      "score": 0.4600165784358978,
+      "id": "https://arxiv.org/abs/2307.06435",
+      "image": "https://arxiv.org/pdf/2307.06435.pdf/page_1.png",
+      "favicon": "https://arxiv.org/favicon.ico",
+      "text": "Abstract Large Language Models (LLMs) have recently demonstrated remarkable capabilities...",
+      "highlights": [
+        "Such requirements have limited their adoption..."
+      ],
+      "highlightScores": [
+        0.4600165784358978
+      ],
+      "summary": "This overview paper on Large Language Models (LLMs) highlights key developments...",
+      "subpages": [
+        {
+          "id": "https://arxiv.org/abs/2303.17580",
+          "url": "https://arxiv.org/pdf/2303.17580.pdf",
+          "title": "H",
+          "publishedDate": "2023-11-16T01:36:20.486Z",
+          "text": "HuggingGPT: Solving.",
+          "highlights": [
+            "2) Recently, some"
+          ],
+          "highlightScores": [
+            0.32679107785224915
+          ]
+        }
+      ],
+      "extras": {
+        "links": []
+      }
+    }
+  ],
+  "searchType": "auto",
+  "context": "<string>",
+  "costDollars": {
+    "total": 0.005,
+    "breakDown": [...]
+  }
+}-->
+        <li class='result' hidden>
+          <div class='result__header'>
+            <img
+              class='result__favicon'
+              src=''
+              alt=''>
+            <h2 class='result__title'>
+              <a
+                href='#'
+                class='result__link'
+                target='_blank'
+                rel='noopener noreferrer'></a>
+            </h2>
+            <time class='result__publishedDate'></time>
+            <address class='result__author'>
+            </address>
+          </div>
+          <div class='result__body'>
+            <div class='result__texturalContent'>
+              <p class='result__summary'>
+              </p>
+              <details>
+                <summary>
+                  Text
+                </summary>
+                <p class='result__text'>
+              </details>
+              </p>
+              <ul class='result__highlights'>
+                <li class='result__highlight'>
+                </li>
+              </ul>
+            </div>
+            <img
+              class='result__image'
+              src=''
+              alt=''>
+          </div>
+        </li>
+      </ol>
+    </main>
+  </body>
+</html>

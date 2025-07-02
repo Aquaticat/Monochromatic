@@ -2,9 +2,6 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 
 language: 'typescript'
 
-dependsOn:
-- 'vite'
-
 tasks:
   # Template for lint/format tasks
   # Note: cache is disabled due to Moon's cache overhead with filesystem-intensive
@@ -279,15 +276,15 @@ tasks:
 
   # Convenience commands
 
-  # Manually run the same checks as the pre-commit hook
+  # Manually run the same checks as the pre-push hook
   # Use this when:
-  #   - You want to test what the pre-commit hook will check before committing
+  #   - You want to test what the pre-push hook will check before pushing
   #   - You've disabled hooks temporarily and want to manually verify
-  #   - You're debugging why a commit was blocked
+  #   - You're debugging why a push was blocked
   # Don't use this for:
   #   - Full validation before pushing (use 'validate' instead)
   #   - As part of CI (use individual tasks)
-  precommit:
+  prepush:
     deps:
     - lint
     - test

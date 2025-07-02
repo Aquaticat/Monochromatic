@@ -8,7 +8,7 @@
   "dependencies": {
     "typescript-eslint": "catalog:",
     "eslint-plugin-unicorn": "catalog:",
-    "eslint-plugin-jsdoc": "catalog:",
+    "eslint-plugin-tsdoc": "catalog:",
     "@eslint/js": "catalog:",
     "eslint-plugin-n": "catalog:",
     "@vitest/eslint-plugin": "catalog:",

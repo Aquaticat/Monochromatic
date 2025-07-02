@@ -5,5 +5,5 @@
     "baseUrl": "./",
     // TS6310: Referenced project may not disable emit
     // "noEmit": true
-  }
+  },
 }

@@ -7,7 +7,10 @@ import {
 } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { match, P } from 'ts-pattern';
+import {
+  match,
+  P,
+} from 'ts-pattern';
 import { notNullishOrThrow } from './error.throw.ts';
 import { pipedAsync } from './function.pipe.ts';
 import { wait } from './promise.wait.ts';
@@ -101,7 +104,7 @@ function limitStringFields(obj: any, maxLength: number = 20_000): any {
   return match(obj)
     .when(
       (o): o is string => typeof o === 'string',
-      (str) => str.length > maxLength ? str.slice(0, maxLength - 3) + '...' : str
+      (str) => str.length > maxLength ? str.slice(0, maxLength - 3) + '...' : str,
     )
     .when(Array.isArray, (arr) => arr.map((item) => limitStringFields(item, maxLength)))
     .when(
@@ -112,7 +115,7 @@ function limitStringFields(obj: any, maxLength: number = 20_000): any {
           limited[key] = limitStringFields(value, maxLength);
         });
         return limited;
-      }
+      },
     )
     .otherwise((o) => o);
 }

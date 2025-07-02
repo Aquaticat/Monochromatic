@@ -7,8 +7,8 @@ import type {
 import {
   i18n,
   langs,
-  postsGroupedByLang,
   type Post,
+  postsGroupedByLang,
 } from '@_/index.ts';
 
 // eslint-disable-next-line require-await -- Astro requires async for getStaticPaths

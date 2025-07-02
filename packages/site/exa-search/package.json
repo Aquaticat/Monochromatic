@@ -1,0 +1,20 @@
+{
+  "name": "@monochromatic-dev/site-exa-search",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/final/js/index.html",
+  "exports": {
+    "./.html": "./dist/final/js/index.html"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*",
+    "@monochromatic-dev/config-vite": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "vite": "catalog:",
+    "zod": "catalog:",
+    "exa-js": "catalog:",
+    "vite-plugin-singlefile": "catalog:",
+    "typescript": "catalog:"
+  }
+}

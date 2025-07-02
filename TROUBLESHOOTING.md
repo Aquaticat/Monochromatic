@@ -713,3 +713,71 @@ In this case, Moon's cache computation takes ~26 seconds for tasks with large in
 4. **Profile edge cases**: Tools optimized for common cases may struggle with large inputs
 
 The irony is that Moon's sophisticated caching system, designed to improve performance, actually makes things slower for certain workloads. This is a classic example of how performance optimizations can backfire when applied to the wrong problem domain.
+
+## Vite Single-File HTML Output Directory Structure
+
+### Problem
+When building a single-file HTML application with Vite, the output preserves the source directory structure, resulting in `dist/final/src/index.html` instead of `dist/final/index.html`.
+
+### Root Cause
+Vite maintains the input directory structure in the output by default. When the rollup input is configured as:
+```javascript
+input: {
+  index: join('src', 'index.html')
+}
+```
+Vite creates the same `src/` directory in the output.
+
+### Investigation
+Initial attempts to fix this included:
+1. Setting `subDir` parameter to empty string (`''`) or `'./'`
+2. Modifying the `join()` paths to avoid creating subdirectories
+3. Trying different root configurations
+
+None of these worked because Vite was enforcing the directory structure based on the input path.
+
+### Solution
+Split the frontend configuration into two separate functions:
+
+1. **`createPrefixedFrontendLikeConfig`**: For builds that need subdirectories (e.g., Figma plugins)
+   - Explicitly sets input and output paths with subdirectories
+   - Used by `getFigmaFrontend` and `getFigmaIframe`
+
+2. **`createUnprefixedFrontendLikeConfig`**: For root-level builds
+   - Only sets the root directory and plugins
+   - Lets Vite use its default behavior for input/output
+   - Used by `getFrontend`
+
+```typescript
+// Prefixed version - creates subdirectories
+const createPrefixedFrontendLikeConfig = (configDir: string, subDir: string): UserConfig =>
+  mergeConfig(createBaseConfig(configDir), {
+    // ... other config
+    root: resolve(configDir),
+    build: {
+      rollupOptions: {
+        input: {
+          index: join('src', subDir, 'index.html'),
+        },
+      },
+      outDir: join('dist', 'final', subDir),
+    },
+  });
+
+// Unprefixed version - uses defaults
+const createUnprefixedFrontendLikeConfig = (configDir: string): UserConfig =>
+  mergeConfig(createBaseConfig(configDir), {
+    // ... other config
+    root: resolve(configDir),
+    // No build configuration - uses Vite defaults
+  });
+```
+
+### Usage
+For projects that want a clean output structure:
+```typescript
+import { getFrontend } from '@monochromatic-dev/config-vite/.ts';
+export default getFrontend(import.meta.dirname);
+```
+
+This produces output at `dist/final/js/index.html` without the `src/` subdirectory.

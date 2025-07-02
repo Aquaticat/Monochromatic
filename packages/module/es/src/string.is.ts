@@ -105,7 +105,9 @@ import type {
   value: unknown,
 ): value is LongLangString {
   const LANG_CODE_WITH_REGION_LENGTH = 5;
-  return isString(value) && value.length === LANG_CODE_WITH_REGION_LENGTH && /^[a-z]{2}-[A-Z]{2}$/.test(value);
+  return isString(value)
+    && value.length === LANG_CODE_WITH_REGION_LENGTH
+    && /^[a-z]{2}-[A-Z]{2}$/.test(value);
 }
 
 /**

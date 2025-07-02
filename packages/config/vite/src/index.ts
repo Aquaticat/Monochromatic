@@ -314,7 +314,8 @@ const createFigmaBackendConfig = (configDir: string): UserConfig =>
     },
   });
 
-const createFrontendLikeConfig = (configDir: string, subDir: string): UserConfig =>
+const createPrefixedFrontendLikeConfig = (configDir: string,
+  subDir: string): UserConfig =>
   mergeConfig(createBaseConfig(configDir), {
     define: {
       // So postcss modules can be bundled and correctly working in browsers.
@@ -340,6 +341,23 @@ const createFrontendLikeConfig = (configDir: string, subDir: string): UserConfig
     },
   });
 
+const createUnprefixedFrontendLikeConfig = (configDir: string): UserConfig =>
+  mergeConfig(createBaseConfig(configDir), {
+    define: {
+      // So postcss modules can be bundled and correctly working in browsers.
+      __filename: '""',
+      __dirname: '""',
+    },
+    esbuild: {
+      exclude: ['browserslist'],
+    },
+    plugins: [
+      viteSingleFile({}),
+    ],
+
+    root: resolve(configDir),
+  });
+
 /**
  @remarks
  Use it like this:
@@ -362,9 +380,12 @@ export const getLib = (configDir: string): UserConfigFnObject =>
 export const getFigmaBackend = (configDir: string): UserConfigFnObject =>
   createModeConfig(configDir, createFigmaBackendConfig);
 
+export const getFrontend = (configDir: string): UserConfigFnObject =>
+  createModeConfig(configDir, createUnprefixedFrontendLikeConfig);
+
 export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
   createModeConfig(configDir, function createFigmaFrontendConfig(configDir) {
-    return mergeConfig(createFrontendLikeConfig(configDir, 'frontend'), {
+    return mergeConfig(createPrefixedFrontendLikeConfig(configDir, 'frontend'), {
       plugins: [
         (function inlineIframePlugin(): PluginOption {
           const iframePath = join(configDir, 'dist/final/iframe/src/iframe/index.html');
@@ -415,7 +436,7 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
 /** */
 export const getFigmaIframe = (configDir: string): UserConfigFnObject =>
   createModeConfig(configDir, function createFigmaIframeConfig(configDir) {
-    return createFrontendLikeConfig(configDir, 'iframe');
+    return createPrefixedFrontendLikeConfig(configDir, 'iframe');
   });
 
 export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({

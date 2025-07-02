@@ -206,7 +206,6 @@ npm install -g @moonrepo/cli
 
 # Setup project
 moon run prepare
-pnpm install
 ```
 
 ### Development Commands
@@ -411,6 +410,37 @@ TypeScript's support for overloading generator functions has some quirks:
     timeout: 5000,
   } satisfies Config;
   ```
+- **Destructuring pattern with dependencies**: When destructuring multiple variables where some depend on others, use separate destructuring blocks
+  - First block: Define independent variables
+  - Second block: Define variables that depend on the first block
+  - Example:
+    ```ts
+    // First block - independent variables
+    const {
+      searchForm,
+      resultsSection,
+    } = {
+      searchForm: identity<HTMLFormElement>(notFalsyOrThrow(
+        document.querySelector('.searchForm'),
+      )),
+      resultsSection: identity<HTMLElement>(notFalsyOrThrow(
+        document.querySelector('.results'),
+      )),
+    };
+    
+    // Second block - depends on searchForm
+    const {
+      searchInput,
+      submitButton,
+    } = {
+      searchInput: identity<HTMLInputElement>(notFalsyOrThrow(
+        searchForm.querySelector('input'),
+      )),
+      submitButton: identity<HTMLButtonElement>(notFalsyOrThrow(
+        searchForm.querySelector('button[type="submit"]'),
+      )),
+    };
+    ```
 
 ### Export conventions
 

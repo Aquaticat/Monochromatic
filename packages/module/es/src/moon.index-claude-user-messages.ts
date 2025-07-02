@@ -40,7 +40,13 @@ function readClaudeConfig(): any {
     const content = readFileSync(CLAUDE_CONFIG_PATH, 'utf8');
     return JSON.parse(content);
   } catch (error) {
-    throw new Error(`Failed to read .claude.json: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to read .claude.json: ${
+        error instanceof Error
+          ? error.message
+          : String(error)
+      }`,
+    );
   }
 }
 

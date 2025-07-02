@@ -2,18 +2,18 @@
   "extends": "@monochromatic-dev/config-typescript",
   "references": [
     {
-      "path": "../../config/typescript"
-    }
+      "path": "../../config/typescript",
+    },
   ],
   "include": [
-    "../../config/typescript/**/*"
+    "../../config/typescript/**/*",
   ],
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
       "@monochromatic-dev/config-typescript/*": [
-        "../../config/typescript/*"
-      ]
-    }
-  }
+        "../../config/typescript/*",
+      ],
+    },
+  },
 }

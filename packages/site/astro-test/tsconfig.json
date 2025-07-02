@@ -2,21 +2,21 @@
   "extends": "@monochromatic-dev/config-typescript/astro",
   "references": [
     {
-      "path": "../../module/es"
-    }
+      "path": "../../module/es",
+    },
   ],
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
       "@monochromatic-dev/module-es": [
-        "../../module/es/src/index.ts"
+        "../../module/es/src/index.ts",
       ],
       "@monochromatic-dev/module-es/*": [
-        "../../module/es/src/*"
+        "../../module/es/src/*",
       ],
       "@_/*": [
-        "./src/*"
-      ]
-    }
-  }
+        "./src/*",
+      ],
+    },
+  },
 }

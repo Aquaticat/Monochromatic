@@ -19,12 +19,12 @@ const buildChecks = [
 const checkResults = buildChecks.map((check) => {
   const fullPath = join(process.cwd(), check.path);
   const exists = existsSync(fullPath);
-  
+
   match(exists)
     .with(true, () => console.log(`✅ ${check.name} exist`))
     .with(false, () => console.error(`❌ ${check.name} missing`))
     .exhaustive();
-  
+
   return { check, exists };
 });
 

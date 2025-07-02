@@ -3,7 +3,7 @@ packages:
 autoInstallPeers: false
 catalog:
   browserslist: '*'
-  zod: '*'
+  zod: '>=3.25.67'
   dprint: '*'
   esbuild: '*'
   oxlint: '>=1.1.0'
@@ -15,6 +15,8 @@ catalog:
   glob: '*'
   tinyglobby: '*'
   oxc-resolver: '*'
+  eslint-plugin-tsdoc: '*'
+  exa-js: '*'
   smol-toml: '*'
   zod-opts: '*'
   '@typescript-eslint/parser': '*'

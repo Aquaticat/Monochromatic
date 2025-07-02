@@ -1,4 +1,4 @@
-import { 
+import {
   getCollection,
   type InferEntrySchema,
   type RenderedContent,
@@ -118,11 +118,13 @@ export const i18n = new Map<string, Map<string, string>>(
       'Redirecting to choose a language page for ${name}',
       new Map([
         // eslint-disable-next-line no-template-curly-in-string -- i18n placeholder
-        ['en', 'Redirecting to choose a language page for ${name}'], [
-        'zh',
-        // eslint-disable-next-line no-template-curly-in-string -- i18n placeholder
-        '正在跳转至${name}的语言选择页面',
-      ]]),
+        ['en', 'Redirecting to choose a language page for ${name}'],
+        [
+          'zh',
+          // eslint-disable-next-line no-template-curly-in-string -- i18n placeholder
+          '正在跳转至${name}的语言选择页面',
+        ],
+      ]),
     ],
   ],
 );

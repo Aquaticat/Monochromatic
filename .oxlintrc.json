@@ -100,6 +100,9 @@
              because they have different behavior with new number properties,
              and then replace the global number variables with aliases of new number properties. */
     "unicorn/prefer-number-properties": "error",
+
+    // Useful for `nonPromiseAll([void replicateElementAsParentContent(firstResult, exaMaxResults),])`
+    "no-void": ["off", { "allowAsStatement": true }],
     //endregion Restriction
 
     //region perf
@@ -129,6 +132,7 @@
     "eslint/max-lines-per-function": "off",
     "eslint/max-nested-callbacks": "off",
     "eslint/max-class-per-file": "off",
+    "id-length": "allow",
     // Nested ternaries work great!
     "eslint/no-nested-ternary": "off",
     // Conflicts with TypeScript function overloading.
@@ -144,6 +148,9 @@
 
     // Sometimes `import { a, type B } from 'module'` is needed.
     "import/consistent-type-specifier-style": "off",
+
+    // Good rule generally. Bad for library with a barrel file.
+    "import/prefer-default-export": "allow",
 
     // Good traces are desired.
     "eslint/func-names": ["warn", "as-needed"],

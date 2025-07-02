@@ -30,3 +30,8 @@ Use [`ts-pattern`](https://github.com/gvergnaud/ts-pattern) instead.
 ### jsonc
 
 Use [`jsonc.min`](https://www.npmjs.com/package/jsonc.min/) instead.
+
+### Observable
+
+For simple observable needs, use `any.observable.ts` (`createObservable`/`createObservableAsync`).
+For a more complete observable implementation, use [`@therapy/observable`](https://jsr.io/@therapy/observable) - a lightweight, zero-dependency TypeScript observable library with a simple `.value` API.

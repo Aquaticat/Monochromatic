@@ -43,15 +43,15 @@ await match(packagesLine)
     console.log('Checking installed packages...');
     const startCheck = performance.now();
     const valePath = join(process.cwd(), '.vale');
-    
+
     const allPackagesExist = packages.every((pkg) => {
       const packagePath = join(valePath, pkg);
       const exists = existsSync(packagePath);
-      
+
       match(exists)
         .with(false, () => console.log(`Package ${pkg} not found at ${packagePath}`))
         .otherwise(() => {});
-      
+
       return exists;
     });
 
@@ -65,7 +65,9 @@ await match(packagesLine)
         console.log('Running vale sync...');
         const startSync = performance.now();
         await spawn('vale', ['sync'], { stdio: 'inherit' });
-        console.log(`Vale sync completed in ${(performance.now() - startSync).toFixed(2)}ms`);
+        console.log(
+          `Vale sync completed in ${(performance.now() - startSync).toFixed(2)}ms`,
+        );
       })
       .exhaustive();
 

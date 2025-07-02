@@ -1,5 +1,25 @@
 {
   "extends": "@monochromatic-dev/config-typescript/dom",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@monochromatic-dev/module-es": [
+        "../../module/es/src/index.ts",
+      ],
+      "@monochromatic-dev/module-es/*": [
+        "../../module/es/src/*",
+      ],
+      "@monochromatic-dev/config-typescript/*": [
+        "../../config/typescript/*",
+      ],
+      "@monochromatic-dev/config-vite": [
+        "../../config/vite/src/index.ts",
+      ],
+      "@monochromatic-dev/config-vite/*": [
+        "../../config/vite/src/*",
+      ],
+    },
+  },
   "references": [
     {
       "path": "../../config/typescript",
@@ -11,24 +31,4 @@
       "path": "../../module/es",
     },
   ],
-  "compilerOptions": {
-    "baseUrl": "./",
-    "paths": {
-      "@monochromatic-dev/module-es": [
-        "../../module/es/src/index.ts",
-      ],
-      "@monochromatic-dev/module-es/*": [
-        "../../module/es/src/*",
-      ],
-      "@monochromatic-dev/config-vite": [
-        "../../config/vite/src/index.ts",
-      ],
-      "@monochromatic-dev/config-vite/*": [
-        "../../config/vite/src/*",
-      ],
-      "@monochromatic-dev/config-typescript/*": [
-        "../../config/typescript/*",
-      ],
-    },
-  },
 }

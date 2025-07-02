@@ -3,6 +3,7 @@
 export * from './any.constant.ts';
 export * from './any.echo.ts';
 export * from './any.identity.ts';
+export * from './any.observable.ts';
 export * from './any.toExport.ts';
 export * from './any.typeOf.ts';
 export * from './any.when.ts';
@@ -74,6 +75,7 @@ export * from './numeric.type.intsTo10.ts';
 export * from './numeric.type.nan.ts';
 export * from './numeric.type.negative.ts';
 
+export * from './promise.all.ts';
 export * from './promise.awaits.ts';
 export * from './promise.is.ts';
 export * from './promise.type.ts';
@@ -92,6 +94,6 @@ export * from './string.type.ts';
 export * from './strings.concat.ts';
 export * from './strings.join.ts';
 
-// export * from './deprecated.testing.ts';
-
+export * from './dom.duplicateElement.ts';
+export * from './dom.prompt.ts';
 export * from './dom.redirectingTo.ts';

@@ -20,6 +20,6 @@
  * numbers.filter(identity); // [1, 2, 3, 4, 5] (truthy values only)
  * ```
  */
-export function identity<T,>(x: T): T {
+export function identity<const T,>(x: T): T {
   return x;
 }

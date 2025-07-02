@@ -81,7 +81,12 @@
 		"todo-tree.filtering.ignoreGitSubmodules": true,
 		"todo-tree.regex.enableMultiLine": true,
 		"todo-tree.highlights.defaultHighlight": {
-			"textDecoration": "underline"
+      "fontStyle": "italic",
+      "fontWeight": "bold",
+      "foreground": "#ccc",
+      "textDecoration": "none",
+      "type": "tag-and-comment",
+      "gutterIcon": true,
 		},
 
 		"typescript.enablePromptUseWorkspaceTsdk": true,

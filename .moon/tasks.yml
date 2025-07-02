@@ -9,9 +9,6 @@ fileGroups:
   configs:
   - '*.config.{cjs,mjs,ts}'
   - '*.{json,jsonc,yaml,yml}'
-  - '/packages/config/*'
-  - '/packages/config/src/**/*'
-  - '/packages/config/dist/**/*'
   sources:
   - 'src/**/*.{ts,astro,html,vue,mjs,js,cjs}'
   unitTests:

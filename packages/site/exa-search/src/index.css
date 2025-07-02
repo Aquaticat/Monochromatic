@@ -1,0 +1,59 @@
+[hidden] {
+  display: none !important;
+}
+
+:root {
+  --dark: #000;
+  --light: #eee;
+  --fg: var(--light);
+  --bg: var(--dark);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --fg: var(--dark);
+    --bg: var(--light);
+  }
+}
+
+body {
+  font-family: 'Inter Variable', 'Inter Var', sans-serif;
+
+  background-color: var(--bg);
+
+  color: var(--fg);
+}
+
+[data-sr-only] {
+  /* stylelint-disable-next-line property-disallowed-list -- special use */
+  clip: rect(0 0 0 0);
+
+  position: absolute;
+
+  /* stylelint-disable-next-line property-disallowed-list,unit-disallowed-list -- copypaste */
+  width: 1px;
+
+  /* stylelint-disable-next-line property-disallowed-list,unit-disallowed-list -- copypaste */
+  height: 1px;
+
+  /* stylelint-disable-next-line property-disallowed-list -- copypaste */
+  overflow: hidden;
+
+  white-space: nowrap;
+
+  clip-path: inset(50%);
+}
+
+.result__link {
+  color: inherit;
+
+  ::after {
+    display: block;
+
+    content: attr(href);
+  }
+}
+
+.result__image {
+  background-color: #fff;
+}

@@ -3,7 +3,7 @@ import eslint from '@eslint/js';
 import vitest from '@vitest/eslint-plugin';
 
 // Excluded from bundle because it causes the bundle size to be large.
-import jsdoc from 'eslint-plugin-jsdoc';
+import tsdoc from 'eslint-plugin-tsdoc';
 
 import nodePlugin from 'eslint-plugin-n';
 import {
@@ -53,7 +53,7 @@ const myConfigArray: ConfigArray = tseslint.config(
   },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
-  jsdoc.configs['flat/recommended-typescript'],
+  // @ts-expect-error -- upstream issue
   nodePlugin.configs['flat/recommended'],
   eslintPluginUnicorn.configs.all,
   {
@@ -70,23 +70,22 @@ const myConfigArray: ConfigArray = tseslint.config(
       },
     },
 
+    plugins: {
+      tsdoc,
+    },
+
     'settings': {
       node: {
         version: '>=24.0.0',
-      },
-      jsdoc: {
-        mode: 'typescript',
       },
     },
 
     rules: {
       // Redundant with TypeScript
+      'unicorn/no-unused-properties': ['off'],
+
+      // Redundant with TypeScript
       'n/no-missing-import': ['off'],
-      'jsdoc/check-tag-names': ['error', {
-        definedTags: ['remarks'],
-        enableFixer: false,
-        typed: true,
-      }],
 
       'n/hashbang': ['error', {
         executableMap: {
@@ -95,11 +94,15 @@ const myConfigArray: ConfigArray = tseslint.config(
         },
       }],
 
-      // Tag line spacing is a formatting concern, not a linting concern per ESLint's current philosophy
-      'jsdoc/tag-lines': 'off',
       '@typescript-eslint/no-unnecessary-condition': ['error', {
         allowConstantLoopConditions: 'only-allowed-literals',
       }],
+      '@typescript-eslint/no-confusing-void-expression': ['error', {
+        ignoreVoidReturningFunctions: true,
+        ignoreVoidOperator: true,
+      }],
+      // I don't mind extra void.
+      '@typescript-eslint/no-meaningless-void-operator': 'off',
       '@typescript-eslint/restrict-template-expressions': ['error', {
         // Always use JSON.stringify
       }],
@@ -148,6 +151,8 @@ const myConfigArray: ConfigArray = tseslint.config(
         },
       ],
 
+      'tsdoc/syntax': 'warn',
+
       // Using Vite bundler.
       'n/no-unpublished-import': 'off',
 
@@ -170,8 +175,16 @@ const myConfigArray: ConfigArray = tseslint.config(
           l: false, // logger
           src: false,
           pkg: false,
+          num: false,
+          val: false,
+          obj: false,
           //endregion umambiguious
         },
+      }],
+
+      'unicorn/no-keyword-prefix': ['error', {
+        // `new` and `class` doesn't look too similar to me.
+        disallowedPrefixes: [],
       }],
 
       'unicorn/import-style': ['warn', {
@@ -215,7 +228,7 @@ const myConfigArray: ConfigArray = tseslint.config(
           'execAsync',
           //endregion For blackbox testing
           // Extended test
-          'test'
+          'test',
         ],
       }],
     },

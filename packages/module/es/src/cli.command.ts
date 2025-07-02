@@ -99,7 +99,7 @@ $ bun moon.command.ts --shell -- "echo hello && echo world"`,
                 (signal) => {
                   console.error(`Command terminated by signal: ${signal}`);
                 },
-              )
+              );
 
             // Exit with 0 if allowFailure is true, otherwise use the command's exit code
             match(allowFailure)

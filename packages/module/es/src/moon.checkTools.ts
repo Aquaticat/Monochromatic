@@ -35,7 +35,7 @@ const requiredToolResults = await Promise.all(
       console.error(`❌ ${tool.name}: NOT INSTALLED (required: ${tool.minVersion}+)`);
       return { tool, success: false };
     }
-  })
+  }),
 );
 
 console.log('\nOptional tools:');
@@ -49,7 +49,7 @@ await Promise.all(
     } catch {
       console.log(`⚠️  ${tool.name}: not installed (optional)`);
     }
-  })
+  }),
 );
 
 // Check proto
@@ -62,7 +62,9 @@ const protoCheck = await (async () => {
     return true;
   } catch {
     console.error('❌ proto: NOT INSTALLED');
-    console.error('   Install with: bash <(curl -fsSL https://moonrepo.dev/install/proto.sh)');
+    console.error(
+      '   Install with: bash <(curl -fsSL https://moonrepo.dev/install/proto.sh)',
+    );
     return false;
   }
 })();
@@ -87,11 +89,10 @@ const moonWorkspaceCheck = await (async () => {
   }
 })();
 
-const hasErrors = 
-  requiredToolResults.some((result) => !result.success) ||
-  !protoCheck ||
-  !prototoolsExists ||
-  !moonWorkspaceCheck;
+const hasErrors = requiredToolResults.some((result) => !result.success)
+  || !protoCheck
+  || !prototoolsExists
+  || !moonWorkspaceCheck;
 
 match(hasErrors)
   .with(false, () => console.log('\n✨ All required tools are installed!'))
