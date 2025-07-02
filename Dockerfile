@@ -4,6 +4,7 @@ FROM ubuntu:24.04 AS builder
 RUN apt-get update && apt-get install -y \
     curl \
     xz-utils \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Install proto non-interactively
@@ -11,12 +12,6 @@ RUN bash -c "$(curl -fsSL https://moonrepo.dev/install/proto.sh)" -- --yes
 ENV PATH="/root/.proto/bin:/root/.proto/shims:$PATH"
 
 WORKDIR /app
-
-# Copy proto config
-COPY .prototools .prototools
-
-# Install tools via proto
-RUN proto install
 
 # Copy the entire monorepo
 COPY . .
