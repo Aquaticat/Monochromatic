@@ -1,10 +1,12 @@
 version: '3.8'
 
 services:
-  exa-search:
+  app:
     build:
-      context: ../../..
-      dockerfile: Dockerfile.exa-search
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - PROJECT=exa-search
     ports:
       - '${PORT:-3000}:80'
     environment:
