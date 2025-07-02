@@ -22,7 +22,10 @@ RUN proto install
 # Eventually the tasks would be fixed so we don't need the allowFailure variant.
 # Right now it doesn't build because we're not auto setting up snap when installing Vale.
 # We're migrating off Vale anyway.
-RUN moon run prepareAndBuildAllowFailure
+#
+# Update: We're forgoing all the prepare steps because they take too long.
+# Still using the allowFailure variant of the build task because right now tsc throws some errors unrelated to what we're working on.
+RUN moon run buildAllowFailure
 
 # Production stage
 FROM caddy:alpine
