@@ -30,7 +30,6 @@ import vitestExcludeCommonConfig from './vitest-exclude-common.json' with {
 // TODO: Directly import source in module-es instead.
 type falsy = false | null | 0 | 0n | '' | undefined;
 
-// eslint-disable-next-line jsdoc/require-jsdoc
 function notFalsyOrThrow<T,>(
   potentiallyFalsy: T,
 ): Exclude<T, falsy> {
@@ -40,7 +39,6 @@ function notFalsyOrThrow<T,>(
   return potentiallyFalsy as Exclude<T, falsy>;
 }
 
-// eslint-disable-next-line jsdoc/require-jsdoc
 function wait(timeInMs: number): Promise<undefined> {
   // oxlint-disable-next-line avoid-new
   return new Promise(function createTimeout(_resolve) {
@@ -176,6 +174,8 @@ const createBaseConfig = (configDir: string): UserConfig => ({
 
     // A little bit faster builds.
     reportCompressedSize: false,
+
+    sourcemap: true,
   },
   worker: {
     format: 'es',
