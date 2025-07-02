@@ -57,3 +57,16 @@ export function replicateElementAsParentContent(templateElement: HTMLElement,
 export function deepCloneNode<const T extends Node,>(element: T): T {
   return element.cloneNode(true) as T;
 }
+
+export function replicateElementAsContentOf(templateElement: HTMLElement,
+  parentElement: HTMLElement, targetCount: number): void
+{
+  const clones = Array.from(
+    { length: targetCount },
+    function wrapper() {
+      return deepCloneNode(templateElement);
+    },
+  );
+
+  parentElement.replaceChildren(...clones);
+}

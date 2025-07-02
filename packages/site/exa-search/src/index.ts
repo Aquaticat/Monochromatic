@@ -4,7 +4,7 @@ import {
   nonPromiseAll,
   notFalsyOrThrow,
   prompt,
-  replicateElementAsParentContent,
+  replicateElementAsContentOf,
 } from '@monochromatic-dev/module-es';
 import { Exa } from 'exa-js';
 import { z } from 'zod/v4-mini';
@@ -103,13 +103,11 @@ const {
   ),
 };
 
-replicateElementAsParentContent(firstResult, exaMaxResults);
+replicateElementAsContentOf(firstResult, resultsSection, exaMaxResults);
 
 const resultArticles = resultsSection.children;
 
 nonPromiseAll([
-  void replicateElementAsParentContent(firstResult, exaMaxResults),
-
   void searchForm.addEventListener('submit', async function onSearch(event) {
     event.preventDefault();
 
