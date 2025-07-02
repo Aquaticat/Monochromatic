@@ -9,6 +9,8 @@ import {
 import { Exa } from 'exa-js';
 import { z } from 'zod/v4-mini';
 
+const { baseUrl } = { baseUrl: 'https://exa.aquati.cat/api/proxy' };
+
 const {
   searchForm,
   costDollarsSpan,
@@ -32,7 +34,7 @@ const {
             return inputApiKey;
           })), z.uuid())
         .parseAsync(localStorage.getItem('exaApiKey'));
-      const exa = new Exa(apiKey);
+      const exa = new Exa(apiKey, baseUrl);
       return [exa, { apiKey }];
     })(),
     function updateStorage(val) {
@@ -232,7 +234,7 @@ nonPromiseAll([
   }),
   void changeApiKeyButton.addEventListener('click', async function promptForNewApiKey() {
     const inputApiKey = notFalsyOrThrow(await prompt('Change api key'));
-    exa.value = [new Exa(inputApiKey), { apiKey: inputApiKey }];
+    exa.value = [new Exa(inputApiKey, baseUrl), { apiKey: inputApiKey }];
   }),
 
   void numResultsInput.addEventListener('input', function setNewNumResults() {

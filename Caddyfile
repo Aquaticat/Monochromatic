@@ -1,5 +1,11 @@
 :80 {
-  # DOCS: Put header in your end reverse proxy.
+  handle /api/proxy/* {
+    uri strip_prefix /api/proxy
+    reverse_proxy https://api.exa.ai {
+      header_up Host api.exa.ai
+      header_up x-api-key {header.x-api-key}
+    }
+  }
 
   root * /srv/packages/site/exa-search/dist/final/js
   file_server
