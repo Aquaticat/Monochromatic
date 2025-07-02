@@ -10,14 +10,14 @@ ENV PATH="/root/.proto/bin:/root/.proto/shims:$PATH"
 
 WORKDIR /app
 
-# Copy proto config from monorepo root
-COPY ../../../.prototools .prototools
+# Copy proto config
+COPY .prototools .prototools
 
 # Install tools via proto
 RUN proto install
 
 # Copy the entire monorepo
-COPY ../../.. .
+COPY . .
 
 # Run moon prepare (builds all projects)
 RUN moon run prepare
