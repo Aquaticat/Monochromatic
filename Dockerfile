@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install proto
-RUN curl -fsSL https://moonrepo.dev/install/proto.sh | bash
+# Install proto non-interactively
+RUN bash -c "$(curl -fsSL https://moonrepo.dev/install/proto.sh)" -- --yes
 ENV PATH="/root/.proto/bin:/root/.proto/shims:$PATH"
 
 WORKDIR /app
