@@ -18,8 +18,6 @@ tasks:
 
   pnpmVersionCheck:
     command: 'pnpm version'
-  pnpmInstall:
-    command: 'bun packages/module/es/src/moon.pnpmInstall.ts'
 
   test:
     deps:
@@ -76,6 +74,10 @@ tasks:
 
   preparePlaywright:
     command: 'bun packages/module/es/src/moon.preparePlaywright.ts'
+  preparePlaywrightAllowFailure:
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure --shell -- bun packages/module/es/src/moon.preparePlaywright.ts'
+    options:
+      shell: true
 
   prepareVale:
     deps:
@@ -85,20 +87,49 @@ tasks:
     - createValeNoopStyle
     options:
       runDepsInParallel: false
+  prepareValeAllowFailure:
+    deps:
+    - installValeDependencyGloballyAllowFailure
+    - installValeAllowFailure
+    - valeSyncAllowFailure
+    - createValeNoopStyleAllowFailure
+    options:
+      runDepsInParallel: false
   installVale:
     command: 'bun packages/module/es/src/moon.installVale.ts'
+  installValeAllowFailure:
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure --shell -- bun packages/module/es/src/moon.installVale.ts'
+    options:
+      shell: true
   installValeDependencyGlobally:
     command: 'bun install -g mdx2vast'
+  installValeDependencyGloballyAllowFailure:
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure --shell -- bun install -g mdx2vast'
+    options:
+      shell: true
   valeSync:
     command: 'bun packages/module/es/src/moon.valeSync.ts'
+  valeSyncAllowFailure:
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure --shell -- bun packages/module/es/src/moon.valeSync.ts'
+    options:
+      shell: true
   createValeNoopStyle:
     command: 'mkdir -p .vale/noop'
+  createValeNoopStyleAllowFailure:
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure --shell -- mkdir -p .vale/noop'
+    options:
+      shell: true
 
   prepare:
     deps:
-    - pnpmInstall
     - preparePlaywright
     - prepareVale
+    options:
+      outputStyle: buffer-only-failure
+  prepareAllowFailure:
+    deps:
+    - preparePlaywrightAllowFailure
+    - prepareValeAllowFailure
     options:
       outputStyle: buffer-only-failure
 
@@ -108,6 +139,13 @@ tasks:
     deps:
     - prepare
     - build
+    options:
+      runDepsInParallel: false
+      outputStyle: buffer-only-failure
+  prepareAndBuildAllowFailure:
+    deps:
+    - prepareAllowFailure
+    - buildAllowFailure
     options:
       runDepsInParallel: false
       outputStyle: buffer-only-failure
@@ -155,6 +193,11 @@ tasks:
       outputStyle: buffer-only-failure
       # tsc uses its own cache
       cache: false
+  typesAllowFailure:
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure --shell -- tsc --build'
+    options:
+      outputStyle: buffer-only-failure
+      cache: false
 
   typesWatch:
     command: 'tsc --watch'
@@ -166,6 +209,13 @@ tasks:
     - 'types'
     # #package:types executes tsc from inside every package.
     # - '#package:types'
+    options:
+      outputStyle: buffer-only-failure
+  buildAllowFailure:
+    deps:
+    # Shouldn't fail anyway.
+    - '#package:js'
+    - 'typesAllowFailure'
     options:
       outputStyle: buffer-only-failure
 

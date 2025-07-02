@@ -1,8 +1,5 @@
 FROM ubuntu:24.04 AS builder
 
-# Build argument for which project to build
-ARG PROJECT=exa-search
-
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     curl \
@@ -25,19 +22,20 @@ RUN proto install
 # Copy the entire monorepo
 COPY . .
 
-# Run moon prepare (builds all projects)
-RUN moon run prepare
+# Run moon prepare and build (builds all projects)
+# Eventually the tasks would be fixed so we don't need the allowFailure variant.
+# Right now it doesn't build because we're not auto setting up snap when installing Vale.
+# We're migrating off Vale anyway.
+RUN moon run prepareAndBuildAllowFailure
 
 # Production stage
 FROM caddy:alpine
-
-ARG PROJECT=exa-search
 
 # Copy all built files from builder
 COPY --from=builder /app/packages /srv/packages
 
 # Create a simple Caddyfile for serving the specific project
-RUN echo ":80 { root * /srv/packages/site/${PROJECT}/dist/final/js; file_server }" > /etc/caddy/Caddyfile
+RUN echo ":80 { root * /srv/packages/site/exa-search/dist/final/js; file_server }" > /etc/caddy/Caddyfile
 
 EXPOSE 80
 
