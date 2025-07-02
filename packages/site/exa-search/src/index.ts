@@ -103,6 +103,10 @@ const {
   ),
 };
 
+replicateElementAsParentContent(firstResult, exaMaxResults);
+
+const resultArticles = resultsSection.children;
+
 nonPromiseAll([
   void replicateElementAsParentContent(firstResult, exaMaxResults),
 
@@ -141,13 +145,9 @@ nonPromiseAll([
           costDollarsSpan.textContent = String(results.costDollars?.total ?? 0),
 
           void results.results.forEach(function displayResult(result, resultIndex) {
-            const {
-              currentResultArticle,
-            } = {
-              currentResultArticle: identity<HTMLElement>(notFalsyOrThrow(
-                resultsSection.querySelector(`:nth-child(${resultIndex + 1})`),
-              )),
-            };
+            const currentResultArticle: HTMLLIElement = notFalsyOrThrow(
+              resultArticles[resultIndex],
+            ) as HTMLLIElement;
 
             const {
               favicon,
