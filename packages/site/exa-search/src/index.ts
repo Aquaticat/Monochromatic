@@ -205,8 +205,11 @@ nonPromiseAll([
               })(),
               summary.textContent = result.summary,
               text.textContent = result.text,
-              void replicateElementAsParentContent(firstHighlight,
-                result.highlights.length),
+              void replicateElementAsContentOf(
+                firstHighlight,
+                highlights,
+                result.highlights.length,
+              ),
               void result.highlights.forEach(
                 function populateHighlight(highlight, highlightIndex) {
                   const currentHighlight: HTMLLIElement = notFalsyOrThrow(
