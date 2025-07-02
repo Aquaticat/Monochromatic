@@ -3,7 +3,7 @@ FROM ubuntu:24.04 AS builder
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     curl \
-    git \
+    xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Install proto non-interactively
