@@ -1,5 +1,5 @@
 :80 {
   root * /srv/packages/site/exa-search/dist/final/js
-  header Access-Control-Allow-Origin: https://api.exa.ai
+
   file_server
 }
