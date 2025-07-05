@@ -1,28 +1,60 @@
 $schema: 'https://moonrepo.dev/schemas/toolchain.json'
 
+# `version` fields are already set in `.prototools`.
+
 bun:
-  version: '>=1.2.15'
+  # Not using Bun as the package manager for this workspace.
+  # These installArgs make sure nothing is done even if Moon errornously trigger Bun installDeps action.
+  installArgs:
+  - '--frozen-lockfile'
+  - '--dry-run'
+  - '--no-verify'
+  - '--ignore-scripts'
+  - '--no-save'
 
 node:
-  version: '>=24.1.0'
   packageManager: 'pnpm'
   pnpm:
-    version: '>=10.11.1'
-  # Too slow
+    installArgs:
+    # Make `pnpm install` faster when automatically ran by Moon.
+    - '--prefer-frozen-lockfile'
+    - '--no-verify-store-integrity'
+    - '--optimistic-repeat-install'
+    - '--prefer-offline'
+  # Too slow. Run `pnpm install && pnpm dedupe` on your own.
   dedupeOnLockfileChange: false
 
+# TODO: Raise issue to Moon pointing out their schema needs updating.
 typescript:
   syncProjectReferences: true
 
   rootOptionsConfigFileName: './packages/config/typescript/tsconfig.dom.json'
 
   # Defaults to false. Might be unnecessary and clutters the tsconfig.json
-  # TODO: Find out if this really is unnecessary.
+  # DONE: Found out this really is unnecessary.
   # includeProjectReferenceSources: true
 
   syncProjectReferencesToPaths: true
 
-  # Defaults to false. If such a package exists and is not ignored, moon should fail.
+  # Defaults to false. If such a package exists and isn't ignored, moon should fail.
   # createMissingConfig: true
 
   includeSharedTypes: true
+
+python:
+  packageManager: uv
+  uv:
+    syncArgs:
+    - --all-extras
+    - --all-packages
+
+unstable_rust:
+  # TODO: Find out if to define Rust verison here or in `.prototools`.
+  # Tried defining it in prototools, then Moon warns "moon_config::toolchain_config  The legacy Rust toolchain and WASM based Rust toolchain must not be used together!"
+  bins:
+  - create-tauri-app
+  - ripgrep
+  - fastmod
+  - fd-find
+  syncToolchainConfig: true
+  addMsrvConstraint: true

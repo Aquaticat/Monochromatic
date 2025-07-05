@@ -38,7 +38,7 @@ optionalHooks.forEach((hook) => {
     .exhaustive();
 });
 
-const hasAllRequiredHooks = requiredHookResults.every((exists) => exists);
+const hasAllRequiredHooks = requiredHookResults.every(Boolean);
 
 match(hasAllRequiredHooks)
   .with(true, () => console.log('\n✨ Git hooks properly configured!'))

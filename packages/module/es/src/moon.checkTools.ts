@@ -15,7 +15,6 @@ const REQUIRED_TOOLS = [
 ] as const;
 
 const OPTIONAL_TOOLS = [
-  { name: 'vale', args: ['--version'] },
   { name: 'dprint', args: ['--version'] },
   { name: 'oxlint', args: ['--version'] },
 ] as const;
@@ -69,7 +68,7 @@ const protoCheck = await (async () => {
   }
 })();
 
-// Check .prototools file
+// Check `.prototools` file
 console.log('\nConfiguration files:');
 const prototoolsExists = existsSync('.prototools');
 match(prototoolsExists)

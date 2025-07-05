@@ -1,11 +1,13 @@
-FROM ubuntu:24.04 AS builder
+FROM debian:latest
 
-# Install dependencies
-RUN apt-get update && apt-get install -y \
+# Install dependencies needed by proto
+RUN apt-get update
+
+RUN apt-get install -y \
     curl \
     xz-utils \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+    unzip \
+    git
 
 # Install proto non-interactively
 RUN bash -c "$(curl -fsSL https://moonrepo.dev/install/proto.sh)" -- --yes
@@ -22,17 +24,10 @@ RUN proto install
 # Eventually the tasks would be fixed so we don't need the allowFailure variant.
 # Right now it doesn't build because we're not auto setting up snap when installing Vale.
 # We're migrating off Vale anyway.
+# To Code Spell Checker or Harper
 #
 # Update: We're forgoing all the prepare steps because they take too long.
 # Still using the allowFailure variant of the build task because right now tsc throws some errors unrelated to what we're working on.
 RUN moon run buildAllowFailure
 
-# Production stage
-FROM caddy:alpine
-
-# Copy all built files from builder
-COPY --from=builder /app /srv
-
-EXPOSE 80
-
-CMD ["caddy", "run", "--config", "/srv/Caddyfile", "--adapter", "caddyfile"]
+CMD ["moon", "run", "start"]

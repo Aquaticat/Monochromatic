@@ -93,11 +93,6 @@
     "typescript.preferences.preferTypeOnlyAutoImports": true,
 
     "dprint.experimentalLsp": true,
-    "dprint.path": "./node_modules/.bin/dprint",
-
-    // TODO: Automatically check this is set correctly on commit via husky git hook.
-    // Commented out when not using Yarn
-		// "dprint.path": ".yarn/unplugged/dprint-npm-0.47.2-8175957bd9/node_modules/dprint/bin.js",
 
     "files.exclude": {
       "**/.git": true,
@@ -120,50 +115,10 @@
 			"gruntfuggly.todo-tree",
 			"vue.volar",
 
-      // Commented out when not using Yarn
-			// "arcanis.vscode-zipfs",
-
       "oxc.oxc-vscode",
       "stylelint.vscode-stylelint",
       "oven.bun-vscode",
       "astro-build.astro-vscode",
 		],
 	},
-
-  "tasks": {
-		"version": "2.0.0",
-
-    "tasks": [
-      // Commented out when not using Yarn
-      /*
-			{
-				"label": "dprint",
-				"command": "yarn",
-
-        "type": "shell",
-				"args": ["run", "-T", "-B", "dprint", "fmt", "${file}"],
-
-        "presentation": {
-					"reveal": "silent"
-				},
-				"problemMatcher": "[ERROR]",
-
-        "osx": {
-					"options": {
-						"shell": {
-							"args": ["-c", "-i"]
-						}
-					}
-				},
-				"linux": {
-					"options": {
-						"shell": {
-							"args": ["-c", "-i"]
-						}
-					}
-				}
-			}
-      */
-		]
-	}
 }

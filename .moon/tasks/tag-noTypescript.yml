@@ -5,5 +5,9 @@ taskOptions:
 tasks:
   types:
     command: 'true'
+    options:
+      mergeArgs: replace
   typesWatch:
     command: 'true'
+    options:
+      mergeArgs: replace

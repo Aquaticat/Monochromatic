@@ -5,9 +5,6 @@
     "config",
     "monochromatic"
   ],
-  "peerDependencies": {
-    "dprint": "catalog:"
-  },
   "main": "index.json",
   "module": "index.json",
   "type": "module",

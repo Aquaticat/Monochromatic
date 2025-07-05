@@ -2,6 +2,7 @@ node_modules
 .jj
 .dist
 dist
+.env
 /bak
 *.tsbuildinfo
 *.map
@@ -10,6 +11,8 @@ test-results
 playwright-report
 blob-report
 .cache
+cache/
+**/cache/
 /temp
 src/temp
 .pnpm-store
@@ -29,6 +32,7 @@ package-lock.json
 *.js
 !*.config.js
 .tmp
+.mastra
 
 .eslintcache
 

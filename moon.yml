@@ -16,8 +16,211 @@ tasks:
       windowsShell: 'bash'
       shell: true
 
+  build:
+    deps:
+    - '#package:js'
+    - 'types'
+    # #package:types executes tsc from inside every package.
+    # - '#package:types'
+    options:
+      outputStyle: buffer-only-failure
+
+  buildAllowFailure:
+    deps:
+    # Shouldn't fail anyway.
+    - '#package:js'
+    - 'typesAllowFailure'
+    options:
+      outputStyle: buffer-only-failure
+
+  buildAndTest:
+    deps:
+    - build
+    - test
+    options:
+      runDepsInParallel: false
+
+  buildAndTestWatch:
+    local: true
+    deps:
+    - '#package:jsWatch'
+    - 'typesWatch'
+    - testUnitWatch
+    - testBrowserWatch
+
+  buildWatch:
+    deps:
+    - '#package:jsWatch'
+    - 'typesWatch'
+    local: true
+
+  bunCompile:
+    command: 'bun packages/module/es/src/moon.bunCompile.ts'
+    inputs:
+    - 'packages/module/es/src/moon.*.ts'
+    - 'packages/module/es/src/cli.*.ts'
+    outputs:
+    - 'packages/module/es/dist/final/moon.*'
+    - 'packages/module/es/dist/final/cli.*'
+    options:
+      # cache doesn't really work for this, only adds extra time at the end.
+      cache: false
+
+  checkBuild:
+    command: 'bun packages/module/es/src/moon.checkBuild.ts'
+
+  checkDependencies:
+    command: 'bun packages/module/es/src/moon.checkDependencies.ts'
+
+  checkGitHooks:
+    command: 'bun packages/module/es/src/moon.checkGitHooks.ts'
+
+  checkTools:
+    command: 'bun packages/module/es/src/moon.checkTools.ts'
+
+  # Formatting tasks organized for maximum parallelization
+  format:
+    deps:
+    - formatAllFileTypes
+    - formatLanguageSpecific
+    options:
+      runDepsInParallel: false
+
+  # First pass: dprint formats all file types (ts, astro, css, html, yaml)
+  formatAllFileTypes:
+    deps:
+    - formatDprint
+
+  formatDprint:
+    extends: '_lintFormatBase'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- dprint fmt'
+
+  formatEslint:
+    extends: '_lintFormatBase'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- eslint --cache --fix'
+
+  # Second pass: Language-specific formatters run in parallel
+  formatLanguageSpecific:
+    deps:
+    - formatTypeScript # TS formatters (sequential)
+    - formatStylelint # CSS formatter (parallel with TS)
+  # Default is parallel, so formatTypeScript and formatStylelint run simultaneously
+
+  formatOxlint:
+    extends: '_lintFormatBase'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- oxlint --fix'
+
+  formatStylelint:
+    extends: '_lintFormatBase'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- stylelint --ignore-path .gitignore --fix "**/*.{css,astro,html}"'
+
+  # TypeScript formatters must run sequentially (both process .ts files)
+  formatTypeScript:
+    deps:
+    - formatOxlint
+    - formatEslint
+    options:
+      runDepsInParallel: false
+
+  # Claude Code conversation indexing tasks
+  indexClaude:
+    deps:
+    - indexClaudeMessages
+    - indexClaudeMcpLogs
+    options:
+      cache: false
+
+  indexClaudeMcpLogs:
+    command: 'bun packages/module/es/src/moon.index-claude-mcp-logs.ts'
+    options:
+      cache: false
+
+  indexClaudeMessages:
+    command: 'bun packages/module/es/src/moon.index-claude-user-messages.ts'
+    options:
+      cache: false
+
+  # Linting tasks
+  lint:
+    deps:
+    - lintEslint
+    - lintStylelint
+    - lintDprint
+    - lintOxlint
+
+  lintDprint:
+    extends: '_lintFormatBase'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- dprint check --list-different'
+
+  lintEslint:
+    extends: '_lintFormatBase'
+    command: 'bun run packages/module/es/src/cli.command.ts --allowFailure -- eslint --cache'
+
+  lintOxlint:
+    extends: '_lintFormatBase'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- oxlint'
+
+  lintStylelint:
+    extends: '_lintFormatBase'
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
+
   pnpmVersionCheck:
     command: 'pnpm version'
+
+  prepare:
+    deps:
+    - preparePlaywright
+
+  prepareAllowFailure:
+    deps:
+    - preparePlaywrightAllowFailure
+
+  # Complete setup for fresh clones - prepare environment and build all artifacts
+  # Note: Moon automatically syncs TypeScript project references during build
+  prepareAndBuild:
+    deps:
+    - prepare
+    - build
+    options:
+      runDepsInParallel: false
+
+  prepareAndBuildAllowFailure:
+    deps:
+    - prepareAllowFailure
+    - buildAllowFailure
+    options:
+      runDepsInParallel: false
+
+  preparePlaywright:
+    command: 'bun packages/module/es/src/moon.preparePlaywright.ts'
+
+  preparePlaywrightAllowFailure:
+    extends: _shell
+    command: 'bun packages/module/es/src/cli.command.ts --allowFailure --timeout 30000 --shell -- bun packages/module/es/src/moon.preparePlaywright.ts'
+
+  # Manually run the same checks as the pre-push hook
+  # Use this when:
+  #   - You want to test what the pre-push hook will check before pushing
+  #   - You've disabled hooks temporarily and want to manually verify
+  #   - You're debugging why a push was blocked
+  # Don't use this for:
+  #   - Full validation before pushing (use 'validate' instead)
+  #   - As part of CI (use individual tasks)
+  prepush:
+    deps:
+    - lint
+    - test
+    # Lint and test can run in parallel since they don't depend on each other
+
+  start:
+    deps:
+    - startCaddy
+    - '#package:start'
+    local: true
+
+  startCaddy:
+    command: 'caddy run --config Caddyfile --adapter caddyfile'
+    local: true
 
   test:
     deps:
@@ -27,13 +230,21 @@ tasks:
     - '@group(allTests)'
     - '@group(allDists)'
 
-  testWatch:
-    deps:
-    - testUnitWatch
-    - testBrowserWatch
-    local: true
+  # Browser test runner
+  # Note: cache disabled for same reasons as testUnit - large input sets
+  testBrowser:
+    command: 'vitest run --config vitest.browser.config.ts'
     inputs:
-    - '@group(allTests)'
+    - '@group(allBrowserTests)'
+    - '@group(allDists)'
+    options:
+      cache: false
+
+  testBrowserWatch:
+    command: 'vitest watch --config vitest.browser.config.ts'
+    preset: watcher
+    inputs:
+    - '@group(allBrowserTests)'
     - '@group(allDists)'
 
   # Unit test runner
@@ -55,134 +266,14 @@ tasks:
     - '@group(allUnitTests)'
     - '@group(allDists)'
 
-  # Browser test runner
-  # Note: cache disabled for same reasons as testUnit - large input sets
-  testBrowser:
-    command: 'vitest run --config vitest.browser.config.ts'
-    inputs:
-    - '@group(allUnitTests)'
-    - '@group(allDists)'
-    options:
-      cache: false
-
-  testBrowserWatch:
-    command: 'vitest watch --config vitest.browser.config.ts'
+  testWatch:
+    deps:
+    - testUnitWatch
+    - testBrowserWatch
     local: true
     inputs:
-    - '@group(allUnitTests)'
+    - '@group(allTests)'
     - '@group(allDists)'
-
-  preparePlaywright:
-    command: 'bun packages/module/es/src/moon.preparePlaywright.ts'
-  preparePlaywrightAllowFailure:
-    command: 'bun packages/module/es/src/cli.command.ts --allowFailure --timeout 30000 --shell -- bun packages/module/es/src/moon.preparePlaywright.ts'
-    options:
-      shell: true
-
-  prepareVale:
-    deps:
-    - installValeDependencyGlobally
-    - installVale
-    - valeSync
-    - createValeNoopStyle
-    options:
-      runDepsInParallel: false
-  prepareValeAllowFailure:
-    deps:
-    - installValeDependencyGloballyAllowFailure
-    - installValeAllowFailure
-    - valeSyncAllowFailure
-    - createValeNoopStyleAllowFailure
-    options:
-      runDepsInParallel: false
-  installVale:
-    command: 'bun packages/module/es/src/moon.installVale.ts'
-  installValeAllowFailure:
-    command: 'bun packages/module/es/src/cli.command.ts --allowFailure --shell -- bun packages/module/es/src/moon.installVale.ts'
-    options:
-      shell: true
-  installValeDependencyGlobally:
-    command: 'bun install -g mdx2vast'
-  installValeDependencyGloballyAllowFailure:
-    command: 'bun packages/module/es/src/cli.command.ts --allowFailure --shell -- bun install -g mdx2vast'
-    options:
-      shell: true
-  valeSync:
-    command: 'bun packages/module/es/src/moon.valeSync.ts'
-  valeSyncAllowFailure:
-    command: 'bun packages/module/es/src/cli.command.ts --allowFailure --shell -- bun packages/module/es/src/moon.valeSync.ts'
-    options:
-      shell: true
-  createValeNoopStyle:
-    command: 'mkdir -p .vale/noop'
-  createValeNoopStyleAllowFailure:
-    command: 'bun packages/module/es/src/cli.command.ts --allowFailure --shell -- mkdir -p .vale/noop'
-    options:
-      shell: true
-
-  prepare:
-    deps:
-    - preparePlaywright
-    - prepareVale
-    options:
-      outputStyle: buffer-only-failure
-  prepareAllowFailure:
-    deps:
-    - preparePlaywrightAllowFailure
-    - prepareValeAllowFailure
-    options:
-      outputStyle: buffer-only-failure
-
-  # Complete setup for fresh clones - prepare environment and build all artifacts
-  # Note: Moon automatically syncs TypeScript project references during build
-  prepareAndBuild:
-    deps:
-    - prepare
-    - build
-    options:
-      runDepsInParallel: false
-      outputStyle: buffer-only-failure
-  prepareAndBuildAllowFailure:
-    deps:
-    - prepareAllowFailure
-    - buildAllowFailure
-    options:
-      runDepsInParallel: false
-      outputStyle: buffer-only-failure
-
-  # Validate that the development environment is properly set up
-  validateSetup:
-    deps:
-    - checkTools
-    - checkDependencies
-    - checkBuild
-    - checkGitHooks
-    options:
-      runDepsInParallel: true
-
-  # Check that required tools are installed
-  checkTools:
-    command: 'bun packages/module/es/src/moon.checkTools.ts'
-    options:
-      outputStyle: buffer-only-failure
-
-  # Check that dependencies are properly installed
-  checkDependencies:
-    command: 'bun packages/module/es/src/moon.checkDependencies.ts'
-    options:
-      outputStyle: buffer-only-failure
-
-  # Check that build artifacts exist
-  checkBuild:
-    command: 'bun packages/module/es/src/moon.checkBuild.ts'
-    options:
-      outputStyle: buffer-only-failure
-
-  # Check that git hooks are installed
-  checkGitHooks:
-    command: 'bun packages/module/es/src/moon.checkGitHooks.ts'
-    options:
-      outputStyle: buffer-only-failure
 
   types:
     # --verbose is too chatty
@@ -193,6 +284,7 @@ tasks:
       outputStyle: buffer-only-failure
       # tsc uses its own cache
       cache: false
+
   typesAllowFailure:
     command: 'bun packages/module/es/src/cli.command.ts --allowFailure --shell -- tsc --build'
     options:
@@ -203,150 +295,13 @@ tasks:
     command: 'tsc --watch'
     local: true
 
-  build:
-    deps:
-    - '#package:js'
-    - 'types'
-    # #package:types executes tsc from inside every package.
-    # - '#package:types'
-    options:
-      outputStyle: buffer-only-failure
-  buildAllowFailure:
-    deps:
-    # Shouldn't fail anyway.
-    - '#package:js'
-    - 'typesAllowFailure'
-    options:
-      outputStyle: buffer-only-failure
-
-  bunCompile:
-    command: 'bun packages/module/es/src/moon.bunCompile.ts'
-    inputs:
-    - 'packages/module/es/src/moon.*.ts'
-    - 'packages/module/es/src/cli.*.ts'
-    outputs:
-    - 'packages/module/es/dist/final/moon.*'
-    - 'packages/module/es/dist/final/cli.*'
-    options:
-      # cache doesn't really work for this, only adds extra time at the end.
-      cache: false
-
-  buildWatch:
-    deps:
-    - '#package:jsWatch'
-    - 'typesWatch'
-    local: true
-
-  buildAndTest:
-    deps:
-    - build
-    - test
-    options:
-      runDepsInParallel: false
-
-  buildAndTestWatch:
-    local: true
-    deps:
-    - '#package:jsWatch'
-    - 'typesWatch'
-    - testUnitWatch
-    - testBrowserWatch
-
-  # Linting tasks
-  lint:
-    deps:
-    - lintEslint
-    - lintStylelint
-    - lintDprint
-    - lintOxlint
-    - lintVale
-
-  lintEslint:
-    extends: '_lintFormatBase'
-    command: 'bun run packages/module/es/src/cli.command.ts --allowFailure -- eslint --cache'
-
-  lintStylelint:
-    extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
-  lintDprint:
-    extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- dprint check --list-different'
-
-  lintOxlint:
-    extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- oxlint'
-
-  lintVale:
-    extends: '_lintFormatBase'
-    command: "bun packages/module/es/src/cli.command.ts --allowFailure -- vale --glob='{*,packages/*/*/*,packages/*/*/src/**/*}' ."
-
-  # Formatting tasks organized for maximum parallelization
-  format:
-    deps:
-    - formatAllFileTypes
-    - formatLanguageSpecific
-    options:
-      runDepsInParallel: false
-
-  # First pass: dprint formats all file types (ts, astro, css, html, yaml)
-  formatAllFileTypes:
-    deps:
-    - formatDprint
-
-  # Second pass: Language-specific formatters run in parallel
-  formatLanguageSpecific:
-    deps:
-    - formatTypeScript # TS formatters (sequential)
-    - formatStylelint # CSS formatter (parallel with TS)
-  # Default is parallel, so formatTypeScript and formatStylelint run simultaneously
-
-  # TypeScript formatters must run sequentially (both process .ts files)
-  formatTypeScript:
-    deps:
-    - formatOxlint
-    - formatEslint
-    options:
-      runDepsInParallel: false
-
-  formatEslint:
-    extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- eslint --cache --fix'
-
-  formatStylelint:
-    extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- stylelint --ignore-path .gitignore --fix "**/*.{css,astro,html}"'
-
-  formatDprint:
-    extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- dprint fmt'
-
-  formatOxlint:
-    extends: '_lintFormatBase'
-    command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- oxlint --fix'
-
-  # Convenience commands
-
-  # Manually run the same checks as the pre-push hook
-  # Use this when:
-  #   - You want to test what the pre-push hook will check before pushing
-  #   - You've disabled hooks temporarily and want to manually verify
-  #   - You're debugging why a push was blocked
-  # Don't use this for:
-  #   - Full validation before pushing (use 'validate' instead)
-  #   - As part of CI (use individual tasks)
-  prepush:
-    deps:
-    - lint
-    - test
-    # Lint and test can run in parallel since they don't depend on each other
-
   # Comprehensive validation: format, build, then test
   # Use this when:
   #   - Before pushing to ensure your branch is fully ready
   #   - After large refactoring to verify everything still works
   #   - Before opening a PR to avoid CI failures
   # Don't use this for:
-  #   - Every single commit (too slow, use pre-commit hook instead)
+  #   - Every single commit (too slow, use pre-push hook instead)
   #   - In CI pipelines (use individual tasks for better parallelization)
   validate:
     deps:
@@ -356,23 +311,13 @@ tasks:
     options:
       runDepsInParallel: false # Must be sequential: format → build → test
 
-  # Claude Code conversation indexing tasks
-  indexClaudeMessages:
-    command: 'bun packages/module/es/src/moon.index-claude-user-messages.ts'
-    options:
-      cache: false
-
-  indexClaudeMcpLogs:
-    command: 'bun packages/module/es/src/moon.index-claude-mcp-logs.ts'
-    options:
-      cache: false
-
-  indexClaude:
+  # Validate that the development environment is properly set up
+  validateSetup:
     deps:
-    - indexClaudeMessages
-    - indexClaudeMcpLogs
-    options:
-      cache: false
+    - checkTools
+    - checkDependencies
+    - checkBuild
+    - checkGitHooks
 
 tags:
 - noTypescript

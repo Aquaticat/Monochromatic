@@ -3,7 +3,10 @@ $schema: 'https://moonrepo.dev/schemas/tasks.json'
 implicitInputs:
 - '@group(configs)'
 - '@group(sources)'
-- '/.prototools'
+
+implicitDeps:
+  # Used extensively throughout the repo
+  - 'es:js'
 
 fileGroups:
   configs:
@@ -21,6 +24,18 @@ fileGroups:
   - 'src/**/*.bench.ts'
   dists:
   - 'dist/**/*'
+  distJs:
+  - 'dist/final/js/**/*'
+  distTypes:
+  - 'dist/final/types/**/*'
+  distMastra:
+  - '.mastra/**/*'
+  allDistTypes:
+  - '/packages/*/*/dist/final/types/**/*'
+  allDistJs:
+  - '/packages/*/*/dist/final/js/**/*'
+  allDistMastra:
+  - '/packages/*/*/.mastra/**/*'
   allPackages:
   - '/packages/*/*/*/**/*'
   allSources:
@@ -34,7 +49,15 @@ fileGroups:
   allBenchs:
   - '/packages/*/*/src/**/*.bench.ts'
   allDists:
-  - '/packages/*/*/dist/**/*'
+  - '/packages/*/*/dist/final/**/*'
+
+taskOptions:
+  inferInputs: false
+  mergeArgs: replace
+  mergeInputs: replace
+  mergeOutputs: replace
+  outputStyle: buffer-only-failure
+  timeout: 30
 
 tasks:
   _shell:
@@ -43,40 +66,26 @@ tasks:
       windowsShell: 'bash'
       shell: true
 
-  types:
-    command: 'tsc --build --force --verbose'
-    options:
-      outputStyle: 'buffer-only-failure'
-
-  typesWatch:
-    command: 'tsc --watch'
-    local: true
-
   js_default:
     command: 'vite build --config vite.config.ts --mode production'
+    outputs:
+    - '@group(distJs)'
     options:
       outputStyle: 'buffer-only-failure'
 
   js_defaultWatch:
     command: 'vite build --config vite.config.ts --mode production --watch'
-    local: true
+    preset: 'server'
 
   js:
     deps:
     - js_default
+    outputs:
+    - '@group(distJs)'
     options:
       outputStyle: 'buffer-only-failure'
 
   jsWatch:
     deps:
     - js_defaultWatch
-    local: true
-
-#  "w:types": "tsc --watch",
-#  "b:types": "tsc --build --force --verbose",
-#  "b:js_node": "vite build --config vite.config.ts --mode production,node",
-#  "w:js_node": "vite build --config vite.config.ts --mode production,node --watch",
-#  "b:js_browser": "vite build --config vite.config.ts --mode production,browser",
-#  "w:js_browser": "vite build --config vite.config.ts --mode production,browser --watch",
-#  "b": "pnpm run --stream \"/^b:\\w+$/\"",
-#  "w": "pnpm run --stream \"/^w:\\w+$/\""
+    preset: 'server'

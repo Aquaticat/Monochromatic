@@ -1,9 +1,80 @@
-bun = "latest"
-moon = "latest"
-node = "latest"
-pnpm = "latest"
 proto = "latest"
+moon = "latest"
+
+# Moon config files
+# We're not using pkl right now for Moon task configs because https://moonrepo.dev/docs/guides/pkl-config#caveats-and-restrictions .
+# Pending evaluation.
+pkl = "latest"
+
+# Primary runtime
+bun = "latest"
+
+# Package manager
+pnpm = "latest"
+
+# Needed by Vitest
+node = "latest"
+
+# Needed by some `create-*` tools
+npm = "latest"
+
+# Non-JS-based formatters
+dprint = "latest"
+oxlint = "latest"
+
+# For running Python packages and scripts
+uv = "latest"
+
+#region Convenience -- frequently used terminal commands
+
+# json/toml manipulation
+jq = "latest"
+yq = "latest"
+
+# Benchmarking
+hyperfine = "latest"
+
+# Terminal workspace
+zellij = "latest"
+
+# GitHub CLI
+gh = "latest"
+
+# Fuzzy finder
+fzf = "latest"
+
+#endregion Convenience
+
+# Web Server for Deployment
+caddy = "latest"
 
 [settings]
 auto-install = true
 auto-clean = true
+detect-strategy = "only-prototools"
+
+[plugins]
+zellij = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/zellij/plugin.toml"
+
+yq = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/yq/plugin.toml"
+
+oxlint = "https://raw.githubusercontent.com/Phault/proto-toml-plugins/main/oxlint/plugin.toml"
+
+pkl = "https://raw.githubusercontent.com/milesj/proto-plugins/refs/heads/master/pkl.toml"
+
+jq = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/jq/plugin.toml"
+
+hyperfine = "https://raw.githubusercontent.com/Phault/proto-toml-plugins/main/hyperfine/plugin.toml"
+
+gh = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/gh/plugin.toml"
+
+fzf = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/fzf/plugin.toml"
+
+dprint = "https://raw.githubusercontent.com/Phault/proto-toml-plugins/main/dprint/plugin.toml"
+
+caddy = "https://raw.githubusercontent.com/Phault/proto-toml-plugins/main/caddy/plugin.toml"
+
+# ripgrep is managed by moon because it's a cargo package.
+
+[env]
+file = ".env"

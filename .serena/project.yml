@@ -1,0 +1,6 @@
+ignore_all_files_in_gitignore: true
+
+language: typescript
+
+excluded_tools: []
+

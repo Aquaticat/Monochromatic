@@ -4,7 +4,8 @@ A TypeScript monorepo ecosystem for modern web development.
 
 ## Task Runner: Moon
 
-**IMPORTANT: This project uses [Moon](https://moonrepo.dev/) as the task runner. DO NOT use npm scripts directly.**
+This project uses [Moon](https://moonrepo.dev/) as the task runner.
+Don't use npm scripts directly.
 
 All tasks must be run through Moon commands:
 - `moon run test` (correct)
@@ -75,32 +76,6 @@ moon run buildAndTestWatch
 moon clean --lifetime '1 seconds'
 ```
 
-### Claude Code Conversation Indexing
-
-**⚠️ SECURITY WARNING**: These commands permanently delete conversation data after successful indexing!
-
-```bash
-# Index all Claude conversations for searchability (DELETES data after indexing)
-moon run indexClaude
-
-# Index only user messages (CLEARS ~/.claude.json history after indexing)
-moon run indexClaudeMessages
-
-# Index only MCP server logs (DELETES log files after indexing)
-moon run indexClaudeMcpLogs
-```
-
-These tasks index Claude Code conversation data into Meilisearch for improved context awareness and searchability.
-
-**How it works**:
-1. Reads conversation data from Claude Code's storage locations
-2. Indexes the data into Meilisearch for searchability
-3. **Automatically deletes the original data for security** (only if indexing succeeds)
-   - User messages: Clears the `history` field in `~/.claude.json`
-   - MCP logs: Deletes log files from `~/.cache/claude-cli-nodejs/`
-
-**Note**: If indexing fails, data is NOT deleted for safety. You can re-run the command after fixing any issues.
-
 ## Project Structure
 
 ```
@@ -115,12 +90,26 @@ packages/
 
 ## Technical Stack
 
-- **Package Manager**: pnpm with workspaces
-- **Task Runner**: Moon CLI
-- **Bundler**: Vite v7+
-- **Language**: TypeScript (strict mode)
-- **Testing**: Vitest
+- **Toolchain Manager**: Proto
+- **Task Runner**: Moon (calls pnpm automatically)
+- **Package Manager**: pnpm (with `catalog:` and non-native modules)
+- **Bundler**: Vite (rolldown-vite)
+- **Language**: TypeScript (non-native beta)
+- **Testing**: Vitest (also uses rolldown-vite under the hood)
 
-## Documentation
+## Dropping Windows as a development platform
 
-Detailed project conventions and guidelines are in [CLAUDE.md](./CLAUDE.md)
+Some tools aren't available on Windows:
+
+- Zellij
+
+In `*.code-workspace`:
+
+- `"dprint.path": "./node_modules/.bin/dprint",` has to be set when connecting through VSCode on Windows to WSL, which would make detection on Windows impossible.
+
+Hardlink support:
+
+- Windows doesn't support hardlink, which `pnpm install` can use to improve speed.
+
+Use WSL2 when developing on Windows.
+The recommended WSL distro is Arch Linux or Debian.

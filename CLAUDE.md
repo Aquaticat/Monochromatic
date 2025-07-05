@@ -1,6 +1,7 @@
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+On start, read the initial instructions from serena MCP.
 
 **IMPORTANT DATE REMINDER**: Always use the current date from the environment information provided in the system prompt. Today's date is shown in the <env> section. Never assume or guess dates.
 
@@ -427,7 +428,7 @@ TypeScript's support for overloading generator functions has some quirks:
         document.querySelector('.results'),
       )),
     };
-    
+
     // Second block - depends on searchForm
     const {
       searchInput,

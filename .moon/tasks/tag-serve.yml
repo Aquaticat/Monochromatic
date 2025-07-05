@@ -3,3 +3,5 @@ tasks:
   js_defaultWatch:
     command: 'vite --config vite.config.ts --mode production'
     local: true
+    options:
+      mergeArgs: replace

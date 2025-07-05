@@ -781,3 +781,29 @@ export default getFrontend(import.meta.dirname);
 ```
 
 This produces output at `dist/final/js/index.html` without the `src/` subdirectory.
+
+## `dprint` and `oxlint` slow startup
+
+Removed them from root `package.json` and now using `.prototools` to manage them.
+
+This is also why peer dependency `dprint` isn't declared in `config-dprint`.
+
+## `proto` warning `It looks like you have an existing installation of Rust`
+
+```txt
+warn: It looks like you have an existing installation of Rust at:
+warn: /usr/sbin
+warn: It is recommended that rustup be the primary Rust installation.
+warn: Otherwise you may have confusion unless you are careful with your PATH.
+warn: If you are sure that you want both rustup and your already installed Rust
+warn: then please reply `y' or `yes' or set RUSTUP_INIT_SKIP_PATH_CHECK to yes
+warn: or pass `-y' to ignore all ignorable checks.
+error: cannot install while Rust is installed
+warn: continuing (because the -y flag is set and the error is ignorable)
+info: profile set to 'default'
+info: default host triple is x86_64-unknown-linux-gnu
+```
+
+Solution: Set `RUSTUP_INIT_SKIP_PATH_CHECK=yes`.
+
+Reasoning: It's okay to have a global install of Rust, but we want the toolchain of current project to have the Rust version set in `.prototools`.

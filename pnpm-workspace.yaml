@@ -1,15 +1,17 @@
 packages:
-- packages/*/*
+  - packages/*/*
+
 autoInstallPeers: false
+
 catalog:
   browserslist: '*'
-  zod: '>=3.25.67'
+  zod: 3.25.71
   dprint: '*'
   esbuild: '*'
   oxlint: '>=1.1.0'
   stylelint: '*'
   stylelint-config-standard: '*'
-  typescript: '*'
+  typescript: 'npm:typescript@next'
   '@ungap/structured-clone': '*'
   find-up: '*'
   glob: '*'
@@ -24,7 +26,7 @@ catalog:
   '@types/bun': '*'
   postcss-html: '*'
   '@types/mdx': '*'
-  vite: 'npm:rolldown-vite'
+  vite: npm:rolldown-vite
   vite-plugin-singlefile: '*'
   '@csstools/postcss-color-function': '*'
   '@csstools/postcss-color-mix-function': '*'
@@ -94,6 +96,10 @@ catalog:
   rehype-autolink-headings: '*'
   rambdax: '*'
   ses: '*'
+  '@openrouter/ai-sdk-provider': '*'
+  '@mastra/core': '*'
+  openapi-types: '*'
+  react: '*'
   the-new-css-reset: '*'
   TODS: github:clagnut/TODS
   '@mdx-js/vue': '*'
@@ -116,7 +122,7 @@ catalog:
   '@typescript-eslint/eslint-plugin': '*'
   ts-pattern: '*'
   oxc-minify: '*'
-  'mdx2vast': '*'
+  mdx2vast: '*'
   memfs: '>=4.17.2'
   happy-opfs: '>=1.8.6'
   eslint-p: '>=0.23.0'
@@ -134,66 +140,99 @@ catalog:
   istanbul-lib-report: '*'
   eslint-plugin-astro: '>=1.3.1'
   eslint-plugin-jsx-a11y: '>=6.10.2'
+  '@eslint/core': '*'
+  '@eslint/plugin-kit': '*'
   '@moonrepo/cli': '>=1.36.3'
+  sugarss: '*'
+  '@types/node': ^24.0.10
   rollup: '*'
-catalogs:
-  vitest:
-    vite: '>=7.0.0'
+  mastra: 0.10.10
+  '@typers/react': '*'
+
+catalogMode: strict
+
 childConcurrency: 16
+
 dedupeDirectDeps: true
+
 disallowWorkspaceCycles: true
+
+enableGlobalVirtualStore: true
+
 hoist: false
-resolvePeersFromWorkspaceRoot: false
+
 hoistWorkspacePackages: false
+
 includeWorkspaceRoot: true
+
 linkWorkspacePackages: true
+
 managePackageManagerVersions: false
+
 nodeLinker: isolated
+
 onlyBuiltDependencies:
-- '@moonrepo/cli'
-- dprint
-- esbuild
-- sharp
+  - '@moonrepo/cli'
+  - dprint
+  - esbuild
+  - protobufjs
+  - sharp
+
 overrides:
-  tsconfck>typescript: 'catalog:'
-  zod-to-ts>typescript: 'catalog:'
-  astro>typescript: 'catalog:'
-  vite>postcss: 'catalog:'
+  typescript: 'catalog:'
   vite: 'catalog:'
   vitest: 'catalog:'
   rollup: 'catalog:'
   postcss: 'catalog:'
+  sugarss: 'catalog:'
+  esbuild: 'catalog:'
+  astro: 'catalog:'
+
 packageExtensions:
   vitest:
     dependencies:
-      'strip-literal': '>=3.0.0'
+      strip-literal: '>=3.0.0'
   '@vitest/browser':
     peerDependencies:
       vite: '*'
   stylelint:
     dependencies:
-      'postcss-html': '*'
+      postcss-html: '*'
   vite-plugin-json5:
     dependencies:
       rollup: '*'
   vite-plugin-singlefile:
     dependencies:
       rollup: '*'
+  '@types/bun':
+    dependencies:
+      '@types/react': '*'
+
+packageImportMethod: hardlink
+
 peerDependencyRules:
   allowedVersions:
     '@vitejs/plugin-basic-ssl>vite': '*'
-    'vite-plugin-singlefile>vite': '*'
-    'vite-plugin-json5>vite': '*'
+    vite-plugin-singlefile>vite: '*'
+    vite-plugin-json5>vite: '*'
+
 preferWorkspacePackages: true
+
 resolutionMode: highest
+
+resolvePeersFromWorkspaceRoot: false
+
 savePrefix: ''
+
 saveWorkspaceProtocol: false
+
 shellEmulator: false
+
 strictDepBuilds: true
+
 strictPeerDependencies: true
+
 supportedArchitectures:
-  os: [win32, darwin, linux, current]
+  os: [darwin, linux, current]
   cpu: [x64, arm64, current]
   libc: [glibc, musl, current]
-enableGlobalVirtualStore: true
-catalogMode: strict

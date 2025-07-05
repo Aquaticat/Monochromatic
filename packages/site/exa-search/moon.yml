@@ -4,11 +4,3 @@ language: 'typescript'
 tags:
 - package
 - serve
-
-dependsOn:
-- 'es'
-
-tasks:
-  js_default:
-    deps:
-    - 'es:js'

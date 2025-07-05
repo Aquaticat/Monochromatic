@@ -1,4 +1,4 @@
-:80 {
+:4110 {
   handle /api/proxy/* {
     uri strip_prefix /api/proxy
     reverse_proxy https://api.exa.ai {

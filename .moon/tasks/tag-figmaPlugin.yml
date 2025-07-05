@@ -6,6 +6,8 @@ tasks:
   #"b:iframeFrontend": "vite build --mode production --config vite.config.iframe.ts",
   js_default:
     command: 'vite build --mode production --config vite.config.frontend.ts'
+    options:
+      mergeArgs: replace
     deps:
     - js_iframe
   js_defaultNoDepWatch:
@@ -42,3 +44,5 @@ tasks:
     - js_defaultNoDepWatch
     - js_backendWatch
     local: true
+    options:
+      mergeDeps: replace

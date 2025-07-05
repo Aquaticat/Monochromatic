@@ -5,6 +5,8 @@ tasks:
     command: 'vite build --config vite.config.ts --mode production,node'
     options:
       outputStyle: buffer-only-failure
+    outputs:
+    - '@group(distJs)'
 
   js_nodeWatch:
     command: 'vite build --config vite.config.ts --mode production,node --watch'

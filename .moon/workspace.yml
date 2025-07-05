@@ -1,34 +1,14 @@
 # https://moonrepo.dev/docs/config/workspace
 $schema: 'https://moonrepo.dev/schemas/workspace.json'
 
-# Require a specific version of moon while running commands, otherwise fail.
-# versionConstraint: '>=1.0.0'
-
-# Extend and inherit an external configuration file. Must be a valid HTTPS URL or file system path.
-# extends: './shared/workspace.yml'
-
-# REQUIRED: A map of all projects found within the workspace, or a list or file system globs.
-# When using a map, each entry requires a unique project ID as the map key, and a file system
-# path to the project folder as the map value. File paths are relative from the workspace root,
-# and cannot reference projects located outside the workspace boundary.
 projects:
-- 'packages/*/*'
-- '.'
+  globs:
+  - 'packages/*/*'
+  sources:
+    Monochromatic: '.'
 
-# Configures the version control system to utilize within the workspace. A VCS
-# is required for determining touched (added, modified, etc) files, calculating file hashes,
-# computing affected files, and much more.
 vcs:
-  # The client to use when managing the repository.
-  # Accepts "git". Defaults to "git".
-  manager: 'git'
-
-  # The default branch in the repository for comparing the
-  # local branch against. For git, this is is typically "main",
-  # and must include the remote prefix (before /).
   defaultBranch: 'main'
-
-  hookFormat: 'bash'
 
   syncHooks: true
 
@@ -42,5 +22,11 @@ codeowners:
 hasher:
   walkStrategy: 'glob'
   optimization: 'performance'
+
+notifier:
+  terminalNotifications: always
+
+pipeline:
+  logRunningCommand: true
 
 versionConstraint: '>=1.29.3'

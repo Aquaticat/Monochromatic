@@ -26,8 +26,6 @@
     "@monochromatic-dev/config-vite": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/config-stylelint": "workspace:*",
-    "dprint": "catalog:",
-    "oxlint": "catalog:",
     "stylelint": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",

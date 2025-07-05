@@ -1,0 +1,19 @@
+{
+  "extends": "@monochromatic-dev/config-typescript/dom",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@monochromatic-dev/module-es": [
+        "../../module/es/src/index.ts"
+      ],
+      "@monochromatic-dev/module-es/*": [
+        "../../module/es/src/*"
+      ]
+    }
+  },
+  "references": [
+    {
+      "path": "../../module/es"
+    }
+  ]
+}
