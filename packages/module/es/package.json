@@ -42,7 +42,6 @@
     }
   },
   "bin": {
-    "installVale": "./src/moon.installVale.ts",
     "checkBuild": "./src/moon.checkBuild.ts",
     "checkDependencies": "./src/moon.checkDependencies.ts",
     "checkGitHooks": "./src/moon.checkGitHooks.ts",

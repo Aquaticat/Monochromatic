@@ -1,0 +1,28 @@
+$schema: 'https://moonrepo.dev/schemas/tasks.json'
+
+tasks:
+  js_nodeWatch:
+    deps:
+    - es:jsWatch
+    command: 'vite build --config vite.config.ts --mode production,node --watch'
+    extends: _server
+
+  js:
+    command: 'vite build --config vite.config.ts --mode production,node'
+    deps:
+    - es:js
+    outputs:
+    - '@group(distJs)'
+    options:
+      internal: false
+  jsWatch:
+    deps:
+    - js_nodeWatch
+    command: 'bun run --watch src/index.ts'
+    extends: _server
+  start:
+    deps:
+    - js
+    command: 'bun run dist/final/js/index.node.js'
+    extends: _server
+    # Note: preset:server disables cache, so inputs/outputs aren't needed

@@ -33,7 +33,7 @@ body {
 
   margin-inline: auto;
 
-  > :not(:nth-child(1)) {
+  > :not(:first-child) {
     margin-block-start: 2rem;
   }
 }
@@ -161,7 +161,7 @@ details {
 }
 
 ::details-content {
-  /* stylelint-disable-next-line property-disallowed-list -- necessary */
+  /* stylelint-disable-next-line property-disallowed-list -- to be split into separate properties */
   transition: block-size 0.5s ease, content-visibility 0.5s ease allow-discrete;
 
   block-size: 0;

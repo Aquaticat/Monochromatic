@@ -1,0 +1,15 @@
+$schema: 'https://moonrepo.dev/schemas/tasks.json'
+
+tasks:
+  js:
+    command: 'astro build'
+    # Note: @group(sources) and @group(configs) are implicit inputs
+    outputs:
+    - '@group(distAstro)'
+    options:
+      internal: false
+  jsWatch:
+    command: 'astro dev'
+    extends: _server
+
+    # Note: preset:server disables cache, so inputs/outputs aren't needed

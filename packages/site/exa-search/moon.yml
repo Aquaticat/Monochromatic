@@ -2,5 +2,10 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 language: 'typescript'
 
 tags:
+- html
 - package
-- serve
+
+tasks:
+  js:
+    deps:
+    - es:js

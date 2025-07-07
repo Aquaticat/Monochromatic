@@ -1,63 +1,51 @@
 $schema: 'https://moonrepo.dev/schemas/tasks.json'
 
+# The following file groups are automatically added to ALL tasks as inputs.
+# You don't need to explicitly add these to individual task inputs.
 implicitInputs:
 - '@group(configs)'
 - '@group(sources)'
 
-implicitDeps:
-  # Used extensively throughout the repo
-  - 'es:js'
-
 fileGroups:
+  indexHtml:
+  - 'index.html'
   configs:
   - '*.config.{cjs,mjs,ts}'
-  - '*.{json,jsonc,yaml,yml}'
+  - '*.{json,jsonc,yaml,yml,toml}'
   sources:
-  - 'src/**/*.{ts,astro,html,vue,mjs,js,cjs}'
-  unitTests:
-  - 'src/**/*.unit.test.ts'
-  browserTests:
-  - 'src/**/*.browser.test.ts'
-  tests:
-  - 'src/**/*.test.ts'
-  benchs:
-  - 'src/**/*.bench.ts'
-  dists:
-  - 'dist/**/*'
+  - 'src/**/*.{ts,astro,html,vue,mjs,js,cjs,mdx,json,toml}'
   distJs:
   - 'dist/final/js/**/*'
-  distTypes:
-  - 'dist/final/types/**/*'
-  distMastra:
-  - '.mastra/**/*'
+  dist:
+  - 'dist/**/*'
   allDistTypes:
   - '/packages/*/*/dist/final/types/**/*'
   allDistJs:
   - '/packages/*/*/dist/final/js/**/*'
-  allDistMastra:
-  - '/packages/*/*/.mastra/**/*'
-  allPackages:
-  - '/packages/*/*/*/**/*'
   allSources:
-  - '/packages/*/*/src/**/*.{ts,astro,html,vue,mjs,js,cjs}'
-  allUnitTests:
-  - '/packages/*/*/src/**/*.unit.test.ts'
-  allBrowserTests:
-  - '/packages/*/*/src/**/*.browser.test.ts'
-  allTests:
-  - '/packages/*/*/src/**/*.test.ts'
-  allBenchs:
-  - '/packages/*/*/src/**/*.bench.ts'
+  - '/packages/*/*/src/**/*.{ts,astro,html,vue,mjs,js,cjs,mdx,json,toml}'
   allDists:
-  - '/packages/*/*/dist/final/**/*'
+  - '/packages/*/*/dist/**/*'
+  allConfigs:
+  # Changing anything in `.moon` auto triggers cache invalidation.
+  # - '/.moon/**/*.{yml,pkl}'
+  - '/**/*.config.{cjs,mjs,ts}'
+  - '/**/*.{json,jsonc,yaml,yml,toml}'
 
 taskOptions:
   inferInputs: false
   mergeArgs: replace
   mergeInputs: replace
   mergeOutputs: replace
+  # Enable output as needed.
   outputStyle: buffer-only-failure
-  timeout: 30
+  # Timeout overriding behavior seems broken. Tried overriding it with both 0 and null.
+  # `null` terminates the process in 30s still.
+  # `0` terminates the process immediately.
+  # Workaround: manually define override in individual tasks.
+  # timeout: 30
+  # Enable running task on command line as needed.
+  internal: true
 
 tasks:
   _shell:
@@ -66,26 +54,22 @@ tasks:
       windowsShell: 'bash'
       shell: true
 
-  js_default:
-    command: 'vite build --config vite.config.ts --mode production'
-    outputs:
-    - '@group(distJs)'
+  # Template for lint/format tasks
+  # Note: cache is disabled due to Moon's cache overhead with filesystem-intensive
+  # operations and tasks with large numbers of inputs/outputs from expanded globs
+  _lintFormatBase:
     options:
-      outputStyle: 'buffer-only-failure'
+      cache: false
+      unixShell: 'bash'
+      windowsShell: 'bash'
+      shell: true
+      internal: false
 
-  js_defaultWatch:
-    command: 'vite build --config vite.config.ts --mode production --watch'
-    preset: 'server'
-
-  js:
-    deps:
-    - js_default
-    outputs:
-    - '@group(distJs)'
+  # My own server preset because Moon builtin server preset doesn't override timeout to none.
+  _server:
     options:
-      outputStyle: 'buffer-only-failure'
-
-  jsWatch:
-    deps:
-    - js_defaultWatch
-    preset: 'server'
+      cache: false
+      outputStyle: stream
+      persistent: true
+      runInCI: false
+      internal: false

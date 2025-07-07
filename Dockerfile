@@ -29,5 +29,3 @@ RUN proto install
 # Update: We're forgoing all the prepare steps because they take too long.
 # Still using the allowFailure variant of the build task because right now tsc throws some errors unrelated to what we're working on.
 RUN moon run buildAllowFailure
-
-CMD ["moon", "run", "start"]

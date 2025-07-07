@@ -31,6 +31,7 @@ export * from './fs.emptyPath.ts';
 export * from './fs.ensurePath.ts';
 
 export * from './function.arguments.ts';
+export * from './function.always.ts';
 export * from './function.booleanfy.ts';
 export * from './function.curry.ts';
 export * from './function.ensuring.ts';

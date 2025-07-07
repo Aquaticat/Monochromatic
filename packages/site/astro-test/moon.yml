@@ -2,7 +2,7 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 language: 'typescript'
 
 tags:
-# FIXME: Temporarily turned off tsc on this project. This tag will be removed when the team gets to work on this project and fix the types.
-- 'noTypescript'
-- 'noJs'
+- astro
 - package
+# FIXME: Temporarily turned off tsc on this project. This tag will be removed when the team gets to work on this project and fix the types.
+# Previously used noTypescript and noJs tags

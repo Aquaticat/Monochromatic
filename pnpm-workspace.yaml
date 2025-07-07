@@ -1,5 +1,5 @@
 packages:
-  - packages/*/*
+- packages/*/*
 
 autoInstallPeers: false
 
@@ -146,8 +146,15 @@ catalog:
   sugarss: '*'
   '@types/node': ^24.0.10
   rollup: '*'
-  mastra: 0.10.10
+  elysia: '*'
+  file-type: '>=20.0.0'
+  '@aws-crypto/sha256-js': '*'
   '@typers/react': '*'
+  '@elysiajs/swagger': '*'
+  ai: '*'
+  '@ai-sdk/react': '*'
+  'swr': '*'
+  'use-sync-external-store': '*'
 
 catalogMode: strict
 
@@ -172,11 +179,11 @@ managePackageManagerVersions: false
 nodeLinker: isolated
 
 onlyBuiltDependencies:
-  - '@moonrepo/cli'
-  - dprint
-  - esbuild
-  - protobufjs
-  - sharp
+- '@moonrepo/cli'
+- dprint
+- esbuild
+- protobufjs
+- sharp
 
 overrides:
   typescript: 'catalog:'
@@ -187,6 +194,7 @@ overrides:
   sugarss: 'catalog:'
   esbuild: 'catalog:'
   astro: 'catalog:'
+  react: 'catalog:'
 
 packageExtensions:
   vitest:
@@ -207,6 +215,22 @@ packageExtensions:
   '@types/bun':
     dependencies:
       '@types/react': '*'
+  elysia:
+    dependencies:
+      file-type: '*'
+  "@openrouter/ai-sdk-provider":
+    dependencies:
+      ai: '*'
+  ai:
+    dependencies:
+      react: '*'
+  'swr':
+    dependencies:
+      react: '*'
+  'use-sync-external-store':
+    dependencies:
+      react: '*'
+
 
 packageImportMethod: hardlink
 

@@ -1,7 +1,11 @@
 $schema: 'https://moonrepo.dev/schemas/project.json'
-
-id: 'style-monochromatic'
+language: 'typescript'
 
 tags:
-- noop
+- server
 - package
+
+tasks:
+  js:
+    deps:
+    - es:js

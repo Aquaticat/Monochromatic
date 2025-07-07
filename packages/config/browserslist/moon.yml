@@ -1,6 +1,5 @@
 $schema: 'https://moonrepo.dev/schemas/project.json'
 
 tags:
-- 'noTypescript'
-- 'noJs'
+- noop
 - package

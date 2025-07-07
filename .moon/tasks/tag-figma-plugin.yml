@@ -1,0 +1,62 @@
+$schema: 'https://moonrepo.dev/schemas/tasks.json'
+
+tasks:
+  # Frontend build
+  js_frontend:
+    command: 'vite build --mode production --config vite.config.frontend.ts'
+    deps:
+    - js_iframe
+    # Note: @group(sources) and @group(configs) are implicit inputs
+    outputs:
+    - '@group(distJs)'
+
+  js_frontendWatch:
+    command: 'vite build --mode production --config vite.config.frontend.ts --watch'
+    extends: _server
+
+    # Note: preset:server disables cache, so inputs/outputs aren't needed
+
+  # Backend build
+  js_backend:
+    command: 'vite build --mode production --config vite.config.backend.ts'
+    # Note: @group(sources) and @group(configs) are implicit inputs
+    outputs:
+    - '@group(distJs)'
+
+  js_backendWatch:
+    command: 'vite build --mode production --config vite.config.backend.ts --watch'
+    extends: _server
+
+    # Note: preset:server disables cache, so inputs/outputs aren't needed
+
+  # Iframe build
+  js_iframe:
+    command: 'vite build --mode production --config vite.config.iframe.ts'
+    # Note: @group(sources) and @group(configs) are implicit inputs
+    outputs:
+    - '@group(distJs)'
+
+  js_iframeWatch:
+    command: 'vite build --mode production --config vite.config.iframe.ts --watch'
+    extends: _server
+
+    # Note: preset:server disables cache, so inputs/outputs aren't needed
+
+  # Combined tasks
+  js:
+    deps:
+    - js_frontend
+    - js_backend
+    # Note: @group(sources) and @group(configs) are implicit inputs
+    outputs:
+    - '@group(distJs)'
+    options:
+      internal: false
+  jsWatch:
+    deps:
+    - js_iframeWatch
+    - js_frontendWatch
+    - js_backendWatch
+    extends: _server
+
+    # Note: preset:server disables cache, so inputs/outputs aren't needed

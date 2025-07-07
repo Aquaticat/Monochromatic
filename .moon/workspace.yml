@@ -14,7 +14,7 @@ vcs:
 
   hooks:
     pre-push:
-    - 'moon run prepush'
+    - 'moon run validate'
 
 codeowners:
   syncOnRun: true

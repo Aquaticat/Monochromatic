@@ -1,0 +1,21 @@
+$schema: 'https://moonrepo.dev/schemas/tasks.json'
+
+tasks:
+  js:
+    command: 'vite build --config vite.config.ts --mode production'
+    inputs:
+    - '@group(indexHtml)'
+    outputs:
+    - '@group(distJs)'
+    options:
+      internal: false
+  js_browserWatch:
+    command: 'vite build --config vite.config.ts --mode production --watch'
+    extends: _server
+  jsWatch:
+    deps:
+    - js_browserWatch
+    command: 'vite --config vite.config.ts --mode production'
+    extends: _server
+
+    # Note: preset:server disables cache, so inputs/outputs aren't needed

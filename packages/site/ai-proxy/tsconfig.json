@@ -8,10 +8,19 @@
       ],
       "@monochromatic-dev/module-es/*": [
         "../../module/es/src/*"
+      ],
+      "@monochromatic-dev/config-vite": [
+        "../../config/vite/src/index.ts"
+      ],
+      "@monochromatic-dev/config-vite/*": [
+        "../../config/vite/src/*"
       ]
     }
   },
   "references": [
+    {
+      "path": "../../config/vite"
+    },
     {
       "path": "../../module/es"
     }

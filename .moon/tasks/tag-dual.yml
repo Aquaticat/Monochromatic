@@ -1,0 +1,46 @@
+$schema: 'https://moonrepo.dev/schemas/tasks.json'
+
+tasks:
+  # Browser build
+  js_browser:
+    command: 'vite build --config vite.config.ts --mode production'
+    # Note: @group(sources) and @group(configs) are implicit inputs
+    outputs:
+    - '@group(distJs)'
+
+  js_browserWatch:
+    command: 'vite build --config vite.config.ts --mode production --watch'
+    extends: _server
+
+    # Note: preset:server disables cache, so inputs/outputs aren't needed
+
+  # Node build
+  js_node:
+    command: 'vite build --config vite.config.ts --mode production,node'
+    # Note: @group(sources) and @group(configs) are implicit inputs
+    outputs:
+    - '@group(distJs)'
+
+  js_nodeWatch:
+    command: 'vite build --config vite.config.ts --mode production,node --watch'
+    extends: _server
+
+    # Note: preset:server disables cache, so inputs/outputs aren't needed
+
+  # Combined tasks
+  js:
+    deps:
+    - js_browser
+    - js_node
+    # Note: @group(sources) and @group(configs) are implicit inputs
+    outputs:
+    - '@group(distJs)'
+    options:
+      internal: false
+  jsWatch:
+    deps:
+    - js_browserWatch
+    - js_nodeWatch
+    extends: _server
+
+    # Note: preset:server disables cache, so inputs/outputs aren't needed

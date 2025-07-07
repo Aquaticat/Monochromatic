@@ -3,83 +3,124 @@ $schema: 'https://moonrepo.dev/schemas/project.json'
 language: 'typescript'
 
 tasks:
-  # Template for lint/format tasks
-  # Note: cache is disabled due to Moon's cache overhead with filesystem-intensive
-  # operations and tasks with large numbers of inputs/outputs from expanded globs
-  _lintFormatBase:
-    inputs:
-    - '@group(allSources)'
-    - '@group(configs)'
-    options:
-      cache: false
-      unixShell: 'bash'
-      windowsShell: 'bash'
-      shell: true
+  # CACHING STRATEGY:
+  # Moon's cache is disabled for the following task categories:
+  # 1. Tools with their own cache: ESLint (.eslintcache), TypeScript (tsconfig.tsbuildinfo), dprint
+  # 2. Filesystem-heavy operations: lint, format, test tasks with large input/output sets
+  # 3. Non-reproducible builds: Bun compilation doesn't produce deterministic outputs
+  # 4. One-off operations: check*, validate*, prepush - tasks run infrequently where cache maintenance overhead isn't worth it
+  # For these tasks, Moon's cache computation time often exceeds actual execution time.
+  #
+  # IMPORTANT: Tasks with cache:false or preset:server don't need inputs/outputs defined
+  # as Moon only uses these for cache computation. We remove them for clarity.
 
   build:
     deps:
+    # Moon would auto skip projects that doesn't have the `js` task defined.
     - '#package:js'
     - 'types'
-    # #package:types executes tsc from inside every package.
-    # - '#package:types'
+    inputs:
+    - '@group(allConfigs)'
+    - '@group(allSources)'
+    outputs:
+    - '@group(allDists)'
     options:
-      outputStyle: buffer-only-failure
+      internal: false
 
   buildAllowFailure:
     deps:
     # Shouldn't fail anyway.
     - '#package:js'
     - 'typesAllowFailure'
+    inputs:
+    - '@group(allConfigs)'
+    - '@group(allSources)'
+    outputs:
+    - '@group(allDists)'
     options:
-      outputStyle: buffer-only-failure
+      # Used in CI.
+      internal: false
 
   buildAndTest:
     deps:
     - build
     - test
     options:
-      runDepsInParallel: false
+      cache: false
+      runDepsInParallel: false  # Tests depend on build artifacts being complete
+      internal: false
+    inputs:
+    - '@group(allConfigs)'
+    - '@group(allSources)'
+    outputs:
+    - '@group(allDists)'
 
   buildAndTestWatch:
-    local: true
+    extends: _server
     deps:
     - '#package:jsWatch'
     - 'typesWatch'
     - testUnitWatch
     - testBrowserWatch
+    options:
+      internal: false
 
   buildWatch:
     deps:
     - '#package:jsWatch'
     - 'typesWatch'
-    local: true
+    extends: _server
+    options:
+      internal: false
 
   bunCompile:
     command: 'bun packages/module/es/src/moon.bunCompile.ts'
-    inputs:
-    - 'packages/module/es/src/moon.*.ts'
-    - 'packages/module/es/src/cli.*.ts'
-    outputs:
-    - 'packages/module/es/dist/final/moon.*'
-    - 'packages/module/es/dist/final/cli.*'
     options:
-      # cache doesn't really work for this, only adds extra time at the end.
+      # Bun doesn't do reproducible builds - we always want the freshest compilation
       cache: false
+      internal: false
 
   checkBuild:
     command: 'bun packages/module/es/src/moon.checkBuild.ts'
+    options:
+      # One-off operation - cache overhead not worth it
+      cache: false
 
   checkDependencies:
     command: 'bun packages/module/es/src/moon.checkDependencies.ts'
+    options:
+      # One-off operation - cache overhead not worth it
+      cache: false
 
   checkGitHooks:
     command: 'bun packages/module/es/src/moon.checkGitHooks.ts'
+    options:
+      # One-off operation - cache overhead not worth it
+      cache: false
 
   checkTools:
     command: 'bun packages/module/es/src/moon.checkTools.ts'
+    options:
+      # One-off operation - cache overhead not worth it
+      cache: false
+
+  check:
+    deps:
+      - checkBuild
+      - checkDependencies
+      - checkGitHooks
+      - checkTools
+    options:
+      cache: false
+      internal: false
 
   # Formatting tasks organized for maximum parallelization
+  # IMPORTANT: Two-pass formatting strategy to avoid conflicts:
+  # 1. formatAllFileTypes - dprint handles all file types in one pass
+  # 2. formatLanguageSpecific - Language-specific formatters run after
+  # This prevents race conditions when multiple formatters target the same files
   format:
+    extends: _lintFormatBase
     deps:
     - formatAllFileTypes
     - formatLanguageSpecific
@@ -88,6 +129,8 @@ tasks:
 
   # First pass: dprint formats all file types (ts, astro, css, html, yaml)
   formatAllFileTypes:
+    extends: _lintFormatBase
+
     deps:
     - formatDprint
 
@@ -101,6 +144,8 @@ tasks:
 
   # Second pass: Language-specific formatters run in parallel
   formatLanguageSpecific:
+    extends: _lintFormatBase
+
     deps:
     - formatTypeScript # TS formatters (sequential)
     - formatStylelint # CSS formatter (parallel with TS)
@@ -115,6 +160,9 @@ tasks:
     command: 'bun packages/module/es/src/cli.command.ts --allowFailure -- stylelint --ignore-path .gitignore --fix "**/*.{css,astro,html}"'
 
   # TypeScript formatters must run sequentially (both process .ts files)
+  # IMPORTANT: oxlint and eslint both modify TypeScript files
+  # Running them in parallel causes file conflicts and race conditions
+  # Order matters: oxlint runs first, then eslint applies additional rules
   formatTypeScript:
     deps:
     - formatOxlint
@@ -129,6 +177,7 @@ tasks:
     - indexClaudeMcpLogs
     options:
       cache: false
+      internal: false
 
   indexClaudeMcpLogs:
     command: 'bun packages/module/es/src/moon.index-claude-mcp-logs.ts'
@@ -166,14 +215,24 @@ tasks:
 
   pnpmVersionCheck:
     command: 'pnpm version'
+    options:
+      # One-off check, no outputs
+      cache: false
+      internal: false
 
   prepare:
     deps:
     - preparePlaywright
+    options:
+      # One-off setup operation
+      cache: false
 
   prepareAllowFailure:
     deps:
     - preparePlaywrightAllowFailure
+    options:
+      # One-off setup operation
+      cache: false
 
   # Complete setup for fresh clones - prepare environment and build all artifacts
   # Note: Moon automatically syncs TypeScript project references during build
@@ -183,6 +242,7 @@ tasks:
     - build
     options:
       runDepsInParallel: false
+      cache: false
 
   prepareAndBuildAllowFailure:
     deps:
@@ -190,110 +250,98 @@ tasks:
     - buildAllowFailure
     options:
       runDepsInParallel: false
+      cache: false
 
   preparePlaywright:
     command: 'bun packages/module/es/src/moon.preparePlaywright.ts'
+    options:
+      # One-off setup operation
+      cache: false
 
   preparePlaywrightAllowFailure:
     extends: _shell
     command: 'bun packages/module/es/src/cli.command.ts --allowFailure --timeout 30000 --shell -- bun packages/module/es/src/moon.preparePlaywright.ts'
-
-  # Manually run the same checks as the pre-push hook
-  # Use this when:
-  #   - You want to test what the pre-push hook will check before pushing
-  #   - You've disabled hooks temporarily and want to manually verify
-  #   - You're debugging why a push was blocked
-  # Don't use this for:
-  #   - Full validation before pushing (use 'validate' instead)
-  #   - As part of CI (use individual tasks)
-  prepush:
-    deps:
-    - lint
-    - test
-    # Lint and test can run in parallel since they don't depend on each other
+    options:
+      # One-off setup operation
+      cache: false
 
   start:
     deps:
+    # FIXME: This never gets triggered.
+    #  Research more on how to run multiple watchers at the same time in Moon.
+    #  Found out I was doing it correctly. Probably a Caddy bug.
+    #  Will file a bug report later.
     - startCaddy
     - '#package:start'
-    local: true
+    extends: _server
+
 
   startCaddy:
     command: 'caddy run --config Caddyfile --adapter caddyfile'
-    local: true
+    extends: _server
 
   test:
     deps:
     - testUnit
     - testBrowser
-    inputs:
-    - '@group(allTests)'
-    - '@group(allDists)'
+    options:
+      # Aggregator of cache-disabled test tasks
+      cache: false
 
   # Browser test runner
-  # Note: cache disabled for same reasons as testUnit - large input sets
   testBrowser:
     command: 'vitest run --config vitest.browser.config.ts'
-    inputs:
-    - '@group(allBrowserTests)'
-    - '@group(allDists)'
     options:
+      # Cache disabled because:
+      # 1. Vitest has its own cache and watch mechanisms
+      # 2. Filesystem-intensive with large input/output sets
+      # 3. Moon's cache overhead exceeds test execution time
       cache: false
 
   testBrowserWatch:
     command: 'vitest watch --config vitest.browser.config.ts'
-    preset: watcher
-    inputs:
-    - '@group(allBrowserTests)'
-    - '@group(allDists)'
+    extends: _server
+
 
   # Unit test runner
-  # Note: cache disabled to avoid Moon's cache overhead with large input sets
-  # The @group(allUnitTests) and @group(allDists) expand to many files,
-  # causing significant cache computation time that exceeds test execution time
   testUnit:
     command: 'vitest run --config vitest.unit.config.ts'
-    inputs:
-    - '@group(allUnitTests)'
-    - '@group(allDists)'
     options:
+      # Cache disabled because:
+      # 1. Vitest has its own cache and watch mechanisms
+      # 2. Filesystem-intensive with large input/output sets
+      # 3. Moon's cache overhead exceeds test execution time
       cache: false
 
   testUnitWatch:
     command: 'vitest watch --config vitest.unit.config.ts'
-    local: true
-    inputs:
-    - '@group(allUnitTests)'
-    - '@group(allDists)'
+    extends: _server
+
 
   testWatch:
     deps:
     - testUnitWatch
     - testBrowserWatch
-    local: true
-    inputs:
-    - '@group(allTests)'
-    - '@group(allDists)'
+    extends: _server
+
 
   types:
     # --verbose is too chatty
     command: 'tsc --build'
-    inputs:
-    - '@group(allSources)'
     options:
-      outputStyle: buffer-only-failure
       # tsc uses its own cache
       cache: false
+      internal: false
 
   typesAllowFailure:
     command: 'bun packages/module/es/src/cli.command.ts --allowFailure --shell -- tsc --build'
     options:
-      outputStyle: buffer-only-failure
       cache: false
 
   typesWatch:
     command: 'tsc --watch'
-    local: true
+    extends: _server
+
 
   # Comprehensive validation: format, build, then test
   # Use this when:
@@ -303,6 +351,15 @@ tasks:
   # Don't use this for:
   #   - Every single commit (too slow, use pre-push hook instead)
   #   - In CI pipelines (use individual tasks for better parallelization)
+  #
+  # This task runs sequentially by design:
+  # 1. format - Ensures consistent code style before building
+  # 2. build - Compiles all packages (some formatters may need build artifacts)
+  # 3. test - Runs tests against the built code
+  # The sequential order is critical because:
+  # - Formatting may change source files that affect the build
+  # - Tests depend on having up-to-date build artifacts
+  # - Running in parallel would cause race conditions and unpredictable failures
   validate:
     deps:
     - format
@@ -310,6 +367,9 @@ tasks:
     - test
     options:
       runDepsInParallel: false # Must be sequential: format → build → test
+      # One-off operation run before major commits - cache overhead not worth it
+      cache: false
+      internal: false
 
   # Validate that the development environment is properly set up
   validateSetup:
@@ -318,7 +378,10 @@ tasks:
     - checkDependencies
     - checkBuild
     - checkGitHooks
+    options:
+      # One-off operation for environment validation - cache overhead not worth it
+      cache: false
+      internal: false
 
 tags:
-- noTypescript
-- 'noJs'
+- noop

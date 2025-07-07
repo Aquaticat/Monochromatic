@@ -45,6 +45,11 @@ function wait(timeInMs: number): Promise<undefined> {
     return setTimeout(_resolve, timeInMs);
   });
 }
+
+function alwaysTrue(_input: any): true {
+  return true;
+}
+
 //endregion Duplicated from module-es to avoid circular dependency
 
 /** Latest ESR (as of Jun 25 2025) */
@@ -200,42 +205,22 @@ const createBaseLibConfig = (configDir: string): UserConfig =>
           fileName: 'index',
           formats: ['es'],
         },
-        // So istanbul knows which lines have coverage.
-        sourcemap: 'inline',
-      },
-
-      plugins: [
-        // TODO: Temporarily commented out. Either remove or refine.
-        /*         (function oxcMinifyLibPlugin(): PluginOption {
-          return {
-            name: 'vite-plugin-oxc-minify-lib',
-            enforce: 'post',
-
-            // renderChunk doesn't work for whatever reason.
-            async writeBundle() {
-              const outdir = join(configDir, 'dist', 'final', 'js');
-              const entryPointNames = (await readdir(outdir)).filter(
-                function isJsFile(file) {
-                  return file.endsWith('.js');
+        rollupOptions: {
+          output: {
+            // Rolldown-vite emits a small runtime chunk and index chunk for correctness
+            // See https://rolldown.rs/guide/in-depth/advanced-chunks#why-there-s-always-a-runtime-js-chunk
+            advancedChunks: {
+              groups: [
+                {
+                  name: 'index',
+                  test: alwaysTrue, // Match all modules into a single chunk
                 },
-              );
-              const entryPoints: string[] = entryPointNames.map(
-                function fullPath(entryPointName: string): string {
-                  return join(outdir, entryPointName);
-                },
-              );
-              await esbuildBuild({
-                entryPoints,
-                // So istanbul knows which lines have coverage.
-                sourcemap: 'linked',
-                minifyWhitespace: true,
-                outdir,
-                allowOverwrite: true,
-              });
+              ],
             },
-          };
-        })(), */
-      ],
+            inlineDynamicImports: true, // Force all dynamic imports to be inlined
+          },
+        },
+      },
     },
   );
 

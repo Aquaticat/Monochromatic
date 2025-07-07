@@ -5,7 +5,7 @@ dependsOn:
 - 'vite'
 
 tags:
-- 'dualBuildsNodeBrowser'
+- dual
 - package
 
 toolchain:
