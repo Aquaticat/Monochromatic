@@ -8,9 +8,7 @@ import {
   type CounterStyleRule,
   type CustomAtRules,
   type CustomMediaRule,
-  type Declaration,
   type DeclarationBlock,
-  type DefaultAtRule,
   type FontFaceRule,
   type FontFeatureValuesRule,
   type FontPaletteValuesRule,
@@ -18,7 +16,6 @@ import {
   type KeyframesRule,
   type LayerBlockRule,
   type LayerStatementRule,
-  type MediaQuery,
   type MediaRule,
   type MozDocumentRule,
   type NamespaceRule,
@@ -26,23 +23,17 @@ import {
   type NestingRule,
   type PageRule,
   type PropertyRule,
-  type Rule,
   type ScopeRule,
-  type Selector,
-  type SelectorComponent,
   type StartingStyleRule,
   type StyleRule,
   type SupportsRule,
-  type Token,
-  type TokenOrValue,
   type UnknownAtRule,
   type ViewportRule,
   type ViewTransitionRule,
   type Visitor,
 } from 'lightningcss';
 import { readFile } from 'node:fs/promises';
-import { type } from 'node:os';
-import path, {
+import {
   join,
   resolve,
 } from 'node:path';
