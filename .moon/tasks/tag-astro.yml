@@ -5,7 +5,7 @@ tasks:
     command: 'astro build'
     # Note: @group(sources) and @group(configs) are implicit inputs
     outputs:
-    - '@group(distAstro)'
+    - '@group(dist)'
     options:
       internal: false
   jsWatch:
