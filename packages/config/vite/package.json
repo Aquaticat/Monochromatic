@@ -16,7 +16,8 @@
     "postcss-custom-selectors": "catalog:",
     "postcss-mixins": "catalog:",
     "vite-plugin-json5": "catalog:",
-    "minimatch": "catalog:"
+    "minimatch": "catalog:",
+    "@monochromatic-dev/module-es": "workspace:*"
   },
   "peerDependencies": {
     "vitest": "catalog:",

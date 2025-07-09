@@ -78,7 +78,7 @@ moon clean --lifetime '1 seconds'
 
 ## Project Structure
 
-```
+```txt
 packages/
 ├── config/              # Tool configurations
 ├── module/es/           # Functional utilities
@@ -103,13 +103,5 @@ Some tools aren't available on Windows:
 
 - Zellij
 
-In `*.code-workspace`:
-
-- `"dprint.path": "./node_modules/.bin/dprint",` has to be set when connecting through VSCode on Windows to WSL, which would make detection on Windows impossible.
-
-Hardlink support:
-
-- Windows doesn't support hardlink, which `pnpm install` can use to improve speed.
-
 Use WSL2 when developing on Windows.
-The recommended WSL distro is Arch Linux or Debian.
+The recommended WSL distro is Arch Linux or Debian or Ubuntu.

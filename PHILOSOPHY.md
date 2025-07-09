@@ -20,7 +20,7 @@ Plain markdown readability with optional enhanced tooling.
 Direct `bun <script>.ts` execution in moon.yml:
 
 - **Platform portability**: Bun single file executables aren't cross-platform
-- **Industry precedent**: oxlint and dprint use runtime platform detection
+- **Industry precedent**: Oxlint and dprint use runtime platform detection
 - **Performance**: Acceptable startup cost for portability
 
 ### Tool choices
@@ -53,7 +53,7 @@ Alternatives rejected:
     - ✗ No Firefox user.js/Chrome flags support
     - ✗ Host configuration breaks reproducibility
 
-2.  **Playwright standalone**
+1.  **Playwright standalone**
     - ✗ No unit testing
 
 Vitest + Playwright: unit testing + browser automation + emulation.
@@ -77,10 +77,10 @@ OpenAI SDK: direct API integration without unnecessary dependencies.
 Modern features without workarounds:
 
 1.  **CSS Container Queries** - `@container` and container units
-2.  **`:has()` selector**
-3.  **CSS Nesting**
-4.  **`content-visibility`**
-5.  **Text Fragments**
-6.  **CSS `@scope`**
-7.  **Popover API**
-8.  **View Transitions API**
+1.  **`:has()` selector**
+1.  **CSS Nesting**
+1.  **`content-visibility`**
+1.  **Text Fragments**
+1.  **CSS `@scope`**
+1.  **Popover API**
+1.  **View Transitions API**

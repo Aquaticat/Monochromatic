@@ -56,5 +56,6 @@ unstable_rust:
   - ripgrep
   - fastmod
   - fd-find
+  - harper-ls
   syncToolchainConfig: true
   addMsrvConstraint: true

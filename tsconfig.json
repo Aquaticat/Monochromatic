@@ -36,9 +36,6 @@
       "path": "packages/site/exa-search"
     },
     {
-      "path": "packages/site/mastra-proxy"
-    },
-    {
       "path": "packages/style/monochromatic"
     }
   ],

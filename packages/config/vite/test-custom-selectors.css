@@ -1,0 +1,26 @@
+/* Test custom selectors transformation */
+
+/* Define custom selectors */
+@custom-selector :--heading h1, h2, h3, h4, h5, h6;
+@custom-selector :--button button, .btn, [role="button"];
+@custom-selector :--interactive a, button, input, select, textarea;
+
+/* Use custom selectors - should transform to :is() */
+:--heading {
+  font-family: var(--font-heading);
+  line-height: 1.2;
+}
+
+:--button {
+  cursor: pointer;
+  user-select: none;
+}
+
+:--interactive:hover {
+  outline: 2px solid blue;
+}
+
+/* Nested usage */
+.container :--heading {
+  margin-bottom: 1rem;
+}

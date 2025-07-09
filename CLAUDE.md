@@ -82,16 +82,16 @@ Script preferences:
 
 ## Search Tools
 
-- **ripgrep (rg)** is available in this environment for fast text searching
+- **`ripgrep` (rg)** is available in this environment for fast text searching
 - Use `rg` directly with Bash tool for searching specific strings, types, or patterns
-- **Don't waste time navigating pnpm's complex node_modules structure** - just search everywhere at once
+- **Don't waste time navigating `pnpm`'s complex node_modules structure** - just search everywhere at once
 - Examples:
   - `rg "interface AnalyzeOptions" -t ts` (searches all TypeScript files)
   - `rg "export.*parseForESLint" --type ts`
   - `rg "functionName" -A 5 -B 5` (show 5 lines before/after matches)
 - This is much faster than:
   - Using Grep tool
-  - Trying to find the exact path in pnpm's symlinked `.pnpm` directories
+  - Trying to find the exact path in `pnpm`'s symlinked `.pnpm` directories
   - Guessing where packages are located
 
 ## Functional Programming Utilities
@@ -138,10 +138,6 @@ When working with third-party libraries:
   - For GitHub repos: Use `github:get_file_contents` to fetch from the library's GitHub page
   - This ensures you have the most up-to-date API documentation and usage examples
 - Always check the actual type definitions before using APIs
-- **Just use `rg` to search for anything from the workspace root** - don't try to navigate pnpm's node_modules maze
-  - `rg "interface TypeName" -t ts`
-  - `rg "export type.*TypeName" -t ts`
-  - `rg "class ClassName" -t ts`
 - Read the actual source types, not just documentation (which may be outdated)
 - When encountering type errors, read the error message carefully - it often shows what's actually expected
 
@@ -269,7 +265,7 @@ packages/
 ```
 
 ### Build System
-- **Package Manager**: pnpm with workspaces and catalog feature
+- **Package Manager**: pnpm with workspace and catalog feature
 - **Task Orchestration**: Moon CLI (runs task dependencies in parallel by default)
 - **Bundler**: Vite v7.0.0-beta.1+
 - **Language**: TypeScript with strict type checking
@@ -334,7 +330,7 @@ packages/
 - Prefer function declarations (`function foo() {}`) for hoistability. For readability, aim to declare functions before their first use.
 - Always use parentheses around arrow function parameters.
   - This applies even for a single parameter.
-  - dprint enforces this.
+  - `dprint` enforces this.
 - Avoid handling to preserve `this`; prefer arrow functions for callbacks or methods that need to capture `this` from the lexical scope.
 - Throw and return early in functions.
 - Use function overloads for functions with multiple call signatures.
@@ -363,7 +359,7 @@ packages/
 - Prefer `const` generic type parameters to enhance type safety and immutability.
   - Good: `function processItems<const T extends { id: string }>(items: T[]): T[]`
   - Bad: `function processItems<T extends { id: string }>(items: T[]): T[]`
-- Prefix `readonly` modifier for array parameters. This make the function accept both mutable and immutable arrays, giving it more versitility.
+- Prefix `readonly` modifier for array parameters. This make the function accept both mutable and immutable arrays, giving it more versatility.
   - Good: `function myFn<const T>(myArr: readonly T[]): T[] { return myArr; }`
   - Bad: `function myFn<const T>(myArr: T[]): T[] { return myArr; }`
 - Use generics for `T[]`s, `Iterable<T>`s, `MaybeAsyncIterable<T>`s to ensure the output type doesn't lose fidelity.
@@ -532,7 +528,7 @@ TypeScript's support for overloading generator functions has some quirks:
   - This can stop an application at any unexpected moment and doesn't give other parts a chance to handle errors
   - Bad: `if (error) { console.error('Error occurred'); process.exit(1); }`
   - Good: `if (error) { throw new Error('Error occurred'); }`
-  - Throwing errors provides better stack traces and allows parent code to handle errors
+  - Throwing errors provides better stacktraces and allows parent code to handle errors
   - **Thrown errors automatically set exit code to 1** - no need to manually set process.exitCode
 - **Combine console.log/error messages into thrown errors**
   - When you need to log an error message before throwing, include the entire message in the error
@@ -727,7 +723,7 @@ function badExample() {
 ### Testing requirements
 
 - Write a corresponding Vitest file that aims for 100% test coverage.
-- If certain lines or branches can't be tested (example: error handling for impossible states), use v8 ignore comments:
+- If certain lines or branches can't be tested (example: error handling for impossible states), use V8 ignore comments:
   ```ts
   /* v8 ignore next -- @preserve */
   if (impossibleCondition) {
@@ -741,7 +737,7 @@ function badExample() {
     return fallbackValue;
   }
   ```
-- Use descriptive test names that explain the expected behavior.
+- Use descriptive test names that explain the expected behaviour.
 - Group related tests using `describe` blocks.
 - Use `it.each` for parameterized tests.
 - Mock external dependencies using Vitest's mocking capabilities.
@@ -851,13 +847,13 @@ Don't write commit messages that only describe partial changes.
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation only changes
-- `style`: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- `style`: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc.)
 - `refactor`: Code change that neither fixes a bug nor adds a feature
 - `perf`: Code change that improves performance
 - `test`: Adding missing tests or correcting existing tests
 - `build`: Changes that affect the build system or external dependencies
 - `ci`: Changes to CI configuration files and scripts
-- `chore`: Other changes that don't modify src or test files (removing deprecated files, updating .gitignore, etc)
+- `chore`: Other changes that don't modify src or test files (removing deprecated files, updating `.gitignore`, etc.)
 - `revert`: Reverts a previous commit
 
 #### Scope
@@ -906,14 +902,14 @@ test(module-es): achieve 100% coverage for error utilities
 
 ### Identifying the linting tool
 When fixing linting issues, first identify which tool reports the error:
-- Check the lint output format: `monochromatic:lintOxlint | ! eslint-plugin-unicorn(error-message)` indicates oxlint
+- Check the lint output format: `monochromatic:lintOxlint | ! eslint-plugin-unicorn(error-message)` indicates Oxlint
 - ESLint errors show as `eslint(rule-name)`
 - Oxlint errors often include the plugin name like `eslint-plugin-unicorn(rule-name)`
 
 ### Common linting fixes
 
 #### Testing intentional violations
-When tests intentionally violate a rule to verify behavior:
+When tests intentionally violate a rule to verify behaviour:
 ```ts
 // BAD: Adding data to satisfy the linter
 expect(isError(new Error('test message'))).toBe(true);

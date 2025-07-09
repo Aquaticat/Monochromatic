@@ -104,13 +104,24 @@
       "**/.jj": true,
       "**/*.map": true
     },
-    "vitest.configSearchPatternInclude": "vitest.*.config*.{ts,js,mjs,cjs,cts,mts}",
+    "vitest.configSearchPatternInclude": "vitest.*.config.{ts,js,mjs,cjs,cts,mts}",
+    "markdown.validate.enabled": true,
+    "harper.dialect": "Canadian",
+    "harper.markdown.IgnoreLinkTitle": true,
+    "vue-vine.hideDataTrackWarning": true,
+    // False positive: TODO
+		"harper.linters.ToDoHyphen": false,
+    // False positive: Plugin
+    "harper.linters.PhrasalVerbAsCompoundNoun": false,
+    // False positive: region markers
+    "harper.linters.SentenceCapitalization": false,
+    // False positive: `//region Configuration Modifiers -- Functions that enhance base configs`
+    "harper.linters.Dashes": false,
 	},
 
   "extensions": {
 		"recommendations": [
 			"EditorConfig.EditorConfig",
-			"tamasfe.even-better-toml",
 			"unifiedjs.vscode-mdx",
 			"dprint.dprint",
 			"gruntfuggly.todo-tree",
@@ -120,7 +131,8 @@
       "stylelint.vscode-stylelint",
       "oven.bun-vscode",
       "astro-build.astro-vscode",
-      "vitest.explorer",
+			"vitest.explorer",
+			"html-validate.vscode-html-validate",
 		],
 	},
 }

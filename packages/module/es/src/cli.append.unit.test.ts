@@ -2,7 +2,7 @@ import {
   logtapeConfiguration,
   logtapeConfigure,
 } from '@monochromatic-dev/module-es';
-import findUp from 'find-up';
+import { findUp } from 'find-up';
 import { exec } from 'node:child_process';
 import {
   existsSync,
@@ -27,7 +27,7 @@ await logtapeConfigure(await logtapeConfiguration());
 
 const execAsync = promisify(exec);
 
-interface AppendTestFixtures {
+type AppendTestFixtures = {
   cliPath: string;
   testDir: string;
   testFile: string;

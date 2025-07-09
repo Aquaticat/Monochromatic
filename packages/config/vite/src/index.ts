@@ -1,13 +1,52 @@
-import postcssCustomUnits from '@csstools/custom-units';
-import { readFile } from 'node:fs/promises';
 import {
+  alwaysTrue,
+  createBaseConfig,
+  wait,
+} from '@monochromatic-dev/module-es/.ts';
+import {
+  composeVisitors,
+  type ContainerRule,
+  type CounterStyleRule,
+  type CustomAtRules,
+  type CustomMediaRule,
+  type Declaration,
+  type DeclarationBlock,
+  type DefaultAtRule,
+  type FontFaceRule,
+  type FontFeatureValuesRule,
+  type FontPaletteValuesRule,
+  type ImportRule,
+  type KeyframesRule,
+  type LayerBlockRule,
+  type LayerStatementRule,
+  type MediaQuery,
+  type MediaRule,
+  type MozDocumentRule,
+  type NamespaceRule,
+  type NestedDeclarationsRule,
+  type NestingRule,
+  type PageRule,
+  type PropertyRule,
+  type Rule,
+  type ScopeRule,
+  type Selector,
+  type SelectorComponent,
+  type StartingStyleRule,
+  type StyleRule,
+  type SupportsRule,
+  type Token,
+  type TokenOrValue,
+  type UnknownAtRule,
+  type ViewportRule,
+  type ViewTransitionRule,
+  type Visitor,
+} from 'lightningcss';
+import { readFile } from 'node:fs/promises';
+import { type } from 'node:os';
+import path, {
   join,
   resolve,
 } from 'node:path';
-import type { AcceptedPlugin as PostcssPlugin } from 'postcss';
-import postcssCustomMedia from 'postcss-custom-media';
-import postcssCustomSelectors from 'postcss-custom-selectors';
-import postcssMixins from 'postcss-mixins';
 import {
   defineConfig,
   mergeConfig,
@@ -19,46 +58,172 @@ import { json5Plugin } from 'vite-plugin-json5';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import {
   defineConfig as defineVitestConfig,
-  defineProject,
   type ViteUserConfig as VitestUserConfig,
 } from 'vitest/config';
 import vitestExcludeCommonConfig from './vitest-exclude-common.json' with {
   type: 'json',
 };
 
-//region Duplicated from module-es to avoid circular dependency
-// TODO: Directly import source in module-es instead.
-type falsy = false | null | 0 | 0n | '' | undefined;
+//region Constants -- Configuration values used throughout the file
 
-function notFalsyOrThrow<T,>(
-  potentiallyFalsy: T,
-): Exclude<T, falsy> {
-  if (!potentiallyFalsy) {
-    throw new TypeError(`${JSON.stringify(potentiallyFalsy)} is falsy`);
-  }
-  return potentiallyFalsy as Exclude<T, falsy>;
-}
-
-function wait(timeInMs: number): Promise<undefined> {
-  // oxlint-disable-next-line avoid-new
-  return new Promise(function createTimeout(_resolve) {
-    return setTimeout(_resolve, timeInMs);
-  });
-}
-
-function alwaysTrue(_input: any): true {
-  return true;
-}
-
-//endregion Duplicated from module-es to avoid circular dependency
-
+// Browser versions
 /** Latest ESR (as of Jun 25 2025) */
-const firefoxVersion = 140;
-
+const FIREFOX_ESR_VERSION = 140;
 /** Bit shift for Firefox version encoding in LightningCSS */
 const FIREFOX_VERSION_SHIFT = 16;
 
+// Ports
+const VITEST_API_PORT = 3001;
+const VITEST_BROWSER_API_PORT = 3003;
+
+// Timeouts
+const DEFAULT_TEST_TIMEOUT = 2000;
+const BROWSER_TEST_TIMEOUT = 1000;
+
+// Other constants
+const MAX_CONCURRENCY = 16;
+
+//endregion Constants
+
 const vitestExcludeCommon = vitestExcludeCommonConfig.patterns;
+
+//region LightningCSS Visitors -- Custom CSS transform implementations
+
+/** Storage for mixin definitions */
+const mixins = new Map<string,
+  | Required<DeclarationBlock>
+  | (
+    | { type: 'ignored'; }
+    | { type: 'custom'; value: null; }
+    | ({ type: 'font-face'; value: FontFaceRule; } & { value: Required<FontFaceRule>; })
+    | ({ type: 'font-palette-values'; value: FontPaletteValuesRule; } & {
+      value: Required<FontPaletteValuesRule>;
+    })
+    | ({ type: 'font-feature-values'; value: FontFeatureValuesRule; } & {
+      value: Required<FontFeatureValuesRule>;
+    })
+    | ({ type: 'namespace'; value: NamespaceRule; } & { value: Required<NamespaceRule>; })
+    | ({ type: 'layer-statement'; value: LayerStatementRule; } & {
+      value: Required<LayerStatementRule>;
+    })
+    | ({ type: 'property'; value: PropertyRule; } & { value: Required<PropertyRule>; })
+    | ({ type: 'view-transition'; value: ViewTransitionRule; } & {
+      value: Required<ViewTransitionRule>;
+    })
+    | ({ type: 'unknown'; value: UnknownAtRule; } & { value: Required<UnknownAtRule>; })
+    | ({ type: 'media'; value: MediaRule; } & {
+      value: Required<MediaRule>;
+    })
+    | ({ type: 'import'; value: ImportRule; } & {
+      value: Required<ImportRule>;
+    })
+    | ({ type: 'style'; value: StyleRule; } & {
+      value: Required<StyleRule> & {
+        declarations: Required<DeclarationBlock>;
+      };
+    })
+    | ({ type: 'keyframes'; value: KeyframesRule; } & {
+      value: Required<KeyframesRule>;
+    })
+    | ({ type: 'page'; value: PageRule; } & {
+      value: Required<PageRule>;
+    })
+    | ({ type: 'supports'; value: SupportsRule; } & {
+      value: Required<SupportsRule>;
+    })
+    | ({ type: 'counter-style'; value: CounterStyleRule; } & {
+      value: Required<CounterStyleRule>;
+    })
+    | ({ type: 'moz-document'; value: MozDocumentRule; } & {
+      value: Required<MozDocumentRule>;
+    })
+    | ({ type: 'nesting'; value: NestingRule; } & {
+      value: Required<NestingRule>;
+    })
+    | ({ type: 'nested-declarations'; value: NestedDeclarationsRule; } & {
+      value: Required<NestedDeclarationsRule>;
+    })
+    | ({ type: 'viewport'; value: ViewportRule; } & {
+      value: Required<ViewportRule>;
+    })
+    | ({ type: 'custom-media'; value: CustomMediaRule; } & {
+      value: Required<CustomMediaRule>;
+    })
+    | ({ type: 'layer-block'; value: LayerBlockRule; } & {
+      value: Required<LayerBlockRule>;
+    })
+    | ({ type: 'container'; value: ContainerRule; } & {
+      value: Required<ContainerRule>;
+    })
+    | ({ type: 'scope'; value: ScopeRule; } & {
+      value: Required<ScopeRule>;
+    })
+    | ({ type: 'starting-style'; value: StartingStyleRule; } & {
+      value: Required<StartingStyleRule>;
+    })
+  )[]>();
+
+/** Transforms custom property units into `calc()` expressions */
+const customUnitsVisitor: Visitor<CustomAtRules> = {
+  Token: {
+    dimension(token) {
+      if (token.unit.startsWith('--')) {
+        return {
+          type: 'function',
+          value: {
+            name: 'calc',
+            arguments: [
+              {
+                type: 'token',
+                value: {
+                  type: 'number',
+                  value: token.value,
+                },
+              },
+              {
+                type: 'token',
+                value: {
+                  type: 'delim',
+                  value: '*',
+                },
+              },
+              {
+                type: 'var',
+                value: {
+                  name: {
+                    ident: token.unit,
+                  },
+                },
+              },
+            ],
+          },
+        };
+      }
+      return;
+    },
+  },
+};
+
+/** Transforms `@mixin` definitions and `@apply` usage */
+const mixinsVisitor: Visitor<CustomAtRules> = {
+  Rule: {
+    custom: {
+      mixin(rule) {
+        // Uncomment to get the updated TypeScript inferred type for the map.
+        // const body = rule.body.value;
+        mixins.set(rule.prelude.value as string, rule.body.value);
+        return [];
+      },
+      apply(rule) {
+        return mixins.get(rule.prelude.value as string);
+      },
+    },
+  },
+};
+
+//endregion LightningCSS Visitors
+
+//region Helper Functions -- Utilities used throughout configurations
 
 const rollupExternal = (moduleId: string): boolean => {
   if (
@@ -83,6 +248,7 @@ const rollupExternal = (moduleId: string): boolean => {
     'vitest',
     'esbuild',
     'typescript-eslint',
+    'lightningcss',
     //endregion Build
 
     //region Node
@@ -104,7 +270,6 @@ const rollupExternal = (moduleId: string): boolean => {
 
 /**
  * Read file with retry logic for EPERM errors on Windows.
- * TODO: Move this fn to module-es
  */
 async function readFileWithRetry(
   path: Parameters<typeof readFile>[0],
@@ -113,7 +278,7 @@ async function readFileWithRetry(
   delayMs = 10,
 ): Promise<string> {
   try {
-    // Explicitly types the return as string for 'utf8' encoding
+    // Explicitly types the return as string for `utf8` encoding
     return await readFile(path, options) as string;
   } catch (error) {
     if (
@@ -128,6 +293,10 @@ async function readFileWithRetry(
   }
 }
 
+//endregion Helper Functions
+
+//region Base Configurations -- Core configuration factories
+
 const createBaseConfig = (configDir: string): UserConfig => ({
   plugins: [
     // Allows importing JSON5 files directly.
@@ -140,22 +309,16 @@ const createBaseConfig = (configDir: string): UserConfig => ({
     },
   },
   css: {
-    postcss: {
-      plugins: [
-        postcssMixins(),
-        // TODO: Write lightningcss mixin, custom units, and custom selectors plugins. Lightningcss has custom media support builtin.
-        //region Cause type error
-        // (postcssCustomUnits as () => PostcssPlugin)(),
-        // postcssCustomMedia(),
-        // postcssCustomSelectors(),
-        //endregion Cause type error
-      ],
-    },
+    transformer: 'lightningcss',
     lightningcss: {
       targets: {
-        firefox: firefoxVersion << FIREFOX_VERSION_SHIFT,
+        firefox: FIREFOX_ESR_VERSION << FIREFOX_VERSION_SHIFT,
       },
       cssModules: false,
+      visitor: composeVisitors([
+        customUnitsVisitor,
+        mixinsVisitor,
+      ]),
     },
     preprocessorMaxWorkers: true,
     devSourcemap: true,
@@ -165,7 +328,7 @@ const createBaseConfig = (configDir: string): UserConfig => ({
     minifyIdentifiers: false,
   },
   build: {
-    target: `firefox${firefoxVersion}`,
+    target: `firefox${FIREFOX_ESR_VERSION}`,
     cssMinify: 'lightningcss',
     outDir: join('dist', 'final', 'js'),
 
@@ -224,6 +387,10 @@ const createBaseLibConfig = (configDir: string): UserConfig =>
     },
   );
 
+//endregion Base Configurations
+
+//region Configuration Modifiers -- Functions that enhance base configs
+
 const withNoMinify = (config: UserConfig): UserConfig =>
   mergeConfig(config, { build: { minify: false } });
 
@@ -244,34 +411,34 @@ const createModeConfig = (
   sharedFactory: (configDir: string) => UserConfig,
 ): UserConfigFnObject =>
   defineConfig(function enhanceBaseConfig({ mode }) {
-    const modes = (function getModes(mode: string): string[] {
-      if (mode.includes(' ')) {
-        return mode.split(' ');
-      }
-      if (mode.includes(',')) {
-        return mode.split(',');
-      }
-      return [mode];
-    })(mode);
+    // Parse modes from space or comma-separated string
+    const modes = mode.includes(' ')
+      ? mode.split(' ')
+      : (mode.includes(',')
+        ? mode.split(',')
+        : [mode]);
 
-    // TODO: Refactor this.
+    // Apply mode-specific transformations using reduce for immutability
+    const config = modes.reduce(
+      (currentConfig, currentMode) => {
+        switch (currentMode) {
+          case 'development':
+            return withNoMinify(currentConfig);
+          case 'node':
+            return withNodeResolveConditions(currentConfig);
+          default:
+            return currentConfig;
+        }
+      },
+      sharedFactory(configDir),
+    );
 
-    const maybeWithNoMinify: UserConfig = modes.some(function isDev(m) {
-        return m === 'development';
-      })
-      ? withNoMinify(sharedFactory(configDir))
-      : sharedFactory(configDir);
-
-    const nodeOrBrowser: UserConfig = modes.some(function isNode(m) {
-        return m === 'node';
-      })
-      ? withNodeResolveConditions(maybeWithNoMinify)
-      : maybeWithNoMinify;
-
-    // console.log(modes);
-
-    return nodeOrBrowser;
+    return config;
   });
+
+//endregion Configuration Modifiers
+
+//region Figma Configurations -- Figma plugin specific configs
 
 const createFigmaBackendConfig = (configDir: string): UserConfig =>
   mergeConfig(createBaseConfig(configDir), {
@@ -343,18 +510,19 @@ const createUnprefixedFrontendLikeConfig = (configDir: string): UserConfig =>
     root: resolve(configDir),
   });
 
+//endregion Figma Configurations
+
+//region Public API -- Exported configuration factories
+
 /**
  @remarks
  Use it like this:
 
- import { getShared } from '@monochromatic-dev/config-vite';
+```ts
+ import { getShared, UserConfigFnObject } from '@monochromatic-dev/config-vite/.ts';
 
- import { dirname } from 'node:path';
- import { fileURLToPath } from 'node:url';
-
- const __dirname = dirname(fileURLToPath(import.meta.url));
-
- export default getShared(__dirname);
+ export default getShared(import.meta.dirname) satisfies UserConfigFnObject;
+```
  */
 export const getShared = (configDir: string): UserConfigFnObject =>
   createModeConfig(configDir, createBaseConfig);
@@ -383,27 +551,6 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
             async transformIndexHtml(html): Promise<string> {
               if (html.includes('REPLACE_WITH_IFRAME_INDEX_HTML')) {
                 console.log('replacing iframe');
-                // chmodSync(iframePath, constants.S_IRUSR);
-                // FIXME: Find out why this fails with a permission issue. Could be a Vite configuration not allowing plugins to read files outside of root dir. Could be something else.
-                //  Update: Probably not due to Vite. Read the docs and only the server can't serve files out of root dir.
-                //error during build:
-                //           css-variables:js_default | EPERM: operation not permitted, open 'C:\Users\user\Text\Projects\Aquaticat\monochromatic2025MAY24-pnpmTest\packages\figma-plugin\css-variables\dist\final\iframe\index.html'
-                //           css-variables:js_default |     at async open (node:internal/fs/promises:633:25)
-                //           css-variables:js_default |     at async writeFile (node:internal/fs/promises:1207:14)
-                //           css-variables:js_default |     at async Queue.work (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rollup@4.40.2/node_modules/rollup/dist/es/shared/node-entry.js:22320:32)
-                //  error during build:
-                //           css-variables:js_default | Build failed with 1 error:
-                //           css-variables:js_default |
-                //           css-variables:js_default | [UNHANDLEABLE_ERROR] Error: Something went wrong inside rolldown, please report this problem at https://github.com/rolldown/rolldown/issues.
-                //           css-variables:js_default | Access denied. (os error 5)
-                //           css-variables:js_default |
-                //           css-variables:js_default |     at normalizeErrors (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown@1.0.0-beta.11-commit.83d4d62/node_modules/rolldown/dist/shared/src-C1CX2gm4.mjs:2362:18)
-                //           css-variables:js_default |     at handleOutputErrors (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown@1.0.0-beta.11-commit.83d4d62/node_modules/rolldown/dist/shared/src-C1CX2gm4.mjs:3368:34)
-                //           css-variables:js_default |     at transformToRollupOutput (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown@1.0.0-beta.11-commit.83d4d62/node_modules/rolldown/dist/shared/src-C1CX2gm4.mjs:3362:2)
-                //           css-variables:js_default |     at RolldownBuild.write (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown@1.0.0-beta.11-commit.83d4d62/node_modules/rolldown/dist/shared/src-C1CX2gm4.mjs:4623:11)
-                //           css-variables:js_default |     at async buildEnvironment (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/chunks/dep-BVD1pq3j.js:44451:16)
-                //           css-variables:js_default |     at async Object.defaultBuildApp [as buildApp] (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/chunks/dep-BVD1pq3j.js:44957:5)
-                //           css-variables:js_default |     at async CAC.<anonymous> (file:///C:/Users/user/Text/Projects/Aquaticat/monochromatic2025MAY24-pnpmTest/node_modules/.pnpm/rolldown-vite@6.3.17_@types_1e456e895584948faf6ff142639fbae7/node_modules/rolldown-vite/dist/node/cli.js:864:7)
                 const iframeFileContent = await readFileWithRetry(iframePath, 'utf8');
                 return html.replace(
                   'REPLACE_WITH_IFRAME_INDEX_HTML',
@@ -424,12 +571,16 @@ export const getFigmaIframe = (configDir: string): UserConfigFnObject =>
     return createPrefixedFrontendLikeConfig(configDir, 'iframe');
   });
 
+//endregion Public API
+
+//region Vitest Configurations -- Test runner configurations
+
 export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
   test: {
     name: 'workspace',
     api: {
       host: '0.0.0.0',
-      port: 3001,
+      port: VITEST_API_PORT,
     },
 
     reporters: ['dot'],
@@ -453,10 +604,10 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
         useAtomics: true,
       },
     },
-    testTimeout: 2000,
+    testTimeout: DEFAULT_TEST_TIMEOUT,
     silent: 'passed-only',
     logHeapUsage: true,
-    maxConcurrency: 16,
+    maxConcurrency: MAX_CONCURRENCY,
     sequence: {
       concurrent: true,
     },
@@ -535,16 +686,16 @@ export const vitestOnlyBrowserConfigWorkspace: VitestUserConfig = {
 
       api: {
         host: '0.0.0.0',
-        port: 3003,
+        port: VITEST_BROWSER_API_PORT,
       },
 
       instances: [
         {
           browser: 'chromium',
-          testTimeout: 1000,
+          testTimeout: BROWSER_TEST_TIMEOUT,
         },
         // @vitest/coverage-v8 doesn't work with firefox because Firefox doesn't use v8 engine.
-        { browser: 'firefox', testTimeout: 1000 },
+        { browser: 'firefox', testTimeout: BROWSER_TEST_TIMEOUT },
       ],
     },
   },
@@ -570,5 +721,7 @@ export const getVitestUnitWorkspace = (configDir: string): UserConfigFnObject =>
   createModeConfig(configDir, createVitestBaseUnitConfigWorkspace);
 export const getVitestBrowserWorkspace = (configDir: string): UserConfigFnObject =>
   createModeConfig(configDir, createVitestBaseBrowserConfigWorkspace);
+
+//endregion Vitest Configurations
 
 export type { UserConfigFnObject } from 'vite';

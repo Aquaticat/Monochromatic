@@ -7,5 +7,5 @@ tags:
 
 toolchain:
   typescript:
-    # Should depend on no other projects.
+    # Cannot use project references because no other packages is guaranteed to be built when it's invoked.
     syncProjectReferences: false

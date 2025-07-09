@@ -1,0 +1,136 @@
+plugins:
+#region remark-preset-lint-consistent
+# Overridden by preset-lint-markdown-style-guide (with value: 2)
+# - - remark-lint-blockquote-indentation
+#   - 'consistent'
+- - remark-lint-checkbox-character-style
+  - 'consistent'
+# Overridden by preset-lint-markdown-style-guide (with value: 'fenced')
+# - - remark-lint-code-block-style
+#   - 'consistent'
+# Overridden by preset-lint-markdown-style-guide (with value: '*')
+# - - remark-lint-emphasis-marker
+#   - 'consistent'
+# Overridden by preset-lint-markdown-style-guide (with value: '`')
+# - - remark-lint-fenced-code-marker
+#   - 'consistent'
+# Overridden by preset-lint-markdown-style-guide (with value: 'atx')
+# - - remark-lint-heading-style
+#   - 'consistent'
+# Overridden by preset-lint-markdown-style-guide (with value: '"')
+# - - remark-lint-link-title-style
+#   - 'consistent'
+# Overridden by preset-lint-markdown-style-guide
+# - remark-lint-list-item-content-indent
+# Overridden by preset-lint-recommended (with value: '.') and preset-lint-markdown-style-guide (with value: '.')
+# - - remark-lint-ordered-list-marker-style
+#   - 'consistent'
+# Overridden by preset-lint-markdown-style-guide (with value: 'one')
+# - - remark-lint-ordered-list-marker-value
+#   - 'consistent'
+# Overridden by preset-lint-markdown-style-guide (with value: '---')
+# - - remark-lint-rule-style
+#   - 'consistent'
+# Overridden by preset-lint-markdown-style-guide (with value: '*')
+# - - remark-lint-strong-marker
+#   - 'consistent'
+# Overridden by preset-lint-markdown-style-guide (with value: 'padded')
+# - - remark-lint-table-cell-padding
+#   - 'consistent'
+#endregion remark-preset-lint-consistent
+
+#region remark-preset-lint-recommended
+- remark-lint-final-newline
+# Overridden by preset-lint-markdown-style-guide
+# - remark-lint-hard-break-spaces
+- remark-lint-list-item-bullet-indent
+
+# USER: Disabled in all presets because it doesn't have the option "2" for numbered lists and "1" for bullet lists.
+# - - remark-lint-list-item-indent
+#   - 'one'
+
+# Overridden by preset-lint-markdown-style-guide
+# - remark-lint-no-blockquote-without-marker
+- remark-lint-no-duplicate-definitions
+- remark-lint-no-heading-content-indent
+# Overridden by preset-lint-markdown-style-guide
+# - remark-lint-no-literal-urls
+# Overridden by preset-lint-markdown-style-guide
+# - remark-lint-no-shortcut-reference-image
+# Overridden by preset-lint-markdown-style-guide
+# - remark-lint-no-shortcut-reference-link
+- remark-lint-no-undefined-references
+- remark-lint-no-unused-definitions
+# Overridden by preset-lint-markdown-style-guide (same value: '.')
+# - - remark-lint-ordered-list-marker-style
+#   - '.'
+#endregion remark-preset-lint-recommended
+
+#region remark-preset-lint-markdown-style-guide
+- - remark-lint-blockquote-indentation
+  - 2
+- - remark-lint-code-block-style
+  - 'fenced'
+- remark-lint-definition-case
+- remark-lint-definition-spacing
+- - remark-lint-emphasis-marker
+  - '*'
+- - remark-lint-fenced-code-flag
+  - allowEmpty: false
+- - remark-lint-fenced-code-marker
+  - '`'
+- - remark-lint-file-extension
+  - 'md'
+- remark-lint-final-definition
+- remark-lint-hard-break-spaces
+- remark-lint-heading-increment
+- - remark-lint-heading-style
+  - 'atx'
+- - remark-lint-link-title-style
+  - '"'
+- remark-lint-list-item-content-indent
+
+# USER: Disabled in all presets because it doesn't have the option "2" for numbered lists and "1" for bullet lists.
+# - - remark-lint-list-item-indent
+#   - 'mixed'
+
+- remark-lint-list-item-spacing
+- remark-lint-maximum-heading-length
+- - remark-lint-maximum-line-length
+  - 80
+- remark-lint-no-blockquote-without-marker
+- remark-lint-no-consecutive-blank-lines
+- remark-lint-no-duplicate-headings
+- remark-lint-no-emphasis-as-heading
+- remark-lint-no-file-name-articles
+- remark-lint-no-file-name-consecutive-dashes
+- remark-lint-no-file-name-irregular-characters
+- remark-lint-no-file-name-mixed-case
+- remark-lint-no-file-name-outer-dashes
+- - remark-lint-no-heading-punctuation
+  - ':.'
+- remark-lint-no-literal-urls
+- remark-lint-no-multiple-toplevel-headings
+- remark-lint-no-shell-dollars
+- remark-lint-no-shortcut-reference-image
+- remark-lint-no-shortcut-reference-link
+- remark-lint-no-table-indentation
+- - remark-lint-ordered-list-marker-style
+  - '.'
+- - remark-lint-ordered-list-marker-value
+  - 'one'
+- - remark-lint-rule-style
+  - '---'
+- - remark-lint-strong-marker
+  - '*'
+- - remark-lint-table-cell-padding
+  - 'padded'
+- remark-lint-table-pipe-alignment
+- remark-lint-table-pipes
+- - remark-lint-unordered-list-marker-style
+  - '-'
+#endregion remark-preset-lint-markdown-style-guide
+
+settings:
+  # Be consistent with YAML.
+  bullet: '-'

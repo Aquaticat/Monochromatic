@@ -2,7 +2,7 @@ import {
   logtapeConfiguration,
   logtapeConfigure,
 } from '@monochromatic-dev/module-es';
-import findUp from 'find-up';
+import { findUp } from 'find-up';
 import { exec } from 'node:child_process';
 import {
   existsSync,
@@ -41,11 +41,11 @@ if (arg === 'fail') {
 }
 `;
 
-interface CommandTestFixtures {
+type CommandTestFixtures = {
   cliPath: string;
   testDir: string;
   testScript: string;
-}
+};
 
 const test = baseTest.extend<CommandTestFixtures>({
   cliPath: async ({}, use) => {
@@ -291,7 +291,9 @@ describe('cli.command', () => {
 
     await expect(
       execAsync(`bun ${cliPath} --timeout 500 -- node ${longScript}`),
-    ).rejects.toThrow();
+    )
+      .rejects
+      .toThrow();
 
     // Clean up
     if (existsSync(longScript)) {
