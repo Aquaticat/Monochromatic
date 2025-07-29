@@ -1,0 +1,21 @@
+{
+  "name": "@monochromatic-dev/site-rss",
+  "version": "1.0.0",
+  "description": "",
+  "module": "dist/final/js/index.node.js",
+  "keywords": [],
+  "license": "Apache-2.0",
+  "type": "module",
+  "dependencies": {
+    "@monochromatic-dev/config-vite": "workspace:*",
+    "@monochromatic-dev/module-es": "workspace:*",
+    "@elysiajs/swagger": "catalog:",
+    "zod": "catalog:",
+    "@anthropic-ai/sdk": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "elysia": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -297,6 +297,7 @@ const createBaseConfig = (configDir: string): UserConfig => ({
       '@': resolve(configDir),
       '@_': resolve(configDir, 'src'),
     },
+    tsconfigPaths: true,
   },
   css: {
     transformer: 'lightningcss',

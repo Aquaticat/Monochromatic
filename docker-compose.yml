@@ -23,13 +23,14 @@ services:
 
   ai-proxy:
     <<: *shared-config
-    command: moon run ai-proxy:start
+    command: moon run ai-tree:start
     ports:
     - '4111:4111'
     environment:
-    - SERVICE_FQDN_AI_PROXY_4111=${AI_PROXY_FQDN:-https://ai-proxy.aquati.cat}
-    - GOOGLE_GENERATIVE_AI_API_KEY=${GOOGLE_GENERATIVE_AI_API_KEY}
-    - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+    - SERVICE_FQDN_AI_TREE_4111=${AI_TREE_FQDN:-https://ai-tree.aquati.cat}
+    - GOOGLE_GENERATIVE_AI_API_KEY
+    - OPENROUTER_API_KEY
+    - ANTHROPIC_API_KEY
 
 volumes:
   pnpm-store:

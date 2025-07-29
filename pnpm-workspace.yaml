@@ -11,7 +11,7 @@ catalog:
   oxlint: '>=1.1.0'
   stylelint: '*'
   stylelint-config-standard: '*'
-  typescript: 'npm:typescript@next'
+  typescript: 'npm:typescript@rc'
   '@ungap/structured-clone': '*'
   find-up: '*'
   glob: '*'
@@ -205,6 +205,8 @@ catalog:
   remark-lint-table-pipe-alignment: '*'
   remark-lint-table-pipes: '*'
   remark-lint-unordered-list-marker-style: '*'
+  '@anthropic-ai/sdk': '*'
+  socket: '*'
 
 catalogMode: strict
 
@@ -286,6 +288,9 @@ peerDependencyRules:
     '@vitejs/plugin-basic-ssl>vite': '*'
     vite-plugin-singlefile>vite: '*'
     vite-plugin-json5>vite: '*'
+    '@typescript-eslint/project-service>typescript': '*'
+    '@typescript-eslint/tsconfig-utils>typescript': '*'
+    '@typescript-eslint/type-utils>typescript': '*'
 
 preferWorkspacePackages: true
 

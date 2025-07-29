@@ -30,6 +30,9 @@
       "path": "packages/site/ai-proxy"
     },
     {
+      "path": "packages/site/ai-tree"
+    },
+    {
       "path": "packages/site/astro-test"
     },
     {
