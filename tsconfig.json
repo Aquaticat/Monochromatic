@@ -39,6 +39,9 @@
       "path": "packages/site/exa-search"
     },
     {
+      "path": "packages/site/rss"
+    },
+    {
       "path": "packages/style/monochromatic"
     }
   ],

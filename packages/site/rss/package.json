@@ -11,7 +11,9 @@
     "@monochromatic-dev/module-es": "workspace:*",
     "@elysiajs/swagger": "catalog:",
     "zod": "catalog:",
-    "@anthropic-ai/sdk": "catalog:"
+    "@anthropic-ai/sdk": "catalog:",
+    "feedsmith": "catalog:",
+    "find-up": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",

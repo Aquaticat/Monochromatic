@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml xmlns:frss="https://freshrss.org/opml" version="2.0">
+  <head>
+    <title>FreshRSS</title>
+    <dateCreated>Tue, 29 Jul 2025 20:47:20 +0000</dateCreated>
+  </head>
+  <body>
+    <outline text="monitor">
+      <outline text="Anthropic Status - Incident History" type="rss" xmlUrl="https://status.anthropic.com/history.rss" htmlUrl="https://status.anthropic.com/"/>
+    </outline>
+  </body>
+</opml>

@@ -132,6 +132,9 @@ catalogs:
     execa:
       specifier: '>=9.5.3'
       version: 9.6.0
+    feedsmith:
+      specifier: '*'
+      version: 1.9.0
     find-up:
       specifier: '*'
       version: 7.0.0
@@ -1245,6 +1248,12 @@ importers:
       '@monochromatic-dev/module-es':
         specifier: workspace:*
         version: link:../../module/es
+      feedsmith:
+        specifier: 'catalog:'
+        version: 1.9.0
+      find-up:
+        specifier: 'catalog:'
+        version: 7.0.0
       zod:
         specifier: 'catalog:'
         version: 3.25.71
@@ -3161,6 +3170,9 @@ packages:
     peerDependenciesMeta:
       picomatch:
         optional: true
+
+  feedsmith@1.9.0:
+    resolution: {integrity: sha512-j8haMeMh6686mwYD4MEpdsT1ItOiR5ednDNKHWEGn/qro2sR0muAmNZRlXDAtaThkKHkaMfRC/mFh6QYsE4OdA==}
 
   fflate@0.8.2:
     resolution: {integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==}
@@ -7775,6 +7787,11 @@ snapshots:
   fdir@6.4.6(picomatch@4.0.3):
     optionalDependencies:
       picomatch: 4.0.3
+
+  feedsmith@1.9.0:
+    dependencies:
+      entities: 6.0.1
+      fast-xml-parser: 5.2.5
 
   fflate@0.8.2: {}
 
