@@ -22,18 +22,17 @@
  * const clean = trimIterable([1, 2, 3]); // [1, 2, 3]
  * ```
  */
-export function trimIterable<const T,>(iterable: Iterable<T>): T[] {
-  const arr = [...iterable];
-  const firstNonEmptyIndex = arr.findIndex(Boolean);
-  if (firstNonEmptyIndex === -1) {
+export function trimIterable<const T,>(iterable: Iterable<T>,): T[] {
+  const arr = [...iterable,];
+  const firstNonEmptyIndex = arr.findIndex(Boolean,);
+  if (firstNonEmptyIndex === -1)
     return [];
-  }
 
-  const lastNonEmptyIndex = arr.toReversed().findIndex(Boolean);
+  const lastNonEmptyIndex = arr.toReversed().findIndex(Boolean,);
 
   const lastIndex = arr.length - lastNonEmptyIndex - 1;
 
-  return arr.slice(firstNonEmptyIndex, lastIndex + 1);
+  return arr.slice(firstNonEmptyIndex, lastIndex + 1,);
 }
 
 /**
@@ -65,17 +64,16 @@ export function trimIterable<const T,>(iterable: Iterable<T>): T[] {
  * const none = trimIterableWith(x => false, [1, 2, 3]); // []
  * ```
  */
-export function trimIterableWith<const T,>(predicateKeeps: (elementToTest: T) => boolean,
-  iterable: Iterable<T>): T[]
+export function trimIterableWith<const T,>(predicateKeeps: (elementToTest: T,) => boolean,
+  iterable: Iterable<T>,): T[]
 {
-  const arr = [...iterable];
-  const firstNonEmptyIndex = arr.findIndex(predicateKeeps);
-  if (firstNonEmptyIndex === -1) {
+  const arr = [...iterable,];
+  const firstNonEmptyIndex = arr.findIndex(predicateKeeps,);
+  if (firstNonEmptyIndex === -1)
     return [];
-  }
-  const lastNonEmptyIndex = arr.toReversed().findIndex(predicateKeeps);
+  const lastNonEmptyIndex = arr.toReversed().findIndex(predicateKeeps,);
 
   const lastIndex = arr.length - lastNonEmptyIndex - 1;
 
-  return arr.slice(firstNonEmptyIndex, lastIndex + 1);
+  return arr.slice(firstNonEmptyIndex, lastIndex + 1,);
 }

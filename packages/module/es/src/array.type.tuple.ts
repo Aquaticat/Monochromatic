@@ -18,9 +18,9 @@ export type Tuple<
   T_element,
   T_count extends number,
 > = T_count extends 0 ? never[]
-  : T_count extends 1 ? [T_element]
-  : T_count extends 2 ? [T_element, T_element]
-  : T_count extends 3 ? [T_element, T_element, T_element]
+  : T_count extends 1 ? [T_element,]
+  : T_count extends 2 ? [T_element, T_element,]
+  : T_count extends 3 ? [T_element, T_element, T_element,]
   : T_count extends 4 ? [
       T_element,
       T_element,

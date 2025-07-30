@@ -6,21 +6,21 @@ import {
   posts,
 } from '@/src';
 import Html from '@_/layouts/Html.astro';
-import type { GetStaticPaths } from 'astro';
-import { render } from 'astro:content';
+import type { GetStaticPaths, } from 'astro';
+import { render, } from 'astro:content';
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  return langs.flatMap((lang) => (names.map((name) => ({
-    params: { lang, name },
+  return langs.flatMap(lang => (names.map(name => ({
+    params: { lang, name, },
   }))));
 };
 
-const { lang, name } = Astro.params;
-const potentialPost = posts.find((post) => post.name === name && post.lang === lang);
-const PotentialContent = potentialPost && (await render(potentialPost)).Content;
+const { lang, name, } = Astro.params;
+const potentialPost = posts.find(post => post.name === name && post.lang === lang);
+const PotentialContent = potentialPost && (await render(potentialPost,)).Content;
 const title = potentialPost
   ? potentialPost.data.title
-  : i18n.get("Post doesn't exist in specified language")!.get(lang)!;
+  : i18n.get("Post doesn't exist in specified language",)!.get(lang,)!;
 ---
 <Html
   {title}

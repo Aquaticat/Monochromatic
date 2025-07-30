@@ -1,4 +1,4 @@
-import type { FlatConfig } from '@typescript-eslint/utils/ts-eslint';
+import type { FlatConfig, } from '@typescript-eslint/utils/ts-eslint';
 // eslint-disable-next-line import/no-namespace -- Parser needs to be imported as namespace
 import * as astroParser from './astro-parser.ts';
 /**
@@ -21,14 +21,14 @@ const astroPluginWConfig: FlatConfig.Plugin & {
   ...astroPlugin,
   configs: {
     recommended: [{
-      files: ['**/*.astro'],
+      files: ['**/*.astro',],
       plugins: {
         'astro-internal': astroPlugin,
       },
       languageOptions: {
         parser: astroParser,
       },
-    }],
+    },],
   },
 };
 

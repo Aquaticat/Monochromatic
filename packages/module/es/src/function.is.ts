@@ -1,4 +1,4 @@
-import type { Promisable } from 'type-fest';
+import type { Promisable, } from 'type-fest';
 
 // MAYBE: Doesn't correctly infer function type.
 // Searching "typescript function is async predicate" yields nothing.

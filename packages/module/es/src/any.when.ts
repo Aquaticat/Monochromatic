@@ -1,4 +1,4 @@
-import type { Promisable } from 'type-fest';
+import type { Promisable, } from 'type-fest';
 
 //region when -- Synchronous conditional transformation
 
@@ -22,13 +22,12 @@ import type { Promisable } from 'type-fest';
  * ```
  */
 export function when<const T, const R,>(
-  predicate: (value: T) => boolean,
-  onTrue: (value: T) => R,
+  predicate: (value: T,) => boolean,
+  onTrue: (value: T,) => R,
   value: T,
 ): T | R {
-  if (predicate(value)) {
-    return onTrue(value);
-  }
+  if (predicate(value,))
+    return onTrue(value,);
   return value;
 }
 
@@ -64,13 +63,12 @@ export function when<const T, const R,>(
  * ```
  */
 export async function whenAsync<const T, const R,>(
-  predicate: (value: T) => Promisable<boolean>,
-  onTrue: (value: T) => Promisable<R>,
+  predicate: (value: T,) => Promisable<boolean>,
+  onTrue: (value: T,) => Promisable<R>,
   value: T,
 ): Promise<T | R> {
-  if (await predicate(value)) {
-    return await onTrue(value);
-  }
+  if (await predicate(value,))
+    return await onTrue(value,);
   return value;
 }
 

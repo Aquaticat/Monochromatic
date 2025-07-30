@@ -1,4 +1,4 @@
-import type { Promisable } from 'type-fest';
+import type { Promisable, } from 'type-fest';
 import {
   ensuringFalsyAsync,
   ensuringTruthyAsync,
@@ -10,8 +10,8 @@ import {
   entriesIterableAsync,
   // mapArrayLikeAsync,
 } from './iterable.entries.ts';
-import type { MappingFunction } from './iterable.map.ts';
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
+import type { MappingFunction, } from './iterable.map.ts';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
 /**
  * Tests if no elements in an async iterable satisfy a predicate function.
@@ -74,7 +74,7 @@ export async function noneIterableAsync<T_element,
   testingFn: MappingFunction<T_element, Promisable<boolean>>,
   arrayLike: T_arrayLike,
 ): Promise<boolean> {
-  const arr: T_element[] = await Array.fromAsync(arrayLike);
+  const arr: T_element[] = await Array.fromAsync(arrayLike,);
 
   /*
    We want the modified predicate to throw (causing a rejected promise) as long as it doesn't satisfy.
@@ -84,16 +84,17 @@ export async function noneIterableAsync<T_element,
    Otherwise, Promise.any rejects, which means all the predicates rejected,
    so the whole noneArray test should return true.
    */
-  const ensuredTruthyAsync = ensuringTruthyAsync(testingFn);
+  const ensuredTruthyAsync = ensuringTruthyAsync(testingFn,);
   const results = arr.map(
-    function toPromise(element: T_element, index: number): Promisable<boolean> {
-      return ensuredTruthyAsync(element, index, arr);
+    function toPromise(element: T_element, index: number,): Promisable<boolean> {
+      return ensuredTruthyAsync(element, index, arr,);
     },
   );
   try {
-    await Promise.any(results);
+    await Promise.any(results,);
     return false;
-  } catch {
+  }
+  catch {
     return true;
   }
 }
@@ -159,12 +160,11 @@ export function noneIterable<T_element, T_arrayLike extends Iterable<T_element>,
   testingFn: MappingFunction<T_element, boolean>,
   arrayLike: T_arrayLike,
 ): boolean {
-  const arr: T_element[] = [...arrayLike];
-  const nonThrowingFn = nonThrowingWithFalse(testingFn);
-  for (const [index, element] of entriesIterable(arr)) {
-    if (nonThrowingFn(element, index, arr)) {
+  const arr: T_element[] = [...arrayLike,];
+  const nonThrowingFn = nonThrowingWithFalse(testingFn,);
+  for (const [index, element,] of entriesIterable(arr,)) {
+    if (nonThrowingFn(element, index, arr,))
       return false;
-    }
   }
   return true;
   /*

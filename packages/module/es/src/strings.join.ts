@@ -1,4 +1,4 @@
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
 /**
  * Joins an async iterable of strings using the specified separator string, combining elements into a single string with the separator between each element.
@@ -60,12 +60,11 @@ export async function joinStringsAsync(
   separator: string,
   strings: MaybeAsyncIterable<string>,
 ): Promise<string> {
-  if (Array.isArray(strings)) {
-    return strings.join(separator);
-  }
+  if (Array.isArray(strings,))
+    return strings.join(separator,);
 
-  const stringsArr: string[] = await Array.fromAsync(strings);
-  return stringsArr.join(separator);
+  const stringsArr: string[] = await Array.fromAsync(strings,);
+  return stringsArr.join(separator,);
 }
 
 /**
@@ -137,10 +136,9 @@ export function joinStrings(
   separator: string,
   strings: Iterable<string>,
 ): string {
-  if (Array.isArray(strings)) {
-    return strings.join(separator);
-  }
+  if (Array.isArray(strings,))
+    return strings.join(separator,);
 
-  const stringsArr: string[] = [...strings];
-  return stringsArr.join(separator);
+  const stringsArr: string[] = [...strings,];
+  return stringsArr.join(separator,);
 }

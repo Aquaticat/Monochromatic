@@ -8,10 +8,10 @@ import {
   test,
 } from 'vitest';
 
-await logtapeConfigure(await logtapeConfiguration());
+await logtapeConfigure(await logtapeConfiguration(),);
 
 describe(onLoadRedirectingTo, () => {
   test('placeholder test', () => {
     // TODO: Add actual tests for dom.redirectingTo
   });
-});
+},);

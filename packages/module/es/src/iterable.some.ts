@@ -1,6 +1,6 @@
-import type { Promisable } from 'type-fest';
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
-import { somePromises } from './promises.some.ts';
+import type { Promisable, } from 'type-fest';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import { somePromises, } from './promises.some.ts';
 
 /**
  * Tests whether at least one element in an iterable satisfies the provided predicate.
@@ -48,13 +48,12 @@ import { somePromises } from './promises.some.ts';
  */
 export function someIterable<const T_element,
   const T_iterable extends Iterable<T_element>,>(
-  predicate: (element: T_element) => boolean,
+  predicate: (element: T_element,) => boolean,
   iterable: T_iterable,
 ): boolean {
   for (const element of iterable) {
-    if (predicate(element)) {
+    if (predicate(element,))
       return true;
-    }
   }
   return false;
 }
@@ -105,13 +104,12 @@ export function someIterable<const T_element,
  */
 export function someFailIterable<const T_element,
   const T_iterable extends Iterable<T_element>,>(
-  predicate: (element: T_element) => boolean,
+  predicate: (element: T_element,) => boolean,
   iterable: T_iterable,
 ): boolean {
   for (const element of iterable) {
-    if (!predicate(element)) {
+    if (!predicate(element,))
       return true;
-    }
   }
   return false;
 }
@@ -151,10 +149,10 @@ export function someFailIterable<const T_element,
  * ```
  */
 export async function someIterableAsync<T_element,>(
-  predicate: (element: T_element) => Promisable<boolean>,
+  predicate: (element: T_element,) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_element>,
 ): Promise<boolean> {
-  return await somePromises(predicate, arrayLike);
+  return await somePromises(predicate, arrayLike,);
 }
 
 /**
@@ -191,13 +189,12 @@ export async function someIterableAsync<T_element,>(
  * ```
  */
 export async function someFailIterableAsync<T_element,>(
-  predicate: (element: T_element) => Promisable<boolean>,
+  predicate: (element: T_element,) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_element>,
 ): Promise<boolean> {
   for await (const element of arrayLike) {
-    if (!(await predicate(element))) {
+    if (!(await predicate(element,)))
       return true;
-    }
   }
   return false;
 }

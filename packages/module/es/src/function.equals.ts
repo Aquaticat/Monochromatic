@@ -25,9 +25,9 @@ import {
  */
 export function equals<const T_equalTo,>(
   equalTo: T_equalTo,
-): (input: unknown) => boolean {
-  return function inner(input: unknown): boolean {
-    return equal(input, equalTo);
+): (input: unknown,) => boolean {
+  return function inner(input: unknown,): boolean {
+    return equal(input, equalTo,);
   };
 }
 
@@ -49,9 +49,9 @@ export function equals<const T_equalTo,>(
  */
 export function equalsAsync<const T_equalTo,>(
   equalTo: T_equalTo,
-): (input: unknown) => Promise<boolean> {
-  return async function inner(input: unknown): Promise<boolean> {
-    return await equalAsync(input, equalTo);
+): (input: unknown,) => Promise<boolean> {
+  return async function inner(input: unknown,): Promise<boolean> {
+    return await equalAsync(input, equalTo,);
   };
 }
 
@@ -79,13 +79,12 @@ export function equalsAsync<const T_equalTo,>(
  */
 export function equalsOrThrow<const T_input,>(
   equalTo: unknown,
-): (input: T_input) => T_input {
-  return function inner(input: T_input): T_input {
-    if (equal(input, equalTo)) {
+): (input: T_input,) => T_input {
+  return function inner(input: T_input,): T_input {
+    if (equal(input, equalTo,))
       return input;
-    }
 
-    throw new Error(`input ${input} isn't equal to ${equalTo}`);
+    throw new Error(`input ${input} isn't equal to ${equalTo}`,);
   };
 }
 
@@ -113,12 +112,11 @@ export function equalsOrThrow<const T_input,>(
  */
 export function equalsAsyncOrThrow<const T_input,>(
   equalTo: unknown,
-): (input: T_input) => Promise<T_input> {
-  return async function inner(input: T_input): Promise<T_input> {
-    if (await equalAsync(input, equalTo)) {
+): (input: T_input,) => Promise<T_input> {
+  return async function inner(input: T_input,): Promise<T_input> {
+    if (await equalAsync(input, equalTo,))
       return input;
-    }
 
-    throw new Error(`input ${input} isn't equal to ${equalTo}`);
+    throw new Error(`input ${input} isn't equal to ${equalTo}`,);
   };
 }

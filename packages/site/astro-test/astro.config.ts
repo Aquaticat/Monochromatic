@@ -5,12 +5,12 @@ import {
   transformerNotationHighlight,
 } from '@shikijs/transformers';
 // import viteBasicSsl from '@vitejs/plugin-basic-ssl';
-import { defineConfig } from 'astro/config';
-import { glob } from 'glob';
+import { defineConfig, } from 'astro/config';
+import { glob, } from 'glob';
 import spawn from 'nano-spawn';
-import { writeFile } from 'node:fs/promises';
-import { relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { writeFile, } from 'node:fs/promises';
+import { relative, } from 'node:path';
+import { fileURLToPath, } from 'node:url';
 import postcssCustomMedia from 'postcss-custom-media';
 import postcssCustomSelectors from 'postcss-custom-selectors';
 import postcssMixins from 'postcss-mixins';
@@ -19,10 +19,10 @@ import rehypeParse from 'rehype-parse';
 import rehypePresetMinify from 'rehype-preset-minify';
 import rehypeSlug from 'rehype-slug-custom-id';
 import rehypeStringify from 'rehype-stringify';
-import { remarkAlert } from 'remark-github-blockquote-alert';
+import { remarkAlert, } from 'remark-github-blockquote-alert';
 import remarkSectionize from 'remark-sectionize';
-import { read } from 'to-vfile';
-import { unified } from 'unified';
+import { read, } from 'to-vfile';
+import { unified, } from 'unified';
 
 // https://astro.build/config
 export default defineConfig({
@@ -37,8 +37,8 @@ export default defineConfig({
 
     resolve: {
       alias: {
-        '@': fileURLToPath(new URL('./', import.meta.url)),
-        '@_': fileURLToPath(new URL('./src', import.meta.url)),
+        '@': fileURLToPath(new URL('./', import.meta.url,),),
+        '@_': fileURLToPath(new URL('./src', import.meta.url,),),
       },
     },
     css: {
@@ -78,14 +78,14 @@ export default defineConfig({
         dark: 'github-dark-high-contrast',
       },
       wrap: true,
-      transformers: [transformerNotationDiff(), transformerNotationHighlight()],
+      transformers: [transformerNotationDiff(), transformerNotationHighlight(),],
     },
-    remarkPlugins: [[remarkAlert, {}], [remarkSectionize, {}]],
+    remarkPlugins: [[remarkAlert, {},], [remarkSectionize, {},],],
     rehypePlugins: [[rehypeSlug, {
       enableCustomId: true,
       maintainCase: true,
       removeAccents: true,
-    }], [rehypeAutolinkHeadings, {}]],
+    },], [rehypeAutolinkHeadings, {},],],
     // remarkRehype: { allowDangerousHtml: true },
   },
 
@@ -117,26 +117,26 @@ export default defineConfig({
     {
       name: 'astro-rehype',
       hooks: {
-        'astro:build:done': async ({ dir, logger }): Promise<void> => {
-          const relativeDir = relative(process.cwd(), fileURLToPath(dir));
-          const htmlFilePaths = await glob(`${relativeDir}/**/*.html`);
-          htmlFilePaths.forEach(async (htmlFilePath) => {
+        'astro:build:done': async ({ dir, logger, },): Promise<void> => {
+          const relativeDir = relative(process.cwd(), fileURLToPath(dir,),);
+          const htmlFilePaths = await glob(`${relativeDir}/**/*.html`,);
+          htmlFilePaths.forEach(async htmlFilePath => {
             await writeFile(htmlFilePath, String(await unified()
-              .use(rehypeParse)
-              .use(rehypePresetMinify)
-              .use(rehypeStringify)
-              .process(await read(htmlFilePath))));
-          });
-          logger.info(`minified html files in ${relativeDir}`);
+              .use(rehypeParse,)
+              .use(rehypePresetMinify,)
+              .use(rehypeStringify,)
+              .process(await read(htmlFilePath,),),),);
+          },);
+          logger.info(`minified html files in ${relativeDir}`,);
         },
       },
     },
     {
       name: 'astro-zstd',
       hooks: {
-        'astro:build:done': async ({ dir, logger }): Promise<void> => {
+        'astro:build:done': async ({ dir, logger, },): Promise<void> => {
           const relativeDir = relative(process
-            .cwd(), fileURLToPath(dir));
+            .cwd(), fileURLToPath(dir,),);
           try {
             await spawn('zstd', [
               '-z',
@@ -149,12 +149,13 @@ export default defineConfig({
               '-r',
               '--adapt',
               relativeDir,
-            ]);
+            ],);
             logger
-              .info(`compressed dir ${relativeDir}`);
-          } catch (zstdError) {
+              .info(`compressed dir ${relativeDir}`,);
+          }
+          catch (zstdError) {
             logger
-              .error(String(zstdError));
+              .error(String(zstdError,),);
           }
         },
       },
@@ -166,4 +167,4 @@ export default defineConfig({
     clientPrerender: true,
     contentIntellisense: true,
   },
-});
+},);

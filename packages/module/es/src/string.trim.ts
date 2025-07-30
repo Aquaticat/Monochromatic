@@ -17,24 +17,22 @@
  * trimEndWith('String', 'prefix'); // 'String' (no change)
  * ```
  */
-export function trimEndWith(str: string, trimmer: string): string {
-  if (trimmer === '') {
-    throw new Error('trimmer cannot be empty');
-  }
-  if (!str.endsWith(trimmer)) {
+export function trimEndWith(str: string, trimmer: string,): string {
+  if (trimmer === '')
+    throw new Error('trimmer cannot be empty',);
+  if (!str.endsWith(trimmer,))
     return str;
-  }
-  const reversedTrimmer = [...trimmer].toReversed().join('');
+  const reversedTrimmer = [...trimmer,].toReversed().join('',);
   let modifyingString = str;
-  while (modifyingString.endsWith(trimmer)) {
+  while (modifyingString.endsWith(trimmer,)) {
     modifyingString = [
-      ...[...modifyingString]
+      ...[...modifyingString,]
         .toReversed()
-        .join('')
-        .replace(reversedTrimmer, ''),
+        .join('',)
+        .replace(reversedTrimmer, '',),
     ]
       .toReversed()
-      .join('');
+      .join('',);
   }
   return modifyingString;
 }
@@ -58,16 +56,13 @@ export function trimEndWith(str: string, trimmer: string): string {
  * trimStartWith('String', 'suffix'); // 'String' (no change)
  * ```
  */
-export function trimStartWith(str: string, trimmer: string): string {
-  if (trimmer === '') {
-    throw new Error('trimmer cannot be empty');
-  }
-  if (!str.startsWith(trimmer)) {
+export function trimStartWith(str: string, trimmer: string,): string {
+  if (trimmer === '')
+    throw new Error('trimmer cannot be empty',);
+  if (!str.startsWith(trimmer,))
     return str;
-  }
   let modifyingString = str;
-  while (modifyingString.startsWith(trimmer)) {
-    modifyingString = modifyingString.replace(trimmer, '');
-  }
+  while (modifyingString.startsWith(trimmer,))
+    modifyingString = modifyingString.replace(trimmer, '',);
   return modifyingString;
 }

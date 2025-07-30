@@ -35,8 +35,8 @@ import {
   writeFile,
 } from 'node:fs/promises';
 
-async function readTextFile(path: string): Promise<string> {
-  return await readFile(path, { encoding: 'utf8' });
+async function readTextFile(path: string,): Promise<string> {
+  return await readFile(path, { encoding: 'utf8', },);
 }
 
 export {

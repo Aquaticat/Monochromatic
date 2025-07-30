@@ -1,4 +1,4 @@
-import { thunk } from './function.thunk.ts';
+import { thunk, } from './function.thunk.ts';
 
 /**
  * Replaces an element's parent's content with clones of that element.
@@ -31,7 +31,7 @@ import { thunk } from './function.thunk.ts';
  * ```
  */
 export function replicateElementAsParentContent(templateElement: HTMLElement,
-  targetCount: number): void
+  targetCount: number,): void
 {
   // Get the parent of the template element.
   const parent = templateElement.parentElement;
@@ -44,29 +44,29 @@ export function replicateElementAsParentContent(templateElement: HTMLElement,
   }
 
   const clones = Array.from(
-    { length: targetCount },
+    { length: targetCount, },
     function wrapper() {
-      return deepCloneNode(templateElement);
+      return deepCloneNode(templateElement,);
     },
   );
 
   // Replace all children of the parent element with the newly created clones.
-  parent.replaceChildren(...clones);
+  parent.replaceChildren(...clones,);
 }
 
-export function deepCloneNode<const T extends Node,>(element: T): T {
-  return element.cloneNode(true) as T;
+export function deepCloneNode<const T extends Node,>(element: T,): T {
+  return element.cloneNode(true,) as T;
 }
 
 export function replicateElementAsContentOf(templateElement: HTMLElement,
-  parentElement: HTMLElement, targetCount: number): void
+  parentElement: HTMLElement, targetCount: number,): void
 {
   const clones = Array.from(
-    { length: targetCount },
+    { length: targetCount, },
     function wrapper() {
-      return deepCloneNode(templateElement);
+      return deepCloneNode(templateElement,);
     },
   );
 
-  parentElement.replaceChildren(...clones);
+  parentElement.replaceChildren(...clones,);
 }

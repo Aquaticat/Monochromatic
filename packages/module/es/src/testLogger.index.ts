@@ -2,10 +2,10 @@ import {
   logtapeConfiguration,
   logtapeConfigure,
 } from '@monochromatic-dev/module-es/.js';
-import { logtapeGetLogger } from './logtape.shared.ts';
+import { logtapeGetLogger, } from './logtape.shared.ts';
 
-await logtapeConfigure(await logtapeConfiguration());
+await logtapeConfigure(await logtapeConfiguration(),);
 
-const l = logtapeGetLogger(['m', 'testLogger.index.ts']);
+const l = logtapeGetLogger(['m', 'testLogger.index.ts',],);
 
-l.debug('testLogger.index.ts');
+l.debug('testLogger.index.ts',);

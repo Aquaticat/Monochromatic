@@ -1,11 +1,11 @@
-import type { Promisable } from 'type-fest';
-import { equalsOrThrow } from './function.equals.ts';
-import { logtapeGetLogger } from './logtape.shared.ts';
-import type { NotPromise } from './promise.type.ts';
+import type { Promisable, } from 'type-fest';
+import { equalsOrThrow, } from './function.equals.ts';
+import { logtapeGetLogger, } from './logtape.shared.ts';
+import type { NotPromise, } from './promise.type.ts';
 
 //region Error Assertion Testing -- Provides comprehensive utilities for asserting that functions throw expected errors in both sync and async contexts
 
-const l = logtapeGetLogger(['m', 'error.assert.throw']);
+const l = logtapeGetLogger(['m', 'error.assert.throw',],);
 
 /**
  * Expected error types that can be used for error assertion testing.
@@ -77,45 +77,44 @@ export async function assertThrowAsync(
 ): Promise<void> {
   try {
     await fn();
-  } catch (actualError: any) {
-    l.debug`assertThrowAsync(error: ${error}, fn: ${String(fn)}), actualError: ${
-      String(actualError)
+  }
+  catch (actualError: any) {
+    l.debug`assertThrowAsync(error: ${error}, fn: ${String(fn,)}), actualError: ${
+      String(actualError,)
     }`;
 
     const expectedError = typeof error === 'function' ? await error() : error;
 
-    const equalErrorOrThrow = equalsOrThrow(expectedError);
+    const equalErrorOrThrow = equalsOrThrow(expectedError,);
 
     if (expectedError instanceof Error) {
-      equalErrorOrThrow(actualError);
+      equalErrorOrThrow(actualError,);
       return;
     }
 
     /* v8 ignore next 3 -- @preserve */
-    if (typeof expectedError !== 'string') {
-      throw new Error(`unexpected type ${typeof error} of expected error: ${error}`);
-    }
+    if (typeof expectedError !== 'string')
+      throw new Error(`unexpected type ${typeof error} of expected error: ${error}`,);
 
     // Accept any instance of Error
     if (expectedError === 'Error') {
-      if (!(actualError instanceof Error)) {
-        throw new Error(`actualError ${actualError} is not an Error`);
-      }
+      if (!(actualError instanceof Error))
+        throw new Error(`actualError ${actualError} is not an Error`,);
       return;
     }
 
-    if (expectedError.endsWith('Error')) {
+    if (expectedError.endsWith('Error',)) {
       // MAYBE: Error.name isn't working? Find all the other instances where this was used
       //        and replace it with Object.prototype.toString.call as usual
-      equalErrorOrThrow(actualError?.name);
+      equalErrorOrThrow(actualError?.name,);
       return;
     }
 
-    equalErrorOrThrow(actualError.message);
+    equalErrorOrThrow(actualError.message,);
     return;
   }
 
-  throw new Error(`fn ${fn} unexpectedly didn't throw`);
+  throw new Error(`fn ${fn} unexpectedly didn't throw`,);
 }
 
 /**
@@ -162,44 +161,43 @@ export function assertThrow(
 ): void {
   try {
     fn();
-  } catch (actualError: any) {
-    l.debug`assertThrow(error: ${error}, fn: ${String(fn)}), actualError: ${
-      String(actualError)
+  }
+  catch (actualError: any) {
+    l.debug`assertThrow(error: ${error}, fn: ${String(fn,)}), actualError: ${
+      String(actualError,)
     }`;
 
     const expectedError = typeof error === 'function' ? error() : error;
 
-    const equalErrorOrThrow = equalsOrThrow(expectedError);
+    const equalErrorOrThrow = equalsOrThrow(expectedError,);
 
     if (expectedError instanceof Error) {
-      equalErrorOrThrow(actualError);
+      equalErrorOrThrow(actualError,);
       return;
     }
 
     /* v8 ignore next 3 -- @preserve */
-    if (typeof expectedError !== 'string') {
-      throw new Error(`unexpected type ${typeof error} of expected error: ${error}`);
-    }
+    if (typeof expectedError !== 'string')
+      throw new Error(`unexpected type ${typeof error} of expected error: ${error}`,);
 
     // Accept any instance of Error
     if (expectedError === 'Error') {
-      if (!(actualError instanceof Error)) {
-        throw new Error(`actualError ${actualError} is not an Error`);
-      }
+      if (!(actualError instanceof Error))
+        throw new Error(`actualError ${actualError} is not an Error`,);
       return;
     }
 
-    if (expectedError.endsWith('Error')) {
+    if (expectedError.endsWith('Error',)) {
       // MAYBE: Error.name isn't working? Find all the other instances where this was used
       //        and replace it with Object.prototype.toString.call as usual
-      equalErrorOrThrow(actualError?.name);
+      equalErrorOrThrow(actualError?.name,);
       return;
     }
-    equalErrorOrThrow(actualError.message);
+    equalErrorOrThrow(actualError.message,);
     return;
   }
 
-  throw new Error(`fn ${fn} unexpectedly didn't throw`);
+  throw new Error(`fn ${fn} unexpectedly didn't throw`,);
 }
 
 /**
@@ -219,7 +217,7 @@ export function assertThrow(
 export async function assertThrowErrorAsync(
   fn: () => Promisable<any>,
 ): Promise<void> {
-  await assertThrowAsync('Error', fn);
+  await assertThrowAsync('Error', fn,);
 }
 
 /**
@@ -239,7 +237,7 @@ export async function assertThrowErrorAsync(
 export async function assertThrowTypeErrorAsync(
   fn: () => Promisable<any>,
 ): Promise<void> {
-  await assertThrowAsync('TypeError', fn);
+  await assertThrowAsync('TypeError', fn,);
 }
 
 /**
@@ -259,7 +257,7 @@ export async function assertThrowTypeErrorAsync(
 export async function assertThrowRangeErrorAsync(
   fn: () => Promisable<any>,
 ): Promise<void> {
-  await assertThrowAsync('RangeError', fn);
+  await assertThrowAsync('RangeError', fn,);
 }
 
 /**
@@ -279,7 +277,7 @@ export async function assertThrowRangeErrorAsync(
 export async function assertThrowReferenceErrorAsync(
   fn: () => Promisable<any>,
 ): Promise<void> {
-  await assertThrowAsync('ReferenceError', fn);
+  await assertThrowAsync('ReferenceError', fn,);
 }
 
 /**
@@ -299,7 +297,7 @@ export async function assertThrowReferenceErrorAsync(
 export async function assertThrowURIErrorAsync(
   fn: () => Promisable<any>,
 ): Promise<void> {
-  await assertThrowAsync('URIError', fn);
+  await assertThrowAsync('URIError', fn,);
 }
 
 /**
@@ -316,8 +314,8 @@ export async function assertThrowURIErrorAsync(
  * assertThrowError(() => { throw new Error('Generic error'); });
  * ```
  */
-export function assertThrowError(fn: () => NotPromise): void {
-  assertThrow('Error', fn);
+export function assertThrowError(fn: () => NotPromise,): void {
+  assertThrow('Error', fn,);
 }
 
 /**
@@ -337,7 +335,7 @@ export function assertThrowError(fn: () => NotPromise): void {
 export function assertThrowTypeError(
   fn: () => NotPromise,
 ): void {
-  assertThrow('TypeError', fn);
+  assertThrow('TypeError', fn,);
 }
 
 /**
@@ -357,7 +355,7 @@ export function assertThrowTypeError(
 export function assertThrowRangeError(
   fn: () => NotPromise,
 ): void {
-  assertThrow('RangeError', fn);
+  assertThrow('RangeError', fn,);
 }
 
 /**
@@ -377,7 +375,7 @@ export function assertThrowRangeError(
 export function assertThrowReferenceError(
   fn: () => NotPromise,
 ): void {
-  assertThrow('ReferenceError', fn);
+  assertThrow('ReferenceError', fn,);
 }
 
 /**
@@ -397,7 +395,7 @@ export function assertThrowReferenceError(
 export function assertThrowURIError(
   fn: () => NotPromise,
 ): void {
-  assertThrow('URIError', fn);
+  assertThrow('URIError', fn,);
 }
 
 //endregion Error Assertion Testing

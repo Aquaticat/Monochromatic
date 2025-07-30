@@ -9,7 +9,7 @@ import {
 type Props = {
   lang: string;
 };
-const { lang } = Astro.props;
+const { lang, } = Astro.props;
 ---
 <style>
 @import '@monochromatic-dev/style-monochromatic/mixin.css';
@@ -154,7 +154,7 @@ img[alt='avatar'] {
     <img
       src={`/favicon.svg`}
       alt='avatar'>
-    <span class='siteName'>{i18n.get('siteName')!.get(lang)!}</span>
+    <span class='siteName'>{i18n.get('siteName',)!.get(lang,)!}</span>
   </a>
   <nav>
     <button popovertarget='search'>
@@ -178,20 +178,18 @@ img[alt='avatar'] {
       id='search'
       hidden>
       <search>
-        <label>{i18n.get('searchPlaceholder')!.get(lang)!}
+        <label>{i18n.get('searchPlaceholder',)!.get(lang,)!}
           <input
             name='q'
             type='search'
             required
-            placeholder={i18n.get('searchPlaceholder')!.get(lang)!}
+            placeholder={i18n.get('searchPlaceholder',)!.get(lang,)!}
           />
         </label>
       </search>
       <ul class='Header__tags'>
         {
-          tags.map((
-            tag,
-          ) => (
+          tags.map(tag => (
             <details>
               <summary>
                 <span>{tag}</span>

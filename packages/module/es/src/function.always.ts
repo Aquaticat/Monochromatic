@@ -1,3 +1,3 @@
-export function alwaysTrue(_input: any): true {
+export function alwaysTrue(_input: any,): true {
   return true;
 }

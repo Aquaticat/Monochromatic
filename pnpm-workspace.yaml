@@ -120,6 +120,7 @@ catalog:
   '@total-typescript/ts-reset': '*'
   '@types/postcss-mixins': '*'
   '@typescript-eslint/eslint-plugin': '*'
+  '@elysiajs/static': '*'
   ts-pattern: '*'
   oxc-minify: '*'
   mdx2vast: '*'

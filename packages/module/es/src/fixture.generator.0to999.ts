@@ -51,9 +51,8 @@
  * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export function* gen0to999(): Generator<number> {
-  for (let value = 0; value < 1000; value++) {
+  for (let value = 0; value < 1000; value++)
     yield value;
-  }
 }
 
 /**
@@ -104,10 +103,9 @@
  * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export function* gen0to999error(): Generator<number> {
-  for (let value = 0; value < 999; value++) {
+  for (let value = 0; value < 999; value++)
     yield value;
-  }
-  throw new RangeError(`fixture reached 999`);
+  throw new RangeError(`fixture reached 999`,);
 }
 
 /**
@@ -169,9 +167,8 @@
 /* @__NO_SIDE_EFFECTS__ */ export async function* gen0to999Async(): AsyncGenerator<
   number
 > {
-  for (let value = 0; value < 1000; value++) {
+  for (let value = 0; value < 1000; value++)
     yield value;
-  }
 }
 
 /**
@@ -228,10 +225,9 @@
 /* @__NO_SIDE_EFFECTS__ */ export async function* gen0to999errorAsync(): AsyncGenerator<
   number
 > {
-  for (let value = 0; value < 999; value++) {
+  for (let value = 0; value < 999; value++)
     yield value;
-  }
-  throw new RangeError(`fixture reached 999`);
+  throw new RangeError(`fixture reached 999`,);
 }
 
 /**
@@ -320,7 +316,7 @@
   number
 > {
   for (let delayMilliseconds = 0; delayMilliseconds < 1000; delayMilliseconds++) {
-    await (new Promise((resolve) => setTimeout(resolve, delayMilliseconds)));
+    await (new Promise(resolve => setTimeout(resolve, delayMilliseconds,)));
     yield delayMilliseconds;
   }
 }
@@ -418,10 +414,10 @@
   number
 > {
   for (let delayMilliseconds = 0; delayMilliseconds < 999; delayMilliseconds++) {
-    await (new Promise((resolve) => setTimeout(resolve, delayMilliseconds)));
+    await (new Promise(resolve => setTimeout(resolve, delayMilliseconds,)));
     yield delayMilliseconds;
   }
-  throw new RangeError(`fixture reached 999`);
+  throw new RangeError(`fixture reached 999`,);
 }
 
 //endregion Generator Test Fixtures

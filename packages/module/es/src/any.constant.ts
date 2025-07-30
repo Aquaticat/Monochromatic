@@ -27,7 +27,7 @@
  * defaultHandler(); // 'default'
  * ```
  */
-export function constant<const T,>(x: T): () => T {
+export function constant<const T,>(x: T,): () => T {
   return function identity(): T {
     return x;
   };

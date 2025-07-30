@@ -16,15 +16,15 @@
  * The `--` separator is required to distinguish script args from command args.
  */
 
-import { outdent } from '@cspotcode/outdent';
+import { outdent, } from '@cspotcode/outdent';
 import {
   cli,
   define,
 } from '@kazupon/gunshi';
 import spawn from 'nano-spawn';
-import { match } from 'ts-pattern';
-import { unary } from './function.nary.ts';
-import { arrayIsNonEmpty } from './iterable.is';
+import { match, } from 'ts-pattern';
+import { unary, } from './function.nary.ts';
+import { arrayIsNonEmpty, } from './iterable.is';
 
 // Define the command with gunshi using define for type safety
 const moonCommand = define({
@@ -58,17 +58,17 @@ $ bun moon.command.ts --shell -- "echo hello && echo world"
 
 # Execute with timeout of 5 seconds
 $ bun moon.command.ts --timeout 5000 -- npm test`,
-  run: async (ctx) => {
-    const { allowFailure, shell, timeout } = ctx.values;
+  run: async ctx => {
+    const { allowFailure, shell, timeout, } = ctx.values;
 
     // ctx.rest or ctx._ contains arguments after --
-    const gunshiRestArgsArray = [ctx.rest, ctx._].find(unary(arrayIsNonEmpty));
+    const gunshiRestArgsArray = [ctx.rest, ctx._,].find(unary(arrayIsNonEmpty,),);
 
     if (!gunshiRestArgsArray) {
       throw new Error(
         outdent`
           No command specified after --
-          ${JSON.stringify(ctx, null, 2)}
+          ${JSON.stringify(ctx, null, 2,)}
         `,
       );
     }
@@ -79,7 +79,7 @@ $ bun moon.command.ts --timeout 5000 -- npm test`,
       throw new Error(outdent`
         command not found!
         ${gunshiRestArgsArray}
-      `);
+      `,);
     }
 
     try {
@@ -90,53 +90,54 @@ $ bun moon.command.ts --timeout 5000 -- npm test`,
         stdin: 'inherit',
         shell,
         timeout,
-      });
+      },);
 
       // Script ends naturally with exit code 0
-    } catch (error) {
+    }
+    catch (error) {
       // nano-spawn throws SubprocessError when the process fails
-      match(error)
+      match(error,)
         .when(
           (
             error,
           ): error is { exitCode?: number; signalName?: string; message: string; } =>
             error !== null && typeof error === 'object' && 'exitCode' in error,
-          (subprocessError) => {
-            match(subprocessError.signalName)
+          subprocessError => {
+            match(subprocessError.signalName,)
               .when(
-                (signal): signal is string => signal !== undefined,
-                (signal) => {
-                  console.error(`Command terminated by signal: ${signal}`);
+                (signal,): signal is string => signal !== undefined,
+                signal => {
+                  console.error(`Command terminated by signal: ${signal}`,);
                 },
               );
 
             // Exit with 0 if allowFailure is true, otherwise use the command's exit code
-            match(allowFailure ?? false)
+            match(allowFailure ?? false,)
               .with(false, () => {
                 process.exitCode = subprocessError.exitCode ?? 1;
-              })
+              },)
               .with(true, () => {
                 // Let script end naturally with exit code 0
-              });
+              },);
           },
         )
         .otherwise(() => {
           console.error(
             `Failed to execute command: ${
-              error instanceof Error ? error.message : String(error)
+              error instanceof Error ? error.message : String(error,)
             }`,
           );
-          match(allowFailure ?? false)
+          match(allowFailure ?? false,)
             .with(false, () => {
               throw error;
-            })
+            },)
             .with(true, () => {
               // Let script end naturally with exit code 0
-            });
-        });
+            },);
+        },);
     }
   },
-});
+},);
 
 // Run the CLI
-await cli(process.argv.slice(2), moonCommand);
+await cli(process.argv.slice(2,), moonCommand,);

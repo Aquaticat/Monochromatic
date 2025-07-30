@@ -13,7 +13,6 @@ tasks:
   #
   # IMPORTANT: Tasks with cache:false or preset:server don't need inputs/outputs defined
   # as Moon only uses these for cache computation. We remove them for clarity.
-
   build:
     deps:
     # Moon would auto skip projects that doesn't have the `js` task defined.
@@ -47,7 +46,7 @@ tasks:
     - test
     options:
       cache: false
-      runDepsInParallel: false  # Tests depend on build artifacts being complete
+      runDepsInParallel: false # Tests depend on build artifacts being complete
       internal: false
     inputs:
     - '@group(allConfigs)'
@@ -106,10 +105,10 @@ tasks:
 
   check:
     deps:
-      - checkBuild
-      - checkDependencies
-      - checkGitHooks
-      - checkTools
+    - checkBuild
+    - checkDependencies
+    - checkGitHooks
+    - checkTools
     options:
       cache: false
       internal: false
@@ -275,7 +274,6 @@ tasks:
     - '#package:start'
     extends: _server
 
-
   startCaddy:
     command: 'caddy run --config Caddyfile --adapter caddyfile'
     extends: _server
@@ -302,7 +300,6 @@ tasks:
     command: 'vitest watch --config vitest.browser.config.ts'
     extends: _server
 
-
   # Unit test runner
   testUnit:
     command: 'vitest run --config vitest.unit.config.ts'
@@ -317,13 +314,11 @@ tasks:
     command: 'vitest watch --config vitest.unit.config.ts'
     extends: _server
 
-
   testWatch:
     deps:
     - testUnitWatch
     - testBrowserWatch
     extends: _server
-
 
   types:
     # --verbose is too chatty
@@ -341,7 +336,6 @@ tasks:
   typesWatch:
     command: 'tsc --watch'
     extends: _server
-
 
   # Comprehensive validation: format, build, then test
   # Use this when:

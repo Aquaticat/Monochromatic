@@ -1,10 +1,10 @@
-import { notUndefinedOrThrow } from './error.throw.ts';
-import { unary } from './function.nary.ts';
+import { notUndefinedOrThrow, } from './error.throw.ts';
+import { unary, } from './function.nary.ts';
 import {
   isArrayEmpty,
   isArrayOfLength1,
 } from './iterable.is.ts';
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
 /**
  * Creates a new Set containing the intersection of all input iterables, preserving only elements
@@ -42,17 +42,17 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
  */
 export function intersectionIterables(...arrays: never[]): Set<never>;
 export function intersectionIterables<const Param1,>(
-  ...arrays: [Iterable<Param1>]
+  ...arrays: [Iterable<Param1>,]
 ): Set<Param1>;
 export function intersectionIterables<const Param1, const Param2,>(
-  ...arrays: [Iterable<Param1>, Iterable<Param2>]
+  ...arrays: [Iterable<Param1>, Iterable<Param2>,]
 ): Set<Param1 & Param2>;
 export function intersectionIterables<const Param1, const Param2, const Param3,>(
-  ...arrays: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>]
+  ...arrays: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>,]
 ): Set<Param1 & Param2 & Param3>;
 export function intersectionIterables<const Param1, const Param2, const Param3,
   const Param4,>(
-  ...arrays: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>, Iterable<Param4>]
+  ...arrays: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>, Iterable<Param4>,]
 ): Set<Param1 & Param2 & Param3 & Param4>;
 export function intersectionIterables<const Param1, const Param2, const Param3,
   const Param4, const Param5,>(
@@ -116,30 +116,26 @@ export function intersectionIterables<const Param1, const Param2, const Param3,
 ): Set<Param1 & Param2 & Param3 & Param4 & Param5 & Param6 & Param7 & Param8 & Param9>;
 export function intersectionIterables<const T,>(...arrays: Iterable<T>[]): Set<T>;
 export function intersectionIterables(...arrays: Iterable<unknown>[]): Set<unknown> {
-  if (arrays.length === 0) {
+  if (arrays.length === 0)
     return new Set();
-  }
 
-  if (arrays.length === 1) {
-    return new Set(arrays[0]);
-  }
+  if (arrays.length === 1)
+    return new Set(arrays[0],);
 
   // Start with the first iterable as candidates
-  const candidates = new Set(arrays[0]);
+  const candidates = new Set(arrays[0],);
 
   // Empty set short-circuit
-  if (candidates.size === 0) {
+  if (candidates.size === 0)
     return candidates;
-  }
 
   // For each subsequent iterable
-  for (const otherArray of arrays.slice(1)) {
+  for (const otherArray of arrays.slice(1,)) {
     // Short-circuit if no candidates remain
-    if (candidates.size === 0) {
+    if (candidates.size === 0)
       return candidates;
-    }
 
-    const currentSet = new Set(otherArray);
+    const currentSet = new Set(otherArray,);
 
     // If current iterable is empty, intersection is empty
     if (currentSet.size === 0) {
@@ -149,9 +145,8 @@ export function intersectionIterables(...arrays: Iterable<unknown>[]): Set<unkno
 
     // Remove items from candidates that don't exist in current set
     for (const item of candidates) {
-      if (!currentSet.has(item)) {
-        candidates.delete(item);
-      }
+      if (!currentSet.has(item,))
+        candidates.delete(item,);
     }
   }
 
@@ -192,9 +187,8 @@ export function setOfIterable<const T,>(
   iterable: Iterable<T>,
 ): Set<T> {
   const set = new Set<T>();
-  for (const item of iterable) {
-    set.add(item);
-  }
+  for (const item of iterable)
+    set.add(item,);
   return set;
 }
 
@@ -236,9 +230,8 @@ export async function setOfIterableAsync<const T,>(
   iterable: MaybeAsyncIterable<T>,
 ): Promise<Set<T>> {
   const set = new Set<T>();
-  for await (const item of iterable) {
-    set.add(item);
-  }
+  for await (const item of iterable)
+    set.add(item,);
   return set;
 }
 
@@ -303,10 +296,10 @@ export async function intersectionIterablesAsync(
   ...iterables: never[]
 ): Promise<Set<never>>;
 export async function intersectionIterablesAsync<const Param1,>(
-  ...iterables: [MaybeAsyncIterable<Param1>]
+  ...iterables: [MaybeAsyncIterable<Param1>,]
 ): Promise<Set<Param1>>;
 export async function intersectionIterablesAsync<const Param1, const Param2,>(
-  ...iterables: [MaybeAsyncIterable<Param1>, MaybeAsyncIterable<Param2>]
+  ...iterables: [MaybeAsyncIterable<Param1>, MaybeAsyncIterable<Param2>,]
 ): Promise<Set<Param1 & Param2>>;
 export async function intersectionIterablesAsync<const Param1, const Param2,
   const Param3,>(
@@ -393,33 +386,29 @@ export async function intersectionIterablesAsync<const T,>(
 export async function intersectionIterablesAsync(
   ...iterables: MaybeAsyncIterable<unknown>[]
 ): Promise<Set<unknown>> {
-  if (isArrayEmpty(iterables)) {
+  if (isArrayEmpty(iterables,))
     return new Set();
-  }
 
-  if (isArrayOfLength1(iterables)) {
-    return setOfIterableAsync(iterables[0]);
-  }
+  if (isArrayOfLength1(iterables,))
+    return setOfIterableAsync(iterables[0],);
 
   // Start with the first iterable as candidates
-  const candidates = await setOfIterableAsync(notUndefinedOrThrow(iterables[0]));
+  const candidates = await setOfIterableAsync(notUndefinedOrThrow(iterables[0],),);
 
   // Empty set short-circuit
-  if (candidates.size === 0) {
+  if (candidates.size === 0)
     return candidates;
-  }
 
   // Convert all subsequent iterables to sets concurrently
   const subsequentSets = await Promise.all(
-    iterables.slice(1).map(unary(setOfIterableAsync)),
+    iterables.slice(1,).map(unary(setOfIterableAsync,),),
   );
 
   // For each subsequent set
   for (const currentSet of subsequentSets) {
     // Short-circuit if no candidates remain
-    if (candidates.size === 0) {
+    if (candidates.size === 0)
       return candidates;
-    }
 
     // If current set is empty, intersection is empty
     if (currentSet.size === 0) {
@@ -429,9 +418,8 @@ export async function intersectionIterablesAsync(
 
     // Remove items from candidates that don't exist in current set
     for (const item of candidates) {
-      if (!currentSet.has(item)) {
-        candidates.delete(item);
-      }
+      if (!currentSet.has(item,))
+        candidates.delete(item,);
     }
   }
 

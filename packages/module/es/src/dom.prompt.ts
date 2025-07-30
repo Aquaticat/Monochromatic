@@ -1,4 +1,4 @@
-import { outdent } from '@cspotcode/outdent';
+import { outdent, } from '@cspotcode/outdent';
 
 // Prompt Dialog Polyfill -- Drop-in replacement for window.prompt using dialog element
 
@@ -24,61 +24,61 @@ export async function prompt(
   defaultValue = '',
 ): Promise<string | null> {
   // oxlint-disable-next-line promise/avoid-new -- Required for dialog event handling
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     // Create dialog element
-    const dialog = document.createElement('dialog');
+    const dialog = document.createElement('dialog',);
     dialog.className = 'prompt-polyfill-dialog';
 
     // Create form element
-    const form = document.createElement('form');
+    const form = document.createElement('form',);
     form.method = 'dialog';
 
     // Create title element
-    const titleElement = document.createElement('h2');
+    const titleElement = document.createElement('h2',);
     titleElement.textContent = message;
 
     // Create input element
-    const input = document.createElement('input');
+    const input = document.createElement('input',);
     input.type = 'text';
     input.value = defaultValue;
     input.autofocus = true;
 
     // Create button container
-    const buttonContainer = document.createElement('div');
+    const buttonContainer = document.createElement('div',);
 
     // Create cancel button
-    const cancelButton = document.createElement('button');
+    const cancelButton = document.createElement('button',);
     cancelButton.type = 'button';
     cancelButton.className = 'prompt-polyfill-cancel';
     cancelButton.textContent = 'Cancel';
 
     // Create OK button
-    const okButton = document.createElement('button');
+    const okButton = document.createElement('button',);
     okButton.type = 'submit';
     okButton.className = 'prompt-polyfill-ok';
     okButton.textContent = 'OK';
 
     // Assemble the dialog
-    buttonContainer.append(cancelButton);
-    buttonContainer.append(okButton);
-    form.append(titleElement);
-    form.append(input);
-    form.append(buttonContainer);
-    dialog.append(form);
-    document.body.append(dialog);
+    buttonContainer.append(cancelButton,);
+    buttonContainer.append(okButton,);
+    form.append(titleElement,);
+    form.append(input,);
+    form.append(buttonContainer,);
+    dialog.append(form,);
+    document.body.append(dialog,);
 
     // Handle form submission
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', event => {
       event.preventDefault();
       dialog.returnValue = input.value;
       dialog.close();
-    });
+    },);
 
     // Handle cancel button
     cancelButton.addEventListener('click', () => {
       dialog.returnValue = '';
       dialog.close();
-    });
+    },);
 
     // Handle dialog close (ESC key or other close methods)
     dialog.addEventListener('close', () => {
@@ -89,11 +89,11 @@ export async function prompt(
       dialog.remove();
 
       // Resolve the promise
-      resolve(result === '' ? null : result);
-    });
+      resolve(result === '' ? null : result,);
+    },);
 
     // Handle backdrop click
-    dialog.addEventListener('click', (event) => {
+    dialog.addEventListener('click', event => {
       // Check if click was on the backdrop (dialog element itself, not its children)
       if (event.target === dialog) {
         const rect = dialog.getBoundingClientRect();
@@ -107,12 +107,12 @@ export async function prompt(
           dialog.close();
         }
       }
-    });
+    },);
 
     // Show the dialog
     dialog.showModal();
 
     // Select text in input for easy replacement
     input.select();
-  });
+  },);
 }

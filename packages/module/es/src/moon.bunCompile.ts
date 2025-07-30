@@ -13,14 +13,14 @@
 
 import findUp from 'find-up';
 import spawn from 'nano-spawn';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, } from 'node:fs/promises';
 import {
   basename,
   dirname,
   join,
 } from 'node:path';
-import { serializeError } from 'serialize-error';
-import { glob } from 'tinyglobby';
+import { serializeError, } from 'serialize-error';
+import { glob, } from 'tinyglobby';
 
 //region Target definitions -- Platform-specific compilation targets
 
@@ -66,41 +66,40 @@ const targets: readonly CompilationTarget[] = [
 async function getPackageRoot(): Promise<string> {
   const packageJsonPath = await findUp('package.json', {
     cwd: import.meta.dirname,
-  });
+  },);
 
-  if (!packageJsonPath) {
-    throw new Error('Could not find package.json');
-  }
+  if (!packageJsonPath)
+    throw new Error('Could not find package.json',);
 
-  return dirname(packageJsonPath);
+  return dirname(packageJsonPath,);
 }
 
 /**
  * Supported script prefixes that can be compiled.
  */
-const SUPPORTED_PREFIXES = ['moon', 'cli'] as const;
+const SUPPORTED_PREFIXES = ['moon', 'cli',] as const;
 
 /**
  * Extracts script name and prefix from filename.
  * @param filename - script filename (e.g., moon.*.ts, cli.*.ts).
  * @returns object containing prefix and script name.
  */
-function extractScriptInfo(filename: string): { prefix: string; scriptName: string; } {
-  const base = basename(filename, '.ts');
+function extractScriptInfo(filename: string,): { prefix: string; scriptName: string; } {
+  const base = basename(filename, '.ts',);
 
   // Find which prefix matches
   for (const prefix of SUPPORTED_PREFIXES) {
     const prefixWithDot = `${prefix}.`;
-    if (base.startsWith(prefixWithDot)) {
+    if (base.startsWith(prefixWithDot,)) {
       return {
         prefix,
-        scriptName: base.slice(prefixWithDot.length),
+        scriptName: base.slice(prefixWithDot.length,),
       };
     }
   }
 
   // This shouldn't happen if glob patterns are correct
-  throw new Error(`Unexpected filename format: ${filename}`);
+  throw new Error(`Unexpected filename format: ${filename}`,);
 }
 
 /**
@@ -112,11 +111,11 @@ function extractScriptInfo(filename: string): { prefix: string; scriptName: stri
  * @returns full output path.
  */
 function getOutputPath(prefix: string, scriptName: string, target: string,
-  packageRoot: string): string
+  packageRoot: string,): string
 {
-  const outputDir = join(packageRoot, 'dist', 'final');
+  const outputDir = join(packageRoot, 'dist', 'final',);
   // Bun automatically adds .exe on Windows
-  return join(outputDir, `${prefix}.${scriptName}.${target}`);
+  return join(outputDir, `${prefix}.${scriptName}.${target}`,);
 }
 
 /**
@@ -127,15 +126,15 @@ function getOutputPath(prefix: string, scriptName: string, target: string,
  * @returns promise that resolves when compilation is complete.
  */
 async function compileScript(scriptPath: string, target: string,
-  packageRoot: string): Promise<void>
+  packageRoot: string,): Promise<void>
 {
-  const { prefix, scriptName } = extractScriptInfo(scriptPath);
-  const outputPath = getOutputPath(prefix, scriptName, target, packageRoot);
+  const { prefix, scriptName, } = extractScriptInfo(scriptPath,);
+  const outputPath = getOutputPath(prefix, scriptName, target, packageRoot,);
 
   // Ensure output directory exists
-  await mkdir(dirname(outputPath), { recursive: true });
+  await mkdir(dirname(outputPath,), { recursive: true, },);
 
-  console.log(`Compiling ${basename(scriptPath)} for ${target}...`);
+  console.log(`Compiling ${basename(scriptPath,)} for ${target}...`,);
 
   try {
     await spawn('bun', [
@@ -144,13 +143,14 @@ async function compileScript(scriptPath: string, target: string,
       '--compile',
       `--target=${target}`,
       `--outfile=${outputPath}`,
-    ], { stdio: 'ignore' });
+    ], { stdio: 'ignore', },);
 
-    console.log(`✓ Compiled ${basename(scriptPath)} for ${target}`);
-  } catch (error: any) {
+    console.log(`✓ Compiled ${basename(scriptPath,)} for ${target}`,);
+  }
+  catch (error: any) {
     throw new Error(
-      `✗ Failed to compile ${basename(scriptPath)} for ${target}: ${
-        serializeError(error)
+      `✗ Failed to compile ${basename(scriptPath,)} for ${target}: ${
+        serializeError(error,)
       }`,
     );
   }
@@ -164,42 +164,41 @@ async function compileScript(scriptPath: string, target: string,
 const packageRoot = await getPackageRoot();
 
 // Find all scripts with supported prefixes in the src directory
-const srcDir = join(packageRoot, 'src');
-const globPatterns = SUPPORTED_PREFIXES.map((prefix) => `${prefix}.*.ts`);
+const srcDir = join(packageRoot, 'src',);
+const globPatterns = SUPPORTED_PREFIXES.map(prefix => `${prefix}.*.ts`);
 const scriptPaths = await glob(globPatterns, {
   cwd: srcDir,
-  ignore: ['**/*.test.ts'],
-});
+  ignore: ['**/*.test.ts',],
+},);
 
-console.log(`Found ${scriptPaths.length} script(s) to compile:`);
-scriptPaths.forEach((script) => {
-  console.log(`  - ${basename(script)}`);
-});
-console.log('');
+console.log(`Found ${scriptPaths.length} script(s) to compile:`,);
+scriptPaths.forEach(script => {
+  console.log(`  - ${basename(script,)}`,);
+},);
+console.log('',);
 
 // Create all compilation tasks
-const compilationTasks = scriptPaths.flatMap((scriptPath) =>
-  targets.map((target) => compileScript(join(srcDir, scriptPath), target, packageRoot))
+const compilationTasks = scriptPaths.flatMap(scriptPath =>
+  targets.map(target => compileScript(join(srcDir, scriptPath,), target, packageRoot,))
 );
 
-console.log(`Starting compilation of ${compilationTasks.length} targets...\n`);
+console.log(`Starting compilation of ${compilationTasks.length} targets...\n`,);
 
 // Run all compilations in parallel
-const results = await Promise.allSettled(compilationTasks);
+const results = await Promise.allSettled(compilationTasks,);
 
 // Report results
-const successful = results.filter((r) => r.status === 'fulfilled').length;
-const failed = results.filter((r) => r.status === 'rejected').length;
+const successful = results.filter(r => r.status === 'fulfilled').length;
+const failed = results.filter(r => r.status === 'rejected').length;
 
-console.log('\n=== Compilation Summary ===');
-console.log(`Total: ${results.length}`);
-console.log(`Successful: ${successful}`);
-console.log(`Failed: ${failed}`);
+console.log('\n=== Compilation Summary ===',);
+console.log(`Total: ${results.length}`,);
+console.log(`Successful: ${successful}`,);
+console.log(`Failed: ${failed}`,);
 
-if (failed > 0) {
-  throw new Error(`${failed} compilation(s) failed. See errors above.`);
-}
+if (failed > 0)
+  throw new Error(`${failed} compilation(s) failed. See errors above.`,);
 
-console.log('\nAll compilations completed successfully!');
+console.log('\nAll compilations completed successfully!',);
 
 //endregion Main execution

@@ -10,36 +10,36 @@ import {
   test,
 } from 'vitest';
 
-await logtapeConfigure(await logtapeConfiguration());
+await logtapeConfigure(await logtapeConfiguration(),);
 
 describe(joinStrings, () => {
   test('joins array of strings with separator', () => {
-    const strings = ['a', 'b', 'c'];
-    expect(joinStrings('-', strings)).toBe('a-b-c');
+    const strings = ['a', 'b', 'c',];
+    expect(joinStrings('-', strings,),).toBe('a-b-c',);
   });
 
   test('joins iterable of strings with separator', () => {
-    const strings = new Set(['a', 'b', 'c']);
-    expect(joinStrings(':', strings)).toBe('a:b:c');
+    const strings = new Set(['a', 'b', 'c',],);
+    expect(joinStrings(':', strings,),).toBe('a:b:c',);
   });
 
   test('returns empty string for empty array', () => {
-    expect(joinStrings(',', [])).toBe('');
+    expect(joinStrings(',', [],),).toBe('',);
   });
 
   test('returns empty string for empty iterable', () => {
-    expect(joinStrings(',', new Set())).toBe('');
+    expect(joinStrings(',', new Set(),),).toBe('',);
   });
 
   test('works with single element', () => {
-    expect(joinStrings('-', ['single'])).toBe('single');
+    expect(joinStrings('-', ['single',],),).toBe('single',);
   });
-});
+},);
 
 describe(joinStringsAsync, () => {
   test('joins array of strings with separator', async () => {
-    const strings = ['a', 'b', 'c'];
-    expect(await joinStringsAsync('-', strings)).toBe('a-b-c');
+    const strings = ['a', 'b', 'c',];
+    expect(await joinStringsAsync('-', strings,),).toBe('a-b-c',);
   });
 
   test('joins async iterable of strings with separator', async () => {
@@ -51,11 +51,11 @@ describe(joinStringsAsync, () => {
         yield 'c';
       },
     };
-    expect(await joinStringsAsync(':', asyncIterable)).toBe('a:b:c');
+    expect(await joinStringsAsync(':', asyncIterable,),).toBe('a:b:c',);
   });
 
   test('returns empty string for empty array', async () => {
-    expect(await joinStringsAsync(',', [])).toBe('');
+    expect(await joinStringsAsync(',', [],),).toBe('',);
   });
 
   test('returns empty string for empty async iterable', async () => {
@@ -64,7 +64,7 @@ describe(joinStringsAsync, () => {
         // Yields nothing
       },
     };
-    expect(await joinStringsAsync(',', emptyAsyncIterable)).toBe('');
+    expect(await joinStringsAsync(',', emptyAsyncIterable,),).toBe('',);
   });
 
   test('works with single element async iterable', async () => {
@@ -73,6 +73,6 @@ describe(joinStringsAsync, () => {
         yield 'single';
       },
     };
-    expect(await joinStringsAsync('-', singleAsyncIterable)).toBe('single');
+    expect(await joinStringsAsync('-', singleAsyncIterable,),).toBe('single',);
   });
-});
+},);

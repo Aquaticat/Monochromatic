@@ -17,10 +17,10 @@
   "newLineKind": "lf",
   "plugins": [
     "https://plugins.dprint.dev/toml-0.7.0.wasm",
-    "https://plugins.dprint.dev/g-plane/markup_fmt-v0.19.1.wasm",
-    "https://plugins.dprint.dev/typescript-0.94.0.wasm",
-    "https://plugins.dprint.dev/g-plane/malva-v0.11.2.wasm",
-    "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.5.0.wasm",
+    "https://plugins.dprint.dev/g-plane/markup_fmt-v0.23.1.wasm",
+    "https://plugins.dprint.dev/typescript-0.95.9.wasm",
+    "https://plugins.dprint.dev/g-plane/malva-v0.14.1.wasm",
+    "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.5.1.wasm",
     "https://plugins.dprint.dev/json-0.20.0.wasm"
   ],
   "toml": {
@@ -77,13 +77,18 @@
   "typescript": {
     "semiColons": "always",
     "quoteStyle": "preferSingle",
+    "quoteProps": "asNeeded",
     "jsx.quoteStyle": "preferSingle",
-    "useBraces": "maintain",
+    "useBraces": "preferNone",
+    "singleBodyPosition": "nextLine",
+    "nextControlFlowPosition": "nextLine",
+    "trailingCommas": "always",
+    "preferHanging": true,
 
     // For jsx (tsx) compatibility.
     "typeParameters.trailingCommas": "always",
 
-    "arrowFunction.useParentheses": "force",
+    "arrowFunction.useParentheses": "preferNone",
     "binaryExpression.linePerExpression": true,
     "jsx.bracketPosition": "sameLine",
     "memberExpression.linePerExpression": true,

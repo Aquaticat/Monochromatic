@@ -1,11 +1,11 @@
 ---
 import PrettyDate from '@_/components/PrettyDate.astro';
-import type { Post as PostType } from '@_/index.ts';
+import type { Post as PostType, } from '@_/index.ts';
 type Props = {
   post: PostType;
   lang: string;
 };
-const { post, lang } = Astro.props;
+const { post, lang, } = Astro.props;
 ---
 <style>
 @import '@monochromatic-dev/style-monochromatic/mixin.css';
@@ -110,7 +110,7 @@ h2 {
     <aside>
       <ul class='tags'>
         {
-          post.data.tags.map((tag) => (
+          post.data.tags.map(tag => (
             <li class='Post__tag'>
               <a href={`#tag__${tag}`}>
                 <span>{tag}</span>

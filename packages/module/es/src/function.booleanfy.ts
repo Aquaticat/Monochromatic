@@ -1,5 +1,5 @@
-import type { Promisable } from 'type-fest';
-import type { NotPromise } from './promise.type.ts';
+import type { Promisable, } from 'type-fest';
+import type { NotPromise, } from './promise.type.ts';
 
 /**
  * Transforms a function to return a boolean based on the truthiness of its original return value.
@@ -38,8 +38,8 @@ export function booleanfy<Args extends any[], ReturnType,>(
   fn: (...args: Args) => ReturnType,
 ): (...args: Args) => boolean {
   return function booleanfied(...args: Args): boolean {
-    const result = fn(...args);
-    return Boolean(result);
+    const result = fn(...args,);
+    return Boolean(result,);
   };
 }
 
@@ -82,7 +82,7 @@ export function booleanfyAsync<Args extends any[], ReturnType extends NotPromise
   fn: (...args: Args) => Promisable<ReturnType>,
 ): (...args: Args) => Promise<boolean> {
   return async function booleanfied(...args: Args): Promise<boolean> {
-    const result = await fn(...args);
-    return Boolean(result);
+    const result = await fn(...args,);
+    return Boolean(result,);
   };
 }

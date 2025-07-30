@@ -29,7 +29,7 @@
  * }
  * ```
  */
-export function isError(value: unknown): value is Error {
+export function isError(value: unknown,): value is Error {
   // Contrary to expectations, all the subclasses of Error all also give [object Error]
-  return Object.prototype.toString.call(value) === '[object Error]';
+  return Object.prototype.toString.call(value,) === '[object Error]';
 }

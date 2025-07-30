@@ -168,7 +168,7 @@ export function partial<T_0, T_fn extends (input0: T_0, ...rest: any[]) => any,>
     return function partiallyApplied(
       ...laterInputs: WithoutFirst<Parameters<T_fn>>
     ): ReturnType<T_fn> {
-      return fn(presetInput0, ...laterInputs);
+      return fn(presetInput0, ...laterInputs,);
     };
   }
 
@@ -176,7 +176,7 @@ export function partial<T_0, T_fn extends (input0: T_0, ...rest: any[]) => any,>
     return function partiallyApplied(
       ...laterInputs: WithoutFirst2<Parameters<T_fn>>
     ): ReturnType<T_fn> {
-      return fn(presetInput0, presetInput1, ...laterInputs);
+      return fn(presetInput0, presetInput1, ...laterInputs,);
     };
   }
 
@@ -184,7 +184,7 @@ export function partial<T_0, T_fn extends (input0: T_0, ...rest: any[]) => any,>
     return function partiallyApplied(
       ...laterInputs: WithoutFirst3<Parameters<T_fn>>
     ): ReturnType<T_fn> {
-      return fn(presetInput0, presetInput1, presetInput2, ...laterInputs);
+      return fn(presetInput0, presetInput1, presetInput2, ...laterInputs,);
     };
   }
 

@@ -3,9 +3,9 @@ import type {
   LogRecord,
   Sink,
 } from '@logtape/logtape';
-import { appendFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { ensureFile } from './fs.ensurePath.ts';
+import { appendFile, } from 'node:fs/promises';
+import { join, } from 'node:path';
+import { ensureFile, } from './fs.ensurePath.ts';
 import {
   createBaseConfig,
   createMemorySink,
@@ -15,30 +15,31 @@ async function disposeFileSink(): Promise<void> {
   // No need to close the file stream, as we're using appendFile
 }
 
-async function createFileSink(appName: string): Promise<Sink & AsyncDisposable> {
+async function createFileSink(appName: string,): Promise<Sink & AsyncDisposable> {
   try {
     const fileName = `${appName}.${
-      new Date().toISOString().replaceAll(':', '')
+      new Date().toISOString().replaceAll(':', '',)
     }.log.jsonl`;
-    const filePath = join('logs', fileName);
+    const filePath = join('logs', fileName,);
 
-    await ensureFile(filePath);
+    await ensureFile(filePath,);
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises -- Not really a misused promise. An async function assigned to a variable.
     const fileSink: Sink & AsyncDisposable = async function logToFile(
       record: LogRecord,
     ): Promise<void> {
-      const log = JSON.stringify(record, null, 2) + '\n';
+      const log = JSON.stringify(record, null, 2,) + '\n';
 
       // It's, in fact, working correctly.
-      await appendFile(filePath, log);
+      await appendFile(filePath, log,);
     };
 
     fileSink[Symbol.asyncDispose] = disposeFileSink;
 
     return fileSink;
-  } catch (fsError: any) {
-    console.log(`fs failed with ${fsError}, storing log in memory in array.`);
+  }
+  catch (fsError: any) {
+    console.log(`fs failed with ${fsError}, storing log in memory in array.`,);
     return createMemorySink();
   }
 }
@@ -108,8 +109,8 @@ async function createFileSink(appName: string): Promise<Sink & AsyncDisposable> 
 export const logtapeConfiguration = async (
   appName = 'monochromatic',
 ): Promise<Parameters<typeof configure>[0]> => {
-  const fileSink = await createFileSink(appName);
-  return createBaseConfig(fileSink);
+  const fileSink = await createFileSink(appName,);
+  return createBaseConfig(fileSink,);
 };
 
-export { logtapeId } from './logtape.shared.ts';
+export { logtapeId, } from './logtape.shared.ts';

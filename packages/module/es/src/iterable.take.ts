@@ -1,5 +1,5 @@
-import { notNullishOrThrow } from './error.throw.ts';
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
+import { notNullishOrThrow, } from './error.throw.ts';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
 /**
  * Takes the first n elements from an async iterable, collecting them into an array.
@@ -40,22 +40,19 @@ export async function takeIterableAsync<const T,>(
   count: number,
   iterable: MaybeAsyncIterable<T>,
 ): Promise<T[]> {
-  if (count < 0) {
-    throw new RangeError('Count must be non-negative');
-  }
-  if (count === 0) {
+  if (count < 0)
+    throw new RangeError('Count must be non-negative',);
+  if (count === 0)
     return [];
-  }
 
   const result: T[] = [];
   let taken = 0;
 
   for await (const element of iterable) {
-    result.push(element);
+    result.push(element,);
     taken++;
-    if (taken >= count) {
+    if (taken >= count)
       break;
-    }
   }
 
   return result;
@@ -100,22 +97,19 @@ export function takeIterable<const T,>(
   count: number,
   iterable: Iterable<T>,
 ): T[] {
-  if (count < 0) {
-    throw new RangeError('Count must be non-negative');
-  }
-  if (count === 0) {
+  if (count < 0)
+    throw new RangeError('Count must be non-negative',);
+  if (count === 0)
     return [];
-  }
 
   const result: T[] = [];
   let taken = 0;
 
   for (const element of iterable) {
-    result.push(element);
+    result.push(element,);
     taken++;
-    if (taken >= count) {
+    if (taken >= count)
       break;
-    }
   }
 
   return result;
@@ -164,21 +158,18 @@ export async function* takeIterableAsyncGen<const T,>(
   count: number,
   iterable: MaybeAsyncIterable<T>,
 ): AsyncGenerator<T, void, undefined> {
-  if (count < 0) {
-    throw new RangeError('Count must be non-negative');
-  }
-  if (count === 0) {
+  if (count < 0)
+    throw new RangeError('Count must be non-negative',);
+  if (count === 0)
     return;
-  }
 
   let taken = 0;
 
   for await (const element of iterable) {
     yield element;
     taken++;
-    if (taken >= count) {
+    if (taken >= count)
       break;
-    }
   }
 }
 
@@ -222,21 +213,18 @@ export function* takeIterableGen<const T,>(
   count: number,
   iterable: Iterable<T>,
 ): Generator<T, void, undefined> {
-  if (count < 0) {
-    throw new RangeError('Count must be non-negative');
-  }
-  if (count === 0) {
+  if (count < 0)
+    throw new RangeError('Count must be non-negative',);
+  if (count === 0)
     return;
-  }
 
   let taken = 0;
 
   for (const element of iterable) {
     yield element;
     taken++;
-    if (taken >= count) {
+    if (taken >= count)
       break;
-    }
   }
 }
 
@@ -281,16 +269,15 @@ export function* takeIterableGen<const T,>(
  * ```
  */
 export async function takeWhileIterableAsync<const T,>(
-  predicate: (element: T) => Promise<boolean> | boolean,
+  predicate: (element: T,) => Promise<boolean> | boolean,
   iterable: MaybeAsyncIterable<T>,
 ): Promise<T[]> {
   const result: T[] = [];
 
   for await (const element of iterable) {
-    if (!(await predicate(element))) {
+    if (!(await predicate(element,)))
       break;
-    }
-    result.push(element);
+    result.push(element,);
   }
 
   return result;
@@ -332,18 +319,17 @@ export async function takeWhileIterableAsync<const T,>(
  * ```
  */
 export function takeWhileIterable<const T,>(
-  predicate: (element: T, index: number, array: T[]) => boolean,
+  predicate: (element: T, index: number, array: T[],) => boolean,
   iterable: Iterable<T>,
 ): T[] {
-  const arr = [...iterable];
+  const arr = [...iterable,];
   const result: T[] = [];
 
   for (let index = 0; index < arr.length; index++) {
-    const element = notNullishOrThrow(arr[index]);
-    if (!predicate(element, index, arr)) {
+    const element = notNullishOrThrow(arr[index],);
+    if (!predicate(element, index, arr,))
       break;
-    }
-    result.push(element);
+    result.push(element,);
   }
 
   return result;
@@ -395,13 +381,12 @@ export function takeWhileIterable<const T,>(
  * ```
  */
 export async function* takeWhileIterableAsyncGen<const T,>(
-  predicate: (element: T) => Promise<boolean> | boolean,
+  predicate: (element: T,) => Promise<boolean> | boolean,
   iterable: MaybeAsyncIterable<T>,
 ): AsyncGenerator<T, void, undefined> {
   for await (const element of iterable) {
-    if (!(await predicate(element))) {
+    if (!(await predicate(element,)))
       break;
-    }
     yield element;
   }
 }
@@ -454,13 +439,12 @@ export async function* takeWhileIterableAsyncGen<const T,>(
  * ```
  */
 export function* takeWhileIterableGen<const T,>(
-  predicate: (element: T) => boolean,
+  predicate: (element: T,) => boolean,
   iterable: Iterable<T>,
 ): Generator<T, void, undefined> {
   for (const element of iterable) {
-    if (!predicate(element)) {
+    if (!predicate(element,))
       break;
-    }
     yield element;
   }
 }

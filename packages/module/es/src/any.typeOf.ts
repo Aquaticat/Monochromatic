@@ -40,39 +40,50 @@ export function typeOf(
   | 'object'
 {
   // Early returns for primitives to avoid switch statement evaluation issues
-  if (obj === null) { return 'null'; }
-  if (obj === undefined) { return 'undefined'; }
-  if (typeof obj === 'number' && Number.isNaN(obj)) { return 'NaN'; }
-  if (typeof obj === 'number') { return 'number'; }
-  if (typeof obj === 'boolean') { return 'boolean'; }
-  if (typeof obj === 'bigint') { return 'bigint'; }
-  if (typeof obj === 'symbol') { return 'symbol'; }
-  if (typeof obj === 'string') { return 'string'; }
+  if (obj === null)
+    return 'null';
+  if (obj === undefined)
+    return 'undefined';
+  if (typeof obj === 'number' && Number.isNaN(obj,))
+    return 'NaN';
+  if (typeof obj === 'number')
+    return 'number';
+  if (typeof obj === 'boolean')
+    return 'boolean';
+  if (typeof obj === 'bigint')
+    return 'bigint';
+  if (typeof obj === 'symbol')
+    return 'symbol';
+  if (typeof obj === 'string')
+    return 'string';
 
   // Handle special object types
-  if (Array.isArray(obj)) { return 'array'; }
-  if (obj instanceof Date) { return 'date'; }
-  if (obj instanceof Set) { return 'set'; }
-  if (obj instanceof Map) { return 'map'; }
+  if (Array.isArray(obj,))
+    return 'array';
+  if (obj instanceof Date)
+    return 'date';
+  if (obj instanceof Set)
+    return 'set';
+  if (obj instanceof Map)
+    return 'map';
 
   // Handle objects with careful checking to avoid primitive conversion errors
   if (typeof obj === 'object') {
     // Check for null-prototype objects first (like Object.create(null))
-    console.log('hello');
-    const prototype = Object.getPrototypeOf(obj);
-    if (prototype === null) {
+    console.log('hello',);
+    const prototype = Object.getPrototypeOf(obj,);
+    if (prototype === null)
       return 'object';
-    }
 
     // Check for plain objects - only those with Object.prototype as prototype
     // AND with Object as constructor (to exclude class instances)
     if (prototype === Object.prototype) {
       try {
         /* v8 ignore next -- @preserve */
-        if (obj.constructor === Object) {
+        if (obj.constructor === Object)
           return 'object';
-        }
-      } catch {
+      }
+      catch {
         // If constructor access fails, but prototype is Object.prototype,
         // it's likely a plain object
         /* v8 ignore next -- @preserve */
@@ -85,8 +96,9 @@ export function typeOf(
   const objType = typeof obj;
   let objStringified: string;
   try {
-    objStringified = JSON.stringify(obj);
-  } catch {
+    objStringified = JSON.stringify(obj,);
+  }
+  catch {
     /* v8 ignore next -- @preserve */
     objStringified = '[object Object]';
   }

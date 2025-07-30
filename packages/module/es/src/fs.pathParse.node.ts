@@ -1,1 +1,1 @@
-export { parse as pathParse } from 'node:path';
+export { parse as pathParse, } from 'node:path';

@@ -84,7 +84,6 @@ export function arrayOf<const T_elements extends any[],>(
 export function* genOf<const T_elements extends any[],>(
   ...elements: T_elements
 ): Generator<T_elements[number]> {
-  for (const element of elements) {
+  for (const element of elements)
     yield element;
-  }
 }

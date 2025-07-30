@@ -11,87 +11,87 @@ import {
   test,
 } from 'vitest';
 
-await logtapeConfigure(await logtapeConfiguration());
+await logtapeConfigure(await logtapeConfiguration(),);
 
 describe(everyIterable, () => {
   test('returns true when all elements pass the test', () => {
-    const array = [2, 4, 6, 8];
-    expect(everyIterable((num: number) => num % 2 === 0, array)).toBe(true);
+    const array = [2, 4, 6, 8,];
+    expect(everyIterable((num: number,) => num % 2 === 0, array,),).toBe(true,);
   });
 
   test('returns false when any element fails the test', () => {
-    const array = [2, 4, 5, 8];
-    expect(everyIterable((num: number) => num % 2 === 0, array)).toBe(false);
+    const array = [2, 4, 5, 8,];
+    expect(everyIterable((num: number,) => num % 2 === 0, array,),).toBe(false,);
   });
 
   test('short-circuits when finding first failing element', () => {
     let callCount = 0;
-    const array = [2, 4, 5, 8];
-    everyIterable((num: number) => {
+    const array = [2, 4, 5, 8,];
+    everyIterable((num: number,) => {
       callCount++;
       return num % 2 === 0;
-    }, array);
-    expect(callCount).toBe(3); // Only calls until the first false result
+    }, array,);
+    expect(callCount,).toBe(3,); // Only calls until the first false result
   });
 
   test('correctly passes index as second argument', () => {
-    const array = [10, 20, 30];
+    const array = [10, 20, 30,];
     expect(
-      everyIterable((num: number, index: number) => num === (index + 1) * 10, array),
+      everyIterable((num: number, index: number,) => num === (index + 1) * 10, array,),
     )
-      .toBe(true);
+      .toBe(true,);
   });
 
   test('correctly passes array as third argument', () => {
-    const array = [1, 2, 3];
+    const array = [1, 2, 3,];
     expect(
-      everyIterable((_num: number, _index: number, arr) => equal(arr, array), array),
+      everyIterable((_num: number, _index: number, arr,) => equal(arr, array,), array,),
     )
-      .toBe(true);
+      .toBe(true,);
   });
 
   test('works with other iterables like Sets', () => {
-    const set = new Set([2, 4, 6, 8]);
-    expect(everyIterable((num: number) => num % 2 === 0, set)).toBe(true);
+    const set = new Set([2, 4, 6, 8,],);
+    expect(everyIterable((num: number,) => num % 2 === 0, set,),).toBe(true,);
 
-    const failSet = new Set([2, 3, 6, 8]);
-    expect(everyIterable((num: number) => num % 2 === 0, failSet)).toBe(false);
+    const failSet = new Set([2, 3, 6, 8,],);
+    expect(everyIterable((num: number,) => num % 2 === 0, failSet,),).toBe(false,);
   });
 
   test('works with strings as iterables', () => {
     const str = 'aabb';
-    expect(everyIterable((char: string) => /[ab]/.test(char), str)).toBe(true);
+    expect(everyIterable((char: string,) => /[ab]/.test(char,), str,),).toBe(true,);
 
     const failStr = 'aabc';
-    expect(everyIterable((char: string) => /[ab]/.test(char), failStr)).toBe(false);
+    expect(everyIterable((char: string,) => /[ab]/.test(char,), failStr,),).toBe(false,);
   });
 
   test('throws error when testing function throws', () => {
-    const array = [1, 2, 3];
+    const array = [1, 2, 3,];
     expect(() =>
       everyIterable(() => {
-        throw new Error('Test error');
-      }, array)
+        throw new Error('Test error',);
+      }, array,)
     )
-      .toThrow('Test error');
+      .toThrow('Test error',);
   });
 
   test('returns true for empty arrays', () => {
-    expect(everyIterable(() => false, [])).toBe(true);
+    expect(everyIterable(() => false, [],),).toBe(true,);
   });
-});
+},);
 
 describe(everyIterableAsync, () => {
   test('returns true when all elements pass the test', async () => {
-    const array = [2, 4, 6, 8];
-    expect(await everyIterableAsync(async (num: number) => num % 2 === 0, array)).toBe(
+    const array = [2, 4, 6, 8,];
+    expect(await everyIterableAsync(async (num: number,) => num % 2 === 0, array,),).toBe(
       true,
     );
   });
 
   test('returns false when any element fails the test', async () => {
-    const array = [2, 4, 5, 8];
-    await expect(everyIterableAsync(async (num: number) => num % 2 === 0, array))
+    const array = [2, 4, 5, 8,];
+    await expect(everyIterableAsync(async (num: number,) => num % 2 === 0, array,),)
       .resolves
       .toBe(
         false,
@@ -99,23 +99,23 @@ describe(everyIterableAsync, () => {
   });
 
   test('correctly passes index as second argument', async () => {
-    const array = [10, 20, 30];
+    const array = [10, 20, 30,];
     expect(
       await everyIterableAsync(
-        async (num: number, index: number) => num === (index + 1) * 10,
+        async (num: number, index: number,) => num === (index + 1) * 10,
         array,
       ),
     )
-      .toBe(true);
+      .toBe(true,);
   });
 
   test('correctly passes array as third argument', async () => {
-    const array = [1, 2, 3];
+    const array = [1, 2, 3,];
     await expect(
-      everyIterableAsync(async (_num, _index, arr) => equal(arr, array), array),
+      everyIterableAsync(async (_num, _index, arr,) => equal(arr, array,), array,),
     )
       .resolves
-      .toBe(true);
+      .toBe(true,);
   });
 
   test('works with async iterables', async () => {
@@ -127,7 +127,9 @@ describe(everyIterableAsync, () => {
       },
     };
 
-    await expect(everyIterableAsync(async (num: number) => num % 2 === 0, asyncIterable))
+    await expect(
+      everyIterableAsync(async (num: number,) => num % 2 === 0, asyncIterable,),
+    )
       .resolves
       .toBe(
         true,
@@ -142,43 +144,42 @@ describe(everyIterableAsync, () => {
     };
 
     await expect(
-      everyIterableAsync(async (num: number) => num % 2 === 0, failAsyncIterable),
+      everyIterableAsync(async (num: number,) => num % 2 === 0, failAsyncIterable,),
     )
       .resolves
-      .toBe(false);
+      .toBe(false,);
   });
 
   test('throws error when testing function throws', async () => {
-    const array = [1, 2, 3];
-    await expect(everyIterableAsync(async (_element: any) => {
-      throw new Error('Async test error');
-    }, array))
+    const array = [1, 2, 3,];
+    await expect(everyIterableAsync(async (_element: any,) => {
+      throw new Error('Async test error',);
+    }, array,),)
       .rejects
-      .toThrow('Async test error');
+      .toThrow('Async test error',);
   });
 
   test('returns true for empty arrays', async () => {
-    expect(await everyIterableAsync(async () => false, [])).toBe(true);
+    expect(await everyIterableAsync(async () => false, [],),).toBe(true,);
   });
 
   test('handles mixed synchronous and asynchronous predicates', async () => {
-    const array = [1, 2, 3, 4];
+    const array = [1, 2, 3, 4,];
 
-    const result = await everyIterableAsync((num: number, index: number) => {
-      if (index % 2 === 0) {
-        return Promise.resolve(num < 5);
-      }
+    const result = await everyIterableAsync((num: number, index: number,) => {
+      if (index % 2 === 0)
+        return Promise.resolve(num < 5,);
       return num < 5;
-    }, array);
+    }, array,);
 
-    expect(result).toBe(true);
+    expect(result,).toBe(true,);
   });
 
   test('handles delayed async responses correctly', async () => {
-    const array = [1, 2, 3, 4];
+    const array = [1, 2, 3, 4,];
 
     const slowTrue = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await new Promise(resolve => setTimeout(resolve, 10,));
       return true;
     };
 
@@ -188,99 +189,96 @@ describe(everyIterableAsync, () => {
 
     // Should return false quickly because of parallel execution
     const start = performance.now();
-    const result = await everyIterableAsync(async (num: number) => {
+    const result = await everyIterableAsync(async (num: number,) => {
       return num === 3 ? fastFalse() : slowTrue();
-    }, array);
+    }, array,);
     const elapsed = performance.now() - start;
 
-    expect(result).toBe(false);
+    expect(result,).toBe(false,);
 
     // This should complete faster than it would take for all slow functions to resolve
-    expect(elapsed).toBeLessThan(40);
+    expect(elapsed,).toBeLessThan(40,);
   });
-});
+},);
 
 describe('everyIterable with mixed predicate behavior', () => {
   test('should throw error if it encounters throwing item before false item', () => {
-    const array = ['throw', 'false', 'true'];
+    const array = ['throw', 'false', 'true',];
 
     expect(() =>
-      everyIterable((item: string) => {
-        if (item === 'throw') {
-          throw new Error('Predicate error');
-        }
+      everyIterable((item: string,) => {
+        if (item === 'throw')
+          throw new Error('Predicate error',);
         return item !== 'false';
-      }, array)
+      }, array,)
     )
-      .toThrow('Predicate error');
+      .toThrow('Predicate error',);
   });
 
   test('should return false if it encounters false item before throwing item', () => {
-    const array = ['false', 'throw', 'true'];
+    const array = ['false', 'throw', 'true',];
 
     expect(() =>
-      everyIterable((item: string) => {
-        if (item === 'throw') {
-          throw new Error('Predicate error');
-        }
+      everyIterable((item: string,) => {
+        if (item === 'throw')
+          throw new Error('Predicate error',);
         return item !== 'false';
-      }, array)
+      }, array,)
     )
       .not
       .toThrow();
 
-    expect(everyIterable((item: string) => {
-      if (item === 'throw') {
-        throw new Error('Predicate error');
-      }
+    expect(everyIterable((item: string,) => {
+      if (item === 'throw')
+        throw new Error('Predicate error',);
       return item !== 'false';
-    }, array))
-      .toBe(false);
+    }, array,),)
+      .toBe(false,);
   });
 });
 
 describe('everyIterableAsync with mixed predicate behavior', () => {
   test('can handle mixed predicate behaviors (true, false, throwing)', async () => {
-    const array = ['true', 'false', 'throw'];
+    const array = ['true', 'false', 'throw',];
 
     // Since execution is parallel, either outcome is acceptable
     try {
-      const result = await everyIterableAsync(async (item: string) => {
-        if (item === 'throw') {
-          throw new Error('Async predicate error');
-        }
+      const result = await everyIterableAsync(async (item: string,) => {
+        if (item === 'throw')
+          throw new Error('Async predicate error',);
         return item !== 'false';
-      }, array);
+      }, array,);
 
       // If it completes without throwing, it should be false
-      expect(result).toBe(false);
-    } catch (error: any) {
+      expect(result,).toBe(false,);
+    }
+    catch (error: any) {
       // If it throws, it should be the predicate error
-      expect(error.message).toBe('Async predicate error');
+      expect(error.message,).toBe('Async predicate error',);
     }
   });
 
   test('ensures non-deterministic result is either false or throws', async () => {
-    const array = ['true', 'false', 'throw'];
+    const array = ['true', 'false', 'throw',];
     let threw = false;
     let resultIfNotThrown: null | boolean = null;
 
     // Run multiple times to account for race conditions
     for (let attempt = 0; attempt < 5; attempt++) {
       try {
-        resultIfNotThrown = await everyIterableAsync(async (item: string) => {
-          if (item === 'throw') {
-            throw new Error('Async predicate error');
-          }
+        resultIfNotThrown = await everyIterableAsync(async (item: string,) => {
+          if (item === 'throw')
+            throw new Error('Async predicate error',);
           return item !== 'false';
-        }, array);
-      } catch {
+        }, array,);
+      }
+      catch {
         threw = true;
         break;
       }
     }
 
     // Either it threw at least once, or always returned false
-    expect(threw || resultIfNotThrown === false).toBe(true);
+    expect(threw || resultIfNotThrown === false,).toBe(true,);
   });
 });

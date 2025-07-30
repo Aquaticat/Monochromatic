@@ -10,19 +10,19 @@ import {
 export async function getStaticPaths(): Promise<
   { params: { lang: string; }; }[]
 > {
-  return langs.map((lang) => ({
-    params: { lang },
+  return langs.map(lang => ({
+    params: { lang, },
   }));
 }
 
-const { lang } = Astro.params;
+const { lang, } = Astro.params;
 ---
 
 <Html
-  title={i18n.get('siteDescription')!.get(lang)!}
+  title={i18n.get('siteDescription',)!.get(lang,)!}
   {lang}>
   <main>
-    <h1>{i18n.get('siteDescription')!.get(lang)!}</h1>
+    <h1>{i18n.get('siteDescription',)!.get(lang,)!}</h1>
 
     <!-- TODO: Find a way to insert lang specific introduction article in here. -->
   </main>

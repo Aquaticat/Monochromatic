@@ -1,14 +1,14 @@
 // TODO: Seriously test the types for this.
 
-import type { ArrayValues } from 'type-fest';
+import type { ArrayValues, } from 'type-fest';
 import {
   entriesIterable,
   entriesIterableAsync,
 } from './iterable.entries.ts';
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
-import type { Ints } from './numeric.type.ints.ts';
-import type { IntsNegative10to10 } from './numeric.type.intsTo10.ts';
-import type { Negative } from './numeric.type.negative.ts';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { Ints, } from './numeric.type.ints.ts';
+import type { IntsNegative10to10, } from './numeric.type.intsTo10.ts';
+import type { Negative, } from './numeric.type.negative.ts';
 
 /**
  * Asynchronously retrieves element at specified index from an async iterable, supporting negative indexing.
@@ -107,22 +107,22 @@ export async function atIterableAsync<
   index: T_index,
   iterable: T_iterable,
 ): Promise<T_element | undefined> {
-  if (Array.isArray(iterable)) {
+  if (Array.isArray(iterable,)) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Safe enough.
-    return iterable.at(index);
+    return iterable.at(index,);
   }
 
   const iterableArray: T_element[] = [];
-  for await (const [currentIndex, iterableElement] of entriesIterableAsync(iterable)) {
+  for await (const [currentIndex, iterableElement,] of entriesIterableAsync(iterable,)) {
     if (currentIndex === index) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Safe enough.
       return iterableElement;
     }
-    iterableArray.push(iterableElement);
+    iterableArray.push(iterableElement,);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Safe enough.
-  return iterableArray.at(index);
+  return iterableArray.at(index,);
 }
 
 /**
@@ -213,24 +213,23 @@ export function atIterable<
   index: T_index,
   iterable: T_iterable,
 ): T_element | undefined {
-  if (Array.isArray(iterable)) {
+  if (Array.isArray(iterable,)) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Safe enough.
-    return iterable.at(index);
+    return iterable.at(index,);
   }
 
   const iterableArray: T_element[] = [];
   for (
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- Necessary somehow.
-    const [currentIndex, iterableElement] of entriesIterable(iterable) as Generator<
-      [number, T_element]
+    const [currentIndex, iterableElement,] of entriesIterable(iterable,) as Generator<
+      [number, T_element,]
     >
   ) {
-    if (currentIndex === index) {
+    if (currentIndex === index)
       return iterableElement;
-    }
-    iterableArray.push(iterableElement);
+    iterableArray.push(iterableElement,);
   }
-  return iterableArray.at(index);
+  return iterableArray.at(index,);
 }
 
 // TODO: Check if the use of unknown rather than any everywhere cripples type inference.

@@ -3,66 +3,66 @@
   "files": [],
   "references": [
     {
-      "path": "packages/build/backup-path"
+      "path": "packages/build/backup-path",
     },
     {
-      "path": "packages/build/ensure-dependencies"
+      "path": "packages/build/ensure-dependencies",
     },
     {
-      "path": "packages/build/time"
+      "path": "packages/build/time",
     },
     {
-      "path": "packages/config/eslint"
+      "path": "packages/config/eslint",
     },
     {
-      "path": "packages/config/typescript"
+      "path": "packages/config/typescript",
     },
     {
-      "path": "packages/config/vite"
+      "path": "packages/config/vite",
     },
     {
-      "path": "packages/figma-plugin/css-variables"
+      "path": "packages/figma-plugin/css-variables",
     },
     {
-      "path": "packages/module/es"
+      "path": "packages/module/es",
     },
     {
-      "path": "packages/site/ai-proxy"
+      "path": "packages/site/ai-proxy",
     },
     {
-      "path": "packages/site/ai-tree"
+      "path": "packages/site/ai-tree",
     },
     {
-      "path": "packages/site/astro-test"
+      "path": "packages/site/astro-test",
     },
     {
-      "path": "packages/site/exa-search"
+      "path": "packages/site/exa-search",
     },
     {
-      "path": "packages/site/rss"
+      "path": "packages/site/rss",
     },
     {
-      "path": "packages/style/monochromatic"
-    }
+      "path": "packages/style/monochromatic",
+    },
   ],
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
       "@monochromatic-dev/config-eslint": [
-        "packages/config/eslint/src/index.ts"
+        "packages/config/eslint/src/index.ts",
       ],
       "@monochromatic-dev/config-eslint/*": [
-        "packages/config/eslint/src/*"
+        "packages/config/eslint/src/*",
       ],
       "@monochromatic-dev/config-vite": [
-        "packages/config/vite/src/index.ts"
+        "packages/config/vite/src/index.ts",
       ],
       "@monochromatic-dev/config-vite/*": [
-        "packages/config/vite/src/*"
+        "packages/config/vite/src/*",
       ],
       "@monochromatic-dev/config-typescript/*": [
-        "packages/config/typescript/*"
-      ]
-    }
-  }
+        "packages/config/typescript/*",
+      ],
+    },
+  },
 }

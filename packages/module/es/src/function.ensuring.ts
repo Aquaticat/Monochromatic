@@ -1,5 +1,5 @@
-import type { Promisable } from 'type-fest';
-import type { NotPromise } from './promise.type.ts';
+import type { Promisable, } from 'type-fest';
+import type { NotPromise, } from './promise.type.ts';
 
 //region Function Ensuring Utilities -- Function wrappers that enforce return value conditions and handle errors
 
@@ -22,10 +22,9 @@ export function ensuringTruthy<const T extends (...args: any[]) => NotPromise,>(
   errorMessage = 'Function must return a truthy value',
 ): (...args: Parameters<T>) => ReturnType<T> {
   return function ensuredTruthy(...args: Parameters<T>): ReturnType<T> {
-    const result = fn(...args);
-    if (!result) {
-      throw new Error(errorMessage);
-    }
+    const result = fn(...args,);
+    if (!result)
+      throw new Error(errorMessage,);
     return result;
   };
 }
@@ -42,10 +41,9 @@ export function ensuringTruthyAsync<
   return async function ensuredTruthy(
     ...args: Parameters<T>
   ): Promise<Awaited<ReturnType<T>>> {
-    const result = await fn(...args);
-    if (!result) {
-      throw new Error(errorMessage);
-    }
+    const result = await fn(...args,);
+    if (!result)
+      throw new Error(errorMessage,);
     return result;
   };
 }
@@ -69,10 +67,9 @@ export function ensuringFalsy<const T extends (...args: any[]) => NotPromise,>(
   errorMessage = 'Function must return a falsy value',
 ): (...args: Parameters<T>) => ReturnType<T> {
   return function ensuredFalsy(...args: Parameters<T>): ReturnType<T> {
-    const result = fn(...args);
-    if (result) {
-      throw new Error(errorMessage);
-    }
+    const result = fn(...args,);
+    if (result)
+      throw new Error(errorMessage,);
     return result;
   };
 }
@@ -89,10 +86,9 @@ export function ensuringFalsyAsync<
   return async function ensuredFalsy(
     ...args: Parameters<T>
   ): Promise<Awaited<ReturnType<T>>> {
-    const result = await fn(...args);
-    if (result) {
-      throw new Error(errorMessage);
-    }
+    const result = await fn(...args,);
+    if (result)
+      throw new Error(errorMessage,);
     return result;
   };
 }
@@ -118,8 +114,9 @@ export function nonThrowingWithNull<const T extends (...args: any[]) => NotPromi
 ): (...args: Parameters<T>) => ReturnType<T> | null {
   return function safe(...args: Parameters<T>) {
     try {
-      return fn(...args);
-    } catch {
+      return fn(...args,);
+    }
+    catch {
       return null;
     }
   };
@@ -130,11 +127,12 @@ export function nonThrowingWithNull<const T extends (...args: any[]) => NotPromi
  */
 export function nonThrowingWithNullAsync<
   const T extends (...args: any[]) => Promisable<NotPromise>,
->(fn: T): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>> | null> {
+>(fn: T,): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>> | null> {
   return async function safe(...args: Parameters<T>) {
     try {
-      return await fn(...args);
-    } catch {
+      return await fn(...args,);
+    }
+    catch {
       return null;
     }
   };
@@ -160,8 +158,9 @@ export function nonThrowingWithFalse<const T extends (...args: any[]) => NotProm
 ): (...args: Parameters<T>) => ReturnType<T> | false {
   return function safe(...args: Parameters<T>) {
     try {
-      return fn(...args);
-    } catch {
+      return fn(...args,);
+    }
+    catch {
       return false;
     }
   };
@@ -172,11 +171,12 @@ export function nonThrowingWithFalse<const T extends (...args: any[]) => NotProm
  */
 export function nonThrowingWithFalseAsync<
   const T extends (...args: any[]) => Promisable<NotPromise>,
->(fn: T): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>> | false> {
+>(fn: T,): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>> | false> {
   return async function safe(...args: Parameters<T>) {
     try {
-      return await fn(...args);
-    } catch {
+      return await fn(...args,);
+    }
+    catch {
       return false;
     }
   };
@@ -202,8 +202,9 @@ export function nonThrowingWithTrue<const T extends (...args: any[]) => NotPromi
 ): (...args: Parameters<T>) => ReturnType<T> | true {
   return function safe(...args: Parameters<T>) {
     try {
-      return fn(...args);
-    } catch {
+      return fn(...args,);
+    }
+    catch {
       return true;
     }
   };
@@ -214,11 +215,12 @@ export function nonThrowingWithTrue<const T extends (...args: any[]) => NotPromi
  */
 export function nonThrowingWithTrueAsync<
   const T extends (...args: any[]) => Promisable<NotPromise>,
->(fn: T): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>> | true> {
+>(fn: T,): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>> | true> {
   return async function safe(...args: Parameters<T>) {
     try {
-      return await fn(...args);
-    } catch {
+      return await fn(...args,);
+    }
+    catch {
       return true;
     }
   };

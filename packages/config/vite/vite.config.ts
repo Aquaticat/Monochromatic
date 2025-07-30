@@ -1,6 +1,6 @@
-import { getLib } from './src/index.ts';
+import { getLib, } from './src/index.ts';
 
-import type { UserConfigFnObject } from 'vite';
+import type { UserConfigFnObject, } from 'vite';
 
-const _default_1: UserConfigFnObject = getLib(import.meta.dirname);
+const _default_1: UserConfigFnObject = getLib(import.meta.dirname,);
 export default _default_1;

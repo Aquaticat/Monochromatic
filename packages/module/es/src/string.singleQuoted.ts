@@ -17,7 +17,7 @@
 export function isSingleQuotedString(
   input: string,
 ): boolean {
-  return input.startsWith("'") && input.endsWith("'");
+  return input.startsWith("'",) && input.endsWith("'",);
 }
 
 /**
@@ -39,7 +39,7 @@ export function isSingleQuotedString(
 export function isDoubleQuotedString(
   input: string,
 ): boolean {
-  return input.startsWith('"') && input.endsWith('"');
+  return input.startsWith('"',) && input.endsWith('"',);
 }
 
 /**
@@ -64,17 +64,16 @@ export function isDoubleQuotedString(
 export function toSingleQuotedString(
   input: string,
 ): string {
-  if (isSingleQuotedString(input)) {
+  if (isSingleQuotedString(input,))
     return input;
-  }
 
-  if (!isDoubleQuotedString(input)) {
+  if (!isDoubleQuotedString(input,)) {
     throw new Error(
       `Expected a string to be either already single or double quoted, but got: ${input}`,
     );
   }
 
-  const doubleQuotedInputWoSideQuotes = input.slice(1, -1);
+  const doubleQuotedInputWoSideQuotes = input.slice(1, -1,);
   const singleQuotedStringWoSideQuotes = doubleQuotedInputWoSideQuotes.replaceAll(
     String.raw`\"`,
     `'`,
@@ -104,17 +103,16 @@ export function toSingleQuotedString(
 export function toDoubleQuotedString(
   input: string,
 ): string {
-  if (isDoubleQuotedString(input)) {
+  if (isDoubleQuotedString(input,))
     return input;
-  }
 
-  if (!isSingleQuotedString(input)) {
+  if (!isSingleQuotedString(input,)) {
     throw new Error(
       `Expected a string to be either already single or double quoted, but got: ${input}`,
     );
   }
 
-  const singleQuotedInputWoSideQuotes = input.slice(1, -1);
+  const singleQuotedInputWoSideQuotes = input.slice(1, -1,);
   const doubleQuotedStringWoSideQuotes = singleQuotedInputWoSideQuotes.replaceAll(
     String.raw`\'`,
     `"`,

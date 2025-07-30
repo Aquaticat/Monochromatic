@@ -17,45 +17,45 @@ import {
   notEmptyOrThrow,
   notFalsyOrThrow,
 } from './error.throw.ts';
-import { trimIterableWith } from './iterable.trim.ts';
-import { logtapeGetLogger } from './logtape.shared.ts';
-import { toSingleQuotedString } from './string.singleQuoted.ts';
+import { trimIterableWith, } from './iterable.trim.ts';
+import { logtapeGetLogger, } from './logtape.shared.ts';
+import { toSingleQuotedString, } from './string.singleQuoted.ts';
 
-const l = logtapeGetLogger(['m', 'limitedGetComputedCss']);
+const l = logtapeGetLogger(['m', 'limitedGetComputedCss',],);
 
 class InCoherentCssValueError extends Error {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string,) {
+    super(message,);
     this.name = 'InCoherentCssValueError';
   }
 }
 
 // oxlint-disable-next-line max-classes-per-file
 class UnrecognizedSingleCssValueError extends Error {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string,) {
+    super(message,);
     this.name = 'UnrecognizedSingleCssValueError';
   }
 }
 
 class MalformedCssValueError extends Error {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string,) {
+    super(message,);
     this.name = 'MalformedCssValueError';
   }
 }
 
 const identToValueMap = new Map<string, string | number>([
-  ['--a', 0],
-  ['--b', "'bString'"],
-]);
+  ['--a', 0,],
+  ['--b', "'bString'",],
+],);
 
 /**
  * Represents either a CSS token or a grouped function token with nested tokens.
  * Function tokens are grouped with their contents to maintain proper nesting structure
  * during CSS parsing and evaluation.
  */
-export type GroupedToken = CSSToken | ['function-token-group', GroupedToken[]];
+export type GroupedToken = CSSToken | ['function-token-group', GroupedToken[],];
 
 /**
  * Tokenizes CSS value string into array of CSS tokens using CSS tokenizer.
@@ -74,16 +74,16 @@ export type GroupedToken = CSSToken | ['function-token-group', GroupedToken[]];
  * // Returns array with string token
  * ```
  */
-export function lGCC_tokenizeCssValue(cssValue: string): CSSToken[] {
-  const tokens = tokenize({ css: cssValue }, {
-    onParseError: (error: Error) => {
-      throw new MalformedCssValueError(error.message);
+export function lGCC_tokenizeCssValue(cssValue: string,): CSSToken[] {
+  const tokens = tokenize({ css: cssValue, }, {
+    onParseError: (error: Error,) => {
+      throw new MalformedCssValueError(error.message,);
     },
-  })
-    .slice(0, -1); // Trim EOF token
+  },)
+    .slice(0, -1,); // Trim EOF token
 
   l.info`${cssValue} -> ${tokens}`;
-  notEmptyOrThrow(tokens);
+  notEmptyOrThrow(tokens,);
   return tokens;
 }
 
@@ -107,24 +107,21 @@ export function lGCC_tokenizeCssValue(cssValue: string): CSSToken[] {
  * lGCC_handleSimpleToken(noneToken); // "none"
  * ```
  */
-export function lGCC_handleSimpleToken(token: CSSToken): string | number {
-  if (isTokenNumber(token) || isTokenDimension(token)) {
+export function lGCC_handleSimpleToken(token: CSSToken,): string | number {
+  if (isTokenNumber(token,) || isTokenDimension(token,))
     return token[4].value;
-  }
-  if (isTokenString(token)) {
+  if (isTokenString(token,))
     return token[1];
-  }
-  if (isTokenIdent(token)) {
+  if (isTokenIdent(token,)) {
     const tokenValue = token[4].value;
-    if (tokenValue === 'none') {
+    if (tokenValue === 'none')
       return tokenValue;
-    }
     throw new UnrecognizedSingleCssValueError(
-      `${JSON.stringify(token)} ident token isn't none.`,
+      `${JSON.stringify(token,)} ident token isn't none.`,
     );
   }
   throw new UnrecognizedSingleCssValueError(
-    `${JSON.stringify(token)} isn't a number, dimension or string.`,
+    `${JSON.stringify(token,)} isn't a number, dimension or string.`,
   );
 }
 
@@ -146,7 +143,7 @@ export function lGCC_handleSimpleToken(token: CSSToken): string | number {
  */
 export function lGCC_isFunctionTokenGroup(
   item: GroupedToken,
-): item is ['function-token-group', GroupedToken[]] {
+): item is ['function-token-group', GroupedToken[],] {
   return item[0] === 'function-token-group';
 }
 
@@ -169,17 +166,19 @@ export function lGCC_isFunctionTokenGroup(
  * ```
  */
 export function lGCC_isTokenDeeplyContained(tokenToFind: GroupedToken,
-  groupContents: GroupedToken[]): boolean
+  groupContents: GroupedToken[],): boolean
 {
   for (const item of groupContents) {
-    if (item === tokenToFind) { // Direct reference check for the token itself
+    if (item === tokenToFind) // Direct reference check for the token itself
       return true;
-    }
     // If the item is a function group, recurse into its contents
     // item[1] is GroupedToken[]
     if (
-      lGCC_isFunctionTokenGroup(item) && lGCC_isTokenDeeplyContained(tokenToFind, item[1])
-    ) { return true; }
+      lGCC_isFunctionTokenGroup(item,)
+      && lGCC_isTokenDeeplyContained(tokenToFind, item[1],)
+    ) {
+      return true;
+    }
     // Here, doing `if(lGCC_isFunctionTokenGroup(item)) {return lGCC_isTokenDeeplyContained(tokenToFind, item[1]);}` cause some test failures because it prematurely exits the loop.
     // If item is a function group, this code immediately returns the result of checking within that item. If tokenToFind isn't in this specific item (but might be in a subsequent item in the groupContents array), the function will incorrectly return false without checking the rest of the groupContents.
   }
@@ -200,54 +199,51 @@ export function lGCC_isTokenDeeplyContained(tokenToFind: GroupedToken,
  * // Returns tokens with function calls grouped with their arguments
  * ```
  */
-export function lGCC_groupFunctionTokens(tokens: GroupedToken[]): GroupedToken[] {
+export function lGCC_groupFunctionTokens(tokens: GroupedToken[],): GroupedToken[] {
   const result = tokens.reduce<GroupedToken[]>(
-    function reducer(acc, token: GroupedToken, _, arr: GroupedToken[]) {
+    function reducer(acc, token: GroupedToken, _, arr: GroupedToken[],) {
       // Skip tokens that are part of function groups we've already processed
-      if (lGCC_isTokenDeeplyContained(token, acc)) {
+      if (lGCC_isTokenDeeplyContained(token, acc,))
         return acc;
-      }
 
       // Check if we're starting a function group
-      if (isTokenFunction(token as CSSToken)) {
+      if (isTokenFunction(token as CSSToken,)) {
         // Create a new function group
-        const functionGroup: GroupedToken[] = [token];
+        const functionGroup: GroupedToken[] = [token,];
         let depth = 1; // Track nesting level
-        let tokenIndex = arr.indexOf(token) + 1;
+        let tokenIndex = arr.indexOf(token,) + 1;
 
         // Collect all tokens until matching closing parenthesis
         while (depth > 0) {
-          const currentToken = notFalsyOrThrow(arr[tokenIndex]);
-          functionGroup.push(currentToken);
+          const currentToken = notFalsyOrThrow(arr[tokenIndex],);
+          functionGroup.push(currentToken,);
 
           // Adjust depth based on parentheses
-          if (isTokenFunction(currentToken as CSSToken)) {
+          if (isTokenFunction(currentToken as CSSToken,))
             depth++;
-          }
-          if (isTokenCloseParen(currentToken as CSSToken)) {
+          if (isTokenCloseParen(currentToken as CSSToken,))
             depth--;
-          }
 
           tokenIndex++;
         }
 
         const reducedFunctionGroupInner: GroupedToken[] = functionGroup
-          .slice(1, -1)
+          .slice(1, -1,)
           .reduce<
             GroupedToken[]
-          >(reducer, []);
+          >(reducer, [],);
 
         // Add the complete function group to our result
         return [...acc, [
           'function-token-group',
           [
-            notFalsyOrThrow(functionGroup.at(0)),
+            notFalsyOrThrow(functionGroup.at(0,),),
             ...reducedFunctionGroupInner,
-            notFalsyOrThrow(functionGroup.at(-1)),
+            notFalsyOrThrow(functionGroup.at(-1,),),
           ],
-        ]];
+        ],];
       }
-      return [...acc, token];
+      return [...acc, token,];
     },
     [],
   );
@@ -272,23 +268,20 @@ export function lGCC_groupFunctionTokens(tokens: GroupedToken[]): GroupedToken[]
  * // Returns string representation of the token
  * ```
  */
-export function lGCC_reduceTokenToString(acc: string, token: GroupedToken): string {
-  if (token[0] === 'function-token-group') {
-    return lGCC_handleFunctionTokenGroup(acc, token);
-  }
+export function lGCC_reduceTokenToString(acc: string, token: GroupedToken,): string {
+  if (token[0] === 'function-token-group')
+    return lGCC_handleFunctionTokenGroup(acc, token,);
 
   const cssToken = token;
 
-  if (isTokenWhitespace(cssToken)) {
+  if (isTokenWhitespace(cssToken,))
     return acc === '' ? acc : `${acc} `;
-  }
 
-  if (isTokenString(cssToken)) {
-    return lGCC_appendString(acc, cssToken[1]);
-  }
+  if (isTokenString(cssToken,))
+    return lGCC_appendString(acc, cssToken[1],);
 
   throw new UnrecognizedSingleCssValueError(
-    `single cssToken ${JSON.stringify(cssToken)} isn't a string or whitespace`,
+    `single cssToken ${JSON.stringify(cssToken,)} isn't a string or whitespace`,
   );
 }
 
@@ -307,22 +300,19 @@ export function lGCC_reduceTokenToString(acc: string, token: GroupedToken): stri
  * // Returns processed var() function result
  * ```
  */
-export function lGCC_handleFunctionTokenGroup(acc: string, token: GroupedToken): string {
+export function lGCC_handleFunctionTokenGroup(acc: string, token: GroupedToken,): string {
   const functionTokenGroup = token[1] as GroupedToken[];
-  const functionToken = notFalsyOrThrow(functionTokenGroup[0]) as CSSToken;
+  const functionToken = notFalsyOrThrow(functionTokenGroup[0],) as CSSToken;
 
-  if (!isTokenFunction(functionToken)) {
-    throw new Error(`expected function token, got ${JSON.stringify(functionToken)}`);
-  }
+  if (!isTokenFunction(functionToken,))
+    throw new Error(`expected function token, got ${JSON.stringify(functionToken,)}`,);
 
-  const functionName = notFalsyOrThrow(functionToken[4]).value;
-  if (!['var'].includes(functionName)) {
-    throw new Error(`Unsupported function name: ${functionName}`);
-  }
+  const functionName = notFalsyOrThrow(functionToken[4],).value;
+  if (!['var',].includes(functionName,))
+    throw new Error(`Unsupported function name: ${functionName}`,);
 
-  if (functionName === 'var') {
-    return lGCC_handleVarFunction(acc, functionTokenGroup);
-  }
+  if (functionName === 'var')
+    return lGCC_handleVarFunction(acc, functionTokenGroup,);
 
   return acc;
 }
@@ -344,29 +334,25 @@ export function lGCC_handleFunctionTokenGroup(acc: string, token: GroupedToken):
  * ```
  */
 export function lGCC_handleVarFunction(acc: string,
-  functionTokenGroup: GroupedToken[]): string
+  functionTokenGroup: GroupedToken[],): string
 {
-  const args = functionTokenGroup.slice(1, -1);
-  if (args.length === 0) {
-    throw new Error('var() function requires at least one argument');
-  }
+  const args = functionTokenGroup.slice(1, -1,);
+  if (args.length === 0)
+    throw new Error('var() function requires at least one argument',);
 
-  const firstArg = notFalsyOrThrow(args[0]);
+  const firstArg = notFalsyOrThrow(args[0],);
 
-  if (lGCC_isFunctionTokenGroup(firstArg)) {
-    return lGCC_reduceTokenToString(acc, firstArg);
-  }
+  if (lGCC_isFunctionTokenGroup(firstArg,))
+    return lGCC_reduceTokenToString(acc, firstArg,);
 
-  if (isTokenString(firstArg)) {
-    return lGCC_appendString(acc, firstArg[1]);
-  }
+  if (isTokenString(firstArg,))
+    return lGCC_appendString(acc, firstArg[1],);
 
-  if (isTokenIdent(firstArg)) {
-    return lGCC_handleVarIdentifier(acc, firstArg, args);
-  }
+  if (isTokenIdent(firstArg,))
+    return lGCC_handleVarIdentifier(acc, firstArg, args,);
 
   throw new InCoherentCssValueError(
-    `firstArg ${JSON.stringify(firstArg)} isn't a string or ident.`,
+    `firstArg ${JSON.stringify(firstArg,)} isn't a string or ident.`,
   );
 }
 
@@ -386,11 +372,11 @@ export function lGCC_handleVarFunction(acc: string,
  * // Returns true for meaningful tokens
  * ```
  */
-export function lGCC_isNotWhitespaceOrComment(potentiallyGroupedToken: any): boolean {
+export function lGCC_isNotWhitespaceOrComment(potentiallyGroupedToken: any,): boolean {
   // checking isFunctionTokenGroup is necessary, because other than narrowing the type of potentiallyGroupedToken down, isToken also asserts it's a regular token, which means we'd erroneously remove function token groups if this check isn't here.
-  return lGCC_isFunctionTokenGroup(potentiallyGroupedToken)
-    || isToken(potentiallyGroupedToken)
-      && !isTokenWhiteSpaceOrComment(potentiallyGroupedToken);
+  return lGCC_isFunctionTokenGroup(potentiallyGroupedToken,)
+    || isToken(potentiallyGroupedToken,)
+      && !isTokenWhiteSpaceOrComment(potentiallyGroupedToken,);
 }
 
 /**
@@ -411,14 +397,13 @@ export function lGCC_isNotWhitespaceOrComment(potentiallyGroupedToken: any): boo
  * ```
  */
 export function lGCC_handleVarIdentifier(acc: string, identToken: TokenIdent,
-  args: GroupedToken[]): string
+  args: GroupedToken[],): string
 {
   const identTokenValue = (identToken[4] as { value: string; }).value;
-  const tokenValue = identToValueMap.get(identTokenValue);
+  const tokenValue = identToValueMap.get(identTokenValue,);
 
-  if (typeof tokenValue === 'string') {
-    return lGCC_appendString(acc, tokenValue);
-  }
+  if (typeof tokenValue === 'string')
+    return lGCC_appendString(acc, tokenValue,);
 
   if (typeof tokenValue === 'number') {
     throw new Error(
@@ -433,24 +418,24 @@ export function lGCC_handleVarIdentifier(acc: string, identToken: TokenIdent,
   // FIXME: . w:test:    × lGCC_handleVarFunction > handles var(--unknown, var(--b)) 1ms
   //  . w:test:      → No fallback provided for unknown variable --unknown or function structure malformed. Please note this function only supports parsing var(--a) or var(--b, --c) functions.
   const [, ...otherArgs] = args;
-  const trimmedOtherArgs = trimIterableWith(lGCC_isNotWhitespaceOrComment, otherArgs);
+  const trimmedOtherArgs = trimIterableWith(lGCC_isNotWhitespaceOrComment, otherArgs,);
   const [needToBeCommaToken, ...afterCommaTokens] = trimmedOtherArgs;
-  if (!(isToken(needToBeCommaToken) && isTokenComma(needToBeCommaToken))) {
+  if (!(isToken(needToBeCommaToken,) && isTokenComma(needToBeCommaToken,))) {
     throw new Error(
-      `needToBeCommaToken: ${JSON.stringify(needToBeCommaToken)} isn't a comma token.`,
+      `needToBeCommaToken: ${JSON.stringify(needToBeCommaToken,)} isn't a comma token.`,
     );
   }
   const trimmedAfterCommaTokens = trimIterableWith(lGCC_isNotWhitespaceOrComment,
-    afterCommaTokens);
+    afterCommaTokens,);
   if (trimmedAfterCommaTokens.length !== 1) {
     throw new Error(
       `trimmedAfterCommaTokens: ${
-        JSON.stringify(trimmedAfterCommaTokens)
-      } isn't of length one. Trimmed from ${JSON.stringify(afterCommaTokens)}`,
+        JSON.stringify(trimmedAfterCommaTokens,)
+      } isn't of length one. Trimmed from ${JSON.stringify(afterCommaTokens,)}`,
     );
   }
-  const secondArg = notFalsyOrThrow(trimmedAfterCommaTokens[0]);
-  return lGCC_handleVarFallback(acc, secondArg);
+  const secondArg = notFalsyOrThrow(trimmedAfterCommaTokens[0],);
+  return lGCC_handleVarFallback(acc, secondArg,);
 }
 
 /**
@@ -472,26 +457,23 @@ export function lGCC_handleVarIdentifier(acc: string, identToken: TokenIdent,
  * // Returns processed nested function result
  * ```
  */
-export function lGCC_handleVarFallback(acc: string, fallbackArg: GroupedToken): string {
-  if (lGCC_isFunctionTokenGroup(fallbackArg)) {
-    return lGCC_handleFunctionTokenGroup(acc, fallbackArg);
-  }
+export function lGCC_handleVarFallback(acc: string, fallbackArg: GroupedToken,): string {
+  if (lGCC_isFunctionTokenGroup(fallbackArg,))
+    return lGCC_handleFunctionTokenGroup(acc, fallbackArg,);
 
-  if (isTokenString(fallbackArg)) {
-    return lGCC_appendString(acc, fallbackArg[1]);
-  }
+  if (isTokenString(fallbackArg,))
+    return lGCC_appendString(acc, fallbackArg[1],);
 
-  if (isTokenIdent(fallbackArg)) {
-    const tokenValue = identToValueMap.get(fallbackArg[4].value);
-    if (typeof tokenValue === 'string') {
-      return lGCC_appendString(acc, tokenValue);
-    }
+  if (isTokenIdent(fallbackArg,)) {
+    const tokenValue = identToValueMap.get(fallbackArg[4].value,);
+    if (typeof tokenValue === 'string')
+      return lGCC_appendString(acc, tokenValue,);
     throw new UnrecognizedSingleCssValueError(
-      `Fallback ${JSON.stringify(fallbackArg)} is undefined or not a string`,
+      `Fallback ${JSON.stringify(fallbackArg,)} is undefined or not a string`,
     );
   }
 
-  throw new InCoherentCssValueError(`Fallback isn't a valid token type`);
+  throw new InCoherentCssValueError(`Fallback isn't a valid token type`,);
 }
 
 /**
@@ -512,14 +494,12 @@ export function lGCC_handleVarFallback(acc: string, fallbackArg: GroupedToken): 
  * // Returns "'startend'"
  * ```
  */
-export function lGCC_appendString(acc: string, input: string): string {
-  if (acc.endsWith("' ") && acc.startsWith("'")) {
-    return `${acc.slice(0, -"' ".length)}${toSingleQuotedString(input).slice(1)}`;
-  }
-  if (acc === '') {
-    return toSingleQuotedString(input);
-  }
-  throw new Error(`malformed acc ${acc} with input ${input}`);
+export function lGCC_appendString(acc: string, input: string,): string {
+  if (acc.endsWith("' ",) && acc.startsWith("'",))
+    return `${acc.slice(0, -"' ".length,)}${toSingleQuotedString(input,).slice(1,)}`;
+  if (acc === '')
+    return toSingleQuotedString(input,);
+  throw new Error(`malformed acc ${acc} with input ${input}`,);
 }
 
 /**
@@ -550,18 +530,17 @@ export function lGCC_appendString(acc: string, input: string): string {
  * Throws or gives incorrect results on malformed CSS values.
  * For examples of how browsers handle var resolution, fallback, erroring, and more in the content property, see: https://codepen.io/aquaticat/pen/dPPzEBX
  */
-export function limitedGetComputedCss(cssValue: string): string | number {
+export function limitedGetComputedCss(cssValue: string,): string | number {
   // 1. Tokenize the input
-  const tokens = lGCC_tokenizeCssValue(cssValue);
+  const tokens = lGCC_tokenizeCssValue(cssValue,);
 
   // 2. Handle simple cases (single token)
-  if (tokens.length === 1) {
-    return lGCC_handleSimpleToken(tokens[0] as CSSToken);
-  }
+  if (tokens.length === 1)
+    return lGCC_handleSimpleToken(tokens[0] as CSSToken,);
 
   // 3. Group function tokens
-  const groupedTokens = lGCC_groupFunctionTokens(tokens);
+  const groupedTokens = lGCC_groupFunctionTokens(tokens,);
 
   // 4. Process grouped tokens to get final value
-  return groupedTokens.reduce(lGCC_reduceTokenToString, '');
+  return groupedTokens.reduce(lGCC_reduceTokenToString, '',);
 }

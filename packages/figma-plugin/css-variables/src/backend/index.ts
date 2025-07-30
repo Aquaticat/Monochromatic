@@ -14,7 +14,7 @@ import type {
   VariableResolvedDataType,
   VariableValue,
 } from '@figma/plugin-typings/plugin-api-standalone';
-import type { AuthoredCss } from '../shared/message.ts';
+import type { AuthoredCss, } from '../shared/message.ts';
 
 /** Floating point comparison precision (10^-5) */
 const FLOATING_POINT_PRECISION = 5;
@@ -26,12 +26,12 @@ const RGB_GREEN_INDEX = 1;
 const RGB_BLUE_INDEX = 2;
 const RGBA_ALPHA_INDEX = 3;
 
-const almostEqual = (a: number, b: number): boolean => {
-  return Math.abs(a - b) < EPSILON;
+const almostEqual = (a: number, b: number,): boolean => {
+  return Math.abs(a - b,) < EPSILON;
 };
 
 const getCssValueOfFigmaVariableValue = (value: VariableValue,
-  resolvedType: VariableResolvedDataType): string =>
+  resolvedType: VariableResolvedDataType,): string =>
 {
   switch (resolvedType) {
     case 'COLOR': {
@@ -44,30 +44,30 @@ const getCssValueOfFigmaVariableValue = (value: VariableValue,
     case 'STRING': {
       const stringValue = value as string;
       if (
-        !(stringValue.startsWith('"')
-          && stringValue.endsWith('"'))
-        || (stringValue.startsWith("'")
-            && stringValue.endsWith("'"))
-          && !stringValue.includes('var(--')
+        !(stringValue.startsWith('"',)
+          && stringValue.endsWith('"',))
+        || (stringValue.startsWith("'",)
+            && stringValue.endsWith("'",))
+          && !stringValue.includes('var(--',)
       ) {
-        return `'${stringValue.replaceAll("'", "\\'")}'`;
+        return `'${stringValue.replaceAll("'", "\\'",)}'`;
       }
       return stringValue;
     }
 
     case 'FLOAT': {
       const floatValue = value as number;
-      return String(floatValue);
+      return String(floatValue,);
     }
 
     case 'BOOLEAN': {
       // TODO: Might need unique handling here.
       const booleanValue = value as boolean;
-      return String(booleanValue);
+      return String(booleanValue,);
     }
 
     default:
-      throw new Error(`Unknown resolved type ${resolvedType} for value ${value}`);
+      throw new Error(`Unknown resolved type ${resolvedType} for value ${value}`,);
   }
 };
 
@@ -86,32 +86,34 @@ class EnhancedVariable {
   public readonly id: string;
   private _generatedCss: string = '';
 
-  constructor(variable: Variable) {
-    const { variableCollectionId: collectionId, name, description, resolvedType, id }:
+  constructor(variable: Variable,) {
+    const { variableCollectionId: collectionId, name, description, resolvedType, id, }:
       Variable = variable;
 
     const collection: VariableCollection = collections.find(function collectionIdMatching(
       collection: VariableCollection,
     ): boolean {
       return collection.id === collectionId;
-    })!;
+    },)!;
 
-    const modeIds: string[] = Object.keys(variable.valuesByMode);
+    const modeIds: string[] = Object.keys(variable.valuesByMode,);
 
     const modeNames: string[] = modeIds.map(
-      function modeIdToName(modeIdToFind: string): string {
-        return collection.modes.find(function findModeId({ modeId }): boolean {
+      function modeIdToName(modeIdToFind: string,): string {
+        return collection.modes.find(function findModeId({ modeId, },): boolean {
           return modeIdToFind === modeId;
-        })!
+        },)!
           .name;
       },
     );
 
-    const values: VariableValue[] = Object.values(variable.valuesByMode);
+    const values: VariableValue[] = Object.values(variable.valuesByMode,);
     const valuesByModeName: Record<string, VariableValue> = Object.fromEntries(
-      modeNames.map(function modeNameWithValue(modeName, index): [string, VariableValue] {
-        return [modeName, values[index]!];
-      }),
+      modeNames.map(
+        function modeNameWithValue(modeName, index,): [string, VariableValue,] {
+          return [modeName, values[index]!,];
+        },
+      ),
     );
 
     this.id = id;
@@ -130,7 +132,7 @@ class EnhancedVariable {
     this.recalculateGeneratedCss();
   }
 
-  set name(name: string) {
+  set name(name: string,) {
     this._name = name;
     this.variable.name = name;
     this.recalculateGeneratedCss();
@@ -145,7 +147,7 @@ class EnhancedVariable {
   }
 
   private recalculateGeneratedCss(): string {
-    const { name, description, resolvedType } = this;
+    const { name, description, resolvedType, } = this;
     const descriptionMatchesGeneratedCss = /`(?<code>.+)`/
       .exec(
         description,
@@ -154,9 +156,9 @@ class EnhancedVariable {
       ?.groups
       ?.code
       ?? Object
-        .entries(this._valuesByModeName)
+        .entries(this._valuesByModeName,)
         .map(function generateCssForMode(
-          [modeName, value]: [string, VariableValue],
+          [modeName, value,]: [string, VariableValue,],
         ): string {
           return `[data-mode="${modeName}"] { --${name}: ${
             getCssValueOfFigmaVariableValue(
@@ -164,22 +166,22 @@ class EnhancedVariable {
               resolvedType,
             )
           }; }`;
-        })
-        .join('\n');
+        },)
+        .join('\n',);
 
     return this._generatedCss;
   }
 
-  setValueByModeName(value: VariableValue, modeName: string): void {
+  setValueByModeName(value: VariableValue, modeName: string,): void {
     this._valuesByModeName[modeName] = value;
-    const indexOfMode = this.modeNames.indexOf(modeName);
+    const indexOfMode = this.modeNames.indexOf(modeName,);
     const modeId = this.modeIds[indexOfMode]!;
     this._values[indexOfMode] = value;
-    this.variable.setValueForMode(modeId, value);
+    this.variable.setValueForMode(modeId, value,);
     this.recalculateGeneratedCss();
   }
 
-  getValueByModeName(modeName: string): VariableValue {
+  getValueByModeName(modeName: string,): VariableValue {
     return this._valuesByModeName[modeName]!;
   }
 }
@@ -190,7 +192,7 @@ class EnhancedVariable {
 let collections: VariableCollection[] = [];
 let variables: Variable[] = [];
 let enhancedVariables: EnhancedVariable[] = [];
-let styles: [PaintStyle | TextStyle | EffectStyle | GridStyle][] = [];
+let styles: [PaintStyle | TextStyle | EffectStyle | GridStyle,][] = [];
 let paintStyles: PaintStyle[] = [];
 let textStyles: TextStyle[] = [];
 let effectStyles: EffectStyle[] = [];
@@ -202,39 +204,38 @@ const populateFigmaVariables = async (): Promise<void> => {
     .variables
     .getLocalVariablesAsync();
   enhancedVariables = variables.map(
-    function enhanceVariable(variable: Variable): EnhancedVariable {
-      return new EnhancedVariable(variable);
+    function enhanceVariable(variable: Variable,): EnhancedVariable {
+      return new EnhancedVariable(variable,);
     },
   );
 };
 
 const normalizeVariables = (): void => {
   for (const variable of variables) {
-    if (variable.name.startsWith('--')) {
-      console.log(`Normalizing variable ${variable.name}`);
-      variable.name = variable.name.slice('--'.length);
+    if (variable.name.startsWith('--',)) {
+      console.log(`Normalizing variable ${variable.name}`,);
+      variable.name = variable.name.slice('--'.length,);
     }
   }
 };
 
-const parseColorString = (colorStr: string): RGBA => {
-  const isRgba = colorStr.startsWith('rgba(');
-  const isRgb = colorStr.startsWith('rgb(');
-  if (!isRgba && !isRgb) {
-    throw new TypeError(`Invalid color format: ${colorStr}`);
-  }
+const parseColorString = (colorStr: string,): RGBA => {
+  const isRgba = colorStr.startsWith('rgba(',);
+  const isRgb = colorStr.startsWith('rgb(',);
+  if (!isRgba && !isRgb)
+    throw new TypeError(`Invalid color format: ${colorStr}`,);
   const values = colorStr
-    .slice(isRgba ? 'rgba('.length : 'rgb('.length, -')'.length)
-    .split(',')
-    .map(function trimValue(value): string {
+    .slice(isRgba ? 'rgba('.length : 'rgb('.length, -')'.length,)
+    .split(',',)
+    .map(function trimValue(value,): string {
       return value.trim();
-    });
+    },);
 
   return {
-    r: Number(values[RGB_RED_INDEX]) / 255,
-    g: Number(values[RGB_GREEN_INDEX]) / 255,
-    b: Number(values[RGB_BLUE_INDEX]) / 255,
-    a: isRgba ? Number(values[RGBA_ALPHA_INDEX]) : 1,
+    r: Number(values[RGB_RED_INDEX],) / 255,
+    g: Number(values[RGB_GREEN_INDEX],) / 255,
+    b: Number(values[RGB_BLUE_INDEX],) / 255,
+    a: isRgba ? Number(values[RGBA_ALPHA_INDEX],) : 1,
   };
 };
 
@@ -245,13 +246,13 @@ const handleSettingVarMessage = ({
   varType,
   mode,
   originalComputedValue,
-}: AuthoredCss): void => {
-  const getVariable = (cssVar: `--${string}`): EnhancedVariable => {
+}: AuthoredCss,): void => {
+  const getVariable = (cssVar: `--${string}`,): EnhancedVariable => {
     return enhancedVariables.find(
       function compareVariableByTruncatedName(
         enhancedVariable: EnhancedVariable,
       ): boolean {
-        return enhancedVariable.name === cssVar.slice('--'.length);
+        return enhancedVariable.name === cssVar.slice('--'.length,);
       },
     )!;
   };
@@ -262,57 +263,58 @@ const handleSettingVarMessage = ({
     );
   };
 
-  const handleSimpleTypeChange = (value: string | number | boolean): void => {
-    if (String(computedValue) !== String(originalValue)) {
+  const handleSimpleTypeChange = (value: string | number | boolean,): void => {
+    if (String(computedValue,) !== String(originalValue,)) {
       logVariableChange();
-      getVariable(cssVar).setValueByModeName(value, mode);
+      getVariable(cssVar,).setValueByModeName(value, mode,);
     }
   };
 
   if (varType === 'number' || varType === 'boolean') {
-    handleSimpleTypeChange(computedValue);
+    handleSimpleTypeChange(computedValue,);
     return;
   }
 
   if (varType === 'color') {
     // If color (computed color) can't parse as a color string,
     // the code has failed, so errors aren't caught here.
-    const color = parseColorString(computedValue);
+    const color = parseColorString(computedValue,);
 
     try {
-      const originalColor = parseColorString(originalValue);
+      const originalColor = parseColorString(originalValue,);
 
       if (
-        almostEqual(color.r, originalColor.r)
-        && almostEqual(color.g, originalColor.g)
-        && almostEqual(color.b, originalColor.b)
-        && almostEqual(color.a, originalColor.a)
+        almostEqual(color.r, originalColor.r,)
+        && almostEqual(color.g, originalColor.g,)
+        && almostEqual(color.b, originalColor.b,)
+        && almostEqual(color.a, originalColor.a,)
       ) {
         return;
       }
-    } catch {
+    }
+    catch {
       // If originalColor can't parse as a color string,
       // the variable needs setting.
     }
 
     logVariableChange();
-    getVariable(cssVar).setValueByModeName(color, mode);
+    getVariable(cssVar,).setValueByModeName(color, mode,);
     return;
   }
 
   if (varType === 'string') {
     if (computedValue !== originalValue) {
-      const valueToSet = (computedValue.startsWith("'") && computedValue.endsWith("'"))
-        ? computedValue.slice("'".length, -"'".length)
+      const valueToSet = (computedValue.startsWith("'",) && computedValue.endsWith("'",))
+        ? computedValue.slice("'".length, -"'".length,)
         : computedValue;
 
       logVariableChange();
-      getVariable(cssVar).setValueByModeName(valueToSet, mode);
+      getVariable(cssVar,).setValueByModeName(valueToSet, mode,);
     }
     return;
   }
 
-  throw new Error(`Unrecognized variable ${cssVar} type ${varType} in mode ${mode}`);
+  throw new Error(`Unrecognized variable ${cssVar} type ${varType} in mode ${mode}`,);
 };
 const main = async (): Promise<void> => {
   // Fill the local variable variables.
@@ -321,24 +323,23 @@ const main = async (): Promise<void> => {
   normalizeVariables();
 
   const generatedCssForLocalVariables: string = enhancedVariables
-    .map((enhancedVariable) => enhancedVariable.generatedCss)
-    .join('\n');
+    .map(enhancedVariable => enhancedVariable.generatedCss)
+    .join('\n',);
 
-  console.log(generatedCssForLocalVariables);
+  console.log(generatedCssForLocalVariables,);
 
-  figma.showUI(__html__, { themeColors: true });
+  figma.showUI(__html__, { themeColors: true, },);
 
-  figma.ui.postMessage({ generatedCssForLocalVariables }, { origin: '*' });
+  figma.ui.postMessage({ generatedCssForLocalVariables, }, { origin: '*', },);
 
-  figma.ui.onmessage = (message): void => {
-    console.log('got this from the UI', message);
-    if (message.cssVar) {
-      handleSettingVarMessage(message as AuthoredCss);
-    }
+  figma.ui.onmessage = (message,): void => {
+    console.log('got this from the UI', message,);
+    if (message.cssVar)
+      handleSettingVarMessage(message as AuthoredCss,);
   };
 };
 
-if (new Set(['figma', 'slides']).has(figma.editorType)) {
+if (new Set(['figma', 'slides',],).has(figma.editorType,)) {
   // noinspection JSIgnoredPromiseFromCall - Figma plugin API doesn't support top level await
   main();
 }

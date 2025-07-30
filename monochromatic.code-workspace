@@ -116,7 +116,10 @@
     // False positive: region markers
     "harper.linters.SentenceCapitalization": false,
     // False positive: `//region Configuration Modifiers -- Functions that enhance base configs`
-    "harper.linters.Dashes": false,
+		"harper.linters.Dashes": false,
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "editor.formatOnSave": true,
+    "json.format.keepLines": true,
 	},
 
   "extensions": {

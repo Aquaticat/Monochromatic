@@ -10,13 +10,11 @@ export function argsAlmostEqual(
   args1: readonly unknown[],
   args2: readonly unknown[],
 ): boolean {
-  if (args1.length !== args2.length) {
+  if (args1.length !== args2.length)
     return false;
-  }
   for (let argIndex = 0; argIndex < args1.length; argIndex++) {
-    if (args1[argIndex] !== args2[argIndex]) {
+    if (args1[argIndex] !== args2[argIndex])
       return false;
-    }
   }
   return true;
 }
@@ -60,11 +58,10 @@ export function memoize<const Args extends readonly unknown[], Result,>(
   let lastResult: Result | undefined = undefined;
 
   return function memoized(...args: Args): Result {
-    if (lastArgs && argsAlmostEqual(args, lastArgs)) {
+    if (lastArgs && argsAlmostEqual(args, lastArgs,))
       return lastResult as Result;
-    }
 
-    const currentResult: Result = fn(...args);
+    const currentResult: Result = fn(...args,);
     lastArgs = args;
     lastResult = currentResult;
     return currentResult;

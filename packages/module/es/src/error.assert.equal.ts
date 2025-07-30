@@ -2,7 +2,7 @@ import {
   equalsAsyncOrThrow,
   equalsOrThrow,
 } from './function.equals.ts';
-import type { NotPromise } from './promise.type.ts';
+import type { NotPromise, } from './promise.type.ts';
 
 // It's not necessary to be so pedantic as to postfix every assert with Equal when equal is implied.
 
@@ -25,8 +25,8 @@ import type { NotPromise } from './promise.type.ts';
  * await assertAsync('expected', 'actual'); // Throws: values not equal
  * ```
  */
-export async function assertAsync(expected: any, actual: any): Promise<void> {
-  await equalsAsyncOrThrow(expected)(actual);
+export async function assertAsync(expected: any, actual: any,): Promise<void> {
+  await equalsAsyncOrThrow(expected,)(actual,);
 }
 
 /**
@@ -47,7 +47,7 @@ export async function assertAsync(expected: any, actual: any): Promise<void> {
 export async function assertTrueAsync(
   actual: any,
 ): Promise<void> {
-  await assertAsync(true, await actual);
+  await assertAsync(true, await actual,);
 }
 
 /**
@@ -68,7 +68,7 @@ export async function assertTrueAsync(
 export async function assertFalseAsync(
   actual: any,
 ): Promise<void> {
-  await assertAsync(false, await actual);
+  await assertAsync(false, await actual,);
 }
 
 /**
@@ -89,7 +89,7 @@ export async function assertFalseAsync(
 export async function assertUndefinedAsync(
   actual: any,
 ): Promise<void> {
-  await assertAsync(undefined, actual);
+  await assertAsync(undefined, actual,);
 }
 
 /**
@@ -110,7 +110,7 @@ export async function assertUndefinedAsync(
 export async function assertNullAsync(
   actual: any,
 ): Promise<void> {
-  await assertAsync(null, actual);
+  await assertAsync(null, actual,);
 }
 
 /**
@@ -131,7 +131,7 @@ export async function assertNullAsync(
 export async function assertEmptyArrayAsync(
   actual: any,
 ): Promise<void> {
-  await assertAsync([], actual);
+  await assertAsync([], actual,);
 }
 
 /**
@@ -152,7 +152,7 @@ export async function assertEmptyArrayAsync(
 export async function assertEmptyObjectAsync(
   actual: any,
 ): Promise<void> {
-  await assertAsync({}, actual);
+  await assertAsync({}, actual,);
 }
 
 /**
@@ -173,7 +173,7 @@ export async function assertEmptyObjectAsync(
 export async function assert0Async(
   actual: any,
 ): Promise<void> {
-  await assertAsync(0, actual);
+  await assertAsync(0, actual,);
 }
 
 /**
@@ -194,7 +194,7 @@ export async function assert0Async(
 export async function assert1Async(
   actual: any,
 ): Promise<void> {
-  await assertAsync(1, actual);
+  await assertAsync(1, actual,);
 }
 
 /**
@@ -215,7 +215,7 @@ export async function assert1Async(
 export async function assertNanAsync(
   actual: any,
 ): Promise<void> {
-  await assertAsync(Number.NaN, actual);
+  await assertAsync(Number.NaN, actual,);
 }
 
 /**
@@ -236,7 +236,7 @@ export async function assertNanAsync(
 export async function assertNegative1Async(
   actual: any,
 ): Promise<void> {
-  await assertAsync(-1, actual);
+  await assertAsync(-1, actual,);
 }
 
 /**
@@ -259,8 +259,8 @@ export async function assertNegative1Async(
  * ```
  */
 // Side effect: throws.
-export function assert(expected: NotPromise, actual: NotPromise): void {
-  equalsOrThrow(expected)(actual);
+export function assert(expected: NotPromise, actual: NotPromise,): void {
+  equalsOrThrow(expected,)(actual,);
 }
 
 /**
@@ -278,8 +278,8 @@ export function assert(expected: NotPromise, actual: NotPromise): void {
  * assertTrue('true'); // Throws - string, not boolean
  * ```
  */
-export function assertTrue(actual: NotPromise): void {
-  assert(true, actual);
+export function assertTrue(actual: NotPromise,): void {
+  assert(true, actual,);
 }
 
 /**
@@ -297,8 +297,8 @@ export function assertTrue(actual: NotPromise): void {
  * assertFalse(null); // Throws - falsy but not false
  * ```
  */
-export function assertFalse(actual: NotPromise): void {
-  assert(false, actual);
+export function assertFalse(actual: NotPromise,): void {
+  assert(false, actual,);
 }
 
 /**
@@ -316,8 +316,8 @@ export function assertFalse(actual: NotPromise): void {
  * assertUndefined(0); // Throws - 0 isn't undefined
  * ```
  */
-export function assertUndefined(actual: NotPromise): void {
-  assert(undefined, actual);
+export function assertUndefined(actual: NotPromise,): void {
+  assert(undefined, actual,);
 }
 
 /**
@@ -335,8 +335,8 @@ export function assertUndefined(actual: NotPromise): void {
  * assertNull(0); // Throws - 0 isn't null
  * ```
  */
-export function assertNull(actual: NotPromise): void {
-  assert(null, actual);
+export function assertNull(actual: NotPromise,): void {
+  assert(null, actual,);
 }
 
 /**
@@ -354,8 +354,8 @@ export function assertNull(actual: NotPromise): void {
  * assertEmptyArray(null); // Throws - not an array
  * ```
  */
-export function assertEmptyArray(actual: NotPromise): void {
-  assert([], actual);
+export function assertEmptyArray(actual: NotPromise,): void {
+  assert([], actual,);
 }
 
 /**
@@ -373,8 +373,8 @@ export function assertEmptyArray(actual: NotPromise): void {
  * assertEmptyObject([]); // Throws - array, not object
  * ```
  */
-export function assertEmptyObject(actual: NotPromise): void {
-  assert({}, actual);
+export function assertEmptyObject(actual: NotPromise,): void {
+  assert({}, actual,);
 }
 
 /**
@@ -392,8 +392,8 @@ export function assertEmptyObject(actual: NotPromise): void {
  * assert0(false); // Throws - boolean false isn't 0
  * ```
  */
-export function assert0(actual: NotPromise): void {
-  assert(0, actual);
+export function assert0(actual: NotPromise,): void {
+  assert(0, actual,);
 }
 
 /**
@@ -411,8 +411,8 @@ export function assert0(actual: NotPromise): void {
  * assert1('1'); // Throws - string '1' isn't number 1
  * ```
  */
-export function assert1(actual: NotPromise): void {
-  assert(1, actual);
+export function assert1(actual: NotPromise,): void {
+  assert(1, actual,);
 }
 
 /**
@@ -430,8 +430,8 @@ export function assert1(actual: NotPromise): void {
  * assertNan(undefined); // Throws - undefined isn't NaN
  * ```
  */
-export function assertNan(actual: NotPromise): void {
-  assert(Number.NaN, actual);
+export function assertNan(actual: NotPromise,): void {
+  assert(Number.NaN, actual,);
 }
 
 /**
@@ -449,8 +449,8 @@ export function assertNan(actual: NotPromise): void {
  * assertNegative1('-1'); // Throws - string '-1' isn't number -1
  * ```
  */
-export function assertNegative1(actual: NotPromise): void {
-  assert(-1, actual);
+export function assertNegative1(actual: NotPromise,): void {
+  assert(-1, actual,);
 }
 
 export * from './error.assert.equal.type.ts';

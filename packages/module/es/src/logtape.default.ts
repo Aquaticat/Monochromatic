@@ -17,66 +17,72 @@ const createBrowserFileSink = async (
     const opfsRoot = await navigator.storage.getDirectory();
     const fileHandle = await opfsRoot.getFileHandle(appName, {
       create: true,
-    });
+    },);
     const writableStream = await fileHandle.createWritable();
 
     const fileSink = getStreamSink(writableStream, {
-      formatter(log: LogRecord) {
-        return `${JSON.stringify(log, null, 2)}\n`;
+      formatter(log: LogRecord,) {
+        return `${JSON.stringify(log, null, 2,)}\n`;
       },
-    });
+    },);
 
     fileSink[Symbol.asyncDispose] = async function disposeOpfs(): Promise<void> {
-      console.log('disposing OPFS sink');
+      console.log('disposing OPFS sink',);
       await writableStream.close();
       console.log('disposed OPFS sink', 'with file content', await (await fileHandle
         .getFile())
-        .text());
+        .text(),);
     };
 
     return fileSink;
-  } catch (opfsError) {
+  }
+  catch (opfsError) {
     // Trying sessionStorage
-    console.log(`opfs failed with ${opfsError}, trying sessionStorage`);
+    console.log(`opfs failed with ${opfsError}, trying sessionStorage`,);
 
     try {
-      globalThis.sessionStorage.setItem('test', 'test');
-      globalThis.sessionStorage.removeItem('test');
+      globalThis.sessionStorage.setItem('test', 'test',);
+      globalThis.sessionStorage.removeItem('test',);
 
-      globalThis.sessionStorage.setItem(`${appName}.line`, '-1');
+      globalThis.sessionStorage.setItem(`${appName}.line`, '-1',);
 
-      const sessionStorageSink: Sink & AsyncDisposable = (record: LogRecord): void => {
-        const lineNumber = Number(globalThis.sessionStorage.getItem(`${appName}.line`)!)
+      const sessionStorageSink: Sink & AsyncDisposable = (record: LogRecord,): void => {
+        const lineNumber = Number(globalThis.sessionStorage.getItem(`${appName}.line`,)!,)
           + 1;
-        globalThis.sessionStorage.setItem(`${appName}.line`, String(lineNumber));
+        globalThis.sessionStorage.setItem(`${appName}.line`, String(lineNumber,),);
         globalThis.sessionStorage.setItem(
           `${appName}.${lineNumber}`,
-          `${JSON.stringify(record, null, 2)}\n`,
+          `${JSON.stringify(record, null, 2,)}\n`,
         );
       };
 
       sessionStorageSink[Symbol.asyncDispose] =
         // eslint-disable-next-line require-await -- To keep the signature consistent, we've to make it an async function.
         async function disposeSessionStorage(): Promise<void> {
-          console.log('disposing sessionStorage sink');
-          const lineCount = Number(globalThis.sessionStorage.getItem(`${appName}.line`)!);
+          console.log('disposing sessionStorage sink',);
+          const lineCount = Number(
+            globalThis.sessionStorage.getItem(`${appName}.line`,)!,
+          );
 
           const lines = Array
-            .from({ length: lineCount + 1 })
-            .map(function popLine(_value, lineNumber) {
-              const line = globalThis.sessionStorage.getItem(`${appName}.${lineNumber}`)!;
-              globalThis.sessionStorage.removeItem(`${appName}.${lineNumber}`);
+            .from({ length: lineCount + 1, },)
+            .map(function popLine(_value, lineNumber,) {
+              const line = globalThis.sessionStorage.getItem(
+                `${appName}.${lineNumber}`,
+              )!;
+              globalThis.sessionStorage.removeItem(`${appName}.${lineNumber}`,);
               return line;
-            });
+            },);
 
-          globalThis.sessionStorage.removeItem(`${appName}.line`);
-          const content = lines.join('\n');
+          globalThis.sessionStorage.removeItem(`${appName}.line`,);
+          const content = lines.join('\n',);
           console.log('disposed sessionStorage sink', 'with content length', content
-            .length);
+            .length,);
         };
 
       return sessionStorageSink;
-    } catch (sessionStorageError) {
+    }
+    catch (sessionStorageError) {
       console.log(
         `sessionStorage failed with ${sessionStorageError}, storing log in memory in array.`,
       );
@@ -149,8 +155,8 @@ const createBrowserFileSink = async (
 /* @__NO_SIDE_EFFECTS__ */ export const logtapeConfiguration = async (
   appName = 'monochromatic',
 ): Promise<Parameters<typeof configure>[0]> => {
-  const fileSink = await createBrowserFileSink(appName);
-  return createBaseConfig(fileSink);
+  const fileSink = await createBrowserFileSink(appName,);
+  return createBaseConfig(fileSink,);
 };
 
-export { logtapeId } from './logtape.shared.ts';
+export { logtapeId, } from './logtape.shared.ts';

@@ -1,4 +1,4 @@
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
 /**
  * Creates index-value pairs from an async iterable, similar to Array.prototype.entries().
@@ -91,11 +91,11 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
     : never,
 >(
   arrayLike: T_arrayLike,
-): AsyncGenerator<[number, T_element]> {
+): AsyncGenerator<[number, T_element,]> {
   let index = 0;
 
   for await (const arrayLikeElement of arrayLike as AsyncIterable<T_element>) {
-    yield [index, arrayLikeElement];
+    yield [index, arrayLikeElement,];
     index++;
   }
 }
@@ -186,11 +186,11 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
     : never,
 >(
   arrayLike: T_arrayLike,
-): Generator<[number, T_element]> {
+): Generator<[number, T_element,]> {
   let index = 0;
 
   for (const arrayLikeElement of arrayLike) {
-    yield [index, arrayLikeElement];
+    yield [index, arrayLikeElement,];
     index++;
   }
 }

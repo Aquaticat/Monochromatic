@@ -7,31 +7,34 @@ import {
   homedir,
   platform,
 } from 'node:os';
-import { join } from 'node:path';
-import { match } from 'ts-pattern';
+import { join, } from 'node:path';
+import { match, } from 'ts-pattern';
 
 /**
  * Installs system dependencies for Playwright based on the OS
  */
 async function installSystemDependencies(): Promise<void> {
-  await match(platform())
+  await match(platform(),)
     .with('linux', async () => {
-      console.log('\n🔧 Installing Playwright system dependencies...\n');
+      console.log('\n🔧 Installing Playwright system dependencies...\n',);
       // Try Playwright's native installer first
       try {
-        console.log("Using Playwright's built-in dependency installer...");
-        await spawn('pnpm', ['exec', 'playwright', 'install-deps'], { stdio: 'inherit' });
-        console.log('✅ System dependencies installed successfully');
+        console.log("Using Playwright's built-in dependency installer...",);
+        await spawn('pnpm', ['exec', 'playwright', 'install-deps',], {
+          stdio: 'inherit',
+        },);
+        console.log('✅ System dependencies installed successfully',);
         return;
-      } catch {
-        console.warn("⚠️  Playwright's automatic dependency installation failed.");
-        console.log('Attempting manual installation...\n');
+      }
+      catch {
+        console.warn("⚠️  Playwright's automatic dependency installation failed.",);
+        console.log('Attempting manual installation...\n',);
       }
 
       // Fallback: Check which package manager is available and install dependencies
-      await match(true)
-        .when(() => existsSync('/usr/bin/apt'), async () => {
-          console.log('📦 Installing dependencies with apt...');
+      await match(true,)
+        .when(() => existsSync('/usr/bin/apt',), async () => {
+          console.log('📦 Installing dependencies with apt...',);
           const deps = [
             'libnss3',
             'libnspr4',
@@ -55,12 +58,12 @@ async function installSystemDependencies(): Promise<void> {
             'libasound2',
             'libx11-xcb1',
           ];
-          await spawn('sudo', ['apt-get', 'install', '-y', ...deps], {
+          await spawn('sudo', ['apt-get', 'install', '-y', ...deps,], {
             stdio: 'inherit',
-          });
-        })
-        .when(() => existsSync('/usr/bin/pacman'), async () => {
-          console.log('📦 Installing dependencies with pacman...');
+          },);
+        },)
+        .when(() => existsSync('/usr/bin/pacman',), async () => {
+          console.log('📦 Installing dependencies with pacman...',);
           const deps = [
             'nss',
             'nspr',
@@ -82,39 +85,39 @@ async function installSystemDependencies(): Promise<void> {
             'cairo',
             'alsa-lib',
           ];
-          await spawn('sudo', ['pacman', '-S', '--noconfirm', ...deps], {
+          await spawn('sudo', ['pacman', '-S', '--noconfirm', ...deps,], {
             stdio: 'inherit',
-          });
-        })
-        .when(() => existsSync('/usr/bin/dnf'), async () => {
-          console.log('📦 Installing dependencies with dnf...');
-          await spawn('sudo', ['dnf', 'install', '-y', 'playwright'], {
+          },);
+        },)
+        .when(() => existsSync('/usr/bin/dnf',), async () => {
+          console.log('📦 Installing dependencies with dnf...',);
+          await spawn('sudo', ['dnf', 'install', '-y', 'playwright',], {
             stdio: 'inherit',
-          });
-        })
-        .when(() => existsSync('/usr/bin/zypper'), async () => {
-          console.log('📦 Installing dependencies with zypper...');
-          await spawn('sudo', ['zypper', 'install', '-y', 'chromium'], {
+          },);
+        },)
+        .when(() => existsSync('/usr/bin/zypper',), async () => {
+          console.log('📦 Installing dependencies with zypper...',);
+          await spawn('sudo', ['zypper', 'install', '-y', 'chromium',], {
             stdio: 'inherit',
-          });
-        })
+          },);
+        },)
         .otherwise(() => {
           throw new Error(
             'No supported package manager found (apt, pacman, dnf, zypper). Please install Playwright dependencies manually.',
           );
-        });
-    })
+        },);
+    },)
     .with('darwin', () => {
-      console.log('🍎 macOS detected - no additional system dependencies needed');
-    })
+      console.log('🍎 macOS detected - no additional system dependencies needed',);
+    },)
     .with('win32', () => {
-      console.log('🪟 Windows detected - no additional system dependencies needed');
-    })
+      console.log('🪟 Windows detected - no additional system dependencies needed',);
+    },)
     .otherwise(() => {
       throw new Error(
         `Unknown operating system: ${platform()}. Playwright dependencies installation not supported.`,
       );
-    });
+    },);
 }
 
 // First, ensure system dependencies are installed (Linux only)
@@ -124,29 +127,28 @@ await installSystemDependencies();
 const homeDir = homedir();
 const possiblePaths = [
   // Linux/macOS
-  join(homeDir, '.cache', 'ms-playwright'),
+  join(homeDir, '.cache', 'ms-playwright',),
   // Windows
-  join(homeDir, 'AppData', 'Local', 'ms-playwright'),
+  join(homeDir, 'AppData', 'Local', 'ms-playwright',),
 ];
 
-const hasAnyBrowsers = possiblePaths.some((basePath) => {
-  if (!existsSync(basePath)) {
+const hasAnyBrowsers = possiblePaths.some(basePath => {
+  if (!existsSync(basePath,))
     return false;
-  }
 
   // Check for any browser directory (chromium, firefox, webkit)
-  const browserDirs = ['chromium-', 'firefox-', 'webkit-'];
-  const entries = readdirSync(basePath);
+  const browserDirs = ['chromium-', 'firefox-', 'webkit-',];
+  const entries = readdirSync(basePath,);
 
-  return browserDirs.some((browserPrefix) =>
-    entries.some((entry: string) => entry.startsWith(browserPrefix))
+  return browserDirs.some(browserPrefix =>
+    entries.some((entry: string,) => entry.startsWith(browserPrefix,))
   );
-});
+},);
 
-if (hasAnyBrowsers) {
-  console.log('✅ Playwright browsers already installed');
-} else {
-  console.log('📥 Installing Playwright browsers...');
-  await spawn('pnpm', ['exec', 'playwright', 'install'], { stdio: 'inherit' });
-  console.log('✅ Playwright browsers installed successfully');
+if (hasAnyBrowsers)
+  console.log('✅ Playwright browsers already installed',);
+else {
+  console.log('📥 Installing Playwright browsers...',);
+  await spawn('pnpm', ['exec', 'playwright', 'install',], { stdio: 'inherit', },);
+  console.log('✅ Playwright browsers installed successfully',);
 }

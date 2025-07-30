@@ -6,10 +6,10 @@ import {
   prompt,
   replicateElementAsContentOf,
 } from '@monochromatic-dev/module-es';
-import { Exa } from 'exa-js';
-import { z } from 'zod/v4-mini';
+import { Exa, } from 'exa-js';
+import { z, } from 'zod/v4-mini';
 
-const { baseUrl } = { baseUrl: 'https://exa.aquati.cat/api/proxy' };
+const { baseUrl, } = { baseUrl: 'https://exa.aquati.cat/api/proxy', };
 
 const {
   searchForm,
@@ -21,52 +21,51 @@ const {
   changeApiKeyButton,
   processingParagraph,
 } = {
-  exa: identity<{ value: [Exa, { apiKey: string; }]; }>(createObservable(
-    await (async function createExaExtra(): Promise<[Exa, { apiKey: string; }]> {
+  exa: identity<{ value: [Exa, { apiKey: string; },]; }>(createObservable(
+    await (async function createExaExtra(): Promise<[Exa, { apiKey: string; },]> {
       const apiKey = await z
         .pipe(z
-          .pipe(z.nullable(z.uuid()), z.transform(async function promptSet(val) {
-            if (val) {
+          .pipe(z.nullable(z.uuid(),), z.transform(async function promptSet(val,) {
+            if (val)
               return val;
-            }
-            const inputApiKey = notFalsyOrThrow(await prompt('Set api key'));
-            localStorage.setItem('exaApiKey', inputApiKey);
+            const inputApiKey = notFalsyOrThrow(await prompt('Set api key',),);
+            localStorage.setItem('exaApiKey', inputApiKey,);
             return inputApiKey;
-          })), z.uuid())
-        .parseAsync(localStorage.getItem('exaApiKey'));
-      const exa = new Exa(apiKey, baseUrl);
-      return [exa, { apiKey }];
+          },),), z.uuid(),)
+        .parseAsync(localStorage.getItem('exaApiKey',),);
+      const exa = new Exa(apiKey, baseUrl,);
+      return [exa, { apiKey, },];
     })(),
-    function updateStorage(val) {
-      localStorage.setItem('exaApiKey', val[1].apiKey);
+    function updateStorage(val,) {
+      localStorage.setItem('exaApiKey', val[1].apiKey,);
     },
-  )),
+  ),),
   searchForm: identity<HTMLFormElement>(notFalsyOrThrow(
-    document.querySelector('.searchForm'),
-  )),
+    document.querySelector('.searchForm',),
+  ),),
 
   processingParagraph: identity<HTMLParagraphElement>(
-    notFalsyOrThrow(document.querySelector('.processing')),
+    notFalsyOrThrow(document.querySelector('.processing',),),
   ),
 
   costDollarsSpan: identity<HTMLSpanElement>(notFalsyOrThrow(
-    document.querySelector('.costDollars'),
-  )),
+    document.querySelector('.costDollars',),
+  ),),
   numResultsInput: identity<HTMLInputElement>(
-    notFalsyOrThrow(document.querySelector('.numResults input')),
+    notFalsyOrThrow(document.querySelector('.numResults input',),),
   ),
 
   resultsSection: identity<HTMLElement>(
-    notFalsyOrThrow(document.querySelector('.results')),
+    notFalsyOrThrow(document.querySelector('.results',),),
   ),
 
   numTotalSearchesSpan: identity<HTMLSpanElement>(notFalsyOrThrow(
-    document.querySelector('.numTotalSearches'),
-  )),
+    document.querySelector('.numTotalSearches',),
+  ),),
 
   changeApiKeyButton: identity<HTMLButtonElement>(notFalsyOrThrow(
-    document.querySelector('.changeApiKey'),
-  )),
+    document.querySelector('.changeApiKey',),
+  ),),
 };
 
 const {
@@ -78,51 +77,53 @@ const {
   numResults,
 } = {
   searchInput: identity<HTMLInputElement>(notFalsyOrThrow(
-    searchForm.querySelector('input'),
-  )),
+    searchForm.querySelector('input',),
+  ),),
   firstResult: identity<HTMLElement>(notFalsyOrThrow(
-    resultsSection.querySelector('.result'),
-  )),
-  exaMinResults: z.coerce.number().parse(numResultsInput.min),
-  exaMaxResults: z.coerce.number().parse(numResultsInput.max),
+    resultsSection.querySelector('.result',),
+  ),),
+  exaMinResults: z.coerce.number().parse(numResultsInput.min,),
+  exaMaxResults: z.coerce.number().parse(numResultsInput.max,),
 
   numTotalSearches: identity<{ value: number; }>(
     createObservable(z
-      ._default(z.coerce.number(), 0)
-      .parse(localStorage.getItem('numTotalSearches')), function updateDisplay(val) {
-      numTotalSearchesSpan.textContent = String(val);
-    }),
+      ._default(z.coerce.number(), 0,)
+      .parse(localStorage.getItem('numTotalSearches',),), function updateDisplay(val,) {
+      numTotalSearchesSpan.textContent = String(val,);
+    },),
   ),
 
   numResults: createObservable(
-    z.coerce.number().parse(localStorage.getItem('numResults') ?? numResultsInput.value),
-    function updateStored(val) {
-      localStorage.setItem('numResults', String(val));
-      numResultsInput.value = String(val);
+    z.coerce.number().parse(
+      localStorage.getItem('numResults',) ?? numResultsInput.value,
+    ),
+    function updateStored(val,) {
+      localStorage.setItem('numResults', String(val,),);
+      numResultsInput.value = String(val,);
     },
   ),
 };
 
 // TODO: Use logic of replicating element inside fetch result to avoid errors on subsequent searches.
-replicateElementAsContentOf(firstResult, resultsSection, exaMaxResults);
+replicateElementAsContentOf(firstResult, resultsSection, exaMaxResults,);
 
 const resultArticles = resultsSection.children;
 
 nonPromiseAll([
-  void searchForm.addEventListener('submit', async function onSearch(event) {
+  void searchForm.addEventListener('submit', async function onSearch(event,) {
     event.preventDefault();
 
     await Promise.all([
       numTotalSearches.value++,
 
-      void resultsSection.setAttribute('hidden', 'true'),
+      void resultsSection.setAttribute('hidden', 'true',),
 
-      void resultsSection.querySelectorAll(':scope > *').forEach(function hide(result) {
-        result.setAttribute('hidden', 'true');
-      }),
+      void resultsSection.querySelectorAll(':scope > *',).forEach(function hide(result,) {
+        result.setAttribute('hidden', 'true',);
+      },),
 
       (async function processResults(): Promise<void> {
-        processingParagraph.removeAttribute('hidden');
+        processingParagraph.removeAttribute('hidden',);
 
         const results = await exa.value[0].searchAndContents(searchInput.value.trim(), {
           type: 'auto',
@@ -136,14 +137,14 @@ nonPromiseAll([
             imageLinks: 1,
           },
           highlights: true,
-        });
+        },);
 
-        processingParagraph.setAttribute('hidden', 'true');
+        processingParagraph.setAttribute('hidden', 'true',);
 
         nonPromiseAll([
-          costDollarsSpan.textContent = String(results.costDollars?.total ?? 0),
+          costDollarsSpan.textContent = String(results.costDollars?.total ?? 0,),
 
-          void results.results.forEach(function displayResult(result, resultIndex) {
+          void results.results.forEach(function displayResult(result, resultIndex,) {
             const currentResultArticle: HTMLLIElement = notFalsyOrThrow(
               resultArticles[resultIndex],
             ) as HTMLLIElement;
@@ -160,36 +161,35 @@ nonPromiseAll([
               image,
             } = {
               favicon: identity<HTMLImageElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__favicon'),
-              )),
+                currentResultArticle.querySelector('.result__favicon',),
+              ),),
               link: identity<HTMLAnchorElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__link'),
-              )),
+                currentResultArticle.querySelector('.result__link',),
+              ),),
               publishedDate: identity<HTMLTimeElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__publishedDate'),
-              )),
+                currentResultArticle.querySelector('.result__publishedDate',),
+              ),),
               author: identity<HTMLElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__author'),
-              )),
+                currentResultArticle.querySelector('.result__author',),
+              ),),
               summary: identity<HTMLParagraphElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__summary'),
-              )),
+                currentResultArticle.querySelector('.result__summary',),
+              ),),
               text: identity<HTMLParagraphElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__text'),
-              )),
+                currentResultArticle.querySelector('.result__text',),
+              ),),
               highlights: identity<HTMLUListElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__highlights'),
-              )),
+                currentResultArticle.querySelector('.result__highlights',),
+              ),),
               firstHighlight: identity<HTMLLIElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__highlight'),
-              )),
+                currentResultArticle.querySelector('.result__highlight',),
+              ),),
               image: identity<HTMLImageElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__image'),
-              )),
+                currentResultArticle.querySelector('.result__image',),
+              ),),
             };
-            if (result.favicon) {
+            if (result.favicon)
               favicon.src = result.favicon;
-            }
             nonPromiseAll([
               link.href = result.url,
               link.textContent = result.title,
@@ -200,9 +200,8 @@ nonPromiseAll([
                 }
               })(),
               void (function updateAuthor(): void {
-                if (result.author) {
+                if (result.author)
                   author.textContent = result.author;
-                }
               })(),
               summary.textContent = result.summary,
               text.textContent = result.text,
@@ -212,36 +211,35 @@ nonPromiseAll([
                 result.highlights.length,
               ),
               void result.highlights.forEach(
-                function populateHighlight(highlight, highlightIndex) {
+                function populateHighlight(highlight, highlightIndex,) {
                   const currentHighlight: HTMLLIElement = notFalsyOrThrow(
-                    highlights.querySelector(`:nth-child(${highlightIndex + 1})`),
+                    highlights.querySelector(`:nth-child(${highlightIndex + 1})`,),
                   );
                   currentHighlight.textContent = highlight;
                 },
               ),
               void (function updateImage(): void {
-                if (result.image) {
+                if (result.image)
                   image.src = result.image;
-                }
               })(),
-            ]);
+            ],);
 
-            currentResultArticle.removeAttribute('hidden');
-          }),
-        ]);
+            currentResultArticle.removeAttribute('hidden',);
+          },),
+        ],);
       })(),
-    ]);
+    ],);
 
-    resultsSection.removeAttribute('hidden');
-  }),
+    resultsSection.removeAttribute('hidden',);
+  },),
   void changeApiKeyButton.addEventListener('click', async function promptForNewApiKey() {
-    const inputApiKey = notFalsyOrThrow(await prompt('Change api key'));
-    exa.value = [new Exa(inputApiKey, baseUrl), { apiKey: inputApiKey }];
-  }),
+    const inputApiKey = notFalsyOrThrow(await prompt('Change api key',),);
+    exa.value = [new Exa(inputApiKey, baseUrl,), { apiKey: inputApiKey, },];
+  },),
 
   void numResultsInput.addEventListener('input', function setNewNumResults() {
-    numResults.value = Number(numResultsInput.value);
-  }),
-]);
+    numResults.value = Number(numResultsInput.value,);
+  },),
+],);
 
 export {};

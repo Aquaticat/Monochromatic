@@ -4,25 +4,25 @@
     "baseUrl": "./",
     "paths": {
       "@monochromatic-dev/module-es": [
-        "../../module/es/src/index.ts"
+        "../../module/es/src/index.ts",
       ],
       "@monochromatic-dev/module-es/*": [
-        "../../module/es/src/*"
+        "../../module/es/src/*",
       ],
       "@monochromatic-dev/config-vite": [
-        "../../config/vite/src/index.ts"
+        "../../config/vite/src/index.ts",
       ],
       "@monochromatic-dev/config-vite/*": [
-        "../../config/vite/src/*"
-      ]
-    }
+        "../../config/vite/src/*",
+      ],
+    },
   },
   "references": [
     {
-      "path": "../../config/vite"
+      "path": "../../config/vite",
     },
     {
-      "path": "../../module/es"
-    }
-  ]
+      "path": "../../module/es",
+    },
+  ],
 }

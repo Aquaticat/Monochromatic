@@ -112,7 +112,7 @@ while (validExpressions.size < 100) {
 
   const randomStringLength = randomStringMinLength
     + Math.trunc(Math
-      .random() * (randomStringMaxLength - randomStringMinLength));
+      .random() * (randomStringMaxLength - randomStringMinLength),);
 
   const randomString = ((): string => {
     let randomStringTemp = '';
@@ -123,7 +123,7 @@ while (validExpressions.size < 100) {
     ) {
       const randomStringPart: string = randomStringComponents[
         Math.trunc(Math
-          .random() * randomStringComponents.length)
+          .random() * randomStringComponents.length,)
       ] as string;
 
       randomStringTemp += randomStringPart;
@@ -145,17 +145,18 @@ while (validExpressions.size < 100) {
       if (String(globalThis.result).length >= 10) {
         throw new Error('result too long');
       }
-      `);
+      `,);
 
     validExpressions.set(randomString, randomCodeCompartment
       .globalThis
-      .result);
+      .result,);
 
-    console.log(retryNumber, validExpressions.size);
-    console.log(randomString);
-    console.log(randomCodeCompartment.globalThis.result);
+    console.log(retryNumber, validExpressions.size,);
+    console.log(randomString,);
+    console.log(randomCodeCompartment.globalThis.result,);
     console.log();
-  } catch {
+  }
+  catch {
     // console.warn(i);
     // console.warn(randomString);
     // console.warn();

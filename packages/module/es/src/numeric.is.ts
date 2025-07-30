@@ -12,7 +12,7 @@ import type {
   PositiveFloat,
   PositiveInt,
 } from './numeric.type.int.ts';
-import type { Nan } from './numeric.type.nan';
+import type { Nan, } from './numeric.type.nan';
 
 /**
  * Type guard that checks if a value is a number type using JavaScript typeof operator.
@@ -101,7 +101,7 @@ import type { Nan } from './numeric.type.nan';
 /* @__NO_SIDE_EFFECTS__ */ export function isNan(
   value: unknown,
 ): value is Nan {
-  return Number.isNaN(value);
+  return Number.isNaN(value,);
 }
 
 /**
@@ -114,7 +114,7 @@ import type { Nan } from './numeric.type.nan';
 export function isInteger(
   value: unknown,
 ): value is Int {
-  return Number.isInteger(value);
+  return Number.isInteger(value,);
 }
 
 /**
@@ -170,7 +170,7 @@ export function isInteger(
 export function isInt(
   value: unknown,
 ): value is Int {
-  return Number.isInteger(value);
+  return Number.isInteger(value,);
 }
 
 /**
@@ -214,8 +214,8 @@ export function isInt(
  * }
  * ```
  */
-export function isPositiveInt(value: unknown): value is PositiveInt {
-  return isInt(value) && value > 0;
+export function isPositiveInt(value: unknown,): value is PositiveInt {
+  return isInt(value,) && value > 0;
 }
 
 /**
@@ -260,8 +260,8 @@ export function isPositiveInt(value: unknown): value is PositiveInt {
  * }
  * ```
  */
-export function isNegativeInt(value: unknown): value is NegativeInt {
-  return isInt(value) && value < 0;
+export function isNegativeInt(value: unknown,): value is NegativeInt {
+  return isInt(value,) && value < 0;
 }
 
 /**
@@ -303,8 +303,8 @@ export function isNegativeInt(value: unknown): value is NegativeInt {
  * }
  * ```
  */
-export function isNonNegativeInt(value: unknown): value is NonNegativeInt {
-  return isInt(value) && value >= 0;
+export function isNonNegativeInt(value: unknown,): value is NonNegativeInt {
+  return isInt(value,) && value >= 0;
 }
 
 /**
@@ -353,7 +353,7 @@ export function isNonNegativeInt(value: unknown): value is NonNegativeInt {
 export function isFloat(
   value: unknown,
 ): value is Float {
-  return isNonNanNumber(value) && Number.isFinite(value) && !Number.isInteger(value);
+  return isNonNanNumber(value,) && Number.isFinite(value,) && !Number.isInteger(value,);
 }
 
 /**
@@ -398,7 +398,7 @@ export function isFloat(
 export function isPositiveFloat(
   value: unknown,
 ): value is PositiveFloat {
-  return isFloat(value) && value > 0;
+  return isFloat(value,) && value > 0;
 }
 
 /**
@@ -443,7 +443,7 @@ export function isPositiveFloat(
 export function isNegativeFloat(
   value: unknown,
 ): value is NegativeFloat {
-  return isFloat(value) && value < 0;
+  return isFloat(value,) && value < 0;
 }
 
 /**
@@ -488,7 +488,7 @@ export function isNegativeFloat(
 /* @__NO_SIDE_EFFECTS__ */ export function isNonNanNumber<T,>(
   value: T,
 ): value is Exclude<T extends number ? T : never, typeof Number.NaN> {
-  return isNumber(value) && !isNan(value);
+  return isNumber(value,) && !isNan(value,);
 }
 
 /**
@@ -631,7 +631,7 @@ export function isNegativeFloat(
   : T_value extends NegativeInfinity ? NegativeInfinity
   : never
 {
-  return isPositiveInfinity(value) || isNegativeInfinity(value);
+  return isPositiveInfinity(value,) || isNegativeInfinity(value,);
 }
 
 /**
@@ -681,7 +681,7 @@ export function isNegativeFloat(
 ): value is Exclude<T extends number ? T : never,
   PositiveInfinity | NegativeInfinity | typeof Number.NaN>
 {
-  return !isInfinity(value) && isNonNanNumber(value);
+  return !isInfinity(value,) && isNonNanNumber(value,);
 }
 
 /**
@@ -732,7 +732,7 @@ export function isNegativeFloat(
 ): value is Exclude<T extends number ? T : never,
   PositiveInfinity | NegativeInfinity | typeof Number.NaN>
 {
-  return isFiniteNumber(value)
+  return isFiniteNumber(value,)
     && (-Number.MAX_SAFE_INTEGER <= value && value <= Number.MAX_SAFE_INTEGER);
 }
 
@@ -785,7 +785,7 @@ export function isNegativeFloat(
 /* @__NO_SIDE_EFFECTS__ */ export function isPositiveNumber<T,>(
   value: T,
 ): value is T extends number ? T : never {
-  return isPositiveInfinity(value) || isPositiveInt(value) || isPositiveFloat(value);
+  return isPositiveInfinity(value,) || isPositiveInt(value,) || isPositiveFloat(value,);
 }
 
 /**
@@ -828,8 +828,8 @@ export function isNegativeFloat(
  * const validDates = dates.filter(date => !isNaN(date.getTime()));
  * ```
  */
-/* @__NO_SIDE_EFFECTS__ */ export function isObjectDate(value: unknown): value is Date {
-  return Object.prototype.toString.call(value) === '[object Date]';
+/* @__NO_SIDE_EFFECTS__ */ export function isObjectDate(value: unknown,): value is Date {
+  return Object.prototype.toString.call(value,) === '[object Date]';
 }
 
 /**
@@ -874,7 +874,7 @@ export function isNegativeFloat(
  * }
  * ```
  */
-export function isBigint(value: unknown): value is bigint {
+export function isBigint(value: unknown,): value is bigint {
   return typeof value === 'bigint';
 }
 
@@ -921,8 +921,8 @@ export function isBigint(value: unknown): value is bigint {
  * console.log(numbers); // [1, 3n, 4.5, 100n]
  * ```
  */
-export function isNumeric(value: unknown): value is number | bigint {
-  return isNumber(value) || isBigint(value);
+export function isNumeric(value: unknown,): value is number | bigint {
+  return isNumber(value,) || isBigint(value,);
 }
 
 /**
@@ -965,10 +965,10 @@ export function isNumeric(value: unknown): value is number | bigint {
  * }
  * ```
  */
-export function isIntBigint(value: unknown): value is IntBigint {
-  return isBigint(value)
-    && value >= BigInt(Number.MIN_SAFE_INTEGER)
-    && value <= BigInt(Number.MAX_SAFE_INTEGER);
+export function isIntBigint(value: unknown,): value is IntBigint {
+  return isBigint(value,)
+    && value >= BigInt(Number.MIN_SAFE_INTEGER,)
+    && value <= BigInt(Number.MAX_SAFE_INTEGER,);
 }
 
 /**

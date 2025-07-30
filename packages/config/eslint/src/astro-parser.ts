@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-namespace -- Parser needs to be imported as namespace
 import * as tsParser from '@typescript-eslint/parser';
-import { analyze } from '@typescript-eslint/scope-manager';
+import { analyze, } from '@typescript-eslint/scope-manager';
 import {
   AST_NODE_TYPES,
   type TSESTree,
@@ -47,30 +47,30 @@ export function parseForESLint(
 ): ParseForESLintResult {
   // Extract all TypeScript/JavaScript segments from the Astro file
   const segments: CodeSegment[] = [
-    ...extractFrontmatter(code),
-    ...extractScriptTags(code),
+    ...extractFrontmatter(code,),
+    ...extractScriptTags(code,),
   ];
 
   // Combine segments into a single string with proper line number preservation
-  const extractedTypeScriptCode = combineSegments(segments);
+  const extractedTypeScriptCode = combineSegments(segments,);
 
   // If no TypeScript/JavaScript content found, return empty AST to prevent ESLint errors
-  if (extractedTypeScriptCode.trim().length === 0) {
-    return createEmptyResult(options);
-  }
+  if (extractedTypeScriptCode.trim().length === 0)
+    return createEmptyResult(options,);
 
   /** Parse the extracted TypeScript code using TypeScript ESLint parser */
   try {
     /** Pass the extracted TypeScript code to TypeScript ESLint parser
      *  Options are already configured in the main ESLint config */
-    const result = tsParser.parseForESLint(extractedTypeScriptCode, options);
+    const result = tsParser.parseForESLint(extractedTypeScriptCode, options,);
 
     // Return the parser result directly (includes: ast, services, scopeManager, visitorKeys)
     return result;
-  } catch (error) {
+  }
+  catch (error) {
     /** If parsing fails, return a valid empty AST so ESLint doesn't crash */
-    console.error('Error parsing Astro file:', error);
-    return createErrorResult(extractedTypeScriptCode);
+    console.error('Error parsing Astro file:', error,);
+    return createErrorResult(extractedTypeScriptCode,);
   }
 }
 
@@ -79,11 +79,10 @@ export function parseForESLint(
  * @param code - Source code of Astro file.
  * @returns Array containing frontmatter segment or empty if none found.
  */
-function extractFrontmatter(code: string): CodeSegment[] {
+function extractFrontmatter(code: string,): CodeSegment[] {
   // Frontmatter must start with --- on the first line
-  if (!code.startsWith(FRONTMATTER_DELIMITER + '\n')) {
+  if (!code.startsWith(FRONTMATTER_DELIMITER + '\n',))
     return [];
-  }
 
   // Find the closing delimiter
   const startIndex = FRONTMATTER_DELIMITER.length + 1;
@@ -92,17 +91,17 @@ function extractFrontmatter(code: string): CodeSegment[] {
   while (currentIndex < code.length - FRONTMATTER_DELIMITER.length) {
     if (
       code[currentIndex] === '\n'
-      && code.slice(currentIndex + 1, currentIndex + 1 + FRONTMATTER_DELIMITER.length)
+      && code.slice(currentIndex + 1, currentIndex + 1 + FRONTMATTER_DELIMITER.length,)
         === FRONTMATTER_DELIMITER
     ) {
       // Found closing delimiter
       /** Extract content between opening and closing --- */
-      const content = code.slice(startIndex, currentIndex);
+      const content = code.slice(startIndex, currentIndex,);
       return [{
         content,
         // Frontmatter content starts on line 2 (after ---)\n
         startLine: 2,
-      }];
+      },];
     }
     currentIndex++;
   }
@@ -116,7 +115,7 @@ function extractFrontmatter(code: string): CodeSegment[] {
  * @param code - Source code of Astro file.
  * @returns Array of code segments from script tags.
  */
-function extractScriptTags(code: string): CodeSegment[] {
+function extractScriptTags(code: string,): CodeSegment[] {
   const segments: CodeSegment[] = [];
   /** Current position in source code */
   let currentIndex = 0;
@@ -126,46 +125,45 @@ function extractScriptTags(code: string): CodeSegment[] {
    * @param targetIndex - Character index in source code.
    * @returns Line number (1-based).
    */
-  const getLineNumber = (targetIndex: number): number => {
+  const getLineNumber = (targetIndex: number,): number => {
     // Count newlines in substring from start to targetIndex
-    return code.slice(0, targetIndex).split('\n').length;
+    return code.slice(0, targetIndex,).split('\n',).length;
   };
 
   /** Scan through the entire source code looking for script tags */
   while (currentIndex < code.length - SCRIPT_TAG_OPEN.length) {
     if (
-      code.slice(currentIndex, currentIndex + SCRIPT_TAG_OPEN.length)
+      code.slice(currentIndex, currentIndex + SCRIPT_TAG_OPEN.length,)
         === SCRIPT_TAG_OPEN
     ) {
       // Found opening tag, find closing >
       /** Position to search for closing bracket */
       let tagEndIndex = currentIndex + SCRIPT_TAG_OPEN.length;
-      while (tagEndIndex < code.length && code[tagEndIndex] !== '>') {
+      while (tagEndIndex < code.length && code[tagEndIndex] !== '>')
         tagEndIndex++;
-      }
 
       if (tagEndIndex < code.length) {
         // Found >, now find closing tag
         /** Index where script content starts */
         const contentStartIndex = tagEndIndex + 1;
         /** Line number where script content starts */
-        const contentStartLine = getLineNumber(contentStartIndex);
+        const contentStartLine = getLineNumber(contentStartIndex,);
 
         // Search for closing tag
         /** Mutable index to scan for closing script tag */
         let contentEndIndex = contentStartIndex;
         while (contentEndIndex < code.length - SCRIPT_TAG_CLOSE.length) {
           if (
-            code.slice(contentEndIndex, contentEndIndex + SCRIPT_TAG_CLOSE.length)
+            code.slice(contentEndIndex, contentEndIndex + SCRIPT_TAG_CLOSE.length,)
               === SCRIPT_TAG_CLOSE
           ) {
             // Found closing tag
             /** Extract script content */
-            const content = code.slice(contentStartIndex, contentEndIndex);
+            const content = code.slice(contentStartIndex, contentEndIndex,);
             segments.push({
               content,
               startLine: contentStartLine,
-            });
+            },);
             currentIndex = contentEndIndex + SCRIPT_TAG_CLOSE.length;
             break;
           }
@@ -176,11 +174,13 @@ function extractScriptTags(code: string): CodeSegment[] {
           // No closing tag found, skip this opening tag
           currentIndex++;
         }
-      } else {
+      }
+      else {
         // No closing > found, skip
         currentIndex++;
       }
-    } else {
+    }
+    else {
       currentIndex++;
     }
   }
@@ -193,13 +193,12 @@ function extractScriptTags(code: string): CodeSegment[] {
  * @param segments - Array of code segments to combine.
  * @returns Combined code with newlines to preserve line numbers.
  */
-function combineSegments(segments: CodeSegment[]): string {
-  if (segments.length === 0) {
+function combineSegments(segments: CodeSegment[],): string {
+  if (segments.length === 0)
     return '';
-  }
 
   /** Segments sorted by start line number to ensure correct ordering when combining */
-  const sortedSegments = [...segments].sort((a, b) => a.startLine - b.startLine);
+  const sortedSegments = [...segments,].sort((a, b,) => a.startLine - b.startLine);
 
   /** Mutable string accumulator for building padded output incrementally */
   let result = '';
@@ -215,7 +214,7 @@ function combineSegments(segments: CodeSegment[]): string {
 
     // Add the content
     result += segment.content;
-    currentLine += segment.content.split('\n').length - 1;
+    currentLine += segment.content.split('\n',).length - 1;
   }
 
   return result;
@@ -226,7 +225,7 @@ function combineSegments(segments: CodeSegment[]): string {
  * @param options - Parser options from ESLint config.
  * @returns Valid parser result with empty AST.
  */
-function createEmptyResult(options: any): ParseForESLintResult {
+function createEmptyResult(options: any,): ParseForESLintResult {
   // Create a valid but empty AST structure
   /** Empty AST structure for files with no TypeScript content */
   const emptyAst: TSESTree.Program = {
@@ -237,11 +236,11 @@ function createEmptyResult(options: any): ParseForESLintResult {
     // ES modules (not script)
     sourceType: 'module',
     // Position in source: start to end
-    range: [0, 0],
+    range: [0, 0,],
     // Line/column location info
     loc: {
-      start: { line: 1, column: 0 },
-      end: { line: 1, column: 0 },
+      start: { line: 1, column: 0, },
+      end: { line: 1, column: 0, },
     },
     // No tokens to parse
     tokens: [],
@@ -255,11 +254,11 @@ function createEmptyResult(options: any): ParseForESLintResult {
     // Not in Node.js global scope
     globalReturn: false,
     // Available global variables (ES features)
-    lib: ['esnext'],
-  });
+    lib: ['esnext',],
+  },);
 
   /** Parse empty string to match TypeScript ESLint parser return structure */
-  const result = tsParser.parseForESLint('', options);
+  const result = tsParser.parseForESLint('', options,);
   // Return empty result but preserve our scope manager
   return {
     ...result,
@@ -273,17 +272,17 @@ function createEmptyResult(options: any): ParseForESLintResult {
  * @param extractedCode - Extracted TypeScript code that failed to parse.
  * @returns Valid parser result for error recovery.
  */
-function createErrorResult(extractedCode: string): ParseForESLintResult {
+function createErrorResult(extractedCode: string,): ParseForESLintResult {
   /** Create an error AST that spans the whole file */
   const errorAst: TSESTree.Program = {
     type: AST_NODE_TYPES.Program,
     body: [],
     sourceType: 'module',
     // Full file range
-    range: [0, extractedCode.length],
+    range: [0, extractedCode.length,],
     loc: {
-      start: { line: 1, column: 0 },
-      end: { line: extractedCode.split('\n').length, column: 0 },
+      start: { line: 1, column: 0, },
+      end: { line: extractedCode.split('\n',).length, column: 0, },
     },
     tokens: [],
     comments: [],
@@ -293,11 +292,11 @@ function createErrorResult(extractedCode: string): ParseForESLintResult {
   const scopeManager = analyze(errorAst, {
     sourceType: 'module',
     globalReturn: false,
-    lib: ['esnext'],
-  });
+    lib: ['esnext',],
+  },);
 
   /** Parse empty string to get valid services structure for error recovery */
-  const emptyResult = tsParser.parseForESLint('', {});
+  const emptyResult = tsParser.parseForESLint('', {},);
   // Return error result with custom scope manager
   return {
     ...emptyResult,
@@ -313,8 +312,8 @@ function createErrorResult(extractedCode: string): ParseForESLintResult {
  * @param options - Parser options.
  * @returns AST Program node.
  */
-export const parse = (code: string, options?: any): TSESTree.Program =>
-  parseForESLint(code, options).ast;
+export const parse = (code: string, options?: any,): TSESTree.Program =>
+  parseForESLint(code, options,).ast;
 
 /** Parser metadata used by ESLint for cache and debugging */
 export const meta = {

@@ -30,257 +30,257 @@ import {
   test,
 } from 'vitest';
 
-await logtapeConfigure(await logtapeConfiguration());
+await logtapeConfigure(await logtapeConfiguration(),);
 
 describe('synchronous assertions', () => {
   test('assert compares values correctly', () => {
     expect(() => {
-      assert(42, 42);
-    })
+      assert(42, 42,);
+    },)
       .not
       .toThrow();
     expect(() => {
-      assert('test', 'test');
-    })
+      assert('test', 'test',);
+    },)
       .not
       .toThrow();
     expect(() => {
-      assert(null, null);
-    })
+      assert(null, null,);
+    },)
       .not
       .toThrow();
 
     expect(() => {
-      assert(42, 43);
-    })
+      assert(42, 43,);
+    },)
       .toThrow();
     expect(() => {
-      assert('test', 'other');
-    })
+      assert('test', 'other',);
+    },)
       .toThrow();
   });
 
   test('assertTrue verifies true values', () => {
     expect(() => {
-      assertTrue(true);
-    })
+      assertTrue(true,);
+    },)
       .not
       .toThrow();
     expect(() => {
-      assertTrue(false);
-    })
+      assertTrue(false,);
+    },)
       .toThrow();
   });
 
   test('assertFalse verifies false values', () => {
     expect(() => {
-      assertFalse(false);
-    })
+      assertFalse(false,);
+    },)
       .not
       .toThrow();
     expect(() => {
-      assertFalse(true);
-    })
+      assertFalse(true,);
+    },)
       .toThrow();
   });
 
   test('assertUndefined verifies undefined values', () => {
     expect(() => {
-      assertUndefined(undefined);
-    })
+      assertUndefined(undefined,);
+    },)
       .not
       .toThrow();
     expect(() => {
-      assertUndefined(null);
-    })
+      assertUndefined(null,);
+    },)
       .toThrow();
     expect(() => {
-      assertUndefined(0);
-    })
+      assertUndefined(0,);
+    },)
       .toThrow();
   });
 
   test('assertNull verifies null values', () => {
     expect(() => {
-      assertNull(null);
-    })
+      assertNull(null,);
+    },)
       .not
       .toThrow();
     expect(() => {
-      assertNull(undefined);
-    })
+      assertNull(undefined,);
+    },)
       .toThrow();
     expect(() => {
-      assertNull(0);
-    })
+      assertNull(0,);
+    },)
       .toThrow();
   });
 
   test('assertEmptyArray verifies empty arrays', () => {
     expect(() => {
-      assertEmptyArray([]);
-    })
+      assertEmptyArray([],);
+    },)
       .not
       .toThrow();
     expect(() => {
-      assertEmptyArray([1, 2]);
-    })
+      assertEmptyArray([1, 2,],);
+    },)
       .toThrow();
     expect(() => {
-      assertEmptyArray({});
-    })
+      assertEmptyArray({},);
+    },)
       .toThrow();
   });
 
   test('assertEmptyObject verifies empty objects', () => {
     expect(() => {
-      assertEmptyObject({});
-    })
+      assertEmptyObject({},);
+    },)
       .not
       .toThrow();
     expect(() => {
-      assertEmptyObject({ a: 1 });
-    })
+      assertEmptyObject({ a: 1, },);
+    },)
       .toThrow();
     expect(() => {
-      assertEmptyObject([]);
-    })
+      assertEmptyObject([],);
+    },)
       .toThrow();
   });
 
   test('assert0 verifies zero values', () => {
     expect(() => {
-      assert0(0);
-    })
+      assert0(0,);
+    },)
       .not
       .toThrow();
     expect(() => {
-      assert0(1);
-    })
+      assert0(1,);
+    },)
       .toThrow();
     expect(() => {
-      assert0('0');
-    })
+      assert0('0',);
+    },)
       .toThrow();
   });
 
   test('assert1 verifies one values', () => {
     expect(() => {
-      assert1(1);
-    })
+      assert1(1,);
+    },)
       .not
       .toThrow();
     expect(() => {
-      assert1(0);
-    })
+      assert1(0,);
+    },)
       .toThrow();
     expect(() => {
-      assert1('1');
-    })
+      assert1('1',);
+    },)
       .toThrow();
   });
 
   test('assertNan verifies NaN values', () => {
     expect(() => {
-      assertNan(Number.NaN);
-    })
+      assertNan(Number.NaN,);
+    },)
       .not
       .toThrow();
     expect(() => {
-      assertNan(0);
-    })
+      assertNan(0,);
+    },)
       .toThrow();
     expect(() => {
-      assertNan('NaN');
-    })
+      assertNan('NaN',);
+    },)
       .toThrow();
   });
 
   test('assertNegative1 verifies -1 values', () => {
     expect(() => {
-      assertNegative1(-1);
-    })
+      assertNegative1(-1,);
+    },)
       .not
       .toThrow();
     expect(() => {
-      assertNegative1(0);
-    })
+      assertNegative1(0,);
+    },)
       .toThrow();
     expect(() => {
-      assertNegative1('-1');
-    })
+      assertNegative1('-1',);
+    },)
       .toThrow();
   });
 });
 
 describe('asynchronous assertions', () => {
   test('assertAsync compares values correctly', async () => {
-    await expect(assertAsync(42, 42)).resolves.toBeUndefined();
-    await expect(assertAsync('test', 'test')).resolves.toBeUndefined();
+    await expect(assertAsync(42, 42,),).resolves.toBeUndefined();
+    await expect(assertAsync('test', 'test',),).resolves.toBeUndefined();
 
-    await expect(assertAsync(42, 43)).rejects.toThrow();
-    await expect(assertAsync('test', 'other')).rejects.toThrow();
+    await expect(assertAsync(42, 43,),).rejects.toThrow();
+    await expect(assertAsync('test', 'other',),).rejects.toThrow();
   });
 
   test('assertTrueAsync verifies true values', async () => {
-    await expect(assertTrueAsync(true)).resolves.toBeUndefined();
-    await expect(assertTrueAsync(Promise.resolve(true))).resolves.toBeUndefined();
+    await expect(assertTrueAsync(true,),).resolves.toBeUndefined();
+    await expect(assertTrueAsync(Promise.resolve(true,),),).resolves.toBeUndefined();
 
-    await expect(assertTrueAsync(false)).rejects.toThrow();
-    await expect(assertTrueAsync(Promise.resolve(false))).rejects.toThrow();
+    await expect(assertTrueAsync(false,),).rejects.toThrow();
+    await expect(assertTrueAsync(Promise.resolve(false,),),).rejects.toThrow();
   });
 
   test('assertFalseAsync verifies false values', async () => {
-    await expect(assertFalseAsync(false)).resolves.toBeUndefined();
-    await expect(assertFalseAsync(Promise.resolve(false))).resolves.toBeUndefined();
+    await expect(assertFalseAsync(false,),).resolves.toBeUndefined();
+    await expect(assertFalseAsync(Promise.resolve(false,),),).resolves.toBeUndefined();
 
-    await expect(assertFalseAsync(true)).rejects.toThrow();
-    await expect(assertFalseAsync(Promise.resolve(true))).rejects.toThrow();
+    await expect(assertFalseAsync(true,),).rejects.toThrow();
+    await expect(assertFalseAsync(Promise.resolve(true,),),).rejects.toThrow();
   });
 
   test('assertUndefinedAsync verifies undefined values', async () => {
-    await expect(assertUndefinedAsync(undefined)).resolves.toBeUndefined();
-    await expect(assertUndefinedAsync(null)).rejects.toThrow();
+    await expect(assertUndefinedAsync(undefined,),).resolves.toBeUndefined();
+    await expect(assertUndefinedAsync(null,),).rejects.toThrow();
   });
 
   test('assertNullAsync verifies null values', async () => {
-    await expect(assertNullAsync(null)).resolves.toBeUndefined();
-    await expect(assertNullAsync(undefined)).rejects.toThrow();
+    await expect(assertNullAsync(null,),).resolves.toBeUndefined();
+    await expect(assertNullAsync(undefined,),).rejects.toThrow();
   });
 
   test('assertEmptyArrayAsync verifies empty arrays', async () => {
-    await expect(assertEmptyArrayAsync([])).resolves.toBeUndefined();
-    await expect(assertEmptyArrayAsync([1])).rejects.toThrow();
+    await expect(assertEmptyArrayAsync([],),).resolves.toBeUndefined();
+    await expect(assertEmptyArrayAsync([1,],),).rejects.toThrow();
   });
 
   test('assertEmptyObjectAsync verifies empty objects', async () => {
-    await expect(assertEmptyObjectAsync({})).resolves.toBeUndefined();
-    await expect(assertEmptyObjectAsync({ a: 1 })).rejects.toThrow();
+    await expect(assertEmptyObjectAsync({},),).resolves.toBeUndefined();
+    await expect(assertEmptyObjectAsync({ a: 1, },),).rejects.toThrow();
   });
 
   test('assert0Async verifies zero values', async () => {
-    await expect(assert0Async(0)).resolves.toBeUndefined();
-    await expect(assert0Async(Promise.resolve(0))).resolves.toBeUndefined();
+    await expect(assert0Async(0,),).resolves.toBeUndefined();
+    await expect(assert0Async(Promise.resolve(0,),),).resolves.toBeUndefined();
 
-    await expect(assert0Async(1)).rejects.toThrow();
+    await expect(assert0Async(1,),).rejects.toThrow();
   });
 
   test('assert1Async verifies one values', async () => {
-    await expect(assert1Async(1)).resolves.toBeUndefined();
-    await expect(assert1Async(Promise.resolve(1))).resolves.toBeUndefined();
+    await expect(assert1Async(1,),).resolves.toBeUndefined();
+    await expect(assert1Async(Promise.resolve(1,),),).resolves.toBeUndefined();
 
-    await expect(assert1Async(0)).rejects.toThrow();
+    await expect(assert1Async(0,),).rejects.toThrow();
   });
 
   test('assertNanAsync verifies NaN values', async () => {
-    await expect(assertNanAsync(Number.NaN)).resolves.toBeUndefined();
-    await expect(assertNanAsync(0)).rejects.toThrow();
+    await expect(assertNanAsync(Number.NaN,),).resolves.toBeUndefined();
+    await expect(assertNanAsync(0,),).rejects.toThrow();
   });
 
   test('assertNegative1Async verifies -1 values', async () => {
-    await expect(assertNegative1Async(-1)).resolves.toBeUndefined();
-    await expect(assertNegative1Async(Promise.resolve(-1))).resolves.toBeUndefined();
+    await expect(assertNegative1Async(-1,),).resolves.toBeUndefined();
+    await expect(assertNegative1Async(Promise.resolve(-1,),),).resolves.toBeUndefined();
 
-    await expect(assertNegative1Async(0)).rejects.toThrow();
+    await expect(assertNegative1Async(0,),).rejects.toThrow();
   });
 });

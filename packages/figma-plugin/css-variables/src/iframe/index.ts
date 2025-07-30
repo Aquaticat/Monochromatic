@@ -1,10 +1,10 @@
-import { outdent } from '@cspotcode/outdent';
+import { outdent, } from '@cspotcode/outdent';
 import type {
   AuthoredCss,
   ComputedColor,
 } from '../shared/message.ts';
 
-import { isPositiveNumberString } from '@monochromatic-dev/module-es/ts';
+import { isPositiveNumberString, } from '@monochromatic-dev/module-es/ts';
 
 import {
   asConcur,
@@ -25,27 +25,26 @@ const testCssVar = async (
   mode: string,
   depth = 0,
 ): Promise<AuthoredCss> => {
-  if (depth > 10) {
-    throw new Error('Infinite loop detected');
-  }
+  if (depth > 10)
+    throw new Error('Infinite loop detected',);
   console.log(
     `testCssVar(cssValue: ${cssValue}, cssVar: ${cssVar}, mode: ${mode}, depth: ${depth})`,
   );
 
   const modeApplier: HTMLDivElement =
-    document.querySelector(`body > [data-mode="${mode}"]`)
+    document.querySelector(`body > [data-mode="${mode}"]`,)
       ?? (function createModeApplier(): HTMLDivElement {
-        const createdModeApplier = document.createElement('div');
+        const createdModeApplier = document.createElement('div',);
         createdModeApplier.dataset.mode = mode;
-        document.body.append(createdModeApplier);
+        document.body.append(createdModeApplier,);
         return createdModeApplier;
       })();
 
   {
-    const testElementAssumeUnitfulLength = document.createElement('div');
+    const testElementAssumeUnitfulLength = document.createElement('div',);
     testElementAssumeUnitfulLength.style.width = cssValue;
     testElementAssumeUnitfulLength.style.height = cssValue;
-    modeApplier.append(testElementAssumeUnitfulLength);
+    modeApplier.append(testElementAssumeUnitfulLength,);
 
     const computedStyle = globalThis.getComputedStyle(
       testElementAssumeUnitfulLength,
@@ -63,20 +62,21 @@ const testCssVar = async (
         `${cssVar} isn't a unitful length value.
         Try treating it as a number`,
       );*/
-    } else {
+    }
+    else {
       return {
         cssVar,
         originalValue: cssValue,
-        computedValue: Number(computedWidth.slice(0, -('px'.length))),
+        computedValue: Number(computedWidth.slice(0, -('px'.length),),),
         varType: 'number',
         mode,
         error: {
-          message: outdent({ newline: ' ' })`
+          message: outdent({ newline: ' ', },)`
             Figma doesn't support unitful length values,
             consider using a number or string for this value.
             If you're relying on the behavior of converting from rem to px,
             you can safely ignore this error.`,
-          level: cssValue.includes('em') ? 'notice' : 'error',
+          level: cssValue.includes('em',) ? 'notice' : 'error',
         },
         originalComputedValue: computedWidth,
       };
@@ -88,7 +88,7 @@ const testCssVar = async (
     );
     testElementAssumeNumber.style.width = `${cssValue}px`;
     testElementAssumeNumber.style.height = `${cssValue}px`;
-    modeApplier.append(testElementAssumeNumber);
+    modeApplier.append(testElementAssumeNumber,);
 
     const computedStyle = globalThis.getComputedStyle(
       testElementAssumeNumber,
@@ -105,11 +105,12 @@ const testCssVar = async (
         `${cssVar} isn't a number value.
         Try treating it as a unitful length value`,
       );*/
-    } else {
+    }
+    else {
       return {
         cssVar,
         originalValue: cssValue,
-        computedValue: Number(computedWidth.slice(0, -('px'.length))),
+        computedValue: Number(computedWidth.slice(0, -('px'.length),),),
         varType: 'number',
         mode,
         originalComputedValue: computedWidth,
@@ -122,7 +123,7 @@ const testCssVar = async (
     );
     testElementAssumeColor.style.backgroundColor = cssValue;
     testElementAssumeColor.style.color = cssValue;
-    document.body.append(testElementAssumeColor);
+    document.body.append(testElementAssumeColor,);
 
     const computedStyle = globalThis.getComputedStyle(
       testElementAssumeColor,
@@ -145,7 +146,8 @@ const testCssVar = async (
         mode,
         originalComputedValue: computedBackgroundColor,
       };
-    } else {
+    }
+    else {
       /*            console.log(
         `${cssVar} isn't a color value. Try treating it as something else.`,
       );*/
@@ -156,7 +158,7 @@ const testCssVar = async (
       'div',
     );
     testElementAssumeBoxShadow.style.boxShadow = cssValue;
-    document.body.append(testElementAssumeBoxShadow);
+    document.body.append(testElementAssumeBoxShadow,);
 
     const computedStyle = globalThis.getComputedStyle(
       testElementAssumeBoxShadow,
@@ -177,7 +179,8 @@ const testCssVar = async (
         `${cssVar} isn't a box-shadow value.
         Try treating it as something else.`,
       );*/
-    } else {
+    }
+    else {
       return {
         cssVar,
         originalValue: cssValue,
@@ -199,12 +202,12 @@ const testCssVar = async (
       'div',
     );
     testElementAssumeString.id = `testElementAssumeString${cssVar}`;
-    testElementAssumeString.style.setProperty(cssVar, cssValue);
+    testElementAssumeString.style.setProperty(cssVar, cssValue,);
     const assumeStringStyleSheet = await new CSSStyleSheet().replace(
       `#testElementAssumeString${cssVar}::before { content: ${cssValue}; }`,
     );
-    document.adoptedStyleSheets.push(assumeStringStyleSheet);
-    document.body.append(testElementAssumeString);
+    document.adoptedStyleSheets.push(assumeStringStyleSheet,);
+    document.body.append(testElementAssumeString,);
     const computedStyle = globalThis.getComputedStyle(
       testElementAssumeString,
     );
@@ -217,13 +220,14 @@ const testCssVar = async (
       console
         .log`${cssVar} isn't a string (CSS content) value.
               Try treating it as something else.`;
-    } else {
+    }
+    else {
       return {
         cssVar,
         originalValue: cssValue,
-        computedValue: cssValue.includes('var(--')
+        computedValue: cssValue.includes('var(--',)
           // TODO: Handle the case where cssValue contains var(--)
-          ? cssValue.replaceAll('var(--', 'var(--')
+          ? cssValue.replaceAll('var(--', 'var(--',)
           : cssValue,
         varType: 'string',
         mode,
@@ -241,7 +245,7 @@ const testCssVar = async (
     varType: 'invalid',
     mode,
     error: {
-      message: outdent({ newline: ' ' })`
+      message: outdent({ newline: ' ', },)`
         ${cssVar}'s ${cssValue} can't be treated as a unitful length,
         a number, a color, a box-shadow, or a string (CSS content) value.`,
       level: 'error',
@@ -257,26 +261,27 @@ const processCssVarRuleStyle = async (
   mode: string,
 ): Promise<void> => {
   const cssVar = ruleStyle;
-  const cssValue: string = rule.style.getPropertyValue(cssVar);
+  const cssValue: string = rule.style.getPropertyValue(cssVar,);
 
   // low-hanging fruit:
   // If the CSS var is a number at first glance,
   // skip everything and send the value to the backend.
   // noinspection JSCheckFunctionSignatures
   if (
-    isPositiveNumberString(cssValue)
+    isPositiveNumberString(cssValue,)
   ) {
     globalThis.parent.postMessage({
       authoredCss: {
         cssVar,
         originalValue: cssValue,
-        computedValue: Number(cssValue),
+        computedValue: Number(cssValue,),
         varType: 'number',
         mode,
         originalComputedValue: cssValue,
       },
-    }, '*');
-  } else if (cssValue === 'true') {
+    }, '*',);
+  }
+  else if (cssValue === 'true') {
     globalThis.parent.postMessage({
       authoredCss: {
         cssVar,
@@ -286,8 +291,9 @@ const processCssVarRuleStyle = async (
         mode,
         originalComputedValue: cssValue,
       },
-    }, '*');
-  } else if (cssValue === 'false') {
+    }, '*',);
+  }
+  else if (cssValue === 'false') {
     globalThis.parent.postMessage({
       authoredCss: {
         cssVar,
@@ -297,13 +303,14 @@ const processCssVarRuleStyle = async (
         mode,
         originalComputedValue: cssValue,
       },
-    }, '*');
-  } else {
+    }, '*',);
+  }
+  else {
     // creates multiple test elements to test the CSS var
-    const authoredCss = await testCssVar(cssValue, cssVar, mode, 0);
+    const authoredCss = await testCssVar(cssValue, cssVar, mode, 0,);
 
     // Send the message to the outer iframe
-    globalThis.parent.postMessage({ authoredCss }, '*');
+    globalThis.parent.postMessage({ authoredCss, }, '*',);
   }
 };
 
@@ -314,9 +321,8 @@ const processBasicRule = async (
   // console.log(rule.style);
   const ruleStyles: string[] = [];
 
-  for (let styleIndex = 0; styleIndex < rule.style.length; styleIndex++) {
-    ruleStyles.push(rule.style.item(styleIndex));
-  }
+  for (let styleIndex = 0; styleIndex < rule.style.length; styleIndex++)
+    ruleStyles.push(rule.style.item(styleIndex,),);
 
   /*  for (const ruleStyle of ruleStyles) {
     if (ruleStyle.startsWith('--')) {
@@ -326,42 +332,43 @@ const processBasicRule = async (
     }
   }*/
   await forEachConcur(
-    async function processRuleStyle(ruleStyle: string) {
-      if (ruleStyle.startsWith('--')) {
-        await processCssVarRuleStyle(ruleStyle as `--${string}`, rule, mode);
-      } else {
+    async function processRuleStyle(ruleStyle: string,) {
+      if (ruleStyle.startsWith('--',))
+        await processCssVarRuleStyle(ruleStyle as `--${string}`, rule, mode,);
+      else {
         // console.log(`non-css var: ${ruleStyle}`);
       }
     },
-    asConcur(ruleStyles),
+    asConcur(ruleStyles,),
   );
 };
 
 const processNonBasicRule = (
   rule: CSSStyleRule & { selectorText: string; },
 ): void => {
-  console.log(`non-basic rule: ${rule.selectorText}`);
+  console.log(`non-basic rule: ${rule.selectorText}`,);
 };
 
 const processRule = async (
   rule: CSSStyleRule & { selectorText: string; },
 ): Promise<void> => {
   // Basic Rules
-  if (/^\[data-mode=(?:"\w+"|'\w+')]$/.test(rule.selectorText.trim())) {
+  if (/^\[data-mode=(?:"\w+"|'\w+')]$/.test(rule.selectorText.trim(),)) {
     const mode = rule.selectorText.trim().slice('[data-mode="'.length, -'"]'
-      .length);
-    await processBasicRule(rule, mode);
-  } else {
-    processNonBasicRule(rule);
+      .length,);
+    await processBasicRule(rule, mode,);
+  }
+  else {
+    processNonBasicRule(rule,);
   }
 };
 
-const handleReceivingCss = async (event: MessageEvent): Promise<void> => {
+const handleReceivingCss = async (event: MessageEvent,): Promise<void> => {
   // console.log(`inner iframe received message: ${event.data.css}`);
-  const sheet = await new CSSStyleSheet().replace(event.data.css);
-  document.adoptedStyleSheets = [sheet];
+  const sheet = await new CSSStyleSheet().replace(event.data.css,);
+  document.adoptedStyleSheets = [sheet,];
   globalThis.parent.postMessage(
-    { authoredCss: 'adopted stylesheets applied' },
+    { authoredCss: 'adopted stylesheets applied', },
     '*',
   );
 
@@ -369,17 +376,17 @@ const handleReceivingCss = async (event: MessageEvent): Promise<void> => {
 
   const rules: (CSSStyleRule & { selectorText: string; })[] = [];
 
-  for (let ruleIndex = 0; ruleIndex < ruleList.length; ruleIndex++) {
-    rules.push(ruleList.item(ruleIndex) as CSSStyleRule & { selectorText: string; });
-  }
+  for (let ruleIndex = 0; ruleIndex < ruleList.length; ruleIndex++)
+    rules.push(ruleList.item(ruleIndex,) as CSSStyleRule & { selectorText: string; },);
 
   await forEachConcur(
     processRule,
-    asConcur(rules),
+    asConcur(rules,),
   );
 };
 
-const messageHandler = async (event: MessageEvent): Promise<void> => {
-  if (Object.hasOwn(event.data, 'css')) { await handleReceivingCss(event); }
+const messageHandler = async (event: MessageEvent,): Promise<void> => {
+  if (Object.hasOwn(event.data, 'css',))
+    await handleReceivingCss(event,);
 };
-globalThis.addEventListener('message', messageHandler);
+globalThis.addEventListener('message', messageHandler,);

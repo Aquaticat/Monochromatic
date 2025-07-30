@@ -34,6 +34,6 @@ export function nonPromiseAll<const T_array extends readonly unknown[],>(
  * @param values - iterable
  * @returns iterable turned to array
  */
-export function nonPromiseAll<const T,>(values: Iterable<T>): T[] {
-  return [...values];
+export function nonPromiseAll<const T,>(values: Iterable<T>,): T[] {
+  return [...values,];
 }

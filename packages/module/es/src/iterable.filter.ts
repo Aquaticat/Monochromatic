@@ -1,5 +1,5 @@
-import type { Promisable } from 'type-fest';
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
+import type { Promisable, } from 'type-fest';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
 /**
  * Asynchronously filters an iterable or async iterable based on a predicate function.
@@ -56,15 +56,14 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
  * ```
  */
 export async function filterIterableAsync<T_i,>(
-  predicate: (i: T_i) => Promisable<boolean>,
+  predicate: (i: T_i,) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_i>,
 ): Promise<T_i[]> {
   const yes: T_i[] = [];
 
   for await (const i of arrayLike) {
-    if (await predicate(i)) {
-      yes.push(i);
-    }
+    if (await predicate(i,))
+      yes.push(i,);
   }
 
   // We can't know the length of yes beforehand,
@@ -111,15 +110,14 @@ export async function filterIterableAsync<T_i,>(
  * ```
  */
 export function filterIterable<T_i,>(
-  predicate: (i: T_i) => boolean,
+  predicate: (i: T_i,) => boolean,
   arrayLike: Iterable<T_i>,
 ): T_i[] {
   const yes: T_i[] = [];
 
   for (const i of arrayLike) {
-    if (predicate(i)) {
-      yes.push(i);
-    }
+    if (predicate(i,))
+      yes.push(i,);
   }
 
   return yes;
@@ -180,13 +178,12 @@ export function filterIterable<T_i,>(
  * ```
  */
 export async function* filterIterableAsyncGen<T_i,>(
-  predicate: (i: T_i) => Promisable<boolean>,
+  predicate: (i: T_i,) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_i>,
 ): AsyncGenerator<T_i, void, undefined> {
   for await (const i of arrayLike) {
-    if (await predicate(i)) {
+    if (await predicate(i,))
       yield i;
-    }
   }
 }
 
@@ -241,13 +238,12 @@ export async function* filterIterableAsyncGen<T_i,>(
  * ```
  */
 export function* filterIterableGen<T_i,>(
-  predicate: (i: T_i) => boolean,
+  predicate: (i: T_i,) => boolean,
   arrayLike: Iterable<T_i>,
 ): Generator<T_i, void, undefined> {
   for (const i of arrayLike) {
-    if (predicate(i)) {
+    if (predicate(i,))
       yield i;
-    }
   }
 }
 
@@ -309,13 +305,12 @@ export function* filterIterableGen<T_i,>(
  * ```
  */
 export async function* filterFailIterableAsyncGen<T_i,>(
-  predicate: (i: T_i) => Promisable<boolean>,
+  predicate: (i: T_i,) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_i>,
 ): AsyncGenerator<T_i, void, undefined> {
   for await (const i of arrayLike) {
-    if (!(await predicate(i))) {
+    if (!(await predicate(i,)))
       yield i;
-    }
   }
 }
 
@@ -358,13 +353,12 @@ export async function* filterFailIterableAsyncGen<T_i,>(
  * ```
  */
 export function* filterFailIterableGen<T_i,>(
-  predicate: (i: T_i) => boolean,
+  predicate: (i: T_i,) => boolean,
   arrayLike: Iterable<T_i>,
 ): Generator<T_i, void, undefined> {
   for (const i of arrayLike) {
-    if (!(predicate(i))) {
+    if (!(predicate(i,)))
       yield i;
-    }
   }
 }
 
@@ -415,15 +409,14 @@ export function* filterFailIterableGen<T_i,>(
  * ```
  */
 export async function filterFailIterableAsync<T_i,>(
-  predicate: (i: T_i) => Promisable<boolean>,
+  predicate: (i: T_i,) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_i>,
 ): Promise<T_i[]> {
   const no: T_i[] = [];
 
   for await (const i of arrayLike) {
-    if (!(await predicate(i))) {
-      no.push(i);
-    }
+    if (!(await predicate(i,)))
+      no.push(i,);
   }
 
   return no;
@@ -462,15 +455,14 @@ export async function filterFailIterableAsync<T_i,>(
  * ```
  */
 export function filterFailIterable<T_i,>(
-  predicate: (i: T_i) => boolean,
+  predicate: (i: T_i,) => boolean,
   arrayLike: Iterable<T_i>,
 ): T_i[] {
   const no: T_i[] = [];
 
   for (const i of arrayLike) {
-    if (!(predicate(i))) {
-      no.push(i);
-    }
+    if (!(predicate(i,)))
+      no.push(i,);
   }
 
   return no;

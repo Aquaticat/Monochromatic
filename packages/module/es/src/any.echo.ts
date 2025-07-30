@@ -21,8 +21,7 @@
  * }
  * ```
  */
-export function* echo<const T,>(x: T): Generator<T> {
-  while (true) {
+export function* echo<const T,>(x: T,): Generator<T> {
+  while (true)
     yield x;
-  }
 }

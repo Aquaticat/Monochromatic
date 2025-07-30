@@ -13,8 +13,8 @@
  * type Example5 = WithoutFirst<readonly [number, string]>; // [string]
  * ```
  */
-export type WithoutFirst<T extends any[],> = T extends [any, ...infer Rest] ? Rest
-  : T extends readonly [any, ...infer Rest] ? Rest
+export type WithoutFirst<T extends any[],> = T extends [any, ...infer Rest,] ? Rest
+  : T extends readonly [any, ...infer Rest,] ? Rest
   : T extends Array<infer U> ? U[]
   : never;
 
@@ -32,9 +32,9 @@ export type WithoutFirst<T extends any[],> = T extends [any, ...infer Rest] ? Re
  * type Example4 = WithoutFirst2<string[]>; // string[]
  * ```
  */
-export type WithoutFirst2<T extends any[],> = T extends [any, any, ...infer Rest] ? Rest
-  : T extends readonly [any, any, ...infer Rest] ? Rest
-  : T extends [any, ...infer Rest] ? WithoutFirst<Rest>
+export type WithoutFirst2<T extends any[],> = T extends [any, any, ...infer Rest,] ? Rest
+  : T extends readonly [any, any, ...infer Rest,] ? Rest
+  : T extends [any, ...infer Rest,] ? WithoutFirst<Rest>
   : T extends Array<infer U> ? U[]
   : never;
 
@@ -52,11 +52,11 @@ export type WithoutFirst2<T extends any[],> = T extends [any, any, ...infer Rest
  * type Example4 = WithoutFirst3<string[]>; // string[]
  * ```
  */
-export type WithoutFirst3<T extends any[],> = T extends [any, any, any, ...infer Rest]
+export type WithoutFirst3<T extends any[],> = T extends [any, any, any, ...infer Rest,]
   ? Rest
-  : T extends readonly [any, any, any, ...infer Rest] ? Rest
-  : T extends [any, any, ...infer Rest] ? WithoutFirst<Rest>
-  : T extends [any, ...infer Rest] ? WithoutFirst2<Rest>
+  : T extends readonly [any, any, any, ...infer Rest,] ? Rest
+  : T extends [any, any, ...infer Rest,] ? WithoutFirst<Rest>
+  : T extends [any, ...infer Rest,] ? WithoutFirst2<Rest>
   : T extends Array<infer U> ? U[]
   : never;
 
@@ -75,11 +75,11 @@ export type WithoutFirst3<T extends any[],> = T extends [any, any, any, ...infer
  * ```
  */
 export type WithoutFirst4<T extends any[],> = T extends
-  [any, any, any, any, ...infer Rest] ? Rest
-  : T extends readonly [any, any, any, any, ...infer Rest] ? Rest
-  : T extends [any, any, any, ...infer Rest] ? WithoutFirst<Rest>
-  : T extends [any, any, ...infer Rest] ? WithoutFirst2<Rest>
-  : T extends [any, ...infer Rest] ? WithoutFirst3<Rest>
+  [any, any, any, any, ...infer Rest,] ? Rest
+  : T extends readonly [any, any, any, any, ...infer Rest,] ? Rest
+  : T extends [any, any, any, ...infer Rest,] ? WithoutFirst<Rest>
+  : T extends [any, any, ...infer Rest,] ? WithoutFirst2<Rest>
+  : T extends [any, ...infer Rest,] ? WithoutFirst3<Rest>
   : T extends Array<infer U> ? U[]
   : never;
 
@@ -98,12 +98,12 @@ export type WithoutFirst4<T extends any[],> = T extends
  * ```
  */
 export type WithoutFirst5<T extends any[],> = T extends
-  [any, any, any, any, any, ...infer Rest] ? Rest
-  : T extends readonly [any, any, any, any, any, ...infer Rest] ? Rest
-  : T extends [any, any, any, any, ...infer Rest] ? WithoutFirst<Rest>
-  : T extends [any, any, any, ...infer Rest] ? WithoutFirst2<Rest>
-  : T extends [any, any, ...infer Rest] ? WithoutFirst3<Rest>
-  : T extends [any, ...infer Rest] ? WithoutFirst4<Rest>
+  [any, any, any, any, any, ...infer Rest,] ? Rest
+  : T extends readonly [any, any, any, any, any, ...infer Rest,] ? Rest
+  : T extends [any, any, any, any, ...infer Rest,] ? WithoutFirst<Rest>
+  : T extends [any, any, any, ...infer Rest,] ? WithoutFirst2<Rest>
+  : T extends [any, any, ...infer Rest,] ? WithoutFirst3<Rest>
+  : T extends [any, ...infer Rest,] ? WithoutFirst4<Rest>
   : T extends Array<infer U> ? U[]
   : never;
 
@@ -122,13 +122,13 @@ export type WithoutFirst5<T extends any[],> = T extends
  * ```
  */
 export type WithoutFirst6<T extends any[],> = T extends
-  [any, any, any, any, any, any, ...infer Rest] ? Rest
-  : T extends readonly [any, any, any, any, any, any, ...infer Rest] ? Rest
-  : T extends [any, any, any, any, any, ...infer Rest] ? WithoutFirst<Rest>
-  : T extends [any, any, any, any, ...infer Rest] ? WithoutFirst2<Rest>
-  : T extends [any, any, any, ...infer Rest] ? WithoutFirst3<Rest>
-  : T extends [any, any, ...infer Rest] ? WithoutFirst4<Rest>
-  : T extends [any, ...infer Rest] ? WithoutFirst5<Rest>
+  [any, any, any, any, any, any, ...infer Rest,] ? Rest
+  : T extends readonly [any, any, any, any, any, any, ...infer Rest,] ? Rest
+  : T extends [any, any, any, any, any, ...infer Rest,] ? WithoutFirst<Rest>
+  : T extends [any, any, any, any, ...infer Rest,] ? WithoutFirst2<Rest>
+  : T extends [any, any, any, ...infer Rest,] ? WithoutFirst3<Rest>
+  : T extends [any, any, ...infer Rest,] ? WithoutFirst4<Rest>
+  : T extends [any, ...infer Rest,] ? WithoutFirst5<Rest>
   : T extends Array<infer U> ? U[]
   : never;
 
@@ -147,14 +147,14 @@ export type WithoutFirst6<T extends any[],> = T extends
  * ```
  */
 export type WithoutFirst7<T extends any[],> = T extends
-  [any, any, any, any, any, any, any, ...infer Rest] ? Rest
-  : T extends readonly [any, any, any, any, any, any, any, ...infer Rest] ? Rest
-  : T extends [any, any, any, any, any, any, ...infer Rest] ? WithoutFirst<Rest>
-  : T extends [any, any, any, any, any, ...infer Rest] ? WithoutFirst2<Rest>
-  : T extends [any, any, any, any, ...infer Rest] ? WithoutFirst3<Rest>
-  : T extends [any, any, any, ...infer Rest] ? WithoutFirst4<Rest>
-  : T extends [any, any, ...infer Rest] ? WithoutFirst5<Rest>
-  : T extends [any, ...infer Rest] ? WithoutFirst6<Rest>
+  [any, any, any, any, any, any, any, ...infer Rest,] ? Rest
+  : T extends readonly [any, any, any, any, any, any, any, ...infer Rest,] ? Rest
+  : T extends [any, any, any, any, any, any, ...infer Rest,] ? WithoutFirst<Rest>
+  : T extends [any, any, any, any, any, ...infer Rest,] ? WithoutFirst2<Rest>
+  : T extends [any, any, any, any, ...infer Rest,] ? WithoutFirst3<Rest>
+  : T extends [any, any, any, ...infer Rest,] ? WithoutFirst4<Rest>
+  : T extends [any, any, ...infer Rest,] ? WithoutFirst5<Rest>
+  : T extends [any, ...infer Rest,] ? WithoutFirst6<Rest>
   : T extends Array<infer U> ? U[]
   : never;
 
@@ -173,15 +173,15 @@ export type WithoutFirst7<T extends any[],> = T extends
  * ```
  */
 export type WithoutFirst8<T extends any[],> = T extends
-  [any, any, any, any, any, any, any, any, ...infer Rest] ? Rest
-  : T extends readonly [any, any, any, any, any, any, any, any, ...infer Rest] ? Rest
-  : T extends [any, any, any, any, any, any, any, ...infer Rest] ? WithoutFirst<Rest>
-  : T extends [any, any, any, any, any, any, ...infer Rest] ? WithoutFirst2<Rest>
-  : T extends [any, any, any, any, any, ...infer Rest] ? WithoutFirst3<Rest>
-  : T extends [any, any, any, any, ...infer Rest] ? WithoutFirst4<Rest>
-  : T extends [any, any, any, ...infer Rest] ? WithoutFirst5<Rest>
-  : T extends [any, any, ...infer Rest] ? WithoutFirst6<Rest>
-  : T extends [any, ...infer Rest] ? WithoutFirst7<Rest>
+  [any, any, any, any, any, any, any, any, ...infer Rest,] ? Rest
+  : T extends readonly [any, any, any, any, any, any, any, any, ...infer Rest,] ? Rest
+  : T extends [any, any, any, any, any, any, any, ...infer Rest,] ? WithoutFirst<Rest>
+  : T extends [any, any, any, any, any, any, ...infer Rest,] ? WithoutFirst2<Rest>
+  : T extends [any, any, any, any, any, ...infer Rest,] ? WithoutFirst3<Rest>
+  : T extends [any, any, any, any, ...infer Rest,] ? WithoutFirst4<Rest>
+  : T extends [any, any, any, ...infer Rest,] ? WithoutFirst5<Rest>
+  : T extends [any, any, ...infer Rest,] ? WithoutFirst6<Rest>
+  : T extends [any, ...infer Rest,] ? WithoutFirst7<Rest>
   : T extends Array<infer U> ? U[]
   : never;
 
@@ -200,16 +200,18 @@ export type WithoutFirst8<T extends any[],> = T extends
  * ```
  */
 export type WithoutFirst9<T extends any[],> = T extends
-  [any, any, any, any, any, any, any, any, any, ...infer Rest] ? Rest
-  : T extends readonly [any, any, any, any, any, any, any, any, any, ...infer Rest] ? Rest
-  : T extends [any, any, any, any, any, any, any, any, ...infer Rest] ? WithoutFirst<Rest>
-  : T extends [any, any, any, any, any, any, any, ...infer Rest] ? WithoutFirst2<Rest>
-  : T extends [any, any, any, any, any, any, ...infer Rest] ? WithoutFirst3<Rest>
-  : T extends [any, any, any, any, any, ...infer Rest] ? WithoutFirst4<Rest>
-  : T extends [any, any, any, any, ...infer Rest] ? WithoutFirst5<Rest>
-  : T extends [any, any, any, ...infer Rest] ? WithoutFirst6<Rest>
-  : T extends [any, any, ...infer Rest] ? WithoutFirst7<Rest>
-  : T extends [any, ...infer Rest] ? WithoutFirst8<Rest>
+  [any, any, any, any, any, any, any, any, any, ...infer Rest,] ? Rest
+  : T extends readonly [any, any, any, any, any, any, any, any, any, ...infer Rest,]
+    ? Rest
+  : T extends [any, any, any, any, any, any, any, any, ...infer Rest,]
+    ? WithoutFirst<Rest>
+  : T extends [any, any, any, any, any, any, any, ...infer Rest,] ? WithoutFirst2<Rest>
+  : T extends [any, any, any, any, any, any, ...infer Rest,] ? WithoutFirst3<Rest>
+  : T extends [any, any, any, any, any, ...infer Rest,] ? WithoutFirst4<Rest>
+  : T extends [any, any, any, any, ...infer Rest,] ? WithoutFirst5<Rest>
+  : T extends [any, any, any, ...infer Rest,] ? WithoutFirst6<Rest>
+  : T extends [any, any, ...infer Rest,] ? WithoutFirst7<Rest>
+  : T extends [any, ...infer Rest,] ? WithoutFirst8<Rest>
   : T extends Array<infer U> ? U[]
   : never;
 
@@ -228,19 +230,19 @@ export type WithoutFirst9<T extends any[],> = T extends
  * ```
  */
 export type WithoutFirst10<T extends any[],> = T extends
-  [any, any, any, any, any, any, any, any, any, any, ...infer Rest] ? Rest
-  : T extends readonly [any, any, any, any, any, any, any, any, any, any, ...infer Rest]
+  [any, any, any, any, any, any, any, any, any, any, ...infer Rest,] ? Rest
+  : T extends readonly [any, any, any, any, any, any, any, any, any, any, ...infer Rest,]
     ? Rest
-  : T extends [any, any, any, any, any, any, any, any, any, ...infer Rest]
+  : T extends [any, any, any, any, any, any, any, any, any, ...infer Rest,]
     ? WithoutFirst<Rest>
-  : T extends [any, any, any, any, any, any, any, any, ...infer Rest]
+  : T extends [any, any, any, any, any, any, any, any, ...infer Rest,]
     ? WithoutFirst2<Rest>
-  : T extends [any, any, any, any, any, any, any, ...infer Rest] ? WithoutFirst3<Rest>
-  : T extends [any, any, any, any, any, any, ...infer Rest] ? WithoutFirst4<Rest>
-  : T extends [any, any, any, any, any, ...infer Rest] ? WithoutFirst5<Rest>
-  : T extends [any, any, any, any, ...infer Rest] ? WithoutFirst6<Rest>
-  : T extends [any, any, any, ...infer Rest] ? WithoutFirst7<Rest>
-  : T extends [any, any, ...infer Rest] ? WithoutFirst8<Rest>
-  : T extends [any, ...infer Rest] ? WithoutFirst9<Rest>
+  : T extends [any, any, any, any, any, any, any, ...infer Rest,] ? WithoutFirst3<Rest>
+  : T extends [any, any, any, any, any, any, ...infer Rest,] ? WithoutFirst4<Rest>
+  : T extends [any, any, any, any, any, ...infer Rest,] ? WithoutFirst5<Rest>
+  : T extends [any, any, any, any, ...infer Rest,] ? WithoutFirst6<Rest>
+  : T extends [any, any, any, ...infer Rest,] ? WithoutFirst7<Rest>
+  : T extends [any, any, ...infer Rest,] ? WithoutFirst8<Rest>
+  : T extends [any, ...infer Rest,] ? WithoutFirst9<Rest>
   : T extends Array<infer U> ? U[]
   : never;

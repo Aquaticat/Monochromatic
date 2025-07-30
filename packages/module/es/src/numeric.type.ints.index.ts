@@ -1,4 +1,4 @@
-console.log((function negIntToInt(num: number): string {
+console.log((function negIntToInt(num: number,): string {
   let result =
     '/* @__NO_SIDE_EFFECTS__ */ export type Ints<fromInclusive extends number, toInclusive extends number,> =\n';
 
@@ -10,9 +10,9 @@ console.log((function negIntToInt(num: number): string {
         toInclusive === fromInclusive
           ? toInclusive
           : `(${
-            [...Array.from({ length: toInclusive + 1 - fromInclusive }).keys()]
-              .map((current) => current + fromInclusive)
-              .join('|')
+            [...Array.from({ length: toInclusive + 1 - fromInclusive, },).keys(),]
+              .map(current => current + fromInclusive)
+              .join('|',)
           })`
       } :`;
     }
@@ -23,9 +23,9 @@ console.log((function negIntToInt(num: number): string {
   return result;
 })(
   10,
-));
+),);
 
-console.log((function negIntToIntExclusive(num: number): string {
+console.log((function negIntToIntExclusive(num: number,): string {
   let result =
     'export type IntsToExclusive<fromInclusive extends number, toExclusive extends number,> =\n';
 
@@ -37,9 +37,9 @@ console.log((function negIntToIntExclusive(num: number): string {
         toExclusive === fromInclusive
           ? toExclusive
           : `(${
-            [...Array.from({ length: toExclusive - fromInclusive }).keys()]
-              .map((current) => current + fromInclusive)
-              .join('|')
+            [...Array.from({ length: toExclusive - fromInclusive, },).keys(),]
+              .map(current => current + fromInclusive)
+              .join('|',)
           })`
       } :`;
     }
@@ -50,5 +50,5 @@ console.log((function negIntToIntExclusive(num: number): string {
   return result;
 })(
   10,
-));
+),);
 export {};

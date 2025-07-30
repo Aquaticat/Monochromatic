@@ -1,6 +1,6 @@
-import { isEmptyArray } from './iterable.is.ts';
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
-import type { PromisableFunction } from './promise.type.ts';
+import { isEmptyArray, } from './iterable.is.ts';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { PromisableFunction, } from './promise.type.ts';
 
 //region Type Definitions -- Defines reducer function signatures for different parameter combinations
 
@@ -127,15 +127,14 @@ export async function reduceIterableAsync<const T_accumulated, const T_element,>
   reducer: ReducingFunctionPromisable<T_accumulated, T_element>,
   arrayLike: MaybeAsyncIterable<T_element>,
 ): Promise<T_accumulated> {
-  const arrayLikeArray: T_element[] = await Array.fromAsync(arrayLike);
+  const arrayLikeArray: T_element[] = await Array.fromAsync(arrayLike,);
 
-  if (isEmptyArray(arrayLikeArray)) {
+  if (isEmptyArray(arrayLikeArray,))
     return initialValue;
-  }
 
   let accumulator: T_accumulated = initialValue;
 
-  for (const [internalCurrentIndex, arrayLikeElement] of arrayLikeArray.entries()) {
+  for (const [internalCurrentIndex, arrayLikeElement,] of arrayLikeArray.entries()) {
     // oxlint-disable-next-line no-await-in-loop -- Sequential processing is necessary for reduce semantics.
     accumulator = await reducer(
       accumulator,
@@ -177,7 +176,7 @@ export function reduceIterable<T_accumulated, T_element,>(
   reducer: ReducingFunction<T_accumulated, T_element>,
   arrayLike: Iterable<T_element>,
 ): T_accumulated {
-  const arrayLikeArray: T_element[] = [...arrayLike];
+  const arrayLikeArray: T_element[] = [...arrayLike,];
 
   return arrayLikeArray.reduce(
     reducer,
@@ -221,7 +220,7 @@ export function* reduceIterableGen<const T_accumulated, const T_element,>(
 
   let index = 0;
   for (const element of arrayLike) {
-    accumulator = reducer(accumulator, element, index++);
+    accumulator = reducer(accumulator, element, index++,);
     yield accumulator;
   }
 }
@@ -270,7 +269,7 @@ export async function* reduceIterableAsyncGen<const T_accumulated, const T_eleme
 
   let index = 0;
   for await (const element of arrayLike) {
-    accumulator = await reducer(accumulator, element, index++);
+    accumulator = await reducer(accumulator, element, index++,);
     yield accumulator;
   }
 }

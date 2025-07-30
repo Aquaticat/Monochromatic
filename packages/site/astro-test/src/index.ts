@@ -15,47 +15,45 @@ export type Post = {
   filePath?: string;
 };
 
-export const posts = (await getCollection('blog')).map((post: any) => ({
+export const posts = (await getCollection('blog',)).map((post: any,) => ({
   ...post,
-  lang: post.id.split('/')[0]!,
-  name: post.id.split('/')[1]!,
-})) as [Post, ...Post[]];
+  lang: post.id.split('/',)[0]!,
+  name: post.id.split('/',)[1]!,
+})) as [Post, ...Post[],];
 
-export const postsGroupedByLang = Object.groupBy(posts, (post) => post.lang) as Record<
+export const postsGroupedByLang = Object.groupBy(posts, post => post.lang,) as Record<
   string,
-  [Post, ...Post[]]
+  [Post, ...Post[],]
 >;
 
-export const langs = Object.keys(postsGroupedByLang) as [string, ...string[]];
+export const langs = Object.keys(postsGroupedByLang,) as [string, ...string[],];
 
-export const postsGroupedByName = Object.groupBy(posts, (post) => post.name) as Record<
+export const postsGroupedByName = Object.groupBy(posts, post => post.name,) as Record<
   string,
-  [Post, ...Post[]]
+  [Post, ...Post[],]
 >;
 
-export const names = Object.keys(postsGroupedByName) as [
+export const names = Object.keys(postsGroupedByName,) as [
   string,
   ...string[],
 ];
 
 export const tags = [
-  ...new Set(posts.flatMap((post) => post.data.tags)),
-] as [string, ...string[]];
+  ...new Set(posts.flatMap(post => post.data.tags),),
+] as [string, ...string[],];
 
 export const postsGroupedByTag = Object.fromEntries(
-  tags.map((tag) => [tag, posts.filter((post) => post.data.tags.includes(tag))]),
-) as Record<string, [Post, ...Post[]]>;
+  tags.map(tag => [tag, posts.filter(post => post.data.tags.includes(tag,)),]),
+) as Record<string, [Post, ...Post[],]>;
 
 export const postsGroupedByLangThenTag = Object.fromEntries(
   langs.map(
-    (
-      lang,
-    ) => [
+    lang => [
       lang,
       Object.fromEntries(
-        Object.entries(postsGroupedByTag).map(([tag, tagPosts]) => [
+        Object.entries(postsGroupedByTag,).map(([tag, tagPosts,],) => [
           tag,
-          tagPosts.filter((tagPost) => tagPost.lang === lang),
+          tagPosts.filter(tagPost => tagPost.lang === lang),
         ]),
       ),
     ],
@@ -67,64 +65,64 @@ export const i18n = new Map<string, Map<string, string>>(
     [
       'siteName',
       new Map([
-        ['en', 'Aquaticat'],
-        ['zh', 'Aquaticat'],
-      ]),
+        ['en', 'Aquaticat',],
+        ['zh', 'Aquaticat',],
+      ],),
     ],
     [
       'siteDescription',
       new Map([
-        ['en', 'Changing the world, one design at a time'],
-        ['zh', '用设计改变世界'],
-      ]),
+        ['en', 'Changing the world, one design at a time',],
+        ['zh', '用设计改变世界',],
+      ],),
     ],
     [
       'chooseALang',
       new Map([
-        ['en', 'choose a language'],
-        ['zh', '语言选择'],
-      ]),
+        ['en', 'choose a language',],
+        ['zh', '语言选择',],
+      ],),
     ],
     [
       'searchPlaceholder',
       new Map([
-        ['en', 'Search keyword, topic, text'],
-        ['zh', '搜索关键词，话题，或文段'],
-      ]),
+        ['en', 'Search keyword, topic, text',],
+        ['zh', '搜索关键词，话题，或文段',],
+      ],),
     ],
     [
       'redirectingTo',
       new Map([
-        ['en', 'redirecting to'],
-        ['zh', '正在跳转至'],
-      ]),
+        ['en', 'redirecting to',],
+        ['zh', '正在跳转至',],
+      ],),
     ],
     [
       'page',
       new Map([
-        ['en', 'page'],
-        ['zh', '页面'],
-      ]),
+        ['en', 'page',],
+        ['zh', '页面',],
+      ],),
     ],
     [
       "Post doesn't exist in specified language",
       new Map([
-        ['en', "Post doesn't exist in specified language"],
-        ['zh', '无该语言的页面'],
-      ]),
+        ['en', "Post doesn't exist in specified language",],
+        ['zh', '无该语言的页面',],
+      ],),
     ],
     [
       // eslint-disable-next-line no-template-curly-in-string -- i18n placeholder
       'Redirecting to choose a language page for ${name}',
       new Map([
         // eslint-disable-next-line no-template-curly-in-string -- i18n placeholder
-        ['en', 'Redirecting to choose a language page for ${name}'],
+        ['en', 'Redirecting to choose a language page for ${name}',],
         [
           'zh',
           // eslint-disable-next-line no-template-curly-in-string -- i18n placeholder
           '正在跳转至${name}的语言选择页面',
         ],
-      ]),
+      ],),
     ],
   ],
 );

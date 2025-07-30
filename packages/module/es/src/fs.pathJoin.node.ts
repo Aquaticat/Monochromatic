@@ -1,1 +1,1 @@
-export { join as pathJoin } from 'node:path';
+export { join as pathJoin, } from 'node:path';

@@ -1,7 +1,7 @@
 // TODO: Finish the implementation and preferably write a Promise. function that handles this specific case.
 
-import type { Promisable } from 'type-fest';
-import { throws } from './error.throws.ts';
+import type { Promisable, } from 'type-fest';
+import { throws, } from './error.throws.ts';
 import {
   entriesIterable,
   entriesIterableAsync,
@@ -11,10 +11,10 @@ import type {
   MappingFunctionNoArrayPromisable,
   MappingFunctionPromisable,
 } from './iterable.map.ts';
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
-import { logtapeGetLogger } from './logtape.shared.ts';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import { logtapeGetLogger, } from './logtape.shared.ts';
 
-const l = logtapeGetLogger(['m', 'iterable.every']);
+const l = logtapeGetLogger(['m', 'iterable.every',],);
 
 /**
  * Asynchronously tests whether all elements in an async iterable satisfy a predicate function.
@@ -93,7 +93,7 @@ export async function everyIterableAsync<const T_element,
   iterable: T_iterable,
 ): Promise<boolean> {
   // We do have to collect the iterable first because testingFn could take 3 parameters, the 3rd being the array.
-  const arr: T_element[] = await Array.fromAsync(iterable);
+  const arr: T_element[] = await Array.fromAsync(iterable,);
 
   /*
    We invert the approach from noneIterableAsync:
@@ -104,26 +104,26 @@ export async function everyIterableAsync<const T_element,
    */
 
   const promises: Promise<'result is false' | Error>[] = arr.map(
-    function mapper(element, index): Promise<'result is false' | Error> {
+    function mapper(element, index,): Promise<'result is false' | Error> {
       return (async function inner(): Promise<'result is false' | Error> {
         // Propagate predicate errors
         const result: boolean | Error =
           await (async function throwing(): Promise<boolean | Error> {
             try {
-              return await testingFn(element, index, arr);
-            } catch (error) {
+              return await testingFn(element, index, arr,);
+            }
+            catch (error) {
               // l.warn`${error}`;
               return error as Error;
             }
           })();
 
-        if (result === true) {
-          throw new Error(`result is true`);
-        } else if (result === false) {
+        if (result === true)
+          throw new Error(`result is true`,);
+        else if (result === false)
           return 'result is false'; // Short-circuit when predicate returns false
-        } else {
+        else
           return result;
-        }
       })();
     },
   );
@@ -131,21 +131,20 @@ export async function everyIterableAsync<const T_element,
   const promiseAnyResult: 'result is false' | Error | 'every item passes predicate' =
     await (async function orTrue() {
       try {
-        return await Promise.any(promises);
-      } catch {
+        return await Promise.any(promises,);
+      }
+      catch {
         return 'every item passes predicate';
       }
     })();
   // l.warn`${promiseAnyResult}`;
 
-  if (promiseAnyResult === 'every item passes predicate') {
+  if (promiseAnyResult === 'every item passes predicate')
     return true;
-  }
 
   // If any promise resolved with false, short-circuit with false
-  if (promiseAnyResult === 'result is false') {
+  if (promiseAnyResult === 'result is false')
     return false;
-  }
 
   throw promiseAnyResult;
 }
@@ -221,11 +220,10 @@ export function everyIterable<const T_element,
   iterable: T_iterable,
 ): boolean {
   // We do have to collect the iterable first because testingFn could take 3 parameters, the 3rd being the array.
-  const arr: T_element[] = [...iterable];
-  for (const [index, element] of entriesIterable(arr)) {
-    if (!testingFn(element, index, arr)) {
+  const arr: T_element[] = [...iterable,];
+  for (const [index, element,] of entriesIterable(arr,)) {
+    if (!testingFn(element, index, arr,))
       return false;
-    }
   }
   return true;
 }

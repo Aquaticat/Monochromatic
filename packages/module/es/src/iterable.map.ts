@@ -2,8 +2,8 @@ import type {
   MaybeAsyncIterable,
   Tuple,
 } from '@monochromatic-dev/module-es/ts';
-import type { Promisable } from 'type-fest';
-import type { PromisableFunction } from './promise.type.ts';
+import type { Promisable, } from 'type-fest';
+import type { PromisableFunction, } from './promise.type.ts';
 
 // TODO: Support infinite Iterables by writing a * version of this fn. (Done)
 //       Investigate if doing that makes sense for other ArrayLike methods.
@@ -213,13 +213,13 @@ export async function mapIterableAsync<const T_element, const T_mappedElement,
   mappingFn: MappingFunctionPromisable<T_element, T_mappedElement>,
   arrayLike: T_arrayLike,
 ): Promise<T_mappedElement[]> {
-  const arr: T_element[] = await Array.fromAsync(arrayLike);
+  const arr: T_element[] = await Array.fromAsync(arrayLike,);
   return await Promise.all(
     arr.map(
       function mapper(element: T_element, index: number,
-        array: T_element[]): Promisable<T_mappedElement>
+        array: T_element[],): Promisable<T_mappedElement>
       {
-        return mappingFn(element, index, array);
+        return mappingFn(element, index, array,);
       },
     ),
   );
@@ -285,8 +285,8 @@ export function mapIterable<const T_element, const T_mappedElement,
   mappingFn: MappingFunction<T_element, T_mappedElement>,
   arrayLike: T_arrayLike,
 ): T_mappedElement[] {
-  const arr: T_element[] = [...arrayLike];
-  return arr.map(mappingFn);
+  const arr: T_element[] = [...arrayLike,];
+  return arr.map(mappingFn,);
 }
 
 /**
@@ -336,9 +336,8 @@ export function* mapIterableGen<const T_element, const T_mappedElement,>(
   arrayLike: Iterable<T_element>,
 ): Generator<T_mappedElement> {
   let index = 0;
-  for (const element of arrayLike) {
-    yield mappingFn(element, index++);
-  }
+  for (const element of arrayLike)
+    yield mappingFn(element, index++,);
 }
 
 /**
@@ -415,7 +414,6 @@ export async function* mapIterableAsyncGen<const T_element, const T_mappedElemen
   arrayLike: MaybeAsyncIterable<T_element>,
 ): AsyncGenerator<T_mappedElement> {
   let index = 0;
-  for await (const element of arrayLike) {
-    yield await mappingFn(element, index++);
-  }
+  for await (const element of arrayLike)
+    yield await mappingFn(element, index++,);
 }

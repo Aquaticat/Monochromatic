@@ -2,9 +2,9 @@ import {
   reduceIterable,
   reduceIterableAsync,
 } from './iterable.reduce.ts';
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
-import type { Numeric } from './numeric.type.int.ts';
+import type { Numeric, } from './numeric.type.int.ts';
 
 /**
  * Adds two numbers together using standard JavaScript addition operator.
@@ -31,7 +31,7 @@ import type { Numeric } from './numeric.type.int.ts';
  * console.log(total); // 15
  * ```
  */
-export function addTwoNumbers(previousValue: number, currentValue: number): number {
+export function addTwoNumbers(previousValue: number, currentValue: number,): number {
   return previousValue + currentValue;
 }
 
@@ -69,7 +69,7 @@ export function addTwoNumbers(previousValue: number, currentValue: number): numb
  * ```
  */
 export function sumNumbers(...numbers: number[]): number {
-  return numbers.reduce(addTwoNumbers, 0);
+  return numbers.reduce(addTwoNumbers, 0,);
 }
 
 /**
@@ -99,7 +99,7 @@ export function sumNumbers(...numbers: number[]): number {
  * console.log(sum); // Very large bigint result
  * ```
  */
-export function addTwoBigints(previousValue: bigint, currentValue: bigint): bigint {
+export function addTwoBigints(previousValue: bigint, currentValue: bigint,): bigint {
   return previousValue + currentValue;
 }
 
@@ -141,7 +141,7 @@ export function addTwoBigints(previousValue: bigint, currentValue: bigint): bigi
  */
 export function sumBigints(...bigints: bigint[]): bigint {
   // eslint-disable-next-line no-magic-numbers -- Zero bigint as initial value
-  return bigints.reduce(addTwoBigints, 0n);
+  return bigints.reduce(addTwoBigints, 0n,);
 }
 
 /**
@@ -189,11 +189,10 @@ export function addTwoNumerics<const Prev extends number | bigint,
   previousValue: Prev,
   currentValue: Curr,
 ): Returns {
-  if (typeof previousValue === 'number' && typeof currentValue === 'number') {
+  if (typeof previousValue === 'number' && typeof currentValue === 'number')
     return previousValue + currentValue as Returns;
-  }
 
-  return BigInt(previousValue) + BigInt(currentValue) as Returns;
+  return BigInt(previousValue,) + BigInt(currentValue,) as Returns;
 }
 
 /**
@@ -297,7 +296,7 @@ export function sumNumerics<const T extends (bigint | number)[],
 export async function addNumbersAsync(
   numbers: MaybeAsyncIterable<number>,
 ): Promise<number> {
-  return await reduceIterableAsync(0, addTwoNumbers, numbers);
+  return await reduceIterableAsync(0, addTwoNumbers, numbers,);
 }
 
 /**
@@ -342,7 +341,7 @@ export async function addNumbersAsync(
 export function addNumbers(
   numbers: Iterable<number>,
 ): number {
-  return reduceIterable(0, addTwoNumbers, numbers);
+  return reduceIterable(0, addTwoNumbers, numbers,);
 }
 
 /**
@@ -395,7 +394,7 @@ export async function addBigintsAsync(
   bigints: MaybeAsyncIterable<bigint>,
 ): Promise<bigint> {
   // eslint-disable-next-line no-magic-numbers -- Zero bigint as initial value
-  return await reduceIterableAsync(0n, addTwoBigints, bigints);
+  return await reduceIterableAsync(0n, addTwoBigints, bigints,);
 }
 
 /**
@@ -441,9 +440,9 @@ export async function addBigintsAsync(
  * const sumOfPowers = addBigints(generatePrimes());
  * ```
  */
-export function addBigints(bigints: Iterable<bigint>): bigint {
+export function addBigints(bigints: Iterable<bigint>,): bigint {
   // eslint-disable-next-line no-magic-numbers -- Zero bigint as initial value
-  return reduceIterable(0n, addTwoBigints, bigints);
+  return reduceIterable(0n, addTwoBigints, bigints,);
 }
 
 /**
@@ -500,7 +499,7 @@ export async function addNumericsAsync<
 >(
   numerics: T,
 ): Promise<Returns> {
-  return await reduceIterableAsync(0, addTwoNumerics, numerics) as Returns;
+  return await reduceIterableAsync(0, addTwoNumerics, numerics,) as Returns;
 }
 
 /**
@@ -556,5 +555,5 @@ export function addNumerics<
 >(
   numerics: T,
 ): Returns {
-  return reduceIterable(0, addTwoNumerics, numerics) as Returns;
+  return reduceIterable(0, addTwoNumerics, numerics,) as Returns;
 }

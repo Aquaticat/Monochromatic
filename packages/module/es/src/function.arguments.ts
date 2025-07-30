@@ -31,9 +31,9 @@
  */
 export function spreadArguments<const Fn extends (...args: any) => any,>(
   fn: Fn,
-): (argumentsArray: Parameters<Fn>) => ReturnType<Fn> {
-  return function spreadFn(argumentsArray: Parameters<Fn>): ReturnType<Fn> {
-    return fn(...argumentsArray);
+): (argumentsArray: Parameters<Fn>,) => ReturnType<Fn> {
+  return function spreadFn(argumentsArray: Parameters<Fn>,): ReturnType<Fn> {
+    return fn(...argumentsArray,);
   };
 }
 
@@ -72,10 +72,10 @@ export function spreadArguments<const Fn extends (...args: any) => any,>(
  * joinStrings('apple', 'banana', 'cherry'); // 'apple, banana, cherry'
  * ```
  */
-export function gatherArguments<const Fn extends (arg: any[]) => any,>(
+export function gatherArguments<const Fn extends (arg: any[],) => any,>(
   fn: Fn,
 ): (...argumentsArray: Parameters<Fn>[0]) => ReturnType<Fn> {
   return function gatheredFn(...argumentsArray: Parameters<Fn>[0]): ReturnType<Fn> {
-    return fn(argumentsArray);
+    return fn(argumentsArray,);
   };
 }

@@ -32,7 +32,7 @@ import {
   type ViewTransitionRule,
   type Visitor,
 } from 'lightningcss';
-import { readFile } from 'node:fs/promises';
+import { readFile, } from 'node:fs/promises';
 import {
   join,
   resolve,
@@ -44,8 +44,8 @@ import {
   type UserConfig,
   type UserConfigFnObject,
 } from 'vite';
-import { json5Plugin } from 'vite-plugin-json5';
-import { viteSingleFile } from 'vite-plugin-singlefile';
+import { json5Plugin, } from 'vite-plugin-json5';
+import { viteSingleFile, } from 'vite-plugin-singlefile';
 import {
   defineConfig as defineVitestConfig,
   type ViteUserConfig as VitestUserConfig,
@@ -156,8 +156,8 @@ const mixins = new Map<string,
 /** Transforms custom property units into `calc()` expressions */
 const customUnitsVisitor: Visitor<CustomAtRules> = {
   Token: {
-    dimension(token) {
-      if (token.unit.startsWith('--')) {
+    dimension(token,) {
+      if (token.unit.startsWith('--',)) {
         return {
           type: 'function',
           value: {
@@ -198,14 +198,14 @@ const customUnitsVisitor: Visitor<CustomAtRules> = {
 const mixinsVisitor: Visitor<CustomAtRules> = {
   Rule: {
     custom: {
-      mixin(rule) {
+      mixin(rule,) {
         // Uncomment to get the updated TypeScript inferred type for the map.
         // const body = rule.body.value;
-        mixins.set(rule.prelude.value as string, rule.body.value);
+        mixins.set(rule.prelude.value as string, rule.body.value,);
         return [];
       },
-      apply(rule) {
-        return mixins.get(rule.prelude.value as string);
+      apply(rule,) {
+        return mixins.get(rule.prelude.value as string,);
       },
     },
   },
@@ -215,7 +215,7 @@ const mixinsVisitor: Visitor<CustomAtRules> = {
 
 //region Helper Functions -- Utilities used throughout configurations
 
-const rollupExternal = (moduleId: string): boolean => {
+const rollupExternal = (moduleId: string,): boolean => {
   if (
     [
       'node:',
@@ -225,10 +225,11 @@ const rollupExternal = (moduleId: string): boolean => {
       '@typescript-eslint/',
       '@eslint/',
       '@vitest/',
+      '@elysiajs/',
     ]
-      .some(function startingWithPrefix(prefix) {
-        return moduleId.startsWith(prefix);
-      })
+      .some(function startingWithPrefix(prefix,) {
+        return moduleId.startsWith(prefix,);
+      },)
   ) {
     return true;
   }
@@ -255,7 +256,7 @@ const rollupExternal = (moduleId: string): boolean => {
     'crypto',
     //endregion Node
   ]
-    .includes(moduleId);
+    .includes(moduleId,);
 };
 
 /**
@@ -269,15 +270,16 @@ async function readFileWithRetry(
 ): Promise<string> {
   try {
     // Explicitly types the return as string for `utf8` encoding
-    return await readFile(path, options) as string;
-  } catch (error) {
+    return await readFile(path, options,) as string;
+  }
+  catch (error) {
     if (
       error instanceof Error && 'code' in error && error
           .code === 'EPERM' && retries > 0
     ) {
       // console.warn(`Retrying readFile for ${path} due to EPERM... (${retries} retries left, delay ${delayMs}ms)`);
-      await wait(delayMs);
-      return readFileWithRetry(path, options, retries - 1, delayMs * 2);
+      await wait(delayMs,);
+      return readFileWithRetry(path, options, retries - 1, delayMs * 2,);
     }
     throw error;
   }
@@ -287,15 +289,15 @@ async function readFileWithRetry(
 
 //region Base Configurations -- Core configuration factories
 
-const createBaseConfig = (configDir: string): UserConfig => ({
+const createBaseConfig = (configDir: string,): UserConfig => ({
   plugins: [
     // Allows importing JSON5 files directly.
     json5Plugin(),
   ],
   resolve: {
     alias: {
-      '@': resolve(configDir),
-      '@_': resolve(configDir, 'src'),
+      '@': resolve(configDir,),
+      '@_': resolve(configDir, 'src',),
     },
     tsconfigPaths: true,
   },
@@ -309,7 +311,7 @@ const createBaseConfig = (configDir: string): UserConfig => ({
       visitor: composeVisitors([
         customUnitsVisitor,
         mixinsVisitor,
-      ]),
+      ],),
     },
     preprocessorMaxWorkers: true,
     devSourcemap: true,
@@ -321,7 +323,7 @@ const createBaseConfig = (configDir: string): UserConfig => ({
   build: {
     target: `firefox${FIREFOX_ESR_VERSION}`,
     cssMinify: 'lightningcss',
-    outDir: join('dist', 'final', 'js'),
+    outDir: join('dist', 'final', 'js',),
 
     // Sometimes removes important files.
     // Sometimes crashes because node rmSync doesn't work.
@@ -348,16 +350,16 @@ const createBaseConfig = (configDir: string): UserConfig => ({
   },
 });
 
-const createBaseLibConfig = (configDir: string): UserConfig =>
+const createBaseLibConfig = (configDir: string,): UserConfig =>
   mergeConfig(
-    createBaseConfig(configDir),
+    createBaseConfig(configDir,),
     {
       build: {
         lib: {
-          entry: resolve(configDir, 'src', 'index.ts'),
+          entry: resolve(configDir, 'src', 'index.ts',),
           name: 'index',
           fileName: 'index',
-          formats: ['es'],
+          formats: ['es',],
         },
         rollupOptions: {
           output: {
@@ -382,57 +384,57 @@ const createBaseLibConfig = (configDir: string): UserConfig =>
 
 //region Configuration Modifiers -- Functions that enhance base configs
 
-const withNoMinify = (config: UserConfig): UserConfig =>
-  mergeConfig(config, { build: { minify: false } });
+const withNoMinify = (config: UserConfig,): UserConfig =>
+  mergeConfig(config, { build: { minify: false, }, },);
 
-const withNodeResolveConditions = (config: UserConfig): UserConfig =>
+const withNodeResolveConditions = (config: UserConfig,): UserConfig =>
   mergeConfig(config, {
     resolve: {
-      conditions: ['node', 'module', 'import', 'default'],
+      conditions: ['node', 'module', 'import', 'default',],
     },
     build: {
       lib: {
         fileName: 'index.node',
       },
     },
-  });
+  },);
 
 const createModeConfig = (
   configDir: string,
-  sharedFactory: (configDir: string) => UserConfig,
+  sharedFactory: (configDir: string,) => UserConfig,
 ): UserConfigFnObject =>
-  defineConfig(function enhanceBaseConfig({ mode }) {
+  defineConfig(function enhanceBaseConfig({ mode, },) {
     // Parse modes from space or comma-separated string
-    const modes = mode.includes(' ')
-      ? mode.split(' ')
-      : (mode.includes(',')
-        ? mode.split(',')
-        : [mode]);
+    const modes = mode.includes(' ',)
+      ? mode.split(' ',)
+      : (mode.includes(',',)
+        ? mode.split(',',)
+        : [mode,]);
 
     // Apply mode-specific transformations using reduce for immutability
     const config = modes.reduce(
-      (currentConfig, currentMode) => {
+      (currentConfig, currentMode,) => {
         switch (currentMode) {
           case 'development':
-            return withNoMinify(currentConfig);
+            return withNoMinify(currentConfig,);
           case 'node':
-            return withNodeResolveConditions(currentConfig);
+            return withNodeResolveConditions(currentConfig,);
           default:
             return currentConfig;
         }
       },
-      sharedFactory(configDir),
+      sharedFactory(configDir,),
     );
 
     return config;
-  });
+  },);
 
 //endregion Configuration Modifiers
 
 //region Figma Configurations -- Figma plugin specific configs
 
-const createFigmaBackendConfig = (configDir: string): UserConfig =>
-  mergeConfig(createBaseConfig(configDir), {
+const createFigmaBackendConfig = (configDir: string,): UserConfig =>
+  mergeConfig(createBaseConfig(configDir,), {
     esbuild: {
       supported: {
         'dynamic-import': false,
@@ -442,12 +444,12 @@ const createFigmaBackendConfig = (configDir: string): UserConfig =>
     },
     build: {
       target: 'es2019',
-      outDir: join('dist', 'final', 'backend'),
+      outDir: join('dist', 'final', 'backend',),
       lib: {
-        entry: resolve(configDir, 'src', 'backend', 'index.ts'),
+        entry: resolve(configDir, 'src', 'backend', 'index.ts',),
         name: 'index',
         fileName: 'index',
-        formats: ['iife'],
+        formats: ['iife',],
       },
       rollupOptions: {
         output: {
@@ -455,51 +457,51 @@ const createFigmaBackendConfig = (configDir: string): UserConfig =>
         },
       },
     },
-  });
+  },);
 
 const createPrefixedFrontendLikeConfig = (configDir: string,
-  subDir: string): UserConfig =>
-  mergeConfig(createBaseConfig(configDir), {
+  subDir: string,): UserConfig =>
+  mergeConfig(createBaseConfig(configDir,), {
     define: {
       // So postcss modules can be bundled and correctly working in browsers.
       __filename: '""',
       __dirname: '""',
     },
     esbuild: {
-      exclude: ['browserslist'],
+      exclude: ['browserslist',],
     },
     plugins: [
-      viteSingleFile({}),
+      viteSingleFile({},),
     ],
 
     // Be aware of how Vite resolves paths.
-    root: resolve(configDir),
+    root: resolve(configDir,),
     build: {
       rollupOptions: {
         input: {
-          index: join('src', subDir, 'index.html'),
+          index: join('src', subDir, 'index.html',),
         },
       },
-      outDir: join('dist', 'final', subDir),
+      outDir: join('dist', 'final', subDir,),
     },
-  });
+  },);
 
-const createUnprefixedFrontendLikeConfig = (configDir: string): UserConfig =>
-  mergeConfig(createBaseConfig(configDir), {
+const createUnprefixedFrontendLikeConfig = (configDir: string,): UserConfig =>
+  mergeConfig(createBaseConfig(configDir,), {
     define: {
       // So postcss modules can be bundled and correctly working in browsers.
       __filename: '""',
       __dirname: '""',
     },
     esbuild: {
-      exclude: ['browserslist'],
+      exclude: ['browserslist',],
     },
     plugins: [
-      viteSingleFile({}),
+      viteSingleFile({},),
     ],
 
-    root: resolve(configDir),
-  });
+    root: resolve(configDir,),
+  },);
 
 //endregion Figma Configurations
 
@@ -515,37 +517,37 @@ const createUnprefixedFrontendLikeConfig = (configDir: string): UserConfig =>
  export default getShared(import.meta.dirname) satisfies UserConfigFnObject;
 ```
  */
-export const getShared = (configDir: string): UserConfigFnObject =>
-  createModeConfig(configDir, createBaseConfig);
+export const getShared = (configDir: string,): UserConfigFnObject =>
+  createModeConfig(configDir, createBaseConfig,);
 
-export const getLib = (configDir: string): UserConfigFnObject =>
-  createModeConfig(configDir, createBaseLibConfig);
+export const getLib = (configDir: string,): UserConfigFnObject =>
+  createModeConfig(configDir, createBaseLibConfig,);
 
-export const getFigmaBackend = (configDir: string): UserConfigFnObject =>
-  createModeConfig(configDir, createFigmaBackendConfig);
+export const getFigmaBackend = (configDir: string,): UserConfigFnObject =>
+  createModeConfig(configDir, createFigmaBackendConfig,);
 
-export const getFrontend = (configDir: string): UserConfigFnObject =>
-  createModeConfig(configDir, createUnprefixedFrontendLikeConfig);
+export const getFrontend = (configDir: string,): UserConfigFnObject =>
+  createModeConfig(configDir, createUnprefixedFrontendLikeConfig,);
 
-export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
-  createModeConfig(configDir, function createFigmaFrontendConfig(configDir) {
-    return mergeConfig(createPrefixedFrontendLikeConfig(configDir, 'frontend'), {
+export const getFigmaFrontend = (configDir: string,): UserConfigFnObject =>
+  createModeConfig(configDir, function createFigmaFrontendConfig(configDir,) {
+    return mergeConfig(createPrefixedFrontendLikeConfig(configDir, 'frontend',), {
       plugins: [
         (function inlineIframePlugin(): PluginOption {
-          const iframePath = join(configDir, 'dist/final/iframe/src/iframe/index.html');
+          const iframePath = join(configDir, 'dist/final/iframe/src/iframe/index.html',);
           return {
             name: 'vite-plugin-inline-iframe',
             enforce: 'post',
             buildStart(): void {
-              this.addWatchFile(iframePath);
+              this.addWatchFile(iframePath,);
             },
-            async transformIndexHtml(html): Promise<string> {
-              if (html.includes('REPLACE_WITH_IFRAME_INDEX_HTML')) {
-                console.log('replacing iframe');
-                const iframeFileContent = await readFileWithRetry(iframePath, 'utf8');
+            async transformIndexHtml(html,): Promise<string> {
+              if (html.includes('REPLACE_WITH_IFRAME_INDEX_HTML',)) {
+                console.log('replacing iframe',);
+                const iframeFileContent = await readFileWithRetry(iframePath, 'utf8',);
                 return html.replace(
                   'REPLACE_WITH_IFRAME_INDEX_HTML',
-                  iframeFileContent.replaceAll("'", '&apos;'),
+                  iframeFileContent.replaceAll("'", '&apos;',),
                 );
               }
               return html;
@@ -553,14 +555,14 @@ export const getFigmaFrontend = (configDir: string): UserConfigFnObject =>
           };
         })(),
       ],
-    });
-  });
+    },);
+  },);
 
 /** */
-export const getFigmaIframe = (configDir: string): UserConfigFnObject =>
-  createModeConfig(configDir, function createFigmaIframeConfig(configDir) {
-    return createPrefixedFrontendLikeConfig(configDir, 'iframe');
-  });
+export const getFigmaIframe = (configDir: string,): UserConfigFnObject =>
+  createModeConfig(configDir, function createFigmaIframeConfig(configDir,) {
+    return createPrefixedFrontendLikeConfig(configDir, 'iframe',);
+  },);
 
 //endregion Public API
 
@@ -574,18 +576,18 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
       port: VITEST_API_PORT,
     },
 
-    reporters: ['dot'],
+    reporters: ['dot',],
 
     deps: {
       // Never importing CJS module's default export via `import {x} from 'y'`.
       interopDefault: false,
     },
     benchmark: {
-      outputJson: join('bak', new Date().toISOString().replaceAll(':', ''),
-        'vitest.benchmark.json'),
+      outputJson: join('bak', new Date().toISOString().replaceAll(':', '',),
+        'vitest.benchmark.json',),
     },
-    outputFile: join('bak', new Date().toISOString().replaceAll(':', ''),
-      'vitest.result.json'),
+    outputFile: join('bak', new Date().toISOString().replaceAll(':', '',),
+      'vitest.result.json',),
     pool: 'threads',
     poolOptions: {
       threads: {
@@ -624,7 +626,7 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
       skipFull: true,
 
       reporter: [
-        join(import.meta.dirname, 'coverage-reporter.cjs'),
+        join(import.meta.dirname, 'coverage-reporter.cjs',),
         'html',
         'clover',
         'json',
@@ -647,14 +649,14 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
       ],
     },
   },
-});
+},);
 
 export const vitestOnlyUnitConfigWorkspace: VitestUserConfig = {
   test: {
     ...vitestOnlyConfigWorkspace.test,
     name: 'unit',
-    include: ['packages/*/*/**/src/**/*.unit.test.ts'],
-    exclude: [...vitestExcludeCommon, '**/*.browser.test.ts'],
+    include: ['packages/*/*/**/src/**/*.unit.test.ts',],
+    exclude: [...vitestExcludeCommon, '**/*.browser.test.ts',],
   },
 };
 
@@ -667,8 +669,8 @@ export const vitestOnlyBrowserConfigWorkspace: VitestUserConfig = {
       enabled: false,
     },
     name: 'browser',
-    include: ['packages/*/*/**/src/**/*.browser.test.ts'],
-    exclude: [...vitestExcludeCommon, '**/*.unit.test.ts'],
+    include: ['packages/*/*/**/src/**/*.browser.test.ts',],
+    exclude: [...vitestExcludeCommon, '**/*.unit.test.ts',],
 
     browser: {
       provider: 'playwright',
@@ -686,7 +688,7 @@ export const vitestOnlyBrowserConfigWorkspace: VitestUserConfig = {
           testTimeout: BROWSER_TEST_TIMEOUT,
         },
         // @vitest/coverage-v8 doesn't work with firefox because Firefox doesn't use v8 engine.
-        { browser: 'firefox', testTimeout: BROWSER_TEST_TIMEOUT },
+        { browser: 'firefox', testTimeout: BROWSER_TEST_TIMEOUT, },
       ],
     },
   },
@@ -696,7 +698,7 @@ export const createVitestBaseUnitConfigWorkspace = (
   configDir: string,
 ): VitestUserConfig =>
   mergeConfig(
-    createBaseConfig(configDir),
+    createBaseConfig(configDir,),
     vitestOnlyUnitConfigWorkspace,
   );
 
@@ -704,15 +706,15 @@ export const createVitestBaseBrowserConfigWorkspace = (
   configDir: string,
 ): VitestUserConfig =>
   mergeConfig(
-    createBaseConfig(configDir),
+    createBaseConfig(configDir,),
     vitestOnlyBrowserConfigWorkspace,
   );
 
-export const getVitestUnitWorkspace = (configDir: string): UserConfigFnObject =>
-  createModeConfig(configDir, createVitestBaseUnitConfigWorkspace);
-export const getVitestBrowserWorkspace = (configDir: string): UserConfigFnObject =>
-  createModeConfig(configDir, createVitestBaseBrowserConfigWorkspace);
+export const getVitestUnitWorkspace = (configDir: string,): UserConfigFnObject =>
+  createModeConfig(configDir, createVitestBaseUnitConfigWorkspace,);
+export const getVitestBrowserWorkspace = (configDir: string,): UserConfigFnObject =>
+  createModeConfig(configDir, createVitestBaseBrowserConfigWorkspace,);
 
 //endregion Vitest Configurations
 
-export type { UserConfigFnObject } from 'vite';
+export type { UserConfigFnObject, } from 'vite';

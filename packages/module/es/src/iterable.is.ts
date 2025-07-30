@@ -1,4 +1,4 @@
-import type { UnknownRecord } from 'type-fest';
+import type { UnknownRecord, } from 'type-fest';
 
 /**
  * Type guard that checks if a value is an array.
@@ -162,8 +162,8 @@ export function isMaybeAsyncIterable(
  * console.log(isMap(iframeMap)); // true
  * ```
  */
-export function isMap(value: unknown): value is Map<any, any> {
-  return Object.prototype.toString.call(value) === '[object Map]';
+export function isMap(value: unknown,): value is Map<any, any> {
+  return Object.prototype.toString.call(value,) === '[object Map]';
 }
 
 /**
@@ -193,7 +193,7 @@ export function isMap(value: unknown): value is Map<any, any> {
 export function isWeakMap(
   value: unknown,
 ): value is WeakMap<any, any> {
-  return Object.prototype.toString.call(value) === '[object WeakMap]';
+  return Object.prototype.toString.call(value,) === '[object WeakMap]';
 }
 
 /**
@@ -222,8 +222,8 @@ export function isWeakMap(
  * }
  * ```
  */
-export function isSet(value: unknown): value is Set<any> {
-  return Object.prototype.toString.call(value) === '[object Set]';
+export function isSet(value: unknown,): value is Set<any> {
+  return Object.prototype.toString.call(value,) === '[object Set]';
 }
 
 /**
@@ -250,8 +250,8 @@ export function isSet(value: unknown): value is Set<any> {
  * console.log(isWeakSet(weakSet)); // true
  * ```
  */
-export function isWeakSet(value: unknown): value is WeakSet<any> {
-  return Object.prototype.toString.call(value) === '[object WeakSet]';
+export function isWeakSet(value: unknown,): value is WeakSet<any> {
+  return Object.prototype.toString.call(value,) === '[object WeakSet]';
 }
 
 /**
@@ -281,8 +281,8 @@ export function isWeakSet(value: unknown): value is WeakSet<any> {
  * console.log(isObject(new Object())); // true
  * ```
  */
-export function isObject(value: unknown): value is UnknownRecord {
-  return Object.prototype.toString.call(value) === '[object Object]';
+export function isObject(value: unknown,): value is UnknownRecord {
+  return Object.prototype.toString.call(value,) === '[object Object]';
 }
 
 /**
@@ -323,7 +323,7 @@ export function isObject(value: unknown): value is UnknownRecord {
 export function isAsyncGenerator(
   value: unknown,
 ): value is AsyncGenerator {
-  return Object.prototype.toString.call(value) === '[object AsyncGenerator]';
+  return Object.prototype.toString.call(value,) === '[object AsyncGenerator]';
 }
 
 /**
@@ -365,7 +365,7 @@ export function isAsyncGenerator(
 export function isGenerator(
   value: unknown,
 ): value is Generator {
-  return Object.prototype.toString.call(value) === '[object Generator]';
+  return Object.prototype.toString.call(value,) === '[object Generator]';
 }
 
 /**
@@ -395,8 +395,8 @@ export function isGenerator(
  * }
  * ```
  */
-export function isEmptyArray(value: unknown): value is never[] {
-  return isArray(value) && value.length === 0;
+export function isEmptyArray(value: unknown,): value is never[] {
+  return isArray(value,) && value.length === 0;
 }
 
 /**
@@ -463,8 +463,8 @@ export function isArrayEmpty(
  */
 export function isArrayNonEmpty<const T,>(
   value: readonly T[],
-): value is [T, ...T[]] {
-  return Array.isArray(value) && value.length > 0;
+): value is [T, ...T[],] {
+  return Array.isArray(value,) && value.length > 0;
 }
 
 /**
@@ -502,7 +502,7 @@ export function isNonEmptyArray<const T_value,>(
   T_value extends (infer Element)[] ? Element : never,
   ...(T_value extends (infer Element)[] ? Element : never)[],
 ] {
-  return isArray(value) && value.length > 0;
+  return isArray(value,) && value.length > 0;
 }
 
 /**
@@ -542,7 +542,7 @@ export function arrayIsNonEmpty<
   T_value extends (infer Element)[] ? Element : never,
   ...(T_value extends (infer Element)[] ? Element : never)[],
 ] {
-  return isArray(value) && value.length > 0;
+  return isArray(value,) && value.length > 0;
 }
 
 /**
@@ -567,7 +567,7 @@ export function arrayIsNonEmpty<
  * ```
  */
 export type IsTupleArray<T,> = T extends readonly [] ? true
-  : T extends readonly [unknown, ...readonly unknown[]] ? true
+  : T extends readonly [unknown, ...readonly unknown[],] ? true
   : false;
 
 /**
@@ -590,7 +590,7 @@ export type IsTupleArray<T,> = T extends readonly [] ? true
  * type Result2 = ProcessArray<number[]>; // 'not a non-empty tuple'
  * ```
  */
-export type TupleArray<T,> = T extends readonly [unknown, ...readonly [unknown]] ? T
+export type TupleArray<T,> = T extends readonly [unknown, ...readonly [unknown,],] ? T
   : never;
 
 /**
@@ -700,6 +700,6 @@ export type IsArrayFixedLength<T extends readonly unknown[],> = number extends T
  */
 export function isArrayOfLength1<const T,>(
   value: readonly T[],
-): value is readonly [T] {
-  return Array.isArray(value) && value.length === 1;
+): value is readonly [T,] {
+  return Array.isArray(value,) && value.length === 1;
 }

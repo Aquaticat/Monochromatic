@@ -58,10 +58,10 @@ export const createBaseConfig = (
   const noColor = Boolean(myProcess?.env.NODE_ENV === 'test'
     || myProcess?.env.NO_COLOR
     // This somehow doesn't work?
-    || (import.meta as unknown as { vitest: boolean; }).vitest);
+    || (import.meta as unknown as { vitest: boolean; }).vitest,);
   const consoleSink = noColor
     ? getConsoleSink({
-      formatter: function consoleFormatter(record: LogRecord): readonly unknown[] {
+      formatter: function consoleFormatter(record: LogRecord,): readonly unknown[] {
         // Copypasted from https://jsr.io/@logtape/logtape/0.10.0/formatter.ts
         let msg = '';
         const values: unknown[] = [];
@@ -69,34 +69,37 @@ export const createBaseConfig = (
           if (messageIndex % 2 === 0) {
             // eslint-disable-next-line @typescript-eslint/restrict-plus-operands -- Good enough for defaultConsoleFormatter in logtape library, good enough for the library.
             msg += record.message[messageIndex];
-          } else {
+          }
+          else {
             msg += '%o';
-            values.push(record.message[messageIndex]);
+            values.push(record.message[messageIndex],);
           }
         }
-        const date = new Date(record.timestamp);
-        const time = `${date.getUTCHours().toString().padStart(2, '0')}:${
+        const date = new Date(record.timestamp,);
+        const time = `${date.getUTCHours().toString().padStart(2, '0',)}:${
           date
             .getUTCMinutes()
             .toString()
-            .padStart(2, '0')
-        }:${date.getUTCSeconds().toString().padStart(2, '0')}.${
-          date.getUTCMilliseconds().toString().padStart(3, '0')
+            .padStart(2, '0',)
+        }:${date.getUTCSeconds().toString().padStart(2, '0',)}.${
+          date.getUTCMilliseconds().toString().padStart(3, '0',)
         }`;
         return [
-          `${time} ${record.level.slice(0, 3)} ${record.category.join('\u00B7')} ${msg}`,
+          `${time} ${record.level.slice(0, 3,)} ${
+            record.category.join('\u00B7',)
+          } ${msg}`,
           ...values,
         ];
       },
-    })
+    },)
     : getConsoleSink();
   return ({
     reset: true,
 
     sinks: {
       console: consoleSink,
-      consoleInfoPlus: withFilter(consoleSink, getLevelFilter('info')),
-      consoleWarnPlus: withFilter(consoleSink, getLevelFilter('warning')),
+      consoleInfoPlus: withFilter(consoleSink, getLevelFilter('info',),),
+      consoleWarnPlus: withFilter(consoleSink, getLevelFilter('warning',),),
       file: fileSink,
     },
 
@@ -105,15 +108,15 @@ export const createBaseConfig = (
     loggers: [
       /* a is short for app, m is short for module, t is short for test
        Sorry, but terminal space is precious. */
-      { category: ['a'], lowestLevel: 'debug', sinks: ['file', 'consoleInfoPlus'] },
-      { category: ['t'], lowestLevel: 'debug', sinks: ['file', 'consoleInfoPlus'] },
-      { category: ['m'], lowestLevel: 'debug', sinks: ['file', 'consoleWarnPlus'] },
+      { category: ['a',], lowestLevel: 'debug', sinks: ['file', 'consoleInfoPlus',], },
+      { category: ['t',], lowestLevel: 'debug', sinks: ['file', 'consoleInfoPlus',], },
+      { category: ['m',], lowestLevel: 'debug', sinks: ['file', 'consoleWarnPlus',], },
       {
-        category: ['esbuild-plugin'],
+        category: ['esbuild-plugin',],
         lowestLevel: 'debug',
-        sinks: ['file', 'consoleWarnPlus'],
+        sinks: ['file', 'consoleWarnPlus',],
       },
-      { category: ['logtape', 'meta'], lowestLevel: 'warning', sinks: ['console'] },
+      { category: ['logtape', 'meta',], lowestLevel: 'warning', sinks: ['console',], },
     ],
   });
 };
@@ -176,16 +179,16 @@ export const createBaseConfig = (
 export const createMemorySink = (): Sink & AsyncDisposable => {
   const lines: string[] = [];
 
-  const memorySink: Sink & AsyncDisposable = (record: LogRecord): void => {
-    lines.push(JSON.stringify(record, null, 2));
+  const memorySink: Sink & AsyncDisposable = (record: LogRecord,): void => {
+    lines.push(JSON.stringify(record, null, 2,),);
   };
 
   // eslint-disable-next-line @typescript-eslint/require-await -- To keep the signature consistent, we've to make it an async function.
   memorySink[Symbol.asyncDispose] = async function disposeMemorySink(): Promise<void> {
-    console.log('disposing in memory array sink');
-    const content = lines.join('\n');
+    console.log('disposing in memory array sink',);
+    const content = lines.join('\n',);
     lines.length = 0;
-    console.log('disposed memory sink', 'with content length', content.length);
+    console.log('disposed memory sink', 'with content length', content.length,);
   };
 
   return memorySink;
@@ -249,7 +252,7 @@ export const createMemorySink = (): Sink & AsyncDisposable => {
  * - Compatible with logtape's logger category system
  * - Provides compile-time type checking for logger usage
  */
-export const logtapeId = ['a', 'index'] as const;
+export const logtapeId = ['a', 'index',] as const;
 
 export {
   configure as logtapeConfigure,

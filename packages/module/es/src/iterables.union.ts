@@ -1,4 +1,4 @@
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
 /**
  * Creates a new Set containing the union of all input iterables, preserving type safety across
@@ -34,16 +34,16 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
  */
 export function unionIterables(...iterables: never[]): Set<never>;
 export function unionIterables<const Param1,>(
-  ...iterables: [Iterable<Param1>]
+  ...iterables: [Iterable<Param1>,]
 ): Set<Param1>;
 export function unionIterables<const Param1, const Param2,>(
-  ...iterables: [Iterable<Param1>, Iterable<Param2>]
+  ...iterables: [Iterable<Param1>, Iterable<Param2>,]
 ): Set<Param1 | Param2>;
 export function unionIterables<const Param1, const Param2, const Param3,>(
-  ...iterables: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>]
+  ...iterables: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>,]
 ): Set<Param1 | Param2 | Param3>;
 export function unionIterables<const Param1, const Param2, const Param3, const Param4,>(
-  ...iterables: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>, Iterable<Param4>]
+  ...iterables: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>, Iterable<Param4>,]
 ): Set<Param1 | Param2 | Param3 | Param4>;
 export function unionIterables<const Param1, const Param2, const Param3, const Param4,
   const Param5,>(
@@ -107,16 +107,15 @@ export function unionIterables<const Param1, const Param2, const Param3, const P
 ): Set<Param1 | Param2 | Param3 | Param4 | Param5 | Param6 | Param7 | Param8 | Param9>;
 export function unionIterables<const T,>(...iterables: Iterable<T>[]): Set<T>;
 export function unionIterables(...iterables: Iterable<unknown>[]): Set<unknown> {
-  if (iterables.length === 0) {
+  if (iterables.length === 0)
     return new Set();
-  }
   const trueArrays: unknown[][] = iterables.map(
-    function toArray(array: Iterable<unknown>): unknown[] {
-      return Array.isArray(array) ? array : [...array];
+    function toArray(array: Iterable<unknown>,): unknown[] {
+      return Array.isArray(array,) ? array : [...array,];
     },
   );
   const flatArray: unknown[] = trueArrays.flat();
-  return new Set(flatArray);
+  return new Set(flatArray,);
 }
 
 /**
@@ -159,10 +158,10 @@ export async function unionIterablesAsync(
   ...iterables: never[]
 ): Promise<Set<never>>;
 export async function unionIterablesAsync<const Param1,>(
-  ...iterables: [MaybeAsyncIterable<Param1>]
+  ...iterables: [MaybeAsyncIterable<Param1>,]
 ): Promise<Set<Param1>>;
 export async function unionIterablesAsync<const Param1, const Param2,>(
-  ...iterables: [MaybeAsyncIterable<Param1>, MaybeAsyncIterable<Param2>]
+  ...iterables: [MaybeAsyncIterable<Param1>, MaybeAsyncIterable<Param2>,]
 ): Promise<Set<Param1 | Param2>>;
 export async function unionIterablesAsync<const Param1, const Param2, const Param3,>(
   ...iterables: [
@@ -248,28 +247,25 @@ export async function unionIterablesAsync<const T,>(
 export async function unionIterablesAsync(
   ...iterables: MaybeAsyncIterable<unknown>[]
 ): Promise<Set<unknown>> {
-  if (iterables.length === 0) {
+  if (iterables.length === 0)
     return new Set();
-  }
   const resultSet = new Set<unknown>();
 
   // Create a promise for each iterable to collect its items
-  const itemPromises = iterables.map(async function toItems(iterable) {
+  const itemPromises = iterables.map(async function toItems(iterable,) {
     const items: unknown[] = [];
-    for await (const item of iterable) {
-      items.push(item);
-    }
+    for await (const item of iterable)
+      items.push(item,);
     return items;
-  });
+  },);
 
   // Wait for all iterables to be processed
-  const arrayOfItemArrays = await Promise.all(itemPromises);
+  const arrayOfItemArrays = await Promise.all(itemPromises,);
 
   // Add all items to the result set
   for (const itemArray of arrayOfItemArrays) {
-    for (const item of itemArray) {
-      resultSet.add(item);
-    }
+    for (const item of itemArray)
+      resultSet.add(item,);
   }
 
   return resultSet;
@@ -318,17 +314,17 @@ export function unionIterablesGen(
   ...iterables: never[]
 ): Generator<never, void, undefined>;
 export function unionIterablesGen<const Param1,>(
-  ...iterables: [Iterable<Param1>]
+  ...iterables: [Iterable<Param1>,]
 ): Generator<Param1, void, undefined>;
 export function unionIterablesGen<const Param1, const Param2,>(
-  ...iterables: [Iterable<Param1>, Iterable<Param2>]
+  ...iterables: [Iterable<Param1>, Iterable<Param2>,]
 ): Generator<Param1 | Param2, void, undefined>;
 export function unionIterablesGen<const Param1, const Param2, const Param3,>(
-  ...iterables: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>]
+  ...iterables: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>,]
 ): Generator<Param1 | Param2 | Param3, void, undefined>;
 export function unionIterablesGen<const Param1, const Param2, const Param3,
   const Param4,>(
-  ...iterables: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>, Iterable<Param4>]
+  ...iterables: [Iterable<Param1>, Iterable<Param2>, Iterable<Param3>, Iterable<Param4>,]
 ): Generator<Param1 | Param2 | Param3 | Param4, void, undefined>;
 export function unionIterablesGen<const Param1, const Param2, const Param3, const Param4,
   const Param5,>(
@@ -408,8 +404,8 @@ export function* unionIterablesGen(
   const yieldedSet = new Set<unknown>();
   for (const iterable of iterables) {
     for (const item of iterable) {
-      if (!yieldedSet.has(item)) {
-        yieldedSet.add(item);
+      if (!yieldedSet.has(item,)) {
+        yieldedSet.add(item,);
         yield item;
       }
     }
@@ -473,10 +469,10 @@ export function unionIterablesAsyncGen(
   ...iterables: never[]
 ): AsyncGenerator<never, void, undefined>;
 export function unionIterablesAsyncGen<const Param1,>(
-  ...iterables: [MaybeAsyncIterable<Param1>]
+  ...iterables: [MaybeAsyncIterable<Param1>,]
 ): AsyncGenerator<Param1, void, undefined>;
 export function unionIterablesAsyncGen<const Param1, const Param2,>(
-  ...iterables: [MaybeAsyncIterable<Param1>, MaybeAsyncIterable<Param2>]
+  ...iterables: [MaybeAsyncIterable<Param1>, MaybeAsyncIterable<Param2>,]
 ): AsyncGenerator<Param1 | Param2, void, undefined>;
 export function unionIterablesAsyncGen<const Param1, const Param2, const Param3,>(
   ...iterables: [
@@ -573,8 +569,8 @@ export async function* unionIterablesAsyncGen(
   for (const iterable of iterables) {
     // oxlint-disable-next-line no-await-in-loop -- await in loop here is necessary for the logic, because this function processes each MaybeAsyncIterable one by one.
     for await (const item of iterable) {
-      if (!yieldedSet.has(item)) {
-        yieldedSet.add(item);
+      if (!yieldedSet.has(item,)) {
+        yieldedSet.add(item,);
         yield item;
       }
     }

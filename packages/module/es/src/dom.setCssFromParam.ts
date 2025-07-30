@@ -27,20 +27,19 @@
  * // Sets: nothing (no matching parameters found)
  * ```
  */
-export function onLoadSetCssFromUrlParams(allowedProperties?: Iterable<string>): void {
-  const params = new URLSearchParams(globalThis.location.search);
+export function onLoadSetCssFromUrlParams(allowedProperties?: Iterable<string>,): void {
+  const params = new URLSearchParams(globalThis.location.search,);
 
   if (allowedProperties) {
-    const allowedSet = new Set(allowedProperties);
-    for (const [key, value] of params.entries()) {
-      if (allowedSet.has(key)) {
-        document.documentElement.style.setProperty(key, value);
-      }
+    const allowedSet = new Set(allowedProperties,);
+    for (const [key, value,] of params.entries()) {
+      if (allowedSet.has(key,))
+        document.documentElement.style.setProperty(key, value,);
     }
-  } else {
+  }
+  else {
     // No allowedProperties, so process all parameters
-    for (const [key, value] of params.entries()) {
-      document.documentElement.style.setProperty(key, value);
-    }
+    for (const [key, value,] of params.entries())
+      document.documentElement.style.setProperty(key, value,);
   }
 }

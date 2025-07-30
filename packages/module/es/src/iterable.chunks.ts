@@ -1,14 +1,14 @@
-import type { Tuple } from './array.type.tuple.ts';
-import { notEmptyOrThrow } from './error.throw.ts';
+import type { Tuple, } from './array.type.tuple.ts';
+import { notEmptyOrThrow, } from './error.throw.ts';
 import {
   isArrayEmpty,
   isEmptyArray,
 } from './iterable.is.ts';
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
-import { logtapeGetLogger } from './logtape.shared.ts';
-import type { Ints } from './numeric.type.ints.ts';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import { logtapeGetLogger, } from './logtape.shared.ts';
+import type { Ints, } from './numeric.type.ints.ts';
 
-const l = logtapeGetLogger(['m', 'iterable.chunks']);
+const l = logtapeGetLogger(['m', 'iterable.chunks',],);
 
 /**
  * Splits an array into chunks of specified size, yielding them one by one as a generator.
@@ -74,7 +74,7 @@ const l = logtapeGetLogger(['m', 'iterable.chunks']);
 
 /* @__NO_SIDE_EFFECTS__ */
 export function* chunksArray<
-  const T_array extends readonly [any, ...any[]],
+  const T_array extends readonly [any, ...any[],],
   const T_n extends Ints<1, T_array['length']>,
 >(
   array: T_array,
@@ -82,21 +82,18 @@ export function* chunksArray<
 ): Generator<
   Tuple<T_array extends Iterable<infer T_element> ? T_element : never, Ints<1, (T_n)>>
 > {
-  if (isArrayEmpty(array)) {
-    throw new RangeError(`What's to be chunked cannot be empty`);
-  }
+  if (isArrayEmpty(array,))
+    throw new RangeError(`What's to be chunked cannot be empty`,);
 
   // TODO: Implement throw when n is 0
-  if (n <= 0) {
-    throw new RangeError(`Chunk size cannot be negative or zero`);
-  }
+  if (n <= 0)
+    throw new RangeError(`Chunk size cannot be negative or zero`,);
 
-  if (n > array.length) {
-    throw new RangeError(`Initial chunk index is already out of range.`);
-  }
+  if (n > array.length)
+    throw new RangeError(`Initial chunk index is already out of range.`,);
 
   for (let chunkStart = 0; chunkStart < array.length; chunkStart += n) {
-    yield array.slice(chunkStart, chunkStart + n) as Tuple<
+    yield array.slice(chunkStart, chunkStart + n,) as Tuple<
       T_array extends Iterable<infer T_element> ? T_element : never,
       T_n
     >;
@@ -183,7 +180,7 @@ export function chunksIterable<
     T_arrayLike extends Iterable<infer T_element> ? T_element : never,
     T_n
   >,
->(arrayLike: T_arrayLike, n: T_n): Generator<
+>(arrayLike: T_arrayLike, n: T_n,): Generator<
   YieldType
 >;
 
@@ -195,7 +192,7 @@ export function chunksIterable<
     T_arrayLike extends Iterable<infer T_element> ? T_element : never,
     T_n
   >,
->(arrayLike: T_arrayLike, n: T_n): Generator<
+>(arrayLike: T_arrayLike, n: T_n,): Generator<
   YieldType
 >;
 
@@ -209,14 +206,14 @@ export function* chunksIterable<
     T_arrayLike extends Iterable<infer T_element> ? T_element : never,
     T_n
   >,
->(arrayLike: T_arrayLike, n: T_n): Generator<
+>(arrayLike: T_arrayLike, n: T_n,): Generator<
   YieldType
 > {
   l.debug`chunksIterable(arrayLike: ${arrayLike}, n: ${n})`;
 
-  if (isEmptyArray(arrayLike)) {
+  if (isEmptyArray(arrayLike,)) {
     throw new RangeError(
-      `What's to be chunked: ${JSON.stringify(arrayLike)} cannot be empty`,
+      `What's to be chunked: ${JSON.stringify(arrayLike,)} cannot be empty`,
     );
   }
   if (n > (arrayLike as Iterable<any> & { length: number; }).length) {
@@ -246,7 +243,7 @@ export function* chunksIterable<
     );
   }
 
-  yield* chunksArray(notEmptyOrThrow(arrayLikeArray), n) as unknown as Generator<
+  yield* chunksArray(notEmptyOrThrow(arrayLikeArray,), n,) as unknown as Generator<
     YieldType
   >;
   return;
@@ -370,20 +367,20 @@ export async function* chunksIterableAsync<
     T_arrayLike extends MaybeAsyncIterable<infer T_element> ? T_element : never,
     T_n
   >,
->(arrayLike: T_arrayLike, n: T_n): AsyncGenerator<
+>(arrayLike: T_arrayLike, n: T_n,): AsyncGenerator<
   YieldType
 > {
   // TODO: Switch this to lazy.
 
   l.debug`chunksIterableAsync(arrayLike: ${arrayLike}, n: ${n})`;
 
-  if (isEmptyArray(arrayLike)) {
+  if (isEmptyArray(arrayLike,)) {
     throw new RangeError(
-      `What's to be chunked: ${JSON.stringify(arrayLike)} cannot be empty`,
+      `What's to be chunked: ${JSON.stringify(arrayLike,)} cannot be empty`,
     );
   }
   if (
-    Object.hasOwn(arrayLike, 'length')
+    Object.hasOwn(arrayLike, 'length',)
     && n > (arrayLike as MaybeAsyncIterable<any> & { length: number; }).length
   ) {
     throw new RangeError(
@@ -398,10 +395,10 @@ export async function* chunksIterableAsync<
 
   const arrayLikeArray:
     readonly (T_arrayLike extends MaybeAsyncIterable<infer T_element> ? T_element
-      : never)[] = await Array.fromAsync(arrayLike);
-  if (isEmptyArray(arrayLikeArray)) {
+      : never)[] = await Array.fromAsync(arrayLike,);
+  if (isEmptyArray(arrayLikeArray,)) {
     throw new RangeError(
-      `What's to be chunked: ${JSON.stringify(arrayLikeArray)} cannot be empty`,
+      `What's to be chunked: ${JSON.stringify(arrayLikeArray,)} cannot be empty`,
     );
   }
   if (n > arrayLikeArray.length) {
@@ -418,7 +415,7 @@ export async function* chunksIterableAsync<
     );
   }
 
-  yield* chunksArray(notEmptyOrThrow(arrayLikeArray), n) as unknown as Generator<
+  yield* chunksArray(notEmptyOrThrow(arrayLikeArray,), n,) as unknown as Generator<
     YieldType
   >;
   return;

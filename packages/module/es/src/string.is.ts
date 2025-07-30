@@ -35,7 +35,7 @@ import type {
  * isString(null); // false
  * ```
  */
-/* @__NO_SIDE_EFFECTS__ */ export function isString(value: unknown): value is string {
+/* @__NO_SIDE_EFFECTS__ */ export function isString(value: unknown,): value is string {
   return typeof value === 'string';
 }
 
@@ -59,7 +59,7 @@ import type {
 /* @__NO_SIDE_EFFECTS__ */ export function isObjectRegexp(
   value: unknown,
 ): value is RegExp {
-  return Object.prototype.toString.call(value) === '[object RegExp]';
+  return Object.prototype.toString.call(value,) === '[object RegExp]';
 }
 
 /**
@@ -81,7 +81,7 @@ import type {
 /* @__NO_SIDE_EFFECTS__ */ export function isShortLangString(
   value: unknown,
 ): value is ShortLangString {
-  return isString(value) && value.length === 2 && /^[a-z]+$/.test(value);
+  return isString(value,) && value.length === 2 && /^[a-z]+$/.test(value,);
 }
 
 /**
@@ -105,9 +105,9 @@ import type {
   value: unknown,
 ): value is LongLangString {
   const LANG_CODE_WITH_REGION_LENGTH = 5;
-  return isString(value)
+  return isString(value,)
     && value.length === LANG_CODE_WITH_REGION_LENGTH
-    && /^[a-z]{2}-[A-Z]{2}$/.test(value);
+    && /^[a-z]{2}-[A-Z]{2}$/.test(value,);
 }
 
 /**
@@ -130,7 +130,7 @@ import type {
 /* @__NO_SIDE_EFFECTS__ */ export function isLangString(
   value: unknown,
 ): value is LangString {
-  return isShortLangString(value) || isLongLangString(value);
+  return isShortLangString(value,) || isLongLangString(value,);
 }
 
 /**
@@ -150,9 +150,9 @@ import type {
  * isDigitString(5); // false (not a string)
  * ```
  */
-export function isDigitString(value: unknown): value is DigitString {
+export function isDigitString(value: unknown,): value is DigitString {
   return typeof value === 'string'
-    && ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(value);
+    && ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',].includes(value,);
 }
 
 /**
@@ -172,9 +172,9 @@ export function isDigitString(value: unknown): value is DigitString {
  * isNo0DigitString("a"); // false (not a digit)
  * ```
  */
-export function isNo0DigitString(value: unknown): value is No0DigitString {
+export function isNo0DigitString(value: unknown,): value is No0DigitString {
   return typeof value === 'string'
-    && ['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(value);
+    && ['1', '2', '3', '4', '5', '6', '7', '8', '9',].includes(value,);
 }
 
 /**
@@ -194,8 +194,8 @@ export function isNo0DigitString(value: unknown): value is No0DigitString {
  * isDigitsString("12.3"); // false (contains decimal point)
  * ```
  */
-export function isDigitsString(value: unknown): value is string {
-  return isString(value) && value.length > 0 && [...value].every(isDigitString);
+export function isDigitsString(value: unknown,): value is string {
+  return isString(value,) && value.length > 0 && [...value,].every(isDigitString,);
 }
 
 /**
@@ -215,23 +215,18 @@ export function isDigitsString(value: unknown): value is string {
  * isPositiveIntString("12.3"); // false (decimal not allowed)
  * ```
  */
-export function isPositiveIntString(value: unknown): value is PositiveIntString {
-  if (isDigitString(value)) {
+export function isPositiveIntString(value: unknown,): value is PositiveIntString {
+  if (isDigitString(value,))
     return true;
-  }
-  if (!isString(value)) {
+  if (!isString(value,))
     return false;
-  }
-  if (isDigitString(value)) {
+  if (isDigitString(value,))
     return true;
-  }
-  if (value.length <= 1) {
+  if (value.length <= 1)
     return false;
-  }
-  if (!isNo0DigitString(value[0])) {
+  if (!isNo0DigitString(value[0],))
     return false;
-  }
-  return isDigitsString(value.slice(1));
+  return isDigitsString(value.slice(1,),);
 }
 
 /**
@@ -251,17 +246,14 @@ export function isPositiveIntString(value: unknown): value is PositiveIntString 
  * isNegativeIntString("-12.3"); // false (decimal not allowed)
  * ```
  */
-export function isNegativeIntString(value: unknown): value is NegativeIntString {
-  if (!isString(value)) {
+export function isNegativeIntString(value: unknown,): value is NegativeIntString {
+  if (!isString(value,))
     return false;
-  }
-  if (value.length <= 1) {
+  if (value.length <= 1)
     return false;
-  }
-  if (value[0] !== '-') {
+  if (value[0] !== '-')
     return false;
-  }
-  return isPositiveIntString(value.slice(1));
+  return isPositiveIntString(value.slice(1,),);
 }
 
 /**
@@ -281,28 +273,26 @@ export function isNegativeIntString(value: unknown): value is NegativeIntString 
  * isPositiveFloatString("-12.34"); // false (negative not allowed)
  * ```
  */
-export function isPositiveFloatString(value: unknown): value is PositiveFloatString {
-  if (!isString(value)) {
+export function isPositiveFloatString(value: unknown,): value is PositiveFloatString {
+  if (!isString(value,))
     return false;
-  }
-  if (value.length <= 2) {
+  if (value.length <= 2)
     return false;
-  }
-  const dotIndex = value.indexOf('.');
-  if (dotIndex === -1) {
+  const dotIndex = value.indexOf('.',);
+  if (dotIndex === -1)
     return false;
-  }
-  const intPart = value.slice(0, dotIndex);
-  if (!isPositiveIntString(intPart)) {
+  const intPart = value.slice(0, dotIndex,);
+  if (!isPositiveIntString(intPart,))
     return false;
-  }
-  const floatPart = value.slice(dotIndex + 1);
+  const floatPart = value.slice(dotIndex + 1,);
   if (
-    [...floatPart].every(function is0(floatPartDigit) {
+    [...floatPart,].every(function is0(floatPartDigit,) {
       return floatPartDigit === '0';
-    })
-  ) { return false; }
-  return isDigitsString(floatPart);
+    },)
+  ) {
+    return false;
+  }
+  return isDigitsString(floatPart,);
 }
 
 /**
@@ -322,17 +312,14 @@ export function isPositiveFloatString(value: unknown): value is PositiveFloatStr
  * isNegativeFloatString("-"); // false (no digits after minus)
  * ```
  */
-export function isNegativeFloatString(value: unknown): value is NegativeFloatString {
-  if (!isString(value)) {
+export function isNegativeFloatString(value: unknown,): value is NegativeFloatString {
+  if (!isString(value,))
     return false;
-  }
-  if (value.length <= 1) {
+  if (value.length <= 1)
     return false;
-  }
-  if (value[0] !== '-') {
+  if (value[0] !== '-')
     return false;
-  }
-  return isPositiveFloatString(value.slice(1));
+  return isPositiveFloatString(value.slice(1,),);
 }
 
 /**
@@ -352,8 +339,8 @@ export function isNegativeFloatString(value: unknown): value is NegativeFloatStr
  * isIntString("007"); // false (leading zeros)
  * ```
  */
-export function isIntString(value: unknown): value is IntString {
-  return isPositiveIntString(value) || isNegativeIntString(value);
+export function isIntString(value: unknown,): value is IntString {
+  return isPositiveIntString(value,) || isNegativeIntString(value,);
 }
 
 /**
@@ -373,8 +360,8 @@ export function isIntString(value: unknown): value is IntString {
  * isFloatString("abc"); // false (not numeric)
  * ```
  */
-export function isFloatString(value: unknown): value is FloatString {
-  return isPositiveFloatString(value) || isNegativeFloatString(value);
+export function isFloatString(value: unknown,): value is FloatString {
+  return isPositiveFloatString(value,) || isNegativeFloatString(value,);
 }
 
 /**
@@ -394,8 +381,8 @@ export function isFloatString(value: unknown): value is FloatString {
  * isPositiveNumberString("12.0"); // false (effectively integer)
  * ```
  */
-export function isPositiveNumberString(value: unknown): value is PositiveNumberString {
-  return isPositiveIntString(value) || isPositiveFloatString(value);
+export function isPositiveNumberString(value: unknown,): value is PositiveNumberString {
+  return isPositiveIntString(value,) || isPositiveFloatString(value,);
 }
 
 /**
@@ -415,8 +402,8 @@ export function isPositiveNumberString(value: unknown): value is PositiveNumberS
  * isNegativeNumberString("-12.0"); // false (effectively integer)
  * ```
  */
-export function isNegativeNumberString(value: unknown): value is NegativeNumberString {
-  return isNegativeIntString(value) || isNegativeFloatString(value);
+export function isNegativeNumberString(value: unknown,): value is NegativeNumberString {
+  return isNegativeIntString(value,) || isNegativeFloatString(value,);
 }
 
 /**
@@ -436,6 +423,6 @@ export function isNegativeNumberString(value: unknown): value is NegativeNumberS
  * isNumberString("abc"); // false (not numeric)
  * ```
  */
-export function isNumberString(value: unknown): value is NumberString {
-  return isPositiveNumberString(value) || isNegativeNumberString(value);
+export function isNumberString(value: unknown,): value is NumberString {
+  return isPositiveNumberString(value,) || isNegativeNumberString(value,);
 }

@@ -17,22 +17,22 @@ const CALLBACK_PREVIEW_LENGTH = 64;
  The intentional overuse of the `any` type here might require fixing in the future,
  depending on how much impact it has. */
 
-import { getLogger } from '@logtape/logtape';
-import type { Promisable } from 'type-fest';
+import { getLogger, } from '@logtape/logtape';
+import type { Promisable, } from 'type-fest';
 
 // MAYBE: Change this at to the custom at function
 // MAYBE: Change this to the custom path parser.
 /* vale Microsoft.GeneralURL = NO */
-const testFileBasename: string = new URL(import.meta.url).pathname.split('/').at(-1)!;
+const testFileBasename: string = new URL(import.meta.url,).pathname.split('/',).at(-1,)!;
 /* vale Microsoft.GeneralURL = YES */
 
-const testedFileName: string = testFileBasename.endsWith('.test.js')
-  ? testFileBasename.slice(0, -'.test.js'.length)
+const testedFileName: string = testFileBasename.endsWith('.test.js',)
+  ? testFileBasename.slice(0, -'.test.js'.length,)
   : testFileBasename;
 
 // t is short for test. m is short for module. Sorry, but terminal space is precious.
 // TODO: if this doesn't work, try process.argv
-const l = getLogger(['t', testedFileName]);
+const l = getLogger(['t', testedFileName,],);
 
 type TestReturn =
   | string
@@ -68,7 +68,7 @@ type SuiteReturn =
 /** Pass in an Array of test(...) or suite(...) to create a suite or a supersuite. Fails fast.
  */
 /* @__NO_SIDE_EFFECTS__ */ export async function suite(name: string,
-  testOrSuites: Promisable<TestReturn | SuiteReturn>[]
+  testOrSuites: Promisable<TestReturn | SuiteReturn>[],
 ): Promise<Extract<SuiteReturn, {
   name: string;
   result: PromiseSettledResult<
@@ -77,11 +77,11 @@ type SuiteReturn =
 }>>;
 /* @__NO_SIDE_EFFECTS__ */ export async function suite(name: string,
   testOrSuites: Promisable<TestReturn | SuiteReturn>[],
-  options: { skip: string; }
+  options: { skip: string; },
 ): Promise<Extract<SuiteReturn, { name: string; skip: string; }>>;
 /* @__NO_SIDE_EFFECTS__ */ export async function suite(name: string,
   testOrSuites: Promisable<TestReturn | SuiteReturn>[],
-  options: { todo: string; }
+  options: { todo: string; },
 ): Promise<Extract<SuiteReturn, {
   name: string;
   todo: string;
@@ -91,30 +91,27 @@ type SuiteReturn =
 }>>;
 /* @__NO_SIDE_EFFECTS__ */ export async function suite(name: string,
   testOrSuites: Promisable<TestReturn | SuiteReturn>[],
-  options?: { skip: string; } | { todo: string; }): Promise<SuiteReturn>
+  options?: { skip: string; } | { todo: string; },): Promise<SuiteReturn>
 {
   // TODO: Also log parent suites' names.
   l.debug`suite ${name} started: ${testOrSuites.length} tests or suites`;
 
-  const result = await Promise.allSettled(testOrSuites);
+  const result = await Promise.allSettled(testOrSuites,);
 
   if (options) {
-    if (Object.hasOwn(options, 'skip')) {
-      return { name, skip: (options as { skip: string; }).skip };
-    }
+    if (Object.hasOwn(options, 'skip',))
+      return { name, skip: (options as { skip: string; }).skip, };
 
-    if (Object.hasOwn(options, 'todo')) {
-      l.info`suite ${name} finished: ${JSON.stringify(result)}`;
-      return { name, todo: (options as { todo: string; }).todo, result };
+    if (Object.hasOwn(options, 'todo',)) {
+      l.info`suite ${name} finished: ${JSON.stringify(result,)}`;
+      return { name, todo: (options as { todo: string; }).todo, result, };
     }
   }
 
-  const errored = result.find((
-    settledResult,
-  ) => settledResult.status === 'rejected');
+  const errored = result.find(settledResult => settledResult.status === 'rejected');
   if (errored) {
     throw new Error(
-      `suite ${name} errored with result: ${JSON.stringify(result, null, 2)}`,
+      `suite ${name} errored with result: ${JSON.stringify(result, null, 2,)}`,
       {
         cause: errored.reason,
       },
@@ -123,8 +120,8 @@ type SuiteReturn =
 
   // Depromoted suite log level from info to debug when it finishs without error,
   // for a less cluttered terminal.
-  l.debug`suite ${name} finished: ${JSON.stringify(result)}`;
-  return { name, result };
+  l.debug`suite ${name} finished: ${JSON.stringify(result,)}`;
+  return { name, result, };
 }
 
 // TODO: Redo this function signature. maybe a data-last style would be better.
@@ -136,33 +133,33 @@ type SuiteReturn =
     | number
     | // TODO: Support erroring timeLimit compareTo fn
     (() => Promisable<unknown>);
-}): Promise<
+},): Promise<
   string
 >;
 /* @__NO_SIDE_EFFECTS__ */ export async function test<
   T_callbackReturn extends NonNullable<unknown>,
 >(name: string, callback: () => Promisable<T_callbackReturn>,
-  options?: { timeLimit?: number | (() => Promisable<unknown>); }
+  options?: { timeLimit?: number | (() => Promisable<unknown>); },
 ): Promise<
   { name: string; result: T_callbackReturn; }
 >;
 /* @__NO_SIDE_EFFECTS__ */ export async function test<T_callbackReturn,>(name: string,
   callback: () => Promisable<T_callbackReturn>,
-  options: { skip: string; timeLimit?: number | (() => Promisable<unknown>); }
+  options: { skip: string; timeLimit?: number | (() => Promisable<unknown>); },
 ): Promise<
   { name: string; skip: string; }
 >;
 /* @__NO_SIDE_EFFECTS__ */ export async function test<
   T_callbackReturn extends undefined | null,
 >(name: string, callback: (() => Promisable<T_callbackReturn>) | (() => void),
-  options: { todo: string; timeLimit?: number | (() => Promisable<unknown>); }
+  options: { todo: string; timeLimit?: number | (() => Promisable<unknown>); },
 ): Promise<
   { name: string; todo: string; result?: unknown; }
 >;
 /* @__NO_SIDE_EFFECTS__ */ export async function test<
   T_callbackReturn extends NonNullable<unknown>,
 >(name: string, callback: () => Promisable<T_callbackReturn>,
-  options: { todo: string; timeLimit?: number | (() => Promisable<unknown>); }
+  options: { todo: string; timeLimit?: number | (() => Promisable<unknown>); },
 ): Promise<
   { name: string; todo: string; result: unknown; }
 >;
@@ -178,7 +175,7 @@ type SuiteReturn =
     // URL is part of MDN documentation address - technical term that shouldn't be changed
     /* vale Microsoft.GeneralURL = YES */
     timeLimit?: number | (() => Promisable<unknown>);
-  }
+  },
 ): Promise<
   | string
   | { name: string; result: T_callbackReturn; tooLongPercentage?: number; }
@@ -190,19 +187,20 @@ type SuiteReturn =
 
   if (options) {
     // TODO: Write a type assertion function for Object.hasOwn
-    if (Object.hasOwn(options, 'skip')) {
+    if (Object.hasOwn(options, 'skip',)) {
       l.warn`${name} skipped: ${options.skip}`;
-      return { name, skip: options.skip! };
+      return { name, skip: options.skip!, };
     }
 
-    if (Object.hasOwn(options, 'timeLimit')) {
+    if (Object.hasOwn(options, 'timeLimit',)) {
       timeLimit = typeof options.timeLimit === 'number'
         ? options.timeLimit
         : await (async (): Promise<number> => {
           const beforeExecutingTimeLimitReferenceCallback = performance.now();
           try {
             await (options.timeLimit as () => Promisable<unknown>)();
-          } catch (timeLimitFnError) {
+          }
+          catch (timeLimitFnError) {
             l.info`timeLimit fn threw ${timeLimitFnError}
           If this is intentional, this log can be ignored.
           The test will continue,
@@ -215,7 +213,7 @@ type SuiteReturn =
       l.debug`${name} timeLimit: ${timeLimit}ms`;
     }
 
-    if (Object.hasOwn(options, 'todo')) {
+    if (Object.hasOwn(options, 'todo',)) {
       l.info`${name} started: ${callback} with todo: ${options.todo}`;
 
       try {
@@ -240,29 +238,30 @@ type SuiteReturn =
           }
 
           l.warn`${name} with todo: ${options.todo} finished: ${result}`;
-          return { name, todo: options.todo!, result };
+          return { name, todo: options.todo!, result, };
         }
 
         if (took > timeLimit) {
           const tooLongPercentage = Math.round(
             PERCENTAGE_BASE * (took - timeLimit) / timeLimit,
           );
-          l.error`${name} with todo: ${options.todo} took: ${Math.round(took)}ms, ${
-            Math.round(took - timeLimit)
+          l.error`${name} with todo: ${options.todo} took: ${Math.round(took,)}ms, ${
+            Math.round(took - timeLimit,)
           }ms longer than timeLimit: ${timeLimit}ms, that's ${tooLongPercentage}% too long.`;
-          return { name, todo: options.todo!, tooLongPercentage: tooLongPercentage };
+          return { name, todo: options.todo!, tooLongPercentage: tooLongPercentage, };
         }
 
         l.warn`${name} with todo: ${options.todo} finished`;
-        return { name, todo: options.todo! };
-      } catch (error) {
+        return { name, todo: options.todo!, };
+      }
+      catch (error) {
         l.error`${name} with todo: ${options.todo} errored: ${error}`;
-        return { name, todo: options.todo!, result: error };
+        return { name, todo: options.todo!, result: error, };
       }
     }
   }
 
-  l.debug`${name} started: ${String(callback).slice(0, CALLBACK_PREVIEW_LENGTH)}`;
+  l.debug`${name} started: ${String(callback,).slice(0, CALLBACK_PREVIEW_LENGTH,)}`;
 
   // May error, and that's okay. The test will fail fast here.
   // Well nope, the code needs to catch and rethrow the error, at least to add the name of the test.
@@ -270,24 +269,25 @@ type SuiteReturn =
     const result = await callback();
 
     if (took > timeLimit) {
-      const tooLongPercentage = Math.round(100 * (took - timeLimit) / timeLimit);
+      const tooLongPercentage = Math.round(100 * (took - timeLimit) / timeLimit,);
       throw new RangeError(
-        `${name} took: ${Math.round(took)}ms, ${
-          Math.round(took - timeLimit)
+        `${name} took: ${Math.round(took,)}ms, ${
+          Math.round(took - timeLimit,)
         }ms longer than timeLimit: ${timeLimit}ms, that's ${tooLongPercentage}% too long. finished: ${result}`,
       );
     }
 
     if (result !== undefined && result !== null) {
       l.info`${name} finished: ${result}`;
-      return { name, result };
+      return { name, result, };
     }
 
     // Depromoted single test log level from info to debug when it finishs without a result,
     // for a less cluttered terminal.
     l.debug`${name} finished`;
     return name;
-  } catch (callbackError: any) {
-    throw new Error(`${name}: ${String(callback)} errored`, { cause: callbackError });
+  }
+  catch (callbackError: any) {
+    throw new Error(`${name}: ${String(callback,)} errored`, { cause: callbackError, },);
   }
 }

@@ -27,13 +27,13 @@ import {
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 
 import tseslint from 'typescript-eslint';
-import type { ConfigArray } from 'typescript-eslint';
-import { searchForWorkspaceRoot } from 'vite';
+import type { ConfigArray, } from 'typescript-eslint';
+import { searchForWorkspaceRoot, } from 'vite';
 import astroPlugin from './astro-plugin.ts';
 
 // .astro must be included here for TypeScript ESLint's projectService to work properly
 // See: https://typescript-eslint.io/troubleshooting/typed-linting/performance#changes-to-extrafileextensions-with-projectservice
-const extraFileExtensions = ['vue', 'astro', 'mdx'];
+const extraFileExtensions = ['vue', 'astro', 'mdx',];
 
 const myConfigArray: ConfigArray = tseslint.config(
   {
@@ -60,11 +60,11 @@ const myConfigArray: ConfigArray = tseslint.config(
       parserOptions: {
         parser: '@typescript-eslint/parser',
         projectService: true,
-        tsconfigRootDir: searchForWorkspaceRoot(process.cwd()),
+        tsconfigRootDir: searchForWorkspaceRoot(process.cwd(),),
         jsx: true,
         emcaVersion: 'latest',
         extraFileExtensions,
-        lib: ['esnext', 'dom', 'webworker'],
+        lib: ['esnext', 'dom', 'webworker',],
         sourceType: 'module',
       },
     },
@@ -73,7 +73,7 @@ const myConfigArray: ConfigArray = tseslint.config(
       tsdoc,
     },
 
-    'settings': {
+    settings: {
       node: {
         version: '>=24.0.0',
       },
@@ -81,30 +81,30 @@ const myConfigArray: ConfigArray = tseslint.config(
 
     rules: {
       // Redundant with TypeScript
-      'unicorn/no-unused-properties': ['off'],
+      'unicorn/no-unused-properties': ['off',],
 
       // Redundant with TypeScript
-      'n/no-missing-import': ['off'],
+      'n/no-missing-import': ['off',],
 
       'n/hashbang': ['error', {
         executableMap: {
           '.js': 'bun',
           '.ts': 'bun',
         },
-      }],
+      },],
 
       '@typescript-eslint/no-unnecessary-condition': ['error', {
         allowConstantLoopConditions: 'only-allowed-literals',
-      }],
+      },],
       '@typescript-eslint/no-confusing-void-expression': ['error', {
         ignoreVoidReturningFunctions: true,
         ignoreVoidOperator: true,
-      }],
+      },],
       // I don't mind extra void.
       '@typescript-eslint/no-meaningless-void-operator': 'off',
       '@typescript-eslint/restrict-template-expressions': ['error', {
         // Always use JSON.stringify
-      }],
+      },],
 
       /* Has too many false positives. For example:
       ```ts
@@ -143,9 +143,9 @@ const myConfigArray: ConfigArray = tseslint.config(
       '@typescript-eslint/no-misused-promises': [
         'error',
         {
-          'checksVoidReturn': {
+          checksVoidReturn: {
             // passing a () => Promise<void> to a () => void parameter
-            'arguments': false,
+            arguments: false,
           },
         },
       ],
@@ -179,24 +179,24 @@ const myConfigArray: ConfigArray = tseslint.config(
           obj: false,
           //endregion umambiguious
         },
-      }],
+      },],
 
       'unicorn/no-keyword-prefix': ['error', {
         // `new` and `class` doesn't look too similar to me.
         disallowedPrefixes: [],
-      }],
+      },],
 
       'unicorn/import-style': ['warn', {
-        'styles': {
+        styles: {
           // path does export named imports like join and resolve
-          'path': false,
+          path: false,
           'node:path': false,
         },
-      }],
+      },],
     },
   },
   {
-    files: ['**/*.{test,bench}.ts'],
+    files: ['**/*.{test,bench}.ts',],
 
     plugins: {
       vitest,
@@ -229,7 +229,7 @@ const myConfigArray: ConfigArray = tseslint.config(
           // Extended test
           'test',
         ],
-      }],
+      },],
     },
 
     settings: {

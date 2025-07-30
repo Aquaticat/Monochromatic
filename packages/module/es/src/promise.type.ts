@@ -1,4 +1,4 @@
-import type { Promisable } from 'type-fest';
+import type { Promisable, } from 'type-fest';
 
 /**
  * Type utility that excludes Promise types from a given type.
@@ -60,7 +60,7 @@ export type NotPromise<T = any,> = Exclude<T, Promise<any>>;
  * }
  * ```
  */
-export type Predicate = (input: unknown) => boolean;
+export type Predicate = (input: unknown,) => boolean;
 
 /**
  * Function type that takes unknown input and returns Promise<boolean> asynchronously.
@@ -114,7 +114,7 @@ export type Predicate = (input: unknown) => boolean;
  * }
  * ```
  */
-export type PredicateAsync = (input: unknown) => Promise<boolean>;
+export type PredicateAsync = (input: unknown,) => Promise<boolean>;
 
 /**
  * Function type that takes unknown input and returns boolean or Promise<boolean>.
@@ -171,7 +171,7 @@ export type PredicateAsync = (input: unknown) => Promise<boolean>;
  * }
  * ```
  */
-export type PredicateMaybeAsync = (input: unknown) => Promisable<boolean>;
+export type PredicateMaybeAsync = (input: unknown,) => Promisable<boolean>;
 
 /**
  * Type utility that transforms a function to return Promisable<ReturnType> instead of ReturnType.

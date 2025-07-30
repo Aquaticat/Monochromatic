@@ -9,7 +9,7 @@ import {
   unary,
 } from '@monochromatic-dev/module-es';
 const title = Array
-  .from(i18n.get('chooseALang')!.values(), unary(capitalizeString))
+  .from(i18n.get('chooseALang',)!.values(), unary(capitalizeString,),)
   .join(
     ' ',
   );
@@ -21,7 +21,7 @@ const title = Array
     <h1>{title}</h1>
     <ul>
       {
-        langs.map((lang) => (
+        langs.map(lang => (
           <li>
             <a href={`/${lang}`}>{lang}</a>
           </li>

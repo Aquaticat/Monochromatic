@@ -1,4 +1,4 @@
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
 /**
  * Converts synchronous string iterable into compact formatted representation using Intl.ListFormat.
@@ -87,10 +87,10 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
  * // Both produce identical results, choose based on context
  * ```
  */
-export function toStringIterable(iterable: Iterable<string>): string {
-  const formatter = new Intl.ListFormat(undefined, { style: 'narrow', type: 'unit' });
+export function toStringIterable(iterable: Iterable<string>,): string {
+  const formatter = new Intl.ListFormat(undefined, { style: 'narrow', type: 'unit', },);
 
-  return formatter.format(iterable);
+  return formatter.format(iterable,);
 }
 
 /**
@@ -214,7 +214,7 @@ export function toStringIterable(iterable: Iterable<string>): string {
 export async function toStringIterableAsync(
   iterable: MaybeAsyncIterable<string>,
 ): Promise<string> {
-  const formatter = new Intl.ListFormat(undefined, { style: 'narrow', type: 'unit' });
+  const formatter = new Intl.ListFormat(undefined, { style: 'narrow', type: 'unit', },);
 
-  return formatter.format(await Array.fromAsync(iterable));
+  return formatter.format(await Array.fromAsync(iterable,),);
 }

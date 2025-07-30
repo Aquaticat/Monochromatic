@@ -13,7 +13,9 @@
     "zod": "catalog:",
     "@anthropic-ai/sdk": "catalog:",
     "feedsmith": "catalog:",
-    "find-up": "catalog:"
+    "find-up": "catalog:",
+    "vue": "catalog:",
+    "@elysiajs/static": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",

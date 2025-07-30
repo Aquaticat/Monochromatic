@@ -5,10 +5,10 @@
  Copyrights licensed under the New BSD License. See the accompanying LICENSE file for terms.
  */
 'use strict';
-const { ReportBase } = require('istanbul-lib-report');
-const { parse } = require('node:path');
-const { minimatch } = require('minimatch');
-const vitestExcludeCommonConfig = require('./vitest-exclude-common.json');
+const { ReportBase, } = require('istanbul-lib-report',);
+const { parse, } = require('node:path',);
+const { minimatch, } = require('minimatch',);
+const vitestExcludeCommonConfig = require('./vitest-exclude-common.json',);
 
 const FORMAT_COORDINATE_PAD_LENGTH = 3;
 const FORMAT_ENTRY_PAD_LENGTH = 2;
@@ -44,24 +44,24 @@ const DEBUG = false;
  * - br: [index]:[count1,count2]: loc: [location] ; type: [branchType] ; locations: [branches]
  */
 class MyTextReport extends ReportBase {
-  constructor(opts) {
+  constructor(opts,) {
     super();
   }
 
-  onStart(root, context) {
-    console.log('custom text coverage report');
+  onStart(root, context,) {
+    console.log('custom text coverage report',);
   }
 
-  onDetail(node) {
-    const { path: cPath, statementMap, fnMap, branchMap, s, f, b } = node
+  onDetail(node,) {
+    const { path: cPath, statementMap, fnMap, branchMap, s, f, b, } = node
       .getFileCoverage();
-    const { base, ext, dir } = parse(cPath);
+    const { base, ext, dir, } = parse(cPath,);
 
     // Ignore js files based on shared configuration
     if (
-      vitestExcludeCommonConfig.ignoredExtensions.some(function match(ignoredExt) {
+      vitestExcludeCommonConfig.ignoredExtensions.some(function match(ignoredExt,) {
         return ignoredExt === ext;
-      })
+      },)
     ) {
       return;
     }
@@ -74,11 +74,10 @@ class MyTextReport extends ReportBase {
         ...(vitestExcludeCommonConfig.coverageAdditionalPatterns),
       ]
         .some(
-          function matchPattern(pattern) {
-            const matches = minimatch(cPath, pattern);
-            if (DEBUG) {
-              console.log(`Pattern: ${pattern} | Matches: ${matches} | Path: ${cPath}`);
-            }
+          function matchPattern(pattern,) {
+            const matches = minimatch(cPath, pattern,);
+            if (DEBUG)
+              console.log(`Pattern: ${pattern} | Matches: ${matches} | Path: ${cPath}`,);
             return matches;
           },
         )
@@ -89,18 +88,18 @@ class MyTextReport extends ReportBase {
     /** Simplified directory path with common prefixes and suffixes removed for cleaner output */
     const dirWoCommon = vitestExcludeCommonConfig
       .pathReplacements
-      .reduce(function applyReplacement(currentDir, { pattern, replacement }) {
+      .reduce(function applyReplacement(currentDir, { pattern, replacement, },) {
         // Handle dynamic ${cwd} pattern
         // oxlint-disable-next-line no-template-curly-in-string -- An actual placeholder.
-        const actualPattern = pattern.replace('${cwd}', process.cwd());
-        return currentDir.replace(actualPattern, replacement);
-      }, dir)
+        const actualPattern = pattern.replace('${cwd}', process.cwd(),);
+        return currentDir.replace(actualPattern, replacement,);
+      }, dir,)
       .trim();
 
     if (
-      [statementMap, fnMap, branchMap].some(function nonEmpty(coverageMap) {
-        return Object.keys(coverageMap).length > 0;
-      })
+      [statementMap, fnMap, branchMap,].some(function nonEmpty(coverageMap,) {
+        return Object.keys(coverageMap,).length > 0;
+      },)
     ) {
       console.log();
       console.log(
@@ -110,23 +109,22 @@ class MyTextReport extends ReportBase {
 
       // Process each coverage type
       [
-        ['st'.padEnd(INDENT_LENGTH), [statementMap, s]],
-        ['fn'.padEnd(INDENT_LENGTH), [fnMap, f]],
-        ['br'.padEnd(INDENT_LENGTH), [branchMap, b]],
+        ['st'.padEnd(INDENT_LENGTH,), [statementMap, s,],],
+        ['fn'.padEnd(INDENT_LENGTH,), [fnMap, f,],],
+        ['br'.padEnd(INDENT_LENGTH,), [branchMap, b,],],
       ]
-        .forEach(function log([name, [coverageMap, countsObj]]) {
-          if (Object.keys(coverageMap).length === 0) {
+        .forEach(function log([name, [coverageMap, countsObj,],],) {
+          if (Object.keys(coverageMap,).length === 0)
             return;
-          }
 
-          const counts = Object.values(countsObj);
+          const counts = Object.values(countsObj,);
           const formattedEntries = Object
-            .entries(coverageMap)
-            .map(([keyNumber, value]) => formatCoverageEntry(keyNumber, value, counts))
-            .join(`\n${''.padEnd(INDENT_LENGTH)}`);
+            .entries(coverageMap,)
+            .map(([keyNumber, value,],) => formatCoverageEntry(keyNumber, value, counts,))
+            .join(`\n${''.padEnd(INDENT_LENGTH,)}`,);
 
-          console.log(`${name}${formattedEntries}`);
-        });
+          console.log(`${name}${formattedEntries}`,);
+        },);
     }
   }
 }
@@ -138,17 +136,17 @@ class MyTextReport extends ReportBase {
  * @param {Array} counts - Array of execution counts
  * @returns {string} Formatted coverage entry line
  */
-function formatCoverageEntry(keyNumber, value, counts) {
-  const paddedKey = String(keyNumber).padStart(FORMAT_ENTRY_PAD_LENGTH,
-    NUMBER_FILL_STRING);
-  const count = counts.at(keyNumber);
+function formatCoverageEntry(keyNumber, value, counts,) {
+  const paddedKey = String(keyNumber,).padStart(FORMAT_ENTRY_PAD_LENGTH,
+    NUMBER_FILL_STRING,);
+  const count = counts.at(keyNumber,);
 
   // Handle comma-separated counts for branches
-  const formattedCount = String(count).includes(',')
-    ? String(count).split(',').map((num) => num.padStart(2, '0')).join(',')
-    : String(count).padStart(FORMAT_ENTRY_PAD_LENGTH, NUMBER_FILL_STRING);
+  const formattedCount = String(count,).includes(',',)
+    ? String(count,).split(',',).map(num => num.padStart(2, '0',)).join(',',)
+    : String(count,).padStart(FORMAT_ENTRY_PAD_LENGTH, NUMBER_FILL_STRING,);
 
-  return `${paddedKey}:${formattedCount}: ${formatValue(value)}`;
+  return `${paddedKey}:${formattedCount}: ${formatValue(value,)}`;
 }
 
 /**
@@ -157,26 +155,25 @@ function formatCoverageEntry(keyNumber, value, counts) {
  * @param {*} value - Coverage value to format
  * @returns {string} Formatted value string
  */
-function formatValue(value) {
-  if (typeof value !== 'object') {
+function formatValue(value,) {
+  if (typeof value !== 'object')
     return value;
-  }
 
   // Handle objects with start/end properties
-  if (value.start) {
-    return formatLocation(value);
-  }
+  if (value.start)
+    return formatLocation(value,);
 
   // Handle objects without start property (nested structures)
   return Object
-    .entries(value)
-    .map(([key, val]) => {
+    .entries(value,)
+    .map(([key, val,],) => {
       // Skip 'line' key to avoid duplication
-      if (key === 'line') return null;
-      return `${key}: ${formatNestedValue(val)}`;
-    })
-    .filter(Boolean)
-    .join(' ; ');
+      if (key === 'line')
+        return null;
+      return `${key}: ${formatNestedValue(val,)}`;
+    },)
+    .filter(Boolean,)
+    .join(' ; ',);
 }
 
 /**
@@ -185,20 +182,17 @@ function formatValue(value) {
  * @param {*} value - Nested value to format
  * @returns {string} Formatted value string
  */
-function formatNestedValue(value) {
-  if (typeof value !== 'object') {
+function formatNestedValue(value,) {
+  if (typeof value !== 'object')
     return value;
-  }
 
-  if (value.start) {
-    return formatLocation(value);
-  }
+  if (value.start)
+    return formatLocation(value,);
 
-  if (Array.isArray(value)) {
-    return value.map(formatArrayItem).join(', ');
-  }
+  if (Array.isArray(value,))
+    return value.map(formatArrayItem,).join(', ',);
 
-  return JSON.stringify(value);
+  return JSON.stringify(value,);
 }
 
 /**
@@ -207,21 +201,18 @@ function formatNestedValue(value) {
  * @param {*} item - Array item to format
  * @returns {string} Formatted item string
  */
-function formatArrayItem(item) {
-  if (typeof item !== 'object') {
+function formatArrayItem(item,) {
+  if (typeof item !== 'object')
     return item;
-  }
 
-  if (!item.start) {
-    return JSON.stringify(item);
-  }
+  if (!item.start)
+    return JSON.stringify(item,);
 
   // Check if start has properties and has line property
-  if (Object.keys(item.start).length === 0 || !item.start.line) {
+  if (Object.keys(item.start,).length === 0 || !item.start.line)
     return '';
-  }
 
-  return formatLocation(item);
+  return formatLocation(item,);
 }
 
 /**
@@ -231,7 +222,7 @@ function formatArrayItem(item) {
  * @param {{start: {line?: number, column?: number}, end: {line?: number, column?: number}}} location - Location object
  * @returns {string} Formatted location string (e.g., "001:000 030:inf")
  */
-function formatLocation({ start, end }) {
+function formatLocation({ start, end, },) {
   // Return empty string if all line/column properties are undefined
   if (
     start.line === undefined && start.column === undefined && end
@@ -242,16 +233,18 @@ function formatLocation({ start, end }) {
   }
 
   // Format with 'und' for undefined, 'inf' for Infinity, otherwise pad numbers to 2 digits
-  const formatCoordinate = (value) => {
-    if (value === undefined) return 'und';
-    if (value === Infinity) return 'inf';
-    return String(value).padStart(FORMAT_COORDINATE_PAD_LENGTH, NUMBER_FILL_STRING);
+  const formatCoordinate = value => {
+    if (value === undefined)
+      return 'und';
+    if (value === Infinity)
+      return 'inf';
+    return String(value,).padStart(FORMAT_COORDINATE_PAD_LENGTH, NUMBER_FILL_STRING,);
   };
 
-  const startLine = formatCoordinate(start.line);
-  const startColumn = formatCoordinate(start.column);
-  const endLine = formatCoordinate(end.line);
-  const endColumn = formatCoordinate(end.column);
+  const startLine = formatCoordinate(start.line,);
+  const startColumn = formatCoordinate(start.column,);
+  const endLine = formatCoordinate(end.line,);
+  const endColumn = formatCoordinate(end.column,);
 
   return `${startLine}:${startColumn} ${endLine}:${endColumn}`;
 }

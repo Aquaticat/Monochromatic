@@ -1,6 +1,6 @@
-import type { Promisable } from 'type-fest';
-import { isSyncFunction } from './function.is.ts';
-import type { NotPromise } from './promise.type.ts';
+import type { Promisable, } from 'type-fest';
+import { isSyncFunction, } from './function.is.ts';
+import type { NotPromise, } from './promise.type.ts';
 
 //region Function Piping Utilities -- Provides utilities for composing and piping functions with async/sync support
 
@@ -32,7 +32,7 @@ export async function pipedAsync<T_0,>(
  */
 export async function pipedAsync<T_0, T_1,>(
   input: T_0,
-  fn1: (input0: T_0) => Promisable<T_1>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
 ): Promise<T_1>;
 
 /**
@@ -49,8 +49,8 @@ export async function pipedAsync<T_0, T_1,>(
  */
 export async function pipedAsync<T_0, T_1, T_2,>(
   input: T_0,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
 ): Promise<T_2>;
 
 /**
@@ -68,9 +68,9 @@ export async function pipedAsync<T_0, T_1, T_2,>(
  */
 export async function pipedAsync<T_0, T_1, T_2, T_3,>(
   input: T_0,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
-  fn3: (input2: T_2) => Promisable<T_3>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
+  fn3: (input2: T_2,) => Promisable<T_3>,
 ): Promise<T_3>;
 
 /**
@@ -85,10 +85,10 @@ export async function pipedAsync<T_0, T_1, T_2, T_3,>(
  */
 export async function pipedAsync<T_0, T_1, T_2, T_3, T_4,>(
   input: T_0,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
-  fn3: (input2: T_2) => Promisable<T_3>,
-  fn4: (input3: T_3) => Promisable<T_4>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
+  fn3: (input2: T_2,) => Promisable<T_3>,
+  fn4: (input3: T_3,) => Promisable<T_4>,
 ): Promise<T_4>;
 
 /**
@@ -104,11 +104,11 @@ export async function pipedAsync<T_0, T_1, T_2, T_3, T_4,>(
  */
 export async function pipedAsync<T_0, T_1, T_2, T_3, T_4, T_5,>(
   input: T_0,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
-  fn3: (input2: T_2) => Promisable<T_3>,
-  fn4: (input3: T_3) => Promisable<T_4>,
-  fn5: (input4: T_4) => Promisable<T_5>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
+  fn3: (input2: T_2,) => Promisable<T_3>,
+  fn4: (input3: T_3,) => Promisable<T_4>,
+  fn5: (input4: T_4,) => Promisable<T_5>,
 ): Promise<T_5>;
 
 /**
@@ -125,12 +125,12 @@ export async function pipedAsync<T_0, T_1, T_2, T_3, T_4, T_5,>(
  */
 export async function pipedAsync<T_0, T_1, T_2, T_3, T_4, T_5, T_6,>(
   input: T_0,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
-  fn3: (input2: T_2) => Promisable<T_3>,
-  fn4: (input3: T_3) => Promisable<T_4>,
-  fn5: (input4: T_4) => Promisable<T_5>,
-  fn6: (input5: T_5) => Promisable<T_6>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
+  fn3: (input2: T_2,) => Promisable<T_3>,
+  fn4: (input3: T_3,) => Promisable<T_4>,
+  fn5: (input4: T_4,) => Promisable<T_5>,
+  fn6: (input5: T_5,) => Promisable<T_6>,
 ): Promise<T_6>;
 
 /**
@@ -148,13 +148,13 @@ export async function pipedAsync<T_0, T_1, T_2, T_3, T_4, T_5, T_6,>(
  */
 export async function pipedAsync<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,>(
   input: T_0,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
-  fn3: (input2: T_2) => Promisable<T_3>,
-  fn4: (input3: T_3) => Promisable<T_4>,
-  fn5: (input4: T_4) => Promisable<T_5>,
-  fn6: (input5: T_5) => Promisable<T_6>,
-  fn7: (input6: T_6) => Promisable<T_7>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
+  fn3: (input2: T_2,) => Promisable<T_3>,
+  fn4: (input3: T_3,) => Promisable<T_4>,
+  fn5: (input4: T_4,) => Promisable<T_5>,
+  fn6: (input5: T_5,) => Promisable<T_6>,
+  fn7: (input6: T_6,) => Promisable<T_7>,
 ): Promise<T_7>;
 
 /**
@@ -173,14 +173,14 @@ export async function pipedAsync<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,>(
  */
 export async function pipedAsync<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8,>(
   input: T_0,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
-  fn3: (input2: T_2) => Promisable<T_3>,
-  fn4: (input3: T_3) => Promisable<T_4>,
-  fn5: (input4: T_4) => Promisable<T_5>,
-  fn6: (input5: T_5) => Promisable<T_6>,
-  fn7: (input6: T_6) => Promisable<T_7>,
-  fn8: (input7: T_7) => Promisable<T_8>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
+  fn3: (input2: T_2,) => Promisable<T_3>,
+  fn4: (input3: T_3,) => Promisable<T_4>,
+  fn5: (input4: T_4,) => Promisable<T_5>,
+  fn6: (input5: T_5,) => Promisable<T_6>,
+  fn7: (input6: T_6,) => Promisable<T_7>,
+  fn8: (input7: T_7,) => Promisable<T_8>,
 ): Promise<T_8>;
 
 /**
@@ -200,15 +200,15 @@ export async function pipedAsync<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8,>(
  */
 export async function pipedAsync<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9,>(
   input: T_0,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
-  fn3: (input2: T_2) => Promisable<T_3>,
-  fn4: (input3: T_3) => Promisable<T_4>,
-  fn5: (input4: T_4) => Promisable<T_5>,
-  fn6: (input5: T_5) => Promisable<T_6>,
-  fn7: (input6: T_6) => Promisable<T_7>,
-  fn8: (input7: T_7) => Promisable<T_8>,
-  fn9: (input8: T_8) => Promisable<T_9>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
+  fn3: (input2: T_2,) => Promisable<T_3>,
+  fn4: (input3: T_3,) => Promisable<T_4>,
+  fn5: (input4: T_4,) => Promisable<T_5>,
+  fn6: (input5: T_5,) => Promisable<T_6>,
+  fn7: (input6: T_6,) => Promisable<T_7>,
+  fn8: (input7: T_7,) => Promisable<T_8>,
+  fn9: (input8: T_8,) => Promisable<T_9>,
 ): Promise<T_9>;
 /**
  * Implementation for `pipedAsync`.
@@ -220,50 +220,47 @@ export async function pipedAsync<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_
  */
 export async function pipedAsync<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9,>(
   input: T_0,
-  fn1?: (input0: T_0) => Promisable<T_1>,
-  fn2?: (input1: T_1) => Promisable<T_2>,
-  fn3?: (input2: T_2) => Promisable<T_3>,
-  fn4?: (input3: T_3) => Promisable<T_4>,
-  fn5?: (input4: T_4) => Promisable<T_5>,
-  fn6?: (input5: T_5) => Promisable<T_6>,
-  fn7?: (input6: T_6) => Promisable<T_7>,
-  fn8?: (input7: T_7) => Promisable<T_8>,
-  fn9?: (input8: T_8) => Promisable<T_9>,
+  fn1?: (input0: T_0,) => Promisable<T_1>,
+  fn2?: (input1: T_1,) => Promisable<T_2>,
+  fn3?: (input2: T_2,) => Promisable<T_3>,
+  fn4?: (input3: T_3,) => Promisable<T_4>,
+  fn5?: (input4: T_4,) => Promisable<T_5>,
+  fn6?: (input5: T_5,) => Promisable<T_6>,
+  fn7?: (input6: T_6,) => Promisable<T_7>,
+  fn8?: (input7: T_7,) => Promisable<T_8>,
+  fn9?: (input8: T_8,) => Promisable<T_9>,
 ): Promise<T_0 | T_1 | T_2 | T_3 | T_4 | T_5 | T_6 | T_7 | T_8 | T_9> {
-  if (!fn1) {
+  if (!fn1)
     return input;
-  }
-  if (!fn2) {
-    return await fn1(input);
-  }
-  if (!fn3) {
-    return await fn2(await fn1(input));
-  }
-  if (!fn4) {
-    return await fn3(await fn2(await fn1(input)));
-  }
-  if (!fn5) {
-    return await fn4(await fn3(await fn2(await fn1(input))));
-  }
-  if (!fn6) {
-    return await fn5(await fn4(await fn3(await fn2(await fn1(input)))));
-  }
-  if (!fn7) {
-    return await fn6(await fn5(await fn4(await fn3(await fn2(await fn1(input))))));
-  }
+  if (!fn2)
+    return await fn1(input,);
+  if (!fn3)
+    return await fn2(await fn1(input,),);
+  if (!fn4)
+    return await fn3(await fn2(await fn1(input,),),);
+  if (!fn5)
+    return await fn4(await fn3(await fn2(await fn1(input,),),),);
+  if (!fn6)
+    return await fn5(await fn4(await fn3(await fn2(await fn1(input,),),),),);
+  if (!fn7)
+    return await fn6(await fn5(await fn4(await fn3(await fn2(await fn1(input,),),),),),);
   if (!fn8) {
     return await fn7(
-      await fn6(await fn5(await fn4(await fn3(await fn2(await fn1(input)))))),
+      await fn6(await fn5(await fn4(await fn3(await fn2(await fn1(input,),),),),),),
     );
   }
   if (!fn9) {
     return await fn8(
-      await fn7(await fn6(await fn5(await fn4(await fn3(await fn2(await fn1(input))))))),
+      await fn7(
+        await fn6(await fn5(await fn4(await fn3(await fn2(await fn1(input,),),),),),),
+      ),
     );
   }
   return await fn9(
     await fn8(
-      await fn7(await fn6(await fn5(await fn4(await fn3(await fn2(await fn1(input))))))),
+      await fn7(
+        await fn6(await fn5(await fn4(await fn3(await fn2(await fn1(input,),),),),),),
+      ),
     ),
   );
 }
@@ -296,7 +293,7 @@ export function piped<T_0,>(
  */
 export function piped<T_0, T_1,>(
   input: T_0,
-  fn1: (input0: T_0) => T_1,
+  fn1: (input0: T_0,) => T_1,
 ): T_1;
 /**
  * Pipes an input value through two synchronous functions.
@@ -312,8 +309,8 @@ export function piped<T_0, T_1,>(
  */
 export function piped<T_0, T_1, T_2,>(
   input: T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
 ): T_2;
 /**
  * Pipes an input value through three synchronous functions.
@@ -330,9 +327,9 @@ export function piped<T_0, T_1, T_2,>(
  */
 export function piped<T_0, T_1, T_2, T_3,>(
   input: T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
-  fn3: (input2: T_2) => T_3,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
+  fn3: (input2: T_2,) => T_3,
 ): T_3;
 /**
  * Pipes an input value through four synchronous functions.
@@ -346,10 +343,10 @@ export function piped<T_0, T_1, T_2, T_3,>(
  */
 export function piped<T_0, T_1, T_2, T_3, T_4,>(
   input: T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
-  fn3: (input2: T_2) => T_3,
-  fn4: (input3: T_3) => T_4,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
+  fn3: (input2: T_2,) => T_3,
+  fn4: (input3: T_3,) => T_4,
 ): T_4;
 /**
  * Pipes an input value through five synchronous functions.
@@ -364,11 +361,11 @@ export function piped<T_0, T_1, T_2, T_3, T_4,>(
  */
 export function piped<T_0, T_1, T_2, T_3, T_4, T_5,>(
   input: T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
-  fn3: (input2: T_2) => T_3,
-  fn4: (input3: T_3) => T_4,
-  fn5: (input4: T_4) => T_5,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
+  fn3: (input2: T_2,) => T_3,
+  fn4: (input3: T_3,) => T_4,
+  fn5: (input4: T_4,) => T_5,
 ): T_5;
 /**
  * Pipes an input value through six synchronous functions.
@@ -384,12 +381,12 @@ export function piped<T_0, T_1, T_2, T_3, T_4, T_5,>(
  */
 export function piped<T_0, T_1, T_2, T_3, T_4, T_5, T_6,>(
   input: T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
-  fn3: (input2: T_2) => T_3,
-  fn4: (input3: T_3) => T_4,
-  fn5: (input4: T_4) => T_5,
-  fn6: (input5: T_5) => T_6,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
+  fn3: (input2: T_2,) => T_3,
+  fn4: (input3: T_3,) => T_4,
+  fn5: (input4: T_4,) => T_5,
+  fn6: (input5: T_5,) => T_6,
 ): T_6;
 /**
  * Pipes an input value through seven synchronous functions.
@@ -406,13 +403,13 @@ export function piped<T_0, T_1, T_2, T_3, T_4, T_5, T_6,>(
  */
 export function piped<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,>(
   input: T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
-  fn3: (input2: T_2) => T_3,
-  fn4: (input3: T_3) => T_4,
-  fn5: (input4: T_4) => T_5,
-  fn6: (input5: T_5) => T_6,
-  fn7: (input6: T_6) => T_7,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
+  fn3: (input2: T_2,) => T_3,
+  fn4: (input3: T_3,) => T_4,
+  fn5: (input4: T_4,) => T_5,
+  fn6: (input5: T_5,) => T_6,
+  fn7: (input6: T_6,) => T_7,
 ): T_7;
 /**
  * Pipes an input value through eight synchronous functions.
@@ -430,14 +427,14 @@ export function piped<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,>(
  */
 export function piped<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8,>(
   input: T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
-  fn3: (input2: T_2) => T_3,
-  fn4: (input3: T_3) => T_4,
-  fn5: (input4: T_4) => T_5,
-  fn6: (input5: T_5) => T_6,
-  fn7: (input6: T_6) => T_7,
-  fn8: (input7: T_7) => T_8,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
+  fn3: (input2: T_2,) => T_3,
+  fn4: (input3: T_3,) => T_4,
+  fn5: (input4: T_4,) => T_5,
+  fn6: (input5: T_5,) => T_6,
+  fn7: (input6: T_6,) => T_7,
+  fn8: (input7: T_7,) => T_8,
 ): T_8;
 /**
  * Pipes an input value through nine synchronous functions.
@@ -456,15 +453,15 @@ export function piped<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8,>(
  */
 export function piped<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9,>(
   input: T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
-  fn3: (input2: T_2) => T_3,
-  fn4: (input3: T_3) => T_4,
-  fn5: (input4: T_4) => T_5,
-  fn6: (input5: T_5) => T_6,
-  fn7: (input6: T_6) => T_7,
-  fn8: (input7: T_7) => T_8,
-  fn9: (input8: T_8) => T_9,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
+  fn3: (input2: T_2,) => T_3,
+  fn4: (input3: T_3,) => T_4,
+  fn5: (input4: T_4,) => T_5,
+  fn6: (input5: T_5,) => T_6,
+  fn7: (input6: T_6,) => T_7,
+  fn8: (input7: T_7,) => T_8,
+  fn9: (input8: T_8,) => T_9,
 ): T_9;
 /**
  * Implementation for `piped`.
@@ -472,50 +469,43 @@ export function piped<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9,>(
  */
 export function piped<T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8, T_9,>(
   input: T_0,
-  fn1?: (input0: T_0) => T_1,
-  fn2?: (input1: T_1) => T_2,
-  fn3?: (input2: T_2) => T_3,
-  fn4?: (input3: T_3) => T_4,
-  fn5?: (input4: T_4) => T_5,
-  fn6?: (input5: T_5) => T_6,
-  fn7?: (input6: T_6) => T_7,
-  fn8?: (input7: T_7) => T_8,
-  fn9?: (input8: T_8) => T_9,
+  fn1?: (input0: T_0,) => T_1,
+  fn2?: (input1: T_1,) => T_2,
+  fn3?: (input2: T_2,) => T_3,
+  fn4?: (input3: T_3,) => T_4,
+  fn5?: (input4: T_4,) => T_5,
+  fn6?: (input5: T_5,) => T_6,
+  fn7?: (input6: T_6,) => T_7,
+  fn8?: (input7: T_7,) => T_8,
+  fn9?: (input8: T_8,) => T_9,
 ): T_0 | T_1 | T_2 | T_3 | T_4 | T_5 | T_6 | T_7 | T_8 | T_9 {
-  if (!fn1) {
+  if (!fn1)
     return input;
-  }
-  if (!fn2) {
-    return fn1(input);
-  }
-  if (!fn3) {
-    return fn2(fn1(input));
-  }
-  if (!fn4) {
-    return fn3(fn2(fn1(input)));
-  }
-  if (!fn5) {
-    return fn4(fn3(fn2(fn1(input))));
-  }
-  if (!fn6) {
-    return fn5(fn4(fn3(fn2(fn1(input)))));
-  }
-  if (!fn7) {
-    return fn6(fn5(fn4(fn3(fn2(fn1(input))))));
-  }
+  if (!fn2)
+    return fn1(input,);
+  if (!fn3)
+    return fn2(fn1(input,),);
+  if (!fn4)
+    return fn3(fn2(fn1(input,),),);
+  if (!fn5)
+    return fn4(fn3(fn2(fn1(input,),),),);
+  if (!fn6)
+    return fn5(fn4(fn3(fn2(fn1(input,),),),),);
+  if (!fn7)
+    return fn6(fn5(fn4(fn3(fn2(fn1(input,),),),),),);
   if (!fn8) {
     return fn7(
-      fn6(fn5(fn4(fn3(fn2(fn1(input)))))),
+      fn6(fn5(fn4(fn3(fn2(fn1(input,),),),),),),
     );
   }
   if (!fn9) {
     return fn8(
-      fn7(fn6(fn5(fn4(fn3(fn2(fn1(input))))))),
+      fn7(fn6(fn5(fn4(fn3(fn2(fn1(input,),),),),),),),
     );
   }
   return fn9(
     fn8(
-      fn7(fn6(fn5(fn4(fn3(fn2(fn1(input))))))),
+      fn7(fn6(fn5(fn4(fn3(fn2(fn1(input,),),),),),),),
     ),
   );
 }
@@ -843,7 +833,7 @@ export function pipeAsync<T_inputs extends any[],>(
  */
 export function pipeAsync<T_inputs extends any[], T_0, T_1,>(
   fn0: (...inputs: T_inputs) => Promisable<T_0>,
-  fn1: (input0: T_0) => Promisable<T_1>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
 ): (...inputs: T_inputs) => Promise<T_1>;
 /**
  * Creates a function that composes three async functions.
@@ -865,8 +855,8 @@ export function pipeAsync<T_inputs extends any[], T_0, T_1,>(
  */
 export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2,>(
   fn0: (...inputs: T_inputs) => Promisable<T_0>,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
 ): (...inputs: T_inputs) => Promise<T_2>;
 /**
  * Creates a function that composes four async functions.
@@ -880,9 +870,9 @@ export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2,>(
  */
 export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2, T_3,>(
   fn0: (...inputs: T_inputs) => Promisable<T_0>,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
-  fn3: (input2: T_2) => Promisable<T_3>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
+  fn3: (input2: T_2,) => Promisable<T_3>,
 ): (...inputs: T_inputs) => Promise<T_3>;
 /**
  * Creates a function that composes five async functions.
@@ -897,10 +887,10 @@ export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2, T_3,>(
  */
 export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4,>(
   fn0: (...inputs: T_inputs) => Promisable<T_0>,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
-  fn3: (input2: T_2) => Promisable<T_3>,
-  fn4: (input3: T_3) => Promisable<T_4>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
+  fn3: (input2: T_2,) => Promisable<T_3>,
+  fn4: (input3: T_3,) => Promisable<T_4>,
 ): (...inputs: T_inputs) => Promise<T_4>;
 /**
  * Creates a function that composes six async functions.
@@ -916,11 +906,11 @@ export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4,>(
  */
 export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5,>(
   fn0: (...inputs: T_inputs) => Promisable<T_0>,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
-  fn3: (input2: T_2) => Promisable<T_3>,
-  fn4: (input3: T_3) => Promisable<T_4>,
-  fn5: (input4: T_4) => Promisable<T_5>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
+  fn3: (input2: T_2,) => Promisable<T_3>,
+  fn4: (input3: T_3,) => Promisable<T_4>,
+  fn5: (input4: T_4,) => Promisable<T_5>,
 ): (...inputs: T_inputs) => Promise<T_5>;
 /**
  * Creates a function that composes seven async functions.
@@ -937,12 +927,12 @@ export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5,>
  */
 export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5, T_6,>(
   fn0: (...inputs: T_inputs) => Promisable<T_0>,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
-  fn3: (input2: T_2) => Promisable<T_3>,
-  fn4: (input3: T_3) => Promisable<T_4>,
-  fn5: (input4: T_4) => Promisable<T_5>,
-  fn6: (input5: T_5) => Promisable<T_6>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
+  fn3: (input2: T_2,) => Promisable<T_3>,
+  fn4: (input3: T_3,) => Promisable<T_4>,
+  fn5: (input4: T_4,) => Promisable<T_5>,
+  fn6: (input5: T_5,) => Promisable<T_6>,
 ): (...inputs: T_inputs) => Promise<T_6>;
 /**
  * Creates a function that composes eight async functions.
@@ -961,13 +951,13 @@ export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5, 
 export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5, T_6,
   T_7,>(
   fn0: (...inputs: T_inputs) => Promisable<T_0>,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
-  fn3: (input2: T_2) => Promisable<T_3>,
-  fn4: (input3: T_3) => Promisable<T_4>,
-  fn5: (input4: T_4) => Promisable<T_5>,
-  fn6: (input5: T_5) => Promisable<T_6>,
-  fn7: (input6: T_6) => Promisable<T_7>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
+  fn3: (input2: T_2,) => Promisable<T_3>,
+  fn4: (input3: T_3,) => Promisable<T_4>,
+  fn5: (input4: T_4,) => Promisable<T_5>,
+  fn6: (input5: T_5,) => Promisable<T_6>,
+  fn7: (input6: T_6,) => Promisable<T_7>,
 ): (...inputs: T_inputs) => Promise<T_7>;
 /**
  * Creates a function that composes nine async functions.
@@ -987,14 +977,14 @@ export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5, 
 export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
   T_8,>(
   fn0: (...inputs: T_inputs) => Promisable<T_0>,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
-  fn3: (input2: T_2) => Promisable<T_3>,
-  fn4: (input3: T_3) => Promisable<T_4>,
-  fn5: (input4: T_4) => Promisable<T_5>,
-  fn6: (input5: T_5) => Promisable<T_6>,
-  fn7: (input6: T_6) => Promisable<T_7>,
-  fn8: (input7: T_7) => Promisable<T_8>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
+  fn3: (input2: T_2,) => Promisable<T_3>,
+  fn4: (input3: T_3,) => Promisable<T_4>,
+  fn5: (input4: T_4,) => Promisable<T_5>,
+  fn6: (input5: T_5,) => Promisable<T_6>,
+  fn7: (input6: T_6,) => Promisable<T_7>,
+  fn8: (input7: T_7,) => Promisable<T_8>,
 ): (...inputs: T_inputs) => Promise<T_8>;
 /**
  * Creates a function that composes ten async functions.
@@ -1015,15 +1005,15 @@ export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5, 
 export function pipeAsync<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
   T_8, T_9,>(
   fn0: (...inputs: T_inputs) => Promisable<T_0>,
-  fn1: (input0: T_0) => Promisable<T_1>,
-  fn2: (input1: T_1) => Promisable<T_2>,
-  fn3: (input2: T_2) => Promisable<T_3>,
-  fn4: (input3: T_3) => Promisable<T_4>,
-  fn5: (input4: T_4) => Promisable<T_5>,
-  fn6: (input5: T_5) => Promisable<T_6>,
-  fn7: (input6: T_6) => Promisable<T_7>,
-  fn8: (input7: T_7) => Promisable<T_8>,
-  fn9: (input8: T_8) => Promisable<T_9>,
+  fn1: (input0: T_0,) => Promisable<T_1>,
+  fn2: (input1: T_1,) => Promisable<T_2>,
+  fn3: (input2: T_2,) => Promisable<T_3>,
+  fn4: (input3: T_3,) => Promisable<T_4>,
+  fn5: (input4: T_4,) => Promisable<T_5>,
+  fn6: (input5: T_5,) => Promisable<T_6>,
+  fn7: (input6: T_6,) => Promisable<T_7>,
+  fn8: (input7: T_7,) => Promisable<T_8>,
+  fn9: (input8: T_8,) => Promisable<T_9>,
 ): (...inputs: T_inputs) => Promise<T_9>;
 /**
  * Implementation for `pipeAsync`.
@@ -1043,15 +1033,15 @@ export function pipeAsync<
   T_9,
 >(
   fn0: (...inputs: T_inputs) => Promisable<T_0>,
-  fn1?: (input0: T_0) => Promisable<T_1>,
-  fn2?: (input1: T_1) => Promisable<T_2>,
-  fn3?: (input2: T_2) => Promisable<T_3>,
-  fn4?: (input3: T_3) => Promisable<T_4>,
-  fn5?: (input4: T_4) => Promisable<T_5>,
-  fn6?: (input5: T_5) => Promisable<T_6>,
-  fn7?: (input6: T_6) => Promisable<T_7>,
-  fn8?: (input7: T_7) => Promisable<T_8>,
-  fn9?: (input8: T_8) => Promisable<T_9>,
+  fn1?: (input0: T_0,) => Promisable<T_1>,
+  fn2?: (input1: T_1,) => Promisable<T_2>,
+  fn3?: (input2: T_2,) => Promisable<T_3>,
+  fn4?: (input3: T_3,) => Promisable<T_4>,
+  fn5?: (input4: T_4,) => Promisable<T_5>,
+  fn6?: (input5: T_5,) => Promisable<T_6>,
+  fn7?: (input6: T_6,) => Promisable<T_7>,
+  fn8?: (input7: T_7,) => Promisable<T_8>,
+  fn9?: (input8: T_8,) => Promisable<T_9>,
 ):
   | ((...inputs: T_inputs) => Promisable<T_0>)
   | ((
@@ -1065,15 +1055,15 @@ export function pipeAsync<
 export function pipeAsync<
   T_inputs extends any[],
   T_fn0 extends (...inputs: T_inputs) => any,
-  T_fn1 extends (input: Awaited<ReturnType<T_fn0>>) => any,
-  T_fn2 extends (input: Awaited<ReturnType<T_fn1>>) => any,
-  T_fn3 extends (input: Awaited<ReturnType<T_fn2>>) => any,
-  T_fn4 extends (input: Awaited<ReturnType<T_fn3>>) => any,
-  T_fn5 extends (input: Awaited<ReturnType<T_fn4>>) => any,
-  T_fn6 extends (input: Awaited<ReturnType<T_fn5>>) => any,
-  T_fn7 extends (input: Awaited<ReturnType<T_fn6>>) => any,
-  T_fn8 extends (input: Awaited<ReturnType<T_fn7>>) => any,
-  T_fn9 extends (input: Awaited<ReturnType<T_fn8>>) => any,
+  T_fn1 extends (input: Awaited<ReturnType<T_fn0>>,) => any,
+  T_fn2 extends (input: Awaited<ReturnType<T_fn1>>,) => any,
+  T_fn3 extends (input: Awaited<ReturnType<T_fn2>>,) => any,
+  T_fn4 extends (input: Awaited<ReturnType<T_fn3>>,) => any,
+  T_fn5 extends (input: Awaited<ReturnType<T_fn4>>,) => any,
+  T_fn6 extends (input: Awaited<ReturnType<T_fn5>>,) => any,
+  T_fn7 extends (input: Awaited<ReturnType<T_fn6>>,) => any,
+  T_fn8 extends (input: Awaited<ReturnType<T_fn7>>,) => any,
+  T_fn9 extends (input: Awaited<ReturnType<T_fn8>>,) => any,
 >(
   fn0: T_fn0,
   fn1?: T_fn1,
@@ -1109,124 +1099,126 @@ export function pipeAsync<
   }
 
   if (!fn2) {
-    if (isSyncFunction(fn0) && isSyncFunction(fn1)) {
+    if (isSyncFunction(fn0,) && isSyncFunction(fn1,)) {
       return function fn0to1(...inputs: T_inputs): ReturnType<T_fn1> {
-        return fn1(fn0(...inputs));
+        return fn1(fn0(...inputs,),);
       };
     }
     return async function fn0to1(
       ...inputs: T_inputs
     ): Promise<Awaited<ReturnType<T_fn1>>> {
-      return await fn1(await fn0(...inputs));
+      return await fn1(await fn0(...inputs,),);
     };
   }
 
   if (!fn3) {
-    if (isSyncFunction(fn0) && isSyncFunction(fn1) && isSyncFunction(fn2)) {
+    if (isSyncFunction(fn0,) && isSyncFunction(fn1,) && isSyncFunction(fn2,)) {
       return function fn0to2(...inputs: T_inputs): ReturnType<T_fn2> {
-        return fn2(fn1(fn0(...inputs)));
+        return fn2(fn1(fn0(...inputs,),),);
       };
     }
     return async function fn0to2(
       ...inputs: T_inputs
     ): Promise<Awaited<ReturnType<T_fn2>>> {
-      return await fn2(await fn1(await fn0(...inputs)));
+      return await fn2(await fn1(await fn0(...inputs,),),);
     };
   }
 
   if (!fn4) {
     if (
-      isSyncFunction(fn0)
-      && isSyncFunction(fn1)
-      && isSyncFunction(fn2)
-      && isSyncFunction(fn3)
+      isSyncFunction(fn0,)
+      && isSyncFunction(fn1,)
+      && isSyncFunction(fn2,)
+      && isSyncFunction(fn3,)
     ) {
       return function fn0to3(...inputs: T_inputs): ReturnType<T_fn3> {
-        return fn3(fn2(fn1(fn0(...inputs))));
+        return fn3(fn2(fn1(fn0(...inputs,),),),);
       };
     }
     return async function fn0to3(
       ...inputs: T_inputs
     ): Promise<Awaited<ReturnType<T_fn3>>> {
-      return await fn3(await fn2(await fn1(await fn0(...inputs))));
+      return await fn3(await fn2(await fn1(await fn0(...inputs,),),),);
     };
   }
 
   if (!fn5) {
     if (
-      isSyncFunction(fn0)
-      && isSyncFunction(fn1)
-      && isSyncFunction(fn2)
-      && isSyncFunction(fn3)
-      && isSyncFunction(fn4)
+      isSyncFunction(fn0,)
+      && isSyncFunction(fn1,)
+      && isSyncFunction(fn2,)
+      && isSyncFunction(fn3,)
+      && isSyncFunction(fn4,)
     ) {
       return function fn0to4(...inputs: T_inputs): ReturnType<T_fn4> {
-        return fn4(fn3(fn2(fn1(fn0(...inputs)))));
+        return fn4(fn3(fn2(fn1(fn0(...inputs,),),),),);
       };
     }
     return async function fn0to4(
       ...inputs: T_inputs
     ): Promise<Awaited<ReturnType<T_fn4>>> {
-      return await fn4(await fn3(await fn2(await fn1(await fn0(...inputs)))));
+      return await fn4(await fn3(await fn2(await fn1(await fn0(...inputs,),),),),);
     };
   }
 
   if (!fn6) {
     if (
-      isSyncFunction(fn0)
-      && isSyncFunction(fn1)
-      && isSyncFunction(fn2)
-      && isSyncFunction(fn3)
-      && isSyncFunction(fn4)
-      && isSyncFunction(fn5)
+      isSyncFunction(fn0,)
+      && isSyncFunction(fn1,)
+      && isSyncFunction(fn2,)
+      && isSyncFunction(fn3,)
+      && isSyncFunction(fn4,)
+      && isSyncFunction(fn5,)
     ) {
       return function fn0to5(...inputs: T_inputs): ReturnType<T_fn5> {
-        return fn5(fn4(fn3(fn2(fn1(fn0(...inputs))))));
+        return fn5(fn4(fn3(fn2(fn1(fn0(...inputs,),),),),),);
       };
     }
     return async function fn0to5(
       ...inputs: T_inputs
     ): Promise<Awaited<ReturnType<T_fn5>>> {
-      return await fn5(await fn4(await fn3(await fn2(await fn1(await fn0(...inputs))))));
+      return await fn5(
+        await fn4(await fn3(await fn2(await fn1(await fn0(...inputs,),),),),),
+      );
     };
   }
 
   if (!fn7) {
     if (
-      isSyncFunction(fn0)
-      && isSyncFunction(fn1)
-      && isSyncFunction(fn2)
-      && isSyncFunction(fn3)
-      && isSyncFunction(fn4)
-      && isSyncFunction(fn5)
-      && isSyncFunction(fn6)
+      isSyncFunction(fn0,)
+      && isSyncFunction(fn1,)
+      && isSyncFunction(fn2,)
+      && isSyncFunction(fn3,)
+      && isSyncFunction(fn4,)
+      && isSyncFunction(fn5,)
+      && isSyncFunction(fn6,)
     ) {
       return function fn0to6(...inputs: T_inputs): ReturnType<T_fn6> {
-        return fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs)))))));
+        return fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs,),),),),),),);
       };
     }
     return async function fn0to6(
       ...inputs: T_inputs
     ): Promise<Awaited<ReturnType<T_fn6>>> {
       return await fn6(
-        await fn5(await fn4(await fn3(await fn2(await fn1(await fn0(...inputs)))))),
+        await fn5(await fn4(await fn3(await fn2(await fn1(await fn0(...inputs,),),),),),),
       );
     };
   }
 
   if (!fn8) {
     if (
-      isSyncFunction(fn0)
-      && isSyncFunction(fn1)
-      && isSyncFunction(fn2)
-      && isSyncFunction(fn3)
-      && isSyncFunction(fn4)
-      && isSyncFunction(fn5)
-      && isSyncFunction(fn6)
-      && isSyncFunction(fn7)
+      isSyncFunction(fn0,)
+      && isSyncFunction(fn1,)
+      && isSyncFunction(fn2,)
+      && isSyncFunction(fn3,)
+      && isSyncFunction(fn4,)
+      && isSyncFunction(fn5,)
+      && isSyncFunction(fn6,)
+      && isSyncFunction(fn7,)
     ) {
       return function fn0to7(...inputs: T_inputs): ReturnType<T_fn7> {
-        return fn7(fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs))))))));
+        return fn7(fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs,),),),),),),),);
       };
     }
     return async function fn0to7(
@@ -1234,7 +1226,9 @@ export function pipeAsync<
     ): Promise<Awaited<ReturnType<T_fn7>>> {
       return await fn7(
         await fn6(
-          await fn5(await fn4(await fn3(await fn2(await fn1(await fn0(...inputs)))))),
+          await fn5(
+            await fn4(await fn3(await fn2(await fn1(await fn0(...inputs,),),),),),
+          ),
         ),
       );
     };
@@ -1242,18 +1236,18 @@ export function pipeAsync<
 
   if (!fn9) {
     if (
-      isSyncFunction(fn0)
-      && isSyncFunction(fn1)
-      && isSyncFunction(fn2)
-      && isSyncFunction(fn3)
-      && isSyncFunction(fn4)
-      && isSyncFunction(fn5)
-      && isSyncFunction(fn6)
-      && isSyncFunction(fn7)
-      && isSyncFunction(fn8)
+      isSyncFunction(fn0,)
+      && isSyncFunction(fn1,)
+      && isSyncFunction(fn2,)
+      && isSyncFunction(fn3,)
+      && isSyncFunction(fn4,)
+      && isSyncFunction(fn5,)
+      && isSyncFunction(fn6,)
+      && isSyncFunction(fn7,)
+      && isSyncFunction(fn8,)
     ) {
       return function fn0to8(...inputs: T_inputs): ReturnType<T_fn8> {
-        return fn8(fn7(fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs)))))))));
+        return fn8(fn7(fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs,),),),),),),),),);
       };
     }
     return async function fn0to8(
@@ -1267,7 +1261,7 @@ export function pipeAsync<
                 await fn3(
                   await fn2(
                     await fn1(
-                      await fn0(...inputs),
+                      await fn0(...inputs,),
                     ),
                   ),
                 ),
@@ -1280,19 +1274,19 @@ export function pipeAsync<
   }
 
   if (
-    isSyncFunction(fn0)
-    && isSyncFunction(fn1)
-    && isSyncFunction(fn2)
-    && isSyncFunction(fn3)
-    && isSyncFunction(fn4)
-    && isSyncFunction(fn5)
-    && isSyncFunction(fn6)
-    && isSyncFunction(fn7)
-    && isSyncFunction(fn8)
-    && isSyncFunction(fn9)
+    isSyncFunction(fn0,)
+    && isSyncFunction(fn1,)
+    && isSyncFunction(fn2,)
+    && isSyncFunction(fn3,)
+    && isSyncFunction(fn4,)
+    && isSyncFunction(fn5,)
+    && isSyncFunction(fn6,)
+    && isSyncFunction(fn7,)
+    && isSyncFunction(fn8,)
+    && isSyncFunction(fn9,)
   ) {
     return function fn0to9(...inputs: T_inputs): ReturnType<T_fn9> {
-      return fn9(fn8(fn7(fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs))))))))));
+      return fn9(fn8(fn7(fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs,),),),),),),),),),);
     };
   }
 
@@ -1307,7 +1301,7 @@ export function pipeAsync<
                 await fn3(
                   await fn2(
                     await fn1(
-                      await fn0(...inputs),
+                      await fn0(...inputs,),
                     ),
                   ),
                 ),
@@ -1353,7 +1347,7 @@ export function pipe<T_inputs extends any[], T_0,>(
  */
 export function pipe<T_inputs extends any[], T_0, T_1,>(
   fn0: (...inputs: T_inputs) => T_0,
-  fn1: (input0: T_0) => T_1,
+  fn1: (input0: T_0,) => T_1,
 ): (...inputs: T_inputs) => T_1;
 /**
  * Creates a function that composes three functions.
@@ -1375,8 +1369,8 @@ export function pipe<T_inputs extends any[], T_0, T_1,>(
  */
 export function pipe<T_inputs extends any[], T_0, T_1, T_2,>(
   fn0: (...inputs: T_inputs) => T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
 ): (...inputs: T_inputs) => T_2;
 /**
  * Creates a function that composes four functions.
@@ -1390,9 +1384,9 @@ export function pipe<T_inputs extends any[], T_0, T_1, T_2,>(
  */
 export function pipe<T_inputs extends any[], T_0, T_1, T_2, T_3,>(
   fn0: (...inputs: T_inputs) => T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
-  fn3: (input2: T_2) => T_3,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
+  fn3: (input2: T_2,) => T_3,
 ): (...inputs: T_inputs) => T_3;
 /**
  * Creates a function that composes five functions.
@@ -1407,10 +1401,10 @@ export function pipe<T_inputs extends any[], T_0, T_1, T_2, T_3,>(
  */
 export function pipe<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4,>(
   fn0: (...inputs: T_inputs) => T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
-  fn3: (input2: T_2) => T_3,
-  fn4: (input3: T_3) => T_4,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
+  fn3: (input2: T_2,) => T_3,
+  fn4: (input3: T_3,) => T_4,
 ): (...inputs: T_inputs) => T_4;
 /**
  * Creates a function that composes six functions.
@@ -1426,11 +1420,11 @@ export function pipe<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4,>(
  */
 export function pipe<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5,>(
   fn0: (...inputs: T_inputs) => T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
-  fn3: (input2: T_2) => T_3,
-  fn4: (input3: T_3) => T_4,
-  fn5: (input4: T_4) => T_5,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
+  fn3: (input2: T_2,) => T_3,
+  fn4: (input3: T_3,) => T_4,
+  fn5: (input4: T_4,) => T_5,
 ): (...inputs: T_inputs) => T_5;
 /**
  * Creates a function that composes seven functions.
@@ -1447,12 +1441,12 @@ export function pipe<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5,>(
  */
 export function pipe<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5, T_6,>(
   fn0: (...inputs: T_inputs) => T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
-  fn3: (input2: T_2) => T_3,
-  fn4: (input3: T_3) => T_4,
-  fn5: (input4: T_4) => T_5,
-  fn6: (input5: T_5) => T_6,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
+  fn3: (input2: T_2,) => T_3,
+  fn4: (input3: T_3,) => T_4,
+  fn5: (input4: T_4,) => T_5,
+  fn6: (input5: T_5,) => T_6,
 ): (...inputs: T_inputs) => T_6;
 /**
  * Creates a function that composes eight functions.
@@ -1470,13 +1464,13 @@ export function pipe<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5, T_6,>
  */
 export function pipe<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,>(
   fn0: (...inputs: T_inputs) => T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
-  fn3: (input2: T_2) => T_3,
-  fn4: (input3: T_3) => T_4,
-  fn5: (input4: T_4) => T_5,
-  fn6: (input5: T_5) => T_6,
-  fn7: (input6: T_6) => T_7,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
+  fn3: (input2: T_2,) => T_3,
+  fn4: (input3: T_3,) => T_4,
+  fn5: (input4: T_4,) => T_5,
+  fn6: (input5: T_5,) => T_6,
+  fn7: (input6: T_6,) => T_7,
 ): (...inputs: T_inputs) => T_7;
 /**
  * Creates a function that composes nine functions.
@@ -1496,14 +1490,14 @@ export function pipe<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5, T_6, 
 export function pipe<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7,
   T_8,>(
   fn0: (...inputs: T_inputs) => T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
-  fn3: (input2: T_2) => T_3,
-  fn4: (input3: T_3) => T_4,
-  fn5: (input4: T_4) => T_5,
-  fn6: (input5: T_5) => T_6,
-  fn7: (input6: T_6) => T_7,
-  fn8: (input7: T_7) => T_8,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
+  fn3: (input2: T_2,) => T_3,
+  fn4: (input3: T_3,) => T_4,
+  fn5: (input4: T_4,) => T_5,
+  fn6: (input5: T_5,) => T_6,
+  fn7: (input6: T_6,) => T_7,
+  fn8: (input7: T_7,) => T_8,
 ): (...inputs: T_inputs) => T_8;
 /**
  * Creates a function that composes ten functions.
@@ -1524,15 +1518,15 @@ export function pipe<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5, T_6, 
 export function pipe<T_inputs extends any[], T_0, T_1, T_2, T_3, T_4, T_5, T_6, T_7, T_8,
   T_9,>(
   fn0: (...inputs: T_inputs) => T_0,
-  fn1: (input0: T_0) => T_1,
-  fn2: (input1: T_1) => T_2,
-  fn3: (input2: T_2) => T_3,
-  fn4: (input3: T_3) => T_4,
-  fn5: (input4: T_4) => T_5,
-  fn6: (input5: T_5) => T_6,
-  fn7: (input6: T_6) => T_7,
-  fn8: (input7: T_7) => T_8,
-  fn9: (input8: T_8) => T_9,
+  fn1: (input0: T_0,) => T_1,
+  fn2: (input1: T_1,) => T_2,
+  fn3: (input2: T_2,) => T_3,
+  fn4: (input3: T_3,) => T_4,
+  fn5: (input4: T_4,) => T_5,
+  fn6: (input5: T_5,) => T_6,
+  fn7: (input6: T_6,) => T_7,
+  fn8: (input7: T_7,) => T_8,
+  fn9: (input8: T_8,) => T_9,
 ): (...inputs: T_inputs) => T_9;
 /**
  * Implementation for `pipe`.
@@ -1552,15 +1546,15 @@ export function pipe<
   T_9,
 >(
   fn0: (...inputs: T_inputs) => T_0,
-  fn1?: (input0: T_0) => T_1,
-  fn2?: (input1: T_1) => T_2,
-  fn3?: (input2: T_2) => T_3,
-  fn4?: (input3: T_3) => T_4,
-  fn5?: (input4: T_4) => T_5,
-  fn6?: (input5: T_5) => T_6,
-  fn7?: (input6: T_6) => T_7,
-  fn8?: (input7: T_7) => T_8,
-  fn9?: (input8: T_8) => T_9,
+  fn1?: (input0: T_0,) => T_1,
+  fn2?: (input1: T_1,) => T_2,
+  fn3?: (input2: T_2,) => T_3,
+  fn4?: (input3: T_3,) => T_4,
+  fn5?: (input4: T_4,) => T_5,
+  fn6?: (input5: T_5,) => T_6,
+  fn7?: (input6: T_6,) => T_7,
+  fn8?: (input7: T_7,) => T_8,
+  fn9?: (input8: T_8,) => T_9,
 ):
   | ((...inputs: T_inputs) => T_0)
   | ((...inputs: T_inputs) => T_1)
@@ -1575,59 +1569,59 @@ export function pipe<
 {
   if (!fn1) {
     return function fn0to0(...inputs: T_inputs): T_0 {
-      return fn0(...inputs);
+      return fn0(...inputs,);
     };
   }
 
   if (!fn2) {
     return function fn0to1(...inputs: T_inputs): T_1 {
-      return fn1(fn0(...inputs));
+      return fn1(fn0(...inputs,),);
     };
   }
 
   if (!fn3) {
     return function fn0to2(...inputs: T_inputs): T_2 {
-      return fn2(fn1(fn0(...inputs)));
+      return fn2(fn1(fn0(...inputs,),),);
     };
   }
 
   if (!fn4) {
     return function fn0to3(...inputs: T_inputs): T_3 {
-      return fn3(fn2(fn1(fn0(...inputs))));
+      return fn3(fn2(fn1(fn0(...inputs,),),),);
     };
   }
 
   if (!fn5) {
     return function fn0to4(...inputs: T_inputs): T_4 {
-      return fn4(fn3(fn2(fn1(fn0(...inputs)))));
+      return fn4(fn3(fn2(fn1(fn0(...inputs,),),),),);
     };
   }
 
   if (!fn6) {
     return function fn0to5(...inputs: T_inputs): T_5 {
-      return fn5(fn4(fn3(fn2(fn1(fn0(...inputs))))));
+      return fn5(fn4(fn3(fn2(fn1(fn0(...inputs,),),),),),);
     };
   }
 
   if (!fn7) {
     return function fn0to6(...inputs: T_inputs): T_6 {
-      return fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs)))))));
+      return fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs,),),),),),),);
     };
   }
 
   if (!fn8) {
     return function fn0to7(...inputs: T_inputs): T_7 {
-      return fn7(fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs))))))));
+      return fn7(fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs,),),),),),),),);
     };
   }
 
   if (!fn9) {
     return function fn0to8(...inputs: T_inputs): T_8 {
-      return fn8(fn7(fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs)))))))));
+      return fn8(fn7(fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs,),),),),),),),),);
     };
   }
 
   return function fn0to9(...inputs: T_inputs): T_9 {
-    return fn9(fn8(fn7(fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs))))))))));
+    return fn9(fn8(fn7(fn6(fn5(fn4(fn3(fn2(fn1(fn0(...inputs,),),),),),),),),),);
   };
 }

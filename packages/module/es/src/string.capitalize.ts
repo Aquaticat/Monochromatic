@@ -84,8 +84,8 @@
  * }
  * ```
  */
-export function capitalizeString(str: string, locale?: string): string {
-  return str.replace(/^\p{CWU}/v, function replacer(char) {
-    return char.toLocaleUpperCase(locale);
-  });
+export function capitalizeString(str: string, locale?: string,): string {
+  return str.replace(/^\p{CWU}/v, function replacer(char,) {
+    return char.toLocaleUpperCase(locale,);
+  },);
 }

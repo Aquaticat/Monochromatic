@@ -1,4 +1,4 @@
-import type { Result } from 'happy-rusty';
+import type { Result, } from 'happy-rusty';
 
 /**
  * Unwraps a Result type, returning the success value or throwing the error.
@@ -34,9 +34,8 @@ export function unwrapResult<Ok, Err,>(
 ): Ok {
   if (result.isErr()) {
     const unwrappedResultError = result.unwrapErr() as Error & { code?: string; };
-    if (unwrappedResultError.message.startsWith('NotFoundError:')) {
+    if (unwrappedResultError.message.startsWith('NotFoundError:',))
       unwrappedResultError.code = 'ENOENT';
-    }
     throw unwrappedResultError;
   }
   return result.unwrap();

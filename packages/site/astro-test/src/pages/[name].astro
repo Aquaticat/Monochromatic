@@ -9,12 +9,12 @@ import {
 export async function getStaticPaths(): Promise<
   { params: { name: string; }; }[]
 > {
-  return names.map((name) => ({
-    params: { name },
+  return names.map(name => ({
+    params: { name, },
   }));
 }
 
-const { name } = Astro.params;
+const { name, } = Astro.params;
 const namePosts = postsGroupedByName[name]!;
 ---
 
@@ -25,9 +25,7 @@ const namePosts = postsGroupedByName[name]!;
     <h1>{name}</h1>
     <ul>
       {
-        namePosts.map((
-            post,
-          ) => (
+        namePosts.map(post => (
           <li>
             <a href={`/${post.id}`}>{post.data.title}</a>
           </li>

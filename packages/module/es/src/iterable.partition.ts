@@ -1,8 +1,8 @@
 /* TODO: Optimize performance for this function.
          We don't need to await for the current iterated element to be ready before moving on to the next iterated element. */
 
-import type { Promisable } from 'type-fest';
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
+import type { Promisable, } from 'type-fest';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
 /**
  * Partitions an iterable into two arrays based on an async predicate function.
@@ -22,21 +22,20 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
  * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export async function partitionArrAsync<T_i,>(
-  predicate: (item: T_i) => Promise<boolean> | boolean,
+  predicate: (item: T_i,) => Promise<boolean> | boolean,
   arrayLike: MaybeAsyncIterable<T_i>,
-): Promise<[T_i[], T_i[]]> {
+): Promise<[T_i[], T_i[],]> {
   const yes: T_i[] = [];
   const no: T_i[] = [];
 
   for await (const item of arrayLike) {
-    if (await predicate(item)) {
-      yes.push(item);
-    } else {
-      no.push(item);
-    }
+    if (await predicate(item,))
+      yes.push(item,);
+    else
+      no.push(item,);
   }
 
-  return [yes, no];
+  return [yes, no,];
 }
 
 /**
@@ -81,32 +80,31 @@ import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
  * ```
  */
 export async function partitionIterableAsync<T_i,>(
-  predicate: (item: T_i) => Promisable<boolean>,
+  predicate: (item: T_i,) => Promisable<boolean>,
   arrayLike: MaybeAsyncIterable<T_i>,
-): Promise<[T_i[], T_i[]]> {
+): Promise<[T_i[], T_i[],]> {
   const yes: T_i[] = [];
   const no: T_i[] = [];
-  const arr = await Array.fromAsync(arrayLike);
+  const arr = await Array.fromAsync(arrayLike,);
 
-  const pairPromises: Promise<[T_i, boolean]>[] = arr.map(
-    function toPairPromise(item: T_i): Promise<[T_i, boolean]> {
+  const pairPromises: Promise<[T_i, boolean,]>[] = arr.map(
+    function toPairPromise(item: T_i,): Promise<[T_i, boolean,]> {
       return (async function pairPromise() {
-        return [item, await predicate(item)];
+        return [item, await predicate(item,),];
       })();
     },
   );
 
-  const pairs = await Promise.all(pairPromises);
+  const pairs = await Promise.all(pairPromises,);
 
-  for (const [item, isYes] of pairs) {
-    if (isYes) {
-      yes.push(item);
-    } else {
-      no.push(item);
-    }
+  for (const [item, isYes,] of pairs) {
+    if (isYes)
+      yes.push(item,);
+    else
+      no.push(item,);
   }
 
-  return [yes, no];
+  return [yes, no,];
 }
 
 /**
@@ -143,19 +141,18 @@ export async function partitionIterableAsync<T_i,>(
  * ```
  */
 export function partitionIterable<T_i,>(
-  predicate: (item: T_i) => boolean,
+  predicate: (item: T_i,) => boolean,
   arrayLike: Iterable<T_i>,
-): [T_i[], T_i[]] {
+): [T_i[], T_i[],] {
   const yes: T_i[] = [];
   const no: T_i[] = [];
 
   for (const item of arrayLike) {
-    if (predicate(item)) {
-      yes.push(item);
-    } else {
-      no.push(item);
-    }
+    if (predicate(item,))
+      yes.push(item,);
+    else
+      no.push(item,);
   }
 
-  return [yes, no];
+  return [yes, no,];
 }
