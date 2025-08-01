@@ -70,40 +70,40 @@ a {
   list-style-type: none;
 
   padding-inline: unset;
-}
 
-.feed {
-  padding-block: 1rem;
+  .feed {
+    padding-block: 1rem;
 
-  border-radius: 1rem;
+    border-radius: 1rem;
 
-  content-visibility: auto;
+    content-visibility: auto;
 
-  display: flex;
-
-  flex-direction: column;
-
-  row-gap: 1rem;
-
-  .feed__source {
     display: flex;
 
-    justify-content: space-between;
+    flex-direction: column;
 
-    flex-wrap: wrap;
+    row-gap: 1rem;
 
-    row-gap: 0.5rem;
+    .feed__source {
+      display: flex;
 
-    column-gap: 1rem;
-  }
+      justify-content: space-between;
 
-  .feed__description {
-    block-size: 16rem;
+      flex-wrap: wrap;
 
-    border-color: var(--bg-weaker);
+      row-gap: 0.5rem;
 
-    border-style: solid;
+      column-gap: 1rem;
+    }
 
-    border-width: 0.25rem;
+    .feed__description {
+      block-size: 16rem;
+
+      border-color: var(--bg-weaker);
+
+      border-style: solid;
+
+      border-width: 0.25rem;
+    }
   }
 }

@@ -5,6 +5,7 @@ tasks:
     command: 'vite build --config vite.config.ts --mode production'
     inputs:
     - '@group(indexHtml)'
+    - '@group(sources)'
     outputs:
     - '@group(distJs)'
     options:

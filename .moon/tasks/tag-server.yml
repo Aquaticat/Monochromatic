@@ -18,6 +18,7 @@ tasks:
   jsWatch:
     deps:
     - js_nodeWatch
+    - js_htmlWatch
     command: 'bun run --watch dist/final/js/index.node.js'
     extends: _server
   start:
@@ -26,3 +27,15 @@ tasks:
     command: 'bun run dist/final/js/index.node.js'
     extends: _server
     # Note: preset:server disables cache, so inputs/outputs aren't needed
+  js_html:
+    command: 'vite build --config vite.html.config.ts --mode production'
+    inputs:
+    - '@group(indexHtml)'
+    - '@group(sources)'
+    outputs:
+    - '@group(distJs)'
+    options:
+      internal: false
+  js_htmlWatch:
+    command: 'vite build --config vite.html.config.ts --mode production --watch'
+    extends: _server

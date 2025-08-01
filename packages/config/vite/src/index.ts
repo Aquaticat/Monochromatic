@@ -38,7 +38,6 @@ import {
   resolve,
 } from 'node:path';
 import {
-  defineConfig,
   mergeConfig,
   type PluginOption,
   type UserConfig,
@@ -47,8 +46,8 @@ import {
 import { json5Plugin, } from 'vite-plugin-json5';
 import { viteSingleFile, } from 'vite-plugin-singlefile';
 import {
-  defineConfig as defineVitestConfig,
   type ViteUserConfig as VitestUserConfig,
+  type ViteUserConfigFnObject as VitestUserConfigFnObject,
 } from 'vitest/config';
 import vitestExcludeCommonConfig from './vitest-exclude-common.json' with {
   type: 'json',
@@ -215,7 +214,16 @@ const mixinsVisitor: Visitor<CustomAtRules> = {
 
 //region Helper Functions -- Utilities used throughout configurations
 
-const rollupExternal = (moduleId: string,): boolean => {
+export function viteNoopPlugin(message: string = 'noop',): PluginOption {
+  return {
+    name: 'noop',
+    configResolved(config,) {
+      config.logger.info(message,);
+    },
+  };
+}
+
+export const rollupExternal = (moduleId: string,): boolean => {
   if (
     [
       'node:',
@@ -255,6 +263,10 @@ const rollupExternal = (moduleId: string,): boolean => {
     'url',
     'crypto',
     //endregion Node
+
+    //region Server
+    'happy-dom',
+    //endregion Server
   ]
     .includes(moduleId,);
 };
@@ -331,6 +343,14 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
 
     rollupOptions: {
       external: rollupExternal,
+      output: {
+        assetFileNames: '[name]-[hash].[ext]',
+        minify: {
+          compress: true,
+          mangle: false,
+          removeWhitespace: false,
+        },
+      },
     },
 
     // A little bit faster builds.
@@ -384,11 +404,20 @@ const createBaseLibConfig = (configDir: string,): UserConfig =>
 
 //region Configuration Modifiers -- Functions that enhance base configs
 
-const withNoMinify = (config: UserConfig,): UserConfig =>
-  mergeConfig(config, { build: { minify: false, }, },);
+function withNoMinify(config: UserConfig,): UserConfig;
+function withNoMinify(config: VitestUserConfig,): VitestUserConfig;
+function withNoMinify(
+  config: UserConfig | VitestUserConfig,
+): UserConfig | VitestUserConfig {
+  return mergeConfig(config, { build: { minify: false, }, },);
+}
 
-const withNodeResolveConditions = (config: UserConfig,): UserConfig =>
-  mergeConfig(config, {
+function withNodeResolveConditions(config: UserConfig,): UserConfig;
+function withNodeResolveConditions(config: VitestUserConfig,): VitestUserConfig;
+function withNodeResolveConditions(
+  config: UserConfig | VitestUserConfig,
+): UserConfig | VitestUserConfig {
+  return mergeConfig(config, {
     resolve: {
       conditions: ['node', 'module', 'import', 'default',],
     },
@@ -398,12 +427,16 @@ const withNodeResolveConditions = (config: UserConfig,): UserConfig =>
       },
     },
   },);
+}
 
-const createModeConfig = (
-  configDir: string,
-  sharedFactory: (configDir: string,) => UserConfig,
-): UserConfigFnObject =>
-  defineConfig(function enhanceBaseConfig({ mode, },) {
+function createModeConfig(configDir: string,
+  sharedFactory: (configDir: string,) => UserConfig,): UserConfigFnObject;
+function createModeConfig(configDir: string,
+  sharedFactory: (configDir: string,) => VitestUserConfig,): VitestUserConfigFnObject;
+function createModeConfig(configDir: string,
+  sharedFactory: (configDir: string,) => UserConfig | VitestUserConfig,
+): UserConfigFnObject | VitestUserConfigFnObject {
+  return function enhanceBaseConfig({ mode, },) {
     // Parse modes from space or comma-separated string
     const modes = mode.includes(' ',)
       ? mode.split(' ',)
@@ -413,7 +446,10 @@ const createModeConfig = (
 
     // Apply mode-specific transformations using reduce for immutability
     const config = modes.reduce(
-      (currentConfig, currentMode,) => {
+      (currentConfig: UserConfig | VitestUserConfig, currentMode,):
+        | UserConfig
+        | VitestUserConfig =>
+      {
         switch (currentMode) {
           case 'development':
             return withNoMinify(currentConfig,);
@@ -427,7 +463,8 @@ const createModeConfig = (
     );
 
     return config;
-  },);
+  };
+}
 
 //endregion Configuration Modifiers
 
@@ -459,8 +496,8 @@ const createFigmaBackendConfig = (configDir: string,): UserConfig =>
     },
   },);
 
-const createPrefixedFrontendLikeConfig = (configDir: string,
-  subDir: string,): UserConfig =>
+const createPrefixedFrontendLikeConfig = (configDir: string, subDir: string,
+  { singleFile, }: { singleFile: boolean; } = { singleFile: true, },): UserConfig =>
   mergeConfig(createBaseConfig(configDir,), {
     define: {
       // So postcss modules can be bundled and correctly working in browsers.
@@ -471,7 +508,7 @@ const createPrefixedFrontendLikeConfig = (configDir: string,
       exclude: ['browserslist',],
     },
     plugins: [
-      viteSingleFile({},),
+      singleFile ? viteSingleFile({ deleteInlinedFiles: false, },) : viteNoopPlugin(),
     ],
 
     // Be aware of how Vite resolves paths.
@@ -486,7 +523,8 @@ const createPrefixedFrontendLikeConfig = (configDir: string,
     },
   },);
 
-const createUnprefixedFrontendLikeConfig = (configDir: string,): UserConfig =>
+const createUnprefixedFrontendLikeConfig = (configDir: string,
+  { singleFile, }: { singleFile: boolean; } = { singleFile: true, },): UserConfig =>
   mergeConfig(createBaseConfig(configDir,), {
     define: {
       // So postcss modules can be bundled and correctly working in browsers.
@@ -497,7 +535,7 @@ const createUnprefixedFrontendLikeConfig = (configDir: string,): UserConfig =>
       exclude: ['browserslist',],
     },
     plugins: [
-      viteSingleFile({},),
+      singleFile ? viteSingleFile({ deleteInlinedFiles: false, },) : viteNoopPlugin(),
     ],
 
     root: resolve(configDir,),
@@ -526,8 +564,15 @@ export const getLib = (configDir: string,): UserConfigFnObject =>
 export const getFigmaBackend = (configDir: string,): UserConfigFnObject =>
   createModeConfig(configDir, createFigmaBackendConfig,);
 
-export const getFrontend = (configDir: string,): UserConfigFnObject =>
-  createModeConfig(configDir, createUnprefixedFrontendLikeConfig,);
+export const getFrontend = (
+  configDir: string,
+  options: { singleFile: boolean; } = {
+    singleFile: true,
+  },
+): UserConfigFnObject =>
+  createModeConfig(configDir, function withOptions(configDir: string,) {
+    return createUnprefixedFrontendLikeConfig(configDir, options,);
+  },);
 
 export const getFigmaFrontend = (configDir: string,): UserConfigFnObject =>
   createModeConfig(configDir, function createFigmaFrontendConfig(configDir,) {
@@ -568,7 +613,7 @@ export const getFigmaIframe = (configDir: string,): UserConfigFnObject =>
 
 //region Vitest Configurations -- Test runner configurations
 
-export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
+export const vitestOnlyConfigWorkspace: VitestUserConfig = {
   test: {
     name: 'workspace',
     api: {
@@ -649,7 +694,7 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = defineVitestConfig({
       ],
     },
   },
-},);
+};
 
 export const vitestOnlyUnitConfigWorkspace: VitestUserConfig = {
   test: {
@@ -710,11 +755,13 @@ export const createVitestBaseBrowserConfigWorkspace = (
     vitestOnlyBrowserConfigWorkspace,
   );
 
-export const getVitestUnitWorkspace = (configDir: string,): UserConfigFnObject =>
+export const getVitestUnitWorkspace = (configDir: string,): VitestUserConfigFnObject =>
   createModeConfig(configDir, createVitestBaseUnitConfigWorkspace,);
-export const getVitestBrowserWorkspace = (configDir: string,): UserConfigFnObject =>
+export const getVitestBrowserWorkspace = (configDir: string,): VitestUserConfigFnObject =>
   createModeConfig(configDir, createVitestBaseBrowserConfigWorkspace,);
 
 //endregion Vitest Configurations
 
-export type { UserConfigFnObject, } from 'vite';
+export { type ViteUserConfigFnObject as VitestUserConfigFnObject, } from 'vitest/config';
+
+export { type UserConfigFnObject, } from 'vite';

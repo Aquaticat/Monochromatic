@@ -14,8 +14,10 @@
     "@anthropic-ai/sdk": "catalog:",
     "feedsmith": "catalog:",
     "find-up": "catalog:",
-    "vue": "catalog:",
-    "@elysiajs/static": "catalog:"
+    "preact": "catalog:",
+    "preact-render-to-string": "catalog:",
+    "@elysiajs/static": "catalog:",
+    "happy-dom": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",

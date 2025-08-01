@@ -1,4 +1,3 @@
-import { staticPlugin, } from '@elysiajs/static';
 import { swagger, } from '@elysiajs/swagger';
 import {
   logtapeConfiguration,
@@ -16,6 +15,7 @@ import {
   parseRssFeed,
 } from 'feedsmith';
 import { findUp, } from 'find-up';
+import { Window, } from 'happy-dom';
 import { readFile, } from 'node:fs/promises';
 import {
   dirname,
@@ -23,12 +23,12 @@ import {
   resolve,
 } from 'node:path';
 import { fileURLToPath, } from 'node:url';
-import {
-  createSSRApp,
-  h,
-} from 'vue';
-import { renderToString, } from 'vue/server-renderer';
+import { h, } from 'preact';
+import { render, } from 'preact-render-to-string';
 import { z, } from 'zod/v4-mini';
+
+const window = new Window();
+const document = window.document;
 
 await logtapeConfigure(await logtapeConfiguration(),);
 
@@ -41,9 +41,35 @@ const OPMLS = z.array(z.string(),).parse(process.env.OPMLS?.split(',',) ?? [],);
 
 const DOT_ENV_PATH = await findUp('.env',);
 
-const PUBLIC_PATH = notNullishOrThrow(await findUp('public', { type: 'directory', },),);
+// FIXME: Live update CSS and JS by using file watcher.
+const INDEX_HTML_PATH = notNullishOrThrow(
+  await findUp('index.html', { cwd: import.meta.dirname, },),
+);
 
-const CSS = await readFile(join(PUBLIC_PATH, 'index.css',), 'utf8',);
+const INDEX_HTML_STRING = await readFile(INDEX_HTML_PATH, 'utf8',);
+
+const STATIC_PATH = dirname(INDEX_HTML_PATH,);
+
+document.write(INDEX_HTML_STRING,);
+document.close();
+
+const CSS_SUBPATH = notNullishOrThrow(document.querySelector('link',),).href;
+const JS_SUBPATH = notNullishOrThrow(document.querySelector('script',),).src;
+
+window
+  .happyDOM
+  .abort()
+  .then(function logSuccess() {
+    l.debug`success releasing happy dom`;
+  },)
+  // eslint-disable-next-line unicorn/prefer-top-level-await -- We don't really care.
+  .catch(function logError() {
+    l
+      .debug`failed to release happy dom. This error has no effects other than taking up a bit more memory.`;
+  },);
+
+const CSS = await readFile(join(STATIC_PATH, CSS_SUBPATH,), 'utf8',);
+const JS = await readFile(join(STATIC_PATH, JS_SUBPATH,), 'utf8',);
 
 const opmlContents = await mapIterableAsync(
   async function getText(url: string,): Promise<string> {
@@ -135,12 +161,10 @@ const sortedRssItems = rssItemsWLocaleDate.toSorted(function byDate(a, b,) {
 
 l.info`${sortedRssItems}`;
 
-function rssItemToFeed({ item, rss, }: typeof sortedRssItems[number],
-  index: number,): ReturnType<typeof h>
-{
+function rssItemToFeed({ item, rss, }: typeof sortedRssItems[number], index: number,) {
   return h(
     'li',
-    { key: index, class: 'feed', },
+    { value: index, class: 'feed', },
     [
       h(
         'h2',
@@ -183,9 +207,9 @@ function rssItemToFeed({ item, rss, }: typeof sortedRssItems[number],
           'iframe',
           {
             class: 'feed__description',
-            src: `data:text/html;charset=utf-8,$$${
+            src: `data:text/html;charset=utf-8,${
               encodeURIComponent(
-                `<style>$${CSS}</style>$${item.description}`,
+                `<style>${CSS}</style>${item.description}`,
               )
             }`,
             sandbox: '',
@@ -198,47 +222,38 @@ function rssItemToFeed({ item, rss, }: typeof sortedRssItems[number],
 
 const app = new Elysia()
   .use(swagger(),)
-  .use(staticPlugin(),)
-  .get('/', async function display() {
-    // Create Vue SSR app
-    const vueApp = createSSRApp({
-      render() {
-        return h('html', { lang: 'en', }, [
-          h('head', [
-            h('meta', { charset: 'UTF-8', },),
-            h('meta', {
-              name: 'viewport',
-              content: 'width=device-width, initial-scale=1.0',
-            },),
-            h('title', 'RSS',),
-            h('link', {
-              rel: 'stylesheet',
-              href: '/public/index.css',
-              type: 'text/css',
-            },),
-          ],),
-          h('body', [
-            h(
-              'h1',
-              'RSS',
-            ),
-            h(
-              'ul',
-              { class: 'feeds', },
-              sortedRssItems.map(unary(rssItemToFeed,),),
-            ),
-          ],),
-        ],);
-      },
-    },);
-
-    // Render to HTML string
-    const html = await renderToString(vueApp,);
-
-    return new Response(`<!DOCTYPE html>${html}`, {
+  .get('/', new Response(
+    `
+    <!DOCTYPE html><html lang=en>
+    <head>
+    <meta charset=UTF-8>
+    <meta name=viewport content='width=device-width,initial-scale=1.0'>
+    <style>${CSS}</style>
+    <script type=module>${JS.replaceAll(/<\/script>/gvi, '<\\/script>',)}</script>
+    </head>
+    <body>
+    ${
+      render(
+        h('div', { id: 'app', }, [
+          h(
+            'h1',
+            {},
+            'RSS',
+          ),
+          h(
+            'ul',
+            { class: 'feeds', },
+            sortedRssItems.map(unary(rssItemToFeed,),),
+          ),
+        ],),
+      )
+    }
+    </body>
+    </html>`,
+    {
       headers: { 'Content-Type': 'text/html; charset=utf-8', },
-    },);
-  },)
+    },
+  ),)
   .listen(PORT,);
 
 l.info`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`;
