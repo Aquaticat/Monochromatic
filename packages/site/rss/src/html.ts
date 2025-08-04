@@ -1,24 +1,17 @@
 import {
   binary,
   createObservableAsync,
-  logtapeConfiguration,
-  logtapeConfigure,
-  logtapeGetLogger,
-  thunk,
 } from '@monochromatic-dev/module-es';
 import { h, } from 'preact';
 import { render, } from 'preact-render-to-string';
 import type { ItemWDate, } from './item.ts';
-import { sortedItemsObservable, } from './item.ts';
 
 import {
   css,
   js,
 } from './asset.ts';
 
-await logtapeConfigure(await logtapeConfiguration(),);
-
-const l = logtapeGetLogger(['a', 'html',],);
+import { lHtml as l, } from './log.ts';
 
 const LIMIT = 100;
 
@@ -108,8 +101,8 @@ const indexHtml = `
   render(
     h(
       'ol',
-      { start: 0, class: 'feedList', },
-      sortedItemsObservable.value.slice(0, LIMIT,).map(binary(itemToFeed,),),
+      { start: 0, class: 'feeds', },
+      ([] as ItemWDate[]).slice(0, LIMIT,).map(binary(itemToFeed,),),
     ),
   )
 }

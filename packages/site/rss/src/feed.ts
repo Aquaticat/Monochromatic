@@ -1,15 +1,6 @@
 import {
-  binary,
   createObservableAsync,
-  deConcurrency,
-  filterIterableAsync,
-  logtapeConfiguration,
-  logtapeConfigure,
-  logtapeGetLogger,
   mapIterableAsync,
-  notNullishOrThrow,
-  throws,
-  unary,
 } from '@monochromatic-dev/module-es';
 import {
   parseAtomFeed,
@@ -18,11 +9,8 @@ import {
 import type { Outline, } from 'node_modules/feedsmith/dist/opml/parse/types';
 import { z, } from 'zod/v4-mini';
 import { onSortedFeedsChange, } from './item.ts';
+import { lFeed as l, } from './log.ts';
 import type { InnerOutlineWUrl, } from './outline.ts';
-
-await logtapeConfigure(await logtapeConfiguration(),);
-
-const l = logtapeGetLogger(['a', 'm',],);
 
 /**
  * Type definition for feed data combined with its corresponding outline.

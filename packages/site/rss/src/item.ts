@@ -1,9 +1,4 @@
-import {
-  createObservableAsync,
-  logtapeConfiguration,
-  logtapeConfigure,
-  logtapeGetLogger,
-} from '@monochromatic-dev/module-es';
+import { createObservableAsync, } from '@monochromatic-dev/module-es';
 import {
   parseAtomFeed,
   parseRssFeed,
@@ -16,10 +11,7 @@ import type { Outline, } from 'node_modules/feedsmith/dist/opml/parse/types';
 import { z, } from 'zod/v4-mini';
 import type { FeedWOutline, } from './feed.ts';
 import { onItemsChange, } from './html.ts';
-
-await logtapeConfigure(await logtapeConfiguration(),);
-
-const l = logtapeGetLogger(['a', 'item',],);
+import { lItem as l, } from './log.ts';
 
 /**
  * Type definition for individual feed items.

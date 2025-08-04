@@ -258,4 +258,5 @@ export const logtapeId = ['a', 'index',] as const;
 export {
   configure as logtapeConfigure,
   getLogger as logtapeGetLogger,
+  type Logger as LogtapeLogger,
 } from '@logtape/logtape';

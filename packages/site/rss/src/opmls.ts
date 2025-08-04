@@ -1,17 +1,11 @@
 import {
   createObservableAsync,
-  logtapeConfiguration,
-  logtapeConfigure,
-  logtapeGetLogger,
 } from '@monochromatic-dev/module-es';
 import { findUp, } from 'find-up';
 import Watcher from 'watcher';
 import { z, } from 'zod/v4-mini';
+import { lOpmls as l, } from './log.ts';
 import { onOpmlsChange, } from './outline.ts';
-
-await logtapeConfigure(await logtapeConfiguration(),);
-
-const l = logtapeGetLogger(['a', 'opmls',],);
 
 /**
  * Path to the .env file if found in the project directory hierarchy.

@@ -1,21 +1,15 @@
 import {
-  logtapeConfiguration,
-  logtapeConfigure,
-  logtapeGetLogger,
   notNullishOrThrow,
 } from '@monochromatic-dev/module-es';
 import { Window, } from 'happy-dom';
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import Watcher from 'watcher';
+import { lAsset as l, } from './log.ts';
 import {
   INDEX_HTML_PATH,
   STATIC_PATH,
 } from './path.ts';
-
-await logtapeConfigure(await logtapeConfiguration(),);
-
-const l = logtapeGetLogger(['a', 'asset',],);
 
 /**
  * Extract CSS and JavaScript asset paths from the index.html content.

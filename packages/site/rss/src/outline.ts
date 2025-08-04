@@ -1,8 +1,5 @@
 import {
   createObservable,
-  logtapeConfiguration,
-  logtapeConfigure,
-  logtapeGetLogger,
   mapIterableAsync,
   notNullishOrThrow,
 } from '@monochromatic-dev/module-es';
@@ -10,23 +7,20 @@ import {
   type Opml,
   parseOpml,
 } from 'feedsmith';
-import { readFile, } from 'fs/promises';
+import { readFile, } from 'node:fs/promises';
 import type { Outline, } from 'node_modules/feedsmith/dist/opml/parse/types';
 import {
   dirname,
   resolve,
 } from 'path';
-import { fileURLToPath, } from 'url';
+import { fileURLToPath, } from 'node:url';
 import { z, } from 'zod/v4-mini';
 import { onInnerOutlinesWUrlChange, } from './feed.ts';
 import {
   DOT_ENV_PATH,
   OPMLS_SCHEMA,
 } from './opmls.ts';
-
-await logtapeConfigure(await logtapeConfiguration(),);
-
-const l = logtapeGetLogger(['a', 'outlines',],);
+import { lOutline as l, } from './log.ts';
 
 /**
  * Fetches the text content of all configured OPML files.

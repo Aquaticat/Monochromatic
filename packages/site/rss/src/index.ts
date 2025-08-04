@@ -1,21 +1,13 @@
 import { swagger, } from '@elysiajs/swagger';
-import {
-  logtapeConfiguration,
-  logtapeConfigure,
-  logtapeGetLogger,
-} from '@monochromatic-dev/module-es';
 import { Elysia, } from 'elysia';
 import {
   indexHtmlObservable,
   lastUpdatedObservable,
   MIN_INTERVAL,
 } from './html.ts';
+import { l, } from './log.ts';
 import { opmlsObservable, } from './opmls.ts';
 import { PORT, } from './port.ts';
-
-await logtapeConfigure(await logtapeConfiguration(),);
-
-const l = logtapeGetLogger(['a', 'i',],);
 
 l.debug`logger working`;
 
