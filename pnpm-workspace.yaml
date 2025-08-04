@@ -11,7 +11,7 @@ catalog:
   oxlint: '>=1.1.0'
   stylelint: '*'
   stylelint-config-standard: '*'
-  typescript: 'npm:typescript@rc'
+  typescript: '>=5.9.1'
   '@ungap/structured-clone': '*'
   find-up: '*'
   glob: '*'
@@ -215,6 +215,8 @@ catalog:
   'preact': '*'
   'preact-render-to-string': '*'
   'happy-dom': "*"
+  'chokidar': '*'
+  'watcher': '*'
 
 catalogMode: strict
 

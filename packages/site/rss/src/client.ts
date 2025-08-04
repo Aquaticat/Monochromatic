@@ -1,4 +1,4 @@
-function addScrollEvents(element, options = {},) {
+function addScrollEvents(element: HTMLElement, options = {},): IntersectionObserver {
   const config = {
     threshold: [0, 0.25, 0.5, 0.75, 1,],
     rootMargin: '0px',
@@ -10,6 +10,12 @@ function addScrollEvents(element, options = {},) {
 
   const observer = new IntersectionObserver(entries => {
     const entry = entries[0];
+    if (!entry) {
+      console.log(
+        `${JSON.stringify(entries,)} empty for observer ${JSON.stringify(observer,)}`,
+      );
+      return;
+    }
     const ratio = entry.intersectionRatio;
 
     // Scrolled in (became fully visible)
@@ -40,16 +46,20 @@ function addScrollEvents(element, options = {},) {
   }, config,);
 
   observer.observe(element,);
-  element._scrollObserver = observer;
   return observer;
 }
 
 // Usage
-const element = document.querySelector('.feed',);
-addScrollEvents(element,);
-
-element.addEventListener('scrolledOut', () => console.log('scrolledOut',),);
-element.addEventListener('scrolledIn', () => console.log('scrolledIn',),);
-element.addEventListener('enterViewport', () => console.log('enterViewport',),);
-element.addEventListener('leaveViewport', () => console.log('leaveViewport',),);
-element.addEventListener('halfVisible', () => console.log('halfVisible',),);
+const elements: NodeListOf<HTMLElement> = document.querySelectorAll('.feed',);
+elements.forEach(function scroll(element,) {
+  addScrollEvents(element,);
+  element.addEventListener('scrolledOut', async function onScrolledOut() {
+    console.log('scrolledOut',);
+    const response = await fetch(`/api/read`, {
+      method: 'POST',
+      body: element.outerHTML,
+    },);
+    if (!response.ok)
+      console.log(`${JSON.stringify(response,)} on scrolledOut`,);
+  },);
+},);

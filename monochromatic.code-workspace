@@ -119,7 +119,8 @@
 		"harper.linters.Dashes": false,
     "typescript.tsdk": "node_modules/typescript/lib",
     "editor.formatOnSave": true,
-    "json.format.keepLines": true,
+		"json.format.keepLines": true,
+		"harper.linters.LongSentences": false,
 	},
 
   "extensions": {

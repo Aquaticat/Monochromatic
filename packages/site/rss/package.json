@@ -17,7 +17,8 @@
     "preact": "catalog:",
     "preact-render-to-string": "catalog:",
     "@elysiajs/static": "catalog:",
-    "happy-dom": "catalog:"
+    "happy-dom": "catalog:",
+    "watcher": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",

@@ -100,6 +100,7 @@ export const createBaseConfig = (
       console: consoleSink,
       consoleInfoPlus: withFilter(consoleSink, getLevelFilter('info',),),
       consoleWarnPlus: withFilter(consoleSink, getLevelFilter('warning',),),
+      consoleDebugPlus: withFilter(consoleSink, getLevelFilter('debug',),),
       file: fileSink,
     },
 
@@ -108,7 +109,7 @@ export const createBaseConfig = (
     loggers: [
       /* a is short for app, m is short for module, t is short for test
        Sorry, but terminal space is precious. */
-      { category: ['a',], lowestLevel: 'debug', sinks: ['file', 'consoleInfoPlus',], },
+      { category: ['a',], lowestLevel: 'debug', sinks: ['file', 'consoleDebugPlus',], },
       { category: ['t',], lowestLevel: 'debug', sinks: ['file', 'consoleInfoPlus',], },
       { category: ['m',], lowestLevel: 'debug', sinks: ['file', 'consoleWarnPlus',], },
       {

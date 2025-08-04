@@ -44,6 +44,7 @@ export * from './function.partial.ts';
 // compose isn't provided. Always use pipe.
 export * from './function.pipe.ts';
 
+export * from './function.deConcurrency.ts';
 export * from './function.thunk.ts';
 export * from './function.tryCatch.ts';
 
