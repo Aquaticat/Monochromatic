@@ -143,7 +143,9 @@ function getSortedFeeds(feeds: FeedWOutline[],): FeedWOutline[] {
 
 const sortedFeeds: FeedWOutline[] = [];
 
-const sortedFeedsObservable = await createObservableAsync(sortedFeeds,
+export const sortedFeedsObservable: {
+  value: FeedWOutline[];
+} = await createObservableAsync(sortedFeeds,
   onSortedFeedsChange,);
 
 export async function onInnerOutlinesWUrlChange(

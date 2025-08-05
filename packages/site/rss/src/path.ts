@@ -1,6 +1,6 @@
 import { notNullishOrThrow, } from '@monochromatic-dev/module-es';
 import { findUp, } from 'find-up';
-import { dirname, } from 'node:path';
+import { dirname, join} from 'node:path';
 
 /**
  * Absolute path to the index.html file used for the RSS reader interface.
@@ -20,3 +20,5 @@ export const INDEX_HTML_PATH: string = notNullishOrThrow(
  * @see {@link dirname} for the path manipulation function
  */
 export const STATIC_PATH: string = dirname(INDEX_HTML_PATH,);
+
+export const IGNORE_PATH: string = join(STATIC_PATH, '..', 'ignore');

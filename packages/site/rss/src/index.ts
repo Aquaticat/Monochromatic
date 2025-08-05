@@ -5,6 +5,15 @@ import {
   type SSEPayload,
 } from 'elysia';
 import {
+  appendFile,
+  exists,
+  mkdir,
+  readFile,
+  stat,
+  writeFile,
+} from 'node:fs/promises';
+import { join, } from 'node:path';
+import {
   hash,
   indexHtmlStart,
   indexHtmlWatcher,
@@ -17,7 +26,9 @@ import {
 } from './html.ts';
 import { l, } from './log.ts';
 import { opmlsObservable, } from './opmls.ts';
+import { IGNORE_PATH, } from './path.ts';
 import { PORT, } from './port.ts';
+import './ignore.ts';
 
 l.debug`logger working`;
 
@@ -76,12 +87,22 @@ function getLastUpdated(): Response {
   },);
 }
 
-async function read(request: Request,): Promise<Response> {
-  l.debug`read ${JSON.stringify(await request.text(),)}`;
-  return new Response('not implemented', {
+async function read({ body, }: { body: string; },): Promise<Response> {
+  l.debug`read ${body}`;
+
+  if (!await exists(join(IGNORE_PATH, 'api.jsonl',),)) {
+    l.debug`creating api.jsonl`;
+    await mkdir(IGNORE_PATH, { recursive: true, },);
+    await writeFile(join(IGNORE_PATH, 'api.jsonl',), '', 'utf8',);
+  }
+  await appendFile(join(IGNORE_PATH, 'api.jsonl',), `\n${body}`,);
+
+  const stats = await stat(join(IGNORE_PATH, 'api.jsonl',),);
+
+  return new Response(JSON.stringify(stats,), {
     status: 200,
     headers: {
-      'content-type': 'text/plain',
+      'content-type': 'application/json',
     },
   },);
 }
@@ -98,9 +119,9 @@ const _app = new Elysia()
     path: '/swagger',
   },),)
   .get('/', serveIndex,)
-  .get('/api/updateFeed/new', updateFeed,)
+  .post('/api/updateFeed/new', updateFeed,)
   .get('/api/updateFeed/lastUpdated', getLastUpdated,)
-  .get('/api/read', read,)
+  .post('/api/read/new', read,)
   .get('/api/asset/hash', function getHash() {
     return new Response(hash, {
       status: 200,

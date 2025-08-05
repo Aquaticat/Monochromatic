@@ -66,6 +66,10 @@ a {
   color: inherit;
 }
 
+[data-display='contents'] {
+  display: contents;
+}
+
 .feeds {
   list-style-type: none;
 

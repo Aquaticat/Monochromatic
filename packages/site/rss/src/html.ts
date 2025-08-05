@@ -1,14 +1,20 @@
 import {
   binary,
   createObservableAsync,
+  mapIterableAsync,
 } from '@monochromatic-dev/module-es';
+import { readFile, } from 'node:fs/promises';
+import { readdir, } from 'node:fs/promises';
 import { h, } from 'preact';
 import { render, } from 'preact-render-to-string';
 import type { ItemWDate, } from './item.ts';
 
 import { css, } from './asset.ts';
 
+import type { Dirent, } from 'node:fs';
+import { join, } from 'node:path';
 import { lHtml as l, } from './log.ts';
+import { IGNORE_PATH, } from './path.ts';
 
 const LIMIT = 100;
 
@@ -36,39 +42,45 @@ function itemToFeed({ item, pubDateDate, feed, }: ItemWDate, index: number,) {
     { value: index, class: 'feed', },
     [
       h(
-        'h2',
-        { class: 'feed__title', },
+        'div',
+        { class: 'feed__metadata', 'data-display': 'contents', },
         [
           h(
-            'a',
-            { class: 'feed__link', href: item.link || '#', },
-            item
-              .title || 'Untitled',
+            'h2',
+            { class: 'feed__title', },
+            [
+              h(
+                'a',
+                { class: 'feed__link', href: item.link || '#', },
+                item
+                  .title || 'Untitled',
+              ),
+            ],
           ),
-        ],
-      ),
 
-      h(
-        'time',
-        { class: 'feed__date', datetime: pubDateDate.toISOString(), },
-        pubDateDate.toLocaleString(),
-      ),
-      h(
-        'p',
-        { class: 'feed__source', },
-        [
           h(
-            'span',
-            { class: 'feed__itemTitle', },
-            feed.title || 'Unknown',
+            'time',
+            { class: 'feed__date', datetime: pubDateDate.toISOString(), },
+            pubDateDate.toLocaleString(),
           ),
-          feed.description
-            ? h(
-              'span',
-              { class: 'feed__itemDescription', },
-              feed.description,
-            )
-            : null,
+          h(
+            'p',
+            { class: 'feed__source', },
+            [
+              h(
+                'span',
+                { class: 'feed__itemTitle', },
+                feed.title || 'Unknown',
+              ),
+              feed.description
+                ? h(
+                  'span',
+                  { class: 'feed__itemDescription', },
+                  feed.description,
+                )
+                : null,
+            ],
+          ),
         ],
       ),
       item.description
@@ -101,7 +113,7 @@ export const lastUpdatedObservable: {
   function onLastUpdatedUpdate(lastUpdated, old,) {
     l.debug`onLastUpdatedUpdate ${lastUpdated} ${old}`;
     if (lastUpdated.getTime() - old.getTime() < MIN_INTERVAL)
-      l.debug`onLastUpdatedUpdate successfully triggered, but too soon.`;
+      l.warn`onLastUpdatedUpdate successfully triggered, but too soon.`;
   },);
 
 export const indexHtmlBodyObservable: {
@@ -112,24 +124,76 @@ export const indexHtmlBodyObservable: {
     lastUpdatedObservable.value = new Date();
   },);
 
-export function onItemsChange(items: ItemWDate[],): void {
+export async function onItemsChange(items: ItemWDate[],): Promise<void> {
   l.debug`onItemsChange`;
 
-  indexHtmlBodyObservable.value = getNewIndexHtmlBody(items,);
+  indexHtmlBodyObservable.value = await getNewIndexHtmlBody(items,);
 
   l.debug`onItemsChange `;
 }
 
-function getNewIndexHtmlBody(items: ItemWDate[],): string {
+async function getNewIndexHtmlBody(items: ItemWDate[],): Promise<string> {
   l.debug`getNewIndexHtmlBody`;
+
+  const jsons = await getJsons();
+
+  const filteredItems = items.filter(function notInJsons(item,) {
+    const linkInJsons = jsons.some(function linkEqual(json,) {
+      if (json.link && item.item.link) {
+        l.trace`json.link ${json.link} item.item.link ${item.item.link}`;
+        return item.item.link === json.link;
+      }
+      return false;
+    },);
+    return ![linkInJsons,].some(Boolean,);
+  },);
+
+  l.debug`filteredItems ${filteredItems.length} items ${items.length}`;
+
   const result = render(
     h(
       'ol',
       { class: 'feeds', },
-      items.slice(0, LIMIT,).map(binary(itemToFeed,),),
+      filteredItems.slice(0, LIMIT,).map(binary(itemToFeed,),),
     ),
   );
   l.debug`getNewIndexHtmlBody ${result.slice(0, 100,)} ... ${result.slice(-100,)}`;
 
   return result;
+}
+async function getJsons() {
+  l.debug`getJsons`;
+  const filesInDir = await readdir(IGNORE_PATH, { withFileTypes: true, },);
+  const jsonls = await mapIterableAsync(
+    async function getContent(fileInDir: Dirent,) {
+      return await readFile(join(fileInDir.parentPath, fileInDir.name,), 'utf8',);
+    },
+    filesInDir,
+  );
+
+  const jsonStrings = jsonls
+    .map(function toJsonStrings(jsonl,) {
+      return jsonl.split('\n',);
+    },)
+    .flat()
+    .map(function trimString(value,) {
+      return value.trim();
+    },)
+    .filter(Boolean,);
+  const DISCARD = Symbol('discard',);
+  const jsons = jsonStrings
+    .map(function toJson(jsonString,) {
+      try {
+        return JSON.parse(jsonString.trim(),) as Record<string, string>;
+      }
+      catch (error) {
+        l.warn`can't parse json ${jsonString} ${JSON.stringify(error,)}`;
+        return DISCARD;
+      }
+    },)
+    .filter(function notDiscard(value,) {
+      return value !== DISCARD;
+    },);
+  l.debug`getJsons ${jsons.at(-1,)} * ${jsons.length}`;
+  return jsons;
 }

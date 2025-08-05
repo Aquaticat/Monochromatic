@@ -14,3 +14,4 @@ export const lHtml: LogtapeLogger = logtapeGetLogger(['a', 'html',],);
 export const lItem: LogtapeLogger = logtapeGetLogger(['a', 'item',],);
 export const lOpmls: LogtapeLogger = logtapeGetLogger(['a', 'opmls',],);
 export const lOutline: LogtapeLogger = logtapeGetLogger(['a', 'outline',],);
+export const lIgnore: LogtapeLogger = logtapeGetLogger(['a', 'ignore',],);

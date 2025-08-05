@@ -1,4 +1,8 @@
-import { wait, } from '@monochromatic-dev/module-es';
+import {
+  notNullishOrThrow,
+  wait,
+} from '@monochromatic-dev/module-es';
+import { z, } from 'zod/v4-mini';
 
 console.log('client',);
 
@@ -59,12 +63,30 @@ elements.forEach(function scroll(element,) {
   addScrollEvents(element,);
   element.addEventListener('scrolledOut', async function onScrolledOut() {
     console.log('scrolledOut',);
-    const response = await fetch(`/api/read`, {
+    const metadata = notNullishOrThrow(element.querySelector('.feed__metadata',),);
+    const a: HTMLAnchorElement = notNullishOrThrow(
+      metadata.querySelector('.feed__link',),
+    );
+
+    const body: Record<string, string> = (z.url().parse(a.href,))
+      ? { link: a.href, }
+      : { metadataOuterHtml: metadata.outerHTML, };
+
+    const response = await fetch(`/api/read/new`, {
       method: 'POST',
-      body: element.outerHTML,
+      body: JSON.stringify(body),
     },);
-    if (!response.ok)
-      console.log(`${JSON.stringify(response,)} on scrolledOut`,);
+    if (!response.ok) {
+      console.log(`${JSON.stringify(response,)} not ok on scrolledOut`,);
+      return;
+    }
+    try {
+      const text = await response.text();
+      console.log(`${text} on scrolledOut`,);
+    }
+    catch (error: unknown) {
+      console.log(`${JSON.stringify(error,)} on scrolledOut`,);
+    }
   },);
 },);
 
