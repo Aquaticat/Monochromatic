@@ -1,7 +1,17 @@
 import { swagger, } from '@elysiajs/swagger';
-import { Elysia, } from 'elysia';
 import {
-  indexHtmlObservable,
+  Elysia,
+  sse,
+  type SSEPayload,
+} from 'elysia';
+import {
+  hash,
+  indexHtmlStart,
+  indexHtmlWatcher,
+} from './asset.ts';
+import {
+  INDEX_HTML_END,
+  indexHtmlBodyObservable,
   lastUpdatedObservable,
   MIN_INTERVAL,
 } from './html.ts';
@@ -46,7 +56,7 @@ function serveIndex(): Response {
   updateFeed();
 
   return new Response(
-    indexHtmlObservable.value,
+    `${indexHtmlStart}${indexHtmlBodyObservable.value}${INDEX_HTML_END}`,
     {
       status: 200,
       headers: {
@@ -59,6 +69,16 @@ function serveIndex(): Response {
 function getLastUpdated(): Response {
   l.debug`getLastUpdated`;
   return new Response(lastUpdatedObservable.value.toISOString(), {
+    status: 200,
+    headers: {
+      'content-type': 'text/plain',
+    },
+  },);
+}
+
+async function read(request: Request,): Promise<Response> {
+  l.debug`read ${JSON.stringify(await request.text(),)}`;
+  return new Response('not implemented', {
     status: 200,
     headers: {
       'content-type': 'text/plain',
@@ -80,6 +100,15 @@ const _app = new Elysia()
   .get('/', serveIndex,)
   .get('/api/updateFeed/new', updateFeed,)
   .get('/api/updateFeed/lastUpdated', getLastUpdated,)
+  .get('/api/read', read,)
+  .get('/api/asset/hash', function getHash() {
+    return new Response(hash, {
+      status: 200,
+      headers: {
+        'content-type': 'text/plain',
+      },
+    },);
+  },)
   .listen(PORT, function logListening() {
     l.info`listening on port ${PORT}`;
   },);

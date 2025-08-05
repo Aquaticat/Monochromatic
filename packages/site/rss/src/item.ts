@@ -88,7 +88,9 @@ function getItems(feeds: FeedWOutline[],): Item[] {
  * Standardizes item structure between RSS and Atom formats.
  */
 type NormalizedItem = {
-  feed: Omit<ReturnType<typeof parseRssFeed | typeof parseAtomFeed>, 'entries' | 'items'>;
+  feed: Omit<ReturnType<typeof parseRssFeed>, 'items'>;
+  originalFeed?: Omit<ReturnType<typeof parseRssFeed | typeof parseAtomFeed>,
+    'entries' | 'items'>;
   outline: Outline;
   item: NonNullable<
     ReturnType<typeof parseRssFeed>['items']
@@ -96,6 +98,12 @@ type NormalizedItem = {
   originalItem?: NonNullable<
     ReturnType<typeof parseAtomFeed>['entries'] | ReturnType<typeof parseRssFeed>['items']
   >[number];
+};
+
+type AtomItem = {
+  feed: Omit<ReturnType<typeof parseAtomFeed>, 'entries'>;
+  outline: Outline;
+  item: NonNullable<ReturnType<typeof parseAtomFeed>['entries']>[number];
 };
 
 /**
@@ -114,12 +122,38 @@ type NormalizedItem = {
 function getNormalizedItem(item: Item,): NormalizedItem {
   l.debug`getNormalizedItem`;
   if (item.outline.type === 'atom') {
-    const myItem = item as {
-      feed: Omit<ReturnType<typeof parseRssFeed | typeof parseAtomFeed>,
-        'entries' | 'items'>;
-      outline: Outline;
-      item: NonNullable<ReturnType<typeof parseAtomFeed>['entries']>[number];
-    };
+    const myItem = item as AtomItem;
+    const newItem = getNewItem(myItem,);
+
+    const newFeed = getNewFeed(myItem,);
+
+    const result = { ...item, feed: Object.fromEntries(newFeed,), item: Object
+      .fromEntries(newItem,), originalItem: item
+        .item, originalFeed: item.feed, };
+    l.debug`getNormalizedItem ${result}`;
+    return result;
+  }
+
+  l.debug`getNormalizedItem ${item}`;
+  return item as NormalizedItem;
+
+  function getNewFeed(
+    myItem: AtomItem,
+  ) {
+    const newFeed = new Map<string, string>();
+    const title = myItem.feed.title;
+    const subtitle = myItem.feed.subtitle;
+
+    if (title)
+      newFeed.set('title', title,);
+    if (subtitle)
+      newFeed.set('subtitle', subtitle,);
+    return newFeed;
+  }
+
+  function getNewItem(
+    myItem: AtomItem,
+  ) {
     const categories = myItem.item.categories;
     const links = myItem.item.links;
     const title = myItem.item.title;
@@ -150,15 +184,8 @@ function getNormalizedItem(item: Item,): NormalizedItem {
       newItem.set('pubDate', pubDate,);
     if (guid)
       newItem.set('guid', guid,);
-
-    const result = { ...item, item: Object.fromEntries(newItem,), originalItem: item
-      .item, };
-    l.debug`getNormalizedItem ${result}`;
-    return result;
+    return newItem;
   }
-
-  l.debug`getNormalizedItem ${item}`;
-  return item as NormalizedItem;
 }
 
 /**

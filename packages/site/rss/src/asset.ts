@@ -1,6 +1,4 @@
-import {
-  notNullishOrThrow,
-} from '@monochromatic-dev/module-es';
+import { notNullishOrThrow, } from '@monochromatic-dev/module-es';
 import { Window, } from 'happy-dom';
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -105,17 +103,37 @@ async function getIndexHtmlString(): Promise<string> {
  * @see {@link INDEX_HTML_PATH} for the watched file path
  * @see {@link updateCssJs} for the update handler
  */
-const indexHtmlWatcher: Watcher = new Watcher(INDEX_HTML_PATH, {
+export const indexHtmlWatcher: Watcher = new Watcher(INDEX_HTML_PATH, {
   ignoreInitial: false,
   debounce: 100,
 },);
 
 export async function updateCssJs(): Promise<void> {
   l.debug`updateCssJs`;
-  ({ js, css, } = await getAssetStrings(
+  const assetStrings = await getAssetStrings(
     getAssetSubpaths(await getIndexHtmlString(),),
-  ));
-  l.debug`updateCssJs ${js.slice(0, 100,)} ${css.slice(0, 100,)}`;
+  );
+
+  ({ js, css, } = assetStrings);
+
+  const hashBuffer = await crypto.subtle.digest('SHA-256',
+    new TextEncoder().encode(JSON.stringify(assetStrings,),),);
+  // Base64 encoded string
+  hash = btoa(String.fromCharCode(...new Uint8Array(hashBuffer,),),);
+
+   indexHtmlStart = `<!DOCTYPE html>
+    <html lang=en data-asset-hash=${hash}>
+    <head>
+    <meta charset=UTF-8>
+    <meta name=viewport content='width=device-width,initial-scale=1.0'>
+    <style>${css}</style>
+    <script type=module>${js.replaceAll(/<\/script>/gvi, '<\\/script>',)}</script>
+    </head>
+    <body>`
+
+  l.debug`updateCssJs ${hash} ${assetStrings.js.slice(0, 100,)} ${
+    assetStrings.css.slice(0, 100,)
+  }`;
 }
 
 /**
@@ -133,6 +151,10 @@ export let js = '';
  * @see {@link getAssetStrings} for the update process
  */
 export let css = '';
+
+export let hash = '';
+
+export let indexHtmlStart = '';
 
 /**
  * Updates the CSS and JavaScript asset content when the index.html file changes.

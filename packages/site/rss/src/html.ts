@@ -6,14 +6,13 @@ import { h, } from 'preact';
 import { render, } from 'preact-render-to-string';
 import type { ItemWDate, } from './item.ts';
 
-import {
-  css,
-  js,
-} from './asset.ts';
+import { css, } from './asset.ts';
 
 import { lHtml as l, } from './log.ts';
 
 const LIMIT = 100;
+
+export const INDEX_HTML_END = '</body></html>';
 
 /**
  * Converts a feed item to HTML for display in the RSS reader interface.
@@ -30,7 +29,7 @@ const LIMIT = 100;
  * @see {@link h} for Preact element creation
  * @see {@link render} for HTML rendering
  */
-function itemToFeed({ item, pubDateDate, }: ItemWDate, index: number,) {
+function itemToFeed({ item, pubDateDate, feed, }: ItemWDate, index: number,) {
   l.debug`itemToFeed ${item} ${pubDateDate} ${index}`;
   return h(
     'li',
@@ -61,13 +60,15 @@ function itemToFeed({ item, pubDateDate, }: ItemWDate, index: number,) {
           h(
             'span',
             { class: 'feed__itemTitle', },
-            item.title || 'Unknown',
+            feed.title || 'Unknown',
           ),
-          h(
-            'span',
-            { class: 'feed__itemDescription', },
-            item.description || 'Unknown',
-          ),
+          feed.description
+            ? h(
+              'span',
+              { class: 'feed__itemDescription', },
+              feed.description,
+            )
+            : null,
         ],
       ),
       item.description
@@ -88,27 +89,7 @@ function itemToFeed({ item, pubDateDate, }: ItemWDate, index: number,) {
   );
 }
 
-const indexHtml = `
-  <!DOCTYPE html><html lang=en>
-  <head>
-  <meta charset=UTF-8>
-  <meta name=viewport content='width=device-width,initial-scale=1.0'>
-  <style>${css}</style>
-  <script type=module>${js.replaceAll(/<\/script>/gvi, '<\\/script>',)}</script>
-  </head>
-  <body>
-  ${
-  render(
-    h(
-      'ol',
-      { start: 0, class: 'feeds', },
-      ([] as ItemWDate[]).slice(0, LIMIT,).map(binary(itemToFeed,),),
-    ),
-  )
-}
-  </body>
-  </html>
-`;
+const indexHtmlBody = '';
 
 export const MIN_INTERVAL: number = 10 ** 5; // 100 seconds in milliseconds
 
@@ -123,9 +104,9 @@ export const lastUpdatedObservable: {
       l.debug`onLastUpdatedUpdate successfully triggered, but too soon.`;
   },);
 
-export const indexHtmlObservable: {
+export const indexHtmlBodyObservable: {
   value: string;
-} = await createObservableAsync(indexHtml,
+} = await createObservableAsync(indexHtmlBody,
   function onIndexHtmlUpdate(indexHtml: string,) {
     l.debug`onIndexHtmlUpdate ${indexHtml.slice(0, 100,)} ... ${indexHtml.slice(-100,)}`;
     lastUpdatedObservable.value = new Date();
@@ -134,35 +115,21 @@ export const indexHtmlObservable: {
 export function onItemsChange(items: ItemWDate[],): void {
   l.debug`onItemsChange`;
 
-  indexHtmlObservable.value = getNewIndexHtml(items,);
+  indexHtmlBodyObservable.value = getNewIndexHtmlBody(items,);
 
   l.debug`onItemsChange `;
 }
 
-function getNewIndexHtml(items: ItemWDate[],): string {
-  l.debug`getNewIndexHtml`;
-  const result = `
-  <!DOCTYPE html><html lang=en>
-  <head>
-  <meta charset=UTF-8>
-  <meta name=viewport content='width=device-width,initial-scale=1.0'>
-  <style>${css}</style>
-  <script type=module>${js.replaceAll(/<\/script>/gvi, '<\\/script>',)}</script>
-  </head>
-  <body>
-  ${
-    render(
-      h(
-        'ol',
-        { start: 0, class: 'feedList', },
-        items.slice(0, LIMIT,).map(binary(itemToFeed,),),
-      ),
-    )
-  }
-  </body>
-  </html>
-`;
-  l.debug`getNewIndexHtml ${result.slice(0, 100,)} ... ${result.slice(-100,)}`;
+function getNewIndexHtmlBody(items: ItemWDate[],): string {
+  l.debug`getNewIndexHtmlBody`;
+  const result = render(
+    h(
+      'ol',
+      { class: 'feeds', },
+      items.slice(0, LIMIT,).map(binary(itemToFeed,),),
+    ),
+  );
+  l.debug`getNewIndexHtmlBody ${result.slice(0, 100,)} ... ${result.slice(-100,)}`;
 
   return result;
 }

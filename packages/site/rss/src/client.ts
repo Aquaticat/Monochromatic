@@ -1,3 +1,7 @@
+import { wait, } from '@monochromatic-dev/module-es';
+
+console.log('client',);
+
 function addScrollEvents(element: HTMLElement, options = {},): IntersectionObserver {
   const config = {
     threshold: [0, 0.25, 0.5, 0.75, 1,],
@@ -63,3 +67,23 @@ elements.forEach(function scroll(element,) {
       console.log(`${JSON.stringify(response,)} on scrolledOut`,);
   },);
 },);
+
+while (true) {
+  await wait(5000,);
+  try {
+    const serverHash = await (await fetch('/api/asset/hash',)).text();
+    if (serverHash !== document.documentElement.dataset.assetHash) {
+      console.log(
+        `serverHash ${serverHash} !== ${document.documentElement.dataset.assetHash}, reloading`,
+      );
+      await wait(5000,);
+      window.location.reload();
+    }
+    else {
+      console.log(`serverHash ${serverHash} same`,);
+    }
+  }
+  catch (error: unknown) {
+    console.log(JSON.stringify(error,),);
+  }
+}
