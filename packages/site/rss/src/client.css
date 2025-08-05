@@ -88,6 +88,10 @@ a {
 
     row-gap: 1rem;
 
+    &.ignore {
+      display: none;
+    }
+
     .feed__source {
       display: flex;
 

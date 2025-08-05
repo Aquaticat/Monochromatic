@@ -72,7 +72,7 @@ elements.forEach(function scroll(element,) {
       ? { link: a.href, }
       : { metadataOuterHtml: metadata.outerHTML, };
 
-    const response = await fetch(`/api/read/new`, {
+    const response = await fetch(`/api/ignore/new`, {
       method: 'POST',
       body: JSON.stringify(body),
     },);
@@ -83,6 +83,7 @@ elements.forEach(function scroll(element,) {
     try {
       const text = await response.text();
       console.log(`${text} on scrolledOut`,);
+      element.classList.add('ignore');
     }
     catch (error: unknown) {
       console.log(`${JSON.stringify(error,)} on scrolledOut`,);

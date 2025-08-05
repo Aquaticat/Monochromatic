@@ -87,7 +87,7 @@ function getLastUpdated(): Response {
   },);
 }
 
-async function read({ body, }: { body: string; },): Promise<Response> {
+async function ignore({ body, }: { body: string; },): Promise<Response> {
   l.debug`read ${body}`;
 
   if (!await exists(join(IGNORE_PATH, 'api.jsonl',),)) {
@@ -121,7 +121,7 @@ const _app = new Elysia()
   .get('/', serveIndex,)
   .post('/api/updateFeed/new', updateFeed,)
   .get('/api/updateFeed/lastUpdated', getLastUpdated,)
-  .post('/api/read/new', read,)
+  .post('/api/ignore/new', ignore,)
   .get('/api/asset/hash', function getHash() {
     return new Response(hash, {
       status: 200,
