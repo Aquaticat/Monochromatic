@@ -21,4 +21,9 @@ export const INDEX_HTML_PATH: string = notNullishOrThrow(
  */
 export const STATIC_PATH: string = dirname(INDEX_HTML_PATH,);
 
+/**
+ * Absolute path to the directory storing ignore JSONL files.
+ * Used by server routes and file watchers to persist "ignored" items.
+ * @see {@link STATIC_PATH} as the base for resolving the ignore directory
+ */
 export const IGNORE_PATH: string = join(STATIC_PATH, '..', 'ignore');

@@ -18,6 +18,10 @@ import { IGNORE_PATH, } from './path.ts';
 
 const LIMIT = 100;
 
+/**
+ * Closing HTML fragment appended to the rendered page.
+ * Complements {@link indexHtmlBodyObservable} and the head fragment to form the full HTML document.
+ */
 export const INDEX_HTML_END = '</body></html>';
 
 /**
@@ -103,10 +107,18 @@ function itemToFeed({ item, pubDateDate, feed, }: ItemWDate, index: number,) {
 
 const indexHtmlBody = '';
 
+/**
+ * Minimum interval between feed update operations, in milliseconds.
+ * Enforced by server endpoints to limit update frequency.
+ */
 export const MIN_INTERVAL: number = 10 ** 5; // 100 seconds in milliseconds
 
 const lastUpdated = new Date(0,);
 
+/**
+ * Observable holding the timestamp of the last successful HTML body update.
+ * Updated whenever {@link indexHtmlBodyObservable} changes.
+ */
 export const lastUpdatedObservable: {
   value: Date;
 } = await createObservableAsync(lastUpdated,
@@ -116,6 +128,10 @@ export const lastUpdatedObservable: {
       l.warn`onLastUpdatedUpdate successfully triggered, but too soon.`;
   },);
 
+/**
+ * Observable holding the current HTML body for the rendered feed list.
+ * Set by {@link onItemsChange} after rendering the latest items.
+ */
 export const indexHtmlBodyObservable: {
   value: string;
 } = await createObservableAsync(indexHtmlBody,
@@ -124,6 +140,11 @@ export const indexHtmlBodyObservable: {
     lastUpdatedObservable.value = new Date();
   },);
 
+/**
+ * Re-renders the index HTML body from the provided items and updates {@link indexHtmlBodyObservable}.
+ * @param items - Items with publication dates to render
+ * @returns Promise that resolves when rendering completes and observable is updated
+ */
 export async function onItemsChange(items: ItemWDate[],): Promise<void> {
   l.debug`onItemsChange`;
 

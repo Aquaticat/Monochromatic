@@ -46,6 +46,12 @@ if (DOT_ENV_PATH) {
  */
 const opmls: z.infer<typeof OPMLS_SCHEMA> = [];
 
+/**
+ * Observable list of OPML URLs configured for the application.
+ * Emits validated URLs and triggers downstream updates (outline parsing and feed refresh).
+ * @see {@link OPMLS_SCHEMA} for validation rules
+ * @see {@link onOpmlsChange} for the handler that reacts to changes
+ */
 export const opmlsObservable: {
   value: string[];
 } = await createObservableAsync(opmls, onOpmlsChange,);

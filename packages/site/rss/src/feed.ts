@@ -143,11 +143,22 @@ function getSortedFeeds(feeds: FeedWOutline[],): FeedWOutline[] {
 
 const sortedFeeds: FeedWOutline[] = [];
 
+/**
+ * Observable holding the current list of parsed and time-sorted feeds.
+ * Updated whenever OPML-derived inner outlines with URLs change.
+ * @see {@link onInnerOutlinesWUrlChange} for update trigger
+ */
 export const sortedFeedsObservable: {
   value: FeedWOutline[];
-} = await createObservableAsync(sortedFeeds,
-  onSortedFeedsChange,);
+} = await createObservableAsync(sortedFeeds, onSortedFeedsChange,);
 
+/**
+ * Reacts to changes in validated OPML inner outlines (with xmlUrl) and refreshes
+ * {@link sortedFeedsObservable} with newly fetched and sorted feeds.
+ * @param innerOutlinesWUrl - Inner outlines that include a valid `xmlUrl`
+ * @returns Promise that resolves when the observable is updated
+ * @see {@link getNewSortedFeeds} for the fetching and sorting pipeline
+ */
 export async function onInnerOutlinesWUrlChange(
   innerOutlinesWUrl: InnerOutlineWUrl[],
 ): Promise<void> {

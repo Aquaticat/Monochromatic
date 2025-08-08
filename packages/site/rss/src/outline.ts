@@ -259,6 +259,14 @@ const innerOutlinesWUrl: InnerOutlineWUrl[] = [];
 const innerOutlinesWUrlObservable = createObservable(innerOutlinesWUrl,
   onInnerOutlinesWUrlChange,);
 
+/**
+ * Reacts to changes in the configured OPML URL list and refreshes
+ * the observable of validated inner outlines with xmlUrl.
+ * @param opmls - Validated OPML URL list
+ * @returns Promise that resolves when outlines have been recalculated and published
+ * @see {@link OPMLS_SCHEMA} for OPML URL validation
+ * @see {@link getNewInnerOutlinesWUrl} for parsing and filtering pipeline
+ */
 export async function onOpmlsChange(opmls: z.infer<typeof OPMLS_SCHEMA>,): Promise<void> {
   l.debug`onOpmlsChange`;
 

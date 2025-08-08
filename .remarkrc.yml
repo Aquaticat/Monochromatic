@@ -117,8 +117,9 @@ plugins:
 - remark-lint-no-table-indentation
 - - remark-lint-ordered-list-marker-style
   - '.'
-- - remark-lint-ordered-list-marker-value
-  - 'one'
+# USER: Commented out because I want to have the flexibility of using high marker values for easy reference.
+#- - remark-lint-ordered-list-marker-value
+#  - 'one'
 - - remark-lint-rule-style
   - '---'
 - - remark-lint-strong-marker

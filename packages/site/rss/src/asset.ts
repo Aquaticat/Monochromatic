@@ -108,6 +108,19 @@ export const indexHtmlWatcher: Watcher = new Watcher(INDEX_HTML_PATH, {
   debounce: 100,
 },);
 
+/**
+ * Updates the CSS and JavaScript asset content when the index.html file changes.
+ * Called automatically by the file watcher when index.html is modified.
+ *
+ * This function may be called twice during execution:
+ * 1. During initial startup when the file watcher is initialized with `ignoreInitial: false`
+ * 2. When the index.html file is actually modified by the user
+ *
+ * @returns Promise that resolves when assets are updated
+ * @see {@link getAssetStrings} for reading asset files
+ * @see {@link getAssetSubpaths} for parsing asset paths
+ * @see {@link getIndexHtmlString} for reading the HTML file
+ */
 export async function updateCssJs(): Promise<void> {
   l.debug`updateCssJs`;
   const assetStrings = await getAssetStrings(
@@ -152,21 +165,19 @@ export let js = '';
  */
 export let css = '';
 
+/**
+ * Base64-encoded SHA-256 hash of the current inlined assets (CSS/JS).
+ * Used by the client to detect server-side asset changes and trigger reload.
+ * @see {@link updateCssJs} for hash computation
+ */
 export let hash = '';
 
+/**
+ * Beginning of the HTML template (doctype, html/head/body start) with inlined CSS and JS.
+ * Includes a data-asset-hash attribute used by the client to compare against the server hash.
+ * @see {@link hash} for the computed value
+ * @see {@link updateCssJs} for template regeneration
+ */
 export let indexHtmlStart = '';
 
-/**
- * Updates the CSS and JavaScript asset content when the index.html file changes.
- * Called automatically by the file watcher when index.html is modified.
- *
- * This function may be called twice during execution:
- * 1. During initial startup when the file watcher is initialized with `ignoreInitial: false`
- * 2. When the index.html file is actually modified by the user
- *
- * @returns Promise that resolves when assets are updated
- * @see {@link getAssetStrings} for reading asset files
- * @see {@link getAssetSubpaths} for parsing asset paths
- * @see {@link getIndexHtmlString} for reading the HTML file
- */
 indexHtmlWatcher.on('all', updateCssJs,);

@@ -20,7 +20,7 @@ Forbidden language patterns:
 - Prescriptive language: "should", "must" (except for critical requirements), "ought to"
 - Meta-references: "the project", "this means", "this aligns with"
 
-Forbidden acknowledgment patterns:
+Forbidden acknowledgement patterns:
 - "You're right", "You're correct", "You're absolutely right"
 - "That's right", "That's correct", "Exactly right"
 - "Good point", "Good catch", "Nice catch"

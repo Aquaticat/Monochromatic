@@ -244,10 +244,21 @@ function getSortedItems(itemsWDate: ItemWDate[],): ItemWDate[] {
  */
 const sortedItems: ItemWDate[] = [];
 
+/**
+ * Observable holding the current list of normalized, dated, and sorted items.
+ * Updated by {@link onSortedFeedsChange} when feeds change.
+ * @see {@link getNewSortedItems} for computation pipeline
+ */
 export const sortedItemsObservable: {
   value: ItemWDate[];
 } = await createObservableAsync(sortedItems, onItemsChange,);
 
+/**
+ * Recomputes sorted items from provided feeds and updates {@link sortedItemsObservable}.
+ * @param feeds - Feeds with outlines used to extract and normalize items
+ * @returns void
+ * @see {@link getNewSortedItems} for extraction, normalization, dating, and sorting
+ */
 export function onSortedFeedsChange(
   feeds: FeedWOutline[],
 ): void {
