@@ -93,6 +93,11 @@ const myConfigArray: ConfigArray = tseslint.config(
         },
       },],
 
+      'n/no-unsupported-features/node-builtins': ['error', {
+        ignores: [],
+        allowExperimental: true,
+      },],
+
       '@typescript-eslint/no-unnecessary-condition': ['error', {
         allowConstantLoopConditions: 'only-allowed-literals',
       },],
@@ -205,6 +210,7 @@ const myConfigArray: ConfigArray = tseslint.config(
     rules: {
       ...vitest.configs.all.rules,
       '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-confusing-void-expression': 'off',
       'vitest/prefer-expect-assertions': 'off',
       'unicorn/prevent-abbreviations': 'off',
       // Padding is a formatting concern, not a linting concern per ESLint's current philosophy

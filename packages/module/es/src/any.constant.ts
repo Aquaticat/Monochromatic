@@ -1,3 +1,5 @@
+/* v8 ignore file -- @preserve */
+
 /**
  * Creates a function that always returns the same value, regardless of any arguments passed to it.
  * The constant function is a fundamental functional programming combinator that creates

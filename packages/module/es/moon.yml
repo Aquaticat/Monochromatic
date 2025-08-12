@@ -14,11 +14,13 @@ toolchain:
     syncProjectReferences: false
 
 tasks:
-  # FIXME: Setup moon outputs correctly.
-  js_default:
+  js_browser:
     options:
       # I dunno why the cache performance is so bad here.
       cache: false
   js_node:
+    options:
+      cache: false
+  js:
     options:
       cache: false

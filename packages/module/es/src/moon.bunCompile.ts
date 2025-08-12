@@ -11,7 +11,7 @@
  *   bun moon.bunCompile.ts
  */
 
-import findUp from 'find-up';
+import { findUp, } from 'find-up';
 import spawn from 'nano-spawn';
 import { mkdir, } from 'node:fs/promises';
 import {

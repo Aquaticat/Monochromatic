@@ -285,6 +285,7 @@ tasks:
     options:
       # Aggregator of cache-disabled test tasks
       cache: false
+      internal: false
 
   # Browser test runner
   testBrowser:
@@ -295,6 +296,7 @@ tasks:
       # 2. Filesystem-intensive with large input/output sets
       # 3. Moon's cache overhead exceeds test execution time
       cache: false
+      internal: false
 
   testBrowserWatch:
     command: 'vitest watch --config vitest.browser.config.ts'
@@ -309,6 +311,7 @@ tasks:
       # 2. Filesystem-intensive with large input/output sets
       # 3. Moon's cache overhead exceeds test execution time
       cache: false
+      internal: false
 
   testUnitWatch:
     command: 'vitest watch --config vitest.unit.config.ts'

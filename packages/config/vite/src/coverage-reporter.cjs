@@ -9,12 +9,20 @@ const { ReportBase, } = require('istanbul-lib-report',);
 const { parse, } = require('node:path',);
 const { minimatch, } = require('minimatch',);
 const vitestExcludeCommonConfig = require('./vitest-exclude-common.json',);
+const { readFileSync } = require('node:fs');
 
 const FORMAT_COORDINATE_PAD_LENGTH = 3;
 const FORMAT_ENTRY_PAD_LENGTH = 2;
 const INDENT_LENGTH = 4;
 const NUMBER_FILL_STRING = '0';
 const DEBUG = false;
+const MAX_FILES = 2;
+const IGNORE_EXTENSION_DISPLAY_STRING = '.';
+const IGNORE_GLOB_DISPLAY_STRING = '*';
+const IGNORE_EXCEED_MAX_DISPLAY_STRING = '-';
+const IGNORE_COMMENT_DISPLAY_STRING = '#';
+let loggedFiles = 0;
+let ignoredFilesString = '';
 
 /**
  * Custom text coverage reporter that provides a more compact and readable format than Vitest's built-in text reporter.
@@ -49,7 +57,13 @@ class MyTextReport extends ReportBase {
   }
 
   onStart(root, context,) {
-    console.log('custom text coverage report',);
+    console.log(
+      `custom text coverage report, max ${MAX_FILES} files, file ignored by extension marked ${IGNORE_EXTENSION_DISPLAY_STRING}, file ignored by glob pattern marked ${IGNORE_GLOB_DISPLAY_STRING}, file ignored by comment marked ${IGNORE_COMMENT_DISPLAY_STRING}, file ignored by exceeding max logging marked ${IGNORE_EXCEED_MAX_DISPLAY_STRING}`,
+    );
+  }
+
+  onEnd() {
+    console.log(ignoredFilesString);
   }
 
   onDetail(node,) {
@@ -63,6 +77,8 @@ class MyTextReport extends ReportBase {
         return ignoredExt === ext;
       },)
     ) {
+      ignoredFilesString = `${ignoredFilesString}${IGNORE_EXTENSION_DISPLAY_STRING}`;
+
       return;
     }
 
@@ -82,8 +98,24 @@ class MyTextReport extends ReportBase {
           },
         )
     ) {
+      ignoredFilesString = `${ignoredFilesString}${IGNORE_GLOB_DISPLAY_STRING}`;
+
       return;
     }
+
+    // Ignore files starting with ignore comment
+
+    if (readFileSync(cPath, 'utf8').startsWith('/* v8 ignore file ')) {
+      ignoredFilesString = `${ignoredFilesString}${IGNORE_COMMENT_DISPLAY_STRING}`;
+      return;
+    }
+
+    if (loggedFiles >= MAX_FILES) {
+      ignoredFilesString = `${ignoredFilesString}${IGNORE_EXCEED_MAX_DISPLAY_STRING}`;
+      return;
+    }
+
+    loggedFiles++;
 
     /** Simplified directory path with common prefixes and suffixes removed for cleaner output */
     const dirWoCommon = vitestExcludeCommonConfig

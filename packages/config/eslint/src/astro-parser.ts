@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-namespace -- Parser needs to be imported as namespace
 import * as tsParser from '@typescript-eslint/parser';
 import { analyze, } from '@typescript-eslint/scope-manager';
 import {
@@ -12,7 +11,7 @@ type ParseForESLintResult = ReturnType<typeof tsParser.parseForESLint>;
 /** Delimiter for Astro frontmatter sections */
 const FRONTMATTER_DELIMITER = '---';
 
-/** Script opening tag without closing > to handle attributes like <script lang="ts"> */
+/** Script opening tag without closing \> to handle attributes like <script lang="ts"> */
 const SCRIPT_TAG_OPEN = '<script';
 
 /** Script closing tag */

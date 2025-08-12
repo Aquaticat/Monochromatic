@@ -1,3 +1,5 @@
+// deprecated: not using Claude Code anymore.
+
 import { wait, } from '@monochromatic-dev/module-es';
 import { MeiliSearch, } from 'meilisearch';
 import {

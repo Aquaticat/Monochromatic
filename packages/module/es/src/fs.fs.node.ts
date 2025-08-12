@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/prefer-export-from -- Need to both access imported functions and maybe modify them and export them. */
+
 import {
   constants as fsConstants,
   type Stats as FsStats,
@@ -24,7 +26,6 @@ import {
   realpath,
   rename,
   rm,
-  rmdir,
   stat,
   statfs,
   symlink,
@@ -35,6 +36,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 
+/* v8 ignore next -- Somehow not picking up @preserve */
 async function readTextFile(path: string,): Promise<string> {
   return await readFile(path, { encoding: 'utf8', },);
 }
@@ -64,7 +66,6 @@ export {
   realpath,
   rename,
   rm,
-  rmdir,
   stat,
   statfs,
   symlink,

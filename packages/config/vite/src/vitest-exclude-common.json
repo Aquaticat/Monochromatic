@@ -18,7 +18,8 @@
     "**/cli.*.ts",
     "**/dom.*.ts",
     "**/*.browser.ts",
-    "**/*.browser.test.ts"
+    "**/*.browser.test.ts",
+    "**/astro-*.ts"
   ],
   "ignoredExtensions": [".cjs", ".js", ".mjs"],
   "pathReplacements": [

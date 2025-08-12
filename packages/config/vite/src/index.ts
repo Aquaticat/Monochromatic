@@ -49,6 +49,8 @@ import {
   type ViteUserConfig as VitestUserConfig,
   type ViteUserConfigFnObject as VitestUserConfigFnObject,
 } from 'vitest/config';
+
+// TODO: Investigate how to sneak in comments
 import vitestExcludeCommonConfig from './vitest-exclude-common.json' with {
   type: 'json',
 };
@@ -682,16 +684,17 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = {
         // Error: Failed to update coverage thresholds. The Configuration file is too complex.
         autoUpdate: false,
       },
-
+      // Excluding some files in this file would source map remapping not working.
+      // Therefore, coverage for irrelevant files is ignored in custom coverage reporter.
       // Only this works for coverage to follow sourcemap.
-      include: [
-        'packages/*/*/**/dist/final/**/*.js',
-        'packages/*/*/**/src/**/*.ts',
-      ],
-      exclude: [
-        ...vitestExcludeCommon,
-        ...(vitestExcludeCommonConfig.coverageAdditionalPatterns),
-      ],
+      // include: [
+      //   'packages/*/*/**/dist/final/**/*.js',
+      //   'packages/*/*/**/src/**/*.ts',
+      // ],
+      // exclude: [
+      //   ...vitestExcludeCommon,
+      //   ...(vitestExcludeCommonConfig.coverageAdditionalPatterns),
+      // ],
     },
   },
 };

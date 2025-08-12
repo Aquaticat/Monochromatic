@@ -37,6 +37,7 @@ export * from './function.curry.ts';
 export * from './function.ensuring.ts';
 export * from './function.equals.ts';
 export * from './function.is.ts';
+export * from './function.simpleMemoize.ts';
 export * from './function.memoize.ts';
 export * from './function.nary.ts';
 export * from './function.partial.ts';
@@ -93,6 +94,7 @@ export * from './string.limitedGetComputedCss.ts';
 export * from './string.singleQuoted.ts';
 export * from './string.trim.ts';
 export * from './string.type.ts';
+export * from './string.log.ts';
 export * from './strings.concat.ts';
 export * from './strings.join.ts';
 

@@ -1,4 +1,4 @@
-import { memoize, } from '@monochromatic-dev/module-es/.js';
+import { simpleMemoize, } from '@monochromatic-dev/module-es/.js';
 import {
   describe,
   expect,
@@ -6,10 +6,10 @@ import {
   vi,
 } from 'vitest';
 
-describe(memoize, () => {
+describe(simpleMemoize, () => {
   test('returns the same result for identical arguments', () => {
     const fn = vi.fn((x: number,) => x * 2);
-    const memoizedFn = memoize(fn,);
+    const memoizedFn = simpleMemoize(fn,);
 
     expect(memoizedFn(5,),).toBe(10,);
     expect(memoizedFn(5,),).toBe(10,);
@@ -18,7 +18,7 @@ describe(memoize, () => {
 
   test('calculates new result for different arguments', () => {
     const fn = vi.fn((x: number,) => x * 2);
-    const memoizedFn = memoize(fn,);
+    const memoizedFn = simpleMemoize(fn,);
 
     expect(memoizedFn(5,),).toBe(10,);
     expect(memoizedFn(6,),).toBe(12,);
@@ -27,7 +27,7 @@ describe(memoize, () => {
 
   test('works with multiple arguments', () => {
     const fn = vi.fn((a: number, b: number,) => a + b);
-    const memoizedFn = memoize(fn,);
+    const memoizedFn = simpleMemoize(fn,);
 
     expect(memoizedFn(1, 2,),).toBe(3,);
     expect(memoizedFn(1, 2,),).toBe(3,);
@@ -37,7 +37,7 @@ describe(memoize, () => {
 
   test('does not handle object arguments because it uses Object.is', () => {
     const fn = vi.fn((obj: { a: number; },) => obj.a * 2);
-    const memoizedFn = memoize(fn,);
+    const memoizedFn = simpleMemoize(fn,);
 
     expect(memoizedFn({ a: 5, },),).toBe(10,);
     expect(memoizedFn({ a: 5, },),).toBe(10,);
@@ -48,14 +48,14 @@ describe(memoize, () => {
     const fn = vi.fn(() => {
       throw new Error('Test error',);
     },);
-    const memoizedFn = memoize(fn,);
+    const memoizedFn = simpleMemoize(fn,);
 
     expect(() => memoizedFn()).toThrow('Test error',);
   });
 
   test('supports asynchronous functions', async () => {
     const fn = vi.fn(async (x: number,) => (x * 2));
-    const memoizedFn = memoize(fn,);
+    const memoizedFn = simpleMemoize(fn,);
 
     await expect(memoizedFn(5,),).resolves.toBe(10,);
     await expect(memoizedFn(5,),).resolves.toBe(10,);
@@ -64,7 +64,7 @@ describe(memoize, () => {
 
   test('only memoizes the last call', () => {
     const fn = vi.fn((x: number,) => x * 2);
-    const memoizedFn = memoize(fn,);
+    const memoizedFn = simpleMemoize(fn,);
 
     expect(memoizedFn(5,),).toBe(10,);
     expect(memoizedFn(6,),).toBe(12,); // Different args
@@ -74,7 +74,7 @@ describe(memoize, () => {
 
   test('handles complex nested arguments', () => {
     const fn = vi.fn(obj => JSON.stringify(obj,));
-    const memoizedFn = memoize(fn,);
+    const memoizedFn = simpleMemoize(fn,);
 
     const complex = { a: [1, 2, { c: 3, },], b: { d: 4, }, };
     const result = JSON.stringify(complex,);

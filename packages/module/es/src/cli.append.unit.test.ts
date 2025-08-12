@@ -7,6 +7,7 @@ import { exec, } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
+  // TODO: Deprecated.
   rmdirSync,
   unlinkSync,
   writeFileSync,

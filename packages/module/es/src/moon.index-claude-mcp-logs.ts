@@ -1,3 +1,5 @@
+// deprecated: not using Claude Code anymore.
+
 import { MeiliSearch, } from 'meilisearch';
 import {
   readdirSync,

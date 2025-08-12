@@ -1,3 +1,5 @@
+/* v8 ignore file -- @preserve */
+
 /**
  * Creates an infinite generator that repeatedly yields the same value.
  * This generator function creates an endless sequence of the provided value,

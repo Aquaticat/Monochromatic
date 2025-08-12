@@ -1,3 +1,5 @@
+/* v8 ignore file -- @preserve */
+
 /**
  * Returns its input value unchanged. The identity function is a fundamental building block
  * in functional programming, commonly used as a default transformation or placeholder function.
