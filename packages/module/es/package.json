@@ -39,6 +39,10 @@
     "./fs.pathParse.ts": {
       "node": "./src/fs.pathParse.node.ts",
       "default": "./src/fs.pathParse.default.ts"
+    },
+    "./string.fs.ts": {
+      "node": "./src/string.fs.node.ts",
+      "default": "./src/string.fs.default.ts"
     }
   },
   "bin": {
@@ -80,7 +84,9 @@
     "@csstools/css-tokenizer": "catalog:",
     "tinyglobby": "catalog:",
     "find-up": "catalog:",
-    "@cspotcode/outdent": "catalog:"
+    "@cspotcode/outdent": "catalog:",
+    "superjson": "catalog:",
+    "decircular": "catalog:"
   },
   "dependencies": {
     "meilisearch": "catalog:"

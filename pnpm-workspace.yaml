@@ -97,6 +97,8 @@ catalog:
   rehype-autolink-headings: '*'
   rambdax: '*'
   ses: '*'
+  superjson: '*'
+  decircular: '*'
   '@openrouter/ai-sdk-provider': '*'
   '@mastra/core': '*'
   openapi-types: '*'

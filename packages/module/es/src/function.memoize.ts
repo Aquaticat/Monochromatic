@@ -1,9 +1,7 @@
-import type {
-  UnknownRecord,
-} from 'type-fest';
-import {
-  argsAlmostEqual,
-} from './function.simpleMemoize.ts';
+import type { UnknownRecord, } from 'type-fest';
+import { argsAlmostEqual, } from './function.simpleMemoize.ts';
+
+// FIXME: Unusable implementation right now.
 
 /**
  * Creates a memoized version of a function that caches its last result only, with optional context.
@@ -70,13 +68,12 @@ export function memoize(
     if (lastArgs && argsAlmostEqual(args, lastArgs,))
       return lastResult as unknown;
 
-    const currentResult =
-      context === undefined
-        ? (fn as (...args: unknown[]) => unknown)(...args,)
-        : (fn as (context: UnknownRecord | undefined, ...args: unknown[]) => unknown)(
-            context,
-            ...args,
-          );
+    const currentResult = context === undefined
+      ? (fn as (...args: unknown[]) => unknown)(...args,)
+      : (fn as (context: UnknownRecord | undefined, ...args: unknown[]) => unknown)(
+        context,
+        ...args,
+      );
 
     lastArgs = args;
     lastResult = currentResult;

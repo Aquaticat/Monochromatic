@@ -52,6 +52,11 @@
     "import/no-anonymous-default-export": "off",
     "typescript/triple-slash-reference": "off",
 
+    // Named functions are mandatory.
+    // UPSTREAM: oxc currently doesn't support `allowDestructuring` parameter for this rule. Temporarily turned off.
+    // "typescript/no-this-alias": ["error", { "allowDestructuring": true }],
+    "typescript/no-this-alias": "off",
+
     //endregion correctness
 
     //region Restriction

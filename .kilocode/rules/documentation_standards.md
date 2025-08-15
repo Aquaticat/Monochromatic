@@ -26,7 +26,7 @@ TSDoc (`/** */`) can be used for:
 - Interfaces and their properties
 - Type aliases
 - Enums and enum members
-- Variables/constants (top-level)
+- Variables/constants (any level)
 - Namespaces/modules
 
 TSDoc CANNOT be used for (use `//` or `/* */` instead):

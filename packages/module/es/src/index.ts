@@ -2,6 +2,7 @@
 
 export * from './any.constant.ts';
 export * from './any.echo.ts';
+export * from './any.hasCycle.ts';
 export * from './any.identity.ts';
 export * from './any.observable.ts';
 export * from './any.toExport.ts';
@@ -37,10 +38,10 @@ export * from './function.curry.ts';
 export * from './function.ensuring.ts';
 export * from './function.equals.ts';
 export * from './function.is.ts';
-export * from './function.simpleMemoize.ts';
 export * from './function.memoize.ts';
 export * from './function.nary.ts';
 export * from './function.partial.ts';
+export * from './function.simpleMemoize.ts';
 
 // compose isn't provided. Always use pipe.
 export * from './function.pipe.ts';
@@ -88,16 +89,25 @@ export * from './promises.some.ts';
 // Maybe/Option type isn't provided because it's much easier to have functions just throw when they fail.
 export * from './result.unwrap.ts';
 
+export * from '@monochromatic-dev/module-es/string.fs.ts';
 export * from './string.capitalize.ts';
+export * from './string.digits.ts';
+export * from './string.general.ts';
+export * from './string.hash.ts';
 export * from './string.is.ts';
+export * from './string.language.ts';
+export * from './string.letters.ts';
 export * from './string.limitedGetComputedCss.ts';
+export * from './string.log.ts';
+export * from './string.numbers.ts';
 export * from './string.singleQuoted.ts';
 export * from './string.trim.ts';
-export * from './string.type.ts';
-export * from './string.log.ts';
 export * from './strings.concat.ts';
 export * from './strings.join.ts';
 
 export * from './dom.duplicateElement.ts';
 export * from './dom.prompt.ts';
 export * from './dom.redirectingTo.ts';
+
+export * from './indexedDb.executeTransaction.ts';
+export * from './indexedDb.open.ts';

@@ -111,6 +111,7 @@ const myConfigArray: ConfigArray = tseslint.config(
         // Always use JSON.stringify
       },],
 
+
       /* Has too many false positives. For example:
       ```ts
        export async function atArrayLikeAsync<
@@ -166,7 +167,7 @@ const myConfigArray: ConfigArray = tseslint.config(
           dir: false,
           dirs: false,
 
-          //region unambiguious -- Everybody knows what these are.
+          //region unambitious -- Everybody knows what these are.
           fn: false,
           lib: false,
           temp: false,
@@ -182,7 +183,10 @@ const myConfigArray: ConfigArray = tseslint.config(
           num: false,
           val: false,
           obj: false,
-          //endregion umambiguious
+
+          // Used in indexedDb
+          db: false,
+          //endregion unambiguous
         },
       },],
 
