@@ -170,6 +170,7 @@ export type UppercaseLettersTuple = [
  * ```
  */
 export const lowercaseLetters: LowercaseLettersTuple = [
+  // eslint-disable-next-line @typescript-eslint/no-misused-spread -- letters only
   ...'abcdefghijklmnopqrstuvwxyz',
 ] as LowercaseLettersTuple;
 
@@ -185,6 +186,7 @@ export const lowercaseLetters: LowercaseLettersTuple = [
  * ```
  */
 export const uppercaseLetters: UppercaseLettersTuple = [
+  // eslint-disable-next-line @typescript-eslint/no-misused-spread -- letters only
   ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
 ] as UppercaseLettersTuple;
 
