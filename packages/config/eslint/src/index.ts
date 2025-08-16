@@ -183,6 +183,7 @@ const myConfigArray: ConfigArray = tseslint.config(
           num: false,
           val: false,
           obj: false,
+          str: false,
 
           // Used in indexedDb
           db: false,

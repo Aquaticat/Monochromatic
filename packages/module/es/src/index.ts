@@ -67,6 +67,7 @@ export * from './iterable.map.ts';
 export * from './iterable.none.ts';
 export * from './iterable.noneFail.ts';
 export * from './iterable.partition.ts';
+export * from './iterable.pick.ts';
 export * from './iterable.reduce.ts';
 export * from './iterable.some.ts';
 export * from './iterable.take.ts';
