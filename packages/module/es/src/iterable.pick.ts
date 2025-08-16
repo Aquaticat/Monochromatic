@@ -1,38 +1,105 @@
+import type { Promisable, } from 'type-fest';
+import { equal, equalAsync, } from './boolean.equal.ts';
+import { mapIterableAsync, } from './index.ts';
 import {
-  equal,
-  equalAsync,
   isIterable,
-} from '@monochromatic-dev/module-es';
+  isMaybeAsyncIterable,
+} from './iterable.is.ts';
+import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 import {
   consoleLogger,
   type Logger,
-  logtapeGetLogger,
-} from '@monochromatic-dev/module-es';
-import type { Promisable, } from 'type-fest';
+} from './string.log.ts';
 
 /**
- * Generic schema interface that any validation library can implement
+ * Generic schema interface that validation libraries can implement for parsing values.
+ * Provides synchronous or asynchronous parsing capability through a unified parse method.
+ *
+ * @example
+ * ```ts
+ * const numberSchema: Schema = {
+ *   parse: (value) => {
+ *     if (typeof value === 'number') return value;
+ *     throw new Error('Expected number');
+ *   }
+ * };
+ * ```
  */
 type Schema = {
   readonly parse: <const Input = unknown, const Output = unknown,>(
     value: Input,
-  ) => Output;
+  ) => Promisable<Output>;
 };
 
+/**
+ * Schema interface for synchronous validation only.
+ * Restricts parsing to synchronous operations by returning non-Promise values.
+ *
+ * @example
+ * ```ts
+ * const syncSchema: SyncSchema = {
+ *   parse: (value) => {
+ *     if (typeof value === 'string') return value;
+ *     throw new Error('Expected string');
+ *   }
+ * };
+ * ```
+ */
+type SyncSchema = {
+  readonly parse: (value: unknown,) => unknown;
+};
+
+/**
+ * Schema interface for asynchronous validation.
+ * Provides parseAsync method for handling Promise-based validation logic.
+ *
+ * @example
+ * ```ts
+ * const asyncSchema: AsyncSchema = {
+ *   parseAsync: async (value) => {
+ *     const result = await validateAsync(value);
+ *     return result;
+ *   }
+ * };
+ * ```
+ */
 type AsyncSchema = {
-  readonly parseAsync: <const Input = unknown, const Output = unknown,>(
-    value: Input,
-  ) => Promisable<Output>;
+  readonly parseAsync: (value: unknown,) => Promisable<unknown>;
 };
 
+/**
+ * Union type combining synchronous and asynchronous schema interfaces.
+ * Allows validation functions to accept either sync or async schema objects.
+ *
+ * @example
+ * ```ts
+ * function validateWith(schema: MaybeAsyncSchema, value: unknown) {
+ *   if ('parseAsync' in schema) {
+ *     return schema.parseAsync(value);
+ *   }
+ *   return schema.parse(value);
+ * }
+ * ```
+ */
 type MaybeAsyncSchema = {
-  readonly parse: <const Input = unknown, const Output = unknown,>(
-    value: Input,
-  ) => Promisable<Output>;
+  readonly parse: (value: unknown,) => Promisable<unknown>;
 } | AsyncSchema;
 
 /**
- * Type guard to check if value has a parse method (generic schema)
+ * Type guard determining if value implements the generic Schema interface.
+ * Checks for presence and function type of parse method to ensure schema compatibility.
+ *
+ * @param value - Value to test for Schema interface compliance
+ * @returns True if value has callable parse method, false otherwise
+ *
+ * @example
+ * ```ts
+ * const maybeSchema = { parse: (x) => x };
+ * if (isSchema(maybeSchema)) {
+ *   // TypeScript knows maybeSchema has parse method
+ *   const result = maybeSchema.parse(input);
+ * }
+ * ```
  */
 function isSchema(value: unknown,): value is Schema {
   if (value === null)
@@ -44,58 +111,106 @@ function isSchema(value: unknown,): value is Schema {
   return typeof ((value as { parse: unknown; }).parse) === 'function';
 }
 
-function isMaybeAsyncSchema(value: unknown,): value is Schema {
+/**
+ * Type guard determining if value implements the AsyncSchema interface.
+ * Validates presence and function type of parseAsync method for async schema detection.
+ *
+ * @param value - Value to test for AsyncSchema interface compliance
+ * @returns True if value has callable parseAsync method, false otherwise
+ *
+ * @example
+ * ```ts
+ * const asyncValidator = { parseAsync: async (x) => x };
+ * if (isAsyncSchema(asyncValidator)) {
+ *   // TypeScript knows asyncValidator has parseAsync method
+ *   const result = await asyncValidator.parseAsync(input);
+ * }
+ * ```
+ */
+function isAsyncSchema(value: unknown,): value is AsyncSchema {
   if (value === null)
     return false;
   if (typeof value !== 'object')
     return false;
   if (!(value as { parse: unknown; }).parse)
     return false;
-  return typeof ((value as { parse: unknown; }).parse) === 'function';
-}
-
-function isAsyncSchema(value: unknown,): value is AsyncSchema {
-  if (value === null)
-    return false;
-  if (typeof value !== 'object')
-    return false;
-  if (!(value as { parseAsync: unknown; }).parseAsync)
-    return false;
   return typeof ((value as { parseAsync: unknown; }).parseAsync) === 'function';
 }
 
-function asyncSchema(schema: MaybeAsyncSchema,): AsyncSchema {
+/**
+ * Type guard determining if value implements either Schema or AsyncSchema interface.
+ * Provides unified detection for both synchronous and asynchronous validation schemas.
+ *
+ * @param value - Value to test for schema interface compliance
+ * @returns True if value implements any schema interface, false otherwise
+ *
+ * @example
+ * ```ts
+ * function processSchema(schema: unknown) {
+ *   if (isMaybeAsyncSchema(schema)) {
+ *     // Can safely use schema for validation
+ *     return convertToAsync(schema);
+ *   }
+ *   throw new Error('Invalid schema');
+ * }
+ * ```
+ */
+function isMaybeAsyncSchema(value: unknown,): value is MaybeAsyncSchema {
+  return isSchema(value,) || isAsyncSchema(value,);
+}
+
+/**
+ * Converts any schema type to AsyncSchema interface for unified async processing.
+ * Wraps synchronous parse method with parseAsync when needed for consistency.
+ *
+ * @param schema - Schema to convert to async interface
+ * @returns AsyncSchema with parseAsync method available
+ *
+ * @example
+ * ```ts
+ * const syncSchema = { parse: (x) => x };
+ * const asyncVersion = maybeAsyncSchemaToAsyncSchema(syncSchema);
+ * // asyncVersion.parseAsync is now available
+ * const result = await asyncVersion.parseAsync(value);
+ * ```
+ */
+function maybeAsyncSchemaToAsyncSchema(schema: MaybeAsyncSchema,): AsyncSchema {
   if (isAsyncSchema(schema,))
     return schema;
   return { ...schema, parseAsync: schema.parse, };
 }
 
 /**
- * Picks elements from an iterable that match the provided shape or schema.
+ * Picks elements from an iterable that match provided shape or schema validation.
  *
- * When using schemas (objects with parse method), validates each element.
- * When using exact shapes, performs deep equality comparison.
- * When using arrays with schemas, takes first N elements and validates them.
+ * When using a schema (object with parse method), validates entire iterable as single unit.
+ * When using an iterable, validates only elements corresponding to positions in picked iterable.
+ * Picked iterable cannot be longer than input iterable.
  *
- * @param params - Parameters object
- * @param params.iterable - to validate against the shape
- * @param params.picked - Expected shape, schema, or function returning shape/schema
- * @param params.logger - for logging operations
- * @returns The picked shape or validated result
- * @throws When iterable doesn't match the expected shape or schema validation fails
+ * @param params - Configuration object for picking operation
+ * @param params.iterable - Input iterable to validate and extract from
+ * @param params.picked - Expected shape (iterable) or schema (object with parse method)
+ * @param params.l - Logger for tracing operations during validation
+ * @returns Array containing elements from picked array length (for iterable) or schema validation result
+ * @throws {RangeError} When picked iterable is longer than input iterable
+ * @throws {Error} When elements don't match expected values or schema validation fails
+ * @throws {TypeError} When picked is neither schema nor iterable
  *
  * @example
  * ```ts
- * // With exact shape matching
- * iterablePick({ iterable: [1, 2, 3], picked: [1, 2, 3] }); // returns [1, 2, 3]
- *
- * // With schema validation (any object with parse method)
+ * // With schema validation - validates entire iterable as one unit
  * const numberArraySchema = { parse: (val) => val as number[] };
  * iterablePick({ iterable: [1, 2], picked: numberArraySchema }); // returns [1, 2]
  *
- * // With mixed array containing schemas
+ * // With exact value matching - validates corresponding elements only
+ * iterablePick({ iterable: [1, 2, 3], picked: [1, 2] }); // returns [1, 2] (validates first 2 elements)
+ *
+ * // With mixed array containing schemas - validates corresponding elements
  * const numberSchema = { parse: (val) => val as number };
- * iterablePick({ iterable: [1, 2], picked: [numberSchema] }); // returns [1]
+ * iterablePick({ iterable: [1, 2], picked: [numberSchema, numberSchema] }); // returns [1, 2]
+ *
+ * // Error: picked longer than iterable
+ * iterablePick({ iterable: [1], picked: [1, 2] }); // throws RangeError
  * ```
  */
 export function iterablePick<const MyIterable extends Iterable<unknown>,>({
@@ -104,10 +219,11 @@ export function iterablePick<const MyIterable extends Iterable<unknown>,>({
   l = consoleLogger,
 }: {
   readonly iterable: MyIterable;
-  readonly picked: Partial<MyIterable> | Schema;
+  readonly picked: Iterable<unknown> | SyncSchema;
   readonly l?: Logger;
-},): any {
+},): unknown {
   l.trace('iterablePick',);
+  /** Array representation of input iterable for validation and processing */
   const iterableArray = [...iterable,];
   // Handle schema validation (any object with parse method)
   if (isSchema(picked,)) {
@@ -117,129 +233,122 @@ export function iterablePick<const MyIterable extends Iterable<unknown>,>({
 
   // Handle arrays that might contain schemas
   if (isIterable(picked,)) {
+    /** Array representation of picked iterable for element-wise validation */
     const pickedArray: unknown[] = [...picked,];
 
     if (pickedArray.length > iterableArray.length)
       throw new RangeError('pickedArray longer than iterableArray',);
 
     // Validate each element against corresponding schema or exact value
-    const validated = iterableArray.map((element, elementIndex,) => {
-      const expectedAtIndex = pickedArray[elementIndex];
-      if (isSchema(expectedAtIndex,))
-        return expectedAtIndex.parse(element,);
+    /** Array of validated elements after schema parsing or equality checking */
+    const validatedArray = pickedArray.map(function validated(expected, index,) {
+      /** Current element from input iterable at corresponding index */
+      const actual = iterableArray[index];
+      if (isSchema(expected,))
+        return expected.parse(actual,);
       // For non-schema elements, check exact equality
-      if (!equal(element, expectedAtIndex,)) {
+      if (!equal(expected, actual,)) {
         throw new Error(
-          `Element at index ${elementIndex} does not match expected value`,
+          `Element at index ${index} does not match expected value`,
         );
       }
-      return element;
+      return actual;
     },);
 
-    return validated;
+    return validatedArray;
   }
 
   throw new TypeError('picked',);
 }
 
 /**
- * Async version of iterablePick - picks elements from an async iterable that match the provided shape or schema.
+ * Picks elements from async iterable that match provided shape or schema validation.
  *
- * When using schemas (objects with parse method), validates each element.
- * When using exact shapes, performs deep equality comparison.
- * When using arrays with schemas, takes first N elements and validates them.
+ * When using a schema (object with parse or parseAsync method), validates entire iterable as single unit.
+ * When using async iterable, validates only elements corresponding to positions in picked iterable.
+ * Picked iterable cannot be longer than input iterable.
  *
- * @param params - Parameters object
- * @param params.iterable - to validate against the shape
- * @param params.picked - Expected shape, schema, or function returning shape/schema
- * @param params.logger - for logging operations
- * @returns Promise resolving to the picked shape or validated result
- * @throws When iterable doesn't match the expected shape or schema validation fails
+ * @param params - Configuration object for async picking operation
+ * @param params.iterable - Input async iterable to validate and extract from
+ * @param params.picked - Expected shape (async iterable) or schema (object with parse/parseAsync method)
+ * @param params.l - Logger for tracing operations during validation
+ * @returns Array containing elements from picked array length (for iterable) or schema validation result
+ * @throws {RangeError} When picked iterable is longer than input iterable
+ * @throws {Error} When elements don't match expected values or schema validation fails
+ * @throws {TypeError} When picked is neither schema nor async iterable
  *
  * @example
  * ```ts
- * // With exact shape matching
- * await iterablePickAsync({ iterable: asyncIterable([1, 2]), picked: [1, 2] }); // returns [1, 2]
- *
- * // With schema validation
+ * // With schema validation - validates entire iterable as one unit
  * const schema = { parse: (val) => val as number[] };
  * await iterablePickAsync({ iterable: asyncIterable([1, 2]), picked: schema }); // returns [1, 2]
+ *
+ * // With exact value matching - validates corresponding elements only
+ * await iterablePickAsync({ iterable: asyncIterable([1, 2, 3]), picked: [1, 2] }); // returns [1, 2]
+ *
+ * // With mixed array containing schemas - validates corresponding elements
+ * const numberSchema = { parse: (val) => val as number };
+ * await iterablePickAsync({ iterable: asyncIterable([1, 2]), picked: [numberSchema, numberSchema] }); // returns [1, 2]
+ *
+ * // Error: picked longer than iterable
+ * await iterablePickAsync({ iterable: asyncIterable([1]), picked: [1, 2] }); // throws RangeError
  * ```
  */
-async function iterablePickAsync({
-  iterable,
-  picked,
-  logger = consoleLogger,
-}: {
-  readonly iterable: AsyncIterable<unknown>;
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- Function type needed alongside unknown
-  readonly picked: unknown | (() => unknown | Promise<unknown>);
-  readonly logger?: Logger;
-},): Promise<any> {
-  const loggerInstance = logtapeGetLogger(['m', 'iterablePickAsync',],);
-  loggerInstance.debug('Starting async iterable pick operation',);
+export async function iterablePickAsync<
+  const MyIterable extends MaybeAsyncIterable<unknown>,
+>(
+  {
+    iterable,
+    picked,
+    l = consoleLogger,
+  }: {
+    readonly iterable: MyIterable;
+    readonly picked: MaybeAsyncIterable<unknown> | MaybeAsyncSchema;
+    readonly l?: Logger;
+  },
+): Promise<unknown> {
+  l.trace('iterablePickAsync',);
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call -- Function may return unknown
-  const resolvedPicked = typeof picked === 'function' ? await picked() : picked;
+  /** Array representation of async input iterable for validation and processing */
+  const iterableArray = await Array.fromAsync(iterable,);
 
   // Handle schema validation (any object with parse method)
-  if (isSchema(resolvedPicked,)) {
-    loggerInstance.debug('Using schema validation',);
-    const iterableArray = [];
-    for await (const item of iterable)
-      iterableArray.push(item,);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Schema parse method returns unknown
-    return resolvedPicked.parse(iterableArray,);
+  if (isMaybeAsyncSchema(picked,)) {
+    l.trace('Using schema validation',);
+    return await maybeAsyncSchemaToAsyncSchema(picked,).parseAsync(
+      iterableArray,
+    );
   }
 
   // Handle arrays that might contain schemas
-  if (Array.isArray(resolvedPicked,)) {
-    const iterableArray = [];
-    for await (const item of iterable)
-      iterableArray.push(item,);
+  if (isMaybeAsyncIterable(picked,)) {
+    /** Array representation of async picked iterable for element-wise validation */
+    const pickedArray: unknown[] = await Array.fromAsync(picked,);
 
-    // Check if array contains any schemas
-    // eslint-disable-next-line unicorn/no-array-callback-reference -- Using callback reference for clarity
-    const hasSchemas = resolvedPicked.some(item => isSchema(item,));
+    if (pickedArray.length > iterableArray.length)
+      throw new RangeError('pickedArray longer than iterableArray',);
 
-    if (hasSchemas) {
-      loggerInstance.debug('Using mixed array validation with schemas',);
-      // Take first N elements where N is length of picked array
-      const sliced = iterableArray.slice(0, resolvedPicked.length,);
-
-      // Validate each element against corresponding schema or exact value
-      const validated = sliced.map((element, elementIndex,) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Array access may return any
-        const expectedAtIndex = resolvedPicked[elementIndex];
-        if (isSchema(expectedAtIndex,)) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Schema parse method returns unknown
-          return expectedAtIndex.parse(element,);
-        }
+    // Validate each element against corresponding schema or exact value
+    /** Array of validated elements after async schema parsing or equality checking */
+    const validated = await mapIterableAsync(
+      async (expected: unknown, index: number,) => {
+        /** Current element from async input iterable at corresponding index */
+        const actual = iterableArray[index];
+        if (isSchema(expected,))
+          return await maybeAsyncSchemaToAsyncSchema(expected,).parseAsync(actual,);
         // For non-schema elements, check exact equality
-        if (!equal(element, expectedAtIndex,)) {
+        if (!(await equalAsync(expected, actual,))) {
           throw new Error(
-            `Element at index ${elementIndex} does not match expected value`,
+            `Element at index ${index} does not match expected value`,
           );
         }
-        return element;
-      },);
+        return actual;
+      },
+      pickedArray,
+    );
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Mixed validation returns unknown
-      return validated;
-    }
+    return validated;
   }
 
-  // Handle exact shape matching (original behavior)
-  loggerInstance.debug('Using exact shape matching',);
-
-  const iterableArray = [];
-  for await (const item of iterable)
-    iterableArray.push(item,);
-
-  // Validate that iterable matches the exact picked shape
-  if (!(await equalAsync(iterableArray, resolvedPicked,)))
-    throw new Error('Async iterable does not match the expected shape',);
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Return type depends on picked parameter
-  return resolvedPicked;
+  throw new TypeError('picked',);
 }
