@@ -19,8 +19,8 @@ export * from './array.type.mapTo.ts';
 export * from './array.type.tuple.ts';
 export * from './array.type.withoutFirst.ts';
 
-export * from './boolean.equal.ts';
-export * from './boolean.not.ts';
+export * from './any.equal.ts';
+export * from './any.not.ts';
 
 export * from './error.assert.equal.ts';
 export * from './error.assert.throw.ts';
@@ -85,12 +85,13 @@ export * from './numeric.bigint.ts';
 export * from './numeric.date.ts';
 export * from './numeric.float.ts';
 export * from './numeric.infinity.ts';
+export * from './numeric.int.ts';
+export * from './numeric.nan.ts';
+export * from './numeric.number.ts';
 export * from './numeric.range.ts';
 export * from './numeric.type.abs.ts';
-export * from './numeric.type.int.ts';
 export * from './numeric.type.ints.ts';
 export * from './numeric.type.intsTo10.ts';
-export * from './numeric.type.nan.ts';
 export * from './numeric.type.negative.ts';
 
 export * from './object.is.ts';

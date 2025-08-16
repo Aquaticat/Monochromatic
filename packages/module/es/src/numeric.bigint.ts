@@ -1,4 +1,4 @@
-import { isNumber, } from './numeric.type.nan.ts';
+import { isNumber, } from './numeric.number.ts';
 
 /**
  * Branded type for bigint values representing integers.

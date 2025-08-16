@@ -1,18 +1,22 @@
 import { isError, } from './error.is.ts';
 import {
   isAsyncGenerator,
-  isAsyncIterable,
   isGenerator,
-  isMap,
-  isObject,
-  isSet,
-  isWeakMap,
-  isWeakSet,
-} from './iterable.is.ts';
+} from './generator.is.ts';
+import { isAsyncIterable, } from './iterable.is.ts';
 import { logtapeGetLogger, } from './logtape.shared.ts';
+import {
+  isMap,
+  isWeakMap,
+} from './map.is.ts';
 import { isObjectDate, } from './numeric.is.ts';
+import { isObject, } from './object.is.ts';
 import { isPromise, } from './promise.is.ts';
 import type { NotPromise, } from './promise.type.ts';
+import {
+  isSet,
+  isWeakSet,
+} from './set.is.ts';
 import {
   isObjectRegexp,
   isString,
@@ -331,6 +335,7 @@ export function equal(a: NotPromise, b: NotPromise,): boolean {
 
       l.debug`Boolean wraps a: ${a} b: ${b}`;
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access -- type matches.
       return a.valueOf() === b.valueOf();
     }
 
@@ -354,7 +359,7 @@ export function equal(a: NotPromise, b: NotPromise,): boolean {
         return false;
       }
 
-      return equal(a?.cause, b?.cause,);
+      return equal(a.cause, b.cause,);
     }
 
     if (isGenerator(a,)) {

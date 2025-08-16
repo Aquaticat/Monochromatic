@@ -1,4 +1,4 @@
-import { isNonNanNumber, } from './numeric.type.nan.ts';
+import { isNonNanNumber, } from './numeric.nan.ts';
 
 /**
  * Branded type for positive floating-point numbers (numbers greater than 0).

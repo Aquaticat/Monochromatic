@@ -2,10 +2,13 @@ import type {
   NegativeInfinity,
   PositiveInfinity,
 } from 'type-fest';
-import { isInfinity, isPositiveInfinity, } from './numeric.infinity.ts';
-import { isNonNanNumber, } from './numeric.type.nan.ts';
-import { isPositiveInt, } from './numeric.type.int.ts';
 import { isPositiveFloat, } from './numeric.float.ts';
+import {
+  isInfinity,
+  isPositiveInfinity,
+} from './numeric.infinity.ts';
+import { isPositiveInt, } from './numeric.int.ts';
+import { isNonNanNumber, } from './numeric.nan.ts';
 
 /**
  * Type guard that checks if a value is a finite number (not infinity or NaN).

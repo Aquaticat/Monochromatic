@@ -1,5 +1,8 @@
 import type { Promisable, } from 'type-fest';
-import { equal, equalAsync, } from './boolean.equal.ts';
+import {
+  equal,
+  equalAsync,
+} from './any.equal.ts';
 import { mapIterableAsync, } from './index.ts';
 import {
   isIterable,

@@ -1,3 +1,5 @@
+import { isNumber } from "./numeric.number.ts";
+
 /**
  * Type alias representing the NaN (Not-a-Number) value.
  * Provides a type-safe way to reference the special IEEE 754 floating-point value
@@ -26,52 +28,6 @@
  * ```
  */
 export type Nan = typeof Number.NaN;
-
-/**
- * Type guard that checks if a value is a number type using JavaScript typeof operator.
- *
- * This function provides precise type narrowing for number types, including NaN, Infinity,
- * and all finite numbers. Uses generic types to preserve the exact input type when the
- * value is confirmed to be a number. Essential for type-safe numeric operations.
- *
- * @template T - Type of value to check
- * @param value - Value to test for number type
- * @returns True if value is a number (including NaN and Infinity), false otherwise
- *
- * @example
- * Basic number checking:
- * ```ts
- * console.log(isNumber(42)); // true
- * console.log(isNumber("42")); // false
- * console.log(isNumber(NaN)); // true
- * console.log(isNumber(Infinity)); // true
- * ```
- *
- * @example
- * Type narrowing in conditional logic:
- * ```ts
- * function processValue(value: unknown) {
- *   if (isNumber(value)) {
- *     // value is now typed as number
- *     return value * 2; // TypeScript knows this is safe
- *   }
- *   return 0;
- * }
- * ```
- *
- * @example
- * Working with arrays and filtering:
- * ```ts
- * const mixed = [1, "2", 3, null, 4.5, undefined];
- * const numbers = mixed.filter(isNumber);
- * console.log(numbers); // [1, 3, 4.5] - only actual numbers
- * ```
- */
-/* @__NO_SIDE_EFFECTS__ */ export function isNumber<T,>(
-  value: T,
-): value is T extends number ? T : never {
-  return typeof value === 'number';
-}
 
 /**
  * Type guard that checks if a value is NaN (Not a Number) using JavaScript Number.isNaN.

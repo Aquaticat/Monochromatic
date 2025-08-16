@@ -1,4 +1,4 @@
-import type { MinusOne, } from './numeric.type.int.ts';
+import type { MinusOne, } from './numeric.int.ts';
 
 // TODO: Write type tests.
 export type CanTakeRequiredArgsOrNever<T_fn extends (args: any[],) => any,

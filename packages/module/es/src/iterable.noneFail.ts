@@ -1,5 +1,5 @@
 import type { Promisable, } from 'type-fest';
-import type { BooleanNot, } from './boolean.not.ts';
+import type { BooleanNot, } from './any.not.ts';
 import {
   entriesIterable,
   entriesIterableAsync,

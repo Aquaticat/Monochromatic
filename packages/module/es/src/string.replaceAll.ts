@@ -1,7 +1,7 @@
 import {
   consoleLogger,
   type Logger,
-} from './string.log';
+} from './string.log.ts';
 
 type StringReplaceAllPattern = Parameters<typeof String.prototype.replaceAll>[0];
 

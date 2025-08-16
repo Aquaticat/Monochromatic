@@ -4,7 +4,7 @@ import type {
   UnknownSet,
 } from 'type-fest';
 import type { UnknownArrayOrTuple, } from 'type-fest/source/internal';
-import { isEmptyArray, } from './iterable.is.ts';
+import { isEmptyArray, } from './array.empty.ts';
 
 //region Type Assertion Guards -- Validates runtime values and throws TypeErrors for invalid inputs
 

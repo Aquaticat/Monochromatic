@@ -2,7 +2,7 @@ import {
   BooleanNot,
   logtapeConfiguration,
   logtapeConfigure,
-} from '@monochromatic-dev/module-es/.js';
+} from '@monochromatic-dev/module-es';
 import {
   describe,
   expect,

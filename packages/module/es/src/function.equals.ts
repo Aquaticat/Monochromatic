@@ -1,7 +1,7 @@
 import {
   equal,
   equalAsync,
-} from './boolean.equal.ts';
+} from './any.equal.ts';
 
 /**
  * Creates a function that performs a deep equality comparison between its input and a pre-configured value.

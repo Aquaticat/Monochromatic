@@ -1,5 +1,3 @@
-import { isNonNanNumber, } from './numeric.type.nan.ts';
-
 /**
  * Branded type for positive integers (numbers greater than 0).
  * Provides compile-time guarantees that values are positive whole numbers.
@@ -17,22 +15,6 @@ import { isNonNanNumber, } from './numeric.type.nan.ts';
 export type PositiveInt = number & { __brand: 'PositiveInt'; };
 
 /**
- * Branded type for positive floating-point numbers (numbers greater than 0).
- * Provides compile-time guarantees that values are positive decimal numbers.
- *
- * @example
- * ```ts
- * function calculateArea(radius: PositiveFloat): PositiveFloat {
- *   return (Math.PI * radius * radius) as PositiveFloat;
- * }
- *
- * const radius = 3.14 as PositiveFloat;
- * const area = calculateArea(radius);
- * ```
- */
-export type PositiveFloat = number & { __brand: 'PositiveFloat'; };
-
-/**
  * Branded type for negative integers (numbers less than 0).
  * Provides compile-time guarantees that values are negative whole numbers.
  *
@@ -47,58 +29,6 @@ export type PositiveFloat = number & { __brand: 'PositiveFloat'; };
  * ```
  */
 export type NegativeInt = number & { __brand: 'NegativeInt'; };
-
-/**
- * Branded type for negative floating-point numbers (numbers less than 0).
- * Provides compile-time guarantees that values are negative decimal numbers.
- *
- * @example
- * ```ts
- * function processTemperature(temp: NegativeFloat): string {
- *   return `Below freezing: ${temp}°C`;
- * }
- *
- * const temp = -15.5 as NegativeFloat;
- * processTemperature(temp);
- * ```
- */
-export type NegativeFloat = number & { __brand: 'NegativeFloat'; };
-
-/**
- * Union type for all positive numbers (integers and floats).
- * Combines PositiveInt and PositiveFloat for flexible positive number handling.
- *
- * @example
- * ```ts
- * function processPositiveValue(value: PositiveNumber): number {
- *   return value * 2;
- * }
- *
- * const intValue = 5 as PositiveInt;
- * const floatValue = 3.14 as PositiveFloat;
- * processPositiveValue(intValue);   // OK
- * processPositiveValue(floatValue); // OK
- * ```
- */
-export type PositiveNumber = PositiveInt | PositiveFloat;
-
-/**
- * Union type for all floating-point numbers (positive and negative).
- * Combines PositiveFloat and NegativeFloat for decimal number operations.
- *
- * @example
- * ```ts
- * function roundFloat(value: Float): number {
- *   return Math.round(value);
- * }
- *
- * const positive = 3.7 as PositiveFloat;
- * const negative = -2.3 as NegativeFloat;
- * roundFloat(positive); // 4
- * roundFloat(negative); // -2
- * ```
- */
-export type Float = PositiveFloat | NegativeFloat;
 
 /**
  * Union type for all integers (positive, negative, and zero).
@@ -119,24 +49,6 @@ export type Float = PositiveFloat | NegativeFloat;
  * ```
  */
 export type Int = PositiveInt | NegativeInt | 0;
-
-/**
- * Union type for all negative numbers (integers and floats).
- * Combines NegativeInt and NegativeFloat for flexible negative number handling.
- *
- * @example
- * ```ts
- * function processLoss(value: NegativeNumber): PositiveNumber {
- *   return Math.abs(value) as PositiveNumber;
- * }
- *
- * const intLoss = -100 as NegativeInt;
- * const floatLoss = -25.5 as NegativeFloat;
- * processLoss(intLoss);   // 100
- * processLoss(floatLoss); // 25.5
- * ```
- */
-export type NegativeNumber = NegativeInt | NegativeFloat;
 
 /**
  * Union type for non-negative integers (positive integers and zero).
@@ -173,39 +85,6 @@ export type NonNegativeInt = PositiveInt | 0;
  * ```
  */
 export type NonPositiveInt = NegativeInt | 0;
-
-/**
- * Branded type for bigint values representing integers.
- * Provides compile-time guarantees for large integer operations using bigint.
- *
- * @example
- * ```ts
- * function processLargeNumber(value: IntBigint): string {
- *   return `Large number: ${value}`;
- * }
- *
- * const largeInt = 9007199254740991n as IntBigint;
- * processLargeNumber(largeInt);
- * ```
- */
-export type IntBigint = bigint & { __brand: 'IntBigint'; };
-
-/**
- * Union type for all numeric types (number and bigint).
- * Provides flexibility for functions that can work with both regular numbers and bigints.
- *
- * @example
- * ```ts
- * function convertToString(value: Numeric): string {
- *   return value.toString();
- * }
- *
- * convertToString(42);    // "42"
- * convertToString(42n);   // "42"
- * convertToString(3.14);  // "3.14"
- * ```
- */
-export type Numeric = number | bigint;
 
 /**
  * Type-level utility that subtracts 1 from literal number types 1-10.
