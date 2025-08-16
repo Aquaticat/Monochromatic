@@ -91,7 +91,7 @@ export type ArrayFixedLengthOrNever<T,> = T extends readonly unknown[]
 
 /**
  * Type utility that determines if an array type has a fixed length.
- * Returns true for tuples and fixed-length arrays, false for variable-length arrays.
+ * Returns true for tuples and fixed-length arrays, false for variable-length arrays and non-arrays.
  *
  * @example
  * ```ts
@@ -100,6 +100,8 @@ export type ArrayFixedLengthOrNever<T,> = T extends readonly unknown[]
  * type Test3 = IsArrayFixedLength<readonly [string]>; // true
  * type Test4 = IsArrayFixedLength<Array<boolean>>; // false
  * type Test5 = IsArrayFixedLength<[]>; // true
+ * type Test6 = IsArrayFixedLength<string>; // false
+ * type Test7 = IsArrayFixedLength<null>; // false
  *
  * // Usage in conditional logic
  * function handleArray<T extends readonly unknown[]>(
@@ -109,6 +111,6 @@ export type ArrayFixedLengthOrNever<T,> = T extends readonly unknown[]
  * }
  * ```
  */
-export type IsArrayFixedLength<T extends readonly unknown[],> = number extends T['length']
-  ? false
-  : true;
+export type IsArrayFixedLength<T,> = T extends readonly unknown[]
+  ? number extends T['length'] ? false : true
+  : false;

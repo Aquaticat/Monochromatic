@@ -34,7 +34,7 @@
  * ```
  */
 export function isArrayOfLength1<const T,>(
-  value: readonly T[],
+  value: unknown,
 ): value is readonly [T,] {
   return Array.isArray(value,) && value.length === 1;
 }

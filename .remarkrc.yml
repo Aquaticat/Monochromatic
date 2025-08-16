@@ -105,7 +105,10 @@ plugins:
 - remark-lint-no-file-name-articles
 - remark-lint-no-file-name-consecutive-dashes
 - remark-lint-no-file-name-irregular-characters
-- remark-lint-no-file-name-mixed-case
+
+# USER: Turned off in all presets because I frequently write TODO.feature.md
+# - remark-lint-no-file-name-mixed-case
+
 - remark-lint-no-file-name-outer-dashes
 - - remark-lint-no-heading-punctuation
   - ':.'

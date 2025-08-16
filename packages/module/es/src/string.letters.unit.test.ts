@@ -142,3 +142,111 @@ describe('UppercaseLettersTuple type', () => {
     expectTypeOf<UppercaseLettersTuple[25]>().toEqualTypeOf<'Z'>();
   });
 });
+
+describe('lowercaseLetters runtime array', () => {
+  test('should contain all 26 lowercase letters in alphabetical order', () => {
+    expect(lowercaseLetters,).toHaveLength(26,);
+    expect(lowercaseLetters[0],).toBe('a',);
+    expect(lowercaseLetters[25],).toBe('z',);
+    expect(lowercaseLetters,).toEqual([
+      'a',
+      'b',
+      'c',
+      'd',
+      'e',
+      'f',
+      'g',
+      'h',
+      'i',
+      'j',
+      'k',
+      'l',
+      'm',
+      'n',
+      'o',
+      'p',
+      'q',
+      'r',
+      's',
+      't',
+      'u',
+      'v',
+      'w',
+      'x',
+      'y',
+      'z',
+    ],);
+  });
+
+  test('should be a proper array', () => {
+    expect(Array.isArray(lowercaseLetters,),).toBe(true,);
+    expect(lowercaseLetters,).toBeInstanceOf(Array,);
+  });
+
+  test('should be iterable', () => {
+    const letters: string[] = [];
+    for (const letter of lowercaseLetters)
+      letters.push(letter,);
+    expect(letters,).toHaveLength(26,);
+    expect(letters[0],).toBe('a',);
+    expect(letters[25],).toBe('z',);
+  });
+
+  test('should match the type definition', () => {
+    expectTypeOf(lowercaseLetters,).toEqualTypeOf<LowercaseLettersTuple>();
+  });
+});
+
+describe('uppercaseLetters runtime array', () => {
+  test('should contain all 26 uppercase letters in alphabetical order', () => {
+    expect(uppercaseLetters,).toHaveLength(26,);
+    expect(uppercaseLetters[0],).toBe('A',);
+    expect(uppercaseLetters[25],).toBe('Z',);
+    expect(uppercaseLetters,).toEqual([
+      'A',
+      'B',
+      'C',
+      'D',
+      'E',
+      'F',
+      'G',
+      'H',
+      'I',
+      'J',
+      'K',
+      'L',
+      'M',
+      'N',
+      'O',
+      'P',
+      'Q',
+      'R',
+      'S',
+      'T',
+      'U',
+      'V',
+      'W',
+      'X',
+      'Y',
+      'Z',
+    ],);
+  });
+
+  test('should be a proper array', () => {
+    expect(Array.isArray(uppercaseLetters,),).toBe(true,);
+    expect(uppercaseLetters,).toBeInstanceOf(Array,);
+  });
+
+  test('should be iterable', () => {
+    const letters: string[] = [];
+    for (const letter of uppercaseLetters)
+      letters.push(letter,);
+    expect(letters,).toHaveLength(26,);
+    expect(letters[0],).toBe('A',);
+    expect(letters[25],).toBe('Z',);
+  });
+
+  test('should match the type definition', () => {
+    expectTypeOf(uppercaseLetters,).toEqualTypeOf<UppercaseLettersTuple>();
+  });
+});
