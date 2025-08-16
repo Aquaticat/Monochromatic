@@ -1,3 +1,5 @@
+// TODO: Delete after I verify the migration works myself.
+
 import type { UnknownRecord, } from 'type-fest';
 
 /**

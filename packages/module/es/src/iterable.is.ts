@@ -1,3 +1,5 @@
+// TODO: To be deleted since I'd split it into smaller files.
+
 import type { UnknownRecord, } from 'type-fest';
 
 /**

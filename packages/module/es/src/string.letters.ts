@@ -31,9 +31,9 @@ export type LowercaseLetters =
   | 'r'
   | 's'
   | 't'
-  | 'w'
-  | 'v'
   | 'u'
+  | 'v'
+  | 'w'
   | 'x'
   | 'y'
   | 'z';
@@ -69,9 +69,9 @@ export type UppercaseLetters =
   | 'R'
   | 'S'
   | 'T'
-  | 'W'
-  | 'V'
   | 'U'
+  | 'V'
+  | 'W'
   | 'X'
   | 'Y'
   | 'Z';
@@ -107,9 +107,9 @@ export type LowercaseLettersTuple = [
   'r',
   's',
   't',
-  'w',
-  'v',
   'u',
+  'v',
+  'w',
   'x',
   'y',
   'z',
@@ -146,9 +146,9 @@ export type UppercaseLettersTuple = [
   'R',
   'S',
   'T',
-  'W',
-  'V',
   'U',
+  'V',
+  'W',
   'X',
   'Y',
   'Z',

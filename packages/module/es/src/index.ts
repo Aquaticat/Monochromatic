@@ -9,8 +9,12 @@ export * from './any.toExport.ts';
 export * from './any.typeOf.ts';
 export * from './any.when.ts';
 
-export * from './array.is.ts';
+export * from './array.basic.ts';
+export * from './array.empty.ts';
+export * from './array.length.ts';
+export * from './array.nonEmpty.ts';
 export * from './array.of.ts';
+export * from './array.type.fixedLength.ts';
 export * from './array.type.mapTo.ts';
 export * from './array.type.tuple.ts';
 export * from './array.type.withoutFirst.ts';
