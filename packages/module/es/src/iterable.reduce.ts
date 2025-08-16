@@ -1,4 +1,4 @@
-import { isEmptyArray, } from './iterable.is.ts';
+import { isEmptyArray, } from './array.empty.ts';
 import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 import type { PromisableFunction, } from './promise.type.ts';
 
@@ -179,6 +179,7 @@ export function reduceIterable<T_accumulated, T_element,>(
   const arrayLikeArray: T_element[] = [...arrayLike,];
 
   return arrayLikeArray.reduce(
+    // eslint-disable-next-line unicorn/no-array-callback-reference -- reducer is designed to work.
     reducer,
     initialValue,
   );
