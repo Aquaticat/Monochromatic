@@ -1,5 +1,12 @@
 # Code Quality & Patterns Todo
 
+## Cross-References
+- [**Build System Issues**](TODO.build-system.md#missing-export-issues) - TypeScript compilation and export fixes
+- [**Security Practices**](TODO.security.md#development-security) - Secure coding guidelines and practices
+- [**Performance Patterns**](TODO.performance.md#runtime-performance) - Performance-focused coding patterns
+- [**Package Standards**](TODO.packages.md#cross-package-improvements) - Cross-package coding standards
+- [**Automation Tools**](TODO.automation.md#code-quality-automation) - Automated code quality improvements
+
 ## Current Linting Issues
 
 ### High Priority ESLint Fixes
@@ -21,9 +28,26 @@
 4. **`vitest/prefer-describe-function-title`** (down from 69 to around 30)
    - Update remaining test files to use function references in describe blocks
 
+#### TypeScript Compilation Errors (New - Critical Priority)
+**Status**: Critical - Blocks builds
+
+Recent analysis shows critical TypeScript compilation errors that must be fixed:
+
+- [ ] **Missing exports in type modules** → See [Build System Todo](TODO.build-system.md#missing-export-issues)
+  - `iterable.is.ts` missing multiple export declarations
+  - `numeric.type.int.ts` export name mismatches
+  - Module export consistency issues across packages
+
+- [ ] **Missing function implementations**
+  - `getRandomId` function missing in `any.ReplicatingStore.ts`
+  - Type constraint issues in array type definitions
+  - Pattern matcher type compatibility issues
+
+**Cross-Reference**: See [Build System Todo](TODO.build-system.md#missing-export-issues) for complete list and fixes.
+
 #### Remaining Files to Fix
 - More test files need function references in describe blocks
-- Files with remaining `i` variables in for loops  
+- Files with remaining `i` variables in for loops
 - Files with void expression issues in test assertions
 - Files with window references that need globalThis
 
@@ -38,6 +62,8 @@
 3. Update remaining test files to use function references in describe blocks
 4. Replace `window` with `globalThis` throughout the codebase
 5. Address unsafe any returns with proper type annotations
+
+**Cross-Reference**: See [Automation Todo](TODO.automation.md#code-quality-automation) for automated linting improvements.
 
 ## Completed ESLint Fixes (June 2025)
 
@@ -62,7 +88,7 @@
 
 1. Started with mutable `let taskStatus` and `while` loop with inline constants
 2. "Do you really need a mutable variable?" → Moved to immutable `const` inside loop
-3. "Do you really need a while(true) break pattern?" → Changed to `while` with proper condition  
+3. "Do you really need a while(true) break pattern?" → Changed to `while` with proper condition
 4. "Do you really need a while loop at all?" → Changed to `for` loop with calculated iterations
 5. "Do you really need a for loop?" → Changed to recursive helper function
 
@@ -112,15 +138,19 @@ try {
    - Use `Promise.all` with `findAsync` for each task
    - Or better: a single `findAsync` that polls ALL tasks in each iteration
 
+**Cross-Reference**: See [Packages Todo](TODO.packages.md#async-iterator-utilities) for async utility function development.
+
 ### Lessons from "Do you really need..."
 
 This questioning pattern teaches:
 1. **Question every construct** - Each programming construct adds complexity
-2. **Prefer immutability** - Mutable variables should be eliminated when possible  
+2. **Prefer immutability** - Mutable variables should be eliminated when possible
 3. **Prefer declarative over imperative** - Loops can often be replaced with higher-order functions
 4. **Extract and name concepts** - Helper functions like `isTaskPending` improve readability
 5. **Think functionally first** - There's often a functional solution that's cleaner
 6. **Simplify progressively** - Don't stop at the first working solution
+
+**Cross-Reference**: See [Performance Todo](TODO.performance.md#javascript-performance) for performance-focused patterns.
 
 ## Testing Requirements and Standards
 
@@ -130,6 +160,8 @@ This questioning pattern teaches:
 - To run tests for specific patterns:
   - `moon run testUnit -- packages/module/es/src/boolean.equal.unit.test.ts`
   - `moon run testBrowser -- packages/module/es/src/boolean.equal.browser.test.ts`
+
+**Cross-Reference**: See [Automation Todo](TODO.automation.md#testing-automation) for comprehensive testing automation.
 
 ### Coverage Requirements
 If certain lines or branches can't be tested, use V8 ignore comments:
@@ -198,6 +230,8 @@ expect(isError(new Error())).toBe(true);
 - **Always log errors in catch blocks**
 - **Document expected errors with comments**
 
+**Cross-Reference**: See [Security Todo](TODO.security.md#secure-coding-practices) for security-focused error handling.
+
 ## Linting Configuration Philosophy
 
 ### When to Fix vs Configure
@@ -207,7 +241,7 @@ expect(isError(new Error())).toBe(true);
 
 ### Rule Categories
 1. **Code Quality Issues** - Always fix in code, not config
-2. **Style Preferences** - Can be configured for team consistency  
+2. **Style Preferences** - Can be configured for team consistency
 3. **Framework-specific** - May need configuration for specific use cases
 
 ### Testing-Specific Linting
@@ -223,11 +257,15 @@ expect(isError(new Error())).toBe(true);
 - Avoid await in loops where logically sound
 - Use `Promise.all()` for concurrent operations
 
+**Cross-Reference**: See [Performance Todo](TODO.performance.md#async-performance) for comprehensive async optimization.
+
 ### Functional Programming Utilities
 - Use `piped` for synchronous function composition
 - Use `pipedAsync` for async function composition
 - Use `pipe`/`pipeAsync` for reusable function pipelines
 - Functions generally don't require `.bind()` for `this` context
+
+**Cross-Reference**: See [Packages Todo](TODO.packages.md#module-library-packages-modulees) for functional utility expansion.
 
 ## Code Organization Standards
 
@@ -239,8 +277,29 @@ expect(isError(new Error())).toBe(true);
 
 ### Export Patterns
 - Avoid `Object.assign` for extending typed objects
-- Export at the end after all object construction is complete  
+- Export at the end after all object construction is complete
 - Prefer immediately invoked function expressions over mutable variables
+
+## Security-Focused Code Quality
+
+### Secure Coding Practices
+**Status**: High Priority - Security integration
+
+- [ ] Implement input validation in all user-facing functions
+- [ ] Add proper error handling without information disclosure
+- [ ] Use type-safe patterns to prevent runtime errors
+- [ ] Implement proper logging for security events
+- [ ] Add code review focus on security patterns
+
+**Cross-Reference**: See [Security Todo](TODO.security.md#secure-coding-practices) for comprehensive security guidelines.
+
+### Dependency Security Integration
+- [ ] Add dependency vulnerability scanning to pre-commit hooks
+- [ ] Implement automated dependency update validation
+- [ ] Add license compliance checking
+- [ ] Create secure dependency usage patterns
+
+**Cross-Reference**: See [Security Todo](TODO.security.md#dependency-security) for dependency security management.
 
 ## Future Quality Improvements
 
@@ -250,8 +309,31 @@ expect(isError(new Error())).toBe(true);
 - Monitor code quality metrics over time
 - Integrate with development workflow
 
+**Cross-Reference**: See [Automation Todo](TODO.automation.md#code-quality-automation) for comprehensive automation.
+
 ### Developer Experience
 - Provide clear error messages for common issues
 - Document coding standards and best practices
 - Create code templates and snippets
 - Implement automated refactoring tools
+
+**Cross-Reference**: See [Development Todo](TODO.development.md#development-workflow-improvements) for developer experience enhancements.
+
+### Performance Integration
+- [ ] Add performance-focused linting rules
+- [ ] Implement performance regression detection in code review
+- [ ] Create performance-aware coding guidelines
+- [ ] Add performance impact analysis for code changes
+
+**Cross-Reference**: See [Performance Todo](TODO.performance.md#monitoring--metrics) for performance measurement integration.
+
+## Success Criteria
+
+- [ ] All critical TypeScript compilation errors resolved
+- [ ] ESLint violations reduced to zero for high-priority rules
+- [ ] Automated code quality checking integrated into development workflow
+- [ ] Security-focused code patterns implemented and enforced
+- [ ] Performance-aware coding standards established and followed
+- [ ] Comprehensive testing coverage with quality automation
+- [ ] Developer productivity enhanced through quality tooling
+- [ ] Code review process enhanced with automated quality checks

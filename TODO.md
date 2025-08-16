@@ -7,61 +7,170 @@
 - [**Documentation & UI/UX**](TODO.documentation.md) - Content, design, and user experience
 - [**Development Environment**](TODO.development.md) - WSL, tooling, setup
 - [**Code Quality & Patterns**](TODO.code-quality.md) - Linting, testing, best practices
+- [**Package-Specific Improvements**](TODO.packages.md) - Module library, config packages, style framework
+- [**Security & Infrastructure**](TODO.security.md) - Application security, deployment hardening
+- [**Performance & Optimization**](TODO.performance.md) - Build performance, runtime optimization
+- [**Automation & DevOps**](TODO.automation.md) - CI/CD, development automation, release management
 - [**Completed Tasks**](TODO.completed.md) - Reference for finished work
 
-## High Priority Items
+## Priority Overview
 
-### Immediate Action Required
+### 🔴 Critical Priority
+**Immediate action required - blocking development or production**
 
-1. **CLI Tools Development** → [See CLI Tools Todo](TODO.cli-tools.md#high-priority-tools)
-   - `cpfd` - Copy Files From Dependencies
-   - `increase-version` - Automate version bumping
-   - `add-scripts` - Add NPM scripts to packages
+1. **Build System Reliability** → [Build System Todo](TODO.build-system.md#critical-issues)
+   - Fresh clone setup problems blocking new developers
+   - Package build order issues preventing successful builds
+   - Moon task dependency optimization needed
 
-2. **Build System Improvements** → [See Build System Todo](TODO.build-system.md#critical-issues)
-   - Fix fresh clone setup issues
-   - Resolve package build order problems
-   - Address TypeScript configuration warnings
+2. **Security Fundamentals** → [Security Todo](TODO.security.md#application-security)
+   - Dependency vulnerability scanning and management
+   - Input validation for all user-facing applications
+   - Secrets management audit and implementation
 
-3. **Code Quality** → [See Code Quality Todo](TODO.code-quality.md#current-linting-issues)
-   - Fix remaining ESLint violations
-   - Address unsafe TypeScript patterns
-   - Complete test coverage improvements
+3. **Core Library Completion** → [Packages Todo](TODO.packages.md#module-library-packages-modulees)
+   - Missing async iterator utilities for complete functional programming
+   - Essential array and object utilities for developer productivity
+   - Type guard and validation utilities for type safety
+
+### 🟠 High Priority
+**Important improvements that significantly impact developer experience**
+
+1. **CLI Tools Development** → [CLI Tools Todo](TODO.cli-tools.md#high-priority-tools)
+   - `cpfd` - Copy Files From Dependencies (daily workflow improvement)
+   - `increase-version` - Automate version bumping (publishing workflow)
+   - `add-scripts` - Add NPM scripts to packages (package creation workflow)
+
+2. **Performance Optimization** → [Performance Todo](TODO.performance.md#build-performance)
+   - Build system performance improvements
+   - TypeScript compilation optimization
+   - Bundle size and runtime performance optimization
+
+3. **Development Automation** → [Automation Todo](TODO.automation.md#development-automation)
+   - Enhanced pre-commit hooks and code quality automation
+   - Development environment automation and consistency
+   - Code generation and templating for productivity
+
+### 🟡 Normal Priority
+**Valuable improvements that enhance the project**
+
+1. **Documentation Enhancement** → [Documentation Todo](TODO.documentation.md#documentation-system-improvements)
+   - PlantUML integration for architecture diagrams
+   - Comprehensive API documentation generation
+   - User experience improvements and content optimization
+
+2. **Package Ecosystem** → [Packages Todo](TODO.packages.md#configuration-packages)
+   - Configuration package improvements and templates
+   - Style framework component library development
+   - Figma plugin enhancements and additional tools
+
+3. **Infrastructure Improvements** → [Security Todo](TODO.security.md#infrastructure-security)
+   - Container security and deployment hardening
+   - Monitoring and incident response procedures
+   - Compliance framework implementation
+
+### 🟢 Low Priority
+**Nice-to-have features and experimental improvements**
+
+1. **Advanced Features** → [Packages Todo](TODO.packages.md#cross-package-improvements)
+   - Advanced utilities and specialized functionality
+   - Experimental patterns and libraries
+   - Integration with external tools and services
+
+2. **Optimization Projects** → [Performance Todo](TODO.performance.md#advanced-optimization)
+   - Advanced caching strategies
+   - Infrastructure performance tuning
+   - Predictive analytics and monitoring
 
 ## Current Sprint Focus
 
 ### Active Development (August 2025)
-- Fixing build system ordering issues for fresh clones
-- Completing ESLint configuration cleanup
-- Implementing missing CLI utilities
+- **Build System**: Fixing ordering issues for fresh clones → [Build System Todo](TODO.build-system.md#fresh-clone-setup-problems)
+- **Code Quality**: Completing ESLint configuration cleanup → [Code Quality Todo](TODO.code-quality.md#current-linting-issues)
+- **CLI Tools**: Implementing missing utilities → [CLI Tools Todo](TODO.cli-tools.md#high-priority-tools)
+- **Security**: Establishing security fundamentals → [Security Todo](TODO.security.md#dependency-security)
 
 ### Next Sprint Candidates
-- Pattern matching library development
-- Documentation system improvements
-- Development environment optimization
+- **Package Development**: Expanding module library functionality → [Packages Todo](TODO.packages.md#module-library-packages-modulees)
+- **Performance**: Build system optimization → [Performance Todo](TODO.performance.md#build-performance)
+- **Documentation**: API documentation automation → [Documentation Todo](TODO.documentation.md#api-documentation)
+- **Automation**: CI/CD pipeline enhancement → [Automation Todo](TODO.automation.md#cicd-pipeline)
 
-## Priority Classification
+## Cross-Cutting Initiatives
 
-### 🔴 High Priority
-- CLI tools that improve daily workflow
-- Build system reliability issues
-- Security and type safety violations
+### Developer Experience Excellence
+Initiatives spanning multiple TODO areas:
+- **Build Performance** → [Performance Todo](TODO.performance.md#build-performance) + [Build System Todo](TODO.build-system.md#moon-build-system-optimization)
+- **Development Environment** → [Development Todo](TODO.development.md#wsl-development-environment) + [Automation Todo](TODO.automation.md#development-environment-automation)
+- **Code Quality** → [Code Quality Todo](TODO.code-quality.md#secure-coding-practices) + [Security Todo](TODO.security.md#development-security)
 
-### 🟡 Normal Priority
-- Documentation improvements
-- UI/UX enhancements
-- Performance optimizations
+### Production Readiness
+Cross-functional production preparation:
+- **Security Hardening** → [Security Todo](TODO.security.md#infrastructure-security) + [Performance Todo](TODO.performance.md#infrastructure-performance)
+- **Monitoring & Observability** → [Automation Todo](TODO.automation.md#monitoring-automation) + [Performance Todo](TODO.performance.md#monitoring--metrics)
+- **Release Management** → [Automation Todo](TODO.automation.md#release-automation) + [Build System Todo](TODO.build-system.md#package-management-improvements)
 
-### 🟢 Low Priority
-- Experimental features
-- Nice-to-have utilities
-- Legacy system cleanup
+### Library Ecosystem Growth
+Coordinated library development:
+- **Core Utilities** → [Packages Todo](TODO.packages.md#module-library-packages-modulees) + [Code Quality Todo](TODO.code-quality.md#testing-requirements-and-standards)
+- **Configuration Standards** → [Packages Todo](TODO.packages.md#configuration-packages) + [Documentation Todo](TODO.documentation.md#technical-documentation-style)
+- **Design System** → [Packages Todo](TODO.packages.md#style-packages) + [Documentation Todo](TODO.documentation.md#ui-ux-improvements)
+
+## Implementation Roadmap
+
+### Quarter 1: Foundation & Stability
+**Weeks 1-4: Critical Infrastructure**
+- Build system reliability and fresh clone setup → [Build System Todo](TODO.build-system.md#critical-issues)
+- Security fundamentals and vulnerability management → [Security Todo](TODO.security.md#dependency-security)
+- Core CLI tools for daily workflow → [CLI Tools Todo](TODO.cli-tools.md#high-priority-tools)
+
+**Weeks 5-8: Development Experience**
+- Performance optimization for build and runtime → [Performance Todo](TODO.performance.md#build-performance)
+- Development environment standardization → [Development Todo](TODO.development.md#wsl-development-environment)
+- Code quality automation enhancement → [Code Quality Todo](TODO.code-quality.md#current-linting-issues)
+
+### Quarter 2: Ecosystem Expansion
+**Weeks 9-12: Library Development**
+- Module library expansion with async utilities → [Packages Todo](TODO.packages.md#async-iterator-utilities)
+- Configuration package templates and improvements → [Packages Todo](TODO.packages.md#configuration-packages)
+- Documentation system automation → [Documentation Todo](TODO.documentation.md#api-documentation)
+
+**Weeks 13-16: Advanced Automation**
+- CI/CD pipeline optimization → [Automation Todo](TODO.automation.md#cicd-pipeline)
+- Release automation and semantic versioning → [Automation Todo](TODO.automation.md#release-automation)
+- Infrastructure as code implementation → [Automation Todo](TODO.automation.md#infrastructure-automation)
+
+### Quarter 3: Production Excellence
+**Weeks 17-20: Security & Performance**
+- Comprehensive security hardening → [Security Todo](TODO.security.md#infrastructure-security)
+- Advanced performance optimization → [Performance Todo](TODO.performance.md#runtime-performance)
+- Monitoring and observability implementation → [Automation Todo](TODO.automation.md#monitoring-automation)
+
+**Weeks 21-24: Ecosystem Maturity**
+- Style framework component library → [Packages Todo](TODO.packages.md#style-packages)
+- Advanced developer tools and utilities → [CLI Tools Todo](TODO.cli-tools.md#advanced-utilities)
+- Documentation excellence and user experience → [Documentation Todo](TODO.documentation.md#user-experience-research)
 
 ## Recent Completions
 
-- ✅ Husky to Moon migration (June 2025)
-- ✅ WSL development environment setup
-- ✅ Pre-commit hook implementation
-- ✅ TypeScript baseUrl configuration fixes
+- ✅ Husky to Moon migration (June 2025) → [Completed Tasks](TODO.completed.md#husky-to-moon-migration-june-2025)
+- ✅ WSL development environment setup → [Completed Tasks](TODO.completed.md#wsl-migration-benefits-completed)
+- ✅ Pre-commit hook implementation → [Completed Tasks](TODO.completed.md#pre-commit-validation-issues-fixed-june-2025)
+- ✅ TypeScript baseUrl configuration fixes → [Completed Tasks](TODO.completed.md#typescript-configuration-fixes)
+- ✅ ESLint configuration cleanup (partial) → [Completed Tasks](TODO.completed.md#eslint-configuration-cleanup-june-2025)
 
 *For detailed information on completed tasks, see [Completed Tasks](TODO.completed.md)*
+
+## Contributing Guidelines
+
+### Working with TODO Files
+1. **Read the relevant TODO file** before starting work in any area
+2. **Update task status** by checking off completed items
+3. **Add new tasks** to the appropriate specialized TODO file
+4. **Cross-reference** related tasks across different TODO files
+5. **Document decisions** and update success criteria when tasks are completed
+
+### Priority Guidelines
+- **Critical**: Blocks development or production, fix immediately
+- **High**: Significant developer experience or user impact
+- **Normal**: Valuable
