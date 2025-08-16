@@ -1,86 +1,14 @@
 # Philosophy
 
-## Core principles
+This document outlines the core philosophy and decision-making principles that guide the Monochromatic project.
 
-### Portability and interoperability
+## Organization
 
-Portable, interoperable, detachable.
-No platform-specific solutions.
+The philosophy is organized into focused documents:
 
-#### Markdown features
+- **[Portability and Core Principles](PHILOSOPHY.portability.md)** - Foundational principles around portability, interoperability, and detachable solutions
+- **[Build and Execution](PHILOSOPHY.build-execution.md)** - Technical decisions about build systems and script execution
+- **[Tool Choices](PHILOSOPHY.tool-choices.md)** - Rationale for framework, editor, linting, testing, and AI SDK selections
+- **[Browser Support](PHILOSOPHY.browser-support.md)** - Future considerations for browser feature adoption
 
-Plain markdown readability with optional enhanced tooling.
-
-## Technical decisions
-
-### Build and execution
-
-#### Bun scripts vs single file executables
-
-Direct `bun <script>.ts` execution in moon.yml:
-
-- **Platform portability**: Bun single file executables aren't cross-platform
-- **Industry precedent**: Oxlint and dprint use runtime platform detection
-- **Performance**: Acceptable startup cost for portability
-
-### Tool choices
-
-#### Framework: Astro > Nue
-
-Astro: most supported static site generator.
-
-NueJS: requires less common markdown format support.
-
-#### Editor: VSCode/VSCodium/Neovide > WebStorm
-
-WebStorm lacks moon plugin support.
-
-#### Linting and formatting
-
-- **Biome**: insufficient rules
-- **oxlint**: faster than ESLint
-- **ESLint**: fills oxlint gaps
-- **Stylelint**: CSS-specific rules
-- **dprint**: universal formatter
-
-#### Testing: Vitest + Playwright
-
-Alternatives rejected:
-
-1.  **WebdriverIO**
-    - ✓ Firefox ESR support
-    - ✗ No `prefers-contrast`/`prefers-reduced-motion` emulation
-    - ✗ No Firefox user.js/Chrome flags support
-    - ✗ Host configuration breaks reproducibility
-
-1.  **Playwright standalone**
-    - ✗ No unit testing
-
-Vitest + Playwright: unit testing + browser automation + emulation.
-
-#### AI SDK: OpenAI SDK > Vercel AI SDK
-
-Vercel AI SDK forces React dependencies for non-React projects:
-
-- **Dependency chain**: `ai` → `@ai-sdk/react` → `swr` → `react`
-- **Bloated tree**: Frontend UI concerns bundled with backend logic
-- **No core package**: Missing modular `@ai-sdk/core` without UI dependencies
-
-OpenAI SDK: direct API integration without unnecessary dependencies.
-
-## Future considerations
-
-### Browser support
-
-#### Firefox ESR 140 (June 2025)
-
-Modern features without workarounds:
-
-1.  **CSS Container Queries** - `@container` and container units
-1.  **`:has()` selector**
-1.  **CSS Nesting**
-1.  **`content-visibility`**
-1.  **Text Fragments**
-1.  **CSS `@scope`**
-1.  **Popover API**
-1.  **View Transitions API**
+Each document provides the reasoning behind specific technical decisions and architectural choices.
