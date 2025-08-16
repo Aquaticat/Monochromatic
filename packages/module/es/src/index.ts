@@ -86,12 +86,12 @@ export * from './numeric.date.ts';
 export * from './numeric.float.ts';
 export * from './numeric.infinity.ts';
 export * from './numeric.int.ts';
+export * from './numeric.ints.ts';
 export * from './numeric.nan.ts';
 export * from './numeric.negative.ts';
 export * from './numeric.number.ts';
 export * from './numeric.range.ts';
 export * from './numeric.type.abs.ts';
-export * from './numeric.type.ints.ts';
 export * from './numeric.type.intsTo10.ts';
 
 export * from './object.is.ts';
