@@ -1,9 +1,7 @@
+import { isArrayEmpty, } from './array.empty.ts';
+import { isArrayOfLength1, } from './array.length.ts';
 import { notUndefinedOrThrow, } from './error.throw.ts';
 import { unary, } from './function.nary.ts';
-import {
-  isArrayEmpty,
-  isArrayOfLength1,
-} from './iterable.is.ts';
 import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
 /**
@@ -389,8 +387,10 @@ export async function intersectionIterablesAsync(
   if (isArrayEmpty(iterables,))
     return new Set();
 
-  if (isArrayOfLength1(iterables,))
-    return setOfIterableAsync(iterables[0],);
+  if (isArrayOfLength1(iterables,)) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- had to use any
+    return setOfIterableAsync(iterables[0] as any,);
+  }
 
   // Start with the first iterable as candidates
   const candidates = await setOfIterableAsync(notUndefinedOrThrow(iterables[0],),);

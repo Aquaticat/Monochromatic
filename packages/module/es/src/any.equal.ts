@@ -22,7 +22,7 @@ import {
   isString,
 } from './string.is.ts';
 
-const l = logtapeGetLogger(['m', 'boolean.equal',],);
+const l = logtapeGetLogger(['m', 'any.equal',],);
 
 /* vale alex.Race = NO */
 // TODO: Don't consider BigInt a primitive.
