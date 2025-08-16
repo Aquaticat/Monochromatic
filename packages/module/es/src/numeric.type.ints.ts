@@ -1,3 +1,5 @@
+import type { UnionToTuple, } from 'type-fest';
+
 /**
  * Type-level utility that generates a union of integer literal types within a specified range (inclusive).
  * Creates a union type containing all integers from `fromInclusive` to `toInclusive`, including both endpoints.
@@ -440,6 +442,27 @@ export type Ints<fromInclusive extends number, toInclusive extends number,> =
     : fromInclusive extends 10 ? toInclusive extends 10 ? 10 : number
     : number;
 
+export function ints<const FromInclusive extends number,
+  const ToInclusive extends number,>(
+  fromInclusive: FromInclusive,
+  toInclusive: ToInclusive,
+): FromInclusive extends ToInclusive ? [FromInclusive,]
+  : UnionToTuple<Ints<FromInclusive, ToInclusive>>
+{
+  if (toInclusive < fromInclusive)
+    throw new RangeError('toInclusive < fromInclusive',);
+
+  if ((toInclusive as number) === (fromInclusive as number)) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Cannot be typed.
+    return [fromInclusive,] as any; // Type assertion needed for complex conditional return
+  }
+
+  const length = (toInclusive as number) - (fromInclusive as number) + 1;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Cannot be typed.
+  return Array.from({ length, },
+    (_, index,) => (fromInclusive as number) + index,) as any;
+}
+
 export type IntsToExclusive<fromInclusive extends number, toExclusive extends number,> =
   fromInclusive extends -10 ? toExclusive extends -10 ? never
     : toExclusive extends -9 ? (-10)
@@ -781,3 +804,18 @@ export type IntsToExclusive<fromInclusive extends number, toExclusive extends nu
       ? toExclusive extends 9 ? never : toExclusive extends 10 ? (9) : number
     : fromInclusive extends 10 ? toExclusive extends 10 ? never : number
     : number;
+
+export function intsToExclusive<const FromInclusive extends number,
+  const ToExclusive extends number,>(
+  fromInclusive: FromInclusive,
+  toExclusive: ToExclusive,
+): UnionToTuple<IntsToExclusive<FromInclusive, ToExclusive>>
+{
+  if (toExclusive <= fromInclusive)
+    throw new RangeError('toExclusive <= fromInclusive',);
+
+  const length = (toExclusive as number) - (fromInclusive as number);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Cannot be typed.
+  return Array.from({ length, },
+    (_, index,) => (fromInclusive as number) + index,) as any;
+}
