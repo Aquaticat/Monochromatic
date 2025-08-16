@@ -6,9 +6,9 @@ import {
   entriesIterableAsync,
 } from './iterable.entries.ts';
 import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { Negative, } from './numeric.negative.ts';
 import type { Ints, } from './numeric.type.ints.ts';
 import type { IntsNegative10to10, } from './numeric.type.intsTo10.ts';
-import type { Negative, } from './numeric.type.negative.ts';
 
 /**
  * Asynchronously retrieves element at specified index from an async iterable, supporting negative indexing.
