@@ -1,3 +1,5 @@
+// TODO: Test new migrated smaller files and remove this file.
+
 import type {
   NegativeInfinity,
   PositiveInfinity,

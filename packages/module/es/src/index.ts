@@ -9,6 +9,7 @@ export * from './any.toExport.ts';
 export * from './any.typeOf.ts';
 export * from './any.when.ts';
 
+export * from './array.is.ts';
 export * from './array.of.ts';
 export * from './array.type.mapTo.ts';
 export * from './array.type.tuple.ts';
@@ -50,6 +51,7 @@ export * from './function.deConcurrency.ts';
 export * from './function.thunk.ts';
 export * from './function.tryCatch.ts';
 
+export * from './generator.is.ts';
 export * from './iterable.at.ts';
 export * from './iterable.chunks.ts';
 export * from './iterable.entries.ts';
@@ -71,13 +73,22 @@ export * from './iterables.union.ts';
 export * from '@monochromatic-dev/module-es/logtape.ts';
 export * from './logtape.shared.ts';
 
+export * from './map.is.ts';
+
 export * from './numeric.add.ts';
-export * from './numeric.is.ts';
+export * from './numeric.bigint.ts';
+export * from './numeric.date.ts';
+export * from './numeric.float.ts';
+export * from './numeric.infinity.ts';
+export * from './numeric.range.ts';
 export * from './numeric.type.abs.ts';
+export * from './numeric.type.int.ts';
 export * from './numeric.type.ints.ts';
 export * from './numeric.type.intsTo10.ts';
 export * from './numeric.type.nan.ts';
 export * from './numeric.type.negative.ts';
+
+export * from './object.is.ts';
 
 export * from './promise.all.ts';
 export * from './promise.awaits.ts';
@@ -88,6 +99,8 @@ export * from './promises.some.ts';
 
 // Maybe/Option type isn't provided because it's much easier to have functions just throw when they fail.
 export * from './result.unwrap.ts';
+
+export * from './set.is.ts';
 
 export * from '@monochromatic-dev/module-es/string.fs.ts';
 export * from './string.capitalize.ts';

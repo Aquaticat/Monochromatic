@@ -1,3 +1,11 @@
+// TODO: REMOVE THIS FILE - All types have been migrated to their respective files:
+// - Alphabet types -> string.letters.ts
+// - Digit types -> string.digits.ts
+// - Language code types -> string.language.ts
+// - Number string types -> string.numbers.ts
+// - General string types -> string.general.ts
+// This file can be deleted once all imports are verified to work from the new locations.
+
 // TODO: Remove this file because I've migrated everything.
 
 //region Alphabet Types -- String literal types for individual letters and letter collections
@@ -198,9 +206,28 @@ export type No0DigitString = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
  * lowercaseLetters.forEach(letter => console.log(letter));
  * ```
  */
-export const lowercaseLetters: LowercaseLettersTuple = [
-  ...'abcdefghijklmnopqrstuvwxyz',
-] as LowercaseLettersTuple;
+export const lettersArrayLowercase: readonly LowercaseLetters[] = [
+  // eslint-disable-next-line unicorn/prefer-string-raw -- ASCII alphabet spread is safe for simple characters
+  // eslint-disable-next-line unicorn/no-array-callback-reference -- Array.prototype.map() prevents assignment
+  ...'abcdefghijklmnopqrstuvwxyz'.split('',),
+] as const as readonly LowercaseLetters[];
+
+/**
+ * Runtime array containing all uppercase English letters in alphabetical order.
+ * Corresponds to the UppercaseLettersTuple type.
+ *
+ * @example
+ * ```ts
+ * console.log(uppercaseLetters[0]); // 'A'
+ * console.log(uppercaseLetters.length); // 26
+ * uppercaseLetters.forEach(letter => console.log(letter));
+ * ```
+ */
+export const lettersArrayUppercase: readonly UppercaseLetters[] = [
+  // eslint-disable-next-line unicorn/prefer-string-raw -- ASCII alphabet spread is safe for simple characters
+  // eslint-disable-next-line unicorn/no-array-callback-reference -- Array.prototype.map() prevents assignment
+  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('',),
+] as const as readonly UppercaseLetters[];
 
 /**
  * Runtime array containing all uppercase English letters in alphabetical order.
@@ -214,7 +241,9 @@ export const lowercaseLetters: LowercaseLettersTuple = [
  * ```
  */
 export const uppercaseLetters: UppercaseLettersTuple = [
-  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  // eslint-disable-next-line unicorn/prefer-string-raw -- ASCII alphabet spread is safe for simple characters
+  // eslint-disable-next-line unicorn/no-array-callback-reference -- Array.prototype.map() prevents assignment
+  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('',),
 ] as UppercaseLettersTuple;
 
 //endregion Runtime Constants
