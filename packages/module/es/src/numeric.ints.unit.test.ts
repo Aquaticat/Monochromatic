@@ -115,24 +115,24 @@ describe('ints() runtime function', () => {
       expect(ints(-10, -10)).toEqual([-10]);
       expect(ints(10, 10)).toEqual([10]);
 
-      const fullRange = ints(-10, 10);
+      const fullRange = ints(-10, 10) as number[];
       expect(fullRange).toHaveLength(21);
-      expect(fullRange[0]).toBe(-10);
-      expect(fullRange[20]).toBe(10);
+      expect(fullRange.at(0)).toBe(-10);
+      expect(fullRange.at(-1)).toBe(10);
       expect(fullRange).toEqual([-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     });
 
     test('should handle ranges outside type system bounds', () => {
-      const largeRange = ints(0, 15);
+      const largeRange = ints(0, 15) as number[];
       expect(largeRange).toHaveLength(16);
-      expect(largeRange[0]).toBe(0);
-      expect(largeRange[15]).toBe(15);
+      expect(largeRange.at(0)).toBe(0);
+      expect(largeRange.at(-1)).toBe(15);
       expect(largeRange).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
 
-      const negativeRange = ints(-15, 0);
+      const negativeRange = ints(-15, 0) as number[];
       expect(negativeRange).toHaveLength(16);
-      expect(negativeRange[0]).toBe(-15);
-      expect(negativeRange[15]).toBe(0);
+      expect(negativeRange.at(0)).toBe(-15);
+      expect(negativeRange.at(-1)).toBe(0);
     });
 
     test('should generate arrays with correct length', () => {
@@ -143,9 +143,11 @@ describe('ints() runtime function', () => {
     });
 
     test('should generate arrays in ascending order', () => {
-      const result = ints(-5, 5);
+      const result = ints(-5, 5) as number[];
       for (let index = 1; index < result.length; index++) {
-        expect(result[index]).toBe(result[index - 1] + 1);
+        const current = result.at(index);
+        const previous = result.at(index - 1);
+        expect(current).toBe((previous as number) + 1);
       }
     });
   });
@@ -192,24 +194,24 @@ describe('intsToExclusive() runtime function', () => {
       expect(intsToExclusive(-10, -9)).toEqual([-10]);
       expect(intsToExclusive(9, 10)).toEqual([9]);
 
-      const fullRange = intsToExclusive(-10, 11);
+      const fullRange = intsToExclusive(-10, 11) as number[];
       expect(fullRange).toHaveLength(21);
-      expect(fullRange[0]).toBe(-10);
-      expect(fullRange[20]).toBe(10);
+      expect(fullRange.at(0)).toBe(-10);
+      expect(fullRange.at(-1)).toBe(10);
       expect(fullRange).toEqual([-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     });
 
     test('should handle ranges outside type system bounds', () => {
-      const largeRange = intsToExclusive(0, 16);
+      const largeRange = intsToExclusive(0, 16) as number[];
       expect(largeRange).toHaveLength(16);
-      expect(largeRange[0]).toBe(0);
-      expect(largeRange[15]).toBe(15);
+      expect(largeRange.at(0)).toBe(0);
+      expect(largeRange.at(-1)).toBe(15);
       expect(largeRange).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
 
-      const negativeRange = intsToExclusive(-15, 1);
+      const negativeRange = intsToExclusive(-15, 1) as number[];
       expect(negativeRange).toHaveLength(16);
-      expect(negativeRange[0]).toBe(-15);
-      expect(negativeRange[15]).toBe(0);
+      expect(negativeRange.at(0)).toBe(-15);
+      expect(negativeRange.at(-1)).toBe(0);
     });
 
     test('should generate arrays with correct length', () => {
@@ -220,9 +222,11 @@ describe('intsToExclusive() runtime function', () => {
     });
 
     test('should generate arrays in ascending order', () => {
-      const result = intsToExclusive(-5, 6);
+      const result = intsToExclusive(-5, 6) as number[];
       for (let index = 1; index < result.length; index++) {
-        expect(result[index]).toBe(result[index - 1] + 1);
+        const current = result.at(index);
+        const previous = result.at(index - 1);
+        expect(current).toBe((previous as number) + 1);
       }
     });
   });

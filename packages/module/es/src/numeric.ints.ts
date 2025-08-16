@@ -316,7 +316,8 @@ export type Ints<fromInclusive extends number, toInclusive extends number,> =
       : toInclusive extends 5 ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5)
       : toInclusive extends 6 ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6)
       : toInclusive extends 7 ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7)
-      : toInclusive extends 8 ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8)
+      : toInclusive extends 8
+        ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8)
       : toInclusive extends 9
         ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9)
       : toInclusive extends 10
@@ -447,6 +448,7 @@ export function ints<const FromInclusive extends number,
   fromInclusive: FromInclusive,
   toInclusive: ToInclusive,
 ): FromInclusive extends ToInclusive ? [FromInclusive,]
+  : Ints<FromInclusive, ToInclusive> extends number ? number[]
   : UnionToTuple<Ints<FromInclusive, ToInclusive>>
 {
   if (toInclusive < fromInclusive)
@@ -549,7 +551,7 @@ export type IntsToExclusive<fromInclusive extends number, toExclusive extends nu
       : toExclusive extends 4
         ? (-9 | -8 | -7 | -6 | -5 | -4 | -3 | -2 | -1 | 0 | 1 | 2 | 3)
       : toExclusive extends 5
-        ? (-9 | -8 | -7 | -6 | -5 | -4 | -3 | -2 | -   1 | 0 | 1 | 2 | 3 | 4)
+        ? (-9 | -8 | -7 | -6 | -5 | -4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4)
       : toExclusive extends 6
         ? (-9 | -8 | -7 | -6 | -5 | -4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5)
       : toExclusive extends 7
@@ -680,9 +682,12 @@ export type IntsToExclusive<fromInclusive extends number, toExclusive extends nu
       : toExclusive extends 4 ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3)
       : toExclusive extends 5 ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4)
       : toExclusive extends 6 ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5)
-      : toExclusive extends 7 ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6)
-      : toExclusive extends 8 ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7)
-      : toExclusive extends 9 ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8)
+      : toExclusive extends 7
+        ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6)
+      : toExclusive extends 8
+        ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7)
+      : toExclusive extends 9
+        ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8)
       : toExclusive extends 10
         ? (-4 | -3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9)
       : number
@@ -698,8 +703,10 @@ export type IntsToExclusive<fromInclusive extends number, toExclusive extends nu
       : toExclusive extends 6 ? (-3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5)
       : toExclusive extends 7 ? (-3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6)
       : toExclusive extends 8 ? (-3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7)
-      : toExclusive extends 9 ? (-3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8)
-      : toExclusive extends 10 ? (-3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9)
+      : toExclusive extends 9
+        ? (-3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8)
+      : toExclusive extends 10
+        ? (-3 | -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9)
       : number
     : fromInclusive extends -2 ? toExclusive extends -2 ? never
       : toExclusive extends -1 ? (-2)
@@ -707,13 +714,14 @@ export type IntsToExclusive<fromInclusive extends number, toExclusive extends nu
       : toExclusive extends 1 ? (-2 | -1 | 0)
       : toExclusive extends 2 ? (-2 | -1 | 0 | 1)
       : toExclusive extends 3 ? (-2 | -1 | 0 | 1 | 2)
-      : toExclusive extends 4 ? (-2 | -   1 | 0 | 1 | 2 | 3)
+      : toExclusive extends 4 ? (-2 | -1 | 0 | 1 | 2 | 3)
       : toExclusive extends 5 ? (-2 | -1 | 0 | 1 | 2 | 3 | 4)
       : toExclusive extends 6 ? (-2 | -1 | 0 | 1 | 2 | 3 | 4 | 5)
       : toExclusive extends 7 ? (-2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6)
       : toExclusive extends 8 ? (-2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7)
       : toExclusive extends 9 ? (-2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8)
-      : toExclusive extends 10 ? (-2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9)
+      : toExclusive extends 10
+        ? (-2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9)
       : number
     : fromInclusive extends -1 ? toExclusive extends -1 ? never
       : toExclusive extends 0 ? (-1)
@@ -809,7 +817,8 @@ export function intsToExclusive<const FromInclusive extends number,
   const ToExclusive extends number,>(
   fromInclusive: FromInclusive,
   toExclusive: ToExclusive,
-): UnionToTuple<IntsToExclusive<FromInclusive, ToExclusive>>
+): IntsToExclusive<FromInclusive, ToExclusive> extends number ? number[]
+  : UnionToTuple<IntsToExclusive<FromInclusive, ToExclusive>>
 {
   if (toExclusive <= fromInclusive)
     throw new RangeError('toExclusive <= fromInclusive',);

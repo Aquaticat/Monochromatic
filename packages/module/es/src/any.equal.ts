@@ -9,7 +9,7 @@ import {
   isMap,
   isWeakMap,
 } from './map.is.ts';
-import { isObjectDate, } from './numeric.is.ts';
+import { isObjectDate, } from './numeric.date.ts';
 import { isObject, } from './object.is.ts';
 import { isPromise, } from './promise.is.ts';
 import type { NotPromise, } from './promise.type.ts';
