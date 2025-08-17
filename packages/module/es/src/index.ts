@@ -11,6 +11,7 @@ export * from './any.when.ts';
 
 export * from './array.basic.ts';
 export * from './array.empty.ts';
+export * from './array.findIndexAsync.ts';
 export * from './array.length.ts';
 export * from './array.nonEmpty.ts';
 export * from './array.of.ts';
