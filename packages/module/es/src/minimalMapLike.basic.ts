@@ -1,5 +1,5 @@
 import type { Promisable, } from 'type-fest';
-import type { Getable, } from './getable.basic.ts';
+import type { Getable, GetableSync, } from './getable.basic.ts';
 import type { Identifiable, } from './identifiable.basic.ts';
 import type { MaybeAsyncIterableIterator, } from './iterable.type.maybe.ts';
 
@@ -19,3 +19,9 @@ export type MinimalMapLike<K = unknown, V = unknown,> = {
   /** Iterates all available keys in the storage */
   keys(): MaybeAsyncIterableIterator<K>;
 } & Getable<K, V> & Partial<Identifiable>;
+
+export type MinimalMapLikeSync<K = unknown, V=unknown> = {
+  set(key: K, value: V): unknown;
+  delete(key: K): unknown;
+  keys(): IterableIterator<K>;
+} & GetableSync<K,V> & Partial<Identifiable>;
