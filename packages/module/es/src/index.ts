@@ -55,6 +55,9 @@ export * from './function.deConcurrency.ts';
 export * from './function.thunk.ts';
 export * from './function.tryCatch.ts';
 
+export * from './getable.basic.ts';
+export * from './getables.consensus.ts';
+
 export * from './generator.is.ts';
 export * from './iterable.at.ts';
 export * from './iterable.chunks.ts';
