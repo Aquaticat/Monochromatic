@@ -1,6 +1,6 @@
 import type { Promisable } from "type-fest";
+import type { Weightful } from "./weightful.basic";
 
-export type Getable<T = unknown> = {
-  get: (key: string)=> Promisable<T>,
-  weight?: number,
-}
+export type Getable<K = unknown, V = unknown> = {
+  get: (key: K)=> Promisable<V|undefined>,
+} & Partial<Weightful>;

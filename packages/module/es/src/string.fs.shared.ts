@@ -1,10 +1,11 @@
-import type {  Promisable } from "type-fest";
-import type { NonEmptyString } from "./string.type";
+import type { Promisable, } from 'type-fest';
+import type { MaybeAsyncIterableIterator, } from './iterable.type.maybe.ts';
 import {
   consoleLogger,
   type Logger,
 } from './string.log.ts';
 import { randomUUID, } from './string.random.ts';
+import type { NonEmptyString, } from './string.type.ts';
 
 /**
  * Interface for string-based key-value storage with filesystem-like operations.
@@ -20,16 +21,16 @@ import { randomUUID, } from './string.random.ts';
  */
 export type StringFs = {
   /** Retrieves value for the specified key */
-  get(key: string): Promisable<string|undefined>;
+  get(key: string,): Promisable<string | undefined>;
   /** Stores value under the specified key */
-  set(key: string, value: string): Promisable<unknown>;
+  set(key: string, value: string,): Promisable<unknown>;
   /** Removes the key-value pair for the specified key */
-  delete(key: string): Promisable<unknown>;
-  /** Returns all available keys in the storage */
-  keys(): Promisable<Iterable<string>>;
+  delete(key: string,): Promisable<unknown>;
+  /** Iterates all available keys in the storage */
+  keys(): MaybeAsyncIterableIterator<string>;
   /** Unique identifier for this storage instance */
-  id: NonEmptyString;
-}
+  id?: NonEmptyString;
+};
 
 /**
  * Creates an in-memory StringFs implementation using Map data structure.
@@ -57,7 +58,8 @@ export type StringFs = {
  * ```
  */
 export function getMemoryStringFs(
-  { map: passedMap, l: passedL, id: passedId, }: {map?: Map<string, string>; l?: Logger; id?: string; } = {},
+  { map: passedMap, l: passedL, id: passedId, }: { map?: Map<string, string>; l?: Logger;
+    id?: string; } = {},
 ): StringFs {
   /** Logger instance for tracing storage operations */
   const l: Logger = passedL ?? consoleLogger;
@@ -72,7 +74,7 @@ export function getMemoryStringFs(
     id,
     get(key: string,): string | undefined {
       try {
-        return map.get(key);
+        return map.get(key,);
       }
       catch (error: unknown) {
         throw new Error('get', { cause: error, },);
@@ -94,13 +96,6 @@ export function getMemoryStringFs(
         throw new Error('delete', { cause: error, },);
       }
     },
-    keys(): string[] {
-      try {
-        return Array.from(map.keys(),);
-      }
-      catch (error: unknown) {
-        throw new Error('keys', { cause: error, },);
-      }
-    },
+    keys: map.keys.bind(map,),
   };
 }

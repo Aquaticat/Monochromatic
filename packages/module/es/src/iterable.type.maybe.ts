@@ -8,6 +8,8 @@
  *
  * @template element - The type of elements yielded by the iterable, consistent across both sync and async variants.
  */
-export type MaybeAsyncIterable<element,> =
+export type MaybeAsyncIterable<element = unknown,> =
   | AsyncIterable<element>
   | Iterable<element>;
+
+export type MaybeAsyncIterableIterator<element = unknown,> = AsyncIterableIterator<element>|IterableIterator<element>

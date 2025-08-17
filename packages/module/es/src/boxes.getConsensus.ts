@@ -10,7 +10,7 @@ import {
 /**
  * Determines consensus value from multiple boxes using weighted voting.
  *
- * Groups boxes by their values using deep equality comparison via `equalAsync`,
+ * Groups boxes by their values.
  * sums the weights for each group (defaulting to 1), and returns the value
  * with the highest total weight.
  *

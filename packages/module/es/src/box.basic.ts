@@ -1,4 +1,5 @@
+import type { Weightful } from "./weightful.basic.ts";
+
 export type Box<T = unknown,> = {
   value: T;
-  weight?: number;
-};
+} & Partial<Weightful>;
