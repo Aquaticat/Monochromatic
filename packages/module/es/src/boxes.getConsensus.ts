@@ -62,7 +62,7 @@ export async function boxesGetConsensusAsync<const T = unknown,>(
     return value;
   },);
 
-  const newBoxes = (Array.from(groupedByValue,).map(function getWeight([value, array,],) {
+  const newBoxes = (Array.from(groupedByValue,).map(function getWeight([value, array,],): Required<Box> {
     return { value, weight: array.reduce(function(accumulator, { weight, },) {
       return accumulator + (weight ?? 1);
     }, 0,), };
