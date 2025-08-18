@@ -1,3 +1,5 @@
+// TODO: Preparing to deprecate logtape
+
 import {
   type configure,
   getStreamSink,
