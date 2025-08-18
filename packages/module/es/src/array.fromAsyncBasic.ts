@@ -1,6 +1,10 @@
+import {
+  type Arrayful,
+  isArrayful,
+} from './arrayful.basic.ts';
 import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 import type { Logged, } from './logged.basic.ts';
-import { getDefaultLogger } from './string.log.ts';
+import { getDefaultLogger, } from './string.log.ts';
 
 /**
  * Converts an array or async iterable to an array.
@@ -33,6 +37,9 @@ import { getDefaultLogger } from './string.log.ts';
  * // result3 is [1, 2, 3]
  * ```
  */
+export async function arrayFromAsyncBasic<const MyIterable extends Arrayful,>(
+  { iterable, l, }: { iterable: MyIterable; } & Partial<Logged>,
+): Promise<MyIterable extends Arrayful<infer T> ? T[] : unknown[]>;
 export async function arrayFromAsyncBasic<const MyIterable extends unknown[],>(
   { iterable, l, }: { iterable: MyIterable; } & Partial<Logged>,
 ): Promise<MyIterable>;
@@ -40,11 +47,13 @@ export async function arrayFromAsyncBasic<const MyIterable extends MaybeAsyncIte
   { iterable, l, }: { iterable: MyIterable; } & Partial<Logged>,
 ): Promise<MyIterable extends MaybeAsyncIterable<infer T> ? T[] : unknown[]>;
 export async function arrayFromAsyncBasic<
-  const MyIterable extends MaybeAsyncIterable,
+  const MyIterable extends MaybeAsyncIterable | Arrayful,
 >(
   { iterable, l = getDefaultLogger(), }: { iterable: MyIterable; } & Partial<Logged>,
 ): Promise<unknown[]> {
-  l.trace('arrayFromAsyncBasic');
+  l.trace(arrayFromAsyncBasic.name,);
+  if (isArrayful(iterable,))
+    return iterable.array;
   if (Array.isArray(iterable,)) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- had to
     return iterable as any;

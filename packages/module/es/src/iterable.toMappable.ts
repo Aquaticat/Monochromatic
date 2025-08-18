@@ -1,3 +1,6 @@
+import { arrayFromAsyncBasic } from './array.fromAsyncBasic.ts';
+import type { Arrayful } from './arrayful.basic.ts';
+import { isAsyncIterable, } from './iterable.is.ts';
 import type { MaybeAsyncIterable, } from './iterable.type.maybe';
 import type { Logged, } from './logged.basic';
 import type {
@@ -22,7 +25,7 @@ import { getDefaultLogger, } from './string.log.ts';
  * const mappableArr = iterableToMappable({ iterable: arr });
  * const doubled = await mappableArr.map({
  *   fn: ({ element }) => element * 2
- * }); // This processes the iterable and returns a mapped result
+ * }); // [2, 4, 6]
  *
  * // With async iterable
  * async function* asyncNumbers() {
@@ -33,58 +36,63 @@ import { getDefaultLogger, } from './string.log.ts';
  * const mappableAsync = iterableToMappable({ iterable: asyncNumbers() });
  * const strings = await mappableAsync.map({
  *   fn: async ({ element }) => `Number: ${element}`
- * }); // This processes the async iterable and returns a mapped result
+ * }); // ["Number: 1", "Number: 2", "Number: 3"]
  * ```
  */
-export function iterableToMappable<const T,>(
+export function iterableToMappable<const T, const Returns = unknown>(
   { iterable, l = getDefaultLogger(), }: { iterable: MaybeAsyncIterable<T>; } & Partial<
     Logged
   >,
-): Mappable<T, any> {
+): MaybeAsyncIterable<T> & Mappable<T, Returns> {
   l.trace(iterableToMappable.name,);
 
+  const arrayfulObj: Arrayful<T> = {array: await arrayFromAsyncBasic({iterable, l})};
+
+  const mappableObj: Mappable = {
+    map: function * map({fn, l: mapL = l}){
+      mapL.trace(map.name);
+      for (const [index, element] of arrayfulObj.array.entries()) {
+        yield fn({element, index, array: arrayfulObj.array});
+      }
+    }
+  }
+
   // Create the mappable object
-  return {
-    // Implement the map method
-    map: async function map<const Returns,>(
-      { fn, l: mapLogger = getDefaultLogger(), }: { fn: Mapper<T, Returns>; } & Partial<
+  const returns = Object.assign() {
+    // Implement the map method with the correct signature
+    map: function map(
+      { fn, l: mapLogger = getDefaultLogger(), }: { fn: Mapper<T, T[]>; } & Partial<
         Logged
       >,
-    ): Promise<Returns> {
+    ) {
       mapLogger.trace('iterableToMappable.map',);
 
-      // Handle async iterables
-      if (isAsyncIterable(iterable,)) {
-        let index = 0;
-        const results: Returns[] = [];
-        for await (const element of iterable) {
-          const result = await fn({ element, index: index++, mappable: this,
-            l: mapLogger, },);
-          results.push(result,);
-        }
-        // Return the results array as the mapped value
-        return results as unknown as Returns;
-      }
-      else {
-        // Handle sync iterables
-        let index = 0;
-        const results: Returns[] = [];
-        for (const element of iterable) {
-          // We need to await here in case the mapper function returns a Promise
-          const result = await fn({ element, index: index++, mappable: this,
-            l: mapLogger, },);
-          results.push(result,);
-        }
-        // Return the results array as the mapped value
-        return results as unknown as Returns;
-      }
+      // Process the iterable based on whether it's async or sync
+      return isAsyncIterable(iterable,)
+        ? // For async iterables, return a Promise
+        (async () => {
+          let index = 0;
+          const results: T[] = [];
+          for await (const element of iterable) {
+            // Cast to any to avoid type issues with the mapper function
+            const result = await fn({ element, index: index++, mappable: this,
+              l: mapLogger, },) as any;
+            results.push(result,);
+          }
+          return results;
+        })()
+        : // For sync iterables, process synchronously but still return Promise for consistency
+        (async () => {
+          let index = 0;
+          const results: T[] = [];
+          for (const element of iterable) {
+            // We need to await here in case the mapper function returns a Promise
+            const result = await fn({ element, index: index++, mappable: this,
+              l: mapLogger, },) as any;
+            results.push(result,);
+          }
+          return results;
+        })();
     },
   };
-}
-
-/**
- * Type guard to check if an object is an AsyncIterable
- */
-function isAsyncIterable<T,>(obj: MaybeAsyncIterable<T>,): obj is AsyncIterable<T> {
-  return typeof obj === 'object' && obj !== null && Symbol.asyncIterator in obj;
 }
