@@ -4,7 +4,10 @@ import type {
   GetableSync,
 } from './getable.basic.ts';
 import type { Identifiable, } from './identifiable.basic.ts';
-import type { MaybeAsyncIterable, MaybeAsyncIterableIterator, } from './iterable.type.maybe.ts';
+import type {
+  MaybeAsyncIterable,
+  MaybeAsyncIterableIterator,
+} from './iterable.basic.ts';
 import type { Logged, } from './logged.basic.ts';
 
 /**

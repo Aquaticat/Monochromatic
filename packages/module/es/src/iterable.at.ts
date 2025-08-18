@@ -1,11 +1,11 @@
 // TODO: Seriously test the types for this.
 
 import type { ArrayValues, } from 'type-fest';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import {
   entriesIterable,
   entriesIterableAsync,
 } from './iterable.entries.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 import type { Ints, } from './numeric.ints.ts';
 import type { Negative, } from './numeric.negative.ts';
 import type { IntsNegative10to10, } from './numeric.type.intsTo10.ts';

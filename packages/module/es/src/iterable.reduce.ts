@@ -1,5 +1,5 @@
 import { isEmptyArray, } from './array.empty.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import type { PromisableFunction, } from './promise.type.ts';
 
 //region Type Definitions -- Defines reducer function signatures for different parameter combinations

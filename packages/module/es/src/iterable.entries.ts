@@ -1,4 +1,4 @@
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 
 /**
  * Creates index-value pairs from an async iterable, similar to Array.prototype.entries().

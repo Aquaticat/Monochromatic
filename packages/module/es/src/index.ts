@@ -12,10 +12,10 @@ export * from './anys.noop.ts';
 
 export * from './array.basic.ts';
 export * from './array.empty.ts';
-export * from './array.findIndexAsync.ts';
 export * from './array.findIndex.ts';
-export * from './array.fromBasic.ts';
+export * from './array.findIndexAsync.ts';
 export * from './array.fromAsyncBasic.ts';
+export * from './array.fromBasic.ts';
 export * from './array.length.ts';
 export * from './array.nonEmpty.ts';
 export * from './array.of.ts';
@@ -65,6 +65,7 @@ export * from './getables.consensus.ts';
 
 export * from './generator.is.ts';
 export * from './iterable.at.ts';
+export * from './iterable.basic.ts';
 export * from './iterable.chunks.ts';
 export * from './iterable.entries.ts';
 export * from './iterable.every.ts';
@@ -80,7 +81,6 @@ export * from './iterable.reduce.ts';
 export * from './iterable.some.ts';
 export * from './iterable.take.ts';
 export * from './iterable.trim.ts';
-export * from './iterable.type.maybe.ts';
 export * from './iterables.union.ts';
 
 export * from '@monochromatic-dev/module-es/logtape.ts';

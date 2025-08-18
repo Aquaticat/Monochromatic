@@ -2,7 +2,7 @@ import {
   type Arrayful,
   isArrayful,
 } from './arrayful.basic.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import type { Logged, } from './logged.basic.ts';
 import { getDefaultLogger, } from './string.log.ts';
 
@@ -49,7 +49,7 @@ export async function arrayFromAsyncBasic<const MyIterable extends MaybeAsyncIte
 export async function arrayFromAsyncBasic<
   const MyIterable extends MaybeAsyncIterable | Arrayful,
 >(
-  { iterable, l }: { iterable: MyIterable; } & Partial<Logged>,
+  { iterable, l, }: { iterable: MyIterable; } & Partial<Logged>,
 ): Promise<unknown[]>;
 export async function arrayFromAsyncBasic<
   const MyIterable extends MaybeAsyncIterable | Arrayful,

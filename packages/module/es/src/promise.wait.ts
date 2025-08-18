@@ -28,8 +28,9 @@
  * }
  * ```
  */
-export const wait = (timeInMs: number,): Promise<undefined> =>
+export function wait(timeInMs: number,): Promise<undefined> {
   // eslint-disable avoid-new
-  new Promise(function createTimeout(_resolve,) {
-    return setTimeout(_resolve, timeInMs,);
+  return new Promise(function createTimeout(resolve,) {
+    return setTimeout(resolve, timeInMs,);
   },);
+}

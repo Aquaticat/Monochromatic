@@ -1,5 +1,5 @@
 import type { Promisable, } from 'type-fest';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 
 /**
  * Asynchronously filters an iterable or async iterable based on a predicate function.

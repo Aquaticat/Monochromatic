@@ -1,6 +1,6 @@
 import { arrayFromAsyncBasic, } from './array.fromAsyncBasic';
 import type { Arrayful, } from './arrayful.basic';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe';
+import type { MaybeAsyncIterable, } from './iterable.basic';
 import type { Logged, } from './logged.basic';
 import { getDefaultLogger, } from './string.log';
 

@@ -1,4 +1,4 @@
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 
 /**
  * Converts synchronous string iterable into compact formatted representation using Intl.ListFormat.

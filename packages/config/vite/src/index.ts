@@ -1,8 +1,4 @@
 import {
-  alwaysTrue,
-  wait,
-} from '@monochromatic-dev/module-es/.ts';
-import {
   composeVisitors,
   type ContainerRule,
   type CounterStyleRule,
@@ -55,6 +51,16 @@ import vitestExcludeCommonConfig from './vitest-exclude-common.json' with {
   type: 'json',
 };
 
+function alwaysTrue(_input: any,): true {
+  return true;
+}
+
+function wait(timeInMs: number,): Promise<undefined> {
+  // eslint-disable avoid-new
+  return new Promise(function createTimeout(_resolve,) {
+    return setTimeout(_resolve, timeInMs,);
+  },);
+}
 //region Constants -- Configuration values used throughout the file
 
 // Browser versions

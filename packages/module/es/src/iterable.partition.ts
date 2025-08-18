@@ -2,7 +2,7 @@
          We don't need to await for the current iterated element to be ready before moving on to the next iterated element. */
 
 import type { Promisable, } from 'type-fest';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 
 /**
  * Partitions an iterable into two arrays based on an async predicate function.

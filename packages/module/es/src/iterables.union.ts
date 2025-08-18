@@ -1,4 +1,4 @@
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 
 /**
  * Creates a new Set containing the union of all input iterables, preserving type safety across

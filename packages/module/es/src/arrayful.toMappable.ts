@@ -1,7 +1,7 @@
 import { arrayFromAsyncBasic, } from './array.fromAsyncBasic.ts';
 import type { Arrayful, } from './arrayful.basic.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import { isAsyncIterable, } from './iterable.is.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 import type { Logged, } from './logged.basic.ts';
 import type {
   Mappable,

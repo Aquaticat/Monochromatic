@@ -1,9 +1,18 @@
 import type { Promisable, } from 'type-fest';
-import type { Getable, GetableSync, } from './getable.basic.ts';
+import type {
+  Getable,
+  GetableSync,
+} from './getable.basic.ts';
 import type { Identifiable, } from './identifiable.basic.ts';
-import type { MaybeAsyncIterable, MaybeAsyncIterableIterator, } from './iterable.type.maybe.ts';
+import type {
+  MaybeAsyncIterable,
+  MaybeAsyncIterableIterator,
+} from './iterable.basic.ts';
 import type { Logged, } from './logged.basic.ts';
-import type { MinimalMapLike, MinimalMapLikeSync, } from './minimalMapLike.basic.ts';
+import type {
+  MinimalMapLike,
+  MinimalMapLikeSync,
+} from './minimalMapLike.basic.ts';
 
 /**
  * Full-featured map-like interface extending MinimalMapLike with additional methods.
@@ -21,7 +30,7 @@ export type MapLike<K = unknown, V = unknown,> = MinimalMapLike<K, V> & {
 
   /** Checks if a key exists in the map */
   has({ key, }: { key: K; } & Partial<Logged>,): Promisable<boolean>;
-}
+};
 export type MapLikeSync<K = unknown, V = unknown,> = MinimalMapLikeSync<K, V> & {
   /** Removes all key-value pairs from the map */
   clear({ l, }: Partial<Logged>,): unknown;
@@ -31,4 +40,4 @@ export type MapLikeSync<K = unknown, V = unknown,> = MinimalMapLikeSync<K, V> & 
 
   /** Checks if a key exists in the map */
   has({ key, }: { key: K; } & Partial<Logged>,): boolean;
-}
+};

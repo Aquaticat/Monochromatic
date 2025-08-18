@@ -1,5 +1,5 @@
 import { notNullishOrThrow, } from './error.throw.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 
 /**
  * Takes the first n elements from an async iterable, collecting them into an array.

@@ -2,6 +2,7 @@
 
 import type { Promisable, } from 'type-fest';
 import { throws, } from './error.throws.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import {
   entriesIterable,
   entriesIterableAsync,
@@ -11,7 +12,6 @@ import type {
   MappingFunctionNoArrayPromisable,
   MappingFunctionPromisable,
 } from './iterable.map.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 import { logtapeGetLogger, } from './logtape.shared.ts';
 
 const l = logtapeGetLogger(['m', 'iterable.every',],);

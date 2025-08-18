@@ -1,11 +1,11 @@
 import type { Promisable, } from 'type-fest';
 import type { BooleanNot, } from './any.not.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import {
   entriesIterable,
   entriesIterableAsync,
 } from './iterable.entries.ts';
 import { mapIterableAsync, } from './iterable.map.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
 /**
  * Tests if no elements in an async iterable fail a predicate function.

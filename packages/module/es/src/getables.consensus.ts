@@ -1,7 +1,7 @@
 import { arrayFromAsyncBasic, } from './array.fromAsyncBasic.ts';
 import { boxesGetConsensusAsync, } from './boxes.getConsensus.ts';
 import type { Getable, } from './getable.basic.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import {
   consoleLogger,
   type Logger,
@@ -74,15 +74,14 @@ export async function getablesGetConsensusAsync<const T = unknown,>(
       const box: { value: T; weight?: number; } = {
         value: await getable.get(key,),
       };
-      if (getable.weight !== undefined) {
+      if (getable.weight !== undefined)
         box.weight = getable.weight;
-      }
       return box;
-    }),
+    },),
   );
 
   l.debug(`Got ${boxes.length} results, delegating to boxesGetConsensusAsync`,);
 
   // Delegate to boxesGetConsensusAsync
-  return await boxesGetConsensusAsync({ boxes, l, });
+  return await boxesGetConsensusAsync({ boxes, l, },);
 }

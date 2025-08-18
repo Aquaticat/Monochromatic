@@ -4,7 +4,7 @@ import {
 } from './array.empty.ts';
 import type { Tuple, } from './array.type.tuple.ts';
 import { notEmptyOrThrow, } from './error.throw.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import { logtapeGetLogger, } from './logtape.shared.ts';
 import type { Ints, } from './numeric.ints.ts';
 

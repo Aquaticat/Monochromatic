@@ -1,4 +1,4 @@
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 
 /**
  * Maps each element of an array type to a MaybeAsyncIterable of that element's type.

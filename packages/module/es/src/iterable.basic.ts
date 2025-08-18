@@ -13,3 +13,5 @@ export type MaybeAsyncIterable<element = unknown,> =
   | Iterable<element>;
 
 export type MaybeAsyncIterableIterator<element = unknown,> = AsyncIterableIterator<element>|IterableIterator<element>
+
+export type IterableSync<T = unknown> = Iterable<T>;

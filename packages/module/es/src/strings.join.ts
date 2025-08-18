@@ -1,4 +1,4 @@
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 
 /**
  * Joins an async iterable of strings using the specified separator string, combining elements into a single string with the separator between each element.

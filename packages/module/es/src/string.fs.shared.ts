@@ -1,11 +1,11 @@
 import type { Promisable, } from 'type-fest';
-import type { MaybeAsyncIterableIterator, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterableIterator, } from './iterable.basic.ts';
+import type { NonEmptyString, } from './string.general.ts';
 import {
   consoleLogger,
   type Logger,
 } from './string.log.ts';
 import { randomUUID, } from './string.random.ts';
-import type { NonEmptyString, } from './string.general.ts';
 
 /**
  * Interface for string-based key-value storage with filesystem-like operations.

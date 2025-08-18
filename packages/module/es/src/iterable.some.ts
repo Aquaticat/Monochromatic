@@ -1,5 +1,5 @@
 import type { Promisable, } from 'type-fest';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import { somePromises, } from './promises.some.ts';
 
 /**

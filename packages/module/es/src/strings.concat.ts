@@ -1,8 +1,8 @@
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import {
   isIterable,
   isMaybeAsyncIterable,
 } from './iterable.is.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 import { isString, } from './string.is.ts';
 
 /**

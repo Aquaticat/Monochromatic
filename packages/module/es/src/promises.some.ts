@@ -1,7 +1,7 @@
 import type { Promisable, } from 'type-fest';
 import { isArray, } from './array.basic.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import { chunksArray, } from './iterable.chunks.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 import { logtapeGetLogger, } from './logtape.shared.ts';
 
 const l = logtapeGetLogger(['m', 'promise.some',],);

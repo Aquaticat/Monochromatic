@@ -1,10 +1,10 @@
 import type { Promisable, } from 'type-fest';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import type { Logged, } from './logged.basic.ts';
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 export type LimitedMapper<T = unknown, Returns = unknown,> = (
   { element, index, l, }:
-    & { element?: T; index?: number;}
+    & { element?: T; index?: number; }
     & Partial<Logged>,
 ) => Promisable<Returns>;
 

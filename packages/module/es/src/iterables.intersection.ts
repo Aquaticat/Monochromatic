@@ -2,7 +2,7 @@ import { isArrayEmpty, } from './array.empty.ts';
 import { isArrayOfLength1, } from './array.length.ts';
 import { notUndefinedOrThrow, } from './error.throw.ts';
 import { unary, } from './function.nary.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 
 /**
  * Creates a new Set containing the intersection of all input iterables, preserving only elements

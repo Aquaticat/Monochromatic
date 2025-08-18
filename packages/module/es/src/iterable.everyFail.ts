@@ -1,9 +1,9 @@
 import type { Promisable, } from 'type-fest';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import {
   entriesIterable,
   entriesIterableAsync,
 } from './iterable.entries.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
 /**
  * Asynchronously tests whether all elements in an async iterable fail a predicate function.

@@ -1,8 +1,8 @@
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import {
   reduceIterable,
   reduceIterableAsync,
 } from './iterable.reduce.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
 import type { Numeric, } from './numeric.int.ts';
 

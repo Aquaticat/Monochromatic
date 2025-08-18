@@ -1,6 +1,6 @@
 import type { Promisable, } from 'type-fest';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import type { Logged, } from './logged.basic.ts';
-import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 export type Mapper<T = unknown, Returns = unknown,> = (
   { element, index, mappable, l, }:

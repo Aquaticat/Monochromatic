@@ -4,6 +4,7 @@ import {
   ensuringTruthyAsync,
   nonThrowingWithFalse,
 } from './function.ensuring.ts';
+import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import {
   // BooleanNot,
   entriesIterable,
@@ -11,7 +12,6 @@ import {
   // mapArrayLikeAsync,
 } from './iterable.entries.ts';
 import type { MappingFunction, } from './iterable.map.ts';
-import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
 /**
  * Tests if no elements in an async iterable satisfy a predicate function.
