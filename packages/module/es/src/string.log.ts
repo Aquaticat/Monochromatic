@@ -4,6 +4,7 @@ import type {
 } from 'type-fest';
 import { notUndefinedOrThrow, } from './error.throw.ts';
 import { throws, } from './error.throws.ts';
+import type { MonochromaticGlobalThis, } from './monochromatic.basic.ts';
 import { partialStringReplaceAll, } from './string.replaceAll.ts';
 
 export type StringRecord = Record<string, string>;
@@ -99,3 +100,8 @@ export const consoleLogger: Logger = {
   error: getConsoleLoggerLogger('error',),
   fatal: getConsoleLoggerLogger('fatal',),
 };
+
+export function getDefaultLogger(): Logger {
+  return (globalThis as MonochromaticGlobalThis).monochromatic?.logger
+    ?? consoleLogger;
+}

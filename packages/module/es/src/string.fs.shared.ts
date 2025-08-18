@@ -5,7 +5,7 @@ import {
   type Logger,
 } from './string.log.ts';
 import { randomUUID, } from './string.random.ts';
-import type { NonEmptyString, } from './string.type.ts';
+import type { NonEmptyString, } from './string.general.ts';
 
 /**
  * Interface for string-based key-value storage with filesystem-like operations.

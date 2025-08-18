@@ -2,10 +2,8 @@ import { arrayFromAsyncBasic, } from './array.fromAsyncBasic.ts';
 import type { Box, } from './box.basic.ts';
 import { notNullishOrThrow, } from './error.throw.ts';
 import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
-import {
-  consoleLogger,
-  type Logger,
-} from './string.log.ts';
+import type { Logged, } from './logged.basic.ts';
+import { getDefaultLogger, } from './string.log.ts';
 
 /**
  * Determines consensus value from multiple boxes using weighted voting.
@@ -43,10 +41,9 @@ import {
  * ```
  */
 export async function boxesGetConsensusAsync<const T = unknown,>(
-  { boxes, l = consoleLogger, }: {
+  { boxes, l = getDefaultLogger(), }: {
     boxes: MaybeAsyncIterable<Box<T>>;
-    l?: Logger;
-  },
+  } & Partial<Logged>,
 ): Promise<T> {
   l.debug('Starting box consensus evaluation',);
 
@@ -62,14 +59,15 @@ export async function boxesGetConsensusAsync<const T = unknown,>(
     return value;
   },);
 
-  const newBoxes = (Array.from(groupedByValue,).map(function getWeight([value, array,],): Required<Box> {
-    return { value, weight: array.reduce(function(accumulator, { weight, },) {
-      return accumulator + (weight ?? 1);
-    }, 0,), };
-  },))
-    .toSorted(function byWeight({ weight: aWeight, }, { weight: bWeight, },) {
-      return aWeight - bWeight;
-    },) as [Required<Box<T>>, ...Required<Box<T>>[],];
+  const newBoxes =
+    (Array.from(groupedByValue,).map(function getWeight([value, array,],): Required<Box> {
+      return { value, weight: array.reduce(function(accumulator, { weight, },) {
+        return accumulator + (weight ?? 1);
+      }, 0,), };
+    },))
+      .toSorted(function byWeight({ weight: aWeight, }, { weight: bWeight, },) {
+        return aWeight - bWeight;
+      },) as [Required<Box<T>>, ...Required<Box<T>>[],];
 
   l.debug(`Grouped into ${newBoxes.length} unique values`,);
 
