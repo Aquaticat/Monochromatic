@@ -1,9 +1,26 @@
-import type { Promisable } from "type-fest";
+import type { Promisable, } from 'type-fest';
+import type { Logged, } from './logged.basic.ts';
 
-export type Mappable<V = unknown, Returns = unknown> = {
-  map(fn: (value: V, index: number, mappable: Mappable<V, Returns>) => Promisable<Returns>): Promisable<Returns>
-}
+export type Mapper<T = unknown, Returns = unknown,> = (
+  { element, index, mappable, l, }:
+    & { element?: T; index?: number; mappable?: Mappable; }
+    & Partial<Logged>,
+) => Promisable<Returns>;
 
-export type MappableSync<V= unknown, Returns = unknown> = {
-  map(fn: (value: V, index: number, mappable: Mappable<V, Returns>) => Returns): Returns
-}
+export type Mappable<T = unknown, Returns = unknown,> = {
+  map: (
+    { fn, l, }: { fn: Mapper<T, Returns>; } & Partial<Logged>,
+  ) => Promisable<Returns>;
+};
+
+export type MapperSync<T = unknown, Returns = unknown,> = (
+  { element, index, mappable, l, }:
+    & { element?: T; index?: number; mappable?: Mappable; }
+    & Partial<Logged>,
+) => Returns;
+
+export type MappableSync<T = unknown, Returns = unknown,> = {
+  map: (
+    { fn, l, }: { fn: Mapper<T, Returns>; } & Partial<Logged>,
+  ) => Returns;
+};

@@ -1,7 +1,11 @@
 import type { Promisable, } from 'type-fest';
-import type { Getable, GetableSync, } from './getable.basic.ts';
+import type {
+  Getable,
+  GetableSync,
+} from './getable.basic.ts';
 import type { Identifiable, } from './identifiable.basic.ts';
-import type { MaybeAsyncIterableIterator, } from './iterable.type.maybe.ts';
+import type { MaybeAsyncIterable, MaybeAsyncIterableIterator, } from './iterable.type.maybe.ts';
+import type { Logged, } from './logged.basic.ts';
 
 /**
  * Minimal map-like interface with essential operations.
@@ -13,15 +17,18 @@ import type { MaybeAsyncIterableIterator, } from './iterable.type.maybe.ts';
  */
 export type MinimalMapLike<K = unknown, V = unknown,> = {
   /** Stores value under the specified key */
-  set(key: K, value: V,): Promisable<unknown>;
+  set({ key, value, l, }: { key: K; value: V; } & Partial<Logged>,): Promisable<unknown>;
   /** Removes the key-value pair for the specified key */
-  delete(key: K,): Promisable<unknown>;
+  delete({ key, l, }: { key: K; } & Partial<Logged>,): Promisable<unknown>;
   /** Iterates all available keys in the storage */
-  keys(): MaybeAsyncIterableIterator<K>;
+  keys({ l, }: Partial<Logged>,): MaybeAsyncIterable<K>;
 } & Getable<K, V> & Partial<Identifiable>;
 
-export type MinimalMapLikeSync<K = unknown, V=unknown> = {
-  set(key: K, value: V): unknown;
-  delete(key: K): unknown;
-  keys(): IterableIterator<K>;
-} & GetableSync<K,V> & Partial<Identifiable>;
+export type MinimalMapLikeSync<K = unknown, V = unknown,> = {
+  /** Stores value under the specified key */
+  set({ key, value, l, }: { key: K; value: V; } & Partial<Logged>,): unknown;
+  /** Removes the key-value pair for the specified key */
+  delete({ key, l, }: { key: K; } & Partial<Logged>,): unknown;
+  /** Iterates all available keys in the storage */
+  keys({ l, }: Partial<Logged>,): Iterable<K>;
+} & GetableSync<K, V> & Partial<Identifiable>;
