@@ -190,16 +190,14 @@ Use the package name or area of change:
 ### Examples
 
 **Change of one type and scope:**
-```
+```txt
 feat(module-es): add a
 
 Description of a
-
-Closes #123
 ```
 
 **Change of multiple types and/or scopes**
-```
+```txt
 feat(module-es): enhance error handling utilities
 
 error.assert.throw: add assertion-based error throwing
