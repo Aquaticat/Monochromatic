@@ -347,9 +347,41 @@ export function typeOrThrow<const Input = unknown, const Type extends Input = In
   guard,
   l = getDefaultLogger(),
 }: { potentiallyNotType: Input; guard: Guard<Input, Type>; } & Partial<Logged>,): Type {
-  l.trace(typeOrThrow.name);
-  if (!guard(potentiallyNotType)) {
-    throw new TypeError(`${JSON.stringify(potentiallyNotType)} isn't ${guard.name}`);
-  }
+  l.trace(typeOrThrow.name,);
+  if (!guard(potentiallyNotType,))
+    throw new TypeError(`${JSON.stringify(potentiallyNotType,)} isn't ${guard.name}`,);
   return potentiallyNotType;
+}
+
+/**
+ * Asserts that value is not of a specified type.
+ * Throws TypeError if value matches the type guard, otherwise returns value with that type excluded.
+ *
+ * @param potentiallyOfType - Value to validate against the guard.
+ * @param guard - Type guard function that checks if value is of specified type.
+ * @returns Value with the guarded type excluded.
+ * @throws {TypeError} When value is of the specified type.
+ *
+ * @example
+ * ```ts
+ * const value: string | number = getStringOrNumber();
+ * const notString = notTypeOrThrow(value, isString);
+ * // notString is typed as number
+ * ```
+ */
+export function notTypeOrThrow<const Input, const Type extends Input = Input,>({
+  potentiallyOfType,
+  guard,
+  l = getDefaultLogger()
+}: {
+  potentiallyOfType: Input;
+  guard: Guard<Input, Type>;
+} & Partial<Logged>,): Exclude<Input, Type> {
+  l.trace(notTypeOrThrow.name);
+  if (guard(potentiallyOfType,)) {
+    throw new TypeError(
+      `${JSON.stringify(potentiallyOfType,)} is of type ${guard.name}`,
+    );
+  }
+  return potentiallyOfType as Exclude<Input, Type>;
 }
