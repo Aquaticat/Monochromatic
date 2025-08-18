@@ -35,8 +35,10 @@ export type Schema<Input = unknown, Output = Input> = {
  * };
  * ```
  */
-export type SyncSchema = {
-  readonly parse: (value: unknown,) => unknown;
+export type SyncSchema<Input = unknown, Output = Input> = {
+  readonly parse: (
+    value: Input,
+  ) => Output;
 };
 
 /**
@@ -53,8 +55,10 @@ export type SyncSchema = {
  * };
  * ```
  */
-export type AsyncSchema = {
-  readonly parseAsync: (value: unknown,) => Promisable<unknown>;
+export type AsyncSchema<Input = unknown, Output = Input> = {
+  readonly parseAsync: (
+    value: Input,
+  ) => Promisable<Output>;
 };
 
 /**
@@ -71,9 +75,7 @@ export type AsyncSchema = {
  * }
  * ```
  */
-export type MaybeAsyncSchema = {
-  readonly parse: (value: unknown,) => Promisable<unknown>;
-} | AsyncSchema;
+export type MaybeAsyncSchema<Input = unknown, Output = Input> = Schema<Input, Output> | AsyncSchema<Input, Output>;
 
 /**
  * Type guard determining if value implements the generic Schema interface.
@@ -91,14 +93,14 @@ export type MaybeAsyncSchema = {
  * }
  * ```
  */
-export function isSchema(value: unknown,): value is Schema {
+export function isSchema<Input = unknown, Output = Input>(value: unknown,): value is Schema<Input, Output> {
   if (value === null)
     return false;
   if (typeof value !== 'object')
     return false;
-  if (!(value as { parse: unknown; }).parse)
+  if (!('parse' in value))
     return false;
-  return typeof ((value as { parse: unknown; }).parse) === 'function';
+  return typeof value.parse === 'function';
 }
 
 /**
@@ -117,14 +119,14 @@ export function isSchema(value: unknown,): value is Schema {
  * }
  * ```
  */
-export function isAsyncSchema(value: unknown,): value is AsyncSchema {
+export function isAsyncSchema<Input = unknown, Output = Input>(value: unknown,): value is AsyncSchema<Input, Output> {
   if (value === null)
     return false;
   if (typeof value !== 'object')
     return false;
-  if (!(value as { parse: unknown; }).parse)
+  if (!('parseAsync' in value))
     return false;
-  return typeof ((value as { parseAsync: unknown; }).parseAsync) === 'function';
+  return typeof value.parseAsync === 'function';
 }
 
 /**
@@ -145,8 +147,8 @@ export function isAsyncSchema(value: unknown,): value is AsyncSchema {
  * }
  * ```
  */
-export function isMaybeAsyncSchema(value: unknown,): value is MaybeAsyncSchema {
-  return isSchema(value,) || isAsyncSchema(value,);
+export function isMaybeAsyncSchema<Input = unknown, Output = Input>(value: unknown,): value is MaybeAsyncSchema<Input, Output> {
+  return isSchema<Input, Output>(value,) || isAsyncSchema<Input, Output>(value,);
 }
 
 /**
@@ -164,8 +166,8 @@ export function isMaybeAsyncSchema(value: unknown,): value is MaybeAsyncSchema {
  * const result = await asyncVersion.parseAsync(value);
  * ```
  */
-export function maybeAsyncSchemaToAsyncSchema(schema: MaybeAsyncSchema,): AsyncSchema {
-  if (isAsyncSchema(schema,))
+export function maybeAsyncSchemaToAsyncSchema<Input = unknown, Output = Input>(schema: MaybeAsyncSchema<Input, Output>,): AsyncSchema<Input, Output> {
+  if (isAsyncSchema<Input, Output>(schema,))
     return schema;
-  return { ...schema, parseAsync: schema.parse, };
+  return Object.assign(schema, { parseAsync: schema.parse, });
 }
