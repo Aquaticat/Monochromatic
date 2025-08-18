@@ -4,7 +4,7 @@ import {
   isGenerator,
 } from './generator.is.ts';
 import { isAsyncIterable, } from './iterable.is.ts';
-import { logtapeGetLogger, } from './logtape.shared.ts';
+import type { Logged, } from './logged.basic.ts';
 import {
   isMap,
   isWeakMap,
@@ -21,10 +21,8 @@ import {
   isObjectRegexp,
   isString,
 } from './string.is.ts';
+import { getDefaultLogger, } from './string.log.ts';
 
-const l = logtapeGetLogger(['m', 'any.equal',],);
-
-/* vale alex.Race = NO */
 // TODO: Don't consider BigInt a primitive.
 // Write three functions in total to better express the intended purpose.
 
@@ -70,15 +68,17 @@ const l = logtapeGetLogger(['m', 'any.equal',],);
  * isPrimitive(new Date());   // false (Date object)
  * ```
  */
-export function isPrimitive(value: any,): boolean {
-  /* vale alex.Race = YES */
+export function isPrimitive(
+  { value, l = getDefaultLogger(), }: { value: unknown; } & Partial<Logged>,
+): boolean {
+  l.trace('isPrimitive',);
   if (Object.is(value, undefined,))
     return true;
   if (Object.is(value, null,))
     return true;
   if (typeof value === 'boolean')
     return true;
-  if (isString(value,))
+  if (typeof value === 'string')
     return true;
   if (
     typeof value === 'bigint'
@@ -93,7 +93,7 @@ export function isPrimitive(value: any,): boolean {
   if (typeof value === 'number')
     return true;
 
-  l.debug`value ${value} is not a primitive`;
+  l.debug(`value ${JSON.stringify(value,)} is not a primitive`,);
   return false;
 }
 

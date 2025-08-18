@@ -5,6 +5,13 @@ import type {
 } from 'type-fest';
 import type { UnknownArrayOrTuple, } from 'type-fest/source/internal';
 import { isEmptyArray, } from './array.empty.ts';
+import type { Guard, } from './guard.basic.ts';
+import {
+  isJsonl,
+  type Jsonl,
+} from './jsonl.basic.ts';
+import type { Logged, } from './logged.basic.ts';
+import { getDefaultLogger, } from './string.log.ts';
 
 //region Type Assertion Guards -- Validates runtime values and throws TypeErrors for invalid inputs
 
@@ -334,3 +341,15 @@ export function notEmptyArrayOrThrow<const T,
 }
 
 //endregion Type Assertion Guards
+
+export function typeOrThrow<const Input = unknown, const Type extends Input = Input,>({
+  potentiallyNotType,
+  guard,
+  l = getDefaultLogger(),
+}: { potentiallyNotType: Input; guard: Guard<Input, Type>; } & Partial<Logged>,): Type {
+  l.trace(typeOrThrow.name);
+  if (!guard(potentiallyNotType)) {
+    throw new TypeError(`${JSON.stringify(potentiallyNotType)} isn't ${guard.name}`);
+  }
+  return potentiallyNotType;
+}
