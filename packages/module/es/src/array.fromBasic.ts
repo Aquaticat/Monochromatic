@@ -1,3 +1,7 @@
+import {
+  type Arrayful,
+  isArrayful,
+} from './arrayful.basic.ts';
 import type { Logged, } from './logged.basic.ts';
 import { getDefaultLogger } from './string.log.ts';
 
@@ -26,16 +30,21 @@ import { getDefaultLogger } from './string.log.ts';
  * // result3 is [['a', 1], ['b', 2]]
  * ```
  */
+export function arrayFromBasic<const MyIterable extends Arrayful,>(
+  { iterable, l, }: { iterable: MyIterable; } & Partial<Logged>,
+): MyIterable extends Arrayful<infer T> ? T[] : unknown[];
 export function arrayFromBasic<const MyIterable extends unknown[],>(
   { iterable, l, }: { iterable: MyIterable; } & Partial<Logged>,
 ): MyIterable;
-export function arrayFromBasic<const MyIterable extends Iterable<unknown>,>(
+export function arrayFromBasic<const MyIterable extends Iterable<unknown>|Arrayful,>(
   { iterable, l, }: { iterable: MyIterable; } & Partial<Logged>,
-): MyIterable extends Iterable<infer T> ? T[] : unknown[];
-export function arrayFromBasic<const MyIterable extends Iterable<unknown>,>(
+): MyIterable extends Iterable<infer T>|Arrayful<infer T> ? T[] : unknown[];
+export function arrayFromBasic<const MyIterable extends Iterable<unknown> | Arrayful,>(
   { iterable, l = getDefaultLogger(), }: { iterable: MyIterable; } & Partial<Logged>,
 ): unknown[] {
-  l.trace('arrayFromBasic');
+  l.trace(arrayFromBasic.name,);
+  if (isArrayful(iterable,))
+    return iterable.array;
   if (Array.isArray(iterable,)) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- had to
     return iterable as any;

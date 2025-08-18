@@ -36,6 +36,32 @@ describe(arrayFromBasic, () => {
     expect(result.length,).toBe(0,);
   });
 
+  test('returns array from Arrayful objects', () => {
+    const arr = [1, 2, 3,];
+    const arrayfulObj = { array: arr, };
+    const result = arrayFromBasic({ iterable: arrayfulObj, },);
+    expect(result,).toBe(arr,);
+  });
+
+  test('converts Arrayful objects with different array content', () => {
+    const arrayfulObj = { array: [1, 2, 3,], };
+    const result = arrayFromBasic({ iterable: arrayfulObj, },);
+    expect(result,).toEqual([1, 2, 3,],);
+
+    const emptyArrayfulObj = { array: [], };
+    const result2 = arrayFromBasic({ iterable: emptyArrayfulObj, },);
+    expect(result2,).toEqual([],);
+    expect(result2.length,).toBe(0,);
+  });
+
+  test('handles Arrayful objects with nested arrays', () => {
+    const nestedArr = [[1, 2], [3, 4]];
+    const arrayfulObj = { array: nestedArr, };
+    const result = arrayFromBasic({ iterable: arrayfulObj, },);
+    expect(result,).toBe(nestedArr,); // Same reference
+    expect(result,).toEqual([[1, 2], [3, 4]]);
+  });
+
   test('performs faster than Array.from when input is already an array', () => {
     const arr = Array.from({ length: 10000, }, (_, i,) => i,);
 

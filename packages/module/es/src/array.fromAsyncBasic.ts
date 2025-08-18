@@ -49,6 +49,11 @@ export async function arrayFromAsyncBasic<const MyIterable extends MaybeAsyncIte
 export async function arrayFromAsyncBasic<
   const MyIterable extends MaybeAsyncIterable | Arrayful,
 >(
+  { iterable, l }: { iterable: MyIterable; } & Partial<Logged>,
+): Promise<unknown[]>;
+export async function arrayFromAsyncBasic<
+  const MyIterable extends MaybeAsyncIterable | Arrayful,
+>(
   { iterable, l = getDefaultLogger(), }: { iterable: MyIterable; } & Partial<Logged>,
 ): Promise<unknown[]> {
   l.trace(arrayFromAsyncBasic.name,);

@@ -1,26 +1,27 @@
 import type { Promisable, } from 'type-fest';
 import type { Logged, } from './logged.basic.ts';
+import type { MaybeAsyncIterable } from './iterable.type.maybe.ts';
 
 export type Mapper<T = unknown, Returns = unknown,> = (
   { element, index, mappable, l, }:
-    & { element?: T; index?: number; mappable?: Mappable; }
+    & { element?: T; index?: number; mappable?: T[]; }
     & Partial<Logged>,
 ) => Promisable<Returns>;
 
 export type Mappable<T = unknown, Returns = unknown,> = {
   map: (
     { fn, l, }: { fn: Mapper<T, Returns>; } & Partial<Logged>,
-  ) => Promisable<Returns>;
+  ) => MaybeAsyncIterable<Returns>;
 };
 
 export type MapperSync<T = unknown, Returns = unknown,> = (
   { element, index, mappable, l, }:
-    & { element?: T; index?: number; mappable?: Mappable; }
+    & { element?: T; index?: number; mappable?: T[]; }
     & Partial<Logged>,
 ) => Returns;
 
 export type MappableSync<T = unknown, Returns = unknown,> = {
   map: (
-    { fn, l, }: { fn: Mapper<T, Returns>; } & Partial<Logged>,
-  ) => Returns;
+    { fn, l, }: { fn: MapperSync<T, Returns>; } & Partial<Logged>,
+  ) => Iterable<Returns>;
 };
