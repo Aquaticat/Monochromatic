@@ -1,10 +1,14 @@
+import type { Logged, } from './logged.basic.ts';
+import { getDefaultLogger, } from './string.log.ts';
+
 /**
  * Finds the index of the first element in an array that satisfies the async predicate.
  * Returns -1 if no element satisfies the predicate.
  *
- * @param array - The array to search through
- * @param predicate - An async function that takes an element and returns a Promise that resolves to a boolean
- * @returns A Promise that resolves to the index of the first element that satisfies the predicate, or -1 if none found
+ * @param array - to search through for matching element
+ * @param predicate - to test each element
+ * @param l - Logger instance for debugging. Uses console logger if omitted.
+ * @returns Index of first matching element or -1 if no matches found
  *
  * @example
  * ```ts
@@ -22,10 +26,11 @@
  * console.log(index); // -1
  * ```
  */
-async function arrayFindIndexAsync<T,>(
-  array: readonly T[],
-  predicate: (item: T,) => Promise<boolean>,
-): Promise<number> {
+async function arrayFindIndexAsync<T,>({ array, predicate, l = getDefaultLogger(), }: {
+  array: readonly T[];
+  predicate: (item: T,) => Promise<boolean>;
+} & Partial<Logged>,): Promise<number> {
+  l.trace('arrayFindIndexAsync');
   for (const [index, item,] of array.entries()) {
     if (await predicate(item,))
       return index;

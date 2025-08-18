@@ -1,3 +1,5 @@
+/* v8 ignore file -- @preserve */
+
 /**
  * No-operation function that does nothing when called.
  * Useful for creating loggers that perform no action with minimal performance overhead.
