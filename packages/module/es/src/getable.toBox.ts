@@ -1,6 +1,6 @@
 import type { Box, } from './box.basic.ts';
 import { notUndefinedOrThrow } from './error.throw.ts';
-import type { Getable, } from './getable.basic.ts';
+import type { Getable, GetableSync, } from './getable.basic.ts';
 import type { Logged, } from './logged.basic.ts';
 import { getDefaultLogger, } from './string.log';
 
@@ -10,5 +10,14 @@ export async function getableToBox<const K = unknown, const V = unknown,>(
 ): Promise<Box<V>> {
   l.trace('getableToBox');
   const value = notUndefinedOrThrow(await getable.get({ key, l, },));
+  return { ...getable, value, };
+}
+
+export function getableSyncToBox<const K = unknown, const V = unknown,>(
+  { getable, key, l = getDefaultLogger(), }: { getable: GetableSync<K, V>; key: K; }
+    & Partial<Logged>,
+): Box<V> {
+  l.trace('getableSyncToBox');
+  const value = notUndefinedOrThrow(getable.get({ key, l, }));
   return { ...getable, value, };
 }
