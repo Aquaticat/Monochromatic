@@ -10,11 +10,12 @@ import type {
 import { getDefaultLogger, } from './string.log.ts';
 
 /**
- * Converts an iterable or async iterable to a mappable object.
+ * Converts an Arrayful to a Mappable object.
  * The returned object implements the Mappable interface which provides a map method.
+ * Arrayful extends both Iterable and AsyncIterable, making it mappable in both sync and async contexts.
  *
- * @param params - Object containing the iterable to convert and optional logger
- * @param params.iterable - The iterable or async iterable to convert to mappable
+ * @param params - Object containing the arrayful to convert and optional logger
+ * @param params.arrayful - The Arrayful to convert to Mappable
  * @param params.l - Optional logger for debugging
  * @returns Object that implements the Mappable interface
  *
@@ -22,7 +23,7 @@ import { getDefaultLogger, } from './string.log.ts';
  * ```ts
  * // With regular array
  * const arr = [1, 2, 3];
- * const mappableArr = iterableToMappable({ iterable: arr });
+ * const mappableArr = arrayfulToMappable({ arrayful: arr });
  * const doubled = await mappableArr.map({
  *   fn: ({ element }) => element * 2
  * }); // [2, 4, 6]
@@ -33,7 +34,7 @@ import { getDefaultLogger, } from './string.log.ts';
  *   yield 2;
  *   yield 3;
  * }
- * const mappableAsync = iterableToMappable({ iterable: asyncNumbers() });
+ * const mappableAsync = arrayfulToMappable({ arrayful: asyncNumbers() });
  * const strings = await mappableAsync.map({
  *   fn: async ({ element }) => `Number: ${element}`
  * }); // ["Number: 1", "Number: 2", "Number: 3"]
