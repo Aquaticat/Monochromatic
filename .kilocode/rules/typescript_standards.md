@@ -163,6 +163,12 @@ TypeScript's support for overloading generator functions has quirks:
     }
   })(currentPlatform);
   ```
+- **Prefer exporting constructs immediately when declared**:
+  - **Bad**: `function myFn() {}; export { myFn }`
+  - **Bad**: `const myConst = 'value'; export { myConst }`
+  - **Good**: `export function myFn() {}`
+  - **Good**: `export const myConst = 'value'`
+  - This approach reduces cognitive load by making it immediately clear what is exported from the module
 
 ## Async Programming
 - Prefer `async/await` and promise-returning library functions over explicit `new Promise` creation

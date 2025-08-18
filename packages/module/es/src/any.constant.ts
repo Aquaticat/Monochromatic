@@ -1,36 +1,40 @@
 /* v8 ignore file -- @preserve */
 
+import type { Logged, } from './logged.basic.ts';
+import { getDefaultLogger, } from './string.log';
+
 /**
- * Creates a function that always returns the same value, regardless of any arguments passed to it.
- * The constant function is a fundamental functional programming combinator that creates
- * a closure over a value, useful for providing default values or placeholder functions.
+ * Creates function that returns same value regardless of arguments.
+ * Useful for default values, placeholder functions, and mapping operations.
  *
- * Commonly used in functional programming scenarios where a consistent value is needed,
- * such as default parameters, mapping operations, or as a placeholder function.
- *
- * @param x - Value to be returned by the constant function
- * @returns Function that always returns the captured value
+ * @param x - Value for function to return
+ * @param l - Optional logger
+ * @returns Function returning captured value
  *
  * @example
  * ```ts
  * const alwaysFive = constant(5);
  * alwaysFive(); // 5
- * alwaysFive(1, 2, 3); // 5 (ignores arguments)
+ * alwaysFive(1, 2, 3); // 5
  *
  * const alwaysHello = constant('hello');
  * alwaysHello(); // 'hello'
  *
- * // Common usage in functional programming
+ * // Mapping with constant
  * const numbers = [1, 2, 3];
- * numbers.map(constant(0)); // [0, 0, 0] (replace all with 0)
+ * numbers.map(constant(0)); // [0, 0, 0]
  *
- * // Useful for default functions
+ * // Default handler pattern
  * const defaultHandler = constant('default');
  * defaultHandler(); // 'default'
  * ```
  */
-export function constant<const T,>(x: T,): () => T {
-  return function identity(): T {
+export function constant<const T,>(
+  x: T,
+  { l = getDefaultLogger(), }: Partial<Logged> = {},
+): () => T {
+  l.trace('constant');
+  return function constantValue(): T {
     return x;
   };
 }
