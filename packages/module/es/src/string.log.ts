@@ -2,6 +2,7 @@ import type {
   Promisable,
   UnknownRecord,
 } from 'type-fest';
+import { noop, } from './anys.noop.ts';
 import { notUndefinedOrThrow, } from './error.throw.ts';
 import { throws, } from './error.throws.ts';
 import type { MonochromaticGlobalThis, } from './monochromatic.basic.ts';
@@ -99,6 +100,15 @@ export const consoleLogger: Logger = {
   warn: getConsoleLoggerLogger('warn',),
   error: getConsoleLoggerLogger('error',),
   fatal: getConsoleLoggerLogger('fatal',),
+};
+
+export const noopLogger: Logger = {
+  trace: noop,
+  debug: noop,
+  info: noop,
+  warn: noop,
+  error: noop,
+  fatal: noop,
 };
 
 export function getDefaultLogger(): Logger {

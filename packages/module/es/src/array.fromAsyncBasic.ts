@@ -1,9 +1,13 @@
 import type { MaybeAsyncIterable, } from './iterable.type.maybe.ts';
 
-export async function arrayFromAsyncBasic<const MyIterable extends unknown[]>(iterable: MyIterable): Promise<MyIterable>;
-export async function arrayFromAsyncBasic<const MyIterable extends MaybeAsyncIterable<unknown>>(iterable: MyIterable): Promise<MyIterable extends MaybeAsyncIterable<infer T> ? T[] : unknown[]>;
+export async function arrayFromAsyncBasic<const MyIterable extends unknown[],>(
+  iterable: MyIterable,
+): Promise<MyIterable>;
+export async function arrayFromAsyncBasic<const MyIterable extends MaybeAsyncIterable,>(
+  iterable: MyIterable,
+): Promise<MyIterable extends MaybeAsyncIterable<infer T> ? T[] : unknown[]>;
 export async function arrayFromAsyncBasic<
-  const MyIterable extends MaybeAsyncIterable<unknown>,
+  const MyIterable extends MaybeAsyncIterable,
 >(
   iterable: MyIterable,
 ): Promise<unknown[]> {

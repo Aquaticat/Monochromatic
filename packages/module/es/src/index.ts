@@ -8,6 +8,7 @@ export * from './any.observable.ts';
 export * from './any.toExport.ts';
 export * from './any.typeOf.ts';
 export * from './any.when.ts';
+export * from './anys.noop.ts';
 
 export * from './array.basic.ts';
 export * from './array.empty.ts';
@@ -19,6 +20,7 @@ export * from './array.type.fixedLength.ts';
 export * from './array.type.mapTo.ts';
 export * from './array.type.tuple.ts';
 export * from './array.type.withoutFirst.ts';
+export * from './array.fromBasic.ts';
 
 export * from './any.equal.ts';
 export * from './any.not.ts';
