@@ -25,7 +25,7 @@
  * console.log(isMap(iframeMap)); // true
  * ```
  */
-export function isMap(value: unknown,): value is Map<any, any> {
+export function isMap(value: unknown,): value is Map<unknown, unknown> {
   return Object.prototype.toString.call(value,) === '[object Map]';
 }
 
@@ -55,6 +55,6 @@ export function isMap(value: unknown,): value is Map<any, any> {
  */
 export function isWeakMap(
   value: unknown,
-): value is WeakMap<any, any> {
+): value is WeakMap<WeakKey, unknown> {
   return Object.prototype.toString.call(value,) === '[object WeakMap]';
 }
