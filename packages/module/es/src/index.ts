@@ -13,6 +13,8 @@ export * from './anys.noop.ts';
 export * from './array.basic.ts';
 export * from './array.empty.ts';
 export * from './array.findIndexAsync.ts';
+export * from './array.fromBasic.ts';
+export * from './array.fromAsyncBasic.ts';
 export * from './array.length.ts';
 export * from './array.nonEmpty.ts';
 export * from './array.of.ts';
@@ -20,7 +22,6 @@ export * from './array.type.fixedLength.ts';
 export * from './array.type.mapTo.ts';
 export * from './array.type.tuple.ts';
 export * from './array.type.withoutFirst.ts';
-export * from './array.fromBasic.ts';
 
 export * from './any.equal.ts';
 export * from './any.not.ts';
@@ -136,3 +137,5 @@ export * from './dom.redirectingTo.ts';
 
 export * from './indexedDb.executeTransaction.ts';
 export * from './indexedDb.open.ts';
+
+export * from './monochromatic.basic.ts';
