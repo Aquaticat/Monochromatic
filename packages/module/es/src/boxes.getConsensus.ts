@@ -23,19 +23,19 @@ import { getDefaultLogger, } from './string.log.ts';
  * @example
  * ```ts
  * // Simple consensus with default weights
- * const result = await boxesGetConsensusAsync([
+ * const result = await boxesGetConsensus([
  *   {value: 'b'}
  * ]); // 'b'
  *
  * // Weighted consensus
- * const result = await boxesGetConsensusAsync([
+ * const result = await boxesGetConsensus([
  *   {value: 'b', weight: 1},
  *   {value: 'b', weight: 2},
  *   {value: 'c', weight: 10}
  * ]); // 'c' (weight: 10 > 3)
  *
  * // Async iterable of boxes
- * const result = await boxesGetConsensusAsync(async function*() {
+ * const result = await boxesGetConsensus(async function*() {
  *   yield {value: 'test'};
  * }()); // 'test'
  * ```
@@ -48,7 +48,7 @@ export async function boxesGetConsensus<const T = unknown,>(
   l.trace(boxesGetConsensus.name,);
 
   // Convert iterable to array for processing
-  const boxesArray = await arrayFromAsyncBasic({iterable:boxes},);
+  const boxesArray = await arrayFromAsyncBasic({ iterable: boxes, },);
 
   if (boxesArray.length === 0)
     throw new Error('No boxes provided for consensus',);

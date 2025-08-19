@@ -1,5 +1,5 @@
 import {
-  getablesGetConsensusAsync,
+  getablesGetConsensus,
   logtapeConfiguration,
   logtapeConfigure,
 } from '@monochromatic-dev/module-es';
@@ -12,10 +12,10 @@ import {
 
 await logtapeConfigure(await logtapeConfiguration(),);
 
-describe('getablesGetConsensusAsync', () => {
+describe('getablesGetConsensus', () => {
   test('returns value from single getable with default weight', async () => {
-    const result = await getablesGetConsensusAsync({
-      getables: [{ get: (_key: string,) => 'b', },],
+    const result = await getablesGetConsensus({
+      getables: [{ get: ({key}: {key: string}) => 'b', },],
       key: 'a',
     },);
 
@@ -23,11 +23,11 @@ describe('getablesGetConsensusAsync', () => {
   });
 
   test('returns consensus value based on weights', async () => {
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: [
-        { get: (_key: string,) => 'b', weight: 1, },
-        { get: (_key: string,) => 'b', weight: 2, },
-        { get: (_key: string,) => 'c', weight: 10, },
+        { get: ({key}: {key: string}) => 'b', weight: 1, },
+        { get: ({key}: {key: string}) => 'b', weight: 2, },
+        { get: ({key}: {key: string}) => 'c', weight: 10, },
       ],
       key: 'a',
     },);
@@ -37,11 +37,11 @@ describe('getablesGetConsensusAsync', () => {
 
   test('handles async getables with generators', async () => {
     async function* getablesGenerator() {
-      yield { get: async (_key: string,) => 'async-value', };
-      yield { get: async (_key: string,) => 'async-value', weight: 5, };
+      yield { get: async ({key}: {key: string}) => 'async-value', };
+      yield { get: async ({key}: {key: string}) => 'async-value', weight: 5, };
     }
 
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: getablesGenerator(),
       key: 'test',
     },);
@@ -53,11 +53,11 @@ describe('getablesGetConsensusAsync', () => {
     const complexValue = { nested: { array: [1, 2, 3,], },
       date: new Date('2023-01-01',), };
 
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: [
-        { get: (_key: string,) => complexValue, weight: 1, },
-        { get: (_key: string,) => complexValue, weight: 2, }, // Use same object to avoid readonly issues
-        { get: (_key: string,) => 'different' as unknown, weight: 1, },
+        { get: ({key}: {key: string}) => complexValue, weight: 1, },
+        { get: ({key}: {key: string}) => complexValue, weight: 2, }, // Use same object to avoid readonly issues
+        { get: ({key}: {key: string}) => 'different' as unknown, weight: 1, },
       ],
       key: 'complex',
     },);
@@ -67,21 +67,21 @@ describe('getablesGetConsensusAsync', () => {
 
   test('throws error when multiple values tie for highest weight', async () => {
     await expect(
-      getablesGetConsensusAsync({
+      getablesGetConsensus({
         getables: [
-          { get: (_key: string,) => 'a', weight: 5, },
-          { get: (_key: string,) => 'b', weight: 5, },
+          { get: ({key}: {key: string}) => 'a', weight: 5, },
+          { get: ({key}: {key: string}) => 'b', weight: 5, },
         ],
         key: 'test',
       },),
     )
       .rejects
-      .toThrow('Consensus tie detected: 2 values have the same maximum weight of 5',);
+      .toThrow('Consensus tie detected',);
   });
 
   test('throws error when no getables provided', async () => {
     await expect(
-      getablesGetConsensusAsync({
+      getablesGetConsensus({
         getables: [],
         key: 'test',
       },),
@@ -94,9 +94,9 @@ describe('getablesGetConsensusAsync', () => {
     const errorMessage = 'Getable failed';
 
     await expect(
-      getablesGetConsensusAsync({
+      getablesGetConsensus({
         getables: [
-          { get: (_key: string,) => {
+          { get: ({key}: {key: string}) => {
             throw new Error(errorMessage,);
           }, },
         ],
@@ -111,9 +111,9 @@ describe('getablesGetConsensusAsync', () => {
     const errorMessage = 'Async getable failed';
 
     await expect(
-      getablesGetConsensusAsync({
+      getablesGetConsensus({
         getables: [
-          { get: async (_key: string,) => {
+          { get: async ({key}: {key: string}) => {
             throw new Error(errorMessage,);
           }, },
         ],
@@ -125,10 +125,10 @@ describe('getablesGetConsensusAsync', () => {
   });
 
   test('handles zero weight getables', async () => {
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: [
-        { get: (_key: string,) => 'zero-weight', weight: 0, },
-        { get: (_key: string,) => 'winner', weight: 1, },
+        { get: ({key}: {key: string}) => 'zero-weight', weight: 0, },
+        { get: ({key}: {key: string}) => 'winner', weight: 1, },
       ],
       key: 'test',
     },);
@@ -137,10 +137,10 @@ describe('getablesGetConsensusAsync', () => {
   });
 
   test('handles zero weight vs negative weight', async () => {
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: [
-        { get: (_key: string) => 'zero-weight', weight: 0},
-        { get: (_key: string) => 'loser', weight: -1},
+        { get: ({key: string}) => 'zero-weight', weight: 0},
+        { get: ({key: string}) => 'loser', weight: -1},
       ],
       key: 'test',
     });
@@ -149,12 +149,12 @@ describe('getablesGetConsensusAsync', () => {
   });
 
   test('groups identical values correctly', async () => {
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: [
-        { get: (_key: string) => 'same', weight: 1},
-        { get: (_key: string) => 'same', weight: 1},
-        { get: (_key: string) => 'same', weight: 1},
-        { get: (_key: string) => 'different', weight: 2},
+        { get: ({key: string}) => 'same', weight: 1},
+        { get: ({key: string}) => 'same', weight: 1},
+        { get: ({key: string}) => 'same', weight: 1},
+        { get: ({key: string}) => 'different', weight: 2},
       ],
       key: 'test',
     });
@@ -164,9 +164,9 @@ describe('getablesGetConsensusAsync', () => {
   });
 
   test('handles single getable that returns undefined', async () => {
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: [
-        { get: (_key: string,) => undefined, },
+        { get: ({key}: {key: string,}) => undefined, },
       ],
       key: 'test',
     },);
@@ -175,9 +175,9 @@ describe('getablesGetConsensusAsync', () => {
   });
 
   test('handles single getable that returns null', async () => {
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: [
-        { get: (_key: string,) => null, },
+        { get: ({key}: {key: string,}) => null, },
       ],
       key: 'test',
     },);
@@ -186,9 +186,9 @@ describe('getablesGetConsensusAsync', () => {
   });
 
   test('handles promises returned by get methods', async () => {
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: [
-        { get: (_key: string,) => Promise.resolve('promised-value',), },
+        { get: ({key}: {key: string,}) => Promise.resolve('promised-value',), },
       ],
       key: 'test',
     },);
@@ -199,12 +199,12 @@ describe('getablesGetConsensusAsync', () => {
   test('handles different keys passed to getables', async () => {
     const spy = vi.fn().mockReturnValue('value',);
 
-    await getablesGetConsensusAsync({
+    await getablesGetConsensus({
       getables: [{ get: spy, },],
       key: 'specific-key',
     },);
 
-    expect(spy,).toHaveBeenCalledWith('specific-key',);
+    expect(spy,).toHaveBeenCalledWith({key: 'specific-key'});
   });
 
   test('uses custom logger when provided', async () => {
@@ -217,20 +217,20 @@ describe('getablesGetConsensusAsync', () => {
       fatal: vi.fn(),
     };
 
-    await getablesGetConsensusAsync({
-      getables: [{ get: (_key: string,) => 'test', },],
+    await getablesGetConsensus({
+      getables: [{ get: ({key}: {key: string,}) => 'test', },],
       key: 'test',
       l: customLogger,
     },);
 
-    expect(customLogger.debug,).toHaveBeenCalledWith();
+    expect(customLogger.trace,).toHaveBeenCalledWith('getablesGetConsensus');
   });
 
   test('handles fractional weights', async () => {
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: [
-        { get: (_key: string,) => 'fractional', weight: 0.5, },
-        { get: (_key: string,) => 'winner', weight: 0.6, },
+        { get: ({key}: {key: string,}) => 'fractional', weight: 0.5, },
+        { get: ({key}: {key: string,}) => 'winner', weight: 0.6, },
       ],
       key: 'test',
     },);
@@ -239,10 +239,10 @@ describe('getablesGetConsensusAsync', () => {
   });
 
   test('handles negative weights', async () => {
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: [
-        { get: (_key: string,) => 'negative', weight: -1, },
-        { get: (_key: string,) => 'positive', weight: 1, },
+        { get: ({key}: {key: string,}) => 'negative', weight: -1, },
+        { get: ({key}: {key: string,}) => 'positive', weight: 1, },
       ],
       key: 'test',
     },);
@@ -253,10 +253,10 @@ describe('getablesGetConsensusAsync', () => {
   test('handles large weights', async () => {
     const LARGE_WEIGHT = 1000000;
 
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: [
-        { get: (_key: string,) => 'small', weight: 1, },
-        { get: (_key: string,) => 'large', weight: LARGE_WEIGHT, },
+        { get: ({key}: {key: string,}) => 'small', weight: 1, },
+        { get: ({key}: {key: string,}) => 'large', weight: LARGE_WEIGHT, },
       ],
       key: 'test',
     },);
@@ -268,10 +268,10 @@ describe('getablesGetConsensusAsync', () => {
     const map1 = new Map([['a', 1,], ['b', 2,],],);
     const map2 = new Map([['b', 2,], ['a', 1,],],); // Same content, different order
 
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: [
-        { get: (_key: string,) => map1, weight: 1, },
-        { get: (_key: string,) => map2, weight: 2, }, // Should be considered equal to map1
+        { get: ({key}: {key: string,}) => map1, weight: 1, },
+        { get: ({key}: {key: string,}) => map2, weight: 2, }, // Should be considered equal to map1
       ],
       key: 'test',
     },);
@@ -283,10 +283,10 @@ describe('getablesGetConsensusAsync', () => {
     const set1 = new Set([1, 2, 3,],);
     const set2 = new Set([3, 2, 1,],); // Same content, different order
 
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: [
-        { get: (_key: string,) => set1, weight: 1, },
-        { get: (_key: string,) => set2, weight: 2, }, // Should be considered equal to set1
+        { get: ({key}: {key: string,}) => set1, weight: 1, },
+        { get: ({key}: {key: string,}) => set2, weight: 2, }, // Should be considered equal to set1
       ],
       key: 'test',
     },);
@@ -298,10 +298,10 @@ describe('getablesGetConsensusAsync', () => {
     const date1 = new Date('2023-01-01',);
     const date2 = new Date('2023-01-01',); // Same time
 
-    const result = await getablesGetConsensusAsync({
+    const result = await getablesGetConsensus({
       getables: [
-        { get: (_key: string,) => date1, weight: 1, },
-        { get: (_key: string,) => date2, weight: 2, }, // Should be considered equal to date1
+        { get: ({key}: {key: string,}) => date1, weight: 1, },
+        { get: ({key}: {key: string,}) => date2, weight: 2, }, // Should be considered equal to date1
       ],
       key: 'test',
     },);
@@ -315,9 +315,9 @@ describe('getablesGetConsensusAsync', () => {
 
     const startTime = Date.now();
 
-    await getablesGetConsensusAsync({
+    await getablesGetConsensus({
       getables: Array.from({ length: CONCURRENT_COUNT, }, () => ({
-        get: async (_key: string,) => {
+        get: async ({key}: {key: string,}) => {
           await new Promise(resolve => setTimeout(resolve, DELAY_MS,));
           return 'concurrent-result';
         },

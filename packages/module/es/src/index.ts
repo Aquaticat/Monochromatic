@@ -61,7 +61,7 @@ export * from './function.thunk.ts';
 export * from './function.tryCatch.ts';
 
 export * from './getable.basic.ts';
-export * from './getables.consensus.ts';
+export * from './getables.getConsensus.ts';
 
 export * from './generator.is.ts';
 export * from './iterable.at.ts';

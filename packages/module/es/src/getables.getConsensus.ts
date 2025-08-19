@@ -1,16 +1,15 @@
 import { arrayFromAsyncBasic, } from './array.fromAsyncBasic.ts';
-import { boxesGetConsensusAsync, } from './boxes.getConsensus.ts';
+import { boxesGetConsensus, } from './boxes.getConsensus.ts';
 import type { Getable, } from './getable.basic.ts';
 import type { MaybeAsyncIterable, } from './iterable.basic.ts';
-import {
-  consoleLogger,
-  type Logger,
-} from './string.log.ts';
+import type { Logged, } from './logged.basic.ts';
+import { getDefaultLogger, } from './string.log.ts';
+import type { Box, } from './box.basic.ts';
 
 /**
  * Determines consensus value from multiple getables using weighted voting.
  *
- * Calls `get(key)` on all getables concurrently and returns the value with the
+ * Calls `get({key})` on all getables concurrently and returns the value with the
  * highest total weight. Each getable contributes its weight (defaulting to 1)
  * to the total weight of the value it returns. Uses reference equality
  * to group identical values.
@@ -27,41 +26,40 @@ import {
  * @example
  * ```ts
  * // Simple consensus with default weights
- * const result = await getablesGetConsensusAsync({
- *   getables: [{get: () => 'b'}],
+ * const result = await getablesGetConsensus({
+ *   getables: [{get: ({key}) => 'b'}],
  *   key: 'a'
  * }); // 'b'
  *
  * // Weighted consensus
- * const result = await getablesGetConsensusAsync({
+ * const result = await getablesGetConsensus({
  *   getables: [
- *     {get: () => 'b', weight: 1},
- *     {get: () => 'b', weight: 2},
- *     {get: () => 'c', weight: 10}
+ *     {get: ({key}) => 'b', weight: 1},
+ *     {get: ({key}) => 'b', weight: 2},
+ *     {get: ({key}) => 'c', weight: 10}
  *   ],
  *   key: 'a'
  * }); // 'c' (weight: 10 > 3)
  *
  * // Async getables
- * const result = await getablesGetConsensusAsync({
+ * const result = await getablesGetConsensus({
  *   getables: async function*() {
- *     yield {get: async () => 'value'};
+ *     yield {get: async ({key}) => 'value'};
  *   }(),
  *   key: 'test'
  * }); // 'value'
  * ```
  */
-export async function getablesGetConsensusAsync<const T = unknown,>(
-  { getables, key, l = consoleLogger, }: {
-    getables: MaybeAsyncIterable<Getable<T>>;
+export async function getablesGetConsensus<const T = unknown,>(
+  { getables, key, l = getDefaultLogger(), }: {
+    getables: MaybeAsyncIterable<Getable<string, T>>;
     key: string;
-    l?: Logger;
-  },
-): Promise<T> {
-  l.debug(`Starting consensus for key: ${key}`,);
+  } & Partial<Logged>,
+): Promise<T | undefined> {
+  l.trace(getablesGetConsensus.name,);
 
   // Convert iterable to array for concurrent processing
-  const getablesArray = await arrayFromAsyncBasic(getables,);
+  const getablesArray = await arrayFromAsyncBasic({ iterable: getables, l, },);
 
   if (getablesArray.length === 0)
     throw new Error('No getables provided for consensus',);
@@ -69,19 +67,19 @@ export async function getablesGetConsensusAsync<const T = unknown,>(
   l.debug(`Processing ${getablesArray.length} getables`,);
 
   // Call all get methods concurrently and transform to boxes
-  const boxes = await Promise.all(
-    getablesArray.map(async getable => {
-      const box: { value: T; weight?: number; } = {
-        value: await getable.get(key,),
-      };
-      if (getable.weight !== undefined)
+  const boxes: Box<T | undefined>[] = await Promise.all(
+    getablesArray.map(async function getableToBox(getable): Promise<Box<T | undefined>> {
+      const value = await getable.get({ key, l, },);
+      const box: Box<T | undefined> = { value, };
+      if (getable.weight !== undefined) {
         box.weight = getable.weight;
+      }
       return box;
     },),
   );
 
-  l.debug(`Got ${boxes.length} results, delegating to boxesGetConsensusAsync`,);
+  l.debug(`Got ${boxes.length} results, delegating to boxesGetConsensus`,);
 
-  // Delegate to boxesGetConsensusAsync
-  return await boxesGetConsensusAsync({ boxes, l, },);
+  // Delegate to boxesGetConsensus
+  return await boxesGetConsensus({ boxes, l, },);
 }

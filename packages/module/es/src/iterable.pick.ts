@@ -53,7 +53,7 @@ import {
  * iterablePick({ iterable: [1], picked: [1, 2] }); // throws RangeError
  * ```
  */
-export function iterablePick<const MyIterable extends Iterable<unknown>,>({
+export function iterableSyncPickSync<const MyIterable extends Iterable<unknown>,>({
   iterable,
   picked,
   l = consoleLogger,
@@ -134,7 +134,7 @@ export function iterablePick<const MyIterable extends Iterable<unknown>,>({
  * await iterablePickAsync({ iterable: asyncIterable([1]), picked: [1, 2] }); // throws RangeError
  * ```
  */
-export async function iterablePickAsync<
+export async function iterablePick<
   const MyIterable extends MaybeAsyncIterable,
 >(
   {
