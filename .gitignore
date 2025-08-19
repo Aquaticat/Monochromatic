@@ -46,6 +46,38 @@ package-lock.json
 
 *.bun-build
 
+.fastembed_cache
+
+*.fast
+
+*.lock
+
+*.vec
+
+*.term
+
+*.idx
+
+*.pos
+
+*.store
+
+*.fieldnorm
+
+*.del
+
+meta.json
+
+*.bin
+
+.tmp*
+
+.managed.json
+
+index.meta
+
+metadata.json
+
 # So that actions/setup-node can correctly build yarn cache
 #yarn.lock
 
