@@ -40,15 +40,15 @@ import { getDefaultLogger, } from './string.log.ts';
  * }()); // 'test'
  * ```
  */
-export async function boxesGetConsensusAsync<const T = unknown,>(
+export async function boxesGetConsensus<const T = unknown,>(
   { boxes, l = getDefaultLogger(), }: {
     boxes: MaybeAsyncIterable<Box<T>>;
   } & Partial<Logged>,
 ): Promise<T> {
-  l.debug('Starting box consensus evaluation',);
+  l.trace(boxesGetConsensus.name,);
 
   // Convert iterable to array for processing
-  const boxesArray = await arrayFromAsyncBasic(boxes,);
+  const boxesArray = await arrayFromAsyncBasic({iterable:boxes},);
 
   if (boxesArray.length === 0)
     throw new Error('No boxes provided for consensus',);
