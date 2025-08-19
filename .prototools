@@ -35,7 +35,8 @@ yq = "latest"
 hyperfine = "latest"
 
 # Terminal workspace
-zellij = "latest"
+# USER: Temporarily turned off, 1. because I still need Windows 2. because I still haven't used it
+#zellij = "latest"
 
 # GitHub CLI
 gh = "latest"
@@ -54,7 +55,7 @@ auto-clean = true
 detect-strategy = "only-prototools"
 
 [plugins]
-zellij = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/zellij/plugin.toml"
+#zellij = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/zellij/plugin.toml"
 
 yq = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/yq/plugin.toml"
 
