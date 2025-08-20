@@ -23,47 +23,49 @@ export type Logger = {
   fatal: LoggerLogger;
 };
 
-export function getConsoleLoggerLogger(level: LoggerLevels,): LoggerLogger {
-  const loggerLoggerLogger = (function getLoggerLoggerLogger(level: LoggerLevels,) {
-    let myLoggerLoggerLogger: (message: string,) => unknown;
-    switch (level) {
-      case 'trace':
-        {
-          myLoggerLoggerLogger = console.trace;
-        }
-        break;
-      case 'debug':
-        {
-          myLoggerLoggerLogger = console.debug;
-        }
-        break;
-      case 'info':
-        {
-          myLoggerLoggerLogger = console.info;
-        }
-        break;
-      case 'warn':
-        {
-          myLoggerLoggerLogger = console.warn;
-        }
-        break;
-      case 'error':
-        {
-          myLoggerLoggerLogger = console.error;
-        }
-        break;
-      case 'fatal': {
+function getConsoleLoggerSink(level: LoggerLevels,) {
+  let myLoggerLoggerLogger: (message: string,) => unknown;
+  switch (level) {
+    case 'trace':
+      {
+        myLoggerLoggerLogger = console.trace;
+      }
+      break;
+    case 'debug':
+      {
+        myLoggerLoggerLogger = console.debug;
+      }
+      break;
+    case 'info':
+      {
+        myLoggerLoggerLogger = console.info;
+      }
+      break;
+    case 'warn':
+      {
+        myLoggerLoggerLogger = console.warn;
+      }
+      break;
+    case 'error':
+      {
         myLoggerLoggerLogger = console.error;
       }
+      break;
+    case 'fatal': {
+      myLoggerLoggerLogger = console.error;
     }
-    return myLoggerLoggerLogger;
-  })(level,);
+  }
+  return myLoggerLoggerLogger;
+}
+
+export function getConsoleLoggerLogger(level: LoggerLevels,): LoggerLogger {
+  const consoleLoggerSink = getConsoleLoggerSink(level,);
 
   return function myConsoleLoggerLogger(message: string,
     record?: StringRecord | (() => Promisable<StringRecord>),)
   {
     if (!record)
-      loggerLoggerLogger(message,);
+      consoleLoggerSink(message,);
     const promisableRecord: Promisable<StringRecord> = typeof record === 'function'
       ? record()
       : notUndefinedOrThrow(record,);
@@ -87,7 +89,7 @@ export function getConsoleLoggerLogger(level: LoggerLevels,): LoggerLogger {
         message,
       );
 
-      loggerLoggerLogger(`${replacedMessage}, ${JSON.stringify(myRecord)}`,);
+      consoleLoggerSink(`${replacedMessage}, ${JSON.stringify(myRecord,)}`,);
     })({ message, promisableRecord, },)
       .catch(throws,);
   };
