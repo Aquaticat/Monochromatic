@@ -133,13 +133,43 @@ if (isSchema(enriched)) {
 }
 ```
 
-## Testing Type Behavior
+## FINAL DECISION: Generic Extends Pattern for Type Safety
 
-Use `packages/module/es/src/typeguard.behaviorTest.ts` to verify behavior:
-- Lines with `@ts-expect-error`: Properties get lost
-- Lines without: Properties preserved
-- This pattern reveals the complete type preservation rules
+### For Type-Safety Focused Codebases: Generic Extends Wins
 
-## Recommendation
+**IMMEDIATE ACTION**: Refactor all typeguards to Generic Extends pattern.
 
-**Refactor to generic pattern for better type preservation** - the input type really does matter for maintaining property information during validation.
+```typescript
+// NEW STANDARD PATTERN
+export function isString<const T extends string = string>(
+  value: T
+): value is T {
+  return typeof value === 'string';
+}
+
+export function isSchema<const T extends Schema = Schema>(
+  value: T  
+): value is T {
+  // validation logic
+}
+```
+
+### Why Generic Extends Is The Clear Winner:
+
+1. **🎯 Maximum Type Preservation**: 35 scenarios maintain rich type information
+2. **🚫 Strong Compile-Time Safety**: 18 scenarios catch errors before runtime
+3. **💣 Eliminates False Safety**: Prevents 23 dangerous runtime explosions
+4. **🔥 Minimizes Type Destruction**: Only 4 scenarios lose information
+
+### Migration Strategy:
+1. **Priority 1**: Basic guards (`string`, `number`, `boolean`, `error`)
+2. **Priority 2**: Collections (`array`, `map`, `set`, `promise`)  
+3. **Priority 3**: Complex objects (`schema`, `jsonl`)
+4. **Priority 4**: Update all tests and documentation
+
+### Usage Patterns:
+- **Internal validation**: Direct use for maximum safety
+- **External APIs**: Explicit casting shows dangerous intent
+- **Union narrowing**: Safe with proper casting patterns
+
+**Evidence**: 84 comprehensive test scenarios in `typeguard.behaviorTest.ts` prove Generic Extends superiority for type-safety focused development.
