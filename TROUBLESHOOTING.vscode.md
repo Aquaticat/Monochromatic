@@ -80,3 +80,7 @@ sudo nano /etc/fstab
 - **Virtual machines**: Resource heavy, complex setup
 
 The bind mount approach provides the best balance of functionality and simplicity for this specific WSL + VSCode limitation.
+
+## Related Documentation
+
+- [dprint Extension Configuration](./TROUBLESHOOTING.dprint.md#vscode-extension-cannot-find-dprint-in-wsl)

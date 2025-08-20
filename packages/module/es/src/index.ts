@@ -102,6 +102,7 @@ export * from './numeric.range.ts';
 export * from './numeric.type.abs.ts';
 export * from './numeric.type.intsTo10.ts';
 
+export * from './object.extract.ts';
 export * from './object.is.ts';
 export * from './object.pick.ts';
 

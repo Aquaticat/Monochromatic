@@ -96,9 +96,14 @@ export type MaybeAsyncSchema<Input = unknown, Output = Input,> =
  * }
  * ```
  */
-export function isSchema<Input = unknown, Output = Input,>(
-  value: unknown,
-): value is Schema<Input, Output> {
+export function isSchema<
+  const MyValue = unknown,
+>(
+  value: MyValue,
+): value is MyValue extends Schema<infer MyInput, infer MyOutput>
+  ? (MyValue & Schema<MyInput, MyOutput>)
+  : never
+{
   if (value === null)
     return false;
   if (typeof value !== 'object')
@@ -124,9 +129,14 @@ export function isSchema<Input = unknown, Output = Input,>(
  * }
  * ```
  */
-export function isAsyncSchema<Input = unknown, Output = Input,>(
-  value: unknown,
-): value is SchemaAsync<Input, Output> {
+export function isSchemaAsync<
+  const MyValue = unknown,
+>(
+  value: MyValue,
+): value is MyValue extends SchemaAsync<infer MyInput, infer MyOutput>
+  ? (MyValue & SchemaAsync<MyInput, MyOutput>)
+  : never
+{
   if (value === null)
     return false;
   if (typeof value !== 'object')
@@ -134,6 +144,17 @@ export function isAsyncSchema<Input = unknown, Output = Input,>(
   if (!('parseAsync' in value))
     return false;
   return typeof value.parseAsync === 'function';
+}
+
+export function maybeAsyncSchemaIsSchemaAsync<const Input = unknown,
+  const Output = unknown,
+  const MyMaybeAsyncSchema extends MaybeAsyncSchema<Input, Output> = MaybeAsyncSchema<
+    Input,
+    Output
+  >,>(
+  maybeAsyncSchema: MyMaybeAsyncSchema,
+): maybeAsyncSchema is SchemaAsync<Input, Output> & MyMaybeAsyncSchema {
+  return ('parseAsync' in maybeAsyncSchema);
 }
 
 /**
@@ -154,10 +175,15 @@ export function isAsyncSchema<Input = unknown, Output = Input,>(
  * }
  * ```
  */
-export function isMaybeAsyncSchema<Input = unknown, Output = Input,>(
-  value: unknown,
-): value is MaybeAsyncSchema<Input, Output> {
-  return isSchema<Input, Output>(value,) || isAsyncSchema<Input, Output>(value,);
+export function isMaybeAsyncSchema<
+  const MyValue = unknown,
+>(
+  value: MyValue,
+): value is MyValue extends MaybeAsyncSchema<infer MyInput, infer MyOutput>
+  ? (MyValue & MaybeAsyncSchema<MyInput, MyOutput>)
+  : never
+{
+  return isSchema(value,) || isSchemaAsync(value,);
 }
 
 /**
@@ -175,13 +201,18 @@ export function isMaybeAsyncSchema<Input = unknown, Output = Input,>(
  * const result = await asyncVersion.parseAsync(value);
  * ```
  */
-export function maybeAsyncSchemaToAsyncSchema<Input = unknown, Output = Input,>(
+export function maybeAsyncSchemaToAsyncSchema<
+  const MySchema extends MaybeAsyncSchema = MaybeAsyncSchema,
+>(
   { schema, l = getDefaultLogger(), }:
-    & { schema: MaybeAsyncSchema<Input, Output>; }
+    & { schema: MySchema; }
     & Partial<Logged>,
-): SchemaAsync<Input, Output> {
+): MySchema extends MaybeAsyncSchema<infer Input, infer Output>
+  ? (SchemaAsync<Input, Output> & MySchema)
+  : never
+{
   l.trace(maybeAsyncSchemaToAsyncSchema.name,);
-  if (isAsyncSchema<Input, Output>(schema,))
-    return schema;
-  return Object.assign(schema, { parseAsync: schema.parse, },);
+  if (isSchemaAsync(schema,))
+    return schema as any;
+  return Object.assign(schema, { parseAsync: schema.parse, },) as any;
 }
