@@ -1,7 +1,3 @@
-import {
-  equal,
-  equalAsync,
-} from './any.equal.ts';
 import { anyToSchemaSync, } from './any.toSchemaSync.ts';
 import { arrayFromAsyncBasic, } from './array.fromAsyncBasic.ts';
 import type { MaybeAsyncIterable, } from './iterable.basic.ts';
@@ -63,8 +59,10 @@ export function objectPickSync<
   readonly object: TObject;
   readonly keys: TKeys;
   readonly l?: Logger;
-}): Pick<TObject, Extract<keyof TObject, TKeys extends Iterable<infer U> ? U : TKeys>> | 
-   (TKeys extends SchemaSync<infer _, infer Output> ? Output : never) {
+},):
+  | Pick<TObject, Extract<keyof TObject, TKeys extends Iterable<infer U> ? U : TKeys>>
+  | (TKeys extends SchemaSync<infer _, infer Output> ? Output : never)
+{
   l.trace('objectPickSync',);
 
   // Handle schema validation
@@ -86,9 +84,8 @@ export function objectPickSync<
       }
 
       // Check if key exists in object
-      if (!(key in object)) {
+      if (!(key in object))
         throw new Error(`Key "${String(key,)}" does not exist in object`,);
-      }
 
       // Convert key to string and add to result
       const stringKey = String(key,);
