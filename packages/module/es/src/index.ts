@@ -103,6 +103,7 @@ export * from './numeric.type.abs.ts';
 export * from './numeric.type.intsTo10.ts';
 
 export * from './object.is.ts';
+export * from './object.pick.ts';
 
 export * from './promise.all.ts';
 export * from './promise.awaits.ts';
