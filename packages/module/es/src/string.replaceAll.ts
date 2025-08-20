@@ -1,3 +1,4 @@
+import type { Logged } from './logged.basic.ts';
 import {
   consoleLogger,
   type Logger,
@@ -10,9 +11,9 @@ type StringReplaceAllReplacement = string | (() => string);
 export function stringReplaceAll(
   { str, pattern, replacement, l = consoleLogger, }: { str: string;
     pattern: StringReplaceAllPattern; replacement: StringReplaceAllReplacement;
-    l: Logger; },
+     } & Partial<Logged>,
 ): string {
-  l.trace(`stringReplaceAll`,);
+  l.debug(stringReplaceAll.name,);
   // @ts-expect-error -- TypeScript std lib types seems to be wrong. replaceAll does indeed accept string as 2nd param.
   return str.replaceAll(pattern, replacement,);
 }
@@ -22,9 +23,9 @@ export function partialStringReplaceAll({
   replacement,
   l = consoleLogger,
 }: { pattern: StringReplaceAllPattern; replacement: StringReplaceAllReplacement;
-  l: Logger; },): (str: string,) => string
+} & Partial<Logged>,): (str: string,) => string
 {
-  l.trace(`partialStringReplaceAll`,);
+  l.debug(partialStringReplaceAll.name,);
   return function partialedStringReplaceAll(str: string,): string {
     return stringReplaceAll({ str, pattern, replacement, l, },);
   };

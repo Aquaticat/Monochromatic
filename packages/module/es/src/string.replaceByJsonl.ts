@@ -1,3 +1,58 @@
+import type { UnknownRecord, } from 'type-fest';
+import type { MaybeAsyncIterable, } from './iterable.basic';
+import type { Jsonl, } from './jsonl.basic';
+import type { Logged, } from './logged.basic';
+import { getDefaultLogger, } from './string.log';
+
+/**
+ * Rule definition for string replacement operations.
+ * Supports both literal string and regex patterns with optional line filtering and replacement modes.
+ *
+ * @example
+ * ```ts
+ * // Basic string replacement
+ * const basicRule: ReplacementRule = {
+ *   patternString: 'old',
+ *   replacement: 'new'
+ * };
+ *
+ * // Regex pattern with replaceAll
+ * const regexRule: ReplacementRule = {
+ *   patternString: '/\\d+/',
+ *   replacement: 'NUM',
+ *   replaceAll: true
+ * };
+ *
+ * // Line-specific replacement
+ * const lineRule: ReplacementRule = {
+ *   patternString: 'error',
+ *   replacement: 'warning',
+ *   lines: { start: 0, end: 5 }
+ * };
+ * ```
+ */
+type ReplacementRule = {
+  /** When true, replaces all occurrences instead of just the first one */
+  readonly replaceAll?: true;
+  /**
+   * Pattern to search for. If matches /^\/.*\/$/, will be created as RegExp with g,m,v flags.
+   * Otherwise treated as literal string for exact matching.
+   */
+  readonly patternString: string;
+  /** Literal replacement string to substitute for matches */
+  readonly replacement: string;
+  /**
+   * Optional line range constraint. When specified, only applies replacement within these lines.
+   * Line numbers are zero-indexed and inclusive on both ends.
+   */
+  readonly lines?: {
+    /** Starting line number (inclusive, zero-indexed) */
+    readonly start: number;
+    /** Ending line number (inclusive, zero-indexed) */
+    readonly end: number;
+  };
+};
+
 // stringReplaceByReplacementRules({str: '', rules: []}) // ''
 
 // stringReplaceByReplacementRules({str: 'a', rules: [{replaceAll: true, patternString: 'a', replacement: 'b'}]}) // 'b' logs warning "replaceAll specified but only one instance found, replaced one"
@@ -12,25 +67,23 @@
 
 // stringReplaceByReplacementRules({str: 'a\nab\na'}, rules: [{patternString: 'a', replacement: 'c', lines: {start: 0, end: 1}}]) // 'c\ncb\na'
 
-import type { UnknownRecord, } from 'type-fest';
-import type { MaybeAsyncIterable, } from './iterable.basic';
-import type { Jsonl, } from './jsonl.basic';
-import type { Logged, } from './logged.basic';
-import { getDefaultLogger, } from './string.log';
-
-type ReplacementRule = {
-  readonly replaceAll?: true;
-  /** If matches ^\/.+\/$ , will be created as Regexp with g,m,v flags, otherwise treated as literal string */
-  readonly patternString: string;
-  /** literal string */
-  readonly replacement: string;
-  /** Only replace in which lines */
-  readonly lines?: {
-    readonly start: number;
-    readonly end: number;
-  };
-};
-
+/**
+ * Applies replacement rules from JSONL format to a string.
+ * Each line in JSONL should be a valid ReplacementRule object.
+ *
+ * @param str - String to process with replacement rules
+ * @param jsonl - JSONL format string containing replacement rules
+ * @param l - Logger for debug and warning messages
+ * @returns Processed string with all replacements applied
+ * @example
+ * ```ts
+ * const result = stringReplaceByJsonl({
+ *   str: 'hello world',
+ *   jsonl: '{"patternString": "world", "replacement": "universe"}'
+ * });
+ * // Returns: 'hello universe'
+ * ```
+ */
 export function stringReplaceByJsonl(
   { str, jsonl, l = getDefaultLogger(), }: { str: string; jsonl: Jsonl; } & Partial<
     Logged
@@ -46,6 +99,27 @@ export function stringReplaceByJsonl(
   return stringReplaceByReplacementRulesSync({ str, rules, l, },);
 }
 
+/**
+ * Applies multiple replacement rules to a string synchronously.
+ * Rules are processed sequentially, with each rule operating on the result of the previous rule.
+ *
+ * @param str - String to process with replacement rules
+ * @param rules - Iterable of replacement rules to apply sequentially
+ * @param l - Logger for debug and warning messages
+ * @returns Processed string with all replacements applied
+ * @example
+ * ```ts
+ * const rules = [
+ *   { patternString: 'old', replacement: 'new' },
+ *   { patternString: 'bad', replacement: 'good' }
+ * ];
+ * const result = stringReplaceByReplacementRulesSync({
+ *   str: 'old bad text',
+ *   rules
+ * });
+ * // Returns: 'new good text'
+ * ```
+ */
 export function stringReplaceByReplacementRulesSync(
   { str, rules, l = getDefaultLogger(), }:
     & { str: string; rules: Iterable<ReplacementRule>; }
@@ -77,42 +151,59 @@ export function stringReplaceByReplacementRulesSync(
     .str;
 }
 
+/**
+ * Applies multiple replacement rules to a string asynchronously.
+ * Processes rules as they arrive from the async iterable for efficient streaming.
+ * Rules are processed sequentially, maintaining order and context between rules.
+ *
+ * @param str - String to process with replacement rules
+ * @param rules - Async iterable of replacement rules to apply sequentially
+ * @param l - Logger for debug and warning messages
+ * @returns Promise resolving to processed string with all replacements applied
+ * @example
+ * ```ts
+ * async function* generateRules() {
+ *   yield { patternString: 'old', replacement: 'new' };
+ *   yield { patternString: 'bad', replacement: 'good' };
+ * }
+ *
+ * const result = await stringReplaceByReplacementRules({
+ *   str: 'old bad text',
+ *   rules: generateRules()
+ * });
+ * // Returns: 'new good text'
+ * ```
+ */
 export async function stringReplaceByReplacementRules(
   { str, rules, l = getDefaultLogger(), }: { str: string;
     rules: MaybeAsyncIterable<ReplacementRule>; } & Partial<Logged>,
 ): Promise<string> {
   l.debug('stringReplaceByReplacementRules',);
 
-  const initialContext = { linesTargetedByPreviousRules: [] as number[], };
-  const ruleArray: ReplacementRule[] = [];
+  // Use mutable variables for efficient streaming processing
+  let currentStr = str;
+  const context = { linesTargetedByPreviousRules: [] as number[], };
 
-  // Collect all rules first
-  for await (const rule of rules)
-    ruleArray.push(rule,);
+  // Process each rule as it arrives, don't collect them first
+  for await (const rule of rules) {
+    currentStr = stringReplaceByReplacementRule({
+      str: currentStr,
+      rule,
+      l,
+      context,
+    },);
+  }
 
-  // Process using the same immutable pattern
-  return ruleArray
-    .reduce(
-      (currentResult, rule,) => {
-        const newResult = stringReplaceByReplacementRule({
-          str: currentResult.str,
-          rule,
-          l,
-          context: currentResult.context,
-        },);
-
-        return {
-          str: newResult,
-          context: currentResult.context,
-        };
-      },
-      { str, context: initialContext, },
-    )
-    .str;
+  return currentStr;
 }
 
 /**
- * Counts occurrences of a pattern in a string
+ * Counts occurrences of a pattern in a string using functional approach.
+ * Handles both string literals and RegExp patterns efficiently.
+ *
+ * @param text - String to search within
+ * @param pattern - String literal or RegExp pattern to count
+ * @returns Number of occurrences found
  */
 function countOccurrences(text: string, pattern: string | RegExp,): number {
   if (pattern instanceof RegExp) {
@@ -135,12 +226,56 @@ function countOccurrences(text: string, pattern: string | RegExp,): number {
 }
 
 /**
- * Creates a range of line numbers
+ * Creates a range of consecutive line numbers.
+ * Used for determining which lines should be targeted by replacement rules.
+ *
+ * @param start - Starting line number (inclusive)
+ * @param end - Ending line number (inclusive)
+ * @returns Array of line numbers from start to end
  */
 function createLineRange(start: number, end: number,): number[] {
   return Array.from({ length: end - start + 1, }, (_, index,) => start + index,);
 }
 
+/**
+ * Applies a single replacement rule to a string with comprehensive logging and validation.
+ * Handles regex patterns, line filtering, occurrence counting, and context tracking.
+ * Provides detailed warnings for edge cases and overlapping rule scenarios.
+ *
+ * @param str - String to process with replacement rule
+ * @param rule - Replacement rule defining pattern, replacement, and optional constraints
+ * @param l - Logger for debug and warning messages
+ * @param context - Optional context for tracking lines targeted by previous rules
+ * @returns Processed string with replacement applied according to rule specifications
+ *
+ * @example
+ * ```ts
+ * // Basic replacement
+ * const result = stringReplaceByReplacementRule({
+ *   str: 'hello world',
+ *   rule: { patternString: 'world', replacement: 'universe' }
+ * });
+ * // Returns: 'hello universe'
+ *
+ * // Regex replacement with replaceAll
+ * const regexResult = stringReplaceByReplacementRule({
+ *   str: 'foo123bar456',
+ *   rule: { patternString: '/\\d+/', replacement: 'NUM', replaceAll: true }
+ * });
+ * // Returns: 'fooNUMbarNUM'
+ *
+ * // Line-specific replacement
+ * const lineResult = stringReplaceByReplacementRule({
+ *   str: 'line1\nline2\nline3',
+ *   rule: {
+ *     patternString: 'line',
+ *     replacement: 'row',
+ *     lines: { start: 0, end: 1 }
+ *   }
+ * });
+ * // Returns: 'row1\nrow2\nline3'
+ * ```
+ */
 export function stringReplaceByReplacementRule(
   { str, rule, l = getDefaultLogger(), context, }:
     & { str: string; rule: ReplacementRule;
@@ -235,6 +370,24 @@ export function stringReplaceByReplacementRule(
 //region To be put in other files
 // TODO: Put in other files myself
 
+/**
+ * Parses JSONL (JSON Lines) format string into array of objects.
+ * Each line should contain a valid JSON object, empty lines are filtered out.
+ *
+ * @param jsonl - JSONL format string with one JSON object per line
+ * @param l - Logger for debug messages
+ * @returns Array of parsed JSON objects
+ * @throws Will throw if any line contains invalid JSON
+ *
+ * @example
+ * ```ts
+ * const jsonl = `{"name": "Alice", "age": 30}
+ * {"name": "Bob", "age": 25}`;
+ *
+ * const objects = jsonlToObjects({ jsonl });
+ * // Returns: [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]
+ * ```
+ */
 export function jsonlToObjects(
   { jsonl, l = getDefaultLogger(), }: { jsonl: Jsonl; } & Partial<
     Logged

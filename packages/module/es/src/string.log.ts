@@ -87,7 +87,7 @@ export function getConsoleLoggerLogger(level: LoggerLevels,): LoggerLogger {
         message,
       );
 
-      loggerLoggerLogger(replacedMessage,);
+      loggerLoggerLogger(`${replacedMessage}, ${JSON.stringify(myRecord)}`,);
     })({ message, promisableRecord, },)
       .catch(throws,);
   };

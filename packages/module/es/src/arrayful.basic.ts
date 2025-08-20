@@ -1,12 +1,15 @@
 export type Arrayful<T = unknown,> = {
-  array: T[];
+  readonly array: T[];
 };
 
 // type guard cannot use destructured syntax.
-export function isArrayful<const T = unknown,>(
-  potentiallyArrayful: unknown,
-): potentiallyArrayful is Arrayful<T> {
+export function isArrayful<const MyArrayful extends Arrayful = Arrayful,>(
+  potentiallyArrayful: MyArrayful,
+): potentiallyArrayful is MyArrayful extends Arrayful<infer A> ? (MyArrayful & Arrayful<A>) : never {
   if (typeof potentiallyArrayful !== 'object' || potentiallyArrayful === null)
     return false;
-  return 'array' in potentiallyArrayful && Array.isArray(potentiallyArrayful.array,);
+  if (!( 'array' in potentiallyArrayful)) {
+    return false;
+  }
+  return Array.isArray(potentiallyArrayful.array,);
 }
