@@ -1,40 +1,39 @@
 # Performance Troubleshooting & Optimizations
 
-## Performance Optimizations
+Performance troubleshooting documentation has been organized into focused areas for better maintainability and navigation.
 
-### Moon Prepare Optimization - 2025-06-16
+## Performance Troubleshooting Categories
 
-#### Problem
-`moon run prepare` taking 50+ seconds due to slow command executions in WSL.
+### [Build Performance](TROUBLESHOOTING.performance.build.md)
+Build system performance optimizations
+- Moon Prepare Optimization (WSL performance improvements)
+- TypeScript scripts replacing shell commands
+- File system checks vs binary execution
+- Cross-platform optimization strategies
 
-#### Root Causes
-1. WSL file system overhead when executing binaries from `/mnt/c/`
-2. `pnpm exec` commands taking ~27s each in WSL
-3. Unnecessary command executions when simple file checks would suffice
+### [Logging Performance](TROUBLESHOOTING.performance.logging.md)  
+Runtime logging performance issues
+- Function entry tracing migration (l.trace → l.debug)
+- Stack trace generation overhead
+- Performance impact benchmarks
+- Migration strategies and alternatives
 
-#### Solutions Implemented
+---
 
-##### 1. Created TypeScript scripts to replace shell commands:
-- `moon.preparePlaywright.ts`: Check browser dirs instead of running `playwright install --list`
-- `moon.pnpmInstall.ts`: Auto-decline pnpm reinstall prompt
-- `moon.valeSync.ts`: Check if packages exist before syncing
-- `moon.installVale.ts`: Unified cross-platform vale installation
+## Quick Reference
 
-##### 2. Key optimizations:
-- Use file system checks instead of executing binaries
-- Use native OS commands (`which`, `where.exe`) for existence checks
-- Add PATH updates to `~/.profile` for snap binaries
+### Performance Optimization Key Takeaways
 
-##### 3. Results:
-- **Before**: 50+ seconds
-- **After**: 1.54 seconds (97% improvement)
-- All bun TypeScript scripts consistently take ~80-100ms
-- Actual work (file checks) takes <10ms per script
+1. **WSL Environments**: Avoid executing binaries when file system checks suffice
+2. **Logging**: Use `l.debug()` for function entry, reserve `l.trace()` only when stack traces are needed
+3. **Build Scripts**: Replace shell commands with TypeScript scripts for better performance and cross-platform compatibility
+4. **Caching**: Implement file-based checks before expensive operations
+5. **Process Creation**: Minimize subprocess execution in performance-critical paths
 
-##### 4. Moon tips:
-- Clear cache: `moon clean --lifetime '1 seconds'`
-- Run specific test: `moon run testUnit -- <file-path>`
-- Shell commands need `shell: true` option for proper parsing
+### Common Performance Anti-Patterns
 
-#### Key Takeaway
-In WSL environments, avoid executing binaries when file system checks suffice. The overhead of process creation and file system translation can turn millisecond operations into 30-second waits.
+- Using `console.trace()` or `l.trace()` in tight loops or function entry points
+- Executing binaries when file existence checks would suffice
+- Running shell commands without proper caching mechanisms
+- Mixing synchronous I/O operations with performance-critical code paths
+- Ignoring WSL-specific performance characteristics
