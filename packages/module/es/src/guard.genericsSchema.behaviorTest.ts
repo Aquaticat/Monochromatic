@@ -115,9 +115,9 @@ function isRealSchema_GenericExtendsInfer<
 }
 
 /**
- * Generic Extends with Inference (Non-Intersection) - Preserves input type without intersection
+ * Generic Extends Direct - Preserves exact input type structure without type intersection
  */
-function isRealSchema_GenericExtendsInferNonIntersection<
+function isRealSchema_GenericExtendsDirect<
 const Input = unknown, const Output = Input,
   const T extends RealSchema<Input, Output> = RealSchema<Input, Output>,
 >(
@@ -443,16 +443,22 @@ const testRealGenericStringToNumber = (function() {
   }
 
   // Generic Extends Pattern
-  // @ts-expect-error -- StringToNumberSchema is not assignable to RealSchema (demonstrates compile-time safety)
+  // @ts-expect-error -- StringToNumberSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
   if (isRealSchema_GenericExtends(value,)) {
     // Should preserve full StringToNumberSchema type
     value.parse; // Should maintain (string) => number signature
     const result = value.parse('123',); // Type-safe string input
   }
+  // If isRealSchema_GenericExtends(value) doesn't compile, don't use ts-expect-error to force it to.
+  // Use ts-expect-error to demonstrate it doesn't compile once, then use
+  // isRealSchema_GenericExtends(value as StringToNumberSchema as StringToNumberSchema)
+  // to demonstrate what happens inside the if block
 
   // Generic Extends with Inference Pattern
   // @ts-expect-error -- StringToNumberSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
-  if (isRealSchema_GenericExtendsInfer(value,)) {
+  isRealSchema_GenericExtendsInfer(value,)
+  
+  if (isRealSchema_GenericExtendsInfer(value as RealSchema & typeof value,)) {
     // Most sophisticated - should preserve everything with inference
     value.parse; // Should maintain (string) => number signature with full inference
     const result = value.parse('456',); // Fully type-safe with inferred constraints
@@ -460,7 +466,7 @@ const testRealGenericStringToNumber = (function() {
 
   // Generic Extends with Inference (Non-Intersection) Pattern
   // @ts-expect-error -- StringToNumberSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
-  if (isRealSchema_GenericExtendsInferNonIntersection(value,)) {
+  if (isRealSchema_GenericExtendsDirect(value,)) {
     // Should preserve input type structure without intersection
     value.parse; // Should maintain (string) => number signature with inference but no intersection
     const result = value.parse('789',); // Fully type-safe with inferred constraints, preserves original type
@@ -511,7 +517,9 @@ const testRealGenericWeightedString = (function() {
 
   // Generic Extends with Inference Pattern
   // @ts-expect-error -- WeightedStringSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
-  if (isRealSchema_GenericExtendsInfer(value,)) {
+  isRealSchema_GenericExtendsInfer(value,)
+  
+  if (isRealSchema_GenericExtendsInfer(value as RealSchema & typeof value,)) {
     value.parse; // Schema method with inferred types
     value.weight; // Should preserve with inference
     value.priority; // Should preserve with inference
@@ -521,13 +529,17 @@ const testRealGenericWeightedString = (function() {
 
   // Generic Extends with Inference (Non-Intersection) Pattern
   // @ts-expect-error -- WeightedStringSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
-  if (isRealSchema_GenericExtendsInferNonIntersection(value,)) {
+  if (isRealSchema_GenericExtendsDirect(value,)) {
     value.parse; // Schema method with inferred types, no intersection
     value.weight; // Should preserve additional property without intersection
     value.priority; // Should preserve additional property without intersection
 
     const result = value.parse('non-intersection',); // Type safety with preserved original structure
   }
+  // If isRealSchema_GenericExtendsDirect(value) doesn't compile, don't use ts-expect-error to force it to.
+  // Use ts-expect-error to demonstrate it doesn't compile once, then use
+  // isRealSchema_GenericExtendsDirect(value as WeightedStringSchema as WeightedStringSchema)
+  // to demonstrate what happens inside the if block
 })();
 
 const testRealGenericNamedUser = (function() {
@@ -571,7 +583,7 @@ const testRealGenericNamedUser = (function() {
   }
 
   // @ts-expect-error -- NamedUserSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
-  if (isRealSchema_GenericExtendsInferNonIntersection(value,)) {
+  if (isRealSchema_GenericExtendsDirect(value,)) {
     value.parse; // Schema method with inferred UserInput -> User types, no intersection
     value.schemaName; // Should preserve with inference, original structure
     value.version; // Should preserve with inference, original structure
@@ -755,7 +767,7 @@ const testRealGenericPromisableBehavior = (function() {
   }
 
   // @ts-expect-error -- RealSchema<string, Promise<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
-  if (isRealSchema_GenericExtendsInferNonIntersection(promiseSchema,)) {
+  if (isRealSchema_GenericExtendsDirect(promiseSchema,)) {
     const result = promiseSchema.parse('non-intersection',); // Full type preservation without intersection
     // Result should maintain Promise<number> type with original structure preserved
   }
@@ -789,7 +801,7 @@ const testRealGenericPromisableBehavior = (function() {
   }
 
   // @ts-expect-error -- RealSchema<string, Promisable<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
-  if (isRealSchema_GenericExtendsInferNonIntersection(promisableSchema,)) {
+  if (isRealSchema_GenericExtendsDirect(promisableSchema,)) {
     const result = promisableSchema.parse('promisable-non-intersection',); // Full Promisable<number> preservation without intersection
 
     // Type-safe conditional handling with preserved input structure
@@ -845,7 +857,7 @@ const testRealGenericComplexConstraints = (function() {
   }
 
   // @ts-expect-error -- ValidatedTransformSchema is not assignable to RealSchema (demonstrates compile-time safety)
-  if (isRealSchema_GenericExtendsInferNonIntersection(validatedSchema,)) {
+  if (isRealSchema_GenericExtendsDirect(validatedSchema,)) {
     validatedSchema.parse; // Full constraint preservation without intersection
     validatedSchema.validator; // Method preserved in original structure
     validatedSchema.transformer; // Method preserved in original structure
@@ -935,7 +947,7 @@ const testRealGenericComplexConstraints = (function() {
  *
  * 5. **INTERSECTION TYPE EXCELLENCE**:
  *    ⚡ Generic patterns excel with intersection types (Schema & AdditionalProperties)
- *    GenericExtends and GenericExtendsInfer show best intersection preservation
+ *    GenericExtends and GenericExtendsDirect show best intersection preservation
  *    Typed pattern achieves same with explicit casting
  *
  * 6. **COMPILE-TIME SAFETY AMPLIFICATION**:
@@ -971,7 +983,7 @@ const testRealGenericComplexConstraints = (function() {
  * 2. **Async**: Implement dedicated async variants (isRealSchemaAsync_GenericExtends)
  * 3. **Union**: Create MaybeAsyncSchema handlers with pattern matching
  * 4. **Fallback**: Keep Unknown pattern for truly unknown external inputs
- * 5. **Performance**: Consider GenericExtendsInfer for ultimate type safety (with complexity cost)
+ * 5. **Performance**: Consider GenericExtendsDirect for ultimate type safety (with complexity cost)
  *
  * The real generic testing conclusively demonstrates that sophisticated type
  * constraints make Generic Extends not just better, but ESSENTIAL for
