@@ -1,7 +1,7 @@
 import {
   // Import functions to test
+  iterableSyncPickSync,
   iterablePick,
-  iterablePickAsync,
   // Logging library used
   logtapeConfiguration,
   logtapeConfigure,
@@ -89,10 +89,10 @@ const asyncStringSchema = {
   },
 };
 
-describe(iterablePick, () => {
+describe(iterableSyncPickSync, () => {
   describe('schema validation - validates entire iterable as single unit', () => {
     test('validates number array with numberArraySchema', () => {
-      const result = iterablePick({
+      const result = iterableSyncPickSync({
         iterable: [1, 2, 3,],
         picked: numberArraySchema,
       },);
@@ -100,7 +100,7 @@ describe(iterablePick, () => {
     });
 
     test('validates empty array with numberArraySchema', () => {
-      const result = iterablePick({
+      const result = iterableSyncPickSync({
         iterable: [],
         picked: numberArraySchema,
       },);
@@ -108,7 +108,7 @@ describe(iterablePick, () => {
     });
 
     test('validates string array with stringArraySchema', () => {
-      const result = iterablePick({
+      const result = iterableSyncPickSync({
         iterable: ['a', 'b', 'c',],
         picked: stringArraySchema,
       },);
@@ -117,7 +117,7 @@ describe(iterablePick, () => {
 
     test('throws when schema validation fails', () => {
       expect(() => {
-        iterablePick({
+        iterableSyncPickSync({
           iterable: ['not', 'numbers',],
           picked: numberArraySchema,
         },);
@@ -126,7 +126,7 @@ describe(iterablePick, () => {
     });
 
     test('works with different iterable types - Set', () => {
-      const result = iterablePick({
+      const result = iterableSyncPickSync({
         iterable: new Set([1, 2, 3,],),
         picked: numberArraySchema,
       },);
@@ -140,7 +140,7 @@ describe(iterablePick, () => {
         yield 3;
       }
 
-      const result = iterablePick({
+      const result = iterableSyncPickSync({
         iterable: numberGenerator(),
         picked: numberArraySchema,
       },);
@@ -150,7 +150,7 @@ describe(iterablePick, () => {
 
   describe('element-by-element validation with exact values', () => {
     test('validates matching elements exactly', () => {
-      const result = iterablePick({
+      const result = iterableSyncPickSync({
         iterable: [1, 2, 3,],
         picked: [1, 2, 3,],
       },);
@@ -158,7 +158,7 @@ describe(iterablePick, () => {
     });
 
     test('validates subset of elements', () => {
-      const result = iterablePick({
+      const result = iterableSyncPickSync({
         iterable: [1, 2, 3, 4, 5,],
         picked: [1, 2,],
       },);
@@ -166,7 +166,7 @@ describe(iterablePick, () => {
     });
 
     test('works with mixed types', () => {
-      const result = iterablePick({
+      const result = iterableSyncPickSync({
         iterable: [1, 'hello', true,],
         picked: [1, 'hello', true,],
       },);
@@ -175,7 +175,7 @@ describe(iterablePick, () => {
 
     test('throws when elements do not match', () => {
       expect(() => {
-        iterablePick({
+        iterableSyncPickSync({
           iterable: [1, 2, 3,],
           picked: [1, 2, 4,],
         },);
@@ -185,7 +185,7 @@ describe(iterablePick, () => {
 
     test('throws RangeError when picked is longer than iterable', () => {
       expect(() => {
-        iterablePick({
+        iterableSyncPickSync({
           iterable: [1, 2,],
           picked: [1, 2, 3,],
         },);
@@ -251,7 +251,7 @@ describe(iterablePick, () => {
   describe('error cases', () => {
     test('throws TypeError when picked is neither schema nor iterable', () => {
       expect(() => {
-        iterablePick({
+        iterableSyncPickSync({
           iterable: [1, 2, 3,],
           // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument -- Testing invalid picked parameter
           picked: 42 as unknown as Iterable<unknown>,
@@ -262,7 +262,7 @@ describe(iterablePick, () => {
 
     test('throws TypeError when picked is null', () => {
       expect(() => {
-        iterablePick({
+        iterableSyncPickSync({
           iterable: [1, 2, 3,],
           // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument -- Testing null picked parameter
           picked: null as unknown as Iterable<unknown>,
@@ -273,10 +273,10 @@ describe(iterablePick, () => {
   });
 },);
 
-describe(iterablePickAsync, () => {
+describe(iterablePick, () => {
   describe('schema validation - validates entire iterable as single unit', () => {
     test('validates async iterable with schema', async () => {
-      const result = await iterablePickAsync({
+      const result = await iterablePick({
         iterable: asyncIterable([1, 2, 3,],),
         picked: numberArraySchema,
       },);
@@ -284,7 +284,7 @@ describe(iterablePickAsync, () => {
     });
 
     test('validates regular iterable with schema', async () => {
-      const result = await iterablePickAsync({
+      const result = await iterablePick({
         iterable: [1, 2, 3,],
         picked: numberArraySchema,
       },);
@@ -302,7 +302,7 @@ describe(iterablePickAsync, () => {
         },
       };
 
-      const result = await iterablePickAsync({
+      const result = await iterablePick({
         iterable: asyncIterable([1, 2, 3,],),
         picked: asyncSchema,
       },);
@@ -311,7 +311,7 @@ describe(iterablePickAsync, () => {
 
     test('throws when async schema validation fails', async () => {
       await expect(async () => {
-        await iterablePickAsync({
+        await iterablePick({
           iterable: asyncIterable(['not', 'numbers',],),
           picked: numberArraySchema,
         },);
@@ -323,7 +323,7 @@ describe(iterablePickAsync, () => {
 
   describe('element-by-element validation with exact values', () => {
     test('validates matching elements exactly with async iterable', async () => {
-      const result = await iterablePickAsync({
+      const result = await iterablePick({
         iterable: asyncIterable([1, 2, 3,],),
         picked: [1, 2, 3,],
       },);
@@ -331,7 +331,7 @@ describe(iterablePickAsync, () => {
     });
 
     test('validates subset of async elements', async () => {
-      const result = await iterablePickAsync({
+      const result = await iterablePick({
         iterable: asyncIterable([1, 2, 3, 4, 5,],),
         picked: [1, 2,],
       },);
@@ -339,7 +339,7 @@ describe(iterablePickAsync, () => {
     });
 
     test('validates with async picked iterable', async () => {
-      const result = await iterablePickAsync({
+      const result = await iterablePick({
         iterable: [1, 2, 3,],
         picked: asyncIterable([1, 2, 3,],),
       },);
@@ -348,7 +348,7 @@ describe(iterablePickAsync, () => {
 
     test('throws when async elements do not match', async () => {
       await expect(async () => {
-        await iterablePickAsync({
+        await iterablePick({
           iterable: asyncIterable([1, 2, 3,],),
           picked: [1, 2, 4,],
         },);
@@ -359,7 +359,7 @@ describe(iterablePickAsync, () => {
 
     test('throws RangeError when async picked is longer than iterable', async () => {
       await expect(async () => {
-        await iterablePickAsync({
+        await iterablePick({
           iterable: asyncIterable([1, 2,],),
           picked: [1, 2, 3,],
         },);
@@ -371,7 +371,7 @@ describe(iterablePickAsync, () => {
 
   describe('element-by-element validation with schemas', () => {
     test('validates each async element with corresponding schema', async () => {
-      const result = await iterablePickAsync({
+      const result = await iterablePick({
         iterable: asyncIterable([1, 'hello', true,],),
         picked: [numberSchema, stringSchema, booleanSchema,],
       },);
@@ -379,7 +379,7 @@ describe(iterablePickAsync, () => {
     });
 
     test('validates with async schemas', async () => {
-      const result = await iterablePickAsync({
+      const result = await iterablePick({
         iterable: asyncIterable([1, 'hello',],),
         picked: [asyncNumberSchema, asyncStringSchema,],
       },);
@@ -387,7 +387,7 @@ describe(iterablePickAsync, () => {
     });
 
     test('applies coercion schema async', async () => {
-      const result = await iterablePickAsync({
+      const result = await iterablePick({
         iterable: asyncIterable([1, 0, 'hello',],),
         picked: [coerceBooleanSchema, coerceBooleanSchema, coerceBooleanSchema,],
       },);
@@ -396,7 +396,7 @@ describe(iterablePickAsync, () => {
 
     test('throws when async schema validation fails', async () => {
       await expect(async () => {
-        await iterablePickAsync({
+        await iterablePick({
           iterable: asyncIterable(['not-number', 'hello',],),
           picked: [numberSchema, stringSchema,],
         },);
@@ -406,7 +406,7 @@ describe(iterablePickAsync, () => {
     });
 
     test('mixed schemas and exact values async', async () => {
-      const result = await iterablePickAsync({
+      const result = await iterablePick({
         iterable: asyncIterable([1, 'hello', 42,],),
         picked: [numberSchema, 'hello', numberSchema,],
       },);
@@ -417,7 +417,7 @@ describe(iterablePickAsync, () => {
   describe('error cases', () => {
     test('throws TypeError when picked is neither schema nor async iterable', async () => {
       await expect(async () => {
-        await iterablePickAsync({
+        await iterablePick({
           iterable: asyncIterable([1, 2, 3,],),
           // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument -- Testing invalid picked parameter
           picked: 42 as unknown as Iterable<unknown>,
@@ -429,7 +429,7 @@ describe(iterablePickAsync, () => {
 
     test('throws TypeError when picked is null', async () => {
       await expect(async () => {
-        await iterablePickAsync({
+        await iterablePick({
           iterable: asyncIterable([1, 2, 3,],),
           // oxlint-disable-next-line @typescript-eslint/no-unsafe-argument -- Testing null picked parameter
           picked: null as unknown as Iterable<unknown>,

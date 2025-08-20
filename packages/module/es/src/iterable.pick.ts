@@ -40,17 +40,17 @@ import {
  * ```ts
  * // With schema validation - validates entire iterable as one unit
  * const numberArraySchema = { parse: (val) => val as number[] };
- * iterablePick({ iterable: [1, 2], picked: numberArraySchema }); // returns [1, 2]
+ * iterableSyncPickSync({ iterable: [1, 2], picked: numberArraySchema }); // returns [1, 2]
  *
  * // With exact value matching - validates corresponding elements only
- * iterablePick({ iterable: [1, 2, 3], picked: [1, 2] }); // returns [1, 2] (validates first 2 elements)
+ * iterableSyncPickSync({ iterable: [1, 2, 3], picked: [1, 2] }); // returns [1, 2] (validates first 2 elements)
  *
  * // With mixed array containing schemas - validates corresponding elements
  * const numberSchema = { parse: (val) => val as number };
- * iterablePick({ iterable: [1, 2], picked: [numberSchema, numberSchema] }); // returns [1, 2]
+ * iterableSyncPickSync({ iterable: [1, 2], picked: [numberSchema, numberSchema] }); // returns [1, 2]
  *
  * // Error: picked longer than iterable
- * iterablePick({ iterable: [1], picked: [1, 2] }); // throws RangeError
+ * iterableSyncPickSync({ iterable: [1], picked: [1, 2] }); // throws RangeError
  * ```
  */
 export function iterableSyncPickSync<const MyIterable extends Iterable<unknown>,>({
