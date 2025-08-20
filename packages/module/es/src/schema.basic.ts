@@ -214,5 +214,7 @@ export function maybeAsyncSchemaToAsyncSchema<
   l.trace(maybeAsyncSchemaToAsyncSchema.name,);
   if (isSchemaAsync(schema,))
     return schema as any;
-  return Object.assign(schema, { parseAsync: schema.parse, },) as any;
+  // Schema must have parse method if it's not async
+  const syncSchema = schema as Schema<unknown, unknown>;
+  return Object.assign(syncSchema, { parseAsync: syncSchema.parse, },) as any;
 }
