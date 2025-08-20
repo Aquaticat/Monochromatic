@@ -1,13 +1,20 @@
-# TODO: Refactor Typeguards to Use Generic Pattern with Type Preservation
+# TODO: Refactor Typeguards for Compile-Time Safety
 
 ## Objective
-Refactor all typeguards from accepting `unknown` to using a generic pattern that preserves the original type while providing compile-time safety.
+Refactor all typeguards from accepting `unknown` to requiring the expected type, providing compile-time safety by catching obvious type mismatches during development.
 
 ## Rationale
-While the industry standard is to use `value: unknown` for typeguards, our generic approach provides:
-1. Compile-time safety by requiring type compatibility
-2. Type preservation - additional properties aren't lost during narrowing
-3. Explicit intent when validating untrusted data
+While the industry standard is to use `value: unknown` for typeguards, and TypeScript already preserves type information through intersection types (e.g., `SchemaWithWeight` becomes `SchemaWithWeight & Schema` after guard), we can achieve better compile-time safety by requiring type compatibility upfront.
+
+### Key Discovery
+Through testing, we found that TypeScript's control flow analysis already preserves the original type with ALL patterns - the narrowed type becomes an intersection of the original type and the guard's predicate type. So type preservation is NOT a concern.
+
+### The Real Trade-off
+**Safety vs Flexibility:**
+- **Typed/Generic patterns**: Catch obvious mistakes at compile time, but require explicit casts for union types and unknown data
+- **`unknown` pattern**: Accepts anything without compile errors, validates at runtime only
+
+Our choice: Prioritize compile-time safety to catch errors early.
 
 ## Current Pattern (to be replaced)
 ```typescript
@@ -15,13 +22,41 @@ export function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
-// Problem 1: No compile-time error for obvious mistakes
+// Problem: No compile-time error for obvious mistakes
 isString(42); // Silently returns false, no IDE feedback
+isString({ notString: true }); // No error, just returns false
 
-// Problem 2: Loses type information
-const valueWithExtra = { toString: () => "hello" };
+// Note: TypeScript DOES preserve type information (discovered through testing)
+const valueWithExtra = "hello" as string & { brand: "greeting" };
 if (isString(valueWithExtra)) {
-  // valueWithExtra is just 'string', lost the object info
+  // valueWithExtra is actually string & { brand: "greeting" }
+  // NOT just string - intersection types preserve properties!
+}
+```
+
+## New Pattern (to implement)
+```typescript
+// Simple approach - just require the expected type
+export function isString(value: string): value is string {
+  return typeof value === 'string';
+}
+
+// Alternative with generics for literal type preservation
+export function isString<const T extends string = string>(
+  value: T
+): value is T {
+  return typeof value === 'string';
+}
+
+// Benefit: Compile-time errors for obvious mistakes
+isString(42); // ❌ IDE error - immediate feedback
+isString("hello"); // ✅ Works, validates runtime type matches compile-time type
+
+// TypeScript automatically preserves additional properties through intersections
+const brandedString = "hello" as string & { brand: "greeting" };
+if (isString(brandedString)) {
+  // brandedString remains string & { brand: "greeting" }
+  // Intersection types work automatically!
 }
 ```
 
@@ -68,10 +103,13 @@ if (isSchema(schemaWithWeight)) {
 // Before
 export function isNumber(value: unknown): value is number
 
-// After  
-export function isNumber<const MyValue extends number = number>(
-  value: MyValue
-): value is MyValue & number
+// After - Simple approach (recommended)
+export function isNumber(value: number): value is number
+
+// After - With generic for literal preservation (optional)
+export function isNumber<const T extends number = number>(
+  value: T
+): value is T
 ```
 
 ### Complex Types
@@ -79,10 +117,13 @@ export function isNumber<const MyValue extends number = number>(
 // Before
 export function isError(value: unknown): value is Error
 
-// After
-export function isError<const MyValue extends Error = Error>(
-  value: MyValue
-): value is MyValue & Error
+// After - Simple approach (recommended)
+export function isError(value: Error): value is Error
+
+// After - With generic (optional)
+export function isError<const T extends Error = Error>(
+  value: T
+): value is T
 ```
 
 ### Collections
@@ -90,23 +131,29 @@ export function isError<const MyValue extends Error = Error>(
 // Before
 export function isMap(value: unknown): value is Map<unknown, unknown>
 
-// After
-export function isMap<const MyValue extends Map<any, any> = Map<unknown, unknown>>(
-  value: MyValue
-): value is MyValue & Map<unknown, unknown>
+// After - Simple approach (recommended)
+export function isMap(value: Map<any, any>): value is Map<unknown, unknown>
+
+// After - With generic (optional)
+export function isMap<const T extends Map<any, any> = Map<unknown, unknown>>(
+  value: T
+): value is T & Map<unknown, unknown>
 ```
 
 ### Generic Types (Schemas)
 ```typescript
-// Before (current generic pattern)
+// Before (accepts unknown)
 export function isSchema<const MyValue = unknown>(
   value: MyValue,
 ): value is MyValue extends Schema<infer I, infer O> ? (MyValue & Schema<I, O>) : never
 
-// After (refined generic pattern)
-export function isSchema<const MySchema extends Schema = Schema>(
-  value: MySchema
-): value is MySchema & Schema
+// After - Simple approach (recommended)
+export function isSchema(value: Schema): value is Schema
+
+// After - With generic for subtypes (optional)
+export function isSchema<const T extends Schema = Schema>(
+  value: T
+): value is T
 ```
 
 ## Files to Refactor
@@ -142,28 +189,26 @@ export function isSchema<const MySchema extends Schema = Schema>(
 - Update tests to use proper casting patterns
 - Test that compile-time errors occur for obvious type mismatches
 - Verify narrowing works correctly with union types
-- **Test that additional properties are preserved after type guard**
+- Confirm that TypeScript's automatic type preservation through intersection types is working
 
 ## Migration Strategy
 1. Start with simple type guards (Priority 1)
-2. Update tests to use new casting patterns
+2. Update tests to use proper casting patterns
 3. Ensure no breaking changes to runtime behavior
-4. Verify type preservation works correctly
-5. Document the pattern in CLAUDE.md for consistency
+4. Document the pattern in CLAUDE.md for consistency
 
 ## Benefits
-- **Compile-time safety**: Catches type errors during development
-- **Type preservation**: Additional properties aren't lost during narrowing
+- **Compile-time safety**: Catches type errors during development (main benefit)
 - **Explicit intent**: Forces developers to be clear about validating untrusted data
 - **Better IDE experience**: Immediate feedback on incorrect usage
-- **Composability**: Works well with intersection types and branded types
+- **Type safety**: TypeScript will suggest "convert to unknown first" when types don't overlap
 
 ## Notes
-- This approach is more sophisticated than industry standard but provides better safety and flexibility
+- TypeScript automatically preserves type information through intersection types (discovered through testing)
+- The approach trades flexibility for safety - requires explicit casts for union types and unknown data
 - The double cast pattern `as unknown as Type & typeof value` clearly signals untrusted data validation
 - The single cast pattern `as Type & typeof value` preserves union type information for narrowing
-- TypeScript will suggest "convert to unknown first" when types don't overlap, guiding developers
-- The generic constraint ensures compile-time type compatibility while preserving runtime type information
+- Simple non-generic approach is recommended for most cases, with generics as optional for literal type preservation
 
 ## Usage Patterns
 
