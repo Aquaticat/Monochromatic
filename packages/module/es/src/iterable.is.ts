@@ -1,4 +1,7 @@
-import type { IterableSync, } from './iterable.basic';
+import type {
+  IterableSync,
+  MaybeAsyncIterable,
+} from './iterable.basic.ts';
 
 /**
  * Tests if a value is an Iterable but not an AsyncIterable.
@@ -26,11 +29,11 @@ import type { IterableSync, } from './iterable.basic';
  * console.log(isIterable(gen())); // true
  * ```
  */
-export function isIterable(
-  value: unknown,
-): value is Iterable<any> {
-  return value !== null
-    && value !== undefined
+export function isIterable<const MyValue extends Iterable<any> = Iterable<any>,>(
+  value: MyValue,
+): value is MyValue extends Iterable<infer T> ? MyValue & Iterable<T> : never {
+  return typeof value === 'object'
+    && value !== null
     && typeof (value as any)[Symbol.iterator] === 'function';
 }
 
@@ -65,11 +68,13 @@ export function isIterable(
  * console.log(isAsyncIterable(customAsyncIterable)); // true
  * ```
  */
-export function isAsyncIterable(
-  value: unknown,
-): value is AsyncIterable<any> {
-  return value !== null
-    && value !== undefined
+export function isAsyncIterable<
+  const MyValue extends AsyncIterable<any> = AsyncIterable<any>,
+>(
+  value: MyValue,
+): value is MyValue extends AsyncIterable<infer T> ? MyValue & AsyncIterable<T> : never {
+  return typeof value === 'object'
+    && value !== null
     && typeof (value as any)[Symbol.asyncIterator] === 'function';
 }
 
@@ -107,11 +112,15 @@ export function isAsyncIterable(
  * }
  * ```
  */
-export function isMaybeAsyncIterable(
-  value: unknown,
-): value is Iterable<any> | AsyncIterable<any> {
-  return value !== null
-    && value !== undefined
+export function isMaybeAsyncIterable<
+  const MyValue extends MaybeAsyncIterable<any> = MaybeAsyncIterable<any>,
+>(
+  value: MyValue,
+): value is MyValue extends MaybeAsyncIterable<infer T> ? MyValue & MaybeAsyncIterable<T>
+  : never
+{
+  return typeof value === 'object'
+    && value !== null
     && (typeof (value as any)[Symbol.iterator] === 'function'
       || typeof (value as any)[Symbol.asyncIterator] === 'function');
 }
