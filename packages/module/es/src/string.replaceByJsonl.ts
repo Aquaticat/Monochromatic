@@ -29,7 +29,7 @@ type ReplacementRule = {
 
 // stringReplaceByReplacementRules({str: 'a', rules: [{patternString: 'a', replacement: 'b', lines: {start: 0, end: 0}]}) // 'b' logs warning `str ${str} lines range is equal to given lines range ${JSON.stringify(lines)}`
 
-// stringReplaceByReplacementRules({str: 'a\nab\na'}, rules: [{patternString: 'a', replacement: 'c', lines: {start: 0, end: 1}}]) // 'c\ncb\n'
+// stringReplaceByReplacementRules({str: 'a\nab\na'}, rules: [{patternString: 'a', replacement: 'c', lines: {start: 0, end: 1}}]) // 'c\ncb\na'
 
 export function stringReplaceByJsonl(
   { str, jsonl, l = getDefaultLogger(), }: { str: string; jsonl: Jsonl; } & Partial<
@@ -37,7 +37,7 @@ export function stringReplaceByJsonl(
   >,
 ): string {
   // uses jsonlToObjects
-  // uses stringReplaceByReplacementRules
+  // uses stringReplaceByReplacementRulesSync
 }
 
 export function stringReplaceByReplacementRulesSync(
