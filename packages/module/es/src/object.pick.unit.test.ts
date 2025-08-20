@@ -173,7 +173,7 @@ describe('objectPick types', () => {
     // Test picking single property
     const result2 = await objectPick({
       object: todo,
-      keys: ['description' as keyof Todo,],
+      keys: ['description',],
     },);
     expectTypeOf(result2,).toEqualTypeOf<Pick<Todo, 'description'>>();
   });

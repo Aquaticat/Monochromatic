@@ -110,9 +110,7 @@ export function objectPickSync<
  */
 export async function objectPick<
   const TObject extends Record<string, unknown>,
-  const TKeys extends MaybeAsyncSchema<TObject> | MaybeAsyncIterable<
-    keyof TObject | MaybeAsyncSchema<keyof TObject, string>
-  >,
+  const TKeys extends keyof TObject | MaybeAsyncSchema<TObject> | MaybeAsyncIterable<keyof TObject | MaybeAsyncSchema<keyof TObject, string>>,
 >({
   object,
   keys,
@@ -122,7 +120,11 @@ export async function objectPick<
   readonly keys: TKeys;
   readonly l?: Logger;
 },): Promise<
-  TKeys extends MaybeAsyncSchema<TObject, infer Output> ? Output : Partial<TObject>
+  TKeys extends MaybeAsyncSchema<TObject, infer Output> 
+    ? Output 
+    : TKeys extends MaybeAsyncIterable<infer U> 
+      ? Pick<TObject, Extract<keyof TObject, U extends MaybeAsyncSchema<keyof TObject, infer SchemaOutput> ? SchemaOutput : U>>
+      : Pick<TObject, Extract<keyof TObject, TKeys>>
 > {
   l.trace('objectPick',);
 
