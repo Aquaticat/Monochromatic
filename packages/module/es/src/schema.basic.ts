@@ -1,5 +1,6 @@
 import type { Promisable, } from 'type-fest';
-
+import type { Logged, } from './logged.basic';
+import { getDefaultLogger, } from './string.log';
 
 /**
  * Generic schema interface that validation libraries can implement for parsing values.
@@ -15,7 +16,7 @@ import type { Promisable, } from 'type-fest';
  * };
  * ```
  */
-export type Schema<Input = unknown, Output = Input> = {
+export type Schema<Input = unknown, Output = Input,> = {
   readonly parse: (
     value: Input,
   ) => Promisable<Output>;
@@ -27,7 +28,7 @@ export type Schema<Input = unknown, Output = Input> = {
  *
  * @example
  * ```ts
- * const syncSchema: SyncSchema = {
+ * const syncSchema: SchemaSync = {
  *   parse: (value) => {
  *     if (typeof value === 'string') return value;
  *     throw new Error('Expected string');
@@ -35,7 +36,7 @@ export type Schema<Input = unknown, Output = Input> = {
  * };
  * ```
  */
-export type SyncSchema<Input = unknown, Output = Input> = {
+export type SchemaSync<Input = unknown, Output = Input,> = {
   readonly parse: (
     value: Input,
   ) => Output;
@@ -55,7 +56,7 @@ export type SyncSchema<Input = unknown, Output = Input> = {
  * };
  * ```
  */
-export type AsyncSchema<Input = unknown, Output = Input> = {
+export type SchemaAsync<Input = unknown, Output = Input,> = {
   readonly parseAsync: (
     value: Input,
   ) => Promisable<Output>;
@@ -75,7 +76,9 @@ export type AsyncSchema<Input = unknown, Output = Input> = {
  * }
  * ```
  */
-export type MaybeAsyncSchema<Input = unknown, Output = Input> = Schema<Input, Output> | AsyncSchema<Input, Output>;
+export type MaybeAsyncSchema<Input = unknown, Output = Input,> =
+  | Schema<Input, Output>
+  | SchemaAsync<Input, Output>;
 
 /**
  * Type guard determining if value implements the generic Schema interface.
@@ -93,7 +96,9 @@ export type MaybeAsyncSchema<Input = unknown, Output = Input> = Schema<Input, Ou
  * }
  * ```
  */
-export function isSchema<Input = unknown, Output = Input>(value: unknown,): value is Schema<Input, Output> {
+export function isSchema<Input = unknown, Output = Input,>(
+  value: unknown,
+): value is Schema<Input, Output> {
   if (value === null)
     return false;
   if (typeof value !== 'object')
@@ -119,7 +124,9 @@ export function isSchema<Input = unknown, Output = Input>(value: unknown,): valu
  * }
  * ```
  */
-export function isAsyncSchema<Input = unknown, Output = Input>(value: unknown,): value is AsyncSchema<Input, Output> {
+export function isAsyncSchema<Input = unknown, Output = Input,>(
+  value: unknown,
+): value is SchemaAsync<Input, Output> {
   if (value === null)
     return false;
   if (typeof value !== 'object')
@@ -147,7 +154,9 @@ export function isAsyncSchema<Input = unknown, Output = Input>(value: unknown,):
  * }
  * ```
  */
-export function isMaybeAsyncSchema<Input = unknown, Output = Input>(value: unknown,): value is MaybeAsyncSchema<Input, Output> {
+export function isMaybeAsyncSchema<Input = unknown, Output = Input,>(
+  value: unknown,
+): value is MaybeAsyncSchema<Input, Output> {
   return isSchema<Input, Output>(value,) || isAsyncSchema<Input, Output>(value,);
 }
 
@@ -166,8 +175,13 @@ export function isMaybeAsyncSchema<Input = unknown, Output = Input>(value: unkno
  * const result = await asyncVersion.parseAsync(value);
  * ```
  */
-export function maybeAsyncSchemaToAsyncSchema<Input = unknown, Output = Input>(schema: MaybeAsyncSchema<Input, Output>,): AsyncSchema<Input, Output> {
+export function maybeAsyncSchemaToAsyncSchema<Input = unknown, Output = Input,>(
+  { schema, l = getDefaultLogger(), }:
+    & { schema: MaybeAsyncSchema<Input, Output>; }
+    & Partial<Logged>,
+): SchemaAsync<Input, Output> {
+  l.trace(maybeAsyncSchemaToAsyncSchema.name,);
   if (isAsyncSchema<Input, Output>(schema,))
     return schema;
-  return Object.assign(schema, { parseAsync: schema.parse, });
+  return Object.assign(schema, { parseAsync: schema.parse, },);
 }

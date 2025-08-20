@@ -13,7 +13,7 @@ import {
   isSchema,
   type MaybeAsyncSchema,
   maybeAsyncSchemaToAsyncSchema,
-  type SyncSchema,
+  type SchemaSync,
 } from './schema.basic.ts';
 import {
   consoleLogger,
@@ -59,7 +59,7 @@ export function iterableSyncPickSync<const MyIterable extends Iterable<unknown>,
   l = consoleLogger,
 }: {
   readonly iterable: MyIterable;
-  readonly picked: Iterable<unknown> | SyncSchema;
+  readonly picked: Iterable<unknown> | SchemaSync;
   readonly l?: Logger;
 },): unknown {
   l.trace('iterablePick',);
