@@ -1,6 +1,6 @@
 export type Arrayful<T = unknown,> = {
   readonly array: T[];
-};
+} & Iterable<T>;
 
 // type guard cannot use destructured syntax.
 export function isArrayful<const MyArrayful extends Arrayful = Arrayful,>(

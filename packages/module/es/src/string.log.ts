@@ -23,7 +23,7 @@ export type Logger = {
   fatal: LoggerLogger;
 };
 
-function getConsoleLoggerSink(level: LoggerLevels,) {
+export function getConsoleLoggerSink(level: LoggerLevels,) : (message: string) => unknown {
   let myLoggerLoggerLogger: (message: string,) => unknown;
   switch (level) {
     case 'trace':
