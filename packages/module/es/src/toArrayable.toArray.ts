@@ -6,7 +6,7 @@ import type {
   IterableSync,
   MaybeAsyncIterable,
 } from './iterable.basic.ts';
-import { isMaybeAsyncIterable, } from './iterable.is.ts';
+import { isIterableSync, isMaybeAsyncIterable, } from './iterable.is.ts';
 import type { Logged, } from './logged.basic.ts';
 import { getDefaultLogger, } from './string.log.ts';
 import type {
