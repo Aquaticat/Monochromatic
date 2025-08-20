@@ -115,6 +115,25 @@ function isRealSchema_GenericExtendsInfer<
 }
 
 /**
+ * Generic Extends with Inference (Non-Intersection) - Preserves input type without intersection
+ */
+function isRealSchema_GenericExtendsInferNonIntersection<
+const Input = unknown, const Output = Input,
+  const T extends RealSchema<Input, Output> = RealSchema<Input, Output>,
+>(
+  value: T,
+): value is T
+{
+  if (value === null)
+    return false;
+  if (typeof value !== 'object')
+    return false;
+  if (!('parse' in value))
+    return false;
+  return typeof value.parse === 'function';
+}
+
+/**
  * Async Schema Guards
  */
 function isRealSchemaAsync_Unknown(value: unknown,): value is RealSchemaAsync {
@@ -438,6 +457,14 @@ const testRealGenericStringToNumber = (function() {
     value.parse; // Should maintain (string) => number signature with full inference
     const result = value.parse('456',); // Fully type-safe with inferred constraints
   }
+
+  // Generic Extends with Inference (Non-Intersection) Pattern
+  // @ts-expect-error -- StringToNumberSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+  if (isRealSchema_GenericExtendsInferNonIntersection(value,)) {
+    // Should preserve input type structure without intersection
+    value.parse; // Should maintain (string) => number signature with inference but no intersection
+    const result = value.parse('789',); // Fully type-safe with inferred constraints, preserves original type
+  }
 })();
 
 const testRealGenericWeightedString = (function() {
@@ -491,6 +518,16 @@ const testRealGenericWeightedString = (function() {
 
     const result = value.parse('inferred',); // Fully inferred type safety
   }
+
+  // Generic Extends with Inference (Non-Intersection) Pattern
+  // @ts-expect-error -- WeightedStringSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+  if (isRealSchema_GenericExtendsInferNonIntersection(value,)) {
+    value.parse; // Schema method with inferred types, no intersection
+    value.weight; // Should preserve additional property without intersection
+    value.priority; // Should preserve additional property without intersection
+
+    const result = value.parse('non-intersection',); // Type safety with preserved original structure
+  }
 })();
 
 const testRealGenericNamedUser = (function() {
@@ -531,6 +568,16 @@ const testRealGenericNamedUser = (function() {
 
     // Maximum type safety with inference
     const result = value.parse({ name: 'Bob', age: '35', },);
+  }
+
+  // @ts-expect-error -- NamedUserSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+  if (isRealSchema_GenericExtendsInferNonIntersection(value,)) {
+    value.parse; // Schema method with inferred UserInput -> User types, no intersection
+    value.schemaName; // Should preserve with inference, original structure
+    value.version; // Should preserve with inference, original structure
+
+    // Maximum type safety with inference and preserved input structure
+    const result = value.parse({ name: 'Charlie', age: '42', },);
   }
 })();
 
@@ -707,6 +754,12 @@ const testRealGenericPromisableBehavior = (function() {
     // Result should maintain Promise<number> type
   }
 
+  // @ts-expect-error -- RealSchema<string, Promise<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+  if (isRealSchema_GenericExtendsInferNonIntersection(promiseSchema,)) {
+    const result = promiseSchema.parse('non-intersection',); // Full type preservation without intersection
+    // Result should maintain Promise<number> type with original structure preserved
+  }
+
   // Promisable returning schema
   const promisableSchema = realGenericTestValues.promisableSchema;
 
@@ -726,6 +779,20 @@ const testRealGenericPromisableBehavior = (function() {
     const result = promisableSchema.parse('promisable',); // Full Promisable<number> preservation
 
     // Type-safe conditional handling
+    const isPromise = result instanceof Promise;
+    if (isPromise) {
+      // Handle Promise<number>
+    }
+    else {
+      // Handle number
+    }
+  }
+
+  // @ts-expect-error -- RealSchema<string, Promisable<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+  if (isRealSchema_GenericExtendsInferNonIntersection(promisableSchema,)) {
+    const result = promisableSchema.parse('promisable-non-intersection',); // Full Promisable<number> preservation without intersection
+
+    // Type-safe conditional handling with preserved input structure
     const isPromise = result instanceof Promise;
     if (isPromise) {
       // Handle Promise<number>
@@ -771,6 +838,20 @@ const testRealGenericComplexConstraints = (function() {
 
     // Type-safe complex usage
     const input = '456';
+    if (validatedSchema.validator(input,)) {
+      const parsed = validatedSchema.parse(input,);
+      const transformed = validatedSchema.transformer(input,);
+    }
+  }
+
+  // @ts-expect-error -- ValidatedTransformSchema is not assignable to RealSchema (demonstrates compile-time safety)
+  if (isRealSchema_GenericExtendsInferNonIntersection(validatedSchema,)) {
+    validatedSchema.parse; // Full constraint preservation without intersection
+    validatedSchema.validator; // Method preserved in original structure
+    validatedSchema.transformer; // Method preserved in original structure
+
+    // Type-safe complex usage with preserved input structure
+    const input = '789';
     if (validatedSchema.validator(input,)) {
       const parsed = validatedSchema.parse(input,);
       const transformed = validatedSchema.transformer(input,);

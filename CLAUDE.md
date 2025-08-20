@@ -7,15 +7,16 @@ Be direct and honest.
 
 **IMPORTANT DATE REMINDER**: Always use the current date from the environment information provided in the system prompt. Today's date is shown in the <env> section. Never assume or guess dates.
 
-## Communication Style
+<communication_style>
+# Communication Style
 
-### Direct Communication
+## Direct Communication
 - State facts directly without hedging
 - Give clear answers without softening language
 - Use declarative statements, not apologetic qualifiers
 - Provide information efficiently without relationship management
 
-### Forbidden Language Patterns
+## Forbidden Language Patterns
 - **Apologies**: "sorry", "I apologize", "my apologies", "unfortunately", "I'm afraid"
 - **Vague validation**: "that's a good point", "I understand your concern"
 - **Generalizations**: "typically", "usually", "in most cases", "generally speaking"
@@ -30,48 +31,50 @@ Be direct and honest.
 - **Prescriptive language**: "should", "must" (except for critical requirements), "ought to"
 - **Meta-references**: "the project", "this means", "this aligns with"
 
-### Forbidden Acknowledgment Patterns
+## Forbidden Acknowledgment Patterns
 - "You're right", "You're correct", "You're absolutely right"
 - "That's right", "That's correct", "Exactly right"
 - "Good point", "Good catch", "Nice catch"
 - **Instead**: Jump directly to the technical response
 
-### Error Corrections
+## Error Corrections
 When making errors:
 - State the correction: "That's incorrect. The actual answer is..."
 - Provide the right information immediately
 
-### Inability to Help
+## Inability to Help
 When unable to help:
 - "I can't do that"
 - "That information isn't available"
 - "Try `specific alternative`"
 
-### Handling User Feedback
+## Handling User Feedback
 When users point out issues or suggest improvements:
 - Don't acknowledge they're right/correct
 - Don't apologize for the error
 - Simply implement the change and explain what was done
 - Jump directly to fixing the issue or implementing the suggestion
 
-### Documentation Standards
+## Documentation Standards
 - NEVER use emojis in any content meant to be read by humans
 - Focus on clear, professional text without decorative elements
 - NEVER use ALL CAPS for headings or emphasis in documentation
 - Use sentence case for headings
 - For emphasis, use **bold** formatting instead of capitalization
 
-### Handling External Changes
+## Handling External Changes
 - When files have been modified externally, acknowledge the change
 - Ask for clarification before reverting or modifying externally changed content
 - Don't proceed with implementing features that won't achieve their intended effect
 - If a tool/command doesn't support the requested functionality, explain this instead of creating non-functional code
+</communication_style>
 
-## Essential Commands
+<development_commands>
+# Essential Commands
 
 **IMPORTANT**: All builds and tasks are managed by Moon. Never run `pnpm exec` or direct package scripts. Always use `moon run` commands.
 
-### Initial Setup
+## Initial Setup
 ```bash
 # Install moon globally first
 npm install -g @moonrepo/cli
@@ -80,29 +83,29 @@ npm install -g @moonrepo/cli
 moon run prepare
 ```
 
-### Build Commands
+## Build Commands
 - Full build: `moon run build`
 - Build with watch: `moon run buildWatch`
 - Prepare project: `moon run prepare`
 
-### Test Commands
+## Test Commands
 - Run all tests: `moon run test` (only from workspace root)
 - Run unit tests: `moon run testUnit` (from workspace root)
 - Run browser tests: `moon run testBrowser` (from workspace root)
 - Run tests in watch mode: `moon run testWatch`
 - Run unit tests with coverage: `moon run testUnit`
 
-### Linting and Formatting Commands
+## Linting and Formatting Commands
 - Lint all files: `moon run lint`
 - Format all files: `moon run format`
 - Validate (format + build + test): `moon run validate`
 
-### Development Workflow Commands
+## Development Workflow Commands
 - Clean moon cache: `moon clean --lifetime '1 seconds'`
 - Check tools: `moon check`
 - Install dependencies: `moon run pnpmInstall` or `moon run bunInstall`
 
-### Running Specific Test Files
+## Running Specific Test Files
 To run a single test file:
 ```bash
 moon run testUnit -- packages/module/es/src/filename.unit.test.ts
@@ -110,20 +113,22 @@ moon run testUnit -- packages/module/es/src/filename.unit.test.ts
 
 Use `moon run testBrowser -- packages/path/to/test` for browser tests.
 
-### Package-Specific Commands
+## Package-Specific Commands
 ```bash
 # Build specific package (replace 'es' with package name)
 moon run es:js
 moon run es:types
 ```
 
-### Building Projects
+## Building Projects
 **IMPORTANT**: When rebuilding after configuration changes (like ESLint rules), always use `moon run build` to rebuild all projects at once. Moon's caching system ensures this is efficient and won't unnecessarily rebuild unchanged projects. This approach is preferred over building individual packages.
 
-### Linting and Formatting
+## Linting and Formatting
 Don't run linters or formatters. The user will run them themselves.
+</development_commands>
 
-## Search Tools
+<search_tools>
+# Search Tools
 
 - **`ripgrep` (rg)** is available in this environment for fast text searching
 - Use `rg` directly with Bash tool for searching specific strings, types, or patterns
@@ -136,8 +141,10 @@ Don't run linters or formatters. The user will run them themselves.
   - Using Grep tool
   - Trying to find the exact path in `pnpm`'s symlinked `.pnpm` directories
   - Guessing where packages are located
+</search_tools>
 
-## Script Preferences
+<script_preferences>
+# Script Preferences
 
 - **NEVER write bash/shell scripts** (non-portable, unreadable, unfamiliar)
 - When scripts are needed, create TypeScript files as `moon.<action>.ts` in `packages/module/es/src/`
@@ -155,18 +162,22 @@ Don't run linters or formatters. The user will run them themselves.
   - Bad: `process.exit(1);`
   - Good: `throw new Error('Error description');`
   - Uncaught errors automatically set exit code to 1
+</script_preferences>
 
-## Tool Version Management
+<tool_version_management>
+# Tool Version Management
 
 - **Only pin tool versions when necessary** with clear justification
 - If pinning is required, always include comments explaining why
 - Example: `# Pin to v1.2.3 - v1.3.0 introduced breaking API changes`
 - Document version requirements in both the pinning file and README
 - Regularly review pinned versions to check if constraints still apply
+</tool_version_management>
 
-## Code Simplification Principles
+<code_simplification>
+# Code Simplification Principles
 
-### Core Philosophy
+## Core Philosophy
 
 Always question "Do you really need...?" for every construct:
 - **Do you really need that mutable variable?** → Use `const` and immutable patterns
@@ -175,7 +186,7 @@ Always question "Do you really need...?" for every construct:
 - **Do you really need that complex solution?** → Start with the simplest approach
 - **Do you really need to create promises directly?** → Use existing promise utilities like `wait()`
 
-### Progressive Simplification Pattern
+## Progressive Simplification Pattern
 
 When refactoring code, follow this progression:
 1. Imperative loop with mutable state → `while` loop with proper conditions
@@ -183,7 +194,7 @@ When refactoring code, follow this progression:
 3. `for` loop → Recursive function
 4. Recursive function → Higher-order functions or async iterators
 
-### Best Practices
+## Best Practices
 
 - Always extract and name concepts (e.g., `isTaskPending()` instead of inline conditions)
 - Prefer built-in JavaScript/TypeScript methods over manual implementations
@@ -192,9 +203,62 @@ When refactoring code, follow this progression:
 - Name intermediate values for clarity
 - Break complex operations into smaller, testable functions
 
-## Third-Party Library Usage
+## Examples
 
-### Immediate Documentation Retrieval
+### Bad: Complex imperative code
+```ts
+let results = [];
+for (let i = 0; i < items.length; i++) {
+  if (items[i].isActive) {
+    results.push(items[i].value * 2);
+  }
+}
+```
+
+### Good: Simple functional approach
+```ts
+const results = items
+  .filter(item => item.isActive)
+  .map(item => item.value * 2);
+```
+
+### Bad: Manual promise creation
+```ts
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+```
+
+### Good: Use existing utilities
+```ts
+import { wait } from '@monochromatic-dev/module-es';
+// Use wait(ms) directly
+```
+
+### Bad: Inline complex conditions
+```ts
+if (status === 'pending' && retries < maxRetries && !isTimeout) {
+  // retry logic
+}
+```
+
+### Good: Extract and name the concept
+```ts
+const canRetry = () => 
+  status === 'pending' && 
+  retries < maxRetries && 
+  !isTimeout;
+
+if (canRetry()) {
+  // retry logic
+}
+```
+</code_simplification>
+
+<third_party_libraries>
+# Third-Party Library Usage
+
+## Immediate Documentation Retrieval
 - **IMMEDIATELY retrieve documentation when encountering undefined method errors**
   - The moment you see errors like "X is not a function", "Cannot read property X of undefined", or "X is undefined"
   - Use ALL available documentation tools to understand the correct API:
@@ -204,7 +268,7 @@ When refactoring code, follow this progression:
     - `WebSearch` for recent documentation and examples
   - NEVER guess or assume API methods exist - always verify first
 
-### Documentation Best Practices
+## Documentation Best Practices
 - **Always retrieve documentation from GitHub or npm pages** when implementing features with third-party libraries
   - For npm packages: Use `exa:crawling` to fetch from `https://www.npmjs.com/package/<package-name>`
   - For GitHub repos: Use `github:get_file_contents` to fetch from the library's GitHub page
@@ -213,7 +277,7 @@ When refactoring code, follow this progression:
 - Read the actual source types, not just documentation (which may be outdated)
 - When encountering type errors, read the error message carefully - it often shows what's actually expected
 
-### CLI Tool Documentation Analysis
+## CLI Tool Documentation Analysis
 
 When working with CLI tools and their documentation:
 - **Pay attention to command patterns in examples** - tools often have their own execution conventions
@@ -227,7 +291,7 @@ When working with CLI tools and their documentation:
 - **Test assumptions with the simplest case first** - try the minimal command before adding complexity
 - **Read error messages carefully** - they often reveal the correct usage pattern
 
-### Working with Third-Party Repositories
+## Working with Third-Party Repositories
 
 When setting up or integrating third-party tools:
 - **Never modify files in cloned third-party repositories**
@@ -247,7 +311,7 @@ When setting up or integrating third-party tools:
   - Prevents accidental commits to upstream
   - Maintains clear separation between your code and dependencies
 
-### Functional Programming Utilities
+## Functional Programming Utilities
 
 When composing functions:
 - Use `piped` for synchronous function composition: `piped(input, fn1, fn2, fn3)`
@@ -257,25 +321,27 @@ When composing functions:
 - Functions generally don't require `.bind()` for `this` context unless specifically documented
   - Example: `pipedAsync(data, transform, index.addDocuments)` works fine without `.bind(index)`
   - Instance methods already have their context when referenced as `instance.method`
+</third_party_libraries>
 
-## Project Overview
+<project_overview>
+# Project Overview
 
-### Repository Information
+## Repository Information
 This is the Monochromatic TypeScript monorepo ecosystem for web development.
 
-### Core Features
+## Core Features
 - Reusable development tool configurations
 - Functional programming utilities library
 - CSS framework (Monochromatic design system)
 - Figma plugin tools
 - Documentation sites
 
-### Important Reminders
+## Important Reminders
 **Date Handling**: Always use the current date from the environment information provided in the system prompt. Never assume or guess dates.
 
-### Architecture
+## Architecture
 
-#### Monorepo Structure
+### Monorepo Structure
 ```
 packages/
 ├── config/         # Shareable tool configurations (ESLint, TypeScript, Vite, etc.)
@@ -286,37 +352,39 @@ packages/
 └── build/                # Build utilities
 ```
 
-#### Build System
+### Build System
 - **Package Manager**: pnpm with workspace and catalog feature
 - **Task Orchestration**: Moon CLI (runs task dependencies in parallel by default)
 - **Bundler**: Vite v7.0.0-beta.1+
 - **Language**: TypeScript with strict type checking
 - **Testing**: Vitest for unit and browser tests
 
-#### Key Architectural Decisions
+### Key Architectural Decisions
 1. **Dual Builds**: Packages tagged with `dualBuildsNodeBrowser` produce separate Node.js and browser outputs
 2. **Platform-Specific Code**: Use `.node.ts` for Node-only, `.default.ts` for browser/universal
 3. **Output Structure**: `dist/final/` for builds, `dist/final/types/` for type definitions
 4. **Functional Programming**: Pure functions, immutable data, explicit types
 
-### Dependency Management
+## Dependency Management
 - Use `workspace:*` for internal dependencies
 - `strictPeerDependencies: true` enforces exact versions
 - Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`
 - `nodeLinker: isolated` for isolated node_modules
 
-### Adding New Packages
+## Adding New Packages
 1. Create directory under appropriate category in `packages/`
 2. Add `moon.yml` with appropriate tags
 3. Configure `package.json` with workspace dependencies
 4. Set up dual builds if needed (tag: `dualBuildsNodeBrowser`)
+</project_overview>
 
-## TypeScript Standards
+<typescript_standards>
+# TypeScript Standards
 
-### General Guidelines
+## General Guidelines
 - Adhere to the established linting and formatting configurations (ESLint, Oxlint, dprint)
 
-### Code Organization
+## Code Organization
 - Use `region` markers to delineate logical sections of code
   - This practice enhances code organization and readability, particularly in larger files
   - Most IDEs recognize `region` and `endregion` comments, allowing these sections to collapse or expand
@@ -339,7 +407,7 @@ packages/
     //endregion User Authentication Logic
     ```
 
-### Import and Module Conventions
+## Import and Module Conventions
 - Always include file extensions when importing files
 - **Use `.ts` extensions in imports when `allowImportingTsExtensions` is enabled** (not `.js`)
 - Group imports in the following order:
@@ -352,7 +420,7 @@ packages/
 - Prefer named imports over default imports for better tree-shaking
 - Use `import type` for type-only imports to improve build performance
 
-### Function Declarations
+## Function Declarations
 - Always name functions. Prefer function declarations
   - For arrow functions, make sure the JavaScript engine can infer a name
 - Prefer function declarations (`function foo() {}`) for hoistability
@@ -365,7 +433,7 @@ packages/
   - Place overloads before the implementation
   - Order overloads from most specific to least specific
 
-### Type Definitions and Safety
+## Type Definitions and Safety
 - Provide explicit parameter and return types for all functions, methods, and class accessors
 - Prefer `type` aliases over `interface` declarations for object shapes
 - Use `Record<KeyType, ValueType>` for key-value maps
@@ -380,7 +448,7 @@ packages/
   type EmailAddress = string & { readonly __brand: unique symbol };
   ```
 
-### Generics and Type Parameters
+## Generics and Type Parameters
 - Prefer `const` generic type parameters to enhance type safety and immutability
   - Good: `function processItems<const T extends { id: string }>(items: T[]): T[]`
   - Bad: `function processItems<T extends { id: string }>(items: T[]): T[]`
@@ -393,13 +461,13 @@ packages/
   - Bad: `<T extends Record<string, unknown>>`
 - Apply constraints to generic parameters when appropriate
 
-### Generator Function Overloading
+## Generator Function Overloading
 TypeScript's support for overloading generator functions has quirks:
 - For sync generators, remove the star sign in non-implementation overload signatures
 - For async generators, remove both the `async` modifier and star sign in non-implementation overload signatures
 - This allows TypeScript to correctly determine they're overloads
 
-### Variable Declarations and Immutability
+## Variable Declarations and Immutability
 - Prefer `const` over `let` to encourage immutability
 - Strive for immutability: avoid reassigning variables and modifying objects in place
 - **NEVER use single-letter variables like `i`, `j`, `k`** - they provide no semantic meaning
@@ -417,7 +485,7 @@ TypeScript's support for overloading generator functions has quirks:
 - Use `satisfies` operator for type checking without widening
 - **Destructuring pattern with dependencies**: When destructuring multiple variables where some depend on others, use separate destructuring blocks
 
-### Export Conventions
+## Export Conventions
 - **Avoid `Object.assign` for extending typed objects** - create a new const instead
 - **Prefer exporting constructs immediately when declared**:
   - **Bad**: `function myFn() {}; export { myFn }`
@@ -426,7 +494,7 @@ TypeScript's support for overloading generator functions has quirks:
   - **Good**: `export const myConst = 'value'`
   - This approach reduces cognitive load by making it immediately clear what is exported from the module
 
-### Async Programming
+## Async Programming
 - Prefer `async/await` and promise-returning library functions over explicit `new Promise` creation
 - Always prefer `async/await` over callbacks; convert callback-based APIs to promises
 - Avoid using await in loops wherever logically sound
@@ -435,7 +503,7 @@ TypeScript's support for overloading generator functions has quirks:
 - Handle promise rejections explicitly with try-catch blocks
 - Consider using `AbortController` for cancellable async operations
 
-### Error Handling
+## Error Handling
 - Create custom error classes that extend `Error` for domain-specific errors:
   ```ts
   class ValidationError extends Error {
@@ -482,7 +550,7 @@ TypeScript's support for overloading generator functions has quirks:
   - Check MDN or TypeScript documentation for deprecation warnings
   - Prefer modern, supported alternatives
 
-### Class Design
+## Class Design
 - Prefer composition over inheritance
 - Use `readonly` for properties that shouldn't change after construction
 - Make class methods `private` by default, only expose what's necessary
@@ -490,7 +558,7 @@ TypeScript's support for overloading generator functions has quirks:
 - Implement interfaces explicitly when a class should conform to a contract
 - Use abstract classes sparingly, prefer interfaces and composition
 
-### Performance Considerations
+## Performance Considerations
 - Use `unknown` instead of `any` for better type safety
 - Prefer type assertions (`as`) over angle bracket syntax (`<Type>`)
 - Use type guards for runtime type checking:
@@ -502,17 +570,19 @@ TypeScript's support for overloading generator functions has quirks:
 - Avoid deep nesting in conditional types to prevent performance issues
 - Use `satisfies` instead of type assertions when possible
 - Consider using `const` assertions for immutable data structures
+</typescript_standards>
 
-## Testing Requirements
+<testing_requirements>
+# Testing Requirements
 
-### General Testing Guidelines
+## General Testing Guidelines
 - Write a corresponding Vitest file that aims for 100% test coverage
 - Tests can only be run from workspace root using `moon run test`
 - To run tests for a specific file pattern:
   - `moon run testUnit -- packages/module/es/src/boolean.equal.unit.test.ts`
   - `moon run testBrowser -- packages/module/es/src/boolean.equal.browser.test.ts`
 
-### Coverage Requirements
+## Coverage Requirements
 - If certain lines or branches can't be tested (example: error handling for impossible states), use V8 ignore comments:
   ```ts
   /* v8 ignore next -- @preserve */
@@ -528,14 +598,14 @@ TypeScript's support for overloading generator functions has quirks:
   }
   ```
 
-### Test Structure
+## Test Structure
 - Use descriptive test names that explain the expected behaviour
 - Group related tests using `describe` blocks
 - Use `it.each` for parameterized tests
 - Mock external dependencies using Vitest's mocking capabilities
 - Test both happy path and error scenarios
 
-### Type-Level Testing
+## Type-Level Testing
 Use type-level tests for complex type utilities:
 ```ts
 import {
@@ -556,7 +626,7 @@ describe('ArrayFixedLength', () => {
 });
 ```
 
-### Test File Setup
+## Test File Setup
 Always start Vitest files with:
 ```ts
 import {
@@ -578,9 +648,9 @@ import {
 await logtapeConfigure(await logtapeConfiguration());
 ```
 
-### Linting Test Code
+## Linting Test Code
 
-#### Testing Intentional Violations
+### Testing Intentional Violations
 When tests intentionally violate a rule to verify behaviour:
 ```ts
 // BAD: Adding data to satisfy the linter
@@ -591,22 +661,24 @@ expect(isError(new Error('test message'))).toBe(true);
 expect(isError(new Error())).toBe(true);
 ```
 
-#### Async Testing Patterns
+### Async Testing Patterns
 - Use `wait()` from module-es instead of `new Promise(resolve => setTimeout(resolve, ms))`
 - Add `eslint-disable-next-line no-await-in-loop` when sequential processing is required
 - Import and use existing promise utilities instead of creating new promises
+</testing_requirements>
 
-## Linting and Code Quality
+<linting_code_quality>
+# Linting and Code Quality
 
-### Identifying the Linting Tool
+## Identifying the Linting Tool
 When fixing linting issues, first identify which tool reports the error:
 - Check the lint output format: `monochromatic:lintOxlint | ! eslint-plugin-unicorn(error-message)` indicates Oxlint
 - ESLint errors show as `eslint(rule-name)`
 - Oxlint errors often include the plugin name like `eslint-plugin-unicorn(rule-name)`
 
-### Common Linting Fixes
+## Common Linting Fixes
 
-#### Magic Numbers
+### Magic Numbers
 Define constants for all numeric literals except -2, -1, 0, 1, 2:
 ```ts
 // BAD
@@ -620,7 +692,7 @@ const result = value * PERCENTAGE_BASE;
 if (array.length > MAX_ARRAY_LENGTH) { }
 ```
 
-#### Loops and Iteration
+### Loops and Iteration
 Prefer functional approaches over imperative loops:
 ```ts
 // BAD: for...in with guard
@@ -646,12 +718,12 @@ const result = Object.fromEntries(
 );
 ```
 
-#### Async Patterns
+### Async Patterns
 - Use `wait()` from module-es instead of `new Promise(resolve => setTimeout(resolve, ms))`
 - Add `eslint-disable-next-line no-await-in-loop` when sequential processing is required
 - Import and use existing promise utilities instead of creating new promises
 
-#### Type Annotations
+### Type Annotations
 Always add explicit return types for functions:
 ```ts
 // BAD
@@ -670,7 +742,7 @@ async function fetchData(): Promise<Data> {
 }
 ```
 
-#### Import Patterns
+### Import Patterns
 - When parsers require namespace imports, add disable comment:
   ```ts
   // eslint-disable-next-line import/no-namespace -- Parser needs to be imported as namespace
@@ -682,7 +754,7 @@ async function fetchData(): Promise<Data> {
   import './_Head.css';
   ```
 
-#### Null Checks
+### Null Checks
 Use explicit comparisons instead of `!=` or `==`:
 ```ts
 // BAD
@@ -692,16 +764,18 @@ if (value != null) { }
 if (value !== null && value !== undefined) { }
 ```
 
-#### Module Disambiguation
+### Module Disambiguation
 For scripts that might be parsed as CommonJS, add an export:
 ```ts
 // At the end of the file
 export {};
 ```
+</linting_code_quality>
 
-## Documentation Standards
+<documentation_standards>
+# Documentation Standards
 
-### Technical Documentation Writing Style
+## Technical Documentation Writing Style
 
 When writing technical documentation (README, philosophy, architecture docs):
 - Write in active voice without collective pronouns
@@ -710,7 +784,7 @@ When writing technical documentation (README, philosophy, architecture docs):
 - Use present tense for current state, future tense only for planned features
 - Eliminate unnecessary connecting phrases and transitions
 
-### TSDoc Comments
+## TSDoc Comments
 
 Write comprehensive TSDoc comments for all exported members (functions, types, constants, classes, and everything else):
 - This includes providing descriptions for parameters and return values
@@ -719,7 +793,7 @@ Write comprehensive TSDoc comments for all exported members (functions, types, c
 - Adhere to the `eslint-plugin-jsdoc` recommended rules, TSDoc variant
 - Use `{@inheritDoc originalFn}` for a function that's the mere non-async variant of the original function
 
-#### Use TSDoc where supported, regular comments elsewhere:
+### Use TSDoc where supported, regular comments elsewhere:
 
 TSDoc (`/** */`) can be used for:
 - Functions, methods, arrow functions
@@ -740,11 +814,11 @@ TSDoc CANNOT be used for (use `//` or `/* */` instead):
 
 Key rule: TSDoc must directly precede a declaration (variable, function, class, type, etc.), not a statement or expression
 
-#### Comment Placement
+### Comment Placement
 - NEVER use inline comments after code
 - Always place comments on their own line above the code they describe
 
-#### TSDoc Style Guidelines
+### TSDoc Style Guidelines
 - Avoid `the`, `a`, `an` in `@param` or `@returns` description
 - Avoid repeating the name of the parameter without adding additional context in `@param` description
 - **Comments should explain WHY, not WHAT**:
@@ -771,43 +845,43 @@ Key rule: TSDoc must directly precede a declaration (variable, function, class, 
   }
   ```
 
-### Markdown Conventions
+## Markdown Conventions
 
-#### Text Formatting
+### Text Formatting
 - One sentence per line for better diffs and readability
 - Use **bold** for emphasis, avoid _italics_
 - Prefer fenced code blocks with language tags over inline code for multi-line snippets
 - Use inline code \`like this\` for single commands, function names, or short code
 
-#### Lists
+### Lists
 - Use `-` for unordered lists with one space after
 - Numbered lists: pad marker to 4 characters (e.g., `1.  `, `10. `)
 - Maintain consistent indentation (2 spaces for nested items)
 - Add blank lines before and after lists
 
-#### Code Blocks
+### Code Blocks
 - Always specify language for syntax highlighting
 - Use \`\`\`bash for shell commands, \`\`\`ts for TypeScript
 - Include file paths as comments when showing file contents
 
-#### Links and References
+### Links and References
 - Use reference-style links for repeated URLs
 - Prefer relative links for internal documentation
 - Include descriptive link text, avoid "click here"
 
-#### Structure
+### Structure
 - Use ATX-style headers (`#` not underlines)
 - Maximum header depth: 4 levels (####)
 - Add blank line before headers (except first)
 - Keep line length under 120 characters when possible
 
-### Git Commit Guidelines
+## Git Commit Guidelines
 
 Follow the Conventional Commits specification for all commit messages to ensure consistency and enable automated tooling.
 
 When writing commit messages for multiple changes across different files, include ALL changes in a single comprehensive commit message. Don't write commit messages that only describe partial changes.
 
-#### Commit Message Format
+### Commit Message Format
 
 ```
 <type>(<scope>): <subject>
@@ -817,7 +891,7 @@ When writing commit messages for multiple changes across different files, includ
 <footer>
 ```
 
-#### Types
+### Types
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation only changes
@@ -830,12 +904,12 @@ When writing commit messages for multiple changes across different files, includ
 - `chore`: Other changes that don't modify src or test files (removing deprecated files, updating `.gitignore`, etc.)
 - `revert`: Reverts a previous commit
 
-#### Scope
+### Scope
 Use the package name or area of change:
 - `module-es`
 - `*`: For changes affecting multiple packages
 
-#### Examples
+### Examples
 
 **Change of one type and scope:**
 ```txt
@@ -863,15 +937,18 @@ test(module-es): achieve 100% coverage for error utilities
 - Ensure proper type inference testing
 ```
 
-#### Important Commit Message Rules
+### Important Commit Message Rules
 - Group related changes by type (feat, fix, test, etc.)
 - Don't mix different types in the same scope section
 - Be specific about what changed, not just which files
 - Never use emojis in commit messages
 - Focus on the "what" and "why", not just listing file changes
+</documentation_standards>
 
-## Moon-Based Architecture
+<moon_based_architecture>
+# Moon-Based Architecture
 - All builds and tasks are managed by Moon CLI
 - Never run `pnpm exec` or direct package scripts
 - Use `moon run <task>` for all development activities
 - Dual builds are supported for Node.js and browser targets
+</moon_based_architecture>
