@@ -63,13 +63,14 @@ export function objectPickSync<
   readonly object: TObject;
   readonly keys: TKeys;
   readonly l?: Logger;
-},): unknown {
+}): Pick<TObject, Extract<keyof TObject, TKeys extends Iterable<infer U> ? U : TKeys>> | 
+   (TKeys extends SchemaSync<infer _, infer Output> ? Output : never) {
   l.trace('objectPickSync',);
 
   // Handle schema validation
   if (isSchema(keys,)) {
     l.trace('Using schema validation',);
-    return keys.parse(object,);
+    return keys.parse(object,) as any;
   }
 
   // Handle iterable of keys (including arrays)
@@ -81,22 +82,21 @@ export function objectPickSync<
       // Handle schema within iterable
       if (isSchema(key,)) {
         // This would be for validating the entire object with a schema
-        return key.parse(object,);
+        return key.parse(object,) as any;
       }
 
       // Check if key exists in object
-      if (!(key in object))
+      if (!(key in object)) {
         throw new Error(`Key "${String(key,)}" does not exist in object`,);
+      }
 
-      result[String(key,)] = object[key as keyof TObject];
+      // Convert key to string and add to result
+      const stringKey = String(key,);
+      result[stringKey] = object[key as keyof TObject];
     }
 
-    return result;
+    return result as any;
   }
-
-  // Handle async iterable of keys
-  if (isMaybeAsyncIterable(keys,))
-    throw new Error('Sync function cannot handle async iterables',);
 
   throw new TypeError('keys must be a schema, iterable of keys, or a single key',);
 }
@@ -166,7 +166,7 @@ export async function objectPick<
         try {
           const parsed = await keyAsyncSchema.parseAsync(objectKey,);
 
-          Object.assign(result, { [parsed]: object.objectKey, },);
+          Object.assign(result, { [parsed]: object[objectKey as keyof TObject], },);
           objectKeysSetHasDeletionsForThisKey = true;
           objectKeysSet.delete(objectKey,);
         }

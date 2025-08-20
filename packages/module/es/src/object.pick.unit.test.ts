@@ -2,9 +2,9 @@ import {
   // Logging library used
   logtapeConfiguration,
   logtapeConfigure,
-  objectPick,
   // Import functions to test
   objectPickSync,
+  objectPick,
 } from '@monochromatic-dev/module-es';
 import {
   describe,
@@ -21,7 +21,7 @@ const todoRecord: Record<string, unknown> = {
 };
 
 describe(objectPickSync, () => {
-  test('picks specific properties from object', () => {
+  test('picks specific properties from object with array of keys', () => {
     const result = objectPickSync({
       object: todoRecord,
       keys: ['title', 'completed',],
@@ -65,10 +65,19 @@ describe(objectPickSync, () => {
       description: 'Clean the room thoroughly',
     },);
   });
+  
+  test('throws error for non-iterable, non-schema keys', () => {
+    expect(() => {
+      objectPickSync({
+        object: todoRecord,
+        keys: 'title' as any,
+      },);
+    },).toThrow('keys must be a schema, iterable of keys, or a single key');
+  });
 },);
 
 describe(objectPick, () => {
-  test('async picks specific properties from object', async () => {
+  test('async picks specific properties from object with array of keys', async () => {
     const result = await objectPick({
       object: todoRecord,
       keys: ['title', 'completed',],
@@ -89,5 +98,12 @@ describe(objectPick, () => {
     expect(result,).toEqual({
       description: 'Clean the room thoroughly',
     },);
+  });
+  
+  test('async throws error for unpickable keys', async () => {
+    await expect(objectPick({
+      object: todoRecord,
+      keys: ['nonexistent',] as any,
+    },)).rejects.toThrow('unpickable');
   });
 },);
