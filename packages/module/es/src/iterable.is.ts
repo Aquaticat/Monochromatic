@@ -1,6 +1,6 @@
 // TODO: To be deleted since I'd split it into smaller files.
 
-import type { UnknownRecord, } from 'type-fest';
+import type { IterableSync } from './iterable.basic';
 
 /**
  * Tests if a value is an Iterable but not an AsyncIterable.
@@ -116,4 +116,10 @@ export function isMaybeAsyncIterable(
     && value !== undefined
     && (typeof (value as any)[Symbol.iterator] === 'function'
       || typeof (value as any)[Symbol.asyncIterator] === 'function');
+}
+
+export function isIterableSync<const MyValue extends IterableSync = IterableSync>(
+  value: MyValue
+): value is MyValue extends IterableSync<infer T> ? MyValue & IterableSync<T> : never {
+  return typeof value === 'object' && value !== null && typeof value[Symbol.iterator] === 'function';
 }

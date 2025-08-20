@@ -79,8 +79,8 @@ export function toArrayableSyncToArray<
     ? MyToArrayable & MaybeAsyncIterable<MaybeAsyncIterableElement>
     : never;
 
-  if (isMaybeAsyncIterable(potentiallyMaybeAsyncIterableToArrayable,))
-    return await Array.fromAsync(potentiallyMaybeAsyncIterableToArrayable,) as any;
+  if (isIterableSync(potentiallyMaybeAsyncIterableToArrayable,))
+    return Array.fromAsync(potentiallyMaybeAsyncIterableToArrayable,) as any;
 
   throw new TypeError(`${JSON.stringify(toArrayable,)} isn't ToArrayable`,);
 }
