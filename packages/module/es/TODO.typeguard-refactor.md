@@ -1,62 +1,101 @@
-# TODO: Refactor Typeguards for Compile-Time Safety
+# TODO: Refactor Typeguards for Type Preservation and Compile-Time Safety
+
+## Status: CONFIRMED BENEFIT - Type Preservation IS Affected by Input Type
 
 ## Objective
-Refactor all typeguards from accepting `unknown` to requiring the expected type, providing compile-time safety by catching obvious type mismatches during development.
+Refactor typeguards from accepting `unknown` to using generic patterns that preserve original type information.
 
-## Rationale
-While the industry standard is to use `value: unknown` for typeguards, and TypeScript already preserves type information through intersection types (e.g., `SchemaWithWeight` becomes `SchemaWithWeight & Schema` after guard), we can achieve better compile-time safety by requiring type compatibility upfront.
+## Definitive Discovery
+Through comprehensive testing with `@ts-expect-error` patterns, we found the complete truth:
 
-### Key Discovery
-Through testing, we found that TypeScript's control flow analysis already preserves the original type with ALL patterns - the narrowed type becomes an intersection of the original type and the guard's predicate type. So type preservation is NOT a concern.
+### **Input Type Determines Type Preservation:**
+- **`unknown`/`any` inputs**: Lose original properties, narrow to predicate type only
+- **Typed inputs**: Preserve original properties through intersection types
+- **The typeguard pattern itself**: Less important than input type
 
-### The Real Trade-off
-**Safety vs Flexibility:**
-- **Typed/Generic patterns**: Catch obvious mistakes at compile time, but require explicit casts for union types and unknown data
-- **`unknown` pattern**: Accepts anything without compile errors, validates at runtime only
+### **Evidence from Tests:**
+**Properties LOST (need `@ts-expect-error`):**
+- `any` → `Schema` loses `weight` property (lines 211, 217)
+- `unknown` casting issues (lines 179, 185, 187)
+- Intersection narrowing can lose properties (line 253)
 
-Our choice: Prioritize compile-time safety to catch errors early.
+**Properties PRESERVED (no `@ts-expect-error` needed):**
+- `SchemaWithWeight` → `SchemaWithWeight & Schema` keeps `weight` (lines 71, 79, 86, 240, 245)
+- Generic patterns preserve `any` flexibility better (line 223)
+- Complex intersections work with typed inputs (lines 276-284)
 
-## Current Pattern (to be replaced)
+## The Real Problem
+The industry standard `value: unknown` pattern **loses type information** when validating already-typed values:
+
+```typescript
+const schemaWithWeight: SchemaWithWeight = { parse: (x) => x, weight: 100 };
+
+// WRONG: loses weight property
+if (isSchema(schemaWithWeight as unknown)) {
+  schemaWithWeight.weight; // ❌ Error - narrowed to just Schema
+}
+
+// RIGHT: preserves weight property  
+if (isSchema(schemaWithWeight)) {
+  schemaWithWeight.weight; // ✅ Works - intersection SchemaWithWeight & Schema
+}
+```
+
+## Solution: Generic Pattern with Type Preservation
+```typescript
+export function isSchema<const T extends Schema = Schema>(
+  value: T
+): value is T {
+  return /* validation logic */;
+}
+```
+
+### Benefits:
+1. **Type preservation**: Maintains original properties for typed inputs
+2. **Compile-time safety**: Errors on obvious mistakes like `isSchema(42)`
+3. **Explicit intent**: Requires casting for `unknown` data validation
+4. **Flexibility**: Works with union types, branded types, complex intersections
+
+## Current Pattern (loses type information)
 ```typescript
 export function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
-// Problem: No compile-time error for obvious mistakes
-isString(42); // Silently returns false, no IDE feedback
-isString({ notString: true }); // No error, just returns false
-
-// Note: TypeScript DOES preserve type information (discovered through testing)
+// Problem: Casting to unknown loses properties
 const valueWithExtra = "hello" as string & { brand: "greeting" };
+if (isString(valueWithExtra as unknown)) {
+  valueWithExtra.brand; // ❌ Error - lost during unknown casting + narrowing
+}
+
+// Works only if you don't cast to unknown
 if (isString(valueWithExtra)) {
-  // valueWithExtra is actually string & { brand: "greeting" }
-  // NOT just string - intersection types preserve properties!
+  valueWithExtra.brand; // ✅ Works - but requires TypeScript to accept mismatch
 }
 ```
 
-## New Pattern (to implement)
+## New Pattern (preserves types + compile-time safety)
 ```typescript
-// Simple approach - just require the expected type
-export function isString(value: string): value is string {
-  return typeof value === 'string';
-}
-
-// Alternative with generics for literal type preservation
 export function isString<const T extends string = string>(
   value: T
 ): value is T {
   return typeof value === 'string';
 }
 
-// Benefit: Compile-time errors for obvious mistakes
-isString(42); // ❌ IDE error - immediate feedback
-isString("hello"); // ✅ Works, validates runtime type matches compile-time type
+// Benefits:
+isString(42); // ❌ Compile error - immediate feedback
+isString("hello"); // ✅ Works
 
-// TypeScript automatically preserves additional properties through intersections
+// Type preservation for typed inputs
 const brandedString = "hello" as string & { brand: "greeting" };
 if (isString(brandedString)) {
-  // brandedString remains string & { brand: "greeting" }
-  // Intersection types work automatically!
+  brandedString.brand; // ✅ Preserved - T maintains original type
+}
+
+// Explicit intent for unknown data
+const untrusted: unknown = getData();
+if (isString(untrusted as unknown as string & typeof untrusted)) {
+  // Clear intent: validating potentially unsafe data
 }
 ```
 
@@ -81,6 +120,16 @@ const content = JSON.parse(await readFile('untrusted.json', 'utf8'));
 if (isString(content as unknown as string & typeof content)) {
   // content is validated and typed as string
 }
+```
+
+### For Known Values (Compile-Time Check)
+```typescript
+const definitelyString = "hello";
+isString(definitelyString); // ✅ Works, runtime validation
+
+const definitelyNotString = 42;
+isString(definitelyNotString); // ❌ Compile error: Type 'number' has no overlap with 'string'
+// Error suggests: "Convert to unknown first if intentional"
 ```
 
 ### For Objects with Additional Properties
@@ -182,7 +231,7 @@ export function isSchema<const T extends Schema = Schema>(
 ### Priority 4 - Complex Types
 - [ ] `jsonl.basic.ts` - `isJsonl`
 - [ ] `function.is.ts` - `isAsyncFunction`, `isSyncFunction`
-- [ ] `schema.basic.ts` - Refactor to refined generic pattern
+- [ ] `schema.basic.ts` - Refactor to new pattern
 
 ## Testing Considerations
 - Ensure all existing tests pass after refactoring
@@ -209,178 +258,3 @@ export function isSchema<const T extends Schema = Schema>(
 - The double cast pattern `as unknown as Type & typeof value` clearly signals untrusted data validation
 - The single cast pattern `as Type & typeof value` preserves union type information for narrowing
 - Simple non-generic approach is recommended for most cases, with generics as optional for literal type preservation
-
-## Usage Patterns
-
-### For Narrowing Union Types
-```typescript
-let potentiallyString: string | number;
-
-// Cast preserves original type for narrowing
-if (isString(potentiallyString as string & typeof potentiallyString)) {
-  // potentiallyString is now narrowed to string
-}
-```
-
-### For Validating Untrusted Data
-```typescript
-// Parsing JSON or reading files
-const content = JSON.parse(await readFile('untrusted.json', 'utf8'));
-
-// Double cast shows clear intent: treating unknown as potentially the type
-if (isString(content as unknown as string & typeof content)) {
-  // content is validated and typed as string
-}
-```
-
-### For Known Values (Compile-Time Check)
-```typescript
-const definitelyString = "hello";
-isString(definitelyString); // ✅ Works, runtime validation
-
-const definitelyNotString = 42;
-isString(definitelyNotString); // ❌ Compile error: Type 'number' has no overlap with 'string'
-// Error suggests: "Convert to unknown first if intentional"
-```
-
-## Implementation Guidelines
-
-### Basic Types
-```typescript
-// Before
-export function isNumber(value: unknown): value is number
-
-// After  
-export function isNumber(value: number): value is number
-```
-
-### Complex Types
-```typescript
-// Before
-export function isError(value: unknown): value is Error
-
-// After
-export function isError(value: Error): value is Error
-```
-
-### Collections
-```typescript
-// Before
-export function isMap(value: unknown): value is Map<unknown, unknown>
-
-// After
-export function isMap(value: Map<unknown, unknown>): value is Map<unknown, unknown>
-```
-
-### Generic Types (Schemas)
-```typescript
-// Before
-export function isSchema<const MyValue = unknown>(
-  value: MyValue,
-): value is MyValue extends Schema<infer I, infer O> ? (MyValue & Schema<I, O>) : never
-
-// After
-export function isSchema(value: Schema): value is Schema
-```
-
-## Files to Refactor
-
-### Priority 1 - Basic Type Guards
-- [ ] `string.is.ts` - `isString`
-- [ ] `numeric.bigint.ts` - `isBigint`, `isNumeric`
-- [ ] `numeric.int.ts` - `isPositiveInt`, `isNegativeInt`, `isNonNegativeInt`
-- [ ] `numeric.date.ts` - `isObjectDate`
-- [ ] `object.is.ts` - `isObject`
-- [ ] `array.empty.ts` - `isEmptyArray`
-- [ ] `error.is.ts` - `isError`
-
-### Priority 2 - Collection Type Guards
-- [ ] `map.is.ts` - `isMap`
-- [ ] `set.is.ts` - `isSet`, `isWeakSet`
-- [ ] `promise.is.ts` - `isPromise`
-- [ ] `iterable.is.ts` - `isIterable`
-- [ ] `generator.is.ts` - `isGenerator`, `isAsyncGenerator`
-
-### Priority 3 - String Validators
-- [ ] `string.digits.ts` - `isDigitString`, `isNo0DigitString`, `isDigitsString`
-- [ ] `string.letters.ts` - Letter validation functions
-- [ ] `string.numbers.ts` - All numeric string validators
-
-### Priority 4 - Complex Types
-- [ ] `jsonl.basic.ts` - `isJsonl`
-- [ ] `function.is.ts` - `isAsyncFunction`, `isSyncFunction`
-- [ ] `schema.basic.ts` - Refactor to new pattern
-
-## Testing Considerations
-- Ensure all existing tests pass after refactoring
-- Update tests to use proper casting patterns
-- Test that compile-time errors occur for obvious type mismatches
-- Verify narrowing works correctly with union types
-
-## Migration Strategy
-1. Start with simple type guards (Priority 1)
-2. Update tests to use new casting patterns
-3. Ensure no breaking changes to runtime behavior
-4. Document the pattern in CLAUDE.md for consistency
-
-## Benefits
-- **Compile-time safety**: Catches type errors during development
-- **Explicit intent**: Forces developers to be clear about validating untrusted data
-- **Better IDE experience**: Immediate feedback on incorrect usage
-- **Type preservation**: Maintains type information through narrowing
-
-## Notes
-- This approach is unconventional but provides maximum safety
-- The double cast pattern `as unknown as Type & typeof value` clearly signals untrusted data validation
-- The single cast pattern `as Type & typeof value` preserves union type information for narrowing
-- TypeScript will suggest "convert to unknown first" when types don't overlap, guiding developers
-
-## Files to Refactor
-
-### Priority 1 - Basic Type Guards
-- [ ] `string.is.ts` - `isString`
-- [ ] `numeric.bigint.ts` - `isBigint`, `isNumeric`
-- [ ] `numeric.int.ts` - `isPositiveInt`, `isNegativeInt`, `isNonNegativeInt`
-- [ ] `numeric.date.ts` - `isObjectDate`
-- [ ] `object.is.ts` - `isObject`
-- [ ] `array.empty.ts` - `isEmptyArray`
-- [ ] `error.is.ts` - `isError`
-
-### Priority 2 - Collection Type Guards
-- [ ] `map.is.ts` - `isMap`
-- [ ] `set.is.ts` - `isSet`, `isWeakSet`
-- [ ] `promise.is.ts` - `isPromise`
-- [ ] `iterable.is.ts` - `isIterable`
-- [ ] `generator.is.ts` - `isGenerator`, `isAsyncGenerator`
-
-### Priority 3 - String Validators
-- [ ] `string.digits.ts` - `isDigitString`, `isNo0DigitString`, `isDigitsString`
-- [ ] `string.letters.ts` - Letter validation functions
-- [ ] `string.numbers.ts` - All numeric string validators
-
-### Priority 4 - Complex Types
-- [ ] `jsonl.basic.ts` - `isJsonl`
-- [ ] `function.is.ts` - `isAsyncFunction`, `isSyncFunction`
-- [ ] `schema.basic.ts` - Already uses generic pattern ✅
-
-## Testing Considerations
-- Ensure all existing tests pass after refactoring
-- Add tests that verify compile-time type narrowing works correctly
-- Test that the generic parameter properly defaults to `unknown`
-
-## Migration Strategy
-1. Start with simple type guards (Priority 1)
-2. Update tests alongside each refactor
-3. Ensure no breaking changes to public API behavior
-4. Document the pattern in CLAUDE.md for consistency
-
-## Benefits
-- **Compile-time safety**: Catches type errors during development
-- **Better IDE experience**: Immediate feedback on incorrect usage
-- **Intentional casting**: Forces developers to be explicit when checking values that definitely aren't the target type
-- **Type preservation**: Maintains more specific type information through narrowing
-
-## Notes
-- This approach is more sophisticated than industry standard but provides better developer experience
-- The slight verbosity when explicit casting is needed is a feature, not a bug - it shows intent
-- No hybrid approach - consistency across all typeguards

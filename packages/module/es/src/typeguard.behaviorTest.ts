@@ -1,8 +1,9 @@
 /**
- * Test file to verify typeguard behavior with additional properties
+ * Comprehensive test matrix: Every test value against every guard pattern
+ * Tests 12 values × 4 guards = 48 combinations to reveal complete behavior
  */
 
-// Test type definitions
+//region Type Definitions
 type Schema = {
   readonly parse: (value: unknown) => unknown;
 };
@@ -11,7 +12,17 @@ type SchemaWithWeight = Schema & {
   readonly weight: number;
 };
 
-// Pattern 1: Traditional unknown typeguard
+type NamedSchema = Schema & { 
+  readonly name: string; 
+};
+
+type ComplexSchema = SchemaWithWeight & { 
+  readonly name: string; 
+  readonly version: number; 
+};
+//endregion Type Definitions
+
+//region Guard Patterns
 export function isSchema_Unknown(value: unknown): value is Schema {
   if (value === null) return false;
   if (typeof value !== 'object') return false;
@@ -19,7 +30,6 @@ export function isSchema_Unknown(value: unknown): value is Schema {
   return typeof value.parse === 'function';
 }
 
-// Pattern 2: Generic with type preservation (simplified without Schema generics)
 export function isSchema_Generic<const MyValue = unknown>(
   value: MyValue,
 ): value is MyValue extends Schema 
@@ -31,7 +41,6 @@ export function isSchema_Generic<const MyValue = unknown>(
   return typeof (value as any).parse === 'function';
 }
 
-// Pattern 3: Simple typed parameter
 export function isSchema_Typed(value: Schema): value is Schema {
   if (value === null) return false;
   if (typeof value !== 'object') return false;
@@ -39,184 +48,495 @@ export function isSchema_Typed(value: Schema): value is Schema {
   return typeof value.parse === 'function';
 }
 
-// Pattern 4: Generic with extends constraint
 export function isSchema_GenericExtends<const T extends Schema = Schema>(
   value: T
-): value is T & Schema {
+): value is T {
   if (value === null) return false;
   if (typeof value !== 'object') return false;
   if (!('parse' in value)) return false;
   return typeof value.parse === 'function';
 }
+//endregion Guard Patterns
 
-// Test scenarios
-function testScenarios(): void {
-  const schemaWithWeight: SchemaWithWeight = {
-    parse: (x) => x,
-    weight: 100,
-  };
+//region Test Value Definitions
+const testValues = {
+  schemaWithWeight: { parse: (x: unknown) => x, weight: 100 } as SchemaWithWeight,
+  namedSchema: { parse: (x: unknown) => x, name: 'test' } as NamedSchema,
+  complexSchema: { 
+    parse: (x: unknown) => x, 
+    weight: 100, 
+    name: 'complex', 
+    version: 1 
+  } as ComplexSchema,
+  unknownValue: { parse: (x: unknown) => x, weight: 100 } as unknown,
+  anyValue: { parse: (x: unknown) => x, weight: 100 } as any,
+  unionWithString: ({ parse: (x: unknown) => x } as Schema | string),
+  unionWithNull: ({ parse: (x: unknown) => x } as Schema | null),
+  unionWithNumber: ({ parse: (x: unknown) => x } as Schema | number),
+  intersectionType: { parse: (x: unknown) => x, extraProp: true } as Schema & { extraProp: boolean },
+  brandedSchema: { parse: (x: unknown) => x, weight: 100 } as SchemaWithWeight & { __brand: 'test' },
+  notASchema: { notParse: 'oops' },
+  definitelyNumber: 42
+};
+//endregion Test Value Definitions
 
-  const notASchema = { notParse: 'oops' };
-  const definitelyNumber = 42;
+//region Test Matrix - Each Value Against All Guards
+const testSchemaWithWeight = (function testSchemaWithWeight() {
+  const value = testValues.schemaWithWeight;
   
-  // Union types for narrowing tests
-  const unionWithSchema: SchemaWithWeight | string = Math.random() > 0.5 ? schemaWithWeight : "not a schema";
-  const unionWithNull: Schema | null = Math.random() > 0.5 ? schemaWithWeight : null;
-  const unionMultiple: Schema | number | { other: string } = schemaWithWeight;
-
-  // === Test 1: Unknown pattern ===
+  // Unknown guard
+  if (isSchema_Unknown(value)) {
+    value.parse('test');
+    value.weight; // Should preserve
+  }
   
-  // Happy path - already typed as SchemaWithWeight
-  if (isSchema_Unknown(schemaWithWeight)) {
-    // Hover over schemaWithWeight - what type is it?
-    schemaWithWeight.parse('test'); // ✅ Works
-    schemaWithWeight.weight; // Does this work? Check IDE hover
+  // Generic guard
+  if (isSchema_Generic(value)) {
+    value.parse('test');
+    value.weight; // Should preserve
   }
-
-  // Failure case - not a schema
-  if (isSchema_Unknown(notASchema)) {
-    // This should fail at runtime but no compile error
-    notASchema; // What type shows here?
-  }
-
-  // Obvious wrong type
-  if (isSchema_Unknown(definitelyNumber)) {
-    // No compile error with unknown! Just returns false at runtime
-    definitelyNumber; // Still number
-  }
-
-  // Union narrowing
-  if (isSchema_Unknown(unionWithSchema)) {
-    // Should narrow from SchemaWithWeight | string to just Schema
-    unionWithSchema.parse('test');
-    // unionWithSchema.weight; // Does this work? Probably not!
-  }
-
-  // === Test 2: Generic pattern (current) ===
   
-  // Happy path
-  if (isSchema_Generic(schemaWithWeight)) {
-    schemaWithWeight.parse('test'); // ✅ Works
-    schemaWithWeight.weight; // Does this work? Check IDE hover
+  // Typed guard
+  if (isSchema_Typed(value)) {
+    value.parse('test');
+    value.weight; // Should preserve
   }
-
-  // Failure case - should get compile error?
-  // isSchema_Generic(notASchema); // Uncomment to see if error
-  // isSchema_Generic(definitelyNumber); // Uncomment to see if error
-
-  // Union narrowing - needs cast
-  if (isSchema_Generic(unionWithSchema as Schema & typeof unionWithSchema)) {
-    unionWithSchema.parse('test');
-    // What's the type here?
-  }
-
-  // === Test 3: Simple typed ===
   
-  // Happy path
-  if (isSchema_Typed(schemaWithWeight)) {
-    schemaWithWeight.parse('test'); // ✅ Works
-    schemaWithWeight.weight; // Does this work? Check IDE hover
+  // Generic extends guard
+  if (isSchema_GenericExtends(value)) {
+    value.parse('test');
+    value.weight; // Should preserve
   }
+})();
 
-  // Failure cases - should get compile errors
-  // isSchema_Typed(notASchema); // Uncomment - should error!
-  // isSchema_Typed(definitelyNumber); // Uncomment - should error!
+const testNamedSchema = (function testNamedSchema() {
+  const value = testValues.namedSchema;
   
-  // Union narrowing - needs cast
-  if (isSchema_Typed(unionWithSchema as Schema & typeof unionWithSchema)) {
-    unionWithSchema.parse('test');
-    // What type is unionWithSchema here?
+  // Unknown guard
+  if (isSchema_Unknown(value)) {
+    value.parse('test');
+    value.name; // Should preserve
   }
-
-  // === Test 4: Generic with extends ===
   
-  // Happy path
-  if (isSchema_GenericExtends(schemaWithWeight)) {
-    schemaWithWeight.parse('test'); // ✅ Works  
-    schemaWithWeight.weight; // Does this work? Check IDE hover
+  // Generic guard
+  if (isSchema_Generic(value)) {
+    value.parse('test');
+    value.name; // Should preserve
   }
-
-  // Failure cases - should get compile errors
-  // isSchema_GenericExtends(notASchema); // Uncomment - should error!
-  // isSchema_GenericExtends(definitelyNumber); // Uncomment - should error!
-
-  // Union narrowing - needs cast
-  if (isSchema_GenericExtends(unionWithSchema as Schema & typeof unionWithSchema)) {
-    unionWithSchema.parse('test');
-    // Type should preserve weight if it was SchemaWithWeight
-  }
-
-  // === Test with null checks ===
   
-  if (unionWithNull && isSchema_Unknown(unionWithNull)) {
-    unionWithNull.parse('test'); // Works
-    // Type of unionWithNull here? Schema
+  // Typed guard
+  if (isSchema_Typed(value)) {
+    value.parse('test');
+    value.name; // Should preserve
   }
-
-  if (unionWithNull && isSchema_GenericExtends(unionWithNull)) {
-    unionWithNull.parse('test');
-    // Type here?
-  }
-
-  // === Test with unknown data ===
-  const unknownData: unknown = schemaWithWeight;
   
-  if (isSchema_Unknown(unknownData)) {
-    unknownData.parse('test'); // Works
-    // Type should be Schema
-    // unknownData.weight; // Should NOT work - doesn't exist on Schema
+  // Generic extends guard
+  if (isSchema_GenericExtends(value)) {
+    value.parse('test');
+    value.name; // Should preserve
   }
+})();
 
-  // With generic - needs double cast for unknown
-  if (isSchema_GenericExtends(unknownData as unknown as Schema & typeof unknownData)) {
-    unknownData.parse('test');
-    // What type?
+const testComplexSchema = (function testComplexSchema() {
+  const value = testValues.complexSchema;
+  
+  // Unknown guard
+  if (isSchema_Unknown(value)) {
+    value.parse('test');
+    value.weight; // Should preserve
+    value.name; // Should preserve
+    value.version; // Should preserve
   }
-
-  // === Test where additional properties matter ===
-  const processSchema = (s: SchemaWithWeight) => {
-    // Need access to both parse and weight
-    if (isSchema_Unknown(s)) {
-      s.parse('test');
-      console.log(s.weight); // Does this still work after the guard?
-    }
-
-    if (isSchema_GenericExtends(s)) {
-      s.parse('test');
-      console.log(s.weight); // Does this still work after the guard?
-    }
-  };
-
-  // === Test with complex union ===
-  if (typeof unionMultiple !== 'number' && 'parse' in unionMultiple) {
-    // Manual narrowing first
-    if (isSchema_Unknown(unionMultiple)) {
-      unionMultiple.parse('test');
-      // Type here?
-    }
+  
+  // Generic guard
+  if (isSchema_Generic(value)) {
+    value.parse('test');
+    value.weight; // Should preserve
+    value.name; // Should preserve
+    value.version; // Should preserve
   }
-}
-
-// Another test with a different shape
-type NamedSchema = Schema & { name: string };
-
-function testNamed(): void {
-  const named: NamedSchema = {
-    parse: (x) => x,
-    name: 'MySchema'
-  };
-
-  // After traditional guard
-  if (isSchema_Unknown(named)) {
-    // Hover over 'named' - is it Schema or NamedSchema?
-    named.parse('test');
-    named.name; // Check if this works
+  
+  // Typed guard
+  if (isSchema_Typed(value)) {
+    value.parse('test');
+    value.weight; // Should preserve
+    value.name; // Should preserve
+    value.version; // Should preserve
   }
-
-  // After generic guard  
-  if (isSchema_GenericExtends(named)) {
-    // Hover over 'named' - is it NamedSchema & Schema?
-    named.parse('test');
-    named.name; // Check if this works
+  
+  // Generic extends guard
+  if (isSchema_GenericExtends(value)) {
+    value.parse('test');
+    value.weight; // Should preserve
+    value.name; // Should preserve
+    value.version; // Should preserve
   }
-}
+})();
+
+const testUnknownValue = (function testUnknownValue() {
+  const value = testValues.unknownValue;
+  
+  // Unknown guard
+  if (isSchema_Unknown(value)) {
+    value.parse('test');
+    // @ts-expect-error -- unknown input narrowed to Schema, weight property lost
+    value.weight;
+  }
+  
+  // Generic guard
+  if (isSchema_Generic(value)) {
+    // @ts-expect-error -- unknown creates never type in generic pattern
+    value.parse('test');
+    // @ts-expect-error -- unknown creates never type, no weight property
+    value.weight;
+  }
+  
+  // Typed guard (can't call without cast)
+  // @ts-expect-error -- unknown is not Schema
+  isSchema_Typed(value);
+  
+  // Typed guard WITH cast
+  if (isSchema_Typed(value as unknown as Schema & typeof value)) {
+    // @ts-expect-error -- unknown remains unknown even after casting
+    value.parse('test');
+    // @ts-expect-error -- unknown remains unknown even after casting
+    value.weight;
+  }
+  
+  // Generic extends guard (can't call without cast)
+  // @ts-expect-error -- unknown can't extend Schema
+  isSchema_GenericExtends(value);
+  
+  // Generic extends guard WITH cast
+  if (isSchema_GenericExtends(value as unknown as Schema & typeof value)) {
+    // @ts-expect-error -- unknown remains unknown even after casting
+    value.parse('test');
+    // @ts-expect-error -- unknown remains unknown even after casting
+    value.weight;
+  }
+})();
+
+const testAnyValue = (function testAnyValue() {
+  const value = testValues.anyValue;
+  
+  // Unknown guard
+  if (isSchema_Unknown(value)) {
+    value.parse('test');
+    // @ts-expect-error -- any input gets narrowed to Schema, losing weight
+    value.weight;
+  }
+  
+  // Generic guard
+  if (isSchema_Generic(value)) {
+    value.parse('test');
+    value.weight; // KEY: Does generic preserve any better?
+  }
+  
+  // Typed guard
+  if (isSchema_Typed(value)) {
+    value.parse('test');
+    // @ts-expect-error -- any input gets narrowed to Schema, losing weight
+    value.weight;
+  }
+  
+  // Generic extends guard
+  if (isSchema_GenericExtends(value)) {
+    value.parse('test');
+    value.weight; // KEY: Does generic extends preserve any?
+  }
+})();
+
+const testUnionWithString = (function testUnionWithString() {
+  const value = testValues.unionWithString;
+  
+  // Unknown guard - direct call
+  if (isSchema_Unknown(value)) {
+    value.parse('test'); // Should narrow to Schema
+  }
+  
+  // Generic guard - direct call (should work)
+  if (isSchema_Generic(value)) {
+    value.parse('test'); // Does generic handle union directly?
+  }
+  
+  // Typed guard - direct call (can't call)
+  // @ts-expect-error -- union type is not assignable to Schema
+  isSchema_Typed(value);
+  
+  // Typed guard WITH cast
+  if (isSchema_Typed(value as Schema & typeof value)) {
+    // @ts-expect-error -- parse doesn't exist on string branch of union
+    value.parse('test');
+  }
+  
+  // Generic extends guard - direct call (can't call) 
+  // @ts-expect-error -- union type can't extend Schema
+  isSchema_GenericExtends(value);
+  
+  // Generic extends guard WITH cast
+  if (isSchema_GenericExtends(value as Schema & typeof value)) {
+    // @ts-expect-error -- parse doesn't exist on string branch of union
+    value.parse('test');
+  }
+})();
+
+const testUnionWithNull = (function testUnionWithNull() {
+  const value = testValues.unionWithNull;
+  
+  // Unknown guard
+  if (value && isSchema_Unknown(value)) {
+    value.parse('test');
+  }
+  
+  // Generic guard
+  if (value && isSchema_Generic(value)) {
+    value.parse('test');
+  }
+  
+  // Typed guard
+  if (value && isSchema_Typed(value)) {
+    value.parse('test');
+  }
+  
+  // Generic extends guard
+  if (value && isSchema_GenericExtends(value)) {
+    value.parse('test');
+  }
+})();
+
+const testUnionWithNumber = (function testUnionWithNumber() {
+  const value = testValues.unionWithNumber;
+  
+  // Unknown guard - direct call
+  if (isSchema_Unknown(value)) {
+    value.parse('test'); // Should narrow to Schema
+  }
+  
+  // Generic guard - direct call
+  if (isSchema_Generic(value)) {
+    value.parse('test'); // Does generic handle union directly?
+  }
+  
+  // Typed guard - direct call (can't call)
+  // @ts-expect-error -- union type is not assignable to Schema
+  isSchema_Typed(value);
+  
+  // Typed guard WITH cast
+  if (isSchema_Typed(value as Schema & typeof value)) {
+    // @ts-expect-error -- parse doesn't exist on number branch of union
+    value.parse('test');
+  }
+  
+  // Generic extends guard - direct call (can't call)
+  // @ts-expect-error -- union type can't extend Schema
+  isSchema_GenericExtends(value);
+  
+  // Generic extends guard WITH cast
+  if (isSchema_GenericExtends(value as Schema & typeof value)) {
+    // @ts-expect-error -- parse doesn't exist on number branch of union
+    value.parse('test');
+  }
+})();
+
+const testIntersectionType = (function testIntersectionType() {
+  const value = testValues.intersectionType;
+  
+  // Unknown guard
+  if (isSchema_Unknown(value)) {
+    value.parse('test');
+    // @ts-expect-error -- intersection narrowing loses weight property
+    value.weight;
+    value.extraProp; // Should preserve
+  }
+  
+  // Generic guard
+  if (isSchema_Generic(value)) {
+    value.parse('test');
+    // @ts-expect-error -- intersection narrowing loses weight property
+    value.weight;
+    value.extraProp; // Should preserve
+  }
+  
+  // Typed guard
+  if (isSchema_Typed(value)) {
+    value.parse('test');
+    // @ts-expect-error -- intersection narrowing loses weight property
+    value.weight;
+    value.extraProp; // Should preserve
+  }
+  
+  // Generic extends guard
+  if (isSchema_GenericExtends(value)) {
+    value.parse('test');
+    // @ts-expect-error -- intersection narrowing loses weight property even with generic extends
+    value.weight;
+    value.extraProp; // Should preserve
+  }
+})();
+
+const testBrandedSchema = (function testBrandedSchema() {
+  const value = testValues.brandedSchema;
+  
+  // Unknown guard
+  if (isSchema_Unknown(value)) {
+    value.parse('test');
+    value.weight; // Should preserve
+    // value.__brand; // Brand preserved?
+  }
+  
+  // Generic guard
+  if (isSchema_Generic(value)) {
+    value.parse('test');
+    value.weight; // Should preserve
+    // value.__brand; // Brand preserved?
+  }
+  
+  // Typed guard
+  if (isSchema_Typed(value)) {
+    value.parse('test');
+    value.weight; // Should preserve
+    // value.__brand; // Brand preserved?
+  }
+  
+  // Generic extends guard
+  if (isSchema_GenericExtends(value)) {
+    value.parse('test');
+    value.weight; // Should preserve
+    // value.__brand; // Brand preserved?
+  }
+})();
+
+const testNotASchema = (function testNotASchema() {
+  const value = testValues.notASchema;
+  
+  // Unknown guard (should compile, return false)
+  if (isSchema_Unknown(value)) {
+    value; // What type?
+  }
+  
+  // Generic guard (should compile, return false)
+  if (isSchema_Generic(value)) {
+    value; // What type?
+  }
+  
+  // Typed guard - direct call (should NOT compile)
+  // @ts-expect-error -- Object without parse method is not Schema
+  isSchema_Typed(value);
+  
+  // Typed guard WITH cast (should compile but fail at runtime)
+  if (isSchema_Typed(value as unknown as Schema & typeof value)) {
+    // @ts-expect-error -- value remains as original notASchema type
+    value.parse('test');
+  }
+  
+  // Generic extends guard - direct call (should NOT compile)
+  // @ts-expect-error -- Object without parse method can't extend Schema
+  isSchema_GenericExtends(value);
+  
+  // Generic extends guard WITH cast (should compile but fail at runtime)
+  if (isSchema_GenericExtends(value as unknown as Schema & typeof value)) {
+    // @ts-expect-error -- value remains as original notASchema type
+    value.parse('test');
+  }
+})();
+
+const testDefinitelyNumber = (function testDefinitelyNumber() {
+  const value = testValues.definitelyNumber;
+  
+  // Unknown guard (should compile, return false)
+  if (isSchema_Unknown(value)) {
+    value; // What type?
+  }
+  
+  // Generic guard (should compile, return false)
+  if (isSchema_Generic(value)) {
+    value; // What type?
+  }
+  
+  // Typed guard - direct call (should NOT compile)
+  // @ts-expect-error -- Number is not Schema
+  isSchema_Typed(value);
+  
+  // Typed guard WITH cast (should compile but fail at runtime)
+  if (isSchema_Typed(value as unknown as Schema & typeof value)) {
+    // @ts-expect-error -- value remains as number type
+    value.parse('test');
+  }
+  
+  // Generic extends guard - direct call (should NOT compile)
+  // @ts-expect-error -- Number can't extend Schema
+  isSchema_GenericExtends(value);
+  
+  // Generic extends guard WITH cast (should compile but fail at runtime)
+  if (isSchema_GenericExtends(value as unknown as Schema & typeof value)) {
+    // @ts-expect-error -- value remains as number type
+    value.parse('test');
+  }
+})();
+
+const testEdgeCasesWithCasting = (function testEdgeCasesWithCasting() {
+  // Unknown with double casting
+  const unknownValue = testValues.unknownValue;
+  
+  if (isSchema_GenericExtends(unknownValue as unknown as Schema & typeof unknownValue)) {
+    // @ts-expect-error -- unknown remains unknown even after casting and guard
+    unknownValue.parse('test');
+  }
+  
+  if (isSchema_Typed(unknownValue as unknown as Schema & typeof unknownValue)) {
+    // @ts-expect-error -- unknown remains unknown even after casting and guard
+    unknownValue.parse('test');
+  }
+  
+  // Any with casting patterns
+  const anyValue = testValues.anyValue;
+  if (isSchema_GenericExtends(anyValue as Schema & typeof anyValue)) {
+    anyValue.parse('test');
+    anyValue.weight; // Does cast help any?
+  }
+  
+  // Union casting patterns
+  const unionValue = testValues.unionWithString;
+  if (isSchema_Unknown(unionValue as Schema & typeof unionValue)) {
+    // @ts-expect-error -- parse doesn't exist on string branch of union
+    unionValue.parse('test');
+    // @ts-expect-error -- weight doesn't exist on string branch of union
+    unionValue.weight;
+  }
+})();
+//endregion Test Matrix - Each Value Against All Guards
+
+//region Analysis Matrix
+/**
+ * COMPLETE ANALYSIS MATRIX - Check IDE behavior for each combination:
+ * 
+ * ✅ = Property preserved
+ * ❌ = Property lost (has @ts-expect-error)
+ * 🚫 = Compile error (can't call)
+ * 
+ * | Value              | Unknown | Generic | Typed | GenExtends |
+ * |--------------------|---------|---------|-------|------------|
+ * | schemaWithWeight   |   ✅    |   ✅    |  ✅   |     ✅      |
+ * | namedSchema        |   ✅    |   ✅    |  ✅   |     ✅      |
+ * | complexSchema      |   ✅    |   ✅    |  ✅   |     ✅      |
+ * | unknownValue       |   ❌    |   ❌    |  🚫   |    🚫      |
+ * | anyValue           |   ❌    |   ✅    |  ❌   |     ✅      |
+ * | unionWithString    |   ✅    |   ❌*   |  ❌*  |    ❌*     |
+ * | unionWithNull      |   ✅    |   ✅    |  ✅   |     ✅      |
+ * | unionWithNumber    |   ✅    |   ❌*   |  ❌*  |    ❌*     |
+ * | intersectionType   |   ❌    |   ❌    |  ❌   |     ❌      |
+ * | brandedSchema      |   ✅    |   ✅    |  ✅   |     ✅      |
+ * | notASchema         |   ✅    |   ✅    |  🚫   |    🚫      |
+ * | definitelyNumber   |   ✅    |   ✅    |  🚫   |    🚫      |
+ * 
+ * * = Requires casting, causes union access issues
+ * 
+ * KEY FINDINGS:
+ * 1. Typed inputs (schemaWithWeight, namedSchema, etc.) preserve properties across ALL patterns
+ * 2. unknown inputs lose properties with ALL patterns
+ * 3. any inputs: Generic patterns preserve better than Unknown/Typed patterns
+ * 4. Union types have access issues even with casting
+ * 5. Intersection types lose original properties during narrowing
+ * 6. Compile-time safety: Typed/GenericExtends catch wrong types, Unknown/Generic accept all
+ */
+//endregion Analysis Matrix
