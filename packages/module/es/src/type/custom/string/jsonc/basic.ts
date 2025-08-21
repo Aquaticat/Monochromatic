@@ -79,7 +79,8 @@ export type JsoncRecord = JsoncValueBase & {
 /**
  * Union of all possible parsed JSONC values
  */
-export type JsoncValue = JsoncString | JsoncNumber | JsoncBoolean | JsoncNull | JsoncArray | JsoncRecord;
+export type JsoncValue = JsoncString | JsoncNumber | JsoncBoolean | JsoncNull | JsoncArray
+  | JsoncRecord;
 
 //endregion Type Definitions
 
@@ -96,21 +97,20 @@ type ParserContext = {
 /**
  * Skip whitespace characters in the input
  */
-function skipWhitespace(ctx: ParserContext): void {
-  while (ctx.position < ctx.input.length && /\s/.test(ctx.input[ctx.position])) {
+function skipWhitespace(ctx: ParserContext,): void {
+  while (ctx.position < ctx.input.length && /\s/.test(ctx.input[ctx.position],))
     ctx.position++;
-  }
 }
 
 /**
  * Extract comments from the current position
  */
-function extractComments(ctx: ParserContext): JsoncComment | undefined {
+function extractComments(ctx: ParserContext,): JsoncComment | undefined {
   const comments: string[] = [];
   let hasInline = false;
   let hasBlock = false;
 
-  skipWhitespace(ctx);
+  skipWhitespace(ctx,);
 
   while (ctx.position < ctx.input.length) {
     if (ctx.input[ctx.position] === '/' && ctx.position + 1 < ctx.input.length) {
@@ -122,14 +122,14 @@ function extractComments(ctx: ParserContext): JsoncComment | undefined {
           comment += ctx.input[ctx.position];
           ctx.position++;
         }
-        if (ctx.position < ctx.input.length) {
+        if (ctx.position < ctx.input.length)
           ctx.position++; // Skip newline
-        }
-        comments.push(comment);
+        comments.push(comment,);
         hasInline = true;
-        skipWhitespace(ctx);
+        skipWhitespace(ctx,);
         continue;
-      } else if (ctx.input[ctx.position + 1] === '*') {
+      }
+      else if (ctx.input[ctx.position + 1] === '*') {
         // Block comment
         ctx.position += 2;
         let comment = '';
@@ -141,31 +141,29 @@ function extractComments(ctx: ParserContext): JsoncComment | undefined {
           comment += ctx.input[ctx.position];
           ctx.position++;
         }
-        comments.push(comment);
+        comments.push(comment,);
         hasBlock = true;
-        skipWhitespace(ctx);
+        skipWhitespace(ctx,);
         continue;
       }
     }
     break;
   }
 
-  if (comments.length === 0) {
+  if (comments.length === 0)
     return undefined;
-  }
 
   const commentType = hasInline && hasBlock ? 'mixed' : hasInline ? 'inline' : 'block';
   return {
     type: commentType,
-    commentValue: comments.join('\n')
+    commentValue: comments.join('\n',),
   };
 }
 
 /**
  * Find the end position of the current JSON node
  */
-function findNodeEnd(ctx: ParserContext): number {
-  const start = ctx.position;
+function findNodeEnd(ctx: ParserContext,): number {
   let depth = 0;
   let inString = false;
   let escaped = false;
@@ -185,22 +183,22 @@ function findNodeEnd(ctx: ParserContext): number {
       continue;
     }
 
-    if (char === '"' && !inString) {
+    if (char === '"' && !inString)
       inString = true;
-    } else if (char === '"' && inString) {
+    else if (char === '"' && inString)
       inString = false;
-    }
 
     if (!inString) {
-      if (char === '{' || char === '[') {
+      if (char === '{' || char === '[')
         depth++;
-      } else if (char === '}' || char === ']') {
+      else if (char === '}' || char === ']') {
         depth--;
         if (depth === 0) {
           ctx.position++;
           break;
         }
-      } else if (depth === 0 && /[\s,}\]]/.test(char)) {
+      }
+      else if (depth === 0 && /[\s,}\]]/.test(char,)) {
         break;
       }
     }
@@ -214,133 +212,134 @@ function findNodeEnd(ctx: ParserContext): number {
 /**
  * Parse a JSONC value recursively
  */
-function parseValue(ctx: ParserContext): JsoncValue {
-  const comment = extractComments(ctx);
+function parseValue(ctx: ParserContext,): JsoncValue {
+  const comment = extractComments(ctx,);
 
-  if (ctx.position >= ctx.input.length) {
-    throw new Error('Unexpected end of input');
-  }
+  if (ctx.position >= ctx.input.length)
+    throw new Error('Unexpected end of input',);
 
   const char = ctx.input[ctx.position];
 
   // Handle container nodes (objects and arrays)
-  if (char === '{') {
-    return parseRecord(ctx, comment);
-  } else if (char === '[') {
-    return parseArray(ctx, comment);
-  }
+  if (char === '{')
+    return parseRecord(ctx, comment,);
+  else if (char === '[')
+    return parseArray(ctx, comment,);
 
   // Handle terminal nodes with native JSON.parse()
   const start = ctx.position;
-  const end = findNodeEnd(ctx);
-  const jsonString = ctx.input.substring(start, end);
+  const end = findNodeEnd(ctx,);
+  const jsonString = ctx.input.substring(start, end,);
 
   try {
-    const value = JSON.parse(jsonString);
+    const value = JSON.parse(jsonString,);
 
-    if (typeof value === 'string') {
-      return { type: 'string', value, comment };
-    } else if (typeof value === 'number') {
-      return { type: 'number', value, comment };
-    } else if (typeof value === 'boolean') {
-      return { type: 'boolean', value, comment };
-    } else if (value === null) {
-      return { type: 'null', value: null, comment };
-    }
+    if (typeof value === 'string')
+      return { type: 'string', value, comment, };
+    else if (typeof value === 'number')
+      return { type: 'number', value, comment, };
+    else if (typeof value === 'boolean')
+      return { type: 'boolean', value, comment, };
+    else if (value === null)
+      return { type: 'null', value: null, comment, };
 
-    throw new Error(`Unexpected value type: ${typeof value}`);
-  } catch (error) {
-    throw new Error(`Failed to parse JSON value "${jsonString}": ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(`Unexpected value type: ${typeof value}`,);
+  }
+  catch (error) {
+    throw new Error(
+      `Failed to parse JSON value "${jsonString}": ${
+        error instanceof Error
+          ? error.message
+          : String(error,)
+      }`,
+    );
   }
 }
 
 /**
  * Parse a JSONC record/object
  */
-function parseRecord(ctx: ParserContext, comment?: JsoncComment): JsoncRecord {
+function parseRecord(ctx: ParserContext, comment?: JsoncComment,): JsoncRecord {
   ctx.position++; // Skip '{'
-  skipWhitespace(ctx);
+  skipWhitespace(ctx,);
 
   const entries: JsoncRecordEntry[] = [];
 
   while (ctx.position < ctx.input.length && ctx.input[ctx.position] !== '}') {
     // Parse key
-    const keyComment = extractComments(ctx);
+    const keyComment = extractComments(ctx,);
 
-    if (ctx.input[ctx.position] !== '"') {
-      throw new Error(`Expected string key at position ${ctx.position}`);
-    }
+    if (ctx.input[ctx.position] !== '"')
+      throw new Error(`Expected string key at position ${ctx.position}`,);
 
     const keyStart = ctx.position;
-    const keyEnd = findNodeEnd(ctx);
-    const keyString = ctx.input.substring(keyStart, keyEnd);
-    const keyValue = JSON.parse(keyString);
+    const keyEnd = findNodeEnd(ctx,);
+    const keyString = ctx.input.substring(keyStart, keyEnd,);
+    const keyValue = JSON.parse(keyString,);
 
-    const recordKey: JsoncString = { type: 'string', value: keyValue, comment: keyComment };
+    const recordKey: JsoncString = { type: 'string', value: keyValue,
+      comment: keyComment, };
 
-    skipWhitespace(ctx);
+    skipWhitespace(ctx,);
 
-    if (ctx.input[ctx.position] !== ':') {
-      throw new Error(`Expected ':' at position ${ctx.position}`);
-    }
+    if (ctx.input[ctx.position] !== ':')
+      throw new Error(`Expected ':' at position ${ctx.position}`,);
     ctx.position++;
 
     // Parse value
-    const recordValue = parseValue(ctx);
+    const recordValue = parseValue(ctx,);
 
-    entries.push({ recordKey, recordValue });
+    entries.push({ recordKey, recordValue, },);
 
-    skipWhitespace(ctx);
+    skipWhitespace(ctx,);
 
     if (ctx.input[ctx.position] === ',') {
       ctx.position++;
-      skipWhitespace(ctx);
-    } else if (ctx.input[ctx.position] === '}') {
-      break;
-    } else {
-      throw new Error(`Expected ',' or '}' at position ${ctx.position}`);
+      skipWhitespace(ctx,);
     }
+    else if (ctx.input[ctx.position] === '}')
+      break;
+    else
+      throw new Error(`Expected ',' or '}' at position ${ctx.position}`,);
   }
 
-  if (ctx.input[ctx.position] !== '}') {
-    throw new Error(`Expected '}' at position ${ctx.position}`);
-  }
+  if (ctx.input[ctx.position] !== '}')
+    throw new Error(`Expected '}' at position ${ctx.position}`,);
   ctx.position++;
 
-  return { type: 'record', value: entries, comment };
+  return { type: 'record', value: entries, comment, };
 }
 
 /**
  * Parse a JSONC array
  */
-function parseArray(ctx: ParserContext, comment?: JsoncComment): JsoncArray {
+function parseArray(ctx: ParserContext, comment?: JsoncComment,): JsoncArray {
   ctx.position++; // Skip '['
-  skipWhitespace(ctx);
+  skipWhitespace(ctx,);
 
   const items: JsoncValue[] = [];
 
   while (ctx.position < ctx.input.length && ctx.input[ctx.position] !== ']') {
-    const item = parseValue(ctx);
-    items.push(item);
+    const item = parseValue(ctx,);
+    items.push(item,);
 
-    skipWhitespace(ctx);
+    skipWhitespace(ctx,);
 
     if (ctx.input[ctx.position] === ',') {
       ctx.position++;
-      skipWhitespace(ctx);
-    } else if (ctx.input[ctx.position] === ']') {
-      break;
-    } else {
-      throw new Error(`Expected ',' or ']' at position ${ctx.position}`);
+      skipWhitespace(ctx,);
     }
+    else if (ctx.input[ctx.position] === ']')
+      break;
+    else
+      throw new Error(`Expected ',' or ']' at position ${ctx.position}`,);
   }
 
-  if (ctx.input[ctx.position] !== ']') {
-    throw new Error(`Expected ']' at position ${ctx.position}`);
-  }
+  if (ctx.input[ctx.position] !== ']')
+    throw new Error(`Expected ']' at position ${ctx.position}`,);
   ctx.position++;
 
-  return { type: 'array', value: items, comment };
+  return { type: 'array', value: items, comment, };
 }
 
 //endregion Parser
@@ -356,14 +355,13 @@ function parseArray(ctx: ParserContext, comment?: JsoncComment): JsoncArray {
  * const result = jsoncToParsedJsonc('{"a": 1 /* comment *\/}' as jsonc);
  * ```
  */
-export function jsoncToParsedJsonc(input: jsonc): JsoncValue {
-  const ctx: ParserContext = { input, position: 0 };
-  const result = parseValue(ctx);
+export function jsoncToParsedJsonc(input: jsonc,): JsoncValue {
+  const ctx: ParserContext = { input, position: 0, };
+  const result = parseValue(ctx,);
 
-  skipWhitespace(ctx);
-  if (ctx.position < ctx.input.length) {
-    throw new Error(`Unexpected content after end of JSON at position ${ctx.position}`);
-  }
+  skipWhitespace(ctx,);
+  if (ctx.position < ctx.input.length)
+    throw new Error(`Unexpected content after end of JSON at position ${ctx.position}`,);
 
   return result;
 }
@@ -377,58 +375,55 @@ export function jsoncToParsedJsonc(input: jsonc): JsoncValue {
  * const jsonc = parsedJsoncToJsonc(parsedValue);
  * ```
  */
-export function parsedJsoncToJsonc(parsed: JsoncValue): jsonc {
-  function serializeValue(value: JsoncValue, indent = 0): string {
-    const indentStr = '  '.repeat(indent);
+export function parsedJsoncToJsonc(parsed: JsoncValue,): jsonc {
+  function serializeValue(value: JsoncValue, indent = 0,): string {
+    const indentStr = '  '.repeat(indent,);
     let result = '';
 
     // Add comment if present
     if (value.comment) {
       if (value.comment.type === 'inline') {
-        const lines = value.comment.commentValue.split('\n');
-        for (const line of lines) {
+        const lines = value.comment.commentValue.split('\n',);
+        for (const line of lines)
           result += `${indentStr}//${line}\n`;
-        }
-      } else if (value.comment.type === 'block') {
+      }
+      else if (value.comment.type === 'block')
         result += `${indentStr}/*${value.comment.commentValue}*/ `;
-      } else if (value.comment.type === 'mixed') {
-        const lines = value.comment.commentValue.split('\n');
+      else if (value.comment.type === 'mixed') {
+        const lines = value.comment.commentValue.split('\n',);
         for (const line of lines) {
-          if (line.trim().startsWith('/*')) {
+          if (line.trim().startsWith('/*',))
             result += `${indentStr}${line}\n`;
-          } else {
+          else
             result += `${indentStr}//${line}\n`;
-          }
         }
       }
     }
 
     switch (value.type) {
       case 'string':
-        return result + JSON.stringify(value.value);
+        return result + JSON.stringify(value.value,);
 
       case 'number':
-        return result + String(value.value);
+        return result + String(value.value,);
 
       case 'boolean':
-        return result + String(value.value);
+        return result + String(value.value,);
 
       case 'null':
         return result + 'null';
 
       case 'array': {
-        if (value.value.length === 0) {
+        if (value.value.length === 0)
           return result + '[]';
-        }
 
         let arrayResult = result + '[\n';
         for (let i = 0; i < value.value.length; i++) {
           const item = value.value[i];
-          const serializedItem = serializeValue(item, indent + 1);
+          const serializedItem = serializeValue(item, indent + 1,);
           arrayResult += `${indentStr}  ${serializedItem}`;
-          if (i < value.value.length - 1) {
+          if (i < value.value.length - 1)
             arrayResult += ',';
-          }
           arrayResult += '\n';
         }
         arrayResult += `${indentStr}]`;
@@ -436,9 +431,8 @@ export function parsedJsoncToJsonc(parsed: JsoncValue): jsonc {
       }
 
       case 'record': {
-        if (value.value.length === 0) {
+        if (value.value.length === 0)
           return result + '{}';
-        }
 
         let recordResult = result + '{\n';
         for (let i = 0; i < value.value.length; i++) {
@@ -448,28 +442,25 @@ export function parsedJsoncToJsonc(parsed: JsoncValue): jsonc {
           let keyStr = '';
           if (entry.recordKey.comment) {
             if (entry.recordKey.comment.type === 'inline') {
-              const lines = entry.recordKey.comment.commentValue.split('\n');
-              for (const line of lines) {
+              const lines = entry.recordKey.comment.commentValue.split('\n',);
+              for (const line of lines)
                 keyStr += `${indentStr}  //${line}\n`;
-              }
             }
           }
-          keyStr += `${indentStr}  ${JSON.stringify(entry.recordKey.value)}`;
+          keyStr += `${indentStr}  ${JSON.stringify(entry.recordKey.value,)}`;
 
           // Add value comment and serialize value
           let valueStr = '';
-          if (entry.recordValue.comment?.type === 'block') {
+          if (entry.recordValue.comment?.type === 'block')
             valueStr = `/*${entry.recordValue.comment.commentValue}*/ `;
-          }
 
           const serializedValue = entry.recordValue.comment?.type === 'block'
-            ? serializeValue({ ...entry.recordValue, comment: undefined }, 0)
-            : serializeValue(entry.recordValue, indent + 1);
+            ? serializeValue({ ...entry.recordValue, comment: undefined, }, 0,)
+            : serializeValue(entry.recordValue, indent + 1,);
 
           recordResult += `${keyStr}: ${valueStr}${serializedValue}`;
-          if (i < value.value.length - 1) {
+          if (i < value.value.length - 1)
             recordResult += ',';
-          }
           recordResult += '\n';
         }
         recordResult += `${indentStr}}`;
@@ -477,11 +468,13 @@ export function parsedJsoncToJsonc(parsed: JsoncValue): jsonc {
       }
 
       default:
-        throw new Error(`Unknown value type: ${(value as any).type}`);
+        throw new Error(
+          `Unknown value type: ${String((value as { type?: string; }).type,)}`,
+        );
     }
   }
 
-  return serializeValue(parsed) as jsonc;
+  return serializeValue(parsed,) as jsonc;
 }
 
 //endregion Public API
@@ -515,12 +508,12 @@ export function parsedJsoncToJsonc(parsed: JsoncValue): jsonc {
 //   value: [
 //      {
 //         recordKey: {
-//           comment: {type: 'inline', value: ' comment2'},
+//           comment: {type: 'inline', commentValue: ' comment2'},
 //           type: 'string'
 //           value: 'a',
 //         },
 //         recordValue: {
-//           comment: {type: 'block', value: 'comment3'},
+//           comment: {type: 'block', commentValue: 'comment3'},
 //           type: 'number'
 //           value: 1,
 //         }
@@ -544,20 +537,20 @@ export function parsedJsoncToJsonc(parsed: JsoncValue): jsonc {
 //          type: 'array',
 //          value: [
 //            {
-//              type: number,
+//              type: 'number',
 //              value: 1
 //            },
 //            {
-//              type: number,
+//              type: 'number',
 //              value: 2
 //            },
 //            {
-//              type: number,
-//              comment: {type: 'mixed', value: ' comment4\n comment4 mixed '},
+//              type: 'number',
+//              comment: {type: 'mixed', commentValue: ' comment4\n comment4 mixed '},
 //              value: 3
 //            },
 //            {
-//              type: string,
+//              type: 'string',
 //              value: 'd'
 //            },
 //          ]
