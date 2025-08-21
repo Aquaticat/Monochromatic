@@ -97,10 +97,11 @@ export type JsoncValue = JsoncString | JsoncNumber | JsoncBoolean | JsoncNull | 
  * @param params.position - Current position (should be at opening quote)
  * @returns New position after the closing quote
  */
-function skipQuotedString({ input, position }: { input: string; position: number }): number {
-  if (input[position] !== '"') {
+function skipQuotedString(
+  { input, position, }: { input: string; position: number; },
+): number {
+  if (input[position] !== '"')
     return position;
-  }
 
   position++; // Skip opening quote
   let escaped = false;
@@ -108,11 +109,11 @@ function skipQuotedString({ input, position }: { input: string; position: number
   while (position < input.length) {
     const char = input[position];
 
-    if (escaped) {
+    if (escaped)
       escaped = false;
-    } else if (char === '\\') {
+    else if (char === '\\')
       escaped = true;
-    } else if (char === '"') {
+    else if (char === '"') {
       position++; // Skip closing quote
       break;
     }
@@ -130,20 +131,21 @@ function skipQuotedString({ input, position }: { input: string; position: number
  * @param params.position - Position to check
  * @returns True if inside a string
  */
-function isInsideString({ input, position }: { input: string; position: number }): boolean {
+function isInsideString(
+  { input, position, }: { input: string; position: number; },
+): boolean {
   let quoteCount = 0;
   let escaped = false;
 
   for (let i = 0; i < position; i++) {
     const char = input[i];
 
-    if (escaped) {
+    if (escaped)
       escaped = false;
-    } else if (char === '\\') {
+    else if (char === '\\')
       escaped = true;
-    } else if (char === '"') {
+    else if (char === '"')
       quoteCount++;
-    }
   }
 
   return quoteCount % 2 === 1;
@@ -157,18 +159,18 @@ function isInsideString({ input, position }: { input: string; position: number }
  * @param params.end - End position
  * @returns True if JSONC features are present, false for clean JSON
  */
-function containsJsoncFeatures({ input, start, end }: { input: string; start: number; end: number }): boolean {
-  const content = input.substring(start, end);
+function containsJsoncFeatures(
+  { input, start, end, }: { input: string; start: number; end: number; },
+): boolean {
+  const content = input.substring(start, end,);
 
   // Check for comments
-  if (content.includes('//') || content.includes('/*')) {
+  if (content.includes('//',) || content.includes('/*',))
     return true;
-  }
 
   // Check for trailing commas (simplified check)
-  if (/,\s*[}\]]/.test(content)) {
+  if (/,\s*[}\]]/.test(content,))
     return true;
-  }
 
   return false;
 }
@@ -180,30 +182,33 @@ function containsJsoncFeatures({ input, start, end }: { input: string; start: nu
  * @param params.comment - Optional comment to attach
  * @returns JsoncValue representation
  */
-function convertNativeValue({ value, comment }: { value: unknown; comment?: JsoncComment }): JsoncValue {
-  if (typeof value === 'string') {
-    return { type: 'string', value, comment };
-  } else if (typeof value === 'number') {
-    return { type: 'number', value, comment };
-  } else if (typeof value === 'boolean') {
-    return { type: 'boolean', value, comment };
-  } else if (value === null) {
-    return { type: 'null', value: null, comment };
-  } else if (Array.isArray(value)) {
+function convertNativeValue(
+  { value, comment, }: { value: unknown; comment?: JsoncComment; },
+): JsoncValue {
+  if (typeof value === 'string')
+    return { type: 'string', value, comment, };
+  else if (typeof value === 'number')
+    return { type: 'number', value, comment, };
+  else if (typeof value === 'boolean')
+    return { type: 'boolean', value, comment, };
+  else if (value === null)
+    return { type: 'null', value: null, comment, };
+  else if (Array.isArray(value,)) {
     return {
       type: 'array',
-      value: value.map((item) => convertNativeValue({ value: item })),
-      comment
+      value: value.map(item => convertNativeValue({ value: item, },)),
+      comment,
     };
-  } else if (typeof value === 'object' && value !== null) {
-    const entries: JsoncRecordEntry[] = Object.entries(value).map(([key, val]) => ({
-      recordKey: { type: 'string', value: key },
-      recordValue: convertNativeValue({ value: val })
+  }
+  else if (typeof value === 'object' && value !== null) {
+    const entries: JsoncRecordEntry[] = Object.entries(value,).map(([key, val,],) => ({
+      recordKey: { type: 'string', value: key, },
+      recordValue: convertNativeValue({ value: val, },),
     }));
-    return { type: 'record', value: entries, comment };
+    return { type: 'record', value: entries, comment, };
   }
 
-  throw new Error(`Unexpected value type: ${typeof value}`);
+  throw new Error(`Unexpected value type: ${typeof value}`,);
 }
 
 /**
@@ -213,10 +218,11 @@ function convertNativeValue({ value, comment }: { value: unknown; comment?: Json
  * @param params.position - Current position
  * @returns New position after skipping whitespace
  */
-function skipWhitespace({ input, position }: { input: string; position: number }): number {
-  while (position < input.length && /\s/.test(input[position])) {
+function skipWhitespace(
+  { input, position, }: { input: string; position: number; },
+): number {
+  while (position < input.length && /\s/.test(input[position],))
     position++;
-  }
   return position;
 }
 
@@ -227,12 +233,14 @@ function skipWhitespace({ input, position }: { input: string; position: number }
  * @param params.position - Current position
  * @returns Tuple of [comment, newPosition]
  */
-function extractComments({ input, position }: { input: string; position: number }): [JsoncComment | undefined, number] {
+function extractComments(
+  { input, position, }: { input: string; position: number; },
+): [JsoncComment | undefined, number,] {
   const comments: string[] = [];
   let hasInline = false;
   let hasBlock = false;
 
-  position = skipWhitespace({ input, position });
+  position = skipWhitespace({ input, position, },);
 
   while (position < input.length) {
     if (input[position] === '/' && position + 1 < input.length) {
@@ -244,14 +252,14 @@ function extractComments({ input, position }: { input: string; position: number 
           comment += input[position];
           position++;
         }
-        if (position < input.length) {
+        if (position < input.length)
           position++; // Skip newline
-        }
-        comments.push(comment);
+        comments.push(comment,);
         hasInline = true;
-        position = skipWhitespace({ input, position });
+        position = skipWhitespace({ input, position, },);
         continue;
-      } else if (input[position + 1] === '*') {
+      }
+      else if (input[position + 1] === '*') {
         // Block comment
         position += 2;
         let comment = '';
@@ -263,24 +271,23 @@ function extractComments({ input, position }: { input: string; position: number 
           comment += input[position];
           position++;
         }
-        comments.push(comment);
+        comments.push(comment,);
         hasBlock = true;
-        position = skipWhitespace({ input, position });
+        position = skipWhitespace({ input, position, },);
         continue;
       }
     }
     break;
   }
 
-  if (comments.length === 0) {
-    return [undefined, position];
-  }
+  if (comments.length === 0)
+    return [undefined, position,];
 
   const commentType = hasInline && hasBlock ? 'mixed' : hasInline ? 'inline' : 'block';
   return [{
     type: commentType,
-    commentValue: comments.join('\n')
-  }, position];
+    commentValue: comments.join('\n',),
+  }, position,];
 }
 
 /**
@@ -290,35 +297,37 @@ function extractComments({ input, position }: { input: string; position: number 
  * @param params.position - Current position
  * @returns End position of the JSON node
  */
-function findNodeEnd({ input, position }: { input: string; position: number }): number {
+function findNodeEnd(
+  { input, position, }: { input: string; position: number; },
+): number {
   const char = input[position];
 
   // Handle quoted strings
-  if (char === '"') {
-    return skipQuotedString({ input, position });
-  }
+  if (char === '"')
+    return skipQuotedString({ input, position, },);
 
   // Handle container structures
   if (char === '{' || char === '[') {
     const closeChar = char === '{' ? '}' : ']';
-    const bracketStack = [char];
+    const bracketStack = [char,];
     position++;
 
     while (position < input.length && bracketStack.length > 0) {
       if (input[position] === '"') {
-        position = skipQuotedString({ input, position });
+        position = skipQuotedString({ input, position, },);
         continue;
       }
 
-      if (input[position] === char || input[position] === (char === '{' ? '[' : '{')) {
-        bracketStack.push(input[position]);
-      } else if (input[position] === closeChar || input[position] === (closeChar === '}' ? ']' : '}')) {
+      if (input[position] === char || input[position] === (char === '{' ? '[' : '{'))
+        bracketStack.push(input[position],);
+      else if (input[position] === closeChar
+        || input[position] === (closeChar === '}' ? ']' : '}'))
+      {
         const expectedOpening = input[position] === '}' ? '{' : '[';
         const lastOpening = bracketStack[bracketStack.length - 1];
 
-        if (lastOpening !== expectedOpening) {
-          throw new Error(`Mismatched brackets at position ${position}`);
-        }
+        if (lastOpening !== expectedOpening)
+          throw new Error(`Mismatched brackets at position ${position}`,);
 
         bracketStack.pop();
       }
@@ -330,9 +339,8 @@ function findNodeEnd({ input, position }: { input: string; position: number }): 
   }
 
   // Handle primitives (numbers, booleans, null)
-  while (position < input.length && !/[\s,}\]]/.test(input[position])) {
+  while (position < input.length && !/[\s,}\]]/.test(input[position],))
     position++;
-  }
 
   return position;
 }
@@ -342,55 +350,91 @@ function findNodeEnd({ input, position }: { input: string; position: number }): 
  * @param params - Parameters object with container-specific logic
  * @returns Tuple of [parsedContainer, newPosition]
  */
-function parseContainer<T>({
+function parseContainer<T,>({
   input,
   position,
   comment,
   openChar,
   closeChar,
   parseItem,
-  createResult
+  createResult,
 }: {
   input: string;
   position: number;
   comment?: JsoncComment;
   openChar: string;
   closeChar: string;
-  parseItem: (input: string, position: number) => [unknown, number];
-  createResult: (items: unknown[], comment?: JsoncComment) => T;
-}): [T, number] {
+  parseItem: (input: string, position: number,) => [unknown, number,];
+  createResult: (items: unknown[], comment?: JsoncComment,) => T;
+},): [T, number,] {
   position++; // Skip opening bracket
-  position = skipWhitespace({ input, position });
+  position = skipWhitespace({ input, position, },);
 
   const items: unknown[] = [];
 
   while (position < input.length && input[position] !== closeChar) {
-    const [item, itemPosition] = parseItem(input, position);
-    items.push(item);
+    const [item, itemPosition,] = parseItem(input, position,);
+    items.push(item,);
     position = itemPosition;
 
-    position = skipWhitespace({ input, position });
+    position = skipWhitespace({ input, position, },);
 
     if (input[position] === ',') {
       position++;
-      position = skipWhitespace({ input, position });
-    } else if (input[position] === closeChar) {
-      break;
-    } else {
-      throw new Error(`Expected ',' or '${closeChar}' at position ${position}`);
+      position = skipWhitespace({ input, position, },);
     }
+    else if (input[position] === closeChar)
+      break;
+    else
+      throw new Error(`Expected ',' or '${closeChar}' at position ${position}`,);
   }
 
-  if (input[position] !== closeChar) {
-    throw new Error(`Expected '${closeChar}' at position ${position}`);
-  }
+  if (input[position] !== closeChar)
+    throw new Error(`Expected '${closeChar}' at position ${position}`,);
   position++;
 
-  return [createResult(items, comment), position];
+  return [createResult(items, comment,), position,];
 }
 
 /**
- * Parse a JSONC value recursively
+ * Parse individual record entry (key-value pair) with fast path optimization
+ * @param params - Parameters object
+ * @param params.input - Input string
+ * @param params.position - Current position
+ * @returns Tuple of [recordEntry, newPosition]
+ */
+function parseRecordEntry({ input, position }: { input: string; position: number }): [JsoncRecordEntry, number] {
+  // Parse key with potential fast path
+  const [keyComment, keyCommentPosition] = extractComments({ input, position });
+  position = keyCommentPosition;
+
+  if (input[position] !== '"') {
+    throw new Error(`Expected string key at position ${position}`);
+  }
+
+  // Fast path for key (always a simple string)
+  const keyStart = position;
+  const keyEnd = findNodeEnd({ input, position });
+  const keyString = input.substring(keyStart, keyEnd);
+  const keyValue = JSON.parse(keyString);
+
+  const recordKey: JsoncString = { type: 'string', value: keyValue, comment: keyComment };
+
+  position = skipWhitespace({ input, position: keyEnd });
+
+  if (input[position] !== ':') {
+    throw new Error(`Expected ':' at position ${position}`);
+  }
+  position++;
+
+  // Parse value with full hierarchical fast path recursion
+  const [recordValue, valuePosition] = parseValue({ input, position });
+
+  return [{ recordKey, recordValue }, valuePosition];
+}
+
+/**
+ * Parse a JSONC value recursively with hierarchical fast path optimization
  * @param params - Parameters object
  * @param params.input - Input string
  * @param params.position - Current position
@@ -406,53 +450,26 @@ function parseValue({ input, position }: { input: string; position: number }): [
 
   const char = input[position];
 
-  // Handle container nodes with optimization
+  // Handle container nodes with hierarchical optimization
   if (char === '{') {
     const start = position;
     const end = findNodeEnd({ input, position });
 
-    // Fast path: if no JSONC features, use native parser
+    // Fast path: if entire container is clean, use native parser
     if (!containsJsoncFeatures({ input, start, end })) {
       const jsonString = input.substring(start, end);
       const nativeValue = JSON.parse(jsonString);
       return [convertNativeValue({ value: nativeValue, comment }), end];
     }
 
-    // Slow path: manual parsing for JSONC features
+    // Hierarchical path: parse each entry individually with fast path attempts
     return parseContainer({
       input,
       position,
       comment,
       openChar: '{',
       closeChar: '}',
-      parseItem: (input: string, itemPosition: number) => {
-        // Parse key
-        const [keyComment, keyCommentPosition] = extractComments({ input, position: itemPosition });
-        position = keyCommentPosition;
-
-        if (input[position] !== '"') {
-          throw new Error(`Expected string key at position ${position}`);
-        }
-
-        const keyStart = position;
-        const keyEnd = findNodeEnd({ input, position });
-        const keyString = input.substring(keyStart, keyEnd);
-        const keyValue = JSON.parse(keyString);
-
-        const recordKey: JsoncString = { type: 'string', value: keyValue, comment: keyComment };
-
-        position = skipWhitespace({ input, position: keyEnd });
-
-        if (input[position] !== ':') {
-          throw new Error(`Expected ':' at position ${position}`);
-        }
-        position++;
-
-        // Parse value
-        const [recordValue, valuePosition] = parseValue({ input, position });
-
-        return [{ recordKey, recordValue }, valuePosition];
-      },
+      parseItem: parseRecordEntry,
       createResult: (items: JsoncRecordEntry[], comment?: JsoncComment): JsoncRecord => ({
         type: 'record',
         value: items,
@@ -463,14 +480,14 @@ function parseValue({ input, position }: { input: string; position: number }): [
     const start = position;
     const end = findNodeEnd({ input, position });
 
-    // Fast path: if no JSONC features, use native parser
+    // Fast path: if entire array is clean, use native parser
     if (!containsJsoncFeatures({ input, start, end })) {
       const jsonString = input.substring(start, end);
       const nativeValue = JSON.parse(jsonString);
       return [convertNativeValue({ value: nativeValue, comment }), end];
     }
 
-    // Slow path: manual parsing for JSONC features
+    // Hierarchical path: parse each item individually with fast path attempts
     return parseContainer({
       input,
       position,
@@ -486,9 +503,18 @@ function parseValue({ input, position }: { input: string; position: number }): [
     });
   }
 
-  // Handle terminal nodes with native JSON.parse()
+  // Handle terminal nodes - check for individual value fast path
   const start = position;
   const end = findNodeEnd({ input, position });
+
+  // If no comment, this is a pure terminal - maximum fast path
+  if (!comment) {
+    const jsonString = input.substring(start, end);
+    const value = JSON.parse(jsonString);
+    return [convertNativeValue({ value }), end];
+  }
+
+  // Terminal with comment - still use native parser for the value part
   const jsonString = input.substring(start, end);
 
   try {
@@ -523,13 +549,12 @@ function parseValue({ input, position }: { input: string; position: number }): [
  * const result = jsoncToParsedJsonc('{"a": 1 /* comment *\/}' as jsonc);
  * ```
  */
-export function jsoncToParsedJsonc(input: jsonc): JsoncValue {
-  const [result, finalPosition] = parseValue({ input, position: 0 });
+export function jsoncToParsedJsonc(input: jsonc,): JsoncValue {
+  const [result, finalPosition,] = parseValue({ input, position: 0, },);
 
-  const endPosition = skipWhitespace({ input, position: finalPosition });
-  if (endPosition < input.length) {
-    throw new Error(`Unexpected content after end of JSON at position ${endPosition}`);
-  }
+  const endPosition = skipWhitespace({ input, position: finalPosition, },);
+  if (endPosition < input.length)
+    throw new Error(`Unexpected content after end of JSON at position ${endPosition}`,);
 
   return result;
 }
