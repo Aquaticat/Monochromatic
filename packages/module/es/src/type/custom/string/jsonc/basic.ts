@@ -333,6 +333,288 @@ export type JsoncValue = JsoncString | JsoncNumber | JsoncBoolean | JsoncNull | 
 
 //endregion Type Definitions
 
+//region Primitive Parsers -- Context-aware parsing for JSON primitives with zod validation
+
+/**
+ * Parse a JSON value or container (record value, array value, or standalone)
+ * @param params - Parameters object
+ * @param params.input - Input string
+ * @param params.position - Current position
+ * @param params.comment - Optional comment to attach
+ * @returns Tuple of [JsoncValue, newPosition]
+ */
+function parseJsonValueOrContainer(
+  { input, position, comment, }: { input: string; position: number;
+    comment?: JsoncComment; },
+): [JsoncValue, number,] {
+  const char = input[position];
+
+  // Handle container nodes with hierarchical optimization
+  if (char === '{') {
+    const start = position;
+    const end = findNodeEnd({ input, position, },);
+
+    // Fast path: if entire container is clean, use native parser
+    if (!containsJsoncFeatures({ input, start, end, },)) {
+      const jsonString = input.substring(start, end,);
+      const nativeValue = JSON.parse(jsonString,);
+      return [convertNativeValue({ value: nativeValue, comment, },), end,];
+    }
+
+    // Hierarchical path: parse each entry individually with fast path attempts
+    return parseContainer({
+      input,
+      position,
+      comment,
+      openChar: '{',
+      closeChar: '}',
+      parseItem: parseRecordEntry,
+      createResult: (items: JsoncRecordEntry[],
+        comment?: JsoncComment,): JsoncRecord => ({
+          type: 'record',
+          value: items,
+          comment,
+        }),
+    },);
+  }
+  else if (char === '[') {
+    const start = position;
+    const end = findNodeEnd({ input, position, },);
+
+    // Fast path: if entire array is clean, use native parser
+    if (!containsJsoncFeatures({ input, start, end, },)) {
+      const jsonString = input.substring(start, end,);
+      const nativeValue = JSON.parse(jsonString,);
+      return [convertNativeValue({ value: nativeValue, comment, },), end,];
+    }
+
+    // Hierarchical path: parse each item individually with fast path attempts
+    return parseContainer({
+      input,
+      position,
+      comment,
+      openChar: '[',
+      closeChar: ']',
+      parseItem: (input: string, itemPosition: number,) => {
+        const [itemComment, itemCommentPosition,] = extractComments({ input,
+          position: itemPosition, },);
+        return parseJsonValueOrContainer({ input, position: itemCommentPosition,
+          comment: itemComment, },);
+      },
+      createResult: (items: JsoncValue[], comment?: JsoncComment,): JsoncArray => ({
+        type: 'array',
+        value: items,
+        comment,
+      }),
+    },);
+  }
+
+  // Handle primitives
+  return parseJsonValue({ input, position, comment, },);
+}
+
+/**
+ * Parse a JSON string primitive and return the parsed value with end position
+ * @param params - Parameters object
+ * @param params.input - Input string
+ * @param params.position - Current position (should be at opening quote)
+ * @param params.comment - Optional comment to attach
+ * @returns Tuple of [JsoncString, newPosition]
+ */
+function parseStringPrimitive(
+  { input, position, comment, }: { input: string; position: number;
+    comment?: JsoncComment; },
+): [JsoncString, number,] {
+  const endPosition = skipQuotedString({ input, position, },);
+  const stringContent = input.substring(position, endPosition,);
+
+  // Use native JSON.parse for string parsing (handles escaping correctly)
+  const parsedValue = JSON.parse(stringContent,);
+
+  return [
+    comment
+      ? { type: 'string', value: parsedValue, comment, }
+      : { type: 'string', value: parsedValue, },
+    endPosition,
+  ];
+}
+
+/**
+ * Parse a JSON number primitive with zod validation
+ * @param params - Parameters object
+ * @param params.input - Input string
+ * @param params.position - Current position
+ * @param params.comment - Optional comment to attach
+ * @returns Tuple of [JsoncNumber, newPosition]
+ */
+function parseNumberPrimitive(
+  { input, position, comment, }: { input: string; position: number;
+    comment?: JsoncComment; },
+): [JsoncNumber, number,] {
+  const startPosition = position;
+  const char = input[position];
+
+  if (char === '-')
+    position++;
+
+  // Integer part
+  if (position < input.length && input[position] === '0')
+    position++;
+  else if (position < input.length && /[1-9]/.test(input[position],)) {
+    position++;
+    while (position < input.length && /[0-9]/.test(input[position],))
+      position++;
+  }
+  else {
+    throw new Error(`Invalid number format at position ${startPosition}`,);
+  }
+
+  // Fractional part
+  if (position < input.length && input[position] === '.') {
+    position++;
+    if (position >= input.length || !/[0-9]/.test(input[position],)) {
+      throw new Error(
+        `Invalid number format: missing digits after decimal at position ${position}`,
+      );
+    }
+    while (position < input.length && /[0-9]/.test(input[position],))
+      position++;
+  }
+
+  // Exponent part
+  if (position < input.length && /[eE]/.test(input[position],)) {
+    position++;
+    if (position < input.length && /[+-]/.test(input[position],))
+      position++;
+    if (position >= input.length || !/[0-9]/.test(input[position],)) {
+      throw new Error(
+        `Invalid number format: missing digits in exponent at position ${position}`,
+      );
+    }
+    while (position < input.length && /[0-9]/.test(input[position],))
+      position++;
+  }
+
+  // Extract and validate with zod
+  const extractedNumber = input.substring(startPosition, position,);
+  const numberValidation = jsonNumberSchema.safeParse(extractedNumber,);
+
+  if (!numberValidation.success) {
+    throw new Error(
+      `Invalid number format '${extractedNumber}' at position ${startPosition}`,
+    );
+  }
+
+  return [
+    comment
+      ? { type: 'number', value: numberValidation.data, comment, }
+      : { type: 'number', value: numberValidation.data, },
+    position,
+  ];
+}
+
+/**
+ * Parse a JSON boolean or null keyword primitive with zod validation
+ * @param params - Parameters object
+ * @param params.input - Input string
+ * @param params.position - Current position
+ * @param params.comment - Optional comment to attach
+ * @returns Tuple of [JsoncBoolean | JsoncNull, newPosition]
+ */
+function parseKeywordPrimitive(
+  { input, position, comment, }: { input: string; position: number;
+    comment?: JsoncComment; },
+): [JsoncBoolean | JsoncNull, number,] {
+  let extractedKeyword: string;
+  let keywordLength: number;
+
+  if (input.substring(position, position + 4,) === 'true') {
+    extractedKeyword = 'true';
+    keywordLength = 4;
+  }
+  else if (input.substring(position, position + 5,) === 'false') {
+    extractedKeyword = 'false';
+    keywordLength = 5;
+  }
+  else if (input.substring(position, position + 4,) === 'null') {
+    extractedKeyword = 'null';
+    keywordLength = 4;
+  }
+  else {
+    throw new Error(`Invalid keyword at position ${position}`,);
+  }
+
+  // Use zod to validate the extracted keyword
+  const keywordValidation = jsonKeywordSchema.safeParse(extractedKeyword,);
+
+  if (!keywordValidation.success)
+    throw new Error(`Invalid keyword '${extractedKeyword}' at position ${position}`,);
+
+  const endPosition = position + keywordLength;
+
+  if (extractedKeyword === 'true') {
+    return [
+      comment
+        ? { type: 'boolean', value: true, comment, }
+        : { type: 'boolean', value: true, },
+      endPosition,
+    ];
+  }
+  else if (extractedKeyword === 'false') {
+    return [
+      comment
+        ? { type: 'boolean', value: false, comment, }
+        : { type: 'boolean', value: false, },
+      endPosition,
+    ];
+  }
+  else {
+    return [
+      comment
+        ? { type: 'null', value: null, comment, }
+        : { type: 'null', value: null, },
+      endPosition,
+    ];
+  }
+}
+
+/**
+ * Parse a record key (must be a quoted string followed by colon)
+ * @param params - Parameters object
+ * @param params.input - Input string
+ * @param params.position - Current position
+ * @returns Tuple of [JsoncString, newPosition after colon]
+ */
+function parseRecordKey(
+  { input, position, }: { input: string; position: number; },
+): [JsoncString, number,] {
+  // Extract comments before the key
+  const [keyComment, keyCommentPosition,] = extractComments({ input, position, },);
+  position = keyCommentPosition;
+
+  if (input[position] !== '"')
+    throw new Error(`Expected string key at position ${position}`,);
+
+  // Parse the string key
+  const [recordKey, keyEndPosition,] = parseStringPrimitive({
+    input,
+    position,
+    comment: keyComment,
+  },);
+
+  // Skip whitespace and comments after key, then expect colon
+  position = skipWhitespace({ input, position: keyEndPosition, },);
+
+  if (input[position] !== ':')
+    throw new Error(`Expected ':' after record key at position ${position}`,);
+
+  position++; // Skip the colon
+
+  return [recordKey, position,];
+}
+
+//endregion Primitive Parsers
+
 //region Parser -- Simplified recursive parser using native JSON.parse() for terminals
 
 /**
@@ -386,67 +668,94 @@ function findNodeEnd(
   // Handle JSON primitives with proper boundary detection
   const startPosition = position;
 
-  // Handle numbers using zod validation
+  // Handle quoted strings
+  if (char === '"')
+    return skipQuotedString({ input, position, },);
+
+  // Handle numbers: -?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?
   if (char === '-' || /[0-9]/.test(char,)) {
-    // Try increasingly longer substrings until zod validation fails
-    for (let endPos = position + 1; endPos <= input.length; endPos++) {
-      const potentialNumber = input.substring(position, endPos,);
-      const numberValidation = jsonNumberSchema.safeParse(potentialNumber,);
+    if (char === '-')
+      position++;
 
-      if (numberValidation.success) {
-        // Check if the next character would extend the number
-        if (endPos < input.length) {
-          const nextChar = input[endPos];
-          if (/[0-9.eE+-]/.test(nextChar,))
-            continue; // Try longer substring
-        }
-        return endPos;
-      }
+    // Integer part
+    if (position < input.length && input[position] === '0')
+      position++;
+    else if (position < input.length && /[1-9]/.test(input[position],)) {
+      position++;
+      while (position < input.length && /[0-9]/.test(input[position],))
+        position++;
+    }
+    else {
+      throw new Error(`Invalid number format at position ${startPosition}`,);
     }
 
-    throw new Error(`Invalid number format starting at position ${position}`,);
-  }
-
-  // Handle keywords: use zod validation to find valid keyword boundaries
-  if (/[a-z]/.test(char,)) {
-    // Try the known keyword lengths (4 for 'true'/'null', 5 for 'false')
-    for (const length of [4, 5,]) {
-      if (position + length <= input.length) {
-        const potentialKeyword = input.substring(position, position + length,);
-        const keywordValidation = jsonKeywordSchema.safeParse(potentialKeyword,);
-
-        if (keywordValidation.success)
-          return position + length;
+    // Fractional part
+    if (position < input.length && input[position] === '.') {
+      position++;
+      if (position >= input.length || !/[0-9]/.test(input[position],)) {
+        throw new Error(
+          `Invalid number format: missing digits after decimal at position ${position}`,
+        );
       }
+      while (position < input.length && /[0-9]/.test(input[position],))
+        position++;
     }
 
-    // If no valid keyword found, extract what was attempted for error message
-    let keywordEndPosition = position;
-    while (keywordEndPosition < input.length && /[a-z]/.test(input[keywordEndPosition],))
-      keywordEndPosition++;
+    // Exponent part
+    if (position < input.length && /[eE]/.test(input[position],)) {
+      position++;
+      if (position < input.length && /[+-]/.test(input[position],))
+        position++;
+      if (position >= input.length || !/[0-9]/.test(input[position],)) {
+        throw new Error(
+          `Invalid number format: missing digits in exponent at position ${position}`,
+        );
+      }
+      while (position < input.length && /[0-9]/.test(input[position],))
+        position++;
+    }
 
-    const attemptedKeyword = input.substring(position, keywordEndPosition,);
-    throw new Error(
-      `Invalid keyword '${attemptedKeyword}' at position ${position}. Expected one of: true, false, null`,
-    );
+    // Use zod to validate the extracted number string
+    const extractedNumber = input.substring(startPosition, position,);
+    const numberValidation = jsonNumberSchema.safeParse(extractedNumber,);
+
+    if (!numberValidation.success) {
+      throw new Error(
+        `Invalid number format '${extractedNumber}' at position ${startPosition}`,
+      );
+    }
+
+    return position;
   }
 
-  // Handle boolean and null keywords using zod validation
+  // Handle boolean and null keywords
   if (/[a-z]/.test(char,)) {
-    // Try to extract a potential keyword?
-    let keywordEndPosition = position;
-    while (keywordEndPosition < input.length && /[a-z]/.test(input[keywordEndPosition],))
-      keywordEndPosition++;
+    let extractedKeyword: string;
+    let keywordLength: number;
 
-    const potentialKeyword = input.substring(position, keywordEndPosition,);
-    const keywordValidation = jsonKeywordSchema.safeParse(potentialKeyword,);
+    if (input.substring(position, position + 4,) === 'true') {
+      extractedKeyword = 'true';
+      keywordLength = 4;
+    }
+    else if (input.substring(position, position + 5,) === 'false') {
+      extractedKeyword = 'false';
+      keywordLength = 5;
+    }
+    else if (input.substring(position, position + 4,) === 'null') {
+      extractedKeyword = 'null';
+      keywordLength = 4;
+    }
+    else {
+      throw new Error(`Invalid keyword at position ${position}`,);
+    }
 
-    if (keywordValidation.success)
-      return keywordEndPosition;
+    // Use zod to validate the extracted keyword
+    const keywordValidation = jsonKeywordSchema.safeParse(extractedKeyword,);
 
-    throw new Error(
-      `Invalid keyword '${potentialKeyword}' at position ${position}. Expected one of: true, false, null`,
-    );
+    if (!keywordValidation.success)
+      throw new Error(`Invalid keyword '${extractedKeyword}' at position ${position}`,);
+
+    return position + keywordLength;
   }
 
   throw new Error(`Unexpected character '${char}' at position ${position}`,);
@@ -504,7 +813,7 @@ function parseContainer<T,>({
 }
 
 /**
- * Parse individual record entry (key-value pair) with fast path optimization
+ * Parse individual record entry (key-value pair) with context-specific parsing
  * @param params - Parameters object
  * @param params.input - Input string
  * @param params.position - Current position
@@ -513,32 +822,21 @@ function parseContainer<T,>({
 function parseRecordEntry(
   { input, position, }: { input: string; position: number; },
 ): [JsoncRecordEntry, number,] {
-  // Parse key with potential fast path
-  const [keyComment, keyCommentPosition,] = extractComments({ input, position, },);
-  position = keyCommentPosition;
+  // Parse key using context-specific function
+  const [recordKey, keyEndPosition,] = parseRecordKey({ input, position, },);
 
-  if (input[position] !== '"')
-    throw new Error(`Expected string key at position ${position}`,);
+  // Parse value with comments
+  const [valueComment, valueCommentPosition,] = extractComments({ input,
+    position: keyEndPosition, },);
 
-  // Fast path for key (always a simple string)
-  const keyStart = position;
-  const keyEnd = findNodeEnd({ input, position, },);
-  const keyString = input.substring(keyStart, keyEnd,);
-  const keyValue = JSON.parse(keyString,);
+  // Parse the record value
+  const [recordValue, valueEndPosition,] = parseJsonValueOrContainer({
+    input,
+    position: valueCommentPosition,
+    comment: valueComment,
+  },);
 
-  const recordKey: JsoncString = { type: 'string', value: keyValue,
-    comment: keyComment, };
-
-  position = skipWhitespace({ input, position: keyEnd, },);
-
-  if (input[position] !== ':')
-    throw new Error(`Expected ':' at position ${position}`,);
-  position++;
-
-  // Parse value with full hierarchical fast path recursion
-  const [recordValue, valuePosition,] = parseValue({ input, position, },);
-
-  return [{ recordKey, recordValue, }, valuePosition,];
+  return [{ recordKey, recordValue, }, valueEndPosition,];
 }
 
 /**
@@ -557,101 +855,8 @@ function parseValue(
   if (position >= input.length)
     throw new Error('Unexpected end of input',);
 
-  const char = input[position];
-
-  // Handle container nodes with hierarchical optimization
-  if (char === '{') {
-    const start = position;
-    const end = findNodeEnd({ input, position, },);
-
-    // Fast path: if entire container is clean, use native parser
-    if (!containsJsoncFeatures({ input, start, end, },)) {
-      const jsonString = input.substring(start, end,);
-      const nativeValue = JSON.parse(jsonString,);
-      return [convertNativeValue({ value: nativeValue, comment, },), end,];
-    }
-
-    // Hierarchical path: parse each entry individually with fast path attempts
-    return parseContainer({
-      input,
-      position,
-      comment,
-      openChar: '{',
-      closeChar: '}',
-      parseItem: parseRecordEntry,
-      createResult: (items: JsoncRecordEntry[],
-        comment?: JsoncComment,): JsoncRecord => ({
-          type: 'record',
-          value: items,
-          comment,
-        }),
-    },);
-  }
-  else if (char === '[') {
-    const start = position;
-    const end = findNodeEnd({ input, position, },);
-
-    // Fast path: if entire array is clean, use native parser
-    if (!containsJsoncFeatures({ input, start, end, },)) {
-      const jsonString = input.substring(start, end,);
-      const nativeValue = JSON.parse(jsonString,);
-      return [convertNativeValue({ value: nativeValue, comment, },), end,];
-    }
-
-    // Hierarchical path: parse each item individually with fast path attempts
-    return parseContainer({
-      input,
-      position,
-      comment,
-      openChar: '[',
-      closeChar: ']',
-      parseItem: (input: string, itemPosition: number,) =>
-        parseValue({ input, position: itemPosition, },),
-      createResult: (items: JsoncValue[], comment?: JsoncComment,): JsoncArray => ({
-        type: 'array',
-        value: items,
-        comment,
-      }),
-    },);
-  }
-
-  // Handle terminal nodes - check for individual value fast path
-  const start = position;
-  const end = findNodeEnd({ input, position, },);
-
-  // If no comment, this is a pure terminal - maximum fast path
-  if (!comment) {
-    const jsonString = input.substring(start, end,);
-    const value = JSON.parse(jsonString,);
-    return [convertNativeValue({ value, },), end,];
-  }
-
-  // Terminal with comment - still use native parser for the value part
-  const jsonString = input.substring(start, end,);
-
-  try {
-    const value = JSON.parse(jsonString,);
-
-    if (typeof value === 'string')
-      return [{ type: 'string', value, comment, }, end,];
-    else if (typeof value === 'number')
-      return [{ type: 'number', value, comment, }, end,];
-    else if (typeof value === 'boolean')
-      return [{ type: 'boolean', value, comment, }, end,];
-    else if (value === null)
-      return [{ type: 'null', value: null, comment, }, end,];
-
-    throw new Error(`Unexpected value type: ${typeof value}`,);
-  }
-  catch (error) {
-    throw new Error(
-      `Failed to parse JSON value "${jsonString}": ${
-        error instanceof Error
-          ? error.message
-          : String(error,)
-      }`,
-    );
-  }
+  // Use the new context-aware parsing approach
+  return parseJsonValueOrContainer({ input, position, comment, },);
 }
 
 //endregion Parser
