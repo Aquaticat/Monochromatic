@@ -388,78 +388,52 @@ function findNodeEnd(
 
   // Handle numbers using zod validation
   if (char === '-' || /[0-9]/.test(char,)) {
-    // Extract potential number string for validation
-    let numberEndPosition = position;
+    // Try increasingly longer substrings until zod validation fails
+    for (let endPos = position + 1; endPos <= input.length; endPos++) {
+      const potentialNumber = input.substring(position, endPos,);
+      const numberValidation = jsonNumberSchema.safeParse(potentialNumber,);
 
-    // Fast scan to find potential end of number
-    if (char === '-')
-      numberEndPosition++;
-
-    // Scan through digits, decimal points, and exponents
-    while (numberEndPosition < input.length) {
-      const currentChar = input[numberEndPosition];
-      if (/[0-9.eE+-]/.test(currentChar,))
-        numberEndPosition++;
-      else
-        break;
-    }
-
-    const potentialNumber = input.substring(position, numberEndPosition,);
-
-    // Use zod coercion to validate the number format
-    const numberValidation = jsonNumberSchema.safeParse(potentialNumber,);
-
-    if (numberValidation.success)
-      return numberEndPosition;
-
-    // If zod validation fails, fall back to manual parsing for better error messages
-    if (char === '-')
-      position++;
-
-    // Integer part
-    if (position < input.length && input[position] === '0')
-      position++;
-    else if (position < input.length && /[1-9]/.test(input[position],)) {
-      position++;
-      while (position < input.length && /[0-9]/.test(input[position],))
-        position++;
-    }
-    else {
-      throw new Error(`Invalid number format at position ${startPosition}`,);
-    }
-
-    // Fractional part
-    if (position < input.length && input[position] === '.') {
-      position++;
-      if (position >= input.length || !/[0-9]/.test(input[position],)) {
-        throw new Error(
-          `Invalid number format: missing digits after decimal at position ${position}`,
-        );
+      if (numberValidation.success) {
+        // Check if the next character would extend the number
+        if (endPos < input.length) {
+          const nextChar = input[endPos];
+          if (/[0-9.eE+-]/.test(nextChar,))
+            continue; // Try longer substring
+        }
+        return endPos;
       }
-      while (position < input.length && /[0-9]/.test(input[position],))
-        position++;
     }
 
-    // Exponent part
-    if (position < input.length && /[eE]/.test(input[position],)) {
-      position++;
-      if (position < input.length && /[+-]/.test(input[position],))
-        position++;
-      if (position >= input.length || !/[0-9]/.test(input[position],)) {
-        throw new Error(
-          `Invalid number format: missing digits in exponent at position ${position}`,
-        );
+    throw new Error(`Invalid number format starting at position ${position}`,);
+  }
+
+  // Handle keywords: use zod validation to find valid keyword boundaries
+  if (/[a-z]/.test(char,)) {
+    // Try the known keyword lengths (4 for 'true'/'null', 5 for 'false')
+    for (const length of [4, 5,]) {
+      if (position + length <= input.length) {
+        const potentialKeyword = input.substring(position, position + length,);
+        const keywordValidation = jsonKeywordSchema.safeParse(potentialKeyword,);
+
+        if (keywordValidation.success)
+          return position + length;
       }
-      while (position < input.length && /[0-9]/.test(input[position],))
-        position++;
     }
 
-    return position;
+    // If no valid keyword found, extract what was attempted for error message
+    let keywordEndPosition = position;
+    while (keywordEndPosition < input.length && /[a-z]/.test(input[keywordEndPosition],))
+      keywordEndPosition++;
+
+    const attemptedKeyword = input.substring(position, keywordEndPosition,);
+    throw new Error(
+      `Invalid keyword '${attemptedKeyword}' at position ${position}. Expected one of: true, false, null`,
+    );
   }
 
   // Handle boolean and null keywords using zod validation
   if (/[a-z]/.test(char,)) {
-    // Try to extract a potential keyword
+    // Try to extract a potential keyword?
     let keywordEndPosition = position;
     while (keywordEndPosition < input.length && /[a-z]/.test(input[keywordEndPosition],))
       keywordEndPosition++;
@@ -470,7 +444,6 @@ function findNodeEnd(
     if (keywordValidation.success)
       return keywordEndPosition;
 
-    // If not a valid keyword, throw error with zod-style message
     throw new Error(
       `Invalid keyword '${potentialKeyword}' at position ${position}. Expected one of: true, false, null`,
     );
