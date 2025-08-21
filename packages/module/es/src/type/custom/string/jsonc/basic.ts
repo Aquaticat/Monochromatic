@@ -5,14 +5,6 @@ import { z, } from 'zod/v4-mini';
 //region Zod Validation Schemas -- Schema definitions for JSON value validation
 
 /**
- * Schema for validating JSON number strings
- * Validates the complete JSON number format: -?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?
- */
-const jsonNumberStringSchema = z.string().check(
-  z.regex(/^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?$/,),
-);
-
-/**
  * Schema for coercing valid JSON number strings to actual numbers
  */
 const jsonNumberSchema = z.coerce.number();
@@ -208,14 +200,14 @@ function convertNativeValue(
   else if (Array.isArray(value,)) {
     return comment
       ? {
-          type: 'array',
-          value: value.map(item => convertNativeValue({ value: item, },)),
-          comment,
-        }
+        type: 'array',
+        value: value.map(item => convertNativeValue({ value: item, },)),
+        comment,
+      }
       : {
-          type: 'array',
-          value: value.map(item => convertNativeValue({ value: item, },)),
-        };
+        type: 'array',
+        value: value.map(item => convertNativeValue({ value: item, },)),
+      };
   }
   else if (typeof value === 'object' && value !== null) {
     const entries: JsoncRecordEntry[] = Object.entries(value,).map(([key, val,],) => ({
@@ -413,14 +405,12 @@ function findNodeEnd(
     }
 
     const potentialNumber = input.substring(position, numberEndPosition,);
-    const numberValidation = jsonNumberStringSchema.safeParse(potentialNumber,);
 
-    if (numberValidation.success) {
-      // Validate that it actually converts to a valid number
-      const coercionResult = jsonNumberSchema.safeParse(potentialNumber,);
-      if (coercionResult.success)
-        return numberEndPosition;
-    }
+    // Use zod coercion to validate the number format
+    const numberValidation = jsonNumberSchema.safeParse(potentialNumber,);
+
+    if (numberValidation.success)
+      return numberEndPosition;
 
     // If zod validation fails, fall back to manual parsing for better error messages
     if (char === '-')
