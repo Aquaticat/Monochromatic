@@ -6,7 +6,6 @@ alphabetizing
 anchoring
 annealing
 annotating
-anodizing
 appealing
 approximating
 arbitrating
@@ -27,8 +26,6 @@ backlogging
 backpacking
 backpropagating
 baking
-ballasting
-barking
 batching
 benchmarking
 billing
@@ -54,7 +51,6 @@ budgeting
 building
 bundling
 caching
-calcining
 calibrating
 candying
 caramelizing
@@ -67,7 +63,6 @@ centrifuging
 charging
 charting
 cherry-picking
-chiffonading
 chiseling
 chorusing
 chroma-keying
@@ -98,7 +93,6 @@ contracting
 cooking
 countersigning
 crocheting
-cryopreserving
 crystallizing
 culturing
 curing
@@ -137,10 +131,6 @@ dusting
 dyeing
 eclipsing
 editing
-electroplating
-electropolishing
-electroporating
-electrospinning
 embedding
 embossing
 embroidering
@@ -176,13 +166,11 @@ fractionating
 frosting
 fruiting
 fuzzing
-galvanizing
 generalizing
 geocoding
 geofencing
 georeferencing
 germinating
-glamouring
 glazing
 gliding
 glossing
@@ -192,14 +180,12 @@ grafting
 grilling
 grooming
 grounding
-gybing
 handshaking
 hang-gliding
 hardening
 harmonizing
 harvesting
 hashing
-hemming
 hiking
 hindcasting
 honking
@@ -207,7 +193,6 @@ hot-reloading
 hyphenating
 ideating
 imaging
-immunolabeling
 incarnating
 incinerating
 incubating
@@ -221,8 +206,6 @@ interpolating
 invalidating
 invoicing
 invoking
-ion-implanting
-ionizing
 ironing
 irrigating
 isolating
@@ -234,11 +217,9 @@ kitesurfing
 kneading
 knitting
 knotting
-knurling
 labeling
 lacquering
 laminating
-laundering
 leading
 lensing
 limiting
@@ -274,10 +255,7 @@ mocking
 modulating
 monitoring
 monkey-patching
-mooring
-mopping
 morphing
-mortising
 motion-tracking
 mulching
 multi-tracking
@@ -292,7 +270,6 @@ obfuscating
 offboarding
 onboarding
 optimizing
-optimizing
 orbiting
 orchestrating
 organizing
@@ -306,10 +283,8 @@ pagination
 paragliding
 parameterizing
 parsing
-passivating
 patching
 pathfinding
-PCR-amplifying
 pedaling
 peering
 pentesting
@@ -345,8 +320,6 @@ pruning
 publishing
 pureeing
 purifying
-purling
-quacking
 quantizing
 quenching
 queuing
@@ -363,7 +336,6 @@ reconstituting
 redacting
 redshifting
 reducing
-reefing
 refactoring
 reflecting
 reflowing
@@ -408,7 +380,6 @@ scaffolding
 scheduling
 scrambling
 scrubbing
-scrying
 searching
 seeding
 sequencing
@@ -417,11 +388,9 @@ settling
 sewing
 shading
 sharding
-sigilizing
 signing
 simmering
 simplifying
-sintering
 skating
 skiing
 skimming
@@ -467,16 +436,13 @@ tacking
 tagging
 talking
 tapping
-tatting
 tempering
 templating
-tenoning
 terraforming
 texturing
 thawing
 threading
 threat-modeling
-threshing
 tiling
 titrating
 tokenizing
@@ -484,7 +450,6 @@ tracing
 tracking
 training
 transducing
-transfecting
 transmuting
 transpiling
 transplanting
@@ -505,13 +470,10 @@ unwrapping
 uplinking
 upsampling
 upscaling
-vacuuming
 varnishing
 vectorizing
-veneering
 verifying
 versioning
-warding
 watering
 wayfinding
 weaving
@@ -522,8 +484,6 @@ welding
 whipping
 whittling
 wiki-walking
-windsurfing
-winnowing
 wiring
 witnessing
 wrapping
