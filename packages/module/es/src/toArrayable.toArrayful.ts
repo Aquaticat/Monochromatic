@@ -2,6 +2,7 @@ import {
   type Arrayful,
   isArrayful,
 } from './arrayful.basic.ts';
+import { createArrayful, } from './arrayful.create.ts';
 import type {
   IterableSync,
   MaybeAsyncIterable,
@@ -45,11 +46,8 @@ export async function toArrayableToArrayful<
   if (isArrayful(potentiallyArrayfulToArrayable,))
     return potentiallyArrayfulToArrayable as any;
 
-  if (Array.isArray(toArrayable,)) {
-    const arrayful = { array: toArrayable, };
-    const result = Object.assign(toArrayable, arrayful,);
-    return result as any;
-  }
+  if (Array.isArray(toArrayable,))
+    return createArrayful({ array: toArrayable, obj: toArrayable, },) as any;
 
   const potentiallyMaybeAsyncIterableToArrayable = toArrayable as MyToArrayable extends
     MaybeAsyncIterable<infer MaybeAsyncIterableElement>
@@ -58,9 +56,8 @@ export async function toArrayableToArrayful<
 
   if (isMaybeAsyncIterable(potentiallyMaybeAsyncIterableToArrayable,)) {
     const array = await Array.fromAsync(potentiallyMaybeAsyncIterableToArrayable,);
-    const arrayful = { array, };
-    const result = Object.assign(potentiallyMaybeAsyncIterableToArrayable, arrayful,);
-    return result as any;
+    return createArrayful({ array,
+      obj: potentiallyMaybeAsyncIterableToArrayable, },) as any;
   }
 
   throw new TypeError(`${JSON.stringify(toArrayable,)} isn't ToArrayable`,);
@@ -93,11 +90,8 @@ export function toArrayableSyncToArrayful<
   if (isArrayful(potentiallyArrayfulToArrayable,))
     return potentiallyArrayfulToArrayable as any;
 
-  if (Array.isArray(toArrayable,)) {
-    const arrayful = { array: toArrayable, };
-    const result = Object.assign(toArrayable, arrayful,);
-    return result as any;
-  }
+  if (Array.isArray(toArrayable,))
+    return createArrayful({ array: toArrayable, obj: toArrayable, },) as any;
 
   const potentiallyIterableSyncToArrayable = toArrayable as MyToArrayable extends
     IterableSync<infer IterableSyncElement>
@@ -106,9 +100,7 @@ export function toArrayableSyncToArrayful<
 
   if (isIterableSync(potentiallyIterableSyncToArrayable,)) {
     const array = Array.from(potentiallyIterableSyncToArrayable,);
-    const arrayful = { array, };
-    const result = Object.assign(potentiallyIterableSyncToArrayable, arrayful,);
-    return result as any;
+    return createArrayful({ array, obj: potentiallyIterableSyncToArrayable, },) as any;
   }
 
   throw new TypeError(`${JSON.stringify(toArrayable,)} isn't ToArrayable`,);

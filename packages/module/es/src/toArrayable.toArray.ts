@@ -6,7 +6,10 @@ import type {
   IterableSync,
   MaybeAsyncIterable,
 } from './iterable.basic.ts';
-import { isIterableSync, isMaybeAsyncIterable, } from './iterable.is.ts';
+import {
+  isIterableSync,
+  isMaybeAsyncIterable,
+} from './iterable.is.ts';
 import type { Logged, } from './logged.basic.ts';
 import { getDefaultLogger, } from './string.log.ts';
 import type {
@@ -55,14 +58,12 @@ export function toArrayableSyncToArray<
   { toArrayable, l = getDefaultLogger(), }: { toArrayable: MyToArrayable; } & Partial<
     Logged
   >,
-): Promise<
-  MyToArrayable extends (infer ArrayElement)[] ? MyToArrayable & ArrayElement[]
-    : MyToArrayable extends Arrayful<infer ArrayfulElement>
-      ? (MyToArrayable['array'] & ArrayfulElement[])
-    : MyToArrayable extends IterableSync<infer IterableSyncElement>
-      ? IterableSyncElement[]
-    : never
-> {
+): MyToArrayable extends (infer ArrayElement)[] ? MyToArrayable & ArrayElement[]
+  : MyToArrayable extends Arrayful<infer ArrayfulElement>
+    ? (MyToArrayable['array'] & ArrayfulElement[])
+  : MyToArrayable extends IterableSync<infer IterableSyncElement> ? IterableSyncElement[]
+  : never
+{
   l.debug(toArrayableSyncToArray.name,);
 
   if (Array.isArray(toArrayable,))
@@ -74,13 +75,13 @@ export function toArrayableSyncToArray<
   if (isArrayful(potentiallyArrayfulToArrayable,))
     return potentiallyArrayfulToArrayable.array as any;
 
-  const potentiallyMaybeAsyncIterableToArrayable = toArrayable as MyToArrayable extends
-    MaybeAsyncIterable<infer MaybeAsyncIterableElement>
-    ? MyToArrayable & MaybeAsyncIterable<MaybeAsyncIterableElement>
+  const potentiallyIterableSyncToArrayable = toArrayable as MyToArrayable extends
+    IterableSync<infer IterableSyncElement>
+    ? MyToArrayable & IterableSync<IterableSyncElement>
     : never;
 
-  if (isIterableSync(potentiallyMaybeAsyncIterableToArrayable,))
-    return Array.fromAsync(potentiallyMaybeAsyncIterableToArrayable,) as any;
+  if (isIterableSync(potentiallyIterableSyncToArrayable,))
+    return Array.from(potentiallyIterableSyncToArrayable,) as any;
 
   throw new TypeError(`${JSON.stringify(toArrayable,)} isn't ToArrayable`,);
 }
