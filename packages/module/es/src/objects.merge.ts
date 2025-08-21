@@ -245,7 +245,8 @@ export function objectsMerge<
         result[key] = firstValue;
       else {
         // Handle conflicts based on type
-        result[key] = resolveTypeConflict(key, valueType, values, effectiveRules, l,);
+        result[key] = resolveTypeConflict({ key, valueType, values, rules: effectiveRules,
+          l, },);
       }
     }
   }
@@ -256,13 +257,19 @@ export function objectsMerge<
 /**
  * Internal function to resolve conflicts for a specific type.
  */
-function resolveTypeConflict(
-  key: string,
-  valueType: string,
-  values: unknown[],
-  rules: Required<MergeRules>,
-  l: ReturnType<typeof getDefaultLogger>,
-): unknown {
+function resolveTypeConflict({
+  key,
+  valueType,
+  values,
+  rules,
+  l = getDefaultLogger(),
+}: {
+  readonly key: string;
+  readonly valueType: string;
+  readonly values: unknown[];
+  readonly rules: Required<MergeRules>;
+  readonly l?: ReturnType<typeof getDefaultLogger>;
+},): unknown {
   l.debug(`Resolving ${valueType} conflict for key "${key}"`,);
 
   switch (valueType) {
