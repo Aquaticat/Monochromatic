@@ -87,25 +87,88 @@ export type JsoncValue = JsoncString | JsoncNumber | JsoncBoolean | JsoncNull | 
 //region Parser -- Simplified recursive parser using native JSON.parse() for terminals
 
 /**
+ * Common string traversal utilities
+ */
+
+/**
+ * Skip a quoted string and return the new position
+ * @param params - Parameters object
+ * @param params.input - Input string
+ * @param params.position - Current position (should be at opening quote)
+ * @returns New position after the closing quote
+ */
+function skipQuotedString({ input, position }: { input: string; position: number }): number {
+  if (input[position] !== '"') {
+    return position;
+  }
+
+  position++; // Skip opening quote
+  let escaped = false;
+
+  while (position < input.length) {
+    const char = input[position];
+
+    if (escaped) {
+      escaped = false;
+    } else if (char === '\\') {
+      escaped = true;
+    } else if (char === '"') {
+      position++; // Skip closing quote
+      break;
+    }
+
+    position++;
+  }
+
+  return position;
+}
+
+/**
+ * Check if position is inside a quoted string by scanning backwards
+ * @param params - Parameters object
+ * @param params.input - Input string
+ * @param params.position - Position to check
+ * @returns True if inside a string
+ */
+function isInsideString({ input, position }: { input: string; position: number }): boolean {
+  let quoteCount = 0;
+  let escaped = false;
+
+  for (let i = 0; i < position; i++) {
+    const char = input[i];
+
+    if (escaped) {
+      escaped = false;
+    } else if (char === '\\') {
+      escaped = true;
+    } else if (char === '"') {
+      quoteCount++;
+    }
+  }
+
+  return quoteCount % 2 === 1;
+}
+
+/**
  * Check if a JSON string contains JSONC-specific features (comments or trailing commas)
  * @param params - Parameters object
- * @param params.input - Input string to check
+ * @param params.input - Input string
  * @param params.start - Start position
  * @param params.end - End position
  * @returns True if JSONC features are present, false for clean JSON
  */
-function containsJsoncFeatures(
-  { input, start, end, }: { input: string; start: number; end: number; },
-): boolean {
-  const content = input.substring(start, end,);
+function containsJsoncFeatures({ input, start, end }: { input: string; start: number; end: number }): boolean {
+  const content = input.substring(start, end);
 
   // Check for comments
-  if (content.includes('//',) || content.includes('/*',))
+  if (content.includes('//') || content.includes('/*')) {
     return true;
+  }
 
   // Check for trailing commas (simplified check)
-  if (/,\s*[}\]]/.test(content,))
+  if (/,\s*[}\]]/.test(content)) {
     return true;
+  }
 
   return false;
 }
@@ -117,33 +180,30 @@ function containsJsoncFeatures(
  * @param params.comment - Optional comment to attach
  * @returns JsoncValue representation
  */
-function convertNativeValue(
-  { value, comment, }: { value: unknown; comment?: JsoncComment; },
-): JsoncValue {
-  if (typeof value === 'string')
-    return { type: 'string', value, comment, };
-  else if (typeof value === 'number')
-    return { type: 'number', value, comment, };
-  else if (typeof value === 'boolean')
-    return { type: 'boolean', value, comment, };
-  else if (value === null)
-    return { type: 'null', value: null, comment, };
-  else if (Array.isArray(value,)) {
+function convertNativeValue({ value, comment }: { value: unknown; comment?: JsoncComment }): JsoncValue {
+  if (typeof value === 'string') {
+    return { type: 'string', value, comment };
+  } else if (typeof value === 'number') {
+    return { type: 'number', value, comment };
+  } else if (typeof value === 'boolean') {
+    return { type: 'boolean', value, comment };
+  } else if (value === null) {
+    return { type: 'null', value: null, comment };
+  } else if (Array.isArray(value)) {
     return {
       type: 'array',
-      value: value.map(item => convertNativeValue({ value: item, },)),
-      comment,
+      value: value.map((item) => convertNativeValue({ value: item })),
+      comment
     };
-  }
-  else if (typeof value === 'object' && value !== null) {
-    const entries: JsoncRecordEntry[] = Object.entries(value,).map(([key, val,],) => ({
-      recordKey: { type: 'string', value: key, },
-      recordValue: convertNativeValue({ value: val, },),
+  } else if (typeof value === 'object' && value !== null) {
+    const entries: JsoncRecordEntry[] = Object.entries(value).map(([key, val]) => ({
+      recordKey: { type: 'string', value: key },
+      recordValue: convertNativeValue({ value: val })
     }));
-    return { type: 'record', value: entries, comment, };
+    return { type: 'record', value: entries, comment };
   }
 
-  throw new Error(`Unexpected value type: ${typeof value}`,);
+  throw new Error(`Unexpected value type: ${typeof value}`);
 }
 
 /**
@@ -153,11 +213,10 @@ function convertNativeValue(
  * @param params.position - Current position
  * @returns New position after skipping whitespace
  */
-function skipWhitespace(
-  { input, position, }: { input: string; position: number; },
-): number {
-  while (position < input.length && /\s/.test(input[position],))
+function skipWhitespace({ input, position }: { input: string; position: number }): number {
+  while (position < input.length && /\s/.test(input[position])) {
     position++;
+  }
   return position;
 }
 
@@ -168,14 +227,12 @@ function skipWhitespace(
  * @param params.position - Current position
  * @returns Tuple of [comment, newPosition]
  */
-function extractComments(
-  { input, position, }: { input: string; position: number; },
-): [JsoncComment | undefined, number,] {
+function extractComments({ input, position }: { input: string; position: number }): [JsoncComment | undefined, number] {
   const comments: string[] = [];
   let hasInline = false;
   let hasBlock = false;
 
-  position = skipWhitespace({ input, position, },);
+  position = skipWhitespace({ input, position });
 
   while (position < input.length) {
     if (input[position] === '/' && position + 1 < input.length) {
@@ -187,14 +244,14 @@ function extractComments(
           comment += input[position];
           position++;
         }
-        if (position < input.length)
+        if (position < input.length) {
           position++; // Skip newline
-        comments.push(comment,);
+        }
+        comments.push(comment);
         hasInline = true;
-        position = skipWhitespace({ input, position, },);
+        position = skipWhitespace({ input, position });
         continue;
-      }
-      else if (input[position + 1] === '*') {
+      } else if (input[position + 1] === '*') {
         // Block comment
         position += 2;
         let comment = '';
@@ -206,89 +263,130 @@ function extractComments(
           comment += input[position];
           position++;
         }
-        comments.push(comment,);
+        comments.push(comment);
         hasBlock = true;
-        position = skipWhitespace({ input, position, },);
+        position = skipWhitespace({ input, position });
         continue;
       }
     }
     break;
   }
 
-  if (comments.length === 0)
-    return [undefined, position,];
+  if (comments.length === 0) {
+    return [undefined, position];
+  }
 
   const commentType = hasInline && hasBlock ? 'mixed' : hasInline ? 'inline' : 'block';
   return [{
     type: commentType,
-    commentValue: comments.join('\n',),
-  }, position,];
+    commentValue: comments.join('\n')
+  }, position];
 }
 
 /**
- * Find the end position of the current JSON node
+ * Find the end position of the current JSON node (simplified - just boundary detection)
  * @param params - Parameters object
  * @param params.input - Input string
  * @param params.position - Current position
  * @returns End position of the JSON node
  */
-function findNodeEnd(
-  { input, position, }: { input: string; position: number; },
-): number {
-  const bracketStack: string[] = [];
-  let inString = false;
-  let escaped = false;
+function findNodeEnd({ input, position }: { input: string; position: number }): number {
+  const char = input[position];
 
-  while (position < input.length) {
-    const char = input[position];
+  // Handle quoted strings
+  if (char === '"') {
+    return skipQuotedString({ input, position });
+  }
 
-    if (escaped) {
-      escaped = false;
-      position++;
-      continue;
-    }
+  // Handle container structures
+  if (char === '{' || char === '[') {
+    const closeChar = char === '{' ? '}' : ']';
+    const bracketStack = [char];
+    position++;
 
-    if (char === '\\' && inString) {
-      escaped = true;
-      position++;
-      continue;
-    }
+    while (position < input.length && bracketStack.length > 0) {
+      if (input[position] === '"') {
+        position = skipQuotedString({ input, position });
+        continue;
+      }
 
-    if (char === '"' && !inString)
-      inString = true;
-    else if (char === '"' && inString)
-      inString = false;
-
-    if (!inString) {
-      if (char === '{' || char === '[')
-        bracketStack.push(char,);
-      else if (char === '}' || char === ']') {
-        const expectedOpening = char === '}' ? '{' : '[';
+      if (input[position] === char || input[position] === (char === '{' ? '[' : '{')) {
+        bracketStack.push(input[position]);
+      } else if (input[position] === closeChar || input[position] === (closeChar === '}' ? ']' : '}')) {
+        const expectedOpening = input[position] === '}' ? '{' : '[';
         const lastOpening = bracketStack[bracketStack.length - 1];
 
         if (lastOpening !== expectedOpening) {
-          throw new Error(
-            `Mismatched brackets: expected '${
-              expectedOpening === '{' ? '}' : ']'
-            }' but found '${char}' at position ${position}`,
-          );
+          throw new Error(`Mismatched brackets at position ${position}`);
         }
 
         bracketStack.pop();
-        if (bracketStack.length === 0) {
-          position++;
-          break;
-        }
       }
-      else if (bracketStack.length === 0 && /[\s,}\]]/.test(char,)) {
-        break;
-      }
+
+      position++;
     }
 
+    return position;
+  }
+
+  // Handle primitives (numbers, booleans, null)
+  while (position < input.length && !/[\s,}\]]/.test(input[position])) {
     position++;
   }
 
   return position;
+}
+
+/**
+ * Generic container parser for arrays and objects
+ * @param params - Parameters object with container-specific logic
+ * @returns Tuple of [parsedContainer, newPosition]
+ */
+function parseContainer<T>({
+  input,
+  position,
+  comment,
+  openChar,
+  closeChar,
+  parseItem,
+  createResult
+}: {
+  input: string;
+  position: number;
+  comment?: JsoncComment;
+  openChar: string;
+  closeChar: string;
+  parseItem: (input: string, position: number) => [unknown, number];
+  createResult: (items: unknown[], comment?: JsoncComment) => T;
+}): [T, number] {
+  position++; // Skip opening bracket
+  position = skipWhitespace({ input, position });
+
+  const items: unknown[] = [];
+
+  while (position < input.length && input[position] !== closeChar) {
+    const [item, itemPosition] = parseItem(input, position);
+    items.push(item);
+    position = itemPosition;
+
+    position = skipWhitespace({ input, position });
+
+    if (input[position] === ',') {
+      position++;
+      position = skipWhitespace({ input, position });
+    } else if (input[position] === closeChar) {
+      break;
+    } else {
+      throw new Error(`Expected ',' or '${closeChar}' at position ${position}`);
+    }
+  }
+
+  if (input[position] !== closeChar) {
+    throw new Error(`Expected '${closeChar}' at position ${position}`);
+  }
+  position++;
+
+  return [createResult(items, comment), position];
 }
 
 /**
@@ -298,180 +396,118 @@ function findNodeEnd(
  * @param params.position - Current position
  * @returns Tuple of [parsedValue, newPosition]
  */
-function parseValue(
-  { input, position, }: { input: string; position: number; },
-): [JsoncValue, number,] {
-  const [comment, newPosition,] = extractComments({ input, position, },);
+function parseValue({ input, position }: { input: string; position: number }): [JsoncValue, number] {
+  const [comment, newPosition] = extractComments({ input, position });
   position = newPosition;
 
-  if (position >= input.length)
-    throw new Error('Unexpected end of input',);
+  if (position >= input.length) {
+    throw new Error('Unexpected end of input');
+  }
 
   const char = input[position];
 
-  // Handle container nodes (objects and arrays) with optimization
+  // Handle container nodes with optimization
   if (char === '{') {
     const start = position;
-    const end = findNodeEnd({ input, position, },);
+    const end = findNodeEnd({ input, position });
 
     // Fast path: if no JSONC features, use native parser
-    if (!containsJsoncFeatures({ input, start, end, },)) {
-      const jsonString = input.substring(start, end,);
-      const nativeValue = JSON.parse(jsonString,);
-      return [convertNativeValue({ value: nativeValue, comment, },), end,];
+    if (!containsJsoncFeatures({ input, start, end })) {
+      const jsonString = input.substring(start, end);
+      const nativeValue = JSON.parse(jsonString);
+      return [convertNativeValue({ value: nativeValue, comment }), end];
     }
 
     // Slow path: manual parsing for JSONC features
-    return parseRecord({ input, position, comment, },);
-  }
-  else if (char === '[') {
+    return parseContainer({
+      input,
+      position,
+      comment,
+      openChar: '{',
+      closeChar: '}',
+      parseItem: (input: string, itemPosition: number) => {
+        // Parse key
+        const [keyComment, keyCommentPosition] = extractComments({ input, position: itemPosition });
+        position = keyCommentPosition;
+
+        if (input[position] !== '"') {
+          throw new Error(`Expected string key at position ${position}`);
+        }
+
+        const keyStart = position;
+        const keyEnd = findNodeEnd({ input, position });
+        const keyString = input.substring(keyStart, keyEnd);
+        const keyValue = JSON.parse(keyString);
+
+        const recordKey: JsoncString = { type: 'string', value: keyValue, comment: keyComment };
+
+        position = skipWhitespace({ input, position: keyEnd });
+
+        if (input[position] !== ':') {
+          throw new Error(`Expected ':' at position ${position}`);
+        }
+        position++;
+
+        // Parse value
+        const [recordValue, valuePosition] = parseValue({ input, position });
+
+        return [{ recordKey, recordValue }, valuePosition];
+      },
+      createResult: (items: JsoncRecordEntry[], comment?: JsoncComment): JsoncRecord => ({
+        type: 'record',
+        value: items,
+        comment
+      })
+    });
+  } else if (char === '[') {
     const start = position;
-    const end = findNodeEnd({ input, position, },);
+    const end = findNodeEnd({ input, position });
 
     // Fast path: if no JSONC features, use native parser
-    if (!containsJsoncFeatures({ input, start, end, },)) {
-      const jsonString = input.substring(start, end,);
-      const nativeValue = JSON.parse(jsonString,);
-      return [convertNativeValue({ value: nativeValue, comment, },), end,];
+    if (!containsJsoncFeatures({ input, start, end })) {
+      const jsonString = input.substring(start, end);
+      const nativeValue = JSON.parse(jsonString);
+      return [convertNativeValue({ value: nativeValue, comment }), end];
     }
 
     // Slow path: manual parsing for JSONC features
-    return parseArray({ input, position, comment, },);
+    return parseContainer({
+      input,
+      position,
+      comment,
+      openChar: '[',
+      closeChar: ']',
+      parseItem: (input: string, itemPosition: number) => parseValue({ input, position: itemPosition }),
+      createResult: (items: JsoncValue[], comment?: JsoncComment): JsoncArray => ({
+        type: 'array',
+        value: items,
+        comment
+      })
+    });
   }
 
   // Handle terminal nodes with native JSON.parse()
   const start = position;
-  const end = findNodeEnd({ input, position, },);
-  const jsonString = input.substring(start, end,);
+  const end = findNodeEnd({ input, position });
+  const jsonString = input.substring(start, end);
 
   try {
-    const value = JSON.parse(jsonString,);
+    const value = JSON.parse(jsonString);
 
-    if (typeof value === 'string')
-      return [{ type: 'string', value, comment, }, end,];
-    else if (typeof value === 'number')
-      return [{ type: 'number', value, comment, }, end,];
-    else if (typeof value === 'boolean')
-      return [{ type: 'boolean', value, comment, }, end,];
-    else if (value === null)
-      return [{ type: 'null', value: null, comment, }, end,];
-
-    throw new Error(`Unexpected value type: ${typeof value}`,);
-  }
-  catch (error) {
-    throw new Error(
-      `Failed to parse JSON value "${jsonString}": ${
-        error instanceof Error
-          ? error.message
-          : String(error,)
-      }`,
-    );
-  }
-}
-
-/**
- * Parse a JSONC record/object
- * @param params - Parameters object
- * @param params.input - Input string
- * @param params.position - Current position
- * @param params.comment - Optional comment for this record
- * @returns Tuple of [parsedRecord, newPosition]
- */
-function parseRecord(
-  { input, position, comment, }: { input: string; position: number;
-    comment?: JsoncComment; },
-): [JsoncRecord, number,] {
-  position++; // Skip '{'
-  position = skipWhitespace({ input, position, },);
-
-  const entries: JsoncRecordEntry[] = [];
-
-  while (position < input.length && input[position] !== '}') {
-    // Parse key
-    const [keyComment, keyCommentPosition,] = extractComments({ input, position, },);
-    position = keyCommentPosition;
-
-    if (input[position] !== '"')
-      throw new Error(`Expected string key at position ${position}`,);
-
-    const keyStart = position;
-    const keyEnd = findNodeEnd({ input, position, },);
-    const keyString = input.substring(keyStart, keyEnd,);
-    const keyValue = JSON.parse(keyString,);
-
-    const recordKey: JsoncString = { type: 'string', value: keyValue,
-      comment: keyComment, };
-
-    position = skipWhitespace({ input, position: keyEnd, },);
-
-    if (input[position] !== ':')
-      throw new Error(`Expected ':' at position ${position}`,);
-    position++;
-
-    // Parse value
-    const [recordValue, valuePosition,] = parseValue({ input, position, },);
-    position = valuePosition;
-
-    entries.push({ recordKey, recordValue, },);
-
-    position = skipWhitespace({ input, position, },);
-
-    if (input[position] === ',') {
-      position++;
-      position = skipWhitespace({ input, position, },);
+    if (typeof value === 'string') {
+      return [{ type: 'string', value, comment }, end];
+    } else if (typeof value === 'number') {
+      return [{ type: 'number', value, comment }, end];
+    } else if (typeof value === 'boolean') {
+      return [{ type: 'boolean', value, comment }, end];
+    } else if (value === null) {
+      return [{ type: 'null', value: null, comment }, end];
     }
-    else if (input[position] === '}')
-      break;
-    else
-      throw new Error(`Expected ',' or '}' at position ${position}`,);
+
+    throw new Error(`Unexpected value type: ${typeof value}`);
+  } catch (error) {
+    throw new Error(`Failed to parse JSON value "${jsonString}": ${error instanceof Error ? error.message : String(error)}`);
   }
-
-  if (input[position] !== '}')
-    throw new Error(`Expected '}' at position ${position}`,);
-  position++;
-
-  return [{ type: 'record', value: entries, comment, }, position,];
-}
-
-/**
- * Parse a JSONC array
- * @param params - Parameters object
- * @param params.input - Input string
- * @param params.position - Current position
- * @param params.comment - Optional comment for this array
- * @returns Tuple of [parsedArray, newPosition]
- */
-function parseArray(
-  { input, position, comment, }: { input: string; position: number;
-    comment?: JsoncComment; },
-): [JsoncArray, number,] {
-  position++; // Skip '['
-  position = skipWhitespace({ input, position, },);
-
-  const items: JsoncValue[] = [];
-
-  while (position < input.length && input[position] !== ']') {
-    const [item, itemPosition,] = parseValue({ input, position, },);
-    items.push(item,);
-    position = itemPosition;
-
-    position = skipWhitespace({ input, position, },);
-
-    if (input[position] === ',') {
-      position++;
-      position = skipWhitespace({ input, position, },);
-    }
-    else if (input[position] === ']')
-      break;
-    else
-      throw new Error(`Expected ',' or ']' at position ${position}`,);
-  }
-
-  if (input[position] !== ']')
-    throw new Error(`Expected ']' at position ${position}`,);
-  position++;
-
-  return [{ type: 'array', value: items, comment, }, position,];
 }
 
 //endregion Parser
@@ -487,12 +523,13 @@ function parseArray(
  * const result = jsoncToParsedJsonc('{"a": 1 /* comment *\/}' as jsonc);
  * ```
  */
-export function jsoncToParsedJsonc(input: jsonc,): JsoncValue {
-  const [result, finalPosition,] = parseValue({ input, position: 0, },);
+export function jsoncToParsedJsonc(input: jsonc): JsoncValue {
+  const [result, finalPosition] = parseValue({ input, position: 0 });
 
-  const endPosition = skipWhitespace({ input, position: finalPosition, },);
-  if (endPosition < input.length)
-    throw new Error(`Unexpected content after end of JSON at position ${endPosition}`,);
+  const endPosition = skipWhitespace({ input, position: finalPosition });
+  if (endPosition < input.length) {
+    throw new Error(`Unexpected content after end of JSON at position ${endPosition}`);
+  }
 
   return result;
 }
