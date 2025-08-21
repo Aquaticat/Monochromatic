@@ -64,7 +64,6 @@ citing
 cleaning
 cloning
 clustering
-clustering
 code-splitting
 combining
 commanding
@@ -301,8 +300,6 @@ removing
 renaming
 rendering
 replicating
-replicating
-replicating
 reporting
 requesting
 reranking
@@ -341,7 +338,7 @@ simplifying
 simulating
 skimming
 smoke-testing
-snack-casing
+snake-casing
 snapshotting
 sorting
 specializing
@@ -393,6 +390,7 @@ typesetting
 unit-testing
 unlocking
 unpacking
+unsetting
 unwrapping
 updating
 upgrading
