@@ -69,9 +69,7 @@ describe('objectsMerge', () => {
     const result = objectsMerge({
       objs: [{ a: (c: string,) => c, }, { a: () => true, },],
       rules: {
-        function: (
-          { values, }: { key: string; values: ((...args: unknown[]) => unknown)[]; },
-        ) => values.length,
+        function: ({ values, },) => values.length,
       },
     },);
 
@@ -90,8 +88,7 @@ describe('objectsMerge', () => {
     const result = objectsMerge({
       objs: [{ a: 1, }, { a: 2, },],
       rules: {
-        number: ({ values, }: { key: string; values: number[]; },) =>
-          Math.max(...values,),
+        number: ({ values, },) => Math.max(...values,),
       },
     },);
 
@@ -102,7 +99,7 @@ describe('objectsMerge', () => {
     const result = objectsMerge({
       objs: [{ name: 'John', }, { name: 'Jane', },],
       rules: {
-        string: ({ values, }: { key: string; values: string[]; },) => values.join(' & ',),
+        string: ({ values, },) => values.join(' & ',),
       },
     },);
 
@@ -113,8 +110,7 @@ describe('objectsMerge', () => {
     const result = objectsMerge({
       objs: [{ flag: true, }, { flag: false, },],
       rules: {
-        boolean: ({ values, }: { key: string; values: boolean[]; },) =>
-          values.some((v: boolean,) => v), // OR operation
+        boolean: ({ values, },) => values.some(v => v), // OR operation
       },
     },);
 

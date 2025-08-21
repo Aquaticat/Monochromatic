@@ -2,6 +2,7 @@ import { equal, } from './any.equal.ts';
 import { functionsMapWith, } from './functions.mapWith.ts';
 import type { Logged, } from './logged.basic.ts';
 import { getDefaultLogger, } from './string.log.ts';
+import type { Logger, } from './string.log.ts';
 
 /**
  * Rules configuration for object merging behavior based on JavaScript types.
@@ -10,84 +11,91 @@ export type MergeRules = {
   readonly function?: (params: {
     readonly key: string;
     readonly values: ((...args: unknown[]) => unknown)[];
-  },) => unknown;
+  } & Partial<Logged>,) => unknown;
   readonly string?: (params: {
     readonly key: string;
     readonly values: string[];
-  },) => unknown;
+  } & Partial<Logged>,) => unknown;
   readonly number?: (params: {
     readonly key: string;
     readonly values: number[];
-  },) => unknown;
+  } & Partial<Logged>,) => unknown;
   readonly boolean?: (params: {
     readonly key: string;
     readonly values: boolean[];
-  },) => unknown;
+  } & Partial<Logged>,) => unknown;
   readonly object?: (params: {
     readonly key: string;
     readonly values: object[];
-  },) => unknown;
+  } & Partial<Logged>,) => unknown;
   readonly undefined?: (params: {
     readonly key: string;
     readonly values: undefined[];
-  },) => unknown;
+  } & Partial<Logged>,) => unknown;
   readonly bigint?: (params: {
     readonly key: string;
     readonly values: bigint[];
-  },) => unknown;
+  } & Partial<Logged>,) => unknown;
   readonly symbol?: (params: {
     readonly key: string;
     readonly values: symbol[];
-  },) => unknown;
+  } & Partial<Logged>,) => unknown;
 };
 
 /**
  * Default rules for handling conflicts by type.
  */
 const defaultRules: Required<MergeRules> = {
-  function: ({ key, values, },) => {
+  function: ({ key, values, l, },) => {
     // Default: create a function that calls functionsMapWith
     return (...args: unknown[]) => {
       return functionsMapWith({
         fns: values,
         args: args as any,
-        l: getDefaultLogger(),
+        ...(l && { l, }),
       },);
     };
   },
-  string: ({ key, },) => {
+  string: ({ key, l, },) => {
+    l?.debug(`No string rule provided for "${key}"`,);
     throw new TypeError(
       `No resolution rule provided for string conflicts on property "${key}"`,
     );
   },
-  number: ({ key, },) => {
+  number: ({ key, l, },) => {
+    l?.debug(`No number rule provided for "${key}"`,);
     throw new TypeError(
       `No resolution rule provided for number conflicts on property "${key}"`,
     );
   },
-  boolean: ({ key, },) => {
+  boolean: ({ key, l, },) => {
+    l?.debug(`No boolean rule provided for "${key}"`,);
     throw new TypeError(
       `No resolution rule provided for boolean conflicts on property "${key}"`,
     );
   },
-  object: ({ key, values, },) => {
+  object: ({ key, values, l, },) => {
     // Default: recursively merge objects
+    l?.debug(`Recursively merging objects for "${key}"`,);
     return objectsMerge({
       objs: values as Record<string, unknown>[],
-      l: getDefaultLogger(),
+      ...(l && { l, }),
     },);
   },
-  undefined: ({ key, },) => {
+  undefined: ({ key, l, },) => {
+    l?.debug(`No undefined rule provided for "${key}"`,);
     throw new TypeError(
       `No resolution rule provided for undefined conflicts on property "${key}"`,
     );
   },
-  bigint: ({ key, },) => {
+  bigint: ({ key, l, },) => {
+    l?.debug(`No bigint rule provided for "${key}"`,);
     throw new TypeError(
       `No resolution rule provided for bigint conflicts on property "${key}"`,
     );
   },
-  symbol: ({ key, },) => {
+  symbol: ({ key, l, },) => {
+    l?.debug(`No symbol rule provided for "${key}"`,);
     throw new TypeError(
       `No resolution rule provided for symbol conflicts on property "${key}"`,
     );
@@ -182,19 +190,16 @@ export function objectsMerge<
 
   // Process each property
   for (const key of allKeys) {
-    const valuesByType = new Map<string, unknown[]>();
+    // Collect all values for this key across objects
+    const allValuesForKey: unknown[] = [];
 
-    // Collect all values for this key grouped by type
     for (const obj of objs) {
-      if (key in obj) {
-        const value = obj[key];
-        const valueType = typeof value;
-
-        if (!valuesByType.has(valueType,))
-          valuesByType.set(valueType, [],);
-        valuesByType.get(valueType,)!.push(value,);
-      }
+      if (key in obj)
+        allValuesForKey.push(obj[key],);
     }
+
+    // Group values by type
+    const valuesByType = Map.groupBy(allValuesForKey, value => typeof value,);
 
     l.debug(
       `Processing key "${key}": types found: ${
@@ -230,9 +235,11 @@ export function objectsMerge<
     }
     else {
       // Multiple values of the same type
-      // Check for consensus first
+      // Check for consensus using Map.groupBy
       const firstValue = values[0];
-      const allEqual = values.every((value: unknown,) => equal(firstValue, value,));
+      const groupedByEquality = Map.groupBy(values, value =>
+        equal(firstValue, value,) ? 'equal' : 'different',);
+      const allEqual = !groupedByEquality.has('different',);
 
       if (allEqual)
         result[key] = firstValue;
@@ -263,32 +270,32 @@ function resolveTypeConflict(
       const fns = values as ((...args: unknown[]) => unknown)[];
 
       // Check function parameter compatibility
-      if (!areParametersCompatible(fns,))
+      if (!areParametersCompatible({ fns, },))
         throw new TypeError('fn params incompatible',);
 
-      return rules.function({ key, values: fns, },);
+      return rules.function({ key, values: fns, l, },);
     }
 
     case 'string':
-      return rules.string({ key, values: values as string[], },);
+      return rules.string({ key, values: values as string[], l, },);
 
     case 'number':
-      return rules.number({ key, values: values as number[], },);
+      return rules.number({ key, values: values as number[], l, },);
 
     case 'boolean':
-      return rules.boolean({ key, values: values as boolean[], },);
+      return rules.boolean({ key, values: values as boolean[], l, },);
 
     case 'object':
-      return rules.object({ key, values: values as object[], },);
+      return rules.object({ key, values: values as object[], l, },);
 
     case 'undefined':
-      return rules.undefined({ key, values: values as undefined[], },);
+      return rules.undefined({ key, values: values as undefined[], l, },);
 
     case 'bigint':
-      return rules.bigint({ key, values: values as bigint[], },);
+      return rules.bigint({ key, values: values as bigint[], l, },);
 
     case 'symbol':
-      return rules.symbol({ key, values: values as symbol[], },);
+      return rules.symbol({ key, values: values as symbol[], l, },);
 
     default:
       throw new TypeError(`Unknown type "${valueType}" for property "${key}"`,);
@@ -299,7 +306,9 @@ function resolveTypeConflict(
  * Check if functions have compatible parameter signatures.
  * Functions are compatible if they have the same number of parameters.
  */
-function areParametersCompatible(fns: ((...args: unknown[]) => unknown)[],): boolean {
+function areParametersCompatible(
+  { fns, }: { readonly fns: ((...args: unknown[]) => unknown)[]; },
+): boolean {
   if (fns.length <= 1)
     return true;
 
