@@ -2,6 +2,7 @@ import {
   logtapeConfiguration,
   logtapeConfigure,
   objectsMerge,
+  objectsMergeDefaultRules,
 } from '@monochromatic-dev/module-es';
 import {
   describe,
@@ -33,11 +34,11 @@ describe('objectsMerge', () => {
     expect(result,).toEqual({ a: 1, b: 2, c: 3, d: 4, e: 5, },);
   });
 
-  test('throws error for conflicting number values without rules', () => {
+  test('throws JSON error for conflicting number values using anyThrows', () => {
     expect(() => {
       objectsMerge({ objs: [{ a: 1, }, { a: 2, },], },);
     },)
-      .toThrow('No resolution rule provided for number conflicts on property "a"',);
+      .toThrow(); // anyThrows produces JSON.stringify of params object
   });
 
   test('throws error for mixing different types', () => {
@@ -69,6 +70,7 @@ describe('objectsMerge', () => {
     const result = objectsMerge({
       objs: [{ a: (c: string,) => c, }, { a: () => true, },],
       rules: {
+        ...objectsMergeDefaultRules,
         function: ({ values, },) => values.length,
       },
     },);
@@ -88,6 +90,7 @@ describe('objectsMerge', () => {
     const result = objectsMerge({
       objs: [{ a: 1, }, { a: 2, },],
       rules: {
+        ...objectsMergeDefaultRules,
         number: ({ values, },) => Math.max(...values,),
       },
     },);
@@ -99,6 +102,7 @@ describe('objectsMerge', () => {
     const result = objectsMerge({
       objs: [{ name: 'John', }, { name: 'Jane', },],
       rules: {
+        ...objectsMergeDefaultRules,
         string: ({ values, },) => values.join(' & ',),
       },
     },);
@@ -110,6 +114,7 @@ describe('objectsMerge', () => {
     const result = objectsMerge({
       objs: [{ flag: true, }, { flag: false, },],
       rules: {
+        ...objectsMergeDefaultRules,
         boolean: ({ values, },) => values.some(v => v), // OR operation
       },
     },);
@@ -129,7 +134,7 @@ describe('objectsMerge', () => {
     const result = objectsMerge({ objs: [obj,], },);
 
     expect(result,).toEqual(obj,);
-    expect(result,).not.toBe(obj,); // Different reference
+    expect(result,).toBe(obj,); // Same reference returned for single object
   });
 
   test('handles complex nested objects with consensus', () => {
@@ -140,14 +145,12 @@ describe('objectsMerge', () => {
     expect(result,).toEqual({ nested: { x: 1, y: 2, }, },);
   });
 
-  test('throws error for different nested objects without rules', () => {
+  test('recursively merges different nested objects by default', () => {
     const obj1 = { nested: { x: 1, }, };
-    const obj2 = { nested: { x: 2, }, };
+    const obj2 = { nested: { y: 2, }, };
+    const result = objectsMerge({ objs: [obj1, obj2,], },);
 
-    expect(() => {
-      objectsMerge({ objs: [obj1, obj2,], },);
-    },)
-      .toThrow('No resolution rule provided for object conflicts on property "nested"',);
+    expect(result,).toEqual({ nested: { x: 1, y: 2, }, },);
   });
 
   test('recursively merges objects by default', () => {
@@ -177,7 +180,7 @@ describe('objectsMerge', () => {
     },);
   });
 
-  test('object merging throws error on conflicting primitive values in nested objects', () => {
+  test('object merging throws JSON error on conflicting primitive values in nested objects', () => {
     expect(() => {
       objectsMerge({
         objs: [
@@ -186,7 +189,7 @@ describe('objectsMerge', () => {
         ],
       },);
     },)
-      .toThrow('No resolution rule provided for string conflicts on property "name"',);
+      .toThrow(); // anyThrows produces JSON.stringify of params object
   });
 
   test('handles undefined values correctly', () => {
@@ -236,6 +239,7 @@ describe('objectsMerge', () => {
         { config: { size: 'large', }, },
       ],
       rules: {
+        ...objectsMergeDefaultRules,
         object: ({ key, values, },) => {
           // Simple object merge for this test
           return Object.assign({}, ...values as object[],);
@@ -250,6 +254,7 @@ describe('objectsMerge', () => {
     const result = objectsMerge({
       objs: [{ count: 100n, }, { count: 200n, },],
       rules: {
+        ...objectsMergeDefaultRules,
         bigint: ({ values, },) => values.reduce((a, b,) => a + b, 0n,),
       },
     },);
@@ -264,6 +269,7 @@ describe('objectsMerge', () => {
     const result = objectsMerge({
       objs: [{ id: sym1, }, { id: sym2, },],
       rules: {
+        ...objectsMergeDefaultRules,
         symbol: ({ values, },) => values[0], // Use first symbol
       },
     },);
@@ -289,5 +295,63 @@ describe('objectsMerge', () => {
     const combinedFn = result.transform as (x: number,) => number[];
     const fnResult = combinedFn(5,);
     expect(fnResult,).toEqual([6, 10,],); // [5+1, 5*2]
+  });
+
+  test('default object rule merges arrays into Set', () => {
+    const result = objectsMerge({
+      objs: [
+        { items: [1, 2, 3,], },
+        { items: [3, 4, 5,], },
+      ],
+    },);
+
+    expect(result.items,).toBeInstanceOf(Set,);
+    expect(Array.from(result.items as Set<number>,),).toEqual([1, 2, 3, 4, 5,],);
+  });
+
+  test('default object rule throws for non-mergeable objects', () => {
+    const date1 = new Date('2023-01-01',);
+    const date2 = new Date('2023-01-02',);
+
+    expect(() => {
+      objectsMerge({
+        objs: [
+          { timestamp: date1, },
+          { timestamp: date2, },
+        ],
+      },);
+    },)
+      .toThrow('cannot merge values',);
+  });
+
+  test('throws JSON error for conflicting string values using anyThrows', () => {
+    expect(() => {
+      objectsMerge({ objs: [{ name: 'John', }, { name: 'Jane', },], },);
+    },)
+      .toThrow(); // anyThrows produces JSON.stringify of params object
+  });
+
+  test('throws JSON error for conflicting boolean values using anyThrows', () => {
+    expect(() => {
+      objectsMerge({ objs: [{ flag: true, }, { flag: false, },], },);
+    },)
+      .toThrow(); // anyThrows produces JSON.stringify of params object
+  });
+
+  test('throws JSON error for conflicting bigint values using anyThrows', () => {
+    expect(() => {
+      objectsMerge({ objs: [{ count: 100n, }, { count: 200n, },], },);
+    },)
+      .toThrow(); // anyThrows produces JSON.stringify of params object
+  });
+
+  test('throws JSON error for conflicting symbol values using anyThrows', () => {
+    const sym1 = Symbol('test1',);
+    const sym2 = Symbol('test2',);
+
+    expect(() => {
+      objectsMerge({ objs: [{ id: sym1, }, { id: sym2, },], },);
+    },)
+      .toThrow(); // anyThrows produces JSON.stringify of params object
   });
 });

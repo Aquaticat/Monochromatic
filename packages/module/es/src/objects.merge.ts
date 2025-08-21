@@ -48,7 +48,7 @@ export type ObjectsMergeRules = {
 /**
  * Default rules for handling conflicts by type.
  */
-export const objectsMergeDefaultRules: ObjectsMergeRules = {
+export const objectsMergeDefaultRules: ObjectsMergeRules = Object.freeze({
   function: function combineFunction({ key, values, l = getDefaultLogger(), },) {
     l.debug(
       `Default: create a function that calls functionsMapWith for property ${key}`,
@@ -86,7 +86,7 @@ export const objectsMergeDefaultRules: ObjectsMergeRules = {
   undefined: anyThrows,
   bigint: anyThrows,
   symbol: anyThrows,
-};
+});
 
 /**
  * Merge an array of objects with type-based conflict resolution rules.
