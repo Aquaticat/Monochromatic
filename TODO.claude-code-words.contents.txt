@@ -49,7 +49,6 @@ carving
 casting
 cataloging
 catalyzing
-psycho-analysing
 centrifuging
 charging
 charting
@@ -306,6 +305,7 @@ proofreading
 prototyping
 provisioning
 pruning
+psycho-analysing
 publishing
 pureeing
 purifying
