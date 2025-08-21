@@ -6,7 +6,7 @@ import { indexedDbOpen, } from '../../../indexedDb/indexedDb.open.ts';
 import {
   consoleLogger,
   type Logger,
-} from '../../custom/object/logger/basic.ts';
+} from '../../../module/log/basic.ts';
 import { arrayRange, } from './array.range.ts';
 import { unary, } from './function.nary.ts';
 import * as shared from './string.fs.shared.ts';

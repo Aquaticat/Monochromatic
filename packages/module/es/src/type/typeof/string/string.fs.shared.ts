@@ -2,7 +2,7 @@ import type { Promisable, } from 'type-fest';
 import {
   consoleLogger,
   type Logger,
-} from '../../custom/object/logger/basic.ts';
+} from '../../../module/log/basic.ts';
 import type { MaybeAsyncIterableIterator, } from '../object/iterable/iterable.basic.ts';
 import type { NonEmptyString, } from './string.general.ts';
 import { randomUUID, } from './string.random.ts';

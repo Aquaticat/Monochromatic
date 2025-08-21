@@ -1,5 +1,5 @@
+import { getDefaultLogger, } from 'src/module/log/basic';
 import type { Logged, } from 'src/type/custom/object/logged/logged.basic';
-import { getDefaultLogger, } from 'src/type/custom/object/logger/basic';
 import type { Promisable, } from 'type-fest';
 
 //region when -- Synchronous conditional transformation

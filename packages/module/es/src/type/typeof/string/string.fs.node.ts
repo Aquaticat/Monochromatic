@@ -1,7 +1,7 @@
 import {
   consoleLogger,
   type Logger,
-} from '../../custom/object/logger/basic.ts';
+} from '../../../module/log/basic.ts';
 import {
   mkdir,
   readdir,

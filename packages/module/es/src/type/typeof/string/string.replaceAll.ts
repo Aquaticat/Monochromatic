@@ -1,8 +1,8 @@
-import type { Logged, } from '../../custom/object/logged/logged.basic.ts';
 import {
   consoleLogger,
   type Logger,
-} from '../../custom/object/logger/basic.ts';
+} from '../../../module/log/basic.ts';
+import type { Logged, } from '../../custom/object/logged/logged.basic.ts';
 
 type StringReplaceAllPattern = Parameters<typeof String.prototype.replaceAll>[0];
 

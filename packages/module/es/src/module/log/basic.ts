@@ -1,30 +1,31 @@
 import type { Promisable, } from 'type-fest';
-import { notUndefinedOrThrow, } from '../../../typeof/object/error/error.throw.ts';
-import { throws, } from '../../../typeof/object/error/error.throws.ts';
+import { unnamed, } from '../../type/custom/function/sink/index.ts';
+import { notUndefinedOrThrow, } from '../../type/typeof/object/error/error.throw.ts';
+import { throws, } from '../../type/typeof/object/error/error.throws.ts';
 import type {
   MonochromaticGlobalThis,
-} from '../../../typeof/object/globalThis/monochromatic/basic.ts';
-import { partialStringReplaceAll, } from '../../../typeof/string/string.replaceAll.ts';
-import { neversNoop, } from '../../../typescript/never/noop.ts';
+} from '../../type/typeof/object/globalThis/monochromatic/basic.ts';
+import { partialStringReplaceAll, } from '../../type/typeof/string/string.replaceAll.ts';
+import { neversNoop, } from '../../type/typescript/never/noop.ts';
 
-export type Logger_TemplateData = Record<string, string>;
+export type TemplateData = Record<string, string>;
 
-export type Logger_Method = (message: string,
-  record?: Logger_TemplateData | (() => Promisable<Logger_TemplateData>),) => unknown;
+export type Method = (message: string,
+  record?: TemplateData | (() => Promisable<TemplateData>),) => unknown;
 
-export type Logger_Level = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+export type Level = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 export type Logger = {
-  trace: Logger_Method;
-  debug: Logger_Method;
-  info: Logger_Method;
-  warn: Logger_Method;
-  error: Logger_Method;
-  fatal: Logger_Method;
+  trace: Method;
+  debug: Method;
+  info: Method;
+  warn: Method;
+  error: Method;
+  fatal: Method;
 };
 
-export function Logger_getConsoleFunction(
-  level: Logger_Level,
-): (message: string,) => unknown {
+export function getConsoleSinkUnnamedStringSync(
+  level: Level,
+): unnamed.$StringSync {
   let consoleFunction: (message: string,) => unknown;
   switch (level) {
     case 'trace':
@@ -59,20 +60,20 @@ export function Logger_getConsoleFunction(
   return consoleFunction;
 }
 
-export function Logger_createMethod(level: Logger_Level,): Logger_Method {
-  const consoleFunction = Logger_getConsoleFunction(level,);
+export function getMethod(level: Level,): Method {
+  const consoleFunction = getConsoleSinkUnnamedStringSync(level,);
 
   return function writeMethod(message: string,
-    record?: Logger_TemplateData | (() => Promisable<Logger_TemplateData>),)
+    record?: TemplateData | (() => Promisable<TemplateData>),)
   {
     if (!record)
       consoleFunction(message,);
-    const recordOrFactory: Promisable<Logger_TemplateData> = typeof record === 'function'
+    const recordOrFactory: Promisable<TemplateData> = typeof record === 'function'
       ? record()
       : notUndefinedOrThrow(record,);
     (async function writeWithTemplates(
       { message, recordOrFactory, }: { message: string;
-        recordOrFactory: Promisable<Logger_TemplateData>; },
+        recordOrFactory: Promisable<TemplateData>; },
     ) {
       const templateData = await recordOrFactory;
       const transforms = Object.entries(templateData,).map(
@@ -96,16 +97,16 @@ export function Logger_createMethod(level: Logger_Level,): Logger_Method {
   };
 }
 
-export const Logger_console: Logger = {
-  trace: Logger_createMethod('trace',),
-  debug: Logger_createMethod('debug',),
-  info: Logger_createMethod('info',),
-  warn: Logger_createMethod('warn',),
-  error: Logger_createMethod('error',),
-  fatal: Logger_createMethod('fatal',),
+export const consoleLogger: Logger = {
+  trace: getMethod('trace',),
+  debug: getMethod('debug',),
+  info: getMethod('info',),
+  warn: getMethod('warn',),
+  error: getMethod('error',),
+  fatal: getMethod('fatal',),
 };
 
-export const Logger_noop: Logger = {
+export const noopLogger: Logger = {
   trace: neversNoop,
   debug: neversNoop,
   info: neversNoop,
@@ -114,7 +115,11 @@ export const Logger_noop: Logger = {
   fatal: neversNoop,
 };
 
-export function Logger_getDefault(): Logger {
+export function getDefaultLogger(): Logger {
   return (globalThis as MonochromaticGlobalThis).monochromatic?.logger
-    ?? Logger_console;
+    ?? consoleLogger;
 }
+
+export type Logged = {
+  l: Logger;
+};

@@ -1,5 +1,7 @@
 export type Jsonl = string & { __brand: 'Jsonl'; };
 
+// FIXME: jsonl can have each object spanning multiple lines.
+
 /**
  * Type guard that checks if a value is a valid JSON Lines string.
  *

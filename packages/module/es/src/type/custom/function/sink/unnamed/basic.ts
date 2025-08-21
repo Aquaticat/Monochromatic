@@ -1,10 +1,9 @@
 import type { Promisable } from "type-fest";
 
-export type UnnamedBasicSync<T = unknown, Returns = unknown> = (value: T) => Returns;
+export type $Sync<T = unknown, Returns = unknown> = (value: T) => Returns;
 
-export type UnnamedBasic<T = unknown, Returns = unknown> = (value: T) => Promisable<Returns>;
+export type $<T = unknown, Returns = unknown> = (value: T) => Promisable<Returns>;
 
-export type UnnamedBasicStringSync<Returns = unknown> = (value: string) => Returns;
+export type $StringSync<Returns = unknown> = (value: string) => Returns;
 
-export type UnnamedBasicString<Returns = unknown> = (value: string) => Promisable<Returns>;
-
+export type $String<Returns = unknown> = (value: string) => Promisable<Returns>;
