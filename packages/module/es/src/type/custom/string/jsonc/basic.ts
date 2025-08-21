@@ -57,11 +57,11 @@ function skipQuotedString(
  * @param params - Parameters object
  * @param params.input - Input string
  * @param params.position - Current position
- * @returns Tuple of [comment, newPosition]
+ * @returns Object with comment and newPosition
  */
 function extractComments(
   { input, position, }: { input: string; position: number; },
-): [JsoncComment | undefined, number,] {
+): { comment: JsoncComment | undefined; newPosition: number; } {
   const comments: string[] = [];
   let hasInline = false;
   let hasBlock = false;
@@ -107,13 +107,16 @@ function extractComments(
   }
 
   if (comments.length === 0)
-    return [undefined, position,];
+    return { comment: undefined, newPosition: position, };
 
   const commentType = hasInline && hasBlock ? 'mixed' : hasInline ? 'inline' : 'block';
-  return [{
-    type: commentType,
-    commentValue: comments.join('\n',),
-  }, position,];
+  return {
+    comment: {
+      type: commentType,
+      commentValue: comments.join('\n',),
+    },
+    newPosition: position,
+  };
 }
 
 /**
@@ -232,9 +235,9 @@ function convertNativeValue(
 function skipWhitespace(
   { input, position, }: { input: string; position: number; },
 ): number {
-  while (position < input.length && /\s/.test(input[position],))
-    position++;
-  return position;
+  const remaining = input.substring(position,);
+  const nonWhitespaceIndex = remaining.search(/\S/,);
+  return nonWhitespaceIndex === -1 ? input.length : position + nonWhitespaceIndex;
 }
 
 /** Checks that a position is not inside a quoted string (e.g. in the middle of a keyword or number). */
@@ -341,12 +344,12 @@ export type JsoncValue = JsoncString | JsoncNumber | JsoncBoolean | JsoncNull | 
  * @param params.input - Input string
  * @param params.position - Current position
  * @param params.comment - Optional comment to attach
- * @returns Tuple of [JsoncValue, newPosition]
+ * @returns Object with value and newPosition
  */
 function parseJsonValueOrContainer(
   { input, position, comment, }: { input: string; position: number;
     comment?: JsoncComment; },
-): [JsoncValue, number,] {
+): { value: JsoncValue; newPosition: number; } {
   const char = input[position];
 
   // Handle container nodes with hierarchical optimization
@@ -358,24 +361,27 @@ function parseJsonValueOrContainer(
     if (!containsJsoncFeatures({ input, start, end, },)) {
       const jsonString = input.substring(start, end,);
       const nativeValue = JSON.parse(jsonString,);
-      return [convertNativeValue({ value: nativeValue, comment, },), end,];
+      return { value: convertNativeValue({ value: nativeValue, comment, },),
+        newPosition: end, };
     }
 
     // Hierarchical path: parse each entry individually with fast path attempts
-    return parseContainer({
+    const { value, newPosition, } = parseContainer({
       input,
       position,
       comment,
       openChar: '{',
       closeChar: '}',
       parseItem: parseRecordEntry,
-      createResult: (items: JsoncRecordEntry[],
-        comment?: JsoncComment,): JsoncRecord => ({
-          type: 'record',
-          value: items,
-          comment,
-        }),
+      createResult: (
+        { items, comment, }: { items: JsoncRecordEntry[]; comment?: JsoncComment; },
+      ): JsoncRecord => ({
+        type: 'record',
+        value: items,
+        comment,
+      }),
     },);
+    return { value, newPosition, };
   }
   else if (char === '[') {
     const start = position;
@@ -385,32 +391,62 @@ function parseJsonValueOrContainer(
     if (!containsJsoncFeatures({ input, start, end, },)) {
       const jsonString = input.substring(start, end,);
       const nativeValue = JSON.parse(jsonString,);
-      return [convertNativeValue({ value: nativeValue, comment, },), end,];
+      return { value: convertNativeValue({ value: nativeValue, comment, },),
+        newPosition: end, };
     }
 
     // Hierarchical path: parse each item individually with fast path attempts
-    return parseContainer({
+    const { value, newPosition, } = parseContainer({
       input,
       position,
       comment,
       openChar: '[',
       closeChar: ']',
-      parseItem: (input: string, itemPosition: number,) => {
-        const [itemComment, itemCommentPosition,] = extractComments({ input,
-          position: itemPosition, },);
-        return parseJsonValueOrContainer({ input, position: itemCommentPosition,
-          comment: itemComment, },);
+      parseItem: ({ input, position, }: { input: string; position: number; },) => {
+        const { comment: itemComment, newPosition: itemCommentPosition, } =
+          extractComments({ input, position, },);
+        return itemComment !== undefined
+          ? parseJsonValueOrContainer({ input, position: itemCommentPosition,
+            comment: itemComment, },)
+          : parseJsonValueOrContainer({ input, position: itemCommentPosition, },);
       },
-      createResult: (items: JsoncValue[], comment?: JsoncComment,): JsoncArray => ({
+      createResult: (
+        { items, comment, }: { items: JsoncValue[]; comment?: JsoncComment; },
+      ): JsoncArray => ({
         type: 'array',
         value: items,
         comment,
       }),
     },);
+    return { value, newPosition, };
   }
 
   // Handle primitives
   return parseJsonValue({ input, position, comment, },);
+}
+
+/**
+ * Parse a JSON primitive value (string, number, boolean, null)
+ * @param params - Parameters object
+ * @param params.input - Input string
+ * @param params.position - Current position
+ * @param params.comment - Optional comment to attach
+ * @returns Object with value and newPosition
+ */
+function parseJsonValue(
+  { input, position, comment, }: { input: string; position: number;
+    comment?: JsoncComment; },
+): { value: JsoncValue; newPosition: number; } {
+  const char = input[position];
+
+  if (char === '"')
+    return parseStringPrimitive({ input, position, comment, },);
+  else if (char === '-' || /[0-9]/.test(char,))
+    return parseNumberPrimitive({ input, position, comment, },);
+  else if (/[a-z]/.test(char,))
+    return parseKeywordPrimitive({ input, position, comment, },);
+
+  throw new Error(`Unexpected character '${char}' at position ${position}`,);
 }
 
 /**
@@ -419,24 +455,24 @@ function parseJsonValueOrContainer(
  * @param params.input - Input string
  * @param params.position - Current position (should be at opening quote)
  * @param params.comment - Optional comment to attach
- * @returns Tuple of [JsoncString, newPosition]
+ * @returns Object with value and newPosition
  */
 function parseStringPrimitive(
   { input, position, comment, }: { input: string; position: number;
     comment?: JsoncComment; },
-): [JsoncString, number,] {
+): { value: JsoncString; newPosition: number; } {
   const endPosition = skipQuotedString({ input, position, },);
   const stringContent = input.substring(position, endPosition,);
 
   // Use native JSON.parse for string parsing (handles escaping correctly)
   const parsedValue = JSON.parse(stringContent,);
 
-  return [
-    comment
+  return {
+    value: comment
       ? { type: 'string', value: parsedValue, comment, }
       : { type: 'string', value: parsedValue, },
-    endPosition,
-  ];
+    newPosition: endPosition,
+  };
 }
 
 /**
@@ -445,12 +481,12 @@ function parseStringPrimitive(
  * @param params.input - Input string
  * @param params.position - Current position
  * @param params.comment - Optional comment to attach
- * @returns Tuple of [JsoncNumber, newPosition]
+ * @returns Object with value and newPosition
  */
 function parseNumberPrimitive(
   { input, position, comment, }: { input: string; position: number;
     comment?: JsoncComment; },
-): [JsoncNumber, number,] {
+): { value: JsoncNumber; newPosition: number; } {
   const startPosition = position;
   const char = input[position];
 
@@ -505,12 +541,12 @@ function parseNumberPrimitive(
     );
   }
 
-  return [
-    comment
+  return {
+    value: comment
       ? { type: 'number', value: numberValidation.data, comment, }
       : { type: 'number', value: numberValidation.data, },
-    position,
-  ];
+    newPosition: position,
+  };
 }
 
 /**
@@ -519,12 +555,12 @@ function parseNumberPrimitive(
  * @param params.input - Input string
  * @param params.position - Current position
  * @param params.comment - Optional comment to attach
- * @returns Tuple of [JsoncBoolean | JsoncNull, newPosition]
+ * @returns Object with value and newPosition
  */
 function parseKeywordPrimitive(
   { input, position, comment, }: { input: string; position: number;
     comment?: JsoncComment; },
-): [JsoncBoolean | JsoncNull, number,] {
+): { value: JsoncBoolean | JsoncNull; newPosition: number; } {
   let extractedKeyword: string;
   let keywordLength: number;
 
@@ -553,28 +589,28 @@ function parseKeywordPrimitive(
   const endPosition = position + keywordLength;
 
   if (extractedKeyword === 'true') {
-    return [
-      comment
+    return {
+      value: comment
         ? { type: 'boolean', value: true, comment, }
         : { type: 'boolean', value: true, },
-      endPosition,
-    ];
+      newPosition: endPosition,
+    };
   }
   else if (extractedKeyword === 'false') {
-    return [
-      comment
+    return {
+      value: comment
         ? { type: 'boolean', value: false, comment, }
         : { type: 'boolean', value: false, },
-      endPosition,
-    ];
+      newPosition: endPosition,
+    };
   }
   else {
-    return [
-      comment
+    return {
+      value: comment
         ? { type: 'null', value: null, comment, }
         : { type: 'null', value: null, },
-      endPosition,
-    ];
+      newPosition: endPosition,
+    };
   }
 }
 
@@ -583,20 +619,23 @@ function parseKeywordPrimitive(
  * @param params - Parameters object
  * @param params.input - Input string
  * @param params.position - Current position
- * @returns Tuple of [JsoncString, newPosition after colon]
+ * @returns Object with value and newPosition after colon
  */
 function parseRecordKey(
   { input, position, }: { input: string; position: number; },
-): [JsoncString, number,] {
+): { value: JsoncString; newPosition: number; } {
   // Extract comments before the key
-  const [keyComment, keyCommentPosition,] = extractComments({ input, position, },);
+  const { comment: keyComment, newPosition: keyCommentPosition, } = extractComments({
+    input,
+    position,
+  },);
   position = keyCommentPosition;
 
   if (input[position] !== '"')
     throw new Error(`Expected string key at position ${position}`,);
 
   // Parse the string key
-  const [recordKey, keyEndPosition,] = parseStringPrimitive({
+  const { value: recordKey, newPosition: keyEndPosition, } = parseStringPrimitive({
     input,
     position,
     comment: keyComment,
@@ -610,7 +649,7 @@ function parseRecordKey(
 
   position++; // Skip the colon
 
-  return [recordKey, position,];
+  return { value: recordKey, newPosition: position, };
 }
 
 //endregion Primitive Parsers
@@ -764,9 +803,9 @@ function findNodeEnd(
 /**
  * Generic container parser for arrays and objects
  * @param params - Parameters object with container-specific logic
- * @returns Tuple of [parsedContainer, newPosition]
+ * @returns Object with value and newPosition
  */
-function parseContainer<T,>({
+function parseContainer<TItem, TResult,>({
   input,
   position,
   comment,
@@ -780,16 +819,20 @@ function parseContainer<T,>({
   comment?: JsoncComment;
   openChar: string;
   closeChar: string;
-  parseItem: (input: string, position: number,) => [unknown, number,];
-  createResult: (items: unknown[], comment?: JsoncComment,) => T;
-},): [T, number,] {
+  parseItem: (
+    { input, position, }: { input: string; position: number; },
+  ) => { value: TItem; newPosition: number; };
+  createResult: (
+    { items, comment, }: { items: TItem[]; comment?: JsoncComment; },
+  ) => TResult;
+},): { value: TResult; newPosition: number; } {
   position++; // Skip opening bracket
   position = skipWhitespace({ input, position, },);
 
-  const items: unknown[] = [];
+  const items: TItem[] = [];
 
   while (position < input.length && input[position] !== closeChar) {
-    const [item, itemPosition,] = parseItem(input, position,);
+    const { value: item, newPosition: itemPosition, } = parseItem({ input, position, },);
     items.push(item,);
     position = itemPosition;
 
@@ -809,34 +852,38 @@ function parseContainer<T,>({
     throw new Error(`Expected '${closeChar}' at position ${position}`,);
   position++;
 
-  return [createResult(items, comment,), position,];
+  return { value: createResult({ items, comment, },), newPosition: position, };
 }
 
 /**
- * Parse individual record entry (key-value pair) with context-specific parsing
+ * Individual record entry (key-value pair) with context-specific parsing
  * @param params - Parameters object
  * @param params.input - Input string
  * @param params.position - Current position
- * @returns Tuple of [recordEntry, newPosition]
+ * @returns Object with value and newPosition
  */
 function parseRecordEntry(
   { input, position, }: { input: string; position: number; },
-): [JsoncRecordEntry, number,] {
+): { value: JsoncRecordEntry; newPosition: number; } {
   // Parse key using context-specific function
-  const [recordKey, keyEndPosition,] = parseRecordKey({ input, position, },);
+  const { value: recordKey, newPosition: keyEndPosition, } = parseRecordKey({ input,
+    position, },);
 
   // Parse value with comments
-  const [valueComment, valueCommentPosition,] = extractComments({ input,
-    position: keyEndPosition, },);
-
-  // Parse the record value
-  const [recordValue, valueEndPosition,] = parseJsonValueOrContainer({
+  const { comment: valueComment, newPosition: valueCommentPosition, } = extractComments({
     input,
-    position: valueCommentPosition,
-    comment: valueComment,
+    position: keyEndPosition,
   },);
 
-  return [{ recordKey, recordValue, }, valueEndPosition,];
+  // Parse the record value
+  const { value: recordValue, newPosition: valueEndPosition, } =
+    parseJsonValueOrContainer({
+      input,
+      position: valueCommentPosition,
+      comment: valueComment,
+    },);
+
+  return { value: { recordKey, recordValue, }, newPosition: valueEndPosition, };
 }
 
 /**
@@ -844,19 +891,21 @@ function parseRecordEntry(
  * @param params - Parameters object
  * @param params.input - Input string
  * @param params.position - Current position
- * @returns Tuple of [parsedValue, newPosition]
+ * @returns Object with value and newPosition
  */
 function parseValue(
   { input, position, }: { input: string; position: number; },
-): [JsoncValue, number,] {
-  const [comment, newPosition,] = extractComments({ input, position, },);
+): { value: JsoncValue; newPosition: number; } {
+  const { comment, newPosition, } = extractComments({ input, position, },);
   position = newPosition;
 
   if (position >= input.length)
     throw new Error('Unexpected end of input',);
 
   // Use the new context-aware parsing approach
-  return parseJsonValueOrContainer({ input, position, comment, },);
+  return comment !== undefined
+    ? parseJsonValueOrContainer({ input, position, comment, },)
+    : parseJsonValueOrContainer({ input, position, },);
 }
 
 //endregion Parser
@@ -865,15 +914,17 @@ function parseValue(
 
 /**
  * Parse JSONC string into structured representation
- * @param input - JSONC string to parse
+ * @param params - Parameters object
+ * @param params.input - JSONC string to parse
  * @returns Parsed JSONC structure with preserved comments
  * @example
  * ```ts
- * const result = jsoncToParsedJsonc('{"a": 1 /* comment *\/}' as jsonc);
+ * const result = jsoncToParsedJsonc({ input: '{"a": 1 /* comment *\/}' as jsonc });
  * ```
  */
-export function jsoncToParsedJsonc(input: jsonc,): JsoncValue {
-  const [result, finalPosition,] = parseValue({ input, position: 0, },);
+export function jsoncToParsedJsonc({ input, }: { input: jsonc; },): JsoncValue {
+  const { value: result, newPosition: finalPosition, } = parseValue({ input,
+    position: 0, },);
 
   const endPosition = skipWhitespace({ input, position: finalPosition, },);
   if (endPosition < input.length)
@@ -883,103 +934,3 @@ export function jsoncToParsedJsonc(input: jsonc,): JsoncValue {
 }
 
 // endregion Public API
-
-// Try not to use any in-package function because other functions are bad at this time. You're on your own.
-
-// const myJsonc
-// ```jsonc
-// // comment1
-// // more comment 1
-// {
-//   // comment2
-//   "a": /*comment3*/ 1,
-//   "b": 2,
-//   "c": [
-//     1,
-//     2,
-//     // comment4
-//     /* comment4 mixed */
-//     3,
-//     // comment5 trailing comma ignored
-//     'd',
-//   ]
-// }
-// ```
-//
-// const myParsedJsonc = jsoncToParsedJsonc({myJsonc})
-// {
-//   type: 'record'
-//   comment: {type: 'inline', commentValue: ' comment1\n more comment 1'},
-//   value: [
-//      {
-//         recordKey: {
-//           comment: {type: 'inline', commentValue: ' comment2'},
-//           type: 'string'
-//           value: 'a',
-//         },
-//         recordValue: {
-//           comment: {type: 'block', commentValue: 'comment3'},
-//           type: 'number'
-//           value: 1,
-//         }
-//      },
-//      {
-//        recordKey: {
-//          type: 'string',
-//          value: 'b'
-//        },
-//        recordValue: {
-//          type: 'number'
-//          value: 2
-//        }
-//      },
-//      {
-//        recordKey: {
-//          type: 'string',
-//          value: 'c'
-//        },
-//        recordValue: {
-//          type: 'array',
-//          value: [
-//            {
-//              type: 'number',
-//              value: 1
-//            },
-//            {
-//              type: 'number',
-//              value: 2
-//            },
-//            {
-//              type: 'number',
-//              comment: {type: 'mixed', commentValue: ' comment4\n comment4 mixed '},
-//              value: 3
-//            },
-//            {
-//              type: 'string',
-//              value: 'd'
-//            },
-//          ]
-//        }
-//      }
-//   ]
-// }
-//
-// const reserializedJsonc = parsedJsoncToJsonc({myParsedJsonc})
-// ```jsonc
-// // comment1
-// // more comment1
-// {
-//   // comment2
-//   "a": /*comment3*/ 1,
-//   "b": 2,
-//   "c": [
-//     1,
-//     2,
-//     // comment4
-//     // comment4 mixed
-//     3,
-//     // comment5 trailing comma ignored
-//     'd'
-//   ]
-// }
-// ```
