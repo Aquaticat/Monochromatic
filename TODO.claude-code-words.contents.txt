@@ -66,8 +66,8 @@ concretizing
 condensing
 connecting
 containerizing
-continuous-integrating
 continuing
+continuous-integrating
 contracting
 de-capitalizing
 de-cycling
