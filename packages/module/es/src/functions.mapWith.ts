@@ -6,7 +6,7 @@ export function functionsMapWith<const Args extends unknown[] = unknown[],
   { fns, args, l = getDefaultLogger(), }: { fns: ((...args: Args) => Return)[];
     args: Args; } & Partial<Logged>,
 ): Return[] {
-  l.debug(mapWith.name,);
+  l.debug(functionsMapWith.name,);
   return fns.map(function call(fn,) {
     l.debug(call.name,);
     return fn(...args,);

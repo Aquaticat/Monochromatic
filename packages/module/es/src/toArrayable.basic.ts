@@ -1,4 +1,3 @@
-import type { Arrayful, } from './arrayful.basic';
 import type {
   IterableSync,
   MaybeAsyncIterable,

@@ -105,6 +105,7 @@ export * from './numeric.type.intsTo10.ts';
 export * from './object.extract.ts';
 export * from './object.is.ts';
 export * from './object.pick.ts';
+export * from './objects.merge.ts';
 
 export * from './promise.all.ts';
 export * from './promise.awaits.ts';
