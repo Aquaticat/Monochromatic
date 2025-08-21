@@ -1,4 +1,4 @@
-import { isArray } from './array.basic.ts';
+import { isArray, } from './basic.ts';
 
 /**
  * Tests if an array is non-empty and narrows the type to a tuple with at least one element.

@@ -21,7 +21,7 @@ import type { Promisable, } from 'type-fest';
  * doubleIfEven(3); // => 3
  * ```
  */
-export function when<const T, const R,>(
+export function anyWhen<const T, const R,>(
   predicate: (value: T,) => boolean,
   onTrue: (value: T,) => R,
   value: T,
@@ -62,7 +62,7 @@ export function when<const T, const R,>(
  * await doubleIfEvenAsync(3); // => 3
  * ```
  */
-export async function whenAsync<const T, const R,>(
+export async function anyWhenAsync<const T, const R,>(
   predicate: (value: T,) => Promisable<boolean>,
   onTrue: (value: T,) => Promisable<R>,
   value: T,

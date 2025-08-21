@@ -1,5 +1,5 @@
-import type { Logged, } from './logged.basic.ts';
-import { getDefaultLogger, } from './string.log.ts';
+import type { Logged, } from '../../../logged.basic.ts';
+import { getDefaultLogger, } from '../../../string.log.ts';
 
 /**
  * Finds the index of the first element in an array that satisfies the async predicate.

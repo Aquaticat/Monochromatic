@@ -22,8 +22,8 @@
  * typeOf({}); // 'object'
  * ```
  */
-export function typeOf(
-  obj: any,
+export function unknownToTypeOfString(
+  obj: unknown,
 ):
   | 'null'
   | 'undefined'

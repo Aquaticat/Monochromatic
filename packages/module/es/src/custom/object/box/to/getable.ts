@@ -1,4 +1,4 @@
-import type { Box, } from './box.basic.ts';
+import type { Box, } from '../basic.ts';
 import type { GetableSync, } from './getable.basic.ts';
 import type { Logged, } from './logged.basic.ts';
 import { getDefaultLogger, } from './string.log.ts';

@@ -1,7 +1,7 @@
 import decircular from 'decircular';
 import superjson from 'superjson';
 import type { Promisable, } from 'type-fest';
-import { hasCycle, } from './any.hasCycle.ts';
+import { unknownHasCycle, } from './any.hasCycle.ts';
 import { notUndefinedOrThrow, } from './error.throw.ts';
 import { mapIterableAsync, } from './iterable.map.ts';
 import { hashString, } from './string.hash.ts';
@@ -324,7 +324,7 @@ export class Store {
   private serializeValueForStorage(value: unknown,): string {
     this.l.trace('serializeValueForStorage',);
     const { l, serializer, logLimit, lossyForCircular, } = this;
-    if (hasCycle(value,)) {
+    if (unknownHasCycle(value,)) {
       const decycled = decircular(value as object,);
       const serialized = serializer(decycled,);
       if (!lossyForCircular) {

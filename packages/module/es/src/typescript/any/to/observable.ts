@@ -1,6 +1,6 @@
 import type { Promisable, } from 'type-fest';
 
-export function createObservable<const Value,>(value: Value,
+export function anyToObservable<const Value,>(value: Value,
   onChange: (value: Value, oldValue: Value,) => void,): { value: Value; }
 {
   const proxy = new Proxy({
@@ -20,7 +20,7 @@ export function createObservable<const Value,>(value: Value,
   return proxy;
 }
 
-export async function createObservableAsync<const Value,>(value: Value,
+export async function anyToObservableAsync<const Value,>(value: Value,
   onChange: (value: Value, oldValue: Value,) => Promisable<void>,
 ): Promise<{ value: Value; }> {
   const proxy = new Proxy({

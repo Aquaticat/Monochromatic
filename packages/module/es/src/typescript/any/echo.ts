@@ -1,7 +1,7 @@
 /* v8 ignore file -- @preserve */
 
-import type { Logged, } from './logged.basic.ts';
-import { getDefaultLogger, } from './string.log.ts';
+import type { Logged, } from '../../logged.basic.ts';
+import { getDefaultLogger, } from '../../string.log.ts';
 
 /**
  * Creates an infinite generator that repeatedly yields the same value.
@@ -26,7 +26,7 @@ import { getDefaultLogger, } from './string.log.ts';
  * }
  * ```
  */
-export function* echo<const T,>(
+export function* anyEcho<const T,>(
   { x, l = getDefaultLogger(), }: { x: T; } & Partial<Logged>,
 ): Generator<T> {
   l.trace('echo',);

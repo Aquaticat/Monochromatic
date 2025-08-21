@@ -1,7 +1,7 @@
 /* v8 ignore file -- @preserve */
 
-import type { Logged, } from './logged.basic.ts';
-import { getDefaultLogger, } from './string.log';
+import type { Logged, } from '../../logged.basic.ts';
+import { getDefaultLogger, } from '../../string.log.ts';
 
 /**
  * Creates function that returns same value regardless of arguments.
@@ -29,7 +29,7 @@ import { getDefaultLogger, } from './string.log';
  * defaultHandler(); // 'default'
  * ```
  */
-export function constant<const T,>(
+export function anyConstant<const T,>(
   x: T,
   { l = getDefaultLogger(), }: Partial<Logged> = {},
 ): () => T {

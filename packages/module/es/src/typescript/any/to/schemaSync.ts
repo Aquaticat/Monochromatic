@@ -1,6 +1,6 @@
-import type { Logged, } from './logged.basic';
-import type { SchemaSync, } from './schema.basic';
-import { getDefaultLogger, } from './string.log';
+import type { Logged, } from '../../../logged.basic';
+import type { SchemaSync, } from '../../../schema.basic';
+import { getDefaultLogger, } from '../../../string.log';
 
 export function anyToSchemaSync<const T,>({
   input,

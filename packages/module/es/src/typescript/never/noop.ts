@@ -17,6 +17,6 @@
  * };
  * ```
  */
-export function noop(..._parameters: unknown[]): void {
+export function neversNoop(..._parameters: unknown[]): void {
   // intentionally empty;
 }

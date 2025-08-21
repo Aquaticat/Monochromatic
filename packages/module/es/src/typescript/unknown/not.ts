@@ -20,6 +20,6 @@
  * BooleanNot({}); // false (objects are truthy, even empty ones)
  * ```
  */
-export function BooleanNot(value: unknown,): boolean {
+export function unknownNot(value: unknown,): boolean {
   return !value;
 }

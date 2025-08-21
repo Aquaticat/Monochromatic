@@ -1,5 +1,5 @@
+import type { Box, } from '../basic.ts';
 import { arrayFromAsyncBasic, } from './array.fromAsyncBasic.ts';
-import type { Box, } from './box.basic.ts';
 import { notNullishOrThrow, } from './error.throw.ts';
 import type { MaybeAsyncIterable, } from './iterable.basic.ts';
 import type { Logged, } from './logged.basic.ts';

@@ -1,7 +1,5 @@
 import type { Promisable, } from 'type-fest';
 
-//region Store Interface -- Core store contract definition
-
 /** Store contract.
  * Implement a simple store API with optional tiering.
  */
@@ -17,10 +15,6 @@ export type Store = {
   /** Optional priority tier for consensus (higher value means higher tier). */
   priority?: number;
 };
-
-//endregion Store Interface
-
-//region MemoryStore Implementation -- Map-based in-memory store with documented limitations
 
 /**
  * In-memory store implementation that extends Map to implement Store interface.
@@ -62,5 +56,3 @@ export type Store = {
  * ```
  */
 export class MemoryStore extends Map implements Store {}
-
-//endregion MemoryStore Implementation

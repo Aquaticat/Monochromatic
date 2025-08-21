@@ -1,27 +1,27 @@
-import { isError, } from './error.is.ts';
+import { isError, } from '../../error.is.ts';
 import {
   isAsyncGenerator,
   isGenerator,
-} from './generator.is.ts';
-import { isAsyncIterable, } from './iterable.is.ts';
-import type { Logged, } from './logged.basic.ts';
+} from '../../generator.is.ts';
+import { isAsyncIterable, } from '../../iterable.is.ts';
+import type { Logged, } from '../../logged.basic.ts';
 import {
   isMap,
   isWeakMap,
-} from './map.is.ts';
-import { isObjectDate, } from './numeric.date.ts';
-import { isObject, } from './object.is.ts';
-import { isPromise, } from './promise.is.ts';
-import type { NotPromise, } from './promise.type.ts';
+} from '../../map.is.ts';
+import { isObjectDate, } from '../../numeric.date.ts';
+import { isObject, } from '../../object.is.ts';
+import { isPromise, } from '../../promise.is.ts';
+import type { NotPromise, } from '../../promise.type.ts';
 import {
   isSet,
   isWeakSet,
-} from './set.is.ts';
+} from '../../set.is.ts';
 import {
   isObjectRegexp,
   isString,
-} from './string.is.ts';
-import { getDefaultLogger, } from './string.log.ts';
+} from '../../string.is.ts';
+import { getDefaultLogger, } from '../../string.log.ts';
 
 // TODO: Don't consider BigInt a primitive.
 // Write three functions in total to better express the intended purpose.

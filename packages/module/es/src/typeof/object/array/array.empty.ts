@@ -1,4 +1,4 @@
-import { isArray } from './array.basic.ts';
+import { isArray, } from './basic.ts';
 
 /**
  * Tests if a value is an empty array.
