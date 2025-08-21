@@ -2,7 +2,7 @@ import type { Logged, } from '../../custom/object/logged/logged.basic.ts';
 import {
   consoleLogger,
   type Logger,
-} from './log.ts';
+} from '../../custom/object/logger/basic.ts';
 
 type StringReplaceAllPattern = Parameters<typeof String.prototype.replaceAll>[0];
 

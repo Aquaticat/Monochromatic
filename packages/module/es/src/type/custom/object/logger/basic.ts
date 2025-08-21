@@ -1,14 +1,13 @@
 import type {
   Promisable,
-  UnknownRecord,
 } from 'type-fest';
-import { notUndefinedOrThrow, } from '../object/error/error.throw.ts';
-import { throws, } from '../object/error/error.throws.ts';
+import { notUndefinedOrThrow, } from '../../../typeof/object/error/error.throw.ts';
+import { throws, } from '../../../typeof/object/error/error.throws.ts';
 import type {
   MonochromaticGlobalThis,
-} from '../object/globalThis/monochromatic/basic.ts';
-import { noop, } from './anys.noop.ts';
-import { partialStringReplaceAll, } from './string.replaceAll.ts';
+} from '../../../typeof/object/globalThis/monochromatic/basic.ts';
+import { partialStringReplaceAll, } from '../../../typeof/string/string.replaceAll.ts';
+import { neversNoop, } from '../../../typescript/never/noop.ts';
 
 export type StringRecord = Record<string, string>;
 
@@ -109,12 +108,12 @@ export const consoleLogger: Logger = {
 };
 
 export const noopLogger: Logger = {
-  trace: noop,
-  debug: noop,
-  info: noop,
-  warn: noop,
-  error: noop,
-  fatal: noop,
+  trace: neversNoop,
+  debug: neversNoop,
+  info: neversNoop,
+  warn: neversNoop,
+  error: neversNoop,
+  fatal: neversNoop,
 };
 
 export function getDefaultLogger(): Logger {

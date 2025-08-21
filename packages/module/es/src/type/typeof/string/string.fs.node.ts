@@ -1,4 +1,8 @@
 import {
+  consoleLogger,
+  type Logger,
+} from '../../custom/object/logger/basic.ts';
+import {
   mkdir,
   readdir,
   readFile,
@@ -6,10 +10,6 @@ import {
   writeFile,
 } from './fs.fs.node.ts';
 import { pathJoin, } from './fs.pathJoin.node.ts';
-import {
-  consoleLogger,
-  type Logger,
-} from './log.ts';
 import * as shared from './string.fs.shared.ts';
 import { randomUUID, } from './string.random.ts';
 

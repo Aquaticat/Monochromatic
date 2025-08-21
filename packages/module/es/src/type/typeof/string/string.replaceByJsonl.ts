@@ -1,8 +1,8 @@
 import type { UnknownRecord, } from 'type-fest';
 import type { MaybeAsyncIterable, } from '../../../iterable.basic';
 import type { Logged, } from '../../custom/object/logged/logged.basic';
+import { getDefaultLogger, } from '../../custom/object/logger/basic';
 import type { Jsonl, } from '../../custom/string/jsonl/jsonl.basic';
-import { getDefaultLogger, } from './log';
 
 /**
  * Rule definition for string replacement operations.

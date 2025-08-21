@@ -1,7 +1,5 @@
 import {
   consoleLogger,
-  logtapeConfiguration,
-  logtapeConfigure,
 } from '@monochromatic-dev/module-es';
 import type {
   Logger,
@@ -150,7 +148,7 @@ describe('consoleLogger', () => {
 describe('Logger interface usage patterns', () => {
   test('should allow custom logger implementations', () => {
     const messages: { level: string; message: string }[] = [];
-    
+
     const customLogger: Logger = {
       trace: (message: string) => messages.push({ level: 'trace', message }),
       debug: (message: string) => messages.push({ level: 'debug', message }),
@@ -171,7 +169,7 @@ describe('Logger interface usage patterns', () => {
 
   test('should support logger composition and decoration', () => {
     const logs: string[] = [];
-    
+
     const decoratedLogger: Logger = {
       trace: (message: string) => logs.push(`[TRACE] ${message}`),
       debug: (message: string) => logs.push(`[DEBUG] ${message}`),

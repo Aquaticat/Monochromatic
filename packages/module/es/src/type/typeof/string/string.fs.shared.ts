@@ -1,9 +1,9 @@
 import type { Promisable, } from 'type-fest';
-import type { MaybeAsyncIterableIterator, } from '../object/iterable/iterable.basic.ts';
 import {
   consoleLogger,
   type Logger,
-} from './log.ts';
+} from '../../custom/object/logger/basic.ts';
+import type { MaybeAsyncIterableIterator, } from '../object/iterable/iterable.basic.ts';
 import type { NonEmptyString, } from './string.general.ts';
 import { randomUUID, } from './string.random.ts';
 

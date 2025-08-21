@@ -3,12 +3,12 @@ import {
   indexedDbExecuteTransaction,
 } from '../../../indexedDb/indexedDb.executeTransaction.ts';
 import { indexedDbOpen, } from '../../../indexedDb/indexedDb.open.ts';
-import { arrayRange, } from './array.range.ts';
-import { unary, } from './function.nary.ts';
 import {
   consoleLogger,
   type Logger,
-} from './log.ts';
+} from '../../custom/object/logger/basic.ts';
+import { arrayRange, } from './array.range.ts';
+import { unary, } from './function.nary.ts';
 import * as shared from './string.fs.shared.ts';
 import { isString, } from './string.is.ts';
 import { randomUUID, } from './string.random.ts';
