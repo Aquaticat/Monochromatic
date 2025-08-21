@@ -1,0 +1,14 @@
+import { getDefaultLogger, } from '../../../string.log';
+import type { Logged, } from '../../custom/object/logged/logged.basic';
+
+export function functionsMapWith<const Args extends unknown[] = unknown[],
+  const Return = unknown,>(
+  { fns, args, l = getDefaultLogger(), }: { fns: ((...args: Args) => Return)[];
+    args: Args; } & Partial<Logged>,
+): Return[] {
+  l.debug(functionsMapWith.name,);
+  return fns.map(function call(fn,) {
+    l.debug(call.name,);
+    return fn(...args,);
+  },);
+}
