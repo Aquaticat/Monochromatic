@@ -338,11 +338,68 @@ function findNodeEnd(
     return position;
   }
 
-  // Handle primitives (numbers, booleans, null)
-  while (position < input.length && !/[\s,}\]]/.test(input[position],))
-    position++;
+  // Handle JSON primitives with proper boundary detection
+  const startPosition = position;
 
-  return position;
+  // Handle numbers: -?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?
+  if (char === '-' || /[0-9]/.test(char,)) {
+    if (char === '-')
+      position++;
+
+    // Integer part
+    if (position < input.length && input[position] === '0')
+      position++;
+    else if (position < input.length && /[1-9]/.test(input[position],)) {
+      position++;
+      while (position < input.length && /[0-9]/.test(input[position],))
+        position++;
+    }
+    else {
+      throw new Error(`Invalid number format at position ${startPosition}`,);
+    }
+
+    // Fractional part
+    if (position < input.length && input[position] === '.') {
+      position++;
+      if (position >= input.length || !/[0-9]/.test(input[position],)) {
+        throw new Error(
+          `Invalid number format: missing digits after decimal at position ${position}`,
+        );
+      }
+      while (position < input.length && /[0-9]/.test(input[position],))
+        position++;
+    }
+
+    // Exponent part
+    if (position < input.length && /[eE]/.test(input[position],)) {
+      position++;
+      if (position < input.length && /[+-]/.test(input[position],))
+        position++;
+      if (position >= input.length || !/[0-9]/.test(input[position],)) {
+        throw new Error(
+          `Invalid number format: missing digits in exponent at position ${position}`,
+        );
+      }
+      while (position < input.length && /[0-9]/.test(input[position],))
+        position++;
+    }
+
+    return position;
+  }
+
+  // Handle boolean and null keywords
+  if (/[a-z]/.test(char,)) {
+    if (input.substring(position, position + 4,) === 'true')
+      return position + 4;
+    else if (input.substring(position, position + 5,) === 'false')
+      return position + 5;
+    else if (input.substring(position, position + 4,) === 'null')
+      return position + 4;
+
+    throw new Error(`Invalid keyword at position ${position}`,);
+  }
+
+  throw new Error(`Unexpected character '${char}' at position ${position}`,);
 }
 
 /**
@@ -403,34 +460,35 @@ function parseContainer<T,>({
  * @param params.position - Current position
  * @returns Tuple of [recordEntry, newPosition]
  */
-function parseRecordEntry({ input, position }: { input: string; position: number }): [JsoncRecordEntry, number] {
+function parseRecordEntry(
+  { input, position, }: { input: string; position: number; },
+): [JsoncRecordEntry, number,] {
   // Parse key with potential fast path
-  const [keyComment, keyCommentPosition] = extractComments({ input, position });
+  const [keyComment, keyCommentPosition,] = extractComments({ input, position, },);
   position = keyCommentPosition;
 
-  if (input[position] !== '"') {
-    throw new Error(`Expected string key at position ${position}`);
-  }
+  if (input[position] !== '"')
+    throw new Error(`Expected string key at position ${position}`,);
 
   // Fast path for key (always a simple string)
   const keyStart = position;
-  const keyEnd = findNodeEnd({ input, position });
-  const keyString = input.substring(keyStart, keyEnd);
-  const keyValue = JSON.parse(keyString);
+  const keyEnd = findNodeEnd({ input, position, },);
+  const keyString = input.substring(keyStart, keyEnd,);
+  const keyValue = JSON.parse(keyString,);
 
-  const recordKey: JsoncString = { type: 'string', value: keyValue, comment: keyComment };
+  const recordKey: JsoncString = { type: 'string', value: keyValue,
+    comment: keyComment, };
 
-  position = skipWhitespace({ input, position: keyEnd });
+  position = skipWhitespace({ input, position: keyEnd, },);
 
-  if (input[position] !== ':') {
-    throw new Error(`Expected ':' at position ${position}`);
-  }
+  if (input[position] !== ':')
+    throw new Error(`Expected ':' at position ${position}`,);
   position++;
 
   // Parse value with full hierarchical fast path recursion
-  const [recordValue, valuePosition] = parseValue({ input, position });
+  const [recordValue, valuePosition,] = parseValue({ input, position, },);
 
-  return [{ recordKey, recordValue }, valuePosition];
+  return [{ recordKey, recordValue, }, valuePosition,];
 }
 
 /**
@@ -440,26 +498,27 @@ function parseRecordEntry({ input, position }: { input: string; position: number
  * @param params.position - Current position
  * @returns Tuple of [parsedValue, newPosition]
  */
-function parseValue({ input, position }: { input: string; position: number }): [JsoncValue, number] {
-  const [comment, newPosition] = extractComments({ input, position });
+function parseValue(
+  { input, position, }: { input: string; position: number; },
+): [JsoncValue, number,] {
+  const [comment, newPosition,] = extractComments({ input, position, },);
   position = newPosition;
 
-  if (position >= input.length) {
-    throw new Error('Unexpected end of input');
-  }
+  if (position >= input.length)
+    throw new Error('Unexpected end of input',);
 
   const char = input[position];
 
   // Handle container nodes with hierarchical optimization
   if (char === '{') {
     const start = position;
-    const end = findNodeEnd({ input, position });
+    const end = findNodeEnd({ input, position, },);
 
     // Fast path: if entire container is clean, use native parser
-    if (!containsJsoncFeatures({ input, start, end })) {
-      const jsonString = input.substring(start, end);
-      const nativeValue = JSON.parse(jsonString);
-      return [convertNativeValue({ value: nativeValue, comment }), end];
+    if (!containsJsoncFeatures({ input, start, end, },)) {
+      const jsonString = input.substring(start, end,);
+      const nativeValue = JSON.parse(jsonString,);
+      return [convertNativeValue({ value: nativeValue, comment, },), end,];
     }
 
     // Hierarchical path: parse each entry individually with fast path attempts
@@ -470,21 +529,23 @@ function parseValue({ input, position }: { input: string; position: number }): [
       openChar: '{',
       closeChar: '}',
       parseItem: parseRecordEntry,
-      createResult: (items: JsoncRecordEntry[], comment?: JsoncComment): JsoncRecord => ({
-        type: 'record',
-        value: items,
-        comment
-      })
-    });
-  } else if (char === '[') {
+      createResult: (items: JsoncRecordEntry[],
+        comment?: JsoncComment,): JsoncRecord => ({
+          type: 'record',
+          value: items,
+          comment,
+        }),
+    },);
+  }
+  else if (char === '[') {
     const start = position;
-    const end = findNodeEnd({ input, position });
+    const end = findNodeEnd({ input, position, },);
 
     // Fast path: if entire array is clean, use native parser
-    if (!containsJsoncFeatures({ input, start, end })) {
-      const jsonString = input.substring(start, end);
-      const nativeValue = JSON.parse(jsonString);
-      return [convertNativeValue({ value: nativeValue, comment }), end];
+    if (!containsJsoncFeatures({ input, start, end, },)) {
+      const jsonString = input.substring(start, end,);
+      const nativeValue = JSON.parse(jsonString,);
+      return [convertNativeValue({ value: nativeValue, comment, },), end,];
     }
 
     // Hierarchical path: parse each item individually with fast path attempts
@@ -494,45 +555,52 @@ function parseValue({ input, position }: { input: string; position: number }): [
       comment,
       openChar: '[',
       closeChar: ']',
-      parseItem: (input: string, itemPosition: number) => parseValue({ input, position: itemPosition }),
-      createResult: (items: JsoncValue[], comment?: JsoncComment): JsoncArray => ({
+      parseItem: (input: string, itemPosition: number,) =>
+        parseValue({ input, position: itemPosition, },),
+      createResult: (items: JsoncValue[], comment?: JsoncComment,): JsoncArray => ({
         type: 'array',
         value: items,
-        comment
-      })
-    });
+        comment,
+      }),
+    },);
   }
 
   // Handle terminal nodes - check for individual value fast path
   const start = position;
-  const end = findNodeEnd({ input, position });
+  const end = findNodeEnd({ input, position, },);
 
   // If no comment, this is a pure terminal - maximum fast path
   if (!comment) {
-    const jsonString = input.substring(start, end);
-    const value = JSON.parse(jsonString);
-    return [convertNativeValue({ value }), end];
+    const jsonString = input.substring(start, end,);
+    const value = JSON.parse(jsonString,);
+    return [convertNativeValue({ value, },), end,];
   }
 
   // Terminal with comment - still use native parser for the value part
-  const jsonString = input.substring(start, end);
+  const jsonString = input.substring(start, end,);
 
   try {
-    const value = JSON.parse(jsonString);
+    const value = JSON.parse(jsonString,);
 
-    if (typeof value === 'string') {
-      return [{ type: 'string', value, comment }, end];
-    } else if (typeof value === 'number') {
-      return [{ type: 'number', value, comment }, end];
-    } else if (typeof value === 'boolean') {
-      return [{ type: 'boolean', value, comment }, end];
-    } else if (value === null) {
-      return [{ type: 'null', value: null, comment }, end];
-    }
+    if (typeof value === 'string')
+      return [{ type: 'string', value, comment, }, end,];
+    else if (typeof value === 'number')
+      return [{ type: 'number', value, comment, }, end,];
+    else if (typeof value === 'boolean')
+      return [{ type: 'boolean', value, comment, }, end,];
+    else if (value === null)
+      return [{ type: 'null', value: null, comment, }, end,];
 
-    throw new Error(`Unexpected value type: ${typeof value}`);
-  } catch (error) {
-    throw new Error(`Failed to parse JSON value "${jsonString}": ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(`Unexpected value type: ${typeof value}`,);
+  }
+  catch (error) {
+    throw new Error(
+      `Failed to parse JSON value "${jsonString}": ${
+        error instanceof Error
+          ? error.message
+          : String(error,)
+      }`,
+    );
   }
 }
 
