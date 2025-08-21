@@ -6,11 +6,11 @@ import {
   writeFile,
 } from './fs.fs.node.ts';
 import { pathJoin, } from './fs.pathJoin.node.ts';
-import * as shared from './string.fs.shared.ts';
 import {
   consoleLogger,
   type Logger,
-} from './string.log.ts';
+} from './log.ts';
+import * as shared from './string.fs.shared.ts';
 import { randomUUID, } from './string.random.ts';
 
 /**

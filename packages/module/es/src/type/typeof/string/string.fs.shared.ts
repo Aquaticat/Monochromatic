@@ -1,10 +1,10 @@
 import type { Promisable, } from 'type-fest';
 import type { MaybeAsyncIterableIterator, } from '../object/iterable/iterable.basic.ts';
-import type { NonEmptyString, } from './string.general.ts';
 import {
   consoleLogger,
   type Logger,
-} from './string.log.ts';
+} from './log.ts';
+import type { NonEmptyString, } from './string.general.ts';
 import { randomUUID, } from './string.random.ts';
 
 /**

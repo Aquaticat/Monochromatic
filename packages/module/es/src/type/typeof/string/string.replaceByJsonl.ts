@@ -2,7 +2,7 @@ import type { UnknownRecord, } from 'type-fest';
 import type { MaybeAsyncIterable, } from '../../../iterable.basic';
 import type { Logged, } from '../../custom/object/logged/logged.basic';
 import type { Jsonl, } from '../../custom/string/jsonl/jsonl.basic';
-import { getDefaultLogger, } from './string.log';
+import { getDefaultLogger, } from './log';
 
 /**
  * Rule definition for string replacement operations.

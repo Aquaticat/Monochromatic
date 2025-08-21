@@ -2,15 +2,16 @@ import type { Logged, } from '../../custom/object/logged/logged.basic.ts';
 import {
   consoleLogger,
   type Logger,
-} from './string.log.ts';
+} from './log.ts';
 
 type StringReplaceAllPattern = Parameters<typeof String.prototype.replaceAll>[0];
 
 type StringReplaceAllReplacement = string | (() => string);
 
 export function stringReplaceAll(
-  { str, pattern, replacement, l = consoleLogger, }: { str: string;
-    pattern: StringReplaceAllPattern; replacement: StringReplaceAllReplacement; }
+  { str, pattern, replacement, l = consoleLogger, }:
+    & { str: string; pattern: StringReplaceAllPattern;
+      replacement: StringReplaceAllReplacement; }
     & Partial<Logged>,
 ): string {
   l.debug(stringReplaceAll.name,);
@@ -22,7 +23,8 @@ export function partialStringReplaceAll({
   pattern,
   replacement,
   l = consoleLogger,
-}: { pattern: StringReplaceAllPattern; replacement: StringReplaceAllReplacement; }
+}:
+  & { pattern: StringReplaceAllPattern; replacement: StringReplaceAllReplacement; }
   & Partial<Logged>,): (str: string,) => string
 {
   l.debug(partialStringReplaceAll.name,);

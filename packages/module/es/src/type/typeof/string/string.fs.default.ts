@@ -5,12 +5,12 @@ import {
 import { indexedDbOpen, } from '../../../indexedDb/indexedDb.open.ts';
 import { arrayRange, } from './array.range.ts';
 import { unary, } from './function.nary.ts';
-import * as shared from './string.fs.shared.ts';
-import { isString, } from './string.is.ts';
 import {
   consoleLogger,
   type Logger,
-} from './string.log.ts';
+} from './log.ts';
+import * as shared from './string.fs.shared.ts';
+import { isString, } from './string.is.ts';
 import { randomUUID, } from './string.random.ts';
 
 /**

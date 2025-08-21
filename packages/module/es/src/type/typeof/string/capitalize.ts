@@ -1,5 +1,7 @@
 // From https://stackoverflow.com/a/53930826 under https://creativecommons.org/licenses/by-sa/4.0/
 
+import type { Logged, } from 'src/type/custom/object/logged/logged.basic';
+
 /**
  * Capitalizes the first character of a string using Unicode-aware locale-sensitive transformation.
  *
@@ -84,7 +86,11 @@
  * }
  * ```
  */
-export function capitalizeString(str: string, locale?: string,): string {
+export function capitalizeString(
+  { str, locale, l = getDefaultLogger(), }: { str: string; locale?: string; } & Partial<
+    Logged
+  >,
+): string {
   return str.replace(/^\p{CWU}/v, function replacer(char,) {
     return char.toLocaleUpperCase(locale,);
   },);
