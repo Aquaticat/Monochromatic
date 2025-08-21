@@ -2,7 +2,127 @@ export type jsonc = string & { __brand: 'jsonc'; };
 
 import { z, } from 'zod/v4-mini';
 
+//region Zod Validation Schemas -- Schema definitions for JSON value validation
+
+/**
+ * Schema for validating JSON number strings
+ * Validates the complete JSON number format: -?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?
+ */
+const jsonNumberStringSchema = z.string().check(
+  z.regex(/^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?$/,),
+);
+
+/**
+ * Schema for coercing valid JSON number strings to actual numbers
+ */
+const jsonNumberSchema = z.coerce.number();
+
+/**
+ * Schema for validating JSON keyword literals
+ */
+const jsonKeywordSchema = z.enum(['true', 'false', 'null',],);
+
+//endregion Zod Validation Schemas
+
 //region Comment Processing/Common String Utilities
+
+/**
+ * Skip a quoted string and return the new position
+ * @param params - Parameters object
+ * @param params.input - Input string
+ * @param params.position - Current position (should be at opening quote)
+ * @returns New position after the closing quote
+ */
+function skipQuotedString(
+  { input, position, }: { input: string; position: number; },
+): number {
+  if (input[position] !== '"')
+    return position;
+
+  position++; // Skip opening quote
+  let escaped = false;
+
+  while (position < input.length) {
+    const char = input[position];
+
+    if (escaped)
+      escaped = false;
+    else if (char === '\\')
+      escaped = true;
+    else if (char === '"') {
+      position++; // Skip closing quote
+      break;
+    }
+
+    position++;
+  }
+
+  return position;
+}
+
+/**
+ * Extract comments from the current position
+ * @param params - Parameters object
+ * @param params.input - Input string
+ * @param params.position - Current position
+ * @returns Tuple of [comment, newPosition]
+ */
+function extractComments(
+  { input, position, }: { input: string; position: number; },
+): [JsoncComment | undefined, number,] {
+  const comments: string[] = [];
+  let hasInline = false;
+  let hasBlock = false;
+
+  position = skipWhitespace({ input, position, },);
+
+  while (position < input.length) {
+    if (input[position] === '/' && position + 1 < input.length) {
+      if (input[position + 1] === '/') {
+        // Inline comment
+        position += 2;
+        let comment = '';
+        while (position < input.length && input[position] !== '\n') {
+          comment += input[position];
+          position++;
+        }
+        if (position < input.length)
+          position++; // Skip newline
+        comments.push(comment,);
+        hasInline = true;
+        position = skipWhitespace({ input, position, },);
+        continue;
+      }
+      else if (input[position + 1] === '*') {
+        // Block comment
+        position += 2;
+        let comment = '';
+        while (position < input.length - 1) {
+          if (input[position] === '*' && input[position + 1] === '/') {
+            position += 2;
+            break;
+          }
+          comment += input[position];
+          position++;
+        }
+        comments.push(comment,);
+        hasBlock = true;
+        position = skipWhitespace({ input, position, },);
+        continue;
+      }
+    }
+    break;
+  }
+
+  if (comments.length === 0)
+    return [undefined, position,];
+
+  const commentType = hasInline && hasBlock ? 'mixed' : hasInline ? 'inline' : 'block';
+  return [{
+    type: commentType,
+    commentValue: comments.join('\n',),
+  }, position,];
+}
 
 /**
  * Check if position is inside a quoted string by scanning backwards
@@ -14,20 +134,21 @@ import { z, } from 'zod/v4-mini';
 function isInsideString(
   { input, position, }: { input: string; position: number; },
 ): boolean {
-  // Regex to check if position is inside a possibly escaped string (also handles escaped escape characters)
-  const escapedStringBoundaryRegex = /(?<!\\)(?:\\\\)*"/g;
-  let match;
-  let count = 0;
+  let quoteCount = 0;
+  let escaped = false;
 
-  // Count the number of string boundaries before the position
-  while ((match = escapedStringBoundaryRegex.exec(input,)) !== null) {
-    if (match.index > position)
-      break;
+  for (let i = 0; i < position; i++) {
+    const char = input[i];
 
-    count++;
+    if (escaped)
+      escaped = false;
+    else if (char === '\\')
+      escaped = true;
+    else if (char === '"')
+      quoteCount++;
   }
 
-  return count % 2 === 1; // Odd count means it's inside a string
+  return quoteCount % 2 === 1;
 }
 
 /**
@@ -64,27 +185,46 @@ function containsJsoncFeatures(
 function convertNativeValue(
   { value, comment, }: { value: unknown; comment?: JsoncComment; },
 ): JsoncValue {
-  if (typeof value === 'string')
-    return { type: 'string', value, comment, };
-  else if (typeof value === 'number')
-    return { type: 'number', value, comment, };
-  else if (typeof value === 'boolean')
-    return { type: 'boolean', value, comment, };
-  else if (value === null)
-    return { type: 'null', value: null, comment, };
+  if (typeof value === 'string') {
+    return comment
+      ? { type: 'string', value, comment, }
+      : { type: 'string', value, };
+  }
+  else if (typeof value === 'number') {
+    return comment
+      ? { type: 'number', value, comment, }
+      : { type: 'number', value, };
+  }
+  else if (typeof value === 'boolean') {
+    return comment
+      ? { type: 'boolean', value, comment, }
+      : { type: 'boolean', value, };
+  }
+  else if (value === null) {
+    return comment
+      ? { type: 'null', value: null, comment, }
+      : { type: 'null', value: null, };
+  }
   else if (Array.isArray(value,)) {
-    return {
-      type: 'array',
-      value: value.map(item => convertNativeValue({ value: item, },)),
-      comment,
-    };
+    return comment
+      ? {
+          type: 'array',
+          value: value.map(item => convertNativeValue({ value: item, },)),
+          comment,
+        }
+      : {
+          type: 'array',
+          value: value.map(item => convertNativeValue({ value: item, },)),
+        };
   }
   else if (typeof value === 'object' && value !== null) {
     const entries: JsoncRecordEntry[] = Object.entries(value,).map(([key, val,],) => ({
       recordKey: { type: 'string', value: key, },
       recordValue: convertNativeValue({ value: val, },),
     }));
-    return { type: 'record', value: entries, comment, };
+    return comment
+      ? { type: 'record', value: entries, comment, }
+      : { type: 'record', value: entries, };
   }
 
   throw new Error(`Unexpected value type: ${typeof value}`,);
@@ -574,7 +714,7 @@ export function jsoncToParsedJsonc(input: jsonc,): JsoncValue {
   return result;
 }
 
-//endregion Public API
+// endregion Public API
 
 // Try not to use any in-package function because other functions are bad at this time. You're on your own.
 
