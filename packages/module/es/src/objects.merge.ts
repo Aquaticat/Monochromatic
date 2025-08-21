@@ -1,6 +1,6 @@
-import type { UnknownRecord } from 'type-fest';
+import type { UnknownRecord, } from 'type-fest';
 import { equal, } from './any.equal.ts';
-import { anyThrows } from './any.throws.ts';
+import { anyThrows, } from './any.throws.ts';
 import { notUndefinedOrThrow, } from './error.throw.ts';
 import { throws, } from './error.throws.ts';
 import { functionsMapWith, } from './functions.mapWith.ts';
@@ -10,36 +10,36 @@ import { getDefaultLogger, } from './string.log.ts';
 /**
  * Rules configuration for object merging behavior based on JavaScript types.
  */
-export type MergeRules = {
-  readonly function?: (params: {
+export type ObjectsMergeRules = {
+  readonly function: (params: {
     readonly key: string;
     readonly values: ((...args: unknown[]) => unknown)[];
   } & Partial<Logged>,) => unknown;
-  readonly string?: (params: {
+  readonly string: (params: {
     readonly key: string;
     readonly values: string[];
   } & Partial<Logged>,) => unknown;
-  readonly number?: (params: {
+  readonly number: (params: {
     readonly key: string;
     readonly values: number[];
   } & Partial<Logged>,) => unknown;
-  readonly boolean?: (params: {
+  readonly boolean: (params: {
     readonly key: string;
     readonly values: boolean[];
   } & Partial<Logged>,) => unknown;
-  readonly object?: (params: {
+  readonly object: (params: {
     readonly key: string;
     readonly values: object[];
   } & Partial<Logged>,) => unknown;
-  readonly undefined?: (params: {
+  readonly undefined: (params: {
     readonly key: string;
     readonly values: undefined[];
   } & Partial<Logged>,) => unknown;
-  readonly bigint?: (params: {
+  readonly bigint: (params: {
     readonly key: string;
     readonly values: bigint[];
   } & Partial<Logged>,) => unknown;
-  readonly symbol?: (params: {
+  readonly symbol: (params: {
     readonly key: string;
     readonly values: symbol[];
   } & Partial<Logged>,) => unknown;
@@ -48,7 +48,7 @@ export type MergeRules = {
 /**
  * Default rules for handling conflicts by type.
  */
-const defaultRules: Required<MergeRules> = {
+export const objectsMergeDefaultRules: ObjectsMergeRules = {
   function: function combineFunction({ key, values, l = getDefaultLogger(), },) {
     l.debug(
       `Default: create a function that calls functionsMapWith for property ${key}`,
@@ -64,8 +64,10 @@ const defaultRules: Required<MergeRules> = {
   string: anyThrows,
   number: anyThrows,
   boolean: anyThrows,
-  object: function recursiveMerge({ key, values, l = getDefaultLogger(), },)  {
-    if (values.every(function isRecord(value): value is UnknownRecord {return Object.prototype.toString.call(value) === '[object Object]'})) {
+  object: function recursiveMerge({ key, values, l = getDefaultLogger(), },) {
+    if (values.every(function isRecord(value,): value is UnknownRecord {
+      return Object.prototype.toString.call(value,) === '[object Object]';
+    },)) {
       l.debug(`Recursively merging objects for "${key}"`,);
       return objectsMerge({
         objs: values,
@@ -73,12 +75,12 @@ const defaultRules: Required<MergeRules> = {
       },);
     }
 
-    if (values.every(Array.isArray)) {
-      l.debug(`merging arrays for ${key}`);
-      return new Set(values.flat());
+    if (values.every(Array.isArray,)) {
+      l.debug(`merging arrays for ${key}`,);
+      return new Set(values.flat(),);
     }
 
-    throw new TypeError(`cannot merge values ${JSON.stringify(values)}`);
+    throw new TypeError(`cannot merge values ${JSON.stringify(values,)}`,);
   },
   // Shouldn't happen because undefined === undefined. Here for coherence.
   undefined: anyThrows,
@@ -147,11 +149,11 @@ export function objectsMerge<
 >(
   {
     objs,
-    rules = {},
+    rules = objectsMergeDefaultRules,
     l = getDefaultLogger(),
   }: {
     readonly objs: TObjects;
-    readonly rules?: MergeRules;
+    readonly rules?: ObjectsMergeRules;
   } & Partial<Logged>,
 ): UnknownRecord {
   l.debug(objectsMerge.name,);
@@ -160,10 +162,7 @@ export function objectsMerge<
     throw new TypeError('objs array cannot be empty',);
 
   if (objs.length === 1)
-    return { ...objs[0], };
-
-  // Merge user rules with defaults
-  const effectiveRules = { ...defaultRules, ...rules, };
+    return notUndefinedOrThrow(objs[0],);
 
   // Collect all unique property names
   const allKeys = new Set<string>();
@@ -225,8 +224,7 @@ export function objectsMerge<
         result[key] = firstValue;
       else {
         // Handle conflicts based on type
-        result[key] = resolveTypeConflict({ key, valueType, values, rules: effectiveRules,
-          l, },);
+        result[key] = resolveTypeConflict({ key, valueType, values, rules, l, },);
       }
     }
   }
@@ -248,7 +246,7 @@ function resolveTypeConflict(
     readonly key: string;
     readonly valueType: string;
     readonly values: unknown[];
-    readonly rules: Required<MergeRules>;
+    readonly rules: ObjectsMergeRules;
   },
 ): unknown {
   l.debug(
