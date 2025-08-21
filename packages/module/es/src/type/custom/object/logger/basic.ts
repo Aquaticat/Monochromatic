@@ -1,6 +1,4 @@
-import type {
-  Promisable,
-} from 'type-fest';
+import type { Promisable, } from 'type-fest';
 import { notUndefinedOrThrow, } from '../../../typeof/object/error/error.throw.ts';
 import { throws, } from '../../../typeof/object/error/error.throws.ts';
 import type {
@@ -9,82 +7,82 @@ import type {
 import { partialStringReplaceAll, } from '../../../typeof/string/string.replaceAll.ts';
 import { neversNoop, } from '../../../typescript/never/noop.ts';
 
-export type StringRecord = Record<string, string>;
+export type Logger_TemplateData = Record<string, string>;
 
-export type LoggerLogger = (message: string,
-  record?: StringRecord | (() => Promisable<StringRecord>),) => unknown;
+export type Logger_Method = (message: string,
+  record?: Logger_TemplateData | (() => Promisable<Logger_TemplateData>),) => unknown;
 
-export type LoggerLevels = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+export type Logger_Level = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 export type Logger = {
-  trace: LoggerLogger;
-  debug: LoggerLogger;
-  info: LoggerLogger;
-  warn: LoggerLogger;
-  error: LoggerLogger;
-  fatal: LoggerLogger;
+  trace: Logger_Method;
+  debug: Logger_Method;
+  info: Logger_Method;
+  warn: Logger_Method;
+  error: Logger_Method;
+  fatal: Logger_Method;
 };
 
-export function getConsoleLoggerSink(
-  level: LoggerLevels,
+export function Logger_getConsoleFunction(
+  level: Logger_Level,
 ): (message: string,) => unknown {
-  let myLoggerLoggerLogger: (message: string,) => unknown;
+  let consoleFunction: (message: string,) => unknown;
   switch (level) {
     case 'trace':
       {
-        myLoggerLoggerLogger = console.trace;
+        consoleFunction = console.trace;
       }
       break;
     case 'debug':
       {
-        myLoggerLoggerLogger = console.debug;
+        consoleFunction = console.debug;
       }
       break;
     case 'info':
       {
-        myLoggerLoggerLogger = console.info;
+        consoleFunction = console.info;
       }
       break;
     case 'warn':
       {
-        myLoggerLoggerLogger = console.warn;
+        consoleFunction = console.warn;
       }
       break;
     case 'error':
       {
-        myLoggerLoggerLogger = console.error;
+        consoleFunction = console.error;
       }
       break;
     case 'fatal': {
-      myLoggerLoggerLogger = console.error;
+      consoleFunction = console.error;
     }
   }
-  return myLoggerLoggerLogger;
+  return consoleFunction;
 }
 
-export function getConsoleLoggerLogger(level: LoggerLevels,): LoggerLogger {
-  const consoleLoggerSink = getConsoleLoggerSink(level,);
+export function Logger_createMethod(level: Logger_Level,): Logger_Method {
+  const consoleFunction = Logger_getConsoleFunction(level,);
 
-  return function myConsoleLoggerLogger(message: string,
-    record?: StringRecord | (() => Promisable<StringRecord>),)
+  return function writeMethod(message: string,
+    record?: Logger_TemplateData | (() => Promisable<Logger_TemplateData>),)
   {
     if (!record)
-      consoleLoggerSink(message,);
-    const promisableRecord: Promisable<StringRecord> = typeof record === 'function'
+      consoleFunction(message,);
+    const recordOrFactory: Promisable<Logger_TemplateData> = typeof record === 'function'
       ? record()
       : notUndefinedOrThrow(record,);
-    (async function asyncWrapper(
-      { message, promisableRecord, }: { message: string;
-        promisableRecord: Promisable<StringRecord>; },
+    (async function writeWithTemplates(
+      { message, recordOrFactory, }: { message: string;
+        recordOrFactory: Promisable<Logger_TemplateData>; },
     ) {
-      const myRecord = await promisableRecord;
-      const transforms = Object.entries(myRecord,).map(
-        function toReplacementFunction([key, value,],) {
+      const templateData = await recordOrFactory;
+      const transforms = Object.entries(templateData,).map(
+        function createReplacer([key, value,],) {
           return partialStringReplaceAll({ pattern: `{${key}}`, replacement: value, },);
         },
       );
 
       const replacedMessage: string = transforms.reduce(
-        function executeTransform(message: string,
+        function applyReplacer(message: string,
           transform: (message: string,) => string,)
         {
           return transform(message,);
@@ -92,22 +90,22 @@ export function getConsoleLoggerLogger(level: LoggerLevels,): LoggerLogger {
         message,
       );
 
-      consoleLoggerSink(`${replacedMessage}, ${JSON.stringify(myRecord,)}`,);
-    })({ message, promisableRecord, },)
+      consoleFunction(`${replacedMessage}, ${JSON.stringify(templateData,)}`,);
+    })({ message, recordOrFactory, },)
       .catch(throws,);
   };
 }
 
-export const consoleLogger: Logger = {
-  trace: getConsoleLoggerLogger('trace',),
-  debug: getConsoleLoggerLogger('debug',),
-  info: getConsoleLoggerLogger('info',),
-  warn: getConsoleLoggerLogger('warn',),
-  error: getConsoleLoggerLogger('error',),
-  fatal: getConsoleLoggerLogger('fatal',),
+export const Logger_console: Logger = {
+  trace: Logger_createMethod('trace',),
+  debug: Logger_createMethod('debug',),
+  info: Logger_createMethod('info',),
+  warn: Logger_createMethod('warn',),
+  error: Logger_createMethod('error',),
+  fatal: Logger_createMethod('fatal',),
 };
 
-export const noopLogger: Logger = {
+export const Logger_noop: Logger = {
   trace: neversNoop,
   debug: neversNoop,
   info: neversNoop,
@@ -116,7 +114,7 @@ export const noopLogger: Logger = {
   fatal: neversNoop,
 };
 
-export function getDefaultLogger(): Logger {
+export function Logger_getDefault(): Logger {
   return (globalThis as MonochromaticGlobalThis).monochromatic?.logger
-    ?? consoleLogger;
+    ?? Logger_console;
 }
