@@ -1,3 +1,5 @@
+/* v8 ignore file -- @preserve */
+
 // Don't test fixtures.
 
 /**

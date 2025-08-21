@@ -1,6 +1,5 @@
 import {
   logtapeConfiguration,
-  logtapeConfigure,
   when,
   whenAsync,
 } from '@monochromatic-dev/module-es';
@@ -9,8 +8,6 @@ import {
   expect,
   test,
 } from 'vitest';
-
-await logtapeConfigure(await logtapeConfiguration(),);
 
 //region when tests -- Tests for synchronous conditional transformation
 

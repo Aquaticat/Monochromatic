@@ -1,3 +1,5 @@
+import type { Logged, } from 'src/type/custom/object/logged/logged.basic';
+import { getDefaultLogger, } from 'src/type/typeof/string/string.log';
 import type { Promisable, } from 'type-fest';
 
 //region when -- Synchronous conditional transformation
@@ -22,10 +24,13 @@ import type { Promisable, } from 'type-fest';
  * ```
  */
 export function anyWhen<const T, const R,>(
-  predicate: (value: T,) => boolean,
-  onTrue: (value: T,) => R,
-  value: T,
+  { predicate, onTrue, value, l = getDefaultLogger(), }: {
+    predicate: (value: T,) => boolean;
+    onTrue: (value: T,) => R;
+    value: T;
+  } & Partial<Logged>,
 ): T | R {
+  l.debug(anyWhen.name,);
   if (predicate(value,))
     return onTrue(value,);
   return value;
@@ -63,10 +68,13 @@ export function anyWhen<const T, const R,>(
  * ```
  */
 export async function anyWhenAsync<const T, const R,>(
-  predicate: (value: T,) => Promisable<boolean>,
-  onTrue: (value: T,) => Promisable<R>,
-  value: T,
+  { predicate, onTrue, value, l = getDefaultLogger(), }: {
+    predicate: (value: T,) => Promisable<boolean>;
+    onTrue: (value: T,) => Promisable<R>;
+    value: T;
+  } & Partial<Logged>,
 ): Promise<T | R> {
+  l.debug(anyWhenAsync.name,);
   if (await predicate(value,))
     return await onTrue(value,);
   return value;

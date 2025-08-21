@@ -1,3 +1,5 @@
+/* v8 ignore file -- @preserve */
+
 // Don't test fixtures.
 
 //region Generator Test Fixtures -- Provides generator functions that yield numbers from 0 to 999 for testing synchronous generators, asynchronous generators, error handling, and performance scenarios

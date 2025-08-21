@@ -1,3 +1,5 @@
+/* v8 ignore file -- @preserve */
+
 // Don't test fixtures.
 
 //region Promise Test Fixtures -- Provides an array of 1000 promises with progressive timing delays for testing asynchronous operations, concurrent processing, and performance characteristics
