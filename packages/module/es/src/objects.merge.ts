@@ -1,8 +1,11 @@
+import type { UnknownRecord } from 'type-fest';
 import { equal, } from './any.equal.ts';
+import { anyThrows } from './any.throws.ts';
+import { notUndefinedOrThrow, } from './error.throw.ts';
+import { throws, } from './error.throws.ts';
 import { functionsMapWith, } from './functions.mapWith.ts';
 import type { Logged, } from './logged.basic.ts';
 import { getDefaultLogger, } from './string.log.ts';
-import type { Logger, } from './string.log.ts';
 
 /**
  * Rules configuration for object merging behavior based on JavaScript types.
@@ -46,60 +49,41 @@ export type MergeRules = {
  * Default rules for handling conflicts by type.
  */
 const defaultRules: Required<MergeRules> = {
-  function: ({ key, values, l, },) => {
-    // Default: create a function that calls functionsMapWith
-    return (...args: unknown[]) => {
+  function: function combineFunction({ key, values, l = getDefaultLogger(), },) {
+    l.debug(
+      `Default: create a function that calls functionsMapWith for property ${key}`,
+    );
+    return function combinedFunction(...args: unknown[]) {
       return functionsMapWith({
         fns: values,
-        args: args as any,
-        ...(l && { l, }),
+        args,
+        l,
       },);
     };
   },
-  string: ({ key, l, },) => {
-    l?.debug(`No string rule provided for "${key}"`,);
-    throw new TypeError(
-      `No resolution rule provided for string conflicts on property "${key}"`,
-    );
+  string: anyThrows,
+  number: anyThrows,
+  boolean: anyThrows,
+  object: function recursiveMerge({ key, values, l = getDefaultLogger(), },)  {
+    if (values.every(function isRecord(value): value is UnknownRecord {return Object.prototype.toString.call(value) === '[object Object]'})) {
+      l.debug(`Recursively merging objects for "${key}"`,);
+      return objectsMerge({
+        objs: values,
+        l,
+      },);
+    }
+
+    if (values.every(Array.isArray)) {
+      l.debug(`merging arrays for ${key}`);
+      return new Set(values.flat());
+    }
+
+    throw new TypeError(`cannot merge values ${JSON.stringify(values)}`);
   },
-  number: ({ key, l, },) => {
-    l?.debug(`No number rule provided for "${key}"`,);
-    throw new TypeError(
-      `No resolution rule provided for number conflicts on property "${key}"`,
-    );
-  },
-  boolean: ({ key, l, },) => {
-    l?.debug(`No boolean rule provided for "${key}"`,);
-    throw new TypeError(
-      `No resolution rule provided for boolean conflicts on property "${key}"`,
-    );
-  },
-  object: ({ key, values, l, },) => {
-    // Default: recursively merge objects
-    l?.debug(`Recursively merging objects for "${key}"`,);
-    return objectsMerge({
-      objs: values as Record<string, unknown>[],
-      ...(l && { l, }),
-    },);
-  },
-  undefined: ({ key, l, },) => {
-    l?.debug(`No undefined rule provided for "${key}"`,);
-    throw new TypeError(
-      `No resolution rule provided for undefined conflicts on property "${key}"`,
-    );
-  },
-  bigint: ({ key, l, },) => {
-    l?.debug(`No bigint rule provided for "${key}"`,);
-    throw new TypeError(
-      `No resolution rule provided for bigint conflicts on property "${key}"`,
-    );
-  },
-  symbol: ({ key, l, },) => {
-    l?.debug(`No symbol rule provided for "${key}"`,);
-    throw new TypeError(
-      `No resolution rule provided for symbol conflicts on property "${key}"`,
-    );
-  },
+  // Shouldn't happen because undefined === undefined. Here for coherence.
+  undefined: anyThrows,
+  bigint: anyThrows,
+  symbol: anyThrows,
 };
 
 /**
@@ -159,7 +143,7 @@ const defaultRules: Required<MergeRules> = {
  * ```
  */
 export function objectsMerge<
-  const TObjects extends readonly Record<string, unknown>[],
+  const TObjects extends readonly UnknownRecord[],
 >(
   {
     objs,
@@ -169,8 +153,8 @@ export function objectsMerge<
     readonly objs: TObjects;
     readonly rules?: MergeRules;
   } & Partial<Logged>,
-): Record<string, unknown> {
-  l.debug('objectsMerge',);
+): UnknownRecord {
+  l.debug(objectsMerge.name,);
 
   if (objs.length === 0)
     throw new TypeError('objs array cannot be empty',);
@@ -222,11 +206,7 @@ export function objectsMerge<
 
     // Get the single type and its values
     const entryArray = Array.from(valuesByType.entries(),);
-    const firstEntry = entryArray[0];
-    if (!firstEntry) {
-      // This should never happen if we have values, but TypeScript needs the check
-      continue;
-    }
+    const firstEntry = notUndefinedOrThrow(entryArray[0],);
     const [valueType, values,] = firstEntry;
 
     if (values.length === 1) {
@@ -257,20 +237,23 @@ export function objectsMerge<
 /**
  * Internal function to resolve conflicts for a specific type.
  */
-function resolveTypeConflict({
-  key,
-  valueType,
-  values,
-  rules,
-  l = getDefaultLogger(),
-}: {
-  readonly key: string;
-  readonly valueType: string;
-  readonly values: unknown[];
-  readonly rules: Required<MergeRules>;
-  readonly l?: ReturnType<typeof getDefaultLogger>;
-},): unknown {
-  l.debug(`Resolving ${valueType} conflict for key "${key}"`,);
+function resolveTypeConflict(
+  {
+    key,
+    valueType,
+    values,
+    rules,
+    l = getDefaultLogger(),
+  }: Partial<Logged> & {
+    readonly key: string;
+    readonly valueType: string;
+    readonly values: unknown[];
+    readonly rules: Required<MergeRules>;
+  },
+): unknown {
+  l.debug(
+    `${resolveTypeConflict.name}, Resolving ${valueType} conflict for key "${key}"`,
+  );
 
   switch (valueType) {
     case 'function': {
@@ -314,8 +297,11 @@ function resolveTypeConflict({
  * Functions are compatible if they have the same number of parameters.
  */
 function areParametersCompatible(
-  { fns, }: { readonly fns: ((...args: unknown[]) => unknown)[]; },
+  { fns, l = getDefaultLogger(), }:
+    & { readonly fns: ((...args: unknown[]) => unknown)[]; }
+    & Partial<Logged>,
 ): boolean {
+  l.debug(areParametersCompatible.name,);
   if (fns.length <= 1)
     return true;
 
