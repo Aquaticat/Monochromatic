@@ -1,5 +1,122 @@
 export type jsonc = string & { __brand: 'jsonc'; };
 
+import { z, } from 'zod/v4-mini';
+
+//region Comment Processing/Common String Utilities
+
+/**
+ * Check if position is inside a quoted string by scanning backwards
+ * @param params - Parameters object
+ * @param params.input - Input string
+ * @param params.position - Position to check
+ * @returns True if inside a string
+ */
+function isInsideString(
+  { input, position, }: { input: string; position: number; },
+): boolean {
+  // Regex to check if position is inside a possibly escaped string (also handles escaped escape characters)
+  const escapedStringBoundaryRegex = /(?<!\\)(?:\\\\)*"/g;
+  let match;
+  let count = 0;
+
+  // Count the number of string boundaries before the position
+  while ((match = escapedStringBoundaryRegex.exec(input,)) !== null) {
+    if (match.index > position)
+      break;
+
+    count++;
+  }
+
+  return count % 2 === 1; // Odd count means it's inside a string
+}
+
+/**
+ * Check if a JSON string contains JSONC-specific features (comments or trailing commas)
+ * @param params - Parameters object
+ * @param params.input - Input string
+ * @param params.start - Start position
+ * @param params.end - End position
+ * @returns True if JSONC features are present, false for clean JSON
+ */
+function containsJsoncFeatures(
+  { input, start, end, }: { input: string; start: number; end: number; },
+): boolean {
+  const content = input.substring(start, end,);
+
+  // Check for comments
+  if (content.includes('//',) || content.includes('/*',))
+    return true;
+
+  // Check for trailing commas (simplified check)
+  if (/,\s*[}\]]/.test(content,))
+    return true;
+
+  return false;
+}
+
+/**
+ * Convert native JSON value to JsoncValue structure
+ * @param params - Parameters object
+ * @param params.value - Native JSON value
+ * @param params.comment - Optional comment to attach
+ * @returns JsoncValue representation
+ */
+function convertNativeValue(
+  { value, comment, }: { value: unknown; comment?: JsoncComment; },
+): JsoncValue {
+  if (typeof value === 'string')
+    return { type: 'string', value, comment, };
+  else if (typeof value === 'number')
+    return { type: 'number', value, comment, };
+  else if (typeof value === 'boolean')
+    return { type: 'boolean', value, comment, };
+  else if (value === null)
+    return { type: 'null', value: null, comment, };
+  else if (Array.isArray(value,)) {
+    return {
+      type: 'array',
+      value: value.map(item => convertNativeValue({ value: item, },)),
+      comment,
+    };
+  }
+  else if (typeof value === 'object' && value !== null) {
+    const entries: JsoncRecordEntry[] = Object.entries(value,).map(([key, val,],) => ({
+      recordKey: { type: 'string', value: key, },
+      recordValue: convertNativeValue({ value: val, },),
+    }));
+    return { type: 'record', value: entries, comment, };
+  }
+
+  throw new Error(`Unexpected value type: ${typeof value}`,);
+}
+
+/**
+ * Skip whitespace characters in the input
+ * @param params - Parameters object
+ * @param params.input - Input string
+ * @param params.position - Current position
+ * @returns New position after skipping whitespace
+ */
+function skipWhitespace(
+  { input, position, }: { input: string; position: number; },
+): number {
+  while (position < input.length && /\s/.test(input[position],))
+    position++;
+  return position;
+}
+
+/** Checks that a position is not inside a quoted string (e.g. in the middle of a keyword or number). */
+function assertNotInsideStringQuickCheck(
+  // ({ input, position, }: { input: string; position: number; }) {}
+) {}
+
+/** Same as assertNotInsideStringQuickCheck but more cross platform compatible in terms of which global APIs are used. */
+function assertNotInsideStringStringBasedCheck(
+  // ({ input, position, }: { input: string; position: number; }) {}
+) {}
+
+// endregion Comment Processing/Common String Utilities
+
 //region Type Definitions -- Define all TypeScript types for the parsed JSONC structure
 
 /**
@@ -87,211 +204,7 @@ export type JsoncValue = JsoncString | JsoncNumber | JsoncBoolean | JsoncNull | 
 //region Parser -- Simplified recursive parser using native JSON.parse() for terminals
 
 /**
- * Common string traversal utilities
- */
-
-/**
- * Skip a quoted string and return the new position
- * @param params - Parameters object
- * @param params.input - Input string
- * @param params.position - Current position (should be at opening quote)
- * @returns New position after the closing quote
- */
-function skipQuotedString(
-  { input, position, }: { input: string; position: number; },
-): number {
-  if (input[position] !== '"')
-    return position;
-
-  position++; // Skip opening quote
-  let escaped = false;
-
-  while (position < input.length) {
-    const char = input[position];
-
-    if (escaped)
-      escaped = false;
-    else if (char === '\\')
-      escaped = true;
-    else if (char === '"') {
-      position++; // Skip closing quote
-      break;
-    }
-
-    position++;
-  }
-
-  return position;
-}
-
-/**
- * Check if position is inside a quoted string by scanning backwards
- * @param params - Parameters object
- * @param params.input - Input string
- * @param params.position - Position to check
- * @returns True if inside a string
- */
-function isInsideString(
-  { input, position, }: { input: string; position: number; },
-): boolean {
-  let quoteCount = 0;
-  let escaped = false;
-
-  for (let i = 0; i < position; i++) {
-    const char = input[i];
-
-    if (escaped)
-      escaped = false;
-    else if (char === '\\')
-      escaped = true;
-    else if (char === '"')
-      quoteCount++;
-  }
-
-  return quoteCount % 2 === 1;
-}
-
-/**
- * Check if a JSON string contains JSONC-specific features (comments or trailing commas)
- * @param params - Parameters object
- * @param params.input - Input string
- * @param params.start - Start position
- * @param params.end - End position
- * @returns True if JSONC features are present, false for clean JSON
- */
-function containsJsoncFeatures(
-  { input, start, end, }: { input: string; start: number; end: number; },
-): boolean {
-  const content = input.substring(start, end,);
-
-  // Check for comments
-  if (content.includes('//',) || content.includes('/*',))
-    return true;
-
-  // Check for trailing commas (simplified check)
-  if (/,\s*[}\]]/.test(content,))
-    return true;
-
-  return false;
-}
-
-/**
- * Convert native JSON value to JsoncValue structure
- * @param params - Parameters object
- * @param params.value - Native JSON value
- * @param params.comment - Optional comment to attach
- * @returns JsoncValue representation
- */
-function convertNativeValue(
-  { value, comment, }: { value: unknown; comment?: JsoncComment; },
-): JsoncValue {
-  if (typeof value === 'string')
-    return { type: 'string', value, comment, };
-  else if (typeof value === 'number')
-    return { type: 'number', value, comment, };
-  else if (typeof value === 'boolean')
-    return { type: 'boolean', value, comment, };
-  else if (value === null)
-    return { type: 'null', value: null, comment, };
-  else if (Array.isArray(value,)) {
-    return {
-      type: 'array',
-      value: value.map(item => convertNativeValue({ value: item, },)),
-      comment,
-    };
-  }
-  else if (typeof value === 'object' && value !== null) {
-    const entries: JsoncRecordEntry[] = Object.entries(value,).map(([key, val,],) => ({
-      recordKey: { type: 'string', value: key, },
-      recordValue: convertNativeValue({ value: val, },),
-    }));
-    return { type: 'record', value: entries, comment, };
-  }
-
-  throw new Error(`Unexpected value type: ${typeof value}`,);
-}
-
-/**
- * Skip whitespace characters in the input
- * @param params - Parameters object
- * @param params.input - Input string
- * @param params.position - Current position
- * @returns New position after skipping whitespace
- */
-function skipWhitespace(
-  { input, position, }: { input: string; position: number; },
-): number {
-  while (position < input.length && /\s/.test(input[position],))
-    position++;
-  return position;
-}
-
-/**
- * Extract comments from the current position
- * @param params - Parameters object
- * @param params.input - Input string
- * @param params.position - Current position
- * @returns Tuple of [comment, newPosition]
- */
-function extractComments(
-  { input, position, }: { input: string; position: number; },
-): [JsoncComment | undefined, number,] {
-  const comments: string[] = [];
-  let hasInline = false;
-  let hasBlock = false;
-
-  position = skipWhitespace({ input, position, },);
-
-  while (position < input.length) {
-    if (input[position] === '/' && position + 1 < input.length) {
-      if (input[position + 1] === '/') {
-        // Inline comment
-        position += 2;
-        let comment = '';
-        while (position < input.length && input[position] !== '\n') {
-          comment += input[position];
-          position++;
-        }
-        if (position < input.length)
-          position++; // Skip newline
-        comments.push(comment,);
-        hasInline = true;
-        position = skipWhitespace({ input, position, },);
-        continue;
-      }
-      else if (input[position + 1] === '*') {
-        // Block comment
-        position += 2;
-        let comment = '';
-        while (position < input.length - 1) {
-          if (input[position] === '*' && input[position + 1] === '/') {
-            position += 2;
-            break;
-          }
-          comment += input[position];
-          position++;
-        }
-        comments.push(comment,);
-        hasBlock = true;
-        position = skipWhitespace({ input, position, },);
-        continue;
-      }
-    }
-    break;
-  }
-
-  if (comments.length === 0)
-    return [undefined, position,];
-
-  const commentType = hasInline && hasBlock ? 'mixed' : hasInline ? 'inline' : 'block';
-  return [{
-    type: commentType,
-    commentValue: comments.join('\n',),
-  }, position,];
-}
-
-/**
- * Find the end position of the current JSON node (simplified - just boundary detection)
+ * Find the end position of the current JSON node (simplified)
  * @param params - Parameters object
  * @param params.input - Input string
  * @param params.position - Current position
@@ -341,8 +254,35 @@ function findNodeEnd(
   // Handle JSON primitives with proper boundary detection
   const startPosition = position;
 
-  // Handle numbers: -?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?
+  // Handle numbers using zod validation
   if (char === '-' || /[0-9]/.test(char,)) {
+    // Extract potential number string for validation
+    let numberEndPosition = position;
+
+    // Fast scan to find potential end of number
+    if (char === '-')
+      numberEndPosition++;
+
+    // Scan through digits, decimal points, and exponents
+    while (numberEndPosition < input.length) {
+      const currentChar = input[numberEndPosition];
+      if (/[0-9.eE+-]/.test(currentChar,))
+        numberEndPosition++;
+      else
+        break;
+    }
+
+    const potentialNumber = input.substring(position, numberEndPosition,);
+    const numberValidation = jsonNumberStringSchema.safeParse(potentialNumber,);
+
+    if (numberValidation.success) {
+      // Validate that it actually converts to a valid number
+      const coercionResult = jsonNumberSchema.safeParse(potentialNumber,);
+      if (coercionResult.success)
+        return numberEndPosition;
+    }
+
+    // If zod validation fails, fall back to manual parsing for better error messages
     if (char === '-')
       position++;
 
@@ -387,16 +327,23 @@ function findNodeEnd(
     return position;
   }
 
-  // Handle boolean and null keywords
+  // Handle boolean and null keywords using zod validation
   if (/[a-z]/.test(char,)) {
-    if (input.substring(position, position + 4,) === 'true')
-      return position + 4;
-    else if (input.substring(position, position + 5,) === 'false')
-      return position + 5;
-    else if (input.substring(position, position + 4,) === 'null')
-      return position + 4;
+    // Try to extract a potential keyword
+    let keywordEndPosition = position;
+    while (keywordEndPosition < input.length && /[a-z]/.test(input[keywordEndPosition],))
+      keywordEndPosition++;
 
-    throw new Error(`Invalid keyword at position ${position}`,);
+    const potentialKeyword = input.substring(position, keywordEndPosition,);
+    const keywordValidation = jsonKeywordSchema.safeParse(potentialKeyword,);
+
+    if (keywordValidation.success)
+      return keywordEndPosition;
+
+    // If not a valid keyword, throw error with zod-style message
+    throw new Error(
+      `Invalid keyword '${potentialKeyword}' at position ${position}. Expected one of: true, false, null`,
+    );
   }
 
   throw new Error(`Unexpected character '${char}' at position ${position}`,);
