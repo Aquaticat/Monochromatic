@@ -106,7 +106,7 @@ function badExample() {
 - For async functions, assume users are using `await` syntax to consume their results and don't need the docs to tell them the function technically returns a promise
   - Good: `Converts Iterable to Set.`, `@returns Set containing all unique elements from the input iterable.`
   - Bad: `Converts Iterable to Promise<Set>.`, `@returns Promise that resolves to Set containing all unique elements from the input iterable.`
-- Use `@example` tags to provide usage examples:
+- Always include `@example` tags to provide usage examples:
   ```ts
   /**
    * Calculates the sum of two numbers.
