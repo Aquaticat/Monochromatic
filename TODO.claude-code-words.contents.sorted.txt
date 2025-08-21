@@ -22,7 +22,6 @@ augmenting
 authenticating
 authorizing
 auto-scaling
-back-firing
 backcasting
 backlogging
 backpacking
@@ -35,7 +34,6 @@ benchmarking
 billing
 binding
 bisecting
-blabbing
 blooming
 blueprinting
 blueshifting
@@ -104,7 +102,6 @@ cryopreserving
 crystallizing
 culturing
 curing
-cursing
 de-cycling
 debugging
 deburring
@@ -157,7 +154,6 @@ etching
 evaluating
 evaporating
 expanding
-exploting
 extrapolating
 factoring
 federating
@@ -204,7 +200,6 @@ harmonizing
 harvesting
 hashing
 hemming
-hexing
 hiking
 hindcasting
 honking
@@ -411,7 +406,6 @@ sauteing
 sawing
 scaffolding
 scheduling
-scheming
 scrambling
 scrubbing
 scrying
@@ -474,7 +468,6 @@ tagging
 talking
 tapping
 tatting
-tattling
 tempering
 templating
 tenoning
