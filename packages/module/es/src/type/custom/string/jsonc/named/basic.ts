@@ -1,5 +1,3 @@
-export type jsonc = string & { __brand: 'jsonc'; };
-
 import { z, } from 'zod/v4-mini';
 
 //region Zod Validation Schemas -- Schema definitions for JSON value validation
@@ -933,4 +931,7 @@ export function jsoncToParsedJsonc({ input, }: { input: jsonc; },): JsoncValue {
   return result;
 }
 
-// endregion Public API
+export function $ToParsedJsonc({ input, }: { input: jsonc; },): JsoncValue {
+}
+
+//endregion Public API

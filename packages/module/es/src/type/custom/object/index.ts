@@ -1,1 +1,1 @@
-export * as log from '../../../module/log/index.ts';
+export * as rangeNumber from './rangeNumber/index.ts';

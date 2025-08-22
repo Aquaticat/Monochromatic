@@ -10,6 +10,7 @@ Issues related to TypeScript configuration, ESLint, dprint, and other developmen
 - ESLint configuration best practices
 - Stylelint and postcss-html resolution
 - Proto and Rust installation issues
+- Type predicate assignment errors with complex conditional types
 
 ### [Testing & Vitest](TROUBLESHOOTING.testing.md)
 Problems with testing setup and Vitest configuration:
@@ -19,11 +20,11 @@ Problems with testing setup and Vitest configuration:
 - Test suite organization best practices
 
 ### [Moon Build System](TROUBLESHOOTING.moon.md)
-Moon build orchestrator performance and configuration:
-- Moon performance issues in WSL
-- Cache performance with large input sets
-- Fresh clone setup and dependency resolution
-- Build order dependencies and circular references
+Moon task runner and build system issues:
+- Fresh clone setup and build order dependencies
+- Moon performance optimization in WSL
+- Task dependency resolution problems
+- Caching and incremental build issues
 
 ### [Editor Setup](TROUBLESHOOTING.editors.md)
 Editor installation and configuration issues:
@@ -38,10 +39,10 @@ Vite build system and configuration problems:
 - Vite config circular dependencies
 
 ### [Dependencies & Package Management](TROUBLESHOOTING.dependencies.md)
-Package management and dependency resolution:
+Package management and dependency resolution problems:
 - Proto tool version management
-- Workspace cycle warnings
-- pnpm configuration and best practices
+- pnpm workspace configuration issues
+- Dependency resolution conflicts
 
 ### [Performance Optimization](TROUBLESHOOTING.performance.md)
 Performance-related issues and optimizations:
@@ -62,6 +63,13 @@ Problems with configuration file formats and why TOML can be problematic:
 - Better alternatives to TOML (JSON, YAML, JSON5)
 - Real-world examples of TOML-caused production incidents
 
+### [C-Like Comment Syntax](TROUBLESHOOTING.cLikeComments.md)
+Issues with C-style comment syntax that affect multiple programming languages:
+- Block comment nesting limitations and why `/* */` comments cannot be nested
+- Commenting out code that contains existing block comments
+- IDE comment features and best practices
+- Language-specific comment syntax differences
+
 ### [VSCode-Specific](TROUBLESHOOTING.vscode.md)
 VSCode-specific troubleshooting (already exists):
 - Multiple workspace instances in WSL
@@ -71,7 +79,7 @@ VSCode-specific troubleshooting (already exists):
 ## Quick Links
 
 For common issues:
-- **Slow builds?** → [Moon Performance](TROUBLESHOOTING.moon.md#moon-performance-in-wsl)
+- **Slow builds?** → [Moon performance](TROUBLESHOOTING.moon.md#moon-performance-in-wsl)
 - **Test failures not showing?** → [Duplicate describe blocks](TROUBLESHOOTING.testing.md#vitest-missing-assertions-or-console-output-with-duplicate-describe-blocks)
 - **Fresh clone fails?** → [Build order dependencies](TROUBLESHOOTING.moon.md#fresh-clone-setup-lessons-from-the-build-order-saga)
 - **TypeScript path warnings?** → [dprint configuration](TROUBLESHOOTING.typescript.md#typescript-path-warnings-with-dprint)
