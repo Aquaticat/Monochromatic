@@ -55,6 +55,13 @@ Useful configuration examples and snippets:
 - Caddy build commands with extensions
 - Other tool configurations
 
+### [Configuration Format Issues](TROUBLESHOOTING.toml.md)
+Problems with configuration file formats and why TOML can be problematic:
+- TOML table repetition and silent overwrites
+- Configuration debugging nightmares
+- Better alternatives to TOML (JSON, YAML, JSON5)
+- Real-world examples of TOML-caused production incidents
+
 ### [VSCode-Specific](TROUBLESHOOTING.vscode.md)
 VSCode-specific troubleshooting (already exists):
 - Multiple workspace instances in WSL
@@ -69,6 +76,7 @@ For common issues:
 - **Fresh clone fails?** → [Build order dependencies](TROUBLESHOOTING.moon.md#fresh-clone-setup-lessons-from-the-build-order-saga)
 - **TypeScript path warnings?** → [dprint configuration](TROUBLESHOOTING.typescript.md#typescript-path-warnings-with-dprint)
 - **Package management issues?** → [Proto version management](TROUBLESHOOTING.dependencies.md#proto-tool-version-management)
+- **Configuration not working as expected?** → [TOML issues and alternatives](TROUBLESHOOTING.toml.md#silent-overwrites-the-configuration-killer)
 
 ## Contributing
 
