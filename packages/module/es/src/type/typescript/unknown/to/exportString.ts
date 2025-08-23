@@ -1,3 +1,5 @@
+// deprecated: Use https://www.npmjs.com/package/serialize-javascript
+
 // oxlint-disable-next-line no-unassigned-import -- For side effects.
 import '@total-typescript/ts-reset/array-includes';
 import { match, } from 'ts-pattern';
@@ -74,7 +76,9 @@ export function unknownToExportString(obj: unknown,): string {
   return match(objType,)
     .with('set', function handler() {
       const setObj = obj as Set<any>;
-      return `Object.freeze(new Set([${[...setObj,].map(unknownToExportString,).join(',',)}]))`;
+      return `Object.freeze(new Set([${
+        [...setObj,].map(unknownToExportString,).join(',',)
+      }]))`;
     },)
     .with('map', function handler() {
       const mapObj = obj as Map<any, any>;

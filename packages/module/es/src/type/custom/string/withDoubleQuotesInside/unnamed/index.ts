@@ -1,3 +1,2 @@
-export * from './basic.ts';
-
-export * as is from './is/index.ts';
+export * as $ from './$/index.ts';
+export * as type from './type.ts';

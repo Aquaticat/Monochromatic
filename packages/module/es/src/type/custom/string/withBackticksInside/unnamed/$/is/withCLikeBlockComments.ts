@@ -1,7 +1,9 @@
-import {unnamed as withCLikeBlockComments} from '../../../withCLikeBlockComments/index.ts';
-import { backticks } from 'src/type/custom/object/rangeInt/named/is/inside/index.ts';
-import {unnamed as int} from '../../../../number/int/index.ts'
-import {unnamed as rangeInt} from '../../../../object/rangeInt/index.ts';
+import { backticks, } from 'src/type/custom/object/rangeInt/named/is/inside/index.ts';
+import { unnamed as int, } from '../../../../../number/int/index.ts';
+import { unnamed as rangeInt, } from '../../../../../object/rangeInt/index.ts';
+import {
+  unnamed as withCLikeBlockComments,
+} from '../../../../withCLikeBlockComments/index.ts';
 
 export function is(value: string,): value is withCLikeBlockComments.$ {
   // No need to escape here since c style comments don't support escaping
