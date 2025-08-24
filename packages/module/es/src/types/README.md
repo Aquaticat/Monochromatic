@@ -7,19 +7,8 @@ This directory implements a sophisticated hierarchical organization system for T
 ### Core Structure Pattern
 
 ```txt
-type {return-type}/[type {sub-type}/]from/type {input-type}/[{operation}/][restriction {constraint}/]params {param-style}/
+type {return-type}/[type {sub-type}/]from/type {input-type}/[type {input-sub-type}/][{operation}/][restriction {constraint}/]params {param-style}/
 ```
-
-### Hierarchy Rules
-
-```txt
-restriction {constraint}/ > params {param-style}
-type * > * *
-```
-
-**Meaning**:
-- **Restriction constraints** (like `restriction sync/`) take precedence over parameter styles
-- **Type specifications** (like `type array/`) take precedence over other modifiers
 
 ### Path Components
 
@@ -34,6 +23,7 @@ type * > * *
 - `type object/type array/` - Functions returning array objects
 - `type object/type iterable/` - Functions returning iterable objects
 - `type function/type generator/` - Functions returning generator functions
+- `type object/type array/type param string/` - `string[]`
 
 #### 3. Transformation Direction (Required)
 - `from/` - Indicates transformation from input type to return type
@@ -73,7 +63,7 @@ $(iterable): Array // sync iterable → array, positional params
 
 ### String Transformations
 ```typescript
-// type string/from/type array/type <string>/concat/params positional/index.ts
+// type string/from/type array/type param string/concat/params positional/index.ts
 // Can't omit op, had to use concat because string.from.array.string.positional.$ is ambiguous.
 // (Does it concat the array to one string, or does it just run JSON.stringify?)
 $(strings: string[]): string
@@ -91,7 +81,7 @@ $(value: unknown): string
 
 ### Generator Functions
 ```typescript
-// type function/type generator/type <number>/from/type number/range/params positional/index.ts
+// type function/type generator/type param number/from/type number/range/params positional/index.ts
 $(count: number): Generator<number>
 
 // Pattern: return generator function ← input number
