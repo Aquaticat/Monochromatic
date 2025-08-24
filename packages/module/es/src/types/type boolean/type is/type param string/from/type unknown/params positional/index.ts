@@ -36,7 +36,7 @@ export type NonEmptyString = `${string}${string}`;
  * isString(null); // false
  * ```
  */
-/* @__NO_SIDE_EFFECTS__ */ export function isString(value: unknown,): value is string {
+export function $(value: unknown,): value is string {
   return typeof value === 'string';
 }
 

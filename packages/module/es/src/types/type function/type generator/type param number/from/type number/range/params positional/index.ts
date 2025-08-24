@@ -1,6 +1,6 @@
 /**
  * Creates a generator that yields consecutive integers starting from 0 up to length-1.
- * 
+ *
  * This generator version provides memory-efficient iteration over integer sequences
  * without creating the entire array in memory. Ideal for large ranges or when only
  * partial iteration is needed. Supports early termination and lazy evaluation.
@@ -43,12 +43,10 @@
  * console.log(sum); // 10 (0+1+2+3+4)
  * ```
  */
-export function* arrayRangeGen(length: number): Generator<number, void, undefined> {
-  if (length < 0) {
-    throw new RangeError('Length must be non-negative');
-  }
+export function* $(length: number,): Generator<number, void, undefined> {
+  if (length < 0)
+    throw new RangeError('Length must be non-negative',);
 
-  for (let index = 0; index < length; index++) {
+  for (let index = 0; index < length; index++)
     yield index;
-  }
 }

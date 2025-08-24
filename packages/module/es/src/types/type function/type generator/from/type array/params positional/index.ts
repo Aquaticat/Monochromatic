@@ -1,6 +1,6 @@
 /**
  * Creates a generator that yields each provided element in sequence.
- * This function transforms a list of arguments into a generator that yields
+ * This function transforms an array into a generator that yields
  * each element one at a time. Useful for creating iterables from discrete values
  * or when you need lazy evaluation of a known set of elements.
  *
@@ -41,8 +41,8 @@
  * }
  * ```
  */
-export function* $<const T_elements extends any[],>(
-  ...elements: T_elements
+export function* $<const T_elements extends unknown[],>(
+  elements: T_elements
 ): Generator<T_elements[number]> {
   for (const element of elements)
     yield element;
