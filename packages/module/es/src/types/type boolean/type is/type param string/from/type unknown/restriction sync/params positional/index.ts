@@ -1,3 +1,5 @@
+import type {$ as Is} from '../../../../../type/restriction sync/params positional/index.ts';
+
 //region General String Types -- General utility string types
 
 /**
@@ -38,7 +40,9 @@ export type NonEmptyString = `${string}${string}`;
  */
 export function $(value: unknown,): value is string {
   return typeof value === 'string';
-}
+};
+
+const _$: Is = $;
 
 /**
  * Type guard that checks if a value is a RegExp object using Object.prototype.toString.
