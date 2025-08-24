@@ -6,7 +6,7 @@
 ## Code Organization
 - Use `region` markers to delineate logical sections of code
   - This practice enhances code organization and readability, particularly in larger files
-  - Most IDEs recognize `region` and `endregion` comments, allowing these sections to collapse or expand
+  - Most IDEs recognize `//region` (no space) and `//endregion` (no space) comments, allowing these sections to collapse or expand
   - Following `//region` is the purpose of the code block. After double hyphens, provide a long explanation
   - Following `//endregion` repeats the purpose of the code block
   - Example:
