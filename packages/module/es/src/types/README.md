@@ -6,14 +6,14 @@ This directory implements a sophisticated hierarchical organization system for T
 
 ### Core Structure Pattern
 
-```
-type {return-type}/[type {sub-type}/]from/type {input-type}/[restriction {constraint}/][params {param-style}/]
+```txt
+type {return-type}/[type {sub-type}/]from/type {input-type}/[{operation}/][restriction {constraint}/]params {param-style}/
 ```
 
 ### Hierarchy Rules
 
-```
-restriction * > params *
+```txt
+restriction {constraint}/ > params {param-style}
 type * > * *
 ```
 
@@ -23,7 +23,7 @@ type * > * *
 
 ### Path Components
 
-#### 1. Return Type Category
+#### 1. Return Type Category (Required)
 - `type string/` - Functions returning `string` or `Promise<string>`
 - `type boolean/` - Functions returning `boolean` (including type guards)
 - `type object/` - Functions returning object types
@@ -32,13 +32,13 @@ type * > * *
 
 #### 2. Sub-Type Specification (Optional)
 - `type object/type array/` - Functions returning array objects
-- `type object/type iterable/` - Functions returning iterable objects  
+- `type object/type iterable/` - Functions returning iterable objects
 - `type function/type generator/` - Functions returning generator functions
 
-#### 3. Transformation Direction
+#### 3. Transformation Direction (Required)
 - `from/` - Indicates transformation from input type to return type
 
-#### 4. Input Type Specification  
+#### 4. Input Type Specification (Required)
 - `type iterable/` - Takes iterables as input
 - `type array/` - Takes arrays as input
 - `type unknown/` - Takes unknown values as input
@@ -49,7 +49,7 @@ type * > * *
 - `restriction sync/` - Synchronous operations only
 - `restriction async/` - Asynchronous operations only
 
-#### 6. Parameter Style (Optional)
+#### 6. Parameter Style (Required)
 - `params positional/` - Uses positional parameters
 - `params named/` - Uses named/object parameters
 
@@ -57,47 +57,49 @@ type * > * *
 
 ### Type Guards (Boolean Returns)
 ```typescript
-// type boolean/from/type unknown/isString.ts
-type boolean/from/type unknown/isString.ts
-└─ isString(value: unknown): value is string
+// type boolean/type is/from/type unknown/params positional/index.ts
+$(value: unknown): value is string
 
 // Pattern: return boolean ← input unknown
 ```
 
 ### Array Creation (Object/Array Returns)
 ```typescript
-// type object/type array/from/type iterable/restriction sync/params positional/
-type object/type array/from/type iterable/restriction sync/params positional/index.ts
-└─ $(iterable): Array // sync iterable → array, positional params
+// type object/type array/from/type iterable/restriction sync/params positional/index.ts
+$(iterable): Array // sync iterable → array, positional params
 
 // Pattern: return array ← input iterable, sync only, positional params
 ```
 
 ### String Transformations
 ```typescript
-// type string/from/type array/concat.ts  
-type string/from/type array/concat.ts
-└─ concat(strings: string[]): string
+// type string/from/type array/type <string>/concat/params positional/index.ts
+// Can't omit op, had to use concat because string.from.array.string.positional.$ is ambiguous.
+// (Does it concat the array to one string, or does it just run JSON.stringify?)
+$(strings: string[]): string
 
-// type string/from/unknown/export.ts
-type string/from/unknown/export.ts  
-└─ export(value: unknown): string
+// type string/from/type any/params positional/export/params positional/index.ts
+// Although value is typed as unknown in code, because the output is theoritically reversible, the input type is shown as `any` in fs.
+$(value: unknown): string
+
+// type string/from/type unknown/params positional/inspect.ts
+// Similar to util.inspect, output is irreversible, therefore input type is shown as `unknown` in fs.
+$(value: unknown): string
 
 // Pattern: return string ← input varies
 ```
 
 ### Generator Functions
 ```typescript
-// type function/type generator/from/number/range.ts
-type function/type generator/from/number/range.ts
-└─ range(count: number): Generator<number>
+// type function/type generator/type <number>/from/type number/range/params positional/index.ts
+$(count: number): Generator<number>
 
 // Pattern: return generator function ← input number
 ```
 
 ## Directory Tree Structure
 
-```
+```txt
 types/
 ├── type any/
 ├── type bigint/
@@ -107,19 +109,10 @@ types/
 │   │   ├── type array/
 │   │   ├── type string/
 │   │   └── type unknown/
-│   │       ├── index.ts
-│   │       └── isString.ts
 │   └── type is/
 ├── type function/
 │   └── type generator/
 │       ├── from/
-│       │   ├── any/
-│       │   ├── array/
-│       │   │   └── positional/
-│       │   ├── iterable/
-│       │   └── number/
-│       │       ├── index.ts
-│       │       └── range.ts
 │       └── index.ts
 ├── type never/
 ├── type number/
@@ -144,6 +137,7 @@ types/
 │   ├── type error/
 │   ├── type globalThis/
 │   ├── type iterable/
+// TODO: Document this
 │   │   └── type/
 │   │       ├── restriction sync/
 │   │       │   └── index.ts
@@ -155,22 +149,6 @@ types/
 │   ├── type record/
 │   └── type regexp/
 ├── type string/
-│   ├── from/
-│   │   ├── async/
-│   │   ├── css/
-│   │   ├── path/
-│   │   ├── random/
-│   │   ├── string/
-│   │   │   ├── hash.ts
-│   │   │   └── trim.ts
-│   │   ├── type array/
-│   │   │   ├── concat.ts
-│   │   │   └── index.ts
-│   │   └── unknown/
-│   │       ├── export.ts
-│   │       ├── index.ts
-│   │       └── typeOf.ts
-│   └── index.ts
 ├── type undefined/
 └── type unknown/
 ```
@@ -178,7 +156,7 @@ types/
 ## Path Resolution Examples
 
 ### Simple Type Guard
-```
+```txt
 type boolean/from/type unknown/isString.ts
 │    │       │    │       │
 │    │       │    │       └─ Specific function: isString
@@ -189,13 +167,13 @@ type boolean/from/type unknown/isString.ts
 ```
 
 ### Complex Array Transformation
-```
+```txt
 type object/type array/from/type iterable/restriction sync/params positional/
 │    │      │    │     │    │    │        │           │   │      │
 │    │      │    │     │    │    │        │           │   │      └─ Parameter style
 │    │      │    │     │    │    │        │           │   └─ Params category
 │    │      │    │     │    │    │        │           └─ Constraint: sync only
-│    │      │    │     │    │    │        └─ Restriction category  
+│    │      │    │     │    │    │        └─ Restriction category
 │    │      │    │     │    │    └─ Input type: iterables
 │    │      │    │     │    └─ Input type category
 │    │      │    │     └─ Transformation direction
@@ -222,39 +200,15 @@ type object/type array/from/type iterable/restriction sync/params positional/
 - Sub-type categorization prevents flat namespace pollution
 - Constraint layers provide fine-grained organization
 
-### 4. Semantic Clarity  
+### 4. Semantic Clarity
 - Every path component has specific meaning
 - Function purpose immediately obvious from location
 - Compositional relationships clear from structure
 
-## Migration from Legacy Structure
-
-This organization supersedes the simpler return-type approach outlined in [`TODO.return-type-refactor.md`](../TODO.return-type-refactor.md). Key differences:
-
-### Legacy Pattern (Planned)
-```
-string/from/unknown/export.ts
-boolean/from/string/isDigits.ts  
-array/from/number/range.ts
-```
-
-### Current Pattern (Implemented)
-```
-type string/from/unknown/export.ts
-type boolean/from/type string/isDigits.ts
-type object/type array/from/type number/range.ts
-```
-
-### Advantages of Current Approach
-1. **Explicit type prefixes** eliminate ambiguity
-2. **Sub-type categorization** (e.g., `type array` within `type object`)
-3. **Constraint specification** (`restriction sync/`, `params positional/`)
-4. **Hierarchical precision** enables complex type relationships
-
 ## Implementation Status
 
 - ✅ **Core structure** - Return-type-first organization established
-- ✅ **Type categories** - Major return types (string, boolean, object, function) structured  
+- ✅ **Type categories** - Major return types (string, boolean, object, function) structured
 - ✅ **Sub-type hierarchy** - Complex types (array, iterable, generator) organized
 - ✅ **Constraint system** - Sync/async restrictions and parameter styles implemented
 - 🔄 **Migration ongoing** - Functions being moved from legacy [`src/type/`](../type/) structure
