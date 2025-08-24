@@ -1,0 +1,5 @@
+## rules
+
+`restriction *` > `params *`
+
+`type *` > `* *`
