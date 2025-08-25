@@ -587,55 +587,11 @@ Final: Implementation
 - **Implementation**: `index.ts`
 - **Unit tests**: `index.unit.test.ts`
 - **Browser tests**: `index.browser.test.ts`
-- **Type tests**: `index.type.test.ts`
 - **Documentation**: `README.md` (for complex categories)
 
 #### Function Naming
 
 - **Export function**: Always use `$` for consistency
-- **Type alias**: Use descriptive names like `EmailString`, `ValidatedArray`
-- **Constants**: Use `UPPER_SNAKE_CASE` for configuration values
-
-### Documentation Standards
-
-#### TSDoc Requirements
-
-Every utility must include comprehensive TSDoc:
-
-```typescript
-/**
- * [One-line description of what the function does]
- *
- * [Detailed description explaining the purpose, behavior, and any important
- * implementation details. Explain WHY this function exists, not just WHAT it does.]
- *
- * @param paramName - [Description of parameter purpose and constraints]
- * @returns [Description of return value and its structure/properties]
- * @throws {ErrorType} [Description of when and why this error is thrown]
- *
- * @example
- * [Provide multiple realistic usage examples]
- * ```ts
- * // Basic usage
- * const result = myFunction(input);
- *
- * // Advanced usage
- * const complexResult = myFunction(complexInput);
- *
- * // Type narrowing usage (for type guards)
- * if (myTypeGuard(value)) {
- *   // value is now narrowed to specific type
- * }
- * ```
- */
-```
-
-#### Example Patterns
-
-- **Type Guards**: Show type narrowing in action
-- **Transformations**: Show input/output examples
-- **Generators**: Show iteration patterns and early termination
-- **Complex Functions**: Show multiple use cases and edge cases
 
 ### Testing Requirements
 
@@ -682,11 +638,8 @@ import { match } from 'ts-pattern';
 // 3. Internal workspace packages
 import { $ as helperFunction } from '@monochromatic-dev/module-es';
 
-// 4. Relative imports (same directory and subdirectories)
-import type { MyType } from '../types/index.ts';
-
-// 5. Type-only imports
-import type { Options } from './types.ts';
+// 4. Type-only + relative imports
+import type { $ as Options } from './type/index.ts';
 ```
 
 #### Function Implementation
