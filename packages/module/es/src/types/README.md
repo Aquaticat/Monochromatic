@@ -731,13 +731,6 @@ When migrating utilities from legacy structure:
 - [ ] **Update internal references** to use new paths
 - [ ] **Document migration** in this README
 
-### Deprecation Timeline
-
-1. **Phase 1** (Current): New utilities go to new structure only
-2. **Phase 2** (Q2 2024): Begin migrating existing utilities
-3. **Phase 3** (Q3 2024): Add deprecation warnings to legacy utilities
-4. **Phase 4** (Q4 2024): Remove legacy structure completely
-
 ### Breaking Changes
 
 The migration involves some breaking changes:
@@ -746,8 +739,6 @@ The migration involves some breaking changes:
 2. **Function names normalize**: All exports become `$` with aliasing
 3. **Directory structure**: Completely reorganized hierarchy
 4. **Documentation format**: Enhanced TSDoc requirements
-
-**Migration assistance**: Use the [migration script](../scripts/migrate-types.ts) to automate path updates.
 
 ## Best Practices
 
