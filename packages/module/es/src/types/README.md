@@ -25,12 +25,12 @@ A sophisticated hierarchical organization system for TypeScript utilities, built
 
 | Use Case | Path Pattern | Example |
 |----------|--------------|---------|
-| Check if value is string | `type boolean/type is/type param string/from/type unknown/` | [`isString`](type%20boolean/type%20is/type%20param%20string/from/type%20unknown/restriction%20sync/params%20positional/index.ts) |
-| Convert any value to export string | `type string/from/type any/export/` | [`toExport`](type%20string/from/type%20any/export/restriction%20sync/params%20positional/index.ts) |
-| Generate UUID | `type string/type uuid/from/type never/random/` | [`randomUUID`](type%20string/type%20uuid/from/type%20never/random/restriction%20sync/params%20positional/index.ts) |
-| Convert iterable to array | `type object/type array/from/type iterable/` | [`iterableToArray`](type%20object/type%20array/from/type%20iterable/restriction%20sync/params%20positional/index.ts) |
-| Generate number sequence | `type function/type generator/type param number/from/type number/range/` | [`rangeGenerator`](<type function/type generator/type param number/from/type number/range/restriction sync/params positional/index.ts>) |
-| Join string array | `type string/from/type array/type param string/concat/` | [`arrayConcat`](type%20string/from/type%20array/type%20param%20string/concat/restriction%20sync/params%20positional/index.ts) |
+| Check if value is string | `type boolean/type is/type param string/from/type unknown/` | [`import { $ as isString }`](type%20boolean/type%20is/type%20param%20string/from/type%20unknown/restriction%20sync/params%20positional/index.ts) |
+| Convert any value to export string | `type string/from/type any/export/` | [`import { $ as toExport }`](type%20string/from/type%20any/export/restriction%20sync/params%20positional/index.ts) |
+| Generate UUID | `type string/type uuid/from/type never/random/` | [`import { $ as randomUUID }`](type%20string/type%20uuid/from/type%20never/random/restriction%20sync/params%20positional/index.ts) |
+| Convert iterable to array | `type object/type array/from/type iterable/` | [`import { $ as iterableToArray }`](type%20object/type%20array/from/type%20iterable/restriction%20sync/params%20positional/index.ts) |
+| Generate number sequence | `type function/type generator/type param number/from/type number/range/` | [`import { $ as rangeGenerator }`](<type function/type generator/type param number/from/type number/range/restriction sync/params positional/index.ts>) |
+| Join string array | `type string/from/type array/type param string/concat/` | [`import { $ as arrayConcat }`](type%20string/from/type%20array/type%20param%20string/concat/restriction%20sync/params%20positional/index.ts) |
 
 ### Type-Based Lookup
 
@@ -114,6 +114,8 @@ export function $(value: unknown): value is string {
 }
 
 // Usage examples:
+import { $ as isString } from './index.ts';
+
 const input: unknown = "hello";
 if (isString(input)) {
   // input is now typed as string
@@ -141,6 +143,8 @@ export function $(obj: unknown): string {
 }
 
 // Usage examples:
+import { $ as toExport } from './index.ts';
+
 toExport(true); // "true"
 toExport("hello"); // '"hello"'
 toExport([1, 2, 3]); // "Object.freeze([1,2,3])"
@@ -158,6 +162,8 @@ export function $(strings: string[]): string {
 }
 
 // Usage examples:
+import { $ as arrayConcat } from './index.ts';
+
 arrayConcat(['Hello', ' ', 'World']); // "Hello World"
 arrayConcat(['A', 'B', 'C']); // "ABC"
 ```
@@ -182,6 +188,8 @@ export function $<const MyIterable extends $>(
 }
 
 // Usage examples:
+import { $ as iterableToArray } from './index.ts';
+
 iterableToArray('hello'); // ['h', 'e', 'l', 'l', 'o']
 iterableToArray(new Set([1, 2, 3])); // [1, 2, 3]
 iterableToArray([1, 2, 3]); // [1, 2, 3] (identity for arrays)
@@ -200,6 +208,8 @@ iterableToArray([1, 2, 3]); // [1, 2, 3] (identity for arrays)
 export const $: typeof crypto.randomUUID = crypto.randomUUID;
 
 // Usage examples:
+import { $ as randomUUID } from './index.ts';
+
 randomUUID(); // "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 ```
 
@@ -223,19 +233,21 @@ export function* $(length: number): Generator<number, void, undefined> {
 }
 
 // Usage examples:
-const rangeGen = arrayRangeGen(5);
+import { $ as rangeGenerator } from './index.ts';
+
+const rangeGen = rangeGenerator(5);
 for (const value of rangeGen) {
   console.log(value); // 0, 1, 2, 3, 4
 }
 
 // Memory-efficient processing
-for (const index of arrayRangeGen(1000000)) {
+for (const index of rangeGenerator(1000000)) {
   if (index > 100) break; // Early termination
   console.log(`Processing item ${index}`);
 }
 
 // Convert to array when needed
-const rangeArray = [...arrayRangeGen(3)]; // [0, 1, 2]
+const rangeArray = [...rangeGenerator(3)]; // [0, 1, 2]
 ```
 
 **Pattern**: `return generator function ← input number`
@@ -299,10 +311,9 @@ types/
 │   │   │   │   │   ├── params positional/
 │   │   │   │   │   │   └── index.ts
 │   │   │   │   │   └── index.ts
-│   │   │   │   └── index.ts
-│   │   │   └── type number/
-│   │   │       └── type int/
-│   │   │           └── range/
+│   │   │   ├── type number/
+│   │   │   ├── type int/
+│   │   │       └── range/
 │   │   └── index.ts
 │   ├── type date/
 │   ├── type error/
@@ -367,10 +378,9 @@ type boolean/type is/type param string/from/type unknown/restriction sync/params
 │    │       │    │   │    │      │    │       │    │           └─ Constraint: sync only
 │    │       │    │   │    │      │    │       │    └─ Input type: unknown values
 │    │       │    │   │    │      │    │       └─ Transformation direction
-│    │       │    │   │    │      │    └─ Input type category
-│    │       │    │   │    │      └─ Operation: type checking/guarding
-│    │       │    │   │    └─ Specific type: string parameter checking
-│    │       │    │   └─ Sub-operation: is (type guard)
+│    │       │    │   │    │      └─ Input type category
+│    │       │    │   │    └─ Operation: type checking/guarding
+│    │       │    │   └─ Specific type: string parameter checking
 │    │       │    └─ Operation category: type checking
 │    │       └─ Return type: boolean
 │    └─ Type category prefix
@@ -446,9 +456,8 @@ type string/type uuid/from/type never/random/restriction sync/params positional/
 **Related Utilities** (functions that work well together):
 
 - **String Type Guard** → **String Transformations**: First check type, then transform
-- **Array Creation** → **String Concatenation**: Create array, then join to string
-- **Range Generator** → **Array
-Creation**: Generate sequence, then convert to array
+- **Array Creation** → **String Transformations**: Create array, then join to string
+- **Number Range Generation** → **Array Creation**: Generate sequence, then convert to array
 - **Type Guards** → **Any Operation**: Verify type safety before operations
 
 ### Visual Path Breakdown Examples
@@ -751,9 +760,9 @@ Legacy functions used descriptive names; new structure uses `$` for consistency:
 
 | Legacy | New | Import Pattern |
 |--------|-----|----------------|
-| `isString(value)` | `$(value)` | `import { $ as isString }` |
-| `arrayFromIterable(iter)` | `$(iter)` | `import { $ as arrayFromIterable }` |
-| `generateUUID()` | `$()` | `import { $ as generateUUID }` |
+| `isString(value)` | `export function $(value)` | `import { $ as isString }` |
+| `arrayFromIterable(iter)` | `export function $(iter)` | `import { $ as arrayFromIterable }` |
+| `generateUUID()` | `export function $()` | `import { $ as generateUUID }` |
 
 ### Migration Checklist for Developers
 
@@ -796,7 +805,7 @@ The migration involves some breaking changes:
 ✅ **Solving a common problem**
 ```typescript
 // Good: Email validation is commonly needed
-type boolean/type is/type param string/from/type string/email/restriction sync/params positional/
+type boolean/type is/type param string/from/type unknown/email/restriction sync/params positional/
 ```
 
 ✅ **Input/output types are clearly different**
@@ -842,7 +851,7 @@ type string/from/type array/type param string/concatForEmailSubject/
 
 ```typescript
 // ✅ Good: Validate inputs and throw descriptive errors
-export function $(length: number): Generator<number> {
+export function $(length: number): Generator<number, void, undefined> {
   if (length < 0) {
     throw new RangeError('Length must be non-negative');
   }
@@ -979,7 +988,7 @@ const result = someUtility(input); // result: any
    console.assert(typeof result === 'string', 'Expected string result');
    ```
 
-3. **Check utility's generic constraints**: Ensure input matches expected constraints
+3. **Check utility's generic constraints**: Ensure input meets expected constraints
    ```typescript
    // ✅ Solution: Ensure input meets constraints
    const constrainedInput: readonly string[] = ['a', 'b', 'c'];
@@ -1000,7 +1009,7 @@ import { $ as stringConcat } from './types/type string/from/type array/type para
 import { $ as stringExport } from './types/type string/from/type any/export/restriction sync/params positional/index.ts';
 
 // Type-only imports
-import type { SomeType } from './types/type object/index.ts';
+import type { $ as SomeType } from './types/type object/index.ts';
 ```
 
 **Export Verification**:
@@ -1022,10 +1031,10 @@ const _typeCheck: (input: InputType) => OutputType = $;
    // index.ts -> index.type.test.ts
    ```
 
-2. **Proper test imports**: Use same import patterns as regular code
+2. **Proper test imports**: Always import from package entrypoint to test generated code.
    ```typescript
    // ✅ Correct test import
-   import { $ as myUtility } from './index.ts';
+   import { $ as myUtility } from '@monochromatic-dev/module-es';
    import { describe, test, expect } from 'vitest';
    ```
 
@@ -1077,35 +1086,6 @@ const _typeCheck: (input: InputType) => OutputType = $;
      }
      return processValue(value);
    }
-   ```
-
-#### Development Workflow Issues
-
-**Problem**: Utilities don't integrate well with development tools
-
-**Solutions**:
-1. **IDE Support**: Configure TypeScript properly
-   ```json
-   // tsconfig.json
-   {
-     "compilerOptions": {
-       "allowImportingTsExtensions": true,
-       "moduleResolution": "node",
-       "strict": true
-     }
-   }
-   ```
-
-2. **Build Integration**: Ensure utilities are included in build process
-   ```typescript
-   // Verify your utility is exported in main index
-   export { $ as myUtility } from './types/path/to/utility/index.ts';
-   ```
-
-3. **Documentation Generation**: Include utilities in documentation builds
-   ```bash
-   # Generate docs for utilities
-   typedoc --out docs src/types/
    ```
 
 ### Debugging Techniques
@@ -1173,7 +1153,7 @@ tree types/type\ string/from/type\ array/
 
 ### 5. Developer Experience
 - **Intelligent IDE suggestions**: Path structure guides auto-completion
-- **Clear mental model**: Return-type-first thinking matches developer intent
+- **Clear mental model**: Return-type-first organization matches developer intent
 - **Easy discovery**: Logical hierarchy reveals related functionality
 - **Consistent patterns**: Same organizational principles across all utilities
 
