@@ -1,2 +1,2 @@
 // Re-export all array → string functions
-export * from './concat.ts';
+export * as string from './type param string';

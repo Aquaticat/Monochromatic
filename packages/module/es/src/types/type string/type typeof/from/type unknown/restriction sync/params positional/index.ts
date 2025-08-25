@@ -1,3 +1,5 @@
+import type {$ as TypeOf} from '../../../../type/index.ts';
+
 /**
  * Enhanced typeof function that provides more specific type detection than JavaScript's built-in typeof operator.
  * This function distinguishes between various object types, null, undefined, NaN, and primitive types,
@@ -22,22 +24,9 @@
  * typeOf({}); // 'object'
  * ```
  */
-export function unknownToTypeOfString(
+export function $(
   obj: unknown,
-):
-  | 'null'
-  | 'undefined'
-  | 'NaN'
-  | 'number'
-  | 'boolean'
-  | 'bigint'
-  | 'symbol'
-  | 'string'
-  | 'array'
-  | 'date'
-  | 'set'
-  | 'map'
-  | 'object'
+): TypeOf
 {
   // Early returns for primitives to avoid switch statement evaluation issues
   if (obj === null)

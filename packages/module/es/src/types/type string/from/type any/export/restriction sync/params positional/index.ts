@@ -3,7 +3,9 @@
 // oxlint-disable-next-line no-unassigned-import -- For side effects.
 import '@total-typescript/ts-reset/array-includes';
 import { match, } from 'ts-pattern';
-import { unknownToTypeOfString, } from './typeOfString.ts';
+import {
+  $ as unknownToTypeOfString,
+} from '../../../../../type typeof/from/type unknown/restriction sync/params positional/index.ts';
 
 const unsupported = Object.freeze(
   ['null', 'undefined', 'NaN', 'bigint', 'symbol',] as const,
@@ -44,7 +46,7 @@ const primitive = Object.freeze(['boolean', 'string', 'number', 'date',] as cons
  * // "Object.freeze(Object.fromEntries([["users",Object.freeze([Object.freeze(Object.fromEntries([["name","Alice"]]))])]]))"
  * ```
  */
-export function unknownToExportString(obj: unknown,): string {
+export function $(obj: unknown,): string {
   const objType = unknownToTypeOfString(obj,);
   if (unsupported.includes(objType,)) {
     throw new TypeError(
@@ -76,16 +78,14 @@ export function unknownToExportString(obj: unknown,): string {
   return match(objType,)
     .with('set', function handler() {
       const setObj = obj as Set<any>;
-      return `Object.freeze(new Set([${
-        [...setObj,].map(unknownToExportString,).join(',',)
-      }]))`;
+      return `Object.freeze(new Set([${[...setObj,].map($,).join(',',)}]))`;
     },)
     .with('map', function handler() {
       const mapObj = obj as Map<any, any>;
       return `Object.freeze(new Map([${
         [...mapObj,]
           .map(function eachMapEntry([k, v,],) {
-            return `[${unknownToExportString(k,)},${unknownToExportString(v,)}]`;
+            return `[${$(k,)},${$(v,)}]`;
           },)
           .join(',',)
       }]))`;
@@ -95,7 +95,7 @@ export function unknownToExportString(obj: unknown,): string {
       return `Object.freeze([${
         arrayObj
           .map(function eachArrayItem(i: any,) {
-            return unknownToExportString(i,);
+            return $(i,);
           },)
           .join(',',)
       }])`;
@@ -107,7 +107,7 @@ export function unknownToExportString(obj: unknown,): string {
           .entries(objectObj,)
           .map(
             function eachObjectEntry([k, v,],) {
-              return `[${unknownToExportString(k,)},${unknownToExportString(v,)}]`;
+              return `[${$(k,)},${$(v,)}]`;
             },
           )
           .join(',',)

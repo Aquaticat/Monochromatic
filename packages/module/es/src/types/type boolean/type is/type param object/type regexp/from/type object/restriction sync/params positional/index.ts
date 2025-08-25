@@ -1,6 +1,6 @@
 import type {
   $ as Is,
-} from '../../../../../../type/restriction sync/params positional/index.ts';
+} from '../../../../../../../../type function/type is/type/restriction sync/params positional/index.ts';
 
 /**
  * Type guard that checks if a value is a RegExp object using Object.prototype.toString.
