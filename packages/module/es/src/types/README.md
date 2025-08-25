@@ -29,7 +29,7 @@ A sophisticated hierarchical organization system for TypeScript utilities, built
 | Convert any value to export string | `type string/from/type any/export/` | [`toExport`](type%20string/from/type%20any/export/restriction%20sync/params%20positional/index.ts) |
 | Generate UUID | `type string/type uuid/from/type never/random/` | [`randomUUID`](type%20string/type%20uuid/from/type%20never/random/restriction%20sync/params%20positional/index.ts) |
 | Convert iterable to array | `type object/type array/from/type iterable/` | [`iterableToArray`](type%20object/type%20array/from/type%20iterable/restriction%20sync/params%20positional/index.ts) |
-| Generate number sequence | `type function/type generator/type param number/from/type number/range/` | [`rangeGenerator`](type%20function/type%20generator/type%20param%20number/from/type%20number/range/params%20positional/index.ts) |
+| Generate number sequence | `type function/type generator/type param number/from/type number/range/` | [`rangeGenerator`](<type function/type generator/type param number/from/type number/range/restriction sync/params positional/index.ts>) |
 | Join string array | `type string/from/type array/type param string/concat/` | [`arrayConcat`](type%20string/from/type%20array/type%20param%20string/concat/restriction%20sync/params%20positional/index.ts) |
 
 ### Type-Based Lookup
@@ -207,7 +207,7 @@ randomUUID(); // "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 
 ### Generator Functions
 
-**Number Range Generator**: [`type function/type generator/type param number/from/type number/range/params positional/index.ts`](type%20function/type%20generator/type%20param%20number/from/type%20number/range/params%20positional/index.ts)
+**Number Range Generator**: [`type function/type generator/type param number/from/type number/range/params positional/index.ts`](<type function/type generator/type param number/from/type number/range/restriction sync/params positional/index.ts>)
 
 ```typescript
 /**
@@ -252,8 +252,6 @@ types/
 │   │   ├── type array/
 │   │   ├── type string/
 │   │   └── type unknown/
-│   │       └── params positional/
-│   │           └── index.ts
 │   └── type is/
 │       └── type param string/
 │           └── from/
@@ -265,14 +263,10 @@ types/
 │   ├── type generator/
 │   │   ├── from/
 │   │   │   └── type array/
-│   │   │       └── params positional/
-│   │   │           └── index.ts
 │   │   └── type param number/
 │   │       └── from/
 │   │           └── type number/
 │   │               └── range/
-│   │                   └── params positional/
-│   │                       └── index.ts
 │   ├── type is/
 │   │   └── type/
 │   │       └── restriction sync/
@@ -309,8 +303,6 @@ types/
 │   │   │   └── type number/
 │   │   │       └── type int/
 │   │   │           └── range/
-│   │   │               └── params positional/
-│   │   │                   └── index.ts
 │   │   └── index.ts
 │   ├── type date/
 │   ├── type error/
