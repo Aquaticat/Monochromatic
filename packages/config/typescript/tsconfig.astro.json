@@ -10,8 +10,6 @@
     "isolatedDeclarations": false,
 
     "types": [
-      "bun",
-      "vite/client",
       "mdx"
     ]
   }

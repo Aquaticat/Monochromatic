@@ -18,6 +18,10 @@
       "${configDir}/src",
       "${configDir}"
     ],
+    "paths": {
+      "@/*": ["${configDir}/*"],
+      "@_/*": ["${configDir}/src/*"]
+    },
     "outDir": "${configDir}/dist/final/types",
     "strict": true,
     "exactOptionalPropertyTypes": true,

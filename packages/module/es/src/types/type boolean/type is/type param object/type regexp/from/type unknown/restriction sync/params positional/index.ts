@@ -1,7 +1,3 @@
-import type {
-  $ as Is,
-} from '../../../../../../../../type function/type is/type/restriction sync/params positional/index.ts';
-
 /**
  * Type guard that checks if a value is a RegExp object using Object.prototype.toString.
  * This method provides more reliable RegExp detection than instanceof, especially across
@@ -14,15 +10,19 @@ import type {
  * const pattern = /[a-z]+/;
  * const notPattern = "[a-z]+";
  *
- * isObjectRegexp(pattern); // true
- * isObjectRegexp(notPattern); // false
- * isObjectRegexp(new RegExp("test")); // true
+ * $(pattern); // true
+ * $(notPattern); // false
+ * $(new RegExp("test")); // true
+ *
+ * // Works across different execution contexts
+ * const iframe = document.createElement('iframe');
+ * document.body.appendChild(iframe);
+ * const iframeRegex = new iframe.contentWindow.RegExp("test");
+ * $(iframeRegex); // true
  * ```
  */
 export function $(
-  value: object,
+  value: unknown,
 ): value is RegExp {
   return Object.prototype.toString.call(value,) === '[object RegExp]';
 }
-
-const _$: Is<object, RegExp> = $;
