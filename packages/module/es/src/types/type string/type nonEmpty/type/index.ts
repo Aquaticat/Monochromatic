@@ -9,3 +9,6 @@
  * ```
  */
 export type $ = `${string}${string}`;
+
+// No need for a type guard.
+// TODO: Expand the reasoning for why this has no need for a type guard.
