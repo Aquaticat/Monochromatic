@@ -1,1 +1,1 @@
-export type $<V,> = Record<string, V>;
+export type $<V = unknown,> = Record<string, V>;
