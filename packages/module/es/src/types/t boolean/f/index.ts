@@ -1,1 +1,1 @@
-export * as unknown from './type unknown/index.ts';
+export * as unknown from './t unknown/index.ts';

@@ -1,3 +1,3 @@
-export * as from from './from/index.ts';
-export * as hasQuotedSyntax from './type hasQuotedSyntax/index.ts';
-export * as jsonc from './type hasQuotedSyntax/type doubleQuote/type jsonc/index.ts';
+export * as from from './f/index.ts';
+export * as hasQuotedSyntax from './t hasQuotedSyntax/index.ts';
+export * as jsonc from './t hasQuotedSyntax/t doubleQuote/t jsonc/index.ts';

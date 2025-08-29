@@ -1,5 +1,6 @@
-export type $<Params extends unknown[] = unknown[], Return extends unknown = unknown,> = (
-  ...params: Params
-) => Return;
+/**
+ * Represents a function type.
+ */
+export type $ = (...args: any[]) => any;
 
-export * as async from './restriction async/index.ts';
+export * as async from './r a/index.ts';
