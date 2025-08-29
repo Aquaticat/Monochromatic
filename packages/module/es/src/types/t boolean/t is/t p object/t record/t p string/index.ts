@@ -1,1 +1,1 @@
-export * as rangeNumber from './type rangeNumber/index.ts';
+export * as rangeNumber from './t rangeNumber/index.ts';

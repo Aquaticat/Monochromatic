@@ -1,1 +1,1 @@
-export * as object from './type object/index.ts';
+export * as object from './t object/index.ts';

@@ -1,2 +1,2 @@
-export * as async from './restriction async/index.ts';
-export * as sync from './restriction sync/index.ts';
+export * as async from './r a/index.ts';
+export * as sync from './r s/index.ts';

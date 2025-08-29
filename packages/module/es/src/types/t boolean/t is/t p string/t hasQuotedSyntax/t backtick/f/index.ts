@@ -1,1 +1,1 @@
-export * as string from './type string/index.ts';
+export * as string from './t string/index.ts';

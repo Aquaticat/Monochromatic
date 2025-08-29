@@ -1,1 +1,1 @@
-export * as sync from './restriction sync/index.ts';
+export * as sync from './r s/index.ts';
