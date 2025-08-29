@@ -1131,3 +1131,6 @@ This organizational system provides the precision and scalability needed for a c
 
 `type *` -> `t *`
 `type param *` -> `t p *`
+
+`type` -> `t`
+`from` -> `f`

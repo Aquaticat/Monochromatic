@@ -1,5 +1,5 @@
-export * as any from './type any/index.ts';
-export * as bigint from './type bigint/index.ts';
+export * as any from './t any/index.ts';
+export * as bigint from './t bigint/index.ts';
 export * as boolean from './type boolean/index.ts';
 export * as function from './type function/index.ts';
 export * as never from './type never/index.ts';
