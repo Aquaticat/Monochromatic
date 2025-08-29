@@ -1120,3 +1120,14 @@ tree types/type\ string/from/type\ array/
 - ⏳ **Full coverage** - Complete migration of all 500+ utilities planned
 
 This organizational system provides the precision and scalability needed for a comprehensive functional programming utilities library while maintaining intuitive navigation and clear semantic meaning.
+
+## Abbv
+
+`restriction sync` -> `r s`
+`restriction async` -> `r a`
+
+`params positional` -> `p p`
+`params named` -> `p n`
+
+`type *` -> `t *`
+`type param *` -> `t p *`
