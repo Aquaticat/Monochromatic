@@ -1,9 +1,9 @@
 import type {
   $ as RangeNumberInt,
-} from '@_/types/type object/type record/type param string/type rangeNumber/type int/type/index.ts';
+} from '@_/types/t object/t record/t p string/t rangeNumber/t int/t/index.ts';
 import type {
   $ as RangeNumber,
-} from '@_/types/type object/type record/type param string/type rangeNumber/type/index.ts';
+} from '@_/types/t object/t record/t p string/t rangeNumber/t/index.ts';
 
 /**
  * Type guard to check if an object is a RangeNumberInt.

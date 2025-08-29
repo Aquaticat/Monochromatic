@@ -5,5 +5,6 @@ export type $ = {
   endInclusive: Int;
   __brand: {
     rangeNumber: true;
+    inQuotes?: Map<string, boolean>;
   };
 };
