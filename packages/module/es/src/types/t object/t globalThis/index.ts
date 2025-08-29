@@ -1,2 +1,2 @@
-export * as type from './type/index.ts';
-export * as monochromatic from './type monochromatic/index.ts';
+export * as monochromatic from './t monochromatic/index.ts';
+export * as type from './t/index.ts';
