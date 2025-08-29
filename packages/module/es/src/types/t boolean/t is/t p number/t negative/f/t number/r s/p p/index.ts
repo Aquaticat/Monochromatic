@@ -1,4 +1,4 @@
-import type {$ as Negative} from '@_/types/type number/type negative/type/index.ts';
+import type { $ as Negative, } from '@_/types/t number/t negative/t/index.ts';
 
 export function $(
   value: number,

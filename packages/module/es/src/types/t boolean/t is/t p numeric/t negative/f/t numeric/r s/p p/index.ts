@@ -1,4 +1,4 @@
-import type { $ as Negative, } from '@_/types/type numeric/type negative/type/index.ts';
+import type { $ as Negative, } from '@_/types/t numeric/t negative/t/index.ts';
 
 /**
  * Checks if a numeric value is negative (less than 0).

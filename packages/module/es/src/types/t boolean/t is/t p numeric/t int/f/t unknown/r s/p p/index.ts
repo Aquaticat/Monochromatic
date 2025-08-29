@@ -1,4 +1,4 @@
-import type { $ as NumericInt, } from '@_/types/type numeric/type int/type/index.ts';
+import type { $ as NumericInt, } from '@_/types/t numeric/t int/t/index.ts';
 
 /**
  * Checks if a value is an integer (integer number or any bigint).

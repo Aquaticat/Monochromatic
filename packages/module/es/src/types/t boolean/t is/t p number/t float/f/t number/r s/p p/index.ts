@@ -1,4 +1,4 @@
-import type {$ as Float} from '@_/types/type number/type float/type/index.ts';
+import type { $ as Float, } from '@_/types/t number/t float/t/index.ts';
 
 export function $(
   value: number,

@@ -1,4 +1,4 @@
-import type { $ as Float, } from '@_/types/type numeric/type float/type/index.ts';
+import type { $ as Float, } from '@_/types/t numeric/t float/t/index.ts';
 
 /**
  * Checks if a numeric value is a float (non-integer number).
