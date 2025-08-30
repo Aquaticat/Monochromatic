@@ -42,8 +42,6 @@ import {
   test,
 } from 'vitest';
 
-await logtapeConfigure(await logtapeConfiguration());
-
 describe('ArrayFixedLength', () => {
   test('IsArrayFixedLength', () => {
     expectTypeOf<IsArrayFixedLength<[number, string]>>().toEqualTypeOf<true>();
@@ -59,18 +57,12 @@ import {
   // equal,
   // everyIterable,
   // everyIterableAsync,
-
-  // Logging library used.
-  logtapeConfiguration,
-  logtapeConfigure,
 } from '@monochromatic-dev/module-es';
 import {
   describe,
   expect,
   test,
 } from 'vitest';
-
-await logtapeConfigure(await logtapeConfiguration());
 ```
 
 ## Linting Test Code
