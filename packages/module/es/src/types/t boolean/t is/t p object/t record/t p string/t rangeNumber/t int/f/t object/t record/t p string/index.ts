@@ -1,2 +1,2 @@
-export * as sync from './restriction sync/index.ts';
-export * as rangeNumber from './type rangeNumber/index.ts';
+export * as sync from './r s/index.ts';
+export * as rangeNumber from './t rangeNumber/index.ts';
