@@ -1,4 +1,4 @@
-import type { $ as Int, } from '@_/types/t number/t int/t/index.ts';
+import type { $ as Int, } from '@/src/types/t number/t finite/t int/t';
 
 export type $ = {
   startInclusive: Int;
