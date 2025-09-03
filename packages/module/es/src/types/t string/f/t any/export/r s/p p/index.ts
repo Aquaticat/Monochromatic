@@ -7,24 +7,24 @@ import {
   $ as unknownToTypeOfString,
 } from '../../../../../t typeof/f/t unknown/r s/p p/index.ts';
 
-const unsupported = Object.freeze(
-  ['null', 'undefined', 'NaN', 'bigint', 'symbol',] as const,
-);
-
-const primitive = Object.freeze(['boolean', 'string', 'number', 'date',] as const,);
+const primitive = Object.freeze(['boolean', 'string', 'number', 'date', 'bigint', 'null', 'undefined', 'NaN', 'symbol',] as const,);
 
 /**
  * Converts any JavaScript value into its string representation as frozen export code.
  *
  * This function serializes JavaScript values into code strings that can be used
- * as export statements. It handles primitive types (boolean, string, number, date)
- * and complex data structures (Set, Map, Array, Object) by recursively converting
- * all nested values. All generated objects are wrapped with `Object.freeze()` to
- * ensure immutability.
+ * as export statements. It handles all primitive types (boolean, string, number, date,
+ * bigint, null, undefined, NaN, symbol) and complex data structures (Set, Map, Array, Object)
+ * by recursively converting all nested values. All generated objects are wrapped with
+ * `Object.freeze()` to ensure immutability.
+ *
+ * **Symbol Limitation**: While symbols are supported, each Symbol() call creates a unique
+ * instance, so Symbol('foo') !== Symbol('foo'). The generated export code will create
+ * new symbol instances that are functionally equivalent but not identity-equal to the
+ * original symbols.
  *
  * @param obj - Value to convert to export string representation
  * @returns String representation of the value as frozen export code
- * @throws {TypeError} When the object type is unsupported (null, undefined, NaN, bigint, symbol)
  * @throws {TypeError} When an unknown object type is encountered
  *
  * @example
@@ -34,6 +34,11 @@ const primitive = Object.freeze(['boolean', 'string', 'number', 'date',] as cons
  * toExport("hello"); // '"hello"'
  * toExport(42); // "42"
  * toExport(new Date('2023-01-01')); // 'new Date("2023-01-01T00:00:00.000Z")'
+ * toExport(123n); // "123n"
+ * toExport(null); // "null"
+ * toExport(undefined); // "undefined"
+ * toExport(NaN); // "NaN"
+ * toExport(Symbol('test')); // 'Symbol("test")'
  *
  * // Collections
  * toExport(new Set([1, 2, 3])); // "Object.freeze(new Set([1,2,3]))"
@@ -48,11 +53,6 @@ const primitive = Object.freeze(['boolean', 'string', 'number', 'date',] as cons
  */
 export function $(obj: unknown,): string {
   const objType = unknownToTypeOfString(obj,);
-  if (unsupported.includes(objType,)) {
-    throw new TypeError(
-      `Unsupported obj ${JSON.stringify(obj,)} type ${objType}`,
-    );
-  }
   if (primitive.includes(objType,)) {
     const primitiveObjType = objType as typeof primitive[number];
     return match(primitiveObjType,)
@@ -71,6 +71,26 @@ export function $(obj: unknown,): string {
       .with('date', function handler() {
         const dateObj = obj as Date;
         return `new Date(${JSON.stringify(dateObj,)})`;
+      },)
+      .with('bigint', function handler() {
+        const bigintObj = obj as bigint;
+        return `${String(bigintObj,)}n`;
+      },)
+      .with('null', function handler() {
+        return 'null';
+      },)
+      .with('undefined', function handler() {
+        return 'undefined';
+      },)
+      .with('NaN', function handler() {
+        return 'NaN';
+      },)
+      .with('symbol', function handler() {
+        const symbolObj = obj as symbol;
+        const description = symbolObj.description;
+        return description !== undefined
+          ? `Symbol(${JSON.stringify(description,)})`
+          : 'Symbol()';
       },)
       .exhaustive();
   }
@@ -106,6 +126,7 @@ export function $(obj: unknown,): string {
           .join(',',)
       }])`;
     },)
+    // FIXME: Possible bug here
     .with('object', function handler() {
       const objectObj = obj as Record<string, any>;
       return `Object.freeze(Object.fromEntries([${
