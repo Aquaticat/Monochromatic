@@ -1,17 +1,10 @@
-/**
- * Template literal type representing a non-empty string.
- * Ensures a string has at least one character.
- *
- * @example
- * ```ts
- * const notEmpty: NonEmptyString = 'hello'; // Valid
- * const invalid: NonEmptyString = ''; // Type error - empty string not allowed
- * ```
- */
-export type $ = string & {length: Exclude<number, 0>};
+// See https://stackoverflow.com/a/79468119
+export type $nonEmpty = `${any}${string}`;
 
-// No need for a type guard.
-// TODO: Expand the reasoning for why this has no need for a type guard.
+const _one: $nonEmpty = '1';
+const _two: $nonEmpty = '12';
 
-const _empty:$ = '';
-// FIXME: This
+// @ts-expect-error -- Type '""' is not assignable to type '`${any}${string}`'.ts(2322)
+const _empty: $nonEmpty = '';
+
+// No need for a runtime type guard because ...

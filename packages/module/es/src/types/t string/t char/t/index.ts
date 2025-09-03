@@ -13,3 +13,9 @@ const _one: $2 = '1';
 const _two: $2 = '12';
 
 const _empty: $2 = '';
+
+export type $nonEmpty = `${any}${string}`;
+
+const __one: $nonEmpty = '1';
+
+const __empty: $nonEmpty = '';
