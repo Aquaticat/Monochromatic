@@ -1,4 +1,4 @@
-import type {$ as TypeOf} from '../../../../type/index.ts';
+import type { $ as TypeOf, } from '../../../../t/index.ts';
 
 /**
  * Enhanced typeof function that provides more specific type detection than JavaScript's built-in typeof operator.
@@ -26,8 +26,7 @@ import type {$ as TypeOf} from '../../../../type/index.ts';
  */
 export function $(
   obj: unknown,
-): TypeOf
-{
+): TypeOf {
   // Early returns for primitives to avoid switch statement evaluation issues
   if (obj === null)
     return 'null';
@@ -60,6 +59,7 @@ export function $(
   if (typeof obj === 'object') {
     // Check for null-prototype objects first (like Object.create(null))
     console.log('hello',);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Checking prototype
     const prototype = Object.getPrototypeOf(obj,);
     if (prototype === null)
       return 'object';

@@ -1,1 +1,1 @@
-export * as never from './type never/index.ts';
+export * as never from './t never/index.ts';

@@ -8,7 +8,10 @@
  * const invalid: NonEmptyString = ''; // Type error - empty string not allowed
  * ```
  */
-export type $ = `${string}${string}`;
+export type $ = string & {length: Exclude<number, 0>};
 
 // No need for a type guard.
 // TODO: Expand the reasoning for why this has no need for a type guard.
+
+const _empty:$ = '';
+// FIXME: This

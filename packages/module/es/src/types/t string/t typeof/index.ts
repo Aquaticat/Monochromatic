@@ -1,2 +1,2 @@
-export * as from from './from/index.ts';
-export * as type from './type/index.ts';
+export * as from from './f/index.ts';
+export * as type from './t/index.ts';

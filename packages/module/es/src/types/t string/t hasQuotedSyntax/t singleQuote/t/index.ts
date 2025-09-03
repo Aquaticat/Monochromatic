@@ -1,7 +1,7 @@
-import type {$ as hasQuotedSyntax} from '../../type/index.ts';
+import type { $ as hasQuotedSyntax, } from '../../t/index.ts';
 
 export type $ = hasQuotedSyntax & {
   __brand: {
-    quotesType: "'"
-  }
-}
+    quotesType: "'";
+  };
+};
