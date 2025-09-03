@@ -1,4 +1,4 @@
-import type {$ as Jsonc} from '../../type/index.ts';
+import type { $ as Jsonc, } from '../../t/index.ts';
 
 export type $ = Jsonc & {
   __brand: {
