@@ -1,1 +1,1 @@
-export * as array from './type array/index.ts';
+export * as array from './t array/index.ts';

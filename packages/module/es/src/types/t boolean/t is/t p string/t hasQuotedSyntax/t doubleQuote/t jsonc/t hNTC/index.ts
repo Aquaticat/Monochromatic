@@ -1,1 +1,1 @@
-export * as hasNoBlockComments from './type hNBC/index.ts';
+export * as hasNoBlockComments from './t hNBC/index.ts';

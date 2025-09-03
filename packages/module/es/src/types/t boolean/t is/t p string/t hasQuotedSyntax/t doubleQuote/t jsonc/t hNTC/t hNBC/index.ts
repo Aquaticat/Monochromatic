@@ -1,1 +1,1 @@
-export * as hasNoInlineComments from './type hNIC/index.ts';
+export * as hasNoInlineComments from './t hNIC/index.ts';

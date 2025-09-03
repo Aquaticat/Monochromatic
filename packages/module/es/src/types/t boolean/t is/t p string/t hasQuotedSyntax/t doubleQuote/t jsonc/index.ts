@@ -1,1 +1,1 @@
-export * as hasNoTrailingCommas from './type hNTC/index.ts';
+export * as hasNoTrailingCommas from './t hNTC/index.ts';

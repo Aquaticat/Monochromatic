@@ -1,3 +1,3 @@
 // Re-export all string-producing functions
-export * from '../type typeof/from/type unknown/index.ts';
-export * from './type array/index.ts';
+export * from './t array/index.ts';
+export * from './t any/index.ts';

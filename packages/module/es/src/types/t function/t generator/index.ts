@@ -1,3 +1,3 @@
 // Re-export all generator-producing functions
-export * from './from/index.ts';
-export * from './type param number/index.ts';
+export * from './f/index.ts';
+export * from './t p number/index.ts';

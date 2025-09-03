@@ -5,7 +5,7 @@ import '@total-typescript/ts-reset/array-includes';
 import { match, } from 'ts-pattern';
 import {
   $ as unknownToTypeOfString,
-} from '../../../../../type typeof/from/type unknown/restriction sync/params positional/index.ts';
+} from '../../../../../t typeof/f/t unknown/r s/p p/index.ts';
 
 const unsupported = Object.freeze(
   ['null', 'undefined', 'NaN', 'bigint', 'symbol',] as const,
@@ -50,7 +50,7 @@ export function $(obj: unknown,): string {
   const objType = unknownToTypeOfString(obj,);
   if (unsupported.includes(objType,)) {
     throw new TypeError(
-      `Unsupported obj ${obj} ${JSON.stringify(obj,)} type ${objType}`,
+      `Unsupported obj ${JSON.stringify(obj,)} type ${objType}`,
     );
   }
   if (primitive.includes(objType,)) {
@@ -78,7 +78,13 @@ export function $(obj: unknown,): string {
   return match(objType,)
     .with('set', function handler() {
       const setObj = obj as Set<any>;
-      return `Object.freeze(new Set([${[...setObj,].map($,).join(',',)}]))`;
+      return `Object.freeze(new Set([${
+        [...setObj,]
+          .map(function eachSetItem(element: any,) {
+            return $(element,);
+          },)
+          .join(',',)
+      }]))`;
     },)
     .with('map', function handler() {
       const mapObj = obj as Map<any, any>;
@@ -94,8 +100,8 @@ export function $(obj: unknown,): string {
       const arrayObj = obj as any[];
       return `Object.freeze([${
         arrayObj
-          .map(function eachArrayItem(i: any,) {
-            return $(i,);
+          .map(function eachArrayItem(element: any,) {
+            return $(element,);
           },)
           .join(',',)
       }])`;
@@ -119,7 +125,7 @@ export function $(obj: unknown,): string {
       function thrower() {
         /* v8 ignore next -- @preserve */
         throw new TypeError(
-          `Unknown obj ${obj} ${JSON.stringify(obj,)} type ${objType}`,
+          `Unknown obj ${JSON.stringify(obj,)} type ${objType}`,
         );
       },
     );
