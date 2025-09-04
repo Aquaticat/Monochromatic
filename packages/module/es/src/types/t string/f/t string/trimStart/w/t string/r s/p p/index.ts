@@ -1,3 +1,5 @@
+import {$ as named} from '../p n/index.ts';
+
 /**
  * Removes all occurrences of trimmer string from the start of the input string.
  *
@@ -47,27 +49,5 @@
  * which follows the same pattern but removes from the end of the string.
  */
 export function $(str: string, trimmer: string,): string {
-  if (trimmer === '')
-    throw new Error('trimmer cannot be empty',);
-  if (!str.startsWith(trimmer,))
-    return str;
-
-  // Use Intl.Segmenter for proper Unicode-aware string segmentation
-  /** Segmenter for Unicode-aware string segmentation */
-  const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme', },);
-  /** Segmented trimmer string as array of graphemes */
-  const trimmerSegments = Array.from(segmenter.segment(trimmer,),
-    segment => segment.segment,);
-
-  /** Working copy of the input string being modified */
-  let modifyingString = str;
-  while (modifyingString.startsWith(trimmer,)) {
-    /** Segmented main string as array of graphemes */
-    const stringSegments = Array.from(segmenter.segment(modifyingString,), segment =>
-      segment.segment,);
-    modifyingString = stringSegments
-      .slice(trimmerSegments.length,)
-      .join('',);
-  }
-  return modifyingString;
+  return named({str, trimmer});
 }
