@@ -55,6 +55,8 @@ export function $(
   if (obj instanceof Map)
     return 'map';
 
+  // FIXME: Does this correctly handle wrapper types?
+
   // Handle objects with careful checking to avoid primitive conversion errors
   if (typeof obj === 'object') {
     // Check for null-prototype objects first (like Object.create(null))
@@ -95,3 +97,5 @@ export function $(
     `Unrecognized obj with type "${objType}" and value ${objStringified}`,
   );
 }
+
+// TODO: Refactor to return array of strings according to my current file structure.
