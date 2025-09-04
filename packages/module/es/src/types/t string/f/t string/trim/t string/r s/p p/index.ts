@@ -53,12 +53,17 @@
     return str;
   
   // Use Intl.Segmenter for proper Unicode-aware string segmentation
+  /** Segmenter for Unicode-aware string segmentation */
   const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+  /** Segmented trimmer string as array of graphemes */
   const trimmerSegments = Array.from(segmenter.segment(trimmer), segment => segment.segment);
+  /** Reversed trimmer segments joined into string */
   const reversedTrimmer = trimmerSegments.toReversed().join('');
   
+  /** Working copy of the input string being modified */
   let modifyingString = str;
   while (modifyingString.endsWith(trimmer)) {
+    /** Segmented main string as array of graphemes */
     const stringSegments = Array.from(segmenter.segment(modifyingString), segment => segment.segment);
     modifyingString = Array.from(segmenter.segment(
       stringSegments.toReversed().join('').replace(reversedTrimmer, '')
