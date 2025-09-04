@@ -48,20 +48,21 @@
  */
 /* @__NO_SIDE_EFFECTS__ */ export function $(str: string, trimmer: string): string {
   if (trimmer === '')
-    throw new Error('trimmer cannot be empty',);
-  if (!str.endsWith(trimmer,))
+    throw new Error('trimmer cannot be empty');
+  if (!str.endsWith(trimmer))
     return str;
-  const reversedTrimmer = [...trimmer,].toReversed().join('',);
+  
+  // Use Intl.Segmenter for proper Unicode-aware string segmentation
+  const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+  const trimmerSegments = Array.from(segmenter.segment(trimmer), segment => segment.segment);
+  const reversedTrimmer = trimmerSegments.toReversed().join('');
+  
   let modifyingString = str;
-  while (modifyingString.endsWith(trimmer,)) {
-    modifyingString = [
-      ...[...modifyingString,]
-        .toReversed()
-        .join('',)
-        .replace(reversedTrimmer, '',),
-    ]
-      .toReversed()
-      .join('',);
+  while (modifyingString.endsWith(trimmer)) {
+    const stringSegments = Array.from(segmenter.segment(modifyingString), segment => segment.segment);
+    modifyingString = Array.from(segmenter.segment(
+      stringSegments.toReversed().join('').replace(reversedTrimmer, '')
+    ), segment => segment.segment).toReversed().join('');
   }
   return modifyingString;
 }
