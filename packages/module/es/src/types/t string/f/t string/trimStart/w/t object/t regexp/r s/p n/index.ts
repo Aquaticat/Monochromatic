@@ -61,18 +61,12 @@ export function $(
   if (context.ttl <= 0)
     return str;
 
-  // Create a copy of the regex with global flag and anchored to start
-  // TODO: Do we really need this? Is there a better way?
-  const globalRegex = new RegExp(trimmer.source,
-    trimmer.flags.includes('g',) ? trimmer.flags : trimmer.flags + 'g',);
-  const startAnchoredRegex = new RegExp('^' + globalRegex.source, globalRegex.flags,);
+  // Use trimmer.exec() to find the first match and check if it's at the start
+  const match = trimmer.exec(str,);
 
-  // Find the longest match at the start
-  const match = str.match(startAnchoredRegex,);
-
-  // Base case: if no match or empty match, return the string as-is
+  // Base case: if no match or match isn't at start position or empty match, return the string as-is
   // TODO: Is empty match really "good"?
-  if (!match || match[0] === '')
+  if (!match || match.index !== 0 || match[0] === '')
     return str;
 
   // Use Intl.Segmenter for proper Unicode-aware string segmentation
