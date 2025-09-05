@@ -63,6 +63,7 @@ export function $(
     return str;
 
   // Use trimmer.exec() to find the first match and check if it's at the start
+  // TODO: Optimization opportunity here. Get all matches, then read until sequential matches end.
   const match = trimmer.exec(str,);
 
   // Base case: if no match or match isn't at start position or empty match, return the string as-is
