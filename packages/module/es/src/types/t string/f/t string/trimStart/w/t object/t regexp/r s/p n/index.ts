@@ -56,36 +56,25 @@ export function $(
   { str, trimmer, context = { ttl: 8, }, }: { str: string; trimmer: RegExp;
     context?: { ttl: number; }; },
 ): string {
+  if (context.ttl < 0)
+    throw new Error('ttl cannot be negative',);
   // Base case: if TTL is exhausted, return current string to prevent infinite recursion
-  // TODO: If ttl is <0, something's wrong, throw error.
-  if (context.ttl <= 0)
+  if (context.ttl == 0)
     return str;
 
   // Use trimmer.exec() to find the first match and check if it's at the start
   const match = trimmer.exec(str,);
 
   // Base case: if no match or match isn't at start position or empty match, return the string as-is
-  // TODO: Is empty match really "good"?
+  // Empty matches are treated as invalid - they don't represent actual content to trim
+  // and could cause infinite recursion if processed. This is the correct behavior.
   if (!match || match.index !== 0 || match[0] === '')
     return str;
 
-  // Use Intl.Segmenter for proper Unicode-aware string segmentation
-  const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme', },);
+  // Use the match information directly to slice the string
+  // This eliminates the need for segmenting both strings and array operations
+  const result = str.slice(match[0].length,);
 
-  // Segment the string and remove the matched portion
-  const stringSegments = Array.from(segmenter.segment(str,), segment => segment.segment,);
-  const matchSegments = Array.from(segmenter.segment(match[0],),
-    segment => segment.segment,);
-
-  // Remove the matched portion and recursively process the result
-  const remainingString = stringSegments
-    .slice(matchSegments.length,)
-    .join('',);
-
-  // Recursive call with decremented TTL
-  return $({
-    str: remainingString,
-    trimmer,
-    context: { ttl: context.ttl - 1, },
-  },);
+  // Recursively trim the result with the same trimmer and reduced TTL
+  return $({ str: result, trimmer, context: { ttl: context.ttl - 1, }, },);
 }
