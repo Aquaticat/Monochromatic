@@ -1,3 +1,13 @@
+import {
+  $ as stringToRegexp,
+} from '@_/types/t object/t regexp/f/t string/r s/p p/index.ts';
+import {
+  $ as regexpToGlobalRegexp,
+} from '@_/types/t object/t regexp/t global/f/t object/t regexp/r s/p p/index.ts';
+import {
+  $ as trimEndRegex,
+} from '@_/types/t string/f/t string/trimEnd/w/t object/t regexp/t global/r s/p n/index.ts';
+
 /**
  * Removes all occurrences of trimmer string from the end of the input string.
  *
@@ -47,32 +57,7 @@
  * which follows the same pattern but removes from the beginning of the string.
  */
 export function $({ str, trimmer, }: { str: string; trimmer: string; },): string {
-  if (trimmer === '')
-    throw new Error('trimmer cannot be empty',);
-  if (!str.endsWith(trimmer,))
-    return str;
+  const globalRegexp = regexpToGlobalRegexp(stringToRegexp(trimmer));
 
-  // Use Intl.Segmenter for proper Unicode-aware string segmentation
-  /** Segmenter for Unicode-aware string segmentation */
-  const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme', },);
-  /** Segmented trimmer string as array of graphemes */
-  const trimmerSegments = Array.from(segmenter.segment(trimmer,),
-    segment => segment.segment,);
-  /** Reversed trimmer segments joined into string */
-  const reversedTrimmer = trimmerSegments.toReversed().join('',);
-
-  /** Working copy of the input string being modified */
-  let modifyingString = str;
-  while (modifyingString.endsWith(trimmer,)) {
-    /** Segmented main string as array of graphemes */
-    const stringSegments = Array.from(segmenter.segment(modifyingString,), segment =>
-      segment.segment,);
-    modifyingString = Array
-      .from(segmenter.segment(
-        stringSegments.toReversed().join('',).replace(reversedTrimmer, '',),
-      ), segment => segment.segment,)
-      .toReversed()
-      .join('',);
-  }
-  return modifyingString;
+  return trimEndRegex({str, trimmer: globalRegexp});
 }

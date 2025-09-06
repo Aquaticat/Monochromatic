@@ -10,7 +10,7 @@ import type { $ as Global, } from '@_/types/t object/t regexp/t global/t/index.t
  * @param trimmer - regex pattern to match and remove from the start
  * @param context - recursive context with TTL to prevent infinite loops
  * @returns String with all leading occurrences matching the regex pattern removed
- * @throws {Error} If trimmer is an empty regex or invalid regex pattern
+ * @throws Error If trimmer is an empty regex or invalid regex pattern
  *
  * @example
  * ```ts
