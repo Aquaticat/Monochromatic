@@ -1,6 +1,12 @@
-import {$ as stringToRegexp} from '@_/types/t object/t regexp/f/t string/r s/p p/index.ts';
-import {$ as regexpToGlobalRegexp} from '@_/types/t object/t regexp/t global/f/t object/t regexp/r s/p p/index.ts';
-import {$ as trimStartRegex} from '@_/types/t string/f/t string/trimStart/w/t object/t regexp/t global/r s/p n/index.ts';
+import {
+  $ as stringToRegexp,
+} from '@_/types/t object/t regexp/f/t string/r s/p p/index.ts';
+import {
+  $ as regexpToGlobalRegexp,
+} from '@_/types/t object/t regexp/t global/f/t object/t regexp/r s/p p/index.ts';
+import {
+  $ as trimStartRegex,
+} from '../../../t object/t regexp/t global/r s/p n/index.ts';
 
 /**
  * Removes all occurrences of trimmer string from the start of the input string.
@@ -51,7 +57,7 @@ import {$ as trimStartRegex} from '@_/types/t string/f/t string/trimStart/w/t ob
  * which follows the same pattern but removes from the end of the string.
  */
 export function $({ str, trimmer, }: { str: string; trimmer: string; },): string {
-  const globalRegexp = regexpToGlobalRegexp(stringToRegexp(trimmer));
+  const globalRegexp = regexpToGlobalRegexp(stringToRegexp(trimmer,),);
 
-  return trimStartRegex({str, trimmer: globalRegexp});
+  return trimStartRegex({ str, trimmer: globalRegexp, },);
 }

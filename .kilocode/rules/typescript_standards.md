@@ -28,7 +28,8 @@
 
 ## Import and Module Conventions
 - Always include file extensions when importing files
-- **Use `.ts` extensions in imports when `allowImportingTsExtensions` is enabled** (not `.js`)
+- **Use `.ts` extensions in imports and re-exports (not `.js`)
+  Example: `export * as sync from './r s/index.ts';`
 - Group imports in the following order:
   1. Node.js built-in modules
   2. External dependencies
