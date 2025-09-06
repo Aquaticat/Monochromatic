@@ -79,3 +79,37 @@ export function $(
   // Recursively trim the result with the same trimmer and reduced TTL
   return $({ str: result, trimmer, context: { ttl: context.ttl - 1, }, },);
 }
+
+//region Trimming Logic -- Optimized implementation using matchAll to get all consecutive matches at once
+function n(
+  trimmer: RegExp,
+  str: string,
+  ttl: number,
+): string {
+  // Handle edge cases
+  if (ttl <= 0 || str.length === 0)
+    return str;
+
+  // Use matchAll to get all matches in a single regex execution
+  const matches = Array.from(str.matchAll(trimmer,),);
+
+  // Track consecutive matches starting from position 0
+  let totalTrimLength = 0;
+
+  // Process matches in order to find consecutive leading matches
+  for (const match of matches) {
+    const matchIndex = match.index ?? 0;
+
+    // If match doesn't start at the current trim position, stop
+    if (matchIndex !== totalTrimLength)
+      break;
+
+    // Add this match length to total trim
+    const matchLength = match[0]?.length ?? 0;
+    totalTrimLength += matchLength;
+  }
+
+  // Return string with all consecutive leading matches removed
+  return totalTrimLength === 0 ? str : str.slice(totalTrimLength,);
+}
+//endregion Trimming Logic
