@@ -86,7 +86,8 @@
     "find-up": "catalog:",
     "@cspotcode/outdent": "catalog:",
     "superjson": "catalog:",
-    "decircular": "catalog:"
+    "decircular": "catalog:",
+    "safe-stringify": "catalog:"
   },
   "dependencies": {
     "meilisearch": "catalog:",

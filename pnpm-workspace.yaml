@@ -96,6 +96,7 @@ catalog:
   rehype-parse: '*'
   rehype-autolink-headings: '*'
   rambdax: '*'
+  'safe-stringify': '>=1.2.0'
   ses: '*'
   superjson: '*'
   decircular: '*'

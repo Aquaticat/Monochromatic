@@ -1,8 +1,8 @@
 /** Discriminated union type representing detailed type information for JavaScript values */
 export type $ =
   /** Represents the `undefined` primitive type */
-  | ['undefined',]
-  /** Represents the `big极` primitive type with sign information */
+  | 'undefined'
+  /** Represents the `bigint` primitive type with sign information */
   | ['bigint', { sign: 0 | 'negative' | 'positive'; },]
   /** Represents the `boolean` primitive type with truthiness information */
   | ['boolean', { true: boolean; },]
@@ -57,4 +57,5 @@ export type $ =
     | { empty: true; }
     | { empty: [false, { char:
       | false
-      | [true, 'uppercaseLetter' | 'lowercaseLetter' | 'nonLetter',]; },]; },];
+      | [true, 'uppercaseLetter' | 'lowercaseLetter' | 'nonLetter',]; },]; },]
+  | 'symbol';
