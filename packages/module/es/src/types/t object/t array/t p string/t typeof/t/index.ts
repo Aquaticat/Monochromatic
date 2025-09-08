@@ -1,33 +1,44 @@
-type Types = 'bigint' | 'boolean' | 'function' | 'number' | 'object' | 'string'
-  | 'undefined';
-
-type BigintChild = { number: 0 | 'negative' | 'positive'; };
-
-type BooleanChild = { true: boolean; };
-
-type FunctionChild = { generator: boolean; async: boolean; };
-
-type NumberChild = { number: 0 | 'negative' | 'positive'; float: boolean; };
-
-type ObjectChild = {
-  prototype: 'null' | 'array' | 'iterable' | 'date' | 'map' | 'set' | 'promise' | 'proxy'
-    | 'record' | 'regexp';
-};
-
-type ObjectRegexpChild = { global: boolean; };
-
-type StringChild = { empty: true | 'nonEmpty'; };
-
-type StringNonEmptyChild = {
-  char: false | 'uppercaseLetter' | 'lowerCaseLetter' | 'nonLetter';
-};
-
-type UndefinedChild = never;
-
-export type $ = [];
-
-// undefined ['undefined']
-// 0n ['bigint', {number: 0}]
-// true ['boolean', {true: true}]
-// 0.1 ['number', {number: 'positive', float: true}]
-// /a/g ['object', {prototype: 'regexp'}, {global: true}]
+export type $ =
+  | ['undefined',]
+  | ['bigint', { sign: 0 | 'negative' | 'positive'; },]
+  | ['boolean', { true: boolean; },]
+  | ['function', { generator: boolean; async: boolean; },]
+  | ['number', { sign: 0 | 'negative' | 'positive'; float: boolean; },]
+  | ['object', {
+    prototype:
+      // > Object.prototype.toString.call(null)
+      // '[object Null]'
+      | 'Null'
+      // > Object.prototype.toString.call([])
+      // '[object Array]'
+      | 'Array'
+      // > Object.prototype.toString.call({*[Symbol.iterator]() {}})
+      // '[object Object]'
+      // > Object.prototype.toString.call({})
+      // '[object Object]'
+      // > Object.prototype.toString.call(new Proxy({},{}))
+      // '[object Object]'
+      // > Object.prototype.toString.call({a: 1})
+      // '[object Object]'
+      | ['Object', {iterable: boolean}]
+      // > Object.prototype.toString.call(new Date())
+      // '[object Date]'
+      | 'Date'
+      // > Object.prototype.toString.call(new Map())
+      // '[object Map]'
+      | 'Map'
+      // > Object.prototype.toString.call(new Set())
+      // '[object Set]'
+      | 'Set'
+      // > Object.prototype.toString.call(new Promise(() => {}))
+      // '[object Promise]'
+      | 'Promise'
+      // > Object.prototype.toString.call(new RegExp())
+      // '[object RegExp]'
+      | ['RegExp', { global: boolean; },];
+  },]
+  | ['string',
+    | { empty: true; }
+    | { empty: [false, { char:
+      | false
+      | [true, 'uppercaseLetter' | 'lowercaseLetter' | 'nonLetter',]; },]; },];
