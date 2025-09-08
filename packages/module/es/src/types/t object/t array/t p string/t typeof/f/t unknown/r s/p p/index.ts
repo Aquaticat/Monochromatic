@@ -28,18 +28,43 @@ export function $(value: unknown,): TypeOf {
 
   if (typeOf === 'bigint') {
     const myValue = value as bigint;
-    if (myValue === 0n)
-      return [typeOf, { sign: 0, },];
-    if (myValue > 0n)
-      return [typeOf, { sign: 'positive', },];
-    if (myValue < 0n)
-      return [typeOf, { sign: 'negative', },];
-    throw new Error(`bigint ${stringify(myValue,)} not equal, >, < 0n`,);
+    const sign = myValue === 0n ? 0 : myValue > 0n ? 'positive' : 'negative';
+    return [typeOf, { sign, },];
   }
 
   if (typeOf === 'boolean') {
     const myValue = value as boolean;
     return [typeOf, { true: myValue, },];
+  }
+
+  if (typeOf === 'number') {
+    const myValue = value as number;
+    if (Number.isNaN(myValue,))
+      return [typeOf, { NaN: true, },];
+
+    const sign = myValue === 0 ? 0 : myValue > 0 ? 'positive' : 'negative';
+    const float = !Number.isInteger(myValue,);
+    return [typeOf, { NaN: [false, { sign, float, },], },];
+  }
+
+  if (typeOf === 'string') {
+    const myValue = value as string;
+    if (myValue.length === 0)
+      return [typeOf, { empty: true, },];
+
+    return [typeOf, {
+      empty: [false, { char: myValue
+          .length !== 1
+        ? false
+        : [
+          true,
+          /\p{Upper}/v.test(myValue,)
+            ? 'uppercaseLetter'
+            : /\p{Lower}/v.test(myValue,)
+            ? 'lowercaseLetter'
+            : 'nonLetter',
+        ], },],
+    },];
   }
 
   const prototypeString = Object.prototype.toString.call(value,);
@@ -55,33 +80,9 @@ export function $(value: unknown,): TypeOf {
       return [typeOf, { async: true, generator: true, },];
   }
 
-  if (typeOf === 'number') {
-    const myValue = value as number;
-    if (Number.isNaN(myValue,))
-      throw new Error(`number ${stringify(myValue,)} is NaN`,);
-
-    const sign = myValue === 0 ? 0 : myValue > 0 ? 'positive' : 'negative';
-    const float = !Number.isInteger(myValue,);
-    return [typeOf, { sign, float, },];
-  }
-
-  if (typeOf === 'string') {
-    const myValue = value as string;
-    if (myValue.length === 0)
-      return [typeOf, { empty: true, },];
-
-    // Check if string contains any characters
-    const hasChars = myValue.length > 0;
-    if (!hasChars)
-      return [typeOf, { empty: true, },];
-
-    // For now, return basic string info - char analysis could be added later
-    return [typeOf, { empty: [false, { char: false, },], },];
-  }
-
   if (typeOf === 'object') {
     if (value === null)
-      throw new Error('null should be handled by noFurtherTypeOf',);
+      return [typeOf, { prototype: 'Null', },];
 
     // Handle special object types based on prototype string
     if (prototypeString === '[object Array]')
@@ -99,15 +100,27 @@ export function $(value: unknown,): TypeOf {
       return [typeOf, { prototype: ['RegExp', { global: regexp.global, },], },];
     }
 
-    // Handle iterable objects
-    if (typeof (value as any)[Symbol.iterator] === 'function')
-      return [typeOf, { prototype: ['Object', { iterable: true, },], },];
+    const myValue = value as object;
 
     // Default plain object
-    return [typeOf, { prototype: ['Object', { iterable: false, },], },];
+    return [typeOf, {
+      prototype: ['Object', {
+        iterable: typeof (
+            // @ts-expect-error -- Might be Async Iterable
+            myValue[Symbol.asyncIterator]
+          ) === 'function'
+          ? [true, { async: true, },]
+          : typeof (
+              // @ts-expect-error -- Might be Iterable
+              myValue[Symbol.iterator]
+            ) === 'function'
+          ? [true, { async: false, },]
+          : false,
+      },],
+    },];
   }
 
   throw new TypeError(
-    `Unhandled value with typeof "${typeOf}" and prototype "${prototypeString}"`,
+    `This shouldn't happen. Unhandled value with typeof "${typeOf}" and prototype "${prototypeString}"`,
   );
 }

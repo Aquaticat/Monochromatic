@@ -9,7 +9,8 @@ export type $ =
   /** Represents function types with generator and async flags */
   | ['function', { generator: boolean; async: boolean; },]
   /** Represents the `number` primitive type with sign and float information */
-  | ['number', { sign: 0 | 'negative' | 'positive'; float: boolean; },]
+  | ['number',
+    { NaN: true | [false, { sign: 0 | 'negative' | 'positive'; float: boolean; },]; },]
   /** Represents object types with prototype information */
   | ['object', {
     prototype:
@@ -30,7 +31,7 @@ export type $ =
       // '[object Object]'
       // > Object.prototype.toString.call({a: 1})
       // '[object Object]'
-      | ['Object', { iterable: boolean; },]
+      | ['Object', { iterable: false|[true, {async: boolean}]; },]
       /** Represents Date objects */
       // > Object.prototype.toString.call(new Date())
       // '[object Date]'
