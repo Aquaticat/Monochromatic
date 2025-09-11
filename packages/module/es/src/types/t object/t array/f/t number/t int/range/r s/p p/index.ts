@@ -7,7 +7,7 @@
  *
  * @param length - Number of consecutive integers to generate (array length)
  * @returns Array containing integers from 0 to length-1, empty array for length 0
- * @throws {RangeError} When length is negative
+ * @throws RangeError When length is negative
  *
  * @example
  * Basic usage:
@@ -70,12 +70,17 @@
  * }
  * ```
  */
-export function $<const Length extends number>(length: Length,): Length[] & {length: Length} {
+export function $<const Length extends number,>(
+  length: Length,
+): Length[] & { length: Length; } {
   if (length < 0)
     throw new RangeError('Length must be non-negative',);
 
-  if (length === 0)
+  if (length === 0) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Return type is a type TS can't auto infer
     return [] as any;
+  }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Return type is a type TS can't auto infer
   return Array.from({ length, }, (_, index,) => index,) as any;
 }

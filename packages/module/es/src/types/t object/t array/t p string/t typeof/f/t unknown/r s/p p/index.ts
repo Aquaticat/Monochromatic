@@ -1,4 +1,3 @@
-import stringify from 'safe-stringify';
 import type { $ as TypeOf, } from '../../../../t/index.ts';
 
 const noFurtherTypeOf = ['undefined', 'symbol',] as const;
