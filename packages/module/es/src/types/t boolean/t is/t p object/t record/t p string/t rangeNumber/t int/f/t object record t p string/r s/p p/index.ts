@@ -1,12 +1,12 @@
 import type {
   $ as RangeNumberInt,
-} from '@_/types/type object/type record/type param string/type rangeNumber/type int/type/index.ts';
+} from '@_/types/t object/t record/t p string/t rangeNumber/t int/t/index.ts';
 import type {
   $ as StringUnknownRecord,
-} from '@_/types/type object/type record/type param string/type/index.ts';
+} from '@_/types/t object/t record/t p string/t/index.ts';
 
 /**
- * Type guard to check if an object is a RangeNumberInt.
+ * t guard to check if an object is a RangeNumberInt.
  * @param value - Object to check
  * @returns True if the object is a RangeNumberInt with integer bounds
  */
