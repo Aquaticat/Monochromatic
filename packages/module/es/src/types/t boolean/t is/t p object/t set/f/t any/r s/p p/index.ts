@@ -1,6 +1,6 @@
 import type {
   $ as Is,
-} from '@_/types/type function/type is/type/restriction sync/params positional/index.ts';
+} from '@_/types/t function/t is/t/r s/p p/index.ts';
 
 /**
  * Tests if a value is a Set instance.

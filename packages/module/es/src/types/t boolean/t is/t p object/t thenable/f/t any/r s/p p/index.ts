@@ -38,8 +38,11 @@
  * $(customThenable); // true
  * ```
  */
-export function $<const MyValue>(
+export function $<const MyValue,>(
   value: MyValue,
-): value is MyValue extends Promise<infer T> ? MyValue & Promise<T> : MyValue & Promise<unknown> {
+): value is MyValue extends Promise<infer T> ? MyValue & Promise<T>
+  : MyValue & Promise<unknown>
+{
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- could be thenable
   return typeof (value as any)?.then === 'function';
 }
