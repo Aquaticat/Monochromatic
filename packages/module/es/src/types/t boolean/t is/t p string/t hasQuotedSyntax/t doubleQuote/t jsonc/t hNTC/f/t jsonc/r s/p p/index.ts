@@ -2,14 +2,16 @@ import type {
   $ as HasNoTrailingCommas,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t hNTC/t/index.ts';
 
+import type { $ as Int, } from '@_/types/t number/t finite/t int/t/index.ts';
+import type {
+  $ as RangeInt,
+} from '@_/types/t object/t record/t p string/t rangeNumber/t int/t/index.ts';
 import {
   $ as inQuotes,
 } from '@_/types/t object/t record/t p string/t rangeNumber/t int/w/t array t p string hasQuotedSyntax doubleQuote/inQuotes/r s/p n/index.ts';
-import type {$ as RangeInt} from '@_/types/t object/t record/t p string/t rangeNumber/t int/t/index.ts';
-import type {$ as Int} from '@_/types/t number/t finite/t int/t/index.ts';
-import type {$ as Jsonc} from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
-
-// TODO: Change this to use rangeInt is inside quotes.
+import type {
+  $ as Jsonc,
+} from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
 
 /**
  * Checks if a JSONC string contains no trailing commas.
@@ -32,21 +34,21 @@ import type {$ as Jsonc} from '@_/types/t string/t hasQuotedSyntax/t doubleQuote
  * ```
  */
 export function $(value: Jsonc,): value is HasNoTrailingCommas {
-  const potentialTrailingCommas = value.matchAll(/,\w{0,}[\}\]]/gv,);
+  const potentialTrailingCommas = value.matchAll(/,\s{0,}[\}\]]/gv,);
 
   for (const potentialTrailingComma of potentialTrailingCommas) {
     const rangeInt = {
       startInclusive: potentialTrailingComma.index as Int,
-      endInclusive: (potentialTrailingComma.index + potentialTrailingComma[0].length) as Int,
+      endInclusive: (potentialTrailingComma
+        .index + potentialTrailingComma[0].length) as Int,
     } as RangeInt;
 
-    const rangeIntWInQuotesInfo = inQuotes({value: rangeInt, strs: [value]});
+    const rangeIntWInQuotesInfo = inQuotes({ value: rangeInt, strs: [value,], },);
 
     // return false for the entire fn on not-in-quotes
 
-    if (rangeIntWInQuotesInfo.__brand.inQuotes?.get(value) === false) {
+    if (rangeIntWInQuotesInfo.__brand.inQuotes?.get(value,) === false)
       return false;
-    }
   }
 
   return true;
