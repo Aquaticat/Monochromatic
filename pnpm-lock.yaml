@@ -481,8 +481,8 @@ catalogs:
       specifier: '>=5.8.0'
       version: 5.8.0
     type-fest:
-      specifier: '>=4.40.1'
-      version: 4.41.0
+      specifier: '>=5.0.0'
+      version: 5.0.0
     typescript-eslint:
       specifier: '>=8.32.1'
       version: 8.35.1
@@ -1128,7 +1128,7 @@ importers:
         version: 5.8.0
       type-fest:
         specifier: 'catalog:'
-        version: 4.41.0
+        version: 5.0.0
       typescript:
         specifier: '>=5.9.2'
         version: 5.9.2
@@ -5343,6 +5343,10 @@ packages:
     resolution: {integrity: sha512-9kY+CygyYM6j02t5YFHbNz2FN5QmYGv9zAjVp4lCDjlCw7amdckXlEt/bjMhUIfj4ThGRE4gCUH5+yGnNuPo5A==}
     engines: {node: '>=10.0.0'}
 
+  tagged-tag@1.0.0:
+    resolution: {integrity: sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==}
+    engines: {node: '>=20'}
+
   tapable@2.2.2:
     resolution: {integrity: sha512-Re10+NauLTMCudc7T5WLFLAwDhQ0JWdrMK+9B2M8zR5hRExKmsRDCBA7/aV/pNJFltmBFO5BAMlQFi/vq3nKOg==}
     engines: {node: '>=6'}
@@ -5449,6 +5453,10 @@ packages:
   type-fest@4.41.0:
     resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
     engines: {node: '>=16'}
+
+  type-fest@5.0.0:
+    resolution: {integrity: sha512-GeJop7+u7BYlQ6yQCAY1nBQiRSHR+6OdCEtd8Bwp9a3NK3+fWAVjOaPKJDteB9f6cIJ0wt4IfnScjLG450EpXA==}
+    engines: {node: '>=20'}
 
   typedarray@0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
@@ -10858,6 +10866,8 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
 
+  tagged-tag@1.0.0: {}
+
   tapable@2.2.2: {}
 
   text-table@0.2.0: {}
@@ -10937,6 +10947,10 @@ snapshots:
   type-fest@3.13.1: {}
 
   type-fest@4.41.0: {}
+
+  type-fest@5.0.0:
+    dependencies:
+      tagged-tag: 1.0.0
 
   typedarray@0.0.6: {}
 

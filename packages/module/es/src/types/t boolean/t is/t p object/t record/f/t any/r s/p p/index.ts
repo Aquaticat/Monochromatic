@@ -1,5 +1,3 @@
-import type { UnknownRecord, } from 'type-fest';
-
 /**
  * Tests if a value is a plain object (not an array, function, or other object type).
  * Uses Object.prototype.toString to check for '[object Object]' which indicates a plain object.
@@ -33,6 +31,10 @@ import type { UnknownRecord, } from 'type-fest';
  * $(iframeObject); // true
  * ```
  */
-export function $<const MyValue>(value: MyValue,): value is MyValue extends Record<infer K, infer V> ? MyValue & Record<K, V> : MyValue & Record<string|number|symbol, unknown> {
+export function $<const MyValue,>(
+  value: MyValue,
+): value is MyValue extends Record<infer K, infer V> ? MyValue & Record<K, V>
+  : MyValue & Record<string | number | symbol, unknown>
+{
   return Object.prototype.toString.call(value,) === '[object Object]';
 }
