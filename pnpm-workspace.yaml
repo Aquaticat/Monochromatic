@@ -5,7 +5,7 @@ autoInstallPeers: false
 
 catalog:
   browserslist: '>=4.26.0'
-  zod: '>=3.25.71'
+  zod: 'jsr:@zod/zod@>=4.1.8'
   dprint: '>=0.50.1'
   esbuild: '>=0.25.9'
   oxlint: '>=1.1.0'
