@@ -1,1 +1,1 @@
-export * as number from './t number/index.ts';
+export * as positiveInt from './t number (t positive and (finite int))/index.ts';

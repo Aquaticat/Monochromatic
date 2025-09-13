@@ -1,6 +1,6 @@
 import type {
   $ as SingleQuotedSyntax,
-} from '@_/types/type string/type hasQuotedSyntax/type singleQuote/type/index.ts';
+} from '@_/types/t string/t hasQuotedSyntax/t singleQuote/t/index.ts';
 
 /**
  * Checks if a string has single-quoted syntax by examining the first effective (unescaped) quote.
@@ -24,7 +24,7 @@ import type {
  */
 export function $(value: string,): value is SingleQuotedSyntax {
   // get first effective (unescaped) quote
-  const firstEffectiveQuoteMatch = value.match(/(?<!\\)(?:\\\\)*['"`]/,);
+  const firstEffectiveQuoteMatch = value.match(/(?<!\\)(?:\\\\)*["'`]/,);
 
   // assert that's a single quote
   return firstEffectiveQuoteMatch?.[0] === "'";

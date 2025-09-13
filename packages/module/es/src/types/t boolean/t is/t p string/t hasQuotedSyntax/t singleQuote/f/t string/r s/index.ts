@@ -1,1 +1,1 @@
-export * as positional from './params positional/index.ts';
+export * as positional from './p p/index.ts';

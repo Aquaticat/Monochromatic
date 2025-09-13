@@ -1,3 +1,6 @@
+import type { $ as Int, } from '@_/types/t number/t finite/t int/t/index.ts';
+import type { $ as Positive, } from '@_/types/t number/t positive/t/index.ts';
+
 /**
  * Creates a generator that yields consecutive integers starting from 0 up to length-1.
  *
@@ -43,10 +46,12 @@
  * console.log(sum); // 10 (0+1+2+3+4)
  * ```
  */
-export function* $(length: number,): Generator<number, void, undefined> {
-  if (length < 0)
-    throw new RangeError('Length must be non-negative',);
-
-  for (let index = 0; index < length; index++)
+export function* $(
+  { length, }: { length: Int & Positive; },
+): Generator<Int & (Positive | 0), void, undefined> {
+  for (let index: Int & (Positive | 0) = 0 as Int & (Positive | 0); index < length;
+    index++)
+  {
     yield index;
+  }
 }
