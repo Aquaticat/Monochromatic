@@ -1,12 +1,12 @@
 import type {
   $ as hasNoBlockComments,
-} from '@/src/types/type string/type hasQuotedSyntax/type doubleQuote/type jsonc/type hNBC/type';
+} from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t hNBC/t/index.ts';
 import type {
   $ as hasNoInlineComments,
-} from '@/src/types/type string/type hasQuotedSyntax/type doubleQuote/type jsonc/type hNIC/type';
+} from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t hNIC/t/index.ts';
 import type {
   $ as hasNoTrailingCommas,
-} from '@/src/types/type string/type hasQuotedSyntax/type doubleQuote/type jsonc/type hNTC/type';
+} from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t hNTC/t/index.ts';
 
 export function $(
   value: string,
