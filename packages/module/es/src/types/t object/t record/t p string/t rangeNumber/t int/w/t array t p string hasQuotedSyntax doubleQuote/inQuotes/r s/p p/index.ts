@@ -1,7 +1,10 @@
 import type {
+  $ as Value,
+} from '@_/types/t object/t record/t p string/t rangeNumber/t int/t/index.ts';
+import type {
   $ as DoubleQuote,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t/index.ts';
-import type { $ as Value, } from '../../../../../../../../t/index.ts';
+
 import { $ as named, } from '../p n/index.ts';
 
 /**
@@ -25,5 +28,5 @@ import { $ as named, } from '../p n/index.ts';
  * ```
  */
 export function $(value: Value, strs: DoubleQuote[],): Value {
-  return named({value, strs});
+  return named({ value, strs, },);
 }

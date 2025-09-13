@@ -1,7 +1,9 @@
 import type {
+  $ as Value,
+} from '@_/types/t object/t record/t p string/t rangeNumber/t int/t/index.ts';
+import type {
   $ as DoubleQuote,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t/index.ts';
-import type { $ as Value, } from '../../../../../../../../t/index.ts';
 
 /**
  * Determines if a range position is inside double quotes for multiple strings and merges with existing quote information.
