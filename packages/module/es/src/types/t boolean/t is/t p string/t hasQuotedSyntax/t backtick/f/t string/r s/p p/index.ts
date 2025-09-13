@@ -1,6 +1,6 @@
 import type {
   $ as BacktickSyntax,
-} from '@_/types/type string/type hasQuotedSyntax/type backtick/type/index.ts';
+} from '@_/types/t string/t hasQuotedSyntax/t backtick/t/index.ts';
 
 /**
  * Checks if a string has backtick-quoted syntax by examining the first effective (unescaped) quote.
@@ -24,7 +24,7 @@ import type {
  */
 export function $(value: string,): value is BacktickSyntax {
   // get first effective (unescaped) quote
-  const firstEffectiveQuoteMatch = value.match(/(?<!\\)(?:\\\\)*['"`]/,);
+  const firstEffectiveQuoteMatch = value.match(/(?<!\\)(?:\\\\)*["'`]/,);
 
   // assert that's a backtick
   return firstEffectiveQuoteMatch?.[0] === '`';

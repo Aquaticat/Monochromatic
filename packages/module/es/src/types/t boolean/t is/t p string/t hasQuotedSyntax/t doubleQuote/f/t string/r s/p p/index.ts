@@ -1,6 +1,6 @@
 import type {
   $ as DoubleQuotedSyntax,
-} from '@_/types/type string/type hasQuotedSyntax/type doubleQuote/type/index.ts';
+} from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t/index.ts';
 
 /**
  * Checks if a string has double-quoted syntax by examining the first effective (unescaped) quote.
@@ -24,7 +24,7 @@ import type {
  */
 export function $(value: string,): value is DoubleQuotedSyntax {
   // get first effective (unescaped) quote
-  const firstEffectiveQuoteMatch = value.match(/(?<!\\)(?:\\\\)*['"`]/,);
+  const firstEffectiveQuoteMatch = value.match(/(?<!\\)(?:\\\\)*["'`]/,);
 
   // assert that's a double quote
   return firstEffectiveQuoteMatch?.[0] === '"';
