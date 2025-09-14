@@ -1,3 +1,6 @@
+import type {
+  $ as StringJsonc,
+} from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
 import { z, } from 'zod/v4-mini';
 
 //region Type Definitions -- Define all TypeScript types for the parsed JSONC structure
