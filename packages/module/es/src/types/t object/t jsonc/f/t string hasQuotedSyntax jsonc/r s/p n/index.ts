@@ -4,6 +4,8 @@ import type {
 import type { UnknownRecord, } from 'type-fest';
 import { z, } from 'zod/v4-mini';
 
+const f = Object.freeze;
+
 //region Type Definitions -- Define all TypeScript types for the parsed JSONC structure
 
 /**
@@ -259,19 +261,82 @@ export function startsWithBlockComment(
   const trimmed = value.trim();
 
   if (trimmed.startsWith('/*',)) {
-    // Find the end of the block comment (star slash)
-    const blockEndPosition = trimmed.indexOf('*/', '/*'.length,);
-    if (blockEndPosition === -1) {
+    const blockEndPosition = function findBlockEndPosition({ value, },) {
+      const trimmed = value.trim();
+
+      // Find the end of the block comment (star slash)
+      const starSlashs = f(Array.from(
+        trimmed.matchAll(/\*\//g,),
+      ),);
+
+      const lastStarSlash = f(starSlashs.at(-1,),);
+
+      if (!lastStarSlash) {
+        // No block comment end found, the entire string is an incomplete block comment
+        throw new Error(`incomplete block comment is not jsonc, {
+          comment: {
+            type: 'block',
+            commentValue: ${trimmed.slice('/*'.length,)},
+            },
+          }`,);
+      }
+
+      const newlineSlashSlashsBeforeLastStarSlash = f(
+        (function getNewlineSlashSlashsBeforeLastStarSlash({ value, lastStarSlash, },) {
+          const newlineSlashSlashs = value.matchAll(
+            // First char in whole string is guaranteed to be slash star
+            // Therefore, line comments must be directly prepended by new line.
+            /\n\s*\/\//g,
+          );
+
+          const newlineSlashSlashsBeforeLastStarSlash: RegExpExecArray[] = [];
+
+          for (const newlineSlashSlash of newlineSlashSlashs) {
+            if (newlineSlashSlash.index < lastStarSlash.index)
+              newlineSlashSlashsBeforeLastStarSlash.push(newlineSlashSlash,);
+            else
+              break;
+          }
+
+          return newlineSlashSlashsBeforeLastStarSlash;
+        })({ value: trimmed, lastStarSlash, },),
+      );
+
+      for (const starSlash of starSlashs) {
+        // Ensure our star slash instance isn't commented out by a line comment or inside a JSON string.
+
+        // discard result if star slash is commented out by a line comment.
+        // not discard result if star slash isn't commented out by a line comment.
+        // How do we know? If there's no newline between slashSlash and starSlash.
+
+        // Find shortcircuits on the first match.
+        const commentedOut = newlineSlashSlashsBeforeLastStarSlash.find(
+          function inBetweenHasNewline(starts,) {
+            const substr = trimmed.slice(starts.index + starts[0].length, starSlash
+              .index,);
+            return substr.includes('\n',);
+          },
+        );
+
+        if (commentedOut) {
+          // Discard result, next.
+          continue;
+        }
+
+        // No need to manually ensure starSlash isn't in quotes.
+        // Why? Because if the first starSlash is in quotes when we've already found a slashStar at start, it's invalid JSONC.
+
+        return starSlash.index;
+      }
+
       // No block comment end found, the entire string is an incomplete block comment
-      throw new Error(`incomplete block comment is not jsonc, {
+      throw new Error(`incomplete block comment is not  jsonc, {
         comment: {
           type: 'block',
           commentValue: ${trimmed.slice('/*'.length,)},
         },
       }`,);
-    }
-
-    // FIXME: Ensure our star slash instance isn't commented out by a line comment or inside a JSON string.
+    }({ value: trimmed, },);
 
     // Extract the comment and the rest of the content after the closing star slash
     const commentPart: JsoncComment = {
