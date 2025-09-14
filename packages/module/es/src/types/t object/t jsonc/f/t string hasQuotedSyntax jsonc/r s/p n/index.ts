@@ -191,9 +191,73 @@ export function $({ value, }: { value: StringJsonc; },): JsoncValue {
   catch (error) {
     // TODO: Swap to logger
     console.log(error,);
-    const trimmed = value.trim();
-    if (trimmed.startsWith('//',)) {
-      // TODO: Forward to line comments block end and store whatever's in that block in string.
+
+    try {
+      const outStartsLineComment = startsWithLineComment({ value, },);
+      return Object.assign(outStartsLineComment, {
+        json: JSON.parse(outStartsLineComment.remainingContent,) as UnknownRecord,
+      },);
+    }
+    catch (errorNotBecauseOfStartsLineComment) {
+      console.log(errorNotBecauseOfStartsLineComment,);
     }
   }
+}
+
+export function startsWithLineComment(
+  { value, context, }: { value: StringJsonc; context?: JsoncValueBase; },
+): { remainingContent: StringJsonc; } & JsoncValueBase {
+  // Eliminate leading and trailing whitespace, including space and newline characters.
+  const trimmed = value.trim();
+
+  if (trimmed.startsWith('//',)) {
+    // Find the end of the line comment (newline character)
+    const newlinePosition = trimmed.indexOf('\n', '//'.length,);
+    if (newlinePosition === -1) {
+      // No newline found, the entire string is a line comment
+      throw new Error(`line comment is not jsonc, {
+        comment: {
+          type: 'inline',
+          commentValue: ${trimmed.slice('//'.length,)},
+        },
+      }`,);
+    }
+    // Extract the comment and the rest of the content after newline
+    // No trimming needed because we wanna support both `// This is` and `//region`.
+    const commentPart: JsoncComment = { type: 'inline', commentValue: trimmed
+      .slice('//'.length, newlinePosition,), };
+    const mergedComments = mergeComments({ value: context?.comment,
+      value2: commentPart, },);
+
+    const remainingContent = trimmed.slice(newlinePosition + '\n'.length,) as StringJsonc;
+    if (!mergedComments) {
+      // no new comments to merge, we're done.
+      return { remainingContent, };
+    }
+
+    // Recursively parse the remaining content
+    return startsWithLineComment({ value: remainingContent, context: {
+      comment: mergedComments,
+    }, },);
+  }
+
+  return { remainingContent: value, };
+}
+
+export function mergeComments(
+  { value, value2, }: { value?: JsoncComment | undefined;
+    value2?: JsoncComment | undefined; },
+): JsoncComment | undefined {
+  if (value === undefined)
+    return value2;
+  // value is determined to not be undefined here.
+  if (value2 === undefined)
+    return value;
+  // Both has comment.
+  // No trimming needed because we wanna support both `// This is` and `//region`.
+  const commentValue = `${value.commentValue}
+  ${value2.commentValue}`;
+  return value.type === value2.type
+    ? { ...value, commentValue, }
+    : { ...value, type: 'mixed', commentValue, };
 }
