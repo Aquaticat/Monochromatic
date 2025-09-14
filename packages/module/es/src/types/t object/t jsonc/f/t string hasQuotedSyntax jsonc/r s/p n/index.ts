@@ -225,7 +225,8 @@ export function startsWithLineComment(
         },
       }`,);
     }
-    // TODO: handle \n in quotes.
+
+    // JSON or JSONC doesn't allow newlines in quoted strings. Special handling skipped.
 
     // Extract the comment and the rest of the content after newline
     // No trimming needed because we wanna support both `// This is` and `//region`.
@@ -258,7 +259,7 @@ export function startsWithBlockComment(
   const trimmed = value.trim();
 
   if (trimmed.startsWith('/*',)) {
-    // Find the end of the block comment (*/)
+    // Find the end of the block comment (star slash)
     const blockEndPosition = trimmed.indexOf('*/', '/*'.length,);
     if (blockEndPosition === -1) {
       // No block comment end found, the entire string is an incomplete block comment
@@ -270,7 +271,9 @@ export function startsWithBlockComment(
       }`,);
     }
 
-    // Extract the comment and the rest of the content after the closing */
+    // FIXME: Ensure our star slash instance isn't commented out by a line comment or inside a JSON string.
+
+    // Extract the comment and the rest of the content after the closing star slash
     const commentPart: JsoncComment = {
       type: 'block',
       commentValue: trimmed.slice('/*'.length, blockEndPosition,),
@@ -278,7 +281,7 @@ export function startsWithBlockComment(
     const mergedComments = mergeComments({ value: context?.comment,
       value2: commentPart, },);
 
-    // Get content after the block comment, skipping the */ delimiter
+    // Get content after the block comment, skipping the star slash delimiter
     const remainingContent = trimmed
       .slice(blockEndPosition + '*/'.length,)
       .trim() as StringJsonc;
