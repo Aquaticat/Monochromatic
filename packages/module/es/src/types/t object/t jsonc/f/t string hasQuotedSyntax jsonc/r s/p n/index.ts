@@ -310,11 +310,12 @@ export function startsWithBlockComment(
         // How do we know? If there's no newline between slashSlash and starSlash.
 
         // Find shortcircuits on the first match.
+        // TODO: Each */ should only consider line comments before itself.
         const commentedOut = newlineSlashSlashsBeforeLastStarSlash.find(
-          function inBetweenHasNewline(starts,) {
+          function inBetweenHasNoNewline(starts,) {
             const substr = trimmed.slice(starts.index + starts[0].length, starSlash
               .index,);
-            return substr.includes('\n',);
+            return !substr.includes('\n',);
           },
         );
 
