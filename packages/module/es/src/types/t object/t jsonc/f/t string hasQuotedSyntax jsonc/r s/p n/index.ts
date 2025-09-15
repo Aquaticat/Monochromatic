@@ -196,9 +196,10 @@ export function $({ value, }: { value: StringJsonc; },): JsoncValue {
 
     try {
       const outStartsComment = startsWithComment({ value, },);
-      return Object.assign(outStartsComment, {
+      return {
+        ...outStartsComment,
         json: JSON.parse(outStartsComment.remainingContent,) as UnknownRecord,
-      },);
+      };
     }
     catch (errorNotBecauseOfStartsComment) {
       console.log(errorNotBecauseOfStartsComment,);
@@ -240,10 +241,6 @@ export function startsWithComment(
     const remainingContent = trimmed
       .slice(newlinePosition + '\n'.length,)
       .trim() as StringJsonc;
-    if (!mergedComments) {
-      // no new comments to merge, we're done.
-      return { remainingContent, };
-    }
 
     // Recursively parse the remaining content
     return startsWithComment({ value: remainingContent, context: {
@@ -317,10 +314,6 @@ export function startsWithComment(
     const remainingContent = trimmed
       .slice(blockEndPosition + '*/'.length,)
       .trim() as StringJsonc;
-    if (!mergedComments) {
-      // no new comments to merge, we're done.
-      return { remainingContent, };
-    }
 
     // Recursively parse the remaining content
     return startsWithComment({ value: remainingContent, context: {
@@ -328,117 +321,212 @@ export function startsWithComment(
     }, },);
   }
 
-  return { remainingContent: value, };
+  return { ...context, remainingContent: value, };
 }
 
-export function endsWithLineComment(
+/**
+ * Parse JSONC string from the end to extract trailing comments.
+ *
+ * This function works similarly to startsWithComment but processes comments from the end of the string.
+ * It handles both inline comments (//) and block comments (/* *\/) that appear at the end of JSONC content.
+ * The function preserves comment information and supports recursive parsing for multiple trailing comments.
+ *
+ * @param value - JSONC string to parse for trailing comments
+ * @param context - Optional context containing existing comment information for merging
+ * @returns Object containing the content before the comment and any extracted comment information
+ *
+ * @example
+ * Basic inline comment at the end:
+ * ```ts
+ * const result = endsWithComment({ value: 'some json // trailing comment' });
+ * console.log(result.precedingContent); // 'some json'
+ * console.log(result.comment); // { type: 'inline', commentValue: ' trailing comment' }
+ * ```
+ *
+ * @example
+ * Block comment at the end:
+ * ```ts
+ * const result = endsWithComment({ value: 'json content /* block comment *\/' });
+ * console.log(result.precedingContent); // 'json content'
+ * console.log(result.comment); // { type: 'block', commentValue: ' block comment ' }
+ * ```
+ *
+ * @example
+ * Multiple trailing comments:
+ * ```ts
+ * const result = endsWithComment({ value: 'data // first\n/* second * /' });
+ * // Recursively processes both comments and merges them
+ * ```
+ *
+ * @example
+ * No trailing comments:
+ * ```ts
+ * const result = endsWithComment({ value: 'clean json' });
+ * console.log(result.precedingContent); // 'clean json'
+ * console.log(result.comment); // undefined
+ * ```
+ *
+ * Features:
+ * - Handles inline comments (//) at the end of content
+ * - Handles block comments (/* *\/) at the end of content
+ * - Supports comment merging for multiple trailing comments
+ * - Preserves whitespace handling consistent with startsWithComment
+ * - Returns content before the comment(s) and comment information
+ */
+export function endsWithComment(
   { value, context, }: { value: StringJsonc; context?: JsoncValueBase; },
-): { remainingContent: StringJsonc; } & JsoncValueBase {
-  const trimmed = value.trimEnd();
+): { precedingContent: StringJsonc; } & JsoncValueBase {
+  // Eliminate leading and trailing whitespace, including space and newline characters.
+  const trimmed = value.trim();
 
-  // Find the last occurrence of // that's not inside quotes
-  let inQuotes = false;
-  let quoteChar = '';
-  let lastLineCommentPos = -1;
+  if (trimmed.endsWith('*/',)) {
+    const blockStartPosition = function findBlockStartPosition(
+      { value, }: { value: string; },
+    ) {
+      const trimmed = value.trim();
 
-  for (let charIndex = 0; charIndex < trimmed.length; charIndex++) {
-    const char = trimmed[charIndex];
+      // Get content before the */ to find the matching /*
+      const contentBeforeBlockEnd = trimmed.slice(0, lastBlockCommentEndIndex,);
+      const lastBlockStartIndex = contentBeforeBlockEnd.lastIndexOf('/*',);
 
-    // Handle quote escaping
-    if (char === '"' || char === "'") {
-      if (!inQuotes) {
-        inQuotes = true;
-        quoteChar = char;
+      if (lastBlockStartIndex === -1) {
+        // No matching /* found - this is an incomplete block comment
+        throw new Error(`incomplete block comment is not jsonc, {
+        comment: {
+          type: 'block',
+          commentValue: ${trimmed.slice(lastBlockCommentEndIndex,)},
+        },
+      }`,);
       }
-      else if (char === quoteChar && trimmed[charIndex - 1] !== '\\') {
-        inQuotes = false;
-        quoteChar = '';
-      }
-    }
 
-    // Look for line comment start when not in quotes
-    if (!inQuotes && char === '/' && trimmed[charIndex + 1] === '/')
-      lastLineCommentPos = charIndex;
+      // Validate that this is a proper block comment
+      const blockContent = trimmed.slice(lastBlockStartIndex + '/*'.length,
+        lastBlockCommentEndIndex,);
+
+      // Check if there are any other comments or strings that might interfere
+      // For now, we'll assume valid JSONC as per the project philosophy
+
+      return lastBlockStartIndex;
+    }({ value: trimmed, },);
+
+    // TODO: Finish full fix/refactor
   }
 
-  if (lastLineCommentPos === -1)
-    return { remainingContent: value, };
+  // Find the last occurrence of // (inline comment at the end)
+  const inlineCommentMatches = Array.from(trimmed.matchAll(/\n\s*\/\//,),);
+  const lastInlineCommentMatch = inlineCommentMatches.at(-1,);
+  if (lastInlineCommentMatch) {
+    const contentAfterInline = trimmed.slice(
+      lastInlineCommentMatch.index + lastInlineCommentMatch[0].length,
+    );
 
-  // Extract comment and remaining content
-  const commentPart: JsoncComment = {
-    type: 'inline',
-    commentValue: trimmed.slice(lastLineCommentPos + '//'.length,).trimEnd(),
-  };
-  const remainingContent = trimmed.slice(0, lastLineCommentPos,).trimEnd() as StringJsonc;
-
-  const mergedComments = mergeComments({ value: context?.comment,
-    value2: commentPart, },);
-
-  return { remainingContent, comment: mergedComments, };
-}
-
-export function endsWithBlockComment(
-  { value, context, }: { value: StringJsonc; context?: JsoncValueBase; },
-): { remainingContent: StringJsonc; } & JsoncValueBase {
-  const trimmed = value.trimEnd();
-
-  // Find the last occurrence of /* that's not inside quotes
-  let inQuotes = false;
-  let quoteChar = '';
-  let lastBlockCommentStart = -1;
-  let blockCommentEnd = -1;
-
-  for (let charIndex = 0; charIndex < trimmed.length - 1; charIndex++) {
-    const char = trimmed[charIndex];
-
-    // Handle quote escaping
-    if (char === '"' || char === "'") {
-      if (!inQuotes) {
-        inQuotes = true;
-        quoteChar = char;
-      }
-      else if (char === quoteChar && trimmed[charIndex - 1] !== '\\') {
-        inQuotes = false;
-        quoteChar = '';
-      }
+    if (contentAfterInline.includes('\n',)) {
+      // Not really a inline comment, we're done with inline comments.
+      // Continue with finding block comments.
+      // We don't need this gymnastics in startsWithComment because startsWithComment ensures both types are mutually exclusive via one string.startsWith test.
+      return { ...context, precedingContent: value, };
     }
 
-    // Look for block comment start when not in quotes
-    if (!inQuotes && char === '/' && trimmed[charIndex + 1] === '*') {
-      lastBlockCommentStart = charIndex;
-      // Find the corresponding */
-      const searchStart = charIndex + 2;
-      for (let searchIndex = searchStart; searchIndex < trimmed.length - 1;
-        searchIndex++)
-      {
-        if (trimmed[searchIndex] === '*' && trimmed[searchIndex + 1] === '/') {
-          blockCommentEnd = searchIndex + 2;
-          break;
+    const commentPart: JsoncComment = {
+      type: 'inline',
+      commentValue: contentAfterInline,
+    };
+
+    const mergedComments = mergeComments({ value: context?.comment,
+      value2: commentPart, },);
+
+    // Get content before the inline comment
+    const precedingContent = trimmed
+      .slice(0, lastInlineCommentMatch.index,)
+      .trimEnd() as StringJsonc;
+
+    // Recursively parse the preceding content
+    return endsWithComment({ value: precedingContent, context: {
+      comment: mergedComments,
+    }, },);
+  }
+  else {
+    // No inline comment found, we're done with inline comments.
+    // Continue with finding block comments.
+
+    // Find the last occurrence of /* (block comment end)
+    const lastBlockCommentEndIndex = trimmed.lastIndexOf('*/',);
+
+    if (lastBlockCommentEndIndex !== -1) {
+      // Find the matching /* that corresponds to this */
+      const blockStartPosition = function findBlockStartPosition(
+        { value, }: { value: string; },
+      ) {
+        const trimmed = value.trim();
+
+        // Get content before the */ to find the matching /*
+        const contentBeforeBlockEnd = trimmed.slice(0, lastBlockCommentEndIndex,);
+        const lastBlockStartIndex = contentBeforeBlockEnd.lastIndexOf('/*',);
+
+        if (lastBlockStartIndex === -1) {
+          // No matching /* found - this is an incomplete block comment
+          throw new Error(`incomplete block comment is not jsonc, {
+          comment: {
+            type: 'block',
+            commentValue: ${trimmed.slice(lastBlockCommentEndIndex,)},
+          },
+        }`,);
         }
+
+        // Validate that this is a proper block comment
+        const blockContent = trimmed.slice(lastBlockStartIndex + '/*'.length,
+          lastBlockCommentEndIndex,);
+
+        // Check if there are any other comments or strings that might interfere
+        // For now, we'll assume valid JSONC as per the project philosophy
+
+        return lastBlockStartIndex;
+      }({ value: trimmed, },);
+
+      // Extract the comment and the content before the block comment
+      const commentPart: JsoncComment = {
+        type: 'block',
+        commentValue: trimmed.slice(blockStartPosition + '/*'.length,
+          lastBlockCommentEndIndex,),
+      };
+      const mergedComments = mergeComments({ value: context?.comment,
+        value2: commentPart, },);
+
+      // Get content before the block comment
+      const precedingContent = trimmed
+        .slice(0, blockStartPosition,)
+        .trimEnd() as StringJsonc;
+
+      if (!mergedComments) {
+        // no new comments to merge, we're done.
+        return { precedingContent, };
       }
+
+      // Recursively parse the preceding content
+      return endsWithComment({ value: precedingContent, context: {
+        comment: mergedComments,
+      }, },);
     }
   }
 
-  if (lastBlockCommentStart === -1 || blockCommentEnd === -1)
-    return { remainingContent: value, };
-
-  // Extract comment and remaining content
-  const commentPart: JsoncComment = {
-    type: 'block',
-    commentValue: trimmed
-      .slice(lastBlockCommentStart + '/*'.length, blockCommentEnd - '*/'.length,)
-      .trimEnd(),
-  };
-  const remainingContent = trimmed
-    .slice(0, lastBlockCommentStart,)
-    .trimEnd() as StringJsonc;
-
-  const mergedComments = mergeComments({ value: context?.comment,
-    value2: commentPart, },);
-
-  return { remainingContent, comment: mergedComments, };
+  return { ...context, precedingContent: value, };
 }
 
+export function mergeComments(
+  { value, value2, }: {
+    value?: undefined;
+    value2?: undefined;
+  },
+): undefined;
+export function mergeComments(
+  { value, value2, }: {
+    value: JsoncComment;
+    value2?: JsoncComment | undefined;
+  } | {
+    value?: JsoncComment | undefined;
+    value2: JsoncComment;
+  },
+): JsoncComment;
 export function mergeComments(
   { value, value2, }: { value?: JsoncComment | undefined;
     value2?: JsoncComment | undefined; },
