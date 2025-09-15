@@ -264,10 +264,21 @@ export function startsWithBlockComment(
     const blockEndPosition = function findBlockEndPosition({ value, },) {
       const trimmed = value.trim();
 
+      // TODO: Do not cast to array of array at the start.
+      //       Use line number tracking instead.
       // Find the end of the block comment (star slash)
       const starSlashs = f(Array.from(
         trimmed.matchAll(/\*\//g,),
       ),);
+
+      // TODO: If it's on the first line, we've hit the jackpot.
+      //       How do we know if it's on the first line?
+      //       /\/\*[^\n]{0,}\*\//
+      //
+      //       If not, continue grinding.
+      //       Use the regexp /\n\*\//g
+      //       Then check if the match contains '//'
+      //       If so, discard the match.
 
       const lastStarSlash = f(starSlashs.at(-1,),);
 
