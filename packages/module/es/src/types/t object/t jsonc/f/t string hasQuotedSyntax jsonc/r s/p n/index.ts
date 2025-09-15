@@ -187,24 +187,73 @@ export type JsoncValue = JsoncString | JsoncNumber | JsoncBoolean | JsoncNull | 
  * - Memory-efficient parsing with comment extraction
  */
 export function $({ value, }: { value: StringJsonc; },): JsoncValue {
-  try {
-    return { json: JSON.parse(value,) as UnknownRecord, };
-  }
-  catch (error) {
-    // TODO: Swap to logger
-    console.log(error,);
+  const outStartsComment = startsWithComment({ value, },);
+  const result = (function getResult({ outStartsComment, },): JsoncValue {
+    const { remainingContent: value, } = outStartsComment;
+    if (value.startsWith('[',)) {
+      // Can't use this to eliminate all trailing commas, because some might be inside comments, some might be inside quotes.
+      const trailingCommaMatches = f(Array.from(value.matchAll(/,\s+]/g,),),);
+      const lastTrailingCommaMatch = trailingCommaMatches.at(-1,);
+      if (lastTrailingCommaMatch) {
+        const closeSquareBracketIndex = lastTrailingCommaMatch.index
+          + lastTrailingCommaMatch.length;
+        if (closeSquareBracketIndex === value.length) {
+          const outerIsJson = `${
+            value.slice(0, value.length - lastTrailingCommaMatch.length,)
+          }]`;
+          try {
+            return { ...outStartsComment, json: JSON
+              .parse(outerIsJson,) as UnknownRecord, };
+          }
+          catch (error) {
+            console.log(error,);
+            // Something is inside.
+            // Probably comments and trailing commas.
+            // Defer to custom parser.
+          }
+        }
+      }
+      // Something is at the end.
+      // Probably comments.
+      // Defer to custom parser.
+      // TODO: Avoid returning undefined.
+      return undefined;
+    }
+    else if (value.startsWith('{',)) {
+      // Can't use this to eliminate all trailing commas, because some might be inside comments, some might be inside quotes.
+      const trailingCommaMatches = f(Array.from(value.matchAll(/,\s+}/g,),),);
+      const lastTrailingCommaMatch = trailingCommaMatches.at(-1,);
+      if (lastTrailingCommaMatch) {
+        const closeSquigglyBracketIndex = lastTrailingCommaMatch.index
+          + lastTrailingCommaMatch.length;
+        if (closeSquigglyBracketIndex === value.length) {
+          const outerIsJson = `${
+            value.slice(0, value.length - lastTrailingCommaMatch.length,)
+          }]`;
+          try {
+            return { ...outStartsComment, json: JSON
+              .parse(outerIsJson,) as UnknownRecord, };
+          }
+          catch (error) {
+            console.log(error,);
+            // Something is inside.
+            // Probably comments and trailing commas.
+            // Defer to custom parser.
+          }
+        }
+      }
+      // Something is at the end.
+      // Probably comments.
+      // Defer to custom parser.
+      // TODO: Avoid returning undefined.
+      return undefined;
+    }
+    throw new Error(
+      'invalid jsonc, after removing comments and trimming, nothing except [ or { shall be at the start',
+    );
+  })({ outStartsComment, },);
 
-    try {
-      const outStartsComment = startsWithComment({ value, },);
-      return {
-        ...outStartsComment,
-        json: JSON.parse(outStartsComment.remainingContent,) as UnknownRecord,
-      };
-    }
-    catch (errorNotBecauseOfStartsComment) {
-      console.log(errorNotBecauseOfStartsComment,);
-    }
-  }
+  return result;
 }
 
 export function startsWithComment(
