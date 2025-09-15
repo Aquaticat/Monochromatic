@@ -195,18 +195,18 @@ export function $({ value, }: { value: StringJsonc; },): JsoncValue {
     console.log(error,);
 
     try {
-      const outStartsLineComment = startsWithLineComment({ value, },);
-      return Object.assign(outStartsLineComment, {
-        json: JSON.parse(outStartsLineComment.remainingContent,) as UnknownRecord,
+      const outStartsComment = startsWithComment({ value, },);
+      return Object.assign(outStartsComment, {
+        json: JSON.parse(outStartsComment.remainingContent,) as UnknownRecord,
       },);
     }
-    catch (errorNotBecauseOfStartsLineComment) {
-      console.log(errorNotBecauseOfStartsLineComment,);
+    catch (errorNotBecauseOfStartsComment) {
+      console.log(errorNotBecauseOfStartsComment,);
     }
   }
 }
 
-export function startsWithLineComment(
+export function startsWithComment(
   { value, context, }: { value: StringJsonc; context?: JsoncValueBase; },
 ): { remainingContent: StringJsonc; } & JsoncValueBase {
   // Eliminate leading and trailing whitespace, including space and newline characters.
@@ -246,19 +246,10 @@ export function startsWithLineComment(
     }
 
     // Recursively parse the remaining content
-    return startsWithLineComment({ value: remainingContent, context: {
+    return startsWithComment({ value: remainingContent, context: {
       comment: mergedComments,
     }, },);
   }
-
-  return { remainingContent: value, };
-}
-
-export function startsWithBlockComment(
-  { value, context, }: { value: StringJsonc; context?: JsoncValueBase; },
-): { remainingContent: StringJsonc; } & JsoncValueBase {
-  // Eliminate leading and trailing whitespace, including space and newline characters.
-  const trimmed = value.trim();
 
   if (trimmed.startsWith('/*',)) {
     const blockEndPosition = function findBlockEndPosition({ value, },) {
@@ -332,7 +323,7 @@ export function startsWithBlockComment(
     }
 
     // Recursively parse the remaining content
-    return startsWithBlockComment({ value: remainingContent, context: {
+    return startsWithComment({ value: remainingContent, context: {
       comment: mergedComments,
     }, },);
   }
