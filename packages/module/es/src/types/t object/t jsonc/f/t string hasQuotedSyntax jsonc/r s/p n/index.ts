@@ -262,92 +262,55 @@ export function startsWithBlockComment(
 
   if (trimmed.startsWith('/*',)) {
     const blockEndPosition = function findBlockEndPosition({ value, },) {
-      const trimmed = value.trim();
-
-      // TODO: Do not cast to array of array at the start.
-      //       Use line number tracking instead.
-      // Find the end of the block comment (star slash)
-      const starSlashs = f(Array.from(
-        trimmed.matchAll(/\*\//g,),
-      ),);
-
-      // TODO: If it's on the first line, we've hit the jackpot.
+      // If it's on the first line, we've hit the jackpot.
       //       How do we know if it's on the first line?
       //       /\/\*[^\n]{0,}\*\//
       //
       //       If not, continue grinding.
-      //       Use the regexp /\n\*\//g
+      //       Use the regexp /\n[^\n]{0,}\*\//g
       //       Then check if the match contains '//'
       //       If so, discard the match.
 
-      const lastStarSlash = f(starSlashs.at(-1,),);
+      const trimmed = value.trim();
 
-      if (!lastStarSlash) {
-        // No block comment end found, the entire string is an incomplete block comment
-        throw new Error(`incomplete block comment is not jsonc, {
-          comment: {
-            type: 'block',
-            commentValue: ${trimmed.slice('/*'.length,)},
-            },
-          }`,);
+      // Check for first-line optimization jackpot case: /*...*/ all on one line
+      // This handles the unique case where the entire block comment is on the first line
+      const FIRST_LINE_BLOCK_COMMENT_REGEX = /\/\*[^\n]*\*\//;
+      const firstLineMatch = FIRST_LINE_BLOCK_COMMENT_REGEX.exec(trimmed,);
+      if (firstLineMatch) {
+        // Found a complete block comment on the first line - return immediately
+        return firstLineMatch.index + firstLineMatch[0].length - '*/'.length;
       }
 
-      const newlineSlashSlashsBeforeLastStarSlash = f(
-        (function getNewlineSlashSlashsBeforeLastStarSlash({ value, lastStarSlash, },) {
-          const newlineSlashSlashs = value.matchAll(
-            // First char in whole string is guaranteed to be slash star
-            // Therefore, line comments must be directly prepended by new line.
-            /\n\s*\/\//g,
-          );
+      // If not on first line, use line-based approach
+      // This regex specifically finds */ that appear after newlines
+      const NEWLINE_STAR_SLASH_REGEX = /\n[^\n]*\*\//g;
+      const newlineStarSlashMatches = trimmed.matchAll(NEWLINE_STAR_SLASH_REGEX,);
 
-          const newlineSlashSlashsBeforeLastStarSlash: RegExpExecArray[] = [];
-
-          for (const newlineSlashSlash of newlineSlashSlashs) {
-            if (newlineSlashSlash.index < lastStarSlash.index)
-              newlineSlashSlashsBeforeLastStarSlash.push(newlineSlashSlash,);
-            else
-              break;
-          }
-
-          return newlineSlashSlashsBeforeLastStarSlash;
-        })({ value: trimmed, lastStarSlash, },),
-      );
-
-      for (const starSlash of starSlashs) {
-        // Ensure our star slash instance isn't commented out by a line comment or inside a JSON string.
-
-        // discard result if star slash is commented out by a line comment.
-        // not discard result if star slash isn't commented out by a line comment.
-        // How do we know? If there's no newline between slashSlash and starSlash.
-
-        // Find shortcircuits on the first match.
-        // TODO: Each */ should only consider line comments before itself.
-        const commentedOut = newlineSlashSlashsBeforeLastStarSlash.find(
-          function inBetweenHasNoNewline(starts,) {
-            const substr = trimmed.slice(starts.index + starts[0].length, starSlash
-              .index,);
-            return !substr.includes('\n',);
-          },
-        );
-
-        if (commentedOut) {
-          // Discard result, next.
+      // Process each starSlash match and check for line comment interference
+      for (const newlineStarSlashMatch of newlineStarSlashMatches) {
+        // Check if this starSlash is commented out by a line comment on the same line
+        if (newlineStarSlashMatch.includes('//',)) {
+          // Discard this match, continue to next starSlash
           continue;
         }
 
         // No need to manually ensure starSlash isn't in quotes.
         // Why? Because if the first starSlash is in quotes when we've already found a slashStar at start, it's invalid JSONC.
 
-        return starSlash.index;
+        // Valid starSlash found - return its position
+        return newlineStarSlashMatch.index
+          + newlineStarSlashMatch[0].length
+          - '*/'.length;
       }
 
-      // No block comment end found, the entire string is an incomplete block comment
+      // No valid block comment end found
       throw new Error(`incomplete block comment is not  jsonc, {
-        comment: {
-          type: 'block',
-          commentValue: ${trimmed.slice('/*'.length,)},
-        },
-      }`,);
+            comment: {
+              type: 'block',
+              commentValue: ${trimmed.slice('/*'.length,)},
+            },
+          }`,);
     }({ value: trimmed, },);
 
     // Extract the comment and the rest of the content after the closing star slash
