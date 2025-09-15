@@ -267,6 +267,8 @@ export function startsWithComment(
       const firstLineMatch = FIRST_LINE_BLOCK_COMMENT_REGEX.exec(trimmed,);
       if (firstLineMatch) {
         // Found a complete block comment on the first line - return immediately
+        // Doesn't handle `/* a {"b": "*/" } */ {"c": "d"}`
+        // Because in all languages, */ upon first found after starting a block comment, auto becomes end marker of block comment.
         return firstLineMatch.index + firstLineMatch[0].length - '*/'.length;
       }
 
@@ -376,6 +378,8 @@ export function startsWithComment(
 export function endsWithComment(
   { value, context, }: { value: StringJsonc; context?: JsoncValueBase; },
 ): { precedingContent: StringJsonc; } & JsoncValueBase {
+  // TODO: I'm starting to think we should completely forgo endsWithComment and write our own tolerant JSON parser that doesn't throw once it encounters something invalid and instead spits out what it has already eaten.
+
   // Eliminate leading and trailing whitespace, including space and newline characters.
   const trimmed = value.trim();
 
@@ -385,28 +389,20 @@ export function endsWithComment(
     ) {
       const trimmed = value.trim();
 
-      // Get content before the */ to find the matching /*
-      const contentBeforeBlockEnd = trimmed.slice(0, lastBlockCommentEndIndex,);
-      const lastBlockStartIndex = contentBeforeBlockEnd.lastIndexOf('/*',);
-
-      if (lastBlockStartIndex === -1) {
-        // No matching /* found - this is an incomplete block comment
-        throw new Error(`incomplete block comment is not jsonc, {
-        comment: {
-          type: 'block',
-          commentValue: ${trimmed.slice(lastBlockCommentEndIndex,)},
-        },
-      }`,);
+      // Get content before the starSlash to find the matching slashStar
+      const lastLinefeedIndex = trimmed.lastIndexOf('\n',);
+      const lastLineStartIndex = lastLinefeedIndex === -1 ? 0 : lastLinefeedIndex + 1;
+      const lastLine = trimmed.slice(lastLineStartIndex,);
+      // FIXME: Wrong, because unlike startsWithComment,
+      //        No recognized start slashStar means no finish slashStar.
+      const lastLineMatch = lastLine.match(/\/\*.*\*\//,);
+      if (lastLineMatch)
+        return lastLineMatch.index;
+      if (lastLinefeedIndex === -1) {
+        throw new Error(
+          "only one line, but ending starSlash isn't matched by a slashStar before it.",
+        );
       }
-
-      // Validate that this is a proper block comment
-      const blockContent = trimmed.slice(lastBlockStartIndex + '/*'.length,
-        lastBlockCommentEndIndex,);
-
-      // Check if there are any other comments or strings that might interfere
-      // For now, we'll assume valid JSONC as per the project philosophy
-
-      return lastBlockStartIndex;
     }({ value: trimmed, },);
 
     // TODO: Finish full fix/refactor
