@@ -297,6 +297,7 @@ export function startsWithBlockComment(
 
         // No need to manually ensure starSlash isn't in quotes.
         // Why? Because if the first starSlash is in quotes when we've already found a slashStar at start, it's invalid JSONC.
+        // And we assume valid JSONC.
 
         // Valid starSlash found - return its position
         return newlineStarSlashMatch.index
