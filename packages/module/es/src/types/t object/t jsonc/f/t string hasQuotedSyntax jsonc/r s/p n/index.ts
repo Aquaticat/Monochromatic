@@ -1,8 +1,8 @@
+import type { $ as Int, } from '@_/types/t number/t finite/t int/t/index.ts';
 import type {
   $ as StringJsonc,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
 import type { UnknownRecord, } from 'type-fest';
-import { z, } from 'zod/v4-mini';
 
 const f = Object.freeze;
 
@@ -186,7 +186,6 @@ export type JsoncValue =
  * - Preserves inline (//) and block (/* *\/) comments
  * - Supports trailing commas in objects and arrays
  * - Hierarchical optimization: uses native JSON.parse for clean sections
- * - Type-safe parsing with Zod validation for primitives
  * - Detailed error messages with position information
  * - Memory-efficient parsing with comment extraction
  */
@@ -260,6 +259,34 @@ export function $({ value, }: { value: StringJsonc; },): JsoncValue {
   return result;
 }
 
+export const numberLengthsToTestFirst = [1, 2, 4, 8, 16,] as const;
+
+export function getLengthsToTestFirst(
+  { lengthUpperBound, lengths, }: { lengthUpperBound: number;
+    lengths: readonly number[]; },
+): number[] {
+  const result = [lengthUpperBound,];
+  for (const length of lengths) {
+    if (length > lengthUpperBound)
+      break;
+
+    result.push(length,);
+  }
+  return result;
+}
+
+// TODO: Find a better home for this fn.
+export function getArrayInts(
+  { startExclusive, endExclusive, }: { startExclusive: number; endExclusive: number; },
+): Int[] {
+  const start = (Math.floor(startExclusive,) + 1) as Int;
+  const end = (Math.ceil(endExclusive,) - 1) as Int;
+  const result = (start > end
+    ? []
+    : Array.from({ length: end - start + 1, }, (_, i,) => start + i,)) as Int[];
+  return result;
+}
+
 export function customParserForArray(
   { value, context, }: { value: FragmentStringJsonc | StringJsonc;
     context?: JsoncValueBase; },
@@ -317,27 +344,53 @@ export function customParserForArray(
       return { consumed: 'false', parsed: { value: false, },
         remaining: valueExceptStartingFalse, };
     }
-    else if (value.startsWith('-',)) {
-      const valueWoLeadingNegativeSign = value.slice('-'.length,);
-      if (valueWoLeadingNegativeSign.startsWith('0',)) {
-        const woLeading0 = valueWoLeadingNegativeSign.slice('0'.length,);
+    else if (['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',].some(
+      function startsWithNumberMarker(numberMarker,) {
+        return value.startsWith(numberMarker,);
+      },
+    )) {
+      const lengthsToTestFirst = getLengthsToTestFirst({ lengthUpperBound: value.length,
+        lengths: numberLengthsToTestFirst, },);
 
-        // next must be finish, or dot, or e.
-        if (woLeading0.startsWith('.',)) {
-          // next must be number
+      const lastTested: { longestKnownSuccess?: { length: number; result: number; };
+        shortestKnownFail?: { length: number; }; } = {};
+      for (const lengthToTestFirst of lengthsToTestFirst) {
+        const sliced = value.slice(0, lengthToTestFirst,);
+        try {
+          const potentialNumber = JSON.parse(sliced,) as unknown;
+          if (typeof potentialNumber === 'number') {
+            lastTested.longestKnownSuccess = f({ length: lengthToTestFirst, success: true,
+              result: potentialNumber, },);
+            // continue to the bigger length, if there's no bigger length, we're done.
+          }
+          else {
+            throw new Error('malformed jsonc, non-number after number marker',);
+          }
         }
-        else if (woLeading0.startsWith('e',)) {
+        catch (error: any) {
+          console.error(`${sliced} ${(error as Error).message}`,);
+          lastTested.shortestKnownFail = { length: lengthToTestFirst, };
+
+          break;
         }
-        else if (woLeading0.startsWith(']',))
-          return { consumed: '-0', parsed: { value: -0, }, remaining: woLeading0, };
-        else if (woLeading0.match(/^\s/,))
-          return { consumed: '-0', parsed: { value: -0, }, remaining: woLeading0, };
-        else if (woLeading0.startsWith(',',))
-          return { consumed: '-0', parsed: { value: -0, }, remaining: woLeading0, };
-        else if (woLeading0.startsWith('/*',))
-          return { consumed: '-0', parsed: { value: -0, }, remaining: woLeading0, };
-        else
-          throw new Error('malformed jsonc after negative number',);
+      }
+      if (lastTested.longestKnownSuccess) {
+        if (lastTested.shortestKnownFail) {
+          const lengthsToTest = getArrayInts({
+            startExclusive: lastTested.longestKnownSuccess.length,
+            endExclusive: lastTested.shortestKnownFail.length,
+          },);
+          // TODO: Also test lengthsToTest
+        }
+        else {
+          // longestKnownSuccess exists but shortestKnownFail doesn't, which means the entire string is a number.
+          const { result, length, } = lastTested.longestKnownSuccess;
+          return { consumed: value.slice(0, length,), parsed: { value: result, },
+            remaining: value.slice(length,), };
+        }
+      }
+      else {
+        throw new Error('malformed jsonc, non-number after dash',);
       }
     }
   })({ value: remainingContent, accumulator: '', },);
