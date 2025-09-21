@@ -6,6 +6,8 @@ import { z, } from 'zod/v4-mini';
 
 const f = Object.freeze;
 
+export type FragmentStringJsonc = string & { __brand: { jsonc: 'fragment'; }; };
+
 //region Type Definitions -- Define all TypeScript types for the parsed JSONC structure
 
 /**
@@ -14,7 +16,7 @@ const f = Object.freeze;
 export type JsoncComment = {
   /** Type of comment */
   type: 'inline' | 'block' | 'mixed';
-  /** Comment content without delimiters */
+  /** Untrimmed comment content without delimiters */
   commentValue: string;
 };
 
@@ -29,64 +31,66 @@ export type JsoncValueBase = {
 /**
  * Parsed JSONC string value
  */
-export type JsoncString = JsoncValueBase & {
-  type: 'string';
+export type JsoncStringBase = {
   value: string;
 };
 
 /**
  * Parsed JSONC number value
  */
-export type JsoncNumber = JsoncValueBase & {
-  type: 'number';
+export type JsoncNumberBase = {
   value: number;
 };
 
 /**
  * Parsed JSONC boolean value
  */
-export type JsoncBoolean = JsoncValueBase & {
-  type: 'boolean';
+export type JsoncBooleanBase = {
   value: boolean;
 };
 
 /**
  * Parsed JSONC null value
  */
-export type JsoncNull = JsoncValueBase & {
-  type: 'null';
+export type JsoncNullBase = {
   value: null;
 };
 
 /**
  * Parsed JSONC array value
  */
-export type JsoncArray = JsoncValueBase & {
-  type: 'array';
+export type JsoncArrayBase = {
   value: JsoncValue[];
 };
 
 /**
- * Record entry in a parsed JSONC object
+ * Record key in a parsed JSONC object
  */
-export type JsoncRecordEntry = {
-  recordKey: JsoncString;
-  recordValue: JsoncValue;
-};
+export type JsoncRecordKey = JsoncStringBase & JsoncValueBase;
 
 /**
  * Parsed JSONC object/record value
  */
-export type JsoncRecord = JsoncValueBase & {
-  type: 'record';
-  value: JsoncRecordEntry[];
+export type JsoncRecordBase = Map<JsoncRecordKey, JsoncValue>;
+
+export type PlainJsonBase = {
+  json: UnknownRecord;
 };
 
 /**
  * Union of all possible parsed JSONC values
  */
-export type JsoncValue = JsoncString | JsoncNumber | JsoncBoolean | JsoncNull | JsoncArray
-  | JsoncRecord | { json: UnknownRecord; } & JsoncValueBase;
+export type JsoncValue =
+  & (
+    | JsoncStringBase
+    | JsoncNumberBase
+    | JsoncBooleanBase
+    | JsoncNullBase
+    | JsoncArrayBase
+    | JsoncRecordBase
+    | PlainJsonBase
+  )
+  & JsoncValueBase;
 
 //endregion Type Definitions
 
@@ -256,9 +260,139 @@ export function $({ value, }: { value: StringJsonc; },): JsoncValue {
   return result;
 }
 
-export function startsWithComment(
-  { value, context, }: { value: StringJsonc; context?: JsoncValueBase; },
-): { remainingContent: StringJsonc; } & JsoncValueBase {
+export function customParserForArray(
+  { value, context, }: { value: FragmentStringJsonc | StringJsonc;
+    context?: JsoncValueBase; },
+): JsoncValueBase {
+  const woOpening = value.slice('['.length,) as FragmentStringJsonc;
+  const outStartsComment = startsWithComment({ value: woOpening, },);
+
+  // Must start with an array item, another array, or another record.
+  const { remainingContent, } = outStartsComment;
+
+  if (remainingContent.startsWith('[',)) {
+    const allItemsAndPossiblyMore = { ...outStartsComment,
+      ...(customParserForArray({ value: remainingContent, },)), };
+  }
+
+  if (remainingContent.startsWith('{',)) {
+    const allItemsAndPossiblyMore = { ...outStartsComment,
+      ...(customParserForRecord({ value: remainingContent, },)), };
+  }
+
+  // Must be an array item
+  // read until encountering (unquoted comma) or newline or (unquoted whitespace) or (unquoted comment start marker slashStar only) or closingSquareBracket.
+  //
+  // Why are we not considering unquoted comment start marker slashSlash?
+  // Because slashSlash comments out current line, which means
+  // `1//` cannot be valid no matter what follows.
+  // And we'd already handled the case where `1,//` in "encountering comma".
+  // And we'd already handled the case where `1\n//\n,` in "encountering newline".
+  const { parsed, remaining, } = (function getUntil(
+    { value, accumulator, },
+  ): { consumed: string; parsed: JsoncValue; remaining: string; } {
+    if (value.startsWith('"',)) {
+      const valueAfterQuote = value.slice('"'.length,);
+      const nextQuote = valueAfterQuote.match(/(?<!\\)(?:\\\\)*"/g,);
+      if (!nextQuote)
+        throw new Error('malformed jsonc',);
+      const parsedValue = value.slice(0, nextQuote.index! + 1,);
+      // No need to check if nextQuote isn't commented out.
+      // We're already in quotes, so all comment markers are unavailable.
+      return { consumed: parsedValue, parsed: { value: parsedValue, }, remaining: value
+        .slice(nextQuote.index! + 1,), };
+    }
+    else if (value.startsWith('null',)) {
+      const valueExceptStartingNull = value.slice('null'.length,);
+      return { consumed: 'null', parsed: { value: null, },
+        remaining: valueExceptStartingNull, };
+    }
+    else if (value.startsWith('true',)) {
+      const valueExceptStartingTrue = value.slice('true'.length,);
+      return { consumed: 'true', parsed: { value: true, },
+        remaining: valueExceptStartingTrue, };
+    }
+    else if (value.startsWith('false',)) {
+      const valueExceptStartingFalse = value.slice('false'.length,);
+      return { consumed: 'false', parsed: { value: false, },
+        remaining: valueExceptStartingFalse, };
+    }
+    else if (value.startsWith('-',)) {
+      const valueWoLeadingNegativeSign = value.slice('-'.length,);
+      if (valueWoLeadingNegativeSign.startsWith('0',)) {
+        const woLeading0 = valueWoLeadingNegativeSign.slice('0'.length,);
+
+        // next must be finish, or dot, or e.
+        if (woLeading0.startsWith('.',)) {
+          // next must be number
+        }
+        else if (woLeading0.startsWith('e',)) {
+        }
+        else if (woLeading0.startsWith(']',))
+          return { consumed: '-0', parsed: { value: -0, }, remaining: woLeading0, };
+        else if (woLeading0.match(/^\s/,))
+          return { consumed: '-0', parsed: { value: -0, }, remaining: woLeading0, };
+        else if (woLeading0.startsWith(',',))
+          return { consumed: '-0', parsed: { value: -0, }, remaining: woLeading0, };
+        else if (woLeading0.startsWith('/*',))
+          return { consumed: '-0', parsed: { value: -0, }, remaining: woLeading0, };
+        else
+          throw new Error('malformed jsonc after negative number',);
+      }
+    }
+  })({ value: remainingContent, accumulator: '', },);
+}
+
+//region numbers in js
+const _num2 = 0.0e0;
+const _num3 = 0.e0;
+const _num4 = 0e0;
+const _num8 = 0e01;
+
+// invalid
+// const _num5 = e0;
+// const _num8 = -e0;
+// invalid (by eslint)
+// const _num6 = 01;
+
+//endregion numbers in js
+
+// TODO: Express every StringJsonc is FragmentStringJsonc
+
+export function getNegativeNumberFromString({ value, }: { value: string; },) {
+}
+
+export function customParserForRecord(
+  { value, context, }: { value: FragmentStringJsonc | StringJsonc;
+    context?: JsoncValueBase; },
+): JsoncValueBase {
+  const woOpening = value.slice('{'.length,) as FragmentStringJsonc;
+  const outStartsComment = startsWithComment({ value: woOpening, },);
+
+  // Must start with a record pair, another array, or another record.
+  const { remainingContent, } = outStartsComment;
+
+  if (remainingContent.startsWith('[',)) {
+    const allItemsAndPossiblyMore = { ...outStartsComment,
+      ...(customParserForArray({ value: remainingContent, },)), };
+  }
+
+  if (remainingContent.startsWith('{',)) {
+    const allItemsAndPossiblyMore = { ...outStartsComment,
+      ...(customParserForRecord({ value: remainingContent, },)), };
+  }
+}
+
+export function startsWithComment<const Value extends StringJsonc | FragmentStringJsonc,>(
+  { value, context, }: { value: Value; context?: JsoncValueBase; },
+): StringJsonc extends Value ? {
+    remainingContent: StringJsonc;
+  } & JsoncValueBase
+  : FragmentStringJsonc extends Value ? {
+      remainingContent: FragmentStringJsonc;
+    } & JsoncValueBase
+  : never
+{
   // Eliminate leading and trailing whitespace, including space and newline characters.
   const trimmed = value.trim();
 
@@ -289,7 +423,7 @@ export function startsWithComment(
 
     const remainingContent = trimmed
       .slice(newlinePosition + '\n'.length,)
-      .trim() as StringJsonc;
+      .trim() as Value;
 
     // Recursively parse the remaining content
     return startsWithComment({ value: remainingContent, context: {
@@ -364,7 +498,7 @@ export function startsWithComment(
     // Get content after the block comment, skipping the star slash delimiter
     const remainingContent = trimmed
       .slice(blockEndPosition + '*/'.length,)
-      .trim() as StringJsonc;
+      .trim() as Value;
 
     // Recursively parse the remaining content
     return startsWithComment({ value: remainingContent, context: {
@@ -372,7 +506,8 @@ export function startsWithComment(
     }, },);
   }
 
-  return { ...context, remainingContent: value, };
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- value is Value is auto narrowed.
+  return { ...context, remainingContent: value, } as any;
 }
 
 export function mergeComments(
