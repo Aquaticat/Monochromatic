@@ -71,7 +71,7 @@ export type JsoncRecordKey = JsoncStringBase & JsoncValueBase;
 /**
  * Parsed JSONC object/record value
  */
-export type JsoncRecordBase = Map<JsoncRecordKey, JsoncValue>;
+export type JsoncRecordBase = { value: Map<JsoncRecordKey, JsoncValue>; };
 
 export type PlainJsonBase = {
   json: UnknownRecord;
@@ -290,7 +290,7 @@ export function getArrayInts(
 export function customParserForArray(
   { value, context, }: { value: FragmentStringJsonc | StringJsonc;
     context?: JsoncValueBase; },
-): JsoncValueBase {
+): JsoncValue {
   const woOpening = value.slice('['.length,) as FragmentStringJsonc;
   const outStartsComment = startsWithComment({ value: woOpening, },);
 
@@ -307,7 +307,7 @@ export function customParserForArray(
       ...(customParserForRecord({ value: remainingContent, },)), };
   }
 
-  // Must be an array item
+  // Must start with a primitive array item
   // read until encountering (unquoted comma) or newline or (unquoted whitespace) or (unquoted comment start marker slashStar only) or closingSquareBracket.
   //
   // Why are we not considering unquoted comment start marker slashSlash?
@@ -316,7 +316,7 @@ export function customParserForArray(
   // And we'd already handled the case where `1,//` in "encountering comma".
   // And we'd already handled the case where `1\n//\n,` in "encountering newline".
   const { parsed, remaining, } = (function getUntil(
-    { value, accumulator, },
+    { value, },
   ): { consumed: string; parsed: JsoncValue; remaining: string; } {
     if (value.startsWith('"',)) {
       const valueAfterQuote = value.slice('"'.length,);
@@ -381,19 +381,45 @@ export function customParserForArray(
             endExclusive: lastTested.shortestKnownFail.length,
           },);
           // TODO: Also test lengthsToTest
-        }
-        else {
-          // longestKnownSuccess exists but shortestKnownFail doesn't, which means the entire string is a number.
+          // Test each intermediate length to find the exact boundary
+          for (const lengthToTest of lengthsToTest) {
+            const sliced = value.slice(0, lengthToTest,);
+            try {
+              const potentialNumber = JSON.parse(sliced,) as unknown;
+              if (typeof potentialNumber === 'number') {
+                lastTested.longestKnownSuccess = f({ length: lengthToTest, success: true,
+                  result: potentialNumber, },);
+              }
+              else {
+                throw new Error('malformed jsonc, non-number after number marker',);
+              }
+            }
+            catch (error: any) {
+              console.error(`${sliced} ${(error as Error).message}`,);
+              lastTested.shortestKnownFail = { length: lengthToTest, };
+              break;
+            }
+          }
+          // now we have the canon longestKnownSuccess
           const { result, length, } = lastTested.longestKnownSuccess;
           return { consumed: value.slice(0, length,), parsed: { value: result, },
             remaining: value.slice(length,), };
+        }
+        else {
+          // longestKnownSuccess exists but shortestKnownFail doesn't, which means the entire string is a number.
+          const { result, } = lastTested.longestKnownSuccess;
+          return { consumed: value, parsed: { value: result, }, remaining: '', };
         }
       }
       else {
         throw new Error('malformed jsonc, non-number after dash',);
       }
     }
+    else {
+      throw new Error('invalid jsonc primitive array item',);
+    }
   })({ value: remainingContent, accumulator: '', },);
+  // TODO: Okay, that's just the start. And?
 }
 
 //region numbers in js
@@ -418,7 +444,7 @@ export function getNegativeNumberFromString({ value, }: { value: string; },) {
 export function customParserForRecord(
   { value, context, }: { value: FragmentStringJsonc | StringJsonc;
     context?: JsoncValueBase; },
-): JsoncValueBase {
+): JsoncValue {
   const woOpening = value.slice('{'.length,) as FragmentStringJsonc;
   const outStartsComment = startsWithComment({ value: woOpening, },);
 
