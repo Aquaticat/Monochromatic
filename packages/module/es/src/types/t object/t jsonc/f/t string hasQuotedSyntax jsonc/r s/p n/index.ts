@@ -295,6 +295,7 @@ export function customParserForArray(
   const outStartsComment = startsWithComment({ value: woOpening, },);
 
   // Must start with an array item, another array, or another record.
+  // TODO: Or if the array is empty, closingSquareBracket.
   const { remainingContent, } = outStartsComment;
 
   if (remainingContent.startsWith('[',)) {
@@ -418,8 +419,31 @@ export function customParserForArray(
     else {
       throw new Error('invalid jsonc primitive array item',);
     }
-  })({ value: remainingContent, accumulator: '', },);
+  })({ value: remainingContent, },);
   // TODO: Okay, that's just the start. And?
+  // trimmed must start with either a comma or comments.
+  const afterFirstItemTrimmed = remaining.trimStart() as FragmentStringJsonc;
+  const afterFirstItemOutStartsComment = startsWithComment({
+    value: afterFirstItemTrimmed,
+  },);
+  const { remainingContent: afterFirstItemRemainingContent, } =
+    afterFirstItemOutStartsComment;
+  // afterFirstItemRemainingContent must start with a comma if the array has more than 1 item.
+  // TODO: must start with a closingSquareBracket or a comma + comments/whitespace + closingSquareBracket if the array has only 1 item.
+  if (!afterFirstItemRemainingContent.startsWith(',',)) {
+    throw new Error(
+      `afterFirstItemRemainingContent must start with a comma ${afterFirstItemRemainingContent}`,
+    );
+  }
+  const afterFirstCommaTrimmed = afterFirstItemRemainingContent
+    .slice(','.length,)
+    .trimStart() as FragmentStringJsonc;
+  const afterFirstCommaOutStartsComment = startsWithComment({
+    value: afterFirstCommaTrimmed,
+  },);
+  const { remainingContent: afterFirstCommaRemainingContent, } =
+    afterFirstCommaOutStartsComment;
+  // afterFirstCommaRemainingContent is the start of the 2nd item.
 }
 
 //region numbers in js
