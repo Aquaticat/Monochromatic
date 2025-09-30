@@ -290,21 +290,26 @@ export function getArrayInts(
 export function customParserForArray(
   { value, context, }: { value: FragmentStringJsonc | StringJsonc;
     context?: JsoncValueBase; },
-): JsoncValue {
+): JsoncValue & { remainingContent: FragmentStringJsonc; } {
   const woOpening = value.slice('['.length,) as FragmentStringJsonc;
   const outStartsComment = startsWithComment({ value: woOpening, },);
 
   // Must start with an array item, another array, or another record.
-  // TODO: Or if the array is empty, closingSquareBracket.
+  // Or if the array is empty, closingSquareBracket.
   const { remainingContent, } = outStartsComment;
 
+  if (remainingContent.startsWith(']',)) {
+    return { ...outStartsComment, value: [], remainingContent: remainingContent
+      .slice(']'.length,), };
+  }
+
   if (remainingContent.startsWith('[',)) {
-    const allItemsAndPossiblyMore = { ...outStartsComment,
+    const firstItem = { ...outStartsComment,
       ...(customParserForArray({ value: remainingContent, },)), };
   }
 
   if (remainingContent.startsWith('{',)) {
-    const allItemsAndPossiblyMore = { ...outStartsComment,
+    const firstItem = { ...outStartsComment,
       ...(customParserForRecord({ value: remainingContent, },)), };
   }
 
@@ -461,9 +466,6 @@ const _num8 = 0e01;
 //endregion numbers in js
 
 // TODO: Express every StringJsonc is FragmentStringJsonc
-
-export function getNegativeNumberFromString({ value, }: { value: string; },) {
-}
 
 export function customParserForRecord(
   { value, context, }: { value: FragmentStringJsonc | StringJsonc;
