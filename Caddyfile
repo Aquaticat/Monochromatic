@@ -1,3 +1,4 @@
+# TODO: Delete this and migrate to per-pkg caddyfile
 :4110 {
   handle /api/proxy/* {
     uri strip_prefix /api/proxy

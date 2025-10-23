@@ -13,7 +13,7 @@ The current `src/` directory has 180+ files in a flat structure, with plans to g
 
 ### Existing Categories (from index.ts and file patterns)
 - `any.*` (8 files) → Generic utilities
-- `array.*` (12 files) → Array operations  
+- `array.*` (12 files) → Array operations
 - `string.*` (15 files) → String utilities
 - `function.*` (15 files) → Function utilities
 - `iterable.*` (20 files) → Iterable operations
@@ -26,14 +26,14 @@ The current `src/` directory has 180+ files in a flat structure, with plans to g
 
 ### Subcategory Patterns Already Present
 - `array.type.*` → Type-level array utilities
-- `string.fs.*` → Filesystem string utilities  
+- `string.fs.*` → Filesystem string utilities
 - `fs.pathJoin.*` → Path joining variants
 - `fs.pathParse.*` → Path parsing variants
 - Platform variants: `.node.ts` vs `.default.ts`
 
 ## Proposed Hierarchical Structure
 
-```
+```txt
 src/
 ├── any/                     # Generic utilities (8→15 functions)
 │   ├── index.ts            # export * from './constant.ts'; etc.
@@ -193,7 +193,7 @@ src/
 │   │   ├── index.ts
 │   │   └── (planned functions: get, set, has, unset)
 │   ├── transform/          # Future transformations
-│   │   ├── index.ts  
+│   │   ├── index.ts
 │   │   └── (planned functions: map, filter, transform)
 │   └── *.unit.test.ts      # All object tests co-located
 │
@@ -237,7 +237,7 @@ src/
 │   └── *.unit.test.ts      # All numeric tests co-located
 │
 ├── collection/             # Maps, Sets, specialized collections
-│   ├── index.ts            # Re-exports all collection functions  
+│   ├── index.ts            # Re-exports all collection functions
 │   ├── map/                # Map operations
 │   │   ├── index.ts
 │   │   └── is.ts           # map.is.ts → collection/map/is.ts
@@ -442,7 +442,7 @@ import { isDigitString, isNumberString } from '@monochromatic-dev/module-es/stri
 3. **Subcategory Flexibility**: Complex categories can have deep organization
 4. **Performance**: IDE file trees and autocomplete work better with organized structures
 
-### Developer Experience Benefits  
+### Developer Experience Benefits
 1. **Intuitive Navigation**: `array/search/` clearly indicates array searching functions
 2. **Related Function Discovery**: All string validation in `string/validation/`
 3. **Reduced Cognitive Load**: Only see relevant files when working in a category
@@ -464,7 +464,7 @@ import { isDigitString, isNumberString } from '@monochromatic-dev/module-es/stri
 
 ### What's Preserved
 - ✅ **Individual function files** - tree-shaking optimization maintained
-- ✅ **Test co-location** - tests stay with implementations  
+- ✅ **Test co-location** - tests stay with implementations
 - ✅ **Platform variants** - `.node.ts`/`.default.ts` pattern unchanged
 - ✅ **Existing imports** - all current imports continue working
 - ✅ **Build system** - Moon tasks work with nested directories

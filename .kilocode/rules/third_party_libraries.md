@@ -5,17 +5,10 @@
 ### Immediate Documentation Retrieval
 - **IMMEDIATELY retrieve documentation when encountering undefined method errors**
   - The moment you see errors like "X is not a function", "Cannot read property X of undefined", or "X is undefined"
-  - Use ALL available documentation tools to understand the correct API:
-    - `context7` for library documentation
-    - `exa:crawling` to fetch from `https://www.npmjs.com/package/<package-name>`
-    - `github:search_code` or `github:get_file_contents` to find usage examples
-    - `WebSearch` for recent documentation and examples
-  - NEVER guess or assume API methods exist - always verify first
+  - Use ALL available documentation tools to understand the correct API
 
 ### Documentation Best Practices
 - **Always retrieve documentation from GitHub or npm pages** when implementing features with third-party libraries
-  - For npm packages: Use `exa:crawling` to fetch from `https://www.npmjs.com/package/<package-name>`
-  - For GitHub repos: Use `github:get_file_contents` to fetch from the library's GitHub page
   - This ensures you have the most up-to-date API documentation and usage examples
 - Always check the actual type definitions before using APIs
 - Read the actual source types, not just documentation (which may be outdated)
