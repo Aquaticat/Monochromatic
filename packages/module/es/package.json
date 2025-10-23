@@ -79,7 +79,7 @@
     "@total-typescript/ts-reset": "catalog:",
     "ts-pattern": "catalog:",
     "happy-opfs": "catalog:",
-    "@vitest/browser": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
     "happy-rusty": "catalog:",
     "@csstools/css-tokenizer": "catalog:",
     "tinyglobby": "catalog:",

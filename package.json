@@ -31,7 +31,7 @@
     "vitest": "catalog:",
     "vite": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "@vitest/browser": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
     "@vitest/ui": "catalog:",
     "playwright": "catalog:",
     "vue-tsc": "catalog:",

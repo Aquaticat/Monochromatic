@@ -33,7 +33,7 @@
     "@types/mdx": "catalog:",
     "@types/bun": "catalog:",
     "vite": "catalog:",
-    "@vitest/browser": "catalog:"
+    "@vitest/browser-playwright": "catalog:"
   },
   "dependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*"

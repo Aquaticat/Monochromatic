@@ -20,7 +20,6 @@ npm = "latest"
 
 # Non-JS-based formatters
 dprint = "latest"
-oxlint = "latest"
 
 # For running Python packages and scripts
 uv = "latest"
@@ -59,7 +58,8 @@ detect-strategy = "only-prototools"
 
 yq = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/yq/plugin.toml"
 
-oxlint = "https://raw.githubusercontent.com/Phault/proto-toml-plugins/main/oxlint/plugin.toml"
+# Cannot run w/o node. See https://github.com/oxc-project/oxc/issues/14100#issuecomment-3332147175
+# oxlint = "https://raw.githubusercontent.com/Phault/proto-toml-plugins/main/oxlint/plugin.toml"
 
 pkl = "https://raw.githubusercontent.com/milesj/proto-plugins/refs/heads/master/pkl.toml"
 

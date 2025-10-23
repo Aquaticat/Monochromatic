@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-duplicate-type-constituents -- vitest and vite right now has the exact same types, but may not be sometimes */
 import {
   composeVisitors,
   type ContainerRule,
@@ -45,6 +46,8 @@ import {
   type ViteUserConfig as VitestUserConfig,
   type ViteUserConfigFnObject as VitestUserConfigFnObject,
 } from 'vitest/config';
+
+import { playwright, } from '@vitest/browser-playwright';
 
 // TODO: Investigate how to sneak in comments
 import vitestExcludeCommonConfig from './vitest-exclude-common.json' with {
@@ -356,7 +359,6 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
         minify: {
           compress: true,
           mangle: false,
-          removeWhitespace: false,
         },
       },
     },
@@ -641,15 +643,9 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = {
     },
     outputFile: join('bak', new Date().toISOString().replaceAll(':', '',),
       'vitest.result.json',),
-    pool: 'threads',
-    poolOptions: {
-      threads: {
-        useAtomics: true,
-      },
-      vmThreads: {
-        useAtomics: true,
-      },
-    },
+    pool: 'vmThreads',
+
+    maxWorkers: 16,
     testTimeout: DEFAULT_TEST_TIMEOUT,
     silent: 'passed-only',
     logHeapUsage: true,
@@ -659,9 +655,8 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = {
     },
     typecheck: {
       enabled: true,
-
       // Overwrite this to vue-tsc in packages that use Vue.
-      checker: 'tsc',
+      // checker: 'tsc',
     },
     chaiConfig: {
       includeStack: true,
@@ -727,7 +722,7 @@ export const vitestOnlyBrowserConfigWorkspace: VitestUserConfig = {
     exclude: [...vitestExcludeCommon, '**/*.unit.test.ts',],
 
     browser: {
-      provider: 'playwright',
+      provider: playwright(),
       enabled: true,
       headless: true,
 
