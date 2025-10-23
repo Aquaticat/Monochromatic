@@ -61,6 +61,6 @@
     "postcss-normalize-whitespace": "catalog:",
     "postcss-ordered-values": "catalog:",
     "lfi": "catalog:",
-    "@vitest/browser": "catalog:"
+    "@vitest/browser-playwright": "catalog:"
   }
 }

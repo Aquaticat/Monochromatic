@@ -49,7 +49,7 @@
     "types": [
       "bun",
       "vite/client",
-      "@vitest/browser/providers/playwright"
+      "@vitest/browser-playwright"
     ],
 
     //endregion
