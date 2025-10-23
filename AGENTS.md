@@ -244,9 +244,9 @@ if (status === 'pending' && retries < maxRetries && !isTimeout) {
 
 ### Good: Extract and name the concept
 ```ts
-const canRetry = () => 
-  status === 'pending' && 
-  retries < maxRetries && 
+const canRetry = () =>
+  status === 'pending' &&
+  retries < maxRetries &&
   !isTimeout;
 
 if (canRetry()) {
@@ -261,12 +261,7 @@ if (canRetry()) {
 ## Immediate Documentation Retrieval
 - **IMMEDIATELY retrieve documentation when encountering undefined method errors**
   - The moment you see errors like "X is not a function", "Cannot read property X of undefined", or "X is undefined"
-  - Use ALL available documentation tools to understand the correct API:
-    - `context7` for library documentation
-    - `exa:crawling` to fetch from `https://www.npmjs.com/package/<package-name>`
-    - `github:search_code` or `github:get_file_contents` to find usage examples
-    - `WebSearch` for recent documentation and examples
-  - NEVER guess or assume API methods exist - always verify first
+  - Use ALL available documentation tools to understand the correct API
 
 ## Documentation Best Practices
 - **Always retrieve documentation from GitHub or npm pages** when implementing features with third-party libraries
