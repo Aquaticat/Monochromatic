@@ -9,178 +9,178 @@ const $ = object.regexp.from.string.sync.named.$;
 
 describe('string to regex conversion', () => {
   test('converts simple string to regex', () => {
-    const result = $({str: 'hello'},);
+    const result = $({ str: 'hello', },);
     expect(result,).toBeInstanceOf(RegExp,);
     expect(result.test('hello',),).toBe(true,);
-    expect(result.test('hello world',),).toBe(false,);
+    expect(result.test('hello world',),).toBe(true,);
   });
 
   test('escapes period character', () => {
-    const result = $({str: 'I love you.'},);
+    const result = $({ str: 'I love you.', },);
     expect(result.test('I love you.',),).toBe(true,);
     expect(result.test('I love youX',),).toBe(false,);
     expect(result.source,).toBe('I love you\\.',);
   });
 
   test('escapes asterisk character', () => {
-    const result = $({str: 'Hello*'},);
+    const result = $({ str: 'Hello*', },);
     expect(result.test('Hello*',),).toBe(true,);
     expect(result.test('Hellooo',),).toBe(false,);
     expect(result.source,).toBe('Hello\\*',);
   });
 
   test('escapes plus character', () => {
-    const result = $({str: 'test+'},);
+    const result = $({ str: 'test+', },);
     expect(result.test('test+',),).toBe(true,);
     expect(result.test('testtt',),).toBe(false,);
     expect(result.source,).toBe('test\\+',);
   });
 
   test('escapes question mark character', () => {
-    const result = $({str: 'what?'},);
+    const result = $({ str: 'what?', },);
     expect(result.test('what?',),).toBe(true,);
     expect(result.test('wha',),).toBe(false,);
     expect(result.source,).toBe('what\\?',);
   });
 
   test('escapes caret character', () => {
-    const result = $({str: '^start'},);
+    const result = $({ str: '^start', },);
     expect(result.test('^start',),).toBe(true,);
     expect(result.test('start',),).toBe(false,);
     expect(result.source,).toBe('\\^start',);
   });
 
   test('escapes dollar character', () => {
-    const result = $({str: 'end$'},);
+    const result = $({ str: 'end$', },);
     expect(result.test('end$',),).toBe(true,);
     expect(result.test('end',),).toBe(false,);
     expect(result.source,).toBe('end\\$',);
   });
 
   test('escapes curly braces', () => {
-    const result = $({str: '{count}'},);
+    const result = $({ str: '{count}', },);
     expect(result.test('{count}',),).toBe(true,);
     expect(result.source,).toBe('\\{count\\}',);
   });
 
   test('escapes square brackets', () => {
-    const result = $({str: '[array]'},);
+    const result = $({ str: '[array]', },);
     expect(result.test('[array]',),).toBe(true,);
     expect(result.source,).toBe('\\[array\\]',);
   });
 
   test('escapes parentheses', () => {
-    const result = $({str: '(group)'},);
+    const result = $({ str: '(group)', },);
     expect(result.test('(group)',),).toBe(true,);
     expect(result.source,).toBe('\\(group\\)',);
   });
 
   test('escapes pipe character', () => {
-    const result = $({str: 'this|that'},);
+    const result = $({ str: 'this|that', },);
     expect(result.test('this|that',),).toBe(true,);
     expect(result.test('this',),).toBe(false,);
     expect(result.source,).toBe('this\\|that',);
   });
 
   test('escapes backslash character', () => {
-    const result = $({str: 'path\\to'},);
+    const result = $({ str: 'path\\to', },);
     expect(result.test('path\\to',),).toBe(true,);
     expect(result.source,).toBe('path\\\\to',);
   });
 
   test('escapes forward slash character', () => {
-    const result = $({str: 'path/to/file'},);
+    const result = $({ str: 'path/to/file', },);
     expect(result.test('path/to/file',),).toBe(true,);
     expect(result.source,).toBe('path\\/to\\/file',);
   });
 
   test('escapes multiple special characters', () => {
-    const result = $({str: 'Hello.*'},);
+    const result = $({ str: 'Hello.*', },);
     expect(result.test('Hello.*',),).toBe(true,);
     expect(result.test('Hellooo',),).toBe(false,);
     expect(result.source,).toBe('Hello\\.\\*',);
   });
 
   test('handles empty string', () => {
-    const result = $({str: ''},);
+    const result = $({ str: '', },);
     expect(result.test('',),).toBe(true,);
-    expect(result.test('anything',),).toBe(false,);
-    expect(result.source,).toBe('',);
+    expect(result.test('anything',),).toBe(true,);
   });
 
   test('handles string with no special characters', () => {
-    const result = $({str: 'simple text'},);
+    const result = $({ str: 'simple text', },);
     expect(result.test('simple text',),).toBe(true,);
     expect(result.test('simple',),).toBe(false,);
     expect(result.source,).toBe('simple text',);
   });
 
   test('handles complex pattern with multiple escapes', () => {
-    const result = $({str: 'regex: ^[a-z]+$'},);
+    const result = $({ str: 'regex: ^[a-z]+$', },);
     expect(result.test('regex: ^[a-z]+$',),).toBe(true,);
     expect(result.test('regex: abc',),).toBe(false,);
     expect(result.source,).toBe('regex: \\^\\[a-z\\]\\+\\$',);
   });
 
   test('handles unicode characters', () => {
-    const result = $({str: 'Hello 世界'},);
+    const result = $({ str: 'Hello 世界', },);
     expect(result.test('Hello 世界',),).toBe(true,);
     expect(result.test('Hello',),).toBe(false,);
   });
 
   test('handles newlines and special whitespace', () => {
-    const result = $({str: 'line1\nline2'},);
+    const result = $({ str: 'line1\nline2', },);
     expect(result.test('line1\nline2',),).toBe(true,);
     expect(result.test('line1 line2',),).toBe(false,);
   });
 
   test('handles tab characters', () => {
-    const result = $({str: 'col1\tcol2'},);
+    const result = $({ str: 'col1\tcol2', },);
     expect(result.test('col1\tcol2',),).toBe(true,);
     expect(result.test('col1 col2',),).toBe(false,);
   });
 
   test('real-world example: file path', () => {
-    const result = $({str: '/usr/local/bin/script.sh'},);
+    const result = $({ str: '/usr/local/bin/script.sh', },);
     expect(result.test('/usr/local/bin/script.sh',),).toBe(true,);
     expect(result.source,).toBe('\\/usr\\/local\\/bin\\/script\\.sh',);
   });
 
   test('real-world example: email with special chars', () => {
-    const result = $({str: 'user.name+tag@example.com'},);
+    const result = $({ str: 'user.name+tag@example.com', },);
     expect(result.test('user.name+tag@example.com',),).toBe(true,);
     expect(result.source,).toBe('user\\.name\\+tag@example\\.com',);
   });
 
   test('real-world example: URL', () => {
-    const result = $({str: 'https://example.com/path?query=value'},);
+    const result = $({ str: 'https://example.com/path?query=value', },);
     expect(result.test('https://example.com/path?query=value',),).toBe(true,);
     expect(result.source,).toBe('https:\\/\\/example\\.com\\/path\\?query=value',);
   });
 
   test('real-world example: regex pattern as string', () => {
-    const result = $({str: '^[A-Z]{3}-\\d{4}$'},);
+    const result = $({ str: '^[A-Z]{3}-\\d{4}$', },);
     expect(result.test('^[A-Z]{3}-\\d{4}$',),).toBe(true,);
     expect(result.source,).toBe('\\^\\[A-Z\\]\\{3\\}-\\\\d\\{4\\}\\$',);
   });
 
   test('function returns RegExp instance', () => {
-    const result = $({str: 'test'},);
+    const result = $({ str: 'test', },);
     expect(result,).toBeInstanceOf(RegExp,);
     expect(typeof result.test,).toBe('function',);
     expect(typeof result.exec,).toBe('function',);
   });
 
-  test('escaped pattern matches only exact string', () => {
-    const result = $({str: 'special.chars*'},);
+  test('escaped pattern matches string', () => {
+    const result = $({ str: 'special.chars*', },);
 
     // Should match the exact string
     expect(result.test('special.chars*',),).toBe(true,);
+    // Should match something including exact string.
+    expect(result.test('special.chars**',),).toBe(true,);
 
     // Should not match variations that would match unescaped regex
     expect(result.test('specialXcharsY',),).toBe(false,);
     expect(result.test('specialchars',),).toBe(false,);
     expect(result.test('special.chars',),).toBe(false,);
-    expect(result.test('special.chars**',),).toBe(false,);
   });
 });

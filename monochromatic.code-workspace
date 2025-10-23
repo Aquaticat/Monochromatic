@@ -130,10 +130,8 @@
 			"dprint.dprint",
 			"gruntfuggly.todo-tree",
 			"vue.volar",
-
       "oxc.oxc-vscode",
       "stylelint.vscode-stylelint",
-      "oven.bun-vscode",
       "astro-build.astro-vscode",
 			"vitest.explorer",
 			"html-validate.vscode-html-validate",
