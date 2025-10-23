@@ -19,42 +19,7 @@
       "types": "./dist/final/types/src/index.d.ts",
       "node": "./dist/final/js/index.node.js",
       "default": "./dist/final/js/index.js"
-    },
-    "./logtape.ts": {
-      "node": "./src/logtape.node.ts",
-      "default": "./src/logtape.default.ts"
-    },
-    "./fs.ts": {
-      "node": "./src/fs.node.ts",
-      "default": "./src/fs.default.ts"
-    },
-    "./fs.fs.ts": {
-      "node": "./src/fs.fs.node.ts",
-      "default": "./src/fs.fs.default.ts"
-    },
-    "./fs.pathJoin.ts": {
-      "node": "./src/fs.pathJoin.node.ts",
-      "default": "./src/fs.pathJoin.default.ts"
-    },
-    "./fs.pathParse.ts": {
-      "node": "./src/fs.pathParse.node.ts",
-      "default": "./src/fs.pathParse.default.ts"
-    },
-    "./string.fs.ts": {
-      "node": "./src/string.fs.node.ts",
-      "default": "./src/string.fs.default.ts"
     }
-  },
-  "bin": {
-    "checkBuild": "./src/moon.checkBuild.ts",
-    "checkDependencies": "./src/moon.checkDependencies.ts",
-    "checkGitHooks": "./src/moon.checkGitHooks.ts",
-    "checkTools": "./src/moon.checkTools.ts",
-    "bunCompile": "./src/moon.bunCompile.ts",
-    "pnpmInstall": "./src/moon.pnpmInstall.ts",
-    "preparePlaywright": "./src/moon.preparePlaywright.ts",
-    "append": "./src/cli.append.ts",
-    "command": "./src/cli.command.ts"
   },
   "files": [
     "dist/final",
