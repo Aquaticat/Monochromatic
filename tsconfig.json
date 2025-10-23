@@ -27,9 +27,6 @@
       "path": "packages/module/es",
     },
     {
-      "path": "packages/site/ai-proxy",
-    },
-    {
       "path": "packages/site/ai-tree",
     },
     {
