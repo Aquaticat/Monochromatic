@@ -27,9 +27,11 @@ const f = Object.freeze;
  * parseLiteralToken({ value: 'null,1' }) // -> { consumed: 'null', parsed: { value: null }, remaining: ',1' }
  * ```
  */
-function parseLiteralToken(
+export function parseLiteralToken(
   { value, }: { value: FragmentStringJsonc | StringJsonc; },
-): { consumed: FragmentStringJsonc; parsed: Jsonc.Value; remaining: FragmentStringJsonc; }
+):
+  | { consumed: FragmentStringJsonc; parsed: Jsonc.Value;
+    remaining: FragmentStringJsonc; }
   | undefined
 {
   if (value.startsWith('null',)) {
@@ -58,7 +60,7 @@ function parseLiteralToken(
  * parseNumberToken({ value: '-12.3e+4, x' }) // -> { consumed: '-12.3e+4', parsed: { value: -123000 }, remaining: ', x' }
  * ```
  */
-function parseNumberToken(
+export function parseNumberToken(
   { value, }: { value: FragmentStringJsonc | StringJsonc; },
 ): { consumed: FragmentStringJsonc; parsed: Jsonc.Value;
   remaining: FragmentStringJsonc; }
@@ -86,7 +88,7 @@ function parseNumberToken(
  * parseValueFromStart({ value: '[1]', }) // -> parsed array, remaining ''
  * ```
  */
-function parseValueFromStart(
+export function parseValueFromStart(
   { value, context, }: { value: FragmentStringJsonc | StringJsonc;
     context?: Jsonc.ValueBase; },
 ): { parsed: Jsonc.Value; remaining: FragmentStringJsonc; } {
@@ -134,6 +136,77 @@ function parseValueFromStart(
 }
 //endregion Value dispatcher
 
+//region Array header -- Consume '[' then leading comments to capture array-level comment
+/**
+ * After '[', return array-level comment (if any) and the tail at the first element or ']'.
+ *
+ * @example
+ * ```ts
+ * parseArrayHeader('[ /* c *\/ 1,2]TAIL'.slice(1) as FragmentStringJsonc) // -> { arrayComment, tail: '1,2]TAIL' }
+ * ```
+ */
+export function parseArrayHeader(
+  valueAfterBracket: FragmentStringJsonc | StringJsonc,
+  context?: Jsonc.ValueBase,
+): { arrayComment?: Jsonc.Comment; tail: FragmentStringJsonc; } {
+  const lead = startsWithComment({ value: valueAfterBracket as FragmentStringJsonc,
+    context, },);
+  return { arrayComment: lead.comment, tail: lead.remainingContent, };
+}
+//endregion Array header
+
+//region Array separators -- Determine end of array or next element start
+/**
+ * Given the raw tail after an element, consume comments/whitespace once and decide next action.
+ * Returns 'end' with tail after ']' or 'next' with the starting point of the next element.
+ */
+export function expectArraySeparatorOrEnd(
+  value: FragmentStringJsonc,
+): { kind: 'end'; tail: FragmentStringJsonc; } | { kind: 'next';
+  tailStart: FragmentStringJsonc; }
+{
+  const after = startsWithComment({ value, },);
+  const rc = after.remainingContent.trimStart() as FragmentStringJsonc;
+
+  if (rc.startsWith(']',))
+    return { kind: 'end', tail: rc.slice(1,) as FragmentStringJsonc, };
+
+  if (rc.startsWith(',',)) {
+    const afterComma = rc.slice(1,) as FragmentStringJsonc;
+    const next = startsWithComment({ value: afterComma, },);
+    const nextToken = next.remainingContent.trimStart() as FragmentStringJsonc;
+    if (nextToken.startsWith(']',))
+      return { kind: 'end', tail: nextToken.slice(1,) as FragmentStringJsonc, };
+    return { kind: 'next', tailStart: nextToken, };
+  }
+
+  const preview = rc.slice(0, 32,);
+  throw new Error(`malformed jsonc array: expected ',' or ']' near: ${preview}`,);
+}
+//endregion Array separators
+
+//region Array elements -- Recursive, immutable element parsing for arrays
+/**
+ * Parse one or more array elements starting from a tail, returning the collected items and the tail after ']'.
+ */
+export function parseArrayElements(
+  tail: FragmentStringJsonc,
+  items: readonly Jsonc.Value[] = [],
+): { items: readonly Jsonc.Value[]; tail: FragmentStringJsonc; } {
+  const lead = startsWithComment({ value: tail, },);
+  const start = lead.remainingContent;
+
+  if (start.startsWith(']',))
+    return { items, tail: start.slice(1,) as FragmentStringJsonc, };
+
+  const { parsed, remaining, } = parseValueFromStart({ value: start, context: lead, },);
+  const decision = expectArraySeparatorOrEnd(remaining as FragmentStringJsonc,);
+  if (decision.kind === 'end')
+    return { items: [...items, parsed,], tail: decision.tail, };
+  return parseArrayElements(decision.tailStart, [...items, parsed,],);
+}
+//endregion Array elements
+
 /**
  * Parse a JSONC array fragment starting at '[' while preserving comments and returning the unconsumed tail.
  *
@@ -149,64 +222,24 @@ export function customParserForArray(
 ): Jsonc.Value & { remainingContent: FragmentStringJsonc; } {
   //region Entry and comment skip -- Drop the opening '[' then consume leading comments/space
   const woOpening = value.slice('['.length,) as FragmentStringJsonc;
-  const arrayLead = startsWithComment({ value: woOpening, context, },);
+  const { arrayComment, tail: headerTail, } = parseArrayHeader(woOpening, context,);
   //endregion Entry and comment skip
 
   //region Empty array fast-exit -- Handle immediate closing bracket
-  if (arrayLead.remainingContent.startsWith(']',)) {
+  if (headerTail.startsWith(']',)) {
     return {
       value: [],
-      comment: arrayLead.comment,
-      remainingContent: arrayLead.remainingContent.slice(
+      comment: arrayComment,
+      remainingContent: headerTail.slice(
         ']'.length,
       ) as FragmentStringJsonc,
     };
   }
   //endregion Empty array fast-exit
 
-  //region Element recursion -- Parse one element, then decide on separator and continue
-  const parseElements = (
-    tail: FragmentStringJsonc,
-    items: readonly Jsonc.Value[],
-  ): { items: readonly Jsonc.Value[]; tail: FragmentStringJsonc; } => {
-    const lead = startsWithComment({ value: tail, },);
-    const start = lead.remainingContent;
-
-    // If we encounter a closing bracket before an element, finalize
-    if (start.startsWith(']',))
-      return { items, tail: start.slice(']'.length,) as FragmentStringJsonc, };
-
-    const { parsed, remaining, } = parseValueFromStart({ value: start, context: lead, },);
-    const after = startsWithComment({ value: remaining as FragmentStringJsonc, },);
-    const rc = (after.remainingContent.trimStart() as FragmentStringJsonc);
-
-    // Case: end of array immediately after element
-    if (rc.startsWith(']',)) {
-      return { items: [...items, parsed,], tail: rc
-        .slice(']'.length,) as FragmentStringJsonc, };
-    }
-
-    // Case: comma-separated next element
-    if (rc.startsWith(',',)) {
-      const afterComma = rc.slice(','.length,) as FragmentStringJsonc;
-      const nextStart = startsWithComment({ value: afterComma, },);
-      const nextToken = (nextStart.remainingContent.trimStart() as FragmentStringJsonc);
-
-      // Trailing comma allowed: comma + comments/whitespace + ']'
-      if (nextToken.startsWith(']',)) {
-        return { items: [...items, parsed,], tail: nextToken.slice(']'.length,) as FragmentStringJsonc, };
-      }
-
-      return parseElements(nextToken, [...items, parsed,],);
-    }
-
-    // Error: expected separator or closing bracket
-    const preview = rc.slice(0, 32,);
-    throw new Error(`malformed jsonc array: expected ',' or ']' near: ${preview}`,);
-  };
-
-  const { items, tail, } = parseElements(arrayLead.remainingContent, [],);
-  return { value: items as Jsonc.Value[], comment: arrayLead.comment,
+  //region Element recursion -- Delegate to exported pure helper
+  const { items, tail, } = parseArrayElements(headerTail, [],);
+  return { value: items as Jsonc.Value[], comment: arrayComment,
     remainingContent: tail, };
   //endregion Element recursion
 }
