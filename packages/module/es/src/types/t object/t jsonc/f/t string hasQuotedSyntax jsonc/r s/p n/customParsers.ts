@@ -104,10 +104,12 @@ export function parseValueFromStart(
 
   const literal = parseLiteralToken({ value, },);
   if (literal !== NO_LITERAL) {
+    const myLiteral = literal as { consumed: FragmentStringJsonc; parsed: Jsonc.Value;
+      remaining: FragmentStringJsonc; };
     const parsed: Jsonc.Value = context?.comment
-      ? { ...literal.parsed, comment: context.comment, }
-      : literal.parsed;
-    return { parsed, remaining: literal.remaining, };
+      ? { ...myLiteral.parsed, comment: context.comment, }
+      : myLiteral.parsed;
+    return { parsed, remaining: myLiteral.remaining, };
   }
 
   if (value.startsWith('[',)) {
