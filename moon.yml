@@ -183,7 +183,7 @@ tasks:
 
   lintEslint:
     extends: '_lintFormatBase'
-    command: "pnpx eslint"
+    command: "pnpm exec eslint"
 
   lintOxlint:
     extends: '_lintFormatBase'

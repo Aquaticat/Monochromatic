@@ -197,12 +197,9 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
 }
 
 //region Re-exports -- Surface helpers for testing
-export { mergeComments, } from './mergeComments.ts';
+export * from './mergeComments.ts';
 
-export { startsWithComment, } from './startsWithComment.ts';
+export * from './startsWithComment.ts';
 
-export {
-  customParserForArray,
-  customParserForRecord,
-} from './customParsers.ts';
+export * from './customParsers.ts';
 //endregion Re-exports
