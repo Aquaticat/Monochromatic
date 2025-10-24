@@ -28,14 +28,13 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
     // Find the end of the line comment (newline character)
     const newlinePosition = trimmed.indexOf('\n', '//'.length,);
     if (newlinePosition === -1) {
-      // No newline found, the entire string is a line comment
-      // Template works because we're not really using it as a template string, just to communicate the error.
-      throw new Error(`line comment is not jsonc, {
-        comment: {
-          type: 'inline',
-          commentValue: ${trimmed.slice('//'.length,)},
-        },
-      }`,);
+      // No newline found - line comment extends to end of input (valid at end of file)
+      const commentPart: Jsonc.Comment = { type: 'inline', commentValue: trimmed
+        .slice('//'.length,), };
+      const mergedComments = mergeComments({ value: context?.comment,
+        value2: commentPart, },);
+      // Return empty remaining content since comment consumed everything
+      return { comment: mergedComments, remainingContent: '' as Value, };
     }
 
     // JSON or JSONC doesn't allow newlines in quoted strings. Special handling skipped.
@@ -134,5 +133,5 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- value is Value is auto narrowed.
-  return { ...context, remainingContent: value, } as any;
+  return { ...context, remainingContent: trimmed, } as any;
 }
