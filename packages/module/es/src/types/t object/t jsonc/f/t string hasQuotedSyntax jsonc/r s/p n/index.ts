@@ -114,7 +114,6 @@ const f = Object.freeze;
  * - Detailed error messages with position information
  * - Memory-efficient parsing with comment extraction
  */
-//region Public API: $ -- Orchestrates fast-path vs. custom parsing and returns a Jsonc.Value
 export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
   //region Pre-scan for comments -- Strip/record leading comments to decide how to dispatch
   const outStartsComment = startsWithComment({ value, },);
@@ -192,12 +191,18 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
     //endregion Error handling
   })({ outStartsComment, },);
 
+  //endregion Top-level dispatch and heuristics
+
   return result;
 }
-//endregion Public API: $
 
-//region Re-exports -- Surface helpers for callers composing higher-level parsers
+//region Re-exports -- Surface helpers for testing
 export { mergeComments, } from './mergeComments.ts';
 
 export { startsWithComment, } from './startsWithComment.ts';
+
+export {
+  customParserForArray,
+  customParserForRecord,
+} from './customParsers.ts';
 //endregion Re-exports
