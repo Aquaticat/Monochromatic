@@ -115,7 +115,6 @@ jobs:
         The PR number is ${{ github.event.pull_request.number }} and repository is ${{ github.repository }}.
 
         Guidelines:
-        - Submit at most 10 comments total, prioritizing the most critical issues
         - Each comment should be actionable and clear about what needs to be fixed
         - Check for existing "no issues" comments from bots before posting duplicate messages
         - Include a summary in the review body when submitting multiple inline comments
