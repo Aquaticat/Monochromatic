@@ -17,8 +17,8 @@ jobs:
   code-review:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Skip automated code review for draft PRs
-    if: github.event.pull_request.draft == false
+    # USER: Do not skip automated code review for draft PRs
+    # if: github.event.pull_request.draft == false
 
     steps:
     - name: Checkout repository
@@ -123,7 +123,7 @@ jobs:
 
         # Run droid exec with the prompt - it will handle PR review submission directly
         echo "Running code review analysis and submitting results..."
-        droid exec --auto high --model claude-sonnet-4-5-20250929 -f prompt.txt
+        droid exec --auto high --model gpt-5 -f prompt.txt
 
     - name: Upload debug artifacts on failure
       if: ${{ failure() }}
