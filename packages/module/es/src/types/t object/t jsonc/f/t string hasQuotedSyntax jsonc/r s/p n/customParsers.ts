@@ -126,9 +126,8 @@ export function parseValueFromStart(
   }
 
   const literal = parseLiteralToken({ value, },);
-  if (literal !== NO_LITERAL) {
-    const { parsed: litParsed, remaining, } = literal as { consumed: FragmentStringJsonc;
-      parsed: Jsonc.Boolean | Jsonc.Null; remaining: FragmentStringJsonc; };
+  if (typeof literal !== 'symbol') {
+    const { parsed: litParsed, remaining, } = literal;
     const parsed: Jsonc.Value = context?.comment
       ? { ...litParsed, comment: context.comment, }
       : litParsed;

@@ -4,6 +4,7 @@ import {
   test,
 } from 'vitest';
 
+import type * as Jsonc from '@_/types/t object/t jsonc/t/index.ts';
 import type {
   FragmentStringJsonc,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
@@ -15,20 +16,32 @@ describe('minion helpers', () => {
   describe('parseLiteralToken', () => {
     const $ = exported.parseLiteralToken;
     test('null/true/false', ({ expect, },) => {
-      expect($({ value: 'null,' as FragmentStringJsonc, },)?.parsed,).toEqual({
-        value: null,
-      },);
-      expect($({ value: 'true ]' as FragmentStringJsonc, },)?.parsed,).toEqual({
-        value: true,
-      },);
-      expect($({ value: 'false]' as FragmentStringJsonc, },)?.parsed,).toEqual({
-        value: false,
-      },);
+      {
+        const out = $({ value: 'null,' as FragmentStringJsonc, },);
+        // TODO: Add the fact that "ts can't narrow down union by a unique symbol, only by typeof symbol" to AI instruction files.
+        if (typeof out === 'symbol')
+          throw new Error('expected literal',);
+        expect(out.parsed,).toEqual({ value: null, },);
+      }
+      {
+        const out = $({ value: 'true ]' as FragmentStringJsonc, },);
+        if (out === exported.NO_LITERAL)
+          throw new Error('expected literal',);
+        expect(out.parsed,).toEqual({ value: true, },);
+      }
+      {
+        const out = $({ value: 'false]' as FragmentStringJsonc, },);
+        if (typeof out === 'symbol')
+          throw new Error('expected literal',);
+        expect(out.parsed,).toEqual({ value: false, },);
+      }
     });
     test('prefix match stays here; boundary enforced later', ({ expect, },) => {
       const out = $({ value: 'nully' as FragmentStringJsonc, },);
-      expect(out?.consumed,).toBe('null',);
-      expect(out?.remaining,).toBe('y',);
+      if (typeof out === 'symbol')
+        throw new Error('expected literal',);
+      expect(out.consumed,).toBe('null',);
+      expect(out.remaining,).toBe('y',);
     });
     test('returns sentinel when no literal at start', ({ expect, },) => {
       const out = $({ value: '[1]' as FragmentStringJsonc, },);
@@ -58,14 +71,16 @@ describe('minion helpers', () => {
   describe('parseValueFromStart', () => {
     const $ = exported.parseValueFromStart;
     test('string and number', ({ expect, },) => {
-      expect($({ value: '"x"TAIL' as FragmentStringJsonc, },).parsed.value,).toBe('"x"',);
+      const s = $({ value: '"x"TAIL' as FragmentStringJsonc, },);
+      expect((s.parsed as Jsonc.String).value,).toBe('"x"',);
       expect($({ value: '1, 2' as FragmentStringJsonc, },).parsed,).toEqual({
         value: 1,
       },);
     });
     test('array dispatch', ({ expect, },) => {
       const out = $({ value: '[1]TAIL' as FragmentStringJsonc, },);
-      expect((out.parsed as any).value[0],).toEqual({ value: 1, },);
+      const arr = out.parsed as Jsonc.Array;
+      expect(arr.value[0],).toEqual({ value: 1, },);
       expect(out.remaining,).toBe('TAIL',);
     });
   });
@@ -75,18 +90,22 @@ describe('minion helpers', () => {
   describe('expectArraySeparatorOrEnd', () => {
     const $ = exported.expectArraySeparatorOrEnd;
     test('end directly', ({ expect, },) => {
-      const out = $(']TAIL' as FragmentStringJsonc,);
-      expect(out.kind,).toBe('end',);
+      const r = ']TAIL' as FragmentStringJsonc;
+      const out = $(r,);
+      if (out.kind !== 'end')
+        throw new Error('expected end',);
       expect(out.tail,).toBe('TAIL',);
     });
     test('trailing comma then end', ({ expect, },) => {
       const out = $(', /* c */ ]TAIL' as FragmentStringJsonc,);
-      expect(out.kind,).toBe('end',);
+      if (out.kind !== 'end')
+        throw new Error('expected end',);
       expect(out.tail,).toBe('TAIL',);
     });
     test('next element start', ({ expect, },) => {
       const out = $(', /* c */ 2, x' as FragmentStringJsonc,);
-      expect(out.kind,).toBe('next',);
+      if (out.kind !== 'next')
+        throw new Error('expected next',);
       expect(out.tailStart.startsWith('2',),).toBe(true,);
     });
   });
