@@ -21,6 +21,41 @@ import { startsWithComment, } from './startsWithComment.ts';
 const f = Object.freeze;
 //endregion Imports and helpers
 
+//region Local helpers -- Escape-aware quoted-string scanner without regex; returns consumed slice and remaining tail
+function scanQuotedString(
+  { value, }: { value: FragmentStringJsonc | StringJsonc },
+): { consumed: FragmentStringJsonc; parsed: Jsonc.Value; remaining: FragmentStringJsonc } {
+  if (!value.startsWith('"',))
+    throw new Error('expected a double quote to start a JSON string',);
+
+  let index = 1; // start after the opening quote
+  const length = value.length;
+
+  while (index < length) {
+    const ch = value.charCodeAt(index,);
+    // '"'
+    if (ch === 34) {
+      // Count consecutive backslashes immediately before this quote
+      let backslashCount = 0;
+      let k = index - 1;
+      while (k >= 0 && value.charCodeAt(k,) === 92) { // '\\'
+        backslashCount++;
+        k--;
+      }
+      const isUnescaped = (backslashCount & 1) === 0;
+      if (isUnescaped) {
+        const consumed = value.slice(0, index + 1,) as FragmentStringJsonc;
+        const remaining = value.slice(index + 1,) as FragmentStringJsonc;
+        return { consumed, parsed: { value: consumed, }, remaining, };
+      }
+    }
+    index++;
+  }
+
+  throw new Error('malformed jsonc, unterminated string',);
+}
+//endregion Local helpers
+
 /**
  * Parse a JSONC array fragment starting at '[' while preserving comments and returning the unconsumed tail.
  *
@@ -75,20 +110,8 @@ export function customParserForArray(
     { value, },
   ): { consumed: string; parsed: Jsonc.Value; remaining: string; } {
     if (value.startsWith('"',)) {
-      const valueAfterQuote = value.slice('"'.length,);
-      /*
-        NOTE: Using String.match with global flag returns an array of strings without index information.
-        We can't use matchAll here for performance concerns.
-      */
-      const nextQuote = valueAfterQuote.match(/(?<!\\)(?:\\\\)*"/g,);
-      if (!nextQuote)
-        throw new Error('malformed jsonc',);
-
-      const parsedValue = value.slice(0, nextQuote.index! + 1,);
-      // No need to check if nextQuote isn't commented out.
-      // We're already in quotes, so all comment markers are unavailable.
-      return { consumed: parsedValue, parsed: { value: parsedValue, }, remaining: value
-        .slice(nextQuote.index! + 1,), };
+      const out = scanQuotedString({ value: value as FragmentStringJsonc, },);
+      return { consumed: out.consumed, parsed: out.parsed, remaining: out.remaining, };
     }
     else if (value.startsWith('null',)) {
       const valueExceptStartingNull = value.slice('null'.length,);
