@@ -30,6 +30,10 @@ describe('minion helpers', () => {
       expect(out?.consumed,).toBe('null',);
       expect(out?.remaining,).toBe('y',);
     });
+    test('returns sentinel when no literal at start', ({ expect, },) => {
+      const out = $({ value: '[1]' as FragmentStringJsonc, },);
+      expect(out,).toBe(exported.NO_LITERAL,);
+    });
   });
   //endregion parseLiteralToken
 

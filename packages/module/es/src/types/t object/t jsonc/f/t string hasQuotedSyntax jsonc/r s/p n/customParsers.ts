@@ -18,6 +18,8 @@ const f = Object.freeze;
 //endregion Imports and helpers
 
 //region Value tokenizers -- Pure helpers for literals and numbers with explicit contracts
+/** Sentinel returned when no JSON literal is present at the start. */
+export const NO_LITERAL: symbol = Symbol('jsonc:parseLiteralToken:no-match',);
 /**
  * Parse JSON literals starting at the current position.
  * Supports: null, true, false.
@@ -32,7 +34,7 @@ export function parseLiteralToken(
 ):
   | { consumed: FragmentStringJsonc; parsed: Jsonc.Value;
     remaining: FragmentStringJsonc; }
-  | undefined
+  | typeof NO_LITERAL
 {
   if (value.startsWith('null',)) {
     return { consumed: 'null' as FragmentStringJsonc, parsed: { value: null, },
@@ -46,7 +48,7 @@ export function parseLiteralToken(
     return { consumed: 'false' as FragmentStringJsonc, parsed: { value: false, },
       remaining: value.slice(5,) as FragmentStringJsonc, };
   }
-  return undefined;
+  return NO_LITERAL;
 }
 
 /**
@@ -101,7 +103,7 @@ export function parseValueFromStart(
   }
 
   const literal = parseLiteralToken({ value, },);
-  if (literal) {
+  if (literal !== NO_LITERAL) {
     const parsed: Jsonc.Value = context?.comment
       ? { ...literal.parsed, comment: context.comment, }
       : literal.parsed;
@@ -109,14 +111,18 @@ export function parseValueFromStart(
   }
 
   if (value.startsWith('[',)) {
-    const out = customParserForArray({ value, context, },);
+    const out = context
+      ? customParserForArray({ value, context, },)
+      : customParserForArray({ value, },);
     const { remainingContent, ...parsed } =
       out as unknown as (Jsonc.Value & { remainingContent: FragmentStringJsonc; });
     return { parsed: parsed as Jsonc.Value, remaining: remainingContent, };
   }
 
   if (value.startsWith('{',)) {
-    const out = customParserForRecord({ value, context, },);
+    const out = context
+      ? customParserForRecord({ value, context, },)
+      : customParserForRecord({ value, },);
     const { remainingContent, ...parsed } =
       out as unknown as (Jsonc.Value & { remainingContent: FragmentStringJsonc; });
     return { parsed: parsed as Jsonc.Value, remaining: remainingContent, };
@@ -149,9 +155,13 @@ export function parseArrayHeader(
   valueAfterBracket: FragmentStringJsonc | StringJsonc,
   context?: Jsonc.ValueBase,
 ): { arrayComment?: Jsonc.Comment; tail: FragmentStringJsonc; } {
-  const lead = startsWithComment({ value: valueAfterBracket as FragmentStringJsonc,
-    context, },);
-  return { arrayComment: lead.comment, tail: lead.remainingContent, };
+  const lead = context
+    ? startsWithComment({ value: valueAfterBracket as FragmentStringJsonc, context, },)
+    : startsWithComment({ value: valueAfterBracket as FragmentStringJsonc, },);
+  return {
+    ...(lead.comment ? { arrayComment: lead.comment, } : {}),
+    tail: lead.remainingContent,
+  };
 }
 //endregion Array header
 
@@ -200,7 +210,7 @@ export function parseArrayElements(
     return { items, tail: start.slice(1,) as FragmentStringJsonc, };
 
   const { parsed, remaining, } = parseValueFromStart({ value: start, context: lead, },);
-  const decision = expectArraySeparatorOrEnd(remaining as FragmentStringJsonc,);
+  const decision = expectArraySeparatorOrEnd(remaining,);
   if (decision.kind === 'end')
     return { items: [...items, parsed,], tail: decision.tail, };
   return parseArrayElements(decision.tailStart, [...items, parsed,],);
@@ -228,8 +238,8 @@ export function customParserForArray(
   //region Empty array fast-exit -- Handle immediate closing bracket
   if (headerTail.startsWith(']',)) {
     return {
-      value: [],
-      comment: arrayComment,
+      value: [] as Jsonc.Value[],
+      ...(arrayComment ? { comment: arrayComment, } : {}),
       remainingContent: headerTail.slice(
         ']'.length,
       ) as FragmentStringJsonc,
@@ -239,8 +249,11 @@ export function customParserForArray(
 
   //region Element recursion -- Delegate to exported pure helper
   const { items, tail, } = parseArrayElements(headerTail, [],);
-  return { value: items as Jsonc.Value[], comment: arrayComment,
-    remainingContent: tail, };
+  return {
+    value: items as Jsonc.Value[],
+    ...(arrayComment ? { comment: arrayComment, } : {}),
+    remainingContent: tail,
+  };
   //endregion Element recursion
 }
 
@@ -274,4 +287,7 @@ export function customParserForRecord(
       ...(customParserForRecord({ value: remainingContent, },)), };
   }
   //endregion Nested structure detection
+
+  // Not implemented yet – keep type soundness
+  throw new Error('customParserForRecord not implemented yet',);
 }
