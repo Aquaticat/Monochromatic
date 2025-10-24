@@ -12,8 +12,8 @@ import type {
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
 import type { UnknownRecord, } from 'type-fest';
 import * as Jsonc from '../../../../t/index.ts';
-import { startsWithComment, } from './startsWithComment.ts';
 import { customParserForArray, } from './customParsers.ts';
+import { startsWithComment, } from './startsWithComment.ts';
 
 const f = Object.freeze;
 //endregion Imports and aliases
@@ -26,6 +26,8 @@ const f = Object.freeze;
  * This advanced parser handles JSONC (JSON with Comments) format, preserving comments alongside data
  * while providing performance optimizations through hierarchical fast-path parsing. Uses native JSON.parse
  * for clean sections and custom parsing only where JSONC-specific features are present.
+ *
+ * commentEnd (starSlash) markers are escaped to *\/ in comments because they would be prematurely ending the comment block otherwise.
  *
  * @param input - JSONC string to parse with comment support
  * @returns Parsed JSONC structure with preserved comments and type information
@@ -143,7 +145,7 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
             console.log(error,);
             // Something is inside.
             // Probably comments and trailing commas.
-            // Defer to custom parser.
+            // TODO: Defer to custom parser.
           }
         }
       }
@@ -151,9 +153,14 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
       // Defer to custom parser for full JSONC array parsing with comments/trailing commas
       const out = customParserForArray({ value, context: outStartsComment, },);
       // Validate no unexpected trailing content at top-level
-      const tail = startsWithComment({ value: out.remainingContent, },).remainingContent.trim();
-      if (tail.length > 0)
-        throw new Error(`unexpected trailing content after array: ${tail.slice(0, 48,)}`);
+      const tail = startsWithComment({ value: out.remainingContent, },)
+        .remainingContent
+        .trim();
+      if (tail.length > 0) {
+        throw new Error(
+          `unexpected trailing content after array: ${tail.slice(0, 48,)}`,
+        );
+      }
       const { remainingContent: _rc, ...parsed } = out;
       return parsed as Jsonc.Value;
     }
@@ -177,7 +184,7 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
             console.log(error,);
             // Something is inside.
             // Probably comments and trailing commas.
-            // Defer to custom parser.
+            // TODO: Defer to custom parser.
           }
         }
       }
