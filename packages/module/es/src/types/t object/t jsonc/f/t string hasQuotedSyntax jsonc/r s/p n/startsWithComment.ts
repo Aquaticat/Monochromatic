@@ -6,6 +6,9 @@ import type {
 import * as Jsonc from '../../../../t/index.ts';
 import { mergeComments, } from './mergeComments.ts';
 
+/**
+ * Finds all comments before something and returns both allComments and something.
+ */
 export function startsWithComment<const Value extends StringJsonc | FragmentStringJsonc,>(
   { value, context, }: { value: Value; context?: Jsonc.ValueBase; },
 ): StringJsonc extends Value ? {

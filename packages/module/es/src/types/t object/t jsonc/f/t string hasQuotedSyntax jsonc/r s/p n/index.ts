@@ -1,3 +1,11 @@
+/*
+  Hybrid JSONC parsing entrypoint.
+  Fast-path tries to treat clean (comment-free) top-level arrays/objects as plain JSON for speed, while
+  the fallback delegates to custom parsers that preserve comments and tolerate trailing commas.
+  Region markers outline the phases: imports, pre-scan, dispatch/heuristics, and re-exports.
+*/
+
+//region Imports and aliases -- External types/helpers and local aliases used by the parser
 import type {
   $ as StringJsonc,
   FragmentStringJsonc,
@@ -7,6 +15,7 @@ import * as Jsonc from '../../../../t/index.ts';
 import { startsWithComment, } from './startsWithComment.ts';
 
 const f = Object.freeze;
+//endregion Imports and aliases
 
 // TODO: Add whatever's already parsed in error messages.
 
@@ -106,10 +115,15 @@ const f = Object.freeze;
  * - Memory-efficient parsing with comment extraction
  */
 export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
+  //region Pre-scan for comments -- Strip/record leading comments to decide how to dispatch
   const outStartsComment = startsWithComment({ value, },);
+  //endregion Pre-scan for comments
+
+  //region Top-level dispatch and heuristics -- Select array/object path; attempt simple trailing-comma fix, else fallback
   const result = (function getResult({ outStartsComment, },): Jsonc.Value {
     const { remainingContent: value, } = outStartsComment;
     if (value.startsWith('[',)) {
+      //region Array branch fast-path heuristic -- If the only invalidity is a single trailing comma at the very end, try to repair and JSON.parse
       // Can't use this to eliminate all trailing commas, because some might be inside comments, some might be inside quotes.
       const trailingCommaMatches = f(Array.from(value.matchAll(/,\s+]/g,),),);
       const lastTrailingCommaMatch = trailingCommaMatches.at(-1,);
@@ -132,6 +146,7 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
           }
         }
       }
+      //endregion Array branch fast-path heuristic
       // Something is at the end.
       // Probably comments.
       // Defer to custom parser.
@@ -139,6 +154,7 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
       return undefined;
     }
     else if (value.startsWith('{',)) {
+      //region Object branch fast-path heuristic -- Same boundary-only trailing-comma attempt; otherwise defer
       // Can't use this to eliminate all trailing commas, because some might be inside comments, some might be inside quotes.
       const trailingCommaMatches = f(Array.from(value.matchAll(/,\s+}/g,),),);
       const lastTrailingCommaMatch = trailingCommaMatches.at(-1,);
@@ -161,20 +177,32 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
           }
         }
       }
+      //endregion Object branch fast-path heuristic
       // Something is at the end.
       // Probably comments.
       // Defer to custom parser.
       // TODO: Avoid returning undefined.
       return undefined;
     }
+    //region Error handling -- Only arrays or objects are valid after trimming leading comments
     throw new Error(
       'invalid jsonc, after removing comments and trimming, nothing except [ or { shall be at the start',
     );
+    //endregion Error handling
   })({ outStartsComment, },);
+
+  //endregion Top-level dispatch and heuristics
 
   return result;
 }
 
+//region Re-exports -- Surface helpers for testing
 export { mergeComments, } from './mergeComments.ts';
 
 export { startsWithComment, } from './startsWithComment.ts';
+
+export {
+  customParserForArray,
+  customParserForRecord,
+} from './customParsers.ts';
+//endregion Re-exports

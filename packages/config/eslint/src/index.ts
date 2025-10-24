@@ -275,21 +275,14 @@ const oxlintOffOptions: Linter.Config = {
 
 const myConfigArray: (Linter.Config)[] = [
   myGlobalIgnores,
-  // Not sure why as is required here
   eslint.configs.recommended,
-  // Not sure why as is required here
-  tseslint.configs.strictTypeChecked as Linter.Config,
+  ...(tseslint.configs.strictTypeChecked),
   nodePlugin.configs['flat/recommended'],
   eslintPluginUnicorn.configs.all,
   globalOptions,
   testOptions,
-  //region oxlint -- Turn off rules already supported by oxlint.
   oxlintOffOptions,
-  //endregion oxlint -- Turn off rules already supported by oxlint.
-
-  //region Astro files -- Use astro-internal plugin recommended config
   astroPlugin.configs.recommended,
-  //endregion Astro files
 ];
 
 // Declared @eslint/config-helpers to depend on eslint in pnpm-workspace to fix this.
