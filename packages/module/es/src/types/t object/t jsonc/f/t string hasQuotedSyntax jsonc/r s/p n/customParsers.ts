@@ -23,8 +23,10 @@ const f = Object.freeze;
 
 //region Local helpers -- Escape-aware quoted-string scanner; no magic numbers or global regex scans
 function scanQuotedString(
-  { value, }: { value: FragmentStringJsonc | StringJsonc },
-): { consumed: FragmentStringJsonc; parsed: Jsonc.Value; remaining: FragmentStringJsonc } {
+  { value, }: { value: FragmentStringJsonc | StringJsonc; },
+): { consumed: FragmentStringJsonc; parsed: Jsonc.Value;
+  remaining: FragmentStringJsonc; }
+{
   if (!value.startsWith('"',))
     throw new Error('expected a double quote to start a JSON string',);
 
@@ -34,7 +36,7 @@ function scanQuotedString(
       throw new Error('malformed jsonc, unterminated string',);
 
     const beforeQuote = input.slice(0, quoteIndex,);
-    const backslashesMatch = beforeQuote.match(/\\+$/);
+    const backslashesMatch = beforeQuote.match(/\\+$/,);
     const backslashRunLength = backslashesMatch?.[0].length ?? 0;
     const isUnescaped = (backslashRunLength % 2) === 0;
     return isUnescaped ? quoteIndex : findTerminatingQuote(input, quoteIndex + 1,);
@@ -101,7 +103,7 @@ export function customParserForArray(
     { value, },
   ): { consumed: string; parsed: Jsonc.Value; remaining: string; } {
     if (value.startsWith('"',)) {
-      const out = scanQuotedString({ value: value as FragmentStringJsonc, },);
+      const out = scanQuotedString({ value, },);
       return { consumed: out.consumed, parsed: out.parsed, remaining: out.remaining, };
     }
     else if (value.startsWith('null',)) {
