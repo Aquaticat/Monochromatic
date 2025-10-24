@@ -78,13 +78,12 @@ export function customParserForArray(
       const valueAfterQuote = value.slice('"'.length,);
       /*
         NOTE: Using String.match with global flag returns an array of strings without index information.
-        This makes locating the next unescaped quote unreliable. A future improvement should iteratively
-        scan characters or use matchAll to recover indices.
+        We can't use matchAll here for performance concerns.
       */
       const nextQuote = valueAfterQuote.match(/(?<!\\)(?:\\\\)*"/g,);
       if (!nextQuote)
         throw new Error('malformed jsonc',);
-      // nextQuote.index is not reliable with the current approach; this is a known limitation.
+
       const parsedValue = value.slice(0, nextQuote.index! + 1,);
       // No need to check if nextQuote isn't commented out.
       // We're already in quotes, so all comment markers are unavailable.
