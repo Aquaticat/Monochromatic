@@ -32,8 +32,11 @@ describe('minion functions', () => {
       const context = { remainingContent: '[1, 2, 3]' as StringJsonc, };
       const result = $({ value: '[1, 2, 3]', context, },);
       
-      // No trailing comma means NO_FAST_PATH
-      expect(result,).toBe(NO_FAST_PATH,);
+      if (typeof result === 'symbol') {
+        throw new Error('expected parsed result, got symbol',);
+      }
+      
+      expect(result.json,).toEqual([1, 2, 3],);
     });
 
     test('array with internal comments returns NO_FAST_PATH', ({ expect, },) => {
@@ -134,11 +137,15 @@ describe('minion functions', () => {
       expect(result.json,).toEqual({ a: 1, b: 2, },);
     });
 
-    test('clean object without trailing comma returns NO_FAST_PATH', ({ expect, },) => {
+    test('clean object without trailing comma succeeds', ({ expect, },) => {
       const context = { remainingContent: '{"a": 1, "b": 2}' as StringJsonc, };
       const result = $({ value: '{"a": 1, "b": 2}', context, },);
       
-      expect(result,).toBe(NO_FAST_PATH,);
+      if (typeof result === 'symbol') {
+        throw new Error('expected parsed result, got symbol',);
+      }
+      
+      expect(result.json,).toEqual({ a: 1, b: 2, },);
     });
 
     test('object with internal comments returns NO_FAST_PATH', ({ expect, },) => {
