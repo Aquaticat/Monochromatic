@@ -90,6 +90,17 @@ function badExample() {
 }
 ```
 
+### Escaping block comment terminators
+- Escape block comment terminators inside comments and code snippets to avoid premature comment termination.
+- Write `*/` as `*\\/` in TSDoc blocks and in any block comments in examples.
+
+```ts
+/**
+ * This comment includes an escaped terminator token: *\\/
+ */
+const example = "/* within string */"; // strings do not need escaping
+```
+
 ### TSDoc Style Guidelines
 - Avoid `the`, `a`, `an` in `@param` or `@returns` description
   - Good: `@returns Set containing all unique elements from the input iterable.`, `@param iterable - to convert.`

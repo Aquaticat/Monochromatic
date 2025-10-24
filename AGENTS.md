@@ -853,6 +853,17 @@ Key rule: TSDoc must directly precede a declaration (variable, function, class, 
 - NEVER use inline comments after code
 - Always place comments on their own line above the code they describe
 
+### Escaping block comment terminators
+- Escape block comment terminators inside comments and code snippets to avoid premature comment termination.
+- Write `*/` as `*\\/` in TSDoc blocks and in any block comments in examples.
+
+```ts
+/**
+ * This comment includes an escaped terminator token: *\\/
+ */
+const example = "/* within string */";
+```
+
 ### TSDoc Style Guidelines
 - Avoid `the`, `a`, `an` in `@param` or `@returns` description
 - Avoid repeating the name of the parameter without adding additional context in `@param` description

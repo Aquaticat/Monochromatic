@@ -18,7 +18,6 @@ describe('minion helpers', () => {
     test('null/true/false', ({ expect, },) => {
       {
         const out = $({ value: 'null,' as FragmentStringJsonc, },);
-        // TODO: Add the fact that "ts can't narrow down union by a unique symbol, only by typeof symbol" to AI instruction files.
         if (typeof out === 'symbol')
           throw new Error('expected literal',);
         expect(out.parsed,).toEqual({ value: null, },);
