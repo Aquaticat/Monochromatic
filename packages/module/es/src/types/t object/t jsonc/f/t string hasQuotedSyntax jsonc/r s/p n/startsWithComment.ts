@@ -11,14 +11,7 @@ import { mergeComments, } from './mergeComments.ts';
  */
 export function startsWithComment<const Value extends StringJsonc | FragmentStringJsonc,>(
   { value, context, }: { value: Value; context?: Jsonc.ValueBase; },
-): StringJsonc extends Value ? {
-    remainingContent: StringJsonc;
-  } & Jsonc.ValueBase
-  : FragmentStringJsonc extends Value ? {
-      remainingContent: FragmentStringJsonc;
-    } & Jsonc.ValueBase
-  : never
-{
+): { remainingContent: Value; } & Jsonc.ValueBase {
   // Eliminate leading and trailing whitespace, including space and newline characters.
   const trimmed = value.trim();
 
@@ -34,7 +27,7 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
       const mergedComments = mergeComments({ value: context?.comment,
         value2: commentPart, },);
       // Return empty remaining content since comment consumed everything
-      return { comment: mergedComments, remainingContent: '' as Value, };
+      return { remainingContent: '' as Value, comment: mergedComments, };
     }
 
     // JSON or JSONC doesn't allow newlines in quoted strings. Special handling skipped.
@@ -132,6 +125,5 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
     }, },);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- value is Value is auto narrowed.
-  return { ...context, remainingContent: trimmed, } as any;
+  return { remainingContent: trimmed as Value, ...context, };
 }
