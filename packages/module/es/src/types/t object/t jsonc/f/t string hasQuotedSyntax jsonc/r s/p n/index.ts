@@ -202,4 +202,8 @@ export * from './mergeComments.ts';
 export * from './startsWithComment.ts';
 
 export * from './customParsers.ts';
+
+export * from './lengthSelection.ts';
+
+export * from './scanQuotedString.ts';
 //endregion Re-exports

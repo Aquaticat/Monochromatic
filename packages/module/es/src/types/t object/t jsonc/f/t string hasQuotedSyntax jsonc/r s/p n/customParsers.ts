@@ -6,13 +6,15 @@
 */
 
 //region Imports and helpers -- Core types, utilities, and comment skipper used by the parsers
+import {
+  $ as arrayExclusiveRange,
+} from '@_/types/t object/t array/t p number finite int/f/t number/exclusiveRange/r s/p n/index.ts';
 import * as Jsonc from '../../../../t/index.ts';
 import {
-  getArrayInts,
   getLengthsToTestFirst,
   numberLengthsToTestFirst,
-  scanQuotedString,
-} from './utilities.ts';
+} from './lengthSelection.ts';
+import { scanQuotedString, } from './scanQuotedString.ts';
 
 import type {
   $ as StringJsonc,
@@ -126,7 +128,7 @@ export function customParserForArray(
       }
       if (lastTested.longestKnownSuccess) {
         if (lastTested.shortestKnownFail) {
-          const lengthsToTest = getArrayInts({
+          const lengthsToTest = arrayExclusiveRange({
             startExclusive: lastTested.longestKnownSuccess.length,
             endExclusive: lastTested.shortestKnownFail.length,
           },);
