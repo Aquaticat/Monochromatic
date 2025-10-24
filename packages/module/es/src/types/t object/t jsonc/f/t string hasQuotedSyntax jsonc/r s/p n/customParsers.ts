@@ -219,7 +219,7 @@ export function customParserForArray(
 export function customParserForRecord(
   { value, context, }: { value: FragmentStringJsonc | StringJsonc;
     context?: Jsonc.ValueBase; },
-): Jsonc.Value {
+): Jsonc.Value & { remainingContent: FragmentStringJsonc; } {
   //region Entry and comment skip -- Drop the opening '{' then consume leading comments/space
   const woOpening = value.slice('{'.length,) as FragmentStringJsonc;
   const outStartsComment = startsWithComment({ value: woOpening, },);
