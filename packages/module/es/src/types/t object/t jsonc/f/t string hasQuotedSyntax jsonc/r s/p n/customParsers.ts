@@ -21,38 +21,29 @@ import { startsWithComment, } from './startsWithComment.ts';
 const f = Object.freeze;
 //endregion Imports and helpers
 
-//region Local helpers -- Escape-aware quoted-string scanner without regex; returns consumed slice and remaining tail
+//region Local helpers -- Escape-aware quoted-string scanner; no magic numbers or global regex scans
 function scanQuotedString(
   { value, }: { value: FragmentStringJsonc | StringJsonc },
 ): { consumed: FragmentStringJsonc; parsed: Jsonc.Value; remaining: FragmentStringJsonc } {
   if (!value.startsWith('"',))
     throw new Error('expected a double quote to start a JSON string',);
 
-  let index = 1; // start after the opening quote
-  const length = value.length;
+  const findTerminatingQuote = (input: string, fromIndex: number,): number => {
+    const quoteIndex = input.indexOf('"', fromIndex,);
+    if (quoteIndex === -1)
+      throw new Error('malformed jsonc, unterminated string',);
 
-  while (index < length) {
-    const ch = value.charCodeAt(index,);
-    // '"'
-    if (ch === 34) {
-      // Count consecutive backslashes immediately before this quote
-      let backslashCount = 0;
-      let k = index - 1;
-      while (k >= 0 && value.charCodeAt(k,) === 92) { // '\\'
-        backslashCount++;
-        k--;
-      }
-      const isUnescaped = (backslashCount & 1) === 0;
-      if (isUnescaped) {
-        const consumed = value.slice(0, index + 1,) as FragmentStringJsonc;
-        const remaining = value.slice(index + 1,) as FragmentStringJsonc;
-        return { consumed, parsed: { value: consumed, }, remaining, };
-      }
-    }
-    index++;
-  }
+    const beforeQuote = input.slice(0, quoteIndex,);
+    const backslashesMatch = beforeQuote.match(/\\+$/);
+    const backslashRunLength = backslashesMatch?.[0].length ?? 0;
+    const isUnescaped = (backslashRunLength % 2) === 0;
+    return isUnescaped ? quoteIndex : findTerminatingQuote(input, quoteIndex + 1,);
+  };
 
-  throw new Error('malformed jsonc, unterminated string',);
+  const closingIndex = findTerminatingQuote(value, 1,);
+  const consumed = value.slice(0, closingIndex + 1,) as FragmentStringJsonc;
+  const remaining = value.slice(closingIndex + 1,) as FragmentStringJsonc;
+  return { consumed, parsed: { value: consumed, }, remaining, };
 }
 //endregion Local helpers
 
