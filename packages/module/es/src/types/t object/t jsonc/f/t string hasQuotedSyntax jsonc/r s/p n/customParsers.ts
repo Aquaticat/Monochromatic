@@ -46,7 +46,7 @@ export function customParserForArray(
   //region Empty array fast-exit -- Handle immediate closing bracket
   if (remainingContent.startsWith(']',)) {
     return { ...outStartsComment, value: [], remainingContent: remainingContent
-      .slice(']'.length,), };
+      .slice(']'.length,) as FragmentStringJsonc, };
   }
   //endregion Empty array fast-exit
 
