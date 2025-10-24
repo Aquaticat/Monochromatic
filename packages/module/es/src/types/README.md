@@ -696,7 +696,7 @@ export function $(email: string): User {
 
 ### Legacy `src/type/` Structure Mapping
 
-The utilities are being migrated from the legacy [`../type/`](../type/) directory structure to the new organized system. Here's how the mappings work:
+The utilities are being migrated from the legacy [`../type/`](../../../../../bak/20251014/type) directory structure to the new organized system. Here's how the mappings work:
 
 #### Directory Mapping
 
@@ -1116,7 +1116,7 @@ tree types/type\ string/from/type\ array/
 - ✅ **Concrete examples** - Real utilities documented with usage patterns
 - ✅ **Navigation system** - Search patterns and cross-references established
 - ✅ **Developer guidelines** - Comprehensive instructions for adding utilities
-- 🔄 **Migration ongoing** - Functions being moved from legacy [`src/type/`](../type/) structure
+- 🔄 **Migration ongoing** - Functions being moved from legacy [`src/type/`](../../../../../bak/20251014/type) structure
 - ⏳ **Full coverage** - Complete migration of all 500+ utilities planned
 
 This organizational system provides the precision and scalability needed for a comprehensive functional programming utilities library while maintaining intuitive navigation and clear semantic meaning.

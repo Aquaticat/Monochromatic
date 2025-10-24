@@ -26,8 +26,9 @@ export function mergeComments(
     return value;
   // Both has comment.
   // No trimming needed because we wanna support both `// This is` and `//region`.
+  // Be careful not to indent here.
   const commentValue = `${value.commentValue}
-  ${value2.commentValue}`;
+${value2.commentValue}`;
   return value.type === value2.type
     ? { ...value, commentValue, }
     : { ...value, type: 'mixed', commentValue, };
