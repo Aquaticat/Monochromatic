@@ -827,6 +827,7 @@ Write comprehensive TSDoc comments for all exported members (functions, types, c
 - Any code element that could benefit from documentation should have TSDoc comments
 - Adhere to the `eslint-plugin-jsdoc` recommended rules, TSDoc variant
 - Use `{@inheritDoc originalFn}` for a function that's the mere non-async variant of the original function
+- Unless the code element is genuinely dead code, consider every code element to be important and notable and worthy to be documented - if they do nothing they won't be there.
 
 ### Use TSDoc where supported, regular comments elsewhere:
 
@@ -852,6 +853,17 @@ Key rule: TSDoc must directly precede a declaration (variable, function, class, 
 ### Comment Placement
 - NEVER use inline comments after code
 - Always place comments on their own line above the code they describe
+
+### Escaping block comment terminators
+- Escape block comment terminators inside comments and code snippets to avoid premature comment termination.
+- Write `*/` as `*\\/` in TSDoc blocks and in any block comments in examples.
+
+```ts
+/**
+ * This comment includes an escaped terminator token: *\\/
+ */
+const example = "/* within string */";
+```
 
 ### TSDoc Style Guidelines
 - Avoid `the`, `a`, `an` in `@param` or `@returns` description
