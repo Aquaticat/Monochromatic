@@ -1,3 +1,11 @@
+/*
+  Custom JSONC parsers for arrays and objects.
+  These are the careful, comment-preserving "service road" paths that handle comments, whitespace,
+  and trailing commas when the fast-path cannot use JSON.parse safely.
+  Region markers outline imports, function phases, and known pitfalls to aid maintainability.
+*/
+
+//region Imports and helpers -- Core types, utilities, and comment skipper used by the parsers
 import * as Jsonc from '../../../../t/index.ts';
 import {
   getArrayInts,
@@ -11,23 +19,38 @@ import type {
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
 import { startsWithComment, } from './startsWithComment.ts';
 const f = Object.freeze;
+//endregion Imports and helpers
 
+/**
+ * Parse a JSONC array fragment starting at '[' while preserving comments and returning the unconsumed tail.
+ *
+ * Why this exists: Global regex edits are unsafe in the presence of quotes and comments. This parser advances
+ * token-by-token, allowing comments/whitespace between items and supporting trailing commas.
+ *
+ * Contract: returns a Jsonc.Value for the parsed array plus `remainingContent` (the substring after the closing ']').
+ * Current state: parses the first item and positions at the start of the second; looping/termination are pending.
+ */
 export function customParserForArray(
   { value, context, }: { value: FragmentStringJsonc | StringJsonc;
     context?: Jsonc.ValueBase; },
 ): Jsonc.Value & { remainingContent: FragmentStringJsonc; } {
+  //region Entry and comment skip -- Drop the opening '[' then consume leading comments/space
   const woOpening = value.slice('['.length,) as FragmentStringJsonc;
   const outStartsComment = startsWithComment({ value: woOpening, },);
+  //endregion Entry and comment skip
 
   // Must start with an array item, another array, or another record.
   // Or if the array is empty, closingSquareBracket.
   const { remainingContent, } = outStartsComment;
 
+  //region Empty array fast-exit -- Handle immediate closing bracket
   if (remainingContent.startsWith(']',)) {
     return { ...outStartsComment, value: [], remainingContent: remainingContent
       .slice(']'.length,), };
   }
+  //endregion Empty array fast-exit
 
+  //region Nested structure detection -- Delegate when next token starts another container
   if (remainingContent.startsWith('[',)) {
     const firstItem = { ...outStartsComment,
       ...(customParserForArray({ value: remainingContent, },)), };
@@ -37,6 +60,7 @@ export function customParserForArray(
     const firstItem = { ...outStartsComment,
       ...(customParserForRecord({ value: remainingContent, },)), };
   }
+  //endregion Nested structure detection
 
   // Must start with a primitive array item
   // read until encountering (unquoted comma) or newline or (unquoted whitespace) or (unquoted comment start marker slashStar only) or closingSquareBracket.
@@ -46,14 +70,21 @@ export function customParserForArray(
   // `1//` cannot be valid no matter what follows.
   // And we'd already handled the case where `1,//` in "encountering comma".
   // And we'd already handled the case where `1\n//\n,` in "encountering newline".
+  //region Primitive parsing -- Strings, null/true/false, and number boundary probing
   const { parsed, remaining, } = (function getUntil(
     { value, },
   ): { consumed: string; parsed: Jsonc.Value; remaining: string; } {
     if (value.startsWith('"',)) {
       const valueAfterQuote = value.slice('"'.length,);
+      /*
+        NOTE: Using String.match with global flag returns an array of strings without index information.
+        This makes locating the next unescaped quote unreliable. A future improvement should iteratively
+        scan characters or use matchAll to recover indices.
+      */
       const nextQuote = valueAfterQuote.match(/(?<!\\)(?:\\\\)*"/g,);
       if (!nextQuote)
         throw new Error('malformed jsonc',);
+      // nextQuote.index is not reliable with the current approach; this is a known limitation.
       const parsedValue = value.slice(0, nextQuote.index! + 1,);
       // No need to check if nextQuote isn't commented out.
       // We're already in quotes, so all comment markers are unavailable.
@@ -150,8 +181,10 @@ export function customParserForArray(
       throw new Error('invalid jsonc primitive array item',);
     }
   })({ value: remainingContent, },);
+  //endregion Primitive parsing
   // TODO: Okay, that's just the start. And?
   // trimmed must start with either a comma or comments.
+  //region Separator handling -- After first item, expect a comma for multi-item arrays (comments/whitespace allowed)
   const afterFirstItemTrimmed = remaining.trimStart() as FragmentStringJsonc;
   const afterFirstItemOutStartsComment = startsWithComment({
     value: afterFirstItemTrimmed,
@@ -174,18 +207,29 @@ export function customParserForArray(
   const { remainingContent: afterFirstCommaRemainingContent, } =
     afterFirstCommaOutStartsComment;
   // afterFirstCommaRemainingContent is the start of the 2nd item.
+  //endregion Separator handling
 }
 
+/**
+ * Parse a JSONC object fragment starting at '{' while preserving comments.
+ *
+ * Intent: parse key-value pairs with support for comments around keys, colons, and values, including
+ * tolerance for a trailing comma before the closing '}'. Current implementation is a skeleton that
+ * delegates on nested containers and outlines the control flow.
+ */
 export function customParserForRecord(
   { value, context, }: { value: FragmentStringJsonc | StringJsonc;
     context?: Jsonc.ValueBase; },
 ): Jsonc.Value {
+  //region Entry and comment skip -- Drop the opening '{' then consume leading comments/space
   const woOpening = value.slice('{'.length,) as FragmentStringJsonc;
   const outStartsComment = startsWithComment({ value: woOpening, },);
+  //endregion Entry and comment skip
 
   // Must start with a record pair, another array, or another record.
   const { remainingContent, } = outStartsComment;
 
+  //region Nested structure detection -- If first token opens a container, delegate accordingly
   if (remainingContent.startsWith('[',)) {
     const allItemsAndPossiblyMore = { ...outStartsComment,
       ...(customParserForArray({ value: remainingContent, },)), };
@@ -195,4 +239,5 @@ export function customParserForRecord(
     const allItemsAndPossiblyMore = { ...outStartsComment,
       ...(customParserForRecord({ value: remainingContent, },)), };
   }
+  //endregion Nested structure detection
 }
