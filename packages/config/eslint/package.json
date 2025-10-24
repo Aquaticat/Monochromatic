@@ -16,7 +16,8 @@
     "@typescript-eslint/scope-manager": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "@typescript-eslint/types": "catalog:",
-    "@typescript-eslint/utils": "catalog:"
+    "@typescript-eslint/utils": "catalog:",
+    "@eslint/config-helpers": "catalog:"
   },
   "peerDependencies": {
     "eslint": "catalog:",
@@ -30,8 +31,7 @@
   },
   "type": "module",
   "files": [
-    "src",
-    "dist/final"
+    "src"
   ],
   "author": {
     "name": "Aquaticat",
@@ -46,15 +46,10 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/final/types/src/index.d.ts",
-      "default": "./dist/final/js/index.js"
+      "default": "./src/index.ts"
     },
     "./.ts": {
       "default": "./src/index.ts"
-    },
-    "./.js": {
-      "types": "./dist/final/types/src/index.d.ts",
-      "default": "./dist/final/js/index.js"
     }
   }
 }

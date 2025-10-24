@@ -202,7 +202,7 @@ tasks:
 
   lintEslint:
     extends: '_lintFormatBase'
-    command: 'bun run packages/module/es/src/cli.command.ts --allowFailure -- eslint --cache'
+    command: "pnpx eslint"
 
   lintOxlint:
     extends: '_lintFormatBase'

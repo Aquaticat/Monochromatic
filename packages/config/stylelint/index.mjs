@@ -195,7 +195,7 @@ export default {
 
     //endregion
 
-    // region Unit
+    //region Unit
 
     'unit-disallowed-list': [
       //region angle - Use turn

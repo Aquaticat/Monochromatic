@@ -50,19 +50,24 @@ describe('ArrayFixedLength', () => {
 ```
 
 ## Test File Setup
-Always start Vitest files with:
+Start Vitest files with:
 ```ts
 import {
-  // members to test. Examples:
-  // equal,
-  // everyIterable,
-  // everyIterableAsync,
+  // ... members to test. Examples:
+  types
 } from '@monochromatic-dev/module-es';
 import {
   describe,
-  expect,
   test,
 } from 'vitest';
+
+const $ = types.function.generator.from.iterable.withIndex.sync.named.$;
+
+describe($, () => {
+  test('basic', ({expect}) => {
+    // ... actual test
+  })
+})
 ```
 
 ## Linting Test Code
