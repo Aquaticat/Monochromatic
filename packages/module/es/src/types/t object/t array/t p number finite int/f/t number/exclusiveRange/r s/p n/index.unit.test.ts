@@ -36,7 +36,7 @@ describe($, () => {
   test('handles decimal boundaries', ({ expect, },) => {
     expect($({ startExclusive: 0.1, endExclusive: 4.9, },),).toEqual([1, 2, 3, 4,],);
     expect($({ startExclusive: -0.9, endExclusive: 0.9, },),).toEqual([0,],);
-    expect($({ startExclusive: 1.5, endExclusive: 2.3, },),).toEqual([2],);
+    expect($({ startExclusive: 1.5, endExclusive: 2.3, },),).toEqual([2,],);
   });
 
   test('handles edge cases with large numbers', ({ expect, },) => {
@@ -45,6 +45,9 @@ describe($, () => {
 
   test('returns empty array when no integers exist in range', ({ expect, },) => {
     expect($({ startExclusive: 1.1, endExclusive: 1.9, },),).toEqual([],);
+  });
+
+  test('handles decimal boundaries that resolve to a single integer', ({ expect, },) => {
     expect($({ startExclusive: 0.5, endExclusive: 1.5, },),).toEqual([1,],);
   });
 },);
