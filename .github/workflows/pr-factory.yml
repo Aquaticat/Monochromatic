@@ -84,14 +84,6 @@ jobs:
           // Remove the unreachable code
           ```
         - Be specific about why it's a problem: "This will cause a TypeError if input is null"
-        - No emojis, just clear technical language
-
-        Skip commenting on:
-        - Code style, formatting, or naming conventions
-        - Minor performance optimizations
-        - Architectural decisions or design patterns
-        - Features or functionality (unless broken)
-        - Test coverage (unless tests are clearly broken)
 
         You may open and read other repository files beyond those listed above when it helps you understand the change, but keep all review comments anchored to the modified lines in this PR.
 
