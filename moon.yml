@@ -169,25 +169,6 @@ tasks:
     options:
       runDepsInParallel: false
 
-  # Claude Code conversation indexing tasks
-  indexClaude:
-    deps:
-    - indexClaudeMessages
-    - indexClaudeMcpLogs
-    options:
-      cache: false
-      internal: false
-
-  indexClaudeMcpLogs:
-    command: 'bun packages/module/es/src/moon.index-claude-mcp-logs.ts'
-    options:
-      cache: false
-
-  indexClaudeMessages:
-    command: 'bun packages/module/es/src/moon.index-claude-user-messages.ts'
-    options:
-      cache: false
-
   # Linting tasks
   lint:
     deps:

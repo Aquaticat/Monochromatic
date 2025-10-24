@@ -47,7 +47,7 @@ describe('Logger type', () => {
       fatal: (message: string) => new Error(message),
     };
 
-    expectTypeOf(customLogger).toMatchTypeOf<Logger>();
+    expectTypeOf(customLogger).toExtend<Logger>();
   });
 });
 

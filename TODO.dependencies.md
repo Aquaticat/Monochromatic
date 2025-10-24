@@ -13,7 +13,7 @@ This causes TypeScript errors when using these exported functions.
 ```yaml
 packageExtensions:
   '@eslint/config-helpers':
-    dependencies:
+    peerDependencies:
       eslint: '*'
 ```
 
