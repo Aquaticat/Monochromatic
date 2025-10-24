@@ -72,7 +72,8 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
 
       // Check for first-line optimization jackpot case: /*...*/ all on one line
       // This handles the unique case where the entire block comment is on the first line
-      const FIRST_LINE_BLOCK_COMMENT_REGEX = /\/\*[^\n]*\*\//;
+      // Must be lazy else will match 1, /* c */ 2, /* d */
+      const FIRST_LINE_BLOCK_COMMENT_REGEX = /\/\*[^\n]*?\*\//;
       const firstLineMatch = FIRST_LINE_BLOCK_COMMENT_REGEX.exec(trimmed,);
       if (firstLineMatch) {
         // Found a complete block comment on the first line - return immediately
