@@ -6,10 +6,15 @@
 */
 
 //region Imports and helpers -- Core types, utilities, and comment skipper used by the parsers
+import {
+  $ as arrayExclusiveRange,
+} from '@_/types/t object/t array/t p number finite int/f/t number/exclusiveRange/r s/p n/index.ts';
 import * as Jsonc from '../../../../t/index.ts';
+import {
+  getLengthsToTestFirst,
+  numberLengthsToTestFirst,
+} from './lengthSelection.ts';
 import { scanQuotedString, } from './scanQuotedString.ts';
-import { getLengthsToTestFirst, numberLengthsToTestFirst, } from './lengthSelection.ts';
-import { $ as arrayExclusiveRange, } from '@_/types/t object/t array/f/t number/t int/range/r s/p n/exclusive-bounds/index.ts';
 
 import type {
   $ as StringJsonc,
