@@ -71,4 +71,52 @@ describe($, () => {
     expect(() => $({ value: '[1, 2,' as FragmentStringJsonc })).toThrow();
   });
   //endregion Errors
+
+  //region Array-level vs first-item comments -- semantics for outside/inside comments
+  test('array-level comment comes from outside (context)', ({ expect }) => {
+    const out = $({
+      value: '[1]' as FragmentStringJsonc,
+      // Represent outside comment before '[' via context
+      context: { comment: { type: 'block', commentValue: 'A' } } as any,
+    });
+    expect(out.comment?.type).toBe('block');
+    expect(out.comment?.commentValue).toBe('A');
+    expect((out.value[0] as any).comment).toBeUndefined();
+  });
+
+  test('first element receives inside comment (non-empty array)', ({ expect }) => {
+    const out = $({ value: '[ /* C */ 1 ]' as FragmentStringJsonc });
+    expect(out.comment).toBeUndefined();
+    expect((out.value[0] as any).comment?.type).toBe('block');
+    expect((out.value[0] as any).comment?.commentValue.trim()).toBe('C');
+  });
+
+  test('both outside (array) and inside (first item) comments preserved', ({ expect }) => {
+    const out = $({
+      value: '[ /* C */ 1 ]' as FragmentStringJsonc,
+      context: { comment: { type: 'block', commentValue: 'A' } } as any,
+    });
+    expect(out.comment?.commentValue).toBe('A');
+    expect((out.value[0] as any).comment?.commentValue.trim()).toBe('C');
+  });
+
+  test('empty array merges inside comment into array-level', ({ expect }) => {
+    const out = $({ value: '[ /* X */ ]TAIL' as FragmentStringJsonc });
+    expect(out.value).toEqual([]);
+    expect(out.comment?.type).toBe('block');
+    expect(out.comment?.commentValue.trim()).toBe('X');
+    expect(out.remainingContent).toBe('TAIL');
+  });
+
+  test('empty array merges outside and inside comments', ({ expect }) => {
+    const out = $({
+      value: '[ /* X */ ]TAIL' as FragmentStringJsonc,
+      context: { comment: { type: 'block', commentValue: 'A' } } as any,
+    });
+    expect(out.value).toEqual([]);
+    expect(out.comment?.type).toBe('block');
+    expect(out.comment?.commentValue).toBe('A\n X ');
+    expect(out.remainingContent).toBe('TAIL');
+  });
+  //endregion Array-level vs first-item comments
 });

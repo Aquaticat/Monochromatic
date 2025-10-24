@@ -7,6 +7,7 @@
 
 //region Imports and helpers -- Core types, utilities, and comment skipper used by the parsers
 import * as Jsonc from '../../../../t/index.ts';
+import { mergeComments, } from './mergeComments.ts';
 import { scanQuotedString, } from './scanQuotedString.ts';
 
 import type {
@@ -32,7 +33,7 @@ export const NO_LITERAL: symbol = Symbol('jsonc:parseLiteralToken:no-match',);
 export function parseLiteralToken(
   { value, }: { value: FragmentStringJsonc | StringJsonc; },
 ):
-  | { consumed: FragmentStringJsonc; parsed: Jsonc.Value;
+  | { consumed: FragmentStringJsonc; parsed: Jsonc.Boolean | Jsonc.Null;
     remaining: FragmentStringJsonc; }
   | typeof NO_LITERAL
 {
@@ -64,7 +65,7 @@ export function parseLiteralToken(
  */
 export function parseNumberToken(
   { value, }: { value: FragmentStringJsonc | StringJsonc; },
-): { consumed: FragmentStringJsonc; parsed: Jsonc.Value;
+): { consumed: FragmentStringJsonc; parsed: Jsonc.Number;
   remaining: FragmentStringJsonc; }
 {
   // JSON number grammar (no leading +, leading 0 rules, optional fraction and exponent)
@@ -104,20 +105,19 @@ export function parseValueFromStart(
 
   const literal = parseLiteralToken({ value, },);
   if (literal !== NO_LITERAL) {
-    const myLiteral = literal as { consumed: FragmentStringJsonc; parsed: Jsonc.Value;
+    const { parsed: litParsed, remaining, } = literal as { consumed: FragmentStringJsonc; parsed: Jsonc.Boolean | Jsonc.Null;
       remaining: FragmentStringJsonc; };
     const parsed: Jsonc.Value = context?.comment
-      ? { ...myLiteral.parsed, comment: context.comment, }
-      : myLiteral.parsed;
-    return { parsed, remaining: myLiteral.remaining, };
+      ? { ...litParsed, comment: context.comment, }
+      : litParsed;
+    return { parsed, remaining, };
   }
 
   if (value.startsWith('[',)) {
     const out = context
       ? customParserForArray({ value, context, },)
       : customParserForArray({ value, },);
-    const { remainingContent, ...parsed } =
-      out as unknown as (Jsonc.Value & { remainingContent: FragmentStringJsonc; });
+    const { remainingContent, ...parsed } = out;
     return { parsed: parsed as Jsonc.Value, remaining: remainingContent, };
   }
 
@@ -125,8 +125,7 @@ export function parseValueFromStart(
     const out = context
       ? customParserForRecord({ value, context, },)
       : customParserForRecord({ value, },);
-    const { remainingContent, ...parsed } =
-      out as unknown as (Jsonc.Value & { remainingContent: FragmentStringJsonc; });
+    const { remainingContent, ...parsed } = out;
     return { parsed: parsed as Jsonc.Value, remaining: remainingContent, };
   }
 
@@ -157,12 +156,10 @@ export function parseArrayHeader(
   valueAfterBracket: FragmentStringJsonc | StringJsonc,
   context?: Jsonc.ValueBase,
 ): { arrayComment?: Jsonc.Comment; tail: FragmentStringJsonc; } {
-  const lead = context
-    ? startsWithComment({ value: valueAfterBracket as FragmentStringJsonc, context, },)
-    : startsWithComment({ value: valueAfterBracket as FragmentStringJsonc, },);
+  // Array-level comment comes from outside the '[' via context; do not consume inside comments here.
   return {
-    ...(lead.comment ? { arrayComment: lead.comment, } : {}),
-    tail: lead.remainingContent,
+    ...(context?.comment ? { arrayComment: context.comment, } : {}),
+    tail: valueAfterBracket as FragmentStringJsonc,
   };
 }
 //endregion Array header
@@ -231,18 +228,28 @@ export function parseArrayElements(
 export function customParserForArray(
   { value, context, }: { value: FragmentStringJsonc | StringJsonc;
     context?: Jsonc.ValueBase; },
-): Jsonc.Value & { remainingContent: FragmentStringJsonc; } {
+): Jsonc.Array & { remainingContent: FragmentStringJsonc; } {
   //region Entry and comment skip -- Drop the opening '[' then consume leading comments/space
   const woOpening = value.slice('['.length,) as FragmentStringJsonc;
   const { arrayComment, tail: headerTail, } = parseArrayHeader(woOpening, context,);
   //endregion Entry and comment skip
 
   //region Empty array fast-exit -- Handle immediate closing bracket
-  if (headerTail.startsWith(']',)) {
+  // Peek for closing bracket after consuming only inside-the-bracket comments;
+  // if empty, merge inside comments into array-level comment.
+  const insideLead = startsWithComment({ value: headerTail, },);
+  if (insideLead.remainingContent.startsWith(']',)) {
+    let finalComment: Jsonc.Comment | undefined;
+    if (arrayComment && insideLead.comment)
+      finalComment = mergeComments({ value: arrayComment, value2: insideLead.comment, });
+    else if (arrayComment)
+      finalComment = mergeComments({ value: arrayComment, });
+    else if (insideLead.comment)
+      finalComment = mergeComments({ value2: insideLead.comment, });
     return {
       value: [] as Jsonc.Value[],
-      ...(arrayComment ? { comment: arrayComment, } : {}),
-      remainingContent: headerTail.slice(
+      ...(finalComment ? { comment: finalComment, } : {}),
+      remainingContent: insideLead.remainingContent.slice(
         ']'.length,
       ) as FragmentStringJsonc,
     };
@@ -269,7 +276,7 @@ export function customParserForArray(
 export function customParserForRecord(
   { value, context, }: { value: FragmentStringJsonc | StringJsonc;
     context?: Jsonc.ValueBase; },
-): Jsonc.Value & { remainingContent: FragmentStringJsonc; } {
+): Jsonc.Record & { remainingContent: FragmentStringJsonc; } {
   //region Entry and comment skip -- Drop the opening '{' then consume leading comments/space
   const woOpening = value.slice('{'.length,) as FragmentStringJsonc;
   const outStartsComment = startsWithComment({ value: woOpening, },);

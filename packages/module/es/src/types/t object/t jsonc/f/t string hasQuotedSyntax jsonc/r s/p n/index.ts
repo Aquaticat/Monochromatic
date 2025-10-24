@@ -154,7 +154,7 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
       const tail = startsWithComment({ value: out.remainingContent, },).remainingContent.trim();
       if (tail.length > 0)
         throw new Error(`unexpected trailing content after array: ${tail.slice(0, 48,)}`);
-      const { remainingContent: _rc, ...parsed } = out as unknown as (Jsonc.Value & { remainingContent: FragmentStringJsonc });
+      const { remainingContent: _rc, ...parsed } = out;
       return parsed as Jsonc.Value;
     }
     else if (value.startsWith('{',)) {

@@ -85,3 +85,12 @@ export type Value =
   & ValueBase;
 
 export type $ = Value;
+
+// Narrowed variant aliases for ergonomic typing of specific JSONC node kinds
+export type String = StringBase & ValueBase;
+export type Number = NumberBase & ValueBase;
+export type Boolean = BooleanBase & ValueBase;
+export type Null = NullBase & ValueBase;
+export type Array = ArrayBase & ValueBase;
+export type Record = RecordBase & ValueBase;
+export type PlainJson = PlainJsonBase & ValueBase;
