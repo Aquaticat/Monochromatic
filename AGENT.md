@@ -443,6 +443,49 @@ packages/
   type EmailAddress = string & { readonly __brand: unique symbol };
   ```
 
+## Symbol union narrowing
+- TypeScript does not narrow a union to non-symbol by comparing a value to a specific unique symbol.
+- Identity checks against a single symbol do not eliminate the symbol category, so the else branch can still be a symbol from the same union.
+- Narrow by category first using `typeof value === 'symbol'`, then discriminate by identity for expected symbols within that block.
+
+```ts
+// Single symbol sentinel
+// Anti-pattern (bug is in else)
+if (out === NO_LITERAL) {
+  // handle sentinel
+} else {
+  // BUG: else may still be a symbol from the union
+  use(out.parsed);
+}
+
+// Preferred
+if (typeof out === 'symbol') {
+  if (out === NO_LITERAL) {
+    // handle sentinel
+  } else {
+    throw new Error('is symbol, but not expected');
+  }
+} else {
+  use(out.parsed);
+}
+```
+
+```ts
+// Multiple possible symbol sentinels
+if (typeof out === 'symbol') {
+  if (out === SYMBOL_A) {
+    // handle A
+  } else if (out === SYMBOL_B) {
+    // handle B
+  } else {
+    throw new Error('is symbol, but not one of the expected');
+  }
+} else {
+  // non-symbol branch
+  use(out.parsed);
+}
+```
+
 ## Generics and Type Parameters
 - Prefer `const` generic type parameters to enhance type safety and immutability
   - Good: `function processItems<const T extends { id: string }>(items: T[]): T[]`

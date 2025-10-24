@@ -25,7 +25,7 @@ describe('minion helpers', () => {
       }
       {
         const out = $({ value: 'true ]' as FragmentStringJsonc, },);
-        if (out === exported.NO_LITERAL)
+        if (typeof out === 'symbol')
           throw new Error('expected literal',);
         expect(out.parsed,).toEqual({ value: true, },);
       }
@@ -121,7 +121,7 @@ describe('minion helpers', () => {
     });
     test('multi with comments and trailing comma', ({ expect, },) => {
       const out = $('1, /* c */ 2, /* d */ ]X' as FragmentStringJsonc,);
-      expect(out.items.map((v: any,) => v.value),).toEqual([1, 2,],);
+      expect((out.items as Jsonc.Number[]).map(v => v.value),).toEqual([1, 2,],);
       expect(out.tail,).toBe('X',);
     });
     test('invalid: identifier right after literal (boundary handled by separator)', ({ expect, },) => {

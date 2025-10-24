@@ -313,32 +313,96 @@ export function customParserForArray(
  * @param value - Input fragment beginning with '{'
  * @param context - Optional value base used for comment propagation
  * @returns Parsed record node and `remainingContent` after the closing '}'
- * @throws Error - Not implemented yet
  */
 export function customParserForRecord(
   { value, context, }: { value: FragmentStringJsonc | StringJsonc;
     context?: Jsonc.ValueBase; },
 ): Jsonc.Record & { remainingContent: FragmentStringJsonc; } {
-  //region Entry and comment skip -- Drop the opening '{' then consume leading comments/space
+  //region Record separators -- Decide between next pair or end '}'
+  function expectRecordSeparatorOrEnd(
+    tail: FragmentStringJsonc,
+  ): { kind: 'end'; tail: FragmentStringJsonc; } | { kind: 'next'; tailStart: FragmentStringJsonc; } {
+    const after = startsWithComment({ value: tail, },);
+    const rc = after.remainingContent.trimStart() as FragmentStringJsonc;
+
+    if (rc.startsWith('}',))
+      return { kind: 'end', tail: rc.slice('}'.length,) as FragmentStringJsonc, };
+
+    if (rc.startsWith(',',)) {
+      const afterComma = rc.slice(1,) as FragmentStringJsonc;
+      const next = startsWithComment({ value: afterComma, },);
+      const nextToken = next.remainingContent.trimStart() as FragmentStringJsonc;
+      if (nextToken.startsWith('}',))
+        return { kind: 'end', tail: nextToken.slice('}'.length,) as FragmentStringJsonc, };
+      return { kind: 'next', tailStart: nextToken, };
+    }
+
+    const preview = rc.slice(0, 32,);
+    throw new Error(`malformed jsonc object: expected ',' or '}' near: ${preview}`,);
+  }
+  //endregion Record separators
+
+  //region Record members -- Parse key:value pairs immutably
+  function parseRecordMembers(
+    tail: FragmentStringJsonc,
+    entries: readonly [Jsonc.RecordKey, Jsonc.Value][] = [],
+  ): { entries: readonly [Jsonc.RecordKey, Jsonc.Value][]; tail: FragmentStringJsonc; } {
+    const lead = startsWithComment({ value: tail, },);
+    const start = lead.remainingContent as FragmentStringJsonc;
+
+    if (start.startsWith('}',))
+      return { entries, tail: start.slice('}'.length,) as FragmentStringJsonc, };
+
+    if (!start.startsWith('"',))
+      throw new Error('malformed jsonc object: expected quoted key',);
+
+    const keyScan = scanQuotedString({ value: start, },);
+    const keyNode: Jsonc.RecordKey = lead.comment
+      ? { ...keyScan.parsed, comment: lead.comment, }
+      : keyScan.parsed;
+
+    const afterKeyLead = startsWithComment({ value: keyScan.remaining, },);
+    const rc = afterKeyLead.remainingContent.trimStart() as FragmentStringJsonc;
+    if (!rc.startsWith(':',))
+      throw new Error("malformed jsonc object: expected ':' after key",);
+
+    const valueLead = startsWithComment({ value: rc.slice(1,) as FragmentStringJsonc, },);
+    const { parsed: valueNode, remaining, } = parseValueFromStart({ value: valueLead.remainingContent, context: valueLead, },);
+
+    const decision = expectRecordSeparatorOrEnd(remaining,);
+    const nextEntries = [...entries, [keyNode, valueNode,] as [Jsonc.RecordKey, Jsonc.Value],];
+    return decision.kind === 'end'
+      ? { entries: nextEntries, tail: decision.tail, }
+      : parseRecordMembers(decision.tailStart, nextEntries,);
+  }
+  //endregion Record members
+
+  //region Entry and empty-object fast-exit
   const woOpening = value.slice('{'.length,) as FragmentStringJsonc;
-  const outStartsComment = startsWithComment({ value: woOpening, },);
-  //endregion Entry and comment skip
+  const insideLead = startsWithComment({ value: woOpening, },);
+  if (insideLead.remainingContent.startsWith('}',)) {
+    let finalComment: Jsonc.Comment | undefined;
+    if (context?.comment && insideLead.comment)
+      finalComment = mergeComments({ value: context.comment, value2: insideLead.comment, },);
+    else if (context?.comment)
+      finalComment = mergeComments({ value: context.comment, },);
+    else if (insideLead.comment)
+      finalComment = mergeComments({ value2: insideLead.comment, },);
 
-  // Must start with a record pair, another array, or another record.
-  const { remainingContent, } = outStartsComment;
-
-  //region Nested structure detection -- If first token opens a container, delegate accordingly
-  if (remainingContent.startsWith('[',)) {
-    const allItemsAndPossiblyMore = { ...outStartsComment,
-      ...(customParserForArray({ value: remainingContent, },)), };
+    return {
+      value: new Map(),
+      ...(finalComment ? { comment: finalComment, } : {}),
+      remainingContent: insideLead.remainingContent.slice('}'.length,) as FragmentStringJsonc,
+    };
   }
+  //endregion Entry and empty-object fast-exit
 
-  if (remainingContent.startsWith('{',)) {
-    const allItemsAndPossiblyMore = { ...outStartsComment,
-      ...(customParserForRecord({ value: remainingContent, },)), };
-  }
-  //endregion Nested structure detection
-
-  // Not implemented yet – keep type soundness
-  throw new Error('customParserForRecord not implemented yet',);
+  //region Members recursion
+  const { entries, tail, } = parseRecordMembers(woOpening, [],);
+  return {
+    value: new Map(entries as readonly [Jsonc.RecordKey, Jsonc.Value][],),
+    ...(context?.comment ? { comment: context.comment, } : {}),
+    remainingContent: tail,
+  };
+  //endregion Members recursion
 }
