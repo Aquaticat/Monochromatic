@@ -1,11 +1,13 @@
-import type { FlatConfig, } from '@typescript-eslint/utils/ts-eslint';
-// eslint-disable-next-line import/no-namespace -- Parser needs to be imported as namespace
+import type {
+  ESLint,
+  Linter,
+} from 'eslint';
 import * as astroParser from './astro-parser.ts';
 /**
  * ESLint plugin for Astro files.
  * Provides a custom parser that extracts frontmatter and script content for linting.
  */
-const astroPlugin: FlatConfig.Plugin = {
+const astroPlugin: ESLint.Plugin = {
   meta: {
     name: 'astro-internal',
     version: '1.0.0',
@@ -15,12 +17,12 @@ const astroPlugin: FlatConfig.Plugin = {
 };
 
 // Add shared configuration for all Astro files
-const astroPluginWConfig: FlatConfig.Plugin & {
-  configs: { recommended: FlatConfig.Config[]; };
+const astroPluginWConfig: ESLint.Plugin & {
+  configs: { recommended: Linter.Config; };
 } = {
   ...astroPlugin,
   configs: {
-    recommended: [{
+    recommended: {
       files: ['**/*.astro',],
       plugins: {
         'astro-internal': astroPlugin,
@@ -28,7 +30,7 @@ const astroPluginWConfig: FlatConfig.Plugin & {
       languageOptions: {
         parser: astroParser,
       },
-    },],
+    },
   },
 };
 

@@ -5,3 +5,9 @@ export type $ = DoubleQuote & {
     jsonc: true;
   };
 };
+
+export type FragmentStringJsonc = string & { __brand: { jsonc: 'fragment'; }; };
+
+
+
+// TODO: Express every StringJsonc is FragmentStringJsonc

@@ -1,6 +1,5 @@
 $schema: 'https://moonrepo.dev/schemas/project.json'
 language: 'typescript'
 
-tags:
-- dual
-- package
+# No dts or js builds because eslint now natively supports ts config.
+tags: []

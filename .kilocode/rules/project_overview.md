@@ -16,7 +16,7 @@ This is the Monochromatic TypeScript monorepo ecosystem for web development.
 ## Architecture
 
 ### Monorepo Structure
-```
+```txt
 packages/
 ├── config/         # Shareable tool configurations (ESLint, TypeScript, Vite, etc.)
 ├── module/es/      # Functional programming utilities with dual Node/browser builds

@@ -161,7 +161,7 @@ When writing commit messages for multiple changes across different files, includ
 
 ### Commit Message Format
 
-```
+```txt
 <type>(<scope>): <subject>
 
 <body>

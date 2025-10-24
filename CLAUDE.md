@@ -612,8 +612,6 @@ import {
   test,
 } from 'vitest';
 
-await logtapeConfigure(await logtapeConfiguration());
-
 describe('ArrayFixedLength', () => {
   test('IsArrayFixedLength', () => {
     expectTypeOf<IsArrayFixedLength<[number, string]>>().toEqualTypeOf<true>();
@@ -622,25 +620,24 @@ describe('ArrayFixedLength', () => {
 ```
 
 ## Test File Setup
-Always start Vitest files with:
+Start Vitest files with:
 ```ts
 import {
-  // members to test. Examples:
-  // equal,
-  // everyIterable,
-  // everyIterableAsync,
-
-  // Logging library used.
-  logtapeConfiguration,
-  logtapeConfigure,
+  // ... members to test. Examples:
+  types
 } from '@monochromatic-dev/module-es';
 import {
   describe,
-  expect,
   test,
 } from 'vitest';
 
-await logtapeConfigure(await logtapeConfiguration());
+const $ = types.function.generator.from.iterable.withIndex.sync.named.$;
+
+describe($, () => {
+  test('basic', ({expect}) => {
+    // ... actual test
+  })
+})
 ```
 
 ## Linting Test Code

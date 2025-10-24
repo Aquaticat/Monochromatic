@@ -2,8 +2,11 @@ import * as tsParser from '@typescript-eslint/parser';
 import { analyze, } from '@typescript-eslint/scope-manager';
 import {
   AST_NODE_TYPES,
+  type ParserOptions,
   type TSESTree,
 } from '@typescript-eslint/types';
+
+import {ESLint} from 'eslint'
 
 /** Type of result returned by TypeScript ESLint parser */
 type ParseForESLintResult = ReturnType<typeof tsParser.parseForESLint>;
@@ -42,7 +45,7 @@ type CodeSegment = {
  */
 export function parseForESLint(
   code: string,
-  options: any = {},
+  options: ParserOptions = {},
 ): ParseForESLintResult {
   // Extract all TypeScript/JavaScript segments from the Astro file
   const segments: CodeSegment[] = [
@@ -197,7 +200,7 @@ function combineSegments(segments: CodeSegment[],): string {
     return '';
 
   /** Segments sorted by start line number to ensure correct ordering when combining */
-  const sortedSegments = [...segments,].sort((a, b,) => a.startLine - b.startLine);
+  const sortedSegments = segments.toSorted((a, b,) => a.startLine - b.startLine);
 
   /** Mutable string accumulator for building padded output incrementally */
   let result = '';
@@ -224,7 +227,7 @@ function combineSegments(segments: CodeSegment[],): string {
  * @param options - Parser options from ESLint config.
  * @returns Valid parser result with empty AST.
  */
-function createEmptyResult(options: any,): ParseForESLintResult {
+function createEmptyResult(options: ParserOptions,): ParseForESLintResult {
   // Create a valid but empty AST structure
   /** Empty AST structure for files with no TypeScript content */
   const emptyAst: TSESTree.Program = {
@@ -311,7 +314,7 @@ function createErrorResult(extractedCode: string,): ParseForESLintResult {
  * @param options - Parser options.
  * @returns AST Program node.
  */
-export const parse = (code: string, options?: any,): TSESTree.Program =>
+export const parse = (code: string, options?: ParserOptions,): TSESTree.Program =>
   parseForESLint(code, options,).ast;
 
 /** Parser metadata used by ESLint for cache and debugging */

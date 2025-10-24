@@ -1,5 +1,5 @@
 /**
- * Converts a literal string into a literal RegExp that matches and only matches the string.
+ * Converts a literal string into a literal RegExp that matches the string.
  *
  * Escapes all regex metacharacters in the input string to create a pattern that matches
  * the exact string content. Useful for creating regex patterns from user input or
@@ -32,7 +32,7 @@
  * ```
  *
  * Note: This function escapes all regex metacharacters including:
- * . * + ? ^ $ \{ \} [ ] ( ) | \\ /
+ * . * + ? ^ $ \{ \} [ ] ( ) | \\
  *
  * The regex pattern `/[$()*+.?[\\\]^{|}]/g` matches each metacharacter and replaces it with
  * an escaped version by prefixing it with a backslash. Here's what each metacharacter means:
@@ -48,9 +48,6 @@
  * - `^` - Start of string anchor OR negation in character classes
  * - `{` and `}` - Quantifier delimiters for exact repetition counts \{n,m\}
  * - `|` - Alternation operator for matching either left or right expression
- *
- * The forward slash `/` is also escaped in the replacement to prevent conflicts with
- * regex literal delimiters, even though it's not included in the character class pattern.
  */
 export function $({str}: {str:string},): RegExp {
   // Escape all regex metacharacters to create a literal pattern

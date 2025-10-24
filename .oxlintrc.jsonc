@@ -35,7 +35,9 @@
     //    "jsdoc",
 
     "promise",
-    "node"
+    "node",
+    "vitest",
+    
     // oxlint currently can't lint jsx in non-jsx files. See https://oxc.rs/docs/guide/usage/linter/config#specifying-files-to-process
     // "react",
   ],
