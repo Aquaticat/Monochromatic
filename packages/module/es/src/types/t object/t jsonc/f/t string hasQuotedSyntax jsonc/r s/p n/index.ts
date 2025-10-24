@@ -13,6 +13,7 @@ import type {
 import type { UnknownRecord, } from 'type-fest';
 import * as Jsonc from '../../../../t/index.ts';
 import { startsWithComment, } from './startsWithComment.ts';
+import { customParserForArray, } from './customParsers.ts';
 
 const f = Object.freeze;
 //endregion Imports and aliases
@@ -147,11 +148,14 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
         }
       }
       //endregion Array branch fast-path heuristic
-      // Something is at the end.
-      // Probably comments.
-      // Defer to custom parser.
-      // TODO: Avoid returning undefined.
-      return undefined;
+      // Defer to custom parser for full JSONC array parsing with comments/trailing commas
+      const out = customParserForArray({ value, context: outStartsComment, },);
+      // Validate no unexpected trailing content at top-level
+      const tail = startsWithComment({ value: out.remainingContent, },).remainingContent.trim();
+      if (tail.length > 0)
+        throw new Error(`unexpected trailing content after array: ${tail.slice(0, 48,)}`);
+      const { remainingContent: _rc, ...parsed } = out as unknown as (Jsonc.Value & { remainingContent: FragmentStringJsonc });
+      return parsed as Jsonc.Value;
     }
     else if (value.startsWith('{',)) {
       //region Object branch fast-path heuristic -- Same boundary-only trailing-comma attempt; otherwise defer

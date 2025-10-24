@@ -6,14 +6,7 @@
 */
 
 //region Imports and helpers -- Core types, utilities, and comment skipper used by the parsers
-import {
-  $ as arrayExclusiveRange,
-} from '@_/types/t object/t array/t p number finite int/f/t number/exclusiveRange/r s/p n/index.ts';
 import * as Jsonc from '../../../../t/index.ts';
-import {
-  getLengthsToTestFirst,
-  numberLengthsToTestFirst,
-} from './lengthSelection.ts';
 import { scanQuotedString, } from './scanQuotedString.ts';
 
 import type {
@@ -23,6 +16,123 @@ import type {
 import { startsWithComment, } from './startsWithComment.ts';
 const f = Object.freeze;
 //endregion Imports and helpers
+
+//region Value tokenizers -- Pure helpers for literals and numbers with explicit contracts
+/**
+ * Parse JSON literals starting at the current position.
+ * Supports: null, true, false.
+ *
+ * @example
+ * ```ts
+ * parseLiteralToken({ value: 'null,1' }) // -> { consumed: 'null', parsed: { value: null }, remaining: ',1' }
+ * ```
+ */
+function parseLiteralToken(
+  { value, }: { value: FragmentStringJsonc | StringJsonc; },
+): { consumed: FragmentStringJsonc; parsed: Jsonc.Value; remaining: FragmentStringJsonc; }
+  | undefined
+{
+  if (value.startsWith('null',)) {
+    return { consumed: 'null' as FragmentStringJsonc, parsed: { value: null, },
+      remaining: value.slice(4,) as FragmentStringJsonc, };
+  }
+  if (value.startsWith('true',)) {
+    return { consumed: 'true' as FragmentStringJsonc, parsed: { value: true, },
+      remaining: value.slice(4,) as FragmentStringJsonc, };
+  }
+  if (value.startsWith('false',)) {
+    return { consumed: 'false' as FragmentStringJsonc, parsed: { value: false, },
+      remaining: value.slice(5,) as FragmentStringJsonc, };
+  }
+  return undefined;
+}
+
+/**
+ * Parse a JSON number token from the start using a grammar regex; avoids speculative mutation-heavy probing.
+ * The regex matches the JSON number grammar and returns the longest valid numeric prefix.
+ *
+ * Note: Regex is used instead of incremental mutation to preserve immutability and readability.
+ *
+ * @example
+ * ```ts
+ * parseNumberToken({ value: '-12.3e+4, x' }) // -> { consumed: '-12.3e+4', parsed: { value: -123000 }, remaining: ', x' }
+ * ```
+ */
+function parseNumberToken(
+  { value, }: { value: FragmentStringJsonc | StringJsonc; },
+): { consumed: FragmentStringJsonc; parsed: Jsonc.Value;
+  remaining: FragmentStringJsonc; }
+{
+  // JSON number grammar (no leading +, leading 0 rules, optional fraction and exponent)
+  const NUMBER_RE = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[Ee][+-]?\d+)?/;
+  const match = NUMBER_RE.exec(value,);
+  if (!match || match.index !== 0)
+    throw new Error('malformed jsonc, non-number after number marker',);
+  const consumed = match[0] as FragmentStringJsonc;
+  // Using JSON.parse for exact numeric semantics, no intermediate mutation.
+  const parsedValue = JSON.parse(consumed,) as number;
+  return { consumed, parsed: { value: parsedValue, },
+    remaining: value.slice(consumed.length,) as FragmentStringJsonc, };
+}
+//endregion Value tokenizers
+
+//region Value dispatcher -- Single entry to parse one value from the start
+/**
+ * Parse a single JSONC value from the current position, delegating containers and attaching optional context comment.
+ *
+ * @example
+ * ```ts
+ * parseValueFromStart({ value: '"x" ,', }) // -> parsed string, remaining ' ,'
+ * parseValueFromStart({ value: '[1]', }) // -> parsed array, remaining ''
+ * ```
+ */
+function parseValueFromStart(
+  { value, context, }: { value: FragmentStringJsonc | StringJsonc;
+    context?: Jsonc.ValueBase; },
+): { parsed: Jsonc.Value; remaining: FragmentStringJsonc; } {
+  if (value.startsWith('"',)) {
+    const out = scanQuotedString({ value, },);
+    const parsed: Jsonc.Value = context?.comment
+      ? { ...out.parsed, comment: context.comment, }
+      : out.parsed;
+    return { parsed, remaining: out.remaining, };
+  }
+
+  const literal = parseLiteralToken({ value, },);
+  if (literal) {
+    const parsed: Jsonc.Value = context?.comment
+      ? { ...literal.parsed, comment: context.comment, }
+      : literal.parsed;
+    return { parsed, remaining: literal.remaining, };
+  }
+
+  if (value.startsWith('[',)) {
+    const out = customParserForArray({ value, context, },);
+    const { remainingContent, ...parsed } =
+      out as unknown as (Jsonc.Value & { remainingContent: FragmentStringJsonc; });
+    return { parsed: parsed as Jsonc.Value, remaining: remainingContent, };
+  }
+
+  if (value.startsWith('{',)) {
+    const out = customParserForRecord({ value, context, },);
+    const { remainingContent, ...parsed } =
+      out as unknown as (Jsonc.Value & { remainingContent: FragmentStringJsonc; });
+    return { parsed: parsed as Jsonc.Value, remaining: remainingContent, };
+  }
+
+  if (['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',].some(m =>
+    value.startsWith(m,)
+  )) {
+    const out = parseNumberToken({ value, },);
+    const parsed: Jsonc.Value = context?.comment
+      ? { ...out.parsed, comment: context.comment, }
+      : out.parsed;
+    return { parsed, remaining: out.remaining, };
+  }
+
+  throw new Error('invalid jsonc value start',);
+}
+//endregion Value dispatcher
 
 /**
  * Parse a JSONC array fragment starting at '[' while preserving comments and returning the unconsumed tail.
@@ -39,165 +149,66 @@ export function customParserForArray(
 ): Jsonc.Value & { remainingContent: FragmentStringJsonc; } {
   //region Entry and comment skip -- Drop the opening '[' then consume leading comments/space
   const woOpening = value.slice('['.length,) as FragmentStringJsonc;
-  const outStartsComment = startsWithComment({ value: woOpening, },);
+  const arrayLead = startsWithComment({ value: woOpening, context, },);
   //endregion Entry and comment skip
 
-  // Must start with an array item, another array, or another record.
-  // Or if the array is empty, closingSquareBracket.
-  const { remainingContent, } = outStartsComment;
-
   //region Empty array fast-exit -- Handle immediate closing bracket
-  if (remainingContent.startsWith(']',)) {
-    return { ...outStartsComment, value: [], remainingContent: remainingContent
-      .slice(']'.length,) as FragmentStringJsonc, };
+  if (arrayLead.remainingContent.startsWith(']',)) {
+    return {
+      value: [],
+      comment: arrayLead.comment,
+      remainingContent: arrayLead.remainingContent.slice(
+        ']'.length,
+      ) as FragmentStringJsonc,
+    };
   }
   //endregion Empty array fast-exit
 
-  //region Nested structure detection -- Delegate when next token starts another container
-  if (remainingContent.startsWith('[',)) {
-    const firstItem = { ...outStartsComment,
-      ...(customParserForArray({ value: remainingContent, },)), };
-  }
+  //region Element recursion -- Parse one element, then decide on separator and continue
+  const parseElements = (
+    tail: FragmentStringJsonc,
+    items: readonly Jsonc.Value[],
+  ): { items: readonly Jsonc.Value[]; tail: FragmentStringJsonc; } => {
+    const lead = startsWithComment({ value: tail, },);
+    const start = lead.remainingContent;
 
-  if (remainingContent.startsWith('{',)) {
-    const firstItem = { ...outStartsComment,
-      ...(customParserForRecord({ value: remainingContent, },)), };
-  }
-  //endregion Nested structure detection
+    // If we encounter a closing bracket before an element, finalize
+    if (start.startsWith(']',))
+      return { items, tail: start.slice(']'.length,) as FragmentStringJsonc, };
 
-  // Must start with a primitive array item
-  // read until encountering (unquoted comma) or newline or (unquoted whitespace) or (unquoted comment start marker slashStar only) or closingSquareBracket.
-  //
-  // Why are we not considering unquoted comment start marker slashSlash?
-  // Because slashSlash comments out current line, which means
-  // `1//` cannot be valid no matter what follows.
-  // And we'd already handled the case where `1,//` in "encountering comma".
-  // And we'd already handled the case where `1\n//\n,` in "encountering newline".
-  //region Primitive parsing -- Strings, null/true/false, and number boundary probing
-  const { parsed, remaining, } = (function getUntil(
-    { value, },
-  ): { consumed: string; parsed: Jsonc.Value; remaining: string; } {
-    if (value.startsWith('"',)) {
-      const out = scanQuotedString({ value, },);
-      return { consumed: out.consumed, parsed: out.parsed, remaining: out.remaining, };
-    }
-    else if (value.startsWith('null',)) {
-      const valueExceptStartingNull = value.slice('null'.length,);
-      return { consumed: 'null', parsed: { value: null, },
-        remaining: valueExceptStartingNull, };
-    }
-    else if (value.startsWith('true',)) {
-      const valueExceptStartingTrue = value.slice('true'.length,);
-      return { consumed: 'true', parsed: { value: true, },
-        remaining: valueExceptStartingTrue, };
-    }
-    else if (value.startsWith('false',)) {
-      const valueExceptStartingFalse = value.slice('false'.length,);
-      return { consumed: 'false', parsed: { value: false, },
-        remaining: valueExceptStartingFalse, };
-    }
-    else if (['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',].some(
-      function startsWithNumberMarker(numberMarker,) {
-        return value.startsWith(numberMarker,);
-      },
-    )) {
-      const lengthsToTestFirst = getLengthsToTestFirst({ lengthUpperBound: value.length,
-        lengths: numberLengthsToTestFirst, },);
+    const { parsed, remaining, } = parseValueFromStart({ value: start, context: lead, },);
+    const after = startsWithComment({ value: remaining as FragmentStringJsonc, },);
+    const rc = (after.remainingContent.trimStart() as FragmentStringJsonc);
 
-      const lastTested: { longestKnownSuccess?: { length: number; result: number; };
-        shortestKnownFail?: { length: number; }; } = {};
-      for (const lengthToTestFirst of lengthsToTestFirst) {
-        const sliced = value.slice(0, lengthToTestFirst,);
-        try {
-          const potentialNumber = JSON.parse(sliced,) as unknown;
-          if (typeof potentialNumber === 'number') {
-            lastTested.longestKnownSuccess = f({ length: lengthToTestFirst, success: true,
-              result: potentialNumber, },);
-            // continue to the bigger length, if there's no bigger length, we're done.
-          }
-          else {
-            throw new Error('malformed jsonc, non-number after number marker',);
-          }
-        }
-        catch (error: any) {
-          console.error(`${sliced} ${(error as Error).message}`,);
-          lastTested.shortestKnownFail = { length: lengthToTestFirst, };
+    // Case: end of array immediately after element
+    if (rc.startsWith(']',)) {
+      return { items: [...items, parsed,], tail: rc
+        .slice(']'.length,) as FragmentStringJsonc, };
+    }
 
-          break;
-        }
+    // Case: comma-separated next element
+    if (rc.startsWith(',',)) {
+      const afterComma = rc.slice(','.length,) as FragmentStringJsonc;
+      const nextStart = startsWithComment({ value: afterComma, },);
+      const nextToken = (nextStart.remainingContent.trimStart() as FragmentStringJsonc);
+
+      // Trailing comma allowed: comma + comments/whitespace + ']'
+      if (nextToken.startsWith(']',)) {
+        return { items: [...items, parsed,], tail: nextToken.slice(']'.length,) as FragmentStringJsonc, };
       }
-      if (lastTested.longestKnownSuccess) {
-        if (lastTested.shortestKnownFail) {
-          const lengthsToTest = arrayExclusiveRange({
-            startExclusive: lastTested.longestKnownSuccess.length,
-            endExclusive: lastTested.shortestKnownFail.length,
-          },);
-          // TODO: Also test lengthsToTest
-          // Test each intermediate length to find the exact boundary
-          for (const lengthToTest of lengthsToTest) {
-            const sliced = value.slice(0, lengthToTest,);
-            try {
-              const potentialNumber = JSON.parse(sliced,) as unknown;
-              if (typeof potentialNumber === 'number') {
-                lastTested.longestKnownSuccess = f({ length: lengthToTest, success: true,
-                  result: potentialNumber, },);
-              }
-              else {
-                throw new Error('malformed jsonc, non-number after number marker',);
-              }
-            }
-            catch (error: any) {
-              console.error(`${sliced} ${(error as Error).message}`,);
-              lastTested.shortestKnownFail = { length: lengthToTest, };
-              break;
-            }
-          }
-          // now we have the canon longestKnownSuccess
-          const { result, length, } = lastTested.longestKnownSuccess;
-          return { consumed: value.slice(0, length,), parsed: { value: result, },
-            remaining: value.slice(length,), };
-        }
-        else {
-          // longestKnownSuccess exists but shortestKnownFail doesn't, which means the entire string is a number.
-          const { result, } = lastTested.longestKnownSuccess;
-          return { consumed: value, parsed: { value: result, }, remaining: '', };
-        }
-      }
-      else {
-        throw new Error('malformed jsonc, non-number after dash',);
-      }
+
+      return parseElements(nextToken, [...items, parsed,],);
     }
-    else {
-      throw new Error('invalid jsonc primitive array item',);
-    }
-  })({ value: remainingContent, },);
-  //endregion Primitive parsing
-  // TODO: Okay, that's just the start. And?
-  // trimmed must start with either a comma or comments.
-  //region Separator handling -- After first item, expect a comma for multi-item arrays (comments/whitespace allowed)
-  const afterFirstItemTrimmed = remaining.trimStart() as FragmentStringJsonc;
-  const afterFirstItemOutStartsComment = startsWithComment({
-    value: afterFirstItemTrimmed,
-  },);
-  const { remainingContent: afterFirstItemRemainingContent, } =
-    afterFirstItemOutStartsComment;
-  // afterFirstItemRemainingContent must start with a comma if the array has more than 1 item.
-  // TODO: must start with a closingSquareBracket or a comma + comments/whitespace + closingSquareBracket if the array has only 1 item.
-  if (!afterFirstItemRemainingContent.startsWith(',',)) {
-    throw new Error(
-      `afterFirstItemRemainingContent must start with a comma ${afterFirstItemRemainingContent}`,
-    );
-  }
-  const afterFirstCommaTrimmed = afterFirstItemRemainingContent
-    .slice(','.length,)
-    .trimStart() as FragmentStringJsonc;
-  const afterFirstCommaOutStartsComment = startsWithComment({
-    value: afterFirstCommaTrimmed,
-  },);
-  const { remainingContent: afterFirstCommaRemainingContent, } =
-    afterFirstCommaOutStartsComment;
-  // afterFirstCommaRemainingContent is the start of the 2nd item.
-  //endregion Separator handling
+
+    // Error: expected separator or closing bracket
+    const preview = rc.slice(0, 32,);
+    throw new Error(`malformed jsonc array: expected ',' or ']' near: ${preview}`,);
+  };
+
+  const { items, tail, } = parseElements(arrayLead.remainingContent, [],);
+  return { value: items as Jsonc.Value[], comment: arrayLead.comment,
+    remainingContent: tail, };
+  //endregion Element recursion
 }
 
 /**
