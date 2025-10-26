@@ -9,6 +9,7 @@
     "pedantic": "warn",
     "style": "warn"
   },
+  // Language server still doesn't support js plugins. Waiting for upstream: https://github.com/oxc-project/oxc/issues/14402 https://github.com/oxc-project/oxc/issues/14826
   "jsPlugins": ["./oxlint-require-tsdoc.ts"],
   "env": {
     "browser": true,
