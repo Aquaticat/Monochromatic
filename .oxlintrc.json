@@ -9,7 +9,7 @@
     "pedantic": "warn",
     "style": "warn"
   },
-  "jsPlugins": ["./oxlint-require-tsdoc.js"],
+  "jsPlugins": ["./oxlint-require-tsdoc.ts"],
   "env": {
     "browser": true,
     "node": true,
@@ -192,6 +192,13 @@
     "eslint/sort-keys": "off",
     // Too many false positives.
     "eslint/yoda": "off",
+
+    "import/no-named-export": "off",
+    "import/no-namespace": "off",
+
+    // formatting concern only.
+    "eslint/curly": "off",
+
     // Readable enough.
     "unicorn/no-await-expression-member": "off",
     "typescript/consistent-type-definitions": [
