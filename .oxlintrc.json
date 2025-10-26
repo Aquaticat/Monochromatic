@@ -9,6 +9,7 @@
     "pedantic": "warn",
     "style": "warn"
   },
+  "jsPlugins": ["./oxlint-require-tsdoc.js"],
   "env": {
     "browser": true,
     "node": true,
@@ -36,12 +37,13 @@
 
     "promise",
     "node",
-    "vitest",
-    
+    "vitest"
     // oxlint currently can't lint jsx in non-jsx files. See https://oxc.rs/docs/guide/usage/linter/config#specifying-files-to-process
     // "react",
   ],
   "rules": {
+    "require-tsdoc/require-tsdoc": "error",
+
     //region correctness
 
     // import/default, import/named, import/namespace aren't enabled because TypeScript already checks for those.
@@ -116,7 +118,7 @@
 
     "eslint/no-await-in-loop": "warn",
     "eslint/no-accumulating-spread": "warn",
-    "eslint-plugin-unicorn/prefer-set-has": "warn",
+    "unicorn/prefer-set-has": "warn",
     //endregion perf
 
     //region suspicious
