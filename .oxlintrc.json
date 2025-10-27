@@ -160,7 +160,9 @@
     "import/consistent-type-specifier-style": "off",
 
     // Good rule generally. Bad for library with a barrel file.
-    "import/prefer-default-export": "allow",
+    "import/prefer-default-export": "off",
+
+    "import/exports-last": "off",
 
     // Good traces are desired.
     "eslint/func-names": ["warn", "as-needed"],
