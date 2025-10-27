@@ -42,9 +42,9 @@ import {
 } from 'vite';
 import { json5Plugin, } from 'vite-plugin-json5';
 import { viteSingleFile, } from 'vite-plugin-singlefile';
-import {
-  type ViteUserConfig as VitestUserConfig,
-  type ViteUserConfigFnObject as VitestUserConfigFnObject,
+import type {
+  ViteUserConfig as VitestUserConfig,
+  ViteUserConfigFnObject as VitestUserConfigFnObject,
 } from 'vitest/config';
 
 import { playwright, } from '@vitest/browser-playwright';
@@ -722,7 +722,17 @@ export const vitestOnlyBrowserConfigWorkspace: VitestUserConfig = {
     exclude: [...vitestExcludeCommon, '**/*.unit.test.ts',],
 
     browser: {
-      provider: playwright(),
+      provider: playwright(
+        {
+          contextOptions: {
+            acceptDownloads: false,
+          },
+          launchOptions: {
+            channel: 'chromium',
+            chromiumSandbox: true,
+          },
+        },
+      ),
       enabled: true,
       headless: true,
 

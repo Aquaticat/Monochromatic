@@ -165,6 +165,9 @@
     // Good traces are desired.
     "eslint/func-names": ["warn", "as-needed"],
 
+    // formatting concern.
+    "unicorn/switch-case-braces": "off",
+
     // TypeScript function overloads work better with function declarations.
     "eslint/func-style": "off",
     // Avoid for in loops. Use for of loops instead.
