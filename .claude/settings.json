@@ -1,8 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "mcp__context7__resolve-library-id",
-      "mcp__context7__get-library-docs",
       "Bash(git --no-pager diff CLAUDE.md moon.yml)",
       "Bash(bun:*)",
       "Bash(pnpm list:*)",
@@ -11,8 +9,6 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:docs.astral.sh)",
       "Bash(cat:*)",
-      "mcp__zen__version",
-      "mcp__zen__listmodels",
       "Bash(apt policy:*)",
       "Bash(apt search:*)",
       "Bash(/home/linuxbrew/.linuxbrew/bin/brew --version)",
@@ -27,10 +23,7 @@
       "mcp__exa__crawling",
       "WebFetch(domain:docs.anthropic.com)",
       "mcp__github__get_file_contents",
-      "mcp__github__list_branches",
-      "mcp__meilisearch__get-connection-settings",
-      "mcp__meilisearch__health-check",
-      "mcp__meilisearch__list-indexes"
+      "mcp__github__list_branches"
     ],
     "deny": []
   }

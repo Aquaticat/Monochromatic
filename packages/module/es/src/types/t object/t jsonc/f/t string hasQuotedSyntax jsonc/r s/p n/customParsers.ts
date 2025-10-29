@@ -6,7 +6,7 @@
 */
 
 //region Imports and helpers -- Core types, utilities, and comment skipper used by the parsers
-import * as Jsonc from '../../../../t/index.ts';
+import type * as Jsonc from '../../../../t/index.ts';
 import { mergeComments, } from './mergeComments.ts';
 import { scanQuotedString, } from './scanQuotedString.ts';
 

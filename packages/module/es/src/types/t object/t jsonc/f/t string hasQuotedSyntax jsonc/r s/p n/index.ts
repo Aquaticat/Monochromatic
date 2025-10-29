@@ -11,8 +11,11 @@ import type {
   FragmentStringJsonc,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
 import type { UnknownRecord, } from 'type-fest';
-import * as Jsonc from '../../../../t/index.ts';
-import { customParserForArray, customParserForRecord, } from './customParsers.ts';
+import type * as Jsonc from '../../../../t/index.ts';
+import {
+  customParserForArray,
+  customParserForRecord,
+} from './customParsers.ts';
 import { startsWithComment, } from './startsWithComment.ts';
 //endregion Imports and aliases
 
@@ -89,15 +92,15 @@ export function tryArrayFastPath(
   { value, context, }: { value: string; context: ReturnType<typeof startsWithComment>; },
 ): Jsonc.Value | typeof NO_FAST_PATH {
   const trimmed = value.trimEnd();
-  if (!trimmed.endsWith(']',)) return NO_FAST_PATH;
+  if (!trimmed.endsWith(']',))
+    return NO_FAST_PATH;
 
   // Work backwards from the closing bracket to find trailing comma pattern
   let searchIndex = trimmed.length - ']'.length;
   // Skip whitespace before the bracket
-  while (searchIndex > 0 && /\s/.test(trimmed[searchIndex - 1],)) {
+  while (searchIndex > 0 && /\s/.test(trimmed[searchIndex - 1],))
     searchIndex--;
-  }
-  
+
   // Check if there's a comma before the whitespace
   if (searchIndex > 0 && trimmed[searchIndex - 1] === ',') {
     // Found trailing comma pattern like ", ]" or ",]"
@@ -107,7 +110,7 @@ export function tryArrayFastPath(
       // Empty array with trailing comma like "[ , ]" - reject
       return NO_FAST_PATH;
     }
-    
+
     const repairedJson = trimmed.slice(0, searchIndex - 1,) + ']';
     try {
       return { ...context, json: JSON.parse(repairedJson,) as UnknownRecord, };
@@ -117,7 +120,7 @@ export function tryArrayFastPath(
       return NO_FAST_PATH;
     }
   }
-  
+
   // No trailing comma found - try parsing as-is for clean JSON
   try {
     return { ...context, json: JSON.parse(trimmed,) as UnknownRecord, };
@@ -177,15 +180,15 @@ export function tryObjectFastPath(
   { value, context, }: { value: string; context: ReturnType<typeof startsWithComment>; },
 ): Jsonc.Value | typeof NO_FAST_PATH {
   const trimmed = value.trimEnd();
-  if (!trimmed.endsWith('}',)) return NO_FAST_PATH;
+  if (!trimmed.endsWith('}',))
+    return NO_FAST_PATH;
 
   // Work backwards from the closing brace to find trailing comma pattern
   let searchIndex = trimmed.length - '}'.length;
   // Skip whitespace before the brace
-  while (searchIndex > 0 && /\s/.test(trimmed[searchIndex - 1],)) {
+  while (searchIndex > 0 && /\s/.test(trimmed[searchIndex - 1],))
     searchIndex--;
-  }
-  
+
   // Check if there's a comma before the whitespace
   if (searchIndex > 0 && trimmed[searchIndex - 1] === ',') {
     // Found trailing comma pattern like ", }" or ",}"
@@ -195,7 +198,7 @@ export function tryObjectFastPath(
       // Empty object with trailing comma like "{ , }" - reject
       return NO_FAST_PATH;
     }
-    
+
     const repairedJson = trimmed.slice(0, searchIndex - 1,) + '}';
     try {
       return { ...context, json: JSON.parse(repairedJson,) as UnknownRecord, };
@@ -205,7 +208,7 @@ export function tryObjectFastPath(
       return NO_FAST_PATH;
     }
   }
-  
+
   // No trailing comma found - try parsing as-is for clean JSON
   try {
     return { ...context, json: JSON.parse(trimmed,) as UnknownRecord, };
@@ -245,7 +248,8 @@ export function tryObjectFastPath(
  * ```
  */
 export function validateNoTrailingContent(
-  { remainingContent, containerType, }: { remainingContent: string; containerType: 'array' | 'object'; },
+  { remainingContent, containerType, }: { remainingContent: string;
+    containerType: 'array' | 'object'; },
 ): void {
   const tail = startsWithComment({ value: remainingContent as FragmentStringJsonc, },)
     .remainingContent
@@ -366,28 +370,28 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
     if (value.startsWith('[',)) {
       //region Array branch fast-path heuristic -- Try fast-path optimization before custom parser
       const fastPathResult = tryArrayFastPath({ value, context: outStartsComment, },);
-      if (typeof fastPathResult !== 'symbol') {
+      if (typeof fastPathResult !== 'symbol')
         return fastPathResult;
-      }
       //endregion Array branch fast-path heuristic
       // Defer to custom parser for full JSONC array parsing with comments/trailing commas
       const out = customParserForArray({ value, context: outStartsComment, },);
       // Validate no unexpected trailing content at top-level
-      validateNoTrailingContent({ remainingContent: out.remainingContent, containerType: 'array', },);
+      validateNoTrailingContent({ remainingContent: out.remainingContent,
+        containerType: 'array', },);
       const { remainingContent: _rc, ...parsed } = out;
       return parsed as Jsonc.Value;
     }
     else if (value.startsWith('{',)) {
       //region Object branch fast-path heuristic -- Try fast-path optimization before custom parser
       const fastPathResult = tryObjectFastPath({ value, context: outStartsComment, },);
-      if (typeof fastPathResult !== 'symbol') {
+      if (typeof fastPathResult !== 'symbol')
         return fastPathResult;
-      }
       //endregion Object branch fast-path heuristic
       // Defer to custom parser for full JSONC record parsing with comments/trailing commas
       const out = customParserForRecord({ value, context: outStartsComment, },);
       // Validate no unexpected trailing content at top-level
-      validateNoTrailingContent({ remainingContent: out.remainingContent, containerType: 'object', },);
+      validateNoTrailingContent({ remainingContent: out.remainingContent,
+        containerType: 'object', },);
       const { remainingContent: _rc, ...parsed } = out;
       return parsed as Jsonc.Value;
     }
