@@ -6,21 +6,21 @@
 
 //region Imports and helpers -- Core types, utilities, and helpers from child modules
 import type * as Jsonc from '../../../../t/index.ts';
-import { mergeComments, } from './customParsers.startsWithComment.mergeComments.ts';
-import { scanQuotedString, } from './customParsers.scanQuotedString.ts';
+import { mergeComments, } from './index.customParsers.startsWithComment.mergeComments.ts';
+import { scanQuotedString, } from './index.customParsers.scanQuotedString.ts';
 import type {
   $ as StringJsonc,
   FragmentStringJsonc,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
-import { startsWithComment, } from './customParsers.startsWithComment.ts';
-import { NO_LITERAL, parseLiteralToken, parseNumberToken, } from './customParsers.tokenizers.ts';
-import { parseArrayHeader, expectArraySeparatorOrEnd, } from './customParsers.arrayHelpers.ts';
+import { startsWithComment, } from './index.customParsers.startsWithComment.ts';
+import { NO_LITERAL, parseLiteralToken, parseNumberToken, } from './index.customParsers.tokenizers.ts';
+import { parseArrayHeader, expectArraySeparatorOrEnd, } from './index.customParsers.arrayHelpers.ts';
 import {
   parseRecordHeader,
   expectRecordSeparatorOrEnd,
   parseRecordKey,
   expectColonAfterKey,
-} from './customParsers.recordHelpers.ts';
+} from './index.customParsers.recordHelpers.ts';
 /**
  * Alias for intrinsic freeze to emphasize immutability when capturing values.
  * @remarks Present for parity with modules that capture intrinsics; avoids repeated lookups.
@@ -319,10 +319,10 @@ export function customParserForRecord(
 }
 
 //region Re-exports from child modules
-export * from './customParsers.tokenizers.ts';
-export * from './customParsers.arrayHelpers.ts';
-export * from './customParsers.recordHelpers.ts';
-export * from './customParsers.scanQuotedString.ts';
-export * from './customParsers.startsWithComment.ts';
-export * from './customParsers.startsWithComment.mergeComments.ts';
+export * from './index.customParsers.tokenizers.ts';
+export * from './index.customParsers.arrayHelpers.ts';
+export * from './index.customParsers.recordHelpers.ts';
+export * from './index.customParsers.scanQuotedString.ts';
+export * from './index.customParsers.startsWithComment.ts';
+export * from './index.customParsers.startsWithComment.mergeComments.ts';
 //endregion Re-exports from child modules
