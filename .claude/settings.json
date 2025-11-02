@@ -25,6 +25,11 @@
       "mcp__github__get_file_contents",
       "mcp__github__list_branches"
     ],
-    "deny": []
+    "deny": [
+      "Edit",
+      "WebFetch",
+      "WebSearch",
+      "NotebookEdit"
+    ]
   }
 }
