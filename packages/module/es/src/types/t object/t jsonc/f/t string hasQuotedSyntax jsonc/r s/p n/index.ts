@@ -21,12 +21,15 @@ import { startsWithComment, } from './startsWithComment.ts';
 
 //region Minion functions -- Helper functions for fast-path optimization and validation
 /**
+ * Maximum length for error message preview snippets to keep error output concise.
+ */
+const MAX_ERROR_PREVIEW_LENGTH = 48;
+
+/**
  * Sentinel indicating fast-path optimization cannot be applied.
- *
  * @remarks
  * Narrow by category first using `typeof result === 'symbol'` before identity comparison to avoid incorrect
  * narrowing with symbol unions.
- *
  * @example
  * ```ts
  * const result = tryArrayFastPath({ value: '[1, 2,]', context });
@@ -44,22 +47,24 @@ import { startsWithComment, } from './startsWithComment.ts';
 export const NO_FAST_PATH: symbol = Symbol('jsonc:no-fast-path',);
 
 /**
- * Attempt fast-path optimization for arrays.
+ * Generic fast-path optimization for arrays and objects.
  *
- * Tries to parse arrays using native JSON.parse for performance. Handles both clean JSON
- * and arrays with a single trailing comma at the boundary by removing it first.
+ * Tries to parse containers using native JSON.parse for performance. Handles both clean JSON
+ * and containers with a single trailing comma at the boundary by removing it first.
  * Returns sentinel if optimization cannot be applied (e.g., contains comments).
  *
- * @param value - Array string starting with `[`
+ * @param value - Container string starting with `[` or `{`
  * @param context - Leading comment context from pre-scan
+ * @param closingChar - Expected closing character (`]` for arrays, `}` for objects)
  * @returns Parsed JSONC value on success, or NO_FAST_PATH sentinel when fast-path cannot be used
  *
  * @example
  * Successful fast-path with clean JSON:
  * ```ts
- * const result = tryArrayFastPath({
+ * const result = tryContainerFastPath({
  *   value: '[1, 2, 3]',
- *   context: { remainingContent: '[1, 2, 3]' }
+ *   context: { remainingContent: '[1, 2, 3]' },
+ *   closingChar: ']'
  * });
  * if (typeof result !== 'symbol') {
  *   console.log(result.json); // [1, 2, 3]
@@ -69,49 +74,55 @@ export const NO_FAST_PATH: symbol = Symbol('jsonc:no-fast-path',);
  * @example
  * Successful fast-path with trailing comma:
  * ```ts
- * const result = tryArrayFastPath({
- *   value: '[1, 2, 3, ]',
- *   context: { remainingContent: '[1, 2, 3, ]' }
+ * const result = tryContainerFastPath({
+ *   value: '{"a": 1, "b": 2, }',
+ *   context: { remainingContent: '{"a": 1, "b": 2, }' },
+ *   closingChar: '}'
  * });
  * if (typeof result !== 'symbol') {
- *   console.log(result.json); // [1, 2, 3]
+ *   console.log(result.json); // {a: 1, b: 2}
  * }
  * ```
  *
  * @example
  * Fast-path not applicable:
  * ```ts
- * const result = tryArrayFastPath({
+ * const result = tryContainerFastPath({
  *   value: '[1, /* comment *\/ 2]',
- *   context: { remainingContent: '[1, /* comment *\/ 2]' }
+ *   context: { remainingContent: '[1, /* comment *\/ 2]' },
+ *   closingChar: ']'
  * });
  * // Returns NO_FAST_PATH - contains comments
  * ```
  */
-export function tryArrayFastPath(
-  { value, context, }: { value: string; context: ReturnType<typeof startsWithComment>; },
+function tryContainerFastPath(
+  { value, context, closingChar, }: {
+    value: string;
+    context: ReturnType<typeof startsWithComment>;
+    closingChar: ']' | '}';
+  },
 ): Jsonc.Value | typeof NO_FAST_PATH {
   const trimmed = value.trimEnd();
-  if (!trimmed.endsWith(']',))
+  if (!trimmed.endsWith(closingChar,))
     return NO_FAST_PATH;
 
-  // Work backwards from the closing bracket to find trailing comma pattern
-  let searchIndex = trimmed.length - ']'.length;
-  // Skip whitespace before the bracket
-  while (searchIndex > 0 && /\s/.test(trimmed[searchIndex - 1],))
+  // Work backwards from the closing character to find trailing comma pattern
+  let searchIndex = trimmed.length - closingChar.length;
+  // Skip whitespace before the closing character
+  while (searchIndex > 0 && /\s/.test(trimmed[searchIndex - 1] ?? '',))
     searchIndex--;
 
   // Check if there's a comma before the whitespace
   if (searchIndex > 0 && trimmed[searchIndex - 1] === ',') {
-    // Found trailing comma pattern like ", ]" or ",]"
-    // Check if there's any content between opening bracket and the comma
+    // Found trailing comma pattern like ", ]" or ", }"
+    // Check if there's any content between opening character and the comma
     const contentBeforeComma = trimmed.slice(1, searchIndex - 1,).trim();
     if (contentBeforeComma.length === 0) {
-      // Empty array with trailing comma like "[ , ]" - reject
+      // Empty container with trailing comma like "[ , ]" or "{ , }" - reject
       return NO_FAST_PATH;
     }
 
-    const repairedJson = trimmed.slice(0, searchIndex - 1,) + ']';
+    const repairedJson = trimmed.slice(0, searchIndex - 1,) + closingChar;
     try {
       return { ...context, json: JSON.parse(repairedJson,) as UnknownRecord, };
     }
@@ -132,91 +143,21 @@ export function tryArrayFastPath(
 }
 
 /**
- * Attempt fast-path optimization for objects.
- *
- * Tries to parse objects using native JSON.parse for performance. Handles both clean JSON
- * and objects with a single trailing comma at the boundary by removing it first.
- * Returns sentinel if optimization cannot be applied (e.g., contains comments).
- *
- * @param value - Object string starting with `{`
- * @param context - Leading comment context from pre-scan
- * @returns Parsed JSONC value on success, or NO_FAST_PATH sentinel when fast-path cannot be used
- *
- * @example
- * Successful fast-path with clean JSON:
- * ```ts
- * const result = tryObjectFastPath({
- *   value: '{"a": 1, "b": 2}',
- *   context: { remainingContent: '{"a": 1, "b": 2}' }
- * });
- * if (typeof result !== 'symbol') {
- *   console.log(result.json); // {a: 1, b: 2}
- * }
- * ```
- *
- * @example
- * Successful fast-path with trailing comma:
- * ```ts
- * const result = tryObjectFastPath({
- *   value: '{"a": 1, "b": 2, }',
- *   context: { remainingContent: '{"a": 1, "b": 2, }' }
- * });
- * if (typeof result !== 'symbol') {
- *   console.log(result.json); // {a: 1, b: 2}
- * }
- * ```
- *
- * @example
- * Fast-path not applicable:
- * ```ts
- * const result = tryObjectFastPath({
- *   value: '{"a": 1, /* comment *\/ "b": 2}',
- *   context: { remainingContent: '{"a": 1, /* comment *\/ "b": 2}' }
- * });
- * // Returns NO_FAST_PATH - contains comments
- * ```
+ * {@inheritDoc tryContainerFastPath}
+ */
+export function tryArrayFastPath(
+  { value, context, }: { value: string; context: ReturnType<typeof startsWithComment>; },
+): Jsonc.Value | typeof NO_FAST_PATH {
+  return tryContainerFastPath({ value, context, closingChar: ']', },);
+}
+
+/**
+ * {@inheritDoc tryContainerFastPath}
  */
 export function tryObjectFastPath(
   { value, context, }: { value: string; context: ReturnType<typeof startsWithComment>; },
 ): Jsonc.Value | typeof NO_FAST_PATH {
-  const trimmed = value.trimEnd();
-  if (!trimmed.endsWith('}',))
-    return NO_FAST_PATH;
-
-  // Work backwards from the closing brace to find trailing comma pattern
-  let searchIndex = trimmed.length - '}'.length;
-  // Skip whitespace before the brace
-  while (searchIndex > 0 && /\s/.test(trimmed[searchIndex - 1],))
-    searchIndex--;
-
-  // Check if there's a comma before the whitespace
-  if (searchIndex > 0 && trimmed[searchIndex - 1] === ',') {
-    // Found trailing comma pattern like ", }" or ",}"
-    // Check if there's any content between opening brace and the comma
-    const contentBeforeComma = trimmed.slice(1, searchIndex - 1,).trim();
-    if (contentBeforeComma.length === 0) {
-      // Empty object with trailing comma like "{ , }" - reject
-      return NO_FAST_PATH;
-    }
-
-    const repairedJson = trimmed.slice(0, searchIndex - 1,) + '}';
-    try {
-      return { ...context, json: JSON.parse(repairedJson,) as UnknownRecord, };
-    }
-    catch {
-      // Parse failed - likely has comments, strings with special chars, etc.
-      return NO_FAST_PATH;
-    }
-  }
-
-  // No trailing comma found - try parsing as-is for clean JSON
-  try {
-    return { ...context, json: JSON.parse(trimmed,) as UnknownRecord, };
-  }
-  catch {
-    // Parse failed - contains JSONC features like comments
-    return NO_FAST_PATH;
-  }
+  return tryContainerFastPath({ value, context, closingChar: '}', },);
 }
 
 /**
@@ -256,9 +197,51 @@ export function validateNoTrailingContent(
     .trim();
   if (tail.length > 0) {
     throw new Error(
-      `unexpected trailing content after ${containerType}: ${tail.slice(0, 48,)}`,
+      `unexpected trailing content after ${containerType}: ${
+        tail.slice(0, MAX_ERROR_PREVIEW_LENGTH,)
+      }`,
     );
   }
+}
+
+/**
+ * Parse container with fast-path optimization and custom parser fallback.
+ *
+ * Attempts fast-path parsing first using native JSON.parse, then falls back to custom parser
+ * if JSONC features are detected. Validates no trailing content remains after parsing.
+ *
+ * @param value - Container string to parse
+ * @param context - Leading comment context from pre-scan
+ * @param containerType - Type of container ('array' or 'object')
+ * @param tryFastPathFn - Fast-path optimization function
+ * @param customParserFn - Custom parser for JSONC features
+ * @returns Parsed JSONC value with comments preserved
+ */
+function parseWithFallback({
+  value,
+  context,
+  containerType,
+  tryFastPathFn,
+  customParserFn,
+}: {
+  value: FragmentStringJsonc;
+  context: ReturnType<typeof startsWithComment>;
+  containerType: 'array' | 'object';
+  tryFastPathFn: (
+    parameters: { value: string; context: ReturnType<typeof startsWithComment>; },
+  ) => Jsonc.Value | typeof NO_FAST_PATH;
+  customParserFn: (
+    parameters: { value: FragmentStringJsonc | StringJsonc; context?: Jsonc.ValueBase; },
+  ) => { remainingContent: FragmentStringJsonc; } & Jsonc.Value;
+},): Jsonc.Value {
+  const fastPathResult = tryFastPathFn({ value, context, },);
+  if (typeof fastPathResult !== 'symbol')
+    return fastPathResult;
+
+  const out = customParserFn({ value, context, },);
+  validateNoTrailingContent({ remainingContent: out.remainingContent, containerType, },);
+  const { remainingContent: _rc, ...parsed } = out;
+  return parsed as Jsonc.Value;
 }
 //endregion Minion functions
 
@@ -368,32 +351,22 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
   const result = (function getResult({ outStartsComment, },): Jsonc.Value {
     const { remainingContent: value, } = outStartsComment;
     if (value.startsWith('[',)) {
-      //region Array branch fast-path heuristic -- Try fast-path optimization before custom parser
-      const fastPathResult = tryArrayFastPath({ value, context: outStartsComment, },);
-      if (typeof fastPathResult !== 'symbol')
-        return fastPathResult;
-      //endregion Array branch fast-path heuristic
-      // Defer to custom parser for full JSONC array parsing with comments/trailing commas
-      const out = customParserForArray({ value, context: outStartsComment, },);
-      // Validate no unexpected trailing content at top-level
-      validateNoTrailingContent({ remainingContent: out.remainingContent,
-        containerType: 'array', },);
-      const { remainingContent: _rc, ...parsed } = out;
-      return parsed as Jsonc.Value;
+      return parseWithFallback({
+        value: value as unknown as FragmentStringJsonc,
+        context: outStartsComment,
+        containerType: 'array',
+        tryFastPathFn: tryArrayFastPath,
+        customParserFn: customParserForArray,
+      },);
     }
     else if (value.startsWith('{',)) {
-      //region Object branch fast-path heuristic -- Try fast-path optimization before custom parser
-      const fastPathResult = tryObjectFastPath({ value, context: outStartsComment, },);
-      if (typeof fastPathResult !== 'symbol')
-        return fastPathResult;
-      //endregion Object branch fast-path heuristic
-      // Defer to custom parser for full JSONC record parsing with comments/trailing commas
-      const out = customParserForRecord({ value, context: outStartsComment, },);
-      // Validate no unexpected trailing content at top-level
-      validateNoTrailingContent({ remainingContent: out.remainingContent,
-        containerType: 'object', },);
-      const { remainingContent: _rc, ...parsed } = out;
-      return parsed as Jsonc.Value;
+      return parseWithFallback({
+        value: value as unknown as FragmentStringJsonc,
+        context: outStartsComment,
+        containerType: 'object',
+        tryFastPathFn: tryObjectFastPath,
+        customParserFn: customParserForRecord,
+      },);
     }
     //region Error handling -- Only arrays or objects are valid after trimming leading comments
     throw new Error(

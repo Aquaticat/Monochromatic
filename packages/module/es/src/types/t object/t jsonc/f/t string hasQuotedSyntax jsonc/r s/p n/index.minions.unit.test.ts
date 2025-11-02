@@ -9,7 +9,7 @@ import type {
   FragmentStringJsonc,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
 
-const { tryArrayFastPath, NO_FAST_PATH, } =
+const { tryArrayFastPath, tryObjectFastPath, NO_FAST_PATH, } =
   types.object.jsonc.from.stringHasQuotedSyntaxJsonc.sync.named;
 
 describe('minion functions', () => {
@@ -117,8 +117,7 @@ describe('minion functions', () => {
 
   //region tryObjectFastPath
   describe('tryObjectFastPath', () => {
-    const $ = exported.tryObjectFastPath;
-    const { NO_FAST_PATH, } = exported;
+    const $ = tryObjectFastPath;
 
     test('clean object with boundary trailing comma succeeds', ({ expect, },) => {
       const context = { remainingContent: '{"a": 1, "b": 2, }' as StringJsonc, };

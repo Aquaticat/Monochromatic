@@ -2,16 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(git --no-pager diff CLAUDE.md moon.yml)",
-      "Bash(bun:*)",
-      "Bash(pnpm list:*)",
-      "mcp__exa__web_search_exa",
-      "Bash(git config:*)",
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:docs.astral.sh)",
       "Bash(cat:*)",
-      "Bash(apt policy:*)",
-      "Bash(apt search:*)",
-      "Bash(/home/linuxbrew/.linuxbrew/bin/brew --version)",
       "Bash(export:*)",
       "Bash(brew install:*)",
       "Bash(hx:*)",
@@ -20,8 +11,6 @@
       "Bash(brew uses:*)",
       "Bash(ldd:*)",
       "Bash(sudo ls:*)",
-      "mcp__exa__crawling",
-      "WebFetch(domain:docs.anthropic.com)",
       "mcp__github__get_file_contents",
       "mcp__github__list_branches"
     ],
@@ -29,7 +18,8 @@
       "Edit",
       "WebFetch",
       "WebSearch",
-      "NotebookEdit"
+      "NotebookEdit",
+      "Bash(cd:*)"
     ]
   }
 }

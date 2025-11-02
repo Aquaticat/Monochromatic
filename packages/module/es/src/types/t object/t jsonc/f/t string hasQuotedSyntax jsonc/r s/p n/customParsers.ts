@@ -328,7 +328,6 @@ export function customParserForArray(
     else if (insideLead.comment)
       finalComment = mergeComments({ value2: insideLead.comment, },);
     return {
-      type: 'array' as const,
       value: [] as Jsonc.Value[],
       ...(finalComment ? { comment: finalComment, } : {}),
       remainingContent: insideLead.remainingContent.slice(
@@ -342,7 +341,6 @@ export function customParserForArray(
   /** Parsed items and tail after the terminating ']'. */
   const { items, tail, } = parseArrayElements(headerTail, [],);
   return {
-    type: 'array' as const,
     value: items as Jsonc.Value[],
     ...(arrayComment ? { comment: arrayComment, } : {}),
     remainingContent: tail,
@@ -567,7 +565,6 @@ export function customParserForRecord(
       finalComment = mergeComments({ value2: insideLead.comment, },);
 
     return {
-      type: 'record' as const,
       value: new Map(),
       ...(finalComment ? { comment: finalComment, } : {}),
       remainingContent: insideLead.remainingContent.slice(
@@ -581,7 +578,6 @@ export function customParserForRecord(
   /** Parsed entries and tail after the terminating '}'. */
   const { entries, tail, } = parseRecordMembers(woOpening, [],);
   return {
-    type: 'record' as const,
     value: new Map(entries,),
     ...(context?.comment ? { comment: context.comment, } : {}),
     remainingContent: tail,
