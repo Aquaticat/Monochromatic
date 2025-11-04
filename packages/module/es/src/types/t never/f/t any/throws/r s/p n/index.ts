@@ -24,6 +24,6 @@
  * }
  * ```
  */
-export function $({ value, }: { value: any; },): void {
+export function $({ value, }: { value: unknown; },): void {
   throw value;
 }
