@@ -39,6 +39,7 @@ hyperfine = "latest"
 
 # GitHub CLI
 # Commented out because it seems to be not working.
+# Install gh yourself instead.
 # gh = "latest"
 
 # Fuzzy finder
@@ -54,7 +55,7 @@ auto-install = true
 auto-clean = true
 detect-strategy = "only-prototools"
 
-[plugins]
+[plugins.tools]
 #zellij = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/zellij/plugin.toml"
 
 yq = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/yq/plugin.toml"
