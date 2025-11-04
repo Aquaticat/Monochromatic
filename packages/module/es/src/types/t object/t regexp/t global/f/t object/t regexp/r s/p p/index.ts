@@ -1,5 +1,7 @@
-import type {$ as Global} from '../../../../../t/index.ts';
+import type { $ as Global, } from '../../../../../t/index.ts';
+import { $ as named, } from '../p n/index.ts';
 
-export function $(regexp: RegExp): Global {
-  return new RegExp(regexp.source, regexp.flags.includes('g') ? regexp.flags : `${regexp.flags}g`) as Global;
+/** {@inheritdoc named} */
+export function $(regexp: RegExp,): Global {
+  return named({ regexp, },);
 }
