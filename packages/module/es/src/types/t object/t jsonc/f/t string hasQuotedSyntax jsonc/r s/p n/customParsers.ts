@@ -5,22 +5,29 @@
 */
 
 //region Imports and helpers -- Core types, utilities, and helpers from child modules
-import type * as Jsonc from '../../../../t/index.ts';
-import { mergeComments, } from './customParsers.startsWithComment.mergeComments.ts';
-import { scanQuotedString, } from './customParsers.scanQuotedString.ts';
 import type {
   $ as StringJsonc,
   FragmentStringJsonc,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
-import { startsWithComment, } from './customParsers.startsWithComment.ts';
-import { NO_LITERAL, parseLiteralToken, parseNumberToken, } from './customParsers.tokenizers.ts';
-import { parseArrayHeader, expectArraySeparatorOrEnd, } from './customParsers.arrayHelpers.ts';
+import type * as Jsonc from '../../../../t/index.ts';
 import {
-  parseRecordHeader,
-  expectRecordSeparatorOrEnd,
-  parseRecordKey,
+  expectArraySeparatorOrEnd,
+  parseArrayHeader,
+} from './customParsers.arrayHelpers.ts';
+import {
   expectColonAfterKey,
+  expectRecordSeparatorOrEnd,
+  parseRecordHeader,
+  parseRecordKey,
 } from './customParsers.recordHelpers.ts';
+import { scanQuotedString, } from './customParsers.scanQuotedString.ts';
+import { mergeComments, } from './customParsers.startsWithComment.mergeComments.ts';
+import { startsWithComment, } from './customParsers.startsWithComment.ts';
+import {
+  NO_LITERAL,
+  parseLiteralToken,
+  parseNumberToken,
+} from './customParsers.tokenizers.ts';
 /**
  * Alias for intrinsic freeze to emphasize immutability when capturing values.
  * @remarks Present for parity with modules that capture intrinsics; avoids repeated lookups.
@@ -167,13 +174,9 @@ export function customParserForArray(
   const insideLead = startsWithComment({ value: headerTail, },);
   if (insideLead.remainingContent.startsWith(']',)) {
     /** Combined array-level comment when header and inside comments are present. */
-    let finalComment: Jsonc.Comment | undefined;
-    if (arrayComment && insideLead.comment)
-      finalComment = mergeComments({ value: arrayComment, value2: insideLead.comment, },);
-    else if (arrayComment)
-      finalComment = mergeComments({ value: arrayComment, },);
-    else if (insideLead.comment)
-      finalComment = mergeComments({ value2: insideLead.comment, },);
+    const finalComment = arrayComment && insideLead.comment
+      ? mergeComments({ value: arrayComment, value2: insideLead.comment, },)
+      : arrayComment ?? insideLead.comment;
     return {
       value: [] as Jsonc.Value[],
       ...(finalComment ? { comment: finalComment, } : {}),
@@ -319,10 +322,10 @@ export function customParserForRecord(
 }
 
 //region Re-exports from child modules
-export * from './customParsers.tokenizers.ts';
 export * from './customParsers.arrayHelpers.ts';
 export * from './customParsers.recordHelpers.ts';
 export * from './customParsers.scanQuotedString.ts';
-export * from './customParsers.startsWithComment.ts';
 export * from './customParsers.startsWithComment.mergeComments.ts';
+export * from './customParsers.startsWithComment.ts';
+export * from './customParsers.tokenizers.ts';
 //endregion Re-exports from child modules

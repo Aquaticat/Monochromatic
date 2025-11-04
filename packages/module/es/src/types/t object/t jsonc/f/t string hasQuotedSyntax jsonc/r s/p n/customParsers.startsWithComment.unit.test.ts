@@ -227,12 +227,12 @@ describe($, () => {
           value: '/* unterminated block comment no star slash' as FragmentStringJsonc,
         },)
       )
-        .toThrow(/incomplete block comment is not  jsonc/,);
+        .toThrow(/incomplete block comment is not jsonc/,);
     });
 
     test('throws error for empty unterminated block comment', ({ expect, },) => {
       expect(() => $({ value: '/* {}' as FragmentStringJsonc, },)).toThrow(
-        /incomplete block comment is not  jsonc/,
+        /incomplete block comment is not jsonc/,
       );
     });
   });
@@ -526,7 +526,7 @@ describe($, () => {
       },);
       // The result may not be predictable in this edge case
       expect(result.remainingContent,).toBe('{}',);
-      expect(result.comment?. type,).toBe('block',);
+      expect(result.comment?.type,).toBe('block',);
     });
 
     test('comments with newline characters inside', ({ expect, },) => {

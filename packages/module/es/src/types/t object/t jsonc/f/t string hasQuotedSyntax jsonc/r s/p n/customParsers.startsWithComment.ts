@@ -6,7 +6,7 @@ import type {
 import type * as Jsonc from '../../../../t/index.ts';
 import { mergeComments, } from './customParsers.startsWithComment.mergeComments.ts';
 
-function findBlockEndPosition({ value, }: {value: string},): number {
+function findBlockEndPosition({ value, }: { value: string; },): number {
   // If it's on the first line, we've hit the jackpot.
   //       How do we know if it's on the first line?
   //       /\/\*[^\n]{0,}\*\//
@@ -54,13 +54,13 @@ function findBlockEndPosition({ value, }: {value: string},): number {
   }
 
   // No valid block comment end found
-  throw new Error(`incomplete block comment is not  jsonc, {
+  throw new Error(`incomplete block comment is not jsonc, {
         comment: {
           type: 'block',
           commentValue: ${trimmed.slice('/*'.length,)},
         },
       }`,);
-};
+}
 
 /**
  * Finds all comments before something and returns both allComments and something.
