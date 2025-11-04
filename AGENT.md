@@ -821,7 +821,7 @@ When writing technical documentation (README, philosophy, architecture docs):
 
 ## TSDoc Comments
 
-Write comprehensive TSDoc comments for all exported members (functions, types, constants, classes, and everything else):
+Write comprehensive TSDoc comments for all members (functions, types, constants, classes, and everything else), whether they're exported or not:
 - This includes providing descriptions for parameters and return values
 - **Use TSDoc format for EVERYTHING that can be documented** - functions, constants, types, interfaces, classes, enums, etc. Not just exported members
 - Any code element that could benefit from documentation should have TSDoc comments
