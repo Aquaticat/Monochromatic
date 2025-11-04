@@ -52,7 +52,7 @@ caddy = "latest"
 
 [settings]
 auto-install = true
-auto-clean = true
+auto-clean = false
 detect-strategy = "only-prototools"
 
 [plugins.tools]
@@ -84,6 +84,8 @@ caddy = "https://raw.githubusercontent.com/Phault/proto-toml-plugins/main/caddy/
 # [env]
 # file = ".env"
 
-[settings.offline]
-custom-hosts = ["1.1.1.1:80"]
-override-default-hosts = true
+# Temporarily disabled - incompatible with proxy environment
+# The environment already has working proxy configuration via HTTP_PROXY/HTTPS_PROXY
+# [settings.offline]
+# custom-hosts = ["1.1.1.1:80"]
+# override-default-hosts = true
