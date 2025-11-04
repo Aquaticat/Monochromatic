@@ -85,5 +85,5 @@ caddy = "https://raw.githubusercontent.com/Phault/proto-toml-plugins/main/caddy/
 # file = ".env"
 
 [settings.offline]
-custom-hosts = ["github.com:443"]
+custom-hosts = ["1.1.1.1:80"]
 override-default-hosts = true
