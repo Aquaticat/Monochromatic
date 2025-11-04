@@ -1,4 +1,4 @@
-import * as Jsonc from '../../../../t/index.ts';
+import type * as Jsonc from '../../../../t/index.ts';
 
 export function mergeComments(
   { value, value2, }: {

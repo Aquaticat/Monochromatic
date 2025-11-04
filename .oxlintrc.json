@@ -9,6 +9,8 @@
     "pedantic": "warn",
     "style": "warn"
   },
+  // Language server still doesn't support js plugins. Waiting for upstream: https://github.com/oxc-project/oxc/issues/14402 https://github.com/oxc-project/oxc/issues/14826
+  "jsPlugins": ["./oxlint-require-tsdoc.ts"],
   "env": {
     "browser": true,
     "node": true,
@@ -36,12 +38,13 @@
 
     "promise",
     "node",
-    "vitest",
-    
+    "vitest"
     // oxlint currently can't lint jsx in non-jsx files. See https://oxc.rs/docs/guide/usage/linter/config#specifying-files-to-process
     // "react",
   ],
   "rules": {
+    "require-tsdoc/require-tsdoc": "error",
+
     //region correctness
 
     // import/default, import/named, import/namespace aren't enabled because TypeScript already checks for those.
@@ -116,7 +119,7 @@
 
     "eslint/no-await-in-loop": "warn",
     "eslint/no-accumulating-spread": "warn",
-    "eslint-plugin-unicorn/prefer-set-has": "warn",
+    "unicorn/prefer-set-has": "warn",
     //endregion perf
 
     //region suspicious
@@ -157,10 +160,15 @@
     "import/consistent-type-specifier-style": "off",
 
     // Good rule generally. Bad for library with a barrel file.
-    "import/prefer-default-export": "allow",
+    "import/prefer-default-export": "off",
+
+    "import/exports-last": "off",
 
     // Good traces are desired.
     "eslint/func-names": ["warn", "as-needed"],
+
+    // formatting concern.
+    "unicorn/switch-case-braces": "off",
 
     // TypeScript function overloads work better with function declarations.
     "eslint/func-style": "off",
@@ -171,7 +179,7 @@
     "eslint/no-magic-numbers": [
       "warn",
       {
-        "ignore": [1, -1, 0, 2, -2, 255, 0.1, 10],
+        "ignore": [1, -1, 0, 2, -2, 255, 0.1, 10, "0n", "1n", "2n", "-1n", "-2n"],
         "enforceConst": true,
         "detectObjects": false,
         "ignoreEnums": true,
@@ -190,6 +198,13 @@
     "eslint/sort-keys": "off",
     // Too many false positives.
     "eslint/yoda": "off",
+
+    "import/no-named-export": "off",
+    "import/no-namespace": "off",
+
+    // formatting concern only.
+    "eslint/curly": "off",
+
     // Readable enough.
     "unicorn/no-await-expression-member": "off",
     "typescript/consistent-type-definitions": [

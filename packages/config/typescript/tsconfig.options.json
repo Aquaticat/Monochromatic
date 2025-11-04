@@ -47,8 +47,9 @@
 
     "resolveJsonModule": true,
     "types": [
-      "bun",
-      "vite/client"
+      "bun"
+      // FIXME: Cannot find type definition - Find out if this is no longer needed.
+      // "vite/client"
       // No longer needed, see https://vitest.dev/blog/vitest-4.html#browser-mode-is-stable
       // "@vitest/browser-playwright"
     ],

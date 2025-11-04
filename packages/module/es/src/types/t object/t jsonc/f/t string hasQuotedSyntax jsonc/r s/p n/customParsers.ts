@@ -1,20 +1,33 @@
 /*
-  Custom JSONC parsers for arrays and objects.
-  These are the careful, comment-preserving "service road" paths that handle comments, whitespace,
-  and trailing commas when the fast-path cannot use JSON.parse safely.
+  Custom JSONC parsers for arrays and objects - MUTUAL RECURSION CORE.
+  These functions form a recursive cycle and must stay together to avoid circular imports.
   Region markers outline imports, function phases, and known pitfalls to aid maintainability.
 */
 
-//region Imports and helpers -- Core types, utilities, and comment skipper used by the parsers
-import * as Jsonc from '../../../../t/index.ts';
-import { mergeComments, } from './mergeComments.ts';
-import { scanQuotedString, } from './scanQuotedString.ts';
-
+//region Imports and helpers -- Core types, utilities, and helpers from child modules
 import type {
   $ as StringJsonc,
   FragmentStringJsonc,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
-import { startsWithComment, } from './startsWithComment.ts';
+import type * as Jsonc from '../../../../t/index.ts';
+import {
+  expectArraySeparatorOrEnd,
+  parseArrayHeader,
+} from './customParsers.arrayHelpers.ts';
+import {
+  expectColonAfterKey,
+  expectRecordSeparatorOrEnd,
+  parseRecordHeader,
+  parseRecordKey,
+} from './customParsers.recordHelpers.ts';
+import { scanQuotedString, } from './customParsers.scanQuotedString.ts';
+import { mergeComments, } from './customParsers.startsWithComment.mergeComments.ts';
+import { startsWithComment, } from './customParsers.startsWithComment.ts';
+import {
+  NO_LITERAL,
+  parseLiteralToken,
+  parseNumberToken,
+} from './customParsers.tokenizers.ts';
 /**
  * Alias for intrinsic freeze to emphasize immutability when capturing values.
  * @remarks Present for parity with modules that capture intrinsics; avoids repeated lookups.
@@ -22,106 +35,13 @@ import { startsWithComment, } from './startsWithComment.ts';
 const f = Object.freeze;
 //endregion Imports and helpers
 
-//region Value tokenizers -- Pure helpers for literals and numbers with explicit contracts
-/**
- * Sentinel indicating no JSON literal was matched at the current start position.
- *
- * @remarks
- * Narrow by category first using `typeof out === 'symbol'` before identity comparison to avoid incorrect
- * narrowing with symbol unions. See {@link parseLiteralToken}.
- *
- * @example
- * ```ts
- * const out = parseLiteralToken({ value: 'x' as FragmentStringJsonc });
- * if (typeof out !== 'symbol') {
- *   // literal branch
- * } else if (out === NO_LITERAL) {
- *   // non-match sentinel
- * } else {
- *   throw new Error('unexpected symbol sentinel');
- * }
- * ```
- */
-export const NO_LITERAL: symbol = Symbol('jsonc:parseLiteralToken:no-match',);
-/**
- * Parse JSON literal at the current position.
- * Supports: `null`, `true`, `false`.
- *
- * @remarks
- * Returns {@link NO_LITERAL} when no literal matched; handle using category-first symbol narrowing.
- *
- * @param value - Input fragment to parse from the start
- * @returns Parsed literal token with remaining fragment, or {@link NO_LITERAL} when no literal matched
- * @example
- * ```ts
- * parseLiteralToken({ value: 'null,1' as FragmentStringJsonc })
- * // → { consumed: 'null', parsed: { value: null }, remaining: ',1' }
- * ```
- */
-export function parseLiteralToken(
-  { value, }: { value: FragmentStringJsonc | StringJsonc; },
-):
-  | { consumed: FragmentStringJsonc; parsed: Jsonc.Boolean | Jsonc.Null;
-    remaining: FragmentStringJsonc; }
-  | typeof NO_LITERAL
-{
-  if (value.startsWith('null',)) {
-    return { consumed: 'null' as FragmentStringJsonc, parsed: { value: null, },
-      remaining: value.slice(4,) as FragmentStringJsonc, };
-  }
-  if (value.startsWith('true',)) {
-    return { consumed: 'true' as FragmentStringJsonc, parsed: { value: true, },
-      remaining: value.slice(4,) as FragmentStringJsonc, };
-  }
-  if (value.startsWith('false',)) {
-    return { consumed: 'false' as FragmentStringJsonc, parsed: { value: false, },
-      remaining: value.slice(5,) as FragmentStringJsonc, };
-  }
-  return NO_LITERAL;
-}
-
-/**
- * Parse a JSON number token from the start using a single-pass regex and JSON numeric semantics.
- * The regex matches the JSON number grammar and returns the longest valid numeric prefix.
- *
- * @param value - Input fragment starting at a potential number token
- * @returns Consumed span, parsed number node, and remaining fragment after the number
- * @throws Error - When the start does not match a valid JSON number grammar
- * @example
- * ```ts
- * parseNumberToken({ value: '-12.3e+4, x' as FragmentStringJsonc })
- * // → { consumed: '-12.3e+4', parsed: { value: -123000 }, remaining: ', x' }
- * ```
- */
-export function parseNumberToken(
-  { value, }: { value: FragmentStringJsonc | StringJsonc; },
-): { consumed: FragmentStringJsonc; parsed: Jsonc.Number;
-  remaining: FragmentStringJsonc; }
-{
-  /**
-   * JSON number grammar (no leading +, leading 0 rules, optional fraction and exponent).
-   * Matches the longest valid numeric prefix at position 0.
-   */
-  const NUMBER_RE = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[Ee][+-]?\d+)?/;
-  /** Regex match result for numeric token anchored at start. */
-  const match = NUMBER_RE.exec(value,);
-  if (!match || match.index !== 0)
-    throw new Error('malformed jsonc, non-number after number marker',);
-  /** Span consumed for the number token (kept as fragment for immutability). */
-  const consumed = match[0] as FragmentStringJsonc;
-  /** Exact numeric semantics via JSON.parse; avoids manual float/exp handling. */
-  const parsedValue = JSON.parse(consumed,) as number;
-  return { consumed, parsed: { value: parsedValue, },
-    remaining: value.slice(consumed.length,) as FragmentStringJsonc, };
-}
-//endregion Value tokenizers
-
-//region Value dispatcher -- Single entry to parse one value from the start
+//region Value dispatcher -- Single entry to parse one value from the start (MUTUALLY RECURSIVE)
 /**
  * Parse a single JSONC value from the current position, delegating to container parsers and propagating `context.comment`.
  *
  * @remarks
  * Follows category-first symbol narrowing for results of {@link parseLiteralToken}; propagates `context.comment` onto produced nodes.
+ * MUTUALLY RECURSIVE with customParserForArray and customParserForRecord.
  *
  * @param value - Input fragment to parse from the start
  * @param context - Optional value base whose `comment` is attached to the produced node
@@ -194,71 +114,7 @@ export function parseValueFromStart(
 }
 //endregion Value dispatcher
 
-//region Array header -- Consume '[' then leading comments to capture array-level comment
-/**
- * After the opening '[', compute the array-level comment (if any) and return the tail at the first element or ']'.
- *
- * @param valueAfterBracket - Substring immediately following '['
- * @param context - Optional value whose `comment` represents the array-level comment
- * @returns Array-level comment (when present) and the unparsed tail within the array
- * @example
- * ```ts
- * parseArrayHeader('[ /* c *\/ 1,2]TAIL'.slice(1) as FragmentStringJsonc)
- * // → { arrayComment: { /* ... *\/ }, tail: ' 1,2]TAIL' as FragmentStringJsonc }
- * ```
- */
-export function parseArrayHeader(
-  valueAfterBracket: FragmentStringJsonc | StringJsonc,
-  context?: Jsonc.ValueBase,
-): { arrayComment?: Jsonc.Comment; tail: FragmentStringJsonc; } {
-  // Array-level comment comes from outside the '[' via context; do not consume inside comments here.
-  return {
-    ...(context?.comment ? { arrayComment: context.comment, } : {}),
-    tail: valueAfterBracket as FragmentStringJsonc,
-  };
-}
-//endregion Array header
-
-//region Array separators -- Determine end of array or next element start
-/**
- * Given the raw tail after an element, consume comments/whitespace once and decide next action.
- *
- * @param value - Tail beginning after an element value
- * @returns Discriminated union: `'end'` with tail after ']' or `'next'` with the next element's start
- * @throws Error - When neither ',' nor ']' is found in a valid position
- */
-export function expectArraySeparatorOrEnd(
-  value: FragmentStringJsonc,
-): { kind: 'end'; tail: FragmentStringJsonc; } | { kind: 'next';
-  tailStart: FragmentStringJsonc; }
-{
-  /** Leading comments/whitespace after previous element value. */
-  const after = startsWithComment({ value, },);
-  /** Tail trimmed to detect ',' or ']' token. */
-  const rc = after.remainingContent.trimStart() as FragmentStringJsonc;
-
-  if (rc.startsWith(']',))
-    return { kind: 'end', tail: rc.slice(1,) as FragmentStringJsonc, };
-
-  if (rc.startsWith(',',)) {
-    /** Tail after the element separator comma. */
-    const afterComma = rc.slice(1,) as FragmentStringJsonc;
-    /** Comments/whitespace before the next potential element. */
-    const next = startsWithComment({ value: afterComma, },);
-    /** Start of the next token inside the array. */
-    const nextToken = next.remainingContent.trimStart() as FragmentStringJsonc;
-    if (nextToken.startsWith(']',))
-      return { kind: 'end', tail: nextToken.slice(1,) as FragmentStringJsonc, };
-    return { kind: 'next', tailStart: nextToken, };
-  }
-
-  /** Preview snippet used for error reporting context. */
-  const preview = rc.slice(0, 32,);
-  throw new Error(`malformed jsonc array: expected ',' or ']' near: ${preview}`,);
-}
-//endregion Array separators
-
-//region Array elements -- Recursive, immutable element parsing for arrays
+//region Array elements -- Recursive, immutable element parsing for arrays (MUTUALLY RECURSIVE)
 /**
  * Parse one or more array elements starting from a tail, returning accumulated items and the tail after ']'.
  *
@@ -314,21 +170,14 @@ export function customParserForArray(
   //endregion Entry and comment skip
 
   //region Empty array fast-exit -- Handle immediate closing bracket
-  // Peek for closing bracket after consuming only inside-the-bracket comments;
-  // if empty, merge inside comments into array-level comment.
   /** Leading comments/spaces directly inside '[' before first element or ']'. */
   const insideLead = startsWithComment({ value: headerTail, },);
   if (insideLead.remainingContent.startsWith(']',)) {
     /** Combined array-level comment when header and inside comments are present. */
-    let finalComment: Jsonc.Comment | undefined;
-    if (arrayComment && insideLead.comment)
-      finalComment = mergeComments({ value: arrayComment, value2: insideLead.comment, },);
-    else if (arrayComment)
-      finalComment = mergeComments({ value: arrayComment, },);
-    else if (insideLead.comment)
-      finalComment = mergeComments({ value2: insideLead.comment, },);
+    const finalComment = arrayComment && insideLead.comment
+      ? mergeComments({ value: arrayComment, value2: insideLead.comment, },)
+      : arrayComment ?? insideLead.comment;
     return {
-      type: 'array' as const,
       value: [] as Jsonc.Value[],
       ...(finalComment ? { comment: finalComment, } : {}),
       remainingContent: insideLead.remainingContent.slice(
@@ -342,7 +191,6 @@ export function customParserForArray(
   /** Parsed items and tail after the terminating ']'. */
   const { items, tail, } = parseArrayElements(headerTail, [],);
   return {
-    type: 'array' as const,
     value: items as Jsonc.Value[],
     ...(arrayComment ? { comment: arrayComment, } : {}),
     remainingContent: tail,
@@ -350,121 +198,7 @@ export function customParserForArray(
   //endregion Element recursion
 }
 
-//region Record header -- Consume '{' then extract record-level comment from context
-/**
- * After the opening '{', extract the record-level comment (if any) from context.
- *
- * @param valueAfterBrace - Substring immediately following '{'
- * @param context - Optional value whose `comment` represents the record-level comment
- * @returns Record-level comment (when present) and the unparsed tail within the record
- * @example
- * ```ts
- * parseRecordHeader('{ /* c *\/ "a":1}TAIL'.slice(1) as FragmentStringJsonc)
- * // → { recordComment: undefined, tail: ' /* c *\/ "a":1}TAIL' as FragmentStringJsonc }
- * ```
- */
-export function parseRecordHeader(
-  valueAfterBrace: FragmentStringJsonc | StringJsonc,
-  context?: Jsonc.ValueBase,
-): { recordComment?: Jsonc.Comment; tail: FragmentStringJsonc; } {
-  return {
-    ...(context?.comment ? { recordComment: context.comment, } : {}),
-    tail: valueAfterBrace as FragmentStringJsonc,
-  };
-}
-//endregion Record header
-
-//region Record separators -- Determine end of record or next member start
-/**
- * After a record value, consume comments/whitespace once and decide next action.
- *
- * @param tail - Tail beginning after a value token
- * @returns Discriminated union: `'end'` with tail after '}' or `'next'` with the next member's start
- * @throws Error - When neither ',' nor '}' is found in a valid position
- */
-export function expectRecordSeparatorOrEnd(
-  tail: FragmentStringJsonc,
-): { kind: 'end'; tail: FragmentStringJsonc; } | { kind: 'next';
-  tailStart: FragmentStringJsonc; }
-{
-  /** Leading comments/whitespace after previous member. */
-  const after = startsWithComment({ value: tail, },);
-  /** Tail trimmed to detect ',' or '}' token. */
-  const rc = after.remainingContent.trimStart() as FragmentStringJsonc;
-
-  if (rc.startsWith('}',))
-    return { kind: 'end', tail: rc.slice('}'.length,) as FragmentStringJsonc, };
-
-  if (rc.startsWith(',',)) {
-    /** Tail after the member separator comma. */
-    const afterComma = rc.slice(1,) as FragmentStringJsonc;
-    /** Comments/whitespace before the next potential member. */
-    const next = startsWithComment({ value: afterComma, },);
-    /** Start of the next token inside the record. */
-    const nextToken = next.remainingContent.trimStart() as FragmentStringJsonc;
-    if (nextToken.startsWith('}',))
-      return { kind: 'end', tail: nextToken.slice('}'.length,) as FragmentStringJsonc, };
-    return { kind: 'next', tailStart: nextToken, };
-  }
-
-  /** Preview snippet used for error reporting context. */
-  const preview = rc.slice(0, 32,);
-  throw new Error(`malformed jsonc object: expected ',' or '}' near: ${preview}`,);
-}
-//endregion Record separators
-
-//region Record key parsing -- Parse a single key with its leading comment
-/**
- * Parse a single record key with its leading comment.
- *
- * @param tail - Tail positioned at potential key start (may have leading comment/whitespace)
- * @returns Key node with optional comment, and remaining tail after the key
- * @throws Error - When the tail does not start with a quoted string
- */
-export function parseRecordKey(
-  tail: FragmentStringJsonc,
-): { keyNode: Jsonc.RecordKey; remaining: FragmentStringJsonc; } {
-  /** Leading comments at key start; carries per-key comment. */
-  const lead = startsWithComment({ value: tail, },);
-  /** Start positioned at quoted key. */
-  const start = lead.remainingContent;
-
-  if (!start.startsWith('"',))
-    throw new Error('malformed jsonc object: expected quoted key',);
-
-  /** Scanned quoted key with tail after closing quote. */
-  const keyScan = scanQuotedString({ value: start, },);
-  /** Key node with optional propagated leading comment. */
-  const keyNode: Jsonc.RecordKey = lead.comment
-    ? { ...keyScan.parsed, comment: lead.comment, }
-    : keyScan.parsed;
-
-  return { keyNode, remaining: keyScan.remaining, };
-}
-//endregion Record key parsing
-
-//region Colon expectation -- Verify ':' after key
-/**
- * Consume comments/whitespace after key and verify ':' is present.
- *
- * @param tail - Tail after the key
- * @returns Tail after the ':' token
- * @throws Error - When ':' is not found after consuming comments/whitespace
- */
-export function expectColonAfterKey(
-  tail: FragmentStringJsonc,
-): FragmentStringJsonc {
-  /** Comments/whitespace after key before the colon. */
-  const afterKeyLead = startsWithComment({ value: tail, },);
-  /** Tail starting at ':' or error position. */
-  const rc = afterKeyLead.remainingContent.trimStart() as FragmentStringJsonc;
-  if (!rc.startsWith(':',))
-    throw new Error("malformed jsonc object: expected ':' after key",);
-  return rc.slice(':'.length,) as FragmentStringJsonc;
-}
-//endregion Colon expectation
-
-//region Record value parsing -- Parse value with leading comment after colon
+//region Record value parsing -- Parse value with leading comment after colon (MUTUALLY RECURSIVE)
 /**
  * Parse a record value with its leading comment after the colon.
  *
@@ -486,7 +220,7 @@ export function parseRecordValue(
 }
 //endregion Record value parsing
 
-//region One record member -- Compose key + colon + value for a single member
+//region One record member -- Compose key + colon + value for a single member (MUTUALLY RECURSIVE)
 /**
  * Parse one complete record member (key:value pair) from the current position.
  *
@@ -503,7 +237,7 @@ export function parseOneRecordMember(
 }
 //endregion One record member
 
-//region Record members -- Recursive, immutable member parsing for records
+//region Record members -- Recursive, immutable member parsing for records (MUTUALLY RECURSIVE)
 /**
  * Parse key:value members immutably, propagating comments on keys/values, and return tail after '}'.
  *
@@ -567,7 +301,6 @@ export function customParserForRecord(
       finalComment = mergeComments({ value2: insideLead.comment, },);
 
     return {
-      type: 'record' as const,
       value: new Map(),
       ...(finalComment ? { comment: finalComment, } : {}),
       remainingContent: insideLead.remainingContent.slice(
@@ -581,10 +314,18 @@ export function customParserForRecord(
   /** Parsed entries and tail after the terminating '}'. */
   const { entries, tail, } = parseRecordMembers(woOpening, [],);
   return {
-    type: 'record' as const,
     value: new Map(entries,),
     ...(context?.comment ? { comment: context.comment, } : {}),
     remainingContent: tail,
   };
   //endregion Members recursion
 }
+
+//region Re-exports from child modules
+export * from './customParsers.arrayHelpers.ts';
+export * from './customParsers.recordHelpers.ts';
+export * from './customParsers.scanQuotedString.ts';
+export * from './customParsers.startsWithComment.mergeComments.ts';
+export * from './customParsers.startsWithComment.ts';
+export * from './customParsers.tokenizers.ts';
+//endregion Re-exports from child modules

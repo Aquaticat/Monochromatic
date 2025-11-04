@@ -38,7 +38,8 @@ hyperfine = "latest"
 #zellij = "latest"
 
 # GitHub CLI
-gh = "latest"
+# Commented out because it seems to be not working.
+# gh = "latest"
 
 # Fuzzy finder
 fzf = "latest"
@@ -67,7 +68,7 @@ jq = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/jq/plu
 
 hyperfine = "https://raw.githubusercontent.com/Phault/proto-toml-plugins/main/hyperfine/plugin.toml"
 
-gh = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/gh/plugin.toml"
+# gh = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/gh/plugin.toml"
 
 fzf = "https://raw.githubusercontent.com/appthrust/proto-toml-plugins/main/fzf/plugin.toml"
 

@@ -35,7 +35,7 @@ describe($, () => {
   //region Pairs and separators -- single/multiple and trailing comma
   test('single pair', ({ expect, },) => {
     const out = $({ value: '{"a": 1}' as FragmentStringJsonc, },);
-    const entries = Array.from(out.value.entries(),);
+    const entries = [...out.value.entries()];
     expect(entries,).toHaveLength(1,);
     const [key, val,] = entries[0] as [Jsonc.RecordKey, Jsonc.Value,];
     expect(key.value,).toBe('"a"',);
@@ -46,7 +46,7 @@ describe($, () => {
     const out = $({
       value: '{"a":1, /* c */ "b": 2, /* d */ }X' as FragmentStringJsonc,
     },);
-    const entries = Array.from(out.value.entries(),);
+    const entries = [...out.value.entries()];
     expect(
       entries.map((
         [k, v,]: [Jsonc.RecordKey, Jsonc.Value,],
@@ -60,7 +60,7 @@ describe($, () => {
   //region Nesting -- arrays and objects
   test('nested containers', ({ expect, },) => {
     const out = $({ value: '{"a": [1], "b": {}}' as FragmentStringJsonc, },);
-    const entries = Array.from(out.value.entries(),);
+    const entries = [...out.value.entries()];
     const aVal = entries[0]![1] as Jsonc.Array;
     const bVal = entries[1]![1] as Jsonc.Record;
     expect(Array.isArray(aVal.value,),).toBe(true,);
@@ -81,7 +81,7 @@ describe($, () => {
 
   test('first key receives inside comment', ({ expect, },) => {
     const out = $({ value: '{ /* C */ "a": 1 }' as FragmentStringJsonc, },);
-    const firstKey = Array.from(out.value.keys(),)[0] as Jsonc.RecordKey;
+    const firstKey = [...out.value.keys()][0] as Jsonc.RecordKey;
     expect(firstKey.comment?.type,).toBe('block',);
     expect(firstKey.comment?.commentValue.trim(),).toBe('C',);
     expect(out.comment,).toBeUndefined();

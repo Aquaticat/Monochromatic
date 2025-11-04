@@ -17,8 +17,8 @@ jobs:
   code-review:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Skip automated code review for draft PRs
-    if: github.event.pull_request.draft == false
+    # USER: Do not skip automated code review for draft PRs
+    # if: github.event.pull_request.draft == false
 
     steps:
     - name: Checkout repository
@@ -84,14 +84,6 @@ jobs:
           // Remove the unreachable code
           ```
         - Be specific about why it's a problem: "This will cause a TypeError if input is null"
-        - No emojis, just clear technical language
-
-        Skip commenting on:
-        - Code style, formatting, or naming conventions
-        - Minor performance optimizations
-        - Architectural decisions or design patterns
-        - Features or functionality (unless broken)
-        - Test coverage (unless tests are clearly broken)
 
         You may open and read other repository files beyond those listed above when it helps you understand the change, but keep all review comments anchored to the modified lines in this PR.
 
@@ -115,7 +107,6 @@ jobs:
         The PR number is ${{ github.event.pull_request.number }} and repository is ${{ github.repository }}.
 
         Guidelines:
-        - Submit at most 10 comments total, prioritizing the most critical issues
         - Each comment should be actionable and clear about what needs to be fixed
         - Check for existing "no issues" comments from bots before posting duplicate messages
         - Include a summary in the review body when submitting multiple inline comments
@@ -123,7 +114,7 @@ jobs:
 
         # Run droid exec with the prompt - it will handle PR review submission directly
         echo "Running code review analysis and submitting results..."
-        droid exec --auto high --model claude-sonnet-4-5-20250929 -f prompt.txt
+        droid exec --auto high --model gpt-5-2025-08-07 -f prompt.txt
 
     - name: Upload debug artifacts on failure
       if: ${{ failure() }}

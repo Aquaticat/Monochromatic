@@ -2,7 +2,7 @@ import type {
   $ as StringJsonc,
   FragmentStringJsonc,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
-import * as Jsonc from '../../../../t/index.ts';
+import type * as Jsonc from '../../../../t/index.ts';
 
 /**
  * Scan a JSONC string starting at a double quote and return consumed fragment, parsed value, and remaining tail.

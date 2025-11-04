@@ -1,0 +1,852 @@
+
+ ▐▛███▜▌   Claude Code v2.0.28
+▝▜█████▛▘  Sonnet 4.5 · Claude API
+  ▘▘ ▝▝    C:\Users\user\Text\Projects\Aquaticat\Monochromatic
+
+> /clear 
+  ⎿  (no content)
+
+> /mcp 
+  ⎿  MCP server 'figma' has been disabled.
+
+> /mcp 
+  ⎿  MCP server 'figma' has been enabled.
+
+> https://www.figma.com/design/t1yIFUPfnBVZFzdR8GDu0r/Lofi-wireframes-%7C-todo-app?node-id=1-196&t=aOzh3DmExwggWSjo-1 I'm
+ working on designing an AI-powered todo app.
+Whenever a task is added, AI auto adds tags like `where:Walmart` and `priority:medium`.
+If the task doesn't have enough information for AI to do that, the task is still added and categorized as "unsorted".
+
+I'm using a drawer as the primary navigation. The link is the current topNav. I wonder if I should use a cycle button 
+instead.
+Help me flesh out this idea. 
+
+● I'll help you flesh out your AI-powered todo app design. Let me first examine your current Figma design to understand
+  what you have so far.
+
+● figma - get_screenshot (MCP)(fileKey: "t1yIFUPfnBVZFzdR8GDu0r", nodeId: "1-196", clientLanguages: "typescript",
+                              clientFrameworks: "react")
+  ⎿  [Image]                                                                                                            
+
+● figma - get_design_context (MCP)(fileKey: "t1yIFUPfnBVZFzdR8GDu0r", nodeId: "1-196", clientLanguages: "typescript",
+                                  clientFrameworks: "react")
+  ⎿  function SearchIcon({ className }: { className?: string }) {                                                       
+       return (
+         <div className={className} data-name="search icon" data-node-id="18:810">
+     … +45 lines (ctrl+o to expand)
+  ⎿ SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack a
+    nd styling system.
+    1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design token
+    … +5 lines (ctrl+o to expand)
+
+
+  ⎿  Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+  ⎿ Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-4
+    1d4-a716-446655440000'. These constants will be used in the code as the source for the image, ex: <img src={image} /
+    >. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expir
+    e.
+
+
+
+  ⎿  IMPORTANT: After you call this tool, you MUST call get_screenshot to get a screenshot of the node for context.
+
+● I can see your current topNav design with the user profile, "Unsorted" label, and search icon. Before I help you flesh
+  out the navigation approach, I need to understand your vision better.
+● User answered Claude's questions:                                                                                     
+  ⎿  · What are the main views/filters users will navigate between in your app? → By everything because everything is a 
+     tag, except unsorted/sorted. Unsorted tasks cannot be effectively tagged; sorted tasks already have effective tags 
+     for everything
+     · What would the 'cycle button' behavior be? → Cycle through two: sorted/unsorted
+     · How does the drawer navigation relate to the topNav? → I'm not sure yet, you propose.
+     · What happens when users add a task with ambiguous information? → Goes to Unsorted, user tags manually later
+
+● Perfect! Now I understand your concept better. Let me research navigation patterns and UX best practices for todo apps
+  to help you design the optimal navigation architecture.
+
+● Plan(Research todo app navigation patterns)
+  ⎿  Done (5 tool uses · 30.6k tokens · 1m 29s)                                                                         
+
+● Based on the research, I can now provide you with comprehensive design recommendations for your AI-powered todo app
+  navigation.
+
+  ★ Insight ─────────────────────────────────────
+  The "Unsorted/Sorted" binary is fundamentally different from most todo app navigation patterns. While apps like Todoist
+   and Things 3 use progressive states (Inbox → Today → Done), your model is simpler: tasks either have enough AI-tagged
+  metadata to be useful, or they don't. This creates a unique opportunity for a cleaner, more focused navigation model.
+  ─────────────────────────────────────────────────
+
+  Navigation Architecture Recommendation
+
+  Primary recommendation: Abandon the cycle button, use drawer views
+
+  Here's why the cycle button approach has significant UX problems:
+
+  1. Discoverability: Users won't know what states exist or how to reach them
+  2. Context loss: Cycling forces users through unwanted views to reach their target
+  3. No visual preview: Unlike a drawer/list, users can't see counts or status at a glance
+  4. Scales poorly: Works for 2 states, breaks if you add a 3rd view later
+
+  Proposed Navigation Structure
+
+  Top Navigation Bar:
+  ┌─────────────────────────────┐
+  │ ☰  Unsorted (12)  🔍  ➕    │
+  └─────────────────────────────┘
+
+  - Hamburger menu (☰): Opens drawer
+  - Current view label: Shows "Unsorted (12)" or "All Tasks" with badge count
+  - Search icon: Quick filter/search
+  - Add button: Fast task capture
+
+  Drawer Navigation:
+  ┌─ Navigation ─────────────────┐
+  │ [User Profile Avatar]        │
+  │ John Doe                     │
+  │                              │
+  │ Views                        │
+  │ ● Unsorted (12)      ← Badge │
+  │ ○ All Tasks                  │
+  │                              │
+  │ Quick Filters                │
+  │ ⚡ AI Needs Review (8)       │
+  │ ⚡ High Priority              │
+  │ ⚡ Due Soon                   │
+  │                              │
+  │ Browse Tags                  │
+  │ 📍 where: Walmart (5)        │
+  │ 📍 where: Home (12)          │
+  │ ⚠️ priority: high (3)        │
+  │ ⚠️ priority: medium (8)      │
+  │ 🏷️ project: Kitchen (6)     │
+  │ [View all tags →]            │
+  │                              │
+  │ ─────────────────────       │
+  │ ⚙️ Settings                  │
+  │ 🤖 AI Settings               │
+  └──────────────────────────────┘
+
+  ★ Insight ─────────────────────────────────────
+  The drawer organizes navigation by intent, not just by location. "Views" answers "How are tasks organized?", "Quick
+  Filters" answers "What needs my attention?", and "Browse Tags" answers "What's happening where/when?". This mental
+  model scales as your app adds features.
+  ─────────────────────────────────────────────────
+
+  Tag Filtering Interface
+
+  Since everything in your app is a tag (except the unsorted/sorted distinction), you need a robust multi-tag filtering
+  system:
+
+  Below the top nav (when filters active):
+  ┌─────────────────────────────┐
+  │ ☰  All Tasks      🔍  ➕    │
+  ├─────────────────────────────┤
+  │ [×where:Walmart] [×priority:│
+  │  high] [+ Add filter]       │
+  └─────────────────────────────┘
+
+  Filter selection interface (modal/bottom sheet):
+  ┌─ Add Filter ─────────────────┐
+  │ 🔍 Search tags...            │
+  │                              │
+  │ Where                        │
+  │ ○ Walmart (5)                │
+  │ ○ Home (12)                  │
+  │ ○ Office (3)                 │
+  │                              │
+  │ Priority                     │
+  │ ○ high (3)                   │
+  │ ○ medium (8)                 │
+  │ ○ low (15)                   │
+  │                              │
+  │ Project                      │
+  │ ○ Kitchen (6)                │
+  │ ○ Garden (4)                 │
+  │                              │
+  │ [Apply] [Clear all]          │
+  └──────────────────────────────┘
+
+  AI Confidence Indicators
+
+  For tasks in the "All Tasks" view, show AI tagging confidence:
+
+  High confidence (no indicator needed):
+  ┌─────────────────────────────┐
+  │ □ Buy milk and eggs          │
+  │   🏷️ where:Walmart, shopping │
+  └─────────────────────────────┘
+
+  Medium confidence (sparkle):
+  ┌─────────────────────────────┐
+  │ □ Review quarterly budget ✨ │
+  │   🏷️ priority:high, work     │
+  └─────────────────────────────┘
+
+  Low confidence (in Unsorted view):
+  ┌─────────────────────────────┐
+  │ □ Call about the thing       │
+  │   [+ Add details for AI]     │
+  └─────────────────────────────┘
+
+  ★ Insight ─────────────────────────────────────
+  The sparkle (✨) serves as both an indicator AND an affordance - users can tap it to review/edit AI suggestions. This
+  follows the principle of progressive disclosure: new users learn the AI is helping, experienced users can ignore it if
+  tags are correct.
+  ─────────────────────────────────────────────────
+
+  Alternative: Hybrid Approach (if you really want quick toggle)
+
+  If you want faster switching between Unsorted and All Tasks without opening the drawer:
+
+  Option A: Dropdown in top nav
+  ┌─────────────────────────────┐
+  │ ☰  [Unsorted (12) ▼]  🔍  ➕│
+  └─────────────────────────────┘
+  Tap the dropdown arrow to switch views quickly.
+
+  Option B: Swipe gesture
+  Swipe left/right on header to switch views
+  Visual indicator: subtle dots below title
+  ● ○ ○  (3 views: Unsorted, All, Recent)
+
+  Option C: Floating toggle (least recommended)
+           ┌─────────────┐
+           │  Unsorted   │ ← Floating chip
+           │  All Tasks  │    at top of list
+           └─────────────┘
+
+  Specific Answers to Your Questions
+
+  "Should I use a cycle button instead?"
+
+  No, for these reasons:
+
+  1. The current topNav label ("Unsorted") is clearer - it tells users exactly where they are
+  2. A cycle button hides information - users can't see counts for other views
+  3. Drawer navigation is expected - users know to look there for navigation options
+  4. You'll want more than 2 views eventually - "AI Needs Review", "Recent", "Favorites" are natural additions
+
+  "How should drawer relate to topNav?"
+
+  Proposed relationship:
+
+  | Element                | Purpose                | Content                                            |
+  |------------------------|------------------------|----------------------------------------------------|
+  | Top Nav                | Context + Actions      | Current view name, search, add task, drawer toggle |
+  | Drawer                 | Navigation + Discovery | All views, filters, tag browsing, settings         |
+  | Filter Bar             | Active state           | Shows applied tag filters as dismissible chips     |
+  | Floating Action Button | Primary action         | Quick add task (optional, can use + in topNav)     |
+
+  The topNav shows where you are and what you can do, while the drawer shows where you can go and what exists.
+
+  Design Specification for Implementation
+  ⎿  User rejected Claude's plan:
+     ╭─────────────────────────────────────────────────────────────────────────────╮
+     │ AI-Powered Todo App Navigation Design                                       │
+     │                                                                             │
+     │ Recommended Approach                                                        │
+     │                                                                             │
+     │ Use drawer navigation with views, NOT a cycle button                        │
+     │                                                                             │
+     │ Navigation Structure                                                        │
+     │                                                                             │
+     │ Top Navigation Bar                                                          │
+     │                                                                             │
+     │ - Hamburger menu (☰) → Opens drawer                                         │
+     │ - Current view title with badge count: "Unsorted (12)"                      │
+     │ - Search icon for filtering                                                 │
+     │ - Add button for quick task capture                                         │
+     │                                                                             │
+     │ Drawer Organization                                                         │
+     │                                                                             │
+     │ 1. Views Section                                                            │
+     │   - Unsorted (with count badge)                                             │
+     │   - All Tasks                                                               │
+     │ 2. Quick Filters Section (future)                                           │
+     │   - AI Needs Review (count)                                                 │
+     │   - High Priority                                                           │
+     │   - Due Soon                                                                │
+     │ 3. Browse Tags Section                                                      │
+     │   - Auto-grouped by tag category (where:, priority:, project:)              │
+     │   - Shows counts per tag                                                    │
+     │   - "View all tags" expansion                                               │
+     │ 4. Settings Section                                                         │
+     │   - App preferences                                                         │
+     │   - AI configuration                                                        │
+     │                                                                             │
+     │ Tag Filtering System                                                        │
+     │                                                                             │
+     │ - Filter chips appear below top nav when active                             │
+     │ - Multi-select filter modal for adding tags                                 │
+     │ - Grouped by category for easier scanning                                   │
+     │ - Support for AND/OR logic (start with AND)                                 │
+     │                                                                             │
+     │ AI Confidence Indicators                                                    │
+     │                                                                             │
+     │ - High confidence: No indicator (looks manual)                              │
+     │ - Medium confidence: ✨ sparkle icon (tap to review)                         │
+     │ - Low confidence: Task goes to Unsorted view                                │
+     │                                                                             │
+     │ Rationale                                                                   │
+     │                                                                             │
+     │ - Drawer scales better than binary toggle                                   │
+     │ - Industry-standard pattern (familiar to users)                             │
+     │ - Supports future feature additions                                         │
+     │ - Provides visibility of counts/status at a glance                          │
+     │ - Tag filtering as separate layer supports your "everything is a tag" model │
+     │                                                                             │
+     │ Next Steps (if you want to implement)                                       │
+     │                                                                             │
+     │ 1. Update Figma design with drawer navigation                               │
+     │ 2. Sketch out filter modal interface                                        │
+     │ 3. Design tag chip components                                               │
+     │ 4. Create AI confidence indicator variants                                  │
+     │ 5. Define interaction flows (tap, swipe, long-press)                        │
+     ╰─────────────────────────────────────────────────────────────────────────────╯
+
+> /context 
+  ⎿  
+      Context Usage
+     ⛁ ⛁ ⛁ ⛁ ⛁ ⛁ ⛁ ⛁ ⛁ ⛁   claude-sonnet-4-5-20250929 · 46k/200k tokens (23%)
+     ⛁ ⛁ ⛀ ⛁ ⛁ ⛁ ⛁ ⛁ ⛁ ⛁ 
+     ⛁ ⛁ ⛁ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶   ⛁ System prompt: 2.3k tokens (1.2%)
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶   ⛁ System tools: 13.7k tokens (6.8%)
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶   ⛁ MCP tools: 9.4k tokens (4.7%)
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶   ⛁ Memory files: 10.1k tokens (5.1%)
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶   ⛁ Messages: 10.0k tokens (5.0%)
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶   ⛶ Free space: 154k (77.2%)
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ 
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ 
+
+     MCP tools · /mcp
+     └ mcp__linkup__linkup-search (linkup): 757 tokens
+     └ mcp__linkup__linkup-fetch (linkup): 685 tokens
+     └ mcp__figma__get_screenshot (figma): 1.1k tokens
+     └ mcp__figma__create_design_system_rules (figma): 851 tokens
+     └ mcp__figma__get_design_context (figma): 1.2k tokens
+     └ mcp__figma__get_metadata (figma): 1.1k tokens
+     └ mcp__figma__get_variable_defs (figma): 1.1k tokens
+     └ mcp__figma__get_figjam (figma): 1.1k tokens
+     └ mcp__figma__get_code_connect_map (figma): 969 tokens
+     └ mcp__figma__whoami (figma): 607 tokens
+
+     Memory files · /memory
+     └ Project                                                           10.1k 
+     (C:\Users\user\Text\Projects\Aquaticat\Monochromatic\CLAUDE.md):    tokens
+
+     SlashCommand Tool · 0 commands
+     └ Total: 864 tokens
+
+
+
+> Only high confidence goes to Sorted, others goes to unsorted. Not a configurable option as of MVP.
+No recents/favorites views necessary. This is a todo app that make user focus on what to do next, not dewelling on their 
+personal favorites.
+Sorted view shows user what to do next from top to bottom. 
+
+● This changes everything - your app is much more focused than typical todo apps. Let me reconsider the navigation with
+  this clarity.
+
+  ★ Insight ─────────────────────────────────────
+  The distinction between Sorted (high-confidence, prioritized action list) and Unsorted (needs attention) is
+  fundamentally different from typical todo app categories. Sorted is not just "organized tasks" - it's a curated,
+  AI-prioritized action queue. This makes the binary toggle significantly more defensible.
+  ─────────────────────────────────────────────────
+
+  Reconsidering the Cycle Button
+
+  With only 2 views and no plans for expansion, a cycle button or toggle actually makes sense. The typical arguments
+  against it don't apply here:
+
+  Why it works for your app:
+  1. True binary: Only 2 states, no third state planned
+  2. Clear semantics: Unsorted = needs attention, Sorted = do these next
+  3. Frequent switching: Users will likely toggle often (check unsorted → work on sorted → back to check unsorted)
+  4. Focus-oriented: Fewer navigation options = less distraction
+
+  Refined Navigation Options
+
+  Option 1: Segmented Control (Recommended)
+
+  ┌─────────────────────────────┐
+  │ [Unsorted·12|Sorted·45]  🔍│
+  │  ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎ ︎  ︎ ︎ ︎➕│
+  └─────────────────────────────┘
+
+  - iOS-style segmented control
+  - Always visible
+  - Shows counts for both states
+  - One tap to switch
+  - Clear visual indicator of current state
+
+  Pros:
+  - Industry standard for binary choices
+  - Both options always visible
+  - Counts create urgency for Unsorted
+  - Familiar interaction pattern
+
+  Cons:
+  - Takes more horizontal space
+  - Harder to accommodate very long labels
+
+  Option 2: Dropdown with Quick Switch
+
+  ┌─────────────────────────────┐
+  │ ☰ [Unsorted (12) ▼]   🔍  ➕│
+  └─────────────────────────────┘
+
+  Click dropdown to see:
+  ● Unsorted (12)  ← Current
+  ○ Sorted (45)
+
+  Pros:
+  - Compact
+  - Can add more views later (despite saying you won't)
+  - Standard pattern
+
+  Cons:
+  - Requires 2 taps (open + select)
+  - Other view hidden until dropdown opens
+  - Less immediate feedback
+
+  Option 3: Toggle Switch in Top Nav
+
+  ┌─────────────────────────────┐
+  │ ☰ Unsorted [○————] 🔍  ➕   │
+  │           12↑  ↑45          │
+  └─────────────────────────────┘
+
+  Pros:
+  - Very compact
+  - Clear on/off metaphor
+  - One tap
+
+  Cons:
+  - Non-standard for navigation
+  - Harder to show counts clearly
+  - May be confused with settings toggle
+
+  Option 4: Floating Pill Toggle (Modern)
+
+  ┌─────────────────────────────┐
+  │ ☰              🔍  ➕        │
+  ├─────────────────────────────┤
+  │  [Unsorted·12|Sorted·45]    │ ← Floating
+  │                             │    at top of
+  │  [ ] Task item              │    scroll area
+  │  [ ] Task item              │
+  └─────────────────────────────┘
+
+  Pros:
+  - Doesn't compete with top nav for space
+  - Scrolls with content (or can be sticky)
+  - Very prominent
+
+  Cons:
+  - Takes vertical space from task list
+  - Less conventional placement
+
+  My Recommendation: Segmented Control
+
+  For your focused, binary navigation model, the iOS-style segmented control is ideal:
+
+  ┌──────────────────────────────────────┐
+  │  ☰  [Unsorted·12|Sorted·45]  🔍  ➕  │
+  └──────────────────────────────────────┘
+
+  Implementation details:
+  - Left side selected = Unsorted view active
+  - Right side selected = Sorted view active
+  - Badge counts always visible
+  - Single tap to switch
+  - Drawer (☰) contains:
+    - Tag filters (for filtering within current view)
+    - AI Settings
+    - App Settings
+    - Maybe "About" or "Help"
+
+  ★ Insight ─────────────────────────────────────
+  The segmented control provides continuous awareness - users always see the Unsorted count even when working in Sorted
+  view. This creates gentle, non-intrusive urgency without notifications or badges elsewhere. It respects the "focus on
+  what's next" philosophy while maintaining awareness of pending work.
+  ─────────────────────────────────────────────────
+
+  Refined Drawer Navigation
+
+  Since the main views are handled by the segmented control, the drawer becomes a utility & filtering space:
+
+  ┌─ Navigation ─────────────────┐
+  │ [User Profile]               │
+  │ John Doe                     │
+  │                              │
+  │ Filter Current View          │
+  │ [+ Add tag filter]           │
+  │                              │
+  │ Browse All Tags              │
+  │ 📍 where: Walmart (5)        │
+  │ 📍 where: Home (12)          │
+  │ ⚠️ priority: high (3)        │
+  │ ⚠️ priority: medium (8)      │
+  │ [View all →]                 │
+  │                              │
+  │ ─────────────────────       │
+  │ 🤖 AI Behavior               │
+  │ ⚙️ Settings                  │
+  │ ❓ Help                      │
+  └──────────────────────────────┘
+
+  Key differences from earlier proposal:
+  - No "Views" section (handled by segmented control)
+  - No "Quick Filters" or "Favorites" (staying focused)
+  - Filter tags work within current view (Unsorted OR Sorted)
+  - Minimal, utility-focused
+
+  Tag Filtering Behavior
+
+  When user applies tag filters from drawer:
+
+  In Unsorted view:
+  Shows only unsorted tasks that match selected tags
+  Example: Filter by "where:Walmart" → see only
+  Walmart tasks that need more info
+
+  In Sorted view:
+  Shows only sorted tasks that match selected tags
+  Example: Filter by "priority:high" → see only
+  high priority tasks in AI-determined order
+
+  Active filters appear as chips below the segmented control:
+  ┌──────────────────────────────────────┐
+  │  ☰  [Unsorted·12|Sorted·45]  🔍  ➕  │
+  ├──────────────────────────────────────┤
+  │ [×where:Walmart] [×priority:high] [+]│
+  ├──────────────────────────────────────┤
+  │  [ ] Task items...                   │
+  └──────────────────────────────────────┘
+
+  Questions for You
+
+  Before I present a final design specification:
+
+  1. Segmented control placement: Keep it in the top nav bar (as shown above), or float it at the top of the content
+  area?
+  2. AI prioritization: In Sorted view, does AI just add high-confidence tags, or does it also determine the
+  top-to-bottom order? (You mentioned "shows what to do next from top to bottom")
+  3. Search behavior: Should search work across both Unsorted and Sorted, or only within the current view?
+  4. Empty states: What happens when Unsorted reaches 0? Celebration? Subtle acknowledgment? Just show empty list?
+
+  Let me know your thoughts on these, and whether you'd like me to present a final design specification or continue
+  refining specific aspects.
+
+> Ideally the user should never need to search by priority:high, because Sorted view by definition tells user what to do 
+next according to a complex set of conditions, including priority, due, where, taskComplexity, taskDuration, 
+taskEstimatedDuration, userCurrentHealth, userCurrentLocation 
+
+● This is a critical insight - your Sorted view is not just "organized tasks", it's a context-aware AI recommendation 
+  engine. This fundamentally changes what the navigation should support.
+
+  ★ Insight ─────────────────────────────────────
+  The sophisticated AI prioritization (considering health, location, time, complexity, etc.) means Sorted view is not
+  meant to be filtered or manually organized - it's a trust-the-AI action queue. This is closer to email clients like
+  Superhuman ("what to do next") than traditional todo apps where users manually organize everything.
+  ─────────────────────────────────────────────────
+● User answered Claude's questions:                                                                                     
+  ⎿  · Should users be able to filter the Sorted view by tags, or would that defeat the purpose of AI prioritization? → 
+     No filtering in Sorted, but allow nudging AI via prompt or whatever to make AI re-sort. Example: "I have ADHD+CFS, 
+     incorporate that in your sorting decision"
+     · What should the hamburger menu drawer contain if not view switching or filtering? → Context inputs for AI, 
+     Browse/manage tags, I'm not too sure about it, you propose
+     · How should search work across Unsorted and Sorted views? → I'm not sure, you propose.
+     · When Unsorted reaches 0 tasks, what should happen? → Celebration moment
+
+● Your answers reveal this is a conversational AI-powered productivity system, not just a todo app with auto-tags. The
+  ability to "nudge AI via prompt" is a game-changer.
+
+  ★ Insight ─────────────────────────────────────
+  The "nudge AI via prompt" feature (e.g., "I have ADHD+CFS") transforms this from a passive sorting algorithm into an
+  adaptive assistant. This conversational element needs prominent placement - it's not just a settings option, it's core
+  functionality that affects the user's entire workflow.
+  ─────────────────────────────────────────────────
+
+  Complete Navigation Architecture Proposal
+
+  Top Navigation Bar
+
+  ┌──────────────────────────────────────┐
+  │ ☰  [Unsorted·12|Sorted·45]  💬 🔍 ➕ │
+  └──────────────────────────────────────┘
+
+  Elements:
+  1. ☰ Hamburger: Opens drawer (settings, context, tags)
+  2. Segmented control: Binary Unsorted/Sorted toggle with counts
+  3. 💬 AI Chat: Opens AI conversation for nudging/context ("I have ADHD+CFS...")
+  4. 🔍 Search: Opens dedicated search interface
+  5. ➕ Add task: Quick task capture
+
+  AI Conversation Interface (💬 button)
+
+  Opens a bottom sheet or modal:
+
+  ┌─ Talk to AI ─────────────────────────┐
+  │                                      │
+  │ 💬 Adjust sorting priorities         │
+  │                                      │
+  │ [Chat history...]                    │
+  │ AI: I'm sorting by priority, due     │
+  │     date, and location.              │
+  │                                      │
+  │ You: I have ADHD and CFS, please     │
+  │      factor in energy levels         │
+  │                                      │
+  │ AI: Updated. I'll now prioritize     │
+  │     shorter tasks when energy is low │
+  │                                      │
+  │ ─────────────────────────────────    │
+  │ Type your message...            [Send]│
+  └──────────────────────────────────────┘
+
+  Purpose:
+  - Users explain personal context to AI
+  - AI adjusts sorting algorithm based on conversation
+  - Persistent context (saved between sessions)
+  - Users can update context as circumstances change
+
+  ★ Insight ─────────────────────────────────────
+  The conversational AI interface makes the app deeply personal. Unlike generic productivity apps where settings are
+  buried in menus, this brings AI configuration to the forefront. Users develop a relationship with the AI by teaching it
+   about their needs, making the "trust the AI order" model more acceptable.
+  ─────────────────────────────────────────────────
+
+  Search Interface (🔍 button)
+
+  Opens dedicated search view that replaces the main view:
+
+  ┌──────────────────────────────────────┐
+  │ ← [Search: walmart           ]    ×  │
+  ├──────────────────────────────────────┤
+  │ 🔍 Results (3)                       │
+  │                                      │
+  │ □ Buy milk and eggs         (Sorted) │
+  │   🏷️ where:Walmart, shopping         │
+  │                                      │
+  │ □ Return damaged item    (Unsorted)  │
+  │   [+ Add details for AI]             │
+  │                                      │
+  │ □ Pick up prescription      (Sorted) │
+  │   🏷️ where:Walmart, health           │
+  └──────────────────────────────────────┘
+
+  Search behavior:
+  - Searches across all tasks (both Unsorted and Sorted)
+  - Results show which view each task belongs to
+  - Maintains task integrity (shows full context)
+  - Can search by text content OR tags (#work, #walmart)
+  - Closing search returns to previous view (Unsorted or Sorted)
+
+  Why this works:
+  - Preserves AI ordering in Sorted view (search doesn't filter it)
+  - Users can find specific tasks without breaking the recommendation engine
+  - Seeing "(Unsorted)" or "(Sorted)" provides useful context
+  - Works as an overview when users need to verify a task exists
+
+  Drawer Navigation (☰ button)
+
+  ┌─ Menu ───────────────────────────────┐
+  │ [User Profile Avatar]                │
+  │ John Doe                             │
+  │                                      │
+  │ Current Context                      │
+  │ 📍 Location: Home                    │
+  │ 💪 Energy: Medium                    │
+  │ ⏱️ Available: 2 hours                 │
+  │ [Edit context →]                     │
+  │                                      │
+  │ ─────────────────────────────────    │
+  │                                      │
+  │ All Tags (Browse)                    │
+  │ 📍 where: Walmart (5)                │
+  │ 📍 where: Home (12)                  │
+  │ 📍 where: Office (8)                 │
+  │ ⚠️ priority: high (3)                │
+  │ ⚠️ priority: medium (12)             │
+  │ ⚠️ priority: low (18)                │
+  │ 🏷️ project: Kitchen (6)             │
+  │ [Manage tags →]                      │
+  │                                      │
+  │ ─────────────────────────────────    │
+  │                                      │
+  │ 🤖 AI Behavior                       │
+  │ ⚙️ Settings                          │
+  │ 📊 Statistics                        │
+  │ ❓ Help & Tutorial                   │
+  └──────────────────────────────────────┘
+
+  Drawer sections:
+
+  1. Current Context (quick view/edit)
+    - Shows AI's current understanding of user state
+    - Quick edit opens context input interface
+    - Syncs with device sensors when possible (location)
+  2. All Tags (browse only, not for filtering)
+    - View all existing tags and their counts
+    - Tap to see list of tasks with that tag (opens search)
+    - "Manage tags" opens tag management interface (rename, merge, delete)
+  3. AI Behavior
+    - Opens AI chat interface (same as 💬 button)
+    - Quick shortcuts: "I'm tired", "I'm traveling", "Focus mode"
+  4. Settings
+    - App preferences
+    - Notification settings
+    - Data & privacy
+  5. Statistics
+    - Completion trends
+    - AI accuracy metrics
+    - Time saved by AI prioritization
+  6. Help & Tutorial
+    - Onboarding walkthrough
+    - Tips for effective AI training
+    - FAQ
+
+  Context Input Interface
+
+  Accessed from drawer "Edit context" button:
+
+  ┌─ Update Your Context ────────────────┐
+  │                                      │
+  │ Location                             │
+  │ ○ Home  ● Office  ○ Traveling       │
+  │ or: [Custom location____________]   │
+  │                                      │
+  │ Current Energy                       │
+  │ Low ◯──────●─────◯ High             │
+  │                                      │
+  │ Available Time                       │
+  │ [2] hours [30] minutes              │
+  │                                      │
+  │ Health Status                        │
+  │ [Good ▼]                            │
+  │                                      │
+  │ Additional Notes (optional)          │
+  │ [Feeling extra ADHD symptoms today_] │
+  │                                      │
+  │ [Cancel]           [Update Context]  │
+  └──────────────────────────────────────┘
+
+  Why separate context input from AI chat:
+  - Context input is structured, predictable data (location, energy, time)
+  - AI chat is unstructured, conversational preferences ("I have ADHD+CFS")
+  - Both inform AI decisions, but serve different purposes
+  - Context changes frequently (daily), AI chat context persists longer
+
+  Tag Management Interface
+
+  Accessed from drawer "Manage tags" button:
+
+  ┌─ Manage Tags ────────────────────────┐
+  │ 🔍 [Search tags...____________]      │
+  │                                      │
+  │ 📍 Location Tags                     │
+  │ • where:Walmart (5)          [Edit]  │
+  │ • where:Home (12)            [Edit]  │
+  │ • where:Grocery (3)          [Edit]  │
+  │   └→ Merge with "Walmart"? [Merge]   │
+  │                                      │
+  │ ⚠️ Priority Tags                     │
+  │ • priority:high (3)          [Edit]  │
+  │ • priority:medium (12)       [Edit]  │
+  │ • priority:low (18)          [Edit]  │
+  │                                      │
+  │ 🏷️ Project Tags                     │
+  │ • project:Kitchen (6)        [Edit]  │
+  │ • project:Garden (4)         [Edit]  │
+  │                                      │
+  │ [+ Create custom tag]                │
+  └──────────────────────────────────────┘
+
+  Features:
+  - View all tags grouped by category
+  - Rename tags (updates all tasks)
+  - Merge duplicate/similar tags
+  - Delete unused tags
+  - See tag usage statistics
+
+  Empty State - Unsorted Reaches 0
+
+  When last task leaves Unsorted view:
+
+  ┌──────────────────────────────────────┐
+  │ ☰  [Unsorted·0|Sorted·45]  💬 🔍 ➕  │
+  ├──────────────────────────────────────┤
+  │                                      │
+  │              🎉                       │
+  │                                      │
+  │     Inbox Zero Achieved!             │
+  │                                      │
+  │   All tasks are ready to go.         │
+  │   Check Sorted view to see           │
+  │   what to do next.                   │
+  │                                      │
+  │        [View Sorted Tasks]           │
+  │                                      │
+  └──────────────────────────────────────┘
+
+  Auto-dismisses after 3 seconds, OR user taps "View Sorted Tasks" to immediately switch.
+
+  ★ Insight ─────────────────────────────────────
+  The celebration moment transforms task processing from a chore into an achievement. By acknowledging "Inbox Zero,"
+  you're borrowing from email productivity culture where clearing the inbox is a respected goal. This positive
+  reinforcement encourages users to regularly triage Unsorted tasks.
+  ─────────────────────────────────────────────────
+
+  Complete Information Architecture
+
+  App Structure:
+  ├─ Top Nav (persistent)
+  │  ├─ ☰ Drawer toggle
+  │  ├─ [Unsorted|Sorted] segmented control
+  │  ├─ 💬 AI conversation
+  │  ├─ 🔍 Search
+  │  └─ ➕ Add task
+  │
+  ├─ Main Views (mutually exclusive)
+  │  ├─ Unsorted View
+  │  │  └─ Lists tasks needing more info/tags
+  │  ├─ Sorted View
+  │  │  └─ AI-prioritized action queue
+  │  └─ Search View
+  │     └─ Results across all tasks
+  │
+  ├─ Modal Interfaces
+  │  ├─ AI Conversation
+  │  │  └─ Chat interface for training AI
+  │  ├─ Add Task
+  │  │  └─ Quick capture or detailed entry
+  │  ├─ Context Input
+  │  │  └─ Structured context fields
+  │  └─ Tag Management
+  │     └─ Browse, edit, merge tags
+  │
+  └─ Drawer
+     ├─ Current Context (quick view)
+     ├─ All Tags (browse)
+     ├─ AI Behavior
+     ├─ Settings
+     ├─ Statistics
+     └─ Help
+
+  Summary of Key Design Decisions
+
+  1. Segmented control in top nav: Fast binary toggle, always visible counts
+  2. Dedicated AI conversation (💬): Prominent placement for core feature
+  3. Global search: Dedicated view, searches all tasks, shows source view
+  4. No filtering in Sorted: Preserves AI prioritization integrity
+  5. Context input separated from AI chat: Structured vs conversational data
+  6. Drawer for utilities: Settings, context, tag browsing (not navigation)
+  7. Celebration on Unsorted = 0: Positive reinforcement for task processing
+
+  This architecture supports your vision of a focused, AI-powered todo app that respects user context while maintaining
+  trust in the AI's recommendations.
+
+  Would you like me to refine any specific aspect, or shall I present this as the final design specification?
+
+
+

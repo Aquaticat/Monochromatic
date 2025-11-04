@@ -59,7 +59,7 @@
  * Debouncing user interactions:
  * ```ts
  * let debounceTimeout: NodeJS.Timeout | null = null;
- * 
+ *
  * async function debounceAction(action: () => void) {
  *   if (debounceTimeout) clearTimeout(debounceTimeout);
  *   await $(300); // Wait 300ms
@@ -67,9 +67,9 @@
  * }
  * ```
  */
-/* @__NO_SIDE_EFFECTS__ */ export function $(timeInMs: number): Promise<undefined> {
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises -- Promise constructor pattern
-  return new Promise(function createTimeout(resolve) {
-    return setTimeout(resolve, timeInMs);
-  });
+export function $(timeInMs: number,): Promise<undefined> {
+  // oxlint-disable-next-line avoid-new -- Promise constructor pattern
+  return new Promise(function createTimeout(resolve,) {
+    return setTimeout(resolve, timeInMs,);
+  },);
 }

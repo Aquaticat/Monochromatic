@@ -52,9 +52,9 @@ describe($, () => {
 
   //region Strings and escapes -- ensure quoted parsing cooperates
   test('strings with escaped quote', ({ expect, },) => {
-    const out = $({ value: '["a\\"b", "c"]' as FragmentStringJsonc, },);
+    const out = $({ value: String.raw`["a\"b", "c"]` as FragmentStringJsonc, },);
     expect(out.value[0],).toHaveProperty('value',);
-    expect((out.value[0] as Jsonc.String).value,).toBe('"a\\"b"',);
+    expect((out.value[0] as Jsonc.String).value,).toBe(String.raw`"a\"b"`,);
     expect((out.value[1] as Jsonc.String).value,).toBe('"c"',);
   });
   //endregion Strings and escapes
