@@ -24,12 +24,34 @@ All tasks must be run through Moon commands:
 ## Initial Setup
 
 ```bash
-# 1. Install proto globally. See https://moonrepo.dev/docs/proto/install
+# 1. Create .env file (required by proto configuration)
+cp .env.example .env
+
+# 2. Install proto globally. See https://moonrepo.dev/docs/proto/install
 bash <(curl -fsSL https://moonrepo.dev/install/proto.sh)
 
-# 2. Run project setup and build. Note that proto auto installs moon.
+# 3. Run project setup and build. Note that proto auto installs moon.
 moon run prepareAndBuild
 ```
+
+## Network Requirements
+
+The setup process requires access to the following domains:
+
+**Critical (setup will fail without these):**
+- `moonrepo.dev` - Proto installation script
+- `cdn.playwright.dev` - Playwright browser binaries
+- `playwright.download.prss.microsoft.com` - Playwright fallback CDN
+- `bun.sh` - Bun runtime downloads
+- `plugins.dprint.dev` - dprint formatter plugins
+- `crates.io` and `static.crates.io` - Rust packages (ripgrep, etc.)
+
+**Already accessible (npm ecosystem):**
+- `github.com` and `*.githubusercontent.com` - GitHub releases and raw content
+- `registry.npmjs.org` - npm packages
+- `nodejs.org` - Node.js downloads
+
+If you're in a restricted network environment, request allowlisting for the critical domains above.
 
 ## Essential Commands
 
