@@ -99,6 +99,37 @@ type {return-type}/[type {sub-type}/]from/type {input-type}/[type {input-sub-typ
 - `params positional/` - Uses positional parameters
 - `params named/` - Uses named/object parameters
 
+#### 7. Async/Sync Organization Pattern (For Functions with Multiple Variants)
+
+Functions that can handle both synchronous and asynchronous operations follow a specific organizational pattern:
+
+**Top-level parameter directories** contain async implementations:
+- `p p/` - Async version with positional parameters, handles both sync and async predicates/iterables
+- `p n/` - Async version with named parameters, handles both sync and async predicates/iterables
+
+**`r s/` subdirectory** contains sync-only implementations:
+- `r s/p p/` - Sync-only version with positional parameters, performance optimized for purely synchronous code
+- `r s/p n/` - Sync-only version with named parameters, performance optimized for purely synchronous code
+
+**Example structure**:
+```txt
+partition/
+├── p p/               # Async: handles sync/async predicates and sync/async iterables
+│   └── index.ts
+├── p n/               # Async: handles sync/async predicates and sync/async iterables
+│   └── index.ts
+└── r s/               # Sync-only: performance optimized
+    ├── p p/           # Sync: only sync predicates and sync iterables
+    │   └── index.ts
+    └── p n/           # Sync: only sync predicates and sync iterables
+        └── index.ts
+```
+
+**This pattern provides flexibility**:
+- Use top-level async versions (no `r s/`) for maximum compatibility when working with async operations
+- Use `r s/` versions for better performance when all operations are known to be synchronous
+- The async versions naturally handle sync inputs (since `await` works on non-promises)
+
 ## Concrete Examples
 
 ### Type Guards (Boolean Returns)
@@ -592,6 +623,61 @@ Final: Implementation
 #### Function Naming
 
 - **Export function**: Always use `$` for consistency
+
+#### Implementation Patterns
+
+**Export Naming Convention**
+
+Directory structure already expresses async/sync distinction. Avoid redundant prefixes in exports:
+
+```typescript
+// Bad: Redundant async/sync prefixes
+export * as asyncNamed from './p n/index.ts';
+export * as asyncPositional from './p p/index.ts';
+export * as syncNamed from './r s/p n/index.ts';
+
+// Good: Structure expresses the distinction
+export * as named from './p n/index.ts';
+export * as positional from './p p/index.ts';
+export * as sync from './r s/index.ts';  // sync subdirectory groups sync variants
+```
+
+The directory hierarchy (`r s/` vs top-level) already indicates synchronous vs asynchronous variants. Export names should focus on parameter style (named vs positional) rather than repeating information already in the path.
+
+**DRY Principle for Positional Variants**
+
+Positional parameter variants should delegate to named parameter variants, not reimplement logic:
+
+```typescript
+// Bad: Duplicated implementation
+// p p/index.ts
+export function $<T>(
+  predicate: (item: T) => boolean,
+  iterable: Iterable<T>,
+): { pass: T[]; fail: T[]; thrown: T[] } {
+  const pass: T[] = [];
+  const fail: T[] = [];
+  const thrown: T[] = [];
+  // ... duplicated logic
+}
+
+// Good: Delegate to named variant
+// p p/index.ts
+import { $ as partitionNamed } from '../p n/index.ts';
+
+export function $<T>(
+  predicate: (item: T) => boolean,
+  iterable: Iterable<T>,
+): { pass: T[]; fail: T[]; thrown: T[] } {
+  return partitionNamed({ predicate, iterable });
+}
+```
+
+Benefits:
+- Single source of truth for implementation
+- Ensures consistency between parameter styles
+- Simplifies maintenance and bug fixes
+- Named variant serves as the canonical implementation
 
 ### Testing Requirements
 
