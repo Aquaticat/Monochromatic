@@ -78,5 +78,11 @@ caddy = "https://raw.githubusercontent.com/Phault/proto-toml-plugins/main/caddy/
 
 # ripgrep is managed by moon because it's a cargo package.
 
-[env]
-file = ".env"
+# Temporarily disabled until we can make it load env by glob pattern.
+# TODO: Setup a better env manager.
+# [env]
+# file = ".env"
+
+[settings.offline]
+custom-hosts = ["github.com:443"]
+override-default-hosts = true
