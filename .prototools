@@ -84,6 +84,7 @@ caddy = "https://raw.githubusercontent.com/Phault/proto-toml-plugins/main/caddy/
 # [env]
 # file = ".env"
 
+# Disable offline check - the sandboxed environment uses an HTTP proxy
+# and proto's DNS-based offline detection fails even though HTTP/HTTPS work fine
 [settings.offline]
-custom-hosts = ["github.com:443"]
-override-default-hosts = true
+timeout = 0
