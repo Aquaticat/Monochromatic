@@ -83,7 +83,3 @@ caddy = "https://raw.githubusercontent.com/Phault/proto-toml-plugins/main/caddy/
 # TODO: Setup a better env manager.
 # [env]
 # file = ".env"
-
-[settings.offline]
-custom-hosts = ["1.1.1.1:80"]
-override-default-hosts = true

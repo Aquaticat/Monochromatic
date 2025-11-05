@@ -31,3 +31,16 @@ export RUSTUP_INIT_SKIP_PATH_CHECK=yes
 ```
 
 This allows proto to install and manage its own Rust toolchain without conflicts.
+
+## Offline warning in proxy environment
+
+### Solution
+
+Set `PROTO_OFFLINE=false` as an environment variable.
+
+### Non-working solutions
+
+"Set override hosts", because:
+
+1.  DNS resolution itself fails (expectedly in proxy environment)
+2.  Setting override host to `1.1.1.1:80` somehow counts as raw TCP (not sure).

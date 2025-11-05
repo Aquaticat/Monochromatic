@@ -129,7 +129,10 @@
 			"unifiedjs.vscode-mdx",
 			"dprint.dprint",
 			"gruntfuggly.todo-tree",
-			"vue.volar",
+
+      // Not using Vue at this moment.
+			// "vue.volar",
+
       "oxc.oxc-vscode",
       "stylelint.vscode-stylelint",
       "astro-build.astro-vscode",
