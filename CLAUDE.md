@@ -1,6 +1,4 @@
-# AGENTS.md - Development Guidelines for AI Agents
-
-<!-- Canon source: .kilocode/rules/* - This file consolidates all rules from the kilocode rules directory -->
+# Development Guidelines for AI Agents
 
 This file provides comprehensive guidance for AI agents working with code in this repository.
 Be direct and honest.
@@ -72,56 +70,56 @@ When users point out issues or suggest improvements:
 <development_commands>
 # Essential Commands
 
-**IMPORTANT**: All builds and tasks are managed by Moon. Never run `pnpm exec` or direct package scripts. Always use `moon run` commands.
+**IMPORTANT**: All builds and tasks are managed by mise. Never run `pnpm exec` or direct package scripts. Always use `mise run` commands.
 
 ## Initial Setup
 ```bash
-# Install moon globally first
-npm install -g @moonrepo/cli
+# Install mise (if not already installed)
+# See: https://mise.jdx.dev/getting-started.html
+
+# Activate mise in your shell
+mise activate
+
+# Install all tools
+mise install
 
 # Setup project
-moon run prepare
+mise run prepare
 ```
 
 ## Build Commands
-- Full build: `moon run build`
-- Build with watch: `moon run buildWatch`
-- Prepare project: `moon run prepare`
+- Full build: `mise run build`
+- Build with watch: `mise run buildWatch`
+- Prepare project: `mise run prepare`
+- Sync TypeScript project references: `mise run sync:ts-references`
 
 ## Test Commands
-- Run all tests: `moon run test` (only from workspace root)
-- Run unit tests: `moon run testUnit` (from workspace root)
-- Run browser tests: `moon run testBrowser` (from workspace root)
-- Run tests in watch mode: `moon run testWatch`
-- Run unit tests with coverage: `moon run testUnit`
+- Run all tests: `mise run test` (only from workspace root)
+- Run unit tests: `mise run test:unit` (from workspace root)
+- Run browser tests: `mise run test:browser` (from workspace root)
+- Run tests in watch mode: `mise run test:watch`
+- Run unit tests with coverage: `mise run test:unit`
 
 ## Linting and Formatting Commands
-- Lint all files: `moon run lint`
-- Format all files: `moon run format`
-- Validate (format + build + test): `moon run validate`
+- Lint all files: `mise run lint`
+- Format all files: `mise run format`
+- Validate (format + build + test): `mise run validate`
 
 ## Development Workflow Commands
-- Clean moon cache: `moon clean --lifetime '1 seconds'`
-- Check tools: `moon check`
-- Install dependencies: `moon run pnpmInstall` or `moon run bunInstall`
+- Check tools: `mise run check:tools`
+- Install dependencies: `pnpm install`
+- List all available tasks: `mise tasks`
 
 ## Running Specific Test Files
 To run a single test file:
 ```bash
-moon run testUnit -- packages/module/es/src/filename.unit.test.ts
+mise run test:unit -- packages/module/es/src/filename.unit.test.ts
 ```
 
-Use `moon run testBrowser -- packages/path/to/test` for browser tests.
-
-## Package-Specific Commands
-```bash
-# Build specific package (replace 'es' with package name)
-moon run es:js
-moon run es:types
-```
+Use `mise run test:browser -- packages/path/to/test` for browser tests.
 
 ## Building Projects
-**IMPORTANT**: When rebuilding after configuration changes (like ESLint rules), always use `moon run build` to rebuild all projects at once. Moon's caching system ensures this is efficient and won't unnecessarily rebuild unchanged projects. This approach is preferred over building individual packages.
+**IMPORTANT**: When rebuilding after configuration changes (like ESLint rules), always use `mise run build` to rebuild all projects at once. For TypeScript project reference updates, run `mise run sync:ts-references` after adding or removing dependencies.
 
 ## Linting and Formatting
 Don't run linters or formatters. The user will run them themselves.
@@ -992,10 +990,10 @@ test(module-es): achieve 100% coverage for error utilities
 - Focus on the "what" and "why", not just listing file changes
 </documentation_standards>
 
-<moon_based_architecture>
-# Moon-Based Architecture
-- All builds and tasks are managed by Moon CLI
+<mise_based_architecture>
+# mise-Based Architecture
+- All builds and tasks are managed by mise CLI
 - Never run `pnpm exec` or direct package scripts
-- Use `moon run <task>` for all development activities
+- Use `mise run <task>` for all development activities
 - Dual builds are supported for Node.js and browser targets
-</moon_based_architecture>
+</mise_based_architecture>

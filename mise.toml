@@ -1,0 +1,297 @@
+# mise configuration - replaces proto and moon
+# https://mise.jdx.dev/configuration.html
+
+[tools]
+# Primary runtime
+bun = "latest"
+
+# Package manager
+pnpm = "latest"
+
+# Needed by Vitest
+node = "latest"
+
+# Needed by some `create-*` tools
+npm = "latest"
+
+# Non-JS-based formatters
+dprint = "latest"
+
+# For running Python packages and scripts
+python = "latest"
+uv = "latest"
+
+# Convenience tools - frequently used terminal commands
+
+# json/toml manipulation
+jq = "latest"
+yq = "latest"
+
+# Benchmarking
+hyperfine = "latest"
+
+# Fuzzy finder
+fzf = "latest"
+
+# Web Server for Deployment
+caddy = "latest"
+
+# Rust-based tools
+# Note: ripgrep, fastmod, fd-find were managed by moon's Rust toolchain
+# Install manually or via cargo: cargo install ripgrep fastmod fd-find
+
+[settings]
+# Enable automatic tool installation when entering directory
+auto_install = true
+
+# Experimental features
+experimental = true
+
+[env]
+# Environment variables can be added here as needed
+
+#region Build Tasks
+
+[tasks.build]
+description = "Build all packages (JS + types)"
+depends = ["build:js", "types"]
+
+[tasks."build:js"]
+description = "Build JavaScript for all packages"
+run = """
+# Build all packages that have a js task defined
+# This will need to be customized per package or use a script
+echo "Building JavaScript packages..."
+cd packages/module/es && bun run build:js:node && bun run build:js:browser
+"""
+
+[tasks.buildWatch]
+description = "Build all packages in watch mode"
+depends = ["build:js:watch", "types:watch"]
+
+[tasks."build:js:watch"]
+description = "Build JavaScript in watch mode"
+run = """
+echo "Building JavaScript packages in watch mode..."
+# This task needs to run persistent watchers
+"""
+
+[tasks.buildAllowFailure]
+description = "Build all packages, allowing failures"
+depends = ["build:js", "typesAllowFailure"]
+
+[tasks.buildAndTest]
+description = "Build and then test all packages"
+depends = ["build", "test"]
+
+[tasks.buildAndTestWatch]
+description = "Build and test in watch mode"
+depends = ["build:js:watch", "types:watch", "test:unit:watch", "test:browser:watch"]
+
+#endregion Build Tasks
+
+#region Type Checking Tasks
+
+[tasks.types]
+description = "Type check all packages with TypeScript"
+run = "tsc --build"
+
+[tasks.typesAllowFailure]
+description = "Type check with failures allowed"
+run = "bun packages/module/es/src/cli.command.ts --allowFailure --shell -- tsc --build"
+
+[tasks."types:watch"]
+description = "Type check in watch mode"
+run = "tsc --watch"
+
+#endregion Type Checking Tasks
+
+#region Test Tasks
+
+[tasks.test]
+description = "Run all tests (unit + browser)"
+depends = ["test:unit", "test:browser"]
+
+[tasks."test:unit"]
+description = "Run unit tests"
+run = "vitest run --config vitest.unit.config.ts"
+
+[tasks."test:browser"]
+description = "Run browser tests"
+run = "vitest run --config vitest.browser.config.ts"
+
+[tasks."test:unit:watch"]
+description = "Run unit tests in watch mode"
+run = "vitest watch --config vitest.unit.config.ts"
+
+[tasks."test:browser:watch"]
+description = "Run browser tests in watch mode"
+run = "vitest watch --config vitest.browser.config.ts"
+
+[tasks."test:watch"]
+description = "Run all tests in watch mode"
+depends = ["test:unit:watch", "test:browser:watch"]
+
+#endregion Test Tasks
+
+#region Linting Tasks
+
+[tasks.lint]
+description = "Run all linters"
+depends = ["lint:eslint", "lint:oxlint", "lint:dprint", "lint:stylelint"]
+
+[tasks."lint:eslint"]
+description = "Lint with ESLint"
+run = "pnpm exec eslint"
+
+[tasks."lint:oxlint"]
+description = "Lint with Oxlint"
+run = "bun packages/module/es/src/cli.command.ts --allowFailure -- oxlint"
+
+[tasks."lint:dprint"]
+description = "Check formatting with dprint"
+run = "bun packages/module/es/src/cli.command.ts --allowFailure -- dprint check --list-different"
+
+[tasks."lint:stylelint"]
+description = "Lint CSS with Stylelint"
+run = '''bun packages/module/es/src/cli.command.ts --allowFailure -- stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'''
+
+#endregion Linting Tasks
+
+#region Formatting Tasks
+
+[tasks.format]
+description = "Format all files"
+depends = ["format:all-file-types", "format:language-specific"]
+
+[tasks."format:all-file-types"]
+description = "Format all file types with dprint (first pass)"
+depends = ["format:dprint"]
+
+[tasks."format:dprint"]
+description = "Format with dprint"
+run = "bun packages/module/es/src/cli.command.ts --allowFailure -- dprint fmt"
+
+[tasks."format:language-specific"]
+description = "Run language-specific formatters (second pass)"
+depends = ["format:typescript", "format:stylelint"]
+
+[tasks."format:typescript"]
+description = "Format TypeScript files (sequential: oxlint then eslint)"
+depends = ["format:oxlint", "format:eslint"]
+
+[tasks."format:oxlint"]
+description = "Format with Oxlint"
+run = "bun packages/module/es/src/cli.command.ts --allowFailure -- oxlint --fix"
+
+[tasks."format:eslint"]
+description = "Format with ESLint"
+run = "bun packages/module/es/src/cli.command.ts --allowFailure -- eslint --cache --fix"
+
+[tasks."format:stylelint"]
+description = "Format CSS with Stylelint"
+run = '''bun packages/module/es/src/cli.command.ts --allowFailure -- stylelint --ignore-path .gitignore --fix "**/*.{css,astro,html}"'''
+
+#endregion Formatting Tasks
+
+#region Validation and Check Tasks
+
+[tasks.validate]
+description = "Comprehensive validation: format, build, test (runs sequentially)"
+run = """
+mise run format && mise run build && mise run test
+"""
+
+[tasks.validateSetup]
+description = "Validate development environment setup"
+depends = ["check:tools", "check:dependencies", "check:build", "check:git-hooks"]
+
+[tasks.check]
+description = "Run all checks"
+depends = ["check:build", "check:dependencies", "check:git-hooks", "check:tools"]
+
+[tasks."check:build"]
+description = "Check build configuration"
+run = "bun packages/module/es/src/moon.checkBuild.ts"
+
+[tasks."check:dependencies"]
+description = "Check dependencies"
+run = "bun packages/module/es/src/moon.checkDependencies.ts"
+
+[tasks."check:git-hooks"]
+description = "Check git hooks configuration"
+run = "bun packages/module/es/src/moon.checkGitHooks.ts"
+
+[tasks."check:tools"]
+description = "Check required tools are installed"
+run = "bun packages/module/es/src/moon.checkTools.ts"
+
+#endregion Validation and Check Tasks
+
+#region Preparation Tasks
+
+[tasks.prepare]
+description = "Prepare environment (install Playwright browsers, etc.)"
+depends = ["prepare:playwright"]
+
+[tasks.prepareAllowFailure]
+description = "Prepare environment, allowing failures"
+depends = ["prepare:playwright:allow-failure"]
+
+[tasks."prepare:playwright"]
+description = "Install Playwright browsers"
+run = "bun packages/module/es/src/moon.preparePlaywright.ts"
+
+[tasks."prepare:playwright:allow-failure"]
+description = "Install Playwright browsers, allowing failures"
+run = "bun packages/module/es/src/cli.command.ts --allowFailure --timeout 30000 --shell -- bun packages/module/es/src/moon.preparePlaywright.ts"
+
+[tasks.prepareAndBuild]
+description = "Complete setup: prepare environment and build all artifacts"
+run = """
+mise run prepare && mise run build
+"""
+
+[tasks.prepareAndBuildAllowFailure]
+description = "Complete setup: prepare and build, allowing failures"
+run = """
+mise run prepareAllowFailure && mise run buildAllowFailure
+"""
+
+#endregion Preparation Tasks
+
+#region Development Server Tasks
+
+[tasks.start]
+description = "Start development servers"
+depends = ["start:caddy"]
+# Note: Package-specific start tasks need to be run separately
+
+[tasks."start:caddy"]
+description = "Start Caddy web server"
+run = "caddy run --config Caddyfile --adapter caddyfile"
+
+#endregion Development Server Tasks
+
+#region Miscellaneous Tasks
+
+[tasks.bunCompile]
+description = "Compile with Bun"
+run = "bun packages/module/es/src/moon.bunCompile.ts"
+
+[tasks.pnpmVersionCheck]
+description = "Check pnpm version"
+run = "pnpm version"
+
+#endregion Miscellaneous Tasks
+
+#region TypeScript Project References
+# Moon automatically synced TypeScript project references during build.
+# With mise, this needs to be done manually via a script.
+# See: packages/module/es/src/mise.syncTsProjectReferences.ts
+
+[tasks."sync:ts-references"]
+description = "Sync TypeScript project references (replaces moon's auto-sync)"
+run = "bun packages/module/es/src/mise.syncTsProjectReferences.ts"
+
+#endregion TypeScript Project References
