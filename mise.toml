@@ -1,44 +1,41 @@
+# harper:ignore
+
 # mise configuration - replaces proto and moon
 # https://mise.jdx.dev/configuration.html
+# TODO: Document `mise trust`
 
 [tools]
 # Primary runtime
 bun = "latest"
 
 # Package manager
-pnpm = "latest"
+pnpm = { version = "latest", postinstall = "pnpm install" }
+
+# Scripts assume basic unix tools
+coreutils = "latest"
+
+# Find files
+fd = "latest"
+ripgrep = "latest"
 
 # Needed by Vitest
 node = "latest"
 
-# Needed by some `create-*` tools
-npm = "latest"
-
-# Non-JS-based formatters
+# Non-JS-based linters and formatters
+harper-cli = "latest"
 dprint = "latest"
 
 # For running Python packages and scripts
-python = "latest"
 uv = "latest"
-
-# Convenience tools - frequently used terminal commands
-
-# json/toml manipulation
-jq = "latest"
-yq = "latest"
 
 # Benchmarking
 hyperfine = "latest"
 
-# Fuzzy finder
-fzf = "latest"
-
-# Web Server for Deployment
+# Web Server for deployment
 caddy = "latest"
 
-# Rust-based tools
-# Note: ripgrep, fastmod, fd-find were managed by moon's Rust toolchain
-# Install manually or via cargo: cargo install ripgrep fastmod fd-find
+# Required by `mise watch`
+watchexec = "latest"
 
 [settings]
 # Enable automatic tool installation when entering directory
@@ -47,8 +44,38 @@ auto_install = true
 # Experimental features
 experimental = true
 
+# asdf -> Doesn't support Windows.
+disable_backends = ["asdf"]
+
+jobs = 32
+
+task_timeout = "5s"
+
+verbose = true
+
+npm.bun = true
+
+status.missing_tools = "always"
+
+# Monochromatic/packages/module/es/
+task.monorepo_depth = 3
+
+[hooks]
+enter = "mise install"
+
 [env]
-# Environment variables can be added here as needed
+ESLINT_FLAGS = "v10_config_lookup_from_file,unstable_native_nodejs_ts_config"
+BUN_CONFIG_VERBOSE_FETCH = "1"
+
+# .env file is optional - mise silently ignores missing files
+# https://github.com/jdx/mise/blob/main/src/config/env_directive/file.rs#L155-L163
+_.file = [{ path = ".env", redact = true }]
+_.path = [
+  "node_modules/.bin",
+]
+
+# Doesn't work: --experimental-default-config-file is not allowed in NODE_OPTIONS
+# NODE_OPTIONS = "--experimental-default-config-file"
 
 #region Build Tasks
 

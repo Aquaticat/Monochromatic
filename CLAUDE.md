@@ -56,8 +56,8 @@ When users point out issues or suggest improvements:
 # Install mise (if not already installed)
 # See: https://mise.jdx.dev/getting-started.html
 
-# Activate mise in your shell
-mise activate
+# Activate mise in your shell (substitute bash with your shell)
+mise activate bash
 
 # Install all tools
 mise install
