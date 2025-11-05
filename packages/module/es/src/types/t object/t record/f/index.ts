@@ -1,1 +1,2 @@
-export * as partition from './partition/index.ts';
+// dummy export
+export const $ = '';

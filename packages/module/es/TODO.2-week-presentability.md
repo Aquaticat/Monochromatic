@@ -13,7 +13,7 @@
 
 - [ ] **Critical**: Fix missing exports in `iterable.is.ts`
   - [ ] Export `isEmptyArray`
-  - [ ] Export `isAsyncGenerator` 
+  - [ ] Export `isAsyncGenerator`
   - [ ] Export `isGenerator`
   - [ ] Export `isMap`
   - [ ] Export `isArray`
@@ -33,7 +33,7 @@
 - [ ] Implement `omit(object, keys)` - Remove specified properties from object
 - [ ] Implement `merge(...objects)` - Deep merge multiple objects
 
-#### Array Utilities (3 functions)  
+#### Array Utilities (3 functions)
 - [ ] Implement `chunk(array, size)` - Split array into chunks of specified size
 - [ ] Implement `flatten(array, depth?)` - Flatten nested arrays
 - [ ] Implement `uniq(array)` - Remove duplicate values from array
@@ -60,7 +60,7 @@
 ## Week 2: Documentation & Polish
 **Priority: Make it look professional**
 
-### Days 8-10: Documentation Excellence  
+### Days 8-10: Documentation Excellence
 **Status**: High Priority - Professional presentation
 **Reference**: [`TODO.tsdoc-improvements.md`](TODO.tsdoc-improvements.md)
 
@@ -94,7 +94,7 @@
 **Reference**: [`TODO.package-infrastructure.md`](TODO.package-infrastructure.md)
 
 - [ ] Verify JSR publishing configuration works correctly
-- [ ] Verify NPM publishing configuration works correctly  
+- [ ] Verify NPM publishing configuration works correctly
 - [ ] Test package installation from both registries
 - [ ] Test imports work correctly in Node.js environment
 - [ ] Test imports work correctly in browser environment
@@ -132,7 +132,7 @@
 - ✅ Professional documentation with TSDoc examples
 - ✅ Publishable package ready for JSR/NPM
 
-### Presentable Outcomes  
+### Presentable Outcomes
 - ✅ Clean, error-free codebase for demos/showcases
 - ✅ Professional README with usage examples
 - ✅ Type-safe operations with excellent TypeScript support
@@ -141,7 +141,7 @@
 
 ## Post-2-Week Development
 After achieving presentability, continue with the comprehensive long-term plan documented in:
-- [`TODO.index.md`](TODO.index.md) - Master roadmap
+- [`TODO.index.md`](TODO.md) - Master roadmap
 - [`TODO.missing-implementations.md`](TODO.missing-implementations.md) - 350+ additional functions
 - [`TODO.api-refactors.md`](TODO.api-refactors.md) - Major API improvements
 - [`TODO.governance-strategy.md`](TODO.governance-strategy.md) - Long-term strategy

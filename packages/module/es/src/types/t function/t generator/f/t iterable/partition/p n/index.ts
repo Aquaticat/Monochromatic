@@ -76,26 +76,21 @@
  * }
  * ```
  */
-export async function* $<T>(params: {
-  predicate: (item: T) => boolean | Promise<boolean>;
+export async function* $<T,>({ predicate, iterable, }: {
+  predicate: (item: T,) => boolean | Promise<boolean>;
   iterable: Iterable<T> | AsyncIterable<T>;
-}): AsyncGenerator<
-  { decision: 'pass' | 'fail' | 'thrown'; item: T },
+},): AsyncGenerator<
+  { decision: 'pass' | 'fail' | ['thrown', unknown,]; item: T; },
   void,
   undefined
 > {
-  const { predicate, iterable } = params;
-
   for await (const item of iterable) {
     try {
-      const result = await predicate(item);
-      if (result) {
-        yield { decision: 'pass', item };
-      } else {
-        yield { decision: 'fail', item };
-      }
-    } catch {
-      yield { decision: 'thrown', item };
+      const result = await predicate(item,);
+      yield (result ? { decision: 'pass', item, } : { decision: 'fail', item, });
+    }
+    catch (error) {
+      yield { decision: ['thrown', error,], item, };
     }
   }
 }

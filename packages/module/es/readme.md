@@ -223,6 +223,6 @@ This library is designed to eventually contain every useful functional programmi
 - [**Testing Coverage**](TODO.testing.md) - Test gaps and coverage improvements
 - [**TSDoc Improvements**](TODO.tsdoc-improvements.md) - Documentation enhancement
 - [**Function Improvements**](TODO.improvements.md) - Performance and API improvements
-- [**Package TODO Index**](TODO.index.md) - Complete roadmap and priority overview
+- [**Package TODO Index**](TODO.md) - Complete roadmap and priority overview
 
-For the complete vision and implementation roadmap, see [**TODO.index.md**](TODO.index.md).
+For the complete vision and implementation roadmap, see [**TODO.index.md**](TODO.md).
