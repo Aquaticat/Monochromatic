@@ -2,7 +2,7 @@
  * Partitions an iterable into decisions by yielding each item with its evaluation result.
  *
  * Processes each item through the predicate and yields objects containing:
- * - `decision`: 'pass' if predicate returned true, 'fail' if false, 'thrown' if error occurred
+ * - `decision`: 'pass' if predicate returned true, 'fail' if false, or a tuple ['thrown', error] if error occurred
  * - `item`: The original item from the iterable
  *
  * Handles both synchronous and asynchronous predicates and iterables.
@@ -11,7 +11,7 @@
  * @param params - Configuration object
  * @param params.predicate - Function to test each item, can return boolean or Promise<boolean>
  * @param params.iterable - Iterable or AsyncIterable to partition
- * @yields Objects with decision ('pass', 'fail', or 'thrown') and the item
+ * @yields Objects with decision ('pass', 'fail', or ['thrown', error]) and the item
  *
  * @example
  * ```ts
@@ -46,7 +46,7 @@
  * for await (const result of gen) {
  *   console.log(result);
  *   // { decision: 'fail', item: '1' }
- *   // { decision: 'thrown', item: 'invalid' }
+ *   // { decision: ['thrown', Error('Invalid')], item: 'invalid' }
  *   // { decision: 'pass', item: '3' }
  * }
  * ```

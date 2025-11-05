@@ -29,7 +29,7 @@ describe($, () => {
     ]);
   });
 
-  test('yields items with thrown decision when predicate throws', ({ expect }) => {
+  test('yields items with thrown decision tuple when predicate throws', ({ expect }) => {
     const items = ['1', 'invalid', '3'];
     const results = [];
 
@@ -46,11 +46,14 @@ describe($, () => {
       results.push(result);
     }
 
-    expect(results).toEqual([
-      { decision: 'fail', item: '1' },
-      { decision: 'thrown', item: 'invalid' },
-      { decision: 'pass', item: '3' },
-    ]);
+    expect(results).toHaveLength(3);
+    expect(results[0]).toEqual({ decision: 'fail', item: '1' });
+    expect(results[1]?.item).toBe('invalid');
+    expect(Array.isArray(results[1]?.decision)).toBe(true);
+    expect((results[1]?.decision as unknown[])?.[0]).toBe('thrown');
+    expect((results[1]?.decision as unknown[])?.[1]).toBeInstanceOf(Error);
+    expect(((results[1]?.decision as unknown[])?.[1] as Error).message).toBe('Invalid number');
+    expect(results[2]).toEqual({ decision: 'pass', item: '3' });
   });
 
   test('handles empty iterables', ({ expect }) => {
@@ -119,11 +122,16 @@ describe($, () => {
       results.push(result);
     }
 
-    expect(results).toEqual([
-      { decision: 'thrown', item: 'a' },
-      { decision: 'thrown', item: 'b' },
-      { decision: 'thrown', item: 'c' },
-    ]);
+    expect(results).toHaveLength(3);
+    
+    for (const [resultIndex, item] of items.entries()) {
+      const result = results[resultIndex];
+      expect(result?.item).toBe(item);
+      expect(Array.isArray(result?.decision)).toBe(true);
+      expect((result?.decision as unknown[])?.[0]).toBe('thrown');
+      expect((result?.decision as unknown[])?.[1]).toBeInstanceOf(Error);
+      expect(((result?.decision as unknown[])?.[1] as Error).message).toBe('Invalid');
+    }
   });
 
   test('preserves item type information', ({ expect }) => {
@@ -188,5 +196,58 @@ describe($, () => {
       { decision: 'fail', item: 3 },
       { decision: 'pass', item: 4 },
     ]);
+  });
+
+  test('captures different error types in thrown decision tuple', ({ expect }) => {
+    const items = [1, 2, 3];
+    const results = [];
+    const customError = new TypeError('Custom error');
+
+    for (const result of $({
+      predicate: (n: number) => {
+        if (n === 2) {
+          throw customError;
+        }
+        return n > 2;
+      },
+      iterable: items,
+    })) {
+      results.push(result);
+    }
+
+    expect(results).toHaveLength(3);
+    expect(results[0]).toEqual({ decision: 'fail', item: 1 });
+    expect(results[1]?.item).toBe(2);
+    expect(Array.isArray(results[1]?.decision)).toBe(true);
+    expect((results[1]?.decision as unknown[])?.[0]).toBe('thrown');
+    expect((results[1]?.decision as unknown[])?.[1]).toBe(customError);
+    expect(results[2]).toEqual({ decision: 'pass', item: 3 });
+  });
+
+  test('captures non-Error thrown values in decision tuple', ({ expect }) => {
+    const items = [1, 2, 3];
+    const results = [];
+    const thrownValue = 'string error';
+
+    for (const result of $({
+      predicate: (n: number) => {
+        if (n === 2) {
+          // eslint-disable-next-line @typescript-eslint/only-throw-error -- Testing non-Error throws
+          throw thrownValue;
+        }
+        return n > 2;
+      },
+      iterable: items,
+    })) {
+      results.push(result);
+    }
+
+    expect(results).toHaveLength(3);
+    expect(results[0]).toEqual({ decision: 'fail', item: 1 });
+    expect(results[1]?.item).toBe(2);
+    expect(Array.isArray(results[1]?.decision)).toBe(true);
+    expect((results[1]?.decision as unknown[])?.[0]).toBe('thrown');
+    expect((results[1]?.decision as unknown[])?.[1]).toBe(thrownValue);
+    expect(results[2]).toEqual({ decision: 'pass', item: 3 });
   });
 });

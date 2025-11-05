@@ -23,8 +23,6 @@
     ],
     "deny": [
       "Edit",
-      "WebFetch",
-      "WebSearch",
       "NotebookEdit",
       "Bash(cd:*)"
     ]
