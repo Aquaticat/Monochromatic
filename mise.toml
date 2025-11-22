@@ -37,6 +37,14 @@ caddy = "latest"
 # Required by `mise watch`
 watchexec = "latest"
 
+# For executing tasks cross-platform
+"aqua:nushell/nushell" = "latest"
+
+# For reliable timeout
+rust = "latest"
+cargo-binstall = "latest"
+"cargo:timeout-cli" = "latest"
+
 [settings]
 # Enable automatic tool installation when entering directory
 auto_install = true
@@ -47,10 +55,11 @@ experimental = true
 # asdf -> Doesn't support Windows.
 disable_backends = ["asdf"]
 
-jobs = 32
+jobs = 16
 
 task_timeout = "5s"
 
+# Uncomment when debugging
 verbose = true
 
 npm.bun = true
@@ -60,12 +69,19 @@ status.missing_tools = "always"
 # Monochromatic/packages/module/es/
 task.monorepo_depth = 3
 
+unix_default_file_shell_args = "nu"
+windows_default_file_shell_args = "nu"
+unix_default_inline_shell_args = "nu -c"
+windows_default_inline_shell_args = "nu -c"
+
 [hooks]
 enter = "mise install"
 
 [env]
 ESLINT_FLAGS = "v10_config_lookup_from_file,unstable_native_nodejs_ts_config"
-BUN_CONFIG_VERBOSE_FETCH = "1"
+
+# Too verbose
+# BUN_CONFIG_VERBOSE_FETCH = "1"
 
 # .env file is optional - mise silently ignores missing files
 # https://github.com/jdx/mise/blob/main/src/config/env_directive/file.rs#L155-L163
@@ -77,87 +93,100 @@ _.path = [
 # Doesn't work: --experimental-default-config-file is not allowed in NODE_OPTIONS
 # NODE_OPTIONS = "--experimental-default-config-file"
 
+[vars]
+#region tasks
+#
+# Task naming follows `${category}${optional(`--${modifier}`)}:${child}`
+# never use depends or post depends, use run only because it's the easiest to understand.
+
 #region Build Tasks
 
 [tasks.build]
-description = "Build all packages (JS + types)"
-depends = ["build:js", "types"]
+description = "Build all packages"
+run = [{ tasks = ["build:*"] }]
+alias = "b"
 
+# TODO: Configure monorepo first.
 [tasks."build:js"]
+hide = true
 description = "Build JavaScript for all packages"
-run = """
-# Build all packages that have a js task defined
-# This will need to be customized per package or use a script
-echo "Building JavaScript packages..."
-cd packages/module/es && bun run build:js:node && bun run build:js:browser
-"""
+run = "mise '//...:build:js'"
 
-[tasks.buildWatch]
+[tasks."build--allowFailure:js"]
+hide = true
+description = "Build JavaScript for all packages"
+run = "mise '//...:build--watch:js'"
+
+[tasks.build--watch]
 description = "Build all packages in watch mode"
-depends = ["build:js:watch", "types:watch"]
+run = [{ tasks = ["build--watch:*"] }]
 
-[tasks."build:js:watch"]
+[tasks."build--watch:js"]
+hide = true
 description = "Build JavaScript in watch mode"
-run = """
-echo "Building JavaScript packages in watch mode..."
-# This task needs to run persistent watchers
-"""
+run = "mise '//...:js--watch'"
 
-[tasks.buildAllowFailure]
+[tasks.build--allowFailure]
+hide = true
 description = "Build all packages, allowing failures"
-depends = ["build:js", "typesAllowFailure"]
+depends = ["build--allowFailure:*"]
 
-[tasks.buildAndTest]
-description = "Build and then test all packages"
-depends = ["build", "test"]
-
-[tasks.buildAndTestWatch]
-description = "Build and test in watch mode"
-depends = ["build:js:watch", "types:watch", "test:unit:watch", "test:browser:watch"]
-
-#endregion Build Tasks
-
-#region Type Checking Tasks
-
-[tasks.types]
-description = "Type check all packages with TypeScript"
+[tasks."build:types"]
+hide = true
+description = "Emit dts for all packages with TypeScript"
 run = "tsc --build"
 
-[tasks.typesAllowFailure]
-description = "Type check with failures allowed"
-run = "bun packages/module/es/src/cli.command.ts --allowFailure --shell -- tsc --build"
+[tasks."build--allowFailure:types"]
+hide = true
+description = "Emit dts for all packages with TypeScript"
+run = "try { tsc --build } catch { |e| print -e $e.rendered }"
 
-[tasks."types:watch"]
+[tasks."build--watch:types"]
 description = "Type check in watch mode"
 run = "tsc --watch"
 
-#endregion Type Checking Tasks
+#endregion Build Tasks
 
 #region Test Tasks
 
 [tasks.test]
-description = "Run all tests (unit + browser)"
-depends = ["test:unit", "test:browser"]
+description = "Run all tests"
+depends = ["test:*"]
+alias = "t"
+wait_for = ["build"]
 
 [tasks."test:unit"]
+hide = true
 description = "Run unit tests"
 run = "vitest run --config vitest.unit.config.ts"
 
 [tasks."test:browser"]
+hide = true
 description = "Run browser tests"
 run = "vitest run --config vitest.browser.config.ts"
 
-[tasks."test:unit:watch"]
+[tasks."test--watch:unit"]
+hide = true
 description = "Run unit tests in watch mode"
 run = "vitest watch --config vitest.unit.config.ts"
 
-[tasks."test:browser:watch"]
+[tasks."test--watch:browser"]
+hide = true
 description = "Run browser tests in watch mode"
 run = "vitest watch --config vitest.browser.config.ts"
 
-[tasks."test:watch"]
+[tasks."test--watch"]
 description = "Run all tests in watch mode"
 depends = ["test:unit:watch", "test:browser:watch"]
+alias = "tW"
+
+[tasks.buildAndTest]
+description = "Build and test"
+run = [{ tasks = ["build"] }, { tasks = ["test"] }]
+
+[tasks.buildAndTestWatch]
+description = "Build and test in watch mode"
+depends = ["build:js:watch", "types:watch", "test:unit:watch", "test:browser:watch"]
 
 #endregion Test Tasks
 
@@ -165,61 +194,77 @@ depends = ["test:unit:watch", "test:browser:watch"]
 
 [tasks.lint]
 description = "Run all linters"
-depends = ["lint:eslint", "lint:oxlint", "lint:dprint", "lint:stylelint"]
+run = [{ tasks = ["lint:*"] }]
 
 [tasks."lint:eslint"]
 description = "Lint with ESLint"
-run = "pnpm exec eslint"
+run = "timeout 5 pnpm exec eslint --cache --report-unused-disable-directives --report-unused-inline-configs warn --exit-on-fatal-error 'packages/**/*.*'"
 
 [tasks."lint:oxlint"]
 description = "Lint with Oxlint"
-run = "bun packages/module/es/src/cli.command.ts --allowFailure -- oxlint"
+# TODO: Run js plugin in eslint for now until oxlint https://github.com/oxc-project/oxc/issues/14375 is fixed.
+# TODO: Make this type aware, need to setup both oxlint and eslint rule disables.
+run = "oxlint"
 
 [tasks."lint:dprint"]
 description = "Check formatting with dprint"
-run = "bun packages/module/es/src/cli.command.ts --allowFailure -- dprint check --list-different"
+run = "dprint check --list-different"
 
 [tasks."lint:stylelint"]
 description = "Lint CSS with Stylelint"
-run = '''bun packages/module/es/src/cli.command.ts --allowFailure -- stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'''
+run = 'stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
 
 #endregion Linting Tasks
 
-#region Formatting Tasks
+# TODO: Make dprint the orchestrator instead.
+#  **When multiple plugins format the same file via associations, they execute sequentially in config file order, with each plugin's output becoming the next plugin's input.**
 
+# **Evidence:**
+
+# 1. **Plugins collected in config order** ([name_resolution.rs#L54-L60](https://github.com/dprint/dprint/blob/370a23d8e2ae22789972e6574a00070f05b46287/crates/dprint/src/plugins/name_resolution.rs#L54-L60)):
+# ```rust
+# pub fn get_plugin_names_from_file_path(&self, file_path: &Path) -> Vec<String> {
+#   let mut plugin_names = Vec::new();
+
+#   for (plugin_name, matcher) in self.association_matchers.iter() {
+#     if matcher.matches(file_path) {
+#       plugin_names.push(plugin_name.to_owned());
+#     }
+#   }
+# ```
+#
+# 2. **Sequential execution with chained output** ([resolution.rs#L343-L365](https://github.com/dprint/dprint/blob/0b94d502408d877372b25df71f86ce1dc6f299e2/crates/dprint/src/resolution.rs#L343-L365)):
+# ```rust
+# pub fn format(self: &Rc<Self>, request: HostFormatRequest) -> LocalBoxFuture<'static, FormatResult> {
+#   let plugin_names = self.plugin_name_maps.get_plugin_names_from_file_path(&request.file_path);
+#
+#   async move {
+#     let mut file_text = request.file_bytes;
+#     let mut had_change = false;
+#     for plugin_name in plugin_names {
+#       let plugin = scope.get_plugin(&plugin_name);
+#       match plugin.get_or_create_checking_config_diagnostics(&scope.environment).await {
+#         Ok(GetPluginResult::Success(initialized_plugin)) => {
+#           let result = initialized_plugin.format_text(InitializedPluginWithConfigFormatRequest {
+#             file_bytes: file_text.clone(),  // Current text as input
+#             // ...
+#           }).await;
+#           if let Some(new_text) = result? {
+#             file_text = new_text;  // Output becomes next input
+#             had_change = true;
+#           }
+#         }
+#       }
+#     }
+#     Ok(if had_change { Some(file_text) } else { None })
+#   }
+# }
+# ```
+#
+# **Key mechanism:** The `association_matchers` vector preserves plugin order from the config file, and the format loop processes them sequentially with `file_text` carrying the output forward.
 [tasks.format]
 description = "Format all files"
-depends = ["format:all-file-types", "format:language-specific"]
-
-[tasks."format:all-file-types"]
-description = "Format all file types with dprint (first pass)"
-depends = ["format:dprint"]
-
-[tasks."format:dprint"]
-description = "Format with dprint"
-run = "bun packages/module/es/src/cli.command.ts --allowFailure -- dprint fmt"
-
-[tasks."format:language-specific"]
-description = "Run language-specific formatters (second pass)"
-depends = ["format:typescript", "format:stylelint"]
-
-[tasks."format:typescript"]
-description = "Format TypeScript files (sequential: oxlint then eslint)"
-depends = ["format:oxlint", "format:eslint"]
-
-[tasks."format:oxlint"]
-description = "Format with Oxlint"
-run = "bun packages/module/es/src/cli.command.ts --allowFailure -- oxlint --fix"
-
-[tasks."format:eslint"]
-description = "Format with ESLint"
-run = "bun packages/module/es/src/cli.command.ts --allowFailure -- eslint --cache --fix"
-
-[tasks."format:stylelint"]
-description = "Format CSS with Stylelint"
-run = '''bun packages/module/es/src/cli.command.ts --allowFailure -- stylelint --ignore-path .gitignore --fix "**/*.{css,astro,html}"'''
-
-#endregion Formatting Tasks
+run = ["dprint fmt"]
 
 #region Validation and Check Tasks
 
@@ -292,25 +337,14 @@ mise run prepareAllowFailure && mise run buildAllowFailure
 [tasks.start]
 description = "Start development servers"
 depends = ["start:caddy"]
-# Note: Package-specific start tasks need to be run separately
+
+# TODO: Add package-specific start tasks here
 
 [tasks."start:caddy"]
 description = "Start Caddy web server"
 run = "caddy run --config Caddyfile --adapter caddyfile"
 
 #endregion Development Server Tasks
-
-#region Miscellaneous Tasks
-
-[tasks.bunCompile]
-description = "Compile with Bun"
-run = "bun packages/module/es/src/moon.bunCompile.ts"
-
-[tasks.pnpmVersionCheck]
-description = "Check pnpm version"
-run = "pnpm version"
-
-#endregion Miscellaneous Tasks
 
 #region TypeScript Project References
 # Moon automatically synced TypeScript project references during build.
@@ -322,3 +356,5 @@ description = "Sync TypeScript project references (replaces moon's auto-sync)"
 run = "bun packages/module/es/src/mise.syncTsProjectReferences.ts"
 
 #endregion TypeScript Project References
+
+#endregion tasks

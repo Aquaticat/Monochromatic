@@ -4,6 +4,7 @@ node_modules
 dist
 .env
 /bak
+/.bak
 *.tsbuildinfo
 *.map
 .bin
@@ -33,6 +34,7 @@ package-lock.json
 !*.config.js
 .tmp
 .mastra
+.stylelintcache
 
 .eslintcache
 
