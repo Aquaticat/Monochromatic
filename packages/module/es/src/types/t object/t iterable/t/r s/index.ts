@@ -1,1 +1,1 @@
-export type $<T = unknown> = Iterable<T>;
+export type $<T = unknown,> = Iterable<T>;

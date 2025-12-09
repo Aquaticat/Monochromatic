@@ -46,7 +46,7 @@
  *   debug: true,
  *   version: '1.0.0'
  * };
- * 
+ *
  * const essentials = $(config, ['database', 'api']);
  * console.log(essentials); // { database: {...}, api: {...} }
  * ```
@@ -86,28 +86,26 @@
 >(
   object: TObject,
   keys: TKeys,
-): TKeys extends Iterable<infer U>
-  ? Pick<TObject, Extract<keyof TObject, U>>
-  : Pick<TObject, Extract<keyof TObject, TKeys>> {
-  
+): TKeys extends Iterable<infer U> ? Pick<TObject, Extract<keyof TObject, U>>
+  : Pick<TObject, Extract<keyof TObject, TKeys>>
+{
   // Handle iterable of keys (including arrays)
   if (typeof keys === 'object' && keys !== null && Symbol.iterator in keys) {
-    const keysArray = [...(keys as Iterable<keyof TObject>)];
+    const keysArray = [...(keys as Iterable<keyof TObject>),];
     const result: Record<string, unknown> = {};
 
     for (const key of keysArray) {
       // Check if key exists in object
-      if (!(key in object)) {
-        throw new Error(`Key "${String(key)}" does not exist in object`);
-      }
+      if (!(key in object))
+        throw new Error(`Key "${String(key,)}" does not exist in object`,);
 
       // Convert key to string and add to result
-      const stringKey = String(key);
+      const stringKey = String(key,);
       result[stringKey] = object[key as keyof TObject];
     }
 
     return result as any;
   }
 
-  throw new TypeError('keys must be an iterable of keys');
+  throw new TypeError('keys must be an iterable of keys',);
 }

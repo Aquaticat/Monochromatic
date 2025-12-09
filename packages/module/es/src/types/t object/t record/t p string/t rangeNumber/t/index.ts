@@ -1,7 +1,7 @@
 export type $ = {
-  startInclusive : number,
-  endInclusive : number,
+  startInclusive: number;
+  endInclusive: number;
   __brand: {
-    rangeNumber: true
-  },
+    rangeNumber: true;
+  };
 };

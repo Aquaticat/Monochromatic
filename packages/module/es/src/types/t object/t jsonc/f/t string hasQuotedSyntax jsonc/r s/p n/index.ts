@@ -17,9 +17,9 @@ import {
   startsWithComment,
 } from './customParsers.ts';
 import {
+  parseWithFallback,
   tryArrayFastPath,
   tryObjectFastPath,
-  parseWithFallback,
 } from './fastPath.ts';
 //endregion Imports and aliases
 

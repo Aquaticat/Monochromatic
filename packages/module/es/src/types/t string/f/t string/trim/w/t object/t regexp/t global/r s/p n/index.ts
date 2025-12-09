@@ -1,6 +1,10 @@
 import type { $ as Global, } from '@_/types/t object/t regexp/t global/t/index.ts';
-import  {$ as trimRegexpStart} from '../../../../../../../trimStart/w/t object/t regexp/t global/r s/p n/index.ts';
-import  {$ as trimRegexpEnd} from '../../../../../../../trimEnd/w/t object/t regexp/t global/r s/p n/index.ts';
+import {
+  $ as trimRegexpEnd,
+} from '../../../../../../../trimEnd/w/t object/t regexp/t global/r s/p n/index.ts';
+import {
+  $ as trimRegexpStart,
+} from '../../../../../../../trimStart/w/t object/t regexp/t global/r s/p n/index.ts';
 
 /**
  * Removes all occurrences of patterns matching the regex trimmer from both the start and end of the input string.
@@ -59,8 +63,8 @@ export function $(
   { str, trimmer, }: { str: string; trimmer: Global; },
 ): string {
   // First trim from the start
-  const startTrimmed = trimRegexpStart({str, trimmer},);
+  const startTrimmed = trimRegexpStart({ str, trimmer, },);
 
   // Then trim from the end
-  return trimRegexpEnd({str: startTrimmed, trimmer},);
+  return trimRegexpEnd({ str: startTrimmed, trimmer, },);
 }

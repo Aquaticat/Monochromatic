@@ -4,7 +4,9 @@
  * @param storeName - Object store name
  * @returns Promise resolving to IDBDatabase
  */
-export async function indexedDbOpen(dbName: string, storeName: string,): Promise<IDBDatabase> {
+export async function indexedDbOpen(dbName: string,
+  storeName: string,): Promise<IDBDatabase>
+{
   return new Promise<IDBDatabase>((resolve, reject,) => {
     const request = indexedDB.open(dbName, 1,);
 

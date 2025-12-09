@@ -59,8 +59,8 @@
  * console.log(evenNumbers); // [2, 4, 6, 8, 10]
  * ```
  */
-export function $<T_i>(
-  predicate: (i: T_i) => boolean,
+export function $<T_i,>(
+  predicate: (i: T_i,) => boolean,
   arrayLike: Iterable<T_i>,
 ): T_i[] {
   const yes: T_i[] = [];

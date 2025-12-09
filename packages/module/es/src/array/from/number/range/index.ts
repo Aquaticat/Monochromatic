@@ -70,7 +70,9 @@
  * }
  * ```
  */
-export function $<const Length extends number>(length: Length,): Length[] & {length: Length} {
+export function $<const Length extends number,>(
+  length: Length,
+): Length[] & { length: Length; } {
   if (length < 0)
     throw new RangeError('Length must be non-negative',);
 

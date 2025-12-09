@@ -1,5 +1,5 @@
-import { trimPathTrailingSlash, } from './fs.pathJoin.shared.ts';
 import { trimIterable, } from '../type/typeof/object/iterable/iterable.trim.ts';
+import { trimPathTrailingSlash, } from './fs.pathJoin.shared.ts';
 
 const DOT_DOT_PATTERN = /(?<=^|\/)(?!\.\.)[^\/\n]+?\/\.\.(?=$|\/)/vg;
 const DUPLICATE_SLASH_PATTERN = /\/{2,}/vg;

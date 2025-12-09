@@ -41,7 +41,7 @@
  *   settings: { theme: 'dark', lang: 'en' },
  *   metadata: { created: '2023-01-01', version: 1 }
  * };
- * 
+ *
  * const essentials = $(user, ['profile', 'settings']);
  * console.log(essentials); // { profile: {...}, settings: {...} }
  * ```
@@ -73,14 +73,12 @@
   obj: TObject,
   extracted: TExtracted,
 ): Record<string, unknown> {
-  
   // Handle iterable of keys
-  const extractedArray = [...extracted];
-  
+  const extractedArray = [...extracted,];
+
   // Throw if extracted array is empty
-  if (extractedArray.length === 0) {
-    throw new TypeError('Extracted array cannot be empty');
-  }
+  if (extractedArray.length === 0)
+    throw new TypeError('Extracted array cannot be empty',);
 
   const result: Record<string, unknown> = {};
   const processedKeys = new Set<string>();
@@ -88,10 +86,10 @@
   // Process each extraction key
   for (const extractor of extractedArray) {
     // Direct key extraction
-    const stringKey = String(extractor);
-    if (stringKey in obj && !processedKeys.has(stringKey)) {
+    const stringKey = String(extractor,);
+    if (stringKey in obj && !processedKeys.has(stringKey,)) {
       result[stringKey] = obj[stringKey as keyof TObject];
-      processedKeys.add(stringKey);
+      processedKeys.add(stringKey,);
     }
   }
 

@@ -1,5 +1,5 @@
-import {$ as named} from '../p n/index.ts';
+import { $ as named, } from '../p n/index.ts';
 
-export function $(strings: string[], concatWith: string): string {
-  return named({strings, concatWith});
+export function $(strings: string[], concatWith: string,): string {
+  return named({ strings, concatWith, },);
 }

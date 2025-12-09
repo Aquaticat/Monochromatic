@@ -7,7 +7,7 @@
  * @param count - Number of elements to take from the beginning (must be non-negative)
  * @param iterable - Iterable to take elements from
  * @returns Array containing up to count elements from the beginning
- * 
+ *
  * @example
  * Take from array:
  * ```ts
@@ -65,12 +65,12 @@
  *   let n = 1;
  *   while (true) yield n++;
  * }
- * 
+ *
  * const first5 = $(5, naturalNumbers());
  * console.log(first5); // [1, 2, 3, 4, 5]
  * ```
  */
-/* @__NO_SIDE_EFFECTS__ */ export function $<const T>(
+/* @__NO_SIDE_EFFECTS__ */ export function $<const T,>(
   count: number,
   iterable: Iterable<T>,
 ): T[] {

@@ -25,6 +25,10 @@
  * $(iframeMap); // true
  * ```
  */
-export function $<const MyValue>(value: MyValue,): value is MyValue extends Map<infer K, infer V> ? MyValue & Map<K, V> : MyValue & Map<unknown, unknown> {
+export function $<const MyValue,>(
+  value: MyValue,
+): value is MyValue extends Map<infer K, infer V> ? MyValue & Map<K, V>
+  : MyValue & Map<unknown, unknown>
+{
   return Object.prototype.toString.call(value,) === '[object Map]';
 }

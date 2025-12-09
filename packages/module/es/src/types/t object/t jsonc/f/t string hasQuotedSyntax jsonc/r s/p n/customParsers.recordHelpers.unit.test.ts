@@ -70,7 +70,9 @@ describe('parseRecordKey', () => {
     expect(out.keyNode.comment?.commentValue.trim(),).toBe('key comment',);
   });
   test('error on non-quoted key', ({ expect, },) => {
-    expect(() => $('unquoted: 1' as FragmentStringJsonc,)).toThrow(/expected quoted key/,);
+    expect(() => $('unquoted: 1' as FragmentStringJsonc,)).toThrow(
+      /expected quoted key/,
+    );
   });
 });
 //endregion parseRecordKey
@@ -142,8 +144,9 @@ describe('parseRecordMembers', () => {
   test('multiple members with trailing comma', ({ expect, },) => {
     const out = $('"a": 1, /* c */ "b": 2, }X' as FragmentStringJsonc,);
     expect(out.entries,).toHaveLength(2,);
-    expect(out.entries.map(([k, v,],) =>
-      [k.value, (v as Jsonc.Number).value,]),).toEqual([['"a"', 1,], ['"b"', 2,],],);
+    expect(out.entries.map(([k, v,],) => [k.value, (v as Jsonc.Number).value,]),).toEqual(
+      [['"a"', 1,], ['"b"', 2,],],
+    );
     expect(out.tail,).toBe('X',);
   });
   test('immediate closing brace', ({ expect, },) => {

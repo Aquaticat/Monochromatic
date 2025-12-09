@@ -134,7 +134,7 @@ export async function updateCssJs(): Promise<void> {
   // Base64 encoded string
   hash = btoa(String.fromCharCode(...new Uint8Array(hashBuffer,),),);
 
-   indexHtmlStart = `<!DOCTYPE html>
+  indexHtmlStart = `<!DOCTYPE html>
     <html lang=en data-asset-hash=${hash}>
     <head>
     <meta charset=UTF-8>
@@ -142,7 +142,7 @@ export async function updateCssJs(): Promise<void> {
     <style>${css}</style>
     <script type=module>${js.replaceAll(/<\/script>/gvi, '<\\/script>',)}</script>
     </head>
-    <body>`
+    <body>`;
 
   l.debug`updateCssJs ${hash} ${assetStrings.js.slice(0, 100,)} ${
     assetStrings.css.slice(0, 100,)

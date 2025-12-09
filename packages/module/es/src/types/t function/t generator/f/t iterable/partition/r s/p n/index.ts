@@ -64,22 +64,24 @@
  * // passItems: [2, 4, 6]
  * ```
  */
-export function* $<T>(params: {
-  predicate: (item: T) => boolean;
+export function* $<T,>(params: {
+  predicate: (item: T,) => boolean;
   iterable: Iterable<T>;
-}): Generator<{ decision: 'pass' | 'fail' | ['thrown', unknown]; item: T }, void, undefined> {
-  const { predicate, iterable } = params;
+},): Generator<{ decision: 'pass' | 'fail' | ['thrown', unknown,]; item: T; }, void,
+  undefined>
+{
+  const { predicate, iterable, } = params;
 
   for (const item of iterable) {
     try {
-      const result = predicate(item);
-      if (result) {
-        yield { decision: 'pass', item };
-      } else {
-        yield { decision: 'fail', item };
-      }
-    } catch (error) {
-      yield { decision: ['thrown', error], item };
+      const result = predicate(item,);
+      if (result)
+        yield { decision: 'pass', item, };
+      else
+        yield { decision: 'fail', item, };
+    }
+    catch (error) {
+      yield { decision: ['thrown', error,], item, };
     }
   }
 }

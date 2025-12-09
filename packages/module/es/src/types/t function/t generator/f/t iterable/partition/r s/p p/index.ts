@@ -1,4 +1,4 @@
-import { $ as partitionNamed } from '../p n/index.ts';
+import { $ as partitionNamed, } from '../p n/index.ts';
 
 /**
  * Partitions an iterable into decisions by yielding each item with its evaluation result.
@@ -49,9 +49,11 @@ import { $ as partitionNamed } from '../p n/index.ts';
  * }
  * ```
  */
-export function* $<T>(
-  predicate: (item: T) => boolean,
+export function* $<T,>(
+  predicate: (item: T,) => boolean,
   iterable: Iterable<T>,
-): Generator<{ decision: 'pass' | 'fail' | ['thrown', unknown]; item: T }, void, undefined> {
-  yield* partitionNamed({ predicate, iterable });
+): Generator<{ decision: 'pass' | 'fail' | ['thrown', unknown,]; item: T; }, void,
+  undefined>
+{
+  yield* partitionNamed({ predicate, iterable, },);
 }

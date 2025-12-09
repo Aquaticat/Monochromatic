@@ -1,1 +1,1 @@
-export type $ = Record<string, unknown>
+export type $ = Record<string, unknown>;

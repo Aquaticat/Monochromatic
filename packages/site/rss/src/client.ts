@@ -74,7 +74,7 @@ elements.forEach(function scroll(element,) {
 
     const response = await fetch(`/api/ignore/new`, {
       method: 'POST',
-      body: JSON.stringify(body),
+      body: JSON.stringify(body,),
     },);
     if (!response.ok) {
       console.log(`${JSON.stringify(response,)} not ok on scrolledOut`,);
@@ -83,7 +83,7 @@ elements.forEach(function scroll(element,) {
     try {
       const text = await response.text();
       console.log(`${text} on scrolledOut`,);
-      element.classList.add('ignore');
+      element.classList.add('ignore',);
     }
     catch (error: unknown) {
       console.log(`${JSON.stringify(error,)} on scrolledOut`,);

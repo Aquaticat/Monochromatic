@@ -7,7 +7,10 @@ import {
   $ as unknownToTypeOfString,
 } from '../../../../../t typeof/f/t unknown/r s/p p/index.ts';
 
-const primitive = Object.freeze(['boolean', 'string', 'number', 'date', 'bigint', 'null', 'undefined', 'NaN', 'symbol',] as const,);
+const primitive = Object.freeze(
+  ['boolean', 'string', 'number', 'date', 'bigint', 'null', 'undefined', 'NaN',
+    'symbol',] as const,
+);
 
 /**
  * Converts any JavaScript value into its string representation as frozen export code.

@@ -44,7 +44,7 @@
  * ```ts
  * const setResult = $(x => x.toUpperCase(), new Set(['a', 'b']));
  * console.log(setResult); // ['A', 'B']
- * 
+ *
  * // String characters
  * const charCodes = $(c => c.charCodeAt(0), 'hello');
  * console.log(charCodes); // [104, 101, 108, 108, 111]
@@ -57,7 +57,7 @@
  *   { id: 1, name: 'Alice', age: 30 },
  *   { id: 2, name: 'Bob', age: 25 }
  * ];
- * 
+ *
  * const userSummary = $(
  *   (user, index) => `${index + 1}. ${user.name} (${user.age})`,
  *   users
@@ -65,10 +65,11 @@
  * console.log(userSummary); // ["1. Alice (30)", "2. Bob (25)"]
  * ```
  */
-/* @__NO_SIDE_EFFECTS__ */ export function $<const T_element, const T_mappedElement>(
-  mappingFn: ((element: T_element) => T_mappedElement) | 
-            ((element: T_element, index: number) => T_mappedElement) |
-            ((element: T_element, index: number, array: T_element[]) => T_mappedElement),
+/* @__NO_SIDE_EFFECTS__ */ export function $<const T_element, const T_mappedElement,>(
+  mappingFn:
+    | ((element: T_element,) => T_mappedElement)
+    | ((element: T_element, index: number,) => T_mappedElement)
+    | ((element: T_element, index: number, array: T_element[],) => T_mappedElement),
   arrayLike: Iterable<T_element>,
 ): T_mappedElement[] {
   const arr: T_element[] = [...arrayLike,];

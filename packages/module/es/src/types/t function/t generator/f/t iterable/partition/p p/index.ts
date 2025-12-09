@@ -1,4 +1,4 @@
-import { $ as partitionNamed } from '../p n/index.ts';
+import { $ as partitionNamed, } from '../p n/index.ts';
 
 /**
  * Partitions an iterable into decisions by yielding each item with its evaluation result.
@@ -49,13 +49,13 @@ import { $ as partitionNamed } from '../p n/index.ts';
  * }
  * ```
  */
-export async function* $<T>(
-  predicate: (item: T) => boolean | Promise<boolean>,
+export async function* $<T,>(
+  predicate: (item: T,) => boolean | Promise<boolean>,
   iterable: Iterable<T> | AsyncIterable<T>,
 ): AsyncGenerator<
-  { decision: 'pass' | 'fail' | ['thrown', unknown]; item: T },
+  { decision: 'pass' | 'fail' | ['thrown', unknown,]; item: T; },
   void,
   undefined
 > {
-  yield* partitionNamed({ predicate, iterable });
+  yield* partitionNamed({ predicate, iterable, },);
 }

@@ -64,9 +64,6 @@ Use `mise run test:browser -- packages/path/to/test` for browser tests.
 
 ## Building Projects
 **IMPORTANT**: When rebuilding after configuration changes (like ESLint rules), always use `mise run build` to rebuild all projects at once. For TypeScript project reference updates, run `mise run sync:ts-references` after adding or removing dependencies.
-
-## Linting and Formatting
-Don't run linters or formatters. The user will run them themselves.
 </development_commands>
 
 <search_tools>

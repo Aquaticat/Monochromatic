@@ -8,6 +8,4 @@ export type $ = DoubleQuote & {
 
 export type FragmentStringJsonc = string & { __brand: { jsonc: 'fragment'; }; };
 
-
-
 // TODO: Express every StringJsonc is FragmentStringJsonc

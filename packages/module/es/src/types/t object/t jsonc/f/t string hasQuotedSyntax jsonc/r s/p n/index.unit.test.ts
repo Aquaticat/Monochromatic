@@ -20,12 +20,10 @@ describe($, () => {
       const result = $({ value: input, },);
 
       expect(result.comment?.commentValue,).toContain('Leading comment',);
-      if ('json' in result) {
-        expect(result.json,).toEqual([1, 2, 3],);
-      }
-      else {
+      if ('json' in result)
+        expect(result.json,).toEqual([1, 2, 3,],);
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
 
     test('clean object with leading comments', ({ expect, },) => {
@@ -34,12 +32,10 @@ describe($, () => {
       const result = $({ value: input, },);
 
       expect(result.comment?.commentValue,).toContain('Block comment',);
-      if ('json' in result) {
+      if ('json' in result)
         expect(result.json,).toEqual({ a: 1, b: 2, },);
-      }
-      else {
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
   });
   //endregion Basic parsing with comments
@@ -51,12 +47,10 @@ describe($, () => {
       const result = $({ value: input, },);
 
       // Fast-path successfully parses
-      if ('json' in result) {
-        expect(result.json,).toEqual([1, 2, 3],);
-      }
-      else {
+      if ('json' in result)
+        expect(result.json,).toEqual([1, 2, 3,],);
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
 
     test('object with boundary trailing comma uses fast-path', ({ expect, },) => {
@@ -64,12 +58,10 @@ describe($, () => {
       const result = $({ value: input, },);
 
       // Fast-path successfully parses
-      if ('json' in result) {
+      if ('json' in result)
         expect(result.json,).toEqual({ a: 1, b: 2, },);
-      }
-      else {
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
 
     test('array with leading comment and trailing comma', ({ expect, },) => {
@@ -78,12 +70,10 @@ describe($, () => {
       const result = $({ value: input, },);
 
       expect(result.comment?.commentValue,).toContain('Comment',);
-      if ('json' in result) {
-        expect(result.json,).toEqual([10, 20, 30],);
-      }
-      else {
+      if ('json' in result)
+        expect(result.json,).toEqual([10, 20, 30,],);
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
 
     test('object with leading comment and trailing comma', ({ expect, },) => {
@@ -92,12 +82,10 @@ describe($, () => {
       const result = $({ value: input, },);
 
       expect(result.comment?.commentValue,).toContain('Setup',);
-      if ('json' in result) {
+      if ('json' in result)
         expect(result.json,).toEqual({ enabled: true, count: 5, },);
-      }
-      else {
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
 
     test('nested structures with trailing comma', ({ expect, },) => {
@@ -106,7 +94,7 @@ describe($, () => {
 
       if ('json' in result) {
         expect(result.json,).toEqual({
-          items: [1, 2, 3],
+          items: [1, 2, 3,],
           config: { debug: true, },
         },);
       }
@@ -184,7 +172,7 @@ describe($, () => {
       const input = '[1, 2, , ]' as StringJsonc;
 
       // This should throw or be handled by custom parser
-      expect(() => $({ value: input, },),).toThrow();
+      expect(() => $({ value: input, },)).toThrow();
     });
   });
   //endregion Custom parser fallback
@@ -262,7 +250,7 @@ describe($, () => {
     test('invalid start character throws', ({ expect, },) => {
       const input = 'invalid' as StringJsonc;
 
-      expect(() => $({ value: input, },),).toThrow(
+      expect(() => $({ value: input, },)).toThrow(
         'invalid jsonc, after removing comments and trimming, nothing except [ or { shall be at the start',
       );
     });
@@ -270,7 +258,7 @@ describe($, () => {
     test('number at start throws', ({ expect, },) => {
       const input = '123' as StringJsonc;
 
-      expect(() => $({ value: input, },),).toThrow(
+      expect(() => $({ value: input, },)).toThrow(
         'invalid jsonc, after removing comments and trimming, nothing except [ or { shall be at the start',
       );
     });
@@ -278,7 +266,7 @@ describe($, () => {
     test('string at start throws', ({ expect, },) => {
       const input = '"hello"' as StringJsonc;
 
-      expect(() => $({ value: input, },),).toThrow(
+      expect(() => $({ value: input, },)).toThrow(
         'invalid jsonc, after removing comments and trimming, nothing except [ or { shall be at the start',
       );
     });
@@ -286,7 +274,7 @@ describe($, () => {
     test('trailing content after array throws', ({ expect, },) => {
       const input = '[1, 2, 3] extra' as StringJsonc;
 
-      expect(() => $({ value: input, },),).toThrow(
+      expect(() => $({ value: input, },)).toThrow(
         'unexpected trailing content after array',
       );
     });
@@ -294,7 +282,7 @@ describe($, () => {
     test('trailing content after object throws', ({ expect, },) => {
       const input = '{"a": 1} extra' as StringJsonc;
 
-      expect(() => $({ value: input, },),).toThrow(
+      expect(() => $({ value: input, },)).toThrow(
         'unexpected trailing content after object',
       );
     });
@@ -302,7 +290,7 @@ describe($, () => {
     test('comment then trailing content after array throws', ({ expect, },) => {
       const input = '[1, 2] // comment\nextra' as StringJsonc;
 
-      expect(() => $({ value: input, },),).toThrow(
+      expect(() => $({ value: input, },)).toThrow(
         'unexpected trailing content after array',
       );
     });
@@ -310,7 +298,7 @@ describe($, () => {
     test('comment then trailing content after object throws', ({ expect, },) => {
       const input = '{"x": 1} /* comment */ more' as StringJsonc;
 
-      expect(() => $({ value: input, },),).toThrow(
+      expect(() => $({ value: input, },)).toThrow(
         'unexpected trailing content after object',
       );
     });
@@ -323,48 +311,40 @@ describe($, () => {
       const input = '[]' as StringJsonc;
       const result = $({ value: input, },);
 
-      if ('json' in result) {
+      if ('json' in result)
         expect(result.json,).toEqual([],);
-      }
-      else {
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
 
     test('empty object', ({ expect, },) => {
       const input = '{}' as StringJsonc;
       const result = $({ value: input, },);
 
-      if ('json' in result) {
+      if ('json' in result)
         expect(result.json,).toEqual({},);
-      }
-      else {
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
 
     test('only whitespace before array', ({ expect, },) => {
       const input = '   \n\t  [1, 2]' as StringJsonc;
       const result = $({ value: input, },);
 
-      if ('json' in result) {
-        expect(result.json,).toEqual([1, 2],);
-      }
-      else {
+      if ('json' in result)
+        expect(result.json,).toEqual([1, 2,],);
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
 
     test('only whitespace before object', ({ expect, },) => {
       const input = '   \n\t  {"a": 1}' as StringJsonc;
       const result = $({ value: input, },);
 
-      if ('json' in result) {
+      if ('json' in result)
         expect(result.json,).toEqual({ a: 1, },);
-      }
-      else {
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
 
     test('multiple leading comments', ({ expect, },) => {
@@ -375,12 +355,10 @@ describe($, () => {
       const result = $({ value: input, },);
 
       expect(result.comment,).toBeTruthy();
-      if ('json' in result) {
-        expect(result.json,).toEqual([1, 2, 3],);
-      }
-      else {
+      if ('json' in result)
+        expect(result.json,).toEqual([1, 2, 3,],);
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
 
     test('only comments after structure', ({ expect, },) => {
@@ -448,7 +426,7 @@ describe($, () => {
       const input = '[1, 2] garbage' as StringJsonc;
 
       // Validation should catch trailing content
-      expect(() => $({ value: input, },),).toThrow('unexpected trailing content',);
+      expect(() => $({ value: input, },)).toThrow('unexpected trailing content',);
     });
   });
   //endregion Integration with re-exported parsers
@@ -459,12 +437,10 @@ describe($, () => {
       const input = '[1, 2, 3,   ]' as StringJsonc;
       const result = $({ value: input, },);
 
-      if ('json' in result) {
-        expect(result.json,).toEqual([1, 2, 3],);
-      }
-      else {
+      if ('json' in result)
+        expect(result.json,).toEqual([1, 2, 3,],);
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
 
     test('trailing comma with newline before bracket', ({ expect, },) => {
@@ -472,24 +448,20 @@ describe($, () => {
 ]` as StringJsonc;
       const result = $({ value: input, },);
 
-      if ('json' in result) {
-        expect(result.json,).toEqual([1, 2, 3],);
-      }
-      else {
+      if ('json' in result)
+        expect(result.json,).toEqual([1, 2, 3,],);
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
 
     test('trailing comma with whitespace before brace', ({ expect, },) => {
       const input = '{"a": 1, "b": 2,   }' as StringJsonc;
       const result = $({ value: input, },);
 
-      if ('json' in result) {
+      if ('json' in result)
         expect(result.json,).toEqual({ a: 1, b: 2, },);
-      }
-      else {
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
 
     test('trailing comma with newline before brace', ({ expect, },) => {
@@ -497,12 +469,10 @@ describe($, () => {
 }` as StringJsonc;
       const result = $({ value: input, },);
 
-      if ('json' in result) {
+      if ('json' in result)
         expect(result.json,).toEqual({ a: 1, b: 2, },);
-      }
-      else {
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
 
     test('non-trailing comma in middle of array', ({ expect, },) => {
@@ -510,12 +480,10 @@ describe($, () => {
       const result = $({ value: input, },);
 
       // No trailing comma, still works
-      if ('json' in result) {
-        expect(result.json,).toEqual([1, 2, 3],);
-      }
-      else {
+      if ('json' in result)
+        expect(result.json,).toEqual([1, 2, 3,],);
+      else
         throw new Error('Expected fast-path PlainJson result',);
-      }
     });
   });
   //endregion Trailing comma boundary detection
@@ -526,52 +494,45 @@ describe($, () => {
       const input = '[1, 2]' as StringJsonc;
       const result = $({ value: input, },);
 
-      if ('json' in result) {
+      if ('json' in result)
         expect(Array.isArray(result.json,),).toBe(true,);
-      }
-      else {
+      else
         expect(Array.isArray(result.value,),).toBe(true,);
-      }
     });
 
     test('object result has correct type', ({ expect, },) => {
       const input = '{"a": 1}' as StringJsonc;
       const result = $({ value: input, },);
 
-      if ('json' in result) {
+      if ('json' in result)
         expect(typeof result.json,).toBe('object',);
-      }
-      else {
+      else
         expect(result.value instanceof Map,).toBe(true,);
-      }
     });
 
     test('preserves boolean values', ({ expect, },) => {
       const input = '{"active": true, "disabled": false}' as StringJsonc;
       const result = $({ value: input, },);
 
-      if ('json' in result) {
+      if ('json' in result)
         expect(result.json,).toEqual({ active: true, disabled: false, },);
-      }
     });
 
     test('preserves null values', ({ expect, },) => {
       const input = '{"value": null}' as StringJsonc;
       const result = $({ value: input, },);
 
-      if ('json' in result) {
+      if ('json' in result)
         expect(result.json,).toEqual({ value: null, },);
-      }
     });
 
     test('preserves number types', ({ expect, },) => {
       const input = '{"int": 42, "float": 3.14, "exp": 1e5}' as StringJsonc;
       const result = $({ value: input, },);
 
-      if ('json' in result) {
+      if ('json' in result)
         expect(result.json,).toEqual({ int: 42, float: 3.14, exp: 1e5, },);
-      }
     });
   });
   //endregion Type preservation
-});
+},);

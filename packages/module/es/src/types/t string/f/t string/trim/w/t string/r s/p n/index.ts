@@ -4,9 +4,7 @@ import {
 import {
   $ as regexpToGlobalRegexp,
 } from '@_/types/t object/t regexp/t global/f/t object/t regexp/r s/p p/index.ts';
-import {
-  $ as trimRegex,
-} from '../../../t object/t regexp/t global/r s/p n/index.ts';
+import { $ as trimRegex, } from '../../../t object/t regexp/t global/r s/p n/index.ts';
 
 /**
  * Removes all occurrences of trimmer string from the end of the input string.

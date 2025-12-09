@@ -1,1 +1,1 @@
-export type $<K = unknown, V = unknown> = Map<K, V>;
+export type $<K = unknown, V = unknown,> = Map<K, V>;

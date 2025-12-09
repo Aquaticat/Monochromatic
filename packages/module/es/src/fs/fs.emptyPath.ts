@@ -11,9 +11,9 @@ import {
   writeFile,
 } from 'src/fs/fs.fs.default.ts';
 import { pathParse, } from 'src/fs/fs.pathParse.default.ts';
-import { trimPathLeadingSlash, } from './fs.pathJoin.shared.ts';
 import { tryCatchAsync, } from '../function.tryCatch.ts';
 import { logtapeGetLogger, } from '../logtape.shared.ts';
+import { trimPathLeadingSlash, } from './fs.pathJoin.shared.ts';
 
 const l = logtapeGetLogger(['m', 'fs', 'ensurePath',],);
 

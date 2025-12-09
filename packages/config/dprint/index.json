@@ -104,5 +104,46 @@
     "typeParameters.preferHanging": "always",
     "arguments.preferHanging": "always",
     "parameters.preferHanging": "always"
+  },
+  "exec": {
+    "cwd": "${originConfigDir}",
+    "commands": [
+      {
+        "command": "pnpm exec stylelint --fix --stdin --stdin-filename {{file_path}}",
+        "exts": [
+          "css",
+          "astro",
+          "html"
+        ],
+        "cacheKeyFiles": [
+          "stylelint.config.mjs"
+        ]
+      },
+      {
+        "command": "oxlint --fix {{file_path}}",
+        "stdin": false,
+        "exts": [
+          "ts",
+          "tsx",
+          "js",
+          "jsx"
+        ],
+        "cacheKeyFiles": [
+          ".oxlintrc.json"
+        ]
+      },
+      {
+        "command": "pnpm exec eslint --fix-dry-run --stdin --stdin-filename {{file_path}}",
+        "exts": [
+          "ts",
+          "tsx",
+          "js",
+          "jsx"
+        ],
+        "cacheKeyFiles": [
+          "eslint.config.ts"
+        ]
+      }
+    ]
   }
 }

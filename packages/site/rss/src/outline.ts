@@ -8,19 +8,19 @@ import {
   parseOpml,
 } from 'feedsmith';
 import { readFile, } from 'node:fs/promises';
+import { fileURLToPath, } from 'node:url';
 import type { Outline, } from 'node_modules/feedsmith/dist/opml/parse/types';
 import {
   dirname,
   resolve,
 } from 'path';
-import { fileURLToPath, } from 'node:url';
 import { z, } from 'zod/v4-mini';
 import { onInnerOutlinesWUrlChange, } from './feed.ts';
+import { lOutline as l, } from './log.ts';
 import {
   DOT_ENV_PATH,
   OPMLS_SCHEMA,
 } from './opmls.ts';
-import { lOutline as l, } from './log.ts';
 
 /**
  * Fetches the text content of all configured OPML files.

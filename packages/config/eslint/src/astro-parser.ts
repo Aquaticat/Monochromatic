@@ -6,7 +6,7 @@ import {
   type TSESTree,
 } from '@typescript-eslint/types';
 
-import {ESLint} from 'eslint'
+import { ESLint, } from 'eslint';
 
 /** Type of result returned by TypeScript ESLint parser */
 type ParseForESLintResult = ReturnType<typeof tsParser.parseForESLint>;

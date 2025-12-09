@@ -1,3 +1,3 @@
-import type { Promisable } from "type-fest";
+import type { Promisable, } from 'type-fest';
 
-export type $<T = unknown, Returns = unknown> = (value: T) => Promisable<Returns>;
+export type $<T = unknown, Returns = unknown,> = (value: T,) => Promisable<Returns>;

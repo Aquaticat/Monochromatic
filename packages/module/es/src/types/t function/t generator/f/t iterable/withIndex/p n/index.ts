@@ -1,6 +1,6 @@
 import type { $ as Int, } from '@_/types/t number/t finite/t int/t/index.ts';
 import type { $ as Positive, } from '@_/types/t number/t positive/t/index.ts';
-import type {$ as MaybeAsyncIterable} from '@_/types/t object/t iterable/t/index.ts';
+import type { $ as MaybeAsyncIterable, } from '@_/types/t object/t iterable/t/index.ts';
 
 /**
  * Creates a generator that yields each element of an iterable paired with its index.

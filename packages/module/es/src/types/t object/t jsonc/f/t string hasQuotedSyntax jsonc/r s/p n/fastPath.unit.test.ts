@@ -102,7 +102,7 @@ describe('fastPath', () => {
 
       expect(result,).toBe(NO_FAST_PATH,);
     });
-  });
+  },);
   //endregion tryArrayFastPath
 
   //region tryObjectFastPath
@@ -142,6 +142,6 @@ describe('fastPath', () => {
 
       expect(result,).toBe(NO_FAST_PATH,);
     });
-  });
+  },);
   //endregion tryObjectFastPath
 });

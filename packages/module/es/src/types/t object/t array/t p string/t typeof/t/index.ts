@@ -31,7 +31,7 @@ export type $ =
       // '[object Object]'
       // > Object.prototype.toString.call({a: 1})
       // '[object Object]'
-      | ['Object', { iterable: false|[true, {async: boolean}]; },]
+      | ['Object', { iterable: false | [true, { async: boolean; },]; },]
       /** Represents Date objects */
       // > Object.prototype.toString.call(new Date())
       // '[object Date]'

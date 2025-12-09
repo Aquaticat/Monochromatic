@@ -1,6 +1,4 @@
-import type {
-  $ as Is,
-} from '@_/types/t function/t is/t/r s/p p/index.ts';
+import type { $ as Is, } from '@_/types/t function/t is/t/r s/p p/index.ts';
 
 /**
  * Tests if a value is a Set instance.

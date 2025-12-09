@@ -1,6 +1,4 @@
-import {
-  createObservableAsync,
-} from '@monochromatic-dev/module-es';
+import { createObservableAsync, } from '@monochromatic-dev/module-es';
 import { findUp, } from 'find-up';
 import Watcher from 'watcher';
 import { z, } from 'zod/v4-mini';

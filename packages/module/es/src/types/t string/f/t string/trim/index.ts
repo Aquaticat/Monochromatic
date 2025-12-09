@@ -1,1 +1,1 @@
-export * as  with from './w/index.ts';
+export * as with from './w/index.ts';

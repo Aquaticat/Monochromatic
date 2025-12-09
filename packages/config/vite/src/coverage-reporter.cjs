@@ -9,7 +9,7 @@ const { ReportBase, } = require('istanbul-lib-report',);
 const { parse, } = require('node:path',);
 const { minimatch, } = require('minimatch',);
 const vitestExcludeCommonConfig = require('./vitest-exclude-common.json',);
-const { readFileSync } = require('node:fs');
+const { readFileSync, } = require('node:fs',);
 
 const FORMAT_COORDINATE_PAD_LENGTH = 3;
 const FORMAT_ENTRY_PAD_LENGTH = 2;
@@ -63,7 +63,7 @@ class MyTextReport extends ReportBase {
   }
 
   onEnd() {
-    console.log(ignoredFilesString);
+    console.log(ignoredFilesString,);
   }
 
   onDetail(node,) {
@@ -105,7 +105,7 @@ class MyTextReport extends ReportBase {
 
     // Ignore files starting with ignore comment
 
-    if (readFileSync(cPath, 'utf8').startsWith('/* v8 ignore file ')) {
+    if (readFileSync(cPath, 'utf8',).startsWith('/* v8 ignore file ',)) {
       ignoredFilesString = `${ignoredFilesString}${IGNORE_COMMENT_DISPLAY_STRING}`;
       return;
     }

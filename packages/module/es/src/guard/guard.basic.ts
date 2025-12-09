@@ -30,4 +30,6 @@
  * @typeParam Input - Type of input value to guard. Defaults to unknown.
  * @typeParam Type - Narrowed type when guard returns true. Must extend Input. Defaults to Input.
  */
-export type Guard<Input = unknown, Type extends Input = Input> = (input: Input) => input is Type;
+export type Guard<Input = unknown, Type extends Input = Input,> = (
+  input: Input,
+) => input is Type;

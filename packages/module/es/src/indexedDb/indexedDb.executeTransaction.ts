@@ -10,23 +10,23 @@
  * @param operation - Function that performs operation on object store
  * @returns Promise resolving to operation result
  */
-export async function indexedDbExecuteTransaction<T>(
+export async function indexedDbExecuteTransaction<T,>(
   db: IDBDatabase,
   storeName: string,
   mode: IDBTransactionMode,
-  operation: (store: IDBObjectStore) => IDBRequest,
+  operation: (store: IDBObjectStore,) => IDBRequest,
 ): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const transaction = db.transaction([storeName], mode);
-    const store = transaction.objectStore(storeName);
-    const request = operation(store);
+  return new Promise<T>((resolve, reject,) => {
+    const transaction = db.transaction([storeName,], mode,);
+    const store = transaction.objectStore(storeName,);
+    const request = operation(store,);
 
     request.onerror = () => {
-      reject(new Error('IndexedDB operation failed', { cause: request.error }));
+      reject(new Error('IndexedDB operation failed', { cause: request.error, },),);
     };
 
     request.onsuccess = () => {
-      resolve(request.result as T);
+      resolve(request.result as T,);
     };
-  });
+  },);
 }

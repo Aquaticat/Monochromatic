@@ -7,35 +7,35 @@ export type ObjectsMergeRules = {
   readonly function: (params: {
     readonly key: string;
     readonly values: ((...args: unknown[]) => unknown)[];
-  }) => unknown;
+  },) => unknown;
   readonly string: (params: {
     readonly key: string;
     readonly values: string[];
-  }) => unknown;
+  },) => unknown;
   readonly number: (params: {
     readonly key: string;
     readonly values: number[];
-  }) => unknown;
+  },) => unknown;
   readonly boolean: (params: {
     readonly key: string;
     readonly values: boolean[];
-  }) => unknown;
+  },) => unknown;
   readonly object: (params: {
     readonly key: string;
     readonly values: object[];
-  }) => unknown;
+  },) => unknown;
   readonly undefined: (params: {
     readonly key: string;
     readonly values: undefined[];
-  }) => unknown;
+  },) => unknown;
   readonly bigint: (params: {
     readonly key: string;
     readonly values: bigint[];
-  }) => unknown;
+  },) => unknown;
   readonly symbol: (params: {
     readonly key: string;
     readonly values: symbol[];
-  }) => unknown;
+  },) => unknown;
 };
 
 /**
@@ -97,7 +97,7 @@ export type ObjectsMergeRules = {
  *   { api: { timeout: 1000 }, debug: true },
  *   { api: { retries: 3 }, logging: 'info' }
  * ];
- * 
+ *
  * const merged = $(configs, {
  *   object: ({ values }) => Object.assign({}, ...values)
  * });
@@ -110,19 +110,16 @@ export type ObjectsMergeRules = {
   objs: TObjects,
   rules?: Partial<ObjectsMergeRules>,
 ): UnknownRecord {
-  if (objs.length === 0) {
-    throw new TypeError('objs array cannot be empty');
-  }
+  if (objs.length === 0)
+    throw new TypeError('objs array cannot be empty',);
 
-  if (objs.length === 1) {
+  if (objs.length === 1)
     return objs[0] as UnknownRecord;
-  }
 
   // Collect all unique property names
   const allKeys = new Set<string>();
-  for (const obj of objs) {
-    Object.keys(obj).forEach(key => allKeys.add(key));
-  }
+  for (const obj of objs)
+    Object.keys(obj,).forEach(key => allKeys.add(key,));
 
   const result: Record<string, unknown> = {};
 
@@ -132,60 +129,60 @@ export type ObjectsMergeRules = {
     const allValuesForKey: unknown[] = [];
 
     for (const obj of objs) {
-      if (key in obj) {
-        allValuesForKey.push(obj[key]);
-      }
+      if (key in obj)
+        allValuesForKey.push(obj[key],);
     }
 
     // Group values by type
     const valuesByType = new Map<string, unknown[]>();
     for (const value of allValuesForKey) {
       const valueType = typeof value;
-      if (!valuesByType.has(valueType)) {
-        valuesByType.set(valueType, []);
-      }
-      valuesByType.get(valueType)!.push(value);
+      if (!valuesByType.has(valueType,))
+        valuesByType.set(valueType, [],);
+      valuesByType.get(valueType,)!.push(value,);
     }
 
     // Check if we have multiple types for the same property
     if (valuesByType.size > 1) {
       throw new TypeError(
         `Cannot merge property "${key}": mixed types found: ${
-          Array.from(valuesByType.keys()).join(', ')
-        }`
+          Array.from(valuesByType.keys(),).join(', ',)
+        }`,
       );
     }
 
     // Get the single type and its values
-    const entryArray = Array.from(valuesByType.entries());
+    const entryArray = Array.from(valuesByType.entries(),);
     const firstEntry = entryArray[0];
-    if (!firstEntry) continue;
-    
-    const [valueType, values] = firstEntry;
+    if (!firstEntry)
+      continue;
+
+    const [valueType, values,] = firstEntry;
 
     if (values.length === 1) {
       // Only one value, use it directly
       result[key] = values[0];
-    } else {
+    }
+    else {
       // Multiple values of the same type
       // Check for consensus (all values equal)
       const firstValue = values[0];
-      const allEqual = values.every(value => 
-        JSON.stringify(value) === JSON.stringify(firstValue)
+      const allEqual = values.every(value =>
+        JSON.stringify(value,) === JSON.stringify(firstValue,)
       );
 
-      if (allEqual) {
+      if (allEqual)
         result[key] = firstValue;
-      } else {
+      else {
         // Handle conflicts based on type
         const rule = rules?.[valueType as keyof ObjectsMergeRules];
         if (!rule) {
           throw new TypeError(
-            `Cannot merge property "${key}": conflicting ${valueType} values and no rule provided`
+            `Cannot merge property "${key}": conflicting ${valueType} values and no rule provided`,
           );
         }
-        
-        result[key] = rule({ key, values: values as any });
+
+        result[key] = rule({ key, values: values as any, },);
       }
     }
   }

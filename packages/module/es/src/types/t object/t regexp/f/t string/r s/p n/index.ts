@@ -49,7 +49,7 @@
  * - `{` and `}` - Quantifier delimiters for exact repetition counts \{n,m\}
  * - `|` - Alternation operator for matching either left or right expression
  */
-export function $({str}: {str:string},): RegExp {
+export function $({ str, }: { str: string; },): RegExp {
   // Escape all regex metacharacters to create a literal pattern
   // The pattern matches: $ ( ) * + . ? [ \ ] ^ { | }
   // Each matched character gets replaced with a backslash-escaped version

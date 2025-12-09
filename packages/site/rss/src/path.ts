@@ -1,6 +1,9 @@
 import { notNullishOrThrow, } from '@monochromatic-dev/module-es';
 import { findUp, } from 'find-up';
-import { dirname, join} from 'node:path';
+import {
+  dirname,
+  join,
+} from 'node:path';
 
 /**
  * Absolute path to the index.html file used for the RSS reader interface.
@@ -26,4 +29,4 @@ export const STATIC_PATH: string = dirname(INDEX_HTML_PATH,);
  * Used by server routes and file watchers to persist "ignored" items.
  * @see {@link STATIC_PATH} as the base for resolving the ignore directory
  */
-export const IGNORE_PATH: string = join(STATIC_PATH, '..', 'ignore');
+export const IGNORE_PATH: string = join(STATIC_PATH, '..', 'ignore',);

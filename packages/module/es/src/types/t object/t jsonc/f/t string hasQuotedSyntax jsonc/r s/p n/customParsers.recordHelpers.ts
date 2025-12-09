@@ -3,8 +3,8 @@ import type {
   FragmentStringJsonc,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
 import type * as Jsonc from '../../../../t/index.ts';
-import { startsWithComment, } from './customParsers.startsWithComment.ts';
 import { scanQuotedString, } from './customParsers.scanQuotedString.ts';
+import { startsWithComment, } from './customParsers.startsWithComment.ts';
 
 //region Record header -- Consume '{' then extract record-level comment from context
 /**

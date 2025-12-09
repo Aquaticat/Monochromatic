@@ -133,4 +133,4 @@ describe(isRangeNumberInt, () => {
     },),)
       .toBe(true,);
   });
-});
+},);

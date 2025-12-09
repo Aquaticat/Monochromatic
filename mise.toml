@@ -221,52 +221,13 @@ run = 'stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
 
 #endregion Linting Tasks
 
-# TODO: Make dprint the orchestrator instead.
-#  **When multiple plugins format the same file via associations, they execute sequentially in config file order, with each plugin's output becoming the next plugin's input.**
-
-# **Evidence:**
-
-# 1. **Plugins collected in config order** ([name_resolution.rs#L54-L60](https://github.com/dprint/dprint/blob/370a23d8e2ae22789972e6574a00070f05b46287/crates/dprint/src/plugins/name_resolution.rs#L54-L60)):
-# ```rust
-# pub fn get_plugin_names_from_file_path(&self, file_path: &Path) -> Vec<String> {
-#   let mut plugin_names = Vec::new();
-
-#   for (plugin_name, matcher) in self.association_matchers.iter() {
-#     if matcher.matches(file_path) {
-#       plugin_names.push(plugin_name.to_owned());
-#     }
-#   }
-# ```
-#
-# 2. **Sequential execution with chained output** ([resolution.rs#L343-L365](https://github.com/dprint/dprint/blob/0b94d502408d877372b25df71f86ce1dc6f299e2/crates/dprint/src/resolution.rs#L343-L365)):
-# ```rust
-# pub fn format(self: &Rc<Self>, request: HostFormatRequest) -> LocalBoxFuture<'static, FormatResult> {
-#   let plugin_names = self.plugin_name_maps.get_plugin_names_from_file_path(&request.file_path);
-#
-#   async move {
-#     let mut file_text = request.file_bytes;
-#     let mut had_change = false;
-#     for plugin_name in plugin_names {
-#       let plugin = scope.get_plugin(&plugin_name);
-#       match plugin.get_or_create_checking_config_diagnostics(&scope.environment).await {
-#         Ok(GetPluginResult::Success(initialized_plugin)) => {
-#           let result = initialized_plugin.format_text(InitializedPluginWithConfigFormatRequest {
-#             file_bytes: file_text.clone(),  // Current text as input
-#             // ...
-#           }).await;
-#           if let Some(new_text) = result? {
-#             file_text = new_text;  // Output becomes next input
-#             had_change = true;
-#           }
-#         }
-#       }
-#     }
-#     Ok(if had_change { Some(file_text) } else { None })
-#   }
-# }
-# ```
-#
-# **Key mechanism:** The `association_matchers` vector preserves plugin order from the config file, and the format loop processes them sequentially with `file_text` carrying the output forward.
+# Formatter Orchestration via dprint
+# dprint orchestrates all formatters using dprint-plugin-exec plugin.
+# Sequential execution per file type (documented in packages/config/dprint/index.json):
+#   CSS/Astro/HTML: dprint built-in plugins → stylelint --fix
+#   TS/JS files:     dprint built-in plugins → oxlint --fix → eslint --fix
+# Each formatter's output becomes the next formatter's input, as proven in:
+# https://github.com/dprint/dprint/blob/370a23d8e2ae22789972e6574a00070f05b46287/crates/dprint/src/resolution.rs#L343-L365
 [tasks.format]
 description = "Format all files"
 run = ["dprint fmt"]

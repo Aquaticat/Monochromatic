@@ -17,7 +17,7 @@ describe($, () => {
     ],);
   });
 
-  test('yields elements with their indices for strings', ({expect}) => {
+  test('yields elements with their indices for strings', ({ expect, },) => {
     const result = [...$({ myIterable: 'hello', },),];
 
     expect(result,).toEqual([
@@ -29,7 +29,7 @@ describe($, () => {
     ],);
   });
 
-  test('yields elements with their indices for numbers', ({expect}) => {
+  test('yields elements with their indices for numbers', ({ expect, },) => {
     const result = [...$({ myIterable: [10, 20, 30,], },),];
 
     expect(result,).toEqual([
@@ -39,13 +39,13 @@ describe($, () => {
     ],);
   });
 
-  test('yields nothing for empty iterable', ({expect}) => {
+  test('yields nothing for empty iterable', ({ expect, },) => {
     const result = [...$({ myIterable: [], },),];
 
     expect(result,).toEqual([],);
   });
 
-  test('works with Set', ({expect}) => {
+  test('works with Set', ({ expect, },) => {
     const result = [...$({ myIterable: new Set(['x', 'y', 'z',],), },),];
 
     expect(result,).toEqual([
@@ -55,7 +55,7 @@ describe($, () => {
     ],);
   });
 
-  test('works with Map', ({expect}) => {
+  test('works with Map', ({ expect, },) => {
     const map = new Map([['key1', 'value1',], ['key2', 'value2',],],);
     const result = [...$({ myIterable: map, },),];
 
@@ -65,7 +65,7 @@ describe($, () => {
     ],);
   });
 
-  test('lazy evaluation - generator only iterates when consumed', ({expect}) => {
+  test('lazy evaluation - generator only iterates when consumed', ({ expect, },) => {
     let callCount = 0;
     function* lazyIterable() {
       callCount++;

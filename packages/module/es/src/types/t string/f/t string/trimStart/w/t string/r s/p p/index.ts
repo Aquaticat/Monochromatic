@@ -1,4 +1,4 @@
-import {$ as named} from '../p n/index.ts';
+import { $ as named, } from '../p n/index.ts';
 
 /**
  * Removes all occurrences of trimmer string from the start of the input string.
@@ -49,5 +49,5 @@ import {$ as named} from '../p n/index.ts';
  * which follows the same pattern but removes from the end of the string.
  */
 export function $(str: string, trimmer: string,): string {
-  return named({str, trimmer});
+  return named({ str, trimmer, },);
 }
