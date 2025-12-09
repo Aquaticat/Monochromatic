@@ -339,11 +339,39 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
     preprocessorMaxWorkers: true,
     devSourcemap: true,
   },
-  esbuild: {
-    // Minifying them makes resulting code harder to debug.
-    minifyIdentifiers: false,
+  oxc: {
+    assumptions: {
+      ignoreFunctionLength: true,
+
+      noDocumentAll: true,
+
+      objectRestNoSymbols: true,
+
+      pureGetters: true,
+
+      setPublicClassFields: true,
+    },
+
+    decorator: {
+      emitDecoratorMetadata: true,
+    },
+
+    target: `firefox${FIREFOX_ESR_VERSION}`,
+
+    typescript: {
+      declaration: {
+        sourcemap: true,
+        stripInternal: true,
+      },
+      rewriteImportExtensions: true,
+    },
   },
   build: {
+    rolldownOptions: {
+      checks: {
+        
+      }
+    },
     target: `firefox${FIREFOX_ESR_VERSION}`,
     cssMinify: 'lightningcss',
     outDir: join('dist', 'final', 'js',),
