@@ -1,4 +1,4 @@
-import { $ as partitionNamed } from './p n/index.ts';
+import { $ as partitionNamed } from '../p n/index.ts';
 
 /**
  * Partitions an iterable into decisions by yielding each item with its evaluation result.

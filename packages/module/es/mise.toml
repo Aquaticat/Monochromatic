@@ -1,0 +1,17 @@
+[tasks.'build:js']
+run = [{ tasks = ["build:js:*"] }]
+
+[tasks.'build:js:browser']
+run = "vite build"
+
+[tasks.'build:js:node']
+run = "vite build --mode node"
+
+[tasks."build--watch:js"]
+run = [{ tasks = ["build--watch:js:*"] }]
+
+[tasks.'build--watch:js:browser']
+run = "vite watch"
+
+[tasks.'build--watch:js:node']
+run = "vite watch --mode node"

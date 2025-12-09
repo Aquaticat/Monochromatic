@@ -51,43 +51,8 @@ When users point out issues or suggest improvements:
 
 **IMPORTANT**: All builds and tasks are managed by mise. Never run `pnpm exec` or direct package scripts. Always use `mise run` commands.
 
-## Initial Setup
-```bash
-# Install mise (if not already installed)
-# See: https://mise.jdx.dev/getting-started.html
-
-# Activate mise in your shell (substitute bash with your shell)
-mise activate bash
-
-# Install all tools
-mise install
-
-# Setup project
-mise run prepare
-```
-
-## Build Commands
-- Full build: `mise run build`
-- Build with watch: `mise run buildWatch`
-- Prepare project: `mise run prepare`
-- Sync TypeScript project references: `mise run sync:ts-references`
-
-## Test Commands
-- Run all tests: `mise run test` (only from workspace root)
-- Run unit tests: `mise run test:unit` (from workspace root)
-- Run browser tests: `mise run test:browser` (from workspace root)
-- Run tests in watch mode: `mise run test:watch`
-- Run unit tests with coverage: `mise run test:unit`
-
-## Linting and Formatting Commands
-- Lint all files: `mise run lint`
-- Format all files: `mise run format`
-- Validate (format + build + test): `mise run validate`
-
-## Development Workflow Commands
-- Check tools: `mise run check:tools`
-- Install dependencies: `pnpm install`
-- List all available tasks: `mise tasks`
+## General Commands
+Read the `mise.toml` files in the root and packages directories to see all available commands.
 
 ## Running Specific Test Files
 To run a single test file:

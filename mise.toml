@@ -4,6 +4,8 @@
 # https://mise.jdx.dev/configuration.html
 # TODO: Document `mise trust`
 
+experimental_monorepo_root = true
+
 [tools]
 # Primary runtime
 bun = "latest"
@@ -60,7 +62,7 @@ jobs = 16
 task_timeout = "5s"
 
 # Uncomment when debugging
-verbose = true
+# verbose = true
 
 npm.bun = true
 
@@ -110,12 +112,12 @@ alias = "b"
 [tasks."build:js"]
 hide = true
 description = "Build JavaScript for all packages"
-run = "mise '//...:build:js'"
+run = "mise '//packages/...:build:js'"
 
 [tasks."build--allowFailure:js"]
 hide = true
 description = "Build JavaScript for all packages"
-run = "mise '//...:build--watch:js'"
+run = "mise '//packages/...:build--allowFailure:js'"
 
 [tasks.build--watch]
 description = "Build all packages in watch mode"
@@ -124,12 +126,11 @@ run = [{ tasks = ["build--watch:*"] }]
 [tasks."build--watch:js"]
 hide = true
 description = "Build JavaScript in watch mode"
-run = "mise '//...:js--watch'"
+run = "mise '//packages/...:build--watch:js'"
 
 [tasks.build--allowFailure]
-hide = true
 description = "Build all packages, allowing failures"
-depends = ["build--allowFailure:*"]
+run = [{ tasks = ["build--allowFailure:*"] }]
 
 [tasks."build:types"]
 hide = true
@@ -142,6 +143,7 @@ description = "Emit dts for all packages with TypeScript"
 run = "try { tsc --build } catch { |e| print -e $e.rendered }"
 
 [tasks."build--watch:types"]
+hide = true
 description = "Type check in watch mode"
 run = "tsc --watch"
 
@@ -151,9 +153,8 @@ run = "tsc --watch"
 
 [tasks.test]
 description = "Run all tests"
-depends = ["test:*"]
+run = [{ tasks = ["test:*"] }]
 alias = "t"
-wait_for = ["build"]
 
 [tasks."test:unit"]
 hide = true
@@ -177,16 +178,16 @@ run = "vitest watch --config vitest.browser.config.ts"
 
 [tasks."test--watch"]
 description = "Run all tests in watch mode"
-depends = ["test:unit:watch", "test:browser:watch"]
+run = [{ tasks = ["test--watch:*"] }]
 alias = "tW"
 
 [tasks.buildAndTest]
 description = "Build and test"
 run = [{ tasks = ["build"] }, { tasks = ["test"] }]
 
-[tasks.buildAndTestWatch]
+[tasks.buildAndTest--watch]
 description = "Build and test in watch mode"
-depends = ["build:js:watch", "types:watch", "test:unit:watch", "test:browser:watch"]
+run = [{ tasks = ["build--watch", "test--watch"] }]
 
 #endregion Test Tasks
 
@@ -197,20 +198,24 @@ description = "Run all linters"
 run = [{ tasks = ["lint:*"] }]
 
 [tasks."lint:eslint"]
+hide = true
 description = "Lint with ESLint"
-run = "timeout 5 pnpm exec eslint --cache --report-unused-disable-directives --report-unused-inline-configs warn --exit-on-fatal-error 'packages/**/*.*'"
+run = "timeout 10 pnpm exec eslint --cache --report-unused-disable-directives --report-unused-inline-configs warn --exit-on-fatal-error 'packages/**/*.*'"
 
 [tasks."lint:oxlint"]
+hide = true
 description = "Lint with Oxlint"
 # TODO: Run js plugin in eslint for now until oxlint https://github.com/oxc-project/oxc/issues/14375 is fixed.
 # TODO: Make this type aware, need to setup both oxlint and eslint rule disables.
 run = "oxlint"
 
 [tasks."lint:dprint"]
+hide = true
 description = "Check formatting with dprint"
 run = "dprint check --list-different"
 
 [tasks."lint:stylelint"]
+hide = true
 description = "Lint CSS with Stylelint"
 run = 'stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
 
@@ -274,61 +279,33 @@ run = """
 mise run format && mise run build && mise run test
 """
 
-[tasks.validateSetup]
-description = "Validate development environment setup"
-depends = ["check:tools", "check:dependencies", "check:build", "check:git-hooks"]
-
-[tasks.check]
-description = "Run all checks"
-depends = ["check:build", "check:dependencies", "check:git-hooks", "check:tools"]
-
-[tasks."check:build"]
-description = "Check build configuration"
-run = "bun packages/module/es/src/moon.checkBuild.ts"
-
-[tasks."check:dependencies"]
-description = "Check dependencies"
-run = "bun packages/module/es/src/moon.checkDependencies.ts"
-
-[tasks."check:git-hooks"]
-description = "Check git hooks configuration"
-run = "bun packages/module/es/src/moon.checkGitHooks.ts"
-
-[tasks."check:tools"]
-description = "Check required tools are installed"
-run = "bun packages/module/es/src/moon.checkTools.ts"
-
 #endregion Validation and Check Tasks
 
 #region Preparation Tasks
 
 [tasks.prepare]
 description = "Prepare environment (install Playwright browsers, etc.)"
-depends = ["prepare:playwright"]
+run = [{ tasks = ["prepare:*"] }]
 
-[tasks.prepareAllowFailure]
+[tasks.prepare--allowFailure]
 description = "Prepare environment, allowing failures"
-depends = ["prepare:playwright:allow-failure"]
+run = [{ tasks = ["prepare--allowFailure:*"] }]
 
 [tasks."prepare:playwright"]
 description = "Install Playwright browsers"
-run = "bun packages/module/es/src/moon.preparePlaywright.ts"
+run = "pnpx playwright install --with-deps"
 
-[tasks."prepare:playwright:allow-failure"]
+[tasks."prepare--allowFailure:playwright"]
 description = "Install Playwright browsers, allowing failures"
-run = "bun packages/module/es/src/cli.command.ts --allowFailure --timeout 30000 --shell -- bun packages/module/es/src/moon.preparePlaywright.ts"
+run = "try { pnpx playwright install --with-deps } catch { |e| print -e $e.rendered }"
 
 [tasks.prepareAndBuild]
 description = "Complete setup: prepare environment and build all artifacts"
-run = """
-mise run prepare && mise run build
-"""
+run = [{ tasks = ["prepare"] }, { tasks = ["build"] }]
 
-[tasks.prepareAndBuildAllowFailure]
+[tasks.prepareAndBuild--allowFailure]
 description = "Complete setup: prepare and build, allowing failures"
-run = """
-mise run prepareAllowFailure && mise run buildAllowFailure
-"""
+run = [{ tasks = ["prepare--allowFailure"] }, { tasks = ["build--allowFailure"] }]
 
 #endregion Preparation Tasks
 
@@ -336,11 +313,12 @@ mise run prepareAllowFailure && mise run buildAllowFailure
 
 [tasks.start]
 description = "Start development servers"
-depends = ["start:caddy"]
+run = [{ tasks = ["start:*"] }]
 
 # TODO: Add package-specific start tasks here
 
 [tasks."start:caddy"]
+hide = true
 description = "Start Caddy web server"
 run = "caddy run --config Caddyfile --adapter caddyfile"
 
@@ -351,7 +329,7 @@ run = "caddy run --config Caddyfile --adapter caddyfile"
 # With mise, this needs to be done manually via a script.
 # See: packages/module/es/src/mise.syncTsProjectReferences.ts
 
-[tasks."sync:ts-references"]
+[tasks."sync:tsReferences"]
 description = "Sync TypeScript project references (replaces moon's auto-sync)"
 run = "bun packages/module/es/src/mise.syncTsProjectReferences.ts"
 

@@ -1,4 +1,3 @@
-# vale Vale.Repetition = NO #
 logLevel = 'warn'
 telemetry = false
 
@@ -19,4 +18,3 @@ shell = 'bun'
 bun = true
 
 silent = true
-# vale Vale.Repetition = YES #
