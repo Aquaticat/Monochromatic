@@ -21,7 +21,8 @@
     "https://plugins.dprint.dev/typescript-0.95.9.wasm",
     "https://plugins.dprint.dev/g-plane/malva-v0.14.1.wasm",
     "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.5.1.wasm",
-    "https://plugins.dprint.dev/json-0.20.0.wasm"
+    "https://plugins.dprint.dev/json-0.20.0.wasm",
+    "https://plugins.dprint.dev/exec-0.6.0.json@a054130d458f124f9b5c91484833828950723a5af3f8ff2bd1523bd47b83b364"
   ],
   "toml": {
     "comment.forceLeadingSpace": false
