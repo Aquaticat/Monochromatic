@@ -105,6 +105,7 @@
     "arguments.preferHanging": "always",
     "parameters.preferHanging": "always"
   },
+  // Untested if it's really working.
   "exec": {
     "cwd": "${originConfigDir}",
     "commands": [
