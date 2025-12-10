@@ -281,6 +281,45 @@ export const rollupExternal = (moduleId: string,): boolean => {
     .includes(moduleId,);
 };
 
+export const rolldownExternal: (string|RegExp)[] = [
+  // Prefix-based patterns
+  /^node:/,
+  /^node_modules\//,
+  /^oxc-/,
+  /^eslint-plugin-/,
+  /^@typescript-eslint\//,
+  /^@eslint\//,
+  /^@vitest\//,
+  /^@elysiajs\//,
+
+  // Specific module names
+  //region Build
+  'vite',
+  'vitest',
+  'esbuild',
+  'typescript-eslint',
+  'lightningcss',
+  //endregion Build
+
+  //region Node
+  'path',
+  'fs',
+  'util',
+  'os',
+  'constants',
+  'stream',
+  'assert',
+  'module',
+  'events',
+  'url',
+  'crypto',
+  //endregion Node
+
+  //region Server
+  'happy-dom',
+  //endregion Server
+];
+
 /**
  * Read file with retry logic for EPERM errors on Windows.
  */
@@ -378,6 +417,8 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
         incrementalBuild: true,
       },
 
+      external: rolldownExternal,
+
       output: {
         sourcemap: true,
         minify: {
@@ -390,23 +431,11 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
       },
     },
     target: `firefox${FIREFOX_ESR_VERSION}`,
-    cssMinify: 'lightningcss',
     outDir: join('dist', 'final', 'js',),
 
     // Sometimes removes important files.
     // Sometimes crashes because node rmSync doesn't work.
     emptyOutDir: false,
-
-    rollupOptions: {
-      external: rollupExternal,
-      output: {
-        assetFileNames: '[name]-[hash].[ext]',
-        minify: {
-          compress: true,
-          mangle: false,
-        },
-      },
-    },
 
     // A little bit faster builds.
     reportCompressedSize: false,
@@ -436,7 +465,7 @@ const createBaseLibConfig = (configDir: string,): UserConfig =>
           fileName: 'index',
           formats: ['es',],
         },
-        rollupOptions: {
+        rolldownOptions: {
           output: {
             // Rolldown-vite emits a small runtime chunk and index chunk for correctness
             // See https://rolldown.rs/guide/in-depth/advanced-chunks#why-there-s-always-a-runtime-js-chunk
@@ -448,7 +477,6 @@ const createBaseLibConfig = (configDir: string,): UserConfig =>
                 },
               ],
             },
-            inlineDynamicImports: true, // Force all dynamic imports to be inlined
           },
         },
       },
@@ -527,13 +555,6 @@ function createModeConfig(configDir: string,
 
 const createFigmaBackendConfig = (configDir: string,): UserConfig =>
   mergeConfig(createBaseConfig(configDir,), {
-    esbuild: {
-      supported: {
-        'dynamic-import': false,
-        'object-rest-spread': false,
-        'top-level-await': false,
-      },
-    },
     build: {
       target: 'es2019',
       outDir: join('dist', 'final', 'backend',),
@@ -542,11 +563,6 @@ const createFigmaBackendConfig = (configDir: string,): UserConfig =>
         name: 'index',
         fileName: 'index',
         formats: ['iife',],
-      },
-      rollupOptions: {
-        output: {
-          inlineDynamicImports: true,
-        },
       },
     },
   },);
@@ -559,9 +575,6 @@ const createPrefixedFrontendLikeConfig = (configDir: string, subDir: string,
       __filename: '""',
       __dirname: '""',
     },
-    esbuild: {
-      exclude: ['browserslist',],
-    },
     plugins: [
       singleFile ? viteSingleFile({ deleteInlinedFiles: false, },) : viteNoopPlugin(),
     ],
@@ -569,7 +582,7 @@ const createPrefixedFrontendLikeConfig = (configDir: string, subDir: string,
     // Be aware of how Vite resolves paths.
     root: resolve(configDir,),
     build: {
-      rollupOptions: {
+      rolldownOptions: {
         input: {
           index: join('src', subDir, 'index.html',),
         },
@@ -585,9 +598,6 @@ const createUnprefixedFrontendLikeConfig = (configDir: string,
       // So postcss modules can be bundled and correctly working in browsers.
       __filename: '""',
       __dirname: '""',
-    },
-    esbuild: {
-      exclude: ['browserslist',],
     },
     plugins: [
       singleFile ? viteSingleFile({ deleteInlinedFiles: false, },) : viteNoopPlugin(),
