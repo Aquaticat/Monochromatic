@@ -199,7 +199,6 @@ const customUnitsVisitor: Visitor<CustomAtRules> = {
           },
         };
       }
-      return;
     },
   },
 };
@@ -368,9 +367,27 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
   },
   build: {
     rolldownOptions: {
+      // https://github.com/rolldown/rolldown/blob/5a5fbb88da1c9c37cc5c25f2cfb3d66124c31dc6/packages/rolldown/src/options/generated/checks-options.ts
       checks: {
-        
-      }
+        circularDependency: true,
+      },
+
+      keepNames: true,
+
+      experimental: {
+        incrementalBuild: true,
+      },
+
+      output: {
+        sourcemap: true,
+        minify: {
+          codegen: true,
+          compress: true,
+          mangle: false,
+        },
+
+        inlineDynamicImports: true,
+      },
     },
     target: `firefox${FIREFOX_ESR_VERSION}`,
     cssMinify: 'lightningcss',

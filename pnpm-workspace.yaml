@@ -238,7 +238,7 @@ hoistWorkspacePackages: false
 
 includeWorkspaceRoot: true
 
-linkWorkspacePackages: true
+linkWorkspacePackages: false
 
 managePackageManagerVersions: false
 
