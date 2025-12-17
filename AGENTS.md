@@ -144,6 +144,7 @@ When refactoring code, follow this progression:
 - Refactor to complexity only when necessary
 - Name intermediate values for clarity
 - Break complex operations into smaller, testable functions
+- Split large files until they fall under 200 lines.
 
 ## Examples
 
