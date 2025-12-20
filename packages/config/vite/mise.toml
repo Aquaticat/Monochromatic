@@ -1,0 +1,17 @@
+[tasks.'build:js']
+run = [{ tasks = ["build:js:*"] }]
+
+# [tasks.'build:js:browser']
+# run = "tsdown"
+
+[tasks.'build:js:node']
+run = "tsdown"
+
+[tasks."build--watch:js"]
+run = [{ tasks = ["build--watch:js:*"] }]
+
+# [tasks.'build--watch:js:browser']
+# run = "tsdown --watch"
+
+[tasks.'build--watch:js:node']
+run = "tsdown --watch"

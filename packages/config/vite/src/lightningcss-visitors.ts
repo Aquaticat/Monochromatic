@@ -70,11 +70,11 @@ const mixinsVisitor: Visitor<CustomAtRules> = {
   },
 };
 
-const composedVisitor = composeVisitors([
+const composedVisitor: Visitor<CustomAtRules> = composeVisitors([
   customUnitsVisitor,
   mixinsVisitor,
 ],);
 
 //endregion LightningCSS Visitors
 
-export { composedVisitor };
+export { composedVisitor, };

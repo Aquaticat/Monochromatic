@@ -1,5 +1,5 @@
 import { readFile, } from 'node:fs/promises';
-import { type PluginOption, } from 'vite';
+import type { PluginOption, } from 'vite';
 
 //region Helper Functions -- Utilities used throughout configurations
 
@@ -129,14 +129,7 @@ async function readFileWithRetry(
 
 function wait(timeInMs: number,): Promise<undefined> {
   // oxlint-disable-next-line avoid-new
-  return new Promise(function createTimeout(_resolve,) {
-    return setTimeout(_resolve, timeInMs,);
+  return new Promise(function createTimeout(resolve,) {
+    setTimeout(resolve, timeInMs,);
   },);
 }
-
-export { 
-  viteNoopPlugin,
-  rollupExternal,
-  rolldownExternal,
-  readFileWithRetry,
-};

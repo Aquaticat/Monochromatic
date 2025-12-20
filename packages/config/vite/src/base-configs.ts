@@ -1,21 +1,18 @@
-import { json5Plugin, } from 'vite-plugin-json5';
-import {
-  mergeConfig,
-  type UserConfig,
-} from 'vite';
 import {
   join,
   resolve,
 } from 'node:path';
-import { FIREFOX_ESR_VERSION, FIREFOX_VERSION_SHIFT } from './constants.js';
-import { composedVisitor } from './visitors.js';
-import { rolldownExternal } from './utils.js';
-
-function alwaysTrue(_input: any,): true {
-  return true;
-}
-
-//region Base Configurations -- Core configuration factories
+import {
+  mergeConfig,
+  type UserConfig,
+} from 'vite';
+import { json5Plugin, } from 'vite-plugin-json5';
+import {
+  FIREFOX_ESR_VERSION,
+  FIREFOX_VERSION_SHIFT,
+} from './constants.js';
+import { composedVisitor, } from './lightningcss-visitors.js';
+import { rolldownExternal, } from './utilities.js';
 
 const createBaseConfig = (configDir: string,): UserConfig => ({
   plugins: [
@@ -117,35 +114,4 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
   },
 });
 
-const createBaseLibConfig = (configDir: string,): UserConfig =>
-  mergeConfig(
-    createBaseConfig(configDir,),
-    {
-      build: {
-        lib: {
-          entry: resolve(configDir, 'src', 'index.ts',),
-          name: 'index',
-          fileName: 'index',
-          formats: ['es',],
-        },
-        rolldownOptions: {
-          output: {
-            // Rolldown-vite emits a small runtime chunk and index chunk for correctness
-            // See https://rolldown.rs/guide/in-depth/advanced-chunks#why-there-s-always-a-runtime-js-chunk
-            advancedChunks: {
-              groups: [
-                {
-                  name: 'index',
-                  test: alwaysTrue, // Match all modules into a single chunk
-                },
-              ],
-            },
-          },
-        },
-      },
-    },
-  );
-
-//endregion Base Configurations
-
-export { createBaseConfig, createBaseLibConfig };
+export { createBaseConfig, };

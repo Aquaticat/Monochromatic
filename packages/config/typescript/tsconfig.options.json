@@ -95,9 +95,6 @@
 
     //region Language and Environment
 
-    "emitDecoratorMetadata": true,
-
-    "experimentalDecorators": true,
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "jsxFactory": "h",

@@ -30,6 +30,7 @@
     "typescript": "catalog:",
     "vitest": "catalog:",
     "vite": "catalog:",
+    "tsdown": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/browser-playwright": "catalog:",
     "@vitest/ui": "catalog:",

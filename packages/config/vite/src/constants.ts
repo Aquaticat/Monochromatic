@@ -1,4 +1,3 @@
-// TODO: Investigate how to sneak in comments
 import vitestExcludeCommonConfig from './vitest-exclude-common.json' with {
   type: 'json',
 };
@@ -24,15 +23,15 @@ const MAX_CONCURRENCY = 16;
 
 //endregion Constants
 
-const vitestExcludeCommon = vitestExcludeCommonConfig.patterns;
+const vitestExcludeCommon: string[] = vitestExcludeCommonConfig.patterns;
 
 export {
+  BROWSER_TEST_TIMEOUT,
+  DEFAULT_TEST_TIMEOUT,
   FIREFOX_ESR_VERSION,
   FIREFOX_VERSION_SHIFT,
+  MAX_CONCURRENCY,
   VITEST_API_PORT,
   VITEST_BROWSER_API_PORT,
-  DEFAULT_TEST_TIMEOUT,
-  BROWSER_TEST_TIMEOUT,
-  MAX_CONCURRENCY,
   vitestExcludeCommon,
 };

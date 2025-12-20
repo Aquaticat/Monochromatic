@@ -176,4 +176,4 @@ export const getVitestBrowserWorkspace = (configDir: string,): VitestUserConfigF
 
 export {
   type VitestUserConfigFnObject,
-} from 'vitest/config';
+};

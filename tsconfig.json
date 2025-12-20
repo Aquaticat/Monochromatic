@@ -21,6 +21,9 @@
       "path": "packages/config/vite",
     },
     {
+      "path": "packages/config/tsdown",
+    },
+    {
       "path": "packages/figma-plugin/css-variables",
     },
     {

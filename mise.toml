@@ -59,7 +59,8 @@ disable_backends = ["asdf"]
 
 jobs = 16
 
-task_timeout = "5s"
+# Per task timeout not implemented yet in Mise.
+# task_timeout = "5s"
 
 # Uncomment when debugging
 # verbose = true

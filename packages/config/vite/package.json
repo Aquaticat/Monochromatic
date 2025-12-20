@@ -27,6 +27,7 @@
   "devDependencies": {
     "@csstools/custom-units": "catalog:",
     "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@types/bun": "catalog:",
     "@types/postcss-mixins": "catalog:",
 
