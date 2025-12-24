@@ -2,16 +2,31 @@
 run = [{ tasks = ["build:js:*"] }]
 
 [tasks.'build:js:browser']
-run = "vite build"
+run = "tsdown"
 
 [tasks.'build:js:node']
-run = "vite build --mode node"
+run = "tsdown --config tsdown.node.config.ts"
 
 [tasks."build--watch:js"]
 run = [{ tasks = ["build--watch:js:*"] }]
 
 [tasks.'build--watch:js:browser']
-run = "vite watch"
+run = "tsdown --watch"
 
 [tasks.'build--watch:js:node']
-run = "vite watch --mode node"
+run = "tsdown --watch --config tsdown.node.config.ts"
+
+[tasks."lint:types"]
+hide = true
+description = "TypeScript"
+run = "tsgo --build"
+
+[tasks."lint--allowFailure:types"]
+hide = true
+description = "TypeScript"
+run = "try { tsgo --build } catch { |e| print -e $e.rendered }"
+
+[tasks."lint--watch:types"]
+hide = true
+description = "Type check in watch mode"
+run = "tsgo --watch"

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-duplicate-type-constituents -- vitest and vite right now has the exact same types, but may not be sometimes */
+
 import {
   mergeConfig,
   type UserConfig,
@@ -75,7 +77,7 @@ function createModeConfig(configDir: string,
 //endregion Configuration Modifiers
 
 export {
-  withNoMinify,
-  withNodeResolveConditions,
   createModeConfig,
+  withNodeResolveConditions,
+  withNoMinify,
 };

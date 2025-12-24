@@ -1,4 +1,5 @@
-import { join } from 'node:path';
+import { playwright, } from '@vitest/browser-playwright';
+import { join, } from 'node:path';
 import {
   mergeConfig,
   type UserConfig,
@@ -7,17 +8,16 @@ import type {
   ViteUserConfig as VitestUserConfig,
   ViteUserConfigFnObject as VitestUserConfigFnObject,
 } from 'vitest/config';
-import { playwright } from '@vitest/browser-playwright';
-import { createModeConfig } from './config-modifiers.js';
-import { createBaseConfig } from './base-configs.js';
+import { createBaseConfig, } from './base-configs.ts';
+import { createModeConfig, } from './config-modifiers.ts';
 import {
+  BROWSER_TEST_TIMEOUT,
+  DEFAULT_TEST_TIMEOUT,
+  MAX_CONCURRENCY,
   VITEST_API_PORT,
   VITEST_BROWSER_API_PORT,
-  DEFAULT_TEST_TIMEOUT,
-  BROWSER_TEST_TIMEOUT,
-  MAX_CONCURRENCY,
   vitestExcludeCommon,
-} from './constants.js';
+} from './constants.ts';
 
 //region Vitest Configurations -- Test runner configurations
 
@@ -54,7 +54,7 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = {
     typecheck: {
       enabled: true,
       // Overwrite this to vue-tsc in packages that use Vue.
-      // checker: 'tsc',
+      checker: 'tsgo',
     },
     chaiConfig: {
       includeStack: true,
@@ -72,7 +72,7 @@ export const vitestOnlyConfigWorkspace: VitestUserConfig = {
       skipFull: true,
 
       reporter: [
-        join(import.meta.dirname, 'coverage-reporter.cjs',),
+        join(import.meta.dirname, '..', '..', '..', 'src', 'coverage-reporter.cjs',),
         'html',
         'clover',
         'json',
@@ -102,11 +102,22 @@ export const vitestOnlyUnitConfigWorkspace: VitestUserConfig = {
   test: {
     ...vitestOnlyConfigWorkspace.test,
     name: 'unit',
-    include: ['packages/*/*/**/src/**/*.unit.test.ts',],
+
     exclude: [...vitestExcludeCommon, '**/*.browser.test.ts',],
+    projects: [
+      {
+        extends: true,
+        test: {
+          include: ['packages/*/*/src/**/*.unit.test.ts',],
+        },
+      },
+    ],
   },
 };
 
+/**
+ * @deprecated Doesn't work because the Playwright provider require Vite builds.
+ */
 export const vitestOnlyBrowserConfigWorkspace: VitestUserConfig = {
   test: {
     ...vitestOnlyConfigWorkspace.test,
@@ -116,8 +127,16 @@ export const vitestOnlyBrowserConfigWorkspace: VitestUserConfig = {
       enabled: false,
     },
     name: 'browser',
-    include: ['packages/*/*/**/src/**/*.browser.test.ts',],
     exclude: [...vitestExcludeCommon, '**/*.unit.test.ts',],
+
+    projects: [
+      {
+        extends: true,
+        test: {
+          include: ['packages/*/*/src/**/*.browser.test.ts',],
+        },
+      },
+    ],
 
     browser: {
       provider: playwright(
@@ -159,6 +178,9 @@ export const createVitestBaseUnitConfigWorkspace = (
     vitestOnlyUnitConfigWorkspace,
   );
 
+/**
+ * @deprecated Doesn't work because the Playwright provider require Vite builds.
+ */
 export const createVitestBaseBrowserConfigWorkspace = (
   configDir: string,
 ): VitestUserConfig =>
@@ -169,11 +191,16 @@ export const createVitestBaseBrowserConfigWorkspace = (
 
 export const getVitestUnitWorkspace = (configDir: string,): VitestUserConfigFnObject =>
   createModeConfig(configDir, createVitestBaseUnitConfigWorkspace,);
+
+/**
+ * @deprecated Doesn't work because the Playwright provider require Vite builds.
+ */
 export const getVitestBrowserWorkspace = (configDir: string,): VitestUserConfigFnObject =>
   createModeConfig(configDir, createVitestBaseBrowserConfigWorkspace,);
 
 //endregion Vitest Configurations
 
 export {
+  // eslint-disable-next-line unicorn/prefer-export-from -- false alarm.
   type VitestUserConfigFnObject,
 };

@@ -133,21 +133,6 @@ run = "mise '//packages/...:build--watch:js'"
 description = "Build all packages, allowing failures"
 run = [{ tasks = ["build--allowFailure:*"] }]
 
-[tasks."build:types"]
-hide = true
-description = "Emit dts for all packages with TypeScript"
-run = "tsc --build"
-
-[tasks."build--allowFailure:types"]
-hide = true
-description = "Emit dts for all packages with TypeScript"
-run = "try { tsc --build } catch { |e| print -e $e.rendered }"
-
-[tasks."build--watch:types"]
-hide = true
-description = "Type check in watch mode"
-run = "tsc --watch"
-
 #endregion Build Tasks
 
 #region Test Tasks
@@ -162,20 +147,20 @@ hide = true
 description = "Run unit tests"
 run = "vitest run --config vitest.unit.config.ts"
 
-[tasks."test:browser"]
-hide = true
-description = "Run browser tests"
-run = "vitest run --config vitest.browser.config.ts"
+# [tasks."test:browser"]
+# hide = true
+# description = "Run browser tests"
+# run = "vitest run --config vitest.browser.config.ts"
 
 [tasks."test--watch:unit"]
 hide = true
 description = "Run unit tests in watch mode"
 run = "vitest watch --config vitest.unit.config.ts"
 
-[tasks."test--watch:browser"]
-hide = true
-description = "Run browser tests in watch mode"
-run = "vitest watch --config vitest.browser.config.ts"
+# [tasks."test--watch:browser"]
+# hide = true
+# description = "Run browser tests in watch mode"
+# run = "vitest watch --config vitest.browser.config.ts"
 
 [tasks."test--watch"]
 description = "Run all tests in watch mode"
@@ -219,6 +204,11 @@ run = "dprint check --list-different"
 hide = true
 description = "Lint CSS with Stylelint"
 run = 'stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
+
+[tasks."lint:types"]
+hide = true
+description = "TypeScript"
+run = "mise '//packages/...:lint:types'"
 
 #endregion Linting Tasks
 

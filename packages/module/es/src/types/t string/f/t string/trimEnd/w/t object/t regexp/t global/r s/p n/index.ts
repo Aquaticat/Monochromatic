@@ -61,7 +61,7 @@ export function $(
   const matches = str.matchAll(trimmer,);
 
   // Convert iterator to array and reverse to process from end
-  const matchArray = Array.from(matches,).reverse();
+  const matchArray = Array.from(matches,).toReversed();
 
   // Track how much to trim from the end
   let totalTrimLength = 0;
@@ -74,11 +74,12 @@ export function $(
     const matchIndex = match.index;
     const matchLength = match[0].length;
 
-    // Calculate expected position for a trailing match
-    const expectedPosition = str.length - totalTrimLength - matchLength;
+    // For trimming from the end, check if the match ends at the current boundary
+    const matchEndsAt = matchIndex + matchLength;
+    const currentBoundary = str.length - totalTrimLength;
 
-    // If match doesn't end at the current trim position, stop
-    if (matchIndex !== expectedPosition)
+    // If match doesn't end exactly at the current trim boundary, stop
+    if (matchEndsAt !== currentBoundary)
       break;
 
     // Add this match length to total trim

@@ -5,20 +5,9 @@
   "module": "dist/final/index.js",
   "exports": {
     ".": {
-      "types": "./dist/final/types/src/index.d.ts",
-      "node": "./dist/final/js/index.node.js",
-      "default": "./dist/final/js/index.js"
-    },
-    "./ts": {
-      "default": "./src/index.ts"
-    },
-    "./.ts": {
-      "default": "./src/index.ts"
-    },
-    "./.js": {
-      "types": "./dist/final/types/src/index.d.ts",
-      "node": "./dist/final/js/index.node.js",
-      "default": "./dist/final/js/index.js"
+      "types": "./dist/final/neutral/index.d.mts",
+      "node": "./dist/final/node/index.mjs",
+      "default": "./dist/final/neutral/index.mjs"
     }
   },
   "files": [
@@ -28,7 +17,7 @@
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
-    "@monochromatic-dev/config-vite": "workspace:*",
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "type-fest": "catalog:",
     "@types/bun": "catalog:",
     "vite": "catalog:",

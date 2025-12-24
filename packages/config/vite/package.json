@@ -6,18 +6,6 @@
     "monochromatic"
   ],
   "dependencies": {
-    "vite-plugin-singlefile": "catalog:",
-    "lightningcss": "catalog:",
-    "esbuild": "catalog:",
-    "istanbul-lib-report": "catalog:",
-    "nano-spawn": "catalog:",
-    "postcss": "catalog:",
-    "postcss-custom-media": "catalog:",
-    "postcss-custom-selectors": "catalog:",
-    "postcss-mixins": "catalog:",
-    "vite-plugin-json5": "catalog:",
-    "minimatch": "catalog:",
-    "@monochromatic-dev/module-es": "workspace:*"
   },
   "peerDependencies": {
     "vitest": "catalog:",
@@ -25,15 +13,19 @@
     "lightningcss": "catalog:"
   },
   "devDependencies": {
-    "@csstools/custom-units": "catalog:",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@types/bun": "catalog:",
-    "@types/postcss-mixins": "catalog:",
-
     "vite": "catalog:",
-
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
+    "vite-plugin-singlefile": "catalog:",
+    "lightningcss": "catalog:",
+    "esbuild": "catalog:",
+    "istanbul-lib-report": "catalog:",
+    "nano-spawn": "catalog:",
+    "vite-plugin-json5": "catalog:",
+    "minimatch": "catalog:"
   },
   "type": "module",
   "files": [
@@ -52,16 +44,12 @@
     "directory": "packages/config/vite"
   },
   "exports": {
-    ".": {
-      "types": "./dist/final/types/src/index.d.ts",
-      "default": "./dist/final/js/index.js"
-    },
     "./.ts": {
       "default": "./src/index.ts"
     },
-    "./.js": {
-      "types": "./dist/final/types/src/index.d.ts",
-      "default": "./dist/final/js/index.js"
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
     }
   }
 }

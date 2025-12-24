@@ -17,8 +17,7 @@
     "esbuild"
   ],
   "engines": {
-    "bun": ">=1.2.9",
-    "node": "latest"
+    "bun": ">=1.2.9"
   },
   "type": "module",
   "devDependencies": {
@@ -27,6 +26,7 @@
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/config-stylelint": "workspace:*",
     "stylelint": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",
     "vite": "catalog:",

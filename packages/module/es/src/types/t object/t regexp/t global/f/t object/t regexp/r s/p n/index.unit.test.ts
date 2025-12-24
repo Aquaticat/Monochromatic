@@ -1,0 +1,195 @@
+import { types, } from '@monochromatic-dev/module-es';
+import {
+  describe,
+  test,
+} from 'vitest';
+
+const $ = types.object.regexp.global.from.object.regexp.sync.named.$;
+
+describe('ensure regexp has global flag', () => {
+  test('adds global flag to regexp without flags', ({ expect, },) => {
+    const regexp = /test/;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('g',);
+    expect(result.global,).toBe(true,);
+    expect(result.source,).toBe('test',);
+  });
+
+  test('adds global flag to regexp with existing flags', ({ expect, },) => {
+    const regexp = /test/i;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('gi',);
+    expect(result.global,).toBe(true,);
+    expect(result.ignoreCase,).toBe(true,);
+    expect(result.source,).toBe('test',);
+  });
+
+  test('preserves global flag if already present', ({ expect, },) => {
+    const regexp = /test/g;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('g',);
+    expect(result.global,).toBe(true,);
+    expect(result.source,).toBe('test',);
+  });
+
+  test('preserves global flag with multiple existing flags', ({ expect, },) => {
+    const regexp = /test/gim;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('gim',);
+    expect(result.global,).toBe(true,);
+    expect(result.ignoreCase,).toBe(true,);
+    expect(result.multiline,).toBe(true,);
+    expect(result.source,).toBe('test',);
+  });
+
+  test('works with complex regex patterns', ({ expect, },) => {
+    const regexp = /^[a-z]+/;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('g',);
+    expect(result.source,).toBe('^[a-z]+',);
+    expect(result.test('abc',),).toBe(true,);
+    expect(result.test('123',),).toBe(false,);
+  });
+
+  test('works with special characters in pattern', ({ expect, },) => {
+    const regexp = /[$()*+.?[\\\]^{|}]/;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('g',);
+    expect(result.source,).toBe('[.*+?^${}()|[\\]\\\\]',);
+  });
+
+  test('works with unicode characters', ({ expect, },) => {
+    const regexp = /Hello 世界/;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('g',);
+    expect(result.source,).toBe('Hello 世界',);
+    expect(result.test('Hello 世界',),).toBe(true,);
+  });
+
+  test('works with escaped characters', ({ expect, },) => {
+    const regexp = /\d+\.\d+/;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('g',);
+    expect(result.source,).toBe('\\d+\\.\\d+',);
+  });
+
+  test('returns new RegExp instance', ({ expect, },) => {
+    const original = /test/;
+    const result = $({ regexp: original, },);
+
+    expect(result,).not.toBe(original,);
+    expect(result,).toBeInstanceOf(RegExp,);
+  });
+
+  test('new regexp works with exec for multiple matches', ({ expect, },) => {
+    const regexp = /\w+/;
+    const globalRegexp = $({ regexp, },);
+
+    const text = 'hello world test';
+    const matches: Array<RegExpExecArray> = [];
+
+    let match: RegExpExecArray | null;
+    while ((match = globalRegexp.exec(text,)) !== null)
+      matches.push(match,);
+
+    expect(matches.length,).toBe(3,);
+    expect(matches[0]?.[0],).toBe('hello',);
+    expect(matches[1]?.[0],).toBe('world',);
+    expect(matches[2]?.[0],).toBe('test',);
+  });
+
+  test('new regexp works with matchAll', ({ expect, },) => {
+    const regexp = /\d+/;
+    const globalRegexp = $({ regexp, },);
+
+    const text = 'test123 foo456 bar789';
+    const matches = Array.from(text.matchAll(globalRegexp,),);
+
+    expect(matches.length,).toBe(3,);
+    expect(matches[0]?.[0],).toBe('123',);
+    expect(matches[1]?.[0],).toBe('456',);
+    expect(matches[2]?.[0],).toBe('789',);
+  });
+
+  test('with dotAll flag (s)', ({ expect, },) => {
+    const regexp = /test.test/s;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('gs',);
+    expect(result.dotAll,).toBe(true,);
+  });
+
+  test('with sticky flag (y)', ({ expect, },) => {
+    const regexp = /test/y;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('gy',);
+    expect(result.sticky,).toBe(true,);
+  });
+
+  test('with unicode flag (u)', ({ expect, },) => {
+    const regexp = /\u{1F600}/u;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('gu',);
+    expect(result.unicode,).toBe(true,);
+  });
+
+  test('empty regex gets global flag', ({ expect, },) => {
+    const regexp = /(?:)/;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('g',);
+    expect(result.source,).toBe('(?:)',);
+  });
+
+  test('works with alternation patterns', ({ expect, },) => {
+    const regexp = /cat|dog|bird/;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('g',);
+    expect(result.test('cat',),).toBe(true,);
+    result.lastIndex = 0;
+    expect(result.test('dog',),).toBe(true,);
+    result.lastIndex = 0;
+    expect(result.test('bird',),).toBe(true,);
+    result.lastIndex = 0;
+    expect(result.test('fish',),).toBe(false,);
+  });
+
+  test('works with capturing groups', ({ expect, },) => {
+    const regexp = /(\d+)-(\d+)-(\d+)/;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('g',);
+    const match = result.exec('2024-12-25',);
+    expect(match,).not.toBeNull();
+    expect(match?.[1],).toBe('2024',);
+    expect(match?.[2],).toBe('12',);
+    expect(match?.[3],).toBe('25',);
+  });
+
+  test('works with lookaheads', ({ expect, },) => {
+    const regexp = /\w+(?=\s)/;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('g',);
+    expect(result.source,).toBe('\\w+(?=\\s)',);
+  });
+
+  test('works with lookbehinds', ({ expect, },) => {
+    const regexp = /(?<=\s)\w+/;
+    const result = $({ regexp, },);
+
+    expect(result.flags,).toBe('g',);
+    expect(result.source,).toBe('(?<=\\s)\\w+',);
+  });
+});

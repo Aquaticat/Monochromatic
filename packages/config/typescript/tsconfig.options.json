@@ -13,7 +13,6 @@
     "node_modules"
   ],
   "compilerOptions": {
-    "baseUrl": "./",
     "rootDirs": [
       "${configDir}/src",
       "${configDir}"
@@ -59,7 +58,8 @@
     //region Emit
 
     // error TS5096: Option 'allowImportingTsExtensions' can only be used when either 'noEmit' or 'emitDeclarationOnly' is set.
-    "emitDeclarationOnly": true,
+    // "emitDeclarationOnly": true,
+    "noEmit": true,
 
     "declaration": true,
     "isolatedDeclarations": true,

@@ -2,17 +2,14 @@ import {
   join,
   resolve,
 } from 'node:path';
-import {
-  mergeConfig,
-  type UserConfig,
-} from 'vite';
+import { type UserConfig, } from 'vite';
 import { json5Plugin, } from 'vite-plugin-json5';
 import {
   FIREFOX_ESR_VERSION,
   FIREFOX_VERSION_SHIFT,
-} from './constants.js';
-import { composedVisitor, } from './lightningcss-visitors.js';
-import { rolldownExternal, } from './utilities.js';
+} from './constants.ts';
+import { composedVisitor, } from './lightningcss-visitors.ts';
+import { rolldownExternal, } from './utilities.ts';
 
 const createBaseConfig = (configDir: string,): UserConfig => ({
   plugins: [
@@ -40,11 +37,13 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
   },
   oxc: {
     assumptions: {
-      ignoreFunctionLength: true,
+      // Error: Compiler assumption `objectRestNoSymbols` is not implemented for object-rest-spread.
+      // ignoreFunctionLength: true,
 
       noDocumentAll: true,
 
-      objectRestNoSymbols: true,
+      // Error: Compiler assumption `objectRestNoSymbols` is not implemented for object-rest-spread.
+      // objectRestNoSymbols: true,
 
       pureGetters: true,
 

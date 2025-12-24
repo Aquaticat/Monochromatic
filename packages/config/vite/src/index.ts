@@ -1,15 +1,6 @@
-/* eslint-disable @typescript-eslint/no-duplicate-type-constituents -- vitest and vite right now has the exact same types, but may not be sometimes */
 import {
-  join,
-  resolve,
-} from 'node:path';
-import {
-  mergeConfig,
-  type PluginOption,
-  type UserConfig,
   type UserConfigFnObject,
 } from 'vite';
-import { viteSingleFile, } from 'vite-plugin-singlefile';
 
 // Import from internal modules
 import { createBaseConfig, } from './base-configs.ts';
