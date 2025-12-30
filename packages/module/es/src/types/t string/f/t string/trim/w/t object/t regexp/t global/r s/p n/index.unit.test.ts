@@ -6,86 +6,88 @@ import {
 
 const $ = types.string.from.string.trim.with.object.regexp.global.sync.named.$;
 
+type Global = types.object.regexp.global.type.$;
+
 describe('trim with regex global - synchronous named', () => {
   test('trims numbers from both ends', ({ expect, },) => {
-    expect($({ str: '123abc123def123', trimmer: /\d+/g, },),).toBe('abc123def',);
+    expect($({ str: '123abc123def123', trimmer: /\d+/g as Global, },),).toBe('abc123def',);
   });
 
   test('trims whitespace from both ends', ({ expect, },) => {
-    expect($({ str: '   Hello World   ', trimmer: /\s+/g, },),).toBe('Hello World',);
+    expect($({ str: '   Hello World   ', trimmer: /\s+/g as Global, },),).toBe('Hello World',);
   });
 
   test('trims slashes from both ends', ({ expect, },) => {
-    expect($({ str: '///path/to/file///', trimmer: /\//g, },),).toBe('path/to/file',);
+    expect($({ str: '///path/to/file///', trimmer: /\//g as Global, },),).toBe('path/to/file',);
   });
 
   test('trims repeated prefix patterns', ({ expect, },) => {
-    expect($({ str: 'prefixprefixTextsuffixsuffix', trimmer: /(prefix|suffix)/g, },),)
+    expect($({ str: 'prefixprefixTextsuffixsuffix', trimmer: /(prefix|suffix)/g as Global, },),)
       .toBe('Text',);
   });
 
   test('trims case insensitive patterns', ({ expect, },) => {
-    expect($({ str: 'PREFIXStringSUFFIX', trimmer: /(prefix|suffix)/ig, },),).toBe(
+    expect($({ str: 'PREFIXStringSUFFIX', trimmer: /(prefix|suffix)/gi as Global, },),).toBe(
       'String',
     );
   });
 
   test('trims consecutive identical patterns', ({ expect, },) => {
-    expect($({ str: 'aaabcaaa', trimmer: /a+/g, },),).toBe('bc',);
+    expect($({ str: 'aaabcaaa', trimmer: /a+/g as Global, },),).toBe('bc',);
   });
 
   test('returns unchanged when no matches', ({ expect, },) => {
-    expect($({ str: 'String', trimmer: /different/g, },),).toBe('String',);
+    expect($({ str: 'String', trimmer: /different/g as Global, },),).toBe('String',);
   });
 
   test('removes multiple consecutive patterns from both ends', ({ expect, },) => {
-    expect($({ str: '.txt.txt.txtfile.txt.txt', trimmer: /\.txt/g, },),).toBe('file',);
+    expect($({ str: '.txt.txt.txtfile.txt.txt', trimmer: /\.txt/g as Global, },),).toBe('file',);
   });
 
   test('trims unicode characters', ({ expect, },) => {
-    expect($({ str: '世界Hello世界世界', trimmer: /世界/g, },),).toBe('Hello',);
+    expect($({ str: '世界Hello世界世界', trimmer: /世界/g as Global, },),).toBe('Hello',);
   });
 
   test('trims emoji characters', ({ expect, },) => {
-    expect($({ str: '🚀🚀test🚀🚀', trimmer: /🚀+/g, },),).toBe('test',);
+    expect($({ str: '🚀🚀test🚀🚀', trimmer: /🚀+/g as Global, },),).toBe('test',);
   });
 
   test('handles empty string', ({ expect, },) => {
-    expect($({ str: '', trimmer: /anything/g, },),).toBe('',);
+    expect($({ str: '', trimmer: /anything/g as Global, },),).toBe('',);
   });
 
   test('trims complex whitespace patterns', ({ expect, },) => {
-    expect($({ str: '\t\n  Hello\t\n  World\t\n  ', trimmer: /[\s\t\n]+/g, },),).toBe(
+    expect($({ str: '\t\n  Hello\t\n  World\t\n  ', trimmer: /[\s\t\n]+/g as Global, },),).toBe(
       'Hello\t\n  World',
     );
   });
 
   test('trims numbers from both ends leaving middle numbers', ({ expect, },) => {
-    expect($({ str: '123abc456def123', trimmer: /\d+/g, },),).toBe('abc456def',);
+    expect($({ str: '123abc456def123', trimmer: /\d+/g as Global, },),).toBe('abc456def',);
   });
 
   test('trims file extension patterns from both ends', ({ expect, },) => {
-    expect($({ str: '.backup.document.backup', trimmer: /\.backup/g, },),).toBe(
+    expect($({ str: '.backup.document.backup', trimmer: /\.backup/g as Global, },),).toBe(
       '.document',
     );
   });
 
   test('trims repeated case insensitive patterns', ({ expect, },) => {
-    expect($({ str: 'TestTesttestTestTest', trimmer: /Test+/gi, },),).toBe('test',);
+    expect($({ str: 'TestTesttestTestTest', trimmer: /Test+/gi as Global, },),).toBe('test',);
   });
 
   test('trims variable length number patterns', ({ expect, },) => {
-    expect($({ str: '00123abc00456', trimmer: /0+\d{0,}/g, },),).toBe('abc',);
+    expect($({ str: '00123abc00456', trimmer: /0+\d*/g as Global, },),).toBe('abc',);
   });
 
   test('trims repeating zeros with varying lengths', ({ expect, },) => {
-    expect($({ str: '000abc00def0000ghi000', trimmer: /0+/g, },),).toBe(
+    expect($({ str: '000abc00def0000ghi000', trimmer: /0+/g as Global, },),).toBe(
       'abc00def0000ghi',
     );
   });
 
   test('trims special character patterns', ({ expect, },) => {
-    expect($({ str: '...ellipsis...text...ellipsis...', trimmer: /\.\.\./g, },),).toBe(
+    expect($({ str: '...ellipsis...text...ellipsis...', trimmer: /\.{3}/g as Global, },),).toBe(
       'ellipsis...text...ellipsis',
     );
   });
@@ -96,33 +98,33 @@ describe('trim with regex global - synchronous named', () => {
   // });
 
   test('trims dollar sign patterns', ({ expect, },) => {
-    expect($({ str: '$$$price$$$', trimmer: /\$+/g, },),).toBe('price',);
+    expect($({ str: '$$$price$$$', trimmer: /\$+/g as Global, },),).toBe('price',);
   });
 
   test('trims alternating patterns from both ends', ({ expect, },) => {
-    expect($({ str: 'catdogTextcatdog', trimmer: /(cat|dog)/g, },),).toBe('Text',);
+    expect($({ str: 'catdogTextcatdog', trimmer: /(cat|dog)/g as Global, },),).toBe('Text',);
   });
 
   test('trims with capturing groups', ({ expect, },) => {
-    expect($({ str: '2024-12-25text2024-12-25', trimmer: /(\d+-\d+-\d+)/g, },),).toBe(
+    expect($({ str: '2024-12-25text2024-12-25', trimmer: /(\d+-\d+-\d+)/g as Global, },),).toBe(
       'text',
     );
   });
 
   test('trims with special regex characters', ({ expect, },) => {
-    expect($({ str: '[test][actual][test]', trimmer: /\[test\]/g, },),).toBe('[actual]',);
+    expect($({ str: '[test][actual][test]', trimmer: /\[test\]/g as Global, },),).toBe('[actual]',);
   });
 
   test('trims only completely matched patterns at ends', ({ expect, },) => {
-    expect($({ str: 'preTextpost', trimmer: /^(pre|post)$/g, },),).toBe('preTextpost',);
+    expect($({ str: 'preTextpost', trimmer: /^(pre|post)$/g as Global, },),).toBe('preTextpost',);
   });
 
   test('handles pattern that matches entire string', ({ expect, },) => {
-    expect($({ str: 'match', trimmer: /match/g, },),).toBe('',);
+    expect($({ str: 'match', trimmer: /match/g as Global, },),).toBe('',);
   });
 
   test('trims with dotAll flag', ({ expect, },) => {
-    expect($({ str: 'test.testTexttest.test', trimmer: /test.test/gs, },),).toBe('Text',);
+    expect($({ str: 'test.testTexttest.test', trimmer: /test.test/gs as Global, },),).toBe('Text',);
   });
 
   // Multinaline flag test removed - doesn't work as expected with simple trim logic
@@ -134,7 +136,7 @@ describe('trim with regex global - synchronous named', () => {
 
   test('trims with unicode flag', ({ expect, },) => {
     expect(
-      $({ str: '\u{1F600}\u{1F600}test\u{1F600}\u{1F600}', trimmer: /\u{1F600}+/gu, },),
+      $({ str: '\u{1F600}\u{1F600}test\u{1F600}\u{1F600}', trimmer: /\u{1F600}+/gu as Global, },),
     )
       .toBe('test',);
   });
@@ -148,100 +150,100 @@ describe('trim with regex global - synchronous named', () => {
   // });
 
   test('trims complex pattern with multiple alternations', ({ expect, },) => {
-    expect($({ str: 'abc123def', trimmer: /(abc|def)+/g, },),).toBe('123',);
+    expect($({ str: 'abc123def', trimmer: /(abc|def)+/g as Global, },),).toBe('123',);
   });
 
   test('trims patterns with quantifiers', ({ expect, },) => {
-    expect($({ str: 'aaaabbbbcccc', trimmer: /a+b+/g, },),).toBe('cccc',);
+    expect($({ str: 'aaaabbbbcccc', trimmer: /a+b+/g as Global, },),).toBe('cccc',);
   });
 
   // Lookahead/lookbehind tests removed - these patterns don't work well with simple trim logic
 
   test('trims with negative lookbehind', ({ expect, },) => {
-    expect($({ str: 'testX', trimmer: /\w+(?<!X)/g, },),).toBe('X',);
+    expect($({ str: 'testX', trimmer: /\w+(?<!X)/g as Global, },),).toBe('X',);
   });
 
   test('trims greedy vs lazy quantifiers', ({ expect, },) => {
-    expect($({ str: '<tag>content', trimmer: /<.*?>/g, },),).toBe('content',);
-    expect($({ str: '<tag>content', trimmer: /<.*>/g, },),).toBe('content',);
+    expect($({ str: '<tag>content', trimmer: /<.*?>/g as Global, },),).toBe('content',);
+    expect($({ str: '<tag>content', trimmer: /<.*>/g as Global, },),).toBe('content',);
   });
 
   test('handles regex with global flag already set', ({ expect, },) => {
-    expect($({ str: '123abc123', trimmer: /\d+/g, },),).toBe('abc',);
+    expect($({ str: '123abc123', trimmer: /\d+/g as Global, },),).toBe('abc',);
   });
 
   test('trims only when pattern matches consecutively', ({ expect, },) => {
-    expect($({ str: 'aaabbbccc', trimmer: /a+/g, },),).toBe('bbbccc',);
+    expect($({ str: 'aaabbbccc', trimmer: /a+/g as Global, },),).toBe('bbbccc',);
   });
 
   test('trims patterns with character classes', ({ expect, },) => {
-    expect($({ str: 'abc123def', trimmer: /[a-z]+/g, },),).toBe('123',);
+    expect($({ str: 'abc123def', trimmer: /[a-z]+/g as Global, },),).toBe('123',);
   });
 
   test('trims patterns with negated character classes', ({ expect, },) => {
-    expect($({ str: 'abc123', trimmer: /[^0-9]+/g, },),).toBe('123',);
+    expect($({ str: 'abc123', trimmer: /[^0-9]+/g as Global, },),).toBe('123',);
   });
 
   test('trims with word boundaries', ({ expect, },) => {
-    expect($({ str: 'word test word', trimmer: /\bword\b/g, },),).toBe(' test ');
+    expect($({ str: 'word test word', trimmer: /\bword\b/g as Global, },),).toBe(' test ',);
   });
 
   test('trims with non-word characters', ({ expect, },) => {
-    expect($({ str: '!!!test!!!', trimmer: /\W+/g, },),).toBe('test',);
+    expect($({ str: '!!!test!!!', trimmer: /\W+/g as Global, },),).toBe('test',);
   });
 
   test('trims with digit patterns', ({ expect, },) => {
-    expect($({ str: '123test456', trimmer: /\d+/g, },),).toBe('test',);
+    expect($({ str: '123test456', trimmer: /\d+/g as Global, },),).toBe('test',);
   });
 
   test('trims with non-digit patterns', ({ expect, },) => {
-    expect($({ str: 'abc123def', trimmer: /\D+/g, },),).toBe('123',);
+    expect($({ str: 'abc123def', trimmer: /\D+/g as Global, },),).toBe('123',);
   });
 
   test('trims with whitespace patterns', ({ expect, },) => {
-    expect($({ str: '   test   ', trimmer: /\s+/g, },),).toBe('test',);
+    expect($({ str: '   test   ', trimmer: /\s+/g as Global, },),).toBe('test',);
   });
 
   test('trims with non-whitespace patterns', ({ expect, },) => {
-    expect($({ str: 'test   ', trimmer: /\S+/g, },),).toBe('   ',);
+    expect($({ str: 'test   ', trimmer: /\S+/g as Global, },),).toBe('   ',);
   });
 
   test('trims patterns with alternation and repetition', ({ expect, },) => {
-    expect($({ str: 'abc123def', trimmer: /(abc|123)+/g, },),).toBe('def',);
+    expect($({ str: 'abc123def', trimmer: /(abc|123)+/g as Global, },),).toBe('def',);
   });
 
   test('trims deeply nested patterns', ({ expect, },) => {
-    expect($({ str: '(((text))', trimmer: /\(+/g, },),).toBe('text))',);
+    expect($({ str: '(((text))', trimmer: /\(+/g as Global, },),).toBe('text))',);
   });
 
   test('handles very long strings efficiently', ({ expect, },) => {
     const longStr = 'a'.repeat(1000,) + 'text' + 'a'.repeat(1000,);
-    expect($({ str: longStr, trimmer: /a+/g, },),).toBe('text',);
+    expect($({ str: longStr, trimmer: /a+/g as Global, },),).toBe('text',);
   });
 
   test('trims patterns with escaped special characters', ({ expect, },) => {
-    expect($({ str: '\\d+test', trimmer: /\\d\+/g, },),).toBe('test',);
+    expect($({ str: '\\d+test', trimmer: /\\d\+/g as Global, },),).toBe('test',);
   });
 
   test('trims with possessive quantifiers simulation', ({ expect, },) => {
-    expect($({ str: '"""test"""', trimmer: /"+/g, },),).toBe('test',);
+    expect($({ str: '"""test"""', trimmer: /"+/g as Global, },),).toBe('test',);
   });
 
   test('trims with nested groups', ({ expect, },) => {
-    expect($({ str: 'aaabbb test aaabbb', trimmer: /(a+)b+/g, },),).toBe(' test ');
+    expect($({ str: 'aaabbb test aaabbb', trimmer: /(a+)b+/g as Global, },),).toBe(' test ',);
   });
 
   test('handles pattern that matches zero-length', ({ expect, },) => {
-    expect($({ str: 'test', trimmer: /\w*/g, },),).toBe('',);
+    expect($({ str: 'test', trimmer: /\w*/g as Global, },),).toBe('',);
   });
 
   test('trims with octal escape sequences', ({ expect, },) => {
     // Use modern escape sequences instead of deprecated octal
-    expect($({ str: '\x41test\x42', trimmer: /\x41/g, },),).toBe('test\x42',);
+    expect($({ str: '\x41test\x42', trimmer: /\x41/g as Global, },),).toBe('test\x42',);
   });
 
   test('trims with hexadecimal escape sequences', ({ expect, },) => {
-    expect($({ str: '\x41test\x42', trimmer: /\x41/g, },),).toBe('test\x42',);
+    expect($({ str: '\x41test\x42', trimmer: /\x41/g as Global, },),).toBe('test\x42',);
   });
 
   // Control characters test removed - escape sequence doesn't match as expected
@@ -260,27 +262,27 @@ describe('trim with regex global - synchronous named', () => {
 
   test('verifies trimStart and trimEnd are both called', ({ expect, },) => {
     // This test verifies the implementation calls both trimStart and trimEnd
-    const result = $({ str: '123abc456', trimmer: /\d+/g, },);
+    const result = $({ str: '123abc456', trimmer: /\d+/g as Global, },);
     expect(result,).toBe('abc',);
   });
 
   test('handles case where only start needs trimming', ({ expect, },) => {
-    expect($({ str: '123abc', trimmer: /\d+/g, },),).toBe('abc',);
+    expect($({ str: '123abc', trimmer: /\d+/g as Global, },),).toBe('abc',);
   });
 
   test('handles case where only end needs trimming', ({ expect, },) => {
-    expect($({ str: 'abc123', trimmer: /\d+/g, },),).toBe('abc',);
+    expect($({ str: 'abc123', trimmer: /\d+/g as Global, },),).toBe('abc',);
   });
 
   test('handles case where both ends need equal trimming', ({ expect, },) => {
-    expect($({ str: '123abc123', trimmer: /\d+/g, },),).toBe('abc',);
+    expect($({ str: '123abc123', trimmer: /\d+/g as Global, },),).toBe('abc',);
   });
 
   test('handles case where ends need different amounts of trimming', ({ expect, },) => {
-    expect($({ str: '12345abc67', trimmer: /\d+/g, },),).toBe('abc',);
+    expect($({ str: '12345abc67', trimmer: /\d+/g as Global, },),).toBe('abc',);
   });
 
   test('preserves internal structure while trimming ends', ({ expect, },) => {
-    expect($({ str: '123[abc]456', trimmer: /\d+/g, },),).toBe('[abc]',);
+    expect($({ str: '123[abc]456', trimmer: /\d+/g as Global, },),).toBe('[abc]',);
   });
 });
