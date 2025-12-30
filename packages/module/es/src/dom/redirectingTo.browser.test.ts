@@ -1,17 +1,18 @@
 import {
-  logtapeConfiguration,
-  logtapeConfigure,
-  onLoadRedirectingTo,
-} from '@monochromatic-dev/module-es';
-import {
-  describe,
+  expect,
   test,
-} from 'vitest';
+} from '@playwright/test';
 
-await logtapeConfigure(await logtapeConfiguration(),);
-
-describe(onLoadRedirectingTo, () => {
-  test('placeholder test', () => {
-    // TODO: Add actual tests for dom.redirectingTo
+test.describe('onLoadRedirectingTo', () => {
+  test.beforeEach(async ({ page, }) => {
+    await page.goto('/');
+    await page.waitForFunction(() => window.moduleEs !== undefined);
   });
-},);
+
+  test('placeholder test', async ({ page, }) => {
+    const hasFunction = await page.evaluate(() => {
+      return typeof window.moduleEs.onLoadRedirectingTo === 'function';
+    });
+    expect(hasFunction).toBe(true);
+  });
+});

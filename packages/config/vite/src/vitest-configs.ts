@@ -1,8 +1,6 @@
-import { playwright, } from '@vitest/browser-playwright';
 import { join, } from 'node:path';
 import {
   mergeConfig,
-  type UserConfig,
 } from 'vite';
 import type {
   ViteUserConfig as VitestUserConfig,
@@ -11,11 +9,9 @@ import type {
 import { createBaseConfig, } from './base-configs.ts';
 import { createModeConfig, } from './config-modifiers.ts';
 import {
-  BROWSER_TEST_TIMEOUT,
   DEFAULT_TEST_TIMEOUT,
   MAX_CONCURRENCY,
   VITEST_API_PORT,
-  VITEST_BROWSER_API_PORT,
   vitestExcludeCommon,
 } from './constants.ts';
 
@@ -115,61 +111,6 @@ export const vitestOnlyUnitConfigWorkspace: VitestUserConfig = {
   },
 };
 
-/**
- * @deprecated Doesn't work because the Playwright provider require Vite builds.
- */
-export const vitestOnlyBrowserConfigWorkspace: VitestUserConfig = {
-  test: {
-    ...vitestOnlyConfigWorkspace.test,
-
-    coverage: {
-      // Turned off for browsers. See https://github.com/vitest-dev/vitest/issues/5477
-      enabled: false,
-    },
-    name: 'browser',
-    exclude: [...vitestExcludeCommon, '**/*.unit.test.ts',],
-
-    projects: [
-      {
-        extends: true,
-        test: {
-          include: ['packages/*/*/src/**/*.browser.test.ts',],
-        },
-      },
-    ],
-
-    browser: {
-      provider: playwright(
-        {
-          contextOptions: {
-            acceptDownloads: false,
-          },
-          launchOptions: {
-            channel: 'chromium',
-            chromiumSandbox: true,
-          },
-        },
-      ),
-      enabled: true,
-      headless: true,
-
-      api: {
-        host: '0.0.0.0',
-        port: VITEST_BROWSER_API_PORT,
-      },
-
-      instances: [
-        {
-          browser: 'chromium',
-          testTimeout: BROWSER_TEST_TIMEOUT,
-        },
-        // @vitest/coverage-v8 doesn't work with firefox because Firefox doesn't use v8 engine.
-        { browser: 'firefox', testTimeout: BROWSER_TEST_TIMEOUT, },
-      ],
-    },
-  },
-};
-
 export const createVitestBaseUnitConfigWorkspace = (
   configDir: string,
 ): VitestUserConfig =>
@@ -178,25 +119,8 @@ export const createVitestBaseUnitConfigWorkspace = (
     vitestOnlyUnitConfigWorkspace,
   );
 
-/**
- * @deprecated Doesn't work because the Playwright provider require Vite builds.
- */
-export const createVitestBaseBrowserConfigWorkspace = (
-  configDir: string,
-): VitestUserConfig =>
-  mergeConfig(
-    createBaseConfig(configDir,),
-    vitestOnlyBrowserConfigWorkspace,
-  );
-
 export const getVitestUnitWorkspace = (configDir: string,): VitestUserConfigFnObject =>
   createModeConfig(configDir, createVitestBaseUnitConfigWorkspace,);
-
-/**
- * @deprecated Doesn't work because the Playwright provider require Vite builds.
- */
-export const getVitestBrowserWorkspace = (configDir: string,): VitestUserConfigFnObject =>
-  createModeConfig(configDir, createVitestBaseBrowserConfigWorkspace,);
 
 //endregion Vitest Configurations
 

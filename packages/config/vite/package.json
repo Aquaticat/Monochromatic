@@ -18,7 +18,6 @@
     "@types/bun": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:",
-    "@vitest/browser-playwright": "catalog:",
     "vite-plugin-singlefile": "catalog:",
     "lightningcss": "catalog:",
     "esbuild": "catalog:",

@@ -32,8 +32,7 @@
   "peerDependencies": {
     "@types/mdx": "catalog:",
     "@types/bun": "catalog:",
-    "vite": "catalog:",
-    "@vitest/browser-playwright": "catalog:"
+    "vite": "catalog:"
   },
   "dependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*"

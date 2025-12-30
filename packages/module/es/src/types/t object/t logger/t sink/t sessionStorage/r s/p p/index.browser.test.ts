@@ -1,134 +1,193 @@
-import { types, } from '@monochromatic-dev/module-es';
 import {
-  describe,
+  expect,
   test,
-} from 'vitest';
+} from '@playwright/test';
 
-const { $, verify, } = types.object.logger.sink.sessionStorage.sync.positional;
-
-describe('sessionStorage sink', () => {
-  test('verify function exists and is callable', ({ expect, }) => {
-    expect(typeof verify,).toBe('function',);
+test.describe('sessionStorage sink', () => {
+  test.beforeEach(async ({ page, }) => {
+    await page.goto('/');
+    await page.waitForFunction(() => window.moduleEs !== undefined);
   });
 
-  test('verify returns boolean', ({ expect, }) => {
-    const result = verify();
-    expect(typeof result,).toBe('boolean',);
+  test('verify function exists and is callable', async ({ page, }) => {
+    const typeofVerify = await page.evaluate(() => {
+      const { verify, } = window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+      return typeof verify;
+    });
+    expect(typeofVerify).toBe('function');
   });
 
-  test('verify detects sessionStorage availability', ({ expect, }) => {
-    // In browser environment, sessionStorage should be available
-    const result = verify();
-    expect(result,).toBe(true,);
+  test('verify returns boolean', async ({ page, }) => {
+    const resultType = await page.evaluate(() => {
+      const { verify, } = window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+      return typeof verify();
+    });
+    expect(resultType).toBe('boolean');
   });
 
-  test('sink function exists and is callable', ({ expect, }) => {
-    expect(typeof $,).toBe('function',);
+  test('verify detects sessionStorage availability', async ({ page, }) => {
+    const result = await page.evaluate(() => {
+      const { verify, } = window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+      return verify();
+    });
+    expect(result).toBe(true);
   });
 
-  test('sink writes valid LogRecord', ({ expect, }) => {
-    verify();
-
-    const record = {
-      level: 'info' as const,
-      message: 'test message',
-      timestamp: Date.now(),
-    };
-
-    expect(() => $(record,),).not.toThrow();
+  test('sink function exists and is callable', async ({ page, }) => {
+    const typeofSink = await page.evaluate(() => {
+      const { $, } = window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+      return typeof $;
+    });
+    expect(typeofSink).toBe('function');
   });
 
-  test('sink handles all log levels', ({ expect, }) => {
-    verify();
-
-    const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal',] as const;
-
-    for (const level of levels) {
+  test('sink writes valid LogRecord', async ({ page, }) => {
+    const didNotThrow = await page.evaluate(() => {
+      const { $, verify, } = window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+      verify();
       const record = {
-        level,
-        message: `test ${level} message`,
+        level: 'info' as const,
+        message: 'test message',
         timestamp: Date.now(),
       };
-      expect(() => $(record,),).not.toThrow();
-    }
-  });
-
-  test('sink handles unicode in message', ({ expect, }) => {
-    verify();
-
-    const record = {
-      level: 'info' as const,
-      message: 'Hello 世界 🌍',
-      timestamp: Date.now(),
-    };
-
-    expect(() => $(record,),).not.toThrow();
-  });
-
-  test('sink handles empty message', ({ expect, }) => {
-    verify();
-
-    const record = {
-      level: 'info' as const,
-      message: '',
-      timestamp: Date.now(),
-    };
-
-    expect(() => $(record,),).not.toThrow();
-  });
-
-  test('sink handles JSON in message', ({ expect, }) => {
-    verify();
-
-    const record = {
-      level: 'info' as const,
-      message: '{"key": "value", "nested": {"a": 1}}',
-      timestamp: Date.now(),
-    };
-
-    expect(() => $(record,),).not.toThrow();
-  });
-
-  test('written records can be retrieved from sessionStorage', ({ expect, }) => {
-    // Clear any existing logs first
-    const keysToRemove: string[] = [];
-    const storageLength = globalThis.sessionStorage.length;
-    for (let storageIndex = 0; storageIndex < storageLength; storageIndex++) {
-      const key = globalThis.sessionStorage.key(storageIndex,);
-      if (key?.startsWith('monochromatic.log',)) {
-        keysToRemove.push(key,);
+      try {
+        $(record);
+        return true;
+      } catch {
+        return false;
       }
-    }
-    keysToRemove.forEach((key,) => globalThis.sessionStorage.removeItem(key,),);
+    });
+    expect(didNotThrow).toBe(true);
+  });
 
-    verify();
-
-    const testMessage = `unique-test-${Date.now()}`;
-    const record = {
-      level: 'info' as const,
-      message: testMessage,
-      timestamp: Date.now(),
-    };
-
-    $(record,);
-
-    // Find the written record
-    let found = false;
-    const currentStorageLength = globalThis.sessionStorage.length;
-    for (let storageIndex = 0; storageIndex < currentStorageLength; storageIndex++) {
-      const key = globalThis.sessionStorage.key(storageIndex,);
-      if (key?.startsWith('monochromatic.log',)) {
-        const value = globalThis.sessionStorage.getItem(key,);
-        if (value?.includes(testMessage,)) {
-          found = true;
-          const parsed = JSON.parse(value,);
-          expect(parsed.message,).toBe(testMessage,);
-          expect(parsed.level,).toBe('info',);
-          break;
+  test('sink handles all log levels', async ({ page, }) => {
+    const allSucceeded = await page.evaluate(() => {
+      const { $, verify, } = window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+      verify();
+      const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'] as const;
+      for (const level of levels) {
+        const record = {
+          level,
+          message: `test ${level} message`,
+          timestamp: Date.now(),
+        };
+        try {
+          $(record);
+        } catch {
+          return false;
         }
       }
-    }
+      return true;
+    });
+    expect(allSucceeded).toBe(true);
+  });
 
-    expect(found,).toBe(true,);
+  test('sink handles unicode in message', async ({ page, }) => {
+    const didNotThrow = await page.evaluate(() => {
+      const { $, verify, } = window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+      verify();
+      const record = {
+        level: 'info' as const,
+        message: 'Hello 世界 🌍',
+        timestamp: Date.now(),
+      };
+      try {
+        $(record);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    expect(didNotThrow).toBe(true);
+  });
+
+  test('sink handles empty message', async ({ page, }) => {
+    const didNotThrow = await page.evaluate(() => {
+      const { $, verify, } = window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+      verify();
+      const record = {
+        level: 'info' as const,
+        message: '',
+        timestamp: Date.now(),
+      };
+      try {
+        $(record);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    expect(didNotThrow).toBe(true);
+  });
+
+  test('sink handles JSON in message', async ({ page, }) => {
+    const didNotThrow = await page.evaluate(() => {
+      const { $, verify, } = window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+      verify();
+      const record = {
+        level: 'info' as const,
+        message: '{"key": "value", "nested": {"a": 1}}',
+        timestamp: Date.now(),
+      };
+      try {
+        $(record);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    expect(didNotThrow).toBe(true);
+  });
+
+  test('written records can be retrieved from sessionStorage', async ({ page, }) => {
+    const result = await page.evaluate(() => {
+      const { $, verify, } = window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+
+      // Clear any existing logs first
+      const keysToRemove: string[] = [];
+      const storageLength = globalThis.sessionStorage.length;
+      for (let storageIndex = 0; storageIndex < storageLength; storageIndex++) {
+        const key = globalThis.sessionStorage.key(storageIndex);
+        if (key?.startsWith('monochromatic.log')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((key) => globalThis.sessionStorage.removeItem(key));
+
+      verify();
+
+      const testMessage = `unique-test-${Date.now()}`;
+      const record = {
+        level: 'info' as const,
+        message: testMessage,
+        timestamp: Date.now(),
+      };
+
+      $(record);
+
+      // Find the written record
+      const currentStorageLength = globalThis.sessionStorage.length;
+      for (let storageIndex = 0; storageIndex < currentStorageLength; storageIndex++) {
+        const key = globalThis.sessionStorage.key(storageIndex);
+        if (key?.startsWith('monochromatic.log')) {
+          const value = globalThis.sessionStorage.getItem(key);
+          if (value?.includes(testMessage)) {
+            const parsed = JSON.parse(value);
+            return {
+              found: true,
+              message: parsed.message,
+              level: parsed.level,
+              testMessage,
+            };
+          }
+        }
+      }
+
+      return { found: false, message: null, level: null, testMessage, };
+    });
+
+    expect(result.found).toBe(true);
+    expect(result.message).toBe(result.testMessage);
+    expect(result.level).toBe('info');
   });
 });

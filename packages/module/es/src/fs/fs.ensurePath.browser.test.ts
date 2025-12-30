@@ -1,53 +1,58 @@
 import {
-  ensureDir,
-  ensureFile,
-  ensurePath,
-  logtapeConfiguration,
-  logtapeConfigure,
-  rm,
-} from '@monochromatic-dev/module-es';
-import {
-  beforeEach,
-  describe,
   expect,
-  it,
-} from 'vitest';
+  test,
+} from '@playwright/test';
 
-await logtapeConfigure(await logtapeConfiguration(),);
-
-describe('fs.ensurePath browser tests', () => {
-  // Define test paths that should work in browser environment
+test.describe('fs.ensurePath browser tests', () => {
   const testFilePath = '/test/file.txt';
   const testDirPath = '/test/dir';
 
-  beforeEach(async () => {
-    await rm(testFilePath, { force: true, recursive: true, },);
-    await rm(testDirPath, { force: true, recursive: true, },);
-  },);
+  test.beforeEach(async ({ page, }) => {
+    await page.goto('/');
+    await page.waitForFunction(() => window.moduleEs !== undefined);
 
-  describe(ensurePath, () => {
-    it('should handle file paths correctly', async () => {
-      const result = await ensurePath(testFilePath,);
-      expect(result,).toBe(testFilePath,);
+    await page.evaluate(async ([filePath, dirPath]) => {
+      const { rm, } = window.moduleEs;
+      await rm(filePath, { force: true, recursive: true, });
+      await rm(dirPath, { force: true, recursive: true, });
+    }, [testFilePath, testDirPath] as const);
+  });
+
+  test.describe('ensurePath', () => {
+    test('should handle file paths correctly', async ({ page, }) => {
+      const result = await page.evaluate(async (filePath) => {
+        const { ensurePath, } = window.moduleEs;
+        return await ensurePath(filePath);
+      }, testFilePath);
+      expect(result).toBe(testFilePath);
     });
 
-    it('should handle directory paths correctly', async () => {
-      const result = await ensurePath(testDirPath,);
-      expect(result,).toBe(testDirPath,);
+    test('should handle directory paths correctly', async ({ page, }) => {
+      const result = await page.evaluate(async (dirPath) => {
+        const { ensurePath, } = window.moduleEs;
+        return await ensurePath(dirPath);
+      }, testDirPath);
+      expect(result).toBe(testDirPath);
     });
-  },);
+  });
 
-  describe(ensureDir, () => {
-    it('should create and return directory path', async () => {
-      const result = await ensureDir(testDirPath,);
-      expect(result,).toBe(testDirPath,);
+  test.describe('ensureDir', () => {
+    test('should create and return directory path', async ({ page, }) => {
+      const result = await page.evaluate(async (dirPath) => {
+        const { ensureDir, } = window.moduleEs;
+        return await ensureDir(dirPath);
+      }, testDirPath);
+      expect(result).toBe(testDirPath);
     });
-  },);
+  });
 
-  describe(ensureFile, () => {
-    it('should create and return file path', async () => {
-      const result = await ensureFile(testFilePath,);
-      expect(result,).toBe(testFilePath,);
+  test.describe('ensureFile', () => {
+    test('should create and return file path', async ({ page, }) => {
+      const result = await page.evaluate(async (filePath) => {
+        const { ensureFile, } = window.moduleEs;
+        return await ensureFile(filePath);
+      }, testFilePath);
+      expect(result).toBe(testFilePath);
     });
-  },);
+  });
 });

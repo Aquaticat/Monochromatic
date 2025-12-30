@@ -26,8 +26,7 @@
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/config-vite": "workspace:*",
-    "@types/bun": "catalog:",
-    "@vitest/browser-playwright": "catalog:"
+    "@types/bun": "catalog:"
   },
   "type": "module",
   "files": [

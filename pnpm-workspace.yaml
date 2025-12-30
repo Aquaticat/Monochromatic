@@ -79,8 +79,8 @@ catalog:
   vitest: '>=4.0.15'
   tsdown: '>=0.18.1'
   vue-tsc: '>=3.1.0'
-  '@vitest/browser-playwright': '>=4.0.15'
   playwright: '>=1.52.0'
+  '@playwright/test': '>=1.52.0'
   '@vitest/coverage-v8': '>=4.0.15'
   '@vitest/ui': '>=4.0.15'
   '@vitest/coverage-istanbul': '>=4.0.16'
@@ -232,9 +232,6 @@ packageExtensions:
   vitest:
     dependencies:
       strip-literal: '>=3.0.0'
-  '@vitest/browser-playwright':
-    peerDependencies:
-      vite: '*'
   stylelint:
     dependencies:
       postcss-html: '*'

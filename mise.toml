@@ -147,6 +147,21 @@ hide = true
 description = "Run unit tests"
 run = "vitest run --config vitest.unit.config.ts"
 
+[tasks."test:browser"]
+hide = true
+description = "Run browser tests with Playwright"
+run = "pnpm exec playwright test --config playwright.browser.config.ts"
+
+[tasks."test:browser:chromium"]
+hide = true
+description = "Run browser tests in Chromium"
+run = "pnpm exec playwright test --config playwright.browser.config.ts --project=chromium"
+
+[tasks."test:browser:firefox"]
+hide = true
+description = "Run browser tests in Firefox"
+run = "pnpm exec playwright test --config playwright.browser.config.ts --project=firefox"
+
 # [tasks."test:browser"]
 # hide = true
 # description = "Run browser tests"
@@ -245,11 +260,11 @@ run = [{ tasks = ["prepare--allowFailure:*"] }]
 
 [tasks."prepare:playwright"]
 description = "Install Playwright browsers"
-run = "pnpx playwright install --with-deps"
+run = "pnpm exec playwright install --with-deps"
 
 [tasks."prepare--allowFailure:playwright"]
 description = "Install Playwright browsers, allowing failures"
-run = "try { pnpx playwright install --with-deps } catch { |e| print -e $e.rendered }"
+run = "try { pnpm exec playwright install --with-deps } catch { |e| print -e $e.rendered }"
 
 [tasks.prepareAndBuild]
 description = "Complete setup: prepare environment and build all artifacts"
