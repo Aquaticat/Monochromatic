@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/better-regex -- Testing */
+
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
@@ -10,26 +12,35 @@ type Global = types.object.regexp.global.type.$;
 
 describe('trim with regex global - synchronous named', () => {
   test('trims numbers from both ends', ({ expect, },) => {
-    expect($({ str: '123abc123def123', trimmer: /\d+/g as Global, },),).toBe('abc123def',);
+    expect($({ str: '123abc123def123', trimmer: /\d+/g as Global, },),).toBe(
+      'abc123def',
+    );
   });
 
   test('trims whitespace from both ends', ({ expect, },) => {
-    expect($({ str: '   Hello World   ', trimmer: /\s+/g as Global, },),).toBe('Hello World',);
+    expect($({ str: '   Hello World   ', trimmer: /\s+/g as Global, },),).toBe(
+      'Hello World',
+    );
   });
 
   test('trims slashes from both ends', ({ expect, },) => {
-    expect($({ str: '///path/to/file///', trimmer: /\//g as Global, },),).toBe('path/to/file',);
+    expect($({ str: '///path/to/file///', trimmer: /\//g as Global, },),).toBe(
+      'path/to/file',
+    );
   });
 
   test('trims repeated prefix patterns', ({ expect, },) => {
-    expect($({ str: 'prefixprefixTextsuffixsuffix', trimmer: /(prefix|suffix)/g as Global, },),)
+    expect(
+      $({ str: 'prefixprefixTextsuffixsuffix', trimmer: /(prefix|suffix)/g as Global, },),
+    )
       .toBe('Text',);
   });
 
   test('trims case insensitive patterns', ({ expect, },) => {
-    expect($({ str: 'PREFIXStringSUFFIX', trimmer: /(prefix|suffix)/gi as Global, },),).toBe(
-      'String',
-    );
+    expect($({ str: 'PREFIXStringSUFFIX', trimmer: /(prefix|suffix)/gi as Global, },),)
+      .toBe(
+        'String',
+      );
   });
 
   test('trims consecutive identical patterns', ({ expect, },) => {
@@ -41,7 +52,9 @@ describe('trim with regex global - synchronous named', () => {
   });
 
   test('removes multiple consecutive patterns from both ends', ({ expect, },) => {
-    expect($({ str: '.txt.txt.txtfile.txt.txt', trimmer: /\.txt/g as Global, },),).toBe('file',);
+    expect($({ str: '.txt.txt.txtfile.txt.txt', trimmer: /\.txt/g as Global, },),).toBe(
+      'file',
+    );
   });
 
   test('trims unicode characters', ({ expect, },) => {
@@ -57,13 +70,16 @@ describe('trim with regex global - synchronous named', () => {
   });
 
   test('trims complex whitespace patterns', ({ expect, },) => {
-    expect($({ str: '\t\n  Hello\t\n  World\t\n  ', trimmer: /[\s\t\n]+/g as Global, },),).toBe(
-      'Hello\t\n  World',
-    );
+    expect($({ str: '\t\n  Hello\t\n  World\t\n  ', trimmer: /[\s\t\n]+/g as Global, },),)
+      .toBe(
+        'Hello\t\n  World',
+      );
   });
 
   test('trims numbers from both ends leaving middle numbers', ({ expect, },) => {
-    expect($({ str: '123abc456def123', trimmer: /\d+/g as Global, },),).toBe('abc456def',);
+    expect($({ str: '123abc456def123', trimmer: /\d+/g as Global, },),).toBe(
+      'abc456def',
+    );
   });
 
   test('trims file extension patterns from both ends', ({ expect, },) => {
@@ -73,7 +89,9 @@ describe('trim with regex global - synchronous named', () => {
   });
 
   test('trims repeated case insensitive patterns', ({ expect, },) => {
-    expect($({ str: 'TestTesttestTestTest', trimmer: /Test+/gi as Global, },),).toBe('test',);
+    expect($({ str: 'TestTesttestTestTest', trimmer: /Test+/gi as Global, },),).toBe(
+      'test',
+    );
   });
 
   test('trims variable length number patterns', ({ expect, },) => {
@@ -87,9 +105,10 @@ describe('trim with regex global - synchronous named', () => {
   });
 
   test('trims special character patterns', ({ expect, },) => {
-    expect($({ str: '...ellipsis...text...ellipsis...', trimmer: /\.{3}/g as Global, },),).toBe(
-      'ellipsis...text...ellipsis',
-    );
+    expect($({ str: '...ellipsis...text...ellipsis...', trimmer: /\.{3}/g as Global, },),)
+      .toBe(
+        'ellipsis...text...ellipsis',
+      );
   });
 
   // Bracket patterns test removed - regex doesn't work as expected with trim logic
@@ -102,21 +121,28 @@ describe('trim with regex global - synchronous named', () => {
   });
 
   test('trims alternating patterns from both ends', ({ expect, },) => {
-    expect($({ str: 'catdogTextcatdog', trimmer: /(cat|dog)/g as Global, },),).toBe('Text',);
-  });
-
-  test('trims with capturing groups', ({ expect, },) => {
-    expect($({ str: '2024-12-25text2024-12-25', trimmer: /(\d+-\d+-\d+)/g as Global, },),).toBe(
-      'text',
+    expect($({ str: 'catdogTextcatdog', trimmer: /(cat|dog)/g as Global, },),).toBe(
+      'Text',
     );
   });
 
+  test('trims with capturing groups', ({ expect, },) => {
+    expect($({ str: '2024-12-25text2024-12-25', trimmer: /(\d+-\d+-\d+)/g as Global, },),)
+      .toBe(
+        'text',
+      );
+  });
+
   test('trims with special regex characters', ({ expect, },) => {
-    expect($({ str: '[test][actual][test]', trimmer: /\[test\]/g as Global, },),).toBe('[actual]',);
+    expect($({ str: '[test][actual][test]', trimmer: /\[test\]/g as Global, },),).toBe(
+      '[actual]',
+    );
   });
 
   test('trims only completely matched patterns at ends', ({ expect, },) => {
-    expect($({ str: 'preTextpost', trimmer: /^(pre|post)$/g as Global, },),).toBe('preTextpost',);
+    expect($({ str: 'preTextpost', trimmer: /^(pre|post)$/g as Global, },),).toBe(
+      'preTextpost',
+    );
   });
 
   test('handles pattern that matches entire string', ({ expect, },) => {
@@ -124,7 +150,8 @@ describe('trim with regex global - synchronous named', () => {
   });
 
   test('trims with dotAll flag', ({ expect, },) => {
-    expect($({ str: 'test.testTexttest.test', trimmer: /test.test/gs as Global, },),).toBe('Text',);
+    expect($({ str: 'test.testTexttest.test', trimmer: /test.test/gs as Global, },),)
+      .toBe('Text',);
   });
 
   // Multinaline flag test removed - doesn't work as expected with simple trim logic
@@ -136,7 +163,8 @@ describe('trim with regex global - synchronous named', () => {
 
   test('trims with unicode flag', ({ expect, },) => {
     expect(
-      $({ str: '\u{1F600}\u{1F600}test\u{1F600}\u{1F600}', trimmer: /\u{1F600}+/gu as Global, },),
+      $({ str: '\u{1F600}\u{1F600}test\u{1F600}\u{1F600}',
+        trimmer: /\u{1F600}+/gu as Global, },),
     )
       .toBe('test',);
   });
@@ -185,7 +213,9 @@ describe('trim with regex global - synchronous named', () => {
   });
 
   test('trims with word boundaries', ({ expect, },) => {
-    expect($({ str: 'word test word', trimmer: /\bword\b/g as Global, },),).toBe(' test ',);
+    expect($({ str: 'word test word', trimmer: /\bword\b/g as Global, },),).toBe(
+      ' test ',
+    );
   });
 
   test('trims with non-word characters', ({ expect, },) => {
@@ -230,7 +260,9 @@ describe('trim with regex global - synchronous named', () => {
   });
 
   test('trims with nested groups', ({ expect, },) => {
-    expect($({ str: 'aaabbb test aaabbb', trimmer: /(a+)b+/g as Global, },),).toBe(' test ',);
+    expect($({ str: 'aaabbb test aaabbb', trimmer: /(a+)b+/g as Global, },),).toBe(
+      ' test ',
+    );
   });
 
   test('handles pattern that matches zero-length', ({ expect, },) => {
