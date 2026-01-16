@@ -65,8 +65,6 @@ jobs = 16
 # Uncomment when debugging
 # verbose = true
 
-npm.bun = true
-
 status.missing_tools = "always"
 
 # Monochromatic/packages/module/es/
