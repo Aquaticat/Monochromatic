@@ -51,7 +51,7 @@ Use detection commands:
 
 ### Cross-Shell Compatibility
 - Quote paths with spaces or special chars: `"path with spaces"`
-- Command chaining: `&&` works in both shells
+- Avoid command chaining: chaining commands provide less information about what's going on.
 - Prefer cross-shell compatible syntax when possible
 
 ## Search Tools
