@@ -34,6 +34,9 @@ catalog:
   minimatch: '>=10.0.1'
   '@csstools/css-tokenizer': '>=3.0.3'
   lfi: '>=4.1.1'
+  # LightningCSS v1.30.2 has a bug with customAtRules when CSS contains var()
+  # See: https://github.com/parcel-bundler/lightningcss/issues/1081
+  # Until fixed, @mixin/@apply work via "unknown" at-rule handler but show warnings
   lightningcss: '>=1.29.2'
   postcss: '>=8.5.5'
   '@logtape/logtape': jsr:>=0.9.2

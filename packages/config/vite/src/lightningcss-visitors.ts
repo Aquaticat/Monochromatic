@@ -8,6 +8,18 @@ import {
 
 //region LightningCSS Visitors -- Custom CSS transform implementations
 
+/**
+ * LightningCSS customAtRules limitation:
+ * The `customAtRules` option would eliminate "Unknown at rule" warnings by telling
+ * LightningCSS how to parse @mixin/@apply. However, LightningCSS v1.30.2 has a bug
+ * that breaks customAtRules when CSS contains var() functions.
+ * See: https://github.com/parcel-bundler/lightningcss/issues/1081
+ *
+ * Until fixed, these visitors use `Rule.custom` which expects customAtRules config.
+ * Without customAtRules, warnings appear but the mixin system still works via the
+ * "unknown" at-rule fallback mechanism.
+ */
+
 /** Storage for mixin definitions */
 const mixins = new Map<string,
   | Required<DeclarationBlock>
