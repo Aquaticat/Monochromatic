@@ -1,5 +1,99 @@
 # Development Guidelines for AI Agents
 
+# Project Context
+
+## Repository Information
+This is the Monochromatic TypeScript monorepo ecosystem for web development.
+
+## Important Reminders
+**Date Handling**: Always use the current date from the environment information provided in the system prompt. Never assume or guess dates.
+
+## Core Features
+- Reusable development tool configurations
+- Functional programming utilities library
+- CSS framework (Monochromatic design system)
+- Figma plugin tools
+- Documentation sites
+
+## Architecture
+
+### Monorepo Structure
+```
+packages/
+├── config/         # Shareable tool configurations (ESLint, TypeScript, Vite, etc.)
+├── module/es/      # Functional programming utilities with dual Node/browser builds
+├── style/monochromatic/  # CSS framework
+├── site/astro-test/      # Documentation site
+├── figma-plugin/         # Figma integration tools
+└── build/                # Build utilities
+```
+
+### Build System
+- **Package Manager**: pnpm with workspace and catalog feature
+- **Task Orchestration**: Mise CLI (runs task dependencies in parallel by default)
+- **Bundler**: Vite v7.0.0-beta.1+
+- **Language**: TypeScript with strict type checking
+- **Testing**: Vitest for unit and browser tests
+
+### Key Architectural Decisions
+1. **Dual Builds**: Packages tagged with `dualBuildsNodeBrowser` produce separate Node.js and browser outputs
+2. **Platform-Specific Code**: Use `.node.ts` for Node-only, `.default.ts` for browser/universal
+3. **Output Structure**: `dist/final/` for builds, `dist/final/types/` for type definitions
+4. **Functional Programming**: Pure functions, immutable data, explicit types
+
+## Dependency Management
+- Use `workspace:*` for internal dependencies
+- `strictPeerDependencies: true` enforces exact versions
+- Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`
+- `nodeLinker: isolated` for isolated node_modules
+
+## Adding New Packages
+1. Create directory under appropriate category in `packages/`
+2. Add `mise.toml` with appropriate tags
+3. Configure `package.json` with workspace dependencies
+4. Set up dual builds if needed (tag: `dualBuildsNodeBrowser`)
+
+# Working Environment
+
+## Essential Commands
+
+All builds and tasks are managed by mise. Never run `pnpm exec` or direct package scripts. Always use `mise run` commands.
+
+Read the `mise.toml` files in the root and packages directories to see all available commands.
+
+Don't run linters or formatters. The user will run them themselves.
+
+## Shell Awareness
+
+### Working Directory
+- **NEVER use `cd`** - It's hard to keep track of the current directory
+- Use absolute paths or paths relative to monorepo root (agent always starts there)
+
+### Detecting the Current Shell
+Use detection commands:
+- Check shell name: `echo $0` or `echo $SHELL`
+- PowerShell shows `pwsh` or `powershell`, bash shows `bash` or `sh`
+- Different syntax for environment vars: `$VAR` works in bash, `$env:VAR` works in PowerShell
+
+### Cross-Shell Compatibility
+- Quote paths with spaces or special chars: `"path with spaces"`
+- Command chaining: `&&` works in both shells
+- Prefer cross-shell compatible syntax when possible
+
+## Search Tools
+
+- **`ripgrep` (rg)** is available in this environment for fast text searching
+- Use `rg` directly with for searching specific strings, types, or patterns
+- **Don't waste time navigating `pnpm`'s complex node_modules structure** - just search everywhere at once
+- Examples:
+  - `rg "interface AnalyzeOptions" -t ts` (searches all TypeScript files)
+  - `rg "export.*parseForESLint" --type ts`
+  - `rg "functionName" -A 5 -B 5` (show 5 lines before/after matches)
+- This is much faster than:
+  - Using Grep tool
+  - Trying to find the exact path in `pnpm`'s symlinked `.pnpm` directories
+  - Guessing where packages are located
+
 # Communication & Documentation
 
 ## Communication Style
@@ -24,7 +118,7 @@ Be direct and honest.
 - Don't proceed with implementing features that won't achieve their intended effect
 - If a tool/command doesn't support the requested functionality, explain this instead of creating non-functional code
 
-## Technical Documentation
+## Documentation Practices
 
 ### TSDoc Comments
 
@@ -198,50 +292,6 @@ test(module-es): achieve 100% coverage for error utilities
 - Never use emojis in commit messages
 - Focus on the "what" and "why", not just listing file changes
 
-# Working Environment
-
-## Essential Commands
-
-All builds and tasks are managed by mise. Never run `pnpm exec` or direct package scripts. Always use `mise run` commands.
-
-Read the `mise.toml` files in the root and packages directories to see all available commands.
-
-Don't run linters or formatters. The user will run them themselves.
-
-## Shell Awareness
-
-### Working Directory
-
-- **NEVER use `cd`** - It's hard to keep track of the current directory
-- Use absolute paths or paths relative to monorepo root (agent always starts there)
-
-### Detecting the Current Shell
-
-Use detection commands:
-- Check shell name: `echo $0` or `echo $SHELL`
-- PowerShell shows `pwsh` or `powershell`, bash shows `bash` or `sh`
-- Different syntax for environment vars: `$VAR` works in bash, `$env:VAR` works in PowerShell
-
-### Cross-Shell Compatibility
-
-- Quote paths with spaces or special chars: `"path with spaces"`
-- Command chaining: `&&` works in both shells
-- Prefer cross-shell compatible syntax when possible
-
-## Search Tools
-
-- **`ripgrep` (rg)** is available in this environment for fast text searching
-- Use `rg` directly with for searching specific strings, types, or patterns
-- **Don't waste time navigating `pnpm`'s complex node_modules structure** - just search everywhere at once
-- Examples:
-  - `rg "interface AnalyzeOptions" -t ts` (searches all TypeScript files)
-  - `rg "export.*parseForESLint" --type ts`
-  - `rg "functionName" -A 5 -B 5` (show 5 lines before/after matches)
-- This is much faster than:
-  - Using Grep tool
-  - Trying to find the exact path in `pnpm`'s symlinked `.pnpm` directories
-  - Guessing where packages are located
-
 # Development Practices
 
 ## Script Preferences
@@ -270,6 +320,56 @@ Use detection commands:
 - Example: `# Pin to v1.2.3 - v1.3.0 introduced breaking API changes`
 - Document version requirements in both the pinning file and README
 - Regularly review pinned versions to check if constraints still apply
+
+## Third-Party Library Usage
+
+### Immediate Documentation Retrieval
+- **IMMEDIATELY retrieve documentation when encountering undefined method errors**
+  - The moment you see errors like "X is not a function", "Cannot read property X of undefined", or "X is undefined"
+  - Use ALL available documentation tools to understand the correct API
+
+### Documentation Best Practices
+- **Always retrieve documentation from GitHub or npm pages** when implementing features with third-party libraries
+  - For npm packages: Use `exa:crawling` to fetch from `https://www.npmjs.com/package/<package-name>`
+  - For GitHub repos: Use `github:get_file_contents` to fetch from the library's GitHub page
+  - This ensures you have the most up-to-date API documentation and usage examples
+- Always check the actual type definitions before using APIs
+- Read the actual source types, not just documentation (which may be outdated)
+- When encountering type errors, read the error message carefully - it often shows what's actually expected
+
+### CLI Tool Documentation Analysis
+
+When working with CLI tools and their documentation:
+- **Pay attention to command patterns in examples** - tools often have their own execution conventions
+  - Look for patterns across multiple examples, not just individual commands
+  - Notice what's consistent vs what varies (e.g., `uv run example.py` vs `uv run --with dep example.py`)
+- **Don't assume traditional execution patterns** - modern tools often wrap execution
+  - `uv run script.py` NOT `uv run python script.py`
+  - `npx script.js` NOT `npx node script.js`
+  - Many tools handle interpreter invocation automatically
+- **When you see multiple examples of the same pattern, trust it** - documentation examples are usually correct
+- **Test assumptions with the simplest case first** - try the minimal command before adding complexity
+- **Read error messages carefully** - they often reveal the correct usage pattern
+
+### Working with Third-Party Repositories
+
+When setting up or integrating third-party tools:
+- **Never modify files in cloned third-party repositories**
+  - This breaks git pull/update workflows
+  - Makes it difficult to track upstream changes
+  - Creates merge conflicts when updating
+- **Always prefer configuration-based solutions**
+  - Use external config files (e.g., ~/.kilocode.json for MCP servers)
+  - Use command-line arguments and environment variables
+  - Create wrapper scripts in a separate location if needed
+- **If modifications seem necessary, find alternatives**
+  - Look for official configuration mechanisms
+  - Use the tool's intended extension points
+  - Create a fork only if you need permanent modifications
+- **Keep third-party repos pristine**
+  - Allows easy updates with `git pull`
+  - Prevents accidental commits to upstream
+  - Maintains clear separation between your code and dependencies
 
 # Code Quality
 
@@ -353,7 +453,7 @@ if (canRetry()) {
 }
 ```
 
-## Linting and Code Quality
+## Linting Guidelines
 
 ### Identifying the Linting Tool
 When fixing linting issues, first identify which tool reports the error:
@@ -456,138 +556,37 @@ For scripts that might be parsed as CommonJS, add an export:
 export {};
 ```
 
-# Third-Party Library Usage
-
-## Immediate Documentation Retrieval
-- **IMMEDIATELY retrieve documentation when encountering undefined method errors**
-  - The moment you see errors like "X is not a function", "Cannot read property X of undefined", or "X is undefined"
-  - Use ALL available documentation tools to understand the correct API
-
-## Documentation Best Practices
-- **Always retrieve documentation from GitHub or npm pages** when implementing features with third-party libraries
-  - For npm packages: Use `exa:crawling` to fetch from `https://www.npmjs.com/package/<package-name>`
-  - For GitHub repos: Use `github:get_file_contents` to fetch from the library's GitHub page
-  - This ensures you have the most up-to-date API documentation and usage examples
-- Always check the actual type definitions before using APIs
-- Read the actual source types, not just documentation (which may be outdated)
-- When encountering type errors, read the error message carefully - it often shows what's actually expected
-
-## CLI Tool Documentation Analysis
-
-When working with CLI tools and their documentation:
-- **Pay attention to command patterns in examples** - tools often have their own execution conventions
-  - Look for patterns across multiple examples, not just individual commands
-  - Notice what's consistent vs what varies (e.g., `uv run example.py` vs `uv run --with dep example.py`)
-- **Don't assume traditional execution patterns** - modern tools often wrap execution
-  - `uv run script.py` NOT `uv run python script.py`
-  - `npx script.js` NOT `npx node script.js`
-  - Many tools handle interpreter invocation automatically
-- **When you see multiple examples of the same pattern, trust it** - documentation examples are usually correct
-- **Test assumptions with the simplest case first** - try the minimal command before adding complexity
-- **Read error messages carefully** - they often reveal the correct usage pattern
-
-## Working with Third-Party Repositories
-
-When setting up or integrating third-party tools:
-- **Never modify files in cloned third-party repositories**
-  - This breaks git pull/update workflows
-  - Makes it difficult to track upstream changes
-  - Creates merge conflicts when updating
-- **Always prefer configuration-based solutions**
-  - Use external config files (e.g., ~/.kilocode.json for MCP servers)
-  - Use command-line arguments and environment variables
-  - Create wrapper scripts in a separate location if needed
-- **If modifications seem necessary, find alternatives**
-  - Look for official configuration mechanisms
-  - Use the tool's intended extension points
-  - Create a fork only if you need permanent modifications
-- **Keep third-party repos pristine**
-  - Allows easy updates with `git pull`
-  - Prevents accidental commits to upstream
-  - Maintains clear separation between your code and dependencies
-
-# Project Overview
-
-## Repository Information
-This is the Monochromatic TypeScript monorepo ecosystem for web development.
-
-## Core Features
-- Reusable development tool configurations
-- Functional programming utilities library
-- CSS framework (Monochromatic design system)
-- Figma plugin tools
-- Documentation sites
-
-## Important Reminders
-**Date Handling**: Always use the current date from the environment information provided in the system prompt. Never assume or guess dates.
-
-## Architecture
-
-### Monorepo Structure
-```
-packages/
-├── config/         # Shareable tool configurations (ESLint, TypeScript, Vite, etc.)
-├── module/es/      # Functional programming utilities with dual Node/browser builds
-├── style/monochromatic/  # CSS framework
-├── site/astro-test/      # Documentation site
-├── figma-plugin/         # Figma integration tools
-└── build/                # Build utilities
-```
-
-### Build System
-- **Package Manager**: pnpm with workspace and catalog feature
-- **Task Orchestration**: Mise CLI (runs task dependencies in parallel by default)
-- **Bundler**: Vite v7.0.0-beta.1+
-- **Language**: TypeScript with strict type checking
-- **Testing**: Vitest for unit and browser tests
-
-### Key Architectural Decisions
-1. **Dual Builds**: Packages tagged with `dualBuildsNodeBrowser` produce separate Node.js and browser outputs
-2. **Platform-Specific Code**: Use `.node.ts` for Node-only, `.default.ts` for browser/universal
-3. **Output Structure**: `dist/final/` for builds, `dist/final/types/` for type definitions
-4. **Functional Programming**: Pure functions, immutable data, explicit types
-
-## Dependency Management
-- Use `workspace:*` for internal dependencies
-- `strictPeerDependencies: true` enforces exact versions
-- Dependencies managed via pnpm catalog in `pnpm-workspace.yaml`
-- `nodeLinker: isolated` for isolated node_modules
-
-## Adding New Packages
-1. Create directory under appropriate category in `packages/`
-2. Add `mise.toml` with appropriate tags
-3. Configure `package.json` with workspace dependencies
-4. Set up dual builds if needed (tag: `dualBuildsNodeBrowser`)
-
 # TypeScript Standards
 
 ## General Guidelines
 - Adhere to the established linting and formatting configurations (ESLint, Oxlint, dprint)
 
 ## Code Organization
-- Use `region` markers to delineate logical sections of code
-  - This practice enhances code organization and readability, particularly in larger files
-  - Most IDEs recognize `region` and `endregion` comments, allowing these sections to collapse or expand
-  - Following `//region` is the purpose of the code block. After double hyphens, provide a long explanation
-  - Following `//endregion` repeats the purpose of the code block
-  - Example:
-    ```ts
-    //region User Authentication Logic -- Handles user login, registration, and session management
 
-    function loginUser(credentials: UserCredentials): UserSession {
-      // ... complex login implementation ...
-      return {} as UserSession;
-    }
+### Region Markers
+Use `region` markers to delineate logical sections of code:
+- This practice enhances code organization and readability, particularly in larger files
+- Most IDEs recognize `region` and `endregion` comments, allowing these sections to collapse or expand
+- Following `//region` is the purpose of the code block. After double hyphens, provide a long explanation
+- Following `//endregion` repeats the purpose of the code block
+- Example:
+  ```ts
+  //region User Authentication Logic -- Handles user login, registration, and session management
 
-    function registerUser(details: UserDetails): UserProfile {
-      // ... complex registration implementation ...
-      return {} as UserProfile;
-    }
+  function loginUser(credentials: UserCredentials): UserSession {
+    // ... complex login implementation ...
+    return {} as UserSession;
+  }
 
-    //endregion User Authentication Logic
-    ```
+  function registerUser(details: UserDetails): UserProfile {
+    // ... complex registration implementation ...
+    return {} as UserProfile;
+  }
 
-## Import and Module Conventions
+  //endregion User Authentication Logic
+  ```
+
+### Import and Module Conventions
 - Always include file extensions when importing files
 - **Use `.ts` extensions in imports when `allowImportingTsExtensions` is enabled** (not `.js`)
 - Group imports in the following order:
@@ -600,7 +599,7 @@ packages/
 - Prefer named imports over default imports for better tree-shaking
 - Use `import type` for type-only imports to improve build performance
 
-## Function Declarations
+### Function Declarations
 - Always name functions. Prefer function declarations
   - For arrow functions, make sure the JavaScript engine can infer a name
 - Prefer function declarations (`function foo() {}`) for hoistability
@@ -613,7 +612,18 @@ packages/
   - Place overloads before the implementation
   - Order overloads from most specific to least specific
 
-## Type Definitions and Safety
+### Export Conventions
+- **Avoid `Object.assign` for extending typed objects** - create a new const instead
+- **Prefer exporting constructs immediately when declared**:
+  - **Bad**: `function myFn() {}; export { myFn }`
+  - **Bad**: `const myConst = 'value'; export { myConst }`
+  - **Good**: `export function myFn() {}`
+  - **Good**: `export const myConst = 'value'`
+  - This approach reduces cognitive load by making it immediately clear what is exported from the module
+
+## Type System
+
+### Type Definitions and Safety
 - Provide explicit parameter and return types for all functions, methods, and class accessors
 - Prefer `type` aliases over `interface` declarations for object shapes
 - Use `Record<KeyType, ValueType>` for key-value maps
@@ -628,7 +638,7 @@ packages/
   type EmailAddress = string & { readonly __brand: unique symbol };
   ```
 
-## Symbol union narrowing
+### Symbol Union Narrowing
 - TypeScript does not narrow a union to non-symbol by comparing a value to a specific unique symbol.
 - Identity checks against a single symbol do not eliminate the symbol category, so the else branch can still be a symbol from the same union.
 - Narrow by category first using `typeof value === 'symbol'`, then discriminate by identity for expected symbols within that block.
@@ -671,7 +681,7 @@ if (typeof out === 'symbol') {
 }
 ```
 
-## Generics and Type Parameters
+### Generics and Type Parameters
 - Prefer `const` generic type parameters to enhance type safety and immutability
   - Good: `function processItems<const T extends { id: string }>(items: T[]): T[]`
   - Bad: `function processItems<T extends { id: string }>(items: T[]): T[]`
@@ -684,13 +694,15 @@ if (typeof out === 'symbol') {
   - Bad: `<T extends Record<string, unknown>>`
 - Apply constraints to generic parameters when appropriate
 
-## Generator Function Overloading
+### Generator Function Overloading
 TypeScript's support for overloading generator functions has quirks:
 - For sync generators, remove the star sign in non-implementation overload signatures
 - For async generators, remove both the `async` modifier and star sign in non-implementation overload signatures
 - This allows TypeScript to correctly determine they're overloads
 
-## Variable Declarations and Immutability
+## Variable & Value Patterns
+
+### Immutability and Declarations
 - Prefer `const` over `let` to encourage immutability
 - Strive for immutability: avoid reassigning variables and modifying objects in place
 - **NEVER use single-letter variables like `i`, `j`, `k`** - they provide no semantic meaning
@@ -708,16 +720,9 @@ TypeScript's support for overloading generator functions has quirks:
 - Use `satisfies` operator for type checking without widening
 - **Destructuring pattern with dependencies**: When destructuring multiple variables where some depend on others, use separate destructuring blocks
 
-## Export Conventions
-- **Avoid `Object.assign` for extending typed objects** - create a new const instead
-- **Prefer exporting constructs immediately when declared**:
-  - **Bad**: `function myFn() {}; export { myFn }`
-  - **Bad**: `const myConst = 'value'; export { myConst }`
-  - **Good**: `export function myFn() {}`
-  - **Good**: `export const myConst = 'value'`
-  - This approach reduces cognitive load by making it immediately clear what is exported from the module
+## Programming Patterns
 
-## Async Programming
+### Async Programming
 - Prefer `async/await` and promise-returning library functions over explicit `new Promise` creation
 - Always prefer `async/await` over callbacks; convert callback-based APIs to promises
 - Avoid using await in loops wherever logically sound
@@ -726,7 +731,7 @@ TypeScript's support for overloading generator functions has quirks:
 - Handle promise rejections explicitly with try-catch blocks
 - Consider using `AbortController` for cancellable async operations
 
-## Error Handling
+### Error Handling
 - Create custom error classes that extend `Error` for domain-specific errors:
   ```ts
   class ValidationError extends Error {
@@ -773,7 +778,7 @@ TypeScript's support for overloading generator functions has quirks:
   - Check MDN or TypeScript documentation for deprecation warnings
   - Prefer modern, supported alternatives
 
-## Class Design
+### Class Design
 - Prefer composition over inheritance
 - Use `readonly` for properties that shouldn't change after construction
 - Make class methods `private` by default, only expose what's necessary
@@ -781,7 +786,7 @@ TypeScript's support for overloading generator functions has quirks:
 - Implement interfaces explicitly when a class should conform to a contract
 - Use abstract classes sparingly, prefer interfaces and composition
 
-## Performance Considerations
+### Performance Considerations
 - Use `unknown` instead of `any` for better type safety
 - Prefer type assertions (`as`) over angle bracket syntax (`<Type>`)
 - Use type guards for runtime type checking:
@@ -794,7 +799,7 @@ TypeScript's support for overloading generator functions has quirks:
 - Use `satisfies` instead of type assertions when possible
 - Consider using `const` assertions for immutable data structures
 
-# Testing Requirements
+# Testing
 
 ## General Testing Guidelines
 - Write a corresponding Vitest file that aims for 100% test coverage
