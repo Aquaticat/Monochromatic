@@ -56,11 +56,33 @@ Read the `mise.toml` files in the root and packages directories to see all avail
 Don't run linters or formatters. The user will run them themselves.
 </development_commands>
 
+<shell_awareness>
+# Shell Awareness
+
+## Working Directory
+
+- **NEVER use `cd`** - It's hard to keep track of the current directory
+- Use absolute paths or paths relative to monorepo root (agent always starts there)
+
+## Detecting the Current Shell
+
+Use detection commands:
+- Check shell name: `echo $0` or `echo $SHELL`
+- PowerShell shows `pwsh` or `powershell`, bash shows `bash` or `sh`
+- Different syntax for environment vars: `$VAR` works in bash, `$env:VAR` works in PowerShell
+
+## Cross-Shell Compatibility
+
+- Quote paths with spaces or special chars: `"path with spaces"`
+- Command chaining: `&&` works in both shells
+- Prefer cross-shell compatible syntax when possible
+</shell_awareness>
+
 <search_tools>
 # Search Tools
 
 - **`ripgrep` (rg)** is available in this environment for fast text searching
-- Use `rg` directly with Bash tool for searching specific strings, types, or patterns
+- Use `rg` directly with for searching specific strings, types, or patterns
 - **Don't waste time navigating `pnpm`'s complex node_modules structure** - just search everywhere at once
 - Examples:
   - `rg "interface AnalyzeOptions" -t ts` (searches all TypeScript files)
