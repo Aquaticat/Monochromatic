@@ -1,85 +1,234 @@
 # Development Guidelines for AI Agents
 
-This file provides comprehensive guidance for AI agents working with code in this repository.
+# Communication & Documentation
+
+## Communication Style
+
 Be direct and honest.
 
-**IMPORTANT DATE REMINDER**: Always use the current date from the environment information provided in the system prompt. Today's date is shown in the <env> section. Never assume or guess dates.
-
-<communication_style>
-# Communication Style
-
-## Direct Communication
-- State facts directly without hedging
-- Give clear answers without softening language
-- Use declarative statements, not apologetic qualifiers
-- Provide information efficiently without relationship management
-
-## Error Corrections
-When making errors:
-- State the correction: "I was incorrect. The actual answer is..."
-- Provide the right information immediately
-
-## Inability to Help
-When unable to help:
-- "I can't do that"
-- "That information isn't available"
-- "Try `specific alternative`"
-
-## Handling User Feedback
-When users point out issues or suggest improvements:
-- Don't acknowledge they're right/correct
-- Don't apologize for the error
-- Simply implement the change and explain what was done
-- Jump directly to fixing the issue or implementing the suggestion
-
-## Documentation Standards
+### Documentation Standards
 - NEVER use emojis in any content meant to be read by humans
 - Focus on clear, professional text without decorative elements
 - NEVER use ALL CAPS for headings or emphasis in documentation
 - Use sentence case for headings
 - For emphasis, use **bold** formatting instead of capitalization
+- Write in active voice without collective pronouns
+- State facts directly: "Astro for documentation" instead of "We chose Astro for our documentation"
+- Avoid meta-references: write "Prioritizing portability" instead of "This aligns with the project's philosophy of portability"
+- Use present tense for current state, future tense only for planned features
+- Eliminate unnecessary connecting phrases and transitions
 
-## Handling External Changes
+### Handling External Changes
 - When files have been modified externally, acknowledge the change
 - Ask for clarification before reverting or modifying externally changed content
 - Don't proceed with implementing features that won't achieve their intended effect
 - If a tool/command doesn't support the requested functionality, explain this instead of creating non-functional code
-</communication_style>
 
-<development_commands>
-# Essential Commands
+## Technical Documentation
+
+### TSDoc Comments
+
+Write comprehensive TSDoc comments for all members (functions, types, constants, classes, and everything else), whether they're exported or not:
+- This includes providing descriptions for parameters and return values
+- **Use TSDoc format for EVERYTHING that can be documented** - functions, constants, types, interfaces, classes, enums, etc. Not just exported members
+- Any code element that could benefit from documentation should have TSDoc comments
+- Adhere to the `eslint-plugin-jsdoc` recommended rules, TSDoc variant
+- Use `{@inheritDoc originalFn}` for a function that's the mere non-async variant of the original function
+- Unless the code element is genuinely dead code, consider every code element to be important and notable and worthy to be documented - if they do nothing they won't be there.
+
+#### Use TSDoc where supported, regular comments elsewhere:
+
+TSDoc (`/** */`) can be used for:
+- Functions, methods, arrow functions
+- Classes and class members (properties, methods)
+- Interfaces and their properties
+- Type aliases
+- Enums and enum members
+- Variables/constants (any level)
+- Namespaces/modules
+
+TSDoc CANNOT be used for (use `//` or `/* */` instead):
+- Expression statements (assignments, function calls, increments, etc.)
+- Control flow statements (if, for, while, switch)
+- Import/export statements
+- Return statements
+- Individual parameters in signatures
+- Any comment that isn't immediately followed by a declaration
+
+Key rule: TSDoc must directly precede a declaration (variable, function, class, type, etc.), not a statement or expression
+
+#### Comment Placement
+- NEVER use inline comments after code
+- Always place comments on their own line above the code they describe
+
+#### Escaping block comment terminators
+- Escape block comment terminators inside comments and code snippets to avoid premature comment termination.
+- Write `*/` as `*\\/` in TSDoc blocks and in any block comments in examples.
+
+```ts
+/**
+ * This comment includes an escaped terminator token: *\\/
+ */
+const example = "/* within string */";
+```
+
+#### TSDoc Style Guidelines
+- Avoid `the`, `a`, `an` in `@param` or `@returns` description
+- Avoid repeating the name of the parameter without adding additional context in `@param` description
+- **Comments should explain WHY, not WHAT**:
+  - Good: `/** Mutable counter needed to track newlines encountered while scanning */`
+  - Bad: `/** Line counter starting at 1 */`
+  - Focus on intent, purpose, and design decisions
+  - Explain why something is mutable when using `let`
+  - Don't just restate what the code already shows
+- For async functions, assume users are using `await` syntax to consume their results and don't need the docs to tell them the function technically returns a promise
+- Use `@example` tags to provide usage examples:
+  ```ts
+  /**
+   * Calculates the sum of two numbers.
+   * @param a - First number
+   * @param b - Second number
+   * @returns Sum of the two numbers
+   * @example
+   * ```ts
+   * const result = add(2, 3); // 5
+   * ```
+   */
+  function add(a: number, b: number): number {
+    return a + b;
+  }
+  ```
+
+### Markdown Conventions
+
+#### Text Formatting
+- One sentence per line for better diffs and readability
+- Use **bold** for emphasis, avoid _italics_
+- Prefer fenced code blocks with language tags over inline code for multi-line snippets
+- Use inline code \`like this\` for single commands, function names, or short code
+
+#### Lists
+- Use `-` for unordered lists with one space after
+- Numbered lists: pad marker to 4 characters (e.g., `1.  `, `10. `)
+- Maintain consistent indentation (2 spaces for nested items)
+- Add blank lines before and after lists
+
+#### Code Blocks
+- Always specify language for syntax highlighting
+- Use \`\`\`bash for shell commands, \`\`\`ts for TypeScript
+- Include file paths as comments when showing file contents
+
+#### Links and References
+- Use reference-style links for repeated URLs
+- Prefer relative links for internal documentation
+- Include descriptive link text, avoid "click here"
+
+#### Structure
+- Use ATX-style headers (`#` not underlines)
+- Maximum header depth: 4 levels (####)
+- Add blank line before headers (except first)
+- Keep line length under 120 characters when possible
+
+### Git Commit Guidelines
+
+Follow the Conventional Commits specification for all commit messages to ensure consistency and enable automated tooling.
+
+When writing commit messages for multiple changes across different files, include ALL changes in a single comprehensive commit message. Don't write commit messages that only describe partial changes.
+
+#### Commit Message Format
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+#### Types
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc.)
+- `refactor`: Code change that neither fixes a bug nor adds a feature
+- `perf`: Code change that improves performance
+- `test`: Adding missing tests or correcting existing tests
+- `build`: Changes that affect the build system or external dependencies
+- `ci`: Changes to CI configuration files and scripts
+- `chore`: Other changes that don't modify src or test files (removing deprecated files, updating `.gitignore`, etc.)
+- `revert`: Reverts a previous commit
+
+#### Scope
+Use the package name or area of change:
+- `module-es`
+- `*`: For changes affecting multiple packages
+
+#### Examples
+
+**Change of one type and scope:**
+```txt
+feat(module-es): add a
+
+Description of a
+```
+
+**Change of multiple types and/or scopes**
+```txt
+feat(module-es): enhance error handling utilities
+
+error.assert.throw: add assertion-based error throwing
+- Implement conditional error throwing based on assertions
+- Include TypeScript type narrowing support
+
+error.throw: add unified error throwing utility
+- Implement consistent error creation
+- Provide better stack traces
+- Include custom error types
+
+test(module-es): achieve 100% coverage for error utilities
+- Add comprehensive test cases
+- Use parameterized tests for edge cases
+- Ensure proper type inference testing
+```
+
+#### Important Commit Message Rules
+- Group related changes by type (feat, fix, test, etc.)
+- Don't mix different types in the same scope section
+- Be specific about what changed, not just which files
+- Never use emojis in commit messages
+- Focus on the "what" and "why", not just listing file changes
+
+# Working Environment
+
+## Essential Commands
 
 All builds and tasks are managed by mise. Never run `pnpm exec` or direct package scripts. Always use `mise run` commands.
 
 Read the `mise.toml` files in the root and packages directories to see all available commands.
 
 Don't run linters or formatters. The user will run them themselves.
-</development_commands>
 
-<shell_awareness>
-# Shell Awareness
+## Shell Awareness
 
-## Working Directory
+### Working Directory
 
 - **NEVER use `cd`** - It's hard to keep track of the current directory
 - Use absolute paths or paths relative to monorepo root (agent always starts there)
 
-## Detecting the Current Shell
+### Detecting the Current Shell
 
 Use detection commands:
 - Check shell name: `echo $0` or `echo $SHELL`
 - PowerShell shows `pwsh` or `powershell`, bash shows `bash` or `sh`
 - Different syntax for environment vars: `$VAR` works in bash, `$env:VAR` works in PowerShell
 
-## Cross-Shell Compatibility
+### Cross-Shell Compatibility
 
 - Quote paths with spaces or special chars: `"path with spaces"`
 - Command chaining: `&&` works in both shells
 - Prefer cross-shell compatible syntax when possible
-</shell_awareness>
 
-<search_tools>
-# Search Tools
+## Search Tools
 
 - **`ripgrep` (rg)** is available in this environment for fast text searching
 - Use `rg` directly with for searching specific strings, types, or patterns
@@ -92,10 +241,10 @@ Use detection commands:
   - Using Grep tool
   - Trying to find the exact path in `pnpm`'s symlinked `.pnpm` directories
   - Guessing where packages are located
-</search_tools>
 
-<script_preferences>
-# Script Preferences
+# Development Practices
+
+## Script Preferences
 
 - **NEVER write bash/shell scripts** (non-portable, unreadable, unfamiliar)
 - When scripts are needed, create TypeScript files as `mise.<action>.ts` in `packages/module/es/src/`
@@ -113,22 +262,20 @@ Use detection commands:
   - Bad: `process.exit(1);`
   - Good: `throw new Error('Error description');`
   - Uncaught errors automatically set exit code to 1
-</script_preferences>
 
-<tool_version_management>
-# Tool Version Management
+## Tool Version Management
 
 - **Only pin tool versions when necessary** with clear justification
 - If pinning is required, always include comments explaining why
 - Example: `# Pin to v1.2.3 - v1.3.0 introduced breaking API changes`
 - Document version requirements in both the pinning file and README
 - Regularly review pinned versions to check if constraints still apply
-</tool_version_management>
 
-<code_simplification>
-# Code Simplification Principles
+# Code Quality
 
-## Core Philosophy
+## Code Simplification
+
+### Core Philosophy
 
 Always question "Do you really need...?" for every construct:
 - **Do you really need that mutable variable?** → Use `const` and immutable patterns
@@ -137,7 +284,7 @@ Always question "Do you really need...?" for every construct:
 - **Do you really need that complex solution?** → Start with the simplest approach
 - **Do you really need to create promises directly?** → Use existing promise utilities like `wait()`
 
-## Progressive Simplification Pattern
+### Progressive Simplification Pattern
 
 When refactoring code, follow this progression:
 1. Imperative loop with mutable state → `while` loop with proper conditions
@@ -145,7 +292,7 @@ When refactoring code, follow this progression:
 3. `for` loop → Recursive function
 4. Recursive function → Higher-order functions or async iterators
 
-## Best Practices
+### Best Practices
 
 - Always extract and name concepts (e.g., `isTaskPending()` instead of inline conditions)
 - Prefer built-in JavaScript/TypeScript methods over manual implementations
@@ -155,9 +302,9 @@ When refactoring code, follow this progression:
 - Break complex operations into smaller, testable functions
 - Split large files until they fall under 200 lines.
 
-## Examples
+### Examples
 
-### Bad: Complex imperative code
+#### Bad: Complex imperative code
 ```ts
 let results = [];
 for (let i = 0; i < items.length; i++) {
@@ -167,34 +314,34 @@ for (let i = 0; i < items.length; i++) {
 }
 ```
 
-### Good: Simple functional approach
+#### Good: Simple functional approach
 ```ts
 const results = items
   .filter(item => item.isActive)
   .map(item => item.value * 2);
 ```
 
-### Bad: Manual promise creation
+#### Bad: Manual promise creation
 ```ts
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 ```
 
-### Good: Use existing utilities
+#### Good: Use existing utilities
 ```ts
 import { wait } from '@monochromatic-dev/module-es';
 // Use wait(ms) directly
 ```
 
-### Bad: Inline complex conditions
+#### Bad: Inline complex conditions
 ```ts
 if (status === 'pending' && retries < maxRetries && !isTimeout) {
   // retry logic
 }
 ```
 
-### Good: Extract and name the concept
+#### Good: Extract and name the concept
 ```ts
 const canRetry = () =>
   status === 'pending' &&
@@ -205,9 +352,110 @@ if (canRetry()) {
   // retry logic
 }
 ```
-</code_simplification>
 
-<third_party_libraries>
+## Linting and Code Quality
+
+### Identifying the Linting Tool
+When fixing linting issues, first identify which tool reports the error:
+- Check the lint output format: `monochromatic:lintOxlint | ! eslint-plugin-unicorn(error-message)` indicates Oxlint
+- ESLint errors show as `eslint(rule-name)`
+- Oxlint errors often include the plugin name like `eslint-plugin-unicorn(rule-name)`
+
+### Common Linting Fixes
+
+#### Magic Numbers
+Define constants for all numeric literals except -2, -1, 0, 1, 2:
+```ts
+// BAD
+const result = value * 100;
+if (array.length > 5) { }
+
+// GOOD
+const PERCENTAGE_BASE = 100;
+const MAX_ARRAY_LENGTH = 5;
+const result = value * PERCENTAGE_BASE;
+if (array.length > MAX_ARRAY_LENGTH) { }
+```
+
+#### Loops and Iteration
+Prefer functional approaches over imperative loops:
+```ts
+// BAD: for...in with guard
+for (const key in obj) {
+  if (Object.prototype.hasOwnProperty.call(obj, key)) {
+    result[key] = process(obj[key]);
+  }
+}
+
+// BETTER: for...of with Object.entries
+for (const [key, value] of Object.entries(obj)) {
+  result[key] = process(value);
+}
+
+// BEST: forEach for side effects
+Object.entries(obj).forEach(([key, value]) => {
+  result[key] = process(value);
+});
+
+// For transformations, use map/reduce
+const result = Object.fromEntries(
+  Object.entries(obj).map(([key, value]) => [key, process(value)])
+);
+```
+
+#### Async Patterns
+- Use `wait()` from module-es instead of `new Promise(resolve => setTimeout(resolve, ms))`
+- Add `eslint-disable-next-line no-await-in-loop` when sequential processing is required
+- Import and use existing promise utilities instead of creating new promises
+
+#### Type Annotations
+Always add explicit return types for functions:
+```ts
+// BAD
+function processData(data: string) {
+  return data.toUpperCase();
+}
+
+// GOOD
+function processData(data: string): string {
+  return data.toUpperCase();
+}
+
+// For async functions
+async function fetchData(): Promise<Data> {
+  return await api.getData();
+}
+```
+
+#### Import Patterns
+- When parsers require namespace imports, add disable comment:
+  ```ts
+  // eslint-disable-next-line import/no-namespace -- Parser needs to be imported as namespace
+  import * as tsParser from '@typescript-eslint/parser';
+  ```
+- For CSS imports in Astro components:
+  ```ts
+  // eslint-disable-next-line import/no-unassigned-import -- CSS import for styling
+  import './_Head.css';
+  ```
+
+#### Null Checks
+Use explicit comparisons instead of `!=` or `==`:
+```ts
+// BAD
+if (value != null) { }
+
+// GOOD
+if (value !== null && value !== undefined) { }
+```
+
+#### Module Disambiguation
+For scripts that might be parsed as CommonJS, add an export:
+```ts
+// At the end of the file
+export {};
+```
+
 # Third-Party Library Usage
 
 ## Immediate Documentation Retrieval
@@ -257,9 +505,7 @@ When setting up or integrating third-party tools:
   - Allows easy updates with `git pull`
   - Prevents accidental commits to upstream
   - Maintains clear separation between your code and dependencies
-</third_party_libraries>
 
-<project_overview>
 # Project Overview
 
 ## Repository Information
@@ -312,9 +558,7 @@ packages/
 2. Add `mise.toml` with appropriate tags
 3. Configure `package.json` with workspace dependencies
 4. Set up dual builds if needed (tag: `dualBuildsNodeBrowser`)
-</project_overview>
 
-<typescript_standards>
 # TypeScript Standards
 
 ## General Guidelines
@@ -549,9 +793,7 @@ TypeScript's support for overloading generator functions has quirks:
 - Avoid deep nesting in conditional types to prevent performance issues
 - Use `satisfies` instead of type assertions when possible
 - Consider using `const` assertions for immutable data structures
-</typescript_standards>
 
-<testing_requirements>
 # Testing Requirements
 
 ## General Testing Guidelines
@@ -641,294 +883,3 @@ expect(isError(new Error())).toBe(true);
 - Use `wait()` from module-es instead of `new Promise(resolve => setTimeout(resolve, ms))`
 - Add `eslint-disable-next-line no-await-in-loop` when sequential processing is required
 - Import and use existing promise utilities instead of creating new promises
-</testing_requirements>
-
-<linting_code_quality>
-# Linting and Code Quality
-
-## Identifying the Linting Tool
-When fixing linting issues, first identify which tool reports the error:
-- Check the lint output format: `monochromatic:lintOxlint | ! eslint-plugin-unicorn(error-message)` indicates Oxlint
-- ESLint errors show as `eslint(rule-name)`
-- Oxlint errors often include the plugin name like `eslint-plugin-unicorn(rule-name)`
-
-## Common Linting Fixes
-
-### Magic Numbers
-Define constants for all numeric literals except -2, -1, 0, 1, 2:
-```ts
-// BAD
-const result = value * 100;
-if (array.length > 5) { }
-
-// GOOD
-const PERCENTAGE_BASE = 100;
-const MAX_ARRAY_LENGTH = 5;
-const result = value * PERCENTAGE_BASE;
-if (array.length > MAX_ARRAY_LENGTH) { }
-```
-
-### Loops and Iteration
-Prefer functional approaches over imperative loops:
-```ts
-// BAD: for...in with guard
-for (const key in obj) {
-  if (Object.prototype.hasOwnProperty.call(obj, key)) {
-    result[key] = process(obj[key]);
-  }
-}
-
-// BETTER: for...of with Object.entries
-for (const [key, value] of Object.entries(obj)) {
-  result[key] = process(value);
-}
-
-// BEST: forEach for side effects
-Object.entries(obj).forEach(([key, value]) => {
-  result[key] = process(value);
-});
-
-// For transformations, use map/reduce
-const result = Object.fromEntries(
-  Object.entries(obj).map(([key, value]) => [key, process(value)])
-);
-```
-
-### Async Patterns
-- Use `wait()` from module-es instead of `new Promise(resolve => setTimeout(resolve, ms))`
-- Add `eslint-disable-next-line no-await-in-loop` when sequential processing is required
-- Import and use existing promise utilities instead of creating new promises
-
-### Type Annotations
-Always add explicit return types for functions:
-```ts
-// BAD
-function processData(data: string) {
-  return data.toUpperCase();
-}
-
-// GOOD
-function processData(data: string): string {
-  return data.toUpperCase();
-}
-
-// For async functions
-async function fetchData(): Promise<Data> {
-  return await api.getData();
-}
-```
-
-### Import Patterns
-- When parsers require namespace imports, add disable comment:
-  ```ts
-  // eslint-disable-next-line import/no-namespace -- Parser needs to be imported as namespace
-  import * as tsParser from '@typescript-eslint/parser';
-  ```
-- For CSS imports in Astro components:
-  ```ts
-  // eslint-disable-next-line import/no-unassigned-import -- CSS import for styling
-  import './_Head.css';
-  ```
-
-### Null Checks
-Use explicit comparisons instead of `!=` or `==`:
-```ts
-// BAD
-if (value != null) { }
-
-// GOOD
-if (value !== null && value !== undefined) { }
-```
-
-### Module Disambiguation
-For scripts that might be parsed as CommonJS, add an export:
-```ts
-// At the end of the file
-export {};
-```
-</linting_code_quality>
-
-<documentation_standards>
-# Documentation Standards
-
-## Technical Documentation Writing Style
-
-When writing technical documentation (README, philosophy, architecture docs):
-- Write in active voice without collective pronouns
-- State facts directly: "Astro for documentation" instead of "We chose Astro for our documentation"
-- Avoid meta-references: write "Prioritizing portability" instead of "This aligns with the project's philosophy of portability"
-- Use present tense for current state, future tense only for planned features
-- Eliminate unnecessary connecting phrases and transitions
-
-## TSDoc Comments
-
-Write comprehensive TSDoc comments for all members (functions, types, constants, classes, and everything else), whether they're exported or not:
-- This includes providing descriptions for parameters and return values
-- **Use TSDoc format for EVERYTHING that can be documented** - functions, constants, types, interfaces, classes, enums, etc. Not just exported members
-- Any code element that could benefit from documentation should have TSDoc comments
-- Adhere to the `eslint-plugin-jsdoc` recommended rules, TSDoc variant
-- Use `{@inheritDoc originalFn}` for a function that's the mere non-async variant of the original function
-- Unless the code element is genuinely dead code, consider every code element to be important and notable and worthy to be documented - if they do nothing they won't be there.
-
-### Use TSDoc where supported, regular comments elsewhere:
-
-TSDoc (`/** */`) can be used for:
-- Functions, methods, arrow functions
-- Classes and class members (properties, methods)
-- Interfaces and their properties
-- Type aliases
-- Enums and enum members
-- Variables/constants (any level)
-- Namespaces/modules
-
-TSDoc CANNOT be used for (use `//` or `/* */` instead):
-- Expression statements (assignments, function calls, increments, etc.)
-- Control flow statements (if, for, while, switch)
-- Import/export statements
-- Return statements
-- Individual parameters in signatures
-- Any comment that isn't immediately followed by a declaration
-
-Key rule: TSDoc must directly precede a declaration (variable, function, class, type, etc.), not a statement or expression
-
-### Comment Placement
-- NEVER use inline comments after code
-- Always place comments on their own line above the code they describe
-
-### Escaping block comment terminators
-- Escape block comment terminators inside comments and code snippets to avoid premature comment termination.
-- Write `*/` as `*\\/` in TSDoc blocks and in any block comments in examples.
-
-```ts
-/**
- * This comment includes an escaped terminator token: *\\/
- */
-const example = "/* within string */";
-```
-
-### TSDoc Style Guidelines
-- Avoid `the`, `a`, `an` in `@param` or `@returns` description
-- Avoid repeating the name of the parameter without adding additional context in `@param` description
-- **Comments should explain WHY, not WHAT**:
-  - Good: `/** Mutable counter needed to track newlines encountered while scanning */`
-  - Bad: `/** Line counter starting at 1 */`
-  - Focus on intent, purpose, and design decisions
-  - Explain why something is mutable when using `let`
-  - Don't just restate what the code already shows
-- For async functions, assume users are using `await` syntax to consume their results and don't need the docs to tell them the function technically returns a promise
-- Use `@example` tags to provide usage examples:
-  ```ts
-  /**
-   * Calculates the sum of two numbers.
-   * @param a - First number
-   * @param b - Second number
-   * @returns Sum of the two numbers
-   * @example
-   * ```ts
-   * const result = add(2, 3); // 5
-   * ```
-   */
-  function add(a: number, b: number): number {
-    return a + b;
-  }
-  ```
-
-## Markdown Conventions
-
-### Text Formatting
-- One sentence per line for better diffs and readability
-- Use **bold** for emphasis, avoid _italics_
-- Prefer fenced code blocks with language tags over inline code for multi-line snippets
-- Use inline code \`like this\` for single commands, function names, or short code
-
-### Lists
-- Use `-` for unordered lists with one space after
-- Numbered lists: pad marker to 4 characters (e.g., `1.  `, `10. `)
-- Maintain consistent indentation (2 spaces for nested items)
-- Add blank lines before and after lists
-
-### Code Blocks
-- Always specify language for syntax highlighting
-- Use \`\`\`bash for shell commands, \`\`\`ts for TypeScript
-- Include file paths as comments when showing file contents
-
-### Links and References
-- Use reference-style links for repeated URLs
-- Prefer relative links for internal documentation
-- Include descriptive link text, avoid "click here"
-
-### Structure
-- Use ATX-style headers (`#` not underlines)
-- Maximum header depth: 4 levels (####)
-- Add blank line before headers (except first)
-- Keep line length under 120 characters when possible
-
-## Git Commit Guidelines
-
-Follow the Conventional Commits specification for all commit messages to ensure consistency and enable automated tooling.
-
-When writing commit messages for multiple changes across different files, include ALL changes in a single comprehensive commit message. Don't write commit messages that only describe partial changes.
-
-### Commit Message Format
-
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
-### Types
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation only changes
-- `style`: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc.)
-- `refactor`: Code change that neither fixes a bug nor adds a feature
-- `perf`: Code change that improves performance
-- `test`: Adding missing tests or correcting existing tests
-- `build`: Changes that affect the build system or external dependencies
-- `ci`: Changes to CI configuration files and scripts
-- `chore`: Other changes that don't modify src or test files (removing deprecated files, updating `.gitignore`, etc.)
-- `revert`: Reverts a previous commit
-
-### Scope
-Use the package name or area of change:
-- `module-es`
-- `*`: For changes affecting multiple packages
-
-### Examples
-
-**Change of one type and scope:**
-```txt
-feat(module-es): add a
-
-Description of a
-```
-
-**Change of multiple types and/or scopes**
-```txt
-feat(module-es): enhance error handling utilities
-
-error.assert.throw: add assertion-based error throwing
-- Implement conditional error throwing based on assertions
-- Include TypeScript type narrowing support
-
-error.throw: add unified error throwing utility
-- Implement consistent error creation
-- Provide better stack traces
-- Include custom error types
-
-test(module-es): achieve 100% coverage for error utilities
-- Add comprehensive test cases
-- Use parameterized tests for edge cases
-- Ensure proper type inference testing
-```
-
-### Important Commit Message Rules
-- Group related changes by type (feat, fix, test, etc.)
-- Don't mix different types in the same scope section
-- Be specific about what changed, not just which files
-- Never use emojis in commit messages
-- Focus on the "what" and "why", not just listing file changes
-</documentation_standards>
