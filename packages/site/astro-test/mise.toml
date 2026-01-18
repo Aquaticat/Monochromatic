@@ -18,3 +18,11 @@ run = "try { pnpm exec tsgo --build } catch { |e| print -e $e.rendered }"
 hide = true
 description = "Start development server"
 run = "astro dev"
+
+[tasks."_astro:sync"]
+description = "Sync Astro"
+run = "pnpm exec astro sync"
+
+[tasks."_astro:check"]
+description = "Check Astro"
+run = "pnpm exec astro check"
