@@ -56,7 +56,7 @@ The following exports are referenced by other modules but missing from [`iterabl
 
 - [ ] **Type constraint issues**:
   - [`array.type.fixedLength.unit.test.ts`](src/array.type.fixedLength.unit.test.ts:35) has `TupleArray` constraint issue
-  - [`moon.index-claude-user-messages.ts`](src/moon.index-claude-user-messages.ts:162) has `PatternMatcher` type issue
+  - [`mise.index-claude-user-messages.ts`](src/mise.index-claude-user-messages.ts:162) has `PatternMatcher` type issue
 
 ## Implementation Plan
 

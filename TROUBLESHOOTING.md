@@ -9,7 +9,6 @@ Issues related to TypeScript configuration, ESLint, dprint, and other developmen
 - TypeScript path warnings with dprint
 - ESLint configuration best practices
 - Stylelint and postcss-html resolution
-- Proto and Rust installation issues
 - Type predicate assignment errors with complex conditional types
 
 ### [Testing & Vitest](TROUBLESHOOTING.testing.md)
@@ -18,13 +17,6 @@ Problems with testing setup and Vitest configuration:
 - Duplicate describe blocks causing missing test output
 - Vitest dependency resolution problems
 - Test suite organization best practices
-
-### [Moon Build System](TROUBLESHOOTING.moon.md)
-Moon task runner and build system issues:
-- Fresh clone setup and build order dependencies
-- Moon performance optimization in WSL
-- Task dependency resolution problems
-- Caching and incremental build issues
 
 ### [Editor Setup](TROUBLESHOOTING.editors.md)
 Editor installation and configuration issues:
@@ -40,13 +32,12 @@ Vite build system and configuration problems:
 
 ### [Dependencies & Package Management](TROUBLESHOOTING.dependencies.md)
 Package management and dependency resolution problems:
-- Proto tool version management
 - pnpm workspace configuration issues
 - Dependency resolution conflicts
 
 ### [Performance Optimization](TROUBLESHOOTING.performance.md)
 Performance-related issues and optimizations:
-- Moon prepare optimization strategies
+- Build preparation optimization strategies
 - WSL performance improvements
 - File system vs binary execution trade-offs
 
@@ -79,11 +70,10 @@ VSCode-specific troubleshooting (already exists):
 ## Quick Links
 
 For common issues:
-- **Slow builds?** → [Moon performance](TROUBLESHOOTING.moon.md#moon-performance-in-wsl)
+- **Slow builds?** → [Build performance](TROUBLESHOOTING.performance.build.md)
 - **Test failures not showing?** → [Duplicate describe blocks](TROUBLESHOOTING.testing.md#vitest-missing-assertions-or-console-output-with-duplicate-describe-blocks)
-- **Fresh clone fails?** → [Build order dependencies](TROUBLESHOOTING.moon.md#fresh-clone-setup-lessons-from-the-build-order-saga)
+- **Fresh clone fails?** → [Build order dependencies](TROUBLESHOOTING.vite.md#vite-config-build-order-in-mise)
 - **TypeScript path warnings?** → [dprint configuration](TROUBLESHOOTING.typescript.md#typescript-path-warnings-with-dprint)
-- **Package management issues?** → [Proto version management](TROUBLESHOOTING.dependencies.md#proto-tool-version-management)
 - **Configuration not working as expected?** → [TOML issues and alternatives](TROUBLESHOOTING.toml.md#silent-overwrites-the-configuration-killer)
 
 ## Contributing

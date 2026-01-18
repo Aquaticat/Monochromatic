@@ -16,7 +16,7 @@ A self-contained, single-file HTML search interface for the Exa AI search API, s
 From the workspace root:
 
 ```bash
-moon run exa-search:js
+mise run exa-search:js
 ```
 
 This creates a self-contained HTML file at:

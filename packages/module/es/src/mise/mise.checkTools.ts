@@ -102,7 +102,7 @@ match(hasErrors,)
   .with(true, () => {
     throw new Error(outdent`
       ❌ Some required tools are missing!
-      Run: moon run prepareAndBuild
+      Run: mise run prepareAndBuild
     `,);
   },)
   .exhaustive();

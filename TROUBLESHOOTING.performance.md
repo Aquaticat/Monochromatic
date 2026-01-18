@@ -6,7 +6,6 @@ Performance troubleshooting documentation has been organized into focused areas 
 
 ### [Build Performance](TROUBLESHOOTING.performance.build.md)
 Build system performance optimizations
-- Moon Prepare Optimization (WSL performance improvements)
 - TypeScript scripts replacing shell commands
 - File system checks vs binary execution
 - Cross-platform optimization strategies

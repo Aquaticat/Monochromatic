@@ -2,7 +2,7 @@
 
 ## Bun scripts vs single file executables
 
-Direct `bun <script>.ts` execution in moon.yml:
+Direct `bun <script>.ts` execution in mise.toml:
 
 - **Platform portability**: Bun single file executables aren't cross-platform
 - **Industry precedent**: Oxlint and dprint use runtime platform detection

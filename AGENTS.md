@@ -89,7 +89,7 @@ Don't run linters or formatters. The user will run them themselves.
 # Script Preferences
 
 - **NEVER write bash/shell scripts** (non-portable, unreadable, unfamiliar)
-- When scripts are needed, create TypeScript files as `moon.<action>.ts` in `packages/module/es/src/`
+- When scripts are needed, create TypeScript files as `mise.<action>.ts` in `packages/module/es/src/`
 - Use Bun to execute TypeScript scripts directly
 - Avoid creating main() functions
   - Instead of wrapping code in a main() function, write top-level code directly
@@ -292,7 +292,7 @@ packages/
 
 ### Build System
 - **Package Manager**: pnpm with workspace and catalog feature
-- **Task Orchestration**: Moon CLI (runs task dependencies in parallel by default)
+- **Task Orchestration**: Mise CLI (runs task dependencies in parallel by default)
 - **Bundler**: Vite v7.0.0-beta.1+
 - **Language**: TypeScript with strict type checking
 - **Testing**: Vitest for unit and browser tests
@@ -311,7 +311,7 @@ packages/
 
 ## Adding New Packages
 1. Create directory under appropriate category in `packages/`
-2. Add `moon.yml` with appropriate tags
+2. Add `mise.toml` with appropriate tags
 3. Configure `package.json` with workspace dependencies
 4. Set up dual builds if needed (tag: `dualBuildsNodeBrowser`)
 </project_overview>
@@ -558,10 +558,10 @@ TypeScript's support for overloading generator functions has quirks:
 
 ## General Testing Guidelines
 - Write a corresponding Vitest file that aims for 100% test coverage
-- Tests can only be run from workspace root using `moon run test`
+- Tests can only be run from workspace root using `mise run test`
 - To run tests for a specific file pattern:
-  - `moon run testUnit -- packages/module/es/src/boolean.equal.unit.test.ts`
-  - `moon run testBrowser -- packages/module/es/src/boolean.equal.browser.test.ts`
+  - `mise run test:unit -- packages/module/es/src/boolean.equal.unit.test.ts`
+  - `mise run test:browser -- packages/module/es/src/boolean.equal.browser.test.ts`
 
 ## Coverage Requirements
 - If certain lines or branches can't be tested (example: error handling for impossible states), use V8 ignore comments:

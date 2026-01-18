@@ -2,14 +2,14 @@
 
 A TypeScript monorepo ecosystem for modern web development.
 
-## Task Runner: Moon
+## Task Runner: Mise
 
-This project uses [Moon](https://moonrepo.dev/) as the task runner.
+This project uses [Mise](https://mise.jdx.dev/) as the task runner.
 Don't use npm scripts directly.
 
-All tasks must be run through Moon commands:
-- `moon run test` (correct)
-- `moon run build` (correct)
+All tasks must be run through Mise commands:
+- `mise run test` (correct)
+- `mise run build` (correct)
 - `npm run test` (incorrect)
 - `pnpm test` (incorrect)
 
@@ -24,11 +24,8 @@ All tasks must be run through Moon commands:
 ## Initial Setup
 
 ```bash
-# 1. Install proto globally. See https://moonrepo.dev/docs/proto/install
-bash <(curl -fsSL https://moonrepo.dev/install/proto.sh)
-
-# 2. Run project setup and build. Note that proto auto installs moon.
-moon run prepareAndBuild
+# Run project setup and build
+mise run prepareAndBuild
 ```
 
 ## Essential Commands
@@ -36,44 +33,34 @@ moon run prepareAndBuild
 ### Building
 ```bash
 # Build everything
-moon run build
+mise run build
 
 # Build and watch (development)
-moon run buildWatch
-
-# Build specific package
-moon run es:js
-moon run es:types
+mise run build--watch
 ```
 
 ### Testing
 ```bash
 # Run all tests (from workspace root only)
-moon run test
+mise run test
 
 # Unit tests with coverage
-moon run testUnit
+mise run test:unit
 
 # Test specific file
-moon run testUnit -- packages/module/es/src/boolean.equal.unit.test.ts
+mise run test:unit -- packages/module/es/src/boolean.equal.unit.test.ts
 
 # Browser tests
-moon run testBrowser -- packages/module/es/src/boolean.equal.browser.test.ts
+mise run test:browser -- packages/module/es/src/boolean.equal.browser.test.ts
 ```
 
 ### Development Workflow
 ```bash
 # Build + test together
-moon run buildAndTest
+mise run buildAndTest
 
 # Full dev mode (build + test watch)
-moon run buildAndTestWatch
-```
-
-### Troubleshooting
-```bash
-# Clear Moon cache if needed
-moon clean --lifetime '1 seconds'
+mise run buildAndTest--watch
 ```
 
 ## Project Structure
@@ -90,8 +77,7 @@ packages/
 
 ## Technical Stack
 
-- **Toolchain Manager**: Proto
-- **Task Runner**: Moon (calls pnpm automatically)
+- **Task Runner**: Mise (calls pnpm automatically)
 - **Package Manager**: pnpm (with `catalog:` and non-native modules)
 - **Bundler**: Vite (rolldown-vite)
 - **Language**: TypeScript (non-native beta)

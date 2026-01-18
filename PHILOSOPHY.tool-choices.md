@@ -8,8 +8,6 @@ NueJS: requires less common markdown format support.
 
 ## Editor: VSCode/VSCodium/Neovide > WebStorm
 
-WebStorm lacks moon plugin support.
-
 ## Linting and formatting
 
 - **Biome**: insufficient rules

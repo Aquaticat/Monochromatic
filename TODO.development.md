@@ -255,7 +255,7 @@ ls /mnt/c/Users/user/Text/Projects
 
 2. **Performance Verification**
    - Compare build times between Windows mount and WSL filesystem
-   - Test file watching performance with `moon run buildWatch`
+   - Test file watching performance with `mise run build--watch`
 
 #### IDE Integration Improvements
 1. **Set up IDE integration**:
@@ -290,11 +290,8 @@ Ensure that fresh clones of the repository work correctly when users follow the 
 
 **Current Setup Instructions Being Tested**:
 ```bash
-# 1. Install proto globally
-bash <(curl -fsSL https://moonrepo.dev/install/proto.sh)
-
-# 2. Run project setup and build
-moon run prepareAndBuild
+# Run project setup and build
+mise run prepareAndBuild
 ```
 
 ### Development Workflow Improvements

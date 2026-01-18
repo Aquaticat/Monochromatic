@@ -114,7 +114,7 @@ Create proper error hierarchy:
 
 #### 2.6.4 Monorepo conventions alignment
 - [ ] 2.6.4.1 For applications, avoid library-oriented metadata (exports map, module field). Use the library package as reference for when an exports map is appropriate: [es exports](packages/module/es/package.json:6).
-- [ ] 2.6.4.2 Ensure Moon tasks reflect app vs library roles (no change required now; just confirm [rss moon.yml](packages/site/rss/moon.yml:1) is app-focused, and [es moon.yml](packages/module/es/moon.yml:1) remains dual-build).
+- [ ] 2.6.4.2 Ensure mise tasks reflect app vs library roles (no change required now; just confirm tasks are app-focused for apps, and dual-build for libraries).
 
 ## 3. Migration Strategy
 

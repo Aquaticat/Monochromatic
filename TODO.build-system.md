@@ -16,33 +16,25 @@ The current setup process fails for fresh clones due to build order issues:
 1. **Critical Build Order Problem**: The `js` tasks run before `pnpm install` completes
    - Root cause: The `js_default` task calls `vite build` directly without ensuring dependencies are installed
    - This causes "command not found" errors for tools like `vite` that come from node_modules
-   - Moon allows tasks to start before their implicit dependencies are ready
+   - Mise allows tasks to start before their implicit dependencies are ready
 
 2. **Package Build Order Issue**: Packages depending on `@monochromatic-dev/config-vite` try to build before it's built
    - The figma plugin packages fail because they can't resolve the vite config package
-   - Workaround: Running `moon run vite:js` manually before `moon run build` helps
+   - Workaround: Building vite config packages first helps
 
 #### Recommended Fix
-Add explicit dependencies to ensure proper sequencing in `.moon/tasks.yml`:
-```yaml
-js_default:
-  command: 'vite build --config vite.config.ts --mode production'
-  deps:
-    - '~:pnpmInstall'  # Ensure dependencies are installed first
-  options:
-    outputStyle: 'buffer-only-failure'
+Add explicit dependencies to ensure proper sequencing in `mise.toml`:
+```toml
+[tasks."build:js"]
+dependencies = ["build:pnpmInstall"]
 ```
 
 #### Current Workaround Setup Instructions
-Until the Moon configuration is fixed, users should run:
+Users should run:
 ```bash
-# 1. Install proto globally
-bash <(curl -fsSL https://moonrepo.dev/install/proto.sh)
-
-# 2. Setup and build in separate steps
-moon run prepare
-moon run vite:js  # Build config packages first
-moon run build
+# 1. Setup and build with mise
+mise run prepare
+mise run build
 ```
 
 ### TypeScript Configuration Issues

@@ -1,15 +1,15 @@
 # Vite Configuration & Build Troubleshooting
 
-## Vite Config Build Order in Moon
+## Vite Config Build Order in Mise
 
 ### Problem
-When running `moon run prepareAndBuild` on a fresh clone, packages that depend on `@monochromatic-dev/config-vite` fail with:
+When running `mise run prepareAndBuild` on a fresh clone, packages that depend on `@monochromatic-dev/config-vite` fail with:
 ```
 Failed to resolve entry for package "@monochromatic-dev/config-vite". The package may have incorrect main/module/exports specified in its package.json.
 ```
 
 ### Root Cause
-Moon's automatic dependency installation works correctly with `language: 'typescript'` configuration, but the build order issue occurs because:
+The build order issue occurs because:
 1. The `js_default` task (inherited by all packages) uses vite to build
 2. Packages that import from `@monochromatic-dev/config-vite` try to use it before it's built
 3. This creates a circular dependency: vite config needs to build itself using vite

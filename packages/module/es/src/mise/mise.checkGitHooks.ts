@@ -45,7 +45,7 @@ match(hasAllRequiredHooks,)
   .with(false, () => {
     throw new Error(outdent`
       ❌ Required git hooks missing!
-      Run: moon run installHooks
+      Run: mise run installHooks
       Or: moon sync hooks
     `,);
   },)

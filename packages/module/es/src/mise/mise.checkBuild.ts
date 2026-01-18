@@ -35,6 +35,6 @@ match(missingArtifacts.length,)
   .otherwise(() => {
     throw new Error(outdent`
       ❌ Build artifacts missing!
-      Run: moon run build
+      Run: mise run build
     `,);
   },);

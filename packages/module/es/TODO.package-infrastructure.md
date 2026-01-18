@@ -37,13 +37,13 @@
 **Status**: Normal Priority - Development tooling
 
 Current CLI tools in [`package.json` bin field](package.json:48):
-- [ ] **`checkBuild`** - [`moon.checkBuild.ts`](src/moon.checkBuild.ts:1) - Enhance build validation
-- [ ] **`checkDependencies`** - [`moon.checkDependencies.ts`](src/moon.checkDependencies.ts:1) - Enhance dependency validation
-- [ ] **`checkGitHooks`** - [`moon.checkGitHooks.ts`](src/moon.checkGitHooks.ts:1) - Enhance git hook validation
-- [ ] **`checkTools`** - [`moon.checkTools.ts`](src/moon.checkTools.ts:1) - Enhance tool validation
-- [ ] **`bunCompile`** - [`moon.bunCompile.ts`](src/moon.bunCompile.ts:1) - Enhance compilation utilities
-- [ ] **`pnpmInstall`** - [`moon.pnpmInstall.ts`](src/moon.pnpmInstall.ts:1) - Enhance installation utilities
-- [ ] **`preparePlaywright`** - [`moon.preparePlaywright.ts`](src/moon.preparePlaywright.ts:1) - Enhance test setup
+- [ ] **`checkBuild`** - [`mise.checkBuild.ts`](src/mise.checkBuild.ts:1) - Enhance build validation
+- [ ] **`checkDependencies`** - [`mise.checkDependencies.ts`](src/mise.checkDependencies.ts:1) - Enhance dependency validation
+- [ ] **`checkGitHooks`** - [`mise.checkGitHooks.ts`](src/mise.checkGitHooks.ts:1) - Enhance git hook validation
+- [ ] **`checkTools`** - [`mise.checkTools.ts`](src/mise.checkTools.ts:1) - Enhance tool validation
+- [ ] **`bunCompile`** - [`mise.bunCompile.ts`](src/mise.bunCompile.ts:1) - Enhance compilation utilities
+- [ ] **`pnpmInstall`** - [`mise.pnpmInstall.ts`](src/mise.pnpmInstall.ts:1) - Enhance installation utilities
+- [ ] **`preparePlaywright`** - [`mise.preparePlaywright.ts`](src/mise.preparePlaywright.ts:1) - Enhance test setup
 - [ ] **`append`** - [`cli.append.ts`](src/cli.append.ts:1) - Enhance file manipulation
 - [ ] **`command`** - [`cli.command.ts`](src/cli.command.ts:1) - Enhance command execution
 

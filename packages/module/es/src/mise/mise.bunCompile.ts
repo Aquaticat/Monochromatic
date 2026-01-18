@@ -8,7 +8,7 @@
  * Supported prefixes can be extended by modifying the SUPPORTED_PREFIXES array.
  *
  * Usage:
- *   bun moon.bunCompile.ts
+ *   bun mise.bunCompile.ts
  */
 
 import { findUp, } from 'find-up';
@@ -77,11 +77,11 @@ async function getPackageRoot(): Promise<string> {
 /**
  * Supported script prefixes that can be compiled.
  */
-const SUPPORTED_PREFIXES = ['moon', 'cli',] as const;
+const SUPPORTED_PREFIXES = ['mise', 'cli',] as const;
 
 /**
  * Extracts script name and prefix from filename.
- * @param filename - script filename (e.g., moon.*.ts, cli.*.ts).
+ * @param filename - script filename (e.g., mise.*.ts, cli.*.ts).
  * @returns object containing prefix and script name.
  */
 function extractScriptInfo(filename: string,): { prefix: string; scriptName: string; } {

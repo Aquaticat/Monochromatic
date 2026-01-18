@@ -360,8 +360,8 @@
 **Status**: Final preparation and official launch
 
 #### Days 1-2: Final Quality Assurance
-- [ ] **Build Verification**: Final build test with `moon run build`
-- [ ] **Test Suite**: Complete test suite execution with `moon run test`  
+- [ ] **Build Verification**: Final build test with `mise run build`
+- [ ] **Test Suite**: Complete test suite execution with `mise run test`  
 - [ ] **Performance**: Final performance benchmarking and optimization
 - [ ] **Security**: Final security review and vulnerability scan
 - [ ] **Documentation**: Final documentation review and corrections

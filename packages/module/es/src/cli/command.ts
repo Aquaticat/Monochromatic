@@ -48,16 +48,16 @@ const moonCommand = define({
     },
   },
   examples: `# Always exit with 0
-$ bun moon.command.ts --allowFailure -- eslint --cache
+$ bun mise.command.ts --allowFailure -- eslint --cache
 
 # Exit with command's exit code
-$ bun moon.command.ts -- eslint --cache
+$ bun mise.command.ts -- eslint --cache
 
 # Execute through shell
-$ bun moon.command.ts --shell -- "echo hello && echo world"
+$ bun mise.command.ts --shell -- "echo hello && echo world"
 
 # Execute with timeout of 5 seconds
-$ bun moon.command.ts --timeout 5000 -- npm test`,
+$ bun mise.command.ts --timeout 5000 -- npm test`,
   run: async ctx => {
     const { allowFailure, shell, timeout, } = ctx.values;
 

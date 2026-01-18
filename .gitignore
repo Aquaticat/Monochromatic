@@ -288,9 +288,8 @@ out/
 #endregion https://www.toptal.com/developers/gitignore/api/node,astro,macos,linux,windows,visualstudiocode,jetbrains
 .aider*
 
-# moon
-.moon/cache
-.moon/docker
+# mise
+.mise/cache
 
 # Crush
 .crush/

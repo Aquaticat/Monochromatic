@@ -156,10 +156,10 @@ This questioning pattern teaches:
 
 ### General Testing Guidelines
 - Write a corresponding Vitest file that aims for 100% test coverage
-- Tests can only be run from workspace root using `moon run test`
+- Tests can only be run from workspace root using `mise run test`
 - To run tests for specific patterns:
-  - `moon run testUnit -- packages/module/es/src/boolean.equal.unit.test.ts`
-  - `moon run testBrowser -- packages/module/es/src/boolean.equal.browser.test.ts`
+  - `mise run test:unit -- packages/module/es/src/boolean.equal.unit.test.ts`
+  - `mise run test:browser -- packages/module/es/src/boolean.equal.browser.test.ts`
 
 **Cross-Reference**: See [Automation Todo](TODO.automation.md#testing-automation) for comprehensive testing automation.
 

@@ -169,22 +169,18 @@ Best practices:
   //endregion Success and retry behaviour
   ```
 
-Recommended commands (Moon):
+Recommended commands (Mise):
 - Run a single test file with unit configuration.
   ```bash
-  moon run testUnit -- packages/module/es/src/function.tryCatch.unit.test.ts
+  mise run test:unit -- packages/module/es/src/function.tryCatch.unit.test.ts
   ```
 - Increase verbosity for investigation.
   ```bash
-  moon run testUnit -- --reporter verbose
+  mise run test:unit -- --reporter verbose
   ```
 - Build and test together to avoid stale artifacts.
   ```bash
-  moon run buildAndTest
-  ```
-- Clear Moon cache if results appear stale.
-  ```bash
-  moon clean --lifetime '1 seconds'
+  mise run buildAndTest
   ```
 
 Rationale for the current structure:

@@ -2,10 +2,10 @@
 
 ## Build system performance optimizations
 
-### Moon Prepare Optimization - 2025-06-16
+### Prepare Optimization - 2025-06-16
 
 #### Problem
-`moon run prepare` taking 50+ seconds due to slow command executions in WSL.
+`mise run prepare` taking 50+ seconds due to slow command executions in WSL.
 
 #### Root Causes
 1. WSL file system overhead when executing binaries from `/mnt/c/`
@@ -15,10 +15,10 @@
 #### Solutions Implemented
 
 ##### 1. Created TypeScript scripts to replace shell commands:
-- `moon.preparePlaywright.ts`: Check browser dirs instead of running `playwright install --list`
-- `moon.pnpmInstall.ts`: Auto-decline pnpm reinstall prompt
-- `moon.valeSync.ts`: Check if packages exist before syncing
-- `moon.installVale.ts`: Unified cross-platform vale installation
+- File system checks instead of running binary commands
+- Auto-decline pnpm reinstall prompt
+- Check if packages exist before syncing
+- Unified cross-platform installation scripts
 
 ##### 2. Key optimizations:
 - Use file system checks instead of executing binaries
@@ -30,11 +30,6 @@
 - **After**: 1.54 seconds (97% improvement)
 - All bun TypeScript scripts consistently take ~80-100ms
 - Actual work (file checks) takes <10ms per script
-
-##### 4. Moon tips:
-- Clear cache: `moon clean --lifetime '1 seconds'`
-- Run specific test: `moon run testUnit -- <file-path>`
-- Shell commands need `shell: true` option for proper parsing
 
 #### Key Takeaway
 In WSL environments, avoid executing binaries when file system checks suffice. The overhead of process creation and file system translation can turn millisecond operations into 30-second waits.

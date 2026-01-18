@@ -15,7 +15,7 @@ x-shared-config: &shared-config
 services:
   caddy:
     <<: *shared-config
-    command: moon run startCaddy
+    command: mise run start:caddy
     ports:
     - '4110:4110'
     environment:
@@ -23,7 +23,7 @@ services:
 
   ai-proxy:
     <<: *shared-config
-    command: moon run ai-tree:start
+    command: mise run ai-proxy:start
     ports:
     - '4111:4111'
     environment:

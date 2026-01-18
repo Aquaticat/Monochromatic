@@ -396,7 +396,7 @@ Based on implementation files that have no corresponding `.unit.test.ts`:
 ### Phase 3: Advanced Features (Week 3)
 1. **Storage system** - `any.ReplicatingStore` comprehensive testing
 2. **CLI utilities** - `cli.*` functions with integration tests
-3. **Build tools** - `moon.*` scripts with integration tests
+3. **Build tools** - `mise.*` scripts with integration tests
 
 ### Phase 4: Test Quality (Week 4)
 1. **Split combined test files** into function-specific files

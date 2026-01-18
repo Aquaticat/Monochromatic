@@ -54,7 +54,7 @@
 - [ ] Fix any existing test failures in codebase
 - [ ] Achieve 90%+ test coverage for new functions
 - [ ] Add basic type inference tests for new functions
-- [ ] Verify all tests pass with `moon run test`
+- [ ] Verify all tests pass with `mise run test`
 - [ ] **Skip**: Universal type testing requirement (defer to long-term plan)
 
 ## Week 2: Documentation & Polish
@@ -98,8 +98,8 @@
 - [ ] Test package installation from both registries
 - [ ] Test imports work correctly in Node.js environment
 - [ ] Test imports work correctly in browser environment
-- [ ] Run final build and ensure no errors: `moon run build`
-- [ ] Run final test suite and ensure all pass: `moon run test`
+- [ ] Run final build and ensure no errors: `mise run build`
+- [ ] Run final test suite and ensure all pass: `mise run test`
 - [ ] Final quality assurance review of all changes
 
 ## What to AVOID in 2 Weeks
