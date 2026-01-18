@@ -123,10 +123,11 @@ describe($, () => {
     ],);
   });
 
-  test('type checking for index and element', async () => {
+  test('type checking for index and element', async ({ expect, },) => {
     const gen = $({ myIterable: [1, 2, 3,], },);
     const firstItem = await gen.next();
 
+    expect(firstItem.done,).toBe(false,);
     if (firstItem.done)
       throw new Error('Generator unexpectedly done',);
 
