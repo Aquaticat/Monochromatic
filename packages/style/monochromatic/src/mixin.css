@@ -1,7 +1,7 @@
 /* From https://css-tricks.com/inclusively-hidden/
    Note that since I'm using this class as a pure composition class :not(:focus) and :not(:active) needs to be accounted for everywhere it's used.
  */
-@define-mixin --sr-only {
+@mixin --sr-only {
   /* stylelint-disable-next-line property-disallowed-list -- copypaste */
   clip: rect(0 0 0 0);
 
@@ -21,7 +21,7 @@
   clip-path: inset(50%);
 }
 
-@define-mixin --touch-target {
+@mixin --touch-target {
   min-inline-size: calc(var(--length-m) * var(--rp));
 
   min-block-size: calc(var(--length-m) * var(--rp));
@@ -29,7 +29,7 @@
   cursor: pointer;
 }
 
-@define-mixin --flex-center {
+@mixin --flex-center {
   display: flex;
 
   flex-direction: row;
@@ -41,7 +41,7 @@
   justify-content: center;
 }
 
-@define-mixin --flex-center-start {
+@mixin --flex-center-start {
   display: flex;
 
   flex-direction: row;
@@ -53,7 +53,7 @@
   justify-content: center;
 }
 
-@define-mixin --flex-start-center {
+@mixin --flex-start-center {
   display: flex;
 
   flex-direction: row;
@@ -65,7 +65,7 @@
   justify-content: flex-start;
 }
 
-@define-mixin --flex-start {
+@mixin --flex-start {
   display: flex;
 
   flex-direction: row;
@@ -77,7 +77,7 @@
   justify-content: flex-start;
 }
 
-@define-mixin --flex-between-center {
+@mixin --flex-between-center {
   display: flex;
 
   flex-direction: row;
@@ -89,7 +89,7 @@
   justify-content: space-between;
 }
 
-@define-mixin --p {
+@mixin --p {
   font-size: calc(var(--p) * var(--rp));
 
   line-height: calc(var(--p-lh) / var(--p));
@@ -99,7 +99,7 @@
   hyphens: auto;
 }
 
-@define-mixin --h1 {
+@mixin --h1 {
   font-weight: 800;
 
   font-style: italic;
@@ -115,7 +115,7 @@
   color: var(--fg-weaker);
 }
 
-@define-mixin --h2 {
+@mixin --h2 {
   font-weight: bold;
 
   font-size: calc(var(--h2) * var(--rp));
@@ -127,7 +127,7 @@
   color: var(--fg-weaker);
 }
 
-@define-mixin --h3 {
+@mixin --h3 {
   font-weight: bold;
 
   font-size: calc(var(--h3) * var(--rp));
@@ -137,7 +137,7 @@
   color: var(--fg-weaker);
 }
 
-@define-mixin --h4 {
+@mixin --h4 {
   font-weight: bold;
 
   font-size: calc(var(--h4) * var(--rp));
@@ -147,7 +147,7 @@
   color: var(--fg-weaker);
 }
 
-@define-mixin --h5 {
+@mixin --h5 {
   font-weight: bold;
 
   font-size: calc(var(--h5) * var(--rp));
@@ -157,7 +157,7 @@
   color: var(--fg-weaker);
 }
 
-@define-mixin --h6 {
+@mixin --h6 {
   font-weight: 600;
 
   font-size: calc(var(--h6) * var(--rp));
@@ -168,7 +168,7 @@
 }
 
 /* Text style suitable for button labels and the like */
-@define-mixin --button-text {
+@mixin --button-text {
   font-weight: 500;
 
   font-size: calc(var(--h6) * var(--rp));
@@ -180,13 +180,13 @@
   /* text-transform: uppercase; */
 }
 
-@define-mixin --mono {
+@mixin --mono {
   font-family: var(--mono);
 
   font-feature-settings: var(--mono-font-feature-settings);
 }
 
-@define-mixin --text {
+@mixin --text {
   min-inline-size: calc(var(--min-text) * var(--rp));
 
   max-inline-size: calc(var(--max-text) * var(--rp));
@@ -208,31 +208,31 @@
   }
 
   p {
-    @mixin --p;
+    @apply --p;
   }
 
   h1 {
-    @mixin --h1;
+    @apply --h1;
   }
 
   h2 {
-    @mixin --h2;
+    @apply --h2;
   }
 
   h3 {
-    @mixin --h3;
+    @apply --h3;
   }
 
   h4 {
-    @mixin --h4;
+    @apply --h4;
   }
 
   h5 {
-    @mixin --h5;
+    @apply --h5;
   }
 
   h6 {
-    @mixin --h6;
+    @apply --h6;
   }
 
   * + section {
@@ -253,7 +253,7 @@
 
       &::marker {
         /* line-height: calc(24--p / 0.8); */
-        @mixin --mono;
+        @apply --mono;
       }
     }
 
@@ -324,7 +324,7 @@
   }
 
   code {
-    @mixin --mono;
+    @apply --mono;
 
     font-size: 0.9em;
   }

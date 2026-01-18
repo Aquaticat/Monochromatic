@@ -3,30 +3,30 @@ footer {
 
   padding-block: var(--gap-m);
 
-  @mixin --flex-center;
+  @apply --flex-center;
 
   background-color: var(--bg-darker);
 
   color: var(--subtle);
 
   > div {
-    @mixin --flex-center;
-    @mixin --text;
+    @apply --flex-center;
+    @apply --text;
 
     column-gap: var(--gap-l);
 
     > * {
-      @mixin --flex-center;
+      @apply --flex-center;
 
       column-gap: var(--gap-s);
 
       > * {
-        @mixin --flex-center;
+        @apply --flex-center;
 
         column-gap: var(--gap-s);
 
         > * {
-          @mixin --flex-center;
+          @apply --flex-center;
         }
       }
     }

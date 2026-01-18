@@ -83,7 +83,7 @@ body {
     row-gap: calc(var(--gap-3xl) * var(--rp));
 
     > main {
-      @mixin --text;
+      @apply --text;
     }
 
     > aside {

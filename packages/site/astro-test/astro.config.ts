@@ -1,19 +1,16 @@
 import mdx from '@astrojs/mdx';
-import postcssCustomUnits from '@csstools/custom-units';
 import {
   transformerNotationDiff,
   transformerNotationHighlight,
 } from '@shikijs/transformers';
 // import viteBasicSsl from '@vitejs/plugin-basic-ssl';
+import { composedVisitor, } from '@monochromatic-dev/config-vite/.ts';
 import { defineConfig, } from 'astro/config';
 import { glob, } from 'glob';
 import spawn from 'nano-spawn';
 import { writeFile, } from 'node:fs/promises';
 import { relative, } from 'node:path';
 import { fileURLToPath, } from 'node:url';
-import postcssCustomMedia from 'postcss-custom-media';
-import postcssCustomSelectors from 'postcss-custom-selectors';
-import postcssMixins from 'postcss-mixins';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeParse from 'rehype-parse';
 import rehypePresetMinify from 'rehype-preset-minify';
@@ -42,19 +39,13 @@ export default defineConfig({
       },
     },
     css: {
-      postcss: {
-        plugins: [
-          postcssMixins(),
-          postcssCustomUnits(),
-          postcssCustomMedia(),
-          postcssCustomSelectors(),
-        ],
-      },
+      transformer: 'lightningcss',
       lightningcss: {
         targets: {
           firefox: (128 << 16),
         },
         cssModules: false,
+        visitor: composedVisitor,
       },
       preprocessorMaxWorkers: true,
       devSourcemap: true,

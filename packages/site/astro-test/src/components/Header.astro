@@ -41,7 +41,7 @@ header {
 }
 
 .siteName {
-  @mixin --h6;
+  @apply --h6;
 
   color: var(--primary);
 
@@ -106,7 +106,7 @@ img[alt='avatar'] {
     }
 
     > .Header__tags {
-      @mixin --flex-center;
+      @apply --flex-center;
 
       column-gap: calc(var(--gap-m) * var(--rp));
 
@@ -126,9 +126,9 @@ img[alt='avatar'] {
         }
 
         > summary {
-          @mixin --flex-center;
-          @mixin --touch-target;
-          @mixin --h5;
+          @apply --flex-center;
+          @apply --touch-target;
+          @apply --h5;
 
           color: var(--primary);
 

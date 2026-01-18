@@ -8,7 +8,7 @@ export default {
 
     //region Unknown
 
-    'at-rule-no-unknown': [true, { ignoreAtRules: ['mixin', 'define-mixin',], },],
+    'at-rule-no-unknown': [true, { ignoreAtRules: ['mixin', 'apply',], },],
 
     /*'declaration-property-value-no-unknown': [true, {
       ignoreProperties: {

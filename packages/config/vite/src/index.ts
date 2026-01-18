@@ -23,6 +23,9 @@ export const getShared = (configDir: string,): UserConfigFnObject =>
 
 //endregion Public API
 
+// LightningCSS visitor
+export { composedVisitor, } from './lightningcss-visitors.ts';
+
 // Re-export everything that was publicly exported before
 export {
   rolldownExternal,
@@ -32,16 +35,13 @@ export {
 } from './utilities.ts';
 
 export {
-  createVitestBaseBrowserConfigWorkspace,
   createVitestBaseUnitConfigWorkspace,
-  getVitestBrowserWorkspace,
   getVitestUnitWorkspace,
-  vitestOnlyBrowserConfigWorkspace,
   // From vitest-configs.ts
   vitestOnlyConfigWorkspace,
   vitestOnlyUnitConfigWorkspace,
   type VitestUserConfigFnObject,
-} from './vitest-configs.js';
+} from './vitest-configs.ts';
 
 // Type re-exports from vite and vitest
 export { type UserConfigFnObject, } from 'vite';

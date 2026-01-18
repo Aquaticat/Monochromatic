@@ -37,7 +37,7 @@ const { post, lang, } = Astro.props;
 }
 
 h2 {
-  @mixin --h4;
+  @apply --h4;
 
   text-wrap: balance;
 
@@ -57,16 +57,16 @@ h2 {
 }
 
 .tags {
-  @mixin --flex-start-center;
+  @apply --flex-start-center;
 
   column-gap: calc(var(--gap-m) * var(--rp));
 
   > li {
     > a {
-      @mixin --flex-center;
+      @apply --flex-center;
 
       > span {
-        @mixin --h6;
+        @apply --h6;
 
         color: var(--primary);
 
