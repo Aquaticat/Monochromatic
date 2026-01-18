@@ -2,6 +2,7 @@
 // eslint-disable-next-line import/no-unassigned-import -- CSS import for styling
 import './_Head.css';
 import { i18n, } from '@_/index.ts';
+import { types } from '@monochromatic-dev/module-es';
 type Props = {
   title: string;
   lang: string;
@@ -19,8 +20,6 @@ const { title, lang, } = Astro.props;
     type='image/svg+xml'>
   <title>{title} | {i18n.get('siteName',)!.get(lang,)!}</title>
   <script>
-  import { onLoadRedirectingTo, } from '@monochromatic-dev/module-es';
-
-  onLoadRedirectingTo();
+  types.never.from.never.onLoadRedirectingTo.sync.positional.$();
   </script>
 </head>

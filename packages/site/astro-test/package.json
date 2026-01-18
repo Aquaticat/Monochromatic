@@ -5,6 +5,10 @@
   "private": true,
   "dependencies": {
     "@astrojs/mdx": "catalog:",
+    "@csstools/custom-units": "catalog:",
+    "postcss-custom-media": "catalog:",
+    "postcss-custom-selectors": "catalog:",
+    "postcss-mixins": "catalog:",
     "@types/mdx": "catalog:",
     "astro": "catalog:",
     "@shikijs/transformers": "catalog:",

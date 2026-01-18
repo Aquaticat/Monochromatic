@@ -120,13 +120,13 @@ export default defineConfig({
         'astro:build:done': async ({ dir, logger, },): Promise<void> => {
           const relativeDir = relative(process.cwd(), fileURLToPath(dir,),);
           const htmlFilePaths = await glob(`${relativeDir}/**/*.html`,);
-          htmlFilePaths.forEach(async htmlFilePath => {
+          await Promise.all(htmlFilePaths.map(async htmlFilePath => {
             await writeFile(htmlFilePath, String(await unified()
               .use(rehypeParse,)
               .use(rehypePresetMinify,)
               .use(rehypeStringify,)
               .process(await read(htmlFilePath,),),),);
-          },);
+          },),);
           logger.info(`minified html files in ${relativeDir}`,);
         },
       },
