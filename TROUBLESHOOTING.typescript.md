@@ -77,6 +77,49 @@ function maybeAsyncSchemaIsSchemaAsync<Input, Output>(
 ```
 This throws away the specific schema type information, making the type guard less useful for preserving types in calling code.
 
+## JSX.IntrinsicElements Missing in Astro MDX Files
+
+### Problem
+In VS Code, MDX files in Astro projects show TypeScript error ts-plugin(7026):
+```txt
+JSX element implicitly has type 'any' because no interface 'JSX.IntrinsicElements' exists.
+```
+
+This affects HTML elements like `<abbr>`, `<sub>`, `<sup>`, `<kbd>`, `<mark>`, etc. in MDX content.
+
+### Root Cause
+The `@types/mdx` package expects a global `JSX.IntrinsicElements` interface, which is normally provided by `@types/react`.
+Astro defines its JSX types under `astroHTML.JSX` namespace, not the global `JSX` namespace.
+
+From the MDX documentation:
+> "For types to work, the `JSX` namespace must be typed. This is done by installing and using the types of your framework, such as `@types/react`."
+
+This creates an incompatibility when using MDX with Astro without React.
+
+### Solution
+Create `src/env.d.ts` in your Astro project that bridges the namespaces:
+
+```ts
+/// <reference types="astro/client" />
+
+declare namespace JSX {
+  type Element = astroHTML.JSX.Element;
+  type IntrinsicElements = astroHTML.JSX.IntrinsicElements;
+}
+```
+
+This maps Astro's JSX types to the global namespace that `@types/mdx` expects.
+
+### Note
+- This is an IDE/editor type-checking issue; `skipLibCheck: true` in tsconfig prevents this from blocking builds
+- Each Astro project using MDX with TypeScript needs this `env.d.ts` file
+- The Astro-generated `.astro/types.d.ts` includes `astro/client` but doesn't bridge to the global `JSX` namespace
+
+### References
+- [Astro GitHub Issue #5061](https://github.com/withastro/astro/issues/5061)
+- [MDX Getting Started - Types](https://mdxjs.com/docs/getting-started/#types)
+- [Astro TypeScript - Extending global types](https://docs.astro.build/en/guides/typescript/#extending-global-types)
+
 ## Related Documentation
 
 - [ESLint Configuration](./TROUBLESHOOTING.eslint.md) - ESLint and TypeScript parser issues

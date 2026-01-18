@@ -9,6 +9,7 @@
     "isolatedDeclarations": false,
 
     "types": [
+      "astro/client",
       "mdx"
     ]
   }

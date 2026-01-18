@@ -1,10 +1,9 @@
 import mdx from '@astrojs/mdx';
+import { createBaseConfig, } from '@monochromatic-dev/config-vite/.ts';
 import {
   transformerNotationDiff,
   transformerNotationHighlight,
 } from '@shikijs/transformers';
-// import viteBasicSsl from '@vitejs/plugin-basic-ssl';
-import { createBaseConfig, } from '@monochromatic-dev/config-vite/.ts';
 import { defineConfig, } from 'astro/config';
 import { glob, } from 'glob';
 import spawn from 'nano-spawn';
@@ -75,26 +74,7 @@ export default defineConfig({
       maintainCase: true,
       removeAccents: true,
     },], [rehypeAutolinkHeadings, {},],],
-    // remarkRehype: { allowDangerousHtml: true },
   },
-
-  /*   i18n: {
-    locales: [
-      {
-        path: 'en',
-        codes: ['en', 'en-CA', 'en-US'],
-      },
-      {
-        path: 'zh',
-        codes: ['zh', 'zh-CN'],
-      },
-    ],
-    defaultLocale: 'en',
-    fallback: {
-      zh: 'en',
-    },
-    routing: 'manual',
-  }, */
 
   integrations: [
     mdx(),
