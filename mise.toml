@@ -146,22 +146,26 @@ alias = "t"
 [tasks."test:unit"]
 hide = true
 description = "Run unit tests"
-run = "vitest run --config vitest.unit.config.ts"
+usage = 'arg "[args]" var=#true help="Additional arguments passed to vitest"'
+run = "vitest run --config vitest.unit.config.ts ...($env.usage_args | split row ' ')"
 
 [tasks."test:browser"]
 hide = true
 description = "Run browser tests with Playwright"
-run = "pnpm exec playwright test --config playwright.browser.config.ts"
+usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
+run = "pnpm exec playwright test --config playwright.browser.config.ts ...($env.usage_args | split row ' ')"
 
 [tasks."test:browser:chromium"]
 hide = true
 description = "Run browser tests in Chromium"
-run = "pnpm exec playwright test --config playwright.browser.config.ts --project=chromium"
+usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
+run = "pnpm exec playwright test --config playwright.browser.config.ts --project=chromium ...($env.usage_args | split row ' ')"
 
 [tasks."test:browser:firefox"]
 hide = true
 description = "Run browser tests in Firefox"
-run = "pnpm exec playwright test --config playwright.browser.config.ts --project=firefox"
+usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
+run = "pnpm exec playwright test --config playwright.browser.config.ts --project=firefox ...($env.usage_args | split row ' ')"
 
 # [tasks."test:browser"]
 # hide = true
@@ -171,7 +175,8 @@ run = "pnpm exec playwright test --config playwright.browser.config.ts --project
 [tasks."test--watch:unit"]
 hide = true
 description = "Run unit tests in watch mode"
-run = "vitest watch --config vitest.unit.config.ts"
+usage = 'arg "[args]" var=#true help="Additional arguments passed to vitest"'
+run = "vitest watch --config vitest.unit.config.ts ...($env.usage_args | split row ' ')"
 
 # [tasks."test--watch:browser"]
 # hide = true

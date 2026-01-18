@@ -1,1 +1,2 @@
-export { omit, } from './omit.ts';
+/** Record transformation utilities. */
+export * as record from './t record/index.ts';
