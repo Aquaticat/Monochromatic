@@ -26,7 +26,7 @@ export default defineConfig({
   site: 'https://aquati.cat',
   base: '/',
 
-  vite: createBaseConfig(fileURLToPath(new URL('./', import.meta.url,),),),
+  vite: createBaseConfig(import.meta.dirname,),
 
   markdown: {
     shikiConfig: {
@@ -44,11 +44,6 @@ export default defineConfig({
       removeAccents: true,
     },], [rehypeAutolinkHeadings, {},],],
     // remarkRehype: { allowDangerousHtml: true },
-  },
-
-  image: {
-    // @ts-expect-error - experimentalLayout is a valid option but not in types yet
-    experimentalLayout: 'responsive',
   },
 
   /*   i18n: {
