@@ -33,7 +33,7 @@ export const GET: APIRoute = ({ site, params, },) => {
       link: `${siteUrl}/${langPost.id}`,
       description: langPost.data.description,
       pubDate: langPost.data.published,
-      categories: langPost.data.tags,
+      categories: langPost.data.tags.map((tag: string,) => ({ name: tag, }),),
     })),
   },);
 
