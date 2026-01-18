@@ -29,7 +29,6 @@ export { composedVisitor, } from './lightningcss-visitors.ts';
 // Re-export everything that was publicly exported before
 export {
   createBaseConfig,
-  createBaseConfigForAstro,
 } from './base-configs.ts';
 
 export {
