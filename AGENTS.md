@@ -49,23 +49,10 @@ When users point out issues or suggest improvements:
 <development_commands>
 # Essential Commands
 
-**IMPORTANT**: All builds and tasks are managed by mise. Never run `pnpm exec` or direct package scripts. Always use `mise run` commands.
+All builds and tasks are managed by mise. Never run `pnpm exec` or direct package scripts. Always use `mise run` commands.
 
-## General Commands
 Read the `mise.toml` files in the root and packages directories to see all available commands.
 
-## Running Specific Test Files
-To run a single test file:
-```bash
-mise run test:unit -- packages/module/es/src/filename.unit.test.ts
-```
-
-Use `mise run test:browser -- packages/path/to/test` for browser tests.
-
-## Building Projects
-**IMPORTANT**: When rebuilding after configuration changes (like ESLint rules), always use `mise run build` to rebuild all projects at once. For TypeScript project reference updates, run `mise run sync:ts-references` after adding or removing dependencies.
-
-## Linting and Formatting
 Don't run linters or formatters. The user will run them themselves.
 </development_commands>
 
@@ -248,17 +235,6 @@ When setting up or integrating third-party tools:
   - Allows easy updates with `git pull`
   - Prevents accidental commits to upstream
   - Maintains clear separation between your code and dependencies
-
-## Functional Programming Utilities
-
-When composing functions:
-- Use `piped` for synchronous function composition: `piped(input, fn1, fn2, fn3)`
-- Use `pipedAsync` for async function composition: `await pipedAsync(input, fn1, asyncFn2, fn3)`
-- Use `pipe` to create a reusable sync function pipeline: `const pipeline = pipe(fn1, fn2, fn3); pipeline(input)`
-- Use `pipeAsync` to create a reusable async function pipeline: `const pipeline = pipeAsync(fn1, asyncFn2, fn3); await pipeline(input)`
-- Functions generally don't require `.bind()` for `this` context unless specifically documented
-  - Example: `pipedAsync(data, transform, index.addDocuments)` works fine without `.bind(index)`
-  - Instance methods already have their context when referenced as `instance.method`
 </third_party_libraries>
 
 <project_overview>
@@ -934,11 +910,3 @@ test(module-es): achieve 100% coverage for error utilities
 - Never use emojis in commit messages
 - Focus on the "what" and "why", not just listing file changes
 </documentation_standards>
-
-<mise_based_architecture>
-# mise-Based Architecture
-- All builds and tasks are managed by mise CLI
-- Never run `pnpm exec` or direct package scripts
-- Use `mise run <task>` for all development activities
-- Dual builds are supported for Node.js and browser targets
-</mise_based_architecture>
