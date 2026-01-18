@@ -20,6 +20,8 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
     alias: {
       '@': resolve(configDir,),
       '@_': resolve(configDir, 'src',),
+      // LightningCSS doesn't resolve npm package @imports, so add explicit alias
+      '@monochromatic-dev/style-monochromatic': resolve(configDir, '..', '..', 'style', 'monochromatic', 'src',),
     },
     tsconfigPaths: true,
   },
@@ -54,6 +56,8 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
       emitDecoratorMetadata: true,
     },
 
+    jsx: 'preserve',
+
     target: `firefox${FIREFOX_ESR_VERSION}`,
 
     typescript: {
@@ -65,6 +69,7 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
     },
   },
   build: {
+    cssMinify: false,
     rolldownOptions: {
       // https://github.com/rolldown/rolldown/blob/5a5fbb88da1c9c37cc5c25f2cfb3d66124c31dc6/packages/rolldown/src/options/generated/checks-options.ts
       checks: {
@@ -85,8 +90,6 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
           compress: true,
           mangle: false,
         },
-
-        inlineDynamicImports: true,
       },
     },
     target: `firefox${FIREFOX_ESR_VERSION}`,

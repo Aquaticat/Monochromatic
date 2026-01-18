@@ -47,6 +47,9 @@ rust = "latest"
 cargo-binstall = "latest"
 "cargo:timeout-cli" = "latest"
 
+# Compression
+"github:facebook/zstd" = "latest"
+
 [settings]
 # Enable automatic tool installation when entering directory
 auto_install = true

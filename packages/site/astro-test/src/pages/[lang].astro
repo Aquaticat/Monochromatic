@@ -7,9 +7,10 @@ import {
   langs,
   postsGroupedByLang,
 } from '@_/index.ts';
-export async function getStaticPaths(): Promise<
-  { params: { lang: string; }; }[]
-> {
+
+type StaticPath = { params: { lang: string; }; };
+
+export async function getStaticPaths(): Promise<StaticPath[]> {
   return langs.map(lang => ({
     params: { lang, },
   }));

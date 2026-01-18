@@ -1,4 +1,4 @@
-@import '@monochromatic-dev/style-monochromatic/.css';
+@import '@monochromatic-dev/style-monochromatic/index.css';
 
 @font-face {
   font-family: inter;

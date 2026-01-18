@@ -1,1 +1,1 @@
-export * as from from './t function/index.ts';
+export * as function from './t function/index.ts';

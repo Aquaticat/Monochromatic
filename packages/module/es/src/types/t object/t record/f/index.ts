@@ -1,2 +1,1 @@
-// dummy export
-export const $ = '';
+export { omit, } from './omit.ts';

@@ -1,4 +1,4 @@
-import rss from '@astrojs/rss';
+import { generateRssFeed, } from 'feedsmith';
 import type {
   APIRoute,
   GetStaticPaths,
@@ -11,8 +11,9 @@ import {
   postsGroupedByLang,
 } from '@_/index.ts';
 
-// eslint-disable-next-line require-await -- Astro requires async for getStaticPaths
-export const getStaticPaths: GetStaticPaths = async () => {
+type StaticPath = { params: { lang: string; }; };
+
+export const getStaticPaths: GetStaticPaths = async (): Promise<StaticPath[]> => {
   return langs.map((lang: string,) => ({
     params: { lang, },
   }));
@@ -20,24 +21,25 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const GET: APIRoute = ({ site, params, },) => {
   const lang = params.lang as string;
-  return rss({
-    // `<title>` field in output xml
+  const siteUrl = site?.toString() ?? 'https://example.com';
+
+  const rssXml = generateRssFeed({
     title: i18n.get('siteName',)!.get(lang,)!,
-    // `<description>` field in output xml
+    link: siteUrl,
     description: i18n.get('siteDescription',)!.get(lang,)!,
-    // Pull in your project "site" from the endpoint context
-    // https://docs.astro.build/en/reference/api-reference/#site
-    site: site,
-    // Array of `<item>`s in output xml
-    // See "Generating items" section for examples using content collections and glob imports
+    language: lang,
     items: postsGroupedByLang[lang]!.map((langPost: Post,) => ({
       title: langPost.data.title,
-      pubDate: langPost.data.published,
+      link: `${siteUrl}/${langPost.id}`,
       description: langPost.data.description,
-      link: `/${langPost.id}`,
+      pubDate: langPost.data.published,
       categories: langPost.data.tags,
     })),
-    // (optional) inject custom xml
-    customData: `<language>${params.lang}</language>`,
+  },);
+
+  return new Response(rssXml, {
+    headers: {
+      'Content-Type': 'application/xml; charset=utf-8',
+    },
   },);
 };

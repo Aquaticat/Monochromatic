@@ -12,9 +12,6 @@ catalogs:
     '@astrojs/mdx':
       specifier: '>=4.0.7'
       version: 4.3.0
-    '@astrojs/rss':
-      specifier: '*'
-      version: 4.0.12
     '@cspotcode/outdent':
       specifier: jsr:*
       version: 0.8.0
@@ -112,8 +109,8 @@ catalogs:
       specifier: '>=9.5.3'
       version: 9.6.0
     feedsmith:
-      specifier: '>=0.2.0'
-      version: 1.9.0
+      specifier: '>=3.0.0-next.2'
+      version: 3.0.0-next.2
     find-up:
       specifier: '>=7.0.0'
       version: 7.0.0
@@ -336,6 +333,9 @@ catalogs:
     ses:
       specifier: '>=1.12.2'
       version: 1.13.1
+    sharp:
+      specifier: '>=0.34.3'
+      version: 0.34.5
     stylelint:
       specifier: '>=16.24.0'
       version: 16.24.0
@@ -885,9 +885,6 @@ importers:
       '@astrojs/mdx':
         specifier: 'catalog:'
         version: 4.3.0(astro@6.0.0-beta.1(@types/node@24.0.10)(rollup@4.50.1)(typescript@5.9.3)(yaml@2.8.0))
-      '@astrojs/rss':
-        specifier: 'catalog:'
-        version: 4.0.12
       '@monochromatic-dev/config-vite':
         specifier: workspace:*
         version: link:../../config/vite
@@ -906,6 +903,9 @@ importers:
       astro:
         specifier: '>=6.0.0-beta.1'
         version: 6.0.0-beta.1(@types/node@24.0.10)(rollup@4.50.1)(typescript@5.9.3)(yaml@2.8.0)
+      feedsmith:
+        specifier: 'catalog:'
+        version: 3.0.0-next.2
       glob:
         specifier: 'catalog:'
         version: 11.0.3
@@ -939,6 +939,9 @@ importers:
       ses:
         specifier: 'catalog:'
         version: 1.13.1
+      sharp:
+        specifier: 'catalog:'
+        version: 0.34.5
       to-vfile:
         specifier: 'catalog:'
         version: 8.0.0
@@ -992,7 +995,7 @@ importers:
         version: link:../../module/es
       feedsmith:
         specifier: 'catalog:'
-        version: 1.9.0
+        version: 3.0.0-next.2
       find-up:
         specifier: 'catalog:'
         version: 7.0.0
@@ -1075,9 +1078,6 @@ packages:
   '@astrojs/prism@4.0.0-beta.1':
     resolution: {integrity: sha512-3pg+oWQ9i9Q4G4Y/UaspdRuAmr2AujUpCQF3hzUvp2dFPhm/KRmitCKm7nlFh5hz+xqOmgNTfNzTjrBN5Sk+Ig==}
     engines: {node: ^20.19.5 || >=22.12.0}
-
-  '@astrojs/rss@4.0.12':
-    resolution: {integrity: sha512-O5yyxHuDVb6DQ6VLOrbUVFSm+NpObulPxjs6XT9q3tC+RoKbN4HXMZLpv0LvXd1qdAjzVgJ1NFD+zKHJNDXikw==}
 
   '@astrojs/telemetry@3.3.0':
     resolution: {integrity: sha512-UFBgfeldP06qu6khs/yY+q1cDAaArM2/7AEIqQ9Cuvf7B1hNLq0xDrZkct+QoIGyjq56y8IaE2I3CTvG99mlhQ==}
@@ -2932,6 +2932,10 @@ packages:
     resolution: {integrity: sha512-aN97NXWF6AWBTahfVOIrB/NShkzi5H7F9r1s9mD3cDj4Ko5f2qhhVoYMibXF7GlLveb/D2ioWay8lxI97Ven3g==}
     engines: {node: '>=0.12'}
 
+  entities@7.0.0:
+    resolution: {integrity: sha512-FDWG5cmEYf2Z00IkYRhbFrwIwvdFKH07uV8dvNy0omp/Qb1xcyCWp2UDtcwJF4QZZvk0sLudP6/hAu42TaqVhQ==}
+    engines: {node: '>=0.12'}
+
   env-paths@2.2.1:
     resolution: {integrity: sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==}
     engines: {node: '>=6'}
@@ -3112,8 +3116,8 @@ packages:
   fast-uri@3.0.6:
     resolution: {integrity: sha512-Atfo14OibSv5wAp4VWNsFYE1AchQRTv9cBGWET4pZWHzYshFSS9NQI6I57rdKn9croWVMbYFbLhJ+yJvmZIIHw==}
 
-  fast-xml-parser@5.2.5:
-    resolution: {integrity: sha512-pfX9uG9Ki0yekDHx2SiuRIyFdyAr1kMIMitPvb0YBo8SUfKvia7w7FIyd/l6av85pFYRhZscS75MwMnbvY+hcQ==}
+  fast-xml-parser@5.3.3:
+    resolution: {integrity: sha512-2O3dkPAAC6JavuMm8+4+pgTk+5hoAs+CjZ+sWcQLkX9+/tHRuTkQh/Oaifr8qDmZ8iEHb771Ea6G8CdwkrgvYA==}
     hasBin: true
 
   fastest-levenshtein@1.0.16:
@@ -3140,8 +3144,8 @@ packages:
       picomatch:
         optional: true
 
-  feedsmith@1.9.0:
-    resolution: {integrity: sha512-j8haMeMh6686mwYD4MEpdsT1ItOiR5ednDNKHWEGn/qro2sR0muAmNZRlXDAtaThkKHkaMfRC/mFh6QYsE4OdA==}
+  feedsmith@3.0.0-next.2:
+    resolution: {integrity: sha512-o/9Y8Mar9RT/ojSSwVG8FVVQAivpL6/e3F36Rg9cY47XWbXXytfmOSGeNirfFcLF5vk7vRB4Wotcm65SQBdYVw==}
 
   fflate@0.8.2:
     resolution: {integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==}
@@ -5711,11 +5715,6 @@ snapshots:
     dependencies:
       prismjs: 1.30.0
 
-  '@astrojs/rss@4.0.12':
-    dependencies:
-      fast-xml-parser: 5.2.5
-      kleur: 4.1.5
-
   '@astrojs/telemetry@3.3.0':
     dependencies:
       ci-info: 4.3.1
@@ -5959,8 +5958,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@img/colour@1.0.0':
-    optional: true
+  '@img/colour@1.0.0': {}
 
   '@img/sharp-darwin-arm64@0.34.5':
     optionalDependencies:
@@ -7501,6 +7499,8 @@ snapshots:
 
   entities@6.0.1: {}
 
+  entities@7.0.0: {}
+
   env-paths@2.2.1: {}
 
   err-code@2.0.3: {}
@@ -7776,7 +7776,7 @@ snapshots:
 
   fast-uri@3.0.6: {}
 
-  fast-xml-parser@5.2.5:
+  fast-xml-parser@5.3.3:
     dependencies:
       strnum: 2.1.1
 
@@ -7794,10 +7794,10 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.3
 
-  feedsmith@1.9.0:
+  feedsmith@3.0.0-next.2:
     dependencies:
-      entities: 6.0.1
-      fast-xml-parser: 5.2.5
+      entities: 7.0.0
+      fast-xml-parser: 5.3.3
 
   fflate@0.8.2: {}
 
@@ -10333,7 +10333,6 @@ snapshots:
       '@img/sharp-win32-arm64': 0.34.5
       '@img/sharp-win32-ia32': 0.34.5
       '@img/sharp-win32-x64': 0.34.5
-    optional: true
 
   shebang-command@2.0.0:
     dependencies:

@@ -21,12 +21,44 @@ import remarkSectionize from 'remark-sectionize';
 import { read, } from 'to-vfile';
 import { unified, } from 'unified';
 
+/**
+ * Creates a new object with specified keys omitted.
+ * @param source - Object to omit keys from
+ * @param keys - Keys to exclude from the result
+ */
+function omit<
+  const T extends Record<string, unknown>,
+  const K extends keyof T,
+>(
+  source: T,
+  ...keys: K[]
+): Omit<T, K> {
+  const keysSet = new Set<PropertyKey>(keys,);
+  return Object.fromEntries(
+    Object.entries(source,).filter(
+      ([key,],) => !keysSet.has(key,),
+    ),
+  ) as Omit<T, K>;
+}
+
+/** Base Vite config with rolldownOptions suitable for library builds. */
+const baseViteConfig = createBaseConfig(import.meta.dirname,);
+
+/**
+ * Astro-specific Vite config.
+ * Omits rolldownOptions from build since Astro manages its own bundling.
+ */
+const astroViteConfig = {
+  ...baseViteConfig,
+  build: omit(baseViteConfig.build!, 'rolldownOptions',),
+};
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://aquati.cat',
   base: '/',
 
-  vite: createBaseConfig(import.meta.dirname,),
+  vite: astroViteConfig,
 
   markdown: {
     shikiConfig: {

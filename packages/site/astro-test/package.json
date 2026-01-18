@@ -22,8 +22,9 @@
     "to-vfile": "catalog:",
     "unified": "catalog:",
     "glob": "catalog:",
-    "@astrojs/rss": "catalog:",
+    "feedsmith": "catalog:",
     "lightningcss": "catalog:",
-    "ses": "catalog:"
+    "ses": "catalog:",
+    "sharp": "catalog:"
   }
 }

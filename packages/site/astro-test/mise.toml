@@ -1,20 +1,20 @@
-[tasks.'build:js']
-run = "astro build"
+[tasks.'build:site']
+run = "pnpm exec astro build"
 
-[tasks."build--watch:js"]
-run = "astro build --watch"
+[tasks."build--watch:site"]
+run = "pnpm exec astro build --watch"
 
 [tasks."lint:types"]
 hide = true
 description = "TypeScript"
-run = "tsgo --build"
+run = "pnpm exec tsgo --build"
 
 [tasks."lint--allowFailure:types"]
 hide = true
 description = "TypeScript"
-run = "try { tsgo --build } catch { |e| print -e $e.rendered }"
+run = "try { pnpm exec tsgo --build } catch { |e| print -e $e.rendered }"
 
-[tasks."start:dev"]
+[tasks."dev:site"]
 hide = true
 description = "Start development server"
 run = "astro dev"

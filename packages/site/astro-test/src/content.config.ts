@@ -3,6 +3,7 @@ import {
   defineCollection,
   z,
 } from 'astro:content';
+import type { CollectionConfig, BaseSchema, } from 'astro/content/config';
 
 /* vale Microsoft.Plurals = NO */
 // 2. Import loaders
@@ -12,7 +13,7 @@ import { glob, } from 'astro/loaders';
 /* vale Microsoft.Plurals = NO */
 // 3. Define your collections
 /* vale Microsoft.Plurals = YES */
-const blog = defineCollection({
+const blog: CollectionConfig<BaseSchema> = defineCollection({
   loader: glob({ pattern: '**/*.mdx', base: './src/collections/blog', },),
 
   // title = "Using MDX"
@@ -31,4 +32,4 @@ const blog = defineCollection({
 /* vale Microsoft.Plurals = NO */
 // 4. Export a single `collections` object to register your collections
 /* vale Microsoft.Plurals = YES */
-export const collections = { blog, };
+export const collections: { blog: typeof blog, } = { blog: blog, };
