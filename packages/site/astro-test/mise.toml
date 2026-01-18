@@ -1,0 +1,20 @@
+[tasks.'build:js']
+run = "astro build"
+
+[tasks."build--watch:js"]
+run = "astro build --watch"
+
+[tasks."lint:types"]
+hide = true
+description = "TypeScript"
+run = "tsgo --build"
+
+[tasks."lint--allowFailure:types"]
+hide = true
+description = "TypeScript"
+run = "try { tsgo --build } catch { |e| print -e $e.rendered }"
+
+[tasks."start:dev"]
+hide = true
+description = "Start development server"
+run = "astro dev"

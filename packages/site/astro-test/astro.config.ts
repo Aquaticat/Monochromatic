@@ -4,7 +4,7 @@ import {
   transformerNotationHighlight,
 } from '@shikijs/transformers';
 // import viteBasicSsl from '@vitejs/plugin-basic-ssl';
-import { composedVisitor, } from '@monochromatic-dev/config-vite/.ts';
+import { createBaseConfig, } from '@monochromatic-dev/config-vite/.ts';
 import { defineConfig, } from 'astro/config';
 import { glob, } from 'glob';
 import spawn from 'nano-spawn';
@@ -26,41 +26,7 @@ export default defineConfig({
   site: 'https://aquati.cat',
   base: '/',
 
-  vite: {
-    plugins: [
-      // bun bug https://github.com/oven-sh/bun/issues/14825, commented out for now.
-      // viteBasicSsl({}),
-    ],
-
-    resolve: {
-      alias: {
-        '@': fileURLToPath(new URL('./', import.meta.url,),),
-        '@_': fileURLToPath(new URL('./src', import.meta.url,),),
-      },
-    },
-    css: {
-      transformer: 'lightningcss',
-      lightningcss: {
-        targets: {
-          firefox: (128 << 16),
-        },
-        cssModules: false,
-        visitor: composedVisitor,
-      },
-      preprocessorMaxWorkers: true,
-      devSourcemap: true,
-    },
-    esbuild: {
-      minifyIdentifiers: false,
-    },
-    build: {
-      target: 'firefox128',
-      cssMinify: 'lightningcss',
-    },
-    worker: {
-      format: 'es',
-    },
-  },
+  vite: createBaseConfig(fileURLToPath(new URL('./', import.meta.url,),),),
 
   markdown: {
     shikiConfig: {
@@ -154,7 +120,6 @@ export default defineConfig({
   ],
 
   experimental: {
-    responsiveImages: true,
     clientPrerender: true,
     contentIntellisense: true,
   },

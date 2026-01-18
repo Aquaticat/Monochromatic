@@ -113,4 +113,4 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
   },
 });
 
-export { createBaseConfig, };
+export { createBaseConfig };
