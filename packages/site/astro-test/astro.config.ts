@@ -1,5 +1,5 @@
 import mdx from '@astrojs/mdx';
-import { createBaseConfig, } from '@monochromatic-dev/config-vite/.ts';
+import { createBaseConfig, } from '@monochromatic-dev/config-vite';
 import {
   transformerNotationDiff,
   transformerNotationHighlight,

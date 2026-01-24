@@ -12,15 +12,12 @@ import { cssMixinPlugin, } from './css-mixin-plugin.ts';
 import { composedVisitor, } from './lightningcss-visitors.ts';
 import { rolldownExternal, } from './utilities.ts';
 
-/** Path to the monochromatic style package mixin file */
-const MONOCHROMATIC_MIXIN_PATH = (configDir: string,): string =>
-  resolve(configDir, '..', '..', 'style', 'monochromatic', 'src', 'mixin.css',);
-
 const createBaseConfig = (configDir: string,): UserConfig => ({
   plugins: [
-    // Text-based @mixin/@apply expansion before LightningCSS.
+    // Text-based @mixin/@apply expansion using transform.filter API.
+    // Auto-discovers mixins from all CSS files and their @import dependencies.
     // Workaround for LightningCSS issue #1081 (customAtRules breaks with var()).
-    cssMixinPlugin([MONOCHROMATIC_MIXIN_PATH(configDir,),],),
+    cssMixinPlugin(),
     // Allows importing JSON5 files directly.
     json5Plugin(),
   ],

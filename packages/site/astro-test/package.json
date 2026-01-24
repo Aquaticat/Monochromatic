@@ -3,6 +3,10 @@
   "type": "module",
   "version": "0.0.1",
   "private": true,
+  "devDependencies": {
+    "oxc-resolver": "catalog:",
+    "tinyglobby": "catalog:"
+  },
   "dependencies": {
     "@astrojs/mdx": "catalog:",
     "@types/mdx": "catalog:",

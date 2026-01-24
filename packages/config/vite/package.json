@@ -10,7 +10,9 @@
   "peerDependencies": {
     "vitest": "catalog:",
     "vite": "catalog:",
-    "lightningcss": "catalog:"
+    "lightningcss": "catalog:",
+    "oxc-resolver": "catalog:",
+    "tinyglobby": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
@@ -24,7 +26,9 @@
     "istanbul-lib-report": "catalog:",
     "nano-spawn": "catalog:",
     "vite-plugin-json5": "catalog:",
-    "minimatch": "catalog:"
+    "minimatch": "catalog:",
+    "oxc-resolver": "catalog:",
+    "tinyglobby": "catalog:"
   },
   "type": "module",
   "files": [
