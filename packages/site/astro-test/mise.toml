@@ -1,3 +1,6 @@
+[tasks.'build']
+run = [{ tasks = ["build:*"] }]
+
 [tasks.'build:site']
 run = "pnpm exec astro build"
 
@@ -15,9 +18,8 @@ description = "TypeScript"
 run = "try { pnpm exec tsgo --build } catch { |e| print -e $e.rendered }"
 
 [tasks."dev:site"]
-hide = true
 description = "Start development server"
-run = "astro dev"
+run = "pnpm exec astro dev"
 
 [tasks."_astro:sync"]
 description = "Sync Astro"

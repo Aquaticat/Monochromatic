@@ -1,31 +1,15 @@
 import {
-  composeVisitors,
   type CustomAtRules,
-  type DeclarationBlock,
-  type Rule,
   type Visitor,
 } from 'lightningcss';
 
 //region LightningCSS Visitors -- Custom CSS transform implementations
 
 /**
- * LightningCSS customAtRules limitation:
- * The `customAtRules` option would eliminate "Unknown at rule" warnings by telling
- * LightningCSS how to parse @mixin/@apply. However, LightningCSS v1.30.2 has a bug
- * that breaks customAtRules when CSS contains var() functions.
- * See: https://github.com/parcel-bundler/lightningcss/issues/1081
- *
- * Until fixed, these visitors use `Rule.custom` which expects customAtRules config.
- * Without customAtRules, warnings appear but the mixin system still works via the
- * "unknown" at-rule fallback mechanism.
+ * Transforms custom property units (e.g., `2--rp`) into `calc()` expressions.
+ * This allows using CSS custom properties as units directly in values.
+ * @example `2--rp` becomes `calc(2 * var(--rp))`
  */
-
-/** Storage for mixin definitions */
-const mixins = new Map<string,
-  | Required<DeclarationBlock>
-  | Rule[]>();
-
-/** Transforms custom property units into `calc()` expressions */
 const customUnitsVisitor: Visitor<CustomAtRules> = {
   Token: {
     dimension(token,) {
@@ -65,27 +49,12 @@ const customUnitsVisitor: Visitor<CustomAtRules> = {
   },
 };
 
-/** Transforms `@mixin` definitions and `@apply` usage */
-const mixinsVisitor: Visitor<CustomAtRules> = {
-  Rule: {
-    custom: {
-      mixin(rule,) {
-        // Uncomment to get the updated TypeScript inferred type for the map.
-        // const body = rule.body.value;
-        mixins.set(rule.prelude.value as string, rule.body.value,);
-        return [];
-      },
-      apply(rule,) {
-        return mixins.get(rule.prelude.value as string,);
-      },
-    },
-  },
-};
-
-const composedVisitor: Visitor<CustomAtRules> = composeVisitors([
-  customUnitsVisitor,
-  mixinsVisitor,
-],);
+/**
+ * Composed visitor combining all custom CSS transformations.
+ * Note: @mixin/@apply expansion is handled by css-mixin-plugin.ts (text preprocessing)
+ * as a workaround for LightningCSS issue #1081 (customAtRules breaks with var()).
+ */
+const composedVisitor: Visitor<CustomAtRules> = customUnitsVisitor;
 
 //endregion LightningCSS Visitors
 

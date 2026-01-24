@@ -46,7 +46,7 @@ export const postsGroupedByTag = Object.fromEntries(
   tags.map(tag => [tag, posts.filter(post => post.data.tags.includes(tag,)),]),
 ) as Record<string, [Post, ...Post[],]>;
 
-export const postsGroupedByLangThenTag = Object.fromEntries(
+export const postsGroupedByLangThenTag: Record<string, Record<string, Post[]>> = Object.fromEntries(
   langs.map(
     lang => [
       lang,
@@ -60,7 +60,7 @@ export const postsGroupedByLangThenTag = Object.fromEntries(
   ),
 );
 
-export const i18n = new Map<string, Map<string, string>>(
+export const i18n: Map<string, Map<string, string>> = new Map<string, Map<string, string>>(
   [
     [
       'siteName',

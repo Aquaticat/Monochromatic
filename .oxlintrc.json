@@ -9,6 +9,11 @@
     "pedantic": "warn",
     "style": "warn"
   },
+  "settings": {
+    "vitest": {
+      "typecheck": true
+    }
+  },
   // Language server still doesn't support js plugins. Waiting for upstream: https://github.com/oxc-project/oxc/issues/14402 https://github.com/oxc-project/oxc/issues/14826
   "jsPlugins": ["./oxlint-require-tsdoc.ts"],
   "env": {
@@ -156,6 +161,8 @@
 
     //region style
 
+    "capitalized-comments": "off",
+
     // Sometimes `import { a, type B } from 'module'` is needed.
     "import/consistent-type-specifier-style": "off",
 
@@ -179,7 +186,21 @@
     "eslint/no-magic-numbers": [
       "warn",
       {
-        "ignore": [1, -1, 0, 2, -2, 255, 0.1, 10, "0n", "1n", "2n", "-1n", "-2n"],
+        "ignore": [
+          1,
+          -1,
+          0,
+          2,
+          -2,
+          255,
+          0.1,
+          10,
+          "0n",
+          "1n",
+          "2n",
+          "-1n",
+          "-2n"
+        ],
         "enforceConst": true,
         "detectObjects": false,
         "ignoreEnums": true,
@@ -207,14 +228,8 @@
 
     // Readable enough.
     "unicorn/no-await-expression-member": "off",
-    "typescript/consistent-type-definitions": [
-      "error",
-      "type"
-    ],
-    "typescript/consistent-indexed-object-style": [
-      "error",
-      "record"
-    ],
+    "typescript/consistent-type-definitions": ["error", "type"],
+    "typescript/consistent-indexed-object-style": ["error", "record"],
     "typescript/no-inferrable-types": "off",
     "unicorn/catch-error-name": "off",
     "unicorn/filename-case": "off",
@@ -237,9 +252,7 @@
   },
   "overrides": [
     {
-      "files": [
-        "**/figma-plugin/**"
-      ],
+      "files": ["**/figma-plugin/**"],
       "globals": {
         "figma": "readonly"
       }
@@ -273,18 +286,11 @@
       }
     },
     {
-      "files": [
-        "**/*.{test,bench}.ts"
-      ],
-      "plugins": [
-        "vitest"
-      ],
+      "files": ["**/*.{test,bench}.ts"],
+      "plugins": ["vitest"],
       "rules": {
         // Test files themselves don't require good traces.
-        "eslint/func-names": [
-          "warn",
-          "as-needed"
-        ],
+        "eslint/func-names": ["warn", "as-needed"],
 
         // Sometimes testing a list of numbers is necessary.
         "eslint/no-magic-numbers": "off",
@@ -304,11 +310,14 @@
         "promise/prefer-await-to-then": "off",
 
         // Some test files just have too many TypeScript errors.
-        "typescript/ban-ts-comment": ["error", {
-          "ts-ignore": "allow-with-description",
-          "ts-nocheck": "allow-with-description",
-          "ts-expect-error": "allow-with-description"
-        }],
+        "typescript/ban-ts-comment": [
+          "error",
+          {
+            "ts-ignore": "allow-with-description",
+            "ts-nocheck": "allow-with-description",
+            "ts-expect-error": "allow-with-description"
+          }
+        ],
 
         // Conflicts with Vitest Text Context extension pattern: https://vitest.dev/guide/test-context.html#extend-test-context
         "no-empty-pattern": "allow",

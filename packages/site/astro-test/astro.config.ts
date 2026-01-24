@@ -26,7 +26,7 @@ import { unified, } from 'unified';
  * @param keys - Keys to exclude from the result
  */
 function omit<
-  const T extends Record<string, unknown>,
+  const T extends object,
   const K extends keyof T,
 >(
   source: T,
