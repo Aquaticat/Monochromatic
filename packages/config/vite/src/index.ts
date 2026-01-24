@@ -23,9 +23,6 @@ export const getShared = (configDir: string,): UserConfigFnObject =>
 
 //endregion Public API
 
-// LightningCSS visitor
-export { composedVisitor, } from './lightningcss-visitors.ts';
-
 // Re-export everything that was publicly exported before
 export {
   createBaseConfig,

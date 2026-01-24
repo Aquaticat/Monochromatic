@@ -4,44 +4,38 @@ import {
 } from 'node:path';
 import { type UserConfig, } from 'vite';
 import { json5Plugin, } from 'vite-plugin-json5';
-import {
-  FIREFOX_ESR_VERSION,
-  FIREFOX_VERSION_SHIFT,
-} from './constants.ts';
-import { cssMixinPlugin, } from './css-mixin-plugin.ts';
-import { composedVisitor, } from './lightningcss-visitors.ts';
+import { FIREFOX_ESR_VERSION, } from './constants.ts';
+import { postcssMixin, preloadMixins, } from './postcss-mixin-plugin.ts';
 import { rolldownExternal, } from './utilities.ts';
 
-const createBaseConfig = (configDir: string,): UserConfig => ({
-  plugins: [
-    // Text-based @mixin/@apply expansion using transform.filter API.
-    // Auto-discovers mixins from all CSS files and their @import dependencies.
-    // Workaround for LightningCSS issue #1081 (customAtRules breaks with var()).
-    cssMixinPlugin(),
-    // Allows importing JSON5 files directly.
-    json5Plugin(),
-  ],
-  resolve: {
-    alias: {
-      '@': resolve(configDir,),
-      '@_': resolve(configDir, 'src',),
-      // LightningCSS doesn't resolve npm package @imports, so add explicit alias
-      '@monochromatic-dev/style-monochromatic': resolve(configDir, '..', '..', 'style', 'monochromatic', 'src',),
-    },
-    tsconfigPaths: true,
-  },
-  css: {
-    transformer: 'lightningcss',
-    lightningcss: {
-      targets: {
-        firefox: FIREFOX_ESR_VERSION << FIREFOX_VERSION_SHIFT,
+const createBaseConfig = (configDir: string,): UserConfig => {
+  const styleMonochromaticPath = resolve(configDir, '..', '..', 'style', 'monochromatic', 'src',);
+
+  // Preload mixin definitions before PostCSS starts processing
+  preloadMixins([
+    join(styleMonochromaticPath, 'mixin.css'),
+  ]);
+
+  return {
+    plugins: [
+      // Allows importing JSON5 files directly.
+      json5Plugin(),
+    ],
+    resolve: {
+      alias: {
+        '@': resolve(configDir,),
+        '@_': resolve(configDir, 'src',),
+        '@monochromatic-dev/style-monochromatic': styleMonochromaticPath,
       },
-      cssModules: false,
-      visitor: composedVisitor,
+      tsconfigPaths: true,
     },
-    preprocessorMaxWorkers: true,
-    devSourcemap: true,
-  },
+    css: {
+      postcss: {
+        plugins: [postcssMixin(),],
+      },
+      preprocessorMaxWorkers: true,
+      devSourcemap: true,
+    },
   oxc: {
     assumptions: {
       // Error: Compiler assumption `objectRestNoSymbols` is not implemented for object-rest-spread.
@@ -119,6 +113,7 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
   experimental: {
     enableNativePlugin: true,
   },
-});
+  };
+};
 
 export { createBaseConfig };
