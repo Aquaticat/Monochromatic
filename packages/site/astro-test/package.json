@@ -23,7 +23,7 @@
     "unified": "catalog:",
     "glob": "catalog:",
     "feedsmith": "catalog:",
-    "postcss": "catalog:",
+    "lightningcss": "catalog:",
     "ses": "catalog:",
     "sharp": "catalog:"
   }

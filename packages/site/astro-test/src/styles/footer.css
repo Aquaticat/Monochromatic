@@ -1,3 +1,5 @@
+@import '@monochromatic-dev/style-monochromatic/mixin.css';
+
 footer {
   min-block-size: calc(var(--length-m) + 2 * var(--gap-m));
 

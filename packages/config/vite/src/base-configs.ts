@@ -4,38 +4,35 @@ import {
 } from 'node:path';
 import { type UserConfig, } from 'vite';
 import { json5Plugin, } from 'vite-plugin-json5';
-import { FIREFOX_ESR_VERSION, } from './constants.ts';
-import { postcssMixin, preloadMixins, } from './postcss-mixin-plugin.ts';
+import {
+  FIREFOX_ESR_VERSION,
+  FIREFOX_VERSION_SHIFT,
+} from './constants.ts';
 import { rolldownExternal, } from './utilities.ts';
 
-const createBaseConfig = (configDir: string,): UserConfig => {
-  const styleMonochromaticPath = resolve(configDir, '..', '..', 'style', 'monochromatic', 'src',);
-
-  // Preload mixin definitions before PostCSS starts processing
-  preloadMixins([
-    join(styleMonochromaticPath, 'mixin.css'),
-  ]);
-
-  return {
-    plugins: [
-      // Allows importing JSON5 files directly.
-      json5Plugin(),
-    ],
-    resolve: {
-      alias: {
-        '@': resolve(configDir,),
-        '@_': resolve(configDir, 'src',),
-        '@monochromatic-dev/style-monochromatic': styleMonochromaticPath,
-      },
-      tsconfigPaths: true,
+const createBaseConfig = (configDir: string,): UserConfig => ({
+  plugins: [
+    // Allows importing JSON5 files directly.
+    json5Plugin(),
+  ],
+  resolve: {
+    alias: {
+      '@': resolve(configDir,),
+      '@_': resolve(configDir, 'src',),
     },
-    css: {
-      postcss: {
-        plugins: [postcssMixin(),],
+    tsconfigPaths: true,
+  },
+  css: {
+    transformer: 'lightningcss',
+    lightningcss: {
+      targets: {
+        firefox: FIREFOX_ESR_VERSION << FIREFOX_VERSION_SHIFT,
       },
-      preprocessorMaxWorkers: true,
-      devSourcemap: true,
+      cssModules: false,
     },
+    preprocessorMaxWorkers: true,
+    devSourcemap: true,
+  },
   oxc: {
     assumptions: {
       // Error: Compiler assumption `objectRestNoSymbols` is not implemented for object-rest-spread.
@@ -113,7 +110,6 @@ const createBaseConfig = (configDir: string,): UserConfig => {
   experimental: {
     enableNativePlugin: true,
   },
-  };
-};
+});
 
 export { createBaseConfig };

@@ -10,7 +10,7 @@
   "peerDependencies": {
     "vitest": "catalog:",
     "vite": "catalog:",
-    "postcss": "catalog:"
+    "lightningcss": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
@@ -24,7 +24,7 @@
     "nano-spawn": "catalog:",
     "vite-plugin-json5": "catalog:",
     "minimatch": "catalog:",
-    "postcss": "catalog:"
+    "lightningcss": "catalog:"
   },
   "type": "module",
   "files": [

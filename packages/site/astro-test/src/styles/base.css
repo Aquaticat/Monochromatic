@@ -109,22 +109,8 @@ body {
 
   padding-inline: calc(var(--gap-m) * var(--rp));
 
-  /* Doesn't work with box-shadow */
-
-  /*   clip-path: polygon(
-      0% calc(var(--border-radius-m) * var(--rp)),
-      calc(var(--border-radius-m) * var(--rp)) 0%,
-      calc(100% - calc(var(--border-radius-m) * var(--rp))) 0%,
-      100% calc(var(--border-radius-m) * var(--rp)),
-      100% calc(100% - calc(var(--border-radius-m) * var(--rp))),
-      calc(100% - calc(var(--border-radius-m) * var(--rp))) 100%,
-      calc(var(--border-radius-m) * var(--rp)) 100%,
-      0% calc(100% - calc(var(--border-radius-m) * var(--rp)))
-    ); */
   box-shadow: 0 calc(var(--gap-s) * var(--rp)) calc(var(--blur-m) * var(--rp))
     calc(var(--gap-s) * var(--rp)) oklch(from var(--subtle) l c h / 20%);
 
   backdrop-filter: blur(calc(var(--blur-m) * var(--rp))) brightness(110%);
-
-  /* border: 1px solid rgba(255, 255, 255, 0.3); */
 }

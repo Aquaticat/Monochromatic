@@ -21,6 +21,7 @@
   },
   "type": "module",
   "devDependencies": {
+    "@monochromatic-dev/build-css": "workspace:*",
     "@monochromatic-dev/config-dprint": "workspace:*",
     "@monochromatic-dev/config-vite": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",

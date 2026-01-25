@@ -84,7 +84,7 @@ catalog:
   nano-spawn: '>=0.2.0'
   openapi-types: '>=12.1.3'
   oxc-minify: '>=0.1.1'
-  oxc-resolver: 'catalog:'
+  oxc-resolver: '>=11.0.0'
   oxlint: '>=1.34.0'
   oxlint-tsgolint: '*'
   playwright: '>=1.52.0'
