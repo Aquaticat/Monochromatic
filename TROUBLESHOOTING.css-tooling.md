@@ -294,6 +294,18 @@ Just write the expanded CSS everywhere. Repeat yourself. Abandon DRY. Embrace co
 
 SCSS has worked for a decade. The tooling is mature. The ecosystem understands it. But it feels like admitting defeat to a problem that shouldn't exist.
 
+### Option E: Wait for native CSS mixins
+
+The W3C CSS Working Group has a [CSS Functions and Mixins Module](https://drafts.csswg.org/css-mixins-1/) in development.
+
+Current status (January 2026):
+- `@function` (single value returns): Supported in browsers
+- `@mixin` / `@apply` (style blocks): **Not supported in any browser**
+- Spec status: First Public Working Draft (May 2025)
+- Expected timeline: "further refinement in the coming years"
+
+Translation: Check back in 2028-2030. Maybe.
+
 ---
 
 ## Lessons
