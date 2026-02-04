@@ -129,6 +129,7 @@
 			"unifiedjs.vscode-mdx",
 			"dprint.dprint",
 			"gruntfuggly.todo-tree",
+      "tombi-toml.tombi",
 
       // Not using Vue at this moment.
 			// "vue.volar",

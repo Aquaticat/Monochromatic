@@ -11,7 +11,8 @@ experimental_monorepo_root = true
 bun = "latest"
 
 # Package manager
-pnpm = { version = "latest", postinstall = "pnpm install" }
+# TODO: Migrating to Bun.
+# pnpm = { version = "latest", postinstall = "pnpm install" }
 
 # Scripts assume basic unix tools
 coreutils = "latest"
@@ -153,19 +154,19 @@ run = "vitest run --config vitest.unit.config.ts ...($env.usage_args | split row
 hide = true
 description = "Run browser tests with Playwright"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
-run = "pnpm exec playwright test --config playwright.browser.config.ts ...($env.usage_args | split row ' ')"
+run = "bunx playwright test --config playwright.browser.config.ts ...($env.usage_args | split row ' ')"
 
 [tasks."test:browser:chromium"]
 hide = true
 description = "Run browser tests in Chromium"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
-run = "pnpm exec playwright test --config playwright.browser.config.ts --project=chromium ...($env.usage_args | split row ' ')"
+run = "bunx playwright test --config playwright.browser.config.ts --project=chromium ...($env.usage_args | split row ' ')"
 
 [tasks."test:browser:firefox"]
 hide = true
 description = "Run browser tests in Firefox"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
-run = "pnpm exec playwright test --config playwright.browser.config.ts --project=firefox ...($env.usage_args | split row ' ')"
+run = "bunx playwright test --config playwright.browser.config.ts --project=firefox ...($env.usage_args | split row ' ')"
 
 # [tasks."test:browser"]
 # hide = true
@@ -207,7 +208,7 @@ run = [{ tasks = ["lint:*"] }]
 [tasks."lint:eslint"]
 hide = true
 description = "Lint with ESLint"
-run = "timeout 10 pnpm exec eslint --cache --report-unused-disable-directives --report-unused-inline-configs warn --exit-on-fatal-error 'packages/**/*.*'"
+run = "timeout 10 bunx eslint --cache --report-unused-disable-directives --report-unused-inline-configs warn --exit-on-fatal-error 'packages/**/*.*'"
 
 [tasks."lint:oxlint"]
 hide = true
@@ -266,11 +267,11 @@ run = [{ tasks = ["prepare--allowFailure:*"] }]
 
 [tasks."prepare:playwright"]
 description = "Install Playwright browsers"
-run = "pnpm exec playwright install --with-deps"
+run = "bunx playwright install --with-deps"
 
 [tasks."prepare--allowFailure:playwright"]
 description = "Install Playwright browsers, allowing failures"
-run = "try { pnpm exec playwright install --with-deps } catch { |e| print -e $e.rendered }"
+run = "try { bunx playwright install --with-deps } catch { |e| print -e $e.rendered }"
 
 [tasks.prepareAndBuild]
 description = "Complete setup: prepare environment and build all artifacts"

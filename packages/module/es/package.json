@@ -41,7 +41,6 @@
     "superjson": "catalog:",
     "decircular": "catalog:",
     "safe-stringify": "catalog:",
-    "@types/bun": "catalog:",
     "zod": "catalog:"
   },
   "dependencies": {

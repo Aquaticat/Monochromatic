@@ -23,8 +23,27 @@ All tasks must be run through Mise commands:
 
 ## Initial Setup
 
+After cloning, you'll see this warning on first `cd`:
+
+```txt
+mise WARN  missing: bun@x.x.x pnpm@x.x.x ...
+mise WARN  error executing hook: No such file or directory (os error 2)
+```
+
+**This is expected.**
+The `enter` hook uses nushell, which mise needs to install first.
+
+Run manually once:
+
 ```bash
-# Run project setup and build
+mise install
+```
+
+After this, subsequent directory entries will work normally.
+
+Then run project setup and build:
+
+```bash
 mise run prepareAndBuild
 ```
 
