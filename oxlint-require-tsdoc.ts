@@ -5,7 +5,7 @@ import {
   definePlugin,
   defineRule,
   type Span,
-} from 'oxlint';
+} from '@oxlint/plugins';
 
 function hasTsdoc(node: Span, context: Context,): boolean {
   const comments = context.sourceCode.getCommentsBefore(node,);

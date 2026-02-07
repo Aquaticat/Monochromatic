@@ -21,6 +21,7 @@
   },
   "type": "module",
   "devDependencies": {
+    "@oxlint/plugins": "catalog:",
     "@monochromatic-dev/build-css": "workspace:*",
     "@monochromatic-dev/config-dprint": "workspace:*",
     "@monochromatic-dev/config-vite": "workspace:*",
@@ -99,6 +100,7 @@
       "packages/*/*"
     ],
     "catalog": {
+      "@oxlint/plugins": "*",
       "@ai-sdk/react": ">=1.2.5",
       "@anthropic-ai/sdk": ">=0.62.0",
       "@astrojs/mdx": ">=4.0.7",
