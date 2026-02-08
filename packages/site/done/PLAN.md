@@ -559,56 +559,38 @@ The orchestrator keeps all routing state in memory (rebuilt from `orchestrator.d
 
 **Atomic tasks:**
 
-- (0.25h) Write `Dockerfile`: Bun base image, multi-stage build (see sketch below)
-- (0.25h) Write `docker-compose.yml`: two services, volumes (`done-data`), internal network, Coolify labels
+- (0.25h) Write `docker-compose.yml`: two services, inline Dockerfile for orchestrator (see sketch below), volumes (`done-data`)
 - (0.25h) Configure environment variables: `SMTP_*`, `LLAMA_CPP_URL`, `SESSION_SECRET`, port range
 - (0.25h) Test locally: `docker compose up`, register user, verify full flow (registration -> login -> process spawn -> proxy -> AI suggestion)
 
-**Dockerfile sketch:**
+**Example `docker-compose.yml` with inline Dockerfile:**
 
-```dockerfile
-# -- Build stage --
-FROM oven/bun:1 AS build
-WORKDIR /app
-
-# Install deps first (cache layer)
-COPY package.json bun.lock ./
-COPY orchestrator/package.json orchestrator/
-RUN bun install --frozen-lockfile
-
-# Build SvelteKit app
-COPY . .
-RUN bun run build
-
-# Build orchestrator (plain TS, no SvelteKit -- just bundle it)
-RUN bun build orchestrator/src/index.ts --outdir orchestrator/dist --target bun
-
-# -- Runtime stage --
-FROM oven/bun:1-slim
-WORKDIR /app
-
-# SvelteKit build output (adapter-bun reads from disk)
-COPY --from=build /app/build ./build
-
-# Orchestrator bundle
-COPY --from=build /app/orchestrator/dist ./orchestrator/dist
-
-# Bun is already in the image -- child processes use it to run build/index.js
-EXPOSE 3000
-CMD ["bun", "run", "orchestrator/dist/index.js"]
-```
-
-The key constraint: adapter-bun expects its build output on disk, and child SvelteKit processes are spawned via `bun run build/index.js`, so Bun must be available at runtime (not just a SEA).
+adapter-bun expects its build output on disk, and child SvelteKit processes are spawned via `bun run build/index.js`, so Bun must be available at runtime (not just a SEA).
 The orchestrator itself is a simple bundled script -- no SvelteKit dependency.
-
-**Example `docker-compose.yml` structure:**
 
 ```yaml
 services:
   orchestrator:
     build:
       context: .
-      dockerfile: Dockerfile.orchestrator
+      dockerfile_inline: |
+        # -- Build stage --
+        FROM oven/bun:1 AS build
+        WORKDIR /app
+        COPY package.json bun.lock ./
+        COPY orchestrator/package.json orchestrator/
+        RUN bun install --frozen-lockfile
+        COPY . .
+        RUN bun run build
+        RUN bun build orchestrator/src/index.ts --outdir orchestrator/dist --target bun
+
+        # -- Runtime stage --
+        FROM oven/bun:1-slim
+        WORKDIR /app
+        COPY --from=build /app/build ./build
+        COPY --from=build /app/orchestrator/dist ./orchestrator/dist
+        EXPOSE 3000
+        CMD ["bun", "run", "orchestrator/dist/index.js"]
     ports:
       - "3000:3000"
     volumes:
