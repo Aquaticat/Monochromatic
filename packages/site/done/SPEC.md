@@ -11,16 +11,18 @@ Each user runs their own instance, provisioned automatically on registration.
 
 ### Authentication and instance lifecycle
 
-Authentication lives entirely outside the app, at the infrastructure layer:
+Authentication lives entirely outside the app, at the infrastructure layer.
+Path-based routing (`done.app/u/<user-id>/`) instead of subdomains -- avoids DNS API calls on registration, offensive subdomain risk, wildcard cert complexity, and registrar rate limits.
 
 1. User registers with email, verified via SMTP (through `@upyo/smtp`; Resend or any SMTP provider)
 2. An **orchestrator script** spawns a new **SvelteKit-on-Bun process** (`bun run build/index.js --port=XXXX --db=/data/<user-id>/done.db`)
-3. The orchestrator updates **Caddy's AuthCrunch** config to grant that user access to their instance's URL scope
-4. Caddy reverse-proxies `<user>.done.app` -> `localhost:$PORT`
-5. The app itself has no auth logic -- requests only reach it after Caddy has authenticated the user
+3. The orchestrator updates **Caddy's AuthCrunch** config: the user's JWT gets `acl.paths` claim scoped to `/u/<user-id>/**`, and the authorization policy uses `validate path acl` to enforce it
+4. Caddy reverse-proxies `done.app/u/<user-id>/*` -> `localhost:$PORT`
+5. The app itself has no auth logic -- requests only reach it after Caddy has authenticated the user and validated the path ACL
 6. The orchestrator **suspends idle instances** (`SIGSTOP` or kill + respawn on next request) and **wakes them on URL access** (cold-start pattern)
 
 The Done app never sees unauthenticated requests.
+User IDs are opaque (ULIDs), not user-chosen names -- no abuse vector for offensive URLs.
 
 The AI is self-hosted via llama.cpp, giving full control over the model and eliminating provider ban risk from user content.
 It does not just organize tasks -- it actively surfaces the right task at the right time and place.
@@ -34,7 +36,7 @@ It does not just organize tasks -- it actively surfaces the right task at the ri
 - **Reverse proxy**: Caddy (HTTPS, access control)
 - **Auth**: Caddy AuthCrunch (email-verified registration, managed by orchestrator)
 - **Email**: `@upyo/smtp` (JSR) -- generic SMTP transport; works with Resend, Fastmail, or any SMTP provider. If the transport fails, that's the provider's problem, not ours.
-- **Deployment**: Single host -- orchestrator spawns SvelteKit-on-Bun processes per user (no Docker per user), Caddy in front, llama.cpp as a shared service
+- **Deployment**: Single host, single domain -- orchestrator spawns SvelteKit-on-Bun processes per user (no Docker per user), path-based routing (`/u/<user-id>/`), Caddy in front, llama.cpp as a shared service
 
 ## Screens
 
@@ -227,7 +229,8 @@ The server is the authority for start/stop events; the client handles smooth dis
 
 SvelteKit runs as a full SSR server via adapter-bun.
 Each user's instance is a single SvelteKit process that handles everything: page rendering, data loading (`+page.server.ts` load functions), mutations (form actions), and AI proxy endpoints (`+server.ts`).
-Caddy reverse-proxies all traffic for `<user>.done.app` to the user's SvelteKit port.
+Caddy reverse-proxies `done.app/u/<user-id>/*` to the user's SvelteKit port, stripping the `/u/<user-id>` prefix so SvelteKit sees clean paths.
+SvelteKit's `base` path config is set to `/u/<user-id>` so all generated links include the prefix.
 No separate API layer, no CORS, no client-side fetch() for basic CRUD -- forms submit natively, SvelteKit enhances with client-side navigation.
 
 ### AI rate limiting

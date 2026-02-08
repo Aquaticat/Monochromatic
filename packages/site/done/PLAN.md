@@ -12,7 +12,8 @@ Days are rough guides, not hard boundaries.
 - Configure as PWA (manifest.json, service worker for app shell caching)
 - Add `package.json` with `workspace:*` references to monorepo packages
 - Add `mise.toml` with `dev`, `build`, and `start` tasks
-- Caddy reverse-proxies all traffic for `<user>.done.app` to the user's SvelteKit port (no static file serving needed -- SvelteKit serves everything)
+- SvelteKit `base` path set to `/u/<user-id>` (injected via env var at process spawn time)
+- Caddy reverse-proxies `done.app/u/<user-id>/*` to the user's SvelteKit port, stripping the path prefix (no static file serving needed -- SvelteKit serves everything)
 
 ### Database schema (libsql)
 
@@ -524,17 +525,19 @@ Outbound writes (auto-editing source files) are deferred post-competition -- too
 
 ### Deployment
 
+- **Path-based routing** (`done.app/u/<user-id>/`) instead of subdomains -- one domain, one DNS record, one cert, no registrar API calls on registration, no offensive subdomain risk
 - **No Docker per user** -- each user gets a SvelteKit-on-Bun process (~10-20MB idle), not a container
 - **llama.cpp** runs as a single shared process on the host
 - **Orchestrator script** (Bun/TypeScript):
   - Handles email registration + verification via `@upyo/smtp`
-  - Spawns per-user SvelteKit process: `bun run build/index.js --port=XXXX --db=/data/<user-id>/done.db`
+  - Spawns per-user SvelteKit process: `BASE_PATH=/u/<user-id> bun run build/index.js --port=XXXX --db=/data/<user-id>/done.db`
   - Tracks PID + port + user mapping (in-memory map or a small SQLite DB)
-  - Updates Caddy AuthCrunch config to grant access per user's URL scope
-  - Caddy reverse-proxies `<user>.done.app` -> `localhost:$PORT`
+  - Updates Caddy AuthCrunch config: sets `acl.paths` in the user's JWT to `/u/<user-id>/**`, authorization policy uses `validate path acl`
+  - Caddy reverse-proxies `done.app/u/<user-id>/*` -> `localhost:$PORT` (with path prefix stripping via `handle_path`)
   - Monitors instance activity -- suspends idle processes (`SIGSTOP` / kill) and wakes on URL access (respawn on demand)
-- Caddy config: HTTPS termination, AuthCrunch authentication, wildcard reverse proxy to per-user ports (no static file serving -- SvelteKit handles everything)
+- Caddy config: HTTPS termination, AuthCrunch authentication with path ACL validation, path-based reverse proxy to per-user ports (no static file serving -- SvelteKit handles everything)
 - Data directory: `/data/<user-id>/done.db` per user (libsql file, isolation boundary)
+- User IDs are opaque ULIDs (not user-chosen names) to prevent abuse
 
 ### Testing (if time permits)
 
