@@ -17,7 +17,7 @@ Path-based routing (`done.app/u/<user-id>/`) instead of subdomains -- avoids DNS
 
 1. User registers with email on the orchestrator's own registration page, verified via SMTP (through `@upyo/smtp`)
 2. Orchestrator hashes password with `Bun.password` (argon2id), stores user record in `orchestrator.db`
-3. On login, orchestrator verifies password, sets a signed `HttpOnly` / `SameSite=Strict` / `Secure` session cookie scoped to `/u/<user-id>/`
+3. On login, orchestrator verifies password, creates a session row in `orchestrator.db` with a random 32-byte hex token, sets cookie (`HttpOnly` / `SameSite=Strict` / `Secure`, scoped to `/u/<user-id>/`)
 4. Orchestrator spawns a new **SvelteKit-on-Bun process** (`bun run build/index.js --port=XXXX --db=/data/<user-id>/done.db`)
 5. On every request to `/u/<user-id>/*`, orchestrator validates the session cookie and checks that the session's user-id matches the path -- then reverse-proxies to `localhost:$PORT`, stripping the `/u/<user-id>` prefix
 6. Unauthenticated requests get redirected to the login page; wrong-user requests get 403
@@ -28,6 +28,7 @@ User IDs are opaque (ULIDs), not user-chosen names -- no abuse vector for offens
 
 Auth security considerations:
 - Password hashing via `Bun.password` uses argon2id (constant-time verification)
+- Sessions are server-side lookup tokens (random 32-byte hex IDs stored in `orchestrator.db`), not signed JWTs -- no crypto to get wrong
 - Session cookies: `HttpOnly` + `Secure` + `SameSite=Strict`, cookie `Path` set to `/u/<user-id>/`
 - Rate limit login attempts: in-memory counter per IP, max 10/minute
 - Same error message for wrong email and wrong password (no user enumeration)
@@ -41,7 +42,7 @@ It does not just organize tasks -- it actively surfaces the right task at the ri
 - **Runtime**: Bun (server + bundler)
 - **Framework**: SvelteKit with SSR (server-side rendering on Bun via adapter-bun) -- one process handles both pages and data. `load` functions fetch data server-side, form actions handle mutations. No separate API layer.
 - **Database**: libsql (SQLite-compatible, single file, local)
-- **AI**: Self-hosted llama.cpp (OpenAI-compatible API, full model control, no provider ban risk)
+- **AI**: Self-hosted llama.cpp (OpenAI-compatible API, full model control, no provider ban risk). Primary model: Qwen 2.5 3B Instruct (Q4_K_M, ~2GB RAM, CPU-only). Fallback: Phi-3.5 Mini 3.8B.
 - **Auth + reverse proxy**: Orchestrator (Bun) -- handles registration, login, session cookies, path ACL enforcement, and HTTP reverse proxy to user processes. No Caddy or AuthCrunch; Coolify's reverse proxy terminates HTTPS upstream.
 - **Email**: `@upyo/smtp` (JSR) -- generic SMTP transport; works with Resend, Fastmail, or any SMTP provider. If the transport fails, that's the provider's problem, not ours.
 - **Deployment**: Docker Compose on Coolify -- two containers (orchestrator+user processes, llama.cpp), path-based routing (`/u/<user-id>/`), named volumes for user data
@@ -237,8 +238,10 @@ The server is the authority for start/stop events; the client handles smooth dis
 
 SvelteKit runs as a full SSR server via adapter-bun.
 Each user's instance is a single SvelteKit process that handles everything: page rendering, data loading (`+page.server.ts` load functions), mutations (form actions), and AI proxy endpoints (`+server.ts`).
-The orchestrator reverse-proxies `done.app/u/<user-id>/*` to the user's SvelteKit port, stripping the `/u/<user-id>` prefix so SvelteKit sees clean paths.
-SvelteKit's `base` path config is set to `/u/<user-id>` so all generated links include the prefix.
+The orchestrator reverse-proxies `done.app/u/<user-id>/*` to the user's SvelteKit port, stripping the `/u/<user-id>` prefix so SvelteKit sees clean `/` paths.
+SvelteKit's `base` path stays as the default `/` (it's a build-time config, can't vary per user).
+This works because SvelteKit generates relative links (e.g., `./settings`, `../[id]`) which resolve correctly from the browser's `/u/<user-id>/` URL.
+Each user process gets `ORIGIN=https://done.app` so SvelteKit can construct absolute URLs for redirects.
 No separate API layer, no CORS, no client-side fetch() for basic CRUD -- forms submit natively, SvelteKit enhances with client-side navigation.
 
 ### AI rate limiting
@@ -262,7 +265,6 @@ Environment variables (configured in Coolify):
 - `DOMAIN` -- Public domain (e.g., `done.app`)
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` -- SMTP provider credentials
 - `LLAMA_CPP_URL` -- Internal URL for llama.cpp (defaults to `http://llama-cpp:8080`)
-- `SESSION_SECRET` -- HMAC key for signing session cookies (generate with `openssl rand -hex 32`)
 - `PORT_RANGE_START`, `PORT_RANGE_END` -- Port range for user processes (e.g., 3100-3999)
 
 ### FTS5 rowid note

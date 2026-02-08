@@ -12,12 +12,12 @@ Hour estimates are per-task. Items without a priority marker are implicitly high
 - (0.5h) Configure adapter-bun for SSR (not static adapter)
 - (0.25h) Add `package.json` with `workspace:*` references to monorepo packages
 - (0.25h) Add `mise.toml` with `dev`, `build`, and `start` tasks
-- (0.25h) Configure SvelteKit `base` path to read from `BASE_PATH` env var (defaults to `/`)
-- (0.25h) Verify orchestrator reverse-proxy wiring: `done.app/u/<user-id>/*` -> SvelteKit port, path prefix stripping
+- (0.25h) Leave SvelteKit `base` path as default `/` -- the orchestrator strips `/u/<user-id>` on inbound and SvelteKit generates relative links, so browser-side URLs resolve correctly
+- (0.25h) Set `ORIGIN` env var per user process (e.g., `ORIGIN=https://done.app`) so SvelteKit can construct absolute URLs when needed (e.g., redirects)
 
 ### 1.2 Database schema and migration (~3h)
 
-- (0.5h) Install libsql client, create `src/lib/db.ts` with connection init and migration runner
+- (0.5h) Install `@libsql/client`, create `src/lib/db.ts` with `createClient({ url: "file:/data/<user-id>/done.db" })` and migration runner
 - (1.0h) Write core tables SQL (tasks, attachments, settings) and run migration on first startup
 - (0.5h) Write FTS5 virtual table + sync triggers (insert/update/delete)
 - (0.5h) Write indexes for common query patterns
@@ -185,48 +185,54 @@ ORDER BY rank;
 ### How to read/write JSON array columns
 
 ```ts
+// libsql API: client.execute({ sql, args }) returns { rows, columns, rowsAffected }
+
 // Reading: parse the JSON string from SQLite into a JS array
-const task = db.get('SELECT * FROM tasks WHERE id = ?', [taskId]);
-const tags: string[] = JSON.parse(task.tags);       // '["shopping"]' -> ['shopping']
-const locations: string[] = JSON.parse(task.locations);
+const result = await client.execute({ sql: 'SELECT * FROM tasks WHERE id = ?', args: [taskId] });
+const task = result.rows[0];
+const tags: string[] = JSON.parse(task.tags as string);       // '["shopping"]' -> ['shopping']
+const locations: string[] = JSON.parse(task.locations as string);
 
 // Writing: stringify the JS array back to JSON for SQLite
-db.run('UPDATE tasks SET tags = ? WHERE id = ?', [JSON.stringify(['shopping', 'errands']), taskId]);
+await client.execute({ sql: 'UPDATE tasks SET tags = ? WHERE id = ?', args: [JSON.stringify(['shopping', 'errands']), taskId] });
 
 // Querying tasks that contain a specific tag (uses SQLite JSON functions):
 // json_each() expands a JSON array into rows, so we can match individual elements.
-const tasksWithTag = db.all(`
-  SELECT tasks.* FROM tasks, json_each(tasks.tags) AS tag
-  WHERE tag.value = ?
-`, ['shopping']);
+const tagResult = await client.execute({
+  sql: 'SELECT tasks.* FROM tasks, json_each(tasks.tags) AS tag WHERE tag.value = ?',
+  args: ['shopping'],
+});
+const tasksWithTag = tagResult.rows;
 ```
 
 ### How timers work in SQL
 
 ```ts
 // Start timer: record the current UTC timestamp
-db.run(`
-  UPDATE tasks
-  SET timer_started_at = datetime('now'),
-      status = 'in_progress',
-      updated_at = datetime('now')
-  WHERE id = ?
-`, [taskId]);
+await client.execute({
+  sql: `UPDATE tasks
+        SET timer_started_at = datetime('now'),
+            status = 'in_progress',
+            updated_at = datetime('now')
+        WHERE id = ?`,
+  args: [taskId],
+});
 
 // Stop timer: calculate elapsed seconds, add to cumulative total, clear the timestamp
-db.run(`
-  UPDATE tasks
-  SET tracked_time = tracked_time + CAST(
-        (julianday('now') - julianday(timer_started_at)) * 86400  -- julianday diff in days * seconds-per-day
-      AS INTEGER),
-      timer_started_at = NULL,
-      status = 'inbox',
-      updated_at = datetime('now')
-  WHERE id = ?
-`, [taskId]);
+await client.execute({
+  sql: `UPDATE tasks
+        SET tracked_time = tracked_time + CAST(
+              (julianday('now') - julianday(timer_started_at)) * 86400
+            AS INTEGER),
+            timer_started_at = NULL,
+            status = 'inbox',
+            updated_at = datetime('now')
+        WHERE id = ?`,
+  args: [taskId],
+});
 
 // Read current elapsed time for display (without stopping):
-// In the API response, return both tracked_time and timer_started_at.
+// In the load function, return both tracked_time and timer_started_at.
 // The client computes: displaySeconds = trackedTime + (Date.now() - Date.parse(timerStartedAt)) / 1000
 ```
 
@@ -237,57 +243,53 @@ db.run(`
 // blocked_by is a JSON array of task IDs like '["01HX...","01HY..."]'.
 // We expand it with json_each and check if any blocker still exists (not yet deleted/done).
 
-const unblockers = db.all(`
-  SELECT blocker.value AS blocker_id, tasks.title AS blocker_title
-  FROM json_each(
-    (SELECT blocked_by FROM tasks WHERE id = ?)
-  ) AS blocker
-  JOIN tasks ON tasks.id = blocker.value
-  WHERE tasks.status != 'done'
-`, [taskId]);
+const result = await client.execute({
+  sql: `SELECT blocker.value AS blocker_id, tasks.title AS blocker_title
+        FROM json_each(
+          (SELECT blocked_by FROM tasks WHERE id = ?)
+        ) AS blocker
+        JOIN tasks ON tasks.id = blocker.value
+        WHERE tasks.status != 'done'`,
+  args: [taskId],
+});
 
-if (unblockers.length > 0) {
-  // Return 409 Conflict with the list of blocking tasks
-  return new Response(JSON.stringify({
-    error: 'Task is blocked',
-    blockedBy: unblockers
-  }), { status: 409 });
+if (result.rows.length > 0) {
+  // Return form action failure with the list of blocking tasks
+  return fail(409, { error: 'Task is blocked', blockedBy: result.rows });
 }
 
 // If no active blockers, proceed with completion
-db.run(`DELETE FROM tasks WHERE id = ?`, [taskId]);
+await client.execute({ sql: 'DELETE FROM tasks WHERE id = ?', args: [taskId] });
 ```
 
 ### How to query tasks with nested blocked children
 
 ```ts
 // Fetch top-level (unblocked) inbox tasks for "All" section
-const topLevelTasks = db.all(`
-  SELECT * FROM tasks
-  WHERE status = 'inbox' AND blocked_by = '[]'
-  ORDER BY created_at DESC
-`);
+const topLevel = await client.execute({
+  sql: `SELECT * FROM tasks WHERE status = 'inbox' AND blocked_by = '[]' ORDER BY created_at DESC`,
+  args: [],
+});
 
-// For each visible task, fetch its blocked dependents (tasks where this task is in their blocked_by)
-// These render nested/indented under the parent task.
-const dependents = db.all(`
-  SELECT * FROM tasks
-  WHERE status = 'inbox'
-    AND blocked_by != '[]'
-    AND EXISTS (
-      SELECT 1 FROM json_each(blocked_by) WHERE value = ?
-    )
-`, [parentTaskId]);
+// Batched: fetch ALL blocked inbox tasks and their blocker IDs in one query
+// Group by blocker on the client side (avoids N+1)
+const blocked = await client.execute({
+  sql: `SELECT tasks.*, blocker.value AS blocker_id
+        FROM tasks, json_each(tasks.blocked_by) AS blocker
+        WHERE tasks.status = 'inbox' AND tasks.blocked_by != '[]'`,
+  args: [],
+});
 
 // Search always includes blocked tasks (with a badge)
-const searchResults = db.all(`
-  SELECT tasks.*, 
-    CASE WHEN blocked_by != '[]' THEN 1 ELSE 0 END AS is_blocked
-  FROM tasks_fts
-  JOIN tasks ON tasks.rowid = tasks_fts.rowid
-  WHERE tasks_fts MATCH ?
-  ORDER BY rank
-`, [query]);
+const searchResults = await client.execute({
+  sql: `SELECT tasks.*,
+          CASE WHEN blocked_by != '[]' THEN 1 ELSE 0 END AS is_blocked
+        FROM tasks_fts
+        JOIN tasks ON tasks.rowid = tasks_fts.rowid
+        WHERE tasks_fts MATCH ?
+        ORDER BY rank`,
+  args: [query],
+});
 ```
 
 ### How reminder scheduling works
@@ -297,29 +299,31 @@ const searchResults = db.all(`
 // '["2026-02-14T09:00:00Z","2026-02-14T17:00:00Z"]'
 //
 // A background loop runs every 60 seconds, finds due reminders,
-// sends emails via Resend, then removes the fired reminder from the array.
+// sends emails, then removes the fired reminder from the array.
 
-const dueReminders = db.all(`
-  SELECT tasks.id, tasks.title, tasks.description, reminder.value AS reminder_time
-  FROM tasks, json_each(tasks.reminders) AS reminder
-  WHERE reminder.value <= datetime('now')
-    AND tasks.status != 'done'
-`);
+const dueResult = await client.execute({
+  sql: `SELECT tasks.id, tasks.title, tasks.description, reminder.value AS reminder_time
+        FROM tasks, json_each(tasks.reminders) AS reminder
+        WHERE reminder.value <= datetime('now')
+          AND tasks.status != 'done'`,
+  args: [],
+});
 
-for (const row of dueReminders) {
+for (const row of dueResult.rows) {
   await sendReminderEmail(row);
 
   // Remove the fired reminder from the JSON array
-  db.run(`
-    UPDATE tasks
-    SET reminders = (
-      SELECT json_group_array(r.value)
-      FROM json_each(tasks.reminders) AS r
-      WHERE r.value != ?
-    ),
-    updated_at = datetime('now')
-    WHERE id = ?
-  `, [row.reminder_time, row.id]);
+  await client.execute({
+    sql: `UPDATE tasks
+          SET reminders = (
+            SELECT json_group_array(r.value)
+            FROM json_each(tasks.reminders) AS r
+            WHERE r.value != ?
+          ),
+          updated_at = datetime('now')
+          WHERE id = ?`,
+    args: [row.reminder_time, row.id],
+  });
 }
 ```
 
@@ -333,22 +337,36 @@ for (const row of dueReminders) {
 import { SmtpTransport } from '@upyo/smtp';
 import { createMessage } from '@upyo/core';
 
-const allTasks = db.all('SELECT * FROM tasks');
-const allAttachments = db.all('SELECT id, task_id, filename, mime_type, created_at FROM attachments');
-const allSettings = db.all('SELECT * FROM settings');
+// @upyo/smtp actual API: host/port/secure/auth (not hostname/username/password)
+const transport = new SmtpTransport({
+  host: SMTP_HOST,
+  port: Number(SMTP_PORT),
+  secure: true,
+  auth: { user: SMTP_USER, pass: SMTP_PASS },
+});
 
-const jsonBackup = JSON.stringify({ tasks: allTasks, attachments: allAttachments, settings: allSettings }, null, 2);
+const tasks = await client.execute({ sql: 'SELECT * FROM tasks', args: [] });
+const attachments = await client.execute({
+  sql: 'SELECT id, task_id, filename, mime_type, created_at FROM attachments',
+  args: [],
+});
+const settings = await client.execute({ sql: 'SELECT * FROM settings', args: [] });
 
-const transport = new SmtpTransport({ hostname: SMTP_HOST, port: SMTP_PORT, username: SMTP_USER, password: SMTP_PASS });
+const jsonBackup = JSON.stringify({
+  tasks: tasks.rows, attachments: attachments.rows, settings: settings.rows,
+}, null, 2);
+
+// @upyo/core actual API: content.text (not bare text), returns receipt with .successful
 const message = createMessage({
-  from: { email: SMTP_FROM },
-  to: [{ email: userEmail }],
+  from: SMTP_FROM,
+  to: userEmail,
   subject: `Done - Daily Backup - ${new Date().toISOString().slice(0, 10)}`,
-  text: 'Your daily Done database backup is attached.',
+  content: { text: 'Your daily Done database backup is attached.' },
   attachments: [{ filename: 'done-backup.json', content: new TextEncoder().encode(jsonBackup) }],
 });
+
 // Fire and forget -- if SMTP fails, that's the provider's problem
-await transport.send(message).catch(console.error);
+const receipt = await transport.send(message).catch(console.error);
 await transport.close();
 ```
 
@@ -388,6 +406,234 @@ src/routes/
 Form actions handle all mutations (create/update/delete/start/stop/complete).
 SvelteKit's `use:enhance` progressively enhances forms with client-side submissions and automatic page data invalidation -- no manual fetch() or state management for CRUD.
 The `api/` routes are only for things that genuinely need raw JSON responses (AI streaming, binary downloads, webhook callbacks).
+
+### Error handling pattern
+
+Happy-path only for competition. All errors echo to the user in a popup toast.
+
+```svelte
+<!-- In +layout.svelte: global error toast -->
+<script>
+  import { page } from '$app/stores';
+  // SvelteKit form actions return { type: 'failure', data } on fail()
+  // AI endpoints return { error: string } on failure
+  // Both surface through the same toast mechanism
+</script>
+
+{#if $page.form?.error}
+  <div class="toast toast-error" role="alert">{$page.form.error}</div>
+{/if}
+```
+
+In form actions, use SvelteKit's `fail()` to return errors:
+```ts
+import { fail } from '@sveltejs/kit';
+// On any error:
+return fail(400, { error: 'Something went wrong: ' + errorMessage });
+```
+
+For AI fetch errors, catch and display inline:
+```ts
+const response = await fetch('/api/ai/autofill', { method: 'POST', body });
+if (!response.ok) {
+  errorMessage = 'AI unavailable, fill fields manually';
+  return;
+}
+```
+
+### Orchestrator database schema (orchestrator.db)
+
+The orchestrator maintains its own SQLite database for user accounts, sessions, and process tracking.
+This is separate from each user's `done.db`.
+
+```sql
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,                -- ULID
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,        -- argon2id via Bun.password.hash()
+  email_verified INTEGER NOT NULL DEFAULT 0,
+  verification_token TEXT,            -- random token sent via email, nulled after verification
+  created_at TEXT NOT NULL            -- ISO8601
+);
+
+CREATE TABLE sessions (
+  id TEXT PRIMARY KEY,                -- random hex string (32 bytes)
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at TEXT NOT NULL,           -- ISO8601, e.g., 7 days from creation
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE processes (
+  user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  port INTEGER NOT NULL UNIQUE,       -- allocated from PORT_RANGE_START..PORT_RANGE_END
+  pid INTEGER,                        -- OS process ID, null if not running
+  last_request_at TEXT                -- ISO8601, updated on each proxied request
+);
+
+CREATE INDEX idx_sessions_user ON sessions(user_id);
+CREATE INDEX idx_sessions_expires ON sessions(expires_at);
+```
+
+### Session cookie format
+
+The session cookie is a simple lookup token, not a signed JWT.
+The `sessions` table is the source of truth -- no crypto to get wrong.
+
+```
+Cookie: session=<session-id>; Path=/u/<user-id>/; HttpOnly; Secure; SameSite=Strict
+```
+
+- `session-id`: 32-byte random hex string (via `crypto.randomUUID()` or `crypto.getRandomValues()`)
+- On each request, orchestrator looks up `session-id` in the `sessions` table
+- If found and not expired, extract `user_id` and compare against the path's `<user-id>`
+- If expired, delete the row and redirect to login
+- No HMAC signing needed -- the session ID itself is the secret (high entropy, stored server-side)
+
+### Orchestrator request flow (pseudocode)
+
+```ts
+// Main request handler -- Bun.serve() in the orchestrator process
+function handleRequest(req: Request): Response | Promise<Response> {
+  const url = new URL(req.url);
+  const path = url.pathname;
+
+  // 1. Public routes (no auth required)
+  if (path === '/register') return handleRegister(req);
+  if (path === '/login') return handleLogin(req);
+  if (path === '/verify') return handleEmailVerification(req);
+  if (path === '/') return Response.redirect('/login');
+
+  // 2. Extract user-id from path: /u/<user-id>/...
+  const match = path.match(/^\/u\/([A-Z0-9]{26})\//);  // ULID is 26 chars
+  if (!match) return new Response('Not found', { status: 404 });
+  const pathUserId = match[1];
+
+  // 3. Validate session cookie
+  const sessionId = parseCookie(req.headers.get('cookie'), 'session');
+  if (!sessionId) return Response.redirect('/login');
+
+  const session = await lookupSession(sessionId);  // DB query
+  if (!session || new Date(session.expires_at) < new Date()) {
+    return Response.redirect('/login');
+  }
+
+  // 4. Path ACL: session user must match path user
+  if (session.user_id !== pathUserId) {
+    return new Response('Forbidden', { status: 403 });
+  }
+
+  // 5. Ensure user process is running
+  const proc = await ensureProcessRunning(pathUserId);  // spawn if needed
+
+  // 6. Update last-request timestamp (fire and forget)
+  updateLastRequest(pathUserId);
+
+  // 7. Proxy to user's SvelteKit process, stripping /u/<user-id> prefix
+  const stripped = path.replace(`/u/${pathUserId}`, '') || '/';
+  const proxyUrl = `http://localhost:${proc.port}${stripped}${url.search}`;
+  return fetch(proxyUrl, {
+    method: req.method,
+    headers: req.headers,
+    body: req.body,
+  });
+}
+```
+
+### Registration and login page sketches
+
+The orchestrator serves plain HTML pages (no SvelteKit) for auth flows.
+Minimal styling -- these are functional forms, not the app itself.
+
+**Registration (`/register`):**
+```html
+<form method="POST" action="/register">
+  <h1>Create your Done account</h1>
+  <label>Email <input type="email" name="email" required></label>
+  <label>Password <input type="password" name="password" required minlength="8"></label>
+  <button type="submit">Register</button>
+  <!-- On error, re-render page with error message in a <p class="error"> -->
+  <!-- On success, show "Check your email for verification link" -->
+</form>
+```
+
+**Login (`/login`):**
+```html
+<form method="POST" action="/login">
+  <h1>Log in to Done</h1>
+  <label>Email <input type="email" name="email" required></label>
+  <label>Password <input type="password" name="password" required></label>
+  <button type="submit">Log in</button>
+  <!-- Same error for wrong email and wrong password: "Invalid email or password" -->
+  <!-- On success, Set-Cookie + redirect to /u/<user-id>/ -->
+</form>
+```
+
+**Email verification (`/verify?token=<token>`):**
+- GET request with token query param
+- Look up token in `users` table, set `email_verified = 1`, null the token
+- On success: redirect to `/login` with "Email verified" message
+- On failure: "Invalid or expired verification link"
+
+### AI model recommendation
+
+For CPU-only inference on a competition server, use a small model with good structured JSON output:
+
+**Primary choice: Qwen 2.5 3B Instruct (Q4_K_M quantization)**
+- ~2GB RAM, fast on CPU, good at following structured output instructions
+- GGUF available: `Qwen2.5-3B-Instruct-Q4_K_M.gguf`
+- llama.cpp command: `--model /models/Qwen2.5-3B-Instruct-Q4_K_M.gguf --ctx-size 4096`
+
+**Fallback: Phi-3.5 Mini Instruct (3.8B, Q4_K_M)**
+- Slightly larger but stronger at reasoning tasks
+- Good alternative if Qwen struggles with JSON schema compliance
+
+Both models support the OpenAI-compatible `/v1/chat/completions` endpoint in llama.cpp server mode.
+
+### AI prompt templates (reference for day 4)
+
+**Autofill prompt (4.2):**
+```
+System: You are a task metadata assistant. Given a task title, infer metadata.
+Return ONLY valid JSON matching this schema, no other text:
+{
+  "tags": string[],          // e.g., ["shopping", "errands"]
+  "locations": string[],     // e.g., ["Walmart"] -- places where this task can be done
+  "priority": "low" | "medium" | "high" | null,
+  "complexity": "low" | "medium" | "high" | null,
+  "splitSuggestion": null | { "reason": string, "tasks": string[] }
+}
+
+For consistency, prefer these existing tags: <existing_tags>
+For consistency, prefer these existing locations: <existing_locations>
+
+If the task implies multiple locations with AND semantics (must visit A then B),
+set splitSuggestion with the reason and proposed sub-task titles.
+
+<user_task>
+{title}
+</user_task>
+```
+
+**Suggestion ranking prompt (5.1):**
+```
+System: You are a task prioritization assistant. Given a list of tasks and the user's
+current context, return the task IDs ranked by what the user should do next.
+Return ONLY a JSON array of task ID strings, most important first. No other text.
+
+<user_context>
+Location: {currentLocation}
+Focus: {focusDirective}
+Time: {currentTime}
+</user_context>
+
+<user_tasks>
+{tasks as JSON array of {id, title, tags, locations, priority, dueDate, complexity}}
+</user_tasks>
+```
+
+**Task splitting prompt (4.3):**
+Handled by the autofill prompt above via the `splitSuggestion` field.
+When the autofill response includes a non-null `splitSuggestion`, the UI shows a confirmation dialog.
 
 ## Day 2 (Wed): Core CRUD UI (~4h)
 
@@ -521,7 +767,7 @@ Coolify's reverse proxy terminates HTTPS upstream; the orchestrator listens on H
 **7.1a Registration and login (~1.5h)**
 
 - (0.5h) Create `orchestrator/src/auth.ts`: registration form (HTML page served by orchestrator), email verification via `@upyo/smtp`
-- (0.5h) Implement login: verify password with `Bun.password.verify()`, create HMAC-signed session cookie (`HttpOnly`, `SameSite=Strict`, `Secure`, `Path=/u/<user-id>/`), rate limit login attempts (10/min per IP)
+- (0.5h) Implement login: verify password with `Bun.password.verify()`, create session row in `orchestrator.db` with random 32-byte hex ID, set cookie (`HttpOnly`, `SameSite=Strict`, `Secure`, `Path=/u/<user-id>/`), rate limit login attempts (10/min per IP)
 - (0.5h) On verified registration: generate ULID user ID, hash password with `Bun.password.hash()` (argon2id), store in `orchestrator.db`, create `/data/<user-id>/` directory, initialize empty `done.db` with migration
 
 **7.1b Process management (~1.5h)**
@@ -560,7 +806,7 @@ The orchestrator keeps all routing state in memory (rebuilt from `orchestrator.d
 **Atomic tasks:**
 
 - (0.25h) Write `docker-compose.yml`: two services, inline Dockerfile for orchestrator (see sketch below), volumes (`done-data`)
-- (0.25h) Configure environment variables: `SMTP_*`, `LLAMA_CPP_URL`, `SESSION_SECRET`, port range
+- (0.25h) Configure environment variables: `SMTP_*`, `LLAMA_CPP_URL`, port range
 - (0.25h) Test locally: `docker compose up`, register user, verify full flow (registration -> login -> process spawn -> proxy -> AI suggestion)
 
 **Example `docker-compose.yml` with inline Dockerfile:**
@@ -601,7 +847,6 @@ services:
       - SMTP_USER
       - SMTP_PASS
       - SMTP_FROM
-      - SESSION_SECRET
       - LLAMA_CPP_URL=http://llama-cpp:8080
       - PORT_RANGE_START=3100
       - PORT_RANGE_END=3999
