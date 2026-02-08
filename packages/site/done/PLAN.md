@@ -576,18 +576,23 @@ Minimal styling -- these are functional forms, not the app itself.
 
 ### AI model recommendation
 
-For CPU-only inference on a competition server, use a small model with good structured JSON output:
+For CPU-only inference on a competition server, use the smallest model that reliably produces structured JSON.
+Our prompts are simple (infer tags from a title, rank tasks by context) -- not hard reasoning problems.
+Speed matters more than capability here because autofill runs on every keystroke (debounced).
 
-**Primary choice: Qwen 2.5 3B Instruct (Q4_K_M quantization)**
-- ~2GB RAM, fast on CPU, good at following structured output instructions
-- GGUF available: `Qwen2.5-3B-Instruct-Q4_K_M.gguf`
-- llama.cpp command: `--model /models/Qwen2.5-3B-Instruct-Q4_K_M.gguf --ctx-size 4096`
+**Primary choice: Qwen3-1.7B (Q4_K_M quantization)**
+- ~1.2GB RAM, good structured JSON output (community-validated with Ollama JSON schema constraints)
+- Use **non-thinking mode** (`/no_think` or temperature=0) for fast autofill without chain-of-thought overhead
+- Official GGUF from Qwen team: `Qwen3-1.7B-Q4_K_M.gguf`
+- llama.cpp command: `--model /models/Qwen3-1.7B-Q4_K_M.gguf --ctx-size 4096`
 
-**Fallback: Phi-3.5 Mini Instruct (3.8B, Q4_K_M)**
-- Slightly larger but stronger at reasoning tasks
-- Good alternative if Qwen struggles with JSON schema compliance
+**Fallback: LFM2.5-1.2B-Instruct (GGUF)**
+- Under 1GB RAM, 239 tok/s on AMD CPU -- remarkably fast
+- IFEval 86.23% (instruction following) is strong for its size
+- Official GGUF: `llama-cli -hf LiquidAI/LFM2.5-1.2B-Instruct-GGUF`
+- Use if Qwen3 is too slow on the competition server's CPU
 
-Both models support the OpenAI-compatible `/v1/chat/completions` endpoint in llama.cpp server mode.
+Both support the OpenAI-compatible `/v1/chat/completions` endpoint in llama.cpp server mode.
 
 ### AI prompt templates (reference for day 4)
 
@@ -855,7 +860,7 @@ services:
 
   llama-cpp:
     image: ghcr.io/ggml-org/llama.cpp:server
-    command: ["--host", "0.0.0.0", "--port", "8080", "--model", "/models/model.gguf"]
+    command: ["--host", "0.0.0.0", "--port", "8080", "--model", "/models/Qwen3-1.7B-Q4_K_M.gguf", "--ctx-size", "4096"]
     volumes:
       - llama-models:/models
 

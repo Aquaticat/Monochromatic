@@ -42,7 +42,7 @@ It does not just organize tasks -- it actively surfaces the right task at the ri
 - **Runtime**: Bun (server + bundler)
 - **Framework**: SvelteKit with SSR (server-side rendering on Bun via adapter-bun) -- one process handles both pages and data. `load` functions fetch data server-side, form actions handle mutations. No separate API layer.
 - **Database**: libsql (SQLite-compatible, single file, local)
-- **AI**: Self-hosted llama.cpp (OpenAI-compatible API, full model control, no provider ban risk). Primary model: Qwen 2.5 3B Instruct (Q4_K_M, ~2GB RAM, CPU-only). Fallback: Phi-3.5 Mini 3.8B.
+- **AI**: Self-hosted llama.cpp (OpenAI-compatible API, full model control, no provider ban risk). Primary model: Qwen3-1.7B (Q4_K_M, ~1.2GB RAM, CPU-only, non-thinking mode for fast autofill). Fallback: LFM2.5-1.2B-Instruct (under 1GB, 239 tok/s on CPU).
 - **Auth + reverse proxy**: Orchestrator (Bun) -- handles registration, login, session cookies, path ACL enforcement, and HTTP reverse proxy to user processes. No Caddy or AuthCrunch; Coolify's reverse proxy terminates HTTPS upstream.
 - **Email**: `@upyo/smtp` (JSR) -- generic SMTP transport; works with Resend, Fastmail, or any SMTP provider. If the transport fails, that's the provider's problem, not ours.
 - **Deployment**: Docker Compose on Coolify -- two containers (orchestrator+user processes, llama.cpp), path-based routing (`/u/<user-id>/`), named volumes for user data
