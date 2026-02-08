@@ -1,21 +1,26 @@
 # Done -- Implementation plan
 
 This plan assumes one developer working full-time for 7 days with AI assistance.
-Days are rough guides, not hard boundaries.
+Each day targets ~8 productive hours. Hour estimates are per-task; buffer time is built into each day.
 
-## Day 1: Scaffolding and data layer
+## Day 1: Scaffolding and data layer (~8h)
 
-### Project setup
+### 1.1 Project setup (~2h)
 
-- Initialize SvelteKit project at `packages/site/done/`
-- Configure adapter-bun for SSR (not static adapter)
-- Configure as PWA (manifest.json, service worker for app shell caching)
-- Add `package.json` with `workspace:*` references to monorepo packages
-- Add `mise.toml` with `dev`, `build`, and `start` tasks
-- SvelteKit `base` path set to `/u/<user-id>` (injected via env var at process spawn time)
-- Caddy reverse-proxies `done.app/u/<user-id>/*` to the user's SvelteKit port, stripping the path prefix (no static file serving needed -- SvelteKit serves everything)
+- (0.5h) Initialize SvelteKit project at `packages/site/done/`
+- (0.5h) Configure adapter-bun for SSR (not static adapter)
+- (0.25h) Add `package.json` with `workspace:*` references to monorepo packages
+- (0.25h) Add `mise.toml` with `dev`, `build`, and `start` tasks
+- (0.25h) Configure SvelteKit `base` path to read from `BASE_PATH` env var (defaults to `/`)
+- (0.25h) Verify Caddy reverse-proxy wiring: `done.app/u/<user-id>/*` -> SvelteKit port, path prefix stripping via `handle_path`
 
-### Database schema (libsql)
+### 1.2 Database schema and migration (~3h)
+
+- (0.5h) Install libsql client, create `src/lib/db.ts` with connection init and migration runner
+- (1.0h) Write core tables SQL (tasks, attachments, settings) and run migration on first startup
+- (0.5h) Write FTS5 virtual table + sync triggers (insert/update/delete)
+- (0.5h) Write indexes for common query patterns
+- (0.5h) Verify migration runs cleanly on a fresh `.db` file, test FTS5 triggers manually
 
 libsql is SQLite-compatible, so all standard SQLite features work.
 The schema below is the complete initial migration -- run it once on first startup.
@@ -143,6 +148,17 @@ CREATE INDEX idx_tasks_source_id ON tasks(source, source_id) WHERE source_id IS 
 -- Attachments: look up all attachments for a task
 CREATE INDEX idx_attachments_task_id ON attachments(task_id);
 ```
+
+### 1.3 Database helper functions (~3h)
+
+- (0.5h) Write `src/lib/db/tasks.ts`: CRUD functions (create, read, update, delete task)
+- (0.5h) Write `src/lib/db/tasks.ts`: timer functions (startTimer, stopTimer, completeTask with blocker check)
+- (0.5h) Write `src/lib/db/tasks.ts`: query functions (inbox unblocked, inbox blocked-by-parent, in-progress, search)
+- (0.5h) Write `src/lib/db/attachments.ts`: create, list-by-task, get-by-id, delete
+- (0.5h) Write `src/lib/db/settings.ts`: get, set, getAll
+- (0.5h) Write `src/lib/db/reminders.ts`: getDueReminders, removeReminder
+
+The SQL patterns below are reference material for implementing these helpers.
 
 ### How to query full-text search
 
@@ -335,7 +351,7 @@ await transport.send(message).catch(console.error);
 await transport.close();
 ```
 
-### SvelteKit route structure
+### SvelteKit route structure (reference for days 2-6)
 
 No separate API server. SvelteKit handles everything via `+page.server.ts` (load + form actions) and `+server.ts` (JSON endpoints for AI/async operations).
 
@@ -372,185 +388,309 @@ Form actions handle all mutations (create/update/delete/start/stop/complete).
 SvelteKit's `use:enhance` progressively enhances forms with client-side submissions and automatic page data invalidation -- no manual fetch() or state management for CRUD.
 The `api/` routes are only for things that genuinely need raw JSON responses (AI streaming, binary downloads, webhook callbacks).
 
-## Day 2: Core CRUD UI
+## Day 2: Core CRUD UI (~8h)
 
-### Svelte components
+### 2.1 Layout shell and navigation (~2h)
 
-- **Layout**: Drawer navigation (Inbox, In Progress, Settings)
-- **TaskCard**: Displays title, tags, tracked time, location; tappable to open details
-- **TaskDetails**: Overlay with editable title, description, metadata chips, save/close
-- **ChipEditor**: Reusable component for tappable metadata chips (opens inline editor on tap)
-- **TaskList**: Scrollable list of TaskCard components
-- **FAB**: Floating action button (+) to create new task
-- **SearchOverlay**: Full-text search with results
+- (0.5h) Create `+layout.server.ts`: load user settings from DB
+- (0.5h) Create `+layout.svelte`: drawer navigation shell (Inbox, In Progress, Settings), responsive sidebar
+- (0.5h) Create FAB component: floating action button (+) for new task creation
+- (0.5h) Set up global styles, CSS variables, font loading
 
-### Wiring
+### 2.2 Inbox screen (~2.5h)
 
-- Data arrives server-rendered via `+page.server.ts` load functions -- no client-side fetch on mount
-- Mutations use `<form method="POST">` with SvelteKit form actions
-- `use:enhance` on forms for client-side progressive enhancement (no full page reload, automatic data re-validation)
-- No optimistic UI needed for MVP -- SvelteKit re-runs load functions after form actions, so the page updates with real server state
+- (0.5h) Create `(app)/+page.server.ts`: load function returning unblocked inbox tasks
+- (0.5h) Create `(app)/+page.server.ts`: form actions for create and delete
+- (0.5h) Create TaskCard component: displays title, tags, tracked time, location; tappable link to details
+- (0.5h) Create TaskList component: scrollable list of TaskCard, with "Suggested" and "All" collapsible sections
+- (0.5h) Create `(app)/+page.svelte`: wire TaskList with data from load, FAB with create action
 
-## Day 3: Timers and In Progress screen
+### 2.3 Task details overlay (~2.5h)
 
-### Server-side timer logic
+- (0.5h) Create `(app)/[id]/+page.server.ts`: load single task + attachments; form actions for update, delete
+- (0.5h) Create ChipEditor component: reusable tappable metadata chip (opens inline editor on tap)
+- (0.5h) Create TaskDetails component: editable title, description textarea, metadata chips, save/close
+- (0.5h) Wire all chips: tags, location, priority, due date, complexity, reminders, blockedBy
+- (0.5h) Create `(app)/[id]/+page.svelte`: overlay presentation, `use:enhance` on all forms
 
-- Form action `start` (on `[id]/+page.server.ts`) sets `timer_started_at = NOW()`, changes status to `in_progress`
-- Form action `stop` calculates delta, adds to `tracked_time`, nulls `timer_started_at`, changes status to `inbox`
-- Form action `complete` validates no unresolved blockers, calculates final time, sets status to `done`, then deletes
+### 2.4 Forms wiring (~1h)
 
-### In Progress screen
+- (0.5h) Add `use:enhance` to all forms for progressive enhancement (no full page reload)
+- (0.5h) Verify round-trip: create task -> appears in inbox -> open details -> edit -> save -> inbox reflects changes
 
-- List all tasks where `status = 'in_progress'`
-- **One global tick, not per-task**: a single Svelte store (`nowMs`) updated by one `setInterval(1000)` drives all timer displays. Each task card derives its display from `trackedTime + (nowMs - Date.parse(timerStartedAt)) / 1000`. This scales to 100+ in-progress tasks without spawning 100 intervals.
-- Server only contacted on start/stop/complete actions; no polling or SSE for timer display
-- Blocked tasks are **not shown** in this list (they appear nested under their blockers)
+Data arrives server-rendered via `+page.server.ts` load functions -- no client-side fetch on mount.
+Mutations use `<form method="POST">` with SvelteKit form actions.
+No optimistic UI needed for MVP -- SvelteKit re-runs load functions after form actions, so the page updates with real server state.
 
-### Blocking UI
+## Day 3: Timers, blocking, and In Progress screen (~8h)
 
-- Blocked tasks are hidden from Suggestions, All, and In Progress top-level lists
-- They appear **only nested/indented under the task blocking them** wherever that blocker is visible
-- Search always returns blocked tasks with a "blocked" badge -- nothing is truly invisible
-- Circular dependencies are harmless: cycled tasks disappear from top-level lists; user finds and fixes via search
-- In TaskDetails, `blockedBy` chip opens a task picker (list of other tasks)
-- Complete button disabled with explanation when blockers exist
+### 3.1 Server-side timer logic (~2h)
 
-## Days 4-5: AI integration (2 days, not 1)
+- (0.5h) Add form action `start` on `[id]/+page.server.ts`: set `timer_started_at = NOW()`, change status to `in_progress`
+- (0.5h) Add form action `stop`: calculate elapsed delta, add to `tracked_time`, null `timer_started_at`, change status to `inbox`
+- (0.5h) Add form action `complete`: validate no unresolved blockers, calculate final time, set status to `done`, then delete
+- (0.5h) Test all three actions manually: start -> stop -> verify cumulative time; start -> complete -> verify blocker rejection
+
+### 3.2 In Progress screen (~2.5h)
+
+- (0.5h) Create `in-progress/+page.server.ts`: load all tasks where `status = 'in_progress'` (unblocked only at top level)
+- (0.5h) Create `in-progress/+page.svelte`: list of TaskCards with live timer display
+- (0.5h) Implement global timer tick: single Svelte store (`nowMs`) updated by one `setInterval(1000)`, all task cards derive display from `trackedTime + (nowMs - Date.parse(timerStartedAt)) / 1000`
+- (0.5h) Format timer display as `HH:MM:SS`, handle edge cases (no timerStartedAt, timer just started)
+- (0.5h) Verify: start timer on task -> navigate to In Progress -> see ticking timer -> stop -> time persists
+
+### 3.3 Blocking UI (~2h)
+
+- (0.5h) Update inbox load function: fetch blocked tasks per visible parent (batched query), return as nested structure
+- (0.5h) Update TaskList component: render blocked tasks indented under their blockers with a "blocked" badge
+- (0.5h) Add blocker picker to TaskDetails: `blockedBy` chip opens a searchable task list, saves selected IDs
+- (0.5h) Disable complete button when blockers exist, show explanation with list of blocking tasks
+
+### 3.4 Search overlay (~1.5h)
+
+- (0.5h) Create `search/+page.server.ts`: load function runs FTS5 query from URL search param, returns results with `is_blocked` flag
+- (0.5h) Create `search/+page.svelte`: search input, debounced query submission, result list with blocked badges
+- (0.5h) Test: create tasks with various tags -> search by tag -> verify results include blocked tasks with badge
+
+## Day 4: AI integration -- infrastructure and autofill (~8h)
 
 AI is the core differentiator -- budget two full days for prompt engineering, structured output parsing, and UX polish.
 
-### llama.cpp setup
+### 4.1 llama.cpp client and rate limiting (~2h)
 
-- Shared llama.cpp instance running on the host with `--host 0.0.0.0 --port 8080`
-- Exposes an OpenAI-compatible `/v1/chat/completions` endpoint
-- All user Bun processes talk to `http://localhost:8080` -- no API keys, no provider bans
-- Model choice is an operator decision (download and load whatever fits the hardware)
+- (0.5h) Create `src/lib/ai/client.ts`: HTTP client wrapper for llama.cpp's OpenAI-compatible `/v1/chat/completions` endpoint at `http://localhost:8080`
+- (0.5h) Implement in-memory rate limiter: sliding window counter, max 30 requests/minute per process, returns 429 when exceeded
+- (0.5h) Create `src/lib/ai/prompts.ts`: system prompt templates with clear separation of instructions vs user data (user content in `<user_tasks>` block)
+- (0.5h) Test: verify client connects to llama.cpp, sends a simple prompt, parses response; verify rate limiter rejects burst requests
 
-### Rate limiting
+### 4.2 Autofill endpoint (~3h)
 
-- Each Bun process enforces an in-memory counter: max 30 AI requests/minute
-- Prevents a runaway client loop from starving other users on the shared llama.cpp instance
-- Returns 429 Too Many Requests when exceeded
+- (0.5h) Create `api/ai/autofill/+server.ts`: POST handler accepting `{ title: string }`
+- (0.5h) Write autofill prompt: include title text, existing tags/locations from DB (for consistency), instructions to infer tags/location/priority/complexity
+- (0.5h) Implement structured JSON output parsing: define expected schema, validate response, fallback to empty on parse failure
+- (0.5h) Wire client-side: debounced fetch (500ms) on title input keyup, loading indicator, pre-fill chip values from response
+- (0.5h) Handle edge cases: empty title, AI timeout, malformed response, all fields remain manually editable regardless
+- (0.5h) Test end-to-end: type "Buy milk from Walmart" -> see `#shopping`, `where: Walmart`, `complexity: low` auto-filled
 
-### Autofill
+### 4.3 Task splitting (~1.5h)
 
-- Debounced call (500ms) as user types task title
-- Client-side fetch to `api/ai/autofill/+server.ts` (one of the few raw JSON endpoints)
-- Prompt includes: title text, existing tags/locations in DB (for consistency), instructions to infer tags/location/priority/complexity
-- Request structured JSON output from the model
-- Response pre-fills chip values in TaskDetails
-- Loading indicator while waiting; all fields remain manually editable regardless
+- (0.5h) Extend autofill prompt: detect multi-location AND semantics, return `splitSuggestion` in response when applicable
+- (0.5h) Create SplitPrompt component: "Split into X tasks?" confirmation UI, shows proposed task titles
+- (0.5h) Wire confirm action: create N tasks with sequential `blockedBy` chains via form action
 
-### Suggestion engine
+### 4.4 Prompt injection hardening (~1.5h)
 
-- Inbox `+page.server.ts` load function fetches suggestions server-side (no client fetch)
-- Server fetches all inbox tasks **where `blocked_by = '[]'`** (unblocked only), sends to AI with context:
-  - User's current location
-  - User's focus directive
-  - Task metadata (tags, locations, priority, due dates, complexity)
-- AI returns ranked list of task IDs as structured JSON
-- The "All" section likewise filters out blocked tasks from top-level; blocked tasks only appear nested under their blockers
+- (0.5h) Review all prompts: verify system prompt separated from user data, user content always in delimited blocks
+- (0.5h) Verify structured JSON output schema validation rejects unexpected fields
+- (0.5h) Verify Svelte never renders AI output as `{@html}` (default text escaping is sufficient)
 
-### Task splitting
+## Day 5: AI suggestion engine and polish (~8h)
 
-- When AI detects multi-location AND semantics in autofill, it returns a suggestion to split
-- UI shows a "Split into X tasks?" prompt
-- On confirm, creates N tasks with sequential `blockedBy` chains
+### 5.1 Suggestion engine -- server side (~3h)
 
-### Prompt structure (injection mitigation)
+- (0.5h) Write suggestion prompt: include all unblocked inbox tasks (metadata only), user's current location, focus directive
+- (0.5h) Implement structured output: AI returns ranked array of task IDs as JSON, validate against known task IDs
+- (1.0h) Integrate into inbox `+page.server.ts` load function: fetch suggestions server-side, sort "Suggested" section by AI ranking
+- (0.5h) Handle AI unavailable: if llama.cpp is down or rate-limited, fall back to simple heuristic (due date, priority)
+- (0.5h) Test: create 10 tasks with varied locations/priorities, set location to "Walmart", verify shopping tasks surface first
 
-- System prompt with instructions is clearly separated from user data
-- User task content goes in a delimited `<user_tasks>` block
-- Always request JSON output with a strict schema -- limits what injection can produce
-- Never render raw AI output as `{@html}` in Svelte (default escaping handles this)
+### 5.2 Suggestion engine -- UI polish (~2.5h)
 
-## Day 6: PWA, email, and polish
+- (0.5h) Add loading state for suggestions section (skeleton cards while AI processes)
+- (0.5h) Add "Suggested" section header with explanation tooltip ("Based on your location and focus")
+- (0.5h) Handle empty suggestions gracefully: show "No suggestions right now" message
+- (0.5h) Tune suggestion count: limit to top 5-8 tasks to avoid overwhelming the user
+- (0.5h) Test suggestion refresh: change location in settings -> reload inbox -> verify new suggestions
 
-### PWA configuration
+### 5.3 AI model tuning and prompt iteration (~2.5h)
 
-- `manifest.json` with app name, icons, theme color, display: standalone
-- Service worker caches static assets (JS, CSS, icons) for faster repeat loads
-- **No full offline mode** -- show a clear "offline" banner when connectivity is lost; all pages and actions require the server (SSR means even page loads need connectivity)
-- This avoids the complexity of a local write queue + sync-on-reconnect
+- (1.0h) Test autofill with diverse task titles, iterate on prompt wording for accuracy
+- (1.0h) Test suggestion ranking with various location/focus combos, iterate on ranking prompt
+- (0.5h) Document final prompt templates in `src/lib/ai/prompts.ts` with rationale comments
 
-### Geolocation
+## Day 6: PWA, email, and polish (~8h)
 
-- Browser Geolocation API for autodetect
-- Reverse geocode to place name (ask the llama.cpp model to interpret coordinates, or use a free API)
-- Location stored in settings, sent with suggestion requests
+### 6.1 PWA configuration (~1.5h)
 
-### Camera
+- (0.25h) Create `manifest.json`: app name, icons, theme color, `display: standalone`
+- (0.5h) Create service worker: cache static assets (JS, CSS, icons) for faster repeat loads
+- (0.25h) Add offline detection: show "offline" banner when connectivity is lost (no full offline mode -- all actions require server)
+- (0.5h) Test: install as PWA on phone/desktop, verify cached shell loads fast, verify offline banner appears when disconnected
 
-- `<input type="file" accept="image/*" capture="environment">` for photo attachments
-- Upload via form action on `[id]/+page.server.ts` (attach action), link to task
+### 6.2 Geolocation (~1h)
 
-### Email notifications (must-have, via `@upyo/smtp`)
+- (0.25h) Add Browser Geolocation API call to detect current position
+- (0.5h) Reverse geocode coordinates to place name (via llama.cpp or a free geocoding API)
+- (0.25h) Store detected location in settings, send with suggestion requests
 
-All email goes through `@upyo/smtp` configured with operator-provided SMTP credentials.
-If the SMTP provider has issues, the app logs the error and moves on -- not our problem.
+### 6.3 Camera and attachments (~1h)
 
-**Reminder emails**:
-- `setTimeout` loop checks tasks with upcoming reminders every 60 seconds
-- Sends email via `@upyo/smtp` when reminder time is reached
-- Email contains task title, description, metadata, and a direct link to the task in the app
-- Fire-and-forget: `.catch(console.error)`
+- (0.25h) Add `<input type="file" accept="image/*" capture="environment">` to TaskDetails
+- (0.5h) Wire form action `attach` on `[id]/+page.server.ts`: validate file type/size, store as BLOB in attachments table
+- (0.25h) Create `api/attachments/[id]/+server.ts`: GET handler to download attachment by ID
 
-**Daily database backup email**:
-- Scheduled job (e.g., 3am UTC)
-- Export tasks + settings + attachment metadata as JSON (no BLOBs, no raw `.db` -- stays within SMTP size limits)
-- Send via `@upyo/smtp` to the user's registered email
-- Serves as data safety net if the instance is lost
+### 6.4 Email -- reminder notifications (~2h)
 
-## Day 7: Connected apps and deployment
+- (0.5h) Create `src/lib/email/transport.ts`: `@upyo/smtp` wrapper configured from SMTP env vars
+- (0.5h) Create `src/lib/email/reminders.ts`: query due reminders, format email body (task title, description, link)
+- (0.5h) Wire `setTimeout` loop in server startup: check every 60 seconds, send due reminders, remove fired reminders from JSON array
+- (0.5h) Test: create task with reminder 1 minute from now -> verify email arrives -> verify reminder removed from task
 
-### GitHub integration
+### 6.5 Email -- daily database backup (~1h)
 
-- Personal access token stored in settings
-- Sync logic:
-  - Fetch issues from configured repos
-  - Map to tasks: title, body->description, labels->tags, assignees->ignore (single-tenant)
-  - Detect issue dependencies (GitHub doesn't have native deps -- parse "depends on #X" in body)
-  - Two-way: completing a task closes the issue, closing an issue completes the task
-- Lossless: `source_meta` stores full GitHub issue JSON for round-trip
+- (0.25h) Create `src/lib/email/backup.ts`: export tasks + settings + attachment metadata as JSON (no BLOBs)
+- (0.5h) Wire scheduled job: run once daily at 3am UTC, send JSON attachment via `@upyo/smtp`
+- (0.25h) Test: trigger backup manually -> verify email arrives with valid JSON attachment
 
-### Codebase TODO sync (read-only inbound for MVP)
+### 6.6 Settings screen (~1.5h)
 
-Outbound writes (auto-editing source files) are deferred post-competition -- too risky for week 1.
+- (0.5h) Create `settings/+page.server.ts`: load all settings; form actions for updating each setting
+- (0.5h) Create `settings/+page.svelte`: AI model selection, email config, connected apps status, location
+- (0.5h) Wire save actions with `use:enhance`, verify round-trip
 
-**Inbound** (codebase -> Done):
-- Configure repo path (local directory or git clone URL)
-- Parse `TODO`, `FIXME`, `HACK` comments with regex, extract file path + line number + surrounding context
-- Create tasks with `source: "codebase"`, `sourceId: "repo:file:line"`
-- Re-scan periodically or on webhook to detect new/moved/removed TODOs
+## Day 7: Orchestrator, connected apps, and deployment (~8h)
 
-### Deployment
+### 7.1 Orchestrator script (~4h)
 
-- **Path-based routing** (`done.app/u/<user-id>/`) instead of subdomains -- one domain, one DNS record, one cert, no registrar API calls on registration, no offensive subdomain risk
-- **No Docker per user** -- each user gets a SvelteKit-on-Bun process (~10-20MB idle), not a container
-- **llama.cpp** runs as a single shared process on the host
-- **Orchestrator script** (Bun/TypeScript):
-  - Handles email registration + verification via `@upyo/smtp`
-  - Spawns per-user SvelteKit process: `BASE_PATH=/u/<user-id> bun run build/index.js --port=XXXX --db=/data/<user-id>/done.db`
-  - Tracks PID + port + user mapping (in-memory map or a small SQLite DB)
-  - Updates Caddy AuthCrunch config: sets `acl.paths` in the user's JWT to `/u/<user-id>/**`, authorization policy uses `validate path acl`
-  - Caddy reverse-proxies `done.app/u/<user-id>/*` -> `localhost:$PORT` (with path prefix stripping via `handle_path`)
-  - Monitors instance activity -- suspends idle processes (`SIGSTOP` / kill) and wakes on URL access (respawn on demand)
-- Caddy config: HTTPS termination, AuthCrunch authentication with path ACL validation, path-based reverse proxy to per-user ports (no static file serving -- SvelteKit handles everything)
-- Data directory: `/data/<user-id>/done.db` per user (libsql file, isolation boundary)
-- User IDs are opaque ULIDs (not user-chosen names) to prevent abuse
+The orchestrator is a standalone Bun/TypeScript process that manages the entire multi-tenant lifecycle.
+It lives at `packages/site/done/orchestrator/` with its own entry point.
 
-### Testing (if time permits)
+**7.1a Registration and auth (~1.5h)**
 
-- Unit tests for database/business logic functions (vitest)
-- Basic Playwright smoke tests for critical flows:
-  - Create task -> appears in inbox
-  - Start timer -> appears in In Progress with running timer
-  - Set blocker -> complete button disabled
-  - Search -> results appear
+- (0.5h) Create `orchestrator/src/registration.ts`: email registration form (HTML page served by orchestrator itself, outside of any user SvelteKit instance)
+- (0.5h) Implement email verification flow: generate verification token, send verification email via `@upyo/smtp`, verify on callback
+- (0.5h) On verified registration: generate ULID user ID, create `/data/<user-id>/` directory, initialize empty `done.db` with migration
 
-### Documentation
+**7.1b Process management (~1.5h)**
 
-- Brief README with: what it is, how to deploy, registration flow
+- (0.5h) Create `orchestrator/src/process-manager.ts`: spawn per-user SvelteKit process (`BASE_PATH=/u/<user-id> bun run build/index.js --port=XXXX --db=/data/<user-id>/done.db`)
+- (0.5h) Implement port allocation: track PID + port + user-id mapping in a small SQLite DB (`orchestrator.db`); allocate ports from a configurable range (e.g., 3100-3999)
+- (0.5h) Implement process health check: periodic liveness probe, restart crashed processes, log failures
+
+**7.1c Idle suspension and wake-on-request (~0.5h)**
+
+- (0.25h) Monitor last-request timestamp per user (updated by Caddy access logs or a lightweight middleware)
+- (0.25h) Suspend idle processes after configurable timeout (kill + respawn on next request); Caddy returns 503 briefly during cold start
+
+**7.1d Caddy and AuthCrunch config management (~0.5h)**
+
+- (0.25h) On new user: update Caddy config to add reverse-proxy route `done.app/u/<user-id>/*` -> `localhost:$PORT` with `handle_path` prefix stripping
+- (0.25h) On new user: update AuthCrunch config to set `acl.paths` claim in user's JWT to `/u/<user-id>/**`, add `validate path acl` directive
+
+### 7.2 GitHub integration (~1.5h)
+
+- (0.25h) Create `src/lib/sync/github.ts`: GitHub API client using personal access token from settings
+- (0.5h) Implement import: fetch issues from configured repos, map to tasks (title, body->description, labels->tags), store `source_meta` for lossless round-trip
+- (0.25h) Implement issue dependency detection: parse "depends on #X" in issue body, map to `blockedBy`
+- (0.25h) Implement write-back: completing a task closes the GitHub issue (PATCH issue status)
+- (0.25h) Wire into settings: configure repos, trigger sync, show sync status
+
+### 7.3 Codebase TODO sync (~0.5h)
+
+Read-only inbound for MVP. Outbound writes deferred post-competition.
+
+- (0.25h) Create `src/lib/sync/codebase.ts`: regex scanner for `TODO`, `FIXME`, `HACK` comments in configured directories; extract file path + line number + context; create tasks with `source: "codebase"`, `sourceId: "repo:file:line"`
+- (0.25h) Wire into settings: configure repo paths, trigger scan, show scan results
+
+### 7.4 Docker Compose for Coolify (~1.5h)
+
+The entire stack deploys as a single `docker-compose.yml` at `packages/site/done/docker-compose.yml`.
+Coolify picks it up and manages the deployment.
+
+**Services:**
+
+| Service | Image | Purpose |
+| --- | --- | --- |
+| `caddy` | Custom (Caddy + AuthCrunch plugin) | HTTPS termination, auth, path-based reverse proxy |
+| `orchestrator` | Custom (Bun + app build) | Registration, process management, Caddy admin API calls |
+| `llama-cpp` | `ghcr.io/ggml-org/llama.cpp:server` (CPU) | Shared AI inference, OpenAI-compatible API |
+
+The orchestrator container spawns per-user Bun processes as child processes within itself (not separate containers).
+User data lives on a named volume mounted at `/data/` inside the orchestrator container.
+
+**Caddy config management:**
+- Orchestrator updates Caddy's running config via the admin API (`http://caddy:2019`) for immediate effect
+- Orchestrator also writes changes to the Caddyfile on a shared volume so config survives Caddy container restarts
+- Caddy's `global` block enables the admin API (`admin 0.0.0.0:2019`)
+
+**Atomic tasks:**
+
+- (0.25h) Write `Dockerfile.orchestrator`: Bun base image, copy built SvelteKit app + orchestrator code, install deps
+- (0.25h) Write `Dockerfile.caddy`: Caddy base with AuthCrunch plugin (`xcaddy build --with github.com/greenpau/caddy-security`)
+- (0.25h) Write `docker-compose.yml`: three services, volumes (`done-data`, `caddy-config`), internal network, Coolify labels
+- (0.25h) Configure environment variables: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `LLAMA_CPP_URL`, port range
+- (0.25h) Configure volumes: `/data/` (user DBs), `/etc/caddy/` (Caddyfile persistence), llama.cpp model directory
+- (0.25h) Test locally: `docker compose up`, register user, verify full flow (registration -> process spawn -> Caddy route -> AI suggestion)
+
+**Example `docker-compose.yml` structure:**
+
+```yaml
+services:
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile.caddy
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - caddy-config:/etc/caddy
+      - caddy-data:/data/caddy
+    environment:
+      - DOMAIN=${DOMAIN:-done.app}
+    labels:
+      - "coolify.managed=true"
+    depends_on:
+      - orchestrator
+
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile.orchestrator
+    volumes:
+      - done-data:/data
+      - caddy-config:/etc/caddy
+    environment:
+      - SMTP_HOST
+      - SMTP_PORT
+      - SMTP_USER
+      - SMTP_PASS
+      - SMTP_FROM
+      - LLAMA_CPP_URL=http://llama-cpp:8080
+      - CADDY_ADMIN_URL=http://caddy:2019
+      - PORT_RANGE_START=3100
+      - PORT_RANGE_END=3999
+    depends_on:
+      - llama-cpp
+
+  llama-cpp:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    command: ["--host", "0.0.0.0", "--port", "8080", "--model", "/models/model.gguf"]
+    volumes:
+      - llama-models:/models
+    labels:
+      - "coolify.managed=true"
+
+volumes:
+  done-data:
+  caddy-config:
+  caddy-data:
+  llama-models:
+```
+
+### 7.5 Deployment verification (~0.5h)
+
+- (0.25h) Verify full stack via `docker compose up`: registration -> email verification -> process spawn -> Caddy route -> inbox loads -> AI works
+- (0.25h) Verify AuthCrunch path ACL: unauthenticated request returns 401, wrong user path returns 403
+
+### 7.6 Testing (~0h, stretch goal)
+
+- Unit tests for critical database functions (vitest): CRUD, timer, blocking validation
+- Basic Playwright smoke test: create task -> appears in inbox -> start timer -> appears in In Progress
+
+### 7.7 Documentation (~0h, only if time permits)
+
+- Brief README with: what it is, how to deploy with Coolify, env var reference
 
 ## Risk areas
 
@@ -578,6 +718,11 @@ Outbound writes (auto-editing source files) are deferred post-competition -- too
 - Daily backup email excludes BLOBs intentionally
 - For competition MVP this is acceptable; long-term, move attachments to filesystem
 
+### Orchestrator complexity underestimated
+- Process management, Caddy config updates, AuthCrunch integration, and registration flow are non-trivial
+- Cold-start wake-on-request adds latency; users may see brief 503 errors
+- Mitigation: keep the orchestrator minimal for MVP (no graceful suspension, just kill + respawn), test registration flow early on day 7
+
 ### Blocked-tasks N+1 query
 - Fetching dependents per visible task is N+1; batch into one query:
 
@@ -592,25 +737,27 @@ WHERE tasks.status = 'inbox'
 
 ## Competition scope (must/should/could)
 
-**Must have** (days 1-6):
+**Must have** (days 1-6, ~48h):
 
-- Task CRUD with all metadata fields
-- Inbox and In Progress screens with live timers
-- Task blocking/dependencies (with nested display)
-- AI autofill on task creation (via llama.cpp)
-- AI-powered suggestion engine (location + focus)
-- Basic PWA (installable, cached app shell, offline banner)
-- Email reminder notifications (via `@upyo/smtp`)
-- Daily database backup email (via `@upyo/smtp`)
-- Settings screen with AI model configuration
+- Task CRUD with all metadata fields (1.2, 1.3, 2.2, 2.3)
+- Inbox and In Progress screens with live timers (2.2, 3.1, 3.2)
+- Task blocking/dependencies with nested display (3.3)
+- AI autofill on task creation via llama.cpp (4.1, 4.2)
+- AI-powered suggestion engine with location + focus (5.1, 5.2)
+- Basic PWA: installable, cached app shell, offline banner (6.1)
+- Email reminder notifications via `@upyo/smtp` (6.4)
+- Daily database backup email via `@upyo/smtp` (6.5)
+- Settings screen with AI model configuration (6.6)
+- Orchestrator: registration, process management, Caddy/AuthCrunch config (7.1)
+- Docker Compose for Coolify deployment (7.4)
 
-**Should have** (days 6-7):
+**Should have** (days 3, 6-7):
 
-- Search overlay with FTS5
-- Geolocation autodetect
-- Camera attachments
-- GitHub two-way sync
-- Codebase TODO inbound scan (read-only)
+- Search overlay with FTS5 (3.4)
+- Geolocation autodetect (6.2)
+- Camera attachments (6.3)
+- GitHub two-way sync (7.2)
+- Codebase TODO inbound scan, read-only (7.3)
 
 **Could have** (post-competition):
 

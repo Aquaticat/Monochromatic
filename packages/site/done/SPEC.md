@@ -36,7 +36,7 @@ It does not just organize tasks -- it actively surfaces the right task at the ri
 - **Reverse proxy**: Caddy (HTTPS, access control)
 - **Auth**: Caddy AuthCrunch (email-verified registration, managed by orchestrator)
 - **Email**: `@upyo/smtp` (JSR) -- generic SMTP transport; works with Resend, Fastmail, or any SMTP provider. If the transport fails, that's the provider's problem, not ours.
-- **Deployment**: Single host, single domain -- orchestrator spawns SvelteKit-on-Bun processes per user (no Docker per user), path-based routing (`/u/<user-id>/`), Caddy in front, llama.cpp as a shared service
+- **Deployment**: Docker Compose on Coolify -- three containers (Caddy+AuthCrunch, orchestrator+user processes, llama.cpp), path-based routing (`/u/<user-id>/`), named volumes for user data and Caddy config persistence
 
 ## Screens
 
@@ -236,6 +236,28 @@ No separate API layer, no CORS, no client-side fetch() for basic CRUD -- forms s
 ### AI rate limiting
 
 Each Bun process enforces a simple in-memory rate limit on AI proxy calls (e.g., 30 requests/minute) to prevent runaway loops from overwhelming the shared llama.cpp instance.
+
+### Docker Compose deployment (Coolify)
+
+The entire stack ships as a `docker-compose.yml` deployable on Coolify.
+Three services:
+
+1. **caddy** -- Custom image with AuthCrunch plugin. Handles HTTPS, authentication, and path-based reverse proxy to user processes. Admin API enabled on port 2019 (internal only) for dynamic config updates.
+2. **orchestrator** -- Bun image with the built SvelteKit app and orchestrator code. Spawns per-user Bun processes as child processes within the same container. Manages registration, email verification, Caddy config updates (via admin API for immediate effect, Caddyfile write for persistence across restarts).
+3. **llama-cpp** -- CPU-only `ghcr.io/ggml-org/llama.cpp:server` image. Shared AI inference for all users.
+
+Named volumes:
+- `done-data` -- `/data/<user-id>/done.db` per user (mounted in orchestrator)
+- `caddy-config` -- Caddyfile persistence (shared between caddy and orchestrator)
+- `caddy-data` -- Caddy's TLS certs and state
+- `llama-models` -- Model files for llama.cpp
+
+Environment variables (configured in Coolify):
+- `DOMAIN` -- Public domain (e.g., `done.app`)
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` -- SMTP provider credentials
+- `LLAMA_CPP_URL` -- Internal URL for llama.cpp (defaults to `http://llama-cpp:8080`)
+- `CADDY_ADMIN_URL` -- Internal URL for Caddy admin API (defaults to `http://caddy:2019`)
+- `PORT_RANGE_START`, `PORT_RANGE_END` -- Port range for user processes (e.g., 3100-3999)
 
 ### FTS5 rowid note
 
