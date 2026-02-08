@@ -640,14 +640,62 @@ Time: {currentTime}
 Handled by the autofill prompt above via the `splitSuggestion` field.
 When the autofill response includes a non-null `splitSuggestion`, the UI shows a confirmation dialog.
 
+### UI specifications (reference for day 2)
+
+**Fonts and icons:**
+- Body text: Inter
+- Monospace (tracked time, code): JetBrains Mono
+- Icons: Google Material Symbols (outline style, variable weight)
+  - Hamburger menu: `menu`
+  - Search: `search`
+  - Suggested section: `auto_awesome` (sparkle)
+  - All section: `all_inclusive` (infinity)
+  - Location pin: `location_on`
+  - Timer: `timer`
+  - Tag hash: `tag`
+  - FAB plus: `add`
+  - Checkbox: `check_box_outline_blank` / `check_box`
+  - Collapse toggle: `arrow_drop_down` / `arrow_drop_up`
+  - Focus icon: `psychology`
+
+**Inbox screen layout (from Figma):**
+- Top bar: hamburger (left), "Inbox" title (center), search icon (right)
+- **Suggested** section (collapsible, default open, ephemeral state):
+  - Section header: sparkle icon + "Suggested" + collapse triangle
+  - **My location** subsection: "autodetect" toggle + location chips (e.g., "Walmart" with pin icon)
+    - Autodetect toggle: checkbox-style, tells AI to use current geolocation
+    - Location chips: manually pinned places, used by AI to filter/rank suggestions
+    - This controls what the suggestion engine sees, not task editing
+  - **My focus** subsection: combobox with saved presets (e.g., "Adulting tasks first")
+    - Free-text input with dropdown of previously used directives
+    - AI uses this to bias suggestion ranking
+  - Task cards: AI-ranked list of suggested tasks
+- **All** section (collapsible, default open, ephemeral state):
+  - Section header: infinity icon + "All" + collapse triangle
+  - All unblocked inbox tasks, chronological
+
+**Task card layout:**
+- Checkbox (left) + title text (wraps to 2 lines max)
+- Metadata chips row below title: `# tag`, `timer: Xs`, `where: Place` -- horizontal scroll on overflow, no wrapping
+- Tapping the card navigates to task details; tapping the checkbox completes the task
+
+**FAB (floating action button):**
+- Bottom-right, black circle with white `+` icon
+- Opens new task creation (inline or overlay -- TBD based on other screen designs)
+
+**Color palette:**
+- Monochrome: black text on white background
+- Accent: muted red/brown for tags (`# shopping` text color)
+- No shadows, no gradients, no border-radius on cards -- deliberately bare-bones
+
 ## Day 2 (Wed): Core CRUD UI (~4h)
 
 ### 2.1 Layout shell and navigation (~2h)
 
 - (0.5h) Create `+layout.server.ts`: load user settings from DB
 - (0.5h) Create `+layout.svelte`: drawer navigation shell (Inbox, In Progress, Settings), responsive sidebar
-- (0.5h) Create FAB component: floating action button (+) for new task creation
-- (0.5h) Set up global styles, CSS variables, font loading
+- (0.5h) Create FAB component: black circle, white `+` icon, bottom-right fixed position
+- (0.5h) Set up global styles: Inter + JetBrains Mono fonts, Material Symbols icon font, CSS variables for colors
 
 ### 2.2 Inbox screen (~2.5h)
 
