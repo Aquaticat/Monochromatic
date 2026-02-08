@@ -13,7 +13,7 @@ Hour estimates are per-task. Items without a priority marker are implicitly high
 - (0.25h) Add `package.json` with `workspace:*` references to monorepo packages
 - (0.25h) Add `mise.toml` with `dev`, `build`, and `start` tasks
 - (0.25h) Configure SvelteKit `base` path to read from `BASE_PATH` env var (defaults to `/`)
-- (0.25h) Verify Caddy reverse-proxy wiring: `done.app/u/<user-id>/*` -> SvelteKit port, path prefix stripping via `handle_path`
+- (0.25h) Verify orchestrator reverse-proxy wiring: `done.app/u/<user-id>/*` -> SvelteKit port, path prefix stripping
 
 ### 1.2 Database schema and migration (~3h)
 
@@ -515,95 +515,75 @@ Two-day gap (Sat-Sun) before this session. Budget time for context recovery.
 
 The orchestrator is a standalone Bun/TypeScript process that manages the entire multi-tenant lifecycle.
 It lives at `packages/site/done/orchestrator/` with its own entry point.
+It handles auth, reverse proxy, and process management -- no Caddy or AuthCrunch needed.
+Coolify's reverse proxy terminates HTTPS upstream; the orchestrator listens on HTTP (port 3000).
 
-**7.1a Registration and auth (~1.5h)**
+**7.1a Registration and login (~1.5h)**
 
-- (0.5h) Create `orchestrator/src/registration.ts`: email registration form (HTML page served by orchestrator itself, outside of any user SvelteKit instance)
-- (0.5h) Implement email verification flow: generate verification token, send verification email via `@upyo/smtp`, verify on callback
-- (0.5h) On verified registration: generate ULID user ID, create `/data/<user-id>/` directory, initialize empty `done.db` with migration
+- (0.5h) Create `orchestrator/src/auth.ts`: registration form (HTML page served by orchestrator), email verification via `@upyo/smtp`
+- (0.5h) Implement login: verify password with `Bun.password.verify()`, create HMAC-signed session cookie (`HttpOnly`, `SameSite=Strict`, `Secure`, `Path=/u/<user-id>/`), rate limit login attempts (10/min per IP)
+- (0.5h) On verified registration: generate ULID user ID, hash password with `Bun.password.hash()` (argon2id), store in `orchestrator.db`, create `/data/<user-id>/` directory, initialize empty `done.db` with migration
 
 **7.1b Process management (~1.5h)**
 
 - (0.5h) Create `orchestrator/src/process-manager.ts`: spawn per-user SvelteKit process (`BASE_PATH=/u/<user-id> bun run build/index.js --port=XXXX --db=/data/<user-id>/done.db`)
-- (0.5h) Implement port allocation: track PID + port + user-id mapping in a small SQLite DB (`orchestrator.db`); allocate ports from a configurable range (e.g., 3100-3999)
+- (0.5h) Implement port allocation: track PID + port + user-id mapping in `orchestrator.db`; allocate ports from a configurable range (e.g., 3100-3999)
 - (0.5h) Implement process health check: periodic liveness probe, restart crashed processes, log failures
 
 **7.1c Idle suspension and wake-on-request (~0.5h)** `priority:min`
 
-- (0.25h) Monitor last-request timestamp per user (updated by Caddy access logs or a lightweight middleware)
-- (0.25h) Suspend idle processes after configurable timeout (kill + respawn on next request); Caddy returns 503 briefly during cold start
+- (0.25h) Monitor last-request timestamp per user (updated on each proxied request)
+- (0.25h) Suspend idle processes after configurable timeout (kill + respawn on next request); orchestrator returns loading page briefly during cold start
 
-**7.1d Caddy and AuthCrunch config management (~0.5h)**
+**7.1d HTTP reverse proxy and path ACL (~0.5h)**
 
-- (0.25h) On new user: update Caddy config to add reverse-proxy route `done.app/u/<user-id>/*` -> `localhost:$PORT` with `handle_path` prefix stripping
-- (0.25h) On new user: update AuthCrunch config to set `acl.paths` claim in user's JWT to `/u/<user-id>/**`, add `validate path acl` directive
+- (0.25h) Create `orchestrator/src/proxy.ts`: on each request to `/u/<user-id>/*`, validate session cookie, check session user-id matches path user-id, proxy to `localhost:$PORT` with prefix stripped
+- (0.25h) Handle edge cases: unauthenticated -> redirect to login, wrong user -> 403, user process not running -> spawn and queue request
 
-### 7.4 Docker Compose for Coolify (~1.5h)
+### 7.4 Docker Compose for Coolify (~1h)
 
 The entire stack deploys as a single `docker-compose.yml` at `packages/site/done/docker-compose.yml`.
 Coolify picks it up and manages the deployment.
+Coolify's reverse proxy handles HTTPS termination -- the orchestrator only listens on HTTP.
 
 **Services:**
 
 | Service | Image | Purpose |
 | --- | --- | --- |
-| `caddy` | Custom (Caddy + AuthCrunch plugin) | HTTPS termination, auth, path-based reverse proxy |
-| `orchestrator` | Custom (Bun + app build) | Registration, process management, Caddy admin API calls |
+| `orchestrator` | Custom (Bun + app build) | Auth, reverse proxy, process management |
 | `llama-cpp` | `ghcr.io/ggml-org/llama.cpp:server` (CPU) | Shared AI inference, OpenAI-compatible API |
 
 The orchestrator container spawns per-user Bun processes as child processes within itself (not separate containers).
 User data lives on a named volume mounted at `/data/` inside the orchestrator container.
-
-**Caddy config management:**
-- Orchestrator updates Caddy's running config via the admin API (`http://caddy:2019`) for immediate effect
-- Orchestrator also writes changes to the Caddyfile on a shared volume so config survives Caddy container restarts
-- Caddy's `global` block enables the admin API (`admin 0.0.0.0:2019`)
+The orchestrator keeps all routing state in memory (rebuilt from `orchestrator.db` on startup) -- no external config files to manage.
 
 **Atomic tasks:**
 
 - (0.25h) Write `Dockerfile.orchestrator`: Bun base image, copy built SvelteKit app + orchestrator code, install deps
-- (0.25h) Write `Dockerfile.caddy`: Caddy base with AuthCrunch plugin (`xcaddy build --with github.com/greenpau/caddy-security`)
-- (0.25h) Write `docker-compose.yml`: three services, volumes (`done-data`, `caddy-config`), internal network, Coolify labels
-- (0.25h) Configure environment variables: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `LLAMA_CPP_URL`, port range
-- (0.25h) Configure volumes: `/data/` (user DBs), `/etc/caddy/` (Caddyfile persistence), llama.cpp model directory
-- (0.25h) Test locally: `docker compose up`, register user, verify full flow (registration -> process spawn -> Caddy route -> AI suggestion)
+- (0.25h) Write `docker-compose.yml`: two services, volumes (`done-data`), internal network, Coolify labels
+- (0.25h) Configure environment variables: `SMTP_*`, `LLAMA_CPP_URL`, `SESSION_SECRET`, port range
+- (0.25h) Test locally: `docker compose up`, register user, verify full flow (registration -> login -> process spawn -> proxy -> AI suggestion)
 
 **Example `docker-compose.yml` structure:**
 
 ```yaml
 services:
-  caddy:
-    build:
-      context: .
-      dockerfile: Dockerfile.caddy
-    ports:
-      - "443:443"
-      - "80:80"
-    volumes:
-      - caddy-config:/etc/caddy
-      - caddy-data:/data/caddy
-    environment:
-      - DOMAIN=${DOMAIN:-done.app}
-    labels:
-      - "coolify.managed=true"
-    depends_on:
-      - orchestrator
-
   orchestrator:
     build:
       context: .
       dockerfile: Dockerfile.orchestrator
+    ports:
+      - "3000:3000"
     volumes:
       - done-data:/data
-      - caddy-config:/etc/caddy
     environment:
       - SMTP_HOST
       - SMTP_PORT
       - SMTP_USER
       - SMTP_PASS
       - SMTP_FROM
+      - SESSION_SECRET
       - LLAMA_CPP_URL=http://llama-cpp:8080
-      - CADDY_ADMIN_URL=http://caddy:2019
       - PORT_RANGE_START=3100
       - PORT_RANGE_END=3999
     depends_on:
@@ -614,20 +594,16 @@ services:
     command: ["--host", "0.0.0.0", "--port", "8080", "--model", "/models/model.gguf"]
     volumes:
       - llama-models:/models
-    labels:
-      - "coolify.managed=true"
 
 volumes:
   done-data:
-  caddy-config:
-  caddy-data:
   llama-models:
 ```
 
 ### 7.5 Deployment verification (~0.5h)
 
-- (0.25h) Verify full stack via `docker compose up`: registration -> email verification -> process spawn -> Caddy route -> inbox loads -> AI works
-- (0.25h) Verify AuthCrunch path ACL: unauthenticated request returns 401, wrong user path returns 403
+- (0.25h) Verify full stack via `docker compose up`: registration -> email verification -> login -> process spawn -> proxy -> inbox loads -> AI works
+- (0.25h) Verify auth enforcement: unauthenticated request redirects to login, wrong user path returns 403
 
 ### 7.6 Testing (~0h, stretch goal)
 
@@ -720,9 +696,9 @@ Read-only inbound for MVP. Outbound writes deferred post-competition.
 - For competition MVP this is acceptable; long-term, move attachments to filesystem
 
 ### Orchestrator complexity underestimated
-- Process management, Caddy config updates, AuthCrunch integration, and registration flow are non-trivial
-- Cold-start wake-on-request adds latency; users may see brief 503 errors
-- Mitigation: keep the orchestrator minimal for MVP (no graceful suspension, just kill + respawn), test registration flow early on day 7
+- Process management, auth, reverse proxy, and registration flow are non-trivial -- but simpler than configuring Caddy + AuthCrunch
+- Cold-start wake-on-request adds latency; users may see a brief loading page
+- Mitigation: keep the orchestrator minimal for MVP (no graceful suspension, just kill + respawn), test registration flow early on day 5
 
 ### Blocked-tasks N+1 query
 - Fetching dependents per visible task is N+1; batch into one query:
@@ -742,6 +718,7 @@ Items without a marker are implicitly highest priority and form the 20h core pla
 Marked items are built if time allows, in descending priority order.
 
 **Core (unmarked):** 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 2.4, 4.1, 4.2, 4.3, 4.4, 5.1, 5.2, 5.3, 7.1a, 7.1b, 7.1d, 7.4, 7.5
+Note: 7.4 reduced from 1.5h to 1h (removed Caddy/AuthCrunch Dockerfile and config)
 
 **`priority:medium`:** 3.3 (blocking UI), 6.4 (email reminders), 6.5 (daily backup)
 
