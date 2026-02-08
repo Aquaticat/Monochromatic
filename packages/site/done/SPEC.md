@@ -259,8 +259,7 @@ Two services:
 
 Named volumes:
 - `done-data` -- `/data/<user-id>/done.db` per user (mounted in orchestrator)
-
-The llama-cpp container auto-downloads the model on first start via `--hf-repo` + `--hf-file` flags -- no volume needed for model files.
+- `llama-models` -- Cached model files at `/root/.cache/llama.cpp` (persists auto-downloaded models across container restarts)
 
 Environment variables (configured in Coolify):
 - `DOMAIN` -- Public domain (e.g., `done.app`)

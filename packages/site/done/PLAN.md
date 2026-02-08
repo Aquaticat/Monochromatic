@@ -869,9 +869,12 @@ services:
       - "Qwen3-1.7B-Q4_K_M.gguf"
       - "--ctx-size"
       - "4096"
+    volumes:
+      - llama-models:/root/.cache/llama.cpp
 
 volumes:
   done-data:
+  llama-models:
 ```
 
 ### 7.5 Deployment verification (~0.5h)
