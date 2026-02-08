@@ -8,10 +8,11 @@ Days are rough guides, not hard boundaries.
 ### Project setup
 
 - Initialize SvelteKit project at `packages/site/done/`
-- Configure as PWA (static adapter, manifest.json, service worker)
+- Configure adapter-bun for SSR (not static adapter)
+- Configure as PWA (manifest.json, service worker for app shell caching)
 - Add `package.json` with `workspace:*` references to monorepo packages
 - Add `mise.toml` with `dev`, `build`, and `start` tasks
-- Caddy serves SvelteKit's static build directly and reverse-proxies `/api/*` to the user's Bun port (same origin, no CORS)
+- Caddy reverse-proxies all traffic for `<user>.done.app` to the user's SvelteKit port (no static file serving needed -- SvelteKit serves everything)
 
 ### Database schema (libsql)
 
@@ -333,31 +334,42 @@ await transport.send(message).catch(console.error);
 await transport.close();
 ```
 
-### API server (`Bun.serve()`)
+### SvelteKit route structure
 
-Plain `Bun.serve()` -- a single `server.ts` file matching on `url.pathname` and `req.method`.
-No router, no framework. The API surface is small enough that conditionals are clearer than abstractions.
-
-Endpoints:
+No separate API server. SvelteKit handles everything via `+page.server.ts` (load + form actions) and `+server.ts` (JSON endpoints for AI/async operations).
 
 ```
-GET    /api/tasks                -- list tasks (query: status, search)
-POST   /api/tasks                -- create task
-GET    /api/tasks/:id            -- get task
-PATCH  /api/tasks/:id            -- update task (partial)
-DELETE /api/tasks/:id            -- delete task (permanent)
-POST   /api/tasks/:id/start      -- start timer
-POST   /api/tasks/:id/stop       -- stop timer
-POST   /api/tasks/:id/complete   -- complete task (fails if blocked)
-GET    /api/tasks/suggested       -- AI-ranked suggestions
-POST   /api/tasks/autofill        -- AI metadata inference from title
-GET    /api/settings              -- get settings
-PATCH  /api/settings              -- update settings
-POST   /api/attachments           -- upload attachment
-GET    /api/attachments/:id       -- download attachment
-GET    /api/sync/status           -- sync status for connected apps
-POST   /api/sync/trigger          -- manual sync trigger
+src/routes/
+  +layout.server.ts             -- shared load: user settings from DB
+  +layout.svelte                -- drawer navigation shell
+  (app)/
+    +page.server.ts             -- load: inbox tasks (suggested + all, unblocked + nested blocked)
+                                -- actions: create, delete
+    +page.svelte                -- inbox screen
+    [id]/
+      +page.server.ts           -- load: single task + attachments
+                                -- actions: update, start, stop, complete, attach
+      +page.svelte              -- task details overlay
+    in-progress/
+      +page.server.ts           -- load: in_progress tasks with nested blocked
+      +page.svelte              -- in progress screen
+    search/
+      +page.server.ts           -- load: FTS5 search results (query param)
+      +page.svelte              -- search overlay
+    settings/
+      +page.server.ts           -- load: all settings
+                                -- actions: update settings
+      +page.svelte              -- settings screen
+  api/
+    ai/suggest/+server.ts       -- POST: AI suggestion ranking (returns JSON)
+    ai/autofill/+server.ts      -- POST: AI metadata inference (returns JSON)
+    attachments/[id]/+server.ts -- GET: download attachment BLOB
+    sync/+server.ts             -- GET: sync status, POST: trigger sync
 ```
+
+Form actions handle all mutations (create/update/delete/start/stop/complete).
+SvelteKit's `use:enhance` progressively enhances forms with client-side submissions and automatic page data invalidation -- no manual fetch() or state management for CRUD.
+The `api/` routes are only for things that genuinely need raw JSON responses (AI streaming, binary downloads, webhook callbacks).
 
 ## Day 2: Core CRUD UI
 
@@ -373,17 +385,18 @@ POST   /api/sync/trigger          -- manual sync trigger
 
 ### Wiring
 
-- Fetch tasks from API on mount
-- Create/update/delete through API calls
-- Optimistic UI updates with rollback on error
+- Data arrives server-rendered via `+page.server.ts` load functions -- no client-side fetch on mount
+- Mutations use `<form method="POST">` with SvelteKit form actions
+- `use:enhance` on forms for client-side progressive enhancement (no full page reload, automatic data re-validation)
+- No optimistic UI needed for MVP -- SvelteKit re-runs load functions after form actions, so the page updates with real server state
 
 ## Day 3: Timers and In Progress screen
 
 ### Server-side timer logic
 
-- `POST /api/tasks/:id/start` sets `timer_started_at = NOW()`, changes status to `in_progress`
-- `POST /api/tasks/:id/stop` calculates delta, adds to `tracked_time`, nulls `timer_started_at`, changes status to `inbox`
-- `POST /api/tasks/:id/complete` validates no unresolved blockers, calculates final time, sets status to `done`, then deletes
+- Form action `start` (on `[id]/+page.server.ts`) sets `timer_started_at = NOW()`, changes status to `in_progress`
+- Form action `stop` calculates delta, adds to `tracked_time`, nulls `timer_started_at`, changes status to `inbox`
+- Form action `complete` validates no unresolved blockers, calculates final time, sets status to `done`, then deletes
 
 ### In Progress screen
 
@@ -421,6 +434,7 @@ AI is the core differentiator -- budget two full days for prompt engineering, st
 ### Autofill
 
 - Debounced call (500ms) as user types task title
+- Client-side fetch to `api/ai/autofill/+server.ts` (one of the few raw JSON endpoints)
 - Prompt includes: title text, existing tags/locations in DB (for consistency), instructions to infer tags/location/priority/complexity
 - Request structured JSON output from the model
 - Response pre-fills chip values in TaskDetails
@@ -428,7 +442,7 @@ AI is the core differentiator -- budget two full days for prompt engineering, st
 
 ### Suggestion engine
 
-- `GET /api/tasks/suggested` accepts `location` and `focus` parameters
+- Inbox `+page.server.ts` load function fetches suggestions server-side (no client fetch)
 - Server fetches all inbox tasks **where `blocked_by = '[]'`** (unblocked only), sends to AI with context:
   - User's current location
   - User's focus directive
@@ -454,8 +468,8 @@ AI is the core differentiator -- budget two full days for prompt engineering, st
 ### PWA configuration
 
 - `manifest.json` with app name, icons, theme color, display: standalone
-- Service worker caches app shell (static assets only)
-- **No full offline mode** -- show a clear "offline" banner when connectivity is lost; actions require the API
+- Service worker caches static assets (JS, CSS, icons) for faster repeat loads
+- **No full offline mode** -- show a clear "offline" banner when connectivity is lost; all pages and actions require the server (SSR means even page loads need connectivity)
 - This avoids the complexity of a local write queue + sync-on-reconnect
 
 ### Geolocation
@@ -467,7 +481,7 @@ AI is the core differentiator -- budget two full days for prompt engineering, st
 ### Camera
 
 - `<input type="file" accept="image/*" capture="environment">` for photo attachments
-- Upload to `/api/attachments`, link to task
+- Upload via form action on `[id]/+page.server.ts` (attach action), link to task
 
 ### Email notifications (must-have, via `@upyo/smtp`)
 
@@ -510,21 +524,21 @@ Outbound writes (auto-editing source files) are deferred post-competition -- too
 
 ### Deployment
 
-- **No Docker per user** -- each user gets a Bun process (~10-20MB idle), not a container
+- **No Docker per user** -- each user gets a SvelteKit-on-Bun process (~10-20MB idle), not a container
 - **llama.cpp** runs as a single shared process on the host
 - **Orchestrator script** (Bun/TypeScript):
   - Handles email registration + verification via `@upyo/smtp`
-  - Spawns per-user Bun process: `bun run server.ts --port=XXXX --db=/data/<user-id>/done.db`
+  - Spawns per-user SvelteKit process: `bun run build/index.js --port=XXXX --db=/data/<user-id>/done.db`
   - Tracks PID + port + user mapping (in-memory map or a small SQLite DB)
   - Updates Caddy AuthCrunch config to grant access per user's URL scope
   - Caddy reverse-proxies `<user>.done.app` -> `localhost:$PORT`
   - Monitors instance activity -- suspends idle processes (`SIGSTOP` / kill) and wakes on URL access (respawn on demand)
-- Caddy config: HTTPS termination, AuthCrunch authentication, wildcard reverse proxy to per-user ports, static file serving for SvelteKit build
+- Caddy config: HTTPS termination, AuthCrunch authentication, wildcard reverse proxy to per-user ports (no static file serving -- SvelteKit handles everything)
 - Data directory: `/data/<user-id>/done.db` per user (libsql file, isolation boundary)
 
 ### Testing (if time permits)
 
-- API endpoint tests (Bun's built-in test runner or vitest)
+- Unit tests for database/business logic functions (vitest)
 - Basic Playwright smoke tests for critical flows:
   - Create task -> appears in inbox
   - Start timer -> appears in In Progress with running timer

@@ -14,7 +14,7 @@ Each user runs their own instance, provisioned automatically on registration.
 Authentication lives entirely outside the app, at the infrastructure layer:
 
 1. User registers with email, verified via SMTP (through `@upyo/smtp`; Resend or any SMTP provider)
-2. An **orchestrator script** spawns a new **Bun process** (`bun run server.ts --port=XXXX --db=/data/<user-id>/done.db`)
+2. An **orchestrator script** spawns a new **SvelteKit-on-Bun process** (`bun run build/index.js --port=XXXX --db=/data/<user-id>/done.db`)
 3. The orchestrator updates **Caddy's AuthCrunch** config to grant that user access to their instance's URL scope
 4. Caddy reverse-proxies `<user>.done.app` -> `localhost:$PORT`
 5. The app itself has no auth logic -- requests only reach it after Caddy has authenticated the user
@@ -28,14 +28,13 @@ It does not just organize tasks -- it actively surfaces the right task at the ri
 ## Tech stack
 
 - **Runtime**: Bun (server + bundler)
-- **Backend**: `Bun.serve()` (plain request/response handling, no router or framework)
+- **Framework**: SvelteKit with SSR (server-side rendering on Bun via adapter-bun) -- one process handles both pages and data. `load` functions fetch data server-side, form actions handle mutations. No separate API layer.
 - **Database**: libsql (SQLite-compatible, single file, local)
-- **Frontend**: SvelteKit (compiled to static PWA)
 - **AI**: Self-hosted llama.cpp (OpenAI-compatible API, full model control, no provider ban risk)
 - **Reverse proxy**: Caddy (HTTPS, access control)
 - **Auth**: Caddy AuthCrunch (email-verified registration, managed by orchestrator)
 - **Email**: `@upyo/smtp` (JSR) -- generic SMTP transport; works with Resend, Fastmail, or any SMTP provider. If the transport fails, that's the provider's problem, not ours.
-- **Deployment**: Single host -- orchestrator spawns Bun processes per user (no Docker per user), Caddy in front, llama.cpp as a shared service
+- **Deployment**: Single host -- orchestrator spawns SvelteKit-on-Bun processes per user (no Docker per user), Caddy in front, llama.cpp as a shared service
 
 ## Screens
 
@@ -217,18 +216,19 @@ The server is the authority for start/stop events; the client handles smooth dis
 ## PWA requirements
 
 - Installable (manifest.json with icons)
-- Service worker caches app shell (static assets only -- not a full offline mode)
-- When offline, show a clear "offline" banner; actions require connectivity since the API is server-side
+- Service worker caches static assets (JS, CSS, icons) for faster repeat loads -- not a full offline mode
+- When offline, show a clear "offline" banner; all pages and actions require connectivity since everything is server-rendered
 - Camera access for "Take photo" attachment
 - Geolocation API for location autodetect
 
 ## Architecture notes
 
-### SvelteKit static build + Bun.serve() API
+### SvelteKit SSR on Bun
 
-SvelteKit compiles to static HTML/JS/CSS via the static adapter.
-Caddy serves the static files directly and reverse-proxies `/api/*` to the user's Bun process.
-No CORS needed -- same origin, Caddy handles both.
+SvelteKit runs as a full SSR server via adapter-bun.
+Each user's instance is a single SvelteKit process that handles everything: page rendering, data loading (`+page.server.ts` load functions), mutations (form actions), and AI proxy endpoints (`+server.ts`).
+Caddy reverse-proxies all traffic for `<user>.done.app` to the user's SvelteKit port.
+No separate API layer, no CORS, no client-side fetch() for basic CRUD -- forms submit natively, SvelteKit enhances with client-side navigation.
 
 ### AI rate limiting
 
