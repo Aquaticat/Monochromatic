@@ -259,12 +259,13 @@ Two services:
 
 Named volumes:
 - `done-data` -- `/data/<user-id>/done.db` per user (mounted in orchestrator)
-- `llama-models` -- Model files for llama.cpp
+
+The llama-cpp container auto-downloads the model on first start via `--hf-repo` + `--hf-file` flags -- no volume needed for model files.
 
 Environment variables (configured in Coolify):
 - `DOMAIN` -- Public domain (e.g., `done.app`)
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` -- SMTP provider credentials
-- `LLAMA_CPP_URL` -- Internal URL for llama.cpp (defaults to `http://llama-cpp:8080`)
+- `CHAT_COMPLETIONS_URL` -- Full URL for llama.cpp's OpenAI-compatible chat completions endpoint (defaults to `http://llama-cpp:8080/v1/chat/completions`)
 - `PORT_RANGE_START`, `PORT_RANGE_END` -- Port range for user processes (e.g., 3100-3999)
 
 ### FTS5 rowid note

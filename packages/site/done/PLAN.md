@@ -583,8 +583,8 @@ Speed matters more than capability here because autofill runs on every keystroke
 **Primary choice: Qwen3-1.7B (Q4_K_M quantization)**
 - ~1.2GB RAM, good structured JSON output (community-validated with Ollama JSON schema constraints)
 - Use **non-thinking mode** (`/no_think` or temperature=0) for fast autofill without chain-of-thought overhead
-- Official GGUF from Qwen team: `Qwen3-1.7B-Q4_K_M.gguf`
-- llama.cpp command: `--model /models/Qwen3-1.7B-Q4_K_M.gguf --ctx-size 4096`
+- Official GGUF from Qwen team: `Qwen/Qwen3-1.7B-GGUF`
+- llama.cpp auto-downloads: `--hf-repo Qwen/Qwen3-1.7B-GGUF --hf-file Qwen3-1.7B-Q4_K_M.gguf --ctx-size 4096`
 
 **Fallback: LFM2.5-1.2B-Instruct (GGUF)**
 - Under 1GB RAM, 239 tok/s on AMD CPU -- remarkably fast
@@ -710,7 +710,7 @@ AI is the core differentiator. Prompt engineering and structured output parsing 
 
 ### 4.1 llama.cpp client and rate limiting (~2h)
 
-- (0.5h) Create `src/lib/ai/client.ts`: HTTP client wrapper for llama.cpp's OpenAI-compatible `/v1/chat/completions` endpoint at `http://localhost:8080`
+- (0.5h) Create `src/lib/ai/client.ts`: HTTP client wrapper for llama.cpp's OpenAI-compatible chat completions endpoint (reads `CHAT_COMPLETIONS_URL` env var, e.g., `http://llama-cpp:8080/v1/chat/completions`). Use `response_format: { type: "json_object" }` to force JSON output.
 - (0.5h) Implement in-memory rate limiter: sliding window counter, max 30 requests/minute per process, returns 429 when exceeded
 - (0.5h) Create `src/lib/ai/prompts.ts`: system prompt templates with clear separation of instructions vs user data (user content in `<user_tasks>` block)
 - (0.5h) Test: verify client connects to llama.cpp, sends a simple prompt, parses response; verify rate limiter rejects burst requests
@@ -811,13 +811,14 @@ The orchestrator keeps all routing state in memory (rebuilt from `orchestrator.d
 **Atomic tasks:**
 
 - (0.25h) Write `docker-compose.yml`: two services, inline Dockerfile for orchestrator (see sketch below), volumes (`done-data`)
-- (0.25h) Configure environment variables: `SMTP_*`, `LLAMA_CPP_URL`, port range
+- (0.25h) Configure environment variables: `SMTP_*`, `CHAT_COMPLETIONS_URL`, port range
 - (0.25h) Test locally: `docker compose up`, register user, verify full flow (registration -> login -> process spawn -> proxy -> AI suggestion)
 
 **Example `docker-compose.yml` with inline Dockerfile:**
 
 adapter-bun expects its build output on disk, and child SvelteKit processes are spawned via `bun run build/index.js`, so Bun must be available at runtime (not just a SEA).
-The orchestrator itself is a simple bundled script -- no SvelteKit dependency.
+The orchestrator runs TS directly via Bun (no build step needed for it).
+The llama-cpp container auto-downloads the model on first start via `--hf-repo` + `--hf-file` -- no volume needed.
 
 ```yaml
 services:
@@ -825,25 +826,22 @@ services:
     build:
       context: .
       dockerfile_inline: |
-        # -- Build stage --
         FROM oven/bun:1 AS build
         WORKDIR /app
         COPY package.json bun.lock ./
-        COPY orchestrator/package.json orchestrator/
         RUN bun install --frozen-lockfile
         COPY . .
         RUN bun run build
-        RUN bun build orchestrator/src/index.ts --outdir orchestrator/dist --target bun
 
-        # -- Runtime stage --
         FROM oven/bun:1-slim
         WORKDIR /app
         COPY --from=build /app/build ./build
-        COPY --from=build /app/orchestrator/dist ./orchestrator/dist
+        COPY --from=build /app/orchestrator ./orchestrator
+        COPY --from=build /app/node_modules ./node_modules
         EXPOSE 3000
-        CMD ["bun", "run", "orchestrator/dist/index.js"]
+        CMD ["bun", "run", "orchestrator/src/index.ts"]
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     volumes:
       - done-data:/data
     environment:
@@ -852,7 +850,7 @@ services:
       - SMTP_USER
       - SMTP_PASS
       - SMTP_FROM
-      - LLAMA_CPP_URL=http://llama-cpp:8080
+      - CHAT_COMPLETIONS_URL=http://llama-cpp:8080/v1/chat/completions
       - PORT_RANGE_START=3100
       - PORT_RANGE_END=3999
     depends_on:
@@ -860,13 +858,20 @@ services:
 
   llama-cpp:
     image: ghcr.io/ggml-org/llama.cpp:server
-    command: ["--host", "0.0.0.0", "--port", "8080", "--model", "/models/Qwen3-1.7B-Q4_K_M.gguf", "--ctx-size", "4096"]
-    volumes:
-      - llama-models:/models
+    command:
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8080"
+      - "--hf-repo"
+      - "Qwen/Qwen3-1.7B-GGUF"
+      - "--hf-file"
+      - "Qwen3-1.7B-Q4_K_M.gguf"
+      - "--ctx-size"
+      - "4096"
 
 volumes:
   done-data:
-  llama-models:
 ```
 
 ### 7.5 Deployment verification (~0.5h)
