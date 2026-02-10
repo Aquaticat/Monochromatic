@@ -18,13 +18,18 @@ import {
 //region Test Helpers
 
 // import.meta.dirname is a Bun-specific API (equivalent to __dirname in CJS)
-/** Path to the fixture packages used for integration-style tests */
-const fixtureImportingDir = join(
-  import.meta.dirname, '..', '..', '..', 'fixture', 'test-css-importing',
-);
+/** Root fixture directory for all CSS integration tests */
+const fixtureRoot = join(import.meta.dirname, '..', '..', '..', 'fixture');
 
-/** Path to the main CSS entry point in the importing fixture */
-const fixtureMainCss = join(fixtureImportingDir, 'src', 'main.css');
+/**
+ * Each entry exercises a different CSS import resolution strategy.
+ * - exports field: resolved via package.json `exports` mappings
+ * - direct file path: resolved by reaching into the package's file tree (no `exports` field)
+ */
+const integrationFixtures = [
+  { label: 'exports field', dir: join(fixtureRoot, 'test-css-importing'), },
+  { label: 'direct file path', dir: join(fixtureRoot, 'test-css-importing-filepath'), },
+] as const;
 
 /** Temporary output path for build tests */
 const tempOutput = join(import.meta.dirname, '..', 'dist', 'test-output.css');
@@ -182,55 +187,60 @@ describe('expandMixinBodies', () => {
 
 //region build (integration)
 
-describe('build', () => {
-  test('builds fixture CSS with import resolution and mixin expansion', async () => {
-    expect.assertions(5);
+for (const { label, dir, } of integrationFixtures) {
+  /** Path to the main CSS entry point for this fixture */
+  const fixtureMainCss = join(dir, 'src', 'main.css');
 
-    const result = await build({
-      input: fixtureMainCss,
-      output: tempOutput,
+  describe(`build (${label})`, () => {
+    test('builds fixture CSS with import resolution and mixin expansion', async () => {
+      expect.assertions(5);
+
+      const result = await build({
+        input: fixtureMainCss,
+        output: tempOutput,
+      });
+
+      // Imports should be resolved and inlined
+      expect(result).toContain('--primary: rebeccapurple');
+
+      // @mixin definitions should be removed
+      expect(result).not.toContain('@mixin');
+
+      // @apply should be expanded
+      expect(result).not.toContain('@apply');
+
+      // Mixin content should be inlined
+      expect(result).toContain('display: flex');
+      expect(result).toContain('font-weight: bold');
     });
 
-    // Imports should be resolved and inlined
-    expect(result).toContain('--primary: rebeccapurple');
+    test('writes output file to disk', async () => {
+      expect.assertions(1);
 
-    // @mixin definitions should be removed
-    expect(result).not.toContain('@mixin');
+      await build({
+        input: fixtureMainCss,
+        output: tempOutput,
+      });
 
-    // @apply should be expanded
-    expect(result).not.toContain('@apply');
-
-    // Mixin content should be inlined
-    expect(result).toContain('display: flex');
-    expect(result).toContain('font-weight: bold');
-  });
-
-  test('writes output file to disk', async () => {
-    expect.assertions(1);
-
-    await build({
-      input: fixtureMainCss,
-      output: tempOutput,
+      const written = await readFile(tempOutput, 'utf8');
+      expect(written).toContain('--primary: rebeccapurple');
     });
 
-    const written = await readFile(tempOutput, 'utf8');
-    expect(written).toContain('--primary: rebeccapurple');
-  });
+    test('expands nested mixin references in build output', async () => {
+      expect.assertions(2);
 
-  test('expands nested mixin references in build output', async () => {
-    expect.assertions(2);
+      const result = await build({
+        input: fixtureMainCss,
+        output: tempOutput,
+      });
 
-    const result = await build({
-      input: fixtureMainCss,
-      output: tempOutput,
+      // --card uses @apply --flex-center, so .nested-card should have flex styles
+      expect(result).toContain('.nested-card');
+      // The flex-center content should appear inside .nested-card
+      const nestedCardMatch = result.slice(result.indexOf('.nested-card'));
+      expect(nestedCardMatch).toContain('display: flex');
     });
-
-    // --card uses @apply --flex-center, so .nested-card should have flex styles
-    expect(result).toContain('.nested-card');
-    // The flex-center content should appear inside .nested-card
-    const nestedCardMatch = result.slice(result.indexOf('.nested-card'));
-    expect(nestedCardMatch).toContain('display: flex');
   });
-});
+}
 
 //endregion build (integration)

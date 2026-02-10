@@ -109,6 +109,60 @@ export async function getDiagnostics(): Promise<Diagnostic[]> {
   }));
 }
 
+export interface FileDiagnostics {
+  path: string;
+  diagnostics: Diagnostic[];
+}
+
+/** Returns diagnostics across all buffers, grouped by file path. */
+export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
+  const nvim = await getClient();
+
+  const raw = (await nvim.executeLua(
+    `
+    local diags = vim.diagnostic.get()
+    local by_buf = {}
+    for _, d in ipairs(diags) do
+      local bufnr = d.bufnr
+      if not by_buf[bufnr] then by_buf[bufnr] = {} end
+      table.insert(by_buf[bufnr], {
+        severity = d.severity,
+        lnum = d.lnum,
+        col = d.col,
+        end_lnum = d.end_lnum,
+        end_col = d.end_col,
+        message = d.message,
+        source = d.source,
+        code = d.code,
+      })
+    end
+    local result = {}
+    for bufnr, buf_diags in pairs(by_buf) do
+      table.insert(result, {
+        path = vim.api.nvim_buf_get_name(bufnr),
+        diagnostics = buf_diags,
+      })
+    end
+    return result
+    `,
+    [],
+  )) as Array<Record<string, unknown>>;
+
+  return raw.map((file) => ({
+    path: file.path as string,
+    diagnostics: (file.diagnostics as Array<Record<string, unknown>>).map((d) => ({
+      severity: SEVERITY_MAP[d.severity as number] ?? `UNKNOWN(${d.severity})`,
+      lnum: (d.lnum as number) + 1,
+      col: (d.col as number) + 1,
+      end_lnum: (d.end_lnum as number) + 1,
+      end_col: (d.end_col as number) + 1,
+      message: d.message as string,
+      source: (d.source as string) ?? null,
+      code: (d.code as string | number) ?? null,
+    })),
+  }));
+}
+
 export async function getCurrentFile(): Promise<CurrentFile> {
   const nvim = await getClient();
 

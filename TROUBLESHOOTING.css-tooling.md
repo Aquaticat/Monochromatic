@@ -320,12 +320,26 @@ Translation: Check back in 2028-2030. Maybe.
 
 ## Current state
 
-As of 2026-01-24:
+As of 2026-02-09:
 - CSS build script exists at `packages/build/css/`
 - It uses LightningCSS for bundling + oxc-resolver for import resolution + PostCSS for mixin processing
-- oxc-resolver refuses to be found at runtime despite being installed
-- The mixin system works in theory but cannot be executed in practice
-- Multiple sessions have been spent on this single feature
-- The feature is: expanding `@apply` rules into their mixin contents
+- The build pipeline works: bundling, mixin collection, nested mixin expansion, and `@apply` inlining all pass integration tests
+- oxc-resolver is functioning correctly after the migration from pnpm to Bun's package manager
 
-This is where we are. This is the state of modern web development tooling.
+### Import resolution testing
+
+The integration tests now exercise two distinct CSS import resolution strategies:
+
+1. **`exports` field resolution** (`test-css-importing` + `test-css-imported`)
+   - Imports like `@import '@monochromatic-dev/test-css-imported/index.css'`
+   - Resolved via the `exports` mappings in the imported package's `package.json`
+   - This is the modern, encapsulated approach where the package controls its public surface
+
+2. **Direct file path resolution** (`test-css-importing-filepath` + `test-css-imported-no-exports`)
+   - Imports like `@import '@monochromatic-dev/test-css-imported-no-exports/src/index.css'`
+   - Resolved by reaching directly into the package's file tree
+   - Requires the imported package to **not** have an `exports` field, because `exports` blocks deep imports by design (Node.js resolution semantics, enforced by oxc-resolver)
+
+The key discovery: when a package has an `exports` field, oxc-resolver correctly refuses to resolve paths not listed in the exports map.
+A package specifier like `pkg/src/index.css` fails with `"./src/index.css" is not exported` when the package only exports `./index.css`.
+This is correct behavior, but it means testing both strategies requires two separate imported fixture packages -- one with `exports` and one without.

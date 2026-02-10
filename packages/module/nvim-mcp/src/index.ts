@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { getDiagnostics, getCurrentFile } from "./nvim-client.js";
+import { getDiagnostics, getAllDiagnostics, getCurrentFile } from "./nvim-client.js";
 
 const server = new McpServer({
   name: "nvim",
@@ -25,6 +25,32 @@ server.tool(
       );
 
       return { content: [{ type: "text", text: lines.join("\n") }] };
+    } catch (err) {
+      return { content: [{ type: "text", text: `Error: ${err}` }], isError: true };
+    }
+  },
+);
+
+server.tool(
+  "get_all_diagnostics",
+  "Returns LSP diagnostics across all Neovim buffers, grouped by file path. Use when you need a project-wide view of errors and warnings.",
+  {},
+  async () => {
+    try {
+      const files = await getAllDiagnostics();
+      if (files.length === 0) {
+        return { content: [{ type: "text", text: "No diagnostics in any buffer." }] };
+      }
+
+      const sections = files.map((f) => {
+        const lines = f.diagnostics.map(
+          (d) =>
+            `  ${d.severity} ${d.lnum}:${d.col}${d.source ? ` [${d.source}${d.code ? ` ${d.code}` : ""}]` : ""} ${d.message}`,
+        );
+        return `${f.path}\n${lines.join("\n")}`;
+      });
+
+      return { content: [{ type: "text", text: sections.join("\n\n") }] };
     } catch (err) {
       return { content: [{ type: "text", text: `Error: ${err}` }], isError: true };
     }
