@@ -162,9 +162,7 @@ export function collectMixins(root: Root): void {
     }
 
     if (!node.nodes || node.nodes.length === 0) {
-      // No body means this is an apply invocation, not a definition.
-      // Rename to @apply so expandApplyRules handles it.
-      node.name = 'apply';
+      throw new Error("mixin definition must include body");
     } else {
       mixins.set(mixinName, node.nodes.map((child) => child.clone()));
       node.remove();
