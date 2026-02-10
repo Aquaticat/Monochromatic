@@ -64,43 +64,34 @@ describe('collectMixins', () => {
     expect(root.toString().trim()).toBe('');
   });
 
-  test('converts bodyless @mixin to @apply', () => {
-    expect.assertions(2);
+  test('throws on bodyless @mixin (definitions require content)', () => {
+    expect.assertions(1);
 
     const root = parse(`
       .btn { @mixin --touch-target; }
     `);
 
-    collectMixins(root);
-
-    // No mixin should be registered (it was an invocation, not a definition)
-    expect(mixins.has('--touch-target')).toBe(false);
-    // The rule should now be @apply
-    expect(root.toString()).toContain('@apply --touch-target');
+    expect(() => collectMixins(root)).toThrow('mixin definition must include body');
   });
 
-  test('handles mixed definitions and invocations', () => {
-    expect.assertions(3);
+  test('throws on mixed definition followed by bodyless invocation', () => {
+    expect.assertions(1);
 
     const root = parse(`
       @mixin --bold { font-weight: bold; }
       .title { @mixin --bold; }
     `);
 
-    collectMixins(root);
-
-    expect(mixins.has('--bold')).toBe(true);
-    expect(root.toString()).not.toContain('@mixin');
-    expect(root.toString()).toContain('@apply --bold');
+    // The bodyless @mixin --bold; inside .title triggers the error
+    expect(() => collectMixins(root)).toThrow('mixin definition must include body');
   });
 
-  test('ignores @mixin with empty name', () => {
+  test('throws on @mixin with empty name', () => {
     expect.assertions(1);
 
     const root = parse('@mixin {}');
-    collectMixins(root);
 
-    expect(mixins.size).toBe(0);
+    expect(() => collectMixins(root)).toThrow('@mixin requires a name');
   });
 });
 

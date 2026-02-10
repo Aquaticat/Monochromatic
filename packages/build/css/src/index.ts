@@ -25,8 +25,12 @@ function parseArgs(): BuildOptions {
     throw new Error('Usage: bun index.ts <input> <output> [--watch]');
   }
 
-  const input = args[0] as string;
-  const output = args[1] as string;
+  const input = args[0];
+  const output = args[1];
+
+  if (input === undefined || output === undefined) {
+    throw new Error('Usage: bun index.ts <input> <output> [--watch]');
+  }
   const watchMode = args.includes('--watch');
 
   return { input, output, watch: watchMode, };
