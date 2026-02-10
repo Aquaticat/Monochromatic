@@ -1,0 +1,120 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1rem;
+  color: #111;
+  background: #fff;
+}
+
+h1 { margin-bottom: 1rem; }
+
+/* .deck-list reset is applied via resetList() mixin in decks.ts */
+.deck-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #eee;
+}
+.deck-list a { text-decoration: none; color: inherit; font-weight: 500; }
+.deck-list a:hover { text-decoration: underline; }
+.deck-list .card-count { color: #888; font-size: 0.875rem; }
+
+form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+input[type="text"] {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+button {
+  padding: 0.5rem 1rem;
+  background: #111;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+button:hover { background: #333; }
+button.danger { background: #c00; }
+button.danger:hover { background: #900; }
+button.correct { background: #060; }
+button.wrong { background: #c00; }
+
+.score {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.quiz-controls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.empty { color: #888; padding: 2rem 0; text-align: center; }
+
+.back-link { display: inline-block; margin-bottom: 1rem; color: #666; }
+
+/* flash-card custom element */
+flash-card {
+  display: block;
+  width: 100%;
+  min-height: 200px;
+  border: 2px solid #111;
+  margin: 1rem 0;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+/* flash-card .face centering is applied via flexCenter() mixin in quiz.ts */
+flash-card .face.back { background: #f5f5f5; }
+flash-card .face.hidden { display: none; }
+flash-card .flip-hint {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.75rem;
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+/* Card management in quiz */
+.card-list { list-style: none; margin: 1rem 0; }
+.card-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+  font-size: 0.875rem;
+}
+
+.add-card-form { margin: 1rem 0; }
+.add-card-form input { margin-bottom: 0.25rem; width: 100%; }
+
+.toast {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #c00;
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  z-index: 1000;
+}
+
+.done-message {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.25rem;
+}

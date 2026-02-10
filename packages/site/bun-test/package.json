@@ -1,0 +1,7 @@
+{
+  "name": "bun-test",
+  "private": true,
+  "dependencies": {
+    "zod": "^4.3.6"
+  }
+}

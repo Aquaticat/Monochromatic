@@ -4,16 +4,134 @@ This plan assumes one developer working 5 days over a week with AI assistance.
 Available hours: Tue 4h, Wed 4h, Thu 4h, Fri 4h, Sat 0h, Sun 0h, Mon 4h -- 20h total.
 Hour estimates are per-task. Items without a priority marker are implicitly highest priority.
 
+## Architecture overview
+
+No framework. Vanilla TypeScript on both server and client, unified by Bun.
+
+- **Server:** `Bun.serve()` handles API routes and serves built client assets from a single process.
+- **Client:** Plain TypeScript with `document.createElement` for DOM construction. Custom elements where reuse is needed (task card, chip editor, collapsible section).
+- **Build:** `Bun.build()` runs at server startup -- bundles, tree-shakes, and (in prod) minifies client TS entry points into JS. Same code path in dev and prod; only `minify` flag differs.
+- **Dev:** `bun --watch src/server.ts` -- one command. On any file change, Bun restarts the server process, which re-runs `Bun.build()`, producing fresh client bundles. No second tool, no separate watcher.
+- **Operational advantage:** The orchestrator spawns per-user Bun processes. Each process runs `Bun.build()` at startup, so new/restarted processes immediately serve the latest code.
+
+See `FRAMEWORK_EVALUATION.md` for why this approach was chosen over SvelteKit, Vue Vapor, or Web Components frameworks.
+
 ## Day 1 (Tue): Scaffolding and data layer (~4h)
 
-### 1.1 Project setup (~2h)
+### 1.1 Project setup (~1.5h)
 
-- (0.5h) Initialize SvelteKit project at `packages/site/done/`
-- (0.5h) Configure adapter-bun for SSR (not static adapter)
-- (0.25h) Add `package.json` with `workspace:*` references to monorepo packages
+- (0.25h) Initialize project at `packages/site/done/` with `package.json` (`workspace:*` references to monorepo packages)
 - (0.25h) Add `mise.toml` with `dev`, `build`, and `start` tasks
-- (0.25h) Leave SvelteKit `base` path as default `/` -- the orchestrator strips `/u/<user-id>` on inbound and SvelteKit generates relative links, so browser-side URLs resolve correctly
-- (0.25h) Set `ORIGIN` env var per user process (e.g., `ORIGIN=https://done.app`) so SvelteKit can construct absolute URLs when needed (e.g., redirects)
+- (0.25h) Create `src/server.ts`: entry point with `Bun.build()` call at startup + `Bun.serve()` with route handler
+- (0.25h) Create `src/client/` directory with a minimal `inbox.ts` entry point to verify the build pipeline
+- (0.25h) Verify: `bun --watch src/server.ts` starts, builds client TS, serves the built JS, and restarts on file change
+- (0.25h) Create `src/server/router.ts`: URL pathname matching for pages and API routes
+
+The server entry point:
+
+```ts
+// src/server.ts -- entry point for each user's Done instance
+// Bun.build() at startup ensures client assets are always fresh.
+// In dev (bun --watch), server restarts on any file change -> rebuild is automatic.
+const buildResult = await Bun.build({
+  entrypoints: [
+    "./src/client/inbox.ts",
+    "./src/client/in-progress.ts",
+    "./src/client/task-details.ts",
+    "./src/client/search.ts",
+    "./src/client/settings.ts",
+  ],
+  outdir: "./dist/client",
+  target: "browser",
+  minify: process.env.NODE_ENV === "production",
+});
+
+if (!buildResult.success) {
+  console.error("Client build failed:", buildResult.logs);
+  process.exit(1);
+}
+
+Bun.serve({
+  port: Number(process.env.PORT) || 3000,
+  async fetch(req) {
+    return router(req);
+  },
+});
+```
+
+The router dispatches to page handlers (return HTML responses) and API handlers (return JSON responses):
+
+```ts
+// src/server/router.ts
+// Pages return full HTML documents with a <script> tag pointing to the built client JS.
+// API routes return JSON. Both run in the same process.
+export async function router(req: Request): Promise<Response> {
+  const url = new URL(req.url);
+  const path = url.pathname;
+
+  // Static assets (built client JS)
+  if (path.startsWith("/dist/client/")) {
+    const file = Bun.file(`.${path}`);
+    if (await file.exists()) return new Response(file);
+    return new Response("Not found", { status: 404 });
+  }
+
+  // API routes
+  if (path.startsWith("/api/")) return handleApi(req, path, url);
+
+  // Page routes -- return HTML with embedded data + script tag
+  switch (path) {
+    case "/":           return inboxPage(req);
+    case "/in-progress": return inProgressPage(req);
+    case "/search":     return searchPage(req, url);
+    case "/settings":   return settingsPage(req);
+    default:
+      // /tasks/<id> -- task details
+      const taskMatch = path.match(/^\/tasks\/([A-Z0-9]{26})$/);
+      if (taskMatch) return taskDetailsPage(req, taskMatch[1]);
+      return new Response("Not found", { status: 404 });
+  }
+}
+```
+
+### Page rendering pattern
+
+Each page handler queries the DB, serializes the data into a JSON script tag, and returns a full HTML document. The client TS reads the embedded data and builds the DOM. No client-side fetch on initial load.
+
+```ts
+// src/server/pages/inbox.ts
+export async function inboxPage(req: Request): Promise<Response> {
+  const tasks = await getInboxTasks(db);
+  const settings = await getAllSettings(db);
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inbox - Done</title>
+  <link rel="stylesheet" href="/dist/client/styles.css">
+</head>
+<body>
+  <script type="application/json" id="page-data">${JSON.stringify({ tasks, settings })}</script>
+  <script type="module" src="/dist/client/inbox.js"></script>
+</body>
+</html>`;
+
+  return new Response(html, {
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
+}
+```
+
+Client-side:
+
+```ts
+// src/client/inbox.ts
+// Reads server-embedded data, builds DOM. No fetch on load.
+const data = JSON.parse(document.getElementById("page-data")!.textContent!);
+buildInboxScreen(data.tasks, data.settings);
+```
 
 ### 1.2 Database schema and migration (~3h)
 
@@ -232,7 +350,7 @@ await client.execute({
 });
 
 // Read current elapsed time for display (without stopping):
-// In the load function, return both tracked_time and timer_started_at.
+// In the page handler, return both tracked_time and timer_started_at.
 // The client computes: displaySeconds = trackedTime + (Date.now() - Date.parse(timerStartedAt)) / 1000
 ```
 
@@ -254,8 +372,10 @@ const result = await client.execute({
 });
 
 if (result.rows.length > 0) {
-  // Return form action failure with the list of blocking tasks
-  return fail(409, { error: 'Task is blocked', blockedBy: result.rows });
+  return new Response(JSON.stringify({ error: 'Task is blocked', blockedBy: result.rows }), {
+    status: 409,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 // If no active blockers, proceed with completion
@@ -370,74 +490,130 @@ const receipt = await transport.send(message).catch(console.error);
 await transport.close();
 ```
 
-### SvelteKit route structure (reference for days 2-6)
+### Route structure
 
-No separate API server. SvelteKit handles everything via `+page.server.ts` (load + form actions) and `+server.ts` (JSON endpoints for AI/async operations).
+Single `Bun.serve()` process handles both pages (HTML responses) and API (JSON responses).
 
 ```
-src/routes/
-  +layout.server.ts             -- shared load: user settings from DB
-  +layout.svelte                -- drawer navigation shell
-  (app)/
-    +page.server.ts             -- load: inbox tasks (suggested + all, unblocked + nested blocked)
-                                -- actions: create, delete
-    +page.svelte                -- inbox screen
-    [id]/
-      +page.server.ts           -- load: single task + attachments
-                                -- actions: update, start, stop, complete, attach
-      +page.svelte              -- task details overlay
-    in-progress/
-      +page.server.ts           -- load: in_progress tasks with nested blocked
-      +page.svelte              -- in progress screen
-    search/
-      +page.server.ts           -- load: FTS5 search results (query param)
-      +page.svelte              -- search overlay
-    settings/
-      +page.server.ts           -- load: all settings
-                                -- actions: update settings
-      +page.svelte              -- settings screen
-  api/
-    ai/suggest/+server.ts       -- POST: AI suggestion ranking (returns JSON)
-    ai/autofill/+server.ts      -- POST: AI metadata inference (returns JSON)
-    attachments/[id]/+server.ts -- GET: download attachment BLOB
-    sync/+server.ts             -- GET: sync status, POST: trigger sync
+src/
+  server.ts                         -- entry point: Bun.build() + Bun.serve()
+  server/
+    router.ts                       -- URL pathname dispatch
+    pages/
+      inbox.ts                      -- GET /           -> HTML with embedded task data
+      in-progress.ts                -- GET /in-progress -> HTML with embedded timer data
+      task-details.ts               -- GET /tasks/:id  -> HTML with embedded task + attachments
+      search.ts                     -- GET /search?q=  -> HTML with embedded search results
+      settings.ts                   -- GET /settings   -> HTML with embedded settings
+    api/
+      tasks.ts                      -- POST/PUT/DELETE /api/tasks/* -> JSON
+      timer.ts                      -- POST /api/tasks/:id/start|stop|complete -> JSON
+      ai-autofill.ts                -- POST /api/ai/autofill -> JSON
+      ai-suggest.ts                 -- POST /api/ai/suggest -> JSON
+      attachments.ts                -- POST /api/tasks/:id/attach, GET /api/attachments/:id -> BLOB
+      settings.ts                   -- PUT /api/settings -> JSON
+      sync.ts                       -- GET/POST /api/sync -> JSON
+  client/
+    inbox.ts                        -- reads #page-data, builds inbox DOM
+    in-progress.ts                  -- reads #page-data, builds in-progress DOM, starts timer tick
+    task-details.ts                 -- reads #page-data, builds task detail overlay DOM
+    search.ts                       -- reads #page-data, builds search DOM, wires debounced input
+    settings.ts                     -- reads #page-data, builds settings DOM
+    components/
+      task-card.ts                  -- custom element <task-card> for reuse across screens
+      chip-editor.ts                -- custom element <chip-editor> for tappable metadata editing
+      collapsible-section.ts        -- custom element <collapsible-section>
+      fab.ts                        -- FAB button (plain function, not worth a custom element)
+      toast.ts                      -- error toast display (plain function)
+    lib/
+      api.ts                        -- fetch wrapper for API calls (POST/PUT/DELETE with JSON body)
+      dom.ts                        -- DOM construction helpers (createElement shortcuts, if needed)
+  lib/
+    db.ts                           -- libsql client setup + migration runner
+    db/
+      tasks.ts                      -- CRUD, timer, query functions
+      attachments.ts                -- attachment CRUD
+      settings.ts                   -- settings get/set
+      reminders.ts                  -- reminder queries
+    ai/
+      client.ts                     -- llama.cpp HTTP client + rate limiter
+      prompts.ts                    -- prompt templates
+    email/
+      transport.ts                  -- @upyo/smtp wrapper
+      reminders.ts                  -- reminder email sender
+      backup.ts                     -- daily backup email
 ```
 
-Form actions handle all mutations (create/update/delete/start/stop/complete).
-SvelteKit's `use:enhance` progressively enhances forms with client-side submissions and automatic page data invalidation -- no manual fetch() or state management for CRUD.
-The `api/` routes are only for things that genuinely need raw JSON responses (AI streaming, binary downloads, webhook callbacks).
+### Mutation pattern
+
+No form actions or progressive enhancement. Client-side `fetch()` to API routes, then re-render or navigate.
+
+```ts
+// Client-side: create a task
+const res = await fetch("/api/tasks", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ title, tags, locations }),
+});
+if (!res.ok) {
+  const err = await res.json();
+  showToast(err.error);
+  return;
+}
+// Navigate to refresh data (full page load -- simple, no client-side state to sync)
+window.location.reload();
+```
+
+```ts
+// Server-side: API handler
+export async function handleCreateTask(req: Request): Promise<Response> {
+  const body = await req.json();
+  // validate with zod-mini
+  const parsed = TaskCreateSchema.safeParse(body);
+  if (!parsed.success) {
+    return new Response(JSON.stringify({ error: parsed.error.message }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+  const task = await createTask(db, parsed.data);
+  return new Response(JSON.stringify(task), {
+    status: 201,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+```
 
 ### Error handling pattern
 
-Happy-path only for competition. All errors echo to the user in a popup toast.
+Happy-path only for competition. All errors echo to the user in a toast.
 
-```svelte
-<!-- In +layout.svelte: global error toast -->
-<script>
-  import { page } from '$app/stores';
-  // SvelteKit form actions return { type: 'failure', data } on fail()
-  // AI endpoints return { error: string } on failure
-  // Both surface through the same toast mechanism
-</script>
-
-{#if $page.form?.error}
-  <div class="toast toast-error" role="alert">{$page.form.error}</div>
-{/if}
+```ts
+// Client-side: src/client/lib/api.ts
+// Wraps fetch with error handling -- all API calls go through this.
+export async function api(path: string, options?: RequestInit): Promise<any> {
+  const res = await fetch(path, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...options?.headers },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Request failed" }));
+    showToast(err.error || "Something went wrong");
+    throw new Error(err.error);
+  }
+  return res.json();
+}
 ```
 
-In form actions, use SvelteKit's `fail()` to return errors:
 ```ts
-import { fail } from '@sveltejs/kit';
-// On any error:
-return fail(400, { error: 'Something went wrong: ' + errorMessage });
-```
-
-For AI fetch errors, catch and display inline:
-```ts
-const response = await fetch('/api/ai/autofill', { method: 'POST', body });
-if (!response.ok) {
-  errorMessage = 'AI unavailable, fill fields manually';
-  return;
+// Server-side: all API handlers catch errors and return JSON
+try {
+  // ... handler logic
+} catch (e) {
+  return new Response(JSON.stringify({ error: String(e) }), {
+    status: 500,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 ```
 
@@ -528,7 +704,7 @@ function handleRequest(req: Request): Response | Promise<Response> {
   // 6. Update last-request timestamp (fire and forget)
   updateLastRequest(pathUserId);
 
-  // 7. Proxy to user's SvelteKit process, stripping /u/<user-id> prefix
+  // 7. Proxy to user's process, stripping /u/<user-id> prefix
   const stripped = path.replace(`/u/${pathUserId}`, '') || '/';
   const proxyUrl = `http://localhost:${proc.port}${stripped}${url.search}`;
   return fetch(proxyUrl, {
@@ -541,7 +717,7 @@ function handleRequest(req: Request): Response | Promise<Response> {
 
 ### Registration and login page sketches
 
-The orchestrator serves plain HTML pages (no SvelteKit) for auth flows.
+The orchestrator serves plain HTML pages for auth flows.
 Minimal styling -- these are functional forms, not the app itself.
 
 **Registration (`/register`):**
@@ -692,64 +868,60 @@ When the autofill response includes a non-null `splitSuggestion`, the UI shows a
 
 ### 2.1 Layout shell and navigation (~2h)
 
-- (0.5h) Create `+layout.server.ts`: load user settings from DB
-- (0.5h) Create `+layout.svelte`: drawer navigation shell (Inbox, In Progress, Settings), responsive sidebar
-- (0.5h) Create FAB component: black circle, white `+` icon, bottom-right fixed position
-- (0.5h) Set up global styles: Inter + JetBrains Mono fonts, Material Symbols icon font, CSS variables for colors
+- (0.5h) Create shared HTML shell function (`src/server/pages/layout.ts`): returns the `<!DOCTYPE html>` wrapper with nav drawer, styles, and script tag slot
+- (0.5h) Build drawer navigation as part of the shell: Inbox, In Progress, Settings links. Hamburger toggle. Pure HTML + CSS (no JS needed for drawer -- use `<details>` or checkbox hack).
+- (0.5h) Create FAB function in `src/client/components/fab.ts`: creates a fixed-position button element, wires click to open new-task form
+- (0.5h) Set up `src/client/styles.css`: Inter + JetBrains Mono fonts (via CDN or self-hosted), Material Symbols icon font, CSS variables for colors. Served as static file.
 
 ### 2.2 Inbox screen (~2.5h)
 
-- (0.5h) Create `(app)/+page.server.ts`: load function returning unblocked inbox tasks
-- (0.5h) Create `(app)/+page.server.ts`: form actions for create and delete
-- (0.5h) Create TaskCard component: displays title, tags, tracked time, location; tappable link to details
-- (0.5h) Create TaskList component: scrollable list of TaskCard, with "Suggested" and "All" collapsible sections
-- (0.5h) Create `(app)/+page.svelte`: wire TaskList with data from load, FAB with create action
+- (0.5h) Create `src/server/pages/inbox.ts`: queries unblocked inbox tasks, embeds as JSON, returns HTML
+- (0.5h) Create `src/server/api/tasks.ts`: POST handler for creating tasks (validates with zod-mini)
+- (0.5h) Create `<task-card>` custom element (`src/client/components/task-card.ts`): displays title, tags, tracked time, location; click navigates to `/tasks/:id`, checkbox click calls complete API
+- (0.5h) Create `<collapsible-section>` custom element: header with icon + title + toggle, content slot
+- (0.5h) Create `src/client/inbox.ts`: reads page data, builds Suggested + All sections using custom elements, wires FAB
 
-### 2.3 Task details overlay (~2.5h)
+### 2.3 Task details screen (~2.5h)
 
-- (0.5h) Create `(app)/[id]/+page.server.ts`: load single task + attachments; form actions for update, delete
-- (0.5h) Create ChipEditor component: reusable tappable metadata chip (opens inline editor on tap)
-- (0.5h) Create TaskDetails component: editable title, description textarea, metadata chips, save/close
+- (0.5h) Create `src/server/pages/task-details.ts`: queries single task + attachments, embeds as JSON, returns HTML
+- (0.5h) Create `src/server/api/tasks.ts`: PUT handler for updating tasks, DELETE handler
+- (0.5h) Create `<chip-editor>` custom element: tappable chip that expands to inline editor on click (text input or select), calls API on blur/enter
 - (0.5h) Wire all chips: tags, location, priority, due date, complexity, reminders, blockedBy
-- (0.5h) Create `(app)/[id]/+page.svelte`: overlay presentation, `use:enhance` on all forms
+- (0.5h) Create `src/client/task-details.ts`: reads page data, builds editable form with chips, save button calls PUT API
 
-### 2.4 Forms wiring (~1h)
+### 2.4 API wiring and verification (~1h)
 
-- (0.5h) Add `use:enhance` to all forms for progressive enhancement (no full page reload)
-- (0.5h) Verify round-trip: create task -> appears in inbox -> open details -> edit -> save -> inbox reflects changes
-
-Data arrives server-rendered via `+page.server.ts` load functions -- no client-side fetch on mount.
-Mutations use `<form method="POST">` with SvelteKit form actions.
-No optimistic UI needed for MVP -- SvelteKit re-runs load functions after form actions, so the page updates with real server state.
+- (0.5h) Wire all API routes in `src/server/api/tasks.ts`: create, update, delete with zod-mini validation
+- (0.5h) Verify round-trip: create task -> appears in inbox -> click to details -> edit -> save -> inbox reflects changes
 
 ## Day 3 (Thu): Overflow from days 1-2, then medium/low items (~4h)
 
 ### 3.1 Server-side timer logic (~2h) `priority:low`
 
-- (0.5h) Add form action `start` on `[id]/+page.server.ts`: set `timer_started_at = NOW()`, change status to `in_progress`
-- (0.5h) Add form action `stop`: calculate elapsed delta, add to `tracked_time`, null `timer_started_at`, change status to `inbox`
-- (0.5h) Add form action `complete`: validate no unresolved blockers, calculate final time, set status to `done`, then delete
+- (0.5h) Add API routes `POST /api/tasks/:id/start` and `POST /api/tasks/:id/stop` in `src/server/api/timer.ts`
+- (0.5h) Add API route `POST /api/tasks/:id/complete`: validate no unresolved blockers, calculate final time, set status to `done`, then delete
 - (0.5h) Test all three actions manually: start -> stop -> verify cumulative time; start -> complete -> verify blocker rejection
+- (0.5h) Wire start/stop/complete buttons in task details client code
 
 ### 3.2 In Progress screen (~2.5h) `priority:low`
 
-- (0.5h) Create `in-progress/+page.server.ts`: load all tasks where `status = 'in_progress'` (unblocked only at top level)
-- (0.5h) Create `in-progress/+page.svelte`: list of TaskCards with live timer display
-- (0.5h) Implement global timer tick: single Svelte store (`nowMs`) updated by one `setInterval(1000)`, all task cards derive display from `trackedTime + (nowMs - Date.parse(timerStartedAt)) / 1000`
+- (0.5h) Create `src/server/pages/in-progress.ts`: queries all tasks where `status = 'in_progress'`, embeds as JSON
+- (0.5h) Create `src/client/in-progress.ts`: reads page data, builds task card list with live timer display
+- (0.5h) Implement timer tick: single `setInterval(1000)` updates all visible timer displays by computing `trackedTime + (Date.now() - Date.parse(timerStartedAt)) / 1000`
 - (0.5h) Format timer display as `HH:MM:SS`, handle edge cases (no timerStartedAt, timer just started)
 - (0.5h) Verify: start timer on task -> navigate to In Progress -> see ticking timer -> stop -> time persists
 
 ### 3.3 Blocking UI (~2h) `priority:medium`
 
-- (0.5h) Update inbox load function: fetch blocked tasks per visible parent (batched query), return as nested structure
-- (0.5h) Update TaskList component: render blocked tasks indented under their blockers with a "blocked" badge
-- (0.5h) Add blocker picker to TaskDetails: `blockedBy` chip opens a searchable task list, saves selected IDs
+- (0.5h) Update inbox page handler: fetch blocked tasks per visible parent (batched query), include in embedded data
+- (0.5h) Update inbox client: render blocked tasks indented under their blockers with a "blocked" badge
+- (0.5h) Add blocker picker to task details: `blockedBy` chip opens a searchable task list, saves selected IDs via API
 - (0.5h) Disable complete button when blockers exist, show explanation with list of blocking tasks
 
-### 3.4 Search overlay (~1.5h) `priority:low`
+### 3.4 Search screen (~1.5h) `priority:low`
 
-- (0.5h) Create `search/+page.server.ts`: load function runs FTS5 query from URL search param, returns results with `is_blocked` flag
-- (0.5h) Create `search/+page.svelte`: search input, debounced query submission, result list with blocked badges
+- (0.5h) Create `src/server/pages/search.ts`: runs FTS5 query from `?q=` param, embeds results with `is_blocked` flag
+- (0.5h) Create `src/client/search.ts`: search input with debounced navigation to `/search?q=...`, result list with blocked badges
 - (0.5h) Test: create tasks with various tags -> search by tag -> verify results include blocked tasks with badge
 
 ## Day 4 (Fri): AI integration -- autofill and suggestions (~4h)
@@ -765,9 +937,9 @@ AI is the core differentiator. Prompt engineering and structured output parsing 
 
 ### 4.2 Autofill endpoint (~3h)
 
-- (0.5h) Create `api/ai/autofill/+server.ts`: POST handler accepting `{ title: string }`
+- (0.5h) Create `src/server/api/ai-autofill.ts`: POST handler accepting `{ title: string }`
 - (0.5h) Write autofill prompt: include title text, existing tags/locations from DB (for consistency), instructions to infer tags/location/priority/complexity
-- (0.5h) Implement structured JSON output parsing: define expected schema, validate response, fallback to empty on parse failure
+- (0.5h) Implement structured JSON output parsing: define expected schema with zod-mini, validate response, fallback to empty on parse failure
 - (0.5h) Wire client-side: debounced fetch (500ms) on title input keyup, loading indicator, pre-fill chip values from response
 - (0.5h) Handle edge cases: empty title, AI timeout, malformed response, all fields remain manually editable regardless
 - (0.5h) Test end-to-end: type "Buy milk from Walmart" -> see `#shopping`, `where: Walmart`, `complexity: low` auto-filled
@@ -775,14 +947,14 @@ AI is the core differentiator. Prompt engineering and structured output parsing 
 ### 4.3 Task splitting (~1.5h)
 
 - (0.5h) Extend autofill prompt: detect multi-location AND semantics, return `splitSuggestion` in response when applicable
-- (0.5h) Create SplitPrompt component: "Split into X tasks?" confirmation UI, shows proposed task titles
-- (0.5h) Wire confirm action: create N tasks with sequential `blockedBy` chains via form action
+- (0.5h) Build split confirmation UI: a `<dialog>` showing proposed task titles with confirm/cancel buttons
+- (0.5h) Wire confirm action: POST to create N tasks with sequential `blockedBy` chains
 
 ### 4.4 Prompt injection hardening (~1.5h)
 
 - (0.5h) Review all prompts: verify system prompt separated from user data, user content always in delimited blocks
 - (0.5h) Verify structured JSON output schema validation rejects unexpected fields
-- (0.5h) Verify Svelte never renders AI output as `{@html}` (default text escaping is sufficient)
+- (0.5h) Verify server never passes AI output as raw HTML -- all user-facing text is set via `textContent`, never `innerHTML`
 
 ## Day 5 (Mon): Suggestions, orchestrator, and deployment (~4h)
 
@@ -792,13 +964,13 @@ Two-day gap (Sat-Sun) before this session. Budget time for context recovery.
 
 - (0.5h) Write suggestion prompt: include all unblocked inbox tasks (metadata only), user's current location, focus directive
 - (0.5h) Implement structured output: AI returns ranked array of task IDs as JSON, validate against known task IDs
-- (1.0h) Integrate into inbox `+page.server.ts` load function: fetch suggestions server-side, sort "Suggested" section by AI ranking
+- (1.0h) Integrate into inbox page handler: call suggestion engine, sort "Suggested" section by AI ranking, embed ranked data in page JSON
 - (0.5h) Handle AI unavailable: if llama.cpp is down or rate-limited, fall back to simple heuristic (due date, priority)
 - (0.5h) Test: create 10 tasks with varied locations/priorities, set location to "Walmart", verify shopping tasks surface first
 
 ### 5.2 Suggestion engine -- UI polish (~2.5h)
 
-- (0.5h) Add loading state for suggestions section (skeleton cards while AI processes)
+- (0.5h) Add loading state for suggestions section (skeleton cards while AI processes -- or just show "Loading suggestions..." text)
 - (0.5h) Add "Suggested" section header with explanation tooltip ("Based on your location and focus")
 - (0.5h) Handle empty suggestions gracefully: show "No suggestions right now" message
 - (0.5h) Tune suggestion count: limit to top 5-8 tasks to avoid overwhelming the user
@@ -825,7 +997,7 @@ Coolify's reverse proxy terminates HTTPS upstream; the orchestrator listens on H
 
 **7.1b Process management (~1.5h)**
 
-- (0.5h) Create `orchestrator/src/process-manager.ts`: spawn per-user SvelteKit process (`BASE_PATH=/u/<user-id> bun run build/index.js --port=XXXX --db=/data/<user-id>/done.db`)
+- (0.5h) Create `orchestrator/src/process-manager.ts`: spawn per-user Bun process (`bun src/server.ts --port=XXXX --db=/data/<user-id>/done.db`). Each spawn runs `Bun.build()` at startup, so new processes always serve fresh client code.
 - (0.5h) Implement port allocation: track PID + port + user-id mapping in `orchestrator.db`; allocate ports from a configurable range (e.g., 3100-3999)
 - (0.5h) Implement process health check: periodic liveness probe, restart crashed processes, log failures
 
@@ -849,24 +1021,25 @@ Coolify's reverse proxy handles HTTPS termination -- the orchestrator only liste
 
 | Service | Image | Purpose |
 | --- | --- | --- |
-| `orchestrator` | Custom (Bun + app build) | Auth, reverse proxy, process management |
+| `orchestrator` | Custom (Bun + app code) | Auth, reverse proxy, process management |
 | `llama-cpp` | `ghcr.io/ggml-org/llama.cpp:server` (CPU) | Shared AI inference, OpenAI-compatible API |
 
 The orchestrator container spawns per-user Bun processes as child processes within itself (not separate containers).
+Each child process runs `Bun.build()` at startup to bundle client assets -- no separate build step in the Dockerfile.
 User data lives on a named volume mounted at `/data/` inside the orchestrator container.
 The orchestrator keeps all routing state in memory (rebuilt from `orchestrator.db` on startup) -- no external config files to manage.
 
 **Atomic tasks:**
 
-- (0.25h) Write `docker-compose.yml`: two services, inline Dockerfile for orchestrator (see sketch below), volumes (`done-data`)
+- (0.25h) Write `docker-compose.yml`: two services, inline Dockerfile for orchestrator, volumes (`done-data`)
 - (0.25h) Configure environment variables: `SMTP_*`, `CHAT_COMPLETIONS_URL`, port range
 - (0.25h) Test locally: `docker compose up`, register user, verify full flow (registration -> login -> process spawn -> proxy -> AI suggestion)
 
 **Example `docker-compose.yml` with inline Dockerfile:**
 
-adapter-bun expects its build output on disk, and child SvelteKit processes are spawned via `bun run build/index.js`, so Bun must be available at runtime (not just a SEA).
-The orchestrator runs TS directly via Bun (no build step needed for it).
-The llama-cpp container auto-downloads the model on first start via `--hf-repo` + `--hf-file` -- no volume needed.
+No framework build step. The orchestrator runs TS directly via Bun.
+Child processes run `bun src/server.ts` which calls `Bun.build()` at startup for client assets.
+The llama-cpp container auto-downloads the model on first start via `--hf-repo` + `--hf-file`.
 
 ```yaml
 services:
@@ -874,19 +1047,13 @@ services:
     build:
       context: .
       dockerfile_inline: |
-        FROM oven/bun:1 AS build
+        FROM oven/bun:1
         WORKDIR /app
         COPY package.json bun.lock ./
         RUN bun install --frozen-lockfile
         COPY . .
-        RUN bun run build
-
-        FROM oven/bun:1-slim
-        WORKDIR /app
-        COPY --from=build /app/build ./build
-        COPY --from=build /app/orchestrator ./orchestrator
-        COPY --from=build /app/node_modules ./node_modules
         EXPOSE 3000
+        ENV NODE_ENV=production
         CMD ["bun", "run", "orchestrator/src/index.ts"]
     ports:
       - "127.0.0.1:3000:3000"
@@ -932,7 +1099,7 @@ volumes:
 
 ### 7.6 Testing (~0h, stretch goal)
 
-- Unit tests for critical database functions (vitest): CRUD, timer, blocking validation
+- Unit tests for critical database functions (bun:test): CRUD, timer, blocking validation
 - Basic Playwright smoke test: create task -> appears in inbox -> start timer -> appears in In Progress
 
 ### 7.7 Documentation (~0h, only if time permits)
@@ -956,9 +1123,9 @@ volumes:
 
 ### 6.3 Camera and attachments (~1h) `priority:low`
 
-- (0.25h) Add `<input type="file" accept="image/*" capture="environment">` to TaskDetails
-- (0.5h) Wire form action `attach` on `[id]/+page.server.ts`: validate file type/size, store as BLOB in attachments table
-- (0.25h) Create `api/attachments/[id]/+server.ts`: GET handler to download attachment by ID
+- (0.25h) Add `<input type="file" accept="image/*" capture="environment">` to task details
+- (0.5h) Wire API route `POST /api/tasks/:id/attach`: validate file type/size, store as BLOB in attachments table
+- (0.25h) Wire API route `GET /api/attachments/:id`: download attachment by ID
 
 ### 6.4 Email -- reminder notifications (~2h) `priority:medium`
 
@@ -975,9 +1142,9 @@ volumes:
 
 ### 6.6 Settings screen (~1.5h) `priority:low`
 
-- (0.5h) Create `settings/+page.server.ts`: load all settings; form actions for updating each setting
-- (0.5h) Create `settings/+page.svelte`: AI model selection, email config, connected apps status, location
-- (0.5h) Wire save actions with `use:enhance`, verify round-trip
+- (0.5h) Create `src/server/pages/settings.ts`: queries all settings, embeds as JSON
+- (0.5h) Create `src/client/settings.ts`: builds settings form (AI model, email, connected apps, location), wire save to `PUT /api/settings`
+- (0.5h) Verify round-trip: change setting -> save -> reload -> persisted
 
 ### 7.2 GitHub integration (~1.5h) `priority:low`
 
@@ -1037,13 +1204,18 @@ WHERE tasks.status = 'inbox'
   AND tasks.blocked_by != '[]'
 ```
 
+### Bun.build() startup time
+- Each process restart runs `Bun.build()`. For 5 entry points this should be <100ms.
+- If it becomes noticeable, can cache built output and only rebuild when source files change (check mtimes).
+- For competition, the simple always-rebuild approach is fine.
+
 ## Priority summary
 
 Items without a marker are implicitly highest priority and form the 20h core plan.
 Marked items are built if time allows, in descending priority order.
 
 **Core (unmarked):** 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 2.4, 4.1, 4.2, 4.3, 4.4, 5.1, 5.2, 5.3, 7.1a, 7.1b, 7.1d, 7.4, 7.5
-Note: 7.4 reduced from 1.5h to 1h (removed Caddy/AuthCrunch Dockerfile and config)
+Note: Dockerfile simplified (no framework build step) -- single stage, Bun runs TS directly.
 
 **`priority:medium`:** 3.3 (blocking UI), 6.4 (email reminders), 6.5 (daily backup)
 
@@ -1051,4 +1223,4 @@ Note: 7.4 reduced from 1.5h to 1h (removed Caddy/AuthCrunch Dockerfile and confi
 
 **`priority:min`:** 7.1c (idle suspension)
 
-**Post-competition:** Codebase TODO outbound writes, Linear sync, Calendar sync, full offline mode, comprehensive test suite
+**Post-competition:** Codebase TODO outbound writes, Linear sync, Calendar sync, full offline mode, comprehensive test suite, evaluate Vue Vapor rewrite once 3.6 stable
