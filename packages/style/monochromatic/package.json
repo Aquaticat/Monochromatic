@@ -17,8 +17,9 @@
     "TODS": "catalog:"
   },
   "exports": {
-    "./.css": "src/index.css",
-    "./mixin.css": "src/mixin.css"
+    "./.css": "./src/index.css",
+    "./index.css": "./src/index.css",
+    "./mixin.css": "./src/mixin.css"
   },
   "repository": {
     "type": "git",

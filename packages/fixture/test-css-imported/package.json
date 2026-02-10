@@ -1,0 +1,15 @@
+{
+  "name": "@monochromatic-dev/test-css-imported",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "src/index.css",
+  "exports": {
+    "./.css": "./src/index.css",
+    "./index.css": "./src/index.css",
+    "./mixin.css": "./src/mixin.css"
+  },
+  "files": [
+    "src/"
+  ]
+}

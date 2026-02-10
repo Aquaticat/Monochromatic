@@ -25,6 +25,7 @@
     "feedsmith": "catalog:",
     "lightningcss": "catalog:",
     "ses": "catalog:",
-    "sharp": "catalog:"
+    "sharp": "catalog:",
+    "@monochromatic-dev/style-monochromatic": "workspace:*"
   }
 }

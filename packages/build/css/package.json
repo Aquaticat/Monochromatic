@@ -4,8 +4,8 @@
   "type": "module",
   "module": "dist/final/index.js",
   "exports": {
-    ".": "./dist/final/index.js",
-    "./ts": "./src/index.ts"
+    ".": "./dist/final/build.js",
+    "./ts": "./src/build.ts"
   },
   "main": "dist/final/index.js",
   "typings": "dist/final/index.d.ts",

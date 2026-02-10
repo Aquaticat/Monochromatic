@@ -5,7 +5,7 @@ run = [{ tasks = ["build:*"] }]
 run = [{ tasks = ["build:site:css"] }, { tasks = ["build:site:astro"] }]
 
 [tasks.'build:site:css']
-run = "bun ../../build/css/src/index.ts src/styles/main.css dist/bundle.css --alias @monochromatic-dev/style-monochromatic=../../style/monochromatic/src"
+run = "bun ../../build/css/src/index.ts src/styles/main.css dist/bundle.css"
 
 [tasks.'build:site:astro']
 run = "pnpm exec astro build"
@@ -17,7 +17,7 @@ run = [{ tasks = ["build--watch:*"] }]
 run = [{ tasks = ["build--watch:site:*"] }]
 
 [tasks."build--watch:site:css"]
-run = "bun ../../build/css/src/index.ts src/styles/main.css dist/bundle.css --alias @monochromatic-dev/style-monochromatic=../../style/monochromatic/src --watch"
+run = "bun ../../build/css/src/index.ts src/styles/main.css dist/bundle.css --watch"
 
 [tasks."build--watch:site:astro"]
 run = "pnpm exec astro build --watch"

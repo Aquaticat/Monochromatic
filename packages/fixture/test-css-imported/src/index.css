@@ -1,0 +1,5 @@
+@import './mixin.css';
+
+:root {
+  --primary: rebeccapurple;
+}

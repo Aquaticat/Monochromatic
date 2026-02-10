@@ -68,11 +68,11 @@ body {
 }
 
 :is(summary, button) {
-  @mixin --touch-target;
+  @apply --touch-target;
 }
 
 button {
-  @mixin --button-text;
+  @apply --button-text;
 }
 
 :is(img, iframe) {
