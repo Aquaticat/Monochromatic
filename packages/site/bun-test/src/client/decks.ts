@@ -1,16 +1,11 @@
 // Reads server-embedded deck data, builds DOM. No fetch on load.
 import { api } from "./lib/api";
 import { injectCSS } from "./lib/inject-css";
-import baseStyles from "./styles.css" with { type: "text" };
-import { resetList } from "./lib/mixins";
+// build-css processes src/client/styles.css -> dist/client/styles.css at startup
+// (resolves @import, expands @mixin/@apply). Bun.build() inlines this as a text string.
+import styles from "../../dist/client/styles.css" with { type: "text" };
 
-// CSS imported as text string, injected at runtime.
-// Mixins compose via template literals -- no @apply, no PostCSS, no build plugin.
-injectCSS(baseStyles + `
-.deck-list {
-  ${resetList()}
-}
-`);
+injectCSS(styles);
 
 interface Deck {
   id: string;

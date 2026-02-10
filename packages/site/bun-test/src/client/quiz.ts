@@ -1,20 +1,11 @@
 // Reads server-embedded quiz data, builds quiz UI with <flash-card> custom element.
 import { api } from "./lib/api";
 import { injectCSS } from "./lib/inject-css";
-import baseStyles from "./styles.css" with { type: "text" };
-import { flexCenter } from "./lib/mixins";
+// build-css processes src/client/styles.css -> dist/client/styles.css at startup
+import styles from "../../dist/client/styles.css" with { type: "text" };
 import { FlashCardElement } from "./components/flash-card";
 
-// CSS imported as text, mixins composed via JS functions
-injectCSS(baseStyles + `
-flash-card .face {
-  ${flexCenter()}
-  min-height: 200px;
-  padding: 2rem;
-  font-size: 1.25rem;
-  text-align: center;
-}
-`);
+injectCSS(styles);
 
 interface Card {
   id: string;

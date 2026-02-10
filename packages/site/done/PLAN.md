@@ -8,11 +8,12 @@ Hour estimates are per-task. Items without a priority marker are implicitly high
 
 No framework. Vanilla TypeScript on both server and client, unified by Bun.
 
-- **Server:** `Bun.serve()` handles API routes and serves built client assets from a single process.
+- **Server:** `Bun.serve()` with its built-in `routes` property handles page and API routes with `:param` syntax and per-method dispatch. No separate router file needed. Unmatched requests fall through to a `fetch` handler that serves built client assets.
 - **Client:** Plain TypeScript with `document.createElement` for DOM construction. Custom elements where reuse is needed (task card, chip editor, collapsible section).
-- **Build:** `Bun.build()` runs at server startup -- bundles, tree-shakes, and (in prod) minifies client TS entry points into JS. Same code path in dev and prod; only `minify` flag differs.
-- **Dev:** `bun --watch src/server.ts` -- one command. On any file change, Bun restarts the server process, which re-runs `Bun.build()`, producing fresh client bundles. No second tool, no separate watcher.
-- **Operational advantage:** The orchestrator spawns per-user Bun processes. Each process runs `Bun.build()` at startup, so new/restarted processes immediately serve the latest code.
+- **Build:** `build-css` (resolve @import, expand @mixin/@apply) runs first, then `Bun.build()` bundles client TS (with CSS imported as text strings) at server startup. Same code path in dev and prod; only `minify` flag differs.
+- **CSS:** CSS files use `@mixin`/`@apply` syntax processed by `@monochromatic-dev/build-css`. Processed CSS is imported as text in client TS and injected at runtime -- no separate `<link>` tags needed.
+- **Dev:** `bun --watch src/server.ts` -- one command. On any file change, Bun restarts the server process, which re-runs the full build pipeline. No second tool, no separate watcher.
+- **Operational advantage:** The orchestrator spawns per-user Bun processes. Each process runs the build pipeline at startup, so new/restarted processes immediately serve the latest code.
 
 See `FRAMEWORK_EVALUATION.md` for why this approach was chosen over SvelteKit, Vue Vapor, or Web Components frameworks.
 
@@ -22,17 +23,34 @@ See `FRAMEWORK_EVALUATION.md` for why this approach was chosen over SvelteKit, V
 
 - (0.25h) Initialize project at `packages/site/done/` with `package.json` (`workspace:*` references to monorepo packages)
 - (0.25h) Add `mise.toml` with `dev`, `build`, and `start` tasks
-- (0.25h) Create `src/server.ts`: entry point with `Bun.build()` call at startup + `Bun.serve()` with route handler
+- (0.25h) Create `src/server.ts`: entry point with build-css + `Bun.build()` at startup, then `Bun.serve()` with `routes` property
 - (0.25h) Create `src/client/` directory with a minimal `inbox.ts` entry point to verify the build pipeline
-- (0.25h) Verify: `bun --watch src/server.ts` starts, builds client TS, serves the built JS, and restarts on file change
-- (0.25h) Create `src/server/router.ts`: URL pathname matching for pages and API routes
+- (0.25h) Verify: `bun --watch src/server.ts` starts, builds CSS + client TS, serves the built JS, and restarts on file change
 
-The server entry point:
+The server entry point (validated in bun-test):
 
 ```ts
 // src/server.ts -- entry point for each user's Done instance
-// Bun.build() at startup ensures client assets are always fresh.
-// In dev (bun --watch), server restarts on any file change -> rebuild is automatic.
+// Pipeline: build-css -> Bun.build() -> Bun.serve().
+// In dev (bun --watch), server restarts on any file change -> full rebuild is automatic.
+import { build as buildCSS } from "@monochromatic-dev/build-css/ts";
+import "./lib/db";
+import { inboxPage } from "./server/pages/inbox";
+import { inProgressPage } from "./server/pages/in-progress";
+import { taskDetailsPage } from "./server/pages/task-details";
+import { searchPage } from "./server/pages/search";
+import { settingsPage } from "./server/pages/settings";
+import { handleCreateTask, handleUpdateTask, handleDeleteTask } from "./server/api/tasks";
+import { handleStartTimer, handleStopTimer, handleCompleteTask } from "./server/api/timer";
+// ... other API imports
+
+// Step 1: Process CSS -- resolves @import, expands @mixin/@apply into plain CSS.
+await buildCSS({
+  input: "./src/client/styles.css",
+  output: "./dist/client/styles.css",
+});
+
+// Step 2: Bundle client TS -- imports the processed CSS as text string.
 const buildResult = await Bun.build({
   entrypoints: [
     "./src/client/inbox.ts",
@@ -51,56 +69,49 @@ if (!buildResult.success) {
   process.exit(1);
 }
 
+// Step 3: Serve. Bun's built-in router handles :param parsing and per-method dispatch.
+// No separate router.ts needed -- routes are declarative, type-safe, SIMD-accelerated.
 Bun.serve({
   port: Number(process.env.PORT) || 3000,
+  routes: {
+    // Page routes -- return HTML with embedded data + script tag
+    "/": () => inboxPage(),
+    "/in-progress": () => inProgressPage(),
+    "/tasks/:id": (req) => taskDetailsPage(req.params.id),
+    "/search": (req) => searchPage(new URL(req.url)),
+    "/settings": () => settingsPage(),
+
+    // API routes -- per-method dispatch, typed params
+    "/api/tasks": { POST: (req) => handleCreateTask(req) },
+    "/api/tasks/:id": {
+      PUT: (req) => handleUpdateTask(req, req.params.id),
+      DELETE: (req) => handleDeleteTask(req.params.id),
+    },
+    "/api/tasks/:id/start": { POST: (req) => handleStartTimer(req.params.id) },
+    "/api/tasks/:id/stop": { POST: (req) => handleStopTimer(req.params.id) },
+    "/api/tasks/:id/complete": { POST: (req) => handleCompleteTask(req.params.id) },
+    // ... ai, attachments, settings, sync routes
+  },
+  // Fallback: static assets from build output, or 404.
+  // Bun.file() auto-detects Content-Type from file extension.
   async fetch(req) {
-    return router(req);
+    const path = new URL(req.url).pathname;
+    if (path.startsWith("/dist/client/")) {
+      const file = Bun.file(`.${path}`);
+      if (await file.exists()) return new Response(file);
+    }
+    return new Response("Not found", { status: 404 });
   },
 });
 ```
 
-The router dispatches to page handlers (return HTML responses) and API handlers (return JSON responses):
-
-```ts
-// src/server/router.ts
-// Pages return full HTML documents with a <script> tag pointing to the built client JS.
-// API routes return JSON. Both run in the same process.
-export async function router(req: Request): Promise<Response> {
-  const url = new URL(req.url);
-  const path = url.pathname;
-
-  // Static assets (built client JS)
-  if (path.startsWith("/dist/client/")) {
-    const file = Bun.file(`.${path}`);
-    if (await file.exists()) return new Response(file);
-    return new Response("Not found", { status: 404 });
-  }
-
-  // API routes
-  if (path.startsWith("/api/")) return handleApi(req, path, url);
-
-  // Page routes -- return HTML with embedded data + script tag
-  switch (path) {
-    case "/":           return inboxPage(req);
-    case "/in-progress": return inProgressPage(req);
-    case "/search":     return searchPage(req, url);
-    case "/settings":   return settingsPage(req);
-    default:
-      // /tasks/<id> -- task details
-      const taskMatch = path.match(/^\/tasks\/([A-Z0-9]{26})$/);
-      if (taskMatch) return taskDetailsPage(req, taskMatch[1]);
-      return new Response("Not found", { status: 404 });
-  }
-}
-```
-
 ### Page rendering pattern
 
-Each page handler queries the DB, serializes the data into a JSON script tag, and returns a full HTML document. The client TS reads the embedded data and builds the DOM. No client-side fetch on initial load.
+Each page handler queries the DB, serializes the data into a JSON script tag, and returns a full HTML document. The client TS reads the embedded data and builds the DOM. No client-side fetch on initial load. CSS is bundled into the JS (imported as text, injected at runtime) so no `<link>` tag is needed.
 
 ```ts
 // src/server/pages/inbox.ts
-export async function inboxPage(req: Request): Promise<Response> {
+export async function inboxPage(): Promise<Response> {
   const tasks = await getInboxTasks(db);
   const settings = await getAllSettings(db);
 
@@ -110,7 +121,6 @@ export async function inboxPage(req: Request): Promise<Response> {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inbox - Done</title>
-  <link rel="stylesheet" href="/dist/client/styles.css">
 </head>
 <body>
   <script type="application/json" id="page-data">${JSON.stringify({ tasks, settings })}</script>
@@ -124,13 +134,27 @@ export async function inboxPage(req: Request): Promise<Response> {
 }
 ```
 
-Client-side:
+Client-side (CSS injection validated in bun-test):
 
 ```ts
 // src/client/inbox.ts
+// CSS is imported as a text string by Bun.build(), injected into <head> at runtime.
+import styles from "../dist/client/styles.css" with { type: "text" };
+import { injectCSS } from "./lib/inject-css";
+injectCSS(styles);
+
 // Reads server-embedded data, builds DOM. No fetch on load.
 const data = JSON.parse(document.getElementById("page-data")!.textContent!);
 buildInboxScreen(data.tasks, data.settings);
+```
+
+```ts
+// src/client/lib/inject-css.ts -- 3 lines, validated in bun-test
+export function injectCSS(css: string): void {
+  const style = document.createElement("style");
+  style.textContent = css;
+  document.head.appendChild(style);
+}
 ```
 
 ### 1.2 Database schema and migration (~3h)
@@ -496,38 +520,40 @@ Single `Bun.serve()` process handles both pages (HTML responses) and API (JSON r
 
 ```
 src/
-  server.ts                         -- entry point: Bun.build() + Bun.serve()
+  server.ts                         -- entry point: build-css + Bun.build() + Bun.serve({ routes })
   server/
-    router.ts                       -- URL pathname dispatch
-    pages/
-      inbox.ts                      -- GET /           -> HTML with embedded task data
-      in-progress.ts                -- GET /in-progress -> HTML with embedded timer data
-      task-details.ts               -- GET /tasks/:id  -> HTML with embedded task + attachments
-      search.ts                     -- GET /search?q=  -> HTML with embedded search results
-      settings.ts                   -- GET /settings   -> HTML with embedded settings
-    api/
-      tasks.ts                      -- POST/PUT/DELETE /api/tasks/* -> JSON
-      timer.ts                      -- POST /api/tasks/:id/start|stop|complete -> JSON
-      ai-autofill.ts                -- POST /api/ai/autofill -> JSON
-      ai-suggest.ts                 -- POST /api/ai/suggest -> JSON
-      attachments.ts                -- POST /api/tasks/:id/attach, GET /api/attachments/:id -> BLOB
-      settings.ts                   -- PUT /api/settings -> JSON
-      sync.ts                       -- GET/POST /api/sync -> JSON
+    pages/                          -- each returns full HTML with embedded JSON data
+      inbox.ts                      -- GET /
+      in-progress.ts                -- GET /in-progress
+      task-details.ts               -- GET /tasks/:id
+      search.ts                     -- GET /search?q=
+      settings.ts                   -- GET /settings
+    api/                            -- each returns JSON, wired via routes { METHOD: handler }
+      tasks.ts                      -- POST/PUT/DELETE /api/tasks/*
+      timer.ts                      -- POST /api/tasks/:id/start|stop|complete
+      ai-autofill.ts                -- POST /api/ai/autofill
+      ai-suggest.ts                 -- POST /api/ai/suggest
+      attachments.ts                -- POST /api/tasks/:id/attach, GET /api/attachments/:id
+      settings.ts                   -- PUT /api/settings
+      sync.ts                       -- GET/POST /api/sync
   client/
-    inbox.ts                        -- reads #page-data, builds inbox DOM
-    in-progress.ts                  -- reads #page-data, builds in-progress DOM, starts timer tick
-    task-details.ts                 -- reads #page-data, builds task detail overlay DOM
-    search.ts                       -- reads #page-data, builds search DOM, wires debounced input
-    settings.ts                     -- reads #page-data, builds settings DOM
+    styles.css                      -- base styles with @import 'mixin.css' and @apply rules
+    mixin.css                       -- @mixin definitions (processed by build-css)
+    inbox.ts                        -- imports processed CSS as text, reads #page-data, builds DOM
+    in-progress.ts                  -- same pattern, plus setInterval timer tick
+    task-details.ts                 -- same pattern, builds editable form
+    search.ts                       -- same pattern, wires debounced input
+    settings.ts                     -- same pattern, builds settings form
     components/
-      task-card.ts                  -- custom element <task-card> for reuse across screens
-      chip-editor.ts                -- custom element <chip-editor> for tappable metadata editing
+      task-card.ts                  -- custom element <task-card>
+      chip-editor.ts                -- custom element <chip-editor>
       collapsible-section.ts        -- custom element <collapsible-section>
-      fab.ts                        -- FAB button (plain function, not worth a custom element)
+      fab.ts                        -- FAB button (plain function)
       toast.ts                      -- error toast display (plain function)
     lib/
-      api.ts                        -- fetch wrapper for API calls (POST/PUT/DELETE with JSON body)
-      dom.ts                        -- DOM construction helpers (createElement shortcuts, if needed)
+      api.ts                        -- fetch wrapper with error toast
+      inject-css.ts                 -- 3-line CSS injection helper
+      dom.ts                        -- DOM construction helpers (if needed)
   lib/
     db.ts                           -- libsql client setup + migration runner
     db/
@@ -871,7 +897,7 @@ When the autofill response includes a non-null `splitSuggestion`, the UI shows a
 - (0.5h) Create shared HTML shell function (`src/server/pages/layout.ts`): returns the `<!DOCTYPE html>` wrapper with nav drawer, styles, and script tag slot
 - (0.5h) Build drawer navigation as part of the shell: Inbox, In Progress, Settings links. Hamburger toggle. Pure HTML + CSS (no JS needed for drawer -- use `<details>` or checkbox hack).
 - (0.5h) Create FAB function in `src/client/components/fab.ts`: creates a fixed-position button element, wires click to open new-task form
-- (0.5h) Set up `src/client/styles.css`: Inter + JetBrains Mono fonts (via CDN or self-hosted), Material Symbols icon font, CSS variables for colors. Served as static file.
+- (0.5h) Set up `src/client/styles.css` with `@import 'mixin.css'` and `@apply` rules. Create `src/client/mixin.css` with shared mixins. CSS is processed by build-css, then imported as text in client TS and injected at runtime (no `<link>` tag). Include Inter + JetBrains Mono fonts (via CDN), Material Symbols icon font, CSS variables for colors.
 
 ### 2.2 Inbox screen (~2.5h)
 
@@ -1161,6 +1187,37 @@ Read-only inbound for MVP. Outbound writes deferred post-competition.
 - (0.25h) Create `src/lib/sync/codebase.ts`: regex scanner for `TODO`, `FIXME`, `HACK` comments in configured directories; extract file path + line number + context; create tasks with `source: "codebase"`, `sourceId: "repo:file:line"`
 - (0.25h) Wire into settings: configure repo paths, trigger scan, show scan results
 
+## Validated by bun-test (packages/site/bun-test)
+
+A throwaway flashcard app was built pre-competition to validate the architecture.
+These patterns are confirmed working -- no surprises expected during implementation.
+
+| Pattern | Status | Notes |
+| --- | --- | --- |
+| build-css -> Bun.build() -> Bun.serve() pipeline | **validated** | Runs at startup, restarts cleanly with `bun --watch` |
+| Bun.serve() `routes` with `:param` and per-method dispatch | **validated** | Type-safe params, SIMD-accelerated, replaces hand-written router |
+| Embedded JSON (`<script type="application/json">`) | **validated** | Client reads with `JSON.parse(el.textContent)` |
+| CSS-as-text-import (Bun.build() inlines CSS strings) | **validated** | `import styles from "..." with { type: "text" }` works |
+| @mixin/@apply via @monochromatic-dev/build-css | **validated** | LightningCSS + PostCSS expansion, oxc-resolver works under Bun |
+| Custom elements | **validated** | `<flash-card>` with shadow DOM, attributes, events |
+| zod validation on API routes | **validated** | Schema validation with error messages |
+| fetch() mutations + window.location.reload() | **validated** | Simple mutation pattern, no client-side state sync |
+| bun:sqlite in-memory DB | **validated** | CRUD, foreign keys, WAL mode |
+| Bun.file() auto Content-Type | **validated** | No manual content-type mapping needed |
+| Static imports for DB + route handlers | **validated** | Dynamic imports unnecessary -- top-level await ensures build completes first |
+
+### Not yet tested (verify early in implementation)
+
+| Pattern | Risk | Mitigation |
+| --- | --- | --- |
+| FTS5 full-text search | low | Standard SQLite extension, well-documented |
+| llama.cpp HTTP client + structured JSON output | medium | Test on day 4 with real model before wiring UI |
+| File/BLOB attachments in SQLite | low | Standard bun:sqlite, deferred feature anyway |
+| 5 client entrypoints (vs 2 tested) | low | Bun.build() is fast, linear scaling expected |
+| setInterval timer tick on client | low | Standard browser API, trivial to test |
+| @upyo/smtp email sending | medium | External dependency, test with real SMTP early |
+| Orchestrator multi-process spawning | high | Most complex untested piece -- budget extra time on day 5 |
+
 ## Risk areas
 
 ### AI autofill latency (typing feels sluggish)
@@ -1205,9 +1262,8 @@ WHERE tasks.status = 'inbox'
 ```
 
 ### Bun.build() startup time
-- Each process restart runs `Bun.build()`. For 5 entry points this should be <100ms.
-- If it becomes noticeable, can cache built output and only rebuild when source files change (check mtimes).
-- For competition, the simple always-rebuild approach is fine.
+- Validated in bun-test: 2 entrypoints build in <100ms. 5 should be similar.
+- For competition, the simple always-rebuild approach is confirmed fine.
 
 ## Priority summary
 

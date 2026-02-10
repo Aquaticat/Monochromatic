@@ -1,3 +1,5 @@
+@import 'mixin.css';
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -11,7 +13,7 @@ body {
 
 h1 { margin-bottom: 1rem; }
 
-/* .deck-list reset is applied via resetList() mixin in decks.ts */
+.deck-list { @apply --reset-list; }
 .deck-list li {
   display: flex;
   justify-content: space-between;
@@ -77,7 +79,13 @@ flash-card {
   position: relative;
   user-select: none;
 }
-/* flash-card .face centering is applied via flexCenter() mixin in quiz.ts */
+flash-card .face {
+  @apply --flex-center;
+  min-height: 200px;
+  padding: 2rem;
+  font-size: 1.25rem;
+  text-align: center;
+}
 flash-card .face.back { background: #f5f5f5; }
 flash-card .face.hidden { display: none; }
 flash-card .flip-hint {
