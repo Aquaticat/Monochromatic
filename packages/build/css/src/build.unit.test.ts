@@ -17,6 +17,7 @@ import {
 
 //region Test Helpers
 
+// import.meta.dirname is a Bun-specific API (equivalent to __dirname in CJS)
 /** Path to the fixture packages used for integration-style tests */
 const fixtureImportingDir = join(
   import.meta.dirname, '..', '..', '..', 'fixture', 'test-css-importing',

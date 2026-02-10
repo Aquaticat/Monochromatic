@@ -20,6 +20,8 @@ import {
   resolveImport,
 } from './resolve.ts';
 
+//region Re-exports -- public API surface for consumers importing from build.ts
+
 export type { BuildOptions, } from './resolve.ts';
 export {
   collectMixins,
@@ -29,12 +31,15 @@ export {
 } from './mixin.ts';
 export { createResolver, resolveImport, } from './resolve.ts';
 
+//endregion Re-exports
+
 /**
  * Builds CSS by bundling imports with LightningCSS and processing mixins.
  * Pipeline: resolve imports -> bundle -> collect mixin definitions ->
  * expand nested mixin bodies -> inline \@apply rules -> write output.
  * @param options - Build configuration
  * @returns Processed CSS string
+ * @throws When an import cannot be resolved or a mixin reference is invalid
  */
 export async function build(options: BuildOptions): Promise<string> {
   const { input, output, } = options;
@@ -42,7 +47,9 @@ export async function build(options: BuildOptions): Promise<string> {
   // Clear mixin registry for fresh build
   mixins.clear();
 
+  /** Absolute path to the CSS entry point */
   const inputPath = resolve(input);
+  /** Resolver configured for CSS-specific module resolution */
   const resolver = createResolver();
 
   // Bundle with LightningCSS using oxc-resolver for imports
@@ -56,14 +63,18 @@ export async function build(options: BuildOptions): Promise<string> {
     },
   });
 
-  // Parse bundled CSS with PostCSS to manipulate custom at-rules
-  const root = postcss.parse(code.toString(), { from: inputPath, });
+  /** UTF-8 decoded CSS text from the LightningCSS bundle output */
+  const cssText = new TextDecoder().decode(code);
+  /** PostCSS AST used to walk and manipulate custom @mixin/@apply at-rules */
+  const root = postcss.parse(cssText, { from: inputPath, });
 
   collectMixins(root);
   expandMixinBodies();
   expandApplyRules(root);
 
+  /** Final CSS with all mixins expanded and @apply rules inlined */
   const result = root.toString();
+  /** Absolute path for the output file */
   const outputPath = resolve(output);
   await mkdir(dirname(outputPath), { recursive: true, });
   await writeFile(outputPath, result);

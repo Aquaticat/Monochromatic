@@ -21,6 +21,11 @@ export type BuildOptions = {
  * Creates an oxc-resolver instance configured for CSS module resolution.
  * Supports package.json exports fields and style-specific main fields.
  * @returns Configured ResolverFactory
+ * @example
+ * ```ts
+ * const resolver = createResolver();
+ * const absPath = resolveImport(resolver, '@scope/pkg/index.css', '/project/src/main.css');
+ * ```
  */
 export function createResolver(): ResolverFactory {
   return new ResolverFactory({
@@ -43,7 +48,9 @@ export function createResolver(): ResolverFactory {
  * @throws When the specifier cannot be resolved by any strategy
  */
 export function resolveImport(resolver: ResolverFactory, specifier: string, from: string): string {
+  /** Directory containing the importing file, used as resolution base */
   const fromDir = dirname(from);
+  /** Primary resolution attempt using the specifier as-is */
   const result = resolver.sync(fromDir, specifier);
 
   if (result.path !== undefined) {
@@ -53,6 +60,7 @@ export function resolveImport(resolver: ResolverFactory, specifier: string, from
   // CSS @import treats bare specifiers like 'tods.css' as relative paths,
   // unlike JS where they would be package references. Try with './' prefix.
   if (!specifier.startsWith('.') && !specifier.startsWith('/') && !specifier.startsWith('@')) {
+    /** Fallback attempt treating the bare specifier as a relative path */
     const relativeResult = resolver.sync(fromDir, `./${specifier}`);
     if (relativeResult.path !== undefined) {
       return relativeResult.path;
