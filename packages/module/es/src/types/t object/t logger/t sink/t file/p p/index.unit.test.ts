@@ -33,7 +33,7 @@ describe('file sink', () => {
     };
 
     // Should not throw even if file is unavailable
-    await expect(Promise.resolve($(record,),),).resolves.not.toThrow();
+    await Promise.resolve($(record,),);
   });
 
   test('sink handles all log levels', async () => {
@@ -48,7 +48,7 @@ describe('file sink', () => {
         timestamp: Date.now(),
       };
       // eslint-disable-next-line no-await-in-loop -- Ensuring each level works sequentially
-      await expect(Promise.resolve($(record,),),).resolves.not.toThrow();
+      await Promise.resolve($(record,),);
     }
   });
 
@@ -61,7 +61,7 @@ describe('file sink', () => {
       timestamp: Date.now(),
     };
 
-    await expect(Promise.resolve($(record,),),).resolves.not.toThrow();
+    await Promise.resolve($(record,),);
   });
 
   test('sink handles empty message', async () => {
@@ -73,7 +73,7 @@ describe('file sink', () => {
       timestamp: Date.now(),
     };
 
-    await expect(Promise.resolve($(record,),),).resolves.not.toThrow();
+    await Promise.resolve($(record,),);
   });
 
   test('sink handles JSON in message', async () => {
@@ -85,6 +85,6 @@ describe('file sink', () => {
       timestamp: Date.now(),
     };
 
-    await expect(Promise.resolve($(record,),),).resolves.not.toThrow();
+    await Promise.resolve($(record,),);
   });
 });
