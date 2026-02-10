@@ -1,13 +1,14 @@
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 const $ = types.object.regexp.global.from.object.regexp.sync.named.$;
 
 describe('ensure regexp has global flag', () => {
-  test('adds global flag to regexp without flags', ({ expect, },) => {
+  test('adds global flag to regexp without flags', () => {
     const regexp = /test/;
     const result = $({ regexp, },);
 
@@ -16,7 +17,7 @@ describe('ensure regexp has global flag', () => {
     expect(result.source,).toBe('test',);
   });
 
-  test('adds global flag to regexp with existing flags', ({ expect, },) => {
+  test('adds global flag to regexp with existing flags', () => {
     const regexp = /test/i;
     const result = $({ regexp, },);
 
@@ -26,7 +27,7 @@ describe('ensure regexp has global flag', () => {
     expect(result.source,).toBe('test',);
   });
 
-  test('preserves global flag if already present', ({ expect, },) => {
+  test('preserves global flag if already present', () => {
     const regexp = /test/g;
     const result = $({ regexp, },);
 
@@ -35,7 +36,7 @@ describe('ensure regexp has global flag', () => {
     expect(result.source,).toBe('test',);
   });
 
-  test('preserves global flag with multiple existing flags', ({ expect, },) => {
+  test('preserves global flag with multiple existing flags', () => {
     const regexp = /test/gim;
     const result = $({ regexp, },);
 
@@ -46,7 +47,7 @@ describe('ensure regexp has global flag', () => {
     expect(result.source,).toBe('test',);
   });
 
-  test('works with complex regex patterns', ({ expect, },) => {
+  test('works with complex regex patterns', () => {
     const regexp = /^[a-z]+/;
     const result = $({ regexp, },);
 
@@ -56,7 +57,7 @@ describe('ensure regexp has global flag', () => {
     expect(result.test('123',),).toBe(false,);
   });
 
-  test('works with special characters in pattern', ({ expect, },) => {
+  test('works with special characters in pattern', () => {
     const regexp = /[$()*+.?[\\\]^{|}]/;
     const result = $({ regexp, },);
 
@@ -64,7 +65,7 @@ describe('ensure regexp has global flag', () => {
     expect(result.source,).toBe('[.*+?^${}()|[\\]\\\\]',);
   });
 
-  test('works with unicode characters', ({ expect, },) => {
+  test('works with unicode characters', () => {
     const regexp = /Hello 世界/;
     const result = $({ regexp, },);
 
@@ -73,7 +74,7 @@ describe('ensure regexp has global flag', () => {
     expect(result.test('Hello 世界',),).toBe(true,);
   });
 
-  test('works with escaped characters', ({ expect, },) => {
+  test('works with escaped characters', () => {
     const regexp = /\d+\.\d+/;
     const result = $({ regexp, },);
 
@@ -81,7 +82,7 @@ describe('ensure regexp has global flag', () => {
     expect(result.source,).toBe('\\d+\\.\\d+',);
   });
 
-  test('returns new RegExp instance', ({ expect, },) => {
+  test('returns new RegExp instance', () => {
     const original = /test/;
     const result = $({ regexp: original, },);
 
@@ -89,7 +90,7 @@ describe('ensure regexp has global flag', () => {
     expect(result,).toBeInstanceOf(RegExp,);
   });
 
-  test('new regexp works with exec for multiple matches', ({ expect, },) => {
+  test('new regexp works with exec for multiple matches', () => {
     const regexp = /\w+/;
     const globalRegexp = $({ regexp, },);
 
@@ -106,7 +107,7 @@ describe('ensure regexp has global flag', () => {
     expect(matches[2]?.[0],).toBe('test',);
   });
 
-  test('new regexp works with matchAll', ({ expect, },) => {
+  test('new regexp works with matchAll', () => {
     const regexp = /\d+/;
     const globalRegexp = $({ regexp, },);
 
@@ -119,7 +120,7 @@ describe('ensure regexp has global flag', () => {
     expect(matches[2]?.[0],).toBe('789',);
   });
 
-  test('with dotAll flag (s)', ({ expect, },) => {
+  test('with dotAll flag (s)', () => {
     const regexp = /test.test/s;
     const result = $({ regexp, },);
 
@@ -127,7 +128,7 @@ describe('ensure regexp has global flag', () => {
     expect(result.dotAll,).toBe(true,);
   });
 
-  test('with sticky flag (y)', ({ expect, },) => {
+  test('with sticky flag (y)', () => {
     const regexp = /test/y;
     const result = $({ regexp, },);
 
@@ -135,7 +136,7 @@ describe('ensure regexp has global flag', () => {
     expect(result.sticky,).toBe(true,);
   });
 
-  test('with unicode flag (u)', ({ expect, },) => {
+  test('with unicode flag (u)', () => {
     const regexp = /\u{1F600}/u;
     const result = $({ regexp, },);
 
@@ -143,7 +144,7 @@ describe('ensure regexp has global flag', () => {
     expect(result.unicode,).toBe(true,);
   });
 
-  test('empty regex gets global flag', ({ expect, },) => {
+  test('empty regex gets global flag', () => {
     const regexp = /(?:)/;
     const result = $({ regexp, },);
 
@@ -151,7 +152,7 @@ describe('ensure regexp has global flag', () => {
     expect(result.source,).toBe('(?:)',);
   });
 
-  test('works with alternation patterns', ({ expect, },) => {
+  test('works with alternation patterns', () => {
     const regexp = /cat|dog|bird/;
     const result = $({ regexp, },);
 
@@ -165,7 +166,7 @@ describe('ensure regexp has global flag', () => {
     expect(result.test('fish',),).toBe(false,);
   });
 
-  test('works with capturing groups', ({ expect, },) => {
+  test('works with capturing groups', () => {
     const regexp = /(\d+)-(\d+)-(\d+)/;
     const result = $({ regexp, },);
 
@@ -177,7 +178,7 @@ describe('ensure regexp has global flag', () => {
     expect(match?.[3],).toBe('25',);
   });
 
-  test('works with lookaheads', ({ expect, },) => {
+  test('works with lookaheads', () => {
     const regexp = /\w+(?=\s)/;
     const result = $({ regexp, },);
 
@@ -185,7 +186,7 @@ describe('ensure regexp has global flag', () => {
     expect(result.source,).toBe('\\w+(?=\\s)',);
   });
 
-  test('works with lookbehinds', ({ expect, },) => {
+  test('works with lookbehinds', () => {
     const regexp = /(?<=\s)\w+/;
     const result = $({ regexp, },);
 

@@ -21,7 +21,7 @@ coreutils = "latest"
 fd = "latest"
 ripgrep = "latest"
 
-# Needed by Vitest
+# Needed by some packages that depend on Node APIs
 node = "latest"
 
 # Non-JS-based linters and formatters
@@ -147,8 +147,8 @@ alias = "t"
 [tasks."test:unit"]
 hide = true
 description = "Run unit tests"
-usage = 'arg "[args]" var=#true help="Additional arguments passed to vitest"'
-run = "vitest run --config vitest.unit.config.ts ...($env.usage_args | split row ' ')"
+usage = 'arg "[args]" var=#true help="Additional arguments passed to bun test"'
+run = "bun test .unit.test. ...($env.usage_args | split row ' ')"
 
 [tasks."test:browser"]
 hide = true
@@ -176,8 +176,8 @@ run = "bunx playwright test --config playwright.browser.config.ts --project=fire
 [tasks."test--watch:unit"]
 hide = true
 description = "Run unit tests in watch mode"
-usage = 'arg "[args]" var=#true help="Additional arguments passed to vitest"'
-run = "vitest watch --config vitest.unit.config.ts ...($env.usage_args | split row ' ')"
+usage = 'arg "[args]" var=#true help="Additional arguments passed to bun test"'
+run = "bun test --watch .unit.test. ...($env.usage_args | split row ' ')"
 
 # [tasks."test--watch:browser"]
 # hide = true

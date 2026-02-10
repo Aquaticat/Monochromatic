@@ -17,10 +17,12 @@ import {
 } from 'node:path';
 import { promisify, } from 'node:util';
 import {
+  afterEach,
+  beforeEach,
   describe,
   expect,
-  test as baseTest,
-} from 'vitest';
+  test,
+} from 'bun:test';
 
 await logtapeConfigure(await logtapeConfiguration(),);
 
@@ -41,58 +43,50 @@ if (arg === 'fail') {
 }
 `;
 
-type CommandTestFixtures = {
-  cliPath: string;
-  testDir: string;
-  testScript: string;
-};
+//region Fixture Setup -- Per-test fixtures replacing vitest test.extend
 
-const test = baseTest.extend<CommandTestFixtures>({
-  cliPath: async ({}, use,) => {
-    const testFileDir = import.meta.dirname;
-    const cliPath = join(testFileDir, 'cli.command.ts',);
-    await use(cliPath,);
-  },
+let cliPath: string;
+let testDir: string;
+let testScript: string;
 
-  testDir: async ({}, use,) => {
-    const testFileDir = import.meta.dirname;
-    const packageJsonPath = await findUp('package.json', { cwd: testFileDir, },);
-    if (!packageJsonPath)
-      throw new Error('Could not find package.json',);
+beforeEach(async () => {
+  // cliPath fixture
+  const testFileDir = import.meta.dirname;
+  cliPath = join(testFileDir, 'cli.command.ts',);
 
-    const packageDir = dirname(packageJsonPath,);
-    const timestamp = Date.now();
-    const randomId = Math.random().toString(36,).substring(2, 8,);
-    const testDir = join(packageDir, 'dist', 'temp', 'test',
-      `cli-command-${timestamp}-${randomId}`,);
+  // testDir fixture
+  const packageJsonPath = await findUp('package.json', { cwd: testFileDir, },);
+  if (!packageJsonPath)
+    throw new Error('Could not find package.json',);
 
-    // Create test directory
-    if (!existsSync(testDir,))
-      mkdirSync(testDir, { recursive: true, },);
+  const packageDir = dirname(packageJsonPath,);
+  const timestamp = Date.now();
+  const randomId = Math.random().toString(36,).substring(2, 8,);
+  testDir = join(packageDir, 'dist', 'temp', 'test',
+    `cli-command-${timestamp}-${randomId}`,);
 
-    await use(testDir,);
+  if (!existsSync(testDir,))
+    mkdirSync(testDir, { recursive: true, },);
 
-    // Clean up test directory
-    if (existsSync(testDir,))
-      rmdirSync(testDir, { recursive: true, },);
-  },
+  // testScript fixture
+  testScript = join(testDir, 'test-script.js',);
+  writeFileSync(testScript, createTestScript(),);
+});
 
-  testScript: async ({ testDir, }, use,) => {
-    const testScript = join(testDir, 'test-script.js',);
+afterEach(() => {
+  // Clean up test script
+  if (existsSync(testScript,))
+    unlinkSync(testScript,);
 
-    // Create test script
-    writeFileSync(testScript, createTestScript(),);
+  // Clean up test directory
+  if (existsSync(testDir,))
+    rmdirSync(testDir, { recursive: true, },);
+});
 
-    await use(testScript,);
-
-    // Clean up test script
-    if (existsSync(testScript,))
-      unlinkSync(testScript,);
-  },
-},);
+//endregion Fixture Setup
 
 describe('cli.command', () => {
-  test('executes command successfully with exit code 0', async ({ cliPath, testScript, },) => {
+  test('executes command successfully with exit code 0', async () => {
     const { stdout, stderr, } = await execAsync(
       `bun ${cliPath} -- node ${testScript} success`,
     );
@@ -101,7 +95,7 @@ describe('cli.command', () => {
     expect(stderr,).toBe('',);
   });
 
-  test('executes command and propagates failure exit code', async ({ cliPath, testScript, },) => {
+  test('executes command and propagates failure exit code', async () => {
     await expect(execAsync(`bun ${cliPath} -- node ${testScript} fail`,),)
       .rejects
       .toThrow();
@@ -115,7 +109,7 @@ describe('cli.command', () => {
     }
   });
 
-  test('executes command with --allowFailure flag and exits with 0', async ({ cliPath, testScript, },) => {
+  test('executes command with --allowFailure flag and exits with 0', async () => {
     const { stdout, stderr, } = await execAsync(
       `bun ${cliPath} --allowFailure -- node ${testScript} fail`,
     );
@@ -124,7 +118,7 @@ describe('cli.command', () => {
     // Command should succeed despite the script failing
   });
 
-  test('uses short flag -a for allowFailure', async ({ cliPath, testScript, },) => {
+  test('uses short flag -a for allowFailure', async () => {
     const { stdout, stderr, } = await execAsync(
       `bun ${cliPath} -a -- node ${testScript} fail`,
     );
@@ -133,7 +127,7 @@ describe('cli.command', () => {
     // Command should succeed despite the script failing
   });
 
-  test('preserves stdout and stderr output', async ({ cliPath, testScript, },) => {
+  test('preserves stdout and stderr output', async () => {
     const { stdout, stderr, } = await execAsync(
       `bun ${cliPath} -- node ${testScript} output`,
     );
@@ -142,13 +136,13 @@ describe('cli.command', () => {
     expect(stderr,).toContain('stderr output',);
   });
 
-  test('passes multiple arguments to the command', async ({ cliPath, },) => {
+  test('passes multiple arguments to the command', async () => {
     const { stdout, } = await execAsync(`bun ${cliPath} -- echo "arg1" "arg2" "arg3"`,);
 
     expect(stdout,).toContain('arg1 arg2 arg3',);
   });
 
-  test('executes shell commands with --shell flag', async ({ cliPath, },) => {
+  test('executes shell commands with --shell flag', async () => {
     const { stdout, } = await execAsync(
       `bun ${cliPath} --shell -- "echo hello && echo world"`,
     );
@@ -157,13 +151,13 @@ describe('cli.command', () => {
     expect(stdout,).toContain('world',);
   });
 
-  test('uses short flag -s for shell', async ({ cliPath, },) => {
+  test('uses short flag -s for shell', async () => {
     const { stdout, } = await execAsync(`bun ${cliPath} -s -- "echo test"`,);
 
     expect(stdout,).toContain('test',);
   });
 
-  test('fails when no command is specified', async ({ cliPath, },) => {
+  test('fails when no command is specified', async () => {
     try {
       await execAsync(`bun ${cliPath}`,);
       // Should not reach here
@@ -174,7 +168,7 @@ describe('cli.command', () => {
     }
   });
 
-  test('fails when only -- is provided without command', async ({ cliPath, },) => {
+  test('fails when only -- is provided without command', async () => {
     try {
       await execAsync(`bun ${cliPath} --`,);
       // Should not reach here
@@ -185,7 +179,7 @@ describe('cli.command', () => {
     }
   });
 
-  test('propagates custom exit codes', async ({ cliPath, testScript, },) => {
+  test('propagates custom exit codes', async () => {
     try {
       await execAsync(`bun ${cliPath} -- node ${testScript} fail-with-code 42`,);
     }
@@ -194,7 +188,7 @@ describe('cli.command', () => {
     }
   });
 
-  test('handles non-existent command', async ({ cliPath, },) => {
+  test('handles non-existent command', async () => {
     try {
       await execAsync(`bun ${cliPath} -- nonexistentcommand123`,);
       // Should not reach here
@@ -205,7 +199,7 @@ describe('cli.command', () => {
     }
   });
 
-  test('handles non-existent command with allowFailure', async ({ cliPath, },) => {
+  test('handles non-existent command with allowFailure', async () => {
     // Should not throw with allowFailure
     const result = await execAsync(
       `bun ${cliPath} --allowFailure -- nonexistentcommand123`,
@@ -213,15 +207,15 @@ describe('cli.command', () => {
     // Command succeeds even though the subcommand doesn't exist
   });
 
-  test('executes commands with special characters', async ({ cliPath, },) => {
+  test('executes commands with special characters', async () => {
     const { stdout, } = await execAsync(`bun ${cliPath} -- echo "Hello $USER!"`,);
 
     expect(stdout,).toContain('Hello',);
     expect(stdout,).toContain('!',);
   });
 
-  test('handles command termination by signal', { skip: process.platform === 'win32', },
-    async ({ cliPath, testDir, },) => {
+  test.skipIf(process.platform === 'win32',)('handles command termination by signal',
+    async () => {
       // Create a script that sleeps and can be killed
       const sleepScript = join(testDir, 'sleep-script.js',);
       writeFileSync(sleepScript, `
@@ -251,9 +245,9 @@ describe('cli.command', () => {
       // Clean up
       if (existsSync(sleepScript,))
         unlinkSync(sleepScript,);
-    },); // Skip on Windows as signals work differently
+    },);
 
-  test('combines multiple flags', async ({ cliPath, },) => {
+  test('combines multiple flags', async () => {
     const { stdout, } = await execAsync(
       `bun ${cliPath} -a -s -- "echo combined && exit 1"`,
     );
@@ -262,7 +256,7 @@ describe('cli.command', () => {
     // Should succeed despite exit 1 due to allowFailure
   });
 
-  test('executes command with timeout', async ({ cliPath, testScript, },) => {
+  test('executes command with timeout', async () => {
     const { stdout, } = await execAsync(
       `bun ${cliPath} --timeout 5000 -- node ${testScript} success`,
     );
@@ -270,7 +264,7 @@ describe('cli.command', () => {
     expect(stdout,).toContain('Success',);
   });
 
-  test('uses short flag -t for timeout', async ({ cliPath, testScript, },) => {
+  test('uses short flag -t for timeout', async () => {
     const { stdout, } = await execAsync(
       `bun ${cliPath} -t 5000 -- node ${testScript} success`,
     );
@@ -278,7 +272,7 @@ describe('cli.command', () => {
     expect(stdout,).toContain('Success',);
   });
 
-  test('timeout terminates long-running command', async ({ cliPath, testDir, },) => {
+  test('timeout terminates long-running command', async () => {
     // Create a script that runs longer than timeout
     const longScript = join(testDir, 'long-script.js',);
     writeFileSync(longScript, `
@@ -299,7 +293,7 @@ describe('cli.command', () => {
       unlinkSync(longScript,);
   });
 
-  test('timeout with allowFailure exits with 0', async ({ cliPath, testDir, },) => {
+  test('timeout with allowFailure exits with 0', async () => {
     // Create a script that runs longer than timeout
     const longScript = join(testDir, 'long-script-allow.js',);
     writeFileSync(longScript, `
@@ -320,7 +314,7 @@ describe('cli.command', () => {
       unlinkSync(longScript,);
   });
 
-  test('command without timeout runs to completion', async ({ cliPath, testDir, },) => {
+  test('command without timeout runs to completion', async () => {
     // Create a script that takes some time but completes
     const timedScript = join(testDir, 'timed-script.js',);
     writeFileSync(timedScript, `

@@ -1,8 +1,9 @@
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 import type {
   FragmentStringJsonc,
@@ -13,7 +14,7 @@ const exported = types.object.jsonc.from.stringHasQuotedSyntaxJsonc.sync.named;
 //region parseLiteralToken
 describe('parseLiteralToken', () => {
   const $ = exported.parseLiteralToken;
-  test('null/true/false', ({ expect, },) => {
+  test('null/true/false', () => {
     {
       const out = $({ value: 'null,' as FragmentStringJsonc, },);
       if (typeof out === 'symbol')
@@ -33,14 +34,14 @@ describe('parseLiteralToken', () => {
       expect(out.parsed,).toEqual({ value: false, },);
     }
   });
-  test('prefix match stays here; boundary enforced later', ({ expect, },) => {
+  test('prefix match stays here; boundary enforced later', () => {
     const out = $({ value: 'nully' as FragmentStringJsonc, },);
     if (typeof out === 'symbol')
       throw new Error('expected literal',);
     expect(out.consumed,).toBe('null',);
     expect(out.remaining,).toBe('y',);
   });
-  test('returns sentinel when no literal at start', ({ expect, },) => {
+  test('returns sentinel when no literal at start', () => {
     const out = $({ value: '[1]' as FragmentStringJsonc, },);
     expect(out,).toBe(exported.NO_LITERAL,);
   });
@@ -50,7 +51,7 @@ describe('parseLiteralToken', () => {
 //region parseNumberToken
 describe('parseNumberToken', () => {
   const $ = exported.parseNumberToken;
-  test('ints/decimals/exponents', ({ expect, },) => {
+  test('ints/decimals/exponents', () => {
     expect($({ value: '0, x' as FragmentStringJsonc, },).parsed,).toEqual({
       value: 0,
     },);

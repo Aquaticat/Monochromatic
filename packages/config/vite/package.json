@@ -8,7 +8,6 @@
   "dependencies": {
   },
   "peerDependencies": {
-    "vitest": "catalog:",
     "vite": "catalog:",
     "lightningcss": "catalog:"
   },
@@ -17,7 +16,6 @@
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@types/bun": "catalog:",
     "vite": "catalog:",
-    "vitest": "catalog:",
     "vite-plugin-singlefile": "catalog:",
     "esbuild": "catalog:",
     "istanbul-lib-report": "catalog:",

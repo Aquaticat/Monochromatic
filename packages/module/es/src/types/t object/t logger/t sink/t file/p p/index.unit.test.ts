@@ -1,27 +1,28 @@
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 const { $, verify, } = types.object.logger.sink.file.positional;
 
 describe('file sink', () => {
-  test('verify function exists and is callable', ({ expect, }) => {
+  test('verify function exists and is callable', () => {
     expect(typeof verify,).toBe('function',);
   });
 
-  test('verify returns boolean or promise', async ({ expect, }) => {
+  test('verify returns boolean or promise', async () => {
     const result = verify();
     const resolved = result instanceof Promise ? await result : result;
     expect(typeof resolved,).toBe('boolean',);
   });
 
-  test('sink function exists and is callable', ({ expect, }) => {
+  test('sink function exists and is callable', () => {
     expect(typeof $,).toBe('function',);
   });
 
-  test('sink accepts valid LogRecord', async ({ expect, }) => {
+  test('sink accepts valid LogRecord', async () => {
     // Verify first to set up the file path
     await verify();
 
@@ -35,7 +36,7 @@ describe('file sink', () => {
     await expect(Promise.resolve($(record,),),).resolves.not.toThrow();
   });
 
-  test('sink handles all log levels', async ({ expect, }) => {
+  test('sink handles all log levels', async () => {
     await verify();
 
     const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal',] as const;
@@ -51,7 +52,7 @@ describe('file sink', () => {
     }
   });
 
-  test('sink handles unicode in message', async ({ expect, }) => {
+  test('sink handles unicode in message', async () => {
     await verify();
 
     const record = {
@@ -63,7 +64,7 @@ describe('file sink', () => {
     await expect(Promise.resolve($(record,),),).resolves.not.toThrow();
   });
 
-  test('sink handles empty message', async ({ expect, }) => {
+  test('sink handles empty message', async () => {
     await verify();
 
     const record = {
@@ -75,7 +76,7 @@ describe('file sink', () => {
     await expect(Promise.resolve($(record,),),).resolves.not.toThrow();
   });
 
-  test('sink handles JSON in message', async ({ expect, }) => {
+  test('sink handles JSON in message', async () => {
     await verify();
 
     const record = {

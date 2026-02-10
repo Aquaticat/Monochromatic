@@ -1,29 +1,30 @@
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 const $ = types.object.jsonc.from.stringHasQuotedSyntaxJsonc.sync.named.mergeComments;
 
 describe($, () => {
-  test('both undefined returns undefined', ({ expect, },) => {
+  test('both undefined returns undefined', () => {
     expect($({},),).toBeUndefined();
   });
 
-  test('only first comment defined returns first comment', ({ expect, },) => {
+  test('only first comment defined returns first comment', () => {
     const comment = { type: 'inline' as const, commentValue: 'First comment', };
     const result = $({ value: comment, },);
     expect(result,).toEqual(comment,);
   });
 
-  test('only second comment defined returns second comment', ({ expect, },) => {
+  test('only second comment defined returns second comment', () => {
     const comment = { type: 'block' as const, commentValue: 'Second comment', };
     const result = $({ value2: comment, },);
     expect(result,).toEqual(comment,);
   });
 
-  test('both inline comments merge to inline type', ({ expect, },) => {
+  test('both inline comments merge to inline type', () => {
     const first = { type: 'inline' as const, commentValue: 'First inline', };
     const second = { type: 'inline' as const, commentValue: 'Second inline', };
     const result = $({ value: first, value2: second, },);
@@ -34,7 +35,7 @@ describe($, () => {
     },);
   });
 
-  test('both block comments merge to block type', ({ expect, },) => {
+  test('both block comments merge to block type', () => {
     const first = { type: 'block' as const, commentValue: 'First block', };
     const second = { type: 'block' as const, commentValue: 'Second block', };
     const result = $({ value: first, value2: second, },);
@@ -45,7 +46,7 @@ describe($, () => {
     },);
   });
 
-  test('inline + block comments merge to mixed type', ({ expect, },) => {
+  test('inline + block comments merge to mixed type', () => {
     const first = { type: 'inline' as const, commentValue: 'Inline comment', };
     const second = { type: 'block' as const, commentValue: 'Block comment', };
     const result = $({ value: first, value2: second, },);
@@ -56,7 +57,7 @@ describe($, () => {
     },);
   });
 
-  test('block + inline comments merge to mixed type', ({ expect, },) => {
+  test('block + inline comments merge to mixed type', () => {
     const first = { type: 'block' as const, commentValue: 'Block comment', };
     const second = { type: 'inline' as const, commentValue: 'Inline comment', };
     const result = $({ value: first, value2: second, },);
@@ -67,7 +68,7 @@ describe($, () => {
     },);
   });
 
-  test('preserves whitespace in comment values', ({ expect, },) => {
+  test('preserves whitespace in comment values', () => {
     const first = { type: 'inline' as const,
       commentValue: '  Comment with leading space  ', };
     const second = { type: 'inline' as const,
@@ -80,7 +81,7 @@ describe($, () => {
     },);
   });
 
-  test('handles empty comment values', ({ expect, },) => {
+  test('handles empty comment values', () => {
     const first = { type: 'inline' as const, commentValue: '', };
     const second = { type: 'inline' as const, commentValue: 'Non-empty comment', };
     const result = $({ value: first, value2: second, },);
@@ -91,7 +92,7 @@ describe($, () => {
     },);
   });
 
-  test('handles multiline comments', ({ expect, },) => {
+  test('handles multiline comments', () => {
     const first = { type: 'block' as const, commentValue: 'Line 1\nLine 2', };
     const second = { type: 'block' as const, commentValue: 'Line 3\nLine 4', };
     const result = $({ value: first, value2: second, },);
@@ -102,7 +103,7 @@ describe($, () => {
     },);
   });
 
-  test('preserves comment-like delimiters in values', ({ expect, },) => {
+  test('preserves comment-like delimiters in values', () => {
     const first = { type: 'inline' as const, commentValue: '// This is region marker', };
     const second = { type: 'block' as const,
       commentValue: '/* This has block markers */', };
@@ -114,7 +115,7 @@ describe($, () => {
     },);
   });
 
-  test('handles special characters and unicode', ({ expect, },) => {
+  test('handles special characters and unicode', () => {
     const first = { type: 'inline' as const,
       commentValue: 'Comment with émojis 🚀 and sp€ci@l chars', };
     const second = { type: 'inline' as const, commentValue: '另一个评论', };
@@ -126,7 +127,7 @@ describe($, () => {
     },);
   });
 
-  test('handles very long comment values', ({ expect, },) => {
+  test('handles very long comment values', () => {
     const longComment = 'A'.repeat(1000,);
     const first = { type: 'inline' as const, commentValue: longComment, };
     const second = { type: 'inline' as const, commentValue: 'B'.repeat(1000,), };
@@ -138,21 +139,21 @@ describe($, () => {
     },);
   });
 
-  test('when first is undefined, returns second comment unchanged', ({ expect, },) => {
+  test('when first is undefined, returns second comment unchanged', () => {
     const second = { type: 'inline' as const, commentValue: 'Only second comment', };
     const result = $({ value: undefined, value2: second, },);
 
     expect(result,).toEqual(second,);
   });
 
-  test('when second is undefined, returns first comment unchanged', ({ expect, },) => {
+  test('when second is undefined, returns first comment unchanged', () => {
     const first = { type: 'block' as const, commentValue: 'Only first comment', };
     const result = $({ value: first, value2: undefined, },);
 
     expect(result,).toEqual(first,);
   });
 
-  test('mixed type comment (already mixed) preserves type when merging with inline', ({ expect, },) => {
+  test('mixed type comment (already mixed) preserves type when merging with inline', () => {
     const first = { type: 'mixed' as const, commentValue: 'Already mixed', };
     const second = { type: 'inline' as const, commentValue: 'Adding inline', };
     const result = $({ value: first, value2: second, },);
@@ -163,7 +164,7 @@ describe($, () => {
     },);
   });
 
-  test('mixed type comment (already mixed) preserves type when merging with block', ({ expect, },) => {
+  test('mixed type comment (already mixed) preserves type when merging with block', () => {
     const first = { type: 'mixed' as const, commentValue: 'Already mixed', };
     const second = { type: 'block' as const, commentValue: 'Adding block', };
     const result = $({ value: first, value2: second, },);
@@ -174,7 +175,7 @@ describe($, () => {
     },);
   });
 
-  test('handles comments with existing newlines properly', ({ expect, },) => {
+  test('handles comments with existing newlines properly', () => {
     const first = { type: 'inline' as const,
       commentValue: 'First\nwith\nexisting\nnewlines', };
     const second = { type: 'inline' as const,

@@ -9,7 +9,7 @@ import {
   describe,
   expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 import { readTextFile, } from './fs.fs.node.ts';
 
 //region Test Setup -- Creates temporary files for filesystem testing

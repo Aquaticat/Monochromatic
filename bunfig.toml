@@ -1,9 +1,8 @@
 logLevel = 'warn'
 telemetry = false
 
-# Not using Bun's test runner
-# [test]
-# coverage = true
+[test]
+coverageSkipTestFiles = true
 
 [install]
 auto = 'disable'

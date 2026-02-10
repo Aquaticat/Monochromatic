@@ -1,13 +1,14 @@
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 const $ = types.function.generator.from.iterable.partition.sync.named.$;
 
 describe($, () => {
-  test('yields items with pass decision for items that pass the predicate', ({ expect, },) => {
+  test('yields items with pass decision for items that pass the predicate', () => {
     const numbers = [1, 2, 3, 4, 5,];
     const results = [];
 
@@ -27,7 +28,7 @@ describe($, () => {
     ],);
   });
 
-  test('yields items with thrown decision tuple when predicate throws', ({ expect, },) => {
+  test('yields items with thrown decision tuple when predicate throws', () => {
     const items = ['1', 'invalid', '3',];
     const results = [];
 
@@ -55,7 +56,7 @@ describe($, () => {
     expect(results[2],).toEqual({ decision: 'pass', item: '3', },);
   });
 
-  test('handles empty iterables', ({ expect, },) => {
+  test('handles empty iterables', () => {
     const results = [];
 
     for (const result of $({
@@ -68,7 +69,7 @@ describe($, () => {
     expect(results,).toEqual([],);
   });
 
-  test('handles all items passing', ({ expect, },) => {
+  test('handles all items passing', () => {
     const numbers = [2, 4, 6,];
     const results = [];
 
@@ -86,7 +87,7 @@ describe($, () => {
     ],);
   });
 
-  test('handles all items failing', ({ expect, },) => {
+  test('handles all items failing', () => {
     const numbers = [1, 3, 5,];
     const results = [];
 
@@ -104,7 +105,7 @@ describe($, () => {
     ],);
   });
 
-  test('handles all items throwing', ({ expect, },) => {
+  test('handles all items throwing', () => {
     const items = ['a', 'b', 'c',];
     const results = [];
 
@@ -132,7 +133,7 @@ describe($, () => {
     }
   });
 
-  test('preserves item type information', ({ expect, },) => {
+  test('preserves item type information', () => {
     type Item = { id: number; name: string; };
     const items: Item[] = [
       { id: 1, name: 'Alice', },
@@ -154,7 +155,7 @@ describe($, () => {
     ],);
   });
 
-  test('works with generator iterables', ({ expect, },) => {
+  test('works with generator iterables', () => {
     function* numbers() {
       yield 1;
       yield 2;
@@ -177,7 +178,7 @@ describe($, () => {
     ],);
   });
 
-  test('works with Set iterables', ({ expect, },) => {
+  test('works with Set iterables', () => {
     const numberSet = new Set([1, 2, 3, 4,],);
     const results = [];
 
@@ -196,7 +197,7 @@ describe($, () => {
     ],);
   });
 
-  test('captures different error types in thrown decision tuple', ({ expect, },) => {
+  test('captures different error types in thrown decision tuple', () => {
     const items = [1, 2, 3,];
     const results = [];
     const customError = new TypeError('Custom error',);
@@ -221,7 +222,7 @@ describe($, () => {
     expect(results[2],).toEqual({ decision: 'pass', item: 3, },);
   });
 
-  test('captures non-Error thrown values in decision tuple', ({ expect, },) => {
+  test('captures non-Error thrown values in decision tuple', () => {
     const items = [1, 2, 3,];
     const results = [];
     const thrownValue = 'string error';

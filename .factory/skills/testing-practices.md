@@ -1,11 +1,14 @@
 # Testing Practices
 
 ## General Testing Guidelines
-- Write a corresponding Vitest file that aims for 100% test coverage
+- Write a corresponding test file that aims for 100% test coverage
+- Unit tests use `bun:test` as the test runner
+- Browser tests use Playwright
 - Tests can only be run from workspace root using `mise run test`
 - To run tests for a specific file pattern:
   - `mise run test:unit -- packages/module/es/src/boolean.equal.unit.test.ts`
   - `mise run test:browser -- packages/module/es/src/boolean.equal.browser.test.ts`
+- Tests that import from `@monochromatic-dev/module-es` require the package to be built first (`mise run build:js` in the package directory)
 
 ## Coverage Requirements
 - If certain lines or branches can't be tested (example: error handling for impossible states), use V8 ignore comments:
@@ -26,8 +29,8 @@
 ## Test Structure
 - Use descriptive test names that explain the expected behaviour
 - Group related tests using `describe` blocks
-- Use `it.each` for parameterized tests
-- Mock external dependencies using Vitest's mocking capabilities
+- Use `test.each` for parameterized tests
+- Mock external dependencies using `spyOn` and `mock` from `bun:test`
 - Test both happy path and error scenarios
 
 ## Type-Level Testing
@@ -40,7 +43,7 @@ import {
   describe,
   expectTypeOf,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 describe('ArrayFixedLength', () => {
   test('IsArrayFixedLength', () => {
@@ -50,7 +53,7 @@ describe('ArrayFixedLength', () => {
 ```
 
 ## Test File Setup
-Start Vitest files with:
+Start test files with:
 ```ts
 import {
   // ... members to test. Examples:
@@ -58,17 +61,25 @@ import {
 } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 const $ = types.function.generator.from.iterable.withIndex.sync.named.$;
 
 describe($, () => {
-  test('basic', ({expect}) => {
+  test('basic', () => {
     // ... actual test
   })
 })
 ```
+
+## Key Differences from Vitest
+- Import `expect` directly from `bun:test` -- it is **not** available as a test context parameter
+- `test.for` is not available -- use `test.each` instead
+- `test.extend` (fixtures) is not available -- use `beforeEach`/`afterEach` with module-scoped variables
+- `test('name', { skip: condition }, fn)` options object is not available -- use `test.skipIf(condition)('name', fn)`
+- `vi.spyOn` becomes `spyOn` (imported from `bun:test`)
 
 ## Linting Test Code
 

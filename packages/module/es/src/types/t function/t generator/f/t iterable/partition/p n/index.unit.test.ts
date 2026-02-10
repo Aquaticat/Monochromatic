@@ -1,13 +1,14 @@
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 const $ = types.function.generator.from.iterable.partition.named.$;
 
 describe($, () => {
-  test('yields items with pass decision for items that pass the predicate', async ({ expect, },) => {
+  test('yields items with pass decision for items that pass the predicate', async () => {
     const numbers = [1, 2, 3, 4, 5,];
     const results = [];
 
@@ -27,7 +28,7 @@ describe($, () => {
     ],);
   });
 
-  test('yields items with thrown decision tuple when predicate throws', async ({ expect, },) => {
+  test('yields items with thrown decision tuple when predicate throws', async () => {
     const items = ['1', 'invalid', '3',];
     const results = [];
 
@@ -55,7 +56,7 @@ describe($, () => {
     expect(results[2],).toEqual({ decision: 'pass', item: '3', },);
   });
 
-  test('handles empty iterables', async ({ expect, },) => {
+  test('handles empty iterables', async () => {
     const results = [];
 
     for await (const result of $({
@@ -68,7 +69,7 @@ describe($, () => {
     expect(results,).toEqual([],);
   });
 
-  test('works with async predicates', async ({ expect, },) => {
+  test('works with async predicates', async () => {
     const numbers = [1, 2, 3,];
     const results = [];
 
@@ -90,7 +91,7 @@ describe($, () => {
     ],);
   });
 
-  test('works with async iterables', async ({ expect, },) => {
+  test('works with async iterables', async () => {
     async function* asyncNumbers() {
       yield 1;
       yield 2;
@@ -113,7 +114,7 @@ describe($, () => {
     ],);
   });
 
-  test('handles all items passing', async ({ expect, },) => {
+  test('handles all items passing', async () => {
     const numbers = [2, 4, 6,];
     const results = [];
 
@@ -131,7 +132,7 @@ describe($, () => {
     ],);
   });
 
-  test('handles all items failing', async ({ expect, },) => {
+  test('handles all items failing', async () => {
     const numbers = [1, 3, 5,];
     const results = [];
 
@@ -149,7 +150,7 @@ describe($, () => {
     ],);
   });
 
-  test('handles all items throwing', async ({ expect, },) => {
+  test('handles all items throwing', async () => {
     const items = ['a', 'b', 'c',];
     const results = [];
 
@@ -177,7 +178,7 @@ describe($, () => {
     }
   });
 
-  test('preserves item type information', async ({ expect, },) => {
+  test('preserves item type information', async () => {
     type Item = { id: number; name: string; };
     const items: Item[] = [
       { id: 1, name: 'Alice', },
@@ -199,7 +200,7 @@ describe($, () => {
     ],);
   });
 
-  test('captures different error types in thrown decision tuple', async ({ expect, },) => {
+  test('captures different error types in thrown decision tuple', async () => {
     const items = [1, 2, 3,];
     const results = [];
     const customError = new TypeError('Custom error',);
@@ -224,7 +225,7 @@ describe($, () => {
     expect(results[2],).toEqual({ decision: 'pass', item: 3, },);
   });
 
-  test('captures non-Error thrown values in decision tuple', async ({ expect, },) => {
+  test('captures non-Error thrown values in decision tuple', async () => {
     const items = [1, 2, 3,];
     const results = [];
     const thrownValue = 'string error';

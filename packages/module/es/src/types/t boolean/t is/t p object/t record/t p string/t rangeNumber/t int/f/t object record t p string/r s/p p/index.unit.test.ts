@@ -2,7 +2,7 @@ import {
   describe,
   expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 // TODO: import compiled.
 import { $ as isRangeNumberInt, } from './index.ts';

@@ -1,8 +1,9 @@
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 import type * as Jsonc from '@_/types/t object/t jsonc/t/index.ts';
 import type {
@@ -14,14 +15,14 @@ const exported = types.object.jsonc.from.stringHasQuotedSyntaxJsonc.sync.named;
 //region parseValueFromStart
 describe('parseValueFromStart', () => {
   const $ = exported.parseValueFromStart;
-  test('string and number', ({ expect, },) => {
+  test('string and number', () => {
     const s = $({ value: '"x"TAIL' as FragmentStringJsonc, },);
     expect((s.parsed as Jsonc.String).value,).toBe('"x"',);
     expect($({ value: '1, 2' as FragmentStringJsonc, },).parsed,).toEqual({
       value: 1,
     },);
   });
-  test('array dispatch', ({ expect, },) => {
+  test('array dispatch', () => {
     const out = $({ value: '[1]TAIL' as FragmentStringJsonc, },);
     const arr = out.parsed as Jsonc.Array;
     expect(arr.value[0],).toEqual({ value: 1, },);

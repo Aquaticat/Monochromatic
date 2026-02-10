@@ -2,7 +2,7 @@ import {
   describe,
   expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 // TODO: import from package.
 import { $ as isBigint, } from './index.ts';

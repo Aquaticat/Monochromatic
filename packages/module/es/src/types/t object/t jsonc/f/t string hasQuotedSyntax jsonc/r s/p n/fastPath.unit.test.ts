@@ -1,8 +1,9 @@
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 import type {
   $ as StringJsonc,
@@ -17,7 +18,7 @@ describe('fastPath', () => {
   describe(tryArrayFastPath, () => {
     const $ = tryArrayFastPath;
 
-    test('clean array with boundary trailing comma succeeds', ({ expect, },) => {
+    test('clean array with boundary trailing comma succeeds', () => {
       const context = { remainingContent: '[1, 2, 3, ]' as StringJsonc, };
       const result = $({ value: '[1, 2, 3, ]', context, },);
 
@@ -27,7 +28,7 @@ describe('fastPath', () => {
       expect(result.json,).toEqual([1, 2, 3,],);
     });
 
-    test('clean array without trailing comma succeeds', ({ expect, },) => {
+    test('clean array without trailing comma succeeds', () => {
       const context = { remainingContent: '[1, 2, 3]' as StringJsonc, };
       const result = $({ value: '[1, 2, 3]', context, },);
 
@@ -37,21 +38,21 @@ describe('fastPath', () => {
       expect(result.json,).toEqual([1, 2, 3,],);
     });
 
-    test('array with internal comments returns NO_FAST_PATH', ({ expect, },) => {
+    test('array with internal comments returns NO_FAST_PATH', () => {
       const context = { remainingContent: '[1, /* comment */ 2, ]' as StringJsonc, };
       const result = $({ value: '[1, /* comment */ 2, ]', context, },);
 
       expect(result,).toBe(NO_FAST_PATH,);
     });
 
-    test('array with multiple trailing commas returns NO_FAST_PATH', ({ expect, },) => {
+    test('array with multiple trailing commas returns NO_FAST_PATH', () => {
       const context = { remainingContent: '[1, 2, , ]' as StringJsonc, };
       const result = $({ value: '[1, 2, , ]', context, },);
 
       expect(result,).toBe(NO_FAST_PATH,);
     });
 
-    test('non-boundary trailing comma returns NO_FAST_PATH', ({ expect, },) => {
+    test('non-boundary trailing comma returns NO_FAST_PATH', () => {
       const context = { remainingContent: '[1, ] extra' as StringJsonc, };
       const result = $({ value: '[1, ] extra', context, },);
 
@@ -59,14 +60,14 @@ describe('fastPath', () => {
       expect(result,).toBe(NO_FAST_PATH,);
     });
 
-    test('malformed JSON returns NO_FAST_PATH', ({ expect, },) => {
+    test('malformed JSON returns NO_FAST_PATH', () => {
       const context = { remainingContent: '[1, 2, undefined, ]' as StringJsonc, };
       const result = $({ value: '[1, 2, undefined, ]', context, },);
 
       expect(result,).toBe(NO_FAST_PATH,);
     });
 
-    test('symbol narrowing pattern validation', ({ expect, },) => {
+    test('symbol narrowing pattern validation', () => {
       const context = { remainingContent: '[1, /* x */ 2]' as StringJsonc, };
       const result = $({ value: '[1, /* x */ 2]', context, },);
 
@@ -82,7 +83,7 @@ describe('fastPath', () => {
       }
     });
 
-    test('context is preserved in successful parse', ({ expect, },) => {
+    test('context is preserved in successful parse', () => {
       const context = {
         remainingContent: '[1, 2, ]' as StringJsonc,
         comment: 'leading comment',
@@ -96,7 +97,7 @@ describe('fastPath', () => {
       expect(result.json,).toEqual([1, 2,],);
     });
 
-    test('empty array with trailing comma', ({ expect, },) => {
+    test('empty array with trailing comma', () => {
       const context = { remainingContent: '[ , ]' as StringJsonc, };
       const result = $({ value: '[ , ]', context, },);
 
@@ -109,7 +110,7 @@ describe('fastPath', () => {
   describe(tryObjectFastPath, () => {
     const $ = tryObjectFastPath;
 
-    test('clean object with boundary trailing comma succeeds', ({ expect, },) => {
+    test('clean object with boundary trailing comma succeeds', () => {
       const context = { remainingContent: '{"a": 1, "b": 2, }' as StringJsonc, };
       const result = $({ value: '{"a": 1, "b": 2, }', context, },);
 
@@ -119,7 +120,7 @@ describe('fastPath', () => {
       expect(result.json,).toEqual({ a: 1, b: 2, },);
     });
 
-    test('clean object without trailing comma succeeds', ({ expect, },) => {
+    test('clean object without trailing comma succeeds', () => {
       const context = { remainingContent: '{"x": true}' as StringJsonc, };
       const result = $({ value: '{"x": true}', context, },);
 
@@ -129,14 +130,14 @@ describe('fastPath', () => {
       expect(result.json,).toEqual({ x: true, },);
     });
 
-    test('object with comments returns NO_FAST_PATH', ({ expect, },) => {
+    test('object with comments returns NO_FAST_PATH', () => {
       const context = { remainingContent: '{"a": /* c */ 1, }' as StringJsonc, };
       const result = $({ value: '{"a": /* c */ 1, }', context, },);
 
       expect(result,).toBe(NO_FAST_PATH,);
     });
 
-    test('empty object with trailing comma', ({ expect, },) => {
+    test('empty object with trailing comma', () => {
       const context = { remainingContent: '{ , }' as StringJsonc, };
       const result = $({ value: '{ , }', context, },);
 

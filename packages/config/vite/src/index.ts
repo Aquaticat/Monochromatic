@@ -35,14 +35,5 @@ export {
   viteNoopPlugin,
 } from './utilities.ts';
 
-export {
-  createVitestBaseUnitConfigWorkspace,
-  getVitestUnitWorkspace,
-  // From vitest-configs.ts
-  vitestOnlyConfigWorkspace,
-  vitestOnlyUnitConfigWorkspace,
-  type VitestUserConfigFnObject,
-} from './vitest-configs.ts';
-
-// Type re-exports from vite and vitest
+// Type re-exports from vite
 export { type UserConfigFnObject, } from 'vite';

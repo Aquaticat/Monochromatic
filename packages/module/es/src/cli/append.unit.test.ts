@@ -19,67 +19,61 @@ import {
 } from 'node:path';
 import { promisify, } from 'node:util';
 import {
+  afterEach,
+  beforeEach,
   describe,
   expect,
-  test as baseTest,
-} from 'vitest';
+  test,
+} from 'bun:test';
 
 await logtapeConfigure(await logtapeConfiguration(),);
 
 const execAsync = promisify(exec,);
 
-type AppendTestFixtures = {
-  cliPath: string;
-  testDir: string;
-  testFile: string;
-};
+//region Fixture Setup -- Per-test fixtures replacing vitest test.extend
 
-const test = baseTest.extend<AppendTestFixtures>({
-  cliPath: async ({}, use,) => {
-    const testFileDir = import.meta.dirname;
-    const cliPath = join(testFileDir, 'cli.append.ts',);
-    await use(cliPath,);
-  },
+let cliPath: string;
+let testDir: string;
+let testFile: string;
 
-  testDir: async ({}, use,) => {
-    const testFileDir = import.meta.dirname;
-    const packageJsonPath = await findUp('package.json', { cwd: testFileDir, },);
-    if (!packageJsonPath)
-      throw new Error('Could not find package.json',);
+beforeEach(async () => {
+  // cliPath fixture
+  const testFileDir = import.meta.dirname;
+  cliPath = join(testFileDir, 'cli.append.ts',);
 
-    const packageDir = dirname(packageJsonPath,);
-    const timestamp = Date.now();
-    const randomId = Math.random().toString(36,).substring(2, 8,);
-    const testDir = join(packageDir, 'dist', 'temp', 'test',
-      `cli-append-${timestamp}-${randomId}`,);
+  // testDir fixture
+  const packageJsonPath = await findUp('package.json', { cwd: testFileDir, },);
+  if (!packageJsonPath)
+    throw new Error('Could not find package.json',);
 
-    // Create test directory
-    if (!existsSync(testDir,))
-      mkdirSync(testDir, { recursive: true, },);
+  const packageDir = dirname(packageJsonPath,);
+  const timestamp = Date.now();
+  const randomId = Math.random().toString(36,).substring(2, 8,);
+  testDir = join(packageDir, 'dist', 'temp', 'test',
+    `cli-append-${timestamp}-${randomId}`,);
 
-    await use(testDir,);
+  if (!existsSync(testDir,))
+    mkdirSync(testDir, { recursive: true, },);
 
-    // Clean up test directory
-    if (existsSync(testDir,))
-      rmdirSync(testDir, { recursive: true, },);
-  },
+  // testFile fixture
+  testFile = join(testDir, 'test.txt',);
+  writeFileSync(testFile, 'Initial content\n',);
+});
 
-  testFile: async ({ testDir, }, use,) => {
-    const testFile = join(testDir, 'test.txt',);
+afterEach(() => {
+  // Clean up test file
+  if (existsSync(testFile,))
+    unlinkSync(testFile,);
 
-    // Create test file
-    writeFileSync(testFile, 'Initial content\n',);
+  // Clean up test directory
+  if (existsSync(testDir,))
+    rmdirSync(testDir, { recursive: true, },);
+});
 
-    await use(testFile,);
-
-    // Clean up test file
-    if (existsSync(testFile,))
-      unlinkSync(testFile,);
-  },
-},);
+//endregion Fixture Setup
 
 describe('cli.append', () => {
-  test('appends single line to existing file', async ({ cliPath, testFile, },) => {
+  test('appends single line to existing file', async () => {
     const { stdout, stderr, } = await execAsync(
       `bun ${cliPath} "new line" --to ${testFile}`,
     );
@@ -90,7 +84,7 @@ describe('cli.append', () => {
     expect(content,).toBe('Initial content\nnew line\n',);
   });
 
-  test('appends multiple lines as separate arguments', async ({ cliPath, testFile, },) => {
+  test('appends multiple lines as separate arguments', async () => {
     const { stdout, stderr, } = await execAsync(
       `bun ${cliPath} "line 1" "line 2" "line 3" --to ${testFile}`,
     );
@@ -101,7 +95,7 @@ describe('cli.append', () => {
     expect(content,).toBe('Initial content\nline 1\nline 2\nline 3\n',);
   });
 
-  test('appends multiline text with newline characters', async ({ cliPath, testFile, },) => {
+  test('appends multiline text with newline characters', async () => {
     const { stdout, stderr, } = await execAsync(
       `bun ${cliPath} "line 1\\nline 2" --to ${testFile}`,
     );
@@ -112,7 +106,7 @@ describe('cli.append', () => {
     expect(content,).toBe('Initial content\nline 1\\nline 2\n',);
   });
 
-  test('uses short flag -t for target file', async ({ cliPath, testFile, },) => {
+  test('uses short flag -t for target file', async () => {
     const { stdout, stderr, } = await execAsync(
       `bun ${cliPath} "short flag test" -t ${testFile}`,
     );
@@ -123,31 +117,29 @@ describe('cli.append', () => {
     expect(content,).toBe('Initial content\nshort flag test\n',);
   });
 
-  test('fails when no text is provided', async ({ cliPath, testFile, },) => {
+  test('fails when no text is provided', async () => {
     await expect(execAsync(`bun ${cliPath} --to ${testFile}`,),).rejects.toThrow();
   });
 
-  test('fails when no target file is specified', async ({ cliPath, },) => {
+  test('fails when no target file is specified', async () => {
     await expect(execAsync(`bun ${cliPath} "some text"`,),).rejects.toThrow();
   });
 
-  test('fails when target file does not exist', async ({ cliPath, testDir, },) => {
+  test('fails when target file does not exist', async () => {
     const nonExistentFile = join(testDir, 'non-existent.txt',);
     await expect(execAsync(`bun ${cliPath} "text" --to ${nonExistentFile}`,),)
       .rejects
       .toThrow();
   });
 
-  test('fails when file has no write permissions', {
-    skip: process.platform === 'win32',
-  }, async ({ cliPath, testFile, },) => {
+  test.skipIf(process.platform === 'win32',)('fails when file has no write permissions', async () => {
     // Make file read-only
     writeFileSync(testFile, 'read only content\n', { mode: 0o444, },);
 
     await expect(execAsync(`bun ${cliPath} "text" --to ${testFile}`,),).rejects.toThrow();
-  },); // Skip on Windows as permissions work differently
+  },);
 
-  test('preserves existing file content', async ({ cliPath, testFile, },) => {
+  test('preserves existing file content', async () => {
     // Add some initial content
     writeFileSync(testFile, 'Line 1\nLine 2\n',);
 
@@ -157,14 +149,14 @@ describe('cli.append', () => {
     expect(content,).toBe('Line 1\nLine 2\nLine 3\n',);
   });
 
-  test('handles empty string as valid input', async ({ cliPath, testFile, },) => {
+  test('handles empty string as valid input', async () => {
     await execAsync(`bun ${cliPath} "" --to ${testFile}`,);
 
     const content = await readFile(testFile, 'utf-8',);
     expect(content,).toBe('Initial content\n\n',);
   });
 
-  test('handles special characters in text', async ({ cliPath, testFile, },) => {
+  test('handles special characters in text', async () => {
     const specialText = '"Hello $USER!" && echo \'test\' | cat';
     await execAsync(`bun ${cliPath} "${specialText}" --to ${testFile}`,);
 
@@ -172,7 +164,7 @@ describe('cli.append', () => {
     expect(content,).toBe(`Initial content\n${specialText}\n`,);
   });
 
-  test('appends multiple times to the same file', async ({ cliPath, testFile, },) => {
+  test('appends multiple times to the same file', async () => {
     await execAsync(`bun ${cliPath} "First append" --to ${testFile}`,);
     await execAsync(`bun ${cliPath} "Second append" --to ${testFile}`,);
     await execAsync(`bun ${cliPath} "Third append" --to ${testFile}`,);

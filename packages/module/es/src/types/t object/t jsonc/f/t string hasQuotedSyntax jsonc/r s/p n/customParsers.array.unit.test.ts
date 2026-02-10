@@ -1,8 +1,9 @@
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 import type * as Jsonc from '@_/types/t object/t jsonc/t/index.ts';
 import type {
@@ -14,14 +15,14 @@ const $ =
 
 describe($, () => {
   //region Empty arrays -- basic and with comments
-  test('empty array', ({ expect, },) => {
+  test('empty array', () => {
     const input = '[]' as FragmentStringJsonc;
     const out = $({ value: input, },);
     expect(out.value,).toEqual([],);
     expect(out.remainingContent,).toBe('',);
   });
 
-  test('empty array with leading comment', ({ expect, },) => {
+  test('empty array with leading comment', () => {
     const input = '[ /* c */ ]TAIL' as FragmentStringJsonc;
     const out = $({ value: input, },);
     expect(out.value,).toEqual([],);
@@ -31,19 +32,19 @@ describe($, () => {
   //endregion Empty arrays
 
   //region Primitives and separators -- single/multiple numbers and trailing comma
-  test('single primitive number', ({ expect, },) => {
+  test('single primitive number', () => {
     const out = $({ value: '[1]' as FragmentStringJsonc, },);
     expect(Array.isArray(out.value,),).toBe(true,);
     expect(out.value[0],).toEqual({ value: 1, },);
     expect(out.remainingContent,).toBe('',);
   });
 
-  test('multiple numbers', ({ expect, },) => {
+  test('multiple numbers', () => {
     const out = $({ value: '[1, 2, 3]' as FragmentStringJsonc, },);
     expect((out.value as Jsonc.Number[]).map(v => v.value),).toEqual([1, 2, 3,],);
   });
 
-  test('trailing comma with comments', ({ expect, },) => {
+  test('trailing comma with comments', () => {
     const out = $({ value: '[1, /* c */ 2, /* d */ ]X' as FragmentStringJsonc, },);
     expect((out.value as Jsonc.Number[]).map(v => v.value),).toEqual([1, 2,],);
     expect(out.remainingContent,).toBe('X',);
@@ -51,7 +52,7 @@ describe($, () => {
   //endregion Primitives and separators
 
   //region Strings and escapes -- ensure quoted parsing cooperates
-  test('strings with escaped quote', ({ expect, },) => {
+  test('strings with escaped quote', () => {
     const out = $({ value: String.raw`["a\"b", "c"]` as FragmentStringJsonc, },);
     expect(out.value[0],).toHaveProperty('value',);
     expect((out.value[0] as Jsonc.String).value,).toBe(String.raw`"a\"b"`,);
@@ -60,7 +61,7 @@ describe($, () => {
   //endregion Strings and escapes
 
   //region Nested arrays -- delegate inner arrays
-  test('nested arrays', ({ expect, },) => {
+  test('nested arrays', () => {
     const out = $({ value: '[[1], [2, 3]]' as FragmentStringJsonc, },);
     const arr0 = out.value[0] as Jsonc.Array;
     const arr1 = out.value[1] as Jsonc.Array;
@@ -72,19 +73,19 @@ describe($, () => {
   //endregion Nested arrays
 
   //region Errors -- malformed separators
-  test('missing comma between elements', ({ expect, },) => {
+  test('missing comma between elements', () => {
     expect(() => $({ value: '[1 2]' as FragmentStringJsonc, },)).toThrow(
       /expected ',' or ']'/,
     );
   });
 
-  test('dangling comma without closing bracket', ({ expect, },) => {
+  test('dangling comma without closing bracket', () => {
     expect(() => $({ value: '[1, 2,' as FragmentStringJsonc, },)).toThrow();
   });
   //endregion Errors
 
   //region Array-level vs first-item comments -- semantics for outside/inside comments
-  test('array-level comment comes from outside (context)', ({ expect, },) => {
+  test('array-level comment comes from outside (context)', () => {
     const out = $({
       value: '[1]' as FragmentStringJsonc,
       // Represent outside comment before '[' via context
@@ -95,14 +96,14 @@ describe($, () => {
     expect((out.value[0] as Jsonc.Value).comment,).toBeUndefined();
   });
 
-  test('first element receives inside comment (non-empty array)', ({ expect, },) => {
+  test('first element receives inside comment (non-empty array)', () => {
     const out = $({ value: '[ /* C */ 1 ]' as FragmentStringJsonc, },);
     expect(out.comment,).toBeUndefined();
     expect((out.value[0] as Jsonc.Value).comment?.type,).toBe('block',);
     expect((out.value[0] as Jsonc.Value).comment?.commentValue.trim(),).toBe('C',);
   });
 
-  test('both outside (array) and inside (first item) comments preserved', ({ expect, },) => {
+  test('both outside (array) and inside (first item) comments preserved', () => {
     const out = $({
       value: '[ /* C */ 1 ]' as FragmentStringJsonc,
       context: { comment: { type: 'block', commentValue: 'A', }, } as Jsonc.ValueBase,
@@ -111,7 +112,7 @@ describe($, () => {
     expect((out.value[0] as Jsonc.Value).comment?.commentValue.trim(),).toBe('C',);
   });
 
-  test('empty array merges inside comment into array-level', ({ expect, },) => {
+  test('empty array merges inside comment into array-level', () => {
     const out = $({ value: '[ /* X */ ]TAIL' as FragmentStringJsonc, },);
     expect(out.value,).toEqual([],);
     expect(out.comment?.type,).toBe('block',);
@@ -119,7 +120,7 @@ describe($, () => {
     expect(out.remainingContent,).toBe('TAIL',);
   });
 
-  test('empty array merges outside and inside comments', ({ expect, },) => {
+  test('empty array merges outside and inside comments', () => {
     const out = $({
       value: '[ /* X */ ]TAIL' as FragmentStringJsonc,
       context: { comment: { type: 'block', commentValue: 'A', }, } as Jsonc.ValueBase,

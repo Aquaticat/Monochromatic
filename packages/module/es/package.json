@@ -23,7 +23,6 @@
     "vite": "catalog:",
     "vue-tsc": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:",
     "@logtape/logtape": "catalog:",
     "@logtape/file": "catalog:",
     "serialize-error": "catalog:",

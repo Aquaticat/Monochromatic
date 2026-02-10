@@ -1,13 +1,14 @@
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 const $ = types.function.generator.from.iterable.withIndex.sync.named.$;
 
 describe($, () => {
-  test('yields elements with their indices for arrays', ({ expect, },) => {
+  test('yields elements with their indices for arrays', () => {
     const result = [...$({ myIterable: ['a', 'b', 'c',], },),];
 
     expect(result,).toEqual([
@@ -17,7 +18,7 @@ describe($, () => {
     ],);
   });
 
-  test('yields elements with their indices for strings', ({ expect, },) => {
+  test('yields elements with their indices for strings', () => {
     const result = [...$({ myIterable: 'hello', },),];
 
     expect(result,).toEqual([
@@ -29,7 +30,7 @@ describe($, () => {
     ],);
   });
 
-  test('yields elements with their indices for numbers', ({ expect, },) => {
+  test('yields elements with their indices for numbers', () => {
     const result = [...$({ myIterable: [10, 20, 30,], },),];
 
     expect(result,).toEqual([
@@ -39,13 +40,13 @@ describe($, () => {
     ],);
   });
 
-  test('yields nothing for empty iterable', ({ expect, },) => {
+  test('yields nothing for empty iterable', () => {
     const result = [...$({ myIterable: [], },),];
 
     expect(result,).toEqual([],);
   });
 
-  test('works with Set', ({ expect, },) => {
+  test('works with Set', () => {
     const result = [...$({ myIterable: new Set(['x', 'y', 'z',],), },),];
 
     expect(result,).toEqual([
@@ -55,7 +56,7 @@ describe($, () => {
     ],);
   });
 
-  test('works with Map', ({ expect, },) => {
+  test('works with Map', () => {
     const map = new Map([['key1', 'value1',], ['key2', 'value2',],],);
     const result = [...$({ myIterable: map, },),];
 
@@ -65,7 +66,7 @@ describe($, () => {
     ],);
   });
 
-  test('lazy evaluation - generator only iterates when consumed', ({ expect, },) => {
+  test('lazy evaluation - generator only iterates when consumed', () => {
     let callCount = 0;
     function* lazyIterable() {
       callCount++;

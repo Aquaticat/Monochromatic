@@ -1,14 +1,15 @@
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   expectTypeOf,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 const $ = types.function.generator.from.iterable.withIndex.named.$;
 
 describe($, () => {
-  test('yields elements with their indices for arrays', async ({ expect, },) => {
+  test('yields elements with their indices for arrays', async () => {
     const result = await Array.fromAsync($({ myIterable: ['a', 'b', 'c',], },),);
 
     expect(result,).toEqual([
@@ -18,7 +19,7 @@ describe($, () => {
     ],);
   });
 
-  test('handles empty iterables', async ({ expect, },) => {
+  test('handles empty iterables', async () => {
     const emptyArray = await Array.fromAsync($({ myIterable: [], },),);
     expect(emptyArray,).toEqual([],);
 
@@ -29,7 +30,7 @@ describe($, () => {
     expect(emptySet,).toEqual([],);
   });
 
-  test('yields characters with indices for strings', async ({ expect, },) => {
+  test('yields characters with indices for strings', async () => {
     const result = await Array.fromAsync($({ myIterable: 'hello', },),);
 
     expect(result,).toEqual([
@@ -41,7 +42,7 @@ describe($, () => {
     ],);
   });
 
-  test('yields Set values with indices', async ({ expect, },) => {
+  test('yields Set values with indices', async () => {
     const mySet = new Set([10, 20, 30,],);
     const result = await Array.fromAsync($({ myIterable: mySet, },),);
 
@@ -52,7 +53,7 @@ describe($, () => {
     ],);
   });
 
-  test('yields Map entries with indices', async ({ expect, },) => {
+  test('yields Map entries with indices', async () => {
     const myMap = new Map([
       ['key1', 'value1',],
       ['key2', 'value2',],
@@ -67,7 +68,7 @@ describe($, () => {
     ],);
   });
 
-  test('handles async generators', async ({ expect, },) => {
+  test('handles async generators', async () => {
     async function* asyncGen(): AsyncGenerator<string> {
       yield 'first';
       yield 'second';
@@ -83,7 +84,7 @@ describe($, () => {
     ],);
   });
 
-  test('handles single element iterable', async ({ expect, },) => {
+  test('handles single element iterable', async () => {
     const result = await Array.fromAsync($({ myIterable: ['only',], },),);
 
     expect(result,).toEqual([
@@ -91,7 +92,7 @@ describe($, () => {
     ],);
   });
 
-  test('correctly increments indices for large arrays', async ({ expect, },) => {
+  test('correctly increments indices for large arrays', async () => {
     const LARGE_ARRAY_SIZE = 100;
     const largeArray = Array.from({ length: LARGE_ARRAY_SIZE, },
       (_, arrayIndex,) => arrayIndex,);
@@ -107,7 +108,7 @@ describe($, () => {
     },);
   });
 
-  test('handles generator functions as input', async ({ expect, },) => {
+  test('handles generator functions as input', async () => {
     function* numberGen(): Generator<number> {
       yield 1;
       yield 2;
@@ -123,7 +124,7 @@ describe($, () => {
     ],);
   });
 
-  test('type checking for index and element', async ({ expect, },) => {
+  test('type checking for index and element', async () => {
     const gen = $({ myIterable: [1, 2, 3,], },);
     const firstItem = await gen.next();
 

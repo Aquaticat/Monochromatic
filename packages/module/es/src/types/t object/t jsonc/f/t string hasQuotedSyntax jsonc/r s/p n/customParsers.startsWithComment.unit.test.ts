@@ -1,8 +1,9 @@
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 import type {
   FragmentStringJsonc,
@@ -12,54 +13,54 @@ const $ = types.object.jsonc.from.stringHasQuotedSyntaxJsonc.sync.named.startsWi
 
 describe($, () => {
   describe('no comment scenarios', () => {
-    test('empty string returns empty remaining content', ({ expect, },) => {
+    test('empty string returns empty remaining content', () => {
       const result = $({ value: '' as FragmentStringJsonc, },);
       expect(result,).toEqual({ remainingContent: '', },);
     });
 
-    test('whitespace-only returns trimmed remaining content', ({ expect, },) => {
+    test('whitespace-only returns trimmed remaining content', () => {
       const result = $({ value: '   \n\t  ' as FragmentStringJsonc, },);
       expect(result,).toEqual({ remainingContent: '   \n\t  ', },);
     });
 
-    test('direct JSON object with no comments', ({ expect, },) => {
+    test('direct JSON object with no comments', () => {
       const result = $({ value: '{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({ remainingContent: '{}', },);
     });
 
-    test('direct JSON array with no comments', ({ expect, },) => {
+    test('direct JSON array with no comments', () => {
       const result = $({ value: '[]' as FragmentStringJsonc, },);
       expect(result,).toEqual({ remainingContent: '[]', },);
     });
 
-    test('direct JSON string with no comments', ({ expect, },) => {
+    test('direct JSON string with no comments', () => {
       const result = $({ value: '"hello"' as FragmentStringJsonc, },);
       expect(result,).toEqual({ remainingContent: '"hello"', },);
     });
 
-    test('direct JSON number with no comments', ({ expect, },) => {
+    test('direct JSON number with no comments', () => {
       const result = $({ value: '123' as FragmentStringJsonc, },);
       expect(result,).toEqual({ remainingContent: '123', },);
     });
 
-    test('direct JSON boolean with no comments', ({ expect, },) => {
+    test('direct JSON boolean with no comments', () => {
       const result = $({ value: 'true' as FragmentStringJsonc, },);
       expect(result,).toEqual({ remainingContent: 'true', },);
     });
 
-    test('direct JSON null with no comments', ({ expect, },) => {
+    test('direct JSON null with no comments', () => {
       const result = $({ value: 'null' as FragmentStringJsonc, },);
       expect(result,).toEqual({ remainingContent: 'null', },);
     });
 
-    test('JSON with leading whitespace no comments', ({ expect, },) => {
+    test('JSON with leading whitespace no comments', () => {
       const result = $({ value: '   \n  {}' as FragmentStringJsonc, },);
       expect(result,).toEqual({ remainingContent: '   \n  {}', },);
     });
   });
 
   describe('single inline comment scenarios', () => {
-    test('basic inline comment followed by JSON', ({ expect, },) => {
+    test('basic inline comment followed by JSON', () => {
       const result = $({ value: '// comment\n{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -70,7 +71,7 @@ describe($, () => {
       },);
     });
 
-    test('multiple inline comments processed recursively', ({ expect, },) => {
+    test('multiple inline comments processed recursively', () => {
       const result = $({ value: '// first\n// second\n{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -81,7 +82,7 @@ describe($, () => {
       },);
     });
 
-    test('region marker comment', ({ expect, },) => {
+    test('region marker comment', () => {
       const result = $({ value: '//region\n{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -92,7 +93,7 @@ describe($, () => {
       },);
     });
 
-    test('endregion marker comment', ({ expect, },) => {
+    test('endregion marker comment', () => {
       const result = $({ value: '//endregion\n{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -103,7 +104,7 @@ describe($, () => {
       },);
     });
 
-    test('inline comment with special characters', ({ expect, },) => {
+    test('inline comment with special characters', () => {
       const result = $({
         value: '// comment with émojis 🚀 and sp€ci@l!\n{}' as FragmentStringJsonc,
       },);
@@ -116,7 +117,7 @@ describe($, () => {
       },);
     });
 
-    test('inline comment with leading whitespace preserved', ({ expect, },) => {
+    test('inline comment with leading whitespace preserved', () => {
       const result = $({ value: '//    spaced comment   \n{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -127,14 +128,14 @@ describe($, () => {
       },);
     });
 
-    test('throws error for inline comment without newline', ({ expect, },) => {
+    test('throws error for inline comment without newline', () => {
       expect(() => $({ value: '// comment without newline{}' as FragmentStringJsonc, },))
         .toThrow(
           /line comment is not jsonc/,
         );
     });
 
-    test('inline comment with empty comment value', ({ expect, },) => {
+    test('inline comment with empty comment value', () => {
       const result = $({ value: '//\n{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -147,7 +148,7 @@ describe($, () => {
   });
 
   describe('single block comment scenarios', () => {
-    test('basic single-line block comment', ({ expect, },) => {
+    test('basic single-line block comment', () => {
       const result = $({ value: '/* comment */{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -158,7 +159,7 @@ describe($, () => {
       },);
     });
 
-    test('multi-line block comment', ({ expect, },) => {
+    test('multi-line block comment', () => {
       const result = $({
         value: '/* comment\non multiple\nlines */{}' as FragmentStringJsonc,
       },);
@@ -171,7 +172,7 @@ describe($, () => {
       },);
     });
 
-    test('empty block comment', ({ expect, },) => {
+    test('empty block comment', () => {
       const result = $({ value: '/**/{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -182,7 +183,7 @@ describe($, () => {
       },);
     });
 
-    test('block comment with special characters and unicode', ({ expect, },) => {
+    test('block comment with special characters and unicode', () => {
       const result = $({
         value: '/* block with émojis 🚀 and unicode 测试 */{}' as FragmentStringJsonc,
       },);
@@ -195,7 +196,7 @@ describe($, () => {
       },);
     });
 
-    test('block comment with quote-like content (LIMITATION TEST)', ({ expect, },) => {
+    test('block comment with quote-like content (LIMITATION TEST)', () => {
       // This is a known limitation - quotes inside comments can confuse the parser
       // but this specific case should work since it's not actually quoted content
       const result = $({
@@ -210,7 +211,7 @@ describe($, () => {
       },);
     });
 
-    test('block comment with leading whitespace preserved', ({ expect, },) => {
+    test('block comment with leading whitespace preserved', () => {
       const result = $({ value: '/*    spaced content   */{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -221,7 +222,7 @@ describe($, () => {
       },);
     });
 
-    test('throws error for unterminated block comment', ({ expect, },) => {
+    test('throws error for unterminated block comment', () => {
       expect(() =>
         $({
           value: '/* unterminated block comment no star slash' as FragmentStringJsonc,
@@ -230,7 +231,7 @@ describe($, () => {
         .toThrow(/incomplete block comment is not jsonc/,);
     });
 
-    test('throws error for empty unterminated block comment', ({ expect, },) => {
+    test('throws error for empty unterminated block comment', () => {
       expect(() => $({ value: '/* {}' as FragmentStringJsonc, },)).toThrow(
         /incomplete block comment is not jsonc/,
       );
@@ -238,7 +239,7 @@ describe($, () => {
   });
 
   describe('multiple sequential comments scenarios', () => {
-    test('multiple block comments merged', ({ expect, },) => {
+    test('multiple block comments merged', () => {
       const result = $({ value: '/* first */\n/* second */{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -249,7 +250,7 @@ describe($, () => {
       },);
     });
 
-    test('mixed inline and block comments', ({ expect, },) => {
+    test('mixed inline and block comments', () => {
       const result = $({ value: '// inline\n/* block */{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -260,7 +261,7 @@ describe($, () => {
       },);
     });
 
-    test('block then inline comments become mixed type', ({ expect, },) => {
+    test('block then inline comments become mixed type', () => {
       const result = $({ value: '/* block */\n// inline\n{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -271,7 +272,7 @@ describe($, () => {
       },);
     });
 
-    test('complex three-comment chain', ({ expect, },) => {
+    test('complex three-comment chain', () => {
       const result = $({
         value: '// first\n/* second */\n// third\n{}' as FragmentStringJsonc,
       },);
@@ -288,7 +289,7 @@ describe($, () => {
   });
 
   describe('context accumulation scenarios', () => {
-    test('comments merged with existing inline context', ({ expect, },) => {
+    test('comments merged with existing inline context', () => {
       const result = $({
         value: '// new comment\n{}' as FragmentStringJsonc,
         context: {
@@ -307,7 +308,7 @@ describe($, () => {
       },);
     });
 
-    test('comments merged with existing block context', ({ expect, },) => {
+    test('comments merged with existing block context', () => {
       const result = $({
         value: '/* new comment */{}' as FragmentStringJsonc,
         context: {
@@ -326,7 +327,7 @@ describe($, () => {
       },);
     });
 
-    test('inline comment merged with existing mixed context preserves mixed', ({ expect, },) => {
+    test('inline comment merged with existing mixed context preserves mixed', () => {
       const result = $({
         value: '// new inline\n{}' as FragmentStringJsonc,
         context: {
@@ -345,7 +346,7 @@ describe($, () => {
       },);
     });
 
-    test('no existing context preserves original comment type', ({ expect, },) => {
+    test('no existing context preserves original comment type', () => {
       const result = $({
         value: '/* standalone block */{}' as FragmentStringJsonc,
         context: {},
@@ -361,7 +362,7 @@ describe($, () => {
   });
 
   describe('complex block comment logic scenarios', () => {
-    test('first-line optimization for block comment', ({ expect, },) => {
+    test('first-line optimization for block comment', () => {
       // This should hit the first-line optimization path
       const result = $({ value: '/* single line */{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
@@ -373,7 +374,7 @@ describe($, () => {
       },);
     });
 
-    test('multi-line block comment detection', ({ expect, },) => {
+    test('multi-line block comment detection', () => {
       const result = $({
         value: '/*\nmulti-line\ncomment\n*/{}' as FragmentStringJsonc,
       },);
@@ -386,7 +387,7 @@ describe($, () => {
       },);
     });
 
-    test.skip('block comment with /* marks Star Slash that appears in line comment (should be ignored)', ({ expect, },) => {
+    test.skip('block comment with /* marks Star Slash that appears in line comment (should be ignored)', () => {
       // THE AI WAS WRONG, RIGHT NOW THE IMPLEMENTATION IS CORRECT
       // The */ in the // line should be ignored, the real */ is after the line
       const result = $({
@@ -403,7 +404,7 @@ describe($, () => {
       },);
     });
 
-    test.skip('block comment with multiple line comments containing */', ({ expect, },) => {
+    test.skip('block comment with multiple line comments containing */', () => {
       // THE AI WAS WRONG, RIGHT NOW THE IMPLEMENTATION IS CORRECT
 
       const result = $({
@@ -420,7 +421,7 @@ describe($, () => {
       },);
     });
 
-    test('block comment position calculation accuracy', ({ expect, },) => {
+    test('block comment position calculation accuracy', () => {
       // Test that the position calculation works correctly with preceding whitespace
       const result = $({ value: '   /*  content  */   {}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
@@ -434,7 +435,7 @@ describe($, () => {
   });
 
   describe('whitespace handling scenarios', () => {
-    test('leading whitespace before inline comment', ({ expect, },) => {
+    test('leading whitespace before inline comment', () => {
       const result = $({ value: '   \n  // comment\n{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -445,7 +446,7 @@ describe($, () => {
       },);
     });
 
-    test('leading whitespace before block comment', ({ expect, },) => {
+    test('leading whitespace before block comment', () => {
       const result = $({ value: '\t \n /* comment */\n{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -456,7 +457,7 @@ describe($, () => {
       },);
     });
 
-    test('trailing whitespace after comments', ({ expect, },) => {
+    test('trailing whitespace after comments', () => {
       const result = $({ value: '// comment\n   \t   \n{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -467,7 +468,7 @@ describe($, () => {
       },);
     });
 
-    test('mixed tab and space whitespace', ({ expect, },) => {
+    test('mixed tab and space whitespace', () => {
       const result = $({ value: '\t // mixed\twhitespace\n{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -480,7 +481,7 @@ describe($, () => {
   });
 
   describe('edge cases and limitations', () => {
-    test('very long inline comment', ({ expect, },) => {
+    test('very long inline comment', () => {
       const longComment = 'a'.repeat(1000,);
       const result = $({ value: `// ${longComment}\n{}` as FragmentStringJsonc, },);
       expect(result,).toEqual({
@@ -492,7 +493,7 @@ describe($, () => {
       },);
     });
 
-    test('very long block comment', ({ expect, },) => {
+    test('very long block comment', () => {
       const longComment = 'b'.repeat(1000,);
       const result = $({ value: `/* ${longComment} */{}` as FragmentStringJsonc, },);
       expect(result,).toEqual({
@@ -504,7 +505,7 @@ describe($, () => {
       },);
     });
 
-    test('comment with JSON-like content inside', ({ expect, },) => {
+    test('comment with JSON-like content inside', () => {
       const result = $({
         value:
           '// {"fake": "json", "array": [1,2,3], "bool": true}\n{}' as FragmentStringJsonc,
@@ -518,7 +519,7 @@ describe($, () => {
       },);
     });
 
-    test('KNOWN LIMITATION: block comment with complex quote patterns', ({ expect, },) => {
+    test('KNOWN LIMITATION: block comment with complex quote patterns', () => {
       // This documents a known limitation - complex quote patterns in block comments
       // The current implementation doesn't fully handle quoted */ patterns within block comments
       const result = $({
@@ -529,7 +530,7 @@ describe($, () => {
       expect(result.comment?.type,).toBe('block',);
     });
 
-    test('comments with newline characters inside', ({ expect, },) => {
+    test('comments with newline characters inside', () => {
       const result = $({ value: '/* line1\nline2\nline3 */{}' as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -540,7 +541,7 @@ describe($, () => {
       },);
     });
 
-    test('comment delimiters inside comment content', ({ expect, },) => {
+    test('comment delimiters inside comment content', () => {
       const result = $({
         value:
           '// comment with // inside\n/* block with /* inside */{}' as FragmentStringJsonc,
@@ -556,14 +557,14 @@ describe($, () => {
   });
 
   describe('type preservation scenarios', () => {
-    test('StringJsonc type preservation', ({ expect, },) => {
+    test('StringJsonc type preservation', () => {
       const input = '// comment\n{}' as FragmentStringJsonc;
       const result = $({ value: input, },);
       // Type should include remainingContent as StringJsonc
       expect(result.remainingContent,).toBe('{}',);
     });
 
-    test('FragmentStringJsonc type preservation', ({ expect, },) => {
+    test('FragmentStringJsonc type preservation', () => {
       const input = '/* comment */[]' as FragmentStringJsonc;
       const result = $({ value: input, },);
       // Type should include remainingContent as FragmentStringJsonc

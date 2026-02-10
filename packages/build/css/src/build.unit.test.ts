@@ -6,7 +6,7 @@ import {
   describe,
   expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 import {
   build,
   collectMixins,

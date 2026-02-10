@@ -1,8 +1,9 @@
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 import type {
   FragmentStringJsonc,
@@ -14,7 +15,7 @@ const $ =
 
 describe($, () => {
   //region Empty objects -- basic and with comments
-  test('empty object', ({ expect, },) => {
+  test('empty object', () => {
     const input = '{}' as FragmentStringJsonc;
     const out = $({ value: input, },);
     expect(out.value instanceof Map,).toBe(true,);
@@ -22,7 +23,7 @@ describe($, () => {
     expect(out.remainingContent,).toBe('',);
   });
 
-  test('empty object with inside comment merges into record-level', ({ expect, },) => {
+  test('empty object with inside comment merges into record-level', () => {
     const input = '{ /* c */ }TAIL' as FragmentStringJsonc;
     const out = $({ value: input, },);
     expect(out.value.size,).toBe(0,);
@@ -33,7 +34,7 @@ describe($, () => {
   //endregion Empty objects
 
   //region Pairs and separators -- single/multiple and trailing comma
-  test('single pair', ({ expect, },) => {
+  test('single pair', () => {
     const out = $({ value: '{"a": 1}' as FragmentStringJsonc, },);
     const entries = [...out.value.entries(),];
     expect(entries,).toHaveLength(1,);
@@ -42,7 +43,7 @@ describe($, () => {
     expect((val as Jsonc.Number).value,).toBe(1,);
   });
 
-  test('multiple pairs with trailing comma and comments', ({ expect, },) => {
+  test('multiple pairs with trailing comma and comments', () => {
     const out = $({
       value: '{"a":1, /* c */ "b": 2, /* d */ }X' as FragmentStringJsonc,
     },);
@@ -58,7 +59,7 @@ describe($, () => {
   //endregion Pairs and separators
 
   //region Nesting -- arrays and objects
-  test('nested containers', ({ expect, },) => {
+  test('nested containers', () => {
     const out = $({ value: '{"a": [1], "b": {}}' as FragmentStringJsonc, },);
     const entries = [...out.value.entries(),];
     const aVal = entries[0]![1] as Jsonc.Array;
@@ -71,7 +72,7 @@ describe($, () => {
   //endregion Nesting
 
   //region Comments semantics -- outside vs inside
-  test('record-level comment from context', ({ expect, },) => {
+  test('record-level comment from context', () => {
     const out = $({
       value: '{"a":1}' as FragmentStringJsonc,
       context: { comment: { type: 'block', commentValue: 'A', }, } as Jsonc.ValueBase,
@@ -79,7 +80,7 @@ describe($, () => {
     expect(out.comment?.commentValue,).toBe('A',);
   });
 
-  test('first key receives inside comment', ({ expect, },) => {
+  test('first key receives inside comment', () => {
     const out = $({ value: '{ /* C */ "a": 1 }' as FragmentStringJsonc, },);
     const firstKey = [...out.value.keys(),][0] as Jsonc.RecordKey;
     expect(firstKey.comment?.type,).toBe('block',);
@@ -87,7 +88,7 @@ describe($, () => {
     expect(out.comment,).toBeUndefined();
   });
 
-  test('empty object merges outside and inside comments', ({ expect, },) => {
+  test('empty object merges outside and inside comments', () => {
     const out = $({
       value: '{ /* X */ }TAIL' as FragmentStringJsonc,
       context: { comment: { type: 'block', commentValue: 'A', }, } as Jsonc.ValueBase,
@@ -100,13 +101,13 @@ describe($, () => {
   //endregion Comments semantics
 
   //region Errors -- malformed structures
-  test('missing colon after key', ({ expect, },) => {
+  test('missing colon after key', () => {
     expect(() => $({ value: '{"a" 1}' as FragmentStringJsonc, },)).toThrow(
       /expected ':' after key/,
     );
   });
 
-  test('missing comma between pairs', ({ expect, },) => {
+  test('missing comma between pairs', () => {
     expect(() => $({ value: '{"a":1 "b":2}' as FragmentStringJsonc, },)).toThrow(
       /expected ',' or '}/,
     );

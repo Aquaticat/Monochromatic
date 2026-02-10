@@ -1,16 +1,16 @@
-// Have to import the source ts file here because we don't want to run Vitest twice to test both default and node.
+// Have to import the source ts file here because we don't want to run tests twice to test both default and node.
 import { posix, } from 'node:path';
 import {
   describe,
   expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 import { pathJoin, } from './fs.pathJoin.default.ts';
 import { trimPathTrailingSlash, } from './fs.pathJoin.shared.ts';
 
 describe(pathJoin, () => {
   // Define test cases covering various scenarios
-  test.for([
+  test.each([
     // Empty arguments
     { s: [], },
     { s: ['',], },
@@ -72,7 +72,7 @@ describe(pathJoin, () => {
     { s: ['a/b/.c', '../../d',], },
     { s: ['a/b/.好', '../../d',], },
     { s: ['/a/b/c', './d/e/f', '../../../g/h',], },
-  ] as const,)('%$ -- $s', ({ s, },) => {
+  ] as const,)('pathJoin($s)', ({ s, },) => {
     expect(pathJoin(...s,),).toBe(trimPathTrailingSlash(posix.join(...s,),),);
   },);
 },);

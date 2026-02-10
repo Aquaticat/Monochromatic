@@ -19,7 +19,7 @@ import {
   describe,
   expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 import {
   emptyDir,
   emptyFile,

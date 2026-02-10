@@ -1,8 +1,9 @@
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,
+  expect,
   test,
-} from 'vitest';
+} from 'bun:test';
 
 import type * as Jsonc from '@_/types/t object/t jsonc/t/index.ts';
 import type {
@@ -14,20 +15,20 @@ const exported = types.object.jsonc.from.stringHasQuotedSyntaxJsonc.sync.named;
 //region expectArraySeparatorOrEnd
 describe('expectArraySeparatorOrEnd', () => {
   const $ = exported.expectArraySeparatorOrEnd;
-  test('end directly', ({ expect, },) => {
+  test('end directly', () => {
     const r = ']TAIL' as FragmentStringJsonc;
     const out = $(r,);
     if (out.kind !== 'end')
       throw new Error('expected end',);
     expect(out.tail,).toBe('TAIL',);
   });
-  test('trailing comma then end', ({ expect, },) => {
+  test('trailing comma then end', () => {
     const out = $(', /* c */ ]TAIL' as FragmentStringJsonc,);
     if (out.kind !== 'end')
       throw new Error('expected end',);
     expect(out.tail,).toBe('TAIL',);
   });
-  test('next element start', ({ expect, },) => {
+  test('next element start', () => {
     const out = $(', /* c */ 2, x' as FragmentStringJsonc,);
     if (out.kind !== 'next')
       throw new Error('expected next',);
@@ -39,17 +40,17 @@ describe('expectArraySeparatorOrEnd', () => {
 //region parseArrayElements
 describe('parseArrayElements', () => {
   const $ = exported.parseArrayElements;
-  test('single element then end', ({ expect, },) => {
+  test('single element then end', () => {
     const out = $('1]TAIL' as FragmentStringJsonc,);
     expect(out.items,).toEqual([{ value: 1, },],);
     expect(out.tail,).toBe('TAIL',);
   });
-  test('multi with comments and trailing comma', ({ expect, },) => {
+  test('multi with comments and trailing comma', () => {
     const out = $('1, /* c */ 2, /* d */ ]X' as FragmentStringJsonc,);
     expect((out.items as Jsonc.Number[]).map(v => v.value),).toEqual([1, 2,],);
     expect(out.tail,).toBe('X',);
   });
-  test('invalid: identifier right after literal (boundary handled by separator)', ({ expect, },) => {
+  test('invalid: identifier right after literal (boundary handled by separator)', () => {
     expect(() => $('nullY]' as FragmentStringJsonc,)).toThrow(/expected ',' or ']'/,);
   });
 });
