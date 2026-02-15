@@ -1,0 +1,12 @@
+{
+  "name": "@monochromatic-dev/site-done",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@monochromatic-dev/build-css": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}

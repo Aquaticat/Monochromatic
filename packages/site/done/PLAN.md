@@ -1,8 +1,8 @@
 # Done -- Implementation plan
 
-This plan assumes one developer working 5 days over a week with AI assistance.
-Available hours: Tue 4h, Wed 4h, Thu 4h, Fri 4h, Sat 0h, Sun 0h, Mon 4h -- 20h total.
-Hour estimates are per-task. Items without a priority marker are implicitly highest priority.
+This plan no longer follows a competition deadline.
+The day-by-day sequence and hour estimates now serve as implementation guidance only, not as a hard timeline.
+Items without a priority marker are implicitly highest priority.
 
 ## Architecture overview
 

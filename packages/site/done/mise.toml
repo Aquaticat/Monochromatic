@@ -1,0 +1,23 @@
+[tasks."build:js"]
+run = "bun src/server.ts --build-only"
+
+[tasks."build--watch:js"]
+run = "bun --watch src/server.ts --build-only"
+
+[tasks."dev:site"]
+description = "Start Done in watch mode"
+run = "bun --watch src/server.ts"
+
+[tasks."start:site"]
+description = "Start Done"
+run = "bun src/server.ts"
+
+[tasks."lint:types"]
+hide = true
+description = "TypeScript"
+run = "tsgo --build"
+
+[tasks."lint--allowFailure:types"]
+hide = true
+description = "TypeScript"
+run = "try { tsgo --build } catch { |e| print -e $e.rendered }"
