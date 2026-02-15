@@ -1,3 +1,9 @@
+/**
+ * Client entry script for the Settings page.
+ *
+ * Same hydration pattern as inbox.ts: injectCSS → readPageData → build DOM into #app.
+ */
+import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import styles from "../../dist/client/styles.css" with { type: "text" };
 import { injectCSS } from "./lib/inject-css.ts";
 import { readPageData } from "./lib/page-data.ts";
@@ -19,24 +25,28 @@ if (!(appElement instanceof HTMLElement)) {
 const app = appElement;
 
 //region Calendar connect
-const calendarGroup = document.createElement("setting-group");
-calendarGroup.setAttribute("label", "System calendar");
-calendarGroup.setAttribute("description", "Connect to start two-way auto-syncing.");
-calendarGroup.setAttribute("mode", "button");
-app.append(calendarGroup);
+app.append(
+  h({
+    tag: "setting-group",
+    attrs: { label: "System calendar", description: "Connect to start two-way auto-syncing.", mode: "button" },
+  }),
+);
 //endregion Calendar connect
 
 //region Data privacy
-const privacyGroup = document.createElement("setting-group");
-privacyGroup.setAttribute("label", "Data privacy");
-privacyGroup.setAttribute("description", "We never sell your data, and we never will.");
-privacyGroup.setAttribute("on", "");
-app.append(privacyGroup);
+app.append(
+  h({
+    tag: "setting-group",
+    attrs: { label: "Data privacy", description: "We never sell your data, and we never will.", on: "" },
+  }),
+);
 //endregion Data privacy
 
 //region Dark theme
-const themeGroup = document.createElement("setting-group");
-themeGroup.setAttribute("label", "Dark theme");
-themeGroup.setAttribute("description", "Unlock the dark side.");
-app.append(themeGroup);
+app.append(
+  h({
+    tag: "setting-group",
+    attrs: { label: "Dark theme", description: "Unlock the dark side." },
+  }),
+);
 //endregion Dark theme

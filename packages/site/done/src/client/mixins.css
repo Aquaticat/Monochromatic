@@ -1,0 +1,98 @@
+/* Shared mixin definitions for web component Shadow DOM styles.
+   Consumed at build time by css.macro.ts via @apply --name; syntax.
+   Mixins are granular and composable -- prefer combining small primitives
+   over creating monolithic blocks. */
+
+/* -- Layout primitives ---------------------------------------------------- */
+
+@mixin --flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin --flex-row {
+  display: flex;
+  align-items: center;
+}
+
+@mixin --flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* -- Visual primitives ---------------------------------------------------- */
+
+/* Fully-rounded corners (pill / circle shape) */
+@mixin --border-radius-full {
+  border-radius: 62.5rem;
+}
+
+@mixin --whitespace-nowrap {
+  white-space: nowrap;
+}
+
+@mixin --scrollbar-hidden {
+  scrollbar-width: none;
+}
+
+/* -- Interactive primitives ----------------------------------------------- */
+
+/* Strips all browser-default button/anchor chrome */
+@mixin --appearance-none {
+  background-color: transparent;
+  border-style: none;
+  cursor: pointer;
+  padding-block: 0;
+  padding-inline: 0;
+  font: inherit;
+  color: inherit;
+}
+
+/* Ensures the element meets the 48px (3rem) minimum touch target
+   (Material Design) while allowing it to grow if content demands. */
+@mixin --min-touch-target {
+  min-inline-size: 3rem;
+  min-block-size: 3rem;
+}
+
+/* -- Composed patterns ---------------------------------------------------- */
+
+/* Horizontally scrollable row of inline items */
+@mixin --scroll-row {
+  display: flex;
+  gap: var(--min-gap);
+  align-items: flex-start;
+  overflow-x: auto;
+  overflow-y: clip;
+  @apply --scrollbar-hidden;
+}
+
+/* Outlined interactive button with token-based colors */
+@mixin --button-outlined {
+  @apply --flex-center;
+  @apply --min-touch-target;
+  gap: 0.5rem;
+  border-width: calc(1 / 16 * 1rem);
+  border-style: solid;
+  border-color: var(--fg);
+  padding-block: 0.5rem;
+  padding-inline: 0.5rem;
+  background-color: transparent;
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Top-anchored sticky navigation bar */
+@mixin --sticky-bar {
+  @apply --flex-row;
+  gap: var(--min-gap);
+  block-size: 3rem;
+  padding-block: 0;
+  padding-inline: var(--min-padding);
+  background-color: var(--bg);
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 10;
+}

@@ -1,3 +1,14 @@
+/**
+ * Database initialization module — imported as a side-effect by `server.ts`.
+ *
+ * On import, this module:
+ * 1. Resolves the database path from CLI args / env / default
+ * 2. Ensures the directory exists
+ * 3. Opens the SQLite database with WAL mode
+ * 4. Runs migrations (creates tables, indexes, FTS virtual table, triggers)
+ *
+ * The default export (`db`) is the open Database instance used by `lib/db/tasks.ts`.
+ */
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { Database } from "bun:sqlite";

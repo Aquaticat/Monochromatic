@@ -1,3 +1,44 @@
+import { css } from "../css.macro.ts" with { type: "macro" };
+
+const STYLES = css(`
+  :host {
+    @apply --sticky-bar;
+  }
+  .back {
+    @apply --appearance-none;
+    @apply --flex-center;
+    @apply --min-touch-target;
+    font-size: 1.5rem;
+    color: var(--fg);
+  }
+  .back:focus-visible {
+    outline-width: 0.125rem;
+    outline-style: solid;
+    outline-color: var(--fg);
+    outline-offset: -0.125rem;
+  }
+  input {
+    flex: 1;
+    border-style: none;
+    background-color: transparent;
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--fg);
+    outline: none;
+    block-size: 100%;
+  }
+  input::placeholder { color: var(--medium); }
+  @media (min-width: 48rem) {
+    :host {
+      border-block-end-width: calc(1 / 16 * 1rem);
+      border-block-end-style: solid;
+      border-block-end-color: var(--bg-weaker);
+    }
+    .back { display: none; }
+    input { font-size: 1.5rem; }
+  }
+`);
+
 class SearchBar extends HTMLElement {
   #shadow: ShadowRoot;
 
@@ -22,48 +63,7 @@ class SearchBar extends HTMLElement {
     const query = this.getAttribute("value") ?? "";
 
     this.#shadow.innerHTML = `
-      <style>
-        :host {
-          display: flex;
-          align-items: center;
-          gap: var(--min-gap, 16px);
-          height: 48px;
-          padding: 0 var(--min-padding, 8px);
-          background: var(--gray-bg, #eee);
-          position: sticky;
-          top: 0;
-          z-index: 10;
-        }
-        .back {
-          background: none;
-          border: none;
-          cursor: pointer;
-          font-size: 1.5rem;
-          color: var(--gray-fg, #111);
-          width: 48px;
-          height: 48px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0;
-        }
-        input {
-          flex: 1;
-          border: none;
-          background: transparent;
-          font-size: 1rem;
-          font-family: inherit;
-          color: var(--gray-fg, #111);
-          outline: none;
-          height: 100%;
-        }
-        input::placeholder { color: var(--gray-medium, #888); }
-        @media (min-width: 768px) {
-          :host { border-bottom: 1px solid var(--gray-bg-weaker, #bbb); }
-          .back { display: none; }
-          input { font-size: 1.5rem; }
-        }
-      </style>
+      <style>${STYLES}</style>
       <button class="back" aria-label="Go back">
         <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3">
           <polyline points="20,6 10,16 20,26"/>

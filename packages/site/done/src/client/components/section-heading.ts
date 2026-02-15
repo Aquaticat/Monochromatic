@@ -1,3 +1,32 @@
+import { css } from "../css.macro.ts" with { type: "macro" };
+
+const STYLES = css(`
+  :host {
+    @apply --flex-column;
+    gap: 0.5rem;
+  }
+  .heading {
+    @apply --flex-row;
+    gap: 1rem;
+    font-size: 1.25rem;
+    font-weight: 400;
+    cursor: pointer;
+  }
+  .icon {
+    @apply --flex-center;
+    @apply --min-touch-target;
+    font-size: 2rem;
+  }
+  .toggle {
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+  }
+  .content {
+    @apply --flex-column;
+    gap: var(--gap);
+  }
+`);
+
 class SectionHeading extends HTMLElement {
   #shadow: ShadowRoot;
   #open = true;
@@ -38,40 +67,7 @@ class SectionHeading extends HTMLElement {
     const label = this.getAttribute("label") ?? "";
 
     this.#shadow.innerHTML = `
-      <style>
-        :host {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-        .heading {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          font-size: 1.25rem;
-          font-weight: 400;
-          cursor: pointer;
-        }
-        .icon {
-          width: 48px;
-          height: 48px;
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 2rem;
-        }
-        .toggle {
-          width: 20px;
-          height: 20px;
-          flex-shrink: 0;
-        }
-        .content {
-          display: flex;
-          flex-direction: column;
-          gap: var(--gap, 32px);
-        }
-      </style>
+      <style>${STYLES}</style>
       <div class="heading">
         <span class="icon">${icon}</span>
         <span>${label}</span>

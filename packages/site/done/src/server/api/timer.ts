@@ -1,3 +1,11 @@
+/**
+ * REST API handlers for timer and task completion.
+ *
+ * Mounted by server.ts as route handlers:
+ *   POST /api/tasks/:id/start    → handleStartTimer
+ *   POST /api/tasks/:id/stop     → handleStopTimer
+ *   POST /api/tasks/:id/complete → handleCompleteTask
+ */
 import { completeTask, startTaskTimer, stopTaskTimer } from "../../lib/db/tasks.ts";
 
 function jsonResponse(payload: unknown, status = 200): Response {

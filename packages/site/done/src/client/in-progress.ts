@@ -1,4 +1,11 @@
+/**
+ * Client entry script for the In-Progress page.
+ *
+ * Same hydration pattern as inbox.ts: injectCSS → readPageData → build DOM into #app.
+ * Additionally runs a 1-second interval to live-update tracked-time chip text.
+ */
 import type { Task } from "../lib/types.ts";
+import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import styles from "../../dist/client/styles.css" with { type: "text" };
 import { api } from "./lib/api.ts";
 import { injectCSS } from "./lib/inject-css.ts";
@@ -21,26 +28,23 @@ if (!(appElement instanceof HTMLElement)) {
 const app = appElement;
 
 if (pageData.tasks.length === 0) {
-  const emptyState = document.createElement("p");
-  emptyState.className = "empty";
-  emptyState.textContent = "No active timers.";
-  app.append(emptyState);
+  app.append(h({ tag: "p", class: "empty", text: "No active timers." }));
 }
 
-const list = document.createElement("ul");
-list.className = "task-list";
+const list = h({ tag: "ul", class: "task-list" });
 
 for (const task of pageData.tasks) {
-  const card = createTaskCard(task, {
-    onOpen: (taskId) => {
-      window.location.href = `/tasks/${taskId}`;
-    },
-    onToggleComplete: async (taskId) => {
-      await api(`/api/tasks/${taskId}/stop`, { method: "POST" });
-      window.location.reload();
-    },
-  });
-  list.append(card);
+  list.append(
+    createTaskCard(task, {
+      onOpen: (taskId) => {
+        window.location.href = `/tasks/${taskId}`;
+      },
+      onToggleComplete: async (taskId) => {
+        await api(`/api/tasks/${taskId}/stop`, { method: "POST" });
+        window.location.reload();
+      },
+    }),
+  );
 }
 
 if (pageData.tasks.length > 0) {

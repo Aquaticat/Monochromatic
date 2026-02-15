@@ -1,3 +1,14 @@
+/**
+ * REST API handlers for task CRUD operations.
+ *
+ * Mounted by server.ts as route handlers:
+ *   POST   /api/tasks       → handleCreateTask
+ *   PUT    /api/tasks/:id   → handleUpdateTask
+ *   DELETE /api/tasks/:id   → handleDeleteTask
+ *
+ * Client code calls these via the `api()` helper (see client/lib/api.ts),
+ * typically followed by `window.location.reload()` to re-render with fresh data.
+ */
 import { createTask, deleteTask, updateTask } from "../../lib/db/tasks.ts";
 import type { TaskPriority, TaskStatus, TaskUpdateInput } from "../../lib/types.ts";
 

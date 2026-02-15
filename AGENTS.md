@@ -530,6 +530,85 @@ For scripts that might be parsed as CommonJS, add an export:
 export {};
 ```
 
+## CSS best practices
+
+### Units and values
+
+- Always use `rem` for font sizes, never `px`
+  - Use `calc()` to show derivation: `font-size: calc(15 / 16 * 1rem)` instead of `font-size: 0.9375rem`
+  - Exception: `text-underline-offset` may use `em` because it relates to the font size immediately above itself
+- Use `rem` for all sizing, spacing, borders, and decorative elements
+  - Everything scales with user font preferences, including borders and outlines
+  - Modern screens do not need pixel-crisp borders; when sub-pixel precision is truly needed, use `image-rendering: pixelated` or similar CSS properties
+  - Never use `px` except in contexts where the value is truly device-pixel-dependent
+- Document magic numbers with a comment explaining their origin
+
+### Logical properties
+
+- Use logical properties everywhere physical properties would go
+  - `margin-inline-start` not `margin-left`, `padding-inline-end` not `padding-right`
+  - `border-inline-end` not `border-right`, `inset-inline-start` not `left`
+  - `inline-size` / `block-size` when sizing should respect writing direction
+  - `text-align: start` not `text-align: left`
+- No exceptions -- logical properties apply to fixed and absolute positioning too (`inset-block-start` not `top`, `inset-inline-end` not `right`)
+
+### No shorthand properties
+
+- Avoid shorthand properties like `border`, `padding`, `margin`, `font`, `background`, `flex`
+  - Shorthands reset sub-properties to initial values in surprising ways
+  - Longhand is easier to scan and diff
+  - Bad: `border: 1px solid #111`
+  - Good: `border-width: calc(1 / 16 * 1rem); border-style: solid; border-color: var(--gray-fg);`
+  - Bad: `padding: 0.5rem 1rem`
+  - Good: `padding-block: 0.5rem; padding-inline: 1rem;`
+- Exception: `inset: 0` is acceptable because all four sides genuinely share the same value
+
+### Color tokens
+
+- Never hardcode color values in component CSS
+  - Every color must reference a CSS custom property from the design token system
+  - Bad: `color: #111; border-color: #a00; background: rgba(0, 0, 0, 0.3);`
+  - Good: `color: var(--gray-fg); border-color: var(--error-fg); background: var(--overlay-bg);`
+- If a needed token does not exist, add it to the token system first, then reference it
+
+### Custom property fallbacks
+
+- Do not provide fallback values in `var()` calls
+  - Fallbacks hide missing tokens during development
+  - Bad: `color: var(--gray-fg, #111);`
+  - Good: `color: var(--gray-fg);`
+- Exception: user-configurable properties that genuinely may not be defined, e.g. `var(--user-accent, #800)`
+
+### Minimalism
+
+- Use as few CSS properties as possible
+  - Question every declaration: "Does removing this change anything?"
+  - Remove `flex-shrink: 0` if the element is not in a flex container or already fits
+  - Remove `display: block` on elements that are block by default
+  - Remove `font: inherit` if already inherited
+- Use as few breakpoints as possible
+  - Each breakpoint should change the minimum needed to adapt the layout
+  - Avoid duplicating the same property at multiple breakpoints when a single fluid approach (e.g. `clamp()`, `min()`, `max()`) works
+- Never use `!important` -- it signals a structural problem in specificity management
+
+### Accessibility
+
+- All interactive elements must have `:focus-visible` styles
+  - Provide a visible outline or other indicator for keyboard navigation
+- Touch targets must be at least `48px` in both `inline-size` and `block-size` (Material Design minimum)
+  - Use `min-inline-size` and `min-block-size`, not fixed `inline-size`/`block-size`, so the element can grow if content demands it
+
+### Mixin design
+
+- Prefer many small, composable mixins over few large monolithic ones
+  - Inspired by Tailwind utility classes, but as `@mixin` / `@apply` instead of class names
+  - Example primitives: `--flex-center`, `--border-radius-full`, `--whitespace-nowrap`, `--scrollbar-hidden`
+  - Compose in the component: `@apply --flex-center; @apply --border-radius-full;`
+- Mixin names must describe what the mixin does, not what it is used for
+  - Bad: `--reset-button` (ambiguous -- reset a button, or a button that resets?)
+  - Good: `--appearance-none` (clearly strips browser-default appearance)
+- Mixin bodies must themselves follow all the rules above (logical properties, no shorthands, tokens for colors, etc.)
+
 # TypeScript Standards
 
 ## General Guidelines

@@ -1,3 +1,118 @@
+import { css } from "../css.macro.ts" with { type: "macro" };
+
+const STYLES = css(`
+  :host {
+    display: block;
+  }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+  }
+  .overlay.open { display: flex; }
+  .backdrop {
+    position: absolute;
+    inset: 0;
+    background-color: var(--overlay-bg);
+  }
+  .drawer {
+    position: relative;
+    z-index: 1;
+    background-color: var(--bg);
+    inline-size: 20rem;
+    max-inline-size: 85vw;
+    block-size: 100%;
+    @apply --flex-column;
+  }
+  .header {
+    @apply --flex-row;
+    justify-content: space-between;
+    padding-block-start: var(--min-gap);
+    padding-block-end: var(--min-padding);
+    padding-inline-start: var(--min-gap);
+    padding-inline-end: var(--min-padding);
+    min-block-size: 4rem;
+  }
+  .close {
+    @apply --appearance-none;
+    @apply --flex-center;
+    @apply --min-touch-target;
+  }
+  .close:focus-visible {
+    outline-width: 0.125rem;
+    outline-style: solid;
+    outline-color: var(--fg);
+    outline-offset: -0.125rem;
+  }
+  .close svg {
+    inline-size: 2rem;
+    block-size: 2rem;
+  }
+  .divider {
+    block-size: calc(1 / 16 * 1rem);
+    background-color: var(--bg-weaker);
+    inline-size: 100%;
+  }
+  nav {
+    @apply --flex-column;
+    gap: var(--min-gap);
+    flex: 1;
+    padding-block-start: var(--min-gap);
+  }
+  ::slotted(a), a {
+    @apply --flex-row;
+    gap: var(--min-gap);
+    min-block-size: 3rem;
+    padding-block: 0;
+    padding-inline: var(--min-gap);
+    color: var(--fg);
+    text-decoration: none;
+    font-size: 1.25rem;
+    font-weight: 400;
+  }
+  a:hover {
+    background-color: var(--hover-bg);
+  }
+  a:focus-visible {
+    outline-width: 0.125rem;
+    outline-style: solid;
+    outline-color: var(--fg);
+    outline-offset: -0.125rem;
+  }
+
+  @media (min-width: 48rem) {
+    :host {
+      inline-size: 22rem;
+      block-size: 100dvh;
+      position: sticky;
+      inset-block-start: 0;
+    }
+    .overlay {
+      display: flex;
+      position: relative;
+      inset: auto;
+      z-index: auto;
+      block-size: 100%;
+    }
+    .backdrop { display: none; }
+    .drawer {
+      inline-size: 22rem;
+      max-inline-size: 22rem;
+      border-inline-end-width: calc(1 / 16 * 1rem);
+      border-inline-end-style: solid;
+      border-inline-end-color: var(--bg-weaker);
+      block-size: 100%;
+    }
+    .close { display: none; }
+    .header {
+      padding-block: var(--min-padding);
+      padding-inline-start: var(--min-gap);
+      padding-inline-end: var(--min-padding);
+    }
+  }
+`);
+
 class SideDrawer extends HTMLElement {
   static observedAttributes = ["open"];
 
@@ -35,111 +150,14 @@ class SideDrawer extends HTMLElement {
 
   #render(): void {
     this.#shadow.innerHTML = `
-      <style>
-        :host {
-          display: block;
-        }
-        .overlay {
-          position: fixed;
-          inset: 0;
-          z-index: 100;
-          display: none;
-        }
-        .overlay.open { display: flex; }
-        .backdrop {
-          position: absolute;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.3);
-        }
-        .drawer {
-          position: relative;
-          z-index: 1;
-          background: var(--gray-bg, #eee);
-          width: 320px;
-          max-width: 85vw;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-        }
-        .header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: var(--min-gap, 16px) var(--min-padding, 8px) var(--min-padding, 8px) var(--min-gap, 16px);
-          min-height: 64px;
-        }
-        .close {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: none;
-          width: 48px;
-          height: 48px;
-          padding: 0;
-          background: transparent;
-          cursor: pointer;
-        }
-        .close svg { width: 32px; height: 32px; }
-        .divider {
-          height: 1px;
-          background: var(--gray-bg-weaker, #bbb);
-          width: 100%;
-        }
-        nav {
-          display: flex;
-          flex-direction: column;
-          gap: var(--min-gap, 16px);
-          flex: 1;
-          padding-top: var(--min-gap, 16px);
-        }
-        ::slotted(a), a {
-          display: flex;
-          align-items: center;
-          gap: var(--min-gap, 16px);
-          min-height: 48px;
-          padding: 0 var(--min-gap, 16px);
-          color: var(--gray-fg, #111);
-          text-decoration: none;
-          font-size: 1.25rem;
-          font-weight: 400;
-        }
-        a:hover { background: rgba(0, 0, 0, 0.05); }
-
-        @media (min-width: 768px) {
-          :host {
-            width: 352px;
-            flex-shrink: 0;
-            height: 100dvh;
-            position: sticky;
-            top: 0;
-          }
-          .overlay {
-            display: flex !important;
-            position: relative;
-            inset: auto;
-            z-index: auto;
-            height: 100%;
-          }
-          .backdrop { display: none; }
-          .drawer {
-            width: 352px;
-            max-width: 352px;
-            border-right: 1px solid var(--gray-bg-weaker, #bbb);
-            height: 100%;
-          }
-          .close { display: none; }
-          .header {
-            padding: var(--min-padding, 8px) var(--min-padding, 8px) var(--min-padding, 8px) var(--min-gap, 16px);
-          }
-        }
-      </style>
+      <style>${STYLES}</style>
       <div class="overlay${this.open ? " open" : ""}">
         <div class="backdrop"></div>
         <aside class="drawer">
           <div class="header">
             <span style="font-size:1.25rem">Firstname</span>
             <button class="close" aria-label="Close menu">
-              <svg viewBox="0 0 48 48" fill="none" stroke="#111" stroke-width="4">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4">
                 <line x1="14" y1="14" x2="34" y2="34"/>
                 <line x1="34" y1="14" x2="14" y2="34"/>
               </svg>

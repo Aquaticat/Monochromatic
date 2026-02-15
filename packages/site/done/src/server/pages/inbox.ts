@@ -1,3 +1,10 @@
+/**
+ * Inbox page handler.
+ *
+ * Queries the DB for inbox tasks, then delegates to the shared `renderPage()` shell.
+ * The `entryScriptPath` tells the browser to load `/dist/client/inbox.js`,
+ * which reads `pageData` from the embedded JSON blob and builds the UI into `<main id="app">`.
+ */
 import { listBlockedInboxTasks, listInboxUnblockedTasks } from "../../lib/db/tasks.ts";
 import { renderPage } from "./layout.ts";
 

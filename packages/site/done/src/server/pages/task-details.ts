@@ -1,5 +1,16 @@
+/**
+ * Task detail page handler.
+ *
+ * Renders its own HTML inline (not via `renderPage()`) because the task detail
+ * page omits the `<top-nav>` entirely -- the `<task-detail>` web component
+ * provides its own back-button header.
+ *
+ * Client entry: `/dist/client/task-details.js` (src/client/task-details.ts)
+ */
+import { $ as h } from "@monochromatic-dev/module-es/ts/types/t string/t html/f/t string jsx/r s/p n/index.ts";
 import { getTaskById, listTasksForBlockerPicker } from "../../lib/db/tasks.ts";
 
+/** Escapes `<` to prevent `</script>` injection inside the JSON blob */
 function serializePageData(data: unknown): string {
   return JSON.stringify(data).replaceAll("<", "\\u003c");
 }
@@ -27,21 +38,35 @@ export function taskDetailsPage(taskId: string): Response {
   };
 
   const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Task - ${task.title}</title>
-</head>
-<body>
-  <side-drawer id="drawer"></side-drawer>
-  <div class="page-wrapper">
-    <main id="app"></main>
-  </div>
-  <script type="application/json" id="page-data">${serializePageData(pageData)}</script>
-  <script type="module" src="/dist/client/task-details.js"></script>
-</body>
-</html>`;
+` + h({
+    tag: "html",
+    attrs: { lang: "en" },
+    children: [
+      h({
+        tag: "head",
+        children: [
+          h({ tag: "meta", attrs: { charset: "utf-8" } }),
+          h({ tag: "meta", attrs: { name: "viewport", content: "width=device-width, initial-scale=1" } }),
+          h({ tag: "title", text: `Task - ${task.title}` }),
+        ],
+      }),
+      h({
+        tag: "body",
+        children: [
+          h({ tag: "side-drawer", attrs: { id: "drawer" } }),
+          h({
+            tag: "div",
+            class: "page-wrapper",
+            children: [
+              h({ tag: "main", attrs: { id: "app" } }),
+            ],
+          }),
+          h({ tag: "script", attrs: { type: "application/json", id: "page-data" }, html: serializePageData(pageData) }),
+          h({ tag: "script", attrs: { type: "module", src: "/dist/client/task-details.js" } }),
+        ],
+      }),
+    ],
+  });
 
   return new Response(html, {
     headers: { "Content-Type": "text/html; charset=utf-8" },

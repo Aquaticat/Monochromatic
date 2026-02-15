@@ -1,3 +1,11 @@
+/**
+ * Thin wrapper around `fetch` for calling the JSON API endpoints defined
+ * in `server/api/tasks.ts` and `server/api/timer.ts`.
+ *
+ * Automatically sets `Content-Type: application/json` and shows a toast on error.
+ */
+import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
+
 export async function api<TResponse = unknown>(path: string, options?: RequestInit): Promise<TResponse> {
   const response = await fetch(path, {
     ...options,
@@ -22,12 +30,9 @@ export async function api<TResponse = unknown>(path: string, options?: RequestIn
 }
 
 export function showToast(message: string): void {
-  const currentToast = document.querySelector(".toast");
-  currentToast?.remove();
+  document.querySelector(".toast")?.remove();
 
-  const toastElement = document.createElement("div");
-  toastElement.className = "toast";
-  toastElement.textContent = message;
+  const toastElement = h({ tag: "div", class: "toast", text: message });
   document.body.append(toastElement);
   setTimeout(() => {
     toastElement.remove();

@@ -1,3 +1,32 @@
+import { css } from "../css.macro.ts" with { type: "macro" };
+
+const STYLES = css(`
+  :host {
+    display: block;
+    inline-size: 100%;
+  }
+  button {
+    @apply --button-outlined;
+    inline-size: 100%;
+    text-align: start;
+  }
+  button:focus-visible {
+    outline-width: 0.125rem;
+    outline-style: solid;
+    outline-color: var(--fg);
+    outline-offset: 0.125rem;
+  }
+  .text {
+    flex: 1;
+    text-align: start;
+  }
+  .divider {
+    inline-size: calc(1 / 16 * 1rem);
+    block-size: 100%;
+    background-color: var(--fg-weaker);
+  }
+`);
+
 class FocusDropdown extends HTMLElement {
   #shadow: ShadowRoot;
 
@@ -10,36 +39,7 @@ class FocusDropdown extends HTMLElement {
     const text = this.getAttribute("value") ?? "Select focus...";
 
     this.#shadow.innerHTML = `
-      <style>
-        :host {
-          display: block;
-          width: 100%;
-        }
-        button {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
-          border: 1px solid var(--gray-fg, #111);
-          padding: 0.5rem;
-          height: 48px;
-          background: transparent;
-          color: var(--gray-fg, #111);
-          font: inherit;
-          cursor: pointer;
-          width: 100%;
-          text-align: left;
-        }
-        .text {
-          flex: 1;
-          text-align: left;
-        }
-        .divider {
-          width: 1px;
-          height: 100%;
-          background: var(--gray-fg-weaker, #444);
-        }
-      </style>
+      <style>${STYLES}</style>
       <button>
         <span class="text">${text}</span>
         <span class="divider"></span>

@@ -1,4 +1,12 @@
+/**
+ * Client entry script for the Search page.
+ *
+ * Same hydration pattern as inbox.ts: injectCSS → readPageData → build DOM into #app.
+ * The search page's HTML shell (rendered inline by the server, not via renderPage)
+ * places a `<search-bar>` above `<main id="app">` instead of a `<top-nav>`.
+ */
 import type { SearchTask } from "../lib/types.ts";
+import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import styles from "../../dist/client/styles.css" with { type: "text" };
 import { api } from "./lib/api.ts";
 import { injectCSS } from "./lib/inject-css.ts";
@@ -29,31 +37,31 @@ document.querySelector("search-bar")?.addEventListener("search", ((event: Custom
 }) as EventListener);
 
 if (pageData.query.length === 0) {
-  const hint = document.createElement("p");
-  hint.className = "search-hint";
-  hint.textContent = "Type something...or select one of the categories.";
-  app.append(hint);
+  app.append(h({ tag: "p", class: "search-hint", text: "Type something...or select one of the categories." }));
 
   const availableTags = pageData.availableTags ?? [];
   if (availableTags.length > 0) {
-    const tagChips = document.createElement("div");
-    tagChips.className = "tag-chips";
-
-    for (const tag of availableTags) {
-      const chip = document.createElement("button");
-      chip.className = "tag-chip";
-      chip.textContent = `# ${tag}`;
-      chip.addEventListener("click", () => {
-        window.location.href = `/search?q=${encodeURIComponent(`#${tag}`)}`;
-      });
-      tagChips.append(chip);
-    }
-
-    app.append(tagChips);
+    app.append(
+      h({
+        tag: "div",
+        class: "tag-chips",
+        children: availableTags.map((tag) =>
+          h({
+            tag: "button",
+            class: "tag-chip",
+            text: `# ${tag}`,
+            on: {
+              click: () => {
+                window.location.href = `/search?q=${encodeURIComponent(`#${tag}`)}`;
+              },
+            },
+          }),
+        ),
+      }),
+    );
   }
 } else {
-  const resultList = document.createElement("ul");
-  resultList.className = "task-list";
+  const resultList = h({ tag: "ul", class: "task-list" });
 
   for (const result of pageData.results) {
     resultList.append(
@@ -66,15 +74,12 @@ if (pageData.query.length === 0) {
           await api(`/api/tasks/${taskId}/complete`, { method: "POST" });
           window.location.reload();
         },
-      })
+      }),
     );
   }
 
   if (pageData.results.length === 0) {
-    const emptyState = document.createElement("p");
-    emptyState.className = "empty";
-    emptyState.textContent = "No matching tasks.";
-    app.append(emptyState);
+    app.append(h({ tag: "p", class: "empty", text: "No matching tasks." }));
   } else {
     app.append(resultList);
   }

@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@monochromatic-dev/build-css": "workspace:*"
+    "@monochromatic-dev/build-css": "workspace:*",
+    "@monochromatic-dev/module-es": "workspace:*",
+    "postcss": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",

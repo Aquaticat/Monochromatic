@@ -1,3 +1,42 @@
+import { css } from "../css.macro.ts" with { type: "macro" };
+
+const STYLES = css(`
+  :host {
+    position: fixed;
+    inset-block-end: 1rem;
+    inset-inline-end: calc(50% - calc(393 / 16 * 1rem) / 2 + 1rem);
+    z-index: 50;
+  }
+  button {
+    @apply --flex-center;
+    @apply --min-touch-target;
+    inline-size: 4rem;
+    block-size: 4rem;
+    @apply --border-radius-full;
+    background-color: var(--fg);
+    border-width: 0.25rem;
+    border-style: solid;
+    border-color: var(--bg);
+    color: var(--bg);
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1.2;
+  }
+  button:hover { opacity: 0.85; }
+  button:focus-visible {
+    outline-width: 0.125rem;
+    outline-style: solid;
+    outline-color: var(--fg);
+    outline-offset: 0.125rem;
+  }
+  @media (min-width: 48rem) {
+    :host {
+      inset-inline-end: 1rem;
+      inset-block-end: 1rem;
+    }
+  }
+`);
+
 class FabButton extends HTMLElement {
   #shadow: ShadowRoot;
 
@@ -8,35 +47,7 @@ class FabButton extends HTMLElement {
 
   connectedCallback(): void {
     this.#shadow.innerHTML = `
-      <style>
-        :host {
-          position: fixed;
-          bottom: 1rem;
-          right: calc(50% - 196px + 1rem);
-          z-index: 50;
-        }
-        button {
-          width: 64px;
-          height: 64px;
-          border-radius: 999px;
-          background: var(--gray-fg, #111);
-          border: 4px solid var(--gray-bg, #eee);
-          color: var(--gray-bg, #eee);
-          font-size: 2rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          line-height: 1;
-        }
-        button:hover { opacity: 0.85; }
-        @media (min-width: 768px) {
-          :host {
-            right: 1rem;
-            bottom: 1rem;
-          }
-        }
-      </style>
+      <style>${STYLES}</style>
       <button part="button" aria-label="${this.getAttribute("label") ?? "Action"}">
         <slot>+</slot>
       </button>

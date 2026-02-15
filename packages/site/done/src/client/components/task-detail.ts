@@ -1,5 +1,6 @@
 import type { Task } from "../../lib/types.ts";
 import { formatRunningTrackedTime } from "../lib/task-card.ts";
+import { css } from "../css.macro.ts" with { type: "macro" };
 
 type BlockerSummary = {
   id: string;
@@ -12,33 +13,32 @@ type TaskDetailData = {
   blockerSummaries: BlockerSummary[];
 };
 
-const STYLES = `
+const STYLES = css(`
   :host {
-    display: flex;
-    flex-direction: column;
+    @apply --flex-column;
     gap: 1rem;
-    padding: 1rem;
+    padding-block: 1rem;
+    padding-inline: 1rem;
   }
   .header {
-    display: flex;
-    align-items: center;
+    @apply --flex-row;
     justify-content: space-between;
   }
   .close {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    @apply --appearance-none;
+    @apply --flex-center;
+    @apply --min-touch-target;
+  }
+  .close:focus-visible {
+    outline-width: 0.125rem;
+    outline-style: solid;
+    outline-color: var(--fg);
+    outline-offset: -0.125rem;
   }
   .close svg {
-    width: 32px;
-    height: 32px;
-    stroke: var(--gray-fg, #111);
+    inline-size: 2rem;
+    block-size: 2rem;
+    stroke: var(--fg);
     stroke-width: 4;
   }
   .heading {
@@ -48,84 +48,80 @@ const STYLES = `
   .title-input {
     font-size: 1.5rem;
     font-weight: 400;
-    border: none;
-    border-bottom: 1px solid var(--gray-fg, #111);
-    background: transparent;
-    width: 100%;
-    padding: 0.25rem 0;
+    border-style: none;
+    border-block-end-width: calc(1 / 16 * 1rem);
+    border-block-end-style: solid;
+    border-block-end-color: var(--fg);
+    background-color: transparent;
+    inline-size: 100%;
+    padding-block: 0.25rem;
+    padding-inline: 0;
     outline: none;
     font-family: inherit;
-    color: var(--gray-fg, #111);
+    color: var(--fg);
   }
   .desc-input {
-    border: 1px solid var(--gray-fg, #111);
-    padding: 0.5rem;
-    min-height: 4.5rem;
+    border-width: calc(1 / 16 * 1rem);
+    border-style: solid;
+    border-color: var(--fg);
+    padding-block: 0.5rem;
+    padding-inline: 0.5rem;
+    min-block-size: 4.5rem;
     resize: vertical;
     font: inherit;
-    color: var(--gray-fg, #111);
-    background: transparent;
+    color: var(--fg);
+    background-color: transparent;
   }
-  .desc-input::placeholder { color: var(--gray-medium, #888); }
+  .desc-input::placeholder { color: var(--medium); }
   .actions {
     display: flex;
     gap: 1rem;
   }
   .pills {
-    display: flex;
+    @apply --scroll-row;
     flex-wrap: wrap;
-    gap: var(--min-gap, 16px);
-    align-items: flex-start;
-    overflow-x: auto;
-    overflow-y: clip;
   }
   .pill {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #111;
-    border-radius: 999px;
-    padding: 0.5rem;
+    @apply --flex-center;
+    @apply --whitespace-nowrap;
+    border-width: calc(1 / 16 * 1rem);
+    border-style: solid;
+    border-color: var(--fg);
+    @apply --border-radius-full;
+    padding-block: 0.5rem;
+    padding-inline: 0.5rem;
     gap: 0.25rem;
-    white-space: nowrap;
     font-size: 1rem;
     line-height: 1.5;
   }
   .btn-row {
-    display: flex;
-    align-items: center;
+    @apply --flex-row;
     gap: 0.5rem;
     flex-wrap: wrap;
-    margin-top: 1rem;
+    margin-block-start: 1rem;
   }
   .btn-outline {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border: 1px solid var(--gray-fg, #111);
-    padding: 0.5rem;
-    height: 48px;
-    background: transparent;
-    color: var(--gray-fg, #111);
-    font: inherit;
-    cursor: pointer;
+    @apply --button-outlined;
+  }
+  .btn-outline:focus-visible {
+    outline-width: 0.125rem;
+    outline-style: solid;
+    outline-color: var(--fg);
+    outline-offset: 0.125rem;
   }
   .btn-primary {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border: 1px solid var(--gray-fg, #111);
-    padding: 0.5rem;
-    height: 48px;
-    background: var(--gray-fg, #111);
-    color: var(--gray-bg, #eee);
-    font: inherit;
-    cursor: pointer;
+    @apply --button-outlined;
+    background-color: var(--fg);
+    color: var(--bg);
+  }
+  .btn-primary:focus-visible {
+    outline-width: 0.125rem;
+    outline-style: solid;
+    outline-color: var(--fg);
+    outline-offset: 0.125rem;
   }
   button:disabled { opacity: 0.45; cursor: not-allowed; }
-`;
+`);
 
 class TaskDetail extends HTMLElement {
   #shadow: ShadowRoot;

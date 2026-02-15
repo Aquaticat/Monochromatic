@@ -1,3 +1,10 @@
+/**
+ * Client entry script for the Task Detail page.
+ *
+ * Same hydration pattern as inbox.ts: injectCSS → readPageData → build DOM into #app.
+ * The server renders its own HTML shell (not via renderPage) without `<top-nav>`,
+ * because the `<task-detail>` component provides its own back-button header.
+ */
 import type { Task } from "../lib/types.ts";
 import styles from "../../dist/client/styles.css" with { type: "text" };
 import { api } from "./lib/api.ts";
