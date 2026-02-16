@@ -19,6 +19,7 @@ import { api } from "./lib/api.ts";
 import { injectCSS } from "./lib/inject-css.ts";
 import { readPageData } from "./lib/page-data.ts";
 import { createTaskCard } from "./lib/task-card.ts";
+import { TaskDetail } from "./components/task-detail.ts";
 // Side-effect imports: register custom elements so the browser recognizes them in the DOM
 import "./components/side-drawer.ts";
 import "./components/top-nav.ts";
@@ -39,6 +40,65 @@ type InboxPageData = {
 };
 
 injectCSS(styles);
+
+// Page-scoped styles for inbox controls (not shared with other pages)
+injectCSS(`
+.task-children {
+  margin-inline-start: 1.5rem;
+  border-inline-start-width: 0.125rem;
+  border-inline-start-style: solid;
+  border-inline-start-color: var(--bg-weaker);
+  padding-inline-start: 0.75rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+  align-items: flex-start;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--min-padding);
+  flex: 1 0 0;
+  min-inline-size: 100%;
+  overflow: hidden;
+}
+
+.subsection-heading {
+  font-size: 1.25rem;
+  font-weight: 400;
+}
+
+.subsection-desc {
+  font-size: calc(15 / 16 * 1rem);
+  line-height: 1.5;
+  color: var(--fg-weaker);
+}
+
+.location-options {
+  display: flex;
+  gap: var(--min-gap);
+  align-items: center;
+  min-block-size: 3rem;
+  flex-wrap: wrap;
+}
+
+.autodetect-toggle {
+  display: flex;
+  gap: var(--min-padding);
+  align-items: center;
+  cursor: pointer;
+  background-color: transparent;
+  border-style: none;
+  font: inherit;
+  color: var(--fg);
+  padding-block: 0;
+  padding-inline: 0;
+}
+`);
 
 const pageData = readPageData<InboxPageData>();
 const appElement = document.getElementById("app");
@@ -163,23 +223,86 @@ app.append(allSection);
 
 //endregion All section
 
-// FAB button for creating tasks
+//region New-task dialog -- FAB opens a modal <dialog> with task-detail in create mode
+
+/** Blank task template used when creating a new task. */
+const emptyTask: Task = {
+  id: "",
+  title: "",
+  description: null,
+  tags: [],
+  locations: [],
+  priority: null,
+  dueDate: null,
+  complexity: null,
+  reminders: [],
+  blockedBy: [],
+  trackedTime: 0,
+  timerStartedAt: null,
+  status: "inbox",
+  source: "local",
+  sourceId: null,
+  sourceMeta: null,
+  createdAt: "",
+  updatedAt: "",
+};
+
+const newTaskDialog = h({ tag: "dialog", class: "new-task-dialog" }) as HTMLDialogElement;
+const newTaskDetail = document.createElement("task-detail") as TaskDetail;
+
+newTaskDetail.addEventListener("action", ((event: CustomEvent) => {
+  const { action, title, description } = event.detail as {
+    action: string;
+    title: string;
+    description: string;
+  };
+
+  if (action === "close") {
+    newTaskDialog.close();
+    return;
+  }
+
+  if (action === "save") {
+    const trimmedTitle = title.trim();
+    if (trimmedTitle.length === 0) return;
+
+    const metadata = newTaskDetail.getMetadata();
+    api("/api/tasks", {
+      method: "POST",
+      body: JSON.stringify({
+        title: trimmedTitle,
+        description: description.length === 0 ? null : description,
+        tags: metadata.tags,
+        locations: metadata.locations,
+        priority: metadata.priority,
+        complexity: metadata.complexity,
+      }),
+    }).then(() => {
+      window.location.reload();
+    });
+  }
+}) as EventListener);
+
+newTaskDialog.append(newTaskDetail);
+document.body.append(newTaskDialog);
+
+function openNewTaskDialog(): void {
+  // Re-configure with a fresh empty task each time the dialog opens
+  newTaskDetail.configure({ task: emptyTask, blockerSummaries: [], mode: "create" });
+  newTaskDialog.showModal();
+
+  requestAnimationFrame(() => {
+    const titleInput = newTaskDetail.shadowRoot?.querySelector(".title-input") as HTMLInputElement | null;
+    titleInput?.focus();
+  });
+}
+
 document.body.append(
   h({
     tag: "fab-button",
     attrs: { label: "Add task" },
-    on: {
-      click: () => {
-        const title = prompt("New task title:");
-        if (title !== null && title.trim().length > 0) {
-          api("/api/tasks", {
-            method: "POST",
-            body: JSON.stringify({ title: title.trim() }),
-          }).then(() => {
-            window.location.reload();
-          });
-        }
-      },
-    },
+    on: { click: openNewTaskDialog },
   }),
 );
+
+//endregion New-task dialog

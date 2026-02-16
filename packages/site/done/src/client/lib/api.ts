@@ -4,7 +4,9 @@
  *
  * Automatically sets `Content-Type: application/json` and shows a toast on error.
  */
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
+import { showToast } from "../components/toast-message.ts";
+
+export { showToast };
 
 export async function api<TResponse = unknown>(path: string, options?: RequestInit): Promise<TResponse> {
   const response = await fetch(path, {
@@ -27,14 +29,4 @@ export async function api<TResponse = unknown>(path: string, options?: RequestIn
   }
 
   return (await response.json()) as TResponse;
-}
-
-export function showToast(message: string): void {
-  document.querySelector(".toast")?.remove();
-
-  const toastElement = h({ tag: "div", class: "toast", text: message });
-  document.body.append(toastElement);
-  setTimeout(() => {
-    toastElement.remove();
-  }, 3000);
 }

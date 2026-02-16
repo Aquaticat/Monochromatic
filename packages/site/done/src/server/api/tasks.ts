@@ -165,6 +165,8 @@ export async function handleCreateTask(req: Request): Promise<Response> {
       description: typeof body.description === "string" ? body.description : null,
       tags: parseStringArray(body.tags) ?? [],
       locations: parseStringArray(body.locations) ?? [],
+      priority: parsePriority(body.priority) ?? null,
+      complexity: parsePriority(body.complexity) ?? null,
     });
     return jsonResponse(task, 201);
   } catch (error) {

@@ -56,6 +56,15 @@
   min-block-size: 3rem;
 }
 
+/* Light-DOM global resets that shadow DOM cannot inherit.
+   Applied once at the top level of each component's STYLES string
+   so every shadow tree gets consistent disabled and placeholder styling
+   without repeating the declarations in every component. */
+@mixin --shadow-dom-globals {
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  input::placeholder, textarea::placeholder { color: var(--medium); }
+}
+
 /* -- Composed patterns ---------------------------------------------------- */
 
 /* Horizontally scrollable row of inline items */

@@ -27,7 +27,7 @@ const STYLES = css(`
     outline: none;
     block-size: 100%;
   }
-  input::placeholder { color: var(--medium); }
+  @apply --shadow-dom-globals;
   @media (min-width: 48rem) {
     :host {
       border-block-end-width: calc(1 / 16 * 1rem);

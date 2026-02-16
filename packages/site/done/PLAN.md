@@ -19,7 +19,7 @@ See `FRAMEWORK_EVALUATION.md` for why this approach was chosen over SvelteKit, V
 
 ## Day 1 (Tue): Scaffolding and data layer (~4h)
 
-### 1.1 Project setup (~1.5h)
+### 1.1 Project setup (~1.5h) **done**
 
 - (0.25h) Initialize project at `packages/site/done/` with `package.json` (`workspace:*` references to monorepo packages)
 - (0.25h) Add `mise.toml` with `dev`, `build`, and `start` tasks
@@ -157,7 +157,7 @@ export function injectCSS(css: string): void {
 }
 ```
 
-### 1.2 Database schema and migration (~3h)
+### 1.2 Database schema and migration (~3h) **done**
 
 - (0.5h) Install `@libsql/client`, create `src/lib/db.ts` with `createClient({ url: "file:/data/<user-id>/done.db" })` and migration runner
 - (1.0h) Write core tables SQL (tasks, attachments, settings) and run migration on first startup
@@ -292,7 +292,7 @@ CREATE INDEX idx_tasks_source_id ON tasks(source, source_id) WHERE source_id IS 
 CREATE INDEX idx_attachments_task_id ON attachments(task_id);
 ```
 
-### 1.3 Database helper functions (~3h)
+### 1.3 Database helper functions (~3h) **partial** (tasks.ts done; attachments, settings, reminders not started)
 
 - (0.5h) Write `src/lib/db/tasks.ts`: CRUD functions (create, read, update, delete task)
 - (0.5h) Write `src/lib/db/tasks.ts`: timer functions (startTimer, stopTimer, completeTask with blocker check)
@@ -892,14 +892,14 @@ When the autofill response includes a non-null `splitSuggestion`, the UI shows a
 
 ## Day 2 (Wed): Core CRUD UI (~4h)
 
-### 2.1 Layout shell and navigation (~2h)
+### 2.1 Layout shell and navigation (~2h) **done**
 
 - (0.5h) Create shared HTML shell function (`src/server/pages/layout.ts`): returns the `<!DOCTYPE html>` wrapper with nav drawer, styles, and script tag slot
 - (0.5h) Build drawer navigation as part of the shell: Inbox, In Progress, Settings links. Hamburger toggle. Pure HTML + CSS (no JS needed for drawer -- use `<details>` or checkbox hack).
 - (0.5h) Create FAB function in `src/client/components/fab.ts`: creates a fixed-position button element, wires click to open new-task form
 - (0.5h) Set up `src/client/styles.css` with `@import 'mixin.css'` and `@apply` rules. Create `src/client/mixin.css` with shared mixins. CSS is processed by build-css, then imported as text in client TS and injected at runtime (no `<link>` tag). Include Inter + JetBrains Mono fonts (via CDN), Material Symbols icon font, CSS variables for colors.
 
-### 2.2 Inbox screen (~2.5h)
+### 2.2 Inbox screen (~2.5h) **done**
 
 - (0.5h) Create `src/server/pages/inbox.ts`: queries unblocked inbox tasks, embeds as JSON, returns HTML
 - (0.5h) Create `src/server/api/tasks.ts`: POST handler for creating tasks (validates with zod-mini)
@@ -907,7 +907,7 @@ When the autofill response includes a non-null `splitSuggestion`, the UI shows a
 - (0.5h) Create `<collapsible-section>` custom element: header with icon + title + toggle, content slot
 - (0.5h) Create `src/client/inbox.ts`: reads page data, builds Suggested + All sections using custom elements, wires FAB
 
-### 2.3 Task details screen (~2.5h)
+### 2.3 Task details screen (~2.5h) **done**
 
 - (0.5h) Create `src/server/pages/task-details.ts`: queries single task + attachments, embeds as JSON, returns HTML
 - (0.5h) Create `src/server/api/tasks.ts`: PUT handler for updating tasks, DELETE handler
@@ -915,21 +915,21 @@ When the autofill response includes a non-null `splitSuggestion`, the UI shows a
 - (0.5h) Wire all chips: tags, location, priority, due date, complexity, reminders, blockedBy
 - (0.5h) Create `src/client/task-details.ts`: reads page data, builds editable form with chips, save button calls PUT API
 
-### 2.4 API wiring and verification (~1h)
+### 2.4 API wiring and verification (~1h) **done**
 
 - (0.5h) Wire all API routes in `src/server/api/tasks.ts`: create, update, delete with zod-mini validation
 - (0.5h) Verify round-trip: create task -> appears in inbox -> click to details -> edit -> save -> inbox reflects changes
 
 ## Day 3 (Thu): Overflow from days 1-2, then medium/low items (~4h)
 
-### 3.1 Server-side timer logic (~2h) `priority:low`
+### 3.1 Server-side timer logic (~2h) `priority:low` **done**
 
 - (0.5h) Add API routes `POST /api/tasks/:id/start` and `POST /api/tasks/:id/stop` in `src/server/api/timer.ts`
 - (0.5h) Add API route `POST /api/tasks/:id/complete`: validate no unresolved blockers, calculate final time, set status to `done`, then delete
 - (0.5h) Test all three actions manually: start -> stop -> verify cumulative time; start -> complete -> verify blocker rejection
 - (0.5h) Wire start/stop/complete buttons in task details client code
 
-### 3.2 In Progress screen (~2.5h) `priority:low`
+### 3.2 In Progress screen (~2.5h) `priority:low` **done**
 
 - (0.5h) Create `src/server/pages/in-progress.ts`: queries all tasks where `status = 'in_progress'`, embeds as JSON
 - (0.5h) Create `src/client/in-progress.ts`: reads page data, builds task card list with live timer display
@@ -937,14 +937,14 @@ When the autofill response includes a non-null `splitSuggestion`, the UI shows a
 - (0.5h) Format timer display as `HH:MM:SS`, handle edge cases (no timerStartedAt, timer just started)
 - (0.5h) Verify: start timer on task -> navigate to In Progress -> see ticking timer -> stop -> time persists
 
-### 3.3 Blocking UI (~2h) `priority:medium`
+### 3.3 Blocking UI (~2h) `priority:medium` **done**
 
 - (0.5h) Update inbox page handler: fetch blocked tasks per visible parent (batched query), include in embedded data
 - (0.5h) Update inbox client: render blocked tasks indented under their blockers with a "blocked" badge
 - (0.5h) Add blocker picker to task details: `blockedBy` chip opens a searchable task list, saves selected IDs via API
 - (0.5h) Disable complete button when blockers exist, show explanation with list of blocking tasks
 
-### 3.4 Search screen (~1.5h) `priority:low`
+### 3.4 Search screen (~1.5h) `priority:low` **done**
 
 - (0.5h) Create `src/server/pages/search.ts`: runs FTS5 query from `?q=` param, embeds results with `is_blocked` flag
 - (0.5h) Create `src/client/search.ts`: search input with debounced navigation to `/search?q=...`, result list with blocked badges
@@ -954,14 +954,14 @@ When the autofill response includes a non-null `splitSuggestion`, the UI shows a
 
 AI is the core differentiator. Prompt engineering and structured output parsing are the focus.
 
-### 4.1 llama.cpp client and rate limiting (~2h)
+### 4.1 llama.cpp client and rate limiting (~2h) **done**
 
 - (0.5h) Create `src/lib/ai/client.ts`: HTTP client wrapper for llama.cpp's OpenAI-compatible chat completions endpoint (reads `CHAT_COMPLETIONS_URL` env var, e.g., `http://llama-cpp:8080/v1/chat/completions`). Use `response_format: { type: "json_object" }` to force JSON output.
 - (0.5h) Implement in-memory rate limiter: sliding window counter, max 30 requests/minute per process, returns 429 when exceeded
 - (0.5h) Create `src/lib/ai/prompts.ts`: system prompt templates with clear separation of instructions vs user data (user content in `<user_tasks>` block)
 - (0.5h) Test: verify client connects to llama.cpp, sends a simple prompt, parses response; verify rate limiter rejects burst requests
 
-### 4.2 Autofill endpoint (~3h)
+### 4.2 Autofill endpoint (~3h) **done**
 
 - (0.5h) Create `src/server/api/ai-autofill.ts`: POST handler accepting `{ title: string }`
 - (0.5h) Write autofill prompt: include title text, existing tags/locations from DB (for consistency), instructions to infer tags/location/priority/complexity
@@ -1166,7 +1166,7 @@ volumes:
 - (0.5h) Wire scheduled job: run once daily at 3am UTC, send JSON attachment via `@upyo/smtp`
 - (0.25h) Test: trigger backup manually -> verify email arrives with valid JSON attachment
 
-### 6.6 Settings screen (~1.5h) `priority:low`
+### 6.6 Settings screen (~1.5h) `priority:low` **partial** (UI skeleton only; no API route, no DB persistence)
 
 - (0.5h) Create `src/server/pages/settings.ts`: queries all settings, embeds as JSON
 - (0.5h) Create `src/client/settings.ts`: builds settings form (AI model, email, connected apps, location), wire save to `PUT /api/settings`
@@ -1270,12 +1270,17 @@ WHERE tasks.status = 'inbox'
 Items without a marker are implicitly highest priority and form the 20h core plan.
 Marked items are built if time allows, in descending priority order.
 
-**Core (unmarked):** 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 2.4, 4.1, 4.2, 4.3, 4.4, 5.1, 5.2, 5.3, 7.1a, 7.1b, 7.1d, 7.4, 7.5
+**Core -- done:** 1.1, 1.2, 2.1, 2.2, 2.3, 2.4, 4.1, 4.2
+**Core -- partial:** 1.3 (tasks + settings done; attachments/reminders not started)
+**Core -- not started:** 4.3, 4.4, 5.1, 5.2, 5.3, 7.1a, 7.1b, 7.1d, 7.4, 7.5
 Note: Dockerfile simplified (no framework build step) -- single stage, Bun runs TS directly.
 
-**`priority:medium`:** 3.3 (blocking UI), 6.4 (email reminders), 6.5 (daily backup)
+**`priority:medium` -- done:** 3.3 (blocking UI)
+**`priority:medium` -- not started:** 6.4 (email reminders), 6.5 (daily backup)
 
-**`priority:low`:** 3.1 (timer logic), 3.2 (in-progress screen), 3.4 (search), 6.1 (PWA), 6.2 (geolocation), 6.3 (camera), 6.6 (settings screen), 7.2 (GitHub sync), 7.3 (codebase TODO sync)
+**`priority:low` -- done:** 3.1 (timer logic), 3.2 (in-progress screen), 3.4 (search)
+**`priority:low` -- partial:** 6.6 (settings screen -- UI skeleton only)
+**`priority:low` -- not started:** 6.1 (PWA), 6.2 (geolocation), 6.3 (camera), 7.2 (GitHub sync), 7.3 (codebase TODO sync)
 
 **`priority:min`:** 7.1c (idle suspension)
 

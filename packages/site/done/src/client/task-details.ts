@@ -59,13 +59,14 @@ detail.addEventListener("action", ((event: CustomEvent) => {
       window.location.href = "/";
       break;
     case "save": {
+      const metadata = detail.getMetadata();
       const payload = {
         title,
         description: description.length === 0 ? null : description,
-        tags: task.tags,
-        locations: task.locations,
-        priority: task.priority,
-        complexity: task.complexity,
+        tags: metadata.tags,
+        locations: metadata.locations,
+        priority: metadata.priority,
+        complexity: metadata.complexity,
         dueDate: task.dueDate,
         blockedBy: task.blockedBy,
       };

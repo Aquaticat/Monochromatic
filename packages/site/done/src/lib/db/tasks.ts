@@ -31,6 +31,70 @@ type TaskRow = {
   updated_at: string;
 };
 
+//region SQL queries -- extracted for readability; each constant is used by exactly one function
+
+const SQL_SELECT_TASK_BY_ID = "SELECT * FROM tasks WHERE id = ?";
+
+const SQL_SELECT_INBOX_UNBLOCKED =
+  "SELECT * FROM tasks WHERE status = 'inbox' AND blocked_by = '[]' ORDER BY created_at DESC";
+
+const SQL_SELECT_BLOCKED_INBOX = `
+  SELECT tasks.*, blocker.value AS blocker_id
+  FROM tasks, json_each(tasks.blocked_by) AS blocker
+  WHERE tasks.status = 'inbox' AND tasks.blocked_by != '[]'
+  ORDER BY tasks.created_at DESC`;
+
+const SQL_SELECT_IN_PROGRESS =
+  "SELECT * FROM tasks WHERE status = 'in_progress' ORDER BY updated_at DESC";
+
+const SQL_SELECT_FOR_BLOCKER_PICKER =
+  "SELECT * FROM tasks WHERE id != ? AND status != 'done' ORDER BY title ASC";
+
+const SQL_SELECT_ALL_TAGS =
+  "SELECT DISTINCT tag.value AS tag FROM tasks, json_each(tasks.tags) AS tag ORDER BY tag.value ASC";
+
+const SQL_SEARCH_FTS = `
+  SELECT tasks.*, CASE WHEN blocked_by != '[]' THEN 1 ELSE 0 END AS is_blocked
+  FROM tasks_fts
+  JOIN tasks ON tasks.rowid = tasks_fts.rowid
+  WHERE tasks_fts MATCH ?
+  ORDER BY rank`;
+
+const SQL_SEARCH_LIKE = `
+  SELECT tasks.*, CASE WHEN blocked_by != '[]' THEN 1 ELSE 0 END AS is_blocked
+  FROM tasks
+  WHERE tasks.title LIKE ? OR tasks.description LIKE ?
+  ORDER BY tasks.updated_at DESC`;
+
+const SQL_INSERT_TASK = `
+  INSERT INTO tasks (
+    id, title, description, tags, locations, priority, due_date,
+    complexity, reminders, blocked_by, tracked_time, timer_started_at,
+    status, source, source_id, source_meta, created_at, updated_at
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+const SQL_UPDATE_TASK = `
+  UPDATE tasks
+  SET title = ?, description = ?, tags = ?, locations = ?, priority = ?, due_date = ?,
+      complexity = ?, reminders = ?, blocked_by = ?, status = ?, updated_at = ?
+  WHERE id = ?`;
+
+const SQL_DELETE_TASK = "DELETE FROM tasks WHERE id = ?";
+
+const SQL_START_TIMER =
+  "UPDATE tasks SET timer_started_at = ?, status = 'in_progress', updated_at = ? WHERE id = ?";
+
+const SQL_STOP_TIMER =
+  "UPDATE tasks SET tracked_time = ?, timer_started_at = NULL, status = 'inbox', updated_at = ? WHERE id = ?";
+
+const SQL_SELECT_BLOCKERS = `
+  SELECT blocker.value AS blocker_id, tasks.title AS blocker_title
+  FROM json_each((SELECT blocked_by FROM tasks WHERE id = ?)) AS blocker
+  JOIN tasks ON tasks.id = blocker.value
+  WHERE tasks.status != 'done'`;
+
+//endregion SQL queries
+
 export type BlockerSummary = {
   blockerId: string;
   blockerTitle: string;
@@ -91,7 +155,7 @@ function mapTask(row: TaskRow): Task {
 }
 
 function getTaskRowById(id: string): TaskRow | null {
-  const taskRow = db.query("SELECT * FROM tasks WHERE id = ?").get(id) as TaskRow | null;
+  const taskRow = db.query(SQL_SELECT_TASK_BY_ID).get(id) as TaskRow | null;
   return taskRow;
 }
 
@@ -101,48 +165,31 @@ export function getTaskById(id: string): Task | null {
 }
 
 export function listInboxUnblockedTasks(): Task[] {
-  const rows = db
-    .query(
-      "SELECT * FROM tasks WHERE status = 'inbox' AND blocked_by = '[]' ORDER BY created_at DESC"
-    )
-    .all() as TaskRow[];
+  const rows = db.query(SQL_SELECT_INBOX_UNBLOCKED).all() as TaskRow[];
 
   return rows.map(mapTask);
 }
 
 export function listBlockedInboxTasks(): BlockedTaskLink[] {
-  const rows = db
-    .query(
-      `SELECT tasks.*, blocker.value AS blocker_id
-       FROM tasks, json_each(tasks.blocked_by) AS blocker
-       WHERE tasks.status = 'inbox' AND tasks.blocked_by != '[]'
-       ORDER BY tasks.created_at DESC`
-    )
-    .all() as (TaskRow & { blocker_id: string })[];
+  const rows = db.query(SQL_SELECT_BLOCKED_INBOX).all() as (TaskRow & { blocker_id: string })[];
 
   return rows.map((row) => ({ blockerId: row.blocker_id, task: mapTask(row) }));
 }
 
 export function listInProgressTasks(): Task[] {
-  const rows = db
-    .query("SELECT * FROM tasks WHERE status = 'in_progress' ORDER BY updated_at DESC")
-    .all() as TaskRow[];
+  const rows = db.query(SQL_SELECT_IN_PROGRESS).all() as TaskRow[];
 
   return rows.map(mapTask);
 }
 
 export function listTasksForBlockerPicker(taskId: string): Task[] {
-  const rows = db
-    .query("SELECT * FROM tasks WHERE id != ? AND status != 'done' ORDER BY title ASC")
-    .all(taskId) as TaskRow[];
+  const rows = db.query(SQL_SELECT_FOR_BLOCKER_PICKER).all(taskId) as TaskRow[];
 
   return rows.map(mapTask);
 }
 
 export function listAllTags(): string[] {
-  const rows = db
-    .query("SELECT DISTINCT tag.value AS tag FROM tasks, json_each(tasks.tags) AS tag ORDER BY tag.value ASC")
-    .all() as { tag: string }[];
+  const rows = db.query(SQL_SELECT_ALL_TAGS).all() as { tag: string }[];
 
   return rows.map((row) => row.tag);
 }
@@ -153,23 +200,12 @@ export function searchTasks(searchQuery: string): SearchTask[] {
     return [];
   }
 
-  const query = `SELECT tasks.*, CASE WHEN blocked_by != '[]' THEN 1 ELSE 0 END AS is_blocked
-                 FROM tasks_fts
-                 JOIN tasks ON tasks.rowid = tasks_fts.rowid
-                 WHERE tasks_fts MATCH ?
-                 ORDER BY rank`;
-
   try {
-    const rows = db.query(query).all(normalizedSearchQuery) as (TaskRow & { is_blocked: number })[];
+    const rows = db.query(SQL_SEARCH_FTS).all(normalizedSearchQuery) as (TaskRow & { is_blocked: number })[];
     return rows.map((row) => ({ ...mapTask(row), isBlocked: row.is_blocked === 1 }));
   } catch {
     const rows = db
-      .query(
-        `SELECT tasks.*, CASE WHEN blocked_by != '[]' THEN 1 ELSE 0 END AS is_blocked
-         FROM tasks
-         WHERE tasks.title LIKE ? OR tasks.description LIKE ?
-         ORDER BY tasks.updated_at DESC`
-      )
+      .query(SQL_SEARCH_LIKE)
       .all(`%${normalizedSearchQuery}%`, `%${normalizedSearchQuery}%`) as (TaskRow & {
       is_blocked: number;
     })[];
@@ -181,13 +217,7 @@ export function createTask(input: TaskCreateInput): Task {
   const id = crypto.randomUUID();
   const timestamp = nowIso();
 
-  db.query(
-    `INSERT INTO tasks (
-      id, title, description, tags, locations, priority, due_date,
-      complexity, reminders, blocked_by, tracked_time, timer_started_at,
-      status, source, source_id, source_meta, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).run(
+  db.query(SQL_INSERT_TASK).run(
     id,
     input.title.trim(),
     input.description ?? null,
@@ -237,12 +267,7 @@ export function updateTask(id: string, input: TaskUpdateInput): Task | null {
     updatedAt: nowIso(),
   };
 
-  db.query(
-    `UPDATE tasks
-     SET title = ?, description = ?, tags = ?, locations = ?, priority = ?, due_date = ?,
-         complexity = ?, reminders = ?, blocked_by = ?, status = ?, updated_at = ?
-     WHERE id = ?`
-  ).run(
+  db.query(SQL_UPDATE_TASK).run(
     updatedTask.title,
     updatedTask.description,
     JSON.stringify(normalizeStringArray(updatedTask.tags)),
@@ -261,13 +286,13 @@ export function updateTask(id: string, input: TaskUpdateInput): Task | null {
 }
 
 export function deleteTask(id: string): boolean {
-  const result = db.query("DELETE FROM tasks WHERE id = ?").run(id);
+  const result = db.query(SQL_DELETE_TASK).run(id);
   return result.changes > 0;
 }
 
 export function startTaskTimer(id: string): Task | null {
   const timestamp = nowIso();
-  db.query("UPDATE tasks SET timer_started_at = ?, status = 'in_progress', updated_at = ? WHERE id = ?").run(
+  db.query(SQL_START_TIMER).run(
     timestamp,
     timestamp,
     id
@@ -288,9 +313,7 @@ export function stopTaskTimer(id: string): Task | null {
   const updatedTrackedTime = currentTask.trackedTime + elapsedSeconds;
   const timestamp = nowIso();
 
-  db.query(
-    "UPDATE tasks SET tracked_time = ?, timer_started_at = NULL, status = 'inbox', updated_at = ? WHERE id = ?"
-  ).run(updatedTrackedTime, timestamp, id);
+  db.query(SQL_STOP_TIMER).run(updatedTrackedTime, timestamp, id);
 
   return getTaskById(id);
 }
@@ -302,12 +325,7 @@ export function completeTask(id: string): CompleteTaskResult {
   }
 
   const blockingRows = db
-    .query(
-      `SELECT blocker.value AS blocker_id, tasks.title AS blocker_title
-       FROM json_each((SELECT blocked_by FROM tasks WHERE id = ?)) AS blocker
-       JOIN tasks ON tasks.id = blocker.value
-       WHERE tasks.status != 'done'`
-    )
+    .query(SQL_SELECT_BLOCKERS)
     .all(id) as { blocker_id: string; blocker_title: string }[];
 
   const blockedBy = blockingRows.map((row) => ({ blockerId: row.blocker_id, blockerTitle: row.blocker_title }));
@@ -319,6 +337,6 @@ export function completeTask(id: string): CompleteTaskResult {
     stopTaskTimer(id);
   }
 
-  db.query("DELETE FROM tasks WHERE id = ?").run(id);
+  db.query(SQL_DELETE_TASK).run(id);
   return { completed: true, notFound: false, blockedBy: [] };
 }

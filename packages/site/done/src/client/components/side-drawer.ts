@@ -4,16 +4,25 @@ const STYLES = css(`
   :host {
     display: block;
   }
-  .overlay {
+  .panel {
     position: fixed;
     inset: 0;
     z-index: 100;
-    display: none;
+    display: flex;
+    border-style: none;
+    padding-block: 0;
+    padding-inline: 0;
+    background-color: transparent;
+    inline-size: auto;
+    max-inline-size: none;
+    max-block-size: none;
+    overflow: visible;
   }
-  .overlay.open { display: flex; }
-  .backdrop {
-    position: absolute;
-    inset: 0;
+
+  /* Popover uses :popover-open instead of manual class toggling */
+  .panel:not(:popover-open) { display: none; }
+
+  .panel::backdrop {
     background-color: var(--overlay-bg);
   }
   .drawer {
@@ -38,16 +47,18 @@ const STYLES = css(`
     @apply --appearance-none;
     @apply --flex-center;
     @apply --min-touch-target;
-  }
-  .close:focus-visible {
-    outline-width: 0.125rem;
-    outline-style: solid;
-    outline-color: var(--fg);
-    outline-offset: -0.125rem;
-  }
-  .close svg {
-    inline-size: 2rem;
-    block-size: 2rem;
+
+    &:focus-visible {
+      outline-width: 0.125rem;
+      outline-style: solid;
+      outline-color: var(--fg);
+      outline-offset: -0.125rem;
+    }
+
+    & svg {
+      inline-size: 2rem;
+      block-size: 2rem;
+    }
   }
   .divider {
     block-size: calc(1 / 16 * 1rem);
@@ -60,7 +71,7 @@ const STYLES = css(`
     flex: 1;
     padding-block-start: var(--min-gap);
   }
-  ::slotted(a), a {
+  a {
     @apply --flex-row;
     gap: var(--min-gap);
     min-block-size: 3rem;
@@ -70,15 +81,17 @@ const STYLES = css(`
     text-decoration: none;
     font-size: 1.25rem;
     font-weight: 400;
-  }
-  a:hover {
-    background-color: var(--hover-bg);
-  }
-  a:focus-visible {
-    outline-width: 0.125rem;
-    outline-style: solid;
-    outline-color: var(--fg);
-    outline-offset: -0.125rem;
+
+    &:hover {
+      background-color: var(--hover-bg);
+    }
+
+    &:focus-visible {
+      outline-width: 0.125rem;
+      outline-style: solid;
+      outline-color: var(--fg);
+      outline-offset: -0.125rem;
+    }
   }
 
   @media (min-width: 48rem) {
@@ -88,14 +101,14 @@ const STYLES = css(`
       position: sticky;
       inset-block-start: 0;
     }
-    .overlay {
+    .panel {
       display: flex;
       position: relative;
       inset: auto;
       z-index: auto;
       block-size: 100%;
     }
-    .backdrop { display: none; }
+    .panel::backdrop { display: none; }
     .drawer {
       inline-size: 22rem;
       max-inline-size: 22rem;
@@ -117,6 +130,7 @@ class SideDrawer extends HTMLElement {
   static observedAttributes = ["open"];
 
   #shadow: ShadowRoot;
+  #panel: HTMLDivElement | null = null;
 
   constructor() {
     super();
@@ -137,22 +151,31 @@ class SideDrawer extends HTMLElement {
 
   connectedCallback(): void {
     this.#render();
-    this.#shadow.querySelector(".backdrop")?.addEventListener("click", () => { this.open = false; });
+    this.#panel = this.#shadow.querySelector(".panel") as HTMLDivElement;
     this.#shadow.querySelector(".close")?.addEventListener("click", () => { this.open = false; });
+
+    // Light-dismiss: close when clicking the ::backdrop area (outside the drawer)
+    this.#panel.addEventListener("click", (event) => {
+      if (event.target === this.#panel) {
+        this.open = false;
+      }
+    });
   }
 
   attributeChangedCallback(): void {
-    const overlay = this.#shadow.querySelector(".overlay") as HTMLElement | null;
-    if (overlay !== null) {
-      overlay.classList.toggle("open", this.open);
+    if (this.#panel === null) return;
+
+    if (this.open) {
+      this.#panel.showPopover();
+    } else {
+      this.#panel.hidePopover();
     }
   }
 
   #render(): void {
     this.#shadow.innerHTML = `
       <style>${STYLES}</style>
-      <div class="overlay${this.open ? " open" : ""}">
-        <div class="backdrop"></div>
+      <div class="panel" popover="manual">
         <aside class="drawer">
           <div class="header">
             <span style="font-size:1.25rem">Firstname</span>

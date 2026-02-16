@@ -21,6 +21,7 @@
 import { build as buildCSS } from "@monochromatic-dev/build-css/ts";
 // Side-effect: opens SQLite database and runs schema migrations on import
 import "./lib/db.ts";
+import { handleAutofill } from "./server/api/ai-autofill.ts";
 import { handleCreateTask, handleDeleteTask, handleUpdateTask } from "./server/api/tasks.ts";
 import { handleCompleteTask, handleStartTimer, handleStopTimer } from "./server/api/timer.ts";
 import { inProgressPage } from "./server/pages/in-progress.ts";
@@ -103,6 +104,7 @@ if (buildOnly) {
       "/api/tasks/:id/start": { POST: (req) => handleStartTimer(req.params.id) },
       "/api/tasks/:id/stop": { POST: (req) => handleStopTimer(req.params.id) },
       "/api/tasks/:id/complete": { POST: (req) => handleCompleteTask(req.params.id) },
+      "/api/ai/autofill": { POST: (req) => handleAutofill(req) },
     },
     // Fallback handler: serves bundled JS and CSS from dist/client/ as static files.
     // Bun's `routes` only match exact patterns; this catches asset requests.

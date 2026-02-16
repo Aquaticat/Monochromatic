@@ -23,6 +23,50 @@ type SearchPageData = {
 
 injectCSS(styles);
 
+// Page-scoped styles for search (not shared with other pages)
+injectCSS(`
+.search-hint {
+  color: var(--fg-weaker);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--min-gap);
+}
+
+.tag-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-width: calc(1 / 16 * 1rem);
+  border-style: solid;
+  border-color: var(--fg);
+  border-radius: 62.5rem;
+  padding-block: 0.5rem;
+  padding-inline: 0.5rem;
+  gap: 0.25rem;
+  white-space: nowrap;
+  font-size: 1rem;
+  line-height: 1.5;
+  cursor: pointer;
+  background-color: transparent;
+  font: inherit;
+
+  &:hover {
+    background-color: var(--hover-bg);
+  }
+}
+
+@media (min-width: 48rem) {
+  .search-hint {
+    font-size: 1.5rem;
+  }
+}
+`);
+
 const pageData = readPageData<SearchPageData>();
 const appElement = document.getElementById("app");
 if (!(appElement instanceof HTMLElement)) {

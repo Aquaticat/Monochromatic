@@ -532,6 +532,17 @@ export {};
 
 ## CSS best practices
 
+### Platform primitives over custom implementations
+
+- Use native HTML and CSS features instead of reimplementing them in JavaScript
+  - `<dialog>` for modals and overlays -- provides `::backdrop`, top-layer stacking, focus trapping, and Escape-to-close for free
+  - Popover API (`popover="auto"` / `popover="manual"`) for drawers, dropdowns, and tooltips -- provides `:popover-open`, light-dismiss, and top-layer without z-index management
+  - `:popover-open` and `[open]` selectors for visibility instead of manual class toggling
+  - CSS nesting, `@layer`, `@scope`, container queries, and other modern CSS features that eliminate JavaScript workarounds
+- The browser support baseline is Firefox ESR 140 (June 2025) -- see `PHILOSOPHY.browser-support.md` for the full feature list
+- When in doubt about a platform feature, check against the baseline before using it
+- Never build custom backdrop overlays, focus traps, or dismiss handlers when the platform provides them
+
 ### Units and values
 
 - Always use `rem` for font sizes, never `px`
@@ -608,6 +619,37 @@ export {};
   - Bad: `--reset-button` (ambiguous -- reset a button, or a button that resets?)
   - Good: `--appearance-none` (clearly strips browser-default appearance)
 - Mixin bodies must themselves follow all the rules above (logical properties, no shorthands, tokens for colors, etc.)
+
+### CSS nesting
+
+- Use native CSS nesting (`&`) to group related rules under their parent
+  - Keeps pseudo-classes, pseudo-elements, child selectors, and attribute selectors co-located with the rule they modify
+  - Bad (flat, repeated selectors):
+    ```css
+    .close { @apply --appearance-none; }
+    .close:focus-visible { outline-style: solid; }
+    .close svg { inline-size: 2rem; }
+    ```
+  - Good (nested):
+    ```css
+    .close {
+      @apply --appearance-none;
+
+      &:focus-visible { outline-style: solid; }
+
+      & svg { inline-size: 2rem; }
+    }
+    ```
+- Keep nesting shallow -- one level is typical, two is occasionally warranted, three or more signals the selector structure should be simplified
+
+### State and variant styling
+
+- Use data attributes instead of BEM modifier classes for state-driven or variant-driven styling
+  - Data attributes express state, BEM conflates state with naming convention
+  - Bad: `class="pill pill--loading"`, `.pill--loading { opacity: 0.5; }`
+  - Good: `<span class="pill" data-loading>`, `.pill { &[data-loading] { opacity: 0.5; } }`
+- Boolean states use valueless data attributes: `data-loading`, `data-hidden`, `data-autofilled`
+- Enumerated variants use data attribute values: `data-size="small"`, `data-variant="primary"`
 
 # TypeScript Standards
 
