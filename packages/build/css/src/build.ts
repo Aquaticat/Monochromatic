@@ -41,6 +41,34 @@ export {
 //endregion Re-exports
 
 /**
+ * Expands \@apply references in a CSS string using mixin definitions
+ * from a separate CSS source string.
+ *
+ * This is the high-level string-to-string API for consumers that already
+ * have CSS text in memory (e.g. web component Shadow DOM styles). It
+ * encapsulates the full postcss parse → collect → expand → serialize
+ * pipeline so callers never touch postcss directly.
+ * @param cssText - CSS string containing \@apply references to expand
+ * @param mixinCssText - CSS string containing \@mixin definitions
+ * @returns Expanded CSS with all \@apply rules replaced by mixin bodies
+ * @throws When an \@apply references an unknown mixin
+ */
+export function applyMixins(cssText: string, mixinCssText: string): string {
+  mixins.clear();
+
+  /** PostCSS AST of mixin definitions, parsed to extract \@mixin rules */
+  const mixinRoot = postcss.parse(mixinCssText, { from: 'mixins.css', });
+  collectMixins(mixinRoot);
+  expandMixinBodies();
+
+  /** PostCSS AST of the consumer CSS, parsed for \@apply expansion */
+  const root = postcss.parse(cssText);
+  expandApplyRules(root);
+
+  return root.toString();
+}
+
+/**
  * Builds CSS by inlining \@import rules and processing \@mixin/\@apply.
  *
  * Pipeline: read input → inline \@import (custom PostCSS plugin) →

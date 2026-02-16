@@ -6,15 +6,12 @@ CSS build tool that bundles `@import` statements across monorepo packages and pr
 
 No single CSS tool handles all three requirements at once:
 
-1. **Monorepo-aware `@import` resolution** -- LightningCSS bundles CSS but only resolves relative paths, not `node_modules` or package.json `exports`
-2. **Custom `@mixin`/`@apply` processing** -- LightningCSS's `customAtRules` breaks when CSS contains `var()` ([lightningcss#1081](https://github.com/parcel-bundler/lightningcss/issues/1081))
-3. **Framework-agnostic pre-build** -- Vite/Astro CSS pipelines are opaque and don't reliably run PostCSS on all generated CSS
+1. **Monorepo-aware `@import` resolution** -- PostCSS only resolves relative paths out of the box, not `node_modules` or package.json `exports`
+2. **Custom `@mixin`/`@apply` processing** -- no standard PostCSS plugin provides the mixin semantics this monorepo needs
+3. **Browser-compatible** -- the entire pipeline runs in both Node.js and browser environments (no native binary dependencies)
 
-This package stitches together three tools to cover the gaps:
-
-- **LightningCSS** -- fast CSS bundling (`@import` inlining)
-- **oxc-resolver** -- Node.js-compatible module resolution (package.json `exports`, `node_modules`, monorepo workspaces)
-- **PostCSS** -- AST walking for `@mixin` collection and `@apply` expansion
+The package uses only **PostCSS** for all CSS processing -- AST walking for `@import` inlining, `@mixin` collection, and `@apply` expansion.
+A custom `@import` plugin handles monorepo-aware resolution (package.json `exports`, `node_modules`, workspace packages).
 
 See [TROUBLESHOOTING.css-tooling.md](../../../TROUBLESHOOTING.css-tooling.md) for the full chronicle.
 
@@ -78,7 +75,7 @@ The build expands nested references in multiple passes until stable, with a safe
 
 ### Cross-package imports
 
-Imports resolve through `node_modules` using oxc-resolver, supporting both package.json `exports` mappings and direct file paths (for packages without `exports`):
+Imports resolve through a custom PostCSS plugin, supporting package.json `exports` mappings, `node_modules` lookup, and direct file paths:
 
 ```css
 /* Via exports field */
@@ -88,9 +85,37 @@ Imports resolve through `node_modules` using oxc-resolver, supporting both packa
 @import '@some-package/src/tokens.css';
 ```
 
+## Using mixins in JavaScript (Shadow DOM, runtime)
+
+The `build()` function processes standalone `.css` files on disk.
+For consumers that already have CSS text in memory -- such as web components with Shadow DOM styles defined as JavaScript strings -- use `applyMixins()`:
+
+```ts
+import { applyMixins } from '@monochromatic-dev/build-css/ts';
+import mixinSource from './mixins.css' with { type: 'text' };
+
+const expanded = applyMixins(`
+  .close { @apply --reset-button; @apply --touch-target; }
+  .pill  { @apply --pill; }
+`, mixinSource);
+```
+
+`applyMixins(cssText, mixinCssText)` encapsulates the full pipeline (parse mixin definitions, expand nested mixin bodies, inline `@apply` rules, serialize) and returns the expanded CSS string.
+No filesystem access, no postcss import needed by the caller.
+
+### Browser environments
+
+PostCSS references `process.env` without guards.
+Import the provided shim before any build-css import:
+
+```ts
+import '@monochromatic-dev/build-css/ts/process-shim';
+import { applyMixins } from '@monochromatic-dev/build-css/ts';
+```
+
 ## Build pipeline
 
-1. **Resolve and bundle** -- LightningCSS walks `@import` statements, oxc-resolver maps specifiers to absolute paths, LightningCSS inlines the resolved files
+1. **Resolve and bundle** -- a custom PostCSS plugin walks `@import` statements, resolves specifiers (relative paths, package.json `exports`, bare `node_modules`), and inlines the resolved files
 2. **Collect mixins** -- PostCSS walks the bundled AST, extracts `@mixin` definitions into a registry, removes them from the tree
 3. **Expand mixin bodies** -- nested `@apply` rules inside mixin definitions are resolved via fixed-point iteration
 4. **Inline `@apply`** -- remaining `@apply` rules in the document are replaced with cloned mixin body nodes
@@ -101,10 +126,13 @@ Imports resolve through `node_modules` using oxc-resolver, supporting both packa
 | File | Purpose |
 |------|---------|
 | `index.ts` | CLI entry point with argument parsing and watch mode |
-| `build.ts` | Orchestrates the full pipeline, re-exports public API |
-| `resolve.ts` | oxc-resolver factory and `@import` specifier resolution |
+| `build.ts` | Orchestrates the full pipeline; exports `build()` and `applyMixins()` |
+| `import.ts` | Custom PostCSS `@import` plugin with monorepo-aware resolution |
 | `mixin.ts` | `collectMixins` and `expandApplyRules` (PostCSS walkers) |
 | `mixin-registry.ts` | Mixin storage, nested `@apply` expansion, type guards |
+| `fs.ts` | Adaptive file reader (in-memory registry with `node:fs` fallback) |
+| `fs-registry.ts` | In-memory `Map` for browser-side file storage |
+| `process-shim.ts` | Minimal `globalThis.process` shim for browser environments |
 
 ## Testing
 
