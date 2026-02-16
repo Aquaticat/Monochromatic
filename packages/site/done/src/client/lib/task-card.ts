@@ -6,12 +6,12 @@
  * Client entry scripts call `createTaskCard(task, options)` which creates the
  * element, calls `configure()` to pass data, and returns it for appending to the DOM.
  *
- * The `css()` macro call below is expanded at build time (see css.macro.ts) --
- * `@apply --flex-column` etc. are replaced with the actual mixin CSS.
+ * The `css()` call below expands \@apply rules at runtime (see css.ts) --
+ * `\@apply --flex-column` etc. are replaced with the actual mixin CSS.
  */
 import type { Task } from "../../lib/types.ts";
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { css } from "../css.macro.ts" with { type: "macro" };
+import { css } from "../css.ts";
 
 type TaskCardOptions = {
   showBlockedBadge?: boolean;

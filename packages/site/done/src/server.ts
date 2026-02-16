@@ -58,7 +58,7 @@ await buildCSS({
 });
 
 // Step 3: bundle one JS entry per page; each becomes a `<script type="module">` in the HTML shell.
-// The `css()` macro calls inside component files are expanded at bundle time (see css.macro.ts).
+// Component files call `css()` at runtime to expand @apply mixin rules (see css.ts).
 const buildResult = await Bun.build({
   entrypoints: [
     "./src/client/inbox.ts",
@@ -70,6 +70,7 @@ const buildResult = await Bun.build({
   outdir: "./dist/client",
   target: "browser",
   minify: process.env.NODE_ENV === "production",
+
 });
 
 if (!buildResult.success) {

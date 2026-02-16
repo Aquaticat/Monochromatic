@@ -1,5 +1,5 @@
 /* Shared mixin definitions for web component Shadow DOM styles.
-   Consumed at build time by css.macro.ts via @apply --name; syntax.
+   Consumed at runtime by css.ts via @apply --name; syntax.
    Mixins are granular and composable -- prefer combining small primitives
    over creating monolithic blocks. */
 

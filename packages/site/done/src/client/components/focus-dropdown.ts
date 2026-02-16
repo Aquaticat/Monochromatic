@@ -1,4 +1,4 @@
-import { css } from "../css.macro.ts" with { type: "macro" };
+import { css } from "../css.ts";
 
 const STYLES = css(`
   :host {

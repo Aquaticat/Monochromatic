@@ -1,6 +1,6 @@
 import type { Task } from "../../lib/types.ts";
 import { formatRunningTrackedTime } from "../lib/task-card.ts";
-import { css } from "../css.macro.ts" with { type: "macro" };
+import { css } from "../css.ts";
 
 type BlockerSummary = {
   id: string;

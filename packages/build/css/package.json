@@ -5,7 +5,9 @@
   "module": "dist/final/index.js",
   "exports": {
     ".": "./dist/final/build.js",
-    "./ts": "./src/build.ts"
+    "./ts": "./src/build.ts",
+    "./ts/fs-registry": "./src/fs-registry.ts",
+    "./ts/process-shim": "./src/process-shim.ts"
   },
   "main": "dist/final/index.js",
   "typings": "dist/final/index.d.ts",
@@ -17,8 +19,7 @@
     "@types/bun": "catalog:"
   },
   "dependencies": {
-    "lightningcss": "catalog:",
-    "oxc-resolver": "catalog:",
+    "@monochromatic-dev/module-es": "workspace:*",
     "postcss": "catalog:"
   },
   "version": "0.0.1",
@@ -27,5 +28,7 @@
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/build/css"
   },
-  "sideEffects": false
+  "sideEffects": [
+    "./src/process-shim.ts"
+  ]
 }

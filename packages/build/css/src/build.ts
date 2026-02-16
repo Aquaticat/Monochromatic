@@ -1,42 +1,53 @@
-import { mkdir, writeFile, } from 'node:fs/promises';
+// Side-effect: shims globalThis.process for browser environments.
+// Must precede postcss import because postcss references process.env without guards.
+import './process-shim.ts';
 import {
   dirname,
   resolve,
-} from 'node:path';
-import { bundleAsync, } from 'lightningcss';
-// PostCSS is used only for AST parsing/stringification of the bundled CSS,
-// so we can walk and manipulate custom @mixin/@apply at-rules.
-// LightningCSS handles bundling but lacks a plugin system for custom at-rules.
+} from '@monochromatic-dev/module-es/ts/path/index.ts';
 import postcss from 'postcss';
+import { readCssFile, } from './fs.ts';
+import { postcssInlineImport, } from './import.ts';
 import {
   collectMixins,
   expandApplyRules,
   expandMixinBodies,
   mixins,
 } from './mixin.ts';
-import type { BuildOptions, } from './resolve.ts';
-import {
-  createResolver,
-  resolveImport,
-} from './resolve.ts';
+
+//region Types
+
+/** Build options for the CSS processor */
+export type BuildOptions = {
+  /** Input CSS file path */
+  input: string;
+  /** Output CSS file path */
+  output: string;
+  /** Enable watch mode */
+  watch?: boolean;
+};
+
+//endregion Types
 
 //region Re-exports -- public API surface for consumers importing from build.ts
 
-export type { BuildOptions, } from './resolve.ts';
 export {
   collectMixins,
   expandApplyRules,
   expandMixinBodies,
   mixins,
 } from './mixin.ts';
-export { createResolver, resolveImport, } from './resolve.ts';
 
 //endregion Re-exports
 
 /**
- * Builds CSS by bundling imports with LightningCSS and processing mixins.
- * Pipeline: resolve imports -> bundle -> collect mixin definitions ->
- * expand nested mixin bodies -> inline \@apply rules -> write output.
+ * Builds CSS by inlining \@import rules and processing \@mixin/\@apply.
+ *
+ * Pipeline: read input → inline \@import (custom PostCSS plugin) →
+ * collect mixin definitions → expand nested mixin bodies →
+ * inline \@apply rules → write output.
+ *
+ * Uses only PostCSS (pure JS) — no native binary dependencies.
  * @param options - Build configuration
  * @returns Processed CSS string
  * @throws When an import cannot be resolved or a mixin reference is invalid
@@ -49,31 +60,27 @@ export async function build(options: BuildOptions): Promise<string> {
 
   /** Absolute path to the CSS entry point */
   const inputPath = resolve(input);
-  /** Resolver configured for CSS-specific module resolution */
-  const resolver = createResolver();
 
-  // Bundle with LightningCSS using oxc-resolver for imports
-  const { code, } = await bundleAsync({
-    filename: inputPath,
-    minify: false,
-    resolver: {
-      resolve(specifier, from) {
-        return resolveImport(resolver, specifier, from);
-      },
-    },
-  });
+  /** Raw CSS text read from the entry file */
+  const cssText = await readCssFile(inputPath);
 
-  /** UTF-8 decoded CSS text from the LightningCSS bundle output */
-  const cssText = new TextDecoder().decode(code);
-  /** PostCSS AST used to walk and manipulate custom @mixin/@apply at-rules */
-  const root = postcss.parse(cssText, { from: inputPath, });
+  // Phase 1: inline @import rules using our custom PostCSS plugin
+  /** PostCSS result after resolving and inlining all @import rules */
+  const bundled = postcss([postcssInlineImport]).process(cssText, { from: inputPath, });
 
+  /** PostCSS AST with all imports inlined, ready for mixin processing */
+  const root = bundled.root;
+
+  // Phase 2: process @mixin/@apply
   collectMixins(root);
   expandMixinBodies();
   expandApplyRules(root);
 
-  /** Final CSS with all mixins expanded and @apply rules inlined */
+  /** Final CSS with all imports inlined and mixins expanded */
   const result = root.toString();
+
+  // Write output — uses dynamic import so browser callers don't pull in node:fs
+  const { mkdir, writeFile, } = await import('node:fs/promises');
   /** Absolute path for the output file */
   const outputPath = resolve(output);
   await mkdir(dirname(outputPath), { recursive: true, });

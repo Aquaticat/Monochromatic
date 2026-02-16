@@ -1,4 +1,4 @@
-import { css } from "../css.macro.ts" with { type: "macro" };
+import { css } from "../css.ts";
 import "./toggle-switch.ts";
 
 const STYLES = css(`

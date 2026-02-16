@@ -2,7 +2,7 @@ import { watch, } from 'node:fs/promises';
 import {
   dirname,
   resolve,
-} from 'node:path';
+} from '@monochromatic-dev/module-es/ts/path/index.ts';
 import { build, } from './build.ts';
 import type { BuildOptions, } from './build.ts';
 
