@@ -1,8 +1,17 @@
-export type TaskPriority = "low" | "medium" | "high";
+/** All recognized priority levels, ordered ascending. */
+export const TASK_PRIORITIES = ["low", "medium", "high"] as const satisfies readonly string[];
 
-export type TaskComplexity = "low" | "medium" | "high";
+export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 
-export type TaskStatus = "inbox" | "in_progress" | "done";
+/** All recognized complexity levels, ordered ascending. */
+export const TASK_COMPLEXITIES = ["low", "medium", "high"] as const satisfies readonly string[];
+
+export type TaskComplexity = (typeof TASK_COMPLEXITIES)[number];
+
+/** All recognized task statuses. */
+export const TASK_STATUSES = ["inbox", "in_progress", "done"] as const satisfies readonly string[];
+
+export type TaskStatus = (typeof TASK_STATUSES)[number];
 
 export type TaskSource = "local" | "github" | "linear" | "calendar" | "codebase";
 

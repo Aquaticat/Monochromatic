@@ -10,10 +10,11 @@
  * typically followed by `window.location.reload()` to re-render with fresh data.
  */
 import { createTask, deleteTask, updateTask } from "../../lib/db/tasks.ts";
+import { TASK_PRIORITIES, TASK_STATUSES } from "../../lib/types.ts";
 import type { TaskPriority, TaskStatus, TaskUpdateInput } from "../../lib/types.ts";
 
-const priorities = new Set<TaskPriority>(["low", "medium", "high"]);
-const statuses = new Set<TaskStatus>(["inbox", "in_progress", "done"]);
+const priorities = new Set<string>(TASK_PRIORITIES);
+const statuses = new Set<string>(TASK_STATUSES);
 
 function jsonResponse(payload: unknown, status = 200): Response {
   return new Response(JSON.stringify(payload), {

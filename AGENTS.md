@@ -96,9 +96,10 @@ Be direct and honest.
 
 ### TSDoc Comments
 
-Write comprehensive TSDoc comments for all members (functions, types, constants, classes, and everything else), whether they're exported or not:
+Write comprehensive TSDoc comments for **all** declarations -- functions, types, constants, classes, and everything else -- whether exported or not, including locals inside function bodies:
 - This includes providing descriptions for parameters and return values
 - **Use TSDoc format for EVERYTHING that can be documented** - functions, constants, types, interfaces, classes, enums, etc. Not just exported members
+- Do not skip declarations that seem "obvious from context" -- what is obvious to the current reader may not be obvious to a future reader with less context, less domain knowledge, or less intelligence; thorough documentation costs little to write but compounds in value over every future read
 - Any code element that could benefit from documentation should have TSDoc comments
 - Adhere to the `eslint-plugin-jsdoc` recommended rules, TSDoc variant
 - Use `{@inheritDoc originalFn}` for a function that's the mere non-async variant of the original function
@@ -190,6 +191,11 @@ const example = "/* within string */";
 - Use reference-style links for repeated URLs
 - Prefer relative links for internal documentation
 - Include descriptive link text, avoid "click here"
+
+#### Tables
+- **No tables in markdown files** -- tables have poor readability when viewed via `cat`/terminal and render badly on mobile
+- Use nested headings or lists instead
+- Flag any existing tables in changed markdown files for conversion to headings or lists
 
 #### Structure
 - Use ATX-style headers (`#` not underlines)
@@ -374,7 +380,9 @@ When refactoring code, follow this progression:
 - Refactor to complexity only when necessary
 - Name intermediate values for clarity
 - Break complex operations into smaller, testable functions
-- Split large files until they fall under 200 lines.
+- Split large files until they fall under 100 lines.
+  - This limit applies only to production/library source code -- test files, fixture files, configuration files, and documentation files are exempt.
+  - If splitting is not feasible (e.g. would cause import cycles), add a justification comment at the top of the file explaining why.
 
 ### Examples
 
@@ -530,6 +538,13 @@ For scripts that might be parsed as CommonJS, add an export:
 export {};
 ```
 
+## Security
+
+- No hardcoded secrets, API keys, or credentials in source code
+- No unsanitized user input in SQL, shell commands, or HTML
+- No overly permissive CORS, file permissions, or network exposure
+- Secrets must not be logged, even at debug level
+
 ## CSS best practices
 
 ### Platform primitives over custom implementations
@@ -664,6 +679,8 @@ Use `region` markers to delineate logical sections of code:
 - Most IDEs recognize `region` and `endregion` comments, allowing these sections to collapse or expand
 - Following `//region` is the purpose of the code block. After double hyphens, provide a long explanation
 - Following `//endregion` repeats the purpose of the code block
+- Use language-appropriate syntax with no space between the comment marker and the keyword (e.g. `//region`, `#region`, `--region`)
+- Missing region markers on substantial code blocks are noteworthy; smaller blocks benefit from them but less critically
 - Example:
   ```ts
   //region User Authentication Logic -- Handles user login, registration, and session management
@@ -800,6 +817,7 @@ TypeScript's support for overloading generator functions has quirks:
 ### Immutability and Declarations
 - Prefer `const` over `let` to encourage immutability
 - Strive for immutability: avoid reassigning variables and modifying objects in place
+- **Justify or refactor**: any deviation from the preferred pattern must have a comment explaining why refactoring to the preferred approach is not feasible; examples include but are not limited to: `let` bindings, imperative loops (`for...of`, `while`, `do...while`) instead of functional alternatives, in-place mutation (`.push()`, `.splice()`, property assignment on an existing object), `any` casts, non-null assertions, `await` in loops, raw `.then()` chains
 - **NEVER use single-letter variables like `i`, `j`, `k`** - they provide no semantic meaning
   - Bad: `for (let i = 0; i < items.length; i++)`
   - Good: `for (let itemIndex = 0; itemIndex < items.length; itemIndex++)`
@@ -820,6 +838,7 @@ TypeScript's support for overloading generator functions has quirks:
 ### Async Programming
 - Prefer `async/await` and promise-returning library functions over explicit `new Promise` creation
 - Always prefer `async/await` over callbacks; convert callback-based APIs to promises
+- **No `.then()`, `.catch()`, `.finally()`** -- use `async`/`await` with `try`/`catch` or let errors propagate naturally by throwing
 - Avoid using await in loops wherever logically sound
 - Use `Promise.all()` for concurrent operations when order doesn't matter
 - Use `Promise.allSettled()` when you need results from all promises regardless of failures
@@ -827,6 +846,7 @@ TypeScript's support for overloading generator functions has quirks:
 - Consider using `AbortController` for cancellable async operations
 
 ### Error Handling
+- **No `try...finally`** -- use `using`/`await using` with `Symbol.dispose`/`Symbol.asyncDispose` for cleanup; when disposal is not applicable, restructure the code to make cleanup explicit without `finally`
 - Create custom error classes that extend `Error` for domain-specific errors:
   ```ts
   class ValidationError extends Error {
@@ -897,3 +917,7 @@ TypeScript's support for overloading generator functions has quirks:
 # Testing
 
 Refer to the Testing Practices skill (.factory/skills/testing-practices.md).
+
+# Code Review
+
+Refer to the Code Review skill (.factory/skills/code-review.md).

@@ -12,6 +12,7 @@ import { chatCompletion } from "../../lib/ai/client.ts";
 import { buildAutofillMessages } from "../../lib/ai/prompts.ts";
 import db from "../../lib/db.ts";
 import { listAllTags } from "../../lib/db/tasks.ts";
+import { TASK_COMPLEXITIES, TASK_PRIORITIES } from "../../lib/types.ts";
 import type { TaskComplexity, TaskPriority } from "../../lib/types.ts";
 
 //region Types
@@ -34,8 +35,8 @@ type RawAutofillResponse = {
 
 //region Validation
 
-const VALID_PRIORITIES = new Set<string>(["low", "medium", "high"]);
-const VALID_COMPLEXITIES = new Set<string>(["low", "medium", "high"]);
+const VALID_PRIORITIES = new Set<string>(TASK_PRIORITIES);
+const VALID_COMPLEXITIES = new Set<string>(TASK_COMPLEXITIES);
 
 /** Best-effort extraction of an autofill result from possibly malformed AI output. */
 function parseAutofillResponse(raw: string): AutofillResult {
