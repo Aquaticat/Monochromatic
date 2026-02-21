@@ -1,3 +1,4 @@
+import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
 
 const STYLES = css(`
@@ -43,6 +44,10 @@ const STYLES = css(`
   }
 `);
 
+/**
+ * `<toggle-switch>` -- boolean toggle with animated thumb.
+ * Reflects state via the `on` attribute and dispatches a `change` event on toggle.
+ */
 class ToggleSwitch extends HTMLElement {
   static observedAttributes = ["on"];
 
@@ -85,12 +90,16 @@ class ToggleSwitch extends HTMLElement {
 
   #render(): void {
     const isOn = this.on;
-    this.#shadow.innerHTML = `
-      <style>${STYLES}</style>
-      <div class="track">
-        <span class="thumb ${isOn ? "on" : "off"}">${isOn ? "\u2713" : "\u2717"}</span>
-      </div>
-    `;
+    this.#shadow.replaceChildren(
+      h({ tag: "style", text: STYLES }),
+      h({
+        tag: "div",
+        class: "track",
+        children: [
+          h({ tag: "span", class: `thumb ${isOn ? "on" : "off"}`, text: isOn ? "\u2713" : "\u2717" }),
+        ],
+      }),
+    );
   }
 }
 

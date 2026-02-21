@@ -11,6 +11,7 @@ import "./components/side-drawer.ts";
 import "./components/top-nav.ts";
 import "./components/setting-group.ts";
 
+/** Shape of the JSON blob embedded in the settings page by the server. */
 type SettingsPageData = {
   message: string;
 };

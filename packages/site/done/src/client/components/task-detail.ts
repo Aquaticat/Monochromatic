@@ -1,13 +1,25 @@
+/**
+ * `<task-detail>` web component for viewing and editing a single task.
+ *
+ * Exceeds 100 lines: the component bundles its Shadow DOM styles, autofill
+ * debounce/fetch logic, and the full render tree in one class because the
+ * private state (`#tags`, `#autofilled`, `#autofillAbort`) is tightly
+ * coupled to both rendering and the autofill lifecycle -- splitting would
+ * require exposing internal state across module boundaries.
+ */
 import type { Task, TaskComplexity, TaskPriority } from "../../lib/types.ts";
+import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { formatRunningTrackedTime } from "../lib/task-card.ts";
 import { css } from "../css.ts";
 
+/** Blocker task summary displayed as a pill in the task detail view. */
 type BlockerSummary = {
   id: string;
   title: string;
   status: string;
 };
 
+/** Shape of the JSON response from the `/api/ai/autofill` endpoint. */
 type AutofillResult = {
   tags: string[];
   locations: string[];
@@ -15,8 +27,10 @@ type AutofillResult = {
   complexity: TaskComplexity | null;
 };
 
+/** Determines whether the component renders as a new-task creator or an editor. */
 type TaskDetailMode = "create" | "edit";
 
+/** Configuration payload passed to `TaskDetail.configure()`. */
 type TaskDetailData = {
   task: Task;
   blockerSummaries: BlockerSummary[];
@@ -150,8 +164,14 @@ const STYLES = css(`
   @apply --shadow-dom-globals;
 `);
 
+/** Delay before triggering AI autofill after the user stops typing. */
 const AUTOFILL_DEBOUNCE_MS = 500;
 
+/**
+ * `<task-detail>` -- full-page task editor with title, description, metadata pills,
+ * action buttons (start/stop/complete/delete), and debounced AI autofill.
+ * Used in both "edit" and "create" modes (controlled by `TaskDetailData.mode`).
+ */
 class TaskDetail extends HTMLElement {
   #shadow: ShadowRoot;
   #data: TaskDetailData | null = null;
@@ -175,7 +195,12 @@ class TaskDetail extends HTMLElement {
     this.#shadow = this.attachShadow({ mode: "open" });
   }
 
+  /**
+   * Sets task data, resets metadata state, and triggers a full render.
+   * Called by the parent page to initialize or reconfigure the component.
+   */
   configure(data: TaskDetailData): void {
+    console.log("[task-detail] configure() called, mode:", data.mode ?? "edit");
     this.#data = data;
     this.#mode = data.mode ?? "edit";
     this.#tags = [...data.task.tags];
@@ -199,13 +224,18 @@ class TaskDetail extends HTMLElement {
     };
   }
 
-  /** Builds the attribute string for a pill span based on current autofill state. */
-  #pillAttrs(field: string): string {
-    if (this.#autofillLoading) return ' data-loading';
-    if (this.#autofilled.has(field)) return ' data-autofilled';
-    return "";
+  //region Pill display -- builds and updates the metadata pill row
+
+  /** Applies autofill/loading data attributes to a pill element based on field state. */
+  #applyPillAttrs(element: HTMLElement, field: string): void {
+    if (this.#autofillLoading) {
+      element.dataset["loading"] = "";
+    } else if (this.#autofilled.has(field)) {
+      element.dataset["autofilled"] = "";
+    }
   }
 
+  /** Rebuilds the pill elements in the `.pills` container from current metadata state. */
   #updatePillsDisplay(): void {
     const pillsContainer = this.#shadow.querySelector(".pills");
     if (pillsContainer === null) return;
@@ -224,11 +254,20 @@ class TaskDetail extends HTMLElement {
       { field: "blockedBy", text: task.blockedBy.length > 0 ? `blockedBy: ${String(task.blockedBy.length)}` : "blockedBy: none" },
     ];
 
-    pillsContainer.innerHTML = pillData
-      .map((pill) => `<span class="pill"${this.#pillAttrs(pill.field)}>${pill.text}</span>`)
-      .join("");
+    const pillElements = pillData.map((pill) => {
+      const element = h({ tag: "span", class: "pill", text: pill.text });
+      this.#applyPillAttrs(element, pill.field);
+      return element;
+    });
+
+    pillsContainer.replaceChildren(...pillElements);
   }
 
+  //endregion Pill display
+
+  //region Autofill -- debounced AI metadata suggestion
+
+  /** Debounces autofill requests so rapid typing does not flood the endpoint. */
   #requestAutofill(title: string): void {
     if (this.#autofillTimer !== null) {
       clearTimeout(this.#autofillTimer);
@@ -246,6 +285,10 @@ class TaskDetail extends HTMLElement {
     }, AUTOFILL_DEBOUNCE_MS);
   }
 
+  /**
+   * Sends an autofill request to the server and merges results into empty metadata fields.
+   * Abortable: a new request cancels any in-flight one.
+   */
   async #fetchAutofill(title: string): Promise<void> {
     const controller = new AbortController();
     this.#autofillAbort = controller;
@@ -294,43 +337,89 @@ class TaskDetail extends HTMLElement {
     }
   }
 
+  //endregion Autofill
+
+  //region Render -- builds the full Shadow DOM tree
+
+  /** Builds the complete Shadow DOM: header, inputs, pills, action buttons, and event wiring. */
   #render(): void {
     const data = this.#data;
     if (data === null) return;
     const task = data.task;
     const isCreate = this.#mode === "create";
 
-    this.#shadow.innerHTML = `
-      <style>${STYLES}</style>
-      <div class="header">
-        <button class="close" data-action="close" aria-label="Close">
-          <svg viewBox="0 0 48 48" fill="none">
-            <line x1="14" y1="14" x2="34" y2="34"/>
-            <line x1="34" y1="14" x2="14" y2="34"/>
-          </svg>
-        </button>
-        <span class="heading">${isCreate ? "New task" : "Task details"}</span>
-        <button class="${isCreate ? "btn-primary" : "btn-outline"}" data-action="save">${isCreate ? "Create" : "Save"}</button>
-      </div>
-      <input class="title-input" type="text" value="${task.title.replaceAll('"', '&quot;')}" placeholder="Title" required>
-      <textarea class="desc-input" placeholder="description">${task.description ?? ""}</textarea>
-      <div class="actions">
-        <button class="btn-outline" data-action="attach">Attach file</button>
-        <button class="btn-outline" data-action="photo">Take photo</button>
-      </div>
-      <div class="pills"></div>
-      <div class="btn-row"${isCreate ? " data-hidden" : ""}>
-        <button class="btn-outline" data-action="start" ${task.timerStartedAt !== null ? "disabled" : ""}>Start</button>
-        <button class="btn-outline" data-action="stop" ${task.timerStartedAt === null ? "disabled" : ""}>Stop</button>
-        <button class="btn-primary" data-action="complete" ${task.blockedBy.length > 0 ? "disabled" : ""}>Complete</button>
-        <button class="btn-outline" data-action="delete">Delete</button>
-      </div>
-    `;
+    // Close button uses innerHTML for SVG because h() creates HTML-namespace
+    // elements -- SVG requires the SVG namespace.
+    const closeButton = h({
+      tag: "button",
+      class: "close",
+      attrs: { "data-action": "close", "aria-label": "Close" },
+    });
+    closeButton.innerHTML = `<svg viewBox="0 0 48 48" fill="none"><line x1="14" y1="14" x2="34" y2="34"/><line x1="34" y1="14" x2="14" y2="34"/></svg>`;
+
+    const titleInput = h({
+      tag: "input",
+      class: "title-input",
+      attrs: { type: "text", value: task.title, placeholder: "Title", required: "" },
+    });
+
+    const descInput = h({ tag: "textarea", class: "desc-input", attrs: { placeholder: "description" } });
+    if (task.description !== null) {
+      descInput.textContent = task.description;
+    }
+
+    const startAttrs: Record<string, string> = { "data-action": "start" };
+    if (task.timerStartedAt !== null) startAttrs["disabled"] = "";
+    const stopAttrs: Record<string, string> = { "data-action": "stop" };
+    if (task.timerStartedAt === null) stopAttrs["disabled"] = "";
+    const completeAttrs: Record<string, string> = { "data-action": "complete" };
+    if (task.blockedBy.length > 0) completeAttrs["disabled"] = "";
+
+    const btnRow = h({
+      tag: "div",
+      class: "btn-row",
+      children: [
+        h({ tag: "button", class: "btn-outline", attrs: startAttrs, text: "Start" }),
+        h({ tag: "button", class: "btn-outline", attrs: stopAttrs, text: "Stop" }),
+        h({ tag: "button", class: "btn-primary", attrs: completeAttrs, text: "Complete" }),
+        h({ tag: "button", class: "btn-outline", attrs: { "data-action": "delete" }, text: "Delete" }),
+      ],
+    });
+    if (isCreate) btnRow.dataset["hidden"] = "";
+
+    this.#shadow.replaceChildren(
+      h({ tag: "style", text: STYLES }),
+      h({
+        tag: "div",
+        class: "header",
+        children: [
+          closeButton,
+          h({ tag: "span", class: "heading", text: isCreate ? "New task" : "Task details" }),
+          h({
+            tag: "button",
+            class: isCreate ? "btn-primary" : "btn-outline",
+            attrs: { "data-action": "save" },
+            text: isCreate ? "Create" : "Save",
+          }),
+        ],
+      }),
+      titleInput,
+      descInput,
+      h({
+        tag: "div",
+        class: "actions",
+        children: [
+          h({ tag: "button", class: "btn-outline", attrs: { "data-action": "attach" }, text: "Attach file" }),
+          h({ tag: "button", class: "btn-outline", attrs: { "data-action": "photo" }, text: "Take photo" }),
+        ],
+      }),
+      h({ tag: "div", class: "pills" }),
+      btnRow,
+    );
 
     this.#updatePillsDisplay();
 
     // Debounced autofill on title input
-    const titleInput = this.#shadow.querySelector(".title-input") as HTMLInputElement;
     titleInput.addEventListener("input", () => {
       this.#requestAutofill(titleInput.value);
     });
@@ -340,8 +429,6 @@ class TaskDetail extends HTMLElement {
       const button = target.closest("[data-action]") as HTMLElement | null;
       if (button === null) return;
       const action = button.dataset["action"];
-
-      const descInput = this.#shadow.querySelector(".desc-input") as HTMLTextAreaElement;
 
       this.dispatchEvent(new CustomEvent("action", {
         bubbles: true,
@@ -353,8 +440,11 @@ class TaskDetail extends HTMLElement {
       }));
     });
   }
+
+  //endregion Render
 }
 
 customElements.define("task-detail", TaskDetail);
+console.log("[task-detail] custom element registered");
 
 export { TaskDetail };

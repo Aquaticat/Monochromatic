@@ -1,3 +1,4 @@
+import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
 
 const STYLES = css(`
@@ -39,6 +40,13 @@ const STYLES = css(`
   }
 `);
 
+/** Debounce delay for search input in milliseconds */
+const SEARCH_DEBOUNCE_MS = 300;
+
+/**
+ * `<search-bar>` -- sticky bar with a back button and debounced search input.
+ * Dispatches a `search` event with `{ query }` after the debounce delay.
+ */
 class SearchBar extends HTMLElement {
   #shadow: ShadowRoot;
 
@@ -62,28 +70,35 @@ class SearchBar extends HTMLElement {
   connectedCallback(): void {
     const query = this.getAttribute("value") ?? "";
 
-    this.#shadow.innerHTML = `
-      <style>${STYLES}</style>
-      <button class="back" aria-label="Go back">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3">
-          <polyline points="20,6 10,16 20,26"/>
-        </svg>
-      </button>
-      <input type="search" placeholder="Search titles, tags, ..." value="${query.replaceAll('"', '&quot;')}" autofocus>
-    `;
+    // SVG back arrow built via innerHTML on a container because h() targets
+    // HTMLElement creation -- SVG elements require the SVG namespace.
+    const backButton = h({
+      tag: "button",
+      class: "back",
+      attrs: { "aria-label": "Go back" },
+      on: { click: () => { history.back(); } },
+    });
+    backButton.innerHTML = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 10,16 20,26"/></svg>`;
 
-    this.#shadow.querySelector(".back")?.addEventListener("click", () => {
-      history.back();
+    const input = h({
+      tag: "input",
+      attrs: { type: "search", placeholder: "Search titles, tags, ...", value: query, autofocus: "" },
     });
 
-    const input = this.#shadow.querySelector("input");
+    // Debounced search dispatch
     let timeout: ReturnType<typeof setTimeout>;
-    input?.addEventListener("input", () => {
+    input.addEventListener("input", () => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         this.dispatchEvent(new CustomEvent("search", { detail: { query: input.value.trim() }, bubbles: true }));
-      }, 300);
+      }, SEARCH_DEBOUNCE_MS);
     });
+
+    this.#shadow.replaceChildren(
+      h({ tag: "style", text: STYLES }),
+      backButton,
+      input,
+    );
   }
 }
 

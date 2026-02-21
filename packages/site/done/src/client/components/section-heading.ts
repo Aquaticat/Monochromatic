@@ -1,3 +1,4 @@
+import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
 
 const STYLES = css(`
@@ -27,6 +28,10 @@ const STYLES = css(`
   }
 `);
 
+/**
+ * `<section-heading>` -- collapsible section with icon, label, and toggle indicator.
+ * Dispatches a `toggle` event with `{ open }` when the heading is clicked.
+ */
 class SectionHeading extends HTMLElement {
   #shadow: ShadowRoot;
   #open = true;
@@ -66,17 +71,23 @@ class SectionHeading extends HTMLElement {
     const icon = this.getAttribute("icon") ?? "";
     const label = this.getAttribute("label") ?? "";
 
-    this.#shadow.innerHTML = `
-      <style>${STYLES}</style>
-      <div class="heading">
-        <span class="icon">${icon}</span>
-        <span>${label}</span>
-        <span class="toggle">${this.#open ? "\u25B2" : "\u25BC"}</span>
-      </div>
-      <div class="content">
-        <slot></slot>
-      </div>
-    `;
+    this.#shadow.replaceChildren(
+      h({ tag: "style", text: STYLES }),
+      h({
+        tag: "div",
+        class: "heading",
+        children: [
+          h({ tag: "span", class: "icon", text: icon }),
+          h({ tag: "span", text: label }),
+          h({ tag: "span", class: "toggle", text: this.#open ? "\u25B2" : "\u25BC" }),
+        ],
+      }),
+      h({
+        tag: "div",
+        class: "content",
+        children: [h({ tag: "slot" })],
+      }),
+    );
   }
 }
 

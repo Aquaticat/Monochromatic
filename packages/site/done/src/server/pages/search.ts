@@ -9,12 +9,12 @@
  */
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t string/t html/f/t string jsx/r s/p n/index.ts";
 import { listAllTags, searchTasks } from "../../lib/db/tasks.ts";
+import { serializePageData } from "./layout.ts";
 
-/** Escapes `<` to prevent `</script>` injection inside the JSON blob */
-function serializePageData(data: unknown): string {
-  return JSON.stringify(data).replaceAll("<", "\\u003c");
-}
-
+/**
+ * Renders the search page with FTS results when a query is present.
+ * @param url - Request URL (the `q` search param contains the query)
+ */
 export function searchPage(url: URL): Response {
   const query = url.searchParams.get("q") ?? "";
   const results = searchTasks(query);

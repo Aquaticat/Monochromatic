@@ -15,6 +15,7 @@ import { createTaskCard } from "./lib/task-card.ts";
 import "./components/side-drawer.ts";
 import "./components/search-bar.ts";
 
+/** Shape of the JSON blob embedded in the search page by the server. */
 type SearchPageData = {
   query: string;
   results: SearchTask[];

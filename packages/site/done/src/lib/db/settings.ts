@@ -48,9 +48,5 @@ export function deleteSetting(key: string): boolean {
  */
 export function getAllSettings(): Record<string, string> {
   const rows = db.query("SELECT key, value FROM settings ORDER BY key ASC").all() as SettingRow[];
-  const settingsRecord: Record<string, string> = {};
-  rows.forEach((row) => {
-    settingsRecord[row.key] = row.value;
-  });
-  return settingsRecord;
+  return Object.fromEntries(rows.map((row) => [row.key, row.value]));
 }

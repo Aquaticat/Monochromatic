@@ -1,3 +1,4 @@
+import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
 import "./toggle-switch.ts";
 
@@ -30,6 +31,10 @@ const STYLES = css(`
   }
 `);
 
+/**
+ * `<setting-group>` -- a single settings row with a label, description,
+ * and an action control (toggle switch or button) determined by the `mode` attribute.
+ */
 class SettingGroup extends HTMLElement {
   #shadow: ShadowRoot;
 
@@ -44,14 +49,27 @@ class SettingGroup extends HTMLElement {
     const mode = this.getAttribute("mode") ?? "toggle";
     const on = this.hasAttribute("on");
 
-    this.#shadow.innerHTML = `
-      <style>${STYLES}</style>
-      <div class="header">
-        <span class="label">${label}</span>
-        ${mode === "button" ? `<button part="action"><slot name="action">connect?</slot></button>` : `<toggle-switch ${on ? 'on' : ''}></toggle-switch>`}
-      </div>
-      ${description.length > 0 ? `<p class="desc">${description}</p>` : ""}
-    `;
+    const actionElement = mode === "button"
+      ? h({ tag: "button", attrs: { part: "action" }, children: [h({ tag: "slot", attrs: { name: "action" }, text: "connect?" })] })
+      : h({ tag: "toggle-switch", attrs: on ? { on: "" } : {} });
+
+    const children: (HTMLElement)[] = [
+      h({ tag: "style", text: STYLES }),
+      h({
+        tag: "div",
+        class: "header",
+        children: [
+          h({ tag: "span", class: "label", text: label }),
+          actionElement,
+        ],
+      }),
+    ];
+
+    if (description.length > 0) {
+      children.push(h({ tag: "p", class: "desc", text: description }));
+    }
+
+    this.#shadow.replaceChildren(...children);
   }
 }
 

@@ -8,19 +8,23 @@
  * 4. Runs migrations (creates tables, indexes, FTS virtual table, triggers)
  *
  * The default export (`db`) is the open Database instance used by `lib/db/tasks.ts`.
+ *
+ * Exceeds 100 lines: the migration SQL strings are long but inert constants
+ * that only make sense next to `runMigrations()` -- extracting them to a
+ * separate file would add a module boundary with no encapsulation benefit.
  */
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { Database } from "bun:sqlite";
+import { getArgumentValue } from "./args.ts";
 
+/** Default database file path when neither `--db=` nor `DB_PATH` env var is provided. */
 const DEFAULT_DATABASE_PATH = "./data/done.db";
 
-function getArgumentValue(name: string): string | undefined {
-  const prefix = `--${name}=`;
-  const argument = process.argv.find((entry) => entry.startsWith(prefix));
-  return argument?.slice(prefix.length);
-}
-
+/**
+ * Strips the `file:` URI prefix if present, returning a plain filesystem path.
+ * @param value - Raw path that may use `file:` scheme
+ */
 function normalizeDatabasePath(value: string): string {
   if (!value.startsWith("file:")) {
     return value;
@@ -29,6 +33,10 @@ function normalizeDatabasePath(value: string): string {
   return value.slice("file:".length);
 }
 
+/**
+ * Resolves the database file path from CLI arguments, environment, or default.
+ * Priority: `--db=PATH` > `DB_PATH` env var > `DEFAULT_DATABASE_PATH`.
+ */
 function resolveDatabasePath(): string {
   const argumentPath = getArgumentValue("db");
   const environmentPath = process.env.DB_PATH;
@@ -36,6 +44,11 @@ function resolveDatabasePath(): string {
   return normalizeDatabasePath(rawPath);
 }
 
+/**
+ * Creates the parent directory for the database file if it does not exist.
+ * Skips creation for `:memory:` databases.
+ * @param databasePath - Resolved filesystem path
+ */
 function ensureDatabaseDirectoryExists(databasePath: string): void {
   if (databasePath === ":memory:") {
     return;
@@ -129,6 +142,7 @@ const MIGRATION_FTS_BACKFILL = `
 
 //endregion Migration SQL
 
+/** Executes all schema migrations (tables, indexes, FTS, triggers, backfill). */
 function runMigrations(database: Database): void {
   database.run(MIGRATION_TABLES_AND_INDEXES);
   database.run(MIGRATION_FTS_AND_TRIGGERS);

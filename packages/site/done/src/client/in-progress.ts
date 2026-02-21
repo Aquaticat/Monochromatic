@@ -14,6 +14,7 @@ import { createTaskCard, formatRunningTrackedTime } from "./lib/task-card.ts";
 import "./components/side-drawer.ts";
 import "./components/top-nav.ts";
 
+/** Shape of the JSON blob embedded in the in-progress page by the server. */
 type InProgressPageData = {
   tasks: Task[];
 };
@@ -51,15 +52,15 @@ if (pageData.tasks.length > 0) {
   app.append(list);
 }
 
-// Live timer updates
+// Live timer updates -- correlate each card with its task by DOM order
 setInterval(() => {
-  for (const task of pageData.tasks) {
-    const cards = list.querySelectorAll("task-card");
-    for (const card of cards) {
-      const chipEl = (card as any).getChipElement?.("tracked:");
-      if (chipEl instanceof HTMLSpanElement) {
-        chipEl.textContent = `tracked: ${formatRunningTrackedTime(task)}`;
-      }
+  const cards = list.querySelectorAll("task-card");
+  cards.forEach((card, cardIndex) => {
+    const task = pageData.tasks[cardIndex];
+    if (task === undefined) return;
+    const chipEl = (card as unknown as { getChipElement?: (prefix: string) => HTMLSpanElement | null }).getChipElement?.("tracked:");
+    if (chipEl instanceof HTMLSpanElement) {
+      chipEl.textContent = `tracked: ${formatRunningTrackedTime(task)}`;
     }
-  }
+  });
 }, 1000);

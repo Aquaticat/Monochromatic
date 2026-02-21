@@ -7,6 +7,10 @@
  *
  * Degrades gracefully: when the AI is unavailable or returns garbage,
  * the response carries empty/null fields so the client can still function.
+ *
+ * Exceeds 100 lines: borderline at ~105 lines, but `parseAutofillResponse`,
+ * `listAllLocations`, and `handleAutofill` share the same types and validation
+ * constants -- splitting would add a module for fewer than 40 lines of code.
  */
 import { chatCompletion } from "../../lib/ai/client.ts";
 import { buildAutofillMessages } from "../../lib/ai/prompts.ts";

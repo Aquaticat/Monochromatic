@@ -8,9 +8,17 @@ run = "bun --watch src/server.ts --build-only"
 description = "Start Done in watch mode"
 run = "bun --watch src/server.ts"
 
-[tasks."start:site"]
-description = "Start Done"
-run = "bun src/server.ts"
+# start:site intentionally omitted -- production is managed by the
+# orchestrator container, not by mise (see PLAN.md section 7).
+
+[tasks."dev"]
+description = "Start Done in watch mode alongside a local llama.cpp inference server"
+run = [{ tasks = ["dev:site:llama", "dev:site"] }]
+
+[tasks."dev:llama"]
+hide = true
+description = "Start llama-server with default model (LFM2.5-1.2B-Instruct-Q4_K_M)"
+run = "llama-server --hf-repo LiquidAI/LFM2.5-1.2B-Instruct-GGUF --hf-file LFM2.5-1.2B-Instruct-Q4_K_M.gguf --ctx-size 4096 --host 127.0.0.1 --port 8080"
 
 [tasks."lint:types"]
 hide = true

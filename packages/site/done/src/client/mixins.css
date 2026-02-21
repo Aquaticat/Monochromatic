@@ -3,7 +3,7 @@
    Mixins are granular and composable -- prefer combining small primitives
    over creating monolithic blocks. */
 
-/* -- Layout primitives ---------------------------------------------------- */
+/*region Layout primitives */
 
 @mixin --flex-center {
   display: flex;
@@ -21,7 +21,9 @@
   flex-direction: column;
 }
 
-/* -- Visual primitives ---------------------------------------------------- */
+/*endregion Layout primitives */
+
+/*region Visual primitives */
 
 /* Fully-rounded corners (pill / circle shape) */
 @mixin --border-radius-full {
@@ -36,7 +38,9 @@
   scrollbar-width: none;
 }
 
-/* -- Interactive primitives ----------------------------------------------- */
+/*endregion Visual primitives */
+
+/*region Interactive primitives */
 
 /* Strips all browser-default button/anchor chrome */
 @mixin --appearance-none {
@@ -65,7 +69,9 @@
   input::placeholder, textarea::placeholder { color: var(--medium); }
 }
 
-/* -- Composed patterns ---------------------------------------------------- */
+/*endregion Interactive primitives */
+
+/*region Composed patterns */
 
 /* Horizontally scrollable row of inline items */
 @mixin --scroll-row {
@@ -105,3 +111,5 @@
   inset-block-start: 0;
   z-index: 10;
 }
+
+/*endregion Composed patterns */

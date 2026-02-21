@@ -1,3 +1,4 @@
+import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
 
 const STYLES = css(`
@@ -62,6 +63,11 @@ const DEFAULT_PRESETS = [
   "Deep work focus",
 ];
 
+/**
+ * `<focus-dropdown>` -- popover-based dropdown for selecting a focus preset.
+ * Reads initial value from the `value` attribute and dispatches `change`
+ * events with `{ value }` when a preset is selected.
+ */
 class FocusDropdown extends HTMLElement {
   #shadow: ShadowRoot;
   #value: string;
@@ -78,35 +84,43 @@ class FocusDropdown extends HTMLElement {
   }
 
   #render(): void {
-    this.#shadow.innerHTML = `
-      <style>${STYLES}</style>
-      <button class="trigger">
-        <span class="text">${this.#value}</span>
-        <span class="divider"></span>
-        <span>\u25BC</span>
-      </button>
-      <ul class="menu" popover="auto">
-        ${DEFAULT_PRESETS.map((preset) => `<li class="option">${preset}</li>`).join("")}
-      </ul>
-    `;
+    const textSpan = h({ tag: "span", class: "text", text: this.#value });
 
-    const trigger = this.#shadow.querySelector(".trigger") as HTMLButtonElement;
-    const menu = this.#shadow.querySelector(".menu") as HTMLElement;
-
-    trigger.addEventListener("click", () => {
-      menu.togglePopover();
+    const menu = h({
+      tag: "ul",
+      class: "menu",
+      attrs: { popover: "auto" },
+      children: DEFAULT_PRESETS.map((preset) =>
+        h({
+          tag: "li",
+          class: "option",
+          text: preset,
+          on: {
+            click: () => {
+              this.#value = preset;
+              textSpan.textContent = preset;
+              menu.hidePopover();
+              this.dispatchEvent(new CustomEvent("change", { bubbles: true, detail: { value: preset } }));
+            },
+          },
+        }),
+      ),
     });
 
-    this.#shadow.querySelectorAll(".option").forEach((option) => {
-      option.addEventListener("click", () => {
-        const text = option.textContent ?? "";
-        this.#value = text;
-        const textSpan = this.#shadow.querySelector(".text") as HTMLSpanElement;
-        textSpan.textContent = text;
-        menu.hidePopover();
-        this.dispatchEvent(new CustomEvent("change", { bubbles: true, detail: { value: text } }));
-      });
-    });
+    this.#shadow.replaceChildren(
+      h({ tag: "style", text: STYLES }),
+      h({
+        tag: "button",
+        class: "trigger",
+        children: [
+          textSpan,
+          h({ tag: "span", class: "divider" }),
+          h({ tag: "span", text: "\u25BC" }),
+        ],
+        on: { click: () => { menu.togglePopover(); } },
+      }),
+      menu,
+    );
   }
 }
 

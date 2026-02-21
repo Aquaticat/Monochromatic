@@ -6,6 +6,11 @@
 
 experimental_monorepo_root = true
 
+[monorepo]
+config_roots = [
+  "packages/*/*",
+]
+
 [tools]
 # Primary runtime
 bun = "latest"
@@ -50,6 +55,9 @@ cargo-binstall = "latest"
 
 # Compression
 "github:facebook/zstd" = "latest"
+
+# AI inference server for local development (packages/site/done)
+"github:ggml-org/llama.cpp" = "latest"
 
 [settings]
 # Enable automatic tool installation when entering directory

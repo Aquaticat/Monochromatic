@@ -6,6 +6,7 @@
  */
 import { renderPage } from "./layout.ts";
 
+/** Renders the settings page with placeholder configuration options. */
 export function settingsPage(): Response {
   return renderPage({
     title: "Settings - Done",

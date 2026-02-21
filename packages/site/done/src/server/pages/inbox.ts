@@ -8,6 +8,7 @@
 import { listBlockedInboxTasks, listInboxUnblockedTasks } from "../../lib/db/tasks.ts";
 import { renderPage } from "./layout.ts";
 
+/** Renders the inbox page with unblocked and blocked task lists. */
 export function inboxPage(): Response {
   const inboxTasks = listInboxUnblockedTasks();
   const blockedLinks = listBlockedInboxTasks();

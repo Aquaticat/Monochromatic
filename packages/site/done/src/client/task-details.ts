@@ -11,19 +11,24 @@ import { api } from "./lib/api.ts";
 import { injectCSS } from "./lib/inject-css.ts";
 import { readPageData } from "./lib/page-data.ts";
 import "./components/side-drawer.ts";
-import { TaskDetail } from "./components/task-detail.ts";
+import type { TaskDetail } from "./components/task-detail.ts";
+// Side-effect import: registers the `<task-detail>` custom element
+import "./components/task-detail.ts";
 
+/** Minimal task info shown in the blocker picker dropdown. */
 type BlockerCandidate = {
   id: string;
   title: string;
 };
 
+/** Summary of a task that blocks the current task (shown as a chip/badge). */
 type BlockerSummary = {
   id: string;
   title: string;
   status: string;
 };
 
+/** Shape of the JSON blob embedded in the task detail page by the server. */
 type TaskDetailsPageData = {
   task: Task;
   blockerCandidates: BlockerCandidate[];
@@ -47,7 +52,8 @@ detail.configure({
   blockerSummaries: pageData.blockerSummaries,
 });
 
-detail.addEventListener("action", ((event: CustomEvent) => {
+detail.addEventListener("action", async (event) => {
+  if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent for 'action' listener");
   const { action, title, description } = event.detail as {
     action: string;
     title: string;
@@ -70,35 +76,30 @@ detail.addEventListener("action", ((event: CustomEvent) => {
         dueDate: task.dueDate,
         blockedBy: task.blockedBy,
       };
-      api(`/api/tasks/${task.id}`, {
+      await api(`/api/tasks/${task.id}`, {
         method: "PUT",
         body: JSON.stringify(payload),
-      }).then(() => {
-        window.location.reload();
       });
+      window.location.reload();
       break;
     }
     case "start":
-      api(`/api/tasks/${task.id}/start`, { method: "POST" }).then(() => {
-        window.location.reload();
-      });
+      await api(`/api/tasks/${task.id}/start`, { method: "POST" });
+      window.location.reload();
       break;
     case "stop":
-      api(`/api/tasks/${task.id}/stop`, { method: "POST" }).then(() => {
-        window.location.reload();
-      });
+      await api(`/api/tasks/${task.id}/stop`, { method: "POST" });
+      window.location.reload();
       break;
     case "complete":
-      api(`/api/tasks/${task.id}/complete`, { method: "POST" }).then(() => {
-        window.location.href = "/";
-      });
+      await api(`/api/tasks/${task.id}/complete`, { method: "POST" });
+      window.location.href = "/";
       break;
     case "delete":
-      api(`/api/tasks/${task.id}`, { method: "DELETE" }).then(() => {
-        window.location.href = "/";
-      });
+      await api(`/api/tasks/${task.id}`, { method: "DELETE" });
+      window.location.href = "/";
       break;
   }
-}) as EventListener);
+});
 
 app.append(detail);

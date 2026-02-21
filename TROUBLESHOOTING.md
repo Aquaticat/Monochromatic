@@ -54,6 +54,13 @@ Problems with configuration file formats and why TOML can be problematic:
 - Better alternatives to TOML (JSON, YAML, JSON5)
 - Real-world examples of TOML-caused production incidents
 
+### [Figma and browser automation](TROUBLESHOOTING.figma-browser-automation.md)
+The WebGL wall: why AI agents cannot meaningfully automate Figma through browser tools:
+- Canvas content is invisible to DOM inspection and browser automation
+- Figma MCP covers node structure but not comments, prototypes, or annotations
+- No automated solution exists for prototype review or comment extraction
+- Workarounds require human-in-the-loop screenshotting
+
 ### [C-Like Comment Syntax](TROUBLESHOOTING.cLikeComments.md)
 Issues with C-style comment syntax that affect multiple programming languages:
 - Block comment nesting limitations and why `/* */` comments cannot be nested
@@ -75,6 +82,7 @@ For common issues:
 - **Fresh clone fails?** → [Build order dependencies](TROUBLESHOOTING.vite.md#vite-config-build-order-in-mise)
 - **TypeScript path warnings?** → [dprint configuration](TROUBLESHOOTING.typescript.md#typescript-path-warnings-with-dprint)
 - **Configuration not working as expected?** → [TOML issues and alternatives](TROUBLESHOOTING.toml.md#silent-overwrites-the-configuration-killer)
+- **Figma automation not working?** → [The WebGL wall](TROUBLESHOOTING.figma-browser-automation.md)
 
 ## Contributing
 

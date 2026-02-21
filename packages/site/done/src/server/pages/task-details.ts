@@ -9,12 +9,13 @@
  */
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t string/t html/f/t string jsx/r s/p n/index.ts";
 import { getTaskById, listTasksForBlockerPicker } from "../../lib/db/tasks.ts";
+import { serializePageData } from "./layout.ts";
 
-/** Escapes `<` to prevent `</script>` injection inside the JSON blob */
-function serializePageData(data: unknown): string {
-  return JSON.stringify(data).replaceAll("<", "\\u003c");
-}
-
+/**
+ * Renders the task detail page for a single task with its blocker summaries.
+ * @param taskId - Task UUID from the route parameter
+ * @returns HTML response, or 404 when the task does not exist
+ */
 export function taskDetailsPage(taskId: string): Response {
   const task = getTaskById(taskId);
   if (task === null) {

@@ -1,3 +1,12 @@
+/**
+ * Task CRUD operations and query functions against the SQLite database.
+ *
+ * Exceeds 100 lines: SQL constants, row-mapping, and CRUD functions form a
+ * single data-access layer -- splitting SQL from the functions that use them
+ * would scatter a tightly-coupled concern across files, and each function
+ * shares the `db` import, `TaskRow` type, and `mapTask`/`parseStringArray`
+ * helpers, making extraction costly for little benefit.
+ */
 import db from "../db.ts";
 import type {
   BlockedTaskLink,
@@ -10,16 +19,21 @@ import type {
   TaskUpdateInput,
 } from "../types.ts";
 
+/** Raw SQLite row shape before mapping to the application-level `Task` type. */
 type TaskRow = {
   id: string;
   title: string;
   description: string | null;
+  /** JSON-encoded string array (`'["tag1","tag2"]'`). */
   tags: string;
+  /** JSON-encoded string array. */
   locations: string;
   priority: TaskPriority | null;
   due_date: string | null;
   complexity: TaskComplexity | null;
+  /** JSON-encoded string array. */
   reminders: string;
+  /** JSON-encoded string array of blocker task IDs. */
   blocked_by: string;
   tracked_time: number;
   timer_started_at: string | null;
@@ -95,21 +109,29 @@ const SQL_SELECT_BLOCKERS = `
 
 //endregion SQL queries
 
+/** Summary of a single blocker task, used to report why completion was refused. */
 export type BlockerSummary = {
   blockerId: string;
   blockerTitle: string;
 };
 
+/** Outcome of a `completeTask()` call -- carries blockers when completion is refused. */
 export type CompleteTaskResult = {
   completed: boolean;
   notFound: boolean;
   blockedBy: BlockerSummary[];
 };
 
+/** Returns the current timestamp in ISO 8601 format for database writes. */
 function nowIso(): string {
   return new Date().toISOString();
 }
 
+/**
+ * Safely parses a JSON string expected to contain a string array.
+ * Returns an empty array on parse failure or unexpected shape.
+ * @param value - Raw JSON text from a SQLite TEXT column
+ */
 function parseStringArray(value: string): string[] {
   try {
     const parsed = JSON.parse(value) as unknown;
@@ -123,6 +145,11 @@ function parseStringArray(value: string): string[] {
   }
 }
 
+/**
+ * Deduplicates, trims, and filters empty strings from an optional array.
+ * Used to normalize user-supplied tag/location/blocker arrays before DB writes.
+ * @param values - Raw string array, or `undefined` to produce an empty result
+ */
 function normalizeStringArray(values: readonly string[] | undefined): string[] {
   if (values === undefined) {
     return [];
@@ -131,6 +158,10 @@ function normalizeStringArray(values: readonly string[] | undefined): string[] {
   return [...new Set(values.map((value) => value.trim()).filter((value) => value.length > 0))];
 }
 
+/**
+ * Converts a raw SQLite `TaskRow` to the application-level `Task` shape.
+ * Parses JSON-encoded array columns and renames snake_case to camelCase.
+ */
 function mapTask(row: TaskRow): Task {
   return {
     id: row.id,
@@ -154,46 +185,68 @@ function mapTask(row: TaskRow): Task {
   };
 }
 
+/**
+ * Fetches a single task row by primary key without mapping.
+ * @param id - Task UUID
+ */
 function getTaskRowById(id: string): TaskRow | null {
   const taskRow = db.query(SQL_SELECT_TASK_BY_ID).get(id) as TaskRow | null;
   return taskRow;
 }
 
+/**
+ * Retrieves a single task by UUID, mapped to the application type.
+ * @param id - Task UUID
+ * @returns Mapped task, or `null` when the ID does not exist
+ */
 export function getTaskById(id: string): Task | null {
   const taskRow = getTaskRowById(id);
   return taskRow === null ? null : mapTask(taskRow);
 }
 
+/** Lists inbox tasks that have no blockers, newest first. */
 export function listInboxUnblockedTasks(): Task[] {
   const rows = db.query(SQL_SELECT_INBOX_UNBLOCKED).all() as TaskRow[];
 
   return rows.map(mapTask);
 }
 
+/** Lists inbox tasks that are blocked, paired with each blocker ID for nesting. */
 export function listBlockedInboxTasks(): BlockedTaskLink[] {
   const rows = db.query(SQL_SELECT_BLOCKED_INBOX).all() as (TaskRow & { blocker_id: string })[];
 
   return rows.map((row) => ({ blockerId: row.blocker_id, task: mapTask(row) }));
 }
 
+/** Lists tasks with active timers (`status = 'in_progress'`), most recently updated first. */
 export function listInProgressTasks(): Task[] {
   const rows = db.query(SQL_SELECT_IN_PROGRESS).all() as TaskRow[];
 
   return rows.map(mapTask);
 }
 
+/**
+ * Lists non-done tasks excluding the given task, for the blocker picker UI.
+ * @param taskId - Task to exclude (the task being edited)
+ */
 export function listTasksForBlockerPicker(taskId: string): Task[] {
   const rows = db.query(SQL_SELECT_FOR_BLOCKER_PICKER).all(taskId) as TaskRow[];
 
   return rows.map(mapTask);
 }
 
+/** Collects all unique tags across every task, sorted alphabetically. */
 export function listAllTags(): string[] {
   const rows = db.query(SQL_SELECT_ALL_TAGS).all() as { tag: string }[];
 
   return rows.map((row) => row.tag);
 }
 
+/**
+ * Full-text searches tasks by title, description, and tags.
+ * Falls back to LIKE matching when the FTS query syntax is invalid.
+ * @param searchQuery - User-entered search string
+ */
 export function searchTasks(searchQuery: string): SearchTask[] {
   const normalizedSearchQuery = searchQuery.trim();
   if (normalizedSearchQuery.length === 0) {
@@ -213,6 +266,12 @@ export function searchTasks(searchQuery: string): SearchTask[] {
   }
 }
 
+/**
+ * Inserts a new task with a generated UUID and current timestamp.
+ * @param input - Task creation payload (only `title` is required)
+ * @returns Freshly created task read back from the database
+ * @throws When the read-back fails (should never happen)
+ */
 export function createTask(input: TaskCreateInput): Task {
   const id = crypto.randomUUID();
   const timestamp = nowIso();
@@ -246,6 +305,12 @@ export function createTask(input: TaskCreateInput): Task {
   return createdTask;
 }
 
+/**
+ * Applies a partial update to an existing task.
+ * @param id - Task UUID
+ * @param input - Fields to update (omitted fields keep their current value)
+ * @returns Updated task, or `null` when the ID does not exist
+ */
 export function updateTask(id: string, input: TaskUpdateInput): Task | null {
   const currentTask = getTaskById(id);
   if (currentTask === null) {
@@ -285,11 +350,21 @@ export function updateTask(id: string, input: TaskUpdateInput): Task | null {
   return getTaskById(id);
 }
 
+/**
+ * Permanently removes a task by UUID.
+ * @param id - Task UUID
+ * @returns `true` when the task existed and was deleted
+ */
 export function deleteTask(id: string): boolean {
   const result = db.query(SQL_DELETE_TASK).run(id);
   return result.changes > 0;
 }
 
+/**
+ * Starts the timer on a task, transitioning its status to `in_progress`.
+ * @param id - Task UUID
+ * @returns Updated task, or `null` when the ID does not exist
+ */
 export function startTaskTimer(id: string): Task | null {
   const timestamp = nowIso();
   db.query(SQL_START_TIMER).run(
@@ -300,6 +375,12 @@ export function startTaskTimer(id: string): Task | null {
   return getTaskById(id);
 }
 
+/**
+ * Stops the running timer, accumulates elapsed seconds into `trackedTime`,
+ * and transitions the task back to `inbox` status.
+ * @param id - Task UUID
+ * @returns Updated task, or `null` when the ID does not exist
+ */
 export function stopTaskTimer(id: string): Task | null {
   const currentTask = getTaskById(id);
   if (currentTask === null) {
@@ -318,6 +399,11 @@ export function stopTaskTimer(id: string): Task | null {
   return getTaskById(id);
 }
 
+/**
+ * Attempts to complete a task: stops any running timer, then deletes it.
+ * Refuses completion when the task has unresolved blockers.
+ * @param id - Task UUID
+ */
 export function completeTask(id: string): CompleteTaskResult {
   const currentTask = getTaskById(id);
   if (currentTask === null) {

@@ -21,6 +21,7 @@
 import { build as buildCSS } from "@monochromatic-dev/build-css/ts";
 // Side-effect: opens SQLite database and runs schema migrations on import
 import "./lib/db.ts";
+import { getArgumentValue } from "./lib/args.ts";
 import { handleAutofill } from "./server/api/ai-autofill.ts";
 import { handleCreateTask, handleDeleteTask, handleUpdateTask } from "./server/api/tasks.ts";
 import { handleCompleteTask, handleStartTimer, handleStopTimer } from "./server/api/timer.ts";
@@ -30,14 +31,13 @@ import { searchPage } from "./server/pages/search.ts";
 import { settingsPage } from "./server/pages/settings.ts";
 import { taskDetailsPage } from "./server/pages/task-details.ts";
 
+/** Default HTTP port when neither `--port=` nor `PORT` env var is provided. */
 const DEFAULT_PORT = 3000;
 
-function getArgumentValue(name: string): string | undefined {
-  const prefix = `--${name}=`;
-  const argument = process.argv.find((entry) => entry.startsWith(prefix));
-  return argument?.slice(prefix.length);
-}
-
+/**
+ * Resolves the HTTP listen port from CLI arguments, environment, or default.
+ * Priority: `--port=N` > `PORT` env var > `DEFAULT_PORT`.
+ */
 function resolvePort(): number {
   const argumentPort = getArgumentValue("port");
   const environmentPort = process.env.PORT;
@@ -71,7 +71,6 @@ const buildResult = await Bun.build({
   outdir: "./dist/client",
   target: "browser",
   minify: process.env.NODE_ENV === "production",
-
 });
 
 if (!buildResult.success) {

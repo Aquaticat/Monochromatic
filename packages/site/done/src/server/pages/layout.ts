@@ -22,8 +22,12 @@ type LayoutOptions = {
   hideTopNav?: boolean;
 };
 
-/** Escapes `<` to prevent `</script>` injection inside the JSON blob */
-function serializePageData(data: unknown): string {
+/**
+ * Escapes `<` to prevent `</script>` injection inside the JSON blob.
+ * Used by page handlers that render their own HTML shell (search, task-details)
+ * in addition to the shared `renderPage()` layout.
+ */
+export function serializePageData(data: unknown): string {
   return JSON.stringify(data).replaceAll("<", "\\u003c");
 }
 

@@ -538,6 +538,13 @@ For scripts that might be parsed as CommonJS, add an export:
 export {};
 ```
 
+## Logging
+
+- Log extensively -- `console.log` calls are cheap to write and invaluable when debugging
+- Add logging to new code by default: function entry points, branch decisions, error paths, async lifecycle events
+- Never remove logging to "clean up" -- a quiet console helps no one when something breaks; a noisy console costs nothing in development
+- Treat logging as permanent infrastructure, not temporary scaffolding
+
 ## Security
 
 - No hardcoded secrets, API keys, or credentials in source code
@@ -892,6 +899,10 @@ TypeScript's support for overloading generator functions has quirks:
   - Use `substring()` or `slice()` instead of deprecated `substr()`
   - Check MDN or TypeScript documentation for deprecation warnings
   - Prefer modern, supported alternatives
+- **Never silently discard unexpected states** -- when narrowing a type at runtime (e.g. `instanceof`, `typeof`, discriminant checks), the failure branch means something is seriously wrong; throw an error instead of returning early or ignoring the case
+  - Bad: `if (!(event instanceof CustomEvent)) return;` -- silently hides a bug
+  - Good: `if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent");`
+  - This applies to type guards, switch-default branches, and any narrowing where the "else" path should be unreachable in correct code
 
 ### Class Design
 - Prefer composition over inheritance

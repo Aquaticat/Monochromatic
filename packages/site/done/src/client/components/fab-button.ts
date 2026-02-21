@@ -1,10 +1,11 @@
+import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
 
 const STYLES = css(`
   :host {
     position: fixed;
     inset-block-end: 1rem;
-    inset-inline-end: calc(50% - calc(393 / 16 * 1rem) / 2 + 1rem);
+    inset-inline-end: 1rem;
     z-index: 50;
   }
   button {
@@ -29,14 +30,13 @@ const STYLES = css(`
     outline-color: var(--fg);
     outline-offset: 0.125rem;
   }
-  @media (min-width: 48rem) {
-    :host {
-      inset-inline-end: 1rem;
-      inset-block-end: 1rem;
-    }
-  }
+
 `);
 
+/**
+ * `<fab-button>` -- floating action button pinned to the bottom-right.
+ * Reads the `label` attribute for accessibility and renders a `<slot>` for custom content.
+ */
 class FabButton extends HTMLElement {
   #shadow: ShadowRoot;
 
@@ -46,12 +46,15 @@ class FabButton extends HTMLElement {
   }
 
   connectedCallback(): void {
-    this.#shadow.innerHTML = `
-      <style>${STYLES}</style>
-      <button part="button" aria-label="${this.getAttribute("label") ?? "Action"}">
-        <slot>+</slot>
-      </button>
-    `;
+    const label = this.getAttribute("label") ?? "Action";
+    this.#shadow.replaceChildren(
+      h({ tag: "style", text: STYLES }),
+      h({
+        tag: "button",
+        attrs: { part: "button", "aria-label": label },
+        children: [h({ tag: "slot", text: "+" })],
+      }),
+    );
   }
 }
 

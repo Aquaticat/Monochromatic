@@ -1,3 +1,4 @@
+import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
 
 const STYLES = css(`
@@ -80,6 +81,10 @@ const STYLES = css(`
   }
 `);
 
+/**
+ * `<top-nav>` -- sticky navigation bar with hamburger menu, page heading, and search link.
+ * Dispatches a `menu-open` composed event when the hamburger is clicked.
+ */
 class TopNav extends HTMLElement {
   #shadow: ShadowRoot;
 
@@ -91,27 +96,46 @@ class TopNav extends HTMLElement {
   connectedCallback(): void {
     const heading = this.getAttribute("heading") ?? "";
 
-    this.#shadow.innerHTML = `
-      <style>${STYLES}</style>
-      <button class="action menu-toggle" aria-label="Open menu">
-        <span class="hamburger">
-          <span class="line"></span>
-          <span class="line"></span>
-          <span class="line"></span>
-        </span>
-      </button>
-      <h1>${heading}</h1>
-      <a class="action" href="/search" aria-label="Search">
-        <span class="search-icon">
-          <span class="circle"></span>
-          <span class="handle"></span>
-        </span>
-      </a>
-    `;
-
-    this.#shadow.querySelector(".menu-toggle")?.addEventListener("click", () => {
-      this.dispatchEvent(new CustomEvent("menu-open", { bubbles: true, composed: true }));
-    });
+    this.#shadow.replaceChildren(
+      h({ tag: "style", text: STYLES }),
+      h({
+        tag: "button",
+        class: "action menu-toggle",
+        attrs: { "aria-label": "Open menu" },
+        children: [
+          h({
+            tag: "span",
+            class: "hamburger",
+            children: [
+              h({ tag: "span", class: "line" }),
+              h({ tag: "span", class: "line" }),
+              h({ tag: "span", class: "line" }),
+            ],
+          }),
+        ],
+        on: {
+          click: () => {
+            this.dispatchEvent(new CustomEvent("menu-open", { bubbles: true, composed: true }));
+          },
+        },
+      }),
+      h({ tag: "h1", text: heading }),
+      h({
+        tag: "a",
+        class: "action",
+        attrs: { href: "/search", "aria-label": "Search" },
+        children: [
+          h({
+            tag: "span",
+            class: "search-icon",
+            children: [
+              h({ tag: "span", class: "circle" }),
+              h({ tag: "span", class: "handle" }),
+            ],
+          }),
+        ],
+      }),
+    );
   }
 }
 
