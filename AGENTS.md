@@ -380,7 +380,7 @@ When refactoring code, follow this progression:
 - Refactor to complexity only when necessary
 - Name intermediate values for clarity
 - Break complex operations into smaller, testable functions
-- Split large files until they fall under 100 lines.
+- Preemptively split large files over 100 lines; all files should be under 200 lines.
   - This limit applies only to production/library source code -- test files, fixture files, configuration files, and documentation files are exempt.
   - If splitting is not feasible (e.g. would cause import cycles), add a justification comment at the top of the file explaining why.
 

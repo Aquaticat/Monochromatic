@@ -1,4 +1,5 @@
 import { Glob, } from 'bun';
+import { readCached, } from './cache.ts';
 import { expandGlob, } from './glob.ts';
 import { trackRead, } from './tracker.ts';
 
@@ -32,8 +33,8 @@ export async function cat(input: string | readonly string[]): Promise<string | r
     const paths = await expandGlob(input);
     return await Promise.all(
       paths.map(async function readGlobMatch(path: string): Promise<GlobResult> {
-          trackRead(path);
-        return { path, content: await Bun.file(path).text(), };
+        trackRead(path);
+        return { path, content: await readCached(path), };
       }),
     );
   }
@@ -52,7 +53,7 @@ export async function cat(input: string | readonly string[]): Promise<string | r
   const contents = await Promise.all(
     expandedGroups.flat().map(async function readOneFile(filePath: string): Promise<string> {
       trackRead(filePath);
-      return await Bun.file(filePath).text();
+      return await readCached(filePath);
     }),
   );
   return contents.join('\n');

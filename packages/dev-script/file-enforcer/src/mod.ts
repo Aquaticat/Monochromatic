@@ -1,3 +1,4 @@
+export { invalidatePaths, readCache, readCached, updateCache, } from './cache.ts';
 export { cat, } from './cat.ts';
 export type { GlobResult, } from './cat.ts';
 export { exec, } from './exec.ts';

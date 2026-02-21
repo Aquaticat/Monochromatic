@@ -1,0 +1,19 @@
+[tasks.'perf:setup']
+description = "Create performance benchmark fixture files in /tmp"
+run = "bun packages/fixture/file-enforcer-perf/src/setup-fixture.ts"
+
+[tasks.'perf:micro']
+description = "Run micro-benchmarks of individual file-enforcer operations"
+run = "bun test packages/fixture/file-enforcer-perf/src/perf.bench.test.ts"
+
+[tasks.'perf:e2e']
+description = "Run end-to-end benchmarks with hyperfine on host"
+run = "bun packages/fixture/file-enforcer-perf/src/run-e2e.ts"
+
+[tasks.'perf:constrained']
+description = "Run benchmarks in resource-constrained podman container (1 vCPU, 1GB RAM)"
+run = "bun packages/fixture/file-enforcer-perf/src/run-constrained.ts"
+
+[tasks.'perf:teardown']
+description = "Remove performance benchmark fixture files"
+run = "rm -rf /tmp/file-enforcer-perf"

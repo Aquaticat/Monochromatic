@@ -6,16 +6,7 @@ import { getProperty as dotPropGet, } from 'dot-prop';
  * @returns Content with duplicate lines removed
  */
 export function dedup(content: string): string {
-  /** Set tracking seen lines for O(1) lookup */
-  const seen = new Set<string>();
-  return content
-    .split('\n')
-    .filter(function keepFirstOccurrence(line: string): boolean {
-      if (seen.has(line)) return false;
-      seen.add(line);
-      return true;
-    })
-    .join('\n');
+  return Array.from(new Set(content.split('\n'))).join('\n');
 }
 
 /**

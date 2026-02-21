@@ -2,6 +2,7 @@ import {
   join,
   resolve,
 } from 'node:path';
+import { invalidatePaths, } from './cache.ts';
 import { reset, } from './tracker.ts';
 import { notifyWriteProtection, } from './notify.ts';
 import { DEBOUNCE_MS, watchDirectory, } from './watch-dir.ts';
@@ -35,9 +36,12 @@ export async function startWatching(configPath: string): Promise<never> {
   /**
    * Re-imports the config with a cache-busting query parameter,
    * then updates the watcher set from newly tracked reads/writes.
+   * @param changedPath - Absolute path of the file that triggered the re-run,
+   *   invalidated from the read cache so only that file is re-read from disk
    */
-  async function rerun(): Promise<void> {
+  async function rerun(changedPath: string): Promise<void> {
     console.log('[file-enforcer] re-running config...');
+    invalidatePaths([changedPath]);
     reset();
     try {
       await import(`${absoluteConfig}?v=${String(Date.now())}`);
@@ -55,22 +59,22 @@ export async function startWatching(configPath: string): Promise<never> {
    * normal re-run (source) or a re-run with notification (protected).
    */
   function handleEvent(kind: EventKind, filename: string, dir: string): void {
+    /** Absolute path of the file that triggered this event */
+    const changedPath = resolve(join(dir, filename));
     clearTimeout(debounceTimer);
     if (kind === 'protected') {
-      /** Absolute path of the externally modified managed file */
-      const protectedPath = resolve(join(dir, filename));
       debounceTimer = setTimeout(() => {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises -- debounced async protection
         (async (): Promise<void> => {
-          await notifyWriteProtection(protectedPath);
-          await rerun();
+          await notifyWriteProtection(changedPath);
+          await rerun(changedPath);
         })();
       }, DEBOUNCE_MS);
       return;
     }
     debounceTimer = setTimeout(() => {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises -- debounced async re-run
-      rerun();
+      rerun(changedPath);
     }, DEBOUNCE_MS);
   }
 
