@@ -1,0 +1,5 @@
+[tasks.'lint:types']
+run = "tsc --noEmit"
+
+[tasks.'test:unit']
+run = "bun test .unit.test."

@@ -932,3 +932,29 @@ Refer to the Testing Practices skill (.factory/skills/testing-practices.md).
 # Code Review
 
 Refer to the Code Review skill (.factory/skills/code-review.md).
+
+# Architecture Decisions
+
+## Monorepo dependency rules
+
+- The root `package.json` may depend on workspace packages (`"@monochromatic-dev/foo": "workspace:*"`)
+- Root-level config files, scripts, and tools can import from workspace packages by name rather than using fragile relative paths
+
+## Config-as-code over config-as-data
+
+- When a configuration format (TOML, YAML, JSON) starts needing operators, pipelines, or conditional logic, switch to TypeScript
+- TypeScript config files provide type checking, IDE support, and composability that no data format can match
+- Don't invent a DSL inside a data format -- if the config needs `if`, `map`, or `await`, it's code
+
+## Direct execution over descriptor patterns
+
+- Don't build a two-phase "collect descriptors then interpret" system unless dry-run, conflict resolution, or pre-execution inspection is a concrete requirement
+- Direct async functions with `await` at the call site are simpler to write, debug, and understand
+- Users get explicit control over sequencing and parallelism with `await` and `Promise.all` instead of the framework guessing
+- Apply YAGNI to architecture, not just features
+
+## Nested calls over method chaining
+
+- Method chaining (`a().b().c()`) looks clean at the call site but forces a descriptor AST and switch-based interpreter in the implementation
+- Nested calls (`c(b(a()))`) let each function be self-contained with no shared state or deferred interpretation
+- Prefer nested calls unless left-to-right reading order is genuinely more important than implementation simplicity

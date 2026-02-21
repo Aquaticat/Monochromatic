@@ -317,4 +317,16 @@ run = "bun packages/module/es/src/mise.syncTsProjectReferences.ts"
 
 #endregion TypeScript Project References
 
+#region File Enforcer
+
+[tasks."sync:files"]
+description = "Sync derived files (CLAUDE.md, oxlint config, etc.) via file-enforcer"
+run = "bun packages/dev-script/file-enforcer/src/index.ts"
+
+[tasks."sync--watch:files"]
+description = "Watch source files and re-sync on changes"
+run = "bun packages/dev-script/file-enforcer/src/index.ts --watch"
+
+#endregion File Enforcer
+
 #endregion tasks
