@@ -207,6 +207,8 @@ const example = "/* within string */";
 
 Follow the Conventional Commits specification for all commit messages to ensure consistency and enable automated tooling.
 
+In this repository, default to committing all current working tree changes together unless explicitly instructed otherwise.
+
 When writing commit messages for multiple changes across different files, include ALL changes in a single comprehensive commit message. Don't write commit messages that only describe partial changes.
 
 #### Commit Message Format
