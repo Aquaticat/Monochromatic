@@ -8,6 +8,6 @@
     }
   }
 
-  root * /srv/packages/site/exa-search/dist/final/js
+  root * /srv/packages/webapp-search/exa-search/dist/final/js
   file_server
 }

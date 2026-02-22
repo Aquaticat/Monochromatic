@@ -1,0 +1,45 @@
+[tasks.'build']
+run = [{ tasks = ["build:*"] }]
+
+[tasks.'build:site']
+run = [{ tasks = ["build:site:css"] }, { tasks = ["build:site:astro"] }]
+
+[tasks.'build:site:css']
+run = "bun ../../build/css/src/index.ts src/styles/main.css dist/bundle.css"
+
+[tasks.'build:site:astro']
+run = "bun exec astro build"
+
+[tasks."build--watch"]
+run = [{ tasks = ["build--watch:*"] }]
+
+[tasks."build--watch:site"]
+run = [{ tasks = ["build--watch:site:*"] }]
+
+[tasks."build--watch:site:css"]
+run = "bun ../../build/css/src/index.ts src/styles/main.css dist/bundle.css --watch"
+
+[tasks."build--watch:site:astro"]
+run = "bun exec astro build --watch"
+
+[tasks."lint:types"]
+hide = true
+description = "TypeScript"
+run = "bun exec tsgo --build"
+
+[tasks."lint--allowFailure:types"]
+hide = true
+description = "TypeScript"
+run = "try { bun exec tsgo --build } catch { |e| print -e $e.rendered }"
+
+[tasks."dev:site"]
+description = "Start development server"
+run = "bun exec astro dev"
+
+[tasks."_astro:sync"]
+description = "Sync Astro"
+run = "bun exec astro sync"
+
+[tasks."_astro:check"]
+description = "Check Astro"
+run = "bun exec astro check"

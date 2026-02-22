@@ -38,5 +38,6 @@
   "exports": {
     ".": "./index.mjs"
   },
-  "preferUnplugged": true
+  "preferUnplugged": true,
+  "description": "Shared Stylelint configuration for Monochromatic stylesheet projects."
 }

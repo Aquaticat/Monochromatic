@@ -1,0 +1,9 @@
+{
+  "name": "@monochromatic-dev/test-fixture-css-importing",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@monochromatic-dev/test-fixture-css-imported": "workspace:*"
+  }
+}

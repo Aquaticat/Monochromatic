@@ -56,7 +56,7 @@ cargo-binstall = "latest"
 # Compression
 "github:facebook/zstd" = "latest"
 
-# AI inference server for local development (packages/site/done)
+# AI inference server for local development (packages/webapp-productivity/done)
 "github:ggml-org/llama.cpp" = "latest"
 
 [settings]
@@ -156,7 +156,7 @@ alias = "t"
 hide = true
 description = "Run unit tests"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to bun test"'
-run = "bun test .unit.test. ...($env.usage_args | split row ' ')"
+run = "bun test ...(rg --files --glob '**/*.unit.test.*' --glob '!**/deprecated/**' | lines) ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
 
 [tasks."test:browser"]
 hide = true
@@ -185,7 +185,7 @@ run = "bunx playwright test --config playwright.browser.config.ts --project=fire
 hide = true
 description = "Run unit tests in watch mode"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to bun test"'
-run = "bun test --watch .unit.test. ...($env.usage_args | split row ' ')"
+run = "bun test --watch ...(rg --files --glob '**/*.unit.test.*' --glob '!**/deprecated/**' | lines) ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
 
 # [tasks."test--watch:browser"]
 # hide = true

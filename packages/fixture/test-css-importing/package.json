@@ -1,9 +1,0 @@
-{
-  "name": "@monochromatic-dev/test-css-importing",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "@monochromatic-dev/test-css-imported": "workspace:*"
-  }
-}

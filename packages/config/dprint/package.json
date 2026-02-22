@@ -23,5 +23,6 @@
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/config/dprint"
   },
-  "preferUnplugged": true
+  "preferUnplugged": true,
+  "description": "Shared dprint configuration for Monochromatic repositories."
 }

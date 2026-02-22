@@ -10,7 +10,9 @@
   "exclude": [
     "dist",
     "bak",
-    "node_modules"
+    "node_modules",
+    "**/deprecated/**",
+    "${configDir}/**/deprecated/**"
   ],
   "compilerOptions": {
     "rootDirs": [

@@ -1,0 +1,31 @@
+{
+  "name": "@monochromatic-dev/webapp-content-astro-test",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@astrojs/mdx": "catalog:",
+    "@types/mdx": "catalog:",
+    "astro": "catalog:",
+    "@monochromatic-dev/config-vite": "workspace:*",
+    "@shikijs/transformers": "catalog:",
+    "remark-github-blockquote-alert": "catalog:",
+    "remark-sectionize": "catalog:",
+    "rehype-slug-custom-id": "catalog:",
+    "rehype-autolink-headings": "catalog:",
+    "@monochromatic-dev/module-es": "workspace:*",
+    "@vitejs/plugin-basic-ssl": "catalog:",
+    "nano-spawn": "catalog:",
+    "rehype-preset-minify": "catalog:",
+    "rehype-parse": "catalog:",
+    "rehype-stringify": "catalog:",
+    "to-vfile": "catalog:",
+    "unified": "catalog:",
+    "glob": "catalog:",
+    "feedsmith": "catalog:",
+    "lightningcss": "catalog:",
+    "ses": "catalog:",
+    "sharp": "catalog:",
+    "@monochromatic-dev/stylesheet-monochromatic": "workspace:*"
+  }
+}

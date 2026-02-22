@@ -1,8 +1,0 @@
-{
-  "name": "@monochromatic-dev/bun-test",
-  "private": true,
-  "dependencies": {
-    "@monochromatic-dev/build-css": "workspace:*",
-    "zod": "^4.3.6"
-  }
-}

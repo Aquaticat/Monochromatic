@@ -5,8 +5,7 @@
     "config",
     "monochromatic"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "peerDependencies": {
     "vite": "catalog:",
     "lightningcss": "catalog:"
@@ -48,5 +47,6 @@
       "types": "./dist/final/node/index.d.mts",
       "default": "./dist/final/node/index.mjs"
     }
-  }
+  },
+  "description": "Shared Vite configuration utilities for Monochromatic web projects."
 }

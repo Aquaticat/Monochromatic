@@ -50,5 +50,6 @@
     "./.ts": {
       "default": "./src/index.ts"
     }
-  }
+  },
+  "description": "Shared ESLint configuration for Monochromatic TypeScript projects."
 }

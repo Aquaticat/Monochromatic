@@ -1,0 +1,14 @@
+{
+  "name": "@monochromatic-dev/webapp-productivity-done",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@monochromatic-dev/build-tool-css": "workspace:*",
+    "@monochromatic-dev/module-es": "workspace:*",
+    "postcss": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}

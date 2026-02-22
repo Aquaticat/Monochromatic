@@ -1,0 +1,15 @@
+@import '@monochromatic-dev/test-fixture-css-imported-no-exports/src/index.css';
+@import '@monochromatic-dev/test-fixture-css-imported-no-exports/src/mixin.css';
+
+.component {
+  @apply --flex-center;
+  background: var(--primary);
+}
+
+.title {
+  @apply --bold-text;
+}
+
+.nested-card {
+  @apply --card;
+}
