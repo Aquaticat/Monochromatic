@@ -18,7 +18,7 @@ import {
   trackRead,
   trackWriteTime,
   writeTimestamps,
-} from './tracker.ts';
+} from '../tracker.ts';
 import {
   classifyEvent,
   shouldTrigger,

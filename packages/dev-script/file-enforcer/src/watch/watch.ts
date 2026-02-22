@@ -2,8 +2,8 @@ import {
   join,
   resolve,
 } from 'node:path';
-import { invalidatePaths, } from './cache.ts';
-import { reset, } from './tracker.ts';
+import { invalidatePaths, } from '../io/cache.ts';
+import { reset, } from '../tracker.ts';
 import { notifyWriteProtection, } from './notify.ts';
 import { DEBOUNCE_MS, watchDirectory, } from './watch-dir.ts';
 import { watchDirs, } from './watch-filter.ts';

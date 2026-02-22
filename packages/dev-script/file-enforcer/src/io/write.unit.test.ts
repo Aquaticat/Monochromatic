@@ -20,7 +20,7 @@ import {
   overwriteEach,
   overwriteIfNotExists,
 } from './write.ts';
-import { reset, writeTimestamps, writes, } from './tracker.ts';
+import { reset, writeTimestamps, writes, } from '../tracker.ts';
 import type { GlobResult, } from './cat.ts';
 
 //region overwrite

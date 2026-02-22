@@ -4,7 +4,7 @@ import { mkdir, } from 'node:fs/promises';
 import { readCached, updateCache, } from './cache.ts';
 import type { GlobResult, } from './cat.ts';
 import { mirrorGlobPath, } from './glob.ts';
-import { trackDest, trackWriteTime, } from './tracker.ts';
+import { trackDest, trackWriteTime, } from '../tracker.ts';
 
 /**
  * Ensures the parent directory of a file path exists before writing.

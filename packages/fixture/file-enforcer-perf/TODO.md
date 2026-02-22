@@ -2,13 +2,9 @@
 
 ## Statistical rigor
 
-- Each constrained scenario currently runs only once.
-  Run each scenario many times (10-30 runs) and report median, p95, and standard deviation.
-  This is critical for separating actual performance regressions from CFS scheduling jitter.
 - The micro-benchmarks use generous 10-50x thresholds.
   Track a history of benchmark results and alert on sustained drift rather than single-run spikes.
-- Warm runs show 2-55ms variance under `--cpus=0.3` purely from CFS jitter.
-  Report the percentage of runs that complete within a target latency (e.g., "95% under 10ms") instead of single-run times.
+- Report the percentage of runs that complete within a target latency (e.g., "95% under 10ms") in addition to min/median/max.
 
 ## Benchmark coverage
 
@@ -22,9 +18,9 @@
 
 ## Calibration
 
-- The `--cpus=0.3` calibration is specific to the current host CPU (Ryzen 7 8700F).
-  On a different machine, the ratio between host IPC and VPS IPC will differ.
-  Consider auto-calibrating: run sysbench on host, compute the CPU fraction needed to match 1605 events/sec.
+- The container count (5) is calibrated for a Ryzen 7 8700F (~5300 sysbench events/sec per core).
+  On a weaker host CPU, fewer containers may be needed; on a stronger one, more.
+  Consider auto-calibrating: run sysbench on host with `taskset -c 0`, divide by 1605, round up to get the container count.
 - IO throttling (`--device-read/write-iops`) only applies to IO that bypasses the page cache.
   Small files (like file-enforcer's workload) mostly hit page cache, so the IOPS limit barely affects results.
   This is realistic (VPS also benefit from page cache), but worth noting for interpretation.

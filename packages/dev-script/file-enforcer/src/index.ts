@@ -1,5 +1,5 @@
 import { findUp, } from 'find-up';
-import { startWatching, } from './watch.ts';
+import { startWatching, } from './watch/watch.ts';
 
 //region CLI entry point -- finds and imports file-enforcer.config.ts, optionally watches
 

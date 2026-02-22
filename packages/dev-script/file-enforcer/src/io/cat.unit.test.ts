@@ -14,7 +14,7 @@ import {
   test,
 } from 'bun:test';
 import { cat, } from './cat.ts';
-import { reads, reset, } from './tracker.ts';
+import { reads, reset, } from '../tracker.ts';
 
 //region cat(string[]) -- array mode
 

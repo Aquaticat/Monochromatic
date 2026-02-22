@@ -1,26 +1,34 @@
 /**
- * Runs inside the podman container. Validates that resource limits
- * are enforced, creates the benchmark fixture, and times multiple
- * perf.config.ts executions under constrained resources.
+ * Runs inside the podman container under CPU contention from sibling
+ * containers pinned to the same core via taskset. Validates that CPU
+ * affinity and memory limits are enforced, creates the benchmark fixture,
+ * and times multiple perf.config.ts executions under natural scheduling
+ * contention.
  *
  * Outputs a JSON summary to stdout for parsing by run-constrained.ts.
  * All diagnostic messages go to stderr.
  */
 
 import { resolve, } from 'node:path';
+import { readFile, } from 'node:fs/promises';
 import { invalidatePaths, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
 //region Resource limit validation
 
-// let needed: cgroup reads may fail outside a container
-let cpuMax = 'unknown';
-try {
-  cpuMax = (await Bun.file('/sys/fs/cgroup/cpu.max').text()).trim();
-} catch {
-  // Not in a cgroup v2 environment
+/**
+ * Reads the Cpus_allowed_list from /proc/self/status to verify that
+ * taskset successfully pinned this process to the expected core.
+ * @returns CPU affinity string (e.g. "0" for single core, "0-15" for all)
+ */
+async function readCpuAffinity(): Promise<string> {
+  const status = await readFile('/proc/self/status', 'utf8');
+  const match = /Cpus_allowed_list:\s+(.+)/.exec(status);
+  return match !== null && match[1] !== undefined ? match[1].trim() : 'unknown';
 }
 
-// let needed: same fallback reason as cpuMax
+const cpuAffinity = await readCpuAffinity();
+
+// let needed: cgroup reads may fail outside a container
 let memoryMax = 'unknown';
 try {
   memoryMax = (await Bun.file('/sys/fs/cgroup/memory.max').text()).trim();
@@ -28,22 +36,22 @@ try {
   // Not in a cgroup v2 environment
 }
 
-console.error(`[container] CPU limit (cpu.max): ${cpuMax}`);
+console.error(`[container] CPU affinity (Cpus_allowed_list): ${cpuAffinity}`);
 console.error(`[container] Memory limit (memory.max): ${memoryMax}`);
 
 /**
- * Expected pattern for --cpus=0.3:
- * cpu.max format is "quota period" where quota/period = cpu fraction.
- * --cpus=0.3 means quota=30000, period=100000.
+ * Expected CPU affinity: pinned to a single core (e.g., "0") by taskset.
+ * All containers share this core via EEVDF scheduling rather than
+ * CFS bandwidth throttling, avoiding artificial sawtooth latency.
  */
-const CPU_LIMIT_PATTERN = /^30000\s+100000$/;
+const EXPECTED_CPU_AFFINITY = '0';
 const EXPECTED_MEMORY_BYTES = '1073741824';
 
-const cpuValid = CPU_LIMIT_PATTERN.test(cpuMax);
+const cpuAffinityValid = cpuAffinity === EXPECTED_CPU_AFFINITY;
 const memoryValid = memoryMax === EXPECTED_MEMORY_BYTES;
 
-if (!cpuValid) {
-  console.error(`[container] WARNING: CPU limit unexpected. Got "${cpuMax}", expected "30000 100000"`);
+if (!cpuAffinityValid) {
+  console.error(`[container] WARNING: CPU affinity unexpected. Got "${cpuAffinity}", expected "${EXPECTED_CPU_AFFINITY}"`);
 }
 if (!memoryValid) {
   console.error(`[container] WARNING: Memory limit unexpected. Got "${memoryMax}", expected "${EXPECTED_MEMORY_BYTES}"`);
@@ -62,7 +70,9 @@ const sysbenchStdout = await new Response(sysbenchProc.stdout).text();
 await sysbenchProc.exited;
 
 const sysbenchMatch = /events per second:\s+([\d.]+)/.exec(sysbenchStdout);
-const sysbenchEventsPerSec = sysbenchMatch !== null ? Number.parseFloat(sysbenchMatch[1]!) : -1;
+const sysbenchEventsPerSec = sysbenchMatch !== null && sysbenchMatch[1] !== undefined
+  ? Number.parseFloat(sysbenchMatch[1])
+  : -1;
 console.error(`[container] sysbench: ${sysbenchEventsPerSec.toFixed(1)} events/sec`);
 
 //endregion Sysbench CPU baseline comparison
@@ -92,8 +102,10 @@ const coldMs = performance.now() - coldStart;
 timings.push({ label: 'cold', ms: coldMs });
 console.error(`[container] cold run: ${coldMs.toFixed(1)}ms`);
 
-// Warm runs -- content unchanged, all writes skipped
-const WARM_RUN_COUNT = 3;
+// Warm runs -- content unchanged, all writes skipped.
+// 10 iterations provide enough samples per container; with N containers
+// running simultaneously, the aggregate dataset has N*10 warm data points.
+const WARM_RUN_COUNT = 10;
 // Sequential execution required: each warm run must complete before the
 // next to measure individual run timing accurately.
 for (let warmIndex = 0; warmIndex < WARM_RUN_COUNT; warmIndex++) {
@@ -139,7 +151,7 @@ function round1(value: number): number {
 }
 
 const results = {
-  limits: { cpuMax, memoryMax, cpuValid, memoryValid },
+  limits: { cpuAffinity, memoryMax, cpuAffinityValid: cpuAffinityValid, memoryValid },
   sysbench: { eventsPerSec: round1(sysbenchEventsPerSec) },
   timings: timings.map(({ label, ms }) => ({ label, ms: round1(ms) })),
 };

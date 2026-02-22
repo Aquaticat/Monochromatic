@@ -1,7 +1,7 @@
 # file-enforcer-perf
 
 Performance benchmark suite for `@monochromatic-dev/dev-script-file-enforcer`.
-Tests file-enforcer under VPS-like resource constraints using podman containers with CPU, memory, and IO throttling calibrated against a real VPS baseline.
+Tests file-enforcer under VPS-like resource constraints using podman containers with CPU contention, memory limits, and IO throttling calibrated against a real VPS baseline.
 
 ## Quick start
 
@@ -48,23 +48,79 @@ Uses hyperfine for statistically rigorous timing across 4 scenarios:
 
 ### Constrained (`run-constrained.ts`)
 
-Runs inside a podman container simulating a cheap VPS:
+Launches 5 podman containers simultaneously, all pinned to the same CPU core via `taskset`, creating natural scheduling contention that simulates a shared VPS:
 
-- **CPU**: `--cpus=0.3` (0.3 of a core, calibrated against host IPC advantage)
+- **CPU**: 5 containers on 1 core via `taskset -c 0` (~20% throughput each)
 - **Memory**: `--memory=1g`
 - **IO**: `--device-read/write-iops=/dev/dm-0:100`, `--device-read/write-bps=/dev/dm-0:80mb`
 
-Validates constraints by comparing container sysbench score against a known VPS baseline of 1605 events/sec.
+Validates constraints by ensuring the **peak** container sysbench score stays below the known VPS baseline of 1605 events/sec.
+Reports min, median, and max timings across all containers for each benchmark scenario.
+
+## CPU scheduling approach
+
+### Why contention instead of bandwidth throttling
+
+The original approach used `--cpus=0.3` (CFS bandwidth throttling via `cpu.max`).
+This created unrealistic benchmark results because CFS bandwidth control works by alternating between "run" and "stall" phases within fixed periods:
+
+- With `cpu.max = "30000 100000"` (30ms quota per 100ms period), the process runs for up to 30ms, then is **frozen for the remaining 70ms** until the next period
+- Operations under 30ms complete cleanly; operations crossing a period boundary get a random 70ms penalty
+- This creates a **bimodal latency distribution** (fast or fast+70ms) rather than the uniformly slower execution of a real VPS
+- p95/p99 numbers are inflated by stall injection, not by actual compute slowness
+- Reducing the period (e.g., `cpu.max = "3000 10000"`) shrinks the stalls to 7ms but introduces scheduler overhead and measurement noise from the 100Hz refill rate
+
+### How real VPS providers schedule CPU
+
+Real VPS providers use approaches that do not produce periodic stalls:
+
+- **Dedicated vCPU pinning** (Hetzner, DigitalOcean, Vultr regular instances): KVM with `virsh vcpupin` gives the guest a full hardware thread of a weaker Xeon/EPYC. Execution is uniformly slower with zero periodic stalls.
+- **Proportional sharing** (overcommitted hosts, some budget providers): Uses `cpu.weight` (cgroup v2) or `cpu.shares` (v1). No hard cap -- throughput varies with neighbor activity but without artificial stall injection.
+- **Burstable with `cpu.max.burst`** (AWS t3, Azure B-series, Ubicloud burstable): Uses `cpu.max` with accumulated burst credits that smooth out the stalls significantly.
+
+None of these match the bare `cpu.max` sawtooth behavior.
+
+### Current approach: contention via taskset
+
+The benchmark launches 5 containers, each pinned to CPU core 0 via `taskset -c 0` inside the container.
+All containers compete for the same physical core through the kernel's EEVDF scheduler, which preempts at sub-millisecond timeslice granularity.
+
+Benefits over CFS bandwidth throttling:
+
+- Preemption at natural scheduler boundaries, not at arbitrary 10-100ms walls
+- No bimodal latency -- just uniformly slower with realistic variance from contention
+- The variance itself is useful data (it captures real scheduling jitter)
+- Each container reports sysbench scores; with 5 containers on 1 core of a Ryzen 7 8700F (~5300 events/sec total), each gets ~1060-1090 events/sec, well below the 1605 VPS baseline
+
+### Why taskset instead of cpuset cgroup
+
+Rootless podman on systemd-managed cgroups v2 cannot use `--cpuset-cpus` because systemd does not delegate the cpuset controller to user slices by default.
+The cpuset controller is a partitioning controller (it carves out exclusive core ownership), unlike proportional controllers like `cpu.weight` or `memory.max`.
+Delegating it to unprivileged users would let them monopolize physical cores, starve system services, or simplify cache-timing side-channel attacks on multi-tenant servers.
+
+Three workarounds exist:
+
+- **systemd drop-in** (`Delegate=cpuset cpu io memory pids` in `/etc/systemd/system/user@.service.d/delegate.conf`): permanent, requires one-time sudo, safe on single-user workstations but inappropriate for multi-tenant systems
+- **sudo podman**: works but requires root, and SELinux relabeling (`:Z`) conflicts when multiple containers mount the same volume simultaneously
+- **taskset inside the container**: process-level CPU affinity that propagates to child processes, works with rootless podman, requires no system configuration changes
+
+The benchmark uses `taskset` for maximum portability across contributor machines.
+
+### SELinux and parallel volume mounts
+
+When multiple rootless containers mount the same host directory, podman's `:Z` volume flag relabels files for one container's SELinux context, causing `EACCES` or `CouldntReadCurrentDirectory` in sibling containers.
+The benchmark uses `--security-opt label=disable` to skip SELinux labeling entirely.
+The mounted volume is read-only in practice (benchmark writes go to `/tmp` inside each container), so the security impact is negligible.
 
 ## Calibration
 
 The host CPU is an AMD Ryzen 7 8700F with ~1.7x the IPC of a typical VPS Xeon.
-`--cpus=0.5` yielded 2710 sysbench events/sec (above the 1605 baseline), so `--cpus=0.3` is used to bring the container below the VPS performance level.
+With 5 containers sharing 1 core, each gets ~20% of a fast core (~1060-1090 sysbench events/sec), reliably below the 1605 events/sec VPS baseline.
 
 IO throttling limits are set to 100 IOPS and 80 MB/s, simulating a cheap shared HDD.
 Verified with `dd` (200 writes in 1.98s = 101 IOPS) and bandwidth tests (4.2 MB/s at 5mb limit).
 
-## Results (as of 2026-02-20)
+## Results (as of 2026-02-22)
 
 ### Host (AMD Ryzen 7 8700F, NVMe SSD)
 
@@ -73,22 +129,24 @@ Verified with `dd` (200 writes in 1.98s = 101 IOPS) and bandwidth tests (4.2 MB/
 - Source changed: ~16ms
 - Dest changed: ~16ms
 
-### Constrained (podman, --cpus=0.3, 1GB RAM, HDD-like IO)
+### Constrained (5 containers on 1 core, 1GB RAM, HDD-like IO)
+
+- Cold: min=72ms, median=92ms, max=111ms (n=5)
+- Warm: min=14ms, median=25ms, max=47ms (n=50)
+- Source changed: min=18ms, median=22ms, max=34ms (n=5)
+- Dest changed: min=9ms, median=16ms, max=24ms (n=5)
+
+Latency variance comes from natural EEVDF scheduling contention rather than CFS period-boundary stalls.
+The smooth distribution (no bimodal clustering) confirms the contention approach produces realistic VPS-like behavior.
+
+### Before contention approach (--cpus=0.3, CFS bandwidth throttling)
 
 - Cold: ~100ms
-- Warm: ~2ms (with read cache)
-- Source changed: ~2ms (with read cache + surgical invalidation)
-- Dest changed: ~2ms (with read cache + surgical invalidation)
+- Warm: ~2ms (but individual runs ranged 2-55ms from CFS jitter)
+- Source changed: ~2ms
+- Dest changed: ~2ms
 
-Warm/changed times are dominated by CFS scheduling jitter rather than actual CPU work.
-Individual runs may show 40-90ms if they land on a CFS period boundary.
-
-### Before read cache optimization
-
-- Cold: ~196ms
-- Warm: ~3ms
-- Source changed: ~92ms (re-read all 307 files from disk)
-- Dest changed: ~3ms
+The 2-55ms warm variance was caused by CFS period boundary stalls, not actual performance variation.
 
 ## Source files
 
@@ -97,6 +155,6 @@ Individual runs may show 40-90ms if they land on a CFS period boundary.
 - `perf.bench.test.ts` -- 11 micro-benchmarks with JIT limitation notes
 - `run-e2e.ts` -- hyperfine-based end-to-end benchmarks
 - `validate-resources.ts` -- CPU, memory, IO, and sysbench benchmarks for resource validation
-- `bench-in-container.ts` -- runs inside the container, validates cgroup limits, times config execution
-- `run-constrained.ts` -- orchestrates podman build, resource validation, and constrained benchmarks
+- `bench-in-container.ts` -- runs inside the container, validates CPU affinity and memory limits, times config execution
+- `run-constrained.ts` -- orchestrates podman build, parallel container launch, and constrained benchmarks
 - `Containerfile` -- Fedora 43 with bun and sysbench

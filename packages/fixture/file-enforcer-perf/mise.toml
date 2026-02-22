@@ -11,7 +11,7 @@ description = "Run end-to-end benchmarks with hyperfine on host"
 run = "bun packages/fixture/file-enforcer-perf/src/run-e2e.ts"
 
 [tasks.'perf:constrained']
-description = "Run benchmarks in resource-constrained podman container (1 vCPU, 1GB RAM)"
+description = "Run benchmarks under CPU contention (5 containers on 1 core, 1GB RAM)"
 run = "bun packages/fixture/file-enforcer-perf/src/run-constrained.ts"
 
 [tasks.'perf:teardown']

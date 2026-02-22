@@ -1,7 +1,7 @@
 import { Glob, } from 'bun';
 import { readCached, } from './cache.ts';
 import { expandGlob, } from './glob.ts';
-import { trackRead, } from './tracker.ts';
+import { trackRead, } from '../tracker.ts';
 
 /** Result of expanding a glob: each matched file with its path and content */
 export type GlobResult = {

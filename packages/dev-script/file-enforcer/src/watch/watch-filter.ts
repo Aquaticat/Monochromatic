@@ -8,7 +8,7 @@ import {
   reads,
   writeTimestamps,
   writes,
-} from './tracker.ts';
+} from '../tracker.ts';
 
 /** Possible outcomes when classifying a filesystem event */
 export type EventKind = 'source' | 'protected' | 'ignore';
