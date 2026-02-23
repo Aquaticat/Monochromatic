@@ -11,7 +11,14 @@ import { CODE_GEN_SYSTEM, } from './system-prompt.ts';
 import { buildCodeGenFixPrompt, combinedScore, extractCode, lintAndLog, } from './scoring.ts';
 import { CSS_MIXIN_TEST_CSS, } from './css-mixin-test-css.ts';
 
+import type { LintResult, } from '../linter.ts';
 import type { Probe, } from '../probes.ts';
+
+/**
+ * Lint results from the most recent score() call, keyed by model ID.
+ * Used by buildFixPrompt to avoid re-linting the same source that score() already analyzed.
+ */
+const lintCache = new Map<string, LintResult>();
 
 /** Number of correctness checks in the css-mixin scoring function */
 const CSS_MIXIN_TOTAL_CHECKS = 10;
@@ -21,7 +28,7 @@ export const cssMixinTranspiler: Probe = {
   name: 'css-mixin-transpiler',
   category: 'code-gen',
   system: CODE_GEN_SYSTEM,
-  buildFixPrompt: buildCodeGenFixPrompt,
+  buildFixPrompt: (response, context) => buildCodeGenFixPrompt(response, context, lintCache.get(context.modelId)),
   prompt: [
     'Write a TypeScript CLI that reads CSS from stdin and writes transpiled CSS to stdout.',
     'It must resolve CSS native mixins:',
@@ -66,6 +73,7 @@ export const cssMixinTranspiler: Probe = {
       runInContainer(source, CSS_MIXIN_TEST_CSS),
       lintAndLog(source, 'css-mixin', context),
     ]);
+    lintCache.set(context.modelId, lint);
 
     if (result.timedOut || result.exitCode !== 0) return combinedScore(0, lint);
 

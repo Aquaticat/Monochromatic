@@ -9,7 +9,14 @@ import { runInContainer, } from '../container.ts';
 import { CODE_GEN_SYSTEM, } from './system-prompt.ts';
 import { buildCodeGenFixPrompt, combinedScore, extractCode, lintAndLog, } from './scoring.ts';
 
+import type { LintResult, } from '../linter.ts';
 import type { Probe, } from '../probes.ts';
+
+/**
+ * Lint results from the most recent score() call, keyed by model ID.
+ * Used by buildFixPrompt to avoid re-linting the same source that score() already analyzed.
+ */
+const lintCache = new Map<string, LintResult>();
 
 /** Test input covering the hardest RFC 4180 edge cases */
 const CSV_TEST_INPUT = 'name,bio,age\n"O\'Brien, ""Bob""","likes\ntravel",30\nJane,simple,25\n';
@@ -19,7 +26,7 @@ export const csvRfc4180: Probe = {
   name: 'csv-rfc4180',
   category: 'code-gen',
   system: CODE_GEN_SYSTEM,
-  buildFixPrompt: buildCodeGenFixPrompt,
+  buildFixPrompt: (response, context) => buildCodeGenFixPrompt(response, context, lintCache.get(context.modelId)),
   prompt: [
     'Write a TypeScript CLI that parses RFC 4180 compliant CSV from stdin and outputs a JSON array to stdout.',
     'Requirements:',
@@ -41,6 +48,7 @@ export const csvRfc4180: Probe = {
       runInContainer(source, CSV_TEST_INPUT),
       lintAndLog(source, 'csv-rfc4180', context),
     ]);
+    lintCache.set(context.modelId, lint);
 
     if (result.timedOut || result.exitCode !== 0) return combinedScore(0, lint);
 

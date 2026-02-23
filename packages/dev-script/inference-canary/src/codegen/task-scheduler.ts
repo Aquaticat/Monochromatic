@@ -12,7 +12,14 @@ import { runInContainer, } from '../container.ts';
 import { CODE_GEN_SYSTEM, } from './system-prompt.ts';
 import { buildCodeGenFixPrompt, combinedScore, extractCode, lintAndLog, } from './scoring.ts';
 
+import type { LintResult, } from '../linter.ts';
 import type { Probe, } from '../probes.ts';
+
+/**
+ * Lint results from the most recent score() call, keyed by model ID.
+ * Used by buildFixPrompt to avoid re-linting the same source that score() already analyzed.
+ */
+const lintCache = new Map<string, LintResult>();
 
 /** A and B run in parallel (~100ms each), then C after both finish (~150ms total) */
 const TASK_TEST_INPUT = 'A 100\nB 100\nC 50 A B\n';
@@ -34,7 +41,7 @@ export const taskScheduler: Probe = {
   name: 'task-scheduler',
   category: 'code-gen',
   slow: true,
-  buildFixPrompt: buildCodeGenFixPrompt,
+  buildFixPrompt: (response, context) => buildCodeGenFixPrompt(response, context, lintCache.get(context.modelId)),
   system: CODE_GEN_SYSTEM,
   prompt: [
     'Write a TypeScript CLI that simulates a concurrent task scheduler.',
@@ -68,6 +75,7 @@ export const taskScheduler: Probe = {
       runInContainer(source, TASK_TEST_INPUT),
       lintAndLog(source, 'task-scheduler', context),
     ]);
+    lintCache.set(context.modelId, lint);
 
     if (result.timedOut || result.exitCode !== 0) return combinedScore(0, lint);
 

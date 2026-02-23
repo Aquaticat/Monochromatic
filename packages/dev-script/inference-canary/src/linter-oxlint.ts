@@ -72,7 +72,8 @@ function parseOxlintJson(jsonOutput: string): OxlintResult {
       linterRan: true,
       rawOutput: formatOxlintDiagnostics(diagnostics),
     };
-  } catch {
+  } catch (parseError) {
+    console.error('    [lint:oxlint] failed to parse JSON output:', parseError);
     return { errors: 0, warnings: 0, violationCount: 0, violatedRules: [], linterRan: false, rawOutput: '', };
   }
 }

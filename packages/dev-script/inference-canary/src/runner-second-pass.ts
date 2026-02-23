@@ -43,7 +43,7 @@ export async function runSecondPass(
     const { text, } = await streamCompletion(client, messages, config, `${probe.name}:fix`);
     return probe.score(text, context);
   } catch (error) {
-    console.log(`  [${probe.name}] pass2: failed: ${String(error)}`);
+    console.error(`  [${probe.name}] pass2: failed:`, error);
     return undefined;
   }
 }

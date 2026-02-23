@@ -5,7 +5,7 @@ import { appendHistory, computeThreshold, readHistory, } from './history.ts';
 import { formatMultiModelReport, } from './report.ts';
 import { runCanary, } from './runner.ts';
 
-import type { HistoryEntry, ModelThreshold, } from './history.ts';
+import type { HistoryEntry, HistoryFile, ModelThreshold, } from './history.ts';
 import type { ModelConfig, } from './models.ts';
 import type { Probe, } from './probes.ts';
 import type { CanaryReport, } from './runner.ts';
@@ -25,7 +25,7 @@ export async function runAndReport(
   selectedModels: readonly ModelConfig[],
   probes: readonly Probe[],
   recentModelProbePairs: Set<string>,
-  history: Awaited<ReturnType<typeof import('./history-io.ts').readHistory>>,
+  history: HistoryFile,
   apiKey: string,
   runsOverride: string | undefined,
 ): Promise<void> {

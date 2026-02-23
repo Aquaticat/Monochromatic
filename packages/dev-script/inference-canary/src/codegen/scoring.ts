@@ -15,9 +15,13 @@ import type { ScoreContext, } from '../probes.ts';
 
 //region Scoring weights and ceilings
 
-/** Weight for each scoring dimension */
+/** Correctness accounts for 40% of the score -- does the code produce correct output? */
 const CORRECTNESS_WEIGHT = 0.4;
+
+/** Lint quality accounts for 30% -- does the code follow project style rules? */
 const LINT_WEIGHT = 0.3;
+
+/** Type safety accounts for 30% -- does the code satisfy the strict tsconfig? */
 const TYPE_WEIGHT = 0.3;
 
 /** Lint errors are weighted 3x warnings because errors indicate correctness issues */

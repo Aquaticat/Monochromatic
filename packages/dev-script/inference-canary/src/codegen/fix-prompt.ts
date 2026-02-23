@@ -8,18 +8,27 @@ import { lintSource, } from '../linter.ts';
 
 import { extractCode, } from './extract-code.ts';
 
+import type { LintResult, } from '../linter.ts';
 import type { ScoreContext, } from '../probes.ts';
 
 /**
  * Builds a follow-up prompt carrying the model's first-pass code + diagnostics.
  * Returns undefined when there are no diagnostics (skip the second pass).
+ *
  * @param response - raw model output from the first pass
  * @param context - model identity and pass for artifact organization
+ * @param priorLint - lint result already computed by score(); if provided, skips re-linting
  * @returns follow-up user message, or undefined to skip
  */
-export async function buildCodeGenFixPrompt(response: string, context: ScoreContext): Promise<string | undefined> {
+export async function buildCodeGenFixPrompt(
+  response: string,
+  context: ScoreContext,
+  priorLint?: LintResult,
+): Promise<string | undefined> {
   const source = extractCode(response);
-  const lint = await lintSource(source, {
+  // Reuse the lint result from score() if available to avoid linting the same code twice.
+  // Falls back to running lintSource if called without a prior result (e.g. in tests).
+  const lint = priorLint ?? await lintSource(source, {
     model: context.modelId,
     probe: 'fix-prompt',
     pass: context.pass,

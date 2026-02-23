@@ -36,8 +36,8 @@ async function detectRuntime(): Promise<string> {
       // eslint-disable-next-line no-await-in-loop -- sequential: try podman before docker
       await execPromise('which', [runtime]);
       return runtime;
-    } catch {
-      // Runtime not found; try next
+    } catch (error) {
+      console.log(`    [container] ${runtime} not found: ${String(error)}`);
     }
   }
   throw new Error('Neither podman nor docker found. Install one to run code-gen probes.');

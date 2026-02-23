@@ -60,11 +60,11 @@ export async function streamCompletion(
   // imperative and each chunk must be processed as it arrives.
   const chunks: string[] = [];
   const interChunkMs: number[] = [];
-  // eslint-disable-next-line prefer-const -- assigned on the first chunk only
+  // firstChunkMs, lastChunkMs, chunkCount are let because they are all
+  // reassigned inside the for-await loop; prefer-const does not apply since
+  // they ARE reassigned, but the mutation pattern requires let not const.
   let firstChunkMs = 0;
-  // eslint-disable-next-line prefer-const -- updated on every chunk to track inter-chunk gaps
   let lastChunkMs = startMs;
-  // eslint-disable-next-line prefer-const -- incremented on every chunk to detect first arrival
   let chunkCount = 0;
 
   for await (const chunk of stream) {

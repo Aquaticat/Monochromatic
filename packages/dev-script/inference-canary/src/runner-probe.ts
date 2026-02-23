@@ -21,10 +21,12 @@ const PROBE_TIMEOUT_MS = 5 * 60 * 1000;
  */
 async function runProbeCore(probe: Probe, config: RunnerConfig): Promise<ProbeResult> {
   // Consistency runs must be sequential (rate limits) and each run's score is
-  // logged immediately. Mutable accumulation via push is the simplest correct approach.
-  // eslint-disable-next-line prefer-const -- grows in sequential loop below
+  // logged immediately. scores uses push because each run appends in the loop;
+  // functional reduce/map would require pre-running all turns before collecting.
   const scores: number[] = [];
-  // eslint-disable-next-line prefer-const -- reassigned in loop; last value needed for pass2
+  // lastResponse is let because the for-of loop reassigns it each run, and the
+  // final value is needed after the loop for the second-pass fix turn.
+  // eslint-disable-next-line prefer-const -- reassigned each loop iteration
   let lastResponse = '';
   for (const runIndex of Array.from({ length: config.consistencyRuns, }, (_, index) => index)) {
     // eslint-disable-next-line no-await-in-loop -- sequential to avoid rate limits
