@@ -9,6 +9,7 @@ import { runInContainer, } from '../container.ts';
 import { CODE_GEN_SYSTEM, } from './system-prompt.ts';
 import { buildCodeGenFixPrompt, combinedScore, extractCode, lintAndLog, } from './scoring.ts';
 
+import type { ContainerResult, } from '../container.ts';
 import type { LintResult, } from '../linter.ts';
 import type { Probe, } from '../probes.ts';
 
@@ -18,6 +19,12 @@ import type { Probe, } from '../probes.ts';
  */
 const lintCache = new Map<string, LintResult>();
 
+/**
+ * Container results from the most recent score() call, keyed by model ID.
+ * Used by buildFixPrompt to include runtime errors in the second-pass prompt.
+ */
+const containerCache = new Map<string, ContainerResult>();
+
 /** Test input covering the hardest RFC 4180 edge cases */
 const CSV_TEST_INPUT = 'name,bio,age\n"O\'Brien, ""Bob""","likes\ntravel",30\nJane,simple,25\n';
 
@@ -26,7 +33,7 @@ export const csvRfc4180: Probe = {
   name: 'csv-rfc4180',
   category: 'code-gen',
   system: CODE_GEN_SYSTEM,
-  buildFixPrompt: (response, context) => buildCodeGenFixPrompt(response, context, lintCache.get(context.modelId)),
+  buildFixPrompt: (response, context) => buildCodeGenFixPrompt(response, context, lintCache.get(context.modelId), containerCache.get(context.modelId)),
   prompt: [
     'Write a TypeScript CLI that parses RFC 4180 compliant CSV from stdin and outputs a JSON array to stdout.',
     'Requirements:',
@@ -45,10 +52,11 @@ export const csvRfc4180: Probe = {
   score: async (response, context) => {
     const source = extractCode(response);
     const [result, lint] = await Promise.all([
-      runInContainer(source, CSV_TEST_INPUT),
+      runInContainer(source, CSV_TEST_INPUT, context.signal),
       lintAndLog(source, 'csv-rfc4180', context),
     ]);
     lintCache.set(context.modelId, lint);
+    containerCache.set(context.modelId, result);
 
     if (result.timedOut || result.exitCode !== 0) return combinedScore(0, lint);
 

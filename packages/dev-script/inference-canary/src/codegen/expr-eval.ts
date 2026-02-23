@@ -10,6 +10,7 @@ import { runInContainer, } from '../container.ts';
 import { CODE_GEN_SYSTEM, } from './system-prompt.ts';
 import { buildCodeGenFixPrompt, combinedScore, extractCode, lintAndLog, } from './scoring.ts';
 
+import type { ContainerResult, } from '../container.ts';
 import type { LintResult, } from '../linter.ts';
 import type { Probe, } from '../probes.ts';
 
@@ -18,6 +19,12 @@ import type { Probe, } from '../probes.ts';
  * Used by buildFixPrompt to avoid re-linting the same source that score() already analyzed.
  */
 const lintCache = new Map<string, LintResult>();
+
+/**
+ * Container results from the most recent score() call, keyed by model ID.
+ * Used by buildFixPrompt to include runtime errors in the second-pass prompt.
+ */
+const containerCache = new Map<string, ContainerResult>();
 
 /** Test input covering precedence, parentheses, negation, and floats */
 const EXPR_TEST_INPUT = '2 + 3 * 4\n(2 + 3) * 4\n10 / (5 - 5)\n-3 + 4 * -2\n((1 + 2) * (3 + 4))\n3.5 * 2 + 1.5\n';
@@ -30,7 +37,7 @@ export const expressionEvaluator: Probe = {
   name: 'expr-eval',
   category: 'code-gen',
   system: CODE_GEN_SYSTEM,
-  buildFixPrompt: (response, context) => buildCodeGenFixPrompt(response, context, lintCache.get(context.modelId)),
+  buildFixPrompt: (response, context) => buildCodeGenFixPrompt(response, context, lintCache.get(context.modelId), containerCache.get(context.modelId)),
   prompt: [
     'Write a TypeScript CLI that reads arithmetic expressions from stdin (one per line) and prints results to stdout (one per line).',
     'Requirements:',
@@ -60,10 +67,11 @@ export const expressionEvaluator: Probe = {
   score: async (response, context) => {
     const source = extractCode(response);
     const [result, lint] = await Promise.all([
-      runInContainer(source, EXPR_TEST_INPUT),
+      runInContainer(source, EXPR_TEST_INPUT, context.signal),
       lintAndLog(source, 'expr-eval', context),
     ]);
     lintCache.set(context.modelId, lint);
+    containerCache.set(context.modelId, result);
 
     if (result.timedOut || result.exitCode !== 0) return combinedScore(0, lint);
 

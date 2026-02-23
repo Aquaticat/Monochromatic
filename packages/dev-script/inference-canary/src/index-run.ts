@@ -46,8 +46,12 @@ export async function runAndReport(
   );
 
   const reportsWithResults = reports.filter((report) => report.results.length > 0);
+  const failedReports = reports.filter((report) => report.failed);
 
-  if (reportsWithResults.length === 0) {
+  // Only skip the report when all probes were cached and nothing actually ran or failed.
+  // Probe-level timeouts now produce zero-score results rather than failing the model,
+  // so they appear in reportsWithResults and are never silently dropped.
+  if (reportsWithResults.length === 0 && failedReports.length === 0) {
     console.log('[canary] all probes skipped due to recent results. Use --retest-all to force re-run.');
     return;
   }
@@ -59,15 +63,18 @@ export async function runAndReport(
     probeScores: Object.fromEntries(report.results.map((result) => [result.name, result.meanScore])),
     failed: report.failed,
   }));
-  await appendHistory(entries);
+  if (entries.length > 0) await appendHistory(entries);
 
   const updatedHistory = await readHistory();
   const thresholds = new Map<string, ModelThreshold>(
     selectedModels.map((model) => [model.id, computeThreshold(model.id, updatedHistory)]),
   );
 
+  // reportsWithResults covers timed-out models (they now have zero-score results);
+  // failedReports covers whole-model failures (API errors, auth failures, etc.).
+  const reportsToDisplay = [...reportsWithResults, ...failedReports];
   console.log('');
-  console.log(formatMultiModelReport(reportsWithResults, thresholds));
+  console.log(formatMultiModelReport(reportsToDisplay, thresholds));
 
   const degraded = reportsWithResults.filter((report) => report.degradationLikely);
   if (degraded.length > 0) {

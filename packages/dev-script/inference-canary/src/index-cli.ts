@@ -5,6 +5,7 @@
  * process.argv integration) instead of manual index/includes on process.argv.
  */
 import { object, } from '@optique/core/constructs';
+import { optional, } from '@optique/core/modifiers';
 import { option, } from '@optique/core/primitives';
 import { integer, string, } from '@optique/core/valueparser';
 import { runSync, } from '@optique/run';
@@ -13,8 +14,8 @@ import { runSync, } from '@optique/run';
 
 /** Optique object parser covering every supported CLI flag */
 const parser = object({
-  model: option('--model', string()),
-  runs: option('--runs', integer()),
+  model: optional(option('--model', string())),
+  runs: optional(option('--runs', integer())),
   simple: option('--simple'),
   slow: option('--slow'),
   retestAll: option('--retest-all'),

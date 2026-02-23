@@ -20,6 +20,11 @@ export type BunExecResult = {
 export type BunExecOptions = {
   /** Milliseconds before the process is forcibly killed */
   readonly timeout?: number;
+  /**
+   * Abort signal -- kills the process immediately when aborted.
+   * Used to propagate probe timeouts into container subprocesses.
+   */
+  readonly signal?: AbortSignal | undefined;
 };
 
 /**
@@ -39,13 +44,18 @@ export async function execBun(
   args: readonly string[],
   options: BunExecOptions = {},
 ): Promise<BunExecResult> {
+  // Fast-path: if the signal is already aborted, skip spawning entirely.
+  if (options.signal?.aborted === true) {
+    return { stdout: '', stderr: '', exitCode: 1, killed: true, };
+  }
+
   const proc = Bun.spawn([command, ...args], { stdout: 'pipe', stderr: 'pipe', });
 
-  // let: the timeout callback assigns true; const would prevent that mutation
+  // let: the timeout callback and abort handler both assign true; const prevents that mutation
   let killed = false;
-  const timer = options.timeout !== undefined
-    ? setTimeout(() => { killed = true; proc.kill(); }, options.timeout)
-    : undefined;
+  const killProc = (): void => { killed = true; proc.kill(); };
+  const timer = options.timeout !== undefined ? setTimeout(killProc, options.timeout) : undefined;
+  options.signal?.addEventListener('abort', killProc);
 
   const [stdout, stderr, exitCode] = await Promise.all([
     new Response(proc.stdout).text(),
@@ -54,6 +64,7 @@ export async function execBun(
   ]);
 
   if (timer !== undefined) clearTimeout(timer);
+  options.signal?.removeEventListener('abort', killProc);
 
   return { stdout, stderr, exitCode, killed, };
 }

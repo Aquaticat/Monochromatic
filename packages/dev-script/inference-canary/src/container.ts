@@ -53,9 +53,10 @@ async function makeStagingDir(): Promise<AsyncDisposable & { readonly path: stri
  *
  * @param source - TypeScript source code to execute
  * @param stdinData - optional stdin data to pipe to the script
+ * @param signal - optional abort signal; kills the container immediately when aborted
  * @returns execution result with stdout, stderr, exit code
  */
-export async function runInContainer(source: string, stdinData?: string): Promise<ContainerResult> {
+export async function runInContainer(source: string, stdinData?: string, signal?: AbortSignal): Promise<ContainerResult> {
   await using stagingResource = await makeStagingDir();
   const stagingDir = stagingResource.path;
 
@@ -70,7 +71,7 @@ export async function runInContainer(source: string, stdinData?: string): Promis
     await writeFile(join(stagingDir, 'stdin.txt'), stdinData, 'utf8');
   }
 
-  return execContainer([
+  return await execContainer([
     'run', '--rm', '--network=none', '--read-only', '--cap-drop=ALL',
     // exec needed because bun JIT-compiles TypeScript
     '--tmpfs', '/tmp:rw,exec,size=64m',
@@ -80,7 +81,7 @@ export async function runInContainer(source: string, stdinData?: string): Promis
     // :Z relabels for SELinux (Fedora/RHEL); :ro for safety
     '-v', `${stagingDir}:/mnt:ro,Z`,
     CONTAINER_IMAGE, 'sh', '-c', shellScript,
-  ]);
+  ], signal);
 }
 
 //endregion Public API

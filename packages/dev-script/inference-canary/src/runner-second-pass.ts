@@ -13,7 +13,7 @@ import type { Probe, ScoreContext, } from './probes.ts';
  * @param probe - probe that produced the first-pass response
  * @param config - runner configuration
  * @param firstResponse - raw model output from the first pass
- * @param context - score context for artifact organization
+ * @param context - score context for artifact organization (includes abort signal)
  * @returns second-pass score, or undefined if skipped
  */
 export async function runSecondPass(
@@ -26,11 +26,11 @@ export async function runSecondPass(
 
   const fixPrompt = await probe.buildFixPrompt(firstResponse, context);
   if (fixPrompt === undefined) {
-    console.log(`  [${probe.name}] pass2: skipped (no diagnostics to fix)`);
+    console.log(`  [${config.model}:${probe.name}] pass2: skipped (no diagnostics to fix)`);
     return undefined;
   }
 
-  console.log(`  [${probe.name}] pass2: sending fix prompt...`);
+  console.log(`  [${config.model}:${probe.name}] pass2: sending fix prompt...`);
 
   const client = createProbeClient(config);
   const messages: ChatMessage[] = [
@@ -39,6 +39,6 @@ export async function runSecondPass(
     { role: 'assistant', content: firstResponse, },
     { role: 'user', content: fixPrompt, },
   ];
-  const { text, } = await streamCompletion(client, messages, config, `${probe.name}:fix`);
+  const { text, } = await streamCompletion(client, messages, config, `${probe.name}:fix`, context.signal);
   return probe.score(text, context);
 }

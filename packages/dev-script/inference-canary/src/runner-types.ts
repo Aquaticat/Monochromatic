@@ -53,6 +53,11 @@ export type ProbeResult = {
    * Positive = model improved; zero/negative = degradation signal.
    */
   readonly fixDelta?: number | undefined;
+  /**
+   * Set to true when the probe timed out; score is forced to 0 rather than
+   * failing the whole model so partial results can still be recorded in history.
+   */
+  readonly timedOut?: boolean | undefined;
 };
 
 /** Aggregate report across all probes */

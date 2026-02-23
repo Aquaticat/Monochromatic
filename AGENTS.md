@@ -74,6 +74,16 @@ Use detection commands:
   - Trying to find the exact path in `pnpm`'s symlinked `.pnpm` directories
   - Guessing where packages are located
 
+## External Context Tools
+
+Prefer these tools over digging through raw source code when external context is needed:
+
+- **`FetchUrl` tool** -- fetch library documentation sites, npm pages, GitHub READMEs, and any URL the user provides.
+  Reach for this first when working with a third-party library: the official docs are usually faster and more reliable than reading compiled `.d.ts` files.
+  Raw source code is still useful when the docs are incomplete or the behavior differs from what is documented.
+- **`gh` CLI** -- query GitHub for issues, PRs, release notes, and repository metadata.
+  Useful for understanding why a library behaves a certain way or what changed between versions.
+
 # Communication & Documentation
 
 ## Communication Style

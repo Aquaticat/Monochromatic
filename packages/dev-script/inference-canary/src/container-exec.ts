@@ -26,14 +26,13 @@ export type ContainerResult = {
  *
  * Resolves on any exit code (including non-zero) -- callers check exitCode/timedOut.
  * @param containerArgs - fully-formed arguments for the container runtime binary
+ * @param signal - optional abort signal; kills the container process immediately on abort
  * @returns container execution result
  */
-export async function execContainer(containerArgs: readonly string[]): Promise<ContainerResult> {
-  console.log(`    [container] running with ${CONTAINER_RUNTIME}...`);
-
+export async function execContainer(containerArgs: readonly string[], signal?: AbortSignal): Promise<ContainerResult> {
   /** Total host-side timeout: container limit plus a buffer for startup/teardown */
   const timeoutMs = (CONTAINER_TIMEOUT_SECONDS + HOST_TIMEOUT_BUFFER_SECONDS) * 1000;
-  const result = await execBun(CONTAINER_RUNTIME, containerArgs, { timeout: timeoutMs, });
+  const result = await execBun(CONTAINER_RUNTIME, containerArgs, { timeout: timeoutMs, signal, });
 
   if (result.exitCode !== 0 || result.killed) {
     console.error(`    [container] exit=${String(result.exitCode)} timedOut=${String(result.killed)}`);

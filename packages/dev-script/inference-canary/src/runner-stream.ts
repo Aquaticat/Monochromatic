@@ -11,18 +11,22 @@ import OpenAI from 'openai';
 import type { RunnerConfig, } from './runner-config.ts';
 import type { ChatMessage, StreamTiming, } from './runner-types.ts';
 
+/** Milliseconds per second for human-readable timing display */
+const MS_PER_SECOND = 1000;
+
 /**
  * Logs a timing summary for a streamed response.
+ * Only ttfc and total are shown -- chunk count and inter-chunk gaps are too granular
+ * for routine human inspection and are preserved in the StreamTiming object for callers
+ * that need them.
  * @param label - probe/call label for log prefix
  * @param timing - collected timing data
  */
 function logTiming(label: string, timing: StreamTiming): void {
-  const maxGap = timing.interChunkMs.length > 0 ? Math.max(...timing.interChunkMs) : 0;
+  const totalSeconds = (timing.totalMs / MS_PER_SECOND).toFixed(1);
   console.log(
     `    [timing:${label}] ttfc=${String(timing.timeToFirstChunkMs)}ms`
-    + ` chunks=${String(timing.chunkCount)}`
-    + ` maxGap=${String(maxGap)}ms`
-    + ` total=${String(timing.totalMs)}ms`,
+    + ` total=${totalSeconds}s`,
   );
 }
 
@@ -32,6 +36,7 @@ function logTiming(label: string, timing: StreamTiming): void {
  * @param messages - conversation messages
  * @param config - runner configuration
  * @param label - label for timing logs
+ * @param signal - optional abort signal; cancels the HTTP stream when aborted
  * @returns collected text and timing breakdown
  */
 export async function streamCompletion(
@@ -39,7 +44,21 @@ export async function streamCompletion(
   messages: readonly ChatMessage[],
   config: RunnerConfig,
   label: string,
+  signal?: AbortSignal,
 ): Promise<{ text: string; timing: StreamTiming }> {
+  // Fast-path: if the signal is already aborted, skip the network request entirely.
+  if (signal !== undefined && signal.aborted) {
+    throw new DOMException('Probe timeout signal already aborted before stream start', 'AbortError');
+  }
+
+  // Track whether the signal fired during the stream. tsgo narrows `signal.aborted` to
+  // `false | undefined` after the for-await loop (infers no abort if stream completed
+  // without throwing), so we use a listener-set flag that tsgo cannot narrow away.
+  // let: assigned true by the abort listener callback below
+  let streamWasAborted = false;
+  const onAbort = (): void => { streamWasAborted = true; };
+  signal?.addEventListener('abort', onAbort, { once: true, });
+
   const startMs = Date.now();
 
   const extraBody: Record<string, unknown> = {
@@ -54,7 +73,7 @@ export async function streamCompletion(
     messages: [...messages],
     stream: true,
     ...extraBody,
-  });
+  }, { signal, });
 
   // Mutable accumulators are required here: for-await streams are inherently
   // imperative and each chunk must be processed as it arrives.
@@ -80,8 +99,17 @@ export async function streamCompletion(
     if (delta !== undefined && delta !== null) chunks.push(delta);
   }
 
+  signal?.removeEventListener('abort', onAbort);
+
   const totalMs = Date.now() - startMs;
   const timing: StreamTiming = { timeToFirstChunkMs: firstChunkMs, interChunkMs, totalMs, chunkCount, };
   logTiming(label, timing);
+
+  // The SDK ends the stream gracefully on abort (returns partial data) rather than throwing.
+  // Throw here so callers treat a truncated response as an error, not valid output.
+  if (streamWasAborted) {
+    throw new DOMException('Stream aborted by probe timeout signal', 'AbortError');
+  }
+
   return { text: chunks.join(''), timing, };
 }

@@ -11,6 +11,11 @@ export type ScoreContext = {
   readonly modelId: string;
   /** Which pass produced this response */
   readonly pass: 'initial' | 'fix';
+  /**
+   * Abort signal from the probe timeout controller.
+   * Passed to container execution so processes are killed when the probe times out.
+   */
+  readonly signal?: AbortSignal | undefined;
 };
 
 /** Single canary probe with prompt, expected behavior, and scoring function */

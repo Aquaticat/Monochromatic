@@ -15,6 +15,33 @@
  *   INFERENCE_VALIDATION_OPENROUTER_API_KEY -- OpenRouter API key
  */
 import { getRecentModelProbePairs, readHistory, } from './history.ts';
+
+//region Elapsed-time log prefix -- prepends "+Xs" to every console.log/error line so interleaved output is easy to timeline
+
+/** Process start time for computing elapsed seconds in log prefixes */
+const PROCESS_START_MS = Date.now();
+
+/**
+ * Formats elapsed milliseconds as a right-aligned "+NNs" prefix for log lines.
+ * @returns elapsed time string like "+  4.2s"
+ */
+function elapsedPrefix(): string {
+  const elapsed = ((Date.now() - PROCESS_START_MS) / 1000).toFixed(1);
+  // Pad to 6 chars so columns align up to 999.9s
+  return `[+${elapsed.padStart(6)}s]`;
+}
+
+// eslint-disable-next-line no-console -- intentional override to inject timestamps
+const originalLog = console.log;
+// eslint-disable-next-line no-console -- intentional override to inject timestamps
+const originalError = console.error;
+// eslint-disable-next-line no-console -- intentional override
+console.log = (...args: unknown[]): void => originalLog(elapsedPrefix(), ...args);
+// eslint-disable-next-line no-console -- intentional override
+console.error = (...args: unknown[]): void => originalError(elapsedPrefix(), ...args);
+
+//endregion Elapsed-time log prefix
+
 import { modelOverride, retestAll, runsOverride, useSimple, includeSlow, } from './index-cli.ts';
 import { runAndReport, } from './index-run.ts';
 import { models, } from './models.ts';

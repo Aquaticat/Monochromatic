@@ -11,6 +11,7 @@ import { CODE_GEN_SYSTEM, } from './system-prompt.ts';
 import { buildCodeGenFixPrompt, combinedScore, extractCode, lintAndLog, } from './scoring.ts';
 import { CSS_MIXIN_TEST_CSS, } from './css-mixin-test-css.ts';
 
+import type { ContainerResult, } from '../container.ts';
 import type { LintResult, } from '../linter.ts';
 import type { Probe, } from '../probes.ts';
 
@@ -20,6 +21,12 @@ import type { Probe, } from '../probes.ts';
  */
 const lintCache = new Map<string, LintResult>();
 
+/**
+ * Container results from the most recent score() call, keyed by model ID.
+ * Used by buildFixPrompt to include runtime errors in the second-pass prompt.
+ */
+const containerCache = new Map<string, ContainerResult>();
+
 /** Number of correctness checks in the css-mixin scoring function */
 const CSS_MIXIN_TOTAL_CHECKS = 10;
 
@@ -28,7 +35,7 @@ export const cssMixinTranspiler: Probe = {
   name: 'css-mixin-transpiler',
   category: 'code-gen',
   system: CODE_GEN_SYSTEM,
-  buildFixPrompt: (response, context) => buildCodeGenFixPrompt(response, context, lintCache.get(context.modelId)),
+  buildFixPrompt: (response, context) => buildCodeGenFixPrompt(response, context, lintCache.get(context.modelId), containerCache.get(context.modelId)),
   prompt: [
     'Write a TypeScript CLI that reads CSS from stdin and writes transpiled CSS to stdout.',
     'It must resolve CSS native mixins:',
@@ -70,10 +77,11 @@ export const cssMixinTranspiler: Probe = {
   score: async (response, context) => {
     const source = extractCode(response);
     const [result, lint] = await Promise.all([
-      runInContainer(source, CSS_MIXIN_TEST_CSS),
+      runInContainer(source, CSS_MIXIN_TEST_CSS, context.signal),
       lintAndLog(source, 'css-mixin', context),
     ]);
     lintCache.set(context.modelId, lint);
+    containerCache.set(context.modelId, result);
 
     if (result.timedOut || result.exitCode !== 0) return combinedScore(0, lint);
 

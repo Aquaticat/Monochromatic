@@ -68,14 +68,18 @@ export async function lintAndLog(source: string, probeName: string, context: Sco
     pass: context.pass,
     timestamp: new Date().toISOString(),
   });
-  if (lint.linterRan) {
-    console.log(
-      `    [lint:${probeName}] errors=${String(lint.severity.errors)}`
-      + ` warnings=${String(lint.severity.warnings)}`
-      + ` rules=[${lint.violatedRules.slice(0, 5).join(', ')}]`,
-    );
+  if (lint.linterRan || lint.typeCheckerRan) {
+    const lintSummary = lint.linterRan
+      ? `lint=${String(lint.severity.errors)}err/${String(lint.severity.warnings)}warn`
+      : 'lint=skipped';
+    const typeSummary = lint.typeCheckerRan
+      ? `type=${String(lint.typeErrors)}err`
+      : 'type=skipped';
+    const rulesSummary = lint.violatedRules.length > 0
+      ? ` (${lint.violatedRules.slice(0, 5).join(', ')})`
+      : '';
+    console.log(`    [${context.modelId}:${probeName}] ${lintSummary} ${typeSummary}${rulesSummary}`);
   }
-  if (lint.typeCheckerRan) console.log(`    [type:${probeName}] errors=${String(lint.typeErrors)}`);
   return lint;
 }
 
