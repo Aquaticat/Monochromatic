@@ -1,2 +1,5 @@
-# Ephemeral artifacts from canary probe runs (lint + type-check targets)
-src/canary-lint-*/
+# Generated model output artifacts (organized by model/probe/pass)
+src/canary-lint/
+
+# Machine-local historical results (used for statistical thresholds)
+canary-history.jsonl

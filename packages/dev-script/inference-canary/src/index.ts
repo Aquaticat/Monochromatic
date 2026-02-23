@@ -1,38 +1,31 @@
 /**
  * CLI entry point for the inference canary.
  *
- * Runs code-generation probes by default (model writes TypeScript CLIs,
- * executed in throwaway containers). Use --simple for cheap text-only checks.
+ * Tests multiple models in parallel by default. Skips models with
+ * recent (<24h) results unless --force is passed.
  *
  * Usage:
  *   bun packages/dev-script/inference-canary/src/index.ts [options]
  *
  * Options:
- *   --provider openrouter|anthropic  API provider (default: openrouter)
- *   --model <id>                     Override model ID
- *   --runs <n>                       Consistency runs per probe (default: 2)
- *   --simple                         Run cheap text-only probes instead of code-gen
+ *   --model <id>     Test a single model instead of all
+ *   --runs <n>       Consistency runs per probe (default: 2)
+ *   --simple         Run cheap text-only probes instead of code-gen
+ *   --slow           Include slow probes (e.g. task-scheduler)
+ *   --retest-all     Retest all models even if recent (<24h) results exist
  *
  * Environment (read from .env.local via mise):
  *   INFERENCE_VALIDATION_OPENROUTER_API_KEY -- OpenRouter API key
- *   INFERENCE_VALIDATION_CLAUDE_API_KEY     -- direct Anthropic API key
  */
+import { appendHistory, computeThreshold, getRecentModelProbePairs, hasRecentResults, readHistory, } from './history.ts';
+import { models, } from './models.ts';
 import { codeGenProbes, codeGenProbesAll, simpleProbes, } from './probes.ts';
-import { formatReport, } from './report.ts';
+import { formatMultiModelReport, } from './report.ts';
 import { runCanary, } from './runner.ts';
 
-//region Provider configuration
-
-/** OpenRouter base URL -- Anthropic SDK appends /v1/messages, so base is /api */
-const OPENROUTER_BASE_URL = 'https://openrouter.ai/api';
-
-/** Default model when using OpenRouter */
-const OPENROUTER_DEFAULT_MODEL = 'anthropic/claude-sonnet-4.6';
-
-/** Default model when using Anthropic directly */
-const ANTHROPIC_DEFAULT_MODEL = 'claude-sonnet-4-6-20260217';
-
-//endregion Provider configuration
+import type { HistoryEntry, ModelThreshold, } from './history.ts';
+import type { ModelConfig, } from './models.ts';
+import type { CanaryReport, } from './runner.ts';
 
 //region CLI argument parsing
 
@@ -50,10 +43,7 @@ function getFlag(flag: string): string | undefined {
   return args[flagIndex + 1];
 }
 
-/** Provider selection: openrouter (default) or anthropic */
-const provider = getFlag('--provider') ?? 'openrouter';
-
-/** Model override from --model flag */
+/** Single-model override from --model flag */
 const modelOverride = getFlag('--model');
 
 /** Consistency runs override from --runs flag */
@@ -62,70 +52,115 @@ const runsOverride = getFlag('--runs');
 /** Whether to run simple probes instead of code-gen */
 const useSimple = args.includes('--simple');
 
-/** Whether to include slow probes (e.g. task-scheduler with real async delays) */
+/** Whether to include slow probes */
 const includeSlow = args.includes('--slow');
+
+/** Retest all models even if they have recent (<24h) results */
+const retestAll = args.includes('--retest-all');
 
 //endregion CLI argument parsing
 
-//region Provider resolution
+//region API key resolution
 
-/**
- * Resolves API credentials and base URL from environment based on provider choice.
- * @param providerName - "openrouter" or "anthropic"
- * @returns configuration partial with apiKey, baseURL, and model defaults
- */
-function resolveProvider(providerName: string): { apiKey: string; baseURL?: string; model: string } {
-  if (providerName === 'openrouter') {
-    const apiKey = process.env['INFERENCE_VALIDATION_OPENROUTER_API_KEY'];
-    if (apiKey === undefined || apiKey === '') {
-      throw new Error('INFERENCE_VALIDATION_OPENROUTER_API_KEY not set in environment');
-    }
-    return {
-      apiKey,
-      baseURL: OPENROUTER_BASE_URL,
-      model: OPENROUTER_DEFAULT_MODEL,
-    };
-  }
-
-  if (providerName === 'anthropic') {
-    const apiKey = process.env['INFERENCE_VALIDATION_CLAUDE_API_KEY'];
-    if (apiKey === undefined || apiKey === '') {
-      throw new Error('INFERENCE_VALIDATION_CLAUDE_API_KEY not set in environment');
-    }
-    return {
-      apiKey,
-      model: ANTHROPIC_DEFAULT_MODEL,
-    };
-  }
-
-  throw new Error(`Unknown provider: ${providerName}. Use "openrouter" or "anthropic".`);
+const apiKey = process.env['INFERENCE_VALIDATION_OPENROUTER_API_KEY'];
+if (apiKey === undefined || apiKey === '') {
+  throw new Error('INFERENCE_VALIDATION_OPENROUTER_API_KEY not set in environment');
 }
 
-//endregion Provider resolution
+//endregion API key resolution
+
+//region Model selection
+
+const history = await readHistory();
+
+/**
+ * Determines which models to test based on CLI flags.
+ * @returns models to test
+ */
+function selectModels(): readonly ModelConfig[] {
+  // Single-model mode: find it in registry or create ad-hoc config
+  if (modelOverride !== undefined) {
+    const found = models.find((model) => model.id === modelOverride);
+    if (found !== undefined) return [found];
+    return [{ id: modelOverride, label: modelOverride, verbosity: 'low', }];
+  }
+
+  if (retestAll) return models;
+
+  // Otherwise run all models (probes will be filtered per-model if needed)
+  return models;
+}
+
+const selectedModels = selectModels();
+
+/**
+ * Set of "model:probeName" pairs that were tested recently.
+ * Allows per-probe skipping: only skips specific probes, not entire models.
+ */
+const recentModelProbePairs = retestAll ? new Set<string>() : getRecentModelProbePairs(history);
+
+//endregion Model selection
 
 //region Execution
 
-const providerConfig = resolveProvider(provider);
-// eslint-disable-next-line no-nested-ternary -- simple three-way probe tier selection
-const probes = useSimple ? simpleProbes : includeSlow ? codeGenProbesAll : codeGenProbes;
+if (selectedModels.length === 0) {
+  // Nothing to do -- no models selected
+  console.log('[canary] no models selected for testing.');
+} else {
+  // eslint-disable-next-line no-nested-ternary -- simple three-way probe tier selection
+  const probes = useSimple ? simpleProbes : includeSlow ? codeGenProbesAll : codeGenProbes;
 
-console.log(`[canary] provider: ${provider}`);
-console.log(`[canary] probe tier: ${useSimple ? 'simple' : 'code-gen'}`);
-console.log('[canary] starting inference canary check...');
-console.log('');
+  console.log(`[canary] testing ${String(selectedModels.length)} model(s) in parallel`);
+  console.log(`[canary] probes: ${probes.map((probe) => probe.name).join(', ')}`);
+  console.log('');
 
-const report = await runCanary(probes, {
-  model: modelOverride ?? providerConfig.model,
-  apiKey: providerConfig.apiKey,
-  ...(providerConfig.baseURL !== undefined ? { baseURL: providerConfig.baseURL, } : {}),
-  ...(runsOverride !== undefined ? { consistencyRuns: Number(runsOverride), } : {}),
-});
+  // Run all models in parallel -- per-probe 5-min timeout is in the runner
+  const reports: readonly CanaryReport[] = await Promise.all(
+    selectedModels.map((model) =>
+      runCanary(probes, {
+        model: model.id,
+        verbosity: model.verbosity,
+        apiKey,
+        degradationThreshold: computeThreshold(model.id, history).threshold,
+        skipProbes: recentModelProbePairs,
+        ...(runsOverride !== undefined ? { consistencyRuns: Number(runsOverride), } : {}),
+      })
+    ),
+  );
 
-console.log('');
-console.log(formatReport(report));
+  // Only save and report on models that actually ran probes
+  const reportsWithResults = reports.filter((report) => report.results.length > 0);
 
-if (report.degradationLikely) {
-  throw new Error('Inference degradation detected');
+  if (reportsWithResults.length === 0) {
+    console.log('[canary] all probes skipped due to recent results. Use --retest-all to force re-run.');
+  } else {
+    // Save all results to history
+    const entries: HistoryEntry[] = reportsWithResults.map((report) => ({
+      timestamp: report.timestamp,
+      model: report.model,
+      overallScore: report.overallScore,
+      probeScores: Object.fromEntries(
+        report.results.map((result) => [result.name, result.meanScore]),
+      ),
+      failed: report.failed,
+    }));
+    await appendHistory(entries);
+
+    // Compute thresholds (now including the new data)
+    const updatedHistory = await readHistory();
+    const thresholds = new Map<string, ModelThreshold>(
+      selectedModels.map((model) => [model.id, computeThreshold(model.id, updatedHistory)]),
+    );
+
+    console.log('');
+    console.log(formatMultiModelReport(reportsWithResults, thresholds));
+
+    // Exit with error if any model is degraded
+    const degraded = reportsWithResults.filter((report) => report.degradationLikely);
+    if (degraded.length > 0) {
+      throw new Error(`Degradation detected in: ${degraded.map((report) => report.model).join(', ')}`);
+    }
+  }
 }
 
 //endregion Execution

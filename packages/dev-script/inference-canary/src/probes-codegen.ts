@@ -17,7 +17,7 @@ import { runInContainer, } from './container.ts';
 import { lintSource, } from './linter.ts';
 
 import type { LintResult, } from './linter.ts';
-import type { Probe, } from './probes.ts';
+import type { Probe, ScoreContext, } from './probes.ts';
 
 //region Shared
 
@@ -155,10 +155,16 @@ function combinedScore(correctness: number, lint: LintResult): number {
  * Runs oxlint and tsgo on generated source, logs results per probe.
  * @param source - TypeScript source to analyze
  * @param probeName - probe name for log prefixes
+ * @param context - model identity and pass for artifact organization
  * @returns full lint result for scoring
  */
-async function lintAndLog(source: string, probeName: string): Promise<LintResult> {
-  const lint = await lintSource(source);
+async function lintAndLog(source: string, probeName: string, context: ScoreContext): Promise<LintResult> {
+  const lint = await lintSource(source, {
+    model: context.modelId,
+    probe: probeName,
+    pass: context.pass,
+    timestamp: new Date().toISOString(),
+  });
   if (lint.linterRan) {
     console.log(
       `    [lint:${probeName}] errors=${String(lint.severity.errors)}`
@@ -177,11 +183,17 @@ async function lintAndLog(source: string, probeName: string): Promise<LintResult
  * plus the linter/type-checker diagnostics and asks it to fix everything.
  * Returns undefined if there are no diagnostics to fix.
  * @param response - raw model output from the first pass
+ * @param context - model identity and pass for artifact organization
  * @returns follow-up user message, or undefined to skip
  */
-async function buildCodeGenFixPrompt(response: string): Promise<string | undefined> {
+async function buildCodeGenFixPrompt(response: string, context: ScoreContext): Promise<string | undefined> {
   const source = extractCode(response);
-  const lint = await lintSource(source);
+  const lint = await lintSource(source, {
+    model: context.modelId,
+    probe: 'fix-prompt',
+    pass: context.pass,
+    timestamp: new Date().toISOString(),
+  });
   const totalIssues = lint.violationCount + lint.typeErrors;
 
   if (totalIssues === 0 || lint.rawDiagnostics.length === 0) return undefined;
@@ -231,14 +243,14 @@ const csvRfc4180: Probe = {
     '"O\'Brien, ""Bob""","likes\\ntravel",30',
     'Jane,simple,25',
   ].join('\n'),
-  score: async (response) => {
+  score: async (response, context) => {
     const source = extractCode(response);
 
     // Container execution and host-side linting are independent -- run in parallel
     const testInput = 'name,bio,age\n"O\'Brien, ""Bob""","likes\ntravel",30\nJane,simple,25\n';
     const [result, lint] = await Promise.all([
       runInContainer(source, testInput),
-      lintAndLog(source, 'csv-rfc4180'),
+      lintAndLog(source, 'csv-rfc4180', context),
     ]);
 
     if (result.timedOut || result.exitCode !== 0) return combinedScore(0, lint);
@@ -313,13 +325,13 @@ const expressionEvaluator: Probe = {
     '-11',
     '21',
   ].join('\n'),
-  score: async (response) => {
+  score: async (response, context) => {
     const source = extractCode(response);
 
     const testInput = '2 + 3 * 4\n(2 + 3) * 4\n10 / (5 - 5)\n-3 + 4 * -2\n((1 + 2) * (3 + 4))\n3.5 * 2 + 1.5\n';
     const [result, lint] = await Promise.all([
       runInContainer(source, testInput),
-      lintAndLog(source, 'expr-eval'),
+      lintAndLog(source, 'expr-eval', context),
     ]);
 
     if (result.timedOut || result.exitCode !== 0) return combinedScore(0, lint);
@@ -383,13 +395,13 @@ const taskScheduler: Probe = {
     'DONE C @150',
     'TOTAL 150',
   ].join('\n'),
-  score: async (response) => {
+  score: async (response, context) => {
     const source = extractCode(response);
 
     const testInput = 'A 100\nB 100\nC 50 A B\n';
     const [result, lint] = await Promise.all([
       runInContainer(source, testInput),
-      lintAndLog(source, 'task-scheduler'),
+      lintAndLog(source, 'task-scheduler', context),
     ]);
 
     if (result.timedOut || result.exitCode !== 0) return combinedScore(0, lint);
@@ -442,10 +454,190 @@ const taskScheduler: Probe = {
 
 //endregion Probe: concurrent task scheduler
 
+//region Probe: CSS native mixin transpiler
+
+/**
+ * Asks the model to build a single-file CSS transpiler that resolves
+ * native `@mixin` declarations and `@apply` rules.
+ *
+ * CSS native mixins are new enough that models won't have canned solutions.
+ * The task tests string parsing, brace-depth tracking, and state management --
+ * failure modes that surface differently from algorithmic probes.
+ */
+const cssMixinTranspiler: Probe = {
+  name: 'css-mixin-transpiler',
+  category: 'code-gen',
+  system: CODE_GEN_SYSTEM,
+  buildFixPrompt: buildCodeGenFixPrompt,
+  prompt: [
+    'Write a TypeScript CLI that reads CSS from stdin and writes transpiled CSS to stdout.',
+    'It must resolve CSS native mixins:',
+    '',
+    '1. Parse `@mixin --name { ...declarations... }` blocks and collect their contents',
+    '2. Replace every `@apply --name;` rule with the collected declarations from that mixin',
+    '3. Remove `@mixin` blocks from the output entirely',
+    '4. Preserve all other CSS exactly as-is (selectors, properties, comments, whitespace between rules)',
+    '5. A rule block may contain multiple `@apply` rules -- expand each in order',
+    '6. The same mixin may be referenced from multiple rule blocks',
+    '7. Mixin names always start with `--` (CSS custom property convention)',
+    '8. Mixin bodies can contain declarations, nested rules, AND `@apply` of other mixins (recursive expansion)',
+    '9. `@apply` can appear inside nested rules (CSS nesting with `&`) -- resolve them at any depth',
+    '10. `@apply` at the top level (outside any rule block) expands the mixin body directly into the stylesheet',
+    '',
+    'Example 1 -- basic:',
+    '```css',
+    '@mixin --flex-center {',
+    '  display: flex;',
+    '  align-items: center;',
+    '}',
+    '.card { @apply --flex-center; padding: 1rem; }',
+    '```',
+    'Becomes:',
+    '```css',
+    '.card { display: flex; align-items: center; padding: 1rem; }',
+    '```',
+    '',
+    'Example 2 -- top-level apply:',
+    '```css',
+    '@mixin --reset { body { margin: 0; } }',
+    '@apply --reset;',
+    '```',
+    'Becomes:',
+    '```css',
+    'body { margin: 0; }',
+    '```',
+  ].join('\n'),
+  score: async (response, context) => {
+    const source = extractCode(response);
+
+    const testCss = [
+      // Base mixin
+      '@mixin --flex-center {',
+      '  display: flex;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '}',
+      '',
+      // Mixin that @apply's another mixin (recursive)
+      '@mixin --card-base {',
+      '  @apply --flex-center;',
+      '  padding-block: 1rem;',
+      '  padding-inline: 2rem;',
+      '}',
+      '',
+      '@mixin --visually-hidden {',
+      '  position: absolute;',
+      '  clip-path: inset(50%);',
+      '  overflow: hidden;',
+      '}',
+      '',
+      // Top-level mixin with a full rule inside
+      '@mixin --reset {',
+      '  body {',
+      '    margin: 0;',
+      '    padding: 0;',
+      '  }',
+      '}',
+      '',
+      // Top-level @apply -- expands the reset mixin directly into the stylesheet
+      '@apply --reset;',
+      '',
+      // Simple @apply via recursive mixin
+      '.card {',
+      '  @apply --card-base;',
+      '  border-radius: 0.5rem;',
+      '}',
+      '',
+      // @apply inside nested rule
+      '.nav {',
+      '  background-color: var(--surface-bg);',
+      '',
+      '  & .link {',
+      '    @apply --flex-center;',
+      '    color: var(--link-fg);',
+      '  }',
+      '}',
+      '',
+      // Multiple @apply in one block
+      '.hero {',
+      '  @apply --card-base;',
+      '  @apply --visually-hidden;',
+      '}',
+      '',
+    ].join('\n');
+
+    const [result, lint] = await Promise.all([
+      runInContainer(source, testCss),
+      lintAndLog(source, 'css-mixin', context),
+    ]);
+
+    if (result.timedOut || result.exitCode !== 0) return combinedScore(0, lint);
+
+    // Normalize: collapse whitespace runs so cosmetic differences don't affect scoring.
+    // "display:  flex" and "display: flex" are functionally identical.
+    const output = result.stdout.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n');
+
+    // Check 1: no @mixin blocks remain
+    const mixinsRemoved = !output.includes('@mixin');
+
+    // Check 2: no @apply rules remain
+    const appliesResolved = !output.includes('@apply');
+
+    // Check 3: top-level @apply expanded the reset mixin's body (a full rule) into stylesheet
+    const resetExpanded = output.includes('margin: 0') && output.includes('padding: 0');
+
+    // Check 4: .card has flex-center declarations (expanded through --card-base)
+    const cardHasFlex = output.includes('display: flex')
+      && output.includes('align-items: center');
+
+    // Check 5: .card has card-base's own declarations
+    const cardHasPadding = output.includes('padding-block: 1rem')
+      && output.includes('padding-inline: 2rem');
+
+    // Check 6: .card preserves its own property
+    const cardHasBorder = output.includes('border-radius: 0.5rem');
+
+    // Check 7: nested .nav .link has flex-center expanded + its own property
+    const navLinkHasFlex = output.includes('color: var(--link-fg)');
+
+    // Check 8: .nav preserves its own background
+    const navHasBg = output.includes('background-color: var(--surface-bg)');
+
+    // Check 9: .hero gets both --card-base (which includes --flex-center) and --visually-hidden
+    const heroHasHidden = output.includes('clip-path: inset(50%)')
+      && output.includes('overflow: hidden');
+
+    // Check 10: recursive expansion -- flex-center through card-base
+    // flex-center should appear in .card, .nav .link, and .hero = 3 occurrences
+    const flexOccurrences = output.split('display: flex').length - 1;
+    const heroGotRecursiveFlex = flexOccurrences >= 3;
+
+    const TOTAL_CHECKS = 10;
+    const checks = [
+      mixinsRemoved,
+      appliesResolved,
+      resetExpanded,
+      cardHasFlex,
+      cardHasPadding,
+      cardHasBorder,
+      navLinkHasFlex,
+      navHasBg,
+      heroHasHidden,
+      heroGotRecursiveFlex,
+    ];
+    const correctCount = checks.filter(Boolean).length;
+
+    return combinedScore(correctCount / TOTAL_CHECKS, lint);
+  },
+};
+
+//endregion Probe: CSS native mixin transpiler
+
 /** All code-generation probes */
 const allCodeGenProbes: readonly Probe[] = [
   csvRfc4180,
   expressionEvaluator,
+  cssMixinTranspiler,
   taskScheduler,
 ];
 

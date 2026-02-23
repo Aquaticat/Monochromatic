@@ -54,26 +54,48 @@ export type LintResult = {
  * Gitignored via the package .gitignore.
  */
 const PACKAGE_DIR = new URL('..', import.meta.url).pathname;
-const LINT_BASE = join(PACKAGE_DIR, 'src', 'canary-lint');
+const LINT_DIR = join(PACKAGE_DIR, 'src', 'canary-lint');
 
-/** Monotonic counter for unique lint directories (safe for parallel calls) */
-let lintDirCounter = 0;
+/** Metadata written alongside each generated canary.ts for traceability */
+type ArtifactMeta = {
+  readonly model: string;
+  readonly probe: string;
+  readonly pass: 'initial' | 'fix';
+  readonly timestamp: string;
+};
 
 /**
- * Creates a unique lint directory and writes source into it.
- * Each call gets its own directory so parallel probes don't clobber each other.
- * @param source - TypeScript source to analyze
- * @returns object with file path and cleanup function
+ * Extracts the short model name from an OpenRouter model ID.
+ * "anthropic/claude-sonnet-4.6" -> "claude-sonnet-4.6"
+ * @param modelId - full OpenRouter model ID
+ * @returns short slug suitable for directory names
  */
-async function writeLintFile(source: string): Promise<{
+function modelSlug(modelId: string): string {
+  return modelId.split('/').pop() ?? modelId;
+}
+
+/**
+ * Creates a lint artifact directory organized by model and probe.
+ *
+ * Directory structure: `src/canary-lint/<model-slug>/<probe>-<pass>/canary.ts`
+ * A `meta.json` is written alongside for future viewer tools.
+ *
+ * @param source - TypeScript source to analyze
+ * @param meta - artifact metadata (model, probe, pass, timestamp)
+ * @returns object with file path and subdirectory path
+ */
+async function writeLintFile(source: string, meta: ArtifactMeta): Promise<{
   filePath: string;
   lintDir: string;
 }> {
-  lintDirCounter += 1;
-  const lintDir = `${LINT_BASE}-${String(lintDirCounter)}`;
+  const slug = modelSlug(meta.model);
+  const lintDir = join(LINT_DIR, slug, `${meta.probe}-${meta.pass}`);
   await mkdir(lintDir, { recursive: true, });
   const filePath = join(lintDir, 'canary.ts');
-  await writeFile(filePath, source, 'utf8');
+  await Promise.all([
+    writeFile(filePath, source, 'utf8'),
+    writeFile(join(lintDir, 'meta.json'), JSON.stringify(meta, null, 2), 'utf8'),
+  ]);
   return { filePath, lintDir, };
 }
 
@@ -92,14 +114,18 @@ async function cleanupLintDir(lintDir: string): Promise<void> {
 /**
  * Runs both oxlint and tsgo on generated source, returns combined results.
  *
- * Uses `-D all` for oxlint (every rule category enabled) and the package's
- * tsconfig for type checking (inherits the monorepo's strict settings).
+ * Uses the project's oxlint config and the canary-specific tsconfig for type
+ * checking (inherits the monorepo's strict settings).
+ *
+ * Generated source is written to `src/canary-lint/<model>/<probe>-<pass>/canary.ts`
+ * with a `meta.json` sidecar for traceability.
  *
  * @param source - TypeScript source code to analyze
+ * @param meta - artifact metadata for directory naming and traceability
  * @returns combined lint + type-check results
  */
-export async function lintSource(source: string): Promise<LintResult> {
-  const { filePath, lintDir, } = await writeLintFile(source);
+export async function lintSource(source: string, meta: ArtifactMeta): Promise<LintResult> {
+  const { filePath, lintDir, } = await writeLintFile(source, meta);
 
   try {
     const [oxlintResult, typeResult] = await Promise.all([
@@ -132,7 +158,8 @@ export async function lintSource(source: string): Promise<LintResult> {
       rawDiagnostics: '',
     };
   } finally {
-    await cleanupLintDir(lintDir);
+    // Lint dirs are intentionally kept -- useful for debugging and don't accumulate
+    // enough to matter (gitignored via src/canary-lint-*/)
   }
 }
 
@@ -259,10 +286,10 @@ function parseOxlintJson(jsonOutput: string): {
 //region Type checking
 
 /**
- * Runs tsgo --noEmit on the package's tsconfig, which covers src/canary-lint-*\/
+ * Runs tsgo --noEmit on the package's tsconfig, which covers src/canary-lint/
  * via the inherited `src/**\/*.ts` include pattern.
- * Counts only type errors from the specific lint directory.
- * @param lintDir - absolute path to the lint directory for this probe
+ * Counts only type errors from the specific lint subdirectory.
+ * @param lintDir - absolute path to the lint subdirectory for this probe
  * @returns error count and whether tsgo ran successfully
  */
 async function runAndParseTypeCheck(lintDir: string): Promise<{
@@ -270,15 +297,17 @@ async function runAndParseTypeCheck(lintDir: string): Promise<{
   ran: boolean;
   rawOutput: string;
 }> {
-  /** Directory basename used to filter tsgo output to just this probe's file */
-  const dirName = lintDir.split('/').pop() ?? 'canary-lint';
+  /** Filter pattern: "canary-lint/<model>/<probe>-<pass>/canary.ts" uniquely identifies this probe's file */
+  const relativeSuffix = lintDir.split('canary-lint/').pop() ?? '';
 
   try {
+    /** Separate tsconfig that only includes src/canary-lint/ to avoid polluting the package lint */
+    const canaryTsconfig = join(PACKAGE_DIR, 'tsconfig.canary-lint.json');
     const output = await execPromise(
       'tsgo',
-      ['--noEmit', '-p', join(PACKAGE_DIR, 'tsconfig.json')],
+      ['--noEmit', '-p', canaryTsconfig],
     );
-    const filtered = filterTypeErrors(output, dirName);
+    const filtered = filterTypeErrors(output, relativeSuffix);
     return { errorCount: filtered.length, ran: true, rawOutput: filtered.join('\n'), };
   } catch (error) {
     // tsgo exits non-zero when there are type errors; stdout has the diagnostics
@@ -287,7 +316,7 @@ async function runAndParseTypeCheck(lintDir: string): Promise<{
       : '';
 
     if (stdout.includes('error TS')) {
-      const filtered = filterTypeErrors(stdout, dirName);
+      const filtered = filterTypeErrors(stdout, relativeSuffix);
       return { errorCount: filtered.length, ran: true, rawOutput: filtered.join('\n'), };
     }
 
@@ -297,15 +326,16 @@ async function runAndParseTypeCheck(lintDir: string): Promise<{
 }
 
 /**
- * Extracts type error lines from a specific canary lint directory only,
+ * Extracts type error lines from a specific canary lint subdirectory only,
  * ignoring noise from bun-types, other project files, or other probe runs.
  * @param output - raw tsgo output
- * @param dirName - directory name to filter for (e.g. "canary-lint-1")
- * @returns error lines from that directory's canary.ts
+ * @param subdirId - subdirectory label within canary-lint/ (e.g. "css-mixin", "csv-rfc4180-2")
+ * @returns error lines from that subdirectory's canary.ts
  */
-function filterTypeErrors(output: string, dirName: string): readonly string[] {
+function filterTypeErrors(output: string, subdirId: string): readonly string[] {
+  const marker = `canary-lint/${subdirId}/canary.ts`;
   return output.split('\n')
-    .filter((line) => line.includes(`${dirName}/canary.ts`) && line.includes('error TS'));
+    .filter((line) => line.includes(marker) && line.includes('error TS'));
 }
 
 //endregion Type checking

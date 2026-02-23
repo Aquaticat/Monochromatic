@@ -1,14 +1,15 @@
 /**
- * Formats a canary report for terminal output.
+ * Formats canary reports for terminal output.
  *
- * Produces a human-readable summary with per-probe scores,
- * category breakdowns, and a clear pass/fail verdict.
+ * Produces a human-readable summary with per-model scores,
+ * per-probe breakdowns, and pass/fail verdicts.
  */
+import type { ModelThreshold, } from './history.ts';
 import type { CanaryReport, } from './runner.ts';
 
 //region Score formatting
 
-/** Score thresholds for color-coded terminal output */
+/** Score thresholds for text labels */
 const GOOD_THRESHOLD = 0.9;
 const WARN_THRESHOLD = 0.7;
 
@@ -25,66 +26,91 @@ function scoreLabel(score: number): string {
 
 //endregion Score formatting
 
-//region Report formatting
+//region Single-model report
 
 /**
- * Formats a canary report as a multi-line string for terminal display.
+ * Formats a single model's canary report.
  * @param report - completed canary report
+ * @param threshold - statistical threshold info if available
  * @returns formatted report text
  */
-export function formatReport(report: CanaryReport): string {
+function formatModelReport(report: CanaryReport, threshold?: ModelThreshold): string {
   const lines: string[] = [];
 
-  lines.push('=== Inference canary report ===');
-  lines.push(`Model: ${report.model}`);
-  lines.push(`Time:  ${report.timestamp}`);
-  lines.push('');
+  if (report.failed) {
+    lines.push(`  [FAIL] ${report.model}: ${report.error ?? 'unknown error'}`);
+    return lines.join('\n');
+  }
 
-  lines.push('--- Per-probe results ---');
+  const label = scoreLabel(report.overallScore);
+  const thresholdInfo = threshold !== undefined && threshold.sampleCount >= 3
+    ? ` (threshold: ${threshold.threshold.toFixed(2)}, mean: ${threshold.mean.toFixed(2)}, n=${String(threshold.sampleCount)})`
+    : '';
+  lines.push(`  [${label}] ${report.model}: ${report.overallScore.toFixed(2)}${thresholdInfo}`);
+
   report.results.forEach((result) => {
-    const label = scoreLabel(result.meanScore);
-    const consistency = result.consistent ? 'consistent' : 'INCONSISTENT';
     const pass2 = result.pass2Score !== undefined
-      ? ` -> pass2: ${result.pass2Score.toFixed(2)} (delta: ${result.fixDelta !== undefined && result.fixDelta >= 0 ? '+' : ''}${result.fixDelta?.toFixed(2) ?? '?'})`
+      ? ` -> fix: ${result.pass2Score.toFixed(2)} (${result.fixDelta !== undefined && result.fixDelta >= 0 ? '+' : ''}${result.fixDelta?.toFixed(2) ?? '?'})`
       : '';
-    lines.push(
-      `  [${label}] ${result.name} (${result.category}): ${result.meanScore.toFixed(2)} [${consistency}]${pass2}`,
-    );
+    lines.push(`    ${result.name}: ${result.meanScore.toFixed(2)}${pass2}`);
   });
+
+  return lines.join('\n');
+}
+
+//endregion Single-model report
+
+//region Multi-model report
+
+/**
+ * Formats a multi-model canary report as a terminal-friendly summary.
+ * @param reports - completed reports for each model
+ * @param thresholds - per-model statistical thresholds
+ * @returns formatted multi-line report
+ */
+export function formatMultiModelReport(
+  reports: readonly CanaryReport[],
+  thresholds: ReadonlyMap<string, ModelThreshold>,
+): string {
+  const lines: string[] = [];
+  const timestamp = reports[0]?.timestamp ?? new Date().toISOString();
+
+  lines.push('=== Inference canary report ===');
+  lines.push(`Time: ${timestamp}`);
+  lines.push(`Models: ${String(reports.length)}`);
   lines.push('');
 
-  lines.push('--- Category scores ---');
-  Object.entries(report.categoryScores).forEach(([category, score]) => {
-    lines.push(`  ${category}: ${(score as number).toFixed(2)} [${scoreLabel(score as number)}]`);
-  });
-  lines.push('');
+  // Separate successful from failed
+  const successful = reports.filter((report) => !report.failed);
+  const failed = reports.filter((report) => report.failed);
 
-  lines.push('--- Overall ---');
-  lines.push(`  Score: ${report.overallScore.toFixed(2)} [${scoreLabel(report.overallScore)}]`);
-  lines.push(`  Degradation likely: ${report.degradationLikely ? 'YES' : 'no'}`);
-
-  if (report.degradationLikely) {
+  if (successful.length > 0) {
+    lines.push('--- Results ---');
+    successful.forEach((report) => {
+      lines.push(formatModelReport(report, thresholds.get(report.model)));
+    });
     lines.push('');
-    lines.push('  Recommendation: inference quality may be degraded.');
-    lines.push('  Consider retrying later or switching models.');
+  }
 
-    /** Identify which categories are weakest to give targeted advice */
-    const weakCategories = Object.entries(report.categoryScores)
-      .filter(([, score]) => (score as number) < WARN_THRESHOLD)
-      .map(([category]) => category);
+  if (failed.length > 0) {
+    lines.push('--- Failed ---');
+    failed.forEach((report) => {
+      lines.push(formatModelReport(report));
+    });
+    lines.push('');
+  }
 
-    if (weakCategories.length > 0) {
-      lines.push(`  Weakest categories: ${weakCategories.join(', ')}`);
-    }
-
-    /** Flag inconsistent probes as especially suspicious */
-    const inconsistentProbes = report.results.filter((result) => !result.consistent);
-    if (inconsistentProbes.length > 0) {
-      lines.push(`  Inconsistent probes: ${inconsistentProbes.map((probe) => probe.name).join(', ')}`);
-    }
+  // Summary line
+  const degraded = successful.filter((report) => report.degradationLikely);
+  if (degraded.length > 0) {
+    lines.push(`Degradation detected: ${degraded.map((report) => report.model).join(', ')}`);
+  } else if (failed.length === 0) {
+    lines.push('All models healthy.');
+  } else {
+    lines.push(`${String(failed.length)} model(s) failed, ${String(successful.length)} healthy.`);
   }
 
   return lines.join('\n');
 }
 
-//endregion Report formatting
+//endregion Multi-model report

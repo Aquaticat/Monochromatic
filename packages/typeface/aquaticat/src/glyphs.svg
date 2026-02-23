@@ -1,0 +1,48 @@
+<svg width="12860" height="1000" viewBox="0 0 12860 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="605" height="1000" fill="white"/>
+<path d="M302.5 50L0 750H100L302.5 300L505 750H605L302.5 50Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(645)" fill="white"/>
+<path d="M750 750L670 700V100L750 50V750Z" fill="black"/>
+<path d="M1250 525L830 750V650L1075 525L830 400L1075 275L830 150V50L1250 275L1000 400L1250 525Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(1290)" fill="white"/>
+<path d="M1895 50L1290 350V450L1895 750V650L1390 400L1895 150V50Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(1935)" fill="white"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M1935 50L2025 94.6281V147.5V194.554V605.446V675.5V705.372L1935 750V700V650V150V147.5V50ZM2125 244.059V144.215L2540 350V450L2125 655.785V555.941L2440 400L2125 244.059Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(2580)" fill="white"/>
+<path d="M2580 525L3000 750L3090 700L2755 525L3000 400L2755 275L3090 100L3000 50L2580 275L2830 400L2580 525Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(3225)" fill="white"/>
+<path d="M3225 150V750L3305 800V200L3225 150Z" fill="black"/>
+<path d="M3645 350V250L3305 450V550L3645 350Z" fill="black"/>
+<path d="M3645 0L3305 200V300L3645 100V0Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(3870)" fill="white"/>
+<path d="M4370 450L4474 500V675L4370 750L3870 450V350V250L4172.5 50L4475 250V350L4172.5 150L3870 350L4370 650V450Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(4515)" fill="white"/>
+<path d="M4515 100L4595 50V250L4817.5 375L5040 250V50L5120 100V700L5040 750V500L4817.5 375L4595 500V750L4515 700V100Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(5160)" fill="white"/>
+<path d="M5422.5 700L5322.5 750H5602.5L5502.5 700V100L5602.5 50H5322.5L5422.5 100V700Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(5805)" fill="white"/>
+<path d="M6187.5 100L6107.5 50V710L6027.5 750L6107.5 790L6187.5 750V100Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(6450)" fill="white"/>
+<path d="M6530 50V750L6450 700V100L6530 50Z" fill="black"/>
+<path d="M7055 50L6450 350V450L7055 750V650L6550 400L7055 150V50Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(7095)" fill="white"/>
+<path d="M7317.5 100L7397.5 50V710L7700 550V625L7397.5 790L7317.5 750V100Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(7740)" fill="white"/>
+<path d="M7740 750L7820 710V200L8042.5 325L8265 200V710L8345 750V50L8042.5 225L7740 50V750Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(8385)" fill="white"/>
+<path d="M8990 625L8465 325V800L8385 750V175L8910 475V50L8990 0V625Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(9030)" fill="white"/>
+<path d="M9595 271.505V547.255L9332.5 703.453L9070 547.255V271.505L9332.5 97.9512L9595 271.505Z" stroke="black" stroke-width="80"/>
+<rect width="605" height="1000" transform="translate(9675)" fill="white"/>
+<path d="M9675 50V750L9755 700V100L9675 50Z" fill="black"/>
+<path d="M10095 300L9755 100V200L9935 300L9755 400V500L10095 300Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(10320)" fill="white"/>
+<path d="M10885 271.505V547.255L10622.5 703.453L10360 547.255V271.505L10622.5 97.9512L10885 271.505Z" stroke="black" stroke-width="80"/>
+<path d="M10925 925L10622.5 750V658L10925 825V925Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(10965)" fill="white"/>
+<path d="M11065 50H10965L11215 410L10965 750H11065L11265.5 470L11470 750H11570L11315 410L11570 50H11470L11265.5 350L11065 50Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(11610)" fill="white"/>
+<path d="M11710 50H11610L11860 410V750H11910.5H11960V410L12215 50H12115L11910.5 350L11710 50Z" fill="black"/>
+<rect width="605" height="1000" transform="translate(12255)" fill="white"/>
+<path d="M12355 50H12255L12301 123H12724L12255 750H12355H12760H12860L12809 671.5H12415L12860 50H12760H12355Z" fill="black"/>
+</svg>

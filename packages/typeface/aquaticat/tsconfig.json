@@ -1,0 +1,7 @@
+{
+  "extends": "@monochromatic-dev/config-typescript",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src"]
+}
