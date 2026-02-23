@@ -18,9 +18,6 @@ export const HOST_TIMEOUT_BUFFER_SECONDS = 5;
 /** Container image with bun pre-installed */
 export const CONTAINER_IMAGE = 'docker.io/oven/bun:1.3';
 
-/** Max output buffer size in bytes */
-export const MAX_BUFFER_BYTES = 1024 * 1024;
-
 //endregion Configuration
 
 //region Runtime detection -- uses Bun.which to avoid spawning a subprocess just to find an executable

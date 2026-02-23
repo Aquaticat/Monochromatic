@@ -26,9 +26,8 @@ async function runProbeCore(probe: Probe, config: RunnerConfig): Promise<ProbeRe
   const scores: number[] = [];
   // lastResponse is let because the for-of loop reassigns it each run, and the
   // final value is needed after the loop for the second-pass fix turn.
-  // eslint-disable-next-line prefer-const -- reassigned each loop iteration
   let lastResponse = '';
-  for (const runIndex of Array.from({ length: config.consistencyRuns, }, (_, index) => index)) {
+  for (const runIndex of Array.from({ length: config.consistencyRuns, }).keys()) {
     // eslint-disable-next-line no-await-in-loop -- sequential to avoid rate limits
     lastResponse = await executeProbe(probe, config);
     const scoreContext: ScoreContext = { modelId: config.model, pass: 'initial', };
@@ -38,7 +37,10 @@ async function runProbeCore(probe: Probe, config: RunnerConfig): Promise<ProbeRe
     console.log(`  [${probe.name}] run ${String(runIndex + 1)}/${String(config.consistencyRuns)}: score=${String(runScore)}`);
   }
 
-  const meanScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+  // Guard: scores is empty when consistencyRuns is 0; return 0 rather than NaN
+  const meanScore = scores.length > 0
+    ? scores.reduce((sum, score) => sum + score, 0) / scores.length
+    : 0;
   const consistent = scores.every((score) => score === scores[0]);
   const fixContext: ScoreContext = { modelId: config.model, pass: 'fix', };
   const pass2Result = await runSecondPass(probe, config, lastResponse, fixContext);

@@ -31,9 +31,12 @@ const cliArgs = runSync(parser, { programName: 'inference-canary', help: 'option
 export const modelOverride: string | undefined =
   typeof cliArgs.model === 'string' ? cliArgs.model : undefined;
 
-/** Consistency runs override from --runs flag, already parsed as an integer */
-export const runsOverride: number | undefined =
-  typeof cliArgs.runs === 'number' ? cliArgs.runs : undefined;
+/** Consistency runs override from --runs flag, validated to be >= 1 to prevent empty score arrays */
+export const runsOverride: number | undefined = (() => {
+  if (typeof cliArgs.runs !== 'number') return undefined;
+  if (cliArgs.runs < 1) throw new Error(`--runs must be >= 1, got ${String(cliArgs.runs)}`);
+  return cliArgs.runs;
+})();
 
 /** Whether to run simple probes instead of code-gen */
 export const useSimple = cliArgs.simple === true;

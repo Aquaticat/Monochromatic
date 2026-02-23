@@ -59,7 +59,10 @@ export async function runCanary(
       }),
     );
 
-    const overallScore = results.reduce((sum, result) => sum + result.meanScore, 0) / results.length;
+    // Guard: results is empty when all probes are skipped; return 0 rather than NaN
+    const overallScore = results.length > 0
+      ? results.reduce((sum, result) => sum + result.meanScore, 0) / results.length
+      : 0;
 
     return {
       model: mergedConfig.model,

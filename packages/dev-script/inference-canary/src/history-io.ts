@@ -37,7 +37,10 @@ export async function readHistory(): Promise<HistoryFile> {
       })
       .filter((entry): entry is HistoryEntry => entry !== undefined);
     return { entries, };
-  } catch {
+  } catch (error) {
+    // ENOENT is expected on first run; log anything else so real I/O errors are visible
+    const isEnoent = error instanceof Error && 'code' in error && error.code === 'ENOENT';
+    if (!isEnoent) console.error('[history] failed to read history file:', error);
     return { entries: [], };
   }
 }

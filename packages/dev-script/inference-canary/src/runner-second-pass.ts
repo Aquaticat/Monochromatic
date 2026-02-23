@@ -32,18 +32,13 @@ export async function runSecondPass(
 
   console.log(`  [${probe.name}] pass2: sending fix prompt...`);
 
-  try {
-    const client = createProbeClient(config);
-    const messages: ChatMessage[] = [
-      { role: 'system', content: probe.system, },
-      { role: 'user', content: probe.prompt, },
-      { role: 'assistant', content: firstResponse, },
-      { role: 'user', content: fixPrompt, },
-    ];
-    const { text, } = await streamCompletion(client, messages, config, `${probe.name}:fix`);
-    return probe.score(text, context);
-  } catch (error) {
-    console.error(`  [${probe.name}] pass2: failed:`, error);
-    return undefined;
-  }
+  const client = createProbeClient(config);
+  const messages: ChatMessage[] = [
+    { role: 'system', content: probe.system, },
+    { role: 'user', content: probe.prompt, },
+    { role: 'assistant', content: firstResponse, },
+    { role: 'user', content: fixPrompt, },
+  ];
+  const { text, } = await streamCompletion(client, messages, config, `${probe.name}:fix`);
+  return probe.score(text, context);
 }

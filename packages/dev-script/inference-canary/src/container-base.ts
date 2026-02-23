@@ -55,5 +55,5 @@ export async function execBun(
 
   if (timer !== undefined) clearTimeout(timer);
 
-  return { stdout, stderr, exitCode: exitCode ?? 1, killed, };
+  return { stdout, stderr, exitCode, killed, };
 }

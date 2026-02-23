@@ -40,7 +40,8 @@ function filterTypeErrors(output: string, subdirId: string): readonly string[] {
  */
 export async function runAndParseTypeCheck(lintDir: string): Promise<TsgoResult> {
   /** Filter key: "model-slug/probe-pass" identifies this probe's file uniquely */
-  const relativeSuffix = lintDir.split('canary-lint/').pop() ?? '';
+  // split() always returns a non-empty array; pop() is therefore never undefined here
+  const relativeSuffix = lintDir.split('canary-lint/').pop() as string;
 
   try {
     /** Separate tsconfig that only includes src/canary-lint/ to isolate generated code */

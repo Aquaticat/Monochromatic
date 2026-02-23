@@ -40,7 +40,8 @@ const simpleJson: Probe = {
       const parsed = JSON.parse(response.trim()) as Record<string, unknown>;
       if (parsed['status'] === 'ok' && parsed['value'] === 42) return 1;
       return 0.5;
-    } catch {
+    } catch (parseError) {
+      console.log(`[probe:json-output] response was not valid JSON: ${String(parseError)}`);
       return 0;
     }
   },
