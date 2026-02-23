@@ -1,0 +1,20 @@
+{
+  "name": "@monochromatic-dev/dev-script-inference-canary",
+  "description": "Canary probes for detecting LLM inference degradation from within agent sessions.",
+  "type": "module",
+  "main": "src/index.ts",
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "catalog:"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/dev-script/inference-canary"
+  },
+  "sideEffects": true
+}

@@ -21,11 +21,9 @@ description = "Start llama-server with default model (LFM2.5-1.2B-Instruct-Q4_K_
 run = "llama-server --hf-repo LiquidAI/LFM2.5-1.2B-Instruct-GGUF --hf-file LFM2.5-1.2B-Instruct-Q4_K_M.gguf --ctx-size 4096 --host 127.0.0.1 --port 8080"
 
 [tasks."lint:types"]
+extends = "lint:types"
 hide = true
-description = "TypeScript"
-run = "tsgo --build"
 
 [tasks."lint--allowFailure:types"]
+extends = "lint--allowFailure:types"
 hide = true
-description = "TypeScript"
-run = "try { tsgo --build } catch { |e| print -e $e.rendered }"

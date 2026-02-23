@@ -290,6 +290,7 @@ out/
 
 # mise
 .mise/cache
+*.local.*
 
 # Crush
 .crush/

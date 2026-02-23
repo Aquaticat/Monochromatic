@@ -1,5 +1,5 @@
 [tasks.'lint:types']
-run = "tsc --noEmit"
+extends = "lint:types"
 
 [tasks.'test:unit']
 run = "bun test .unit.test."

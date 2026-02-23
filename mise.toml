@@ -4,9 +4,14 @@
 # https://mise.jdx.dev/configuration.html
 # TODO: Document `mise trust`
 
+# Enables monorepo task discovery: tasks in subdirectories are auto-discovered
+# and prefixed with their relative paths, creating a unified task namespace.
+# https://mise.jdx.dev/tasks/monorepo.html
 experimental_monorepo_root = true
 
 [monorepo]
+# Each packages/*/* directory with a mise.toml becomes its own config root,
+# giving it its own tools, env, and tasks while inheriting from the root.
 config_roots = [
   "packages/*/*",
 ]
@@ -69,8 +74,6 @@ experimental = true
 # asdf -> Doesn't support Windows.
 disable_backends = ["asdf"]
 
-jobs = 16
-
 # Per task timeout not implemented yet in Mise.
 # task_timeout = "5s"
 
@@ -79,9 +82,10 @@ jobs = 16
 
 status.missing_tools = "always"
 
-# Monochromatic/packages/module/es/
+# Matches the packages/*/* directory depth (e.g. packages/module/es = 3 segments).
 task.monorepo_depth = 3
 
+# Nushell for all task execution ensures consistent behavior across platforms.
 unix_default_file_shell_args = "nu"
 windows_default_file_shell_args = "nu"
 unix_default_inline_shell_args = "nu -c"
@@ -91,14 +95,15 @@ windows_default_inline_shell_args = "nu -c"
 enter = "mise install"
 
 [env]
-ESLINT_FLAGS = "v10_config_lookup_from_file,unstable_native_nodejs_ts_config"
+# Uses native Node.js TypeScript loader for eslint.config.ts (instead of jiti).
+ESLINT_FLAGS = "unstable_native_nodejs_ts_config"
 
 # Too verbose
 # BUN_CONFIG_VERBOSE_FETCH = "1"
 
 # .env file is optional - mise silently ignores missing files
 # https://github.com/jdx/mise/blob/main/src/config/env_directive/file.rs#L155-L163
-_.file = [{ path = ".env", redact = true }]
+_.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true }]
 _.path = [
   "node_modules/.bin",
 ]
@@ -106,7 +111,63 @@ _.path = [
 # Doesn't work: --experimental-default-config-file is not allowed in NODE_OPTIONS
 # NODE_OPTIONS = "--experimental-default-config-file"
 
+# Placeholder for future shared variables across tasks.
 [vars]
+
+[task_templates.build]
+run = [{ tasks = ["build:*"] }]
+
+[task_templates."build:js"]
+run = [{ tasks = ["build:js:*"] }]
+
+[task_templates."build:js:browser"]
+run = "tsdown --config tsdown.browser.config.ts"
+
+[task_templates."build:js:node"]
+run = "tsdown --config tsdown.node.config.ts"
+
+[task_templates."build--watch"]
+run = [{ tasks = ["build--watch:*"] }]
+
+[task_templates."build--watch:js"]
+run = [{ tasks = ["build--watch:js:*"] }]
+
+[task_templates."build--watch:js:browser"]
+run = "tsdown --watch --config tsdown.browser.config.ts"
+
+[task_templates."build--watch:js:node"]
+run = "tsdown --watch --config tsdown.node.config.ts"
+
+[task_templates."build--allowFailure"]
+run = [{ tasks = ["build--allowFailure:*"] }]
+
+[task_templates.test]
+run = [{ tasks = ["test:*"] }]
+
+[task_templates."test--watch"]
+run = [{ tasks = ["test--watch:*"] }]
+
+[task_templates.lint]
+run = [{ tasks = ["lint:*"] }]
+
+[task_templates."lint:types"]
+description = "TypeScript"
+run = "tsgo --build"
+
+[task_templates."lint--allowFailure:types"]
+description = "TypeScript"
+run = "try { tsgo --build } catch { |e| print -e $e.rendered }"
+
+[task_templates."lint--watch:types"]
+description = "Type check in watch mode"
+run = "tsgo --watch"
+
+[task_templates.prepare]
+run = [{ tasks = ["prepare:*"] }]
+
+[task_templates."prepare--allowFailure"]
+run = [{ tasks = ["prepare--allowFailure:*"] }]
+
 #region tasks
 #
 # Task naming follows `${category}${optional(`--${modifier}`)}:${child}`
@@ -116,10 +177,11 @@ _.path = [
 
 [tasks.build]
 description = "Build all packages"
-run = [{ tasks = ["build:*"] }]
+extends = "build"
 alias = "b"
 
-# TODO: Configure monorepo first.
+# Monorepo glob syntax: // = absolute from root, ... = all config roots, :task = task name.
+# https://mise.jdx.dev/tasks/monorepo.html
 [tasks."build:js"]
 hide = true
 description = "Build JavaScript for all packages"
@@ -132,7 +194,7 @@ run = "mise '//packages/...:build--allowFailure:js'"
 
 [tasks.build--watch]
 description = "Build all packages in watch mode"
-run = [{ tasks = ["build--watch:*"] }]
+extends = "build--watch"
 
 [tasks."build--watch:js"]
 hide = true
@@ -141,7 +203,7 @@ run = "mise '//packages/...:build--watch:js'"
 
 [tasks.build--allowFailure]
 description = "Build all packages, allowing failures"
-run = [{ tasks = ["build--allowFailure:*"] }]
+extends = "build--allowFailure"
 
 #endregion Build Tasks
 
@@ -149,7 +211,7 @@ run = [{ tasks = ["build--allowFailure:*"] }]
 
 [tasks.test]
 description = "Run all tests"
-run = [{ tasks = ["test:*"] }]
+extends = "test"
 alias = "t"
 
 [tasks."test:unit"]
@@ -194,7 +256,7 @@ run = "bun test --watch ...(rg --files --glob '**/*.unit.test.*' --glob '!**/dep
 
 [tasks."test--watch"]
 description = "Run all tests in watch mode"
-run = [{ tasks = ["test--watch:*"] }]
+extends = "test--watch"
 alias = "tW"
 
 [tasks.buildAndTest]
@@ -211,7 +273,7 @@ run = [{ tasks = ["build--watch", "test--watch"] }]
 
 [tasks.lint]
 description = "Run all linters"
-run = [{ tasks = ["lint:*"] }]
+extends = "lint"
 
 [tasks."lint:eslint"]
 hide = true
@@ -235,6 +297,7 @@ hide = true
 description = "Lint CSS with Stylelint"
 run = 'stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
 
+# Runs lint:types across all package config roots via monorepo glob syntax.
 [tasks."lint:types"]
 hide = true
 description = "TypeScript"
@@ -267,11 +330,11 @@ mise run format && mise run build && mise run test
 
 [tasks.prepare]
 description = "Prepare environment (install Playwright browsers, etc.)"
-run = [{ tasks = ["prepare:*"] }]
+extends = "prepare"
 
 [tasks.prepare--allowFailure]
 description = "Prepare environment, allowing failures"
-run = [{ tasks = ["prepare--allowFailure:*"] }]
+extends = "prepare--allowFailure"
 
 [tasks."prepare:playwright"]
 description = "Install Playwright browsers"
@@ -328,5 +391,14 @@ description = "Watch source files and re-sync on changes"
 run = "bun packages/dev-script/file-enforcer/src/index.ts --watch"
 
 #endregion File Enforcer
+
+#region Inference Canary -- probes to detect LLM inference degradation before starting work
+
+[tasks.canary]
+description = "Run inference canary probes against the configured model"
+usage = 'arg "[args]" var=#true help="Additional arguments (--model <id> --runs <n>)"'
+run = "bun packages/dev-script/inference-canary/src/index.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
+
+#endregion Inference Canary
 
 #endregion tasks

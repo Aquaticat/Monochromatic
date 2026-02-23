@@ -1,0 +1,2 @@
+# Ephemeral artifacts from canary probe runs (lint + type-check targets)
+src/canary-lint-*/
