@@ -13,9 +13,6 @@ import { PACKAGE_DIR, } from './linter-artifacts.ts';
 /** Lint tool timeout in milliseconds */
 const LINT_TIMEOUT_MS = 15_000;
 
-/** Max stdout buffer for lint output */
-const LINT_MAX_BUFFER = 1024 * 1024;
-
 /** Parsed tsgo result */
 export type TsgoResult = {
   readonly errorCount: number;
@@ -50,7 +47,6 @@ export async function runAndParseTypeCheck(lintDir: string): Promise<TsgoResult>
     const canaryTsconfig = join(PACKAGE_DIR, 'tsconfig.canary-lint.json');
     const output = await execPromise('tsgo', ['--noEmit', '-p', canaryTsconfig], {
       timeout: LINT_TIMEOUT_MS,
-      maxBuffer: LINT_MAX_BUFFER,
     });
     const filtered = filterTypeErrors(output, relativeSuffix);
     return { errorCount: filtered.length, ran: true, rawOutput: filtered.join('\n'), };

@@ -4,7 +4,7 @@
  * Uses mean - 2*stddev for degradation thresholds (covers ~95% of normal variance),
  * so a model's baseline volatility is accounted for rather than using a fixed cutoff.
  */
-import type { HistoryFile, ModelThreshold, } from './history-types.ts';
+import type { HistoryFile, ModelThreshold, OpenRouterModelId, } from './history-types.ts';
 
 /** Minimum samples needed before statistical thresholds are meaningful */
 const MIN_SAMPLES = 3;
@@ -22,7 +22,8 @@ const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
  * @param history - full history
  * @returns computed threshold, or default if insufficient data
  */
-export function computeThreshold(model: string, history: HistoryFile): ModelThreshold {
+export function computeThreshold(model: OpenRouterModelId, history: HistoryFile): ModelThreshold {
+  /** Historical overall scores for this model, excluding failed runs */
   const scores = history.entries
     .filter((entry) => entry.model === model && !entry.failed)
     .map((entry) => entry.overallScore);
@@ -31,10 +32,20 @@ export function computeThreshold(model: string, history: HistoryFile): ModelThre
     return { model, mean: 0, stddev: 0, threshold: DEFAULT_THRESHOLD, sampleCount: scores.length, };
   }
 
+  /** Arithmetic mean of historical scores -- the model's typical performance level */
   const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+  /**
+   * Population variance (not sample variance) -- divides by N rather than N-1.
+   * We use population variance because we are computing statistics over all observed
+   * runs, not estimating a parameter from a sample of a larger population.
+   */
   const variance = scores.reduce((sum, score) => sum + (score - mean) ** 2, 0) / scores.length;
+  /** Standard deviation: sqrt of variance, in the same units as the scores */
   const stddev = Math.sqrt(variance);
 
+  // Threshold = mean - 2*stddev: any score more than two standard deviations
+  // below the model's historical mean is flagged as likely degradation.
+  // Floored at 0 to avoid negative thresholds for extremely volatile models.
   return { model, mean, stddev, threshold: Math.max(0, mean - 2 * stddev), sampleCount: scores.length, };
 }
 
@@ -44,7 +55,7 @@ export function computeThreshold(model: string, history: HistoryFile): ModelThre
  * @param history - full history
  * @returns most recent entry timestamp, or undefined if none
  */
-export function lastRunTimestamp(model: string, history: HistoryFile): string | undefined {
+export function lastRunTimestamp(model: OpenRouterModelId, history: HistoryFile): string | undefined {
   return history.entries.filter((entry) => entry.model === model).at(-1)?.timestamp;
 }
 
@@ -54,24 +65,34 @@ export function lastRunTimestamp(model: string, history: HistoryFile): string | 
  * @param history - full history
  * @returns true if recent results exist
  */
-export function hasRecentResults(model: string, history: HistoryFile): boolean {
+export function hasRecentResults(model: OpenRouterModelId, history: HistoryFile): boolean {
   const lastTs = lastRunTimestamp(model, history);
   if (lastTs === undefined) return false;
   return Date.now() - new Date(lastTs).getTime() < TWENTY_FOUR_HOURS_MS;
 }
 
 /**
- * Returns a set of "model:probeName" pairs tested within the last 24 hours.
- * Used to skip only specific probes for a model, allowing partial re-runs.
+ * Returns a map from model ID to the set of probe names tested within the last 24 hours.
+ *
+ * Using a `Map<model, Set<probe>>` instead of a flat `Set<"model:probe">` preserves
+ * the structural relationship between model and probe -- callers look up by model ID
+ * then probe name without needing to know any composite string format.
  * @param history - full history
- * @returns set of recent model-probe pairs (e.g. "anthropic/claude-sonnet-4.6:csv-rfc4180")
+ * @returns map of model ID to set of recently-tested probe names
  */
-export function getRecentModelProbePairs(history: HistoryFile): Set<string> {
+export function getRecentModelProbePairs(history: HistoryFile): ReadonlyMap<string, ReadonlySet<string>> {
   const cutoff = Date.now() - TWENTY_FOUR_HOURS_MS;
-  const pairs = history.entries
+  /** Mutable intermediate map: built up entry by entry before being returned as readonly */
+  const result = new Map<string, Set<string>>();
+  history.entries
     .filter((entry) => !entry.failed && new Date(entry.timestamp).getTime() >= cutoff)
-    .flatMap((entry) =>
-      Object.keys(entry.probeScores).map((probeName) => `${entry.model}:${probeName}`),
-    );
-  return new Set(pairs);
+    .forEach((entry) => {
+      // eslint-disable-next-line no-restricted-syntax -- Object.keys is safe on a plain Record
+      const existing = result.get(entry.model) ?? new Set<string>();
+      for (const probeName of Object.keys(entry.probeScores)) {
+        existing.add(probeName);
+      }
+      result.set(entry.model, existing);
+    });
+  return result;
 }

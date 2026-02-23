@@ -22,7 +22,7 @@ import { codeGenProbes, codeGenProbesAll, simpleProbes, } from './probes.ts';
 
 import type { ModelConfig, } from './models.ts';
 
-//region API key resolution
+//region API key resolution -- validates INFERENCE_VALIDATION_OPENROUTER_API_KEY before any network calls
 
 const apiKey = process.env['INFERENCE_VALIDATION_OPENROUTER_API_KEY'];
 if (apiKey === undefined || apiKey === '') {
@@ -31,7 +31,7 @@ if (apiKey === undefined || apiKey === '') {
 
 //endregion API key resolution
 
-//region Model selection
+//region Model selection -- resolves the set of models to test and which probes to skip from recent history
 
 const history = await readHistory();
 
@@ -43,17 +43,24 @@ function selectModels(): readonly ModelConfig[] {
   if (modelOverride !== undefined) {
     const found = models.find((model) => model.id === modelOverride);
     if (found !== undefined) return [found];
-    return [{ id: modelOverride, label: modelOverride, verbosity: 'low', }];
+    if (!modelOverride.includes('/')) {
+      throw new Error(`Invalid model ID "${modelOverride}": must be in "provider/name" format`);
+    }
+    // Type assertion: includes('/') check above satisfies the OpenRouterModelId template literal
+    const modelId = modelOverride as `${string}/${string}`;
+    return [{ id: modelId, label: modelId, verbosity: 'low', }];
   }
   return models;
 }
 
 const selectedModels = selectModels();
-const recentModelProbePairs = retestAll ? new Set<string>() : getRecentModelProbePairs(history);
+const recentModelProbePairs = retestAll
+  ? new Map<string, ReadonlySet<string>>()
+  : getRecentModelProbePairs(history);
 
 //endregion Model selection
 
-//region Execution
+//region Execution -- selects probe tier (simple/fast/slow), runs canary, throws on degradation
 
 if (selectedModels.length === 0) {
   console.log('[canary] no models selected for testing.');

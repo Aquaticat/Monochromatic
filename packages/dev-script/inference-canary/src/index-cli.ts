@@ -1,32 +1,47 @@
 /**
  * CLI argument parsing for the inference canary entry point.
+ *
+ * Uses @optique/core (type-safe combinatorial parser) and @optique/run (automatic
+ * process.argv integration) instead of manual index/includes on process.argv.
  */
+import { object, } from '@optique/core/constructs';
+import { option, } from '@optique/core/primitives';
+import { integer, string, } from '@optique/core/valueparser';
+import { runSync, } from '@optique/run';
 
-/** Raw CLI arguments after the script path */
-const args = process.argv.slice(2);
+//region Parser definition -- defines all recognized CLI flags and their value parsers
 
-/**
- * Extracts a named flag value from CLI args.
- * @param flag - flag name including dashes (e.g. "--model")
- * @returns flag value if present, undefined otherwise
- */
-export function getFlag(flag: string): string | undefined {
-  const flagIndex = args.indexOf(flag);
-  if (flagIndex === -1 || flagIndex + 1 >= args.length) return undefined;
-  return args[flagIndex + 1];
-}
+/** Optique object parser covering every supported CLI flag */
+const parser = object({
+  model: option('--model', string()),
+  runs: option('--runs', integer()),
+  simple: option('--simple'),
+  slow: option('--slow'),
+  retestAll: option('--retest-all'),
+});
+
+//endregion Parser definition
+
+//region Parsed arguments -- module-level exports consumed by index.ts
+
+/** Parsed CLI arguments from process.argv */
+const cliArgs = runSync(parser, { programName: 'inference-canary', help: 'option', });
 
 /** Single-model override from --model flag */
-export const modelOverride = getFlag('--model');
+export const modelOverride: string | undefined =
+  typeof cliArgs.model === 'string' ? cliArgs.model : undefined;
 
-/** Consistency runs override from --runs flag */
-export const runsOverride = getFlag('--runs');
+/** Consistency runs override from --runs flag, already parsed as an integer */
+export const runsOverride: number | undefined =
+  typeof cliArgs.runs === 'number' ? cliArgs.runs : undefined;
 
 /** Whether to run simple probes instead of code-gen */
-export const useSimple = args.includes('--simple');
+export const useSimple = cliArgs.simple === true;
 
 /** Whether to include slow probes */
-export const includeSlow = args.includes('--slow');
+export const includeSlow = cliArgs.slow === true;
 
 /** Retest all models even if they have recent (<24h) results */
-export const retestAll = args.includes('--retest-all');
+export const retestAll = cliArgs.retestAll === true;
+
+//endregion Parsed arguments

@@ -4,11 +4,12 @@
  * Configuration types and defaults live in runner-config.ts.
  */
 import type { Probe, } from './probes.ts';
+import type { ISOTimestamp, OpenRouterModelId, } from './history-types.ts';
 
 export type { RunnerConfig, VerbosityLevel, } from './runner-config.ts';
 export { defaultConfig, } from './runner-config.ts';
 
-//region Message and timing types
+//region Message and timing types -- chat message shape and streaming timing breakdown used by runner-stream.ts
 
 /** Chat completions message shape */
 export type ChatMessage = {
@@ -30,7 +31,7 @@ export type StreamTiming = {
 
 //endregion Message and timing types
 
-//region Probe and report result types
+//region Probe and report result types -- ProbeResult (per-probe) and CanaryReport (per-model) returned by runCanary
 
 /** Result of a single probe execution */
 export type ProbeResult = {
@@ -56,8 +57,8 @@ export type ProbeResult = {
 
 /** Aggregate report across all probes */
 export type CanaryReport = {
-  readonly model: string;
-  readonly timestamp: string;
+  readonly model: OpenRouterModelId;
+  readonly timestamp: ISOTimestamp;
   readonly results: readonly ProbeResult[];
   /** Overall health score 0-1 */
   readonly overallScore: number;

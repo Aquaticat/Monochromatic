@@ -13,7 +13,7 @@ import { extractCode, } from './extract-code.ts';
 import type { LintResult, } from '../linter.ts';
 import type { ScoreContext, } from '../probes.ts';
 
-//region Scoring weights and ceilings
+//region Scoring weights and ceilings -- numeric constants that calibrate the relative importance of each quality dimension
 
 /** Correctness accounts for 40% of the score -- does the code produce correct output? */
 const CORRECTNESS_WEIGHT = 0.4;

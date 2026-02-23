@@ -6,13 +6,14 @@
  */
 
 import type { VerbosityLevel, } from './runner.ts';
+import type { OpenRouterModelId, } from './history-types.ts';
 
-//region Model config type
+//region Model config type -- per-model overrides for verbosity and display label
 
 /** Per-model configuration for canary probes */
 export type ModelConfig = {
   /** OpenRouter model ID (e.g. "anthropic/claude-sonnet-4.6") */
-  readonly id: string;
+  readonly id: OpenRouterModelId;
   /** Short human-readable label for reports */
   readonly label: string;
   /**
@@ -24,7 +25,7 @@ export type ModelConfig = {
 
 //endregion Model config type
 
-//region Model registry
+//region Model registry -- the canonical list of models tested by default; add/remove models here
 
 /** All models to test in parallel */
 export const models: readonly ModelConfig[] = [

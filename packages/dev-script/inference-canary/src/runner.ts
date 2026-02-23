@@ -38,12 +38,12 @@ export async function runCanary(
   config: Partial<RunnerConfig> = {},
 ): Promise<CanaryReport> {
   const mergedConfig: RunnerConfig = { ...defaultConfig, ...config, };
-  const timestamp = new Date().toISOString();
+  // Type assertion: new Date().toISOString() always returns ISO 8601 matching ISOTimestamp
+  const timestamp = new Date().toISOString() as `${number}-${string}`;
 
-  const probesToRun = probes.filter((probe) => {
-    const skipKey = `${mergedConfig.model}:${probe.name}`;
-    return !mergedConfig.skipProbes?.has(skipKey);
-  });
+  const probesToRun = probes.filter(
+    (probe) => !mergedConfig.skipProbes?.get(mergedConfig.model)?.has(probe.name),
+  );
 
   if (probesToRun.length < probes.length) {
     console.log(`[${mergedConfig.model}] skipping ${String(probes.length - probesToRun.length)} probe(s) with recent results`);

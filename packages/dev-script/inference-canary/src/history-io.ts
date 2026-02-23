@@ -22,7 +22,9 @@ const HISTORY_PATH = join(PACKAGE_DIR, 'canary-history.jsonl');
  */
 export async function readHistory(): Promise<HistoryFile> {
   try {
+    /** Raw JSONL file content -- one JSON object per non-empty line */
     const raw = await readFile(HISTORY_PATH, 'utf8');
+    /** Parsed entries; malformed lines are logged and skipped rather than crashing */
     const entries = raw.split('\n')
       .filter((line) => line.trim().length > 0)
       .map((line) => {

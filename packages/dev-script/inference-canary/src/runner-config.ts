@@ -1,6 +1,7 @@
 /**
  * Runner configuration types and defaults.
  */
+import type { OpenRouterModelId, } from './history-types.ts';
 
 /**
  * OpenRouter verbosity levels controlling response detail via output_config.effort.
@@ -10,8 +11,8 @@ export type VerbosityLevel = 'low' | 'medium' | 'high' | 'max';
 
 /** Configuration for the canary runner */
 export type RunnerConfig = {
-  /** Model ID (OpenRouter path like "anthropic/claude-sonnet-4.6") */
-  readonly model: string;
+  /** OpenRouter model ID (e.g. "anthropic/claude-sonnet-4.6") */
+  readonly model: OpenRouterModelId;
   /** Number of times to run each probe for consistency checking */
   readonly consistencyRuns: number;
   /** Maximum tokens in the model's response */
@@ -30,10 +31,10 @@ export type RunnerConfig = {
   /** Base URL for the chat completions endpoint (e.g. "https://openrouter.ai/api/v1") */
   readonly baseURL?: string | undefined;
   /**
-   * Set of "model:probeName" strings to skip execution for.
-   * Allows partial re-runs: only skips specific probes tested recently.
+   * Map from model ID to the set of probe names to skip for that model.
+   * Allows partial re-runs: only probes tested within the last 24 hours are skipped.
    */
-  readonly skipProbes?: Set<string> | undefined;
+  readonly skipProbes?: ReadonlyMap<string, ReadonlySet<string>> | undefined;
 };
 
 /** Conservative defaults tuned for quick diagnostics */

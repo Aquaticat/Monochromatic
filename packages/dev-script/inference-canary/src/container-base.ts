@@ -1,24 +1,59 @@
 /**
- * Base execution helper for container.ts submodules.
+ * Base execution helper using Bun-native process APIs.
  *
- * Provides a promisified execFile used by both runtime detection (container-runtime.ts)
- * and container execution (container-exec.ts). Kept separate to avoid circular imports
- * between those two modules.
+ * Avoids the promisify(execFile) pattern since this package runs under Bun,
+ * which provides Bun.spawn as a first-class Promise-based API. Kept as a
+ * shared module so container-exec.ts has a single import rather than
+ * duplicating the Bun.spawn boilerplate.
  */
-import { execFile, } from 'node:child_process';
-import { promisify, } from 'node:util';
 
-/** Promisified execFile. On non-zero exit, the rejected error has stdout/stderr attached. */
-export const execFileAsync = promisify(execFile);
+/** Result of a Bun-spawned command -- never throws, callers inspect exitCode */
+export type BunExecResult = {
+  readonly stdout: string;
+  readonly stderr: string;
+  readonly exitCode: number;
+  /** True when the process was killed by our timeout, not by a natural exit */
+  readonly killed: boolean;
+};
+
+/** Options for Bun-native command execution */
+export type BunExecOptions = {
+  /** Milliseconds before the process is forcibly killed */
+  readonly timeout?: number;
+};
 
 /**
- * Runs a command and returns stdout.
- * @param command - command to run
+ * Runs a command via Bun.spawn, capturing stdout and stderr separately.
+ *
+ * Never throws -- callers check `exitCode` and `killed` to decide what to do.
+ * This is preferable to the promisify(execFile) pattern because it uses
+ * Bun's native process API and avoids extracting error properties from a
+ * thrown Error object.
+ * @param command - executable name or absolute path
  * @param args - command arguments
- * @returns stdout string
- * @throws with `.stdout` attached if the command exits non-zero
+ * @param options - optional timeout
+ * @returns execution result with stdout, stderr, exit code, and killed flag
  */
-export async function execPromise(command: string, args: readonly string[]): Promise<string> {
-  const { stdout, } = await execFileAsync(command, args as string[], { encoding: 'utf8', });
-  return stdout;
+export async function execBun(
+  command: string,
+  args: readonly string[],
+  options: BunExecOptions = {},
+): Promise<BunExecResult> {
+  const proc = Bun.spawn([command, ...args], { stdout: 'pipe', stderr: 'pipe', });
+
+  // let: the timeout callback assigns true; const would prevent that mutation
+  let killed = false;
+  const timer = options.timeout !== undefined
+    ? setTimeout(() => { killed = true; proc.kill(); }, options.timeout)
+    : undefined;
+
+  const [stdout, stderr, exitCode] = await Promise.all([
+    new Response(proc.stdout).text(),
+    new Response(proc.stderr).text(),
+    proc.exited,
+  ]);
+
+  if (timer !== undefined) clearTimeout(timer);
+
+  return { stdout, stderr, exitCode: exitCode ?? 1, killed, };
 }

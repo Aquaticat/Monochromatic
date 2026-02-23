@@ -9,7 +9,7 @@
  */
 import { execPromise, } from './linter-exec.ts';
 
-//region Types
+//region Types -- oxlint JSON output shape and the parsed result type returned to callers
 
 /** Shape of a single oxlint diagnostic in JSON output */
 type OxlintDiagnostic = {
@@ -31,7 +31,7 @@ export type OxlintResult = {
 
 //endregion Types
 
-//region Parsing
+//region Parsing -- converts raw JSON from oxlint --format json into structured OxlintResult
 
 /**
  * Formats oxlint JSON diagnostics into human-readable lines for model feedback.
@@ -80,13 +80,10 @@ function parseOxlintJson(jsonOutput: string): OxlintResult {
 
 //endregion Parsing
 
-//region Runner
+//region Runner -- spawns oxlint, handles non-zero exits (oxlint exits 1 on violations), returns OxlintResult
 
 /** Lint tool timeout in milliseconds */
 const LINT_TIMEOUT_MS = 15_000;
-
-/** Max stdout buffer for lint output */
-const LINT_MAX_BUFFER = 1024 * 1024;
 
 /**
  * Runs oxlint --format json on a file, returns parsed severity breakdown.
@@ -98,7 +95,6 @@ export async function runAndParseOxlint(filePath: string): Promise<OxlintResult>
   try {
     const output = await execPromise('oxlint', ['--format', 'json', filePath], {
       timeout: LINT_TIMEOUT_MS,
-      maxBuffer: LINT_MAX_BUFFER,
     });
     return parseOxlintJson(output);
   } catch (error) {

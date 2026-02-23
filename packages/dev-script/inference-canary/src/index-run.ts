@@ -18,19 +18,19 @@ import type { RunnerConfig, } from './runner-config.ts';
  * @param recentModelProbePairs - model:probe pairs to skip (tested recently)
  * @param history - current history (for threshold computation)
  * @param apiKey - OpenRouter API key
- * @param runsOverride - optional override for the number of consistency runs
+ * @param runsOverride - optional override for the number of consistency runs (already parsed as integer)
  * @throws if degradation is detected in any model
  */
 export async function runAndReport(
   selectedModels: readonly ModelConfig[],
   probes: readonly Probe[],
-  recentModelProbePairs: Set<string>,
+  recentModelProbePairs: ReadonlyMap<string, ReadonlySet<string>>,
   history: HistoryFile,
   apiKey: string,
-  runsOverride: string | undefined,
+  runsOverride: number | undefined,
 ): Promise<void> {
   const consistencyRunsOverride: Pick<Partial<RunnerConfig>, 'consistencyRuns'> =
-    runsOverride !== undefined ? { consistencyRuns: Number(runsOverride), } : {};
+    runsOverride !== undefined ? { consistencyRuns: runsOverride, } : {};
 
   const reports: readonly CanaryReport[] = await Promise.all(
     selectedModels.map((model) =>

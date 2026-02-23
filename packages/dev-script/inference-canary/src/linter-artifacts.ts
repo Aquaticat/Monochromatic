@@ -8,7 +8,7 @@
 import { mkdir, writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-//region Paths
+//region Paths -- package-relative constants for locating the canary-lint artifact directory
 
 /**
  * Canary lint artifact directory. Lives under src/ so both tsgo (via the
@@ -22,7 +22,7 @@ export const LINT_DIR = join(PACKAGE_DIR, 'src', 'canary-lint');
 
 //endregion Paths
 
-//region Artifact writing
+//region Artifact writing -- writes generated source and meta.json sidecar for oxlint/tsgo to consume
 
 /** Metadata written alongside each generated canary.ts for traceability */
 export type ArtifactMeta = {

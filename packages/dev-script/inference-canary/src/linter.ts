@@ -13,7 +13,7 @@ import { writeLintFile, } from './linter-artifacts.ts';
 
 export type { ArtifactMeta, } from './linter-artifacts.ts';
 
-//region Types
+//region Types -- severity counts, lint result, and related types consumed by codegen probes
 
 /** Oxlint diagnostic severity levels */
 export type Severity = 'error' | 'warning';
@@ -47,7 +47,7 @@ export type LintResult = {
 
 //endregion Types
 
-//region Public API
+//region Public API -- lintSource is the sole entry point; writes artifact, runs oxlint + tsgo, returns combined result
 
 /**
  * Runs both oxlint and tsgo on generated source, returns combined results.
