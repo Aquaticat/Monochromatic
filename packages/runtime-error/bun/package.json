@@ -1,0 +1,10 @@
+{
+  "name": "@monochromatic-dev/runtime-error-bun",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}

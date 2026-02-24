@@ -1,0 +1,34 @@
+[tasks."run:stack-overflow"]
+description = "Trigger a stack overflow (RangeError: Maximum call stack size exceeded)"
+run = "bun src/stack-overflow.ts"
+
+[tasks."run:oom"]
+description = "Trigger out-of-memory by allocating 256 MB chunks indefinitely"
+run = "bun src/oom.ts"
+
+[tasks."run:unhandled-rejection"]
+description = "Trigger an unhandled promise rejection (exit 1)"
+run = "bun src/unhandled-rejection.ts"
+
+[tasks."run:infinite-loop"]
+description = "Trigger a synchronous hang via infinite loop (no exit)"
+run = "bun src/infinite-loop.ts"
+
+[tasks."run:null-deref"]
+description = "Trigger TypeError by accessing a property on null"
+run = "bun src/null-deref.ts"
+
+[tasks."run:not-a-function"]
+description = "Trigger TypeError by calling a non-function value"
+run = "bun src/not-a-function.ts"
+
+[tasks."run:uncaught-throw"]
+description = "Trigger an uncaught synchronous Error (exit 1)"
+run = "bun src/uncaught-throw.ts"
+
+[tasks."run:abort"]
+description = "Trigger SIGABRT via process.abort()"
+run = "bun src/abort.ts"
+
+[tasks.'lint:types']
+extends = "lint:types"
