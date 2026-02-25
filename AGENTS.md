@@ -33,14 +33,7 @@ In spec mode, keep researching and gathering context until the user explicitly a
 **`rg` (ripgrep)** -- fast text search across the entire codebase.
 Use it directly for strings, types, or patterns rather than navigating directory trees.
 
-Examples:
-
-- `rg "interface AnalyzeOptions" -t ts` (TypeScript files only)
-- `rg "export.*parseForESLint" --type ts`
-- `rg "functionName" -A 5 -B 5` (5 lines of context)
-
 **`FetchUrl` tool** -- fetch library documentation sites, npm pages, GitHub READMEs, and any URL the user provides.
-Reach for this first when working with a third-party library: the official docs are usually faster and more reliable than reading compiled `.d.ts` files.
 Raw source code is still useful when the docs are incomplete or the behavior differs from what is documented.
 
 **`gh` CLI** -- query GitHub for issues, PRs, release notes, and repository metadata.

@@ -83,6 +83,19 @@ if (shellName && !bashCompatibleShells.has(shellName)) {
 ]
 ```
 
+### Tool usage examples and rationale
+
+Do not include syntax examples for standard tools (e.g. `rg`, `gh`, `curl`) or explain why a well-known tool is useful.
+Any competent agent or developer already knows how to use `ripgrep` or when to reach for official documentation over source code.
+Explaining these things wastes tokens on every context load and signals distrust of the reader.
+
+Removed:
+
+- `rg` examples (`-t ts`, `--type ts`, `-A 5 -B 5`) -- standard ripgrep flags, universally known
+- "Reach for this first when working with a third-party library: the official docs are usually faster..." -- states the obvious
+
+What belongs instead: the name of the tool, what it covers in this project's context, and any non-obvious constraint (e.g. "raw source is still useful when docs are incomplete").
+
 ### Negative prompts
 
 Avoid "Never assume X" when the positive instruction already makes the intent clear.
