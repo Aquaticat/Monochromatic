@@ -34,12 +34,6 @@ In spec mode, keep researching and gathering context until the user explicitly a
 - **NEVER use `cd`** - It's hard to keep track of the current directory
 - Use absolute paths or paths relative to monorepo root (agent always starts there)
 
-### Detecting the Current Shell
-Use detection commands:
-- Check shell name: `echo $0` or `echo $SHELL`
-- PowerShell shows `pwsh` or `powershell`, bash shows `bash` or `sh`
-- Different syntax for environment vars: `$VAR` works in bash, `$env:VAR` works in PowerShell
-
 ### Cross-Shell Compatibility
 - Quote paths with spaces or special chars: `"path with spaces"`
 - Avoid command chaining: chaining commands provide less information about what's going on.
