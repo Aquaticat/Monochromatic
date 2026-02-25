@@ -28,40 +28,23 @@ Before editing any root config file, check `file-enforcer.config.ts` to see if i
 
 In spec mode, keep researching and gathering context until the user explicitly asks to draft or exit.
 
-## Shell Awareness
+## Research tools
 
-### Working Directory
-- **NEVER use `cd`** - It's hard to keep track of the current directory
-- Use absolute paths or paths relative to monorepo root (agent always starts there)
+**`rg` (ripgrep)** -- fast text search across the entire codebase.
+Use it directly for strings, types, or patterns rather than navigating directory trees.
 
-### Cross-Shell Compatibility
-- Quote paths with spaces or special chars: `"path with spaces"`
-- Avoid command chaining: chaining commands provide less information about what's going on.
-- Prefer cross-shell compatible syntax when possible
+Examples:
 
-## Search Tools
+- `rg "interface AnalyzeOptions" -t ts` (TypeScript files only)
+- `rg "export.*parseForESLint" --type ts`
+- `rg "functionName" -A 5 -B 5` (5 lines of context)
 
-- **`ripgrep` (rg)** is available in this environment for fast text searching
-- Use `rg` directly with for searching specific strings, types, or patterns
-- **Don't waste time navigating `pnpm`'s complex node_modules structure** - just search everywhere at once
-- Examples:
-  - `rg "interface AnalyzeOptions" -t ts` (searches all TypeScript files)
-  - `rg "export.*parseForESLint" --type ts`
-  - `rg "functionName" -A 5 -B 5` (show 5 lines before/after matches)
-- This is much faster than:
-  - Using Grep tool
-  - Trying to find the exact path in `pnpm`'s symlinked `.pnpm` directories
-  - Guessing where packages are located
+**`FetchUrl` tool** -- fetch library documentation sites, npm pages, GitHub READMEs, and any URL the user provides.
+Reach for this first when working with a third-party library: the official docs are usually faster and more reliable than reading compiled `.d.ts` files.
+Raw source code is still useful when the docs are incomplete or the behavior differs from what is documented.
 
-## External Context Tools
-
-Prefer these tools over digging through raw source code when external context is needed:
-
-- **`FetchUrl` tool** -- fetch library documentation sites, npm pages, GitHub READMEs, and any URL the user provides.
-  Reach for this first when working with a third-party library: the official docs are usually faster and more reliable than reading compiled `.d.ts` files.
-  Raw source code is still useful when the docs are incomplete or the behavior differs from what is documented.
-- **`gh` CLI** -- query GitHub for issues, PRs, release notes, and repository metadata.
-  Useful for understanding why a library behaves a certain way or what changed between versions.
+**`gh` CLI** -- query GitHub for issues, PRs, release notes, and repository metadata.
+Useful for understanding why a library behaves a certain way or what changed between versions.
 
 # Communication & Documentation
 
