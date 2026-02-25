@@ -24,6 +24,65 @@ Avoid titles like "Important Reminders", "Notes", or "Miscellaneous".
 Content with such titles belongs in a topically relevant section.
 When no section fits, add one with a specific name.
 
+### Runtime environment checks
+
+Do not put detection logic or compatibility warnings in AGENTS.md when a hook can enforce the same constraint automatically and silently.
+AGENTS.md text is passive -- an agent reads it once and may not apply it consistently.
+A hook fires on every session start and injects a warning directly into context only when the condition is actually violated.
+
+**Removed: "Detecting the Current Shell"**
+
+The original section told agents how to detect whether the shell is bash-compatible (checking `$SHELL`, recognizing `pwsh`, etc.) and how to adjust syntax accordingly.
+This was removed because:
+
+1. AI agents already assume bash-compatible syntax by default and do not need to be told to.
+2. The detection instructions were only useful if something was already wrong -- a condition better caught by automation.
+3. A `SessionStart` hook covers the failure case with no AGENTS.md noise for the common case.
+
+**Hook setup**
+
+The replacement is `~/.factory/hooks/check-shell.ts`, registered in `~/.factory/settings.json` as a global personal hook.
+It runs on every session start, reads `SHELL`, and injects a warning into the session context when the shell is not in `{bash, zsh, sh, dash, ksh}`.
+On a compatible shell it exits silently.
+
+`~/.factory/hooks/check-shell.ts`:
+
+```ts
+/**
+ * SessionStart hook: warns Droid if the current shell is not bash-compatible.
+ * AI tooling assumes bash syntax; non-compatible shells cause silent command failures.
+ */
+const shell = Bun.env.SHELL ?? "";
+const shellName = shell.split("/").at(-1) ?? "";
+const bashCompatibleShells = new Set(["bash", "zsh", "sh", "dash", "ksh"]);
+
+if (shellName && !bashCompatibleShells.has(shellName)) {
+  console.log(
+    JSON.stringify({
+      hookSpecificOutput: {
+        hookEventName: "SessionStart",
+        additionalContext: `Shell warning: current shell is ${shellName} (SHELL=${shell}), which is not bash-compatible. Use bash-compatible syntax for all shell commands, or prefix commands with \`bash -c\`.`,
+      },
+    }),
+  );
+}
+```
+
+`~/.factory/settings.json` (relevant excerpt):
+
+```json
+"SessionStart": [
+  {
+    "hooks": [
+      {
+        "type": "command",
+        "command": "bun run ~/.factory/hooks/check-shell.ts"
+      }
+    ]
+  }
+]
+```
+
 ### Negative prompts
 
 Avoid "Never assume X" when the positive instruction already makes the intent clear.
