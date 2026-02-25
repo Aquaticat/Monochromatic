@@ -30,14 +30,9 @@ In spec mode, keep researching and gathering context until the user explicitly a
 
 ## Research tools
 
-**`rg` (ripgrep)** -- fast text search across the entire codebase.
-Use it directly for strings, types, or patterns rather than navigating directory trees.
-
-**`FetchUrl` tool** -- fetch library documentation sites, npm pages, GitHub READMEs, and any URL the user provides.
-Raw source code is still useful when the docs are incomplete or the behavior differs from what is documented.
-
-**`gh` CLI** -- query GitHub for issues, PRs, release notes, and repository metadata.
-Useful for understanding why a library behaves a certain way or what changed between versions.
+- `rg` -- fast text search across the entire codebase; use directly for strings, types, or patterns rather than navigating directory trees
+- `FetchUrl` -- fetch library documentation sites, npm pages, GitHub READMEs, and any URL the user provides; raw source is still useful when docs are incomplete or behavior differs from what is documented
+- `gh` -- query GitHub for issues, PRs, release notes, and repository metadata; useful for understanding why a library behaves a certain way or what changed between versions
 
 # Communication & Documentation
 
