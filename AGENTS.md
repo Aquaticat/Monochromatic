@@ -275,7 +275,6 @@ test(module-es): achieve 100% coverage for error utilities
 - Group related changes by type (feat, fix, test, etc.)
 - Don't mix different types in the same scope section
 - Be specific about what changed, not just which files
-- Never use emojis in commit messages
 - Focus on the "what" and "why", not just listing file changes
 
 # Development Practices
@@ -305,14 +304,6 @@ An unguarded recursive hook can burn tens of thousands of tokens in seconds.
   - Bad: `function main() { /* code */ } main();`
   - Good: Just write the code at the top level
   - For async operations, use top-level await: `await someAsyncOperation();`
-- Avoid exiting with 0; just let the program naturally run to the end
-  - Bad: `process.exit(0);` at the end of successful execution
-  - Good: Let the script complete naturally
-  - The Node.js/Bun runtime will exit with code 0 automatically when the script finishes
-- NEVER use process.exit() - throw errors instead
-  - Bad: `process.exit(1);`
-  - Good: `throw new Error('Error description');`
-  - Uncaught errors automatically set exit code to 1
 
 ## Tool Version Management
 
@@ -330,12 +321,8 @@ An unguarded recursive hook can burn tens of thousands of tokens in seconds.
   - Use ALL available documentation tools to understand the correct API
 
 ### Documentation Best Practices
-- **Always retrieve documentation** when implementing features with third-party libraries
-- Use `gh` to fetch from the library's GitHub page; use web fetch tools to fetch from the library's website.
-  - This ensures you have the most up-to-date API documentation and usage examples
-- Always check the actual type definitions before using APIs
-- Read the actual source types, not just documentation (which may be outdated)
-- When encountering type errors, read the error message carefully - it often shows what's actually expected
+- Always check the actual type definitions before using APIs; documentation may be outdated
+- When encountering type errors, read the error message carefully -- it often shows what's actually expected
 
 ### CLI Tool Documentation Analysis
 
@@ -379,8 +366,6 @@ When setting up or integrating third-party tools:
 
 Always question "Do you really need...?" for every construct:
 - **Do you really need that mutable variable?** → Use `const` and immutable patterns
-- **Do you really need that loop?** → Consider `map`, `filter`, `reduce`, or functional helpers
-- **Do you really need that imperative code?** → Look for declarative/functional alternatives
 - **Do you really need that complex solution?** → Start with the simplest approach
 - **Do you really need to create promises directly?** → Use existing promise utilities like `wait()`
 
@@ -395,7 +380,6 @@ When refactoring code, follow this progression:
 ### Best Practices
 
 - Always extract and name concepts (e.g., `isTaskPending()` instead of inline conditions)
-- Prefer built-in JavaScript/TypeScript methods over manual implementations
 - Start with the simplest solution that could work
 - Refactor to complexity only when necessary
 - Name intermediate values for clarity
@@ -465,22 +449,8 @@ When fixing linting issues, first identify which tool reports the error:
 
 ### Common Linting Fixes
 
-#### Magic Numbers
-Define constants for all numeric literals except -2, -1, 0, 1, 2:
-```ts
-// BAD
-const result = value * 100;
-if (array.length > 5) { }
-
-// GOOD
-const PERCENTAGE_BASE = 100;
-const MAX_ARRAY_LENGTH = 5;
-const result = value * PERCENTAGE_BASE;
-if (array.length > MAX_ARRAY_LENGTH) { }
-```
-
 #### Loops and Iteration
-Prefer functional approaches over imperative loops:
+When iterating over objects, prefer `Object.entries` and functional methods over `for...in`:
 ```ts
 // BAD: for...in with guard
 for (const key in obj) {
@@ -506,28 +476,7 @@ const result = Object.fromEntries(
 ```
 
 #### Async Patterns
-- Use `wait()` from module-es instead of `new Promise(resolve => setTimeout(resolve, ms))`
 - Add `eslint-disable-next-line no-await-in-loop` when sequential processing is required
-- Import and use existing promise utilities instead of creating new promises
-
-#### Type Annotations
-Always add explicit return types for functions:
-```ts
-// BAD
-function processData(data: string) {
-  return data.toUpperCase();
-}
-
-// GOOD
-function processData(data: string): string {
-  return data.toUpperCase();
-}
-
-// For async functions
-async function fetchData(): Promise<Data> {
-  return await api.getData();
-}
-```
 
 #### Import Patterns
 - When parsers require namespace imports, add disable comment:
@@ -942,7 +891,6 @@ TypeScript's support for overloading generator functions has quirks:
   }
   ```
 - Avoid deep nesting in conditional types to prevent performance issues
-- Use `satisfies` instead of type assertions when possible
 - Consider using `const` assertions for immutable data structures
 
 # Testing
