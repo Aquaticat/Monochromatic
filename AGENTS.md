@@ -1,4 +1,3 @@
-<coding_guidelines>
 # Development Guidelines for AI Agents
 
 # Working Environment
@@ -216,4 +215,3 @@ Refer to `.factory/skills/code-review/SKILL.md`.
 - Switch from config-as-data to TypeScript when config needs logic (`if`, `map`, `await`)
 - Direct async execution over descriptor/interpreter patterns; apply YAGNI to architecture
 - Nested calls (`c(b(a()))`) over method chaining to keep functions self-contained
-</coding_guidelines>
