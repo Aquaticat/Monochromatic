@@ -100,3 +100,86 @@ What belongs instead: the name of the tool, what it covers in this project's con
 
 Avoid "Never assume X" when the positive instruction already makes the intent clear.
 "Use the current date from the system prompt" is sufficient; "Never assume or guess" is redundant noise.
+
+### Code examples for rules that are self-explanatory
+
+Code examples belong in AGENTS.md only when the rule itself is ambiguous without one.
+When a rule is clear from its text (e.g. "prefer `const` over `let`"), the example adds tokens without adding understanding.
+
+Examples that illustrate **what to flag during review** belong in the code-review skill, not in AGENTS.md.
+This way the examples load only when a review is happening, not on every session.
+
+### Explanatory rationale for standard practices
+
+Drop rationale like "for better tree-shaking" or "to improve build performance" when the practice is widely understood.
+Keep rationale only when the reasoning is project-specific or counterintuitive.
+
+### Detailed sub-rules for generic workflows
+
+Compress multi-bullet expansions of a single rule into one line when the sub-bullets are obvious consequences.
+
+Example: "Never modify files in cloned third-party repositories -- use configuration, env vars, or wrapper scripts" replaces five bullets explaining why modification is bad and what the alternatives are.
+
+## What was compressed (2025-02-25)
+
+AGENTS.md was reduced from 5839 words to ~1500 words.
+The following categories of content were handled:
+
+### Moved to code-review skill
+
+All bad/good code examples were relocated to `.factory/skills/code-review/SKILL.md` where they serve as patterns for the reviewing agent to flag:
+
+- Functional vs imperative loop examples
+- Object iteration (`for...in` vs `Object.entries`) examples
+- Named condition extraction examples
+- Single-letter variable examples
+- Manual promise creation (`new Promise` vs `wait()`) examples
+- TSDoc WHY-vs-WHAT comment examples
+- TSDoc block comment terminator escaping examples
+- Symbol union narrowing anti-pattern examples
+- Generics `const`/`readonly` good/bad examples
+- Custom error class examples
+- Assertion function examples
+- Type guard examples
+- `notNullishOrThrow` vs `!` operator examples
+- Silent error handling examples
+- CSS shorthand, color token, and state styling examples
+- Region marker examples
+- Commit message format and multi-scope examples
+
+### Dropped as inferable
+
+- "Check web sources, session history, or codebase as appropriate" -- implied by "search for evidence"
+- Detailed CLI tool execution patterns (`uv run script.py` not `uv run python script.py`) -- generic agent knowledge
+- Third-party repo rationale bullets ("breaks git pull", "creates merge conflicts") -- obvious consequences of the rule
+- "Convert callback-based APIs to promises" -- implied by "async/await only"
+- "Implement interfaces explicitly when a class should conform to a contract" -- standard TypeScript knowledge
+- "Use abstract classes sparingly, prefer interfaces and composition" -- standard OOP knowledge
+- "Document version requirements in both the pinning file and README" -- generic practice
+- "Regularly review pinned versions to check if constraints still apply" -- generic practice
+- TSDoc rationale about "obvious from context" and "dead code" caveats -- the rule to document all declarations is sufficient
+- Individual type descriptions for commit types (`style: Changes that do not affect...`) -- Conventional Commits is a well-known spec
+- `dprint` enforcement notes -- the tool config speaks for itself
+- "For arrow functions, make sure the JavaScript engine can infer a name" -- inferable from "always name functions"
+
+### Kept in compressed form
+
+Rules that are non-obvious or project-specific were retained as terse single-line bullets:
+
+- Progressive simplification pattern (imperative -> while -> for -> recursive -> HOF)
+- File-splitting justification comment clause
+- "Never remove logging" philosophy
+- "Avoid meta-references" documentation standard
+- "Avoid deprecated features" with `substr()` example
+- Assertion functions (`asserts value is T`)
+- Type guard pattern
+- `as` over angle bracket syntax; conditional type nesting warning
+- Unused variable underscore-prefix convention
+- `process.exitCode` only for non-standard codes
+- "Combine console.log/error messages into thrown errors"
+- `outdent` import path (`@cspotcode/outdent`)
+- Generic `Function` type ban; unused Generator params
+
+### Skill file structure change
+
+Skills were moved from `.factory/skills/<name>.md` to `.factory/skills/<name>/SKILL.md` to match the expected Droid skill format.
