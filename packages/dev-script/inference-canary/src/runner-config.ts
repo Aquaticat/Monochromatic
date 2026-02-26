@@ -41,8 +41,8 @@ export type RunnerConfig = {
 export const defaultConfig: RunnerConfig = {
   model: 'anthropic/claude-sonnet-4.6',
   consistencyRuns: 2,
-  // 16k is plenty for a single-file TypeScript CLI (~200 lines).
-  maxTokens: 16_384,
+  // 128k allows verbose solutions (e.g. character-by-character parsers without regex).
+  maxTokens: 128_000,
   verbosity: 'low',
   reasoning: true,
   degradationThreshold: 0.4,
