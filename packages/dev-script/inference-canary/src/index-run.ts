@@ -13,13 +13,15 @@ import type { RunnerConfig, } from './runner-config.ts';
 
 /**
  * Runs canary probes for all selected models, saves results, and prints the report.
+ * Degradation is reported via console output but does not cause a non-zero exit;
+ * the script failing would mask the distinction between "degradation found" and
+ * "canary itself broke".
  * @param selectedModels - models to test
  * @param probes - probes to run on each model
  * @param recentModelProbePairs - model:probe pairs to skip (tested recently)
  * @param history - current history (for threshold computation)
  * @param apiKey - OpenRouter API key
  * @param runsOverride - optional override for the number of consistency runs (already parsed as integer)
- * @throws if degradation is detected in any model
  */
 export async function runAndReport(
   selectedModels: readonly ModelConfig[],
@@ -78,6 +80,6 @@ export async function runAndReport(
 
   const degraded = reportsWithResults.filter((report) => report.degradationLikely);
   if (degraded.length > 0) {
-    throw new Error(`Degradation detected in: ${degraded.map((report) => report.model).join(', ')}`);
+    console.warn(`[canary] Degradation detected in: ${degraded.map((report) => report.model).join(', ')}`);
   }
 }
