@@ -23,7 +23,7 @@ export type Probe = {
   /** Human-readable label for reporting */
   readonly name: string;
   /** Which degradation axis this probe targets */
-  readonly category: 'simple' | 'code-gen';
+  readonly category: 'simple' | 'code-gen' | 'simulation';
   /** System prompt sent alongside the user message */
   readonly system: string;
   /** User message that forms the probe */

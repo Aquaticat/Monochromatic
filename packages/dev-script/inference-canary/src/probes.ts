@@ -1,9 +1,10 @@
 /**
  * Canary probe registry.
  *
- * Two tiers:
+ * Three tiers:
  * - **Simple** (disabled by default): cheap text-only checks for basic sanity
  * - **Code-gen** (default): the model writes a TypeScript CLI, scored by correctness + lint + types
+ * - **Simulation** (default): the model reads an interpreter source file and traces execution
  */
 export type { Probe, ScoreContext, } from './probe-types.ts';
 
@@ -53,3 +54,4 @@ const simpleJson: Probe = {
 export const simpleProbes: readonly Probe[] = [simpleArithmetic, simpleFormat, simpleJson];
 
 export { codeGenProbes, codeGenProbesAll, } from './probes-codegen.ts';
+export { simulationProbes, } from './probes-simulation.ts';

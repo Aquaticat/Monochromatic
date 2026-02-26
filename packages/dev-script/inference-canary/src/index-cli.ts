@@ -16,6 +16,7 @@ import { runSync, } from '@optique/run';
 const parser = object({
   model: optional(option('--model', string())),
   runs: optional(option('--runs', integer())),
+  probe: optional(option('--probe', string())),
   simple: option('--simple'),
   slow: option('--slow'),
   retestAll: option('--retest-all'),
@@ -37,6 +38,15 @@ export const runsOverride: number | undefined = (() => {
   if (typeof cliArgs.runs !== 'number') return undefined;
   if (cliArgs.runs < 1) throw new Error(`--runs must be >= 1, got ${String(cliArgs.runs)}`);
   return cliArgs.runs;
+})();
+
+/**
+ * Comma-separated probe names to run exclusively (e.g. `stak-interpreter,stak-simulation`).
+ * When set, only matching probes run and recent-result caching is bypassed for them.
+ */
+export const probeFilter: ReadonlySet<string> | undefined = (() => {
+  if (typeof cliArgs.probe !== 'string') return undefined;
+  return new Set(cliArgs.probe.split(',').map((name) => name.trim()).filter((name) => name !== ''));
 })();
 
 /** Whether to run simple probes instead of code-gen */

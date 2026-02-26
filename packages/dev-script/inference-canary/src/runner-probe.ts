@@ -95,10 +95,13 @@ export async function runProbe(probe: Probe, config: RunnerConfig): Promise<Prob
     consistent: true,
     timedOut: true,
   };
+  // timer is let so corePromise's finally handler can clear it before the callback fires,
+  // preventing a misleading "timed out" log for probes that complete before the deadline.
+  let timer: ReturnType<typeof setTimeout> | undefined;
   return Promise.race([
-    corePromise,
+    corePromise.finally(() => { if (timer !== undefined) clearTimeout(timer); }),
     new Promise<ProbeResult>((resolve) => {
-      const timer = setTimeout(
+      timer = setTimeout(
         () => {
           controller.abort();
           console.error(`  [${config.model}:${probe.name}] timed out after 5 minutes`);

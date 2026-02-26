@@ -5,11 +5,12 @@
  *   bun packages/dev-script/inference-canary/src/index.ts [options]
  *
  * Options:
- *   --model <id>     Test a single model instead of all
- *   --runs <n>       Consistency runs per probe (default: 2)
- *   --simple         Run cheap text-only probes instead of code-gen
- *   --slow           Include slow probes (e.g. task-scheduler)
- *   --retest-all     Retest all models even if recent (<24h) results exist
+ *   --model <id>        Test a single model instead of all
+ *   --runs <n>          Consistency runs per probe (default: 2)
+ *   --probe <names>     Run only the named probes (comma-separated); bypasses recent-result cache
+ *   --simple            Run cheap text-only probes instead of code-gen
+ *   --slow              Include slow probes (e.g. task-scheduler)
+ *   --retest-all        Retest all models even if recent (<24h) results exist
  *
  * Environment (read from .env.local via mise):
  *   INFERENCE_VALIDATION_OPENROUTER_API_KEY -- OpenRouter API key
@@ -42,10 +43,10 @@ console.error = (...args: unknown[]): void => originalError(elapsedPrefix(), ...
 
 //endregion Elapsed-time log prefix
 
-import { modelOverride, retestAll, runsOverride, useSimple, includeSlow, } from './index-cli.ts';
+import { modelOverride, retestAll, runsOverride, useSimple, includeSlow, probeFilter, } from './index-cli.ts';
 import { runAndReport, } from './index-run.ts';
 import { models, } from './models.ts';
-import { codeGenProbes, codeGenProbesAll, simpleProbes, } from './probes.ts';
+import { codeGenProbes, codeGenProbesAll, simpleProbes, simulationProbes, } from './probes.ts';
 
 import type { ModelConfig, } from './models.ts';
 
@@ -92,12 +93,37 @@ const recentModelProbePairs = retestAll
 if (selectedModels.length === 0) {
   console.log('[canary] no models selected for testing.');
 } else {
-  // eslint-disable-next-line no-nested-ternary -- simple three-way probe tier selection
-  const probes = useSimple ? simpleProbes : includeSlow ? codeGenProbesAll : codeGenProbes;
+  // eslint-disable-next-line no-nested-ternary -- three-way probe tier selection; simulation runs alongside code-gen by default
+  const codeGenSet = includeSlow ? codeGenProbesAll : codeGenProbes;
+  const allProbes = useSimple ? simpleProbes : [...codeGenSet, ...simulationProbes];
+
+  // Capture in a local const so TypeScript can narrow the type inside callbacks
+  const activeProbeFilter = probeFilter;
+
+  const probes = activeProbeFilter !== undefined
+    ? allProbes.filter((probe) => activeProbeFilter.has(probe.name))
+    : allProbes;
+
+  if (probes.length === 0) {
+    const available = allProbes.map((probe) => probe.name).join(', ');
+    throw new Error(`--probe matched no probes. Available: ${available}`);
+  }
+
+  // When targeting specific probes, bypass the recent-result cache for those probes so
+  // they always re-run regardless of how recently they last executed.
+  const effectiveRecentPairs = activeProbeFilter !== undefined
+    ? new Map(
+      [...recentModelProbePairs.entries()].map(([model, skipped]) => [
+        model,
+        new Set([...skipped].filter((name) => !activeProbeFilter.has(name))),
+      ]),
+    )
+    : recentModelProbePairs;
+
   console.log(`[canary] testing ${String(selectedModels.length)} model(s) in parallel`);
   console.log(`[canary] probes: ${probes.map((probe) => probe.name).join(', ')}`);
   console.log('');
-  await runAndReport(selectedModels, probes, recentModelProbePairs, history, apiKey, runsOverride);
+  await runAndReport(selectedModels, probes, effectiveRecentPairs, history, apiKey, runsOverride);
 }
 
 //endregion Execution
