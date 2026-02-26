@@ -2,7 +2,7 @@
 
 ## Purpose
 
-AGENTS.md is for non-obvious, actionable guidance that an agent cannot infer from context or general knowledge.
+AGENTS.md is for non-obvious, actionable guidance that neither an AI agent nor a human developer can infer from context or general knowledge alone.
 It supplements, not replaces, common sense.
 
 ## What does not belong

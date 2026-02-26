@@ -67,7 +67,7 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 
 ## Markdown conventions
 
-- One sentence per line; **bold** for emphasis; no _italics_
+- Break lines at semantic boundaries so text reads naturally without editor wrapping; **bold** for emphasis; no _italics_
 - `-` for unordered lists; pad numbered markers to 4 chars (`1.  `, `10. `)
 - Fenced code blocks with language tags; include file paths as comments
 - Reference-style links for repeated URLs; relative links for internal docs
