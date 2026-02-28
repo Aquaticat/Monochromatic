@@ -92,7 +92,11 @@ unix_default_inline_shell_args = "nu -c"
 windows_default_inline_shell_args = "nu -c"
 
 [hooks]
-enter = "mise install"
+# `mise install` only installs missing tools; it does not re-resolve "latest"
+# for core backends (bun, node, etc.) that cache the resolution via symlink.
+# `mise upgrade` re-resolves "latest" and installs newer versions.
+# Nushell `;` always runs both commands (no fail-fast like bash `&&`).
+enter = "mise install; mise upgrade"
 
 [env]
 # Uses native Node.js TypeScript loader for eslint.config.ts (instead of jiti).
