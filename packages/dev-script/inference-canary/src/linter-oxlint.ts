@@ -25,6 +25,11 @@ export type OxlintResult = {
   readonly warnings: number;
   readonly violationCount: number;
   readonly violatedRules: readonly string[];
+  /**
+   * Uncapped penalty contribution per rule, computed from per-rule violation
+   * counts and severity. Used by combinedScore to apply a per-rule cap.
+   */
+  readonly perRulePenalty: ReadonlyMap<string, number>;
   readonly linterRan: boolean;
   readonly rawOutput: string;
 };
@@ -53,6 +58,17 @@ function formatOxlintDiagnostics(diagnostics: readonly OxlintDiagnostic[]): stri
  * @param jsonOutput - raw JSON string from oxlint --format json
  * @returns parsed result with severity breakdown and raw diagnostic text
  */
+/** Points deducted per lint error occurrence (before per-rule capping) */
+const LINT_ERROR_PENALTY = 0.1;
+
+/** Points deducted per lint warning occurrence (before per-rule capping) */
+const LINT_WARNING_PENALTY = 0.05;
+
+/**
+ * Parses oxlint JSON output, counting violations by severity.
+ * @param jsonOutput - raw JSON string from oxlint --format json
+ * @returns parsed result with severity breakdown and raw diagnostic text
+ */
 function parseOxlintJson(jsonOutput: string): OxlintResult {
   try {
     const parsed = JSON.parse(jsonOutput.trim()) as {
@@ -64,17 +80,30 @@ function parseOxlintJson(jsonOutput: string): OxlintResult {
     const violatedRules = [
       ...new Set(diagnostics.map((d) => d.code ?? 'unknown').filter((code) => code !== 'unknown')),
     ];
+
+    // Compute uncapped penalty per rule from per-rule violation counts and severity
+    const penaltyAccumulator = new Map<string, number>();
+    diagnostics.forEach((diagnostic) => {
+      const rule = diagnostic.code ?? 'unknown';
+      const penaltyPerOccurrence = diagnostic.severity === 'warning'
+        ? LINT_WARNING_PENALTY
+        : LINT_ERROR_PENALTY;
+      const current = penaltyAccumulator.get(rule) ?? 0;
+      penaltyAccumulator.set(rule, current + penaltyPerOccurrence);
+    });
+
     return {
       errors,
       warnings,
       violationCount: diagnostics.length,
       violatedRules,
+      perRulePenalty: penaltyAccumulator,
       linterRan: true,
       rawOutput: formatOxlintDiagnostics(diagnostics),
     };
   } catch (parseError) {
     console.error('    [lint:oxlint] failed to parse JSON output:', parseError);
-    return { errors: 0, warnings: 0, violationCount: 0, violatedRules: [], linterRan: false, rawOutput: '', };
+    return { errors: 0, warnings: 0, violationCount: 0, violatedRules: [], perRulePenalty: new Map(), linterRan: false, rawOutput: '', };
   }
 }
 
@@ -99,7 +128,7 @@ export async function runAndParseOxlint(filePath: string): Promise<OxlintResult>
     const stdout = getStdoutFromError(error);
     if (stdout.includes('"diagnostics"')) return parseOxlintJson(stdout);
     console.error(`    [lint:oxlint] failed: ${String(error)}`);
-    return { errors: 0, warnings: 0, violationCount: 0, violatedRules: [], linterRan: false, rawOutput: '', };
+    return { errors: 0, warnings: 0, violationCount: 0, violatedRules: [], perRulePenalty: new Map(), linterRan: false, rawOutput: '', };
   }
 }
 

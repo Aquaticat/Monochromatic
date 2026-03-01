@@ -2,11 +2,15 @@
  * Combined scoring for code-generation probes.
  *
  * Correctness is a hard gate: any correctness error zeroes the entire score.
- * When correctness is perfect (1.0), the score starts at 1.0 and each
- * quality issue applies a flat penalty:
- * - Lint error: -0.1 per occurrence
- * - Type error: -0.1 per occurrence
- * - Lint warning: -0.05 per occurrence
+ * When correctness is perfect (1.0), the score starts at 1.0 and quality issues
+ * apply penalties:
+ * - Lint error: -0.1 per occurrence, capped at 0.3 per rule
+ * - Lint warning: -0.05 per occurrence, capped at 0.3 per rule
+ * - Type error: -0.1 per occurrence (no per-rule cap; tsgo errors are distinct)
+ *
+ * The per-rule cap prevents one systematically violated rule (e.g. require-tsdoc
+ * on every declaration) from dominating the score. Forgetting TSDoc costs at most
+ * 0.3, not 2.5 -- the model missed one convention, not twenty different ones.
  *
  * Final score is clamped to [0, 1].
  */
@@ -17,16 +21,13 @@ import { extractCode, } from './extract-code.ts';
 import type { LintResult, } from '../linter.ts';
 import type { ScoreContext, } from '../probes.ts';
 
-//region Scoring penalties -- flat per-issue deductions applied when correctness is perfect
-
-/** Points deducted per lint error reported by oxlint */
-const LINT_ERROR_PENALTY = 0.1;
+//region Scoring penalties
 
 /** Points deducted per type error reported by tsgo */
 const TYPE_ERROR_PENALTY = 0.1;
 
-/** Points deducted per lint warning reported by oxlint */
-const LINT_WARNING_PENALTY = 0.05;
+/** Maximum penalty any single lint rule can contribute */
+const MAX_PENALTY_PER_RULE = 0.3;
 
 //endregion Scoring penalties
 
@@ -34,25 +35,29 @@ const LINT_WARNING_PENALTY = 0.05;
  * Combines correctness, lint quality, and type safety into a final score.
  *
  * Any correctness failure (score below 1.0) zeroes the entire result.
- * Otherwise deducts flat penalties per lint error, type error, and lint warning.
+ * Otherwise deducts capped per-rule lint penalties and flat type error penalties.
  *
  * @param correctness - 0-1 score from output verification; must be exactly 1.0 to earn points
- * @param lint - full lint result with severity breakdown and type errors
+ * @param lint - full lint result with per-rule penalty map and type errors
  * @returns combined score clamped to [0, 1]
  *
  * @example
  * ```ts
- * // Perfect correctness, 2 lint errors, 1 type error, 3 warnings
- * // score = 1.0 - (2 * 0.1) - (1 * 0.1) - (3 * 0.05) = 0.55
+ * // Perfect correctness, require-tsdoc violated 20 times (uncapped 2.0, capped 0.3),
+ * // one other error (0.1), 2 type errors (0.2)
+ * // score = 1.0 - 0.3 - 0.1 - 0.2 = 0.4
  * combinedScore(1.0, lint);
  * ```
  */
 export function combinedScore(correctness: number, lint: LintResult): number {
   if (correctness < 1) return 0;
-  const penalty = (lint.severity.errors * LINT_ERROR_PENALTY)
-    + (lint.typeErrors * TYPE_ERROR_PENALTY)
-    + (lint.severity.warnings * LINT_WARNING_PENALTY);
-  return Math.max(0, 1 - penalty);
+
+  // Sum lint penalties with per-rule cap
+  const lintPenalty = [...lint.perRulePenalty.values()]
+    .reduce((sum, uncapped) => sum + Math.min(uncapped, MAX_PENALTY_PER_RULE), 0);
+
+  const typePenalty = lint.typeErrors * TYPE_ERROR_PENALTY;
+  return Math.max(0, 1 - lintPenalty - typePenalty);
 }
 
 /**

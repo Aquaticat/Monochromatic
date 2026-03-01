@@ -32,6 +32,12 @@ export type LintResult = {
   readonly violationCount: number;
   /** Unique rule IDs that were violated, for diagnostic reporting */
   readonly violatedRules: readonly string[];
+  /**
+   * Uncapped penalty contribution per rule (e.g. 20 require-tsdoc errors = 2.0).
+   * combinedScore applies a per-rule cap to prevent one repeated rule from
+   * dominating the score.
+   */
+  readonly perRulePenalty: ReadonlyMap<string, number>;
   /** Number of TypeScript type errors from tsgo */
   readonly typeErrors: number;
   /** Whether oxlint executed successfully (not whether code is clean) */
@@ -82,6 +88,7 @@ export async function lintSource(
     severity: { errors: oxlintResult.errors, warnings: oxlintResult.warnings, },
     violationCount: oxlintResult.violationCount,
     violatedRules: oxlintResult.violatedRules,
+    perRulePenalty: oxlintResult.perRulePenalty,
     typeErrors: typeResult.errorCount,
     linterRan: oxlintResult.linterRan,
     typeCheckerRan: typeResult.ran,
