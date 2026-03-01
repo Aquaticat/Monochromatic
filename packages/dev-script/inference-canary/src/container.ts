@@ -15,9 +15,10 @@ import { execContainer, } from './container-exec.ts';
 import { CONTAINER_IMAGE, CONTAINER_TIMEOUT_SECONDS, } from './container-runtime.ts';
 import { LINT_DIR, } from './linter-artifacts.ts';
 
-export type { ContainerResult, } from './container-exec.ts';
-
+// eslint-disable-next-line no-duplicate-imports -- re-export requires a separate import for local use
 import type { ContainerResult, } from './container-exec.ts';
+
+export type { ContainerResult, } from './container-exec.ts';
 
 //region Staging directory -- uses LINT_DIR instead of os.tmpdir() so all container I/O stays under one well-known tree
 

@@ -57,4 +57,10 @@ export const CSS_MIXIN_TEST_CSS = [
   '  @apply --visually-hidden;',
   '}',
   '',
+  // Later property should override earlier property from mixin
+  '.override-test {',
+  '  @apply --flex-center;',
+  '  display: grid;',
+  '}',
+  '',
 ].join('\n');

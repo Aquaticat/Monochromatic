@@ -35,7 +35,7 @@ export const modelOverride: string | undefined =
 
 /** Consistency runs override from --runs flag, validated to be >= 1 to prevent empty score arrays */
 export const runsOverride: number | undefined = (() => {
-  if (typeof cliArgs.runs !== 'number') return undefined;
+  if (typeof cliArgs.runs !== 'number') return;
   if (cliArgs.runs < 1) throw new Error(`--runs must be >= 1, got ${String(cliArgs.runs)}`);
   return cliArgs.runs;
 })();
@@ -45,7 +45,7 @@ export const runsOverride: number | undefined = (() => {
  * When set, only matching probes run and recent-result caching is bypassed for them.
  */
 export const probeFilter: ReadonlySet<string> | undefined = (() => {
-  if (typeof cliArgs.probe !== 'string') return undefined;
+  if (typeof cliArgs.probe !== 'string') return;
   return new Set(cliArgs.probe.split(',').map((name) => name.trim()).filter((name) => name !== ''));
 })();
 

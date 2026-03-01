@@ -16,7 +16,7 @@ type OxlintDiagnostic = {
   readonly code?: string;
   readonly severity?: string;
   readonly message?: string;
-  readonly labels?: ReadonlyArray<{ readonly span?: { readonly line?: number } }>;
+  readonly labels?: readonly { readonly span?: { readonly line?: number } }[];
 };
 
 /** Parsed oxlint result */

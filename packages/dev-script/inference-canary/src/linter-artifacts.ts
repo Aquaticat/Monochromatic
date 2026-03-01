@@ -1,7 +1,7 @@
 /**
  * Lint artifact file management.
  *
- * Writes generated model output to `src/canary-lint/<model>/<probe>-<pass>/canary.ts`
+ * Writes generated model output to `src/canary-lint/<model>/<probe>-<pass>-<timestamp>/canary.ts`
  * with a `meta.json` sidecar for traceability. Directory is gitignored and intentionally
  * kept after runs for debugging -- artifacts do not accumulate enough to matter.
  */
@@ -36,7 +36,29 @@ function modelSlug(modelId: string): string {
 }
 
 /**
+ * Converts an ISO timestamp to a filesystem-safe string.
+ * Replaces colons with hyphens so the directory name works on all platforms.
+ * "2026-02-28T12:00:00.000Z" -> "2026-02-28T12-00-00.000Z"
+ * @param timestamp - ISO 8601 timestamp string
+ * @returns filesystem-safe timestamp slug
+ *
+ * @example
+ * ```ts
+ * timestampSlug('2026-02-28T12:00:00.000Z'); // "2026-02-28T12-00-00.000Z"
+ * ```
+ */
+function timestampSlug(timestamp: string): string {
+  return timestamp.replaceAll(':', '-');
+}
+
+/**
  * Writes generated source and a meta.json sidecar into an artifact directory.
+ *
+ * Each run gets its own directory keyed by timestamp so all historical artifacts
+ * are preserved for the web interface, not just the latest run.
+ *
+ * Directory structure: `src/canary-lint/<model>/<probe>-<pass>-<timestamp>/`
+ *
  * @param source - TypeScript source to analyze
  * @param meta - artifact metadata (model, probe, pass, timestamp)
  * @returns file path and lint subdirectory path
@@ -46,7 +68,8 @@ export async function writeLintFile(source: string, meta: ArtifactMeta): Promise
   readonly lintDir: string;
 }> {
   const slug = modelSlug(meta.model);
-  const lintDir = join(LINT_DIR, slug, `${meta.probe}-${meta.pass}`);
+  const safeTs = timestampSlug(meta.timestamp);
+  const lintDir = join(LINT_DIR, slug, `${meta.probe}-${meta.pass}-${safeTs}`);
   await mkdir(lintDir, { recursive: true, });
   const filePath = join(lintDir, 'canary.ts');
   await Promise.all([

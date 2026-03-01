@@ -16,8 +16,18 @@
  *   INFERENCE_VALIDATION_OPENROUTER_API_KEY -- OpenRouter API key
  */
 import { getRecentModelProbePairs, readHistory, } from './history.ts';
+import { modelOverride, retestAll, runsOverride, useSimple, includeSlow, probeFilter, } from './index-cli.ts';
+import { runAndReport, } from './index-run.ts';
+import { models, type ModelConfig, } from './models.ts';
+import { codeGenProbes, codeGenProbesAll, simpleProbes, simulationProbes, } from './probes.ts';
 
 //region Elapsed-time log prefix -- prepends "+Xs" to every console.log/error line so interleaved output is easy to timeline
+
+/** Milliseconds per second for elapsed-time display */
+const MS_PER_SECOND = 1000;
+
+/** Width of the elapsed-time column so values align up to 999.9s */
+const ELAPSED_PAD_WIDTH = 6;
 
 /** Process start time for computing elapsed seconds in log prefixes */
 const PROCESS_START_MS = Date.now();
@@ -27,9 +37,9 @@ const PROCESS_START_MS = Date.now();
  * @returns elapsed time string like "+  4.2s"
  */
 function elapsedPrefix(): string {
-  const elapsed = ((Date.now() - PROCESS_START_MS) / 1000).toFixed(1);
+  const elapsed = ((Date.now() - PROCESS_START_MS) / MS_PER_SECOND).toFixed(1);
   // Pad to 6 chars so columns align up to 999.9s
-  return `[+${elapsed.padStart(6)}s]`;
+  return `[+${elapsed.padStart(ELAPSED_PAD_WIDTH)}s]`;
 }
 
 // eslint-disable-next-line no-console -- intentional override to inject timestamps
@@ -42,13 +52,6 @@ console.log = (...args: unknown[]): void => originalLog(elapsedPrefix(), ...args
 console.error = (...args: unknown[]): void => originalError(elapsedPrefix(), ...args);
 
 //endregion Elapsed-time log prefix
-
-import { modelOverride, retestAll, runsOverride, useSimple, includeSlow, probeFilter, } from './index-cli.ts';
-import { runAndReport, } from './index-run.ts';
-import { models, } from './models.ts';
-import { codeGenProbes, codeGenProbesAll, simpleProbes, simulationProbes, } from './probes.ts';
-
-import type { ModelConfig, } from './models.ts';
 
 //region API key resolution -- validates INFERENCE_VALIDATION_OPENROUTER_API_KEY before any network calls
 

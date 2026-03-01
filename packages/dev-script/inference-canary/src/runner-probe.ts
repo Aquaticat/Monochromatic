@@ -12,17 +12,27 @@ import type { ProbeResult, } from './runner-types.ts';
 import type { RunnerConfig, } from './runner-config.ts';
 import type { Probe, ScoreContext, } from './probes.ts';
 
+/** Minutes before a probe is considered timed out */
+const PROBE_TIMEOUT_MINUTES = 5;
+
+/** Seconds per minute for timeout computation */
+const SECONDS_PER_MINUTE = 60;
+
+/** Milliseconds per second for timeout computation */
+const MS_PER_SECOND = 1000;
+
 /** 5 minutes per probe (all consistency runs + fix pass) -- slower inference is unusable */
-const PROBE_TIMEOUT_MS = 5 * 60 * 1000;
+const PROBE_TIMEOUT_MS = PROBE_TIMEOUT_MINUTES * SECONDS_PER_MINUTE * MS_PER_SECOND;
 
 /**
  * Core probe logic: runs consistency checks then the second-pass fix loop.
  * @param probe - canary probe to execute
  * @param config - runner configuration
+ * @param timestamp - authoritative server timestamp for artifact naming
  * @param signal - abort signal from the timeout controller; cancels HTTP streams and containers
  * @returns scored result with consistency information
  */
-async function runProbeCore(probe: Probe, config: RunnerConfig, signal: AbortSignal): Promise<ProbeResult> {
+async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: string, signal: AbortSignal): Promise<ProbeResult> {
   const client = createProbeClient(config);
   // Consistency runs must be sequential (rate limits) and each run's score is
   // logged immediately. scores uses push because each run appends in the loop;
@@ -34,7 +44,7 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, signal: AbortSig
   for (const runIndex of Array.from({ length: config.consistencyRuns, }).keys()) {
     // eslint-disable-next-line no-await-in-loop -- sequential to avoid rate limits
     lastResponse = await executeProbe(probe, config, client, signal);
-    const scoreContext: ScoreContext = { modelId: config.model, pass: 'initial', signal, };
+    const scoreContext: ScoreContext = { modelId: config.model, pass: 'initial', timestamp, signal, };
     // eslint-disable-next-line no-await-in-loop -- score may involve container execution
     const runScore = await probe.score(lastResponse, scoreContext);
     scores.push(runScore);
@@ -43,7 +53,7 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, signal: AbortSig
 
   const meanScore = mean(scores);
   const consistent = scores.every((score) => score === scores[0]);
-  const fixContext: ScoreContext = { modelId: config.model, pass: 'fix', signal, };
+  const fixContext: ScoreContext = { modelId: config.model, pass: 'fix', timestamp, signal, };
   const pass2Result = await runSecondPass(probe, config, client, lastResponse, fixContext);
   if (pass2Result !== undefined) {
     const delta = pass2Result - meanScore;
@@ -74,16 +84,19 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, signal: AbortSig
  * so partial results from other probes can still be collected and written to history.
  * @param probe - canary probe to execute
  * @param config - runner configuration
+ * @param timestamp - authoritative server timestamp for artifact naming
  * @returns scored result; on timeout, a zero-score result with `timedOut: true`
  */
-export async function runProbe(probe: Probe, config: RunnerConfig): Promise<ProbeResult> {
+// eslint-disable-next-line require-await -- returns Promise.race directly; async needed for callers expecting Promise<ProbeResult>
+export async function runProbe(probe: Probe, config: RunnerConfig, timestamp: string): Promise<ProbeResult> {
   // new Promise required: no standard promisified API exists for time-based resolution,
   // and @monochromatic-dev/module-es is not a dependency of this package.
   // timer.unref() prevents the timer from keeping the process alive after the probe finishes.
   const controller = new AbortController();
-  const corePromise = runProbeCore(probe, config, controller.signal);
+  const corePromise = runProbeCore(probe, config, timestamp, controller.signal);
   // Suppress unhandled-rejection warning: after the timeout wins the race,
   // corePromise may still reject (via AbortError) with no observer.
+  // eslint-disable-next-line promise/prefer-await-to-then -- catch handler on a racing promise; await is not viable here
   corePromise.catch(() => { /* expected: abort-triggered rejection after timeout */ });
   // Zero-score sentinel returned when the timeout fires; score 0 is recorded in history
   // so the overall model score reflects the failure without discarding other probe results.
@@ -97,14 +110,16 @@ export async function runProbe(probe: Probe, config: RunnerConfig): Promise<Prob
   };
   // timer is let so corePromise's finally handler can clear it before the callback fires,
   // preventing a misleading "timed out" log for probes that complete before the deadline.
-  let timer: ReturnType<typeof setTimeout> | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined = undefined;
   return Promise.race([
+    // eslint-disable-next-line promise/prefer-await-to-then -- finally on a racing promise; await is not viable here
     corePromise.finally(() => { if (timer !== undefined) clearTimeout(timer); }),
+    // eslint-disable-next-line promise/avoid-new -- timeout racing requires manual Promise construction
     new Promise<ProbeResult>((resolve) => {
       timer = setTimeout(
         () => {
           controller.abort();
-          console.error(`  [${config.model}:${probe.name}] timed out after 5 minutes`);
+          console.error(`  [${config.model}:${probe.name}] timed out after ${String(PROBE_TIMEOUT_MINUTES)} minutes`);
           resolve(timedOutResult);
         },
         PROBE_TIMEOUT_MS,

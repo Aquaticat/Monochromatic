@@ -3,14 +3,15 @@
  */
 import { mean, } from './math.ts';
 import { runProbe, } from './runner-probe.ts';
-import { defaultConfig, } from './runner-config.ts';
+import { defaultConfig, type RunnerConfig, } from './runner-config.ts';
+import { fetchServerTimestamp, } from './server-time.ts';
+
+import type { Probe, } from './probes.ts';
+// eslint-disable-next-line no-duplicate-imports -- local type use; re-exported below for consumers
+import type { CanaryReport, ProbeResult, } from './runner-types.ts';
 
 export type { CanaryReport, ProbeResult, } from './runner-types.ts';
 export type { RunnerConfig, VerbosityLevel, } from './runner-config.ts';
-
-import type { Probe, } from './probes.ts';
-import type { CanaryReport, ProbeResult, } from './runner-types.ts';
-import type { RunnerConfig, } from './runner-config.ts';
 
 /**
  * Computes per-category mean scores from probe results.
@@ -38,8 +39,7 @@ export async function runCanary(
   config: Partial<RunnerConfig> = {},
 ): Promise<CanaryReport> {
   const mergedConfig: RunnerConfig = { ...defaultConfig, ...config, };
-  // Type assertion: new Date().toISOString() always returns ISO 8601 matching ISOTimestamp
-  const timestamp = new Date().toISOString() as `${number}-${string}`;
+  const timestamp = await fetchServerTimestamp();
 
   const probesToRun = probes.filter(
     (probe) => !mergedConfig.skipProbes?.get(mergedConfig.model)?.has(probe.name),
@@ -53,7 +53,7 @@ export async function runCanary(
   try {
     const results = await Promise.all(
       probesToRun.map(async (probe) => {
-        const result = await runProbe(probe, mergedConfig);
+        const result = await runProbe(probe, mergedConfig, timestamp);
         console.log(`  [${mergedConfig.model}:${probe.name}] => mean=${String(result.meanScore.toFixed(2))}`);
         return result;
       }),

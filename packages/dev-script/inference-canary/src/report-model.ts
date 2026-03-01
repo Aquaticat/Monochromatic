@@ -10,6 +10,9 @@ const GOOD_THRESHOLD = 0.9;
 /** Score threshold below which a WARN label is shown */
 const WARN_THRESHOLD = 0.7;
 
+/** Minimum samples needed before threshold info is shown */
+const MIN_SAMPLES = 3;
+
 /**
  * Returns a text indicator based on score value.
  * @param score - numeric score between 0 and 1
@@ -46,7 +49,7 @@ export function formatModelReport(report: CanaryReport, threshold?: ModelThresho
   }
 
   const label = scoreLabel(report.overallScore);
-  const thresholdInfo = threshold !== undefined && threshold.sampleCount >= 3
+  const thresholdInfo = threshold !== undefined && threshold.sampleCount >= MIN_SAMPLES
     ? ` (mean=${threshold.mean.toFixed(2)}, n=${String(threshold.sampleCount)}, threshold=${threshold.threshold.toFixed(2)})`
     : '';
   const header = `  [${label}] ${report.model}: ${report.overallScore.toFixed(2)}${thresholdInfo}`;

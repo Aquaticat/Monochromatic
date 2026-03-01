@@ -1,0 +1,14 @@
+{
+  "name": "@monochromatic-dev/mcp-stdio",
+  "version": "0.1.0",
+  "description": "Minimal MCP server framework for stdio transport. Zero dependencies.",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}

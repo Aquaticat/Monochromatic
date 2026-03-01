@@ -26,8 +26,10 @@ export async function readHistory(): Promise<HistoryFile> {
         try {
           return JSON.parse(line) as HistoryEntry;
         } catch {
-          console.log(`[history] skipping malformed line: ${line.slice(0, 80)}`);
-          return undefined;
+          /** Maximum characters to show from a malformed line in the log */
+          const MALFORMED_LINE_PREVIEW_LENGTH = 80;
+          console.log(`[history] skipping malformed line: ${line.slice(0, MALFORMED_LINE_PREVIEW_LENGTH)}`);
+          return;
         }
       })
       .filter((entry): entry is HistoryEntry => entry !== undefined);

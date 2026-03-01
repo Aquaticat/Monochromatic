@@ -269,6 +269,9 @@
     "unicorn/prefer-reflect-apply": "error",
     // Because JS's default Array join separator isn't an empty string.
     "unicorn/require-array-join-separator": "error",
+    // Default minimumDigits of 5 rejects separators on 4-digit numbers (e.g. 3_000) while accepting 12_000.
+    // Setting to 0 makes grouping consistent for all numeric literals that already contain separators.
+    "unicorn/numeric-separators-style": ["warn", { "number": { "minimumDigits": 0 } }],
     //endregion style
 
     // Linters reporting unused vars aren't wanted.

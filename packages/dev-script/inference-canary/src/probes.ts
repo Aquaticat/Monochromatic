@@ -6,9 +6,9 @@
  * - **Code-gen** (default): the model writes a TypeScript CLI, scored by correctness + lint + types
  * - **Simulation** (default): the model reads an interpreter source file and traces execution
  */
-export type { Probe, ScoreContext, } from './probe-types.ts';
-
 import type { Probe, } from './probe-types.ts';
+
+export type { Probe, ScoreContext, } from './probe-types.ts';
 
 //region Simple probes -- cheap text-only checks, disabled by default
 
@@ -39,8 +39,12 @@ const simpleJson: Probe = {
   score: (response, _context) => {
     try {
       const parsed = JSON.parse(response.trim()) as Record<string, unknown>;
-      if (parsed['status'] === 'ok' && parsed['value'] === 42) return 1;
-      return 0.5;
+      /** Expected value in the JSON output */
+      const EXPECTED_VALUE = 42;
+      /** Partial credit for valid JSON with wrong content */
+      const PARTIAL_SCORE = 0.5;
+      if (parsed['status'] === 'ok' && parsed['value'] === EXPECTED_VALUE) return 1;
+      return PARTIAL_SCORE;
     } catch (parseError) {
       console.log(`[probe:json-output] response was not valid JSON: ${String(parseError)}`);
       return 0;

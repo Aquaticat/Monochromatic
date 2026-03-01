@@ -1,6 +1,7 @@
 /**
  * OpenAI client creation and single-turn probe execution.
  */
+// eslint-disable-next-line import/no-named-as-default -- OpenAI SDK canonical usage is `import OpenAI from 'openai'`
 import OpenAI from 'openai';
 
 import { streamCompletion, } from './runner-stream.ts';

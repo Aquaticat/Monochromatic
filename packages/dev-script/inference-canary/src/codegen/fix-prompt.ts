@@ -50,7 +50,7 @@ export async function buildCodeGenFixPrompt(
     model: context.modelId,
     probe: 'fix-prompt',
     pass: context.pass,
-    timestamp: new Date().toISOString(),
+    timestamp: context.timestamp,
   });
 
   // Narrow to a failed container only when exit was non-zero or process was killed

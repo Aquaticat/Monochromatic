@@ -12,6 +12,12 @@ export type ScoreContext = {
   /** Which pass produced this response */
   readonly pass: 'initial' | 'fix';
   /**
+   * Authoritative run timestamp from the OpenRouter server.
+   * All artifacts within a run share this timestamp for consistent ordering
+   * and to avoid reliance on the local system clock.
+   */
+  readonly timestamp: string;
+  /**
    * Abort signal from the probe timeout controller.
    * Passed to container execution so processes are killed when the probe times out.
    */

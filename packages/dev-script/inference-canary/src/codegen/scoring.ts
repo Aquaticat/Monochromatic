@@ -72,7 +72,7 @@ export async function lintAndLog(source: string, probeName: string, context: Sco
     model: context.modelId,
     probe: probeName,
     pass: context.pass,
-    timestamp: new Date().toISOString(),
+    timestamp: context.timestamp,
   });
   if (lint.linterRan || lint.typeCheckerRan) {
     const lintSummary = lint.linterRan

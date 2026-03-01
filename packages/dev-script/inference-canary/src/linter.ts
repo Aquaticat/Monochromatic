@@ -11,6 +11,9 @@ import { runAndParseOxlint, } from './linter-oxlint.ts';
 import { runAndParseTypeCheck, } from './linter-tsgo.ts';
 import { writeLintFile, } from './linter-artifacts.ts';
 
+// eslint-disable-next-line no-duplicate-imports -- re-export requires a separate import for local use
+import type { ArtifactMeta, } from './linter-artifacts.ts';
+
 export type { ArtifactMeta, } from './linter-artifacts.ts';
 
 //region Types -- severity counts, lint result, and related types consumed by codegen probes
@@ -58,7 +61,7 @@ export type LintResult = {
 /**
  * Runs both oxlint and tsgo on generated source, returns combined results.
  *
- * Generated source is written to `src/canary-lint/<model>/<probe>-<pass>/canary.ts`
+ * Generated source is written to `src/canary-lint/<model>/<probe>-<pass>-<timestamp>/canary.ts`
  * with a `meta.json` sidecar for traceability. Artifact directories are kept after
  * runs for debugging (gitignored, do not accumulate meaningfully).
  *
@@ -68,7 +71,7 @@ export type LintResult = {
  */
 export async function lintSource(
   source: string,
-  meta: import('./linter-artifacts.ts').ArtifactMeta,
+  meta: ArtifactMeta,
 ): Promise<LintResult> {
   const { filePath, lintDir, } = await writeLintFile(source, meta);
 

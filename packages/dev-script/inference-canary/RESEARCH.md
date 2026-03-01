@@ -33,6 +33,13 @@ This package implements the second approach.
   Correlates better with quality than likelihood-based metrics.
 - **Calibrated Reflection** (ACL TrustNLP 2025): prompting the model to reflect on its outputs improves calibration.
 
+### Introspective awareness (not applicable to agents)
+
+- **Emergent Introspective Awareness** (Anthropic, October 2025): concept injection experiments show Claude Opus 4/4.1 can sometimes detect and identify concepts injected directly into their neural activations.
+  Succeeds only ~20% of the time, requires activation-level access (injecting known vectors into model internals), and fails silently or hallucinates at wrong injection strengths.
+  Without activation-level ground truth, asking a model "are you degraded?" falls into confabulation territory -- models can act introspective without being introspective.
+  Reinforces the design choice to use objective behavioral probes rather than self-reported model state.
+
 ### Real-world degradation incidents
 
 - **August 2025**: Anthropic confirmed 56.5 hours of degraded inference from a faulty infrastructure upgrade (status.anthropic.com).

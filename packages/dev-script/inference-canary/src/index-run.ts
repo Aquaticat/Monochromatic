@@ -1,15 +1,12 @@
 /**
  * Core execution block for the inference canary: runs probes, saves history, prints report.
  */
-import { appendHistory, computeThreshold, readHistory, } from './history.ts';
+import { appendHistory, computeThreshold, readHistory, type HistoryEntry, type HistoryFile, type ModelThreshold, } from './history.ts';
 import { formatMultiModelReport, } from './report.ts';
-import { runCanary, } from './runner.ts';
+import { runCanary, type CanaryReport, type RunnerConfig, } from './runner.ts';
 
-import type { HistoryEntry, HistoryFile, ModelThreshold, } from './history.ts';
 import type { ModelConfig, } from './models.ts';
 import type { Probe, } from './probes.ts';
-import type { CanaryReport, } from './runner.ts';
-import type { RunnerConfig, } from './runner-config.ts';
 
 /**
  * Runs canary probes for all selected models, saves results, and prints the report.

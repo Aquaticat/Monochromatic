@@ -14,8 +14,20 @@ const MIN_SAMPLES = 3;
 /** Fallback threshold when insufficient history exists */
 const DEFAULT_THRESHOLD = 0.4;
 
+/** Hours in a day */
+const HOURS_PER_DAY = 24;
+
+/** Minutes per hour */
+const MINUTES_PER_HOUR = 60;
+
+/** Seconds per minute */
+const SECONDS_PER_MINUTE = 60;
+
+/** Milliseconds per second */
+const MS_PER_SECOND = 1000;
+
 /** 24 hours in milliseconds */
-const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+const TWENTY_FOUR_HOURS_MS = HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MS_PER_SECOND;
 
 /**
  * Computes a per-model degradation threshold from historical data.
