@@ -1,125 +1,8 @@
-// MCP wire protocol types for stdio transport (spec revision 2025-03-26)
+// MCP protocol types for initialization, capabilities, and tool definitions (spec revision 2025-03-26).
+// Justification for >100 lines: pure type definitions with required TSDoc on each;
+// further splitting would fragment a single cohesive set of protocol types.
 
-//region JSON-RPC 2.0 base types -- foundation for all MCP message exchange
-
-/** Unique request identifier. MCP uses integer or string ids per JSON-RPC 2.0. */
-type JsonRpcId = number | string;
-
-/**
- * Inbound JSON-RPC request from client to server.
- *
- * @example
- * ```ts
- * const request: JsonRpcRequest = {
- *   jsonrpc: '2.0',
- *   id: 1,
- *   method: 'tools/list',
- *   params: {},
- * };
- * ```
- */
-export type JsonRpcRequest = {
-  readonly jsonrpc: '2.0';
-  readonly id: JsonRpcId;
-  readonly method: string;
-  readonly params?: Record<string, unknown>;
-};
-
-/**
- * Inbound JSON-RPC notification from client. Notifications carry no `id` and expect no response.
- *
- * @example
- * ```ts
- * const notification: JsonRpcNotification = {
- *   jsonrpc: '2.0',
- *   method: 'notifications/initialized',
- * };
- * ```
- */
-export type JsonRpcNotification = {
-  readonly jsonrpc: '2.0';
-  readonly method: string;
-  readonly params?: Record<string, unknown>;
-};
-
-/**
- * Outbound JSON-RPC success response.
- *
- * @example
- * ```ts
- * const response: JsonRpcResponse = {
- *   jsonrpc: '2.0',
- *   id: 1,
- *   result: { tools: [] },
- * };
- * ```
- */
-export type JsonRpcResponse = {
-  readonly jsonrpc: '2.0';
-  readonly id: JsonRpcId;
-  readonly result: unknown;
-};
-
-/**
- * Structured error detail within a JSON-RPC error response.
- *
- * @example
- * ```ts
- * const error: JsonRpcErrorDetail = {
- *   code: -32602,
- *   message: 'Unknown tool: foo',
- * };
- * ```
- */
-export type JsonRpcErrorDetail = {
-  readonly code: number;
-  readonly message: string;
-  readonly data?: unknown;
-};
-
-/**
- * Outbound JSON-RPC error response.
- *
- * @example
- * ```ts
- * const errorResponse: JsonRpcErrorResponse = {
- *   jsonrpc: '2.0',
- *   id: 1,
- *   error: { code: -32601, message: 'Method not found' },
- * };
- * ```
- */
-export type JsonRpcErrorResponse = {
-  readonly jsonrpc: '2.0';
-  readonly id: JsonRpcId;
-  readonly error: JsonRpcErrorDetail;
-};
-
-/** Any message the server may send back over stdout. */
-export type JsonRpcOutbound = JsonRpcResponse | JsonRpcErrorResponse;
-
-/** Any message the server may receive over stdin. */
-export type JsonRpcInbound = JsonRpcRequest | JsonRpcNotification;
-
-//endregion
-
-//region Standard JSON-RPC error codes -- used for protocol-level failures
-
-/** Method does not exist or is not available. */
-export const JSON_RPC_METHOD_NOT_FOUND = -32601;
-
-/** Invalid method parameters. */
-export const JSON_RPC_INVALID_PARAMS = -32602;
-
-/** Internal server error. */
-export const JSON_RPC_INTERNAL_ERROR = -32603;
-
-/** Failed to parse JSON. */
-export const JSON_RPC_PARSE_ERROR = -32700;
-
-//endregion
-
-//region MCP protocol types -- initialization, capabilities, tool definitions
+//region Protocol version and server capabilities
 
 /**
  * Protocol version string sent during initialization handshake.
@@ -161,6 +44,10 @@ export type InitializeResult = {
   };
 };
 
+//endregion
+
+//region Tool definitions and handlers -- describes tools exposed to MCP clients
+
 /**
  * JSON Schema subset describing tool input parameters.
  * Kept intentionally loose -- servers provide arbitrary JSON Schema objects.
@@ -188,6 +75,7 @@ export type ToolInputSchema = {
  * const tool: ToolDefinition = {
  *   name: 'get_weather',
  *   description: 'Fetches current weather for a location.',
+ *   inputSchema: { type: 'object' },
  * };
  * ```
  */

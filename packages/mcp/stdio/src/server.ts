@@ -1,222 +1,156 @@
-// MCP server that handles initialization, tool registration, and JSON-RPC dispatch.
-
-import type {
-  InitializeResult,
-  JsonRpcErrorResponse,
-  JsonRpcInbound,
-  JsonRpcNotification,
-  JsonRpcOutbound,
-  JsonRpcRequest,
-  JsonRpcResponse,
-  ToolCallResult,
-  ToolDefinition,
-  ToolHandler,
-  ToolInputSchema,
-} from './types.ts';
+// MCP server: immutable tool registry and JSON-RPC dispatch.
+// Justification for >100 lines: dispatch logic, response builders, and tool call
+// validation form a single cohesive unit; further splitting would scatter functions
+// that share the same closed-over state (config, toolMap).
 
 import {
   JSON_RPC_INTERNAL_ERROR,
   JSON_RPC_INVALID_PARAMS,
   JSON_RPC_METHOD_NOT_FOUND,
+  type JsonRpcErrorResponse,
+  type JsonRpcInbound,
+  type JsonRpcNotification,
+  type JsonRpcOutbound,
+  type JsonRpcRequest,
+  type JsonRpcResponse,
+} from './json-rpc.ts';
+
+import {
   PROTOCOL_VERSION,
-} from './types.ts';
+  type InitializeResult,
+  type ToolCallResult,
+  type ToolDefinition,
+} from './protocol.ts';
 
-//region Tool registration -- stores tool metadata alongside handlers
+import type { McpServerConfig, McpServerHandle, RegisteredTool, ToolEntry } from './server-types.ts';
+
+//region Module-scope helpers -- pure functions that capture no closure state
 
 /**
- * Registered tool combining its wire-format definition with the runtime handler.
+ * Constructs a JSON-RPC success response.
  *
- * @example
- * ```ts
- * const tool: RegisteredTool = {
- *   definition: { name: 'ping', description: 'Returns pong.' },
- *   handler: async () => ({ content: [{ type: 'text', text: 'pong' }] }),
- * };
- * ```
+ * @param id - Request id to echo back.
+ * @param result - Payload for the `result` field.
+ * @returns Formatted JSON-RPC response.
  */
-type RegisteredTool = {
-  readonly definition: ToolDefinition;
-  readonly handler: ToolHandler;
-};
+function respondSuccess(id: JsonRpcRequest['id'], result: unknown): JsonRpcResponse {
+  return { jsonrpc: '2.0', id, result };
+}
+
+/**
+ * Constructs a JSON-RPC error response.
+ *
+ * @param id - Request id to echo back.
+ * @param code - Standard JSON-RPC error code.
+ * @param message - Human-readable error description.
+ * @returns Formatted JSON-RPC error response.
+ */
+function respondError(id: JsonRpcRequest['id'], code: number, message: string): JsonRpcErrorResponse {
+  return { jsonrpc: '2.0', id, error: { code, message } };
+}
+
+/**
+ * Processes notifications. Logs unexpected notification methods for protocol debugging.
+ *
+ * @param notification - Inbound notification (consumed but not acted upon).
+ * @returns Always `undefined` since notifications produce no response.
+ */
+function handleNotification(notification: JsonRpcNotification): undefined {
+  if (notification.method !== 'notifications/initialized') {
+    console.error(`[mcp-stdio] unexpected notification method: ${notification.method}`);
+  }
+  return undefined;
+}
 
 //endregion
 
-//region Server configuration -- identity passed during initialization
+//region defineTool -- convenience for declaring tool entries
 
 /**
- * Configuration for creating an MCP server instance.
+ * Declares a named tool entry for passing to {@link createMcpServer}.
+ * Pure convenience: validates nothing, just bundles name with options.
+ *
+ * @param name - Unique tool identifier exposed to clients.
+ * @param entry - Tool metadata and handler, without the `name` field.
+ * @returns Complete tool entry ready for server creation.
  *
  * @example
  * ```ts
- * const config: McpServerConfig = { name: 'my-server', version: '1.0.0' };
- * ```
- */
-export type McpServerConfig = {
-  readonly name: string;
-  readonly version: string;
-};
-
-//endregion
-
-//region Tool registration options -- describes a tool for registration
-
-/**
- * Options for registering a tool on the server.
- *
- * @example
- * ```ts
- * const options: ToolOptions = {
- *   description: 'Fetches diagnostics.',
- *   handler: async () => ({ content: [{ type: 'text', text: 'ok' }] }),
- * };
- * ```
- */
-export type ToolOptions = {
-  readonly description: string;
-  readonly inputSchema?: ToolInputSchema;
-  readonly handler: ToolHandler;
-};
-
-//endregion
-
-//region McpServer class -- the primary API surface
-
-/**
- * Minimal MCP server supporting tool registration and JSON-RPC dispatch over stdio.
- * Handles the `initialize` / `initialized` handshake, `tools/list`, `tools/call`, and `ping`.
- *
- * @example
- * ```ts
- * import { McpServer } from '@monochromatic-dev/mcp-stdio';
- *
- * const server = new McpServer({ name: 'demo', version: '0.1.0' });
- * server.tool('greet', {
- *   description: 'Greets by name.',
- *   handler: async (args) => ({
- *     content: [{ type: 'text', text: `Hello, ${args.name}!` }],
+ * const tool = defineTool('get_time', {
+ *   description: 'Returns current UTC time.',
+ *   handler: async () => ({
+ *     content: [{ type: 'text', text: new Date().toISOString() }],
  *   }),
  * });
  * ```
  */
-export class McpServer {
-  readonly #config: McpServerConfig;
-  readonly #tools: Map<string, RegisteredTool> = new Map();
+export function defineTool(name: string, entry: Omit<ToolEntry, 'name'>): ToolEntry {
+  return { name, ...entry };
+}
 
-  /**
-   * @param config - Server identity used in initialization responses.
-   *
-   * @example
-   * ```ts
-   * const server = new McpServer({ name: 'my-mcp', version: '0.1.0' });
-   * ```
-   */
-  constructor(config: McpServerConfig) {
-    this.#config = config;
-  }
+//endregion
 
-  /**
-   * Registers a tool that clients can discover via `tools/list` and invoke via `tools/call`.
-   *
-   * @param name - Unique tool identifier exposed to clients.
-   * @param options - Tool metadata and handler function.
-   *
-   * @example
-   * ```ts
-   * server.tool('get_time', {
-   *   description: 'Returns current UTC time.',
-   *   handler: async () => ({
-   *     content: [{ type: 'text', text: new Date().toISOString() }],
-   *   }),
-   * });
-   * ```
-   */
-  tool(name: string, options: ToolOptions): void {
-    // MCP clients (including Factory Droid) require `inputSchema` on every tool,
-    // even when the tool accepts no arguments. Default to an empty object schema.
-    const definition: ToolDefinition = {
-      name,
-      description: options.description,
-      inputSchema: options.inputSchema ?? { type: 'object' },
-    };
-    this.#tools.set(name, { definition, handler: options.handler });
-  }
+//region createMcpServer -- builds an immutable server from config and tool entries
 
-  /**
-   * Dispatches a parsed JSON-RPC message to the appropriate handler.
-   * Returns a response for requests, or `undefined` for notifications.
-   *
-   * @param message - Parsed inbound JSON-RPC request or notification.
-   * @returns JSON-RPC response for requests; `undefined` for notifications.
-   *
-   * @example
-   * ```ts
-   * const response = await server.handleMessage({
-   *   jsonrpc: '2.0',
-   *   id: 1,
-   *   method: 'tools/list',
-   * });
-   * ```
-   */
-  async handleMessage(message: JsonRpcInbound): Promise<JsonRpcOutbound | undefined> {
-    // Notifications (no `id`) require no response.
-    if (!('id' in message)) {
-      return this.#handleNotification(message);
-    }
-    return this.#handleRequest(message);
-  }
+/**
+ * Creates an immutable MCP server that dispatches JSON-RPC messages.
+ * Tools are registered at creation time; no mutation after construction.
+ *
+ * @param config - Server identity used in initialization responses.
+ * @param tools - Tool entries to register, typically created via {@link defineTool}.
+ * @returns Server handle with a `handleMessage` function for the transport layer.
+ *
+ * @example
+ * ```ts
+ * import { createMcpServer, defineTool, serve } from '@monochromatic-dev/mcp-stdio';
+ *
+ * const server = createMcpServer(
+ *   { name: 'demo', version: '0.1.0' },
+ *   [
+ *     defineTool('greet', {
+ *       description: 'Greets by name.',
+ *       handler: async (args) => ({
+ *         content: [{ type: 'text', text: `Hello, ${args.name}!` }],
+ *       }),
+ *     }),
+ *   ],
+ * );
+ * await serve(server);
+ * ```
+ */
+export function createMcpServer(
+  config: McpServerConfig,
+  tools: readonly ToolEntry[],
+): McpServerHandle {
+  // Build an immutable tool lookup from the entry list.
+  // MCP clients (including Factory Droid) require `inputSchema` on every tool,
+  // even when the tool accepts no arguments. Default to an empty object schema.
+  const toolMap: ReadonlyMap<string, RegisteredTool> = new Map(
+    tools.map((entry) => [
+      entry.name,
+      {
+        definition: {
+          name: entry.name,
+          description: entry.description,
+          inputSchema: entry.inputSchema ?? { type: 'object' },
+        },
+        handler: entry.handler,
+      },
+    ]),
+  );
 
-  /**
-   * Processes notifications. Currently only `notifications/initialized` is expected.
-   *
-   * @param _notification - Inbound notification (consumed but not acted upon).
-   * @returns Always `undefined` since notifications produce no response.
-   */
-  #handleNotification(_notification: JsonRpcNotification): undefined {
-    // `notifications/initialized` signals the client is ready. Nothing to do server-side.
-    return undefined;
-  }
-
-  /**
-   * Routes a JSON-RPC request to the matching method handler.
-   *
-   * @param request - Inbound request with an `id` that must be echoed in the response.
-   * @returns JSON-RPC success or error response.
-   */
-  async #handleRequest(request: JsonRpcRequest): Promise<JsonRpcOutbound> {
-    const { id, method } = request;
-
-    switch (method) {
-      case 'initialize': {
-        return this.#respondSuccess(id, this.#buildInitializeResult());
-      }
-      case 'ping': {
-        return this.#respondSuccess(id, {});
-      }
-      case 'tools/list': {
-        return this.#respondSuccess(id, this.#buildToolsList());
-      }
-      case 'tools/call': {
-        return this.#handleToolCall(request);
-      }
-      default: {
-        return this.#respondError(id, JSON_RPC_METHOD_NOT_FOUND, `Method not found: ${method}`);
-      }
-    }
-  }
+  //region Protocol payloads -- initialization and tool listing
 
   /**
    * Builds the `InitializeResult` payload for the initialization handshake.
    *
    * @returns Server identity and capabilities.
    */
-  #buildInitializeResult(): InitializeResult {
+  function buildInitializeResult(): InitializeResult {
     return {
       protocolVersion: PROTOCOL_VERSION,
       capabilities: { tools: {} },
-      serverInfo: {
-        name: this.#config.name,
-        version: this.#config.version,
-      },
+      serverInfo: { name: config.name, version: config.version },
     };
   }
 
@@ -225,64 +159,106 @@ export class McpServer {
    *
    * @returns Object containing array of tool definitions.
    */
-  #buildToolsList(): { tools: readonly ToolDefinition[] } {
+  function buildToolsList(): { tools: readonly ToolDefinition[] } {
     return {
-      tools: Array.from(this.#tools.values()).map((registered) => registered.definition),
+      tools: [...toolMap.values()].map((registered) => registered.definition),
     };
   }
 
+  //endregion
+
+  //region Request dispatch -- routes JSON-RPC methods to handlers
+
   /**
    * Dispatches a `tools/call` request to the registered handler.
+   * Validates tool name and arguments from untrusted client input before dispatch.
    *
    * @param request - Request containing tool `name` and `arguments` in `params`.
    * @returns Tool result wrapped in a JSON-RPC response, or an error if the tool is unknown.
    */
-  async #handleToolCall(request: JsonRpcRequest): Promise<JsonRpcOutbound> {
+  async function handleToolCall(request: JsonRpcRequest): Promise<JsonRpcOutbound> {
     const { id, params } = request;
-    const toolName = params?.name as string | undefined;
-    const toolArgs = (params?.arguments as Record<string, unknown>) ?? {};
 
-    if (toolName === undefined || toolName === null) {
-      return this.#respondError(id, JSON_RPC_INVALID_PARAMS, 'Missing tool name in tools/call');
+    // Validate tool name is a string rather than blindly casting untrusted input.
+    const toolName = typeof params?.name === 'string' ? params.name : undefined;
+    if (toolName === undefined) {
+      return respondError(id, JSON_RPC_INVALID_PARAMS, 'Missing or non-string tool name in tools/call');
     }
 
-    const registered = this.#tools.get(toolName);
+    // Validate arguments is a plain object when present, default to empty object otherwise.
+    const rawArgs = params?.arguments;
+    const toolArgs: Record<string, unknown> =
+      rawArgs !== undefined && rawArgs !== null && typeof rawArgs === 'object' && !Array.isArray(rawArgs)
+        ? (rawArgs as Record<string, unknown>)
+        : {};
+
+    const registered = toolMap.get(toolName);
     if (registered === undefined) {
-      return this.#respondError(id, JSON_RPC_INVALID_PARAMS, `Unknown tool: ${toolName}`);
+      return respondError(id, JSON_RPC_INVALID_PARAMS, `Unknown tool: ${toolName}`);
     }
 
+    // Deliberate catch-and-return: in a server context, tool handler errors must be
+    // reported as JSON-RPC error responses rather than crashing the server process.
     try {
       const result: ToolCallResult = await registered.handler(toolArgs);
-      return this.#respondSuccess(id, result);
+      return respondSuccess(id, result);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       console.error(`[mcp-stdio] tool "${toolName}" threw:`, error);
-      return this.#respondError(id, JSON_RPC_INTERNAL_ERROR, `Tool execution failed: ${message}`);
+      return respondError(id, JSON_RPC_INTERNAL_ERROR, `Tool execution failed: ${message}`);
     }
   }
 
   /**
-   * Constructs a JSON-RPC success response.
+   * Routes a JSON-RPC request to the matching method handler.
+   * Only the `tools/call` branch is async (awaits the tool handler);
+   * all other branches return synchronously but the signature must be
+   * async to unify with `handleToolCall`.
    *
-   * @param id - Request id to echo back.
-   * @param result - Payload for the `result` field.
-   * @returns Formatted JSON-RPC response.
+   * @param request - Inbound request with an `id` that must be echoed in the response.
+   * @returns JSON-RPC success or error response.
    */
-  #respondSuccess(id: JsonRpcRequest['id'], result: unknown): JsonRpcResponse {
-    return { jsonrpc: '2.0', id, result };
+  function handleRequest(request: JsonRpcRequest): Promise<JsonRpcOutbound> {
+    const { id, method } = request;
+
+    switch (method) {
+      case 'initialize': {
+        return Promise.resolve(respondSuccess(id, buildInitializeResult()));
+      }
+      case 'ping': {
+        return Promise.resolve(respondSuccess(id, {}));
+      }
+      case 'tools/list': {
+        return Promise.resolve(respondSuccess(id, buildToolsList()));
+      }
+      case 'tools/call': {
+        return handleToolCall(request);
+      }
+      default: {
+        return Promise.resolve(respondError(id, JSON_RPC_METHOD_NOT_FOUND, `Method not found: ${method}`));
+      }
+    }
   }
+
+  //endregion
+
+  //region Public handle -- single dispatch function exposed to the transport
 
   /**
-   * Constructs a JSON-RPC error response.
+   * Dispatches a parsed JSON-RPC message to the appropriate handler.
+   * Returns a response for requests, or `undefined` for notifications.
    *
-   * @param id - Request id to echo back.
-   * @param code - Standard JSON-RPC error code.
-   * @param message - Human-readable error description.
-   * @returns Formatted JSON-RPC error response.
+   * @param message - Parsed inbound JSON-RPC request or notification.
+   * @returns JSON-RPC response for requests; `undefined` for notifications.
    */
-  #respondError(id: JsonRpcRequest['id'], code: number, message: string): JsonRpcErrorResponse {
-    return { jsonrpc: '2.0', id, error: { code, message } };
+  function handleMessage(message: JsonRpcInbound): Promise<JsonRpcOutbound | undefined> {
+    if (!('id' in message)) {
+      return Promise.resolve(handleNotification(message));
+    }
+    return handleRequest(message);
   }
-}
 
-//endregion
+  return { handleMessage };
+
+  //endregion
+}

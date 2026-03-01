@@ -1,17 +1,15 @@
-// Stdio transport: reads JSON-RPC from stdin, dispatches through McpServer, writes responses to stdout.
+// Stdio transport: reads JSON-RPC from stdin, dispatches through server handle, writes responses to stdout.
 
 import { readLines } from './line-reader.ts';
+import { isJsonRpcMessage, JSON_RPC_PARSE_ERROR, type JsonRpcOutbound } from './json-rpc.ts';
 
-import { JSON_RPC_PARSE_ERROR } from './types.ts';
-
-import type { McpServer } from './server.ts';
-import type { JsonRpcInbound, JsonRpcOutbound } from './types.ts';
+import type { McpServerHandle } from './server-types.ts';
 
 //region Output writer abstraction -- supports both Bun FileSink and standard WritableStream
 
 /**
  * Minimal writer interface that both Bun's `FileSink` and `WritableStreamDefaultWriter` satisfy.
- * Allows the transport to work with `Bun.stdout.writer()` without depending on the full `WritableStreamDefaultWriter` shape.
+ * Allows the transport to work with `Bun.stdout.writer()` without depending on Bun-specific types.
  *
  * @example
  * ```ts
@@ -25,27 +23,29 @@ export type StdoutWriter = {
 
 //endregion
 
+//region Stdio message loop -- reads stdin lines, validates, dispatches, writes responses
+
 /**
- * Connects an {@link McpServer} to stdin/stdout using newline-delimited JSON-RPC.
- * Reads lines from stdin, parses each as a JSON-RPC message, dispatches to the server,
- * and writes responses as newline-terminated JSON to stdout.
+ * Connects an MCP server handle to stdin/stdout using newline-delimited JSON-RPC.
+ * Reads lines from stdin, parses and validates each as a JSON-RPC message,
+ * dispatches to the server, and writes responses as newline-terminated JSON to stdout.
  *
- * This function runs until stdin closes (the client terminates the subprocess).
+ * Runs until stdin closes (the client terminates the subprocess).
  *
- * @param server - MCP server instance with registered tools.
+ * @param server - Immutable server handle created by {@link createMcpServer}.
  * @param input - Readable byte stream for incoming messages. Defaults to `Bun.stdin.stream()`.
  * @param output - Writer for outgoing messages. Defaults to `Bun.stdout.writer()`.
  *
  * @example
  * ```ts
- * import { McpServer, serve } from '@monochromatic-dev/mcp-stdio';
+ * import { createMcpServer, defineTool, serve } from '@monochromatic-dev/mcp-stdio';
  *
- * const server = new McpServer({ name: 'demo', version: '0.1.0' });
+ * const server = createMcpServer({ name: 'demo', version: '0.1.0' }, []);
  * await serve(server);
  * ```
  */
 export async function serve(
-  server: McpServer,
+  server: McpServerHandle,
   input: ReadableStream<Uint8Array> = Bun.stdin.stream(),
   output: StdoutWriter = Bun.stdout.writer(),
 ): Promise<void> {
@@ -56,15 +56,29 @@ export async function serve(
       continue;
     }
 
-    // `parsed` needs reassignment from undefined to the parsed value inside try/catch.
-    let parsed: JsonRpcInbound | undefined;
+    // Parse step: reject malformed JSON before any further processing.
+    let parsed: unknown = undefined;
     try {
-      parsed = JSON.parse(line) as JsonRpcInbound;
-    } catch {
+      parsed = JSON.parse(line);
+    } catch (error: unknown) {
+      console.error('[mcp-stdio] failed to parse JSON from stdin:', error);
       const errorResponse: JsonRpcOutbound = {
         jsonrpc: '2.0',
-        id: 0,
+        id: null,
         error: { code: JSON_RPC_PARSE_ERROR, message: 'Failed to parse JSON' },
+      };
+      await writeMessage(output, encoder, errorResponse);
+      continue;
+    }
+
+    // Validate step: ensure the parsed value is a valid JSON-RPC 2.0 message
+    // before dispatching. Catches non-object values, missing jsonrpc field, etc.
+    if (!isJsonRpcMessage(parsed)) {
+      console.error('[mcp-stdio] received invalid JSON-RPC message (missing jsonrpc or method):', parsed);
+      const errorResponse: JsonRpcOutbound = {
+        jsonrpc: '2.0',
+        id: null,
+        error: { code: JSON_RPC_PARSE_ERROR, message: 'Invalid JSON-RPC message: missing jsonrpc or method field' },
       };
       await writeMessage(output, encoder, errorResponse);
       continue;
@@ -84,6 +98,10 @@ export async function serve(
   }
 }
 
+//endregion
+
+//region Message serialization -- writes JSON-RPC responses to stdout
+
 /**
  * Writes a JSON-RPC message as a newline-terminated UTF-8 string to the output stream.
  *
@@ -96,6 +114,8 @@ async function writeMessage(
   encoder: TextEncoder,
   message: JsonRpcOutbound,
 ): Promise<void> {
-  const serialized = JSON.stringify(message) + '\n';
+  const serialized = `${JSON.stringify(message)}\n`;
   await writer.write(encoder.encode(serialized));
 }
+
+//endregion

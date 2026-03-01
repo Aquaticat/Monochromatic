@@ -1,7 +1,7 @@
 # @monochromatic-dev/mcp-stdio
 
 Minimal MCP server framework for stdio transport.
-Zero runtime dependencies, ~700 lines of TypeScript.
+Zero runtime dependencies, ~800 lines of TypeScript.
 
 ## Why
 
@@ -19,21 +19,24 @@ the MCP initialization handshake,
 
 ```ts
 // packages/mcp/my-server/src/index.ts
-import { McpServer, serve } from "@monochromatic-dev/mcp-stdio";
+import { createMcpServer, defineTool, serve } from "@monochromatic-dev/mcp-stdio";
 
-const server = new McpServer({ name: "my-server", version: "0.1.0" });
-
-server.tool("greet", {
-  description: "Greets by name.",
-  inputSchema: {
-    type: "object",
-    properties: { name: { type: "string" } },
-    required: ["name"],
-  },
-  handler: async (args) => ({
-    content: [{ type: "text", text: `Hello, ${args.name}!` }],
-  }),
-});
+const server = createMcpServer(
+  { name: "my-server", version: "0.1.0" },
+  [
+    defineTool("greet", {
+      description: "Greets by name.",
+      inputSchema: {
+        type: "object",
+        properties: { name: { type: "string" } },
+        required: ["name"],
+      },
+      handler: async (args) => ({
+        content: [{ type: "text", text: `Hello, ${args.name}!` }],
+      }),
+    }),
+  ],
+);
 
 await serve(server);
 ```
@@ -44,9 +47,9 @@ Implements MCP spec revision **2025-03-26** (stdio transport only).
 
 - `initialize` / `notifications/initialized` handshake
 - `tools/list` with full tool definitions
-- `tools/call` with argument dispatch
+- `tools/call` with argument dispatch and input validation
 - `ping` keep-alive
-- JSON-RPC error codes for parse errors, unknown methods, unknown tools
+- JSON-RPC error codes for parse errors, invalid messages, unknown methods, unknown tools
 
 Features intentionally omitted (not needed for stdio):
 HTTP/SSE transport, OAuth, session management, resources, prompts, sampling,
@@ -56,9 +59,11 @@ progress notifications, cancellation.
 
 ```
 src/
-  types.ts        Wire protocol types (JSON-RPC, tool definitions, content)
-  line-reader.ts  Async iterator yielding newline-delimited lines from a byte stream
-  server.ts       McpServer class (tool registration, JSON-RPC dispatch)
-  transport.ts    Connects McpServer to stdin/stdout
-  index.ts        Public API re-exports
+  json-rpc.ts      JSON-RPC 2.0 types, error codes, and message validation
+  protocol.ts      MCP protocol types (initialization, capabilities, tool definitions)
+  server-types.ts  Server configuration, tool entry, and handle types
+  server.ts        createMcpServer factory and defineTool (JSON-RPC dispatch)
+  transport.ts     Connects server handle to stdin/stdout
+  line-reader.ts   Async iterator yielding newline-delimited lines from a byte stream
+  index.ts         Public API re-exports
 ```
