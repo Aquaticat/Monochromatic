@@ -101,16 +101,4 @@
 
 *For detailed information on completed tasks, see [Completed Tasks](TODO.completed.md)*
 
-## Contributing Guidelines
 
-### Working with TODO Files
-1. **Read the relevant TODO file** before starting work in any area
-2. **Update task status** by checking off completed items
-3. **Add new tasks** to the appropriate specialized TODO file
-4. **Cross-reference** related tasks across different TODO files
-5. **Document decisions** and update success criteria when tasks are completed
-
-### Priority Guidelines
-- **Critical**: Blocks development or production, fix immediately
-- **High**: Significant developer experience or user impact
-- **Normal**: Valuable
