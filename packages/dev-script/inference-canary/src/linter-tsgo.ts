@@ -7,11 +7,8 @@
  */
 import { join, } from 'node:path';
 
-import { execPromise, } from './linter-exec.ts';
+import { execPromise, getStdoutFromError, LINT_TIMEOUT_MS, } from './linter-exec.ts';
 import { PACKAGE_DIR, } from './linter-artifacts.ts';
-
-/** Lint tool timeout in milliseconds */
-const LINT_TIMEOUT_MS = 15_000;
 
 /** Parsed tsgo result */
 export type TsgoResult = {
@@ -53,9 +50,7 @@ export async function runAndParseTypeCheck(lintDir: string): Promise<TsgoResult>
     return { errorCount: filtered.length, ran: true, rawOutput: filtered.join('\n'), };
   } catch (error) {
     // tsgo exits non-zero when there are type errors; stdout has the diagnostics
-    const stdout = error instanceof Error && 'stdout' in error
-      ? String((error as { stdout: unknown }).stdout)
-      : '';
+    const stdout = getStdoutFromError(error);
     if (stdout.includes('error TS')) {
       const filtered = filterTypeErrors(stdout, relativeSuffix);
       return { errorCount: filtered.length, ran: true, rawOutput: filtered.join('\n'), };

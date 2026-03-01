@@ -1,10 +1,14 @@
 /**
  * Combined scoring for code-generation probes.
  *
- * Merges three dimensions into a single 0-1 score:
- * - Correctness (40%): container output matches expected
- * - Lint quality (30%): oxlint violations, errors weighted 3x warnings
- * - Type safety (30%): tsgo type errors
+ * Correctness is a hard gate: any correctness error zeroes the entire score.
+ * When correctness is perfect (1.0), the score starts at 1.0 and each
+ * quality issue applies a flat penalty:
+ * - Lint error: -0.1 per occurrence
+ * - Type error: -0.1 per occurrence
+ * - Lint warning: -0.05 per occurrence
+ *
+ * Final score is clamped to [0, 1].
  */
 import { lintSource, } from '../linter.ts';
 
@@ -13,45 +17,42 @@ import { extractCode, } from './extract-code.ts';
 import type { LintResult, } from '../linter.ts';
 import type { ScoreContext, } from '../probes.ts';
 
-//region Scoring weights and ceilings -- numeric constants that calibrate the relative importance of each quality dimension
+//region Scoring penalties -- flat per-issue deductions applied when correctness is perfect
 
-/** Correctness accounts for 40% of the score -- does the code produce correct output? */
-const CORRECTNESS_WEIGHT = 0.4;
+/** Points deducted per lint error reported by oxlint */
+const LINT_ERROR_PENALTY = 0.1;
 
-/** Lint quality accounts for 30% -- does the code follow project style rules? */
-const LINT_WEIGHT = 0.3;
+/** Points deducted per type error reported by tsgo */
+const TYPE_ERROR_PENALTY = 0.1;
 
-/** Type safety accounts for 30% -- does the code satisfy the strict tsconfig? */
-const TYPE_WEIGHT = 0.3;
+/** Points deducted per lint warning reported by oxlint */
+const LINT_WARNING_PENALTY = 0.05;
 
-/** Lint errors are weighted 3x warnings because errors indicate correctness issues */
-const ERROR_MULTIPLIER = 3;
-
-/**
- * Weighted lint violation count at which the lint score becomes 0.
- * A healthy model produces ~30 warnings and ~10 errors; ceiling at 100 gives headroom.
- */
-const LINT_WEIGHTED_CEILING = 100;
-
-/**
- * Number of type errors at which the type score becomes 0.
- * Generated code is standalone, so a healthy model should produce few type errors.
- */
-const TYPE_ERROR_CEILING = 20;
-
-//endregion Scoring weights and ceilings
+//endregion Scoring penalties
 
 /**
  * Combines correctness, lint quality, and type safety into a final score.
- * @param correctness - 0-1 score from output verification
+ *
+ * Any correctness failure (score below 1.0) zeroes the entire result.
+ * Otherwise deducts flat penalties per lint error, type error, and lint warning.
+ *
+ * @param correctness - 0-1 score from output verification; must be exactly 1.0 to earn points
  * @param lint - full lint result with severity breakdown and type errors
- * @returns weighted combined score
+ * @returns combined score clamped to [0, 1]
+ *
+ * @example
+ * ```ts
+ * // Perfect correctness, 2 lint errors, 1 type error, 3 warnings
+ * // score = 1.0 - (2 * 0.1) - (1 * 0.1) - (3 * 0.05) = 0.55
+ * combinedScore(1.0, lint);
+ * ```
  */
 export function combinedScore(correctness: number, lint: LintResult): number {
-  const weightedViolations = (lint.severity.errors * ERROR_MULTIPLIER) + lint.severity.warnings;
-  const lintScore = Math.max(0, 1 - (weightedViolations / LINT_WEIGHTED_CEILING));
-  const typeScore = Math.max(0, 1 - (lint.typeErrors / TYPE_ERROR_CEILING));
-  return (correctness * CORRECTNESS_WEIGHT) + (lintScore * LINT_WEIGHT) + (typeScore * TYPE_WEIGHT);
+  if (correctness < 1) return 0;
+  const penalty = (lint.severity.errors * LINT_ERROR_PENALTY)
+    + (lint.typeErrors * TYPE_ERROR_PENALTY)
+    + (lint.severity.warnings * LINT_WARNING_PENALTY);
+  return Math.max(0, 1 - penalty);
 }
 
 /**

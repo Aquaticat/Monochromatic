@@ -8,19 +8,12 @@
 import { mkdir, writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-//region Paths -- package-relative constants for locating the canary-lint artifact directory
+import { PACKAGE_DIR, } from './paths.ts';
 
-/**
- * Canary lint artifact directory. Lives under src/ so both tsgo (via the
- * package tsconfig's `src\/**\/*.ts` include) and oxlint pick it up without
- * any config overrides. No leading dot because TS globs skip dotdirs.
- */
-export const PACKAGE_DIR = new URL('..', import.meta.url).pathname;
+export { PACKAGE_DIR, } from './paths.ts';
 
 /** Root directory for all lint artifacts, gitignored via the package .gitignore. */
 export const LINT_DIR = join(PACKAGE_DIR, 'src', 'canary-lint');
-
-//endregion Paths
 
 //region Artifact writing -- writes generated source and meta.json sidecar for oxlint/tsgo to consume
 

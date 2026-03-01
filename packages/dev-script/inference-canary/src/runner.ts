@@ -1,6 +1,7 @@
 /**
  * Top-level canary orchestrator: runs all probes for a model and produces a report.
  */
+import { mean, } from './math.ts';
 import { runProbe, } from './runner-probe.ts';
 import { defaultConfig, } from './runner-config.ts';
 
@@ -21,8 +22,7 @@ function computeCategoryScores(results: readonly ProbeResult[]): Record<string, 
   return Object.fromEntries(
     categories.map((category) => {
       const categoryResults = results.filter((result) => result.category === category);
-      const mean = categoryResults.reduce((sum, result) => sum + result.meanScore, 0) / categoryResults.length;
-      return [category, mean];
+      return [category, mean(categoryResults.map((result) => result.meanScore))];
     }),
   );
 }
@@ -59,10 +59,7 @@ export async function runCanary(
       }),
     );
 
-    // Guard: results is empty when all probes are skipped; return 0 rather than NaN
-    const overallScore = results.length > 0
-      ? results.reduce((sum, result) => sum + result.meanScore, 0) / results.length
-      : 0;
+    const overallScore = mean(results.map((result) => result.meanScore));
 
     return {
       model: mergedConfig.model,

@@ -4,36 +4,24 @@
  * Full RFC 4180 CSV parsing including escaped quotes, multiline fields, and mixed
  * line endings. Hard because most models get the escaped-quote-within-quoted-field case wrong.
  */
-import { runInContainer, } from '../container.ts';
-
-import { CODE_GEN_SYSTEM, } from './system-prompt.ts';
-import { buildCodeGenFixPrompt, combinedScore, extractCode, lintAndLog, } from './scoring.ts';
-
-import type { ContainerResult, } from '../container.ts';
-import type { LintResult, } from '../linter.ts';
-import type { Probe, } from '../probes.ts';
-
-/**
- * Lint results from the most recent score() call, keyed by model ID.
- * Used by buildFixPrompt to avoid re-linting the same source that score() already analyzed.
- */
-const lintCache = new Map<string, LintResult>();
-
-/**
- * Container results from the most recent score() call, keyed by model ID.
- * Used by buildFixPrompt to include runtime errors in the second-pass prompt.
- */
-const containerCache = new Map<string, ContainerResult>();
+import { CSV_PERF_INPUT, } from './perf-test-data/index.ts';
+import { createCodeGenProbe, } from './probe-factory.ts';
 
 /** Test input covering the hardest RFC 4180 edge cases */
 const CSV_TEST_INPUT = 'name,bio,age\n"O\'Brien, ""Bob""","likes\ntravel",30\nJane,simple,25\n';
 
+/** Number of correctness checks in the output verifier */
+const TOTAL_CHECKS = 5;
+
 /** {@inheritDoc Probe} */
-export const csvRfc4180: Probe = {
+export const csvRfc4180 = createCodeGenProbe({
   name: 'csv-rfc4180',
-  category: 'code-gen',
-  system: CODE_GEN_SYSTEM,
-  buildFixPrompt: (response, context) => buildCodeGenFixPrompt(response, context, lintCache.get(context.modelId), containerCache.get(context.modelId)),
+  testInput: CSV_TEST_INPUT,
+  perfTest: {
+    input: CSV_PERF_INPUT,
+    fastMs: 2_000,
+    slowMs: 8_000,
+  },
   prompt: [
     'Write a TypeScript CLI that parses RFC 4180 compliant CSV from stdin and outputs a JSON array to stdout.',
     'Requirements:',
@@ -49,28 +37,17 @@ export const csvRfc4180: Probe = {
     '"O\'Brien, ""Bob""","likes\\ntravel",30',
     'Jane,simple,25',
   ].join('\n'),
-  score: async (response, context) => {
-    const source = extractCode(response);
-    const [result, lint] = await Promise.all([
-      runInContainer(source, CSV_TEST_INPUT, context.signal),
-      lintAndLog(source, 'csv-rfc4180', context),
-    ]);
-    lintCache.set(context.modelId, lint);
-    containerCache.set(context.modelId, result);
-
-    if (result.timedOut || result.exitCode !== 0) return combinedScore(0, lint);
-
+  verify: (result) => {
     try {
       const parsed = JSON.parse(result.stdout.trim()) as Record<string, string>[];
-      if (!Array.isArray(parsed) || parsed.length !== 2) return combinedScore(0.1, lint);
+      if (!Array.isArray(parsed) || parsed.length !== 2) return { correctness: 0.1, };
 
       const first = parsed[0];
-      if (first === undefined) return combinedScore(0.1, lint);
+      if (first === undefined) return { correctness: 0.1, };
 
       const second = parsed[1];
-      if (second === undefined) return combinedScore(0.2, lint);
+      if (second === undefined) return { correctness: 0.2, };
 
-      const TOTAL_CHECKS = 5;
       const correctCount = [
         first['name'] === 'O\'Brien, "Bob"',
         first['bio'] === 'likes\ntravel',
@@ -79,9 +56,9 @@ export const csvRfc4180: Probe = {
         second['bio'] === 'simple',
       ].filter(Boolean).length;
 
-      return combinedScore(correctCount / TOTAL_CHECKS, lint);
+      return { correctness: correctCount / TOTAL_CHECKS, };
     } catch {
-      return combinedScore(0.05, lint);
+      return { correctness: 0.05, };
     }
   },
-};
+});

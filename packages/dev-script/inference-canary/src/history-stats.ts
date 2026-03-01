@@ -4,6 +4,8 @@
  * Uses mean - 2*stddev for degradation thresholds (covers ~95% of normal variance),
  * so a model's baseline volatility is accounted for rather than using a fixed cutoff.
  */
+import { mean as computeMean, } from './math.ts';
+
 import type { HistoryFile, ModelThreshold, OpenRouterModelId, } from './history-types.ts';
 
 /** Minimum samples needed before statistical thresholds are meaningful */
@@ -33,7 +35,7 @@ export function computeThreshold(model: OpenRouterModelId, history: HistoryFile)
   }
 
   /** Arithmetic mean of historical scores -- the model's typical performance level */
-  const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+  const mean = computeMean(scores);
   /**
    * Population variance (not sample variance) -- divides by N rather than N-1.
    * We use population variance because we are computing statistics over all observed

@@ -5,31 +5,15 @@
  * and @apply rules. CSS native mixins are new enough that models won't have canned solutions,
  * making this a strong signal of genuine reasoning ability.
  */
-import { runInContainer, } from '../container.ts';
-
-import { CODE_GEN_SYSTEM, } from './system-prompt.ts';
-import { buildCodeGenFixPrompt, combinedScore, extractCode, lintAndLog, } from './scoring.ts';
 import { CSS_MIXIN_TEST_CSS, } from './css-mixin-test-css.ts';
+import { CSS_MIXIN_PERF_INPUT, } from './perf-test-data/index.ts';
+import { createCodeGenProbe, } from './probe-factory.ts';
 
-import type { ContainerResult, } from '../container.ts';
-import type { LintResult, } from '../linter.ts';
-import type { Probe, } from '../probes.ts';
-
-/**
- * Lint results from the most recent score() call, keyed by model ID.
- * Used by buildFixPrompt to avoid re-linting the same source that score() already analyzed.
- */
-const lintCache = new Map<string, LintResult>();
-
-/**
- * Container results from the most recent score() call, keyed by model ID.
- * Used by buildFixPrompt to include runtime errors in the second-pass prompt.
- */
-const containerCache = new Map<string, ContainerResult>();
+import type { ScoreContext, } from '../probes.ts';
 
 /**
  * Tracks whether the most recent score() call detected regex usage, keyed by model ID.
- * Used by buildFixPrompt to tell the model its solution was rejected for violating the no-regex constraint.
+ * Set by transformSource and read by customizeFixPrompt.
  */
 const regexViolationCache = new Map<string, boolean>();
 
@@ -54,21 +38,31 @@ function detectsRegexUsage(source: string): boolean {
 /** Number of correctness checks in the css-mixin scoring function */
 const CSS_MIXIN_TOTAL_CHECKS = 10;
 
+/** Constraint violation message prepended to the fix prompt when regex is detected */
+const REGEX_CONSTRAINT_MSG = [
+  'CONSTRAINT VIOLATION: Your solution used regular expressions, which is explicitly forbidden by the prompt.',
+  'Your score was 0. Rewrite the solution using character-by-character parsing or string index operations instead.',
+  '',
+].join('\n');
+
 /** {@inheritDoc Probe} */
-export const cssMixinTranspiler: Probe = {
+export const cssMixinTranspiler = createCodeGenProbe({
   name: 'css-mixin-transpiler',
-  category: 'code-gen',
-  system: CODE_GEN_SYSTEM,
-  buildFixPrompt: async (response, context) => {
-    const base = await buildCodeGenFixPrompt(response, context, lintCache.get(context.modelId), containerCache.get(context.modelId));
+  testInput: CSS_MIXIN_TEST_CSS,
+  perfTest: {
+    input: CSS_MIXIN_PERF_INPUT,
+    fastMs: 3_000,
+    slowMs: 12_000,
+  },
+  transformSource: (source, context) => {
+    const usesRegex = detectsRegexUsage(source);
+    regexViolationCache.set(context.modelId, usesRegex);
+    return { reject: usesRegex, source, };
+  },
+  customizeFixPrompt: (base, context) => {
     if (regexViolationCache.get(context.modelId) !== true) return base;
-    const constraintMsg = [
-      'CONSTRAINT VIOLATION: Your solution used regular expressions, which is explicitly forbidden by the prompt.',
-      'Your score was 0. Rewrite the solution using character-by-character parsing or string index operations instead.',
-      '',
-    ].join('\n');
     // Prepend constraint violation to existing fix prompt, or create a standalone prompt
-    return base !== undefined ? `${constraintMsg}\n${base}` : constraintMsg;
+    return base !== undefined ? `${REGEX_CONSTRAINT_MSG}\n${base}` : REGEX_CONSTRAINT_MSG;
   },
   prompt: [
     'Write a TypeScript CLI that reads CSS from stdin and writes transpiled CSS to stdout.',
@@ -112,21 +106,7 @@ export const cssMixinTranspiler: Probe = {
     'body { margin: 0; }',
     '```',
   ].join('\n'),
-  score: async (response, context) => {
-    const source = extractCode(response);
-    const [result, lint] = await Promise.all([
-      runInContainer(source, CSS_MIXIN_TEST_CSS, context.signal),
-      lintAndLog(source, 'css-mixin', context),
-    ]);
-    lintCache.set(context.modelId, lint);
-    containerCache.set(context.modelId, result);
-
-    const usesRegex = detectsRegexUsage(source);
-    regexViolationCache.set(context.modelId, usesRegex);
-    if (usesRegex) return combinedScore(0, lint);
-
-    if (result.timedOut || result.exitCode !== 0) return combinedScore(0, lint);
-
+  verify: (result) => {
     // Normalize whitespace so cosmetic formatting differences don't affect scoring
     const output = result.stdout.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n');
 
@@ -145,6 +125,6 @@ export const cssMixinTranspiler: Probe = {
       flexOccurrences >= 3,
     ];
 
-    return combinedScore(checks.filter(Boolean).length / CSS_MIXIN_TOTAL_CHECKS, lint);
+    return { correctness: checks.filter(Boolean).length / CSS_MIXIN_TOTAL_CHECKS, };
   },
-};
+});

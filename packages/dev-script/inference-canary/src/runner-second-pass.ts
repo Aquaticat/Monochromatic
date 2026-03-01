@@ -1,8 +1,9 @@
 /**
  * Second-pass fix loop: sends the model its own code + diagnostics and scores the fix.
  */
-import { createProbeClient, } from './runner-client.ts';
 import { streamCompletion, } from './runner-stream.ts';
+
+import type OpenAI from 'openai';
 import type { ChatMessage, } from './runner-types.ts';
 import type { RunnerConfig, } from './runner-config.ts';
 import type { Probe, ScoreContext, } from './probes.ts';
@@ -12,6 +13,7 @@ import type { Probe, ScoreContext, } from './probes.ts';
  * and scores whether it can fix the issues in one follow-up turn.
  * @param probe - probe that produced the first-pass response
  * @param config - runner configuration
+ * @param client - OpenAI SDK client (reused from first pass)
  * @param firstResponse - raw model output from the first pass
  * @param context - score context for artifact organization (includes abort signal)
  * @returns second-pass score, or undefined if skipped
@@ -19,6 +21,7 @@ import type { Probe, ScoreContext, } from './probes.ts';
 export async function runSecondPass(
   probe: Probe,
   config: RunnerConfig,
+  client: OpenAI,
   firstResponse: string,
   context: ScoreContext,
 ): Promise<number | undefined> {
@@ -32,7 +35,6 @@ export async function runSecondPass(
 
   console.log(`  [${config.model}:${probe.name}] pass2: sending fix prompt...`);
 
-  const client = createProbeClient(config);
   const messages: ChatMessage[] = [
     { role: 'system', content: probe.system, },
     { role: 'user', content: probe.prompt, },

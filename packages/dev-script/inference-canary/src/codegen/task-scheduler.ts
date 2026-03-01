@@ -7,26 +7,7 @@
  * parallelism limits. Combines topological sort, async programming, and resource
  * management -- models often get concurrency limiting wrong or deadlock.
  */
-import { runInContainer, } from '../container.ts';
-
-import { CODE_GEN_SYSTEM, } from './system-prompt.ts';
-import { buildCodeGenFixPrompt, combinedScore, extractCode, lintAndLog, } from './scoring.ts';
-
-import type { ContainerResult, } from '../container.ts';
-import type { LintResult, } from '../linter.ts';
-import type { Probe, } from '../probes.ts';
-
-/**
- * Lint results from the most recent score() call, keyed by model ID.
- * Used by buildFixPrompt to avoid re-linting the same source that score() already analyzed.
- */
-const lintCache = new Map<string, LintResult>();
-
-/**
- * Container results from the most recent score() call, keyed by model ID.
- * Used by buildFixPrompt to include runtime errors in the second-pass prompt.
- */
-const containerCache = new Map<string, ContainerResult>();
+import { createCodeGenProbe, } from './probe-factory.ts';
 
 /** A and B run in parallel (~100ms each), then C after both finish (~150ms total) */
 const TASK_TEST_INPUT = 'A 100\nB 100\nC 50 A B\n';
@@ -44,12 +25,10 @@ const EXPECTED_C_TIME = 150;
 const TOTAL_CHECKS = 4;
 
 /** {@inheritDoc Probe} */
-export const taskScheduler: Probe = {
+export const taskScheduler = createCodeGenProbe({
   name: 'task-scheduler',
-  category: 'code-gen',
   slow: true,
-  buildFixPrompt: (response, context) => buildCodeGenFixPrompt(response, context, lintCache.get(context.modelId), containerCache.get(context.modelId)),
-  system: CODE_GEN_SYSTEM,
+  testInput: TASK_TEST_INPUT,
   prompt: [
     'Write a TypeScript CLI that simulates a concurrent task scheduler.',
     'Read a task graph from stdin in this format (one task per line):',
@@ -76,24 +55,14 @@ export const taskScheduler: Probe = {
     'DONE C @150',
     'TOTAL 150',
   ].join('\n'),
-  score: async (response, context) => {
-    const source = extractCode(response);
-    const [result, lint] = await Promise.all([
-      runInContainer(source, TASK_TEST_INPUT, context.signal),
-      lintAndLog(source, 'task-scheduler', context),
-    ]);
-    lintCache.set(context.modelId, lint);
-    containerCache.set(context.modelId, result);
-
-    if (result.timedOut || result.exitCode !== 0) return combinedScore(0, lint);
-
+  verify: (result) => {
     const lines = result.stdout.trim().split('\n').map((line) => line.trim());
 
     if (!lines.some((line) => line.startsWith('DONE A'))
       || !lines.some((line) => line.startsWith('DONE B'))
       || !lines.some((line) => line.startsWith('DONE C'))
       || !lines.some((line) => line.startsWith('TOTAL'))) {
-      return combinedScore(0.1, lint);
+      return { correctness: 0.1, };
     }
 
     /** Extracts the @<ms> timestamp from a DONE line */
@@ -109,7 +78,7 @@ export const taskScheduler: Probe = {
     const timeC = extractTime('C');
 
     if (timeA === undefined || timeB === undefined || timeC === undefined) {
-      return combinedScore(0.2, lint);
+      return { correctness: 0.2, };
     }
 
     const correctCount = [
@@ -119,6 +88,6 @@ export const taskScheduler: Probe = {
       timeC > timeA && timeC > timeB,
     ].filter(Boolean).length;
 
-    return combinedScore(correctCount / TOTAL_CHECKS, lint);
+    return { correctness: correctCount / TOTAL_CHECKS, };
   },
-};
+});

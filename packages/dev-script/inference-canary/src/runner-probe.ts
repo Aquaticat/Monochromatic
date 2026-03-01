@@ -4,8 +4,10 @@
  * Consistency runs are sequential to avoid rate limits. A 5-minute timeout covers
  * all turns (all consistency runs + the second pass fix turn).
  */
-import { executeProbe, } from './runner-client.ts';
+import { mean, } from './math.ts';
+import { createProbeClient, executeProbe, } from './runner-client.ts';
 import { runSecondPass, } from './runner-second-pass.ts';
+
 import type { ProbeResult, } from './runner-types.ts';
 import type { RunnerConfig, } from './runner-config.ts';
 import type { Probe, ScoreContext, } from './probes.ts';
@@ -21,6 +23,7 @@ const PROBE_TIMEOUT_MS = 5 * 60 * 1000;
  * @returns scored result with consistency information
  */
 async function runProbeCore(probe: Probe, config: RunnerConfig, signal: AbortSignal): Promise<ProbeResult> {
+  const client = createProbeClient(config);
   // Consistency runs must be sequential (rate limits) and each run's score is
   // logged immediately. scores uses push because each run appends in the loop;
   // functional reduce/map would require pre-running all turns before collecting.
@@ -30,7 +33,7 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, signal: AbortSig
   let lastResponse = '';
   for (const runIndex of Array.from({ length: config.consistencyRuns, }).keys()) {
     // eslint-disable-next-line no-await-in-loop -- sequential to avoid rate limits
-    lastResponse = await executeProbe(probe, config, signal);
+    lastResponse = await executeProbe(probe, config, client, signal);
     const scoreContext: ScoreContext = { modelId: config.model, pass: 'initial', signal, };
     // eslint-disable-next-line no-await-in-loop -- score may involve container execution
     const runScore = await probe.score(lastResponse, scoreContext);
@@ -38,13 +41,10 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, signal: AbortSig
     console.log(`  [${config.model}:${probe.name}] run ${String(runIndex + 1)}/${String(config.consistencyRuns)}: score=${runScore.toFixed(2)}`);
   }
 
-  // Guard: scores is empty when consistencyRuns is 0; return 0 rather than NaN
-  const meanScore = scores.length > 0
-    ? scores.reduce((sum, score) => sum + score, 0) / scores.length
-    : 0;
+  const meanScore = mean(scores);
   const consistent = scores.every((score) => score === scores[0]);
   const fixContext: ScoreContext = { modelId: config.model, pass: 'fix', signal, };
-  const pass2Result = await runSecondPass(probe, config, lastResponse, fixContext);
+  const pass2Result = await runSecondPass(probe, config, client, lastResponse, fixContext);
   if (pass2Result !== undefined) {
     const delta = pass2Result - meanScore;
     const deltaStr = delta >= 0 ? `+${delta.toFixed(2)}` : delta.toFixed(2);

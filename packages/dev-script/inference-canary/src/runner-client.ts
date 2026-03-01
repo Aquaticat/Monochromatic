@@ -26,11 +26,11 @@ export function createProbeClient(config: RunnerConfig): OpenAI {
  * Sends a single probe to the API and returns the raw text response.
  * @param probe - canary probe to execute
  * @param config - runner configuration
+ * @param client - OpenAI SDK client (reused across consistency runs and fix pass)
  * @param signal - optional abort signal; cancels the HTTP stream when aborted
  * @returns raw text response from the model
  */
-export async function executeProbe(probe: Probe, config: RunnerConfig, signal?: AbortSignal): Promise<string> {
-  const client = createProbeClient(config);
+export async function executeProbe(probe: Probe, config: RunnerConfig, client: OpenAI, signal?: AbortSignal): Promise<string> {
   const messages: ChatMessage[] = [
     { role: 'system', content: probe.system, },
     { role: 'user', content: probe.prompt, },

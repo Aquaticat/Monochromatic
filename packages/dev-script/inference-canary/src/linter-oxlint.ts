@@ -7,7 +7,7 @@
  * oxlint exits non-zero when it finds violations; stdout still contains valid JSON.
  * The error handler extracts stdout from the rejected error for parsing.
  */
-import { execPromise, } from './linter-exec.ts';
+import { execPromise, getStdoutFromError, LINT_TIMEOUT_MS, } from './linter-exec.ts';
 
 //region Types -- oxlint JSON output shape and the parsed result type returned to callers
 
@@ -82,9 +82,6 @@ function parseOxlintJson(jsonOutput: string): OxlintResult {
 
 //region Runner -- spawns oxlint, handles non-zero exits (oxlint exits 1 on violations), returns OxlintResult
 
-/** Lint tool timeout in milliseconds */
-const LINT_TIMEOUT_MS = 15_000;
-
 /**
  * Runs oxlint --format json on a file, returns parsed severity breakdown.
  * oxlint exits non-zero on violations; stdout still contains valid JSON.
@@ -99,9 +96,7 @@ export async function runAndParseOxlint(filePath: string): Promise<OxlintResult>
     return parseOxlintJson(output);
   } catch (error) {
     // oxlint exits non-zero when there are lint errors; stdout still has valid JSON
-    const stdout = error instanceof Error && 'stdout' in error
-      ? String((error as { stdout: unknown }).stdout)
-      : '';
+    const stdout = getStdoutFromError(error);
     if (stdout.includes('"diagnostics"')) return parseOxlintJson(stdout);
     console.error(`    [lint:oxlint] failed: ${String(error)}`);
     return { errors: 0, warnings: 0, violationCount: 0, violatedRules: [], linterRan: false, rawOutput: '', };

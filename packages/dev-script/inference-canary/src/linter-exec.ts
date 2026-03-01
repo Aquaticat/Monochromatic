@@ -1,17 +1,42 @@
 /**
- * Shared Bun-native exec helper for lint and type-check runners.
+ * Shared exec helper for lint and type-check runners.
  *
- * Uses Bun.spawn instead of promisify(execFile) since this package runs under Bun.
- * On a non-zero exit the thrown error has `.stdout` and `.stderr` attached --
- * callers (linter-oxlint.ts, linter-tsgo.ts) extract diagnostic output from
- * tools that exit non-zero when they find issues.
+ * Delegates to `execBun` from container-base.ts (the single Bun.spawn wrapper)
+ * and throws on non-zero exit with `.stdout` and `.stderr` attached, since lint
+ * tools (oxlint, tsgo) exit 1 when they find violations and write their findings
+ * to stdout as structured output (JSON, diagnostics).
  */
+import { execBun, } from './container-base.ts';
+
+/** Timeout shared by both oxlint and tsgo runners */
+export const LINT_TIMEOUT_MS = 15_000;
 
 /** Options for linter exec invocations */
 type LintExecOptions = {
   /** Milliseconds before the process is forcibly killed */
   readonly timeout?: number;
 };
+
+/**
+ * Extracts the stdout property from an error thrown by `execPromise`.
+ *
+ * Both oxlint and tsgo exit non-zero when they find issues, so callers need
+ * to recover stdout from the thrown error to parse diagnostics.
+ * @param error - caught error value
+ * @returns stdout string if present, empty string otherwise
+ *
+ * @example
+ * ```ts
+ * try { await execPromise('oxlint', ['file.ts']); }
+ * catch (error) { const output = getStdoutFromError(error); }
+ * ```
+ */
+export function getStdoutFromError(error: unknown): string {
+  if (error instanceof Error && 'stdout' in error) {
+    return String((error as { stdout: unknown }).stdout);
+  }
+  return '';
+}
 
 /**
  * Runs a linting command and returns its stdout.
@@ -30,28 +55,15 @@ export async function execPromise(
   args: readonly string[],
   options: LintExecOptions = {},
 ): Promise<string> {
-  const proc = Bun.spawn([command, ...args], { stdout: 'pipe', stderr: 'pipe', });
+  const execOptions = options.timeout !== undefined ? { timeout: options.timeout, } : {};
+  const result = await execBun(command, args, execOptions);
 
-  // let: the timeout callback assigns true; const would prevent that mutation
-  let killed = false;
-  const timer = options.timeout !== undefined
-    ? setTimeout(() => { killed = true; proc.kill(); }, options.timeout)
-    : undefined;
-
-  const [stdout, stderr, exitCode] = await Promise.all([
-    new Response(proc.stdout).text(),
-    new Response(proc.stderr).text(),
-    proc.exited,
-  ]);
-
-  if (timer !== undefined) clearTimeout(timer);
-
-  if (exitCode !== 0) {
+  if (result.exitCode !== 0) {
     throw Object.assign(
-      new Error(`${command} exited ${String(exitCode)}${killed ? ' (killed)' : ''}: ${stderr}`),
-      { stdout, stderr, },
+      new Error(`${command} exited ${String(result.exitCode)}${result.killed ? ' (killed)' : ''}: ${result.stderr}`),
+      { stdout: result.stdout, stderr: result.stderr, },
     );
   }
 
-  return stdout;
+  return result.stdout;
 }
