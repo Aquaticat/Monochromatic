@@ -2,10 +2,10 @@
 
 ## Quick Links to Specialized Todo Lists
 
-- [**Build System & Package Management**](TODO.build-system.md) - Moon, TypeScript, dependencies
+- [**Build System & Package Management**](TODO.build-system.md) - mise, TypeScript, dependencies
 - [**CLI Tools & Utilities**](TODO.cli-tools.md) - Custom tools and automation scripts
 - [**Documentation & UI/UX**](TODO.documentation.md) - Content, design, and user experience
-- [**Development Environment**](TODO.development.md) - WSL, tooling, setup
+- [**Development Environment**](TODO.development.md) - Tooling, setup
 - [**Code Quality & Patterns**](TODO.code-quality.md) - Linting, testing, best practices
 - [**Package-Specific Improvements**](TODO.packages.md) - Module library, config packages, style framework
 - [**Security & Infrastructure**](TODO.security.md) - Application security, deployment hardening
@@ -15,13 +15,13 @@
 
 ## Priority Overview
 
-### 🔴 Critical Priority
-**Immediate action required - blocking development or production**
+### Critical priority
+**Immediate action required -- blocking development or production**
 
 1. **Build System Reliability** → [Build System Todo](TODO.build-system.md#critical-issues)
    - Fresh clone setup problems blocking new developers
    - Package build order issues preventing successful builds
-   - Moon task dependency optimization needed
+   - Mise task dependency optimization needed
 
 2. **Security Fundamentals** → [Security Todo](TODO.security.md#application-security)
    - Dependency vulnerability scanning and management
@@ -33,13 +33,13 @@
    - Essential array and object utilities for developer productivity
    - Type guard and validation utilities for type safety
 
-### 🟠 High Priority
+### High priority
 **Important improvements that significantly impact developer experience**
 
 1. **CLI Tools Development** → [CLI Tools Todo](TODO.cli-tools.md#high-priority-tools)
-   - `cpfd` - Copy Files From Dependencies (daily workflow improvement)
-   - `increase-version` - Automate version bumping (publishing workflow)
-   - `add-scripts` - Add NPM scripts to packages (package creation workflow)
+   - ~~`cpfd`~~ - Deprecated, superseded by file-enforcer
+   - ~~`increase-version`~~ - Deprecated, no longer needed with monorepo
+   - ~~`add-scripts`~~ - Deprecated, handled by file-enforcer and mise templates
 
 2. **Performance Optimization** → [Performance Todo](TODO.performance.md#build-performance)
    - Build system performance improvements
@@ -51,7 +51,7 @@
    - Development environment automation and consistency
    - Code generation and templating for productivity
 
-### 🟡 Normal Priority
+### Normal priority
 **Valuable improvements that enhance the project**
 
 1. **Documentation Enhancement** → [Documentation Todo](TODO.documentation.md#documentation-system-improvements)
@@ -69,7 +69,7 @@
    - Monitoring and incident response procedures
    - Compliance framework implementation
 
-### 🟢 Low Priority
+### Low priority
 **Nice-to-have features and experimental improvements**
 
 1. **Advanced Features** → [Packages Todo](TODO.packages.md#cross-package-improvements)
@@ -84,10 +84,10 @@
 
 ## Current Sprint Focus
 
-### Active Development (August 2025)
+### Active development (March 2026)
+- **MCP packages**: Building mcp-stdio and mcp-nvim → packages/mcp/
 - **Build System**: Fixing ordering issues for fresh clones → [Build System Todo](TODO.build-system.md#fresh-clone-setup-problems)
 - **Code Quality**: Completing ESLint configuration cleanup → [Code Quality Todo](TODO.code-quality.md#current-linting-issues)
-- **CLI Tools**: Implementing missing utilities → [CLI Tools Todo](TODO.cli-tools.md#high-priority-tools)
 - **Security**: Establishing security fundamentals → [Security Todo](TODO.security.md#dependency-security)
 
 ### Next Sprint Candidates
@@ -100,8 +100,8 @@
 
 ### Developer Experience Excellence
 Initiatives spanning multiple TODO areas:
-- **Build Performance** → [Performance Todo](TODO.performance.md#build-performance) + [Build System Todo](TODO.build-system.md#moon-build-system-optimization)
-- **Development Environment** → [Development Todo](TODO.development.md#wsl-development-environment) + [Automation Todo](TODO.automation.md#development-environment-automation)
+- **Build Performance** → [Performance Todo](TODO.performance.md#build-performance) + [Build System Todo](TODO.build-system.md#mise-configuration-enhancements)
+- **Development Environment** → [Development Todo](TODO.development.md) + [Automation Todo](TODO.automation.md#development-environment-automation)
 - **Code Quality** → [Code Quality Todo](TODO.code-quality.md#secure-coding-practices) + [Security Todo](TODO.security.md#development-security)
 
 ### Production Readiness
@@ -126,7 +126,7 @@ Coordinated library development:
 
 **Weeks 5-8: Development Experience**
 - Performance optimization for build and runtime → [Performance Todo](TODO.performance.md#build-performance)
-- Development environment standardization → [Development Todo](TODO.development.md#wsl-development-environment)
+- Development environment standardization → [Development Todo](TODO.development.md)
 - Code quality automation enhancement → [Code Quality Todo](TODO.code-quality.md#current-linting-issues)
 
 ### Quarter 2: Ecosystem Expansion
@@ -153,11 +153,11 @@ Coordinated library development:
 
 ## Recent Completions
 
-- ✅ Husky to Moon migration (June 2025) → [Completed Tasks](TODO.completed.md#husky-to-moon-migration-june-2025)
-- ✅ WSL development environment setup → [Completed Tasks](TODO.completed.md#wsl-migration-benefits-completed)
-- ✅ Pre-commit hook implementation → [Completed Tasks](TODO.completed.md#pre-commit-validation-issues-fixed-june-2025)
-- ✅ TypeScript baseUrl configuration fixes → [Completed Tasks](TODO.completed.md#typescript-configuration-fixes)
-- ✅ ESLint configuration cleanup (partial) → [Completed Tasks](TODO.completed.md#eslint-configuration-cleanup-june-2025)
+- Husky to mise migration (June 2025) → [Completed Tasks](TODO.completed.md)
+- Pre-commit hook implementation → [Completed Tasks](TODO.completed.md)
+- TypeScript baseUrl configuration fixes → [Completed Tasks](TODO.completed.md)
+- ESLint configuration cleanup (partial) → [Completed Tasks](TODO.completed.md)
+- MCP stdio package initial implementation (March 2026)
 
 *For detailed information on completed tasks, see [Completed Tasks](TODO.completed.md)*
 
