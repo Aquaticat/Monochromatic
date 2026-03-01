@@ -36,17 +36,12 @@
 ### High priority
 **Important improvements that significantly impact developer experience**
 
-1. **CLI Tools Development** → [CLI Tools Todo](TODO.cli-tools.md#high-priority-tools)
-   - ~~`cpfd`~~ - Deprecated, superseded by file-enforcer
-   - ~~`increase-version`~~ - Deprecated, no longer needed with monorepo
-   - ~~`add-scripts`~~ - Deprecated, handled by file-enforcer and mise templates
-
-2. **Performance Optimization** → [Performance Todo](TODO.performance.md#build-performance)
+1. **Performance Optimization** → [Performance Todo](TODO.performance.md#build-performance)
    - Build system performance improvements
    - TypeScript compilation optimization
    - Bundle size and runtime performance optimization
 
-3. **Development Automation** → [Automation Todo](TODO.automation.md#development-automation)
+2. **Development Automation** → [Automation Todo](TODO.automation.md#development-automation)
    - Enhanced pre-commit hooks and code quality automation
    - Development environment automation and consistency
    - Code generation and templating for productivity
