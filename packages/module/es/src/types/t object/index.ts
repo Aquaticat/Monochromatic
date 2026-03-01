@@ -11,4 +11,5 @@ export * as nonNull from './t nonNull/index.ts';
 export * as null from './t null/index.ts';
 export * as record from './t record/index.ts';
 export * as regexp from './t regexp/index.ts';
+export * as store from './t store/index.ts';
 export * as type from './t/index.ts';

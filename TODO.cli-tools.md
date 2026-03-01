@@ -10,58 +10,17 @@
 ## High Priority Tools
 
 ### `cpfd` - Copy Files From Dependencies
-**Status**: High Priority - Daily workflow improvement
-
-Create a tool to copy files from dependencies into the project.
-
-#### Detailed Implementation Tasks
-- [ ] Design CLI interface with intuitive commands and options
-- [ ] Implement dependency resolution and file discovery
-- [ ] Add support for glob patterns and file filtering
-- [ ] Create configuration file support for common copy operations
-- [ ] Add dry-run mode for preview before copying
-- [ ] Implement file conflict resolution and overwrite protection
-- [ ] Add progress reporting for large copy operations
-- [ ] Create integration with Moon task system
-
-**Cross-Reference**: See [Build System Todo](TODO.build-system.md#package-management-improvements) for related package tooling.
+**Status**: Deprecated -- superseded by `packages/dev-script/file-enforcer`
 
 ### `increase-version`
-**Status**: High Priority - Publishing workflow
-
-Automate version bumping to ensure every publish has a new version.
-
-#### Detailed Implementation Tasks
-- [ ] Implement semantic versioning compliance
-- [ ] Add support for conventional commit parsing
-- [ ] Create interactive version selection mode
-- [ ] Add batch version updating across multiple packages
-- [ ] Implement version constraint validation
-- [ ] Add changelog generation integration
-- [ ] Create git tag automation with proper metadata
-- [ ] Add publishing workflow integration
-
-**Cross-Reference**: See [Automation Todo](TODO.automation.md#release-automation) for comprehensive release automation.
+**Status**: Deprecated -- no longer needed after monorepo adoption (no frequent npm publishes)
 
 ### `add-scripts`
-**Status**: High Priority - Package creation workflow
-
-Add new NPM scripts to the target package every time a new package is created.
-
-#### Detailed Implementation Tasks
-- [ ] Create template-based script generation
-- [ ] Implement package type detection (library, app, config, etc.)
-- [ ] Add script customization based on package category
-- [ ] Create script validation and testing
-- [ ] Add integration with package scaffolding tools
-- [ ] Implement script documentation generation
-- [ ] Create script maintenance and update utilities
-
-**Cross-Reference**: See [Packages Todo](TODO.packages.md#cross-package-improvements) for package standardization.
+**Status**: Deprecated -- handled by file-enforcer and mise task templates
 
 ## Monochromatic CLI Development
 
-**Current Direction**: Writing a few moon plugins instead of a full CLI.
+**Current Direction**: Writing a few mise tasks instead of a full CLI.
 
 ### `monochromatic new <monorepo-name>`
 
@@ -144,18 +103,18 @@ append "my new line1" "my new line2" --to myfile.md
 - [ ] Add content validation and formatting
 - [ ] Implement batch append operations
 
-### Write my own moon MCP server
+### Write my own mise MCP server
 **Status**: Medium Priority
 
-Create a custom MCP server for better Moon integration with Claude/AI tools.
+Create a custom MCP server for better mise integration with Claude/AI tools.
 
 #### Detailed Implementation Tasks
-- [ ] Design MCP server architecture for Moon integration
-- [ ] Implement Moon task discovery and execution tools
-- [ ] Add Moon configuration manipulation tools
-- [ ] Create Moon cache management tools
-- [ ] Implement Moon performance monitoring tools
-- [ ] Add Moon troubleshooting and debugging tools
+- [ ] Design MCP server architecture for mise integration
+- [ ] Implement mise task discovery and execution tools
+- [ ] Add mise configuration manipulation tools
+- [ ] Create mise cache management tools
+- [ ] Implement mise performance monitoring tools
+- [ ] Add mise troubleshooting and debugging tools
 - [ ] Create comprehensive documentation and examples
 
 **Cross-Reference**: See [Automation Todo](TODO.automation.md#development-automation) for AI-assisted development tools.
@@ -190,7 +149,7 @@ Create a custom MCP server for better Moon integration with Claude/AI tools.
 
 ### Script Preferences
 - **NEVER write bash/shell scripts** (non-portable, unreadable, unfamiliar)
-- When scripts are needed, create TypeScript files as `moon.<action>.ts` in `packages/module/es/src/`
+- When scripts are needed, create TypeScript files as `mise.<action>.ts` in `packages/module/es/src/`
 - Use Bun to execute TypeScript scripts directly
 - Avoid creating main() functions
   - Instead of wrapping code in a main() function, write top-level code directly
@@ -300,10 +259,10 @@ const result = await match({ hasFeature: await checkFeature() })
 
 ## Implementation Notes
 
-- Use `ripgrep` (rg) for fast text searching instead of navigating pnpm's complex node_modules structure
+- Use `ripgrep` (rg) for fast text searching instead of navigating Bun's node_modules structure
 - Focus on tools that improve daily development workflow
 - Prioritize TypeScript implementation over shell scripts for better maintainability
-- Integrate with Moon's task system where possible
+- Integrate with mise task system where possible
 - Follow security best practices for all tool development
 - Implement comprehensive error handling and user feedback
 - Create thorough documentation and usage examples for all tools
@@ -320,4 +279,4 @@ const result = await match({ hasFeature: await checkFeature() })
 - [ ] Performance optimization applied where beneficial
 - [ ] Automated testing ensures tool reliability
 - [ ] Tools enhance developer productivity measurably
-- [ ] Integration with Moon task system optimized
+- [ ] Integration with mise task system optimized

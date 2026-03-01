@@ -2,7 +2,7 @@
 
 ## Major Migrations and System Changes
 
-### Husky to Moon Migration (June 2025) ✅
+### Husky to Moon Migration (June 2025)
 
 #### Completed Tasks
 - [x] Research Moon's VCS hooks capabilities and configuration
@@ -35,29 +35,29 @@
 - Consistent task definitions across build and hooks
 
 #### Follow-up Tasks Completed
-1. **Set up IDE integration**: ✅
+1. **Set up IDE integration**:
    - Configure format-on-save for all developers
    - Ensure TypeScript language server is properly configured
    - Document recommended VS Code extensions in the project
 
-2. **Strengthen CI pipeline**: ✅
+2. **Strengthen CI pipeline**:
    - Run full `moon run :build` on every PR
    - Run `moon run :format` in check mode
    - Make these CI checks required for merging
 
-3. **Create convenience commands**: ✅
+3. **Create convenience commands**:
    - `moon run precommit` - manually run all pre-commit checks
    - `moon run validate` - run format + build + test for thorough local validation
 
-### WSL Migration - Post-Migration Tasks (June 2025) ✅
+### WSL Migration - Post-Migration Tasks (June 2025)
 
 #### Completed Migration Steps
-1. **Install dependencies in WSL location** ✅
-2. **Run initial setup** ✅
-3. **Verify build system** ✅
-4. **Set up VSCode for WSL** ✅
-5. **Performance verification** ✅
-6. **Clean up Windows copy** ✅
+1. **Install dependencies in WSL location**
+2. **Run initial setup**
+3. **Verify build system**
+4. **Set up VSCode for WSL**
+5. **Performance verification**
+6. **Clean up Windows copy**
 
 #### Migration Benefits Achieved
 - Native Linux moon binary (no path translation issues)
@@ -67,14 +67,14 @@
 
 ## Build System and Configuration Fixes
 
-### Pre-commit Validation Issues Fixed (June 2025) ✅
+### Pre-commit Validation Issues Fixed (June 2025)
 
 #### Critical Build Issues Resolved
-1. **ESLint config package not built** ✅
+1. **ESLint config package not built**
    - Fixed by running `moon run config-eslint:build`
    - This was blocking all ESLint validation
 
-2. **Playwright system dependencies missing** ✅
+2. **Playwright system dependencies missing**
    - Browser tests fail with: "Host system is missing dependencies to run browsers. Missing libraries: libX11-xcb.so.1"
    - Enhanced the `preparePlaywright` script to:
      - Detect OS (Linux/macOS/Windows) and Linux distribution
@@ -85,22 +85,22 @@
      - Support Ubuntu/Debian, Fedora/RHEL, and Arch Linux with specific commands
 
 #### Resolution Results
-1. **Immediate**: Fix Playwright system dependencies installation ✅
-2. **High**: Address TypeScript strict errors (blocking commits) ✅
-   - Fixed type guard functions to use `unknown` instead of `any` ✅
-   - Fixed error handling in catch blocks to use `unknown` ✅
-   - Added explicit return types for Astro getStaticPaths functions ✅
-   - Fixed Symbol property access on unknown types ✅
-   - Fixed vite config iframe path issue ✅
-   - Fixed empty test file causing test suite failures ✅
+1. **Immediate**: Fix Playwright system dependencies installation
+2. **High**: Address TypeScript strict errors (blocking commits)
+   - Fixed type guard functions to use `unknown` instead of `any`
+   - Fixed error handling in catch blocks to use `unknown`
+   - Added explicit return types for Astro getStaticPaths functions
+   - Fixed Symbol property access on unknown types
+   - Fixed vite config iframe path issue
+   - Fixed empty test file causing test suite failures
    - **Pre-commit hook now passes!** Commits are no longer blocked
    - Remaining: Some TypeScript errors in test files (can be addressed incrementally)
 
-### TypeScript Configuration Fixes ✅
+### TypeScript Configuration Fixes
 
-1. **TypeScript baseUrl Warnings**: ✅ Fixed by adding `baseUrl: "./"` to all tsconfig files (completed in commit 673787f)
+1. **TypeScript baseUrl Warnings**: Fixed by adding `baseUrl: "./"` to all tsconfig files (completed in commit 673787f)
 
-## ESLint Configuration Cleanup (June 2025) ✅
+## ESLint Configuration Cleanup (June 2025)
 
 ### Configuration Changes Completed
 - [x] Disable `jsdoc/tag-lines` - formatting concern, not linting
@@ -113,7 +113,7 @@
 - [x] Replace `window` with `globalThis` in figma plugin files
 - [x] Fix `e` variable usage in catch blocks to use `error` instead
 
-### Comprehensive ESLint Fixes Session (June 2025) ✅
+### Comprehensive ESLint Fixes Session (June 2025)
 
 #### Variable `i` Issues Fixed
 - `fixture.promises.0to999.ts` - changed to `promiseIndex`, `batchStart`, `index`
@@ -157,32 +157,32 @@ Updated to use function references in multiple test files including:
 
 ## Setup and Validation
 
-### Fresh Clone Setup Validation (June 2025) ✅
+### Fresh Clone Setup Validation (June 2025)
 
 #### Validation Scripts Implemented
-- ✅ **validateSetup task**: Successfully implemented to help diagnose environment issues
-- ✅ **Validation scripts**: checkTools, checkDependencies, checkBuild, checkGitHooks are working correctly
-- ✅ **baseUrl TypeScript configuration**: Has been documented in TROUBLESHOOTING.md
+- **validateSetup task**: Successfully implemented to help diagnose environment issues
+- **Validation scripts**: checkTools, checkDependencies, checkBuild, checkGitHooks are working correctly
+- **baseUrl TypeScript configuration**: Has been documented in TROUBLESHOOTING.md
 
 ## Framework and Dependency Updates
 
-### Completed/No Action Needed ✅
+### Completed/No Action Needed
 
 #### Astro RSS Endpoint
-- ✅ **Status**: Fixed upstream
+- **Status**: Fixed upstream
 - **Note**: Seems like they've fixed it, so no work needed
 
 #### LightningCSS Resolver  
-- ✅ **Status**: Switched back to postcss
+- **Status**: Switched back to postcss
 - **Note**: Holding onto this idea in case future lightningcss updates make it better than postcss
 
 #### fs-extra packageExtensions
-- ✅ **Status**: No longer using fs-extra
+- **Status**: No longer using fs-extra
 - **Note**: Previously needed for fs-extra/universalify dependency issue, keeping for reference
 
 ## Documentation and Standards
 
-### Documentation Standards Established ✅
+### Documentation Standards Established
 
 #### Technical Writing Guidelines
 - Write in active voice without collective pronouns
@@ -202,7 +202,7 @@ Updated to use function references in multiple test files including:
 - Use sentence case for headings
 - Use **bold** formatting instead of capitalization
 
-### Git Commit Guidelines Established ✅
+### Git Commit Guidelines Established
 
 #### Conventional Commits Implementation
 - Follow Conventional Commits specification
@@ -213,17 +213,17 @@ Updated to use function references in multiple test files including:
 
 ## Code Quality Patterns and Learning
 
-### Meilisearch Task Polling Implementation Evolution ✅
+### Meilisearch Task Polling Implementation Evolution
 
 **Completed Learning Exercise**: Progressive simplification through "Do you really need..." questions:
 
-1. ✅ Started with mutable `let taskStatus` and `while` loop with inline constants
-2. ✅ "Do you really need a mutable variable?" → Moved to immutable `const` inside loop, hoisted constants
-3. ✅ "Do you really need a while(true) break pattern?" → Changed to `while` with proper condition
-4. ✅ "Do you really need a while loop at all?" → Changed to `for` loop with calculated iterations
-5. ✅ "Do you really need a for loop?" → Changed to recursive helper function
+1. Started with mutable `let taskStatus` and `while` loop with inline constants
+2. "Do you really need a mutable variable?" → Moved to immutable `const` inside loop, hoisted constants
+3. "Do you really need a while(true) break pattern?" → Changed to `while` with proper condition
+4. "Do you really need a while loop at all?" → Changed to `for` loop with calculated iterations
+5. "Do you really need a for loop?" → Changed to recursive helper function
 
-#### Lessons Learned and Applied ✅
+#### Lessons Learned and Applied
 1. **Question every construct** - Each programming construct adds complexity
 2. **Prefer immutability** - Mutable variables should be eliminated when possible
 3. **Prefer declarative over imperative** - Loops can often be replaced with higher-order functions
@@ -231,59 +231,58 @@ Updated to use function references in multiple test files including:
 5. **Think functionally first** - There's often a functional solution that's cleaner
 6. **Simplify progressively** - Don't stop at the first working solution
 
-## Priority Classifications Established ✅
+## Priority Classifications Established
 
 ### Completed Priority System
-- ✅ **High Priority**: CLI tools development, Package.jsonc support and bidirectional sync
-- ✅ **Normal Priority**: Multiple localized 404 pages, PlantUML integration, SVG optimization
-- ✅ **Low Priority**: MDX formatting, Automatic translation integration, Dim sidebar on hover (on hold)
-- ✅ **Completed/No Action Needed**: Astro RSS endpoint, lightningCSS resolver, fs-extra packageExtensions
+- **High Priority**: CLI tools development, Package.jsonc support and bidirectional sync
+- **Normal Priority**: Multiple localized 404 pages, PlantUML integration, SVG optimization
+- **Low Priority**: MDX formatting, Automatic translation integration, Dim sidebar on hover (on hold)
+- **Completed/No Action Needed**: Astro RSS endpoint, lightningCSS resolver, fs-extra packageExtensions
 
 ## Testing and Quality Assurance
 
-### Testing Requirements Established ✅
+### Testing Requirements Established
 
 #### Test Structure Standards
-- ✅ Use descriptive test names that explain expected behavior
-- ✅ Group related tests using `describe` blocks
-- ✅ Use `it.each` for parameterized tests
-- ✅ Mock external dependencies using Vitest's mocking capabilities
-- ✅ Test both happy path and error scenarios
+- Use descriptive test names that explain expected behavior
+- Group related tests using `describe` blocks
+- Use `it.each` for parameterized tests
+- Mock external dependencies using Vitest's mocking capabilities
+- Test both happy path and error scenarios
 
 #### Test File Setup Standards
-- ✅ Always start Vitest files with proper imports and logtape configuration
-- ✅ Use V8 ignore comments for untestable code paths
-- ✅ Write corresponding Vitest files aiming for 100% test coverage
-- ✅ Tests can only be run from workspace root using `moon run test`
+- Always start Vitest files with proper imports and logtape configuration
+- Use V8 ignore comments for untestable code paths
+- Write corresponding Vitest files aiming for 100% test coverage
+- Tests can only be run from workspace root using `mise run test`
 
 ## Reference Information
 
-### Key Dates and Milestones
-- **June 19, 2025**: WSL Migration completion
-- **June 2025**: Husky to Moon migration
+**Note**: The project migrated from Moon to mise and from pnpm to Bun in late 2025.
+Historical references below reflect the tooling at the time of completion.
+
+### Key dates and milestones
+- **June 19, 2025**: WSL migration completion
+- **June 2025**: Husky to Moon migration (later migrated to mise)
 - **June 2025**: Pre-commit validation fixes
 - **June 2025**: ESLint configuration cleanup
-- **August 2025**: TODO file reorganization (this document)
+- **August 2025**: TODO file reorganization
+- **Late 2025**: Migration from Moon to mise, pnpm to Bun
+- **March 2026**: MCP stdio package initial implementation
 
-### Important File Locations
-- **Backup Location**: `bak/20250619_233329/` (package.json backup from Husky migration)
-- **Configuration Files**: `.moon/workspace.yml`, `.moon/toolchain.yml`, `.moon/tasks.yml`
-- **Validation Scripts**: Various moon validation tasks in `packages/module/es/src/`
+### Important file locations
+- **Backup location**: `bak/20250619_233329/` (package.json backup from Husky migration)
+- **Task configuration**: `mise.toml` files in root and package directories
+- **Validation scripts**: Various mise tasks in `packages/module/es/src/`
 
-### Migration Commands Reference
+### Current commands reference
 ```bash
-# WSL Migration verification
-cd ~/projects/monochromatic
-pnpm install
-moon run prepare
-moon run build
-moon run test
+# Fresh clone setup
+bun install
+mise run build
 
-# Fresh clone setup (current working approach)
-bash <(curl -fsSL https://moonrepo.dev/install/proto.sh)
-moon run prepare
-moon run vite:js  # Build config packages first
-moon run build
+# Running tests
+mise run test
 ```
 
 This document serves as a historical reference for completed work and should be updated when major tasks are finished to keep the active TODO files focused on current and future work.

@@ -5,7 +5,7 @@
 - [**Security Documentation**](TODO.security.md#security-documentation) - Security guidelines and procedures
 - [**Performance Documentation**](TODO.performance.md#monitoring--metrics) - Performance guidelines and metrics
 - [**Automation Documentation**](TODO.automation.md#documentation-automation) - Automated documentation generation
-- [**Build System Documentation**](TODO.build-system.md#moon-configuration-enhancements) - Build system and tooling documentation
+- [**Build System Documentation**](TODO.build-system.md#mise-configuration-enhancements) - Build system and tooling documentation
 
 ## Documentation System Improvements
 

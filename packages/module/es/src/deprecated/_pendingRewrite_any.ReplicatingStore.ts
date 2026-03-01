@@ -1,3 +1,8 @@
+/**
+ * @deprecated Use `types/t object/t store/` instead.
+ * This file is pending removal after migration is complete.
+ */
+
 import decircular from 'decircular';
 import superjson from 'superjson';
 import type { Promisable, } from 'type-fest';

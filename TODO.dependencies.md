@@ -9,13 +9,7 @@ Tasks related to third-party dependency issues and contributions.
 **Issue**: The `@eslint/config-helpers` package uses eslint types (for `globalIgnore` and `defineConfig`) but does not declare eslint as a dependency or peer dependency.
 This causes TypeScript errors when using these exported functions.
 
-**Current workaround**: Added to `packageExtensions` in `pnpm-workspace.yaml`:
-```yaml
-packageExtensions:
-  '@eslint/config-helpers':
-    peerDependencies:
-      eslint: '*'
-```
+**Current workaround**: Added to `packageExtensions` in `bunfig.toml` or workspace config.
 
 **Action needed**: Contribute a PR to the @eslint/config-helpers repository to add eslint as a peer dependency.
 

@@ -55,16 +55,15 @@ Current CLI tools in [`package.json` bin field](package.json:48):
 - [ ] **Documentation** - Comprehensive usage documentation for all CLI tools
 - [ ] **Testing** - Unit and integration tests for all CLI utilities
 
-### Moon Build System Integration
+### Mise task system integration
 
-#### Moon Integration Utilities
+#### Mise integration utilities
 **Status**: Normal Priority - Build system tooling
 
-- [ ] **Moon task automation** - Utilities for Moon task management
-- [ ] **Moon configuration validation** - Validate Moon workspace configuration
-- [ ] **Moon performance monitoring** - Track Moon task performance
-- [ ] **Moon cache optimization** - Utilities for Moon cache management
-- [ ] **Moon debugging utilities** - Tools for debugging Moon build issues
+- [ ] **Mise task automation** - Utilities for mise task management
+- [ ] **Mise configuration validation** - Validate mise workspace configuration
+- [ ] **Mise performance monitoring** - Track mise task performance
+- [ ] **Mise debugging utilities** - Tools for debugging mise build issues
 
 #### Build Validation and Checking
 **Status**: High Priority - Build reliability

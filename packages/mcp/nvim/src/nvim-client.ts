@@ -3,7 +3,7 @@ import { readdirSync, statSync } from "node:fs";
 import { connect } from "node:net";
 
 // Severity codes from vim.diagnostic.severity
-const SEVERITY_MAP: Record<number, string> = {
+export const SEVERITY_MAP: Record<number, string> = {
   1: "ERROR",
   2: "WARN",
   3: "INFO",

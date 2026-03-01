@@ -56,9 +56,9 @@ This approach addresses the core psychological and workflow barriers:
 - **Recovery**: Difficult due to large time gaps between commits
 
 ### Development Environment
-- **Project Structure**: Monorepo with Moon task orchestration
+- **Project Structure**: Monorepo with mise task orchestration
 - **Language**: TypeScript with strict typing
-- **Tools**: VSCode, Moon CLI, pnpm, existing linting/testing infrastructure
+- **Tools**: VSCode, mise, Bun, existing linting/testing infrastructure
 - **Workflow**: Rapid iterative development with frequent file switching
 - **Session Length**: Extended coding sessions (2-8 hours common)
 
@@ -126,7 +126,7 @@ This approach addresses the core psychological and workflow barriers:
   - Respect `.gitignore` and custom ignore patterns
   - Detect and preserve existing commit hooks
   - Handle merge conflicts and rebases gracefully
-  - Work with monorepo structure (Moon workspace)
+  - Work with monorepo structure (Bun workspace)
 
 ## Phase 4: Advanced Features
 
@@ -160,7 +160,7 @@ This approach addresses the core psychological and workflow barriers:
   - Setup instructions for different development environments
   - Configuration examples for various project types
   - Best practices and troubleshooting guide
-  - Integration with Moon workspace and existing tools
+  - Integration with mise/Bun workspace and existing tools
 
 - [ ] **Testing and validation**
   - Unit tests for core logic
@@ -173,7 +173,7 @@ This approach addresses the core psychological and workflow barriers:
 **File Watcher Implementation**
 - Use Node.js with `chokidar` for cross-platform compatibility
 - Leverage existing TypeScript tooling in the project
-- Integrate with Moon's task system for consistency
+- Integrate with mise task system for consistency
 
 **AI Provider Strategy**
 - Start with GitHub Copilot CLI (already authenticated)
@@ -189,7 +189,7 @@ This approach addresses the core psychological and workflow barriers:
 
 ## Integration Points
 
-- [ ] **Moon workspace integration**
+- [ ] **mise workspace integration**
   - Add as a new package under `packages/build/ai-commit/`
   - Use existing TypeScript configuration
   - Leverage shared utilities from `module-es`
