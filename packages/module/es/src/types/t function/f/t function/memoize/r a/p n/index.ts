@@ -22,6 +22,16 @@ function buildCacheKey(argKey: string, salt: string | number,): string {
   return `${argKey}:${String(salt)}`;
 }
 
+// Not extracted to the types tree: this is a key-only eviction tracker, not a
+// general-purpose LRU cache. Use cases like HTTP response caches or image
+// thumbnail caches are already served by memoize itself:
+//
+//   const cachedFetch = await memoize({
+//     fn: fetchData,
+//     keyFn: (url) => url,
+//     salt: String(Math.floor(Date.now() / HOUR_MS)),
+//   });
+
 /**
  * Ordered key set that tracks LRU access order.
  * Uses a `Map<string, true>` so JS insertion-order iteration gives LRU semantics.

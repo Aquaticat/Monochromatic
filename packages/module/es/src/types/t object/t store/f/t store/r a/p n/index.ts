@@ -1,5 +1,4 @@
 import superjson from 'superjson';
-import decircular from 'decircular';
 
 import type {
   $  as Store,
@@ -10,91 +9,11 @@ import type { Serializer, Deserializer, } from '../../../../t/index.ts';
 import { $ as defaultLogger, } from '../../../../../t logger/f/t never/r s/p p/index.ts';
 import {
   type BackendResult,
-  computeCanonical,
+  resolveConsensus,
   healBackends,
 } from '../../../../consensus.ts';
 import { hashString, } from '../../../../../../t string/f/_pendingRefactor_type string/hash.ts';
-
-/**
- * Detect whether a value contains circular references.
- *
- * @param value - value to inspect
- * @returns true when cyclic
- *
- * @example
- * ```ts
- * const obj: Record<string, unknown> = {};
- * obj.self = obj;
- * hasCycle(obj); // true
- * ```
- */
-function hasCycle(value: unknown,): boolean {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-
-  /** Tracks visited object references. */
-  const seen = new WeakSet();
-
-  /** Stack-based iterative cycle detection. */
-  const stack: unknown[] = [value,];
-
-  // Intentional mutation: stack is consumed during traversal
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- stack shrinks via pop
-  while (stack.length > 0) {
-    const current = stack.pop();
-    if (typeof current !== 'object' || current === null) {
-      continue;
-    }
-    if (seen.has(current,)) {
-      return true;
-    }
-    seen.add(current,);
-    for (const child of Object.values(current,)) {
-      stack.push(child,);
-    }
-  }
-
-  return false;
-}
-
-/** Max characters for value previews in log messages when no limit is specified. */
-const DEFAULT_LOG_LIMIT = 100;
-
-/**
- * Serialize a value for storage, handling cyclic graphs based on configuration.
- *
- * @param value - input data to serialize
- * @param serializer - serialization function
- * @param lossyForCircular - whether to allow lossy decycling
- * @returns serialized string
- * @throws TypeError when cyclic and lossyForCircular is false
- *
- * @example
- * ```ts
- * const serialized = serializeValue({ x: 1 }, JSON.stringify, true);
- * ```
- */
-function serializeValue(
-  value: unknown,
-  serializer: Serializer,
-  lossyForCircular: boolean,
-): string {
-  if (hasCycle(value,)) {
-    const decycled = decircular(value as object,);
-    const serialized = serializer(decycled,);
-    if (!lossyForCircular) {
-      throw new TypeError(
-        `Cannot store value perfectly because it has cycles: ${serialized.slice(0, DEFAULT_LOG_LIMIT,)}`,
-      );
-    }
-    defaultLogger.warn(
-      `Value has cycles, storing decycled version: ${serialized.slice(0, DEFAULT_LOG_LIMIT,)}`,
-    );
-    return serialized;
-  }
-  return serializer(value,);
-}
+import { $ as serializeValue, } from '../../../../../../t string/f/t unknown/serialize/r s/p n/index.ts';
 
 /**
  * Query all backends for a key and return typed results with priority info.
@@ -123,47 +42,6 @@ async function queryAllBackends(
     },),
   );
   return results as [BackendResult, ...BackendResult[],];
-}
-
-/**
- * Resolve canonical value from backend results via consensus.
- *
- * @param results - backend query results
- * @param key - lookup key for error messages
- * @returns canonical serialized value or undefined
- *
- * @example
- * ```ts
- * const canonical = resolveConsensus(results, 'my-key');
- * ```
- */
-function resolveConsensus(
-  results: readonly [BackendResult, ...BackendResult[],],
-  key: string,
-): string | undefined {
-  const grouped = Map.groupBy(results, function byPriority({ priority, },) {
-    return priority;
-  },);
-
-  const sortedTiers = Array
-    .from(grouped.entries(),)
-    .toSorted(function byAscPriority([priorityA,], [priorityB,],) {
-      return priorityA - priorityB;
-    },)
-    .map(function extractResults([, tierResults,],) {
-      return tierResults;
-    },);
-
-  const highestResults = sortedTiers.at(-1,);
-  if (highestResults === undefined || highestResults.length === 0) {
-    throw new Error(`Store.get: no backend results for key "${key}"`,);
-  }
-
-  const groupedHighest = Map.groupBy(highestResults, function byValue({ value, },) {
-    return value;
-  },);
-
-  return computeCanonical(results, groupedHighest, highestResults, key,);
 }
 
 /**
@@ -252,7 +130,7 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
 
     async set(key: string, value: unknown,): Promise<Store> {
       defaultLogger.trace(`Store.set: "${key}"`,);
-      const serialized = serializeValue(value, serializer, lossyForCircular,);
+      const serialized = serializeValue({ value, serializer, lossyForCircular, },);
       const resolvedKey = key.length === 0 ? await hashString(serialized,) : key;
 
       await Promise.all(

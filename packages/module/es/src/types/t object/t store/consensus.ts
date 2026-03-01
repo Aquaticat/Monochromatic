@@ -1,3 +1,8 @@
+// Not extracted to the types tree: the consensus API is shaped around
+// BackendResult with string values and numeric priority tiers -- store
+// vocabulary. The concept (majority vote over prioritized sources) is general,
+// but generalizing the API without a second consumer would be speculative.
+
 /**
  * Internal result record for Store.get aggregation.
  * Generic over backend type so both sync and async stores can reuse consensus logic.
@@ -115,6 +120,52 @@ export function computeCanonical<TBackend = unknown,>(
   return overall.hasMajority
     ? overall.value
     : computeFromHighestTier(groupedHighest, highestResults, key,);
+}
+
+/**
+ * Resolve canonical value from backend results via consensus.
+ *
+ * Groups results by priority tier, picks the highest tier, then delegates
+ * to {@link computeCanonical} for majority-based resolution.
+ *
+ * @typeParam TBackend - storage backend type
+ * @param results - backend query results (at least one)
+ * @param key - lookup key for error messages
+ * @returns canonical serialized value or `undefined`
+ * @throws Error when no backend results exist for the key
+ *
+ * @example
+ * ```ts
+ * const canonical = resolveConsensus(results, 'my-key');
+ * ```
+ */
+export function resolveConsensus<TBackend = unknown,>(
+  results: readonly [BackendResult<TBackend>, ...BackendResult<TBackend>[],],
+  key: string,
+): string | undefined {
+  const grouped = Map.groupBy(results, function byPriority({ priority, },) {
+    return priority;
+  },);
+
+  const sortedTiers = Array
+    .from(grouped.entries(),)
+    .toSorted(function byAscPriority([priorityA,], [priorityB,],) {
+      return priorityA - priorityB;
+    },)
+    .map(function extractResults([, tierResults,],) {
+      return tierResults;
+    },);
+
+  const highestResults = sortedTiers.at(-1,);
+  if (highestResults === undefined || highestResults.length === 0) {
+    throw new Error(`Store.get: no backend results for key "${key}"`,);
+  }
+
+  const groupedHighest = Map.groupBy(highestResults, function byValue({ value, },) {
+    return value;
+  },);
+
+  return computeCanonical(results, groupedHighest, highestResults, key,);
 }
 
 /**
