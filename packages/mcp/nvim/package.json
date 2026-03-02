@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@monochromatic-dev/mcp-stdio": "workspace:*",
-    "neovim": "^5.3.0"
+    "neovim": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",

@@ -9,14 +9,14 @@
     "render": "vite build"
   },
   "dependencies": {
-    "@motion-canvas/2d": "^3.17.2",
-    "@motion-canvas/core": "^3.17.2",
-    "@motion-canvas/vite-plugin": "^3.17.2",
-    "@motion-canvas/ffmpeg": "^3.17.2",
-    "@motion-canvas/ui": "^3.17.2"
+    "@motion-canvas/2d": "catalog:",
+    "@motion-canvas/core": "catalog:",
+    "@motion-canvas/vite-plugin": "catalog:",
+    "@motion-canvas/ffmpeg": "catalog:",
+    "@motion-canvas/ui": "catalog:"
   },
   "devDependencies": {
-    "vite": "^5.4.0"
+    "vite": "catalog:legacy"
   },
   "repository": {
     "type": "git",

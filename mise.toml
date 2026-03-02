@@ -405,4 +405,12 @@ run = "bun packages/dev-script/inference-canary/src/index.ts ...($env.usage_args
 
 #endregion Inference Canary
 
+#region Fix Tasks -- workarounds for upstream bugs
+
+[tasks."fix:jsr"]
+description = "Clear bun HTTP cache to work around JSR 502 on If-None-Match (jsr-io/jsr#1323)"
+run = "bun pm cache rm; bun install"
+
+#endregion Fix Tasks
+
 #endregion tasks

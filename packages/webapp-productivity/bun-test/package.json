@@ -3,6 +3,6 @@
   "private": true,
   "dependencies": {
     "@monochromatic-dev/build-tool-css": "workspace:*",
-    "zod": "^4.3.6"
+    "zod": "catalog:"
   }
 }

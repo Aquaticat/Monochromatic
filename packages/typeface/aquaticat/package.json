@@ -16,7 +16,7 @@
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@types/bun": "catalog:",
-    "opentype.js": "^1.3.4"
+    "opentype.js": "catalog:"
   },
   "repository": {
     "type": "git",
