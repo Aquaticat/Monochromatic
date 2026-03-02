@@ -10,8 +10,8 @@ import { $ as defaultLogger, } from '../../../../../t logger/f/t never/r s/p p/i
 import {
   type BackendResult,
   resolveConsensus,
-  healBackends,
 } from '../../../../consensus.ts';
+import { healBackends, } from '../../../../heal.ts';
 import { hashString, } from '../../../../../../t string/f/_pendingRefactor_type string/hash.ts';
 import { $ as serializeValue, } from '../../../../../../t string/f/t unknown/serialize/r s/p n/index.ts';
 

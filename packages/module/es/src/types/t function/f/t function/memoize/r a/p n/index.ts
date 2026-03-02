@@ -1,125 +1,12 @@
 import type {
-  MemoizeAsyncOptions,
+  MemoizeAsyncNamedOptions,
   MemoizedAsyncFunction,
 } from '../../t/index.ts';
 import { DEFAULT_MAX_CACHE_SIZE, } from '../../t/index.ts';
 import type { $ as Store, } from '../../../../../../t object/t store/t/r a/index.ts';
 import { $ as createStore, } from '../../../../../../t object/t store/f/t store/r a/p n/index.ts';
-
-/**
- * Build the full cache key from keyFn output and resolved salt.
- *
- * @param argKey - key derived from function arguments via keyFn
- * @param salt - resolved salt value to append
- * @returns composite cache key
- *
- * @example
- * ```ts
- * buildCacheKey('arg-key', 'v1'); // 'arg-key:v1'
- * ```
- */
-function buildCacheKey(argKey: string, salt: string | number,): string {
-  return `${argKey}:${String(salt)}`;
-}
-
-// Not extracted to the types tree: this is a key-only eviction tracker, not a
-// general-purpose LRU cache. Use cases like HTTP response caches or image
-// thumbnail caches are already served by memoize itself:
-//
-//   const cachedFetch = await memoize({
-//     fn: fetchData,
-//     keyFn: (url) => url,
-//     salt: String(Math.floor(Date.now() / HOUR_MS)),
-//   });
-
-/**
- * Ordered key set that tracks LRU access order.
- * Uses a `Map<string, true>` so JS insertion-order iteration gives LRU semantics.
- * Does not store values -- the Store handles that.
- *
- * @example
- * ```ts
- * const lru = createLruKeySet(1024, (key) => store.delete(key));
- * lru.touch('my-key');
- * ```
- */
-type LruKeySet = {
-  /** Mark a key as recently accessed. Evicts oldest if over capacity. */
-  touch: (key: string,) => void;
-  /** Remove a key from tracking. */
-  remove: (key: string,) => void;
-  /** Clear all tracked keys. */
-  clear: () => void;
-};
-
-/**
- * Create an LRU key set that evicts the oldest key when capacity is exceeded.
- *
- * @param maxSize - maximum tracked keys before eviction
- * @param onEvict - callback fired when a key is evicted (used to clean the Store)
- * @returns LRU key set
- *
- * @example
- * ```ts
- * const lru = createLruKeySet(256, (key) => { void store.delete(key); });
- * ```
- */
-function createLruKeySet(
-  maxSize: number,
-  onEvict: (key: string,) => void,
-): LruKeySet {
-  /** Ordered set using Map for insertion-order iteration. */
-  const keys = new Map<string, true>();
-
-  return {
-    touch(key: string,): void {
-      keys.delete(key,);
-      keys.set(key, true,);
-
-      if (keys.size > maxSize) {
-        const oldest = keys.keys().next();
-        if (!oldest.done) {
-          keys.delete(oldest.value,);
-          onEvict(oldest.value,);
-        }
-      }
-    },
-
-    remove(key: string,): void {
-      keys.delete(key,);
-    },
-
-    clear(): void {
-      keys.clear();
-    },
-  };
-}
-
-/**
- * Named-parameter options for async memoization.
- * Includes the function to memoize alongside configuration.
- *
- * @typeParam TArgs - tuple of function argument types
- * @typeParam TReturn - resolved return type (not wrapped in Promise)
- * @typeParam TSalt - salt value type
- *
- * @example
- * ```ts
- * const opts: MemoizeAsyncNamedOptions<[string], User, string> = {
- *   fn: fetchUser,
- *   keyFn: (id) => id,
- *   salt: 'v1',
- * };
- * ```
- */
-export type MemoizeAsyncNamedOptions<
-  TArgs extends readonly unknown[],
-  TReturn,
-  TSalt extends string | number = string,
-> = MemoizeAsyncOptions<TArgs, TSalt> & {
-  /** Pure async function to memoize. */
-  fn: (this: void, ...args: TArgs) => Promise<TReturn>;
-};
+import { buildCacheKey, } from '../../cacheKey.ts';
+import { createLruKeySet, } from '../../lruKeySet.ts';
 
 /**
  * Wraps an async function with memoization using LRU eviction, salt-based cache keys,

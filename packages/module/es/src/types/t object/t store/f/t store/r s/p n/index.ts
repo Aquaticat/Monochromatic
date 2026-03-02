@@ -10,8 +10,8 @@ import { $ as defaultLogger, } from '../../../../../t logger/f/t never/r s/p p/i
 import {
   type BackendResult,
   resolveConsensus,
-  healBackendsSync,
 } from '../../../../consensus.ts';
+import { healBackendsSync, } from '../../../../heal.ts';
 import { $ as serializeValue, } from '../../../../../../t string/f/t unknown/serialize/r s/p n/index.ts';
 
 /**

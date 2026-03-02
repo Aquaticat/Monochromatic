@@ -134,3 +134,55 @@ export type MemoizedAsyncFunction<
   /** Remove a specific entry by its full cache key (keyFn result + salt). */
   delete: (key: string,) => Promise<void>;
 };
+
+/**
+ * Named-parameter options for sync memoization.
+ * Includes the function to memoize alongside configuration.
+ *
+ * @typeParam TArgs - tuple of function argument types
+ * @typeParam TReturn - function return type
+ * @typeParam TSalt - salt value type
+ *
+ * @example
+ * ```ts
+ * const opts: MemoizeNamedOptions<[number], number, string> = {
+ *   fn: (x) => x * 2,
+ *   keyFn: (x) => String(x),
+ *   salt: 'v1',
+ * };
+ * ```
+ */
+export type MemoizeNamedOptions<
+  TArgs extends readonly unknown[],
+  TReturn,
+  TSalt extends string | number = string,
+> = MemoizeOptions<TArgs, TSalt> & {
+  /** Pure synchronous function to memoize. */
+  fn: (this: void, ...args: TArgs) => TReturn;
+};
+
+/**
+ * Named-parameter options for async memoization.
+ * Includes the function to memoize alongside configuration.
+ *
+ * @typeParam TArgs - tuple of function argument types
+ * @typeParam TReturn - resolved return type (not wrapped in Promise)
+ * @typeParam TSalt - salt value type
+ *
+ * @example
+ * ```ts
+ * const opts: MemoizeAsyncNamedOptions<[string], User, string> = {
+ *   fn: fetchUser,
+ *   keyFn: (id) => id,
+ *   salt: 'v1',
+ * };
+ * ```
+ */
+export type MemoizeAsyncNamedOptions<
+  TArgs extends readonly unknown[],
+  TReturn,
+  TSalt extends string | number = string,
+> = MemoizeAsyncOptions<TArgs, TSalt> & {
+  /** Pure async function to memoize. */
+  fn: (this: void, ...args: TArgs) => Promise<TReturn>;
+};
