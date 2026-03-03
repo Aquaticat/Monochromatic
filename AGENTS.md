@@ -99,6 +99,14 @@ Scope: package name or `*` for multi-package changes.
 Move changes where they belong immediately -- different file, new file, gitignore entry.
 When unsure, propose a concrete edit and location.
 
+## Package completeness
+
+A package is not finished until:
+- It has a `README.md`
+- It passes linting with zero errors
+
+Do not declare work complete while either condition is unmet.
+
 ## Run what you build
 
 Always execute created or modified runnable code to verify it works.

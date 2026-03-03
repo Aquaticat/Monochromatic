@@ -27,3 +27,6 @@ hide = true
 [tasks."lint--watch:types"]
 extends = "lint--watch:types"
 hide = true
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"

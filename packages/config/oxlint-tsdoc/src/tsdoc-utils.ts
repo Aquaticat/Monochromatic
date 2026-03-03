@@ -58,6 +58,7 @@ export type TsdocParseResult = {
  * Checks whether given file should be skipped by TSDoc rules.
  *
  * @param filename - absolute path of file being linted
+ *
  * @returns true when file has an ignored extension
  *
  * @example
@@ -75,6 +76,7 @@ export function shouldIgnoreFile(filename: string): boolean {
  * Checks whether a block comment is a TSDoc comment (starts with `*`).
  *
  * @param comment - AST comment node
+ *
  * @returns true for `/** ... *\/` style comments
  */
 function isTsdocBlock(comment: Comment): boolean {
@@ -117,7 +119,9 @@ const FALLBACK_ELIGIBLE_TYPES: ReadonlySet<string> = new Set([
  * is owned by the enclosing VariableDeclaration or MethodDefinition.
  *
  * @param node - AST node to find TSDoc for
+ *
  * @param context - oxlint rule context providing sourceCode
+ *
  * @returns block comment starting with `*`, or undefined when absent
  *
  * @example
@@ -128,12 +132,15 @@ const FALLBACK_ELIGIBLE_TYPES: ReadonlySet<string> = new Set([
 export function findTsdocComment(node: Span, context: Context): Comment | undefined {
   // Fast path: getCommentsBefore works for most declarations
   const comments = context.sourceCode.getCommentsBefore(node);
-  const found = comments.findLast(isTsdocBlock);
-  if (found !== undefined) {
-    return found;
+  for (let i = comments.length - 1; i >= 0; i--) {
+    const c = comments[i];
+    if (isTsdocBlock(c)) {
+      return c;
+    }
   }
 
   // Only fall back for declaration-level nodes, not expressions inside them
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const nodeType = (node as unknown as Record<string, unknown>).type as string | undefined;
   if (nodeType === undefined || !FALLBACK_ELIGIBLE_TYPES.has(nodeType)) {
     return undefined;
@@ -146,20 +153,20 @@ export function findTsdocComment(node: Span, context: Context): Comment | undefi
   const nodeStartLine = node.loc.start.line;
   const allComments = context.sourceCode.getAllComments();
 
-  let best: Comment | undefined;
-  for (const comment of allComments) {
-    if (!isTsdocBlock(comment)) {
+  let best: Comment | undefined = undefined;
+  for (const candidate of allComments) {
+    if (!isTsdocBlock(candidate)) {
       continue;
     }
-    const commentEndLine = comment.loc.end.line;
-    if (commentEndLine >= nodeStartLine) {
+    const candidateEndLine = candidate.loc.end.line;
+    if (candidateEndLine >= nodeStartLine) {
       continue;
     }
-    if (nodeStartLine - commentEndLine > 1) {
+    if (nodeStartLine - candidateEndLine > 1) {
       continue;
     }
-    if (best === undefined || comment.loc.end.line > best.loc.end.line) {
-      best = comment;
+    if (best === undefined || candidate.loc.end.line > best.loc.end.line) {
+      best = candidate;
     }
   }
 
@@ -170,7 +177,9 @@ export function findTsdocComment(node: Span, context: Context): Comment | undefi
  * Extracts and parses the TSDoc comment for a given AST node.
  *
  * @param node - AST node to find TSDoc for
+ *
  * @param context - oxlint rule context
+ *
  * @returns parsed result, or undefined when no TSDoc comment precedes the node
  *
  * @example
@@ -208,10 +217,12 @@ export function parseTsdocForNode(
  * function value, or returns the node itself for other function-like types.
  *
  * @param node - AST node representing a function-like declaration
+ *
  * @returns inner function node, or undefined when node has no `.value`
  */
 function unwrapMethodDefinition(node: Record<string, unknown>): Record<string, unknown> | undefined {
   if (node.type === 'MethodDefinition' || node.type === 'TSAbstractMethodDefinition') {
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return node.value as Record<string, unknown> | undefined;
   }
   return node;
@@ -223,6 +234,7 @@ function unwrapMethodDefinition(node: Record<string, unknown>): Record<string, u
  * Handles unwrapping MethodDefinition to its inner function value.
  *
  * @param node - AST node representing a function-like declaration
+ *
  * @returns raw parameter AST nodes, or empty array when absent
  */
 function extractRawParams(node: Record<string, unknown>): readonly Record<string, unknown>[] {
@@ -230,6 +242,7 @@ function extractRawParams(node: Record<string, unknown>): readonly Record<string
   if (target === undefined) {
     return [];
   }
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
   return target.params as Array<Record<string, unknown>> | undefined ?? [];
 }
 
@@ -240,6 +253,7 @@ function extractRawParams(node: Record<string, unknown>): readonly Record<string
  * MethodDefinition, and TSMethodSignature nodes.
  *
  * @param node - AST node representing a function-like declaration
+ *
  * @returns array of parameter name strings, excluding rest-element `...` prefix
  *
  * @example
@@ -250,7 +264,7 @@ function extractRawParams(node: Record<string, unknown>): readonly Record<string
  */
 export function extractParamNames(node: Span & Record<string, unknown>): readonly string[] {
   return extractRawParams(node).flatMap(function extractName(param): readonly string[] {
-    return extractBindingName(param as Record<string, unknown>);
+    return extractBindingName(param);
   });
 }
 
@@ -258,22 +272,27 @@ export function extractParamNames(node: Span & Record<string, unknown>): readonl
  * Recursively extracts binding names from a parameter pattern.
  *
  * @param pattern - AST binding pattern node
+ *
  * @returns array of extracted name strings
  */
 function extractBindingName(pattern: Record<string, unknown>): readonly string[] {
   switch (pattern.type) {
     case 'Identifier': {
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const name = pattern.name as string;
       // Skip `this` parameter in TypeScript
       return name === 'this' ? [] : [name];
     }
     case 'AssignmentPattern': {
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
       return extractBindingName(pattern.left as Record<string, unknown>);
     }
     case 'RestElement': {
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
       return extractBindingName(pattern.argument as Record<string, unknown>);
     }
     case 'TSParameterProperty': {
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
       return extractBindingName(pattern.parameter as Record<string, unknown>);
     }
     case 'ObjectPattern':
@@ -299,6 +318,7 @@ function extractBindingName(pattern: Record<string, unknown>): readonly string[]
  * RestElement (rest patterns), and TSParameterProperty (constructor params).
  *
  * @param node - AST node representing a function-like declaration
+ *
  * @returns set of property name strings from all destructured parameters
  *
  * @example
@@ -312,7 +332,7 @@ export function extractDestructuredParamNames(node: Span & Record<string, unknow
   const names = new Set<string>();
 
   for (const param of extractRawParams(node)) {
-    collectDestructuredNames(param as Record<string, unknown>, names);
+    collectDestructuredNames(param, names);
   }
 
   return names;
@@ -323,6 +343,7 @@ export function extractDestructuredParamNames(node: Span & Record<string, unknow
  * into the provided set.
  *
  * @param pattern - AST binding pattern node
+ *
  * @param names - mutable set to collect names into
  */
 function collectDestructuredNames(pattern: Record<string, unknown>, names: Set<string>): void {
@@ -333,19 +354,23 @@ function collectDestructuredNames(pattern: Record<string, unknown>, names: Set<s
     }
     case 'AssignmentPattern': {
       // `{ a = defaultValue }` -- unwrap to the left side
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
       collectDestructuredNames(pattern.left as Record<string, unknown>, names);
       return;
     }
     case 'RestElement': {
       // `...rest` inside destructuring
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
       collectDestructuredNames(pattern.argument as Record<string, unknown>, names);
       return;
     }
     case 'TSParameterProperty': {
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
       collectDestructuredNames(pattern.parameter as Record<string, unknown>, names);
       return;
     }
     case 'ObjectPattern': {
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const properties = pattern.properties as Array<Record<string, unknown>> | undefined;
       if (properties === undefined) {
         return;
@@ -356,8 +381,10 @@ function collectDestructuredNames(pattern: Record<string, unknown>, names: Set<s
           collectDestructuredNames(prop, names);
         } else {
           // Property node -- extract the key name
+          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
           const key = prop.key as Record<string, unknown> | undefined;
           if (key !== undefined && key.type === 'Identifier') {
+            // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
             names.add(key.name as string);
           }
         }
@@ -366,6 +393,7 @@ function collectDestructuredNames(pattern: Record<string, unknown>, names: Set<s
     }
     case 'ArrayPattern': {
       // Array destructuring: `[a, b]` -- elements are binding patterns
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const elements = pattern.elements as Array<Record<string, unknown> | null> | undefined;
       if (elements === undefined) {
         return;
@@ -378,16 +406,17 @@ function collectDestructuredNames(pattern: Record<string, unknown>, names: Set<s
       return;
     }
     default: {
-      return;
+      // Unknown pattern type, nothing to collect
     }
   }
 }
 
 /**
- * Extracts documented @param names from a parsed TSDoc comment.
+ * Extracts documented param names from a parsed TSDoc comment.
  *
  * @param docComment - parsed TSDoc DocComment
- * @returns array of parameter names found in @param tags
+ *
+ * @returns array of parameter names found in param tags
  *
  * @example
  * ```ts
@@ -404,6 +433,7 @@ export function extractDocParamNames(docComment: DocComment): readonly string[] 
  * Checks whether a function-like node has a non-void return type or return statements.
  *
  * @param node - AST node to inspect
+ *
  * @returns true when function appears to return a value
  */
 export function functionReturnsValue(node: Span & Record<string, unknown>): boolean {
@@ -411,6 +441,7 @@ export function functionReturnsValue(node: Span & Record<string, unknown>): bool
   // because `kind` ("constructor", "get", "set", "method") is a property
   // of MethodDefinition, not of the inner FunctionExpression.
   if (node.type === 'MethodDefinition' || node.type === 'TSAbstractMethodDefinition') {
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const kind = (node as Record<string, unknown>).kind as string | undefined;
     if (kind === 'constructor' || kind === 'set') {
       return false;
@@ -424,10 +455,13 @@ export function functionReturnsValue(node: Span & Record<string, unknown>): bool
   }
 
   // Check for explicit void/never return type annotation
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const returnType = target.returnType as Record<string, unknown> | undefined | null;
   if (returnType !== undefined && returnType !== null) {
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const typeAnnotation = returnType.typeAnnotation as Record<string, unknown> | undefined;
     if (typeAnnotation !== undefined) {
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const tsType = typeAnnotation.type as string | undefined;
       if (tsType === 'TSVoidKeyword' || tsType === 'TSNeverKeyword') {
         return false;
@@ -442,6 +476,7 @@ export function functionReturnsValue(node: Span & Record<string, unknown>): bool
  * Checks whether a function-like node is a generator (has `generator: true`).
  *
  * @param node - AST node to inspect
+ *
  * @returns true when the function is a generator
  */
 export function isGeneratorFunction(node: Span & Record<string, unknown>): boolean {
@@ -451,5 +486,5 @@ export function isGeneratorFunction(node: Span & Record<string, unknown>): boole
     return false;
   }
 
-  return (target as Record<string, unknown>).generator === true;
+  return target.generator === true;
 }

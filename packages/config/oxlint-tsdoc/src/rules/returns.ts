@@ -20,22 +20,30 @@ import {
  * Creates a visitor for function-like nodes with TSDoc comments.
  *
  * @param context - oxlint rule context
- * @param callback - invoked with node and parsed TSDoc
+ *
+ * @param handler - invoked with node and parsed TSDoc
+ *
  * @returns visitor with hooks
  */
 function createFunctionTsdocVisitor(
   context: Context,
-  callback: (node: Span & Record<string, unknown>, result: TsdocParseResult) => void,
+  handler: (node: Span & Record<string, unknown>, result: TsdocParseResult) => void,
 ): VisitorWithHooks {
-  /** Checks a function-like node. */
+  /**
+   * Checks a function-like node for TSDoc and invokes handler.
+   *
+   * @param node - AST node to check
+   */
   function check(node: Span): void {
     const result = parseTsdocForNode(node, context);
     if (result === undefined) {
       return;
     }
-    callback(node as Span & Record<string, unknown>, result);
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    handler(node as Span & Record<string, unknown>, result);
   }
 
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
   return {
     before(): false | undefined {
       if (shouldIgnoreFile(context.filename)) {
@@ -52,13 +60,13 @@ function createFunctionTsdocVisitor(
 //endregion Shared
 
 /**
- * Requires `@returns` tag for functions that return a value.
+ * Requires returns tag for functions that return a value.
  *
  * Skips void/never return types, constructors, and setters.
  *
  * @example
  * ```ts
- * // Bad -- missing @returns
+ * // Bad -- missing returns tag
  * /\** Adds numbers. *\/
  * function add(a: number, b: number): number { return a + b; }
  *
@@ -82,7 +90,7 @@ export const requireReturns: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireReturnsCallback(node, result): void {
+    return createFunctionTsdocVisitor(context, function requireReturnsHandler(node, result): void {
       if (!functionReturnsValue(node)) {
         return;
       }
@@ -97,10 +105,10 @@ export const requireReturns: CreateOnceRule = {
 };
 
 /**
- * Validates `@returns` tag consistency with the function signature.
+ * Validates returns tag consistency with the function signature.
  *
- * Reports `@returns` on void functions, and missing `@returns` on
- * functions with non-void return types (when `@returns` is present
+ * Reports returns tag on void functions, and missing returns tag on
+ * functions with non-void return types (when returns tag is present
  * but the function doesn't return a value).
  */
 export const requireReturnsCheck: CreateOnceRule = {
@@ -115,7 +123,7 @@ export const requireReturnsCheck: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireReturnsCheckCallback(node, result): void {
+    return createFunctionTsdocVisitor(context, function requireReturnsCheckHandler(node, result): void {
       if (!functionReturnsValue(node) && result.docComment.returnsBlock !== undefined) {
         context.report({
           node: result.comment,
@@ -127,15 +135,15 @@ export const requireReturnsCheck: CreateOnceRule = {
 };
 
 /**
- * Requires that `@returns` tags have a description.
+ * Requires that returns tags have a description.
  *
- * Uses `PlainTextEmitter.hasAnyTextContent` to detect empty `@returns`
+ * Uses `PlainTextEmitter.hasAnyTextContent` to detect empty returns
  * tags where the TSDoc parser creates a paragraph node containing only
  * whitespace or soft breaks.
  *
  * @example
  * ```ts
- * // Bad -- empty @returns
+ * // Bad -- empty returns tag
  * /\** @returns *\/
  * function getName(): string { return 'name'; }
  *
@@ -156,8 +164,8 @@ export const requireReturnsDescription: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireReturnsDescCallback(_node, result): void {
-      const returnsBlock = result.docComment.returnsBlock;
+    return createFunctionTsdocVisitor(context, function requireReturnsDescHandler(_node, result): void {
+      const { returnsBlock } = result.docComment;
       if (returnsBlock === undefined) {
         return;
       }

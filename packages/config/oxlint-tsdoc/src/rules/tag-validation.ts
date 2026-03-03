@@ -20,24 +20,31 @@ import {
 const COMMENT_LINE_PREFIX = /^ *\*/;
 
 /**
- * Creates a visitor for all documentable nodes, calling callback with parsed TSDoc.
+ * Creates a visitor for all documentable nodes, calling handler with parsed TSDoc.
  *
  * @param context - oxlint rule context
- * @param callback - invoked for each (node, comment) pair where TSDoc exists
+ *
+ * @param handler - invoked for each (node, comment) pair where TSDoc exists
+ *
  * @returns visitor with hooks
  */
 function createTsdocVisitor(
   context: Context,
-  callback: (node: Span, comment: Comment) => void,
+  handler: (node: Span, comment: Comment) => void,
 ): VisitorWithHooks {
-  /** Checks node for TSDoc and fires callback. */
+  /**
+   * Checks node for TSDoc and fires handler.
+   *
+   * @param node - AST node to check
+   */
   function check(node: Span): void {
     const comment = findTsdocComment(node, context);
     if (comment !== undefined) {
-      callback(node, comment);
+      handler(node, comment);
     }
   }
 
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
   return {
     before(): false | undefined {
       if (shouldIgnoreFile(context.filename)) {
@@ -66,25 +73,48 @@ function createTsdocVisitor(
 //endregion Shared
 
 /**
- * Valid TSDoc tag names from the TSDoc standard.
+ * Valid TSDoc tag names from the TSDoc standard, plus custom tags
+ * supported by this plugin (yields).
  *
- * Built dynamically from @microsoft/tsdoc StandardTags so the set stays
+ * Built dynamically from microsoft/tsdoc StandardTags so the set stays
  * current with spec updates.
  */
-const VALID_TSDOC_TAGS: ReadonlySet<string> = new Set(
-  StandardTags.allDefinitions.map(function getTagName(def): string {
+const VALID_TSDOC_TAGS: ReadonlySet<string> = new Set([
+  ...StandardTags.allDefinitions.map(function getTagName(def): string {
     return def.tagName;
   }),
-);
+  '@yields',
+]);
+
+/** Regex matching a fenced code block delimiter inside a TSDoc comment. */
+const CODE_FENCE_PATTERN = /^\s*```/;
+
+/** Regex matching backtick-wrapped inline code segments. */
+const INLINE_CODE_PATTERN = /`[^`]*`/g;
+
+/** Regex matching backslash-escaped at signs. */
+const ESCAPED_AT_PATTERN = /\\@/g;
+
+/**
+ * Strips inline code and backslash-escaped at signs from a line so that
+ * tag scanning does not produce false positives on package names or
+ * escaped tag references.
+ *
+ * @param line - raw TSDoc comment line
+ *
+ * @returns line with inline code and escaped at signs removed
+ */
+function stripInlineCodeAndEscapes(line: string): string {
+  return line.replace(INLINE_CODE_PATTERN, '').replace(ESCAPED_AT_PATTERN, '');
+}
 
 /**
  * Validates that all tags in a TSDoc comment are recognized TSDoc standard tags.
  *
- * Reports JSDoc-only tags (`@type`, `@typedef`, `@callback`, `@property`, `@memberof`,
- * `@augments`, `@extends`, `@class`, `@constructor`, `@function`, `@method`,
- * `@namespace`, `@module`, `@member`, `@var`, `@global`, `@enum`, `@access`,
- * `@lends`, `@fires`, `@listens`, `@mixes`, `@mixin`, `@interface`) and
- * any other unrecognized tags.
+ * Reports JSDoc-only tags and any other unrecognized tags.
+ *
+ * Skips tag scanning inside fenced code blocks and backtick-wrapped inline
+ * code to avoid false positives on package names or escaped tag references.
  */
 export const checkTagNames: CreateOnceRule = {
   meta: {
@@ -131,10 +161,24 @@ export const checkTagNames: CreateOnceRule = {
       ['@access', 'Use @public, @internal, @alpha, or @beta modifier tags instead.'],
     ]);
 
-    return createTsdocVisitor(context, function checkTagNamesCallback(_node, comment): void {
+    return createTsdocVisitor(context, function checkTagNamesHandler(_node, comment): void {
       const lines = comment.value.split('\n');
+      let insideCodeFence = false;
+
       lines.forEach(function checkLine(line, index): void {
-        const tagMatches = line.matchAll(/@(\w+)/g);
+        // Track fenced code block boundaries to skip tag scanning inside them
+        if (CODE_FENCE_PATTERN.test(line)) {
+          insideCodeFence = !insideCodeFence;
+          return;
+        }
+        if (insideCodeFence) {
+          return;
+        }
+
+        // Strip inline code and escaped @ to avoid false positives on
+        // package names like `@microsoft/tsdoc` or escaped tag references
+        const stripped = stripInlineCodeAndEscapes(line);
+        const tagMatches = stripped.matchAll(/@(\w+)/g);
         for (const match of tagMatches) {
           const tag = `@${match[1]}`;
           const suggestion = jsdocToTsdocMap.get(tag);
@@ -164,7 +208,7 @@ export const checkTagNames: CreateOnceRule = {
 /**
  * Validates access modifier tags in TSDoc comments.
  *
- * Reports conflicting access modifiers (e.g., `@public` and `@internal` together).
+ * Reports conflicting access modifiers (e.g., public and internal together).
  */
 export const checkAccess: CreateOnceRule = {
   meta: {
@@ -178,14 +222,15 @@ export const checkAccess: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
+    /** Access-level tags that are mutually exclusive. */
     const accessTags = ['@public', '@internal', '@alpha', '@beta', '@experimental'];
 
-    return createTsdocVisitor(context, function checkAccessCallback(_node, comment): void {
+    return createTsdocVisitor(context, function checkAccessHandler(_node, comment): void {
       const found: string[] = [];
       const text = comment.value;
       accessTags.forEach(function findTag(tag): void {
         // Match tag at word boundary to avoid false positives
-        const pattern = new RegExp(`(?:^|\\s)${tag.replace('@', '\\@')}(?:\\s|$|\\*)`);
+        const pattern = new RegExp(String.raw`(?:^|\s)${tag.replace('@', String.raw`\@`)}(?:\s|$|\*)`);
         if (pattern.test(text)) {
           found.push(tag);
         }
@@ -203,9 +248,9 @@ export const checkAccess: CreateOnceRule = {
 };
 
 /**
- * Reports TSDoc parse errors from the @microsoft/tsdoc parser.
+ * Reports TSDoc parse errors from the microsoft/tsdoc parser.
  *
- * Catches syntax errors, malformed inline tags, broken `{@link}` references,
+ * Catches syntax errors, malformed inline tags, broken link references,
  * and other structural issues the parser detects.
  */
 export const validTypes: CreateOnceRule = {
@@ -220,7 +265,11 @@ export const validTypes: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    /** Checks node for TSDoc parse errors. */
+    /**
+     * Checks node for TSDoc parse errors.
+     *
+     * @param node - AST node to check
+     */
     function check(node: Span): void {
       const result = parseTsdocForNode(node, context);
       if (result === undefined) {
@@ -235,6 +284,7 @@ export const validTypes: CreateOnceRule = {
       });
     }
 
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       before(): false | undefined {
         if (shouldIgnoreFile(context.filename)) {
@@ -265,7 +315,7 @@ export const validTypes: CreateOnceRule = {
  * Disallows type annotations in TSDoc tags.
  *
  * In TypeScript projects, types are expressed via type annotations, not JSDoc-style
- * `{Type}` syntax. Reports `@param {Type} name`, `@returns {Type}`, etc.
+ * `{Type}` syntax. Reports param/returns with `{Type}` syntax.
  */
 export const noTypes: CreateOnceRule = {
   meta: {
@@ -282,7 +332,7 @@ export const noTypes: CreateOnceRule = {
     /** Regex detecting JSDoc-style type annotations like `{Type}` after a tag. */
     const typePattern = /@\w+\s+\{([^}]+)\}/g;
 
-    return createTsdocVisitor(context, function noTypesCallback(_node, comment): void {
+    return createTsdocVisitor(context, function noTypesHandler(_node, comment): void {
       const lines = comment.value.split('\n');
       lines.forEach(function checkLine(line, index): void {
         const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '').trimStart();

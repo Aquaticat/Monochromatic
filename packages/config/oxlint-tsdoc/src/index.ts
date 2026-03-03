@@ -36,13 +36,13 @@ import {
  *
  * Ports the eslint-plugin-jsdoc recommended-typescript ruleset to the oxlint
  * jsPlugin API, adapting all rules to conform to TSDoc (not JSDoc) specs.
- * Uses @microsoft/tsdoc for authoritative comment parsing.
+ * Uses `\@microsoft/tsdoc` for authoritative comment parsing.
  *
  * @example
  * ```jsonc
  * // .oxlintrc.json
  * {
- *   "jsPlugins": ["@monochromatic-dev/config-oxlint-tsdoc"]
+ *   "jsPlugins": ["\@monochromatic-dev/config-oxlint-tsdoc"]
  * }
  * ```
  */

@@ -4,3 +4,6 @@ run = "bun src/index.ts"
 
 [tasks.'lint:types']
 extends = "lint:types"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"

@@ -14,6 +14,7 @@ import {
  * Reports a diagnostic when node lacks a TSDoc comment.
  *
  * @param node - AST node that should have TSDoc
+ *
  * @param context - oxlint rule context
  */
 function reportMissing(node: Span, context: Context): void {
@@ -23,13 +24,16 @@ function reportMissing(node: Span, context: Context): void {
 }
 
 /**
- * Requires TSDoc comments on all documentable declarations.
+ * Requires TSDoc comments on module-level documentable declarations.
  *
  * Ported from the original root-level `oxlint-require-tsdoc.ts`.
  *
  * FunctionExpression and ArrowFunctionExpression are intentionally
  * excluded because their TSDoc is owned by the enclosing
  * VariableDeclaration or MethodDefinition node.
+ *
+ * VariableDeclaration nodes inside function bodies (nonzero scope depth) are
+ * skipped because local implementation variables do not warrant TSDoc.
  *
  * @example
  * ```ts
@@ -53,6 +57,10 @@ export const requireTsdoc: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
+    /** Tracks nesting depth inside function-like scopes. */
+    let scopeDepth = 0;
+
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       before(): false | undefined {
         if (shouldIgnoreFile(context.filename)) {
@@ -61,6 +69,22 @@ export const requireTsdoc: CreateOnceRule = {
       },
       FunctionDeclaration(node): void {
         reportMissing(node, context);
+        scopeDepth++;
+      },
+      'FunctionDeclaration:exit'(): void {
+        scopeDepth--;
+      },
+      FunctionExpression(): void {
+        scopeDepth++;
+      },
+      'FunctionExpression:exit'(): void {
+        scopeDepth--;
+      },
+      ArrowFunctionExpression(): void {
+        scopeDepth++;
+      },
+      'ArrowFunctionExpression:exit'(): void {
+        scopeDepth--;
       },
       ClassDeclaration(node): void {
         reportMissing(node, context);
@@ -78,7 +102,9 @@ export const requireTsdoc: CreateOnceRule = {
         reportMissing(node, context);
       },
       VariableDeclaration(node): void {
-        reportMissing(node, context);
+        if (scopeDepth === 0) {
+          reportMissing(node, context);
+        }
       },
       PropertyDefinition(node): void {
         reportMissing(node, context);

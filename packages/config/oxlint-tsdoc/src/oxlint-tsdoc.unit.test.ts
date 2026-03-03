@@ -57,6 +57,7 @@ async function lint(fixturePath: string): Promise<readonly OxlintDiagnostic[]> {
   const stdout = await new Response(proc.stdout).text();
   await proc.exited;
 
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-assignment -- JSON.parse returns any
   const output: OxlintOutput = JSON.parse(stdout);
 
   // Filter to only tsdoc plugin diagnostics so built-in rules don't interfere
@@ -73,7 +74,10 @@ async function lint(fixturePath: string): Promise<readonly OxlintDiagnostic[]> {
  * @returns sorted array of unique `tsdoc(rule-name)` codes
  */
 function uniqueRules(diagnostics: readonly OxlintDiagnostic[]): readonly string[] {
-  return [...new Set(diagnostics.map(function getCode(d): string { return d.code; }))].sort();
+  const codes = diagnostics.map(function getCode(d): string { return d.code; });
+  const deduped: string[] = [...new Set<string>(codes)];
+  deduped.sort();
+  return deduped;
 }
 
 //endregion Helpers

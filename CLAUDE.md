@@ -4,6 +4,8 @@
 
 Don't use "plan mode" since they currently just bug out. Waiting for upstream fixes.
 
+We've got practically infinite disk space. Whenever you want to dig into a package or something, clone it to `~/temp/`.
+
 ## Dependency management
 - Use `workspace:*` for internal dependencies
 - Dependencies managed via Bun catalog in root `package.json`
@@ -96,6 +98,14 @@ Scope: package name or `*` for multi-package changes.
 
 Move changes where they belong immediately -- different file, new file, gitignore entry.
 When unsure, propose a concrete edit and location.
+
+## Package completeness
+
+A package is not finished until:
+- It has a `README.md`
+- It passes linting with zero errors
+
+Do not declare work complete while either condition is unmet.
 
 ## Run what you build
 

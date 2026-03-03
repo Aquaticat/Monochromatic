@@ -41,3 +41,6 @@ run = "bun exec astro sync"
 [tasks."_astro:check"]
 description = "Check Astro"
 run = "bun exec astro check"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"

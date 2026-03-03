@@ -18,22 +18,30 @@ import {
  * Creates a visitor for function-like nodes with TSDoc comments.
  *
  * @param context - oxlint rule context
- * @param callback - invoked with node and parsed TSDoc
+ *
+ * @param handler - invoked with node and parsed TSDoc
+ *
  * @returns visitor with hooks
  */
 function createFunctionTsdocVisitor(
   context: Context,
-  callback: (node: Span & Record<string, unknown>, result: TsdocParseResult) => void,
+  handler: (node: Span & Record<string, unknown>, result: TsdocParseResult) => void,
 ): VisitorWithHooks {
-  /** Checks a function-like node. */
+  /**
+   * Checks a function-like node for TSDoc and invokes handler.
+   *
+   * @param node - AST node to check
+   */
   function check(node: Span): void {
     const result = parseTsdocForNode(node, context);
     if (result === undefined) {
       return;
     }
-    callback(node as Span & Record<string, unknown>, result);
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    handler(node as Span & Record<string, unknown>, result);
   }
 
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
   return {
     before(): false | undefined {
       if (shouldIgnoreFile(context.filename)) {
@@ -49,23 +57,25 @@ function createFunctionTsdocVisitor(
 //endregion Shared
 
 /**
- * Checks whether a TSDoc comment contains `@yields` tag.
+ * Checks whether a TSDoc comment documents yielded values.
  *
- * TSDoc standard doesn't define `@yields` natively, so check the raw comment text.
+ * TSDoc standard doesn't define a yields tag natively, so this checks
+ * the raw comment text for the tag pattern.
  *
  * @param result - parsed TSDoc result
- * @returns true when @yields is documented
+ *
+ * @returns true when yielded values are documented
  */
 function hasYieldsTag(result: TsdocParseResult): boolean {
   return result.comment.value.includes('@yields');
 }
 
 /**
- * Requires `@yields` tag for generator functions.
+ * Requires yield documentation for generator functions.
  *
  * @example
  * ```ts
- * // Bad -- missing @yields for generator
+ * // Bad -- missing yield documentation for generator
  * /\** Generates numbers. *\/
  * function* count(): Generator<number> { yield 1; }
  *
@@ -89,7 +99,7 @@ export const requireYields: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireYieldsCallback(node, result): void {
+    return createFunctionTsdocVisitor(context, function requireYieldsHandler(node, result): void {
       if (!isGeneratorFunction(node)) {
         return;
       }
@@ -104,9 +114,9 @@ export const requireYields: CreateOnceRule = {
 };
 
 /**
- * Validates `@yields` tag consistency with generator functions.
+ * Validates yield tag consistency with generator functions.
  *
- * Reports `@yields` on non-generator functions.
+ * Reports yield documentation on non-generator functions.
  */
 export const requireYieldsCheck: CreateOnceRule = {
   meta: {
@@ -120,7 +130,7 @@ export const requireYieldsCheck: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireYieldsCheckCallback(node, result): void {
+    return createFunctionTsdocVisitor(context, function requireYieldsCheckHandler(node, result): void {
       if (!isGeneratorFunction(node) && hasYieldsTag(result)) {
         context.report({
           node: result.comment,

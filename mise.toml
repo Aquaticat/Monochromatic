@@ -117,6 +117,8 @@ _.path = [
 
 # Placeholder for future shared variables across tasks.
 [vars]
+# Monorepo root for task templates that need to reference root-level config files.
+monorepo_root = "{{config_root}}"
 
 [task_templates.build]
 run = [{ tasks = ["build:*"] }]
@@ -153,6 +155,10 @@ run = [{ tasks = ["test--watch:*"] }]
 
 [task_templates.lint]
 run = [{ tasks = ["lint:*"] }]
+
+[task_templates."lint:oxlint"]
+description = "Lint with Oxlint"
+run = "oxlint --type-aware -c {{vars.monorepo_root}}/.oxlintrc.json"
 
 [task_templates."lint:types"]
 description = "TypeScript"
@@ -308,12 +314,11 @@ hide = true
 description = "Lint with ESLint"
 run = "timeout 10 bunx eslint --cache --report-unused-disable-directives --report-unused-inline-configs warn --exit-on-fatal-error 'packages/**/*.*'"
 
+# Runs lint:oxlint across all package config roots via monorepo glob syntax.
 [tasks."lint:oxlint"]
 hide = true
 description = "Lint with Oxlint"
-# TODO: Run js plugin in eslint for now until oxlint https://github.com/oxc-project/oxc/issues/14375 is fixed.
-# TODO: Make this type aware, need to setup both oxlint and eslint rule disables.
-run = "oxlint --type-aware"
+run = "mise '//packages/...:lint:oxlint'"
 
 [tasks."lint:dprint"]
 hide = true

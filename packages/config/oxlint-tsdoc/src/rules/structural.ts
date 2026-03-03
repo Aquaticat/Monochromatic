@@ -20,6 +20,7 @@ const COMMENT_LINE_PREFIX = /^ *\*/;
  * Splits a block comment value into its constituent lines.
  *
  * @param comment - block comment AST node
+ *
  * @returns array of lines (without the opening `/*` and closing `*\/`)
  */
 function getCommentLines(comment: Comment): readonly string[] {
@@ -28,24 +29,31 @@ function getCommentLines(comment: Comment): readonly string[] {
 
 /**
  * Creates a visitor that iterates over all nodes requiring TSDoc
- * and calls the provided callback when a TSDoc comment is found.
+ * and calls the provided handler when a TSDoc comment is found.
  *
  * @param context - oxlint rule context
- * @param callback - invoked for each (node, comment) pair
+ *
+ * @param handler - invoked for each (node, comment) pair
+ *
  * @returns visitor with hooks
  */
 function createTsdocVisitor(
   context: Context,
-  callback: (node: Span, comment: Comment) => void,
+  handler: (node: Span, comment: Comment) => void,
 ): VisitorWithHooks {
-  /** Checks node and fires callback when TSDoc exists. */
+  /**
+   * Checks node and fires handler when TSDoc exists.
+   *
+   * @param node - AST node to check
+   */
   function check(node: Span): void {
     const comment = findTsdocComment(node, context);
     if (comment !== undefined) {
-      callback(node, comment);
+      handler(node, comment);
     }
   }
 
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
   return {
     before(): false | undefined {
       if (shouldIgnoreFile(context.filename)) {
@@ -91,7 +99,7 @@ export const checkAlignment: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    return createTsdocVisitor(context, function checkAlignmentCallback(_node, comment): void {
+    return createTsdocVisitor(context, function checkAlignmentHandler(_node, comment): void {
       const lines = getCommentLines(comment);
       if (lines.length < 2) {
         return;
@@ -141,10 +149,12 @@ export const multilineBlocks: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    return createTsdocVisitor(context, function multilineCallback(_node, comment): void {
+    return createTsdocVisitor(context, function multilineHandler(_node, comment): void {
       const lines = getCommentLines(comment);
+      /** Minimum line count for a proper multiline comment: opener, content, closer. */
+      const minMultilineLines = 3;
       // A proper multiline comment has at least 3 lines: opener, content, closer
-      if (lines.length >= 3) {
+      if (lines.length >= minMultilineLines) {
         return;
       }
       // Single-line comment containing a tag should be multiline
@@ -172,7 +182,7 @@ export const noMultiAsterisks: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    return createTsdocVisitor(context, function noMultiCallback(_node, comment): void {
+    return createTsdocVisitor(context, function noMultiHandler(_node, comment): void {
       const lines = getCommentLines(comment);
       // Skip first line (opening) and last line (closing)
       lines.slice(1, -1).forEach(function checkLine(line, index): void {
@@ -208,9 +218,11 @@ export const tagLines: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    return createTsdocVisitor(context, function tagLinesCallback(_node, comment): void {
+    return createTsdocVisitor(context, function tagLinesHandler(_node, comment): void {
       const lines = getCommentLines(comment);
-      if (lines.length < 3) {
+      /** Minimum line count for a comment that can contain tag spacing issues. */
+      const minContentLines = 3;
+      if (lines.length < minContentLines) {
         return;
       }
 
@@ -246,9 +258,9 @@ export const tagLines: CreateOnceRule = {
 /**
  * Enforces that TSDoc tags which should not have content are empty.
  *
- * Modifier tags like `@public`, `@readonly`, `@override`, `@sealed`,
- * `@virtual`, `@alpha`, `@beta`, `@internal`, `@experimental`,
- * `@eventProperty`, and `@packageDocumentation` must not have content.
+ * Modifier tags like `\@public`, `\@readonly`, `\@override`, `\@sealed`,
+ * `\@virtual`, `\@alpha`, `\@beta`, `\@internal`, `\@experimental`,
+ * `\@eventProperty`, and `\@packageDocumentation` must not have content.
  */
 export const emptyTags: CreateOnceRule = {
   meta: {
@@ -277,7 +289,7 @@ export const emptyTags: CreateOnceRule = {
       '@packageDocumentation',
     ]);
 
-    return createTsdocVisitor(context, function emptyTagsCallback(_node, comment): void {
+    return createTsdocVisitor(context, function emptyTagsHandler(_node, comment): void {
       const lines = getCommentLines(comment);
       lines.forEach(function checkLine(line, index): void {
         const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '').trimStart();
@@ -285,7 +297,7 @@ export const emptyTags: CreateOnceRule = {
         if (tagMatch === null) {
           return;
         }
-        const [, tag, rest] = tagMatch;
+        const { 1: tag, 2: rest } = tagMatch;
         if (tag !== undefined && modifierTags.has(tag) && rest !== undefined && rest.trim().length > 0) {
           context.report({
             loc: {
@@ -313,11 +325,11 @@ export const escapeInlineTags: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      unescaped: 'Unescaped `*/` inside TSDoc content. Use `*\\/` instead.',
+      unescaped: String.raw`Unescaped '*/' inside TSDoc content. Use '*\/' instead.`,
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    return createTsdocVisitor(context, function escapeCallback(_node, comment): void {
+    return createTsdocVisitor(context, function escapeHandler(_node, comment): void {
       const lines = getCommentLines(comment);
       // Skip the last line which is the legitimate closing `*/`
       lines.slice(0, -1).forEach(function checkLine(line, index): void {

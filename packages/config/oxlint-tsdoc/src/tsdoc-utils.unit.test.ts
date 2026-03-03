@@ -11,7 +11,7 @@ import {
 
 describe('shouldIgnoreFile', () => {
   test.each(IGNORED_EXTENSIONS)('returns true for %s extension', (ext) => {
-    expect(shouldIgnoreFile(`/some/path/file${ext}`)).toBe(true);
+    expect(shouldIgnoreFile(`/some/path/file${String(ext)}`)).toBe(true);
   });
 
   test('returns false for plain .ts files', () => {

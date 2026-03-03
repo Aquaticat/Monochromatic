@@ -17,3 +17,6 @@ run = "bun packages/fixture/file-enforcer-perf/src/run-constrained.ts"
 [tasks.'perf:teardown']
 description = "Remove performance benchmark fixture files"
 run = "rm -rf /tmp/file-enforcer-perf"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"

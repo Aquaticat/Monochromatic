@@ -32,9 +32,11 @@ const FUNCTION_LIKE_TYPES = new Set([
  * Checks whether a node is function-like (can have parameters).
  *
  * @param node - AST node to test
+ *
  * @returns true for function-like nodes
  */
 function isFunctionLike(node: Span & Record<string, unknown>): boolean {
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
   return FUNCTION_LIKE_TYPES.has(node.type as string);
 }
 
@@ -42,15 +44,22 @@ function isFunctionLike(node: Span & Record<string, unknown>): boolean {
  * Creates a visitor for function-like nodes that have TSDoc comments.
  *
  * @param context - oxlint rule context
- * @param callback - invoked with node and parsed TSDoc for each function-like node
+ *
+ * @param handler - invoked with node and parsed TSDoc for each function-like node
+ *
  * @returns visitor with hooks
  */
 function createFunctionTsdocVisitor(
   context: Context,
-  callback: (node: Span & Record<string, unknown>, result: TsdocParseResult) => void,
+  handler: (node: Span & Record<string, unknown>, result: TsdocParseResult) => void,
 ): VisitorWithHooks {
-  /** Checks a function-like node for TSDoc and invokes callback. */
+  /**
+   * Checks a function-like node for TSDoc and invokes handler.
+   *
+   * @param node - AST node to check
+   */
   function check(node: Span): void {
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const typedNode = node as Span & Record<string, unknown>;
     if (!isFunctionLike(typedNode)) {
       return;
@@ -59,9 +68,10 @@ function createFunctionTsdocVisitor(
     if (result === undefined) {
       return;
     }
-    callback(typedNode, result);
+    handler(typedNode, result);
   }
 
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
   return {
     before(): false | undefined {
       if (shouldIgnoreFile(context.filename)) {
@@ -78,25 +88,25 @@ function createFunctionTsdocVisitor(
 //endregion Shared
 
 /**
- * Validates that `@param` tag names match the function's actual parameter names.
+ * Validates that `\@param` tag names match the function's actual parameter names.
  *
- * Reports mismatches, incorrect order, and `@param` tags for nonexistent parameters.
- * Allows `@param` tags that match property names from destructured parameters
+ * Reports mismatches, incorrect order, and `\@param` tags for nonexistent parameters.
+ * Allows `\@param` tags that match property names from destructured parameters
  * (ObjectPattern/ArrayPattern), since documenting destructured properties by
  * name is a common TSDoc convention.
  *
  * @example
  * ```ts
  * // Bad -- parameter name doesn't match
- * /\** @param x - description *\/
+ * /\** \@param x - description *\/
  * function foo(name: string): void {}
  *
  * // Good
- * /\** @param name - description *\/
+ * /\** \@param name - description *\/
  * function foo(name: string): void {}
  *
  * // Good -- destructured property names are allowed
- * /\** @param value - item to process *\/
+ * /\** \@param value - item to process *\/
  * function foo({ value }: Options): void {}
  * ```
  */
@@ -114,7 +124,7 @@ export const checkParamNames: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function checkParamNamesCallback(node, result): void {
+    return createFunctionTsdocVisitor(context, function checkParamNamesHandler(node, result): void {
       const paramNames = extractParamNames(node);
       const docParamNames = extractDocParamNames(result.docComment);
       const destructuredNames = extractDestructuredParamNames(node);
@@ -154,18 +164,18 @@ export const checkParamNames: CreateOnceRule = {
 };
 
 /**
- * Requires `@param` tags for all function parameters.
+ * Requires `\@param` tags for all function parameters.
  *
  * @example
  * ```ts
- * // Bad -- missing @param for `count`
- * /\** @param name - user name *\/
+ * // Bad -- missing \@param for `count`
+ * /\** \@param name - user name *\/
  * function greet(name: string, count: number): void {}
  *
  * // Good
  * /\**
- *  * @param name - user name
- *  * @param count - greeting count
+ *  * \@param name - user name
+ *  * \@param count - greeting count
  *  *\/
  * function greet(name: string, count: number): void {}
  * ```
@@ -182,7 +192,7 @@ export const requireParam: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireParamCallback(node, result): void {
+    return createFunctionTsdocVisitor(context, function requireParamHandler(node, result): void {
       const paramNames = extractParamNames(node);
       const docParamNames = new Set(extractDocParamNames(result.docComment));
 
@@ -200,9 +210,9 @@ export const requireParam: CreateOnceRule = {
 };
 
 /**
- * Requires that every `@param` tag has a parameter name.
+ * Requires that every `\@param` tag has a parameter name.
  *
- * Reports `@param - description` (missing name before the hyphen).
+ * Reports `\@param - description` (missing name before the hyphen).
  */
 export const requireParamName: CreateOnceRule = {
   meta: {
@@ -216,7 +226,7 @@ export const requireParamName: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireParamNameCallback(_node, result): void {
+    return createFunctionTsdocVisitor(context, function requireParamNameHandler(_node, result): void {
       result.docComment.params.blocks.forEach(function checkBlock(block): void {
         if (block.parameterName.trim().length === 0) {
           context.report({
@@ -230,20 +240,20 @@ export const requireParamName: CreateOnceRule = {
 };
 
 /**
- * Requires that every `@param` tag has a description after the parameter name.
+ * Requires that every `\@param` tag has a description after the parameter name.
  *
- * Uses `PlainTextEmitter.hasAnyTextContent` to detect empty `@param`
+ * Uses `PlainTextEmitter.hasAnyTextContent` to detect empty `\@param`
  * tags where the TSDoc parser creates a paragraph node containing only
  * whitespace or soft breaks.
  *
  * @example
  * ```ts
  * // Bad -- no description
- * /\** @param name *\/
+ * /\** \@param name *\/
  * function foo(name: string): void {}
  *
  * // Good
- * /\** @param name - user name to display *\/
+ * /\** \@param name - user name to display *\/
  * function foo(name: string): void {}
  * ```
  */
@@ -259,7 +269,7 @@ export const requireParamDescription: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireParamDescCallback(_node, result): void {
+    return createFunctionTsdocVisitor(context, function requireParamDescHandler(_node, result): void {
       result.docComment.params.blocks.forEach(function checkBlock(block): void {
         if (!PlainTextEmitter.hasAnyTextContent(block.content)) {
           context.report({

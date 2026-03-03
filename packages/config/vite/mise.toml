@@ -15,3 +15,6 @@ extends = "build--watch:js"
 
 [tasks.'build--watch:js:node']
 extends = "build--watch:js:node"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
