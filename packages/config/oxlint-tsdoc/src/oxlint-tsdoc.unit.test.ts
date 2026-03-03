@@ -1,0 +1,188 @@
+import { resolve } from 'node:path';
+
+import {
+  describe,
+  expect,
+  test,
+} from 'bun:test';
+
+//region Types
+
+/** Single diagnostic from oxlint JSON output. */
+type OxlintDiagnostic = {
+  /** Human-readable error message. */
+  readonly message: string;
+  /** Rule identifier in `plugin(rule-name)` format. */
+  readonly code: string;
+  /** `"error"` or `"warning"`. */
+  readonly severity: string;
+  /** Source file path relative to cwd. */
+  readonly filename: string;
+};
+
+/** Top-level oxlint `--format json` output. */
+type OxlintOutput = {
+  /** All reported diagnostics. */
+  readonly diagnostics: readonly OxlintDiagnostic[];
+};
+
+//endregion Types
+
+//region Helpers
+
+/** Workspace root. */
+const ROOT = resolve(import.meta.dirname, '..', '..', '..', '..');
+
+/** Fixture root. */
+const FIXTURES = resolve(ROOT, 'packages', 'test-fixture', 'oxlint-tsdoc', 'src');
+
+/**
+ * Runs oxlint with the project config against a fixture path and returns parsed diagnostics.
+ *
+ * @param fixturePath - path relative to fixture root
+ *
+ * @returns array of diagnostics from tsdoc rules only
+ */
+async function lint(fixturePath: string): Promise<readonly OxlintDiagnostic[]> {
+  const target = resolve(FIXTURES, fixturePath);
+  const proc = Bun.spawn(
+    ['oxlint', '--format', 'json', '-c', resolve(ROOT, '.oxlintrc.json'), target],
+    {
+      cwd: ROOT,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    },
+  );
+
+  const stdout = await new Response(proc.stdout).text();
+  await proc.exited;
+
+  const output: OxlintOutput = JSON.parse(stdout);
+
+  // Filter to only tsdoc plugin diagnostics so built-in rules don't interfere
+  return output.diagnostics.filter(function isTsdocRule(diagnostic): boolean {
+    return diagnostic.code.startsWith('tsdoc(');
+  });
+}
+
+/**
+ * Extracts unique rule codes from a set of diagnostics.
+ *
+ * @param diagnostics - array of oxlint diagnostics
+ *
+ * @returns sorted array of unique `tsdoc(rule-name)` codes
+ */
+function uniqueRules(diagnostics: readonly OxlintDiagnostic[]): readonly string[] {
+  return [...new Set(diagnostics.map(function getCode(d): string { return d.code; }))].sort();
+}
+
+//endregion Helpers
+
+//region Valid fixtures -- expect zero tsdoc violations
+
+describe('valid fixtures', () => {
+  test('fully documented declarations produce no violations', async () => {
+    const diagnostics = await lint('valid/documented-declarations.ts');
+    expect(diagnostics).toEqual([]);
+  });
+
+  test('complete TSDoc with params, returns, yields produce no violations', async () => {
+    const diagnostics = await lint('valid/complete-tsdoc.ts');
+    expect(diagnostics).toEqual([]);
+  });
+
+  test('.test.ts files are ignored by tsdoc rules', async () => {
+    const diagnostics = await lint('valid/ignored-extensions.test.ts');
+    expect(diagnostics).toEqual([]);
+  });
+});
+
+//endregion Valid fixtures
+
+//region Invalid fixtures -- expect specific violations
+
+describe('require-tsdoc', () => {
+  test('reports missing TSDoc on undocumented declarations', async () => {
+    const diagnostics = await lint('invalid/missing-tsdoc.ts');
+    const rules = uniqueRules(diagnostics);
+    expect(rules).toContain('tsdoc(require-tsdoc)');
+
+    // Every diagnostic should be require-tsdoc since file has no TSDoc at all
+    const requireTsdocCount = diagnostics.filter(
+      function isRequireTsdoc(d): boolean { return d.code === 'tsdoc(require-tsdoc)'; },
+    ).length;
+    // function, arrow, class, type, interface, enum, const = at least 7
+    expect(requireTsdocCount).toBeGreaterThanOrEqual(7);
+  });
+});
+
+describe('structural rules', () => {
+  test('reports structural formatting issues', async () => {
+    const diagnostics = await lint('invalid/structural-issues.ts');
+    const rules = uniqueRules(diagnostics);
+
+    expect(rules).toContain('tsdoc(multiline-blocks)');
+    expect(rules).toContain('tsdoc(no-multi-asterisks)');
+    expect(rules).toContain('tsdoc(tag-lines)');
+    expect(rules).toContain('tsdoc(empty-tags)');
+  });
+});
+
+describe('tag validation rules', () => {
+  test('reports invalid tag names and type annotations', async () => {
+    const diagnostics = await lint('invalid/tag-validation-issues.ts');
+    const rules = uniqueRules(diagnostics);
+
+    expect(rules).toContain('tsdoc(check-tag-names)');
+    expect(rules).toContain('tsdoc(check-access)');
+    expect(rules).toContain('tsdoc(no-types)');
+  });
+
+  test('reports specific JSDoc-only tags', async () => {
+    const diagnostics = await lint('invalid/tag-validation-issues.ts');
+    const tagNameDiags = diagnostics.filter(
+      function isCheckTagNames(d): boolean { return d.code === 'tsdoc(check-tag-names)'; },
+    );
+
+    const messages = tagNameDiags.map(function getMsg(d): string { return d.message; });
+    // @type, @typedef, @return, @foobar should all be flagged
+    expect(messages.some(function hasType(m): boolean { return m.includes('@type'); })).toBe(true);
+    expect(messages.some(function hasTypedef(m): boolean { return m.includes('@typedef'); })).toBe(true);
+    expect(messages.some(function hasReturn(m): boolean { return m.includes('@return'); })).toBe(true);
+    expect(messages.some(function hasFoobar(m): boolean { return m.includes('@foobar'); })).toBe(true);
+  });
+});
+
+describe('param rules', () => {
+  test('reports parameter documentation issues', async () => {
+    const diagnostics = await lint('invalid/param-issues.ts');
+    const rules = uniqueRules(diagnostics);
+
+    expect(rules).toContain('tsdoc(check-param-names)');
+    expect(rules).toContain('tsdoc(require-param)');
+    expect(rules).toContain('tsdoc(require-param-description)');
+  });
+});
+
+describe('returns rules', () => {
+  test('reports return documentation issues', async () => {
+    const diagnostics = await lint('invalid/returns-issues.ts');
+    const rules = uniqueRules(diagnostics);
+
+    expect(rules).toContain('tsdoc(require-returns)');
+    expect(rules).toContain('tsdoc(require-returns-check)');
+    expect(rules).toContain('tsdoc(require-returns-description)');
+  });
+});
+
+describe('yields rules', () => {
+  test('reports yield documentation issues', async () => {
+    const diagnostics = await lint('invalid/yields-issues.ts');
+    const rules = uniqueRules(diagnostics);
+
+    expect(rules).toContain('tsdoc(require-yields)');
+    expect(rules).toContain('tsdoc(require-yields-check)');
+  });
+});
+
+//endregion Invalid fixtures

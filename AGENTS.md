@@ -2,6 +2,10 @@
 
 # Working Environment
 
+Don't use "plan mode" since they currently just bug out. Waiting for upstream fixes.
+
+We've got practically infinite disk space. Whenever you want to dig into a package or something, clone it to `~/temp/`.
+
 ## Dependency management
 - Use `workspace:*` for internal dependencies
 - Dependencies managed via Bun catalog in root `package.json`
@@ -205,11 +209,11 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 
 # Testing
 
-Refer to `.factory/skills/testing-practices/SKILL.md`.
+Refer to `.agents/skills/testing-practices/SKILL.md`.
 
 # Code Review
 
-Refer to `.factory/skills/code-review/SKILL.md`.
+Refer to `.agents/skills/code-review/SKILL.md`.
 
 # Architecture Decisions
 

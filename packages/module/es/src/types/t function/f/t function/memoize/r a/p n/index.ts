@@ -106,6 +106,25 @@ export async function $<
   })();
 
   /**
+   * Create a disposable that removes a key from the inflight map on dispose.
+   *
+   * @param cacheKey - key to remove from inflight on disposal
+   * @returns disposable that cleans inflight entry
+   *
+   * @example
+   * ```ts
+   * using _guard = inflightGuard('my-key');
+   * ```
+   */
+  function inflightGuard(cacheKey: string,): Disposable {
+    return {
+      [Symbol.dispose](): void {
+        inflight.delete(cacheKey,);
+      },
+    };
+  }
+
+  /**
    * Core computation: checks Store, then calls fn. Manages inflight map.
    *
    * @param cacheKey - full cache key
@@ -113,23 +132,18 @@ export async function $<
    * @returns cached or freshly computed result
    */
   async function resolveValue(cacheKey: string, args: TArgs,): Promise<TReturn> {
-    try {
-      const stored = await store.get<TReturn>(cacheKey,);
-      if (stored !== undefined) {
-        lru.touch(cacheKey,);
-        return stored;
-      }
+    using _guard = inflightGuard(cacheKey,);
 
-      const result = await fn(...args,);
-      await store.set(cacheKey, result,);
+    const stored = await store.get<TReturn>(cacheKey,);
+    if (stored !== undefined) {
       lru.touch(cacheKey,);
-      return result;
-    } catch (error: unknown) {
-      inflight.delete(cacheKey,);
-      throw error;
-    } finally {
-      inflight.delete(cacheKey,);
+      return stored;
     }
+
+    const result = await fn(...args,);
+    await store.set(cacheKey, result,);
+    lru.touch(cacheKey,);
+    return result;
   }
 
   /**

@@ -12,8 +12,8 @@
   "settings": {},
   // Language server still doesn't support js plugins. Waiting for upstream: https://github.com/oxc-project/oxc/issues/14402 https://github.com/oxc-project/oxc/issues/14826
   "jsPlugins": [
-    // Require tsdoc for every element able to have tsdoc.
-    "./oxlint-require-tsdoc.ts"
+    // TSDoc validation rules adapted from eslint-plugin-jsdoc recommended config.
+    "./packages/config/oxlint-tsdoc/src/index.ts"
   ],
   "env": {
     "browser": true,
@@ -53,7 +53,26 @@
     // "react",
   ],
   "rules": {
-    "require-tsdoc/require-tsdoc": "error",
+    "tsdoc/require-tsdoc": "error",
+    "tsdoc/check-alignment": "error",
+    "tsdoc/multiline-blocks": "warn",
+    "tsdoc/no-multi-asterisks": "error",
+    "tsdoc/tag-lines": "warn",
+    "tsdoc/empty-tags": "error",
+    "tsdoc/escape-inline-tags": "error",
+    "tsdoc/check-tag-names": "error",
+    "tsdoc/check-access": "error",
+    "tsdoc/valid-types": "warn",
+    "tsdoc/no-types": "error",
+    "tsdoc/check-param-names": "error",
+    "tsdoc/require-param": "warn",
+    "tsdoc/require-param-name": "error",
+    "tsdoc/require-param-description": "warn",
+    "tsdoc/require-returns": "warn",
+    "tsdoc/require-returns-check": "error",
+    "tsdoc/require-returns-description": "warn",
+    "tsdoc/require-yields": "warn",
+    "tsdoc/require-yields-check": "error",
 
     //region jest -- Suppress leaked jest rules from vitest plugin internals.
     // oxlint re-uses jest rule implementations for vitest and leaks them globally.

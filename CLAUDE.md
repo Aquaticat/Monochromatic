@@ -2,6 +2,8 @@
 
 # Working Environment
 
+Don't use "plan mode" since they currently just bug out. Waiting for upstream fixes.
+
 ## Dependency management
 - Use `workspace:*` for internal dependencies
 - Dependencies managed via Bun catalog in root `package.json`
@@ -32,6 +34,7 @@ In spec mode, keep researching and gathering context until the user explicitly a
 - `FetchUrl` -- fetch documentation sites, npm pages, GitHub READMEs; raw source is still useful when docs are incomplete
 - `gh` -- query GitHub for issues, PRs, release notes, and repository metadata
 - Web search cannot inspect package internals (sizes, dependency trees, source code); clone repos to `/tmp` or install packages instead
+- Do not remove cloned repos or other audit artifacts from `/tmp`; the user will clean them up when ready
 
 # Communication & Documentation
 
@@ -204,11 +207,11 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 
 # Testing
 
-Refer to `.factory/skills/testing-practices/SKILL.md`.
+Refer to `.agents/skills/testing-practices/SKILL.md`.
 
 # Code Review
 
-Refer to `.factory/skills/code-review/SKILL.md`.
+Refer to `.agents/skills/code-review/SKILL.md`.
 
 # Architecture Decisions
 

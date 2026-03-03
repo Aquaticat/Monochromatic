@@ -213,34 +213,51 @@ extends = "build--allowFailure"
 
 #region Test Tasks
 
+# When args are provided, only unit tests run with those args (for single-file filtering).
+# When no args are provided, all test suites (unit + browser) run.
 [tasks.test]
-description = "Run all tests"
-extends = "test"
+description = "Run all tests, or pass args to filter unit tests"
 alias = "t"
+usage = 'arg "[args]" var=#true help="Additional arguments passed to bun test (when provided, only unit tests run)"'
+run = """
+let args = ($env.usage_args? | default '' | str trim)
+if $args == '' {
+  mise run test:unit test:browser
+} else {
+  mise run test:unit -- ...($args | split row ' ')
+}
+"""
 
 [tasks."test:unit"]
 hide = true
 description = "Run unit tests"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to bun test"'
-run = "bun test ...(rg --files --glob '**/*.unit.test.*' --glob '!**/deprecated/**' | lines) ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
+run = """
+let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|part| $part != '' })
+if ($args | is-empty) {
+  bun test ...(rg --files --glob '**/*.unit.test.*' --glob '!**/deprecated/**' | lines)
+} else {
+  bun test ...$args
+}
+"""
 
 [tasks."test:browser"]
 hide = true
 description = "Run browser tests with Playwright"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
-run = "bunx playwright test --config playwright.browser.config.ts ...($env.usage_args | split row ' ')"
+run = "bunx playwright test --config playwright.browser.config.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
 
 [tasks."test:browser:chromium"]
 hide = true
 description = "Run browser tests in Chromium"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
-run = "bunx playwright test --config playwright.browser.config.ts --project=chromium ...($env.usage_args | split row ' ')"
+run = "bunx playwright test --config playwright.browser.config.ts --project=chromium ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
 
 [tasks."test:browser:firefox"]
 hide = true
 description = "Run browser tests in Firefox"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
-run = "bunx playwright test --config playwright.browser.config.ts --project=firefox ...($env.usage_args | split row ' ')"
+run = "bunx playwright test --config playwright.browser.config.ts --project=firefox ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
 
 # [tasks."test:browser"]
 # hide = true
@@ -251,7 +268,14 @@ run = "bunx playwright test --config playwright.browser.config.ts --project=fire
 hide = true
 description = "Run unit tests in watch mode"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to bun test"'
-run = "bun test --watch ...(rg --files --glob '**/*.unit.test.*' --glob '!**/deprecated/**' | lines) ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
+run = """
+let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|part| $part != '' })
+if ($args | is-empty) {
+  bun test --watch ...(rg --files --glob '**/*.unit.test.*' --glob '!**/deprecated/**' | lines)
+} else {
+  bun test --watch ...$args
+}
+"""
 
 # [tasks."test--watch:browser"]
 # hide = true
@@ -289,7 +313,7 @@ hide = true
 description = "Lint with Oxlint"
 # TODO: Run js plugin in eslint for now until oxlint https://github.com/oxc-project/oxc/issues/14375 is fixed.
 # TODO: Make this type aware, need to setup both oxlint and eslint rule disables.
-run = "oxlint"
+run = "oxlint --type-aware"
 
 [tasks."lint:dprint"]
 hide = true
@@ -387,6 +411,7 @@ run = "bun packages/module/es/src/mise.syncTsProjectReferences.ts"
 #region File Enforcer
 
 [tasks."sync:files"]
+alias = "file-enforcer"
 description = "Sync derived files (CLAUDE.md, oxlint config, etc.) via file-enforcer"
 run = "bun packages/dev-script/file-enforcer/src/index.ts"
 

@@ -85,7 +85,7 @@ export function computeFromHighestTier<TBackend = unknown,>(
   const highestTier = pickMajority(groupedHighest, highestResults.length,);
   if (!highestTier.hasMajority) {
     throw new Error(
-      `Store.get consensus failure for key "${key}" -- no majority in highest tier`,
+      `(maybe sync) Store.get consensus failure for key "${key}" -- no majority in highest tier`,
     );
   }
   return highestTier.value;
@@ -158,7 +158,7 @@ export function resolveConsensus<TBackend = unknown,>(
 
   const highestResults = sortedTiers.at(-1,);
   if (highestResults === undefined || highestResults.length === 0) {
-    throw new Error(`Store.get: no backend results for key "${key}"`,);
+    throw new Error(`(maybe sync) Store.get: no backend results for key "${key}"`,);
   }
 
   const groupedHighest = Map.groupBy(highestResults, function byValue({ value, },) {

@@ -1,7 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git --no-pager diff CLAUDE.md moon.yml)",
+      "Bash(git:*)",
       "Bash(cat:*)",
       "Bash(export:*)",
       "Bash(brew install:*)",
@@ -11,6 +11,9 @@
       "Bash(brew uses:*)",
       "Bash(ldd:*)",
       "Bash(sudo ls:*)",
+      "Bash(oxlint:*)",
+      "Bash(mise:*)",
+      "Bash(do:*)",
       "mcp__github__get_file_contents",
       "mcp__github__list_branches",
       "mcp__figma__get_screenshot",
@@ -22,9 +25,7 @@
       "mcp__morph__edit_file"
     ],
     "deny": [
-      "Edit",
-      "NotebookEdit",
-      "Bash(cd:*)"
+      "NotebookEdit"
     ]
   }
 }

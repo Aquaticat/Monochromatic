@@ -10,7 +10,7 @@
 
 /**
  * Ordered key set that tracks LRU access order.
- * Uses a `Map<string, true>` so JS insertion-order iteration gives LRU semantics.
+ * Uses a `Set<string>` so JS insertion-order iteration gives LRU semantics.
  * Does not store values -- the Store handles that.
  *
  * @example
@@ -44,16 +44,16 @@ export function createLruKeySet(
   maxSize: number,
   onEvict: (key: string,) => void,
 ): LruKeySet {
-  /** Ordered set using Map for insertion-order iteration. */
-  const keys = new Map<string, true>();
+  /** Ordered set for insertion-order iteration. */
+  const keys = new Set<string>();
 
   return {
     touch(key: string,): void {
       keys.delete(key,);
-      keys.set(key, true,);
+      keys.add(key,);
 
       if (keys.size > maxSize) {
-        const oldest = keys.keys().next();
+        const oldest = keys.values().next();
         if (!oldest.done) {
           keys.delete(oldest.value,);
           onEvict(oldest.value,);
