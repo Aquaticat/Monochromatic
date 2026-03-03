@@ -7,6 +7,7 @@
 import { csvRfc4180, } from './codegen/csv-rfc4180.ts';
 import { expressionEvaluator, } from './codegen/expr-eval.ts';
 import { cssMixinTranspiler, } from './codegen/css-mixin.ts';
+import { sudokuSolver, } from './codegen/sudoku-solver.ts';
 import { taskScheduler, } from './codegen/task-scheduler.ts';
 import { stakInterpreter, } from './codegen/stak.ts';
 
@@ -17,6 +18,7 @@ export const codeGenProbesAll: readonly Probe[] = [
   csvRfc4180,
   expressionEvaluator,
   cssMixinTranspiler,
+  sudokuSolver,
   taskScheduler,
   stakInterpreter,
 ];

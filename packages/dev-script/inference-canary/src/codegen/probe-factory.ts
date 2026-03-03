@@ -9,6 +9,7 @@
 import { runInContainer, } from '../container.ts';
 
 import { buildPerfDiagnostic, computePerfScore, runInContainerTimed, } from './perf.ts';
+import { appendAdditionalRunDiagnostics, } from './probe-factory-additional.ts';
 import { CODE_GEN_SYSTEM, } from './system-prompt.ts';
 import { buildCodeGenFixPrompt, combinedScore, extractCode, lintAndLog, } from './scoring.ts';
 
@@ -16,63 +17,9 @@ import type { ContainerResult, } from '../container.ts';
 import type { LintResult, } from '../linter.ts';
 import type { Probe, ScoreContext, } from '../probes.ts';
 import type { PerfTestConfig, TimedContainerResult, } from './perf.ts';
+import type { CodeGenProbeConfig, VerifyResult, } from './probe-factory-types.ts';
 
-/**
- * Verification result returned by a probe's output checker.
- * Correctness is a 0-1 fraction; the factory combines it with lint quality.
- */
-export type VerifyResult = {
-  /** 0-1 correctness fraction from output verification */
-  readonly correctness: number;
-};
-
-/**
- * Configuration for a standard code-gen probe.
- *
- * The factory handles caching, container execution, linting, buildFixPrompt,
- * and optional performance testing. Probes only supply what varies.
- */
-export type CodeGenProbeConfig = {
-  /** Human-readable probe name for reporting and log prefixes */
-  readonly name: string;
-  /** User message that forms the probe prompt */
-  readonly prompt: string;
-  /** Stdin data piped to the generated program in the container */
-  readonly testInput: string;
-  /**
-   * Verifies container output and returns a correctness fraction.
-   * Called only when the container exits successfully (exit 0, no timeout).
-   * @param result - container execution result with stdout/stderr
-   * @returns correctness score between 0 and 1
-   */
-  readonly verify: (result: ContainerResult) => VerifyResult;
-  /** Whether this probe involves long-running execution */
-  readonly slow?: boolean;
-  /**
-   * Optional performance test configuration. When provided, the factory runs a
-   * second container with larger input in parallel with the correctness test,
-   * measures wall-clock time, and applies the perf score as a multiplier.
-   * Performance diagnostics are included in the fix prompt when the score is below 1.0.
-   */
-  readonly perfTest?: PerfTestConfig;
-  /**
-   * Optional hook to transform the source after extraction but before execution.
-   * Returning `{ reject: true }` forces score to 0 (e.g. constraint violations).
-   * @param source - extracted TypeScript source
-   * @param context - model identity and pass info
-   * @returns transformed source or rejection signal
-   */
-  readonly transformSource?: (source: string, context: ScoreContext) => { readonly reject: boolean; readonly source: string };
-  /**
-   * Optional hook to customize the fix prompt beyond the standard buildCodeGenFixPrompt.
-   * Receives the base fix prompt (or undefined if no diagnostics) and returns
-   * the final prompt to send. Returning undefined skips the second pass.
-   * @param base - standard fix prompt from buildCodeGenFixPrompt, or undefined
-   * @param context - model identity and pass info
-   * @returns modified fix prompt, or undefined to skip
-   */
-  readonly customizeFixPrompt?: (base: string | undefined, context: ScoreContext) => string | undefined;
-};
+export type { AdditionalRun, CodeGenProbeConfig, VerifyResult, } from './probe-factory-types.ts';
 
 /**
  * Creates a code-gen probe with standardized caching, container execution, scoring,
@@ -104,6 +51,10 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
   const lintCache = new Map<string, LintResult>();
   const containerCache = new Map<string, ContainerResult>();
   const perfCache = new Map<string, TimedContainerResult>();
+  const additionalContainerCaches: Map<string, ContainerResult>[] =
+    (config.additionalRuns ?? []).map(() => new Map());
+  const additionalVerifyCaches: Map<string, VerifyResult>[] =
+    (config.additionalRuns ?? []).map(() => new Map());
 
   const slowProp = config.slow !== undefined ? { slow: config.slow, } : {};
 
@@ -121,10 +72,16 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
         containerCache.get(context.modelId),
       );
 
-      // Apply probe-specific customization first (e.g. constraint violation messages)
+      // Append additional run diagnostics when runs failed or produced incorrect output
+      const withAdditional = appendAdditionalRunDiagnostics(
+        base, response, config.additionalRuns, additionalContainerCaches,
+        additionalVerifyCaches, context.modelId,
+      );
+
+      // Apply probe-specific customization (e.g. constraint violation messages)
       const customized = config.customizeFixPrompt !== undefined
-        ? config.customizeFixPrompt(base, context)
-        : base;
+        ? config.customizeFixPrompt(withAdditional, context)
+        : withAdditional;
 
       // Append perf diagnostics when a perf test is configured and the result was slow
       if (config.perfTest === undefined) return customized;
@@ -159,21 +116,35 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
 
       const source = transformed.source;
 
-      // Build parallel container runs: correctness + lint, and optionally perf
+      // Build parallel container runs: correctness + lint + perf + additional runs
       const correctnessPromise = runInContainer(source, config.testInput, context.signal);
       const lintPromise = lintAndLog(source, config.name, context);
       const perfPromise = config.perfTest !== undefined
         ? runInContainerTimed(source, config.perfTest.input, context.signal)
         : undefined;
+      const additionalRunPromises = (config.additionalRuns ?? []).map((run) => {
+        const runSource = run.transformSource !== undefined ? run.transformSource(source) : source;
+        return runInContainer(runSource, run.input, context.signal);
+      });
 
       const [result, lint, perfResult] = await Promise.all([
         correctnessPromise,
         lintPromise,
         ...(perfPromise !== undefined ? [perfPromise] : []),
       ]) as [ContainerResult, LintResult, TimedContainerResult | undefined];
+      const additionalResults = await Promise.all(additionalRunPromises);
 
       lintCache.set(context.modelId, lint);
       containerCache.set(context.modelId, result);
+
+      // Cache additional run results and verify successful ones
+      for (const [index, additionalResult] of additionalResults.entries()) {
+        additionalContainerCaches[index]?.set(context.modelId, additionalResult);
+        const run = config.additionalRuns?.[index];
+        if (run !== undefined && additionalResult.exitCode === 0 && !additionalResult.timedOut) {
+          additionalVerifyCaches[index]?.set(context.modelId, run.verify(additionalResult));
+        }
+      }
 
       // Compute and log perf score when configured
       // perfMultiplier is let because it starts at 1.0 (no perf test) and is
@@ -193,8 +164,23 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
         return combinedScore(0, lint) * perfMultiplier;
       }
 
-      const { correctness, } = config.verify(result);
-      return combinedScore(correctness, lint) * perfMultiplier;
+      const { correctness: mainCorrectness, } = config.verify(result);
+
+      // Combine main and additional run correctness via Math.min --
+      // every run must achieve perfect correctness for a non-zero final score
+      const additionalCorrectnesses = additionalResults.map((additionalResult, index) => {
+        if (additionalResult.timedOut || additionalResult.exitCode !== 0) {
+          const run = config.additionalRuns?.[index];
+          console.log(
+            `  [${context.modelId}:${config.name}:${run?.name ?? String(index)}] container failed: exit=${String(additionalResult.exitCode)} timedOut=${String(additionalResult.timedOut)}`,
+          );
+          return 0;
+        }
+        return additionalVerifyCaches[index]?.get(context.modelId)?.correctness ?? 0;
+      });
+
+      const overallCorrectness = Math.min(mainCorrectness, ...additionalCorrectnesses);
+      return combinedScore(overallCorrectness, lint) * perfMultiplier;
     },
   };
 }
