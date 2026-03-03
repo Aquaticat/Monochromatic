@@ -187,7 +187,8 @@ items.forEach((item, itemIndex) => ...)
 
 - Semantic, descriptive names for variables, functions, types
 - Comments explain WHY, not WHAT
-- TSDoc on **all** declarations (functions, types, constants, classes -- including locals inside function bodies) with `@param`, `@returns`, `@throws`, `@example`; do not skip declarations that seem "obvious from context"
+- TSDoc on **all** declarations (functions, types, constants, classes -- including locals inside function bodies) with `@param`, `@returns`, `@example`; do not skip declarations that seem "obvious from context"
+- `@throws` only on functions that actually throw; do not add `@throws` to functions that never throw
 - Comments on their own line above code, never inline after code
 - No narrative or promotional language in docs
 - Region markers for substantial code blocks; flag missing markers as WARNING for substantial blocks and NIT for smaller ones
@@ -272,7 +273,7 @@ import { wait } from '@monochromatic-dev/module-es';
 - Custom error classes extending `Error` for domain errors
 - No `process.exit()`; throw instead
 - Multi-line error messages use `outdent` from `@cspotcode/outdent`
-- `@throws` in TSDoc for functions that throw
+- `@throws` in TSDoc only for functions that actually throw; flag `@throws` on non-throwing functions as NIT
 - `notNullishOrThrow` instead of non-null assertion (`!`)
 - Every catch block must log the error with `console.error()`
 

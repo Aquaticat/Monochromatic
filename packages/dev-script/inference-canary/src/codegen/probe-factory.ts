@@ -1,3 +1,6 @@
+// Over 100 lines because the factory function returns a single object with two closures
+// (buildFixPrompt, score) that share cache state. Extracting either closure would require
+// passing all caches as parameters, adding complexity without improving cohesion.
 /**
  * Factory for code-generation probes.
  *
@@ -9,7 +12,12 @@
 import { runInContainer, } from '../container.ts';
 
 import { buildPerfDiagnostic, computePerfScore, runInContainerTimed, } from './perf.ts';
-import { appendAdditionalRunDiagnostics, } from './probe-factory-additional.ts';
+import {
+  appendAdditionalRunDiagnostics,
+  cacheAdditionalResults,
+  computeAdditionalCorrectnesses,
+  executeAdditionalRuns,
+} from './probe-factory-additional.ts';
 import { CODE_GEN_SYSTEM, } from './system-prompt.ts';
 import { buildCodeGenFixPrompt, combinedScore, extractCode, lintAndLog, } from './scoring.ts';
 
@@ -17,9 +25,11 @@ import type { ContainerResult, } from '../container.ts';
 import type { LintResult, } from '../linter.ts';
 import type { Probe, ScoreContext, } from '../probes.ts';
 import type { PerfTestConfig, TimedContainerResult, } from './perf.ts';
-import type { CodeGenProbeConfig, VerifyResult, } from './probe-factory-types.ts';
+import type { VerifyResult, } from './additional-run-types.ts';
+import type { CodeGenProbeConfig, } from './probe-factory-types.ts';
 
-export type { AdditionalRun, CodeGenProbeConfig, VerifyResult, } from './probe-factory-types.ts';
+export type { AdditionalRun, VerifyResult, } from './additional-run-types.ts';
+export type { CodeGenProbeConfig, } from './probe-factory-types.ts';
 
 /**
  * Creates a code-gen probe with standardized caching, container execution, scoring,
@@ -48,14 +58,20 @@ export type { AdditionalRun, CodeGenProbeConfig, VerifyResult, } from './probe-f
  * ```
  */
 export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
+  /** Per-model lint result cache, populated by score() and read by buildFixPrompt() */
   const lintCache = new Map<string, LintResult>();
+  /** Per-model main container result cache */
   const containerCache = new Map<string, ContainerResult>();
+  /** Per-model perf container result cache */
   const perfCache = new Map<string, TimedContainerResult>();
+  /** Per-additional-run container result caches, indexed by run position */
   const additionalContainerCaches: Map<string, ContainerResult>[] =
     (config.additionalRuns ?? []).map(() => new Map());
+  /** Per-additional-run verification result caches, indexed by run position */
   const additionalVerifyCaches: Map<string, VerifyResult>[] =
     (config.additionalRuns ?? []).map(() => new Map());
 
+  /** Spread-friendly slow property, omitted when config.slow is undefined */
   const slowProp = config.slow !== undefined ? { slow: config.slow, } : {};
 
   return {
@@ -66,6 +82,7 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
     ...slowProp,
 
     buildFixPrompt: async (response, context) => {
+      /** Base fix prompt from standard lint/runtime diagnostics */
       const base = await buildCodeGenFixPrompt(
         response, context,
         lintCache.get(context.modelId),
@@ -73,20 +90,24 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
       );
 
       // Append additional run diagnostics when runs failed or produced incorrect output
+      /** Fix prompt with additional run failure diagnostics appended */
       const withAdditional = appendAdditionalRunDiagnostics(
         base, response, config.additionalRuns, additionalContainerCaches,
         additionalVerifyCaches, context.modelId,
       );
 
       // Apply probe-specific customization (e.g. constraint violation messages)
+      /** Fix prompt after probe-specific customizeFixPrompt hook */
       const customized = config.customizeFixPrompt !== undefined
         ? config.customizeFixPrompt(withAdditional, context)
         : withAdditional;
 
       // Append perf diagnostics when a perf test is configured and the result was slow
       if (config.perfTest === undefined) return customized;
+      /** Cached perf result for this model */
       const perf = perfCache.get(context.modelId);
       if (perf === undefined) return customized;
+      /** Formatted performance diagnostic text, undefined when perf was acceptable */
       const perfDiag = buildPerfDiagnostic(perf, config.perfTest);
       if (perfDiag === undefined) return customized;
 
@@ -109,41 +130,46 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
     },
 
     score: async (response, context) => {
+      /** Extracted TypeScript source from the model response */
       const rawSource = extractCode(response);
+      /** Source after probe-level transform, with reject flag for constraint violations */
       const transformed = config.transformSource !== undefined
         ? config.transformSource(rawSource, context)
         : { reject: false, source: rawSource, };
 
+      /** Final source to execute in containers */
       const source = transformed.source;
 
-      // Build parallel container runs: correctness + lint + perf + additional runs
+      // Launch all container runs in parallel: correctness + lint + perf + additional
+      /** Main correctness container promise */
       const correctnessPromise = runInContainer(source, config.testInput, context.signal);
+      /** Lint analysis promise */
       const lintPromise = lintAndLog(source, config.name, context);
+      /** Perf container promise (undefined when no perfTest configured) */
       const perfPromise = config.perfTest !== undefined
         ? runInContainerTimed(source, config.perfTest.input, context.signal)
         : undefined;
-      const additionalRunPromises = (config.additionalRuns ?? []).map((run) => {
-        const runSource = run.transformSource !== undefined ? run.transformSource(source) : source;
-        return runInContainer(runSource, run.input, context.signal);
-      });
+      /** Additional run container promises (empty array when no additional runs) */
+      const additionalPromise = config.additionalRuns !== undefined
+        ? executeAdditionalRuns(source, config.additionalRuns, context.signal)
+        : undefined;
 
-      const [result, lint, perfResult] = await Promise.all([
+      const [result, lint, perfResult, additionalResults] = await Promise.all([
         correctnessPromise,
         lintPromise,
         ...(perfPromise !== undefined ? [perfPromise] : []),
-      ]) as [ContainerResult, LintResult, TimedContainerResult | undefined];
-      const additionalResults = await Promise.all(additionalRunPromises);
+        ...(additionalPromise !== undefined ? [additionalPromise] : []),
+      ]) as [ContainerResult, LintResult, TimedContainerResult | undefined, ContainerResult[] | undefined];
 
       lintCache.set(context.modelId, lint);
       containerCache.set(context.modelId, result);
 
-      // Cache additional run results and verify successful ones
-      for (const [index, additionalResult] of additionalResults.entries()) {
-        additionalContainerCaches[index]?.set(context.modelId, additionalResult);
-        const run = config.additionalRuns?.[index];
-        if (run !== undefined && additionalResult.exitCode === 0 && !additionalResult.timedOut) {
-          additionalVerifyCaches[index]?.set(context.modelId, run.verify(additionalResult));
-        }
+      // Cache and verify additional runs
+      if (additionalResults !== undefined && config.additionalRuns !== undefined) {
+        cacheAdditionalResults(
+          additionalResults, config.additionalRuns,
+          additionalContainerCaches, additionalVerifyCaches, context.modelId,
+        );
       }
 
       // Compute and log perf score when configured
@@ -168,17 +194,15 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
 
       // Combine main and additional run correctness via Math.min --
       // every run must achieve perfect correctness for a non-zero final score
-      const additionalCorrectnesses = additionalResults.map((additionalResult, index) => {
-        if (additionalResult.timedOut || additionalResult.exitCode !== 0) {
-          const run = config.additionalRuns?.[index];
-          console.log(
-            `  [${context.modelId}:${config.name}:${run?.name ?? String(index)}] container failed: exit=${String(additionalResult.exitCode)} timedOut=${String(additionalResult.timedOut)}`,
-          );
-          return 0;
-        }
-        return additionalVerifyCaches[index]?.get(context.modelId)?.correctness ?? 0;
-      });
+      /** Per-run correctness fractions from additional runs (empty when none configured) */
+      const additionalCorrectnesses = additionalResults !== undefined && config.additionalRuns !== undefined
+        ? computeAdditionalCorrectnesses(
+          additionalResults, config.additionalRuns,
+          additionalVerifyCaches, context.modelId, config.name,
+        )
+        : [];
 
+      /** Combined correctness: minimum of main and all additional runs */
       const overallCorrectness = Math.min(mainCorrectness, ...additionalCorrectnesses);
       return combinedScore(overallCorrectness, lint) * perfMultiplier;
     },

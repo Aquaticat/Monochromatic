@@ -1,7 +1,9 @@
+// Over 100 lines due to TSDoc on six tightly-coupled grid functions sharing constants.
+// Further splitting would separate functions that depend on GRID_SIZE and BOX_SIZE.
 /**
- * Sudoku grid parsing and validation helpers for the sudoku-solver probe.
+ * Sudoku grid parsing and validation helpers.
  *
- * Shared by both the normal-mode and --all-mode verifiers. Validates structural
+ * Operates on 9x9 number arrays representing sudoku grids. Validates structural
  * correctness (rows, columns, 3x3 boxes) and clue matching independently of
  * any specific puzzle instance.
  */
@@ -11,6 +13,19 @@ const GRID_SIZE = 9;
 
 /** Standard sudoku 3x3 box dimension */
 const BOX_SIZE = 3;
+
+/** Column indices [0..8] for functional iteration over grid columns */
+const COLUMN_INDICES = Array.from({ length: GRID_SIZE, }, (_, idx) => idx);
+
+/**
+ * Box origin coordinates for all 9 boxes.
+ * Each entry is [topRow, leftCol] for one 3x3 box, enabling functional
+ * iteration without classic for loops.
+ */
+const BOX_ORIGINS: readonly (readonly [number, number])[] = Array.from(
+  { length: GRID_SIZE, },
+  (_, idx) => [Math.floor(idx / BOX_SIZE) * BOX_SIZE, (idx % BOX_SIZE) * BOX_SIZE] as const,
+);
 
 /**
  * Parses a text block into a 9x9 grid of digits 1-9.
@@ -24,9 +39,12 @@ const BOX_SIZE = 3;
  * ```
  */
 export function parseGrid(text: string): number[][] | undefined {
+  /** Non-empty trimmed lines from the text block */
   const lines = text.trim().split('\n').map((line) => line.trim()).filter((line) => line.length > 0);
   if (lines.length !== GRID_SIZE) return undefined;
+  /** Parsed digit rows, undefined entries indicate parse failure */
   const grid = lines.map((line) => {
+    /** Digits extracted by stripping whitespace and converting each character */
     const digits = [...line.replace(/\s/g, '')].map(Number);
     return digits.length === GRID_SIZE && digits.every((digit) => digit >= 1 && digit <= GRID_SIZE)
       ? digits
@@ -35,6 +53,41 @@ export function parseGrid(text: string): number[][] | undefined {
   return grid.every((row): row is number[] => row !== undefined)
     ? (grid as number[][])
     : undefined;
+}
+
+/**
+ * Extracts all values from a single column of the grid.
+ * @param grid - 9x9 grid of digits
+ * @param col - column index (0-8)
+ * @returns array of 9 values from the specified column
+ *
+ * @example
+ * ```ts
+ * extractColumn(grid, 0); // [5, 6, 1, 8, 4, 7, 9, 2, 3]
+ * ```
+ */
+function extractColumn(grid: number[][], col: number): number[] {
+  return grid.map((row) => row[col] ?? 0);
+}
+
+/**
+ * Extracts all 9 values from a 3x3 box given its top-left corner.
+ * Linearizes the box cells into a flat array using index arithmetic.
+ * @param grid - 9x9 grid of digits
+ * @param originRow - top row of the box (0, 3, or 6)
+ * @param originCol - left column of the box (0, 3, or 6)
+ * @returns array of 9 values from the specified box
+ *
+ * @example
+ * ```ts
+ * extractBox(grid, 0, 0); // top-left box values
+ * ```
+ */
+function extractBox(grid: number[][], originRow: number, originCol: number): number[] {
+  return Array.from(
+    { length: GRID_SIZE, },
+    (_, idx) => grid[originRow + Math.floor(idx / BOX_SIZE)]?.[originCol + (idx % BOX_SIZE)] ?? 0,
+  );
 }
 
 /**
@@ -49,31 +102,17 @@ export function parseGrid(text: string): number[][] | undefined {
  * ```
  */
 export function isValidSolution(grid: number[][]): boolean {
-  /** Checks whether nums contains exactly GRID_SIZE distinct values */
+  /** Checks whether nums contains exactly GRID_SIZE distinct values (1-9) */
   const hasAllDigits = (nums: number[]): boolean => new Set(nums).size === GRID_SIZE;
 
   // Rows
   if (!grid.every(hasAllDigits)) return false;
 
   // Columns
-  for (let col = 0; col < GRID_SIZE; col++) {
-    if (!hasAllDigits(grid.map((row) => row[col] ?? 0))) return false;
-  }
+  if (!COLUMN_INDICES.every((col) => hasAllDigits(extractColumn(grid, col)))) return false;
 
   // 3x3 boxes
-  for (let boxRow = 0; boxRow < GRID_SIZE; boxRow += BOX_SIZE) {
-    for (let boxCol = 0; boxCol < GRID_SIZE; boxCol += BOX_SIZE) {
-      const cells: number[] = [];
-      for (let row = boxRow; row < boxRow + BOX_SIZE; row++) {
-        for (let col = boxCol; col < boxCol + BOX_SIZE; col++) {
-          cells.push(grid[row]?.[col] ?? 0);
-        }
-      }
-      if (!hasAllDigits(cells)) return false;
-    }
-  }
-
-  return true;
+  return BOX_ORIGINS.every(([originRow, originCol]) => hasAllDigits(extractBox(grid, originRow, originCol)));
 }
 
 /**
@@ -93,18 +132,18 @@ export function matchesClues(grid: number[][], clues: readonly (readonly number[
 }
 
 /**
- * Splits combined output into per-puzzle result sections.
- * Puzzles are separated by a line matching one or more dashes (e.g. "---").
- * @param output - raw stdout from the container
- * @returns array of trimmed result sections, one per puzzle
+ * Serializes a 9x9 grid into a canonical string for deduplication.
+ * Each row becomes a 9-digit string joined by newlines.
+ * @param grid - 9x9 grid of digits 1-9
+ * @returns canonical grid string
  *
  * @example
  * ```ts
- * splitPuzzleSections('534678912\n...\n---\nUNSOLVABLE'); // ['534678912\n...', 'UNSOLVABLE']
+ * gridToString([[5,3,4,...], ...]); // '534...\n672...\n...'
  * ```
  */
-export function splitPuzzleSections(output: string): string[] {
-  return output.trim().split(/\n-+\n/).map((section) => section.trim());
+export function gridToString(grid: number[][]): string {
+  return grid.map((row) => row.join('')).join('\n');
 }
 
 /**
@@ -120,19 +159,4 @@ export function splitPuzzleSections(output: string): string[] {
  */
 export function splitSolutions(section: string): string[] {
   return section.split(/\n\s*\n/).map((block) => block.trim()).filter((block) => block.length > 0);
-}
-
-/**
- * Serializes a 9x9 grid into a canonical string for deduplication.
- * Each row becomes a 9-digit string joined by newlines.
- * @param grid - 9x9 grid of digits 1-9
- * @returns canonical grid string
- *
- * @example
- * ```ts
- * gridToString([[5,3,4,...], ...]); // '534...\n672...\n...'
- * ```
- */
-export function gridToString(grid: number[][]): string {
-  return grid.map((row) => row.join('')).join('\n');
 }
