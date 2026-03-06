@@ -9,8 +9,10 @@
  * All diagnostic messages go to stderr.
  */
 
-import { resolve, } from 'node:path';
 import { readFile, } from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, resolve, } from 'node:path';
+
 import { invalidatePaths, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 
 //region Resource limit validation
@@ -119,7 +121,8 @@ for (let warmIndex = 0; warmIndex < WARM_RUN_COUNT; warmIndex++) {
 
 // 1 source changed -- modify one source file, invalidate its cache entry, re-run.
 // This mirrors what watch mode does: it knows exactly which file changed.
-const sourceFile = '/tmp/file-enforcer-perf/src/pkg-00/docs/readme.md';
+const fixtureDir = join(tmpdir(), 'file-enforcer-perf');
+const sourceFile = join(fixtureDir, 'src', 'pkg-00', 'docs', 'readme.md');
 const sourceContent = await Bun.file(sourceFile).text();
 await Bun.write(sourceFile, `${sourceContent}\n# Modified for benchmark`);
 invalidatePaths([sourceFile]);
@@ -131,7 +134,7 @@ console.error(`[container] 1 source changed: ${srcChangedMs.toFixed(1)}ms`);
 
 // 1 dest changed -- modify one dest file externally, invalidate its cache entry, re-run.
 // Simulates watch mode detecting an external edit to a managed destination.
-const destFile = '/tmp/file-enforcer-perf/dest/combined-0.md';
+const destFile = join(fixtureDir, 'dest', 'combined-0.md');
 const destContent = await Bun.file(destFile).text();
 await Bun.write(destFile, `${destContent}\n# Externally modified`);
 invalidatePaths([destFile]);

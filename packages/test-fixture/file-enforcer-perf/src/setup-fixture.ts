@@ -12,10 +12,11 @@ import {
   rm,
   writeFile,
 } from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
-/** Root directory for all fixture files */
-const FIXTURE_DIR = '/tmp/file-enforcer-perf';
+/** Root directory for all fixture files, respects $TMPDIR for sandbox compatibility */
+const FIXTURE_DIR = join(tmpdir(), 'file-enforcer-perf');
 
 /** Number of simulated packages to create */
 const PACKAGE_COUNT = 20;

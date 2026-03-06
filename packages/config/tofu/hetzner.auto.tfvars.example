@@ -1,0 +1,3 @@
+hcloud_token  = ""
+ipinfo_token  = ""
+home_isp_asns = { home = "AS_YOUR_ISP" }

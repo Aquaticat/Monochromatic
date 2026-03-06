@@ -7,7 +7,8 @@
  */
 
 import { mkdir, rm, } from 'node:fs/promises';
-import { resolve, } from 'node:path';
+import { tmpdir, } from 'node:os';
+import { join, resolve, } from 'node:path';
 
 //region Setup
 
@@ -17,8 +18,8 @@ await import(resolve(import.meta.dirname, 'setup-fixture.ts'));
 /** Absolute path to the perf config */
 const CONFIG = resolve(import.meta.dirname, 'perf.config.ts');
 
-/** Fixture root and subdirectories */
-const FIXTURE_DIR = '/tmp/file-enforcer-perf';
+/** Fixture root and subdirectories, respects $TMPDIR for sandbox compatibility */
+const FIXTURE_DIR = join(tmpdir(), 'file-enforcer-perf');
 const DEST_DIR = `${FIXTURE_DIR}/dest`;
 
 /** Files modified by hyperfine --prepare for changed-file scenarios */

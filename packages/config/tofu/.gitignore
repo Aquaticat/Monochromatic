@@ -1,0 +1,17 @@
+*.auto.tfvars
+
+.env.local
+
+*.lock.*
+
+.terraform
+
+cache_*.json
+
+ipinfo_lite.json
+
+node_modules
+
+*.backup
+
+*.tfstate

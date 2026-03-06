@@ -7,6 +7,9 @@
  * Run via `bun perf.config.ts` after setup-fixture.ts creates the fixture.
  */
 
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
+
 import {
   cat,
   dedup,
@@ -22,8 +25,8 @@ reset();
 // Log cache stats for benchmark diagnostics
 console.error(`[perf.config] readCache size: ${String(readCache.size)} entries`);
 
-/** Absolute path to the fixture root */
-const BASE = '/tmp/file-enforcer-perf';
+/** Absolute path to the fixture root, respects $TMPDIR for sandbox compatibility */
+const BASE = join(tmpdir(), 'file-enforcer-perf');
 const SRC = `${BASE}/src`;
 const DEST = `${BASE}/dest`;
 
