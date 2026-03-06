@@ -120,6 +120,23 @@ Dependencies excluded from full source code audit, with rationale.
   skipVoid uses recursion per comment line, which could theoretically overflow on pathologically large inputs, but this is
   low-severity. With ~7M weekly npm downloads and BSD-3-Clause licensing, this library is production-ready and safe to adopt.
 
+### superjson
+
+- **Notes:** well-engineered, minimal TypeScript library for serializing rich JavaScript types (Date,
+  Map, Set, BigInt, etc.) over JSON. The codebase is lean (~1,530 lines), strictly typed, and carries only one runtime dependency.
+  It has no install hooks, no telemetry, no network calls, and no obfuscated code — the supply chain risk is negligible. Security
+  is actively addressed: prototype pollution is explicitly blocked and tested from both serialize and deserialize vectors. Test
+  coverage is strong at a roughly 1:1 test-to-code ratio with edge-case and performance regression tests. The library is actively
+  maintained with recent commits and regular releases. The only minor concern is a theoretical ReDoS vector via RegExp
+  deserialization, which requires attacker control of the trusted payload — low risk in typical use. This dependency is safe to
+  adopt.
+
+### happy-dom
+
+- **Notes:** Uses of eval() and child_process are inherent to
+  its purpose as a browser DOM simulator and mirror patterns found in the industry-standard jsdom. The project is 100% TypeScript
+  with ~300 test files, ESLint/Prettier enforcement, and CI that explicitly disables install scripts.
+
 ## Audit Queue
 
 Remaining dependencies to audit, ordered by priority.
@@ -129,13 +146,11 @@ Remaining dependencies to audit, ordered by priority.
 ### Tier 2 — Medium Risk (build pipeline, data transformation)
 
 - [ ] rehype-* / remark-* / unified (content pipeline)
-- [ ] happy-dom
 
 ### Tier 3 — Lower Risk (utilities, dev-only)
 
 - [ ] type-fest
 - [ ] ts-pattern
-- [ ] superjson
 - [ ] decircular
 - [ ] safe-stringify
 - [ ] dot-prop
@@ -147,8 +162,6 @@ Remaining dependencies to audit, ordered by priority.
 - [ ] preact
 - [ ] preact-render-to-string
 - [ ] watcher
-- [ ] happy-opfs
-- [ ] happy-rusty
 - [ ] @csstools/css-tokenizer
 - [ ] @cspotcode/outdent
 - [ ] serialize-error
