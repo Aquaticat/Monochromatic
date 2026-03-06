@@ -5,8 +5,79 @@ import { appendHistory, computeThreshold, readHistory, type HistoryEntry, type H
 import { formatMultiModelReport, } from './report.ts';
 import { runCanary, type CanaryReport, type RunnerConfig, } from './runner.ts';
 
+import type { ConfigSnapshot, StreamTiming, StreamUsage, } from './runner-types.ts';
 import type { ModelConfig, } from './models.ts';
 import type { Probe, } from './probes.ts';
+
+/**
+ * Builds per-probe individual consistency-run scores from a canary report.
+ * @param report - canary report with probe results
+ * @returns record mapping probe name to its individual run scores
+ */
+function buildScoresRecord(report: CanaryReport): Record<string, readonly number[]> {
+  return Object.fromEntries(
+    report.results
+      .filter((result) => result.scores.length > 0)
+      .map((result) => [result.name, result.scores]),
+  );
+}
+
+/**
+ * Builds per-probe timing records from a canary report.
+ * @param report - canary report with probe results
+ * @returns record mapping probe name to its streaming timing
+ */
+function buildTimingRecord(report: CanaryReport): Record<string, StreamTiming> {
+  return Object.fromEntries(
+    report.results
+      .filter((result) => result.timing !== undefined)
+      .map((result) => [result.name, result.timing as StreamTiming]),
+  );
+}
+
+/**
+ * Builds per-probe usage records from a canary report.
+ * @param report - canary report with probe results
+ * @returns record mapping probe name to its token usage
+ */
+function buildUsageRecord(report: CanaryReport): Record<string, StreamUsage> {
+  return Object.fromEntries(
+    report.results
+      .filter((result) => result.usage !== undefined)
+      .map((result) => [result.name, result.usage as StreamUsage]),
+  );
+}
+
+/**
+ * Converts a canary report into a history entry with all available data.
+ * @param report - completed canary report
+ * @param configSnapshot - runner config snapshot for this model
+ * @returns history entry ready for JSONL persistence
+ */
+function reportToHistoryEntry(report: CanaryReport, configSnapshot: ConfigSnapshot): HistoryEntry {
+  /** Pass-2 scores for probes that had a fix pass, omitting probes without one */
+  const pass2Entries = report.results
+    .filter((result) => result.pass2Score !== undefined)
+    .map((result) => [result.name, result.pass2Score as number] as const);
+
+  const scoresRecord = buildScoresRecord(report);
+  const timingRecord = buildTimingRecord(report);
+  const usageRecord = buildUsageRecord(report);
+
+  return {
+    timestamp: report.timestamp,
+    model: report.model,
+    overallScore: report.overallScore,
+    probeScores: Object.fromEntries(report.results.map((result) => [result.name, result.meanScore])),
+    ...(pass2Entries.length > 0 ? { pass2Scores: Object.fromEntries(pass2Entries), } : {}),
+    failed: report.failed,
+    ...(Object.keys(scoresRecord).length > 0 ? { scores: scoresRecord, } : {}),
+    ...(Object.keys(timingRecord).length > 0 ? { timing: timingRecord, } : {}),
+    ...(Object.keys(usageRecord).length > 0 ? { usage: usageRecord, } : {}),
+    config: configSnapshot,
+    ...(report.error !== undefined ? { error: report.error, } : {}),
+  };
+}
 
 /**
  * Runs canary probes for all selected models, saves results, and prints the report.
@@ -56,18 +127,14 @@ export async function runAndReport(
   }
 
   const entries: readonly HistoryEntry[] = reportsWithResults.map((report) => {
-    /** Pass-2 scores for probes that had a fix pass, omitting probes without one */
-    const pass2Entries = report.results
-      .filter((result) => result.pass2Score !== undefined)
-      .map((result) => [result.name, result.pass2Score as number] as const);
-    return {
-      timestamp: report.timestamp,
-      model: report.model,
-      overallScore: report.overallScore,
-      probeScores: Object.fromEntries(report.results.map((result) => [result.name, result.meanScore])),
-      ...(pass2Entries.length > 0 ? { pass2Scores: Object.fromEntries(pass2Entries), } : {}),
-      failed: report.failed,
+    const model = selectedModels.find((selectedModel) => selectedModel.id === report.model);
+    const configSnapshot: ConfigSnapshot = {
+      verbosity: model?.verbosity ?? 'low',
+      reasoning: true,
+      maxTokens: 128_000,
+      consistencyRuns: runsOverride ?? 2,
     };
+    return reportToHistoryEntry(report, configSnapshot);
   });
   if (entries.length > 0) await appendHistory(entries);
 

@@ -29,6 +29,49 @@ export type StreamTiming = {
   readonly chunkCount: number;
 };
 
+/**
+ * Token usage from a streaming chat completion.
+ * Populated when the API returns usage data (requires `stream_options.include_usage`).
+ */
+export type StreamUsage = {
+  /** Tokens in the prompt */
+  readonly promptTokens: number;
+  /** Tokens in the generated completion (includes reasoning tokens) */
+  readonly completionTokens: number;
+  /** Tokens used for internal reasoning, undefined when the model does not report them */
+  readonly reasoningTokens?: number | undefined;
+  /** Sum of prompt and completion tokens */
+  readonly totalTokens: number;
+};
+
+/**
+ * Full result from a streaming chat completion call.
+ * Captures everything the API returns: text, reasoning trace, timing, usage, and stop reason.
+ */
+export type CompletionResult = {
+  /** Concatenated content deltas (the "visible" response) */
+  readonly text: string;
+  /** Concatenated reasoning/thinking deltas, empty string when the model produced none */
+  readonly reasoning: string;
+  /** Per-chunk timing breakdown */
+  readonly timing: StreamTiming;
+  /** Token usage, undefined when the API did not include usage data */
+  readonly usage: StreamUsage | undefined;
+  /** Why generation stopped (e.g. "stop", "length"), undefined when not reported */
+  readonly finishReason: string | undefined;
+};
+
+/**
+ * Snapshot of runner configuration persisted alongside artifacts and history entries.
+ * Captures the settings that affect model output so results can be reproduced.
+ */
+export type ConfigSnapshot = {
+  readonly verbosity: string;
+  readonly reasoning: boolean;
+  readonly maxTokens: number;
+  readonly consistencyRuns: number;
+};
+
 //endregion Message and timing types
 
 //region Probe and report result types -- ProbeResult (per-probe) and CanaryReport (per-model) returned by runCanary
@@ -58,6 +101,10 @@ export type ProbeResult = {
    * failing the whole model so partial results can still be recorded in history.
    */
   readonly timedOut?: boolean | undefined;
+  /** Timing from the last consistency run */
+  readonly timing?: StreamTiming | undefined;
+  /** Token usage from the last consistency run */
+  readonly usage?: StreamUsage | undefined;
 };
 
 /** Aggregate report across all probes */

@@ -1,5 +1,5 @@
 /**
- * Per-probe execution: consistency runs and timeout enforcement.
+ * Per-probe execution: consistency runs, timeout enforcement, and artifact enrichment.
  *
  * Consistency runs are sequential to avoid rate limits. A 5-minute timeout covers
  * all turns (all consistency runs + the second pass fix turn).
@@ -7,9 +7,11 @@
 import { mean, } from './math.ts';
 import { createProbeClient, executeProbe, } from './runner-client.ts';
 import { runSecondPass, } from './runner-second-pass.ts';
+import { writeEnrichedArtifact, } from './linter-artifacts.ts';
 
-import type { ProbeResult, } from './runner-types.ts';
+import type { CompletionResult, ConfigSnapshot, ProbeResult, } from './runner-types.ts';
 import type { RunnerConfig, } from './runner-config.ts';
+import type { EnrichedArtifactMeta, } from './linter-artifacts.ts';
 import type { Probe, ScoreContext, } from './probes.ts';
 
 /** Minutes before a probe is considered timed out */
@@ -25,7 +27,57 @@ const MS_PER_SECOND = 1000;
 const PROBE_TIMEOUT_MS = PROBE_TIMEOUT_MINUTES * SECONDS_PER_MINUTE * MS_PER_SECOND;
 
 /**
+ * Builds a {@link ConfigSnapshot} from the runner configuration.
+ * @param config - full runner configuration
+ * @returns snapshot of the fields relevant for reproducibility
+ */
+function snapshotConfig(config: RunnerConfig): ConfigSnapshot {
+  return {
+    verbosity: config.verbosity,
+    reasoning: config.reasoning,
+    maxTokens: config.maxTokens,
+    consistencyRuns: config.consistencyRuns,
+  };
+}
+
+/**
+ * Writes an enriched artifact for a single probe execution (initial or fix pass).
+ * @param probe - probe that produced the response
+ * @param config - runner configuration
+ * @param timestamp - authoritative server timestamp
+ * @param pass - which pass produced the response
+ * @param completion - full completion result from the API
+ * @param score - computed score for this response
+ * @param fixPrompt - diagnostic prompt (fix pass only)
+ */
+async function enrichArtifact(
+  probe: Probe,
+  config: RunnerConfig,
+  timestamp: string,
+  pass: 'initial' | 'fix',
+  completion: CompletionResult,
+  score: number,
+  fixPrompt?: string,
+): Promise<void> {
+  const enriched: EnrichedArtifactMeta = {
+    model: config.model,
+    probe: probe.name,
+    pass,
+    timestamp,
+    score,
+    reasoning: completion.reasoning,
+    timing: completion.timing,
+    usage: completion.usage,
+    finishReason: completion.finishReason,
+    config: snapshotConfig(config),
+    ...(fixPrompt !== undefined ? { fixPrompt, } : {}),
+  };
+  await writeEnrichedArtifact(enriched, completion.text);
+}
+
+/**
  * Core probe logic: runs consistency checks then the second-pass fix loop.
+ * After scoring, writes enriched metadata to each artifact directory.
  * @param probe - canary probe to execute
  * @param config - runner configuration
  * @param timestamp - authoritative server timestamp for artifact naming
@@ -38,27 +90,44 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: strin
   // logged immediately. scores uses push because each run appends in the loop;
   // functional reduce/map would require pre-running all turns before collecting.
   const scores: number[] = [];
-  // lastResponse is let because the for-of loop reassigns it each run, and the
-  // final value is needed after the loop for the second-pass fix turn.
-  let lastResponse = '';
+  // lastCompletion is let because the for-of loop reassigns it each run, and the
+  // final value is needed after the loop for the second-pass fix turn and artifact enrichment.
+  let lastCompletion: CompletionResult | undefined = undefined;
+  // lastScore tracks the score of the most recent consistency run for artifact enrichment.
+  let lastScore = 0;
   for (const runIndex of Array.from({ length: config.consistencyRuns, }).keys()) {
     // eslint-disable-next-line no-await-in-loop -- sequential to avoid rate limits
-    lastResponse = await executeProbe(probe, config, client, signal);
+    lastCompletion = await executeProbe(probe, config, client, signal);
     const scoreContext: ScoreContext = { modelId: config.model, pass: 'initial', timestamp, signal, };
     // eslint-disable-next-line no-await-in-loop -- score may involve container execution
-    const runScore = await probe.score(lastResponse, scoreContext);
+    const runScore = await probe.score(lastCompletion.text, scoreContext);
     scores.push(runScore);
+    lastScore = runScore;
     console.log(`  [${config.model}:${probe.name}] run ${String(runIndex + 1)}/${String(config.consistencyRuns)}: score=${runScore.toFixed(2)}`);
+  }
+
+  // Enrich the initial-pass artifact with the last consistency run's data.
+  // Runs in the background -- artifact enrichment should not block the fix pass.
+  if (lastCompletion !== undefined) {
+    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget; enrichment failure is non-fatal
+    enrichArtifact(probe, config, timestamp, 'initial', lastCompletion, lastScore)
+      .catch((error) => { console.error(`  [${config.model}:${probe.name}] artifact enrichment failed:`, error); });
   }
 
   const meanScore = mean(scores);
   const consistent = scores.every((score) => score === scores[0]);
   const fixContext: ScoreContext = { modelId: config.model, pass: 'fix', timestamp, signal, };
-  const pass2Result = await runSecondPass(probe, config, client, lastResponse, fixContext);
+  const pass2Result = await runSecondPass(probe, config, client, lastCompletion?.text ?? '', fixContext);
+
   if (pass2Result !== undefined) {
-    const delta = pass2Result - meanScore;
+    const delta = pass2Result.score - meanScore;
     const deltaStr = delta >= 0 ? `+${delta.toFixed(2)}` : delta.toFixed(2);
-    console.log(`  [${config.model}:${probe.name}] pass2: score=${pass2Result.toFixed(2)} delta=${deltaStr}`);
+    console.log(`  [${config.model}:${probe.name}] pass2: score=${pass2Result.score.toFixed(2)} delta=${deltaStr}`);
+
+    // Enrich the fix-pass artifact with completion data, score, and diagnostic prompt.
+    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget; enrichment failure is non-fatal
+    enrichArtifact(probe, config, timestamp, 'fix', pass2Result.completion, pass2Result.score, pass2Result.fixPrompt)
+      .catch((error) => { console.error(`  [${config.model}:${probe.name}] fix artifact enrichment failed:`, error); });
   }
 
   return {
@@ -67,8 +136,10 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: strin
     scores,
     meanScore,
     consistent,
-    pass2Score: pass2Result,
-    fixDelta: pass2Result !== undefined ? pass2Result - meanScore : undefined,
+    pass2Score: pass2Result?.score,
+    fixDelta: pass2Result !== undefined ? pass2Result.score - meanScore : undefined,
+    timing: lastCompletion?.timing,
+    usage: lastCompletion?.usage,
   };
 }
 

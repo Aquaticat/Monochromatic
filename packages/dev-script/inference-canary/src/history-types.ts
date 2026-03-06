@@ -1,6 +1,7 @@
 /**
  * Shared types for the canary history system.
  */
+import type { ConfigSnapshot, StreamTiming, StreamUsage, } from './runner-types.ts';
 
 /**
  * ISO 8601 timestamp string, e.g. "2026-02-23T12:00:00.000Z".
@@ -26,6 +27,16 @@ export type HistoryEntry = {
   readonly pass2Scores?: Record<string, number> | undefined;
   /** Whether this run was a failure (API error, timeout, etc.) */
   readonly failed: boolean;
+  /** Per-probe individual consistency-run scores (not just the mean) */
+  readonly scores?: Record<string, readonly number[]> | undefined;
+  /** Per-probe streaming timing from the last consistency run */
+  readonly timing?: Record<string, StreamTiming> | undefined;
+  /** Per-probe token usage from the last consistency run */
+  readonly usage?: Record<string, StreamUsage> | undefined;
+  /** Runner configuration snapshot for this run */
+  readonly config?: ConfigSnapshot | undefined;
+  /** Error message when the run failed */
+  readonly error?: string | undefined;
 };
 
 /** Parsed history: just an array of entries, one per JSONL line */

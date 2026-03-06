@@ -1,6 +1,6 @@
 /**
  * OpenAI SDK streaming wrapper: streams chat completions and collects
- * per-chunk timing data to diagnose time-to-first-token vs generation latency.
+ * per-chunk timing data, reasoning traces, token usage, and finish reason.
  *
  * Based on research from:
  * - "Calibrating LLMs with Sample Consistency" (AAAI 2025)
@@ -9,7 +9,7 @@
 // eslint-disable-next-line import/no-named-as-default -- OpenAI SDK canonical usage is `import OpenAI from 'openai'`
 import type OpenAI from 'openai';
 import type { RunnerConfig, } from './runner-config.ts';
-import type { ChatMessage, StreamTiming, } from './runner-types.ts';
+import type { ChatMessage, CompletionResult, StreamTiming, StreamUsage, } from './runner-types.ts';
 
 /** Milliseconds per second for human-readable timing display */
 const MS_PER_SECOND = 1000;
@@ -31,13 +31,30 @@ function logTiming(label: string, timing: StreamTiming): void {
 }
 
 /**
- * Streams a chat completion and collects the full text + per-chunk timing.
+ * Extracts a {@link StreamUsage} from the SDK's CompletionUsage shape.
+ * Returns undefined when the input is nullish (API did not include usage).
+ * @param raw - raw usage object from the OpenAI SDK
+ * @returns normalized usage, or undefined
+ */
+function parseUsage(raw: OpenAI.CompletionUsage | null | undefined): StreamUsage | undefined {
+  if (raw === null || raw === undefined) return undefined;
+  return {
+    promptTokens: raw.prompt_tokens,
+    completionTokens: raw.completion_tokens,
+    reasoningTokens: raw.completion_tokens_details?.reasoning_tokens,
+    totalTokens: raw.total_tokens,
+  };
+}
+
+/**
+ * Streams a chat completion and collects text, reasoning traces, per-chunk timing,
+ * token usage, and finish reason.
  * @param client - OpenAI SDK client
  * @param messages - conversation messages
  * @param config - runner configuration
  * @param label - label for timing logs
  * @param signal - optional abort signal; cancels the HTTP stream when aborted
- * @returns collected text and timing breakdown
+ * @returns full completion result with all captured data
  */
 export async function streamCompletion(
   client: OpenAI,
@@ -45,7 +62,7 @@ export async function streamCompletion(
   config: RunnerConfig,
   label: string,
   signal?: AbortSignal,
-): Promise<{ text: string; timing: StreamTiming }> {
+): Promise<CompletionResult> {
   // Fast-path: if the signal is already aborted, skip the network request entirely.
   if (signal !== undefined && signal.aborted) {
     throw new DOMException('Probe timeout signal already aborted before stream start', 'AbortError');
@@ -72,19 +89,22 @@ export async function streamCompletion(
     max_tokens: config.maxTokens,
     messages: [...messages],
     stream: true,
+    stream_options: { include_usage: true, },
     ...extraBody,
   }, { signal, });
 
   // Mutable accumulators are required here: for-await streams are inherently
   // imperative and each chunk must be processed as it arrives.
   const chunks: string[] = [];
+  const reasoningChunks: string[] = [];
   const interChunkMs: number[] = [];
-  // firstChunkMs, lastChunkMs, chunkCount are let because they are all
-  // reassigned inside the for-await loop; prefer-const does not apply since
-  // they ARE reassigned, but the mutation pattern requires let not const.
+  // firstChunkMs, lastChunkMs, chunkCount, lastFinishReason, lastUsage are let
+  // because they are all reassigned inside the for-await loop.
   let firstChunkMs = 0;
   let lastChunkMs = startMs;
   let chunkCount = 0;
+  let lastFinishReason: string | undefined = undefined;
+  let lastUsage: OpenAI.CompletionUsage | null | undefined = undefined;
 
   for await (const chunk of stream) {
     const now = Date.now();
@@ -95,8 +115,26 @@ export async function streamCompletion(
       interChunkMs.push(now - lastChunkMs);
     }
     lastChunkMs = now;
-    const delta = chunk.choices[0]?.delta?.content;
-    if (delta !== undefined && delta !== null) chunks.push(delta);
+
+    const choice = chunk.choices[0];
+    if (choice !== undefined) {
+      const delta = choice.delta;
+      if (delta.content !== undefined && delta.content !== null) chunks.push(delta.content);
+
+      // OpenRouter surfaces reasoning traces as `reasoning_content` on the delta.
+      // The field is not typed in OpenAI SDK v6.22, so access it dynamically.
+      const reasoningContent = (delta as Record<string, unknown>)['reasoning_content'];
+      if (typeof reasoningContent === 'string') reasoningChunks.push(reasoningContent);
+
+      if (choice.finish_reason !== undefined && choice.finish_reason !== null) {
+        lastFinishReason = choice.finish_reason;
+      }
+    }
+
+    // Usage arrives on the final chunk when stream_options.include_usage is set.
+    if (chunk.usage !== undefined && chunk.usage !== null) {
+      lastUsage = chunk.usage;
+    }
   }
 
   signal?.removeEventListener('abort', onAbort);
@@ -111,5 +149,11 @@ export async function streamCompletion(
     throw new DOMException('Stream aborted by probe timeout signal', 'AbortError');
   }
 
-  return { text: chunks.join(''), timing, };
+  return {
+    text: chunks.join(''),
+    reasoning: reasoningChunks.join(''),
+    timing,
+    usage: parseUsage(lastUsage),
+    finishReason: lastFinishReason,
+  };
 }

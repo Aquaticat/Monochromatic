@@ -131,7 +131,7 @@ async function renderProbeOverlay(
 
   const title = `${escapeHtml(label)} - ${escapeHtml(probe)} - ${score.toFixed(2)} - ${escapeHtml(entry.timestamp)}${entry.failed ? ' (FAILED)' : ''}`;
 
-  return `<div popover="auto" id="run-${escapeHtml(id)}" class="overlay">
+  return `<div popover="auto" id="run-${escapeHtml(id)}" class="overlay overlay--source">
   <h2 class="overlay-title">${title}</h2>
   ${sourceSection}
 </div>`;

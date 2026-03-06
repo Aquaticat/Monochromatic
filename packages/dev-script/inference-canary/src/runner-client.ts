@@ -7,7 +7,7 @@ import OpenAI from 'openai';
 import { streamCompletion, } from './runner-stream.ts';
 
 import type { RunnerConfig, } from './runner-config.ts';
-import type { ChatMessage, } from './runner-types.ts';
+import type { ChatMessage, CompletionResult, } from './runner-types.ts';
 import type { Probe, } from './probes.ts';
 
 /**
@@ -24,18 +24,18 @@ export function createProbeClient(config: RunnerConfig): OpenAI {
 }
 
 /**
- * Sends a single probe to the API and returns the raw text response.
+ * Sends a single probe to the API and returns the full completion result
+ * including text, reasoning traces, timing, usage, and finish reason.
  * @param probe - canary probe to execute
  * @param config - runner configuration
  * @param client - OpenAI SDK client (reused across consistency runs and fix pass)
  * @param signal - optional abort signal; cancels the HTTP stream when aborted
- * @returns raw text response from the model
+ * @returns full completion result from the model
  */
-export async function executeProbe(probe: Probe, config: RunnerConfig, client: OpenAI, signal?: AbortSignal): Promise<string> {
+export async function executeProbe(probe: Probe, config: RunnerConfig, client: OpenAI, signal?: AbortSignal): Promise<CompletionResult> {
   const messages: ChatMessage[] = [
     { role: 'system', content: probe.system, },
     { role: 'user', content: probe.prompt, },
   ];
-  const { text, } = await streamCompletion(client, messages, config, probe.name, signal);
-  return text;
+  return streamCompletion(client, messages, config, probe.name, signal);
 }
