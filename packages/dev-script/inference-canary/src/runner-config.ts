@@ -24,8 +24,6 @@ export type RunnerConfig = {
   readonly verbosity: VerbosityLevel;
   /** Whether to enable adaptive thinking (reasoning) */
   readonly reasoning: boolean;
-  /** Overall score below which degradation is flagged */
-  readonly degradationThreshold: number;
   /** API key for Authorization header */
   readonly apiKey?: string | undefined;
   /** Base URL for the chat completions endpoint (e.g. "https://openrouter.ai/api/v1") */
@@ -45,5 +43,4 @@ export const defaultConfig: RunnerConfig = {
   maxTokens: 128_000,
   verbosity: 'low',
   reasoning: true,
-  degradationThreshold: 0.4,
 } as const;

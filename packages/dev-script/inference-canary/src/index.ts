@@ -15,7 +15,7 @@
  * Environment (read from .env.local via mise):
  *   INFERENCE_VALIDATION_OPENROUTER_API_KEY -- OpenRouter API key
  */
-import { getRecentModelProbePairs, readHistory, } from './history.ts';
+import { getRecentArtifactPairs, } from './linter-artifacts.ts';
 import { modelOverride, retestAll, runsOverride, useSimple, includeSlow, probeFilter, } from './index-cli.ts';
 import { runAndReport, } from './index-run.ts';
 import { models, type ModelConfig, } from './models.ts';
@@ -62,9 +62,7 @@ if (apiKey === undefined || apiKey === '') {
 
 //endregion API key resolution
 
-//region Model selection -- resolves the set of models to test and which probes to skip from recent history
-
-const history = await readHistory();
+//region Model selection -- resolves the set of models to test and which probes to skip from recent artifacts
 
 /**
  * Determines which models to test based on CLI flags.
@@ -87,7 +85,7 @@ function selectModels(): readonly ModelConfig[] {
 const selectedModels = selectModels();
 const recentModelProbePairs = retestAll
   ? new Map<string, ReadonlySet<string>>()
-  : getRecentModelProbePairs(history);
+  : await getRecentArtifactPairs();
 
 //endregion Model selection
 
@@ -126,7 +124,7 @@ if (selectedModels.length === 0) {
   console.log(`[canary] testing ${String(selectedModels.length)} model(s) in parallel`);
   console.log(`[canary] probes: ${probes.map((probe) => probe.name).join(', ')}`);
   console.log('');
-  await runAndReport(selectedModels, probes, effectiveRecentPairs, history, apiKey, runsOverride);
+  await runAndReport(selectedModels, probes, effectiveRecentPairs, apiKey, runsOverride);
 }
 
 //endregion Execution

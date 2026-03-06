@@ -1,7 +1,6 @@
 /**
  * Single-model canary report formatting.
  */
-import type { ModelThreshold, } from './history-types.ts';
 import type { CanaryReport, } from './runner-types.ts';
 
 /** Score thresholds for text labels */
@@ -9,9 +8,6 @@ const GOOD_THRESHOLD = 0.9;
 
 /** Score threshold below which a WARN label is shown */
 const WARN_THRESHOLD = 0.7;
-
-/** Minimum samples needed before threshold info is shown */
-const MIN_SAMPLES = 3;
 
 /**
  * Returns a text indicator based on score value.
@@ -40,19 +36,15 @@ function formatDelta(delta: number): string {
  * Probe names are aligned to the longest name in the result set so scores
  * form a readable column even when probe names differ in length.
  * @param report - completed canary report
- * @param threshold - statistical threshold info if available
  * @returns formatted report text
  */
-export function formatModelReport(report: CanaryReport, threshold?: ModelThreshold): string {
+export function formatModelReport(report: CanaryReport): string {
   if (report.failed) {
     return `  [FAIL] ${report.model}: ${report.error ?? 'unknown error'}`;
   }
 
   const label = scoreLabel(report.overallScore);
-  const thresholdInfo = threshold !== undefined && threshold.sampleCount >= MIN_SAMPLES
-    ? ` (mean=${threshold.mean.toFixed(2)}, n=${String(threshold.sampleCount)}, threshold=${threshold.threshold.toFixed(2)})`
-    : '';
-  const header = `  [${label}] ${report.model}: ${report.overallScore.toFixed(2)}${thresholdInfo}`;
+  const header = `  [${label}] ${report.model}: ${report.overallScore.toFixed(2)}`;
 
   // Align probe name column to the longest name for easier score scanning
   const maxNameLen = report.results.length > 0

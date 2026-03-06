@@ -3,7 +3,6 @@
  */
 import { formatModelReport, scoreLabel, } from './report-model.ts';
 
-import type { ModelThreshold, } from './history-types.ts';
 import type { CanaryReport, } from './runner-types.ts';
 
 /**
@@ -24,55 +23,26 @@ function formatTimestamp(isoTimestamp: string): string {
 }
 
 /**
- * Produces a one-line summary string from categorized report arrays.
- *
- * Extracted from `formatMultiModelReport` to avoid a deeply nested ternary.
- * @param degraded - models flagged as degraded
- * @param failed - models that failed entirely
- * @param successful - models that completed successfully
- * @param belowTarget - successful models below the target score but not degraded
- * @returns human-readable summary sentence
- */
-function formatSummary(
-  degraded: readonly CanaryReport[],
-  failed: readonly CanaryReport[],
-  successful: readonly CanaryReport[],
-  belowTarget: readonly CanaryReport[],
-): string {
-  if (degraded.length > 0) {
-    return `Degradation detected: ${degraded.map((report) => report.model).join(', ')}`;
-  }
-  if (failed.length > 0) {
-    return `${String(failed.length)} model(s) failed, ${String(successful.length)} passed.`;
-  }
-  if (belowTarget.length > 0) {
-    return `No degradation detected. ${String(belowTarget.length)} of ${String(successful.length)} model(s) below target score.`;
-  }
-  return 'All models healthy.';
-}
-
-/**
  * Formats a multi-model canary report as a terminal-friendly summary.
  * @param reports - completed reports for each model
- * @param thresholds - per-model statistical thresholds
  * @returns formatted multi-line report
  */
 export function formatMultiModelReport(
   reports: readonly CanaryReport[],
-  thresholds: ReadonlyMap<string, ModelThreshold>,
 ): string {
   const timestamp = formatTimestamp(reports[0]?.timestamp ?? new Date().toISOString());
   const successful = reports.filter((report) => !report.failed);
   const failed = reports.filter((report) => report.failed);
-  const degraded = successful.filter((report) => report.degradationLikely);
-  // Models above the degradation threshold but below the optimal (PASS) score -- healthy
-  // but not ideal. Calling these "healthy" would be misleading.
-  const belowTarget = successful.filter((report) => !report.degradationLikely && scoreLabel(report.overallScore) !== 'PASS');
+  const belowTarget = successful.filter((report) => scoreLabel(report.overallScore) !== 'PASS');
 
-  const summary = formatSummary(degraded, failed, successful, belowTarget);
+  const summary = failed.length > 0
+    ? `${String(failed.length)} model(s) failed, ${String(successful.length)} passed.`
+    : belowTarget.length > 0
+      ? `${String(belowTarget.length)} of ${String(successful.length)} model(s) below target score.`
+      : 'All models healthy.';
 
   const successSection = successful.length > 0
-    ? ['--- Results ---', ...successful.map((report) => formatModelReport(report, thresholds.get(report.model))), '']
+    ? ['--- Results ---', ...successful.map((report) => formatModelReport(report)), '']
     : [];
 
   const failSection = failed.length > 0

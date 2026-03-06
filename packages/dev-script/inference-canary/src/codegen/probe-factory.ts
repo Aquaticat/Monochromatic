@@ -19,7 +19,7 @@ import {
   executeAdditionalRuns,
 } from './probe-factory-additional.ts';
 import { CODE_GEN_SYSTEM, } from './system-prompt.ts';
-import { buildCodeGenFixPrompt, combinedScore, extractCode, lintAndLog, } from './scoring.ts';
+import { buildCodeGenFixPrompt, combinedScore, extractCode, lintAndLog, tryExtractCode, } from './scoring.ts';
 
 import type { ContainerResult, } from '../container.ts';
 import type { LintResult, } from '../linter.ts';
@@ -130,8 +130,18 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
     },
 
     score: async (response, context) => {
+      /** Extraction result: source code and whether a fenced block was found */
+      const extraction = tryExtractCode(response);
+      if (!extraction.fenced) {
+        console.log(`  [${context.modelId}:${config.name}] no fenced code block found in response`);
+        // Still lint the raw response so artifacts are written for debugging,
+        // but score is forced to 0 since the model didn't follow the output format.
+        await lintAndLog(extraction.source, config.name, context);
+        return 0;
+      }
+
       /** Extracted TypeScript source from the model response */
-      const rawSource = extractCode(response);
+      const rawSource = extraction.source;
       /** Source after probe-level transform, with reject flag for constraint violations */
       const transformed = config.transformSource !== undefined
         ? config.transformSource(rawSource, context)

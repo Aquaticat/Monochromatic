@@ -89,5 +89,5 @@ export async function lintAndLog(source: string, probeName: string, context: Sco
   return lint;
 }
 
-export { extractCode, } from './extract-code.ts';
+export { extractCode, tryExtractCode, } from './extract-code.ts';
 export { buildCodeGenFixPrompt, } from './fix-prompt.ts';

@@ -5,6 +5,7 @@ import { mean, } from './math.ts';
 import { runProbe, } from './runner-probe.ts';
 import { defaultConfig, type RunnerConfig, } from './runner-config.ts';
 import { fetchServerTimestamp, } from './server-time.ts';
+import { writeFailureArtifact, } from './linter-artifacts.ts';
 
 import type { Probe, } from './probes.ts';
 // eslint-disable-next-line no-duplicate-imports -- local type use; re-exported below for consumers
@@ -67,19 +68,37 @@ export async function runCanary(
       results,
       overallScore,
       categoryScores: computeCategoryScores(results),
-      degradationLikely: overallScore < mergedConfig.degradationThreshold,
       failed: false,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`  [${mergedConfig.model}] FAILED: ${message}`);
+
+    // Write a failure artifact so the artifact directory records that this run
+    // was attempted, even though no probes completed successfully.
+    try {
+      await writeFailureArtifact({
+        model: mergedConfig.model,
+        timestamp,
+        failed: true,
+        error: message,
+        config: {
+          verbosity: mergedConfig.verbosity,
+          reasoning: mergedConfig.reasoning,
+          maxTokens: mergedConfig.maxTokens,
+          consistencyRuns: mergedConfig.consistencyRuns,
+        },
+      });
+    } catch (writeError) {
+      console.error(`  [${mergedConfig.model}] failed to write failure artifact:`, writeError);
+    }
+
     return {
       model: mergedConfig.model,
       timestamp,
       results: [],
       overallScore: 0,
       categoryScores: {},
-      degradationLikely: true,
       failed: true,
       error: message,
     };

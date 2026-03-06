@@ -5,7 +5,7 @@
  * with a `meta.json` sidecar for traceability. Directory is gitignored and intentionally
  * kept after runs for debugging -- artifacts do not accumulate enough to matter.
  */
-import { mkdir, writeFile, } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { PACKAGE_DIR, } from './paths.ts';
@@ -47,6 +47,22 @@ export type EnrichedArtifactMeta = ArtifactMeta & {
   readonly config: ConfigSnapshot;
   /** Diagnostic prompt sent to the model (fix pass only), undefined for initial pass */
   readonly fixPrompt?: string | undefined;
+  /** True when this artifact contains partial data from an aborted or failed run */
+  readonly partial?: boolean | undefined;
+  /** Error message when the run failed or was aborted */
+  readonly error?: string | undefined;
+};
+
+/**
+ * Metadata for a whole-model failure where no probes executed.
+ * Written so the artifact directory records that a run was attempted.
+ */
+export type FailureArtifactMeta = {
+  readonly model: string;
+  readonly timestamp: string;
+  readonly failed: true;
+  readonly error: string;
+  readonly config: ConfigSnapshot;
 };
 
 /**
@@ -134,4 +150,115 @@ export async function writeEnrichedArtifact(enriched: EnrichedArtifactMeta, rawR
   ]);
 }
 
+/**
+ * Writes a failure artifact for a whole-model failure where no probes executed.
+ *
+ * Creates `src/canary-lint/<model-slug>/failure-<timestamp>/meta.json`
+ * so the artifact directory records that a run was attempted and why it failed.
+ *
+ * @param meta - failure metadata with model, timestamp, and error
+ */
+export async function writeFailureArtifact(meta: FailureArtifactMeta): Promise<void> {
+  const slug = modelSlug(meta.model);
+  const safeTs = timestampSlug(meta.timestamp);
+  const dir = join(LINT_DIR, slug, `failure-${safeTs}`);
+  await mkdir(dir, { recursive: true, });
+  await writeFile(join(dir, 'meta.json'), JSON.stringify(meta, null, 2), 'utf8');
+}
+
 //endregion Artifact writing
+
+//region Recent artifact detection -- scans artifact directories to find model:probe pairs tested recently
+
+/** Hours in a day */
+const HOURS_PER_DAY = 24;
+
+/** Minutes per hour */
+const MINUTES_PER_HOUR = 60;
+
+/** Seconds per minute */
+const SECONDS_PER_MINUTE = 60;
+
+/** Milliseconds per second */
+const MS_PER_SECOND = 1000;
+
+/** 24 hours in milliseconds */
+const TWENTY_FOUR_HOURS_MS = HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MS_PER_SECOND;
+
+/**
+ * Regex to parse artifact directory names into (probe, pass, timestamp) components.
+ * Matches: `<probe>-<pass>-<timestamp>` where pass is "initial" or "fix".
+ * The timestamp has colons replaced with hyphens by {@link timestampSlug}.
+ *
+ * @example
+ * ```ts
+ * ARTIFACT_DIR_PATTERN.exec('csv-rfc4180-initial-2026-03-06T12-00-00.000Z');
+ * // groups: { probe: 'csv-rfc4180', pass: 'initial', timestamp: '2026-03-06T12-00-00.000Z' }
+ * ```
+ */
+const ARTIFACT_DIR_PATTERN = /^(?<probe>.+)-(?<pass>initial|fix)-(?<timestamp>\d{4}-.+)$/;
+
+/**
+ * Scans artifact directories to find model:probe pairs tested within the last 24 hours.
+ *
+ * Replaces the history-based {@link getRecentModelProbePairs} for the runner,
+ * deriving recent results directly from artifact directory timestamps.
+ * Only considers initial-pass artifacts (fix-pass artifacts always accompany an initial).
+ * @returns map from model ID to set of recently-tested probe names
+ */
+export async function getRecentArtifactPairs(): Promise<ReadonlyMap<string, ReadonlySet<string>>> {
+  const cutoff = Date.now() - TWENTY_FOUR_HOURS_MS;
+  const result = new Map<string, Set<string>>();
+
+  let modelDirs: string[];
+  try {
+    modelDirs = await readdir(LINT_DIR);
+  } catch {
+    return result;
+  }
+
+  for (const modelDir of modelDirs) {
+    const modelPath = join(LINT_DIR, modelDir);
+    let artifactDirs: string[];
+    try {
+      artifactDirs = await readdir(modelPath);
+    } catch {
+      continue;
+    }
+
+    for (const dirName of artifactDirs) {
+      const match = ARTIFACT_DIR_PATTERN.exec(dirName);
+      if (match === null || match.groups === undefined) continue;
+      if (match.groups['pass'] !== 'initial') continue;
+
+      // Restore colons from the filesystem-safe timestamp slug
+      const rawTimestamp = match.groups['timestamp'];
+      if (rawTimestamp === undefined) continue;
+      const timestamp = rawTimestamp.replaceAll('-', ':').replace('T:', 'T');
+      // Fix the date part: year:MM:DD -> year-MM-DD (first two colons after year are date separators)
+      const fixedTimestamp = timestamp.replace(
+        /^(\d{4}):(\d{2}):(\d{2})/,
+        '$1-$2-$3',
+      );
+
+      const entryTime = new Date(fixedTimestamp).getTime();
+      if (Number.isNaN(entryTime) || entryTime < cutoff) continue;
+
+      // Read meta.json to get the full model ID (directory name is the short slug)
+      const metaPath = join(modelPath, dirName, 'meta.json');
+      try {
+        const metaRaw = await readFile(metaPath, 'utf8');
+        const meta = JSON.parse(metaRaw) as ArtifactMeta;
+        const existing = result.get(meta.model) ?? new Set<string>();
+        existing.add(meta.probe);
+        result.set(meta.model, existing);
+      } catch {
+        // Missing or malformed meta.json -- skip
+      }
+    }
+  }
+
+  return result;
+}
+
+//endregion Recent artifact detection

@@ -116,8 +116,6 @@ export type CanaryReport = {
   readonly overallScore: number;
   /** Per-category scores for targeted diagnosis */
   readonly categoryScores: Record<string, number>;
-  /** Whether degradation is likely based on thresholds */
-  readonly degradationLikely: boolean;
   /** Whether this run failed entirely (API error, timeout, etc.) */
   readonly failed: boolean;
   /** Error message if failed */

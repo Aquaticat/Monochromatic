@@ -14,6 +14,42 @@ import type { ChatMessage, CompletionResult, StreamTiming, StreamUsage, } from '
 /** Milliseconds per second for human-readable timing display */
 const MS_PER_SECOND = 1000;
 
+//region PartialCompletionError -- thrown on stream abort, carries whatever data was collected before cancellation
+
+/**
+ * Error thrown when a stream is aborted mid-response.
+ * Carries the partial {@link CompletionResult} so callers can persist
+ * whatever chunks were received before cancellation.
+ *
+ * @example
+ * ```ts
+ * try {
+ *   return await streamCompletion(client, messages, config, label, signal);
+ * } catch (error) {
+ *   if (error instanceof PartialCompletionError) {
+ *     console.log('Partial text:', error.partialResult.text);
+ *   }
+ *   throw error;
+ * }
+ * ```
+ */
+export class PartialCompletionError extends Error {
+  /** Partial completion data collected before the stream was aborted */
+  readonly partialResult: CompletionResult;
+
+  /**
+   * @param message - human-readable error description
+   * @param partialResult - completion data collected before abort
+   */
+  constructor(message: string, partialResult: CompletionResult) {
+    super(message);
+    this.name = 'PartialCompletionError';
+    this.partialResult = partialResult;
+  }
+}
+
+//endregion PartialCompletionError
+
 /**
  * Logs a timing summary for a streamed response.
  * Only ttfc and total are shown -- chunk count and inter-chunk gaps are too granular
@@ -47,14 +83,43 @@ function parseUsage(raw: OpenAI.CompletionUsage | null | undefined): StreamUsage
 }
 
 /**
+ * Builds a {@link CompletionResult} from accumulated stream data.
+ * @param chunks - collected content deltas
+ * @param reasoningChunks - collected reasoning deltas
+ * @param timing - computed timing breakdown
+ * @param usage - raw usage from the API (may be nullish)
+ * @param finishReason - stop reason from the final chunk
+ * @returns assembled completion result
+ */
+function buildResult(
+  chunks: readonly string[],
+  reasoningChunks: readonly string[],
+  timing: StreamTiming,
+  usage: OpenAI.CompletionUsage | null | undefined,
+  finishReason: string | undefined,
+): CompletionResult {
+  return {
+    text: chunks.join(''),
+    reasoning: reasoningChunks.join(''),
+    timing,
+    usage: parseUsage(usage),
+    finishReason,
+  };
+}
+
+/**
  * Streams a chat completion and collects text, reasoning traces, per-chunk timing,
  * token usage, and finish reason.
+ *
+ * On abort, throws {@link PartialCompletionError} carrying whatever data was
+ * collected before cancellation so callers can persist partial responses.
  * @param client - OpenAI SDK client
  * @param messages - conversation messages
  * @param config - runner configuration
  * @param label - label for timing logs
  * @param signal - optional abort signal; cancels the HTTP stream when aborted
  * @returns full completion result with all captured data
+ * @throws {PartialCompletionError} when the stream is aborted, carrying partial data
  */
 export async function streamCompletion(
   client: OpenAI,
@@ -143,17 +208,14 @@ export async function streamCompletion(
   const timing: StreamTiming = { timeToFirstChunkMs: firstChunkMs, interChunkMs, totalMs, chunkCount, };
   logTiming(label, timing);
 
+  const result = buildResult(chunks, reasoningChunks, timing, lastUsage, lastFinishReason);
+
   // The SDK ends the stream gracefully on abort (returns partial data) rather than throwing.
-  // Throw here so callers treat a truncated response as an error, not valid output.
+  // Throw PartialCompletionError so callers can distinguish abort from success while still
+  // having access to whatever chunks arrived before cancellation.
   if (streamWasAborted) {
-    throw new DOMException('Stream aborted by probe timeout signal', 'AbortError');
+    throw new PartialCompletionError('Stream aborted by probe timeout signal', result);
   }
 
-  return {
-    text: chunks.join(''),
-    reasoning: reasoningChunks.join(''),
-    timing,
-    usage: parseUsage(lastUsage),
-    finishReason: lastFinishReason,
-  };
+  return result;
 }

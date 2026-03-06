@@ -7,6 +7,7 @@
 import { mean, } from './math.ts';
 import { createProbeClient, executeProbe, } from './runner-client.ts';
 import { runSecondPass, } from './runner-second-pass.ts';
+import { PartialCompletionError, } from './runner-stream.ts';
 import { writeEnrichedArtifact, } from './linter-artifacts.ts';
 
 import type { CompletionResult, ConfigSnapshot, ProbeResult, } from './runner-types.ts';
@@ -48,7 +49,7 @@ function snapshotConfig(config: RunnerConfig): ConfigSnapshot {
  * @param pass - which pass produced the response
  * @param completion - full completion result from the API
  * @param score - computed score for this response
- * @param fixPrompt - diagnostic prompt (fix pass only)
+ * @param options - optional fields for fix prompt, partial flag, and error message
  */
 async function enrichArtifact(
   probe: Probe,
@@ -57,7 +58,7 @@ async function enrichArtifact(
   pass: 'initial' | 'fix',
   completion: CompletionResult,
   score: number,
-  fixPrompt?: string,
+  options?: { fixPrompt?: string; partial?: boolean; error?: string; },
 ): Promise<void> {
   const enriched: EnrichedArtifactMeta = {
     model: config.model,
@@ -70,14 +71,75 @@ async function enrichArtifact(
     usage: completion.usage,
     finishReason: completion.finishReason,
     config: snapshotConfig(config),
-    ...(fixPrompt !== undefined ? { fixPrompt, } : {}),
+    ...(options?.fixPrompt !== undefined ? { fixPrompt: options.fixPrompt, } : {}),
+    ...(options?.partial === true ? { partial: true, } : {}),
+    ...(options?.error !== undefined ? { error: options.error, } : {}),
   };
   await writeEnrichedArtifact(enriched, completion.text);
 }
 
 /**
+ * Extracts a {@link CompletionResult} from an error if it is a
+ * {@link PartialCompletionError}, otherwise returns undefined.
+ * @param error - caught error value
+ * @returns partial completion result, or undefined for non-partial errors
+ */
+function extractPartialCompletion(error: unknown): CompletionResult | undefined {
+  if (error instanceof PartialCompletionError) return error.partialResult;
+  return undefined;
+}
+
+/**
+ * Saves whatever data was collected before a probe failure.
+ *
+ * For completed consistency runs, the last run's completion is already enriched
+ * during the normal flow. This function handles the partial/failed case: it writes
+ * the partial completion (if any) with `partial: true` and the error message.
+ * @param probe - probe being executed
+ * @param config - runner configuration
+ * @param timestamp - authoritative server timestamp
+ * @param error - the caught error
+ * @param lastCompletion - completion from the last successful consistency run (if any)
+ * @param partialCompletion - partial completion extracted from a PartialCompletionError
+ * @param lastScore - score from the last successful consistency run
+ * @param enrichedInitial - whether the initial-pass artifact was already enriched
+ */
+async function saveFailureArtifacts(
+  probe: Probe,
+  config: RunnerConfig,
+  timestamp: string,
+  error: unknown,
+  lastCompletion: CompletionResult | undefined,
+  partialCompletion: CompletionResult | undefined,
+  lastScore: number,
+  enrichedInitial: boolean,
+): Promise<void> {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+
+  // If we have a partial completion from an aborted stream, save it.
+  // This captures the mid-stream response that would otherwise be lost.
+  if (partialCompletion !== undefined) {
+    await enrichArtifact(probe, config, timestamp, 'initial', partialCompletion, 0, {
+      partial: true,
+      error: errorMessage,
+    });
+    return;
+  }
+
+  // If we completed at least one run but haven't enriched the artifact yet, do it now.
+  if (lastCompletion !== undefined && !enrichedInitial) {
+    await enrichArtifact(probe, config, timestamp, 'initial', lastCompletion, lastScore, {
+      error: errorMessage,
+    });
+  }
+}
+
+/**
  * Core probe logic: runs consistency checks then the second-pass fix loop.
  * After scoring, writes enriched metadata to each artifact directory.
+ *
+ * On failure, persists whatever partial data was collected (completed runs,
+ * partial stream responses) before re-throwing.
  * @param probe - canary probe to execute
  * @param config - runner configuration
  * @param timestamp - authoritative server timestamp for artifact naming
@@ -95,52 +157,94 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: strin
   let lastCompletion: CompletionResult | undefined = undefined;
   // lastScore tracks the score of the most recent consistency run for artifact enrichment.
   let lastScore = 0;
-  for (const runIndex of Array.from({ length: config.consistencyRuns, }).keys()) {
-    // eslint-disable-next-line no-await-in-loop -- sequential to avoid rate limits
-    lastCompletion = await executeProbe(probe, config, client, signal);
-    const scoreContext: ScoreContext = { modelId: config.model, pass: 'initial', timestamp, signal, };
-    // eslint-disable-next-line no-await-in-loop -- score may involve container execution
-    const runScore = await probe.score(lastCompletion.text, scoreContext);
-    scores.push(runScore);
-    lastScore = runScore;
-    console.log(`  [${config.model}:${probe.name}] run ${String(runIndex + 1)}/${String(config.consistencyRuns)}: score=${runScore.toFixed(2)}`);
+  // enrichedInitial tracks whether the initial-pass artifact was successfully enriched,
+  // so the failure handler knows whether it needs to write the artifact.
+  let enrichedInitial = false;
+
+  try {
+    for (const runIndex of Array.from({ length: config.consistencyRuns, }).keys()) {
+      // eslint-disable-next-line no-await-in-loop -- sequential to avoid rate limits
+      lastCompletion = await executeProbe(probe, config, client, signal);
+      const scoreContext: ScoreContext = { modelId: config.model, pass: 'initial', timestamp, signal, };
+      // eslint-disable-next-line no-await-in-loop -- score may involve container execution
+      const runScore = await probe.score(lastCompletion.text, scoreContext);
+      scores.push(runScore);
+      lastScore = runScore;
+      console.log(`  [${config.model}:${probe.name}] run ${String(runIndex + 1)}/${String(config.consistencyRuns)}: score=${runScore.toFixed(2)}`);
+    }
+
+    // Enrich the initial-pass artifact with the last consistency run's data.
+    if (lastCompletion !== undefined) {
+      await enrichArtifact(probe, config, timestamp, 'initial', lastCompletion, lastScore);
+      enrichedInitial = true;
+    }
+
+    const meanScore = mean(scores);
+    const consistent = scores.every((score) => score === scores[0]);
+
+    // Fix pass has its own error handling: a failed fix should not discard
+    // valid initial-pass results. Partial fix data is saved before continuing.
+    // pass2Score is let because it starts undefined and is conditionally assigned
+    // based on the fix pass result or left undefined if the fix pass is skipped/fails.
+    let pass2Score: number | undefined = undefined;
+    try {
+      const fixContext: ScoreContext = { modelId: config.model, pass: 'fix', timestamp, signal, };
+      const pass2Result = await runSecondPass(probe, config, client, lastCompletion?.text ?? '', fixContext);
+
+      if (pass2Result !== undefined) {
+        pass2Score = pass2Result.score;
+        const delta = pass2Result.score - meanScore;
+        const deltaStr = delta >= 0 ? `+${delta.toFixed(2)}` : delta.toFixed(2);
+        console.log(`  [${config.model}:${probe.name}] pass2: score=${pass2Result.score.toFixed(2)} delta=${deltaStr}`);
+
+        // Enrich the fix-pass artifact with completion data, score, and diagnostic prompt.
+        await enrichArtifact(probe, config, timestamp, 'fix', pass2Result.completion, pass2Result.score, {
+          fixPrompt: pass2Result.fixPrompt,
+        });
+      }
+    } catch (fixError) {
+      const errorMessage = fixError instanceof Error ? fixError.message : String(fixError);
+      console.error(`  [${config.model}:${probe.name}] pass2 failed: ${errorMessage}`);
+
+      // Save partial fix data if the stream was aborted mid-response.
+      const partialFix = extractPartialCompletion(fixError);
+      if (partialFix !== undefined) {
+        try {
+          await enrichArtifact(probe, config, timestamp, 'fix', partialFix, 0, {
+            partial: true,
+            error: errorMessage,
+          });
+        } catch (saveError) {
+          console.error(`  [${config.model}:${probe.name}] failed to save partial fix artifact:`, saveError);
+        }
+      }
+    }
+
+    return {
+      name: probe.name,
+      category: probe.category,
+      scores,
+      meanScore,
+      consistent,
+      pass2Score,
+      fixDelta: pass2Score !== undefined ? pass2Score - meanScore : undefined,
+      timing: lastCompletion?.timing,
+      usage: lastCompletion?.usage,
+    };
+  } catch (error) {
+    const partialCompletion = extractPartialCompletion(error);
+    // Save whatever data we collected before the failure. Uses a separate try/catch
+    // so a write failure doesn't mask the original error.
+    try {
+      await saveFailureArtifacts(
+        probe, config, timestamp, error,
+        lastCompletion, partialCompletion, lastScore, enrichedInitial,
+      );
+    } catch (saveError) {
+      console.error(`  [${config.model}:${probe.name}] failed to save failure artifacts:`, saveError);
+    }
+    throw error;
   }
-
-  // Enrich the initial-pass artifact with the last consistency run's data.
-  // Runs in the background -- artifact enrichment should not block the fix pass.
-  if (lastCompletion !== undefined) {
-    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget; enrichment failure is non-fatal
-    enrichArtifact(probe, config, timestamp, 'initial', lastCompletion, lastScore)
-      .catch((error) => { console.error(`  [${config.model}:${probe.name}] artifact enrichment failed:`, error); });
-  }
-
-  const meanScore = mean(scores);
-  const consistent = scores.every((score) => score === scores[0]);
-  const fixContext: ScoreContext = { modelId: config.model, pass: 'fix', timestamp, signal, };
-  const pass2Result = await runSecondPass(probe, config, client, lastCompletion?.text ?? '', fixContext);
-
-  if (pass2Result !== undefined) {
-    const delta = pass2Result.score - meanScore;
-    const deltaStr = delta >= 0 ? `+${delta.toFixed(2)}` : delta.toFixed(2);
-    console.log(`  [${config.model}:${probe.name}] pass2: score=${pass2Result.score.toFixed(2)} delta=${deltaStr}`);
-
-    // Enrich the fix-pass artifact with completion data, score, and diagnostic prompt.
-    // eslint-disable-next-line promise/prefer-await-to-then -- fire-and-forget; enrichment failure is non-fatal
-    enrichArtifact(probe, config, timestamp, 'fix', pass2Result.completion, pass2Result.score, pass2Result.fixPrompt)
-      .catch((error) => { console.error(`  [${config.model}:${probe.name}] fix artifact enrichment failed:`, error); });
-  }
-
-  return {
-    name: probe.name,
-    category: probe.category,
-    scores,
-    meanScore,
-    consistent,
-    pass2Score: pass2Result?.score,
-    fixDelta: pass2Result !== undefined ? pass2Result.score - meanScore : undefined,
-    timing: lastCompletion?.timing,
-    usage: lastCompletion?.usage,
-  };
 }
 
 /**
