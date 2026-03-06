@@ -1,7 +1,7 @@
 /**
  * Runner configuration types and defaults.
  */
-import type { OpenRouterModelId, } from './history-types.ts';
+import type { OpenRouterModelId, } from './runner-types.ts';
 
 /**
  * OpenRouter verbosity levels controlling response detail via output_config.effort.

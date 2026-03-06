@@ -4,7 +4,23 @@
  * Configuration types and defaults live in runner-config.ts.
  */
 import type { Probe, } from './probes.ts';
-import type { ISOTimestamp, OpenRouterModelId, } from './history-types.ts';
+
+//region Shared branded types -- template-literal types used across runner, models, server-time, and artifacts
+
+/**
+ * ISO 8601 timestamp string, e.g. "2026-02-23T12:00:00.000Z".
+ * Template literal narrows the type to strings starting with a year segment,
+ * catching obvious non-timestamp values at compile time.
+ */
+export type ISOTimestamp = `${number}-${string}`;
+
+/**
+ * OpenRouter model ID in provider/name format, e.g. "anthropic/claude-sonnet-4.6".
+ * Template literal enforces the slash separator, preventing bare model names.
+ */
+export type OpenRouterModelId = `${string}/${string}`;
+
+//endregion Shared branded types
 
 export type { RunnerConfig, VerbosityLevel, } from './runner-config.ts';
 export { defaultConfig, } from './runner-config.ts';

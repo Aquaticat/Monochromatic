@@ -13,7 +13,7 @@
  * ```
  */
 
-import type { ISOTimestamp, } from './history-types.ts';
+import type { ISOTimestamp, } from './runner-types.ts';
 
 /** OpenRouter models endpoint -- lightweight, public, no auth required */
 const OPENROUTER_MODELS_URL = 'https://openrouter.ai/api/v1/models';

@@ -1,13 +1,13 @@
 # Viewer migration: artifacts as source of truth
 
-The inference-canary runner no longer writes `canary-history.jsonl` or exports `HISTORY_PATH`.
+The inference-canary runner no longer writes `canary-history.jsonl` or maintains any history files.
 All run data is now persisted as enriched artifacts in `src/canary-lint/`.
-The viewer must be updated to derive its data from artifacts instead of the JSONL file.
+The viewer must be updated to derive its data entirely from artifacts.
 
 ## What changed in inference-canary
 
-- **Deleted**: `history-io.ts` (JSONL read/write), `HISTORY_PATH` from `paths.ts`
-- **Kept**: `history-types.ts` (HistoryEntry, HistoryFile, ModelThreshold, OpenRouterModelId), `history-stats.ts` (computeThreshold, etc.)
+- **Deleted**: `history-io.ts`, `history-types.ts`, `history-stats.ts`, `history.ts`, `HISTORY_PATH`
+- **Moved**: `ISOTimestamp` and `OpenRouterModelId` now live in `runner-types.ts`
 - **Runner no longer**: reads history, appends history, computes degradation thresholds, or reports degradation
 - **Runner now writes**: enriched `meta.json` + `response.txt` per probe per pass, plus `failure-<timestamp>/meta.json` for whole-model failures
 
@@ -54,16 +54,16 @@ Alongside each `meta.json`, `response.txt` contains the raw model output.
 ## What the viewer needs to do
 
 1. **Stop reading `canary-history.jsonl`**: delete `src/data/read-history.ts` and its `HISTORY_PATH` import
-2. **Build HistoryEntry from artifacts**: modify `readArtifacts()` (or add a new function) to:
+2. **Define your own data model**: the old `HistoryEntry`, `HistoryFile`, `ModelThreshold` types no longer exist in the runner package. Define viewer-local types that match the artifact-based data, or work directly with `EnrichedArtifactMeta`
+3. **Build run data from artifacts**: modify `readArtifacts()` (or add a new function) to:
    - Read each `meta.json` as `EnrichedArtifactMeta` (falling back to `ArtifactMeta` for old artifacts without enrichment)
    - Group initial-pass artifacts by `(model, timestamp)` to form runs
    - Compute `overallScore` as the mean of per-probe `score` fields
-   - Build `probeScores` from individual artifact scores
-   - Build `pass2Scores` from fix-pass artifact scores
+   - Build per-probe scores from individual artifact scores
+   - Build pass-2 scores from fix-pass artifact scores
    - Populate `timing`, `usage`, `config` from the enriched fields
-   - Return `HistoryFile` (array of `HistoryEntry`) for the existing chart/view code
-3. **Move degradation detection here**: the runner no longer computes `degradationLikely`. The viewer already imports `computeThreshold` from `history-stats.ts` -- use it to flag degradation when rendering
-4. **Display new data in overlays**: the detail overlay can now show:
+4. **Implement degradation detection locally**: the runner no longer computes `degradationLikely` and `computeThreshold` has been deleted. Reimplement the statistical logic (mean - 2*stddev, floored at 0.3, min 3 samples) in the viewer if degradation flagging is desired
+5. **Display new data in overlays**: the detail overlay can now show:
    - Reasoning/thinking traces (from `reasoning` field)
    - Token usage breakdown
    - Timing (time-to-first-chunk, total)
@@ -83,11 +83,5 @@ The viewer should handle missing fields gracefully (e.g. show "N/A" for score, s
 From `@monochromatic-dev/dev-script-inference-canary/src/linter-artifacts.ts`:
 - `ArtifactMeta`, `EnrichedArtifactMeta`, `FailureArtifactMeta`, `LINT_DIR`, `artifactDir`
 
-From `@monochromatic-dev/dev-script-inference-canary/src/history-types.ts` (still exists):
-- `HistoryEntry`, `HistoryFile`, `ModelThreshold`, `OpenRouterModelId`
-
-From `@monochromatic-dev/dev-script-inference-canary/src/history-stats.ts` (still exists):
-- `computeThreshold`
-
 From `@monochromatic-dev/dev-script-inference-canary/src/runner-types.ts`:
-- `StreamTiming`, `StreamUsage`, `ConfigSnapshot`
+- `ISOTimestamp`, `OpenRouterModelId`, `StreamTiming`, `StreamUsage`, `ConfigSnapshot`

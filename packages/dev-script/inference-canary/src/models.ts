@@ -6,7 +6,7 @@
  */
 
 import type { VerbosityLevel, } from './runner.ts';
-import type { OpenRouterModelId, } from './history-types.ts';
+import type { OpenRouterModelId, } from './runner-types.ts';
 
 //region Model config type -- per-model overrides for verbosity and display label
 
