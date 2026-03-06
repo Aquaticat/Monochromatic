@@ -1,4 +1,5 @@
 {
+  "name": "@monochromatic-dev/config-tofu",
   "type": "module",
   "devDependencies": {
     "@types/bun": "catalog:"

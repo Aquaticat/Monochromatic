@@ -1,0 +1,49 @@
+/* Side-by-side diff view for initial/fix pass comparison. */
+
+.diff-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-block: 1rem;
+  overflow-x: auto;
+}
+
+.diff-column {
+  min-inline-size: 0;
+  overflow-x: auto;
+}
+
+.diff-pre {
+  font-size: 0.75rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.diff-removed {
+  display: block;
+  background-color: #fee2e2;
+  color: #991b1b;
+  margin-inline: -0.5rem;
+  padding-inline: 0.5rem;
+}
+
+.diff-added {
+  display: block;
+  background-color: #dcfce7;
+  color: #166534;
+  margin-inline: -0.5rem;
+  padding-inline: 0.5rem;
+}
+
+.diff-spacer {
+  display: block;
+  min-block-size: 1.6em;
+}
+
+/* On narrow viewports, stack columns vertically */
+@media (max-inline-size: 48rem) {
+  .diff-container {
+    grid-template-columns: 1fr;
+  }
+}

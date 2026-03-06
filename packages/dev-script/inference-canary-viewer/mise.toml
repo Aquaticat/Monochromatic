@@ -1,0 +1,21 @@
+[tasks.build]
+description = "Generate static dashboard from canary history and artifacts"
+run = "bun src/build.ts"
+
+[tasks.'dev:watch']
+description = "Rebuild dashboard on source changes"
+run = "bun --watch src/build.ts"
+
+[tasks.'dev:serve']
+description = "Serve the built dashboard locally"
+run = "bun ./dist/final/index.html"
+
+[tasks.dev]
+description = "Watch and serve the dashboard"
+run = [{tasks = ["dev:*"]}]
+
+[tasks.'lint:types']
+extends = "lint:types"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"

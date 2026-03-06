@@ -1,0 +1,79 @@
+/* Fixed overlay for run detail, activated via :target. */
+
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+  padding-block: 2rem;
+  padding-inline: 1rem;
+}
+
+.overlay:target {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.overlay-panel {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  padding-block: 1.5rem;
+  padding-inline: 1.5rem;
+  max-inline-size: 72rem;
+  inline-size: 100%;
+  box-shadow: 0 0.25rem 1.5rem rgba(0, 0, 0, 0.15);
+}
+
+.overlay-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-block-end: 1rem;
+  padding-block-end: 0.75rem;
+  border-block-end: 0.0625rem solid #e5e5e5;
+}
+
+.overlay-header h2 {
+  flex: 1;
+  min-inline-size: 12rem;
+}
+
+.overlay-meta {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.overlay-close {
+  margin-inline-start: auto;
+  font-size: 0.875rem;
+  padding-block: 0.25rem;
+  padding-inline: 0.75rem;
+  border: 0.0625rem solid #ccc;
+  border-radius: 0.25rem;
+  text-decoration: none;
+  color: #333;
+}
+
+.overlay-close:hover {
+  background-color: #f0f0f0;
+}
+
+.overlay-scores {
+  max-inline-size: 24rem;
+  margin-block: 0.5rem;
+}
+
+.overlay-no-artifacts {
+  color: #888;
+  font-style: italic;
+  margin-block: 1rem;
+}
+
+/* Source code display */
+.source-single {
+  margin-block: 1rem;
+}

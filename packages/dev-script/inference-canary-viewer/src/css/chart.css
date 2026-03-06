@@ -1,0 +1,222 @@
+/* Scatter plot: positioned points inside a relative container.
+ * Y axis 0-1, X axis run indices. */
+
+.chart-figure {
+  margin-block: 1rem;
+}
+
+.chart-caption {
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-block-end: 0.5rem;
+}
+
+.chart-container {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  grid-template-rows: 1fr 1.5rem;
+  block-size: 16rem;
+}
+
+.chart-y-axis {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.chart-y-tick {
+  position: absolute;
+  inset-inline-end: 0.25rem;
+  font-size: 0.6875rem;
+  color: #888;
+  transform: translateY(50%);
+}
+
+.chart-plot {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  border-inline-start: 0.0625rem solid #ccc;
+  border-block-end: 0.0625rem solid #ccc;
+  background-image:
+    linear-gradient(to top, #f0f0f0 0.0625rem, transparent 0.0625rem);
+  background-size: 100% 25%;
+}
+
+.chart-x-axis {
+  position: relative;
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.chart-x-tick {
+  position: absolute;
+  inset-block-start: 0.125rem;
+  font-size: 0.6875rem;
+  color: #888;
+  transform: translateX(-50%);
+}
+
+/* Data points */
+.chart-point {
+  position: absolute;
+  display: block;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 50%;
+  background-color: var(--point-color, #6B7280);
+  transform: translate(-50%, 50%);
+  text-decoration: none;
+  transition: transform 0.1s;
+}
+
+.chart-point:hover,
+.chart-point:focus-visible {
+  transform: translate(-50%, 50%) scale(1.8);
+  z-index: 1;
+  outline: 0.125rem solid var(--point-color, #6B7280);
+  outline-offset: 0.0625rem;
+}
+
+/* Data points with vendor icon inside */
+.chart-point--icon {
+  inline-size: 1rem;
+  block-size: 1rem;
+  background-color: #fff;
+  border: 0.0625rem solid var(--point-color, #6B7280);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  & svg {
+    inline-size: 0.75rem;
+    block-size: 0.75rem;
+  }
+}
+
+.chart-point--icon:hover,
+.chart-point--icon:focus-visible {
+  transform: translate(-50%, 50%) scale(1.5);
+}
+
+/* Pass-2 (fix) points: diamond shape, slightly larger */
+.chart-point--pass2 {
+  background-color: var(--point-color, #6B7280);
+  opacity: 0.6;
+  inline-size: 0.625rem;
+  block-size: 0.625rem;
+  border-radius: 0;
+  transform: translate(-50%, 50%) rotate(45deg);
+}
+
+.chart-point--pass2:hover,
+.chart-point--pass2:focus-visible {
+  transform: translate(-50%, 50%) rotate(45deg) scale(1.8);
+  opacity: 1;
+}
+
+/* Failed runs: X-shaped via clip-path */
+.chart-point--failed {
+  background-color: #dc2626;
+  border-radius: 0;
+  clip-path: polygon(
+    20% 0%, 50% 30%, 80% 0%, 100% 20%, 70% 50%,
+    100% 80%, 80% 100%, 50% 70%, 20% 100%, 0% 80%,
+    30% 50%, 0% 20%
+  );
+}
+
+/* Threshold line */
+.chart-threshold {
+  position: absolute;
+  inset-inline: 0;
+  border-block-start: 0.0625rem dashed #dc2626;
+  z-index: 0;
+}
+
+.chart-threshold-label {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: -1.125rem;
+  font-size: 0.625rem;
+  color: #dc2626;
+  background-color: #fafafa;
+  padding-inline: 0.25rem;
+}
+
+/* Backing data table: visible but compact */
+.chart-data-table {
+  margin-block-start: 0.5rem;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.chart-data-table caption {
+  text-align: start;
+  font-size: 0.6875rem;
+  color: #999;
+  margin-block-end: 0.25rem;
+}
+
+.chart-empty {
+  color: #888;
+  font-style: italic;
+}
+
+/* Color dot for legends and tables */
+.color-dot {
+  display: inline-block;
+  inline-size: 0.625rem;
+  block-size: 0.625rem;
+  border-radius: 50%;
+  background-color: var(--point-color, #6B7280);
+  vertical-align: middle;
+}
+
+/* Legend */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block: 0.5rem;
+  font-size: 0.8125rem;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Icon dot: contains an inline SVG instead of a solid color */
+.color-dot--icon {
+  background-color: transparent;
+  border-radius: 0;
+  inline-size: 1em;
+  block-size: 1em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  & svg {
+    inline-size: 1em;
+    block-size: 1em;
+  }
+}
+
+/* Kimi icon is nearly invisible on white — add a subtle frame */
+.color-dot--icon[data-vendor="moonshotai"] {
+  outline: 0.0625rem solid #888;
+  outline-offset: 0;
+  border-radius: 0.125rem;
+}
+
+/* Diamond dot for fix-score legend entries */
+.color-dot--fix {
+  border-radius: 0;
+  transform: rotate(45deg);
+  opacity: 0.6;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+}

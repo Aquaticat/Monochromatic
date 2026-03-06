@@ -14,6 +14,9 @@ const MIN_SAMPLES = 3;
 /** Fallback threshold when insufficient history exists */
 const DEFAULT_THRESHOLD = 0.4;
 
+/** Minimum degradation threshold -- prevents the threshold from dropping too low when a model consistently underperforms */
+const MIN_THRESHOLD = 0.3;
+
 /** Hours in a day */
 const HOURS_PER_DAY = 24;
 
@@ -59,8 +62,8 @@ export function computeThreshold(model: OpenRouterModelId, history: HistoryFile)
 
   // Threshold = mean - 2*stddev: any score more than two standard deviations
   // below the model's historical mean is flagged as likely degradation.
-  // Floored at 0 to avoid negative thresholds for extremely volatile models.
-  return { model, mean, stddev, threshold: Math.max(0, mean - 2 * stddev), sampleCount: scores.length, };
+  // Floored at MIN_THRESHOLD so consistently low-performing models are still flagged.
+  return { model, mean, stddev, threshold: Math.max(MIN_THRESHOLD, mean - 2 * stddev), sampleCount: scores.length, };
 }
 
 /**

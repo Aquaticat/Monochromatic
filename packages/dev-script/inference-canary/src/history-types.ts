@@ -20,8 +20,10 @@ export type HistoryEntry = {
   readonly timestamp: ISOTimestamp;
   readonly model: OpenRouterModelId;
   readonly overallScore: number;
-  /** Per-probe scores for finer-grained analysis */
+  /** Per-probe pass-1 scores for finer-grained analysis */
   readonly probeScores: Record<string, number>;
+  /** Per-probe pass-2 (fix) scores, keyed by probe name. Absent for probes without a fix pass. */
+  readonly pass2Scores?: Record<string, number> | undefined;
   /** Whether this run was a failure (API error, timeout, etc.) */
   readonly failed: boolean;
 };
@@ -36,7 +38,7 @@ export type ModelThreshold = {
   readonly model: OpenRouterModelId;
   readonly mean: number;
   readonly stddev: number;
-  /** Threshold = mean - 2*stddev, floored at 0 */
+  /** Threshold = mean - 2*stddev, floored at 0.3 */
   readonly threshold: number;
   /** Number of historical runs used */
   readonly sampleCount: number;

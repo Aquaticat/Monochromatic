@@ -10,7 +10,9 @@
       "default": "./dist/final/neutral/index.mjs"
     },
     "./ts": "./src/index.ts",
-    "./ts/*": "./src/*"
+    "./ts/*": "./src/*",
+    "./h-dom": "./src/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts",
+    "./h-html": "./src/types/t string/t html/f/t string jsx/r s/p n/index.ts"
   },
   "files": [
     "dist/final",

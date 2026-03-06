@@ -1,0 +1,26 @@
+import { log } from "../log.ts";
+
+/**
+ * Sends a critical desktop notification via `notify-send` to alert the user
+ * about sustained unproductive activity.
+ * @param summary - LLM-generated analysis summary shown in the notification body
+ * @example
+ * ```ts
+ * await sendNotification("User has been browsing Reddit for 25 minutes.");
+ * ```
+ */
+export async function sendNotification(summary: string): Promise<void> {
+  try {
+    Bun.spawnSync([
+      "notify-send",
+      "--urgency=critical",
+      "--app-name=Hall Monitor",
+      "Hall Monitor: You've been unproductive!",
+      summary,
+    ]);
+    log.info("[notify] Desktop notification sent.");
+  } catch (err) {
+    console.error(`[notify] Failed to send notification: ${err}`);
+    log.error(`[notify] Failed to send notification: ${err}`);
+  }
+}

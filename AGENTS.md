@@ -178,6 +178,7 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - Use `//region`/`//endregion` markers with purpose and explanation for logical code sections
 - Include `.ts` extensions in imports; group: built-ins, external, workspace, relative, type-only
 - Prefer named imports, `import type` for type-only, absolute imports for workspace packages
+- Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile` -- Bun resolves these at build time with no async preload step needed
 - Prefer function declarations; always name functions; parentheses around all arrow params
 - Export immediately at declaration; avoid `Object.assign` for extending typed objects
 - Throw and return early; use overloads (most specific first)

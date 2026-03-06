@@ -55,13 +55,20 @@ export async function runAndReport(
     return;
   }
 
-  const entries: readonly HistoryEntry[] = reportsWithResults.map((report) => ({
-    timestamp: report.timestamp,
-    model: report.model,
-    overallScore: report.overallScore,
-    probeScores: Object.fromEntries(report.results.map((result) => [result.name, result.meanScore])),
-    failed: report.failed,
-  }));
+  const entries: readonly HistoryEntry[] = reportsWithResults.map((report) => {
+    /** Pass-2 scores for probes that had a fix pass, omitting probes without one */
+    const pass2Entries = report.results
+      .filter((result) => result.pass2Score !== undefined)
+      .map((result) => [result.name, result.pass2Score as number] as const);
+    return {
+      timestamp: report.timestamp,
+      model: report.model,
+      overallScore: report.overallScore,
+      probeScores: Object.fromEntries(report.results.map((result) => [result.name, result.meanScore])),
+      ...(pass2Entries.length > 0 ? { pass2Scores: Object.fromEntries(pass2Entries), } : {}),
+      failed: report.failed,
+    };
+  });
   if (entries.length > 0) await appendHistory(entries);
 
   const updatedHistory = await readHistory();

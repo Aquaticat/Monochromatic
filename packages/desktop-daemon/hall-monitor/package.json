@@ -1,0 +1,18 @@
+{
+  "name": "@monochromatic-dev/desktop-daemon-hall-monitor",
+  "description": "Local, privacy-first desktop productivity monitor using a local vision LLM.",
+  "type": "module",
+  "private": true,
+  "main": "src/index.ts",
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/desktop-daemon/hall-monitor"
+  },
+  "sideEffects": true
+}

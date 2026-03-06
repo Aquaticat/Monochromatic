@@ -1,0 +1,22 @@
+{
+  "name": "@monochromatic-dev/dev-script-inference-canary-viewer",
+  "description": "Static dashboard for inference canary results. Generates a single-page HTML viewer from canary history and artifacts.",
+  "type": "module",
+  "main": "src/build.ts",
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  },
+  "dependencies": {
+    "@lobehub/icons-static-svg": "^1.82.0",
+    "@monochromatic-dev/dev-script-inference-canary": "workspace:*",
+    "nue-glow": "^0.2.5"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/dev-script/inference-canary-viewer"
+  },
+  "sideEffects": true
+}

@@ -1,0 +1,89 @@
+/* Syntax highlighting styles adapted from nue-glow.
+ * Semantic tags: <b> keywords, <em> strings, <sup> comments,
+ * <strong> tag names, <i> operators, <label> annotations. */
+
+pre.glow {
+  background-color: #1e293b;
+  color: #a2aab1;
+  padding-block: 1rem;
+  padding-inline: 1rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, "Cascadia Code", "JetBrains Mono", monospace;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  counter-reset: line-counter 0;
+}
+
+pre.glow *  {
+  font-weight: 400;
+  font-style: inherit;
+  text-decoration: inherit;
+}
+
+/* Keywords */
+pre.glow b {
+  color: #7dd3fc;
+}
+
+/* Strings */
+pre.glow em {
+  color: #f472b6;
+}
+
+/* Tag names, language keywords */
+pre.glow strong {
+  color: #419fff;
+}
+
+/* Operators, brackets */
+pre.glow i {
+  color: #64748b;
+}
+
+/* Comments */
+pre.glow sup {
+  color: #6f7a7d;
+  font-size: inherit;
+  vertical-align: inherit;
+  font-style: italic;
+}
+
+/* Annotations (@param, @returns) */
+pre.glow label {
+  font-weight: bold;
+  color: #fff;
+}
+
+/* Wavy underline for errors */
+pre.glow u {
+  text-decoration: underline wavy #ef4444;
+  text-decoration-thickness: 0.15em;
+  text-underline-offset: 0.5em;
+}
+
+/* Marked/highlighted code */
+pre.glow mark {
+  background-color: rgba(45, 212, 191, 0.15);
+  color: unset;
+  border-radius: 0.2em;
+  padding-block: 0.3em;
+  padding-inline: 0.4em;
+  margin-block: -0.3em;
+  margin-inline: -0.4em;
+}
+
+/* Line numbers */
+pre.glow span {
+  counter-increment: line-counter 1;
+}
+
+pre.glow span::before {
+  color: #475569;
+  content: counter(line-counter);
+  display: inline-block;
+  text-align: end;
+  padding-inline-end: 1em;
+  margin-inline-end: 1em;
+  inline-size: 2.5em;
+}

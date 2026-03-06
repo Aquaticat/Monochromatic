@@ -294,3 +294,20 @@ out/
 
 # Crush
 .crush/
+
+# Claude Code sandbox sentinel files
+/.bash_profile
+/.bashrc
+/.gitconfig
+/.gitmodules
+/.nvimlog
+/.profile
+/.ripgreprc
+/.vscode
+/.zprofile
+/.zshrc
+/HEAD
+/config
+/hooks
+/objects
+/refs
