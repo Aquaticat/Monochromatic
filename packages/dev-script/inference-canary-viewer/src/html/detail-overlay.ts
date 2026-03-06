@@ -1,9 +1,9 @@
 /**
- * Run detail overlay shown via `:target` CSS pseudo-class.
+ * Run detail overlay using the Popover API (`popover="auto"`).
  *
- * Clicking a scatter point navigates to `#run-{id}`, making the corresponding
- * `<section>` visible as a fixed overlay. Contains source code with syntax
- * highlighting, side-by-side diff, and lint diagnostics.
+ * Clicking a scatter point button (`popovertarget="run-{id}"`) opens the
+ * corresponding overlay. Light-dismiss is built in — clicking outside or
+ * pressing Escape closes the popover. No JavaScript required.
  */
 import { escapeHtml, } from '../chart/data-table.ts';
 import { highlightTs, } from '../highlight/glow.ts';
@@ -18,7 +18,7 @@ import { artifactKey, } from '../data/read-artifacts.ts';
 /**
  * Renders all run detail overlays for every history entry.
  *
- * Each overlay is a `<section id="run-{id}">` that becomes visible via `:target`.
+ * Each overlay is a `<div popover="auto" id="run-{id}">` opened by `popovertarget` buttons.
  * @param entries - all history entries
  * @param artifacts - available artifact pairs
  * @param modelLabels - display labels per model
@@ -73,30 +73,22 @@ function renderRunOverlay(
 
   void pair;
 
-  const probeRows = Object.entries(entry.probeScores)
+  const probeCards = Object.entries(entry.probeScores)
     .map(([name, score]) => {
       const probeOverlayId = `run-${escapeHtml(entry.model)}-${escapeHtml(name)}-${escapeHtml(entry.timestamp)}`;
-      return `<tr><td><a href="#${probeOverlayId}">${escapeHtml(name)}</a></td><td>${score.toFixed(2)}</td></tr>`;
+      return `<button popovertarget="${probeOverlayId}" class="probe-card">
+  <span>${escapeHtml(name)}</span>
+  <span class="probe-card-score"><strong>${score.toFixed(2)}</strong></span>
+</button>`;
     })
     .join('\n');
 
-  return `<section id="run-${escapeHtml(id)}" class="overlay">
-  <div class="overlay-panel">
-    <header class="overlay-header">
-      <h2>${escapeHtml(label)} - ${escapeHtml(probe)}</h2>
-      <p class="overlay-meta">
-        <time>${escapeHtml(entry.timestamp)}</time>
-        &middot; overall: <strong>${entry.overallScore.toFixed(2)}</strong>
-        ${entry.failed ? '&middot; <span class="status--failed">FAILED</span>' : ''}
-      </p>
-      <a href="#" class="overlay-close" aria-label="Close detail view">Close</a>
-    </header>
-    <table class="overlay-scores">
-      <thead><tr><th>Probe</th><th>Score</th></tr></thead>
-      <tbody>${probeRows}</tbody>
-    </table>
-  </div>
-</section>`;
+  const title = `${escapeHtml(label)} - ${entry.overallScore.toFixed(2)} - ${escapeHtml(entry.timestamp)}${entry.failed ? ' (FAILED)' : ''}`;
+
+  return `<div popover="auto" id="run-${escapeHtml(id)}" class="overlay">
+  <h2 class="overlay-title">${title}</h2>
+  <div class="probe-grid">${probeCards}</div>
+</div>`;
 }
 
 /**
@@ -137,20 +129,12 @@ async function renderProbeOverlay(
     }
   }
 
-  return `<section id="run-${escapeHtml(id)}" class="overlay">
-  <div class="overlay-panel">
-    <header class="overlay-header">
-      <h2>${escapeHtml(label)} - ${escapeHtml(probe)}</h2>
-      <p class="overlay-meta">
-        <time>${escapeHtml(entry.timestamp)}</time>
-        &middot; score: <strong>${score.toFixed(2)}</strong>
-        ${entry.failed ? '&middot; <span class="status--failed">FAILED</span>' : ''}
-      </p>
-      <a href="#" class="overlay-close" aria-label="Close detail view">Close</a>
-    </header>
-    ${sourceSection}
-  </div>
-</section>`;
+  const title = `${escapeHtml(label)} - ${escapeHtml(probe)} - ${score.toFixed(2)} - ${escapeHtml(entry.timestamp)}${entry.failed ? ' (FAILED)' : ''}`;
+
+  return `<div popover="auto" id="run-${escapeHtml(id)}" class="overlay">
+  <h2 class="overlay-title">${title}</h2>
+  ${sourceSection}
+</div>`;
 }
 
 /**

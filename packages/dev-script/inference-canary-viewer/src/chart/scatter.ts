@@ -1,8 +1,8 @@
 /**
  * HTML+CSS scatter plot renderer.
  *
- * Each data point is a positioned `<a>` element inside a `position: relative`
- * container. Points link to run detail overlays via fragment identifiers.
+ * Each data point is a positioned `<button>` element inside a `position: relative`
+ * container. Points open run detail popovers via `popovertarget` attributes.
  * Pass-1 points are filled circles; pass-2 points are hollow circles overlaid
  * at the same X position.
  */
@@ -75,20 +75,20 @@ export function renderScatterChart(
     const iconClass = point.icon !== undefined && point.icon !== '' && !point.failed ? ' chart-point--icon' : '';
     const iconHtml = point.icon !== undefined && point.icon !== '' && !point.failed ? point.icon : '';
 
-    const pass1 = `<a href="#run-${escapeHtml(point.runId)}"
+    const pass1 = `<button popovertarget="run-${escapeHtml(point.runId)}"
   class="chart-point${point.failed ? ' chart-point--failed' : ''}${iconClass}"
   style="left: ${left.toFixed(2)}%; bottom: ${bottom.toFixed(2)}%; --point-color: ${point.color}"
   title="${escapeHtml(point.title)}"
-  aria-label="${escapeHtml(point.title)}">${iconHtml}</a>`;
+  aria-label="${escapeHtml(point.title)}">${iconHtml}</button>`;
 
     if (point.pass2Score === undefined) return pass1;
 
     const pass2Bottom = point.pass2Score * PERCENT;
-    const pass2 = `<a href="#run-${escapeHtml(point.runId)}"
+    const pass2 = `<button popovertarget="run-${escapeHtml(point.runId)}"
   class="chart-point chart-point--pass2"
   style="left: ${left.toFixed(2)}%; bottom: ${pass2Bottom.toFixed(2)}%; --point-color: ${point.color}"
   title="fix: ${point.pass2Score.toFixed(2)}"
-  aria-label="fix score ${point.pass2Score.toFixed(2)}"></a>`;
+  aria-label="fix score ${point.pass2Score.toFixed(2)}"></button>`;
 
     return `${pass1}\n${pass2}`;
   }).join('\n');

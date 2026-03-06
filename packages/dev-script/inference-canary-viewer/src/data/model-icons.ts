@@ -18,10 +18,13 @@ import zhipuSvg from '@lobehub/icons-static-svg/icons/zhipu-color.svg' with { ty
  * - moonshotai uses the kimi icon (Kimi is the product name)
  * - z-ai (Zhipu) uses the zhipu icon
  */
+/** Kimi SVG has white (#fff) fills that are invisible on light backgrounds — add a dark square behind it */
+const kimiFixed = kimiSvg.replace('<path', '<rect width="24" height="24" rx="3" fill="#888"/><path');
+
 const VENDOR_ICONS: Record<string, string> = {
   'anthropic': claudeSvg,
   'openai': openaiSvg,
-  'moonshotai': kimiSvg,
+  'moonshotai': kimiFixed,
   'minimax': minimaxSvg,
   'z-ai': zhipuSvg,
   'qwen': qwenSvg,

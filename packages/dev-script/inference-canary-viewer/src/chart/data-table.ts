@@ -13,6 +13,8 @@ export type TableRow = {
   readonly score: number;
   readonly pass2Score?: number | undefined;
   readonly failed: boolean;
+  /** Run ID for linking to the detail overlay (used in grid mode) */
+  readonly runId?: string | undefined;
 };
 
 /**
@@ -47,6 +49,11 @@ export function renderDataTable(
 ): string {
   const showModel = options.showModel ?? true;
   const showProbe = options.showProbe ?? true;
+
+  /** When only timestamp + score remain, render as a compact grid instead of a table */
+  if (!showModel && !showProbe) {
+    return renderDataGrid(rows, caption);
+  }
 
   /** Only show the fix score column when at least one row has pass2 data */
   const hasFixScores = rows.some((row) => row.pass2Score !== undefined);
@@ -86,6 +93,55 @@ export function renderDataTable(
   <thead>${headerRow}</thead>
   <tbody>${bodyRows}</tbody>
 </table>`;
+}
+
+/**
+ * Renders a compact card grid for timestamp + score data.
+ *
+ * Used when both Model and Probe columns are hidden, leaving only two
+ * data fields per row. Cards display timestamp on top, score below,
+ * matching the probe grid layout in run detail overlays.
+ * @param rows - data rows to render
+ * @param caption - accessible caption
+ * @returns HTML string
+ *
+ * @example
+ * ```ts
+ * const html = renderDataGrid(rows, 'Claude overall score');
+ * // '<div class="data-grid" role="list" aria-label="...">...<\/div>'
+ * ```
+ */
+function renderDataGrid(
+  rows: readonly TableRow[],
+  caption: string,
+): string {
+  /** Show fix scores when at least one row has pass-2 data */
+  const hasFixScores = rows.some((row) => row.pass2Score !== undefined);
+
+  const cards = rows.map((row) => {
+    const timestamp = escapeHtml(row.timestamp);
+    const failedSuffix = row.failed ? ' <span class="status--failed">(timeout)</span>' : '';
+    const score = row.score.toFixed(2);
+
+    /** Warn when fix data is missing for this row but exists elsewhere */
+    const fixSuffix = hasFixScores
+      ? row.pass2Score !== undefined
+        ? ` (fix: ${row.pass2Score.toFixed(2)})`
+        : ' <span class="data-warning">(fix: no data)</span>'
+      : '';
+
+    const tag = row.runId !== undefined ? 'button' : 'div';
+    const popoverAttr = row.runId !== undefined ? ` popovertarget="run-${escapeHtml(row.runId)}"` : '';
+
+    return `<${tag} class="data-card"${popoverAttr} role="listitem"${row.failed ? ' data-failed' : ''}>
+  <span>${timestamp}${failedSuffix}</span>
+  <span><strong>${score}</strong>${fixSuffix}</span>
+</${tag}>`;
+  }).join('\n');
+
+  return `<div class="data-grid" role="list" aria-label="${escapeHtml(caption)}">
+  ${cards}
+</div>`;
 }
 
 /**

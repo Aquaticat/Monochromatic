@@ -99,6 +99,7 @@ function buildCrossModelPoints(
         score,
         pass2Score,
         failed: entry.failed,
+        runId,
       },
     };
   });
@@ -141,6 +142,7 @@ function buildSingleModelPoints(
         score,
         pass2Score,
         failed: entry.failed,
+        runId,
       },
     };
   });

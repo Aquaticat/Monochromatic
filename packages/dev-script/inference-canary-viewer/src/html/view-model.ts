@@ -36,8 +36,8 @@ export function renderByModel(
 
   void artifacts;
 
-  /** Hide Model column since we're already within a per-model context */
-  const tableDisplay = { showModel: false, };
+  /** Hide Model and Probe columns since we're within a per-model overall context */
+  const tableDisplay = { showModel: false, showProbe: false, };
 
   return modelIds.map((modelId) => {
     const label = modelLabels.get(modelId) ?? modelId;
@@ -102,6 +102,7 @@ function buildOverallPoints(
         probe: 'overall',
         score: entry.overallScore,
         failed: entry.failed,
+        runId,
       },
     };
   });
@@ -144,6 +145,7 @@ function buildProbePoints(
           score,
           pass2Score,
           failed: entry.failed,
+          runId,
         },
       };
     });
