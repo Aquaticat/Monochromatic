@@ -21,7 +21,7 @@ import {
   overwriteIfNotExists,
 } from './write.ts';
 import { reset, writeTimestamps, writes, } from '../tracker.ts';
-import type { GlobResult, } from './cat.ts';
+import { globResults, } from './cat.ts';
 
 //region overwrite
 
@@ -181,12 +181,12 @@ describe('overwriteEach', () => {
     const srcDir = join(tempDir, 'src');
     await mkdir(srcDir, { recursive: true, });
 
-    const files: readonly GlobResult[] = [
+    const files = globResults(join(srcDir, '*.ts'), [
       { path: join(srcDir, 'a.ts'), content: 'alpha', },
       { path: join(srcDir, 'b.ts'), content: 'beta', },
-    ];
+    ]);
 
-    await overwriteEach(join(tempDir, 'dest', '*.ts'), join(srcDir, '*.ts'), files);
+    await overwriteEach(join(tempDir, 'dest', '*.ts'), files);
 
     expect(await readFile(join(tempDir, 'dest', 'a.ts'), 'utf8')).toBe('alpha');
     expect(await readFile(join(tempDir, 'dest', 'b.ts'), 'utf8')).toBe('beta');
@@ -202,11 +202,11 @@ describe('overwriteEach', () => {
     /** Pre-populate destination with identical content */
     await writeFile(join(destDir, 'same.ts'), 'unchanged');
 
-    const files: readonly GlobResult[] = [
+    const files = globResults(join(srcDir, '*.ts'), [
       { path: join(srcDir, 'same.ts'), content: 'unchanged', },
-    ];
+    ]);
 
-    await overwriteEach(join(destDir, '*.ts'), join(srcDir, '*.ts'), files);
+    await overwriteEach(join(destDir, '*.ts'), files);
 
     /** No writeTimestamp because content was identical */
     expect(writeTimestamps.size).toBe(0);
@@ -214,7 +214,7 @@ describe('overwriteEach', () => {
 
   test('handles empty file array without error', async () => {
     expect.assertions(1);
-    await overwriteEach(join(tempDir, 'dest', '*.ts'), join(tempDir, 'src', '*.ts'), []);
+    await overwriteEach(join(tempDir, 'dest', '*.ts'), globResults(join(tempDir, 'src', '*.ts'), []));
     expect(writes.size).toBe(0);
   });
 
@@ -223,12 +223,12 @@ describe('overwriteEach', () => {
     const srcDir = join(tempDir, 'src');
     await mkdir(srcDir, { recursive: true, });
 
-    const files: readonly GlobResult[] = [
+    const files = globResults(join(srcDir, '*.ts'), [
       { path: join(srcDir, 'x.ts'), content: '1', },
       { path: join(srcDir, 'y.ts'), content: '2', },
-    ];
+    ]);
 
-    await overwriteEach(join(tempDir, 'out', '*.ts'), join(srcDir, '*.ts'), files);
+    await overwriteEach(join(tempDir, 'out', '*.ts'), files);
     expect(writes.size).toBe(2);
   });
 });

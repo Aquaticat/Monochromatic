@@ -2,7 +2,7 @@ import { exists, } from 'node:fs/promises';
 import { dirname, } from 'node:path';
 import { mkdir, } from 'node:fs/promises';
 import { readCached, updateCache, } from './cache.ts';
-import type { GlobResult, } from './cat.ts';
+import type { GlobResults, } from './cat.ts';
 import { mirrorGlobPath, } from './glob.ts';
 import { trackDest, trackWriteTime, } from '../tracker.ts';
 
@@ -66,20 +66,24 @@ export async function overwriteIfNotExists(dest: string, content: string): Promi
 /**
  * Writes each glob-matched file to its mirrored destination,
  * skipping files whose content is already identical.
+ * Source glob is read from the {@link GlobResults} array produced by `cat()`.
  * @param destGlob - Destination glob pattern with positional wildcards
- * @param sourceGlob - Source glob pattern used to match the files
- * @param files - Glob results to write
+ * @param files - Glob results carrying the source pattern and file contents
+ *
+ * @example
+ * ```ts
+ * await overwriteEach('./dest/*​/*.md', await cat('./src/*​/*.md'));
+ * ```
  */
 export async function overwriteEach(
   destGlob: string,
-  sourceGlob: string,
-  files: readonly GlobResult[],
+  files: GlobResults,
 ): Promise<void> {
   console.log(`[file-enforcer] overwriteEach: ${String(files.length)} files`);
   await Promise.all(
-    files.map(async function writeOneGlobMatch(file: GlobResult): Promise<void> {
+    files.map(async function writeOneGlobMatch(file): Promise<void> {
       /** Concrete destination path from the mirror-glob mapping */
-      const dest = mirrorGlobPath(sourceGlob, destGlob, file.path);
+      const dest = mirrorGlobPath(files.sourceGlob, destGlob, file.path);
       trackDest(dest);
       /** Skip if content is already identical */
       const existing = await readExisting(dest);

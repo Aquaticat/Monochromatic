@@ -195,7 +195,7 @@ describe('integration: config execution', () => {
     const configContent = `
       import { cat, overwriteEach } from '${join(import.meta.dirname, 'mod.ts')}';
       const files = await cat('${join(srcDir, '*.ts')}');
-      await overwriteEach('${join(tempDir, 'out', '*.ts')}', '${join(srcDir, '*.ts')}', files);
+      await overwriteEach('${join(tempDir, 'out', '*.ts')}', files);
     `;
     const configPath = join(tempDir, 'mirror.config.ts');
     await writeFile(configPath, configContent);

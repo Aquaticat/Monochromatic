@@ -40,13 +40,13 @@ bun packages/dev-script/file-enforcer/src/index.ts --watch
 ### Reading
 
 - `cat(files: string[])` -- reads and concatenates files into a single string; paths containing `*` or `?` are auto-expanded as globs
-- `cat(glob: string)` -- reads files matching a glob pattern, returns `GlobResult[]` with `{ path, content }` per match
+- `cat(glob: string)` -- reads files matching a glob pattern, returns `GlobResults` (a `GlobResult[]` carrying the source pattern)
 
 ### Writing
 
 - `overwrite(dest, content)` -- writes content to dest; skips when existing content is identical
 - `overwriteIfNotExists(dest, content)` -- writes only if the file does not exist
-- `overwriteEach(destGlob, sourceGlob, files)` -- mirrors each `GlobResult` to a destination using positional wildcard substitution
+- `overwriteEach(destGlob, files)` -- mirrors each `GlobResults` entry to a destination using positional wildcard substitution; source glob is read from the array
 
 ### Transforms
 

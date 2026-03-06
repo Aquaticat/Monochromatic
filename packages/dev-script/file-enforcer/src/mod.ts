@@ -1,6 +1,6 @@
 export { invalidatePaths, readCache, readCached, updateCache, } from './io/cache.ts';
-export { cat, } from './io/cat.ts';
-export type { GlobResult, } from './io/cat.ts';
+export { cat, globResults, } from './io/cat.ts';
+export type { GlobResult, GlobResults, } from './io/cat.ts';
 export { expandGlob, mirrorGlobPath, } from './io/glob.ts';
 export { overwrite, overwriteEach, overwriteIfNotExists, } from './io/write.ts';
 export { exec, } from './pipeline/exec.ts';

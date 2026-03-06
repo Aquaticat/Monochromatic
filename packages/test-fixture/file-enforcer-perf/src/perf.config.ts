@@ -74,10 +74,9 @@ await Promise.all([
 
   // Glob mirror rules -- mirror lib and type files across packages
   ...MIRROR_CONFIGS.map(async ({ dir, file }) => {
-    const sourceGlob = `${SRC}/pkg-*/${dir}/${file}`;
     const destGlob = `${DEST}/mirror-${dir}/*/${file}`;
-    const files = await cat(sourceGlob);
-    await overwriteEach(destGlob, sourceGlob, files);
+    const files = await cat(`${SRC}/pkg-*/${dir}/${file}`);
+    await overwriteEach(destGlob, files);
   }),
 
   // GetProperty extractions -- parse JSON and extract nested values
@@ -99,7 +98,7 @@ await Promise.all([
   // Deep glob -- mirror 6-level nested files
   (async (): Promise<void> => {
     const deepFiles = await cat(deepSourceGlob);
-    await overwriteEach(deepDestGlob, deepSourceGlob, deepFiles);
+    await overwriteEach(deepDestGlob, deepFiles);
   })(),
 ]);
 
