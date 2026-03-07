@@ -9,20 +9,14 @@
   "dependencies": {
     "@monochromatic-dev/config-vite": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
-    "@elysiajs/swagger": "catalog:",
     "zod": "catalog:",
     "@anthropic-ai/sdk": "catalog:",
     "feedsmith": "catalog:",
     "find-up": "catalog:",
-    "preact": "catalog:",
-    "preact-render-to-string": "catalog:",
-    "@elysiajs/static": "catalog:",
-    "happy-dom": "catalog:",
     "watcher": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",
-    "elysia": "catalog:",
     "typescript": "catalog:"
   }
 }

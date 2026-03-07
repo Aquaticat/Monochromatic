@@ -1,10 +1,9 @@
 import { $ as binary, } from '@monochromatic-dev/module-es/binary';
 import { $ as createObservableAsync, } from '@monochromatic-dev/module-es/create-observable-async';
+import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 import { $ as mapIterableAsync, } from '@monochromatic-dev/module-es/map-iterable-async';
 import { readFile, } from 'node:fs/promises';
 import { readdir, } from 'node:fs/promises';
-import { h, } from 'preact';
-import { render, } from 'preact-render-to-string';
 import type { ItemWDate, } from './item.ts';
 
 import { css, } from './asset.ts';
@@ -23,84 +22,88 @@ const LIMIT = 100;
 export const INDEX_HTML_END = '</body></html>';
 
 /**
- * Converts a feed item to HTML for display in the RSS reader interface.
- * Uses Preact to generate HTML elements for each feed item.
+ * Converts a feed item to an HTML string for display in the RSS reader interface.
+ * Uses h-html to generate HTML strings for each feed item.
  * @param item - Feed item with publication date
  * @param index - Index of the item in the list (used for numbering)
- * @returns Preact JSX element representing the feed item
+ * @returns HTML string representing the feed item
  * @example
  * ```typescript
  * const items = getSortedItems(itemsWithDates);
- * const htmlItems = items.map(itemToFeed);
+ * const htmlItems = items.map(binary(itemToFeed));
  * ```
  * @see {@link ItemWDate} for the input type
- * @see {@link h} for Preact element creation
- * @see {@link render} for HTML rendering
+ * @see {@link h} for string-based HTML element creation
  */
-function itemToFeed({ item, pubDateDate, feed, }: ItemWDate, index: number,) {
+function itemToFeed({ item, pubDateDate, feed, }: ItemWDate, index: number,): string {
   l.debug(`itemToFeed ${item} ${pubDateDate} ${index}`);
-  return h(
-    'li',
-    { value: index, class: 'feed', },
-    [
-      h(
-        'div',
-        { class: 'feed__metadata', 'data-display': 'contents', },
-        [
-          h(
-            'h2',
-            { class: 'feed__title', },
-            [
-              h(
-                'a',
-                { class: 'feed__link', href: item.link || '#', },
-                item
-                  .title || 'Untitled',
-              ),
-            ],
-          ),
 
-          h(
-            'time',
-            { class: 'feed__date', datetime: pubDateDate.toISOString(), },
-            pubDateDate.toLocaleString(),
-          ),
-          h(
-            'p',
-            { class: 'feed__source', },
-            [
-              h(
-                'span',
-                { class: 'feed__itemTitle', },
-                feed.title || 'Unknown',
-              ),
-              feed.description
-                ? h(
-                  'span',
-                  { class: 'feed__itemDescription', },
-                  feed.description,
-                )
-                : null,
+  const descriptionIframe = item.description
+    ? h({
+      tag: 'iframe',
+      class: 'feed__description',
+      attrs: {
+        src: `data:text/html;charset=utf-8,${
+          encodeURIComponent(
+            `<style>${css}</style>${(item.description as string | undefined) ?? ''}`,
+          )
+        }`,
+        sandbox: '',
+      },
+    },)
+    : '';
+
+  return h({
+    tag: 'li',
+    class: 'feed',
+    attrs: { value: String(index,), },
+    children: [
+      h({
+        tag: 'div',
+        class: 'feed__metadata',
+        attrs: { 'data-display': 'contents', },
+        children: [
+          h({
+            tag: 'h2',
+            class: 'feed__title',
+            children: [
+              h({
+                tag: 'a',
+                class: 'feed__link',
+                attrs: { href: item.link || '#', },
+                text: item.title || 'Untitled',
+              },),
             ],
-          ),
+          },),
+          h({
+            tag: 'time',
+            class: 'feed__date',
+            attrs: { datetime: pubDateDate.toISOString(), },
+            text: pubDateDate.toLocaleString(),
+          },),
+          h({
+            tag: 'p',
+            class: 'feed__source',
+            children: [
+              h({
+                tag: 'span',
+                class: 'feed__itemTitle',
+                text: feed.title || 'Unknown',
+              },),
+              ...(feed.description
+                ? [h({
+                  tag: 'span',
+                  class: 'feed__itemDescription',
+                  text: feed.description,
+                },),]
+                : []),
+            ],
+          },),
         ],
-      ),
-      item.description
-        ? h(
-          'iframe',
-          {
-            class: 'feed__description',
-            src: `data:text/html;charset=utf-8,${
-              encodeURIComponent(
-                `<style>${css}</style>${(item.description as string | undefined) ?? ''}`,
-              )
-            }`,
-            sandbox: '',
-          },
-        )
-        : null,
-    ],
-  );
+      },),
+      descriptionIframe,
+    ].filter(Boolean,),
+  },);
 }
 
 const indexHtmlBody = '';
@@ -151,6 +154,13 @@ export async function onItemsChange(items: ItemWDate[],): Promise<void> {
   l.debug(`onItemsChange `);
 }
 
+/**
+ * Builds the HTML body string from items, filtering out ignored entries.
+ * @param items - All available feed items with dates
+ * @returns Promise resolving to the rendered HTML string for the feed list
+ * @see {@link getJsons} for ignore list loading
+ * @see {@link itemToFeed} for per-item rendering
+ */
 async function getNewIndexHtmlBody(items: ItemWDate[],): Promise<string> {
   l.debug(`getNewIndexHtmlBody`);
 
@@ -169,17 +179,22 @@ async function getNewIndexHtmlBody(items: ItemWDate[],): Promise<string> {
 
   l.debug(`filteredItems ${filteredItems.length} items ${items.length}`);
 
-  const result = render(
-    h(
-      'ol',
-      { class: 'feeds', },
-      filteredItems.slice(0, LIMIT,).map(binary(itemToFeed,),),
-    ),
-  );
+  const result = h({
+    tag: 'ol',
+    class: 'feeds',
+    children: filteredItems.slice(0, LIMIT,).map(binary(itemToFeed,),),
+  },);
+
   l.debug(`getNewIndexHtmlBody ${result.slice(0, 100,)} ... ${result.slice(-100,)}`);
 
   return result;
 }
+
+/**
+ * Loads and parses all JSONL ignore files from the ignore directory.
+ * @returns Promise resolving to an array of parsed JSON records
+ * @see {@link IGNORE_PATH} for the ignore directory
+ */
 async function getJsons() {
   l.debug(`getJsons`);
   const filesInDir = await readdir(IGNORE_PATH, { withFileTypes: true, },);

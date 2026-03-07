@@ -1,5 +1,4 @@
 import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
-import { Window, } from 'happy-dom';
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import Watcher from 'watcher';
@@ -10,41 +9,30 @@ import {
 } from './path.ts';
 
 /**
- * Extract CSS and JavaScript asset paths from the index.html content.
- * Uses a virtual DOM to parse the HTML and find link and script tags.
- * @param indexHtmlString - The HTML content to parse for asset paths
+ * Extracts CSS and JavaScript asset paths from index.html content using regex.
+ * Finds the first `<link>` href and `<script>` src attribute values.
+ * @param indexHtmlString - HTML content to parse for asset paths
  * @returns Object containing the JavaScript and CSS subpaths
- * @throws {@link Error} If required DOM elements cannot be found in the HTML
+ * @throws {@link Error} If required link href or script src cannot be found
  * @example
  * ```typescript
  * const htmlContent = await getIndexHtmlString();
  * const { jsSubpath, cssSubpath } = getAssetSubpaths(htmlContent);
  * ```
- * @see {@link Window} for the virtual DOM implementation
- * @see {@link notNullishOrThrow} for element validation
  */
 function getAssetSubpaths(
   indexHtmlString: string,
 ): { jsSubpath: string; cssSubpath: string; } {
   l.debug(`getAssetSubpaths`);
-  const window = new Window();
-  const document = window.document;
-  document.write(indexHtmlString,);
-  document.close();
-  const cssSubpath = notNullishOrThrow(document.querySelector('link',),).href;
-  const jsSubpath = notNullishOrThrow(document.querySelector('script',),).src;
-  window
-    .happyDOM
-    .abort()
-    .then(function logSuccess() {
-      l.debug(`success releasing happy dom`);
-    },)
-    .catch(function logError() {
-      l.debug(`failed to release happy dom. This error has no effects other than taking up a bit more memory.`);
-    },);
+
+  const cssMatch = indexHtmlString.match(/href=['"]([^'"]+)['"]/,);
+  const jsMatch = indexHtmlString.match(/src=['"]([^'"]+)['"]/,);
+
+  const cssSubpath = notNullishOrThrow(cssMatch?.[1],);
+  const jsSubpath = notNullishOrThrow(jsMatch?.[1],);
 
   const result = { cssSubpath, jsSubpath, };
-  l.debug(`getAssetSubpaths ${result}`);
+  l.debug(`getAssetSubpaths ${JSON.stringify(result,)}`);
   return result;
 }
 
@@ -60,8 +48,6 @@ function getAssetSubpaths(
  * const { js, css } = await getAssetStrings(assetPaths);
  * ```
  * @see {@link STATIC_PATH} for the base directory of assets
- * @see {@link readFile} for the file reading implementation
- * @see {@link join} for path joining logic
  */
 async function getAssetStrings(
   assetSubpaths: { jsSubpath: string; cssSubpath: string; },
@@ -84,7 +70,6 @@ async function getAssetStrings(
  * const htmlContent = await getIndexHtmlString();
  * ```
  * @see {@link INDEX_HTML_PATH} for the file path
- * @see {@link readFile} for the file reading implementation
  */
 async function getIndexHtmlString(): Promise<string> {
   l.debug(`getIndexHtmlString`);
