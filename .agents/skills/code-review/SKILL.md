@@ -707,16 +707,20 @@ const value = notNullishOrThrow(possiblyUndefined);
 
 #### Silent error handling
 
-Flag empty or logging-only catch blocks without re-throwing:
+Flag empty catch blocks without logging:
 
 ```ts
 // Bad -- flag as WARNING
-catch (error) { console.error('Failed:', error); }
+catch (error) { }
 
-// Good (when error must be handled)
+// Good -- fatal error
 catch (error) {
-  console.error('Failed to get index stats:', error);
-  throw new Error('Failed to get index stats', { cause: error });
+   throw new Error('Failed to get index stats', { cause: error });
+}
+
+// Good - expected error that shouldn't interrupt program operation.
+catch (error) {
+   console.error('Failed to get index stats:', error);
 }
 ```
 
