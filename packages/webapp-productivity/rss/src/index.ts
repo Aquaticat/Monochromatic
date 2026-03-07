@@ -2,16 +2,11 @@ import {
   appendFile,
   exists,
   mkdir,
-  readFile,
   stat,
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
-import {
-  hash,
-  indexHtmlStart,
-  indexHtmlWatcher,
-} from './asset.ts';
+import { indexHtmlStart, } from './asset.ts';
 import {
   INDEX_HTML_END,
   indexHtmlBodyObservable,
@@ -82,9 +77,7 @@ function serveIndex(): Response {
     `${indexHtmlStart}${indexHtmlBodyObservable.value}${INDEX_HTML_END}`,
     {
       status: 200,
-      headers: {
-        'content-type': 'text/html',
-      },
+      headers: { 'content-type': 'text/html', },
     },
   );
 }
@@ -133,21 +126,6 @@ async function ignore(request: Request,): Promise<Response> {
 }
 
 /**
- * Returns the current asset hash for client-side change detection.
- * @returns Response with the base64 SHA-256 hash as plain text
- * @see {@link hash} for the computed value
- */
-function getHash(): Response {
-  l.debug(`getHash`);
-  return new Response(hash, {
-    status: 200,
-    headers: {
-      'content-type': 'text/plain',
-    },
-  },);
-}
-
-/**
  * Routes an incoming request to the appropriate handler based on method and path.
  * @param request - Incoming HTTP request
  * @returns Response from the matched handler, or 404
@@ -163,7 +141,6 @@ async function handleRequest(request: Request,): Promise<Response> {
   if (method === 'POST' && pathname === '/api/updateFeed/new') return updateFeed();
   if (method === 'GET' && pathname === '/api/updateFeed/lastUpdated') return getLastUpdated();
   if (method === 'POST' && pathname === '/api/ignore/new') return await ignore(request,);
-  if (method === 'GET' && pathname === '/api/asset/hash') return getHash();
 
   return new Response('Not Found', { status: 404, },);
 }

@@ -1,6 +1,7 @@
 import type {
   MemoizeAsyncNamedOptions,
   MemoizedAsyncFunction,
+  MemoizedCallOptions,
 } from '../../t/index.ts';
 import { DEFAULT_MAX_CACHE_SIZE, } from '../../t/index.ts';
 import type { $ as Store, } from '../../../../../../t object/t store/t/r a/index.ts';
@@ -8,13 +9,13 @@ import { $ as createStore, } from '../../../../../../t object/t store/f/t store/
 import { buildCacheKey, } from '../../cacheKey.ts';
 
 /**
- * Wraps an async function with memoization using LRU eviction, salt-based cache keys,
- * and in-flight Promise deduplication.
+ * Wraps an async function with memoization using LRU eviction, per-call salt-based
+ * cache keys, and in-flight Promise deduplication.
+ *
+ * Salt is provided per-call via {@link MemoizedCallOptions}, enabling dynamic
+ * cache invalidation without recreating the memoized function.
  *
  * The `keyFn` option is required to compute cache keys from arguments.
- * The `salt` parameter can be a `Promise`, enabling patterns like
- * `await fetchData({salt: time%1h})` for time-based cache invalidation.
- *
  * Uses the Store as the single source of truth for cached values.
  * An in-flight `Map` deduplicates concurrent calls with the same key.
  * LRU eviction is handled by the Store when configured with an eviction policy.
@@ -24,7 +25,6 @@ import { buildCacheKey, } from '../../cacheKey.ts';
  *
  * @typeParam TArgs - tuple of function argument types
  * @typeParam TReturn - resolved return type (not wrapped in Promise)
- * @typeParam TSalt - salt value type
  * @param options - function and memoization configuration
  * @returns memoized async function with `.store`, `.clear()`, `.delete()`
  *
@@ -38,21 +38,20 @@ import { buildCacheKey, } from '../../cacheKey.ts';
  * const memoized = await $({
  *   fn: fetchUser,
  *   keyFn: (id) => id,
- *   salt: 'v1',
  * });
- * await memoized('user-1'); // fetched
- * await memoized('user-1'); // cached
+ * await memoized({ args: ['user-1'], salt: 'v1' }); // fetched
+ * await memoized({ args: ['user-1'], salt: 'v1' }); // cached
  * ```
  *
  * @example
- * Time-based salt via Promise:
+ * Dynamic salt for cache invalidation:
  * ```ts
- * const HOUR_MS = 3_600_000;
  * const memoized = await $({
  *   fn: expensiveFetch,
  *   keyFn: (url) => url,
- *   salt: Promise.resolve(String(Math.floor(Date.now() / HOUR_MS))),
  * });
+ * await memoized({ args: ['/api'], salt: 'v1' }); // fetched
+ * await memoized({ args: ['/api'], salt: 'v2' }); // refetched (salt changed)
  * ```
  *
  * @example
@@ -66,7 +65,6 @@ import { buildCacheKey, } from '../../cacheKey.ts';
  * const memoized = await $({
  *   fn: fetchData,
  *   keyFn: (id) => id,
- *   salt: 'v1',
  *   store,
  * });
  * ```
@@ -74,34 +72,18 @@ import { buildCacheKey, } from '../../cacheKey.ts';
 export async function $<
   const TArgs extends readonly unknown[],
   const TReturn,
-  const TSalt extends string | number = string,
 >(
   this: void,
-  options: MemoizeAsyncNamedOptions<TArgs, TReturn, TSalt>,
+  options: MemoizeAsyncNamedOptions<TArgs, TReturn>,
 ): Promise<MemoizedAsyncFunction<TArgs, TReturn>> {
-  const { fn, keyFn, salt, } = options;
-  const maxSize = options.maxSize ?? DEFAULT_MAX_CACHE_SIZE;
+  const { fn, keyFn, } = options;
   const store: Store = options.store ?? await createStore({
     storeId: `memoize-${crypto.randomUUID()}`,
-    eviction: [{ policy: 'lru', maxSize, },],
+    eviction: [{ policy: 'lru', maxSize: DEFAULT_MAX_CACHE_SIZE, },],
   },);
 
   /** In-flight promises for deduplication of concurrent calls. */
   const inflight = new Map<string, Promise<TReturn>>();
-
-  /**
-   * Eagerly resolve salt so it's available synchronously on subsequent calls.
-   * Intentional let: caches the resolved salt value after first resolution.
-   */
-  // eslint-disable-next-line prefer-const -- intentional: caches after first await
-  let resolvedSaltCache: string | number | undefined;
-
-  /** Promise that resolves salt exactly once. */
-  const saltReady: Promise<string | number> = (async function resolveSalt(): Promise<string | number> {
-    const resolved = await salt;
-    resolvedSaltCache = resolved;
-    return resolved;
-  })();
 
   /**
    * Create a disposable that removes a key from the inflight map on dispose.
@@ -163,22 +145,11 @@ export async function $<
 
   /**
    * Memoized async wrapper.
-   * When salt is already resolved, dispatches synchronously for deduplication.
-   * Otherwise awaits salt resolution first.
+   * Salt is provided per-call to enable dynamic cache invalidation.
    */
-  function memoized(this: void, ...args: TArgs): Promise<TReturn> {
-    if (resolvedSaltCache !== undefined) {
-      const cacheKey = buildCacheKey(keyFn(...args,), resolvedSaltCache,);
-      return dispatch(cacheKey, args,);
-    }
-
-    async function afterSaltResolved(): Promise<TReturn> {
-      const resolvedSalt = await saltReady;
-      const cacheKey = buildCacheKey(keyFn(...args,), resolvedSalt,);
-      return await dispatch(cacheKey, args,);
-    }
-
-    return afterSaltResolved();
+  function memoized(this: void, { args, salt, }: MemoizedCallOptions<TArgs>,): Promise<TReturn> {
+    const cacheKey = buildCacheKey(keyFn(...args,), salt,);
+    return dispatch(cacheKey, args,);
   }
 
   memoized.store = store;

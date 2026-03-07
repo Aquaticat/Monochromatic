@@ -214,9 +214,11 @@ usage = 'arg "[args]" var=#true help="Additional arguments passed to bun test (w
 run = """
 let args = ($env.usage_args? | default '' | str trim)
 if $args == '' {
-  mise run test:unit test:browser test:e2e
+  mise run test:unit ::: test:browser ::: test:e2e
 } else {
-  mise run test:unit -- ...($args | split row ' ')
+  # usage_args shell-escapes values; evaluate to recover the original
+  let files = (nu -c $"echo ($args)")
+  bun test $files
 }
 """
 
@@ -298,8 +300,20 @@ extends = "test--watch"
 alias = "tW"
 
 [tasks.buildAndTest]
-description = "Build and test"
-run = [{ tasks = ["build"] }, { tasks = ["test"] }]
+description = "Build all packages (tolerating failures), then run tests (pass -- <file> to run a single test)"
+alias = "bt"
+usage = 'arg "[args]" var=#true help="Test file path or bun test arguments"'
+run = """
+try { mise run build } catch { |e| print -e $e.rendered }
+let args = ($env.usage_args? | default '' | str trim)
+if $args == '' {
+  mise run test
+} else {
+  # usage_args shell-escapes values (wraps spaces in quotes); evaluate to recover the original
+  let files = (nu -c $"echo ($args)")
+  bun test $files
+}
+"""
 
 [tasks.buildAndTest--watch]
 description = "Build and test in watch mode"

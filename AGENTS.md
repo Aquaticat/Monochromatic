@@ -4,7 +4,11 @@
 
 Don't use "plan mode" since they currently just bug out. Waiting for upstream fixes.
 
-We've got practically infinite disk space. Whenever you want to dig into a package or something, clone it to `~/temp/`.
+Don't use pipes in bash tool since they're broken for now. Workarounds like redirecting to file then reading the file works.
+
+The Glob tool is denylisted and disabled because it currently doesn't respect .gitignore .
+
+Clone entire git repo of a package to a temp dir whenever investigating source code is needed.
 
 ## Dependency management
 - Use `workspace:*` for internal dependencies
@@ -20,6 +24,11 @@ We've got practically infinite disk space. Whenever you want to dig into a packa
 All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts.
 Read `mise.toml` files in root and package directories for available commands.
 Do not run linters or formatters -- the user runs them.
+
+After modifying source in packages that produce dist output (e.g. `module-es`),
+always verify with `mise run buildAndTest` instead of running tests alone.
+Tests import from the built dist, so a stale build causes false failures.
+To run a specific test file after building: `mise run buildAndTest -- path/to/file.test.ts`.
 
 ## Workspace conventions
 

@@ -1,26 +1,23 @@
 import type { $ as Store, } from '../../../../../t object/t store/t/r a/index.ts';
 import type { $ as SyncStore, } from '../../../../../t object/t store/t/r s/index.ts';
 
-/** Default maximum cache entries before LRU eviction. */
+/** Maximum cache entries before LRU eviction in default memoize stores. */
 export const DEFAULT_MAX_CACHE_SIZE = 1024;
 
 /**
  * Options for sync memoization via {@link MemoizedFunction}.
  *
  * @typeParam TArgs - tuple of function argument types
- * @typeParam TSalt - salt value type, must be string or number
  *
  * @example
  * ```ts
- * const options: MemoizeOptions<[number, number], string> = {
+ * const options: MemoizeOptions<[number, number]> = {
  *   keyFn: (a, b) => `${String(a)}:${String(b)}`,
- *   salt: 'v1',
  * };
  * ```
  */
 export type MemoizeOptions<
   TArgs extends readonly unknown[],
-  TSalt extends string | number = string,
 > = {
   /**
    * Computes cache key from arguments. Must be deterministic.
@@ -28,37 +25,26 @@ export type MemoizeOptions<
    */
   keyFn: (this: void, ...args: TArgs) => string;
   /**
-   * Salt value appended to cache key.
-   * Change salt to invalidate cache (e.g. `time % 3600000` for hourly expiry).
-   */
-  salt: TSalt;
-  /** Maximum cache entries before LRU eviction. Defaults to `1024`. */
-  maxSize?: number;
-  /**
    * Sync store backend for cache persistence.
-   * Defaults to a fresh in-memory SyncStore.
+   * Defaults to a fresh in-memory SyncStore with LRU eviction at {@link DEFAULT_MAX_CACHE_SIZE}.
    */
   store?: SyncStore;
 };
 
 /**
  * Options for async memoization.
- * Extends {@link MemoizeOptions} by allowing salt to be a `Promise`.
  *
  * @typeParam TArgs - tuple of function argument types
- * @typeParam TSalt - salt value type, must be string or number
  *
  * @example
  * ```ts
- * const options: MemoizeAsyncOptions<[string], string> = {
+ * const options: MemoizeAsyncOptions<[string]> = {
  *   keyFn: (url) => url,
- *   salt: fetchVersion(), // Promise<string>
  * };
  * ```
  */
 export type MemoizeAsyncOptions<
   TArgs extends readonly unknown[],
-  TSalt extends string | number = string,
 > = {
   /**
    * Computes cache key from arguments. Must be deterministic.
@@ -66,17 +52,32 @@ export type MemoizeAsyncOptions<
    */
   keyFn: (this: void, ...args: TArgs) => string;
   /**
-   * Salt value appended to cache key.
-   * Can be a Promise to support patterns like `await fetchData({salt: time%1h})`.
-   */
-  salt: TSalt | Promise<TSalt>;
-  /** Maximum cache entries before LRU eviction. Defaults to `1024`. */
-  maxSize?: number;
-  /**
    * Store backend for cache persistence.
-   * Defaults to a fresh in-memory Store.
+   * Defaults to a fresh in-memory Store with LRU eviction at {@link DEFAULT_MAX_CACHE_SIZE}.
    */
   store?: Store;
+};
+
+/**
+ * Call-site options passed to a memoized function on each invocation.
+ *
+ * @typeParam TArgs - tuple of original function argument types
+ *
+ * @example
+ * ```ts
+ * memoized({ args: [1, 2], salt: 'v1' });
+ * ```
+ */
+export type MemoizedCallOptions<
+  TArgs extends readonly unknown[],
+> = {
+  /** Original function arguments as a tuple. */
+  args: TArgs;
+  /**
+   * Salt appended to cache key.
+   * Change salt to invalidate cache (e.g. `String(time % 3600000)` for hourly expiry).
+   */
+  salt: string;
 };
 
 /**
@@ -88,8 +89,8 @@ export type MemoizeAsyncOptions<
  * @example
  * ```ts
  * const memoized: MemoizedFunction<[number], number> = memoize(expensiveFn, opts);
- * memoized(42); // computed
- * memoized(42); // cached
+ * memoized({ args: [42], salt: 'v1' }); // computed
+ * memoized({ args: [42], salt: 'v1' }); // cached
  * memoized.clear();
  * ```
  */
@@ -97,7 +98,7 @@ export type MemoizedFunction<
   TArgs extends readonly unknown[],
   TReturn,
 > = {
-  (this: void, ...args: TArgs): TReturn;
+  (this: void, options: MemoizedCallOptions<TArgs>): TReturn;
   /** Read-only access to the underlying SyncStore. */
   readonly store: SyncStore;
   /** Wipe all cached entries. */
@@ -117,8 +118,8 @@ export type MemoizedFunction<
  * @example
  * ```ts
  * const memoized: MemoizedAsyncFunction<[string], Response> = memoizeAsync(fetchFn, opts);
- * await memoized('/api/data'); // fetched
- * await memoized('/api/data'); // cached
+ * await memoized({ args: ['/api/data'], salt: 'v1' }); // fetched
+ * await memoized({ args: ['/api/data'], salt: 'v1' }); // cached
  * await memoized.clear();
  * ```
  */
@@ -126,7 +127,7 @@ export type MemoizedAsyncFunction<
   TArgs extends readonly unknown[],
   TReturn,
 > = {
-  (this: void, ...args: TArgs): Promise<TReturn>;
+  (this: void, options: MemoizedCallOptions<TArgs>): Promise<TReturn>;
   /** Read-only access to the underlying Store. */
   readonly store: Store;
   /** Wipe all cached entries. */
@@ -141,22 +142,19 @@ export type MemoizedAsyncFunction<
  *
  * @typeParam TArgs - tuple of function argument types
  * @typeParam TReturn - function return type
- * @typeParam TSalt - salt value type
  *
  * @example
  * ```ts
- * const opts: MemoizeNamedOptions<[number], number, string> = {
+ * const opts: MemoizeNamedOptions<[number], number> = {
  *   fn: (x) => x * 2,
  *   keyFn: (x) => String(x),
- *   salt: 'v1',
  * };
  * ```
  */
 export type MemoizeNamedOptions<
   TArgs extends readonly unknown[],
   TReturn,
-  TSalt extends string | number = string,
-> = MemoizeOptions<TArgs, TSalt> & {
+> = MemoizeOptions<TArgs> & {
   /** Pure synchronous function to memoize. */
   fn: (this: void, ...args: TArgs) => TReturn;
 };
@@ -167,22 +165,19 @@ export type MemoizeNamedOptions<
  *
  * @typeParam TArgs - tuple of function argument types
  * @typeParam TReturn - resolved return type (not wrapped in Promise)
- * @typeParam TSalt - salt value type
  *
  * @example
  * ```ts
- * const opts: MemoizeAsyncNamedOptions<[string], User, string> = {
+ * const opts: MemoizeAsyncNamedOptions<[string], User> = {
  *   fn: fetchUser,
  *   keyFn: (id) => id,
- *   salt: 'v1',
  * };
  * ```
  */
 export type MemoizeAsyncNamedOptions<
   TArgs extends readonly unknown[],
   TReturn,
-  TSalt extends string | number = string,
-> = MemoizeAsyncOptions<TArgs, TSalt> & {
+> = MemoizeAsyncOptions<TArgs> & {
   /** Pure async function to memoize. */
   fn: (this: void, ...args: TArgs) => Promise<TReturn>;
 };

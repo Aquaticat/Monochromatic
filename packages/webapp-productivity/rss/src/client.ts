@@ -1,5 +1,4 @@
 import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
-import { $ as wait, } from '@monochromatic-dev/module-es/wait';
 import { z, } from 'zod/v4-mini';
 
 console.log('client',);
@@ -89,22 +88,4 @@ elements.forEach(function scroll(element,) {
   },);
 },);
 
-while (true) {
-  await wait(5000,);
-  try {
-    const serverHash = await (await fetch('/api/asset/hash',)).text();
-    if (serverHash !== document.documentElement.dataset.assetHash) {
-      console.log(
-        `serverHash ${serverHash} !== ${document.documentElement.dataset.assetHash}, reloading`,
-      );
-      await wait(5000,);
-      window.location.reload();
-    }
-    else {
-      console.log(`serverHash ${serverHash} same`,);
-    }
-  }
-  catch (error: unknown) {
-    console.log(JSON.stringify(error,),);
-  }
-}
+export {};

@@ -2,12 +2,11 @@
   "name": "@monochromatic-dev/webapp-productivity-rss",
   "version": "1.0.0",
   "description": "RSS and OPML productivity web application.",
-  "module": "dist/final/js/index.node.js",
+  "module": "src/index.ts",
   "keywords": [],
   "license": "Apache-2.0",
   "type": "module",
   "dependencies": {
-    "@monochromatic-dev/config-vite": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
     "zod": "catalog:",
     "@anthropic-ai/sdk": "catalog:",
