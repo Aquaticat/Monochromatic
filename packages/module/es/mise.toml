@@ -1,3 +1,6 @@
+[tasks.build]
+extends = "build"
+
 [tasks.'build:js']
 extends = "build:js"
 
@@ -6,6 +9,9 @@ extends = "build:js:browser"
 
 [tasks.'build:js:node']
 extends = "build:js:node"
+
+[tasks.build--watch]
+extends = "build--watch"
 
 [tasks."build--watch:js"]
 extends = "build--watch:js"

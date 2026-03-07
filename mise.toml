@@ -187,34 +187,19 @@ run = [{ tasks = ["prepare--allowFailure:*"] }]
 #region Build Tasks
 
 [tasks.build]
-description = "Build all packages"
-extends = "build"
-alias = "b"
+description = "Build all packages, fanout to every package's 'build' task"
+run = "mise '//packages/...:build'"
 
 # Monorepo glob syntax: // = absolute from root, ... = all config roots, :task = task name.
 # https://mise.jdx.dev/tasks/monorepo.html
-[tasks."build:js"]
-hide = true
-description = "Build JavaScript for all packages"
-run = "mise '//packages/...:build:js'"
-
-[tasks."build--allowFailure:js"]
-hide = true
-description = "Build JavaScript for all packages"
-run = "mise '//packages/...:build--allowFailure:js'"
 
 [tasks.build--watch]
-description = "Build all packages in watch mode"
-extends = "build--watch"
-
-[tasks."build--watch:js"]
-hide = true
-description = "Build JavaScript in watch mode"
-run = "mise '//packages/...:build--watch:js'"
+description = "Build all packages in watch mode, fanout to every package's 'build--watch' task"
+run = "mise '//packages/...:build--watch'"
 
 [tasks.build--allowFailure]
-description = "Build all packages, allowing failures"
-extends = "build--allowFailure"
+description = "Build all packages, allowing failures, fanout to every package's 'build--allowFailure' task"
+run = "mise '//packages/...:build--allowFailure'"
 
 #endregion Build Tasks
 
