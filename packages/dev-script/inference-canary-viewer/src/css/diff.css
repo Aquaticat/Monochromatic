@@ -23,16 +23,16 @@
 
 .diff-removed {
   display: block;
-  background-color: #fee2e2;
-  color: #991b1b;
+  background-color: var(--error-bg);
+  color: var(--error-fg);
   margin-inline: -0.5rem;
   padding-inline: 0.5rem;
 }
 
 .diff-added {
   display: block;
-  background-color: #dcfce7;
-  color: #166534;
+  background-color: var(--ok-bg);
+  color: var(--ok-fg);
   margin-inline: -0.5rem;
   padding-inline: 0.5rem;
 }
@@ -41,4 +41,3 @@
   display: block;
   min-block-size: 1.6em;
 }
-

@@ -1,5 +1,62 @@
 /* Minimal reset, typography, and layout for the canary viewer dashboard. */
 
+/*region Color tokens -- Semantic aliases that flip between light and dark modes.
+   Components reference only these -- never raw hex values. */
+
+:root {
+  --fg: #1a1a1a;
+  --fg-muted: #555;
+  --fg-faint: #888;
+  --bg: #fafafa;
+  --bg-surface: #fff;
+  --bg-hover: #f5f5f5;
+  --border: #e5e5e5;
+  --border-subtle: #eee;
+  --border-strong: #ccc;
+  --link: #2563eb;
+  --grid-line: #f0f0f0;
+  --red: #dc2626;
+  --ok-fg: #166534;
+  --ok-bg: #dcfce7;
+  --warn-fg: #92400e;
+  --warn-bg: #fef3c7;
+  --error-fg: #991b1b;
+  --error-bg: #fee2e2;
+  --badge-neutral-fg: #374151;
+  --badge-neutral-bg: #f3f4f6;
+  --shadow: rgb(0 0 0 / 0.15);
+  --backdrop: rgb(0 0 0 / 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg: #e5e5e5;
+    --fg-muted: #a0a0a0;
+    --fg-faint: #777;
+    --bg: #1a1a1a;
+    --bg-surface: #252525;
+    --bg-hover: #2a2a2a;
+    --border: #333;
+    --border-subtle: #2a2a2a;
+    --border-strong: #444;
+    --link: #60a5fa;
+    --grid-line: #252525;
+    --red: #ef4444;
+    --ok-fg: #86efac;
+    --ok-bg: #14532d;
+    --warn-fg: #fcd34d;
+    --warn-bg: #78350f;
+    --error-fg: #fca5a5;
+    --error-bg: #7f1d1d;
+    --badge-neutral-fg: #d1d5db;
+    --badge-neutral-bg: #374151;
+    --shadow: rgb(0 0 0 / 0.4);
+    --backdrop: rgb(0 0 0 / 0.7);
+  }
+}
+
+/*endregion Color tokens */
+
 *,
 *::before,
 *::after {
@@ -11,8 +68,8 @@
 html {
   font-family: system-ui, -apple-system, sans-serif;
   line-height: 1.5;
-  color: #1a1a1a;
-  background-color: #fafafa;
+  color: var(--fg);
+  background-color: var(--bg);
 }
 
 body {
@@ -24,7 +81,7 @@ body {
 
 .site-header {
   padding-block-end: 1rem;
-  border-block-end: 0.0625rem solid #ddd;
+  border-block-end: 0.0625rem solid var(--border);
   margin-block-end: 1.5rem;
 }
 
@@ -55,16 +112,16 @@ td {
   padding-block: 0.375rem;
   padding-inline: 0.5rem;
   text-align: start;
-  border-block-end: 0.0625rem solid #e5e5e5;
+  border-block-end: 0.0625rem solid var(--border);
 }
 
 th {
   font-weight: 600;
-  color: #555;
+  color: var(--fg-muted);
 }
 
 a {
-  color: #2563eb;
+  color: var(--link);
 }
 
 p {

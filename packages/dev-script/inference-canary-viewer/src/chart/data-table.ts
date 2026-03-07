@@ -35,8 +35,8 @@ export type TableDisplayOptions = {
  *
  * Status is shown inline: "(timeout)" is appended to the timestamp cell
  * for failed runs instead of occupying its own column.
- * Missing fix scores are shown as "(data error)" when fix scores exist
- * for other rows.
+ * Missing fix scores distinguish between failed runs ("not run" — fix was
+ * never attempted) and genuine data errors ("data error").
  * @param rows - data rows to render
  * @param caption - table caption describing the chart
  * @param options - column visibility overrides
@@ -72,11 +72,13 @@ export function renderDataTable(
       ? `${escapeHtml(row.timestamp)} <span class="status--failed">(timeout)</span>`
       : escapeHtml(row.timestamp);
 
-    /** Show "(data error)" when fix scores exist for some rows but not this one */
+    /** Show why fix score is missing: run failed → fix never attempted; otherwise data error */
     const fixScoreCell = hasFixScores
       ? row.pass2Score !== undefined
         ? row.pass2Score.toFixed(2)
-        : '<span class="data-error">(data error)</span>'
+        : row.failed
+          ? '<span class="data-error">(not run)</span>'
+          : '<span class="data-error">(data error)</span>'
       : '';
 
     return `<tr${row.failed ? ' class="status--failed"' : ''}>
@@ -127,7 +129,9 @@ function renderDataGrid(
     const fixSuffix = hasFixScores
       ? row.pass2Score !== undefined
         ? ` (fix: ${row.pass2Score.toFixed(2)})`
-        : ' <span class="data-warning">(fix: no data)</span>'
+        : row.failed
+          ? ' <span class="data-warning">(fix: not run)</span>'
+          : ' <span class="data-warning">(fix: no data)</span>'
       : '';
 
     const tag = row.runId !== undefined ? 'button' : 'div';

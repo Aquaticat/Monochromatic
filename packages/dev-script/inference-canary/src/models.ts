@@ -44,7 +44,7 @@ export const models: readonly ModelConfig[] = [
   // Update: Opus 4.6 high effort also constantly times out.
   // { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 high', verbosity: 'high', },
   { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 medium', verbosity: 'medium', },
-
+  { openrouterId: 'anthropic/claude-sonnet-4.6', label: 'Sonnet 4.6 mediumn', verbosity: 'medium', },
 
   { openrouterId: 'anthropic/claude-haiku-4.5', label: 'Haiku 4.5', verbosity: 'low', },
   { openrouterId: 'minimax/minimax-m2.5', label: 'MiniMax M2.5', verbosity: 'low', },

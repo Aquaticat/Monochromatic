@@ -13,7 +13,7 @@
 }
 
 .view-section {
-  border-block-end: 0.0625rem solid #ddd;
+  border-block-end: 0.0625rem solid var(--border);
 }
 
 .view-tab {
@@ -24,7 +24,7 @@
 }
 
 .view-tab:hover {
-  background-color: #f0f0f0;
+  background-color: var(--bg-hover);
 }
 
 .view-content {
@@ -34,7 +34,7 @@
 
 /* Nested model sections */
 .model-section {
-  border: 0.0625rem solid #e5e5e5;
+  border: 0.0625rem solid var(--border);
   border-radius: 0.25rem;
   margin-block: 0.5rem;
 }
@@ -47,7 +47,7 @@
 }
 
 .model-tab:hover {
-  background-color: #f5f5f5;
+  background-color: var(--bg-hover);
 }
 
 .model-content {
@@ -57,7 +57,7 @@
 
 /* Nested probe sections */
 .probe-section {
-  border: 0.0625rem solid #eee;
+  border: 0.0625rem solid var(--border-subtle);
   border-radius: 0.25rem;
   margin-block: 0.375rem;
 }
@@ -70,7 +70,7 @@
 }
 
 .probe-tab:hover {
-  background-color: #f8f8f8;
+  background-color: var(--bg-hover);
 }
 
 .probe-content {
@@ -94,23 +94,23 @@
 }
 
 .status--ok {
-  color: #166534;
-  background-color: #dcfce7;
+  color: var(--ok-fg);
+  background-color: var(--ok-bg);
 }
 
 .status--degraded {
-  color: #92400e;
-  background-color: #fef3c7;
+  color: var(--warn-fg);
+  background-color: var(--warn-bg);
 }
 
 .status--failed {
-  color: #991b1b;
-  background-color: #fee2e2;
+  color: var(--error-fg);
+  background-color: var(--error-bg);
 }
 
 /* Inline data error marker for missing fix scores */
 .data-error {
-  color: #92400e;
+  color: var(--warn-fg);
   font-style: italic;
   font-size: 0.8125em;
 }
