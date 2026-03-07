@@ -1,0 +1,21 @@
+{
+  "name": "@monochromatic-dev/cli-vm",
+  "description": "CLI tool for creating and managing ephemeral Ubuntu KVM virtual machines.",
+  "type": "module",
+  "private": true,
+  "main": "src/index.ts",
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/cli/vm"
+  },
+  "sideEffects": true
+}

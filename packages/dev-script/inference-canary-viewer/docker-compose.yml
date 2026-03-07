@@ -1,0 +1,85 @@
+# Inference canary: periodic LLM probe runner + static dashboard viewer.
+#
+# Prerequisites:
+#   Create .env next to this file with:
+#     INFERENCE_VALIDATION_OPENROUTER_API_KEY=sk-or-...
+#
+# Usage:
+#   docker compose up -d --build
+#
+# The container runs the canary probes on startup, builds the viewer dashboard,
+# serves it on the configured port, then re-runs probes every CANARY_INTERVAL_SECONDS.
+#
+# Add a .dockerignore at the monorepo root to speed up builds:
+#   node_modules
+#   .git
+#   **/dist
+#   **/*.jsonl
+
+services:
+  canary:
+    build:
+      context: ../../..
+      dockerfile_inline: |
+        FROM oven/bun:1.3-debian
+
+        RUN apt-get update \
+         && apt-get install -y --no-install-recommends \
+              podman fuse-overlayfs git \
+         && rm -rf /var/lib/apt/lists/*
+
+        # Podman storage: fuse-overlayfs is required because Docker's own overlayfs
+        # does not support nested native overlay mounts.
+        RUN mkdir -p /etc/containers \
+         && printf '[storage]\ndriver = "overlay"\n\n[storage.options.overlay]\nmount_program = "/usr/bin/fuse-overlayfs"\n' \
+              > /etc/containers/storage.conf \
+         && printf '{"default": [{"type": "insecureAcceptAnything"}]}\n' \
+              > /etc/containers/policy.json
+
+        WORKDIR /app
+
+        COPY package.json bun.lock .oxlintrc.json ./
+        COPY packages/ packages/
+
+        RUN bun install --frozen-lockfile
+
+        ENV PATH="/app/node_modules/.bin:$PATH"
+    cap_add:
+      - SYS_ADMIN
+      - MKNOD
+    devices:
+      - /dev/fuse
+    security_opt:
+      - seccomp=unconfined
+      - label=disable
+    volumes:
+      - canary-artifacts:/app/packages/dev-script/inference-canary/src/canary-lint
+      - podman-storage:/var/lib/containers
+    ports:
+      - "${CANARY_PORT:-8080}:3000"
+    env_file: .env
+    environment:
+      CANARY_INTERVAL_SECONDS: "${CANARY_INTERVAL_SECONDS:-21600}"
+    restart: unless-stopped
+    command:
+      - sh
+      - -c
+      - |
+        # Initial canary run (tolerate failure on first deploy with no cached data)
+        bun packages/dev-script/inference-canary/src/index.ts --retest-all || true
+        bun packages/dev-script/inference-canary-viewer/src/build.ts || true
+
+        # Serve dashboard in background
+        bun --port 3000 packages/dev-script/inference-canary-viewer/dist/final/index.html &
+        SERVE_PID=$$!
+        trap 'kill $$SERVE_PID 2>/dev/null; exit 0' TERM INT
+
+        # Re-run canary probes on a fixed interval
+        while sleep "$$CANARY_INTERVAL_SECONDS"; do
+          bun packages/dev-script/inference-canary/src/index.ts || true
+          bun packages/dev-script/inference-canary-viewer/src/build.ts || true
+        done
+
+volumes:
+  canary-artifacts:
+  podman-storage:
