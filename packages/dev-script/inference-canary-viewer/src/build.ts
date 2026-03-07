@@ -10,6 +10,7 @@ import { join, } from 'node:path';
 import { models, } from '@monochromatic-dev/dev-script-inference-canary/src/models.ts';
 
 import { readArtifacts, } from './data/read-artifacts.ts';
+import { hasMultipleProbes, } from './data/viewer-types.ts';
 import { computeThreshold, } from './data/threshold.ts';
 import { renderPage, } from './html/page.ts';
 import { renderDashboard, } from './html/dashboard.ts';
@@ -62,7 +63,9 @@ for (const label of new Set(entries.map((entry) => entry.label))) {
 const summaries: ModelSummary[] = [];
 for (const label of new Set(entries.map((entry) => entry.label))) {
   const modelEntries = entries.filter((entry) => entry.label === label);
-  const latest = modelEntries.at(-1);
+  /** Latest multi-probe run for meaningful overall score; fall back to latest run */
+  const latestMultiProbe = modelEntries.filter(hasMultipleProbes).at(-1);
+  const latest = latestMultiProbe ?? modelEntries.at(-1);
   if (latest === undefined) continue;
 
   const threshold = thresholds.get(label) ?? 0;

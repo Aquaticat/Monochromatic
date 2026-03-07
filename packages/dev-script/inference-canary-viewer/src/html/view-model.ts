@@ -11,6 +11,7 @@ import { vendorColor, } from '../data/model-colors.ts';
 import { iconDot, vendorIcon, } from '../data/model-icons.ts';
 
 import type { ViewerEntry, } from '../data/viewer-types.ts';
+import { hasMultipleProbes, } from '../data/viewer-types.ts';
 
 /**
  * Renders the by-model view: one `<details>` per model, each containing scatter charts.
@@ -83,7 +84,7 @@ function buildOverallPoints(
   openrouterId: string,
   color: string,
 ): readonly ScatterPoint[] {
-  return entries.map((entry, index) => {
+  return entries.filter(hasMultipleProbes).map((entry, index) => {
     const runId = `${label}-${entry.timestamp}`;
     return {
       runId,

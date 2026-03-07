@@ -124,7 +124,7 @@ export const checkTagNames: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      unknown: 'Unknown TSDoc tag "{{tag}}". TSDoc does not define this tag.',
+      unknown: String.raw`Unknown TSDoc tag "{{tag}}". If this is not a tag, escape the @ as \@.`,
       jsdocOnly: '"{{tag}}" is a JSDoc tag, not valid in TSDoc. {{suggestion}}',
     },
   },

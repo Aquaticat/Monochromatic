@@ -3,8 +3,8 @@ description = "Generate static dashboard from canary history and artifacts"
 run = "bun src/build.ts"
 
 [tasks.'dev:watch']
-description = "Rebuild dashboard on source changes"
-run = "bun --watch src/build.ts"
+description = "Rebuild dashboard on source or canary-lint changes"
+run = "mise watch -w src -w ../inference-canary/src/canary-lint --no-vcs-ignore --debounce 1sec -r -- build"
 
 [tasks.'dev:serve']
 description = "Serve the built dashboard locally"

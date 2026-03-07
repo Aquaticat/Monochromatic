@@ -32,6 +32,7 @@ In spec mode, keep researching and gathering context until the user explicitly a
 
 ## Research tools
 
+- `fd` -- fast file finder; use instead of `find` or `ls`
 - `rg` -- fast text search; use directly rather than navigating directory trees
 - `FetchUrl` -- fetch documentation sites, npm pages, GitHub READMEs; raw source is still useful when docs are incomplete
 - `gh` -- query GitHub for issues, PRs, release notes, and repository metadata

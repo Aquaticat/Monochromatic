@@ -41,7 +41,8 @@ export const models: readonly ModelConfig[] = [
   // Add the best model + highest effort possible just to see what frontier looks like now.
   // Update: Opus 4.6 max effort constantly times out.
   // { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 max', verbosity: 'max', },
-  { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 high', verbosity: 'high', },
+  // Update: Opus 4.6 high effort also constantly times out.
+  // { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 high', verbosity: 'high', },
   { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 medium', verbosity: 'medium', },
 
 

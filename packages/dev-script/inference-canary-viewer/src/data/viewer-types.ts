@@ -103,6 +103,24 @@ export type ProbeDetail = {
   readonly error?: string | undefined;
 };
 
+/**
+ * Whether a run tested more than one probe.
+ *
+ * Single-probe runs produce artificially high overall scores because the easy
+ * probe (e.g. stak-simulation) dominates the average. These should be excluded
+ * from overall-score charts and threshold calculations.
+ * @param entry - viewer entry to check
+ * @returns true when the run tested at least 2 probes
+ *
+ * @example
+ * ```ts
+ * entries.filter(hasMultipleProbes); // only runs with meaningful overall scores
+ * ```
+ */
+export function hasMultipleProbes(entry: ViewerEntry): boolean {
+  return Object.keys(entry.probeScores).length >= 2;
+}
+
 /** Result of reading all artifacts */
 export type ArtifactData = {
   /** Run entries suitable for charts and tables */

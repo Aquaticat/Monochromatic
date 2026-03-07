@@ -84,11 +84,13 @@ export function renderScatterChart(
     if (point.pass2Score === undefined) return pass1;
 
     const pass2Bottom = point.pass2Score * PERCENT;
+    const pass2IconClass = point.icon !== undefined && point.icon !== '' ? ' chart-point--icon' : '';
+    const pass2IconHtml = point.icon !== undefined && point.icon !== '' ? point.icon : '';
     const pass2 = `<button popovertarget="run-${escapeHtml(point.runId)}"
-  class="chart-point chart-point--pass2"
+  class="chart-point chart-point--pass2${pass2IconClass}"
   style="left: ${left.toFixed(2)}%; bottom: ${pass2Bottom.toFixed(2)}%; --point-color: ${point.color}"
   title="fix: ${point.pass2Score.toFixed(2)}"
-  aria-label="fix score ${point.pass2Score.toFixed(2)}"></button>`;
+  aria-label="fix score ${point.pass2Score.toFixed(2)}">${pass2IconHtml}</button>`;
 
     return `${pass1}\n${pass2}`;
   }).join('\n');

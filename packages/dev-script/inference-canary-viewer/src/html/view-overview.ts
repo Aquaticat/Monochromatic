@@ -13,6 +13,7 @@ import { iconDot, vendorIcon, } from '../data/model-icons.ts';
 import { SHAPE_LEGEND, } from '../chart/legend.ts';
 
 import type { ViewerEntry, } from '../data/viewer-types.ts';
+import { hasMultipleProbes, } from '../data/viewer-types.ts';
 
 /** Aggregated model summary for the overview table */
 export type ModelSummary = {
@@ -91,7 +92,7 @@ function buildAllModelPoints(
   entries: readonly ViewerEntry[],
   summaries: readonly ModelSummary[],
 ): readonly ScatterPoint[] {
-  return entries.filter((entry) => entry.overallScore > 0).map((entry, index) => {
+  return entries.filter((entry) => entry.overallScore > 0 && hasMultipleProbes(entry)).map((entry, index) => {
     const color = vendorColor(entry.model);
     const runId = `${entry.label}-${entry.timestamp}`;
     const tableRow = {

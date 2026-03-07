@@ -95,7 +95,7 @@ export const checkAlignment: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      misaligned: 'TSDoc comment asterisks must be aligned.',
+      misaligned: 'TSDoc asterisk misaligned: expected {{expected}} spaces of indent, found {{actual}}.',
     },
   },
   createOnce(context: Context): VisitorWithHooks {
@@ -124,6 +124,7 @@ export const checkAlignment: CreateOnceRule = {
               start: { line: comment.loc.start.line + index + 1, column: actualIndent },
             },
             messageId: 'misaligned',
+            data: { expected: String(expectedIndent), actual: String(actualIndent) },
           });
         }
       });
@@ -145,7 +146,7 @@ export const multilineBlocks: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      singleLine: 'TSDoc comment should use multiline format.',
+      singleLine: 'TSDoc comment with tags must use multiline format.',
     },
   },
   createOnce(context: Context): VisitorWithHooks {
@@ -178,7 +179,7 @@ export const noMultiAsterisks: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      extra: 'Unexpected multiple asterisks at the start of a TSDoc comment line.',
+      extra: 'Extra asterisk at start of TSDoc comment line.',
     },
   },
   createOnce(context: Context): VisitorWithHooks {
@@ -214,7 +215,7 @@ export const tagLines: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      noBlankBefore: 'Expected a blank line before this TSDoc block tag.',
+      noBlankBefore: 'Expected a blank line before "{{tag}}".',
     },
   },
   createOnce(context: Context): VisitorWithHooks {
@@ -243,11 +244,14 @@ export const tagLines: CreateOnceRule = {
         }
         const prevTrimmed = prevLine.trimStart().replace(COMMENT_LINE_PREFIX, '').trimStart();
         if (prevTrimmed.length > 0) {
+          const tagMatch = trimmed.match(/^(@\w+)/);
+          const tag = tagMatch !== null ? tagMatch[1] ?? '@unknown' : '@unknown';
           context.report({
             loc: {
               start: { line: comment.loc.start.line + index + 1, column: 0 },
             },
             messageId: 'noBlankBefore',
+            data: { tag },
           });
         }
       });

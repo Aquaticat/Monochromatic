@@ -119,6 +119,23 @@
   opacity: 1;
 }
 
+/* Pass-2 points with vendor icon: circular like pass-1 but dashed border */
+.chart-point--pass2.chart-point--icon {
+  border-radius: 50%;
+  border-style: dashed;
+  background-color: #fff;
+  opacity: 0.8;
+  inline-size: 1rem;
+  block-size: 1rem;
+  transform: translate(-50%, 50%);
+}
+
+.chart-point--pass2.chart-point--icon:hover,
+.chart-point--pass2.chart-point--icon:focus-visible {
+  transform: translate(-50%, 50%) scale(1.5);
+  opacity: 1;
+}
+
 /* Failed runs: X-shaped via clip-path */
 .chart-point--failed {
   background-color: #dc2626;

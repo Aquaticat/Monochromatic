@@ -5,6 +5,7 @@
  * Uses mean - 2*stddev floored at 0.3, requiring at least 3 samples.
  */
 import type { ViewerEntry, } from './viewer-types.ts';
+import { hasMultipleProbes, } from './viewer-types.ts';
 
 /** Minimum non-failed samples required before computing a meaningful threshold */
 const MIN_SAMPLES = 3;
@@ -45,7 +46,7 @@ export function computeThreshold(
   entries: readonly ViewerEntry[],
 ): ModelThreshold {
   const scores = entries
-    .filter((entry) => entry.label === label && !entry.failed)
+    .filter((entry) => entry.label === label && !entry.failed && hasMultipleProbes(entry))
     .map((entry) => entry.overallScore);
 
   if (scores.length < MIN_SAMPLES) {
