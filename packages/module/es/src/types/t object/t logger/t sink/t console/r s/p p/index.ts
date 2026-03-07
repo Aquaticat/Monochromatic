@@ -42,7 +42,8 @@ export const verify: Verify = (): boolean => {
     }
 
     // Actually call it to verify it doesn't throw
-    testFn('monochromatic: console sink verification');
+    // data is intentionally an empty string to avoid unnecessary noise.
+    testFn('');
     available = true;
   } catch {
     available = false;
