@@ -12,14 +12,18 @@ import openaiSvg from '@lobehub/icons-static-svg/icons/openai.svg' with { type: 
 import qwenSvg from '@lobehub/icons-static-svg/icons/qwen-color.svg' with { type: 'text' };
 import zhipuSvg from '@lobehub/icons-static-svg/icons/zhipu-color.svg' with { type: 'text' };
 
+import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+
 /**
  * Maps OpenRouter vendor prefix to inlined SVG content.
  *
  * - anthropic models use the Claude icon (product icon, not corporate)
  * - moonshotai uses the kimi icon (Kimi is the product name)
  * - z-ai (Zhipu) uses the zhipu icon
+ *
+ * Kimi SVG has white (#fff) fills that are invisible on light backgrounds,
+ * so a dark square is prepended behind its paths.
  */
-/** Kimi SVG has white (#fff) fills that are invisible on light backgrounds — add a dark square behind it */
 const kimiFixed = kimiSvg.replace('<path', '<rect width="24" height="24" rx="3" fill="#888"/><path');
 
 const VENDOR_ICONS: Record<string, string> = {
@@ -49,9 +53,9 @@ export function iconDot(modelId: string, color: string): string {
   const vendor = modelId.split('/')[0] ?? '';
   const svg = VENDOR_ICONS[vendor];
   if (svg === undefined || svg === '') {
-    return `<span class="color-swatch" style="--point-color: ${color}"></span>`;
+    return h({ tag: 'span', class: 'color-swatch', style: { '--point-color': color, }, });
   }
-  return `<span class="color-swatch" data-shape="icon" data-vendor="${vendor}">${svg}</span>`;
+  return h({ tag: 'span', class: 'color-swatch', attrs: { 'data-shape': 'icon', 'data-vendor': vendor, }, html: svg, });
 }
 
 /**

@@ -5,7 +5,8 @@
  * run entries. Enriched artifacts provide scores, reasoning, timing, and usage.
  * Old pre-enrichment artifacts degrade gracefully with score defaulting to 0.
  *
- * <!-- justification: single cohesive reader pipeline; splitting would scatter the grouping logic -->
+ * Exceeds 100 lines: single cohesive reader pipeline; splitting would scatter
+ * the grouping logic across files with no clear ownership boundary.
  */
 import { readdir, readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -39,7 +40,11 @@ function isFailure(meta: Record<string, unknown>): meta is FailureArtifactMeta {
 async function readOptional(path: string): Promise<string | undefined> {
   try {
     return await readFile(path, 'utf8');
-  } catch {
+  } catch (error) {
+    // ENOENT is expected for optional files (e.g. canary.ts not saved in old artifacts)
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      console.error(`[viewer] failed to read ${path}:`, error);
+    }
     return undefined;
   }
 }
@@ -84,33 +89,34 @@ export async function readArtifacts(): Promise<ArtifactData> {
   /** Whole-model failure artifacts */
   const failures: FailureArtifactMeta[] = [];
 
-  let modelDirs: string[];
+  let modelDirents: import('node:fs').Dirent[];
   try {
-    modelDirs = await readdir(LINT_DIR);
+    modelDirents = await readdir(LINT_DIR, { withFileTypes: true, });
   } catch {
     console.error('[viewer] no artifact directory found, skipping artifact loading');
     return { entries: [], probeDetails: new Map(), };
   }
 
-  for (const modelDir of modelDirs) {
-    const modelPath = join(LINT_DIR, modelDir);
-    let subdirs: string[];
+  for (const modelDirent of modelDirents.filter(function isDir(dirent) { return dirent.isDirectory(); })) {
+    const modelPath = join(LINT_DIR, modelDirent.name);
+    let subdirents: import('node:fs').Dirent[];
     try {
-      subdirs = await readdir(modelPath);
-    } catch {
+      subdirents = await readdir(modelPath, { withFileTypes: true, });
+    } catch (error) {
+      console.error(`[viewer] failed to read model directory ${modelPath}:`, error);
       continue;
     }
 
-    for (const subdir of subdirs) {
-      const dirPath = join(modelPath, subdir);
+    for (const subdirent of subdirents.filter(function isDir(dirent) { return dirent.isDirectory(); })) {
+      const dirPath = join(modelPath, subdirent.name);
       const metaRaw = await readOptional(join(dirPath, 'meta.json'));
       if (metaRaw === undefined) continue;
 
       let parsed: Record<string, unknown>;
       try {
         parsed = JSON.parse(metaRaw) as Record<string, unknown>;
-      } catch {
-        console.error(`[viewer] malformed meta.json in ${dirPath}`);
+      } catch (error) {
+        console.error(`[viewer] malformed meta.json in ${dirPath}:`, error);
         continue;
       }
 
@@ -119,11 +125,11 @@ export async function readArtifacts(): Promise<ArtifactData> {
         continue;
       }
 
-      const meta = parsed as ArtifactMeta | EnrichedArtifactMeta;
       // Old artifacts without label fall back to the directory name
-      if (meta.label === undefined) {
-        (meta as { label: string }).label = modelDir;
-      }
+      const meta: ArtifactMeta | EnrichedArtifactMeta = {
+        ...(parsed as ArtifactMeta | EnrichedArtifactMeta),
+        label: (parsed as ArtifactMeta).label ?? modelDirent.name,
+      };
       const [source, response] = await Promise.all([
         readOptional(join(dirPath, 'canary.ts')),
         readOptional(join(dirPath, 'response.txt')),
@@ -158,7 +164,7 @@ function buildViewerData(
 
   for (const [runKey, probes] of initialByRun) {
     const fixes = fixByRun.get(runKey) ?? new Map<string, ParsedArtifact>();
-    const firstProbe = [...probes.values()][0];
+    const firstProbe = probes.values().next().value as ParsedArtifact | undefined;
     if (firstProbe === undefined) continue;
 
     const { model, label, timestamp, } = firstProbe.meta;
@@ -204,7 +210,9 @@ function buildViewerData(
     }
 
     const scores = Object.values(probeScores);
-    const overallScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+    const overallScore = scores.length > 0
+      ? scores.reduce(function addScore(sum, score) { return sum + score; }, 0) / scores.length
+      : 0;
 
     entries.push({
       timestamp,
@@ -222,7 +230,7 @@ function buildViewerData(
     entries.push({
       timestamp: failure.timestamp,
       model: failure.model,
-      label: (failure as { label?: string }).label ?? failure.model,
+      label: (failure as unknown as { label?: string }).label ?? failure.model,
       overallScore: 0,
       probeScores: {},
       failed: true,

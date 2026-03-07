@@ -8,11 +8,12 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 /**
  * Wraps body content in a full HTML document.
- * @param body - inner body HTML
- * @param title - page title
+ * @param options - page rendering options
+ * @param options.body - inner body HTML
+ * @param options.title - page title
  * @returns complete HTML document string
  */
-export function renderPage(body: string, title: string,): string {
+export function renderPage({ body, title, }: { body: string; title: string; }): string {
   return '<!DOCTYPE html>\n' + h({
     tag: 'html',
     attrs: { lang: 'en', },

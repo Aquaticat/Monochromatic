@@ -4,6 +4,9 @@
  * Each probe gets a `<details>` section containing a combined scatter chart
  * where each model's points use its vendor color, plus a per-model breakdown
  * with individual charts.
+ *
+ * Exceeds 100 lines: cross-model and single-model point builders are private
+ * helpers specific to this view and share the same filtering patterns.
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
@@ -17,14 +20,13 @@ import type { ViewerEntry, } from '../data/viewer-types.ts';
 /**
  * Renders the by-probe view: one `<details>` per probe, with all models overlaid
  * and a per-model breakdown nested inside.
- * @param entries - all history entries
- * @param modelLabels - map from model label to display label
+ * @param options - by-probe rendering options
+ * @param options.entries - all history entries
  * @returns HTML string
  */
-export function renderByProbe(
-  entries: readonly ViewerEntry[],
-  modelLabels: ReadonlyMap<string, string>,
-): string {
+export function renderByProbe({ entries, }: {
+  entries: readonly ViewerEntry[];
+}): string {
   /** All unique probe names across all entries */
   const probeNames = [...new Set(entries.flatMap((entry) => Object.keys(entry.probeScores)))];
 
@@ -52,7 +54,7 @@ export function renderByProbe(
             tag: 'summary',
             children: [iconDot(openrouterId, color), ' ', h({ tag: 'span', text: label, })],
           }),
-          renderScatterChart(modelPoints, 0, '', `${probe} - ${label}`, { tableDisplay: { showModel: false, showProbe: false, }, }),
+          renderScatterChart({ points: modelPoints, threshold: 0, thresholdLabel: '', caption: `${probe} - ${label}`, tableDisplay: { showModel: false, showProbe: false, }, }),
         ],
       });
     }).join('\n');
@@ -67,7 +69,7 @@ export function renderByProbe(
           class: 'pane',
           children: [
             legend,
-            renderScatterChart(points, 0, '', `${probe} - all models`, { tableDisplay: { showProbe: false, }, }),
+            renderScatterChart({ points, threshold: 0, thresholdLabel: '', caption: `${probe} - all models`, tableDisplay: { showProbe: false, }, }),
             h({ tag: 'h3', text: 'Per-model breakdown', }),
             modelBreakdown,
           ],

@@ -3,6 +3,9 @@
  *
  * Provides the same data as the visual chart in a machine-readable,
  * screen-reader-navigable format.
+ *
+ * Exceeds 100 lines: table and card-grid are alternative renderings of
+ * the same data and share row/cell construction logic.
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 

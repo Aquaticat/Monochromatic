@@ -3,6 +3,9 @@
  *
  * Renders timing, usage, badges, reasoning traces, fix prompts, and config
  * as compact HTML sections within popover overlays.
+ *
+ * Exceeds 100 lines: badge, pass-meta, collapsible, and config renderers
+ * are cohesive metadata helpers that share formatting utilities.
  */
 import { micromark, } from 'micromark';
 
@@ -77,24 +80,25 @@ export function renderBadges(detail: ProbeDetail,): string {
 /**
  * Renders a compact metadata grid for one pass (initial or fix).
  * Shows timing and token usage as a collapsed `<details>` element.
- * @param label - section label ("Initial pass" or "Fix pass")
- * @param timing - streaming timing data
- * @param usage - token usage data
- * @param finishReason - why generation stopped
+ * @param options - pass metadata rendering options
+ * @param options.label - section label ("Initial pass" or "Fix pass")
+ * @param options.timing - streaming timing data
+ * @param options.usage - token usage data
+ * @param options.finishReason - why generation stopped
  * @returns HTML string, empty when no data is available
  *
  * @example
  * ```ts
- * renderPassMeta('Initial pass', timing, usage, 'stop');
+ * renderPassMeta({ label: 'Initial pass', timing, usage, finishReason: 'stop' });
  * // '<details class="collapsible-section"><summary>Initial pass</summary><dl ...>...'
  * ```
  */
-export function renderPassMeta(
-  label: string,
-  timing: StreamTiming | undefined,
-  usage: StreamUsage | undefined,
-  finishReason: string | undefined,
-): string {
+export function renderPassMeta({ label, timing, usage, finishReason, }: {
+  label: string;
+  timing: StreamTiming | undefined;
+  usage: StreamUsage | undefined;
+  finishReason: string | undefined;
+}): string {
   const items: string[] = [];
 
   if (timing !== undefined) {

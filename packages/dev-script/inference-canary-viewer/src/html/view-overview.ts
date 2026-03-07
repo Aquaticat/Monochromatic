@@ -4,6 +4,9 @@
  * Shows a combined scatter chart with every model's overall score over time,
  * where each point is clickable to open the run detail overlay.
  * Below the chart, a summary table lists each model's latest status.
+ *
+ * Exceeds 100 lines: chart point builders and legend are tightly coupled
+ * to the overview layout and share local types.
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
@@ -30,25 +33,41 @@ export type ModelSummary = {
 };
 
 /**
+ * Resolves a model summary to its status level data attribute value.
+ * @param summary - model summary to check
+ * @returns "failed", "degraded", or empty string for healthy models
+ */
+function statusLevel(summary: ModelSummary): string {
+  if (summary.failed) return 'failed';
+  if (summary.degraded) return 'degraded';
+  return '';
+}
+
+/**
  * Renders the overview section with a scatter chart of all models and a summary table.
- * @param summaries - per-model summaries sorted by model name
- * @param entries - all history entries (for the combined chart)
+ * @param options - overview rendering options
+ * @param options.summaries - per-model summaries sorted by model name
+ * @param options.entries - all history entries (for the combined chart)
  * @returns HTML string
  */
-export function renderOverview(summaries: readonly ModelSummary[], entries: readonly ViewerEntry[],): string {
+export function renderOverview({ summaries, entries, }: {
+  summaries: readonly ModelSummary[];
+  entries: readonly ViewerEntry[];
+}): string {
   if (summaries.length === 0) {
     return h({ tag: 'p', text: 'No history data available. Run the canary first.', });
   }
 
   // Combined scatter chart: all models' overall scores
-  const chartPoints = buildAllModelPoints(entries, summaries);
+  const chartPoints = buildAllModelPoints(entries);
   const legend = buildLegend(summaries);
-  const chart = renderScatterChart(chartPoints, 0, '', 'All models overall score', { hideTable: true, });
+  const chart = renderScatterChart({ points: chartPoints, threshold: 0, thresholdLabel: '', caption: 'All models overall score', hideTable: true, });
 
   // Summary table — status is shown inline rather than in its own column
   const rows = summaries.map((summary) => {
     const color = vendorColor(summary.model);
-    const statusClass = summary.failed ? 'failed' : summary.degraded ? 'degraded' : '';
+    /** Data attribute value for row-level status styling */
+    const statusClass = statusLevel(summary);
 
     const inlineStatus = summary.failed
       ? ' ' + h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'failed', }, text: '(timeout)', })
@@ -105,12 +124,10 @@ export function renderOverview(summaries: readonly ModelSummary[], entries: read
 /**
  * Builds scatter points for all models' overall scores, ordered by timestamp.
  * @param entries - all history entries
- * @param summaries - model summaries (for labels)
  * @returns scatter points array
  */
 function buildAllModelPoints(
   entries: readonly ViewerEntry[],
-  summaries: readonly ModelSummary[],
 ): readonly ScatterPoint[] {
   return entries.filter((entry) => entry.overallScore > 0 && hasMultipleProbes(entry)).map((entry, index) => {
     const color = vendorColor(entry.model);
@@ -142,12 +159,12 @@ function buildAllModelPoints(
  * @returns HTML legend string
  */
 function buildLegend(summaries: readonly ModelSummary[],): string {
-  const items = summaries.map((s) => {
-    const color = vendorColor(s.model);
+  const items = summaries.map(function buildLegendItem(summary) {
+    const color = vendorColor(summary.model);
     return h({
       tag: 'span',
       class: 'item',
-      children: [iconDot(s.model, color), ' ', h({ tag: 'span', text: s.label, })],
+      children: [iconDot(summary.model, color), ' ', h({ tag: 'span', text: summary.label, })],
     });
   }).join('\n');
 

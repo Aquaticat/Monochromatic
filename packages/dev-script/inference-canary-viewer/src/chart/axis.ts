@@ -4,6 +4,9 @@
  * Y axis uses fixed score ticks (0, 0.25, 0.5, 0.75, 1.0).
  * X axis uses timestamps, adapting label granularity to the data range:
  * multiple days show dates, same-day data shows times.
+ *
+ * Exceeds 100 lines: Y and X axis renderers share the same spatial
+ * coordinate conventions and formatter selection logic.
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 

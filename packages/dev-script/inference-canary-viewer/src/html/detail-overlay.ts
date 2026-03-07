@@ -7,6 +7,9 @@
  *
  * Enriched artifacts add reasoning traces, timing, token usage, config,
  * and fix prompts to probe overlays. Missing enrichment degrades gracefully.
+ *
+ * Exceeds 100 lines: run overlay, probe overlay, and diff rendering are
+ * interdependent and share the same entry/detail data flow.
  */
 import { join, } from 'node:path';
 
@@ -25,33 +28,28 @@ import { renderBadges, renderCollapsibles, renderPassMeta, } from './overlay-met
  * Renders all run detail overlays for every viewer entry.
  *
  * Each overlay is a `<div popover="auto" id="run-{id}">` opened by `popovertarget` buttons.
- * @param entries - all viewer entries
- * @param probeDetails - per-probe enriched data keyed by composite key
- * @param modelLabels - display labels per model
+ * @param options - overlay rendering options
+ * @param options.entries - all viewer entries
+ * @param options.probeDetails - per-probe enriched data keyed by composite key
  * @returns HTML string containing all overlay sections
  */
-export async function renderAllOverlays(
-  entries: readonly ViewerEntry[],
-  probeDetails: ReadonlyMap<string, ProbeDetail>,
-  modelLabels: ReadonlyMap<string, string>,
-): Promise<string> {
-  const overlays: string[] = [];
-
-  for (const entry of entries) {
+export async function renderAllOverlays({ entries, probeDetails, }: {
+  entries: readonly ViewerEntry[];
+  probeDetails: ReadonlyMap<string, ProbeDetail>;
+}): Promise<string> {
+  const overlays = await Promise.all(entries.flatMap(function buildEntryOverlays(entry) {
     const probeNames = Object.keys(entry.probeScores);
-
-    // Overall run overlay
     const overallId = `${entry.label}-${entry.timestamp}`;
-    overlays.push(renderRunOverlay(overallId, entry, modelLabels));
 
-    // Per-probe overlays
-    for (const probe of probeNames) {
-      const probeId = `${entry.label}-${probe}-${entry.timestamp}`;
-      const key = probeKey(entry.label, probe, entry.timestamp);
-      const detail = probeDetails.get(key);
-      overlays.push(await renderProbeOverlay(probeId, entry, probe, detail, modelLabels));
-    }
-  }
+    return [
+      Promise.resolve(renderRunOverlay({ id: overallId, entry, })),
+      ...probeNames.map(function buildProbeOverlay(probe) {
+        const probeId = `${entry.label}-${probe}-${entry.timestamp}`;
+        const key = probeKey(entry.label, probe, entry.timestamp);
+        return renderProbeOverlay({ id: probeId, entry, probe, detail: probeDetails.get(key), });
+      }),
+    ];
+  }));
 
   return overlays.join('\n');
 }
@@ -59,16 +57,15 @@ export async function renderAllOverlays(
 /**
  * Renders a simple overlay for an overall run (no source code).
  * Shows a probe grid with clickable cards linking to per-probe overlays.
- * @param id - unique overlay ID
- * @param entry - viewer entry
- * @param modelLabels - display labels
+ * @param options - overlay rendering options
+ * @param options.id - unique overlay ID
+ * @param options.entry - viewer entry
  * @returns HTML string
  */
-function renderRunOverlay(
-  id: string,
-  entry: ViewerEntry,
-  modelLabels: ReadonlyMap<string, string>,
-): string {
+function renderRunOverlay({ id, entry, }: {
+  id: string;
+  entry: ViewerEntry;
+}): string {
   const label = entry.label;
 
   const probeCards = Object.entries(entry.probeScores)
@@ -106,20 +103,19 @@ function renderRunOverlay(
 
 /**
  * Renders a probe-specific overlay with source code, diff, and enriched metadata.
- * @param id - unique overlay ID
- * @param entry - viewer entry
- * @param probe - probe name
- * @param detail - enriched probe detail (may be undefined for missing artifacts)
- * @param modelLabels - display labels
+ * @param options - overlay rendering options
+ * @param options.id - unique overlay ID
+ * @param options.entry - viewer entry
+ * @param options.probe - probe name
+ * @param options.detail - enriched probe detail (may be undefined for missing artifacts)
  * @returns HTML string
  */
-async function renderProbeOverlay(
-  id: string,
-  entry: ViewerEntry,
-  probe: string,
-  detail: ProbeDetail | undefined,
-  modelLabels: ReadonlyMap<string, string>,
-): Promise<string> {
+async function renderProbeOverlay({ id, entry, probe, detail, }: {
+  id: string;
+  entry: ViewerEntry;
+  probe: string;
+  detail: ProbeDetail | undefined;
+}): Promise<string> {
   const label = entry.label;
   const score = entry.probeScores[probe] ?? 0;
   const pass2Score = entry.pass2Scores?.[probe];
@@ -129,10 +125,10 @@ async function renderProbeOverlay(
 
   // Pass metadata sections (timing, usage, finish reason)
   const initialMeta = detail !== undefined
-    ? renderPassMeta('Initial pass', detail.timing, detail.usage, detail.finishReason)
+    ? renderPassMeta({ label: 'Initial pass', timing: detail.timing, usage: detail.usage, finishReason: detail.finishReason, })
     : '';
   const fixMeta = detail !== undefined && (detail.fixTiming !== undefined || detail.fixUsage !== undefined)
-    ? renderPassMeta('Fix pass', detail.fixTiming, detail.fixUsage, detail.fixFinishReason)
+    ? renderPassMeta({ label: 'Fix pass', timing: detail.fixTiming, usage: detail.fixUsage, finishReason: detail.fixFinishReason, })
     : '';
 
   // Source code section (diff or single)
@@ -145,7 +141,7 @@ async function renderProbeOverlay(
     if (detail.fixSource !== undefined && detail.fixDir !== undefined) {
       const initialFile = join(detail.initialDir, 'canary.ts');
       const fixFile = join(detail.fixDir, 'canary.ts');
-      const diffLines = await computeDiff(initialFile, fixFile);
+      const diffLines = await computeDiff({ initialPath: initialFile, fixPath: fixFile, });
       sourceSection = h({
         tag: 'details',
         class: 'collapsible-section',

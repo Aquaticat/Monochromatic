@@ -5,6 +5,9 @@
  * container. Points open run detail popovers via `popovertarget` attributes.
  * Pass-1 points are filled circles; pass-2 points are hollow circles overlaid
  * at the same X position.
+ *
+ * Exceeds 100 lines: point element generation, axis wiring, and table
+ * integration form a single rendering pipeline.
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
@@ -38,30 +41,32 @@ export type ScatterPoint = {
   readonly tableRow: TableRow;
 };
 
-/** Options controlling scatter chart rendering */
-export type ScatterChartOptions = {
-  /** When true, omit the backing data table entirely */
-  readonly hideTable?: boolean;
-  /** Column visibility options forwarded to the data table */
-  readonly tableDisplay?: TableDisplayOptions;
-};
-
 /**
  * Renders a complete scatter chart: plot area, axes, threshold line, and backing table.
- * @param points - data points to render
- * @param threshold - degradation threshold value (0-1), 0 to hide
- * @param thresholdLabel - label for the threshold line
- * @param caption - accessible caption for the chart and table
  * @param options - chart rendering options
+ * @param options.points - data points to render
+ * @param options.threshold - degradation threshold value (0-1), 0 to hide
+ * @param options.thresholdLabel - label for the threshold line
+ * @param options.caption - accessible caption for the chart and table
+ * @param options.hideTable - when true, omit the backing data table entirely
+ * @param options.tableDisplay - column visibility options forwarded to the data table
  * @returns HTML string
  */
-export function renderScatterChart(
-  points: readonly ScatterPoint[],
-  threshold: number,
-  thresholdLabel: string,
-  caption: string,
-  options: ScatterChartOptions = {},
-): string {
+export function renderScatterChart({
+  points,
+  threshold,
+  thresholdLabel,
+  caption,
+  hideTable,
+  tableDisplay,
+}: {
+  points: readonly ScatterPoint[];
+  threshold: number;
+  thresholdLabel: string;
+  caption: string;
+  hideTable?: boolean;
+  tableDisplay?: TableDisplayOptions;
+}): string {
   if (points.length === 0) {
     return h({ tag: 'p', class: 'chart-empty-state', text: 'No data available.', });
   }
@@ -123,12 +128,12 @@ export function renderScatterChart(
 
   const timestamps = points.map((point) => point.timestamp);
 
-  const tableHtml = options.hideTable === true
+  const tableHtml = hideTable === true
     ? ''
     : renderDataTable(
       points.map((point) => point.tableRow),
       caption,
-      options.tableDisplay,
+      tableDisplay,
     );
 
   return h({

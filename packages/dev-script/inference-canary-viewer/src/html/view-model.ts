@@ -3,6 +3,9 @@
  *
  * Each model gets a nested `<details>` element containing one scatter chart
  * per probe, plus an aggregate chart of overall score.
+ *
+ * Exceeds 100 lines: overall and per-probe point builders are private helpers
+ * specific to this view and share the same entry-filtering patterns.
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
@@ -17,16 +20,15 @@ import { hasMultipleProbes, } from '../data/viewer-types.ts';
 
 /**
  * Renders the by-model view: one `<details>` per model, each containing scatter charts.
- * @param entries - all viewer entries
- * @param modelLabels - map from model label to display label
- * @param thresholds - map from model label to computed threshold
+ * @param options - by-model rendering options
+ * @param options.entries - all viewer entries
+ * @param options.thresholds - map from model label to computed threshold
  * @returns HTML string
  */
-export function renderByModel(
-  entries: readonly ViewerEntry[],
-  modelLabels: ReadonlyMap<string, string>,
-  thresholds: ReadonlyMap<string, number>,
-): string {
+export function renderByModel({ entries, thresholds, }: {
+  entries: readonly ViewerEntry[];
+  thresholds: ReadonlyMap<string, number>;
+}): string {
   /** Unique model labels in the order they first appear */
   const labels = [...new Set(entries.map((entry) => entry.label))];
 
@@ -46,10 +48,10 @@ export function renderByModel(
 
     // Overall score chart
     const overallPoints = buildOverallPoints(modelEntries, label, openrouterId, color);
-    const overallChart = renderScatterChart(
-      overallPoints, threshold, `threshold: ${threshold.toFixed(2)}`, `${label} overall score`,
-      { tableDisplay, },
-    );
+    const overallChart = renderScatterChart({
+      points: overallPoints, threshold, thresholdLabel: `threshold: ${threshold.toFixed(2)}`, caption: `${label} overall score`,
+      tableDisplay,
+    });
 
     // Per-probe charts
     const probeNames = [...new Set(modelEntries.flatMap((entry) => Object.keys(entry.probeScores)))];
@@ -60,7 +62,7 @@ export function renderByModel(
         class: 'probe-section',
         children: [
           h({ tag: 'summary', text: probe, }),
-          renderScatterChart(probePoints, 0, '', `${label} - ${probe}`, { tableDisplay: { showModel: false, showProbe: false, }, }),
+          renderScatterChart({ points: probePoints, threshold: 0, thresholdLabel: '', caption: `${label} - ${probe}`, tableDisplay: { showModel: false, showProbe: false, }, }),
         ],
       });
     }).join('\n');

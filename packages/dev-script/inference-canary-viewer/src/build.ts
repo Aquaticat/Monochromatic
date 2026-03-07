@@ -3,12 +3,14 @@
  *
  * Reads enriched artifacts from the sibling inference-canary package,
  * generates a single-page HTML dashboard, and writes it to `dist/final/`.
+ *
+ * Exceeds 100 lines: top-level build orchestration script with sequential
+ * pipeline steps that must remain in a single execution scope.
  */
 import { mkdir, writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { build as buildCss, } from '@monochromatic-dev/build-tool-css/ts';
-import { models, } from '@monochromatic-dev/dev-script-inference-canary/src/models.ts';
 
 import { readArtifacts, } from './data/read-artifacts.ts';
 import { hasMultipleProbes, } from './data/viewer-types.ts';
@@ -37,40 +39,30 @@ console.error(`[viewer] ${String(entries.length)} runs, ${String(probeDetails.si
 
 //region Build model labels and thresholds from the canonical model registry
 
-/** Map from model label to short display label (identity for current models, fallback for old artifacts) */
-const modelLabels = new Map<string, string>(
-  models.map((model) => [model.label, model.label]),
-);
-
-// Add labels for any models in artifacts not in the current registry
-for (const entry of entries) {
-  if (!modelLabels.has(entry.label)) {
-    modelLabels.set(entry.label, entry.label);
-  }
-}
+/** Unique model labels across all entries */
+const uniqueLabels = [...new Set(entries.map((entry) => entry.label))];
 
 /** Map from model label to computed degradation threshold */
-const thresholds = new Map<string, number>();
-for (const label of new Set(entries.map((entry) => entry.label))) {
-  const result = computeThreshold(label, entries);
-  thresholds.set(label, result.threshold);
-}
+const thresholds = new Map<string, number>(
+  uniqueLabels.map(function buildThreshold(label) {
+    return [label, computeThreshold(label, entries).threshold];
+  }),
+);
 
 //endregion Build model labels and thresholds
 
 //region Build model summaries for the overview
 
 /** Summaries for the overview table, one per model */
-const summaries: ModelSummary[] = [];
-for (const label of new Set(entries.map((entry) => entry.label))) {
+const summaries: ModelSummary[] = uniqueLabels.flatMap(function buildSummary(label) {
   const modelEntries = entries.filter((entry) => entry.label === label);
   /** Latest multi-probe run for meaningful overall score; fall back to latest run */
   const latestMultiProbe = modelEntries.filter(hasMultipleProbes).at(-1);
   const latest = latestMultiProbe ?? modelEntries.at(-1);
-  if (latest === undefined) continue;
+  if (latest === undefined) return [];
 
   const threshold = thresholds.get(label) ?? 0;
-  summaries.push({
+  return [{
     model: latest.model,
     label,
     latestScore: latest.overallScore,
@@ -79,8 +71,8 @@ for (const label of new Set(entries.map((entry) => entry.label))) {
     failed: latest.failed,
     threshold,
     degraded: !latest.failed && latest.overallScore < threshold,
-  });
-}
+  }];
+});
 
 //endregion Build model summaries
 
@@ -88,13 +80,13 @@ for (const label of new Set(entries.map((entry) => entry.label))) {
 
 console.error('[viewer] rendering HTML...');
 
-const overviewHtml = renderOverview(summaries, entries);
-const byModelHtml = renderByModel(entries, modelLabels, thresholds);
-const byProbeHtml = renderByProbe(entries, modelLabels);
-const overlaysHtml = await renderAllOverlays(entries, probeDetails, modelLabels);
+const overviewHtml = renderOverview({ summaries, entries, });
+const byModelHtml = renderByModel({ entries, thresholds, });
+const byProbeHtml = renderByProbe({ entries, });
+const overlaysHtml = await renderAllOverlays({ entries, probeDetails, });
 
-const dashboardHtml = renderDashboard(overviewHtml, byModelHtml, byProbeHtml, overlaysHtml);
-const pageHtml = renderPage(dashboardHtml, 'Inference canary dashboard');
+const dashboardHtml = renderDashboard({ overviewHtml, byModelHtml, byProbeHtml, overlaysHtml, });
+const pageHtml = renderPage({ body: dashboardHtml, title: 'Inference canary dashboard', });
 
 //endregion Render all HTML sections
 

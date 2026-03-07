@@ -8,18 +8,19 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 /**
  * Wraps three view sections into the dashboard layout.
- * @param overviewHtml - overview section content
- * @param byModelHtml - per-model section content
- * @param byProbeHtml - per-probe section content
- * @param overlaysHtml - all run detail overlays (rendered outside the views)
+ * @param options - dashboard rendering options
+ * @param options.overviewHtml - overview section content
+ * @param options.byModelHtml - per-model section content
+ * @param options.byProbeHtml - per-probe section content
+ * @param options.overlaysHtml - all run detail overlays (rendered outside the views)
  * @returns dashboard HTML string
  */
-export function renderDashboard(
-  overviewHtml: string,
-  byModelHtml: string,
-  byProbeHtml: string,
-  overlaysHtml: string,
-): string {
+export function renderDashboard({ overviewHtml, byModelHtml, byProbeHtml, overlaysHtml, }: {
+  overviewHtml: string;
+  byModelHtml: string;
+  byProbeHtml: string;
+  overlaysHtml: string;
+}): string {
   return h({
     tag: 'nav',
     class: 'view-switcher',

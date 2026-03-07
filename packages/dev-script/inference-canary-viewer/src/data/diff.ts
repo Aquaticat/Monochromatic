@@ -13,17 +13,21 @@ export type DiffLine = {
 
 /**
  * Computes a line-level diff between two existing files using git.
- * @param initialPath - absolute path to initial pass source file
- * @param fixPath - absolute path to fix pass source file
+ * @param options - diff computation options
+ * @param options.initialPath - absolute path to initial pass source file
+ * @param options.fixPath - absolute path to fix pass source file
  * @returns array of diff lines
  *
  * @example
  * ```ts
- * const lines = await computeDiff('/path/to/initial/canary.ts', '/path/to/fix/canary.ts');
+ * const lines = await computeDiff({ initialPath: '/path/to/initial/canary.ts', fixPath: '/path/to/fix/canary.ts' });
  * // [{ type: 'removed', content: 'const x = 1;' }, { type: 'added', content: 'const x = 2;' }]
  * ```
  */
-export async function computeDiff(initialPath: string, fixPath: string): Promise<readonly DiffLine[]> {
+export async function computeDiff({ initialPath, fixPath, }: {
+  initialPath: string;
+  fixPath: string;
+}): Promise<readonly DiffLine[]> {
   /**
    * git diff --no-index exits with 1 when files differ (not an error).
    * --unified=99999 requests enough context lines to include the entire file.
