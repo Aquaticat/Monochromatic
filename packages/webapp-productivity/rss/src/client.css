@@ -120,7 +120,7 @@ a {
   row-gap: 1rem;
 
   /* Hidden feed items */
-  &.ignore {
+  &[data-ignored] {
     display: none;
   }
 

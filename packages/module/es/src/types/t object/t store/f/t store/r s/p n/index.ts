@@ -106,7 +106,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
     ? createLruKeySet(lruPolicy.maxSize,)
     : undefined;
 
-  defaultLogger.trace(`SyncStore "${storeId}" created with ${String(backends.length)} backend(s)`,);
+  defaultLogger.debug(`SyncStore "${storeId}" created with ${String(backends.length)} backend(s)`,);
 
   const store: SyncStore = {
     storeId,
@@ -124,7 +124,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
     },
 
     set(key: string, value: unknown,): SyncStore {
-      defaultLogger.trace(`SyncStore.set: "${key}"`,);
+      defaultLogger.debug(`SyncStore.set: "${key}"`,);
       const serialized = serializeValue({ value, serializer, lossyForCircular, },);
 
       for (const backend of backends) {
@@ -134,7 +134,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
       if (lru !== undefined) {
         const evicted = lru.touch(key,);
         if (evicted !== undefined) {
-          defaultLogger.trace(`SyncStore.evict: "${evicted}"`,);
+          defaultLogger.debug(`SyncStore.evict: "${evicted}"`,);
           for (const backend of backends) {
             backend.delete(evicted,);
           }
@@ -145,7 +145,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
     },
 
     get<const T = unknown,>(key: string,): T | undefined {
-      defaultLogger.trace(`SyncStore.get: "${key}"`,);
+      defaultLogger.debug(`SyncStore.get: "${key}"`,);
       const results = queryAllBackendsSync(backends, key,);
       const canonicalSerialized = resolveConsensus(results, key,);
 
@@ -154,7 +154,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
       if (canonicalSerialized !== undefined && lru !== undefined) {
         const evicted = lru.touch(key,);
         if (evicted !== undefined) {
-          defaultLogger.trace(`SyncStore.evict: "${evicted}"`,);
+          defaultLogger.debug(`SyncStore.evict: "${evicted}"`,);
           for (const backend of backends) {
             backend.delete(evicted,);
           }
@@ -167,7 +167,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
     },
 
     delete(key: string,): void {
-      defaultLogger.trace(`SyncStore.delete: "${key}"`,);
+      defaultLogger.debug(`SyncStore.delete: "${key}"`,);
       if (lru !== undefined) {
         lru.remove(key,);
       }
@@ -177,7 +177,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
     },
 
     clear(): void {
-      defaultLogger.trace(`SyncStore.clear`,);
+      defaultLogger.debug(`SyncStore.clear`,);
       if (lru !== undefined) {
         lru.clear();
       }

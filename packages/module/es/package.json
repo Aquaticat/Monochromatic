@@ -19,6 +19,8 @@
     "./logger": "./src/types/t object/t logger/f/t never/r s/p p/index.ts",
     "./map-iterable-async": "./src/types/t object/t array/f/t iterable/map/r a/p p/index.ts",
     "./not-nullish-or-throw": "./src/types/t any/f/t any/notNullishOrThrow/r s/p p/index.ts",
+    "./tagged": "./src/types/t object/t logger/f/t object/t logger/tagged/r s/p n/index.ts",
+    "./memoize-async": "./src/types/t function/f/t function/memoize/r a/p n/index.ts",
     "./wait": "./src/types/t object/t promise/f/t number/wait/r a/p p/index.ts"
   },
   "files": [

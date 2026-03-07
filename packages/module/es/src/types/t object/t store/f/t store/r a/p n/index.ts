@@ -138,7 +138,7 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
     ? createLruKeySet(lruPolicy.maxSize,)
     : undefined;
 
-  defaultLogger.trace(`Store "${storeId}" created with ${String(backends.length)} backend(s)`,);
+  defaultLogger.debug(`Store "${storeId}" created with ${String(backends.length)} backend(s)`,);
 
   const store: Store = {
     storeId,
@@ -148,7 +148,7 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
     backends,
 
     async set(key: string, value: unknown,): Promise<Store> {
-      defaultLogger.trace(`Store.set: "${key}"`,);
+      defaultLogger.debug(`Store.set: "${key}"`,);
       const serialized = serializeValue({ value, serializer, lossyForCircular, },);
       const resolvedKey = key.length === 0 ? await hashString(serialized,) : key;
 
@@ -161,7 +161,7 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
       if (lru !== undefined) {
         const evicted = lru.touch(resolvedKey,);
         if (evicted !== undefined) {
-          defaultLogger.trace(`Store.evict: "${evicted}"`,);
+          defaultLogger.debug(`Store.evict: "${evicted}"`,);
           await Promise.all(
             backends.map(async function evictFromBackend(backend,) {
               await backend.delete(evicted,);
@@ -174,7 +174,7 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
     },
 
     async get<const T = unknown,>(key: string,): Promise<T | undefined> {
-      defaultLogger.trace(`Store.get: "${key}"`,);
+      defaultLogger.debug(`Store.get: "${key}"`,);
       const results = await queryAllBackends(backends, key,);
       const canonicalSerialized = resolveConsensus(results, key,);
 
@@ -183,7 +183,7 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
       if (canonicalSerialized !== undefined && lru !== undefined) {
         const evicted = lru.touch(key,);
         if (evicted !== undefined) {
-          defaultLogger.trace(`Store.evict: "${evicted}"`,);
+          defaultLogger.debug(`Store.evict: "${evicted}"`,);
           await Promise.all(
             backends.map(async function evictFromBackend(backend,) {
               await backend.delete(evicted,);
@@ -198,7 +198,7 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
     },
 
     async delete(key: string,): Promise<void> {
-      defaultLogger.trace(`Store.delete: "${key}"`,);
+      defaultLogger.debug(`Store.delete: "${key}"`,);
       if (lru !== undefined) {
         lru.remove(key,);
       }
@@ -210,7 +210,7 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
     },
 
     async clear(): Promise<void> {
-      defaultLogger.trace(`Store.clear`,);
+      defaultLogger.debug(`Store.clear`,);
       if (lru !== undefined) {
         lru.clear();
       }

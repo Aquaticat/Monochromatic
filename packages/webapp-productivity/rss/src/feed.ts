@@ -1,175 +1,106 @@
-import { $ as createObservableAsync, } from '@monochromatic-dev/module-es/create-observable-async';
+// 105 lines: fetch, parse, and sort are a single pipeline; splitting obscures the data flow
 import { $ as mapIterableAsync, } from '@monochromatic-dev/module-es/map-iterable-async';
+import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import {
+  type Opml,
   parseAtomFeed,
   parseRssFeed,
 } from 'feedsmith';
-import type { Outline, } from 'node_modules/feedsmith/dist/opml/parse/types';
 import { z, } from 'zod/v4-mini';
-import { onSortedFeedsChange, } from './item.ts';
-import { l, } from './log.ts';
+import { l as parentLogger, } from './log.ts';
 import type { InnerOutlineWUrl, } from './outline.ts';
 
+const l = tagged({ tag: 'feed', l: parentLogger, },);
+
 /**
- * Type definition for feed data combined with its corresponding outline.
- * Combines parsed feed data with metadata from the OPML structure.
+ * Parsed feed data paired with its OPML outline metadata.
+ * Combines the feed content with source information for display.
  */
 export type FeedWOutline = {
   feed: ReturnType<typeof parseRssFeed | typeof parseAtomFeed>;
-  outline: Outline;
+  outline: Opml.Outline<string>;
 };
 
+//region Feed fetching and sorting -- Retrieves feeds from URLs, parses them, and sorts by date
+
 /**
- * Fetches and parses RSS/Atom feeds from the configured URLs.
- * Handles both RSS and Atom feed formats with appropriate error handling.
- * @param innerOutlinesWUrl - Array of outlines with valid XML URLs
- * @returns Promise resolving to an array of feed objects with outlines
- * @throws {@link Error} If any feed cannot be fetched or parsed
+ * Fetches, parses, and date-sorts feeds from OPML outlines.
+ * Handles both RSS and Atom formats, discarding feeds that fail to fetch or parse.
+ * @param outlines - Outlines with validated xmlUrl properties
+ * @returns Feeds sorted by publication date (newest first)
  * @example
- * ```typescript
- * const feeds = await getFeeds(innerOutlinesWUrl);
+ * ```ts
+ * const feeds = await getSortedFeeds(outlines);
  * ```
- * @see {@link fetch} for HTTP requests
- * @see {@link parseRssFeed} for RSS parsing
- * @see {@link parseAtomFeed} for Atom parsing
  */
-async function getFeeds(
-  innerOutlinesWUrl: InnerOutlineWUrl[],
+export async function getSortedFeeds(
+  outlines: InnerOutlineWUrl[],
 ): Promise<FeedWOutline[]> {
-  l.debug(`getFeeds`);
+  const innerL = tagged({ tag: getSortedFeeds.name, l, },);
+  const feeds = await fetchAndParseFeeds(outlines,);
+  const result = feeds.toSorted(function byDate(feedA, feedB,) {
+    return extractDate(feedB,).getTime() - extractDate(feedA,).getTime();
+  },);
+  innerL.debug(`sorted ${String(result.length)} feeds`);
+  return result;
+}
+
+/**
+ * Fetches and parses feeds from outlines, discarding failures.
+ * @param outlines - Outlines with xmlUrl properties
+ * @returns Successfully fetched and parsed feeds
+ */
+async function fetchAndParseFeeds(
+  outlines: InnerOutlineWUrl[],
+): Promise<FeedWOutline[]> {
+  const innerL = tagged({ tag: fetchAndParseFeeds.name, l, },);
   const DISCARD = Symbol('discard',);
-
-  const innerOutlineWUrlTexts: { text: string;
-    outline: Outline & { xmlUrl: string; }; }[] = (await mapIterableAsync(
-      async function withText(innerOutlineWUrl: Outline & { xmlUrl: string; },) {
-        const response = await fetch(innerOutlineWUrl.xmlUrl,);
-        if (!response.ok) {
-          l.warn(`${response} not ok for ${innerOutlineWUrl}`);
-          return DISCARD;
-        }
-        try {
-          return { text: await response.text(), outline: innerOutlineWUrl, };
-        }
-        catch (error) {
-          l.warn(`${error} when converting ${response} to text for ${innerOutlineWUrl}`);
-          return DISCARD;
-        }
-      },
-      innerOutlinesWUrl,
-    ))
-      .filter(function notDiscard(value,) {
-        return value !== DISCARD;
-      },);
-
-  l.debug(`innerOutlineWUrlTexts ${innerOutlineWUrlTexts[0]?.outline} ${innerOutlineWUrlTexts[0]?.text.slice(0, 100,)} * ${innerOutlineWUrlTexts.length}`);
-
-  const result = innerOutlineWUrlTexts
-    .map(function textToFeed(innerOutlineWUrlText,) {
-      if (innerOutlineWUrlText.outline.type === 'atom') {
-        try {
-          return { feed: parseAtomFeed(innerOutlineWUrlText.text,),
-            outline: innerOutlineWUrlText.outline, };
-        }
-        catch (error) {
-          l.warn(`${error} parseAtomFeed for ${innerOutlineWUrlText}`);
-          return DISCARD;
-        }
-      }
-      try {
-        return { feed: parseRssFeed(innerOutlineWUrlText.text,),
-          outline: innerOutlineWUrlText.outline, };
-      }
-      catch (error) {
-        l.warn(`${error} parseRssFeed for ${innerOutlineWUrlText}`);
+  type TextWOutline = { text: string; outline: Opml.Outline<string> & { xmlUrl: string; }; };
+  const textsWOutline: TextWOutline[] = (await mapIterableAsync(
+    async function fetchFeed(outline: Opml.Outline<string> & { xmlUrl: string; },) {
+      const response = await fetch(outline.xmlUrl,);
+      if (!response.ok) {
+        innerL.warn(`${outline.xmlUrl} responded ${String(response.status)}`);
         return DISCARD;
       }
-    },)
-    .filter(function notDiscard(value,) {
+      try {
+        return { text: await response.text(), outline, };
+      }
+      catch (error) {
+        innerL.warn(`text conversion failed for ${outline.xmlUrl}: ${JSON.stringify(error,)}`);
+        return DISCARD;
+      }
+    },
+    outlines,
+  ))
+    .filter(function notDiscard(value,): value is TextWOutline {
       return value !== DISCARD;
     },);
-
-  l.debug(`getFeeds ${result[0]} * ${result.length}`);
-
-  return result;
-}
-
-/**
- * Extracts the publication date from a feed.
- * Handles both RSS and Atom feed formats with appropriate date parsing.
- * @param feed - Feed object with outline metadata
- * @returns The publication date of the feed
- * @example
- * ```typescript
- * const feeds = await getFeeds(innerOutlinesWUrl);
- * const date = getFeedDate(feeds[0]);
- * ```
- * @see {@link z.coerce.date} for date parsing
- * @see {@link FeedWOutline} for the input type
- */
-function getFeedDate(feed: FeedWOutline,): Date {
-  l.debug(`getFeedDate`);
-  if (feed.outline.type === 'atom') {
-    const myFeed = feed.feed as ReturnType<typeof parseAtomFeed>;
-    return z.coerce.date().parse(myFeed.updated ?? new Date(0,),);
-  }
-  const myFeed = feed.feed as ReturnType<typeof parseRssFeed>;
-  return z.coerce.date().parse(myFeed.pubDate ?? new Date(0,),);
-}
-
-/**
- * Sorts feeds by their publication dates in descending order (newest first).
- * @param feeds - Array of feed objects with outlines
- * @returns Array of feeds sorted by publication date
- * @example
- * ```typescript
- * const feeds = await getFeeds(innerOutlinesWUrl);
- * const sortedFeeds = getSortedFeeds(feeds);
- * ```
- * @see {@link getFeedDate} for date extraction
- * @see {@link Array.toSorted} for sorting implementation
- */
-function getSortedFeeds(feeds: FeedWOutline[],): FeedWOutline[] {
-  l.debug(`getSortedFeeds`);
-  const result = feeds.toSorted(function(a, b,) {
-    return getFeedDate(b,).getTime() - getFeedDate(a,).getTime();
+  innerL.debug(`fetched ${String(textsWOutline.length)} feed texts`);
+  return textsWOutline.flatMap(function parse({ text, outline, },) {
+    const parser = outline.type === 'atom' ? parseAtomFeed : parseRssFeed;
+    try {
+      return [{ feed: parser(text,), outline, },];
+    }
+    catch (error) {
+      innerL.warn(`parse failed for ${outline.xmlUrl}: ${JSON.stringify(error,)}`);
+      return [];
+    }
   },);
-  l.debug(`getSortedFeeds ${result[0]} ${result.at(-1,)} * ${result.length}`);
-  return result;
 }
-
-const sortedFeeds: FeedWOutline[] = [];
 
 /**
- * Observable holding the current list of parsed and time-sorted feeds.
- * Updated whenever OPML-derived inner outlines with URLs change.
- * @see {@link onInnerOutlinesWUrlChange} for update trigger
+ * Extracts the publication date from a feed, falling back to epoch.
+ * @param feedWOutline - Feed with outline metadata
+ * @returns Parsed publication date
  */
-export const sortedFeedsObservable: {
-  value: FeedWOutline[];
-} = await createObservableAsync(sortedFeeds, onSortedFeedsChange,);
-
-/**
- * Reacts to changes in validated OPML inner outlines (with xmlUrl) and refreshes
- * {@link sortedFeedsObservable} with newly fetched and sorted feeds.
- * @param innerOutlinesWUrl - Inner outlines that include a valid `xmlUrl`
- * @returns Promise that resolves when the observable is updated
- * @see {@link getNewSortedFeeds} for the fetching and sorting pipeline
- */
-export async function onInnerOutlinesWUrlChange(
-  innerOutlinesWUrl: InnerOutlineWUrl[],
-): Promise<void> {
-  l.debug(`onInnerOutlinesWUrlChange`);
-
-  sortedFeedsObservable.value = await getNewSortedFeeds(innerOutlinesWUrl,);
-
-  l.debug(`onInnerOutlinesWUrlChange sortedFeeds ${sortedFeedsObservable.value.at(-1,)} * ${sortedFeedsObservable.value.length}`);
+function extractDate({ feed, outline, }: FeedWOutline,): Date {
+  if (outline.type === 'atom') {
+    const atomFeed = feed as ReturnType<typeof parseAtomFeed>;
+    return z.coerce.date().parse(atomFeed.updated ?? new Date(0,),);
+  }
+  const rssFeed = feed as ReturnType<typeof parseRssFeed>;
+  return z.coerce.date().parse(rssFeed.pubDate ?? new Date(0,),);
 }
 
-async function getNewSortedFeeds(
-  innerOutlinesWUrl: InnerOutlineWUrl[],
-): Promise<FeedWOutline[]> {
-  l.debug(`getNewSortedFeeds`);
-  const result = getSortedFeeds(await getFeeds(innerOutlinesWUrl,),);
-  l.debug(`getNewSortedFeeds ${result.at(-1,)} * ${result.length}`);
-  return result;
-}
+//endregion Feed fetching and sorting

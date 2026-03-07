@@ -32,6 +32,9 @@ coreutils = "latest"
 "cargo:fd-find" = "latest"
 ripgrep = "latest"
 
+# Replacing strings
+"cargo:fastmod" = "latest"
+
 # Needed by some packages that depend on Node APIs
 node = "latest"
 

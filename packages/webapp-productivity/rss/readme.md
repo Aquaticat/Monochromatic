@@ -1,48 +1,53 @@
 # RSS Reader
 
-A RSS/Atom feed reader that converts feeds to HTML interface with real-time updates.
+An RSS/Atom feed reader that converts feeds to an HTML interface with memoized updates.
 
 ## Features
 
-- **Multi-format Support**: Reads both RSS and Atom feeds
-- **OPML Integration**: Configure feeds using OPML files
-- **Real-time Updates**: Automatic feed refreshing with rate limiting
-- **Clean Interface**: Minimalist HTML/CSS interface for reading feeds
-- **Embedded Content**: Safe rendering of feed content in iframes
-- **API Endpoints**: RESTful API for feed management and updates
+- **Multi-format support** -- reads both RSS and Atom feeds
+- **OPML integration** -- configure feeds using OPML files
+- **Memoized pipeline** -- time-bucketed and content-derived cache invalidation avoids redundant fetches
+- **Embedded content** -- safe rendering of feed descriptions in sandboxed iframes
+- **Auto-dismiss** -- items scrolled past are automatically marked as ignored
 
 ## Architecture
 
-The RSS reader follows a reactive architecture with observable data streams:
+Pull-based memoized pipeline triggered on each page request:
 
 ```
-OPML Files → Outline Parser → Feed Fetcher → Item Processor → HTML Generator → Client
+OPML URLs -> Fetch OPML texts -> Parse outlines -> Fetch feeds -> Sort items -> Filter ignored -> Render HTML
 ```
 
-### Core Components
+Two memoize layers with distinct salt strategies:
 
-1. **OPML Parser** (`opmls.ts`, `outline.ts`) - Reads and parses OPML configuration files
-2. **Feed Processor** (`feed.ts`) - Fetches and parses RSS/Atom feeds
-3. **Item Handler** (`item.ts`) - Processes individual feed items and normalizes data
-4. **HTML Generator** (`html.ts`) - Creates the web interface with Preact
-5. **Asset Manager** (`asset.ts`) - Manages CSS/JS assets for the interface
-6. **API Server** (`index.ts`) - Provides HTTP endpoints for feed management
+- **Fetch layer** -- time-bucketed salt (`date % interval`), so feeds are re-fetched only when the interval window advances
+- **Render layer** -- salt combines fetch time bucket + ignore file content, so rendering updates when either feeds or ignore list change
+
+### Core modules
+
+- **opmls.ts** -- reads and validates OPML source URLs from environment
+- **outline.ts** -- fetches OPML files and extracts feed outlines
+- **feed.ts** -- fetches and parses RSS/Atom feeds
+- **item.ts** -- extracts, normalizes, and sorts feed items
+- **html.ts** -- renders items to HTML, filtering out ignored entries
+- **interval.ts** -- configurable time-bucket for fetch cache invalidation
+- **index.ts** -- memoized pipeline orchestration and HTTP server
 
 ## Configuration
 
-### Environment Variables
+### Environment variables
 
 Create a `.env` file in the project root:
 
 ```bash
 # Comma-separated list of OPML file URLs
-OPMLS=file://packages/site/rss/src/monitor.opml
-PORT=4112
+OPMLS=file://packages/webapp-productivity/rss/src/monitor.opml
+RSS_PORT=4112
+# Fetch cache interval in milliseconds (default: 300000 = 5 minutes)
+RSS_FETCH_INTERVAL_MS=300000
 ```
 
-### OPML Format
-
-The reader expects OPML files with the following structure:
+### OPML format
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -58,33 +63,21 @@ The reader expects OPML files with the following structure:
 </opml>
 ```
 
-## API Endpoints
+## API endpoints
 
-- `GET /` - Serve the RSS reader interface
-- `GET /api/updateFeed/new` - Trigger manual feed update
-- `GET /api/updateFeed/lastUpdated` - Get last update timestamp
-- `GET /swagger` - API documentation
+- `GET /` -- serve the RSS reader interface
+- `POST /api/ignore/new` -- mark a feed item as ignored
 
 ## Usage
 
 1. Configure your OPML file with desired RSS/Atom feeds
 2. Set the `OPMLS` environment variable to point to your OPML file(s)
-3. Start the server: `pnpm start`
+3. Start the server: `mise run start`
 4. Visit `http://localhost:4112` to view your feeds
 
-## Monitoring
+## Technical details
 
-The default configuration includes monitoring for Anthropic Status incidents:
-
-```xml
-<outline text="Anthropic Status - Incident History" type="rss" xmlUrl="https://status.anthropic.com/history.rss" htmlUrl="https://status.anthropic.com/"/>
-```
-
-## Technical Details
-
-- Built with Elysia.js for the API server
-- Uses Preact for HTML generation
-- Implements rate limiting (100 seconds between updates)
+- Built with Bun.serve for the HTTP server
+- Uses h-html for string-based HTML generation
 - Supports both HTTP and file-based OPML sources
-- Automatic asset reloading during development
-- Comprehensive logging for debugging
+- Salted memoize caching with automatic invalidation

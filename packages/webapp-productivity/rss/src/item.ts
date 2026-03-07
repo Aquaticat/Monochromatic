@@ -1,282 +1,155 @@
-import { $ as createObservableAsync, } from '@monochromatic-dev/module-es/create-observable-async';
+// 154 lines: extraction, normalization, and sorting form one Item->ItemWDate pipeline; splitting loses type locality
+import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+import type {
+  Atom,
+  Opml,
+} from 'feedsmith';
 import {
   parseAtomFeed,
   parseRssFeed,
 } from 'feedsmith';
-import type {
-  Category,
-  Link,
-} from 'node_modules/feedsmith/dist/feeds/atom/parse/types';
-import type { Outline, } from 'node_modules/feedsmith/dist/opml/parse/types';
 import { z, } from 'zod/v4-mini';
 import type { FeedWOutline, } from './feed.ts';
-import { onItemsChange, } from './html.ts';
-import { l, } from './log.ts';
+import { l as parentLogger, } from './log.ts';
+
+const l = tagged({ tag: 'item', l: parentLogger, },);
+
+//region Item type definitions
 
 /**
- * Type definition for individual feed items.
- * Combines feed metadata with individual item data.
+ * Individual feed item with its parent feed metadata and OPML outline.
  */
 type Item = {
   feed: Omit<ReturnType<typeof parseRssFeed | typeof parseAtomFeed>, 'entries' | 'items'>;
-  outline: Outline;
+  outline: Opml.Outline<string>;
   item: NonNullable<
     ReturnType<typeof parseRssFeed>['items'] | ReturnType<typeof parseAtomFeed>['entries']
   >[number];
 };
 
 /**
- * Extracts individual items from feeds.
- * Handles both RSS and Atom feed formats with appropriate item extraction.
- * @param feeds - Array of feed objects with outlines
- * @returns Array of individual feed items
- * @example
- * ```typescript
- * const feeds = await getFeeds(innerOutlinesWUrl);
- * const items = getItems(feeds);
- * ```
- * @see {@link FeedWOutline} for the input type
- * @see {@link parseRssFeed} for RSS item structure
- * @see {@link parseAtomFeed} for Atom entry structure
- */
-function getItems(feeds: FeedWOutline[],): Item[] {
-  l.debug(`getItems`);
-  const DISCARD = Symbol('discard',);
-  const result: Item[] = feeds
-    .map(function _getItems({ feed, outline, },) {
-      if (outline.type === 'atom') {
-        const myFeed = feed as ReturnType<typeof parseAtomFeed>;
-        const items = myFeed.entries;
-        if (!items) {
-          l.warn(`${items} not found for atom feed ${feed}`);
-          return DISCARD;
-        }
-        if (items.length === 0) {
-          l.warn(`${items} empty for atom feed ${feed}`);
-          return DISCARD;
-        }
-        return items.map(function appendMetadata(item,) {
-          return { feed: { ...myFeed, entries: DISCARD, }, outline, item, };
-        },);
-      }
-      const myFeed = feed as ReturnType<typeof parseRssFeed>;
-      const items = myFeed.items;
-      if (!items) {
-        l.warn(`${items} not found for rss feed ${feed}`);
-        return DISCARD;
-      }
-      if (items.length === 0) {
-        l.warn(`${items} empty for rss feed ${feed}`);
-        return DISCARD;
-      }
-      return items.map(function appendMetadata(item,) {
-        return { feed: { ...myFeed, items: DISCARD, }, outline, item, };
-      },);
-    },)
-    .filter(function notDiscard(value,) {
-      return value !== DISCARD;
-    },)
-    .flat();
-
-  l.debug(`getItems ${result[0]} * ${result.length}`);
-
-  return result;
-}
-
-/**
- * Type definition for normalized feed items.
- * Standardizes item structure between RSS and Atom formats.
+ * Feed item normalized to RSS-like structure for uniform rendering.
+ * Atom entries are converted to match RSS item shape.
  */
 type NormalizedItem = {
   feed: Omit<ReturnType<typeof parseRssFeed>, 'items'>;
   originalFeed?: Omit<ReturnType<typeof parseRssFeed | typeof parseAtomFeed>,
     'entries' | 'items'>;
-  outline: Outline;
-  item: NonNullable<
-    ReturnType<typeof parseRssFeed>['items']
-  >[number];
+  outline: Opml.Outline<string>;
+  item: NonNullable<ReturnType<typeof parseRssFeed>['items']>[number];
   originalItem?: NonNullable<
     ReturnType<typeof parseAtomFeed>['entries'] | ReturnType<typeof parseRssFeed>['items']
   >[number];
 };
 
+/**
+ * Atom feed item narrowed to its specific types for normalization.
+ */
 type AtomItem = {
   feed: Omit<ReturnType<typeof parseAtomFeed>, 'entries'>;
-  outline: Outline;
+  outline: Opml.Outline<string>;
   item: NonNullable<ReturnType<typeof parseAtomFeed>['entries']>[number];
 };
 
-/**
- * Normalizes feed items to a common structure.
- * Converts Atom items to match RSS item structure for consistent processing.
- * @param item - Feed item to normalize
- * @returns Normalized feed item
- * @example
- * ```typescript
- * const items = getItems(feeds);
- * const normalizedItems = items.map(getNormalizedItem);
- * ```
- * @see {@link Item} for the input type
- * @see {@link NormalizedItem} for the output type
- */
-function getNormalizedItem(item: Item,): NormalizedItem {
-  l.debug(`getNormalizedItem`);
-  if (item.outline.type === 'atom') {
-    const myItem = item as AtomItem;
-    const newItem = getNewItem(myItem,);
-
-    const newFeed = getNewFeed(myItem,);
-
-    const result = { ...item, feed: Object.fromEntries(newFeed,), item: Object
-      .fromEntries(newItem,), originalItem: item
-        .item, originalFeed: item.feed, };
-    l.debug(`getNormalizedItem ${result}`);
-    return result;
-  }
-
-  l.debug(`getNormalizedItem ${item}`);
-  return item as NormalizedItem;
-
-  function getNewFeed(
-    myItem: AtomItem,
-  ) {
-    const newFeed = new Map<string, string>();
-    const title = myItem.feed.title;
-    const subtitle = myItem.feed.subtitle;
-
-    if (title)
-      newFeed.set('title', title,);
-    if (subtitle)
-      newFeed.set('subtitle', subtitle,);
-    return newFeed;
-  }
-
-  function getNewItem(
-    myItem: AtomItem,
-  ) {
-    const categories = myItem.item.categories;
-    const links = myItem.item.links;
-    const title = myItem.item.title;
-    const published = myItem.item.published;
-    const updated = myItem.item.updated;
-    const content = myItem.item.content;
-    const id = myItem.item.id;
-
-    const link = links?.at(0,);
-    const description = content;
-    const pubDate = updated ?? published;
-    const guid = id;
-
-    const newItem = new Map<string, string | Link | Category[]>();
-    if (title)
-      newItem.set('title', title,);
-
-    if (link)
-      newItem.set('link', link,);
-
-    if (description)
-      newItem.set('description', description,);
-
-    if (categories)
-      newItem.set('categories', categories,);
-
-    if (pubDate)
-      newItem.set('pubDate', pubDate,);
-    if (guid)
-      newItem.set('guid', guid,);
-    return newItem;
-  }
-}
-
-/**
- * Type definition for feed items with extracted publication dates.
- * Extends normalized items with a dedicated date property.
- */
+/** Normalized item with an extracted publication date for sorting. */
 export type ItemWDate = NormalizedItem & { pubDateDate: Date; };
 
-/**
- * Extracts and parses the publication date from a normalized item.
- * @param item - Normalized feed item
- * @returns Feed item with extracted publication date
- * @example
- * ```typescript
- * const normalizedItems = items.map(getNormalizedItem);
- * const itemsWDate = normalizedItems.map(getItemWDate);
- * ```
- * @see {@link NormalizedItem} for the input type
- * @see {@link ItemWDate} for the output type
- * @see {@link z.coerce.date} for date parsing
- */
-function getItemWDate(item: NormalizedItem,): ItemWDate {
-  l.debug(`getItemWDate`);
-  const pubDateDate = z.coerce.date().parse(item.item.pubDate ?? new Date(0,),);
-  const result = { ...item, pubDateDate, };
-  l.debug(`getItemWDate ${result}`);
-  return result;
-}
+//endregion Item type definitions
+
+//region Item extraction and normalization -- Converts feed entries to a uniform dated format
 
 /**
- * Sorts feed items by their publication dates in descending order (newest first).
- * @param itemsWDate - Array of feed items with publication dates
- * @returns Array of items sorted by publication date
+ * Extracts, normalizes, dates, and sorts all items from sorted feeds.
+ * @param feeds - Date-sorted feeds with outline metadata
+ * @returns Items sorted by publication date (newest first)
  * @example
- * ```typescript
- * const itemsWDate = normalizedItems.map(getItemWDate);
- * const sortedItems = getSortedItems(itemsWDate);
+ * ```ts
+ * const items = getSortedItems(await getSortedFeeds(outlines));
  * ```
- * @see {@link ItemWDate} for the input type
- * @see {@link Array.toSorted} for sorting implementation
  */
-function getSortedItems(itemsWDate: ItemWDate[],): ItemWDate[] {
-  l.debug(`getSortedItems`);
-  const result = itemsWDate.toSorted(function byDate(a, b,) {
-    const aDate = a.pubDateDate;
-    const bDate = b.pubDateDate;
-    return bDate.getTime() - aDate.getTime();
+export function getSortedItems(feeds: FeedWOutline[],): ItemWDate[] {
+  const innerL = tagged({ tag: getSortedItems.name, l, },);
+  const items = extractItems(feeds,);
+  const normalized = items.map(getNormalizedItem,);
+  const dated = normalized.map(function addDate(item,) {
+    return {
+      ...item,
+      pubDateDate: z.coerce.date().parse(item.item.pubDate ?? new Date(0,),),
+    };
   },);
-  l.debug(`getSortedItems ${result[0]} * ${result.length}`);
+  const result = dated.toSorted(function byDate(itemA, itemB,) {
+    return itemB.pubDateDate.getTime() - itemA.pubDateDate.getTime();
+  },);
+  innerL.debug(`${String(result.length)} sorted items`);
   return result;
 }
 
 /**
- * Current collection of sorted feed items.
- * Updated automatically when feeds change.
+ * Extracts individual items from feeds, handling RSS items and Atom entries.
+ * @param feeds - Feeds with outline metadata
+ * @returns Flat array of items with parent feed metadata
  */
-const sortedItems: ItemWDate[] = [];
-
-/**
- * Observable holding the current list of normalized, dated, and sorted items.
- * Updated by {@link onSortedFeedsChange} when feeds change.
- * @see {@link getNewSortedItems} for computation pipeline
- */
-export const sortedItemsObservable: {
-  value: ItemWDate[];
-} = await createObservableAsync(sortedItems, onItemsChange,);
-
-/**
- * Recomputes sorted items from provided feeds and updates {@link sortedItemsObservable}.
- * @param feeds - Feeds with outlines used to extract and normalize items
- * @returns void
- * @see {@link getNewSortedItems} for extraction, normalization, dating, and sorting
- */
-export function onSortedFeedsChange(
-  feeds: FeedWOutline[],
-): void {
-  l.debug(`onSortedFeedsChange`);
-
-  sortedItemsObservable.value = getNewSortedItems(feeds,);
-
-  l.debug(`onSortedFeedsChange sortedItems ${sortedItemsObservable.value.at(-1,)} * ${sortedItemsObservable.value.length}`);
-}
-
-function getNewSortedItems(
-  feeds: FeedWOutline[],
-): ItemWDate[] {
-  l.debug(`getNewSortedItems`);
-  const items = getItems(feeds,);
-  const normalizedItems = items.map(item => getNormalizedItem(item,));
-  const itemsWDate = normalizedItems.map(normalizedItem => getItemWDate(normalizedItem,));
-  const result = getSortedItems(itemsWDate,);
-  l.debug(`getNewSortedItems ${result.at(-1,)} * ${result.length}`);
+function extractItems(feeds: FeedWOutline[],): Item[] {
+  const innerL = tagged({ tag: extractItems.name, l, },);
+  const result: Item[] = feeds.flatMap(function extractFeedItems({ feed, outline, },) {
+    if (outline.type === 'atom') {
+      const atomFeed = feed as ReturnType<typeof parseAtomFeed>;
+      const { entries, ...feedWithoutEntries } = atomFeed;
+      if (!entries || entries.length === 0) {
+        innerL.warn(`atom feed ${outline.text ?? 'unnamed'} has no entries`);
+        return [];
+      }
+      return entries.map(function wrapEntry(entry,) {
+        return { feed: feedWithoutEntries, outline, item: entry, };
+      },);
+    }
+    const rssFeed = feed as ReturnType<typeof parseRssFeed>;
+    const { items, ...feedWithoutItems } = rssFeed;
+    if (!items || items.length === 0) {
+      innerL.warn(`rss feed ${outline.text ?? 'unnamed'} has no items`);
+      return [];
+    }
+    return items.map(function wrapItem(rssItem,) {
+      return { feed: feedWithoutItems, outline, item: rssItem, };
+    },);
+  },);
+  innerL.debug(`extracted ${String(result.length)} items`);
   return result;
 }
+
+/**
+ * Normalizes an item to RSS-like structure.
+ * Atom entries are converted so downstream rendering handles one shape.
+ * @param item - Raw feed item (RSS or Atom)
+ * @returns Normalized item in RSS-compatible format
+ */
+function getNormalizedItem(item: Item,): NormalizedItem {
+  if (item.outline.type !== 'atom') return item as NormalizedItem;
+
+  const atomItem = item as AtomItem;
+  const { title, subtitle, } = atomItem.feed;
+  const newFeed: Record<string, string> = {};
+  if (title) newFeed.title = title;
+  if (subtitle) newFeed.subtitle = subtitle;
+
+  const atomEntry = atomItem.item;
+  const link = atomEntry.links?.at(0,);
+  const newItem: Record<string, string | Atom.Link<string> | Atom.Category[]> = {};
+  if (atomEntry.title) newItem.title = atomEntry.title;
+  if (link) newItem.link = link;
+  if (atomEntry.content) newItem.description = atomEntry.content;
+  if (atomEntry.categories) newItem.categories = atomEntry.categories;
+  const pubDate = atomEntry.updated ?? atomEntry.published;
+  if (pubDate) newItem.pubDate = pubDate;
+  if (atomEntry.id) newItem.guid = atomEntry.id;
+
+  return {
+    ...item,
+    feed: newFeed,
+    item: newItem,
+    originalItem: item.item,
+    originalFeed: item.feed,
+  };
+}
+
+//endregion Item extraction and normalization

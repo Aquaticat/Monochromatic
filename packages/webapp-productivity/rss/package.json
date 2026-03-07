@@ -9,10 +9,8 @@
   "dependencies": {
     "@monochromatic-dev/module-es": "workspace:*",
     "zod": "catalog:",
-    "@anthropic-ai/sdk": "catalog:",
     "feedsmith": "catalog:",
-    "find-up": "catalog:",
-    "watcher": "catalog:"
+    "find-up": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",
