@@ -4,6 +4,7 @@
    Components reference only these -- never raw hex values. */
 
 :root {
+  color-scheme: light dark;
   --fg: #1a1a1a;
   --fg-muted: #555;
   --fg-faint: #888;

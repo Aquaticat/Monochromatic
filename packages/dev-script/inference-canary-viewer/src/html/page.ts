@@ -17,7 +17,9 @@ export function renderPage(body: string, title: string): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>${title}</title>
+  <style>html { background-color: light-dark(#fafafa, #1a1a1a) }</style>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
