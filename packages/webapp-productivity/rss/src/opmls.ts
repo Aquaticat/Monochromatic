@@ -1,8 +1,8 @@
-import { createObservableAsync, } from '@monochromatic-dev/module-es';
+import { $ as createObservableAsync, } from '@monochromatic-dev/module-es/create-observable-async';
 import { findUp, } from 'find-up';
 import Watcher from 'watcher';
 import { z, } from 'zod/v4-mini';
-import { lOpmls as l, } from './log.ts';
+import { l, } from './log.ts';
 import { onOpmlsChange, } from './outline.ts';
 
 /**
@@ -55,8 +55,8 @@ export const opmlsObservable: {
 } = await createObservableAsync(opmls, onOpmlsChange,);
 
 function updateOpmls(): void {
-  l.debug`updateOpmls`;
+  l.debug(`updateOpmls`);
   opmlsObservable.value = OPMLS_SCHEMA
     .parse(process.env.OPMLS?.split(',',) ?? [],);
-  l.debug`updateOpmls ${opmlsObservable.value}`;
+  l.debug(`updateOpmls ${opmlsObservable.value}`);
 }

@@ -1,9 +1,9 @@
-import { notNullishOrThrow, } from '@monochromatic-dev/module-es';
+import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
 import { Window, } from 'happy-dom';
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import Watcher from 'watcher';
-import { lAsset as l, } from './log.ts';
+import { l, } from './log.ts';
 import {
   INDEX_HTML_PATH,
   STATIC_PATH,
@@ -26,7 +26,7 @@ import {
 function getAssetSubpaths(
   indexHtmlString: string,
 ): { jsSubpath: string; cssSubpath: string; } {
-  l.debug`getAssetSubpaths`;
+  l.debug(`getAssetSubpaths`);
   const window = new Window();
   const document = window.document;
   document.write(indexHtmlString,);
@@ -37,15 +37,14 @@ function getAssetSubpaths(
     .happyDOM
     .abort()
     .then(function logSuccess() {
-      l.debug`success releasing happy dom`;
+      l.debug(`success releasing happy dom`);
     },)
     .catch(function logError() {
-      l
-        .debug`failed to release happy dom. This error has no effects other than taking up a bit more memory.`;
+      l.debug(`failed to release happy dom. This error has no effects other than taking up a bit more memory.`);
     },);
 
   const result = { cssSubpath, jsSubpath, };
-  l.debug`getAssetSubpaths ${result}`;
+  l.debug(`getAssetSubpaths ${result}`);
   return result;
 }
 
@@ -67,11 +66,11 @@ function getAssetSubpaths(
 async function getAssetStrings(
   assetSubpaths: { jsSubpath: string; cssSubpath: string; },
 ): Promise<{ js: string; css: string; }> {
-  l.debug`getAssetStrings`;
+  l.debug(`getAssetStrings`);
   const css = await readFile(join(STATIC_PATH, assetSubpaths.cssSubpath,), 'utf8',);
   const js = await readFile(join(STATIC_PATH, assetSubpaths.jsSubpath,), 'utf8',);
   const result = { css, js, };
-  l.debug`getAssetStrings ${result.css.slice(0, 100,)} ${result.js.slice(0, 100,)}`;
+  l.debug(`getAssetStrings ${result.css.slice(0, 100,)} ${result.js.slice(0, 100,)}`);
   return result;
 }
 
@@ -88,7 +87,7 @@ async function getAssetStrings(
  * @see {@link readFile} for the file reading implementation
  */
 async function getIndexHtmlString(): Promise<string> {
-  l.debug`getIndexHtmlString`;
+  l.debug(`getIndexHtmlString`);
   return await readFile(INDEX_HTML_PATH, 'utf8',);
 }
 
@@ -122,7 +121,7 @@ export const indexHtmlWatcher: Watcher = new Watcher(INDEX_HTML_PATH, {
  * @see {@link getIndexHtmlString} for reading the HTML file
  */
 export async function updateCssJs(): Promise<void> {
-  l.debug`updateCssJs`;
+  l.debug(`updateCssJs`);
   const assetStrings = await getAssetStrings(
     getAssetSubpaths(await getIndexHtmlString(),),
   );
@@ -144,9 +143,7 @@ export async function updateCssJs(): Promise<void> {
     </head>
     <body>`;
 
-  l.debug`updateCssJs ${hash} ${assetStrings.js.slice(0, 100,)} ${
-    assetStrings.css.slice(0, 100,)
-  }`;
+  l.debug(`updateCssJs ${hash} ${assetStrings.js.slice(0, 100,)} ${assetStrings.css.slice(0, 100,)}`);
 }
 
 /**

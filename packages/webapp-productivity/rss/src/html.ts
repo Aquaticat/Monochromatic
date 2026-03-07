@@ -1,8 +1,6 @@
-import {
-  binary,
-  createObservableAsync,
-  mapIterableAsync,
-} from '@monochromatic-dev/module-es';
+import { $ as binary, } from '@monochromatic-dev/module-es/binary';
+import { $ as createObservableAsync, } from '@monochromatic-dev/module-es/create-observable-async';
+import { $ as mapIterableAsync, } from '@monochromatic-dev/module-es/map-iterable-async';
 import { readFile, } from 'node:fs/promises';
 import { readdir, } from 'node:fs/promises';
 import { h, } from 'preact';
@@ -13,7 +11,7 @@ import { css, } from './asset.ts';
 
 import type { Dirent, } from 'node:fs';
 import { join, } from 'node:path';
-import { lHtml as l, } from './log.ts';
+import { l, } from './log.ts';
 import { IGNORE_PATH, } from './path.ts';
 
 const LIMIT = 100;
@@ -40,7 +38,7 @@ export const INDEX_HTML_END = '</body></html>';
  * @see {@link render} for HTML rendering
  */
 function itemToFeed({ item, pubDateDate, feed, }: ItemWDate, index: number,) {
-  l.debug`itemToFeed ${item} ${pubDateDate} ${index}`;
+  l.debug(`itemToFeed ${item} ${pubDateDate} ${index}`);
   return h(
     'li',
     { value: index, class: 'feed', },
@@ -123,9 +121,9 @@ export const lastUpdatedObservable: {
   value: Date;
 } = await createObservableAsync(lastUpdated,
   function onLastUpdatedUpdate(lastUpdated, old,) {
-    l.debug`onLastUpdatedUpdate ${lastUpdated} ${old}`;
+    l.debug(`onLastUpdatedUpdate ${lastUpdated} ${old}`);
     if (lastUpdated.getTime() - old.getTime() < MIN_INTERVAL)
-      l.warn`onLastUpdatedUpdate successfully triggered, but too soon.`;
+      l.warn(`onLastUpdatedUpdate successfully triggered, but too soon.`);
   },);
 
 /**
@@ -136,7 +134,7 @@ export const indexHtmlBodyObservable: {
   value: string;
 } = await createObservableAsync(indexHtmlBody,
   function onIndexHtmlUpdate(indexHtml: string,) {
-    l.debug`onIndexHtmlUpdate ${indexHtml.slice(0, 100,)} ... ${indexHtml.slice(-100,)}`;
+    l.debug(`onIndexHtmlUpdate ${indexHtml.slice(0, 100,)} ... ${indexHtml.slice(-100,)}`);
     lastUpdatedObservable.value = new Date();
   },);
 
@@ -146,22 +144,22 @@ export const indexHtmlBodyObservable: {
  * @returns Promise that resolves when rendering completes and observable is updated
  */
 export async function onItemsChange(items: ItemWDate[],): Promise<void> {
-  l.debug`onItemsChange`;
+  l.debug(`onItemsChange`);
 
   indexHtmlBodyObservable.value = await getNewIndexHtmlBody(items,);
 
-  l.debug`onItemsChange `;
+  l.debug(`onItemsChange `);
 }
 
 async function getNewIndexHtmlBody(items: ItemWDate[],): Promise<string> {
-  l.debug`getNewIndexHtmlBody`;
+  l.debug(`getNewIndexHtmlBody`);
 
   const jsons = await getJsons();
 
   const filteredItems = items.filter(function notInJsons(item,) {
     const linkInJsons = jsons.some(function linkEqual(json,) {
       if (json.link && item.item.link) {
-        l.trace`json.link ${json.link} item.item.link ${item.item.link}`;
+        l.trace(`json.link ${json.link} item.item.link ${item.item.link}`);
         return item.item.link === json.link;
       }
       return false;
@@ -169,7 +167,7 @@ async function getNewIndexHtmlBody(items: ItemWDate[],): Promise<string> {
     return ![linkInJsons,].some(Boolean,);
   },);
 
-  l.debug`filteredItems ${filteredItems.length} items ${items.length}`;
+  l.debug(`filteredItems ${filteredItems.length} items ${items.length}`);
 
   const result = render(
     h(
@@ -178,12 +176,12 @@ async function getNewIndexHtmlBody(items: ItemWDate[],): Promise<string> {
       filteredItems.slice(0, LIMIT,).map(binary(itemToFeed,),),
     ),
   );
-  l.debug`getNewIndexHtmlBody ${result.slice(0, 100,)} ... ${result.slice(-100,)}`;
+  l.debug(`getNewIndexHtmlBody ${result.slice(0, 100,)} ... ${result.slice(-100,)}`);
 
   return result;
 }
 async function getJsons() {
-  l.debug`getJsons`;
+  l.debug(`getJsons`);
   const filesInDir = await readdir(IGNORE_PATH, { withFileTypes: true, },);
   const jsonls = await mapIterableAsync(
     async function getContent(fileInDir: Dirent,) {
@@ -208,13 +206,13 @@ async function getJsons() {
         return JSON.parse(jsonString.trim(),) as Record<string, string>;
       }
       catch (error) {
-        l.warn`can't parse json ${jsonString} ${JSON.stringify(error,)}`;
+        l.warn(`can't parse json ${jsonString} ${JSON.stringify(error,)}`);
         return DISCARD;
       }
     },)
     .filter(function notDiscard(value,) {
       return value !== DISCARD;
     },);
-  l.debug`getJsons ${jsons.at(-1,)} * ${jsons.length}`;
+  l.debug(`getJsons ${jsons.at(-1,)} * ${jsons.length}`);
   return jsons;
 }

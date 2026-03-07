@@ -1,7 +1,5 @@
-import {
-  createObservableAsync,
-  mapIterableAsync,
-} from '@monochromatic-dev/module-es';
+import { $ as createObservableAsync, } from '@monochromatic-dev/module-es/create-observable-async';
+import { $ as mapIterableAsync, } from '@monochromatic-dev/module-es/map-iterable-async';
 import {
   parseAtomFeed,
   parseRssFeed,
@@ -9,7 +7,7 @@ import {
 import type { Outline, } from 'node_modules/feedsmith/dist/opml/parse/types';
 import { z, } from 'zod/v4-mini';
 import { onSortedFeedsChange, } from './item.ts';
-import { lFeed as l, } from './log.ts';
+import { l, } from './log.ts';
 import type { InnerOutlineWUrl, } from './outline.ts';
 
 /**
@@ -38,7 +36,7 @@ export type FeedWOutline = {
 async function getFeeds(
   innerOutlinesWUrl: InnerOutlineWUrl[],
 ): Promise<FeedWOutline[]> {
-  l.debug`getFeeds`;
+  l.debug(`getFeeds`);
   const DISCARD = Symbol('discard',);
 
   const innerOutlineWUrlTexts: { text: string;
@@ -46,14 +44,14 @@ async function getFeeds(
       async function withText(innerOutlineWUrl: Outline & { xmlUrl: string; },) {
         const response = await fetch(innerOutlineWUrl.xmlUrl,);
         if (!response.ok) {
-          l.warn`${response} not ok for ${innerOutlineWUrl}`;
+          l.warn(`${response} not ok for ${innerOutlineWUrl}`);
           return DISCARD;
         }
         try {
           return { text: await response.text(), outline: innerOutlineWUrl, };
         }
         catch (error) {
-          l.warn`${error} when converting ${response} to text for ${innerOutlineWUrl}`;
+          l.warn(`${error} when converting ${response} to text for ${innerOutlineWUrl}`);
           return DISCARD;
         }
       },
@@ -63,9 +61,7 @@ async function getFeeds(
         return value !== DISCARD;
       },);
 
-  l.debug`innerOutlineWUrlTexts ${innerOutlineWUrlTexts[0]?.outline} ${
-    innerOutlineWUrlTexts[0]?.text.slice(0, 100,)
-  } * ${innerOutlineWUrlTexts.length}`;
+  l.debug(`innerOutlineWUrlTexts ${innerOutlineWUrlTexts[0]?.outline} ${innerOutlineWUrlTexts[0]?.text.slice(0, 100,)} * ${innerOutlineWUrlTexts.length}`);
 
   const result = innerOutlineWUrlTexts
     .map(function textToFeed(innerOutlineWUrlText,) {
@@ -75,7 +71,7 @@ async function getFeeds(
             outline: innerOutlineWUrlText.outline, };
         }
         catch (error) {
-          l.warn`${error} parseAtomFeed for ${innerOutlineWUrlText}`;
+          l.warn(`${error} parseAtomFeed for ${innerOutlineWUrlText}`);
           return DISCARD;
         }
       }
@@ -84,7 +80,7 @@ async function getFeeds(
           outline: innerOutlineWUrlText.outline, };
       }
       catch (error) {
-        l.warn`${error} parseRssFeed for ${innerOutlineWUrlText}`;
+        l.warn(`${error} parseRssFeed for ${innerOutlineWUrlText}`);
         return DISCARD;
       }
     },)
@@ -92,7 +88,7 @@ async function getFeeds(
       return value !== DISCARD;
     },);
 
-  l.debug`getFeeds ${result[0]} * ${result.length}`;
+  l.debug(`getFeeds ${result[0]} * ${result.length}`);
 
   return result;
 }
@@ -111,7 +107,7 @@ async function getFeeds(
  * @see {@link FeedWOutline} for the input type
  */
 function getFeedDate(feed: FeedWOutline,): Date {
-  l.debug`getFeedDate`;
+  l.debug(`getFeedDate`);
   if (feed.outline.type === 'atom') {
     const myFeed = feed.feed as ReturnType<typeof parseAtomFeed>;
     return z.coerce.date().parse(myFeed.updated ?? new Date(0,),);
@@ -133,11 +129,11 @@ function getFeedDate(feed: FeedWOutline,): Date {
  * @see {@link Array.toSorted} for sorting implementation
  */
 function getSortedFeeds(feeds: FeedWOutline[],): FeedWOutline[] {
-  l.debug`getSortedFeeds`;
+  l.debug(`getSortedFeeds`);
   const result = feeds.toSorted(function(a, b,) {
     return getFeedDate(b,).getTime() - getFeedDate(a,).getTime();
   },);
-  l.debug`getSortedFeeds ${result[0]} ${result.at(-1,)} * ${result.length}`;
+  l.debug(`getSortedFeeds ${result[0]} ${result.at(-1,)} * ${result.length}`);
   return result;
 }
 
@@ -162,20 +158,18 @@ export const sortedFeedsObservable: {
 export async function onInnerOutlinesWUrlChange(
   innerOutlinesWUrl: InnerOutlineWUrl[],
 ): Promise<void> {
-  l.debug`onInnerOutlinesWUrlChange`;
+  l.debug(`onInnerOutlinesWUrlChange`);
 
   sortedFeedsObservable.value = await getNewSortedFeeds(innerOutlinesWUrl,);
 
-  l.debug`onInnerOutlinesWUrlChange sortedFeeds ${
-    sortedFeedsObservable.value.at(-1,)
-  } * ${sortedFeedsObservable.value.length}`;
+  l.debug(`onInnerOutlinesWUrlChange sortedFeeds ${sortedFeedsObservable.value.at(-1,)} * ${sortedFeedsObservable.value.length}`);
 }
 
 async function getNewSortedFeeds(
   innerOutlinesWUrl: InnerOutlineWUrl[],
 ): Promise<FeedWOutline[]> {
-  l.debug`getNewSortedFeeds`;
+  l.debug(`getNewSortedFeeds`);
   const result = getSortedFeeds(await getFeeds(innerOutlinesWUrl,),);
-  l.debug`getNewSortedFeeds ${result.at(-1,)} * ${result.length}`;
+  l.debug(`getNewSortedFeeds ${result.at(-1,)} * ${result.length}`);
   return result;
 }

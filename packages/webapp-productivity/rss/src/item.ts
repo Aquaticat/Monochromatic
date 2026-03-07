@@ -1,4 +1,4 @@
-import { createObservableAsync, } from '@monochromatic-dev/module-es';
+import { $ as createObservableAsync, } from '@monochromatic-dev/module-es/create-observable-async';
 import {
   parseAtomFeed,
   parseRssFeed,
@@ -11,7 +11,7 @@ import type { Outline, } from 'node_modules/feedsmith/dist/opml/parse/types';
 import { z, } from 'zod/v4-mini';
 import type { FeedWOutline, } from './feed.ts';
 import { onItemsChange, } from './html.ts';
-import { lItem as l, } from './log.ts';
+import { l, } from './log.ts';
 
 /**
  * Type definition for individual feed items.
@@ -40,7 +40,7 @@ type Item = {
  * @see {@link parseAtomFeed} for Atom entry structure
  */
 function getItems(feeds: FeedWOutline[],): Item[] {
-  l.debug`getItems`;
+  l.debug(`getItems`);
   const DISCARD = Symbol('discard',);
   const result: Item[] = feeds
     .map(function _getItems({ feed, outline, },) {
@@ -48,11 +48,11 @@ function getItems(feeds: FeedWOutline[],): Item[] {
         const myFeed = feed as ReturnType<typeof parseAtomFeed>;
         const items = myFeed.entries;
         if (!items) {
-          l.warn`${items} not found for atom feed ${feed}`;
+          l.warn(`${items} not found for atom feed ${feed}`);
           return DISCARD;
         }
         if (items.length === 0) {
-          l.warn`${items} empty for atom feed ${feed}`;
+          l.warn(`${items} empty for atom feed ${feed}`);
           return DISCARD;
         }
         return items.map(function appendMetadata(item,) {
@@ -62,11 +62,11 @@ function getItems(feeds: FeedWOutline[],): Item[] {
       const myFeed = feed as ReturnType<typeof parseRssFeed>;
       const items = myFeed.items;
       if (!items) {
-        l.warn`${items} not found for rss feed ${feed}`;
+        l.warn(`${items} not found for rss feed ${feed}`);
         return DISCARD;
       }
       if (items.length === 0) {
-        l.warn`${items} empty for rss feed ${feed}`;
+        l.warn(`${items} empty for rss feed ${feed}`);
         return DISCARD;
       }
       return items.map(function appendMetadata(item,) {
@@ -78,7 +78,7 @@ function getItems(feeds: FeedWOutline[],): Item[] {
     },)
     .flat();
 
-  l.debug`getItems ${result[0]} * ${result.length}`;
+  l.debug(`getItems ${result[0]} * ${result.length}`);
 
   return result;
 }
@@ -120,7 +120,7 @@ type AtomItem = {
  * @see {@link NormalizedItem} for the output type
  */
 function getNormalizedItem(item: Item,): NormalizedItem {
-  l.debug`getNormalizedItem`;
+  l.debug(`getNormalizedItem`);
   if (item.outline.type === 'atom') {
     const myItem = item as AtomItem;
     const newItem = getNewItem(myItem,);
@@ -130,11 +130,11 @@ function getNormalizedItem(item: Item,): NormalizedItem {
     const result = { ...item, feed: Object.fromEntries(newFeed,), item: Object
       .fromEntries(newItem,), originalItem: item
         .item, originalFeed: item.feed, };
-    l.debug`getNormalizedItem ${result}`;
+    l.debug(`getNormalizedItem ${result}`);
     return result;
   }
 
-  l.debug`getNormalizedItem ${item}`;
+  l.debug(`getNormalizedItem ${item}`);
   return item as NormalizedItem;
 
   function getNewFeed(
@@ -208,10 +208,10 @@ export type ItemWDate = NormalizedItem & { pubDateDate: Date; };
  * @see {@link z.coerce.date} for date parsing
  */
 function getItemWDate(item: NormalizedItem,): ItemWDate {
-  l.debug`getItemWDate`;
+  l.debug(`getItemWDate`);
   const pubDateDate = z.coerce.date().parse(item.item.pubDate ?? new Date(0,),);
   const result = { ...item, pubDateDate, };
-  l.debug`getItemWDate ${result}`;
+  l.debug(`getItemWDate ${result}`);
   return result;
 }
 
@@ -228,13 +228,13 @@ function getItemWDate(item: NormalizedItem,): ItemWDate {
  * @see {@link Array.toSorted} for sorting implementation
  */
 function getSortedItems(itemsWDate: ItemWDate[],): ItemWDate[] {
-  l.debug`getSortedItems`;
+  l.debug(`getSortedItems`);
   const result = itemsWDate.toSorted(function byDate(a, b,) {
     const aDate = a.pubDateDate;
     const bDate = b.pubDateDate;
     return bDate.getTime() - aDate.getTime();
   },);
-  l.debug`getSortedItems ${result[0]} * ${result.length}`;
+  l.debug(`getSortedItems ${result[0]} * ${result.length}`);
   return result;
 }
 
@@ -262,23 +262,21 @@ export const sortedItemsObservable: {
 export function onSortedFeedsChange(
   feeds: FeedWOutline[],
 ): void {
-  l.debug`onSortedFeedsChange`;
+  l.debug(`onSortedFeedsChange`);
 
   sortedItemsObservable.value = getNewSortedItems(feeds,);
 
-  l.debug`onSortedFeedsChange sortedItems ${
-    sortedItemsObservable.value.at(-1,)
-  } * ${sortedItemsObservable.value.length}`;
+  l.debug(`onSortedFeedsChange sortedItems ${sortedItemsObservable.value.at(-1,)} * ${sortedItemsObservable.value.length}`);
 }
 
 function getNewSortedItems(
   feeds: FeedWOutline[],
 ): ItemWDate[] {
-  l.debug`getNewSortedItems`;
+  l.debug(`getNewSortedItems`);
   const items = getItems(feeds,);
   const normalizedItems = items.map(item => getNormalizedItem(item,));
   const itemsWDate = normalizedItems.map(normalizedItem => getItemWDate(normalizedItem,));
   const result = getSortedItems(itemsWDate,);
-  l.debug`getNewSortedItems ${result.at(-1,)} * ${result.length}`;
+  l.debug(`getNewSortedItems ${result.at(-1,)} * ${result.length}`);
   return result;
 }

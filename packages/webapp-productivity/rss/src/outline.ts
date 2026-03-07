@@ -1,8 +1,6 @@
-import {
-  createObservable,
-  mapIterableAsync,
-  notNullishOrThrow,
-} from '@monochromatic-dev/module-es';
+import { $ as createObservable, } from '@monochromatic-dev/module-es/create-observable';
+import { $ as mapIterableAsync, } from '@monochromatic-dev/module-es/map-iterable-async';
+import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
 import {
   type Opml,
   parseOpml,
@@ -16,7 +14,7 @@ import {
 } from 'path';
 import { z, } from 'zod/v4-mini';
 import { onInnerOutlinesWUrlChange, } from './feed.ts';
-import { lOutline as l, } from './log.ts';
+import { l, } from './log.ts';
 import {
   DOT_ENV_PATH,
   OPMLS_SCHEMA,
@@ -36,7 +34,7 @@ import {
  * @see {@link readFile} for file reading
  */
 async function getOPMLTexts(opmls: z.infer<typeof OPMLS_SCHEMA>,): Promise<string[]> {
-  l.debug`getOPMLTexts`;
+  l.debug(`getOPMLTexts`);
   const DISCARD = Symbol('discard',);
   const result = (await mapIterableAsync(
     async function isResponding(
@@ -45,14 +43,14 @@ async function getOPMLTexts(opmls: z.infer<typeof OPMLS_SCHEMA>,): Promise<strin
       if (opmlLink.startsWith('http',)) {
         const response = await fetch(opmlLink,);
         if (!response.ok) {
-          l.warn`${opmlLink} not ok`;
+          l.warn(`${opmlLink} not ok`);
           return DISCARD;
         }
         try {
           return await response.text();
         }
         catch (event) {
-          l.warn`${event} converting ${response} to text for ${opmlLink}`;
+          l.warn(`${event} converting ${response} to text for ${opmlLink}`);
           return DISCARD;
         }
       }
@@ -62,7 +60,7 @@ async function getOPMLTexts(opmls: z.infer<typeof OPMLS_SCHEMA>,): Promise<strin
             return await readFile(fileURLToPath(opmlLink,), 'utf8',);
           }
           catch (event) {
-            l.warn`${event} failed reading ${opmlLink}`;
+            l.warn(`${event} failed reading ${opmlLink}`);
             return DISCARD;
           }
         }
@@ -72,10 +70,10 @@ async function getOPMLTexts(opmls: z.infer<typeof OPMLS_SCHEMA>,): Promise<strin
           return await readFile(absPath, 'utf8',);
         }
         catch (event) {
-          l.warn`${event} failed reading ${opmlLink} ${absPath}`;
+          l.warn(`${event} failed reading ${opmlLink} ${absPath}`);
         }
       }
-      l.warn`${opmlLink} unsupported protocol`;
+      l.warn(`${opmlLink} unsupported protocol`);
       return DISCARD;
     },
     opmls,
@@ -83,7 +81,7 @@ async function getOPMLTexts(opmls: z.infer<typeof OPMLS_SCHEMA>,): Promise<strin
     .filter(function notDiscard(opmlText,) {
       return opmlText !== DISCARD;
     },);
-  l.debug`getOPMLTexts ${result[0]} * ${result.length}`;
+  l.debug(`getOPMLTexts ${result[0]} * ${result.length}`);
   return result;
 }
 
@@ -101,7 +99,7 @@ async function getOPMLTexts(opmls: z.infer<typeof OPMLS_SCHEMA>,): Promise<strin
  * @see {@link getOPMLTexts} for the source of OPML texts
  */
 function getParsedOPMLs(OPMLTexts: string[],): Opml[] {
-  l.debug`getParsedOPMLs`;
+  l.debug(`getParsedOPMLs`);
   const DISCARD = Symbol('discard',);
   const returns = OPMLTexts
     .map(function parse(OPMLText,) {
@@ -109,14 +107,14 @@ function getParsedOPMLs(OPMLTexts: string[],): Opml[] {
         return parseOpml(OPMLText,);
       }
       catch (error) {
-        l.warn`${error} parse ${OPMLText}`;
+        l.warn(`${error} parse ${OPMLText}`);
         return DISCARD;
       }
     },)
     .filter(function notDiscard(parsedOPML,) {
       return parsedOPML !== DISCARD;
     },);
-  l.debug`getParsedOPMLs ${returns[0]} * ${returns.length}`;
+  l.debug(`getParsedOPMLs ${returns[0]} * ${returns.length}`);
   return returns;
 }
 
@@ -133,22 +131,22 @@ function getParsedOPMLs(OPMLTexts: string[],): Opml[] {
  * @see {@link getParsedOPMLs} for the source of parsed OPMLs
  */
 function getOuterOutlines(parsedOPMLs: Opml[],): Outline[] {
-  l.debug`getOuterOutlines`;
+  l.debug(`getOuterOutlines`);
   const DISCARD = Symbol('discard',);
   const returns: Outline[] = parsedOPMLs
     .map(function _getOuterOutline(parsedOpml,): typeof DISCARD | Outline[] {
       const body = parsedOpml.body;
       if (!body) {
-        l.warn`${parsedOpml} no body`;
+        l.warn(`${parsedOpml} no body`);
         return DISCARD;
       }
       const outlines = body.outlines;
       if (!outlines) {
-        l.warn`${body} no outline`;
+        l.warn(`${body} no outline`);
         return DISCARD;
       }
       if (outlines.length === 0) {
-        l.warn`${outlines} from ${body} empty`;
+        l.warn(`${outlines} from ${body} empty`);
         return DISCARD;
       }
       return outlines;
@@ -157,7 +155,7 @@ function getOuterOutlines(parsedOPMLs: Opml[],): Outline[] {
       return value !== DISCARD;
     },)
     .flat();
-  l.debug`getOuterOutlines ${returns[0]} * ${returns.length}`;
+  l.debug(`getOuterOutlines ${returns[0]} * ${returns.length}`);
   return returns;
 }
 
@@ -174,17 +172,17 @@ function getOuterOutlines(parsedOPMLs: Opml[],): Outline[] {
  * @see {@link getOuterOutlines} for the source of outer outlines
  */
 function getInnerOutlines(outerOutlines: Outline[],): Outline[] {
-  l.debug`getInnerOutlines`;
+  l.debug(`getInnerOutlines`);
   const DISCARD = Symbol('discard',);
   const returns = outerOutlines
     .map(function _getInnerOutline(outline,) {
       const outlines = outline.outlines;
       if (!outlines) {
-        l.warn`${outline} no outlines`;
+        l.warn(`${outline} no outlines`);
         return DISCARD;
       }
       if (outlines.length === 0) {
-        l.warn`${outlines} no outline from ${outline}`;
+        l.warn(`${outlines} no outline from ${outline}`);
         return DISCARD;
       }
       return outlines;
@@ -194,7 +192,7 @@ function getInnerOutlines(outerOutlines: Outline[],): Outline[] {
     },)
     .flat();
 
-  l.debug`getInnerOutlines ${returns[0]} * ${returns.length}`;
+  l.debug(`getInnerOutlines ${returns[0]} * ${returns.length}`);
   return returns;
 }
 
@@ -219,14 +217,14 @@ export type InnerOutlineWUrl = Outline & { xmlUrl: string; };
  * @see {@link z.url} for URL validation
  */
 function getInnerOutlinesWUrl(innerOutlines: Outline[],): InnerOutlineWUrl[] {
-  l.debug`getInnerOutlinesWUrl`;
+  l.debug(`getInnerOutlinesWUrl`);
   const innerOutlinesWUrl: Outline & { xmlUrl: string; }[] = innerOutlines.filter(
     function discardNoXmlUrl(
       innerOutline: Outline,
     ): innerOutline is Outline & { xmlUrl: string; } {
       const xmlUrl = innerOutline.xmlUrl;
       if (!xmlUrl) {
-        l.warn`${innerOutline} no xmlUrl`;
+        l.warn(`${innerOutline} no xmlUrl`);
         return false;
       }
       try {
@@ -238,13 +236,13 @@ function getInnerOutlinesWUrl(innerOutlines: Outline[],): InnerOutlineWUrl[] {
           .parse(xmlUrl,);
       }
       catch (error) {
-        l.warn`${error} ${innerOutline} ${xmlUrl} unsupported`;
+        l.warn(`${error} ${innerOutline} ${xmlUrl} unsupported`);
         return false;
       }
       return true;
     },
   );
-  l.debug`getInnerOutlinesWUrl ${innerOutlinesWUrl[0]} * ${innerOutlinesWUrl.length}`;
+  l.debug(`getInnerOutlinesWUrl ${innerOutlinesWUrl[0]} * ${innerOutlinesWUrl.length}`);
 
   return innerOutlinesWUrl;
 }
@@ -268,22 +266,20 @@ const innerOutlinesWUrlObservable = createObservable(innerOutlinesWUrl,
  * @see {@link getNewInnerOutlinesWUrl} for parsing and filtering pipeline
  */
 export async function onOpmlsChange(opmls: z.infer<typeof OPMLS_SCHEMA>,): Promise<void> {
-  l.debug`onOpmlsChange`;
+  l.debug(`onOpmlsChange`);
 
   innerOutlinesWUrlObservable.value = await getNewInnerOutlinesWUrl(opmls,);
 
-  l.debug`onOpmlsChange innerOutlinesWUrlObservable ${
-    innerOutlinesWUrlObservable.value.at(-1,)
-  } * ${innerOutlinesWUrlObservable.value.length}`;
+  l.debug(`onOpmlsChange innerOutlinesWUrlObservable ${innerOutlinesWUrlObservable.value.at(-1,)} * ${innerOutlinesWUrlObservable.value.length}`);
 }
 
 async function getNewInnerOutlinesWUrl(
   opmls: z.infer<typeof OPMLS_SCHEMA>,
 ): Promise<InnerOutlineWUrl[]> {
-  l.debug`getNewInnerOutlinesWUrl`;
+  l.debug(`getNewInnerOutlinesWUrl`);
   const result = getInnerOutlinesWUrl(
     getInnerOutlines(getOuterOutlines(getParsedOPMLs(await getOPMLTexts(opmls,),),),),
   );
-  l.debug`getNewInnerOutlinesWUrl ${result.at(-1,)} * ${result.length}`;
+  l.debug(`getNewInnerOutlinesWUrl ${result.at(-1,)} * ${result.length}`);
   return result;
 }

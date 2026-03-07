@@ -9,6 +9,8 @@ export * as logger from './t logger/index.ts';
 export * as map from './t map/index.ts';
 export * as nonNull from './t nonNull/index.ts';
 export * as null from './t null/index.ts';
+export * as promise from './t promise/index.ts';
+export * as proxy from './t proxy/index.ts';
 export * as record from './t record/index.ts';
 export * as regexp from './t regexp/index.ts';
 export * as store from './t store/index.ts';

@@ -30,10 +30,10 @@ import { IGNORE_PATH, } from './path.ts';
 import { PORT, } from './port.ts';
 import './ignore.ts';
 
-l.debug`logger working`;
+l.debug(`logger working`);
 
 function updateFeed(): Response {
-  l.debug`updateFeed`;
+  l.debug(`updateFeed`);
 
   const timeSinceLastUpdate = (new Date()).getTime()
     - lastUpdatedObservable.value.getTime();
@@ -62,7 +62,7 @@ function updateFeed(): Response {
 }
 
 function serveIndex(): Response {
-  l.debug`serveIndex`;
+  l.debug(`serveIndex`);
 
   updateFeed();
 
@@ -78,7 +78,7 @@ function serveIndex(): Response {
 }
 
 function getLastUpdated(): Response {
-  l.debug`getLastUpdated`;
+  l.debug(`getLastUpdated`);
   return new Response(lastUpdatedObservable.value.toISOString(), {
     status: 200,
     headers: {
@@ -88,10 +88,10 @@ function getLastUpdated(): Response {
 }
 
 async function ignore({ body, }: { body: string; },): Promise<Response> {
-  l.debug`read ${body}`;
+  l.debug(`read ${body}`);
 
   if (!await exists(join(IGNORE_PATH, 'api.jsonl',),)) {
-    l.debug`creating api.jsonl`;
+    l.debug(`creating api.jsonl`);
     await mkdir(IGNORE_PATH, { recursive: true, },);
     await writeFile(join(IGNORE_PATH, 'api.jsonl',), '', 'utf8',);
   }
@@ -131,5 +131,5 @@ const _app = new Elysia()
     },);
   },)
   .listen(PORT, function logListening() {
-    l.info`listening on port ${PORT}`;
+    l.info(`listening on port ${PORT}`);
   },);

@@ -1,4 +1,4 @@
-import { notNullishOrThrow, } from '@monochromatic-dev/module-es';
+import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
 import { findUp, } from 'find-up';
 import {
   dirname,

@@ -1,7 +1,5 @@
-import {
-  notNullishOrThrow,
-  wait,
-} from '@monochromatic-dev/module-es';
+import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
+import { $ as wait, } from '@monochromatic-dev/module-es/wait';
 import { z, } from 'zod/v4-mini';
 
 console.log('client',);
