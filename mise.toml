@@ -28,7 +28,8 @@ bun = "latest"
 coreutils = "latest"
 
 # Find files
-fd = "latest"
+# aqua:sharkdp/fd broken as of 2026-03-07, falling back to cargo
+"cargo:fd-find" = "latest"
 ripgrep = "latest"
 
 # Needed by some packages that depend on Node APIs
