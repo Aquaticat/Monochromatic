@@ -15,6 +15,7 @@ import { build as buildCss, } from '@monochromatic-dev/build-tool-css/ts';
 import { readArtifacts, } from './data/read-artifacts.ts';
 import { hasMultipleProbes, } from './data/viewer-types.ts';
 import { computeThreshold, } from './data/threshold.ts';
+import { renderSvgSprite, } from './data/model-icons.ts';
 import { renderPage, } from './html/page.ts';
 import { renderDashboard, } from './html/dashboard.ts';
 import { renderOverview, } from './html/view-overview.ts';
@@ -86,7 +87,8 @@ const byProbeHtml = renderByProbe({ entries, });
 const overlaysHtml = await renderAllOverlays({ entries, probeDetails, });
 
 const dashboardHtml = renderDashboard({ overviewHtml, byModelHtml, byProbeHtml, overlaysHtml, });
-const pageHtml = renderPage({ body: dashboardHtml, title: 'Inference canary dashboard', });
+const spriteHtml = renderSvgSprite();
+const pageHtml = renderPage({ body: spriteHtml + dashboardHtml, title: 'Inference canary dashboard', });
 
 //endregion Render all HTML sections
 

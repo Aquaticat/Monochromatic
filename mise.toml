@@ -228,7 +228,7 @@ usage = 'arg "[args]" var=#true help="Additional arguments passed to bun test (w
 run = """
 let args = ($env.usage_args? | default '' | str trim)
 if $args == '' {
-  mise run test:unit test:browser
+  mise run test:unit test:browser test:e2e
 } else {
   mise run test:unit -- ...($args | split row ' ')
 }
@@ -249,21 +249,39 @@ if ($args | is-empty) {
 
 [tasks."test:browser"]
 hide = true
-description = "Run browser tests with Playwright"
+description = "Run browser tests with Playwright in podman"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
-run = "bunx playwright test --config playwright.browser.config.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
+run = """
+let args = ($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })
+podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx playwright test --config playwright.browser.config.ts ...$args
+"""
+
+[tasks."test:e2e"]
+hide = true
+description = "Run e2e tests with Playwright in podman"
+usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
+run = """
+let args = ($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })
+podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx playwright test --config playwright.e2e.config.ts ...$args
+"""
 
 [tasks."test:browser:chromium"]
 hide = true
 description = "Run browser tests in Chromium"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
-run = "bunx playwright test --config playwright.browser.config.ts --project=chromium ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
+run = """
+let args = ($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })
+podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx playwright test --config playwright.browser.config.ts --project=chromium ...$args
+"""
 
 [tasks."test:browser:firefox"]
 hide = true
 description = "Run browser tests in Firefox"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
-run = "bunx playwright test --config playwright.browser.config.ts --project=firefox ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
+run = """
+let args = ($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })
+podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx playwright test --config playwright.browser.config.ts --project=firefox ...$args
+"""
 
 # [tasks."test:browser"]
 # hide = true
@@ -370,12 +388,12 @@ description = "Prepare environment, allowing failures"
 extends = "prepare--allowFailure"
 
 [tasks."prepare:playwright"]
-description = "Install Playwright browsers"
-run = "bunx playwright install --with-deps"
+description = "Build Playwright container image via podman"
+run = "podman build -t monochromatic-playwright -f playwright.Dockerfile ."
 
 [tasks."prepare--allowFailure:playwright"]
-description = "Install Playwright browsers, allowing failures"
-run = "try { bunx playwright install --with-deps } catch { |e| print -e $e.rendered }"
+description = "Build Playwright container image, allowing failures"
+run = "try { podman build -t monochromatic-playwright -f playwright.Dockerfile . } catch { |e| print -e $e.rendered }"
 
 [tasks.prepareAndBuild]
 description = "Complete setup: prepare environment and build all artifacts"
