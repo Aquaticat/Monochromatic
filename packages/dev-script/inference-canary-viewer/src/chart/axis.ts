@@ -22,7 +22,7 @@ export function renderYAxis(): string {
     const bottom = tick * PERCENT;
     return h({
       tag: 'span',
-      class: 'chart-y-tick',
+      class: 'tick',
       style: { bottom: `${String(bottom)}%`, },
       text: tick.toFixed(2),
     });
@@ -59,7 +59,7 @@ export function renderXAxis(timestamps: readonly string[],): string {
     ticks.push(
       h({
         tag: 'span',
-        class: 'chart-x-tick',
+        class: 'tick',
         style: { left: `${left.toFixed(2)}%`, },
         attrs: { title: timestamps[i] ?? '', },
         text: displayLabel,

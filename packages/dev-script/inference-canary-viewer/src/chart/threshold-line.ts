@@ -23,7 +23,7 @@ export function renderThresholdLine(threshold: number, label: string,): string {
     style: { bottom: `${String(bottom)}%`, },
     attrs: { title: label, },
     children: [
-      h({ tag: 'span', class: 'chart-threshold-label', text: label, }),
+      h({ tag: 'span', class: 'label', text: label, }),
     ],
   });
 }

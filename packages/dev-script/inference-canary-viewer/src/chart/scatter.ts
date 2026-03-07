@@ -63,7 +63,7 @@ export function renderScatterChart(
   options: ScatterChartOptions = {},
 ): string {
   if (points.length === 0) {
-    return h({ tag: 'p', class: 'chart-empty', text: 'No data available.', });
+    return h({ tag: 'p', class: 'chart-empty-state', text: 'No data available.', });
   }
 
   const totalRuns = points.length;
@@ -74,12 +74,12 @@ export function renderScatterChart(
     const left = totalRuns === 1 ? 50 : (point.index / (totalRuns - 1)) * PERCENT;
     const bottom = point.score * PERCENT;
 
-    const iconClass = point.icon !== undefined && point.icon !== '' && !point.failed ? ' chart-point--icon' : '';
-    const iconHtml = point.icon !== undefined && point.icon !== '' && !point.failed ? point.icon : '';
+    const hasIcon = point.icon !== undefined && point.icon !== '' && !point.failed;
+    const iconHtml = hasIcon ? point.icon : '';
 
     const pass1 = h({
       tag: 'button',
-      class: `chart-point${point.failed ? ' chart-point--failed' : ''}${iconClass}`,
+      class: 'chart-point',
       style: {
         left: `${left.toFixed(2)}%`,
         bottom: `${bottom.toFixed(2)}%`,
@@ -89,6 +89,8 @@ export function renderScatterChart(
         popovertarget: `run-${point.runId}`,
         title: point.title,
         'aria-label': point.title,
+        ...(point.failed ? { 'data-status': 'failed', } : {}),
+        ...(hasIcon ? { 'data-shape': 'icon', } : {}),
       },
       html: iconHtml,
     });
@@ -96,11 +98,11 @@ export function renderScatterChart(
     if (point.pass2Score === undefined) return pass1;
 
     const pass2Bottom = point.pass2Score * PERCENT;
-    const pass2IconClass = point.icon !== undefined && point.icon !== '' ? ' chart-point--icon' : '';
-    const pass2IconHtml = point.icon !== undefined && point.icon !== '' ? point.icon : '';
+    const pass2HasIcon = point.icon !== undefined && point.icon !== '';
+    const pass2IconHtml = pass2HasIcon ? point.icon : '';
     const pass2 = h({
       tag: 'button',
-      class: `chart-point chart-point--pass2${pass2IconClass}`,
+      class: 'chart-point',
       style: {
         left: `${left.toFixed(2)}%`,
         bottom: `${pass2Bottom.toFixed(2)}%`,
@@ -110,6 +112,8 @@ export function renderScatterChart(
         popovertarget: `run-${point.runId}`,
         title: `fix: ${point.pass2Score.toFixed(2)}`,
         'aria-label': `fix score ${point.pass2Score.toFixed(2)}`,
+        'data-pass': 'fix',
+        ...(pass2HasIcon ? { 'data-shape': 'icon', } : {}),
       },
       html: pass2IconHtml,
     });
@@ -131,10 +135,10 @@ export function renderScatterChart(
     tag: 'figure',
     class: 'chart-figure',
     children: [
-      h({ tag: 'figcaption', class: 'chart-caption', text: caption, }),
+      h({ tag: 'figcaption', text: caption, }),
       h({
         tag: 'div',
-        class: 'chart-container',
+        class: 'chart-area',
         attrs: { role: 'img', 'aria-label': caption, },
         children: [
           h({ tag: 'div', class: 'chart-y-axis', html: renderYAxis(), }),

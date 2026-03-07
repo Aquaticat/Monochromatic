@@ -1,32 +1,34 @@
-/* Run detail overlay using Popover API — light-dismiss built in.
+/* Run detail popover using Popover API — light-dismiss built in.
  * UA stylesheet sets: position: fixed; inset: 0; width: fit-content;
  * height: fit-content; margin: auto; border: solid; padding: 0.25em.
  * Use :popover-open for sufficient specificity to override UA defaults. */
 
-.overlay:popover-open {
-  margin: auto;
-  background-color: var(--bg-surface);
-  border-radius: 0.5rem;
-  border: none;
-  padding-block: 1.5rem;
-  padding-inline: 1.5rem;
-  max-inline-size: min(72rem, calc(100% - 2rem));
-  max-block-size: calc(100dvb - 4rem);
-  overflow-y: auto;
-  overflow-x: auto;
-  box-shadow: 0 0.25rem 1.5rem var(--shadow);
-  color: var(--fg);
-}
+.detail-popover {
+  &:popover-open {
+    margin: auto;
+    background-color: var(--bg-surface);
+    border-radius: 0.5rem;
+    border: none;
+    padding-block: 1.5rem;
+    padding-inline: 1.5rem;
+    max-inline-size: min(72rem, calc(100% - 2rem));
+    max-block-size: calc(100dvb - 4rem);
+    overflow-y: auto;
+    overflow-x: auto;
+    box-shadow: 0 0.25rem 1.5rem var(--shadow);
+    color: var(--fg);
+  }
 
-.overlay::backdrop {
-  background-color: var(--backdrop);
+  &::backdrop {
+    background-color: var(--backdrop);
+  }
 }
 
 /* Progressive enhancement: anchor the overlay to the invoking button.
  * The popovertarget button is the implicit anchor — no anchor-name needed.
  * Falls back to centered viewport positioning when unsupported. */
 @supports (position-area: block-end) {
-  .overlay:popover-open:not(.overlay--source) {
+  .detail-popover:popover-open:not([data-layout="centered"]) {
     inset: auto;
     margin: 0;
     position-area: block-end span-inline-end;
@@ -35,14 +37,14 @@
   }
 
   /* Source overlays opt out of implicit anchor positioning — stay viewport-centered */
-  .overlay--source:popover-open {
+  .detail-popover[data-layout="centered"]:popover-open {
     position-anchor: none;
     inset: 0;
     margin: auto;
   }
 }
 
-.overlay-title {
+.detail-popover-title {
   font-size: 1rem;
   font-weight: 600;
   margin-block-end: 0.75rem;
@@ -58,94 +60,102 @@
 
 .probe-card {
   @apply --grid-card;
+
+  &:hover {
+    background-color: var(--bg-hover);
+  }
+
+  & > .score {
+    font-weight: 600;
+  }
 }
 
-.probe-card:hover {
-  background-color: var(--bg-hover);
-}
-
-.probe-card-score {
-  font-weight: 600;
-}
-
-.overlay-no-artifacts {
+.detail-popover-empty {
   color: var(--fg-faint);
   font-style: italic;
   margin-block: 1rem;
 }
 
 /* Status badges row */
-.overlay-badges {
+.detail-popover-badges {
   display: flex;
   flex-wrap: wrap;
   gap: 0.375rem;
   margin-block-end: 0.75rem;
 }
 
-.badge {
+.run-indicator {
   display: inline-block;
   padding-block: 0.125rem;
   padding-inline: 0.5rem;
   border-radius: 0.25rem;
   font-size: 0.75rem;
   font-weight: 500;
-}
 
-.badge--partial {
-  background-color: var(--warn-bg);
-  color: var(--warn-fg);
-}
+  &[data-severity="warning"] {
+    background-color: var(--warn-bg);
+    color: var(--warn-fg);
+  }
 
-.badge--error {
-  background-color: var(--error-bg);
-  color: var(--error-fg);
-}
+  &[data-severity="error"] {
+    background-color: var(--error-bg);
+    color: var(--error-fg);
+  }
 
-.badge--finish {
-  background-color: var(--badge-neutral-bg);
-  color: var(--badge-neutral-fg);
+  &[data-severity="neutral"] {
+    background-color: var(--badge-neutral-bg);
+    color: var(--badge-neutral-fg);
+  }
 }
 
 /* Metadata definition list grid */
-.overlay-meta {
+.metadata-grid {
   display: grid;
   grid-template-columns: max-content 1fr;
   gap: 0.25rem 0.75rem;
   margin-block: 0.5rem;
   font-size: 0.8125rem;
-}
 
-.overlay-meta dt {
-  color: var(--fg-muted);
-  font-weight: 500;
-}
+  & dt {
+    color: var(--fg-muted);
+    font-weight: 500;
+  }
 
-.overlay-meta dd {
-  margin-inline-start: 0;
-  font-variant-numeric: tabular-nums;
+  & dd {
+    margin-inline-start: 0;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 /* Collapsible detail sections (reasoning, fix prompt, config) */
-.overlay-details {
+.collapsible-section {
   margin-block: 0.5rem;
   border: 0.0625rem solid var(--border);
   border-radius: 0.375rem;
-}
 
-.overlay-details summary {
-  padding-block: 0.5rem;
-  padding-inline: 0.75rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-}
+  & > summary {
+    padding-block: 0.5rem;
+    padding-inline: 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
 
-.overlay-details summary:hover {
-  background-color: var(--bg-hover);
+    &:hover {
+      background-color: var(--bg-hover);
+    }
+  }
+
+  /* Nested metadata grid within collapsible sections */
+  & > .metadata-grid {
+    margin-block: 0;
+    padding-block: 0.5rem;
+    padding-inline: 0.75rem;
+    border-block-start: 0.0625rem solid var(--border);
+  }
 }
 
 /* Markdown-rendered text within collapsible sections */
-.overlay-markdown {
+.rendered-markdown {
   padding-block: 0.75rem;
   padding-inline: 0.75rem;
   font-size: 0.75rem;
@@ -179,15 +189,7 @@
   }
 }
 
-/* Nested metadata grid within collapsible sections */
-.overlay-details .overlay-meta {
-  margin-block: 0;
-  padding-block: 0.5rem;
-  padding-inline: 0.75rem;
-  border-block-start: 0.0625rem solid var(--border);
-}
-
 /* Source code display */
-.source-single {
+.source-display {
   margin-block: 1rem;
 }

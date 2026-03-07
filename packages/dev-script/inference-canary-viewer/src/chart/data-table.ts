@@ -78,7 +78,7 @@ export function renderDataTable(
         children: [
           h({ tag: 'span', text: row.timestamp, }),
           ' ',
-          h({ tag: 'span', class: 'status--failed', text: '(timeout)', }),
+          h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'failed', }, text: '(timeout)', }),
         ],
       })
       : h({ tag: 'td', text: row.timestamp, });
@@ -88,13 +88,13 @@ export function renderDataTable(
       ? row.pass2Score !== undefined
         ? h({ tag: 'td', text: row.pass2Score.toFixed(2), })
         : row.failed
-          ? h({ tag: 'td', children: [h({ tag: 'span', class: 'data-error', text: '(not run)', })], })
-          : h({ tag: 'td', children: [h({ tag: 'span', class: 'data-error', text: '(data error)', })], })
+          ? h({ tag: 'td', children: [h({ tag: 'span', class: 'missing-data-label', text: '(not run)', })], })
+          : h({ tag: 'td', children: [h({ tag: 'span', class: 'missing-data-label', text: '(data error)', })], })
       : '';
 
     return h({
       tag: 'tr',
-      ...(row.failed ? { class: 'status--failed', } : {}),
+      ...(row.failed ? { class: 'run-status', attrs: { 'data-level': 'failed', }, } : {}),
       children: [
         timestampTd,
         ...(showModel ? [h({ tag: 'td', text: row.model, })] : []),
@@ -129,7 +129,7 @@ export function renderDataTable(
  * @example
  * ```ts
  * const html = renderDataGrid(rows, 'Claude overall score');
- * // '<div class="data-grid" role="list" aria-label="...">...<\/div>'
+ * // '<div class="score-card-grid" role="list" aria-label="...">...<\/div>'
  * ```
  */
 function renderDataGrid(
@@ -145,7 +145,7 @@ function renderDataGrid(
     /** Timestamp line with optional "(timeout)" suffix */
     const timestampChildren: string[] = [h({ tag: 'span', text: row.timestamp, })];
     if (row.failed) {
-      timestampChildren.push(' ', h({ tag: 'span', class: 'status--failed', text: '(timeout)', }));
+      timestampChildren.push(' ', h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'failed', }, text: '(timeout)', }));
     }
 
     /** Score line with optional fix suffix */
@@ -154,9 +154,9 @@ function renderDataGrid(
       if (row.pass2Score !== undefined) {
         scoreChildren.push(` (fix: ${row.pass2Score.toFixed(2)})`);
       } else if (row.failed) {
-        scoreChildren.push(' ', h({ tag: 'span', class: 'data-warning', text: '(fix: not run)', }));
+        scoreChildren.push(' ', h({ tag: 'span', class: 'score-warning', text: '(fix: not run)', }));
       } else {
-        scoreChildren.push(' ', h({ tag: 'span', class: 'data-warning', text: '(fix: no data)', }));
+        scoreChildren.push(' ', h({ tag: 'span', class: 'score-warning', text: '(fix: no data)', }));
       }
     }
 
@@ -171,7 +171,7 @@ function renderDataGrid(
 
     return h({
       tag,
-      class: 'data-card',
+      class: 'score-card',
       attrs,
       children: [
         h({ tag: 'span', children: timestampChildren, }),
@@ -182,7 +182,7 @@ function renderDataGrid(
 
   return h({
     tag: 'div',
-    class: 'data-grid',
+    class: 'score-card-grid',
     attrs: { role: 'list', 'aria-label': caption, },
     html: cards,
   });

@@ -12,17 +12,17 @@ export const SHAPE_LEGEND = h({
   children: [
     h({
       tag: 'span',
-      class: 'legend-item',
+      class: 'item',
       children: [
-        h({ tag: 'span', class: 'color-dot', style: { '--point-color': '#666', }, }),
+        h({ tag: 'span', class: 'color-swatch', style: { '--point-color': '#666', }, }),
         ' initial score',
       ],
     }),
     h({
       tag: 'span',
-      class: 'legend-item',
+      class: 'item',
       children: [
-        h({ tag: 'span', class: 'color-dot color-dot--fix', style: { '--point-color': '#666', }, }),
+        h({ tag: 'span', class: 'color-swatch', attrs: { 'data-shape': 'diamond', }, style: { '--point-color': '#666', }, }),
         ' fix score',
       ],
     }),
