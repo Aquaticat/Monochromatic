@@ -61,7 +61,7 @@ export const $: Sink = (record: LogRecord): void => {
   try {
     const consoleFn = LEVEL_TO_CONSOLE[record.level];
     if (typeof consoleFn === 'function') {
-      consoleFn(`[${new Date(record.timestamp).toISOString()}] ${record.message}`);
+      consoleFn(`[${record.level}] [${new Date(record.timestamp).toISOString()}] ${record.message}`);
     }
   } catch {
     // Silently fail if console throws

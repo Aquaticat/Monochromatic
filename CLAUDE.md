@@ -155,6 +155,13 @@ Only pin versions with clear justification and a comment explaining why.
 Log extensively by default: function entry points, branch decisions, error paths, async lifecycle events.
 Never remove logging to "clean up" -- treat logging as permanent infrastructure.
 
+Always use tagged loggers from `@monochromatic-dev/module-es`.
+Never use raw `console.log`/`console.error` or untagged logger instances in production code.
+
+- Tag at every module and function boundary; use `myFn.name` as tag to stay in sync with refactors
+- Compose tags deeply -- when calling a sub-function that accepts a logger, wrap the current logger with an additional tag before passing it
+- Never embed tags manually in message strings (e.g. `l.info("[cycle] done")`) -- use the `tagged` wrapper instead
+
 ## Security
 
 No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissive CORS/permissions, or secrets in logs.

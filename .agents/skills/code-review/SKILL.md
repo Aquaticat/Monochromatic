@@ -951,6 +951,51 @@ border-color: var(--error-fg);
 .pill { &[data-loading] { opacity: 0.5; } }
 ```
 
+### Logging
+
+- All loggers must use the `tagged` wrapper; no raw `console.*` or untagged logger instances
+- Tags at every function/module boundary using `myFn.name` or subsystem name
+- Composed tags for nested calls -- pass `tagged({ tag, l })` down the call chain
+- No manual tag prefixes in message strings
+
+#### Untagged logger
+
+```ts
+// Bad -- flag as WARNING: untagged logger
+export const l: Logger = $;
+
+// Good
+export const l: Logger = tagged({ tag: 'rss' });
+```
+
+#### Manual tag in message string
+
+```ts
+// Bad -- flag as WARNING: manual tag prefix
+l.info("[cycle] capture complete");
+
+// Good
+const l = tagged({ tag: 'cycle', l: parentLogger });
+l.info("capture complete");
+```
+
+#### Shallow tagging
+
+```ts
+// Bad -- flag as NIT: logger not re-tagged for sub-function
+function processItem({ item, l }: { item: Item; l: Logger }): void {
+  l.info('processing');
+  transformItem({ item, l });
+}
+
+// Good -- deep tagging
+function processItem({ item, l: parentLogger }: { item: Item; l: Logger }): void {
+  const l = tagged({ tag: processItem.name, l: parentLogger });
+  l.info('processing');
+  transformItem({ item, l });
+}
+```
+
 ### Script conventions
 
 - No bash/shell scripts -- TypeScript only, executed with Bun
