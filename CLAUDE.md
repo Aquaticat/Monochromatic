@@ -4,9 +4,11 @@
 
 Don't use "plan mode" since they currently just bug out. Waiting for upstream fixes.
 
-We've got practically infinite disk space. Whenever you want to dig into a package or something, clone it to `~/temp/`.
-
 Don't use pipes in bash tool since they're broken for now. Workarounds like redirecting to file then reading the file works.
+
+The Glob tool is denylisted and disabled because it currently doesn't respect .gitignore .
+
+Clone entire git repo of a package to a temp dir whenever investigating source code is needed.
 
 ## Dependency management
 - Use `workspace:*` for internal dependencies
