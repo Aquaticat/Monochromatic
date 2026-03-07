@@ -126,6 +126,8 @@ export type ProbeResult = {
 /** Aggregate report across all probes */
 export type CanaryReport = {
   readonly model: OpenRouterModelId;
+  /** Human-readable model label for display and grouping */
+  readonly label: string;
   readonly timestamp: ISOTimestamp;
   readonly results: readonly ProbeResult[];
   /** Overall health score 0-1 */

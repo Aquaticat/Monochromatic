@@ -40,11 +40,11 @@ function formatDelta(delta: number): string {
  */
 export function formatModelReport(report: CanaryReport): string {
   if (report.failed) {
-    return `  [FAIL] ${report.model}: ${report.error ?? 'unknown error'}`;
+    return `  [FAIL] ${report.label}: ${report.error ?? 'unknown error'}`;
   }
 
-  const label = scoreLabel(report.overallScore);
-  const header = `  [${label}] ${report.model}: ${report.overallScore.toFixed(2)}`;
+  const scoreStatus = scoreLabel(report.overallScore);
+  const header = `  [${scoreStatus}] ${report.label}: ${report.overallScore.toFixed(2)}`;
 
   // Align probe name column to the longest name for easier score scanning
   const maxNameLen = report.results.length > 0

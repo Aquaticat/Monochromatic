@@ -22,6 +22,8 @@ export const LINT_DIR = join(PACKAGE_DIR, 'src', 'canary-lint');
 /** Metadata written alongside each generated canary.ts for traceability */
 export type ArtifactMeta = {
   readonly model: string;
+  /** Human-readable model label, used for directory naming and dedup */
+  readonly label: string;
   readonly probe: string;
   readonly pass: 'initial' | 'fix';
   readonly timestamp: string;
@@ -59,21 +61,13 @@ export type EnrichedArtifactMeta = ArtifactMeta & {
  */
 export type FailureArtifactMeta = {
   readonly model: string;
+  /** Human-readable model label, used for directory naming */
+  readonly label: string;
   readonly timestamp: string;
   readonly failed: true;
   readonly error: string;
   readonly config: ConfigSnapshot;
 };
-
-/**
- * Extracts the short model name from an OpenRouter model ID.
- * "anthropic/claude-sonnet-4.6" -> "claude-sonnet-4.6"
- * @param modelId - full OpenRouter model ID
- * @returns short slug suitable for directory names
- */
-function modelSlug(modelId: string): string {
-  return modelId.split('/').pop() ?? modelId;
-}
 
 /**
  * Converts an ISO timestamp to a filesystem-safe string.
@@ -97,9 +91,11 @@ function timestampSlug(timestamp: string): string {
  * @returns absolute directory path
  */
 export function artifactDir(meta: ArtifactMeta): string {
-  const slug = modelSlug(meta.model);
+  if (typeof meta.label !== 'string') {
+    throw new TypeError(`ArtifactMeta.label must be a string, got ${typeof meta.label} (model=${String(meta.model)}, probe=${String(meta.probe)})`);
+  }
   const safeTs = timestampSlug(meta.timestamp);
-  return join(LINT_DIR, slug, `${meta.probe}-${meta.pass}-${safeTs}`);
+  return join(LINT_DIR, meta.label, `${meta.probe}-${meta.pass}-${safeTs}`);
 }
 
 /**
@@ -159,9 +155,8 @@ export async function writeEnrichedArtifact(enriched: EnrichedArtifactMeta, rawR
  * @param meta - failure metadata with model, timestamp, and error
  */
 export async function writeFailureArtifact(meta: FailureArtifactMeta): Promise<void> {
-  const slug = modelSlug(meta.model);
   const safeTs = timestampSlug(meta.timestamp);
-  const dir = join(LINT_DIR, slug, `failure-${safeTs}`);
+  const dir = join(LINT_DIR, meta.label, `failure-${safeTs}`);
   await mkdir(dir, { recursive: true, });
   await writeFile(join(dir, 'meta.json'), JSON.stringify(meta, null, 2), 'utf8');
 }
@@ -204,7 +199,7 @@ const ARTIFACT_DIR_PATTERN = /^(?<probe>.+)-(?<pass>initial|fix)-(?<timestamp>\d
  * Replaces the history-based {@link getRecentModelProbePairs} for the runner,
  * deriving recent results directly from artifact directory timestamps.
  * Only considers initial-pass artifacts (fix-pass artifacts always accompany an initial).
- * @returns map from model ID to set of recently-tested probe names
+ * @returns map from model label to set of recently-tested probe names
  */
 export async function getRecentArtifactPairs(): Promise<ReadonlyMap<string, ReadonlySet<string>>> {
   const cutoff = Date.now() - TWENTY_FOUR_HOURS_MS;
@@ -244,14 +239,17 @@ export async function getRecentArtifactPairs(): Promise<ReadonlyMap<string, Read
       const entryTime = new Date(fixedTimestamp).getTime();
       if (Number.isNaN(entryTime) || entryTime < cutoff) continue;
 
-      // Read meta.json to get the full model ID (directory name is the short slug)
+      // Read meta.json to get the model label (old artifacts without label fall back to directory name)
       const metaPath = join(modelPath, dirName, 'meta.json');
       try {
         const metaRaw = await readFile(metaPath, 'utf8');
-        const meta = JSON.parse(metaRaw) as ArtifactMeta;
-        const existing = result.get(meta.model) ?? new Set<string>();
-        existing.add(meta.probe);
-        result.set(meta.model, existing);
+        const meta = JSON.parse(metaRaw) as Partial<ArtifactMeta>;
+        const label = meta.label ?? modelDir;
+        const probe = meta.probe;
+        if (probe === undefined) continue;
+        const existing = result.get(label) ?? new Set<string>();
+        existing.add(probe);
+        result.set(label, existing);
       } catch {
         // Missing or malformed meta.json -- skip
       }

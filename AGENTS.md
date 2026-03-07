@@ -180,6 +180,8 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - Prefer named imports, `import type` for type-only, absolute imports for workspace packages
 - Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile` -- Bun resolves these at build time with no async preload step needed
 - Prefer function declarations; always name functions; parentheses around all arrow params
+- Functions with 2+ parameters must use a single destructured object parameter (named params); exempt: callbacks whose signature is dictated by an external API or library
+- No rest parameters (`...args`) in functions we control; accept an array parameter instead
 - Export immediately at declaration; avoid `Object.assign` for extending typed objects
 - Throw and return early; use overloads (most specific first)
 

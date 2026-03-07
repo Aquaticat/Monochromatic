@@ -43,19 +43,19 @@ export async function runCanary(
   const timestamp = await fetchServerTimestamp();
 
   const probesToRun = probes.filter(
-    (probe) => !mergedConfig.skipProbes?.get(mergedConfig.model)?.has(probe.name),
+    (probe) => !mergedConfig.skipProbes?.get(mergedConfig.label)?.has(probe.name),
   );
 
   if (probesToRun.length < probes.length) {
-    console.log(`[${mergedConfig.model}] skipping ${String(probes.length - probesToRun.length)} probe(s) with recent results`);
+    console.log(`[${mergedConfig.label}] skipping ${String(probes.length - probesToRun.length)} probe(s) with recent results`);
   }
-  console.log(`[${mergedConfig.model}] testing with ${String(probesToRun.length)} probe(s)...`);
+  console.log(`[${mergedConfig.label}] testing with ${String(probesToRun.length)} probe(s)...`);
 
   try {
     const results = await Promise.all(
       probesToRun.map(async (probe) => {
         const result = await runProbe(probe, mergedConfig, timestamp);
-        console.log(`  [${mergedConfig.model}:${probe.name}] => mean=${String(result.meanScore.toFixed(2))}`);
+        console.log(`  [${mergedConfig.label}:${probe.name}] => mean=${String(result.meanScore.toFixed(2))}`);
         return result;
       }),
     );
@@ -64,6 +64,7 @@ export async function runCanary(
 
     return {
       model: mergedConfig.model,
+      label: mergedConfig.label,
       timestamp,
       results,
       overallScore,
@@ -72,13 +73,14 @@ export async function runCanary(
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`  [${mergedConfig.model}] FAILED: ${message}`);
+    console.error(`  [${mergedConfig.label}] FAILED: ${message}`);
 
     // Write a failure artifact so the artifact directory records that this run
     // was attempted, even though no probes completed successfully.
     try {
       await writeFailureArtifact({
         model: mergedConfig.model,
+        label: mergedConfig.label,
         timestamp,
         failed: true,
         error: message,
@@ -90,11 +92,12 @@ export async function runCanary(
         },
       });
     } catch (writeError) {
-      console.error(`  [${mergedConfig.model}] failed to write failure artifact:`, writeError);
+      console.error(`  [${mergedConfig.label}] failed to write failure artifact:`, writeError);
     }
 
     return {
       model: mergedConfig.model,
+      label: mergedConfig.label,
       timestamp,
       results: [],
       overallScore: 0,

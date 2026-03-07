@@ -7,8 +7,8 @@
  * can be organized by model and pass (initial vs fix).
  */
 export type ScoreContext = {
-  /** Full OpenRouter model ID (e.g. "anthropic/claude-sonnet-4.6") */
-  readonly modelId: string;
+  /** Human-readable model label used for cache keys and log prefixes */
+  readonly label: string;
   /** Which pass produced this response */
   readonly pass: 'initial' | 'fix';
   /**

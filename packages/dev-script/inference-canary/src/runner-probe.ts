@@ -62,6 +62,7 @@ async function enrichArtifact(
 ): Promise<void> {
   const enriched: EnrichedArtifactMeta = {
     model: config.model,
+    label: config.label,
     probe: probe.name,
     pass,
     timestamp,
@@ -165,12 +166,12 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: strin
     for (const runIndex of Array.from({ length: config.consistencyRuns, }).keys()) {
       // eslint-disable-next-line no-await-in-loop -- sequential to avoid rate limits
       lastCompletion = await executeProbe(probe, config, client, signal);
-      const scoreContext: ScoreContext = { modelId: config.model, pass: 'initial', timestamp, signal, };
+      const scoreContext: ScoreContext = { label: config.label, pass: 'initial', timestamp, signal, };
       // eslint-disable-next-line no-await-in-loop -- score may involve container execution
       const runScore = await probe.score(lastCompletion.text, scoreContext);
       scores.push(runScore);
       lastScore = runScore;
-      console.log(`  [${config.model}:${probe.name}] run ${String(runIndex + 1)}/${String(config.consistencyRuns)}: score=${runScore.toFixed(2)}`);
+      console.log(`  [${config.label}:${probe.name}] run ${String(runIndex + 1)}/${String(config.consistencyRuns)}: score=${runScore.toFixed(2)}`);
     }
 
     // Enrich the initial-pass artifact with the last consistency run's data.
@@ -188,14 +189,14 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: strin
     // based on the fix pass result or left undefined if the fix pass is skipped/fails.
     let pass2Score: number | undefined = undefined;
     try {
-      const fixContext: ScoreContext = { modelId: config.model, pass: 'fix', timestamp, signal, };
+      const fixContext: ScoreContext = { label: config.label, pass: 'fix', timestamp, signal, };
       const pass2Result = await runSecondPass(probe, config, client, lastCompletion?.text ?? '', fixContext);
 
       if (pass2Result !== undefined) {
         pass2Score = pass2Result.score;
         const delta = pass2Result.score - meanScore;
         const deltaStr = delta >= 0 ? `+${delta.toFixed(2)}` : delta.toFixed(2);
-        console.log(`  [${config.model}:${probe.name}] pass2: score=${pass2Result.score.toFixed(2)} delta=${deltaStr}`);
+        console.log(`  [${config.label}:${probe.name}] pass2: score=${pass2Result.score.toFixed(2)} delta=${deltaStr}`);
 
         // Enrich the fix-pass artifact with completion data, score, and diagnostic prompt.
         await enrichArtifact(probe, config, timestamp, 'fix', pass2Result.completion, pass2Result.score, {
@@ -204,7 +205,7 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: strin
       }
     } catch (fixError) {
       const errorMessage = fixError instanceof Error ? fixError.message : String(fixError);
-      console.error(`  [${config.model}:${probe.name}] pass2 failed: ${errorMessage}`);
+      console.error(`  [${config.label}:${probe.name}] pass2 failed: ${errorMessage}`);
 
       // Save partial fix data if the stream was aborted mid-response.
       const partialFix = extractPartialCompletion(fixError);
@@ -215,7 +216,7 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: strin
             error: errorMessage,
           });
         } catch (saveError) {
-          console.error(`  [${config.model}:${probe.name}] failed to save partial fix artifact:`, saveError);
+          console.error(`  [${config.label}:${probe.name}] failed to save partial fix artifact:`, saveError);
         }
       }
     }
@@ -241,7 +242,7 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: strin
         lastCompletion, partialCompletion, lastScore, enrichedInitial,
       );
     } catch (saveError) {
-      console.error(`  [${config.model}:${probe.name}] failed to save failure artifacts:`, saveError);
+      console.error(`  [${config.label}:${probe.name}] failed to save failure artifacts:`, saveError);
     }
     throw error;
   }
@@ -294,7 +295,7 @@ export async function runProbe(probe: Probe, config: RunnerConfig, timestamp: st
       timer = setTimeout(
         () => {
           controller.abort();
-          console.error(`  [${config.model}:${probe.name}] timed out after ${String(PROBE_TIMEOUT_MINUTES)} minutes`);
+          console.error(`  [${config.label}:${probe.name}] timed out after ${String(PROBE_TIMEOUT_MINUTES)} minutes`);
           resolve(timedOutResult);
         },
         PROBE_TIMEOUT_MS,

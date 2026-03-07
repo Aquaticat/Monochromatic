@@ -20,7 +20,7 @@ All underlying rules referenced below are defined in AGENTS.md.
 Read the diff or files under review, then evaluate each category below.
 Skip categories that do not apply to the language or change.
 
-### 1. Correctness
+### Correctness
 
 - Logic errors, off-by-one, unhandled edge cases
 - Missing null/undefined checks
@@ -28,7 +28,7 @@ Skip categories that do not apply to the language or change.
 - Incorrect use of APIs or library methods
 - Broken error propagation (swallowed exceptions, silent catch blocks)
 
-### 2. Type safety (TypeScript)
+### Type safety (TypeScript)
 
 - Explicit return types on all functions
 - `unknown` over `any`; no bare `Function` type
@@ -91,7 +91,59 @@ Flag non-descriptive generic names:
 <TData extends Record<string, unknown>>
 ```
 
-### 3. Immutability and style
+### Function signatures
+
+- Functions with 2+ parameters must use a single destructured object parameter (named params)
+- No rest parameters (`...args`) in functions we control; accept an array parameter instead
+- Exempt: callbacks whose signature is dictated by an external API or library (e.g. `.map()`, `.sort()`, event handlers)
+
+#### Named parameters
+
+Flag any function declaration or named arrow function with 2+ positional parameters:
+
+```ts
+// Bad -- flag as WARNING
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+// Good
+function clamp({ value, min, max }: { value: number; min: number; max: number }): number {
+  return Math.max(min, Math.min(max, value));
+}
+```
+
+```ts
+// Bad -- flag as WARNING
+function fetchUser(id: string, signal: AbortSignal): Promise<User> { ... }
+
+// Good
+function fetchUser({ id, signal }: { id: string; signal: AbortSignal }): Promise<User> { ... }
+```
+
+Callbacks passed to external APIs are exempt because the caller dictates the signature:
+
+```ts
+// OK -- signature dictated by Array.prototype.map
+const doubled = items.map((item, index) => multiply({ value: item, by: index }));
+
+// OK -- signature dictated by Array.prototype.sort
+const sorted = items.sort((left, right) => left.priority - right.priority);
+```
+
+#### Rest parameters
+
+Flag rest parameters in functions we control:
+
+```ts
+// Bad -- flag as WARNING
+function logMessages(...messages: readonly string[]): void { ... }
+
+// Good
+function logMessages({ messages }: { messages: readonly string[] }): void { ... }
+```
+
+### Immutability and style
 
 - `const` over `let`; no unnecessary mutation
 - **Justify or refactor**: any deviation from the preferred pattern must have a comment explaining why refactoring to the preferred approach is not feasible; if no justification is given, flag it as WARNING
@@ -176,14 +228,14 @@ for (let itemIndex = 0; itemIndex < items.length; itemIndex++)
 items.forEach((item, itemIndex) => ...)
 ```
 
-### 4. Security
+### Security
 
 - No hardcoded secrets, API keys, or credentials
 - No unsanitized user input in SQL, shell commands, or HTML
 - No overly permissive CORS, file permissions, or network exposure
 - Secrets not logged, even at debug level
 
-### 5. Naming and readability
+### Naming and readability
 
 - Semantic, descriptive names for variables, functions, types
 - Comments explain WHY, not WHAT
@@ -233,7 +285,7 @@ Flag unescaped `*/` inside TSDoc blocks:
  */
 ```
 
-### 6. Async patterns
+### Async patterns
 
 - `async`/`await` over raw promises or callbacks
 - No `.then()`, `.catch()`, `.finally()` -- use `async`/`await` with `try`/`catch` or let errors propagate naturally by throwing
@@ -258,7 +310,7 @@ import { wait } from '@monochromatic-dev/module-es';
 // Use wait(ms) directly
 ```
 
-### 7. Imports and modules
+### Imports and modules
 
 - Grouped: builtins, external deps, workspace packages, relative, type-only
 - Named imports over default imports
@@ -266,7 +318,7 @@ import { wait } from '@monochromatic-dev/module-es';
 - File extensions in relative imports when required by config
 - No circular dependencies
 
-### 8. Error handling
+### Error handling
 
 - Prefer letting errors propagate by throwing
 - No `try...finally` -- use `using`/`await using` with `Symbol.dispose`/`Symbol.asyncDispose` for cleanup
@@ -342,19 +394,19 @@ if (!(event instanceof CustomEvent)) return;
 if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent");
 ```
 
-### 9. Markdown quality
+### Markdown quality
 
 - No tables in markdown files -- use nested headings or lists instead
 - Flag any existing tables in changed markdown files as WARNING with a suggestion to convert
 
-### 10. Testing gaps
+### Testing gaps
 
 - New logic paths missing corresponding test cases
 - Edge cases not covered (empty input, boundary values, error paths)
 - Mocking that hides real integration issues
 - Flaky patterns (timing dependencies, shared mutable state)
 
-### 11. Commit messages
+### Commit messages
 
 When reviewing PRs or multi-commit bundles, also review commit messages.
 
@@ -400,7 +452,7 @@ test(module-es): achieve 100% coverage for error utilities
 - Focus on "what" and "why"
 - Flag partial commit messages (describing only some changes) as WARNING
 
-### 12. CSS quality
+### CSS quality
 
 When changes include CSS, check:
 
@@ -459,7 +511,7 @@ border-color: var(--error-fg);
 .pill { &[data-loading] { opacity: 0.5; } }
 ```
 
-### 13. Script conventions
+### Script conventions
 
 - No bash/shell scripts -- TypeScript only, executed with Bun
 - Top-level code, no `main()` wrapper; top-level await for async

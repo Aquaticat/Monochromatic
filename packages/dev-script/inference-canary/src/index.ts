@@ -70,14 +70,14 @@ if (apiKey === undefined || apiKey === '') {
  */
 function selectModels(): readonly ModelConfig[] {
   if (modelOverride !== undefined) {
-    const found = models.find((model) => model.id === modelOverride);
+    const found = models.find((model) => model.openrouterId === modelOverride || model.label === modelOverride);
     if (found !== undefined) return [found];
     if (!modelOverride.includes('/')) {
       throw new Error(`Invalid model ID "${modelOverride}": must be in "provider/name" format`);
     }
     // Type assertion: includes('/') check above satisfies the OpenRouterModelId template literal
     const modelId = modelOverride as `${string}/${string}`;
-    return [{ id: modelId, label: modelId, verbosity: 'low', }];
+    return [{ openrouterId: modelId, label: modelId, verbosity: 'low', }];
   }
   return models;
 }

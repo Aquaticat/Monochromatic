@@ -51,7 +51,7 @@ export async function buildCodeGenFixPrompt(
   // Reuse the lint result from score() if available to avoid linting the same code twice.
   // Falls back to running lintSource if called without a prior result (e.g. in tests).
   const lint = priorLint ?? await lintSource(source, {
-    model: context.modelId,
+    model: context.label,
     probe: 'fix-prompt',
     pass: context.pass,
     timestamp: context.timestamp,

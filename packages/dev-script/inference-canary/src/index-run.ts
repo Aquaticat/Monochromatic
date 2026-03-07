@@ -34,7 +34,8 @@ export async function runAndReport(
   const reports: readonly CanaryReport[] = await Promise.all(
     selectedModels.map((model) =>
       runCanary(probes, {
-        model: model.id,
+        model: model.openrouterId,
+        label: model.label,
         verbosity: model.verbosity,
         apiKey,
         skipProbes: recentModelProbePairs,

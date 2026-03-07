@@ -53,20 +53,20 @@ type ParsedArtifact = {
 };
 
 /**
- * Composite key for grouping probe details: `model::probe::timestamp`.
- * @param model - model ID
+ * Composite key for grouping probe details: `label::probe::timestamp`.
+ * @param label - model label
  * @param probe - probe name
  * @param timestamp - ISO timestamp
  * @returns composite key string
  *
  * @example
  * ```ts
- * probeKey('anthropic/claude-sonnet-4.6', 'csv-rfc4180', '2026-03-06T12:00:00.000Z');
- * // "anthropic/claude-sonnet-4.6::csv-rfc4180::2026-03-06T12:00:00.000Z"
+ * probeKey('Sonnet 4.6', 'csv-rfc4180', '2026-03-06T12:00:00.000Z');
+ * // "Sonnet 4.6::csv-rfc4180::2026-03-06T12:00:00.000Z"
  * ```
  */
-export function probeKey(model: string, probe: string, timestamp: string): string {
-  return `${model}::${probe}::${timestamp}`;
+export function probeKey(label: string, probe: string, timestamp: string): string {
+  return `${label}::${probe}::${timestamp}`;
 }
 
 /**
@@ -120,12 +120,16 @@ export async function readArtifacts(): Promise<ArtifactData> {
       }
 
       const meta = parsed as ArtifactMeta | EnrichedArtifactMeta;
+      // Old artifacts without label fall back to the directory name
+      if (meta.label === undefined) {
+        (meta as { label: string }).label = modelDir;
+      }
       const [source, response] = await Promise.all([
         readOptional(join(dirPath, 'canary.ts')),
         readOptional(join(dirPath, 'response.txt')),
       ]);
       const artifact: ParsedArtifact = { meta, source, response, dir: dirPath, };
-      const runKey = `${meta.model}::${meta.timestamp}`;
+      const runKey = `${meta.label}::${meta.timestamp}`;
 
       const target = meta.pass === 'initial' ? initialByRun : fixByRun;
       const probes = target.get(runKey) ?? new Map<string, ParsedArtifact>();
@@ -157,7 +161,7 @@ function buildViewerData(
     const firstProbe = [...probes.values()][0];
     if (firstProbe === undefined) continue;
 
-    const { model, timestamp, } = firstProbe.meta;
+    const { model, label, timestamp, } = firstProbe.meta;
     const probeScores: Record<string, number> = {};
     const pass2Scores: Record<string, number> = {};
     let config: ViewerEntry['config'];
@@ -175,7 +179,7 @@ function buildViewerData(
         hasPass2 = true;
       }
 
-      probeDetails.set(probeKey(model, probeName, timestamp), {
+      probeDetails.set(probeKey(label, probeName, timestamp), {
         score: enriched?.score,
         pass2Score: fixEnriched?.score,
         reasoning: enriched?.reasoning,
@@ -205,6 +209,7 @@ function buildViewerData(
     entries.push({
       timestamp,
       model,
+      label,
       overallScore,
       probeScores,
       ...(hasPass2 ? { pass2Scores, } : {}),
@@ -217,6 +222,7 @@ function buildViewerData(
     entries.push({
       timestamp: failure.timestamp,
       model: failure.model,
+      label: (failure as { label?: string }).label ?? failure.model,
       overallScore: 0,
       probeScores: {},
       failed: true,

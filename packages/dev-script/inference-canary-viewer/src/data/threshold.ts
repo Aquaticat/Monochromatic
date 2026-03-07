@@ -30,26 +30,26 @@ export type ModelThreshold = {
  *
  * Uses the statistical approach: threshold = mean - 2*stddev, floored at 0.3.
  * Returns the floor when fewer than 3 non-failed samples are available.
- * @param model - model ID to compute threshold for
+ * @param label - model label to compute threshold for
  * @param entries - all viewer entries
  * @returns computed threshold with statistics
  *
  * @example
  * ```ts
- * const t = computeThreshold('anthropic/claude-sonnet-4.6', entries);
+ * const t = computeThreshold('Sonnet 4.6', entries);
  * // { model: '...', mean: 0.85, stddev: 0.05, threshold: 0.75, sampleCount: 10 }
  * ```
  */
 export function computeThreshold(
-  model: string,
+  label: string,
   entries: readonly ViewerEntry[],
 ): ModelThreshold {
   const scores = entries
-    .filter((entry) => entry.model === model && !entry.failed)
+    .filter((entry) => entry.label === label && !entry.failed)
     .map((entry) => entry.overallScore);
 
   if (scores.length < MIN_SAMPLES) {
-    return { model, mean: 0, stddev: 0, threshold: THRESHOLD_FLOOR, sampleCount: scores.length, };
+    return { model: label, mean: 0, stddev: 0, threshold: THRESHOLD_FLOOR, sampleCount: scores.length, };
   }
 
   const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
@@ -57,5 +57,5 @@ export function computeThreshold(
   const stddev = Math.sqrt(variance);
   const threshold = Math.max(THRESHOLD_FLOOR, mean - STDDEV_MULTIPLIER * stddev);
 
-  return { model, mean, stddev, threshold, sampleCount: scores.length, };
+  return { model: label, mean, stddev, threshold, sampleCount: scores.length, };
 }

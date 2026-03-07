@@ -69,7 +69,8 @@ export function combinedScore(correctness: number, lint: LintResult): number {
  */
 export async function lintAndLog(source: string, probeName: string, context: ScoreContext): Promise<LintResult> {
   const lint = await lintSource(source, {
-    model: context.modelId,
+    model: context.label,
+    label: context.label,
     probe: probeName,
     pass: context.pass,
     timestamp: context.timestamp,
@@ -84,7 +85,7 @@ export async function lintAndLog(source: string, probeName: string, context: Sco
     const rulesSummary = lint.violatedRules.length > 0
       ? ` (${lint.violatedRules.slice(0, 5).join(', ')})`
       : '';
-    console.log(`    [${context.modelId}:${probeName}] ${lintSummary} ${typeSummary}${rulesSummary}`);
+    console.log(`    [${context.label}:${probeName}] ${lintSummary} ${typeSummary}${rulesSummary}`);
   }
   return lint;
 }

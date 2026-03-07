@@ -15,8 +15,8 @@ import type { ViewerEntry, } from '../data/viewer-types.ts';
 /**
  * Renders the by-model view: one `<details>` per model, each containing scatter charts.
  * @param entries - all viewer entries
- * @param modelLabels - map from model ID to display label
- * @param thresholds - map from model ID to computed threshold
+ * @param modelLabels - map from model label to display label
+ * @param thresholds - map from model label to computed threshold
  * @returns HTML string
  */
 export function renderByModel(
@@ -24,24 +24,25 @@ export function renderByModel(
   modelLabels: ReadonlyMap<string, string>,
   thresholds: ReadonlyMap<string, number>,
 ): string {
-  /** Unique model IDs in the order they first appear */
-  const modelIds = [...new Set(entries.map((entry) => entry.model))];
+  /** Unique model labels in the order they first appear */
+  const labels = [...new Set(entries.map((entry) => entry.label))];
 
-  if (modelIds.length === 0) {
+  if (labels.length === 0) {
     return '<p>No model data available.</p>';
   }
 
   /** Hide Model and Probe columns since we're within a per-model overall context */
   const tableDisplay = { showModel: false, showProbe: false, };
 
-  return modelIds.map((modelId) => {
-    const label = modelLabels.get(modelId) ?? modelId;
-    const color = vendorColor(modelId);
-    const threshold = thresholds.get(modelId) ?? 0;
-    const modelEntries = entries.filter((entry) => entry.model === modelId);
+  return labels.map((label) => {
+    const modelEntries = entries.filter((entry) => entry.label === label);
+    /** OpenRouter model ID from the first entry, used for vendor color/icon */
+    const openrouterId = modelEntries[0]?.model ?? '';
+    const color = vendorColor(openrouterId);
+    const threshold = thresholds.get(label) ?? 0;
 
     // Overall score chart
-    const overallPoints = buildOverallPoints(modelEntries, modelId, color);
+    const overallPoints = buildOverallPoints(modelEntries, label, openrouterId, color);
     const overallChart = renderScatterChart(
       overallPoints, threshold, `threshold: ${threshold.toFixed(2)}`, `${label} overall score`,
       { tableDisplay, },
@@ -50,7 +51,7 @@ export function renderByModel(
     // Per-probe charts
     const probeNames = [...new Set(modelEntries.flatMap((entry) => Object.keys(entry.probeScores)))];
     const probeCharts = probeNames.map((probe) => {
-      const probePoints = buildProbePoints(modelEntries, modelId, probe, color);
+      const probePoints = buildProbePoints(modelEntries, label, openrouterId, probe, color);
       return `<details class="probe-section">
   <summary class="probe-tab">${escapeHtml(probe)}</summary>
   ${renderScatterChart(probePoints, 0, '', `${label} - ${probe}`, { tableDisplay: { showModel: false, showProbe: false, }, })}
@@ -58,7 +59,7 @@ export function renderByModel(
     }).join('\n');
 
     return `<details class="model-section">
-  <summary class="model-tab">${iconDot(modelId, color)} ${escapeHtml(label)}</summary>
+  <summary class="model-tab">${iconDot(openrouterId, color)} ${escapeHtml(label)}</summary>
   <div class="model-content">
     ${overallChart}
     <h3>Per-probe breakdown</h3>
@@ -71,29 +72,31 @@ export function renderByModel(
 /**
  * Builds scatter points from overall scores for one model.
  * @param entries - history entries for this model
- * @param modelId - model identifier
+ * @param label - model display label
+ * @param openrouterId - OpenRouter model ID for vendor icon
  * @param color - point color
  * @returns scatter points array
  */
 function buildOverallPoints(
   entries: readonly ViewerEntry[],
-  modelId: string,
+  label: string,
+  openrouterId: string,
   color: string,
 ): readonly ScatterPoint[] {
   return entries.map((entry, index) => {
-    const runId = `${modelId}-${entry.timestamp}`;
+    const runId = `${label}-${entry.timestamp}`;
     return {
       runId,
       index,
       timestamp: entry.timestamp,
       score: entry.overallScore,
       color,
-      icon: vendorIcon(modelId),
-      title: `${modelId} ${entry.timestamp.slice(0, 10)}: ${entry.overallScore.toFixed(2)}`,
+      icon: vendorIcon(openrouterId),
+      title: `${label} ${entry.timestamp.slice(0, 10)}: ${entry.overallScore.toFixed(2)}`,
       failed: entry.failed,
       tableRow: {
         timestamp: entry.timestamp,
-        model: modelId,
+        model: label,
         probe: 'overall',
         score: entry.overallScore,
         failed: entry.failed,
@@ -106,14 +109,16 @@ function buildOverallPoints(
 /**
  * Builds scatter points for a specific probe within one model's history.
  * @param entries - history entries for this model
- * @param modelId - model identifier
+ * @param label - model display label
+ * @param openrouterId - OpenRouter model ID for vendor icon
  * @param probe - probe name
  * @param color - point color
  * @returns scatter points array
  */
 function buildProbePoints(
   entries: readonly ViewerEntry[],
-  modelId: string,
+  label: string,
+  openrouterId: string,
   probe: string,
   color: string,
 ): readonly ScatterPoint[] {
@@ -122,7 +127,7 @@ function buildProbePoints(
     .map((entry, index) => {
       const score = entry.probeScores[probe] ?? 0;
       const pass2Score = entry.pass2Scores?.[probe];
-      const runId = `${modelId}-${probe}-${entry.timestamp}`;
+      const runId = `${label}-${probe}-${entry.timestamp}`;
       return {
         runId,
         index,
@@ -130,12 +135,12 @@ function buildProbePoints(
         score,
         pass2Score,
         color,
-        icon: vendorIcon(modelId),
+        icon: vendorIcon(openrouterId),
         title: `${probe} ${entry.timestamp.slice(0, 10)}: ${score.toFixed(2)}${pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2)})` : ''}`,
         failed: entry.failed,
         tableRow: {
           timestamp: entry.timestamp,
-          model: modelId,
+          model: label,
           probe,
           score,
           pass2Score,

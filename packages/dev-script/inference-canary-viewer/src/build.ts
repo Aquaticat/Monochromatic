@@ -35,25 +35,23 @@ console.error(`[viewer] ${String(entries.length)} runs, ${String(probeDetails.si
 
 //region Build model labels and thresholds from the canonical model registry
 
-/** Map from OpenRouter model ID to short display label */
+/** Map from model label to short display label (identity for current models, fallback for old artifacts) */
 const modelLabels = new Map<string, string>(
-  models.map((model) => [model.id, model.label]),
+  models.map((model) => [model.label, model.label]),
 );
 
 // Add labels for any models in artifacts not in the current registry
 for (const entry of entries) {
-  if (!modelLabels.has(entry.model)) {
-    /** Extract short name from model ID: "vendor/model-name" -> "model-name" */
-    const shortName = entry.model.split('/').pop() ?? entry.model;
-    modelLabels.set(entry.model, shortName);
+  if (!modelLabels.has(entry.label)) {
+    modelLabels.set(entry.label, entry.label);
   }
 }
 
-/** Map from model ID to computed degradation threshold */
+/** Map from model label to computed degradation threshold */
 const thresholds = new Map<string, number>();
-for (const modelId of new Set(entries.map((entry) => entry.model))) {
-  const result = computeThreshold(modelId, entries);
-  thresholds.set(modelId, result.threshold);
+for (const label of new Set(entries.map((entry) => entry.label))) {
+  const result = computeThreshold(label, entries);
+  thresholds.set(label, result.threshold);
 }
 
 //endregion Build model labels and thresholds
@@ -62,15 +60,15 @@ for (const modelId of new Set(entries.map((entry) => entry.model))) {
 
 /** Summaries for the overview table, one per model */
 const summaries: ModelSummary[] = [];
-for (const modelId of new Set(entries.map((entry) => entry.model))) {
-  const modelEntries = entries.filter((entry) => entry.model === modelId);
+for (const label of new Set(entries.map((entry) => entry.label))) {
+  const modelEntries = entries.filter((entry) => entry.label === label);
   const latest = modelEntries.at(-1);
   if (latest === undefined) continue;
 
-  const threshold = thresholds.get(modelId) ?? 0;
+  const threshold = thresholds.get(label) ?? 0;
   summaries.push({
-    model: modelId,
-    label: modelLabels.get(modelId) ?? modelId,
+    model: latest.model,
+    label,
     latestScore: latest.overallScore,
     latestTimestamp: latest.timestamp,
     runCount: modelEntries.length,

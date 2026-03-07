@@ -40,11 +40,11 @@ export async function runSecondPass(
 
   const fixPrompt = await probe.buildFixPrompt(firstResponse, context);
   if (fixPrompt === undefined) {
-    console.log(`  [${config.model}:${probe.name}] pass2: skipped (no diagnostics to fix)`);
+    console.log(`  [${config.label}:${probe.name}] pass2: skipped (no diagnostics to fix)`);
     return undefined;
   }
 
-  console.log(`  [${config.model}:${probe.name}] pass2: sending fix prompt...`);
+  console.log(`  [${config.label}:${probe.name}] pass2: sending fix prompt...`);
 
   const messages: ChatMessage[] = [
     { role: 'system', content: probe.system, },

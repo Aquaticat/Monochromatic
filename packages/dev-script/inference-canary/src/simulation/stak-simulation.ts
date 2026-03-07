@@ -85,7 +85,7 @@ export const stakSimulation: Probe = {
       if (!match) {
         allCorrect = false;
         console.log(
-          `  [${context.modelId}:stak-simulation] case ${testCase.label}: expected ${JSON.stringify(testCase.expected)}, got ${JSON.stringify(section)}`,
+          `  [${context.label}:stak-simulation] case ${testCase.label}: expected ${JSON.stringify(testCase.expected)}, got ${JSON.stringify(section)}`,
         );
       }
     }

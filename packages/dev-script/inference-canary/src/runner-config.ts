@@ -13,6 +13,11 @@ export type VerbosityLevel = 'low' | 'medium' | 'high' | 'max';
 export type RunnerConfig = {
   /** OpenRouter model ID (e.g. "anthropic/claude-sonnet-4.6") */
   readonly model: OpenRouterModelId;
+  /**
+   * Human-readable model label used for dedup, artifact directories, and log prefixes.
+   * Must be unique across all model configs tested in a single run.
+   */
+  readonly label: string;
   /** Number of times to run each probe for consistency checking */
   readonly consistencyRuns: number;
   /** Maximum tokens in the model's response */
@@ -29,7 +34,7 @@ export type RunnerConfig = {
   /** Base URL for the chat completions endpoint (e.g. "https://openrouter.ai/api/v1") */
   readonly baseURL?: string | undefined;
   /**
-   * Map from model ID to the set of probe names to skip for that model.
+   * Map from model label to the set of probe names to skip for that model.
    * Allows partial re-runs: only probes tested within the last 24 hours are skipped.
    */
   readonly skipProbes?: ReadonlyMap<string, ReadonlySet<string>> | undefined;
@@ -38,6 +43,7 @@ export type RunnerConfig = {
 /** Conservative defaults tuned for quick diagnostics */
 export const defaultConfig: RunnerConfig = {
   model: 'anthropic/claude-sonnet-4.6',
+  label: 'Sonnet 4.6',
   consistencyRuns: 2,
   // 128k allows verbose solutions (e.g. character-by-character parsers without regex).
   maxTokens: 128_000,

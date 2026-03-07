@@ -13,8 +13,11 @@ import type { OpenRouterModelId, } from './runner-types.ts';
 /** Per-model configuration for canary probes */
 export type ModelConfig = {
   /** OpenRouter model ID (e.g. "anthropic/claude-sonnet-4.6") */
-  readonly id: OpenRouterModelId;
-  /** Short human-readable label for reports */
+  readonly openrouterId: OpenRouterModelId;
+  /**
+   * Short human-readable label for reports.
+   * Must be unique across all models -- used as the dedup key and artifact directory name.
+   */
   readonly label: string;
   /**
    * OpenRouter verbosity override.
@@ -32,24 +35,28 @@ export const models: readonly ModelConfig[] = [
   // Claude 4.6 models use adaptive effort -- even at "low", the model decides how much to
   // think based on problem difficulty. Scoring poorly on hard probes at low effort is the
   // model's own calibration failure, not a testing artifact.
-  { id: 'anthropic/claude-opus-4.6', label: 'Opus 4.6', verbosity: 'low', },
-  { id: 'anthropic/claude-sonnet-4.6', label: 'Sonnet 4.6', verbosity: 'low', },
+  { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6', verbosity: 'low', },
+  { openrouterId: 'anthropic/claude-sonnet-4.6', label: 'Sonnet 4.6', verbosity: 'low', },
 
   // Add the best model + highest effort possible just to see what frontier looks like now.
-  { id: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 max', verbosity: 'max'},
+  // Update: Opus 4.6 max effort constantly times out.
+  // { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 max', verbosity: 'max', },
+  { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 high', verbosity: 'high', },
+  { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 medium', verbosity: 'medium', },
 
-  { id: 'anthropic/claude-haiku-4.5', label: 'Haiku 4.5', verbosity: 'low', },
-  { id: 'minimax/minimax-m2.5', label: 'MiniMax M2.5', verbosity: 'low', },
-  { id: 'moonshotai/kimi-k2.5', label: 'Kimi K2.5', verbosity: 'low', },
-  { id: 'z-ai/glm-5', label: 'GLM 5', verbosity: 'low', },
-  { id: 'qwen/qwen3.5-397b-a17b', label: 'Qwen 3.5 OSS', verbosity: 'low', },
+
+  { openrouterId: 'anthropic/claude-haiku-4.5', label: 'Haiku 4.5', verbosity: 'low', },
+  { openrouterId: 'minimax/minimax-m2.5', label: 'MiniMax M2.5', verbosity: 'low', },
+  { openrouterId: 'moonshotai/kimi-k2.5', label: 'Kimi K2.5', verbosity: 'low', },
+  { openrouterId: 'z-ai/glm-5', label: 'GLM 5', verbosity: 'low', },
+  { openrouterId: 'qwen/qwen3.5-397b-a17b', label: 'Qwen 3.5 OSS', verbosity: 'low', },
   // OpenAI models dropped 2026-02-28. OpenAI signed a classified-network contract with the
   // Pentagon hours after Anthropic was designated a supply chain risk for refusing to allow
   // its models to be used for mass surveillance and autonomous weapons. OpenAI claims its
   // contract includes similar red lines, but the opportunistic timing -- stepping in as a
   // replacement the same day a competitor was punished for holding firm -- does not inspire
   // confidence in those commitments. Not spending money on their API until this shakes out.
-  // { id: 'openai/gpt-5.2', label: 'GPT 5.2', verbosity: 'low', },
+  // { openrouterId: 'openai/gpt-5.2', label: 'GPT 5.2', verbosity: 'low', },
 ] as const;
 
 //endregion Model registry

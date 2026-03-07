@@ -26,7 +26,10 @@ export type { ConfigSnapshot, OpenRouterModelId, StreamTiming, StreamUsage, } fr
  */
 export type ViewerEntry = {
   readonly timestamp: string;
+  /** OpenRouter model ID for vendor color/icon resolution */
   readonly model: string;
+  /** Human-readable model label for display and grouping */
+  readonly label: string;
   /** Mean of per-probe pass-1 scores, 0 for failed runs */
   readonly overallScore: number;
   /** Per-probe pass-1 scores keyed by probe name */

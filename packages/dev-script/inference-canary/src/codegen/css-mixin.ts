@@ -80,11 +80,11 @@ export const cssMixinTranspiler = createCodeGenProbe({
   },
   transformSource: (source, context) => {
     const usesRegex = detectsRegexUsage(source);
-    regexViolationCache.set(context.modelId, usesRegex);
+    regexViolationCache.set(context.label, usesRegex);
     return { reject: usesRegex, source, };
   },
   customizeFixPrompt: (base, context) => {
-    if (regexViolationCache.get(context.modelId) !== true) return base;
+    if (regexViolationCache.get(context.label) !== true) return base;
     // Prepend constraint violation to existing fix prompt, or create a standalone prompt
     return base !== undefined ? `${REGEX_CONSTRAINT_MSG}\n${base}` : REGEX_CONSTRAINT_MSG;
   },

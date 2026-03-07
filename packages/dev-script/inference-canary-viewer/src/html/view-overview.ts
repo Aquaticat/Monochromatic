@@ -91,15 +91,12 @@ function buildAllModelPoints(
   entries: readonly ViewerEntry[],
   summaries: readonly ModelSummary[],
 ): readonly ScatterPoint[] {
-  const labelMap = new Map(summaries.map((s) => [s.model, s.label]));
-
   return entries.filter((entry) => entry.overallScore > 0).map((entry, index) => {
-    const label = labelMap.get(entry.model) ?? entry.model;
     const color = vendorColor(entry.model);
-    const runId = `${entry.model}-${entry.timestamp}`;
+    const runId = `${entry.label}-${entry.timestamp}`;
     const tableRow = {
       timestamp: entry.timestamp,
-      model: entry.model,
+      model: entry.label,
       probe: 'overall',
       score: entry.overallScore,
       failed: entry.failed,
@@ -111,7 +108,7 @@ function buildAllModelPoints(
       score: entry.overallScore,
       color,
       icon: vendorIcon(entry.model),
-      title: `${label} ${entry.timestamp.slice(0, 10)}: ${entry.overallScore.toFixed(2)}`,
+      title: `${entry.label} ${entry.timestamp.slice(0, 10)}: ${entry.overallScore.toFixed(2)}`,
       failed: entry.failed,
       tableRow,
     };

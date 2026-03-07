@@ -85,15 +85,15 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
       /** Base fix prompt from standard lint/runtime diagnostics */
       const base = await buildCodeGenFixPrompt(
         response, context,
-        lintCache.get(context.modelId),
-        containerCache.get(context.modelId),
+        lintCache.get(context.label),
+        containerCache.get(context.label),
       );
 
       // Append additional run diagnostics when runs failed or produced incorrect output
       /** Fix prompt with additional run failure diagnostics appended */
       const withAdditional = appendAdditionalRunDiagnostics(
         base, config.additionalRuns, additionalContainerCaches,
-        additionalVerifyCaches, context.modelId,
+        additionalVerifyCaches, context.label,
       );
 
       // Apply probe-specific customization (e.g. constraint violation messages)
@@ -105,7 +105,7 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
       // Append perf diagnostics when a perf test is configured and the result was slow
       if (config.perfTest === undefined) return customized;
       /** Cached perf result for this model */
-      const perf = perfCache.get(context.modelId);
+      const perf = perfCache.get(context.label);
       if (perf === undefined) return customized;
       /** Formatted performance diagnostic text, undefined when perf was acceptable */
       const perfDiag = buildPerfDiagnostic(perf, config.perfTest);
@@ -133,7 +133,7 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
       /** Extraction result: source code and whether a fenced block was found */
       const extraction = tryExtractCode(response);
       if (!extraction.fenced) {
-        console.log(`  [${context.modelId}:${config.name}] no fenced code block found in response`);
+        console.log(`  [${context.label}:${config.name}] no fenced code block found in response`);
         // Still lint the raw response so artifacts are written for debugging,
         // but score is forced to 0 since the model didn't follow the output format.
         await lintAndLog(extraction.source, config.name, context);
@@ -171,14 +171,14 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
         ...(additionalPromise !== undefined ? [additionalPromise] : []),
       ]) as [ContainerResult, LintResult, TimedContainerResult | undefined, ContainerResult[] | undefined];
 
-      lintCache.set(context.modelId, lint);
-      containerCache.set(context.modelId, result);
+      lintCache.set(context.label, lint);
+      containerCache.set(context.label, result);
 
       // Cache and verify additional runs
       if (additionalResults !== undefined && config.additionalRuns !== undefined) {
         cacheAdditionalResults(
           additionalResults, config.additionalRuns,
-          additionalContainerCaches, additionalVerifyCaches, context.modelId,
+          additionalContainerCaches, additionalVerifyCaches, context.label,
         );
       }
 
@@ -187,16 +187,16 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
       // conditionally reassigned when a perf test produces a result
       let perfMultiplier = 1;
       if (config.perfTest !== undefined && perfResult !== undefined) {
-        perfCache.set(context.modelId, perfResult);
+        perfCache.set(context.label, perfResult);
         perfMultiplier = computePerfScore(perfResult, config.perfTest);
         console.log(
-          `  [${context.modelId}:${config.name}] perf: ${String(perfResult.durationMs)}ms score=${perfMultiplier.toFixed(2)}`,
+          `  [${context.label}:${config.name}] perf: ${String(perfResult.durationMs)}ms score=${perfMultiplier.toFixed(2)}`,
         );
       }
 
       if (transformed.reject) return combinedScore(0, lint) * perfMultiplier;
       if (result.timedOut || result.exitCode !== 0) {
-        console.log(`  [${context.modelId}:${config.name}] container failed: exit=${String(result.exitCode)} timedOut=${String(result.timedOut)}`);
+        console.log(`  [${context.label}:${config.name}] container failed: exit=${String(result.exitCode)} timedOut=${String(result.timedOut)}`);
         return combinedScore(0, lint) * perfMultiplier;
       }
 
@@ -208,7 +208,7 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
       const additionalCorrectnesses = additionalResults !== undefined && config.additionalRuns !== undefined
         ? computeAdditionalCorrectnesses(
           additionalResults, config.additionalRuns,
-          additionalVerifyCaches, context.modelId, config.name,
+          additionalVerifyCaches, context.label, config.name,
         )
         : [];
 

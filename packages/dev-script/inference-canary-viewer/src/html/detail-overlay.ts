@@ -39,13 +39,13 @@ export async function renderAllOverlays(
     const probeNames = Object.keys(entry.probeScores);
 
     // Overall run overlay
-    const overallId = `${entry.model}-${entry.timestamp}`;
+    const overallId = `${entry.label}-${entry.timestamp}`;
     overlays.push(renderRunOverlay(overallId, entry, modelLabels));
 
     // Per-probe overlays
     for (const probe of probeNames) {
-      const probeId = `${entry.model}-${probe}-${entry.timestamp}`;
-      const key = probeKey(entry.model, probe, entry.timestamp);
+      const probeId = `${entry.label}-${probe}-${entry.timestamp}`;
+      const key = probeKey(entry.label, probe, entry.timestamp);
       const detail = probeDetails.get(key);
       overlays.push(await renderProbeOverlay(probeId, entry, probe, detail, modelLabels));
     }
@@ -67,11 +67,11 @@ function renderRunOverlay(
   entry: ViewerEntry,
   modelLabels: ReadonlyMap<string, string>,
 ): string {
-  const label = modelLabels.get(entry.model) ?? entry.model;
+  const label = entry.label;
 
   const probeCards = Object.entries(entry.probeScores)
     .map(([name, score]) => {
-      const probeOverlayId = `run-${escapeHtml(entry.model)}-${escapeHtml(name)}-${escapeHtml(entry.timestamp)}`;
+      const probeOverlayId = `run-${escapeHtml(entry.label)}-${escapeHtml(name)}-${escapeHtml(entry.timestamp)}`;
       return `<button popovertarget="${probeOverlayId}" class="probe-card">
   <span>${escapeHtml(name)}</span>
   <span class="probe-card-score"><strong>${score.toFixed(2)}</strong></span>
@@ -104,7 +104,7 @@ async function renderProbeOverlay(
   detail: ProbeDetail | undefined,
   modelLabels: ReadonlyMap<string, string>,
 ): Promise<string> {
-  const label = modelLabels.get(entry.model) ?? entry.model;
+  const label = entry.label;
   const score = entry.probeScores[probe] ?? 0;
   const pass2Score = entry.pass2Scores?.[probe];
 

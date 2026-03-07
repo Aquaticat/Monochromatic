@@ -27,12 +27,12 @@ const MAX_ADDITIONAL_OUTPUT = 500;
  * @param runs - additional run configurations
  * @param containerCaches - per-run container result caches
  * @param verifyCaches - per-run verification result caches
- * @param modelId - model identifier for cache lookups
+ * @param label - model label for cache lookups
  * @returns augmented fix prompt, or base unchanged when no additional diagnostics exist
  *
  * @example
  * ```ts
- * const enhanced = appendAdditionalRunDiagnostics(base, runs, cCaches, vCaches, modelId);
+ * const enhanced = appendAdditionalRunDiagnostics(base, runs, cCaches, vCaches, label);
  * ```
  */
 export function appendAdditionalRunDiagnostics(
@@ -40,7 +40,7 @@ export function appendAdditionalRunDiagnostics(
   runs: readonly AdditionalRun[] | undefined,
   containerCaches: readonly Map<string, ContainerResult>[],
   verifyCaches: readonly Map<string, VerifyResult>[],
-  modelId: string,
+  label: string,
 ): string | undefined {
   if (runs === undefined || runs.length === 0) return base;
 
@@ -48,14 +48,14 @@ export function appendAdditionalRunDiagnostics(
   const diagSections = runs
     .map((run, index) => {
       /** Cached container result for this run and model */
-      const container = containerCaches[index]?.get(modelId);
+      const container = containerCaches[index]?.get(label);
       if (container === undefined) return undefined;
       if (container.timedOut) return `=== ${run.name} ===\nProcess timed out.`;
       if (container.exitCode !== 0) {
         return `=== ${run.name} ===\nExited with code ${String(container.exitCode)}.\n${container.stderr.slice(0, MAX_ADDITIONAL_OUTPUT)}`;
       }
       /** Cached verification result for this run and model */
-      const verify = verifyCaches[index]?.get(modelId);
+      const verify = verifyCaches[index]?.get(label);
       if (verify !== undefined && verify.correctness < 1) {
         return `=== ${run.name} (incorrect output) ===\n${container.stdout.slice(0, MAX_ADDITIONAL_OUTPUT)}`;
       }
@@ -116,21 +116,21 @@ export function executeAdditionalRuns(
  * @param runs - additional run configurations (for verify functions)
  * @param containerCaches - per-run container result caches to populate
  * @param verifyCaches - per-run verification result caches to populate
- * @param modelId - model identifier for cache keys
+ * @param label - model label for cache keys
  */
 export function cacheAdditionalResults(
   results: readonly ContainerResult[],
   runs: readonly AdditionalRun[],
   containerCaches: Map<string, ContainerResult>[],
   verifyCaches: Map<string, VerifyResult>[],
-  modelId: string,
+  label: string,
 ): void {
   for (const [index, result] of results.entries()) {
-    containerCaches[index]?.set(modelId, result);
+    containerCaches[index]?.set(label, result);
     /** Run configuration for this index, used to call verify on successful containers */
     const run = runs[index];
     if (run !== undefined && result.exitCode === 0 && !result.timedOut) {
-      verifyCaches[index]?.set(modelId, run.verify(result));
+      verifyCaches[index]?.set(label, run.verify(result));
     }
   }
 }
@@ -141,7 +141,7 @@ export function cacheAdditionalResults(
  * @param results - container results from executeAdditionalRuns
  * @param runs - additional run configurations (for names in log messages)
  * @param verifyCaches - per-run verification caches populated by cacheAdditionalResults
- * @param modelId - model identifier for cache lookups and log prefixes
+ * @param label - model label for cache lookups and log prefixes
  * @param probeName - probe name for log prefixes
  * @returns array of correctness fractions (0-1) in the same order as runs
  */
@@ -149,7 +149,7 @@ export function computeAdditionalCorrectnesses(
   results: readonly ContainerResult[],
   runs: readonly AdditionalRun[],
   verifyCaches: readonly Map<string, VerifyResult>[],
-  modelId: string,
+  label: string,
   probeName: string,
 ): number[] {
   return results.map((result, index) => {
@@ -157,11 +157,11 @@ export function computeAdditionalCorrectnesses(
       /** Run name for the log message, falls back to numeric index */
       const runName = runs[index]?.name ?? String(index);
       console.log(
-        `  [${modelId}:${probeName}:${runName}] container failed: exit=${String(result.exitCode)} timedOut=${String(result.timedOut)}`,
+        `  [${label}:${probeName}:${runName}] container failed: exit=${String(result.exitCode)} timedOut=${String(result.timedOut)}`,
       );
       return 0;
     }
-    return verifyCaches[index]?.get(modelId)?.correctness ?? 0;
+    return verifyCaches[index]?.get(label)?.correctness ?? 0;
   });
 }
 
