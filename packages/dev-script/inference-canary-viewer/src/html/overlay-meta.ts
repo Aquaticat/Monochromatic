@@ -4,6 +4,8 @@
  * Renders timing, usage, badges, reasoning traces, fix prompts, and config
  * as compact HTML sections within popover overlays.
  */
+import { micromark, } from 'micromark';
+
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 import type { ConfigSnapshot, StreamTiming, StreamUsage, } from '../data/viewer-types.ts';
@@ -165,7 +167,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
       class: 'overlay-details',
       children: [
         h({ tag: 'summary', text: `Thinking (${formatNumber(detail.reasoning.length)} chars)`, }),
-        h({ tag: 'pre', class: 'overlay-pre', text: detail.reasoning, }),
+        h({ tag: 'div', class: 'overlay-markdown', html: micromark(detail.reasoning), }),
       ],
     }));
   }
@@ -176,7 +178,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
       class: 'overlay-details',
       children: [
         h({ tag: 'summary', text: `Response (${formatNumber(detail.initialResponse.length)} chars)`, }),
-        h({ tag: 'pre', class: 'overlay-pre', text: detail.initialResponse, }),
+        h({ tag: 'div', class: 'overlay-markdown', html: micromark(detail.initialResponse), }),
       ],
     }));
   }
@@ -187,7 +189,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
       class: 'overlay-details',
       children: [
         h({ tag: 'summary', text: `Fix thinking (${formatNumber(detail.fixReasoning.length)} chars)`, }),
-        h({ tag: 'pre', class: 'overlay-pre', text: detail.fixReasoning, }),
+        h({ tag: 'div', class: 'overlay-markdown', html: micromark(detail.fixReasoning), }),
       ],
     }));
   }
@@ -198,7 +200,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
       class: 'overlay-details',
       children: [
         h({ tag: 'summary', text: `Fix response (${formatNumber(detail.fixResponse.length)} chars)`, }),
-        h({ tag: 'pre', class: 'overlay-pre', text: detail.fixResponse, }),
+        h({ tag: 'div', class: 'overlay-markdown', html: micromark(detail.fixResponse), }),
       ],
     }));
   }
@@ -209,7 +211,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
       class: 'overlay-details',
       children: [
         h({ tag: 'summary', text: 'Fix prompt', }),
-        h({ tag: 'pre', class: 'overlay-pre', text: detail.fixPrompt, }),
+        h({ tag: 'div', class: 'overlay-markdown', html: micromark(detail.fixPrompt), }),
       ],
     }));
   }

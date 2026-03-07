@@ -10,6 +10,7 @@
   "dependencies": {
     "@lobehub/icons-static-svg": "^1.82.0",
     "@monochromatic-dev/dev-script-inference-canary": "workspace:*",
+    "micromark": "catalog:",
     "@monochromatic-dev/module-es": "workspace:*",
     "nue-glow": "^0.2.5"
   },
