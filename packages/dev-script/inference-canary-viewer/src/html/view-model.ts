@@ -59,7 +59,7 @@ export function renderByModel(
         tag: 'details',
         class: 'probe-section',
         children: [
-          h({ tag: 'summary', class: 'probe-tab', text: probe, }),
+          h({ tag: 'summary', text: probe, }),
           renderScatterChart(probePoints, 0, '', `${label} - ${probe}`, { tableDisplay: { showModel: false, showProbe: false, }, }),
         ],
       });
@@ -71,12 +71,11 @@ export function renderByModel(
       children: [
         h({
           tag: 'summary',
-          class: 'model-tab',
           children: [iconDot(openrouterId, color), ' ', h({ tag: 'span', text: label, })],
         }),
         h({
           tag: 'div',
-          class: 'model-content',
+          class: 'pane',
           children: [
             overallChart,
             h({ tag: 'h3', text: 'Per-probe breakdown', }),

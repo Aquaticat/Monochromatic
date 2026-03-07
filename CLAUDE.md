@@ -165,7 +165,7 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - Browser baseline: Firefox ESR 140 (June 2025); see `PHILOSOPHY.browser-support.md`
 - `rem` for all sizing (use `calc()` for derivation); never `px` except device-pixel-dependent contexts
 - Logical properties everywhere (`margin-inline-start`, `inset-block-start`, `text-align: start`)
-- No shorthand properties (exception: `inset: 0`); longhand is easier to scan and diff
+- No shorthand properties that combine unrelated axes or sub-properties (e.g. `margin`, `padding`, `border`, `background`); longhand is easier to scan and diff. Single-axis or single-concept shorthands are fine (`padding-inline`, `margin-block`, `border-radius`, `inset`, `gap`).
 - All colors via CSS custom properties from the design token system; no `var()` fallbacks (exception: user-configurable properties)
 - Minimal declarations; no `!important`; fluid approaches over breakpoints
 - `:focus-visible` on all interactive elements; `48px` minimum touch targets via `min-inline-size`/`min-block-size`

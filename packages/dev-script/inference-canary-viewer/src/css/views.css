@@ -1,10 +1,10 @@
 /* View switching via <details> + :has(), and status indicators. */
 
-/* Top-level view switcher: only one section open at a time */
+/*region View switcher */
+
 .view-switcher {
   display: flex;
   flex-direction: column;
-  gap: 0;
 
   /* Hide non-open sibling views when one is open */
   &:has(.view-section[open]) > .view-section:not([open]) > .pane {
@@ -13,7 +13,7 @@
 }
 
 .view-section {
-  border-block-end: 0.0625rem solid var(--border);
+  border-block-end: var(--border-width) solid var(--border);
 
   & > summary {
     padding-block: 0.75rem;
@@ -32,17 +32,21 @@
   }
 }
 
-/* Nested model sections */
+/*endregion View switcher */
+
+/*region Nested detail sections */
+
 .model-section {
-  border: 0.0625rem solid var(--border);
-  border-radius: 0.25rem;
+  border-block: var(--border-width) solid var(--border);
+  border-inline: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
   margin-block: 0.5rem;
 
   & > summary {
     padding-block: 0.5rem;
     padding-inline: 0.75rem;
     font-weight: 600;
-    font-size: 0.9375rem;
+    font-size: var(--font-size-xl);
 
     &:hover {
       background-color: var(--bg-hover);
@@ -55,16 +59,16 @@
   }
 }
 
-/* Nested probe sections */
 .probe-section {
-  border: 0.0625rem solid var(--border-subtle);
-  border-radius: 0.25rem;
-  margin-block: 0.375rem;
+  border-block: var(--border-width) solid var(--border-subtle);
+  border-inline: var(--border-width) solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  margin-block: calc(0.5rem - var(--border-width) * 2);
 
   & > summary {
-    padding-block: 0.375rem;
+    padding-block: calc(0.5rem - var(--border-width) * 2);
     padding-inline: 0.5rem;
-    font-size: 0.875rem;
+    font-size: var(--font-size-lg);
     font-weight: 500;
 
     &:hover {
@@ -78,7 +82,10 @@
   }
 }
 
-/* Run status color tinting (applied to inline spans and table rows) */
+/*endregion Nested detail sections */
+
+/*region Status indicators */
+
 .run-status {
   &[data-level="ok"] {
     color: var(--ok-fg);
@@ -96,23 +103,26 @@
   }
 }
 
-/* Pill-shaped status badge (adds shape to run-status color tinting) */
 .status-pill {
   padding-block: 0.25rem;
   padding-inline: 0.75rem;
-  border-radius: 0.25rem;
-  font-size: 0.8125rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-md);
   font-weight: 600;
 }
 
-/* Inline data error marker for missing fix scores */
 .missing-data-label {
   color: var(--warn-fg);
   font-style: italic;
-  font-size: 0.8125em;
+  font-size: var(--font-size-md);
 }
 
-/* Overview table */
+/*endregion Status indicators */
+
+/*region Overview */
+
 .overview-table {
   margin-block: 0.5rem;
 }
+
+/*endregion Overview */

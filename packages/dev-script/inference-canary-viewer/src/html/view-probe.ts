@@ -50,7 +50,6 @@ export function renderByProbe(
         children: [
           h({
             tag: 'summary',
-            class: 'model-tab',
             children: [iconDot(openrouterId, color), ' ', h({ tag: 'span', text: label, })],
           }),
           renderScatterChart(modelPoints, 0, '', `${probe} - ${label}`, { tableDisplay: { showModel: false, showProbe: false, }, }),
@@ -62,10 +61,10 @@ export function renderByProbe(
       tag: 'details',
       class: 'probe-section',
       children: [
-        h({ tag: 'summary', class: 'probe-tab', text: probe, }),
+        h({ tag: 'summary', text: probe, }),
         h({
           tag: 'div',
-          class: 'probe-content',
+          class: 'pane',
           children: [
             legend,
             renderScatterChart(points, 0, '', `${probe} - all models`, { tableDisplay: { showProbe: false, }, }),
@@ -186,7 +185,7 @@ function buildLegend(
     const color = vendorColor(openrouterId);
     return h({
       tag: 'span',
-      class: 'legend-item',
+      class: 'item',
       children: [iconDot(openrouterId, color), ' ', h({ tag: 'span', text: label, })],
     });
   }).join('\n');

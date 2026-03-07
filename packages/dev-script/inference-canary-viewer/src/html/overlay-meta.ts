@@ -54,24 +54,24 @@ function formatNumber(num: number,): string {
  * @example
  * ```ts
  * renderBadges({ partial: true, error: 'timeout', finishReason: 'length' });
- * // '<div class="overlay-badges">...'
+ * // '<div class="detail-popover-badges">...'
  * ```
  */
 export function renderBadges(detail: ProbeDetail,): string {
   const badges: string[] = [];
 
   if (detail.partial === true) {
-    badges.push(h({ tag: 'span', class: 'badge badge--partial', text: 'partial', }));
+    badges.push(h({ tag: 'span', class: 'run-indicator', attrs: { 'data-severity': 'warning', }, text: 'partial', }));
   }
   if (detail.error !== undefined && detail.error !== '') {
-    badges.push(h({ tag: 'span', class: 'badge badge--error', text: detail.error, }));
+    badges.push(h({ tag: 'span', class: 'run-indicator', attrs: { 'data-severity': 'error', }, text: detail.error, }));
   }
   if (detail.finishReason !== undefined && detail.finishReason !== 'stop') {
-    badges.push(h({ tag: 'span', class: 'badge badge--finish', text: detail.finishReason, }));
+    badges.push(h({ tag: 'span', class: 'run-indicator', attrs: { 'data-severity': 'neutral', }, text: detail.finishReason, }));
   }
 
   if (badges.length === 0) return '';
-  return h({ tag: 'div', class: 'overlay-badges', children: badges, });
+  return h({ tag: 'div', class: 'detail-popover-badges', children: badges, });
 }
 
 /**
@@ -86,7 +86,7 @@ export function renderBadges(detail: ProbeDetail,): string {
  * @example
  * ```ts
  * renderPassMeta('Initial pass', timing, usage, 'stop');
- * // '<details class="overlay-details"><summary>Initial pass</summary><dl ...>...'
+ * // '<details class="collapsible-section"><summary>Initial pass</summary><dl ...>...'
  * ```
  */
 export function renderPassMeta(
@@ -138,10 +138,10 @@ export function renderPassMeta(
 
   return h({
     tag: 'details',
-    class: 'overlay-details',
+    class: 'collapsible-section',
     children: [
       h({ tag: 'summary', text: label, }),
-      h({ tag: 'dl', class: 'overlay-meta', children: items, }),
+      h({ tag: 'dl', class: 'metadata-grid', children: items, }),
     ],
   });
 }
@@ -155,7 +155,7 @@ export function renderPassMeta(
  * @example
  * ```ts
  * renderCollapsibles(detail);
- * // '<details class="overlay-details">...'
+ * // '<details class="collapsible-section">...'
  * ```
  */
 export function renderCollapsibles(detail: ProbeDetail,): string {
@@ -164,10 +164,10 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
   if (detail.reasoning !== undefined && detail.reasoning !== '') {
     sections.push(h({
       tag: 'details',
-      class: 'overlay-details',
+      class: 'collapsible-section',
       children: [
         h({ tag: 'summary', text: `Thinking (${formatNumber(detail.reasoning.length)} chars)`, }),
-        h({ tag: 'div', class: 'overlay-markdown', html: micromark(detail.reasoning), }),
+        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.reasoning), }),
       ],
     }));
   }
@@ -175,10 +175,10 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
   if (detail.initialResponse !== undefined && detail.initialResponse !== '') {
     sections.push(h({
       tag: 'details',
-      class: 'overlay-details',
+      class: 'collapsible-section',
       children: [
         h({ tag: 'summary', text: `Response (${formatNumber(detail.initialResponse.length)} chars)`, }),
-        h({ tag: 'div', class: 'overlay-markdown', html: micromark(detail.initialResponse), }),
+        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.initialResponse), }),
       ],
     }));
   }
@@ -186,10 +186,10 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
   if (detail.fixReasoning !== undefined && detail.fixReasoning !== '') {
     sections.push(h({
       tag: 'details',
-      class: 'overlay-details',
+      class: 'collapsible-section',
       children: [
         h({ tag: 'summary', text: `Fix thinking (${formatNumber(detail.fixReasoning.length)} chars)`, }),
-        h({ tag: 'div', class: 'overlay-markdown', html: micromark(detail.fixReasoning), }),
+        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.fixReasoning), }),
       ],
     }));
   }
@@ -197,10 +197,10 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
   if (detail.fixResponse !== undefined && detail.fixResponse !== '') {
     sections.push(h({
       tag: 'details',
-      class: 'overlay-details',
+      class: 'collapsible-section',
       children: [
         h({ tag: 'summary', text: `Fix response (${formatNumber(detail.fixResponse.length)} chars)`, }),
-        h({ tag: 'div', class: 'overlay-markdown', html: micromark(detail.fixResponse), }),
+        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.fixResponse), }),
       ],
     }));
   }
@@ -208,10 +208,10 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
   if (detail.fixPrompt !== undefined && detail.fixPrompt !== '') {
     sections.push(h({
       tag: 'details',
-      class: 'overlay-details',
+      class: 'collapsible-section',
       children: [
         h({ tag: 'summary', text: 'Fix prompt', }),
-        h({ tag: 'div', class: 'overlay-markdown', html: micromark(detail.fixPrompt), }),
+        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.fixPrompt), }),
       ],
     }));
   }
@@ -231,12 +231,12 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
 function renderConfig(config: ConfigSnapshot,): string {
   return h({
     tag: 'details',
-    class: 'overlay-details',
+    class: 'collapsible-section',
     children: [
       h({ tag: 'summary', text: 'Config', }),
       h({
         tag: 'dl',
-        class: 'overlay-meta',
+        class: 'metadata-grid',
         children: [
           h({ tag: 'dt', text: 'Verbosity', }),
           h({ tag: 'dd', text: config.verbosity, }),

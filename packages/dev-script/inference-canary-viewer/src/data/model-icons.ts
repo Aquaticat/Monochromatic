@@ -33,7 +33,7 @@ const VENDOR_ICONS: Record<string, string> = {
 };
 
 /**
- * Returns a `color-dot` span containing the vendor's SVG icon.
+ * Returns a `color-swatch` span containing the vendor's SVG icon.
  * Falls back to a plain colored dot when no icon is available.
  * @param modelId - full OpenRouter model ID
  * @param color - CSS color for the dot background/fallback
@@ -42,16 +42,16 @@ const VENDOR_ICONS: Record<string, string> = {
  * @example
  * ```ts
  * const dot = iconDot('anthropic/claude-opus-4.6', '#D97757');
- * // '<span class="color-dot color-dot--icon"><svg ...>...</svg></span>'
+ * // '<span class="color-swatch" data-shape="icon"><svg ...>...</svg></span>'
  * ```
  */
 export function iconDot(modelId: string, color: string): string {
   const vendor = modelId.split('/')[0] ?? '';
   const svg = VENDOR_ICONS[vendor];
   if (svg === undefined || svg === '') {
-    return `<span class="color-dot" style="--point-color: ${color}"></span>`;
+    return `<span class="color-swatch" style="--point-color: ${color}"></span>`;
   }
-  return `<span class="color-dot color-dot--icon" data-vendor="${vendor}">${svg}</span>`;
+  return `<span class="color-swatch" data-shape="icon" data-vendor="${vendor}">${svg}</span>`;
 }
 
 /**

@@ -29,24 +29,24 @@ export function renderDashboard(
         class: 'view-section',
         attrs: { open: '', },
         children: [
-          h({ tag: 'summary', class: 'view-tab', text: 'Overview', }),
-          h({ tag: 'div', class: 'view-content', html: overviewHtml, }),
+          h({ tag: 'summary', text: 'Overview', }),
+          h({ tag: 'div', class: 'pane', html: overviewHtml, }),
         ],
       }),
       h({
         tag: 'details',
         class: 'view-section',
         children: [
-          h({ tag: 'summary', class: 'view-tab', text: 'By model', }),
-          h({ tag: 'div', class: 'view-content', html: byModelHtml, }),
+          h({ tag: 'summary', text: 'By model', }),
+          h({ tag: 'div', class: 'pane', html: byModelHtml, }),
         ],
       }),
       h({
         tag: 'details',
         class: 'view-section',
         children: [
-          h({ tag: 'summary', class: 'view-tab', text: 'By probe', }),
-          h({ tag: 'div', class: 'view-content', html: byProbeHtml, }),
+          h({ tag: 'summary', text: 'By probe', }),
+          h({ tag: 'div', class: 'pane', html: byProbeHtml, }),
         ],
       }),
     ],

@@ -82,7 +82,7 @@ function renderRunOverlay(
           h({ tag: 'span', text: name, }),
           h({
             tag: 'span',
-            class: 'probe-card-score',
+            class: 'score',
             children: [h({ tag: 'strong', text: score.toFixed(2), })],
           }),
         ],
@@ -95,10 +95,10 @@ function renderRunOverlay(
 
   return h({
     tag: 'div',
-    class: 'overlay',
+    class: 'detail-popover',
     attrs: { popover: 'auto', id: `run-${id}`, },
     children: [
-      h({ tag: 'h2', class: 'overlay-title', text: title, }),
+      h({ tag: 'h2', class: 'detail-popover-title', text: title, }),
       h({ tag: 'div', class: 'probe-grid', html: probeCards, }),
     ],
   });
@@ -137,7 +137,7 @@ async function renderProbeOverlay(
 
   // Source code section (diff or single)
   let sourceSection = detail === undefined
-    ? h({ tag: 'p', class: 'overlay-no-artifacts', text: 'Artifacts not available for this run.', })
+    ? h({ tag: 'p', class: 'detail-popover-empty', text: 'Artifacts not available for this run.', })
     : '';
   if (detail?.initialSource !== undefined) {
     const initialHighlighted = highlightTs(detail.initialSource);
@@ -148,7 +148,7 @@ async function renderProbeOverlay(
       const diffLines = await computeDiff(initialFile, fixFile);
       sourceSection = h({
         tag: 'details',
-        class: 'overlay-details',
+        class: 'collapsible-section',
         children: [
           h({ tag: 'summary', text: 'Source diff', }),
           renderSideBySideDiff(diffLines),
@@ -157,7 +157,7 @@ async function renderProbeOverlay(
     } else {
       sourceSection = h({
         tag: 'details',
-        class: 'overlay-details',
+        class: 'collapsible-section',
         children: [
           h({ tag: 'summary', text: 'Source', }),
           h({ tag: 'pre', class: 'glow', html: initialHighlighted, }),
@@ -174,10 +174,10 @@ async function renderProbeOverlay(
 
   return h({
     tag: 'div',
-    class: 'overlay overlay--source',
-    attrs: { popover: 'auto', id: `run-${id}`, },
+    class: 'detail-popover',
+    attrs: { popover: 'auto', id: `run-${id}`, 'data-layout': 'centered', },
     children: [
-      h({ tag: 'h2', class: 'overlay-title', text: title, }),
+      h({ tag: 'h2', class: 'detail-popover-title', text: title, }),
       badges,
       initialMeta,
       fixMeta,

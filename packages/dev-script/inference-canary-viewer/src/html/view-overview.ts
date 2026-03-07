@@ -48,17 +48,17 @@ export function renderOverview(summaries: readonly ModelSummary[], entries: read
   // Summary table — status is shown inline rather than in its own column
   const rows = summaries.map((summary) => {
     const color = vendorColor(summary.model);
-    const statusClass = summary.failed ? 'status--failed' : summary.degraded ? 'status--degraded' : '';
+    const statusClass = summary.failed ? 'failed' : summary.degraded ? 'degraded' : '';
 
     const inlineStatus = summary.failed
-      ? ' ' + h({ tag: 'span', class: 'status--failed', text: '(timeout)', })
+      ? ' ' + h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'failed', }, text: '(timeout)', })
       : summary.degraded
-        ? ' ' + h({ tag: 'span', class: 'status--degraded', text: '(degraded)', })
+        ? ' ' + h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'degraded', }, text: '(degraded)', })
         : '';
 
     return h({
       tag: 'tr',
-      ...(statusClass !== '' ? { class: statusClass, } : {}),
+      ...(statusClass !== '' ? { class: 'run-status', attrs: { 'data-level': statusClass, }, } : {}),
       children: [
         h({
           tag: 'td',
@@ -146,7 +146,7 @@ function buildLegend(summaries: readonly ModelSummary[],): string {
     const color = vendorColor(s.model);
     return h({
       tag: 'span',
-      class: 'legend-item',
+      class: 'item',
       children: [iconDot(s.model, color), ' ', h({ tag: 'span', text: s.label, })],
     });
   }).join('\n');
