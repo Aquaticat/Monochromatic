@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@lobehub/icons-static-svg": "^1.82.0",
+    "@monochromatic-dev/build-tool-css": "workspace:*",
     "@monochromatic-dev/dev-script-inference-canary": "workspace:*",
     "micromark": "catalog:",
     "@monochromatic-dev/module-es": "workspace:*",

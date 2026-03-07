@@ -1,0 +1,30 @@
+/* Shared layout primitives for the canary viewer dashboard. */
+
+/* Grid with shared borders: container gets top+left border,
+   children get bottom+right border to form a seamless grid. */
+@mixin --border-grid {
+  border-block-start: 0.0625rem solid var(--border);
+  border-inline-start: 0.0625rem solid var(--border);
+}
+
+/* Clickable card cell inside a --border-grid container.
+   Flex column, centered content, grid-cell borders, hover feedback. */
+@mixin --grid-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding-block: 0.75rem;
+  padding-inline: 1rem;
+  border-block-end: 0.0625rem solid var(--border);
+  border-inline-end: 0.0625rem solid var(--border);
+  border-block-start: none;
+  border-inline-start: none;
+  background-color: transparent;
+  font: inherit;
+  font-size: 0.8125rem;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}

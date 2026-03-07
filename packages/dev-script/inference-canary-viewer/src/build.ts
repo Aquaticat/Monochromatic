@@ -4,9 +4,10 @@
  * Reads enriched artifacts from the sibling inference-canary package,
  * generates a single-page HTML dashboard, and writes it to `dist/final/`.
  */
-import { mkdir, readFile, writeFile, } from 'node:fs/promises';
+import { mkdir, writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { build as buildCss, } from '@monochromatic-dev/build-tool-css/ts';
 import { models, } from '@monochromatic-dev/dev-script-inference-canary/src/models.ts';
 
 import { readArtifacts, } from './data/read-artifacts.ts';
@@ -97,23 +98,16 @@ const pageHtml = renderPage(dashboardHtml, 'Inference canary dashboard');
 
 //endregion Render all HTML sections
 
-//region Concatenate CSS files and write output
-
-/** CSS source files in the order they should be concatenated */
-const CSS_FILES = ['base.css', 'chart.css', 'views.css', 'overlay.css', 'diff.css', 'glow.css'];
-
-const cssContents = await Promise.all(
-  CSS_FILES.map(async (file) => readFile(join(CSS_DIR, file), 'utf8')),
-);
-const combinedCss = cssContents.join('\n');
+//region Build CSS and write output
 
 await mkdir(DIST_DIR, { recursive: true, });
-await Promise.all([
+
+const [, cssResult] = await Promise.all([
   writeFile(join(DIST_DIR, 'index.html'), pageHtml, 'utf8'),
-  writeFile(join(DIST_DIR, 'style.css'), combinedCss, 'utf8'),
+  buildCss({ input: join(CSS_DIR, 'index.css'), output: join(DIST_DIR, 'style.css'), }),
 ]);
 
 console.error(`[viewer] wrote ${join(DIST_DIR, 'index.html')}`);
-console.error(`[viewer] wrote ${join(DIST_DIR, 'style.css')}`);
+console.error(`[viewer] wrote ${join(DIST_DIR, 'style.css')} (${String(cssResult.length)} bytes)`);
 
-//endregion Concatenate CSS and write output
+//endregion Build CSS and write output

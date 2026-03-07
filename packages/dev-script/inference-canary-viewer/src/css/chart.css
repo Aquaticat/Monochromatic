@@ -170,28 +170,11 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   margin-block-start: 0.5rem;
-  border-block-start: 0.0625rem solid var(--border);
-  border-inline-start: 0.0625rem solid var(--border);
+  @apply --border-grid;
 }
 
 .data-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  padding-block: 0.75rem;
-  padding-inline: 1rem;
-  border-block-end: 0.0625rem solid var(--border);
-  border-inline-end: 0.0625rem solid var(--border);
-  border-block-start: none;
-  border-inline-start: none;
-  background-color: transparent;
-  font: inherit;
-  font-size: 0.8125rem;
-  color: inherit;
-  cursor: pointer;
-  transition: background-color 0.1s;
+  @apply --grid-card;
 }
 
 .data-card:hover {
