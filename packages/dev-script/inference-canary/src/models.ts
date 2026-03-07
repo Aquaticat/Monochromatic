@@ -34,6 +34,10 @@ export const models: readonly ModelConfig[] = [
   // model's own calibration failure, not a testing artifact.
   { id: 'anthropic/claude-opus-4.6', label: 'Opus 4.6', verbosity: 'low', },
   { id: 'anthropic/claude-sonnet-4.6', label: 'Sonnet 4.6', verbosity: 'low', },
+
+  // Add the best model + highest effort possible just to see what frontier looks like now.
+  { id: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 max', verbosity: 'max'},
+
   { id: 'anthropic/claude-haiku-4.5', label: 'Haiku 4.5', verbosity: 'low', },
   { id: 'minimax/minimax-m2.5', label: 'MiniMax M2.5', verbosity: 'low', },
   { id: 'moonshotai/kimi-k2.5', label: 'Kimi K2.5', verbosity: 'low', },

@@ -5,6 +5,8 @@
  * trace five programs mentally. Tests whether the model reads code carefully
  * rather than pattern-matching to familiar language semantics.
  *
+ * Correctness is a hard gate: any incorrect case zeroes the entire score.
+ *
  * Trip wires (visible only in the interpreter source, not in the prompt):
  * - DIV uses Math.floor (floor division), not Math.trunc (truncation)
  * - MOD uses ((a % b) + b) % b (floored remainder), not a % b (JS remainder)
@@ -16,9 +18,6 @@ import { SIMULATION_SYSTEM, } from './system-prompt.ts';
 import { SIMULATION_CASES, } from '../stak/test-cases.ts';
 
 import type { Probe, } from '../probes.ts';
-
-/** Total number of simulation test programs; each is worth an equal fraction of the score */
-const STAK_SIMULATION_TOTAL_CASES = SIMULATION_CASES.length;
 
 /** Interpreter TypeScript source, read at module load time and embedded in every probe invocation */
 const INTERPRETER_SOURCE = await readFile(
@@ -79,16 +78,17 @@ export const stakSimulation: Probe = {
   prompt: buildSimulationPrompt(),
   score: (response, context) => {
     const sections = parseSections(response);
-    const correct = SIMULATION_CASES.filter((testCase, index) => {
+    let allCorrect = true;
+    for (const [index, testCase] of SIMULATION_CASES.entries()) {
       const section = sections[index] ?? '';
       const match = section === testCase.expected;
       if (!match) {
+        allCorrect = false;
         console.log(
           `  [${context.modelId}:stak-simulation] case ${testCase.label}: expected ${JSON.stringify(testCase.expected)}, got ${JSON.stringify(section)}`,
         );
       }
-      return match;
-    });
-    return correct.length / STAK_SIMULATION_TOTAL_CASES;
+    }
+    return allCorrect ? 1 : 0;
   },
 };
