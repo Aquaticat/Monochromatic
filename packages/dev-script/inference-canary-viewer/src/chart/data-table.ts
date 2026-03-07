@@ -4,6 +4,7 @@
  * Provides the same data as the visual chart in a machine-readable,
  * screen-reader-navigable format.
  */
+import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 /** Single data point for the table */
 export type TableRow = {
@@ -58,43 +59,61 @@ export function renderDataTable(
   /** Only show the fix score column when at least one row has pass2 data */
   const hasFixScores = rows.some((row) => row.pass2Score !== undefined);
 
-  const headerRow = `<tr>
-  <th scope="col">Timestamp</th>
-  ${showModel ? '<th scope="col">Model</th>' : ''}
-  ${showProbe ? '<th scope="col">Probe</th>' : ''}
-  <th scope="col">Score</th>
-  ${hasFixScores ? '<th scope="col">Fix score</th>' : ''}
-</tr>`;
+  const headerRow = h({
+    tag: 'tr',
+    children: [
+      h({ tag: 'th', attrs: { scope: 'col', }, text: 'Timestamp', }),
+      ...(showModel ? [h({ tag: 'th', attrs: { scope: 'col', }, text: 'Model', })] : []),
+      ...(showProbe ? [h({ tag: 'th', attrs: { scope: 'col', }, text: 'Probe', })] : []),
+      h({ tag: 'th', attrs: { scope: 'col', }, text: 'Score', }),
+      ...(hasFixScores ? [h({ tag: 'th', attrs: { scope: 'col', }, text: 'Fix score', })] : []),
+    ],
+  });
 
   const bodyRows = rows.map((row) => {
-    /** Append "(timeout)" inline when the run failed */
-    const timestampCell = row.failed
-      ? `${escapeHtml(row.timestamp)} <span class="status--failed">(timeout)</span>`
-      : escapeHtml(row.timestamp);
+    /** Timestamp cell with inline "(timeout)" for failed runs */
+    const timestampTd = row.failed
+      ? h({
+        tag: 'td',
+        children: [
+          h({ tag: 'span', text: row.timestamp, }),
+          ' ',
+          h({ tag: 'span', class: 'status--failed', text: '(timeout)', }),
+        ],
+      })
+      : h({ tag: 'td', text: row.timestamp, });
 
-    /** Show why fix score is missing: run failed → fix never attempted; otherwise data error */
-    const fixScoreCell = hasFixScores
+    /** Fix score cell: present, "(not run)" for failed, or "(data error)" */
+    const fixScoreTd = hasFixScores
       ? row.pass2Score !== undefined
-        ? row.pass2Score.toFixed(2)
+        ? h({ tag: 'td', text: row.pass2Score.toFixed(2), })
         : row.failed
-          ? '<span class="data-error">(not run)</span>'
-          : '<span class="data-error">(data error)</span>'
+          ? h({ tag: 'td', children: [h({ tag: 'span', class: 'data-error', text: '(not run)', })], })
+          : h({ tag: 'td', children: [h({ tag: 'span', class: 'data-error', text: '(data error)', })], })
       : '';
 
-    return `<tr${row.failed ? ' class="status--failed"' : ''}>
-  <td>${timestampCell}</td>
-  ${showModel ? `<td>${escapeHtml(row.model)}</td>` : ''}
-  ${showProbe ? `<td>${escapeHtml(row.probe)}</td>` : ''}
-  <td>${row.score.toFixed(2)}</td>
-  ${hasFixScores ? `<td>${fixScoreCell}</td>` : ''}
-</tr>`;
+    return h({
+      tag: 'tr',
+      ...(row.failed ? { class: 'status--failed', } : {}),
+      children: [
+        timestampTd,
+        ...(showModel ? [h({ tag: 'td', text: row.model, })] : []),
+        ...(showProbe ? [h({ tag: 'td', text: row.probe, })] : []),
+        h({ tag: 'td', text: row.score.toFixed(2), }),
+        fixScoreTd,
+      ].filter(Boolean),
+    });
   }).join('\n');
 
-  return `<table class="chart-data-table">
-  <caption>${escapeHtml(caption)}</caption>
-  <thead>${headerRow}</thead>
-  <tbody>${bodyRows}</tbody>
-</table>`;
+  return h({
+    tag: 'table',
+    class: 'chart-data-table',
+    children: [
+      h({ tag: 'caption', text: caption, }),
+      h({ tag: 'thead', children: [headerRow], }),
+      h({ tag: 'tbody', html: bodyRows, }),
+    ],
+  });
 }
 
 /**
@@ -121,43 +140,50 @@ function renderDataGrid(
   const hasFixScores = rows.some((row) => row.pass2Score !== undefined);
 
   const cards = rows.map((row) => {
-    const timestamp = escapeHtml(row.timestamp);
-    const failedSuffix = row.failed ? ' <span class="status--failed">(timeout)</span>' : '';
     const score = row.score.toFixed(2);
 
-    /** Warn when fix data is missing for this row but exists elsewhere */
-    const fixSuffix = hasFixScores
-      ? row.pass2Score !== undefined
-        ? ` (fix: ${row.pass2Score.toFixed(2)})`
-        : row.failed
-          ? ' <span class="data-warning">(fix: not run)</span>'
-          : ' <span class="data-warning">(fix: no data)</span>'
-      : '';
+    /** Timestamp line with optional "(timeout)" suffix */
+    const timestampChildren: string[] = [h({ tag: 'span', text: row.timestamp, })];
+    if (row.failed) {
+      timestampChildren.push(' ', h({ tag: 'span', class: 'status--failed', text: '(timeout)', }));
+    }
+
+    /** Score line with optional fix suffix */
+    const scoreChildren: string[] = [h({ tag: 'strong', text: score, })];
+    if (hasFixScores) {
+      if (row.pass2Score !== undefined) {
+        scoreChildren.push(` (fix: ${row.pass2Score.toFixed(2)})`);
+      } else if (row.failed) {
+        scoreChildren.push(' ', h({ tag: 'span', class: 'data-warning', text: '(fix: not run)', }));
+      } else {
+        scoreChildren.push(' ', h({ tag: 'span', class: 'data-warning', text: '(fix: no data)', }));
+      }
+    }
 
     const tag = row.runId !== undefined ? 'button' : 'div';
-    const popoverAttr = row.runId !== undefined ? ` popovertarget="run-${escapeHtml(row.runId)}"` : '';
+    const attrs: Record<string, string> = { role: 'listitem', };
+    if (row.runId !== undefined) {
+      attrs['popovertarget'] = `run-${row.runId}`;
+    }
+    if (row.failed) {
+      attrs['data-failed'] = '';
+    }
 
-    return `<${tag} class="data-card"${popoverAttr} role="listitem"${row.failed ? ' data-failed' : ''}>
-  <span>${timestamp}${failedSuffix}</span>
-  <span><strong>${score}</strong>${fixSuffix}</span>
-</${tag}>`;
+    return h({
+      tag,
+      class: 'data-card',
+      attrs,
+      children: [
+        h({ tag: 'span', children: timestampChildren, }),
+        h({ tag: 'span', children: scoreChildren, }),
+      ],
+    });
   }).join('\n');
 
-  return `<div class="data-grid" role="list" aria-label="${escapeHtml(caption)}">
-  ${cards}
-</div>`;
-}
-
-/**
- * Escapes HTML special characters to prevent injection.
- * @param str - raw string
- * @returns escaped string safe for HTML content
- */
-export function escapeHtml(str: string): string {
-  return str
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
+  return h({
+    tag: 'div',
+    class: 'data-grid',
+    attrs: { role: 'list', 'aria-label': caption, },
+    html: cards,
+  });
 }

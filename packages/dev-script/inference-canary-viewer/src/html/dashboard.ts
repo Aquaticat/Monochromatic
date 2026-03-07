@@ -4,6 +4,7 @@
  * Uses `<details>` elements for view switching. CSS `:has()` on the parent
  * hides non-open siblings so only one view is visible at a time.
  */
+import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 /**
  * Wraps three view sections into the dashboard layout.
@@ -19,25 +20,35 @@ export function renderDashboard(
   byProbeHtml: string,
   overlaysHtml: string,
 ): string {
-  return `<nav class="view-switcher">
-  <details class="view-section" open>
-    <summary class="view-tab">Overview</summary>
-    <div class="view-content">
-      ${overviewHtml}
-    </div>
-  </details>
-  <details class="view-section">
-    <summary class="view-tab">By model</summary>
-    <div class="view-content">
-      ${byModelHtml}
-    </div>
-  </details>
-  <details class="view-section">
-    <summary class="view-tab">By probe</summary>
-    <div class="view-content">
-      ${byProbeHtml}
-    </div>
-  </details>
-</nav>
-${overlaysHtml}`;
+  return h({
+    tag: 'nav',
+    class: 'view-switcher',
+    children: [
+      h({
+        tag: 'details',
+        class: 'view-section',
+        attrs: { open: '', },
+        children: [
+          h({ tag: 'summary', class: 'view-tab', text: 'Overview', }),
+          h({ tag: 'div', class: 'view-content', html: overviewHtml, }),
+        ],
+      }),
+      h({
+        tag: 'details',
+        class: 'view-section',
+        children: [
+          h({ tag: 'summary', class: 'view-tab', text: 'By model', }),
+          h({ tag: 'div', class: 'view-content', html: byModelHtml, }),
+        ],
+      }),
+      h({
+        tag: 'details',
+        class: 'view-section',
+        children: [
+          h({ tag: 'summary', class: 'view-tab', text: 'By probe', }),
+          h({ tag: 'div', class: 'view-content', html: byProbeHtml, }),
+        ],
+      }),
+    ],
+  }) + '\n' + overlaysHtml;
 }

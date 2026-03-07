@@ -10,12 +10,14 @@
  */
 import { join, } from 'node:path';
 
-import { escapeHtml, } from '../chart/data-table.ts';
+import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+
 import { highlightTs, } from '../highlight/glow.ts';
 import { computeDiff, } from '../data/diff.ts';
+import { probeKey, } from '../data/read-artifacts.ts';
+
 import type { DiffLine, } from '../data/diff.ts';
 import type { ProbeDetail, ViewerEntry, } from '../data/viewer-types.ts';
-import { probeKey, } from '../data/read-artifacts.ts';
 
 import { renderBadges, renderCollapsibles, renderPassMeta, } from './overlay-meta.ts';
 
@@ -71,21 +73,35 @@ function renderRunOverlay(
 
   const probeCards = Object.entries(entry.probeScores)
     .map(([name, score]) => {
-      const probeOverlayId = `run-${escapeHtml(entry.label)}-${escapeHtml(name)}-${escapeHtml(entry.timestamp)}`;
-      return `<button popovertarget="${probeOverlayId}" class="probe-card">
-  <span>${escapeHtml(name)}</span>
-  <span class="probe-card-score"><strong>${score.toFixed(2)}</strong></span>
-</button>`;
+      const probeOverlayId = `run-${entry.label}-${name}-${entry.timestamp}`;
+      return h({
+        tag: 'button',
+        class: 'probe-card',
+        attrs: { popovertarget: probeOverlayId, },
+        children: [
+          h({ tag: 'span', text: name, }),
+          h({
+            tag: 'span',
+            class: 'probe-card-score',
+            children: [h({ tag: 'strong', text: score.toFixed(2), })],
+          }),
+        ],
+      });
     })
     .join('\n');
 
-  const errorSuffix = entry.error !== undefined ? ` (${escapeHtml(entry.error)})` : '';
-  const title = `${escapeHtml(label)} - ${entry.overallScore.toFixed(2)} - ${escapeHtml(entry.timestamp)}${entry.failed ? ` (FAILED${errorSuffix})` : ''}`;
+  const errorSuffix = entry.error !== undefined ? ` (${entry.error})` : '';
+  const title = `${label} - ${entry.overallScore.toFixed(2)} - ${entry.timestamp}${entry.failed ? ` (FAILED${errorSuffix})` : ''}`;
 
-  return `<div popover="auto" id="run-${escapeHtml(id)}" class="overlay">
-  <h2 class="overlay-title">${title}</h2>
-  <div class="probe-grid">${probeCards}</div>
-</div>`;
+  return h({
+    tag: 'div',
+    class: 'overlay',
+    attrs: { popover: 'auto', id: `run-${id}`, },
+    children: [
+      h({ tag: 'h2', class: 'overlay-title', text: title, }),
+      h({ tag: 'div', class: 'probe-grid', html: probeCards, }),
+    ],
+  });
 }
 
 /**
@@ -121,7 +137,7 @@ async function renderProbeOverlay(
 
   // Source code section (diff or single)
   let sourceSection = detail === undefined
-    ? '<p class="overlay-no-artifacts">Artifacts not available for this run.</p>'
+    ? h({ tag: 'p', class: 'overlay-no-artifacts', text: 'Artifacts not available for this run.', })
     : '';
   if (detail?.initialSource !== undefined) {
     const initialHighlighted = highlightTs(detail.initialSource);
@@ -130,15 +146,23 @@ async function renderProbeOverlay(
       const initialFile = join(detail.initialDir, 'canary.ts');
       const fixFile = join(detail.fixDir, 'canary.ts');
       const diffLines = await computeDiff(initialFile, fixFile);
-      sourceSection = `<details class="overlay-details">
-  <summary>Source diff</summary>
-  ${renderSideBySideDiff(diffLines)}
-</details>`;
+      sourceSection = h({
+        tag: 'details',
+        class: 'overlay-details',
+        children: [
+          h({ tag: 'summary', text: 'Source diff', }),
+          renderSideBySideDiff(diffLines),
+        ],
+      });
     } else {
-      sourceSection = `<details class="overlay-details">
-  <summary>Source</summary>
-  <pre class="glow">${initialHighlighted}</pre>
-</details>`;
+      sourceSection = h({
+        tag: 'details',
+        class: 'overlay-details',
+        children: [
+          h({ tag: 'summary', text: 'Source', }),
+          h({ tag: 'pre', class: 'glow', html: initialHighlighted, }),
+        ],
+      });
     }
   }
 
@@ -146,16 +170,21 @@ async function renderProbeOverlay(
   const collapsibles = detail !== undefined ? renderCollapsibles(detail) : '';
 
   const pass2Suffix = pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2)})` : '';
-  const title = `${escapeHtml(label)} - ${escapeHtml(probe)} - ${score.toFixed(2)}${pass2Suffix} - ${escapeHtml(entry.timestamp)}${entry.failed ? ' (FAILED)' : ''}`;
+  const title = `${label} - ${probe} - ${score.toFixed(2)}${pass2Suffix} - ${entry.timestamp}${entry.failed ? ' (FAILED)' : ''}`;
 
-  return `<div popover="auto" id="run-${escapeHtml(id)}" class="overlay overlay--source">
-  <h2 class="overlay-title">${title}</h2>
-  ${badges}
-  ${initialMeta}
-  ${fixMeta}
-  ${sourceSection}
-  ${collapsibles}
-</div>`;
+  return h({
+    tag: 'div',
+    class: 'overlay overlay--source',
+    attrs: { popover: 'auto', id: `run-${id}`, },
+    children: [
+      h({ tag: 'h2', class: 'overlay-title', text: title, }),
+      badges,
+      initialMeta,
+      fixMeta,
+      sourceSection,
+      collapsibles,
+    ],
+  });
 }
 
 /**
@@ -174,34 +203,53 @@ function renderSideBySideDiff(
   const rightLines: string[] = [];
 
   for (const line of diffLines) {
-    const escaped = escapeHtml(line.content);
     switch (line.type) {
       case 'removed': {
-        leftLines.push(`<span class="diff-removed">${escaped}</span>`);
-        rightLines.push('<span class="diff-spacer"></span>');
+        leftLines.push(h({ tag: 'span', class: 'diff-removed', text: line.content, }));
+        rightLines.push(h({ tag: 'span', class: 'diff-spacer', }));
         break;
       }
       case 'added': {
-        leftLines.push('<span class="diff-spacer"></span>');
-        rightLines.push(`<span class="diff-added">${escaped}</span>`);
+        leftLines.push(h({ tag: 'span', class: 'diff-spacer', }));
+        rightLines.push(h({ tag: 'span', class: 'diff-added', text: line.content, }));
         break;
       }
       case 'unchanged': {
-        leftLines.push(`<span>${escaped}</span>`);
-        rightLines.push(`<span>${escaped}</span>`);
+        leftLines.push(h({ tag: 'span', text: line.content, }));
+        rightLines.push(h({ tag: 'span', text: line.content, }));
         break;
       }
     }
   }
 
-  return `<div class="diff-container">
-  <div class="diff-column">
-    <h3>Initial pass</h3>
-    <pre class="glow diff-pre"><code>${leftLines.join('\n')}</code></pre>
-  </div>
-  <div class="diff-column">
-    <h3>Fix pass</h3>
-    <pre class="glow diff-pre"><code>${rightLines.join('\n')}</code></pre>
-  </div>
-</div>`;
+  return h({
+    tag: 'div',
+    class: 'diff-container',
+    children: [
+      h({
+        tag: 'div',
+        class: 'diff-column',
+        children: [
+          h({ tag: 'h3', text: 'Initial pass', }),
+          h({
+            tag: 'pre',
+            class: 'glow diff-pre',
+            children: [h({ tag: 'code', html: leftLines.join('\n'), })],
+          }),
+        ],
+      }),
+      h({
+        tag: 'div',
+        class: 'diff-column',
+        children: [
+          h({ tag: 'h3', text: 'Fix pass', }),
+          h({
+            tag: 'pre',
+            class: 'glow diff-pre',
+            children: [h({ tag: 'code', html: rightLines.join('\n'), })],
+          }),
+        ],
+      }),
+    ],
+  });
 }

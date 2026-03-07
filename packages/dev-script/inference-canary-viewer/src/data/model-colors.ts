@@ -30,6 +30,7 @@ const FALLBACK_COLOR = '#6B7280';
  * Brand colors by vendor prefix.
  *
  * - anthropic: Claude terracotta (#D97757) -- Anthropic corporate (#F1F0E8) is invisible on white
+ * - google: Gemini blue (#3186FF) -- primary fill color from the icon SVG
  * - openai: GPT 5 pink (#F86AA4) -- OpenAI corporate (#000) is unusable
  * - moonshotai: Kimi blue (#027AFF) -- Moonshot corporate (#16191E) is near-black
  * - minimax: Minimax coral (#F23F5D)
@@ -38,6 +39,7 @@ const FALLBACK_COLOR = '#6B7280';
  */
 const VENDOR_COLORS: Record<string, string> = {
   'anthropic': '#D97757',
+  'google': '#3186FF',
   'openai': '#F86AA4',
   'moonshotai': '#027AFF',
   'minimax': '#F23F5D',

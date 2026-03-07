@@ -5,6 +5,7 @@
  * {@link iconDot} is synchronous and requires no preloading.
  */
 import claudeSvg from '@lobehub/icons-static-svg/icons/claude-color.svg' with { type: 'text' };
+import geminiSvg from '@lobehub/icons-static-svg/icons/gemini-color.svg' with { type: 'text' };
 import kimiSvg from '@lobehub/icons-static-svg/icons/kimi-color.svg' with { type: 'text' };
 import minimaxSvg from '@lobehub/icons-static-svg/icons/minimax-color.svg' with { type: 'text' };
 import openaiSvg from '@lobehub/icons-static-svg/icons/openai.svg' with { type: 'text' };
@@ -23,6 +24,7 @@ const kimiFixed = kimiSvg.replace('<path', '<rect width="24" height="24" rx="3" 
 
 const VENDOR_ICONS: Record<string, string> = {
   'anthropic': claudeSvg,
+  'google': geminiSvg,
   'openai': openaiSvg,
   'moonshotai': kimiFixed,
   'minimax': minimaxSvg,

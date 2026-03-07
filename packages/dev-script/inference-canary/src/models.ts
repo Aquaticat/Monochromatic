@@ -44,13 +44,19 @@ export const models: readonly ModelConfig[] = [
   // Update: Opus 4.6 high effort also constantly times out.
   // { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 high', verbosity: 'high', },
   { openrouterId: 'anthropic/claude-opus-4.6', label: 'Opus 4.6 medium', verbosity: 'medium', },
-  { openrouterId: 'anthropic/claude-sonnet-4.6', label: 'Sonnet 4.6 medium', verbosity: 'medium', },
+
+  // Constantly times out.
+  // { openrouterId: 'anthropic/claude-sonnet-4.6', label: 'Sonnet 4.6 medium', verbosity: 'medium', },
 
   { openrouterId: 'anthropic/claude-haiku-4.5', label: 'Haiku 4.5', verbosity: 'low', },
   { openrouterId: 'minimax/minimax-m2.5', label: 'MiniMax M2.5', verbosity: 'low', },
   { openrouterId: 'moonshotai/kimi-k2.5', label: 'Kimi K2.5', verbosity: 'low', },
   { openrouterId: 'z-ai/glm-5', label: 'GLM 5', verbosity: 'low', },
   { openrouterId: 'qwen/qwen3.5-397b-a17b', label: 'Qwen 3.5 OSS', verbosity: 'low', },
+
+  { openrouterId: 'google/gemini-3.1-flash-lite-preview', label: 'Gemini 3.1 Flash Lite Preview', verbosity: 'low', },
+  { openrouterId: 'google/gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro Preview', verbosity: 'low', },
+
   // OpenAI models dropped 2026-02-28. OpenAI signed a classified-network contract with the
   // Pentagon hours after Anthropic was designated a supply chain risk for refusing to allow
   // its models to be used for mass surveillance and autonomous weapons. OpenAI claims its

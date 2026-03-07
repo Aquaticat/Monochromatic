@@ -4,13 +4,15 @@
  * Each model gets a nested `<details>` element containing one scatter chart
  * per probe, plus an aggregate chart of overall score.
  */
+import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+
 import { renderScatterChart, } from '../chart/scatter.ts';
-import type { ScatterPoint, } from '../chart/scatter.ts';
-import { escapeHtml, } from '../chart/data-table.ts';
 import { vendorColor, } from '../data/model-colors.ts';
 import { iconDot, vendorIcon, } from '../data/model-icons.ts';
 
+import type { ScatterPoint, } from '../chart/scatter.ts';
 import type { ViewerEntry, } from '../data/viewer-types.ts';
+
 import { hasMultipleProbes, } from '../data/viewer-types.ts';
 
 /**
@@ -29,7 +31,7 @@ export function renderByModel(
   const labels = [...new Set(entries.map((entry) => entry.label))];
 
   if (labels.length === 0) {
-    return '<p>No model data available.</p>';
+    return h({ tag: 'p', text: 'No model data available.', });
   }
 
   /** Hide Model and Probe columns since we're within a per-model overall context */
@@ -53,20 +55,36 @@ export function renderByModel(
     const probeNames = [...new Set(modelEntries.flatMap((entry) => Object.keys(entry.probeScores)))];
     const probeCharts = probeNames.map((probe) => {
       const probePoints = buildProbePoints(modelEntries, label, openrouterId, probe, color);
-      return `<details class="probe-section">
-  <summary class="probe-tab">${escapeHtml(probe)}</summary>
-  ${renderScatterChart(probePoints, 0, '', `${label} - ${probe}`, { tableDisplay: { showModel: false, showProbe: false, }, })}
-</details>`;
+      return h({
+        tag: 'details',
+        class: 'probe-section',
+        children: [
+          h({ tag: 'summary', class: 'probe-tab', text: probe, }),
+          renderScatterChart(probePoints, 0, '', `${label} - ${probe}`, { tableDisplay: { showModel: false, showProbe: false, }, }),
+        ],
+      });
     }).join('\n');
 
-    return `<details class="model-section">
-  <summary class="model-tab">${iconDot(openrouterId, color)} ${escapeHtml(label)}</summary>
-  <div class="model-content">
-    ${overallChart}
-    <h3>Per-probe breakdown</h3>
-    ${probeCharts}
-  </div>
-</details>`;
+    return h({
+      tag: 'details',
+      class: 'model-section',
+      children: [
+        h({
+          tag: 'summary',
+          class: 'model-tab',
+          children: [iconDot(openrouterId, color), ' ', h({ tag: 'span', text: label, })],
+        }),
+        h({
+          tag: 'div',
+          class: 'model-content',
+          children: [
+            overallChart,
+            h({ tag: 'h3', text: 'Per-probe breakdown', }),
+            probeCharts,
+          ],
+        }),
+      ],
+    });
   }).join('\n');
 }
 

@@ -5,7 +5,7 @@
  * X axis uses timestamps, adapting label granularity to the data range:
  * multiple days show dates, same-day data shows times.
  */
-import { escapeHtml, } from '../chart/data-table.ts';
+import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 /** Fixed Y axis tick values for score plots (0 to 1) */
 export const Y_TICKS: readonly number[] = [0, 0.25, 0.5, 0.75, 1.0];
@@ -20,7 +20,12 @@ export function renderYAxis(): string {
   const PERCENT = 100;
   return Y_TICKS.map((tick) => {
     const bottom = tick * PERCENT;
-    return `<span class="chart-y-tick" style="bottom: ${String(bottom)}%">${tick.toFixed(2)}</span>`;
+    return h({
+      tag: 'span',
+      class: 'chart-y-tick',
+      style: { bottom: `${String(bottom)}%`, },
+      text: tick.toFixed(2),
+    });
   }).join('\n');
 }
 
@@ -32,7 +37,7 @@ export function renderYAxis(): string {
  * @param timestamps - ordered array of ISO timestamp strings corresponding to data points
  * @returns HTML string for X axis ticks
  */
-export function renderXAxis(timestamps: readonly string[]): string {
+export function renderXAxis(timestamps: readonly string[],): string {
   if (timestamps.length === 0) return '';
 
   /** Maximum number of X axis labels to show before skipping */
@@ -52,7 +57,13 @@ export function renderXAxis(timestamps: readonly string[]): string {
     const displayLabel = label === lastLabel ? '' : label;
     lastLabel = label;
     ticks.push(
-      `<span class="chart-x-tick" style="left: ${left.toFixed(2)}%" title="${escapeHtml(timestamps[i] ?? '')}">${escapeHtml(displayLabel)}</span>`,
+      h({
+        tag: 'span',
+        class: 'chart-x-tick',
+        style: { left: `${left.toFixed(2)}%`, },
+        attrs: { title: timestamps[i] ?? '', },
+        text: displayLabel,
+      }),
     );
   }
   return ticks.join('\n');
@@ -64,7 +75,7 @@ export function renderXAxis(timestamps: readonly string[]): string {
  * @param timestamps - all timestamps in the chart
  * @returns formatter function mapping ISO timestamp to display label
  */
-function chooseFormatter(timestamps: readonly string[]): (ts: string) => string {
+function chooseFormatter(timestamps: readonly string[],): (ts: string) => string {
   const uniqueDates = new Set(timestamps.map((ts) => ts.slice(0, 10)));
   if (uniqueDates.size <= 1) {
     return formatTime;
@@ -82,7 +93,7 @@ function chooseFormatter(timestamps: readonly string[]): (ts: string) => string 
  * formatTime('2026-03-06T14:30:00.000Z'); // "14:30"
  * ```
  */
-function formatTime(timestamp: string): string {
+function formatTime(timestamp: string,): string {
   /** ISO format: YYYY-MM-DDTHH:MM:SS — time starts at index 11 */
   const TIME_START = 11;
   const TIME_END = 16;
@@ -101,7 +112,7 @@ function formatTime(timestamp: string): string {
  * formatDate('2026-03-01T01:12:43.219Z'); // "03-01"
  * ```
  */
-function formatDate(timestamp: string): string {
+function formatDate(timestamp: string,): string {
   if (timestamp.length < 10) return timestamp;
   /** Extract YYYY-MM-DD from the ISO string */
   const datePart = timestamp.slice(0, 10);

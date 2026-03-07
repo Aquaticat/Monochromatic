@@ -5,14 +5,16 @@
  * where each point is clickable to open the run detail overlay.
  * Below the chart, a summary table lists each model's latest status.
  */
+import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+
 import { renderScatterChart, } from '../chart/scatter.ts';
-import type { ScatterPoint, } from '../chart/scatter.ts';
-import { escapeHtml, } from '../chart/data-table.ts';
 import { vendorColor, } from '../data/model-colors.ts';
 import { iconDot, vendorIcon, } from '../data/model-icons.ts';
 import { SHAPE_LEGEND, } from '../chart/legend.ts';
 
+import type { ScatterPoint, } from '../chart/scatter.ts';
 import type { ViewerEntry, } from '../data/viewer-types.ts';
+
 import { hasMultipleProbes, } from '../data/viewer-types.ts';
 
 /** Aggregated model summary for the overview table */
@@ -33,9 +35,9 @@ export type ModelSummary = {
  * @param entries - all history entries (for the combined chart)
  * @returns HTML string
  */
-export function renderOverview(summaries: readonly ModelSummary[], entries: readonly ViewerEntry[]): string {
+export function renderOverview(summaries: readonly ModelSummary[], entries: readonly ViewerEntry[],): string {
   if (summaries.length === 0) {
-    return '<p>No history data available. Run the canary first.</p>';
+    return h({ tag: 'p', text: 'No history data available. Run the canary first.', });
   }
 
   // Combined scatter chart: all models' overall scores
@@ -47,39 +49,57 @@ export function renderOverview(summaries: readonly ModelSummary[], entries: read
   const rows = summaries.map((summary) => {
     const color = vendorColor(summary.model);
     const statusClass = summary.failed ? 'status--failed' : summary.degraded ? 'status--degraded' : '';
+
     const inlineStatus = summary.failed
-      ? ' <span class="status--failed">(timeout)</span>'
+      ? ' ' + h({ tag: 'span', class: 'status--failed', text: '(timeout)', })
       : summary.degraded
-        ? ' <span class="status--degraded">(degraded)</span>'
+        ? ' ' + h({ tag: 'span', class: 'status--degraded', text: '(degraded)', })
         : '';
 
-    return `<tr${statusClass !== '' ? ` class="${statusClass}"` : ''}>
-  <td>${iconDot(summary.model, color)} ${escapeHtml(summary.label)}</td>
-  <td>${summary.latestScore.toFixed(2)}${inlineStatus}</td>
-  <td>${escapeHtml(summary.latestTimestamp.slice(0, 10))}</td>
-  <td>${String(summary.runCount)}</td>
-  <td>${summary.threshold.toFixed(2)}</td>
-</tr>`;
+    return h({
+      tag: 'tr',
+      ...(statusClass !== '' ? { class: statusClass, } : {}),
+      children: [
+        h({
+          tag: 'td',
+          children: [iconDot(summary.model, color), ' ', h({ tag: 'span', text: summary.label, })],
+        }),
+        h({ tag: 'td', html: summary.latestScore.toFixed(2) + inlineStatus, }),
+        h({ tag: 'td', text: summary.latestTimestamp.slice(0, 10), }),
+        h({ tag: 'td', text: String(summary.runCount), }),
+        h({ tag: 'td', text: summary.threshold.toFixed(2), }),
+      ],
+    });
   }).join('\n');
 
-  return `${legend}
-${SHAPE_LEGEND}
-${chart}
-<h3>Summary</h3>
-<table class="overview-table">
-  <thead>
-    <tr>
-      <th scope="col">Model</th>
-      <th scope="col">Score</th>
-      <th scope="col">Last run</th>
-      <th scope="col">Runs</th>
-      <th scope="col">Threshold</th>
-    </tr>
-  </thead>
-  <tbody>
-    ${rows}
-  </tbody>
-</table>`;
+  return [
+    legend,
+    SHAPE_LEGEND,
+    chart,
+    h({ tag: 'h3', text: 'Summary', }),
+    h({
+      tag: 'table',
+      class: 'overview-table',
+      children: [
+        h({
+          tag: 'thead',
+          children: [
+            h({
+              tag: 'tr',
+              children: [
+                h({ tag: 'th', attrs: { scope: 'col', }, text: 'Model', }),
+                h({ tag: 'th', attrs: { scope: 'col', }, text: 'Score', }),
+                h({ tag: 'th', attrs: { scope: 'col', }, text: 'Last run', }),
+                h({ tag: 'th', attrs: { scope: 'col', }, text: 'Runs', }),
+                h({ tag: 'th', attrs: { scope: 'col', }, text: 'Threshold', }),
+              ],
+            }),
+          ],
+        }),
+        h({ tag: 'tbody', html: rows, }),
+      ],
+    }),
+  ].join('\n');
 }
 
 /**
@@ -121,11 +141,15 @@ function buildAllModelPoints(
  * @param summaries - model summaries
  * @returns HTML legend string
  */
-function buildLegend(summaries: readonly ModelSummary[]): string {
+function buildLegend(summaries: readonly ModelSummary[],): string {
   const items = summaries.map((s) => {
     const color = vendorColor(s.model);
-    return `<span class="legend-item">${iconDot(s.model, color)} ${escapeHtml(s.label)}</span>`;
+    return h({
+      tag: 'span',
+      class: 'legend-item',
+      children: [iconDot(s.model, color), ' ', h({ tag: 'span', text: s.label, })],
+    });
   }).join('\n');
 
-  return `<div class="chart-legend">${items}</div>`;
+  return h({ tag: 'div', class: 'chart-legend', html: items, });
 }

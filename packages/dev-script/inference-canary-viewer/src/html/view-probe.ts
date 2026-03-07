@@ -5,12 +5,13 @@
  * where each model's points use its vendor color, plus a per-model breakdown
  * with individual charts.
  */
+import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+
 import { renderScatterChart, } from '../chart/scatter.ts';
-import type { ScatterPoint, } from '../chart/scatter.ts';
-import { escapeHtml, } from '../chart/data-table.ts';
 import { vendorColor, } from '../data/model-colors.ts';
 import { iconDot, vendorIcon, } from '../data/model-icons.ts';
 
+import type { ScatterPoint, } from '../chart/scatter.ts';
 import type { ViewerEntry, } from '../data/viewer-types.ts';
 
 /**
@@ -28,7 +29,7 @@ export function renderByProbe(
   const probeNames = [...new Set(entries.flatMap((entry) => Object.keys(entry.probeScores)))];
 
   if (probeNames.length === 0) {
-    return '<p>No probe data available.</p>';
+    return h({ tag: 'p', text: 'No probe data available.', });
   }
 
   return probeNames.map((probe) => {
@@ -43,21 +44,37 @@ export function renderByProbe(
       const openrouterId = modelEntries[0]?.model ?? '';
       const color = vendorColor(openrouterId);
       const modelPoints = buildSingleModelPoints(entries, probe, label, openrouterId, color);
-      return `<details class="model-section">
-  <summary class="model-tab">${iconDot(openrouterId, color)} ${escapeHtml(label)}</summary>
-  ${renderScatterChart(modelPoints, 0, '', `${probe} - ${label}`, { tableDisplay: { showModel: false, showProbe: false, }, })}
-</details>`;
+      return h({
+        tag: 'details',
+        class: 'model-section',
+        children: [
+          h({
+            tag: 'summary',
+            class: 'model-tab',
+            children: [iconDot(openrouterId, color), ' ', h({ tag: 'span', text: label, })],
+          }),
+          renderScatterChart(modelPoints, 0, '', `${probe} - ${label}`, { tableDisplay: { showModel: false, showProbe: false, }, }),
+        ],
+      });
     }).join('\n');
 
-    return `<details class="probe-section">
-  <summary class="probe-tab">${escapeHtml(probe)}</summary>
-  <div class="probe-content">
-    ${legend}
-    ${renderScatterChart(points, 0, '', `${probe} - all models`, { tableDisplay: { showProbe: false, }, })}
-    <h3>Per-model breakdown</h3>
-    ${modelBreakdown}
-  </div>
-</details>`;
+    return h({
+      tag: 'details',
+      class: 'probe-section',
+      children: [
+        h({ tag: 'summary', class: 'probe-tab', text: probe, }),
+        h({
+          tag: 'div',
+          class: 'probe-content',
+          children: [
+            legend,
+            renderScatterChart(points, 0, '', `${probe} - all models`, { tableDisplay: { showProbe: false, }, }),
+            h({ tag: 'h3', text: 'Per-model breakdown', }),
+            modelBreakdown,
+          ],
+        }),
+      ],
+    });
   }).join('\n');
 }
 
@@ -167,8 +184,12 @@ function buildLegend(
 
   const items = [...seen.entries()].map(([label, openrouterId]) => {
     const color = vendorColor(openrouterId);
-    return `<span class="legend-item">${iconDot(openrouterId, color)} ${escapeHtml(label)}</span>`;
+    return h({
+      tag: 'span',
+      class: 'legend-item',
+      children: [iconDot(openrouterId, color), ' ', h({ tag: 'span', text: label, })],
+    });
   }).join('\n');
 
-  return `<div class="chart-legend">${items}</div>`;
+  return h({ tag: 'div', class: 'chart-legend', html: items, });
 }

@@ -6,11 +6,13 @@
  * Pass-1 points are filled circles; pass-2 points are hollow circles overlaid
  * at the same X position.
  */
+import { $ as h, } from '@monochromatic-dev/module-es/h-html';
+
 import { renderYAxis, renderXAxis, } from './axis.ts';
 import { renderThresholdLine, } from './threshold-line.ts';
 import { renderDataTable, } from './data-table.ts';
+
 import type { TableRow, TableDisplayOptions, } from './data-table.ts';
-import { escapeHtml, } from './data-table.ts';
 
 /** Single data point for the scatter plot */
 export type ScatterPoint = {
@@ -61,7 +63,7 @@ export function renderScatterChart(
   options: ScatterChartOptions = {},
 ): string {
   if (points.length === 0) {
-    return `<p class="chart-empty">No data available.</p>`;
+    return h({ tag: 'p', class: 'chart-empty', text: 'No data available.', });
   }
 
   const totalRuns = points.length;
@@ -75,22 +77,42 @@ export function renderScatterChart(
     const iconClass = point.icon !== undefined && point.icon !== '' && !point.failed ? ' chart-point--icon' : '';
     const iconHtml = point.icon !== undefined && point.icon !== '' && !point.failed ? point.icon : '';
 
-    const pass1 = `<button popovertarget="run-${escapeHtml(point.runId)}"
-  class="chart-point${point.failed ? ' chart-point--failed' : ''}${iconClass}"
-  style="left: ${left.toFixed(2)}%; bottom: ${bottom.toFixed(2)}%; --point-color: ${point.color}"
-  title="${escapeHtml(point.title)}"
-  aria-label="${escapeHtml(point.title)}">${iconHtml}</button>`;
+    const pass1 = h({
+      tag: 'button',
+      class: `chart-point${point.failed ? ' chart-point--failed' : ''}${iconClass}`,
+      style: {
+        left: `${left.toFixed(2)}%`,
+        bottom: `${bottom.toFixed(2)}%`,
+        '--point-color': point.color,
+      },
+      attrs: {
+        popovertarget: `run-${point.runId}`,
+        title: point.title,
+        'aria-label': point.title,
+      },
+      html: iconHtml,
+    });
 
     if (point.pass2Score === undefined) return pass1;
 
     const pass2Bottom = point.pass2Score * PERCENT;
     const pass2IconClass = point.icon !== undefined && point.icon !== '' ? ' chart-point--icon' : '';
     const pass2IconHtml = point.icon !== undefined && point.icon !== '' ? point.icon : '';
-    const pass2 = `<button popovertarget="run-${escapeHtml(point.runId)}"
-  class="chart-point chart-point--pass2${pass2IconClass}"
-  style="left: ${left.toFixed(2)}%; bottom: ${pass2Bottom.toFixed(2)}%; --point-color: ${point.color}"
-  title="fix: ${point.pass2Score.toFixed(2)}"
-  aria-label="fix score ${point.pass2Score.toFixed(2)}">${pass2IconHtml}</button>`;
+    const pass2 = h({
+      tag: 'button',
+      class: `chart-point chart-point--pass2${pass2IconClass}`,
+      style: {
+        left: `${left.toFixed(2)}%`,
+        bottom: `${pass2Bottom.toFixed(2)}%`,
+        '--point-color': point.color,
+      },
+      attrs: {
+        popovertarget: `run-${point.runId}`,
+        title: `fix: ${point.pass2Score.toFixed(2)}`,
+        'aria-label': `fix score ${point.pass2Score.toFixed(2)}`,
+      },
+      html: pass2IconHtml,
+    });
 
     return `${pass1}\n${pass2}`;
   }).join('\n');
@@ -105,16 +127,26 @@ export function renderScatterChart(
       options.tableDisplay,
     );
 
-  return `<figure class="chart-figure">
-  <figcaption class="chart-caption">${escapeHtml(caption)}</figcaption>
-  <div class="chart-container" role="img" aria-label="${escapeHtml(caption)}">
-    <div class="chart-y-axis">${renderYAxis()}</div>
-    <div class="chart-plot">
-      ${renderThresholdLine(threshold, thresholdLabel)}
-      ${pointElements}
-    </div>
-    <div class="chart-x-axis">${renderXAxis(timestamps)}</div>
-  </div>
-  ${tableHtml}
-</figure>`;
+  return h({
+    tag: 'figure',
+    class: 'chart-figure',
+    children: [
+      h({ tag: 'figcaption', class: 'chart-caption', text: caption, }),
+      h({
+        tag: 'div',
+        class: 'chart-container',
+        attrs: { role: 'img', 'aria-label': caption, },
+        children: [
+          h({ tag: 'div', class: 'chart-y-axis', html: renderYAxis(), }),
+          h({
+            tag: 'div',
+            class: 'chart-plot',
+            children: [renderThresholdLine(threshold, thresholdLabel), pointElements],
+          }),
+          h({ tag: 'div', class: 'chart-x-axis', html: renderXAxis(timestamps), }),
+        ],
+      }),
+      tableHtml,
+    ],
+  });
 }
