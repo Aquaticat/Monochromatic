@@ -14,10 +14,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  row-gap: 0.25rem;
-  column-gap: 0.25rem;
-  padding-block: 0.75rem;
-  padding-inline: 1rem;
+  row-gap: var(--space-1);
+  column-gap: var(--space-1);
+  padding-block: var(--space-3);
+  padding-inline: var(--space-4);
   border-block-end: var(--border-width) solid var(--border);
   border-inline-end: var(--border-width) solid var(--border);
   border-block-start: none;

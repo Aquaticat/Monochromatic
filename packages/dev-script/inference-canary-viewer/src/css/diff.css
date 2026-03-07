@@ -5,9 +5,9 @@
 .diff-container {
   display: flex;
   flex-wrap: wrap;
-  row-gap: 1rem;
-  column-gap: 1rem;
-  margin-block: 1rem;
+  row-gap: var(--space-4);
+  column-gap: var(--space-4);
+  margin-block: var(--space-4);
   overflow-x: auto;
 
   & > .diff-column {
@@ -34,16 +34,16 @@
   display: block;
   background-color: var(--error-bg);
   color: var(--error-fg);
-  margin-inline: -0.5rem;
-  padding-inline: 0.5rem;
+  margin-inline: calc(var(--space-2) * -1);
+  padding-inline: var(--space-2);
 }
 
 .diff-added {
   display: block;
   background-color: var(--ok-bg);
   color: var(--ok-fg);
-  margin-inline: -0.5rem;
-  padding-inline: 0.5rem;
+  margin-inline: calc(var(--space-2) * -1);
+  padding-inline: var(--space-2);
 }
 
 .diff-spacer {

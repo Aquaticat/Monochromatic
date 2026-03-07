@@ -16,8 +16,8 @@
   border-block-end: var(--border-width) solid var(--border);
 
   & > summary {
-    padding-block: 0.75rem;
-    padding-inline: 0.5rem;
+    padding-block: var(--space-3);
+    padding-inline: var(--space-2);
     font-weight: 600;
     font-size: 1rem;
 
@@ -27,8 +27,8 @@
   }
 
   & > .pane {
-    padding-block: 0.5rem;
-    padding-inline: 0.5rem;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-2);
   }
 }
 
@@ -40,11 +40,11 @@
   border-block: var(--border-width) solid var(--border);
   border-inline: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
-  margin-block: 0.5rem;
+  margin-block: var(--space-2);
 
   & > summary {
-    padding-block: 0.5rem;
-    padding-inline: 0.75rem;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
     font-weight: 600;
     font-size: var(--font-size-xl);
 
@@ -54,8 +54,8 @@
   }
 
   & > .pane {
-    padding-inline: 0.75rem;
-    padding-block-end: 0.75rem;
+    padding-inline: var(--space-3);
+    padding-block-end: var(--space-3);
   }
 }
 
@@ -63,11 +63,11 @@
   border-block: var(--border-width) solid var(--border-subtle);
   border-inline: var(--border-width) solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  margin-block: calc(0.5rem - var(--border-width) * 2);
+  margin-block: calc(var(--space-2) - var(--border-width) * 2);
 
   & > summary {
-    padding-block: calc(0.5rem - var(--border-width) * 2);
-    padding-inline: 0.5rem;
+    padding-block: calc(var(--space-2) - var(--border-width) * 2);
+    padding-inline: var(--space-2);
     font-size: var(--font-size-lg);
     font-weight: 500;
 
@@ -77,8 +77,8 @@
   }
 
   & > .pane {
-    padding-inline: 0.5rem;
-    padding-block-end: 0.5rem;
+    padding-inline: var(--space-2);
+    padding-block-end: var(--space-2);
   }
 }
 
@@ -104,8 +104,8 @@
 }
 
 .status-pill {
-  padding-block: 0.25rem;
-  padding-inline: 0.75rem;
+  padding-block: var(--space-1);
+  padding-inline: var(--space-3);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-md);
   font-weight: 600;
@@ -122,7 +122,7 @@
 /*region Overview */
 
 .overview-table {
-  margin-block: 0.5rem;
+  margin-block: var(--space-2);
 }
 
 /*endregion Overview */

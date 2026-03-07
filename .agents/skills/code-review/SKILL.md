@@ -28,6 +28,74 @@ Skip categories that do not apply to the language or change.
 - Incorrect use of APIs or library methods
 - Broken error propagation (swallowed exceptions, silent catch blocks)
 
+#### Off-by-one and boundary errors
+
+```ts
+// Bad -- flag as WARNING
+const lastItem = items[items.length];
+
+// Good
+const lastItem = items.at(-1);
+```
+
+```ts
+// Bad -- flag as WARNING: skips the last element
+for (let index = 0; index < items.length - 1; index++) { ... }
+
+// Good
+// Looping is unavoidable here because each item has side effects
+for (const item of items) { ... }
+```
+
+#### Missing null/undefined checks
+
+```ts
+// Bad -- flag as BLOCKER
+function getUser(id: string): User {
+  const user = users.find((candidate) => candidate.id === id);
+  return user; // may be undefined
+}
+
+// Good
+function getUser(id: string): User {
+  return notNullishOrThrow(users.find(function matchesId(candidate) { return candidate.id === id; }));
+}
+```
+
+#### Race conditions
+
+```ts
+// Bad -- flag as WARNING: shared mutable state with concurrent access
+const cache: Map<string, Data> = new Map();
+
+async function getData(key: string): Promise<Data> {
+  if (!cache.has(key)) {
+    const data = await fetchData(key);
+    cache.set(key, data); // another call may have set it while awaiting
+  }
+  return notNullishOrThrow(cache.get(key));
+}
+```
+
+#### Broken error propagation
+
+```ts
+// Bad -- flag as WARNING: swallowed exception
+try {
+  await saveRecord(record);
+} catch {
+  // silently ignored
+}
+
+// Good
+try {
+  await saveRecord(record);
+} catch (error) {
+  console.error('Failed to save record:', error);
+  throw new Error('Failed to save record', { cause: error });
+}
+```
+
 ### Type safety (TypeScript)
 
 - Explicit return types on all functions
@@ -37,6 +105,69 @@ Skip categories that do not apply to the language or change.
 - `satisfies` over `as` when validating shape without widening
 - `const` generic parameters; `readonly` array parameters
 - Proper discriminated unions; narrow `typeof === 'symbol'` before identity checks
+
+#### Explicit return types
+
+```ts
+// Bad -- flag as WARNING
+function parseConfig(raw: string) {
+  return JSON.parse(raw);
+}
+
+// Good
+function parseConfig(raw: string): Config {
+  return JSON.parse(raw) as Config;
+}
+```
+
+#### `unknown` over `any`
+
+```ts
+// Bad -- flag as WARNING
+function processInput(data: any): void { ... }
+
+// Bad -- flag as WARNING: bare Function type
+function runCallback(callback: Function): void { ... }
+
+// Good
+function processInput(data: unknown): void { ... }
+
+// Good
+function runCallback(callback: () => void): void { ... }
+```
+
+#### Domain-specific types
+
+```ts
+// Bad -- flag as NIT: primitive type loses domain meaning
+function getUser({ id }: { id: string }): User { ... }
+function setPermissions({ level }: { level: number }): void { ... }
+
+// Good -- branded type for opaque identifiers
+type UserId = string & { readonly __brand: 'UserId' };
+function getUser({ id }: { id: UserId }): User { ... }
+
+// Good -- union type for small finite sets
+type PermissionLevel = 1 | 2 | 3;
+function setPermissions({ level }: { level: PermissionLevel }): void { ... }
+
+// Good -- template literal type for structured strings
+type SemVer = `${number}.${number}.${number}`;
+function parseVersion({ version }: { version: SemVer }): VersionInfo { ... }
+```
+
+#### Explicit type annotations and `satisfies`
+
+```ts
+// Bad -- flag as WARNING: as widens the type
+const config = { host: 'localhost', port: 8080 } as ServerConfig;
+
+// Good -- explicit type annotation on the variable when possible
+const config: ServerConfig = { host: 'localhost', port: 8080 };
+
+// Good -- satisfies when direct annotation is not possible (e.g. exported configs)
+export default { host: 'localhost', port: 8080 } satisfies ServerConfig;
+```
 
 #### Symbol union narrowing
 
@@ -56,7 +187,7 @@ if (typeof out === 'symbol') {
   if (out === NO_LITERAL) {
     // handle sentinel
   } else {
-    throw new Error('is symbol, but not expected');
+    throw new Error(`Unexpected symbol: ${String(out)}`);
   }
 } else {
   use(out.parsed);
@@ -72,7 +203,7 @@ Flag missing `const` or `readonly` modifiers:
 function processItems<T extends { id: string }>(items: T[]): T[]
 
 // Good
-function processItems<const T extends { id: string }>(items: T[]): T[]
+function processItems<const T extends { id: string }>(items: readonly T[]): readonly T[]
 
 // Bad -- flag as WARNING
 function myFn<const T>(myArr: T[]): T[]
@@ -88,7 +219,7 @@ Flag non-descriptive generic names:
 <T extends Record<string, unknown>>
 
 // Good
-<TData extends Record<string, unknown>>
+<TUser extends Record<string, unknown>>
 ```
 
 ### Function signatures
@@ -125,10 +256,14 @@ Callbacks passed to external APIs are exempt because the caller dictates the sig
 
 ```ts
 // OK -- signature dictated by Array.prototype.map
-const doubled = items.map((item, index) => multiply({ value: item, by: index }));
+const doubled = items.map(function doubleByIndex(item, index) {
+  return multiply({ value: item, by: index });
+});
 
 // OK -- signature dictated by Array.prototype.sort
-const sorted = items.sort((left, right) => left.priority - right.priority);
+const sorted = items.sort(function byPriority(left, right) {
+  return left.priority - right.priority;
+});
 ```
 
 #### Rest parameters
@@ -154,6 +289,56 @@ function logMessages({ messages }: { messages: readonly string[] }): void { ... 
 - Every source code file must be less than 100 lines unless a justification comment is given; flag unjustified files as WARNING (test, fixture, config, and doc files are exempt)
 - Extract and name complex conditions
 
+#### `const` over `let`
+
+```ts
+// Bad -- flag as WARNING
+let baseUrl = 'https://api.example.com';
+
+// Good
+const baseUrl = 'https://api.example.com';
+```
+
+```ts
+// Bad -- flag as WARNING: accumulator mutated via let
+let total = 0;
+for (const item of items) {
+  total += item.price;
+}
+
+// Good
+const total = items.reduce(function addPrice(sum, item) { return sum + item.price; }, 0);
+```
+
+#### Magic numbers and strings
+
+```ts
+// Bad -- flag as WARNING
+if (retries > 3) { ... }
+await wait(5000);
+
+// Good
+const maxRetries = 3;
+const retryDelayMs = 5000;
+if (retries > maxRetries) { ... }
+await wait(retryDelayMs);
+```
+
+#### `for...of` over classic `for`
+
+```ts
+// Bad -- flag as WARNING
+for (let index = 0; index < items.length; index++) {
+  process(items[index]);
+}
+
+// Good (when functional patterns do not apply)
+// Iteration is unavoidable because process() has side effects
+for (const item of items) {
+  process(item);
+}
+```
+
 #### Functional over imperative
 
 Flag imperative patterns when functional alternatives exist:
@@ -169,8 +354,8 @@ for (let i = 0; i < items.length; i++) {
 
 // Good
 const results = items
-  .filter(item => item.isActive)
-  .map(item => item.value * 2);
+  .filter(function isActive(item) { return item.isActive; })
+  .map(function doubleValue(item) { return item.value * 2; });
 ```
 
 #### Object iteration
@@ -186,13 +371,13 @@ for (const key in obj) {
 }
 
 // Good
-Object.entries(obj).forEach(([key, value]) => {
+Object.entries(obj).forEach(function applyProcess([key, value]) {
   result[key] = process(value);
 });
 
 // Good (for transformations)
 const result = Object.fromEntries(
-  Object.entries(obj).map(([key, value]) => [key, process(value)])
+  Object.entries(obj).map(function processEntry([key, value]) { return [key, process(value)]; })
 );
 ```
 
@@ -207,10 +392,9 @@ if (status === 'pending' && retries < maxRetries && !isTimeout) {
 }
 
 // Good
-const canRetry = () =>
-  status === 'pending' &&
-  retries < maxRetries &&
-  !isTimeout;
+function canRetry(): boolean {
+  return status === 'pending' && retries < maxRetries && !isTimeout;
+}
 
 if (canRetry()) {
   // retry logic
@@ -225,7 +409,7 @@ for (let i = 0; i < items.length; i++)
 
 // Good
 for (let itemIndex = 0; itemIndex < items.length; itemIndex++)
-items.forEach((item, itemIndex) => ...)
+items.forEach(function processItem(item, itemIndex) { ... })
 ```
 
 ### Security
@@ -234,6 +418,45 @@ items.forEach((item, itemIndex) => ...)
 - No unsanitized user input in SQL, shell commands, or HTML
 - No overly permissive CORS, file permissions, or network exposure
 - Secrets not logged, even at debug level
+
+#### Hardcoded secrets
+
+```ts
+// Bad -- flag as BLOCKER
+const apiKey = 'sk-live-abc123def456';
+
+// Good
+const apiKey = notNullishOrThrow(process.env['API_KEY']);
+```
+
+#### Unsanitized user input
+
+```ts
+// Bad -- flag as BLOCKER: shell injection
+const output = execSync(`grep ${userQuery} /var/log/app.log`);
+
+// Good
+const output = execSync('grep', [userQuery, '/var/log/app.log']);
+```
+
+```ts
+// Bad -- flag as BLOCKER: SQL injection
+const rows = db.query(`SELECT * FROM users WHERE name = '${name}'`);
+
+// Good
+const rows = db.query('SELECT * FROM users WHERE name = ?', [name]);
+```
+
+#### Secrets in logs
+
+```ts
+// Bad -- flag as BLOCKER
+console.log('Authenticating with token:', token);
+
+// Good
+const tokenPrefixLength = 4;
+console.log('Authenticating with token:', token.slice(0, tokenPrefixLength) + '...');
+```
 
 ### Naming and readability
 
@@ -295,6 +518,44 @@ Flag unescaped `*/` inside TSDoc blocks:
 - `AbortController` for cancellable operations
 - Streams and subprocesses properly consumed or cleaned up
 
+#### No `.then()`/`.catch()`/`.finally()`
+
+```ts
+// Bad -- flag as WARNING
+function loadConfig(): Promise<Config> {
+  return readFile('config.json', 'utf8')
+    .then((raw) => JSON.parse(raw) as Config)
+    .catch((error) => {
+      console.error('Failed:', error);
+      throw error;
+    });
+}
+
+// Good
+async function loadConfig(): Promise<Config> {
+  const raw = await readFile('config.json', 'utf8');
+  return JSON.parse(raw) as Config;
+}
+```
+
+#### No `await` in loops
+
+```ts
+// Bad -- flag as WARNING: sequential when concurrency is possible
+for (const url of urls) {
+  const response = await fetch(url);
+  results.push(await response.json());
+}
+
+// Good
+async function fetchJson(url: string): Promise<unknown> {
+  const response = await fetch(url);
+  return response.json();
+}
+
+const results = await Promise.all(urls.map(fetchJson));
+```
+
 #### Manual promise creation
 
 Flag explicit `new Promise` when utilities exist:
@@ -302,7 +563,7 @@ Flag explicit `new Promise` when utilities exist:
 ```ts
 // Bad -- flag as WARNING
 function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(function resolveAfterDelay(resolve) { setTimeout(resolve, ms); });
 }
 
 // Good
@@ -318,6 +579,27 @@ import { wait } from '@monochromatic-dev/module-es';
 - File extensions in relative imports when required by config
 - No circular dependencies
 
+#### Import grouping and style
+
+```ts
+// Bad -- flag as WARNING: ungrouped, missing extension, default import, missing import type
+import config from './config';
+import { readFile } from 'node:fs/promises';
+import { z } from 'zod';
+import { Config } from './types';
+
+// Good
+import { readFile } from 'node:fs/promises';
+
+import { z } from 'zod';
+
+import { parseConfig } from '@monochromatic-dev/module-es';
+
+import { loadSettings } from './config.ts';
+
+import type { Config } from './types.ts';
+```
+
 ### Error handling
 
 - Prefer letting errors propagate by throwing
@@ -328,6 +610,57 @@ import { wait } from '@monochromatic-dev/module-es';
 - `@throws` in TSDoc only for functions that actually throw; flag `@throws` on non-throwing functions as NIT
 - `notNullishOrThrow` instead of non-null assertion (`!`)
 - Every catch block must log the error with `console.error()`
+
+#### `using` over `try...finally`
+
+```ts
+// Bad -- flag as WARNING
+const handle = openResource();
+try {
+  await process(handle);
+} finally {
+  handle.close();
+}
+
+// Good
+await using handle = openResource();
+await process(handle);
+```
+
+#### No `process.exit()`
+
+```ts
+// Bad -- flag as WARNING
+if (!isValid) {
+  console.error('Invalid input');
+  process.exit(1);
+}
+
+// Good
+if (!isValid) {
+  throw new Error('Invalid input');
+}
+```
+
+#### `outdent` for multi-line error messages
+
+```ts
+// Bad -- flag as NIT
+throw new Error(
+  'Failed to process record.\n' +
+  `Expected type: ${expectedType}\n` +
+  `Received type: ${receivedType}`
+);
+
+// Good
+import { outdent } from '@cspotcode/outdent';
+
+throw new Error(outdent`
+  Failed to process record.
+  Expected type: ${expectedType}
+  Received type: ${receivedType}
+`);
+```
 
 #### Custom error classes
 
@@ -381,7 +714,10 @@ Flag empty or logging-only catch blocks without re-throwing:
 catch (error) { console.error('Failed:', error); }
 
 // Good (when error must be handled)
-catch (error) { console.error('Failed to get index stats:', error); throw error; }
+catch (error) {
+  console.error('Failed to get index stats:', error);
+  throw new Error('Failed to get index stats', { cause: error });
+}
 ```
 
 Flag silently discarded unexpected states:
@@ -398,6 +734,20 @@ if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent")
 
 - No tables in markdown files -- use nested headings or lists instead
 - Flag any existing tables in changed markdown files as WARNING with a suggestion to convert
+
+#### Tables to lists
+
+````md
+<!-- Bad -- flag as WARNING -->
+| Name   | Type   | Default |
+|--------|--------|---------|
+| host   | string | localhost |
+| port   | number | 8080    |
+
+<!-- Good -->
+- **host** -- `string`, default `localhost`
+- **port** -- `number`, default `8080`
+````
 
 ### Testing gaps
 
@@ -459,26 +809,112 @@ When changes include CSS, check:
 - Native platform features over JS reimplementations (`<dialog>`, Popover API, CSS nesting)
 - `rem` for all sizing; `calc()` for derivation; no `px` except device-pixel contexts
 - Logical properties everywhere (no physical `left`/`right`/`top`/`bottom`)
-- No shorthand properties (exception: `inset: 0`)
+- No shorthand properties that combine unrelated axes or sub-properties; single-axis/single-concept shorthands are fine (`padding-inline`, `margin-block`, `border-radius`, `inset`, `gap`)
 - Colors via CSS custom properties; no `var()` fallbacks (exception: user-configurable)
 - No `!important`
 - `:focus-visible` on interactive elements; `48px` minimum touch targets
 - Shallow native nesting (1-2 levels)
 - Data attributes for state/variant styling, not BEM modifiers
 
-#### Shorthand properties
+#### Logical properties
+
+```css
+/* Bad -- flag as WARNING: physical properties */
+margin-left: 1rem;
+padding-top: 0.5rem;
+text-align: left;
+top: 0;
+right: 0;
+
+/* Good */
+margin-inline-start: 1rem;
+padding-block-start: 0.5rem;
+text-align: start;
+inset-block-start: 0;
+inset-inline-end: 0;
+```
+
+#### `rem` sizing
 
 ```css
 /* Bad -- flag as WARNING */
-border: 1px solid #111;
-padding: 0.5rem 1rem;
+font-size: 14px;
+padding-block: 8px;
+border-radius: 4px;
 
 /* Good */
+font-size: calc(14 / 16 * 1rem);
+padding-block: calc(8 / 16 * 1rem);
+border-radius: calc(4 / 16 * 1rem);
+```
+
+#### `:focus-visible` and touch targets
+
+```css
+/* Bad -- flag as WARNING: :focus instead of :focus-visible */
+button:focus {
+  outline-color: var(--focus-ring);
+}
+
+/* Bad -- flag as WARNING: touch target too small */
+button {
+  min-inline-size: 2rem;
+  min-block-size: 2rem;
+}
+
+/* Good */
+button {
+  min-inline-size: 3rem; /* 48px equivalent */
+  min-block-size: 3rem;
+
+  &:focus-visible {
+    outline-color: var(--focus-ring);
+  }
+}
+```
+
+#### Shallow nesting
+
+```css
+/* Bad -- flag as WARNING: 4+ levels of nesting */
+.card {
+  & .header {
+    & .title {
+      & span { color: var(--accent-fg); }
+    }
+  }
+}
+
+/* Good -- max 3 levels */
+.card {
+  .title {
+    & span { color: var(--accent-fg); }
+  }
+}
+```
+
+#### Shorthand properties
+
+```css
+/* Bad -- flag as WARNING: multi-axis/multi-concept shorthands */
+border: 1px solid #111;
+padding: 0.5rem 1rem;
+margin: 0 auto;
+background: #fff url(...) no-repeat center;
+
+/* Good -- longhand for multi-concept properties */
 border-width: calc(1 / 16 * 1rem);
 border-style: solid;
 border-color: var(--gray-fg);
+
+/* Good -- single-axis/single-concept shorthands are fine */
 padding-block: 0.5rem;
 padding-inline: 1rem;
+margin-block: 0;
+margin-inline: auto;
+border-radius: 0.25rem;
+inset: 0;
+gap: 1rem;
 ```
 
 #### Color tokens
@@ -516,6 +952,22 @@ border-color: var(--error-fg);
 - No bash/shell scripts -- TypeScript only, executed with Bun
 - Top-level code, no `main()` wrapper; top-level await for async
 - No `process.exit()` -- throw errors instead
+
+#### No `main()` wrapper
+
+```ts
+// Bad -- flag as WARNING
+async function main(): Promise<void> {
+  const data = await loadData();
+  console.log(data);
+}
+
+main();
+
+// Good
+const data = await loadData();
+console.log(data);
+```
 
 ## Region markers
 

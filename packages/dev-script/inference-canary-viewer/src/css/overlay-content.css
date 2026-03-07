@@ -1,0 +1,97 @@
+/* Metadata grid, collapsible sections, and source display within popovers. */
+
+/*region Metadata grid */
+
+.metadata-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  row-gap: var(--space-1);
+  column-gap: var(--space-3);
+  margin-block: var(--space-2);
+  font-size: var(--font-size-md);
+
+  & dt {
+    color: var(--fg-muted);
+    font-weight: 500;
+  }
+
+  & dd {
+    margin-inline-start: 0;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/*endregion Metadata grid */
+
+/*region Collapsible sections */
+
+.collapsible-section {
+  margin-block: var(--space-2);
+  border-block: var(--border-width) solid var(--border);
+  border-inline: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+
+  & > summary {
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+    font-size: var(--font-size-md);
+    font-weight: 500;
+
+    &:hover {
+      background-color: var(--bg-hover);
+    }
+  }
+
+  /* Nested metadata grid within collapsible sections */
+  & > .metadata-grid {
+    margin-block: 0;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+    border-block-start: var(--border-width) solid var(--border);
+  }
+}
+
+/* Markdown-rendered text within collapsible sections */
+.rendered-markdown {
+  padding-block: var(--space-3);
+  padding-inline: var(--space-3);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  overflow-x: auto;
+  word-break: break-word;
+  border-block-start: var(--border-width) solid var(--border);
+
+  & > :first-child {
+    margin-block-start: 0;
+  }
+
+  & > :last-child {
+    margin-block-end: 0;
+  }
+
+  & pre {
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+    overflow-x: auto;
+    background-color: var(--bg-hover);
+    border-radius: var(--radius-sm);
+  }
+
+  & code {
+    font-size: var(--font-size-xs);
+  }
+
+  & p {
+    margin-block: var(--space-2);
+  }
+}
+
+/*endregion Collapsible sections */
+
+/*region Source display */
+
+.source-display {
+  margin-block: var(--space-4);
+}
+
+/*endregion Source display */

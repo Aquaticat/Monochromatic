@@ -13,13 +13,13 @@
     border-radius: var(--radius-lg);
     border-block: none;
     border-inline: none;
-    padding-block: 1.5rem;
-    padding-inline: 1.5rem;
-    max-inline-size: min(72rem, calc(100% - 2rem));
-    max-block-size: calc(100dvb - 4rem);
+    padding-block: var(--space-6);
+    padding-inline: var(--space-6);
+    max-inline-size: min(72rem, calc(100% - var(--space-2) * 4));
+    max-block-size: calc(100dvb - var(--space-4) * 4);
     overflow-y: auto;
     overflow-x: auto;
-    box-shadow: 0 0.25rem 1.5rem var(--shadow);
+    box-shadow: 0 var(--space-1) var(--space-6) var(--shadow);
     color: var(--fg);
   }
 
@@ -38,7 +38,7 @@
     margin-inline: 0;
     position-area: block-end span-inline-end;
     position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
-    max-inline-size: min(40rem, calc(100vi - 2rem));
+    max-inline-size: min(40rem, calc(100vi - var(--space-2) * 4));
   }
 
   /* Source overlays opt out of implicit anchor positioning -- stay viewport-centered */
@@ -53,7 +53,7 @@
 .detail-popover-title {
   font-size: 1rem;
   font-weight: 600;
-  margin-block-end: 0.75rem;
+  margin-block-end: var(--space-3);
 }
 
 /*endregion Popover shell */
@@ -63,7 +63,7 @@
 .probe-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
-  margin-block: 0.75rem;
+  margin-block: var(--space-3);
   @apply --border-grid;
 }
 
@@ -82,7 +82,7 @@
 .detail-popover-empty {
   color: var(--fg-faint);
   font-style: italic;
-  margin-block: 1rem;
+  margin-block: var(--space-4);
 }
 
 /*endregion Probe grid */
@@ -92,15 +92,15 @@
 .detail-popover-badges {
   display: flex;
   flex-wrap: wrap;
-  row-gap: calc(0.5rem - var(--border-width) * 2);
-  column-gap: calc(0.5rem - var(--border-width) * 2);
-  margin-block-end: 0.75rem;
+  row-gap: calc(var(--space-2) - var(--border-width) * 2);
+  column-gap: calc(var(--space-2) - var(--border-width) * 2);
+  margin-block-end: var(--space-3);
 }
 
 .run-indicator {
   display: inline-block;
   padding-block: calc(var(--border-width) * 2);
-  padding-inline: 0.5rem;
+  padding-inline: var(--space-2);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -122,99 +122,3 @@
 }
 
 /*endregion Run indicator badges */
-
-/*region Metadata grid */
-
-.metadata-grid {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  row-gap: 0.25rem;
-  column-gap: 0.75rem;
-  margin-block: 0.5rem;
-  font-size: var(--font-size-md);
-
-  & dt {
-    color: var(--fg-muted);
-    font-weight: 500;
-  }
-
-  & dd {
-    margin-inline-start: 0;
-    font-variant-numeric: tabular-nums;
-  }
-}
-
-/*endregion Metadata grid */
-
-/*region Collapsible sections */
-
-.collapsible-section {
-  margin-block: 0.5rem;
-  border-block: var(--border-width) solid var(--border);
-  border-inline: var(--border-width) solid var(--border);
-  border-radius: var(--radius-md);
-
-  & > summary {
-    padding-block: 0.5rem;
-    padding-inline: 0.75rem;
-    font-size: var(--font-size-md);
-    font-weight: 500;
-
-    &:hover {
-      background-color: var(--bg-hover);
-    }
-  }
-
-  /* Nested metadata grid within collapsible sections */
-  & > .metadata-grid {
-    margin-block: 0;
-    padding-block: 0.5rem;
-    padding-inline: 0.75rem;
-    border-block-start: var(--border-width) solid var(--border);
-  }
-}
-
-/* Markdown-rendered text within collapsible sections */
-.rendered-markdown {
-  padding-block: 0.75rem;
-  padding-inline: 0.75rem;
-  font-size: var(--font-size-sm);
-  line-height: 1.5;
-  overflow-x: auto;
-  word-break: break-word;
-  border-block-start: var(--border-width) solid var(--border);
-
-  & > :first-child {
-    margin-block-start: 0;
-  }
-
-  & > :last-child {
-    margin-block-end: 0;
-  }
-
-  & pre {
-    padding-block: 0.5rem;
-    padding-inline: 0.75rem;
-    overflow-x: auto;
-    background-color: var(--bg-hover);
-    border-radius: var(--radius-sm);
-  }
-
-  & code {
-    font-size: var(--font-size-xs);
-  }
-
-  & p {
-    margin-block: 0.5rem;
-  }
-}
-
-/*endregion Collapsible sections */
-
-/*region Source display */
-
-.source-display {
-  margin-block: 1rem;
-}
-
-/*endregion Source display */
