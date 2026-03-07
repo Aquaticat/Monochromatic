@@ -2,7 +2,8 @@
  * Axis tick generation and label placement for scatter plots.
  *
  * Y axis uses fixed score ticks (0, 0.25, 0.5, 0.75, 1.0).
- * X axis uses timestamps, showing dates at evenly spaced intervals.
+ * X axis uses timestamps, adapting label granularity to the data range:
+ * multiple days show dates, same-day data shows times.
  */
 import { escapeHtml, } from '../chart/data-table.ts';
 
@@ -26,6 +27,8 @@ export function renderYAxis(): string {
 /**
  * Generates HTML for X axis tick labels using timestamps.
  * Shows date labels at evenly spaced intervals to avoid overcrowding.
+ * Adapts granularity: shows HH:MM when all points fall on the same day,
+ * MM-DD for same-year multi-day ranges, or YYYY-MM-DD across years.
  * @param timestamps - ordered array of ISO timestamp strings corresponding to data points
  * @returns HTML string for X axis ticks
  */
@@ -36,17 +39,55 @@ export function renderXAxis(timestamps: readonly string[]): string {
   const MAX_LABELS = 12;
   const step = Math.max(1, Math.ceil(timestamps.length / MAX_LABELS));
 
+  const formatter = chooseFormatter(timestamps);
+
   /** Percentage multiplier */
   const PERCENT = 100;
   const ticks: string[] = [];
+  let lastLabel = '';
   for (let i = 0; i < timestamps.length; i += step) {
     const left = timestamps.length === 1 ? 50 : (i / (timestamps.length - 1)) * PERCENT;
-    const dateLabel = formatTimestampShort(timestamps[i] ?? '');
+    const label = formatter(timestamps[i] ?? '');
+    /** Suppress consecutive duplicate labels so the axis stays readable */
+    const displayLabel = label === lastLabel ? '' : label;
+    lastLabel = label;
     ticks.push(
-      `<span class="chart-x-tick" style="left: ${left.toFixed(2)}%" title="${escapeHtml(timestamps[i] ?? '')}">${escapeHtml(dateLabel)}</span>`,
+      `<span class="chart-x-tick" style="left: ${left.toFixed(2)}%" title="${escapeHtml(timestamps[i] ?? '')}">${escapeHtml(displayLabel)}</span>`,
     );
   }
   return ticks.join('\n');
+}
+
+/**
+ * Chooses a label formatter based on the time span of the data.
+ * Same-day data gets HH:MM labels; multi-day gets date labels.
+ * @param timestamps - all timestamps in the chart
+ * @returns formatter function mapping ISO timestamp to display label
+ */
+function chooseFormatter(timestamps: readonly string[]): (ts: string) => string {
+  const uniqueDates = new Set(timestamps.map((ts) => ts.slice(0, 10)));
+  if (uniqueDates.size <= 1) {
+    return formatTime;
+  }
+  return formatDate;
+}
+
+/**
+ * Formats an ISO timestamp as HH:MM for same-day axis labels.
+ * @param timestamp - ISO 8601 timestamp string
+ * @returns time string like "14:30"
+ *
+ * @example
+ * ```ts
+ * formatTime('2026-03-06T14:30:00.000Z'); // "14:30"
+ * ```
+ */
+function formatTime(timestamp: string): string {
+  /** ISO format: YYYY-MM-DDTHH:MM:SS — time starts at index 11 */
+  const TIME_START = 11;
+  const TIME_END = 16;
+  if (timestamp.length < TIME_END) return timestamp;
+  return timestamp.slice(TIME_START, TIME_END);
 }
 
 /**
@@ -57,10 +98,10 @@ export function renderXAxis(timestamps: readonly string[]): string {
  *
  * @example
  * ```ts
- * formatTimestampShort('2026-03-01T01:12:43.219Z'); // "03-01"
+ * formatDate('2026-03-01T01:12:43.219Z'); // "03-01"
  * ```
  */
-function formatTimestampShort(timestamp: string): string {
+function formatDate(timestamp: string): string {
   if (timestamp.length < 10) return timestamp;
   /** Extract YYYY-MM-DD from the ISO string */
   const datePart = timestamp.slice(0, 10);

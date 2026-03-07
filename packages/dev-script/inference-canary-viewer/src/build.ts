@@ -1,18 +1,16 @@
 /**
  * Static site build script for the inference canary viewer.
  *
- * Reads canary history and artifacts from the sibling inference-canary package,
+ * Reads enriched artifacts from the sibling inference-canary package,
  * generates a single-page HTML dashboard, and writes it to `dist/final/`.
  */
 import { mkdir, readFile, writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { computeThreshold, } from '@monochromatic-dev/dev-script-inference-canary/src/history-stats.ts';
 import { models, } from '@monochromatic-dev/dev-script-inference-canary/src/models.ts';
 
-import type { OpenRouterModelId, } from './data/read-history.ts';
-import { readHistory, } from './data/read-history.ts';
 import { readArtifacts, } from './data/read-artifacts.ts';
+import { computeThreshold, } from './data/threshold.ts';
 import { renderPage, } from './html/page.ts';
 import { renderDashboard, } from './html/dashboard.ts';
 import { renderOverview, } from './html/view-overview.ts';
@@ -30,10 +28,10 @@ const DIST_DIR = join(PACKAGE_DIR, 'dist', 'final');
 /** Directory containing CSS source files */
 const CSS_DIR = join(PACKAGE_DIR, 'src', 'css');
 
-console.error('[viewer] reading history and artifacts...');
-const [history, artifacts] = await Promise.all([readHistory(), readArtifacts()]);
+console.error('[viewer] reading artifacts...');
+const { entries, probeDetails, } = await readArtifacts();
 
-console.error(`[viewer] ${String(history.entries.length)} history entries, ${String(artifacts.size)} artifact pairs`);
+console.error(`[viewer] ${String(entries.length)} runs, ${String(probeDetails.size)} probe details`);
 
 //region Build model labels and thresholds from the canonical model registry
 
@@ -42,8 +40,8 @@ const modelLabels = new Map<string, string>(
   models.map((model) => [model.id, model.label]),
 );
 
-// Add labels for any models in history not in the current registry
-for (const entry of history.entries) {
+// Add labels for any models in artifacts not in the current registry
+for (const entry of entries) {
   if (!modelLabels.has(entry.model)) {
     /** Extract short name from model ID: "vendor/model-name" -> "model-name" */
     const shortName = entry.model.split('/').pop() ?? entry.model;
@@ -53,9 +51,9 @@ for (const entry of history.entries) {
 
 /** Map from model ID to computed degradation threshold */
 const thresholds = new Map<string, number>();
-for (const modelId of new Set(history.entries.map((entry) => entry.model))) {
-  const threshold = computeThreshold(modelId as OpenRouterModelId, history);
-  thresholds.set(modelId, threshold.threshold);
+for (const modelId of new Set(entries.map((entry) => entry.model))) {
+  const result = computeThreshold(modelId, entries);
+  thresholds.set(modelId, result.threshold);
 }
 
 //endregion Build model labels and thresholds
@@ -64,8 +62,8 @@ for (const modelId of new Set(history.entries.map((entry) => entry.model))) {
 
 /** Summaries for the overview table, one per model */
 const summaries: ModelSummary[] = [];
-for (const modelId of new Set(history.entries.map((entry) => entry.model))) {
-  const modelEntries = history.entries.filter((entry) => entry.model === modelId);
+for (const modelId of new Set(entries.map((entry) => entry.model))) {
+  const modelEntries = entries.filter((entry) => entry.model === modelId);
   const latest = modelEntries.at(-1);
   if (latest === undefined) continue;
 
@@ -88,10 +86,10 @@ for (const modelId of new Set(history.entries.map((entry) => entry.model))) {
 
 console.error('[viewer] rendering HTML...');
 
-const overviewHtml = renderOverview(summaries, history.entries);
-const byModelHtml = renderByModel(history.entries, modelLabels, thresholds, artifacts);
-const byProbeHtml = renderByProbe(history.entries, modelLabels);
-const overlaysHtml = await renderAllOverlays(history.entries, artifacts, modelLabels);
+const overviewHtml = renderOverview(summaries, entries);
+const byModelHtml = renderByModel(entries, modelLabels, thresholds);
+const byProbeHtml = renderByProbe(entries, modelLabels);
+const overlaysHtml = await renderAllOverlays(entries, probeDetails, modelLabels);
 
 const dashboardHtml = renderDashboard(overviewHtml, byModelHtml, byProbeHtml, overlaysHtml);
 const pageHtml = renderPage(dashboardHtml, 'Inference canary dashboard');

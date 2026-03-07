@@ -10,22 +10,19 @@ import { escapeHtml, } from '../chart/data-table.ts';
 import { vendorColor, } from '../data/model-colors.ts';
 import { iconDot, vendorIcon, } from '../data/model-icons.ts';
 
-import type { HistoryEntry, OpenRouterModelId, } from '../data/read-history.ts';
-import type { ArtifactPair, } from '../data/read-artifacts.ts';
+import type { ViewerEntry, } from '../data/viewer-types.ts';
 
 /**
  * Renders the by-model view: one `<details>` per model, each containing scatter charts.
- * @param entries - all history entries
+ * @param entries - all viewer entries
  * @param modelLabels - map from model ID to display label
  * @param thresholds - map from model ID to computed threshold
- * @param artifacts - available artifact pairs keyed by composite key
  * @returns HTML string
  */
 export function renderByModel(
-  entries: readonly HistoryEntry[],
+  entries: readonly ViewerEntry[],
   modelLabels: ReadonlyMap<string, string>,
   thresholds: ReadonlyMap<string, number>,
-  artifacts: ReadonlyMap<string, ArtifactPair>,
 ): string {
   /** Unique model IDs in the order they first appear */
   const modelIds = [...new Set(entries.map((entry) => entry.model))];
@@ -33,8 +30,6 @@ export function renderByModel(
   if (modelIds.length === 0) {
     return '<p>No model data available.</p>';
   }
-
-  void artifacts;
 
   /** Hide Model and Probe columns since we're within a per-model overall context */
   const tableDisplay = { showModel: false, showProbe: false, };
@@ -81,8 +76,8 @@ export function renderByModel(
  * @returns scatter points array
  */
 function buildOverallPoints(
-  entries: readonly HistoryEntry[],
-  modelId: OpenRouterModelId,
+  entries: readonly ViewerEntry[],
+  modelId: string,
   color: string,
 ): readonly ScatterPoint[] {
   return entries.map((entry, index) => {
@@ -117,8 +112,8 @@ function buildOverallPoints(
  * @returns scatter points array
  */
 function buildProbePoints(
-  entries: readonly HistoryEntry[],
-  modelId: OpenRouterModelId,
+  entries: readonly ViewerEntry[],
+  modelId: string,
   probe: string,
   color: string,
 ): readonly ScatterPoint[] {

@@ -1,0 +1,109 @@
+/**
+ * Viewer-local data types derived from enriched artifacts.
+ *
+ * Replaces the runner's deleted `HistoryEntry` and `HistoryFile` types
+ * with types that match the artifact-based data model.
+ */
+import type { ConfigSnapshot, StreamTiming, StreamUsage, } from '@monochromatic-dev/dev-script-inference-canary/src/runner-types.ts';
+
+export type { ConfigSnapshot, OpenRouterModelId, StreamTiming, StreamUsage, } from '@monochromatic-dev/dev-script-inference-canary/src/runner-types.ts';
+
+/**
+ * A single run entry derived from artifact metadata.
+ * Replaces the runner's deleted `HistoryEntry` type.
+ *
+ * @example
+ * ```ts
+ * const entry: ViewerEntry = {
+ *   timestamp: '2026-03-06T12:00:00.000Z',
+ *   model: 'anthropic/claude-sonnet-4.6',
+ *   overallScore: 0.85,
+ *   probeScores: { 'csv-rfc4180': 0.9, 'css-mixin': 0.8 },
+ *   pass2Scores: { 'csv-rfc4180': 0.95 },
+ *   failed: false,
+ * };
+ * ```
+ */
+export type ViewerEntry = {
+  readonly timestamp: string;
+  readonly model: string;
+  /** Mean of per-probe pass-1 scores, 0 for failed runs */
+  readonly overallScore: number;
+  /** Per-probe pass-1 scores keyed by probe name */
+  readonly probeScores: Record<string, number>;
+  /** Per-probe pass-2 (fix) scores, absent for probes without a fix pass */
+  readonly pass2Scores?: Record<string, number> | undefined;
+  /** Whether this run was a whole-model failure (no probes executed) */
+  readonly failed: boolean;
+  /** Error message for failed runs */
+  readonly error?: string | undefined;
+  /** Runner configuration snapshot, present for enriched artifacts */
+  readonly config?: ConfigSnapshot | undefined;
+};
+
+/**
+ * Per-probe enriched detail data for overlays.
+ * Combines initial-pass and fix-pass artifact data for a single probe run.
+ * Fields are optional to gracefully handle old pre-enrichment artifacts.
+ *
+ * @example
+ * ```ts
+ * const detail: ProbeDetail = {
+ *   score: 0.85,
+ *   reasoning: 'Let me think...',
+ *   timing: { timeToFirstChunkMs: 1234, interChunkMs: [], totalMs: 15000, chunkCount: 200 },
+ *   usage: { promptTokens: 500, completionTokens: 2000, totalTokens: 2500 },
+ *   initialDir: '/path/to/initial',
+ * };
+ * ```
+ */
+export type ProbeDetail = {
+  /** Probe score, undefined for old artifacts without enrichment */
+  readonly score?: number | undefined;
+  /** Fix-pass score */
+  readonly pass2Score?: number | undefined;
+  /** Model reasoning/thinking trace from initial pass */
+  readonly reasoning?: string | undefined;
+  /** Timing breakdown from initial pass */
+  readonly timing?: StreamTiming | undefined;
+  /** Token usage from initial pass */
+  readonly usage?: StreamUsage | undefined;
+  /** Why generation stopped on initial pass */
+  readonly finishReason?: string | undefined;
+  /** Runner configuration snapshot */
+  readonly config?: ConfigSnapshot | undefined;
+  /** Diagnostic prompt sent for the fix pass */
+  readonly fixPrompt?: string | undefined;
+  /** Model reasoning/thinking trace from fix pass */
+  readonly fixReasoning?: string | undefined;
+  /** Timing breakdown from fix pass */
+  readonly fixTiming?: StreamTiming | undefined;
+  /** Token usage from fix pass */
+  readonly fixUsage?: StreamUsage | undefined;
+  /** Why generation stopped on fix pass */
+  readonly fixFinishReason?: string | undefined;
+  /** Raw model response from initial pass response.txt */
+  readonly initialResponse?: string | undefined;
+  /** Raw model response from fix pass response.txt */
+  readonly fixResponse?: string | undefined;
+  /** TypeScript source from initial pass canary.ts */
+  readonly initialSource?: string | undefined;
+  /** TypeScript source from fix pass canary.ts */
+  readonly fixSource?: string | undefined;
+  /** Absolute path to initial pass artifact directory */
+  readonly initialDir: string;
+  /** Absolute path to fix pass artifact directory */
+  readonly fixDir?: string | undefined;
+  /** True when initial pass was partial/aborted */
+  readonly partial?: boolean | undefined;
+  /** Error message from initial pass */
+  readonly error?: string | undefined;
+};
+
+/** Result of reading all artifacts */
+export type ArtifactData = {
+  /** Run entries suitable for charts and tables */
+  readonly entries: readonly ViewerEntry[];
+  /** Per-probe detail data keyed by `model::probe::timestamp` */
+  readonly probeDetails: ReadonlyMap<string, ProbeDetail>;
+};

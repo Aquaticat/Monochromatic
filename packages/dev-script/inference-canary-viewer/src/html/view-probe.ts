@@ -11,7 +11,7 @@ import { escapeHtml, } from '../chart/data-table.ts';
 import { vendorColor, } from '../data/model-colors.ts';
 import { iconDot, vendorIcon, } from '../data/model-icons.ts';
 
-import type { HistoryEntry, } from '../data/read-history.ts';
+import type { ViewerEntry, } from '../data/viewer-types.ts';
 
 /**
  * Renders the by-probe view: one `<details>` per probe, with all models overlaid
@@ -21,7 +21,7 @@ import type { HistoryEntry, } from '../data/read-history.ts';
  * @returns HTML string
  */
 export function renderByProbe(
-  entries: readonly HistoryEntry[],
+  entries: readonly ViewerEntry[],
   modelLabels: ReadonlyMap<string, string>,
 ): string {
   /** All unique probe names across all entries */
@@ -70,7 +70,7 @@ export function renderByProbe(
  * @returns scatter points sorted by timestamp
  */
 function buildCrossModelPoints(
-  entries: readonly HistoryEntry[],
+  entries: readonly ViewerEntry[],
   probe: string,
   modelLabels: ReadonlyMap<string, string>,
 ): readonly ScatterPoint[] {
@@ -114,7 +114,7 @@ function buildCrossModelPoints(
  * @returns scatter points for this model+probe combination
  */
 function buildSingleModelPoints(
-  entries: readonly HistoryEntry[],
+  entries: readonly ViewerEntry[],
   probe: string,
   modelId: string,
   color: string,
@@ -155,7 +155,7 @@ function buildSingleModelPoints(
  * @returns HTML string for the legend
  */
 function buildLegend(
-  entries: readonly HistoryEntry[],
+  entries: readonly ViewerEntry[],
   modelLabels: ReadonlyMap<string, string>,
 ): string {
   const modelIds = [...new Set(entries.map((entry) => entry.model))];

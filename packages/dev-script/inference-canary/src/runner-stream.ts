@@ -186,10 +186,20 @@ export async function streamCompletion(
       const delta = choice.delta;
       if (delta.content !== undefined && delta.content !== null) chunks.push(delta.content);
 
-      // OpenRouter surfaces reasoning traces as `reasoning_content` on the delta.
+      // OpenRouter surfaces reasoning via `reasoning_details` on the delta -- an array of
+      // objects with `type` ("reasoning.text" | "reasoning.summary" | "reasoning.encrypted")
+      // and a type-specific text field (`text`, `summary`, or `data`).
       // The field is not typed in OpenAI SDK v6.22, so access it dynamically.
-      const reasoningContent = (delta as Record<string, unknown>)['reasoning_content'];
-      if (typeof reasoningContent === 'string') reasoningChunks.push(reasoningContent);
+      const reasoningDetails = (delta as Record<string, unknown>)['reasoning_details'];
+      if (Array.isArray(reasoningDetails)) {
+        for (const detail of reasoningDetails as readonly Record<string, unknown>[]) {
+          if (detail['type'] === 'reasoning.text' && typeof detail['text'] === 'string') {
+            reasoningChunks.push(detail['text']);
+          } else if (detail['type'] === 'reasoning.summary' && typeof detail['summary'] === 'string') {
+            reasoningChunks.push(detail['summary']);
+          }
+        }
+      }
 
       if (choice.finish_reason !== undefined && choice.finish_reason !== null) {
         lastFinishReason = choice.finish_reason;

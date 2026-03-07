@@ -9,7 +9,6 @@
  * the fix prompt.
  */
 import { runInContainer, } from '../container.ts';
-import { extractCode, } from './scoring.ts';
 
 import type { ContainerResult, } from '../container.ts';
 import type { AdditionalRun, VerifyResult, } from './additional-run-types.ts';
@@ -25,7 +24,6 @@ const MAX_ADDITIONAL_OUTPUT = 500;
  * Includes runtime errors (crash/timeout) and incorrect output summaries for runs
  * that succeeded at runtime but failed verification. Skips runs that passed.
  * @param base - base fix prompt from buildCodeGenFixPrompt (may be undefined)
- * @param response - raw model output for source extraction when building standalone prompt
  * @param runs - additional run configurations
  * @param containerCaches - per-run container result caches
  * @param verifyCaches - per-run verification result caches
@@ -34,12 +32,11 @@ const MAX_ADDITIONAL_OUTPUT = 500;
  *
  * @example
  * ```ts
- * const enhanced = appendAdditionalRunDiagnostics(base, response, runs, cCaches, vCaches, modelId);
+ * const enhanced = appendAdditionalRunDiagnostics(base, runs, cCaches, vCaches, modelId);
  * ```
  */
 export function appendAdditionalRunDiagnostics(
   base: string | undefined,
-  response: string,
   runs: readonly AdditionalRun[] | undefined,
   containerCaches: readonly Map<string, ContainerResult>[],
   verifyCaches: readonly Map<string, VerifyResult>[],
@@ -73,12 +70,7 @@ export function appendAdditionalRunDiagnostics(
 
   // Main run was fine but additional runs failed -- build standalone prompt
   return [
-    'Here is your code from the previous response:',
-    '',
-    '```typescript',
-    extractCode(response),
-    '```',
-    '',
+    'Your code from the previous response has issues.',
     combined,
     '',
     'Fix all the issues. Output ONLY the complete fixed TypeScript source in a single fenced code block.',

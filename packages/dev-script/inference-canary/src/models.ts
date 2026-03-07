@@ -29,6 +29,9 @@ export type ModelConfig = {
 
 /** All models to test in parallel */
 export const models: readonly ModelConfig[] = [
+  // Claude 4.6 models use adaptive effort -- even at "low", the model decides how much to
+  // think based on problem difficulty. Scoring poorly on hard probes at low effort is the
+  // model's own calibration failure, not a testing artifact.
   { id: 'anthropic/claude-opus-4.6', label: 'Opus 4.6', verbosity: 'low', },
   { id: 'anthropic/claude-sonnet-4.6', label: 'Sonnet 4.6', verbosity: 'low', },
   { id: 'anthropic/claude-haiku-4.5', label: 'Haiku 4.5', verbosity: 'low', },

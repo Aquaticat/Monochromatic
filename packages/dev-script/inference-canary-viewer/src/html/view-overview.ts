@@ -12,7 +12,7 @@ import { vendorColor, } from '../data/model-colors.ts';
 import { iconDot, vendorIcon, } from '../data/model-icons.ts';
 import { SHAPE_LEGEND, } from '../chart/legend.ts';
 
-import type { HistoryEntry, } from '../data/read-history.ts';
+import type { ViewerEntry, } from '../data/viewer-types.ts';
 
 /** Aggregated model summary for the overview table */
 export type ModelSummary = {
@@ -32,7 +32,7 @@ export type ModelSummary = {
  * @param entries - all history entries (for the combined chart)
  * @returns HTML string
  */
-export function renderOverview(summaries: readonly ModelSummary[], entries: readonly HistoryEntry[]): string {
+export function renderOverview(summaries: readonly ModelSummary[], entries: readonly ViewerEntry[]): string {
   if (summaries.length === 0) {
     return '<p>No history data available. Run the canary first.</p>';
   }
@@ -88,12 +88,12 @@ ${chart}
  * @returns scatter points array
  */
 function buildAllModelPoints(
-  entries: readonly HistoryEntry[],
+  entries: readonly ViewerEntry[],
   summaries: readonly ModelSummary[],
 ): readonly ScatterPoint[] {
   const labelMap = new Map(summaries.map((s) => [s.model, s.label]));
 
-  return entries.map((entry, index) => {
+  return entries.filter((entry) => entry.overallScore > 0).map((entry, index) => {
     const label = labelMap.get(entry.model) ?? entry.model;
     const color = vendorColor(entry.model);
     const runId = `${entry.model}-${entry.timestamp}`;

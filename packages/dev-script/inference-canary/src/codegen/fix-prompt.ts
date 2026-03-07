@@ -1,8 +1,10 @@
 /**
  * Second-pass fix prompt builder for code-generation probes.
  *
- * Sends the model its own first-pass code along with lint, type-check,
- * and runtime diagnostics so it can attempt to fix all issues in one follow-up turn.
+ * Builds a diagnostics-only follow-up prompt so the model can fix lint, type-check,
+ * and runtime issues in one turn. The model's first-pass code is already present
+ * in the conversation as a native assistant message (see runner-second-pass.ts),
+ * so the fix prompt references it without repeating the source.
  */
 import { lintSource, } from '../linter.ts';
 
@@ -28,10 +30,12 @@ function buildRuntimeSection(container: ContainerResult): string {
 }
 
 /**
- * Builds a follow-up prompt carrying the model's first-pass code + diagnostics.
+ * Builds a diagnostics-only follow-up prompt for the fix turn.
  * Returns undefined when there are no diagnostics (skip the second pass).
  *
- * @param response - raw model output from the first pass
+ * The model's first-pass response is already in the conversation as a native
+ * assistant message, so this prompt only carries diagnostics -- no code echo.
+ * @param response - raw model output from the first pass (used to extract source for linting)
  * @param context - model identity and pass for artifact organization
  * @param priorLint - lint result already computed by score(); if provided, skips re-linting
  * @param priorContainer - container result already computed by score(); runtime errors are included when present
@@ -74,12 +78,7 @@ export async function buildCodeGenFixPrompt(
   ].filter((part) => part.length > 0);
 
   return [
-    'Here is your code from the previous response:',
-    '',
-    '```typescript',
-    source,
-    '```',
-    '',
+    'Your code from the previous response has issues.',
     [lintSummary, runtimeSummary].filter((line) => line !== undefined).join(' '),
     'Here are the diagnostics:',
     '',

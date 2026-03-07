@@ -92,7 +92,7 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
       // Append additional run diagnostics when runs failed or produced incorrect output
       /** Fix prompt with additional run failure diagnostics appended */
       const withAdditional = appendAdditionalRunDiagnostics(
-        base, response, config.additionalRuns, additionalContainerCaches,
+        base, config.additionalRuns, additionalContainerCaches,
         additionalVerifyCaches, context.modelId,
       );
 
