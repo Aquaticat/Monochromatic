@@ -6,7 +6,6 @@ import { DEFAULT_MAX_CACHE_SIZE, } from '../../t/index.ts';
 import type { $ as Store, } from '../../../../../../t object/t store/t/r a/index.ts';
 import { $ as createStore, } from '../../../../../../t object/t store/f/t store/r a/p n/index.ts';
 import { buildCacheKey, } from '../../cacheKey.ts';
-import { createLruKeySet, } from '../../lruKeySet.ts';
 
 /**
  * Wraps an async function with memoization using LRU eviction, salt-based cache keys,
@@ -18,7 +17,7 @@ import { createLruKeySet, } from '../../lruKeySet.ts';
  *
  * Uses the Store as the single source of truth for cached values.
  * An in-flight `Map` deduplicates concurrent calls with the same key.
- * An LRU key set tracks access order and evicts from the Store at capacity.
+ * LRU eviction is handled by the Store when configured with an eviction policy.
  *
  * The `fn` parameter is typed with `this: void` to disallow method-style memoization
  * where `this` binding would cause incorrect caching.
@@ -60,7 +59,10 @@ import { createLruKeySet, } from '../../lruKeySet.ts';
  * Custom Store backend:
  * ```ts
  * import { $ as createStore } from '../../t object/t store/f/t store/r a/p n/index.ts';
- * const store = await createStore({ storeId: 'fetch-cache' });
+ * const store = await createStore({
+ *   storeId: 'fetch-cache',
+ *   eviction: [{ policy: 'lru', maxSize: 512 }],
+ * });
  * const memoized = await $({
  *   fn: fetchData,
  *   keyFn: (id) => id,
@@ -79,17 +81,13 @@ export async function $<
 ): Promise<MemoizedAsyncFunction<TArgs, TReturn>> {
   const { fn, keyFn, salt, } = options;
   const maxSize = options.maxSize ?? DEFAULT_MAX_CACHE_SIZE;
-  const store: Store = options.store ?? await createStore({ storeId: `memoize-${crypto.randomUUID()}`, },);
+  const store: Store = options.store ?? await createStore({
+    storeId: `memoize-${crypto.randomUUID()}`,
+    eviction: [{ policy: 'lru', maxSize, },],
+  },);
 
   /** In-flight promises for deduplication of concurrent calls. */
   const inflight = new Map<string, Promise<TReturn>>();
-
-  /** LRU key set that evicts oldest Store entries at capacity. */
-  const lru = createLruKeySet(maxSize, function onEvict(evictedKey,) {
-    // Fire-and-forget: clean persistent store when LRU evicts.
-    // Intentional void: store.delete is async but eviction callback is synchronous.
-    void store.delete(evictedKey,);
-  },);
 
   /**
    * Eagerly resolve salt so it's available synchronously on subsequent calls.
@@ -136,13 +134,11 @@ export async function $<
 
     const stored = await store.get<TReturn>(cacheKey,);
     if (stored !== undefined) {
-      lru.touch(cacheKey,);
       return stored;
     }
 
     const result = await fn(...args,);
     await store.set(cacheKey, result,);
-    lru.touch(cacheKey,);
     return result;
   }
 
@@ -189,13 +185,11 @@ export async function $<
 
   memoized.clear = async function clear(): Promise<void> {
     inflight.clear();
-    lru.clear();
     await store.clear();
   };
 
   memoized.delete = async function deleteCacheEntry(key: string,): Promise<void> {
     inflight.delete(key,);
-    lru.remove(key,);
     await store.delete(key,);
   };
 

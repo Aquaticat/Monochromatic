@@ -6,7 +6,6 @@ import { DEFAULT_MAX_CACHE_SIZE, } from '../../t/index.ts';
 import type { $ as SyncStore, } from '../../../../../../t object/t store/t/r s/index.ts';
 import { $ as createSyncStore, } from '../../../../../../t object/t store/f/t store/r s/p n/index.ts';
 import { buildCacheKey, } from '../../cacheKey.ts';
-import { createLruKeySet, } from '../../lruKeySet.ts';
 
 /**
  * Wraps a synchronous function with memoization using a SyncStore backend,
@@ -56,12 +55,14 @@ import { createLruKeySet, } from '../../lruKeySet.ts';
  * Custom store and max size:
  * ```ts
  * import { $ as createSyncStore } from '../../t object/t store/f/t store/r s/p n/index.ts';
- * const store = createSyncStore({ storeId: 'my-memo' });
+ * const store = createSyncStore({
+ *   storeId: 'my-memo',
+ *   eviction: [{ policy: 'lru', maxSize: 256 }],
+ * });
  * const memoized = $({
  *   fn: compute,
  *   keyFn: (x) => String(x),
  *   salt: 'v1',
- *   maxSize: 256,
  *   store,
  * });
  * ```
@@ -76,11 +77,9 @@ export function $<
 ): MemoizedFunction<TArgs, TReturn> {
   const { fn, keyFn, salt, } = options;
   const maxSize = options.maxSize ?? DEFAULT_MAX_CACHE_SIZE;
-  const store: SyncStore = options.store ?? createSyncStore({ storeId: `memoize-${crypto.randomUUID()}`, },);
-
-  /** LRU key set that evicts oldest store entries at capacity. */
-  const lru = createLruKeySet(maxSize, function onEvict(evictedKey,) {
-    store.delete(evictedKey,);
+  const store: SyncStore = options.store ?? createSyncStore({
+    storeId: `memoize-${crypto.randomUUID()}`,
+    eviction: [{ policy: 'lru', maxSize, },],
   },);
 
   /**
@@ -91,25 +90,21 @@ export function $<
 
     const cached = store.get<TReturn>(cacheKey,);
     if (cached !== undefined) {
-      lru.touch(cacheKey,);
       return cached;
     }
 
     const result = fn(...args,);
     store.set(cacheKey, result,);
-    lru.touch(cacheKey,);
     return result;
   }
 
   memoized.store = store;
 
   memoized.clear = function clear(): void {
-    lru.clear();
     store.clear();
   };
 
   memoized.delete = function deleteCacheEntry(key: string,): void {
-    lru.remove(key,);
     store.delete(key,);
   };
 

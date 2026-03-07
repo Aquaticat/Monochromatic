@@ -146,6 +146,88 @@ describe($, () => {
     expect(store.get('complex',),).toEqual(complex,);
   });
 
+  test('LRU eviction removes oldest entry at capacity', () => {
+    const store = $({
+      storeId: 'lru-evict',
+      eviction: [{ policy: 'lru', maxSize: 3, },],
+    },);
+
+    store.set('a', 1,);
+    store.set('b', 2,);
+    store.set('c', 3,);
+    expect(store.size,).toBe(3,);
+
+    store.set('d', 4,);
+    expect(store.size,).toBe(3,);
+    expect(store.get('a',),).toBeUndefined();
+    expect(store.get('d',),).toBeDefined();
+  });
+
+  test('LRU access refreshes entry position', () => {
+    const store = $({
+      storeId: 'lru-refresh',
+      eviction: [{ policy: 'lru', maxSize: 3, },],
+    },);
+
+    store.set('a', 1,);
+    store.set('b', 2,);
+    store.set('c', 3,);
+
+    // Access 'a' to refresh it
+    store.get('a',);
+
+    // Adding 'd' should evict 'b' (oldest after refresh), not 'a'
+    store.set('d', 4,);
+    expect(store.get('a',),).toBeDefined();
+    expect(store.get('b',),).toBeUndefined();
+  });
+
+  test('LRU delete removes key from eviction tracking', () => {
+    const store = $({
+      storeId: 'lru-delete',
+      eviction: [{ policy: 'lru', maxSize: 3, },],
+    },);
+
+    store.set('a', 1,);
+    store.set('b', 2,);
+    store.set('c', 3,);
+    store.delete('b',);
+
+    // After deleting 'b', LRU tracks [a, c] (2 keys).
+    // Adding 'd' fills to capacity (3), no eviction.
+    store.set('d', 4,);
+    expect(store.get('a',),).toBeDefined();
+    expect(store.get('c',),).toBeDefined();
+    expect(store.get('d',),).toBeDefined();
+  });
+
+  test('LRU clear resets eviction tracking', () => {
+    const store = $({
+      storeId: 'lru-clear',
+      eviction: [{ policy: 'lru', maxSize: 2, },],
+    },);
+
+    store.set('a', 1,);
+    store.set('b', 2,);
+    store.clear();
+
+    // After clear, can add entries without eviction
+    store.set('c', 3,);
+    store.set('d', 4,);
+    expect(store.size,).toBe(2,);
+  });
+
+  test('no eviction by default', () => {
+    const store = $({ storeId: 'no-eviction', },);
+
+    store.set('a', 1,);
+    store.set('b', 2,);
+    store.set('c', 3,);
+    store.set('d', 4,);
+    store.set('e', 5,);
+    expect(store.size,).toBe(5,);
+  });
+
   test('all operations are synchronous', () => {
     const store = $({ storeId: 'sync-check', },);
     const setResult = store.set('k', 'v',);

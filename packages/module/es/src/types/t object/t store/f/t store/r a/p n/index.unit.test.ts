@@ -132,4 +132,87 @@ describe($, () => {
     await store.set('complex', complex,);
     expect(await store.get('complex',),).toEqual(complex,);
   });
+
+  test('LRU eviction removes oldest entry at capacity', async () => {
+    const store = await $({
+      storeId: 'lru-evict',
+      eviction: [{ policy: 'lru', maxSize: 3, },],
+    },);
+
+    await store.set('a', 1,);
+    await store.set('b', 2,);
+    await store.set('c', 3,);
+    await store.set('d', 4,);
+
+    expect(await store.get('a',),).toBeUndefined();
+    expect(await store.get('d',),).toBeDefined();
+  });
+
+  test('LRU access refreshes entry position', async () => {
+    const store = await $({
+      storeId: 'lru-refresh',
+      eviction: [{ policy: 'lru', maxSize: 3, },],
+    },);
+
+    await store.set('a', 1,);
+    await store.set('b', 2,);
+    await store.set('c', 3,);
+
+    // Access 'a' to refresh it
+    await store.get('a',);
+
+    // Adding 'd' should evict 'b' (oldest after refresh), not 'a'
+    await store.set('d', 4,);
+    expect(await store.get('a',),).toBeDefined();
+    expect(await store.get('b',),).toBeUndefined();
+  });
+
+  test('LRU delete removes key from eviction tracking', async () => {
+    const store = await $({
+      storeId: 'lru-delete',
+      eviction: [{ policy: 'lru', maxSize: 3, },],
+    },);
+
+    await store.set('a', 1,);
+    await store.set('b', 2,);
+    await store.set('c', 3,);
+    await store.delete('b',);
+
+    // After deleting 'b', LRU tracks [a, c] (2 keys).
+    // Adding 'd' fills to capacity (3), no eviction.
+    await store.set('d', 4,);
+    expect(await store.get('a',),).toBeDefined();
+    expect(await store.get('c',),).toBeDefined();
+    expect(await store.get('d',),).toBeDefined();
+  });
+
+  test('LRU clear resets eviction tracking', async () => {
+    const store = await $({
+      storeId: 'lru-clear',
+      eviction: [{ policy: 'lru', maxSize: 2, },],
+    },);
+
+    await store.set('a', 1,);
+    await store.set('b', 2,);
+    await store.clear();
+
+    // After clear, can add entries without eviction
+    await store.set('c', 3,);
+    await store.set('d', 4,);
+    // No eviction expected since tracking was cleared
+    expect(await store.get('c',),).toBeDefined();
+    expect(await store.get('d',),).toBeDefined();
+  });
+
+  test('no eviction by default', async () => {
+    const store = await $({ storeId: 'no-eviction', },);
+
+    await store.set('a', 1,);
+    await store.set('b', 2,);
+    await store.set('c', 3,);
+    await store.set('d', 4,);
+    await store.set('e', 5,);
+    expect(await store.get('a',),).toBeDefined();
+    expect(await store.get('e',),).toBeDefined();
+  });
 });

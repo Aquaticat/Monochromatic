@@ -13,6 +13,7 @@ import {
 } from '../../../../consensus.ts';
 import { healBackendsSync, } from '../../../../heal.ts';
 import { $ as serializeValue, } from '../../../../../../t string/f/t unknown/serialize/r s/p n/index.ts';
+import { createLruKeySet, } from '../../../../lruKeySet.ts';
 
 /**
  * Query all sync backends for a key and return typed results with priority info.
@@ -46,6 +47,9 @@ function queryAllBackendsSync(
  * are synchronous. Backends must implement {@link SyncStorageBackend}.
  * Defaults to an in-memory `Map` when no backends are provided.
  *
+ * When {@link SyncStoreConfig.eviction} is set, the store tracks access order
+ * and evicts entries according to the configured policy.
+ *
  * @param config - store configuration
  * @returns initialized sync Store
  *
@@ -54,6 +58,15 @@ function queryAllBackendsSync(
  * const store = $({ storeId: 'my-cache' });
  * store.set('key', { data: 42 });
  * const value = store.get<{ data: number }>('key');
+ * ```
+ *
+ * @example
+ * LRU-bounded store:
+ * ```ts
+ * const store = $({
+ *   storeId: 'bounded',
+ *   eviction: [{ policy: 'lru', maxSize: 256 }],
+ * });
  * ```
  *
  * @example
@@ -87,6 +100,12 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
   const backends: readonly [SyncStorageBackend, ...SyncStorageBackend[],] = config.backends
     ?? [new Map<string, string>(),];
 
+  const policies = config.eviction ?? [];
+  const lruPolicy = policies.find(function isLru(p,) { return p.policy === 'lru'; },);
+  const lru = lruPolicy !== undefined
+    ? createLruKeySet(lruPolicy.maxSize,)
+    : undefined;
+
   defaultLogger.trace(`SyncStore "${storeId}" created with ${String(backends.length)} backend(s)`,);
 
   const store: SyncStore = {
@@ -112,6 +131,16 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
         backend.set(key, serialized,);
       }
 
+      if (lru !== undefined) {
+        const evicted = lru.touch(key,);
+        if (evicted !== undefined) {
+          defaultLogger.trace(`SyncStore.evict: "${evicted}"`,);
+          for (const backend of backends) {
+            backend.delete(evicted,);
+          }
+        }
+      }
+
       return store;
     },
 
@@ -122,6 +151,16 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
 
       healBackendsSync(results, canonicalSerialized, key,);
 
+      if (canonicalSerialized !== undefined && lru !== undefined) {
+        const evicted = lru.touch(key,);
+        if (evicted !== undefined) {
+          defaultLogger.trace(`SyncStore.evict: "${evicted}"`,);
+          for (const backend of backends) {
+            backend.delete(evicted,);
+          }
+        }
+      }
+
       return canonicalSerialized === undefined
         ? undefined
         : deserializer<T>(canonicalSerialized,);
@@ -129,6 +168,9 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
 
     delete(key: string,): void {
       defaultLogger.trace(`SyncStore.delete: "${key}"`,);
+      if (lru !== undefined) {
+        lru.remove(key,);
+      }
       for (const backend of backends) {
         backend.delete(key,);
       }
@@ -136,6 +178,9 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
 
     clear(): void {
       defaultLogger.trace(`SyncStore.clear`,);
+      if (lru !== undefined) {
+        lru.clear();
+      }
       for (const backend of backends) {
         if ('clear' in backend && typeof backend.clear === 'function') {
           (backend.clear as () => unknown)();

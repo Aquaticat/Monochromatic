@@ -24,6 +24,34 @@ export type Serializer = (toSerialize: unknown,) => string;
 export type Deserializer = <const T = unknown,>(toDeserialize: string,) => T;
 
 /**
+ * LRU eviction policy that removes the least recently accessed entry
+ * when capacity is exceeded.
+ *
+ * @example
+ * ```ts
+ * const lru: LruEvictionPolicy = { policy: 'lru', maxSize: 1024 };
+ * ```
+ */
+export type LruEvictionPolicy = {
+  /** Eviction strategy discriminant. */
+  policy: 'lru';
+  /** Maximum entries before the oldest is evicted. */
+  maxSize: number;
+};
+
+/**
+ * Discriminated union of eviction policies.
+ * Multiple policies can be active simultaneously on a single store
+ * by passing an array to {@link BaseStoreConfig.eviction}.
+ *
+ * @example
+ * ```ts
+ * const policy: EvictionPolicy = { policy: 'lru', maxSize: 256 };
+ * ```
+ */
+export type EvictionPolicy = LruEvictionPolicy;
+
+/**
  * Shared configuration fields for both sync and async store constructors.
  * Extended by `StoreConfig` and `SyncStoreConfig` which add their
  * backend-specific `backends` field.
@@ -48,6 +76,17 @@ export type BaseStoreConfig = {
   lossyForCircular?: boolean;
   /** Unique identifier used for namespacing. Defaults to random UUID. */
   storeId?: string;
+  /**
+   * Eviction policies for bounding store capacity.
+   * Multiple policies can be active simultaneously.
+   * Defaults to no eviction (unbounded).
+   *
+   * @example
+   * ```ts
+   * { eviction: [{ policy: 'lru', maxSize: 256 }] }
+   * ```
+   */
+  eviction?: readonly EvictionPolicy[];
 };
 
 /**

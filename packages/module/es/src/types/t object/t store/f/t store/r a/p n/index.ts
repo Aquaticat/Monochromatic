@@ -14,6 +14,7 @@ import {
 import { healBackends, } from '../../../../heal.ts';
 import { hashString, } from '../../../../../../t string/f/_pendingRefactor_type string/hash.ts';
 import { $ as serializeValue, } from '../../../../../../t string/f/t unknown/serialize/r s/p n/index.ts';
+import { createLruKeySet, } from '../../../../lruKeySet.ts';
 
 /**
  * Query all backends for a key and return typed results with priority info.
@@ -88,6 +89,9 @@ export function configureDefaultBackendsBuilder(builder: DefaultBackendsBuilder,
  * Falls back to a single in-memory `Map` when no backends are configured
  * and no platform builder has been registered.
  *
+ * When {@link StoreConfig.eviction} is set, the store tracks access order
+ * and evicts entries according to the configured policy.
+ *
  * @param config - store configuration
  * @returns initialized Store
  *
@@ -96,6 +100,15 @@ export function configureDefaultBackendsBuilder(builder: DefaultBackendsBuilder,
  * const store = await $({ storeId: 'my-cache' });
  * await store.set('key', [1, 2, 3]);
  * const arr = await store.get<number[]>('key');
+ * ```
+ *
+ * @example
+ * LRU-bounded store:
+ * ```ts
+ * const store = await $({
+ *   storeId: 'bounded',
+ *   eviction: [{ policy: 'lru', maxSize: 256 }],
+ * });
  * ```
  *
  * @example
@@ -119,6 +132,12 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
       ? await defaultBackendsBuilder({ storeId, },)
       : [new Map<string, string>(),]);
 
+  const policies = config.eviction ?? [];
+  const lruPolicy = policies.find(function isLru(p,) { return p.policy === 'lru'; },);
+  const lru = lruPolicy !== undefined
+    ? createLruKeySet(lruPolicy.maxSize,)
+    : undefined;
+
   defaultLogger.trace(`Store "${storeId}" created with ${String(backends.length)} backend(s)`,);
 
   const store: Store = {
@@ -139,6 +158,18 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
         },),
       );
 
+      if (lru !== undefined) {
+        const evicted = lru.touch(resolvedKey,);
+        if (evicted !== undefined) {
+          defaultLogger.trace(`Store.evict: "${evicted}"`,);
+          await Promise.all(
+            backends.map(async function evictFromBackend(backend,) {
+              await backend.delete(evicted,);
+            },),
+          );
+        }
+      }
+
       return store;
     },
 
@@ -149,6 +180,18 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
 
       await healBackends(results, canonicalSerialized, key,);
 
+      if (canonicalSerialized !== undefined && lru !== undefined) {
+        const evicted = lru.touch(key,);
+        if (evicted !== undefined) {
+          defaultLogger.trace(`Store.evict: "${evicted}"`,);
+          await Promise.all(
+            backends.map(async function evictFromBackend(backend,) {
+              await backend.delete(evicted,);
+            },),
+          );
+        }
+      }
+
       return canonicalSerialized === undefined
         ? undefined
         : deserializer<T>(canonicalSerialized,);
@@ -156,6 +199,9 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
 
     async delete(key: string,): Promise<void> {
       defaultLogger.trace(`Store.delete: "${key}"`,);
+      if (lru !== undefined) {
+        lru.remove(key,);
+      }
       await Promise.all(
         backends.map(async function deleteFromBackend(backend,) {
           await backend.delete(key,);
@@ -165,6 +211,9 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
 
     async clear(): Promise<void> {
       defaultLogger.trace(`Store.clear`,);
+      if (lru !== undefined) {
+        lru.clear();
+      }
       await Promise.all(
         backends.map(async function clearBackend(backend,) {
           // Map and similar backends support clear()
