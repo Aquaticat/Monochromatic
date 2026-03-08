@@ -8,6 +8,8 @@ Don't use pipes in bash tool since they're broken for now. Workarounds like redi
 
 The Glob tool is denylisted and disabled because it currently doesn't respect .gitignore .
 
+User input might include raw `\n` which you should consider as newlines since newline is broken sometimes.
+
 Clone entire git repo of a package to a temp dir whenever investigating source code is needed.
 
 ## Dependency management
@@ -18,6 +20,7 @@ Clone entire git repo of a package to a temp dir whenever investigating source c
 1. Create directory under the appropriate category in `packages/`
 2. Add `mise.toml` with task definitions mirroring sibling packages
 3. Configure `package.json` with workspace dependencies
+4. For CLI packages with a `bin` entry, add `#!/usr/bin/env bun` shebang as the first line of the entry point -- without it, Unix falls back to `/bin/sh` and the script hangs or errors
 
 ## Essential commands
 
@@ -166,6 +169,7 @@ Never remove logging to "clean up" -- treat logging as permanent infrastructure.
 
 Always use tagged loggers from `@monochromatic-dev/module-es`.
 Never use raw `console.log`/`console.error` or untagged logger instances in production code.
+Exception: raw `console` is allowed when precise control over terminal output is needed (e.g. CLI user-facing messages, progress indicators, interactive prompts).
 
 - Tag at every module and function boundary; use `myFn.name` as tag to stay in sync with refactors
 - Compose tags deeply -- when calling a sub-function that accepts a logger, wrap the current logger with an additional tag before passing it

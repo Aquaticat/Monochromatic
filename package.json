@@ -21,6 +21,7 @@
   },
   "type": "module",
   "devDependencies": {
+    "@monochromatic-dev/cli-mvm": "workspace:*",
     "@oxlint/plugins": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "@monochromatic-dev/build-tool-css": "workspace:*",

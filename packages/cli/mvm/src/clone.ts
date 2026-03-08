@@ -6,7 +6,7 @@ import { VMS_DIR, validateName } from './config.ts';
 import { domainXml } from './domain-xml.ts';
 import { l, tagged } from './log.ts';
 import { run } from './run.ts';
-import { defineVm, getVmIp, startVm } from './virsh.ts';
+import { defineVm, startVm } from './virsh.ts';
 
 /**
  * Clones an existing VM by copying its disk and creating a new cloud-init seed.
@@ -47,12 +47,5 @@ export async function clone({ destination, source }: { destination: string; sour
   await defineVm({ vmDir: dstVmDir, xml, });
   await startVm({ name: destination, });
 
-  rl.info('waiting for cloned VM to boot...');
-  const ip = await getVmIp({ name: destination, });
-
-  rl.info(`VM ${destination} is ready at ${ip}`);
-  console.error(`VM ${destination} is ready (cloned from ${source})`);
-  console.error(`  IP:    ${ip}`);
-  console.error(`  SSH:   ssh ubuntu@${ip}`);
-  console.error(`  Shell: mvm shell ${destination}`);
+  rl.info(`VM ${destination} is ready (cloned from ${source}). Connect with: mvm shell ${destination}`);
 }

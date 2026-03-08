@@ -31,13 +31,13 @@ export async function list(): Promise<void> {
   }
 
   if (vms.length === 0) {
-    console.error('No VMs found.');
+    rl.info('no VMs found');
     return;
   }
 
   /** Column width for aligned output. */
   const NAME_COL_WIDTH = 24;
   for (const vm of vms) {
-    console.error(`${vm.name.padEnd(NAME_COL_WIDTH)} ${vm.state}`);
+    rl.info(`${vm.name.padEnd(NAME_COL_WIDTH)} ${vm.state}`);
   }
 }

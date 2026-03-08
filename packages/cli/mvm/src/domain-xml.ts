@@ -48,10 +48,12 @@ export function domainXml({ diskPath, name, seedIsoPath }: {
       <target dev='sda' bus='sata'/>
       <readonly/>
     </disk>
-    <interface type='network'>
-      <source network='default'/>
+    <interface type='user'>
       <model type='virtio'/>
     </interface>
+    <channel type='unix'>
+      <target type='virtio' name='org.qemu.guest_agent.0'/>
+    </channel>
     <serial type='pty'>
       <target port='0'/>
     </serial>

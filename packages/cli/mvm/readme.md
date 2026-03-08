@@ -7,11 +7,9 @@ Clone replaces snapshot needs.
 
 ## Prerequisites
 
+- **Linux only** -- depends on KVM, libvirt, and `virsh`, none of which are available on macOS or Windows
 - KVM support (`/dev/kvm` must exist)
 - `virsh` and `qemu-img` installed (`sudo dnf install libvirt qemu-img`)
-- libvirt default network active (`virsh net-start default`)
-- SSH public key in `~/.ssh/` (ed25519, RSA, or ECDSA)
-- User in the `libvirt` group (`sudo usermod -aG libvirt $USER`)
 
 ## Usage
 
@@ -19,7 +17,7 @@ Clone replaces snapshot needs.
 # Create a new VM (downloads Ubuntu 24.04 LTS cloud image on first run)
 bun packages/cli/vm/src/index.ts create dev-01
 
-# SSH into a running VM
+# Connect to a running VM (auto-login serial console, Ctrl+] to disconnect)
 bun packages/cli/vm/src/index.ts shell dev-01
 
 # List all managed VMs
@@ -45,7 +43,9 @@ mise run packages/cli/vm:run -- create dev-01
   containing `disk.qcow2`, `seed.iso`, and metadata files
 - **Disks** use qcow2 backing files from the cached base image for fast creation
 - **Cloud-init** seed ISOs are generated using a built-in ISO9660 writer (no `genisoimage` needed)
-- **Networking** uses libvirt's default NAT network for internet access
+- **Console access** uses `virsh console` with auto-login on ttyS0 (no SSH or keys needed)
+- **Networking** uses QEMU user-mode networking (SLIRP) for outbound internet access
+- **Connection** uses `qemu:///session` so no root privileges or polkit prompts are needed
 - All VM names are prefixed with `mvm-` in libvirt to avoid collisions
 
 ## VM defaults
@@ -55,3 +55,4 @@ mise run packages/cli/vm:run -- create dev-01
 - 20 GiB root disk (thin-provisioned via qcow2)
 - Ubuntu 24.04 LTS (Noble Numbat)
 - User: `ubuntu` with passwordless sudo
+- Serial console auto-login (disconnect with `Ctrl+]`)

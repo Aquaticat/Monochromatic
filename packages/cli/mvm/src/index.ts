@@ -1,9 +1,12 @@
+#!/usr/bin/env bun
 import { parseArgs } from 'node:util';
 
 import { clone } from './clone.ts';
 import { create } from './create.ts';
-import { destroy } from './destroy.ts';
+import { destroy, destroyAll } from './destroy.ts';
+import { exec } from './exec.ts';
 import { list } from './list.ts';
+import { l, tagged } from './log.ts';
 import { shell } from './shell.ts';
 
 export {};
@@ -15,23 +18,26 @@ Usage: mvm <command> [args]
 
 Commands:
   create <name>              Create and start a new Ubuntu VM
-  shell <name>               SSH into a running VM
+  shell <name>               Connect to a running VM (Ctrl+] to disconnect)
   list                       List all managed VMs
   destroy <name>             Destroy a VM and all its storage
+  destroy --all              Destroy all managed VMs
+  exec <name> <command...>    Execute a command in a VM and print output
   clone <source> <dest>      Clone an existing VM to a new name
 
 Prerequisites:
   - KVM support (/dev/kvm)
-  - libvirt with default network active
+  - libvirt
   - qemu-img
-  - SSH public key in ~/.ssh/
 
-The user must be in the 'libvirt' group for passwordless access.`;
+Console access uses virsh console with auto-login (no SSH needed).
+Uses qemu:///session (user-mode) so no root or polkit prompts are needed.`;
 
-const { positionals } = parseArgs({
+const { positionals, values } = parseArgs({
   allowPositionals: true,
   args: Bun.argv.slice(2),
   options: {
+    all: { type: 'boolean', },
     help: { type: 'boolean', short: 'h', },
   },
   strict: false,
@@ -39,8 +45,10 @@ const { positionals } = parseArgs({
 
 const command = positionals[0];
 
+const rl = tagged({ tag: 'cli', l, });
+
 if (command === undefined || command === 'help' || command === '--help') {
-  console.error(USAGE);
+  rl.info(USAGE);
 } else if (command === 'create') {
   const name = positionals[1];
   if (name === undefined) {
@@ -56,11 +64,22 @@ if (command === undefined || command === 'help' || command === '--help') {
 } else if (command === 'list' || command === 'ls') {
   await list();
 } else if (command === 'destroy' || command === 'rm') {
-  const name = positionals[1];
-  if (name === undefined) {
-    throw new Error('usage: mvm destroy <name>');
+  if (values.all === true) {
+    await destroyAll();
+  } else {
+    const name = positionals[1];
+    if (name === undefined) {
+      throw new Error('usage: mvm destroy <name> | --all');
+    }
+    await destroy({ name, });
   }
-  await destroy({ name, });
+} else if (command === 'exec') {
+  const name = positionals[1];
+  if (name === undefined || positionals.length < 3) {
+    throw new Error('usage: mvm exec <name> <command...>');
+  }
+  const cmd = positionals.slice(2).join(' ');
+  await exec({ command: cmd, name, });
 } else if (command === 'clone') {
   const source = positionals[1];
   const destination = positionals[2];

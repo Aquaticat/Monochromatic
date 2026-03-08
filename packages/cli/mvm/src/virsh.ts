@@ -2,7 +2,6 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { LIBVIRT_URI, VM_PREFIX } from './config.ts';
-import { l, tagged } from './log.ts';
 import { run } from './run.ts';
 
 /**
@@ -73,41 +72,3 @@ export async function listVms(): Promise<ReadonlyArray<string>> {
     .map((line) => line.slice(VM_PREFIX.length));
 }
 
-/**
- * Polls for the IP address of a running VM via DHCP lease information.
- * Retries up to 30 times with 1-second intervals.
- *
- * @param options - VM name without the mvm- prefix
- * @returns IPv4 address string
- * @throws Error after 30 seconds if no IP is assigned
- *
- * @example
- * ```ts
- * const ip = await getVmIp({ name: 'my-vm' });
- * // => "192.168.122.45"
- * ```
- */
-export async function getVmIp({ name }: { name: string }): Promise<string> {
-  const rl = tagged({ tag: getVmIp.name, l, });
-  const fullName = `${VM_PREFIX}${name}`;
-  const MAX_ATTEMPTS = 30;
-  const POLL_INTERVAL_MS = 1000;
-
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    try {
-      const output = await virsh({ args: ['domifaddr', fullName, '--source', 'lease'], });
-      const match = /(\d+\.\d+\.\d+\.\d+)/.exec(output);
-      if (match !== null) {
-        rl.info(`VM ${name} has IP ${match[1]}`);
-        return match[1]!;
-      }
-    } catch {
-      rl.debug(`virsh domifaddr not ready yet`);
-    }
-
-    rl.debug(`waiting for IP (attempt ${String(attempt + 1)}/${String(MAX_ATTEMPTS)})...`);
-    await Bun.sleep(POLL_INTERVAL_MS);
-  }
-
-  throw new Error(`timed out waiting for IP address of VM ${name} after ${String(MAX_ATTEMPTS)}s`);
-}

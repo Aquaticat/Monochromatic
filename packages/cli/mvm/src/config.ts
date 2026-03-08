@@ -28,8 +28,8 @@ export const DEFAULT_VCPUS = 2;
 /** Default root disk size for new VMs. */
 export const DEFAULT_DISK_SIZE = '20G';
 
-/** libvirt connection URI targeting the system QEMU/KVM daemon. */
-export const LIBVIRT_URI = 'qemu:///system';
+/** libvirt connection URI targeting the user session QEMU/KVM daemon. */
+export const LIBVIRT_URI = 'qemu:///session';
 
 /**
  * Validates a VM name contains only safe characters.

@@ -68,6 +68,11 @@ Issues with C-style comment syntax that affect multiple programming languages:
 - IDE comment features and best practices
 - Language-specific comment syntax differences
 
+### [CLI bin entries](TROUBLESHOOTING.cli-bin.md)
+Problems with CLI tools installed via `node_modules/.bin/`:
+- Missing shebang causes Unix to fall back to `/bin/sh`, triggering ImageMagick `import` hangs
+- Cross-platform shebang and `.cmd` wrapper interaction
+
 ### [VSCode-Specific](TROUBLESHOOTING.vscode.md)
 VSCode-specific troubleshooting (already exists):
 - Multiple workspace instances in WSL
@@ -83,6 +88,7 @@ For common issues:
 - **TypeScript path warnings?** → [dprint configuration](TROUBLESHOOTING.typescript.md#typescript-path-warnings-with-dprint)
 - **Configuration not working as expected?** → [TOML issues and alternatives](TROUBLESHOOTING.toml.md#silent-overwrites-the-configuration-killer)
 - **Figma automation not working?** → [The WebGL wall](TROUBLESHOOTING.figma-browser-automation.md)
+- **CLI hangs with ImageMagick errors?** → [Missing shebang](TROUBLESHOOTING.cli-bin.md#cli-command-hangs-on-unix-with-imagemagick-errors)
 
 ## Contributing
 
