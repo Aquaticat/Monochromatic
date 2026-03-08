@@ -6,6 +6,7 @@ RUN sed -i 's|http://|https://|g' /etc/apt/sources.list.d/ubuntu.sources
 RUN apt-get update \
  && apt-get install -y --no-install-recommends podman git unzip curl
 RUN curl -fsSL https://bun.com/install | bash
+ENV PATH="/root/.bun/bin:$PATH"
 # vfs driver: avoids overlay mount issues inside Docker volumes.
 # Performance is acceptable — the canary pulls one small image infrequently.
 RUN printf '[storage]\ndriver = "vfs"\nrunroot = "/run/containers/storage"\ngraphroot = "/var/lib/containers/storage"\n' \
