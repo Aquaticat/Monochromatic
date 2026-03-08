@@ -8,7 +8,6 @@ MCP server that exposes [mvm](../../cli/mvm/) VM management operations to AI age
 - **create_vm** -- creates and starts a new Ubuntu VM
 - **destroy_vm** -- force-stops and deletes a VM by name, or all managed VMs when `all` is true
 - **exec_in_vm** -- runs a shell command inside a running VM via the QEMU guest agent
-- **clone_vm** -- clones an existing VM to a new name
 
 ## Usage
 

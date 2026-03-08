@@ -24,7 +24,7 @@ bun packages/cli/vm/src/index.ts shell dev-01
 bun packages/cli/vm/src/index.ts list
 
 # Clone a VM (full disk copy, new hostname via cloud-init)
-bun packages/cli/vm/src/index.ts clone dev-01 dev-02
+bun packages/cli/vm/src/index.ts create --from dev-01 dev-02
 
 # Destroy a VM and all its storage
 bun packages/cli/vm/src/index.ts destroy dev-01
