@@ -39,7 +39,7 @@ services:
 
         ENV PATH="/app/node_modules/.bin:$PATH"
     privileged: true
-    cgroupns_mode: host
+    cgroup: host
     volumes:
       - canary-artifacts:/app/packages/dev-script/inference-canary/src/canary-lint
       - podman-storage:/var/lib/containers
