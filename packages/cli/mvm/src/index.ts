@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 import { object, or } from '@optique/core/constructs';
 import { message } from '@optique/core/message';
-import { map, optional } from '@optique/core/modifiers';
-import { argument, command, flag, option, passThrough } from '@optique/core/primitives';
+import { map, multiple, optional } from '@optique/core/modifiers';
+import { argument, command, flag, option } from '@optique/core/primitives';
 import { string } from '@optique/core/valueparser';
 import { runSync } from '@optique/run';
 
@@ -15,6 +15,41 @@ import { list } from './list.ts';
 import { shell } from './shell.ts';
 
 export {};
+
+//region Verbose flag -- stripped before parsing; logger detects it from raw process.argv at import time
+
+/**
+ * Flags consumed by infrastructure (logger) rather than the argument parser.
+ * Only stripped from tokens before `--` so that VM commands like
+ * `mvm exec myvm -- --verbose cmd` preserve `--verbose` for the guest.
+ *
+ * @example
+ * ```ts
+ * INFRA_FLAGS.has('--verbose'); // true
+ * ```
+ */
+const INFRA_FLAGS: ReadonlySet<string> = new Set(['--verbose']);
+
+/** Raw args after the script name. */
+const rawArgs = process.argv.slice(2);
+
+/**
+ * Index of the `--` separator, or end-of-args when absent.
+ * Infrastructure flags are only stripped before this boundary.
+ */
+const doubleDashIndex = rawArgs.indexOf('--');
+
+/** Boundary past which tokens belong to the VM command and must not be touched. */
+const boundary = doubleDashIndex === -1 ? rawArgs.length : doubleDashIndex;
+
+/**
+ * Process argv with infrastructure flags removed only from the mvm-owned prefix.
+ * The logger caches its own `process.argv` check at module load time
+ * (before this runs), so stripping here only affects the @optique parser.
+ */
+const filteredArgs = rawArgs.filter((arg, i) => i >= boundary || !INFRA_FLAGS.has(arg));
+
+//endregion Verbose flag
 
 //region Result types -- discriminated union for subcommand dispatch
 
@@ -89,19 +124,22 @@ const rmCmd = command('rm', or(
   destroyNameParser,
 ), { hidden: true });
 
-/** Parser for `exec --destroy [--from SOURCE] <command...>` -- ephemeral VM */
+/** Value parser for individual command tokens after `--`, displayed as COMMAND in help */
+const commandToken = string({ metavar: 'COMMAND' });
+
+/** Parser for `exec --destroy [--from SOURCE] -- <command...>` -- ephemeral VM */
 const execDestroyParser = map(
   object({
     _destroy: flag('--destroy', { description: message`Create an ephemeral VM, execute, then destroy it` }),
     from: fromOption,
-    args: passThrough({ format: 'greedy' }),
+    args: multiple(argument(commandToken)),
   }),
   (v): MvmArgs => ({ cmd: 'exec', command: v.args.join(' '), destroy: true, from: v.from }),
 );
 
-/** Parser for `exec <name> <command...>` -- existing VM */
+/** Parser for `exec <name> -- <command...>` -- existing VM */
 const execDirectParser = map(
-  object({ name: argument(name), args: passThrough({ format: 'greedy' }) }),
+  object({ name: argument(name), args: multiple(argument(commandToken)) }),
   (v): MvmArgs => ({ cmd: 'exec', name: v.name, command: v.args.join(' '), destroy: false }),
 );
 
@@ -129,9 +167,11 @@ const parser = or(
 /** Parsed CLI result from process.argv */
 const args = runSync(parser, {
   programName: 'mvm',
+  args: filteredArgs,
   help: 'option',
   aboveError: 'help',
   brief: message`mvm - ephemeral Ubuntu VM manager`,
+  footer: message`Pass --verbose before the subcommand to enable debug logging.`,
 }) as MvmArgs;
 
 if (args.cmd === 'create') {
