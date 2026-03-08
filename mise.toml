@@ -405,9 +405,12 @@ description = "Prepare environment, allowing failures"
 extends = "prepare--allowFailure"
 
 [tasks."prepare:bun"]
+run = [{ tasks = ["prepare:bun:bun"] }, {tasks=["prepare:bun:others:*"]}]
+
+[tasks."prepare:bun:bun"]
 run = "bun install"
 
-[tasks."prepare:files"]
+[tasks."prepare:bun:others:files"]
 description = "Sync file-enforcer managed files (CLAUDE.md, skill mirrors)"
 run = "bun file-enforcer.config.ts"
 
