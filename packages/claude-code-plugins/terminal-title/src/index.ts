@@ -21,6 +21,9 @@ import type {
   PostToolUseInput,
   PreToolUseInput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
+import {
+  readStdin,
+} from '@monochromatic-dev/claude-code-plugins-hook-utils';
 
 export {}
 
@@ -401,21 +404,6 @@ function setTerminalTitle(title: string): void {
 //endregion
 
 //region Main
-
-/**
- * Reads the full contents of stdin as a string.
- *
- * @returns Resolved stdin text.
- */
-async function readStdin(): Promise<string> {
-  const chunks: string[] = [];
-  const decoder = new TextDecoder();
-  for await (const chunk of Bun.stdin.stream()) {
-    chunks.push(decoder.decode(chunk, { stream: true, }));
-  }
-  chunks.push(decoder.decode());
-  return chunks.join('');
-}
 
 /** Raw JSON string read from stdin containing the hook event payload. */
 const raw = await readStdin();

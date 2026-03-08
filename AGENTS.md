@@ -51,6 +51,7 @@ In spec mode, keep researching and gathering context until the user explicitly a
 
 - `fd` -- fast file finder; use instead of `find` or `ls`
 - `rg` -- fast text search; use directly rather than navigating directory trees
+- `agent-browser` -- headless browser automation CLI; use for fetching rendered web pages, taking screenshots, interacting with web UIs, and verifying deployed web applications
 - `FetchUrl` -- fetch documentation sites, npm pages, GitHub READMEs; raw source is still useful when docs are incomplete
 - `gh` -- query GitHub for issues, PRs, release notes, and repository metadata
 - Web search cannot inspect package internals (sizes, dependency trees, source code); clone repos to `/tmp` or install packages instead

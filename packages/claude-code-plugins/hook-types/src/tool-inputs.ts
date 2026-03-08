@@ -149,6 +149,15 @@ type AgentToolInput = {
 
   /** Model alias to override the default. */
   model?: string;
+
+  /** Agent ID to resume from a previous invocation. */
+  resume?: string;
+
+  /** Whether to run this agent in the background. */
+  run_in_background?: boolean;
+
+  /** Isolation mode (`"worktree"` creates a temporary git worktree). */
+  isolation?: 'worktree';
 };
 
 /**

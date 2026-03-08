@@ -24,6 +24,8 @@
     "@monochromatic-dev/cli-mvm": "workspace:*",
     "@monochromatic-dev/claude-code-plugins-terminal-title": "workspace:*",
     "@monochromatic-dev/claude-code-plugins-session-start-housekeeping": "workspace:*",
+    "@monochromatic-dev/claude-code-plugins-stop-reminders": "workspace:*",
+    "@monochromatic-dev/claude-code-plugins-agent-resume-guard": "workspace:*",
     "@oxlint/plugins": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "@monochromatic-dev/build-tool-css": "workspace:*",

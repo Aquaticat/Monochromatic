@@ -1,6 +1,6 @@
 # Claude Code sandbox pipe breakage investigation
 
-Status: **root cause identified**
+Status: **root cause identified** -- [upstream issue filed](https://github.com/anthropics/claude-code/issues/31968)
 
 ## Summary
 
