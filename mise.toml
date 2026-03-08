@@ -407,6 +407,10 @@ extends = "prepare--allowFailure"
 [tasks."prepare:bun"]
 run = "bun install"
 
+[tasks."prepare:files"]
+description = "Sync file-enforcer managed files (CLAUDE.md, skill mirrors)"
+run = "bun packages/dev-script/file-enforcer/src/index.ts"
+
 [tasks."prepare:playwright"]
 description = "Build Playwright container image via podman"
 run = "podman build -t monochromatic-playwright -f playwright.Dockerfile ."
