@@ -6,13 +6,12 @@
   },
   "metadata": {
     "description": "Claude Code hook plugins for terminal titles, uncertainty detection, session housekeeping, and agent resume guards.",
-    "version": "0.0.1",
-    "pluginRoot": "./packages/claude-code-plugins"
+    "version": "0.0.1"
   },
   "plugins": [
     {
       "name": "terminal-title",
-      "source": "./terminal-title",
+      "source": "./packages/claude-code-plugins/terminal-title",
       "description": "Sets the terminal tab title to reflect current Claude Code activity.",
       "version": "0.0.1",
       "category": "productivity",
@@ -20,7 +19,7 @@
     },
     {
       "name": "stop-reminders",
-      "source": "./stop-reminders",
+      "source": "./packages/claude-code-plugins/stop-reminders",
       "description": "Detects uncertain language in Claude's responses and reminds it to investigate before guessing.",
       "version": "0.0.1",
       "category": "quality",
@@ -28,7 +27,7 @@
     },
     {
       "name": "session-start-housekeeping",
-      "source": "./session-start-housekeeping",
+      "source": "./packages/claude-code-plugins/session-start-housekeeping",
       "description": "Creates temp directories, cleans stale dist artifacts, and removes ephemeral config files on session start.",
       "version": "0.0.1",
       "category": "maintenance",
@@ -36,7 +35,7 @@
     },
     {
       "name": "agent-resume-guard",
-      "source": "./agent-resume-guard",
+      "source": "./packages/claude-code-plugins/agent-resume-guard",
       "description": "Blocks Agent resume calls to prevent polling loops on background agents.",
       "version": "0.0.1",
       "category": "quality",
