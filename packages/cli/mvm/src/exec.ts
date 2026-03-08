@@ -5,6 +5,13 @@ import { virsh } from './virsh.ts';
 /** Milliseconds to wait between polling for guest-exec completion. */
 const POLL_INTERVAL_MS = 250;
 
+/** Result of executing a command inside a VM via guest agent. */
+export type ExecResult = {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+};
+
 /**
  * Decodes a base64-encoded string to UTF-8 text.
  *
@@ -23,17 +30,19 @@ function decodeBase64(encoded: string): string {
 /**
  * Executes a command inside a running VM via the QEMU guest agent.
  * Runs the command as the `ubuntu` user, captures stdout and stderr,
- * and reflects the output back to the host.
+ * and returns the result.
  *
  * @param options - VM name without prefix and the command string to execute
- * @throws Error when the guest agent is unreachable or the command fails
+ * @returns Captured stdout, stderr, and exit code
+ * @throws Error when the guest agent is unreachable
  *
  * @example
  * ```ts
- * await exec({ command: 'uname -a', name: 'dev-01' });
+ * const result = await exec({ command: 'uname -a', name: 'dev-01' });
+ * // { stdout: 'Linux dev-01 ...', stderr: '', exitCode: 0 }
  * ```
  */
-export async function exec({ command, name }: { command: string; name: string }): Promise<void> {
+export async function exec({ command, name }: { command: string; name: string }): Promise<ExecResult> {
   validateName(name);
   const rl = tagged({ tag: exec.name, l, });
   const fullName = `${VM_PREFIX}${name}`;
@@ -75,18 +84,9 @@ export async function exec({ command, name }: { command: string; name: string })
 
     const stdout = status['out-data'] !== undefined ? decodeBase64(status['out-data']) : '';
     const stderr = status['err-data'] !== undefined ? decodeBase64(status['err-data']) : '';
+    const exitCode = status.exitcode ?? 0;
 
-    if (stdout.length > 0) {
-      process.stdout.write(stdout);
-    }
-    if (stderr.length > 0) {
-      process.stderr.write(stderr);
-    }
-
-    if (status.exitcode !== undefined && status.exitcode !== 0) {
-      process.exitCode = status.exitcode;
-    }
-
-    return;
+    rl.debug(`command exited with code ${String(exitCode)}`);
+    return { exitCode, stderr, stdout };
   }
 }

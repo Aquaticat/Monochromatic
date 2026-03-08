@@ -2,25 +2,28 @@ import { VM_PREFIX } from './config.ts';
 import { l, tagged } from './log.ts';
 import { virsh } from './virsh.ts';
 
+/** Single VM entry with its display name and current libvirt state. */
+export type VmInfo = { name: string; state: string };
+
 /**
- * Lists all VMs managed by this tool with their current state.
+ * Queries libvirt for all managed VMs and returns structured info.
  * Parses `virsh list --all` output and filters for VMs with the `mvm-` prefix.
+ *
+ * @returns Array of VM entries with name (without prefix) and state
  *
  * @example
  * ```ts
- * await list();
- * // dev-01               running
- * // dev-02               shut off
+ * const vms = await list();
+ * // [{ name: 'dev-01', state: 'running' }, { name: 'dev-02', state: 'shut off' }]
  * ```
  */
-export async function list(): Promise<void> {
+export async function list(): Promise<ReadonlyArray<VmInfo>> {
   const rl = tagged({ tag: list.name, l, });
   rl.debug('querying virsh for all VMs');
 
   const output = await virsh({ args: ['list', '--all'], });
   const lines = output.split('\n');
 
-  type VmInfo = { name: string; state: string };
   const vms: VmInfo[] = [];
 
   for (const line of lines) {
@@ -30,14 +33,6 @@ export async function list(): Promise<void> {
     }
   }
 
-  if (vms.length === 0) {
-    rl.info('no VMs found');
-    return;
-  }
-
-  /** Column width for aligned output. */
-  const NAME_COL_WIDTH = 24;
-  for (const vm of vms) {
-    rl.info(`${vm.name.padEnd(NAME_COL_WIDTH)} ${vm.state}`);
-  }
+  rl.debug(`found ${String(vms.length)} managed VMs`);
+  return vms;
 }

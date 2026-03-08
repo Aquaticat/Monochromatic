@@ -1,13 +1,15 @@
 #!/usr/bin/env bun
-import { object, or, tuple } from '@optique/core/constructs';
+import { object, or } from '@optique/core/constructs';
+import { message } from '@optique/core/message';
 import { map, optional } from '@optique/core/modifiers';
-import { argument, command, passThrough } from '@optique/core/primitives';
+import { argument, command, flag, option, passThrough } from '@optique/core/primitives';
 import { string } from '@optique/core/valueparser';
 import { runSync } from '@optique/run';
 
 import { clone } from './clone.ts';
 import { create } from './create.ts';
 import { destroy, destroyAll } from './destroy.ts';
+import { ephemeralExec } from './ephemeral-exec.ts';
 import { exec } from './exec.ts';
 import { list } from './list.ts';
 import { shell } from './shell.ts';
@@ -18,68 +20,96 @@ export {};
 
 /** Discriminated union of all subcommand parse results */
 type MvmArgs =
-  | { cmd: 'create'; name: string }
+  | { cmd: 'create'; name: string; from: string | undefined }
   | { cmd: 'shell'; name: string }
   | { cmd: 'list' }
   | { cmd: 'destroy'; name: string | undefined; all: boolean }
-  | { cmd: 'exec'; name: string; command: string }
-  | { cmd: 'clone'; source: string; destination: string };
+  | { cmd: 'exec'; name: string; command: string; destroy: false }
+  | { cmd: 'exec'; command: string; destroy: true; from: string | undefined };
 
 //endregion Result types
 
+//region Shared value parsers -- reusable metavar-labeled string parsers
+
+/** Value parser for VM name arguments, displayed as NAME in help */
+const name = string({ metavar: 'NAME' });
+
+/** Shared option parser for `--from SOURCE` cloning flag */
+const fromOption = optional(option('--from', string({ metavar: 'SOURCE' }), { description: message`Clone from an existing VM instead of creating fresh` }));
+
+//endregion Shared value parsers
+
 //region Parser definition -- subcommand parsers combined via or()
 
-/** Parser for `create <name>` */
+/** Parser for `create <name> [--from SOURCE]` */
 const createCmd = command('create', map(
-  object({ name: argument(string()) }),
+  object({ name: argument(name), from: fromOption }),
   (v): MvmArgs => ({ cmd: 'create', ...v }),
-));
+), { brief: message`Create and start a new Ubuntu VM` });
 
 /** Parser for `shell <name>` */
 const shellCmd = command('shell', map(
-  object({ name: argument(string()) }),
+  object({ name: argument(name) }),
   (v): MvmArgs => ({ cmd: 'shell', ...v }),
-));
+), { brief: message`Open a serial console to a running VM` });
 
 /** Parser for `list` (alias `ls`) */
 const listCmd = command('list', map(
   object({}),
   (): MvmArgs => ({ cmd: 'list' }),
-));
+), { brief: message`Show all VMs and their state` });
 
-/** Parser for `ls` alias */
+/** Parser for `ls` (hidden alias of `list`) */
 const lsCmd = command('ls', map(
   object({}),
   (): MvmArgs => ({ cmd: 'list' }),
-));
+), { hidden: true });
 
-/** Parser for `destroy [--all | <name>]` (alias `rm`) */
-const destroyParser = map(
-  object({ all: optional(argument(string())) }),
-  (v): MvmArgs => ({
-    cmd: 'destroy',
-    name: v.all === '--all' ? undefined : v.all,
-    all: v.all === '--all',
-  }),
+/** Parser for `destroy --all` -- destroys every managed VM */
+const destroyAllParser = map(
+  object({ all: flag('--all', { description: message`Destroy every managed VM` }) }),
+  (): MvmArgs => ({ cmd: 'destroy', name: undefined, all: true }),
+);
+
+/** Parser for `destroy <name>` -- destroys a single VM by name */
+const destroyNameParser = map(
+  object({ name: argument(name) }),
+  (v): MvmArgs => ({ cmd: 'destroy', name: v.name, all: false }),
 );
 
 /** Parser for `destroy` */
-const destroyCmd = command('destroy', destroyParser);
+const destroyCmd = command('destroy', or(
+  destroyAllParser,
+  destroyNameParser,
+), { brief: message`Stop and delete a VM` });
 
-/** Parser for `rm` alias */
-const rmCmd = command('rm', destroyParser);
+/** Parser for `rm` (hidden alias of `destroy`) */
+const rmCmd = command('rm', or(
+  destroyAllParser,
+  destroyNameParser,
+), { hidden: true });
 
-/** Parser for `exec <name> <command...>` */
-const execCmd = command('exec', map(
-  tuple([argument(string()), passThrough({ format: 'greedy' })]),
-  ([name, rest]): MvmArgs => ({ cmd: 'exec', name, command: rest.join(' ') }),
-));
+/** Parser for `exec --destroy [--from SOURCE] <command...>` -- ephemeral VM */
+const execDestroyParser = map(
+  object({
+    _destroy: flag('--destroy', { description: message`Create an ephemeral VM, execute, then destroy it` }),
+    from: fromOption,
+    args: passThrough({ format: 'greedy' }),
+  }),
+  (v): MvmArgs => ({ cmd: 'exec', command: v.args.join(' '), destroy: true, from: v.from }),
+);
 
-/** Parser for `clone <source> <dest>` */
-const cloneCmd = command('clone', map(
-  object({ source: argument(string()), destination: argument(string()) }),
-  (v): MvmArgs => ({ cmd: 'clone', ...v }),
-));
+/** Parser for `exec <name> <command...>` -- existing VM */
+const execDirectParser = map(
+  object({ name: argument(name), args: passThrough({ format: 'greedy' }) }),
+  (v): MvmArgs => ({ cmd: 'exec', name: v.name, command: v.args.join(' '), destroy: false }),
+);
+
+/** Parser for `exec` subcommand (ephemeral or direct) */
+const execCmd = command('exec', or(
+  execDestroyParser,
+  execDirectParser,
+), { brief: message`Run a command inside a VM via guest agent` });
 
 /** Combined top-level parser across all subcommands */
 const parser = or(
@@ -90,7 +120,6 @@ const parser = or(
   destroyCmd,
   rmCmd,
   execCmd,
-  cloneCmd,
 );
 
 //endregion Parser definition
@@ -101,15 +130,29 @@ const parser = or(
 const args = runSync(parser, {
   programName: 'mvm',
   help: 'option',
-  brief: ['mvm - ephemeral Ubuntu VM manager'],
+  aboveError: 'help',
+  brief: message`mvm - ephemeral Ubuntu VM manager`,
 }) as MvmArgs;
 
 if (args.cmd === 'create') {
-  await create({ name: args.name });
+  if (args.from !== undefined) {
+    await clone({ destination: args.name, source: args.from });
+  } else {
+    await create({ name: args.name });
+  }
 } else if (args.cmd === 'shell') {
   await shell({ name: args.name });
 } else if (args.cmd === 'list') {
-  await list();
+  const vms = await list();
+  if (vms.length === 0) {
+    console.error('no VMs found');
+  } else {
+    /** Column width for aligned output. */
+    const NAME_COL_WIDTH = 24;
+    for (const vm of vms) {
+      console.log(`${vm.name.padEnd(NAME_COL_WIDTH)} ${vm.state}`);
+    }
+  }
 } else if (args.cmd === 'destroy') {
   if (args.all) {
     await destroyAll();
@@ -119,9 +162,18 @@ if (args.cmd === 'create') {
     throw new Error('usage: mvm destroy <name> | --all');
   }
 } else if (args.cmd === 'exec') {
-  await exec({ command: args.command, name: args.name });
-} else if (args.cmd === 'clone') {
-  await clone({ destination: args.destination, source: args.source });
+  const result = args.destroy
+    ? await ephemeralExec({ command: args.command, from: args.from })
+    : await exec({ command: args.command, name: args.name });
+  if (result.stdout.length > 0) {
+    process.stdout.write(result.stdout);
+  }
+  if (result.stderr.length > 0) {
+    process.stderr.write(result.stderr);
+  }
+  if (result.exitCode !== 0) {
+    process.exitCode = result.exitCode;
+  }
 }
 
 //endregion Dispatch

@@ -1,0 +1,18 @@
+{
+  "name": "@monochromatic-dev/mcp-mvm",
+  "version": "0.1.0",
+  "description": "MCP server exposing mvm VM management operations to AI agents.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "mvm-mcp": "./src/index.ts"
+  },
+  "dependencies": {
+    "@monochromatic-dev/cli-mvm": "workspace:*",
+    "@monochromatic-dev/mcp-stdio": "workspace:*"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}

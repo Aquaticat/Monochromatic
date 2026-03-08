@@ -7,7 +7,7 @@ import { domainXml } from './domain-xml.ts';
 import { ensureImage } from './image.ts';
 import { l, tagged } from './log.ts';
 import { run } from './run.ts';
-import { defineVm, startVm } from './virsh.ts';
+import { defineVm, startVm, waitForGuestAgent } from './virsh.ts';
 
 /**
  * Creates a new Ubuntu VM with a backing-file disk, cloud-init seed, and starts it.
@@ -42,6 +42,7 @@ export async function create({ name }: { name: string }): Promise<void> {
 
   await defineVm({ vmDir, xml, });
   await startVm({ name, });
+  await waitForGuestAgent({ name, });
 
   rl.info(`VM ${name} is ready. Connect with: mvm shell ${name}`);
 }
