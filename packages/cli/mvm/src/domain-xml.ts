@@ -33,6 +33,7 @@ export function domainXml({ diskPath, name, seedIsoPath }: {
     <type arch='x86_64'>hvm</type>
     <boot dev='hd'/>
   </os>
+  <cpu mode='host-passthrough'/>
   <features>
     <acpi/>
   </features>
