@@ -29,17 +29,11 @@ services:
 
         # Podman storage: fuse-overlayfs is required because Docker's own overlayfs
         # does not support nested native overlay mounts.
-        RUN mkdir -p /etc/containers \
-         && printf '[storage]\ndriver = "overlay"\n\n[storage.options.overlay]\nmount_program = "/usr/bin/fuse-overlayfs"\n' \
-              > /etc/containers/storage.conf \
-         && printf '{"default": [{"type": "insecureAcceptAnything"}]}\n' \
-              > /etc/containers/policy.json
+        RUN printf '[storage]\ndriver = "overlay"\nrunroot = "/run/containers/storage"\ngraphroot = "/var/lib/containers/storage"\n\n[storage.options.overlay]\nmount_program = "/usr/bin/fuse-overlayfs"\n' \
+              > /etc/containers/storage.conf
 
         WORKDIR /app
-
-        COPY package.json .oxlintrc.json ./
-        COPY bun.lock* ./
-        COPY packages/ packages/
+        COPY . .
 
         RUN bun install
 
