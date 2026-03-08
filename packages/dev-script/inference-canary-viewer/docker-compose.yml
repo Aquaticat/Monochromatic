@@ -1,11 +1,10 @@
 # Inference canary: periodic LLM probe runner + static dashboard viewer.
 #
-# Prerequisites:
-#   Create .env next to this file with:
-#     INFERENCE_VALIDATION_OPENROUTER_API_KEY=sk-or-...
+# Coolify: add as a Docker Compose resource; set INFERENCE_VALIDATION_OPENROUTER_API_KEY
+#          in the Coolify UI environment variables panel.
 #
-# Usage:
-#   docker compose up -d --build
+# Standalone:
+#   INFERENCE_VALIDATION_OPENROUTER_API_KEY=sk-or-... docker compose up -d --build
 #
 # The container runs the canary probes on startup, builds the viewer dashboard,
 # serves it on the configured port, then re-runs probes every CANARY_INTERVAL_SECONDS.
@@ -57,9 +56,13 @@ services:
       - podman-storage:/var/lib/containers
     ports:
       - "${CANARY_PORT:-8080}:3000"
-    env_file: .env
     environment:
+      INFERENCE_VALIDATION_OPENROUTER_API_KEY: "${INFERENCE_VALIDATION_OPENROUTER_API_KEY:?}"
       CANARY_INTERVAL_SECONDS: "${CANARY_INTERVAL_SECONDS:-21600}"
+    healthcheck:
+      test: ["CMD", "bun", "-e", "await fetch('http://localhost:3000')"]
+      start_period: 120s
+      interval: 30s
     restart: unless-stopped
     command:
       - sh

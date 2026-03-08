@@ -1,4 +1,6 @@
-import { cli, } from '@kazupon/gunshi';
+import { argument, } from '@optique/core/primitives';
+import { string, } from '@optique/core/valueparser';
+import { runSync, } from '@optique/run';
 import {
   cp,
   mkdir,
@@ -8,16 +10,21 @@ import {
   join,
 } from 'node:path';
 
-await cli(process.argv.slice(2,), async function withCtx(ctx,): Promise<void> {
-  if (ctx.positionals.length === 0)
-    throw new Error('No path provided',);
-  const path = ctx.positionals[0]!;
-  console.log(`Backing up ${path}`,);
-  const now = new Date().toISOString().replaceAll(':', '',);
-  await mkdir(join('bak', now,),);
-  await cp(path, join('bak', now, basename(path,),), {
-    recursive: true,
-    errorOnExist: true,
-    preserveTimestamps: true,
-  },);
+/**
+ * Parsed positional path argument from process.argv.
+ *
+ * @example
+ * ```sh
+ * backup-path ./some/file-or-dir
+ * ```
+ */
+const path = runSync(argument(string(),), { programName: 'backup-path', help: 'option', },);
+
+console.log(`Backing up ${path}`,);
+const now = new Date().toISOString().replaceAll(':', '',);
+await mkdir(join('bak', now,),);
+await cp(path, join('bak', now, basename(path,),), {
+  recursive: true,
+  errorOnExist: true,
+  preserveTimestamps: true,
 },);

@@ -1,92 +1,127 @@
 #!/usr/bin/env bun
-import { parseArgs } from 'node:util';
+import { object, or, tuple } from '@optique/core/constructs';
+import { map, optional } from '@optique/core/modifiers';
+import { argument, command, passThrough } from '@optique/core/primitives';
+import { string } from '@optique/core/valueparser';
+import { runSync } from '@optique/run';
 
 import { clone } from './clone.ts';
 import { create } from './create.ts';
 import { destroy, destroyAll } from './destroy.ts';
 import { exec } from './exec.ts';
 import { list } from './list.ts';
-import { l, tagged } from './log.ts';
 import { shell } from './shell.ts';
 
 export {};
 
-/** Usage help text displayed when no command is provided or command is unknown. */
-const USAGE = `mvm - ephemeral Ubuntu VM manager
+//region Result types -- discriminated union for subcommand dispatch
 
-Usage: mvm <command> [args]
+/** Discriminated union of all subcommand parse results */
+type MvmArgs =
+  | { cmd: 'create'; name: string }
+  | { cmd: 'shell'; name: string }
+  | { cmd: 'list' }
+  | { cmd: 'destroy'; name: string | undefined; all: boolean }
+  | { cmd: 'exec'; name: string; command: string }
+  | { cmd: 'clone'; source: string; destination: string };
 
-Commands:
-  create <name>              Create and start a new Ubuntu VM
-  shell <name>               Connect to a running VM (Ctrl+] to disconnect)
-  list                       List all managed VMs
-  destroy <name>             Destroy a VM and all its storage
-  destroy --all              Destroy all managed VMs
-  exec <name> <command...>    Execute a command in a VM and print output
-  clone <source> <dest>      Clone an existing VM to a new name
+//endregion Result types
 
-Prerequisites:
-  - KVM support (/dev/kvm)
-  - libvirt
-  - qemu-img
+//region Parser definition -- subcommand parsers combined via or()
 
-Console access uses virsh console with auto-login (no SSH needed).
-Uses qemu:///session (user-mode) so no root or polkit prompts are needed.`;
+/** Parser for `create <name>` */
+const createCmd = command('create', map(
+  object({ name: argument(string()) }),
+  (v): MvmArgs => ({ cmd: 'create', ...v }),
+));
 
-const { positionals, values } = parseArgs({
-  allowPositionals: true,
-  args: Bun.argv.slice(2),
-  options: {
-    all: { type: 'boolean', },
-    help: { type: 'boolean', short: 'h', },
-  },
-  strict: false,
-});
+/** Parser for `shell <name>` */
+const shellCmd = command('shell', map(
+  object({ name: argument(string()) }),
+  (v): MvmArgs => ({ cmd: 'shell', ...v }),
+));
 
-const command = positionals[0];
+/** Parser for `list` (alias `ls`) */
+const listCmd = command('list', map(
+  object({}),
+  (): MvmArgs => ({ cmd: 'list' }),
+));
 
-const rl = tagged({ tag: 'cli', l, });
+/** Parser for `ls` alias */
+const lsCmd = command('ls', map(
+  object({}),
+  (): MvmArgs => ({ cmd: 'list' }),
+));
 
-if (command === undefined || command === 'help' || command === '--help') {
-  rl.info(USAGE);
-} else if (command === 'create') {
-  const name = positionals[1];
-  if (name === undefined) {
-    throw new Error('usage: mvm create <name>');
-  }
-  await create({ name, });
-} else if (command === 'shell') {
-  const name = positionals[1];
-  if (name === undefined) {
-    throw new Error('usage: mvm shell <name>');
-  }
-  await shell({ name, });
-} else if (command === 'list' || command === 'ls') {
+/** Parser for `destroy [--all | <name>]` (alias `rm`) */
+const destroyParser = map(
+  object({ all: optional(argument(string())) }),
+  (v): MvmArgs => ({
+    cmd: 'destroy',
+    name: v.all === '--all' ? undefined : v.all,
+    all: v.all === '--all',
+  }),
+);
+
+/** Parser for `destroy` */
+const destroyCmd = command('destroy', destroyParser);
+
+/** Parser for `rm` alias */
+const rmCmd = command('rm', destroyParser);
+
+/** Parser for `exec <name> <command...>` */
+const execCmd = command('exec', map(
+  tuple([argument(string()), passThrough({ format: 'greedy' })]),
+  ([name, rest]): MvmArgs => ({ cmd: 'exec', name, command: rest.join(' ') }),
+));
+
+/** Parser for `clone <source> <dest>` */
+const cloneCmd = command('clone', map(
+  object({ source: argument(string()), destination: argument(string()) }),
+  (v): MvmArgs => ({ cmd: 'clone', ...v }),
+));
+
+/** Combined top-level parser across all subcommands */
+const parser = or(
+  createCmd,
+  shellCmd,
+  listCmd,
+  lsCmd,
+  destroyCmd,
+  rmCmd,
+  execCmd,
+  cloneCmd,
+);
+
+//endregion Parser definition
+
+//region Dispatch -- parse argv and route to the appropriate handler
+
+/** Parsed CLI result from process.argv */
+const args = runSync(parser, {
+  programName: 'mvm',
+  help: 'option',
+  brief: ['mvm - ephemeral Ubuntu VM manager'],
+}) as MvmArgs;
+
+if (args.cmd === 'create') {
+  await create({ name: args.name });
+} else if (args.cmd === 'shell') {
+  await shell({ name: args.name });
+} else if (args.cmd === 'list') {
   await list();
-} else if (command === 'destroy' || command === 'rm') {
-  if (values.all === true) {
+} else if (args.cmd === 'destroy') {
+  if (args.all) {
     await destroyAll();
+  } else if (args.name !== undefined) {
+    await destroy({ name: args.name });
   } else {
-    const name = positionals[1];
-    if (name === undefined) {
-      throw new Error('usage: mvm destroy <name> | --all');
-    }
-    await destroy({ name, });
+    throw new Error('usage: mvm destroy <name> | --all');
   }
-} else if (command === 'exec') {
-  const name = positionals[1];
-  if (name === undefined || positionals.length < 3) {
-    throw new Error('usage: mvm exec <name> <command...>');
-  }
-  const cmd = positionals.slice(2).join(' ');
-  await exec({ command: cmd, name, });
-} else if (command === 'clone') {
-  const source = positionals[1];
-  const destination = positionals[2];
-  if (source === undefined || destination === undefined) {
-    throw new Error('usage: mvm clone <source> <dest>');
-  }
-  await clone({ destination, source, });
-} else {
-  throw new Error(`unknown command: ${command}\n\n${USAGE}`);
+} else if (args.cmd === 'exec') {
+  await exec({ command: args.command, name: args.name });
+} else if (args.cmd === 'clone') {
+  await clone({ destination: args.destination, source: args.source });
 }
+
+//endregion Dispatch
