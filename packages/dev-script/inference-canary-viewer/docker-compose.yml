@@ -19,7 +19,7 @@ services:
   canary:
     build:
       context: ../../..
-      dockerfile: Dockerfile.inference-canary
+      dockerfile: packages/dev-script/inference-canary-viewer/Dockerfile
     privileged: true
     cgroup: host
     volumes:
