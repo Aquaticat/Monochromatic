@@ -28,7 +28,7 @@ services:
       - canary-artifacts:/app/packages/dev-script/inference-canary/src/canary-lint
       - podman-storage:/var/lib/containers
     ports:
-      - "127.0.0.1:${CANARY_PORT:-1011}:3000"
+      - "127.0.0.1:${CANARY_PORT:-1021}:3000"
     environment:
       INFERENCE_VALIDATION_OPENROUTER_API_KEY: "${INFERENCE_VALIDATION_OPENROUTER_API_KEY:?}"
       CANARY_INTERVAL_SECONDS: "${CANARY_INTERVAL_SECONDS:-10800}"
