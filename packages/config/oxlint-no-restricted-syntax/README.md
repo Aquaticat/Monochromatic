@@ -20,6 +20,8 @@ This plugin provides individual rules for each banned syntax pattern instead.
 - **no-switch** -- bans `switch` statements in favor of if/else chains or `Record` lookups
 - **no-trim-left-right** -- bans `.trimLeft()`/`.trimRight()` in favor of `.trimStart()`/`.trimEnd()`
 - **no-try-finally** -- bans `try...finally` blocks in favor of `using`/`await using`
+- **no-variable-function-expression** -- bans `const x = function() {}`, use a function declaration instead
+- **require-destructured-params** -- function declarations with 2+ params must use a single destructured object
 
 ## Usage
 
@@ -38,7 +40,9 @@ This plugin provides individual rules for each banned syntax pattern instead.
     "no-restricted-syntax/no-rest-params": "error",
     "no-restricted-syntax/no-switch": "error",
     "no-restricted-syntax/no-trim-left-right": "error",
-    "no-restricted-syntax/no-try-finally": "error"
+    "no-restricted-syntax/no-try-finally": "error",
+    "no-restricted-syntax/no-variable-function-expression": "error",
+    "no-restricted-syntax/require-destructured-params": "error"
   }
 }
 ```

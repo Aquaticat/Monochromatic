@@ -9,6 +9,8 @@ import { noPromiseFinally } from './rules/no-promise-finally.ts';
 import { noRegexpExec } from './rules/no-regexp-exec.ts';
 import { noRestParams } from './rules/no-rest-params.ts';
 import { noSwitch } from './rules/no-switch.ts';
+import { noVariableFunctionExpression } from './rules/no-variable-function-expression.ts';
+import { requireDestructuredParams } from './rules/require-destructured-params.ts';
 import { noTrimLeftRight } from './rules/no-trim-left-right.ts';
 import { noTryFinally } from './rules/no-try-finally.ts';
 
@@ -44,6 +46,8 @@ const plugin = eslintCompatPlugin({
     'no-switch': noSwitch,
     'no-trim-left-right': noTrimLeftRight,
     'no-try-finally': noTryFinally,
+    'no-variable-function-expression': noVariableFunctionExpression,
+    'require-destructured-params': requireDestructuredParams,
   },
 });
 

@@ -206,7 +206,9 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - Include `.ts` extensions in imports; group: built-ins, external, workspace, relative, type-only
 - Prefer named imports, `import type` for type-only, absolute imports for workspace packages
 - Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile` -- Bun resolves these at build time with no async preload step needed
-- No arrow functions -- use named function declarations or named function expressions; arrows produce anonymous stack traces and hide intent
+- No arrow functions -- use named function declarations; arrows produce anonymous stack traces and hide intent
+- No `const x = function() {}` -- use a function declaration instead; declarations are compatible with TSDoc, support overloading, and are easier to scan
+- No calling functions before their declaration in source order -- hoisting makes it legal but reading top-down becomes unreliable
 - Always name functions; parentheses around all arrow params in external API callbacks where arrows are unavoidable
 - Functions with 2+ parameters must use a single destructured object parameter (named params); exempt: callbacks whose signature is dictated by an external API or library
 - No rest parameters (`...args`) in functions we control; accept an array parameter instead

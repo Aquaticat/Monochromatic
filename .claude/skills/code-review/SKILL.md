@@ -226,7 +226,22 @@ Flag non-descriptive generic names:
 
 - Functions with 2+ parameters must use a single destructured object parameter (named params)
 - No rest parameters (`...args`) in functions we control; accept an array parameter instead
+- No `const x = function() {}` -- use a function declaration instead
+- No calling functions before their declaration in source order
 - Exempt: callbacks whose signature is dictated by an external API or library (e.g. `.map()`, `.sort()`, event handlers)
+
+#### No variable function expressions
+
+Flag function expressions assigned to variables:
+
+```ts
+// Bad -- flag as WARNING
+const greet = function greet(name: string): void { };
+const greet = function(name: string): void { };
+
+// Good -- use a function declaration
+function greet(name: string): void { }
+```
 
 #### Named parameters
 
@@ -264,6 +279,27 @@ const doubled = items.map(function doubleByIndex(item, index) {
 const sorted = items.sort(function byPriority(left, right) {
   return left.priority - right.priority;
 });
+```
+
+#### No use before declaration
+
+Flag function calls that appear before the function's declaration in source order.
+Hoisting makes this legal at runtime but breaks top-down readability:
+
+```ts
+// Bad -- flag as WARNING: b() called before its declaration
+const a = b();
+
+function b(): string {
+  return 'hello';
+}
+
+// Good -- declaration before use
+function b(): string {
+  return 'hello';
+}
+
+const a = b();
 ```
 
 #### Rest parameters

@@ -5,17 +5,6 @@
  *
  * Reads hook event JSON from stdin and writes an OSC 0 escape sequence to `/dev/tty`.
  * Compatible with Ptyxis, Konsole, Wezterm, and Ghostty.
- *
- * @example
- * ```jsonc
- * // .claude/settings.local.json
- * {
- *   "hooks": {
- *     "PostToolUse": [{ "type": "command", "command": "bun packages/claude-code-plugins/cc-terminal-title/src/hook.ts" }],
- *     "Stop": [{ "type": "command", "command": "bun packages/claude-code-plugins/cc-terminal-title/src/hook.ts" }]
- *   }
- * }
- * ```
  */
 
 import {
@@ -27,8 +16,10 @@ import {
   basename,
 } from 'node:path';
 import type {
+  GenericToolInput,
   HookInput,
   PostToolUseInput,
+  PreToolUseInput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
 
 export {}
@@ -92,6 +83,13 @@ function shortPath(filePath: string): string {
 }
 
 /**
+ * Matches leading noise in shell commands: env-var assignments (`KEY=val`)
+ * and wrapper commands (`timeout 10`, `env`, `nice`, `nohup`) with their argument.
+ * Anchored at start; repeats to strip stacked prefixes like `env timeout 10`.
+ */
+const COMMAND_NOISE_RE = /^(?:(?!-)\S+=\S*\s+|(?:timeout|env|nice|nohup)\s+\S+\s+)*/;
+
+/**
  * Extracts first meaningful token from a bash command for display.
  * Strips environment variable assignments and common prefixes to show the actual command.
  *
@@ -106,129 +104,273 @@ function shortPath(filePath: string): string {
  * ```
  */
 function shortCommand(command: string): string {
-  /** Prefixes that add no meaningful context to the title. */
-  const NOISE_PREFIXES = new Set(['timeout', 'env', 'nice', 'nohup']);
-
-  const parts = command.split(' ');
-  /** Index of the first token that represents the actual command. */
-  let startIndex = 0;
-
-  for (const part of parts) {
-    /* Skip environment variable assignments like KEY=value. */
-    if (part.includes('=') && !part.startsWith('-')) {
-      startIndex++;
-      continue;
-    }
-    /* Skip noise prefixes and their argument (e.g. `timeout 10`). */
-    if (NOISE_PREFIXES.has(part)) {
-      startIndex++;
-      /* Skip the next token too since it's the argument to the prefix. */
-      const nextPart = parts[startIndex];
-      if (nextPart !== undefined && !nextPart.startsWith('-')) {
-        startIndex++;
-      }
-      continue;
-    }
-    break;
-  }
-
-  return parts.slice(startIndex).join(' ');
+  return command.replace(COMMAND_NOISE_RE, '');
 }
 
 /**
- * Builds a human-readable title string from a PostToolUse event.
- * Extracts the most relevant context from `tool_input` depending on the tool type.
+ * Extracts a string field from untyped tool input, returning `undefined` if absent or non-string.
  *
- * @param event - PostToolUse hook event payload.
+ * @param input - Tool input record.
  *
- * @returns Descriptive title like "Reading index.ts" or "Running git status".
+ * @param key - Property name to extract.
+ *
+ * @returns String value or `undefined`.
  *
  * @example
  * ```ts
- * titleForTool({ tool_name: 'Read', tool_input: { file_path: '/src/index.ts' } })
- * // 'Reading index.ts'
+ * stringField({ file_path: '/src/index.ts' }, 'file_path') // '/src/index.ts'
+ * stringField({ count: 5 }, 'file_path') // undefined
  * ```
  */
-function titleForTool(event: PostToolUseInput): string {
-  const { tool_name: toolName, tool_input: input } = event;
-
-  if (toolName === 'Bash') {
-    const { command } = input;
-    if (typeof command === 'string') {
-      return shortCommand(command);
-    }
-    return 'Running command';
+function stringField(input: GenericToolInput, key: string): string | undefined {
+  const value = input[key];
+  if (typeof value === 'string') {
+    return value;
   }
+  return undefined;
+}
 
-  if (toolName === 'Read') {
-    const { file_path: filePath } = input;
-    if (typeof filePath === 'string') {
-      return `Reading ${shortPath(filePath)}`;
-    }
-    return 'Reading file';
-  }
+/**
+ * Creates an extractor that reads a named string field from tool input.
+ *
+ * @param key - Property name to extract.
+ *
+ * @returns Extractor function compatible with {@link ToolTitleEntry.extract}.
+ *
+ * @example
+ * ```ts
+ * field('file_path')({ file_path: '/src/index.ts' }) // '/src/index.ts'
+ * field('file_path')({ count: 5 }) // undefined
+ * ```
+ */
+function field(key: string): (input: GenericToolInput) => string | undefined {
+  return function extractField(input: GenericToolInput) {
+    return stringField(input, key);
+  };
+}
 
-  if (toolName === 'Edit') {
-    const { file_path: filePath } = input;
-    if (typeof filePath === 'string') {
-      return `Editing ${shortPath(filePath)}`;
-    }
-    return 'Editing file';
-  }
+/**
+ * Tense-specific labels for a tool title.
+ * `pre` is shown during execution (PreToolUse), `post` after completion (PostToolUse).
+ */
+type TenseLabels = {
+  pre: string;
+  post: string;
+};
 
-  if (toolName === 'Write') {
-    const { file_path: filePath } = input;
-    if (typeof filePath === 'string') {
-      return `Writing ${shortPath(filePath)}`;
-    }
-    return 'Writing file';
-  }
+/**
+ * Formatter entry for a known tool.
+ * `extract` pulls a display-relevant string from `tool_input`; `format` turns it into a tense-appropriate title.
+ * `fallback` provides tense-specific defaults when `extract` returns `undefined`.
+ */
+type ToolTitleEntry = {
+  extract: (input: GenericToolInput) => string | undefined;
+  format: (value: string, tense: 'pre' | 'post') => string;
+  fallback: TenseLabels;
+};
 
-  if (toolName === 'Grep') {
-    const { pattern } = input;
-    if (typeof pattern === 'string') {
-      return `Searching "${truncate(pattern, MAX_PATTERN_LENGTH)}"`;
-    }
-    return 'Searching';
-  }
+/**
+ * Builds a tense-aware file path formatter.
+ *
+ * @param labels - Present and past tense verbs (e.g. `{ pre: 'Reading', post: 'Read' }`).
+ *
+ * @returns Formatter that produces titles like "Reading index.ts" or "Read index.ts".
+ *
+ * @example
+ * ```ts
+ * pathFormat({ pre: 'Editing', post: 'Edited' })('src/index.ts', 'pre') // 'Editing index.ts'
+ * ```
+ */
+function pathFormat(labels: TenseLabels): (value: string, tense: 'pre' | 'post') => string {
+  return function formatPath(v: string, tense: 'pre' | 'post') {
+    return `${labels[tense]} ${shortPath(v)}`;
+  };
+}
 
-  if (toolName === 'Glob') {
-    const { pattern } = input;
-    if (typeof pattern === 'string') {
-      return `Finding ${truncate(pattern, MAX_PATTERN_LENGTH)}`;
-    }
-    return 'Finding files';
-  }
+/**
+ * Builds a tense-aware pattern/query formatter with quoting and truncation.
+ *
+ * @param labels - Present and past tense verbs (e.g. `{ pre: 'Searching', post: 'Searched' }`).
+ *
+ * @returns Formatter that produces titles like `Searching "pattern"` or `Searched "pattern"`.
+ *
+ * @example
+ * ```ts
+ * quotedFormat({ pre: 'Searching', post: 'Searched' })('TODO', 'post') // 'Searched "TODO"'
+ * ```
+ */
+function quotedFormat(labels: TenseLabels): (value: string, tense: 'pre' | 'post') => string {
+  return function formatQuoted(v: string, tense: 'pre' | 'post') {
+    return `${labels[tense]} "${truncate(v, MAX_PATTERN_LENGTH)}"`;
+  };
+}
 
-  if (toolName === 'Agent') {
-    const { description } = input;
-    if (typeof description === 'string') {
-      return `Agent: ${description}`;
-    }
-    return 'Agent working';
-  }
-
-  if (toolName === 'WebSearch') {
-    const { query } = input;
-    if (typeof query === 'string') {
-      return `Searching "${truncate(query, MAX_PATTERN_LENGTH)}"`;
-    }
-    return 'Web search';
-  }
-
-  if (toolName === 'WebFetch') {
-    const { url } = input;
-    if (typeof url === 'string') {
-      try {
-        return `Fetching ${new URL(url).hostname}`;
-      } catch {
-        return `Fetching URL`;
+/**
+ * Maps tool names to their title formatting rules.
+ * Each entry specifies how to extract a display string from `tool_input`, how to format it per tense, and fallbacks.
+ *
+ * @example
+ * ```ts
+ * TOOL_TITLES['Read']
+ * // { extract: field('file_path'), format: pathFormat(...), fallback: { pre: 'Reading file', post: 'Read file' } }
+ * ```
+ */
+const TOOL_TITLES: Record<string, ToolTitleEntry> = {
+  Bash: {
+    extract: field('command'),
+    format(v) { return shortCommand(v); },
+    fallback: { pre: 'Running command', post: 'Ran command' },
+  },
+  Read: { extract: field('file_path'), format: pathFormat({ pre: 'Reading', post: 'Read' }), fallback: { pre: 'Reading file', post: 'Read file' } },
+  Edit: { extract: field('file_path'), format: pathFormat({ pre: 'Editing', post: 'Edited' }), fallback: { pre: 'Editing file', post: 'Edited file' } },
+  Write: { extract: field('file_path'), format: pathFormat({ pre: 'Writing', post: 'Wrote' }), fallback: { pre: 'Writing file', post: 'Wrote file' } },
+  Grep: { extract: field('pattern'), format: quotedFormat({ pre: 'Searching', post: 'Searched' }), fallback: { pre: 'Searching', post: 'Searched' } },
+  Glob: { extract: field('pattern'), format: quotedFormat({ pre: 'Finding', post: 'Found' }), fallback: { pre: 'Finding files', post: 'Found files' } },
+  Agent: {
+    extract: field('description'),
+    format(v, tense) { return `${tense === 'pre' ? 'Agent' : 'Agent done'}: ${v}`; },
+    fallback: { pre: 'Agent working', post: 'Agent done' },
+  },
+  WebSearch: { extract: field('query'), format: quotedFormat({ pre: 'Searching', post: 'Searched' }), fallback: { pre: 'Web search', post: 'Web search done' } },
+  AskUserQuestion: {
+    extract(input) {
+      const questions = input['questions'];
+      if (!Array.isArray(questions)) {
+        return undefined;
       }
-    }
-    return 'Fetching URL';
-  }
+      /* eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- untyped tool_input; structure verified by Array.isArray guard */
+      const first = (questions as Array<Record<string, unknown>>)[0];
+      if (first === undefined) {
+        return undefined;
+      }
+      const question = first['question'];
+      if (typeof question === 'string') {
+        return question;
+      }
+      return undefined;
+    },
+    format(v, tense) { return `${tense === 'pre' ? 'Asking' : 'Asked'}: ${truncate(v, MAX_PATTERN_LENGTH)}`; },
+    fallback: { pre: 'Asking question', post: 'Asked question' },
+  },
+  WebFetch: {
+    extract: field('url'),
+    format(v, tense) {
+      /** Verb prefix matching the hook tense. */
+      const verb = tense === 'pre' ? 'Fetching' : 'Fetched';
+      try {
+        return `${verb} ${new URL(v).hostname}`;
+      } catch {
+        return `${verb} URL`;
+      }
+    },
+    fallback: { pre: 'Fetching URL', post: 'Fetched URL' },
+  },
+  NotebookEdit: { extract: field('notebook_path'), format: pathFormat({ pre: 'Editing notebook', post: 'Edited notebook' }), fallback: { pre: 'Editing notebook', post: 'Edited notebook' } },
+  LSP: {
+    extract: field('operation'),
+    format(v, tense) { return `${tense === 'pre' ? 'LSP' : 'LSP done'}: ${v}`; },
+    fallback: { pre: 'LSP query', post: 'LSP done' },
+  },
+  Skill: {
+    extract: field('skill'),
+    format(v, tense) { return `${tense === 'pre' ? 'Skill' : 'Skill done'}: ${v}`; },
+    fallback: { pre: 'Running skill', post: 'Ran skill' },
+  },
+  ToolSearch: {
+    extract: field('query'),
+    format(v, tense) { return `${tense === 'pre' ? 'Discovering' : 'Discovered'}: ${truncate(v, MAX_PATTERN_LENGTH)}`; },
+    fallback: { pre: 'Discovering tools', post: 'Discovered tools' },
+  },
+  EnterPlanMode: {
+    extract() { return undefined; },
+    format() { return ''; },
+    fallback: { pre: 'Entering plan mode', post: 'In plan mode' },
+  },
+  ExitPlanMode: {
+    extract() { return undefined; },
+    format() { return ''; },
+    fallback: { pre: 'Exiting plan mode', post: 'Exited plan mode' },
+  },
+  EnterWorktree: {
+    extract: field('name'),
+    format(v, tense) { return `${tense === 'pre' ? 'Creating' : 'Created'} worktree: ${v}`; },
+    fallback: { pre: 'Creating worktree', post: 'Created worktree' },
+  },
+  TaskCreate: {
+    extract: field('subject'),
+    format(v, tense) { return `${tense === 'pre' ? 'Creating' : 'Created'} task: ${truncate(v, MAX_PATTERN_LENGTH)}`; },
+    fallback: { pre: 'Creating task', post: 'Created task' },
+  },
+  TaskGet: {
+    extract: field('taskId'),
+    format(v) { return `Task #${v}`; },
+    fallback: { pre: 'Getting task', post: 'Got task' },
+  },
+  TaskList: {
+    extract() { return undefined; },
+    format() { return ''; },
+    fallback: { pre: 'Listing tasks', post: 'Listed tasks' },
+  },
+  TaskOutput: {
+    extract: field('task_id'),
+    format(v, tense) { return `${tense === 'pre' ? 'Reading' : 'Read'} task output #${v}`; },
+    fallback: { pre: 'Reading task output', post: 'Read task output' },
+  },
+  TaskStop: {
+    extract: field('task_id'),
+    format(v, tense) { return `${tense === 'pre' ? 'Stopping' : 'Stopped'} task #${v}`; },
+    fallback: { pre: 'Stopping task', post: 'Stopped task' },
+  },
+  TaskUpdate: {
+    extract: field('taskId'),
+    format(v, tense) { return `${tense === 'pre' ? 'Updating' : 'Updated'} task #${v}`; },
+    fallback: { pre: 'Updating task', post: 'Updated task' },
+  },
+  CronCreate: {
+    extract: field('prompt'),
+    format(v, tense) { return `${tense === 'pre' ? 'Scheduling' : 'Scheduled'}: ${truncate(v, MAX_PATTERN_LENGTH)}`; },
+    fallback: { pre: 'Scheduling cron', post: 'Scheduled cron' },
+  },
+  CronDelete: {
+    extract: field('id'),
+    format(v, tense) { return `${tense === 'pre' ? 'Deleting' : 'Deleted'} cron #${v}`; },
+    fallback: { pre: 'Deleting cron', post: 'Deleted cron' },
+  },
+  CronList: {
+    extract() { return undefined; },
+    format() { return ''; },
+    fallback: { pre: 'Listing cron jobs', post: 'Listed cron jobs' },
+  },
+};
 
-  return toolName;
+/**
+ * Builds a human-readable title string from a PreToolUse or PostToolUse event.
+ * Looks up the tool in {@link TOOL_TITLES} and applies the matching formatter with the appropriate tense.
+ *
+ * @param event - PreToolUse or PostToolUse hook event payload.
+ *
+ * @returns Descriptive title like "Reading index.ts" (pre) or "Read index.ts" (post).
+ *
+ * @example
+ * ```ts
+ * titleForTool({ hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: '/src/index.ts' } })
+ * // 'Writing index.ts'
+ * titleForTool({ hook_event_name: 'PostToolUse', tool_name: 'Write', tool_input: { file_path: '/src/index.ts' } })
+ * // 'Wrote index.ts'
+ * ```
+ */
+function titleForTool(event: PreToolUseInput | PostToolUseInput): string {
+  const { tool_name: toolName, tool_input: input } = event;
+  const tense = event.hook_event_name === 'PreToolUse' ? 'pre' : 'post';
+  const entry = TOOL_TITLES[toolName];
+  if (entry === undefined) {
+    return toolName;
+  }
+  const value = entry.extract(input);
+  if (value === undefined) {
+    return entry.fallback[tense];
+  }
+  return entry.format(value, tense);
 }
 
 //endregion
@@ -286,16 +428,75 @@ const raw = await readStdin();
 /* eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
 const event = JSON.parse(raw) as HookInput;
 
-if (event.hook_event_name === 'PostToolUse') {
-  /** Human-readable description of the tool action for the terminal title. */
-  const detail = titleForTool(event);
-  setTerminalTitle(truncate(`${TITLE_PREFIX} ${detail}`, MAX_TITLE_LENGTH));
-} else if (event.hook_event_name === 'Stop') {
-  setTerminalTitle(`${TITLE_PREFIX} Stopped`);
-} else if (event.hook_event_name === 'UserPromptSubmit') {
-  setTerminalTitle(`${TITLE_PREFIX} ${event.prompt}`);
-} else {
-  setTerminalTitle(TITLE_PREFIX);
+/**
+ * Builds a human-readable title string from any hook event.
+ * Tool events delegate to {@link titleForTool}; other events produce static or field-based titles.
+ *
+ * @param hookEvent - Parsed hook event payload.
+ *
+ * @returns Short descriptive title for the terminal tab.
+ *
+ * @example
+ * ```ts
+ * titleForEvent({ hook_event_name: 'SessionStart', source: 'startup', ... }) // 'Session started'
+ * titleForEvent({ hook_event_name: 'Stop', ... }) // 'Stopped'
+ * ```
+ */
+function titleForEvent(hookEvent: HookInput): string {
+  if (hookEvent.hook_event_name === 'PreToolUse' || hookEvent.hook_event_name === 'PostToolUse') {
+    return titleForTool(hookEvent);
+  }
+  if (hookEvent.hook_event_name === 'PermissionRequest') {
+    return `Permission: ${hookEvent.tool_name}`;
+  }
+  if (hookEvent.hook_event_name === 'PostToolUseFailure') {
+    return `Failed: ${hookEvent.tool_name}`;
+  }
+  if (hookEvent.hook_event_name === 'SessionStart') {
+    return `Session ${hookEvent.source}`;
+  }
+  if (hookEvent.hook_event_name === 'InstructionsLoaded') {
+    return `Loaded ${shortPath(hookEvent.file_path)}`;
+  }
+  if (hookEvent.hook_event_name === 'UserPromptSubmit') {
+    return hookEvent.prompt;
+  }
+  if (hookEvent.hook_event_name === 'Notification') {
+    return hookEvent.title ?? hookEvent.message;
+  }
+  if (hookEvent.hook_event_name === 'SubagentStart') {
+    return `Subagent: ${hookEvent.agent_type}`;
+  }
+  if (hookEvent.hook_event_name === 'SubagentStop') {
+    return `Subagent done: ${hookEvent.agent_type}`;
+  }
+  if (hookEvent.hook_event_name === 'TeammateIdle') {
+    return `Idle: ${hookEvent.teammate_name}`;
+  }
+  if (hookEvent.hook_event_name === 'TaskCompleted') {
+    return `Task done: ${hookEvent.task_subject}`;
+  }
+  if (hookEvent.hook_event_name === 'ConfigChange') {
+    return `Config: ${hookEvent.source}`;
+  }
+  if (hookEvent.hook_event_name === 'WorktreeCreate') {
+    return `Worktree: ${hookEvent.name}`;
+  }
+  if (hookEvent.hook_event_name === 'WorktreeRemove') {
+    return `Worktree removed`;
+  }
+  if (hookEvent.hook_event_name === 'PreCompact') {
+    return `Compacting (${hookEvent.trigger})`;
+  }
+  if (hookEvent.hook_event_name === 'Stop') {
+    return 'Stopped';
+  }
+  /* hookEvent.hook_event_name === 'SessionEnd' */
+  return 'Session ended';
 }
+
+/** Human-readable title derived from the hook event. */
+const title = titleForEvent(event);
+setTerminalTitle(truncate(`${TITLE_PREFIX} ${title}`, MAX_TITLE_LENGTH));
 
 //endregion

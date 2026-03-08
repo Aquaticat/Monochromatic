@@ -160,6 +160,8 @@
     "no-restricted-syntax/no-hasownproperty": "error",
     "no-restricted-syntax/no-rest-params": "error",
     "no-restricted-syntax/no-trim-left-right": "error",
+    "no-restricted-syntax/no-variable-function-expression": "error",
+    "no-restricted-syntax/require-destructured-params": "error",
     // Never process.exit() -- throw errors instead.
     "unicorn/no-process-exit": "error",
     // Ban non-null assertion (!) -- use notNullishOrThrow instead.
