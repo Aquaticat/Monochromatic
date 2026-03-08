@@ -441,11 +441,7 @@ run = "caddy run --config Caddyfile --adapter caddyfile"
 # Moon automatically synced TypeScript project references during build.
 # With mise, this needs to be done manually via a script.
 # See: packages/module/es/src/mise.syncTsProjectReferences.ts
-
-[tasks."sync:tsReferences"]
-description = "Sync TypeScript project references (replaces moon's auto-sync)"
-run = "bun packages/module/es/src/mise.syncTsProjectReferences.ts"
-
+# Update: deprecated. tsgo is fast enough that importing ts source w/o any special setup is acceptable.
 #endregion TypeScript Project References
 
 #region File Enforcer
