@@ -159,9 +159,6 @@ run = "tsdown --watch --config tsdown.browser.config.ts"
 [task_templates."build--watch:js:node"]
 run = "tsdown --watch --config tsdown.node.config.ts"
 
-[task_templates."build--allowFailure"]
-run = [{ tasks = ["build--allowFailure:*"] }]
-
 [task_templates.test]
 run = [{ tasks = ["test:*"] }]
 
@@ -179,10 +176,6 @@ run = "oxlint --type-aware -c {{vars.monorepo_root}}/.oxlintrc.json"
 description = "TypeScript"
 run = "tsgo --build"
 
-[task_templates."lint--allowFailure:types"]
-description = "TypeScript"
-run = "try { tsgo --build } catch { |e| print -e $e.rendered }"
-
 [task_templates."lint--watch:types"]
 description = "Type check in watch mode"
 run = "tsgo --watch"
@@ -190,13 +183,19 @@ run = "tsgo --watch"
 [task_templates.prepare]
 run = [{ tasks = ["prepare:*"] }]
 
-[task_templates."prepare--allowFailure"]
-run = [{ tasks = ["prepare--allowFailure:*"] }]
-
 #region tasks
 #
 # Task naming follows `${category}${optional(`--${modifier}`)}:${child}`
 # never use depends or post depends, use run only because it's the easiest to understand.
+
+#region Utility Tasks
+
+[tasks.try]
+description = "Run a task, tolerating failures"
+usage = 'arg "task" help="Task name to run with failure tolerance"'
+run = "try { mise run $env.usage_task } catch { |e| print -e $e.rendered }"
+
+#endregion Utility Tasks
 
 #region Build Tasks
 
@@ -210,10 +209,6 @@ run = "mise '//packages/...:build'"
 [tasks.build--watch]
 description = "Build all packages in watch mode, fanout to every package's 'build--watch' task"
 run = "mise '//packages/...:build--watch'"
-
-[tasks.build--allowFailure]
-description = "Build all packages, allowing failures, fanout to every package's 'build--allowFailure' task"
-run = "mise '//packages/...:build--allowFailure'"
 
 #endregion Build Tasks
 
@@ -321,7 +316,7 @@ description = "Build all packages (tolerating failures), then run tests (pass --
 alias = "bt"
 usage = 'arg "[args]" var=#true help="Test file path or bun test arguments"'
 run = """
-try { mise run build } catch { |e| print -e $e.rendered }
+mise run try -- build
 let args = ($env.usage_args? | default '' | str trim)
 if $args == '' {
   mise run test
@@ -400,10 +395,6 @@ mise run format && mise run build && mise run test
 description = "Prepare environment (install Playwright browsers, etc.)"
 extends = "prepare"
 
-[tasks.prepare--allowFailure]
-description = "Prepare environment, allowing failures"
-extends = "prepare--allowFailure"
-
 [tasks."prepare:bun"]
 run = [{ tasks = ["prepare:bun:bun"] }, {tasks=["prepare:bun:others:*"]}]
 
@@ -418,17 +409,16 @@ run = "bun file-enforcer.config.ts"
 description = "Build Playwright container image via podman"
 run = "podman build -t monochromatic-playwright -f playwright.Dockerfile ."
 
-[tasks."prepare--allowFailure:playwright"]
-description = "Build Playwright container image, allowing failures"
-run = "try { podman build -t monochromatic-playwright -f playwright.Dockerfile . } catch { |e| print -e $e.rendered }"
-
 [tasks.prepareAndBuild]
 description = "Complete setup: prepare environment and build all artifacts"
 run = [{ tasks = ["prepare"] }, { tasks = ["build"] }]
 
 [tasks.prepareAndBuild--allowFailure]
 description = "Complete setup: prepare and build, allowing failures"
-run = [{ tasks = ["prepare--allowFailure"] }, { tasks = ["build--allowFailure"] }]
+run = """
+mise run try -- prepare
+mise run try -- build
+"""
 
 #endregion Preparation Tasks
 

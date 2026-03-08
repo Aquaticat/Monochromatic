@@ -26,10 +26,6 @@ extends = "build--watch:js:node"
 extends = "lint:types"
 hide = true
 
-[tasks."lint--allowFailure:types"]
-extends = "lint--allowFailure:types"
-hide = true
-
 [tasks."lint--watch:types"]
 extends = "lint--watch:types"
 hide = true

@@ -24,9 +24,5 @@ run = "llama-server --hf-repo LiquidAI/LFM2.5-1.2B-Instruct-GGUF --hf-file LFM2.
 extends = "lint:types"
 hide = true
 
-[tasks."lint--allowFailure:types"]
-extends = "lint--allowFailure:types"
-hide = true
-
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"

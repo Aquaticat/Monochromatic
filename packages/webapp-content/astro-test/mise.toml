@@ -26,10 +26,6 @@ run = "bun exec astro build --watch"
 extends = "lint:types"
 hide = true
 
-[tasks."lint--allowFailure:types"]
-extends = "lint--allowFailure:types"
-hide = true
-
 [tasks."dev:site"]
 description = "Start development server"
 run = "bun exec astro dev"
