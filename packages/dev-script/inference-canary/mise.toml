@@ -1,5 +1,6 @@
 [tasks.run]
 description = "Run the inference canary against all configured models"
+depends = ["prepare"]
 run = "bun src/index.ts"
 
 [tasks.'lint:types']
@@ -7,3 +8,18 @@ extends = "lint:types"
 
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
+
+[tasks.prepare]
+extends = "prepare"
+
+[tasks.'prepare:perf-test-data']
+run = [{ tasks = ["prepare:perf-test-data:*"] }]
+
+[tasks.'prepare:perf-test-data:css-mixin']
+run = "bun src/codegen/perf-test-data/mise.generate-css-mixin-perf.ts"
+
+[tasks.'prepare:perf-test-data:csv']
+run = "bun src/codegen/perf-test-data/mise.generate-csv-perf.ts"
+
+[tasks.'prepare:perf-test-data:expr']
+run = "bun src/codegen/perf-test-data/mise.generate-expr-perf.ts"

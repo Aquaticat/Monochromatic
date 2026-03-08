@@ -18,6 +18,7 @@ import type { Probe, } from './probes.ts';
  * @param selectedModels - models to test
  * @param probes - probes to run on each model
  * @param recentModelProbePairs - model:probe pairs to skip (tested recently)
+ * @param recentlyFailedModels - model labels that had a whole-model failure recently (e.g. 429)
  * @param apiKey - OpenRouter API key
  * @param runsOverride - optional override for the number of consistency runs (already parsed as integer)
  */
@@ -25,14 +26,25 @@ export async function runAndReport(
   selectedModels: readonly ModelConfig[],
   probes: readonly Probe[],
   recentModelProbePairs: ReadonlyMap<string, ReadonlySet<string>>,
+  recentlyFailedModels: ReadonlySet<string>,
   apiKey: string,
   runsOverride: number | undefined,
 ): Promise<void> {
   const consistencyRunsOverride: Pick<Partial<RunnerConfig>, 'consistencyRuns'> =
     runsOverride !== undefined ? { consistencyRuns: runsOverride, } : {};
 
+  // Skip models that had a whole-model failure (e.g. 429, auth error) within the last 24 hours.
+  // Their failure artifacts are already recorded; retesting would just hit the same error.
+  const modelsToRun = selectedModels.filter((model) => {
+    if (recentlyFailedModels.has(model.label)) {
+      console.log(`[${model.label}] skipping all probes (recent whole-model failure)`);
+      return false;
+    }
+    return true;
+  });
+
   const reports: readonly CanaryReport[] = await Promise.all(
-    selectedModels.map((model) =>
+    modelsToRun.map((model) =>
       runCanary(probes, {
         model: model.openrouterId,
         label: model.label,

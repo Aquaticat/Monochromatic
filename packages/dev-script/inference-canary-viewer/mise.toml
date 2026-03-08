@@ -1,6 +1,10 @@
 [tasks.build]
 description = "Generate static dashboard from canary history and artifacts"
-run = "bun src/build.ts"
+depends = ["inference-canary-run"]
+run = ["bun src/build.ts"]
+
+[tasks.inference-canary-run]
+run =  ["mise run //packages/dev-script/inference-canary:run"]
 
 [tasks.'dev:watch']
 description = "Rebuild dashboard on source or canary-lint changes"

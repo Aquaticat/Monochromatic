@@ -83,8 +83,8 @@ function selectModels(): readonly ModelConfig[] {
 }
 
 const selectedModels = selectModels();
-const recentModelProbePairs = retestAll
-  ? new Map<string, ReadonlySet<string>>()
+const { probePairs: recentModelProbePairs, failedModels: recentlyFailedModels, } = retestAll
+  ? { probePairs: new Map<string, ReadonlySet<string>>(), failedModels: new Set<string>(), }
   : await getRecentArtifactPairs();
 
 //endregion Model selection
@@ -124,7 +124,13 @@ if (selectedModels.length === 0) {
   console.log(`[canary] testing ${String(selectedModels.length)} model(s) in parallel`);
   console.log(`[canary] probes: ${probes.map((probe) => probe.name).join(', ')}`);
   console.log('');
-  await runAndReport(selectedModels, probes, effectiveRecentPairs, apiKey, runsOverride);
+  await runAndReport(selectedModels, probes, effectiveRecentPairs, recentlyFailedModels, apiKey, runsOverride);
 }
+
+// OpenAI SDK maintains internal HTTP connection pools (keep-alive sockets) that
+// prevent the event loop from draining after all work completes. The SDK does not
+// expose a close() method, so explicit exit is the only way to avoid hanging.
+// eslint-disable-next-line unicorn/no-process-exit -- required: OpenAI SDK keep-alive prevents clean shutdown
+process.exit(0);
 
 //endregion Execution

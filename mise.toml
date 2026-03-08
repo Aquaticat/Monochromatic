@@ -304,6 +304,9 @@ description = "Run all tests in watch mode"
 extends = "test--watch"
 alias = "tW"
 
+[tasks."testDockerImage"]
+run = "docker build --progress=plain ."
+
 [tasks.buildAndTest]
 description = "Build all packages (tolerating failures), then run tests (pass -- <file> to run a single test)"
 alias = "bt"
@@ -391,6 +394,9 @@ extends = "prepare"
 [tasks.prepare--allowFailure]
 description = "Prepare environment, allowing failures"
 extends = "prepare--allowFailure"
+
+[tasks."prepare:bun"]
+run = "bun install"
 
 [tasks."prepare:playwright"]
 description = "Build Playwright container image via podman"

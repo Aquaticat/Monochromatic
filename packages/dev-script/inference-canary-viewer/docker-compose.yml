@@ -42,6 +42,10 @@ services:
       - -c
       - |
         # Initial canary run (tolerate failure on first deploy with no cached data)
+        bun packages/dev-script/inference-canary/src/codegen/perf-test-data/mise.generate-css-mixin-perf.ts
+        bun packages/dev-script/inference-canary/src/codegen/perf-test-data/mise.generate-csv-perf.ts
+        bun packages/dev-script/inference-canary/src/codegen/perf-test-data/mise.generate-expr-perf.ts
+
         bun packages/dev-script/inference-canary/src/index.ts --retest-all || true
         bun packages/dev-script/inference-canary-viewer/src/build.ts || true
 
