@@ -86,6 +86,7 @@ For common issues:
 - **Test failures not showing?** → [Duplicate describe blocks](TROUBLESHOOTING.testing.md#vitest-missing-assertions-or-console-output-with-duplicate-describe-blocks)
 - **Fresh clone fails?** → [Build order dependencies](TROUBLESHOOTING.vite.md#vite-config-build-order-in-mise)
 - **TypeScript path warnings?** → [dprint configuration](TROUBLESHOOTING.typescript.md#typescript-path-warnings-with-dprint)
+- **`Cannot find name` for DOM types in a non-browser package?** → [All packages must extend config-typescript/dom](TROUBLESHOOTING.typescript.md#all-packages-must-extend-config-typescriptdom)
 - **Configuration not working as expected?** → [TOML issues and alternatives](TROUBLESHOOTING.toml.md#silent-overwrites-the-configuration-killer)
 - **Figma automation not working?** → [The WebGL wall](TROUBLESHOOTING.figma-browser-automation.md)
 - **CLI hangs with ImageMagick errors?** → [Missing shebang](TROUBLESHOOTING.cli-bin.md#cli-command-hangs-on-unix-with-imagemagick-errors)

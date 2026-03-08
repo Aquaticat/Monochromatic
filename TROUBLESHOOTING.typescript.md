@@ -120,6 +120,41 @@ This maps Astro's JSX types to the global namespace that `@types/mdx` expects.
 - [MDX Getting Started - Types](https://mdxjs.com/docs/getting-started/#types)
 - [Astro TypeScript - Extending global types](https://docs.astro.build/en/guides/typescript/#extending-global-types)
 
+## All packages must extend `config-typescript/dom`
+
+### Problem
+
+`tsgo --build` reports errors like `Cannot find name 'FileSystemWritableFileStream'` or
+`Property 'storage' does not exist on type 'Navigator'` in a package that never uses browser APIs directly.
+
+```txt
+../../module/es/src/types/.../t opfs/p p/index.ts(8,15): error TS2304: Cannot find name 'FileSystemWritableFileStream'.
+../../module/es/src/types/.../t opfs/p p/index.ts(24,38): error TS2339: Property 'storage' does not exist on type 'Navigator'.
+```
+
+### Root cause
+
+`module-es` exports raw `.ts` source files via its `exports` map (e.g. `"./logger": "./src/..."`).
+When another package imports from `module-es`, tsgo checks those source files under the **consumer's** tsconfig, not module-es's.
+If the consumer extends the base config (`config-typescript`) which only has `"lib": ["ESNext"]`,
+DOM types like `FileSystemWritableFileStream` and `navigator.storage` are missing.
+
+Non-browser runtimes may adopt browser APIs over time,
+so separating into `/dom` vs non-`/dom` configs provides no future-proofing benefit
+and causes false positives instead.
+
+### Solution
+
+Every package tsconfig must extend `@monochromatic-dev/config-typescript/dom` (not the base export).
+This adds `"lib": ["ESNext", "DOM", "WebWorker"]` so all standard platform types are available
+regardless of the package's target runtime.
+
+```json
+{
+  "extends": "@monochromatic-dev/config-typescript/dom"
+}
+```
+
 ## Related Documentation
 
 - [ESLint Configuration](./TROUBLESHOOTING.eslint.md) - ESLint and TypeScript parser issues

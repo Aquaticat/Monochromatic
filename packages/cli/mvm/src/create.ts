@@ -4,13 +4,14 @@ import { join } from 'node:path';
 import { createSeedIso } from './cloud-init.ts';
 import { DEFAULT_DISK_SIZE, VMS_DIR, validateName } from './config.ts';
 import { domainXml } from './domain-xml.ts';
-import { ensureImage } from './image.ts';
 import { l, tagged } from './log.ts';
 import { run } from './run.ts';
+import { ensureTemplate } from './template.ts';
 import { defineVm, startVm, waitForGuestAgent } from './virsh.ts';
 
 /**
- * Creates a new Ubuntu VM with a backing-file disk, cloud-init seed, and starts it.
+ * Creates a new Ubuntu VM from the pre-built template image and starts it.
+ * The template already has qemu-guest-agent installed, so boot is fast.
  *
  * @param options - VM name (alphanumeric, hyphens, underscores)
  * @throws Error on invalid name or disk creation failure
@@ -28,13 +29,13 @@ export async function create({ name }: { name: string }): Promise<void> {
   rl.info(`creating VM ${name}`);
   await mkdir(vmDir, { recursive: true, });
 
-  const baseImage = await ensureImage();
+  const templateImage = await ensureTemplate();
   const diskPath = join(vmDir, 'disk.qcow2');
 
-  rl.info('creating disk from base image...');
+  rl.info('creating disk from template image...');
   await run({
     command: 'qemu-img',
-    args: ['create', '-f', 'qcow2', '-b', baseImage, '-F', 'qcow2', diskPath, DEFAULT_DISK_SIZE],
+    args: ['create', '-f', 'qcow2', '-b', templateImage, '-F', 'qcow2', diskPath, DEFAULT_DISK_SIZE],
   });
 
   const seedIsoPath = await createSeedIso({ name, vmDir, });

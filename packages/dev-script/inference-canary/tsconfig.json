@@ -1,5 +1,5 @@
 {
-  "extends": "@monochromatic-dev/config-typescript",
+  "extends": "@monochromatic-dev/config-typescript/dom",
   // Generated model outputs live in src/canary-lint/ and intentionally have
   // lint/type errors -- exclude them from the package's own type checking.
   "exclude": ["src/canary-lint"],

@@ -4,26 +4,20 @@ import { createIso } from './iso9660.ts';
 import { l, tagged } from './log.ts';
 
 /**
- * Generates a cloud-init NoCloud seed ISO with user-data and meta-data.
- * Uses the built-in ISO9660 generator instead of external tools like genisoimage.
+ * Shared cloud-init user-data content for VM configuration.
+ * Sets up the ubuntu user with passwordless sudo and serial console autologin.
+ * Does NOT install qemu-guest-agent -- that is pre-baked into the template image.
  *
- * Configures auto-login on the serial console (ttyS0) so `virsh console`
- * drops directly into a shell without SSH or passwords.
- *
- * @param options - VM directory for writing the ISO and VM name for hostname configuration
- * @returns Absolute path to the generated seed ISO
+ * @param name - VM hostname
+ * @returns Cloud-init user-data string
  *
  * @example
  * ```ts
- * const seedPath = await createSeedIso({ name: 'my-vm', vmDir: '/path/to/vm' });
+ * const userData = vmUserData('my-vm');
  * ```
  */
-export async function createSeedIso({ name, vmDir }: { name: string; vmDir: string }): Promise<string> {
-  const rl = tagged({ tag: createSeedIso.name, l, });
-
-  const encoder = new TextEncoder();
-  const userData = encoder.encode(
-    `#cloud-config
+function vmUserData(name: string): string {
+  return `#cloud-config
 hostname: ${name}
 users:
   - name: ubuntu
@@ -41,14 +35,65 @@ write_files:
     content: |
       echo ""
       echo "Session ended. Press Ctrl+] to disconnect."
-packages:
-  - qemu-guest-agent
 runcmd:
   - systemctl daemon-reload
   - systemctl restart serial-getty@ttyS0.service
+`;
+}
+
+/**
+ * Cloud-init user-data for template creation.
+ * Installs qemu-guest-agent so the template image has it pre-baked,
+ * avoiding apt downloads on every VM boot.
+ *
+ * @param name - Template VM hostname
+ * @returns Cloud-init user-data string with qemu-guest-agent installation
+ *
+ * @example
+ * ```ts
+ * const userData = templateUserData('template-setup');
+ * ```
+ */
+function templateUserData(name: string): string {
+  return `#cloud-config
+hostname: ${name}
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+packages:
+  - qemu-guest-agent
+runcmd:
   - systemctl enable --now qemu-guest-agent
-`,
-  );
+`;
+}
+
+/**
+ * Generates a cloud-init NoCloud seed ISO with user-data and meta-data.
+ * Uses the built-in ISO9660 generator instead of external tools like genisoimage.
+ *
+ * Configures auto-login on the serial console (ttyS0) so `virsh console`
+ * drops directly into a shell without SSH or passwords.
+ *
+ * @param options - VM directory for writing the ISO, VM name for hostname configuration,
+ *   and whether this is for template creation (installs qemu-guest-agent)
+ * @returns Absolute path to the generated seed ISO
+ *
+ * @example
+ * ```ts
+ * const seedPath = await createSeedIso({ name: 'my-vm', vmDir: '/path/to/vm' });
+ * const templateSeed = await createSeedIso({ name: 'tpl', vmDir: '/path/to/vm', template: true });
+ * ```
+ */
+export async function createSeedIso({ name, template = false, vmDir }: {
+  name: string;
+  template?: boolean;
+  vmDir: string;
+}): Promise<string> {
+  const rl = tagged({ tag: createSeedIso.name, l, });
+
+  const encoder = new TextEncoder();
+  const userData = encoder.encode(template ? templateUserData(name) : vmUserData(name));
 
   const metaData = encoder.encode(
     `instance-id: ${name}
