@@ -406,8 +406,8 @@ locals {
     }]
   ))
 
-  web_out_rules = flatten(concat(
-    [for s in local.web_out : concat(
+  web_out_rules = flatten([
+    for s in local.web_out : concat(
       [for i, chunk in local.cdn_ips_v4_chunks : {
         desc  = "${s.desc} v4 - chunk ${i}"
         port  = s.port
@@ -421,9 +421,8 @@ locals {
         proto = s.proto
         ips   = chunk
       }]
-    )],
-    [local.ubuntu_http_out_rules]
-  ))
+    )
+  ])
 }
 
 resource "hcloud_firewall" "tofu" {
@@ -550,6 +549,21 @@ resource "hcloud_firewall" "web_out" {
 
   dynamic "rule" {
     for_each = local.web_out_rules
+    content {
+      description     = rule.value.desc
+      direction       = "out"
+      protocol        = rule.value.proto
+      port            = rule.value.port
+      destination_ips = rule.value.ips
+    }
+  }
+}
+
+resource "hcloud_firewall" "ubuntu_http" {
+  name = "ubuntu_http"
+
+  dynamic "rule" {
+    for_each = local.ubuntu_http_out_rules
     content {
       description     = rule.value.desc
       direction       = "out"
