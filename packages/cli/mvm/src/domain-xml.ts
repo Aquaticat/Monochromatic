@@ -33,6 +33,10 @@ export function domainXml({ diskPath, name, seedIsoPath }: {
     <type arch='x86_64'>hvm</type>
     <boot dev='hd'/>
   </os>
+  ${
+    // Bun requires AVX
+    ''
+  }
   <cpu mode='host-passthrough'/>
   <features>
     <acpi/>
