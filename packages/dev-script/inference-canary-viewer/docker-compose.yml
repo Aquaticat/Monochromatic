@@ -18,26 +18,10 @@
 services:
   canary:
     build:
-      context: ../../..
-      dockerfile_inline: |
-        FROM oven/bun:1.3-debian
-
-        RUN apt-get update \
-         && apt-get install -y --no-install-recommends \
-              ca-certificates podman git \
-         && rm -rf /var/lib/apt/lists/*
-
-        # vfs driver: avoids overlay mount issues inside Docker volumes.
-        # Performance is acceptable — the canary pulls one small image infrequently.
-        RUN printf '[storage]\ndriver = "vfs"\nrunroot = "/run/containers/storage"\ngraphroot = "/var/lib/containers/storage"\n' \
-              > /etc/containers/storage.conf
-
-        WORKDIR /app
-        COPY . .
-
-        RUN bun install
-
-        ENV PATH="/app/node_modules/.bin:$PATH"
+      # Coolify sets --project-directory to the repo root, so context
+      # must be relative to repo root (not the compose file location).
+      context: .
+      dockerfile: Dockerfile.canary
     privileged: true
     cgroup: host
     volumes:
