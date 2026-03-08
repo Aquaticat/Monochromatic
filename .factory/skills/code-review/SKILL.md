@@ -468,6 +468,42 @@ console.log('Authenticating with token:', token.slice(0, tokenPrefixLength) + '.
 - No narrative or promotional language in docs
 - Region markers for substantial code blocks; flag missing markers as WARNING for substantial blocks and NIT for smaller ones
 
+#### Comments inside template literals
+
+Embed comments inside template literals using the `${''}` trick.
+Do not use target-language comments (XML, HTML, etc.) or move the comment outside the template.
+
+Reasons:
+- Target-language comments require context switching between JS and the target language
+- Editors cannot properly highlight target-language comments inside JS template literals
+- Target-language comment syntax is easy to get wrong or forget across different languages
+
+```ts
+// Bad -- flag as NIT: target-language comment
+const xml = `
+  <os><type arch='x86_64'>hvm</type></os>
+  <!-- Bun requires AVX -->
+  <cpu mode='host-passthrough'/>
+`;
+
+// Bad -- flag as NIT: comment disconnected from the line it explains
+// Bun requires AVX
+const xml = `
+  <os><type arch='x86_64'>hvm</type></os>
+  <cpu mode='host-passthrough'/>
+`;
+
+// Good
+const xml = `
+  <os><type arch='x86_64'>hvm</type></os>
+  ${
+    // Bun requires AVX
+    ''
+  }
+  <cpu mode='host-passthrough'/>
+`;
+```
+
 #### TSDoc quality
 
 Flag WHY-less comments:

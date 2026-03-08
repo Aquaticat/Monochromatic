@@ -76,6 +76,7 @@ Write comprehensive TSDoc for **all** declarations (exported or not, including l
 Adhere to `eslint-plugin-jsdoc` recommended rules, TSDoc variant.
 Use `{@inheritDoc originalFn}` for non-async wrappers.
 
+- Use `${ // comment \n '' }` to embed comments inside template literals; do not use target-language comments or move the comment outside the template
 - TSDoc (`/** */`) for declarations only; use `//` or `/* */` for statements, control flow, imports, returns
 - TSDoc must directly precede a declaration, not a statement
 - Comments on their own line above code, never inline after code

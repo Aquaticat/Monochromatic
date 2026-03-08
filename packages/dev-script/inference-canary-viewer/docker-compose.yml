@@ -38,14 +38,8 @@ services:
         RUN bun install
 
         ENV PATH="/app/node_modules/.bin:$PATH"
-    cap_add:
-      - SYS_ADMIN
-      - MKNOD
-    devices:
-      - /dev/fuse
-    security_opt:
-      - seccomp=unconfined
-      - label=disable
+    privileged: true
+    cgroupns_mode: host
     volumes:
       - canary-artifacts:/app/packages/dev-script/inference-canary/src/canary-lint
       - podman-storage:/var/lib/containers
@@ -55,7 +49,7 @@ services:
       INFERENCE_VALIDATION_OPENROUTER_API_KEY: "${INFERENCE_VALIDATION_OPENROUTER_API_KEY:?}"
       CANARY_INTERVAL_SECONDS: "${CANARY_INTERVAL_SECONDS:-21600}"
     healthcheck:
-      test: ["CMD", "bun", "-e", "await fetch('http://localhost:3000')"]
+      test: ["CMD", "bun", "-e", "await fetch('http://0.0.0.0:3000')"]
       start_period: 120s
       interval: 30s
     restart: unless-stopped
@@ -67,8 +61,10 @@ services:
         bun packages/dev-script/inference-canary/src/index.ts --retest-all || true
         bun packages/dev-script/inference-canary-viewer/src/build.ts || true
 
-        # Serve dashboard in background
-        bun --port 3000 packages/dev-script/inference-canary-viewer/dist/final/index.html &
+        # Serve dashboard on 0.0.0.0 so Docker port mapping works
+        # (bun's built-in static server binds to ::1 by default)
+        DIST=packages/dev-script/inference-canary-viewer/dist/final
+        bun -e "Bun.serve({port:3000,hostname:'0.0.0.0',fetch(r){const p=new URL(r.url).pathname.replace(/^\/$/,'index.html');return new Response(Bun.file('$$DIST/'+p))}})" &
         SERVE_PID=$$!
         trap 'kill $$SERVE_PID 2>/dev/null; exit 0' TERM INT
 
