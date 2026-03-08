@@ -1,8 +1,10 @@
 FROM ubuntu:latest
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
 RUN sed -i 's|http://|https://|g' /etc/apt/sources.list.d/ubuntu.sources
 RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-      ca-certificates podman git unzip
+ && apt-get install -y --no-install-recommends podman git unzip
 RUN curl -fsSL https://bun.com/install | bash
 # vfs driver: avoids overlay mount issues inside Docker volumes.
 # Performance is acceptable — the canary pulls one small image infrequently.

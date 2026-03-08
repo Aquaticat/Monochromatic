@@ -151,6 +151,11 @@ locals {
     if can(cidrhost(ip, 0))
   ]
 
+  ubuntu_ips_v4 = [for ip in local.ubuntu_ips : ip if !strcontains(ip, ":")]
+  ubuntu_ips_v6 = [for ip in local.ubuntu_ips : ip if strcontains(ip, ":")]
+  ubuntu_ips_v4_chunks = chunklist(local.ubuntu_ips_v4, 20)
+  ubuntu_ips_v6_chunks = chunklist(local.ubuntu_ips_v6, 20)
+
   youtube_ips_unsanitized = concat(
     [for s in split("\n", trimspace(data.http.youtube_ipv4.response_body)) : s if s != ""],
     [for s in split("\n", trimspace(data.http.youtube_ipv6.response_body)) : s if s != ""]
@@ -378,17 +383,31 @@ locals {
   cdn_ips_v6_chunks = chunklist(local.cdn_ips_v6_greedy, 20)
 
   web_out = [
-    # There are no HTTP services as of now.
-    # { port = "80",  proto = "tcp", desc = "http cdn" },
-
     { port = "443", proto = "tcp", desc = "https tcp cdn" },
 
     # Trying to stay under the 500 effective rules limit.
     { port = "443", proto = "udp", desc = "https udp cdn" },
   ]
 
-  web_out_rules = flatten([
-    for s in local.web_out : concat(
+  # Port 80 only for Ubuntu APT repos (ca-certificates must be fetched over
+  # HTTP before HTTPS sources can work in fresh containers).
+  ubuntu_http_out_rules = flatten(concat(
+    [for i, chunk in local.ubuntu_ips_v4_chunks : {
+      desc  = "http ubuntu v4 - chunk ${i}"
+      port  = "80"
+      proto = "tcp"
+      ips   = chunk
+    }],
+    [for i, chunk in local.ubuntu_ips_v6_chunks : {
+      desc  = "http ubuntu v6 - chunk ${i}"
+      port  = "80"
+      proto = "tcp"
+      ips   = chunk
+    }]
+  ))
+
+  web_out_rules = flatten(concat(
+    [for s in local.web_out : concat(
       [for i, chunk in local.cdn_ips_v4_chunks : {
         desc  = "${s.desc} v4 - chunk ${i}"
         port  = s.port
@@ -402,8 +421,9 @@ locals {
         proto = s.proto
         ips   = chunk
       }]
-    )
-  ])
+    )],
+    [local.ubuntu_http_out_rules]
+  ))
 }
 
 resource "hcloud_firewall" "tofu" {
