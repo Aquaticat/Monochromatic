@@ -126,9 +126,20 @@ A package is not finished until:
 
 Do not declare work complete while either condition is unmet.
 
-## Run what you build
+## Verify at the user boundary
 
-Always execute created or modified runnable code to verify it works.
+After building, deploying, or installing an artifact, run a verification step that exercises
+the artifact the way an end user would consume it.
+Building, bundling, and installing are prerequisites -- not proof that the artifact works.
+
+- Server: confirm it serves correct responses, not just that it starts
+- CLI tool: run a real command and check the output
+- Hook/plugin: trigger it through the host application, not just by piping test input directly
+- Library: import and call it from a consuming project, not just compile it
+- Web page: fetch the served HTML and confirm content renders
+
+The verification must cross the integration boundary between the artifact and its consumer.
+If the only evidence of success is "it compiled" or "it installed," the task is not verified.
 
 ## Hooks and automation
 
