@@ -1,0 +1,22 @@
+{
+  "name": "@monochromatic-dev/claude-code-plugins-terminal-title",
+  "description": "Claude Code hook that sets the terminal tab title to reflect current activity.",
+  "type": "module",
+  "bin": {
+    "cctt": "./src/index.ts"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/claude-code-plugins/terminal-title"
+  },
+  "sideEffects": true,
+  "dependencies": {
+    "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}

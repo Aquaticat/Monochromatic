@@ -208,6 +208,51 @@ The purpose of `< /dev/null` is to prevent user commands from reading Claude Cod
 IPC socket (which is the shell's stdin). Redirecting eval's stdin achieves this correctly;
 the redirected stdin propagates to all child commands without interfering with pipes.
 
+## Related: stdin-reading hang with `&&`/`;` chains
+
+The same `\<` bug causes a different symptom when the user command contains `&&` or `;`
+but **no pipes**. Tools like `rg` and `fd` auto-detect whether stdin is a TTY:
+
+- **TTY stdin** -- search current directory (normal interactive behavior)
+- **Non-TTY stdin** -- read input from stdin (filter mode)
+
+Claude Code's stdin is a non-TTY socket that never sends EOF.
+The `< /dev/null` redirect is meant to give commands immediate EOF,
+but due to the `\<` bug it becomes a string argument to `eval`,
+which appends it to the last simple command in the chain.
+
+### Example
+
+User command: `rg -l 'pattern' --type ts && cat results.txt`
+
+After eval joins its arguments:
+```
+rg -l 'pattern' --type ts && cat results.txt < /dev/null
+```
+
+`< /dev/null` redirects `cat`'s stdin (harmless), but `rg` gets the original
+non-TTY socket as stdin. Without an explicit path argument, `rg` enters
+stdin-reading mode and blocks forever.
+
+### Why bare `rg` (no chain) doesn't hang
+
+Without `&&` or `;`, eval produces `rg -l 'pattern' --type ts < /dev/null`.
+The redirect applies directly to `rg`, giving it immediate EOF.
+`rg` reads nothing from stdin and exits with code 2 ("no files were searched") --
+fast, but wrong results (it searched stdin instead of the filesystem).
+
+### Workaround
+
+Always pass an explicit search path (`.` or absolute) to `rg`/`fd`:
+
+```bash
+# HANGS (no path, rg falls back to stdin in non-TTY sandbox)
+rg -l 'pattern' --type ts && echo done
+
+# WORKS (explicit path, rg never checks stdin)
+rg -l 'pattern' --type ts . && echo done
+```
+
 ## Discarded hypotheses
 
 These were investigated but turned out to be irrelevant:

@@ -1,0 +1,18 @@
+{
+  "name": "@monochromatic-dev/claude-code-plugins-hook-types",
+  "description": "TypeScript type definitions for Claude Code hook events.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/claude-code-plugins/hook-types"
+  },
+  "sideEffects": false,
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*"
+  }
+}

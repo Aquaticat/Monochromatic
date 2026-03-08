@@ -381,6 +381,53 @@ const result = Object.fromEntries(
 );
 ```
 
+#### No `switch` statements
+
+Flag all `switch` statements. Use if/else chains for branching or `Record` lookups for mapping a discriminant to a value.
+
+`switch` adds `break` boilerplate, risks accidental fallthrough, and encourages large blocks.
+If/else works naturally with early returns and needs no special syntax.
+When the logic is a pure mapping from key to value, a `Record` is more declarative and type-safe.
+
+```ts
+// Bad -- flag as WARNING: switch statement
+switch (toolName) {
+  case 'Read': {
+    return `Reading ${shortPath(filePath)}`;
+  }
+  case 'Edit': {
+    return `Editing ${shortPath(filePath)}`;
+  }
+  case 'Bash': {
+    return `Running ${shortCommand(command)}`;
+  }
+  default: {
+    return toolName;
+  }
+}
+
+// Good -- if/else for branching with logic
+if (toolName === 'Read') {
+  return `Reading ${shortPath(filePath)}`;
+} else if (toolName === 'Edit') {
+  return `Editing ${shortPath(filePath)}`;
+} else if (toolName === 'Bash') {
+  return `Running ${shortCommand(command)}`;
+} else {
+  return toolName;
+}
+
+// Good -- Record lookup for pure mappings
+const TOOL_LABELS: Record<string, (input: ToolInput) => string> = {
+  Read: function readLabel({ filePath }) { return `Reading ${shortPath(filePath)}`; },
+  Edit: function editLabel({ filePath }) { return `Editing ${shortPath(filePath)}`; },
+  Bash: function bashLabel({ command }) { return `Running ${shortCommand(command)}`; },
+};
+
+const labelFn = TOOL_LABELS[toolName];
+return labelFn !== undefined ? labelFn(input) : toolName;
+```
+
 #### Naming extracted concepts
 
 Flag inline complex conditions:

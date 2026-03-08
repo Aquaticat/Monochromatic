@@ -22,6 +22,7 @@
   "type": "module",
   "devDependencies": {
     "@monochromatic-dev/cli-mvm": "workspace:*",
+    "@monochromatic-dev/claude-code-plugins-terminal-title": "workspace:*",
     "@oxlint/plugins": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "@monochromatic-dev/build-tool-css": "workspace:*",
@@ -272,7 +273,7 @@
       "ts-pattern": ">=5.8.0",
       "tsdown": ">=0.18.1",
       "type-fest": ">=5.0.0",
-      "typescript": ">=5.9.3",
+      "typescript": ">=6.0.1-rc",
       "typescript-eslint": ">=8.44.0",
       "unified": ">=11.0.5",
       "use-sync-external-store": ">=1.5.0",

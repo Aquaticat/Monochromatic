@@ -69,6 +69,7 @@ cargo-binstall = "latest"
 "github:ggml-org/llama.cpp" = "latest"
 opentofu = "latest"
 hcloud = "latest"
+"npm:typescript-language-server" = "latest"
 
 [settings]
 # Enable automatic tool installation when entering directory
@@ -102,7 +103,15 @@ windows_default_inline_shell_args = "nu -c"
 # for core backends (bun, node, etc.) that cache the resolution via symlink.
 # `mise upgrade` re-resolves "latest" and installs newer versions.
 # Nushell `;` always runs both commands (no fail-fast like bash `&&`).
-enter = "mise install; mise upgrade"
+enter = """
+let quiet_lines = ["mise all tools are installed" "mise All tools are up to date"]
+for result in [(mise install | complete) (mise upgrade | complete)] {
+  let out = ($result.stdout | str trim)
+  if $out != '' { print $out }
+  let err_lines = ($result.stderr | str trim | lines | where {|line| ($line | str trim) not-in $quiet_lines })
+  if ($err_lines | is-not-empty) { print -e ($err_lines | str join "\n") }
+}
+"""
 
 [env]
 # Uses native Node.js TypeScript loader for eslint.config.ts (instead of jiti).

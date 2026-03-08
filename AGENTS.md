@@ -6,6 +6,11 @@ Don't use "plan mode" since they currently just bug out. Waiting for upstream fi
 
 Don't use pipes in bash tool since they're broken for now. Workarounds like redirecting to file then reading the file works.
 
+Always pass an explicit path (`.` or absolute) to `rg` and `fd` in the Bash tool.
+Without a path argument, these tools detect non-TTY stdin in the sandbox and switch to stdin-reading mode.
+Combined with command chains (`&&`, `;`), the `< /dev/null` redirect misapplies to the last command in the chain,
+leaving `rg`/`fd` blocking forever on a socket that never sends EOF. See `PIPE-BUG.md` for details.
+
 The Glob tool is denylisted and disabled because it currently doesn't respect .gitignore .
 
 User input might include raw `\n` which you should consider as newlines since newline is broken sometimes.
@@ -201,7 +206,8 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - Include `.ts` extensions in imports; group: built-ins, external, workspace, relative, type-only
 - Prefer named imports, `import type` for type-only, absolute imports for workspace packages
 - Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile` -- Bun resolves these at build time with no async preload step needed
-- Prefer function declarations; always name functions; parentheses around all arrow params
+- No arrow functions -- use named function declarations or named function expressions; arrows produce anonymous stack traces and hide intent
+- Always name functions; parentheses around all arrow params in external API callbacks where arrows are unavoidable
 - Functions with 2+ parameters must use a single destructured object parameter (named params); exempt: callbacks whose signature is dictated by an external API or library
 - No rest parameters (`...args`) in functions we control; accept an array parameter instead
 - Export immediately at declaration; avoid `Object.assign` for extending typed objects
@@ -238,6 +244,7 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - Combine console.log/error messages into thrown errors; use `process.exitCode` only for non-standard exit codes
 - Never `process.exit()` -- throw errors instead; always `console.error()` in catch blocks
 - Never silently discard unexpected states -- throw on unreachable branches
+- No `switch` statements -- use if/else chains or `Record` lookups; if/else avoids `break` boilerplate and fallthrough bugs; `Record` is preferred when mapping a discriminant to a value
 - Composition over inheritance; `readonly` and `#private` by default; `unknown` over `any`
 
 # Testing
