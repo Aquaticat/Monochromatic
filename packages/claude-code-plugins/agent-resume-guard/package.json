@@ -1,0 +1,23 @@
+{
+  "name": "@monochromatic-dev/claude-code-plugins-agent-resume-guard",
+  "description": "Claude Code PreToolUse hook that blocks Agent resume calls, preventing polling loops on background agents.",
+  "type": "module",
+  "bin": {
+    "ccarg": "./src/index.ts"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/claude-code-plugins/agent-resume-guard"
+  },
+  "sideEffects": true,
+  "dependencies": {
+    "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*",
+    "@monochromatic-dev/claude-code-plugins-hook-utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}

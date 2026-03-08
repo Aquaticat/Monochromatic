@@ -1,0 +1,21 @@
+{
+  "name": "session-start-housekeeping",
+  "description": "Creates temp directories, cleans stale dist artifacts, and removes ephemeral config files on session start.",
+  "version": "0.0.1",
+  "author": {
+    "name": "Aquaticat"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/dist/final/ccssh.js"
+          }
+        ]
+      }
+    ]
+  }
+}

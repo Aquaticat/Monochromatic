@@ -6,4 +6,4 @@ extends = "lint:oxlint"
 
 [tasks.build]
 description = "Bundle into a self-contained executable"
-run = "bun build --target=bun --minify src/index.ts --outfile dist/final/ccssh.js"
+run = "bun build --target=bun --minify src/index.ts --outfile dist/final/ccsr.js"

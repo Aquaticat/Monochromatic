@@ -1,0 +1,20 @@
+{
+  "name": "stop-reminders",
+  "description": "Detects uncertain language in Claude's responses and reminds it to investigate before guessing.",
+  "version": "0.0.1",
+  "author": {
+    "name": "Aquaticat"
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/dist/final/ccsr.js"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -3,3 +3,7 @@ extends = "lint:types"
 
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
+
+[tasks.build]
+description = "Bundle into a self-contained executable"
+run = "bun build --target=bun --minify src/index.ts --outfile dist/final/cctt.js"

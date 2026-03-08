@@ -1,0 +1,23 @@
+{
+  "name": "@monochromatic-dev/claude-code-plugins-stop-reminders",
+  "description": "Claude Code Stop hook that detects uncertain language in responses and reminds Claude to investigate before guessing.",
+  "type": "module",
+  "bin": {
+    "ccsr": "./src/index.ts"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/claude-code-plugins/stop-reminders"
+  },
+  "sideEffects": true,
+  "dependencies": {
+    "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*",
+    "@monochromatic-dev/claude-code-plugins-hook-utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}
