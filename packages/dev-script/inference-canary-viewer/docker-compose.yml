@@ -47,7 +47,7 @@ services:
       - "127.0.0.1:${CANARY_PORT:-1011}:3000"
     environment:
       INFERENCE_VALIDATION_OPENROUTER_API_KEY: "${INFERENCE_VALIDATION_OPENROUTER_API_KEY:?}"
-      CANARY_INTERVAL_SECONDS: "${CANARY_INTERVAL_SECONDS:-21600}"
+      CANARY_INTERVAL_SECONDS: "${CANARY_INTERVAL_SECONDS:-10800}"
     healthcheck:
       test: ["CMD", "bun", "-e", "await fetch('http://0.0.0.0:3000')"]
       start_period: 120s
