@@ -67,6 +67,8 @@ cargo-binstall = "latest"
 
 # AI inference server for local development (packages/webapp-productivity/done)
 "github:ggml-org/llama.cpp" = "latest"
+opentofu = "latest"
+hcloud = "latest"
 
 [settings]
 # Enable automatic tool installation when entering directory
