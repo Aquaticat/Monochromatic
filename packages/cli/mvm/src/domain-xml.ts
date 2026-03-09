@@ -43,6 +43,7 @@ export function domainXml({ diskPath, name, seedIsoPath }: {
       }),
       // Bun requires AVX
       h({ tag: 'cpu', attrs: { mode: 'host-passthrough', }, }),
+      // ACPI enables graceful shutdown during template baking (template.ts)
       h({
         tag: 'features',
         children: [
@@ -61,6 +62,7 @@ export function domainXml({ diskPath, name, seedIsoPath }: {
               h({ tag: 'target', attrs: { dev: 'vda', bus: 'virtio', }, }),
             ],
           }),
+          // Cloud-init NoCloud seed ISO for hostname, user, and serial autologin config
           h({
             tag: 'disk',
             attrs: { type: 'file', device: 'cdrom', },
@@ -71,6 +73,7 @@ export function domainXml({ diskPath, name, seedIsoPath }: {
               h({ tag: 'readonly', }),
             ],
           }),
+          // SLIRP user-mode networking for outbound internet without bridge setup
           h({
             tag: 'interface',
             attrs: { type: 'user', },
@@ -78,6 +81,7 @@ export function domainXml({ diskPath, name, seedIsoPath }: {
               h({ tag: 'model', attrs: { type: 'virtio', }, }),
             ],
           }),
+          // Guest agent channel for command execution via `virsh qemu-agent-command`
           h({
             tag: 'channel',
             attrs: { type: 'unix', },
@@ -85,6 +89,7 @@ export function domainXml({ diskPath, name, seedIsoPath }: {
               h({ tag: 'target', attrs: { type: 'virtio', name: 'org.qemu.guest_agent.0', }, }),
             ],
           }),
+          // Serial console for interactive shell via `virsh console`
           h({
             tag: 'serial',
             attrs: { type: 'pty', },
