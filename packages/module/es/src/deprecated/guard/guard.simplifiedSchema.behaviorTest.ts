@@ -127,7 +127,7 @@ const simplifiedTestValues = {
 //endregion Simplified Test Values
 
 //region Simplified Behavioral Tests
-const testSimplifiedSchemaWithWeight = (function testSimplifiedSchemaWithWeight() {
+const testSimplifiedSchemaWithWeight = (function testSimplifiedSchemaWithWeight(): void {
   const value = simplifiedTestValues.schemaWithWeight;
 
   // Unknown guard
@@ -155,7 +155,7 @@ const testSimplifiedSchemaWithWeight = (function testSimplifiedSchemaWithWeight(
   }
 })();
 
-const testSimplifiedNamedSchema = (function testSimplifiedNamedSchema() {
+const testSimplifiedNamedSchema = (function testSimplifiedNamedSchema(): void {
   const value = simplifiedTestValues.namedSchema;
 
   // Unknown guard
@@ -183,7 +183,7 @@ const testSimplifiedNamedSchema = (function testSimplifiedNamedSchema() {
   }
 })();
 
-const testSimplifiedComplexSchema = (function testSimplifiedComplexSchema() {
+const testSimplifiedComplexSchema = (function testSimplifiedComplexSchema(): void {
   const value = simplifiedTestValues.complexSchema;
 
   // Unknown guard
@@ -219,7 +219,7 @@ const testSimplifiedComplexSchema = (function testSimplifiedComplexSchema() {
   }
 })();
 
-const testSimplifiedUnknownValue = (function testSimplifiedUnknownValue() {
+const testSimplifiedUnknownValue = (function testSimplifiedUnknownValue(): void {
   const value = simplifiedTestValues.unknownValue;
 
   // Unknown guard
@@ -246,7 +246,7 @@ const testSimplifiedUnknownValue = (function testSimplifiedUnknownValue() {
   isSchema_GenericExtends(value,);
 })();
 
-const testSimplifiedAnyValue = (function testSimplifiedAnyValue() {
+const testSimplifiedAnyValue = (function testSimplifiedAnyValue(): void {
   const value = simplifiedTestValues.anyValue;
 
   // Unknown guard
@@ -276,7 +276,7 @@ const testSimplifiedAnyValue = (function testSimplifiedAnyValue() {
   }
 })();
 
-const testSimplifiedUnionTypes = (function testSimplifiedUnionTypes() {
+const testSimplifiedUnionTypes = (function testSimplifiedUnionTypes(): void {
   // Union with string
   const {unionWithString} = simplifiedTestValues;
 
@@ -312,7 +312,7 @@ const testSimplifiedUnionTypes = (function testSimplifiedUnionTypes() {
   }
 })();
 
-const testSimplifiedIntersectionTypes = (function testSimplifiedIntersectionTypes() {
+const testSimplifiedIntersectionTypes = (function testSimplifiedIntersectionTypes(): void {
   const intersectionValue = simplifiedTestValues.intersectionType;
 
   // Unknown guard
@@ -340,7 +340,7 @@ const testSimplifiedIntersectionTypes = (function testSimplifiedIntersectionType
   }
 })();
 
-const testSimplifiedEdgeCases = (function testSimplifiedEdgeCases() {
+const testSimplifiedEdgeCases = (function testSimplifiedEdgeCases(): void {
   // Invalid schemas
   const {notASchema} = simplifiedTestValues;
 

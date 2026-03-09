@@ -3,7 +3,7 @@
 export class FlashCardElement extends HTMLElement {
   private flipped = false;
 
-  connectedCallback() {
+  connectedCallback(): void {
     this.render();
     this.addEventListener("click", () => {
       this.flipped = !this.flipped;
@@ -11,7 +11,7 @@ export class FlashCardElement extends HTMLElement {
     });
   }
 
-  render() {
+  render(): void {
     const front = this.getAttribute("front") ?? "";
     const back = this.getAttribute("back") ?? "";
 
@@ -23,7 +23,7 @@ export class FlashCardElement extends HTMLElement {
   }
 
   // Reset to front face (used when advancing to next card)
-  reset() {
+  reset(): void {
     this.flipped = false;
     this.render();
   }

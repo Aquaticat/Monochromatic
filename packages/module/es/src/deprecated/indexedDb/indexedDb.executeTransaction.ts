@@ -21,11 +21,11 @@ export async function indexedDbExecuteTransaction<T,>(
     const store = transaction.objectStore(storeName,);
     const request = operation(store,);
 
-    request.onerror = () => {
+    request.onerror = (): void => {
       reject(new Error('IndexedDB operation failed', { cause: request.error, },),);
     };
 
-    request.onsuccess = () => {
+    request.onsuccess = (): void => {
       resolve(request.result as T,);
     };
   },);

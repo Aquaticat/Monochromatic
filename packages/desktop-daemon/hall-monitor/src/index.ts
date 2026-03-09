@@ -36,7 +36,7 @@ process.on("SIGTERM", shutdown);
 
 // Async IIFE required because `bun build --compile` does not support top-level await.
 // eslint-disable-next-line @typescript-eslint/no-floating-promises -- top-level entry point
-(async () => {
+(async (): Promise<void> => {
   if (!(await acquireLock())) {
     if (args["kill-existing"]) {
       await killExisting();

@@ -70,8 +70,8 @@ export const sudokuSolver = createCodeGenProbe({
     {
       name: '--all mode',
       input: ALL_INPUT,
-      transformSource: (source) => `process.argv.push("--all");\n${source}`,
-      verify: (result) => ({ correctness: verifyAll(result.stdout), }),
+      transformSource: (source): string => `process.argv.push("--all");\n${source}`,
+      verify: (result): { correctness: number } => ({ correctness: verifyAll(result.stdout), }),
     },
   ],
 });

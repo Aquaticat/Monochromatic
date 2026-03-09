@@ -50,7 +50,7 @@ type CompletionResponse = {
  * @param buf - JPEG image bytes
  * @returns image_url content entry
  */
-function buildImageEntry(buf: Buffer) {
+function buildImageEntry(buf: Buffer): { type: "image_url"; image_url: { url: string } } {
   return {
     type: "image_url" as const,
     image_url: { url: `data:image/jpeg;base64,${buf.toString("base64")}` },

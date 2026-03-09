@@ -77,7 +77,7 @@ if (data.cards.length === 0) {
   doneMsg.className = "done-message hidden";
   app.append(doneMsg);
 
-  function updateUI() {
+  function updateUI(): void {
     scoreEl.textContent = `Card ${currentIndex + 1} of ${data.cards.length} | Correct: ${correctCount} | Wrong: ${wrongCount}`;
 
     if (currentIndex >= data.cards.length) {
@@ -95,7 +95,7 @@ if (data.cards.length === 0) {
     cardEl.reset();
   }
 
-  async function answer(correct: boolean) {
+  async function answer(correct: boolean): Promise<void> {
     if (currentIndex >= data.cards.length) return;
     const card = data.cards[currentIndex];
     await api(`/api/quiz/${data.deck.id}/answer`, {

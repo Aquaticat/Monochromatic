@@ -417,7 +417,7 @@ const realGenericTestValues = {
  * Reveals complete TypeScript behavior with Input/Output type preservation
  */
 
-const testRealGenericStringToNumber = (function testRealGenericStringToNumber() {
+const testRealGenericStringToNumber = (function testRealGenericStringToNumber(): void {
   const value = realGenericTestValues.stringToNumberSchema;
 
   // Unknown Pattern
@@ -478,7 +478,7 @@ const testRealGenericStringToNumber = (function testRealGenericStringToNumber() 
   }
 })();
 
-const testRealGenericWeightedString = (function testRealGenericWeightedString() {
+const testRealGenericWeightedString = (function testRealGenericWeightedString(): void {
   const value = realGenericTestValues.weightedStringSchema;
 
   // Unknown Pattern
@@ -551,7 +551,7 @@ const testRealGenericWeightedString = (function testRealGenericWeightedString() 
   // to demonstrate what happens inside the if block
 })();
 
-const testRealGenericNamedUser = (function testRealGenericNamedUser() {
+const testRealGenericNamedUser = (function testRealGenericNamedUser(): void {
   const value = realGenericTestValues.namedUserSchema;
 
   // Test all patterns against complex generic transformation schema
@@ -608,7 +608,7 @@ const testRealGenericNamedUser = (function testRealGenericNamedUser() {
   }
 })();
 
-const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants() {
+const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants(): void {
   const asyncSchema = realGenericTestValues.asyncUserSchema;
 
   // Test async schema guards
@@ -679,7 +679,7 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants() {
   }
 })();
 
-const testRealGenericEdgeCases = (function testRealGenericEdgeCases() {
+const testRealGenericEdgeCases = (function testRealGenericEdgeCases(): void {
   // Unknown value with schema properties
   const unknownValue = realGenericTestValues.unknownGenericValue;
 
@@ -768,7 +768,7 @@ const testRealGenericEdgeCases = (function testRealGenericEdgeCases() {
   }
 })();
 
-const testRealGenericPromisableBehavior = (function testRealGenericPromisableBehavior() {
+const testRealGenericPromisableBehavior = (function testRealGenericPromisableBehavior(): void {
   // Promise returning schema
   const promiseSchema = realGenericTestValues.promiseReturningSchema;
 
@@ -852,7 +852,7 @@ const testRealGenericPromisableBehavior = (function testRealGenericPromisableBeh
   }
 })();
 
-const testRealGenericComplexConstraints = (function testRealGenericComplexConstraints() {
+const testRealGenericComplexConstraints = (function testRealGenericComplexConstraints(): void {
   // Branded schema testing
   const brandedSchema = realGenericTestValues.brandedStringSchema;
 

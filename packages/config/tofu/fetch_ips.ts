@@ -13,7 +13,7 @@ const CACHE_FILE = join(import.meta.dir, `cache_${TARGET_ASN}.json`);
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1_000;
 const URL = `https://ipinfo.io/data/ipinfo_lite.json.gz?_src=frontend&token=${process.env.IPINFO_TOKEN}`;
 
-async function run() {
+async function run(): Promise<void> {
   const cacheFile = file(CACHE_FILE);
 
   // Check Cache

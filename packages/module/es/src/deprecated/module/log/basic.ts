@@ -74,7 +74,7 @@ export function getMethod(level: Level,): Method {
     (async function writeWithTemplates(
       { message, recordOrFactory, }: { message: string;
         recordOrFactory: Promisable<TemplateData>; },
-    ) {
+    ): Promise<void> {
       const templateData = await recordOrFactory;
       const transforms = Object.entries(templateData,).map(
         function createReplacer([key, value,],) {

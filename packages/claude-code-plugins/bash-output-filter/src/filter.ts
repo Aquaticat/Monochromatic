@@ -122,7 +122,7 @@ const CWD_PREFIX = (() => {
  * ALT_CWD_PREFIX = "/home/user/project/"      (symlink form via $HOME)
  * ```
  */
-const ALT_CWD_PREFIX = (() => {
+const ALT_CWD_PREFIX = ((): string => {
   if (CWD_PREFIX === '' || REAL_HOME_DIR === '' || HOME_DIR === '') {
     return ''
   }
