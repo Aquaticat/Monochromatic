@@ -345,7 +345,7 @@ class TaskDetail extends HTMLElement {
   #render(): void {
     const data = this.#data;
     if (data === null) return;
-    const task = data.task;
+    const {task} = data;
     const isCreate = this.#mode === "create";
 
     // Close button uses innerHTML for SVG because h() creates HTML-namespace
@@ -428,7 +428,7 @@ class TaskDetail extends HTMLElement {
       const target = event.target as HTMLElement;
       const button = target.closest("[data-action]") as HTMLElement | null;
       if (button === null) return;
-      const action = button.dataset["action"];
+      const {action} = button.dataset;
 
       this.dispatchEvent(new CustomEvent("action", {
         bubbles: true,

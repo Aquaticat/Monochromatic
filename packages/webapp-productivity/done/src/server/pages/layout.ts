@@ -28,7 +28,7 @@ type LayoutOptions = {
  * in addition to the shared `renderPage()` layout.
  */
 export function serializePageData(data: unknown): string {
-  return JSON.stringify(data).replaceAll("<", "\\u003c");
+  return JSON.stringify(data).replaceAll("<", String.raw`\u003c`);
 }
 
 /** Inline script that wires the top-nav hamburger menu to the side-drawer */
@@ -50,7 +50,7 @@ export function renderPage(options: LayoutOptions): Response {
       h({
         tag: "head",
         children: [
-          h({ tag: "meta", attrs: { charset: "utf-8" } }),
+          h({ tag: "meta", attrs: { charset: "utf8" } }),
           h({ tag: "meta", attrs: { name: "viewport", content: "width=device-width, initial-scale=1" } }),
           h({ tag: "title", text: options.title }),
         ],

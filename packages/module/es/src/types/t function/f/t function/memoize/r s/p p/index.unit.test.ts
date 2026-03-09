@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const $ = types.function.from.function.memoize.sync.positional.$;
+const {$} = types.function.from.function.memoize.sync.positional;
 const createSyncStore = types.object.store.from.store.sync.named.$;
 
 describe($, () => {

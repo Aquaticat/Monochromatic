@@ -69,7 +69,7 @@ injectCSS(`
 `);
 
 const pageData = readPageData<SearchPageData>();
-const appElement = document.getElementById("app");
+const appElement = document.querySelector("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }

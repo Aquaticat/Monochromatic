@@ -39,7 +39,7 @@ console.log(
 
 // Step 3: Serve. Bun's built-in router handles :param parsing and per-method dispatch.
 const server = Bun.serve({
-  port: Number(process.env.PORT) || 3000,
+  port: Number(process.env.PORT) || 3_000,
   routes: {
     "/": () => decksPage(),
     "/quiz/:deckId": (req) => quizPage(req.params.deckId),

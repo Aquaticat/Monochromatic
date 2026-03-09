@@ -15,7 +15,7 @@ import type { ConfigSnapshot, StreamTiming, StreamUsage, } from '../data/viewer-
 import type { ProbeDetail, } from '../data/viewer-types.ts';
 
 /** Milliseconds per second for display formatting */
-const MS_PER_SECOND = 1000;
+const MS_PER_SECOND = 1_000;
 
 /**
  * Formats milliseconds as a human-readable duration.

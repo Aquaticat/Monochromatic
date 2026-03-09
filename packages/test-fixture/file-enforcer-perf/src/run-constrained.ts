@@ -34,7 +34,7 @@ const IMAGE_NAME = 'file-enforcer-perf';
  * The user's cheapest VPS scored 1605 events/sec in sysbench cpu.
  * Even the PEAK score across all contending containers must stay below this.
  */
-const VPS_SYSBENCH_BASELINE = 1605;
+const VPS_SYSBENCH_BASELINE = 1_605;
 
 /**
  * Number of containers to run simultaneously on the same CPU core.
@@ -156,7 +156,7 @@ type ContainerBenchResult = {
     readonly memoryValid: boolean;
   };
   readonly sysbench: { readonly eventsPerSec: number };
-  readonly timings: ReadonlyArray<{ readonly label: string; readonly ms: number }>;
+  readonly timings: readonly { readonly label: string; readonly ms: number }[];
 };
 
 /**
@@ -169,7 +169,7 @@ function median(values: readonly number[]): number {
   if (values.length === 0) {
     throw new Error('Cannot compute median of empty array');
   }
-  const sorted = [...values].sort((a, b) => a - b);
+  const sorted = [...values].toSorted((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
   // Indices guaranteed in-bounds: length > 0 ensures mid >= 0,
   // and mid < length by construction of Math.floor(length / 2).

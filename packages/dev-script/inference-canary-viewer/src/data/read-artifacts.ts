@@ -8,6 +8,7 @@
  * Exceeds 100 lines: single cohesive reader pipeline; splitting would scatter
  * the grouping logic across files with no clear ownership boundary.
  */
+import type { Dirent, } from 'node:fs';
 import { readdir, readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
@@ -89,7 +90,7 @@ export async function readArtifacts(): Promise<ArtifactData> {
   /** Whole-model failure artifacts */
   const failures: FailureArtifactMeta[] = [];
 
-  let modelDirents: import('node:fs').Dirent[];
+  let modelDirents: Dirent[];
   try {
     modelDirents = await readdir(LINT_DIR, { withFileTypes: true, });
   } catch {
@@ -99,7 +100,7 @@ export async function readArtifacts(): Promise<ArtifactData> {
 
   for (const modelDirent of modelDirents.filter(function isDir(dirent) { return dirent.isDirectory(); })) {
     const modelPath = join(LINT_DIR, modelDirent.name);
-    let subdirents: import('node:fs').Dirent[];
+    let subdirents: Dirent[];
     try {
       subdirents = await readdir(modelPath, { withFileTypes: true, });
     } catch (error) {
@@ -176,7 +177,7 @@ function buildViewerData(
     for (const [probeName, artifact] of probes) {
       const enriched = isEnriched(artifact.meta) ? artifact.meta : undefined;
       probeScores[probeName] = enriched?.score ?? 0;
-      if (enriched?.config !== undefined) config = enriched.config;
+      if (enriched?.config !== undefined) ({ config } = enriched);
 
       const fix = fixes.get(probeName);
       const fixEnriched = fix !== undefined && isEnriched(fix.meta) ? fix.meta : undefined;

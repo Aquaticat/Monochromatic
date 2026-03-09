@@ -24,7 +24,7 @@ import { codeGenProbes, codeGenProbesAll, simpleProbes, simulationProbes, } from
 //region Elapsed-time log prefix -- prepends "+Xs" to every console.log/error line so interleaved output is easy to timeline
 
 /** Milliseconds per second for elapsed-time display */
-const MS_PER_SECOND = 1000;
+const MS_PER_SECOND = 1_000;
 
 /** Width of the elapsed-time column so values align up to 999.9s */
 const ELAPSED_PAD_WIDTH = 6;

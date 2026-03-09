@@ -148,7 +148,7 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
         : { reject: false, source: rawSource, };
 
       /** Final source to execute in containers */
-      const source = transformed.source;
+      const {source} = transformed;
 
       // Launch all container runs in parallel: correctness + lint + perf + additional
       /** Main correctness container promise */

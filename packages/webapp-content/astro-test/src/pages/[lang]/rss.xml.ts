@@ -13,11 +13,9 @@ import {
 
 type StaticPath = { params: { lang: string; }; };
 
-export const getStaticPaths: GetStaticPaths = async (): Promise<StaticPath[]> => {
-  return langs.map((lang: string,) => ({
+export const getStaticPaths: GetStaticPaths = async (): Promise<StaticPath[]> => langs.map((lang: string,) => ({
     params: { lang, },
   }));
-};
 
 export const GET: APIRoute = ({ site, params, },) => {
   const lang = params.lang as string;

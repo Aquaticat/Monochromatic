@@ -97,7 +97,7 @@ export async function build(options: BuildOptions): Promise<string> {
   const bundled = postcss([postcssInlineImport]).process(cssText, { from: inputPath, });
 
   /** PostCSS AST with all imports inlined, ready for mixin processing */
-  const root = bundled.root;
+  const {root} = bundled;
 
   // Phase 2: process @mixin/@apply
   collectMixins(root);

@@ -32,7 +32,7 @@ import { settingsPage } from "./server/pages/settings.ts";
 import { taskDetailsPage } from "./server/pages/task-details.ts";
 
 /** Default HTTP port when neither `--port=` nor `PORT` env var is provided. */
-const DEFAULT_PORT = 3000;
+const DEFAULT_PORT = 3_000;
 
 /**
  * Resolves the HTTP listen port from CLI arguments, environment, or default.

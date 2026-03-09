@@ -49,7 +49,7 @@ export function appendAdditionalRunDiagnostics(
     .map((run, index) => {
       /** Cached container result for this run and model */
       const container = containerCaches[index]?.get(label);
-      if (container === undefined) return undefined;
+      if (container === undefined) return;
       if (container.timedOut) return `=== ${run.name} ===\nProcess timed out.`;
       if (container.exitCode !== 0) {
         return `=== ${run.name} ===\nExited with code ${String(container.exitCode)}.\n${container.stderr.slice(0, MAX_ADDITIONAL_OUTPUT)}`;
@@ -59,7 +59,7 @@ export function appendAdditionalRunDiagnostics(
       if (verify !== undefined && verify.correctness < 1) {
         return `=== ${run.name} (incorrect output) ===\n${container.stdout.slice(0, MAX_ADDITIONAL_OUTPUT)}`;
       }
-      return undefined;
+      return;
     })
     .filter((diagSection): diagSection is string => diagSection !== undefined);
 

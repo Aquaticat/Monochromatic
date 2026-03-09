@@ -4,7 +4,7 @@ import { z, } from 'zod/v4-mini';
  * Default port number for the exa-search server when no environment variable is set.
  * @see {@link PORT} for the actual port used by the server
  */
-const DEFAULT_PORT = 4115;
+const DEFAULT_PORT = 4_115;
 
 /**
  * Port number on which the exa-search server will listen for incoming requests.

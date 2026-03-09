@@ -21,7 +21,7 @@ import type { CellPath, SVGPathCommand } from "./parse-svg.ts";
 /** SVG Y coordinate that corresponds to the font baseline (y = 0 in font coords). */
 const BASELINE_Y = 750;
 
-const UNITS_PER_EM = 1000;
+const UNITS_PER_EM = 1_000;
 const ASCENDER = 750;
 const DESCENDER = -250;
 
@@ -48,8 +48,8 @@ function fontY(svgY: number): number {
 }
 
 /** Resolve absolute X positions from SVG path commands (expanding H/V to full coords). */
-function resolveAbsolutePoints(commands: readonly SVGPathCommand[]): Array<[number, number]> {
-  const points: Array<[number, number]> = [];
+function resolveAbsolutePoints(commands: readonly SVGPathCommand[]): [number, number][] {
+  const points: [number, number][] = [];
   // Mutable cursor tracking the current pen position while replaying path commands
   // -- let needed because M/L/H/V each update different axes of the cursor
   let cx = 0;
@@ -127,8 +127,8 @@ function addStrokedPath(
   // Drop the closing duplicate vertex if present (the Z command closes implicitly)
   const vertices = (
     points.length > 1 &&
-    points[0][0] === points[points.length - 1][0] &&
-    points[0][1] === points[points.length - 1][1]
+    points[0][0] === points.at(-1)[0] &&
+    points[0][1] === points.at(-1)[1]
   )
     ? points.slice(0, -1)
     : points;
@@ -137,7 +137,7 @@ function addStrokedPath(
   const innerVerts = offsetPolygon(vertices, -halfWidth);
 
   // Trace function adds a polygon contour to the opentype path
-  const traceContour = (verts: ReadonlyArray<[number, number]>): void => {
+  const traceContour = (verts: readonly [number, number][]): void => {
     verts.forEach((vert, vertIndex) => {
       const fx = vert[0] - cellX + xShift;
       const fy = fontY(vert[1]);
@@ -150,7 +150,7 @@ function addStrokedPath(
   // Outer contour (forward order)
   traceContour(outerVerts);
   // Inner contour (reversed to create the hole via opposite winding)
-  traceContour([...innerVerts].reverse());
+  traceContour([...innerVerts].toReversed());
 }
 
 //endregion Path construction
@@ -162,7 +162,7 @@ const svgPath = resolve(scriptDir, "glyphs.svg");
 const distDir = resolve(scriptDir, "..", "dist");
 
 console.log("Reading glyph SVG:", svgPath);
-const svgContent = readFileSync(svgPath, "utf-8");
+const svgContent = readFileSync(svgPath, "utf8");
 const cells = parseSvg(svgContent);
 console.log(`Parsed ${cells.length} glyph cells`);
 
@@ -185,9 +185,9 @@ const spaceGlyph = new opentype.Glyph({
 const letterGlyphs = cells
   .map((cell, cellIndex) => {
     const unicode = CELL_UNICODE[cellIndex];
-    if (unicode === undefined) return undefined;
+    if (unicode === undefined) return;
 
-    const letterName = String.fromCharCode(unicode);
+    const letterName = String.fromCodePoint(unicode);
     const { minX, maxX } = computeLocalXBounds(cell.paths, cell.xOffset);
     const xShift = SIDE_BEARING - minX;
     const advanceWidth = maxX - minX + 2 * SIDE_BEARING;

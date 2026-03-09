@@ -78,9 +78,9 @@ const server = createMcpServer(
           const files = await getCurrentFiles();
           const header = buildHeader(files);
 
-          const uniquePaths = Array.from(new Set(
-            files.map(function getPath(file) { return file.path; }),
-          ));
+          const uniquePaths = [...new Set(files.map(function getPath(file) {
+	return file.path;
+}))];
 
           // Query all editor diagnostics and lint in parallel, then filter to current files.
           // Using getAllDiagnostics gives us per-file grouping across all instances.
@@ -120,7 +120,7 @@ const server = createMcpServer(
             allNotes.push(caveat);
           }
 
-          const allMerged = Array.from(mergedByPath.values()).flat();
+          const allMerged = [...mergedByPath.values()].flat();
 
           if (allMerged.length === 0) {
             return {
@@ -144,7 +144,7 @@ const server = createMcpServer(
             };
           }
 
-          const sections = Array.from(mergedByPath.entries()).map(
+          const sections = [...mergedByPath.entries()].map(
             function formatSection([path, diagnostics]) {
               const lines = diagnostics.map(function formatLine(diagnostic) {
                 return formatDiagnostic(diagnostic, "  ");
@@ -200,7 +200,7 @@ const server = createMcpServer(
           }
           //endregion Merge editor and lint diagnostics per file
 
-          const result: FileDiagnostics[] = Array.from(mergedByPath.entries()).map(
+          const result: FileDiagnostics[] = [...mergedByPath.entries()].map(
             function toFileDiagnostics([path, diagnostics]) {
               return { path, diagnostics };
             },

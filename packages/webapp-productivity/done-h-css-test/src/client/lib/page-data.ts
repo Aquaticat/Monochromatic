@@ -7,7 +7,7 @@
  * deserializes them here to build the UI without an additional fetch.
  */
 export function readPageData<TData>(): TData {
-  const element = document.getElementById("page-data");
+  const element = document.querySelector("#page-data");
   if (!(element instanceof HTMLScriptElement)) {
     throw new Error("Missing page data script element");
   }

@@ -13,7 +13,7 @@ import type {
  * @returns true when node is clearly a RegExp
  */
 function isRegExpNode(node: Record<string, unknown>): boolean {
-  const type = node['type'];
+  const {type} = node;
   /* oxc serializes RegExpLiteral as ESTree `Literal` with a `regex` property. */
   if (type === 'Literal' && node['regex'] !== undefined && node['regex'] !== null) {
     return true;

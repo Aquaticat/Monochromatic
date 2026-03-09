@@ -138,7 +138,7 @@ export async function analyze(sets: CaptureSet[]): Promise<string> {
   }
 
   const data = (await res.json()) as CompletionResponse;
-  const elapsed = ((performance.now() - start) / 1000).toFixed(1);
+  const elapsed = ((performance.now() - start) / 1_000).toFixed(1);
   const { prompt_tokens, completion_tokens } = data.usage;
 
   log.debug(

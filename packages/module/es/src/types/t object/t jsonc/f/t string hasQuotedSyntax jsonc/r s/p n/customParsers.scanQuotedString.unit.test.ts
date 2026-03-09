@@ -21,9 +21,9 @@ describe($, () => {
   });
 
   test('escaped quote inside string (odd backslash run escapes)', () => {
-    const input = '"a \\" b"TAIL' as FragmentStringJsonc; // a \" b
+    const input = String.raw`"a \" b"TAIL` as FragmentStringJsonc; // a \" b
     const out = $({ value: input, },);
-    expect(out.consumed,).toBe('"a \\" b"',);
+    expect(out.consumed,).toBe(String.raw`"a \" b"`,);
     expect(out.remaining,).toBe('TAIL',);
   });
 
@@ -35,16 +35,16 @@ describe($, () => {
   });
 
   test('odd backslash run before quote escapes; later quote terminates', () => {
-    const input = (`"a ${'\\'.repeat(3,)}\" more"TAIL`) as FragmentStringJsonc; // a \\\" more"
+    const input = (`"a ${'\\'.repeat(3,)}" more"TAIL`) as FragmentStringJsonc; // a \\\" more"
     const out = $({ value: input, },);
-    expect(out.consumed,).toBe(`"a ${'\\'.repeat(3,)}\" more"`,);
+    expect(out.consumed,).toBe(`"a ${'\\'.repeat(3,)}" more"`,);
     expect(out.remaining,).toBe('TAIL',);
   });
 
   test('unicode and common escapes inside string', () => {
-    const input = '"\\u0041\\n\\t"END' as FragmentStringJsonc; // "\u0041\n\t"
+    const input = String.raw`"\u0041\n\t"END` as FragmentStringJsonc; // "\u0041\n\t"
     const out = $({ value: input, },);
-    expect(out.consumed,).toBe('"\\u0041\\n\\t"',);
+    expect(out.consumed,).toBe(String.raw`"\u0041\n\t"`,);
     expect(out.remaining,).toBe('END',);
   });
 

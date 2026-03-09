@@ -13,7 +13,7 @@ describe('createIso', () => {
       volumeId: 'TESTLABEL',
     });
 
-    const SECTOR_SIZE = 2048;
+    const SECTOR_SIZE = 2_048;
     const pvdOffset = 16 * SECTOR_SIZE;
     const signature = new TextDecoder().decode(iso.slice(pvdOffset + 1, pvdOffset + 6));
     expect(signature).toBe('CD001');
@@ -27,7 +27,7 @@ describe('createIso', () => {
       volumeId: 'cidata',
     });
 
-    const SECTOR_SIZE = 2048;
+    const SECTOR_SIZE = 2_048;
     const pvdOffset = 16 * SECTOR_SIZE;
     const volId = new TextDecoder().decode(iso.slice(pvdOffset + 40, pvdOffset + 46));
     expect(volId).toBe('cidata');
@@ -39,7 +39,7 @@ describe('createIso', () => {
       volumeId: 'TEST',
     });
 
-    const SECTOR_SIZE = 2048;
+    const SECTOR_SIZE = 2_048;
     const vdstOffset = 17 * SECTOR_SIZE;
     expect(iso[vdstOffset]).toBe(255);
     const sig = new TextDecoder().decode(iso.slice(vdstOffset + 1, vdstOffset + 6));
@@ -53,7 +53,7 @@ describe('createIso', () => {
       volumeId: 'cidata',
     });
 
-    const SECTOR_SIZE = 2048;
+    const SECTOR_SIZE = 2_048;
     const fileOffset = 21 * SECTOR_SIZE;
     const extracted = new TextDecoder().decode(iso.slice(fileOffset, fileOffset + content.length));
     expect(extracted).toBe(content);
@@ -68,7 +68,7 @@ describe('createIso', () => {
       volumeId: 'cidata',
     });
 
-    const SECTOR_SIZE = 2048;
+    const SECTOR_SIZE = 2_048;
     /** Two files at sectors 21 and 22, so total is 23 sectors. */
     expect(iso.length).toBe(23 * SECTOR_SIZE);
   });

@@ -13,7 +13,7 @@ import { l, tagged } from './log.ts';
  * const output = await run({ command: 'virsh', args: ['list', '--all'] });
  * ```
  */
-export async function run({ args, command }: { args: ReadonlyArray<string>; command: string }): Promise<string> {
+export async function run({ args, command }: { args: readonly string[]; command: string }): Promise<string> {
   const rl = tagged({ tag: run.name, l, });
   rl.debug(`${command} ${args.join(' ')}`);
 

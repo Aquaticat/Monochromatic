@@ -7,7 +7,7 @@ import styles from "../../dist/client/styles.css" with { type: "text" };
 
 injectCSS(styles);
 
-interface Deck {
+type Deck = {
   id: string;
   name: string;
   card_count: number;
@@ -15,7 +15,7 @@ interface Deck {
 }
 
 const data: { decks: Deck[] } = JSON.parse(
-  document.getElementById("page-data")!.textContent!
+  document.querySelector("#page-data")!.textContent!
 );
 
 const app = document.createElement("main");
@@ -23,13 +23,13 @@ document.body.prepend(app);
 
 const h1 = document.createElement("h1");
 h1.textContent = "Flashcard Quiz";
-app.appendChild(h1);
+app.append(h1);
 
 if (data.decks.length === 0) {
   const empty = document.createElement("p");
   empty.className = "empty";
   empty.textContent = "No decks yet. Create one below.";
-  app.appendChild(empty);
+  app.append(empty);
 } else {
   const ul = document.createElement("ul");
   ul.className = "deck-list";
@@ -39,12 +39,12 @@ if (data.decks.length === 0) {
     const link = document.createElement("a");
     link.href = `/quiz/${deck.id}`;
     link.textContent = deck.name;
-    li.appendChild(link);
+    li.append(link);
 
     const meta = document.createElement("span");
     meta.className = "card-count";
     meta.textContent = `${deck.card_count} card${deck.card_count !== 1 ? "s" : ""}`;
-    li.appendChild(meta);
+    li.append(meta);
 
     const del = document.createElement("button");
     del.className = "danger";
@@ -53,11 +53,11 @@ if (data.decks.length === 0) {
       await api(`/api/decks/${deck.id}`, { method: "DELETE" });
       window.location.reload();
     });
-    li.appendChild(del);
+    li.append(del);
 
-    ul.appendChild(li);
+    ul.append(li);
   }
-  app.appendChild(ul);
+  app.append(ul);
 }
 
 // New deck form
@@ -67,12 +67,12 @@ input.type = "text";
 input.name = "name";
 input.placeholder = "New deck name...";
 input.required = true;
-form.appendChild(input);
+form.append(input);
 
 const submit = document.createElement("button");
 submit.type = "submit";
 submit.textContent = "Create Deck";
-form.appendChild(submit);
+form.append(submit);
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -85,4 +85,4 @@ form.addEventListener("submit", async (e) => {
   window.location.reload();
 });
 
-app.appendChild(form);
+app.append(form);

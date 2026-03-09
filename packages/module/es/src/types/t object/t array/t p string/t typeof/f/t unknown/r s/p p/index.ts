@@ -27,7 +27,7 @@ export function $(value: unknown,): TypeOf {
 
   if (typeOf === 'bigint') {
     const myValue = value as bigint;
-    const sign = myValue === 0n ? 0 : myValue > 0n ? 'positive' : 'negative';
+    const sign = myValue === 0n ? 0 : (myValue > 0n ? 'positive' : 'negative');
     return [typeOf, { sign, },];
   }
 
@@ -41,7 +41,7 @@ export function $(value: unknown,): TypeOf {
     if (Number.isNaN(myValue,))
       return [typeOf, { NaN: true, },];
 
-    const sign = myValue === 0 ? 0 : myValue > 0 ? 'positive' : 'negative';
+    const sign = myValue === 0 ? 0 : (myValue > 0 ? 'positive' : 'negative');
     const float = !Number.isInteger(myValue,);
     return [typeOf, { NaN: [false, { sign, float, },], },];
   }
@@ -59,9 +59,9 @@ export function $(value: unknown,): TypeOf {
           true,
           /\p{Upper}/v.test(myValue,)
             ? 'uppercaseLetter'
-            : /\p{Lower}/v.test(myValue,)
+            : (/\p{Lower}/v.test(myValue,)
             ? 'lowercaseLetter'
-            : 'nonLetter',
+            : 'nonLetter'),
         ], },],
     },];
   }
@@ -109,12 +109,12 @@ export function $(value: unknown,): TypeOf {
             myValue[Symbol.asyncIterator]
           ) === 'function'
           ? [true, { async: true, },]
-          : typeof (
+          : (typeof (
               // @ts-expect-error -- Might be Iterable
               myValue[Symbol.iterator]
             ) === 'function'
           ? [true, { async: false, },]
-          : false,
+          : false),
       },],
     },];
   }

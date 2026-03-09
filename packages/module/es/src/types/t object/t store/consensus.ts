@@ -45,8 +45,7 @@ export function pickMajority<TBackend = unknown,>(
   totalCount: number,
 ): { hasMajority: boolean; value?: string | undefined; } {
   /** Leader candidate and its bucket after sorting by descending bucket size. */
-  const sorted = Array
-    .from(buckets.entries(),)
+  const sorted = [...buckets.entries()]
     .toSorted(function byDescCount(
       [, bucketA,],
       [, bucketB,],
@@ -147,8 +146,7 @@ export function resolveConsensus<TBackend = unknown,>(
     return priority;
   },);
 
-  const sortedTiers = Array
-    .from(grouped.entries(),)
+  const sortedTiers = [...grouped.entries()]
     .toSorted(function byAscPriority([priorityA,], [priorityB,],) {
       return priorityA - priorityB;
     },)

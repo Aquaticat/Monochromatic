@@ -65,7 +65,7 @@ function parseSvg(raw: string): { viewBox: string; inner: string } {
  */
 function extractDefs(inner: string): { defs: string; content: string } {
   let defs = '';
-  const content = inner.replace(/<defs>([\s\S]*?)<\/defs>/g, (_match, defsContent: string) => {
+  const content = inner.replaceAll(/<defs>([\s\S]*?)<\/defs>/g, (_match, defsContent: string) => {
     defs += defsContent;
     return '';
   });

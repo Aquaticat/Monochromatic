@@ -11,7 +11,7 @@ if (!TARGET_ASN) {
 }
 
 const CACHE_FILE = join(import.meta.dir, `cache_${TARGET_ASN}.json`);
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1_000;
 const URL = `https://ipinfo.io/data/ipinfo_lite.json.gz?_src=frontend&token=${process.env.IPINFO_TOKEN}`;
 
 async function run() {
@@ -33,7 +33,7 @@ async function run() {
     const reader = stream.getReader();
     const decoder = new TextDecoder();
 
-    let ips: string[] = [];
+    const ips: string[] = [];
     let leftover = "";
 
     while (true) {
@@ -57,7 +57,7 @@ async function run() {
     await write(CACHE_FILE, result);
     process.stdout.write(JSON.stringify({ ips: result }));
 
-  } catch (e) {
+  } catch {
     // Fallback to expired cache if download fails
     if (await cacheFile.exists()) {
       process.stdout.write(JSON.stringify({ ips: await cacheFile.text() }));

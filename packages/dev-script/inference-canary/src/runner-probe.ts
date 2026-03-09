@@ -22,7 +22,7 @@ const PROBE_TIMEOUT_MINUTES = 5;
 const SECONDS_PER_MINUTE = 60;
 
 /** Milliseconds per second for timeout computation */
-const MS_PER_SECOND = 1000;
+const MS_PER_SECOND = 1_000;
 
 /** 5 minutes per probe (all consistency runs + fix pass) -- slower inference is unusable */
 const PROBE_TIMEOUT_MS = PROBE_TIMEOUT_MINUTES * SECONDS_PER_MINUTE * MS_PER_SECOND;

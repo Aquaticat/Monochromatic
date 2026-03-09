@@ -54,7 +54,7 @@ export const css: string = clientCss;
 export const js: string = await buildClientJs();
 
 /** Escaped JS source safe for embedding inside a `<script>` tag. */
-const safeJs: string = js.replaceAll(/<\/script>/gvi, '<\\/script>',);
+const safeJs: string = js.replaceAll('<\/script>', String.raw`<\/script>`,);
 
 //region HTML structure -- Declarative page composition via h-html
 
@@ -267,7 +267,7 @@ export const indexHtml: string = [
       h({
         tag: 'head',
         children: [
-          h({ tag: 'meta', attrs: { charset: 'UTF-8', }, },),
+          h({ tag: 'meta', attrs: { charset: 'utf8', }, },),
           h({ tag: 'meta', attrs: { name: 'viewport', content: 'width=device-width, initial-scale=1.0', }, },),
           h({ tag: 'title', text: 'Exa Search', },),
           h({ tag: 'style', html: css, },),

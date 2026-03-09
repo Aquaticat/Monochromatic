@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const $ = types.function.generator.from.iterable.withIndex.sync.named.$;
+const {$} = types.function.generator.from.iterable.withIndex.sync.named;
 
 describe($, () => {
   test('yields elements with their indices for arrays', () => {

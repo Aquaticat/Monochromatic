@@ -2,7 +2,7 @@ import {
   join,
   resolve,
 } from 'node:path';
-import { type UserConfig, } from 'vite';
+import type { UserConfig, } from 'vite';
 import { json5Plugin, } from 'vite-plugin-json5';
 import {
   FIREFOX_ESR_VERSION,

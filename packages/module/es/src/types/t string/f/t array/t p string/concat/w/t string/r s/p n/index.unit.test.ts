@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const $ = types.string.from.array.string.concat.with.string.sync.named.$;
+const {$} = types.string.from.array.string.concat.with.string.sync.named;
 
 describe('concat with string - synchronous named', () => {
   test('joins multiple strings with a separator', () => {
@@ -139,8 +139,8 @@ describe('concat with string - synchronous named', () => {
   });
 
   test('handles very long strings', () => {
-    const longString1 = 'a'.repeat(1000,);
-    const longString2 = 'b'.repeat(1000,);
+    const longString1 = 'a'.repeat(1_000,);
+    const longString2 = 'b'.repeat(1_000,);
     const result = $({ strings: [longString1, longString2,], concatWith: '|', },);
     expect(result,).toBe(`${longString1}|${longString2}`,);
   });
@@ -159,7 +159,7 @@ describe('concat with string - synchronous named', () => {
 
   test('handles backslash separator', () => {
     expect($({ strings: ['C:', 'Users', 'Documents',], concatWith: '\\', },),).toBe(
-      'C:\\Users\\Documents',
+      String.raw`C:\Users\Documents`,
     );
   });
 

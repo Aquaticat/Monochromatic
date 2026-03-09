@@ -19,7 +19,7 @@ type SettingsPageData = {
 injectCSS(globalStyles);
 
 const _pageData = readPageData<SettingsPageData>();
-const appElement = document.getElementById("app");
+const appElement = document.querySelector("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }

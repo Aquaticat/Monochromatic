@@ -11,7 +11,7 @@
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 /** Fixed Y axis tick values for score plots (0 to 1) */
-export const Y_TICKS: readonly number[] = [0, 0.25, 0.5, 0.75, 1.0];
+export const Y_TICKS: readonly number[] = [0, 0.25, 0.5, 0.75, 1];
 
 /**
  * Generates HTML for Y axis tick labels positioned absolutely within a chart container.

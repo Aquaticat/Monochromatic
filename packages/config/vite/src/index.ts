@@ -1,5 +1,5 @@
-import {
-  type UserConfigFnObject,
+import type {
+  UserConfigFnObject,
 } from 'vite';
 
 // Import from internal modules

@@ -60,8 +60,8 @@ const EXPENSIVE_ITERATIONS = 10;
 
 /** Maximum ms for the entire iteration set -- generous to avoid CI flakes */
 const MAX_FAST_MS = 500;
-const MAX_IO_MS = 2000;
-const MAX_EXPENSIVE_MS = 5000;
+const MAX_IO_MS = 2_000;
+const MAX_EXPENSIVE_MS = 5_000;
 
 /**
  * Times a synchronous function.
@@ -219,7 +219,7 @@ describe('perf: micro-benchmarks', () => {
 
   test('mirrorGlobPath: 1000 path transformations', () => {
     expect.assertions(1);
-    const MIRROR_ITERATIONS = 1000;
+    const MIRROR_ITERATIONS = 1_000;
     let resultLength = 0;
 
     const elapsed = measure(() => {
@@ -241,8 +241,8 @@ describe('perf: micro-benchmarks', () => {
 
   test('dedup: 2000-line content with 50% duplicates', () => {
     expect.assertions(1);
-    const LINE_COUNT = 2000;
-    const DEDUP_MODULO = 1000;
+    const LINE_COUNT = 2_000;
+    const DEDUP_MODULO = 1_000;
     const content = Array.from(
       { length: LINE_COUNT },
       (_, lineIndex) => `line ${String(lineIndex % DEDUP_MODULO)}`,

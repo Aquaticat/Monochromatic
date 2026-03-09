@@ -175,7 +175,7 @@ const MINUTES_PER_HOUR = 60;
 const SECONDS_PER_MINUTE = 60;
 
 /** Milliseconds per second */
-const MS_PER_SECOND = 1000;
+const MS_PER_SECOND = 1_000;
 
 /** 24 hours in milliseconds */
 const TWENTY_FOUR_HOURS_MS = HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MS_PER_SECOND;
@@ -314,7 +314,7 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
         const metaRaw = await readFile(metaPath, 'utf8');
         const meta = JSON.parse(metaRaw) as Partial<ArtifactMeta>;
         const label = meta.label ?? modelDir;
-        const probe = meta.probe;
+        const {probe} = meta;
         if (probe === undefined) continue;
         const existing = probePairs.get(label) ?? new Set<string>();
         existing.add(probe);

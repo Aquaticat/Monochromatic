@@ -237,20 +237,20 @@ const TOOL_TITLES: Record<string, ToolTitleEntry> = {
   WebSearch: { extract: field('query'), format: quotedFormat({ pre: 'Searching', post: 'Searched' }), fallback: { pre: 'Web search', post: 'Web search done' } },
   AskUserQuestion: {
     extract(input) {
-      const questions = input['questions'];
+      const {questions} = input;
       if (!Array.isArray(questions)) {
-        return undefined;
+        return;
       }
       /* eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- untyped tool_input; structure verified by Array.isArray guard */
-      const first = (questions as Array<Record<string, unknown>>)[0];
+      const first = (questions as Record<string, unknown>[])[0];
       if (first === undefined) {
-        return undefined;
+        return;
       }
-      const question = first['question'];
+      const {question} = first;
       if (typeof question === 'string') {
         return question;
       }
-      return undefined;
+      return;
     },
     format(v, tense) { return `${tense === 'pre' ? 'Asking' : 'Asked'}: ${truncate(v, MAX_PATTERN_LENGTH)}`; },
     fallback: { pre: 'Asking question', post: 'Asked question' },
@@ -285,12 +285,12 @@ const TOOL_TITLES: Record<string, ToolTitleEntry> = {
     fallback: { pre: 'Discovering tools', post: 'Discovered tools' },
   },
   EnterPlanMode: {
-    extract() { return undefined; },
+    extract() { return; },
     format() { return ''; },
     fallback: { pre: 'Entering plan mode', post: 'In plan mode' },
   },
   ExitPlanMode: {
-    extract() { return undefined; },
+    extract() { return; },
     format() { return ''; },
     fallback: { pre: 'Exiting plan mode', post: 'Exited plan mode' },
   },
@@ -310,7 +310,7 @@ const TOOL_TITLES: Record<string, ToolTitleEntry> = {
     fallback: { pre: 'Getting task', post: 'Got task' },
   },
   TaskList: {
-    extract() { return undefined; },
+    extract() { return; },
     format() { return ''; },
     fallback: { pre: 'Listing tasks', post: 'Listed tasks' },
   },
@@ -340,7 +340,7 @@ const TOOL_TITLES: Record<string, ToolTitleEntry> = {
     fallback: { pre: 'Deleting cron', post: 'Deleted cron' },
   },
   CronList: {
-    extract() { return undefined; },
+    extract() { return; },
     format() { return ''; },
     fallback: { pre: 'Listing cron jobs', post: 'Listed cron jobs' },
   },

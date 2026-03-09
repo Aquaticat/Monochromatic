@@ -253,7 +253,7 @@ export async function runOxlint({ files }: { files: readonly string[] }): Promis
   const notes: string[] = [];
 
   //region Run per-package-root invocations with --type-aware
-  const packageRuns = Array.from(groupsByPackageRoot.entries()).map(
+  const packageRuns = [...groupsByPackageRoot.entries()].map(
     async function runPackageOxlint([packageRoot, packageFiles]) {
       return spawnOxlint({
         configPath,

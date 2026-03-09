@@ -9,6 +9,9 @@
  * and {@link sep}.
  */
 
+import type * as NodePath from 'node:path';
+import type * as NodePathPosix from 'node:path/posix';
+
 //region Node delegation -- use real node:path/posix when the runtime has it
 
 /**
@@ -23,8 +26,8 @@ const hasNodePath = typeof process !== 'undefined' && process.versions?.node !==
  * so browser bundlers cannot statically resolve the import.
  * Top-level await is valid in ESM and supported by Bun and Node 14.8+.
  */
-const nodePath: typeof import('node:path/posix') | undefined = hasNodePath
-  ? (await import('node' + ':path') as typeof import('node:path')).posix
+const nodePath: NodePathPosix | undefined = hasNodePath
+  ? (await import('node' + ':path') as NodePath).posix
   : undefined;
 
 //endregion Node delegation
@@ -61,7 +64,7 @@ export function isAbsolute(filePath: string): boolean {
   if (nodePath !== undefined) {
     return nodePath.isAbsolute(filePath);
   }
-  return filePath.length > 0 && filePath.charCodeAt(0) === 47;
+  return filePath.length > 0 && filePath.codePointAt(0) === 47;
 }
 
 /**
@@ -118,9 +121,9 @@ function normalize(filePath: string): string {
   }
 
   /** Whether the input is rooted */
-  const isRoot = filePath.charCodeAt(0) === 47;
+  const isRoot = filePath.codePointAt(0) === 47;
   /** Whether the input ends with a trailing slash */
-  const trailingSlash = filePath.charCodeAt(filePath.length - 1) === 47;
+  const trailingSlash = filePath.codePointAt(filePath.length - 1) === 47;
 
   /** Path segments split on `/` */
   const parts = filePath.split('/');
@@ -133,7 +136,7 @@ function normalize(filePath: string): string {
     }
     if (part === '..') {
       // Don't pop past root
-      if (resolved.length > 0 && resolved[resolved.length - 1] !== '..') {
+      if (resolved.length > 0 && resolved.at(-1) !== '..') {
         resolved.pop();
       } else if (!isRoot) {
         resolved.push('..');
@@ -165,13 +168,13 @@ function dirnameFallback(filePath: string): string {
   }
 
   /** Whether the input path is rooted */
-  const isRoot = filePath.charCodeAt(0) === 47;
+  const isRoot = filePath.codePointAt(0) === 47;
   /** Index of the last slash, ignoring a trailing slash */
   let lastSlash = -1;
 
   // Walk backwards to find the last separator, skipping a trailing slash
   for (let charIndex = filePath.length - 1; charIndex >= 1; charIndex--) {
-    if (filePath.charCodeAt(charIndex) === 47) {
+    if (filePath.codePointAt(charIndex) === 47) {
       if (charIndex === filePath.length - 1) {
         continue;
       }
@@ -217,7 +220,7 @@ function resolveFallback(...segments: string[]): string {
       continue;
     }
     resolved = resolved === '' ? segment : segment + '/' + resolved;
-    resolvedAbsolute = segment.charCodeAt(0) === 47;
+    resolvedAbsolute = segment.codePointAt(0) === 47;
   }
 
   // If still not absolute, prepend cwd (unavailable in browser, default to '/')
@@ -232,7 +235,7 @@ function resolveFallback(...segments: string[]): string {
   /** Normalized absolute path */
   const normalized = normalize(resolved);
   // resolve() never returns trailing slashes except for root '/'
-  if (normalized.length > 1 && normalized.charCodeAt(normalized.length - 1) === 47) {
+  if (normalized.length > 1 && normalized.codePointAt(normalized.length - 1) === 47) {
     return normalized.slice(0, -1);
   }
   return normalized;

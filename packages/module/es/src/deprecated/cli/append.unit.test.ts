@@ -48,7 +48,7 @@ beforeEach(async () => {
 
   const packageDir = dirname(packageJsonPath,);
   const timestamp = Date.now();
-  const randomId = Math.random().toString(36,).substring(2, 8,);
+  const randomId = Math.random().toString(36,).slice(2, 8,);
   testDir = join(packageDir, 'dist', 'temp', 'test',
     `cli-append-${timestamp}-${randomId}`,);
 
@@ -80,7 +80,7 @@ describe('cli.append', () => {
 
     expect(stderr,).toBe('',);
 
-    const content = await readFile(testFile, 'utf-8',);
+    const content = await readFile(testFile, 'utf8',);
     expect(content,).toBe('Initial content\nnew line\n',);
   });
 
@@ -91,7 +91,7 @@ describe('cli.append', () => {
 
     expect(stderr,).toBe('',);
 
-    const content = await readFile(testFile, 'utf-8',);
+    const content = await readFile(testFile, 'utf8',);
     expect(content,).toBe('Initial content\nline 1\nline 2\nline 3\n',);
   });
 
@@ -102,7 +102,7 @@ describe('cli.append', () => {
 
     expect(stderr,).toBe('',);
 
-    const content = await readFile(testFile, 'utf-8',);
+    const content = await readFile(testFile, 'utf8',);
     expect(content,).toBe('Initial content\nline 1\\nline 2\n',);
   });
 
@@ -113,7 +113,7 @@ describe('cli.append', () => {
 
     expect(stderr,).toBe('',);
 
-    const content = await readFile(testFile, 'utf-8',);
+    const content = await readFile(testFile, 'utf8',);
     expect(content,).toBe('Initial content\nshort flag test\n',);
   });
 
@@ -145,14 +145,14 @@ describe('cli.append', () => {
 
     await execAsync(`bun ${cliPath} "Line 3" --to ${testFile}`,);
 
-    const content = await readFile(testFile, 'utf-8',);
+    const content = await readFile(testFile, 'utf8',);
     expect(content,).toBe('Line 1\nLine 2\nLine 3\n',);
   });
 
   test('handles empty string as valid input', async () => {
     await execAsync(`bun ${cliPath} "" --to ${testFile}`,);
 
-    const content = await readFile(testFile, 'utf-8',);
+    const content = await readFile(testFile, 'utf8',);
     expect(content,).toBe('Initial content\n\n',);
   });
 
@@ -160,7 +160,7 @@ describe('cli.append', () => {
     const specialText = '"Hello $USER!" && echo \'test\' | cat';
     await execAsync(`bun ${cliPath} "${specialText}" --to ${testFile}`,);
 
-    const content = await readFile(testFile, 'utf-8',);
+    const content = await readFile(testFile, 'utf8',);
     expect(content,).toBe(`Initial content\n${specialText}\n`,);
   });
 
@@ -169,7 +169,7 @@ describe('cli.append', () => {
     await execAsync(`bun ${cliPath} "Second append" --to ${testFile}`,);
     await execAsync(`bun ${cliPath} "Third append" --to ${testFile}`,);
 
-    const content = await readFile(testFile, 'utf-8',);
+    const content = await readFile(testFile, 'utf8',);
     expect(content,).toBe(
       'Initial content\nFirst append\nSecond append\nThird append\n',
     );

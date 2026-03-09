@@ -127,7 +127,7 @@ const simplifiedTestValues = {
 //endregion Simplified Test Values
 
 //region Simplified Behavioral Tests
-const testSimplifiedSchemaWithWeight = (function() {
+const testSimplifiedSchemaWithWeight = (function testSimplifiedSchemaWithWeight() {
   const value = simplifiedTestValues.schemaWithWeight;
 
   // Unknown guard
@@ -155,7 +155,7 @@ const testSimplifiedSchemaWithWeight = (function() {
   }
 })();
 
-const testSimplifiedNamedSchema = (function() {
+const testSimplifiedNamedSchema = (function testSimplifiedNamedSchema() {
   const value = simplifiedTestValues.namedSchema;
 
   // Unknown guard
@@ -183,7 +183,7 @@ const testSimplifiedNamedSchema = (function() {
   }
 })();
 
-const testSimplifiedComplexSchema = (function() {
+const testSimplifiedComplexSchema = (function testSimplifiedComplexSchema() {
   const value = simplifiedTestValues.complexSchema;
 
   // Unknown guard
@@ -219,7 +219,7 @@ const testSimplifiedComplexSchema = (function() {
   }
 })();
 
-const testSimplifiedUnknownValue = (function() {
+const testSimplifiedUnknownValue = (function testSimplifiedUnknownValue() {
   const value = simplifiedTestValues.unknownValue;
 
   // Unknown guard
@@ -246,7 +246,7 @@ const testSimplifiedUnknownValue = (function() {
   isSchema_GenericExtends(value,);
 })();
 
-const testSimplifiedAnyValue = (function() {
+const testSimplifiedAnyValue = (function testSimplifiedAnyValue() {
   const value = simplifiedTestValues.anyValue;
 
   // Unknown guard
@@ -276,9 +276,9 @@ const testSimplifiedAnyValue = (function() {
   }
 })();
 
-const testSimplifiedUnionTypes = (function() {
+const testSimplifiedUnionTypes = (function testSimplifiedUnionTypes() {
   // Union with string
-  const unionWithString = simplifiedTestValues.unionWithString;
+  const {unionWithString} = simplifiedTestValues;
 
   // Unknown guard - direct call
   if (isSchema_Unknown(unionWithString,))
@@ -297,7 +297,7 @@ const testSimplifiedUnionTypes = (function() {
   isSchema_GenericExtends(unionWithString,);
 
   // Union with null
-  const unionWithNull = simplifiedTestValues.unionWithNull;
+  const {unionWithNull} = simplifiedTestValues;
 
   if (isSchema_Unknown(unionWithNull,)) {
     unionWithNull.parse('test',);
@@ -312,7 +312,7 @@ const testSimplifiedUnionTypes = (function() {
   }
 })();
 
-const testSimplifiedIntersectionTypes = (function() {
+const testSimplifiedIntersectionTypes = (function testSimplifiedIntersectionTypes() {
   const intersectionValue = simplifiedTestValues.intersectionType;
 
   // Unknown guard
@@ -340,9 +340,9 @@ const testSimplifiedIntersectionTypes = (function() {
   }
 })();
 
-const testSimplifiedEdgeCases = (function() {
+const testSimplifiedEdgeCases = (function testSimplifiedEdgeCases() {
   // Invalid schemas
-  const notASchema = simplifiedTestValues.notASchema;
+  const {notASchema} = simplifiedTestValues;
 
   if (isSchema_Unknown(notASchema,))
     notASchema.parse('test',); // Type narrowed to Schema, but runtime fails

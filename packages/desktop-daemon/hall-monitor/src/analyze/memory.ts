@@ -1,5 +1,5 @@
 /** How long capture sets are retained in the buffer before pruning. */
-const RETENTION_MS = 10 * 60 * 1000;
+const RETENTION_MS = 10 * 60 * 1_000;
 
 /** Maximum number of capture sets kept in the rolling buffer. */
 const MAX_ENTRIES = 3;

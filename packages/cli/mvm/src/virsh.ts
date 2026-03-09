@@ -6,13 +6,13 @@ import { l, tagged } from './log.ts';
 import { run } from './run.ts';
 
 /** Milliseconds between guest agent ping attempts. */
-const AGENT_POLL_INTERVAL_MS = 1000;
+const AGENT_POLL_INTERVAL_MS = 1_000;
 
 /** Default maximum milliseconds to wait for guest agent before giving up. */
 const DEFAULT_AGENT_TIMEOUT_MS = 15_000;
 
 /** Milliseconds between VM state polls when waiting for shutdown. */
-const SHUTDOWN_POLL_INTERVAL_MS = 1000;
+const SHUTDOWN_POLL_INTERVAL_MS = 1_000;
 
 /** Maximum milliseconds to wait for graceful shutdown. */
 const SHUTDOWN_TIMEOUT_MS = 120_000;
@@ -29,7 +29,7 @@ const SHUTDOWN_TIMEOUT_MS = 120_000;
  * const output = await virsh({ args: ['list', '--all'] });
  * ```
  */
-export async function virsh({ args }: { args: ReadonlyArray<string> }): Promise<string> {
+export async function virsh({ args }: { args: readonly string[] }): Promise<string> {
   return run({ command: 'virsh', args: ['--connect', LIBVIRT_URI, ...args], });
 }
 
@@ -106,10 +106,10 @@ export async function waitForGuestAgent({ name, timeoutMs = DEFAULT_AGENT_TIMEOU
       const elapsed = Date.now() - startTime;
       if (elapsed >= timeoutMs) {
         throw new Error(
-          `guest agent on ${name} did not respond within ${String(timeoutMs / 1000)}s`,
+          `guest agent on ${name} did not respond within ${String(timeoutMs / 1_000)}s`,
         );
       }
-      rl.debug(`guest agent not ready yet (${String(Math.round(elapsed / 1000))}s elapsed), retrying...`);
+      rl.debug(`guest agent not ready yet (${String(Math.round(elapsed / 1_000))}s elapsed), retrying...`);
       await Bun.sleep(AGENT_POLL_INTERVAL_MS);
     }
   }
@@ -167,11 +167,11 @@ export async function waitForShutdown({ name }: { name: string }): Promise<void>
     const elapsed = Date.now() - startTime;
     if (elapsed >= SHUTDOWN_TIMEOUT_MS) {
       throw new Error(
-        `VM ${name} did not shut down within ${String(SHUTDOWN_TIMEOUT_MS / 1000)}s`,
+        `VM ${name} did not shut down within ${String(SHUTDOWN_TIMEOUT_MS / 1_000)}s`,
       );
     }
 
-    rl.debug(`VM state: ${state} (${String(Math.round(elapsed / 1000))}s elapsed)`);
+    rl.debug(`VM state: ${state} (${String(Math.round(elapsed / 1_000))}s elapsed)`);
     await Bun.sleep(SHUTDOWN_POLL_INTERVAL_MS);
   }
 }
@@ -181,7 +181,7 @@ export async function waitForShutdown({ name }: { name: string }): Promise<void>
  *
  * @returns Array of VM names without the prefix
  */
-export async function listVms(): Promise<ReadonlyArray<string>> {
+export async function listVms(): Promise<readonly string[]> {
   const output = await virsh({ args: ['list', '--all', '--name'], });
   return output
     .split('\n')

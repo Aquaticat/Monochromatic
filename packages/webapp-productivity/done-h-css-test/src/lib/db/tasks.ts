@@ -390,7 +390,7 @@ export function stopTaskTimer(id: string): Task | null {
   const elapsedSeconds =
     currentTask.timerStartedAt === null
       ? 0
-      : Math.max(0, Math.floor((Date.now() - Date.parse(currentTask.timerStartedAt)) / 1000));
+      : Math.max(0, Math.floor((Date.now() - Date.parse(currentTask.timerStartedAt)) / 1_000));
   const updatedTrackedTime = currentTask.trackedTime + elapsedSeconds;
   const timestamp = nowIso();
 

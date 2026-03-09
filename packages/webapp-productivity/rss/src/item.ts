@@ -4,7 +4,7 @@ import type {
   Atom,
   Opml,
 } from 'feedsmith';
-import {
+import type {
   parseAtomFeed,
   parseRssFeed,
 } from 'feedsmith';

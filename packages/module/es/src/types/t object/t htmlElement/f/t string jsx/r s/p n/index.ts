@@ -80,11 +80,9 @@ type HOptions<TTag extends string> = {
   /** Event listeners keyed by event name (known DOM events are type-checked, unknown ones accepted as fallback) */
   on?: {
     [K in keyof HTMLElementEventMap]?: (event: HTMLElementEventMap[K]) => void | Promise<void>;
-  } & {
-    [K in string]?: (event: any) => void | Promise<void>;
-  };
+  } & Partial<Record<string, (event: any) => void | Promise<void>>>;
   /** Child nodes to append */
-  children?: ReadonlyArray<Node | string>;
+  children?: readonly (Node | string)[];
 };
 
 /* @__NO_SIDE_EFFECTS__ */ export function $<const TTag extends string>(

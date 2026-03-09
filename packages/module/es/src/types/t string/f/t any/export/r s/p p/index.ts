@@ -90,7 +90,7 @@ export function $(obj: unknown,): string {
       },)
       .with('symbol', function handler() {
         const symbolObj = obj as symbol;
-        const description = symbolObj.description;
+        const {description} = symbolObj;
         return description !== undefined
           ? `Symbol(${JSON.stringify(description,)})`
           : 'Symbol()';

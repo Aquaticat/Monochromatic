@@ -19,7 +19,7 @@ import type { ISOTimestamp, } from './runner-types.ts';
 const OPENROUTER_MODELS_URL = 'https://openrouter.ai/api/v1/models';
 
 /** Maximum milliseconds to wait for the HEAD request before falling back to local clock */
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 5_000;
 
 /**
  * Fetches an authoritative ISO 8601 timestamp from the OpenRouter API server.

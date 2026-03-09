@@ -10,8 +10,8 @@ import {
 } from '@motion-canvas/core';
 
 /** Canvas dimensions. */
-const WIDTH = 1920;
-const HEIGHT = 1080;
+const WIDTH = 1_920;
+const HEIGHT = 1_080;
 
 /** Ground Y position (bottom quarter of screen). */
 const GROUND_Y = 340;
@@ -49,7 +49,7 @@ const SHADOW_OPACITY_GROUND = 0.4;
 const SHADOW_OPACITY_AIR = 0.1;
 
 /** Shadow scale when ball is on ground vs at peak. */
-const SHADOW_SCALE_GROUND = 1.0;
+const SHADOW_SCALE_GROUND = 1;
 const SHADOW_SCALE_AIR = 0.5;
 
 /** Stripe colors for a beachball look. */
@@ -223,7 +223,7 @@ export default makeScene2D(function* (view) {
 
   // Rolling phase: ball rolls to a stop
   const rollDistance = 200;
-  const rollDuration = 2.0;
+  const rollDuration = 2;
   const rollTargetX = currentX + rollDistance;
 
   yield* all(

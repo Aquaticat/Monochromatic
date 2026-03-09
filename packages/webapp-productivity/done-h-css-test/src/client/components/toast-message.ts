@@ -10,7 +10,7 @@ const STYLES = [
       'inset-block-end': cssRem(1),
       'inset-inline-start': cssPercent(50),
       transform: cssTranslateX(cssPercent(-50)),
-      'z-index': cssInt(1000),
+      'z-index': cssInt(1_000),
     },
   }),
   css({
@@ -25,7 +25,7 @@ const STYLES = [
 ].join('');
 
 /** Auto-dismiss duration in milliseconds */
-const DISMISS_MS = 3000;
+const DISMISS_MS = 3_000;
 
 /**
  * `<toast-message>` -- ephemeral notification that auto-dismisses.

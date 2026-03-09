@@ -54,7 +54,7 @@ export function runStak(source: string): string {
       case 'MUL':  { const b = pop(); const a = pop(); stack.push(a * b); break; }
       case 'DIV':  { const b = pop(); const a = pop(); stack.push(Math.floor(a / b)); break; }
       case 'MOD':  { const b = pop(); const a = pop(); stack.push(((a % b) + b) % b); break; }
-      case 'DUP':  { stack.push(stack[stack.length - 1]!); break; }
+      case 'DUP':  { stack.push(stack.at(-1)!); break; }
       case 'SWAP': { const b = pop(); const a = pop(); stack.push(b); stack.push(a); break; }
       case 'DROP': { pop(); break; }
       case 'PRINT':  { out += `${String(pop())}\n`; break; }

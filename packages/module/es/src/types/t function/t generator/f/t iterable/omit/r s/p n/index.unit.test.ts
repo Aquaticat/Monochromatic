@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const $ = types.function.generator.from.iterable.omit.sync.named.$;
+const {$} = types.function.generator.from.iterable.omit.sync.named;
 
 describe($, () => {
   test('omits items in the exclusion set', () => {

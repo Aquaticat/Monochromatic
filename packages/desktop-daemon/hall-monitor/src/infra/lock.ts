@@ -1,6 +1,6 @@
-import { createServer } from "net";
-import type { Server } from "net";
-import { readdir, readlink, readFile } from "fs/promises";
+import { createServer } from "node:net";
+import type { Server } from "node:net";
+import { readdir, readlink, readFile } from "node:fs/promises";
 
 import { log } from "../log.ts";
 
@@ -54,7 +54,7 @@ export function acquireLock(): Promise<boolean> {
  * @returns PID of the socket owner, or null if not found
  */
 async function findSocketOwnerPid(): Promise<number | null> {
-  const unix = await readFile("/proc/net/unix", "utf-8");
+  const unix = await readFile("/proc/net/unix", "utf8");
   const line = unix.split("\n").find((l) => l.includes("@hall-monitor"));
   if (!line) return null;
   const fields = line.trim().split(/\s+/);
@@ -66,7 +66,7 @@ async function findSocketOwnerPid(): Promise<number | null> {
       const fds = await readdir(`/proc/${pid}/fd`);
       for (const fd of fds) {
         const link = await readlink(`/proc/${pid}/fd/${fd}`);
-        if (link === `socket:[${inode}]`) return parseInt(pid, 10);
+        if (link === `socket:[${inode}]`) return Number.parseInt(pid, 10);
       }
     } catch {
       // permission denied or process exited between readdir and readlink

@@ -21,7 +21,7 @@ export function renderPage({ body, title, }: { body: string; title: string; }): 
       h({
         tag: 'head',
         children: [
-          h({ tag: 'meta', attrs: { charset: 'utf-8', }, }),
+          h({ tag: 'meta', attrs: { charset: 'utf8', }, }),
           h({ tag: 'meta', attrs: { name: 'viewport', content: 'width=device-width, initial-scale=1', }, }),
           h({ tag: 'meta', attrs: { name: 'color-scheme', content: 'light dark', }, }),
           h({ tag: 'title', text: title, }),

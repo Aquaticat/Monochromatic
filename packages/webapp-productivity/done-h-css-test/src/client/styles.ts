@@ -164,7 +164,7 @@ const layoutShell = [
       'font-family': cssCommaList(['Inter', 'system-ui', 'sans-serif']),
       color: cssVar('fg'),
       'background-color': cssVar('bg'),
-      'max-inline-size': cssCalc(`${cssRem(1194)} / 16`),
+      'max-inline-size': cssCalc(`${cssRem(1_194)} / 16`),
       'margin-inline': 'auto',
       'overflow-x': 'hidden',
       'min-block-size': cssDvb(100),

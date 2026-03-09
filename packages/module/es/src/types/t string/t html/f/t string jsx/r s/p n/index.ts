@@ -92,7 +92,7 @@ type HOptions = {
   /** Inline style properties (camelCase or kebab-case keys) */
   style?: Record<string, string>;
   /** Child HTML strings to concatenate inside the element */
-  children?: ReadonlyArray<string>;
+  children?: readonly string[];
 };
 
 /**

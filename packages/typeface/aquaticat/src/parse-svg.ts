@@ -63,7 +63,7 @@ export function parseSvg(svgContent: string): Cell[] {
     const strokeWidthStr = attr(attrs, "stroke-width");
     const strokeWidth = isStroked && strokeWidthStr !== undefined ? Number(strokeWidthStr) : 0;
 
-    const currentCell = cells[cells.length - 1];
+    const currentCell = cells.at(-1);
     if (currentCell !== undefined) {
       currentCell.paths.push({ d, isStroked, strokeWidth });
     }

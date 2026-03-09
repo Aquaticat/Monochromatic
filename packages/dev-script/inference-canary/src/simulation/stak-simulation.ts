@@ -64,7 +64,7 @@ function buildSimulationPrompt(): string {
  * @returns array of trimmed output sections, one per program
  */
 function parseSections(response: string): readonly string[] {
-  const normalized = response.replace(/([^\n])---/g, '$1\n---');
+  const normalized = response.replaceAll(/([^\n])---/g, '$1\n---');
   return normalized
     .split(/^---$/m)
     .map((section) => section.trim());

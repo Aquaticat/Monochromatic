@@ -12,7 +12,7 @@ import type { RunnerConfig, } from './runner-config.ts';
 import type { ChatMessage, CompletionResult, StreamTiming, StreamUsage, } from './runner-types.ts';
 
 /** Milliseconds per second for human-readable timing display */
-const MS_PER_SECOND = 1000;
+const MS_PER_SECOND = 1_000;
 
 //region PartialCompletionError -- thrown on stream abort, carries whatever data was collected before cancellation
 
@@ -183,7 +183,7 @@ export async function streamCompletion(
 
     const choice = chunk.choices[0];
     if (choice !== undefined) {
-      const delta = choice.delta;
+      const {delta} = choice;
       if (delta.content !== undefined && delta.content !== null) chunks.push(delta.content);
 
       // OpenRouter surfaces reasoning via `reasoning_details` on the delta -- an array of

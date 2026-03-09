@@ -22,7 +22,7 @@ type InProgressPageData = {
 injectCSS(globalStyles);
 
 const pageData = readPageData<InProgressPageData>();
-const appElement = document.getElementById("app");
+const appElement = document.querySelector("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
@@ -63,4 +63,4 @@ setInterval(() => {
       chipEl.textContent = `tracked: ${formatRunningTrackedTime(task)}`;
     }
   });
-}, 1000);
+}, 1_000);

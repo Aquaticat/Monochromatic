@@ -45,7 +45,7 @@ export function parseGrid(text: string): number[][] | undefined {
   /** Parsed digit rows, undefined entries indicate parse failure */
   const grid = lines.map((line) => {
     /** Digits extracted by stripping whitespace and converting each character */
-    const digits = [...line.replace(/\s/g, '')].map(Number);
+    const digits = [...line.replaceAll(/\s/g, '')].map(Number);
     return digits.length === GRID_SIZE && digits.every((digit) => digit >= 1 && digit <= GRID_SIZE)
       ? digits
       : undefined;

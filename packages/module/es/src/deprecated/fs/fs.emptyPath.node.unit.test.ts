@@ -219,7 +219,7 @@ describe('fs.emptyPath', () => {
       expect(result,).toBe(testDir,);
       const entries = await readdir(testDir,);
       expect(entries,).toHaveLength(2,);
-      expect(entries.sort(),).toEqual(['file1.txt', 'file2.txt',],);
+      expect(entries.toSorted(),).toEqual(['file1.txt', 'file2.txt',],);
     });
 
     test('handles empty directory', async () => {

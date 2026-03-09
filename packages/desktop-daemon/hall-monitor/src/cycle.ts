@@ -64,7 +64,7 @@ export async function cycle(): Promise<void> {
       return;
     }
     log.debug(
-      `[capture] Screenshot: ${(screenshot.length / 1024).toFixed(0)}KB, Webcam: ${(webcam.length / 1024).toFixed(0)}KB`,
+      `[capture] Screenshot: ${(screenshot.length / 1_024).toFixed(0)}KB, Webcam: ${(webcam.length / 1_024).toFixed(0)}KB`,
     );
 
     store({ timestamp: ts, screenshot, webcam });

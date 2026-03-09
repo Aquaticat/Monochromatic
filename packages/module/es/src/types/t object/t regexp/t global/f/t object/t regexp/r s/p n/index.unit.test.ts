@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const $ = types.object.regexp.global.from.object.regexp.sync.named.$;
+const {$} = types.object.regexp.global.from.object.regexp.sync.named;
 
 describe('ensure regexp has global flag', () => {
   test('adds global flag to regexp without flags', () => {
@@ -79,7 +79,7 @@ describe('ensure regexp has global flag', () => {
     const result = $({ regexp, },);
 
     expect(result.flags,).toBe('g',);
-    expect(result.source,).toBe('\\d+\\.\\d+',);
+    expect(result.source,).toBe(String.raw`\d+\.\d+`,);
   });
 
   test('returns new RegExp instance', () => {
@@ -95,7 +95,7 @@ describe('ensure regexp has global flag', () => {
     const globalRegexp = $({ regexp, },);
 
     const text = 'hello world test';
-    const matches: Array<RegExpExecArray> = [];
+    const matches: RegExpExecArray[] = [];
 
     let match: RegExpExecArray | null;
     while ((match = globalRegexp.exec(text,)) !== null)
@@ -112,7 +112,7 @@ describe('ensure regexp has global flag', () => {
     const globalRegexp = $({ regexp, },);
 
     const text = 'test123 foo456 bar789';
-    const matches = Array.from(text.matchAll(globalRegexp,),);
+    const matches = [...text.matchAll(globalRegexp)];
 
     expect(matches.length,).toBe(3,);
     expect(matches[0]?.[0],).toBe('123',);
@@ -183,7 +183,7 @@ describe('ensure regexp has global flag', () => {
     const result = $({ regexp, },);
 
     expect(result.flags,).toBe('g',);
-    expect(result.source,).toBe('\\w+(?=\\s)',);
+    expect(result.source,).toBe(String.raw`\w+(?=\s)`,);
   });
 
   test('works with lookbehinds', () => {
@@ -191,6 +191,6 @@ describe('ensure regexp has global flag', () => {
     const result = $({ regexp, },);
 
     expect(result.flags,).toBe('g',);
-    expect(result.source,).toBe('(?<=\\s)\\w+',);
+    expect(result.source,).toBe(String.raw`(?<=\s)\w+`,);
   });
 });

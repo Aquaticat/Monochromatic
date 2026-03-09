@@ -11,9 +11,10 @@ import { dirname, resolve, } from 'node:path';
 import { fileURLToPath, } from 'node:url';
 import { z, } from 'zod/v4-mini';
 import { l as parentLogger, } from './log.ts';
+import type {
+  OPMLS_SCHEMA} from './opmls.ts';
 import {
-  DOT_ENV_PATH,
-  OPMLS_SCHEMA,
+  DOT_ENV_PATH
 } from './opmls.ts';
 
 const l = tagged({ tag: 'outline', l: parentLogger, },);
@@ -122,7 +123,7 @@ export async function getOutlinesFromOpmls(
     function hasValidXmlUrl(
       outline,
     ): outline is InnerOutlineWUrl {
-      const xmlUrl = outline.xmlUrl;
+      const {xmlUrl} = outline;
       if (!xmlUrl) {
         innerL.warn(`outline ${outline.text ?? 'unnamed'} has no xmlUrl`);
         return false;

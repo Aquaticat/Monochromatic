@@ -61,7 +61,7 @@ export function $(
   const matches = str.matchAll(trimmer,);
 
   // Convert iterator to array and reverse to process from end
-  const matchArray = Array.from(matches,).toReversed();
+  const matchArray = [...matches].toReversed();
 
   // Track how much to trim from the end
   let totalTrimLength = 0;

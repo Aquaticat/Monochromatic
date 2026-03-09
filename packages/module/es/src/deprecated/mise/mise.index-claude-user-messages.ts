@@ -48,7 +48,7 @@ function readClaudeConfig(): any {
         error instanceof Error
           ? error.message
           : String(error,)
-      }`,
+      }`, { cause: error },
     );
   }
 }

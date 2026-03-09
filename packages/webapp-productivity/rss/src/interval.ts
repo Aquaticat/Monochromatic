@@ -5,7 +5,7 @@ import { l as parentLogger, } from './log.ts';
 const l = tagged({ tag: 'interval', l: parentLogger, },);
 
 /** Default fetch cache interval: 5 minutes in milliseconds. */
-const DEFAULT_FETCH_INTERVAL_MS = 5 * 60 * 1000;
+const DEFAULT_FETCH_INTERVAL_MS = 5 * 60 * 1_000;
 
 /**
  * Duration in milliseconds for which fetched feed data is cached.

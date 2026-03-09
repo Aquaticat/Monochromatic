@@ -66,7 +66,7 @@ function renderRunOverlay({ id, entry, }: {
   id: string;
   entry: ViewerEntry;
 }): string {
-  const label = entry.label;
+  const {label} = entry;
 
   const probeCards = Object.entries(entry.probeScores)
     .map(([name, score]) => {
@@ -116,7 +116,7 @@ async function renderProbeOverlay({ id, entry, probe, detail, }: {
   probe: string;
   detail: ProbeDetail | undefined;
 }): Promise<string> {
-  const label = entry.label;
+  const {label} = entry;
   const score = entry.probeScores[probe] ?? 0;
   const pass2Score = entry.pass2Scores?.[probe];
 

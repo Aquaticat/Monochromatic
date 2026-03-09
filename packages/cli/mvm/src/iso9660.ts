@@ -5,14 +5,14 @@
  */
 
 /** ISO9660 logical sector size in bytes. */
-const SECTOR_SIZE = 2048;
+const SECTOR_SIZE = 2_048;
 
 //region Binary format helpers
 
 /** Writes a space-padded ASCII string at the given offset. */
 function writeStr(buf: Uint8Array, offset: number, str: string, len: number): void {
   for (let idx = 0; idx < len; idx++) {
-    buf[offset + idx] = idx < str.length ? str.charCodeAt(idx) : 0x20;
+    buf[offset + idx] = idx < str.length ? str.codePointAt(idx) : 0x20;
   }
 }
 
@@ -55,7 +55,7 @@ function writeDirEntry(
   offset: number,
   opts: { isDir: boolean; name: string; sector: number; size: number },
 ): number {
-  const nameLen = opts.name === '\x00' || opts.name === '\x01' ? 1 : opts.name.length;
+  const nameLen = opts.name === '\u0000' || opts.name === '\u0001' ? 1 : opts.name.length;
   /** Record length must be even per ISO9660. */
   const recordLen = 33 + nameLen + (nameLen % 2 === 0 ? 1 : 0);
 
@@ -67,9 +67,9 @@ function writeDirEntry(
   writeBoth16(view, offset + 28, 1);
   buf[offset + 32] = nameLen;
 
-  if (opts.name === '\x00') {
+  if (opts.name === '\u0000') {
     buf[offset + 33] = 0;
-  } else if (opts.name === '\x01') {
+  } else if (opts.name === '\u0001') {
     buf[offset + 33] = 1;
   } else {
     writeStr(buf, offset + 33, opts.name, nameLen);
@@ -105,7 +105,7 @@ function writeDirEntry(
  * ```
  */
 export function createIso({ files, volumeId }: {
-  files: ReadonlyArray<{ data: Uint8Array; name: string }>;
+  files: readonly { data: Uint8Array; name: string }[];
   volumeId: string;
 }): Uint8Array {
   const ROOT_SECTOR = 20;
@@ -137,7 +137,7 @@ export function createIso({ files, volumeId }: {
   writeBoth32(view, pvd + 132, 10);
   view.setUint32(pvd + 140, 18, true);
   view.setUint32(pvd + 148, 19, false);
-  writeDirEntry(iso, view, pvd + 156, { isDir: true, name: '\x00', sector: ROOT_SECTOR, size: rootDirSize, });
+  writeDirEntry(iso, view, pvd + 156, { isDir: true, name: '\u0000', sector: ROOT_SECTOR, size: rootDirSize, });
   writeTimestamp17(iso, pvd + 813);
   writeTimestamp17(iso, pvd + 830);
   writeTimestamp17(iso, pvd + 847);
@@ -163,8 +163,8 @@ export function createIso({ files, volumeId }: {
 
   //region Root directory (sector 20)
   let pos = ROOT_SECTOR * SECTOR_SIZE;
-  pos += writeDirEntry(iso, view, pos, { isDir: true, name: '\x00', sector: ROOT_SECTOR, size: rootDirSize, });
-  pos += writeDirEntry(iso, view, pos, { isDir: true, name: '\x01', sector: ROOT_SECTOR, size: rootDirSize, });
+  pos += writeDirEntry(iso, view, pos, { isDir: true, name: '\u0000', sector: ROOT_SECTOR, size: rootDirSize, });
+  pos += writeDirEntry(iso, view, pos, { isDir: true, name: '\u0001', sector: ROOT_SECTOR, size: rootDirSize, });
 
   for (const entry of entries) {
     pos += writeDirEntry(iso, view, pos, {

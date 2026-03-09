@@ -521,7 +521,7 @@ export function cssScale(factor: number,): CssValue {
  * cssCubicBezier([0, 0, 0.2, 1])    // 'cubic-bezier(0, 0, 0.2, 1)'
  * ```
  */
-export function cssCubicBezier(values: ReadonlyArray<number>,): CssValue {
+export function cssCubicBezier(values: readonly number[],): CssValue {
   return `cubic-bezier(${values.join(', ')})` as CssValue;
 }
 
@@ -543,7 +543,7 @@ export function cssCubicBezier(values: ReadonlyArray<number>,): CssValue {
  * // 'inset-inline-start, inset-inline-end'
  * ```
  */
-export function cssCommaList(values: ReadonlyArray<CssValue | string>,): CssValue {
+export function cssCommaList(values: readonly (CssValue | string)[],): CssValue {
   return values.join(', ') as CssValue;
 }
 
@@ -566,7 +566,7 @@ export function cssCommaList(values: ReadonlyArray<CssValue | string>,): CssValu
  * // '0 -0.25rem 1rem oklch(0 0 0 / 0.2)'
  * ```
  */
-export function cssCompounded(values: ReadonlyArray<CssValue | string | number>,): CssValue {
+export function cssCompounded(values: readonly (CssValue | string | number)[],): CssValue {
   return values.join(' ') as CssValue;
 }
 

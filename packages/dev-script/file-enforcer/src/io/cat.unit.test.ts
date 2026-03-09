@@ -58,7 +58,7 @@ describe('cat(string[])', () => {
     /** Glob in the array should be expanded and all matches concatenated */
     const result = await cat([join(tempDir, '*.ts')]);
     /** Order may vary; check both pieces are present */
-    expect(result.split('\n').sort()).toEqual(['one', 'two'].sort());
+    expect(result.split('\n').toSorted()).toEqual(['one', 'two'].toSorted());
   });
 
   test('handles mix of literal paths and globs', async () => {
@@ -128,7 +128,7 @@ describe('cat(string)', () => {
     const results = await cat(join(tempDir, '*.md'));
     expect(results.length).toBe(2);
     /** Each result should have both path and content */
-    const contents = results.map((result) => result.content).sort();
+    const contents = results.map((result) => result.content).toSorted();
     expect(contents).toEqual(['content1', 'content2']);
   });
 

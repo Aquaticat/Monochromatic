@@ -58,7 +58,7 @@ export const noTrimLeftRight: CreateOnceRule = {
           return;
         }
 
-        const name = property['name'];
+        const {name} = property;
         if (name === 'trimLeft') {
           context.report({
             node,

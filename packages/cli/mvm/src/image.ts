@@ -21,11 +21,11 @@ import { l, tagged } from './log.ts';
  * ```
  */
 function formatBytes(bytes: number): string {
-  const MIB = 1024 * 1024;
+  const MIB = 1_024 * 1_024;
   if (bytes >= MIB) {
     return `${(bytes / MIB).toFixed(1)} MiB`;
   }
-  const KIB = 1024;
+  const KIB = 1_024;
   return `${(bytes / KIB).toFixed(0)} KiB`;
 }
 
@@ -46,7 +46,7 @@ async function streamWithProgress({ destPath, response, rl }: {
   response: Response;
   rl: { info: (msg: string) => void };
 }): Promise<void> {
-  const body = response.body;
+  const {body} = response;
   if (body === null) {
     throw new Error('response body is null');
   }

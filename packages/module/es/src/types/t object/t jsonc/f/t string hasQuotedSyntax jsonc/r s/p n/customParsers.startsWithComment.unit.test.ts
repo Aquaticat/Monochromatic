@@ -482,7 +482,7 @@ describe($, () => {
 
   describe('edge cases and limitations', () => {
     test('very long inline comment', () => {
-      const longComment = 'a'.repeat(1000,);
+      const longComment = 'a'.repeat(1_000,);
       const result = $({ value: `// ${longComment}\n{}` as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',
@@ -494,7 +494,7 @@ describe($, () => {
     });
 
     test('very long block comment', () => {
-      const longComment = 'b'.repeat(1000,);
+      const longComment = 'b'.repeat(1_000,);
       const result = $({ value: `/* ${longComment} */{}` as FragmentStringJsonc, },);
       expect(result,).toEqual({
         remainingContent: '{}',

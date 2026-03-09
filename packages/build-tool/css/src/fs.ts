@@ -6,6 +6,8 @@
  * This lets the same build pipeline work on the server (disk I/O)
  * and in the browser (pre-populated memory Map).
  */
+import type * as NodeFs from 'node:fs';
+
 import { fsRegistry, } from './fs-registry.ts';
 
 /**
@@ -21,8 +23,8 @@ const hasNodeFs = typeof process !== 'undefined' && process.versions?.node !== u
  * Loaded eagerly (not lazily) because sync functions like
  * {@link readCssFileSync} and {@link existsSync} cannot await.
  */
-const nodeFs: typeof import('node:fs') | undefined = hasNodeFs
-  ? await import('node' + ':fs') as typeof import('node:fs')
+const nodeFs: NodeFs | undefined = hasNodeFs
+  ? await import('node' + ':fs') as NodeFs
   : undefined;
 
 /**
@@ -41,7 +43,7 @@ export async function readCssFile(absolutePath: string): Promise<string> {
 
   if (nodeFs !== undefined) {
     const { readFile, } = await import('node:fs/promises');
-    return readFile(absolutePath, 'utf-8');
+    return readFile(absolutePath, 'utf8');
   }
 
   throw new Error(`File not found in registry and no filesystem available: ${absolutePath}`);
@@ -61,7 +63,7 @@ export function readCssFileSync(absolutePath: string): string {
   }
 
   if (nodeFs !== undefined) {
-    return nodeFs.readFileSync(absolutePath, 'utf-8');
+    return nodeFs.readFileSync(absolutePath, 'utf8');
   }
 
   throw new Error(`File not found in registry and no filesystem available: ${absolutePath}`);

@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const $ = types.string.from.string.trim.with.string.sync.named.$;
+const {$} = types.string.from.string.trim.with.string.sync.named;
 
 describe('trim with string - synchronous named', () => {
   test('trims single character from both ends', () => {
@@ -205,7 +205,7 @@ describe('trim with string - synchronous named', () => {
   });
 
   test('handles very long strings efficiently', () => {
-    const longStr = 'a'.repeat(1000,) + 'text' + 'a'.repeat(1000,);
+    const longStr = 'a'.repeat(1_000,) + 'text' + 'a'.repeat(1_000,);
     expect($({ str: longStr, trimmer: 'a', },),).toBe('text',);
   });
 

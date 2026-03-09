@@ -110,7 +110,7 @@ export function findAllSocketPaths(): string[] {
     }
   }
 
-  return Array.from(found);
+  return [...found];
 }
 
 /**
@@ -294,7 +294,7 @@ export async function getDiagnostics(): Promise<Diagnostic[]> {
   const results = await Promise.all(
     nvimClients.map(async function queryInstance(nvim) {
       try {
-        const raw = (await nvim.executeLua(LUA_GET_CURRENT_BUF_DIAGNOSTICS, [])) as Array<Record<string, unknown>>;
+        const raw = (await nvim.executeLua(LUA_GET_CURRENT_BUF_DIAGNOSTICS, [])) as Record<string, unknown>[];
         return raw.map(mapRawDiagnostic);
       } catch (err: unknown) {
         console.error("[mcp-nvim] Failed to query instance for current buffer diagnostics:", err);
@@ -323,11 +323,11 @@ export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
   const instanceResults = await Promise.all(
     nvimClients.map(async function queryInstance(nvim) {
       try {
-        const raw = (await nvim.executeLua(LUA_GET_ALL_DIAGNOSTICS, [])) as Array<Record<string, unknown>>;
+        const raw = (await nvim.executeLua(LUA_GET_ALL_DIAGNOSTICS, [])) as Record<string, unknown>[];
         return raw.map(function mapFileEntry(file) {
           return {
             path: file.path as string,
-            diagnostics: (file.diagnostics as Array<Record<string, unknown>>).map(mapRawDiagnostic),
+            diagnostics: (file.diagnostics as Record<string, unknown>[]).map(mapRawDiagnostic),
           };
         });
       } catch (err: unknown) {
@@ -352,7 +352,7 @@ export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
   }
   //endregion Merge diagnostics from all instances by file path
 
-  return Array.from(byPath.entries()).map(function toFileDiagnostics([path, diagnostics]) {
+  return [...byPath.entries()].map(function toFileDiagnostics([path, diagnostics]) {
     return { path, diagnostics: uniqueDiagnostics(diagnostics) };
   });
 }

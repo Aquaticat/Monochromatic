@@ -6,7 +6,7 @@ import { getProperty as dotPropGet, } from 'dot-prop';
  * @returns Content with duplicate lines removed
  */
 export function dedup(content: string): string {
-  return Array.from(new Set(content.split('\n'))).join('\n');
+  return [...new Set(content.split('\n'))].join('\n');
 }
 
 /**

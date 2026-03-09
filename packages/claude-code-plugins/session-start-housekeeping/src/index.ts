@@ -73,7 +73,7 @@ const STALE_DIST_ARTIFACTS = [
  */
 async function cleanDistArtifacts(workspaceRoot: string): Promise<void> {
   const glob = new Bun.Glob('packages/*/*/dist/final');
-  const removals: Array<Promise<void>> = [];
+  const removals: Promise<void>[] = [];
 
   for await (const finalDir of glob.scan({ cwd: workspaceRoot, onlyFiles: false })) {
     for (const artifact of STALE_DIST_ARTIFACTS) {

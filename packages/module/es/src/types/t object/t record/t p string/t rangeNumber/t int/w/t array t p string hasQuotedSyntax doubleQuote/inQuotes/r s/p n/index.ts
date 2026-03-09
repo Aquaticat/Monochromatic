@@ -34,8 +34,7 @@ export function $({ value, strs, }: { value: Value; strs: DoubleQuote[]; },): Va
     const strBefore = str.slice(0, value.startInclusive,);
 
     // Count effective double quotes using regex that handles escaped quotes properly
-    const effectiveDoubleQuotesInStrBefore = Array
-      .from(strBefore.matchAll(/(?<!\\)(?:\\\\)*"/g,),)
+    const effectiveDoubleQuotesInStrBefore = [...strBefore.matchAll(/(?<!\\)(?:\\\\)*"/g)]
       .length;
 
     // Odd count means inside quotes, even count means outside quotes

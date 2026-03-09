@@ -45,7 +45,7 @@ injectCSS(styles);
 injectCSS(inboxStyles);
 
 const pageData = readPageData<InboxPageData>();
-const appElement = document.getElementById("app");
+const appElement = document.querySelector("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }

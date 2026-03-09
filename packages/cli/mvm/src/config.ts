@@ -20,7 +20,7 @@ export const UBUNTU_IMAGE_URL = 'https://cloud-images.ubuntu.com/noble/current/n
 export const UBUNTU_IMAGE_NAME = 'ubuntu-24.04-cloudimg-amd64.img';
 
 /** Default VM memory allocation in MiB. Making it large for builds. */
-export const DEFAULT_MEMORY_MIB = 8192;
+export const DEFAULT_MEMORY_MIB = 8_192;
 
 /** Default number of virtual CPUs. */
 export const DEFAULT_VCPUS = 4;

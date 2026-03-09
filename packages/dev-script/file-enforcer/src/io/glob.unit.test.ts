@@ -124,8 +124,8 @@ describe('expandGlob', () => {
 
     /** Matched paths should only include .ts files */
     const matches = await expandGlob(join(tempDir, '*.ts'));
-    expect([...matches].sort()).toEqual(
-      [join(tempDir, 'a.ts'), join(tempDir, 'b.ts')].sort(),
+    expect([...matches].toSorted()).toEqual(
+      [join(tempDir, 'a.ts'), join(tempDir, 'b.ts')].toSorted(),
     );
   });
 

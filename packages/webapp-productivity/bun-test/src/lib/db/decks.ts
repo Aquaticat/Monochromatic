@@ -1,6 +1,6 @@
 import db from "../db";
 
-export interface Deck {
+export type Deck = {
   id: string;
   name: string;
   created_at: string;

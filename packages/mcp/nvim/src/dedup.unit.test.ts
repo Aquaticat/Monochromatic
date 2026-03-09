@@ -38,7 +38,7 @@ function makeDiag(overrides: Partial<Diagnostic> = {}): Diagnostic {
 describe("dedupDiagnostics", () => {
   test("returns editor diagnostics unchanged when lint is empty", () => {
     expect.assertions(1);
-    const editor = [makeDiag({ lnum: 10, col: 5, source: "typescript", code: 2345 })];
+    const editor = [makeDiag({ lnum: 10, col: 5, source: "typescript", code: 2_345 })];
     const result = dedupDiagnostics({ editor, lint: [] });
     expect(result).toEqual(editor);
   });
@@ -56,7 +56,7 @@ describe("dedupDiagnostics", () => {
       lnum: 10,
       col: 5,
       source: "typescript",
-      code: 2345,
+      code: 2_345,
       message: "Type 'string' is not assignable to type 'number'.",
       end_lnum: 10,
       end_col: 15,
@@ -65,7 +65,7 @@ describe("dedupDiagnostics", () => {
       lnum: 10,
       col: 5,
       source: "oxlint",
-      code: 2345,
+      code: 2_345,
       message: "Type mismatch",
       end_lnum: 10,
       end_col: 5,
@@ -101,7 +101,7 @@ describe("dedupDiagnostics", () => {
 
   test("keeps both when same location but different code", () => {
     expect.assertions(2);
-    const editor = [makeDiag({ lnum: 10, col: 5, source: "typescript", code: 2345 })];
+    const editor = [makeDiag({ lnum: 10, col: 5, source: "typescript", code: 2_345 })];
     const lint = [makeDiag({ lnum: 10, col: 5, source: "oxlint", code: "no-any" })];
 
     const result = dedupDiagnostics({ editor, lint });
@@ -120,7 +120,7 @@ describe("dedupDiagnostics", () => {
 
   test("appends lint-only diagnostics after editor diagnostics", () => {
     expect.assertions(3);
-    const editor = [makeDiag({ lnum: 1, col: 1, source: "typescript", code: 1000 })];
+    const editor = [makeDiag({ lnum: 1, col: 1, source: "typescript", code: 1_000 })];
     const lint = [makeDiag({ lnum: 50, col: 10, source: "oxlint", code: "tsdoc(require-tsdoc)" })];
 
     const result = dedupDiagnostics({ editor, lint });

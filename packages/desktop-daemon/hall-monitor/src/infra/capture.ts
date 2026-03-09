@@ -1,11 +1,11 @@
 import { $ } from "bun";
-import { unlink } from "fs/promises";
+import { unlink } from "node:fs/promises";
 
 /** Path to the ffmpeg binary. */
 const FFMPEG = "/usr/bin/ffmpeg";
 
 /** Maximum long-edge resolution for downscaled screenshots. */
-const SCREENSHOT_LONG_EDGE = 1440;
+const SCREENSHOT_LONG_EDGE = 1_440;
 
 /** Maximum long-edge resolution for downscaled webcam frames. */
 const WEBCAM_LONG_EDGE = 720;

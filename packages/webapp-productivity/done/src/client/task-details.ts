@@ -38,9 +38,9 @@ type TaskDetailsPageData = {
 injectCSS(styles);
 
 const pageData = readPageData<TaskDetailsPageData>();
-const task = pageData.task;
+const {task} = pageData;
 
-const appElement = document.getElementById("app");
+const appElement = document.querySelector("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }

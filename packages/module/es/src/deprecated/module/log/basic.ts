@@ -1,5 +1,5 @@
 import type { Promisable, } from 'type-fest';
-import { unnamed, } from '../../type/custom/function/sink/index.ts';
+import type { unnamed, } from '../../type/custom/function/sink/index.ts';
 import { notUndefinedOrThrow, } from '../../type/typeof/object/error/error.throw.ts';
 import { throws, } from '../../type/typeof/object/error/error.throws.ts';
 import type {

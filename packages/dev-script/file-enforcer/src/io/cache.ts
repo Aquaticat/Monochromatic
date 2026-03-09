@@ -6,7 +6,7 @@ import { resolve, } from 'node:path';
  * Watch mode invalidates specific entries when it knows which file changed,
  * so subsequent `readCached()` calls re-read only the invalidated files.
  */
-export const readCache: Map<string, string> = new Map();
+export const readCache = new Map<string, string>();
 
 /**
  * Removes specific paths from the read cache so the next `readCached()`

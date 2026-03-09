@@ -34,7 +34,7 @@ export const verify: Verify = async (): Promise<boolean> => {
     // Verify by writing and reading test data
     const testData = `{"test":true,"timestamp":${Date.now()}}\n`;
     await appendFile(filePath, testData);
-    const content = await readFile(filePath, 'utf-8');
+    const content = await readFile(filePath, 'utf8');
     available = content.includes('"test":true');
   } catch {
     available = false;

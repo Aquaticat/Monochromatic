@@ -1,4 +1,4 @@
-import { parseArgs } from "util";
+import { parseArgs } from "node:util";
 
 import { acquireLock, killExisting, getLockServer } from "./infra/lock.ts";
 import { forceCleanup } from "./analyze/llama.ts";
@@ -8,7 +8,7 @@ import { log } from "./log.ts";
 export {};
 
 /** Interval between capture-analyze-notify cycles. */
-const INTERVAL_MS = 5 * 60 * 1000;
+const INTERVAL_MS = 5 * 60 * 1_000;
 
 const { values: args } = parseArgs({
   args: Bun.argv.slice(2),

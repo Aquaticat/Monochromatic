@@ -14,9 +14,9 @@ try {
 
   console.log('\n✅ Dependencies installed',);
 }
-catch (error) {
+catch {
   throw new Error(outdent`
     ❌ Dependencies check failed
     Run: pnpm install
-  `,);
+  `, { cause: error },);
 }

@@ -1,6 +1,6 @@
 import db from "../db";
 
-export interface Card {
+export type Card = {
   id: string;
   deck_id: string;
   front: string;

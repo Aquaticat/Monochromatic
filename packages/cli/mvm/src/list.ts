@@ -17,7 +17,7 @@ export type VmInfo = { name: string; state: string };
  * // [{ name: 'dev-01', state: 'running' }, { name: 'dev-02', state: 'shut off' }]
  * ```
  */
-export async function list(): Promise<ReadonlyArray<VmInfo>> {
+export async function list(): Promise<readonly VmInfo[]> {
   const rl = tagged({ tag: list.name, l, });
   rl.debug('querying virsh for all VMs');
 

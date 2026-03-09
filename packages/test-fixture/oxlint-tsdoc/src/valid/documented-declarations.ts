@@ -21,7 +21,7 @@ function log(): void {}
 type Direction = 'up' | 'down' | 'left' | 'right';
 
 /** Configuration shape. */
-interface Config {
+type Config = {
   /** Enables verbose logging. */
   debug: boolean;
 }

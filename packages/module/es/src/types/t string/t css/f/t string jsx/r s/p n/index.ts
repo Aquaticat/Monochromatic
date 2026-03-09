@@ -130,7 +130,7 @@ type TypedAtRuleOptions = {
     /** Raw CSS string to inject inside the block (NOT escaped — caller responsible) */
     raw?: string;
     /** Nested rules or at-rules inside this block */
-    children?: ReadonlyArray<string>;
+    children?: readonly string[];
   };
 }[keyof AtRuleDeclsMap];
 
@@ -156,7 +156,7 @@ type UntypedAtRuleOptions = {
   /** Raw CSS string to inject inside the block (NOT escaped — caller responsible) */
   raw?: string;
   /** Nested rules or at-rules inside this block */
-  children?: ReadonlyArray<string>;
+  children?: readonly string[];
 };
 
 /**
@@ -187,7 +187,7 @@ type RuleOptions = {
   /** Raw CSS string to inject inside the block (NOT escaped — caller responsible) */
   raw?: string;
   /** Nested rules or at-rules inside this block */
-  children?: ReadonlyArray<string>;
+  children?: readonly string[];
 };
 
 /**
@@ -220,7 +220,7 @@ type CssOptions = AtRuleOptions | RuleOptions;
 function serializeDecls(decls: object,): string {
   const parts: string[] = [];
 
-  for (const [property, value,] of Object.entries(decls,) as ReadonlyArray<[string, CssValue | string | number | undefined]>) {
+  for (const [property, value,] of Object.entries(decls,) as readonly [string, CssValue | string | number | undefined][]) {
     if (value === undefined || value === null) {
       continue;
     }

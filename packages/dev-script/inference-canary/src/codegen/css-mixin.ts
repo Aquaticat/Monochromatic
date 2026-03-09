@@ -132,7 +132,7 @@ export const cssMixinTranspiler = createCodeGenProbe({
   ].join('\n'),
   verify: (result) => {
     // Normalize whitespace so cosmetic formatting differences don't affect scoring
-    const output = result.stdout.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n');
+    const output = result.stdout.replaceAll(/[ \t]+/g, ' ').replaceAll(/\n{3,}/g, '\n\n');
 
     const flexOccurrences = output.split('display: flex').length - 1;
     const checks = [

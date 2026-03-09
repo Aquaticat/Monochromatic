@@ -146,13 +146,13 @@ export type ObjectsMergeRules = {
     if (valuesByType.size > 1) {
       throw new TypeError(
         `Cannot merge property "${key}": mixed types found: ${
-          Array.from(valuesByType.keys(),).join(', ',)
+          [...valuesByType.keys()].join(', ',)
         }`,
       );
     }
 
     // Get the single type and its values
-    const entryArray = Array.from(valuesByType.entries(),);
+    const entryArray = [...valuesByType.entries()];
     const firstEntry = entryArray[0];
     if (!firstEntry)
       continue;

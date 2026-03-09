@@ -37,9 +37,9 @@ export function formatMultiModelReport(
 
   const summary = failed.length > 0
     ? `${String(failed.length)} model(s) failed, ${String(successful.length)} passed.`
-    : belowTarget.length > 0
+    : (belowTarget.length > 0
       ? `${String(belowTarget.length)} of ${String(successful.length)} model(s) below target score.`
-      : 'All models healthy.';
+      : 'All models healthy.');
 
   const successSection = successful.length > 0
     ? ['--- Results ---', ...successful.map((report) => formatModelReport(report)), '']

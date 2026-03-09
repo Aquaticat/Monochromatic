@@ -71,9 +71,9 @@ export function renderOverview({ summaries, entries, }: {
 
     const inlineStatus = summary.failed
       ? ' ' + h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'failed', }, text: '(timeout)', })
-      : summary.degraded
+      : (summary.degraded
         ? ' ' + h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'degraded', }, text: '(degraded)', })
-        : '';
+        : '');
 
     return h({
       tag: 'tr',

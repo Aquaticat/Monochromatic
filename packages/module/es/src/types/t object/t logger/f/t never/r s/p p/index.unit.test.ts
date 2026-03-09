@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const $ = types.object.logger.from.never.sync.positional.$;
+const {$} = types.object.logger.from.never.sync.positional;
 
 describe('multi-sink logger', () => {
   test('logger has all six log level methods', () => {

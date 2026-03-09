@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const $ = types.object.store.from.store.sync.named.$;
+const {$} = types.object.store.from.store.sync.named;
 
 describe($, () => {
   test('creates a store with default configuration', () => {

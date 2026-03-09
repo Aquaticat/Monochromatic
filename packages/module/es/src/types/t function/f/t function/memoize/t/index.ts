@@ -2,7 +2,7 @@ import type { $ as Store, } from '../../../../../t object/t store/t/r a/index.ts
 import type { $ as SyncStore, } from '../../../../../t object/t store/t/r s/index.ts';
 
 /** Maximum cache entries before LRU eviction in default memoize stores. */
-export const DEFAULT_MAX_CACHE_SIZE = 1024;
+export const DEFAULT_MAX_CACHE_SIZE = 1_024;
 
 /**
  * Options for sync memoization via {@link MemoizedFunction}.

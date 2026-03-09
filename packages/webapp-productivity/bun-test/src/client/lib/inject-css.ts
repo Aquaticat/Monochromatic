@@ -3,5 +3,5 @@
 export function injectCSS(css: string): void {
   const style = document.createElement("style");
   style.textContent = css;
-  document.head.appendChild(style);
+  document.head.append(style);
 }

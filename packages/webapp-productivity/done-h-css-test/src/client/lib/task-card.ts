@@ -36,8 +36,8 @@ type TaskCardOptions = {
  */
 function formatTrackedTime(seconds: number): string {
   const totalSeconds = Math.max(0, Math.floor(seconds));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const hours = Math.floor(totalSeconds / 3_600);
+  const minutes = Math.floor((totalSeconds % 3_600) / 60);
   const remainingSeconds = totalSeconds % 60;
 
   if (hours > 0) {
@@ -243,6 +243,6 @@ export function formatRunningTrackedTime(task: Task): string {
     return formatTrackedTime(task.trackedTime);
   }
 
-  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - Date.parse(task.timerStartedAt)) / 1000));
+  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - Date.parse(task.timerStartedAt)) / 1_000));
   return formatTrackedTime(task.trackedTime + elapsedSeconds);
 }

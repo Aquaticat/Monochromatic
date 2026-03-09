@@ -14,7 +14,7 @@
  */
 
 /** Number of expressions to generate */
-const EXPR_COUNT = 5000;
+const EXPR_COUNT = 5_000;
 
 /** Seed for deterministic pseudo-random generation */
 const SEED = 42;
@@ -28,7 +28,7 @@ function* lcg(seed: number): Generator<number> {
   // state is let because the LCG updates it on every iteration
   let state = seed;
   while (true) {
-    state = (state * 1664525 + 1013904223) % 2147483648;
+    state = (state * 1_664_525 + 1_013_904_223) % 2_147_483_648;
     yield state;
   }
 }
@@ -42,7 +42,7 @@ const rng = lcg(SEED);
  * @returns pseudo-random integer
  */
 function rand(min: number, max: number): number {
-  const value = rng.next().value;
+  const {value} = rng.next();
   if (value === undefined) throw new Error('RNG exhausted');
   return min + (value % (max - min + 1));
 }
@@ -76,7 +76,7 @@ for (const index of Array.from({ length: EXPR_COUNT, }).keys()) {
     results.push(String((operandA + operandB) * operandC));
   } else if (variant === 3) {
     // Division
-    const operandA = rand(10, 9999);
+    const operandA = rand(10, 9_999);
     const operandB = rand(1, 99);
     const quotient = operandA / operandB;
     // Match what a correct evaluator would produce (no rounding specified, raw float)
@@ -87,7 +87,7 @@ for (const index of Array.from({ length: EXPR_COUNT, }).keys()) {
     const operandA = rand(1, 999);
     expressions.push(`${String(operandA)} / (${String(rand(1, 50))} - ${String(rand(1, 50))})`);
     // Might or might not be zero -- compute to find out
-    const evalStr = expressions[expressions.length - 1];
+    const evalStr = expressions.at(-1);
     if (evalStr === undefined) throw new Error('Expression disappeared');
     // Safe: we constructed this expression ourselves from known integers
     // eslint-disable-next-line no-eval -- generating expected output for test data
@@ -124,8 +124,8 @@ for (const index of Array.from({ length: EXPR_COUNT, }).keys()) {
 const input = expressions.join('\n') + '\n';
 const expectedOutput = results.join('\n') + '\n';
 
-await Bun.write(new URL('./expr-perf-input.txt', import.meta.url).pathname, input);
-await Bun.write(new URL('./expr-perf-expected.txt', import.meta.url).pathname, expectedOutput);
+await Bun.write(new URL('expr-perf-input.txt', import.meta.url).pathname, input);
+await Bun.write(new URL('expr-perf-expected.txt', import.meta.url).pathname, expectedOutput);
 
 console.log(`Generated expr perf test: ${String(EXPR_COUNT)} expressions, ${String(input.length)} bytes input, ${String(expectedOutput.length)} bytes expected output`);
 
