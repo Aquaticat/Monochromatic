@@ -8,3 +8,5 @@ const alsoUndocumented = (): number => 42;
 class NoDocNeeded {}
 
 type UndocumentedType = { value: string };
+
+export {}

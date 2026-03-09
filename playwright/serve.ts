@@ -1,5 +1,7 @@
+export {}
+
 Bun.serve({
-  port: 3005,
+  port: 3_005,
   async fetch(req) {
     const url = new URL(req.url);
 

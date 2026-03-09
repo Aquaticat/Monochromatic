@@ -7,10 +7,12 @@
  *
  * Side-effect-only import — sets `globalThis.process` if missing.
  */
-if (typeof globalThis.process === "undefined") {
+if (globalThis.process === undefined) {
   (globalThis as Record<string, unknown>).process = {
     env: {},
     cwd: (): string => "/",
     versions: {},
   };
 }
+
+export {}
