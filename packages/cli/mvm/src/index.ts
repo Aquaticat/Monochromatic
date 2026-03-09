@@ -55,7 +55,7 @@ const filteredArgs = rawArgs.filter((arg, i) => i >= boundary || !INFRA_FLAGS.ha
 
 /** Discriminated union of all subcommand parse results */
 type MvmArgs =
-  | { cmd: 'create'; name: string; from: string | undefined }
+  | { cmd: 'create'; image: string | undefined; name: string; from: string | undefined }
   | { cmd: 'shell'; name: string }
   | { cmd: 'list' }
   | { cmd: 'destroy'; name: string | undefined; all: boolean }
@@ -72,15 +72,18 @@ const name = string({ metavar: 'NAME' });
 /** Shared option parser for `--from SOURCE` cloning flag */
 const fromOption = optional(option('--from', string({ metavar: 'SOURCE' }), { description: message`Clone from an existing VM instead of creating fresh` }));
 
+/** Option parser for `--image IMAGE` to select a distro (ubuntu, fedora, alpine, or custom template name) */
+const imageOption = optional(option('--image', string({ metavar: 'IMAGE' }), { description: message`Image to use: ubuntu (default), fedora, alpine, or a custom template name` }));
+
 //endregion Shared value parsers
 
 //region Parser definition -- subcommand parsers combined via or()
 
-/** Parser for `create <name> [--from SOURCE]` */
+/** Parser for `create <name> [--from SOURCE] [--image IMAGE]` */
 const createCmd = command('create', map(
-  object({ name: argument(name), from: fromOption }),
-  (v): MvmArgs => ({ cmd: 'create', ...v }),
-), { brief: message`Create and start a new Ubuntu VM` });
+  object({ name: argument(name), from: fromOption, image: imageOption }),
+  (v): MvmArgs => ({ cmd: 'create', from: v.from, image: v.image, name: v.name }),
+), { brief: message`Create and start a new VM` });
 
 /** Parser for `shell <name>` */
 const shellCmd = command('shell', map(
@@ -170,7 +173,7 @@ const args = runSync(parser, {
   args: filteredArgs,
   help: 'option',
   aboveError: 'help',
-  brief: message`mvm - ephemeral Ubuntu VM manager`,
+  brief: message`mvm - ephemeral VM manager`,
   footer: message`Pass --verbose before the subcommand to enable debug logging.`,
 }) as MvmArgs;
 
@@ -178,7 +181,7 @@ if (args.cmd === 'create') {
   if (args.from !== undefined) {
     await clone({ destination: args.name, source: args.from });
   } else {
-    await create({ name: args.name });
+    await create({ image: args.image, name: args.name });
   }
 } else if (args.cmd === 'shell') {
   await shell({ name: args.name });

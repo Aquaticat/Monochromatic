@@ -2,12 +2,9 @@ import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import {
-  IMAGES_DIR,
-  UBUNTU_IMAGE_NAME,
-  UBUNTU_IMAGE_URL,
-} from './config.ts';
+import { IMAGES_DIR } from './config.ts';
 import { l, tagged } from './log.ts';
+import type { ImageSpec } from './registry.ts';
 
 /**
  * Formats a byte count as a human-readable string (e.g. "123.4 MiB").
@@ -96,33 +93,34 @@ async function streamWithProgress({ destPath, response, rl }: {
 }
 
 /**
- * Ensures the Ubuntu cloud image is cached locally, downloading it if missing.
+ * Ensures a cloud image is cached locally, downloading it if missing.
  * Shows download progress on stderr when fetching.
  *
- * @returns Absolute path to the cached qcow2 cloud image
+ * @param spec - Image specification from the registry
+ * @returns Absolute path to the cached cloud image
  * @throws Error when the download fails
  *
  * @example
  * ```ts
- * const imagePath = await ensureImage();
- * // => /home/user/.local/share/mvm/images/ubuntu-24.04-cloudimg-amd64.img
+ * const imagePath = await ensureImage(IMAGES['ubuntu']);
+ * // => /home/user/.local/share/mvm/images/noble-server-cloudimg-amd64.img
  * ```
  */
-export async function ensureImage(): Promise<string> {
+export async function ensureImage(spec: ImageSpec): Promise<string> {
   const rl = tagged({ tag: ensureImage.name, l, });
-  const imagePath = join(IMAGES_DIR, UBUNTU_IMAGE_NAME);
+  const imagePath = join(IMAGES_DIR, spec.fileName);
 
   if (existsSync(imagePath)) {
     rl.info(`using cached image ${imagePath}`);
     return imagePath;
   }
 
-  rl.info(`downloading Ubuntu 24.04 LTS cloud image to ${IMAGES_DIR}`);
+  rl.info(`downloading ${spec.fileName} to ${IMAGES_DIR}`);
   await mkdir(IMAGES_DIR, { recursive: true, });
 
-  const response = await fetch(UBUNTU_IMAGE_URL);
+  const response = await fetch(spec.url);
   if (!response.ok) {
-    throw new Error(`failed to download image: ${response.status} ${response.statusText}`);
+    throw new Error(`failed to download image from ${spec.url}: ${response.status} ${response.statusText}`);
   }
 
   await streamWithProgress({ destPath: imagePath, response, rl, });

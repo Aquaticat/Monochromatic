@@ -13,12 +13,6 @@ export const IMAGES_DIR = join(DATA_DIR, 'images');
 /** Directory containing per-VM subdirectories with disks and metadata. */
 export const VMS_DIR = join(DATA_DIR, 'vms');
 
-/** Ubuntu 24.04 LTS (Noble Numbat) cloud image download URL. */
-export const UBUNTU_IMAGE_URL = 'https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img';
-
-/** Filename for the cached Ubuntu cloud image. */
-export const UBUNTU_IMAGE_NAME = 'ubuntu-24.04-cloudimg-amd64.img';
-
 /** Default VM memory allocation in MiB. Making it large for builds. */
 export const DEFAULT_MEMORY_MIB = 8192;
 

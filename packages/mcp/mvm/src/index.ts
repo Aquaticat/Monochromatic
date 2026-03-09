@@ -30,25 +30,27 @@ const listTool = defineTool('list_vms', {
   },
 });
 
-/** MCP tool: create a new Ubuntu VM, optionally cloned from an existing one. */
+/** MCP tool: create a new VM, optionally cloned from an existing one. */
 const createTool = defineTool('create_vm', {
-  description: 'Creates and starts a new Ubuntu VM. When `from` is provided, clones from that existing VM instead of creating fresh from the base image.',
+  description: 'Creates and starts a new VM. Supports ubuntu (default), fedora, alpine, or a custom template name via the `image` parameter. When `from` is provided, clones from that existing VM instead of creating fresh.',
   inputSchema: {
     type: 'object',
     properties: {
       name: { type: 'string', description: 'VM name (alphanumeric, hyphens, underscores)' },
       from: { type: 'string', description: 'Clone from this existing VM instead of creating fresh' },
+      image: { type: 'string', description: 'Image to use: ubuntu (default), fedora, alpine, or a custom template name' },
     },
     required: ['name'],
   },
   handler: async (args) => {
     const name = args.name as string;
     const from = args.from as string | undefined;
+    const image = args.image as string | undefined;
     try {
       if (from !== undefined) {
         await clone({ destination: name, source: from });
       } else {
-        await create({ name });
+        await create({ image, name });
       }
       const suffix = from !== undefined ? ` (cloned from ${from})` : '';
       return { content: [{ type: 'text', text: `VM ${name} created${suffix} and started. Use exec_in_vm to run commands inside it.` }] };
