@@ -1,5 +1,5 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { cssCalc, cssPercent, cssRaw, cssRem, cssS, cssTranslateY, cssVar } from "@monochromatic-dev/module-es/h-css";
+import { cssCalc, cssCommaList, cssPercent, cssRem, cssS, cssTranslateY, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { borderRadiusFull, flexCenter } from "../mixins.ts";
 
@@ -43,7 +43,7 @@ const STYLES = [
       'background-color': cssVar('bg-stronger'),
       ...flexCenter(),
       'font-size': cssRem(1),
-      'transition-property': cssRaw('inset-inline-start, inset-inline-end'),
+      'transition-property': cssCommaList(['inset-inline-start', 'inset-inline-end']),
       'transition-duration': cssS(0.15),
     },
   }),

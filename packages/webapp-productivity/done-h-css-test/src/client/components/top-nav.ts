@@ -1,5 +1,5 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { cssCalc, cssInt, cssNum, cssRaw, cssRem, cssRotate, cssTurn, cssVar } from "@monochromatic-dev/module-es/h-css";
+import { cssCalc, cssCompounded, cssInt, cssRem, cssRotate, cssTurn, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { appearanceNone, borderRadiusFull, flexCenter, flexColumn, focusOutline, minTouchTarget, stickyBar } from "../mixins.ts";
 
@@ -81,7 +81,7 @@ const STYLES = [
       'block-size': cssRem(0.875),
       'background-color': cssVar('fg'),
       transform: cssRotate(cssTurn(-0.125)),
-      'transform-origin': cssRaw('top left'),
+      'transform-origin': cssCompounded(['top', 'left']),
     },
   }),
   css({

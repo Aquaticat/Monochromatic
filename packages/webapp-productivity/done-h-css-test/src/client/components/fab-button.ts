@@ -1,5 +1,5 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { cssInt, cssNum, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
+import { cssInt, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { borderRadiusFull, flexCenter, focusOutline, minTouchTarget } from "../mixins.ts";
 
@@ -28,10 +28,10 @@ const STYLES = [
       color: cssVar('bg'),
       'font-size': cssRem(2),
       cursor: 'pointer',
-      'line-height': cssNum(1.2),
+      'line-height': 1.2,
     },
     children: [
-      css({ rule: '&:hover', decls: { opacity: cssNum(0.85) } }),
+      css({ rule: '&:hover', decls: { opacity: 0.85 } }),
       css({ rule: '&:focus-visible', decls: focusOutline() }),
     ],
   }),

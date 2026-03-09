@@ -9,7 +9,7 @@
  */
 import type { Task, TaskComplexity, TaskPriority } from "../../lib/types.ts";
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { cssCalc, cssInt, cssNum, cssPercent, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
+import { cssCalc, cssInt, cssPercent, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { formatRunningTrackedTime } from "../lib/task-card.ts";
 import { $ as css } from "../css.ts";
 import {
@@ -133,11 +133,11 @@ const STYLES = [
       'padding-inline': cssRem(0.5),
       gap: cssRem(0.25),
       'font-size': cssRem(1),
-      'line-height': cssNum(1.5),
+      'line-height': 1.5,
     },
     children: [
       css({ rule: '&[data-autofilled]', decls: { 'border-color': cssVar('red-fg'), color: cssVar('red-fg') } }),
-      css({ rule: '&[data-loading]', decls: { opacity: cssNum(0.5) } }),
+      css({ rule: '&[data-loading]', decls: { opacity: 0.5 } }),
     ],
   }),
   css({

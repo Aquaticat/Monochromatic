@@ -15,7 +15,7 @@
  * would scatter the two halves of a single layout concern.
  */
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { cssCalc, cssInt, cssNum, cssPercent, cssRaw, cssRem, cssS, cssTranslateX, cssVar, cssVi } from "@monochromatic-dev/module-es/h-css";
+import { cssCalc, cssCubicBezier, cssInt, cssNum, cssPercent, cssRem, cssS, cssTranslateX, cssVar, cssVi } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { appearanceNone, flexCenter, flexColumn, flexRow, focusOutline, minTouchTarget, shadowDomGlobals } from "../mixins.ts";
 
@@ -155,7 +155,7 @@ const STYLES = [
   css({
     rule: '.panel:popover-open',
     decls: {
-      'animation-name': cssRaw('scrim-fade-in'),
+      'animation-name': 'scrim-fade-in',
       'animation-duration': cssS(0.2),
       'animation-timing-function': 'ease-out',
       'animation-fill-mode': 'both',
@@ -164,9 +164,9 @@ const STYLES = [
   css({
     rule: '.panel:popover-open > .panel-drawer',
     decls: {
-      'animation-name': cssRaw('drawer-slide-in'),
+      'animation-name': 'drawer-slide-in',
       'animation-duration': cssS(0.25),
-      'animation-timing-function': cssRaw('cubic-bezier(0, 0, 0.2, 1)'),
+      'animation-timing-function': cssCubicBezier([0, 0, 0.2, 1]),
       'animation-fill-mode': 'both',
     },
   }),

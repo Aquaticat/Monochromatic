@@ -504,27 +504,72 @@ export function cssScale(factor: number,): CssValue {
 
 //endregion
 
-//region Escape hatch
+//region Composition constructors
 
 /**
- * Brands a raw CSS value string.
+ * Creates a `cubic-bezier()` easing function value.
  *
- * Use for compound values that no specific constructor covers
- * (e.g. multi-part values, complex function compositions).
- * This is an intentional escape hatch — prefer specific constructors when available.
+ * `cubic-bezier()` defines a custom timing curve for CSS animations and transitions.
+ * The four values are the x/y coordinates of the two control points (P1 and P2).
  *
- * @param value - raw CSS value string
- * @returns branded CSS value
+ * @param values - four control point coordinates `[x1, y1, x2, y2]`
+ * @returns branded CSS timing function string (e.g. `'cubic-bezier(0.4, 0, 0.2, 1)'`)
  *
  * @example
  * ```ts
- * cssRaw('repeat(3, 1fr)')                           // grid template
- * cssRaw('0 0.25rem 0.5rem oklch(0 0 0 / 0.1)')     // box-shadow
- * cssRaw('oklch(0.5 0.2 250) solid 0.125rem')        // border longhand
+ * cssCubicBezier([0.4, 0, 0.2, 1])  // 'cubic-bezier(0.4, 0, 0.2, 1)'
+ * cssCubicBezier([0, 0, 0.2, 1])    // 'cubic-bezier(0, 0, 0.2, 1)'
  * ```
  */
-export function cssRaw(value: string,): CssValue {
-  return value as CssValue;
+export function cssCubicBezier(values: ReadonlyArray<number>,): CssValue {
+  return `cubic-bezier(${values.join(', ')})` as CssValue;
 }
+
+/**
+ * Creates a comma-separated CSS value list.
+ *
+ * Joins items with `, ` — use for multi-value properties like `font-family`,
+ * `transition-property`, `animation-name` (multiple), or `background-image`.
+ *
+ * @param values - list items (branded CSS values or plain identifier strings)
+ * @returns branded CSS comma-separated list
+ *
+ * @example
+ * ```ts
+ * cssCommaList(['Inter', 'system-ui', 'sans-serif'])
+ * // 'Inter, system-ui, sans-serif'
+ *
+ * cssCommaList(['inset-inline-start', 'inset-inline-end'])
+ * // 'inset-inline-start, inset-inline-end'
+ * ```
+ */
+export function cssCommaList(values: ReadonlyArray<CssValue | string>,): CssValue {
+  return values.join(', ') as CssValue;
+}
+
+/**
+ * Creates a space-separated compound CSS value.
+ *
+ * Joins items with ` ` — use for multi-part values like `box-shadow`,
+ * `transform-origin`, `grid-template`, or any property that takes
+ * space-separated components.
+ *
+ * @param values - value parts (branded CSS values, keyword strings, or numbers)
+ * @returns branded CSS compound value
+ *
+ * @example
+ * ```ts
+ * cssCompounded(['bottom', 'right'])
+ * // 'bottom right'
+ *
+ * cssCompounded([0, cssRem(-0.25), cssRem(1), cssOklch({ l: 0, c: 0, h: 0, a: 0.2 })])
+ * // '0 -0.25rem 1rem oklch(0 0 0 / 0.2)'
+ * ```
+ */
+export function cssCompounded(values: ReadonlyArray<CssValue | string | number>,): CssValue {
+  return values.join(' ') as CssValue;
+}
+
+//endregion
 
 //endregion

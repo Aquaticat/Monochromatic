@@ -5,7 +5,7 @@
  * hydration logic rather than style declarations.
  */
 import { $ as css } from "./css.ts";
-import { cssCalc, cssNum, cssPercent, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
+import { cssCalc, cssPercent, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 
 /** Inbox-specific styles for task children, controls, and location options. */
 export const inboxStyles = [

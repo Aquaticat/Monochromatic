@@ -36,7 +36,7 @@
  *   at: 'media',
  *   params: '(prefers-color-scheme: dark)',
  *   children: [
- *     $({ rule: ':root', decls: { '--color-fg': cssRaw('oklch(0.9 0 0)') } }),
+ *     $({ rule: ':root', decls: { '--color-fg': cssOklch({ l: 0.9, c: 0, h: 0 }) } }),
  *   ],
  * });
  * ```
@@ -67,8 +67,11 @@ export type { CssValue } from "./values.ts";
 export {
   cssCalc,
   cssColorFn,
+  cssCommaList,
+  cssCompounded,
   cssCqb,
   cssCqi,
+  cssCubicBezier,
   cssDvb,
   cssDvi,
   cssEm,
@@ -78,7 +81,6 @@ export {
   cssNum,
   cssOklch,
   cssPercent,
-  cssRaw,
   cssRem,
   cssRotate,
   cssS,

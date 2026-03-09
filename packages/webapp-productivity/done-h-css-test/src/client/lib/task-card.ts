@@ -17,7 +17,7 @@
 import type { Task } from "../../lib/types.ts";
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { $ as css } from "../css.ts";
-import { cssNum, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
+import { cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { appearanceNone, flexCenter, flexRow, focusOutline, scrollRow, whitespaceNowrap, flexColumn } from "../mixins.ts";
 
 /** Configuration for a `<task-card>` instance, passed via `createTaskCard`. */
@@ -84,7 +84,7 @@ const TASK_CARD_STYLES = [
   }),
   css({
     rule: '.title',
-    decls: { 'font-size': cssRem(1.25), 'font-weight': cssNum(400), 'line-height': 'normal', 'flex-grow': cssNum(1), 'min-inline-size': 0 },
+    decls: { 'font-size': cssRem(1.25), 'font-weight': 400, 'line-height': 'normal', 'flex-grow': 1, 'min-inline-size': 0 },
   }),
   css({
     rule: '.chips',
@@ -93,7 +93,7 @@ const TASK_CARD_STYLES = [
   css({ rule: '.chips::-webkit-scrollbar', decls: { display: 'none' } }),
   css({
     rule: '.chip',
-    decls: { ...flexRow(), ...whitespaceNowrap(), gap: cssRem(0.25), 'font-size': cssRem(1), 'line-height': cssNum(1.5) },
+    decls: { ...flexRow(), ...whitespaceNowrap(), gap: cssRem(0.25), 'font-size': cssRem(1), 'line-height': 1.5 },
   }),
   css({
     rule: '.chip.blocked',

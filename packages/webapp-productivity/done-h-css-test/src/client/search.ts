@@ -13,7 +13,7 @@ import { readPageData } from "./lib/page-data.ts";
 import { createTaskCard } from "./lib/task-card.ts";
 import { globalStyles } from "./styles.ts";
 import { $ as css } from "./css.ts";
-import { cssCalc, cssNum, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
+import { cssCalc, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { borderRadiusFull, flexCenter, whitespaceNowrap } from "./mixins.ts";
 import "./components/side-drawer.ts";
 import "./components/search-bar.ts";

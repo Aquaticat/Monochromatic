@@ -1,5 +1,5 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { cssCalc, cssNum, cssPercent, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
+import { cssCalc, cssPercent, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { appearanceNone, flexCenter, focusOutline, minTouchTarget, shadowDomGlobals, stickyBar } from "../mixins.ts";
 

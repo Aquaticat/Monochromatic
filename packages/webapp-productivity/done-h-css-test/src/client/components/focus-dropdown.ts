@@ -1,5 +1,5 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { cssCalc, cssInt, cssNum, cssPercent, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
+import { cssCalc, cssInt, cssPercent, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { buttonOutlined, focusOutline } from "../mixins.ts";
 

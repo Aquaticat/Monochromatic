@@ -145,6 +145,27 @@ export type DisallowedAtRules = 'charset' | 'font-palette-values';
 
 //endregion
 
+//region Identifier properties
+
+/**
+ * CSS properties whose values are user-defined identifiers, not CSS lengths/colors/keywords.
+ *
+ * These properties accept arbitrary strings via `(string & {})` because their values
+ * are names chosen by the author (e.g. `@keyframes` names), not constrained CSS tokens.
+ * Requiring `CssValue` constructors for these adds no safety.
+ *
+ * @example
+ * ```ts
+ * const decls: StrictCssDeclarations = {
+ *   'animation-name': 'slide-in',  // plain string — OK, user-defined identifier
+ *   gap: '1rem',                   // type error — must use cssRem(1)
+ * };
+ * ```
+ */
+type IdentifierProperties = 'animation-name';
+
+//endregion
+
 //region Strict declarations
 
 /**
@@ -152,6 +173,7 @@ export type DisallowedAtRules = 'charset' | 'font-palette-values';
  *
  * - Property names: csstype's `PropertiesHyphen` minus {@link DisallowedProperties}
  * - Property values: csstype keyword literals (minus named colors) plus `CssValue` branded type
+ * - Identifier properties: accept `(string & {})` for user-defined names (e.g. animation names)
  * - Custom properties: `--*` accepted with `CssValue` or plain `string` values
  *
  * @example
@@ -160,13 +182,17 @@ export type DisallowedAtRules = 'charset' | 'font-palette-values';
  *   display: 'flex',                     // keyword literal
  *   gap: cssRem(1),                      // branded constructor
  *   'background-color': cssVar('bg'),    // branded var reference
+ *   'animation-name': 'slide-in',        // plain string — identifier property
  *   width: cssRem(10),                   // type error — 'width' is disallowed
  *   color: 'red',                        // type error — named colors excluded
  * };
  * ```
  */
 export type StrictCssDeclarations = {
-  [K in Exclude<keyof PropertiesHyphen, DisallowedProperties>]?: StrictValue<PropertiesHyphen[K]>;
+  [K in Exclude<keyof PropertiesHyphen, DisallowedProperties>]?:
+    K extends IdentifierProperties
+      ? StrictValue<PropertiesHyphen[K]> | (string & {})
+      : StrictValue<PropertiesHyphen[K]>;
 } & Record<`--${string}`, CssValue | string>;
 
 //endregion
