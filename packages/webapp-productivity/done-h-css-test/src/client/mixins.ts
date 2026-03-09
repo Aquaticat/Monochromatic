@@ -5,7 +5,8 @@
  * functions that return declaration records. Composed via object spread.
  */
 import type { CssDeclarations, CssValue } from "@monochromatic-dev/module-es/h-css";
-import { cssCalc, cssRem, cssVar, cssInt } from "@monochromatic-dev/module-es/h-css";
+import { cssCalc, cssInt, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
+import { $ as css } from "./css.ts";
 
 //region Layout primitives
 
@@ -137,8 +138,8 @@ export function minTouchTarget(): CssDeclarations {
  */
 export function shadowDomGlobals(): string[] {
   return [
-    'button:disabled{opacity:0.45;cursor:not-allowed}',
-    'input::placeholder,textarea::placeholder{color:var(--medium)}',
+    css({ rule: 'button:disabled', decls: { opacity: 0.45, cursor: 'not-allowed' } }),
+    css({ rule: 'input::placeholder,textarea::placeholder', decls: { color: cssVar('medium') } }),
   ];
 }
 
