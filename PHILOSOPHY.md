@@ -10,5 +10,6 @@ The philosophy is organized into focused documents:
 - **[Build and Execution](PHILOSOPHY.build-execution.md)** - Technical decisions about build systems and script execution
 - **[Tool Choices](PHILOSOPHY.tool-choices.md)** - Rationale for framework, editor, linting, testing, and AI SDK selections
 - **[Browser Support](PHILOSOPHY.browser-support.md)** - Future considerations for browser feature adoption
+- **[CSS](PHILOSOPHY.css.md)** - h-css hyperscript pattern, Shadow DOM style injection, and why alternatives don't fit
 
 Each document provides the reasoning behind specific technical decisions and architectural choices.

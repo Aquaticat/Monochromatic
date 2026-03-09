@@ -1,0 +1,12 @@
+{
+  "name": "@monochromatic-dev/webapp-productivity-done-h-css-test",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}

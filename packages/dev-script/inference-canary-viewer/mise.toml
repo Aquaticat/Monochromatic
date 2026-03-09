@@ -1,6 +1,7 @@
 [tasks.build]
 description = "Generate static dashboard from canary history and artifacts"
-depends = ["inference-canary-run"]
+# FIXME: I mis-understood how Mise's "depends" work. I thought it would run once but apparently it runs every time. Need a proper "depends" that runs the depended tasks once until the depended tasks themselves' dependencies changed or output not proper.
+# depends = ["inference-canary-run"]
 run = ["bun src/build.ts"]
 
 [tasks.inference-canary-run]

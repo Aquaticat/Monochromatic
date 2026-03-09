@@ -1,0 +1,34 @@
+[tasks.build]
+extends = "build"
+
+[tasks."build:js"]
+run = "bun src/server.ts --build-only"
+
+[tasks."watch:build"]
+extends = "watch:build"
+
+[tasks."watch:build:js"]
+run = "bun --watch src/server.ts --build-only"
+
+[tasks."dev:site"]
+description = "Start Done in watch mode"
+run = "bun --watch src/server.ts"
+
+# start:site intentionally omitted -- production is managed by the
+# orchestrator container, not by mise (see PLAN.md section 7).
+
+[tasks."dev"]
+description = "Start Done in watch mode alongside a local llama.cpp inference server"
+run = [{ tasks = ["dev:site:llama", "dev:site"] }]
+
+[tasks."dev:llama"]
+hide = true
+description = "Start llama-server with default model (LFM2.5-1.2B-Instruct-Q4_K_M)"
+run = "llama-server --hf-repo LiquidAI/LFM2.5-1.2B-Instruct-GGUF --hf-file LFM2.5-1.2B-Instruct-Q4_K_M.gguf --ctx-size 4096 --host 127.0.0.1 --port 8080"
+
+[tasks."lint:types"]
+extends = "lint:types"
+hide = true
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"

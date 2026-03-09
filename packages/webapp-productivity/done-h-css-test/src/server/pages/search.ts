@@ -1,0 +1,60 @@
+/**
+ * Search page handler.
+ *
+ * Unlike inbox/settings/in-progress, this page renders its own HTML inline
+ * instead of calling `renderPage()`, because it replaces the `<top-nav>` with
+ * a `<search-bar>` component at the top of the shell.
+ *
+ * Client entry: `/dist/client/search.js` (src/client/search.ts)
+ */
+import { $ as h } from "@monochromatic-dev/module-es/ts/types/t string/t html/f/t string jsx/r s/p n/index.ts";
+import { listAllTags, searchTasks } from "../../lib/db/tasks.ts";
+import { serializePageData } from "./layout.ts";
+
+/**
+ * Renders the search page with FTS results when a query is present.
+ * @param url - Request URL (the `q` search param contains the query)
+ */
+export function searchPage(url: URL): Response {
+  const query = url.searchParams.get("q") ?? "";
+  const results = searchTasks(query);
+  const availableTags = listAllTags();
+
+  const pageData = { query, results, availableTags };
+
+  const html = `<!DOCTYPE html>
+` + h({
+    tag: "html",
+    attrs: { lang: "en" },
+    children: [
+      h({
+        tag: "head",
+        children: [
+          h({ tag: "meta", attrs: { charset: "utf-8" } }),
+          h({ tag: "meta", attrs: { name: "viewport", content: "width=device-width, initial-scale=1" } }),
+          h({ tag: "title", text: "Search - Done" }),
+        ],
+      }),
+      h({
+        tag: "body",
+        children: [
+          h({ tag: "side-drawer", attrs: { id: "drawer" } }),
+          h({
+            tag: "div",
+            class: "page-wrapper",
+            children: [
+              h({ tag: "search-bar", attrs: { value: query } }),
+              h({ tag: "main", attrs: { id: "app" } }),
+            ],
+          }),
+          h({ tag: "script", attrs: { type: "application/json", id: "page-data" }, html: serializePageData(pageData) }),
+          h({ tag: "script", attrs: { type: "module", src: "/dist/client/search.js" } }),
+        ],
+      }),
+    ],
+  });
+
+  return new Response(html, {
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
+}
