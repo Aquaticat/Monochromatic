@@ -24,6 +24,6 @@ import {
  * console.log(uuid); // 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
  * ```
  */
-export function $(_options?: {}): string {
+export function $(_options?: Record<string, never>): string {
   return positional();
 }
