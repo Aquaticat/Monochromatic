@@ -3,7 +3,7 @@
   "description": "Claude Code PreToolUse hook that blocks Agent resume calls, preventing polling loops on background agents.",
   "type": "module",
   "bin": {
-    "ccarg": "./src/index.ts"
+    "ccarg": "./dist/final/node/index.mjs"
   },
   "version": "0.0.1",
   "repository": {
@@ -17,6 +17,7 @@
     "@monochromatic-dev/claude-code-plugins-hook-utils": "workspace:*"
   },
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@types/bun": "catalog:"
   }

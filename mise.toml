@@ -24,10 +24,6 @@ bun = "latest"
 # TODO: Migrating to Bun.
 # pnpm = { version = "latest", postinstall = "pnpm install" }
 
-# Scripts assume basic unix tools
-coreutils = "latest"
-
-# Find files
 # aqua:sharkdp/fd broken as of 2026-03-07, falling back to cargo
 "cargo:fd-find" = "latest"
 ripgrep = "latest"
@@ -67,9 +63,11 @@ cargo-binstall = "latest"
 
 # AI inference server for local development (packages/webapp-productivity/done)
 "github:ggml-org/llama.cpp" = "latest"
+
 opentofu = "latest"
 hcloud = "latest"
 "npm:typescript-language-server" = "latest"
+"cargo:coreutils" = { version = "latest", features = "unix" }
 
 [settings]
 # Enable automatic tool installation when entering directory
@@ -147,23 +145,23 @@ run = "tsdown --config tsdown.browser.config.ts"
 [task_templates."build:js:node"]
 run = "tsdown --config tsdown.node.config.ts"
 
-[task_templates."build--watch"]
-run = [{ tasks = ["build--watch:*"] }]
+[task_templates."watch:build"]
+run = [{ tasks = ["watch:build:*"] }]
 
-[task_templates."build--watch:js"]
-run = [{ tasks = ["build--watch:js:*"] }]
+[task_templates."watch:build:js"]
+run = [{ tasks = ["watch:build:js:*"] }]
 
-[task_templates."build--watch:js:browser"]
+[task_templates."watch:build:js:browser"]
 run = "tsdown --watch --config tsdown.browser.config.ts"
 
-[task_templates."build--watch:js:node"]
+[task_templates."watch:build:js:node"]
 run = "tsdown --watch --config tsdown.node.config.ts"
 
 [task_templates.test]
 run = [{ tasks = ["test:*"] }]
 
-[task_templates."test--watch"]
-run = [{ tasks = ["test--watch:*"] }]
+[task_templates."watch:test"]
+run = [{ tasks = ["watch:test:*"] }]
 
 [task_templates.lint]
 run = [{ tasks = ["lint:*"] }]
@@ -176,7 +174,7 @@ run = "oxlint --type-aware -c {{vars.monorepo_root}}/.oxlintrc.json"
 description = "TypeScript"
 run = "tsgo --build"
 
-[task_templates."lint--watch:types"]
+[task_templates."watch:lint:types"]
 description = "Type check in watch mode"
 run = "tsgo --watch"
 
@@ -206,9 +204,9 @@ run = "mise '//packages/...:build'"
 # Monorepo glob syntax: // = absolute from root, ... = all config roots, :task = task name.
 # https://mise.jdx.dev/tasks/monorepo.html
 
-[tasks.build--watch]
-description = "Build all packages in watch mode, fanout to every package's 'build--watch' task"
-run = "mise '//packages/...:build--watch'"
+[tasks."watch:build"]
+description = "Build all packages in watch mode, fanout to every package's 'watch:build' task"
+run = "mise '//packages/...:watch:build'"
 
 #endregion Build Tasks
 
@@ -285,7 +283,7 @@ podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx 
 # description = "Run browser tests"
 # run = "vitest run --config vitest.browser.config.ts"
 
-[tasks."test--watch:unit"]
+[tasks."watch:test:unit"]
 hide = true
 description = "Run unit tests in watch mode"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to bun test"'
@@ -298,14 +296,14 @@ if ($args | is-empty) {
 }
 """
 
-# [tasks."test--watch:browser"]
+# [tasks."watch:test:browser"]
 # hide = true
 # description = "Run browser tests in watch mode"
 # run = "vitest watch --config vitest.browser.config.ts"
 
-[tasks."test--watch"]
+[tasks."watch:test"]
 description = "Run all tests in watch mode"
-extends = "test--watch"
+extends = "watch:test"
 alias = "tW"
 
 [tasks."testDockerImage"]
@@ -327,9 +325,9 @@ if $args == '' {
 }
 """
 
-[tasks.buildAndTest--watch]
+[tasks."watch:buildAndTest"]
 description = "Build and test in watch mode"
-run = [{ tasks = ["build--watch", "test--watch"] }]
+run = [{ tasks = ["watch:build", "watch:test"] }]
 
 #endregion Test Tasks
 
@@ -449,11 +447,11 @@ run = "caddy run --config Caddyfile --adapter caddyfile"
 [tasks."sync:files"]
 alias = "file-enforcer"
 description = "Sync derived files (CLAUDE.md, oxlint config, etc.) via file-enforcer"
-run = "bun packages/dev-script/file-enforcer/src/index.ts"
+run = "bun packages/dev-script/file-enforcer/src/cli.ts"
 
-[tasks."sync--watch:files"]
+[tasks."watch:sync:files"]
 description = "Watch source files and re-sync on changes"
-run = "bun packages/dev-script/file-enforcer/src/index.ts --watch"
+run = "bun packages/dev-script/file-enforcer/src/cli.ts --watch"
 
 #endregion File Enforcer
 

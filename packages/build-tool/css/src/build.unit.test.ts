@@ -13,7 +13,7 @@ import {
   expandApplyRules,
   expandMixinBodies,
   mixins,
-} from './build.ts';
+} from './index.ts';
 
 //region Test Helpers
 

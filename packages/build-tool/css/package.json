@@ -2,19 +2,20 @@
   "name": "@monochromatic-dev/build-tool-css",
   "description": "CSS build tool with @mixin/@apply processing and @import resolution for monorepo packages.",
   "type": "module",
-  "module": "dist/final/index.js",
+  "module": "dist/final/node/index.js",
   "exports": {
-    ".": "./dist/final/build.js",
-    "./ts": "./src/build.ts",
+    ".": "./dist/final/node/index.js",
+    "./ts": "./src/index.ts",
     "./ts/fs-registry": "./src/fs-registry.ts",
     "./ts/process-shim": "./src/process-shim.ts"
   },
-  "main": "dist/final/index.js",
-  "typings": "dist/final/index.d.ts",
+  "main": "dist/final/node/index.js",
+  "typings": "dist/final/node/index.d.ts",
   "files": [
     "dist/final"
   ],
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@types/bun": "catalog:"
   },

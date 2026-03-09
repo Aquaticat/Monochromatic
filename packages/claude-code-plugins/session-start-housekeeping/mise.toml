@@ -5,5 +5,19 @@ extends = "lint:types"
 extends = "lint:oxlint"
 
 [tasks.build]
-description = "Bundle into a self-contained executable"
-run = "bun build --target=bun --minify src/index.ts --outfile dist/final/ccssh.js"
+extends = "build"
+
+[tasks."build:js"]
+extends = "build:js"
+
+[tasks.'build:js:node']
+extends = "build:js:node"
+
+[tasks."watch:build"]
+extends = "watch:build"
+
+[tasks."watch:build:js"]
+extends = "watch:build:js"
+
+[tasks."watch:build:js:node"]
+extends = "watch:build:js:node"

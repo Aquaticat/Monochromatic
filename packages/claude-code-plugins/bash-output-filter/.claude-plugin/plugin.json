@@ -1,0 +1,21 @@
+{
+  "name": "bash-output-filter",
+  "description": "Strips wasteful patterns from Bash tool output (git boilerplate, long lines, repeated diagnostics) to reduce token usage.",
+  "version": "0.0.1",
+  "author": {
+    "name": "Aquaticat"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/dist/final/node/index.mjs"
+          }
+        ]
+      }
+    ]
+  }
+}

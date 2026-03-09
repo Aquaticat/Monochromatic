@@ -1,10 +1,25 @@
 import { defineConfig, type UserConfig, } from 'tsdown';
 
+/**
+ * Shared tsdown configuration for Node.js platform builds.
+ *
+ * Bundles workspace dependencies (`@monochromatic-dev/*`) into the output
+ * so built artifacts are self-contained and work outside the monorepo
+ * (e.g. Claude Code plugins installed via marketplace).
+ *
+ * @example
+ * ```ts
+ * // tsdown.node.config.ts
+ * import base from '@monochromatic-dev/config-tsdown/.node.ts';
+ * export default defineConfig({ ...base, entry: ['./src/index.ts'] });
+ * ```
+ */
 const _default_1: UserConfig = defineConfig({
   entry: ['./src/index.ts',],
   dts: true,
   target: 'firefox140',
   platform: 'node',
+  noExternal: [/^@monochromatic-dev\//,],
   minify: {
     compress: true,
     mangle: false,

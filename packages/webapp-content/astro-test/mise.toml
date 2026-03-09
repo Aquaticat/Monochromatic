@@ -5,21 +5,21 @@ extends = "build"
 run = [{ tasks = ["build:site:css"] }, { tasks = ["build:site:astro"] }]
 
 [tasks.'build:site:css']
-run = "bun ../../build/css/src/index.ts src/styles/main.css dist/bundle.css"
+run = "bun ../../build-tool/css/src/cli.ts src/styles/main.css dist/bundle.css"
 
 [tasks.'build:site:astro']
 run = "bun exec astro build"
 
-[tasks."build--watch"]
-extends = "build--watch"
+[tasks."watch:build"]
+extends = "watch:build"
 
-[tasks."build--watch:site"]
-run = [{ tasks = ["build--watch:site:*"] }]
+[tasks."watch:build:site"]
+run = [{ tasks = ["watch:build:site:*"] }]
 
-[tasks."build--watch:site:css"]
-run = "bun ../../build/css/src/index.ts src/styles/main.css dist/bundle.css --watch"
+[tasks."watch:build:site:css"]
+run = "bun ../../build-tool/css/src/cli.ts src/styles/main.css dist/bundle.css --watch"
 
-[tasks."build--watch:site:astro"]
+[tasks."watch:build:site:astro"]
 run = "bun exec astro build --watch"
 
 [tasks."lint:types"]

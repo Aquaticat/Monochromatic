@@ -1,0 +1,24 @@
+{
+  "name": "@monochromatic-dev/claude-code-plugins-bash-output-filter",
+  "description": "Claude Code PreToolUse hook that pipes Bash tool output through a filter to strip git boilerplate, truncate long lines, and collapse repeated diagnostics.",
+  "type": "module",
+  "bin": {
+    "ccbof": "./dist/final/node/index.mjs"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/claude-code-plugins/bash-output-filter"
+  },
+  "sideEffects": true,
+  "dependencies": {
+    "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*",
+    "@monochromatic-dev/claude-code-plugins-hook-utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}

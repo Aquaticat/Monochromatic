@@ -26,6 +26,7 @@
     "@monochromatic-dev/claude-code-plugins-session-start-housekeeping": "workspace:*",
     "@monochromatic-dev/claude-code-plugins-stop-reminders": "workspace:*",
     "@monochromatic-dev/claude-code-plugins-agent-resume-guard": "workspace:*",
+    "@monochromatic-dev/claude-code-plugins-bash-output-filter": "workspace:*",
     "@oxlint/plugins": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "@monochromatic-dev/build-tool-css": "workspace:*",

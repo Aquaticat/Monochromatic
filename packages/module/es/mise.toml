@@ -10,24 +10,24 @@ extends = "build:js:browser"
 [tasks.'build:js:node']
 extends = "build:js:node"
 
-[tasks.build--watch]
-extends = "build--watch"
+[tasks."watch:build"]
+extends = "watch:build"
 
-[tasks."build--watch:js"]
-extends = "build--watch:js"
+[tasks."watch:build:js"]
+extends = "watch:build:js"
 
-[tasks.'build--watch:js:browser']
-extends = "build--watch:js:browser"
+[tasks."watch:build:js:browser"]
+extends = "watch:build:js:browser"
 
-[tasks.'build--watch:js:node']
-extends = "build--watch:js:node"
+[tasks."watch:build:js:node"]
+extends = "watch:build:js:node"
 
 [tasks."lint:types"]
 extends = "lint:types"
 hide = true
 
-[tasks."lint--watch:types"]
-extends = "lint--watch:types"
+[tasks."watch:lint:types"]
+extends = "watch:lint:types"
 hide = true
 
 [tasks."lint:oxlint"]

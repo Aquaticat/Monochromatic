@@ -31,6 +31,7 @@ Clone entire git repo of a package to a temp dir whenever investigating source c
 
 All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts.
 Read `mise.toml` files in root and package directories for available commands.
+To run a task in a specific package, use `mise run //packages/path:task` (not `mise run -C`).
 Do not run linters or formatters -- the user runs them.
 
 After modifying source in packages that produce dist output (e.g. `module-es`),

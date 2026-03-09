@@ -3,7 +3,7 @@
   "description": "Claude Code SessionStart hook that creates temp directories, cleans stale dist artifacts, and removes ephemeral config files.",
   "type": "module",
   "bin": {
-    "ccssh": "./src/index.ts"
+    "ccssh": "./dist/final/node/index.mjs"
   },
   "version": "0.0.1",
   "repository": {
@@ -17,6 +17,7 @@
     "@monochromatic-dev/claude-code-plugins-hook-utils": "workspace:*"
   },
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@types/bun": "catalog:"
   }

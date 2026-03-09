@@ -1,100 +1,118 @@
-import { watch, } from 'node:fs/promises';
+// Side-effect: shims globalThis.process for browser environments.
+// Must precede postcss import because postcss references process.env without guards.
+import './process-shim.ts';
 import {
   dirname,
   resolve,
 } from '@monochromatic-dev/module-es/ts/path/index.ts';
-import { build, } from './build.ts';
-import type { BuildOptions, } from './build.ts';
+import postcss from 'postcss';
+import { readCssFile, } from './fs.ts';
+import { postcssInlineImport, } from './import.ts';
+import {
+  collectMixins,
+  expandApplyRules,
+  expandMixinBodies,
+  mixins,
+} from './mixin.ts';
 
-//region CLI -- parses args, runs the build, and optionally watches for changes
+//region Types
 
-/** Minimum delay between rebuilds to avoid overlapping builds from rapid saves */
-const DEBOUNCE_MS = 100;
+/** Build options for the CSS processor */
+export type BuildOptions = {
+  /** Input CSS file path */
+  input: string;
+  /** Output CSS file path */
+  output: string;
+  /** Enable watch mode */
+  watch?: boolean;
+};
+
+//endregion Types
+
+//region Re-exports -- public API surface for consumers importing from build.ts
+
+export {
+  collectMixins,
+  expandApplyRules,
+  expandMixinBodies,
+  mixins,
+} from './mixin.ts';
+
+//endregion Re-exports
 
 /**
- * Parses command line arguments for the CSS build tool.
- * @returns Parsed build options
- * @throws When required arguments are missing
- * @example
- * ```bash
- * bun index.ts src/main.css dist/bundle.css
- * bun index.ts src/main.css dist/bundle.css --watch
- * ```
+ * Expands \@apply references in a CSS string using mixin definitions
+ * from a separate CSS source string.
+ *
+ * This is the high-level string-to-string API for consumers that already
+ * have CSS text in memory (e.g. web component Shadow DOM styles). It
+ * encapsulates the full postcss parse → collect → expand → serialize
+ * pipeline so callers never touch postcss directly.
+ * @param cssText - CSS string containing \@apply references to expand
+ * @param mixinCssText - CSS string containing \@mixin definitions
+ * @returns Expanded CSS with all \@apply rules replaced by mixin bodies
+ * @throws When an \@apply references an unknown mixin
  */
-function parseArgs(): BuildOptions {
-  /** Raw CLI arguments after the script path */
-  const args = process.argv.slice(2);
+export function applyMixins(cssText: string, mixinCssText: string): string {
+  mixins.clear();
 
-  if (args.length < 2) {
-    throw new Error('Usage: bun index.ts <input> <output> [--watch]');
-  }
+  /** PostCSS AST of mixin definitions, parsed to extract \@mixin rules */
+  const mixinRoot = postcss.parse(mixinCssText, { from: 'mixins.css', });
+  collectMixins(mixinRoot);
+  expandMixinBodies();
 
-  /** Positional arg: path to the CSS entry point */
-  const input = args[0];
-  /** Positional arg: path for the bundled output */
-  const output = args[1];
+  /** PostCSS AST of the consumer CSS, parsed for \@apply expansion */
+  const root = postcss.parse(cssText);
+  expandApplyRules(root);
 
-  if (input === undefined || output === undefined) {
-    throw new Error('Usage: bun index.ts <input> <output> [--watch]');
-  }
-  /** Whether to keep running and rebuild on file changes */
-  const watchMode = args.includes('--watch');
-
-  return { input, output, watch: watchMode, };
+  return root.toString();
 }
 
 /**
- * Watches a directory for CSS file changes and triggers rebuilds with debouncing.
- * Uses the async iterator form of fs.watch (supported by Bun's node:fs/promises).
- * @param options - Build configuration including input/output paths
+ * Builds CSS by inlining \@import rules and processing \@mixin/\@apply.
+ *
+ * Pipeline: read input → inline \@import (custom PostCSS plugin) →
+ * collect mixin definitions → expand nested mixin bodies →
+ * inline \@apply rules → write output.
+ *
+ * Uses only PostCSS (pure JS) — no native binary dependencies.
+ * @param options - Build configuration
+ * @returns Processed CSS string
+ * @throws When an import cannot be resolved or a mixin reference is invalid
  */
-async function watchAndRebuild(options: BuildOptions): Promise<void> {
-  /** Directory to watch, derived from the input file's location */
-  const inputDir = dirname(resolve(options.input));
-  console.log(`Watching directory: ${inputDir}`);
+export async function build(options: BuildOptions): Promise<string> {
+  const { input, output, } = options;
 
-  // Debounce state — `let` needed because the timer is replaced on each event
-  let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+  // Clear mixin registry for fresh build
+  mixins.clear();
 
-  /** Async iterator from node:fs/promises that yields file system events */
-  const watcher = watch(inputDir, { recursive: true, });
+  /** Absolute path to the CSS entry point */
+  const inputPath = resolve(input);
 
-  // for-await is the only way to consume an AsyncIterable from fs.watch —
-  // there is no functional alternative for an unbounded event stream.
-  for await (const event of watcher) {
-    if (event.filename === null || !event.filename.endsWith('.css')) {
-      continue;
-    }
+  /** Raw CSS text read from the entry file */
+  const cssText = await readCssFile(inputPath);
 
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(async () => {
-      console.log(`Change detected: ${event.filename}`);
-      try {
-        await build(options);
-        console.log('Rebuild complete');
-      } catch (rebuildError: unknown) {
-        console.error('Rebuild failed:', rebuildError);
-      }
-    }, DEBOUNCE_MS);
-  }
+  // Phase 1: inline @import rules using our custom PostCSS plugin
+  /** PostCSS result after resolving and inlining all @import rules */
+  const bundled = postcss([postcssInlineImport]).process(cssText, { from: inputPath, });
+
+  /** PostCSS AST with all imports inlined, ready for mixin processing */
+  const root = bundled.root;
+
+  // Phase 2: process @mixin/@apply
+  collectMixins(root);
+  expandMixinBodies();
+  expandApplyRules(root);
+
+  /** Final CSS with all imports inlined and mixins expanded */
+  const result = root.toString();
+
+  // Write output — uses dynamic import so browser callers don't pull in node:fs
+  const { mkdir, writeFile, } = await import('node:fs/promises');
+  /** Absolute path for the output file */
+  const outputPath = resolve(output);
+  await mkdir(dirname(outputPath), { recursive: true, });
+  await writeFile(outputPath, result);
+
+  return result;
 }
-
-/**
- * Entry point: runs the build and optionally watches for changes.
- */
-async function run(): Promise<void> {
-  /** Parsed CLI arguments controlling input, output, and watch behavior */
-  const options = parseArgs();
-
-  console.log(`Building CSS: ${options.input} -> ${options.output}`);
-  await build(options);
-  console.log('Build complete');
-
-  if (options.watch) {
-    await watchAndRebuild(options);
-  }
-}
-
-await run();
-
-//endregion CLI

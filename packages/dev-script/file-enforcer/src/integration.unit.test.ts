@@ -39,7 +39,7 @@ describe('integration: config execution', () => {
 
     /** Config that imports from the package and runs a simple copy */
     const configContent = `
-      import { cat, overwrite } from '${join(import.meta.dirname, 'mod.ts')}';
+      import { cat, overwrite } from '${join(import.meta.dirname, 'index.ts')}';
       await overwrite('${join(tempDir, 'dest.md')}', await cat(['${join(tempDir, 'source.md')}']));
     `;
     /** Write config to temp dir so it can be imported */
@@ -62,7 +62,7 @@ describe('integration: config execution', () => {
 
     /** Config concatenating two files */
     const configContent = `
-      import { cat, overwrite } from '${join(import.meta.dirname, 'mod.ts')}';
+      import { cat, overwrite } from '${join(import.meta.dirname, 'index.ts')}';
       await overwrite(
         '${join(tempDir, 'combined.txt')}',
         await cat(['${join(tempDir, 'a.txt')}', '${join(tempDir, 'b.txt')}'])
@@ -82,7 +82,7 @@ describe('integration: config execution', () => {
 
     /** Config that reads, deduplicates, and writes */
     const configContent = `
-      import { cat, dedup, overwrite } from '${join(import.meta.dirname, 'mod.ts')}';
+      import { cat, dedup, overwrite } from '${join(import.meta.dirname, 'index.ts')}';
       await overwrite(
         '${join(tempDir, 'unique.txt')}',
         dedup(await cat(['${join(tempDir, 'dupes.txt')}']))
@@ -104,7 +104,7 @@ describe('integration: config execution', () => {
 
     /** Config that extracts a property from JSON */
     const configContent = `
-      import { cat, getProperty, overwrite } from '${join(import.meta.dirname, 'mod.ts')}';
+      import { cat, getProperty, overwrite } from '${join(import.meta.dirname, 'index.ts')}';
       await overwrite(
         '${join(tempDir, 'name.txt')}',
         getProperty('.config.name', await cat(['${join(tempDir, 'data.json')}']))
@@ -124,7 +124,7 @@ describe('integration: config execution', () => {
 
     /** Config with a simple copy to verify tracker state */
     const configContent = `
-      import { cat, overwrite } from '${join(import.meta.dirname, 'mod.ts')}';
+      import { cat, overwrite } from '${join(import.meta.dirname, 'index.ts')}';
       await overwrite('${join(tempDir, 'output.md')}', await cat(['${join(tempDir, 'input.md')}']));
     `;
     const configPath = join(tempDir, 'tracked.config.ts');
@@ -143,7 +143,7 @@ describe('integration: config execution', () => {
 
     /** Config that registers a manual dependency via addWatchedPaths */
     const configContent = `
-      import { addWatchedPaths, exec, overwrite } from '${join(import.meta.dirname, 'mod.ts')}';
+      import { addWatchedPaths, exec, overwrite } from '${join(import.meta.dirname, 'index.ts')}';
       addWatchedPaths(['${join(tempDir, 'dep.json')}']);
       const result = await exec('echo', ['from-exec']);
       await overwrite('${join(tempDir, 'exec-out.txt')}', result.trim());
@@ -168,7 +168,7 @@ describe('integration: config execution', () => {
 
     /** Config using overwriteIfNotExists */
     const configContent = `
-      import { cat, overwriteIfNotExists } from '${join(import.meta.dirname, 'mod.ts')}';
+      import { cat, overwriteIfNotExists } from '${join(import.meta.dirname, 'index.ts')}';
       await overwriteIfNotExists(
         '${join(tempDir, 'keep.txt')}',
         await cat(['${join(tempDir, 'src.txt')}'])
@@ -193,7 +193,7 @@ describe('integration: config execution', () => {
 
     /** Config using cat(glob) -> overwriteEach */
     const configContent = `
-      import { cat, overwriteEach } from '${join(import.meta.dirname, 'mod.ts')}';
+      import { cat, overwriteEach } from '${join(import.meta.dirname, 'index.ts')}';
       const files = await cat('${join(srcDir, '*.ts')}');
       await overwriteEach('${join(tempDir, 'out', '*.ts')}', files);
     `;

@@ -1,34 +1,14 @@
-import { findUp, } from 'find-up';
-import { startWatching, } from './watch/watch.ts';
-
-//region CLI entry point -- finds and imports file-enforcer.config.ts, optionally watches
-
-/** Config file name to search for upward from cwd */
-const CONFIG_NAME = 'file-enforcer.config.ts';
-
-/** Raw CLI arguments after the script path */
-const args = process.argv.slice(2);
-
-/** Whether --watch was passed, enabling continuous file watching */
-const watchMode = args.includes('--watch');
-
-/** Positional args with flags stripped, used as an optional config path override */
-const positionalArgs = args.filter((arg) => !arg.startsWith('--'));
-
-/** Config path from CLI arg, or found by walking up from cwd */
-const configPath = positionalArgs[0] ?? await findUp(CONFIG_NAME);
-
-if (configPath === undefined) {
-  throw new Error(`Could not find ${CONFIG_NAME} in any parent directory`);
-}
-
-console.log(`[file-enforcer] loading config: ${configPath}`);
-
-// Importing the config executes it -- the config uses top-level await
-await import(configPath);
-
-if (watchMode) {
-  await startWatching(configPath);
-}
-
-//endregion CLI entry point
+export { invalidatePaths, readCache, readCached, updateCache, } from './io/cache.ts';
+export { cat, globResults, } from './io/cat.ts';
+export type { GlobResult, GlobResults, } from './io/cat.ts';
+export { expandGlob, mirrorGlobPath, } from './io/glob.ts';
+export { overwrite, overwriteEach, overwriteIfNotExists, } from './io/write.ts';
+export { exec, } from './pipeline/exec.ts';
+export { inspect, } from './pipeline/inspect.ts';
+export { dedup, getProperty, } from './pipeline/transform.ts';
+export { addWatchedPaths, reads, reset, trackDest, trackRead, trackWriteTime, writeTimestamps, writes, } from './tracker.ts';
+export { notifyWriteProtection, } from './watch/notify.ts';
+export { DEBOUNCE_MS, watchDirectory, } from './watch/watch-dir.ts';
+export type { EventKind, } from './watch/watch-filter.ts';
+export { classifyEvent, shouldTrigger, watchDirs, } from './watch/watch-filter.ts';
+export { startWatching, } from './watch/watch.ts';

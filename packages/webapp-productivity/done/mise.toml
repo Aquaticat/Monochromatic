@@ -1,7 +1,7 @@
 [tasks."build:js"]
 run = "bun src/server.ts --build-only"
 
-[tasks."build--watch:js"]
+[tasks."watch:build:js"]
 run = "bun --watch src/server.ts --build-only"
 
 [tasks."dev:site"]

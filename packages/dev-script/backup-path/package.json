@@ -2,17 +2,18 @@
   "name": "@monochromatic-dev/dev-script-backup-path",
   "description": "Backup a file or folder into the bak folder in a timestamped folder.",
   "type": "module",
-  "module": "dist/final/index.js",
+  "module": "dist/final/node/index.js",
   "exports": {
-    ".": "./dist/final/index.js",
+    ".": "./dist/final/node/index.js",
     "./ts": "./src/index.ts"
   },
-  "main": "dist/final/index.js",
-  "typings": "dist/final/index.d.ts",
+  "main": "dist/final/node/index.js",
+  "typings": "dist/final/node/index.d.ts",
   "files": [
     "dist/final"
   ],
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@types/bun": "catalog:"
   },
