@@ -43,13 +43,17 @@ function omit<
 /** Base Vite config with rolldownOptions suitable for library builds. */
 const baseViteConfig = createBaseConfig(import.meta.dirname,);
 
+if (baseViteConfig.build === undefined || baseViteConfig.build === null) {
+  throw new Error('Expected baseViteConfig.build to be defined',);
+}
+
 /**
  * Astro-specific Vite config.
  * Omits rolldownOptions from build since Astro manages its own bundling.
  */
 const astroViteConfig = {
   ...baseViteConfig,
-  build: omit(baseViteConfig.build!, 'rolldownOptions',),
+  build: omit(baseViteConfig.build, 'rolldownOptions',),
 };
 
 // https://astro.build/config
