@@ -50,7 +50,7 @@ describe($, () => {
     expect(Array.isArray(results[1]?.decision,),).toBe(true,);
     expect((results[1]?.decision as unknown[])?.[0],).toBe('thrown',);
     expect((results[1]?.decision as unknown[])?.[1],).toBeInstanceOf(Error,);
-    expect(((results[1]?.decision as unknown[])?.[1] as Error).message,).toBe(
+    expect(((results[1]?.decision as unknown[])?.[1] as Error | undefined)?.message,).toBe(
       'Invalid number',
     );
     expect(results[2],).toEqual({ decision: 'pass', item: '3', },);
@@ -174,7 +174,7 @@ describe($, () => {
       expect(Array.isArray(result?.decision,),).toBe(true,);
       expect((result?.decision as unknown[])?.[0],).toBe('thrown',);
       expect((result?.decision as unknown[])?.[1],).toBeInstanceOf(Error,);
-      expect(((result?.decision as unknown[])?.[1] as Error).message,).toBe('Invalid',);
+      expect(((result?.decision as unknown[])?.[1] as Error | undefined)?.message,).toBe('Invalid',);
     }
   });
 
