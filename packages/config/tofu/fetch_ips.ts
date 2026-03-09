@@ -6,8 +6,7 @@ const input = await Bun.stdin.json();
 const TARGET_ASN = input.asn?.toUpperCase();
 
 if (!TARGET_ASN) {
-  console.error("No ASN provided");
-  process.exit(1);
+  throw new Error("No ASN provided");
 }
 
 const CACHE_FILE = join(import.meta.dir, `cache_${TARGET_ASN}.json`);
@@ -62,7 +61,7 @@ async function run() {
     if (await cacheFile.exists()) {
       process.stdout.write(JSON.stringify({ ips: await cacheFile.text() }));
     } else {
-      process.exit(1);
+      throw new Error("Download failed and no cached data available");
     }
   }
 }

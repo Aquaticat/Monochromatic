@@ -28,8 +28,7 @@ const buildResult = await Bun.build({
 });
 
 if (!buildResult.success) {
-  console.error("Client build failed:", buildResult.logs);
-  process.exit(1);
+  throw new Error(`Client build failed: ${JSON.stringify(buildResult.logs)}`);
 }
 
 console.log(
