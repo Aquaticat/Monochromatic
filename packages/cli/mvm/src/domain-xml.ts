@@ -1,3 +1,5 @@
+import { $ as h } from '@monochromatic-dev/module-es/h-xml';
+
 import {
   DEFAULT_MEMORY_MIB,
   DEFAULT_VCPUS,
@@ -25,46 +27,80 @@ export function domainXml({ diskPath, name, seedIsoPath }: {
   name: string;
   seedIsoPath: string;
 }): string {
-  return `<domain type='kvm'>
-  <name>${VM_PREFIX}${name}</name>
-  <memory unit='MiB'>${DEFAULT_MEMORY_MIB}</memory>
-  <vcpu>${DEFAULT_VCPUS}</vcpu>
-  <os>
-    <type arch='x86_64'>hvm</type>
-    <boot dev='hd'/>
-  </os>
-  ${
-    // Bun requires AVX
-    ''
-  }
-  <cpu mode='host-passthrough'/>
-  <features>
-    <acpi/>
-  </features>
-  <devices>
-    <disk type='file' device='disk'>
-      <driver name='qemu' type='qcow2'/>
-      <source file='${diskPath}'/>
-      <target dev='vda' bus='virtio'/>
-    </disk>
-    <disk type='file' device='cdrom'>
-      <driver name='qemu' type='raw'/>
-      <source file='${seedIsoPath}'/>
-      <target dev='sda' bus='sata'/>
-      <readonly/>
-    </disk>
-    <interface type='user'>
-      <model type='virtio'/>
-    </interface>
-    <channel type='unix'>
-      <target type='virtio' name='org.qemu.guest_agent.0'/>
-    </channel>
-    <serial type='pty'>
-      <target port='0'/>
-    </serial>
-    <console type='pty'>
-      <target type='serial' port='0'/>
-    </console>
-  </devices>
-</domain>`;
+  return h({
+    tag: 'domain',
+    attrs: { type: 'kvm', },
+    children: [
+      h({ tag: 'name', text: `${VM_PREFIX}${name}`, }),
+      h({ tag: 'memory', attrs: { unit: 'MiB', }, text: String(DEFAULT_MEMORY_MIB), }),
+      h({ tag: 'vcpu', text: String(DEFAULT_VCPUS), }),
+      h({
+        tag: 'os',
+        children: [
+          h({ tag: 'type', attrs: { arch: 'x86_64', }, text: 'hvm', }),
+          h({ tag: 'boot', attrs: { dev: 'hd', }, }),
+        ],
+      }),
+      // Bun requires AVX
+      h({ tag: 'cpu', attrs: { mode: 'host-passthrough', }, }),
+      h({
+        tag: 'features',
+        children: [
+          h({ tag: 'acpi', }),
+        ],
+      }),
+      h({
+        tag: 'devices',
+        children: [
+          h({
+            tag: 'disk',
+            attrs: { type: 'file', device: 'disk', },
+            children: [
+              h({ tag: 'driver', attrs: { name: 'qemu', type: 'qcow2', }, }),
+              h({ tag: 'source', attrs: { file: diskPath, }, }),
+              h({ tag: 'target', attrs: { dev: 'vda', bus: 'virtio', }, }),
+            ],
+          }),
+          h({
+            tag: 'disk',
+            attrs: { type: 'file', device: 'cdrom', },
+            children: [
+              h({ tag: 'driver', attrs: { name: 'qemu', type: 'raw', }, }),
+              h({ tag: 'source', attrs: { file: seedIsoPath, }, }),
+              h({ tag: 'target', attrs: { dev: 'sda', bus: 'sata', }, }),
+              h({ tag: 'readonly', }),
+            ],
+          }),
+          h({
+            tag: 'interface',
+            attrs: { type: 'user', },
+            children: [
+              h({ tag: 'model', attrs: { type: 'virtio', }, }),
+            ],
+          }),
+          h({
+            tag: 'channel',
+            attrs: { type: 'unix', },
+            children: [
+              h({ tag: 'target', attrs: { type: 'virtio', name: 'org.qemu.guest_agent.0', }, }),
+            ],
+          }),
+          h({
+            tag: 'serial',
+            attrs: { type: 'pty', },
+            children: [
+              h({ tag: 'target', attrs: { port: '0', }, }),
+            ],
+          }),
+          h({
+            tag: 'console',
+            attrs: { type: 'pty', },
+            children: [
+              h({ tag: 'target', attrs: { type: 'serial', port: '0', }, }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
 }
