@@ -40,7 +40,7 @@ export function offsetPolygon(vertices: readonly Point[], offset: number): Point
     const next = vertices[(vertexIndex + 1) % vertexCount];
     const dx = next[0] - vertex[0];
     const dy = next[1] - vertex[1];
-    const len = Math.sqrt(dx * dx + dy * dy);
+    const len = Math.hypot(dx, dy);
     // Outward normal for CW polygon in SVG coords (Y-down): (dy/len, -dx/len)
     const nx = (dy / len) * offset;
     const ny = (-dx / len) * offset;
