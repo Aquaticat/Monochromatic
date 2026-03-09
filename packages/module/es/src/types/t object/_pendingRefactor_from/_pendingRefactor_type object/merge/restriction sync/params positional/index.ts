@@ -139,7 +139,9 @@ export type ObjectsMergeRules = {
       const valueType = typeof value;
       if (!valuesByType.has(valueType,))
         valuesByType.set(valueType, [],);
-      valuesByType.get(valueType,)!.push(value,);
+      const typeValues = valuesByType.get(valueType,);
+      if (typeValues === undefined) throw new Error(`Missing values array for type "${valueType}"`);
+      typeValues.push(value,);
     }
 
     // Check if we have multiple types for the same property

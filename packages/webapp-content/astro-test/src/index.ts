@@ -17,8 +17,8 @@ export type Post = {
 
 export const posts = (await getCollection('blog',)).map((post: any,) => ({
   ...post,
-  lang: post.id.split('/',)[0]!,
-  name: post.id.split('/',)[1]!,
+  lang: post.id.split('/',)[0] ?? '',
+  name: post.id.split('/',)[1] ?? '',
 })) as [Post, ...Post[],];
 
 export const postsGroupedByLang = Object.groupBy(posts, post => post.lang,) as Record<

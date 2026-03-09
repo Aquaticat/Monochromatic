@@ -223,7 +223,11 @@ export async function runOxlint({ files }: { files: readonly string[] }): Promis
     return { diagnostics: new Map(), notes: [] };
   }
 
-  const configDir = findAncestorWithFile(dirname(files[0]!), ".oxlintrc.json");
+  const firstFile = files[0];
+  if (firstFile === undefined) {
+    return { diagnostics: new Map(), notes: [] };
+  }
+  const configDir = findAncestorWithFile(dirname(firstFile), ".oxlintrc.json");
   if (configDir === null) {
     console.error("[mcp-nvim] Could not find .oxlintrc.json in any ancestor directory");
     return { diagnostics: new Map(), notes: [] };

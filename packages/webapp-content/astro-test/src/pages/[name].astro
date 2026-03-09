@@ -15,7 +15,7 @@ export async function getStaticPaths(): Promise<StaticPath[]> {
 }
 
 const { name, } = Astro.params;
-const namePosts = postsGroupedByName[name]!;
+const namePosts = postsGroupedByName[name] ?? [];
 ---
 
 <Html

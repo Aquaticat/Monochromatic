@@ -55,7 +55,7 @@ function formatNotes(notes: readonly string[]): string {
  */
 function buildHeader(files: readonly CurrentFile[]): string {
   if (files.length === 1) {
-    const file = files[0]!;
+    const file = files[0] as (typeof files)[0];
     return `path: ${file.path}\nfiletype: ${file.filetype}\nmodified: ${file.modified}`;
   }
 

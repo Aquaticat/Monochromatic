@@ -28,7 +28,8 @@ async function run() {
   // Stream & Filter (Memory-only)
   try {
     const response = await fetch(URL);
-    const stream = response.body!.pipeThrough(new DecompressionStream("gzip"));
+    if (response.body === null) throw new Error("Response body is null");
+    const stream = response.body.pipeThrough(new DecompressionStream("gzip"));
     const reader = stream.getReader();
     const decoder = new TextDecoder();
 

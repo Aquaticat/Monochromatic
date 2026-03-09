@@ -49,7 +49,9 @@ async function runSysbench(): Promise<number> {
     /** Parse "events per second: NNNN.NN" from sysbench output */
     const match = /events per second:\s+([\d.]+)/.exec(stdout);
     if (match !== null) {
-      return Number.parseFloat(match[1]!);
+      const value = match[1];
+      if (value === undefined) return -1;
+      return Number.parseFloat(value);
     }
     return -1;
   } catch {

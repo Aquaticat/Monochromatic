@@ -14,8 +14,10 @@ type Deck = {
   created_at: string;
 }
 
+const pageDataEl = document.querySelector("#page-data");
+if (pageDataEl === null || pageDataEl.textContent === null) throw new Error("Missing #page-data element or content");
 const data: { decks: Deck[] } = JSON.parse(
-  document.querySelector("#page-data")!.textContent!
+  pageDataEl.textContent
 );
 
 const app = document.createElement("main");

@@ -20,8 +20,10 @@ type Deck = {
   name: string;
 }
 
+const pageDataEl = document.querySelector("#page-data");
+if (pageDataEl === null || pageDataEl.textContent === null) throw new Error("Missing #page-data element or content");
 const data: { deck: Deck; cards: Card[] } = JSON.parse(
-  document.querySelector("#page-data")!.textContent!
+  pageDataEl.textContent
 );
 
 const app = document.createElement("main");

@@ -22,11 +22,11 @@ export const GET: APIRoute = ({ site, params, },) => {
   const siteUrl = site?.toString() ?? 'https://example.com';
 
   const rssXml = generateRssFeed({
-    title: i18n.get('siteName',)!.get(lang,)!,
+    title: i18n.get('siteName',)?.get(lang,) ?? 'Monochromatic',
     link: siteUrl,
-    description: i18n.get('siteDescription',)!.get(lang,)!,
+    description: i18n.get('siteDescription',)?.get(lang,) ?? '',
     language: lang,
-    items: postsGroupedByLang[lang]!.map((langPost: Post,) => ({
+    items: (postsGroupedByLang[lang] ?? []).map((langPost: Post,) => ({
       title: langPost.data.title,
       link: `${siteUrl}/${langPost.id}`,
       description: langPost.data.description,

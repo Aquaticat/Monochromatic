@@ -6,8 +6,10 @@ import {
 import Html from '@_/layouts/Html.astro';
 import { types } from '@monochromatic-dev/module-es';
 
+const chooseALang = i18n.get('chooseALang',);
+if (chooseALang === undefined) throw new Error('Missing i18n key "chooseALang"');
 const title = Array
-  .from(i18n.get('chooseALang',)!.values(), types.function.from.function.unary.sync.positional.$(types.string.from.string.capitalize.sync.positional.$,),)
+  .from(chooseALang.values(), types.function.from.function.unary.sync.positional.$(types.string.from.string.capitalize.sync.positional.$,),)
   .join(' ',);
 ---
 <Html

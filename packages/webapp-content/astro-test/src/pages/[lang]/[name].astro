@@ -16,9 +16,10 @@ export const getStaticPaths: GetStaticPaths = async () => langs.flatMap(lang => 
 const { lang, name, } = Astro.params;
 const potentialPost = posts.find(post => post.name === name && post.lang === lang);
 const PotentialContent = potentialPost && (await render(potentialPost,)).Content;
+const postDoesntExist = i18n.get("Post doesn't exist in specified language",);
 const title = potentialPost
   ? potentialPost.data.title
-  : i18n.get("Post doesn't exist in specified language",)!.get(lang,)!;
+  : postDoesntExist?.get(lang,) ?? "Post doesn't exist in specified language";
 ---
 <Html
   {title}

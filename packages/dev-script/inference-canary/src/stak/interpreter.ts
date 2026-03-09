@@ -20,8 +20,10 @@ export function runStak(source: string): string {
   // First pass: index label positions so JUMP/JUMPZ can resolve targets before execution
   const labels = new Map<string, number>();
   for (let i = 0; i < tokens.length; i++) {
-    const [op, name] = tokens[i]!.split(' ');
-    if (op === 'LABEL') labels.set(name!, i);
+    const token = tokens[i];
+    if (token === undefined) continue;
+    const [op, name] = token.split(' ');
+    if (op === 'LABEL' && name !== undefined) labels.set(name, i);
   }
 
   const stack: number[] = [];
@@ -36,13 +38,18 @@ export function runStak(source: string): string {
    */
   const pop = (): number => {
     if (stack.length === 0) throw new Error('stack underflow');
-    return stack.pop()!;
+    const value = stack.pop();
+    if (value === undefined) throw new Error('stack underflow');
+    return value;
   };
 
   while (ip < tokens.length) {
-    const [op, arg] = tokens[ip]!.split(' ');
+    const currentToken = tokens[ip];
+    if (currentToken === undefined) throw new Error(`Missing token at ip=${ip}`);
+    const [op, arg] = currentToken.split(' ');
 
-    if (/^-?\d+$/.test(op!)) {
+    if (op === undefined) throw new Error(`Missing op at ip=${ip}`);
+    if (/^-?\d+$/.test(op)) {
       stack.push(Number(op));
       ip++;
       continue;
@@ -54,23 +61,36 @@ export function runStak(source: string): string {
       case 'MUL':  { const b = pop(); const a = pop(); stack.push(a * b); break; }
       case 'DIV':  { const b = pop(); const a = pop(); stack.push(Math.floor(a / b)); break; }
       case 'MOD':  { const b = pop(); const a = pop(); stack.push(((a % b) + b) % b); break; }
-      case 'DUP':  { stack.push(stack.at(-1)!); break; }
+      case 'DUP':  { const top = stack.at(-1); if (top === undefined) throw new Error('stack underflow'); stack.push(top); break; }
       case 'SWAP': { const b = pop(); const a = pop(); stack.push(b); stack.push(a); break; }
       case 'DROP': { pop(); break; }
       case 'PRINT':  { out += `${String(pop())}\n`; break; }
       case 'PRINTC': { out += String.fromCodePoint(pop()); break; }
-      case 'STORE':  { env.set(arg!, pop()); break; }
+      case 'STORE':  { if (arg === undefined) throw new Error('STORE requires a variable name'); env.set(arg, pop()); break; }
       case 'LOAD': {
-        const val = env.get(arg!);
+        if (arg === undefined) throw new Error('LOAD requires a variable name');
+        const val = env.get(arg);
         if (val === undefined) throw new Error(`undefined: ${arg}`);
         stack.push(val);
         break;
       }
       case 'LABEL': { break; }
-      case 'JUMP':  { ip = labels.get(arg!)!; continue; }
+      case 'JUMP':  {
+        if (arg === undefined) throw new Error('JUMP requires a label name');
+        const target = labels.get(arg);
+        if (target === undefined) throw new Error(`undefined label: ${arg}`);
+        ip = target;
+        continue;
+      }
       case 'JUMPZ': {
         const val = pop();
-        if (val === 0) { ip = labels.get(arg!)!; continue; }
+        if (val === 0) {
+          if (arg === undefined) throw new Error('JUMPZ requires a label name');
+          const target = labels.get(arg);
+          if (target === undefined) throw new Error(`undefined label: ${arg}`);
+          ip = target;
+          continue;
+        }
         break;
       }
       default: throw new Error(`unknown op: ${String(op)}`);

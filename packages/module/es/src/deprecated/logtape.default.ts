@@ -49,8 +49,9 @@ const createBrowserFileSink = async (
       globalThis.sessionStorage.setItem(`${appName}.line`, '-1',);
 
       const sessionStorageSink: Sink & AsyncDisposable = (record: LogRecord,): void => {
-        const lineNumber = Number(globalThis.sessionStorage.getItem(`${appName}.line`,)!,)
-          + 1;
+        const rawLine = globalThis.sessionStorage.getItem(`${appName}.line`,);
+        if (rawLine === null) throw new Error(`sessionStorage key "${appName}.line" missing`);
+        const lineNumber = Number(rawLine) + 1;
         globalThis.sessionStorage.setItem(`${appName}.line`, String(lineNumber,),);
         globalThis.sessionStorage.setItem(
           `${appName}.${lineNumber}`,
@@ -62,16 +63,16 @@ const createBrowserFileSink = async (
         // eslint-disable-next-line require-await -- To keep the signature consistent, we've to make it an async function.
         async function disposeSessionStorage(): Promise<void> {
           console.log('disposing sessionStorage sink',);
-          const lineCount = Number(
-            globalThis.sessionStorage.getItem(`${appName}.line`,)!,
-          );
+          const rawLineCount = globalThis.sessionStorage.getItem(`${appName}.line`,);
+          if (rawLineCount === null) throw new Error(`sessionStorage key "${appName}.line" missing`);
+          const lineCount = Number(rawLineCount);
 
           const lines = Array
             .from({ length: lineCount + 1, },)
             .map(function popLine(_value, lineNumber,) {
               const line = globalThis.sessionStorage.getItem(
                 `${appName}.${lineNumber}`,
-              )!;
+              ) ?? '';
               globalThis.sessionStorage.removeItem(`${appName}.${lineNumber}`,);
               return line;
             },);
