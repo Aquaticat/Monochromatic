@@ -511,7 +511,7 @@ async function indexMcpLogs(): Promise<void> {
     try {
       const taskStatus = await waitForTask(task.taskUid,);
       match(taskStatus.status,)
-        .with('succeeded', () => {},)
+        .with('succeeded', () => { /* No action needed on success */ },)
         .otherwise(() => {
           console.error(`Task ${task.taskUid} failed:`, taskStatus.error,);
           allTasksSuccessful = false;
@@ -544,7 +544,7 @@ async function indexMcpLogs(): Promise<void> {
 
       console.log(`✅ Deleted ${deletedCount} log files for security`,);
       match(failedDeletes,)
-        .with(0, () => {},)
+        .with(0, () => { /* No action needed when all deletes succeed */ },)
         .otherwise(count => console.log(`⚠️  Failed to delete ${count} files`,));
     },)
     .with(false, () => {

@@ -101,6 +101,6 @@ export async function cycle(): Promise<void> {
   } catch (err) {
     console.error(`[error] ${err}`);
     log.error(`[error] ${err}`);
-    await stopLlama().catch(() => {});
+    await stopLlama().catch(() => { /* Swallow cleanup errors */ });
   }
 }

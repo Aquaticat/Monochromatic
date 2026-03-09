@@ -80,11 +80,11 @@ describe('consoleLogger', () => {
   });
 
   test('should call appropriate console methods when used', () => {
-    const traceSpy = spyOn(console, 'trace',).mockImplementation(() => {},);
-    const debugSpy = spyOn(console, 'debug',).mockImplementation(() => {},);
-    const infoSpy = spyOn(console, 'info',).mockImplementation(() => {},);
-    const warnSpy = spyOn(console, 'warn',).mockImplementation(() => {},);
-    const errorSpy = spyOn(console, 'error',).mockImplementation(() => {},);
+    const traceSpy = spyOn(console, 'trace',).mockImplementation(() => { /* No-op stub */ },);
+    const debugSpy = spyOn(console, 'debug',).mockImplementation(() => { /* No-op stub */ },);
+    const infoSpy = spyOn(console, 'info',).mockImplementation(() => { /* No-op stub */ },);
+    const warnSpy = spyOn(console, 'warn',).mockImplementation(() => { /* No-op stub */ },);
+    const errorSpy = spyOn(console, 'error',).mockImplementation(() => { /* No-op stub */ },);
 
     try {
       consoleLogger.trace('trace message',);
@@ -111,7 +111,7 @@ describe('consoleLogger', () => {
   });
 
   test('should handle multiple calls correctly', () => {
-    const infoSpy = spyOn(console, 'info',).mockImplementation(() => {},);
+    const infoSpy = spyOn(console, 'info',).mockImplementation(() => { /* No-op stub */ },);
 
     try {
       consoleLogger.info('first message',);
@@ -129,7 +129,7 @@ describe('consoleLogger', () => {
   });
 
   test('should work with different message types', () => {
-    const warnSpy = spyOn(console, 'warn',).mockImplementation(() => {},);
+    const warnSpy = spyOn(console, 'warn',).mockImplementation(() => { /* No-op stub */ },);
 
     try {
       consoleLogger.warn('simple string',);

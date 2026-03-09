@@ -106,7 +106,7 @@ async function indexUserMessages(): Promise<void> {
       console.log('No messages found to index.',);
       return;
     },)
-    .otherwise(() => {},);
+    .otherwise(() => { /* Non-zero count; continue to indexing */ },);
 
   console.log(`Found ${messages.length} messages to index.`,);
 
@@ -136,7 +136,7 @@ async function indexUserMessages(): Promise<void> {
     }
 
     match(taskStatus.status,)
-      .with('succeeded', () => {},)
+      .with('succeeded', () => { /* No action needed on success */ },)
       .otherwise(() => {
         console.error(`Task ${task.taskUid} failed:`, taskStatus.error,);
         allTasksSuccessful = false;

@@ -13,7 +13,7 @@ function singleLineWithTag(): number {
 /**
  ** Double asterisk line.
  */
-function doubleAsterisk(): void {}
+function doubleAsterisk(): void { /* Intentional no-op for TSDoc testing */ }
 
 /**
  * Description.
@@ -26,6 +26,6 @@ function missingBlankBeforeTag(): number {
 /**
  * @internal do not use this
  */
-function modifierTagWithContent(): void {}
+function modifierTagWithContent(): void { /* Intentional no-op for TSDoc testing */ }
 
 export {};

@@ -1,9 +1,9 @@
 // Fixture: declarations missing TSDoc comments.
 // Expected violations: tsdoc(require-tsdoc)
 
-function undocumentedFunction(): void {}
+function undocumentedFunction(): void { /* Intentional no-op for TSDoc testing */ }
 
-const undocumentedArrow = (): void => {};
+const undocumentedArrow = (): void => { /* Intentional no-op for TSDoc testing */ };
 
 class UndocumentedClass {}
 

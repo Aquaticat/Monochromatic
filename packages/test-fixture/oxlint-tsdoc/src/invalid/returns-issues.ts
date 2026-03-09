@@ -16,7 +16,7 @@ function missingReturns(): string {
  *
  * @returns nothing
  */
-function returnsOnVoid(): void {}
+function returnsOnVoid(): void { /* Intentional no-op for TSDoc testing */ }
 
 /**
  * Throws unconditionally.

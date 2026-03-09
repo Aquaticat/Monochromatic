@@ -33,12 +33,12 @@ function log(message: string): void {
  *
  * @internal
  */
-function internalHelper(): void {}
+function internalHelper(): void { /* Intentional no-op for TSDoc testing */ }
 
 /**
  * Escaped content with *\/ inside.
  */
-function withEscapedClose(): void {}
+function withEscapedClose(): void { /* Intentional no-op for TSDoc testing */ }
 
 /**
  * Method with rest parameter.

@@ -48,7 +48,7 @@ export async function captureScreenshot(): Promise<Buffer> {
     if (buf.length === 0) throw new Error("Screenshot resize produced empty output");
     return buf;
   } finally {
-    await unlink(tmp).catch(() => {});
+    await unlink(tmp).catch(() => { /* Swallow cleanup errors */ });
   }
 }
 

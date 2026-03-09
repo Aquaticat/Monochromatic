@@ -15,6 +15,6 @@ function* missingYields(): Generator<number> {
  *
  * @yields nothing
  */
-function yieldsOnNonGenerator(): void {}
+function yieldsOnNonGenerator(): void { /* Intentional no-op for TSDoc testing */ }
 
 export {};

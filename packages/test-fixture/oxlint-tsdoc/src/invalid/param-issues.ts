@@ -7,21 +7,21 @@
 /**
  * @param x - wrong name
  */
-function mismatchedParam(value: string): void {}
+function mismatchedParam(value: string): void { /* Intentional no-op for TSDoc testing */ }
 
 /**
  * Adds numbers.
  */
-function missingAllParams(a: number, b: number): void {}
+function missingAllParams(a: number, b: number): void { /* Intentional no-op for TSDoc testing */ }
 
 /**
  * @param a - first
  */
-function missingSecondParam(a: number, b: number): void {}
+function missingSecondParam(a: number, b: number): void { /* Intentional no-op for TSDoc testing */ }
 
 /**
  * @param name
  */
-function paramWithoutDescription(name: string): void {}
+function paramWithoutDescription(name: string): void { /* Intentional no-op for TSDoc testing */ }
 
 export {};

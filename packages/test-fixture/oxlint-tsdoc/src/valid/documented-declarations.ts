@@ -15,7 +15,7 @@ function add(a: number, b: number): number {
 }
 
 /** Logs a message. */
-function log(): void {}
+function log(): void { /* Intentional no-op for TSDoc testing */ }
 
 /** Available directions. */
 type Direction = 'up' | 'down' | 'left' | 'right';

@@ -24,7 +24,7 @@ function jsdocReturnTag(): number {
 /**
  * @foobar unknown
  */
-function unknownTag(): void {}
+function unknownTag(): void { /* Intentional no-op for TSDoc testing */ }
 
 /**
  * Confusing access.
@@ -32,12 +32,12 @@ function unknownTag(): void {}
  * @public
  * @internal
  */
-function conflictingAccess(): void {}
+function conflictingAccess(): void { /* Intentional no-op for TSDoc testing */ }
 
 /**
  * @param {string} name - with type
  */
-function jsdocTypeAnnotation(name: string): void {}
+function jsdocTypeAnnotation(name: string): void { /* Intentional no-op for TSDoc testing */ }
 
 /**
  * @returns {number} the result
