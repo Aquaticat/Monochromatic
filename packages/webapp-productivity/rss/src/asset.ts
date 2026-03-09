@@ -65,7 +65,7 @@ export const indexHtmlStart: string = `<!DOCTYPE html>
     <meta charset=UTF-8>
     <meta name=viewport content='width=device-width,initial-scale=1.0'>
     <style>${css}</style>
-    <script type=module>${js.replaceAll('<\/script>', String.raw`<\/script>`,)}</script>
+    <script type=module>${js.replaceAll('</script>', String.raw`<\/script>`,)}</script>
     </head>
     <body>`;
 

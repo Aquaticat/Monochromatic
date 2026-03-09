@@ -54,7 +54,7 @@ export const css: string = clientCss;
 export const js: string = await buildClientJs();
 
 /** Escaped JS source safe for embedding inside a `<script>` tag. */
-const safeJs: string = js.replaceAll('<\/script>', String.raw`<\/script>`,);
+const safeJs: string = js.replaceAll('</script>', String.raw`<\/script>`,);
 
 //region HTML structure -- Declarative page composition via h-html
 
