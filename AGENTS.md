@@ -30,6 +30,8 @@ Clone entire git repo of a package to a temp dir whenever investigating source c
 ## Essential commands
 
 All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts.
+Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly -- use the corresponding mise task instead.
+When no suitable mise task exists for an operation, add one to the target package's `mise.toml` before running it.
 Read `mise.toml` files in root and package directories for available commands.
 To run a task in a specific package, use `mise run //packages/path:task` (not `mise run -C`).
 Do not run linters or formatters -- the user runs them.

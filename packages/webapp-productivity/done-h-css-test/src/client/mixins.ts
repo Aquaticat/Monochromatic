@@ -4,7 +4,8 @@
  * Replaces the PostCSS `@mixin`/`@apply` pipeline with plain TypeScript
  * functions that return declaration records. Composed via object spread.
  */
-import type { CssDeclarations } from "@monochromatic-dev/module-es/h-css";
+import type { CssDeclarations, CssValue } from "@monochromatic-dev/module-es/h-css";
+import { cssCalc, cssRem, cssVar, cssInt } from "@monochromatic-dev/module-es/h-css";
 
 //region Layout primitives
 
@@ -61,7 +62,7 @@ export function flexColumn(): CssDeclarations {
  */
 export function borderRadiusFull(): CssDeclarations {
   return {
-    'border-radius': '62.5rem',
+    'border-radius': cssRem(62.5),
   };
 }
 
@@ -101,9 +102,13 @@ export function appearanceNone(): CssDeclarations {
     'background-color': 'transparent',
     'border-style': 'none',
     cursor: 'pointer',
-    'padding-block': '0',
-    'padding-inline': '0',
-    font: 'inherit',
+    'padding-block': 0,
+    'padding-inline': 0,
+    'font-family': 'inherit',
+    'font-size': 'inherit',
+    'font-style': 'inherit',
+    'font-weight': 'inherit',
+    'line-height': 'inherit',
     color: 'inherit',
   };
 }
@@ -116,8 +121,8 @@ export function appearanceNone(): CssDeclarations {
  */
 export function minTouchTarget(): CssDeclarations {
   return {
-    'min-inline-size': '3rem',
-    'min-block-size': '3rem',
+    'min-inline-size': cssRem(3),
+    'min-block-size': cssRem(3),
   };
 }
 
@@ -149,7 +154,7 @@ export function shadowDomGlobals(): string[] {
 export function scrollRow(): CssDeclarations {
   return {
     display: 'flex',
-    gap: 'var(--min-gap)',
+    gap: cssVar('min-gap'),
     'align-items': 'flex-start',
     'overflow-x': 'auto',
     'overflow-y': 'clip',
@@ -166,15 +171,19 @@ export function buttonOutlined(): CssDeclarations {
   return {
     ...flexCenter(),
     ...minTouchTarget(),
-    gap: '0.5rem',
-    'border-width': 'calc(1 / 16 * 1rem)',
+    gap: cssRem(0.5),
+    'border-width': cssCalc(`${cssRem(1)} / 16`),
     'border-style': 'solid',
-    'border-color': 'var(--fg)',
-    'padding-block': '0.5rem',
-    'padding-inline': '0.5rem',
+    'border-color': cssVar('fg'),
+    'padding-block': cssRem(0.5),
+    'padding-inline': cssRem(0.5),
     'background-color': 'transparent',
-    color: 'var(--fg)',
-    font: 'inherit',
+    color: cssVar('fg'),
+    'font-family': 'inherit',
+    'font-size': 'inherit',
+    'font-style': 'inherit',
+    'font-weight': 'inherit',
+    'line-height': 'inherit',
     cursor: 'pointer',
   };
 }
@@ -187,14 +196,14 @@ export function buttonOutlined(): CssDeclarations {
 export function stickyBar(): CssDeclarations {
   return {
     ...flexRow(),
-    gap: 'var(--min-gap)',
-    'block-size': '3rem',
-    'padding-block': '0',
-    'padding-inline': 'var(--min-padding)',
-    'background-color': 'var(--bg)',
+    gap: cssVar('min-gap'),
+    'block-size': cssRem(3),
+    'padding-block': 0,
+    'padding-inline': cssVar('min-padding'),
+    'background-color': cssVar('bg'),
     position: 'sticky',
-    'inset-block-start': '0',
-    'z-index': '10',
+    'inset-block-start': 0,
+    'z-index': cssInt(10),
   };
 }
 
@@ -205,14 +214,14 @@ export function stickyBar(): CssDeclarations {
 /**
  * Standard focus-visible outline declarations.
  *
- * @param offset - Outline offset value (default `'0.125rem'`)
+ * @param offset - Outline offset value (default `cssRem(0.125)`)
  * @returns Declarations for focus outline
  */
-export function focusOutline({ offset = '0.125rem' }: { offset?: string } = {}): CssDeclarations {
+export function focusOutline({ offset = cssRem(0.125) }: { offset?: CssValue } = {}): CssDeclarations {
   return {
-    'outline-width': '0.125rem',
+    'outline-width': cssRem(0.125),
     'outline-style': 'solid',
-    'outline-color': 'var(--fg)',
+    'outline-color': cssVar('fg'),
     'outline-offset': offset,
   };
 }

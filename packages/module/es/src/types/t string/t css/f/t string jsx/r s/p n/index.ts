@@ -10,29 +10,24 @@
  * records, composed via object spread.
  *
  * Types from `csstype` provide editor intellisense for:
- * - CSS property names (kebab-case) and their valid values
- * - At-rule names (`media`, `layer`, `keyframes`, ...)
+ * - CSS property names (kebab-case), with disallowed properties omitted
+ * - CSS property values (keyword autocomplete, named colors excluded)
+ * - At-rule names (`media`, `layer`, `keyframes`, ...), with disallowed at-rules excluded
  * - At-rule descriptors per type (`@font-face`, `@property`, `@counter-style`, ...)
+ *
+ * Branded value constructors (`cssRem`, `cssVar`, `cssOklch`, etc.) replace raw
+ * string values, preventing invalid units, disallowed color functions, and named
+ * colors at the type level — eliminating the need for stylelint runtime checks.
  *
  * @param options - Named parameters describing the CSS construct
  * @returns CSS string
  *
- * @example Style rule
- * ```ts
- * const css = $({ rule: '.card', decls: { display: 'flex', gap: '1rem' } });
- * // '.card{display:flex;gap:1rem}'
- * ```
- *
- * @example Nested rule
+ * @example Style rule with strict values
  * ```ts
  * const css = $({
  *   rule: '.card',
- *   decls: { display: 'flex' },
- *   children: [
- *     $({ rule: '&:hover', decls: { opacity: '0.8' } }),
- *   ],
+ *   decls: { display: 'flex', gap: cssRem(1), 'background-color': cssVar('bg') },
  * });
- * // '.card{display:flex;&:hover{opacity:0.8}}'
  * ```
  *
  * @example At-rule with children
@@ -41,10 +36,9 @@
  *   at: 'media',
  *   params: '(prefers-color-scheme: dark)',
  *   children: [
- *     $({ rule: ':root', decls: { '--color-fg': 'oklch(0.9 0 0)' } }),
+ *     $({ rule: ':root', decls: { '--color-fg': cssRaw('oklch(0.9 0 0)') } }),
  *   ],
  * });
- * // '\@media (prefers-color-scheme: dark){:root{--color-fg:oklch(0.9 0 0)}}'
  * ```
  *
  * @example At-rule with typed descriptors (`@property`)
@@ -54,50 +48,52 @@
  *   params: '--color-fg',
  *   decls: { syntax: '"<color>"', inherits: 'true', 'initial-value': 'black' },
  * });
- * // '\@property --color-fg{syntax:"<color>";inherits:true;initial-value:black}'
  * ```
  *
  * @example Statement at-rule (no block)
  * ```ts
  * const css = $({ at: 'layer', params: 'tokens, base, components' });
- * // '\@layer tokens, base, components;'
  * ```
  */
-import type { AtRule, AtRules, PropertiesHyphen } from "csstype";
+import type { AtRule } from "csstype";
+
+import type { StrictAtRuleName, StrictCssDeclarations } from "./properties.ts";
+import type { CssValue } from "./values.ts";
+
+//region Re-exports
+
+export type { StrictCssDeclarations as CssDeclarations } from "./properties.ts";
+export type { CssValue } from "./values.ts";
+export {
+  cssCalc,
+  cssColorFn,
+  cssCqb,
+  cssCqi,
+  cssDvb,
+  cssDvi,
+  cssEm,
+  cssFr,
+  cssInt,
+  cssLh,
+  cssNum,
+  cssOklch,
+  cssPercent,
+  cssRaw,
+  cssRem,
+  cssRotate,
+  cssS,
+  cssScale,
+  cssTranslateX,
+  cssTranslateY,
+  cssTurn,
+  cssVar,
+  cssVb,
+  cssVi,
+} from "./values.ts";
+
+//endregion
 
 //region Types
-
-/**
- * CSS declarations record with editor intellisense for standard property names and values.
- *
- * Combines `csstype`'s `PropertiesHyphen` (kebab-case standard properties with value autocomplete)
- * and a template literal index for CSS custom properties (`--*`).
- *
- * @example
- * ```ts
- * const decls: CssDeclarations = {
- *   display: 'flex',              // autocomplete for 'flex', 'grid', 'block', ...
- *   'align-items': 'center',      // autocomplete for 'center', 'flex-start', ...
- *   '--color-fg': 'oklch(0.2 0 0)', // custom properties accepted
- * };
- * ```
- */
-export type CssDeclarations = PropertiesHyphen & Record<`--${string}`, string>;
-
-/**
- * Strips the `@` prefix from csstype's `AtRules` union.
- *
- * Transforms `"@media" | "@layer" | ...` into `"media" | "layer" | ...`
- * to match h-css's `at` field convention (prefix added during string building).
- */
-type StripAtPrefix<T> = T extends `@${infer Name}` ? Name : never;
-
-/**
- * Union of all standard CSS at-rule names without the `@` prefix.
- *
- * @example `'media' | 'layer' | 'keyframes' | 'font-face' | 'property' | ...`
- */
-type AtRuleName = StripAtPrefix<AtRules>;
 
 /**
  * Maps at-rule names that have typed descriptor interfaces in csstype
@@ -109,7 +105,6 @@ type AtRuleName = StripAtPrefix<AtRules>;
 type AtRuleDeclsMap = {
   'counter-style': AtRule.CounterStyleHyphen;
   'font-face': AtRule.FontFaceHyphen;
-  'font-palette-values': AtRule.FontPaletteValuesHyphen;
   'page': AtRule.PageHyphen;
   'property': AtRule.PropertyHyphen;
   'view-transition': AtRule.ViewTransitionHyphen;
@@ -138,12 +133,10 @@ type TypedAtRuleOptions = {
 }[keyof AtRuleDeclsMap];
 
 /**
- * At-rule names that do not have typed descriptor interfaces in csstype.
- *
- * Includes wrapper at-rules (`media`, `supports`, `container`, `layer`, etc.)
- * and statement at-rules (`charset`, `import`, `namespace`).
+ * At-rule names that do not have typed descriptor interfaces in csstype,
+ * minus disallowed at-rules.
  */
-type UntypedAtRuleName = Exclude<AtRuleName, keyof AtRuleDeclsMap>;
+type UntypedAtRuleName = Exclude<StrictAtRuleName, keyof AtRuleDeclsMap>;
 
 /**
  * At-rule options for at-rules without typed descriptors.
@@ -173,7 +166,7 @@ type UntypedAtRuleOptions = {
  * - **Statement**: `@layer tokens;` — omit both `decls` and `children`
  *
  * For at-rules with csstype descriptor interfaces (`font-face`, `property`,
- * `counter-style`, `page`, `font-palette-values`, `view-transition`),
+ * `counter-style`, `page`, `view-transition`),
  * the `decls` field is typed to the matching descriptor interface.
  * For all other at-rules, `decls` accepts `Record<string, string>`.
  */
@@ -187,8 +180,8 @@ type AtRuleOptions = TypedAtRuleOptions | UntypedAtRuleOptions;
 type RuleOptions = {
   /** CSS selector (e.g. `'.card'`, `'&:hover'`, `':root'`) */
   rule: string;
-  /** CSS declarations as property-value pairs with editor intellisense */
-  decls?: CssDeclarations;
+  /** CSS declarations — strict property names, strict values, custom properties */
+  decls?: StrictCssDeclarations;
   /** Raw CSS string to inject inside the block (NOT escaped — caller responsible) */
   raw?: string;
   /** Nested rules or at-rules inside this block */
@@ -209,23 +202,23 @@ type CssOptions = AtRuleOptions | RuleOptions;
 /**
  * Serializes a declarations record into a CSS declaration string.
  *
- * Accepts any declarations object — `CssDeclarations`, at-rule descriptor interfaces,
- * or plain `Record<string, string>`. Skips `undefined` values since csstype interfaces
- * mark all properties as optional.
+ * Accepts any declarations object — `StrictCssDeclarations`, at-rule descriptor
+ * interfaces, or plain `Record<string, string>`. Skips `undefined` values since
+ * csstype interfaces mark all properties as optional.
  *
  * @param decls - property-value pairs (typed at the API boundary, loose here for internal flexibility)
  * @returns semicolon-separated declarations (e.g. `'display:flex;gap:1rem'`)
  *
  * @example
  * ```ts
- * serializeDecls({ display: 'flex', gap: '1rem' })
+ * serializeDecls({ display: 'flex', gap: cssRem(1) })
  * // 'display:flex;gap:1rem'
  * ```
  */
 function serializeDecls(decls: object,): string {
   const parts: string[] = [];
 
-  for (const [property, value,] of Object.entries(decls,) as ReadonlyArray<[string, string | number | undefined]>) {
+  for (const [property, value,] of Object.entries(decls,) as ReadonlyArray<[string, CssValue | string | number | undefined]>) {
     if (value === undefined || value === null) {
       continue;
     }

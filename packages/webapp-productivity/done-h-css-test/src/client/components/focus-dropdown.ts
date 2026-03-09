@@ -1,48 +1,49 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
+import { cssCalc, cssInt, cssNum, cssPercent, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { buttonOutlined, focusOutline } from "../mixins.ts";
 
 const STYLES = [
   css({
     rule: ':host',
-    decls: { display: 'block', 'inline-size': '100%', position: 'relative' },
+    decls: { display: 'block', 'inline-size': cssPercent(100), position: 'relative' },
   }),
   css({
     rule: '.trigger',
-    decls: { ...buttonOutlined(), 'inline-size': '100%', 'text-align': 'start' },
+    decls: { ...buttonOutlined(), 'inline-size': cssPercent(100), 'text-align': 'start' },
     children: [
       css({ rule: '&:focus-visible', decls: focusOutline() }),
     ],
   }),
   css({
     rule: '.text',
-    decls: { flex: '1', 'text-align': 'start' },
+    decls: { 'flex-grow': 1, 'text-align': 'start' },
   }),
   css({
     rule: '.divider',
     decls: {
-      'inline-size': 'calc(1 / 16 * 1rem)',
-      'block-size': '100%',
-      'background-color': 'var(--fg-weaker)',
+      'inline-size': cssCalc(`${cssRem(1)} / 16`),
+      'block-size': cssPercent(100),
+      'background-color': cssVar('fg-weaker'),
     },
   }),
   css({
     rule: '.menu',
     decls: {
       position: 'absolute',
-      'inset-block-start': '100%',
-      'inset-inline-start': '0',
-      'inline-size': '100%',
-      'border-width': 'calc(1 / 16 * 1rem)',
+      'inset-block-start': cssPercent(100),
+      'inset-inline-start': 0,
+      'inline-size': cssPercent(100),
+      'border-width': cssCalc(`${cssRem(1)} / 16`),
       'border-style': 'solid',
-      'border-color': 'var(--fg)',
-      'background-color': 'var(--bg)',
-      'padding-block': '0.25rem',
-      'padding-inline': '0',
-      'margin-block': '0',
-      'margin-inline': '0',
+      'border-color': cssVar('fg'),
+      'background-color': cssVar('bg'),
+      'padding-block': cssRem(0.25),
+      'padding-inline': 0,
+      'margin-block': 0,
+      'margin-inline': 0,
       'list-style': 'none',
-      'z-index': '10',
+      'z-index': cssInt(10),
     },
     children: [
       css({ rule: '&:not(:popover-open)', decls: { display: 'none' } }),
@@ -50,9 +51,9 @@ const STYLES = [
   }),
   css({
     rule: '.option',
-    decls: { 'padding-block': '0.5rem', 'padding-inline': '0.5rem', cursor: 'pointer' },
+    decls: { 'padding-block': cssRem(0.5), 'padding-inline': cssRem(0.5), cursor: 'pointer' },
     children: [
-      css({ rule: '&:hover', decls: { 'background-color': 'var(--hover-bg)' } }),
+      css({ rule: '&:hover', decls: { 'background-color': cssVar('hover-bg') } }),
     ],
   }),
 ].join('');

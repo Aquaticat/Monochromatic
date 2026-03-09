@@ -15,6 +15,7 @@
  * would scatter the two halves of a single layout concern.
  */
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
+import { cssCalc, cssInt, cssNum, cssPercent, cssRaw, cssRem, cssS, cssTranslateX, cssVar, cssVi } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { appearanceNone, flexCenter, flexColumn, flexRow, focusOutline, minTouchTarget, shadowDomGlobals } from "../mixins.ts";
 
@@ -24,37 +25,37 @@ const DESKTOP_BREAKPOINT = "48rem";
 
 const STYLES = [
   css({ rule: ':host', decls: { display: 'block' } }),
-  css({ rule: '.wrapper', decls: { 'block-size': '100%' } }),
+  css({ rule: '.wrapper', decls: { 'block-size': cssPercent(100) } }),
 
   //region Shared nav styles
   css({
     rule: '.divider',
     decls: {
-      'block-size': 'calc(1 / 16 * 1rem)',
-      'background-color': 'var(--bg-weaker)',
-      'inline-size': '100%',
+      'block-size': cssCalc(`${cssRem(1)} / 16`),
+      'background-color': cssVar('bg-weaker'),
+      'inline-size': cssPercent(100),
     },
   }),
   css({
     rule: 'nav',
-    decls: { ...flexColumn(), gap: 'var(--min-gap)', flex: '1', 'padding-block-start': 'var(--min-gap)' },
+    decls: { ...flexColumn(), gap: cssVar('min-gap'), 'flex-grow': 1, 'padding-block-start': cssVar('min-gap') },
   }),
   css({
     rule: 'a',
     decls: {
       ...flexRow(),
-      gap: 'var(--min-gap)',
-      'min-block-size': '3rem',
-      'padding-block': '0',
-      'padding-inline': 'var(--min-gap)',
-      color: 'var(--fg)',
+      gap: cssVar('min-gap'),
+      'min-block-size': cssRem(3),
+      'padding-block': 0,
+      'padding-inline': cssVar('min-gap'),
+      color: cssVar('fg'),
       'text-decoration': 'none',
-      'font-size': '1.25rem',
-      'font-weight': '400',
+      'font-size': cssRem(1.25),
+      'font-weight': cssInt(400),
     },
     children: [
-      css({ rule: '&:hover', decls: { 'background-color': 'var(--hover-bg)' } }),
-      css({ rule: '&:focus-visible', decls: focusOutline({ offset: '-0.125rem' }) }),
+      css({ rule: '&:hover', decls: { 'background-color': cssVar('hover-bg') } }),
+      css({ rule: '&:focus-visible', decls: focusOutline({ offset: cssRem(-0.125) }) }),
     ],
   }),
   css({
@@ -62,19 +63,19 @@ const STYLES = [
     decls: {
       ...flexRow(),
       'justify-content': 'space-between',
-      'padding-block-start': 'var(--min-gap)',
-      'padding-block-end': 'var(--min-padding)',
-      'padding-inline-start': 'var(--min-gap)',
-      'padding-inline-end': 'var(--min-padding)',
-      'min-block-size': '4rem',
+      'padding-block-start': cssVar('min-gap'),
+      'padding-block-end': cssVar('min-padding'),
+      'padding-inline-start': cssVar('min-gap'),
+      'padding-inline-end': cssVar('min-padding'),
+      'min-block-size': cssRem(4),
     },
   }),
   css({
     rule: '.close',
     decls: { ...appearanceNone(), ...flexCenter(), ...minTouchTarget() },
     children: [
-      css({ rule: '&:focus-visible', decls: focusOutline({ offset: '-0.125rem' }) }),
-      css({ rule: '& svg', decls: { 'inline-size': '2rem', 'block-size': '2rem' } }),
+      css({ rule: '&:focus-visible', decls: focusOutline({ offset: cssRem(-0.125) }) }),
+      css({ rule: '& svg', decls: { 'inline-size': cssRem(2), 'block-size': cssRem(2) } }),
     ],
   }),
   //endregion Shared nav styles
@@ -84,19 +85,19 @@ const STYLES = [
     rule: '.sidebar',
     decls: {
       ...flexColumn(),
-      'block-size': '100%',
-      'border-inline-end-width': 'calc(1 / 16 * 1rem)',
+      'block-size': cssPercent(100),
+      'border-inline-end-width': cssCalc(`${cssRem(1)} / 16`),
       'border-inline-end-style': 'solid',
-      'border-inline-end-color': 'var(--bg-weaker)',
+      'border-inline-end-color': cssVar('bg-weaker'),
       display: 'none',
     },
     children: [
       css({
         rule: '& .header',
         decls: {
-          'padding-block': 'var(--min-padding)',
-          'padding-inline-start': 'var(--min-gap)',
-          'padding-inline-end': 'var(--min-padding)',
+          'padding-block': cssVar('min-padding'),
+          'padding-inline-start': cssVar('min-gap'),
+          'padding-inline-end': cssVar('min-padding'),
         },
       }),
       css({ rule: '& .close', decls: { display: 'none' } }),
@@ -116,19 +117,22 @@ const STYLES = [
     rule: '.panel',
     decls: {
       position: 'fixed',
-      inset: '0',
-      margin: '0',
-      'padding-block': '0',
-      'padding-inline': '0',
+      'inset-block': 0,
+      'inset-inline': 0,
+      'margin-block': 0,
+      'margin-inline': 0,
+      'padding-block': 0,
+      'padding-inline': 0,
       'border-style': 'none',
-      'inline-size': '100%',
-      'max-inline-size': '100%',
-      'block-size': '100%',
-      'max-block-size': '100%',
-      'z-index': '100',
+      'inline-size': cssPercent(100),
+      'max-inline-size': cssPercent(100),
+      'block-size': cssPercent(100),
+      'max-block-size': cssPercent(100),
+      'z-index': cssInt(100),
       display: 'flex',
       'background-color': 'transparent',
-      overflow: 'visible',
+      'overflow-x': 'visible',
+      'overflow-y': 'visible',
     },
   }),
   css({ rule: '.panel:not(:popover-open)', decls: { display: 'none' } }),
@@ -136,8 +140,8 @@ const STYLES = [
     at: 'keyframes',
     params: 'drawer-slide-in',
     children: [
-      css({ rule: 'from', decls: { transform: 'translateX(-100%)', opacity: '0' } }),
-      css({ rule: 'to', decls: { transform: 'translateX(0)', opacity: '1' } }),
+      css({ rule: 'from', decls: { transform: cssTranslateX(cssPercent(-100)), opacity: 0 } }),
+      css({ rule: 'to', decls: { transform: cssTranslateX(cssNum(0)), opacity: 1 } }),
     ],
   }),
   css({
@@ -145,14 +149,14 @@ const STYLES = [
     params: 'scrim-fade-in',
     children: [
       css({ rule: 'from', decls: { 'background-color': 'transparent' } }),
-      css({ rule: 'to', decls: { 'background-color': 'var(--overlay-bg)' } }),
+      css({ rule: 'to', decls: { 'background-color': cssVar('overlay-bg') } }),
     ],
   }),
   css({
     rule: '.panel:popover-open',
     decls: {
-      'animation-name': 'scrim-fade-in',
-      'animation-duration': '200ms',
+      'animation-name': cssRaw('scrim-fade-in'),
+      'animation-duration': cssS(0.2),
       'animation-timing-function': 'ease-out',
       'animation-fill-mode': 'both',
     },
@@ -160,19 +164,19 @@ const STYLES = [
   css({
     rule: '.panel:popover-open > .panel-drawer',
     decls: {
-      'animation-name': 'drawer-slide-in',
-      'animation-duration': '250ms',
-      'animation-timing-function': 'cubic-bezier(0, 0, 0.2, 1)',
+      'animation-name': cssRaw('drawer-slide-in'),
+      'animation-duration': cssS(0.25),
+      'animation-timing-function': cssRaw('cubic-bezier(0, 0, 0.2, 1)'),
       'animation-fill-mode': 'both',
     },
   }),
   css({
     rule: '.panel-drawer',
     decls: {
-      'background-color': 'var(--bg)',
-      'inline-size': '20rem',
-      'max-inline-size': '85vw',
-      'block-size': '100%',
+      'background-color': cssVar('bg'),
+      'inline-size': cssRem(20),
+      'max-inline-size': cssVi(85),
+      'block-size': cssPercent(100),
       ...flexColumn(),
     },
   }),

@@ -9,6 +9,7 @@
  */
 import type { Task, TaskComplexity, TaskPriority } from "../../lib/types.ts";
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
+import { cssCalc, cssInt, cssNum, cssPercent, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { formatRunningTrackedTime } from "../lib/task-card.ts";
 import { $ as css } from "../css.ts";
 import {
@@ -53,7 +54,7 @@ type TaskDetailData = {
 const STYLES = [
   css({
     rule: ':host',
-    decls: { ...flexColumn(), gap: '1rem', 'padding-block': '1rem', 'padding-inline': '1rem' },
+    decls: { ...flexColumn(), gap: cssRem(1), 'padding-block': cssRem(1), 'padding-inline': cssRem(1) },
   }),
   css({
     rule: '.header',
@@ -63,53 +64,57 @@ const STYLES = [
     rule: '.close',
     decls: { ...appearanceNone(), ...flexCenter(), ...minTouchTarget() },
     children: [
-      css({ rule: '&:focus-visible', decls: focusOutline({ offset: '-0.125rem' }) }),
+      css({ rule: '&:focus-visible', decls: focusOutline({ offset: cssRem(-0.125) }) }),
       css({
         rule: '& svg',
-        decls: { 'inline-size': '2rem', 'block-size': '2rem', stroke: 'var(--fg)', 'stroke-width': '4' },
+        decls: { 'inline-size': cssRem(2), 'block-size': cssRem(2), stroke: cssVar('fg'), 'stroke-width': cssInt(4) },
       }),
     ],
   }),
   css({
     rule: '.heading',
-    decls: { 'font-size': '1.5rem', 'font-weight': '400' },
+    decls: { 'font-size': cssRem(1.5), 'font-weight': cssInt(400) },
   }),
   css({
     rule: '.title-input',
     decls: {
-      'font-size': '1.5rem',
-      'font-weight': '400',
+      'font-size': cssRem(1.5),
+      'font-weight': cssInt(400),
       'border-style': 'none',
-      'border-block-end-width': 'calc(1 / 16 * 1rem)',
+      'border-block-end-width': cssCalc(`${cssRem(1)} / 16`),
       'border-block-end-style': 'solid',
-      'border-block-end-color': 'var(--fg)',
+      'border-block-end-color': cssVar('fg'),
       'background-color': 'transparent',
-      'inline-size': '100%',
-      'padding-block': '0.25rem',
-      'padding-inline': '0',
-      outline: 'none',
+      'inline-size': cssPercent(100),
+      'padding-block': cssRem(0.25),
+      'padding-inline': 0,
+      'outline-style': 'none',
       'font-family': 'inherit',
-      color: 'var(--fg)',
+      color: cssVar('fg'),
     },
   }),
   css({
     rule: '.desc-input',
     decls: {
-      'border-width': 'calc(1 / 16 * 1rem)',
+      'border-width': cssCalc(`${cssRem(1)} / 16`),
       'border-style': 'solid',
-      'border-color': 'var(--fg)',
-      'padding-block': '0.5rem',
-      'padding-inline': '0.5rem',
-      'min-block-size': '4.5rem',
+      'border-color': cssVar('fg'),
+      'padding-block': cssRem(0.5),
+      'padding-inline': cssRem(0.5),
+      'min-block-size': cssRem(4.5),
       resize: 'vertical',
-      font: 'inherit',
-      color: 'var(--fg)',
+      'font-family': 'inherit',
+      'font-size': 'inherit',
+      'font-style': 'inherit',
+      'font-weight': 'inherit',
+      'line-height': 'inherit',
+      color: cssVar('fg'),
       'background-color': 'transparent',
     },
   }),
   css({
     rule: '.actions',
-    decls: { display: 'flex', gap: '1rem' },
+    decls: { display: 'flex', gap: cssRem(1) },
   }),
   css({
     rule: '.pills',
@@ -120,24 +125,24 @@ const STYLES = [
     decls: {
       ...flexCenter(),
       ...whitespaceNowrap(),
-      'border-width': 'calc(1 / 16 * 1rem)',
+      'border-width': cssCalc(`${cssRem(1)} / 16`),
       'border-style': 'solid',
-      'border-color': 'var(--fg)',
+      'border-color': cssVar('fg'),
       ...borderRadiusFull(),
-      'padding-block': '0.5rem',
-      'padding-inline': '0.5rem',
-      gap: '0.25rem',
-      'font-size': '1rem',
-      'line-height': '1.5',
+      'padding-block': cssRem(0.5),
+      'padding-inline': cssRem(0.5),
+      gap: cssRem(0.25),
+      'font-size': cssRem(1),
+      'line-height': cssNum(1.5),
     },
     children: [
-      css({ rule: '&[data-autofilled]', decls: { 'border-color': 'var(--red-fg)', color: 'var(--red-fg)' } }),
-      css({ rule: '&[data-loading]', decls: { opacity: '0.5' } }),
+      css({ rule: '&[data-autofilled]', decls: { 'border-color': cssVar('red-fg'), color: cssVar('red-fg') } }),
+      css({ rule: '&[data-loading]', decls: { opacity: cssNum(0.5) } }),
     ],
   }),
   css({
     rule: '.btn-row',
-    decls: { ...flexRow(), gap: '0.5rem', 'flex-wrap': 'wrap', 'margin-block-start': '1rem' },
+    decls: { ...flexRow(), gap: cssRem(0.5), 'flex-wrap': 'wrap', 'margin-block-start': cssRem(1) },
     children: [
       css({ rule: '&[data-hidden]', decls: { display: 'none' } }),
     ],
@@ -151,7 +156,7 @@ const STYLES = [
   }),
   css({
     rule: '.btn-primary',
-    decls: { ...buttonOutlined(), 'background-color': 'var(--fg)', color: 'var(--bg)' },
+    decls: { ...buttonOutlined(), 'background-color': cssVar('fg'), color: cssVar('bg') },
     children: [
       css({ rule: '&:focus-visible', decls: focusOutline() }),
     ],

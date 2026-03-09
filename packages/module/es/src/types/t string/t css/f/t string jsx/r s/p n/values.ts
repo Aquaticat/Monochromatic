@@ -1,0 +1,530 @@
+/**
+ * Branded CSS value types and constructor functions.
+ *
+ * Replaces raw CSS value strings with type-safe constructors that prevent
+ * invalid units, disallowed color functions, and named colors at the type level.
+ * Every constructor returns `CssValue` — a branded string that the strict
+ * `CssDeclarations` type accepts in any property value position.
+ *
+ * Constructors are prefixed with `css` to distinguish them from other functions.
+ */
+
+//region Branded base type
+
+/**
+ * Branded CSS value — the base type returned by all value constructors.
+ *
+ * Property value types accept `CssValue` alongside specific keyword literals,
+ * preventing raw strings like `'10px'` or `'red'` from being used directly.
+ *
+ * @example
+ * ```ts
+ * const gap: CssValue = cssRem(1);    // OK
+ * const color: CssValue = cssVar('fg'); // OK
+ * ```
+ */
+export type CssValue = string & { readonly __cssValue: unique symbol };
+
+//endregion
+
+//region Type utilities
+
+/**
+ * Extracts only literal string types from a union, removing `string & {}` escape hatches.
+ *
+ * csstype uses `string & {}` in value unions to allow arbitrary strings while
+ * preserving autocomplete. This utility strips that escape hatch so only
+ * known keyword literals remain.
+ *
+ * @example
+ * ```ts
+ * type T = ExtractLiteral<'flex' | 'grid' | (string & {})>;
+ * // T = 'flex' | 'grid'
+ * ```
+ */
+export type ExtractLiteral<T> = T extends string
+  ? string extends T
+    ? never
+    : T
+  : T extends number
+    ? number extends T
+      ? never
+      : T
+    : never;
+
+/**
+ * CSS named colors (the 148 CSS Color Level 4 keywords).
+ *
+ * Excluded from strict property value types to enforce the `color-named: never` rule.
+ * `transparent` and `currentColor` are NOT named colors per the CSS spec — they are
+ * special color keywords and remain allowed.
+ */
+export type CssNamedColor =
+  | 'aliceblue' | 'antiquewhite' | 'aqua' | 'aquamarine' | 'azure'
+  | 'beige' | 'bisque' | 'black' | 'blanchedalmond' | 'blue' | 'blueviolet' | 'brown' | 'burlywood'
+  | 'cadetblue' | 'chartreuse' | 'chocolate' | 'coral' | 'cornflowerblue' | 'cornsilk' | 'crimson' | 'cyan'
+  | 'darkblue' | 'darkcyan' | 'darkgoldenrod' | 'darkgray' | 'darkgreen' | 'darkgrey' | 'darkkhaki'
+  | 'darkmagenta' | 'darkolivegreen' | 'darkorange' | 'darkorchid' | 'darkred' | 'darksalmon'
+  | 'darkseagreen' | 'darkslateblue' | 'darkslategray' | 'darkslategrey' | 'darkturquoise' | 'darkviolet'
+  | 'deeppink' | 'deepskyblue' | 'dimgray' | 'dimgrey' | 'dodgerblue'
+  | 'firebrick' | 'floralwhite' | 'forestgreen' | 'fuchsia'
+  | 'gainsboro' | 'ghostwhite' | 'gold' | 'goldenrod' | 'gray' | 'green' | 'greenyellow' | 'grey'
+  | 'honeydew' | 'hotpink'
+  | 'indianred' | 'indigo' | 'ivory'
+  | 'khaki'
+  | 'lavender' | 'lavenderblush' | 'lawngreen' | 'lemonchiffon' | 'lightblue' | 'lightcoral' | 'lightcyan'
+  | 'lightgoldenrodyellow' | 'lightgray' | 'lightgreen' | 'lightgrey' | 'lightpink' | 'lightsalmon'
+  | 'lightseagreen' | 'lightskyblue' | 'lightslategray' | 'lightslategrey' | 'lightsteelblue' | 'lightyellow'
+  | 'lime' | 'limegreen' | 'linen'
+  | 'magenta' | 'maroon' | 'mediumaquamarine' | 'mediumblue' | 'mediumorchid' | 'mediumpurple'
+  | 'mediumseagreen' | 'mediumslateblue' | 'mediumspringgreen' | 'mediumturquoise' | 'mediumvioletred'
+  | 'midnightblue' | 'mintcream' | 'mistyrose' | 'moccasin'
+  | 'navajowhite' | 'navy'
+  | 'oldlace' | 'olive' | 'olivedrab' | 'orange' | 'orangered' | 'orchid'
+  | 'palegoldenrod' | 'palegreen' | 'paleturquoise' | 'palevioletred' | 'papayawhip' | 'peachpuff' | 'peru'
+  | 'pink' | 'plum' | 'powderblue' | 'purple'
+  | 'rebeccapurple' | 'red' | 'rosybrown' | 'royalblue'
+  | 'saddlebrown' | 'salmon' | 'sandybrown' | 'seagreen' | 'seashell' | 'sienna' | 'silver' | 'skyblue'
+  | 'slateblue' | 'slategray' | 'slategrey' | 'snow' | 'springgreen' | 'steelblue'
+  | 'tan' | 'teal' | 'thistle' | 'tomato' | 'turquoise'
+  | 'violet'
+  | 'wheat' | 'white' | 'whitesmoke'
+  | 'yellow' | 'yellowgreen';
+
+/**
+ * Deprecated CSS system colors (e.g. `ActiveBorder`, `ButtonHighlight`).
+ *
+ * Excluded alongside named colors for strictness.
+ */
+export type CssDeprecatedSystemColor =
+  | 'ActiveBorder' | 'ActiveCaption' | 'AppWorkspace' | 'Background'
+  | 'ButtonHighlight' | 'ButtonShadow' | 'CaptionText'
+  | 'InactiveBorder' | 'InactiveCaption' | 'InactiveCaptionText' | 'InfoBackground' | 'InfoText'
+  | 'Menu' | 'MenuText'
+  | 'Scrollbar'
+  | 'ThreeDDarkShadow' | 'ThreeDFace' | 'ThreeDHighlight' | 'ThreeDLightShadow' | 'ThreeDShadow'
+  | 'Window' | 'WindowFrame' | 'WindowText';
+
+/**
+ * Converts a csstype property value type to a strict value type.
+ *
+ * - Strips `string & {}` (the any-string escape hatch) via `ExtractLiteral`
+ * - Removes named colors and deprecated system colors
+ * - Adds `CssValue` (branded constructor return type) as a valid alternative
+ * - Preserves plain `number` for properties that accept any numeric value
+ *   (e.g. `opacity`, `flex-grow`, `z-index`) while keeping it excluded from
+ *   length properties (where only the `0` literal from `TLength` survives)
+ *
+ * csstype encodes the distinction: length properties use `TLength = (string & {}) | 0`
+ * (only literal `0` without units), while number properties use `(number & {})` directly
+ * (any number is valid CSS). The `[number] extends [T]` check detects the wide number
+ * case without distributing over the union.
+ *
+ * @example
+ * ```ts
+ * // csstype: Property.Display = 'flex' | 'grid' | ... | (string & {})
+ * // StrictValue<Property.Display> = 'flex' | 'grid' | ... | CssValue
+ * //
+ * // csstype: Property.Opacity = Globals | (number & {}) | (string & {})
+ * // StrictValue<Property.Opacity> = Globals | number | CssValue
+ * //
+ * // csstype: Property.Gap<TLength> = Globals | TLength | (string & {})
+ * // StrictValue<Property.Gap> = Globals | 0 | CssValue  (number excluded)
+ * ```
+ */
+export type StrictValue<T> =
+  | Exclude<ExtractLiteral<T>, CssNamedColor | CssDeprecatedSystemColor>
+  | CssValue
+  | ([number] extends [T] ? number : never);
+
+//endregion
+
+//region Length constructors
+
+/**
+ * Creates a `rem` length value.
+ *
+ * `rem` is the primary length unit — relative to root font size, predictable across contexts.
+ *
+ * @param n - numeric value
+ * @returns branded CSS length string (e.g. `'1.5rem'`)
+ *
+ * @example
+ * ```ts
+ * cssRem(1)     // '1rem'
+ * cssRem(0.25)  // '0.25rem'
+ * ```
+ */
+export function cssRem(n: number,): CssValue {
+  return `${n}rem` as CssValue;
+}
+
+/**
+ * Creates an `em` length value.
+ *
+ * `em` is relative to the element's font size — use for font-relative spacing.
+ *
+ * @param n - numeric value
+ * @returns branded CSS length string (e.g. `'1em'`)
+ */
+export function cssEm(n: number,): CssValue {
+  return `${n}em` as CssValue;
+}
+
+/**
+ * Creates a percentage value.
+ *
+ * @param n - numeric value (e.g. `50` for `50%`)
+ * @returns branded CSS percentage string (e.g. `'50%'`)
+ */
+export function cssPercent(n: number,): CssValue {
+  return `${n}%` as CssValue;
+}
+
+/**
+ * Creates an `fr` flex fraction value (for CSS Grid).
+ *
+ * @param n - numeric value
+ * @returns branded CSS flex string (e.g. `'1fr'`)
+ */
+export function cssFr(n: number,): CssValue {
+  return `${n}fr` as CssValue;
+}
+
+/**
+ * Creates an `lh` line-height-relative length value.
+ *
+ * @param n - numeric value
+ * @returns branded CSS length string (e.g. `'1.5lh'`)
+ */
+export function cssLh(n: number,): CssValue {
+  return `${n}lh` as CssValue;
+}
+
+/**
+ * Creates a `vi` viewport-inline length value (logical viewport unit).
+ *
+ * @param n - numeric value
+ * @returns branded CSS length string (e.g. `'100vi'`)
+ */
+export function cssVi(n: number,): CssValue {
+  return `${n}vi` as CssValue;
+}
+
+/**
+ * Creates a `vb` viewport-block length value (logical viewport unit).
+ *
+ * @param n - numeric value
+ * @returns branded CSS length string (e.g. `'100vb'`)
+ */
+export function cssVb(n: number,): CssValue {
+  return `${n}vb` as CssValue;
+}
+
+/**
+ * Creates a `cqi` container-query-inline length value (logical container unit).
+ *
+ * @param n - numeric value
+ * @returns branded CSS length string (e.g. `'50cqi'`)
+ */
+export function cssCqi(n: number,): CssValue {
+  return `${n}cqi` as CssValue;
+}
+
+/**
+ * Creates a `cqb` container-query-block length value (logical container unit).
+ *
+ * @param n - numeric value
+ * @returns branded CSS length string (e.g. `'50cqb'`)
+ */
+export function cssCqb(n: number,): CssValue {
+  return `${n}cqb` as CssValue;
+}
+
+//endregion
+
+//region Dynamic viewport constructors
+
+/**
+ * Creates a `dvb` dynamic-viewport-block length value (logical dynamic viewport unit).
+ *
+ * `dvb` adapts to the dynamic viewport size (accounts for browser chrome that
+ * appears/disappears, e.g. mobile address bar). Logical equivalent of `dvh`
+ * in horizontal writing modes.
+ *
+ * @param n - numeric value
+ * @returns branded CSS length string (e.g. `'100dvb'`)
+ *
+ * @example
+ * ```ts
+ * cssDvb(100)  // '100dvb'
+ * ```
+ */
+export function cssDvb(n: number,): CssValue {
+  return `${n}dvb` as CssValue;
+}
+
+/**
+ * Creates a `dvi` dynamic-viewport-inline length value (logical dynamic viewport unit).
+ *
+ * `dvi` adapts to the dynamic viewport size. Logical equivalent of `dvw`
+ * in horizontal writing modes.
+ *
+ * @param n - numeric value
+ * @returns branded CSS length string (e.g. `'100dvi'`)
+ *
+ * @example
+ * ```ts
+ * cssDvi(100)  // '100dvi'
+ * ```
+ */
+export function cssDvi(n: number,): CssValue {
+  return `${n}dvi` as CssValue;
+}
+
+//endregion
+
+//region Time constructors
+
+/**
+ * Creates a seconds time value.
+ *
+ * `s` is the only allowed time unit (milliseconds are banned).
+ *
+ * @param n - numeric value
+ * @returns branded CSS time string (e.g. `'0.3s'`)
+ */
+export function cssS(n: number,): CssValue {
+  return `${n}s` as CssValue;
+}
+
+//endregion
+
+//region Angle constructors
+
+/**
+ * Creates a `turn` angle value.
+ *
+ * `turn` is the only allowed angle unit (`deg` and `rad` are banned).
+ *
+ * @param n - numeric value (1 = full rotation)
+ * @returns branded CSS angle string (e.g. `'0.25turn'`)
+ */
+export function cssTurn(n: number,): CssValue {
+  return `${n}turn` as CssValue;
+}
+
+//endregion
+
+//region Color constructors
+
+/**
+ * Creates an `oklch()` color value.
+ *
+ * `oklch()` is the primary color function — perceptually uniform, wide gamut.
+ * All other color functions (`rgb`, `hsl`, `hwb`, `lab`, `lch`, `oklab`) are banned.
+ *
+ * @param options - oklch color channels
+ * @param options.l - lightness (0 to 1)
+ * @param options.c - chroma (0 to ~0.4)
+ * @param options.h - hue (0 to 360)
+ * @param options.a - alpha (0 to 1, optional)
+ * @returns branded CSS color string (e.g. `'oklch(0.5 0.2 250)'`)
+ *
+ * @example
+ * ```ts
+ * cssOklch({ l: 0.5, c: 0.2, h: 250 })        // 'oklch(0.5 0.2 250)'
+ * cssOklch({ l: 0.5, c: 0.2, h: 250, a: 0.5 }) // 'oklch(0.5 0.2 250 / 0.5)'
+ * ```
+ */
+export function cssOklch({ l, c, h, a, }: { l: number; c: number; h: number; a?: number },): CssValue {
+  if (a !== undefined) {
+    return `oklch(${l} ${c} ${h} / ${a})` as CssValue;
+  }
+
+  return `oklch(${l} ${c} ${h})` as CssValue;
+}
+
+/**
+ * Creates a `color()` function value for wide-gamut color spaces.
+ *
+ * Use when `oklch()` is insufficient and a specific color space is needed
+ * (e.g. `display-p3`, `srgb-linear`, `a98-rgb`).
+ *
+ * @param options - color space and channels
+ * @param options.space - color space name (e.g. `'display-p3'`, `'srgb'`)
+ * @param options.channels - space-separated channel values
+ * @param options.a - alpha (0 to 1, optional)
+ * @returns branded CSS color string
+ *
+ * @example
+ * ```ts
+ * cssColorFn({ space: 'display-p3', channels: '1 0 0' })
+ * // 'color(display-p3 1 0 0)'
+ * ```
+ */
+export function cssColorFn({ space, channels, a, }: { space: string; channels: string; a?: number },): CssValue {
+  if (a !== undefined) {
+    return `color(${space} ${channels} / ${a})` as CssValue;
+  }
+
+  return `color(${space} ${channels})` as CssValue;
+}
+
+//endregion
+
+//region Reference constructors
+
+/**
+ * Creates a `var()` custom property reference.
+ *
+ * @param name - custom property name WITHOUT the `--` prefix
+ * @returns branded CSS var reference (e.g. `'var(--fg)'`)
+ *
+ * @example
+ * ```ts
+ * cssVar('fg')         // 'var(--fg)'
+ * cssVar('min-gap')    // 'var(--min-gap)'
+ * ```
+ */
+export function cssVar(name: string,): CssValue {
+  return `var(--${name})` as CssValue;
+}
+
+/**
+ * Creates a `calc()` expression.
+ *
+ * Accepts a raw expression string — use other constructors inside template literals
+ * for the operands, then wrap with `cssCalc()`.
+ *
+ * @param expr - calc expression (e.g. `'1rem + 2rem'`, `'100% - 3rem'`)
+ * @returns branded CSS calc expression
+ *
+ * @example
+ * ```ts
+ * cssCalc('1rem + 2rem')      // 'calc(1rem + 2rem)'
+ * cssCalc('100% - 3rem')      // 'calc(100% - 3rem)'
+ * cssCalc('1 / 16 * 1rem')    // 'calc(1 / 16 * 1rem)'
+ * ```
+ */
+export function cssCalc(expr: string,): CssValue {
+  return `calc(${expr})` as CssValue;
+}
+
+//endregion
+
+//region Number constructors
+
+/**
+ * Creates a unitless number value (for properties like `opacity`, `flex-grow`, `line-height`).
+ *
+ * @param n - numeric value
+ * @returns branded CSS number string (e.g. `'0.5'`)
+ */
+export function cssNum(n: number,): CssValue {
+  return `${n}` as CssValue;
+}
+
+/**
+ * Creates a unitless integer value (for properties like `z-index`, `order`, `column-count`).
+ *
+ * @param n - integer value
+ * @returns branded CSS integer string (e.g. `'10'`)
+ */
+export function cssInt(n: number,): CssValue {
+  return `${Math.round(n)}` as CssValue;
+}
+
+//endregion
+
+//region Transform function constructors
+
+/**
+ * Creates a `translateX()` transform value.
+ *
+ * @param offset - horizontal translation (branded CSS value from a length/percentage constructor)
+ * @returns branded CSS transform string (e.g. `'translateX(-50%)'`)
+ *
+ * @example
+ * ```ts
+ * cssTranslateX(cssPercent(-50))  // 'translateX(-50%)'
+ * cssTranslateX(cssRem(2))        // 'translateX(2rem)'
+ * ```
+ */
+export function cssTranslateX(offset: CssValue,): CssValue {
+  return `translateX(${offset})` as CssValue;
+}
+
+/**
+ * Creates a `translateY()` transform value.
+ *
+ * @param offset - vertical translation (branded CSS value from a length/percentage constructor)
+ * @returns branded CSS transform string (e.g. `'translateY(-50%)'`)
+ *
+ * @example
+ * ```ts
+ * cssTranslateY(cssPercent(-50))  // 'translateY(-50%)'
+ * ```
+ */
+export function cssTranslateY(offset: CssValue,): CssValue {
+  return `translateY(${offset})` as CssValue;
+}
+
+/**
+ * Creates a `rotate()` transform value.
+ *
+ * @param angle - rotation angle (branded CSS value from `cssTurn` or another angle constructor)
+ * @returns branded CSS transform string (e.g. `'rotate(-0.125turn)'`)
+ *
+ * @example
+ * ```ts
+ * cssRotate(cssTurn(-0.125))  // 'rotate(-0.125turn)'
+ * cssRotate(cssTurn(0.25))    // 'rotate(0.25turn)'
+ * ```
+ */
+export function cssRotate(angle: CssValue,): CssValue {
+  return `rotate(${angle})` as CssValue;
+}
+
+/**
+ * Creates a `scale()` transform value.
+ *
+ * @param factor - scale factor (unitless number)
+ * @returns branded CSS transform string (e.g. `'scale(0.15)'`)
+ *
+ * @example
+ * ```ts
+ * cssScale(0.15)  // 'scale(0.15)'
+ * cssScale(1)     // 'scale(1)'
+ * ```
+ */
+export function cssScale(factor: number,): CssValue {
+  return `scale(${factor})` as CssValue;
+}
+
+//endregion
+
+//region Escape hatch
+
+/**
+ * Brands a raw CSS value string.
+ *
+ * Use for compound values that no specific constructor covers
+ * (e.g. multi-part values, complex function compositions).
+ * This is an intentional escape hatch — prefer specific constructors when available.
+ *
+ * @param value - raw CSS value string
+ * @returns branded CSS value
+ *
+ * @example
+ * ```ts
+ * cssRaw('repeat(3, 1fr)')                           // grid template
+ * cssRaw('0 0.25rem 0.5rem oklch(0 0 0 / 0.1)')     // box-shadow
+ * cssRaw('oklch(0.5 0.2 250) solid 0.125rem')        // border longhand
+ * ```
+ */
+export function cssRaw(value: string,): CssValue {
+  return value as CssValue;
+}
+
+//endregion

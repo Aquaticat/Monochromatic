@@ -1,4 +1,5 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
+import { cssCalc, cssInt, cssNum, cssRaw, cssRem, cssRotate, cssTurn, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { appearanceNone, borderRadiusFull, flexCenter, flexColumn, focusOutline, minTouchTarget, stickyBar } from "../mixins.ts";
 
@@ -10,13 +11,13 @@ const STYLES = [
   css({
     rule: 'h1',
     decls: {
-      flex: '1',
+      'flex-grow': 1,
       'text-align': 'center',
-      'font-size': '1.5rem',
-      'font-weight': '400',
+      'font-size': cssRem(1.5),
+      'font-weight': cssInt(400),
       'line-height': 'normal',
-      'margin-block': '0',
-      'margin-inline': '0',
+      'margin-block': 0,
+      'margin-inline': 0,
     },
   }),
   css({
@@ -25,48 +26,48 @@ const STYLES = [
       ...appearanceNone(),
       ...flexCenter(),
       ...minTouchTarget(),
-      color: 'var(--fg)',
+      color: cssVar('fg'),
       'text-decoration': 'none',
     },
     children: [
-      css({ rule: '&:focus-visible', decls: focusOutline({ offset: '-0.125rem' }) }),
+      css({ rule: '&:focus-visible', decls: focusOutline({ offset: cssRem(-0.125) }) }),
     ],
   }),
   css({
     rule: '.hamburger',
     decls: {
-      'inline-size': '2rem',
-      'block-size': '2rem',
+      'inline-size': cssRem(2),
+      'block-size': cssRem(2),
       ...flexColumn(),
       'justify-content': 'center',
       'align-items': 'center',
-      gap: '0.375rem',
+      gap: cssRem(0.375),
     },
   }),
   css({
     rule: '.line',
     decls: {
-      'inline-size': '1.75rem',
-      'block-size': '0.25rem',
-      'background-color': 'var(--fg)',
+      'inline-size': cssRem(1.75),
+      'block-size': cssRem(0.25),
+      'background-color': cssVar('fg'),
       display: 'block',
     },
   }),
   css({
     rule: '.search-icon',
-    decls: { 'inline-size': '2rem', 'block-size': '2rem', position: 'relative' },
+    decls: { 'inline-size': cssRem(2), 'block-size': cssRem(2), position: 'relative' },
   }),
   css({
     rule: '.circle',
     decls: {
       position: 'absolute',
-      'inset-block-start': '0',
-      'inset-inline-start': '0',
-      'inline-size': '1.375rem',
-      'block-size': '1.375rem',
-      'border-width': '0.25rem',
+      'inset-block-start': 0,
+      'inset-inline-start': 0,
+      'inline-size': cssRem(1.375),
+      'block-size': cssRem(1.375),
+      'border-width': cssRem(0.25),
       'border-style': 'solid',
-      'border-color': 'var(--fg)',
+      'border-color': cssVar('fg'),
       ...borderRadiusFull(),
     },
   }),
@@ -74,13 +75,13 @@ const STYLES = [
     rule: '.handle',
     decls: {
       position: 'absolute',
-      'inset-block-start': 'calc(19 / 16 * 1rem)',
-      'inset-inline-start': 'calc(19 / 16 * 1rem)',
-      'inline-size': '0.25rem',
-      'block-size': '0.875rem',
-      'background-color': 'var(--fg)',
-      transform: 'rotate(-45deg)',
-      'transform-origin': 'top left',
+      'inset-block-start': cssCalc(`${cssRem(19)} / 16`),
+      'inset-inline-start': cssCalc(`${cssRem(19)} / 16`),
+      'inline-size': cssRem(0.25),
+      'block-size': cssRem(0.875),
+      'background-color': cssVar('fg'),
+      transform: cssRotate(cssTurn(-0.125)),
+      'transform-origin': cssRaw('top left'),
     },
   }),
   css({
@@ -91,10 +92,10 @@ const STYLES = [
         rule: ':host',
         decls: {
           'justify-content': 'space-between',
-          'padding-inline-start': 'var(--min-gap)',
-          'border-block-end-width': 'calc(1 / 16 * 1rem)',
+          'padding-inline-start': cssVar('min-gap'),
+          'border-block-end-width': cssCalc(`${cssRem(1)} / 16`),
           'border-block-end-style': 'solid',
-          'border-block-end-color': 'var(--bg-weaker)',
+          'border-block-end-color': cssVar('bg-weaker'),
         },
       }),
       css({ rule: '.menu-toggle', decls: { display: 'none' } }),

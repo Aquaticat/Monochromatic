@@ -1,27 +1,28 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
+import { cssInt, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { flexCenter, flexColumn, flexRow, minTouchTarget } from "../mixins.ts";
 
 const STYLES = [
   css({
     rule: ':host',
-    decls: { ...flexColumn(), gap: '0.5rem' },
+    decls: { ...flexColumn(), gap: cssRem(0.5) },
   }),
   css({
     rule: '.heading',
-    decls: { ...flexRow(), gap: '1rem', 'font-size': '1.25rem', 'font-weight': '400', cursor: 'pointer' },
+    decls: { ...flexRow(), gap: cssRem(1), 'font-size': cssRem(1.25), 'font-weight': cssInt(400), cursor: 'pointer' },
   }),
   css({
     rule: '.icon',
-    decls: { ...flexCenter(), ...minTouchTarget(), 'font-size': '2rem' },
+    decls: { ...flexCenter(), ...minTouchTarget(), 'font-size': cssRem(2) },
   }),
   css({
     rule: '.toggle',
-    decls: { 'inline-size': '1.25rem', 'block-size': '1.25rem' },
+    decls: { 'inline-size': cssRem(1.25), 'block-size': cssRem(1.25) },
   }),
   css({
     rule: '.content',
-    decls: { ...flexColumn(), gap: 'var(--gap)' },
+    decls: { ...flexColumn(), gap: cssVar('gap') },
   }),
 ].join('');
 

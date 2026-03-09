@@ -1,4 +1,5 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
+import { cssInt, cssNum, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { borderRadiusFull, flexCenter, focusOutline, minTouchTarget } from "../mixins.ts";
 
@@ -7,9 +8,9 @@ const STYLES = [
     rule: ':host',
     decls: {
       position: 'fixed',
-      'inset-block-end': '1rem',
-      'inset-inline-end': '1rem',
-      'z-index': '50',
+      'inset-block-end': cssRem(1),
+      'inset-inline-end': cssRem(1),
+      'z-index': cssInt(50),
     },
   }),
   css({
@@ -17,20 +18,20 @@ const STYLES = [
     decls: {
       ...flexCenter(),
       ...minTouchTarget(),
-      'inline-size': '4rem',
-      'block-size': '4rem',
+      'inline-size': cssRem(4),
+      'block-size': cssRem(4),
       ...borderRadiusFull(),
-      'background-color': 'var(--fg)',
-      'border-width': '0.25rem',
+      'background-color': cssVar('fg'),
+      'border-width': cssRem(0.25),
       'border-style': 'solid',
-      'border-color': 'var(--bg)',
-      color: 'var(--bg)',
-      'font-size': '2rem',
+      'border-color': cssVar('bg'),
+      color: cssVar('bg'),
+      'font-size': cssRem(2),
       cursor: 'pointer',
-      'line-height': '1.2',
+      'line-height': cssNum(1.2),
     },
     children: [
-      css({ rule: '&:hover', decls: { opacity: '0.85' } }),
+      css({ rule: '&:hover', decls: { opacity: cssNum(0.85) } }),
       css({ rule: '&:focus-visible', decls: focusOutline() }),
     ],
   }),

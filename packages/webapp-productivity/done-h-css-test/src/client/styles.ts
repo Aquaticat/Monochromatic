@@ -5,6 +5,7 @@
  * Imported by page entry scripts and passed to `injectCSS()`.
  */
 import { $ as css } from "./css.ts";
+import { cssCalc, cssDvb, cssNum, cssPercent, cssRaw, cssRem, cssS, cssScale, cssVar } from "@monochromatic-dev/module-es/h-css";
 
 //region Primitive color tokens -- Raw color values that never change between modes.
 
@@ -69,10 +70,10 @@ const semanticTokens = css({
     '--orange-bg': 'var(--orange-light)',
     '--overlay-bg': 'rgb(0 0 0 / 0.3)',
     '--hover-bg': 'rgb(0 0 0 / 0.05)',
-    '--min-target': '3rem',
-    '--min-gap': '1rem',
-    '--min-padding': '0.5rem',
-    '--gap': '2rem',
+    '--min-target': cssRem(3),
+    '--min-gap': cssRem(1),
+    '--min-padding': cssRem(0.5),
+    '--gap': cssRem(2),
   },
 });
 
@@ -123,19 +124,31 @@ const darkMode = css({
 const resets = [
   css({
     rule: '*, *::before, *::after',
-    decls: { 'box-sizing': 'border-box', margin: '0', padding: '0' },
+    decls: {
+      'box-sizing': 'border-box',
+      'margin-block': 0,
+      'margin-inline': 0,
+      'padding-block': 0,
+      'padding-inline': 0,
+    },
   }),
   css({
     rule: 'input, textarea, select, button',
-    decls: { font: 'inherit' },
+    decls: {
+      'font-family': 'inherit',
+      'font-size': 'inherit',
+      'font-style': 'inherit',
+      'font-weight': 'inherit',
+      'line-height': 'inherit',
+    },
   }),
   css({
     rule: 'button:disabled',
-    decls: { opacity: '0.45', cursor: 'not-allowed' },
+    decls: { opacity: 0.45, cursor: 'not-allowed' },
   }),
   css({
     rule: 'input::placeholder, textarea::placeholder',
-    decls: { color: 'var(--medium)' },
+    decls: { color: cssVar('medium') },
   }),
 ].join('');
 
@@ -144,17 +157,17 @@ const resets = [
 //region Layout shell
 
 const layoutShell = [
-  css({ rule: ':root', decls: { '--sidebar-basis': '22rem' } }),
+  css({ rule: ':root', decls: { '--sidebar-basis': cssRem(22) } }),
   css({
     rule: 'body',
     decls: {
-      'font-family': 'Inter, system-ui, sans-serif',
-      color: 'var(--fg)',
-      'background-color': 'var(--bg)',
-      'max-inline-size': 'calc(1194 / 16 * 1rem)',
+      'font-family': cssRaw('Inter, system-ui, sans-serif'),
+      color: cssVar('fg'),
+      'background-color': cssVar('bg'),
+      'max-inline-size': cssCalc(`${cssRem(1194)} / 16`),
       'margin-inline': 'auto',
       'overflow-x': 'hidden',
-      'min-block-size': '100dvh',
+      'min-block-size': cssDvb(100),
       display: 'flex',
       'flex-direction': 'row',
     },
@@ -162,19 +175,19 @@ const layoutShell = [
   css({
     rule: 'side-drawer',
     decls: {
-      'flex-shrink': '0',
-      'flex-basis': '0',
+      'flex-shrink': 0,
+      'flex-basis': 0,
       position: 'sticky',
-      'inset-block-start': '0',
+      'inset-block-start': 0,
       'align-self': 'flex-start',
-      'max-block-size': '100dvh',
+      'max-block-size': cssDvb(100),
     },
   }),
   css({
     at: 'media',
     params: '(min-width: 48rem)',
     children: [
-      css({ rule: 'side-drawer', decls: { 'flex-basis': 'var(--sidebar-basis)' } }),
+      css({ rule: 'side-drawer', decls: { 'flex-basis': cssVar('sidebar-basis') } }),
     ],
   }),
   css({
@@ -182,9 +195,9 @@ const layoutShell = [
     decls: {
       display: 'flex',
       'flex-direction': 'column',
-      'min-block-size': '100dvh',
-      'flex-grow': '1',
-      'min-inline-size': '0',
+      'min-block-size': cssDvb(100),
+      'flex-grow': 1,
+      'min-inline-size': 0,
     },
   }),
   css({
@@ -192,9 +205,9 @@ const layoutShell = [
     decls: {
       display: 'flex',
       'flex-direction': 'column',
-      'padding-block': 'var(--gap)',
-      'padding-inline': 'var(--min-gap)',
-      gap: 'var(--gap)',
+      'padding-block': cssVar('gap'),
+      'padding-inline': cssVar('min-gap'),
+      gap: cssVar('gap'),
       'overflow-x': 'hidden',
     },
   }),
@@ -207,17 +220,17 @@ const layoutShell = [
 const utilities = [
   css({
     rule: '.task-list',
-    decls: { display: 'flex', 'flex-direction': 'column', gap: 'var(--gap)', 'list-style': 'none' },
+    decls: { display: 'flex', 'flex-direction': 'column', gap: cssVar('gap'), 'list-style': 'none' },
   }),
   css({
     rule: '.divider',
     decls: {
-      'block-size': 'calc(1 / 16 * 1rem)',
-      'background-color': 'var(--fg)',
-      'inline-size': '100%',
+      'block-size': cssCalc(`${cssRem(1)} / 16`),
+      'background-color': cssVar('fg'),
+      'inline-size': cssPercent(100),
     },
   }),
-  css({ rule: '.empty', decls: { color: 'var(--medium)' } }),
+  css({ rule: '.empty', decls: { color: cssVar('medium') } }),
 ].join('');
 
 //endregion Multi-page utilities
@@ -231,17 +244,17 @@ const newTaskPanel = [
     children: [
       css({
         rule: 'from',
-        decls: { transform: 'scale(0.15)', 'border-radius': '50%', opacity: '0.6' },
+        decls: { transform: cssScale(0.15), 'border-radius': cssPercent(50), opacity: 0.6 },
       }),
       css({
         rule: 'to',
         decls: {
-          transform: 'scale(1)',
-          'border-start-start-radius': '1rem',
-          'border-start-end-radius': '1rem',
-          'border-end-start-radius': '0',
-          'border-end-end-radius': '0',
-          opacity: '1',
+          transform: cssScale(1),
+          'border-start-start-radius': cssRem(1),
+          'border-start-end-radius': cssRem(1),
+          'border-end-start-radius': 0,
+          'border-end-end-radius': 0,
+          opacity: 1,
         },
       }),
     ],
@@ -250,32 +263,34 @@ const newTaskPanel = [
     rule: '.new-task-panel',
     decls: {
       position: 'fixed',
-      inset: 'auto',
-      margin: '0',
-      'inset-block-end': '0',
-      'inset-inline-end': '1rem',
+      'inset-block-start': 'auto',
+      'inset-block-end': 0,
+      'inset-inline-start': 'auto',
+      'inset-inline-end': cssRem(1),
+      'margin-block': 0,
+      'margin-inline': 0,
       'border-style': 'none',
-      'padding-block': '0',
-      'padding-inline': '0',
-      'background-color': 'var(--bg)',
-      color: 'var(--fg)',
-      'inline-size': 'calc(393 / 16 * 1rem)',
-      'max-block-size': '80dvh',
+      'padding-block': 0,
+      'padding-inline': 0,
+      'background-color': cssVar('bg'),
+      color: cssVar('fg'),
+      'inline-size': cssCalc(`${cssRem(393)} / 16`),
+      'max-block-size': cssDvb(80),
       'overflow-y': 'auto',
-      'border-start-start-radius': '1rem',
-      'border-start-end-radius': '1rem',
-      'border-end-start-radius': '0',
-      'border-end-end-radius': '0',
-      'box-shadow': '0 -0.25rem 1rem rgb(0 0 0 / 0.2)',
-      'transform-origin': 'bottom right',
+      'border-start-start-radius': cssRem(1),
+      'border-start-end-radius': cssRem(1),
+      'border-end-start-radius': 0,
+      'border-end-end-radius': 0,
+      'box-shadow': cssRaw(`0 ${cssRem(-0.25)} ${cssRem(1)} rgb(0 0 0 / 0.2)`),
+      'transform-origin': cssRaw('bottom right'),
     },
     children: [
       css({
         rule: '&[data-animating]',
         decls: {
-          'animation-name': 'fab-to-surface',
-          'animation-duration': '250ms',
-          'animation-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
+          'animation-name': cssRaw('fab-to-surface'),
+          'animation-duration': cssS(0.25),
+          'animation-timing-function': cssRaw('cubic-bezier(0.4, 0, 0.2, 1)'),
           'animation-fill-mode': 'both',
         },
       }),

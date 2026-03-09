@@ -1,4 +1,5 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
+import { cssCalc, cssPercent, cssRaw, cssRem, cssS, cssTranslateY, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { borderRadiusFull, flexCenter } from "../mixins.ts";
 
@@ -8,53 +9,55 @@ const STYLES = [
     decls: {
       display: 'inline-flex',
       cursor: 'pointer',
-      'inline-size': '3rem',
-      'block-size': '2rem',
+      'inline-size': cssRem(3),
+      'block-size': cssRem(2),
     },
   }),
   css({
     rule: '.track',
     decls: {
-      'inline-size': '100%',
-      'block-size': '100%',
-      'border-width': 'calc(1 / 16 * 1rem)',
+      'inline-size': cssPercent(100),
+      'block-size': cssPercent(100),
+      'border-width': cssCalc(`${cssRem(1)} / 16`),
       'border-style': 'solid',
-      'border-color': 'var(--fg)',
+      'border-color': cssVar('fg'),
       ...borderRadiusFull(),
-      'background-color': 'var(--bg)',
+      'background-color': cssVar('bg'),
       position: 'relative',
-      overflow: 'hidden',
+      'overflow-x': 'hidden',
+      'overflow-y': 'hidden',
     },
   }),
   css({
     rule: '.thumb',
     decls: {
       position: 'absolute',
-      'inset-block-start': '50%',
-      transform: 'translateY(-50%)',
-      'inline-size': '2rem',
-      'block-size': '2rem',
+      'inset-block-start': cssPercent(50),
+      transform: cssTranslateY(cssPercent(-50)),
+      'inline-size': cssRem(2),
+      'block-size': cssRem(2),
       ...borderRadiusFull(),
-      'border-width': 'calc(1 / 16 * 1rem)',
+      'border-width': cssCalc(`${cssRem(1)} / 16`),
       'border-style': 'solid',
-      'border-color': 'var(--fg)',
-      'background-color': 'var(--bg-stronger)',
+      'border-color': cssVar('fg'),
+      'background-color': cssVar('bg-stronger'),
       ...flexCenter(),
-      'font-size': '1rem',
-      transition: 'inset-inline-start 0.15s, inset-inline-end 0.15s',
+      'font-size': cssRem(1),
+      'transition-property': cssRaw('inset-inline-start, inset-inline-end'),
+      'transition-duration': cssS(0.15),
     },
   }),
   css({
     rule: '.thumb.on',
     decls: {
-      'inset-inline-end': 'calc(-1 / 16 * 1rem)',
+      'inset-inline-end': cssCalc(`${cssRem(-1)} / 16`),
       'inset-inline-start': 'auto',
     },
   }),
   css({
     rule: '.thumb.off',
     decls: {
-      'inset-inline-start': 'calc(-1 / 16 * 1rem)',
+      'inset-inline-start': cssCalc(`${cssRem(-1)} / 16`),
       'inset-inline-end': 'auto',
     },
   }),

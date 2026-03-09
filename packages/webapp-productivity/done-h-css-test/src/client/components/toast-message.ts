@@ -1,4 +1,5 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
+import { cssInt, cssPercent, cssRem, cssTranslateX, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 
 const STYLES = [
@@ -6,19 +7,19 @@ const STYLES = [
     rule: ':host',
     decls: {
       position: 'fixed',
-      'inset-block-end': '1rem',
-      'inset-inline-start': '50%',
-      transform: 'translateX(-50%)',
-      'z-index': '1000',
+      'inset-block-end': cssRem(1),
+      'inset-inline-start': cssPercent(50),
+      transform: cssTranslateX(cssPercent(-50)),
+      'z-index': cssInt(1000),
     },
   }),
   css({
     rule: '.content',
     decls: {
-      'background-color': 'var(--red-bg)',
-      color: 'var(--bg-stronger)',
-      'padding-block': '0.55rem',
-      'padding-inline': '0.85rem',
+      'background-color': cssVar('red-bg'),
+      color: cssVar('bg-stronger'),
+      'padding-block': cssRem(0.55),
+      'padding-inline': cssRem(0.85),
     },
   }),
 ].join('');

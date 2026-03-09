@@ -1,4 +1,5 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
+import { cssCalc, cssNum, cssPercent, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { appearanceNone, flexCenter, focusOutline, minTouchTarget, shadowDomGlobals, stickyBar } from "../mixins.ts";
 
@@ -13,24 +14,24 @@ const STYLES = [
       ...appearanceNone(),
       ...flexCenter(),
       ...minTouchTarget(),
-      'font-size': '1.5rem',
-      color: 'var(--fg)',
+      'font-size': cssRem(1.5),
+      color: cssVar('fg'),
     },
     children: [
-      css({ rule: '&:focus-visible', decls: focusOutline({ offset: '-0.125rem' }) }),
+      css({ rule: '&:focus-visible', decls: focusOutline({ offset: cssRem(-0.125) }) }),
     ],
   }),
   css({
     rule: 'input',
     decls: {
-      flex: '1',
+      'flex-grow': 1,
       'border-style': 'none',
       'background-color': 'transparent',
-      'font-size': '1rem',
+      'font-size': cssRem(1),
       'font-family': 'inherit',
-      color: 'var(--fg)',
-      outline: 'none',
-      'block-size': '100%',
+      color: cssVar('fg'),
+      'outline-style': 'none',
+      'block-size': cssPercent(100),
     },
   }),
   ...shadowDomGlobals(),
@@ -41,13 +42,13 @@ const STYLES = [
       css({
         rule: ':host',
         decls: {
-          'border-block-end-width': 'calc(1 / 16 * 1rem)',
+          'border-block-end-width': cssCalc(`${cssRem(1)} / 16`),
           'border-block-end-style': 'solid',
-          'border-block-end-color': 'var(--bg-weaker)',
+          'border-block-end-color': cssVar('bg-weaker'),
         },
       }),
       css({ rule: '.back', decls: { display: 'none' } }),
-      css({ rule: 'input', decls: { 'font-size': '1.5rem' } }),
+      css({ rule: 'input', decls: { 'font-size': cssRem(1.5) } }),
     ],
   }),
 ].join('');

@@ -17,6 +17,7 @@
 import type { Task } from "../../lib/types.ts";
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { $ as css } from "../css.ts";
+import { cssNum, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { appearanceNone, flexCenter, flexRow, focusOutline, scrollRow, whitespaceNowrap, flexColumn } from "../mixins.ts";
 
 /** Configuration for a `<task-card>` instance, passed via `createTaskCard`. */
@@ -58,15 +59,15 @@ function formatTrackedTime(seconds: number): string {
 const TASK_CARD_STYLES = [
   css({
     rule: ':host',
-    decls: { ...flexColumn(), gap: 'var(--min-gap)', 'background-color': 'var(--bg)', overflow: 'hidden', cursor: 'pointer' },
+    decls: { ...flexColumn(), gap: cssVar('min-gap'), 'background-color': cssVar('bg'), 'overflow-x': 'hidden', 'overflow-y': 'hidden', cursor: 'pointer' },
   }),
   css({
     rule: '.row',
-    decls: { ...flexRow(), gap: 'var(--min-gap)', 'align-items': 'flex-start' },
+    decls: { ...flexRow(), gap: cssVar('min-gap'), 'align-items': 'flex-start' },
   }),
   css({
     rule: '.checkbox',
-    decls: { ...appearanceNone(), ...flexCenter(), 'inline-size': '2rem', 'block-size': '2rem' },
+    decls: { ...appearanceNone(), ...flexCenter(), 'inline-size': cssRem(2), 'block-size': cssRem(2) },
     children: [
       css({ rule: '&:focus-visible', decls: focusOutline() }),
     ],
@@ -74,16 +75,16 @@ const TASK_CARD_STYLES = [
   css({
     rule: '.checkbox-box',
     decls: {
-      'inline-size': '1.75rem',
-      'block-size': '1.75rem',
-      'border-width': '0.25rem',
+      'inline-size': cssRem(1.75),
+      'block-size': cssRem(1.75),
+      'border-width': cssRem(0.25),
       'border-style': 'solid',
-      'border-color': 'var(--fg)',
+      'border-color': cssVar('fg'),
     },
   }),
   css({
     rule: '.title',
-    decls: { 'font-size': '1.25rem', 'font-weight': '400', 'line-height': 'normal', flex: '1', 'min-inline-size': '0' },
+    decls: { 'font-size': cssRem(1.25), 'font-weight': cssNum(400), 'line-height': 'normal', 'flex-grow': cssNum(1), 'min-inline-size': 0 },
   }),
   css({
     rule: '.chips',
@@ -92,11 +93,11 @@ const TASK_CARD_STYLES = [
   css({ rule: '.chips::-webkit-scrollbar', decls: { display: 'none' } }),
   css({
     rule: '.chip',
-    decls: { ...flexRow(), ...whitespaceNowrap(), gap: '0.25rem', 'font-size': '1rem', 'line-height': '1.5' },
+    decls: { ...flexRow(), ...whitespaceNowrap(), gap: cssRem(0.25), 'font-size': cssRem(1), 'line-height': cssNum(1.5) },
   }),
   css({
     rule: '.chip.blocked',
-    decls: { 'border-color': 'var(--red-fg)', color: 'var(--red-fg)' },
+    decls: { 'border-color': cssVar('red-fg'), color: cssVar('red-fg') },
   }),
 ].join('');
 
