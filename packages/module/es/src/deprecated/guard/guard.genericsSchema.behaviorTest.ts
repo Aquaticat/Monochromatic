@@ -346,7 +346,7 @@ const realGenericTestValues = {
   // Validated transform schema
   validatedTransformSchema: {
     parse: (value: string,) => Number.parseInt(value, 10,),
-    validator: (input: string,) => !isNaN(Number.parseInt(input, 10,),),
+    validator: (input: string,) => !Number.isNaN(Number.parseInt(input, 10,),),
     transformer: (input: string,) => Number.parseInt(input, 10,),
   } as ValidatedTransformSchema<string, number>,
 
