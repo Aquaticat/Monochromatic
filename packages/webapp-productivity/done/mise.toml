@@ -1,5 +1,11 @@
+[tasks.build]
+extends = "build"
+
 [tasks."build:js"]
 run = "bun src/server.ts --build-only"
+
+[tasks."watch:build"]
+extends = "watch:build"
 
 [tasks."watch:build:js"]
 run = "bun --watch src/server.ts --build-only"

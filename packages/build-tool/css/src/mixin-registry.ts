@@ -23,7 +23,7 @@ function isAtRule(node: ChildNode): node is AtRule {
 /**
  * Registry for mixin definitions.
  * Stored at module level because the build pipeline is single-threaded and
- * sequential — cleared at the start of each build in build.ts.
+ * sequential — cleared at the start of each build in index.ts.
  */
 export const mixins: Map<string, ChildNode[]> = new Map<string, ChildNode[]>();
 

@@ -1,2 +1,6 @@
+[tasks.dev]
+description = "Start exa-search in watch mode"
+run = "bun --watch src/index.ts"
+
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"

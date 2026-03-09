@@ -2,18 +2,18 @@
   "name": "@monochromatic-dev/webapp-search-ai-tree",
   "version": "1.0.0",
   "description": "AI-powered tree exploration web application.",
-  "module": "dist/final/js/index.node.js",
+  "module": "dist/final/node/index.js",
   "keywords": [],
   "license": "Apache-2.0",
   "type": "module",
   "dependencies": {
-    "@monochromatic-dev/config-vite": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
     "@elysiajs/swagger": "catalog:",
     "zod": "catalog:",
     "@anthropic-ai/sdk": "catalog:"
   },
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@types/bun": "catalog:",
     "elysia": "catalog:",
     "typescript": "catalog:"
