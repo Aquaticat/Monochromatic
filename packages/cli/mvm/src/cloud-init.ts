@@ -2,7 +2,25 @@ import { join } from 'node:path';
 
 import { createIso } from './iso9660.ts';
 import { l, tagged } from './log.ts';
-import type { GuestConfig, InitSystem } from './registry.ts';
+import type { GuestConfig, InitSystem, LinuxGuestConfig } from './registry.ts';
+
+/**
+ * Narrows a {@link GuestConfig} to {@link LinuxGuestConfig} after the caller
+ * has already ruled out Windows guests via an early return.
+ *
+ * @param guest - Guest config known to be Linux at this call site
+ * @returns The same config narrowed to LinuxGuestConfig
+ *
+ * @example
+ * ```ts
+ * if (guest.osFamily === 'windows') return;
+ * const linux = asLinux(guest);
+ * linux.initSystem; // safe
+ * ```
+ */
+function asLinux(guest: GuestConfig): LinuxGuestConfig {
+  return guest as LinuxGuestConfig;
+}
 
 //region Systemd user-data helpers
 
@@ -160,13 +178,14 @@ function vmAutologin(initSystem: InitSystem, user: string): string {
  * ```
  */
 function vmUserData({ guest, name }: { guest: GuestConfig; name: string }): string {
+  const linux = asLinux(guest);
   return `#cloud-config
 hostname: ${name}
 users:
-  - name: ${guest.defaultUser}
+  - name: ${linux.defaultUser}
     sudo: ALL=(ALL) NOPASSWD:ALL
-    shell: ${guest.shell}
-${vmAutologin(guest.initSystem, guest.defaultUser)}`;
+    shell: ${linux.shell}
+${vmAutologin(linux.initSystem, linux.defaultUser)}`;
 }
 
 /**
@@ -183,15 +202,16 @@ ${vmAutologin(guest.initSystem, guest.defaultUser)}`;
  * ```
  */
 function templateUserData({ guest, name }: { guest: GuestConfig; name: string }): string {
+  const linux = asLinux(guest);
   return `#cloud-config
 hostname: ${name}
 users:
-  - name: ${guest.defaultUser}
+  - name: ${linux.defaultUser}
     sudo: ALL=(ALL) NOPASSWD:ALL
-    shell: ${guest.shell}
+    shell: ${linux.shell}
 packages:
   - qemu-guest-agent
-${templateRuncmd(guest.initSystem)}`;
+${templateRuncmd(linux.initSystem)}`;
 }
 
 //endregion User-data generators
@@ -205,13 +225,20 @@ ${templateRuncmd(guest.initSystem)}`;
  * Configures auto-login on the serial console (ttyS0) so `virsh console`
  * drops directly into a shell without SSH or passwords.
  *
+ * Windows guests return `undefined` because they do not use cloud-init.
+ * Hostname is set via the QEMU guest agent after boot instead.
+ *
  * @param options - VM directory for writing the ISO, VM name for hostname configuration,
- *   image spec for distro-specific cloud-init, and whether this is for template creation
- * @returns Absolute path to the generated seed ISO
+ *   guest config for distro-specific cloud-init, and whether this is for template creation
+ * @returns Absolute path to the generated seed ISO, or `undefined` for Windows guests
  *
  * @example
  * ```ts
  * const seedPath = await createSeedIso({ name: 'my-vm', guest: IMAGES['ubuntu'], vmDir: '/path/to/vm' });
+ * // seedPath => '/path/to/vm/seed.iso'
+ *
+ * const winSeed = await createSeedIso({ name: 'win-vm', guest: IMAGES['windows'], vmDir: '/path/to/vm' });
+ * // winSeed => undefined
  * ```
  */
 export async function createSeedIso({ guest, name, template = false, vmDir }: {
@@ -219,7 +246,13 @@ export async function createSeedIso({ guest, name, template = false, vmDir }: {
   name: string;
   template?: boolean;
   vmDir: string;
-}): Promise<string> {
+}): Promise<string | undefined> {
+  if (guest.osFamily === 'windows') {
+    const rl = tagged({ tag: createSeedIso.name, l });
+    rl.info('skipping seed ISO for Windows guest (uses guest agent for provisioning)');
+    return undefined;
+  }
+
   const rl = tagged({ tag: createSeedIso.name, l, });
 
   const encoder = new TextEncoder();

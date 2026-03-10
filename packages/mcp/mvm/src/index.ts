@@ -5,6 +5,7 @@ import { destroy, destroyAll } from '@monochromatic-dev/cli-mvm/destroy';
 import { ephemeralExec } from '@monochromatic-dev/cli-mvm/ephemeral-exec';
 import { exec } from '@monochromatic-dev/cli-mvm/exec';
 import { list } from '@monochromatic-dev/cli-mvm/list';
+import { update } from '@monochromatic-dev/cli-mvm/update';
 import { createMcpServer, defineTool, serve } from '@monochromatic-dev/mcp-stdio';
 
 export {};
@@ -32,13 +33,13 @@ const listTool = defineTool('list_vms', {
 
 /** MCP tool: create a new VM, optionally cloned from an existing one. */
 const createTool = defineTool('create_vm', {
-  description: 'Creates and starts a new VM. Supports ubuntu (default), fedora, alpine, or a custom template name via the `image` parameter. When `from` is provided, clones from that existing VM instead of creating fresh.',
+  description: 'Creates and starts a new VM. Supports ubuntu (default), fedora, alpine, windows, or a custom template name via the `image` parameter. Windows VMs use a Windows Server 2025 evaluation ISO with unattended install (first creation takes 15-30 minutes). When `from` is provided, clones from that existing VM instead of creating fresh.',
   inputSchema: {
     type: 'object',
     properties: {
       name: { type: 'string', description: 'VM name (alphanumeric, hyphens, underscores)' },
       from: { type: 'string', description: 'Clone from this existing VM instead of creating fresh' },
-      image: { type: 'string', description: 'Image to use: ubuntu (default), fedora, alpine, or a custom template name' },
+      image: { type: 'string', description: 'Image to use: ubuntu (default), fedora, alpine, windows, or a custom template name' },
     },
     required: ['name'],
   },
@@ -95,12 +96,12 @@ const destroyTool = defineTool('destroy_vm', {
 
 /** MCP tool: execute a command inside a running VM. */
 const execTool = defineTool('exec_in_vm', {
-  description: 'Runs a shell command inside a VM via the QEMU guest agent and returns stdout, stderr, and exit code. When `destroy` is true, creates an ephemeral VM (optionally cloned from `from`), executes the command, and destroys the VM afterward.',
+  description: 'Runs a shell command inside a VM via the QEMU guest agent and returns stdout, stderr, and exit code. Linux VMs use bash; Windows VMs use PowerShell. When `destroy` is true, creates an ephemeral VM (optionally cloned from `from`), executes the command, and destroys the VM afterward.',
   inputSchema: {
     type: 'object',
     properties: {
       name: { type: 'string', description: 'VM name to execute in (ignored when destroy is true)' },
-      command: { type: 'string', description: 'Shell command to run inside the VM' },
+      command: { type: 'string', description: 'Shell command to run inside the VM (bash for Linux, PowerShell for Windows)' },
       destroy: { type: 'boolean', description: 'Create an ephemeral VM, execute, then destroy it' },
       from: { type: 'string', description: 'Clone from this existing VM instead of creating fresh (only with destroy)' },
     },
@@ -131,13 +132,28 @@ const execTool = defineTool('exec_in_vm', {
   },
 });
 
+/** MCP tool: re-download and rebuild all template images. */
+const updateTool = defineTool('update_templates', {
+  description: 'Re-downloads all base images and rebuilds all templates unconditionally. Use to refresh Windows evaluation ISOs (180-day expiry), pick up new Linux cloud image releases, or update virtio-win drivers. Builds templates for all registered images, even those never previously used. Windows template rebuild takes 15-30 minutes.',
+  handler: async () => {
+    try {
+      await update();
+      return { content: [{ type: 'text', text: 'All template images updated successfully.' }] };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('[mcp-mvm] update_templates failed:', err);
+      return { content: [{ type: 'text', text: `Error: ${message}` }], isError: true };
+    }
+  },
+});
+
 //endregion Tool definitions
 
 //region Server setup -- create and serve the MCP server
 
 const server = createMcpServer(
   { name: 'mvm', version: '0.1.0' },
-  [listTool, createTool, destroyTool, execTool],
+  [listTool, createTool, destroyTool, execTool, updateTool],
 );
 
 await serve(server);

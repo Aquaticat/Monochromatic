@@ -13,6 +13,7 @@ import { ephemeralExec } from './ephemeral-exec.ts';
 import { exec } from './exec.ts';
 import { list } from './list.ts';
 import { shell } from './shell.ts';
+import { update } from './update.ts';
 
 export {};
 
@@ -58,6 +59,7 @@ type MvmArgs =
   | { cmd: 'create'; image: string | undefined; name: string; from: string | undefined }
   | { cmd: 'shell'; name: string }
   | { cmd: 'list' }
+  | { cmd: 'update' }
   | { cmd: 'destroy'; name: string | undefined; all: boolean }
   | { cmd: 'exec'; name: string; command: string; destroy: false }
   | { cmd: 'exec'; command: string; destroy: true; from: string | undefined };
@@ -72,8 +74,8 @@ const name = string({ metavar: 'NAME' });
 /** Shared option parser for `--from SOURCE` cloning flag */
 const fromOption = optional(option('--from', string({ metavar: 'SOURCE' }), { description: message`Clone from an existing VM instead of creating fresh` }));
 
-/** Option parser for `--image IMAGE` to select a distro (ubuntu, fedora, alpine, or custom template name) */
-const imageOption = optional(option('--image', string({ metavar: 'IMAGE' }), { description: message`Image to use: ubuntu (default), fedora, alpine, or a custom template name` }));
+/** Option parser for `--image IMAGE` to select a distro (ubuntu, fedora, alpine, windows, or custom template name) */
+const imageOption = optional(option('--image', string({ metavar: 'IMAGE' }), { description: message`Image to use: ubuntu (default), fedora, alpine, windows, or a custom template name` }));
 
 //endregion Shared value parsers
 
@@ -152,12 +154,19 @@ const execCmd = command('exec', or(
   execDirectParser,
 ), { brief: message`Run a command inside a VM via guest agent` });
 
+/** Parser for `update` -- re-downloads and rebuilds all template images */
+const updateCmd = command('update', map(
+  object({}),
+  (): MvmArgs => ({ cmd: 'update' }),
+), { brief: message`Re-download and rebuild all template images` });
+
 /** Combined top-level parser across all subcommands */
 const parser = or(
   createCmd,
   shellCmd,
   listCmd,
   lsCmd,
+  updateCmd,
   destroyCmd,
   rmCmd,
   execCmd,
@@ -196,6 +205,8 @@ if (args.cmd === 'create') {
       console.log(`${vm.name.padEnd(NAME_COL_WIDTH)} ${vm.state}`);
     }
   }
+} else if (args.cmd === 'update') {
+  await update();
 } else if (args.cmd === 'destroy') {
   if (args.all) {
     await destroyAll();

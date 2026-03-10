@@ -14,7 +14,9 @@
     "./exec": "./src/exec.ts",
     "./ephemeral-exec": "./src/ephemeral-exec.ts",
     "./clone": "./src/clone.ts",
-    "./registry": "./src/registry.ts"
+    "./registry": "./src/registry.ts",
+    "./update": "./src/update.ts",
+    "./meta": "./src/meta.ts"
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",

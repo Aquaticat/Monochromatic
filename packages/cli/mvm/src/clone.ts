@@ -1,41 +1,24 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { createSeedIso } from './cloud-init.ts';
 import { VMS_DIR, validateName } from './config.ts';
 import { domainXml } from './domain-xml.ts';
+import { exec } from './exec.ts';
 import { l, tagged } from './log.ts';
-import { CUSTOM_GUEST_DEFAULTS, DEFAULT_IMAGE, resolveImage } from './registry.ts';
+import { readVmMeta, writeVmMeta } from './meta.ts';
+import { CUSTOM_GUEST_DEFAULTS, resolveImage } from './registry.ts';
 import { run } from './run.ts';
 import { defineVm, startVm, waitForGuestAgent } from './virsh.ts';
-
-/**
- * Reads the image identifier persisted by {@link create} in the VM directory.
- * Falls back to `ubuntu` for VMs created before image selection was added.
- *
- * @param vmDir - Absolute path to the source VM directory
- * @returns Image identifier string
- *
- * @example
- * ```ts
- * const image = await readVmImage('/home/user/.local/share/mvm/vms/dev-01');
- * // => 'fedora'
- * ```
- */
-async function readVmImage(vmDir: string): Promise<string> {
-  try {
-    const content = await readFile(join(vmDir, 'image'), 'utf8');
-    return content.trim();
-  } catch {
-    return DEFAULT_IMAGE;
-  }
-}
 
 /**
  * Clones an existing VM by copying its disk and creating a new cloud-init seed.
  * The new instance-id in the seed ISO triggers cloud-init to re-run,
  * updating the hostname on the cloned disk. Preserves the source VM's
  * image identifier so the correct guest config is used for cloud-init.
+ *
+ * For Windows VMs, hostname is set via guest agent after boot instead of
+ * cloud-init since Windows does not support the NoCloud datasource.
  *
  * @param options - Source VM name and destination VM name
  * @throws Error when source disk is missing or clone fails
@@ -65,19 +48,31 @@ export async function clone({ destination, source }: { destination: string; sour
     args: ['convert', '-O', 'qcow2', srcDiskPath, dstDiskPath],
   });
 
-  const image = await readVmImage(srcVmDir);
-  const resolved = resolveImage(image);
+  const meta = await readVmMeta(srcVmDir);
+  const resolved = resolveImage(meta.image);
   const guest = resolved.kind === 'registry'
     ? resolved.spec
     : CUSTOM_GUEST_DEFAULTS;
 
   const seedIsoPath = await createSeedIso({ guest, name: destination, vmDir: dstVmDir, });
-  const xml = domainXml({ diskPath: dstDiskPath, name: destination, seedIsoPath, });
+  const xml = domainXml({ diskPath: dstDiskPath, name: destination, osFamily: guest.osFamily, seedIsoPath, });
 
   await defineVm({ vmDir: dstVmDir, xml, });
   await startVm({ name: destination, });
   await waitForGuestAgent({ name: destination, });
 
-  await writeFile(join(dstVmDir, 'image'), image);
+  // Windows VMs: set hostname via guest agent since cloud-init is not available
+  if (guest.osFamily === 'windows') {
+    rl.info(`setting Windows hostname to ${destination}`);
+    const result = await exec({
+      command: `Rename-Computer -NewName '${destination}' -Force`,
+      name: destination,
+    });
+    if (result.exitCode !== 0) {
+      rl.info(`hostname change returned exit code ${String(result.exitCode)}: ${result.stderr}`);
+    }
+  }
+
+  await writeVmMeta({ guest, image: meta.image, vmDir: dstVmDir });
   rl.info(`VM ${destination} is ready (cloned from ${source}). Connect with: mvm shell ${destination}`);
 }

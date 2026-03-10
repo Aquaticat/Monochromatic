@@ -1,5 +1,8 @@
-import { VM_PREFIX, validateName } from './config.ts';
+import { join } from 'node:path';
+
+import { VM_PREFIX, VMS_DIR, validateName } from './config.ts';
 import { l, tagged } from './log.ts';
+import { readVmMeta } from './meta.ts';
 import { virsh } from './virsh.ts';
 
 /** Milliseconds to wait between polling for guest-exec completion. */
@@ -27,10 +30,48 @@ function decodeBase64(encoded: string): string {
   return Buffer.from(encoded, 'base64').toString('utf-8');
 }
 
+//region Shell dispatch
+
+/**
+ * Builds the guest-exec path and arguments for the given OS family and command.
+ * Linux uses the configured shell (bash/ash) with `-c`; Windows uses
+ * `powershell.exe` with `-NoProfile -NonInteractive -Command`.
+ *
+ * @param options - OS family, shell path/name, and command string
+ * @returns Object with `path` and `arg` array for the guest-exec payload
+ *
+ * @example
+ * ```ts
+ * execArgs({ osFamily: 'linux', shell: '/bin/bash', command: 'uname -a' });
+ * // => { path: '/bin/bash', arg: ['-c', 'uname -a'] }
+ *
+ * execArgs({ osFamily: 'windows', shell: 'powershell.exe', command: 'hostname' });
+ * // => { path: 'powershell.exe', arg: ['-NoProfile', '-NonInteractive', '-Command', 'hostname'] }
+ * ```
+ */
+function execArgs({ command, osFamily, shell }: {
+  command: string;
+  osFamily: string;
+  shell: string;
+}): { arg: ReadonlyArray<string>; path: string } {
+  if (osFamily === 'windows') {
+    return {
+      arg: ['-NoProfile', '-NonInteractive', '-Command', command],
+      path: shell,
+    };
+  }
+  return {
+    arg: ['-c', command],
+    path: shell,
+  };
+}
+
+//endregion Shell dispatch
+
 /**
  * Executes a command inside a running VM via the QEMU guest agent.
- * Runs the command as the `ubuntu` user, captures stdout and stderr,
- * and returns the result.
+ * Reads VM metadata to determine the correct shell for the guest OS:
+ * Linux VMs use bash/ash, Windows VMs use PowerShell.
  *
  * @param options - VM name without prefix and the command string to execute
  * @returns Captured stdout, stderr, and exit code
@@ -38,8 +79,11 @@ function decodeBase64(encoded: string): string {
  *
  * @example
  * ```ts
+ * // Linux VM
  * const result = await exec({ command: 'uname -a', name: 'dev-01' });
- * // { stdout: 'Linux dev-01 ...', stderr: '', exitCode: 0 }
+ *
+ * // Windows VM
+ * const winResult = await exec({ command: 'Get-ComputerInfo', name: 'win-01' });
  * ```
  */
 export async function exec({ command, name }: { command: string; name: string }): Promise<ExecResult> {
@@ -47,13 +91,21 @@ export async function exec({ command, name }: { command: string; name: string })
   const rl = tagged({ tag: exec.name, l, });
   const fullName = `${VM_PREFIX}${name}`;
 
-  rl.debug(`executing command in VM ${name}: ${command}`);
+  const vmDir = join(VMS_DIR, name);
+  const meta = await readVmMeta(vmDir);
+  const { arg, path } = execArgs({
+    command,
+    osFamily: meta.osFamily,
+    shell: meta.shell,
+  });
+
+  rl.debug(`executing command in VM ${name} (${meta.osFamily}, ${path}): ${command}`);
 
   const execPayload = JSON.stringify({
     execute: 'guest-exec',
     arguments: {
-      path: '/bin/bash',
-      arg: ['-c', command],
+      path,
+      arg,
       'capture-output': true,
     },
   });
