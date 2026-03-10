@@ -70,6 +70,9 @@ hcloud = "latest"
 "cargo:coreutils" = { version = "latest", features = "unix" }
 
 [settings]
+
+env_shell_expand = false
+
 # Enable automatic tool installation when entering directory
 auto_install = true
 

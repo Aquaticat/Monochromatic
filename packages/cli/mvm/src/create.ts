@@ -2,13 +2,13 @@ import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { createSeedIso } from './cloud-init.ts';
-import { DEFAULT_DISK_SIZE, VMS_DIR, validateName } from './config.ts';
+import { DEFAULT_DISK_SIZE, VMS_DIR, WINDOWS_DISK_SIZE, validateName } from './config.ts';
 import { domainXml } from './domain-xml.ts';
 import { exec } from './exec.ts';
 import { l, tagged } from './log.ts';
 import { writeVmMeta } from './meta.ts';
 import { CUSTOM_GUEST_DEFAULTS, DEFAULT_IMAGE, resolveImage } from './registry.ts';
-import { run } from './run.ts';
+import { spawn } from './spawn.ts';
 import { ensureTemplate } from './template.ts';
 import { defineVm, startVm, waitForGuestAgent } from './virsh.ts';
 
@@ -81,22 +81,24 @@ export async function create({ image = DEFAULT_IMAGE, name }: {
     ? await ensureTemplate(resolved.spec)
     : resolved.customTemplatePath;
 
-  const diskPath = join(vmDir, 'disk.qcow2');
-
-  rl.info('creating disk from template image...');
-  await run({
-    command: 'qemu-img',
-    args: ['create', '-f', 'qcow2', '-b', templateImage, '-F', 'qcow2', diskPath, DEFAULT_DISK_SIZE],
-  });
-
   const guest = resolved.kind === 'registry'
     ? resolved.spec
     : CUSTOM_GUEST_DEFAULTS;
 
+  const diskPath = join(vmDir, 'disk.qcow2');
+  const diskSize = guest.osFamily === 'windows' ? WINDOWS_DISK_SIZE : DEFAULT_DISK_SIZE;
+
+  rl.info('creating disk from template image...');
+  await spawn({
+    command: 'qemu-img',
+    args: ['create', '-f', 'qcow2', '-b', templateImage, '-F', 'qcow2', diskPath, diskSize],
+  });
+
   const seedIsoPath = await createSeedIso({ guest, name, vmDir, });
-  const xml = domainXml({ diskPath, name, osFamily: guest.osFamily, seedIsoPath, });
+  const xml = domainXml({ diskPath, name, osFamily: guest.osFamily, seedIsoPath });
 
   await defineVm({ vmDir, xml, });
+  await writeVmMeta({ guest, image, vmDir });
   await startVm({ name, });
   await waitForGuestAgent({ name, });
 
@@ -104,8 +106,6 @@ export async function create({ image = DEFAULT_IMAGE, name }: {
   if (guest.osFamily === 'windows') {
     await setWindowsHostname({ hostname: name, name });
   }
-
-  await writeVmMeta({ guest, image, vmDir });
   rl.info(`VM ${name} is ready. Connect with: mvm shell ${name}`);
 }
 

@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { IMAGES_DIR } from './config.ts';
@@ -34,61 +34,61 @@ function formatBytes(bytes: number): string {
 }
 
 /**
- * Streams a fetch response body to a file while printing download progress to stderr.
- * Writes chunks directly to disk using a file writer to avoid accumulating the entire
- * file in memory. Critical for large downloads like Windows evaluation ISOs (~5 GiB).
+ * Prints download progress to stderr by polling the destination file size
+ * while a concurrent `Bun.write()` streams the response to disk.
+ * Resolves when the write completes; rejects if it fails.
  *
- * @param options - Response to stream, destination file path, and logger instance
- * @throws Error when the response body is null
+ * Uses `Bun.write(destPath, response)` for native-speed I/O instead of
+ * manual chunk-by-chunk streaming, which avoids throughput bottlenecks
+ * and buffering bugs in the JS `ReadableStream` path.
+ *
+ * @param options - Response to write, destination file path, and logger instance
  *
  * @example
  * ```ts
- * await streamWithProgress({ response, destPath: '/tmp/image.img', rl: logger });
+ * await writeWithProgress({ response, destPath: '/tmp/image.img', rl: logger });
  * ```
  */
-async function streamWithProgress({ destPath, response, rl }: {
+async function writeWithProgress({ destPath, response, rl }: {
   destPath: string;
   response: Response;
   rl: { info: (msg: string) => void };
 }): Promise<void> {
-  const body = response.body;
-  if (body === null) {
-    throw new Error('response body is null');
-  }
-
   const contentLength = Number(response.headers.get('content-length') ?? 0);
   const totalStr = contentLength > 0 ? formatBytes(contentLength) : 'unknown';
-  let downloaded = 0;
 
-  const writer = Bun.file(destPath).writer();
-  const reader = body.getReader();
-  let lastProgressTime = 0;
-  /** Minimum milliseconds between progress line updates to avoid flickering. */
-  const PROGRESS_THROTTLE_MS = 250;
+  /** Milliseconds between file size polls for progress display. */
+  const POLL_INTERVAL_MS = 500;
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- reader.read() loop
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+  let done = false;
 
-    writer.write(value);
-    downloaded += value.length;
-
-    const now = Date.now();
-    if (now - lastProgressTime >= PROGRESS_THROTTLE_MS) {
-      lastProgressTime = now;
-      const downloadedStr = formatBytes(downloaded);
-      if (contentLength > 0) {
-        const pct = Math.round((downloaded / contentLength) * 100);
-        process.stderr.write(`\r  downloading: ${downloadedStr} / ${totalStr} (${String(pct)}%)`);
-      } else {
-        process.stderr.write(`\r  downloading: ${downloadedStr}`);
+  // Poll file size in the background for progress reporting
+  const progressLoop = (async () => {
+    while (!done) {
+      await Bun.sleep(POLL_INTERVAL_MS);
+      if (done) break;
+      try {
+        const { size } = await stat(destPath);
+        const downloadedStr = formatBytes(size);
+        if (contentLength > 0) {
+          const pct = Math.round((size / contentLength) * 100);
+          process.stderr.write(`\r  downloading: ${downloadedStr} / ${totalStr} (${String(pct)}%)`);
+        } else {
+          process.stderr.write(`\r  downloading: ${downloadedStr}`);
+        }
+      } catch {
+        // File may not exist yet during initial write setup
       }
     }
-  }
+  })();
 
-  await writer.end();
-  process.stderr.write(`\r  downloaded: ${formatBytes(downloaded)} total${' '.repeat(20)}\n`);
+  // Native Bun.write streams the response body to disk at full speed
+  await Bun.write(destPath, response);
+  done = true;
+  await progressLoop;
+
+  const { size } = await stat(destPath);
+  process.stderr.write(`\r  downloaded: ${formatBytes(size)} total${' '.repeat(20)}\n`);
   rl.info(`saved to ${destPath}`);
 }
 
@@ -133,7 +133,7 @@ async function downloadIfMissing({ destPath, tag, url }: {
     throw new Error(`failed to download from ${url}: ${response.status} ${response.statusText}`);
   }
 
-  await streamWithProgress({ destPath, response, rl });
+  await writeWithProgress({ destPath, response, rl });
   return destPath;
 }
 

@@ -18,6 +18,8 @@ const COMPONENT_ATTRS = 'processorArchitecture="amd64" publicKeyToken="31bf3856a
  */
 const VIRTIO_DRIVE_CANDIDATES = ['D', 'E', 'F', 'G'];
 
+
+
 /**
  * Windows Server 2025 driver subdirectory within the virtio-win ISO.
  * Server 2025 shares drivers with Windows 11 (`w11` directory).
@@ -57,30 +59,52 @@ ${paths.join('\n')}
 }
 
 /**
- * Generates a PowerShell command that searches available drive letters for the
- * virtio-win guest tools MSI installer and runs it silently.
- * Used as a FirstLogonCommand to install the QEMU guest agent and all VirtIO
- * drivers after Windows setup completes.
+ * VirtIO driver subdirectories to install from the virtio-win ISO.
+ * Only the drivers needed for VM operation: storage (disk), network,
+ * serial (guest agent communication), and QEMU firmware config.
+ */
+const VIRTIO_DRIVER_DIRS = ['viostor', 'NetKVM', 'vioserial', 'qemufwcfg'];
+
+/**
+ * Generates a PowerShell command that:
+ * 1. Finds the virtio-win CDROM among candidate drive letters
+ * 2. Imports the Red Hat signing certificate into Trusted Publishers
+ *    to suppress driver signing prompts
+ * 3. Installs VirtIO drivers for the correct OS version via `pnputil`
+ * 4. Installs the QEMU guest agent from the standalone MSI
  *
- * @returns PowerShell command string for silent MSI installation
+ * Only installs drivers for the `w11` (Server 2025) platform to avoid
+ * hash failures from older driver versions.
+ *
+ * @returns PowerShell command string for VirtIO driver and guest agent installation
  *
  * @example
  * ```ts
- * guestAgentInstallCommand();
- * // => "powershell -NoProfile -Command \"$msi = ..."
+ * virtioInstallCommand();
+ * // => "powershell -NoProfile -Command ..."
  * ```
  */
-function guestAgentInstallCommand(): string {
+function virtioInstallCommand(): string {
   const driveList = VIRTIO_DRIVE_CANDIDATES.map((d) => `'${d}:\\'`).join(',');
-  // Search all candidate drives for the all-in-one VirtIO guest tools installer
-  // eslint-disable-next-line no-useless-escape -- backslashes are for PowerShell, not JS regex
-  return `powershell -NoProfile -Command "${ // find and install virtio-win-gt-x64.msi silently
+  /** pnputil calls for each driver directory, targeting the correct OS version. */
+  const pnputilCalls = VIRTIO_DRIVER_DIRS.map((dir) =>
+    `pnputil /add-driver (Join-Path $root '${dir}\\${VIRTIO_DRIVER_OS_DIR}\\amd64\\*.inf') /install`,
+  ).join('; ');
+  return `powershell -NoProfile -Command "${ // find the virtio-win CDROM by looking for the viostor directory
     ''
-  }$msi = Get-ChildItem -Path ${driveList} -Filter 'virtio-win-gt-x64.msi' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1; ${ // fall back to qemu-ga MSI if all-in-one is absent
+  }$vd = Get-ChildItem -Path ${driveList} -Directory -Filter 'viostor' -ErrorAction SilentlyContinue | Select-Object -First 1; ${ // proceed only if virtio-win ISO is found
     ''
-  }if (-not $msi) { $msi = Get-ChildItem -Path ${driveList} -Filter 'qemu-ga-x86_64.msi' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 }; ${ // run silent install and wait for completion
+  }if ($vd) { $root = $vd.Parent.FullName; ${ // import Red Hat certificate to suppress driver signing dialogs
     ''
-  }if ($msi) { Start-Process msiexec -ArgumentList '/i',$msi.FullName,'/qn','/norestart' -Wait }"`;
+  }Get-ChildItem (Join-Path $root 'cert\\*.cer') -Recurse | ForEach-Object { certutil -addstore TrustedPublisher $_.FullName }; ${ // install VirtIO drivers for Server 2025 (w11) platform only
+    ''
+  }${pnputilCalls}; ${ // install standalone guest agent MSI from the guest-agent subfolder
+    ''
+  }$ga = Join-Path $root 'guest-agent\\qemu-ga-x86_64.msi'; ${ // fall back to all-in-one MSI if standalone is absent
+    ''
+  }if (-not (Test-Path $ga)) { $ga = Join-Path $root 'virtio-win-gt-x64.msi' }; ${ // run silent install and wait for completion
+    ''
+  }Start-Process msiexec -ArgumentList '/i',$ga,'/qn','/norestart','/log','C:\\virtio-install.log' -Wait }"`;
 }
 
 /**
@@ -122,6 +146,7 @@ export function generateAutounattend({ hostname, imageIndex }: {
     </component>
     <component name="Microsoft-Windows-Setup" ${COMPONENT_ATTRS}>
       <DiskConfiguration>
+        <WillShowUI>OnError</WillShowUI>
         <Disk wcm:action="add">
           <DiskID>0</DiskID>
           <WillWipeDisk>true</WillWipeDisk>
@@ -215,13 +240,13 @@ ${pnpDriverPaths()}
           <Value>mvm</Value>
           <PlainText>true</PlainText>
         </Password>
-        <LogonCount>1</LogonCount>
+        <LogonCount>5</LogonCount>
       </AutoLogon>
       <FirstLogonCommands>
         <SynchronousCommand wcm:action="add">
           <Order>1</Order>
-          <CommandLine>${guestAgentInstallCommand()}</CommandLine>
-          <Description>Install QEMU guest agent and VirtIO drivers</Description>
+          <CommandLine>${virtioInstallCommand()}</CommandLine>
+          <Description>Install VirtIO drivers and QEMU guest agent via pnputil and MSI</Description>
         </SynchronousCommand>
         <SynchronousCommand wcm:action="add">
           <Order>2</Order>

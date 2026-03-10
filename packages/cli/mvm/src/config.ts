@@ -19,8 +19,11 @@ export const DEFAULT_MEMORY_MIB = 8192;
 /** Default number of virtual CPUs. */
 export const DEFAULT_VCPUS = 4;
 
-/** Default root disk size for new VMs. */
+/** Default root disk size for new Linux VMs. */
 export const DEFAULT_DISK_SIZE = '20G';
+
+/** Default root disk size for Windows VMs (Server 2025 requires 32 GB minimum). */
+export const WINDOWS_DISK_SIZE = '40G';
 
 /** libvirt connection URI targeting the user session QEMU/KVM daemon. */
 export const LIBVIRT_URI = 'qemu:///session';

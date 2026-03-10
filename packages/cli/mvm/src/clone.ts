@@ -8,7 +8,7 @@ import { exec } from './exec.ts';
 import { l, tagged } from './log.ts';
 import { readVmMeta, writeVmMeta } from './meta.ts';
 import { CUSTOM_GUEST_DEFAULTS, resolveImage } from './registry.ts';
-import { run } from './run.ts';
+import { spawn } from './spawn.ts';
 import { defineVm, startVm, waitForGuestAgent } from './virsh.ts';
 
 /**
@@ -43,7 +43,7 @@ export async function clone({ destination, source }: { destination: string; sour
   const dstDiskPath = join(dstVmDir, 'disk.qcow2');
 
   rl.info('copying disk (this may take a moment)...');
-  await run({
+  await spawn({
     command: 'qemu-img',
     args: ['convert', '-O', 'qcow2', srcDiskPath, dstDiskPath],
   });
@@ -55,7 +55,7 @@ export async function clone({ destination, source }: { destination: string; sour
     : CUSTOM_GUEST_DEFAULTS;
 
   const seedIsoPath = await createSeedIso({ guest, name: destination, vmDir: dstVmDir, });
-  const xml = domainXml({ diskPath: dstDiskPath, name: destination, osFamily: guest.osFamily, seedIsoPath, });
+  const xml = domainXml({ diskPath: dstDiskPath, name: destination, osFamily: guest.osFamily, seedIsoPath });
 
   await defineVm({ vmDir: dstVmDir, xml, });
   await startVm({ name: destination, });

@@ -4,12 +4,12 @@ import { join } from 'node:path';
 
 import { createAutounattendIso } from './autounattend.ts';
 import { createSeedIso } from './cloud-init.ts';
-import { DEFAULT_DISK_SIZE, IMAGES_DIR, VMS_DIR } from './config.ts';
+import { DEFAULT_DISK_SIZE, IMAGES_DIR, VMS_DIR, WINDOWS_DISK_SIZE } from './config.ts';
 import { domainXml } from './domain-xml.ts';
 import { ensureImage, ensureVirtioWin } from './image.ts';
 import { l, tagged } from './log.ts';
 import type { ImageSpec, LinuxImageSpec, WindowsImageSpec } from './registry.ts';
-import { run } from './run.ts';
+import { spawn } from './spawn.ts';
 import {
   defineVm,
   destroyVm,
@@ -34,6 +34,14 @@ const LINUX_TEMPLATE_AGENT_TIMEOUT_MS = 120_000;
  * first boot, OOBE, and guest agent installation via FirstLogonCommands.
  */
 const WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS = 2_400_000;
+
+/**
+ * Timeout for guest agent during VirtIO disk bus verification.
+ * After switching from SATA to VirtIO, Windows needs to detect the new
+ * disk controller and load the viostor driver on boot. Typically takes
+ * 2-5 minutes including the full Windows boot cycle.
+ */
+const VIRTIO_VERIFY_AGENT_TIMEOUT_MS = 300_000;
 
 /** Name used for the temporary VM during template creation. */
 const TEMPLATE_VM_NAME = 'template-setup';
@@ -70,7 +78,7 @@ async function ensureLinuxTemplate(spec: LinuxImageSpec): Promise<string> {
 
   try {
     rl.info('creating overlay disk from base image...');
-    await run({
+    await spawn({
       command: 'qemu-img',
       args: ['create', '-f', 'qcow2', '-b', baseImage, '-F', 'qcow2', diskPath, DEFAULT_DISK_SIZE],
     });
@@ -87,7 +95,7 @@ async function ensureLinuxTemplate(spec: LinuxImageSpec): Promise<string> {
     await waitForShutdown({ name: TEMPLATE_VM_NAME });
 
     rl.info('converting overlay to standalone template image...');
-    await run({
+    await spawn({
       command: 'qemu-img',
       args: ['convert', '-O', 'qcow2', diskPath, templatePath],
     });
@@ -142,9 +150,9 @@ async function ensureWindowsTemplate(spec: WindowsImageSpec): Promise<string> {
 
   try {
     rl.info('creating empty disk for Windows installation...');
-    await run({
+    await spawn({
       command: 'qemu-img',
-      args: ['create', '-f', 'qcow2', diskPath, DEFAULT_DISK_SIZE],
+      args: ['create', '-f', 'qcow2', diskPath, WINDOWS_DISK_SIZE],
     });
 
     // Generate autounattend ISO with answer file for unattended install
@@ -162,6 +170,7 @@ async function ensureWindowsTemplate(spec: WindowsImageSpec): Promise<string> {
         { path: autounattendIsoPath },
         { path: virtioWinPath },
       ],
+      diskBus: 'sata',
       diskPath,
       name: TEMPLATE_VM_NAME,
       osFamily: 'windows',
@@ -173,12 +182,31 @@ async function ensureWindowsTemplate(spec: WindowsImageSpec): Promise<string> {
     rl.info('Windows installation in progress (waiting for guest agent)...');
     await waitForGuestAgent({ name: TEMPLATE_VM_NAME, timeoutMs: WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS });
 
-    rl.info('guest agent ready, shutting down template VM...');
+    // Phase 1 complete: Windows installed with SATA disk, VirtIO drivers installed.
+    // Now switch to VirtIO disk bus and verify Windows boots with VirtIO storage.
+    rl.info('guest agent ready on SATA, switching to VirtIO disk bus...');
+    await shutdownVm({ name: TEMPLATE_VM_NAME });
+    await waitForShutdown({ name: TEMPLATE_VM_NAME });
+
+    // Redefine VM with VirtIO disk (no CDROMs needed, boot from hard disk)
+    await undefineVm({ name: TEMPLATE_VM_NAME });
+    const virtioXml = domainXml({
+      diskPath,
+      name: TEMPLATE_VM_NAME,
+      osFamily: 'windows',
+    });
+    await defineVm({ vmDir, xml: virtioXml });
+    await startVm({ name: TEMPLATE_VM_NAME });
+
+    rl.info('verifying Windows boots with VirtIO disk (waiting for guest agent)...');
+    await waitForGuestAgent({ name: TEMPLATE_VM_NAME, timeoutMs: VIRTIO_VERIFY_AGENT_TIMEOUT_MS });
+
+    rl.info('VirtIO boot verified, shutting down for template capture...');
     await shutdownVm({ name: TEMPLATE_VM_NAME });
     await waitForShutdown({ name: TEMPLATE_VM_NAME });
 
     rl.info('converting disk to standalone template image...');
-    await run({
+    await spawn({
       command: 'qemu-img',
       args: ['convert', '-O', 'qcow2', diskPath, templatePath],
     });

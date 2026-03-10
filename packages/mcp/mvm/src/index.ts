@@ -2,9 +2,9 @@
 import { clone } from '@monochromatic-dev/cli-mvm/clone';
 import { create } from '@monochromatic-dev/cli-mvm/create';
 import { destroy, destroyAll } from '@monochromatic-dev/cli-mvm/destroy';
-import { ephemeralExec } from '@monochromatic-dev/cli-mvm/ephemeral-exec';
 import { exec } from '@monochromatic-dev/cli-mvm/exec';
 import { list } from '@monochromatic-dev/cli-mvm/list';
+import { run } from '@monochromatic-dev/cli-mvm/run';
 import { update } from '@monochromatic-dev/cli-mvm/update';
 import { createMcpServer, defineTool, serve } from '@monochromatic-dev/mcp-stdio';
 
@@ -94,27 +94,22 @@ const destroyTool = defineTool('destroy_vm', {
   },
 });
 
-/** MCP tool: execute a command inside a running VM. */
+/** MCP tool: execute a command inside a named running VM. */
 const execTool = defineTool('exec_in_vm', {
-  description: 'Runs a shell command inside a VM via the QEMU guest agent and returns stdout, stderr, and exit code. Linux VMs use bash; Windows VMs use PowerShell. When `destroy` is true, creates an ephemeral VM (optionally cloned from `from`), executes the command, and destroys the VM afterward.',
+  description: 'Runs a shell command inside a named VM via the QEMU guest agent and returns stdout, stderr, and exit code. Linux VMs use bash; Windows VMs use PowerShell.',
   inputSchema: {
     type: 'object',
     properties: {
-      name: { type: 'string', description: 'VM name to execute in (ignored when destroy is true)' },
+      name: { type: 'string', description: 'VM name to execute in' },
       command: { type: 'string', description: 'Shell command to run inside the VM (bash for Linux, PowerShell for Windows)' },
-      destroy: { type: 'boolean', description: 'Create an ephemeral VM, execute, then destroy it' },
-      from: { type: 'string', description: 'Clone from this existing VM instead of creating fresh (only with destroy)' },
     },
-    required: ['command'],
+    required: ['name', 'command'],
   },
   handler: async (args) => {
+    const name = args.name as string;
     const command = args.command as string;
-    const shouldDestroy = args.destroy as boolean | undefined;
-    const from = args.from as string | undefined;
     try {
-      const result = shouldDestroy === true
-        ? await ephemeralExec({ command, from })
-        : await exec({ command, name: args.name as string });
+      const result = await exec({ command, name });
       const parts: string[] = [];
       if (result.stdout.length > 0) {
         parts.push(`stdout:\n${result.stdout}`);
@@ -127,6 +122,39 @@ const execTool = defineTool('exec_in_vm', {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       console.error('[mcp-mvm] exec_in_vm failed:', err);
+      return { content: [{ type: 'text', text: `Error: ${message}` }], isError: true };
+    }
+  },
+});
+
+/** MCP tool: create an ephemeral VM, run a command, then destroy it. */
+const runTool = defineTool('run_in_vm', {
+  description: 'Creates an ephemeral VM, runs a shell command inside it via the QEMU guest agent, then destroys the VM. Returns stdout, stderr, and exit code. Optionally clones from an existing VM instead of creating fresh. Linux VMs use bash; Windows VMs use PowerShell.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      command: { type: 'string', description: 'Shell command to run inside the VM (bash for Linux, PowerShell for Windows)' },
+      from: { type: 'string', description: 'Clone from this existing VM instead of creating fresh' },
+    },
+    required: ['command'],
+  },
+  handler: async (args) => {
+    const command = args.command as string;
+    const from = args.from as string | undefined;
+    try {
+      const result = await run({ command, from });
+      const parts: string[] = [];
+      if (result.stdout.length > 0) {
+        parts.push(`stdout:\n${result.stdout}`);
+      }
+      if (result.stderr.length > 0) {
+        parts.push(`stderr:\n${result.stderr}`);
+      }
+      parts.push(`exit code: ${String(result.exitCode)}`);
+      return { content: [{ type: 'text', text: parts.join('\n\n') }] };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('[mcp-mvm] run_in_vm failed:', err);
       return { content: [{ type: 'text', text: `Error: ${message}` }], isError: true };
     }
   },
@@ -153,7 +181,7 @@ const updateTool = defineTool('update_templates', {
 
 const server = createMcpServer(
   { name: 'mvm', version: '0.1.0' },
-  [listTool, createTool, destroyTool, execTool, updateTool],
+  [listTool, createTool, destroyTool, execTool, runTool, updateTool],
 );
 
 await serve(server);

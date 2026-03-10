@@ -152,11 +152,19 @@ function ideCdromDevices(cdroms: ReadonlyArray<CdromSpec>): ReadonlyArray<string
  * });
  * ```
  */
-export function domainXml({ bootDev = 'hd', cdroms = [], diskPath, name, osFamily = 'linux', seedIsoPath }: {
+export function domainXml({ bootDev = 'hd', cdroms = [], diskBus = 'virtio', diskPath, name, osFamily = 'linux', seedIsoPath }: {
   /** Boot device: `hd` for normal operation, `cdrom` for ISO-based installation. */
   bootDev?: 'cdrom' | 'hd';
   /** Additional IDE CDROMs (Windows ISO, autounattend, virtio-win). */
   cdroms?: ReadonlyArray<CdromSpec>;
+  /**
+   * Bus type for the primary disk.
+   * Use `virtio` for production VMs (best performance).
+   * Use `sata` during Windows template creation to avoid the Server 2025
+   * SAN policy (policy 4: offline shared bus) which makes VirtIO disks
+   * appear offline in WinPE, blocking unattended installation.
+   */
+  diskBus?: 'sata' | 'virtio';
   /** Absolute path to the VM disk image. */
   diskPath: string;
   /** VM name without the mvm- prefix. */
@@ -171,15 +179,17 @@ export function domainXml({ bootDev = 'hd', cdroms = [], diskPath, name, osFamil
     features.push(hypervFeatures());
   }
 
+  /** Device name prefix depends on bus type: vda for virtio, sda for sata. */
+  const diskDev = diskBus === 'virtio' ? 'vda' : 'sda';
+
   const devices: string[] = [
-    // Main disk: VirtIO for performance (Windows gets drivers from virtio-win)
     h({
       tag: 'disk',
       attrs: { type: 'file', device: 'disk' },
       children: [
         h({ tag: 'driver', attrs: { name: 'qemu', type: 'qcow2' } }),
         h({ tag: 'source', attrs: { file: diskPath } }),
-        h({ tag: 'target', attrs: { dev: 'vda', bus: 'virtio' } }),
+        h({ tag: 'target', attrs: { dev: diskDev, bus: diskBus } }),
       ],
     }),
   ];
@@ -193,7 +203,7 @@ export function domainXml({ bootDev = 'hd', cdroms = [], diskPath, name, osFamil
         children: [
           h({ tag: 'driver', attrs: { name: 'qemu', type: 'raw' } }),
           h({ tag: 'source', attrs: { file: seedIsoPath } }),
-          h({ tag: 'target', attrs: { dev: 'sda', bus: 'sata' } }),
+          h({ tag: 'target', attrs: { dev: 'sdb', bus: 'sata' } }),
           h({ tag: 'readonly' }),
         ],
       }),
@@ -243,9 +253,17 @@ export function domainXml({ bootDev = 'hd', cdroms = [], diskPath, name, osFamil
     }),
   );
 
-  // Tablet input device to prevent mouse pointer offset in Windows
+  // Windows requires a VGA device for the WinPE installer and OOBE
+  // Also useful for debugging via `virsh screenshot`
   if (osFamily === 'windows') {
     devices.push(
+      h({
+        tag: 'video',
+        children: [
+          h({ tag: 'model', attrs: { type: 'vga', vram: '16384' } }),
+        ],
+      }),
+      // Tablet input device to prevent mouse pointer offset
       h({
         tag: 'input',
         attrs: { type: 'tablet', bus: 'usb' },

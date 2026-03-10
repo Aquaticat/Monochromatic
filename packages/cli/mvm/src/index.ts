@@ -9,9 +9,9 @@ import { runSync } from '@optique/run';
 import { clone } from './clone.ts';
 import { create } from './create.ts';
 import { destroy, destroyAll } from './destroy.ts';
-import { ephemeralExec } from './ephemeral-exec.ts';
 import { exec } from './exec.ts';
 import { list } from './list.ts';
+import { run } from './run.ts';
 import { shell } from './shell.ts';
 import { update } from './update.ts';
 
@@ -61,8 +61,8 @@ type MvmArgs =
   | { cmd: 'list' }
   | { cmd: 'update' }
   | { cmd: 'destroy'; name: string | undefined; all: boolean }
-  | { cmd: 'exec'; name: string; command: string; destroy: false }
-  | { cmd: 'exec'; command: string; destroy: true; from: string | undefined };
+  | { cmd: 'exec'; name: string; command: string }
+  | { cmd: 'run'; command: string; from: string | undefined };
 
 //endregion Result types
 
@@ -132,27 +132,20 @@ const rmCmd = command('rm', or(
 /** Value parser for individual command tokens after `--`, displayed as COMMAND in help */
 const commandToken = string({ metavar: 'COMMAND' });
 
-/** Parser for `exec --destroy [--from SOURCE] -- <command...>` -- ephemeral VM */
-const execDestroyParser = map(
+/** Parser for `exec <name> -- <command...>` -- run a command in an existing VM */
+const execCmd = command('exec', map(
+  object({ name: argument(name), args: multiple(argument(commandToken)) }),
+  (v): MvmArgs => ({ cmd: 'exec', name: v.name, command: v.args.join(' ') }),
+), { brief: message`Run a command inside a named VM via guest agent` });
+
+/** Parser for `run [--from SOURCE] -- <command...>` -- ephemeral VM */
+const runCmd = command('run', map(
   object({
-    _destroy: flag('--destroy', { description: message`Create an ephemeral VM, execute, then destroy it` }),
     from: fromOption,
     args: multiple(argument(commandToken)),
   }),
-  (v): MvmArgs => ({ cmd: 'exec', command: v.args.join(' '), destroy: true, from: v.from }),
-);
-
-/** Parser for `exec <name> -- <command...>` -- existing VM */
-const execDirectParser = map(
-  object({ name: argument(name), args: multiple(argument(commandToken)) }),
-  (v): MvmArgs => ({ cmd: 'exec', name: v.name, command: v.args.join(' '), destroy: false }),
-);
-
-/** Parser for `exec` subcommand (ephemeral or direct) */
-const execCmd = command('exec', or(
-  execDestroyParser,
-  execDirectParser,
-), { brief: message`Run a command inside a VM via guest agent` });
+  (v): MvmArgs => ({ cmd: 'run', command: v.args.join(' '), from: v.from }),
+), { brief: message`Create an ephemeral VM, run a command, then destroy it` });
 
 /** Parser for `update` -- re-downloads and rebuilds all template images */
 const updateCmd = command('update', map(
@@ -170,6 +163,7 @@ const parser = or(
   destroyCmd,
   rmCmd,
   execCmd,
+  runCmd,
 );
 
 //endregion Parser definition
@@ -216,9 +210,18 @@ if (args.cmd === 'create') {
     throw new Error('usage: mvm destroy <name> | --all');
   }
 } else if (args.cmd === 'exec') {
-  const result = args.destroy
-    ? await ephemeralExec({ command: args.command, from: args.from })
-    : await exec({ command: args.command, name: args.name });
+  const result = await exec({ command: args.command, name: args.name });
+  if (result.stdout.length > 0) {
+    process.stdout.write(result.stdout);
+  }
+  if (result.stderr.length > 0) {
+    process.stderr.write(result.stderr);
+  }
+  if (result.exitCode !== 0) {
+    process.exitCode = result.exitCode;
+  }
+} else if (args.cmd === 'run') {
+  const result = await run({ command: args.command, from: args.from });
   if (result.stdout.length > 0) {
     process.stdout.write(result.stdout);
   }

@@ -192,6 +192,31 @@ const GIT_TRANSPORT_PROGRESS_PATTERNS = [
 
 //endregion
 
+//region Sandbox noise patterns
+
+/**
+ * Patterns matching sandbox environment noise that provides no value to the model.
+ *
+ * These lines are artifacts of running inside the Claude Code sandbox and are
+ * not part of the command's actual output.
+ */
+const SANDBOX_NOISE_PATTERNS = [
+  /**
+   * Mise cache write failures caused by the sandbox's read-only filesystem.
+   * These appear on nearly every mise invocation and repeat per tool version,
+   * producing dozens of identical warning lines.
+   *
+   * @example
+   * ```
+   * mise WARN  failed to write cache file: ~/.cache/mise/neovim/0.11.6/exec_env_....msgpack.z Read-only file system (os error 30)
+   * mise WARN  failed to write cache file: ~/.cache/mise/ripgrep/15.1.0/bin_paths-....msgpack.z Read-only file system (os error 30)
+   * ```
+   */
+  /^mise WARN\s+failed to write cache file:.*Read-only file system/,
+]
+
+//endregion
+
 //region Filter logic
 
 /**
@@ -202,6 +227,11 @@ const GIT_TRANSPORT_PROGRESS_PATTERNS = [
  */
 function shouldStripLine(line: string): boolean {
   if (GIT_FILE_MODE_PATTERN.test(line)) {
+    return true
+  }
+  if (SANDBOX_NOISE_PATTERNS.some(function patternTest(pattern) {
+    return pattern.test(line)
+  })) {
     return true
   }
   return GIT_TRANSPORT_PROGRESS_PATTERNS.some(function patternTest(pattern) {

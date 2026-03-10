@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { LIBVIRT_URI, VM_PREFIX } from './config.ts';
 import { l, tagged } from './log.ts';
-import { run } from './run.ts';
+import { spawn } from './spawn.ts';
 
 /** Milliseconds between guest agent ping attempts. */
 const AGENT_POLL_INTERVAL_MS = 1000;
@@ -30,7 +30,7 @@ const SHUTDOWN_TIMEOUT_MS = 120_000;
  * ```
  */
 export async function virsh({ args }: { args: ReadonlyArray<string> }): Promise<string> {
-  return run({ command: 'virsh', args: ['--connect', LIBVIRT_URI, ...args], });
+  return spawn({ command: 'virsh', args: ['--connect', LIBVIRT_URI, ...args], });
 }
 
 /**

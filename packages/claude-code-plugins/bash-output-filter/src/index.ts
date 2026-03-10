@@ -104,9 +104,11 @@ const SKIP_PATTERNS = [
 
   /**
    * Commands that already use our filter (prevent double-wrapping on retry).
-   * Matches both built (`filter.mjs`) and source (`filter.ts`) paths.
+   * Matches both built (`filter.mjs`) and source (`filter.ts`) paths,
+   * as well as the in-band exit code marker.
    */
   /\bfilter\.(mjs|ts)\b/,
+  /___BOF_EC:/,
 
   /**
    * Background commands (`&` at the end, `nohup`, `setsid`).
@@ -213,24 +215,60 @@ if (event.tool_name !== 'Bash') {
     /**
      * Rewritten command that pipes output through the filter.
      *
-     * Suffix breakdown:
+     * Structure: `set -o pipefail && <cmd> 2>&1 | bun <filter> && true`
+     *
+     * - `set -o pipefail` enables pipefail so the pipeline's exit code is the
+     *   first non-zero exit from any command (i.e. the original command's code),
+     *   rather than the filter's exit code (always 0)
+     * - `&&` chains pipefail setup with the pipeline without using `;`
      * - `2>&1` merges stderr into stdout so progress lines (git push) are captured
      * - `| bun ${filterPath}` runs the filter inside the sandbox
-     * - `_bof=$PIPESTATUS` captures the original command's exit code
-     *   (bare `$PIPESTATUS` returns element 0 -- avoids `${PIPESTATUS[0]}`
-     *   whose `[]{}` syntax can be mangled by the sandbox's shell-quoting)
-     * - `(exit "$_bof")` replays it so Claude Code sees the real exit code
-     *   (quoted to prevent word splitting if the value is somehow non-numeric)
+     * - `&& true` serves as a sacrificial target for the sandbox's
+     *   `< /dev/null` append (see below)
      *
-     * The sandbox's eval chain appends `< /dev/null` to the last simple command,
-     * which lands on `(exit "$_bof")` -- harmless since it does not read stdin.
+     * **`< /dev/null` absorption:**
+     * the sandbox's eval chain appends `< /dev/null` to the last simple command
+     * in the command string. Without a suffix, the filter becomes the last command
+     * and `< /dev/null` overrides its pipe stdin -- the filter reads nothing,
+     * outputs nothing, and the left side of the pipe gets SIGPIPE (exit 141).
+     * The `&& true` suffix absorbs `< /dev/null` harmlessly: bash parses
+     * `cmd | filter && true < /dev/null` with the redirect on `true`,
+     * not on `filter`. Since `true` does not read stdin, the redirect is inert.
+     *
+     * **Exit code propagation without shell variables:**
+     * when the pipeline succeeds (exit 0), `&& true` runs and exits 0.
+     * When the pipeline fails (exit N), `&&` is not taken and the pipeline's
+     * exit code (N) propagates as the overall exit code.
+     * This avoids `$?`, `$PIPESTATUS`, and all shell variable expansion,
+     * which the sandbox's eval chain corrupts or empties.
+     *
+     * This avoids five failure modes in the sandbox's eval chain:
+     *
+     * 1. `{ ...; }` compound command grouping is broken -- the sandbox treats `{`
+     *    as a command name rather than a bash reserved word, causing
+     *    `bash: command not found: {`
+     *
+     * 2. `$PIPESTATUS` and shell variables across `;` boundaries are unreliable --
+     *    the sandbox appears to evaluate `;`-separated segments in separate contexts,
+     *    so `$PIPESTATUS` after `;` may not reference the preceding pipeline.
+     *    This caused intermittent `exit: of: numeric argument required` errors
+     *    with the `_bof=$PIPESTATUS; (exit "$_bof")` approach.
+     *
+     * 3. `bash -c '...'` adds an extra quoting/expansion layer that corrupts
+     *    special characters -- `!` inside double-quoted strings (e.g. `bun -e
+     *    "if (!x)"`) gets escaped to `\!`, causing `Unexpected escape sequence`
+     *    errors in the evaluated code.
+     *
+     * 4. Without a suffix after the pipeline, `< /dev/null` lands on the filter,
+     *    breaking the pipe and causing SIGPIPE (exit 141) on the left side.
+     *
+     * 5. `$?` in suffix positions (e.g. `|| (exit $?)`) expands to empty,
+     *    causing `exit: : numeric argument required`.
+     *
+     * The filter is designed to always exit 0 (catches all errors internally),
+     * so `pipefail` reliably surfaces the original command's exit code.
      */
-    const wrappedCommand = [
-      bashInput.command,
-      ' 2>&1 | bun ',
-      filterPath,
-      '; _bof=$PIPESTATUS; (exit "$_bof")',
-    ].join('')
+    const wrappedCommand = `set -o pipefail && ${bashInput.command} 2>&1 | bun ${filterPath} && true`
 
     const output: PreToolUseOutput = {
       hookSpecificOutput: {

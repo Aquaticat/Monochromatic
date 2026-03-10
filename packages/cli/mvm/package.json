@@ -12,7 +12,7 @@
     "./create": "./src/create.ts",
     "./destroy": "./src/destroy.ts",
     "./exec": "./src/exec.ts",
-    "./ephemeral-exec": "./src/ephemeral-exec.ts",
+    "./run": "./src/run.ts",
     "./clone": "./src/clone.ts",
     "./registry": "./src/registry.ts",
     "./update": "./src/update.ts",
