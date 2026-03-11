@@ -59,7 +59,7 @@ if (event.stop_hook_active) {
   process.stdout.write(JSON.stringify(output));
 } else {
   /** Prose content with code blocks, inline code, blockquotes, and quoted strings stripped out. */
-  const prose = stripNonProseRegions(event.last_assistant_message);
+  const prose = stripNonProseRegions(event.last_assistant_message ?? '');
 
   /** First uncertainty marker found in the prose, if any. */
   const match = findUncertainty(prose);

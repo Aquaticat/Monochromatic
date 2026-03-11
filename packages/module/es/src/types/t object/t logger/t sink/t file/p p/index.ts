@@ -49,10 +49,12 @@ export const verify: Verify = async (): Promise<boolean> => {
 export const $: Sink = async (record: LogRecord): Promise<void> => {
   if (!available || !filePath) return;
 
+  // appendFile is supposed to be available here because we've already checked before.
+  const { appendFile } = await import('node:fs/promises');
+
   try {
-    const { appendFile } = await import('node:fs/promises');
     await appendFile(filePath, JSON.stringify(record) + '\n');
-  } catch {
-    // Silently fail
+  } catch (error) {
+    console.error(`logger internal error in fs sink ${(Error.isError(error))? error.message : 'unknown non-Error error'}`)
   }
 };

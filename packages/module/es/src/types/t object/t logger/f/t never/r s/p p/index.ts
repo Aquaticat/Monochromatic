@@ -79,34 +79,41 @@ const initPromise: Promise<void> = initialize();
  * Creates a logging method for the specified severity level.
  * @param level - Log severity level for messages from this method
  */
+/**
+ * Marks a sink entry as failed and recalculates global availability.
+ * @param entry - Sink entry that encountered an error
+ */
+function markFailed(entry: SinkEntry): void {
+  entry.available = false;
+  hasAvailableSink = sinkEntries.some((sinkEntry) => sinkEntry.available === true);
+}
+
+/**
+ * Creates a logging method for the specified severity level.
+ * @param level - Log severity level for messages from this method
+ */
 function createMethod(level: Level): (message: string) => void {
   return (message: string): void => {
     if (!hasAvailableSink && initialized) {
       throw new Error('No logging backends available');
     }
 
-    const record: LogRecord = {
-      level,
-      message,
-      timestamp: Date.now(),
-    };
+    const available = sinkEntries.filter((entry) => entry.available === true);
+    if (available.length === 0) return;
 
-    for (const entry of sinkEntries) {
-      if (entry.available !== true) continue;
+    const record: LogRecord = { level, message, timestamp: Date.now() };
 
+    available.forEach((entry) => {
       try {
         const result = entry.sink(record);
         if (result instanceof Promise) {
-          result.catch(() => {
-            entry.available = false;
-            hasAvailableSink = sinkEntries.some((sinkEntry) => sinkEntry.available === true);
-          });
+          // oxlint-disable-next-line prefer-await-to-then -- Fire-and-forget: awaiting would make the logger blocking
+          result.catch(() => { markFailed(entry); });
         }
       } catch {
-        entry.available = false;
-        hasAvailableSink = sinkEntries.some((sinkEntry) => sinkEntry.available === true);
+        markFailed(entry);
       }
-    }
+    });
 
     if (!hasAvailableSink) {
       throw new Error('All logging backends have failed');
