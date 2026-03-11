@@ -1,3 +1,5 @@
+import nanoSpawn from 'nano-spawn';
+
 import { LIBVIRT_URI, VM_PREFIX, validateName } from './config.ts';
 import { l, tagged } from './log.ts';
 
@@ -20,13 +22,16 @@ export async function shell({ name }: { name: string }): Promise<void> {
 
   rl.info(`connecting to VM ${name} via console (press Ctrl+] to disconnect, not exit)`);
 
-  const proc = Bun.spawn(
-    ['virsh', '--connect', LIBVIRT_URI, 'console', fullName],
-    { stderr: 'inherit', stdin: 'inherit', stdout: 'inherit', },
-  );
-
-  const exitCode = await proc.exited;
-  if (exitCode !== 0) {
-    process.exitCode = exitCode;
+  try {
+    await nanoSpawn('virsh', ['--connect', LIBVIRT_URI, 'console', fullName], {
+      stderr: 'inherit',
+      stdin: 'inherit',
+      stdout: 'inherit',
+    });
+  } catch (error: unknown) {
+    const exitCode = (error as { exitCode?: number }).exitCode;
+    if (exitCode !== undefined) {
+      process.exitCode = exitCode;
+    }
   }
 }

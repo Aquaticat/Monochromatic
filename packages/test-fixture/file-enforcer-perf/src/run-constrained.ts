@@ -21,6 +21,8 @@
 
 import { resolve, } from 'node:path';
 
+import nanoSpawn from 'nano-spawn';
+
 /** Absolute path to the monorepo root */
 const MONOREPO_ROOT = resolve(import.meta.dirname, '..', '..', '..', '..');
 
@@ -93,19 +95,8 @@ const RESOURCE_FLAGS = [
  */
 async function runCapture(cmd: readonly string[], label: string): Promise<string> {
   console.log(`[constrained] ${label}...`);
-  const proc = Bun.spawn([...cmd], {
-    stdout: 'pipe',
-    stderr: 'pipe',
-  });
-  const [stdout, stderr] = await Promise.all([
-    new Response(proc.stdout).text(),
-    new Response(proc.stderr).text(),
-  ]);
-  const exitCode = await proc.exited;
-  if (exitCode !== 0) {
-    console.error(`[constrained] stderr from ${label}:\n${stderr}`);
-    throw new Error(`${label} failed with exit code ${String(exitCode)}`);
-  }
+  const [command, ...args] = cmd;
+  const { stdout } = await nanoSpawn(command!, [...args]);
   return stdout;
 }
 
@@ -137,14 +128,11 @@ function parseLastJsonLine(output: string): unknown {
  */
 async function runInherit(cmd: readonly string[], label: string): Promise<void> {
   console.log(`[constrained] ${label}...`);
-  const proc = Bun.spawn([...cmd], {
+  const [command, ...args] = cmd;
+  await nanoSpawn(command!, [...args], {
     stdout: 'inherit',
     stderr: 'inherit',
   });
-  const exitCode = await proc.exited;
-  if (exitCode !== 0) {
-    throw new Error(`${label} failed with exit code ${String(exitCode)}`);
-  }
 }
 
 /** Result shape from bench-in-container.ts */

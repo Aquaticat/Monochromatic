@@ -1,3 +1,5 @@
+import spawn from "nano-spawn";
+
 import { log } from "../log.ts";
 
 /**
@@ -11,8 +13,7 @@ import { log } from "../log.ts";
  */
 export async function sendNotification(summary: string): Promise<void> {
   try {
-    Bun.spawnSync([
-      "notify-send",
+    await spawn("notify-send", [
       "--urgency=critical",
       "--app-name=Hall Monitor",
       "Hall Monitor: You've been unproductive!",

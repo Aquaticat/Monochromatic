@@ -7,26 +7,27 @@ export interface Deck {
   card_count?: number;
 }
 
-export function listDecks(): Deck[] {
+export async function listDecks(): Promise<Deck[]> {
   return db
-    .query(
+    .prepare(
       `SELECT d.*, COUNT(c.id) AS card_count
        FROM decks d
        LEFT JOIN cards c ON c.deck_id = d.id
        GROUP BY d.id
        ORDER BY d.created_at DESC`
     )
-    .all() as Deck[];
+    .all() as Promise<Deck[]>;
 }
 
-export function getDeck(id: string): Deck | null {
-  return (db.query("SELECT * FROM decks WHERE id = ?").get(id) as Deck) ?? null;
+export async function getDeck(id: string): Promise<Deck | null> {
+  const row = await db.prepare("SELECT * FROM decks WHERE id = ?").get(id) as Deck | undefined;
+  return row ?? null;
 }
 
-export function createDeck(name: string): Deck {
+export async function createDeck(name: string): Promise<Deck> {
   const id = crypto.randomUUID();
   const created_at = new Date().toISOString();
-  db.query("INSERT INTO decks (id, name, created_at) VALUES (?, ?, ?)").run(
+  await db.prepare("INSERT INTO decks (id, name, created_at) VALUES (?, ?, ?)").run(
     id,
     name,
     created_at
@@ -34,7 +35,7 @@ export function createDeck(name: string): Deck {
   return { id, name, created_at };
 }
 
-export function deleteDeck(id: string): boolean {
-  const result = db.query("DELETE FROM decks WHERE id = ?").run(id);
+export async function deleteDeck(id: string): Promise<boolean> {
+  const result = await db.prepare("DELETE FROM decks WHERE id = ?").run(id);
   return result.changes > 0;
 }

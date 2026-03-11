@@ -12,7 +12,7 @@ export async function handleCreateCard(
   deckId: string
 ): Promise<Response> {
   try {
-    const deck = getDeck(deckId);
+    const deck = await getDeck(deckId);
     if (!deck) {
       return new Response(
         JSON.stringify({ error: "Deck not found" }),
@@ -29,7 +29,7 @@ export async function handleCreateCard(
       );
     }
 
-    const card = createCard(deckId, parsed.data.front, parsed.data.back);
+    const card = await createCard(deckId, parsed.data.front, parsed.data.back);
     return new Response(JSON.stringify(card), {
       status: 201,
       headers: { "Content-Type": "application/json" },
@@ -42,8 +42,8 @@ export async function handleCreateCard(
   }
 }
 
-export function handleDeleteCard(id: string): Response {
-  const deleted = deleteCard(id);
+export async function handleDeleteCard(id: string): Promise<Response> {
+  const deleted = await deleteCard(id);
   if (!deleted) {
     return new Response(
       JSON.stringify({ error: "Card not found" }),

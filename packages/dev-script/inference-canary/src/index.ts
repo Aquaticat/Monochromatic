@@ -15,6 +15,7 @@
  * Environment (read from .env.local via mise):
  *   INFERENCE_VALIDATION_OPENROUTER_API_KEY -- OpenRouter API key
  */
+import whyIsNodeRunning from 'why-is-node-running';
 import { getRecentArtifactPairs, } from './linter-artifacts.ts';
 import { modelOverride, retestAll, runsOverride, useSimple, includeSlow, probeFilter, } from './index-cli.ts';
 import { runAndReport, } from './index-run.ts';
@@ -127,10 +128,19 @@ if (selectedModels.length === 0) {
   await runAndReport(selectedModels, probes, effectiveRecentPairs, recentlyFailedModels, apiKey, runsOverride);
 }
 
-// OpenAI SDK maintains internal HTTP connection pools (keep-alive sockets) that
-// prevent the event loop from draining after all work completes. The SDK does not
-// expose a close() method, so explicit exit is the only way to avoid hanging.
-// eslint-disable-next-line unicorn/no-process-exit -- required: OpenAI SDK keep-alive prevents clean shutdown
-process.exit(0);
+// Intermittently, Bun's fetch connection pool or other async resources prevent the
+// event loop from draining after all work completes. This watchdog detects when
+// the process should have exited but hasn't, dumps the active handles for diagnosis,
+// then force-exits so CI pipelines don't hang indefinitely.
+/** Seconds to wait before assuming the process is stuck on leaked async resources */
+const WATCHDOG_TIMEOUT_SECONDS = 5;
+
+const watchdog = setTimeout(() => {
+  console.error('[canary] process did not exit naturally after all work completed, dumping active handles:');
+  whyIsNodeRunning();
+  // eslint-disable-next-line unicorn/no-process-exit -- required: fallback for intermittent async resource leaks
+  process.exit(0);
+}, WATCHDOG_TIMEOUT_SECONDS * MS_PER_SECOND);
+watchdog.unref();
 
 //endregion Execution

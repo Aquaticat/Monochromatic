@@ -4,6 +4,9 @@
   "type": "module",
   "private": true,
   "main": "src/index.ts",
+  "dependencies": {
+    "nano-spawn": "catalog:"
+  },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@types/bun": "catalog:"

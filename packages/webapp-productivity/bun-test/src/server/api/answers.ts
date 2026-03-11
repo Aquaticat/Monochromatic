@@ -20,7 +20,7 @@ export async function handleAnswer(
       );
     }
 
-    const card = getCard(parsed.data.cardId);
+    const card = await getCard(parsed.data.cardId);
     if (!card) {
       return new Response(
         JSON.stringify({ error: "Card not found" }),
@@ -28,7 +28,7 @@ export async function handleAnswer(
       );
     }
 
-    recordAnswer(parsed.data.cardId, parsed.data.correct);
+    await recordAnswer(parsed.data.cardId, parsed.data.correct);
     return new Response(JSON.stringify({ ok: true }), {
       headers: { "Content-Type": "application/json" },
     });

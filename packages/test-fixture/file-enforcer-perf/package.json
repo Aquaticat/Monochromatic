@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@monochromatic-dev/dev-script-file-enforcer": "workspace:*"
+    "@monochromatic-dev/dev-script-file-enforcer": "workspace:*",
+    "nano-spawn": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:"

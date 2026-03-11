@@ -10,6 +10,8 @@
 
 import { resolve, } from 'node:path';
 
+import spawn from 'nano-spawn';
+
 //region Cgroup limit detection
 
 // let needed: cgroup reads may fail on host or non-cgroup-v2 systems
@@ -39,12 +41,7 @@ try {
  */
 async function runSysbench(): Promise<number> {
   try {
-    const proc = Bun.spawn(['sysbench', 'cpu', '--threads=1', 'run'], {
-      stdout: 'pipe',
-      stderr: 'pipe',
-    });
-    const stdout = await new Response(proc.stdout).text();
-    await proc.exited;
+    const { stdout } = await spawn('sysbench', ['cpu', '--threads=1', 'run']);
 
     /** Parse "events per second: NNNN.NN" from sysbench output */
     const match = /events per second:\s+([\d.]+)/.exec(stdout);
@@ -110,11 +107,7 @@ console.error(`[validate] parallel CPU: ${String(WORKER_COUNT)} workers * ${Stri
 const parallelStart = performance.now();
 await Promise.all(
   Array.from({ length: WORKER_COUNT }, async () => {
-    const proc = Bun.spawn(['bun', '-e', workerScript], {
-      stdout: 'pipe',
-      stderr: 'pipe',
-    });
-    await proc.exited;
+    await spawn('bun', ['-e', workerScript]);
   }),
 );
 const parallelMs = performance.now() - parallelStart;

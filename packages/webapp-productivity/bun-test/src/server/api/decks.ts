@@ -15,7 +15,7 @@ export async function handleCreateDeck(req: Request): Promise<Response> {
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-    const deck = createDeck(parsed.data.name);
+    const deck = await createDeck(parsed.data.name);
     return new Response(JSON.stringify(deck), {
       status: 201,
       headers: { "Content-Type": "application/json" },
@@ -28,8 +28,8 @@ export async function handleCreateDeck(req: Request): Promise<Response> {
   }
 }
 
-export function handleDeleteDeck(id: string): Response {
-  const deleted = deleteDeck(id);
+export async function handleDeleteDeck(id: string): Promise<Response> {
+  const deleted = await deleteDeck(id);
   if (!deleted) {
     return new Response(
       JSON.stringify({ error: "Deck not found" }),

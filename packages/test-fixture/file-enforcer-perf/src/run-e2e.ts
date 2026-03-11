@@ -10,6 +10,8 @@ import { mkdir, rm, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, resolve, } from 'node:path';
 
+import spawn from 'nano-spawn';
+
 //region Setup
 
 console.log('[e2e] setting up fixture...');
@@ -38,14 +40,10 @@ const DEST_FILE = `${DEST_DIR}/combined-0.md`;
  */
 async function runHyperfine(label: string, args: readonly string[]): Promise<void> {
   console.log(`\n--- ${label} ---`);
-  const proc = Bun.spawn(['hyperfine', ...args], {
+  await spawn('hyperfine', [...args], {
     stdout: 'inherit',
     stderr: 'inherit',
   });
-  const exitCode = await proc.exited;
-  if (exitCode !== 0) {
-    throw new Error(`hyperfine "${label}" exited with code ${String(exitCode)}`);
-  }
 }
 
 //endregion Hyperfine runner
@@ -63,8 +61,7 @@ await runHyperfine('Cold run (all files written)', [
 console.log('\n[e2e] populating dest for warm runs...');
 await rm(DEST_DIR, { recursive: true, force: true });
 await mkdir(DEST_DIR, { recursive: true });
-const warmSetup = Bun.spawn(['bun', CONFIG], { stdout: 'pipe', stderr: 'pipe' });
-await warmSetup.exited;
+await spawn('bun', [CONFIG]);
 
 await runHyperfine('Warm run (all unchanged)', [
   '--warmup', '2',

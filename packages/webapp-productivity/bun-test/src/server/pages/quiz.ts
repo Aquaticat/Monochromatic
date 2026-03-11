@@ -2,13 +2,13 @@ import { getDeck } from "../../lib/db/decks";
 import { listCards } from "../../lib/db/cards";
 
 // Renders quiz page for a specific deck with all cards embedded as JSON.
-export function quizPage(deckId: string): Response {
-  const deck = getDeck(deckId);
+export async function quizPage(deckId: string): Promise<Response> {
+  const deck = await getDeck(deckId);
   if (!deck) {
     return new Response("Deck not found", { status: 404 });
   }
 
-  const cards = listCards(deckId);
+  const cards = await listCards(deckId);
 
   const html = `<!DOCTYPE html>
 <html lang="en">

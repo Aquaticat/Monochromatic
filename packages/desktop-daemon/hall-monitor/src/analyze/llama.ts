@@ -1,4 +1,7 @@
-import type { Subprocess } from "bun";
+import { spawn as cpSpawn, type ChildProcess } from "node:child_process";
+import { setTimeout } from "node:timers/promises";
+
+import spawn from "nano-spawn";
 
 import { log } from "../log.ts";
 
@@ -28,7 +31,7 @@ const HEALTH_POLL_MS = 500;
 export const API_URL = `http://127.0.0.1:${PORT}/v1/chat/completions`;
 
 /** Handle to the running llama-server subprocess, or null when stopped. */
-let server: Subprocess | null = null;
+let server: ChildProcess | null = null;
 
 /**
  * Starts llama-server inside a distrobox container with AMD GPU overrides.
@@ -45,9 +48,10 @@ export async function start(): Promise<void> {
   if (server) return;
 
   log.debug("[llama] Starting llama-server via distrobox...");
-  server = Bun.spawn(
+  server = cpSpawn(
+    "distrobox",
     [
-      "distrobox", "enter", "llama-build", "--",
+      "enter", "llama-build", "--",
       "env", "HSA_OVERRIDE_GFX_VERSION=11.0.2",
       LLAMA_SERVER,
       "-m", MODEL,
@@ -58,7 +62,7 @@ export async function start(): Promise<void> {
       "-ub", "4096",
       "--port", String(PORT),
     ],
-    { stdout: "ignore", stderr: "ignore" },
+    { stdio: ["ignore", "ignore", "ignore"] },
   );
 
   await waitForHealth();
@@ -80,17 +84,19 @@ export async function stop(): Promise<void> {
 
   // Kill the actual llama-server process by name since distrobox wraps it
   try {
-    Bun.spawnSync(["pkill", "-f", `llama-server.*--port ${PORT}`]);
+    await spawn("pkill", ["-f", `llama-server.*--port ${PORT}`]);
   } catch {
-    // process may already be gone
+    // process may already be gone, or pkill exits non-zero if no match
   }
 
   server.kill();
-  await server.exited;
+  await new Promise<void>(function awaitExit(resolve) {
+    server!.on("exit", resolve);
+  });
   server = null;
 
   // Wait briefly for port to free up
-  await Bun.sleep(500);
+  await setTimeout(500);
   log.debug("[llama] Server stopped.");
 }
 
@@ -104,9 +110,9 @@ export async function stop(): Promise<void> {
  */
 export async function forceCleanup(): Promise<void> {
   try {
-    Bun.spawnSync(["pkill", "-9", "-f", `llama-server.*--port ${PORT}`]);
+    await spawn("pkill", ["-9", "-f", `llama-server.*--port ${PORT}`]);
   } catch {
-    // process may already be gone
+    // process may already be gone, or pkill exits non-zero if no match
   }
   server = null;
 }
@@ -129,7 +135,7 @@ async function waitForHealth(): Promise<void> {
     } catch {
       // server not up yet
     }
-    await Bun.sleep(HEALTH_POLL_MS);
+    await setTimeout(HEALTH_POLL_MS);
   }
   throw new Error(`llama-server failed to become healthy within ${MAX_HEALTH_POLLS} polls`);
 }

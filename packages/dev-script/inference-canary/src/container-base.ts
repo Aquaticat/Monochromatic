@@ -1,13 +1,13 @@
 /**
- * Base execution helper using Bun-native process APIs.
+ * Base execution helper using nano-spawn for cross-runtime process management.
  *
- * Avoids the promisify(execFile) pattern since this package runs under Bun,
- * which provides Bun.spawn as a first-class Promise-based API. Kept as a
- * shared module so container-exec.ts has a single import rather than
- * duplicating the Bun.spawn boilerplate.
+ * Kept as a shared module so container-exec.ts has a single import rather than
+ * duplicating the spawn boilerplate.
  */
 
-/** Result of a Bun-spawned command -- never throws, callers inspect exitCode */
+import spawn from 'nano-spawn';
+
+/** Result of a spawned command -- never throws, callers inspect exitCode */
 export type BunExecResult = {
   readonly stdout: string;
   readonly stderr: string;
@@ -28,12 +28,9 @@ export type BunExecOptions = {
 };
 
 /**
- * Runs a command via Bun.spawn, capturing stdout and stderr separately.
+ * Runs a command via nano-spawn, capturing stdout and stderr separately.
  *
  * Never throws -- callers check `exitCode` and `killed` to decide what to do.
- * This is preferable to the promisify(execFile) pattern because it uses
- * Bun's native process API and avoids extracting error properties from a
- * thrown Error object.
  * @param command - executable name or absolute path
  * @param args - command arguments
  * @param options - optional timeout
@@ -49,22 +46,33 @@ export async function execBun(
     return { stdout: '', stderr: '', exitCode: 1, killed: true, };
   }
 
-  const proc = Bun.spawn([command, ...args], { stdout: 'pipe', stderr: 'pipe', });
+  try {
+    const result = await spawn(command, args as string[], {
+      timeout: options.timeout,
+      signal: options.signal,
+    });
 
-  // let: the timeout callback and abort handler both assign true; const prevents that mutation
-  let killed = false;
-  const killProc = (): void => { killed = true; proc.kill(); };
-  const timer = options.timeout !== undefined ? setTimeout(killProc, options.timeout) : undefined;
-  options.signal?.addEventListener('abort', killProc);
+    return { stdout: result.stdout, stderr: result.stderr, exitCode: 0, killed: false, };
+  } catch (error: unknown) {
+    // nano-spawn throws SubprocessError on non-zero exit
+    if (error !== null && error !== undefined && typeof error === 'object' && 'exitCode' in error) {
+      const subprocessError = error as { stdout: string; stderr: string; exitCode: number | undefined; signalName: string | undefined };
+      // Killed if the signal was aborted (race: it may have become true after spawn started)
+      // or the process received a termination signal
+      const wasKilled = Boolean(options.signal?.aborted)
+        || subprocessError.signalName !== undefined;
 
-  const [stdout, stderr, exitCode] = await Promise.all([
-    new Response(proc.stdout).text(),
-    new Response(proc.stderr).text(),
-    proc.exited,
-  ]);
+      return {
+        stdout: subprocessError.stdout,
+        stderr: subprocessError.stderr,
+        exitCode: subprocessError.exitCode ?? 1,
+        killed: wasKilled,
+      };
+    }
 
-  if (timer !== undefined) clearTimeout(timer);
-  options.signal?.removeEventListener('abort', killProc);
+    // Unexpected error (e.g. command not found)
+    const message = error instanceof Error ? error.message : String(error);
 
-  return { stdout, stderr, exitCode, killed, };
+    return { stdout: '', stderr: message, exitCode: 1, killed: false, };
+  }
 }

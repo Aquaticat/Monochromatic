@@ -1,3 +1,5 @@
+import nanoSpawn from 'nano-spawn';
+
 import { l, tagged } from './log.ts';
 
 /**
@@ -17,14 +19,7 @@ export async function spawn({ args, command }: { args: ReadonlyArray<string>; co
   const rl = tagged({ tag: spawn.name, l, });
   rl.debug(`${command} ${args.join(' ')}`);
 
-  const proc = Bun.spawn([command, ...args], { stderr: 'pipe', stdout: 'pipe', });
-  const exitCode = await proc.exited;
-  const stdout = await new Response(proc.stdout).text();
-
-  if (exitCode !== 0) {
-    const stderr = await new Response(proc.stderr).text();
-    throw new Error(`${command} failed (exit ${exitCode}): ${stderr.trim()}`);
-  }
+  const { stdout } = await nanoSpawn(command, [...args]);
 
   return stdout.trim();
 }

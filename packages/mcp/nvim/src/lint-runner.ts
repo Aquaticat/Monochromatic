@@ -1,6 +1,8 @@
 import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
+import spawn from "nano-spawn";
+
 import type { Diagnostic } from "./nvim-client.ts";
 
 //region Types -- oxlint JSON output shape
@@ -325,29 +327,28 @@ async function spawnOxlint({ configPath, cwd, files, typeAware }: {
   ];
 
   try {
-    const proc = Bun.spawn(["oxlint", ...args], {
-      cwd,
-      stdout: "pipe",
-      stderr: "pipe",
-    });
+    const result = await spawn("oxlint", args, { cwd, timeout: OXLINT_TIMEOUT_MS });
+    const stdout = result.stdout;
 
-    const timeoutId = setTimeout(() => {
-      proc.kill();
-    }, OXLINT_TIMEOUT_MS);
-
-    const stdout = await new Response(proc.stdout).text();
-    const exitCode = await proc.exited;
-    clearTimeout(timeoutId);
-
-    // oxlint exits non-zero when it finds diagnostics, which is expected
     if (stdout.trim().length === 0) {
-      console.error(`[mcp-nvim] oxlint produced no output (exit code ${exitCode})`);
+      console.error("[mcp-nvim] oxlint produced no output (exit code 0)");
       return new Map();
     }
 
     const parsed = JSON.parse(stdout) as OxlintJsonOutput;
     return parseOxlintOutput(parsed, cwd);
   } catch (err: unknown) {
+    // oxlint exits non-zero when it finds diagnostics, which is expected
+    if (err !== null && err !== undefined && typeof err === "object" && "stdout" in err) {
+      const stdout = String(err.stdout);
+      if (stdout.trim().length > 0) {
+        const parsed = JSON.parse(stdout) as OxlintJsonOutput;
+        return parseOxlintOutput(parsed, cwd);
+      }
+      const exitCode = "exitCode" in err ? err.exitCode : "unknown";
+      console.error(`[mcp-nvim] oxlint produced no output (exit code ${exitCode})`);
+      return new Map();
+    }
     const message = err instanceof Error ? err.message : String(err);
     console.error(`[mcp-nvim] Failed to run oxlint: ${message}`);
     return new Map();

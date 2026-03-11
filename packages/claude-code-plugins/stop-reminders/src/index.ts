@@ -29,6 +29,7 @@ import {
   readStdin,
 } from '@monochromatic-dev/claude-code-plugins-hook-utils';
 import {
+  findTrailingQuestion,
   findUncertainty,
   stripNonProseRegions,
 } from './uncertainty.ts';
@@ -63,16 +64,36 @@ if (event.stop_hook_active) {
   /** First uncertainty marker found in the prose, if any. */
   const match = findUncertainty(prose);
 
+  /** First trailing question found in the prose, if any. */
+  const question = findTrailingQuestion(prose);
+
+  /** Collect all applicable reminders into a single block reason. */
+  const reasons: Array<string> = [];
+
   if (match !== null && match !== undefined) {
+    reasons.push(
+      `Your response contains uncertain language ("${match.phrase}").`,
+      'Search for evidence, read the relevant code, or check documentation.',
+      'Always research thoroughly before responding.',
+      'If you have already investigated and the uncertainty is genuinely warranted,',
+      'say so explicitly and continue with your response.',
+      'This may be a false positive -- use your judgement.',
+    );
+  }
+
+  if (question !== null && question !== undefined) {
+    reasons.push(
+      `Your response ends with a question to the user ("${question.sentence}").`,
+      'Use the AskUserQuestion tool to ask the user instead of ending your response with a question.',
+      'The AskUserQuestion tool ensures the user sees and can respond to your question directly.',
+      'Rephrase your question as an AskUserQuestion tool call and continue.',
+    );
+  }
+
+  if (reasons.length > 0) {
     const output: StopOutput = {
       decision: 'block',
-      reason: [
-        `Your response contains uncertain language ("${match.phrase}").`,
-        'Search for evidence, read the relevant code, or check documentation','Always research thoroughly before responding.',
-        'If you have already investigated and the uncertainty is genuinely warranted,',
-        'say so explicitly and continue with your response.',
-        'This may be a false positive -- use your judgement.',
-      ].join(' '),
+      reason: reasons.join(' '),
     };
     process.stdout.write(JSON.stringify(output));
   } else {

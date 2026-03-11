@@ -1,3 +1,5 @@
+import spawn from 'nano-spawn';
+
 /**
  * Sends a write-protection warning to both terminal and desktop notification.
  * Called when an external process modifies a file that file-enforcer manages.
@@ -12,11 +14,9 @@ export async function notifyWriteProtection(filePath: string): Promise<void> {
   const notifyBody = `"${filePath}" was modified externally and has been reverted.`;
   try {
     /** Spawn notify-send as fire-and-forget; failure is non-fatal */
-    const proc = Bun.spawn(
-      ['notify-send', '--urgency=critical', 'file-enforcer: write protected', notifyBody],
-      { stdout: 'ignore', stderr: 'pipe', },
-    );
-    await proc.exited;
+    await spawn('notify-send', ['--urgency=critical', 'file-enforcer: write protected', notifyBody], {
+      stdout: 'ignore',
+    });
   } catch (notifyError: unknown) {
     // notify-send may not be installed -- log and move on
     console.warn('[file-enforcer] could not send desktop notification:', notifyError);

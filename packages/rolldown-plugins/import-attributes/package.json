@@ -1,0 +1,29 @@
+{
+  "name": "@monochromatic-dev/rolldown-plugin-import-attributes",
+  "description": "Rolldown plugin that transforms import attributes (with { type: 'text' }) into bundler-compatible module loads.",
+  "type": "module",
+  "module": "dist/final/node/index.mjs",
+  "exports": {
+    ".": "./dist/final/node/index.mjs",
+    "./ts": "./src/index.ts"
+  },
+  "main": "dist/final/node/index.mjs",
+  "typings": "dist/final/node/index.d.mts",
+  "files": [
+    "dist/final"
+  ],
+  "dependencies": {
+    "rolldown": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/rolldown-plugins/import-attributes"
+  }
+}

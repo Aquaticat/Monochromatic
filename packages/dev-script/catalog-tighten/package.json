@@ -1,0 +1,18 @@
+{
+  "name": "@monochromatic-dev/dev-script-catalog-tighten",
+  "description": "Tighten monorepo catalog >=x.y.z ranges to match installed versions from node_modules.",
+  "type": "module",
+  "main": "src/index.ts",
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  },
+  "dependencies": {},
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/dev-script/catalog-tighten"
+  },
+  "sideEffects": true
+}

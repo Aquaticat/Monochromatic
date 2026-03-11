@@ -52,6 +52,21 @@ Vercel AI SDK forces React dependencies for non-React projects:
 
 OpenAI SDK: direct API integration without unnecessary dependencies.
 
+## Type checking: tsgo > tsc
+
+The monorepo uses `tsgo` (the native Go port of TypeScript) for all type checking via `mise run lint:types`.
+`tsc` is not used directly anywhere.
+
+The Claude Code TypeScript LSP plugin has been removed (2026-03-10) because:
+
+- It runs `tsc` internally, not `tsgo`, producing diagnostics against the wrong checker
+- It frequently serves stale diagnostics that do not reflect the current file state
+
+A Claude Code `PostToolUse` hook will replace it,
+triggering the package-specific `lint:types` task on every Edit/Write of a `.ts` file.
+This gives fresh `tsgo` diagnostics scoped to the affected package
+without the staleness and tool mismatch of the LSP plugin.
+
 ## Bundler: tsdown > raw rolldown
 
 tsdown (v0.20.3) is a ~5,000-line config translator and plugin orchestrator on top of rolldown.

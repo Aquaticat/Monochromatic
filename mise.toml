@@ -68,6 +68,7 @@ opentofu = "latest"
 hcloud = "latest"
 "npm:typescript-language-server" = "latest"
 "cargo:coreutils" = { version = "latest", features = "unix" }
+deno = "latest"
 
 [settings]
 
@@ -473,6 +474,18 @@ usage = 'arg "[args]" var=#true help="Additional arguments (--model <id> --runs 
 run = "bun packages/dev-script/inference-canary/src/index.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
 
 #endregion Inference Canary
+
+#region Catalog Tighten -- tighten >= ranges in workspaces.catalog to match installed versions
+
+[tasks."catalog:tighten"]
+description = "Tighten catalog >=x.y.z ranges to match installed node_modules versions"
+usage = 'flag "--dry-run" help="Print what would change without writing"'
+run = """
+let args = if ($env.usage_dry__run? | default '' | str trim) == 'true' { ['--dry-run'] } else { [] }
+bun packages/dev-script/catalog-tighten/src/index.ts ...$args
+"""
+
+#endregion Catalog Tighten
 
 #region Fix Tasks -- workarounds for upstream bugs
 

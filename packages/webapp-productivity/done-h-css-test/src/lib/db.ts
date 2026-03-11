@@ -15,7 +15,8 @@
  */
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { Database } from "bun:sqlite";
+import { connect } from "@tursodatabase/database";
+import type { Database } from "@tursodatabase/database";
 import { getArgumentValue } from "./args.ts";
 
 /** Default database file path when neither `--db=` nor `DB_PATH` env var is provided. */
@@ -142,20 +143,23 @@ const MIGRATION_FTS_BACKFILL = `
 
 //endregion Migration SQL
 
-/** Executes all schema migrations (tables, indexes, FTS, triggers, backfill). */
-function runMigrations(database: Database): void {
-  database.run(MIGRATION_TABLES_AND_INDEXES);
-  database.run(MIGRATION_FTS_AND_TRIGGERS);
-  database.run(MIGRATION_FTS_BACKFILL);
+/**
+ * Executes all schema migrations (tables, indexes, FTS, triggers, backfill).
+ * @param database - Connected Turso database instance
+ */
+async function runMigrations(database: Database): Promise<void> {
+  await database.exec(MIGRATION_TABLES_AND_INDEXES);
+  await database.exec(MIGRATION_FTS_AND_TRIGGERS);
+  await database.exec(MIGRATION_FTS_BACKFILL);
 }
 
 const databasePath = resolveDatabasePath();
 ensureDatabaseDirectoryExists(databasePath);
 
-const db = new Database(databasePath);
-db.run("PRAGMA journal_mode = WAL");
-db.run("PRAGMA foreign_keys = ON");
+const db = await connect(databasePath, { experimental: ["triggers"] });
+await db.exec("PRAGMA journal_mode = WAL");
+await db.exec("PRAGMA foreign_keys = ON");
 
-runMigrations(db);
+await runMigrations(db);
 
 export default db;

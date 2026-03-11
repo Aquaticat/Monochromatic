@@ -52,6 +52,7 @@ export async function buildCodeGenFixPrompt(
   // Falls back to running lintSource if called without a prior result (e.g. in tests).
   const lint = priorLint ?? await lintSource(source, {
     model: context.label,
+    label: context.label,
     probe: 'fix-prompt',
     pass: context.pass,
     timestamp: context.timestamp,

@@ -5,6 +5,7 @@ import {
   expect,
   test,
 } from 'bun:test';
+import spawn from 'nano-spawn';
 
 //region Types
 
@@ -45,17 +46,17 @@ const FIXTURES = resolve(ROOT, 'packages', 'test-fixture', 'oxlint-tsdoc', 'src'
  */
 async function lint(fixturePath: string): Promise<readonly OxlintDiagnostic[]> {
   const target = resolve(FIXTURES, fixturePath);
-  const proc = Bun.spawn(
-    ['oxlint', '--format', 'json', '-c', resolve(ROOT, '.oxlintrc.json'), target],
-    {
-      cwd: ROOT,
-      stdout: 'pipe',
-      stderr: 'pipe',
-    },
-  );
 
-  const stdout = await new Response(proc.stdout).text();
-  await proc.exited;
+  // oxlint exits non-zero when violations are found -- capture stdout from the error
+  let stdout: string;
+  try {
+    const result = await spawn('oxlint', ['--format', 'json', '-c', resolve(ROOT, '.oxlintrc.json'), target], {
+      cwd: ROOT,
+    });
+    stdout = result.stdout;
+  } catch (error: unknown) {
+    stdout = (error as { stdout: string }).stdout;
+  }
 
   // oxlint-disable-next-line typescript-eslint/no-unsafe-assignment -- JSON.parse returns any
   const output: OxlintOutput = JSON.parse(stdout);

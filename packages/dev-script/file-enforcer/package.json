@@ -19,7 +19,8 @@
   },
   "dependencies": {
     "dot-prop": "catalog:",
-    "find-up": "catalog:"
+    "find-up": "catalog:",
+    "nano-spawn": "catalog:"
   },
   "version": "0.0.1",
   "repository": {

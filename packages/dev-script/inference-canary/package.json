@@ -5,11 +5,13 @@
   "main": "src/index.ts",
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
-    "@types/bun": "catalog:"
+    "@types/bun": "catalog:",
+    "why-is-node-running": "^3.2.2"
   },
   "dependencies": {
     "@optique/core": "catalog:",
     "@optique/run": "catalog:",
+    "nano-spawn": "catalog:",
     "openai": "catalog:"
   },
   "version": "0.0.1",

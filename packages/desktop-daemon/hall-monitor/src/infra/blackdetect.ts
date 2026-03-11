@@ -1,3 +1,6 @@
+import { spawn as cpSpawn } from "node:child_process";
+import { once } from "node:events";
+
 /**
  * Detects whether a JPEG frame is essentially all-black (e.g. webcam privacy
  * cover is down) using ffmpeg's blackdetect filter.
@@ -12,19 +15,20 @@
  * ```
  */
 export async function isBlackFrame(jpegBuf: Buffer): Promise<boolean> {
-  const proc = Bun.spawn(
+  const proc = cpSpawn(
+    "/usr/bin/ffmpeg",
     [
-      "/usr/bin/ffmpeg",
       "-f", "image2pipe", "-i", "pipe:0",
       "-vf", "blackdetect=d=0:pix_th=0.10:pic_th=0.98",
       "-f", "null", "-",
     ],
-    { stdin: "pipe", stdout: "pipe", stderr: "pipe" },
+    { stdio: ["pipe", "pipe", "pipe"] },
   );
-  proc.stdin.write(jpegBuf);
-  proc.stdin.end();
-  const stderr = await new Response(proc.stderr).text();
-  await proc.exited;
+  proc.stdin!.end(jpegBuf);
+  const stderrChunks: Buffer[] = [];
+  proc.stderr!.on("data", function collectChunk(chunk: Buffer) { stderrChunks.push(chunk); });
+  await once(proc, "close");
+  const stderr = Buffer.concat(stderrChunks).toString("utf8");
   // blackdetect emits "black_start:..." lines on stderr when a black frame is found
   return stderr.includes("black_start");
 }

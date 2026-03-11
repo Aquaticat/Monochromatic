@@ -162,6 +162,14 @@ type UncertaintyMatch = {
 };
 
 /**
+ * Result of scanning text for trailing questions directed at the user.
+ */
+type QuestionMatch = {
+  /** Sentence ending with `?` that was detected. */
+  sentence: string;
+};
+
+/**
  * Scans prose text for the first uncertainty marker match.
  *
  * @param prose - Text with code blocks and quotes already stripped.
@@ -183,13 +191,69 @@ function findUncertainty(prose: string): UncertaintyMatch | undefined {
   return undefined;
 }
 
+/**
+ * Detects sentences ending with `?` near the end of the assistant message.
+ *
+ * Only checks the last 500 characters of prose to target trailing questions
+ * directed at the user (not rhetorical questions buried in explanations).
+ * Skips sentences that start with common rhetorical/conditional patterns.
+ *
+ * @param prose - Text with code blocks and quotes already stripped.
+ * @returns Match details if a trailing question was found, `undefined` otherwise.
+ *
+ * @example
+ * ```ts
+ * const match = findTrailingQuestion('I finished the refactor. Want me to run the tests?')
+ * // => { sentence: 'Want me to run the tests?' }
+ * ```
+ */
+function findTrailingQuestion(prose: string): QuestionMatch | undefined {
+  /** Only scan the tail of the message where user-directed questions appear. */
+  const tail = prose.slice(-500);
+
+  /**
+   * Match sentences ending with `?`.
+   * Captures from the start of a sentence (after `.`, `!`, `?`, or start of string)
+   * through to the `?`.
+   */
+  const questionPattern = /(?:^|[.!?]\s+)([A-Z][^.!?]*\?)\s*$/;
+  const match = questionPattern.exec(tail);
+
+  if (match === null || match === undefined) {
+    return undefined;
+  }
+
+  const sentence = match[1] ?? match[0];
+
+  /**
+   * Skip rhetorical or conditional questions that are not directed at the user.
+   * These patterns introduce hypothetical or explanatory contexts.
+   */
+  const rhetoricalPrefixes = [
+    /^what if\b/i,
+    /^why does\b/i,
+    /^why would\b/i,
+    /^how does\b/i,
+    /^have you ever\b/i,
+  ];
+  for (const prefix of rhetoricalPrefixes) {
+    if (prefix.test(sentence)) {
+      return undefined;
+    }
+  }
+
+  return { sentence };
+}
+
 //endregion
 
 export {
+  findTrailingQuestion,
   findUncertainty,
   stripNonProseRegions,
 };
 
 export type {
+  QuestionMatch,
   UncertaintyMatch,
 };

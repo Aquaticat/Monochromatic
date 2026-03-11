@@ -198,7 +198,7 @@ export async function handleCreateTask(req: Request): Promise<Response> {
       return jsonResponse({ error: "Task title is required" }, 400);
     }
 
-    const task = createTask({
+    const task = await createTask({
       title,
       description: typeof body.description === "string" ? body.description : null,
       tags: parseStringArray(body.tags) ?? [],
@@ -226,7 +226,7 @@ export async function handleUpdateTask(req: Request, id: string): Promise<Respon
       return jsonResponse({ error: "Invalid update payload" }, 400);
     }
 
-    const task = updateTask(id, taskUpdateInput);
+    const task = await updateTask(id, taskUpdateInput);
     if (task === null) {
       return jsonResponse({ error: "Task not found" }, 404);
     }
@@ -242,8 +242,8 @@ export async function handleUpdateTask(req: Request, id: string): Promise<Respon
  * @param id - Task UUID from the route parameter
  * @returns 200 on success, 404 when the task does not exist
  */
-export function handleDeleteTask(id: string): Response {
-  const deleted = deleteTask(id);
+export async function handleDeleteTask(id: string): Promise<Response> {
+  const deleted = await deleteTask(id);
   if (!deleted) {
     return jsonResponse({ error: "Task not found" }, 404);
   }

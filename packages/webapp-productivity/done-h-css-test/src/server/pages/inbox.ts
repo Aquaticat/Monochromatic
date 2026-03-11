@@ -9,9 +9,9 @@ import { listBlockedInboxTasks, listInboxUnblockedTasks } from "../../lib/db/tas
 import { renderPage } from "./layout.ts";
 
 /** Renders the inbox page with unblocked and blocked task lists. */
-export function inboxPage(): Response {
-  const inboxTasks = listInboxUnblockedTasks();
-  const blockedLinks = listBlockedInboxTasks();
+export async function inboxPage(): Promise<Response> {
+  const inboxTasks = await listInboxUnblockedTasks();
+  const blockedLinks = await listBlockedInboxTasks();
   const blockedTasksByBlocker = Object.groupBy(blockedLinks, (link) => link.blockerId);
 
   return renderPage({

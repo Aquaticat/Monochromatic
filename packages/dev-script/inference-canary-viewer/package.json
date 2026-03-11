@@ -13,6 +13,7 @@
     "@monochromatic-dev/dev-script-inference-canary": "workspace:*",
     "micromark": "catalog:",
     "@monochromatic-dev/module-es": "workspace:*",
+    "nano-spawn": "catalog:",
     "nue-glow": "^0.2.5"
   },
   "version": "0.0.1",

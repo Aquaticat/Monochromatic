@@ -35,6 +35,9 @@ When no suitable mise task exists for an operation, add one to the target packag
 Read `mise.toml` files in root and package directories for available commands.
 To run a task in a specific package, use `mise run //packages/path:task` (not `mise run -C`).
 Do not run linters or formatters -- the user runs them.
+No TypeScript LSP diagnostics are available in this environment.
+A `PostToolUse` hook for Edit/Write on `.ts` files will run the package-specific `lint:types` task automatically;
+until that hook exists, run `mise run //packages/<path>:lint:types` manually after editing TypeScript.
 
 After modifying source in packages that produce dist output (e.g. `module-es`),
 always verify with `mise run buildAndTest` instead of running tests alone.

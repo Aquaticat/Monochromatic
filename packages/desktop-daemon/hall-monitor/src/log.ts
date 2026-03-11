@@ -1,5 +1,9 @@
+import spawn from "nano-spawn";
+
 /**
  * Emits a syslog message via the `logger` CLI utility.
+ * Fire-and-forget: the spawn promise is not awaited so logging never blocks
+ * the main flow.
  * @param priority - syslog priority level (e.g. "debug", "info", "warning", "err")
  * @param message - log message body
  * @example
@@ -8,7 +12,7 @@
  * ```
  */
 function emit(priority: string, message: string): void {
-  Bun.spawnSync(["logger", "-t", "hall-monitor", "-p", `user.${priority}`, "--", message]);
+  spawn("logger", ["-t", "hall-monitor", "-p", `user.${priority}`, "--", message]).catch(() => {});
 }
 
 /**

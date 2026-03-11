@@ -16,9 +16,9 @@ type SettingRow = {
  * @param key - Setting identifier
  * @returns Stored value, or `null` when the key does not exist
  */
-export function getSetting(key: string): string | null {
-  const row = db.query("SELECT value FROM settings WHERE key = ?").get(key) as Pick<SettingRow, "value"> | null;
-  return row === null ? null : row.value;
+export async function getSetting(key: string): Promise<string | null> {
+  const row = await db.prepare("SELECT value FROM settings WHERE key = ?").get(key) as Pick<SettingRow, "value"> | undefined;
+  return row?.value ?? null;
 }
 
 /**
@@ -26,8 +26,8 @@ export function getSetting(key: string): string | null {
  * @param key - Setting identifier
  * @param value - Text payload to store
  */
-export function setSetting(key: string, value: string): void {
-  db.query("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(
+export async function setSetting(key: string, value: string): Promise<void> {
+  await db.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(
     key,
     value
   );
@@ -38,15 +38,15 @@ export function setSetting(key: string, value: string): void {
  * @param key - Setting identifier
  * @returns `true` when the key existed and was removed
  */
-export function deleteSetting(key: string): boolean {
-  const result = db.query("DELETE FROM settings WHERE key = ?").run(key);
+export async function deleteSetting(key: string): Promise<boolean> {
+  const result = await db.prepare("DELETE FROM settings WHERE key = ?").run(key);
   return result.changes > 0;
 }
 
 /**
  * Returns all settings as a key-value record.
  */
-export function getAllSettings(): Record<string, string> {
-  const rows = db.query("SELECT key, value FROM settings ORDER BY key ASC").all() as SettingRow[];
+export async function getAllSettings(): Promise<Record<string, string>> {
+  const rows = await db.prepare("SELECT key, value FROM settings ORDER BY key ASC").all() as SettingRow[];
   return Object.fromEntries(rows.map((row) => [row.key, row.value]));
 }

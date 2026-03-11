@@ -5,6 +5,8 @@
  * so no temp files are needed.
  */
 
+import spawn from 'nano-spawn';
+
 /** Single line in a diff result */
 export type DiffLine = {
   readonly type: 'added' | 'removed' | 'unchanged';
@@ -32,12 +34,14 @@ export async function computeDiff({ initialPath, fixPath, }: {
    * git diff --no-index exits with 1 when files differ (not an error).
    * --unified=99999 requests enough context lines to include the entire file.
    */
-  const proc = Bun.spawn(
-    ['git', 'diff', '--no-index', '--unified=99999', '--no-color', initialPath, fixPath],
-    { stdout: 'pipe', stderr: 'pipe', },
-  );
-  const stdout = await new Response(proc.stdout).text();
-  await proc.exited;
+  let stdout: string;
+  try {
+    const result = await spawn('git', ['diff', '--no-index', '--unified=99999', '--no-color', initialPath, fixPath]);
+    stdout = result.stdout;
+  } catch (error: unknown) {
+    // Exit code 1 means files differ -- expected behavior
+    stdout = (error as { stdout: string }).stdout;
+  }
 
   return parseDiffOutput(stdout);
 }

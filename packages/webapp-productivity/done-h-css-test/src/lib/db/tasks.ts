@@ -189,9 +189,9 @@ function mapTask(row: TaskRow): Task {
  * Fetches a single task row by primary key without mapping.
  * @param id - Task UUID
  */
-function getTaskRowById(id: string): TaskRow | null {
-  const taskRow = db.query(SQL_SELECT_TASK_BY_ID).get(id) as TaskRow | null;
-  return taskRow;
+async function getTaskRowById(id: string): Promise<TaskRow | null> {
+  const taskRow = await db.prepare(SQL_SELECT_TASK_BY_ID).get(id) as TaskRow | undefined;
+  return taskRow ?? null;
 }
 
 /**
@@ -199,28 +199,28 @@ function getTaskRowById(id: string): TaskRow | null {
  * @param id - Task UUID
  * @returns Mapped task, or `null` when the ID does not exist
  */
-export function getTaskById(id: string): Task | null {
-  const taskRow = getTaskRowById(id);
+export async function getTaskById(id: string): Promise<Task | null> {
+  const taskRow = await getTaskRowById(id);
   return taskRow === null ? null : mapTask(taskRow);
 }
 
 /** Lists inbox tasks that have no blockers, newest first. */
-export function listInboxUnblockedTasks(): Task[] {
-  const rows = db.query(SQL_SELECT_INBOX_UNBLOCKED).all() as TaskRow[];
+export async function listInboxUnblockedTasks(): Promise<Task[]> {
+  const rows = await db.prepare(SQL_SELECT_INBOX_UNBLOCKED).all() as TaskRow[];
 
   return rows.map(mapTask);
 }
 
 /** Lists inbox tasks that are blocked, paired with each blocker ID for nesting. */
-export function listBlockedInboxTasks(): BlockedTaskLink[] {
-  const rows = db.query(SQL_SELECT_BLOCKED_INBOX).all() as (TaskRow & { blocker_id: string })[];
+export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
+  const rows = await db.prepare(SQL_SELECT_BLOCKED_INBOX).all() as (TaskRow & { blocker_id: string })[];
 
   return rows.map((row) => ({ blockerId: row.blocker_id, task: mapTask(row) }));
 }
 
 /** Lists tasks with active timers (`status = 'in_progress'`), most recently updated first. */
-export function listInProgressTasks(): Task[] {
-  const rows = db.query(SQL_SELECT_IN_PROGRESS).all() as TaskRow[];
+export async function listInProgressTasks(): Promise<Task[]> {
+  const rows = await db.prepare(SQL_SELECT_IN_PROGRESS).all() as TaskRow[];
 
   return rows.map(mapTask);
 }
@@ -229,15 +229,15 @@ export function listInProgressTasks(): Task[] {
  * Lists non-done tasks excluding the given task, for the blocker picker UI.
  * @param taskId - Task to exclude (the task being edited)
  */
-export function listTasksForBlockerPicker(taskId: string): Task[] {
-  const rows = db.query(SQL_SELECT_FOR_BLOCKER_PICKER).all(taskId) as TaskRow[];
+export async function listTasksForBlockerPicker(taskId: string): Promise<Task[]> {
+  const rows = await db.prepare(SQL_SELECT_FOR_BLOCKER_PICKER).all(taskId) as TaskRow[];
 
   return rows.map(mapTask);
 }
 
 /** Collects all unique tags across every task, sorted alphabetically. */
-export function listAllTags(): string[] {
-  const rows = db.query(SQL_SELECT_ALL_TAGS).all() as { tag: string }[];
+export async function listAllTags(): Promise<string[]> {
+  const rows = await db.prepare(SQL_SELECT_ALL_TAGS).all() as { tag: string }[];
 
   return rows.map((row) => row.tag);
 }
@@ -247,18 +247,18 @@ export function listAllTags(): string[] {
  * Falls back to LIKE matching when the FTS query syntax is invalid.
  * @param searchQuery - User-entered search string
  */
-export function searchTasks(searchQuery: string): SearchTask[] {
+export async function searchTasks(searchQuery: string): Promise<SearchTask[]> {
   const normalizedSearchQuery = searchQuery.trim();
   if (normalizedSearchQuery.length === 0) {
     return [];
   }
 
   try {
-    const rows = db.query(SQL_SEARCH_FTS).all(normalizedSearchQuery) as (TaskRow & { is_blocked: number })[];
+    const rows = await db.prepare(SQL_SEARCH_FTS).all(normalizedSearchQuery) as (TaskRow & { is_blocked: number })[];
     return rows.map((row) => ({ ...mapTask(row), isBlocked: row.is_blocked === 1 }));
   } catch {
-    const rows = db
-      .query(SQL_SEARCH_LIKE)
+    const rows = await db
+      .prepare(SQL_SEARCH_LIKE)
       .all(`%${normalizedSearchQuery}%`, `%${normalizedSearchQuery}%`) as (TaskRow & {
       is_blocked: number;
     })[];
@@ -272,11 +272,11 @@ export function searchTasks(searchQuery: string): SearchTask[] {
  * @returns Freshly created task read back from the database
  * @throws When the read-back fails (should never happen)
  */
-export function createTask(input: TaskCreateInput): Task {
+export async function createTask(input: TaskCreateInput): Promise<Task> {
   const id = crypto.randomUUID();
   const timestamp = nowIso();
 
-  db.query(SQL_INSERT_TASK).run(
+  await db.prepare(SQL_INSERT_TASK).run(
     id,
     input.title.trim(),
     input.description ?? null,
@@ -297,7 +297,7 @@ export function createTask(input: TaskCreateInput): Task {
     timestamp
   );
 
-  const createdTask = getTaskById(id);
+  const createdTask = await getTaskById(id);
   if (createdTask === null) {
     throw new Error("Failed to read created task");
   }
@@ -311,8 +311,8 @@ export function createTask(input: TaskCreateInput): Task {
  * @param input - Fields to update (omitted fields keep their current value)
  * @returns Updated task, or `null` when the ID does not exist
  */
-export function updateTask(id: string, input: TaskUpdateInput): Task | null {
-  const currentTask = getTaskById(id);
+export async function updateTask(id: string, input: TaskUpdateInput): Promise<Task | null> {
+  const currentTask = await getTaskById(id);
   if (currentTask === null) {
     return null;
   }
@@ -332,7 +332,7 @@ export function updateTask(id: string, input: TaskUpdateInput): Task | null {
     updatedAt: nowIso(),
   };
 
-  db.query(SQL_UPDATE_TASK).run(
+  await db.prepare(SQL_UPDATE_TASK).run(
     updatedTask.title,
     updatedTask.description,
     JSON.stringify(normalizeStringArray(updatedTask.tags)),
@@ -355,8 +355,8 @@ export function updateTask(id: string, input: TaskUpdateInput): Task | null {
  * @param id - Task UUID
  * @returns `true` when the task existed and was deleted
  */
-export function deleteTask(id: string): boolean {
-  const result = db.query(SQL_DELETE_TASK).run(id);
+export async function deleteTask(id: string): Promise<boolean> {
+  const result = await db.prepare(SQL_DELETE_TASK).run(id);
   return result.changes > 0;
 }
 
@@ -365,9 +365,9 @@ export function deleteTask(id: string): boolean {
  * @param id - Task UUID
  * @returns Updated task, or `null` when the ID does not exist
  */
-export function startTaskTimer(id: string): Task | null {
+export async function startTaskTimer(id: string): Promise<Task | null> {
   const timestamp = nowIso();
-  db.query(SQL_START_TIMER).run(
+  await db.prepare(SQL_START_TIMER).run(
     timestamp,
     timestamp,
     id
@@ -381,8 +381,8 @@ export function startTaskTimer(id: string): Task | null {
  * @param id - Task UUID
  * @returns Updated task, or `null` when the ID does not exist
  */
-export function stopTaskTimer(id: string): Task | null {
-  const currentTask = getTaskById(id);
+export async function stopTaskTimer(id: string): Promise<Task | null> {
+  const currentTask = await getTaskById(id);
   if (currentTask === null) {
     return null;
   }
@@ -394,7 +394,7 @@ export function stopTaskTimer(id: string): Task | null {
   const updatedTrackedTime = currentTask.trackedTime + elapsedSeconds;
   const timestamp = nowIso();
 
-  db.query(SQL_STOP_TIMER).run(updatedTrackedTime, timestamp, id);
+  await db.prepare(SQL_STOP_TIMER).run(updatedTrackedTime, timestamp, id);
 
   return getTaskById(id);
 }
@@ -404,14 +404,14 @@ export function stopTaskTimer(id: string): Task | null {
  * Refuses completion when the task has unresolved blockers.
  * @param id - Task UUID
  */
-export function completeTask(id: string): CompleteTaskResult {
-  const currentTask = getTaskById(id);
+export async function completeTask(id: string): Promise<CompleteTaskResult> {
+  const currentTask = await getTaskById(id);
   if (currentTask === null) {
     return { completed: false, notFound: true, blockedBy: [] };
   }
 
-  const blockingRows = db
-    .query(SQL_SELECT_BLOCKERS)
+  const blockingRows = await db
+    .prepare(SQL_SELECT_BLOCKERS)
     .all(id) as { blocker_id: string; blocker_title: string }[];
 
   const blockedBy = blockingRows.map((row) => ({ blockerId: row.blocker_id, blockerTitle: row.blocker_title }));
@@ -420,9 +420,9 @@ export function completeTask(id: string): CompleteTaskResult {
   }
 
   if (currentTask.timerStartedAt !== null) {
-    stopTaskTimer(id);
+    await stopTaskTimer(id);
   }
 
-  db.query(SQL_DELETE_TASK).run(id);
+  await db.prepare(SQL_DELETE_TASK).run(id);
   return { completed: true, notFound: false, blockedBy: [] };
 }

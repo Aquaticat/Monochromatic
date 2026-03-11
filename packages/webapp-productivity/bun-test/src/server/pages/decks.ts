@@ -2,8 +2,8 @@ import { listDecks } from "../../lib/db/decks";
 
 // Renders deck list page with embedded JSON data.
 // Client JS reads #page-data and builds DOM -- no client-side fetch on load.
-export function decksPage(): Response {
-  const decks = listDecks();
+export async function decksPage(): Promise<Response> {
+  const decks = await listDecks();
 
   const html = `<!DOCTYPE html>
 <html lang="en">

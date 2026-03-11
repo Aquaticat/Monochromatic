@@ -1,5 +1,8 @@
-import { $ } from "bun";
-import { unlink } from "fs/promises";
+import { spawn as cpSpawn } from "node:child_process";
+import { once } from "node:events";
+import { unlink } from "node:fs/promises";
+
+import spawn from "nano-spawn";
 
 /** Path to the ffmpeg binary. */
 const FFMPEG = "/usr/bin/ffmpeg";
@@ -38,13 +41,16 @@ function scaleFilter(longEdge: number): string {
 export async function captureScreenshot(): Promise<Buffer> {
   const tmp = `/tmp/hall-monitor-screen-${Date.now()}.png`;
   try {
-    await $`spectacle -f -b -n -o ${tmp}`.quiet();
-    const proc = Bun.spawn(
-      [FFMPEG, "-y", "-i", tmp, "-vf", scaleFilter(SCREENSHOT_LONG_EDGE), "-q:v", "2", "-f", "image2", "-vcodec", "mjpeg", "pipe:1"],
-      { stdout: "pipe", stderr: "inherit" },
+    await spawn("spectacle", ["-f", "-b", "-n", "-o", tmp], { stdout: "ignore", stderr: "ignore" });
+    const proc = cpSpawn(
+      FFMPEG,
+      ["-y", "-i", tmp, "-vf", scaleFilter(SCREENSHOT_LONG_EDGE), "-q:v", "2", "-f", "image2", "-vcodec", "mjpeg", "pipe:1"],
+      { stdio: ["ignore", "pipe", "inherit"] },
     );
-    const buf = Buffer.from(await new Response(proc.stdout).arrayBuffer());
-    await proc.exited;
+    const chunks: Buffer[] = [];
+    proc.stdout!.on("data", function collectChunk(chunk: Buffer) { chunks.push(chunk); });
+    await once(proc, "close");
+    const buf = Buffer.concat(chunks);
     if (buf.length === 0) throw new Error("Screenshot resize produced empty output");
     return buf;
   } finally {
@@ -64,14 +70,19 @@ export async function captureScreenshot(): Promise<Buffer> {
  * ```
  */
 export async function captureWebcam(): Promise<Buffer> {
-  const proc = Bun.spawn(
-    [FFMPEG, "-f", "v4l2", "-i", "/dev/video0", "-frames:v", "1",
-     "-vf", scaleFilter(WEBCAM_LONG_EDGE), "-q:v", "2",
-     "-f", "image2", "-vcodec", "mjpeg", "pipe:1"],
-    { stdout: "pipe", stderr: "inherit" },
+  const proc = cpSpawn(
+    FFMPEG,
+    [
+      "-f", "v4l2", "-i", "/dev/video0", "-frames:v", "1",
+      "-vf", scaleFilter(WEBCAM_LONG_EDGE), "-q:v", "2",
+      "-f", "image2", "-vcodec", "mjpeg", "pipe:1",
+    ],
+    { stdio: ["ignore", "pipe", "inherit"] },
   );
-  const buf = Buffer.from(await new Response(proc.stdout).arrayBuffer());
-  await proc.exited;
+  const chunks: Buffer[] = [];
+  proc.stdout!.on("data", function collectChunk(chunk: Buffer) { chunks.push(chunk); });
+  await once(proc, "close");
+  const buf = Buffer.concat(chunks);
   if (buf.length === 0) throw new Error("Webcam capture produced empty output");
   return buf;
 }

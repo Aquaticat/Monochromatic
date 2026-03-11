@@ -81,9 +81,9 @@ function parseAutofillResponse(raw: string): AutofillResult {
 //region Existing metadata for consistency hints
 
 /** Collects unique locations across all tasks via a full scan. */
-function listAllLocations(): string[] {
-  const rows = db
-    .query("SELECT DISTINCT loc.value AS loc FROM tasks, json_each(tasks.locations) AS loc ORDER BY loc.value ASC")
+async function listAllLocations(): Promise<string[]> {
+  const rows = await db
+    .prepare("SELECT DISTINCT loc.value AS loc FROM tasks, json_each(tasks.locations) AS loc ORDER BY loc.value ASC")
     .all() as { loc: string }[];
   return rows.map((row) => row.loc);
 }
@@ -104,8 +104,8 @@ export async function handleAutofill(req: Request): Promise<Response> {
       );
     }
 
-    const existingTags = listAllTags();
-    const existingLocations = listAllLocations();
+    const existingTags = await listAllTags();
+    const existingLocations = await listAllLocations();
     const messages = buildAutofillMessages(title, existingTags, existingLocations);
 
     const result = await chatCompletion({

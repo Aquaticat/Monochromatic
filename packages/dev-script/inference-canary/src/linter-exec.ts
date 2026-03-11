@@ -1,7 +1,7 @@
 /**
  * Shared exec helper for lint and type-check runners.
  *
- * Delegates to `execBun` from container-base.ts (the single Bun.spawn wrapper)
+ * Delegates to `execBun` from container-base.ts (the single nano-spawn wrapper)
  * and throws on non-zero exit with `.stdout` and `.stderr` attached, since lint
  * tools (oxlint, tsgo) exit 1 when they find violations and write their findings
  * to stdout as structured output (JSON, diagnostics).

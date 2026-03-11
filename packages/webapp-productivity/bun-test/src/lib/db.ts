@@ -1,12 +1,11 @@
-import { Database } from "bun:sqlite";
+import { connect } from "@tursodatabase/database";
 
 // In-memory SQLite -- no persistence needed for this test app.
-// Validates that bun:sqlite works for the patterns we need in Done.
-const db = new Database(":memory:");
-db.exec("PRAGMA journal_mode = WAL");
-db.exec("PRAGMA foreign_keys = ON");
+const db = await connect(":memory:");
+await db.exec("PRAGMA journal_mode = WAL");
+await db.exec("PRAGMA foreign_keys = ON");
 
-db.exec(`
+await db.exec(`
   CREATE TABLE decks (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,

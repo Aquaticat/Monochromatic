@@ -15,10 +15,10 @@ import { serializePageData } from "./layout.ts";
  * Renders the search page with FTS results when a query is present.
  * @param url - Request URL (the `q` search param contains the query)
  */
-export function searchPage(url: URL): Response {
+export async function searchPage(url: URL): Promise<Response> {
   const query = url.searchParams.get("q") ?? "";
-  const results = searchTasks(query);
-  const availableTags = listAllTags();
+  const results = await searchTasks(query);
+  const availableTags = await listAllTags();
 
   const pageData = { query, results, availableTags };
 

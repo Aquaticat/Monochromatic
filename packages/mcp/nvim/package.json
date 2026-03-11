@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@monochromatic-dev/mcp-stdio": "workspace:*",
+    "nano-spawn": "catalog:",
     "neovim": "catalog:"
   },
   "devDependencies": {

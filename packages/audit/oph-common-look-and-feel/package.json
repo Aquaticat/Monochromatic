@@ -1,0 +1,6 @@
+{
+  "name": "@monochromatic-dev/audit-oph-common-look-and-feel",
+  "private": true,
+  "type": "module",
+  "description": "Common Look and Feel audit of ottawapublichealth.ca with design tokens, component inventory, and web component recreations"
+}

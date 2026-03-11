@@ -16,13 +16,13 @@ import { serializePageData } from "./layout.ts";
  * @param taskId - Task UUID from the route parameter
  * @returns HTML response, or 404 when the task does not exist
  */
-export function taskDetailsPage(taskId: string): Response {
-  const task = getTaskById(taskId);
+export async function taskDetailsPage(taskId: string): Promise<Response> {
+  const task = await getTaskById(taskId);
   if (task === null) {
     return new Response("Task not found", { status: 404 });
   }
 
-  const blockerCandidates = listTasksForBlockerPicker(taskId);
+  const blockerCandidates = await listTasksForBlockerPicker(taskId);
   const blockerCandidatesById = Object.fromEntries(blockerCandidates.map((candidate) => [candidate.id, candidate]));
   const blockerSummaries = task.blockedBy
     .map((blockerId) => blockerCandidatesById[blockerId])

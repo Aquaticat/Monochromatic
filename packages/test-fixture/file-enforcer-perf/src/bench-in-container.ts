@@ -14,6 +14,7 @@ import { tmpdir, } from 'node:os';
 import { join, resolve, } from 'node:path';
 
 import { invalidatePaths, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
+import spawn from 'nano-spawn';
 
 //region Resource limit validation
 
@@ -64,12 +65,7 @@ if (!memoryValid) {
 //region Sysbench CPU baseline comparison
 
 console.error('[container] running sysbench cpu...');
-const sysbenchProc = Bun.spawn(['sysbench', 'cpu', '--threads=1', 'run'], {
-  stdout: 'pipe',
-  stderr: 'pipe',
-});
-const sysbenchStdout = await new Response(sysbenchProc.stdout).text();
-await sysbenchProc.exited;
+const { stdout: sysbenchStdout } = await spawn('sysbench', ['cpu', '--threads=1', 'run']);
 
 const sysbenchMatch = /events per second:\s+([\d.]+)/.exec(sysbenchStdout);
 const sysbenchEventsPerSec = sysbenchMatch !== null && sysbenchMatch[1] !== undefined
