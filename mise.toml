@@ -2,7 +2,11 @@
 
 # mise configuration - replaces proto and moon
 # https://mise.jdx.dev/configuration.html
-# TODO: Document `mise trust`
+# After cloning, run `mise trust` to mark this file as trustworthy.
+# Mise refuses to evaluate env vars, templates, and `path:` plugin versions
+# in untrusted config files. Trusting the monorepo root implicitly trusts
+# all descendant config files (packages/**/mise.toml).
+# https://mise.jdx.dev/cli/trust.html
 
 # Enables monorepo task discovery: tasks in subdirectories are auto-discovered
 # and prefixed with their relative paths, creating a unified task namespace.

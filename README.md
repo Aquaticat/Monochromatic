@@ -1,112 +1,187 @@
 # Monochromatic
 
-A TypeScript monorepo ecosystem for modern web development.
+A TypeScript monorepo (48 packages) for web applications, design systems,
+developer tooling, and AI integrations.
 
-## Task Runner: Mise
+## Highlights
 
-This project uses [Mise](https://mise.jdx.dev/) as the task runner.
-Don't use npm scripts directly.
+**Minimal MCP server** --
+[`mcp-stdio`](packages/mcp/stdio/) implements the Model Context Protocol
+in 800 lines with zero runtime dependencies.
+The official `@modelcontextprotocol/sdk` pulls 5.8 MB and 17 dependencies
+(Express, Hono, jose, OAuth, rate limiting, SSE);
+this package implements only JSON-RPC 2.0, initialization handshake,
+`tools/list`, `tools/call`, and `ping`.
 
-All tasks must be run through Mise commands:
-- `mise run test` (correct)
-- `mise run build` (correct)
-- `npm run test` (incorrect)
-- `pnpm test` (incorrect)
+**Inference canary** --
+[`inference-canary`](packages/dev-script/inference-canary/) runs five
+code-generation probes (CSV parser, expression evaluator, CSS mixin transpiler,
+stack interpreter, task scheduler) against 8 LLM models in parallel.
+Each probe executes inside a locked-down Podman container (no network,
+read-only filesystem, 256 MB memory, 15 s timeout) and scores across
+correctness, lint quality (oxlint), and type safety (tsgo).
+Statistical threshold detection (mean - 2*stddev) flags model degradation
+before it affects development.
 
-## What's Inside
+**Security-audited dependency selection** --
+[`AUDIT.md`](AUDIT.md) documents source-code audits with dates and verdicts
+for every non-trivial dependency.
+Framework selection rejected Elysia after discovering an RCE vulnerability chain
+through `new Function()` code generation
+([GHSA-8vch-m3f4-q8jf](https://github.com/advisories/GHSA-8vch-m3f4-q8jf))
+and measuring a 45x performance regression (3,853 vs 175,951 req/s)
+when AOT compilation was disabled.
+See [`PHILOSOPHY.tool-choices.md`](PHILOSOPHY.tool-choices.md) for the full
+analysis of h3 vs Elysia vs Hono.
 
-- **Development Configurations**: Shareable ESLint, TypeScript, Vite configs
-- **Functional Utilities**: Pure functions library with dual Node/browser builds
-- **CSS Framework**: Monochromatic design system
-- **Documentation**: Astro-powered documentation sites
-- **Figma Plugin**: Design system integration tools
+**Custom Oxlint plugins** --
+[`oxlint-tsdoc`](packages/config/oxlint-tsdoc/) enforces TSDoc correctness
+across 20+ rules with 23 fixture-based tests, replacing the slow
+ESLint + eslint-plugin-jsdoc integration.
+[`oxlint-no-restricted-syntax`](packages/config/oxlint-no-restricted-syntax/)
+encodes 13 monorepo-specific AST rules (no arrow functions, no switch statements,
+require destructured params for 2+ args) that Oxlint's lack of AST selectors
+demands as dedicated rule implementations.
 
-## Initial Setup
+**Monorepo-aware CSS build tool** --
+[`build-tool-css`](packages/build-tool/css/) resolves `@import` through
+`package.json` exports mappings and `node_modules`, processes custom
+`@mixin`/`@apply` syntax, and generates CSS strings for Shadow DOM injection
+-- all without native binaries.
 
-After cloning, you'll see this warning on first `cd`:
+**OpenTofu firewall automation** --
+[`config-tofu`](packages/config/tofu/) dynamically aggregates CIDR ranges
+from 7 CDN sources (Cloudflare, CloudFront, Fastly, GitHub, YouTube,
+Ubuntu ASN, Coolify), summarizes them to minimize Hetzner firewall rule count,
+and caches ASN lookups for 30 days with graceful fallback to expired cache
+on fetch failure.
 
-```txt
-mise WARN  missing: bun@x.x.x pnpm@x.x.x ...
-mise WARN  error executing hook: No such file or directory (os error 2)
+**Custom typeface from SVG geometry** --
+[`typeface-aquaticat`](packages/typeface/aquaticat/) parses a master glyph strip
+SVG, expands stroked outlines into filled contours using polygon offset math,
+assembles an OpenType font via opentype.js, and converts to WOFF2 through
+fonttools.
+
+## Initial setup
+
+### Prerequisites
+
+Install [Mise](https://mise.jdx.dev/) (task runner and tool version manager).
+All other tools (Bun, Node, dprint, etc.) are installed automatically by Mise.
+
+### Clone and bootstrap
+
+```sh
+git clone https://github.com/Aquaticat/Monochromatic.git
+cd Monochromatic
 ```
 
-**This is expected.**
-The `enter` hook uses nushell, which mise needs to install first.
+On first entry, Mise will warn about missing tools and an `enter` hook error
+because nushell is not installed yet. This is expected. Run manually once:
 
-Run manually once:
-
-```bash
+```sh
 mise install
 ```
 
-After this, subsequent directory entries will work normally.
+Then trust the configuration so Mise evaluates environment variables and templates:
 
-Then run project setup and build:
+```sh
+mise trust
+```
 
-```bash
+Trusting the monorepo root implicitly trusts all descendant `mise.toml` files
+under `packages/`. See [mise trust docs](https://mise.jdx.dev/cli/trust.html)
+for details on what this enables and why it is required.
+
+Finally, install dependencies and build all packages:
+
+```sh
 mise run prepareAndBuild
 ```
 
-## Essential Commands
+Subsequent directory entries trigger the `enter` hook automatically, which runs
+`mise install` and `mise upgrade` to keep tools current.
 
-### Building
-```bash
-# Build everything
+## Essential commands
+
+All builds and tasks use `mise run`. Never invoke raw tools (`tsc`, `tsdown`,
+`bun test`, `oxlint`) or package manager scripts (`npm run`, `pnpm exec`) directly.
+
+```sh
+# Build all packages
 mise run build
 
-# Build and watch (development)
-mise run build--watch
-```
-
-### Testing
-```bash
-# Run all tests (from workspace root only)
+# Run all tests (unit + browser + e2e)
 mise run test
 
-# Unit tests with coverage
-mise run test:unit
-
-# Test specific file
-mise run test:unit -- packages/module/es/src/boolean.equal.unit.test.ts
-
-# Browser tests
-mise run test:browser -- packages/module/es/src/boolean.equal.browser.test.ts
-```
-
-### Development Workflow
-```bash
-# Build + test together
+# Build then test (use this after editing source)
 mise run buildAndTest
 
-# Full dev mode (build + test watch)
-mise run buildAndTest--watch
+# Build and test a specific file
+mise run buildAndTest -- packages/module/es/src/boolean.equal.unit.test.ts
+
+# Format all files
+mise run format
+
+# Full validation: format, build, test
+mise run validate
+
+# Watch mode
+mise run watch:build
+mise run watch:test
 ```
 
-## Project Structure
+Run a task in a specific package with the monorepo path prefix:
 
-```txt
+```sh
+mise run //packages/module/es:test
+mise run //packages/webapp-productivity/done:build
+```
+
+## Project structure
+
+```
 packages/
-├── config/              # Tool configurations
-├── module/es/           # Functional utilities
-├── style/monochromatic/ # CSS framework
-├── site/astro-test/     # Documentation
-├── figma-plugin/        # Figma tools
-└── build/               # Build utilities
+  audit/                    Compliance audits (oph-common-look-and-feel)
+  build-tool/               Build tooling (CSS processor)
+  claude-code-plugins/      Claude Code IDE plugins (7 packages)
+  cli/                      CLI tools (mvm -- KVM virtual machine manager)
+  config/                   Shared configurations (dprint, eslint, oxlint,
+                              stylelint, tofu, tsdown, typescript, vite)
+  desktop-daemon/           Background services (hall-monitor)
+  dev-script/               Developer utilities (file-enforcer, inference-canary,
+                              catalog-tighten, backup-path)
+  mcp/                      Model Context Protocol servers (stdio, nvim, mvm)
+  media-renderer/           Animation rendering (motion-canvas-beachball)
+  module/                   Core libraries (es -- functional utilities)
+  rolldown-plugins/         Rolldown/tsdown plugins (import-attributes)
+  runtime-error/            Runtime error reproductions (bun)
+  stylesheet/               Design system (monochromatic CSS framework)
+  test-fixture/             Test fixtures for CSS imports and oxlint rules
+  typeface/                 Custom fonts (aquaticat geometric typeface)
+  webapp-content/           Content sites (astro-test)
+  webapp-productivity/      Productivity apps (done, flashcard quiz, rss)
+  webapp-search/            Search apps (ai-tree, exa-search)
 ```
 
-## Technical Stack
+## Technical stack
 
-- **Task Runner**: Mise (calls pnpm automatically)
-- **Package Manager**: pnpm (with `catalog:` and non-native modules)
-- **Bundler**: Vite (rolldown-vite)
-- **Language**: TypeScript (non-native beta)
-- **Testing**: Vitest (also uses rolldown-vite under the hood)
+- **Task runner**: [Mise](https://mise.jdx.dev/) with nushell for cross-platform task execution
+- **Runtime**: [Bun](https://bun.sh/) (migrating away from Bun-specific APIs toward Node.js standards)
+- **Package manager**: Bun workspaces with `catalog:` dependency management
+- **Bundler**: [tsdown](https://tsdown.dev/) (Rolldown-based, replacing Vite for library builds)
+- **Language**: TypeScript with `tsgo` for type checking
+- **Linters**: ESLint, Oxlint, Stylelint, Harper (prose)
+- **Formatter**: dprint (orchestrates all formatters including oxlint and eslint auto-fix)
+- **Testing**: Bun test runner for unit tests, Playwright in Podman for browser and e2e tests
+- **HTTP framework**: [h3](https://h3.dev/) for server applications
+- **Infrastructure**: OpenTofu, Hetzner Cloud, Caddy, Podman
 
-## Dropping Windows as a development platform
+## Platform support
 
-Some tools aren't available on Windows:
+Development targets Linux (Fedora). Use WSL2 on Windows -- some tools
+(e.g. Zellij) have no native Windows support.
 
-- Zellij
+## License
 
-Use WSL2 when developing on Windows.
-The recommended WSL distro is Arch Linux or Debian or Ubuntu.
+[Apache-2.0](LICENSE)
