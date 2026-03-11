@@ -17,7 +17,7 @@ extends = "watch:build"
 run = [{ tasks = ["watch:build:site:*"] }]
 
 [tasks."watch:build:site:css"]
-run = "bun ../../build-tool/css/src/cli.ts src/styles/main.css dist/bundle.css --watch"
+run = "mise watch -w src/styles --exts css -r -- bun ../../build-tool/css/src/cli.ts src/styles/main.css dist/bundle.css"
 
 [tasks."watch:build:site:astro"]
 run = "bun exec astro build --watch"

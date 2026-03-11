@@ -1,6 +1,6 @@
 [tasks.dev]
 description = "Start RSS reader in watch mode"
-run = "bun --watch src/index.ts"
+run = "mise watch -w src -r -- bun src/index.ts"
 
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"

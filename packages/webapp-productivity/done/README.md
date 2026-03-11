@@ -10,11 +10,11 @@ There is no `build` command to run first, no `dist/` to check in, and no way to 
 
 This is a deliberate architectural choice, not a missing feature.
 The build pipeline (build-css, `Bun.build()`) executes at startup every time, so the running server always reflects the current source.
-In development, `bun --watch src/server.ts` restarts the process on any file change, which re-runs the full pipeline automatically.
+In development, `mise run dev:site` uses `mise watch` to restart the process on any source change, which re-runs the full pipeline automatically.
 
 ```
-bun src/server.ts           # production
-bun --watch src/server.ts   # development (auto-restart on change)
+bun src/server.ts    # production
+mise run dev:site    # development (auto-restart on src/ change via mise watch)
 ```
 
 The `--build-only` flag exists for CI type-checking; it runs the pipeline then exits without starting the server.

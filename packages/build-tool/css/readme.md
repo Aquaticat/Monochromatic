@@ -21,7 +21,6 @@ See [TROUBLESHOOTING.css-tooling.md](../../../TROUBLESHOOTING.css-tooling.md) fo
 
 ```bash
 bun packages/build/css/src/index.ts src/main.css dist/bundle.css
-bun packages/build/css/src/index.ts src/main.css dist/bundle.css --watch
 ```
 
 ### Programmatic
@@ -125,7 +124,7 @@ import { applyMixins } from '@monochromatic-dev/build-css/ts';
 
 | File | Purpose |
 |------|---------|
-| `index.ts` | CLI entry point with argument parsing and watch mode |
+| `index.ts` | CLI entry point with argument parsing |
 | `build.ts` | Orchestrates the full pipeline; exports `build()` and `applyMixins()` |
 | `import.ts` | Custom PostCSS `@import` plugin with monorepo-aware resolution |
 | `mixin.ts` | `collectMixins` and `expandApplyRules` (PostCSS walkers) |

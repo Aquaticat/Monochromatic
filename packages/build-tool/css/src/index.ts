@@ -23,8 +23,6 @@ export type BuildOptions = {
   input: string;
   /** Output CSS file path */
   output: string;
-  /** Enable watch mode */
-  watch?: boolean;
 };
 
 //endregion Types
