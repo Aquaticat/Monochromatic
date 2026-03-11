@@ -36,7 +36,7 @@ describe($, () => {
   test('delete removes an entry', async () => {
     const store = await $({ storeId: 'delete-test', },);
     await store.set('to-delete', 'value',);
-    expect(await store.get('to-delete',),).toBe('value',);
+    expect(await store.get<string>('to-delete',),).toBe('value',);
     await store.delete('to-delete',);
     expect(await store.get('to-delete',),).toBeUndefined();
   });
@@ -130,7 +130,7 @@ describe($, () => {
     const store = await $({ storeId: 'complex', },);
     const complex = { arr: [1, 2, 3,], nested: { deep: true, }, };
     await store.set('complex', complex,);
-    expect(await store.get('complex',),).toEqual(complex,);
+    expect(await store.get<typeof complex>('complex',),).toEqual(complex,);
   });
 
   test('LRU eviction removes oldest entry at capacity', async () => {

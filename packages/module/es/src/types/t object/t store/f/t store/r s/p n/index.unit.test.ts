@@ -36,7 +36,7 @@ describe($, () => {
   test('delete removes an entry', () => {
     const store = $({ storeId: 'delete-test', },);
     store.set('to-delete', 'value',);
-    expect(store.get('to-delete',),).toBe('value',);
+    expect(store.get<string>('to-delete',),).toBe('value',);
     store.delete('to-delete',);
     expect(store.get('to-delete',),).toBeUndefined();
   });
@@ -143,7 +143,7 @@ describe($, () => {
     const store = $({ storeId: 'complex', },);
     const complex = { arr: [1, 2, 3,], nested: { deep: true, }, };
     store.set('complex', complex,);
-    expect(store.get('complex',),).toEqual(complex,);
+    expect(store.get<typeof complex>('complex',),).toEqual(complex,);
   });
 
   test('LRU eviction removes oldest entry at capacity', () => {

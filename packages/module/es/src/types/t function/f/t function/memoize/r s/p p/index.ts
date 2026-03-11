@@ -36,5 +36,5 @@ export function $<
   keyFn: (this: void, ...args: TArgs) => string,
   store?: SyncStore,
 ): MemoizedFunction<TArgs, TReturn> {
-  return named({ fn, keyFn, store, },);
+  return named({ fn, keyFn, ...(store !== undefined ? { store, } : {}), },);
 }

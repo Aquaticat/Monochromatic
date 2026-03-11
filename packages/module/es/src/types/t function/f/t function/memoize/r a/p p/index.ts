@@ -36,5 +36,5 @@ export async function $<
   keyFn: (this: void, ...args: TArgs) => string,
   store?: Store,
 ): Promise<MemoizedAsyncFunction<TArgs, TReturn>> {
-  return await named({ fn, keyFn, store, },);
+  return await named({ fn, keyFn, ...(store !== undefined ? { store, } : {}), },);
 }

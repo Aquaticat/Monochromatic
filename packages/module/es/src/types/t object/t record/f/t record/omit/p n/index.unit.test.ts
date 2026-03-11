@@ -50,6 +50,7 @@ describe($, () => {
     const user = { id: 1, name: 'Alice', };
     expect(() => $({
       original: user,
+      // @ts-expect-error -- intentionally passing non-existent key to test runtime error
       toOmit: new Set(['nonexistent',] as const,),
     },),).toThrow('Key not found in iterable: nonexistent',);
   });

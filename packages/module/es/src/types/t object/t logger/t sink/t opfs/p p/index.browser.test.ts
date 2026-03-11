@@ -3,6 +3,12 @@ import {
   test,
 } from '@playwright/test';
 
+declare global {
+  interface Window {
+    moduleEs: typeof import('@monochromatic-dev/module-es');
+  }
+}
+
 test.describe('OPFS sink', () => {
   test.beforeEach(async ({ page, }) => {
     await page.goto('/');

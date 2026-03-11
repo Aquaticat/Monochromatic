@@ -3,7 +3,16 @@ import {
   expect,
   test,
 } from 'bun:test';
-import { $, } from './index.ts';
+import {
+  type CssDeclarations,
+  type CssValue,
+  $,
+  cssCompounded,
+  cssNum,
+  cssOklch,
+  cssRem,
+  cssVar,
+} from '@monochromatic-dev/module-es/h-css';
 
 const $$ = '$';
 
@@ -11,7 +20,7 @@ describe($$, () => {
   //region Style rules
 
   test('creates a simple rule with declarations', () => {
-    expect($({ rule: '.card', decls: { display: 'flex', gap: '1rem', }, }),).toBe(
+    expect($({ rule: '.card', decls: { display: 'flex', gap: cssRem(1,), }, }),).toBe(
       '.card{display:flex;gap:1rem}',
     );
   });
@@ -45,7 +54,7 @@ describe($$, () => {
       rule: '.card',
       decls: { display: 'flex', },
       children: [
-        $({ rule: '&:hover', decls: { opacity: '0.8', }, }),
+        $({ rule: '&:hover', decls: { opacity: cssNum(0.8,), }, }),
       ],
     }),).toBe('.card{display:flex;&:hover{opacity:0.8}}',);
   });
@@ -53,12 +62,12 @@ describe($$, () => {
   test('nests multiple children', () => {
     expect($({
       rule: '.btn',
-      decls: { padding: '0.5rem', },
+      decls: { padding: '0.5rem' as CssValue, },
       children: [
-        $({ rule: '&:hover', decls: { 'background-color': 'blue', }, }),
-        $({ rule: '&:focus-visible', decls: { outline: '2px solid', }, }),
+        $({ rule: '&:hover', decls: { 'background-color': cssOklch({ l: 0.45, c: 0.31, h: 264, },), }, }),
+        $({ rule: '&:focus-visible', decls: { outline: '2px solid' as CssValue, }, }),
       ],
-    }),).toBe('.btn{padding:0.5rem;&:hover{background-color:blue}&:focus-visible{outline:2px solid}}',);
+    }),).toBe('.btn{padding:0.5rem;&:hover{background-color:oklch(0.45 0.31 264)}&:focus-visible{outline:2px solid}}',);
   });
 
   test('nests children without parent declarations', () => {
@@ -77,11 +86,11 @@ describe($$, () => {
         $({
           rule: '& .b',
           children: [
-            $({ rule: '& .c', decls: { color: 'red', }, }),
+            $({ rule: '& .c', decls: { color: cssVar('fg',), }, }),
           ],
         }),
       ],
-    }),).toBe('.a{& .b{& .c{color:red}}}',);
+    }),).toBe('.a{& .b{& .c{color:var(--fg)}}}',);
   });
 
   //endregion
@@ -113,7 +122,7 @@ describe($$, () => {
       at: 'scope',
       params: '(.card)',
       children: [
-        $({ rule: '.title', decls: { 'font-size': '1.5rem', }, }),
+        $({ rule: '.title', decls: { 'font-size': cssRem(1.5,), }, }),
       ],
     }),).toBe('@scope (.card){.title{font-size:1.5rem}}',);
   });
@@ -228,21 +237,21 @@ describe($$, () => {
   //region Composition patterns (mixin replacement)
 
   test('composes declarations via object spread', () => {
-    function flexCenter(): Record<string, string> {
+    function flexCenter(): CssDeclarations {
       return { display: 'flex', 'align-items': 'center', 'justify-content': 'center', };
     }
 
-    expect($({ rule: '.hero', decls: { ...flexCenter(), gap: '2rem', }, }),).toBe(
+    expect($({ rule: '.hero', decls: { ...flexCenter(), gap: cssRem(2,), }, }),).toBe(
       '.hero{display:flex;align-items:center;justify-content:center;gap:2rem}',
     );
   });
 
   test('composes parameterized declarations', () => {
-    function touchTarget({ size = '48px', }: { size?: string; } = {},): Record<string, string> {
+    function touchTarget({ size = '48px' as CssValue, }: { size?: CssValue; } = {},): CssDeclarations {
       return { 'min-inline-size': size, 'min-block-size': size, };
     }
 
-    expect($({ rule: '.btn', decls: { ...touchTarget({ size: '44px', }), cursor: 'pointer', }, }),).toBe(
+    expect($({ rule: '.btn', decls: { ...touchTarget({ size: '44px' as CssValue, }), cursor: 'pointer', }, }),).toBe(
       '.btn{min-inline-size:44px;min-block-size:44px;cursor:pointer}',
     );
   });
@@ -290,13 +299,13 @@ describe($$, () => {
       decls: {
         display: 'flex',
         'flex-direction': 'column',
-        gap: 'var(--gap-md)',
-        'border-radius': '0.5rem',
+        gap: cssVar('gap-md',),
+        'border-radius': cssRem(0.5,),
       },
       children: [
-        $({ rule: '&:hover', decls: { 'box-shadow': '0 2px 8px oklch(0 0 0 / 0.1)', }, }),
-        $({ rule: '&:focus-visible', decls: { outline: '2px solid var(--color-accent)', }, }),
-        $({ rule: '& > .title', decls: { 'font-size': '1.25rem', 'font-weight': '600', }, }),
+        $({ rule: '&:hover', decls: { 'box-shadow': cssCompounded([0, '2px' as CssValue, '8px' as CssValue, cssOklch({ l: 0, c: 0, h: 0, a: 0.1, },),],), }, }),
+        $({ rule: '&:focus-visible', decls: { outline: cssCompounded(['2px' as CssValue, 'solid', cssVar('color-accent',),],), }, }),
+        $({ rule: '& > .title', decls: { 'font-size': cssRem(1.25,), 'font-weight': 600, }, }),
       ],
     });
     expect(result,).toBe(

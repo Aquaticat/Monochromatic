@@ -31,7 +31,7 @@ import { createLruKeySet, } from '../../../../lruKeySet.ts';
 async function queryAllBackends(
   backends: readonly [StorageBackend, ...StorageBackend[],],
   key: string,
-): Promise<[BackendResult, ...BackendResult[],]> {
+): Promise<[BackendResult<StorageBackend>, ...BackendResult<StorageBackend>[],]> {
   const results = await Promise.all(
     backends.map(async function queryBackend(backend,) {
       const raw = await backend.get(key,);
@@ -42,7 +42,7 @@ async function queryAllBackends(
       };
     },),
   );
-  return results as [BackendResult, ...BackendResult[],];
+  return results as [BackendResult<StorageBackend>, ...BackendResult<StorageBackend>[],];
 }
 
 /**
