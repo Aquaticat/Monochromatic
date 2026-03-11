@@ -24,7 +24,15 @@ export const CONTAINER_IMAGE = 'docker.io/oven/bun:1.3';
 //region Runtime detection -- uses `which` to locate executables on PATH
 
 /**
- * Checks whether a binary exists on PATH using the `which` command.
+ * Lookup command for finding executables on PATH.
+ * `where.exe` on Windows, `which` everywhere else.
+ */
+const WHICH_CMD = process.platform === 'win32' ? 'where.exe' : 'which';
+
+/**
+ * Checks whether a binary exists on PATH.
+ *
+ * Uses `where.exe` on Windows and `which` on Unix.
  *
  * @param name - binary name to search for
  * @returns absolute path to the binary, or null if not found
@@ -36,7 +44,8 @@ export const CONTAINER_IMAGE = 'docker.io/oven/bun:1.3';
  */
 function whichSync(name: string): string | null {
   try {
-    return execFileSync('which', [name], { encoding: 'utf-8' }).trim();
+    // `where.exe` may return multiple lines; take the first match
+    return execFileSync(WHICH_CMD, [name], { encoding: 'utf-8' }).trim().split('\n')[0]!.trim();
   } catch {
     return null;
   }
