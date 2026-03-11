@@ -11,11 +11,9 @@ Issues related to TypeScript configuration, ESLint, dprint, and other developmen
 - Stylelint and postcss-html resolution
 - Type predicate assignment errors with complex conditional types
 
-### [Testing & Vitest](TROUBLESHOOTING.testing.md)
-Problems with testing setup and Vitest configuration:
-- Vitest UI port binding issues on Windows
-- Duplicate describe blocks causing missing test output
-- Vitest dependency resolution problems
+### [Testing](TROUBLESHOOTING.testing.md)
+Problems with test execution and test suite organization:
+- Duplicate describe blocks causing missing or misattributed test output
 - Test suite organization best practices
 
 ### [Editor Setup](TROUBLESHOOTING.editors.md)
@@ -83,7 +81,7 @@ VSCode-specific troubleshooting (already exists):
 
 For common issues:
 - **Slow builds?** → [Build performance](TROUBLESHOOTING.performance.build.md)
-- **Test failures not showing?** → [Duplicate describe blocks](TROUBLESHOOTING.testing.md#vitest-missing-assertions-or-console-output-with-duplicate-describe-blocks)
+- **Test failures not showing?** → [Duplicate describe blocks](TROUBLESHOOTING.testing.md#duplicate-describe-blocks-causing-missing-or-misattributed-test-output)
 - **Fresh clone fails?** → [Build order dependencies](TROUBLESHOOTING.vite.md#vite-config-build-order-in-mise)
 - **TypeScript path warnings?** → [dprint configuration](TROUBLESHOOTING.typescript.md#typescript-path-warnings-with-dprint)
 - **`Cannot find name` for DOM types in a non-browser package?** → [All packages must extend config-typescript/dom](TROUBLESHOOTING.typescript.md#all-packages-must-extend-config-typescriptdom)
