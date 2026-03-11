@@ -9,7 +9,7 @@ error: GET https://npm.jsr.io/@jsr%2fzod__zod - 502
 error: zod@catalog: failed to resolve
 ```
 
-Every JSR-hosted package (`@logtape/*`, `@optique/*`, `@cspotcode/outdent`, `@kazupon/gunshi`, `zod`) fails with 502 Bad Gateway.
+Every JSR-hosted package (`@logtape/*`, `@optique/*`, `@cspotcode/outdent`, `zod`) fails with 502 Bad Gateway.
 Non-JSR packages resolve fine.
 `curl https://npm.jsr.io/@jsr/zod__zod` returns 200.
 

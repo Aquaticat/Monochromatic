@@ -1,0 +1,29 @@
+{
+  "name": "@monochromatic-dev/dev-script-task-util",
+  "description": "CLI utilities for mise task orchestration: command executor with allowFailure support and file append helper.",
+  "type": "module",
+  "private": true,
+  "main": "src/command.ts",
+  "bin": {
+    "task-command": "src/command.ts",
+    "task-append": "src/append.ts"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  },
+  "dependencies": {
+    "@cspotcode/outdent": "catalog:",
+    "@optique/core": "catalog:",
+    "@optique/run": "catalog:",
+    "nano-spawn": "catalog:",
+    "ts-pattern": "catalog:"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/dev-script/task-util"
+  },
+  "sideEffects": true
+}

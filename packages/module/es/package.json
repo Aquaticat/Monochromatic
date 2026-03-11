@@ -42,7 +42,6 @@
     "@logtape/file": "catalog:",
     "serialize-error": "catalog:",
     "lfi": "catalog:",
-    "@kazupon/gunshi": "catalog:",
     "nano-spawn": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
     "ts-pattern": "catalog:",

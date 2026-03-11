@@ -1,7 +1,3 @@
-import {
-  logtapeConfiguration,
-  logtapeConfigure,
-} from '@monochromatic-dev/module-es';
 import { findUp, } from 'find-up';
 import { exec, } from 'node:child_process';
 import {
@@ -23,8 +19,6 @@ import {
   expect,
   test,
 } from 'bun:test';
-
-await logtapeConfigure(await logtapeConfiguration(),);
 
 const execAsync = promisify(exec,);
 
@@ -52,7 +46,7 @@ let testScript: string;
 beforeEach(async () => {
   // cliPath fixture
   const testFileDir = import.meta.dirname;
-  cliPath = join(testFileDir, 'cli.command.ts',);
+  cliPath = join(testFileDir, 'command.ts',);
 
   // testDir fixture
   const packageJsonPath = await findUp('package.json', { cwd: testFileDir, },);
@@ -85,7 +79,7 @@ afterEach(() => {
 
 //endregion Fixture Setup
 
-describe('cli.command', () => {
+describe('task-command', () => {
   test('executes command successfully with exit code 0', async () => {
     const { stdout, stderr, } = await execAsync(
       `bun ${cliPath} -- node ${testScript} success`,

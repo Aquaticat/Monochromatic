@@ -1,7 +1,3 @@
-import {
-  logtapeConfiguration,
-  logtapeConfigure,
-} from '@monochromatic-dev/module-es';
 import { findUp, } from 'find-up';
 import { exec, } from 'node:child_process';
 import {
@@ -26,8 +22,6 @@ import {
   test,
 } from 'bun:test';
 
-await logtapeConfigure(await logtapeConfiguration(),);
-
 const execAsync = promisify(exec,);
 
 //region Fixture Setup -- Per-test fixtures replacing vitest test.extend
@@ -39,7 +33,7 @@ let testFile: string;
 beforeEach(async () => {
   // cliPath fixture
   const testFileDir = import.meta.dirname;
-  cliPath = join(testFileDir, 'cli.append.ts',);
+  cliPath = join(testFileDir, 'append.ts',);
 
   // testDir fixture
   const packageJsonPath = await findUp('package.json', { cwd: testFileDir, },);
@@ -72,7 +66,7 @@ afterEach(() => {
 
 //endregion Fixture Setup
 
-describe('cli.append', () => {
+describe('task-append', () => {
   test('appends single line to existing file', async () => {
     const { stdout, stderr, } = await execAsync(
       `bun ${cliPath} "new line" --to ${testFile}`,

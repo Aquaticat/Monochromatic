@@ -121,7 +121,6 @@
       "@eslint/js": ">=10.0.1",
       "@eslint/plugin-kit": ">=0.6.0",
       "@fxts/core": ">=0.29.0",
-      "@kazupon/gunshi": "npm:@jsr/kazupon__gunshi@*",
       "@logtape/file": "npm:@jsr/logtape__file@>=2.0.2",
       "@logtape/logtape": "npm:@jsr/logtape__logtape@>=2.0.2",
       "@mastra/core": "*",

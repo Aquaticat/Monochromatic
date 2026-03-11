@@ -1,0 +1,133 @@
+#!/usr/bin/env bun
+
+/**
+ * Command executor wrapper for mise tasks.
+ *
+ * This script works around task runner limitations where tasks with `allowFailure: true`
+ * can't be dependencies.
+ *
+ * By wrapping commands in this executor, we can control exit codes while still
+ * showing all output and errors to the user.
+ *
+ * Usage:
+ *   task-command --allowFailure -- eslint --cache  # Always exits with 0
+ *   task-command -- eslint --cache                 # Exits with command's exit code
+ *
+ * The `--` separator is required to distinguish script args from command args.
+ *
+ * @example
+ * ```bash
+ * # Always exit with 0
+ * task-command --allowFailure -- eslint --cache
+ *
+ * # Exit with command's exit code
+ * task-command -- eslint --cache
+ *
+ * # Execute through shell
+ * task-command --shell -- "echo hello && echo world"
+ *
+ * # Execute with timeout of 5 seconds
+ * task-command --timeout 5000 -- npm test
+ * ```
+ */
+
+import { outdent, } from '@cspotcode/outdent';
+import { object, } from '@optique/core/constructs';
+import {
+  multiple,
+  optional,
+} from '@optique/core/modifiers';
+import {
+  argument,
+  option,
+} from '@optique/core/primitives';
+import {
+  integer,
+  string,
+} from '@optique/core/valueparser';
+import { runSync, } from '@optique/run';
+import spawn from 'nano-spawn';
+import { match, } from 'ts-pattern';
+
+export {};
+
+//region Parser definition -- defines CLI flags and rest arguments after --
+
+/** Optique parser for the task-command CLI */
+const parser = object({
+  allowFailure: option('-a', '--allowFailure',),
+  shell: option('-s', '--shell',),
+  timeout: optional(option('-t', '--timeout', integer(),),),
+  rest: multiple(argument(string(),),),
+},);
+
+//endregion Parser definition
+
+/** Parsed CLI arguments from process.argv */
+const args = runSync(parser, { programName: 'task-command', help: 'option', },);
+
+const [command, ...commandArgs] = args.rest;
+
+if (!command) {
+  throw new Error(
+    outdent`
+      No command specified after --
+      ${JSON.stringify(args, null, 2,)}
+    `,
+  );
+}
+
+try {
+  // Execute the command with nano-spawn
+  await spawn(command, commandArgs, {
+    stdout: 'inherit',
+    stderr: 'inherit',
+    stdin: 'inherit',
+    shell: args.shell,
+    timeout: typeof args.timeout === 'number' ? args.timeout : undefined,
+  },);
+
+  // Script ends naturally with exit code 0
+}
+catch (error) {
+  // nano-spawn throws SubprocessError when the process fails
+  match(error,)
+    .when(
+      (
+        error,
+      ): error is { exitCode?: number; signalName?: string; message: string; } =>
+        error !== null && typeof error === 'object' && 'exitCode' in error,
+      subprocessError => {
+        match(subprocessError.signalName,)
+          .when(
+            (signal,): signal is string => signal !== undefined,
+            signal => {
+              console.error(`Command terminated by signal: ${signal}`,);
+            },
+          );
+
+        // Exit with 0 if allowFailure is true, otherwise use the command's exit code
+        match(args.allowFailure,)
+          .with(false, () => {
+            process.exitCode = subprocessError.exitCode ?? 1;
+          },)
+          .with(true, () => {
+            // Let script end naturally with exit code 0
+          },);
+      },
+    )
+    .otherwise(() => {
+      console.error(
+        `Failed to execute command: ${
+          error instanceof Error ? error.message : String(error,)
+        }`,
+      );
+      match(args.allowFailure,)
+        .with(false, () => {
+          throw error;
+        },)
+        .with(true, () => {
+          // Let script end naturally with exit code 0
+        },);
+    },);
+}

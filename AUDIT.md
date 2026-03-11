@@ -40,7 +40,6 @@ Dependencies excluded from full source code audit, with rationale.
 - **astro** — Will be replaced with a simpler SSG
 - **@astrojs/mdx** — Will be removed with astro
 - **exa-js** — To be replaced by linkup.so
-- **@kazupon/gunshi** - To be replaced by @optique/*
 - **`@logtape/*`** - To be replaced by our custom logger
 
 ## Audited
