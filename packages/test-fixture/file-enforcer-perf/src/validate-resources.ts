@@ -8,6 +8,7 @@
  *   Container: podman run ... bun validate-resources.ts
  */
 
+import { createHash } from 'node:crypto';
 import { readFile, } from 'node:fs/promises';
 import { resolve, } from 'node:path';
 
@@ -73,7 +74,7 @@ const serialStart = performance.now();
 let serialAccumulator = 0;
 // Imperative loop required: sequential hash computation for timing accuracy.
 for (let hashIndex = 0; hashIndex < SERIAL_HASH_COUNT; hashIndex++) {
-  const hasher = new Bun.CryptoHasher('sha256');
+  const hasher = createHash('sha256');
   hasher.update(`benchmark-serial-${String(hashIndex)}`);
   serialAccumulator += hasher.digest('hex').length;
 }
@@ -93,11 +94,12 @@ const WORKER_COUNT = 8;
 /** SHA-256 hashes per worker */
 const HASHES_PER_WORKER = 50_000;
 
-/** Inline bun script executed by each worker process */
+/** Inline script executed by each worker process using node:crypto */
 const workerScript = [
+  'const { createHash } = require("node:crypto");',
   'let acc = 0;',
   `for (let i = 0; i < ${String(HASHES_PER_WORKER)}; i++) {`,
-  '  const h = new Bun.CryptoHasher("sha256");',
+  '  const h = createHash("sha256");',
   '  h.update("parallel-" + String(i));',
   '  acc += h.digest("hex").length;',
   '}',
@@ -108,7 +110,7 @@ console.error(`[validate] parallel CPU: ${String(WORKER_COUNT)} workers * ${Stri
 const parallelStart = performance.now();
 await Promise.all(
   Array.from({ length: WORKER_COUNT }, async () => {
-    await spawn('bun', ['-e', workerScript]);
+    await spawn(process.execPath, ['-e', workerScript]);
   }),
 );
 const parallelMs = performance.now() - parallelStart;

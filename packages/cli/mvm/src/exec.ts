@@ -130,7 +130,7 @@ export async function exec({ command, name }: { command: string; name: string })
     };
 
     if (!status.exited) {
-      await Bun.sleep(POLL_INTERVAL_MS);
+      await new Promise(function execPollDelay(resolve) { setTimeout(resolve, POLL_INTERVAL_MS); });
       continue;
     }
 

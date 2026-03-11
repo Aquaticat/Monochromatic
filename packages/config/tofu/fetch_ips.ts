@@ -1,4 +1,5 @@
-import { file, write } from "bun";
+import { readFile, stat, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { json } from "node:stream/consumers";
 
@@ -16,13 +17,11 @@ const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 const URL = `https://ipinfo.io/data/ipinfo_lite.json.gz?_src=frontend&token=${process.env.IPINFO_TOKEN}`;
 
 async function run() {
-  const cacheFile = file(CACHE_FILE);
-
   // Check Cache
-  if (await cacheFile.exists()) {
-    const stats = await cacheFile.lastModified;
-    if (Date.now() - stats < THIRTY_DAYS_MS) {
-      process.stdout.write(JSON.stringify({ ips: await cacheFile.text() }));
+  if (existsSync(CACHE_FILE)) {
+    const stats = await stat(CACHE_FILE);
+    if (Date.now() - stats.mtimeMs < THIRTY_DAYS_MS) {
+      process.stdout.write(JSON.stringify({ ips: await readFile(CACHE_FILE, "utf-8") }));
       return;
     }
   }
@@ -37,6 +36,7 @@ async function run() {
     let ips: string[] = [];
     let leftover = "";
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- streaming read loop
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -55,13 +55,13 @@ async function run() {
     }
 
     const result = ips.join(",");
-    await write(CACHE_FILE, result);
+    await writeFile(CACHE_FILE, result);
     process.stdout.write(JSON.stringify({ ips: result }));
 
   } catch (e) {
     // Fallback to expired cache if download fails
-    if (await cacheFile.exists()) {
-      process.stdout.write(JSON.stringify({ ips: await cacheFile.text() }));
+    if (existsSync(CACHE_FILE)) {
+      process.stdout.write(JSON.stringify({ ips: await readFile(CACHE_FILE, "utf-8") }));
     } else {
       process.exit(1);
     }

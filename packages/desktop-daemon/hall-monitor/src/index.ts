@@ -11,7 +11,7 @@ export {};
 const INTERVAL_MS = 5 * 60 * 1000;
 
 const { values: args } = parseArgs({
-  args: Bun.argv.slice(2),
+  args: process.argv.slice(2),
   options: { "kill-existing": { type: "boolean", default: false } },
 });
 
@@ -57,7 +57,7 @@ process.on("SIGTERM", shutdown);
   // Not needed because we don't allow configuring interval: defense-in-depth — add a floor (e.g. Math.max(INTERVAL_MS, 60_000))
   // so a misconfigured or zero interval cannot cause a tight spin loop.
   while (running) {
-    await Bun.sleep(INTERVAL_MS);
+    await new Promise(function intervalDelay(resolve) { setTimeout(resolve, INTERVAL_MS); });
     if (running) await cycle();
   }
 })();

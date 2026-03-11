@@ -67,7 +67,7 @@ async function writeWithProgress({ destPath, response, rl }: {
   // Poll file size in the background for progress reporting
   const progressLoop = (async () => {
     while (!done) {
-      await Bun.sleep(POLL_INTERVAL_MS);
+      await new Promise(function pollDelay(resolve) { setTimeout(resolve, POLL_INTERVAL_MS); });
       if (done) break;
       try {
         const { size } = await stat(destPath);

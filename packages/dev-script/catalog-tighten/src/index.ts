@@ -16,6 +16,7 @@
  */
 
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 
 export {};
@@ -220,8 +221,8 @@ let workspaceRootsCache: string[] | undefined;
  * Reads the installed version of a package from node_modules.
  * Tries resolution in this order:
  * 1. Root `node_modules/<name>/package.json`
- * 2. `Bun.resolveSync` from monorepo root
- * 3. `Bun.resolveSync` from each workspace package directory
+ * 2. `createRequire().resolve()` from monorepo root
+ * 3. `createRequire().resolve()` from each workspace package directory
  * 4. Bun store (`node_modules/.bun/`) directory name scan for transitive deps
  * @param npmName - npm package name to look up
  * @param monorepoRoot - absolute path to the monorepo root
@@ -239,9 +240,10 @@ function readInstalledVersion(npmName: string, monorepoRoot: string): string | u
     return version;
   }
 
-  // Try resolving from monorepo root via Bun
+  // Try resolving from monorepo root via createRequire
   try {
-    const resolved = Bun.resolveSync(`${npmName}/package.json`, monorepoRoot);
+    const require = createRequire(join(monorepoRoot, 'package.json'));
+    const resolved = require.resolve(`${npmName}/package.json`);
     const rootVersion = readVersionFromPackageJson(resolved);
     if (rootVersion !== undefined) {
       return rootVersion;
@@ -254,7 +256,8 @@ function readInstalledVersion(npmName: string, monorepoRoot: string): string | u
   const workspaceRoots = discoverWorkspaceRoots(monorepoRoot);
   for (const wsRoot of workspaceRoots) {
     try {
-      const resolved = Bun.resolveSync(`${npmName}/package.json`, wsRoot);
+      const require = createRequire(join(wsRoot, 'package.json'));
+      const resolved = require.resolve(`${npmName}/package.json`);
       const wsVersion = readVersionFromPackageJson(resolved);
       if (wsVersion !== undefined) {
         return wsVersion;

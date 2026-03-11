@@ -1,10 +1,11 @@
 /**
  * Container runtime detection and configuration constants.
  *
- * Detects podman (preferred) or docker synchronously using Bun.which, which
- * reads PATH without spawning a subprocess. Other container submodules import
- * the resolved CONTAINER_RUNTIME from here.
+ * Detects podman (preferred) or docker synchronously by checking PATH.
+ * Other container submodules import the resolved CONTAINER_RUNTIME from here.
  */
+
+import { execFileSync } from 'node:child_process';
 
 //region Configuration -- timeout, image tag, and buffer size shared by container-exec.ts
 
@@ -20,19 +21,36 @@ export const CONTAINER_IMAGE = 'docker.io/oven/bun:1.3';
 
 //endregion Configuration
 
-//region Runtime detection -- uses Bun.which to avoid spawning a subprocess just to find an executable
+//region Runtime detection -- uses `which` to locate executables on PATH
+
+/**
+ * Checks whether a binary exists on PATH using the `which` command.
+ *
+ * @param name - binary name to search for
+ * @returns absolute path to the binary, or null if not found
+ *
+ * @example
+ * ```ts
+ * whichSync('podman'); // => "/usr/bin/podman" or null
+ * ```
+ */
+function whichSync(name: string): string | null {
+  try {
+    return execFileSync('which', [name], { encoding: 'utf-8' }).trim();
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Detects whether podman or docker is available on the host.
  *
- * Uses synchronous `Bun.which` (reads PATH, no subprocess) rather than
- * spawning `which podman` which requires a full process round-trip.
  * @returns name of the available container runtime binary
  * @throws if neither podman nor docker is found on PATH
  */
 function detectRuntime(): string {
   for (const runtime of ['podman', 'docker'] as const) {
-    const resolved = Bun.which(runtime);
+    const resolved = whichSync(runtime);
     if (resolved !== null) {
       console.log(`    [container] using runtime: ${resolved}`);
       return runtime;

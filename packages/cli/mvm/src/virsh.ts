@@ -110,7 +110,7 @@ export async function waitForGuestAgent({ name, timeoutMs = DEFAULT_AGENT_TIMEOU
         );
       }
       rl.debug(`guest agent not ready yet (${String(Math.round(elapsed / 1000))}s elapsed), retrying...`);
-      await Bun.sleep(AGENT_POLL_INTERVAL_MS);
+      await new Promise(function agentPollDelay(resolve) { setTimeout(resolve, AGENT_POLL_INTERVAL_MS); });
     }
   }
 }
@@ -172,7 +172,7 @@ export async function waitForShutdown({ name }: { name: string }): Promise<void>
     }
 
     rl.debug(`VM state: ${state} (${String(Math.round(elapsed / 1000))}s elapsed)`);
-    await Bun.sleep(SHUTDOWN_POLL_INTERVAL_MS);
+    await new Promise(function shutdownPollDelay(resolve) { setTimeout(resolve, SHUTDOWN_POLL_INTERVAL_MS); });
   }
 }
 

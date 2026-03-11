@@ -97,7 +97,7 @@ export async function killExisting(): Promise<void> {
   // duration (300ms) into named constants derived from a single timeout policy
   // so the bounds are enforced in one place.
   for (let i = 0; i < 10; i++) {
-    await Bun.sleep(300);
+    await new Promise(function retryDelay(resolve) { setTimeout(resolve, 300); });
     if (await acquireLock()) return;
   }
 
@@ -109,7 +109,7 @@ export async function killExisting(): Promise<void> {
   }
 
   for (let i = 0; i < 7; i++) {
-    await Bun.sleep(300);
+    await new Promise(function retryDelay(resolve) { setTimeout(resolve, 300); });
     if (await acquireLock()) return;
   }
 
