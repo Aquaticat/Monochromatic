@@ -17,6 +17,8 @@ User input might include raw `\n` which you should consider as newlines since ne
 
 Clone entire git repo of a package to a temp dir whenever investigating source code is needed.
 
+Sandbox breaks `bun install` despite proper allowlisting, so run it outside sandbox until this is fixed.
+
 ## Dependency management
 - Use `workspace:*` for internal dependencies
 - Dependencies managed via Bun catalog in root `package.json`

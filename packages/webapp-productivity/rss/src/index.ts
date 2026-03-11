@@ -1,3 +1,4 @@
+import { H3, HTTPError, defineHandler, getRouterParam, serve, } from 'h3';
 import { $ as memoizeAsync, } from '@monochromatic-dev/module-es/memoize-async';
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import { getSortedFeeds, } from './feed.ts';
@@ -68,31 +69,28 @@ async function getHtmlBody(): Promise<string> {
 
 //endregion Memoized pipeline
 
-//region Request routing -- Maps HTTP method + path to handler functions
+//region h3 application -- Maps HTTP method + path to handler functions
+
+const app = new H3();
 
 /**
- * Routes an incoming request to the appropriate handler based on method and path.
- * @param request - Incoming HTTP request
- * @returns Response from the matched handler, or 404
+ * Serves the rendered RSS feed index page.
  */
-async function handleRequest(request: Request,): Promise<Response> {
-  const url = new URL(request.url,);
-  const { pathname, } = url;
-  const { method, } = request;
+app.get(
+  '/',
+  defineHandler(async () => serveIndex({ getHtmlBody, },)),
+);
 
-  l.debug(`${method} ${pathname}`);
+/**
+ * Adds an item to the ignore list.
+ */
+app.post(
+  '/api/ignore/new',
+  defineHandler(async (event) => ignore(event.req,)),
+);
 
-  if (method === 'GET' && pathname === '/') return await serveIndex({ getHtmlBody, },);
-  if (method === 'POST' && pathname === '/api/ignore/new') return await ignore(request,);
+//endregion h3 application
 
-  return new Response('Not Found', { status: 404, },);
-}
+const server = serve(app, { port: PORT, },);
 
-//endregion Request routing
-
-const _server = Bun.serve({
-  port: PORT,
-  fetch: handleRequest,
-},);
-
-l.info(`listening on port ${String(PORT)}`);
+l.info(`listening on ${server.url}`);

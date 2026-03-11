@@ -3,21 +3,24 @@
  *
  * Boot sequence:
  * 1. Side-effect import of `./lib/db.ts` opens the SQLite database and runs migrations
- * 2. CSS is compiled from `src/client/styles.css` → `dist/css/styles.css`
- * 3. Start Bun HTTP server with page routes and API routes
+ * 2. CSS is compiled from `src/client/styles.css` -> `dist/css/styles.css`
+ * 3. Start h3 HTTP server with page routes and API routes
  *
  * Client JS bundles are built separately via `mise run build:js:client` (tsdown).
  *
  * Request lifecycle (page):
- *   browser GET "/" → `inboxPage()` → `renderPage()` → HTML shell response
- *   → browser loads `<script src="/dist/client/inbox.js">` (served by `fetch` handler)
- *   → client script calls `readPageData()` to hydrate from the `<script id="page-data">` JSON blob
- *   → client script imperatively builds DOM into `<main id="app">`
+ *   browser GET "/" -> `inboxPage()` -> `renderPage()` -> HTML shell response
+ *   -> browser loads `<script src="/dist/client/inbox.js">` (served by static handler)
+ *   -> client script calls `readPageData()` to hydrate from the `<script id="page-data">` JSON blob
+ *   -> client script imperatively builds DOM into `<main id="app">`
  *
  * Request lifecycle (API):
  *   browser fetch POST "/api/tasks/:id/complete"
- *   → matched by `routes` object → handler reads/writes DB → JSON response
+ *   -> matched by h3 router -> handler reads/writes DB -> JSON response
  */
+import { readFile, stat, } from 'node:fs/promises';
+import { join, } from 'node:path';
+import { H3, HTTPError, defineHandler, getRouterParam, serve, serveStatic, } from 'h3';
 import { build as buildCSS } from "@monochromatic-dev/build-tool-css/ts";
 // Side-effect: opens SQLite database and runs schema migrations on import
 import "./lib/db.ts";
@@ -50,50 +53,97 @@ function resolvePort(): number {
   return Number.isNaN(parsedPort) ? DEFAULT_PORT : parsedPort;
 }
 
+/**
+ * Extracts a required route parameter, throwing 400 if missing.
+ * @param event - h3 event
+ * @param name - Parameter name from the route pattern
+ * @returns Parameter value
+ * @throws {HTTPError} 400 when parameter is missing
+ */
+function requireParam(event: Parameters<typeof getRouterParam>[0], name: string): string {
+  const value = getRouterParam(event, name,);
+  if (value === undefined) {
+    throw new HTTPError({ status: 400, message: `missing route parameter: ${name}`, },);
+  }
+  return value;
+}
+
 // Step 2: compile global CSS (resolves @apply rules, produces plain CSS)
 await buildCSS({
   input: "./src/client/styles.css",
   output: "./dist/css/styles.css",
 });
 
-// Step 3: start HTTP server.
-// Page routes return full HTML documents (via renderPage / inline HTML).
-// API routes return JSON. Static assets (dist/client/*) are served by the fallback `fetch` handler.
-const server = Bun.serve({
-  port: resolvePort(),
-  routes: {
-    // Each page handler queries the DB, then returns an HTML shell containing
-    // a <script id="page-data"> JSON blob and a <script type="module"> pointing
-    // at the corresponding bundled client entry (e.g. /dist/client/inbox.js).
-    "/": () => inboxPage(),
-    "/in-progress": () => inProgressPage(),
-    "/tasks/:id": (req) => taskDetailsPage(req.params.id),
-    "/search": (req) => searchPage(new URL(req.url)),
-    "/settings": () => settingsPage(),
+// Step 3: build h3 application.
 
-    "/api/tasks": { POST: (req) => handleCreateTask(req) },
-    "/api/tasks/:id": {
-      PUT: (req) => handleUpdateTask(req, req.params.id),
-      DELETE: (req) => handleDeleteTask(req.params.id),
-    },
-    "/api/tasks/:id/start": { POST: (req) => handleStartTimer(req.params.id) },
-    "/api/tasks/:id/stop": { POST: (req) => handleStopTimer(req.params.id) },
-    "/api/tasks/:id/complete": { POST: (req) => handleCompleteTask(req.params.id) },
-    "/api/ai/autofill": { POST: (req) => handleAutofill(req) },
-  },
-  // Fallback handler: serves bundled JS and CSS from dist/client/ as static files.
-  // Bun's `routes` only match exact patterns; this catches asset requests.
-  async fetch(req) {
-    const path = new URL(req.url).pathname;
-    if (path.startsWith("/dist/client/")) {
-      const file = Bun.file(`.${path}`);
-      if (await file.exists()) {
-        return new Response(file);
+const app = new H3();
+
+//region Page routes -- return full HTML documents (via renderPage / inline HTML)
+
+app.get('/', defineHandler(() => inboxPage()));
+app.get('/in-progress', defineHandler(() => inProgressPage()));
+
+app.get('/tasks/:id', defineHandler((event) => {
+  const id = requireParam(event, 'id',);
+  return taskDetailsPage(id,);
+}));
+
+app.get('/search', defineHandler((event) => searchPage(event.url,)));
+app.get('/settings', defineHandler(() => settingsPage()));
+
+//endregion Page routes
+
+//region API routes -- return JSON
+
+app.post('/api/tasks', defineHandler((event) => handleCreateTask(event.req,)));
+
+app.put('/api/tasks/:id', defineHandler((event) => {
+  const id = requireParam(event, 'id',);
+  return handleUpdateTask(event.req, id,);
+}));
+
+app.delete('/api/tasks/:id', defineHandler((event) => {
+  const id = requireParam(event, 'id',);
+  return handleDeleteTask(id,);
+}));
+
+app.post('/api/tasks/:id/start', defineHandler((event) => {
+  const id = requireParam(event, 'id',);
+  return handleStartTimer(id,);
+}));
+
+app.post('/api/tasks/:id/stop', defineHandler((event) => {
+  const id = requireParam(event, 'id',);
+  return handleStopTimer(id,);
+}));
+
+app.post('/api/tasks/:id/complete', defineHandler((event) => {
+  const id = requireParam(event, 'id',);
+  return handleCompleteTask(id,);
+}));
+
+app.post('/api/ai/autofill', defineHandler((event) => handleAutofill(event.req,)));
+
+//endregion API routes
+
+//region Static asset serving -- bundled JS and CSS from dist/client/
+
+app.get('/dist/client/**', defineHandler((event) => {
+  return serveStatic(event, {
+    getContents: (id) => readFile(join('.', id,),),
+    getMeta: async (id) => {
+      const stats = await stat(join('.', id,),).catch(() => undefined,);
+      if (stats === undefined || !stats.isFile()) {
+        return undefined;
       }
-    }
+      return { size: stats.size, mtime: stats.mtimeMs, };
+    },
+  },);
+}));
 
-    return new Response("Not found", { status: 404 });
-  },
-});
+//endregion Static asset serving
 
-console.log(`Listening on http://localhost:${server.port}`);
+// Step 4: Start server.
+const server = serve(app, { port: resolvePort(), },);
+
+console.log(`Listening on ${server.url}`);

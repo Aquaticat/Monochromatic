@@ -6,6 +6,7 @@
     "@monochromatic-dev/build-tool-css": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
     "@tursodatabase/database": "catalog:",
+    "h3": "catalog:",
     "postcss": "catalog:"
   },
   "devDependencies": {

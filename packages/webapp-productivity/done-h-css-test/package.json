@@ -4,7 +4,8 @@
   "type": "module",
   "dependencies": {
     "@monochromatic-dev/module-es": "workspace:*",
-    "@tursodatabase/database": "catalog:"
+    "@tursodatabase/database": "catalog:",
+    "h3": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

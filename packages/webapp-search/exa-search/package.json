@@ -6,6 +6,7 @@
   "module": "src/index.ts",
   "dependencies": {
     "@monochromatic-dev/module-es": "workspace:*",
+    "h3": "catalog:",
     "zod": "catalog:",
     "exa-js": "catalog:"
   },

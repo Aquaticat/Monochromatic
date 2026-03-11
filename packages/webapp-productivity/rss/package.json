@@ -8,6 +8,7 @@
   "type": "module",
   "dependencies": {
     "@monochromatic-dev/module-es": "workspace:*",
+    "h3": "catalog:",
     "zod": "catalog:",
     "feedsmith": "catalog:",
     "find-up": "catalog:"
