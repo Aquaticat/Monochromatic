@@ -124,8 +124,9 @@ for (const index of Array.from({ length: EXPR_COUNT, }).keys()) {
 const input = expressions.join('\n') + '\n';
 const expectedOutput = results.join('\n') + '\n';
 
-await Bun.write(new URL('./expr-perf-input.txt', import.meta.url).pathname, input);
-await Bun.write(new URL('./expr-perf-expected.txt', import.meta.url).pathname, expectedOutput);
+const { writeFile } = await import('node:fs/promises');
+await writeFile(new URL('./expr-perf-input.txt', import.meta.url).pathname, input);
+await writeFile(new URL('./expr-perf-expected.txt', import.meta.url).pathname, expectedOutput);
 
 console.log(`Generated expr perf test: ${String(EXPR_COUNT)} expressions, ${String(input.length)} bytes input, ${String(expectedOutput.length)} bytes expected output`);
 

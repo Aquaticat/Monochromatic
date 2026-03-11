@@ -4,11 +4,13 @@
  * @module
  */
 
+import { text } from 'node:stream/consumers';
+
 //region Stdin reading
 
 /**
  * Reads the full contents of stdin as a string.
- * Uses Bun's streaming API with a `TextDecoder` for incremental chunk decoding.
+ * Uses `node:stream/consumers` for cross-runtime compatibility (Node 16.7+, Bun, Deno).
  *
  * Claude Code command hooks receive their event payload as JSON on stdin.
  * This function collects all chunks until EOF and returns the complete string.
@@ -24,13 +26,7 @@
  * ```
  */
 async function readStdin(): Promise<string> {
-  const chunks: string[] = [];
-  const decoder = new TextDecoder();
-  for await (const chunk of Bun.stdin.stream()) {
-    chunks.push(decoder.decode(chunk, { stream: true }));
-  }
-  chunks.push(decoder.decode());
-  return chunks.join('');
+  return text(process.stdin);
 }
 
 //endregion

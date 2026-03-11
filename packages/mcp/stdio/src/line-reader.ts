@@ -1,21 +1,24 @@
-// Async iterator that yields complete newline-delimited lines from a ReadableStream.
+// Async iterator that yields complete newline-delimited lines from any async byte source.
 // MCP stdio transport requires messages delimited by newlines with no embedded newlines.
 
 /**
  * Yields complete lines from a byte stream, buffering partial reads across chunk boundaries.
  * Each yielded string has the trailing newline stripped.
  *
- * @param stream - Readable byte stream to consume (typically `Bun.stdin.stream()`).
+ * Accepts any `AsyncIterable<Uint8Array>` -- works with `ReadableStream`, `process.stdin`,
+ * and Node `Readable` streams without conversion or type casts.
+ *
+ * @param stream - Async iterable of byte chunks to consume.
  * @yields Individual newline-delimited lines without the trailing newline character.
  *
  * @example
  * ```ts
- * for await (const line of readLines(Bun.stdin.stream())) {
+ * for await (const line of readLines(process.stdin)) {
  *   console.error('received:', line);
  * }
  * ```
  */
-export async function* readLines(stream: ReadableStream<Uint8Array>): AsyncGenerator<string> {
+export async function* readLines(stream: AsyncIterable<Uint8Array>): AsyncGenerator<string> {
   const decoder = new TextDecoder();
   // `buffer` accumulates partial line data between chunk boundaries.
   // Declared with `let` because string concatenation requires reassignment.

@@ -9,7 +9,7 @@
  * All diagnostic messages go to stderr.
  */
 
-import { readFile, } from 'node:fs/promises';
+import { readFile, writeFile, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, resolve, } from 'node:path';
 
@@ -34,7 +34,7 @@ const cpuAffinity = await readCpuAffinity();
 // let needed: cgroup reads may fail outside a container
 let memoryMax = 'unknown';
 try {
-  memoryMax = (await Bun.file('/sys/fs/cgroup/memory.max').text()).trim();
+  memoryMax = (await readFile('/sys/fs/cgroup/memory.max', 'utf8')).trim();
 } catch {
   // Not in a cgroup v2 environment
 }
@@ -119,8 +119,8 @@ for (let warmIndex = 0; warmIndex < WARM_RUN_COUNT; warmIndex++) {
 // This mirrors what watch mode does: it knows exactly which file changed.
 const fixtureDir = join(tmpdir(), 'file-enforcer-perf');
 const sourceFile = join(fixtureDir, 'src', 'pkg-00', 'docs', 'readme.md');
-const sourceContent = await Bun.file(sourceFile).text();
-await Bun.write(sourceFile, `${sourceContent}\n# Modified for benchmark`);
+const sourceContent = await readFile(sourceFile, 'utf8');
+await writeFile(sourceFile, `${sourceContent}\n# Modified for benchmark`);
 invalidatePaths([sourceFile]);
 const srcChangedStart = performance.now();
 await import(`${CONFIG_PATH}?v=src-changed`);
@@ -131,8 +131,8 @@ console.error(`[container] 1 source changed: ${srcChangedMs.toFixed(1)}ms`);
 // 1 dest changed -- modify one dest file externally, invalidate its cache entry, re-run.
 // Simulates watch mode detecting an external edit to a managed destination.
 const destFile = join(fixtureDir, 'dest', 'combined-0.md');
-const destContent = await Bun.file(destFile).text();
-await Bun.write(destFile, `${destContent}\n# Externally modified`);
+const destContent = await readFile(destFile, 'utf8');
+await writeFile(destFile, `${destContent}\n# Externally modified`);
 invalidatePaths([destFile]);
 const destChangedStart = performance.now();
 await import(`${CONFIG_PATH}?v=dest-changed`);

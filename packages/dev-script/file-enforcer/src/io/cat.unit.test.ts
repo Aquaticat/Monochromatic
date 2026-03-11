@@ -11,9 +11,10 @@ import {
   beforeEach,
   describe,
   expect,
+  expectTypeOf,
   test,
 } from 'bun:test';
-import { cat, } from './cat.ts';
+import { cat, type GlobResults, } from './cat.ts';
 import { reads, reset, } from '../tracker.ts';
 
 //region cat(string[]) -- array mode
@@ -136,7 +137,9 @@ describe('cat(string)', () => {
     expect.assertions(1);
     /** Pattern with no matches */
     const results = await cat(join(tempDir, '*.xyz'));
-    expect(results).toEqual([]);
+    expectTypeOf(results).toEqualTypeOf<GlobResults>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- value equality separate from type check above
+    expect(results).toEqual([] as any);
   });
 
   test('includes the matched file path in each result', async () => {

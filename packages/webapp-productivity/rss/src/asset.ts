@@ -1,3 +1,5 @@
+import { readFile, } from 'node:fs/promises';
+
 import clientCss from './client.css' with { type: 'text' };
 import { l, } from './log.ts';
 
@@ -5,7 +7,7 @@ l.debug(`asset module loading`);
 
 /**
  * CSS source for the RSS reader interface.
- * Imported at build time via Bun's static asset import.
+ * Imported at build time via static asset import.
  * Also used by {@link itemToFeed} in html.ts for iframe content styling.
  * @see {@link indexHtmlStart} for where it is inlined into the page
  */
@@ -16,7 +18,7 @@ export const css: string = clientCss;
  * Pre-built by tsdown via `mise run build:js:client` and read from disk at startup.
  * @see {@link indexHtmlStart} for where it is inlined into the page
  */
-export const js: string = await Bun.file('./dist/client/client.js',).text();
+export const js: string = await readFile('./dist/client/client.js', 'utf8',);
 
 /**
  * Opening HTML fragment (doctype through body start) with inlined CSS and JS.

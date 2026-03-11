@@ -1,6 +1,5 @@
-import { exists, } from 'node:fs/promises';
+import { exists, mkdir, writeFile, } from 'node:fs/promises';
 import { dirname, } from 'node:path';
-import { mkdir, } from 'node:fs/promises';
 import { readCached, updateCache, } from './cache.ts';
 import type { GlobResults, } from './cat.ts';
 import { mirrorGlobPath, } from './glob.ts';
@@ -43,7 +42,7 @@ export async function overwrite(dest: string, content: string): Promise<void> {
     return;
   }
   await ensureDir(dest);
-  await Bun.write(dest, content);
+  await writeFile(dest, content);
   updateCache(dest, content);
   trackWriteTime(dest);
   console.log(`[file-enforcer] -> ${dest}`);
@@ -92,7 +91,7 @@ export async function overwriteEach(
         return;
       }
       await ensureDir(dest);
-      await Bun.write(dest, file.content);
+      await writeFile(dest, file.content);
       updateCache(dest, file.content);
       trackWriteTime(dest);
       console.log(`[file-enforcer] ${file.path} -> ${dest}`);

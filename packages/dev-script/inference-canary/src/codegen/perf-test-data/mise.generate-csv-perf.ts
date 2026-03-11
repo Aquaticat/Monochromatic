@@ -70,8 +70,9 @@ for (const index of Array.from({ length: ROW_COUNT, }).keys()) {
 const csvInput = rows.join('\n') + '\n';
 const expectedOutput = JSON.stringify(expected, null, 2) + '\n';
 
-await Bun.write(new URL('./csv-perf-input.txt', import.meta.url).pathname, csvInput);
-await Bun.write(new URL('./csv-perf-expected.txt', import.meta.url).pathname, expectedOutput);
+const { writeFile } = await import('node:fs/promises');
+await writeFile(new URL('./csv-perf-input.txt', import.meta.url).pathname, csvInput);
+await writeFile(new URL('./csv-perf-expected.txt', import.meta.url).pathname, expectedOutput);
 
 console.log(`Generated CSV perf test: ${String(ROW_COUNT)} rows, ${String(csvInput.length)} bytes input, ${String(expectedOutput.length)} bytes expected output`);
 

@@ -24,6 +24,7 @@
  */
 
 import { realpathSync } from 'node:fs';
+import { text } from 'node:stream/consumers';
 
 export {}
 
@@ -452,7 +453,7 @@ function filterOutput(input: string): string {
 
 try {
   /** Raw text read from stdin (piped from the Bash tool command). */
-  const input = await Bun.stdin.text()
+  const input = await text(process.stdin)
 
   /** Filtered output with waste patterns removed. */
   const filtered = filterOutput(input)
@@ -464,7 +465,7 @@ try {
    * Losing output is worse than failing to filter.
    */
   try {
-    const fallback = await Bun.stdin.text()
+    const fallback = await text(process.stdin)
     process.stdout.write(fallback)
   } catch {
     /* stdin already consumed or unavailable -- nothing to pass through */

@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { mkdir, rm } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { createAutounattendIso } from './autounattend.ts';
@@ -161,7 +161,7 @@ async function ensureWindowsTemplate(spec: WindowsImageSpec): Promise<string> {
       imageIndex: spec.imageIndex,
     });
     const autounattendIsoPath = join(vmDir, 'autounattend.iso');
-    await Bun.write(autounattendIsoPath, autounattendIso);
+    await writeFile(autounattendIsoPath, autounattendIso);
 
     const xml = domainXml({
       bootDev: 'cdrom',

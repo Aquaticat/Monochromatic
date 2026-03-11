@@ -1,3 +1,4 @@
+import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { createIso } from './iso9660.ts';
@@ -277,7 +278,7 @@ local-hostname: ${name}
   });
 
   const seedPath = join(vmDir, 'seed.iso');
-  await Bun.write(seedPath, iso);
+  await writeFile(seedPath, iso);
   rl.info(`created seed ISO at ${seedPath}`);
   return seedPath;
 }

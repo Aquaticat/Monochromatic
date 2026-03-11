@@ -52,7 +52,7 @@ On a compatible shell it exits silently.
  * SessionStart hook: warns Droid if the current shell is not bash-compatible.
  * AI tooling assumes bash syntax; non-compatible shells cause silent command failures.
  */
-const shell = Bun.env.SHELL ?? "";
+const shell = process.env.SHELL ?? "";
 const shellName = shell.split("/").at(-1) ?? "";
 const bashCompatibleShells = new Set(["bash", "zsh", "sh", "dash", "ksh"]);
 

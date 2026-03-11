@@ -8,6 +8,7 @@
  *   Container: podman run ... bun validate-resources.ts
  */
 
+import { readFile, } from 'node:fs/promises';
 import { resolve, } from 'node:path';
 
 import spawn from 'nano-spawn';
@@ -17,7 +18,7 @@ import spawn from 'nano-spawn';
 // let needed: cgroup reads may fail on host or non-cgroup-v2 systems
 let cpuMax = 'max 100000';
 try {
-  cpuMax = (await Bun.file('/sys/fs/cgroup/cpu.max').text()).trim();
+  cpuMax = (await readFile('/sys/fs/cgroup/cpu.max', 'utf8')).trim();
 } catch {
   // Not in a cgroup v2 container or no read access
 }
@@ -25,7 +26,7 @@ try {
 // let needed: same fallback reason as cpuMax
 let memoryMax = 'max';
 try {
-  memoryMax = (await Bun.file('/sys/fs/cgroup/memory.max').text()).trim();
+  memoryMax = (await readFile('/sys/fs/cgroup/memory.max', 'utf8')).trim();
 } catch {
   // Not in a cgroup v2 container or no read access
 }
@@ -141,7 +142,7 @@ const IO_DIR = '/tmp/fe-io-bench';
 
 console.error(`[validate] IO: ${String(IO_FILE_COUNT)} file write/read cycles...`);
 
-const { mkdir, rm, } = await import('node:fs/promises');
+const { mkdir, rm, writeFile, } = await import('node:fs/promises');
 const { join, } = await import('node:path');
 
 await rm(IO_DIR, { recursive: true, force: true });
@@ -152,9 +153,9 @@ const ioStart = performance.now();
 for (let fileIndex = 0; fileIndex < IO_FILE_COUNT; fileIndex++) {
   const filePath = join(IO_DIR, `file-${String(fileIndex)}.txt`);
   // eslint-disable-next-line no-await-in-loop -- sequential IO benchmark
-  await Bun.write(filePath, `content-${String(fileIndex)}-padding`.repeat(10));
+  await writeFile(filePath, `content-${String(fileIndex)}-padding`.repeat(10));
   // eslint-disable-next-line no-await-in-loop -- sequential IO benchmark
-  await Bun.file(filePath).text();
+  await readFile(filePath, 'utf8');
 }
 const ioMs = performance.now() - ioStart;
 await rm(IO_DIR, { recursive: true, force: true });

@@ -126,8 +126,9 @@ for (const index of Array.from({ length: RULE_COUNT, }).keys()) {
 const input = allMixinCss + '\n\n' + ruleInputLines.join('\n\n') + '\n';
 const expectedOutput = ruleExpectedLines.join('\n\n') + '\n';
 
-await Bun.write(new URL('./css-mixin-perf-input.txt', import.meta.url).pathname, input);
-await Bun.write(new URL('./css-mixin-perf-expected.txt', import.meta.url).pathname, expectedOutput);
+const { writeFile } = await import('node:fs/promises');
+await writeFile(new URL('./css-mixin-perf-input.txt', import.meta.url).pathname, input);
+await writeFile(new URL('./css-mixin-perf-expected.txt', import.meta.url).pathname, expectedOutput);
 
 console.log(`Generated CSS mixin perf test: ${String(MIXIN_COUNT)} mixins + ${String(RULE_COUNT)} rules, ${String(input.length)} bytes input, ${String(expectedOutput.length)} bytes expected output`);
 

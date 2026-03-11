@@ -20,7 +20,8 @@
   "dependencies": {
     "dot-prop": "catalog:",
     "find-up": "catalog:",
-    "nano-spawn": "catalog:"
+    "nano-spawn": "catalog:",
+    "tiny-readdir-glob": "catalog:"
   },
   "version": "0.0.1",
   "repository": {

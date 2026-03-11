@@ -8,18 +8,41 @@ import type { McpServerHandle } from './server-types.ts';
 //region Output writer abstraction -- supports both Bun FileSink and standard WritableStream
 
 /**
- * Minimal writer interface that both Bun's `FileSink` and `WritableStreamDefaultWriter` satisfy.
- * Allows the transport to work with `Bun.stdout.writer()` without depending on Bun-specific types.
+ * Minimal writer interface for stdout output.
+ * Accepts any object with a `write(Uint8Array)` method, including
+ * `Bun.stdout.writer()`, `WritableStreamDefaultWriter`, and the
+ * {@link processStdoutWriter} helper.
  *
  * @example
  * ```ts
- * const writer: StdoutWriter = Bun.stdout.writer();
+ * const writer: StdoutWriter = processStdoutWriter();
  * await writer.write(new TextEncoder().encode('hello\n'));
  * ```
  */
 export type StdoutWriter = {
   write(data: Uint8Array): number | Promise<number>;
 };
+
+/**
+ * Creates a {@link StdoutWriter} backed by `process.stdout.write`.
+ * Cross-runtime alternative to `Bun.stdout.writer()` that works in Node, Bun, and Deno.
+ *
+ * @returns Writer that delegates to `process.stdout.write`.
+ *
+ * @example
+ * ```ts
+ * const writer = processStdoutWriter();
+ * await writer.write(new TextEncoder().encode('hello\n'));
+ * ```
+ */
+function processStdoutWriter(): StdoutWriter {
+  return {
+    write(data: Uint8Array): number {
+      process.stdout.write(data);
+      return data.byteLength;
+    },
+  };
+}
 
 //endregion
 
@@ -33,8 +56,8 @@ export type StdoutWriter = {
  * Runs until stdin closes (the client terminates the subprocess).
  *
  * @param server - Immutable server handle created by {@link createMcpServer}.
- * @param input - Readable byte stream for incoming messages. Defaults to `Bun.stdin.stream()`.
- * @param output - Writer for outgoing messages. Defaults to `Bun.stdout.writer()`.
+ * @param input - Async iterable of byte chunks for incoming messages. Defaults to `process.stdin`.
+ * @param output - Writer for outgoing messages. Defaults to a `process.stdout.write` wrapper.
  *
  * @example
  * ```ts
@@ -46,8 +69,8 @@ export type StdoutWriter = {
  */
 export async function serve(
   server: McpServerHandle,
-  input: ReadableStream<Uint8Array> = Bun.stdin.stream(),
-  output: StdoutWriter = Bun.stdout.writer(),
+  input: AsyncIterable<Uint8Array> = process.stdin,
+  output: StdoutWriter = processStdoutWriter(),
 ): Promise<void> {
   const encoder = new TextEncoder();
 

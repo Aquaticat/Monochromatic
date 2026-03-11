@@ -1,3 +1,5 @@
+import { readFile, } from 'node:fs/promises';
+
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 import clientCss from './index.css' with { type: 'text' };
 import { l, } from './log.ts';
@@ -6,7 +8,7 @@ l.debug(`asset module loading`);
 
 /**
  * CSS source for the exa-search interface.
- * Imported at build time via Bun's static asset import.
+ * Imported at build time via static asset import.
  * @see {@link indexHtml} for where it is inlined into the page
  */
 export const css: string = clientCss;
@@ -16,7 +18,7 @@ export const css: string = clientCss;
  * Pre-built by tsdown via `mise run build:js:client` and read from disk at startup.
  * @see {@link indexHtml} for where it is inlined into the page
  */
-export const js: string = await Bun.file('./dist/client/client.js',).text();
+export const js: string = await readFile('./dist/client/client.js', 'utf8',);
 
 /** Escaped JS source safe for embedding inside a `<script>` tag. */
 const safeJs: string = js.replaceAll(/<\/script>/gvi, '<\\/script>',);

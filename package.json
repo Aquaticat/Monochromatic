@@ -274,6 +274,7 @@
       "superjson": ">=2.2.6",
       "swr": ">=2.3.6",
       "the-new-css-reset": ">=1.11.3",
+      "tiny-readdir-glob": ">=2.0.0",
       "tinyglobby": ">=0.2.15",
       "to-vfile": ">=8.0.0",
       "ts-pattern": ">=5.9.0",

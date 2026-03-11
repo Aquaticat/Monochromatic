@@ -18,6 +18,7 @@
  */
 
 import {
+  glob,
   mkdir,
   rm,
 } from 'node:fs/promises';
@@ -62,7 +63,7 @@ const STALE_DIST_ARTIFACTS = [
 
 /**
  * Removes stale git metadata and Claude config directories from all nested `dist/final/` paths under `packages/`.
- * Uses Bun's glob to find matching paths and removes them recursively.
+ * Uses `node:fs/promises` glob to find matching paths and removes them recursively.
  *
  * @param workspaceRoot - Absolute path to the monorepo root.
  *
@@ -72,10 +73,9 @@ const STALE_DIST_ARTIFACTS = [
  * ```
  */
 async function cleanDistArtifacts(workspaceRoot: string): Promise<void> {
-  const glob = new Bun.Glob('packages/*/*/dist/final');
   const removals: Array<Promise<void>> = [];
 
-  for await (const finalDir of glob.scan({ cwd: workspaceRoot, onlyFiles: false })) {
+  for await (const finalDir of glob('packages/*/*/dist/final', { cwd: workspaceRoot, })) {
     for (const artifact of STALE_DIST_ARTIFACTS) {
       removals.push(
         rm(`${workspaceRoot}/${finalDir}/${artifact}`, { recursive: true, force: true }),

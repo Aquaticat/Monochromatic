@@ -1,3 +1,4 @@
+import { readFile, } from 'node:fs/promises';
 import { resolve, } from 'node:path';
 
 /**
@@ -31,7 +32,7 @@ export async function readCached(filePath: string): Promise<string> {
   if (cached !== undefined) {
     return cached;
   }
-  const content = await Bun.file(absPath).text();
+  const content = await readFile(absPath, 'utf8');
   readCache.set(absPath, content);
   return content;
 }

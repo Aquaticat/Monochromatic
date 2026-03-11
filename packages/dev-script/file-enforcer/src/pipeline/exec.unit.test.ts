@@ -25,7 +25,7 @@ describe('exec', () => {
   test('throws on non-zero exit code', async () => {
     expect.assertions(1);
     /** `false` always exits with code 1 */
-    await expect(exec('false')).rejects.toThrow('exited with code');
+    await expect(exec('false')).rejects.toThrow('Command failed with exit code 1: false');
   });
 
   test('includes stderr in the error message', async () => {

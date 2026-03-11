@@ -1,6 +1,9 @@
 import { existsSync } from 'node:fs';
+import { createWriteStream } from 'node:fs';
 import { mkdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 
 import { IMAGES_DIR } from './config.ts';
 import { l, tagged } from './log.ts';
@@ -35,12 +38,11 @@ function formatBytes(bytes: number): string {
 
 /**
  * Prints download progress to stderr by polling the destination file size
- * while a concurrent `Bun.write()` streams the response to disk.
+ * while a concurrent write streams the response to disk.
  * Resolves when the write completes; rejects if it fails.
  *
- * Uses `Bun.write(destPath, response)` for native-speed I/O instead of
- * manual chunk-by-chunk streaming, which avoids throughput bottlenecks
- * and buffering bugs in the JS `ReadableStream` path.
+ * Streams the response body to disk via `node:stream/promises` pipeline
+ * for cross-runtime compatibility.
  *
  * @param options - Response to write, destination file path, and logger instance
  *
@@ -82,8 +84,12 @@ async function writeWithProgress({ destPath, response, rl }: {
     }
   })();
 
-  // Native Bun.write streams the response body to disk at full speed
-  await Bun.write(destPath, response);
+  // Stream response body to disk via node:stream pipeline
+  const body = response.body;
+  if (body === null) {
+    throw new Error(`response body is null for ${destPath}`);
+  }
+  await pipeline(Readable.fromWeb(body as ReadableStream), createWriteStream(destPath));
   done = true;
   await progressLoop;
 

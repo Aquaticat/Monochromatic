@@ -1,19 +1,88 @@
-import { Glob, } from 'bun';
+import { join, relative, resolve, } from 'node:path';
+import readdirGlob from 'tiny-readdir-glob';
+
+/** Index of the first glob metacharacter in a pattern string */
+const GLOB_META = /[*?{[]/;
+
+/**
+ * Splits a glob pattern into a static base directory, a relative glob suffix,
+ * and the original static prefix string (for reconstructing output paths).
+ * Everything before the first wildcard segment becomes `cwd`;
+ * the remainder becomes the pattern passed to the matcher.
+ * @param pattern - Glob pattern, absolute or relative (e.g., `/tmp/foo/*.ts` or `./src/**​/*.md`)
+ * @returns Tuple of `[resolvedCwd, relativeGlob, originalPrefix]`
+ *
+ * @example
+ * ```ts
+ * splitGlob('/tmp/foo/*.ts');
+ * // ['/tmp/foo', '*.ts', '/tmp/foo']
+ *
+ * splitGlob('./src/a/**​/*.md');
+ * // ['/abs/path/src/a', '**​/*.md', './src/a']
+ * ```
+ */
+function splitGlob(pattern: string): readonly [cwd: string, relativeGlob: string, originalPrefix: string] {
+  /** Position of the first metacharacter */
+  const metaIndex = pattern.search(GLOB_META);
+
+  if (metaIndex === -1) {
+    // No wildcards -- treat entire pattern as a literal path
+    return [resolve(pattern), '', pattern];
+  }
+
+  /** Static prefix up to the last `/` before the first metacharacter */
+  const staticPrefix = pattern.slice(0, metaIndex);
+  /** Index of the last separator in the static prefix */
+  const lastSep = staticPrefix.lastIndexOf('/');
+
+  if (lastSep === -1) {
+    // Metacharacter appears in the first segment; cwd is the current directory
+    return [resolve('.'), pattern, '.'];
+  }
+
+  /** Original prefix as written in the pattern (preserves `./` or absolute form) */
+  const originalPrefix = staticPrefix.slice(0, lastSep);
+  return [
+    resolve(originalPrefix),
+    pattern.slice(lastSep + 1),
+    originalPrefix,
+  ];
+}
 
 /**
  * Expands a glob pattern against the filesystem and returns matched file paths.
+ * Returned paths preserve the prefix format of the input pattern --
+ * relative patterns produce relative paths, absolute patterns produce absolute paths.
+ * Uses `tiny-readdir-glob` (backed by zeptomatch) for matching,
+ * which always includes dot files without configuration.
  * @param pattern - Glob pattern (e.g., `./packages/*​/src/*.ts`)
- * @returns Array of matched absolute-ish paths relative to cwd
+ * @returns Array of matched paths with the same prefix style as the input pattern
+ *
+ * @example
+ * ```ts
+ * const tsFiles = await expandGlob('./src/**​/*.ts');
+ * // ['./src/index.ts', './src/lib/utils.ts']
+ * ```
  */
 export async function expandGlob(pattern: string): Promise<readonly string[]> {
-  /** Bun glob instance scoped to cwd */
-  const glob = new Glob(pattern);
-  /** Collected match paths */
-  const matches: string[] = [];
-  for await (const match of glob.scan({ dot: true, })) {
-    matches.push(match);
+  const [cwd, relativeGlob, originalPrefix] = splitGlob(pattern);
+
+  if (relativeGlob === '') {
+    return [cwd];
   }
-  return matches;
+
+  const { files, } = await readdirGlob(relativeGlob, { cwd, });
+
+  // Reconstruct paths using the original prefix to preserve relative/absolute form.
+  // Use string concatenation instead of `join()` to preserve `./` prefixes
+  // that `join()` would normalize away (e.g., `./.agents` -> `.agents`).
+  return files.map(function toOriginalForm(absolutePath: string): string {
+    /** Path relative to the resolved cwd */
+    const relPath = relative(cwd, absolutePath);
+    /** Separator between prefix and relative path */
+    const sep = originalPrefix.endsWith('/') ? '' : '/';
+    return `${originalPrefix}${sep}${relPath}`;
+  });
 }
 
 /**

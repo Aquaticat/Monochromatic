@@ -19,6 +19,8 @@ Clone entire git repo of a package to a temp dir whenever investigating source c
 
 Sandbox breaks `bun install` despite proper allowlisting, so run it outside sandbox until this is fixed.
 
+Prefer cross-runtime patterns instead of Bun-specific implementations.
+
 ## Dependency management
 - Use `workspace:*` for internal dependencies
 - Dependencies managed via Bun catalog in root `package.json`

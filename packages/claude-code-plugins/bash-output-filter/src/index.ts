@@ -204,13 +204,13 @@ if (event.tool_name !== 'Bash') {
      * `dist/final/node/filter.mjs`. When running from source (`src/index.ts`),
      * this resolves to `src/filter.ts` -- which bun can execute directly.
      *
-     * Uses `import.meta.dir` which gives the directory of the currently executing file,
+     * Uses `import.meta.dirname` which gives the directory of the currently executing file,
      * regardless of how it was invoked.
      */
     const isBuilt = import.meta.url.endsWith('.mjs')
     const filterPath = isBuilt
-      ? `${import.meta.dir}/filter.mjs`
-      : `${import.meta.dir}/filter.ts`
+      ? `${import.meta.dirname}/filter.mjs`
+      : `${import.meta.dirname}/filter.ts`
 
     /**
      * Rewritten command that pipes output through the filter.

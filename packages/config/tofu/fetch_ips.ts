@@ -1,8 +1,9 @@
 import { file, write } from "bun";
 import { join } from "node:path";
+import { json } from "node:stream/consumers";
 
 // 1. Parse OpenTofu Input (from stdin)
-const input = await Bun.stdin.json();
+const input = await json(process.stdin) as Record<string, string>;
 const TARGET_ASN = input.asn?.toUpperCase();
 
 if (!TARGET_ASN) {
@@ -10,7 +11,7 @@ if (!TARGET_ASN) {
   process.exit(1);
 }
 
-const CACHE_FILE = join(import.meta.dir, `cache_${TARGET_ASN}.json`);
+const CACHE_FILE = join(import.meta.dirname, `cache_${TARGET_ASN}.json`);
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 const URL = `https://ipinfo.io/data/ipinfo_lite.json.gz?_src=frontend&token=${process.env.IPINFO_TOKEN}`;
 

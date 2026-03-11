@@ -5,7 +5,7 @@
  * Run: `bun src/build-font.ts`
  */
 
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 import spawn from 'nano-spawn';
@@ -237,7 +237,7 @@ const woff2Path = resolve(distDir, "Aquaticat-Regular.woff2");
 const woff2Script = `from fontTools.ttLib import TTFont; f = TTFont("${otfPath}"); f.flavor = "woff2"; f.save("${woff2Path}")`;
 try {
   await spawn("uv", ["run", "--with", "fonttools", "--with", "brotli", "python3", "-c", woff2Script]);
-  const { size } = Bun.file(woff2Path);
+  const { size } = statSync(woff2Path);
   console.log(`Wrote ${woff2Path} (${size} bytes)`);
 } catch (error: unknown) {
   console.error("WOFF2 conversion failed:", (error as { stderr: string }).stderr);
