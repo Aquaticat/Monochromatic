@@ -1,43 +1,29 @@
+/**
+ * Application entry point for the flashcard quiz app.
+ *
+ * Boot sequence:
+ * 1. Side-effect import opens the SQLite database
+ * 2. CSS is compiled from `src/client/styles.css` → `dist/css/styles.css`
+ * 3. Start Bun HTTP server
+ *
+ * Client JS bundles are built separately via `mise run build:js:client` (tsdown).
+ */
 import { build as buildCSS } from "@monochromatic-dev/build-tool-css/ts";
-import "./lib/db";
-import { decksPage } from "./server/pages/decks";
-import { quizPage } from "./server/pages/quiz";
-import { handleCreateDeck, handleDeleteDeck } from "./server/api/decks";
-import { handleCreateCard, handleDeleteCard } from "./server/api/cards";
-import { handleAnswer } from "./server/api/answers";
-
-// Entry point: build-css (resolve imports, expand mixins) -> Bun.build() -> Bun.serve().
-// In dev (bun --watch), server restarts on any file change -> full rebuild is automatic.
+import "./lib/db.ts";
+import { decksPage } from "./server/pages/decks.ts";
+import { quizPage } from "./server/pages/quiz.ts";
+import { handleCreateDeck, handleDeleteDeck } from "./server/api/decks.ts";
+import { handleCreateCard, handleDeleteCard } from "./server/api/cards.ts";
+import { handleAnswer } from "./server/api/answers.ts";
 
 // Step 1: Process CSS -- resolves @import, expands @mixin/@apply into plain CSS.
 await buildCSS({
   input: "./src/client/styles.css",
-  output: "./dist/client/styles.css",
+  output: "./dist/css/styles.css",
 });
-console.log("CSS build complete: dist/client/styles.css");
+console.log("CSS build complete: dist/css/styles.css");
 
-// Step 2: Bundle client TS -- imports the processed CSS as text string.
-const buildResult = await Bun.build({
-  entrypoints: [
-    "./src/client/decks.ts",
-    "./src/client/quiz.ts",
-  ],
-  outdir: "./dist/client",
-  target: "browser",
-  minify: process.env.NODE_ENV === "production",
-});
-
-if (!buildResult.success) {
-  console.error("Client build failed:", buildResult.logs);
-  process.exit(1);
-}
-
-console.log(
-  `Built ${buildResult.outputs.length} client bundles:`,
-  buildResult.outputs.map((o) => o.path)
-);
-
-// Step 3: Serve. Bun's built-in router handles :param parsing and per-method dispatch.
+// Step 2: Serve. Bun's built-in router handles :param parsing and per-method dispatch.
 const server = Bun.serve({
   port: Number(process.env.PORT) || 3000,
   routes: {

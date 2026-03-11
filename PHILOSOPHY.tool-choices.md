@@ -67,6 +67,90 @@ triggering the package-specific `lint:types` task on every Edit/Write of a `.ts`
 This gives fresh `tsgo` diagnostics scoped to the affected package
 without the staleness and tool mismatch of the LSP plugin.
 
+## HTTP framework: h3 v2 > Hono > Elysia
+
+h3 v2: minimal HTTP primitive (216-line core class) built on srvx (universal server) + rou3 (router).
+Zero unnecessary abstractions. Utilities are standalone tree-shakeable functions, not framework methods.
+
+Production apps that only need routing use raw `Bun.serve()` directly.
+h3 is for packages that need cross-runtime support, middleware composition, or validation.
+
+### Why not Elysia
+
+Elysia generates request handlers as JavaScript strings via `new Function()` at startup (`compose.ts`, 2,805 lines).
+A separate system (`sucrose.ts`, 763 lines) parses handler source code via `Function.toString()` with regex
+to infer which context properties each handler accesses,
+then the code generator omits unused parsing steps from the generated function.
+
+Problems with this approach:
+
+- **Security**: code generation without input sanitization produced an RCE chain
+  (GHSA-8vch-m3f4-q8jf + GHSA-hxj9-33pp-j2cc, patched 1.4.17).
+  Cookie config was interpolated into generated code strings unsanitized.
+- **Self-defeating optimizer**: issue #1604 showed AOT-enabled Elysia at 3,853 req/s
+  vs 175,951 req/s with `aot: false` (45x regression).
+  Hono (no code generation) hit 237,229 req/s in the same benchmark.
+- **Dual codepath divergence**: AOT and non-AOT modes behave differently.
+  Issues #1753, #952, #1458 document parsing, hook, and routing inconsistencies between modes.
+- **Fragile source analysis**: `Function.toString()` breaks under minification (issue #1617),
+  `bun build --minify` breaks integrating libraries (issue #740).
+  Sucrose uses hardcoded character positions that assume unminified source formatting.
+- **CSP incompatible**: `new Function()` requires `unsafe-eval` in Content-Security-Policy.
+  Cloudflare Workers blocks it entirely (issue #58).
+  The `aot: false` workaround itself breaks routing in plugin compositions (issue #1244).
+- **Diminishing returns**: Bun.serve() absorbs framework optimizations over time
+  (built-in route tree with SIMD parameter decoding, static responses, cookie parsing).
+  V8/JSC JIT compilers already perform function inlining, dead code elimination,
+  and type specialization that Elysia reimplements in userland.
+  The optimization gap narrows with each runtime release while the complexity cost is fixed.
+- **God class**: `index.ts` is 8,292 lines containing routing, lifecycle hooks,
+  plugin system, decorators, state management, guards, schema models, and compilation.
+
+### Why not Hono
+
+Hono's core HTTP framework is clean: 74-line koa-style compose, 539-line base class,
+5 router implementations, zero runtime dependencies, no code generation.
+
+Rejected for scope creep:
+
+- **Client-side JSX runtime** (`hono/jsx/dom`): virtual DOM reconciler (792-line `render.ts`),
+  hooks, state management, hydration. A React alternative inside an HTTP router.
+- **CSS-in-JS** (`hono/css`): CSS generation utilities in a server framework.
+- **Static site generation** (`hono/helper/ssg`): build-time page generation.
+- 5,000 lines (21% of source) dedicated to client-side rendering concerns.
+
+These are behind subpath exports and tree-shake away,
+but they signal a trajectory toward full-stack framework territory.
+Maintainer attention splits across HTTP routing, JSX reconciliation, and SSG --
+concerns that belong in separate packages.
+
+Hono's TypeScript inference also slows tsserver on large apps (issues #3945, #3869)
+and breaks with 3+ chained middlewares (#3587).
+
+### Why h3 v2
+
+- **Minimal core**: H3 class is 216 lines. Delegates routing to rou3, server adapters to srvx.
+- **Focused scope**: HTTP primitives only. No JSX, no CSS, no SSG, no client runtime.
+- **Lazy evaluation**: getters and symbols defer body parsing, session loading,
+  and response header construction. Same "skip what you don't use" benefit as Elysia's Sucrose
+  without source code parsing.
+- **Standard Schema validation**: works with Zod, Valibot, ArkType via Standard Schema v1 interface.
+  No bundled validation library.
+- **Battle-tested indirectly**: srvx + rou3 power Nuxt/Nitro's deployment base.
+- **No code generation**: no `new Function()`, no `eval()`, no `Function.toString()`.
+  Request handling is straightforward function dispatch.
+
+### h3 v2 stability
+
+h3 v2 is in RC (v2.0.1-rc.16 as of 2026-03-09). v1 still receives patches.
+The RC label reflects API finalization, not instability --
+the core is functionally complete and the underlying srvx + rou3 are production-deployed at scale.
+Nitro v3 will require h3 v2, which sets a hard timeline for stabilization.
+
+Accepted risk: API surface changes between RC and stable.
+Mitigation: Elysia usage in this repo is minimal (two experimental packages with basic routing).
+Migration surface is small enough that any h3 v2 API changes are trivial to absorb.
+
 ## Bundler: tsdown > raw rolldown
 
 tsdown (v0.20.3) is a ~5,000-line config translator and plugin orchestrator on top of rolldown.

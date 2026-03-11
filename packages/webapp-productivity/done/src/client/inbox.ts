@@ -19,7 +19,7 @@
  */
 import type { BlockedTaskLink, Task } from "../lib/types.ts";
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import styles from "../../dist/client/styles.css" with { type: "text" };
+import styles from "../../dist/css/styles.css" with { type: "text" };
 import { api } from "./lib/api.ts";
 import { injectCSS } from "./lib/inject-css.ts";
 import { readPageData } from "./lib/page-data.ts";

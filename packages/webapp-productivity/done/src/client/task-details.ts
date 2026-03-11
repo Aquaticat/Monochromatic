@@ -6,7 +6,7 @@
  * because the `<task-detail>` component provides its own back-button header.
  */
 import type { Task } from "../lib/types.ts";
-import styles from "../../dist/client/styles.css" with { type: "text" };
+import styles from "../../dist/css/styles.css" with { type: "text" };
 import { api } from "./lib/api.ts";
 import { injectCSS } from "./lib/inject-css.ts";
 import { readPageData } from "./lib/page-data.ts";

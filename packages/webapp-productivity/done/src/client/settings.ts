@@ -4,7 +4,7 @@
  * Same hydration pattern as inbox.ts: injectCSS → readPageData → build DOM into #app.
  */
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import styles from "../../dist/client/styles.css" with { type: "text" };
+import styles from "../../dist/css/styles.css" with { type: "text" };
 import { injectCSS } from "./lib/inject-css.ts";
 import { readPageData } from "./lib/page-data.ts";
 import "./components/side-drawer.ts";

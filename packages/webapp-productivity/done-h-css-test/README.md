@@ -4,27 +4,21 @@ AI-powered task aggregator that surfaces what to do next based on location and f
 
 ## How it runs
 
-Done has no build step.
-Running the server **is** the build: `bun src/server.ts` compiles CSS, bundles client scripts, and starts the HTTP server in a single process.
-There is no `build` command to run first, no `dist/` to check in, and no way to separate compilation from serving.
-
-This is a deliberate architectural choice, not a missing feature.
-The build pipeline (build-css, `Bun.build()`) executes at startup every time, so the running server always reflects the current source.
-In development, `mise run dev:site` uses `mise watch` to restart the process on any source change, which re-runs the full pipeline automatically.
+Client JS is bundled by tsdown as a separate build step (`mise run build:js:client`).
+In development, `mise run dev:site` uses `mise watch` to restart the process on any source change.
 
 ```
-bun src/server.ts    # production
-mise run dev:site    # development (auto-restart on src/ change via mise watch)
+mise run build:js:client  # bundle client scripts
+bun src/server.ts         # start server
+mise run dev:site         # development (auto-restart on src/ change via mise watch)
 ```
-
-The `--build-only` flag exists for CI type-checking; it runs the pipeline then exits without starting the server.
 
 ## Architecture overview
 
 Single `Bun.serve()` process handling both page routes (HTML) and API routes (JSON).
 
 1. **CSS** -- `@monochromatic-dev/build-css` resolves `@import` and expands `@mixin`/`@apply` into plain CSS
-2. **Client JS** -- `Bun.build()` bundles one entry per page (inbox, in-progress, task-details, search, settings)
+2. **Client JS** -- tsdown bundles one entry per page (inbox, in-progress, task-details, search, settings) via `mise run build:js:client`
 3. **Server** -- `Bun.serve()` with declarative `routes` for pages and REST API; fallback handler serves static assets from `dist/client/`
 4. **Database** -- SQLite (@tursodatabase/database) with FTS5 full-text search, initialized via side-effect import at startup
 5. **Client** -- Vanilla TypeScript with custom elements; reads server-embedded JSON from `<script id="page-data">`, builds DOM imperatively

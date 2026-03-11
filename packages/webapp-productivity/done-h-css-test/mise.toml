@@ -2,13 +2,19 @@
 extends = "build"
 
 [tasks."build:js"]
-run = "bun src/server.ts --build-only"
+extends = "build:js"
+
+[tasks."build:js:client"]
+extends = "build:js:client"
 
 [tasks."watch:build"]
 extends = "watch:build"
 
 [tasks."watch:build:js"]
-run = "mise watch -w src -r -- bun src/server.ts --build-only"
+extends = "watch:build:js"
+
+[tasks."watch:build:js:client"]
+extends = "watch:build:js:client"
 
 [tasks."dev:site"]
 description = "Start Done in watch mode"

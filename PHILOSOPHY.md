@@ -8,7 +8,7 @@ The philosophy is organized into focused documents:
 
 - **[Portability and Core Principles](PHILOSOPHY.portability.md)** - Foundational principles around portability, interoperability, and detachable solutions
 - **[Build and Execution](PHILOSOPHY.build-execution.md)** - Technical decisions about build systems and script execution
-- **[Tool Choices](PHILOSOPHY.tool-choices.md)** - Rationale for framework, editor, linting, testing, and AI SDK selections
+- **[Tool Choices](PHILOSOPHY.tool-choices.md)** - Rationale for HTTP framework, editor, linting, testing, bundler, and AI SDK selections
 - **[Browser Support](PHILOSOPHY.browser-support.md)** - Future considerations for browser feature adoption
 - **[CSS](PHILOSOPHY.css.md)** - h-css hyperscript pattern, Shadow DOM style injection, and why alternatives don't fit
 

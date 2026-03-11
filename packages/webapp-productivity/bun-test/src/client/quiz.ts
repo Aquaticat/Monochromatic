@@ -1,8 +1,8 @@
 // Reads server-embedded quiz data, builds quiz UI with <flash-card> custom element.
 import { api } from "./lib/api";
 import { injectCSS } from "./lib/inject-css";
-// build-css processes src/client/styles.css -> dist/client/styles.css at startup
-import styles from "../../dist/client/styles.css" with { type: "text" };
+// build-css processes src/client/styles.css -> dist/css/styles.css
+import styles from "../../dist/css/styles.css" with { type: "text" };
 import { FlashCardElement } from "./components/flash-card";
 
 injectCSS(styles);

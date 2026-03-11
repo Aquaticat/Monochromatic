@@ -30,6 +30,9 @@
     },
     "./.node.ts": {
       "default": "./src/index.node.ts"
+    },
+    "./.client.ts": {
+      "default": "./src/index.client.ts"
     }
   },
   "description": "Shared tsdown build configuration for Monochromatic packages."

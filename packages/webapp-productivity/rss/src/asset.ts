@@ -4,40 +4,6 @@ import { l, } from './log.ts';
 l.debug(`asset module loading`);
 
 /**
- * Builds the client-side JavaScript bundle using Bun.build.
- * Bundles `client.ts` and its dependencies for browser execution.
- * @returns Promise resolving to the bundled JavaScript source code
- * @throws {@link Error} If the build fails or produces no output
- * @example
- * ```typescript
- * const clientJs = await buildClientJs();
- * ```
- */
-async function buildClientJs(): Promise<string> {
-  l.debug(`buildClientJs`);
-
-  const buildResult = await Bun.build({
-    entrypoints: ['./src/client.ts',],
-    target: 'browser',
-    minify: process.env.NODE_ENV === 'production',
-  },);
-
-  if (!buildResult.success) {
-    l.error(`buildClientJs failed: ${buildResult.logs.join('\n',)}`);
-    throw new Error(`Client build failed: ${buildResult.logs.join('\n',)}`,);
-  }
-
-  const output = buildResult.outputs[0];
-  if (!output) {
-    throw new Error('Client build produced no output',);
-  }
-
-  const text = await output.text();
-  l.debug(`buildClientJs done, ${text.length} chars`);
-  return text;
-}
-
-/**
  * CSS source for the RSS reader interface.
  * Imported at build time via Bun's static asset import.
  * Also used by {@link itemToFeed} in html.ts for iframe content styling.
@@ -47,11 +13,10 @@ export const css: string = clientCss;
 
 /**
  * Bundled client-side JavaScript for the RSS reader interface.
- * Built once at server startup via Bun.build with browser target.
- * @see {@link buildClientJs} for the bundling process
+ * Pre-built by tsdown via `mise run build:js:client` and read from disk at startup.
  * @see {@link indexHtmlStart} for where it is inlined into the page
  */
-export const js: string = await buildClientJs();
+export const js: string = await Bun.file('./dist/client/client.js',).text();
 
 /**
  * Opening HTML fragment (doctype through body start) with inlined CSS and JS.

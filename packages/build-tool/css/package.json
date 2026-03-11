@@ -9,6 +9,9 @@
     "./ts/fs-registry": "./src/fs-registry.ts",
     "./ts/process-shim": "./src/process-shim.ts"
   },
+  "bin": {
+    "build-css": "./src/cli.ts"
+  },
   "main": "dist/final/node/index.js",
   "typings": "dist/final/node/index.d.ts",
   "files": [

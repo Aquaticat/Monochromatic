@@ -1,9 +1,9 @@
 // Reads server-embedded deck data, builds DOM. No fetch on load.
 import { api } from "./lib/api";
 import { injectCSS } from "./lib/inject-css";
-// build-css processes src/client/styles.css -> dist/client/styles.css at startup
-// (resolves @import, expands @mixin/@apply). Bun.build() inlines this as a text string.
-import styles from "../../dist/client/styles.css" with { type: "text" };
+// build-css processes src/client/styles.css -> dist/css/styles.css
+// (resolves @import, expands @mixin/@apply). tsdown inlines this as a text string.
+import styles from "../../dist/css/styles.css" with { type: "text" };
 
 injectCSS(styles);
 

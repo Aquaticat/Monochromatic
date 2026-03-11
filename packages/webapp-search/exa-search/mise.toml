@@ -1,3 +1,21 @@
+[tasks.build]
+extends = "build"
+
+[tasks."build:js"]
+extends = "build:js"
+
+[tasks."build:js:client"]
+extends = "build:js:client"
+
+[tasks."watch:build"]
+extends = "watch:build"
+
+[tasks."watch:build:js"]
+extends = "watch:build:js"
+
+[tasks."watch:build:js:client"]
+extends = "watch:build:js:client"
+
 [tasks.dev]
 description = "Start exa-search in watch mode"
 run = "mise watch -w src -r -- bun src/index.ts"

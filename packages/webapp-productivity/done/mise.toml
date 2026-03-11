@@ -1,14 +1,25 @@
 [tasks.build]
 extends = "build"
 
+[tasks."build:css"]
+description = "Compile global CSS (resolves @apply rules)"
+run = "build-css ./src/client/styles.css ./dist/css/styles.css"
+
 [tasks."build:js"]
-run = "bun src/server.ts --build-only"
+description = "Build CSS then bundle client JS"
+run = "mise run build:css; mise run build:js:client"
+
+[tasks."build:js:client"]
+extends = "build:js:client"
 
 [tasks."watch:build"]
 extends = "watch:build"
 
 [tasks."watch:build:js"]
-run = "mise watch -w src -r -- bun src/server.ts --build-only"
+extends = "watch:build:js"
+
+[tasks."watch:build:js:client"]
+extends = "watch:build:js:client"
 
 [tasks."dev:site"]
 description = "Start Done in watch mode"

@@ -10,7 +10,9 @@
     "exa-js": "catalog:"
   },
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@types/bun": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:"
   }
 }

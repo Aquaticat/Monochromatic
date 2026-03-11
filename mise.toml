@@ -153,6 +153,9 @@ run = "{{vars.fanout}}"
 [task_templates."build:js:browser"]
 run = "tsdown --config tsdown.browser.config.ts"
 
+[task_templates."build:js:client"]
+run = "tsdown --config tsdown.client.config.ts"
+
 [task_templates."build:js:node"]
 run = "tsdown --config tsdown.node.config.ts"
 
@@ -164,6 +167,9 @@ run = "{{vars.fanout}}"
 
 [task_templates."watch:build:js:browser"]
 run = "tsdown --watch --config tsdown.browser.config.ts"
+
+[task_templates."watch:build:js:client"]
+run = "tsdown --watch --config tsdown.client.config.ts"
 
 [task_templates."watch:build:js:node"]
 run = "tsdown --watch --config tsdown.node.config.ts"

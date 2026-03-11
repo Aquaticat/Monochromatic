@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import { build, } from './index.ts';
 import type { BuildOptions, } from './index.ts';
 
