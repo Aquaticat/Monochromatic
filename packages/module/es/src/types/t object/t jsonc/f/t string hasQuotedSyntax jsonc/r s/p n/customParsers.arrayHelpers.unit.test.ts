@@ -20,13 +20,13 @@ describe('expectArraySeparatorOrEnd', () => {
     const out = $(r,);
     if (out.kind !== 'end')
       throw new Error('expected end',);
-    expect(out.tail,).toBe('TAIL',);
+    expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
   });
   test('trailing comma then end', () => {
     const out = $(', /* c */ ]TAIL' as FragmentStringJsonc,);
     if (out.kind !== 'end')
       throw new Error('expected end',);
-    expect(out.tail,).toBe('TAIL',);
+    expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
   });
   test('next element start', () => {
     const out = $(', /* c */ 2, x' as FragmentStringJsonc,);
@@ -43,12 +43,12 @@ describe('parseArrayElements', () => {
   test('single element then end', () => {
     const out = $('1]TAIL' as FragmentStringJsonc,);
     expect(out.items,).toEqual([{ value: 1, },],);
-    expect(out.tail,).toBe('TAIL',);
+    expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
   });
   test('multi with comments and trailing comma', () => {
     const out = $('1, /* c */ 2, /* d */ ]X' as FragmentStringJsonc,);
     expect((out.items as Jsonc.Number[]).map(v => v.value),).toEqual([1, 2,],);
-    expect(out.tail,).toBe('X',);
+    expect(out.tail,).toBe('X' as FragmentStringJsonc,);
   });
   test('invalid: identifier right after literal (boundary handled by separator)', () => {
     expect(() => $('nullY]' as FragmentStringJsonc,)).toThrow(/expected ',' or ']'/,);

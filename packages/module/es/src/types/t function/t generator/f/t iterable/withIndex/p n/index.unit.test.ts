@@ -6,6 +6,12 @@ import {
   test,
 } from 'bun:test';
 
+import type { $ as Int, } from '@_/types/t number/t finite/t int/t/index.ts';
+import type { $ as Positive, } from '@_/types/t number/t positive/t/index.ts';
+
+/** Shorthand for the branded index type yielded by withIndex. */
+type Index = Int & (Positive | 0);
+
 const $ = types.function.generator.from.iterable.withIndex.named.$;
 
 describe($, () => {
@@ -13,9 +19,9 @@ describe($, () => {
     const result = await Array.fromAsync($({ myIterable: ['a', 'b', 'c',], },),);
 
     expect(result,).toEqual([
-      { element: 'a', index: 0, },
-      { element: 'b', index: 1, },
-      { element: 'c', index: 2, },
+      { element: 'a', index: 0 as Index, },
+      { element: 'b', index: 1 as Index, },
+      { element: 'c', index: 2 as Index, },
     ],);
   });
 
@@ -34,11 +40,11 @@ describe($, () => {
     const result = await Array.fromAsync($({ myIterable: 'hello', },),);
 
     expect(result,).toEqual([
-      { element: 'h', index: 0, },
-      { element: 'e', index: 1, },
-      { element: 'l', index: 2, },
-      { element: 'l', index: 3, },
-      { element: 'o', index: 4, },
+      { element: 'h', index: 0 as Index, },
+      { element: 'e', index: 1 as Index, },
+      { element: 'l', index: 2 as Index, },
+      { element: 'l', index: 3 as Index, },
+      { element: 'o', index: 4 as Index, },
     ],);
   });
 
@@ -47,9 +53,9 @@ describe($, () => {
     const result = await Array.fromAsync($({ myIterable: mySet, },),);
 
     expect(result,).toEqual([
-      { element: 10, index: 0, },
-      { element: 20, index: 1, },
-      { element: 30, index: 2, },
+      { element: 10, index: 0 as Index, },
+      { element: 20, index: 1 as Index, },
+      { element: 30, index: 2 as Index, },
     ],);
   });
 
@@ -62,9 +68,9 @@ describe($, () => {
     const result = await Array.fromAsync($({ myIterable: myMap, },),);
 
     expect(result,).toEqual([
-      { element: ['key1', 'value1',], index: 0, },
-      { element: ['key2', 'value2',], index: 1, },
-      { element: ['key3', 'value3',], index: 2, },
+      { element: ['key1', 'value1',], index: 0 as Index, },
+      { element: ['key2', 'value2',], index: 1 as Index, },
+      { element: ['key3', 'value3',], index: 2 as Index, },
     ],);
   });
 
@@ -78,9 +84,9 @@ describe($, () => {
     const result = await Array.fromAsync($({ myIterable: asyncGen(), },),);
 
     expect(result,).toEqual([
-      { element: 'first', index: 0, },
-      { element: 'second', index: 1, },
-      { element: 'third', index: 2, },
+      { element: 'first', index: 0 as Index, },
+      { element: 'second', index: 1 as Index, },
+      { element: 'third', index: 2 as Index, },
     ],);
   });
 
@@ -88,7 +94,7 @@ describe($, () => {
     const result = await Array.fromAsync($({ myIterable: ['only',], },),);
 
     expect(result,).toEqual([
-      { element: 'only', index: 0, },
+      { element: 'only', index: 0 as Index, },
     ],);
   });
 
@@ -99,11 +105,11 @@ describe($, () => {
     const result = await Array.fromAsync($({ myIterable: largeArray, },),);
 
     expect(result,).toHaveLength(LARGE_ARRAY_SIZE,);
-    expect(result[0],).toEqual({ element: 0, index: 0, },);
-    expect(result[LARGE_ARRAY_SIZE - 1],).toEqual({ element: 99, index: 99, },);
+    expect(result[0],).toEqual({ element: 0, index: 0 as Index, },);
+    expect(result[LARGE_ARRAY_SIZE - 1],).toEqual({ element: 99, index: 99 as Index, },);
 
     result.forEach((item, arrayIndex,) => {
-      expect(item.index,).toBe(arrayIndex,);
+      expect(item.index,).toBe(arrayIndex as Index,);
       expect(item.element,).toBe(arrayIndex,);
     },);
   });
@@ -118,9 +124,9 @@ describe($, () => {
     const result = await Array.fromAsync($({ myIterable: numberGen(), },),);
 
     expect(result,).toEqual([
-      { element: 1, index: 0, },
-      { element: 2, index: 1, },
-      { element: 3, index: 2, },
+      { element: 1, index: 0 as Index, },
+      { element: 2, index: 1 as Index, },
+      { element: 3, index: 2 as Index, },
     ],);
   });
 

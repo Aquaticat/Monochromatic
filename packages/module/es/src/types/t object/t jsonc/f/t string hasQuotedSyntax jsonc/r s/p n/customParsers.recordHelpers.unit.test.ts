@@ -18,7 +18,7 @@ describe('parseRecordHeader', () => {
   test('no context comment', () => {
     const out = $(' "a":1}TAIL' as FragmentStringJsonc,);
     expect(out.recordComment,).toBeUndefined();
-    expect(out.tail,).toBe(' "a":1}TAIL',);
+    expect(out.tail,).toBe(' "a":1}TAIL' as FragmentStringJsonc,);
   });
   test('with context comment', () => {
     const out = $(
@@ -38,13 +38,13 @@ describe('expectRecordSeparatorOrEnd', () => {
     const out = $('}TAIL' as FragmentStringJsonc,);
     if (out.kind !== 'end')
       throw new Error('expected end',);
-    expect(out.tail,).toBe('TAIL',);
+    expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
   });
   test('trailing comma then end', () => {
     const out = $(', /* c */ }TAIL' as FragmentStringJsonc,);
     if (out.kind !== 'end')
       throw new Error('expected end',);
-    expect(out.tail,).toBe('TAIL',);
+    expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
   });
   test('next member start', () => {
     const out = $(', /* c */ "b": 2' as FragmentStringJsonc,);
@@ -62,7 +62,7 @@ describe('parseRecordKey', () => {
     const out = $('"myKey": 1' as FragmentStringJsonc,);
     expect(out.keyNode.value,).toBe('"myKey"',);
     expect(out.keyNode.comment,).toBeUndefined();
-    expect(out.remaining,).toBe(': 1',);
+    expect(out.remaining,).toBe(': 1' as FragmentStringJsonc,);
   });
   test('key with leading comment', () => {
     const out = $('/* key comment */ "x": true' as FragmentStringJsonc,);
@@ -83,11 +83,11 @@ describe('expectColonAfterKey', () => {
   const $ = exported.expectColonAfterKey;
   test('colon immediately after', () => {
     const out = $(': 1' as FragmentStringJsonc,);
-    expect(out,).toBe(' 1',);
+    expect(out,).toBe(' 1' as FragmentStringJsonc,);
   });
   test('colon with surrounding whitespace/comments', () => {
     const out = $(' /* c */ : 1' as FragmentStringJsonc,);
-    expect(out,).toBe(' 1',);
+    expect(out,).toBe(' 1' as FragmentStringJsonc,);
   });
   test('error when colon missing', () => {
     expect(() => $(' 1' as FragmentStringJsonc,)).toThrow(/expected ':' after key/,);
@@ -101,7 +101,7 @@ describe('parseRecordValue', () => {
   test('simple number value', () => {
     const out = $(' 42, "b"' as FragmentStringJsonc,);
     expect((out.valueNode as Jsonc.Number).value,).toBe(42,);
-    expect(out.remaining,).toBe(', "b"',);
+    expect(out.remaining,).toBe(', "b"' as FragmentStringJsonc,);
   });
   test('value with leading comment', () => {
     const out = $(' /* val comment */ "text"}' as FragmentStringJsonc,);
@@ -119,7 +119,7 @@ describe('parseOneRecordMember', () => {
     const [key, val,] = out.entry;
     expect(key.value,).toBe('"a"',);
     expect((val as Jsonc.Number).value,).toBe(1,);
-    expect(out.remaining,).toBe(', "b"',);
+    expect(out.remaining,).toBe(', "b"' as FragmentStringJsonc,);
   });
   test('with comments on key and value', () => {
     const out = $('/* k */ "x": /* v */ 99}' as FragmentStringJsonc,);
@@ -140,7 +140,7 @@ describe('parseRecordMembers', () => {
     const [key, val,] = out.entries[0] as [Jsonc.RecordKey, Jsonc.Number,];
     expect(key.value,).toBe('"a"',);
     expect(val.value,).toBe(1,);
-    expect(out.tail,).toBe('TAIL',);
+    expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
   });
   test('multiple members with trailing comma', () => {
     const out = $('"a": 1, /* c */ "b": 2, }X' as FragmentStringJsonc,);
@@ -148,12 +148,12 @@ describe('parseRecordMembers', () => {
     expect(out.entries.map(([k, v,],) => [k.value, (v as Jsonc.Number).value,]),).toEqual(
       [['"a"', 1,], ['"b"', 2,],],
     );
-    expect(out.tail,).toBe('X',);
+    expect(out.tail,).toBe('X' as FragmentStringJsonc,);
   });
   test('immediate closing brace', () => {
     const out = $('}TAIL' as FragmentStringJsonc,);
     expect(out.entries,).toHaveLength(0,);
-    expect(out.tail,).toBe('TAIL',);
+    expect(out.tail,).toBe('TAIL' as FragmentStringJsonc,);
   });
 });
 //endregion parseRecordMembers

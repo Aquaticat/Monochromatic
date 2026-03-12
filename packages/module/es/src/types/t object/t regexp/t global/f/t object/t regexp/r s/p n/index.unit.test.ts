@@ -62,7 +62,7 @@ describe('ensure regexp has global flag', () => {
     const result = $({ regexp, },);
 
     expect(result.flags,).toBe('g',);
-    expect(result.source,).toBe('[.*+?^${}()|[\\]\\\\]',);
+    expect(result.source,).toBe('[$()*+.?[\\\\\\]^{|}]',);
   });
 
   test('works with unicode characters', () => {
@@ -70,7 +70,8 @@ describe('ensure regexp has global flag', () => {
     const result = $({ regexp, },);
 
     expect(result.flags,).toBe('g',);
-    expect(result.source,).toBe('Hello 世界',);
+    // Bun (JavaScriptCore) escapes non-ASCII in .source when constructing via new RegExp()
+    expect(result.source,).toBe('Hello \\u4E16\\u754C',);
     expect(result.test('Hello 世界',),).toBe(true,);
   });
 

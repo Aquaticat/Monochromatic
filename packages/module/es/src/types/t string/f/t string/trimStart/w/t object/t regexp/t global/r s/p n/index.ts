@@ -45,7 +45,7 @@ import type { $ as Global, } from '@_/types/t object/t regexp/t global/t/index.t
  * $({ str: '00123abc', trimmer: /0+\d{0,}/g }); // 'abc'
  *
  * // Remove repeated prefixes with patterns
- * $({ str: 'TestTesttest', trimmer: /Test+/ig }); // 'test'
+ * $({ str: 'TestTESTmiddle', trimmer: /Test/gi }); // 'middle'
  *
  * // Remove file extension patterns
  * $({ str: '.backup.backup.document', trimmer: /\.backup/g }); // 'document'

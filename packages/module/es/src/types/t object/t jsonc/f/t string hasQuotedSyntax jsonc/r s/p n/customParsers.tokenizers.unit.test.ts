@@ -38,8 +38,8 @@ describe('parseLiteralToken', () => {
     const out = $({ value: 'nully' as FragmentStringJsonc, },);
     if (typeof out === 'symbol')
       throw new Error('expected literal',);
-    expect(out.consumed,).toBe('null',);
-    expect(out.remaining,).toBe('y',);
+    expect(out.consumed,).toBe('null' as FragmentStringJsonc,);
+    expect(out.remaining,).toBe('y' as FragmentStringJsonc,);
   });
   test('returns sentinel when no literal at start', () => {
     const out = $({ value: '[1]' as FragmentStringJsonc, },);

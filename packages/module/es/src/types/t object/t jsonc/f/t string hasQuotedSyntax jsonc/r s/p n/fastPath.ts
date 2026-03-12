@@ -2,7 +2,7 @@ import type {
   $ as StringJsonc,
   FragmentStringJsonc,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
-import type { UnknownRecord, } from 'type-fest';
+import type { JsonValue, } from 'type-fest';
 import type * as Jsonc from '../../../../t/index.ts';
 import { startsWithComment, } from './customParsers.startsWithComment.ts';
 
@@ -113,7 +113,7 @@ function tryContainerFastPath(
 
     const repairedJson = trimmed.slice(0, searchIndex - 1,) + closingChar;
     try {
-      return { ...context, json: JSON.parse(repairedJson,) as UnknownRecord, };
+      return { ...context, json: JSON.parse(repairedJson,) as JsonValue, };
     }
     catch {
       // Parse failed - likely has comments, strings with special chars, etc.
@@ -123,7 +123,7 @@ function tryContainerFastPath(
 
   // No trailing comma found - try parsing as-is for clean JSON
   try {
-    return { ...context, json: JSON.parse(trimmed,) as UnknownRecord, };
+    return { ...context, json: JSON.parse(trimmed,) as JsonValue, };
   }
   catch {
     // Parse failed - contains JSONC features like comments

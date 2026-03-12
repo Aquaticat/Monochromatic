@@ -5,6 +5,12 @@ import {
   test,
 } from 'bun:test';
 
+import type { $ as Int, } from '@_/types/t number/t finite/t int/t/index.ts';
+import type { $ as Positive, } from '@_/types/t number/t positive/t/index.ts';
+
+/** Shorthand for the branded index type yielded by withIndex. */
+type Index = Int & (Positive | 0);
+
 const $ = types.function.generator.from.iterable.withIndex.sync.named.$;
 
 describe($, () => {
@@ -12,9 +18,9 @@ describe($, () => {
     const result = [...$({ myIterable: ['a', 'b', 'c',], },),];
 
     expect(result,).toEqual([
-      { element: 'a', index: 0, },
-      { element: 'b', index: 1, },
-      { element: 'c', index: 2, },
+      { element: 'a', index: 0 as Index, },
+      { element: 'b', index: 1 as Index, },
+      { element: 'c', index: 2 as Index, },
     ],);
   });
 
@@ -22,11 +28,11 @@ describe($, () => {
     const result = [...$({ myIterable: 'hello', },),];
 
     expect(result,).toEqual([
-      { element: 'h', index: 0, },
-      { element: 'e', index: 1, },
-      { element: 'l', index: 2, },
-      { element: 'l', index: 3, },
-      { element: 'o', index: 4, },
+      { element: 'h', index: 0 as Index, },
+      { element: 'e', index: 1 as Index, },
+      { element: 'l', index: 2 as Index, },
+      { element: 'l', index: 3 as Index, },
+      { element: 'o', index: 4 as Index, },
     ],);
   });
 
@@ -34,9 +40,9 @@ describe($, () => {
     const result = [...$({ myIterable: [10, 20, 30,], },),];
 
     expect(result,).toEqual([
-      { element: 10, index: 0, },
-      { element: 20, index: 1, },
-      { element: 30, index: 2, },
+      { element: 10, index: 0 as Index, },
+      { element: 20, index: 1 as Index, },
+      { element: 30, index: 2 as Index, },
     ],);
   });
 
@@ -50,9 +56,9 @@ describe($, () => {
     const result = [...$({ myIterable: new Set(['x', 'y', 'z',],), },),];
 
     expect(result,).toEqual([
-      { element: 'x', index: 0, },
-      { element: 'y', index: 1, },
-      { element: 'z', index: 2, },
+      { element: 'x', index: 0 as Index, },
+      { element: 'y', index: 1 as Index, },
+      { element: 'z', index: 2 as Index, },
     ],);
   });
 
@@ -61,8 +67,8 @@ describe($, () => {
     const result = [...$({ myIterable: map, },),];
 
     expect(result,).toEqual([
-      { element: ['key1', 'value1',], index: 0, },
-      { element: ['key2', 'value2',], index: 1, },
+      { element: ['key1', 'value1',], index: 0 as Index, },
+      { element: ['key2', 'value2',], index: 1 as Index, },
     ],);
   });
 
@@ -82,12 +88,12 @@ describe($, () => {
 
     // Consume first element
     const first = gen.next();
-    expect(first.value,).toEqual({ element: 'first', index: 0, },);
+    expect(first.value,).toEqual({ element: 'first', index: 0 as Index, },);
     expect(callCount,).toBe(1,);
 
     // Consume second element
     const second = gen.next();
-    expect(second.value,).toEqual({ element: 'second', index: 1, },);
+    expect(second.value,).toEqual({ element: 'second', index: 1 as Index, },);
     expect(callCount,).toBe(2,);
 
     // Generator is done

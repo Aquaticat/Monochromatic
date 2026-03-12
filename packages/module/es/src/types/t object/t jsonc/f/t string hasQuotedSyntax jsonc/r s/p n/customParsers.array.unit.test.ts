@@ -19,7 +19,7 @@ describe($, () => {
     const input = '[]' as FragmentStringJsonc;
     const out = $({ value: input, },);
     expect(out.value,).toEqual([],);
-    expect(out.remainingContent,).toBe('',);
+    expect(out.remainingContent,).toBe('' as FragmentStringJsonc,);
   });
 
   test('empty array with leading comment', () => {
@@ -27,7 +27,7 @@ describe($, () => {
     const out = $({ value: input, },);
     expect(out.value,).toEqual([],);
     expect(out.comment?.type,).toBe('block',);
-    expect(out.remainingContent,).toBe('TAIL',);
+    expect(out.remainingContent,).toBe('TAIL' as FragmentStringJsonc,);
   });
   //endregion Empty arrays
 
@@ -36,7 +36,7 @@ describe($, () => {
     const out = $({ value: '[1]' as FragmentStringJsonc, },);
     expect(Array.isArray(out.value,),).toBe(true,);
     expect(out.value[0],).toEqual({ value: 1, },);
-    expect(out.remainingContent,).toBe('',);
+    expect(out.remainingContent,).toBe('' as FragmentStringJsonc,);
   });
 
   test('multiple numbers', () => {
@@ -47,7 +47,7 @@ describe($, () => {
   test('trailing comma with comments', () => {
     const out = $({ value: '[1, /* c */ 2, /* d */ ]X' as FragmentStringJsonc, },);
     expect((out.value as Jsonc.Number[]).map(v => v.value),).toEqual([1, 2,],);
-    expect(out.remainingContent,).toBe('X',);
+    expect(out.remainingContent,).toBe('X' as FragmentStringJsonc,);
   });
   //endregion Primitives and separators
 
@@ -117,7 +117,7 @@ describe($, () => {
     expect(out.value,).toEqual([],);
     expect(out.comment?.type,).toBe('block',);
     expect(out.comment?.commentValue.trim(),).toBe('X',);
-    expect(out.remainingContent,).toBe('TAIL',);
+    expect(out.remainingContent,).toBe('TAIL' as FragmentStringJsonc,);
   });
 
   test('empty array merges outside and inside comments', () => {
@@ -128,7 +128,7 @@ describe($, () => {
     expect(out.value,).toEqual([],);
     expect(out.comment?.type,).toBe('block',);
     expect(out.comment?.commentValue,).toBe('A\n X ',);
-    expect(out.remainingContent,).toBe('TAIL',);
+    expect(out.remainingContent,).toBe('TAIL' as FragmentStringJsonc,);
   });
   //endregion Array-level vs first-item comments
 },);

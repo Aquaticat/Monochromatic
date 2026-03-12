@@ -1,4 +1,3 @@
-import { findUp, } from 'find-up';
 import { exec, } from 'node:child_process';
 import {
   existsSync,
@@ -7,10 +6,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
-import {
-  dirname,
-  join,
-} from 'node:path';
+import { join, } from 'node:path';
 import { promisify, } from 'node:util';
 import {
   afterEach,
@@ -48,12 +44,8 @@ beforeEach(async () => {
   const testFileDir = import.meta.dirname;
   cliPath = join(testFileDir, 'command.ts',);
 
-  // testDir fixture
-  const packageJsonPath = await findUp('package.json', { cwd: testFileDir, },);
-  if (!packageJsonPath)
-    throw new Error('Could not find package.json',);
-
-  const packageDir = dirname(packageJsonPath,);
+  // testDir fixture — import.meta.dirname is src/, so parent is the package root
+  const packageDir = join(testFileDir, '..',);
   const timestamp = Date.now();
   const randomId = Math.random().toString(36,).substring(2, 8,);
   testDir = join(packageDir, 'dist', 'temp', 'test',

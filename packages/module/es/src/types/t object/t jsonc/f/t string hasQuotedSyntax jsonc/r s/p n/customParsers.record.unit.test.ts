@@ -20,7 +20,7 @@ describe($, () => {
     const out = $({ value: input, },);
     expect(out.value instanceof Map,).toBe(true,);
     expect(out.value.size,).toBe(0,);
-    expect(out.remainingContent,).toBe('',);
+    expect(out.remainingContent,).toBe('' as FragmentStringJsonc,);
   });
 
   test('empty object with inside comment merges into record-level', () => {
@@ -29,7 +29,7 @@ describe($, () => {
     expect(out.value.size,).toBe(0,);
     expect(out.comment?.type,).toBe('block',);
     expect(out.comment?.commentValue.trim(),).toBe('c',);
-    expect(out.remainingContent,).toBe('TAIL',);
+    expect(out.remainingContent,).toBe('TAIL' as FragmentStringJsonc,);
   });
   //endregion Empty objects
 
@@ -54,7 +54,7 @@ describe($, () => {
       ) => [k.value, (v as Jsonc.Number).value,]),
     )
       .toEqual([['"a"', 1,], ['"b"', 2,],],);
-    expect(out.remainingContent,).toBe('X',);
+    expect(out.remainingContent,).toBe('X' as FragmentStringJsonc,);
   });
   //endregion Pairs and separators
 
@@ -96,7 +96,7 @@ describe($, () => {
     expect(out.value.size,).toBe(0,);
     expect(out.comment?.type,).toBe('block',);
     expect(out.comment?.commentValue,).toBe('A\n X ',);
-    expect(out.remainingContent,).toBe('TAIL',);
+    expect(out.remainingContent,).toBe('TAIL' as FragmentStringJsonc,);
   });
   //endregion Comments semantics
 

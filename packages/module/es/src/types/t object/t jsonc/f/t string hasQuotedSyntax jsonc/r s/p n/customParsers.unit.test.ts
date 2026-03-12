@@ -26,7 +26,7 @@ describe('parseValueFromStart', () => {
     const out = $({ value: '[1]TAIL' as FragmentStringJsonc, },);
     const arr = out.parsed as Jsonc.Array;
     expect(arr.value[0],).toEqual({ value: 1, },);
-    expect(out.remaining,).toBe('TAIL',);
+    expect(out.remaining,).toBe('TAIL' as FragmentStringJsonc,);
   });
 });
 //endregion parseValueFromStart

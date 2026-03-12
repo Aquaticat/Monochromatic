@@ -1,4 +1,4 @@
-import type { UnknownRecord, } from 'type-fest';
+import type { JsonValue, } from 'type-fest';
 
 export type FragmentStringJsonc = string & { __brand: { jsonc: 'fragment'; }; };
 
@@ -66,7 +66,7 @@ export type RecordKey = StringBase & ValueBase;
 export type RecordBase = { value: Map<RecordKey, Value>; };
 
 export type PlainJsonBase = {
-  json: UnknownRecord;
+  json: JsonValue;
 };
 
 /**

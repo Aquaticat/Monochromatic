@@ -90,8 +90,8 @@ describe('trim with regex global - synchronous named', () => {
   });
 
   test('trims repeated case insensitive patterns', () => {
-    expect($({ str: 'TestTesttestTestTest', trimmer: /Test+/gi as Global, },),).toBe(
-      'test',
+    expect($({ str: 'TestTESTmiddleTESTTest', trimmer: /Test/gi as Global, },),).toBe(
+      'middle',
     );
   });
 

@@ -50,7 +50,7 @@ import {
  * $({ str: '00123abc00456', trimmer: /0+\d{0,}/g }); // 'abc'
  *
  * // Remove repeated prefixes/suffixes with patterns
- * $({ str: 'TestTesttestTestTest', trimmer: /Test+/ig }); // 'test'
+ * $({ str: 'TestTESTmiddleTESTTest', trimmer: /Test/gi }); // 'middle'
  *
  * // Remove file extension patterns from both ends
  * $({ str: '.backup.document.backup', trimmer: /\.backup/g }); // 'document'
