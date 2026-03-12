@@ -1,12 +1,13 @@
 {
   "name": "@monochromatic-dev/dev-script-task-util",
-  "description": "CLI utilities for mise task orchestration: command executor with allowFailure support and file append helper.",
+  "description": "CLI utilities for mise task orchestration: command executor with allowFailure support, file append helper, and make-style dependency checker.",
   "type": "module",
   "private": true,
   "main": "src/command.ts",
   "bin": {
     "task-command": "src/command.ts",
-    "task-append": "src/append.ts"
+    "task-append": "src/append.ts",
+    "task-depends": "src/depends.ts"
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
@@ -17,6 +18,7 @@
     "@optique/core": "catalog:",
     "@optique/run": "catalog:",
     "nano-spawn": "catalog:",
+    "tiny-readdir-glob": "catalog:",
     "ts-pattern": "catalog:"
   },
   "version": "0.0.1",

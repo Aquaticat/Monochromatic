@@ -1,0 +1,176 @@
+#!/usr/bin/env bun
+
+/**
+ * Make-style dependency checker for mise tasks.
+ *
+ * Checks staleness via file modification times and/or shell command probes,
+ * then runs the given command only when dependencies are stale.
+ * Output from the command is collapsed (hidden on success, shown on failure).
+ *
+ * Both `-s` and `-o` accept file globs or `sh:` prefixed shell commands.
+ * Shell commands must output a parseable timestamp on stdout:
+ * unix epoch (seconds or ms), ISO 8601, `Infinity`, or `-Infinity`.
+ * Non-zero exit codes are treated as errors (not silent staleness signals).
+ *
+ * Timestamps are aggregated per-side using configurable strategies
+ * (`--source-time-strategy`, `--output-time-strategy`), then compared:
+ * `sourceTime > outputTime` → stale.
+ *
+ * @example
+ * ```bash
+ * # File-based
+ * task-depends -s "src/*.ts" -o "dist/*.js" -- mise run build
+ *
+ * # Command-based output check (gate pattern)
+ * task-depends -o "sh:podman image exists img && echo Infinity || echo -Infinity" -- podman build .
+ *
+ * # Timestamp from command
+ * task-depends -s "sh:git log -1 --format=%ct" -o "dist/*.js" -- mise run build
+ *
+ * # Catch missing outputs in mixed lists with oldest strategy
+ * task-depends --output-time-strategy oldest -s "src/**" -o "dist/**" -o "sh:..." -- mise run build
+ * ```
+ */
+
+import { outdent, } from '@cspotcode/outdent';
+import { object, } from '@optique/core/constructs';
+import {
+  multiple,
+  optional,
+} from '@optique/core/modifiers';
+import {
+  argument,
+  option,
+} from '@optique/core/primitives';
+import { string, } from '@optique/core/valueparser';
+import { runSync, } from '@optique/run';
+
+import type { BuiltinTimeStrategy, TimeStrategy, } from './depends-staleness.ts';
+
+import { executeWithCollapsedOutput, } from './depends-exec.ts';
+import { checkStaleness, } from './depends-staleness.ts';
+
+export {};
+
+//region Parser definition
+
+/** Optique parser for the task-depends CLI */
+const parser = object({
+  sources: multiple(optional(option('-s', '--sources', string(),),),),
+  outputs: multiple(optional(option('-o', '--outputs', string(),),),),
+  sourceTimeStrategy: optional(option('--source-time-strategy', string(),),),
+  outputTimeStrategy: optional(option('--output-time-strategy', string(),),),
+  allowFailure: option('-a', '--allowFailure',),
+  verbose: option('-v', '--verbose',),
+  rest: multiple(argument(string(),),),
+},);
+
+//endregion Parser definition
+
+//region Argument validation
+
+/** Parsed CLI arguments from process.argv */
+const rawArgs = runSync(parser, { programName: 'task-depends', help: 'option', },);
+
+/**
+ * Filters nullish values produced by `multiple(optional(...))` when an option is omitted.
+ *
+ * optique returns `undefined` for omitted optional options inside `multiple`.
+ *
+ * @param values - Array that may contain nullish values from optique parsing
+ * @returns Array with nullish values removed
+ *
+ * @example
+ * ```ts
+ * filterNullish([undefined, 'a', null]) // ['a']
+ * ```
+ */
+function filterNullish(values: ReadonlyArray<string | null | undefined>,): string[] {
+  return values.filter(function isString(value,): value is string {
+    return value !== null && value !== undefined;
+  },);
+}
+
+/** Valid builtin time strategy names */
+const BUILTIN_STRATEGIES: readonly BuiltinTimeStrategy[] = ['newest', 'oldest', 'mean', 'median',];
+
+/**
+ * Validates and defaults a time strategy option.
+ *
+ * Accepts builtin strategy names or `sh:` prefixed shell commands.
+ *
+ * @param value - Raw value from optique (possibly nullish when option is omitted)
+ * @param flagName - Flag name for error messages
+ * @returns Validated strategy, defaulting to `'newest'`
+ * @throws {Error} When value is not a valid builtin and does not start with `sh:`
+ *
+ * @example
+ * ```ts
+ * validateTimeStrategy(undefined, '--source-time-strategy') // 'newest'
+ * validateTimeStrategy('oldest', '--output-time-strategy') // 'oldest'
+ * validateTimeStrategy('sh:my-script', '--source-time-strategy') // 'sh:my-script'
+ * ```
+ */
+function validateTimeStrategy(value: string | null | undefined, flagName: string,): TimeStrategy {
+  if (value === null || value === undefined) return 'newest';
+  if (BUILTIN_STRATEGIES.includes(value as BuiltinTimeStrategy,)) return value as TimeStrategy;
+  if (value.startsWith('sh:',)) return value as TimeStrategy;
+  throw new Error(
+    `Invalid ${flagName}: "${value}". Must be a builtin (newest, oldest, mean, median) or sh:command.`,
+  );
+}
+
+/** Cleaned CLI arguments with nullish values filtered out */
+const args = {
+  sources: filterNullish(rawArgs.sources,),
+  outputs: filterNullish(rawArgs.outputs,),
+  sourceTimeStrategy: validateTimeStrategy(rawArgs.sourceTimeStrategy, '--source-time-strategy',),
+  outputTimeStrategy: validateTimeStrategy(rawArgs.outputTimeStrategy, '--output-time-strategy',),
+  allowFailure: rawArgs.allowFailure,
+  verbose: rawArgs.verbose,
+  rest: rawArgs.rest,
+};
+
+const [command, ...commandArgs] = args.rest;
+
+if (!command) {
+  throw new Error(
+    outdent`
+      No command specified after --
+      Usage: task-depends -s "src/*" -o "dist/*" -- command args...
+      Usage: task-depends -o "sh:podman image exists img" -- command args...
+    `,
+  );
+}
+
+if (args.outputs.length === 0) {
+  throw new Error(
+    'At least one -o is required (defines what "done" looks like: file glob or sh:command)',
+  );
+}
+
+//endregion Argument validation
+
+//region Staleness check and execution
+
+const stale = await checkStaleness({
+  sources: args.sources,
+  outputs: args.outputs,
+  verbose: args.verbose,
+  sourceTimeStrategy: args.sourceTimeStrategy,
+  outputTimeStrategy: args.outputTimeStrategy,
+},);
+
+if (stale) {
+  await executeWithCollapsedOutput({
+    command,
+    commandArgs,
+    verbose: args.verbose,
+    allowFailure: args.allowFailure,
+  },);
+}
+else if (args.verbose) {
+  console.error('[task-depends] all checks passed, skipping command',);
+}
+
+//endregion Staleness check and execution

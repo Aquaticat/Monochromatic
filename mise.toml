@@ -268,6 +268,7 @@ hide = true
 description = "Run browser tests with Playwright in podman"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
 run = """
+mise run prepare:playwright
 let args = ($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })
 podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx playwright test --config playwright.browser.config.ts ...$args
 """
@@ -277,6 +278,7 @@ hide = true
 description = "Run e2e tests with Playwright in podman"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
 run = """
+mise run prepare:playwright
 let args = ($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })
 podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx playwright test --config playwright.e2e.config.ts ...$args
 """
@@ -286,6 +288,7 @@ hide = true
 description = "Run browser tests in Chromium"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
 run = """
+mise run prepare:playwright
 let args = ($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })
 podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx playwright test --config playwright.browser.config.ts --project=chromium ...$args
 """
@@ -295,6 +298,7 @@ hide = true
 description = "Run browser tests in Firefox"
 usage = 'arg "[args]" var=#true help="Additional arguments passed to playwright"'
 run = """
+mise run prepare:playwright
 let args = ($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })
 podman run --rm -v $"($env.PWD):/work:Z" -w /work monochromatic-playwright bunx playwright test --config playwright.browser.config.ts --project=firefox ...$args
 """
@@ -426,7 +430,9 @@ run = "bun file-enforcer.config.ts"
 
 [tasks."prepare:playwright"]
 description = "Build Playwright container image via podman"
-run = "podman build -t monochromatic-playwright -f playwright.Dockerfile ."
+run = """
+task-depends -s "sh:echo Infinity" -o "sh:podman image exists monochromatic-playwright && echo Infinity || echo -Infinity" -- podman build -t monochromatic-playwright -f playwright.Dockerfile .
+"""
 
 [tasks.prepareAndBuild]
 description = "Complete setup: prepare environment and build all artifacts"
