@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200">
+  <!-- Back layer of skirt - more contained A-line shape -->
+  <path d="M332,396
+           Q316,406 300,435
+           L284,485 L280,510
+           Q284,525 298,533
+           L400,542 L502,533
+           Q516,525 520,510
+           L516,485 L500,435
+           Q484,406 468,396 Z"
+        fill="#cc2244" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Black petticoat -->
+  <path d="M280,510
+           Q284,532 302,542
+           L400,552 L498,542
+           Q516,532 520,510
+           Q516,538 498,550
+           L400,560 L302,550
+           Q284,538 280,510 Z"
+        fill="#2a2a2a" stroke="#1a1a1a" stroke-width="1"/>
+  <!-- Fold lines -->
+  <path d="M355,411 L316,518" stroke="#aa1a35" stroke-width="1" opacity="0.4"/>
+  <path d="M400,404 L400,538" stroke="#aa1a35" stroke-width="1" opacity="0.4"/>
+  <path d="M445,411 L484,518" stroke="#aa1a35" stroke-width="1" opacity="0.4"/>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200">
+  <!-- Left shoulder epaulette - compact, fits very narrow torso -->
+  <!-- Bottom layer -->
+  <path d="M340,235 L362,225 L367,238 L364,256 L346,260 Q338,257 339,247 Z"
+        fill="#888888" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Middle layer -->
+  <path d="M343,232 L360,224 L364,232 L363,249 L348,253 Q341,250 342,242 Z"
+        fill="#9a9a9a" stroke="#2a2a2a" stroke-width="1.2"/>
+  <!-- Top layer -->
+  <path d="M346,230 L358,222 L362,229 L360,242 L350,245 Q344,242 345,236 Z"
+        fill="#c8c4be" stroke="#2a2a2a" stroke-width="1.2"/>
+  <!-- Highlight -->
+  <path d="M349,231 L357,226" stroke="#d8d4ce" stroke-width="1.2" opacity="0.5"/>
+</svg>

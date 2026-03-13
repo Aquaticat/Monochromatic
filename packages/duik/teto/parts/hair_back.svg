@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200">
+  <!-- Hair mass behind head - widened to match face rx=57 -->
+  <path d="M336,95
+           Q336,75 348,65
+           Q374,50 400,48
+           Q426,50 452,65
+           Q464,75 464,95
+           Q468,140 466,185
+           Q464,215 457,240
+           Q446,262 437,270
+           L363,270
+           Q354,262 343,240
+           Q336,215 334,185
+           Q331,140 336,95
+           Z"
+        fill="#a01a35" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Volume texture -->
+  <path d="M352,72 Q400,55 448,72" fill="none" stroke="#881130" stroke-width="2" opacity="0.4"/>
+  <path d="M341,100 Q400,82 459,100" fill="none" stroke="#bb2040" stroke-width="1.5" opacity="0.3"/>
+  <path d="M338,150 Q400,140 462,150" fill="none" stroke="#881130" stroke-width="1" opacity="0.3"/>
+</svg>

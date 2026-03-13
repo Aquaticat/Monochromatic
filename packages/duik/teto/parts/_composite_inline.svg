@@ -1,0 +1,740 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200">
+  <rect width="800" height="1200" fill="#f0f0f0"/>
+  <defs>
+    <!-- from torso_front -->
+    <linearGradient id="jacket" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#888888"/>
+      <stop offset="50%" stop-color="#9a9a9a"/>
+      <stop offset="100%" stop-color="#888888"/>
+    </linearGradient>
+    <!-- from skirt_front -->
+    <linearGradient id="skirt-gray" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9a9a9a"/>
+      <stop offset="100%" stop-color="#888888"/>
+    </linearGradient>
+    <!-- from head_face -->
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5e0d0"/>
+      <stop offset="100%" stop-color="#ebd0c0"/>
+    </linearGradient>
+    <!-- from eyes -->
+    <radialGradient id="iris-l" cx="0.5" cy="0.4" r="0.5">
+      <stop offset="0%" stop-color="#ee4455"/>
+      <stop offset="50%" stop-color="#cc2244"/>
+      <stop offset="100%" stop-color="#881133"/>
+    </radialGradient>
+    <radialGradient id="iris-r" cx="0.5" cy="0.4" r="0.5">
+      <stop offset="0%" stop-color="#ee4455"/>
+      <stop offset="50%" stop-color="#cc2244"/>
+      <stop offset="100%" stop-color="#881133"/>
+    </radialGradient>
+  </defs>
+  <g id="hair_back">
+    <!-- Hair mass behind head - widened to match face rx=57 -->
+  <path d="M336,95
+           Q336,75 348,65
+           Q374,50 400,48
+           Q426,50 452,65
+           Q464,75 464,95
+           Q468,140 466,185
+           Q464,215 457,240
+           Q446,262 437,270
+           L363,270
+           Q354,262 343,240
+           Q336,215 334,185
+           Q331,140 336,95
+           Z"
+        fill="#a01a35" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Volume texture -->
+  <path d="M352,72 Q400,55 448,72" fill="none" stroke="#881130" stroke-width="2" opacity="0.4"/>
+  <path d="M341,100 Q400,82 459,100" fill="none" stroke="#bb2040" stroke-width="1.5" opacity="0.3"/>
+  <path d="M338,150 Q400,140 462,150" fill="none" stroke="#881130" stroke-width="1" opacity="0.3"/>
+  </g>
+  <g id="torso_front">
+    <!-- Military-style gray jacket - shorter cropped style matching reference -->
+  
+
+  <!-- Main jacket body - cropped, ending at natural waist -->
+  <path d="M352,235
+           Q358,228 372,225
+           L393,222 L407,222
+           L428,225
+           Q442,228 448,235
+           L456,258
+           Q458,278 457,300
+           L455,330
+           Q454,350 453,365
+           L451,380
+           Q449,386 445,390
+           L355,390
+           Q351,386 349,380
+           L347,365
+           Q346,350 345,330
+           L343,300
+           Q342,278 344,258
+           Z"
+        fill="url(#jacket)" stroke="#2a2a2a" stroke-width="2"/>
+
+  <!-- Collar -->
+  <path d="M378,225 L390,248 L400,240 L410,248 L422,225"
+        fill="#c8c4be" stroke="#2a2a2a" stroke-width="1.5"/>
+  <path d="M382,228 L392,246 L400,240 L408,246 L418,228"
+        fill="none" stroke="#6a6a6a" stroke-width="1"/>
+
+  <!-- Center button placket -->
+  <line x1="400" y1="242" x2="400" y2="386" stroke="#6a6a6a" stroke-width="1.5"/>
+
+  <!-- Buttons -->
+  <circle cx="400" cy="262" r="3" fill="#555" stroke="#2a2a2a" stroke-width="1"/>
+  <circle cx="400" cy="290" r="3" fill="#555" stroke="#2a2a2a" stroke-width="1"/>
+  <circle cx="400" cy="318" r="3" fill="#555" stroke="#2a2a2a" stroke-width="1"/>
+  <circle cx="400" cy="346" r="3" fill="#555" stroke="#2a2a2a" stroke-width="1"/>
+
+  <!-- Diagonal trim lines (chevron/X pattern) -->
+  <line x1="346" y1="292" x2="397" y2="258" stroke="#c8c4be" stroke-width="2"/>
+  <line x1="454" y1="292" x2="403" y2="258" stroke="#c8c4be" stroke-width="2"/>
+  <line x1="348" y1="355" x2="397" y2="322" stroke="#c8c4be" stroke-width="2"/>
+  <line x1="452" y1="355" x2="403" y2="322" stroke="#c8c4be" stroke-width="2"/>
+
+  <!-- Crossbody strap -->
+  <path d="M444,232 L440,248 L360,378 L354,373 L432,240 L436,226 Z"
+        fill="#2a2a2a" stroke="#1a1a1a" stroke-width="1"/>
+
+  <!-- Strap pouch at right hip -->
+  <path d="M450,386 L454,404 L449,416 L442,416 L440,404 L442,390 Z"
+        fill="#cc2244" stroke="#2a2a2a" stroke-width="1.2"/>
+  <line x1="447" y1="386" x2="448" y2="394" stroke="#2a2a2a" stroke-width="1.5"/>
+
+  <!-- Collar pin / badge -->
+  <rect x="374" y="252" width="24" height="12" rx="2" fill="#cc2244" stroke="#2a2a2a" stroke-width="1.2"/>
+  <text x="386" y="262" font-family="sans-serif" font-size="8" font-weight="bold"
+        fill="#ffffff" text-anchor="middle">0401</text>
+
+  <!-- Jacket hem -->
+  <path d="M349,386 Q400,394 451,386" fill="none" stroke="#2a2a2a" stroke-width="1.5"/>
+  </g>
+  <g id="skirt_back">
+    <!-- Back layer of skirt - more contained A-line shape -->
+  <path d="M332,396
+           Q316,406 300,435
+           L284,485 L280,510
+           Q284,525 298,533
+           L400,542 L502,533
+           Q516,525 520,510
+           L516,485 L500,435
+           Q484,406 468,396 Z"
+        fill="#cc2244" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Black petticoat -->
+  <path d="M280,510
+           Q284,532 302,542
+           L400,552 L498,542
+           Q516,532 520,510
+           Q516,538 498,550
+           L400,560 L302,550
+           Q284,538 280,510 Z"
+        fill="#2a2a2a" stroke="#1a1a1a" stroke-width="1"/>
+  <!-- Fold lines -->
+  <path d="M355,411 L316,518" stroke="#aa1a35" stroke-width="1" opacity="0.4"/>
+  <path d="M400,404 L400,538" stroke="#aa1a35" stroke-width="1" opacity="0.4"/>
+  <path d="M445,411 L484,518" stroke="#aa1a35" stroke-width="1" opacity="0.4"/>
+  </g>
+  <g id="upper_arm_L">
+    <!-- Left upper arm - angled outward from shoulder to elbow -->
+  <!-- Shoulder at torso edge x≈352, elbow extends outward to x≈315 -->
+  <path d="M353,238
+           Q346,248 338,265
+           L328,305
+           L320,340
+           Q316,355 318,365
+           L336,368
+           Q339,358 340,345
+           L346,305
+           L354,265
+           Q358,250 358,238
+           Z"
+        fill="#9a9a9a" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Sleeve trim -->
+  <path d="M330,305 L348,300" stroke="#c8c4be" stroke-width="1.8" opacity="0.6"/>
+  <!-- Sleeve seam -->
+  <path d="M354,248 L326,358" stroke="#7a7a7a" stroke-width="0.7" opacity="0.4"/>
+  </g>
+  <g id="forearm_L">
+    <!-- Left forearm - angled outward, continuing from elbow x≈318 -->
+  <!-- Sleeve portion -->
+  <path d="M316,360
+           L310,395
+           L305,425
+           L302,445
+           L318,448
+           L322,428
+           L326,398
+           L332,365
+           Z"
+        fill="#9a9a9a" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Black cuff -->
+  <path d="M303,440
+           L300,456
+           L300,470
+           L316,472
+           L318,456
+           L319,440
+           Z"
+        fill="#2a2a2a" stroke="#1a1a1a" stroke-width="1.5"/>
+  <!-- Red rectangular band on cuff -->
+  <rect x="301" y="448" width="16" height="9" rx="1" fill="#cc2244" stroke="#aa1a35" stroke-width="0.8"/>
+  <!-- Cuff seam -->
+  <path d="M302,443 L318,445" stroke="#3a3a3a" stroke-width="1"/>
+  </g>
+  <g id="hand_L">
+    <!-- Left hand - at outward arm position x≈300 -->
+  <path d="M299,466
+           L296,478
+           L294,490
+           Q292,498 294,504
+           L297,508
+           L300,502
+           L301,494
+           L303,502
+           L306,506
+           L308,500
+           L308,494
+           L310,500
+           L312,503
+           L312,496
+           L311,486
+           L310,476
+           L309,466
+           Z"
+        fill="#f0ddd0" stroke="#2a2a2a" stroke-width="1.2"/>
+  <!-- Thumb -->
+  <path d="M299,474 L295,483 Q293,490 295,496"
+        fill="#f0ddd0" stroke="#2a2a2a" stroke-width="1.2"/>
+  <!-- Finger lines -->
+  <path d="M301,494 L301,500" stroke="#dfc0b0" stroke-width="0.6"/>
+  <path d="M306,494 L306,502" stroke="#dfc0b0" stroke-width="0.6"/>
+  <path d="M309,492 L309,498" stroke="#dfc0b0" stroke-width="0.6"/>
+  </g>
+  <g id="upper_arm_R">
+    <!-- Right upper arm - angled outward from shoulder to elbow -->
+  <!-- Shoulder at torso edge x≈448, elbow extends outward to x≈485 -->
+  <path d="M447,238
+           Q454,248 462,265
+           L472,305
+           L480,340
+           Q484,355 482,365
+           L464,368
+           Q461,358 460,345
+           L454,305
+           L446,265
+           Q442,250 442,238
+           Z"
+        fill="#9a9a9a" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Sleeve trim -->
+  <path d="M470,305 L452,300" stroke="#c8c4be" stroke-width="1.8" opacity="0.6"/>
+  <!-- Sleeve seam -->
+  <path d="M446,248 L474,358" stroke="#7a7a7a" stroke-width="0.7" opacity="0.4"/>
+  </g>
+  <g id="forearm_R">
+    <!-- Right forearm - angled outward, continuing from elbow x≈482 -->
+  <!-- Sleeve portion -->
+  <path d="M484,360
+           L490,395
+           L495,425
+           L498,445
+           L482,448
+           L478,428
+           L474,398
+           L468,365
+           Z"
+        fill="#9a9a9a" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Black cuff -->
+  <path d="M497,440
+           L500,456
+           L500,470
+           L484,472
+           L482,456
+           L481,440
+           Z"
+        fill="#2a2a2a" stroke="#1a1a1a" stroke-width="1.5"/>
+  <!-- Red rectangular band on cuff -->
+  <rect x="483" y="448" width="16" height="9" rx="1" fill="#cc2244" stroke="#aa1a35" stroke-width="0.8"/>
+  <!-- Cuff seam -->
+  <path d="M498,443 L482,445" stroke="#3a3a3a" stroke-width="1"/>
+  </g>
+  <g id="hand_R">
+    <!-- Right hand - at outward arm position x≈500 -->
+  <path d="M501,466
+           L504,478
+           L506,490
+           Q508,498 506,504
+           L503,508
+           L500,502
+           L499,494
+           L497,502
+           L494,506
+           L492,500
+           L492,494
+           L490,500
+           L488,503
+           L488,496
+           L489,486
+           L490,476
+           L491,466
+           Z"
+        fill="#f0ddd0" stroke="#2a2a2a" stroke-width="1.2"/>
+  <!-- Thumb -->
+  <path d="M501,474 L505,483 Q507,490 505,496"
+        fill="#f0ddd0" stroke="#2a2a2a" stroke-width="1.2"/>
+  <!-- Finger lines -->
+  <path d="M499,494 L499,500" stroke="#dfc0b0" stroke-width="0.6"/>
+  <path d="M494,494 L494,502" stroke="#dfc0b0" stroke-width="0.6"/>
+  <path d="M491,492 L491,498" stroke="#dfc0b0" stroke-width="0.6"/>
+  </g>
+  <g id="upper_leg_L">
+    <!-- Left upper leg - shifted 5px outward for wider stance -->
+  <path d="M343,430 Q333,440 330,460 L325,530 L323,590 L321,640 L361,640 L363,590 L367,530 L371,460 Q373,440 371,430 Z"
+        fill="#f0ddd0" stroke="#2a2a2a" stroke-width="1.2"/>
+  <path d="M340,470 Q331,550 325,630" stroke="#e0c8b8" stroke-width="2" opacity="0.3"/>
+  </g>
+  <g id="lower_leg_L">
+    <!-- Left lower leg - shifted 5px outward for wider stance -->
+  <path d="M321,630 L319,690 L317,750 L314,810 L361,810 L363,750 L364,690 L364,630 Z"
+        fill="#f0ddd0" stroke="#2a2a2a" stroke-width="0.8"/>
+  </g>
+  <g id="boot_L">
+    <!-- Left boot - calf-height, shifted 5px outward for wider stance -->
+  <path d="M331,720
+           Q326,728 324,740
+           L323,770
+           L322,800
+           Q322,815 323,832
+           Q327,848 333,856
+           L343,862
+           Q353,866 363,862
+           L369,854
+           Q373,844 374,828
+           Q375,810 374,800
+           L373,770
+           L372,740
+           Q369,728 365,720
+           Z"
+        fill="#2a2a2a" stroke="#1a1a1a" stroke-width="1.8"/>
+
+  <!-- Boot top red trim -->
+  <path d="M331,720 Q326,728 324,740 L324,750 L371,750 L371,740 Q369,728 365,720 Z"
+        fill="#cc2244" stroke="#aa1a35" stroke-width="1"/>
+
+  <!-- Lace-up -->
+  <circle cx="343" cy="764" r="2" fill="#555"/>
+  <circle cx="352" cy="764" r="2" fill="#555"/>
+  <circle cx="343" cy="784" r="2" fill="#555"/>
+  <circle cx="352" cy="784" r="2" fill="#555"/>
+  <circle cx="343" cy="804" r="2" fill="#555"/>
+  <circle cx="352" cy="804" r="2" fill="#555"/>
+  <path d="M343,764 L352,784 M352,764 L343,784" stroke="#666" stroke-width="1" fill="none"/>
+  <path d="M343,784 L352,804 M352,784 L343,804" stroke="#666" stroke-width="1" fill="none"/>
+
+  <!-- Sole -->
+  <path d="M322,845 Q319,855 325,862 Q333,870 348,872 L361,868 Q371,862 374,845 L373,838 Q370,854 360,862 Q348,866 337,860 Q327,854 324,842 Z"
+        fill="#cc2244"/>
+
+  <!-- Heel -->
+  <path d="M322,838 L321,858 L331,866 L333,848 Z"
+        fill="#2a2a2a" stroke="#1a1a1a" stroke-width="0.8"/>
+
+  <!-- Shine -->
+  <path d="M353,755 L352,820" stroke="#3a3a3a" stroke-width="4" opacity="0.25" stroke-linecap="round"/>
+  </g>
+  <g id="upper_leg_R">
+    <!-- Right upper leg - shifted 5px outward for wider stance -->
+  <path d="M429,430 Q439,440 443,460 L447,530 L449,590 L451,640 L411,640 L409,590 L405,530 L401,460 Q399,440 401,430 Z"
+        fill="#f0ddd0" stroke="#2a2a2a" stroke-width="1.2"/>
+  <path d="M433,470 Q441,550 447,630" stroke="#e0c8b8" stroke-width="2" opacity="0.3"/>
+  </g>
+  <g id="lower_leg_R">
+    <!-- Right lower leg - shifted 5px outward for wider stance -->
+  <path d="M451,630 L453,690 L455,750 L457,810 L412,810 L409,750 L407,690 L407,630 Z"
+        fill="#f0ddd0" stroke="#2a2a2a" stroke-width="0.8"/>
+  </g>
+  <g id="boot_R">
+    <!-- Right boot - calf-height, shifted 5px outward for wider stance -->
+  <path d="M438,720
+           Q443,728 445,740
+           L446,770
+           L447,800
+           Q447,815 446,832
+           Q442,848 436,856
+           L426,862
+           Q416,866 406,862
+           L400,854
+           Q396,844 395,828
+           Q394,810 395,800
+           L396,770
+           L397,740
+           Q400,728 404,720
+           Z"
+        fill="#2a2a2a" stroke="#1a1a1a" stroke-width="1.8"/>
+
+  <!-- Boot top red trim -->
+  <path d="M438,720 Q443,728 445,740 L445,750 L398,750 L398,740 Q400,728 404,720 Z"
+        fill="#cc2244" stroke="#aa1a35" stroke-width="1"/>
+
+  <!-- Lace-up -->
+  <circle cx="417" cy="764" r="2" fill="#555"/>
+  <circle cx="426" cy="764" r="2" fill="#555"/>
+  <circle cx="417" cy="784" r="2" fill="#555"/>
+  <circle cx="426" cy="784" r="2" fill="#555"/>
+  <circle cx="417" cy="804" r="2" fill="#555"/>
+  <circle cx="426" cy="804" r="2" fill="#555"/>
+  <path d="M417,764 L426,784 M426,764 L417,784" stroke="#666" stroke-width="1" fill="none"/>
+  <path d="M417,784 L426,804 M426,784 L417,804" stroke="#666" stroke-width="1" fill="none"/>
+
+  <!-- Sole -->
+  <path d="M447,845 Q450,855 444,862 Q436,870 421,872 L408,868 Q398,862 395,845 L396,838 Q399,854 409,862 Q421,866 432,860 Q442,854 445,842 Z"
+        fill="#cc2244"/>
+
+  <!-- Heel -->
+  <path d="M447,838 L448,858 L438,866 L436,848 Z"
+        fill="#2a2a2a" stroke="#1a1a1a" stroke-width="0.8"/>
+
+  <!-- Shine -->
+  <path d="M416,755 L417,820" stroke="#3a3a3a" stroke-width="4" opacity="0.25" stroke-linecap="round"/>
+  </g>
+  <g id="skirt_front">
+    <!-- Front skirt - more contained A-line matching reference -->
+  
+
+  <!-- Waistband -->
+  <path d="M335,388
+           Q365,382 400,380
+           Q435,382 465,388
+           L468,402
+           Q435,408 400,410
+           Q365,408 332,402
+           Z"
+        fill="#555555" stroke="#2a2a2a" stroke-width="1.8"/>
+
+  <!-- Red underskirt sides - narrower flare -->
+  <path d="M332,402
+           Q322,425 315,452
+           Q308,480 306,500
+           Q304,508 308,512
+           L348,504
+           L352,410
+           Z"
+        fill="#cc2244" stroke="#2a2a2a" stroke-width="1.2"/>
+  <path d="M468,402
+           Q478,425 485,452
+           Q492,480 494,500
+           Q496,508 492,512
+           L452,504
+           L448,410
+           Z"
+        fill="#cc2244" stroke="#2a2a2a" stroke-width="1.2"/>
+
+  <!-- Front gray panel -->
+  <path d="M353,404
+           Q345,434 338,468
+           Q330,495 326,510
+           Q344,520 378,524
+           L400,526
+           L422,524
+           Q456,520 474,510
+           Q470,495 462,468
+           Q455,434 447,404
+           Z"
+        fill="url(#skirt-gray)" stroke="#2a2a2a" stroke-width="1.5"/>
+
+  <!-- Musical staff lines -->
+  <line x1="335" y1="474" x2="465" y2="474" stroke="#c8c4be" stroke-width="1.8"/>
+  <line x1="332" y1="484" x2="468" y2="484" stroke="#c8c4be" stroke-width="1.8"/>
+  <line x1="330" y1="494" x2="470" y2="494" stroke="#c8c4be" stroke-width="1.8"/>
+  <line x1="328" y1="504" x2="472" y2="504" stroke="#c8c4be" stroke-width="1.8"/>
+
+  <!-- Fold lines -->
+  <path d="M385,412 L372,510" stroke="#777" stroke-width="0.8" opacity="0.5"/>
+  <path d="M415,412 L428,510" stroke="#777" stroke-width="0.8" opacity="0.5"/>
+
+  <!-- Black ruffle petticoat -->
+  <path d="M304,510
+           Q308,521 320,527
+           Q340,533 358,531
+           Q378,534 395,532
+           Q405,534 415,532
+           Q435,534 455,531
+           Q472,533 486,527
+           Q498,521 500,510
+           Q496,525 486,533
+           Q468,543 452,540
+           Q435,543 415,541
+           Q405,543 395,541
+           Q378,543 358,540
+           Q340,543 320,533
+           Q308,525 304,510
+           Z"
+        fill="#2a2a2a" stroke="#1a1a1a" stroke-width="1"/>
+
+  <!-- Red trim above ruffle -->
+  <path d="M306,511 Q400,523 494,511" fill="none" stroke="#cc2244" stroke-width="2"/>
+  </g>
+  <g id="epaulette_L">
+    <!-- Left shoulder epaulette - compact, fits very narrow torso -->
+  <!-- Bottom layer -->
+  <path d="M340,235 L362,225 L367,238 L364,256 L346,260 Q338,257 339,247 Z"
+        fill="#888888" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Middle layer -->
+  <path d="M343,232 L360,224 L364,232 L363,249 L348,253 Q341,250 342,242 Z"
+        fill="#9a9a9a" stroke="#2a2a2a" stroke-width="1.2"/>
+  <!-- Top layer -->
+  <path d="M346,230 L358,222 L362,229 L360,242 L350,245 Q344,242 345,236 Z"
+        fill="#c8c4be" stroke="#2a2a2a" stroke-width="1.2"/>
+  <!-- Highlight -->
+  <path d="M349,231 L357,226" stroke="#d8d4ce" stroke-width="1.2" opacity="0.5"/>
+  </g>
+  <g id="epaulette_R">
+    <!-- Right shoulder epaulette - compact, fits very narrow torso (mirror) -->
+  <!-- Bottom layer -->
+  <path d="M460,235 L438,225 L433,238 L436,256 L454,260 Q462,257 461,247 Z"
+        fill="#888888" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Middle layer -->
+  <path d="M457,232 L440,224 L436,232 L437,249 L452,253 Q459,250 458,242 Z"
+        fill="#9a9a9a" stroke="#2a2a2a" stroke-width="1.2"/>
+  <!-- Top layer -->
+  <path d="M454,230 L442,222 L438,229 L440,242 L450,245 Q456,242 455,236 Z"
+        fill="#c8c4be" stroke="#2a2a2a" stroke-width="1.2"/>
+  <!-- Highlight -->
+  <path d="M451,231 L443,226" stroke="#d8d4ce" stroke-width="1.2" opacity="0.5"/>
+  </g>
+  <g id="head_face">
+    <!-- Head/face with neck stub - narrower to match reference proportions -->
+  
+  <!-- Neck (extends under torso) -->
+  <path d="M390,205 L410,205 L412,260 L388,260 Z"
+        fill="#ebd0c0" stroke="#2a2a2a" stroke-width="1"/>
+  <!-- Face - widened to match reference head proportions -->
+  <ellipse cx="400" cy="150" rx="55" ry="65" fill="url(#skin)" stroke="#2a2a2a" stroke-width="1.8"/>
+  <!-- Ears -->
+  <ellipse cx="349" cy="155" rx="8" ry="14" fill="#ebd0c0" stroke="#2a2a2a" stroke-width="1.2"/>
+  <ellipse cx="451" cy="155" rx="8" ry="14" fill="#ebd0c0" stroke="#2a2a2a" stroke-width="1.2"/>
+  <!-- Ear inner -->
+  <ellipse cx="350" cy="155" rx="4" ry="8" fill="#dfc0b0"/>
+  <ellipse cx="450" cy="155" rx="4" ry="8" fill="#dfc0b0"/>
+  <!-- Chin definition -->
+  <path d="M380,198 Q400,214 420,198" fill="none" stroke="#dfc0b0" stroke-width="1.2"/>
+  <!-- Nose -->
+  <path d="M398,158 L397,168 L400,171" fill="none" stroke="#dfc0b0" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Blush marks -->
+  <ellipse cx="373" cy="172" rx="13" ry="6" fill="#f0b0a0" opacity="0.3"/>
+  <ellipse cx="427" cy="172" rx="13" ry="6" fill="#f0b0a0" opacity="0.3"/>
+  </g>
+  <g id="hair_bangs">
+    <!-- Front bangs/fringe - match face rx=55 -->
+  <!-- Main bangs mass covering forehead -->
+  <path d="M352,88
+           Q353,78 364,72
+           Q381,62 400,60
+           Q419,62 436,72
+           Q447,78 448,88
+           L450,100
+           Q448,115 450,130
+           L445,140
+           L436,122
+           L430,142
+           L420,120
+           L415,145
+           L407,124
+           L400,148
+           L393,124
+           L385,145
+           L380,120
+           L370,142
+           L364,122
+           L355,140
+           L350,130
+           Q352,115 350,100
+           Z"
+        fill="#cc2244" stroke="#2a2a2a" stroke-width="1.8"/>
+
+  <!-- Side bangs extending past face -->
+  <path d="M350,100 L345,115 L341,135 L346,140 L352,128 L353,108 Z"
+        fill="#cc2244" stroke="#2a2a2a" stroke-width="1.2"/>
+  <path d="M450,100 L455,115 L459,135 L454,140 L448,128 L447,108 Z"
+        fill="#cc2244" stroke="#2a2a2a" stroke-width="1.2"/>
+
+  <!-- Top of head hair volume -->
+  <path d="M355,88 Q381,68 400,64 Q419,68 445,88"
+        fill="none" stroke="#aa1a35" stroke-width="2" opacity="0.5"/>
+
+  <!-- Hair strand highlights -->
+  <path d="M377,75 L375,125" stroke="#dd4466" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  <path d="M400,70 L400,118" stroke="#dd4466" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  <path d="M423,75 L425,125" stroke="#dd4466" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+
+  <!-- Dark root lines -->
+  <path d="M365,78 L368,110" stroke="#991133" stroke-width="1" opacity="0.3"/>
+  <path d="M389,68 L390,108" stroke="#991133" stroke-width="1" opacity="0.3"/>
+  <path d="M411,68 L410,108" stroke="#991133" stroke-width="1" opacity="0.3"/>
+  <path d="M435,78 L432,110" stroke="#991133" stroke-width="1" opacity="0.3"/>
+  </g>
+  <g id="hair_drill_L">
+    <!-- Left twin drill - puffy bun at ear level -->
+
+  <!-- Main volume - rounded shape -->
+  <path d="M355,88
+           Q340,82 326,90
+           Q312,104 306,118
+           Q300,136 301,154
+           Q302,170 308,180
+           Q318,194 330,190
+           Q342,184 349,168
+           Q355,148 356,128
+           Q358,108 357,94
+           Z"
+        fill="#cc2244" stroke="#2a2a2a" stroke-width="2"/>
+
+  <!-- Spiral wrap 1 -->
+  <path d="M353,90
+           Q338,83 326,95
+           Q316,108 314,124
+           Q313,136 318,140
+           Q326,144 334,130
+           Q344,114 350,102
+           Z"
+        fill="#dd3355" stroke="#2a2a2a" stroke-width="1.5"/>
+
+  <!-- Spiral wrap 2 -->
+  <path d="M332,118
+           Q320,128 314,146
+           Q310,160 314,168
+           Q318,175 324,170
+           Q334,160 338,144
+           Q342,132 338,126
+           Z"
+        fill="#bb1e3d" stroke="#2a2a2a" stroke-width="1.5"/>
+
+  <!-- Spiral wrap 3 -->
+  <path d="M320,158
+           Q312,168 308,178
+           Q306,186 310,189
+           Q318,189 324,180
+           Q330,170 326,164
+           Z"
+        fill="#dd3355" stroke="#2a2a2a" stroke-width="1.3"/>
+
+  <!-- Highlights -->
+  <path d="M342,98 Q334,114 330,132" stroke="#ee5577" stroke-width="2.5" opacity="0.4" fill="none" stroke-linecap="round"/>
+  <path d="M326,142 Q318,158 314,170" stroke="#ee5577" stroke-width="2" opacity="0.35" fill="none" stroke-linecap="round"/>
+  </g>
+  <g id="hair_drill_R">
+    <!-- Right twin drill - puffy bun at ear level (mirror) -->
+
+  <!-- Main volume - rounded shape -->
+  <path d="M445,88
+           Q460,82 474,90
+           Q488,104 494,118
+           Q500,136 499,154
+           Q498,170 492,180
+           Q482,194 470,190
+           Q458,184 451,168
+           Q445,148 444,128
+           Q442,108 443,94
+           Z"
+        fill="#cc2244" stroke="#2a2a2a" stroke-width="2"/>
+
+  <!-- Spiral wrap 1 -->
+  <path d="M447,90
+           Q462,83 474,95
+           Q484,108 486,124
+           Q487,136 482,140
+           Q474,144 466,130
+           Q456,114 450,102
+           Z"
+        fill="#dd3355" stroke="#2a2a2a" stroke-width="1.5"/>
+
+  <!-- Spiral wrap 2 -->
+  <path d="M468,118
+           Q480,128 486,146
+           Q490,160 486,168
+           Q482,175 476,170
+           Q466,160 462,144
+           Q458,132 462,126
+           Z"
+        fill="#bb1e3d" stroke="#2a2a2a" stroke-width="1.5"/>
+
+  <!-- Spiral wrap 3 -->
+  <path d="M480,158
+           Q488,168 492,178
+           Q494,186 490,189
+           Q482,189 476,180
+           Q470,170 474,164
+           Z"
+        fill="#dd3355" stroke="#2a2a2a" stroke-width="1.3"/>
+
+  <!-- Highlights -->
+  <path d="M458,98 Q466,114 470,132" stroke="#ee5577" stroke-width="2.5" opacity="0.4" fill="none" stroke-linecap="round"/>
+  <path d="M474,142 Q482,158 486,170" stroke="#ee5577" stroke-width="2" opacity="0.35" fill="none" stroke-linecap="round"/>
+  </g>
+  <g id="hair_accessory_L">
+    <!-- Left hair accessory - empty, decoration only on right side -->
+  </g>
+  <g id="hair_accessory_R">
+    <!-- Right hair accessory - white horn/ribbon piece, more prominent -->
+  <path d="M 426 80 L 433 38 Q 434 26 430 20 L 424 16 Q 418 18 416 28 L 414 68 Q 416 80 422 84 Z"
+        fill="#f0ede8" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Inner highlight -->
+  <path d="M 424 72 L 429 32" stroke="#ffffff" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  <!-- Shadow edge -->
+  <path d="M 419 70 L 418 34" stroke="#d0ccc6" stroke-width="1" opacity="0.5"/>
+  </g>
+  <g id="eyes">
+    <!-- Eyes - positioned for face rx=57 -->
+  
+
+  <!-- Left eye -->
+  <g>
+    <path d="M364,140 Q376,130 390,136 Q394,148 390,158 Q378,166 364,157 Q360,148 364,140 Z"
+          fill="#ffffff" stroke="#2a2a2a" stroke-width="0.5"/>
+    <ellipse cx="377" cy="149" rx="9" ry="10" fill="url(#iris-l)"/>
+    <ellipse cx="377" cy="150" rx="5" ry="6" fill="#1a0a10"/>
+    <ellipse cx="381" cy="144" rx="3" ry="2.5" fill="#ffffff" opacity="0.9"/>
+    <ellipse cx="375" cy="155" rx="2" ry="1.8" fill="#ffffff" opacity="0.5"/>
+    <path d="M362,141 Q376,128 392,135" fill="none" stroke="#2a2a2a" stroke-width="2.8"
+          stroke-linecap="round"/>
+    <path d="M365,159 Q378,165 391,157" fill="none" stroke="#2a2a2a" stroke-width="1"
+          stroke-linecap="round"/>
+    <path d="M362,141 L358,135" stroke="#2a2a2a" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M392,135 L396,129" stroke="#2a2a2a" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Right eye -->
+  <g>
+    <path d="M410,136 Q422,130 436,140 Q440,148 436,157 Q422,166 410,158 Q406,148 410,136 Z"
+          fill="#ffffff" stroke="#2a2a2a" stroke-width="0.5"/>
+    <ellipse cx="423" cy="149" rx="9" ry="10" fill="url(#iris-r)"/>
+    <ellipse cx="423" cy="150" rx="5" ry="6" fill="#1a0a10"/>
+    <ellipse cx="427" cy="144" rx="3" ry="2.5" fill="#ffffff" opacity="0.9"/>
+    <ellipse cx="419" cy="155" rx="2" ry="1.8" fill="#ffffff" opacity="0.5"/>
+    <path d="M408,135 Q422,128 438,141" fill="none" stroke="#2a2a2a" stroke-width="2.8"
+          stroke-linecap="round"/>
+    <path d="M409,157 Q422,165 436,159" fill="none" stroke="#2a2a2a" stroke-width="1"
+          stroke-linecap="round"/>
+    <path d="M408,135 L404,129" stroke="#2a2a2a" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M438,141 L442,135" stroke="#2a2a2a" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Eyebrows -->
+  <path d="M361,128 Q376,118 392,124" fill="none" stroke="#aa1a35" stroke-width="2.5"
+        stroke-linecap="round"/>
+  <path d="M408,124 Q422,118 439,128" fill="none" stroke="#aa1a35" stroke-width="2.5"
+        stroke-linecap="round"/>
+  </g>
+  <g id="mouth">
+    <!-- Mouth - separate layer for lip sync -->
+  <!-- Small closed mouth, neutral expression -->
+  <path d="M 393 188 Q 400 186 407 188" fill="none" stroke="#cc6666" stroke-width="1.8"
+        stroke-linecap="round"/>
+  <!-- Lower lip hint -->
+  <path d="M 395 190 Q 400 193 405 190" fill="none" stroke="#dfa0a0" stroke-width="0.8"
+        stroke-linecap="round"/>
+  </g>
+</svg>

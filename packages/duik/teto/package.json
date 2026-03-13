@@ -1,0 +1,16 @@
+{
+  "name": "@monochromatic-dev/duik-teto",
+  "description": "Kasane Teto SV character parts for After Effects Duik rigging.",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "license": "CC-BY-NC-SA-4.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/duik/teto"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-image-diff": "workspace:*"
+  }
+}

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200">
+  <!-- Right upper arm - angled outward from shoulder to elbow -->
+  <!-- Shoulder at torso edge x≈448, elbow extends outward to x≈485 -->
+  <path d="M447,238
+           Q454,248 462,265
+           L472,305
+           L480,340
+           Q484,355 482,365
+           L464,368
+           Q461,358 460,345
+           L454,305
+           L446,265
+           Q442,250 442,238
+           Z"
+        fill="#9a9a9a" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Sleeve trim -->
+  <path d="M470,305 L452,300" stroke="#c8c4be" stroke-width="1.8" opacity="0.6"/>
+  <!-- Sleeve seam -->
+  <path d="M446,248 L474,358" stroke="#7a7a7a" stroke-width="0.7" opacity="0.4"/>
+</svg>

@@ -1,0 +1,20 @@
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks.composite]
+description = "Build inline composite SVG from parts and render PNG preview"
+run = "bun run src/mise.build-composite.ts"
+
+[tasks.compare]
+description = "Compare composite against reference with perceptual metrics"
+depends = ["composite"]
+run = "bun run src/mise.compare.ts"
+
+[tasks.measure]
+description = "Measure body proportions and compare silhouette widths against reference"
+depends = ["composite"]
+run = "bun run src/mise.measure.ts"
+
+[tasks.narrow]
+description = "Apply horizontal narrowing factors to SVG parts"
+run = "bun run src/mise.narrow.ts"

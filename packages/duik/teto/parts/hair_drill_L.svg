@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200">
+  <!-- Left twin drill - puffy bun at ear level -->
+
+  <!-- Main volume - rounded shape -->
+  <path d="M355,88
+           Q340,82 326,90
+           Q312,104 306,118
+           Q300,136 301,154
+           Q302,170 308,180
+           Q318,194 330,190
+           Q342,184 349,168
+           Q355,148 356,128
+           Q358,108 357,94
+           Z"
+        fill="#cc2244" stroke="#2a2a2a" stroke-width="2"/>
+
+  <!-- Spiral wrap 1 -->
+  <path d="M353,90
+           Q338,83 326,95
+           Q316,108 314,124
+           Q313,136 318,140
+           Q326,144 334,130
+           Q344,114 350,102
+           Z"
+        fill="#dd3355" stroke="#2a2a2a" stroke-width="1.5"/>
+
+  <!-- Spiral wrap 2 -->
+  <path d="M332,118
+           Q320,128 314,146
+           Q310,160 314,168
+           Q318,175 324,170
+           Q334,160 338,144
+           Q342,132 338,126
+           Z"
+        fill="#bb1e3d" stroke="#2a2a2a" stroke-width="1.5"/>
+
+  <!-- Spiral wrap 3 -->
+  <path d="M320,158
+           Q312,168 308,178
+           Q306,186 310,189
+           Q318,189 324,180
+           Q330,170 326,164
+           Z"
+        fill="#dd3355" stroke="#2a2a2a" stroke-width="1.3"/>
+
+  <!-- Highlights -->
+  <path d="M342,98 Q334,114 330,132" stroke="#ee5577" stroke-width="2.5" opacity="0.4" fill="none" stroke-linecap="round"/>
+  <path d="M326,142 Q318,158 314,170" stroke="#ee5577" stroke-width="2" opacity="0.35" fill="none" stroke-linecap="round"/>
+</svg>

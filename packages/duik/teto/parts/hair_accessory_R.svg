@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200">
+  <!-- Right hair accessory - white horn/ribbon piece, more prominent -->
+  <path d="M 426 80 L 433 38 Q 434 26 430 20 L 424 16 Q 418 18 416 28 L 414 68 Q 416 80 422 84 Z"
+        fill="#f0ede8" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Inner highlight -->
+  <path d="M 424 72 L 429 32" stroke="#ffffff" stroke-width="2" opacity="0.4" stroke-linecap="round"/>
+  <!-- Shadow edge -->
+  <path d="M 419 70 L 418 34" stroke="#d0ccc6" stroke-width="1" opacity="0.5"/>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200">
+  <!-- Left forearm - angled outward, continuing from elbow x≈318 -->
+  <!-- Sleeve portion -->
+  <path d="M316,360
+           L310,395
+           L305,425
+           L302,445
+           L318,448
+           L322,428
+           L326,398
+           L332,365
+           Z"
+        fill="#9a9a9a" stroke="#2a2a2a" stroke-width="1.5"/>
+  <!-- Black cuff -->
+  <path d="M303,440
+           L300,456
+           L300,470
+           L316,472
+           L318,456
+           L319,440
+           Z"
+        fill="#2a2a2a" stroke="#1a1a1a" stroke-width="1.5"/>
+  <!-- Red rectangular band on cuff -->
+  <rect x="301" y="448" width="16" height="9" rx="1" fill="#cc2244" stroke="#aa1a35" stroke-width="0.8"/>
+  <!-- Cuff seam -->
+  <path d="M302,443 L318,445" stroke="#3a3a3a" stroke-width="1"/>
+</svg>
