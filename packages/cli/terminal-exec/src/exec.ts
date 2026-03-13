@@ -14,6 +14,7 @@ const l = tagged({ tag: 'exec', l: parentLogger });
  * This replaces the shell script's `exec "$@"` pattern.
  *
  * @param command - Complete command array where `command[0]` is the executable.
+ *
  * @throws {Error} When the command array is empty.
  *
  * @example
@@ -21,7 +22,7 @@ const l = tagged({ tag: 'exec', l: parentLogger });
  * execvp({ command: ['/usr/bin/ghostty', '--gtk-single-instance=true', '-e', 'bash'] })
  * ```
  */
-export function execvp({ command }: { command: ReadonlyArray<string> }): void {
+export function execvp({ command }: { command: readonly string[] }): void {
   if (command.length === 0) {
     throw new Error('execvp: empty command array');
   }

@@ -12,6 +12,7 @@
   "devDependencies": {
     "h3": "catalog:",
     "@monochromatic-dev/cli-mvm": "workspace:*",
+    "@monochromatic-dev/cli-terminal-exec": "workspace:*",
     "@monochromatic-dev/claude-code-plugins-terminal-title": "workspace:*",
     "@monochromatic-dev/claude-code-plugins-session-start-housekeeping": "workspace:*",
     "@monochromatic-dev/claude-code-plugins-stop-reminders": "workspace:*",

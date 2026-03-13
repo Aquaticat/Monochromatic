@@ -18,7 +18,7 @@ describe('formatDiagnostic', () => {
       lnum: 10,
       col: 5,
       source: 'typescript',
-      code: 2345,
+      code: 2_345,
       message: 'Type mismatch',
     };
     expect(formatDiagnostic(diagnostic)).toBe('ERROR 10:5 [typescript 2345] Type mismatch');
@@ -70,7 +70,7 @@ describe('formatDiagnostic', () => {
       lnum: 5,
       col: 3,
       source: 'ts',
-      code: 1000,
+      code: 1_000,
       message: 'Missing semicolon',
     };
     expect(formatDiagnostic(diagnostic, '  ')).toBe('  ERROR 5:3 [ts 1000] Missing semicolon');

@@ -98,7 +98,7 @@ document.querySelector("search-bar")?.addEventListener("search", function onSear
 if (pageData.query.length === 0) {
   app.append(h({ tag: "p", class: "search-hint", text: "Type something...or select one of the categories." }));
 
-  const availableTags = pageData.availableTags;
+  const {availableTags} = pageData;
   if (availableTags.length > 0) {
     app.append(
       h({

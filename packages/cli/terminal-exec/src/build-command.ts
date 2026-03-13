@@ -23,7 +23,7 @@ export type UserOptions = {
   /** Whether `--hold` was passed. */
   readonly hold: boolean;
   /** Command and arguments to execute in the terminal. */
-  readonly command: ReadonlyArray<string>;
+  readonly command: readonly string[];
 };
 
 /**
@@ -32,10 +32,12 @@ export type UserOptions = {
  * Otherwise, two separate arguments are added (`--title` `My Title`).
  *
  * @param args - Mutable argument array to append to.
+ *
  * @param argKey - Terminal argument key (e.g. `--title=` or `--title`).
+ *
  * @param value - User-provided value.
  */
-function appendArg({ args, argKey, value }: { args: Array<string>; argKey: string; value: string }): void {
+function appendArg({ args, argKey, value }: { args: string[]; argKey: string; value: string }): void {
   if (argKey.endsWith('=')) {
     args.push(`${argKey}${value}`);
   } else {
@@ -47,7 +49,9 @@ function appendArg({ args, argKey, value }: { args: Array<string>; argKey: strin
  * Builds the final command array from a resolved terminal and user options.
  *
  * @param terminal - Resolved terminal entry with Exec tokens and argument keys.
+ *
  * @param options - User-provided options from CLI parsing.
+ *
  * @returns Complete command array ready for `exec`.
  *
  * @example
@@ -62,8 +66,8 @@ function appendArg({ args, argKey, value }: { args: Array<string>; argKey: strin
 export function buildCommand({ terminal, options }: {
   terminal: ResolvedTerminal;
   options: UserOptions;
-}): ReadonlyArray<string> {
-  const args: Array<string> = [...terminal.execTokens];
+}): readonly string[] {
+  const args: string[] = [...terminal.execTokens];
 
   if (options.appId.length > 0 && terminal.appIdArg.length > 0) {
     appendArg({ args, argKey: terminal.appIdArg, value: options.appId });

@@ -191,8 +191,8 @@ function commitTextInput(): void {
   }
 
   /** Pixel position of the text input relative to canvas container */
-  const x = parseFloat(textInput.style.insetInlineStart);
-  const y = parseFloat(textInput.style.insetBlockStart);
+  const x = Number.parseFloat(textInput.style.insetInlineStart);
+  const y = Number.parseFloat(textInput.style.insetBlockStart);
 
   if (canvasWidth === 0 || canvasHeight === 0) {
     hideTextInput();

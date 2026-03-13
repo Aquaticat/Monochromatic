@@ -1,5 +1,5 @@
 /** Auto-dismiss duration for toast notifications in milliseconds. */
-const DISMISS_MS = 3000;
+const DISMISS_MS = 3_000;
 
 /**
  * Fetch wrapper with error toast -- validates the pattern from PLAN.md.

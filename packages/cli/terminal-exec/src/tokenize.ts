@@ -20,6 +20,7 @@ const FIELD_CODES = new Set(['f', 'F', 'u', 'U', 'i', 'c', 'k', 'd', 'D', 'n', '
  * Strips `%` field codes and rejects lines with unquoted shell metacharacters.
  *
  * @param exec - Raw Exec value from the desktop entry.
+ *
  * @returns Array of argument tokens, or `null` if the value contains invalid syntax.
  *
  * @example
@@ -28,8 +29,8 @@ const FIELD_CODES = new Set(['f', 'F', 'u', 'U', 'i', 'c', 'k', 'd', 'D', 'n', '
  * // ['/usr/bin/ghostty', '--gtk-single-instance=true']
  * ```
  */
-export function tokenizeExec({ exec }: { exec: string }): ReadonlyArray<string> | null {
-  const tokens: Array<string> = [];
+export function tokenizeExec({ exec }: { exec: string }): readonly string[] | null {
+  const tokens: string[] = [];
   let current = '';
   let inQuote = false;
   let i = 0;

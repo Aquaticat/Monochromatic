@@ -23,9 +23,9 @@ export type DesktopEntry = {
   /** TryExec binary path, if specified. */
   readonly tryExec: string;
   /** OnlyShowIn desktop list. */
-  readonly onlyShowIn: ReadonlyArray<string>;
+  readonly onlyShowIn: readonly string[];
   /** NotShowIn desktop list. */
-  readonly notShowIn: ReadonlyArray<string>;
+  readonly notShowIn: readonly string[];
   /** X-TerminalArgExec or TerminalArgExec value. */
   readonly execArg: string;
   /** X-TerminalArgAppId or TerminalArgAppId value. */
@@ -51,10 +51,11 @@ const ESCAPE_MAP: Record<string, string> = {
  * Expands desktop entry string escapes (`\s`, `\n`, `\t`, `\r`, `\\`).
  *
  * @param s - Raw value from a desktop entry key.
+ *
  * @returns Expanded string with escapes resolved.
  */
 export function expandEscapes({ s }: { s: string }): string {
-  return s.replace(/\\(.)/g, function replaceEscape(_match, char: string) {
+  return s.replaceAll(/\\(.)/g, function replaceEscape(_match, char: string) {
     return ESCAPE_MAP[char] ?? char;
   });
 }
@@ -64,6 +65,7 @@ export function expandEscapes({ s }: { s: string }): string {
  * Only reads keys from the `[Desktop Entry]` section (not actions).
  *
  * @param path - Absolute path to the `.desktop` file.
+ *
  * @returns Parsed desktop entry, or `null` if the file cannot be read.
  *
  * @example
@@ -82,7 +84,7 @@ export async function parseDesktopEntry({ path }: { path: string }): Promise<Des
   const text = await file.text();
   const result: {
     exec: string; isTerminal: boolean; hidden: boolean; tryExec: string;
-    onlyShowIn: Array<string>; notShowIn: Array<string>;
+    onlyShowIn: string[]; notShowIn: string[];
     execArg: string; appIdArg: string; titleArg: string; dirArg: string; holdArg: string;
   } = {
     exec: '', isTerminal: false, hidden: false, tryExec: '',
@@ -126,14 +128,16 @@ export async function parseDesktopEntry({ path }: { path: string }): Promise<Des
  * Applies a parsed key-value pair to the result object.
  *
  * @param key - Desktop entry key name.
+ *
  * @param value - Raw value string.
+ *
  * @param result - Mutable result object to populate.
  */
 function applyKey({ key, value, result }: {
   key: string; value: string;
   result: {
     exec: string; isTerminal: boolean; hidden: boolean; tryExec: string;
-    onlyShowIn: Array<string>; notShowIn: Array<string>;
+    onlyShowIn: string[]; notShowIn: string[];
     execArg: string; appIdArg: string; titleArg: string; dirArg: string; holdArg: string;
   };
 }): void {

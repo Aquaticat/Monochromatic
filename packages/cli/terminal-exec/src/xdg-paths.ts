@@ -18,6 +18,7 @@ const l = tagged({ tag: 'xdg-paths', l: parentLogger });
  * the generic `xdg-terminals.list` for each config directory.
  *
  * @param desktops - Lowercased desktop names from `$XDG_CURRENT_DESKTOP`.
+ *
  * @returns Config file paths in descending priority order (first match wins).
  *
  * @example
@@ -26,13 +27,13 @@ const l = tagged({ tag: 'xdg-paths', l: parentLogger });
  * // ~/.config/kde-xdg-terminals.list, ~/.config/xdg-terminals.list, ...
  * ```
  */
-export function configPaths({ desktops }: { desktops: ReadonlyArray<string> }): ReadonlyArray<string> {
+export function configPaths({ desktops }: { desktops: readonly string[] }): readonly string[] {
   const home = Bun.env['HOME'] ?? '/tmp';
   const configHome = Bun.env['XDG_CONFIG_HOME'] ?? `${home}/.config`;
   const configDirs = (Bun.env['XDG_CONFIG_DIRS'] ?? '/etc/xdg').split(':');
   const dataDirs = (Bun.env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share').split(':');
 
-  const paths: Array<string> = [];
+  const paths: string[] = [];
 
   //region Config directories (XDG_CONFIG_HOME + XDG_CONFIG_DIRS)
   for (const dir of [configHome, ...configDirs]) {
@@ -69,7 +70,7 @@ export function configPaths({ desktops }: { desktops: ReadonlyArray<string> }): 
  * // ['/usr/share/applications/', '/usr/local/share/applications/', '~/.local/share/applications/']
  * ```
  */
-export function applicationDirs(): ReadonlyArray<string> {
+export function applicationDirs(): readonly string[] {
   const home = Bun.env['HOME'] ?? '/tmp';
   const dataHome = Bun.env['XDG_DATA_HOME'] ?? `${home}/.local/share`;
   const dataDirs = (Bun.env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share').split(':');
@@ -91,7 +92,7 @@ export function applicationDirs(): ReadonlyArray<string> {
  *
  * @returns Array of desktop name strings, e.g. `['kde']`.
  */
-export function currentDesktops(): ReadonlyArray<string> {
+export function currentDesktops(): readonly string[] {
   const raw = Bun.env['XDG_CURRENT_DESKTOP'] ?? '';
   return raw.split(':').filter(function nonEmpty(s) { return s.length > 0; }).map(function lower(s) { return s.toLowerCase(); });
 }

@@ -15,11 +15,12 @@ const l = tagged({ tag: 'validate', l: parentLogger });
  * Checks if an executable exists in `$PATH` using Bun's `which`.
  *
  * @param name - Executable name or absolute path.
+ *
  * @returns `true` if the executable is found.
  */
 function executableExists({ name }: { name: string }): boolean {
   if (name.startsWith('/')) {
-    return Bun.file(name).size !== 0;
+    return Bun.file(name).size > 0;
   }
   return Bun.which(name) !== null;
 }
@@ -29,7 +30,7 @@ function executableExists({ name }: { name: string }): boolean {
  */
 export type ValidatedEntry = {
   /** Tokenized Exec command as an argument array. */
-  readonly execTokens: ReadonlyArray<string>;
+  readonly execTokens: readonly string[];
   /** Resolved TerminalArgExec value (from entry, default, or `-e`). */
   readonly execArg: string;
   /** TerminalArgAppId value. */
@@ -46,16 +47,21 @@ export type ValidatedEntry = {
  * Validates a parsed desktop entry as a usable terminal emulator.
  *
  * @param entry - Parsed desktop entry.
+ *
  * @param entryId - Desktop entry ID for logging and default lookups.
+ *
  * @param desktops - Current desktop names for OnlyShowIn/NotShowIn checks.
+ *
  * @param isFallback - Whether this is a fallback entry (enables ShowIn checks).
+ *
  * @param execArgDefault - Default TerminalArgExec from config, if any.
+ *
  * @returns Validated entry with tokenized Exec, or `null` if the entry fails validation.
  */
 export function validateEntry({ entry, entryId, desktops, isFallback, execArgDefault }: {
   entry: DesktopEntry;
   entryId: string;
-  desktops: ReadonlyArray<string>;
+  desktops: readonly string[];
   isFallback: boolean;
   execArgDefault: string;
 }): ValidatedEntry | null {
@@ -112,9 +118,9 @@ export function validateEntry({ entry, entryId, desktops, isFallback, execArgDef
   /** Resolve TerminalArgExec: entry value > config default > `-e`. */
   const resolvedExecArg = entry.execArg.length > 0
     ? entry.execArg
-    : execArgDefault.length > 0
+    : (execArgDefault.length > 0
       ? execArgDefault
-      : '-e';
+      : '-e');
 
   l.debug(`${entryId}: validated, execArg='${resolvedExecArg}'`);
 

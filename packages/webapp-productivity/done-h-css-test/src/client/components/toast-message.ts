@@ -29,7 +29,7 @@ const STYLES = [
 ].join('');
 
 /** Auto-dismiss duration in milliseconds. */
-const DISMISS_MS = 3000;
+const DISMISS_MS = 3_000;
 
 /**
  * `\<toast-message\>` -- ephemeral notification that auto-dismisses.

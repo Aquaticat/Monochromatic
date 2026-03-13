@@ -150,7 +150,7 @@ export const requireTsdoc: CreateOnceRule = {
         if (shouldIgnoreFile(context.filename)) {
           return false;
         }
-        return undefined;
+        return;
       },
       FunctionDeclaration(node): void {
         reportMissing(node, context);

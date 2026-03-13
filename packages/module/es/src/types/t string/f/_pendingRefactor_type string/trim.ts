@@ -25,15 +25,10 @@ export function trimEndWith(str: string, trimmer: string,): string {
     throw new Error('trimmer cannot be empty',);
   if (!str.endsWith(trimmer,))
     return str;
-  const reversedTrimmer = Array.from(trimmer).toReversed().join('',);
+  const reversedTrimmer = [...trimmer].toReversed().join('',);
   let modifyingString = str;
   while (modifyingString.endsWith(trimmer,)) {
-    modifyingString = Array.from(
-      Array.from(modifyingString)
-        .toReversed()
-        .join('',)
-        .replace(reversedTrimmer, '',),
-    )
+    modifyingString = [...Array.from(modifyingString).toReversed().join('').replace(reversedTrimmer, '')]
       .toReversed()
       .join('',);
   }

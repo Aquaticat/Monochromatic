@@ -24,7 +24,7 @@ import { handleAnswer } from "./server/api/answers.ts";
 const HTTP_BAD_REQUEST = 400;
 
 /** Default HTTP listen port. */
-const DEFAULT_PORT = 3000;
+const DEFAULT_PORT = 3_000;
 
 /**
  * Extracts a required route parameter, throwing 400 if missing.
@@ -107,7 +107,7 @@ app.get('/dist/client/**', defineHandler(function handleStaticAsset(event) {
     },
     getMeta: async function getMetadata(id) {
       const stats = await stat(join('.', id,),).catch(function onStatError() {
-        return undefined;
+        return;
       },);
       if (stats === undefined || !stats.isFile()) {
         return;

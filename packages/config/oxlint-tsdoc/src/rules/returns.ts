@@ -49,7 +49,7 @@ function createFunctionTsdocVisitor(
       if (shouldIgnoreFile(context.filename)) {
         return false;
       }
-      return undefined;
+      return;
     },
     FunctionDeclaration: check,
     FunctionExpression: check,

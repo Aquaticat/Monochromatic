@@ -17,6 +17,7 @@ const l = tagged({ tag: 'cli', l: parentLogger });
  * arguments after are the command to execute in the terminal.
  *
  * @param argv - Raw process arguments (excluding `bun` and script path).
+ *
  * @returns Parsed user options.
  *
  * @example
@@ -25,7 +26,7 @@ const l = tagged({ tag: 'cli', l: parentLogger });
  * // { title: 'My Shell', command: ['bash', '-l'], appId: '', dir: '', hold: false }
  * ```
  */
-export function parseArgs({ argv }: { argv: ReadonlyArray<string> }): UserOptions {
+export function parseArgs({ argv }: { argv: readonly string[] }): UserOptions {
   let appId = '';
   let title = '';
   let dir = '';

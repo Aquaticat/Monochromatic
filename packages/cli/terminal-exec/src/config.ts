@@ -14,7 +14,7 @@ const l = tagged({ tag: 'config', l: parentLogger });
  */
 export type ConfigResult = {
   /** Explicitly listed entry IDs in priority order. */
-  readonly entryIds: ReadonlyArray<string>;
+  readonly entryIds: readonly string[];
   /** Entry IDs excluded from fallback scanning. */
   readonly excludedIds: ReadonlySet<string>;
   /** Default TerminalArgExec values keyed by entry ID. */
@@ -29,6 +29,7 @@ export type ConfigResult = {
  * All other lines are explicit entry ID preferences.
  *
  * @param paths - Config file paths in descending priority order.
+ *
  * @returns Parsed configuration with entries, exclusions, and defaults.
  *
  * @example
@@ -37,8 +38,8 @@ export type ConfigResult = {
  * // config.entryIds === ['com.mitchellh.ghostty.desktop']
  * ```
  */
-export async function parseConfigFiles({ paths }: { paths: ReadonlyArray<string> }): Promise<ConfigResult> {
-  const entryIds: Array<string> = [];
+export async function parseConfigFiles({ paths }: { paths: readonly string[] }): Promise<ConfigResult> {
+  const entryIds: string[] = [];
   const excludedIds = new Set<string>();
   /** Tracks IDs that have been explicitly included via `+`, preventing later `-` from excluding them. */
   const includedIds = new Set<string>();
@@ -92,6 +93,7 @@ export async function parseConfigFiles({ paths }: { paths: ReadonlyArray<string>
  * Parses a `/`-prefixed directive line from a config file.
  *
  * @param line - Raw directive line including the leading `/`.
+ *
  * @param execArgDefaults - Mutable map to populate with `/execarg_default` entries.
  */
 function parseDirective({ line, execArgDefaults }: { line: string; execArgDefaults: Map<string, string> }): void {

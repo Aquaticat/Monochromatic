@@ -156,7 +156,7 @@ function parseTaskUpdateInput(value: unknown): TaskUpdateInput | null {
       return null;
     }
     // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated above: string | null
-    taskUpdateInput.description = value.description as string | null;
+    taskUpdateInput.description = value.description;
   }
 
   if ("tags" in value) {
@@ -212,7 +212,7 @@ function parseTaskUpdateInput(value: unknown): TaskUpdateInput | null {
       return null;
     }
     // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated above: string | null
-    taskUpdateInput.dueDate = value.dueDate as string | null;
+    taskUpdateInput.dueDate = value.dueDate;
   }
 
   if ("status" in value) {

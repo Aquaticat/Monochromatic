@@ -34,7 +34,7 @@ import { settingsPage } from "./server/pages/settings.ts";
 import { taskDetailsPage } from "./server/pages/task-details.ts";
 
 /** Default HTTP port when neither `--port=` nor `PORT` env var is provided. */
-const DEFAULT_PORT = 3000;
+const DEFAULT_PORT = 3_000;
 
 /** HTTP status code for bad requests. */
 const HTTP_BAD_REQUEST = 400;
@@ -151,7 +151,7 @@ app.get('/dist/client/**', defineHandler(function handleStaticAsset(event) {
     },
     getMeta: async function getMetadata(id) {
       const stats = await stat(join('.', id,),).catch(function onStatError() {
-        return undefined;
+        return;
       },);
       if (stats === undefined || !stats.isFile()) {
         return;

@@ -50,7 +50,7 @@ function createTsdocVisitor(
       if (shouldIgnoreFile(context.filename)) {
         return false;
       }
-      return undefined;
+      return;
     },
     FunctionDeclaration: check,
     FunctionExpression: check,
@@ -291,7 +291,7 @@ export const validTypes: CreateOnceRule = {
         if (shouldIgnoreFile(context.filename)) {
           return false;
         }
-        return undefined;
+        return;
       },
       FunctionDeclaration: check,
       FunctionExpression: check,

@@ -114,16 +114,21 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
  * Attempts to resolve a single entry ID into a validated terminal.
  *
  * @param entryId - Desktop entry ID to try.
+ *
  * @param registry - Entry registry from scanning.
+ *
  * @param desktops - Current desktop names.
+ *
  * @param isFallback - Whether this is a fallback entry.
+ *
  * @param config - Parsed config for execarg defaults.
+ *
  * @returns Validated entry or `null`.
  */
 async function tryEntry({ entryId, registry, desktops, isFallback, config }: {
   entryId: string;
   registry: ReadonlyMap<string, { readonly id: string; readonly path: string }>;
-  desktops: ReadonlyArray<string>;
+  desktops: readonly string[];
   isFallback: boolean;
   config: { readonly execArgDefaults: ReadonlyMap<string, string> };
 }): Promise<ValidatedEntry | null> {

@@ -29,10 +29,11 @@ export type EntryRegistration = {
  * Recursively finds all `.desktop` files in a directory.
  *
  * @param dir - Absolute path to the applications directory.
+ *
  * @returns Array of absolute file paths.
  */
-async function findDesktopFiles({ dir }: { dir: string }): Promise<ReadonlyArray<string>> {
-  const results: Array<string> = [];
+async function findDesktopFiles({ dir }: { dir: string }): Promise<readonly string[]> {
+  const results: string[] = [];
 
   async function walk({ current }: { current: string }): Promise<void> {
     let entries;
@@ -61,6 +62,7 @@ async function findDesktopFiles({ dir }: { dir: string }): Promise<ReadonlyArray
  * override earlier ones for duplicate entry IDs.
  *
  * @param dirs - Application directory paths in ascending priority order.
+ *
  * @returns Map of entry ID to registration, and ordered fallback ID list (highest priority first).
  *
  * @example
@@ -70,20 +72,20 @@ async function findDesktopFiles({ dir }: { dir: string }): Promise<ReadonlyArray
  * })
  * ```
  */
-export async function scanEntries({ dirs }: { dirs: ReadonlyArray<string> }): Promise<{
+export async function scanEntries({ dirs }: { dirs: readonly string[] }): Promise<{
   readonly registry: ReadonlyMap<string, EntryRegistration>;
-  readonly fallbackIds: ReadonlyArray<string>;
+  readonly fallbackIds: readonly string[];
 }> {
   /** Mutable map; later dirs override earlier for same ID. */
   const registry = new Map<string, EntryRegistration>();
   /** Tracks insertion order per directory for fallback priority. */
-  const allIds: Array<string> = [];
+  const allIds: string[] = [];
 
   for (const dir of dirs) {
     const files = await findDesktopFiles({ dir });
     for (const filePath of files) {
       const rel = relative(dir, filePath);
-      const id = rel.replace(/\//g, '-');
+      const id = rel.replaceAll('/', '-');
       registry.set(id, { id, path: filePath });
       /** Remove previous occurrence so re-adding puts it at the end (higher priority). */
       const prevIdx = allIds.indexOf(id);

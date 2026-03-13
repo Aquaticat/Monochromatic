@@ -59,7 +59,7 @@ const stream = await anthropic
 for await (const messageStreamEvent of stream)
   console.log(messageStreamEvent,);
 
-const DEFAULT_PORT = 4111;
+const DEFAULT_PORT = 4_111;
 const PORT = z.coerce.number().parse(process.env.AI_TREE_PORT ?? DEFAULT_PORT,);
 
 const app = new Elysia()
