@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200">
+  <!-- upper_arm_L - auto-generated from reference image -->
+  <g transform="translate(202.27, 0) scale(1.3636)">
+    <g transform="translate(0.000000,876.000000) scale(0.100000,-0.100000)">
+      <path d="M480 6190 c-69 -36 -82 -39 -157 -40 -102 0 -147 -19 -174 -72 -37
+-72 -14 -154 50 -182 66 -28 397 -19 462 13 39 19 59 71 59 151 0 86 -20 131
+-67 154 -51 24 -91 19 -173 -24z" fill="#9a9a9a"/>
+    </g>
+  </g>
+</svg>
