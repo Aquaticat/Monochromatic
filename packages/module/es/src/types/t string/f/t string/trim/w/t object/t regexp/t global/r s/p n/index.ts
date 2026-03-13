@@ -13,8 +13,11 @@ import {
  * The regex pattern is applied using Unicode-aware string segmentation for proper character handling.
  *
  * @param str - to trim from both ends
+ *
  * @param trimmer - regex pattern to match and remove from both ends
+ *
  * @returns String with all leading and trailing occurrences matching the regex pattern removed
+ *
  * @throws Error If trimmer is an empty regex or invalid regex pattern
  *
  * @example

@@ -8,7 +8,9 @@ import { l, tagged } from './log.ts';
  * Returns the resolved path or `undefined` if resolution fails.
  *
  * @param specifier - ESM import specifier (e.g. `lodash`, `@scope/pkg/sub`)
+ *
  * @param baseDir - Directory to resolve from
+ *
  * @returns Resolved file URL string, or `undefined` on failure
  *
  * @example
@@ -37,6 +39,7 @@ function resolveFrom({ specifier, baseDir }: { specifier: string; baseDir: strin
  * Returns the path or `undefined` if none found.
  *
  * @param startDir - Directory to start searching from
+ *
  * @returns Path to monorepo root, or `undefined`
  *
  * @example
@@ -53,7 +56,9 @@ async function findMonorepoRoot({ startDir }: { startDir: string }): Promise<str
   while (dir !== ROOT) {
     const pkgPath = join(dir, 'package.json');
     try {
+      // oxlint-disable-next-line eslint(no-await-in-loop) -- intentionally sequential directory walk
       const content = await Bun.file(pkgPath).text();
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown
       const pkg = JSON.parse(content) as Record<string, unknown>;
       if ('workspaces' in pkg) {
         rl.info(`found monorepo root at ${dir}`);
@@ -100,8 +105,8 @@ function findGlobalNodeModules(): string | undefined {
   ];
   for (const candidate of candidates) {
     try {
-      const stat = Bun.file(join(candidate, '.package-lock.json'));
-      if (stat) {
+      const bunFile = Bun.file(join(candidate, '.package-lock.json'));
+      if (bunFile.size > 0) {
         rl.info(`found global node_modules at ${candidate}`);
         return candidate;
       }
@@ -118,7 +123,9 @@ function findGlobalNodeModules(): string | undefined {
  * and global node_modules in that order.
  *
  * @param specifier - Bare import specifier to resolve
+ *
  * @returns Resolved file path
+ *
  * @throws When the specifier cannot be resolved from any location
  *
  * @example
@@ -161,11 +168,9 @@ export async function resolveSpecifier({ specifier }: { specifier: string }): Pr
   }
   //endregion Global resolution
 
+  const monorepoLine = monorepoRoot !== undefined ? `  - Monorepo root: ${monorepoRoot}\n` : '';
+  const globalLine = globalDir !== undefined ? `  - Global: ${globalDir}\n` : '';
   throw new Error(
-    `Cannot resolve "${specifier}" from any of:\n`
-    + `  - CWD: ${cwd}\n`
-    + (monorepoRoot !== undefined ? `  - Monorepo root: ${monorepoRoot}\n` : '')
-    + (globalDir !== undefined ? `  - Global: ${globalDir}\n` : '')
-    + 'Install the package first (e.g. bun add <package>)',
+    `Cannot resolve "${specifier}" from any of:\n  - CWD: ${cwd}\n${monorepoLine}${globalLine}Install the package first (e.g. bun add <package>)`,
   );
 }

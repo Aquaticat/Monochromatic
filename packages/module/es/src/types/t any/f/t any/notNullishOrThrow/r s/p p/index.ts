@@ -5,8 +5,10 @@
  * instead of silently producing incorrect behavior.
  *
  * @param value - Value to assert as non-nullish
+ *
  * @returns Same value with `null | undefined` removed from the type
- * @throws {@link Error} When value is `null` or `undefined`
+ *
+ * @throws Error when value is `null` or `undefined`
  *
  * @example
  * DOM element lookup:

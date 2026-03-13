@@ -1,28 +1,36 @@
 /**
  * Client entry script for the Settings page.
  *
- * Same hydration pattern as inbox.ts: injectCSS → readPageData → build DOM into #app.
+ * Same hydration pattern as inbox.ts: injectCSS -\> readPageData -\> build DOM into #app.
  */
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import styles from "../../dist/css/styles.css" with { type: "text" };
 import { injectCSS } from "./lib/inject-css.ts";
 import { readPageData } from "./lib/page-data.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/side-drawer.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/top-nav.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/setting-group.ts";
 
 /** Shape of the JSON blob embedded in the settings page by the server. */
 type SettingsPageData = {
+  /** Server-provided settings message. */
   message: string;
 };
 
 injectCSS(styles);
 
 const _pageData = readPageData<SettingsPageData>();
-const appElement = document.getElementById("app");
+
+/** Root app container element. */
+const appElement = document.querySelector("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
+
+/** Typed reference to the app container. */
 const app = appElement;
 
 //region Calendar connect

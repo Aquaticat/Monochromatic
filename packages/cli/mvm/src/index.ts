@@ -46,9 +46,9 @@ const boundary = doubleDashIndex === -1 ? rawArgs.length : doubleDashIndex;
 /**
  * Process argv with infrastructure flags removed only from the mvm-owned prefix.
  * The logger caches its own `process.argv` check at module load time
- * (before this runs), so stripping here only affects the @optique parser.
+ * (before this runs), so stripping here only affects the \@optique parser.
  */
-const filteredArgs = rawArgs.filter((arg, i) => i >= boundary || !INFRA_FLAGS.has(arg));
+const filteredArgs = rawArgs.filter(function keepNonInfraArgs(arg, i) { return i >= boundary || !INFRA_FLAGS.has(arg); });
 
 //endregion Verbose flag
 
@@ -84,37 +84,37 @@ const imageOption = optional(option('--image', string({ metavar: 'IMAGE' }), { d
 /** Parser for `create <name> [--from SOURCE] [--image IMAGE]` */
 const createCmd = command('create', map(
   object({ name: argument(name), from: fromOption, image: imageOption }),
-  (v): MvmArgs => ({ cmd: 'create', from: v.from, image: v.image, name: v.name }),
+  function toCreateArgs(v: { name: string; from: string | undefined; image: string | undefined }): MvmArgs { return { cmd: 'create', from: v.from, image: v.image, name: v.name }; },
 ), { brief: message`Create and start a new VM` });
 
 /** Parser for `shell <name>` */
 const shellCmd = command('shell', map(
   object({ name: argument(name) }),
-  (v): MvmArgs => ({ cmd: 'shell', ...v }),
+  function toShellArgs(v: { name: string }): MvmArgs { return { cmd: 'shell', ...v }; },
 ), { brief: message`Open a serial console to a running VM` });
 
 /** Parser for `list` (alias `ls`) */
 const listCmd = command('list', map(
   object({}),
-  (): MvmArgs => ({ cmd: 'list' }),
+  function toListArgs(): MvmArgs { return { cmd: 'list' }; },
 ), { brief: message`Show all VMs and their state` });
 
 /** Parser for `ls` (hidden alias of `list`) */
 const lsCmd = command('ls', map(
   object({}),
-  (): MvmArgs => ({ cmd: 'list' }),
+  function toLsArgs(): MvmArgs { return { cmd: 'list' }; },
 ), { hidden: true });
 
 /** Parser for `destroy --all` -- destroys every managed VM */
 const destroyAllParser = map(
   object({ all: flag('--all', { description: message`Destroy every managed VM` }) }),
-  (): MvmArgs => ({ cmd: 'destroy', name: undefined, all: true }),
+  function toDestroyAllArgs(): MvmArgs { return { cmd: 'destroy', name: undefined, all: true }; },
 );
 
 /** Parser for `destroy <name>` -- destroys a single VM by name */
 const destroyNameParser = map(
   object({ name: argument(name) }),
-  (v): MvmArgs => ({ cmd: 'destroy', name: v.name, all: false }),
+  function toDestroyNameArgs(v: { name: string }): MvmArgs { return { cmd: 'destroy', name: v.name, all: false }; },
 );
 
 /** Parser for `destroy` */
@@ -135,7 +135,7 @@ const commandToken = string({ metavar: 'COMMAND' });
 /** Parser for `exec <name> -- <command...>` -- run a command in an existing VM */
 const execCmd = command('exec', map(
   object({ name: argument(name), args: multiple(argument(commandToken)) }),
-  (v): MvmArgs => ({ cmd: 'exec', name: v.name, command: v.args.join(' ') }),
+  function toExecArgs(v: { name: string; args: readonly string[] }): MvmArgs { return { cmd: 'exec', name: v.name, command: v.args.join(' ') }; },
 ), { brief: message`Run a command inside a named VM via guest agent` });
 
 /** Parser for `run [--from SOURCE] -- <command...>` -- ephemeral VM */
@@ -144,13 +144,13 @@ const runCmd = command('run', map(
     from: fromOption,
     args: multiple(argument(commandToken)),
   }),
-  (v): MvmArgs => ({ cmd: 'run', command: v.args.join(' '), from: v.from }),
+  function toRunArgs(v: { from: string | undefined; args: readonly string[] }): MvmArgs { return { cmd: 'run', command: v.args.join(' '), from: v.from }; },
 ), { brief: message`Create an ephemeral VM, run a command, then destroy it` });
 
 /** Parser for `update` -- re-downloads and rebuilds all template images */
 const updateCmd = command('update', map(
   object({}),
-  (): MvmArgs => ({ cmd: 'update' }),
+  function toUpdateArgs(): MvmArgs { return { cmd: 'update' }; },
 ), { brief: message`Re-download and rebuild all template images` });
 
 /** Combined top-level parser across all subcommands */
@@ -178,23 +178,23 @@ const args = runSync(parser, {
   aboveError: 'help',
   brief: message`mvm - ephemeral VM manager`,
   footer: message`Pass --verbose before the subcommand to enable debug logging.`,
-}) as MvmArgs;
+});
 
 if (args.cmd === 'create') {
-  if (args.from !== undefined) {
-    await clone({ destination: args.name, source: args.from });
-  } else {
-    await create({ image: args.image, name: args.name });
-  }
+  await (args.from !== undefined
+    ? clone({ destination: args.name, source: args.from })
+    : create({ image: args.image, name: args.name }));
 } else if (args.cmd === 'shell') {
   await shell({ name: args.name });
 } else if (args.cmd === 'list') {
+  /** All managed VMs queried from libvirt. */
   const vms = await list();
   if (vms.length === 0) {
     console.error('no VMs found');
   } else {
     /** Column width for aligned output. */
     const NAME_COL_WIDTH = 24;
+    // oxlint-disable-next-line tsdoc/require-tsdoc -- loop variable
     for (const vm of vms) {
       console.log(`${vm.name.padEnd(NAME_COL_WIDTH)} ${vm.state}`);
     }
@@ -210,6 +210,7 @@ if (args.cmd === 'create') {
     throw new Error('usage: mvm destroy <name> | --all');
   }
 } else if (args.cmd === 'exec') {
+  /** Execution result with stdout, stderr, and exit code. */
   const result = await exec({ command: args.command, name: args.name });
   if (result.stdout.length > 0) {
     process.stdout.write(result.stdout);
@@ -220,7 +221,8 @@ if (args.cmd === 'create') {
   if (result.exitCode !== 0) {
     process.exitCode = result.exitCode;
   }
-} else if (args.cmd === 'run') {
+} else {
+  /** Execution result from the ephemeral VM. */
   const result = await run({ command: args.command, from: args.from });
   if (result.stdout.length > 0) {
     process.stdout.write(result.stdout);

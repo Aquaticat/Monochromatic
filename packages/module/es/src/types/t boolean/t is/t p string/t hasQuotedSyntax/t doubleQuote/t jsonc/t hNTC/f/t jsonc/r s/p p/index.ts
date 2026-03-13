@@ -22,7 +22,9 @@ import type {
  * between actual string delimiters and escaped characters.
  *
  * @param value - JSONC string to check for trailing commas
+ *
  * @returns True if no trailing commas are found, false otherwise
+ *
  * @example
  * ```ts
  * $('{"a": 1}'); // true - no trailing commas

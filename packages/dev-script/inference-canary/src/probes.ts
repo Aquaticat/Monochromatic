@@ -18,7 +18,7 @@ const simpleArithmetic: Probe = {
   category: 'simple',
   system: 'Answer with only the number, nothing else.',
   prompt: 'What is 7 * 8?',
-  score: (response, _context) => response.trim() === '56' ? 1 : 0,
+  score: function scoreArithmetic(response, _context): number { return response.trim() === '56' ? 1 : 0; },
 };
 
 /** Checks if the model follows an exact output format */
@@ -27,7 +27,7 @@ const simpleFormat: Probe = {
   category: 'simple',
   system: 'Follow the formatting instruction exactly. Output nothing else.',
   prompt: 'Output exactly this text with no changes: <<CANARY_OK>>',
-  score: (response, _context) => response.trim() === '<<CANARY_OK>>' ? 1 : 0,
+  score: function scoreFormat(response, _context): number { return response.trim() === '<<CANARY_OK>>' ? 1 : 0; },
 };
 
 /** Checks JSON output compliance -- degraded models often break structure */
@@ -36,8 +36,9 @@ const simpleJson: Probe = {
   category: 'simple',
   system: 'Respond with valid JSON only. No markdown fences, no explanation.',
   prompt: 'Return a JSON object with keys "status" (string "ok") and "value" (number 42).',
-  score: (response, _context) => {
+  score: function scoreJson(response, _context): number {
     try {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse result checked structurally below
       const parsed = JSON.parse(response.trim()) as Record<string, unknown>;
       /** Expected value in the JSON output */
       const EXPECTED_VALUE = 42;

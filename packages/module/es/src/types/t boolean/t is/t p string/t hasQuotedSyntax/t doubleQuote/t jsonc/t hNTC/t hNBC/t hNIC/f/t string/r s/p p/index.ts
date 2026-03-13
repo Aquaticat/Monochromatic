@@ -8,6 +8,13 @@ import type {
   $ as hasNoTrailingCommas,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t hNTC/t/index.ts';
 
+/**
+ * Type guard checking whether a string is valid strict JSON (no comments, no trailing commas).
+ *
+ * @param value - string to parse as strict JSON
+ *
+ * @returns `true` when the string parses as valid JSON
+ */
 export function $(
   value: string,
 ): value is hasNoTrailingCommas & hasNoBlockComments & hasNoInlineComments {

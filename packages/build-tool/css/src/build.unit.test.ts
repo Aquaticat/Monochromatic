@@ -77,7 +77,7 @@ describe('collectMixins', () => {
       .btn { @mixin --touch-target; }
     `);
 
-    expect(() => collectMixins(root)).toThrow('mixin definition must include body');
+    expect(() =>{  collectMixins(root); }).toThrow('mixin definition must include body');
   });
 
   test('throws on mixed definition followed by bodyless invocation', () => {
@@ -89,7 +89,7 @@ describe('collectMixins', () => {
     `);
 
     // The bodyless @mixin --bold; inside .title triggers the error
-    expect(() => collectMixins(root)).toThrow('mixin definition must include body');
+    expect(() =>{  collectMixins(root); }).toThrow('mixin definition must include body');
   });
 
   test('throws on @mixin with empty name', () => {
@@ -97,7 +97,7 @@ describe('collectMixins', () => {
 
     const root = parse('@mixin {}');
 
-    expect(() => collectMixins(root)).toThrow('@mixin requires a name');
+    expect(() =>{  collectMixins(root); }).toThrow('@mixin requires a name');
   });
 });
 
@@ -124,7 +124,7 @@ describe('expandApplyRules', () => {
 
     const root = parse('.box { @apply --nonexistent; }');
 
-    expect(() => expandApplyRules(root)).toThrow('Unknown mixin: --nonexistent');
+    expect(() =>{  expandApplyRules(root); }).toThrow('Unknown mixin: --nonexistent');
   });
 
   test('throws on @apply without a name', () => {
@@ -132,7 +132,7 @@ describe('expandApplyRules', () => {
 
     const root = parse('.box { @apply ; }');
 
-    expect(() => expandApplyRules(root)).toThrow('Mixin name is required');
+    expect(() =>{  expandApplyRules(root); }).toThrow('Mixin name is required');
   });
 
   test('removes @apply for empty mixin', () => {

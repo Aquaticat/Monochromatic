@@ -8,7 +8,7 @@
  * automatic navigation flows.
  *
  * @param delayTime - Time in milliseconds to wait before redirecting. Defaults to 5000ms (5 seconds).
- * @returns Nothing (void). Either schedules a redirect or does nothing if no target element is found.
+ *
  * @example
  * ```ts
  * // HTML: <a href="https://example.com/dashboard" class="redirectingTo">Go to Dashboard</a>
@@ -30,7 +30,7 @@
  * $(1000); // Safe to call even without target element
  * ```
  */
-export function $(delayTime: number = 5000,): void {
+export function $(delayTime: number = 5_000,): void {
   const potentialRedirectingToElement: HTMLAnchorElement | null = document
     .querySelector('a.redirectingTo',);
   if (potentialRedirectingToElement) {

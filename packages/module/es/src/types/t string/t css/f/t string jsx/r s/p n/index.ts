@@ -130,7 +130,7 @@ type TypedAtRuleOptions = {
     /** Raw CSS string to inject inside the block (NOT escaped — caller responsible) */
     raw?: string;
     /** Nested rules or at-rules inside this block */
-    children?: ReadonlyArray<string>;
+    children?: readonly string[];
   };
 }[keyof AtRuleDeclsMap];
 
@@ -156,7 +156,7 @@ type UntypedAtRuleOptions = {
   /** Raw CSS string to inject inside the block (NOT escaped — caller responsible) */
   raw?: string;
   /** Nested rules or at-rules inside this block */
-  children?: ReadonlyArray<string>;
+  children?: readonly string[];
 };
 
 /**
@@ -187,7 +187,7 @@ type RuleOptions = {
   /** Raw CSS string to inject inside the block (NOT escaped — caller responsible) */
   raw?: string;
   /** Nested rules or at-rules inside this block */
-  children?: ReadonlyArray<string>;
+  children?: readonly string[];
 };
 
 /**
@@ -209,6 +209,7 @@ type CssOptions = AtRuleOptions | RuleOptions;
  * csstype interfaces mark all properties as optional.
  *
  * @param decls - property-value pairs (typed at the API boundary, loose here for internal flexibility)
+ *
  * @returns semicolon-separated declarations (e.g. `'display:flex;gap:1rem'`)
  *
  * @example
@@ -220,7 +221,7 @@ type CssOptions = AtRuleOptions | RuleOptions;
 function serializeDecls(decls: object,): string {
   const parts: string[] = [];
 
-  for (const [property, value,] of Object.entries(decls,) as ReadonlyArray<[string, CssValue | string | number | undefined]>) {
+  for (const [property, value,] of Object.entries(decls,) as readonly [string, CssValue | string | number | undefined][]) {
     if (value === undefined || value === null) {
       continue;
     }
@@ -237,6 +238,7 @@ function serializeDecls(decls: object,): string {
  * Statement at-rules like `@layer tokens;` have no block.
  *
  * @param options - at-rule options to inspect
+ *
  * @returns `true` when the at-rule should produce a `{ }` block
  */
 function hasBlock(options: AtRuleOptions,): boolean {
@@ -266,6 +268,7 @@ function hasBlock(options: AtRuleOptions,): boolean {
  * Returns a minified CSS string with no trailing newlines.
  *
  * @param options - {@link CssOptions}
+ *
  * @returns CSS string
  */
 /* @__NO_SIDE_EFFECTS__ */ export function $(
@@ -275,13 +278,20 @@ function hasBlock(options: AtRuleOptions,): boolean {
     return buildRule(options,);
   }
 
-  return buildAtRule(options as AtRuleOptions,);
+  return buildAtRule(options,);
 }
 
 /**
  * Builds a CSS style rule string.
  *
- * @param options - {@link RuleOptions}
+ * @param rule - CSS selector string
+ *
+ * @param decls - declarations to serialize
+ *
+ * @param raw - raw CSS strings to inject verbatim
+ *
+ * @param children - nested child rules
+ *
  * @returns CSS rule string (e.g. `'.card{display:flex}'`)
  */
 function buildRule(
@@ -324,6 +334,7 @@ function buildRule(
  * at-rule (`@layer tokens;`) depending on whether block content is present.
  *
  * @param options - {@link AtRuleOptions}
+ *
  * @returns CSS at-rule string
  */
 function buildAtRule(

@@ -14,12 +14,13 @@ import { getOpmls, } from './opmls.ts';
 import { getOutlinesFromOpmls, } from './outline.ts';
 import { PORT, } from './port.ts';
 
+/** Tagged logger for the server entry module. */
 const l = tagged({ tag: 'server', l: parentLogger, },);
 
 //region Memoized pipeline -- Pull-based feed processing with content-derived cache invalidation
 
 /**
- * Memoized pipeline: OPML URLs -> outlines -> feeds -> sorted items.
+ * Memoized pipeline: OPML URLs -\> outlines -\> feeds -\> sorted items.
  * Cache invalidates when the time bucket advances (controlled by RSS_FETCH_INTERVAL_MS).
  */
 const memoizedGetSortedItems = await memoizeAsync({
@@ -35,11 +36,13 @@ const memoizedGetSortedItems = await memoizeAsync({
     innerL.debug(`pipeline complete: ${String(items.length)} items`);
     return items;
   },
-  keyFn: () => '',
+  keyFn: function emptyKey() {
+    return '';
+  },
 },);
 
 /**
- * Memoized HTML renderer: sorted items -> filtered + rendered HTML body.
+ * Memoized HTML renderer: sorted items -\> filtered + rendered HTML body.
  * Invalidates when either the fetch time bucket or ignore file content changes.
  */
 const memoizedGetHtmlBody = await memoizeAsync({
@@ -52,13 +55,16 @@ const memoizedGetHtmlBody = await memoizeAsync({
     innerL.debug(`rendered ${String(body.length)} chars`);
     return body;
   },
-  keyFn: () => '',
+  keyFn: function emptyKey() {
+    return '';
+  },
 },);
 
 /**
  * Computes the render salt and calls the memoized HTML body renderer.
  * Salt combines the fetch time bucket with ignore file content,
  * so changes to either invalidate the render cache.
+ *
  * @returns Rendered HTML body string
  */
 async function getHtmlBody(): Promise<string> {
@@ -71,6 +77,7 @@ async function getHtmlBody(): Promise<string> {
 
 //region h3 application -- Maps HTTP method + path to handler functions
 
+/** h3 application instance routing HTTP requests to handlers. */
 const app = new H3();
 
 /**
@@ -78,7 +85,9 @@ const app = new H3();
  */
 app.get(
   '/',
-  defineHandler(async () => serveIndex({ getHtmlBody, },)),
+  defineHandler(async function handleIndex() {
+    return serveIndex({ getHtmlBody, },);
+  }),
 );
 
 /**
@@ -86,11 +95,14 @@ app.get(
  */
 app.post(
   '/api/ignore/new',
-  defineHandler(async (event) => ignore(event.req,)),
+  defineHandler(async function handleIgnore(event) {
+    return ignore(event.req,);
+  }),
 );
 
 //endregion h3 application
 
+/** Running HTTP server instance listening on the configured port. */
 const server = serve(app, { port: PORT, },);
 
 l.info(`listening on ${server.url}`);

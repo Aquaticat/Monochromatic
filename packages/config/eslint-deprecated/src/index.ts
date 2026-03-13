@@ -7,7 +7,7 @@ import {
   globalIgnores,
 } from '@eslint/config-helpers';
 
-import { type Linter, } from 'eslint';
+import type { Linter, } from 'eslint';
 
 // Excluded from bundle because it causes the bundle size to be large.
 import tsdoc from 'eslint-plugin-tsdoc';

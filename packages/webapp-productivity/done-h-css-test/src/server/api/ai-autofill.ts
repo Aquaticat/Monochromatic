@@ -2,7 +2,7 @@
  * AI autofill API handler.
  *
  * POST /api/ai/autofill
- * Accepts `{ title: string }` and returns inferred metadata (tags, locations,
+ * Accepts `\{ title: string \}` and returns inferred metadata (tags, locations,
  * priority, complexity) using the configured chat completions endpoint.
  *
  * Degrades gracefully: when the AI is unavailable or returns garbage,
@@ -16,22 +16,31 @@ import { chatCompletion } from "../../lib/ai/client.ts";
 import { buildAutofillMessages } from "../../lib/ai/prompts.ts";
 import db from "../../lib/db.ts";
 import { listAllTags } from "../../lib/db/tasks.ts";
-import { TASK_COMPLEXITIES, TASK_PRIORITIES } from "../../lib/types.ts";
-import type { TaskComplexity, TaskPriority } from "../../lib/types.ts";
+import { TASK_COMPLEXITIES, TASK_PRIORITIES, type TaskComplexity, type TaskPriority } from "../../lib/types.ts";
 
 //region Types
 
+/** Result of AI-powered metadata inference for a task title. */
 type AutofillResult = {
+  /** Suggested tags. */
   tags: string[];
+  /** Suggested locations. */
   locations: string[];
+  /** Suggested priority level. */
   priority: TaskPriority | null;
+  /** Suggested complexity level. */
   complexity: TaskComplexity | null;
 };
 
+/** Raw shape of the AI response before validation. */
 type RawAutofillResponse = {
+  /** Possibly-valid tags array. */
   tags?: unknown;
+  /** Possibly-valid locations array. */
   locations?: unknown;
+  /** Possibly-valid priority string. */
   priority?: unknown;
+  /** Possibly-valid complexity string. */
   complexity?: unknown;
 };
 
@@ -39,34 +48,53 @@ type RawAutofillResponse = {
 
 //region Validation
 
+/** Set of valid priority values for input validation. */
 const VALID_PRIORITIES = new Set<string>(TASK_PRIORITIES);
+
+/** Set of valid complexity values for input validation. */
 const VALID_COMPLEXITIES = new Set<string>(TASK_COMPLEXITIES);
 
-/** Best-effort extraction of an autofill result from possibly malformed AI output. */
+/** Maximum tokens for AI autofill response. */
+const MAX_TOKENS = 256;
+
+/**
+ * Best-effort extraction of an autofill result from possibly malformed AI output.
+ *
+ * @param raw - Raw JSON string from the AI completion
+ *
+ * @returns Validated autofill result with safe defaults
+ */
 function parseAutofillResponse(raw: string): AutofillResult {
   const empty: AutofillResult = { tags: [], locations: [], priority: null, complexity: null };
 
   try {
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; shape validated below
     const parsed = JSON.parse(raw) as RawAutofillResponse;
     if (typeof parsed !== "object" || parsed === null) {
       return empty;
     }
 
     const tags = Array.isArray(parsed.tags)
-      ? parsed.tags.filter((tag): tag is string => typeof tag === "string")
+      ? parsed.tags.filter(function isString(tag): tag is string {
+        return typeof tag === "string";
+      })
       : [];
 
     const locations = Array.isArray(parsed.locations)
-      ? parsed.locations.filter((location): location is string => typeof location === "string")
+      ? parsed.locations.filter(function isString(location): location is string {
+        return typeof location === "string";
+      })
       : [];
 
     const priority =
       typeof parsed.priority === "string" && VALID_PRIORITIES.has(parsed.priority)
+        // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated by Set.has check
         ? (parsed.priority as TaskPriority)
         : null;
 
     const complexity =
       typeof parsed.complexity === "string" && VALID_COMPLEXITIES.has(parsed.complexity)
+        // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated by Set.has check
         ? (parsed.complexity as TaskComplexity)
         : null;
 
@@ -80,28 +108,40 @@ function parseAutofillResponse(raw: string): AutofillResult {
 
 //region Existing metadata for consistency hints
 
-/** Collects unique locations across all tasks via a full scan. */
+/**
+ * Collects unique locations across all tasks via a full scan.
+ *
+ * @returns Sorted array of unique location strings
+ */
 async function listAllLocations(): Promise<string[]> {
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- database query returns rows with loc column
   const rows = await db
     .prepare("SELECT DISTINCT loc.value AS loc FROM tasks, json_each(tasks.locations) AS loc ORDER BY loc.value ASC")
     .all() as { loc: string }[];
-  return rows.map((row) => row.loc);
+  return rows.map(function extractLoc(row) {
+    return row.loc;
+  });
 }
 
 //endregion Existing metadata
 
 //region Handler
 
+/**
+ * POST /api/ai/autofill -- infers task metadata from a title using AI.
+ *
+ * @param req - Incoming request with JSON body containing `title`
+ *
+ * @returns JSON response with inferred tags, locations, priority, and complexity
+ */
 export async function handleAutofill(req: Request): Promise<Response> {
   try {
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- request body is expected to be a JSON object
     const body = (await req.json()) as Record<string, unknown>;
     const title = typeof body.title === "string" ? body.title.trim() : "";
 
     if (title.length === 0) {
-      return new Response(
-        JSON.stringify({ tags: [], locations: [], priority: null, complexity: null }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      return Response.json({ tags: [], locations: [], priority: null, complexity: null });
     }
 
     const existingTags = await listAllTags();
@@ -112,28 +152,19 @@ export async function handleAutofill(req: Request): Promise<Response> {
       messages,
       temperature: 0,
       jsonMode: true,
-      maxTokens: 256,
+      maxTokens: MAX_TOKENS,
     });
 
     if (!result.ok) {
       console.error("AI autofill failed:", result.error);
-      return new Response(
-        JSON.stringify({ tags: [], locations: [], priority: null, complexity: null }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      return Response.json({ tags: [], locations: [], priority: null, complexity: null });
     }
 
     const autofill = parseAutofillResponse(result.content);
-    return new Response(JSON.stringify(autofill), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return Response.json(autofill);
   } catch (error) {
     console.error("AI autofill handler error:", error);
-    return new Response(
-      JSON.stringify({ tags: [], locations: [], priority: null, complexity: null }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return Response.json({ tags: [], locations: [], priority: null, complexity: null });
   }
 }
 

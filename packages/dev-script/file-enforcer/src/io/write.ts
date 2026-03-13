@@ -7,7 +7,10 @@ import { trackDest, trackWriteTime, } from '../tracker.ts';
 
 /**
  * Ensures the parent directory of a file path exists before writing.
+ *
  * @param filePath - Path to the file about to be written
+ *
+ * @returns resolves after the directory is created
  */
 async function ensureDir(filePath: string): Promise<void> {
   await mkdir(dirname(filePath), { recursive: true, });
@@ -16,7 +19,9 @@ async function ensureDir(filePath: string): Promise<void> {
 /**
  * Reads the current content of a file via the read cache, returning
  * undefined if the file does not exist. Used for content-based write skipping.
+ *
  * @param filePath - Path to check
+ *
  * @returns File content as string, or undefined if missing
  */
 async function readExisting(filePath: string): Promise<string | undefined> {
@@ -30,8 +35,12 @@ async function readExisting(filePath: string): Promise<string | undefined> {
 /**
  * Writes content to dest, skipping the write when existing content is identical.
  * Always registers the path as a managed destination for watch-mode protection.
+ *
  * @param dest - Destination file path
+ *
  * @param content - Content string to write
+ *
+ * @returns resolves after the write completes or is skipped
  */
 export async function overwrite(dest: string, content: string): Promise<void> {
   trackDest(dest);
@@ -50,8 +59,12 @@ export async function overwrite(dest: string, content: string): Promise<void> {
 
 /**
  * Writes content to dest only if the file does not already exist.
+ *
  * @param dest - Destination file path
+ *
  * @param content - Content string to write
+ *
+ * @returns resolves after the write completes or is skipped
  */
 export async function overwriteIfNotExists(dest: string, content: string): Promise<void> {
   if (await exists(dest)) {
@@ -66,13 +79,17 @@ export async function overwriteIfNotExists(dest: string, content: string): Promi
  * Writes each glob-matched file to its mirrored destination,
  * skipping files whose content is already identical.
  * Source glob is read from the {@link GlobResults} array produced by `cat()`.
+ *
  * @param destGlob - Destination glob pattern with positional wildcards
+ *
  * @param files - Glob results carrying the source pattern and file contents
  *
  * @example
  * ```ts
  * await overwriteEach('./dest/*​/*.md', await cat('./src/*​/*.md'));
  * ```
+ *
+ * @returns resolves after all files are written
  */
 export async function overwriteEach(
   destGlob: string,

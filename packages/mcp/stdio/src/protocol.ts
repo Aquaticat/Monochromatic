@@ -118,6 +118,7 @@ export type ToolCallResult = {
  * Async handler function invoked when a tool is called.
  *
  * @param args - Parsed arguments from the client's `tools/call` request.
+ *
  * @returns Tool execution result containing content items.
  *
  * @example

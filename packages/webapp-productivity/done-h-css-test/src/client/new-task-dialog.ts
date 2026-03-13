@@ -14,6 +14,7 @@ import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlEle
 import { api } from "./lib/api.ts";
 import type { TaskDetail } from "./components/task-detail.ts";
 // Side-effect import: registers the `<task-detail>` custom element
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/task-detail.ts";
 
 /** Blank task template used when creating a new task. */
@@ -103,7 +104,7 @@ export function createNewTaskDialog(): NewTaskDialog {
           complexity: metadata.complexity,
         }),
       });
-      window.location.reload();
+      globalThis.location.reload();
     }
   });
 

@@ -2,7 +2,7 @@ import type { $ as Store, } from '../../../../../t object/t store/t/r a/index.ts
 import type { $ as SyncStore, } from '../../../../../t object/t store/t/r s/index.ts';
 
 /** Maximum cache entries before LRU eviction in default memoize stores. */
-export const DEFAULT_MAX_CACHE_SIZE = 1024;
+export const DEFAULT_MAX_CACHE_SIZE = 1_024;
 
 /**
  * Options for sync memoization via {@link MemoizedFunction}.
@@ -84,6 +84,7 @@ export type MemoizedCallOptions<
  * A memoized synchronous function with cache management methods.
  *
  * @typeParam TArgs - tuple of function argument types
+ *
  * @typeParam TReturn - function return type
  *
  * @example
@@ -113,6 +114,7 @@ export type MemoizedFunction<
  * A memoized asynchronous function with cache management methods.
  *
  * @typeParam TArgs - tuple of function argument types
+ *
  * @typeParam TReturn - resolved return type (not wrapped in Promise)
  *
  * @example
@@ -141,6 +143,7 @@ export type MemoizedAsyncFunction<
  * Includes the function to memoize alongside configuration.
  *
  * @typeParam TArgs - tuple of function argument types
+ *
  * @typeParam TReturn - function return type
  *
  * @example
@@ -164,6 +167,7 @@ export type MemoizeNamedOptions<
  * Includes the function to memoize alongside configuration.
  *
  * @typeParam TArgs - tuple of function argument types
+ *
  * @typeParam TReturn - resolved return type (not wrapped in Promise)
  *
  * @example

@@ -1,16 +1,16 @@
 /**
  * Client entry script for the Inbox page.
  *
- * Loaded by the browser as `<script type="module" src="/dist/client/inbox.js">`.
+ * Loaded by the browser as `\<script type="module" src="/dist/client/inbox.js"\>`.
  *
  * Hydration flow:
- * 1. `injectCSS()` inserts the compiled global stylesheet into `<head>`
- * 2. `readPageData()` deserializes the `<script id="page-data">` JSON blob
+ * 1. `injectCSS()` inserts the compiled global stylesheet into `\<head\>`
+ * 2. `readPageData()` deserializes the `\<script id="page-data"\>` JSON blob
  *    that the server embedded in the HTML shell (see layout.ts / renderPage)
- * 3. The script builds DOM elements via `h()` and appends them to `<main id="app">`
+ * 3. The script builds DOM elements via `h()` and appends them to `\<main id="app"\>`
  *
  * Web component side-effect imports register custom elements with the browser
- * so that tags like `<top-nav>`, `<task-card>`, etc. are recognized.
+ * so that tags like `\<top-nav\>`, `\<task-card\>`, etc. are recognized.
  *
  * Exceeds 100 lines: the suggested and all section builders are deeply nested
  * `h()` call trees that close over `pageData` -- extracting them into separate
@@ -26,43 +26,72 @@ import { readPageData } from "./lib/page-data.ts";
 import { createTaskCard } from "./lib/task-card.ts";
 import { inboxStyles } from "./inbox-styles.ts";
 import { createNewTaskDialog } from "./new-task-dialog.ts";
-// Side-effect imports: register custom elements so the browser recognizes them in the DOM
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/side-drawer.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/top-nav.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/section-heading.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/toggle-switch.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/focus-dropdown.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/fab-button.ts";
 
 /** Shape of the JSON blob embedded in the inbox page by the server. */
 type InboxPageData = {
+  /** Tasks suggested based on context. */
   suggestedTasks: Task[];
+  /** All inbox tasks. */
   allTasks: Task[];
+  /** Blocked tasks grouped by their blocker task ID. */
   blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>;
 };
 
 injectCSS(styles);
 injectCSS(inboxStyles);
 
+/** Deserialized page data from the server-rendered JSON blob. */
 const pageData = readPageData<InboxPageData>();
-const appElement = document.getElementById("app");
+
+/** Root app container element where client-rendered content is appended. */
+const appElement = document.querySelector("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
+
+/** Typed reference to the app container. */
 const app = appElement;
 
-/** Navigates to the task detail page for the given task. */
+/**
+ * Navigates to the task detail page for the given task.
+ *
+ * @param taskId - UUID of the task to open
+ */
 function openTask(taskId: string): void {
-  window.location.href = `/tasks/${taskId}`;
+  globalThis.location.href = `/tasks/${taskId}`;
 }
 
-/** Sends a complete-task API call and reloads the page on success. */
+/**
+ * Sends a complete-task API call and reloads the page on success.
+ *
+ * @param taskId - UUID of the task to complete
+ */
 async function completeTask(taskId: string): Promise<void> {
   await api(`/api/tasks/${taskId}/complete`, { method: "POST" });
-  window.location.reload();
+  globalThis.location.reload();
 }
 
-/** Builds a task list with optional blocked-child nesting. */
+/**
+ * Builds a task list with optional blocked-child nesting.
+ *
+ * @param tasks - Tasks to display
+ *
+ * @param blockedTasksByBlocker - Map of blocker ID to blocked task links
+ *
+ * @returns Unordered list element containing task cards
+ */
 function buildTaskList(tasks: readonly Task[], blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>): HTMLUListElement {
   const list = h({ tag: "ul", class: "task-list" });
 
@@ -79,9 +108,9 @@ function buildTaskList(tasks: readonly Task[], blockedTasksByBlocker: Record<str
             h({
               tag: "ul",
               class: "task-list",
-              children: childLinks.map((childLink) =>
-                createTaskCard(childLink.task, { showBlockedBadge: true, onOpen: openTask, onToggleComplete: completeTask }),
-              ),
+              children: childLinks.map(function createBlockedCard(childLink) {
+                return createTaskCard(childLink.task, { showBlockedBadge: true, onOpen: openTask, onToggleComplete: completeTask });
+              }),
             }),
           ],
         }),
@@ -94,8 +123,10 @@ function buildTaskList(tasks: readonly Task[], blockedTasksByBlocker: Record<str
 
 //region Suggested section
 
+/** Collapsible section heading for suggested tasks. */
 const suggestedSection = h({ tag: "section-heading", attrs: { icon: "\u2728", label: "Suggested" } });
 
+/** Content container for the suggested tasks section. */
 const suggestedContent = h({
   tag: "div",
   style: { display: "flex", flexDirection: "column", gap: "var(--gap)" },
@@ -152,8 +183,10 @@ app.append(h({ tag: "div", class: "divider" }));
 
 //region All section
 
+/** Collapsible section heading for all tasks. */
 const allSection = h({ tag: "section-heading", attrs: { icon: "\u221E", label: "All" } });
 
+/** Content container for the all tasks section. */
 const allContent = h({
   tag: "div",
   style: { display: "flex", flexDirection: "column", gap: "var(--gap)" },
@@ -169,7 +202,7 @@ app.append(allSection);
 
 //endregion All section
 
-//region New-task dialog -- FAB opens a modal <dialog> with task-detail in create mode
+//region New-task dialog -- FAB opens a modal \<dialog\> with task-detail in create mode
 
 const { panel: newTaskPanel, fab: newTaskFab } = createNewTaskDialog();
 document.body.append(newTaskPanel);

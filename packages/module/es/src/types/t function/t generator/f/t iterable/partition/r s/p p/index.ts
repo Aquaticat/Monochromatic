@@ -11,7 +11,9 @@ import { $ as partitionNamed, } from '../p n/index.ts';
  * Use this when both the predicate and iterable are guaranteed to be synchronous.
  *
  * @param predicate - Synchronous function to test each item
+ *
  * @param iterable - Synchronous iterable to partition
+ *
  * @yields Objects with decision ('pass', 'fail', or ['thrown', error]) and the item
  *
  * @example

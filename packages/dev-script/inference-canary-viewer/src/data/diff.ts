@@ -15,9 +15,12 @@ export type DiffLine = {
 
 /**
  * Computes a line-level diff between two existing files using git.
- * @param options - diff computation options
- * @param options.initialPath - absolute path to initial pass source file
- * @param options.fixPath - absolute path to fix pass source file
+ *
+ *
+ * @param initialPath - absolute path to initial pass source file
+ *
+ * @param fixPath - absolute path to fix pass source file
+ *
  * @returns array of diff lines
  *
  * @example
@@ -37,10 +40,10 @@ export async function computeDiff({ initialPath, fixPath, }: {
   let stdout: string;
   try {
     const result = await spawn('git', ['diff', '--no-index', '--unified=99999', '--no-color', initialPath, fixPath]);
-    stdout = result.stdout;
+    ({ stdout } = result);
   } catch (error: unknown) {
     // Exit code 1 means files differ -- expected behavior
-    stdout = (error as { stdout: string }).stdout;
+    ({ stdout } = (error as { stdout: string }));
   }
 
   return parseDiffOutput(stdout);
@@ -49,7 +52,9 @@ export async function computeDiff({ initialPath, fixPath, }: {
 /**
  * Parses unified diff output into typed diff lines.
  * Skips the diff header lines (everything before the first `@@` hunk marker).
+ *
  * @param output - raw unified diff output from git
+ *
  * @returns parsed diff lines
  */
 function parseDiffOutput(output: string): readonly DiffLine[] {

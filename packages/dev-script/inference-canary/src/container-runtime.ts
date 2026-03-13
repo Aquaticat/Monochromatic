@@ -35,6 +35,7 @@ const WHICH_CMD = process.platform === 'win32' ? 'where.exe' : 'which';
  * Uses `where.exe` on Windows and `which` on Unix.
  *
  * @param name - binary name to search for
+ *
  * @returns absolute path to the binary, or null if not found
  *
  * @example
@@ -45,7 +46,7 @@ const WHICH_CMD = process.platform === 'win32' ? 'where.exe' : 'which';
 function whichSync(name: string): string | null {
   try {
     // `where.exe` may return multiple lines; take the first match
-    return execFileSync(WHICH_CMD, [name], { encoding: 'utf-8' }).trim().split('\n')[0]!.trim();
+    return execFileSync(WHICH_CMD, [name], { encoding: 'utf8' }).trim().split('\n')[0]!.trim();
   } catch {
     return null;
   }
@@ -55,6 +56,7 @@ function whichSync(name: string): string | null {
  * Detects whether podman or docker is available on the host.
  *
  * @returns name of the available container runtime binary
+ *
  * @throws if neither podman nor docker is found on PATH
  */
 function detectRuntime(): string {

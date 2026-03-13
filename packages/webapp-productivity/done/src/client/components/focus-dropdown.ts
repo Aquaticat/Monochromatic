@@ -1,6 +1,10 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
 
+/** Z-index for the dropdown menu overlay. */
+const MENU_Z_INDEX = 10;
+
+/** Shadow DOM styles for the `\<focus-dropdown\>` component. */
 const STYLES = css(`
   :host {
     display: block;
@@ -42,7 +46,7 @@ const STYLES = css(`
     margin-block: 0;
     margin-inline: 0;
     list-style: none;
-    z-index: 10;
+    z-index: ${String(MENU_Z_INDEX)};
 
     &:not(:popover-open) { display: none; }
   }
@@ -57,6 +61,7 @@ const STYLES = css(`
   }
 `);
 
+/** Default focus preset options. */
 const DEFAULT_PRESETS = [
   "Adulting tasks first",
   "Quick wins only",
@@ -64,47 +69,52 @@ const DEFAULT_PRESETS = [
 ];
 
 /**
- * `<focus-dropdown>` -- popover-based dropdown for selecting a focus preset.
+ * `\<focus-dropdown\>` -- popover-based dropdown for selecting a focus preset.
  * Reads initial value from the `value` attribute and dispatches `change`
- * events with `{ value }` when a preset is selected.
+ * events with `\{ value \}` when a preset is selected.
  */
 class FocusDropdown extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
+
+  /** Currently selected preset value. */
   #value: string;
 
+  /** Initializes the shadow root with empty value. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
     this.#value = "";
   }
 
+  /** Reads initial value from attribute and renders the dropdown. */
   connectedCallback(): void {
     this.#value = this.getAttribute("value") ?? "Select focus...";
     this.#render();
   }
 
+  /** Renders the trigger button and popover menu with preset options. */
   #render(): void {
     const textSpan = h({ tag: "span", class: "text", text: this.#value });
-
     const menu = h({
       tag: "ul",
       class: "menu",
       attrs: { popover: "auto" },
-      children: DEFAULT_PRESETS.map((preset) =>
-        h({
-          tag: "li",
-          class: "option",
-          text: preset,
-          on: {
-            click: () => {
-              this.#value = preset;
-              textSpan.textContent = preset;
-              menu.hidePopover();
-              this.dispatchEvent(new CustomEvent("change", { bubbles: true, detail: { value: preset } }));
-            },
+      // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: closures over `this.#value` and `this.dispatchEvent`
+      children: DEFAULT_PRESETS.map((preset) => h({
+        tag: "li",
+        class: "option",
+        text: preset,
+        on: {
+          // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: click handler must reference outer `this`
+          click: () => {
+            this.#value = preset;
+            textSpan.textContent = preset;
+            menu.hidePopover();
+            this.dispatchEvent(new CustomEvent("change", { bubbles: true, detail: { value: preset } }));
           },
-        }),
-      ),
+        },
+      })),
     });
 
     this.#shadow.replaceChildren(
@@ -117,7 +127,7 @@ class FocusDropdown extends HTMLElement {
           h({ tag: "span", class: "divider" }),
           h({ tag: "span", text: "\u25BC" }),
         ],
-        on: { click: () => { menu.togglePopover(); } },
+        on: { click: function onTriggerClick() { menu.togglePopover(); } },
       }),
       menu,
     );

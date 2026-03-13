@@ -14,12 +14,14 @@
  */
 
 /** Whether the current runtime is Bun. */
-const isBun = typeof globalThis.Bun !== 'undefined';
+// oxlint-disable-next-line no-unnecessary-condition -- Bun global only exists at runtime in Bun
+const isBun = globalThis.Bun !== undefined;
 
 /**
  * Resolves the appropriate Elysia adapter for the current runtime.
  * Bun uses the built-in adapter (returns undefined).
  * Node.js and Deno use `@elysiajs/node`.
+ *
  * @returns Adapter instance, or undefined for Bun
  */
 async function resolveAdapter(): Promise<unknown> {
@@ -31,23 +33,29 @@ async function resolveAdapter(): Promise<unknown> {
   return node();
 }
 
+/** Resolved Elysia adapter for the current runtime. */
 const adapter = await resolveAdapter();
 
 // Defer Elysia import to after adapter resolution to keep the dynamic import path clean.
+/** Elysia constructor, dynamically imported after adapter resolution. */
 const { Elysia } = await import('elysia');
 
 /** In-memory task store for the PoC. */
-const tasks: Array<{ id: string; title: string; done: boolean }> = [
+const tasks: { id: string; title: string; done: boolean }[] = [
   { id: '1', title: 'Try Bun', done: true },
   { id: '2', title: 'Try Node.js', done: false },
   { id: '3', title: 'Try Deno', done: false },
 ];
 
 /** Counter for generating task IDs. */
-let nextId = 4;
+const INITIAL_NEXT_ID = 4;
+
+/** Counter for generating task IDs. */
+let nextId = INITIAL_NEXT_ID;
 
 /**
  * Detects the runtime name for the greeting response.
+ *
  * @returns Human-readable runtime identifier
  */
 function detectRuntime(): string {
@@ -55,14 +63,18 @@ function detectRuntime(): string {
     return `Bun ${Bun.version}`;
   }
 
-  if (typeof globalThis.Deno !== 'undefined') {
+  // oxlint-disable-next-line no-unnecessary-condition -- Deno global only exists at runtime in Deno
+  if (globalThis.Deno !== undefined) {
     // @ts-expect-error -- Deno global exists at runtime but not in Bun/Node types
+    // oxlint-disable-next-line no-unsafe-member-access, no-unsafe-type-assertion -- Deno global is untyped in non-Deno environments
     return `Deno ${Deno.version.deno as string}`;
   }
 
   return `Node.js ${process.version}`;
 }
 
+// oxlint-disable no-restricted-syntax/no-arrow-function, typescript-eslint/no-unsafe-type-assertion -- Elysia's fluent API requires arrow callbacks and adapter type is opaque
+/** Elysia application instance with all routes configured. */
 const app = new Elysia({ adapter: adapter as never })
   .get('/', () => ({
     message: 'Elysia universal PoC',
@@ -91,7 +103,9 @@ const app = new Elysia({ adapter: adapter as never })
     task.done = true;
     return task;
   })
+  // oxlint-disable-next-line no-magic-numbers -- PoC server port
   .listen(3099);
+// oxlint-enable
 
 console.log(`Listening on http://localhost:3099 (${detectRuntime()})`);
 

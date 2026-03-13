@@ -8,7 +8,7 @@ import { types, } from '@monochromatic-dev/module-es';
 
 import type { $ as Int, } from '@_/types/t number/t finite/t int/t/index.ts';
 
-const $ = types.object.array.numberFiniteInt.from.number.exclusiveRange.sync.named.$;
+const {$} = types.object.array.numberFiniteInt.from.number.exclusiveRange.sync.named;
 
 describe($, () => {
   test('returns empty array when start equals end', () => {

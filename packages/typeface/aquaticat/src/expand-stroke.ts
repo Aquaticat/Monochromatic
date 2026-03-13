@@ -9,10 +9,15 @@ type Point = [number, number];
 
 /**
  * Intersect two infinite lines, each defined by a point and direction vector.
+ *
  * @param p1 - point on line 1
+ *
  * @param d1 - direction of line 1
+ *
  * @param p2 - point on line 2
+ *
  * @param d2 - direction of line 2
+ *
  * @returns intersection point
  */
 function lineIntersection(p1: Point, d1: Point, p2: Point, d2: Point): Point {
@@ -28,19 +33,22 @@ function lineIntersection(p1: Point, d1: Point, p2: Point, d2: Point): Point {
  * then intersect consecutive offset edges to produce the new vertex ring.
  * Positive offset expands a clockwise (SVG Y-down) polygon outward;
  * negative offset shrinks it inward.
+ *
  * @param vertices - ordered polygon vertices (clockwise in SVG coordinate space)
+ *
  * @param offset - signed offset distance (positive = outward, negative = inward)
+ *
  * @returns new polygon vertices at the requested offset
  */
 export function offsetPolygon(vertices: readonly Point[], offset: number): Point[] {
   const vertexCount = vertices.length;
 
   // Compute parallel-shifted edges
-  const offsetEdges = vertices.map((vertex, vertexIndex) => {
+  const offsetEdges = vertices.map(function shiftEdge(vertex, vertexIndex) {
     const next = vertices[(vertexIndex + 1) % vertexCount];
     const dx = next[0] - vertex[0];
     const dy = next[1] - vertex[1];
-    const len = Math.sqrt(dx * dx + dy * dy);
+    const len = Math.hypot(dx, dy);
     // Outward normal for CW polygon in SVG coords (Y-down): (dy/len, -dx/len)
     const nx = (dy / len) * offset;
     const ny = (-dx / len) * offset;
@@ -51,7 +59,7 @@ export function offsetPolygon(vertices: readonly Point[], offset: number): Point
   });
 
   // Intersect consecutive offset edges to find new vertices
-  return offsetEdges.map((edge, edgeIndex) => {
+  return offsetEdges.map(function intersectEdge(edge, edgeIndex) {
     const nextEdge = offsetEdges[(edgeIndex + 1) % vertexCount];
     return lineIntersection(edge.point, edge.direction, nextEdge.point, nextEdge.direction);
   });

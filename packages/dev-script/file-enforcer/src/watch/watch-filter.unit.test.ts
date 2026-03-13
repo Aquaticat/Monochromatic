@@ -122,7 +122,7 @@ describe('classifyEvent', () => {
     trackDest(filePath);
     // Record a timestamp well in the past to simulate stale write
     /** Offset to push our recorded time into the past */
-    const pastOffset = 2000;
+    const pastOffset = 2_000;
     writeTimestamps.set(filePath, Date.now() - pastOffset);
 
     /** Now modify the file -- its mtime will be "now", after our recorded timestamp */
@@ -203,7 +203,7 @@ describe('shouldTrigger', () => {
     await writeFile(filePath, 'old');
     trackDest(filePath);
     /** Push timestamp into the past */
-    const pastOffset = 2000;
+    const pastOffset = 2_000;
     writeTimestamps.set(filePath, Date.now() - pastOffset);
     await writeFile(filePath, 'modified externally');
 

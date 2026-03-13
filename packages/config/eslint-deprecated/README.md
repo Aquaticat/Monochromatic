@@ -17,6 +17,32 @@ Oxlint now covers all rules previously handled by ESLint in this monorepo:
 - **Vitest** -- not needed (using bun:test)
 - **Astro** -- deprecated
 
+## Removed package.json dependencies
+
+The following dependencies were removed from this package
+(they referenced catalog entries that no longer exist).
+Restore them when re-adopting ESLint:
+
+```json
+"dependencies": {
+  "@eslint/config-helpers": "catalog:",
+  "@eslint/js": "catalog:",
+  "@typescript-eslint/parser": "catalog:",
+  "@typescript-eslint/scope-manager": "catalog:",
+  "@typescript-eslint/types": "catalog:",
+  "@typescript-eslint/utils": "catalog:",
+  "@vitest/eslint-plugin": "catalog:",
+  "eslint-plugin-n": "catalog:",
+  "eslint-plugin-oxlint": "catalog:",
+  "eslint-plugin-tsdoc": "catalog:",
+  "eslint-plugin-unicorn": "catalog:",
+  "typescript-eslint": "catalog:"
+},
+"peerDependencies": {
+  "eslint": "catalog:"
+}
+```
+
 ## Re-adoption checklist
 
 If ESLint is ever needed again (e.g. for a plugin with no oxlint equivalent):

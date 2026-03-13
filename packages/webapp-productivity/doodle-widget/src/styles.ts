@@ -119,6 +119,15 @@ export function renderStyles(): string {
     }),
 
     $({
+      rule: '.toolbar button.tool-active',
+      decls: {
+        'background-color': cssOklch({ l: 0.88, c: 0.02, h: 250, }),
+        'border-block-color': cssOklch({ l: 0.65, c: 0.05, h: 250, }),
+        'border-inline-color': cssOklch({ l: 0.65, c: 0.05, h: 250, }),
+      },
+    }),
+
+    $({
       rule: '#canvas-container',
       decls: {
         position: 'relative',
@@ -158,6 +167,16 @@ export function renderStyles(): string {
         'max-inline-size': FULL_PERCENT,
         'max-block-size': FULL_PERCENT,
       },
+    }),
+    $({
+      rule: '#text-input',
+      decls: {
+        position: 'absolute',
+        display: 'none',
+        'background-color': cssOklch({ l: 1, c: 0, h: 0, a: 0.85, }),
+        color: cssOklch({ l: 0.3, c: 0, h: 0, }),
+      },
+      raw: ';border:none;outline:none;font:inherit;font-size:1.25rem;padding-block:0.125rem;padding-inline:0.25rem;min-inline-size:8rem;z-index:10',
     }),
   ].join('');
 }

@@ -27,11 +27,17 @@ import { globalStyles } from "./styles.ts";
 import { inboxStyles } from "./inbox-styles.ts";
 import { createNewTaskDialog } from "./new-task-dialog.ts";
 // Side-effect imports: register custom elements so the browser recognizes them in the DOM
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/side-drawer.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/top-nav.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/section-heading.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/toggle-switch.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/focus-dropdown.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/fab-button.ts";
 
 /** Shape of the JSON blob embedded in the inbox page by the server. */
@@ -45,7 +51,7 @@ injectCSS(globalStyles);
 injectCSS(inboxStyles);
 
 const pageData = readPageData<InboxPageData>();
-const appElement = document.getElementById("app");
+const appElement = document.querySelector("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
@@ -53,13 +59,13 @@ const app = appElement;
 
 /** Navigates to the task detail page for the given task. */
 function openTask(taskId: string): void {
-  window.location.href = `/tasks/${taskId}`;
+  globalThis.location.href = `/tasks/${taskId}`;
 }
 
 /** Sends a complete-task API call and reloads the page on success. */
 async function completeTask(taskId: string): Promise<void> {
   await api(`/api/tasks/${taskId}/complete`, { method: "POST" });
-  window.location.reload();
+  globalThis.location.reload();
 }
 
 /** Builds a task list with optional blocked-child nesting. */

@@ -80,13 +80,30 @@ type HOptions<TTag extends string> = {
   /** Event listeners keyed by event name (known DOM events are type-checked, unknown ones accepted as fallback) */
   on?: {
     [K in keyof HTMLElementEventMap]?: (event: HTMLElementEventMap[K]) => void | Promise<void>;
-  } & {
-    [K in string]?: (event: any) => void | Promise<void>;
-  };
+  } & Partial<Record<string, (event: any) => void | Promise<void>>>;
   /** Child nodes to append */
-  children?: ReadonlyArray<Node | string>;
+  children?: readonly (Node | string)[];
 };
 
+/**
+ * Creates an HTML element with declarative options for tag, class, text, attributes, style, events, and children.
+ *
+ * @param tag - HTML tag name
+ *
+ * @param text - text content
+ *
+ * @param html - inner HTML (bypasses escaping)
+ *
+ * @param attrs - HTML attributes as key-value pairs
+ *
+ * @param style - inline CSS styles as a declarations object
+ *
+ * @param on - event listeners keyed by event name
+ *
+ * @param children - child nodes or strings to append
+ *
+ * @returns created HTML element matching the tag
+ */
 /* @__NO_SIDE_EFFECTS__ */ export function $<const TTag extends string>(
   { tag, class: className, text, html, attrs, style, on, children, }: HOptions<TTag>,
 ): ElementFromTag<TTag> {

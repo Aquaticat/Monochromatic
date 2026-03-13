@@ -6,6 +6,7 @@
  * non-object / `null` inputs.
  *
  * @param value - value to inspect for cyclic references
+ *
  * @returns `true` when value contains at least one cycle
  *
  * @example

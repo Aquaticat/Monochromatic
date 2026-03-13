@@ -15,8 +15,11 @@ import type {
  * Assumes all input strings are well-formed with even total number of effective quotes (all quotes properly paired).
  *
  * @param value - Range object with startInclusive position to check
+ *
  * @param strs - Array of double-quoted syntax strings to analyze
+ *
  * @returns Updated Value object with merged quote status information in the inQuotes map
+ *
  * @example
  * ```ts
  * const range = { startInclusive: 1, endInclusive: 1, __brand: { rangeNumber: true } };
@@ -34,8 +37,7 @@ export function $({ value, strs, }: { value: Value; strs: DoubleQuote[]; },): Va
     const strBefore = str.slice(0, value.startInclusive,);
 
     // Count effective double quotes using regex that handles escaped quotes properly
-    const effectiveDoubleQuotesInStrBefore = Array
-      .from(strBefore.matchAll(/(?<!\\)(?:\\\\)*"/g,),)
+    const effectiveDoubleQuotesInStrBefore = [...strBefore.matchAll(/(?<!\\)(?:\\\\)*"/g)]
       .length;
 
     // Odd count means inside quotes, even count means outside quotes
@@ -46,7 +48,7 @@ export function $({ value, strs, }: { value: Value; strs: DoubleQuote[]; },): Va
   }
 
   // Merge new map with original
-  const existingQuoteMap = value.__brand.inQuotes || new Map<string, boolean>();
+  const existingQuoteMap = value.__brand.inQuotes ?? new Map<string, boolean>();
   const mergedQuoteMap = new Map<string, boolean>([
     ...existingQuoteMap,
     ...newQuoteStatusMap,

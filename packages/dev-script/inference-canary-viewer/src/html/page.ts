@@ -8,9 +8,12 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 /**
  * Wraps body content in a full HTML document.
- * @param options - page rendering options
- * @param options.body - inner body HTML
- * @param options.title - page title
+ *
+ *
+ * @param body - inner body HTML
+ *
+ * @param title - page title
+ *
  * @returns complete HTML document string
  */
 export function renderPage({ body, title, }: { body: string; title: string; }): string {
@@ -21,7 +24,7 @@ export function renderPage({ body, title, }: { body: string; title: string; }): 
       h({
         tag: 'head',
         children: [
-          h({ tag: 'meta', attrs: { charset: 'utf-8', }, }),
+          h({ tag: 'meta', attrs: { charset: 'utf8', }, }),
           h({ tag: 'meta', attrs: { name: 'viewport', content: 'width=device-width, initial-scale=1', }, }),
           h({ tag: 'meta', attrs: { name: 'color-scheme', content: 'light dark', }, }),
           h({ tag: 'title', text: title, }),

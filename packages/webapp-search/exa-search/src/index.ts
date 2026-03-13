@@ -4,23 +4,33 @@ import { l as parentLogger, } from './log.ts';
 import { PORT, } from './port.ts';
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 
+/** Tagged logger for the server subsystem. */
 const l = tagged({ tag: 'server', l: parentLogger, },);
 
+/** H3 application instance for the exa-search server. */
 const app = new H3();
+
+/**
+ * Builds a Response containing the exa-search HTML page.
+ *
+ * @returns HTML Response with status 200
+ */
+function serveIndexHtml(): Response {
+  return new Response(
+    indexHtml,
+    { status: 200, headers: { 'content-type': 'text/html', }, },
+  );
+}
 
 /**
  * Serves the single-page exa-search application HTML.
  */
 app.get(
   '/',
-  defineHandler(() => {
-    return new Response(
-      indexHtml,
-      { status: 200, headers: { 'content-type': 'text/html', }, },
-    );
-  }),
+  defineHandler(serveIndexHtml),
 );
 
+/** Running HTTP server instance. */
 const server = serve(app, { port: PORT, },);
 
 l.info(`listening on ${server.url}`);

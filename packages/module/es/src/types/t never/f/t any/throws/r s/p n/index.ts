@@ -9,7 +9,7 @@
  * which will enable native `throw` in expression contexts.
  *
  * @param value - Value to throw as an error
- * @returns Never returns (always throws)
+ *
  * @throws The provided value
  *
  * @example

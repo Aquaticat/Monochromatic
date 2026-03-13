@@ -18,7 +18,7 @@
 
 import spawn from 'nano-spawn';
 
-export {};
+
 
 //region Types
 
@@ -100,6 +100,7 @@ export async function executeWithCollapsedOutput({
  * swallows the error based on the `allowFailure` flag.
  *
  * @param error - Error thrown by nano-spawn (typically SubprocessError)
+ *
  * @param allowFailure - Whether to suppress the failure
  *
  * @example

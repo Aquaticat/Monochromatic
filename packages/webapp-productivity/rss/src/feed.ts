@@ -10,6 +10,7 @@ import { z, } from 'zod/v4-mini';
 import { l as parentLogger, } from './log.ts';
 import type { InnerOutlineWUrl, } from './outline.ts';
 
+/** Tagged logger for the feed module. */
 const l = tagged({ tag: 'feed', l: parentLogger, },);
 
 /**
@@ -26,8 +27,11 @@ export type FeedWOutline = {
 /**
  * Fetches, parses, and date-sorts feeds from OPML outlines.
  * Handles both RSS and Atom formats, discarding feeds that fail to fetch or parse.
+ *
  * @param outlines - Outlines with validated xmlUrl properties
+ *
  * @returns Feeds sorted by publication date (newest first)
+ *
  * @example
  * ```ts
  * const feeds = await getSortedFeeds(outlines);
@@ -47,7 +51,9 @@ export async function getSortedFeeds(
 
 /**
  * Fetches and parses feeds from outlines, discarding failures.
+ *
  * @param outlines - Outlines with xmlUrl properties
+ *
  * @returns Successfully fetched and parsed feeds
  */
 async function fetchAndParseFeeds(
@@ -55,6 +61,7 @@ async function fetchAndParseFeeds(
 ): Promise<FeedWOutline[]> {
   const innerL = tagged({ tag: fetchAndParseFeeds.name, l, },);
   const DISCARD = Symbol('discard',);
+  /** Fetched OPML text paired with its source outline for later parsing. */
   type TextWOutline = { text: string; outline: Opml.Outline<string> & { xmlUrl: string; }; };
   const textsWOutline: TextWOutline[] = (await mapIterableAsync(
     async function fetchFeed(outline: Opml.Outline<string> & { xmlUrl: string; },) {
@@ -91,14 +98,19 @@ async function fetchAndParseFeeds(
 
 /**
  * Extracts the publication date from a feed, falling back to epoch.
+ *
  * @param feedWOutline - Feed with outline metadata
+ *
  * @returns Parsed publication date
  */
-function extractDate({ feed, outline, }: FeedWOutline,): Date {
+function extractDate(feedWOutline: FeedWOutline,): Date {
+  const { feed, outline, } = feedWOutline;
   if (outline.type === 'atom') {
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type
     const atomFeed = feed as ReturnType<typeof parseAtomFeed>;
     return z.coerce.date().parse(atomFeed.updated ?? new Date(0,),);
   }
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- non-atom feeds are RSS
   const rssFeed = feed as ReturnType<typeof parseRssFeed>;
   return z.coerce.date().parse(rssFeed.pubDate ?? new Date(0,),);
 }

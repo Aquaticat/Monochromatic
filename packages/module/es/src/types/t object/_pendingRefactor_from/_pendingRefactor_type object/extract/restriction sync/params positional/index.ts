@@ -6,9 +6,12 @@
  * and collects all properties that pass validation, potentially with renamed keys.
  *
  * @param obj - Input object to extract properties from
+ *
  * @param extracted - Keys or schemas to extract and transform
+ *
  * @returns Object containing extracted and potentially transformed properties
- * @throws {TypeError} When extracted array is empty
+ *
+ * @throws TypeError when extracted array is empty
  *
  * @example
  * Extract specific key:

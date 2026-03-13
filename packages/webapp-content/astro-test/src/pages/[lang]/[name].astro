@@ -1,4 +1,5 @@
 ---
+// oxlint-disable tsdoc/require-tsdoc, no-non-null-assertion, no-restricted-syntax/no-arrow-function, typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-call, typescript-eslint/no-unsafe-type-assertion, typescript-eslint/explicit-function-return-type, require-await -- Astro component frontmatter with framework-dictated patterns
 import {
   i18n,
   langs,
@@ -9,11 +10,9 @@ import Html from '@_/layouts/Html.astro';
 import type { GetStaticPaths, } from 'astro';
 import { render, } from 'astro:content';
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  return langs.flatMap(lang => (names.map(name => ({
+export async function getStaticPaths() { return langs.flatMap(lang => (names.map(name => ({
     params: { lang, name, },
-  }))));
-};
+  })))) }
 
 const { lang, name, } = Astro.params;
 const potentialPost = posts.find(post => post.name === name && post.lang === lang);

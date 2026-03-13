@@ -249,7 +249,9 @@ export const CUSTOM_GUEST_DEFAULTS: LinuxGuestConfig = {
  * file named `<identifier>.qcow2` in the images directory.
  *
  * @param identifier - Registry shorthand (e.g. `ubuntu`, `windows`) or custom template name
+ *
  * @returns Image spec for registry images, or `{ customTemplatePath }` for user-provided templates
+ *
  * @throws Error when identifier matches neither the registry nor a custom template file
  *
  * @example

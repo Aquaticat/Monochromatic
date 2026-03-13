@@ -12,7 +12,9 @@ import { glow, } from 'nue-glow';
 /**
  * Highlights TypeScript source code to static HTML.
  * Returns a `<code>` element with numbered lines and semantic token tags.
+ *
  * @param source - raw TypeScript source code
+ *
  * @returns HTML string ready to embed in a `<pre>` wrapper
  *
  * @example

@@ -36,7 +36,7 @@ test.describe('OPFS sink', () => {
   test('verify detects OPFS availability', async ({ page, }) => {
     const result = await page.evaluate(async () => {
       const { verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
-      return await verify();
+      return verify();
     });
     expect(result).toBe(true);
   });

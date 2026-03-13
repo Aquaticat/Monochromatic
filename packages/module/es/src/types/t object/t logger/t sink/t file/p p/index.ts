@@ -16,7 +16,7 @@ let available = false;
 /**
  * Verifies file system is available (Node.js) and can write/read data.
  */
-export const verify: Verify = async (): Promise<boolean> => {
+export async function verify(): Promise<boolean> {
   if (verified) return available;
   verified = true;
 
@@ -34,19 +34,19 @@ export const verify: Verify = async (): Promise<boolean> => {
     // Verify by writing and reading test data
     const testData = `{"test":true,"timestamp":${Date.now()}}\n`;
     await appendFile(filePath, testData);
-    const content = await readFile(filePath, 'utf-8');
+    const content = await readFile(filePath, 'utf8');
     available = content.includes('"test":true');
   } catch {
     available = false;
   }
 
   return available;
-};
+}
 
 /**
  * File sink that writes log records to node_modules/.monochromatic/.
  */
-export const $: Sink = async (record: LogRecord): Promise<void> => {
+export async function $(record: LogRecord): Promise<void> {
   if (!available || !filePath) return;
 
   // appendFile is supposed to be available here because we've already checked before.
@@ -57,4 +57,4 @@ export const $: Sink = async (record: LogRecord): Promise<void> => {
   } catch (error) {
     console.error(`logger internal error in fs sink ${(Error.isError(error))? error.message : 'unknown non-Error error'}`)
   }
-};
+}

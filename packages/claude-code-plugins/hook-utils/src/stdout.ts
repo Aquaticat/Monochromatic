@@ -21,7 +21,7 @@ import type {
  *
  * @example
  * ```ts
- * import type { StopOutput } from '@monochromatic-dev/claude-code-plugins-hook-types'
+ * import type { StopOutput } from '\@monochromatic-dev/claude-code-plugins-hook-types'
  *
  * const output: StopOutput = { decision: 'block', reason: 'Needs investigation' }
  * writeOutput(output)

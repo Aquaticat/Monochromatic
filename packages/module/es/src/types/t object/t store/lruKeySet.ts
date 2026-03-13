@@ -22,6 +22,7 @@ export type LruKeySet = {
  * Create an LRU key set that evicts the oldest key when capacity is exceeded.
  *
  * @param maxSize - maximum tracked keys before eviction
+ *
  * @returns LRU key set where {@link LruKeySet.touch} returns evicted key or undefined
  *
  * @example

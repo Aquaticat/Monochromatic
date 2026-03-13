@@ -25,7 +25,7 @@ import { codeGenProbes, codeGenProbesAll, simpleProbes, simulationProbes, } from
 //region Elapsed-time log prefix -- prepends "+Xs" to every console.log/error line so interleaved output is easy to timeline
 
 /** Milliseconds per second for elapsed-time display */
-const MS_PER_SECOND = 1000;
+const MS_PER_SECOND = 1_000;
 
 /** Width of the elapsed-time column so values align up to 999.9s */
 const ELAPSED_PAD_WIDTH = 6;
@@ -35,6 +35,7 @@ const PROCESS_START_MS = Date.now();
 
 /**
  * Formats elapsed milliseconds as a right-aligned "+NNs" prefix for log lines.
+ *
  * @returns elapsed time string like "+  4.2s"
  */
 function elapsedPrefix(): string {
@@ -48,9 +49,9 @@ const originalLog = console.log;
 // oxlint-disable-next-line no-console -- intentional override to inject timestamps
 const originalError = console.error;
 // oxlint-disable-next-line no-console -- intentional override
-console.log = (...args: unknown[]): void => originalLog(elapsedPrefix(), ...args);
+console.log = function logWithTimestamp(...args: unknown[]): void { originalLog(elapsedPrefix(), ...args); };
 // oxlint-disable-next-line no-console -- intentional override
-console.error = (...args: unknown[]): void => originalError(elapsedPrefix(), ...args);
+console.error = function errorWithTimestamp(...args: unknown[]): void { originalError(elapsedPrefix(), ...args); };
 
 //endregion Elapsed-time log prefix
 
@@ -67,16 +68,17 @@ if (apiKey === undefined || apiKey === '') {
 
 /**
  * Determines which models to test based on CLI flags.
+ *
  * @returns models to test
  */
 function selectModels(): readonly ModelConfig[] {
   if (modelOverride !== undefined) {
-    const found = models.find((model) => model.openrouterId === modelOverride || model.label === modelOverride);
+    const found = models.find(function matchModel(model): boolean { return model.openrouterId === modelOverride || model.label === modelOverride; });
     if (found !== undefined) return [found];
     if (!modelOverride.includes('/')) {
       throw new Error(`Invalid model ID "${modelOverride}": must be in "provider/name" format`);
     }
-    // Type assertion: includes('/') check above satisfies the OpenRouterModelId template literal
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- includes('/') ensures provider/model format
     const modelId = modelOverride as `${string}/${string}`;
     return [{ openrouterId: modelId, label: modelId, verbosity: 'low', }];
   }
@@ -103,11 +105,11 @@ if (selectedModels.length === 0) {
   const activeProbeFilter = probeFilter;
 
   const probes = activeProbeFilter !== undefined
-    ? allProbes.filter((probe) => activeProbeFilter.has(probe.name))
+    ? allProbes.filter(function matchFilter(probe): boolean { return activeProbeFilter.has(probe.name); })
     : allProbes;
 
   if (probes.length === 0) {
-    const available = allProbes.map((probe) => probe.name).join(', ');
+    const available = allProbes.map(function getName(probe): string { return probe.name; }).join(', ');
     throw new Error(`--probe matched no probes. Available: ${available}`);
   }
 
@@ -115,15 +117,17 @@ if (selectedModels.length === 0) {
   // they always re-run regardless of how recently they last executed.
   const effectiveRecentPairs = activeProbeFilter !== undefined
     ? new Map(
-      [...recentModelProbePairs.entries()].map(([model, skipped]) => [
-        model,
-        new Set([...skipped].filter((name) => !activeProbeFilter.has(name))),
-      ]),
+      [...recentModelProbePairs.entries()].map(function filterPair([model, skipped]): [string, Set<string>] {
+        return [
+          model,
+          new Set([...skipped].filter(function keepName(name): boolean { return !activeProbeFilter.has(name); })),
+        ];
+      }),
     )
     : recentModelProbePairs;
 
   console.log(`[canary] testing ${String(selectedModels.length)} model(s) in parallel`);
-  console.log(`[canary] probes: ${probes.map((probe) => probe.name).join(', ')}`);
+  console.log(`[canary] probes: ${probes.map(function getName(probe): string { return probe.name; }).join(', ')}`);
   console.log('');
   await runAndReport(selectedModels, probes, effectiveRecentPairs, recentlyFailedModels, apiKey, runsOverride);
 }
@@ -135,7 +139,7 @@ if (selectedModels.length === 0) {
 /** Seconds to wait before assuming the process is stuck on leaked async resources */
 const WATCHDOG_TIMEOUT_SECONDS = 5;
 
-const watchdog = setTimeout(() => {
+const watchdog = setTimeout(function watchdogTimeout(): void {
   console.error('[canary] process did not exit naturally after all work completed, dumping active handles:');
   whyIsNodeRunning();
   // oxlint-disable-next-line unicorn/no-process-exit -- required: fallback for intermittent async resource leaks

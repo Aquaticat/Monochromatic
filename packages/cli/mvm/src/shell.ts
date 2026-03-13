@@ -8,7 +8,9 @@ import { l, tagged } from './log.ts';
  * The VM is configured with auto-login on ttyS0, so no credentials are needed.
  * Press `Ctrl+]` to disconnect from the console.
  *
- * @param options - VM name without the mvm- prefix
+ * @param name - VM name without the mvm- prefix
+ *
+ * @returns Resolves when console session ends
  *
  * @example
  * ```ts
@@ -29,9 +31,11 @@ export async function shell({ name }: { name: string }): Promise<void> {
       stdout: 'inherit',
     });
   } catch (error: unknown) {
-    const exitCode = (error as { exitCode?: number }).exitCode;
-    if (exitCode !== undefined) {
-      process.exitCode = exitCode;
+    if (error !== null && error !== undefined && typeof error === 'object' && 'exitCode' in error) {
+      const exitCode = typeof error.exitCode === 'number' ? error.exitCode : undefined;
+      if (exitCode !== undefined) {
+        process.exitCode = exitCode;
+      }
     }
   }
 }

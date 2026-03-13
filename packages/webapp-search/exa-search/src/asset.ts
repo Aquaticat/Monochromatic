@@ -1,3 +1,4 @@
+// oxlint-disable typescript-eslint/no-unsafe-assignment -- CSS import has any type from static asset import
 import { readFile, } from 'node:fs/promises';
 
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
@@ -9,24 +10,23 @@ l.debug(`asset module loading`);
 /**
  * CSS source for the exa-search interface.
  * Imported at build time via static asset import.
- * @see {@link indexHtml} for where it is inlined into the page
  */
 export const css: string = clientCss;
 
 /**
  * Bundled client-side JavaScript for the exa-search interface.
  * Pre-built by tsdown via `mise run build:js:client` and read from disk at startup.
- * @see {@link indexHtml} for where it is inlined into the page
  */
 export const js: string = await readFile('./dist/client/client.js', 'utf8',);
 
 /** Escaped JS source safe for embedding inside a `<script>` tag. */
-const safeJs: string = js.replaceAll(/<\/script>/gvi, '<\\/script>',);
+const safeJs: string = js.replaceAll('</script>', String.raw`<\/script>`,);
 
 //region HTML structure -- Declarative page composition via h-html
 
 /**
  * Builds the search result template element rendered once and cloned by client JS.
+ *
  * @returns HTML string for a single result `<li>` with all sub-elements
  */
 function buildResultTemplate(): string {
@@ -98,6 +98,7 @@ function buildResultTemplate(): string {
 
 /**
  * Builds the status section with metrics, processing, success, and error indicators.
+ *
  * @returns HTML string for the status `<section>`
  */
 function buildStatusSection(): string {
@@ -137,6 +138,7 @@ function buildStatusSection(): string {
 
 /**
  * Builds the search form inside a `<search>` landmark element.
+ *
  * @returns HTML string for the search form
  */
 function buildSearchForm(): string {
@@ -171,6 +173,7 @@ function buildSearchForm(): string {
 
 /**
  * Builds the page header with logo and nav controls.
+ *
  * @returns HTML string for the `<header>`
  */
 function buildHeader(): string {
@@ -222,8 +225,7 @@ function buildHeader(): string {
 /**
  * Complete self-contained HTML page with inlined CSS and JS.
  * Composed declaratively via h-html; served as the response for every GET / request.
- * @see {@link css} for the inlined stylesheet
- * @see {@link js} for the inlined client bundle
+ *
  */
 export const indexHtml: string = [
   '<!DOCTYPE html>',

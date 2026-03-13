@@ -13,7 +13,7 @@ if (!TARGET_ASN) {
 }
 
 const CACHE_FILE = join(import.meta.dirname, `cache_${TARGET_ASN}.json`);
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1_000;
 const URL = `https://ipinfo.io/data/ipinfo_lite.json.gz?_src=frontend&token=${process.env.IPINFO_TOKEN}`;
 
 async function run() {
@@ -21,7 +21,7 @@ async function run() {
   if (existsSync(CACHE_FILE)) {
     const stats = await stat(CACHE_FILE);
     if (Date.now() - stats.mtimeMs < THIRTY_DAYS_MS) {
-      process.stdout.write(JSON.stringify({ ips: await readFile(CACHE_FILE, "utf-8") }));
+      process.stdout.write(JSON.stringify({ ips: await readFile(CACHE_FILE, "utf8") }));
       return;
     }
   }
@@ -33,7 +33,7 @@ async function run() {
     const reader = stream.getReader();
     const decoder = new TextDecoder();
 
-    let ips: string[] = [];
+    const ips: string[] = [];
     let leftover = "";
 
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- streaming read loop
@@ -43,7 +43,7 @@ async function run() {
 
       const chunk = leftover + decoder.decode(value, { stream: true });
       const lines = chunk.split("\n");
-      leftover = lines.pop() || "";
+      leftover = lines.pop() ?? "";
 
       for (const line of lines) {
         // Optimized check: string search before JSON.parse
@@ -58,10 +58,10 @@ async function run() {
     await writeFile(CACHE_FILE, result);
     process.stdout.write(JSON.stringify({ ips: result }));
 
-  } catch (e) {
+  } catch {
     // Fallback to expired cache if download fails
     if (existsSync(CACHE_FILE)) {
-      process.stdout.write(JSON.stringify({ ips: await readFile(CACHE_FILE, "utf-8") }));
+      process.stdout.write(JSON.stringify({ ips: await readFile(CACHE_FILE, "utf8") }));
     } else {
       process.exit(1);
     }

@@ -5,10 +5,14 @@
  * Handles single keys, iterables of keys, and schema-based validation for flexible property selection.
  *
  * @param object - Input object to pick properties from
+ *
  * @param keys - Keys to pick from the object or schema for validation
+ *
  * @returns Object containing only the picked properties
- * @throws {Error} When a key doesn't exist in the object
- * @throws {TypeError} When keys parameter is invalid type
+ *
+ * @throws Error when a key doesn't exist in the object
+ *
+ * @throws TypeError when keys parameter is invalid type
  *
  * @example
  * Basic property picking:
@@ -90,8 +94,9 @@
   : Pick<TObject, Extract<keyof TObject, TKeys>>
 {
   // Handle iterable of keys (including arrays)
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime guard for non-TS callers
   if (typeof keys === 'object' && keys !== null && Symbol.iterator in keys) {
-    const keysArray = [...(keys as Iterable<keyof TObject>),];
+    const keysArray = [...(keys),];
     const result: Record<string, unknown> = {};
 
     for (const key of keysArray) {
@@ -101,7 +106,7 @@
 
       // Convert key to string and add to result
       const stringKey = String(key,);
-      result[stringKey] = object[key as keyof TObject];
+      result[stringKey] = object[key];
     }
 
     return result as any;

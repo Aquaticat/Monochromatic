@@ -7,7 +7,11 @@
 import { listInProgressTasks } from "../../lib/db/tasks.ts";
 import { renderPage } from "./layout.ts";
 
-/** Renders the in-progress page listing tasks with active timers. */
+/**
+ * Renders the in-progress page listing tasks with active timers.
+ *
+ * @returns HTML response for the in-progress page
+ */
 export async function inProgressPage(): Promise<Response> {
   const tasks = await listInProgressTasks();
 

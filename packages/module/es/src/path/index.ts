@@ -15,6 +15,7 @@
  * Whether the runtime provides Node-compatible path APIs.
  * Bun and Node both set `process.versions.node`.
  */
+// oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime guard for browser environments where process is undefined
 const hasNodePath = typeof process !== 'undefined' && process.versions?.node !== undefined;
 
 /**
@@ -23,7 +24,9 @@ const hasNodePath = typeof process !== 'undefined' && process.versions?.node !==
  * so browser bundlers cannot statically resolve the import.
  * Top-level await is valid in ESM and supported by Bun and Node 14.8+.
  */
+// oxlint-disable-next-line typescript/consistent-type-imports -- dynamic import cannot use `import type` syntax
 const nodePath: typeof import('node:path/posix') | undefined = hasNodePath
+  // oxlint-disable-next-line typescript/consistent-type-imports -- dynamic import type cast
   ? (await import('node' + ':path') as typeof import('node:path')).posix
   : undefined;
 
@@ -35,8 +38,11 @@ export const sep = '/';
 /**
  * Returns the directory portion of a POSIX path.
  * Delegates to `node:path/posix` when available.
+ *
  * @param filePath - Absolute or relative POSIX path
+ *
  * @returns Parent directory path
+ *
  * @example
  * ```ts
  * dirname('/foo/bar/baz.css'); // '/foo/bar'
@@ -54,21 +60,26 @@ export function dirname(filePath: string): string {
 /**
  * Whether a POSIX path is absolute (starts with `/`).
  * Delegates to `node:path/posix` when available.
+ *
  * @param filePath - Path to check
+ *
  * @returns True when the path starts with `/`
  */
 export function isAbsolute(filePath: string): boolean {
   if (nodePath !== undefined) {
     return nodePath.isAbsolute(filePath);
   }
-  return filePath.length > 0 && filePath.charCodeAt(0) === 47;
+  return filePath.length > 0 && filePath.codePointAt(0) === 47;
 }
 
 /**
  * Joins path segments with `/` and normalizes the result.
  * Delegates to `node:path/posix` when available.
+ *
  * @param segments - Path segments to join
+ *
  * @returns Joined and normalized path
+ *
  * @example
  * ```ts
  * join('/foo', 'bar', 'baz'); // '/foo/bar/baz'
@@ -89,8 +100,11 @@ export function join(...segments: string[]): string {
  * Processes segments right-to-left: each absolute segment resets the base,
  * relative segments prepend to the current result. When no segment is
  * absolute, prepends cwd (Node/Bun) or `/` (browser).
+ *
  * @param segments - Path segments to resolve
+ *
  * @returns Absolute, normalized path
+ *
  * @example
  * ```ts
  * resolve('/foo', 'bar', 'baz'); // '/foo/bar/baz'
@@ -109,7 +123,9 @@ export function resolve(...segments: string[]): string {
 /**
  * Normalizes a path by resolving `.` and `..` segments and collapsing
  * consecutive slashes. Does not resolve against cwd — just cleans the string.
+ *
  * @param filePath - Raw path to normalize
+ *
  * @returns Normalized path
  */
 function normalize(filePath: string): string {
@@ -118,9 +134,9 @@ function normalize(filePath: string): string {
   }
 
   /** Whether the input is rooted */
-  const isRoot = filePath.charCodeAt(0) === 47;
+  const isRoot = filePath.codePointAt(0) === 47;
   /** Whether the input ends with a trailing slash */
-  const trailingSlash = filePath.charCodeAt(filePath.length - 1) === 47;
+  const trailingSlash = filePath.codePointAt(filePath.length - 1) === 47;
 
   /** Path segments split on `/` */
   const parts = filePath.split('/');
@@ -133,7 +149,7 @@ function normalize(filePath: string): string {
     }
     if (part === '..') {
       // Don't pop past root
-      if (resolved.length > 0 && resolved[resolved.length - 1] !== '..') {
+      if (resolved.length > 0 && resolved.at(-1) !== '..') {
         resolved.pop();
       } else if (!isRoot) {
         resolved.push('..');
@@ -165,13 +181,13 @@ function dirnameFallback(filePath: string): string {
   }
 
   /** Whether the input path is rooted */
-  const isRoot = filePath.charCodeAt(0) === 47;
+  const isRoot = filePath.codePointAt(0) === 47;
   /** Index of the last slash, ignoring a trailing slash */
   let lastSlash = -1;
 
   // Walk backwards to find the last separator, skipping a trailing slash
   for (let charIndex = filePath.length - 1; charIndex >= 1; charIndex--) {
-    if (filePath.charCodeAt(charIndex) === 47) {
+    if (filePath.codePointAt(charIndex) === 47) {
       if (charIndex === filePath.length - 1) {
         continue;
       }
@@ -195,7 +211,7 @@ function joinFallback(...segments: string[]): string {
     return '.';
   }
   /** Raw concatenation of all non-empty segments */
-  const joined = segments.filter((segment) => segment !== '').join('/');
+  const joined = segments.filter(function isNonEmpty(segment) { return segment !== ''; }).join('/');
   if (joined === '') {
     return '.';
   }
@@ -217,7 +233,7 @@ function resolveFallback(...segments: string[]): string {
       continue;
     }
     resolved = resolved === '' ? segment : segment + '/' + resolved;
-    resolvedAbsolute = segment.charCodeAt(0) === 47;
+    resolvedAbsolute = segment.codePointAt(0) === 47;
   }
 
   // If still not absolute, prepend cwd (unavailable in browser, default to '/')
@@ -232,7 +248,7 @@ function resolveFallback(...segments: string[]): string {
   /** Normalized absolute path */
   const normalized = normalize(resolved);
   // resolve() never returns trailing slashes except for root '/'
-  if (normalized.length > 1 && normalized.charCodeAt(normalized.length - 1) === 47) {
+  if (normalized.length > 1 && normalized.codePointAt(normalized.length - 1) === 47) {
     return normalized.slice(0, -1);
   }
   return normalized;

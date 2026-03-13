@@ -1,6 +1,7 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
 
+/** Shadow DOM styles for the `\<top-nav\>` component. */
 const STYLES = css(`
   :host {
     @apply --sticky-bar;
@@ -82,20 +83,22 @@ const STYLES = css(`
 `);
 
 /**
- * `<top-nav>` -- sticky navigation bar with hamburger menu, page heading, and search link.
+ * `\<top-nav\>` -- sticky navigation bar with hamburger menu, page heading, and search link.
  * Dispatches a `menu-open` composed event when the hamburger is clicked.
  */
 class TopNav extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
 
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
   }
 
+  /** Renders the navigation bar with hamburger, heading, and search link. */
   connectedCallback(): void {
     const heading = this.getAttribute("heading") ?? "";
-
     this.#shadow.replaceChildren(
       h({ tag: "style", text: STYLES }),
       h({
@@ -114,6 +117,7 @@ class TopNav extends HTMLElement {
           }),
         ],
         on: {
+          // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: event handler must reference `this`
           click: () => {
             this.dispatchEvent(new CustomEvent("menu-open", { bubbles: true, composed: true }));
           },

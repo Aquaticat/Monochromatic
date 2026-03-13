@@ -56,12 +56,16 @@ function processStdoutWriter(): StdoutWriter {
  * Runs until stdin closes (the client terminates the subprocess).
  *
  * @param server - Immutable server handle created by {@link createMcpServer}.
+ *
  * @param input - Async iterable of byte chunks for incoming messages. Defaults to `process.stdin`.
+ *
  * @param output - Writer for outgoing messages. Defaults to a `process.stdout.write` wrapper.
+ *
+ * @returns Resolves when stdin closes.
  *
  * @example
  * ```ts
- * import { createMcpServer, defineTool, serve } from '@monochromatic-dev/mcp-stdio';
+ * import { createMcpServer, defineTool, serve } from '\@monochromatic-dev/mcp-stdio';
  *
  * const server = createMcpServer({ name: 'demo', version: '0.1.0' }, []);
  * await serve(server);
@@ -129,8 +133,12 @@ export async function serve(
  * Writes a JSON-RPC message as a newline-terminated UTF-8 string to the output stream.
  *
  * @param writer - Writer for stdout output.
+ *
  * @param encoder - Reusable TextEncoder instance.
+ *
  * @param message - JSON-RPC response to serialize and write.
+ *
+ * @returns Resolves when the message has been written.
  */
 async function writeMessage(
   writer: StdoutWriter,

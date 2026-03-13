@@ -45,10 +45,8 @@ import {
 import { string, } from '@optique/core/valueparser';
 import { runSync, } from '@optique/run';
 
-import type { BuiltinTimeStrategy, TimeStrategy, } from './depends-staleness.ts';
-
 import { executeWithCollapsedOutput, } from './depends-exec.ts';
-import { checkStaleness, } from './depends-staleness.ts';
+import { checkStaleness, type BuiltinTimeStrategy, type TimeStrategy, } from './depends-staleness.ts';
 
 export {};
 
@@ -78,6 +76,7 @@ const rawArgs = runSync(parser, { programName: 'task-depends', help: 'option', }
  * optique returns `undefined` for omitted optional options inside `multiple`.
  *
  * @param values - Array that may contain nullish values from optique parsing
+ *
  * @returns Array with nullish values removed
  *
  * @example
@@ -85,14 +84,14 @@ const rawArgs = runSync(parser, { programName: 'task-depends', help: 'option', }
  * filterNullish([undefined, 'a', null]) // ['a']
  * ```
  */
-function filterNullish(values: ReadonlyArray<string | null | undefined>,): string[] {
+function filterNullish(values: readonly (string | null | undefined)[],): string[] {
   return values.filter(function isString(value,): value is string {
     return value !== null && value !== undefined;
   },);
 }
 
 /** Valid builtin time strategy names */
-const BUILTIN_STRATEGIES: readonly BuiltinTimeStrategy[] = ['newest', 'oldest', 'mean', 'median',];
+const BUILTIN_STRATEGIES: readonly BuiltinTimeStrategy[] = new Set(['newest', 'oldest', 'mean', 'median',]);
 
 /**
  * Validates and defaults a time strategy option.
@@ -100,8 +99,11 @@ const BUILTIN_STRATEGIES: readonly BuiltinTimeStrategy[] = ['newest', 'oldest', 
  * Accepts builtin strategy names or `sh:` prefixed shell commands.
  *
  * @param value - Raw value from optique (possibly nullish when option is omitted)
+ *
  * @param flagName - Flag name for error messages
+ *
  * @returns Validated strategy, defaulting to `'newest'`
+ *
  * @throws {Error} When value is not a valid builtin and does not start with `sh:`
  *
  * @example
@@ -113,7 +115,7 @@ const BUILTIN_STRATEGIES: readonly BuiltinTimeStrategy[] = ['newest', 'oldest', 
  */
 function validateTimeStrategy(value: string | null | undefined, flagName: string,): TimeStrategy {
   if (value === null || value === undefined) return 'newest';
-  if (BUILTIN_STRATEGIES.includes(value as BuiltinTimeStrategy,)) return value as TimeStrategy;
+  if (BUILTIN_STRATEGIES.has(value as BuiltinTimeStrategy,)) return value as TimeStrategy;
   if (value.startsWith('sh:',)) return value as TimeStrategy;
   throw new Error(
     `Invalid ${flagName}: "${value}". Must be a builtin (newest, oldest, mean, median) or sh:command.`,

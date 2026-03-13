@@ -2,7 +2,9 @@
  * Capitalizes the first character of a string.
  *
  * @param str - String to capitalize
+ *
  * @returns String with first character uppercased
+ *
  * @example
  * ```ts
  * $('hello'); // 'Hello'

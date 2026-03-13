@@ -1,3 +1,4 @@
+// oxlint-disable tsdoc/require-tsdoc, no-restricted-syntax/no-arrow-function -- prototype script with inline variables; Elysia API requires arrow callbacks
 import Anthropic from '@anthropic-ai/sdk';
 import { swagger, } from '@elysiajs/swagger';
 import { Elysia, } from 'elysia';

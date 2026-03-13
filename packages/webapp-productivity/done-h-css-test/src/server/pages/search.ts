@@ -13,7 +13,10 @@ import { serializePageData } from "./layout.ts";
 
 /**
  * Renders the search page with FTS results when a query is present.
+ *
  * @param url - Request URL (the `q` search param contains the query)
+ *
+ * @returns HTML response for the search page
  */
 export async function searchPage(url: URL): Promise<Response> {
   const query = url.searchParams.get("q") ?? "";

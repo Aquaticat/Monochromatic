@@ -28,6 +28,7 @@ export type { ContainerResult, } from './container-exec.ts';
  * Uses `crypto.randomUUID()` instead of `mkdtemp` to generate a unique subdirectory
  * name without relying on `os.tmpdir()`. Keeping staging files under LINT_DIR means
  * all container I/O is in one place -- easier to inspect and already gitignored.
+ *
  * @returns async disposable with the staging directory path
  */
 async function makeStagingDir(): Promise<AsyncDisposable & { readonly path: string }> {
@@ -53,8 +54,11 @@ async function makeStagingDir(): Promise<AsyncDisposable & { readonly path: stri
  * that corrupt backticks and template literals in generated code.
  *
  * @param source - TypeScript source code to execute
+ *
  * @param stdinData - optional stdin data to pipe to the script
+ *
  * @param signal - optional abort signal; kills the container immediately when aborted
+ *
  * @returns execution result with stdout, stderr, exit code
  */
 export async function runInContainer(source: string, stdinData?: string, signal?: AbortSignal): Promise<ContainerResult> {

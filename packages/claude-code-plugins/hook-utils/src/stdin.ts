@@ -19,12 +19,13 @@ import { text } from 'node:stream/consumers';
  *
  * @example
  * ```ts
- * import type { StopInput } from '@monochromatic-dev/claude-code-plugins-hook-types'
+ * import type { StopInput } from '\@monochromatic-dev/claude-code-plugins-hook-types'
  *
  * const raw = await readStdin()
  * const event = JSON.parse(raw) as StopInput
  * ```
  */
+/* oxlint-disable-next-line eslint/require-await -- async for explicit Promise<string> return type; text() already returns Promise */
 async function readStdin(): Promise<string> {
   return text(process.stdin);
 }

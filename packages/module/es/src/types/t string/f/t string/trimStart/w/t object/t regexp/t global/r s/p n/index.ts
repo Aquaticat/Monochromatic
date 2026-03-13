@@ -7,9 +7,11 @@ import type { $ as Global, } from '@_/types/t object/t regexp/t global/t/index.t
  * The regex pattern is applied using Unicode-aware string segmentation for proper character handling.
  *
  * @param str - to trim from the start
+ *
  * @param trimmer - regex pattern to match and remove from the start
- * @param context - recursive context with TTL to prevent infinite loops
+ *
  * @returns String with all leading occurrences matching the regex pattern removed
+ *
  * @throws Error If trimmer is an empty regex or invalid regex pattern
  *
  * @example

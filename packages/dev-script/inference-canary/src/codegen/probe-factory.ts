@@ -9,9 +9,9 @@
  * Each probe only supplies its name, prompt, test input, output verifier, and
  * optional perf test configuration.
  */
-import { runInContainer, } from '../container.ts';
+import { runInContainer, type ContainerResult, } from '../container.ts';
 
-import { buildPerfDiagnostic, computePerfScore, runInContainerTimed, } from './perf.ts';
+import { buildPerfDiagnostic, computePerfScore, runInContainerTimed, type PerfTestConfig, type TimedContainerResult, } from './perf.ts';
 import {
   appendAdditionalRunDiagnostics,
   cacheAdditionalResults,
@@ -21,10 +21,8 @@ import {
 import { CODE_GEN_SYSTEM, } from './system-prompt.ts';
 import { buildCodeGenFixPrompt, combinedScore, extractCode, lintAndLog, tryExtractCode, } from './scoring.ts';
 
-import type { ContainerResult, } from '../container.ts';
 import type { LintResult, } from '../linter.ts';
 import type { Probe, ScoreContext, } from '../probes.ts';
-import type { PerfTestConfig, TimedContainerResult, } from './perf.ts';
 import type { VerifyResult, } from './additional-run-types.ts';
 import type { CodeGenProbeConfig, } from './probe-factory-types.ts';
 
@@ -43,7 +41,9 @@ export type { CodeGenProbeConfig, } from './probe-factory-types.ts';
  * 1. Runs `runInContainerTimed` in parallel with correctness + lint
  * 2. Applies the perf score (0-1) as a direct multiplier on the combined score
  * 3. Appends perf diagnostics to the fix prompt when the implementation is slow
+ *
  * @param config - probe-specific configuration
+ *
  * @returns fully wired Probe instance
  *
  * @example
@@ -66,10 +66,10 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
   const perfCache = new Map<string, TimedContainerResult>();
   /** Per-additional-run container result caches, indexed by run position */
   const additionalContainerCaches: Map<string, ContainerResult>[] =
-    (config.additionalRuns ?? []).map(() => new Map());
+    (config.additionalRuns ?? []).map(function createContainerCache(): Map<string, ContainerResult> { return new Map(); });
   /** Per-additional-run verification result caches, indexed by run position */
   const additionalVerifyCaches: Map<string, VerifyResult>[] =
-    (config.additionalRuns ?? []).map(() => new Map());
+    (config.additionalRuns ?? []).map(function createVerifyCache(): Map<string, VerifyResult> { return new Map(); });
 
   /** Spread-friendly slow property, omitted when config.slow is undefined */
   const slowProp = config.slow !== undefined ? { slow: config.slow, } : {};
@@ -81,7 +81,7 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
     prompt: config.prompt,
     ...slowProp,
 
-    buildFixPrompt: async (response, context) => {
+    buildFixPrompt: async function buildFixPrompt(response, context): Promise<string | undefined> {
       /** Base fix prompt from standard lint/runtime diagnostics */
       const base = await buildCodeGenFixPrompt(
         response, context,
@@ -129,7 +129,7 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
       ].join('\n');
     },
 
-    score: async (response, context) => {
+    score: async function score(response, context): Promise<number> {
       /** Extraction result: source code and whether a fenced block was found */
       const extraction = tryExtractCode(response);
       if (!extraction.fenced) {
@@ -148,7 +148,7 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
         : { reject: false, source: rawSource, };
 
       /** Final source to execute in containers */
-      const source = transformed.source;
+      const {source} = transformed;
 
       // Launch all container runs in parallel: correctness + lint + perf + additional
       /** Main correctness container promise */

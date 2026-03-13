@@ -30,7 +30,7 @@
  * onLoadRedirectingTo(1000); // Safe to call even without target element
  * ```
  */
-export function onLoadRedirectingTo(delayTime: number = 5000,): void {
+export function onLoadRedirectingTo(delayTime: number = 5_000,): void {
   const potentialRedirectingToElement: HTMLAnchorElement | null = document
     .querySelector('a.redirectingTo',);
   if (potentialRedirectingToElement) {

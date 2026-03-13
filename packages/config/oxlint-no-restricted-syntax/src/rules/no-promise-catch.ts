@@ -47,7 +47,7 @@ export const noPromiseCatch: CreateOnceRule = {
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const callNode = node as Span & Record<string, unknown>;
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-        const callee = callNode['callee'] as Record<string, unknown> | undefined;
+        const callee = callNode['callee'] as Record<string, unknown> | null | undefined;
         if (callee === undefined || callee === null) {
           return;
         }
@@ -57,7 +57,7 @@ export const noPromiseCatch: CreateOnceRule = {
         }
 
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-        const property = callee['property'] as Record<string, unknown> | undefined;
+        const property = callee['property'] as Record<string, unknown> | null | undefined;
         if (property === undefined || property === null || property['name'] !== 'catch') {
           return;
         }

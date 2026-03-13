@@ -11,7 +11,7 @@ export function pathParse(path: string,): ParsedPath {
 
   // Split path into segments
   const parts = path.split('/',);
-  const basePart = parts.pop() || '';
+  const basePart = parts.pop() ?? '';
 
   // Handle trailing slash case
   const dir = parts.length === 0

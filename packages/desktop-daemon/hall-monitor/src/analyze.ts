@@ -47,10 +47,12 @@ type CompletionResponse = {
 /**
  * Wraps a raw image buffer as a base64 data-URL content entry
  * for the OpenAI-compatible vision API.
+ *
  * @param buf - JPEG image bytes
+ *
  * @returns image_url content entry
  */
-function buildImageEntry(buf: Buffer) {
+function buildImageEntry(buf: Buffer): { type: "image_url"; image_url: { url: string } } {
   return {
     type: "image_url" as const,
     image_url: { url: `data:image/jpeg;base64,${buf.toString("base64")}` },
@@ -60,8 +62,11 @@ function buildImageEntry(buf: Buffer) {
 /**
  * Extracts a PRODUCTIVE or UNPRODUCTIVE verdict from the LLM response text.
  * Looks for the canonical `VERDICT: ...` line first, falls back to keyword matching.
+ *
  * @param result - raw LLM response text
+ *
  * @returns parsed verdict
+ *
  * @example
  * ```ts
  * parseVerdict("... VERDICT: UNPRODUCTIVE"); // "UNPRODUCTIVE"
@@ -71,7 +76,8 @@ function buildImageEntry(buf: Buffer) {
 export function parseVerdict(result: string): "PRODUCTIVE" | "UNPRODUCTIVE" {
   const upper = result.toUpperCase();
   const match = upper.match(/VERDICT:\s*(PRODUCTIVE|UNPRODUCTIVE)/);
-  if (match) return match[1] as "PRODUCTIVE" | "UNPRODUCTIVE";
+  // oxlint-disable-next-line no-unsafe-type-assertion -- regex capture group matches the union exactly
+  if (match !== null) return match[1] as "PRODUCTIVE" | "UNPRODUCTIVE";
   if (upper.includes("UNPRODUCTIVE")) return "UNPRODUCTIVE";
   return "PRODUCTIVE";
 }
@@ -80,9 +86,13 @@ export function parseVerdict(result: string): "PRODUCTIVE" | "UNPRODUCTIVE" {
  * Sends buffered capture sets to the local vision LLM for productivity analysis.
  * Constructs a multimodal prompt with timestamped screenshot/webcam pairs and
  * returns the raw LLM response text containing the verdict.
+ *
  * @param sets - recent capture sets to analyze (mutated: cleared after building the prompt to free memory)
+ *
  * @returns raw LLM response text including the verdict line
+ *
  * @throws when the LLM API returns a non-OK status
+ *
  * @example
  * ```ts
  * const result = await analyze(getRecent());
@@ -137,8 +147,12 @@ export async function analyze(sets: CaptureSet[]): Promise<string> {
     throw new Error(`LLM API error ${res.status}: ${text}`);
   }
 
+  /** Milliseconds per second, for elapsed time formatting. */
+  const MS_PER_SECOND = 1_000;
+
+  // oxlint-disable-next-line no-unsafe-type-assertion -- response shape is defined by the OpenAI-compatible API
   const data = (await res.json()) as CompletionResponse;
-  const elapsed = ((performance.now() - start) / 1000).toFixed(1);
+  const elapsed = ((performance.now() - start) / MS_PER_SECOND).toFixed(1);
   const { prompt_tokens, completion_tokens } = data.usage;
 
   log.debug(

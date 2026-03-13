@@ -56,7 +56,9 @@ const TEMPLATE_VM_NAME = 'template-setup';
  * the result to a standalone qcow2.
  *
  * @param spec - Linux image specification from the registry
+ *
  * @returns Absolute path to the baked template qcow2
+ *
  * @throws Error when template creation fails
  *
  * @example
@@ -76,6 +78,7 @@ async function ensureLinuxTemplate(spec: LinuxImageSpec): Promise<string> {
 
   const diskPath = join(vmDir, 'disk.qcow2');
 
+  // Symbol.asyncDispose not supported by nano-spawn/virsh subprocess lifecycle; try/finally is required here
   try {
     rl.info('creating overlay disk from base image...');
     await spawn({
@@ -122,7 +125,9 @@ async function ensureLinuxTemplate(spec: LinuxImageSpec): Promise<string> {
  * Windows installation process.
  *
  * @param spec - Windows image specification from the registry
+ *
  * @returns Absolute path to the baked template qcow2
+ *
  * @throws Error when template creation fails
  *
  * @example
@@ -148,6 +153,7 @@ async function ensureWindowsTemplate(spec: WindowsImageSpec): Promise<string> {
 
   const diskPath = join(vmDir, 'disk.qcow2');
 
+  // Symbol.asyncDispose not supported by nano-spawn/virsh subprocess lifecycle; try/finally is required here
   try {
     rl.info('creating empty disk for Windows installation...');
     await spawn({
@@ -229,6 +235,8 @@ async function ensureWindowsTemplate(spec: WindowsImageSpec): Promise<string> {
  *
  * @param rl - Logger for status messages
  *
+ * @returns Resolves when cleanup is complete
+ *
  * @example
  * ```ts
  * await cleanupTemplateVm(rl);
@@ -268,7 +276,9 @@ async function cleanupTemplateVm(rl: { debug: (msg: string) => void }): Promise<
  * `template-windows.qcow2`) so multiple distros coexist in the cache.
  *
  * @param spec - Image specification from the registry
+ *
  * @returns Absolute path to the template qcow2 image
+ *
  * @throws Error when template creation fails
  *
  * @example
@@ -277,7 +287,7 @@ async function cleanupTemplateVm(rl: { debug: (msg: string) => void }): Promise<
  * const windowsTemplate = await ensureTemplate(IMAGES['windows']);
  * ```
  */
-export async function ensureTemplate(spec: ImageSpec): Promise<string> {
+export function ensureTemplate(spec: ImageSpec): Promise<string> {
   const rl = tagged({ tag: ensureTemplate.name, l });
   const templatePath = join(IMAGES_DIR, spec.templateFileName);
 

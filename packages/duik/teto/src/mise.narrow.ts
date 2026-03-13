@@ -1,3 +1,4 @@
+// oxlint-disable no-magic-numbers, tsdoc/require-tsdoc -- SVG transform script with many dimensional constants and inline variables
 /**
  * Narrows SVG body parts by scaling x-coordinates toward center (x=400).
  *
@@ -23,7 +24,9 @@ const CENTER_X = 400
  * Transforms an x-coordinate by scaling toward CENTER_X.
  *
  * @param x - original x-coordinate
+ *
  * @param factor - scale factor (0.75 = narrow by 25%)
+ *
  * @returns transformed x-coordinate, rounded to nearest integer
  */
 function narrowX(x: number, factor: number): number {
@@ -37,7 +40,9 @@ function narrowX(x: number, factor: number): number {
  * Coordinates are assumed to be absolute (uppercase commands).
  *
  * @param d - the SVG path data string
+ *
  * @param factor - horizontal narrowing factor
+ *
  * @returns transformed path data string
  */
 function transformPathD(d: string, factor: number): string {
@@ -69,7 +74,7 @@ function transformPathD(d: string, factor: number): string {
       continue
     }
 
-    const num = parseFloat(token)
+    const num = Number.parseFloat(token)
     const upperCmd = cmd.toUpperCase()
 
     if (upperCmd === 'Z') {
@@ -131,30 +136,32 @@ function transformPathD(d: string, factor: number): string {
  * - Preserves `y1`, `y2`, `cy`, `y`, `r`, `rx`, `ry`, width/height
  *
  * @param svgContent - the raw SVG file content
+ *
  * @param factor - horizontal narrowing factor
+ *
  * @returns transformed SVG content
  */
 function transformSvg(svgContent: string, factor: number): string {
   let result = svgContent
 
   /** Transform path d attributes. */
-  result = result.replace(/\bd="([^"]+)"/g, function transformD(_match, d: string) {
+  result = result.replaceAll(/\bd="([^"]+)"/g, function transformD(_match, d: string) {
     return `d="${transformPathD(d, factor)}"`
   })
 
   /** Transform x1 attributes (line elements). */
-  result = result.replace(/\bx1="([-\d.]+)"/g, function transformX1(_match, v: string) {
-    return `x1="${narrowX(parseFloat(v), factor)}"`
+  result = result.replaceAll(/\bx1="([-\d.]+)"/g, function transformX1(_match, v: string) {
+    return `x1="${narrowX(Number.parseFloat(v), factor)}"`
   })
 
   /** Transform x2 attributes. */
-  result = result.replace(/\bx2="([-\d.]+)"/g, function transformX2(_match, v: string) {
-    return `x2="${narrowX(parseFloat(v), factor)}"`
+  result = result.replaceAll(/\bx2="([-\d.]+)"/g, function transformX2(_match, v: string) {
+    return `x2="${narrowX(Number.parseFloat(v), factor)}"`
   })
 
   /** Transform cx attributes (circle elements). */
-  result = result.replace(/\bcx="([-\d.]+)"/g, function transformCx(_match, v: string) {
-    return `cx="${narrowX(parseFloat(v), factor)}"`
+  result = result.replaceAll(/\bcx="([-\d.]+)"/g, function transformCx(_match, v: string) {
+    return `cx="${narrowX(Number.parseFloat(v), factor)}"`
   })
 
   /**
@@ -162,8 +169,8 @@ function transformSvg(svgContent: string, factor: number): string {
    * Skip gradient stop x1/x2 and viewBox.
    * Match `x="..."` but not `x1=` or `x2=` (already handled).
    */
-  result = result.replace(/\bx="([-\d.]+)"/g, function transformX(_match, v: string) {
-    return `x="${narrowX(parseFloat(v), factor)}"`
+  result = result.replaceAll(/\bx="([-\d.]+)"/g, function transformX(_match, v: string) {
+    return `x="${narrowX(Number.parseFloat(v), factor)}"`
   })
 
   return result
@@ -201,8 +208,8 @@ const PART_FACTORS: Record<string, number> = {
   hair_drill_L: 0.65,
   hair_drill_R: 0.65,
   /** Accessories on top of drills. */
-  hair_accessory_L: 0.80,
-  hair_accessory_R: 0.80,
+  hair_accessory_L: 0.8,
+  hair_accessory_R: 0.8,
   /** Torso jacket is boxy and wide (68% too wide at chest). */
   torso_front: 0.75,
   /** Epaulettes extend beyond shoulders. */
@@ -211,8 +218,8 @@ const PART_FACTORS: Record<string, number> = {
   /** Arms are thick cylinders, need slimming. */
   upper_arm_L: 0.78,
   upper_arm_R: 0.78,
-  forearm_L: 0.80,
-  forearm_R: 0.80,
+  forearm_L: 0.8,
+  forearm_R: 0.8,
   hand_L: 0.82,
   hand_R: 0.82,
   /** Boots are 17% too wide. */
@@ -225,7 +232,7 @@ console.error('')
 
 for (const [partName, factor] of Object.entries(PART_FACTORS)) {
   const filePath = join(PARTS_DIR, `${partName}.svg`)
-  const original = readFileSync(filePath, 'utf-8')
+  const original = readFileSync(filePath, 'utf8')
   const transformed = transformSvg(original, factor)
 
   /** Count how many coordinates changed. */

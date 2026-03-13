@@ -17,46 +17,46 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number): string
    * Minimal 1x1 RGBA PNG built from raw bytes.
    * Structure: PNG signature + IHDR + IDAT (zlib-compressed scanline) + IEND.
    */
-  const pngSignature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  const pngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
   /** CRC32 lookup table, computed once. */
-  const crcTable: Array<number> = [];
+  const crcTable: number[] = [];
   for (let n = 0; n < 256; n++) {
     let c = n;
     for (let k = 0; k < 8; k++) {
       // oxlint-disable-next-line no-bitwise -- CRC32 requires bitwise ops
-      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      c = c & 1 ? 0xED_B8_83_20 ^ (c >>> 1) : c >>> 1;
     }
     crcTable.push(c);
   }
 
   /** Compute CRC32 of a byte array. */
-  function crc32(bytes: Array<number>): number {
-    let crc = 0xffffffff;
+  function crc32(bytes: number[]): number {
+    let crc = 0xFF_FF_FF_FF;
     for (const byte of bytes) {
       // oxlint-disable-next-line no-bitwise, typescript/no-non-null-assertion -- CRC32 requires bitwise; table is fully populated
-      crc = crcTable[(crc ^ byte) & 0xff]! ^ (crc >>> 8);
+      crc = crcTable[(crc ^ byte) & 0xFF]! ^ (crc >>> 8);
     }
     // oxlint-disable-next-line no-bitwise -- final XOR
-    return (crc ^ 0xffffffff) >>> 0;
+    return (crc ^ 0xFF_FF_FF_FF) >>> 0;
   }
 
   /** Encode a 4-byte big-endian unsigned integer. */
-  function uint32be(value: number): Array<number> {
+  function uint32be(value: number): number[] {
     return [
       // oxlint-disable-next-line no-bitwise -- byte extraction
-      (value >>> 24) & 0xff,
+      (value >>> 24) & 0xFF,
       // oxlint-disable-next-line no-bitwise
-      (value >>> 16) & 0xff,
+      (value >>> 16) & 0xFF,
       // oxlint-disable-next-line no-bitwise
-      (value >>> 8) & 0xff,
+      (value >>> 8) & 0xFF,
       // oxlint-disable-next-line no-bitwise
-      value & 0xff,
+      value & 0xFF,
     ];
   }
 
   /** Build a PNG chunk: length + type + data + CRC. */
-  function makeChunk(type: Array<number>, data: Array<number>): Array<number> {
+  function makeChunk(type: number[], data: number[]): number[] {
     const typeAndData = [...type, ...data];
     return [...uint32be(data.length), ...typeAndData, ...uint32be(crc32(typeAndData))];
   }
@@ -77,14 +77,14 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number): string
    */
   const len = rawScanline.length;
   // oxlint-disable-next-line no-bitwise -- complement for deflate NLEN
-  const nlen = len ^ 0xffff;
+  const nlen = len ^ 0xFF_FF;
   const deflateBlock = [
     0x78, 0x01,
     0x01,
     // oxlint-disable-next-line no-bitwise
-    len & 0xff, (len >>> 8) & 0xff,
+    len & 0xFF, (len >>> 8) & 0xFF,
     // oxlint-disable-next-line no-bitwise
-    nlen & 0xff, (nlen >>> 8) & 0xff,
+    nlen & 0xFF, (nlen >>> 8) & 0xFF,
     ...rawScanline,
   ];
 
@@ -92,20 +92,20 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number): string
   let a = 1;
   let b = 0;
   for (const byte of rawScanline) {
-    a = (a + byte) % 65521;
-    b = (b + a) % 65521;
+    a = (a + byte) % 65_521;
+    b = (b + a) % 65_521;
   }
   // oxlint-disable-next-line no-bitwise -- Adler-32 packing
   const adler32 = ((b << 16) | a) >>> 0;
   deflateBlock.push(...uint32be(adler32));
 
   const idat = makeChunk([0x49, 0x44, 0x41, 0x54], deflateBlock);
-  const iend = makeChunk([0x49, 0x45, 0x4e, 0x44], []);
+  const iend = makeChunk([0x49, 0x45, 0x4E, 0x44], []);
 
   const pngBytes = new Uint8Array([...pngSignature, ...ihdr, ...idat, ...iend]);
   let binary = '';
   for (const byte of pngBytes) {
-    binary += String.fromCharCode(byte);
+    binary += String.fromCodePoint(byte);
   }
   return `data:image/png;base64,${btoa(binary)}`;
 }

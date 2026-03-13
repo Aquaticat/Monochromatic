@@ -1,5 +1,16 @@
 import type * as Jsonc from '../../../../t/index.ts';
 
+/**
+ * Merges two optional JSONC comments into a single combined comment.
+ * Returns `undefined` when both inputs are `undefined`, or the defined comment
+ * when only one is present. When both exist, concatenates their content.
+ *
+ * @param value - first comment to merge
+ *
+ * @param value2 - second comment to merge
+ *
+ * @returns merged comment, single comment, or `undefined`
+ */
 export function mergeComments(
   { value, value2, }: {
     value?: undefined;
@@ -15,6 +26,7 @@ export function mergeComments(
     value2: Jsonc.Comment;
   },
 ): Jsonc.Comment;
+/** {@inheritDoc mergeComments} */
 export function mergeComments(
   { value, value2, }: { value?: Jsonc.Comment | undefined;
     value2?: Jsonc.Comment | undefined; },

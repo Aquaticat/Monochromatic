@@ -13,15 +13,17 @@ import { z, } from 'zod/v4-mini';
 import { l as parentLogger, } from './log.ts';
 import {
   DOT_ENV_PATH,
-  OPMLS_SCHEMA,
+  type OPMLS_SCHEMA,
 } from './opmls.ts';
 
+/** Tagged logger for the outline module. */
 const l = tagged({ tag: 'outline', l: parentLogger, },);
 
 /**
  * OPML outline with a required, validated `xmlUrl` property.
  * Represents a feed subscription entry ready for fetching.
- * @see {@link Opml} for the base outline type
+ *
+ * @see `Opml` for the base outline type
  */
 export type InnerOutlineWUrl = Opml.Outline<string> & { xmlUrl: string; };
 
@@ -30,8 +32,11 @@ export type InnerOutlineWUrl = Opml.Outline<string> & { xmlUrl: string; };
 /**
  * Fetches OPML file contents from all configured source URLs.
  * Handles HTTP(S) and file:// protocols, discarding unreachable sources with warnings.
+ *
  * @param opmls - Validated OPML source URLs
+ *
  * @returns Array of raw OPML XML strings
+ *
  * @example
  * ```ts
  * const texts = await getOPMLTexts(getOpmls());
@@ -99,8 +104,11 @@ async function getOPMLTexts(
 /**
  * Extracts validated inner outlines with xmlUrl from raw OPML source URLs.
  * Orchestrates the full pipeline: fetch texts, parse XML, extract outlines, validate URLs.
+ *
  * @param opmls - Validated OPML source URLs
+ *
  * @returns Array of outlines with validated HTTP(S) xmlUrl properties
+ *
  * @example
  * ```ts
  * const outlines = await getOutlinesFromOpmls(getOpmls());
@@ -122,8 +130,8 @@ export async function getOutlinesFromOpmls(
     function hasValidXmlUrl(
       outline,
     ): outline is InnerOutlineWUrl {
-      const xmlUrl = outline.xmlUrl;
-      if (!xmlUrl) {
+      const {xmlUrl} = outline;
+      if (xmlUrl === undefined || xmlUrl === null || xmlUrl === '') {
         innerL.warn(`outline ${outline.text ?? 'unnamed'} has no xmlUrl`);
         return false;
       }
@@ -143,7 +151,9 @@ export async function getOutlinesFromOpmls(
 
 /**
  * Safely parses an array of OPML XML strings, discarding unparseable entries.
+ *
  * @param texts - Raw OPML XML strings
+ *
  * @returns Successfully parsed OPML documents
  */
 function parseSafe(texts: string[]): Opml.Document<string>[] {

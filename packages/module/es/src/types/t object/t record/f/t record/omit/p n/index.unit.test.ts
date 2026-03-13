@@ -6,7 +6,7 @@ import {
   test,
 } from 'bun:test';
 
-const $ = types.object.record.from.record.omit.named.$;
+const {$} = types.object.record.from.record.omit.named;
 
 describe($, () => {
   test('omits specified keys from object', () => {

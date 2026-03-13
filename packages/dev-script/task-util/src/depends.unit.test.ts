@@ -34,7 +34,7 @@ beforeEach(() => {
 
   const packageDir = join(testFileDir, '..',);
   const timestamp = Date.now();
-  const randomId = Math.random().toString(36,).substring(2, 8,);
+  const randomId = Math.random().toString(36,).slice(2, 8,);
   testDir = join(packageDir, 'dist', 'temp', 'test',
     `cli-depends-${timestamp}-${randomId}`,);
   srcDir = join(testDir, 'src',);
@@ -104,7 +104,7 @@ describe('task-depends file-based staleness', () => {
   });
 
   test('runs command when sources are newer than outputs', async () => {
-    touch(join(outDir, 'a.js',), 5000,);
+    touch(join(outDir, 'a.js',), 5_000,);
     touch(join(srcDir, 'a.ts',),);
 
     await execAsync(
@@ -115,7 +115,7 @@ describe('task-depends file-based staleness', () => {
   });
 
   test('skips command when outputs are newer than sources', async () => {
-    touch(join(srcDir, 'a.ts',), 5000,);
+    touch(join(srcDir, 'a.ts',), 5_000,);
     touch(join(outDir, 'a.js',),);
 
     await execAsync(
@@ -137,7 +137,7 @@ describe('task-depends file-based staleness', () => {
   });
 
   test('verbose flag logs up-to-date message when skipping', async () => {
-    touch(join(srcDir, 'a.ts',), 5000,);
+    touch(join(srcDir, 'a.ts',), 5_000,);
     touch(join(outDir, 'a.js',),);
 
     const { stderr, } = await execAsync(
@@ -163,7 +163,7 @@ describe('task-depends file-based staleness', () => {
   test('accepts multiple --outputs globs', async () => {
     const dist2Dir = join(testDir, 'dist2',);
     mkdirSync(dist2Dir, { recursive: true, },);
-    touch(join(srcDir, 'a.ts',), 5000,);
+    touch(join(srcDir, 'a.ts',), 5_000,);
     touch(join(outDir, 'a.js',),);
     touch(join(dist2Dir, 'b.js',),);
 
@@ -395,7 +395,7 @@ describe('task-depends time strategies', () => {
 
   test('output-time-strategy newest hides missing output in mixed list', async () => {
     // Same setup but with newest: max picks the real mtime → source (old) < output → fresh
-    touch(join(srcDir, 'a.ts',), 5000,);
+    touch(join(srcDir, 'a.ts',), 5_000,);
     touch(join(outDir, 'a.js',),);
 
     await execAsync(
@@ -503,7 +503,7 @@ describe('task-depends combined file and sh: checks', () => {
   });
 
   test('skips when both file and sh: checks are fresh', async () => {
-    touch(join(srcDir, 'a.ts',), 5000,);
+    touch(join(srcDir, 'a.ts',), 5_000,);
     touch(join(outDir, 'a.js',),);
 
     await execAsync(

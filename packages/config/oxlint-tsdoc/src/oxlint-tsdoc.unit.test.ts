@@ -53,9 +53,9 @@ async function lint(fixturePath: string): Promise<readonly OxlintDiagnostic[]> {
     const result = await spawn('oxlint', ['--format', 'json', '-c', resolve(ROOT, '.oxlintrc.json'), target], {
       cwd: ROOT,
     });
-    stdout = result.stdout;
+    ({ stdout } = result);
   } catch (error: unknown) {
-    stdout = (error as { stdout: string }).stdout;
+    ({ stdout } = (error as { stdout: string }));
   }
 
   // oxlint-disable-next-line typescript-eslint/no-unsafe-assignment -- JSON.parse returns any

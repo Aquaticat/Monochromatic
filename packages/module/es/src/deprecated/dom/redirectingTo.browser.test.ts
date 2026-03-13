@@ -10,9 +10,7 @@ test.describe('onLoadRedirectingTo', () => {
   });
 
   test('placeholder test', async ({ page, }) => {
-    const hasFunction = await page.evaluate(() => {
-      return typeof window.moduleEs.onLoadRedirectingTo === 'function';
-    });
+    const hasFunction = await page.evaluate(() => typeof window.moduleEs.onLoadRedirectingTo === 'function');
     expect(hasFunction).toBe(true);
   });
 });

@@ -5,6 +5,7 @@ import { l, tagged } from './log.ts';
  * Falls back to the raw string if parsing fails.
  *
  * @param arg - Raw CLI argument string
+ *
  * @returns Parsed value (number, boolean, null, object, array) or original string
  *
  * @example

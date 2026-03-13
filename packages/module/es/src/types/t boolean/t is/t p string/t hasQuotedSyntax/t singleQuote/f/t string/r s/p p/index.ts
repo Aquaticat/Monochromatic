@@ -10,7 +10,9 @@ import type {
  * between escaped quotes and quotes following escaped backslashes.
  *
  * @param value - String to check for single-quoted syntax
+ *
  * @returns True if the first effective quote is a single quote
+ *
  * @example
  * ```ts
  * $("'hello'"); // true - starts with single quote

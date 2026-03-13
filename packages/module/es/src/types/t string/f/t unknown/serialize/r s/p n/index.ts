@@ -39,7 +39,9 @@ export type SerializeOptions = {
  * is `false`, a `TypeError` is thrown instead.
  *
  * @param options - serialization configuration
+ *
  * @returns serialized string representation
+ *
  * @throws TypeError when value has cycles and `lossyForCircular` is `false`
  *
  * @example

@@ -68,6 +68,7 @@ const ALLOW_PATTERNS = [
  * Whether a command looks like a normal text command that is safe to pipe.
  *
  * @param command - Full Bash command string from the tool input.
+ *
  * @returns `true` if the command matches the allowlist patterns.
  */
 function isAllowed(command: string): boolean {
@@ -165,6 +166,7 @@ const SKIP_PATTERNS = [
  * Whether a command should be skipped (not piped through the filter).
  *
  * @param command - Full Bash command string from the tool input.
+ *
  * @returns `true` if the command matches any denylist pattern and should not be filtered.
  */
 function shouldSkip(command: string): boolean {
@@ -192,6 +194,7 @@ if (event.tool_name !== 'Bash') {
   writeOutput({});
 } else {
   /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tool_input shape matches BashToolInput when tool_name is "Bash" */
+  /** Typed tool input after verifying tool_name is "Bash". */
   const bashInput = event.tool_input as BashToolInput;
 
   if (!isAllowed(bashInput.command) || shouldSkip(bashInput.command)) {
@@ -207,7 +210,9 @@ if (event.tool_name !== 'Bash') {
      * Uses `import.meta.dirname` which gives the directory of the currently executing file,
      * regardless of how it was invoked.
      */
+    /** Whether running from the built artifact vs source. */
     const isBuilt = import.meta.url.endsWith('.mjs')
+    /** Resolved path to the filter script. */
     const filterPath = isBuilt
       ? `${import.meta.dirname}/filter.mjs`
       : `${import.meta.dirname}/filter.ts`
@@ -222,7 +227,7 @@ if (event.tool_name !== 'Bash') {
      *   rather than the filter's exit code (always 0)
      * - `&&` chains pipefail setup with the pipeline without using `;`
      * - `2>&1` merges stderr into stdout so progress lines (git push) are captured
-     * - `| bun ${filterPath}` runs the filter inside the sandbox
+     * - `| bun $\{filterPath\}` runs the filter inside the sandbox
      * - `&& true` serves as a sacrificial target for the sandbox's
      *   `< /dev/null` append (see below)
      *
@@ -255,9 +260,8 @@ if (event.tool_name !== 'Bash') {
      *    with the `_bof=$PIPESTATUS; (exit "$_bof")` approach.
      *
      * 3. `bash -c '...'` adds an extra quoting/expansion layer that corrupts
-     *    special characters -- `!` inside double-quoted strings (e.g. `bun -e
-     *    "if (!x)"`) gets escaped to `\!`, causing `Unexpected escape sequence`
-     *    errors in the evaluated code.
+     *    special characters -- `!` inside double-quoted strings (e.g. `bun -e "if (!x)"`)
+     *    gets escaped to `\!`, causing `Unexpected escape sequence` errors in the evaluated code.
      *
      * 4. Without a suffix after the pipeline, `< /dev/null` lands on the filter,
      *    breaking the pipe and causing SIGPIPE (exit 141) on the left side.
@@ -270,6 +274,7 @@ if (event.tool_name !== 'Bash') {
      */
     const wrappedCommand = `set -o pipefail && ${bashInput.command} 2>&1 | bun ${filterPath} && true`
 
+    /** Hook output that rewrites the Bash command to pipe through the filter. */
     const output: PreToolUseOutput = {
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',

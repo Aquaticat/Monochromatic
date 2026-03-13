@@ -11,6 +11,7 @@ import type { ItemWDate, } from './item.ts';
 import { l as parentLogger, } from './log.ts';
 import { IGNORE_PATH, } from './path.ts';
 
+/** Tagged logger for the html module. */
 const l = tagged({ tag: 'html', l: parentLogger, },);
 
 /** Maximum number of items rendered on a single page. */
@@ -24,11 +25,12 @@ export const INDEX_HTML_END = '</body></html>';
 /**
  * Reads the raw text content of all ignore JSONL files.
  * Used both for content-derived memoize salt and for link filtering.
+ *
  * @returns Concatenated raw text from all ignore files, or empty string if directory is missing
  */
 export async function getIgnoreContent(): Promise<string> {
   const innerL = tagged({ tag: getIgnoreContent.name, l, },);
-  let filesInDir: Dirent[];
+  let filesInDir: Dirent[] = [];
   try {
     filesInDir = await readdir(IGNORE_PATH, { withFileTypes: true, },);
   }
@@ -38,7 +40,7 @@ export async function getIgnoreContent(): Promise<string> {
   }
   const contents = await mapIterableAsync(
     async function readIgnoreFile(dirent: Dirent,) {
-      return await readFile(join(dirent.parentPath, dirent.name,), 'utf8',);
+      return readFile(join(dirent.parentPath, dirent.name,), 'utf8',);
     },
     filesInDir,
   );
@@ -47,7 +49,9 @@ export async function getIgnoreContent(): Promise<string> {
 
 /**
  * Parses ignored links from raw ignore file content.
+ *
  * @param content - Raw JSONL text from ignore files
+ *
  * @returns Set of link URLs that should be excluded from rendering
  */
 function parseIgnoredLinks(content: string,): Set<string> {
@@ -57,7 +61,9 @@ function parseIgnoredLinks(content: string,): Set<string> {
     .map(function trimLine(line,) {
       return line.trim();
     },)
-    .filter(Boolean,);
+    .filter(function isTruthy(line,) {
+      return line.length > 0;
+    },);
   for (const line of lines) {
     try {
       const parsed = JSON.parse(line,) as Record<string, string>;
@@ -77,14 +83,18 @@ function parseIgnoredLinks(content: string,): Set<string> {
 
 /**
  * Builds the HTML body from items, filtering out entries present in the ignore list.
+ *
  * @param options - Feed items with publication dates to render
+ *
  * @returns Rendered HTML string for the feed list
+ *
  * @example
  * ```ts
  * const body = await getIndexHtmlBody({ items });
  * ```
  */
-export async function getIndexHtmlBody({ items, }: { items: ItemWDate[]; }): Promise<string> {
+export async function getIndexHtmlBody(options: { items: ItemWDate[]; }): Promise<string> {
+  const { items, } = options;
   const innerL = tagged({ tag: getIndexHtmlBody.name, l, },);
 
   const ignoreContent = await getIgnoreContent();
@@ -105,8 +115,11 @@ export async function getIndexHtmlBody({ items, }: { items: ItemWDate[]; }): Pro
 
 /**
  * Renders a single feed item as an HTML list item.
+ *
  * @param item - Feed item with publication date
+ *
  * @param index - Position in the rendered list (used for numbering)
+ *
  * @returns HTML string for the feed item
  */
 function itemToFeed({ item, pubDateDate, feed, }: ItemWDate, index: number,): string {
@@ -142,8 +155,8 @@ function itemToFeed({ item, pubDateDate, feed, }: ItemWDate, index: number,): st
               h({
                 tag: 'a',
                 class: 'feed__link',
-                attrs: { href: item.link || '#', },
-                text: item.title || 'Untitled',
+                attrs: { href: item.link ?? '#', },
+                text: item.title ?? 'Untitled',
               },),
             ],
           },),
@@ -160,7 +173,7 @@ function itemToFeed({ item, pubDateDate, feed, }: ItemWDate, index: number,): st
               h({
                 tag: 'span',
                 class: 'feed__itemTitle',
-                text: feed.title || 'Unknown',
+                text: feed.title ?? 'Unknown',
               },),
               ...(feed.description
                 ? [h({
@@ -174,7 +187,9 @@ function itemToFeed({ item, pubDateDate, feed, }: ItemWDate, index: number,): st
         ],
       },),
       descriptionIframe,
-    ].filter(Boolean,),
+    ].filter(function isTruthy(value,) {
+      return value !== '';
+    },),
   },);
 }
 

@@ -1,7 +1,9 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: registers the toggle-switch custom element
 import "./toggle-switch.ts";
 
+/** Shadow DOM styles for the `\<setting-group\>` component. */
 const STYLES = css(`
   :host {
     @apply --flex-column;
@@ -32,17 +34,20 @@ const STYLES = css(`
 `);
 
 /**
- * `<setting-group>` -- a single settings row with a label, description,
+ * `\<setting-group\>` -- a single settings row with a label, description,
  * and an action control (toggle switch or button) determined by the `mode` attribute.
  */
 class SettingGroup extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
 
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
   }
 
+  /** Renders the setting group with label, optional description, and action control. */
   connectedCallback(): void {
     const label = this.getAttribute("label") ?? "";
     const description = this.getAttribute("description") ?? "";

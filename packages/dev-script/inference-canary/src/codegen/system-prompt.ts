@@ -12,7 +12,9 @@ const MONOREPO_ROOT = new URL('../../../../../', import.meta.url).pathname;
 
 /**
  * Reads a project config file relative to the monorepo root.
+ *
  * @param relativePath - path relative to monorepo root
+ *
  * @returns file content
  */
 async function readConfig(relativePath: string): Promise<string> {
@@ -21,6 +23,7 @@ async function readConfig(relativePath: string): Promise<string> {
 
 /**
  * Builds the system prompt by reading the actual project configs at runtime.
+ *
  * @returns complete system prompt with embedded config contents
  */
 async function buildSystemPrompt(): Promise<string> {

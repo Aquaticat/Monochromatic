@@ -8,11 +8,16 @@ import { $ as omitNamed, } from '../p n/index.ts';
  * Positional parameter variant that delegates to the named parameter version.
  *
  * @param iterable - Source iterable to filter
+ *
  * @param toOmit - Set of items to exclude from the output
+ *
  * @param strict - When true (default), throws if any key in toOmit is not found in the iterable.
  *   When false, silently ignores missing keys.
+ *
  * @yields Items from the iterable that are not in the exclusion set
+ *
  * @throws Error if strict is true and any key in toOmit is not found in the iterable
+ *
  * @example
  * ```ts
  * const numbers = [1, 2, 3, 4, 5];
@@ -20,6 +25,7 @@ import { $ as omitNamed, } from '../p n/index.ts';
  * const result = [...$(numbers, excluded)];
  * // [1, 3, 5]
  * ```
+ *
  * @example
  * ```ts
  * const words = ['apple', 'banana', 'cherry'];

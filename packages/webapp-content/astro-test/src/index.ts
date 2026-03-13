@@ -1,3 +1,4 @@
+// oxlint-disable typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-call, typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-argument, typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-return, no-non-null-assertion, tsdoc/require-tsdoc, no-restricted-syntax/no-arrow-function, typescript-eslint/strict-boolean-expressions, typescript-eslint/no-explicit-any -- Astro content system types are inherently untyped; arrow callbacks are dictated by the Astro API
 import {
   getCollection,
   type InferEntrySchema,

@@ -7,8 +7,11 @@ import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlEle
 import { injectCSS } from "./lib/inject-css.ts";
 import { globalStyles } from "./styles.ts";
 import { readPageData } from "./lib/page-data.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/side-drawer.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/top-nav.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/setting-group.ts";
 
 /** Shape of the JSON blob embedded in the settings page by the server. */
@@ -19,7 +22,7 @@ type SettingsPageData = {
 injectCSS(globalStyles);
 
 const _pageData = readPageData<SettingsPageData>();
-const appElement = document.getElementById("app");
+const appElement = document.querySelector("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }

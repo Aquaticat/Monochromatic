@@ -3,6 +3,7 @@
  * This function specifically checks for synchronous iterables by looking for the Symbol.iterator method.
  *
  * @param value - Value to check for Iterable interface
+ *
  * @returns True if value implements Iterable<any>, false otherwise
  *
  * @example

@@ -31,9 +31,13 @@ export type BunExecOptions = {
  * Runs a command via nano-spawn, capturing stdout and stderr separately.
  *
  * Never throws -- callers check `exitCode` and `killed` to decide what to do.
+ *
  * @param command - executable name or absolute path
+ *
  * @param args - command arguments
+ *
  * @param options - optional timeout
+ *
  * @returns execution result with stdout, stderr, exit code, and killed flag
  */
 export async function execBun(
@@ -47,6 +51,7 @@ export async function execBun(
   }
 
   try {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nano-spawn accepts mutable string array
     const result = await spawn(command, args as string[], {
       timeout: options.timeout,
       signal: options.signal,
@@ -56,6 +61,7 @@ export async function execBun(
   } catch (error: unknown) {
     // nano-spawn throws SubprocessError on non-zero exit
     if (error !== null && error !== undefined && typeof error === 'object' && 'exitCode' in error) {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nano-spawn SubprocessError has known shape
       const subprocessError = error as { stdout: string; stderr: string; exitCode: number | undefined; signalName: string | undefined };
       // Killed if the signal was aborted (race: it may have become true after spawn started)
       // or the process received a termination signal

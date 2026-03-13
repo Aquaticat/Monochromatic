@@ -44,6 +44,7 @@ function hypervFeatures(): string {
  * reference clock for accurate timekeeping.
  *
  * @param osFamily - Guest OS family
+ *
  * @returns XML string for the `<clock>` element
  *
  * @example
@@ -76,6 +77,7 @@ function clockElement(osFamily: OsFamily): string {
  * @example
  * ```ts
  * const cdroms: ReadonlyArray<CdromSpec> = [
+ *
  *   { path: '/path/to/windows.iso' },
  *   { path: '/path/to/virtio-win.iso' },
  * ];
@@ -91,6 +93,7 @@ export type CdromSpec = {
  * Assigns sequential IDE device names (hda, hdb, hdc, hdd).
  *
  * @param cdroms - Array of CDROM specs with ISO paths
+ *
  * @returns Array of XML strings for disk elements
  *
  * @example
@@ -98,21 +101,25 @@ export type CdromSpec = {
  * ideCdromDevices([{ path: '/tmp/win.iso' }]); // => ['<disk type="file" device="cdrom">...']
  * ```
  */
-function ideCdromDevices(cdroms: ReadonlyArray<CdromSpec>): ReadonlyArray<string> {
+function ideCdromDevices(cdroms: readonly CdromSpec[]): readonly string[] {
   /** IDE device name sequence: hda through hdd. */
   const ideDevNames = ['hda', 'hdb', 'hdc', 'hdd'];
-  return cdroms.map((cdrom, index) =>
-    h({
+  return cdroms.map(function buildCdromElement(cdrom, index) {
+    const devName = ideDevNames[index];
+    if (devName === undefined) {
+      throw new Error(`Too many CDROMs: maximum ${String(ideDevNames.length)} supported`);
+    }
+    return h({
       tag: 'disk',
       attrs: { type: 'file', device: 'cdrom' },
       children: [
         h({ tag: 'driver', attrs: { name: 'qemu', type: 'raw' } }),
         h({ tag: 'source', attrs: { file: cdrom.path } }),
-        h({ tag: 'target', attrs: { dev: ideDevNames[index]!, bus: 'ide' } }),
+        h({ tag: 'target', attrs: { dev: devName, bus: 'ide' } }),
         h({ tag: 'readonly' }),
       ],
-    }),
-  );
+    });
+  });
 }
 
 //endregion CDROM devices
@@ -130,8 +137,22 @@ function ideCdromDevices(cdroms: ReadonlyArray<CdromSpec>): ReadonlyArray<string
  * and optional IDE CDROMs for installation media (Windows ISO, autounattend,
  * virtio-win ISO).
  *
- * @param options - VM configuration including disk path, name, optional seed ISO,
  *   OS family, boot device, and additional CDROMs
+ *
+ * @param bootDev - Boot device: `hd` or `cdrom`
+ *
+ * @param cdroms - Additional IDE CDROMs
+ *
+ * @param diskBus - Bus type for the primary disk (`virtio` or `sata`)
+ *
+ * @param diskPath - Absolute path to the VM disk image
+ *
+ * @param name - VM name without the mvm- prefix
+ *
+ * @param osFamily - Guest OS family
+ *
+ * @param seedIsoPath - Absolute path to the cloud-init seed ISO
+ *
  * @returns Complete libvirt domain XML string
  *
  * @example
@@ -144,10 +165,13 @@ function ideCdromDevices(cdroms: ReadonlyArray<CdromSpec>): ReadonlyArray<string
  *
  * // Windows template creation (boot from ISO)
  * domainXml({
+ *
  *   name: 'template',
  *   diskPath: '/path/disk.qcow2',
+ *
  *   osFamily: 'windows',
  *   bootDev: 'cdrom',
+ *
  *   cdroms: [{ path: '/path/win.iso' }, { path: '/path/autounattend.iso' }, { path: '/path/virtio.iso' }],
  * });
  * ```
@@ -156,7 +180,7 @@ export function domainXml({ bootDev = 'hd', cdroms = [], diskBus = 'virtio', dis
   /** Boot device: `hd` for normal operation, `cdrom` for ISO-based installation. */
   bootDev?: 'cdrom' | 'hd';
   /** Additional IDE CDROMs (Windows ISO, autounattend, virtio-win). */
-  cdroms?: ReadonlyArray<CdromSpec>;
+  cdroms?: readonly CdromSpec[];
   /**
    * Bus type for the primary disk.
    * Use `virtio` for production VMs (best performance).

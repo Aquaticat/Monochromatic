@@ -18,6 +18,10 @@ type Decision = "PRODUCTIVE" | "UNPRODUCTIVE";
 /** Fixed-size tuple tracking the 5 most recent verdicts. */
 type DecisionWindow = [Decision, Decision, Decision, Decision, Decision];
 
+/** Bytes per kilobyte, used for human-readable size formatting. */
+const BYTES_PER_KB = 1_024;
+
+
 /** Rolling window of recent verdicts, initialized as all productive. */
 let decisions: DecisionWindow = [
   "PRODUCTIVE",
@@ -29,12 +33,26 @@ let decisions: DecisionWindow = [
 //endregion
 
 /**
+ * Checks whether a decision is unproductive.
+ *
+ * @param d - decision to check
+ *
+ * @returns true when the decision is UNPRODUCTIVE
+ */
+function isUnproductive(d: Decision): boolean {
+  return d === "UNPRODUCTIVE";
+}
+
+/**
  * Executes one capture-analyze-notify cycle.
  * Captures a screenshot and webcam frame, feeds them to the local vision LLM,
  * records the verdict, and sends a desktop notification when 5 consecutive
  * cycles are unproductive.
  *
  * Skips the cycle when the screen is locked or the webcam cover is down.
+ *
+ * @returns when the cycle completes
+ *
  * @example
  * ```ts
  * await cycle();
@@ -64,7 +82,7 @@ export async function cycle(): Promise<void> {
       return;
     }
     log.debug(
-      `[capture] Screenshot: ${(screenshot.length / 1024).toFixed(0)}KB, Webcam: ${(webcam.length / 1024).toFixed(0)}KB`,
+      `[capture] Screenshot: ${(screenshot.length / BYTES_PER_KB).toFixed(0)}KB, Webcam: ${(webcam.length / BYTES_PER_KB).toFixed(0)}KB`,
     );
 
     store({ timestamp: ts, screenshot, webcam });
@@ -76,19 +94,14 @@ export async function cycle(): Promise<void> {
     await stopLlama();
 
     const verdict = parseVerdict(result);
-    decisions = [
-      decisions[1],
-      decisions[2],
-      decisions[3],
-      decisions[4],
-      verdict,
-    ];
-    const streakCount = decisions.filter((d) => d === "UNPRODUCTIVE").length;
+    /* oxlint-disable-next-line no-magic-numbers -- sliding window indices 1..4 */
+    decisions = [decisions[1], decisions[2], decisions[3], decisions[4], verdict];
+    const streakCount = decisions.filter(function checkUnproductive(d) { return isUnproductive(d); }).length;
 
     log.info(`[report] ${result}`);
     log.info(`[verdict] ${verdict} (streak: ${streakCount}/5)`);
 
-    if (decisions.every((d) => d === "UNPRODUCTIVE")) {
+    if (decisions.every(function checkUnproductive(d) { return isUnproductive(d); })) {
       await sendNotification(result);
       decisions = [
         "PRODUCTIVE",
@@ -98,9 +111,14 @@ export async function cycle(): Promise<void> {
         "PRODUCTIVE",
       ];
     }
-  } catch (err) {
-    console.error(`[error] ${err}`);
-    log.error(`[error] ${err}`);
-    await stopLlama().catch(() => {});
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[error] ${message}`);
+    log.error(`[error] ${message}`);
+    try {
+      await stopLlama();
+    } catch {
+      // best-effort cleanup of GPU process
+    }
   }
 }

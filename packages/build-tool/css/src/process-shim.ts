@@ -7,10 +7,22 @@
  *
  * Side-effect-only import — sets `globalThis.process` if missing.
  */
-if (typeof globalThis.process === "undefined") {
+/**
+ * Returns the root directory as the current working directory.
+ *
+ * @returns Root path string
+ */
+function stubCwd(): string {
+  return '/';
+}
+
+// oxlint-disable-next-line no-unnecessary-condition -- browser environments lack process
+if (globalThis.process === undefined) {
   (globalThis as Record<string, unknown>).process = {
     env: {},
-    cwd: (): string => "/",
+    cwd: stubCwd,
     versions: {},
   };
 }
+
+export {};

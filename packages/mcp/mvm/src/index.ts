@@ -15,13 +15,14 @@ export {};
 /** MCP tool: list all managed VMs and their state. */
 const listTool = defineTool('list_vms', {
   description: 'Lists all managed VMs with their current state (running, shut off, etc.).',
-  handler: async () => {
+  handler: async function handleListVms() {
     try {
+      /** All managed VMs queried from libvirt. */
       const vms = await list();
       if (vms.length === 0) {
         return { content: [{ type: 'text', text: 'No VMs found.' }] };
       }
-      const lines = vms.map((vm) => `${vm.name}: ${vm.state}`);
+      const lines = vms.map(function formatVmLine(vm) { return `${vm.name}: ${vm.state}`; });
       return { content: [{ type: 'text', text: lines.join('\n') }] };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
@@ -43,16 +44,14 @@ const createTool = defineTool('create_vm', {
     },
     required: ['name'],
   },
-  handler: async (args) => {
-    const name = args.name as string;
-    const from = args.from as string | undefined;
-    const image = args.image as string | undefined;
+  handler: async function handleCreateVm(args) {
+    const name = String(args.name);
+    const from = typeof args.from === 'string' ? args.from : undefined;
+    const image = typeof args.image === 'string' ? args.image : undefined;
     try {
-      if (from !== undefined) {
-        await clone({ destination: name, source: from });
-      } else {
-        await create({ image, name });
-      }
+      await (from !== undefined
+        ? clone({ destination: name, source: from })
+        : create({ image, name }));
       const suffix = from !== undefined ? ` (cloned from ${from})` : '';
       return { content: [{ type: 'text', text: `VM ${name} created${suffix} and started. Use exec_in_vm to run commands inside it.` }] };
     } catch (err: unknown) {
@@ -73,9 +72,9 @@ const destroyTool = defineTool('destroy_vm', {
       all: { type: 'boolean', description: 'Destroy every managed VM (mutually exclusive with name)' },
     },
   },
-  handler: async (args) => {
-    const name = args.name as string | undefined;
-    const all = args.all as boolean | undefined;
+  handler: async function handleDestroyVm(args) {
+    const name = typeof args.name === 'string' ? args.name : undefined;
+    const all = typeof args.all === 'boolean' ? args.all : undefined;
     try {
       if (all === true) {
         await destroyAll();
@@ -105,9 +104,9 @@ const execTool = defineTool('exec_in_vm', {
     },
     required: ['name', 'command'],
   },
-  handler: async (args) => {
-    const name = args.name as string;
-    const command = args.command as string;
+  handler: async function handleExecInVm(args) {
+    const name = String(args.name);
+    const command = String(args.command);
     try {
       const result = await exec({ command, name });
       const parts: string[] = [];
@@ -138,9 +137,9 @@ const runTool = defineTool('run_in_vm', {
     },
     required: ['command'],
   },
-  handler: async (args) => {
-    const command = args.command as string;
-    const from = args.from as string | undefined;
+  handler: async function handleRunInVm(args) {
+    const command = String(args.command);
+    const from = typeof args.from === 'string' ? args.from : undefined;
     try {
       const result = await run({ command, from });
       const parts: string[] = [];
@@ -163,7 +162,7 @@ const runTool = defineTool('run_in_vm', {
 /** MCP tool: re-download and rebuild all template images. */
 const updateTool = defineTool('update_templates', {
   description: 'Re-downloads all base images and rebuilds all templates unconditionally. Use to refresh Windows evaluation ISOs (180-day expiry), pick up new Linux cloud image releases, or update virtio-win drivers. Builds templates for all registered images, even those never previously used. Windows template rebuild takes 15-30 minutes.',
-  handler: async () => {
+  handler: async function handleUpdateTemplates() {
     try {
       await update();
       return { content: [{ type: 'text', text: 'All template images updated successfully.' }] };
@@ -179,6 +178,7 @@ const updateTool = defineTool('update_templates', {
 
 //region Server setup -- create and serve the MCP server
 
+/** MCP server instance exposing mvm operations as tools. */
 const server = createMcpServer(
   { name: 'mvm', version: '0.1.0' },
   [listTool, createTool, destroyTool, execTool, runTool, updateTool],

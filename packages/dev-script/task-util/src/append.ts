@@ -33,8 +33,7 @@ import {
 } from '@optique/core/primitives';
 import { string, } from '@optique/core/valueparser';
 import { runSync, } from '@optique/run';
-import { existsSync, } from 'node:fs';
-import { constants, } from 'node:fs';
+import { existsSync, constants, } from 'node:fs';
 import {
   access,
   appendFile,
@@ -53,6 +52,7 @@ const ERROR_MESSAGES = {
  * Validates that a file exists and has write permissions.
  *
  * @param filePath - Absolute or relative path to validate
+ *
  * @throws When file does not exist or lacks write permissions
  *
  * @example
@@ -76,6 +76,7 @@ async function validateFile(filePath: string,): Promise<void> {
  * Appends lines to a file, joining them with newlines and adding a trailing newline.
  *
  * @param filePath - Absolute or relative path to append to
+ *
  * @param lines - Lines of text to append
  *
  * @example

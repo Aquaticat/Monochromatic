@@ -26,10 +26,10 @@ export async function emptyPath(path: string,): Promise<string> {
 
   if (parsedPath.ext) {
     l.info`path ${path} is a file.`;
-    return await emptyFile(path,);
+    return emptyFile(path,);
   }
 
-  return await emptyDir(cleanPath,);
+  return emptyDir(cleanPath,);
 }
 
 export async function emptyDir(path: string,): Promise<string> {

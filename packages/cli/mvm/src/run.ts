@@ -32,8 +32,12 @@ function generateEphemeralName(): string {
  * Registers signal handlers for SIGINT and SIGTERM to ensure cleanup even on
  * interruption.
  *
- * @param options - Command to execute and optional source VM to clone from
+ * @param command - Shell command to run inside the VM
+ *
+ * @param from - Source VM to clone from (creates fresh VM when undefined)
+ *
  * @returns Captured stdout, stderr, and exit code from the command
+ *
  * @throws Error when VM creation, command execution, or cleanup fails
  *
  * @example
@@ -51,33 +55,41 @@ export async function run({ command, from }: { command: string; from: string | u
 
   rl.info(`ephemeral VM: ${name}${from !== undefined ? ` (cloned from ${from})` : ' (fresh)'}`);
 
-  /** Destroys the ephemeral VM, logging but not re-throwing errors. */
-  const cleanup = async (): Promise<void> => {
+  /**
+   * Destroys the ephemeral VM, logging but not re-throwing errors.
+   *
+   * @returns Resolves when cleanup is complete
+   */
+  async function cleanup(): Promise<void> {
     rl.info(`destroying ephemeral VM ${name}`);
     try {
       await destroy({ name });
     } catch (err: unknown) {
       rl.info(`cleanup failed for ${name}: ${err instanceof Error ? err.message : String(err)}`);
     }
-  };
+  }
 
-  /** Signal handler that runs cleanup then re-raises the signal. */
-  const onSignal = (signal: NodeJS.Signals): void => {
+  /**
+   * Signal handler that runs cleanup then re-raises the signal.
+   *
+   * @param signal - Signal name (`SIGINT` or `SIGTERM`)
+   */
+  function onSignal(signal: NodeJS.Signals): void {
     rl.info(`received ${signal}, cleaning up...`);
-    void cleanup().finally(() => {
+    // Signal handlers must re-raise after cleanup; using/await using not applicable
+    void cleanup().finally(function reraiseSignal() {
       process.kill(process.pid, signal);
     });
-  };
+  }
 
   process.on('SIGINT', onSignal);
   process.on('SIGTERM', onSignal);
 
+  // Signal handler cleanup requires try/finally; Symbol.dispose cannot remove process listeners
   try {
-    if (from !== undefined) {
-      await clone({ destination: name, source: from });
-    } else {
-      await create({ name });
-    }
+    await (from !== undefined
+      ? clone({ destination: name, source: from })
+      : create({ name }));
 
     const result = await exec({ command, name });
     return result;

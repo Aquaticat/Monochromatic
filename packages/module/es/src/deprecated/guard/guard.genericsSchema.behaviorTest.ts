@@ -272,13 +272,13 @@ type ValidatedTransformSchema<Input, Output,> = RealSchema<Input, Output> & {
 const realGenericTestValues = {
   // Basic generic schemas with specific Input/Output types
   stringToNumberSchema: {
-    parse: (value: string,) => parseInt(value, 10,),
+    parse: (value: string,) => Number.parseInt(value, 10,),
   } as StringToNumberSchema,
 
   userTransformSchema: {
     parse: (user: UserInput,) => ({
       name: user.name,
-      age: parseInt(user.age, 10,),
+      age: Number.parseInt(user.age, 10,),
     }),
   } as UserTransformSchema,
 
@@ -295,7 +295,7 @@ const realGenericTestValues = {
       await wait(1,);
       return {
         name: user.name,
-        age: parseInt(user.age, 10,),
+        age: Number.parseInt(user.age, 10,),
       };
     },
   } as AsyncUserSchema,
@@ -318,7 +318,7 @@ const realGenericTestValues = {
   namedUserSchema: {
     parse: (user: UserInput,) => ({
       name: user.name,
-      age: parseInt(user.age, 10,),
+      age: Number.parseInt(user.age, 10,),
     }),
     schemaName: 'UserTransform',
     version: 1,
@@ -345,9 +345,9 @@ const realGenericTestValues = {
 
   // Validated transform schema
   validatedTransformSchema: {
-    parse: (value: string,) => parseInt(value, 10,),
-    validator: (input: string,) => !isNaN(parseInt(input, 10,),),
-    transformer: (input: string,) => parseInt(input, 10,),
+    parse: (value: string,) => Number.parseInt(value, 10,),
+    validator: (input: string,) => !isNaN(Number.parseInt(input, 10,),),
+    transformer: (input: string,) => Number.parseInt(input, 10,),
   } as ValidatedTransformSchema<string, number>,
 
   // Async with Promise return type
@@ -367,12 +367,12 @@ const realGenericTestValues = {
   unionGenericSchema: ({
     parse: (user: UserInput,) => ({
       name: user.name,
-      age: parseInt(user.age, 10,),
+      age: Number.parseInt(user.age, 10,),
     }),
   } as UserTransformSchema | string),
 
   intersectionGenericSchema: {
-    parse: (value: string,) => parseInt(value, 10,),
+    parse: (value: string,) => Number.parseInt(value, 10,),
     extraProp: true,
     metadata: { version: '2.0', },
   } as StringToNumberSchema & {
@@ -384,7 +384,7 @@ const realGenericTestValues = {
   unknownGenericValue: {
     parse: (user: UserInput,) => ({
       name: user.name,
-      age: parseInt(user.age, 10,),
+      age: Number.parseInt(user.age, 10,),
     }),
     weight: 100,
   } as unknown,
@@ -392,7 +392,7 @@ const realGenericTestValues = {
   anyGenericValue: {
     parse: (user: UserInput,) => ({
       name: user.name,
-      age: parseInt(user.age, 10,),
+      age: Number.parseInt(user.age, 10,),
     }),
     extraData: { complex: 'structure', },
   } as any,
@@ -406,7 +406,7 @@ const realGenericTestValues = {
     parse: 'not a function',
   } as unknown,
 
-  nullValue: null as null,
+  nullValue: null,
   undefinedValue: undefined,
 };
 //endregion Real Generic Test Values
@@ -417,7 +417,7 @@ const realGenericTestValues = {
  * Reveals complete TypeScript behavior with Input/Output type preservation
  */
 
-const testRealGenericStringToNumber = (function() {
+const testRealGenericStringToNumber = (function testRealGenericStringToNumber() {
   const value = realGenericTestValues.stringToNumberSchema;
 
   // Unknown Pattern
@@ -478,7 +478,7 @@ const testRealGenericStringToNumber = (function() {
   }
 })();
 
-const testRealGenericWeightedString = (function() {
+const testRealGenericWeightedString = (function testRealGenericWeightedString() {
   const value = realGenericTestValues.weightedStringSchema;
 
   // Unknown Pattern
@@ -551,7 +551,7 @@ const testRealGenericWeightedString = (function() {
   // to demonstrate what happens inside the if block
 })();
 
-const testRealGenericNamedUser = (function() {
+const testRealGenericNamedUser = (function testRealGenericNamedUser() {
   const value = realGenericTestValues.namedUserSchema;
 
   // Test all patterns against complex generic transformation schema
@@ -608,7 +608,7 @@ const testRealGenericNamedUser = (function() {
   }
 })();
 
-const testRealGenericAsyncVariants = (function() {
+const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants() {
   const asyncSchema = realGenericTestValues.asyncUserSchema;
 
   // Test async schema guards
@@ -679,7 +679,7 @@ const testRealGenericAsyncVariants = (function() {
   }
 })();
 
-const testRealGenericEdgeCases = (function() {
+const testRealGenericEdgeCases = (function testRealGenericEdgeCases() {
   // Unknown value with schema properties
   const unknownValue = realGenericTestValues.unknownGenericValue;
 
@@ -768,7 +768,7 @@ const testRealGenericEdgeCases = (function() {
   }
 })();
 
-const testRealGenericPromisableBehavior = (function() {
+const testRealGenericPromisableBehavior = (function testRealGenericPromisableBehavior() {
   // Promise returning schema
   const promiseSchema = realGenericTestValues.promiseReturningSchema;
 
@@ -802,7 +802,7 @@ const testRealGenericPromisableBehavior = (function() {
   }
 
   // Promisable returning schema
-  const promisableSchema = realGenericTestValues.promisableSchema;
+  const {promisableSchema} = realGenericTestValues;
 
   if (isRealSchema_Generic(promisableSchema,)) {
     const result = promisableSchema.parse('test',); // Should be Promisable<number>
@@ -852,7 +852,7 @@ const testRealGenericPromisableBehavior = (function() {
   }
 })();
 
-const testRealGenericComplexConstraints = (function() {
+const testRealGenericComplexConstraints = (function testRealGenericComplexConstraints() {
   // Branded schema testing
   const brandedSchema = realGenericTestValues.brandedStringSchema;
 

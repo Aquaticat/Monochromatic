@@ -15,7 +15,9 @@ import { globalStyles } from "./styles.ts";
 import { $ as css } from "./css.ts";
 import { cssCalc, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { borderRadiusFull, flexCenter, whitespaceNowrap } from "./mixins.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/side-drawer.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/search-bar.ts";
 
 /** Shape of the JSON blob embedded in the search page by the server. */
@@ -71,7 +73,7 @@ injectCSS([
 ].join(''));
 
 const pageData = readPageData<SearchPageData>();
-const appElement = document.getElementById("app");
+const appElement = document.querySelector("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
@@ -80,7 +82,7 @@ const app = appElement;
 // Listen for search events from the search-bar component
 document.querySelector("search-bar")?.addEventListener("search", ((event: CustomEvent) => {
   const query = event.detail.query as string;
-  window.location.href = query.length === 0 ? "/search" : `/search?q=${encodeURIComponent(query)}`;
+  globalThis.location.href = query.length === 0 ? "/search" : `/search?q=${encodeURIComponent(query)}`;
 }) as EventListener);
 
 if (pageData.query.length === 0) {
@@ -99,7 +101,7 @@ if (pageData.query.length === 0) {
             text: `# ${tag}`,
             on: {
               click: () => {
-                window.location.href = `/search?q=${encodeURIComponent(`#${tag}`)}`;
+                globalThis.location.href = `/search?q=${encodeURIComponent(`#${tag}`)}`;
               },
             },
           }),
@@ -115,11 +117,11 @@ if (pageData.query.length === 0) {
       createTaskCard(result, {
         showBlockedBadge: result.isBlocked,
         onOpen: (taskId) => {
-          window.location.href = `/tasks/${taskId}`;
+          globalThis.location.href = `/tasks/${taskId}`;
         },
         onToggleComplete: async (taskId) => {
           await api(`/api/tasks/${taskId}/complete`, { method: "POST" });
-          window.location.reload();
+          globalThis.location.reload();
         },
       }),
     );

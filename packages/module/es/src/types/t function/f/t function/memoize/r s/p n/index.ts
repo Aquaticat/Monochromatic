@@ -22,8 +22,11 @@ import { buildCacheKey, } from '../../cacheKey.ts';
  * where `this` binding would cause incorrect caching.
  *
  * @typeParam TArgs - tuple of function argument types
+ *
  * @typeParam TReturn - function return type
+ *
  * @param options - function and memoization configuration
+ *
  * @returns memoized function with `.store`, `.clear()`, `.delete()`, `.size`
  *
  * @remarks

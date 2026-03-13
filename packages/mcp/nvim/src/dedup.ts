@@ -18,7 +18,7 @@ import type { Diagnostic } from "./nvim-client.ts";
  * ```
  */
 export function dedupKey(diagnostic: Diagnostic): string {
-  if (diagnostic.code !== null && diagnostic.code !== undefined) {
+  if (diagnostic.code !== null) {
     return `${diagnostic.lnum}:${diagnostic.col}:${diagnostic.code}`;
   }
   return `${diagnostic.lnum}:${diagnostic.col}:${diagnostic.message}`;
@@ -60,15 +60,16 @@ export function uniqueDiagnostics(diagnostics: readonly Diagnostic[]): Diagnosti
  * Editor diagnostics take priority (richer end position info from LSP).
  * Lint-only diagnostics are appended after all editor diagnostics.
  *
- * @param options - Two arrays of diagnostics to merge.
- * @param options.editor - Diagnostics from the editor (LSP).
- * @param options.lint - Diagnostics from the CLI linter.
+ * @param editor - Diagnostics from the editor (LSP).
+ *
+ * @param lint - Diagnostics from the CLI linter.
  *
  * @returns Merged array with duplicates removed.
  *
  * @example
  * ```ts
  * const merged = dedupDiagnostics({
+ *
  *   editor: [{ severity: "ERROR", lnum: 10, col: 5, end_lnum: 10, end_col: 15, message: "Type mismatch", source: "typescript", code: 2345 }],
  *   lint: [{ severity: "ERROR", lnum: 10, col: 5, end_lnum: 10, end_col: 5, message: "Type mismatch", source: "oxlint", code: 2345 }],
  * });
@@ -79,7 +80,7 @@ export function dedupDiagnostics({ editor, lint }: {
   editor: readonly Diagnostic[];
   lint: readonly Diagnostic[];
 }): Diagnostic[] {
-  const editorKeys = new Set(editor.map(dedupKey));
+  const editorKeys = new Set(editor.map(function buildKey(d) { return dedupKey(d); }));
   const lintOnly = lint.filter(function isNotDuplicate(diagnostic) {
     return !editorKeys.has(dedupKey(diagnostic));
   });

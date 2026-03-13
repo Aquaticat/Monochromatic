@@ -76,7 +76,7 @@ export const CODEGEN_TEST_INPUT: string = [
 
 /**
  * Expected stdout from running CODEGEN_TEST_INPUT through a correct Stak interpreter.
- * Breakdown: floor-div=-4, floor-mod=1, PRINTC(72,105,10)="Hi\n", loop prints 5..1.
+ * Breakdown: floor-div=-4, floor-mod=1, PRINTC(72,105,10)="Hi LF", loop prints 5..1.
  */
 export const CODEGEN_EXPECTED_OUTPUT: string = '-4\n1\nHi\n5\n4\n3\n2\n1\n';
 

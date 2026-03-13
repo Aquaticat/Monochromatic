@@ -9,7 +9,7 @@ class UndocumentedClass {}
 
 type UndocumentedType = { value: string };
 
-interface UndocumentedInterface {
+type UndocumentedInterface = {
   name: string;
 }
 

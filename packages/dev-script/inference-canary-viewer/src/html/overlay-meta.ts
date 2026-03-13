@@ -15,11 +15,13 @@ import type { ConfigSnapshot, StreamTiming, StreamUsage, } from '../data/viewer-
 import type { ProbeDetail, } from '../data/viewer-types.ts';
 
 /** Milliseconds per second for display formatting */
-const MS_PER_SECOND = 1000;
+const MS_PER_SECOND = 1_000;
 
 /**
  * Formats milliseconds as a human-readable duration.
+ *
  * @param ms - milliseconds
+ *
  * @returns "1.2s" for >= 1000ms, "123ms" otherwise
  *
  * @example
@@ -37,7 +39,9 @@ function formatMs(ms: number,): string {
 
 /**
  * Formats a number with locale-appropriate thousands separators.
+ *
  * @param num - number to format
+ *
  * @returns formatted string
  *
  * @example
@@ -51,7 +55,9 @@ function formatNumber(num: number,): string {
 
 /**
  * Renders status badges for partial/error/finish-reason states.
+ *
  * @param detail - probe detail
+ *
  * @returns HTML string, empty when no badges apply
  *
  * @example
@@ -80,11 +86,16 @@ export function renderBadges(detail: ProbeDetail,): string {
 /**
  * Renders a compact metadata grid for one pass (initial or fix).
  * Shows timing and token usage as a collapsed `<details>` element.
- * @param options - pass metadata rendering options
- * @param options.label - section label ("Initial pass" or "Fix pass")
- * @param options.timing - streaming timing data
- * @param options.usage - token usage data
- * @param options.finishReason - why generation stopped
+ *
+ *
+ * @param label - section label ("Initial pass" or "Fix pass")
+ *
+ * @param timing - streaming timing data
+ *
+ * @param usage - token usage data
+ *
+ * @param finishReason - why generation stopped
+ *
  * @returns HTML string, empty when no data is available
  *
  * @example
@@ -153,7 +164,9 @@ export function renderPassMeta({ label, timing, usage, finishReason, }: {
 /**
  * Renders collapsible detail sections for reasoning, fix prompt, and config.
  * Sections with no data are omitted entirely.
+ *
  * @param detail - probe detail
+ *
  * @returns HTML string with `<details>` elements
  *
  * @example
@@ -229,7 +242,9 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
 
 /**
  * Renders a collapsible config snapshot section.
+ *
  * @param config - runner configuration snapshot
+ *
  * @returns HTML `<details>` element
  */
 function renderConfig(config: ConfigSnapshot,): string {

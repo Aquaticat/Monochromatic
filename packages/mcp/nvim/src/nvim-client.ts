@@ -91,7 +91,7 @@ const clients = new Map<string, NeovimClient>();
 export function findAllSocketPaths(): string[] {
   const found = new Set<string>();
 
-  if (process.env.NVIM) {
+  if (process.env.NVIM !== undefined && process.env.NVIM !== '') {
     found.add(process.env.NVIM);
   }
 
@@ -110,7 +110,7 @@ export function findAllSocketPaths(): string[] {
     }
   }
 
-  return Array.from(found);
+  return [...found];
 }
 
 /**
@@ -158,7 +158,7 @@ export function getAllClients(): NeovimClient[] {
     );
   }
 
-  return paths.map(connectToSocket);
+  return paths.map(function connectSocket(socketPath) { return connectToSocket(socketPath); });
 }
 
 //endregion Connection management
@@ -173,15 +173,25 @@ export function getAllClients(): NeovimClient[] {
  * @returns Typed Diagnostic with 1-indexed line/column.
  */
 function mapRawDiagnostic(d: Record<string, unknown>): Diagnostic {
+  // Fields come from Neovim's Lua msgpack bridge; types are guaranteed by the Lua code above.
+  const severity = typeof d.severity === 'number' ? d.severity : 0;
+  const lnum = typeof d.lnum === 'number' ? d.lnum : 0;
+  const col = typeof d.col === 'number' ? d.col : 0;
+  const endLnum = typeof d.end_lnum === 'number' ? d.end_lnum : 0;
+  const endCol = typeof d.end_col === 'number' ? d.end_col : 0;
+  const message = typeof d.message === 'string' ? d.message : '';
+  const source = typeof d.source === 'string' ? d.source : null;
+  const code = typeof d.code === 'string' || typeof d.code === 'number' ? d.code : null;
+
   return {
-    severity: SEVERITY_MAP[d.severity as number] ?? `UNKNOWN(${d.severity})`,
-    lnum: (d.lnum as number) + 1,
-    col: (d.col as number) + 1,
-    end_lnum: (d.end_lnum as number) + 1,
-    end_col: (d.end_col as number) + 1,
-    message: normalizeMessage(d.message as string),
-    source: (d.source as string) ?? null,
-    code: (d.code as string | number) ?? null,
+    severity: SEVERITY_MAP[severity] ?? `UNKNOWN(${String(severity)})`,
+    lnum: lnum + 1,
+    col: col + 1,
+    end_lnum: endLnum + 1,
+    end_col: endCol + 1,
+    message: normalizeMessage(message),
+    source,
+    code,
   };
 }
 
@@ -294,8 +304,9 @@ export async function getDiagnostics(): Promise<Diagnostic[]> {
   const results = await Promise.all(
     nvimClients.map(async function queryInstance(nvim) {
       try {
-        const raw = (await nvim.executeLua(LUA_GET_CURRENT_BUF_DIAGNOSTICS, [])) as Array<Record<string, unknown>>;
-        return raw.map(mapRawDiagnostic);
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query
+        const raw = (await nvim.executeLua(LUA_GET_CURRENT_BUF_DIAGNOSTICS, [])) as Record<string, unknown>[];
+        return raw.map(function mapDiag(d) { return mapRawDiagnostic(d); });
       } catch (err: unknown) {
         console.error("[mcp-nvim] Failed to query instance for current buffer diagnostics:", err);
         return [];
@@ -323,11 +334,15 @@ export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
   const instanceResults = await Promise.all(
     nvimClients.map(async function queryInstance(nvim) {
       try {
-        const raw = (await nvim.executeLua(LUA_GET_ALL_DIAGNOSTICS, [])) as Array<Record<string, unknown>>;
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query
+        const raw = (await nvim.executeLua(LUA_GET_ALL_DIAGNOSTICS, [])) as Record<string, unknown>[];
         return raw.map(function mapFileEntry(file) {
+          const filePath = typeof file.path === 'string' ? file.path : '';
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim msgpack array narrowed via Array.isArray
+          const fileDiags = Array.isArray(file.diagnostics) ? file.diagnostics as Record<string, unknown>[] : [];
           return {
-            path: file.path as string,
-            diagnostics: (file.diagnostics as Array<Record<string, unknown>>).map(mapRawDiagnostic),
+            path: filePath,
+            diagnostics: fileDiags.map(function mapDiag(d) { return mapRawDiagnostic(d); }),
           };
         });
       } catch (err: unknown) {
@@ -352,7 +367,7 @@ export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
   }
   //endregion Merge diagnostics from all instances by file path
 
-  return Array.from(byPath.entries()).map(function toFileDiagnostics([path, diagnostics]) {
+  return [...byPath.entries()].map(function toFileDiagnostics([path, diagnostics]) {
     return { path, diagnostics: uniqueDiagnostics(diagnostics) };
   });
 }
@@ -375,11 +390,12 @@ export async function getCurrentFiles(): Promise<CurrentFile[]> {
   const results = await Promise.all(
     nvimClients.map(async function queryInstance(nvim) {
       try {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query
         const result = (await nvim.executeLua(LUA_GET_CURRENT_FILE, [])) as Record<string, unknown>;
         return {
-          path: result.path as string,
-          filetype: result.filetype as string,
-          modified: result.modified as boolean,
+          path: typeof result.path === 'string' ? result.path : '',
+          filetype: typeof result.filetype === 'string' ? result.filetype : '',
+          modified: typeof result.modified === 'boolean' ? result.modified : false,
         };
       } catch (err: unknown) {
         console.error("[mcp-nvim] Failed to query instance for current file:", err);

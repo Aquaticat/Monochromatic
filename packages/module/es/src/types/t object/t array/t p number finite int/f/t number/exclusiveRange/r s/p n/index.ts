@@ -11,5 +11,5 @@ export function $(
   const end = (Math.ceil(endExclusive,) - 1) as Int;
   return (start > end
     ? []
-    : Array.from({ length: end - start + 1, }, (_, index,) => start + index,)) as Int[];
+    : Array.from({ length: end - start + 1, }, function offset(_, index,) { return start + index; },)) as Int[];
 }

@@ -8,6 +8,18 @@ import { showToast } from "../components/toast-message.ts";
 
 export { showToast };
 
+/** HTTP status code indicating no content in response body. */
+const HTTP_NO_CONTENT = 204;
+
+/**
+ * Sends a fetch request to a JSON API endpoint with standard headers and error handling.
+ *
+ * @param path - API endpoint path
+ *
+ * @param options - Optional fetch request configuration
+ *
+ * @returns Parsed JSON response body, or undefined for 204 responses
+ */
 export async function api<TResponse = unknown>(path: string, options?: RequestInit): Promise<TResponse> {
   const response = await fetch(path, {
     ...options,
@@ -15,7 +27,13 @@ export async function api<TResponse = unknown>(path: string, options?: RequestIn
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: "Request failed" }));
+    let error: unknown;
+    try {
+      error = await response.json();
+    }
+    catch {
+      error = { error: "Request failed" };
+    }
     const message =
       typeof error === "object" && error !== null && "error" in error && typeof error.error === "string"
         ? error.error
@@ -24,9 +42,11 @@ export async function api<TResponse = unknown>(path: string, options?: RequestIn
     throw new Error(message);
   }
 
-  if (response.status === 204) {
+  if (response.status === HTTP_NO_CONTENT) {
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- 204 responses have no body; caller expects TResponse
     return undefined as TResponse;
   }
 
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- response JSON matches the TResponse shape by API contract
   return (await response.json()) as TResponse;
 }

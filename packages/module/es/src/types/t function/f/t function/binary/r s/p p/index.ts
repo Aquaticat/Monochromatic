@@ -5,6 +5,7 @@
  * like `Array.prototype.map`, which passes `(element, index, array)`.
  *
  * @param fn - Function to wrap
+ *
  * @returns Binary version that ignores all but first two arguments
  *
  * @example
@@ -26,5 +27,5 @@ export function $<
 >(
   fn: Fn,
 ): (a: Parameters<Fn>[0], b: Parameters<Fn>[1],) => ReturnType<Fn> {
-  return (a: Parameters<Fn>[0], b: Parameters<Fn>[1],): ReturnType<Fn> => fn(a, b,);
+  return function binary(a: Parameters<Fn>[0], b: Parameters<Fn>[1],): ReturnType<Fn> { return fn(a, b,); };
 }

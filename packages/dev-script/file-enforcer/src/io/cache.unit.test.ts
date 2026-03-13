@@ -6,7 +6,7 @@ import { invalidatePaths, readCache, readCached, updateCache, } from './cache.ts
 
 /** Fresh temp directory for each test */
 async function makeTmpDir(): Promise<string> {
-  return await mkdtemp(join(tmpdir(), 'file-enforcer-cache-'));
+  return mkdtemp(join(tmpdir(), 'file-enforcer-cache-'));
 }
 
 afterEach(() => {

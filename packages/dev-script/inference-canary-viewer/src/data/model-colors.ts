@@ -9,7 +9,9 @@
 /**
  * Maps OpenRouter vendor prefix to a brand color hex string.
  * Falls back to a neutral gray for unknown vendors.
+ *
  * @param modelId - full OpenRouter model ID (e.g. "anthropic/claude-sonnet-4.6")
+ *
  * @returns CSS hex color string
  *
  * @example

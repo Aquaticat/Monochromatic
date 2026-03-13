@@ -47,7 +47,7 @@ beforeEach(async () => {
   // testDir fixture — import.meta.dirname is src/, so parent is the package root
   const packageDir = join(testFileDir, '..',);
   const timestamp = Date.now();
-  const randomId = Math.random().toString(36,).substring(2, 8,);
+  const randomId = Math.random().toString(36,).slice(2, 8,);
   testDir = join(packageDir, 'dist', 'temp', 'test',
     `cli-command-${timestamp}-${randomId}`,);
 

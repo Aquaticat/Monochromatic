@@ -147,7 +147,7 @@ describe('createMcpServer', () => {
       const server = createMcpServer({ name: 'srv', version: '0.1.0' }, [tool]);
       const request: JsonRpcInbound = { jsonrpc: '2.0', id: 5, method: 'tools/list' };
       const response = await server.handleMessage(request) as JsonRpcResponse;
-      const tools = (response.result as { tools: readonly { inputSchema: unknown }[] }).tools;
+      const {tools} = (response.result as { tools: readonly { inputSchema: unknown }[] });
       expect(tools[0]?.inputSchema).toEqual({ type: 'object' });
     });
 

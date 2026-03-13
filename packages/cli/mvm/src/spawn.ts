@@ -6,8 +6,12 @@ import { l, tagged } from './log.ts';
  * Spawns a command and returns its trimmed stdout.
  * Logs the command at debug level before execution.
  *
- * @param options - Command name and arguments array
+ * @param args - Arguments array for the command
+ *
+ * @param command - Command name or path to execute
+ *
  * @returns Trimmed stdout output from the command
+ *
  * @throws Error when command exits with non-zero code, including stderr
  *
  * @example
@@ -15,7 +19,7 @@ import { l, tagged } from './log.ts';
  * const output = await spawn({ command: 'virsh', args: ['list', '--all'] });
  * ```
  */
-export async function spawn({ args, command }: { args: ReadonlyArray<string>; command: string }): Promise<string> {
+export async function spawn({ args, command }: { args: readonly string[]; command: string }): Promise<string> {
   const rl = tagged({ tag: spawn.name, l, });
   rl.debug(`${command} ${args.join(' ')}`);
 

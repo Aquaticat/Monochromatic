@@ -7,7 +7,7 @@ const app = new H3();
 app.all(
   '/**',
   defineHandler(async function serveTestHarness(event) {
-    const pathname = new URL(event.request.url).pathname;
+    const {pathname} = new URL(event.request.url);
 
     if (pathname === '/' || pathname === '/test-harness.html') {
       return new Response(await readFile('playwright/test-harness.html'));
@@ -21,4 +21,4 @@ app.all(
   }),
 );
 
-serve({ fetch: app.fetch, port: 3005 });
+serve({ fetch: app.fetch, port: 3_005 });

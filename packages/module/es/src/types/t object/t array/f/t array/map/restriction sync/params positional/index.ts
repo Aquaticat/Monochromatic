@@ -4,7 +4,9 @@
  * Supports mapping functions that receive element, index, and/or array parameters for flexibility.
  *
  * @param mappingFn - Function to transform each element, receives (element, index?, array?)
+ *
  * @param arrayLike - Iterable to transform elements from
+ *
  * @returns Array of transformed elements, preserves tuple length when input has known length
  *
  * @example

@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const $ = types.object.regexp.from.string.sync.named.$;
+const {$} = types.object.regexp.from.string.sync.named;
 
 describe('string to regex conversion', () => {
   test('converts simple string to regex', () => {
@@ -19,86 +19,86 @@ describe('string to regex conversion', () => {
     const result = $({ str: 'I love you.', },);
     expect(result.test('I love you.',),).toBe(true,);
     expect(result.test('I love youX',),).toBe(false,);
-    expect(result.source,).toBe('I love you\\.',);
+    expect(result.source,).toBe(String.raw`I love you\.`,);
   });
 
   test('escapes asterisk character', () => {
     const result = $({ str: 'Hello*', },);
     expect(result.test('Hello*',),).toBe(true,);
     expect(result.test('Hellooo',),).toBe(false,);
-    expect(result.source,).toBe('Hello\\*',);
+    expect(result.source,).toBe(String.raw`Hello\*`,);
   });
 
   test('escapes plus character', () => {
     const result = $({ str: 'test+', },);
     expect(result.test('test+',),).toBe(true,);
     expect(result.test('testtt',),).toBe(false,);
-    expect(result.source,).toBe('test\\+',);
+    expect(result.source,).toBe(String.raw`test\+`,);
   });
 
   test('escapes question mark character', () => {
     const result = $({ str: 'what?', },);
     expect(result.test('what?',),).toBe(true,);
     expect(result.test('wha',),).toBe(false,);
-    expect(result.source,).toBe('what\\?',);
+    expect(result.source,).toBe(String.raw`what\?`,);
   });
 
   test('escapes caret character', () => {
     const result = $({ str: '^start', },);
     expect(result.test('^start',),).toBe(true,);
     expect(result.test('start',),).toBe(false,);
-    expect(result.source,).toBe('\\^start',);
+    expect(result.source,).toBe(String.raw`\^start`,);
   });
 
   test('escapes dollar character', () => {
     const result = $({ str: 'end$', },);
     expect(result.test('end$',),).toBe(true,);
     expect(result.test('end',),).toBe(false,);
-    expect(result.source,).toBe('end\\$',);
+    expect(result.source,).toBe(String.raw`end\$`,);
   });
 
   test('escapes curly braces', () => {
     const result = $({ str: '{count}', },);
     expect(result.test('{count}',),).toBe(true,);
-    expect(result.source,).toBe('\\{count\\}',);
+    expect(result.source,).toBe(String.raw`\{count\}`,);
   });
 
   test('escapes square brackets', () => {
     const result = $({ str: '[array]', },);
     expect(result.test('[array]',),).toBe(true,);
-    expect(result.source,).toBe('\\[array\\]',);
+    expect(result.source,).toBe(String.raw`\[array\]`,);
   });
 
   test('escapes parentheses', () => {
     const result = $({ str: '(group)', },);
     expect(result.test('(group)',),).toBe(true,);
-    expect(result.source,).toBe('\\(group\\)',);
+    expect(result.source,).toBe(String.raw`\(group\)`,);
   });
 
   test('escapes pipe character', () => {
     const result = $({ str: 'this|that', },);
     expect(result.test('this|that',),).toBe(true,);
     expect(result.test('this',),).toBe(false,);
-    expect(result.source,).toBe('this\\|that',);
+    expect(result.source,).toBe(String.raw`this\|that`,);
   });
 
   test('escapes backslash character', () => {
     const result = $({ str: 'path\\to', },);
-    expect(result.test('path\\to',),).toBe(true,);
-    expect(result.source,).toBe('path\\\\to',);
+    expect(result.test(String.raw`path\to`,),).toBe(true,);
+    expect(result.source,).toBe(String.raw`path\\to`,);
   });
 
   test('escapes forward slash character', () => {
     const result = $({ str: 'path/to/file', },);
     expect(result.test('path/to/file',),).toBe(true,);
-    expect(result.source,).toBe('path\\/to\\/file',);
+    expect(result.source,).toBe(String.raw`path\/to\/file`,);
   });
 
   test('escapes multiple special characters', () => {
     const result = $({ str: 'Hello.*', },);
     expect(result.test('Hello.*',),).toBe(true,);
     expect(result.test('Hellooo',),).toBe(false,);
-    expect(result.source,).toBe('Hello\\.\\*',);
+    expect(result.source,).toBe(String.raw`Hello\.\*`,);
   });
 
   test('handles empty string', () => {
@@ -118,7 +118,7 @@ describe('string to regex conversion', () => {
     const result = $({ str: 'regex: ^[a-z]+$', },);
     expect(result.test('regex: ^[a-z]+$',),).toBe(true,);
     expect(result.test('regex: abc',),).toBe(false,);
-    expect(result.source,).toBe('regex: \\^\\[a-z\\]\\+\\$',);
+    expect(result.source,).toBe(String.raw`regex: \^\[a-z\]\+\$`,);
   });
 
   test('handles unicode characters', () => {
@@ -142,25 +142,25 @@ describe('string to regex conversion', () => {
   test('real-world example: file path', () => {
     const result = $({ str: '/usr/local/bin/script.sh', },);
     expect(result.test('/usr/local/bin/script.sh',),).toBe(true,);
-    expect(result.source,).toBe('\\/usr\\/local\\/bin\\/script\\.sh',);
+    expect(result.source,).toBe(String.raw`\/usr\/local\/bin\/script\.sh`,);
   });
 
   test('real-world example: email with special chars', () => {
     const result = $({ str: 'user.name+tag@example.com', },);
     expect(result.test('user.name+tag@example.com',),).toBe(true,);
-    expect(result.source,).toBe('user\\.name\\+tag@example\\.com',);
+    expect(result.source,).toBe(String.raw`user\.name\+tag@example\.com`,);
   });
 
   test('real-world example: URL', () => {
     const result = $({ str: 'https://example.com/path?query=value', },);
     expect(result.test('https://example.com/path?query=value',),).toBe(true,);
-    expect(result.source,).toBe('https:\\/\\/example\\.com\\/path\\?query=value',);
+    expect(result.source,).toBe(String.raw`https:\/\/example\.com\/path\?query=value`,);
   });
 
   test('real-world example: regex pattern as string', () => {
     const result = $({ str: '^[A-Z]{3}-\\d{4}$', },);
-    expect(result.test('^[A-Z]{3}-\\d{4}$',),).toBe(true,);
-    expect(result.source,).toBe('\\^\\[A-Z\\]\\{3\\}-\\\\d\\{4\\}\\$',);
+    expect(result.test(String.raw`^[A-Z]{3}-\d{4}$`,),).toBe(true,);
+    expect(result.source,).toBe(String.raw`\^\[A-Z\]\{3\}-\\d\{4\}\$`,);
   });
 
   test('function returns RegExp instance', () => {

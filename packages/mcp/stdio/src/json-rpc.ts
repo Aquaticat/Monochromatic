@@ -131,6 +131,7 @@ export const JSON_RPC_PARSE_ERROR = -32_700;
  * Checks for `jsonrpc: '2.0'` and a string `method` field.
  *
  * @param value - Untrusted parsed JSON from stdin.
+ *
  * @returns `true` if value conforms to the minimum JSON-RPC inbound message shape.
  *
  * @example
@@ -145,6 +146,7 @@ export function isJsonRpcMessage(value: unknown): value is JsonRpcInbound {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowed from unknown to object above
   const candidate = value as Record<string, unknown>;
   return candidate.jsonrpc === '2.0' && typeof candidate.method === 'string';
 }

@@ -8,6 +8,7 @@ import type { $ as Finite, } from '@_/types/t number/t finite/t/index.ts';
  * where integer-specific behavior is required.
  *
  * @param value - Finite number to check
+ *
  * @returns Type predicate indicating whether value is an integer
  *
  * @example

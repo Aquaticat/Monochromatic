@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-
+// oxlint-disable no-non-null-assertion, typescript-eslint/no-unsafe-type-assertion, tsdoc/require-tsdoc, tsdoc/require-returns, init-declarations, prefer-destructuring -- CLI script with argument parsing; non-null after validation; type assertions for parsed JSON
 /**
  * CLI for perceptual image difference comparison using multimodal embeddings.
  * Supports Voyage AI and Google Gemini backends.
@@ -34,7 +34,7 @@ const EXIT_USAGE = 2;
 /**
  * All recognized model names across providers.
  */
-const VALID_MODELS: ReadonlyArray<string> = [
+const VALID_MODELS: readonly string[] = [
   'voyage-multimodal-3',
   'voyage-multimodal-3.5',
   'gemini-embedding-2-preview',
@@ -43,7 +43,7 @@ const VALID_MODELS: ReadonlyArray<string> = [
 /**
  * All recognized provider names.
  */
-const VALID_PROVIDERS: ReadonlyArray<string> = ['voyage', 'gemini'];
+const VALID_PROVIDERS: readonly string[] = ['voyage', 'gemini'];
 
 /**
  * Print usage information to stderr and exit with code 2.
@@ -82,6 +82,7 @@ Examples:
  * everything else is treated as a file path.
  *
  * @param arg - CLI positional argument
+ *
  * @returns parsed image input
  *
  * @example
@@ -106,19 +107,20 @@ type ParsedFlags = {
   /** Model name override. */
   readonly model: EmbeddingModel | undefined;
   /** Remaining positional arguments. */
-  readonly remaining: Array<string>;
+  readonly remaining: string[];
 };
 
 /**
  * Extract `--provider` and `--model` flags from argv.
  *
  * @param args - CLI arguments after the subcommand
+ *
  * @returns parsed flags and remaining positional args
  */
-function parseFlags(args: Array<string>): ParsedFlags {
+function parseFlags(args: string[]): ParsedFlags {
   let provider: Provider | undefined;
   let model: EmbeddingModel | undefined;
-  const remaining: Array<string> = [];
+  const remaining: string[] = [];
 
   let i = 0;
   while (i < args.length) {
@@ -162,7 +164,7 @@ function parseFlags(args: Array<string>): ParsedFlags {
  *
  * @param args - CLI arguments after "compare"
  */
-async function handleCompare(args: Array<string>): Promise<void> {
+async function handleCompare(args: string[]): Promise<void> {
   const rl = tagged({ tag: handleCompare.name, l });
   const { provider, model, remaining } = parseFlags(args);
 
@@ -214,7 +216,7 @@ async function handleCompare(args: Array<string>): Promise<void> {
  *
  * @param args - CLI arguments after "embed"
  */
-async function handleEmbed(args: Array<string>): Promise<void> {
+async function handleEmbed(args: string[]): Promise<void> {
   const rl = tagged({ tag: handleEmbed.name, l });
   const { provider, model, remaining } = parseFlags(args);
 

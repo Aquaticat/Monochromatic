@@ -56,6 +56,7 @@
  * Handles the five predefined XML entities.
  *
  * @param raw - unescaped string
+ *
  * @returns escaped string safe for XML text content and attribute values
  *
  * @example
@@ -88,7 +89,7 @@ type XmlOptions = {
   /** Attributes set as key="value" pairs (values are XML-escaped) */
   attrs?: Record<string, string>;
   /** Child XML strings to concatenate inside the element */
-  children?: ReadonlyArray<string>;
+  children?: readonly string[];
 };
 
 /**
@@ -97,7 +98,16 @@ type XmlOptions = {
  * Elements with no content (no `text`, `raw`, or `children`) produce
  * self-closing tags (`<tag />`). Otherwise produces `<tag>...</tag>`.
  *
- * @param options - {@link XmlOptions}
+ * @param tag - XML element name
+ *
+ * @param text - text content (XML-escaped automatically)
+ *
+ * @param raw - raw inner XML (NOT escaped)
+ *
+ * @param attrs - attributes as key="value" pairs
+ *
+ * @param children - child XML strings to concatenate
+ *
  * @returns well-formed XML element string
  */
 /* @__NO_SIDE_EFFECTS__ */ export function $(

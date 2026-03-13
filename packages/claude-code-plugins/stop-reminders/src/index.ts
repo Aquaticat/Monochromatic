@@ -59,6 +59,7 @@ if (event.stop_hook_active) {
   process.stdout.write(JSON.stringify(output));
 } else {
   /** Prose content with code blocks, inline code, blockquotes, and quoted strings stripped out. */
+  /** Prose content with code blocks, inline code, blockquotes, and quoted strings stripped out. */
   const prose = stripNonProseRegions(event.last_assistant_message ?? '');
 
   /** First uncertainty marker found in the prose, if any. */
@@ -68,9 +69,9 @@ if (event.stop_hook_active) {
   const question = findTrailingQuestion(prose);
 
   /** Collect all applicable reminders into a single block reason. */
-  const reasons: Array<string> = [];
+  const reasons: string[] = [];
 
-  if (match !== null && match !== undefined) {
+  if (match !== undefined) {
     reasons.push(
       `Your response contains uncertain language ("${match.phrase}").`,
       'Search for evidence, read the relevant code, or check documentation.',
@@ -81,7 +82,7 @@ if (event.stop_hook_active) {
     );
   }
 
-  if (question !== null && question !== undefined) {
+  if (question !== undefined) {
     reasons.push(
       `Your response ends with a question to the user ("${question.sentence}").`,
       'Use the AskUserQuestion tool to ask the user instead of ending your response with a question.',
@@ -91,12 +92,14 @@ if (event.stop_hook_active) {
   }
 
   if (reasons.length > 0) {
+    /** Blocking output with concatenated reason from all matched reminders. */
     const output: StopOutput = {
       decision: 'block',
       reason: reasons.join(' '),
     };
     process.stdout.write(JSON.stringify(output));
   } else {
+    /** Pass-through output allowing the stop to proceed. */
     const output: StopOutput = {};
     process.stdout.write(JSON.stringify(output));
   }

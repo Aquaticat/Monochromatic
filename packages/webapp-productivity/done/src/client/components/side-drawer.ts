@@ -1,5 +1,5 @@
 /**
- * `<side-drawer>` -- intrinsic sidebar navigation.
+ * `\<side-drawer\>` -- intrinsic sidebar navigation.
  *
  * Renders two copies of the nav: an inline sidebar visible when the
  * component is narrow (~22 rem, meaning it sits beside the main content
@@ -21,6 +21,10 @@ import { css } from "../css.ts";
  *  Below this width the sidebar stacks and the inline nav hides. */
 const DESKTOP_BREAKPOINT = "48rem";
 
+/** Z-index for the popover panel overlay. */
+const PANEL_Z_INDEX = 100;
+
+/** Shadow DOM styles for the `\<side-drawer\>` component. */
 const STYLES = css(`
   :host {
     display: block;
@@ -144,7 +148,7 @@ const STYLES = css(`
     block-size: 100%;
     max-block-size: 100%;
 
-    z-index: 100;
+    z-index: ${String(PANEL_Z_INDEX)};
     display: flex;
     background-color: transparent;
     overflow: visible;
@@ -195,7 +199,11 @@ const STYLES = css(`
   @apply --shadow-dom-globals;
 `);
 
-/** Builds a nav element with the standard link set. */
+/**
+ * Builds a nav element with the standard link set.
+ *
+ * @returns Navigation element with app links
+ */
 function buildNav(): HTMLElement {
   return h({
     tag: "nav",
@@ -208,7 +216,13 @@ function buildNav(): HTMLElement {
   });
 }
 
-/** Builds a header row with a name label and an optional close button. */
+/**
+ * Builds a header row with a name label and an optional close button.
+ *
+ * @param closeButton - Close button element, or null for inline sidebar
+ *
+ * @returns Header element
+ */
 function buildHeader(closeButton: HTMLElement | null): HTMLElement {
   const children: HTMLElement[] = [
     h({ tag: "span", style: { fontSize: "1.25rem" }, text: "Firstname" }),
@@ -219,7 +233,13 @@ function buildHeader(closeButton: HTMLElement | null): HTMLElement {
   return h({ tag: "div", class: "header", children });
 }
 
-/** Builds a close button with an X SVG icon. */
+/**
+ * Builds a close button with an X SVG icon.
+ *
+ * @param label - Accessible label for the button
+ *
+ * @returns Close button element
+ */
 function buildCloseButton(label: string): HTMLElement {
   const button = h({
     tag: "button",
@@ -232,7 +252,7 @@ function buildCloseButton(label: string): HTMLElement {
 }
 
 /**
- * `<side-drawer>` -- navigation sidebar with intrinsic layout switching.
+ * `\<side-drawer\>` -- navigation sidebar with intrinsic layout switching.
  *
  * When the component is narrow (inside the Every Layout sidebar flex container),
  * the inline sidebar is visible. When stacked (full viewport width), the inline
@@ -241,20 +261,35 @@ function buildCloseButton(label: string): HTMLElement {
  * Toggle the popover via the `open` attribute (set by the top-nav hamburger).
  */
 class SideDrawer extends HTMLElement {
+  /** Attributes to observe for popover toggling. */
   static observedAttributes = ["open"];
 
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
+
+  /** Reference to the popover panel element, null until first render. */
   #panel: HTMLDivElement | null = null;
 
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
   }
 
+  /**
+   * Whether the popover panel is currently open.
+   *
+   * @returns True when the `open` attribute is present
+   */
   get open(): boolean {
     return this.hasAttribute("open");
   }
 
+  /**
+   * Sets or removes the `open` attribute to control popover visibility.
+   *
+   * @param value - New open state
+   */
   set open(value: boolean) {
     if (value) {
       this.setAttribute("open", "");
@@ -263,15 +298,19 @@ class SideDrawer extends HTMLElement {
     }
   }
 
+  /** Renders content and attaches event handlers for closing the drawer. */
   connectedCallback(): void {
     this.#render();
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- querySelector returns the panel div we created
     this.#panel = this.#shadow.querySelector(".panel") as HTMLDivElement;
 
+    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: addEventListener callback must reference `this`
     this.#shadow.querySelector(".panel-close")?.addEventListener("click", () => {
       this.open = false;
     });
 
     // Light-dismiss: close when clicking the backdrop area (outside the drawer)
+    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: addEventListener callback must reference `this`
     this.#panel.addEventListener("click", (event) => {
       if (event.target === this.#panel) {
         this.open = false;
@@ -279,6 +318,7 @@ class SideDrawer extends HTMLElement {
     });
   }
 
+  /** Toggles popover visibility when the open attribute changes. */
   attributeChangedCallback(): void {
     if (this.#panel === null) return;
 
@@ -289,6 +329,7 @@ class SideDrawer extends HTMLElement {
     }
   }
 
+  /** Renders both the inline sidebar and popover panel into the shadow root. */
   #render(): void {
     const panelClose = buildCloseButton("Close menu");
     panelClose.classList.add("panel-close");

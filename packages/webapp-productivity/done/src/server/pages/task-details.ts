@@ -13,7 +13,9 @@ import { serializePageData } from "./layout.ts";
 
 /**
  * Renders the task detail page for a single task with its blocker summaries.
+ *
  * @param taskId - Task UUID from the route parameter
+ *
  * @returns HTML response, or 404 when the task does not exist
  */
 export async function taskDetailsPage(taskId: string): Promise<Response> {
@@ -23,18 +25,28 @@ export async function taskDetailsPage(taskId: string): Promise<Response> {
   }
 
   const blockerCandidates = await listTasksForBlockerPicker(taskId);
-  const blockerCandidatesById = Object.fromEntries(blockerCandidates.map((candidate) => [candidate.id, candidate]));
+  const blockerCandidatesById = Object.fromEntries(blockerCandidates.map(function toEntry(candidate) {
+    return [candidate.id, candidate];
+  }));
   const blockerSummaries = task.blockedBy
-    .map((blockerId) => blockerCandidatesById[blockerId])
-    .filter((candidate) => candidate !== undefined)
-    .map((candidate) => ({ id: candidate.id, title: candidate.title, status: candidate.status }));
+    .map(function lookupBlocker(blockerId) {
+      return blockerCandidatesById[blockerId];
+    })
+    .filter(function isDefined(candidate) {
+      return candidate !== undefined;
+    })
+    .map(function toSummary(candidate) {
+      return { id: candidate.id, title: candidate.title, status: candidate.status };
+    });
 
   const pageData = {
     task,
-    blockerCandidates: blockerCandidates.map((candidate) => ({
-      id: candidate.id,
-      title: candidate.title,
-    })),
+    blockerCandidates: blockerCandidates.map(function toMinimal(candidate) {
+      return {
+        id: candidate.id,
+        title: candidate.title,
+      };
+    }),
     blockerSummaries,
   };
 

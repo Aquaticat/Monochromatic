@@ -41,9 +41,13 @@ export type TableDisplayOptions = {
  * for failed runs instead of occupying its own column.
  * Missing fix scores distinguish between failed runs ("not run" — fix was
  * never attempted) and genuine data errors ("data error").
+ *
  * @param rows - data rows to render
+ *
  * @param caption - table caption describing the chart
+ *
  * @param options - column visibility overrides
+ *
  * @returns HTML string
  */
 export function renderDataTable(
@@ -125,8 +129,11 @@ export function renderDataTable(
  * Used when both Model and Probe columns are hidden, leaving only two
  * data fields per row. Cards display timestamp on top, score below,
  * matching the probe grid layout in run detail overlays.
+ *
  * @param rows - data rows to render
+ *
  * @param caption - accessible caption
+ *
  * @returns HTML string
  *
  * @example

@@ -19,7 +19,9 @@ import { createLruKeySet, } from '../../../../lruKeySet.ts';
  * Query all sync backends for a key and return typed results with priority info.
  *
  * @param backends - sync storage backends to query
+ *
  * @param key - lookup key
+ *
  * @returns results from all backends
  *
  * @example
@@ -51,6 +53,7 @@ function queryAllBackendsSync(
  * and evicts entries according to the configured policy.
  *
  * @param config - store configuration
+ *
  * @returns initialized sync Store
  *
  * @example
@@ -101,6 +104,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
     ?? [new Map<string, string>(),];
 
   const policies = config.eviction ?? [];
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- future-proofing: more eviction policies will be added
   const lruPolicy = policies.find(function isLru(p,) { return p.policy === 'lru'; },);
   const lru = lruPolicy !== undefined
     ? createLruKeySet(lruPolicy.maxSize,)
@@ -115,6 +119,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
     lossyForCircular,
     backends,
 
+    /** Number of entries in the primary backend, or `0` when unavailable. */
     get size(): number {
       const first = backends[0];
       if ('size' in first && typeof first.size === 'number') {

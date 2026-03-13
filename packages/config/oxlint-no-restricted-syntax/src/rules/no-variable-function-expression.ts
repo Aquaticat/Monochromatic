@@ -47,7 +47,8 @@ export const noVariableFunctionExpression: CreateOnceRule = {
         const declNode = node as Span & Record<string, unknown>;
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const declarations = declNode['declarations'] as
-          | Array<Record<string, unknown>>
+          | Record<string, unknown>[]
+          | null
           | undefined;
         if (declarations === undefined || declarations === null) {
           return;
@@ -55,7 +56,7 @@ export const noVariableFunctionExpression: CreateOnceRule = {
 
         for (const declarator of declarations) {
           // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-          const init = declarator['init'] as Record<string, unknown> | undefined;
+          const init = declarator['init'] as Record<string, unknown> | null | undefined;
           if (init === undefined || init === null) {
             continue;
           }

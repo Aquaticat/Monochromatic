@@ -10,38 +10,39 @@
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
-import { renderScatterChart, } from '../chart/scatter.ts';
+import { renderScatterChart, type ScatterPoint, } from '../chart/scatter.ts';
 import { vendorColor, } from '../data/model-colors.ts';
 import { iconDot, vendorIcon, } from '../data/model-icons.ts';
 
-import type { ScatterPoint, } from '../chart/scatter.ts';
 import type { ViewerEntry, } from '../data/viewer-types.ts';
 
 /**
  * Renders the by-probe view: one `<details>` per probe, with all models overlaid
  * and a per-model breakdown nested inside.
- * @param options - by-probe rendering options
- * @param options.entries - all history entries
+ *
+ *
+ * @param entries - all history entries
+ *
  * @returns HTML string
  */
 export function renderByProbe({ entries, }: {
   entries: readonly ViewerEntry[];
 }): string {
   /** All unique probe names across all entries */
-  const probeNames = [...new Set(entries.flatMap((entry) => Object.keys(entry.probeScores)))];
+  const probeNames = [...new Set(entries.flatMap(function probeKeys(entry): string[] { return Object.keys(entry.probeScores); }))];
 
   if (probeNames.length === 0) {
     return h({ tag: 'p', text: 'No probe data available.', });
   }
 
-  return probeNames.map((probe) => {
+  return probeNames.map(function renderProbeSection(probe): string {
     const points = buildCrossModelPoints(entries, probe);
     const legend = buildLegend(entries);
 
     // Per-model breakdown within this probe
-    const labels = [...new Set(entries.filter((entry) => probe in entry.probeScores).map((entry) => entry.label))];
-    const modelBreakdown = labels.map((label) => {
-      const modelEntries = entries.filter((entry) => entry.label === label);
+    const labels = [...new Set(entries.filter(function hasProbe(entry): boolean { return probe in entry.probeScores; }).map(function getLabel(entry): string { return entry.label; }))];
+    const modelBreakdown = labels.map(function renderModelSection(label): string {
+      const modelEntries = entries.filter(function matchLabel(entry): boolean { return entry.label === label; });
       /** OpenRouter model ID from the first entry for vendor icon/color */
       const openrouterId = modelEntries[0]?.model ?? '';
       const color = vendorColor(openrouterId);
@@ -84,17 +85,20 @@ export function renderByProbe({ entries, }: {
  *
  * Points are interleaved by timestamp order so the X axis represents
  * chronological run index across all models.
+ *
  * @param entries - all history entries
+ *
  * @param probe - probe name to filter on
+ *
  * @returns scatter points sorted by timestamp
  */
 function buildCrossModelPoints(
   entries: readonly ViewerEntry[],
   probe: string,
 ): readonly ScatterPoint[] {
-  const relevant = entries.filter((entry) => probe in entry.probeScores);
+  const relevant = entries.filter(function hasProbe(entry): boolean { return probe in entry.probeScores; });
 
-  return relevant.map((entry, index) => {
+  return relevant.map(function toPoint(entry, index): ScatterPoint {
     const score = entry.probeScores[probe] ?? 0;
     const pass2Score = entry.pass2Scores?.[probe];
     const color = vendorColor(entry.model);
@@ -124,11 +128,17 @@ function buildCrossModelPoints(
 
 /**
  * Builds scatter points for a single model within one probe.
+ *
  * @param entries - all history entries
+ *
  * @param probe - probe name
+ *
  * @param label - model label to filter on
+ *
  * @param openrouterId - OpenRouter model ID for vendor icon
+ *
  * @param color - point color
+ *
  * @returns scatter points for this model+probe combination
  */
 function buildSingleModelPoints(
@@ -138,9 +148,9 @@ function buildSingleModelPoints(
   openrouterId: string,
   color: string,
 ): readonly ScatterPoint[] {
-  const relevant = entries.filter((entry) => entry.label === label && probe in entry.probeScores);
+  const relevant = entries.filter(function matchLabelAndProbe(entry): boolean { return entry.label === label && probe in entry.probeScores; });
 
-  return relevant.map((entry, index) => {
+  return relevant.map(function toPoint(entry, index): ScatterPoint {
     const score = entry.probeScores[probe] ?? 0;
     const pass2Score = entry.pass2Scores?.[probe];
     const runId = `${label}-${probe}-${entry.timestamp}`;
@@ -169,7 +179,9 @@ function buildSingleModelPoints(
 
 /**
  * Renders a color legend mapping model colors to labels.
+ *
  * @param entries - history entries (to extract unique models)
+ *
  * @returns HTML string for the legend
  */
 function buildLegend(
@@ -183,7 +195,7 @@ function buildLegend(
     }
   }
 
-  const items = [...seen.entries()].map(([label, openrouterId]) => {
+  const items = [...seen.entries()].map(function buildItem([label, openrouterId]): string {
     const color = vendorColor(openrouterId);
     return h({
       tag: 'span',

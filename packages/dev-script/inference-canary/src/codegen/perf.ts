@@ -16,9 +16,7 @@
  * - At or above `slowMs`: score = 0.0 (maximum penalty)
  * - Between: linear decay
  */
-import { runInContainer, } from '../container.ts';
-
-import type { ContainerResult, } from '../container.ts';
+import { runInContainer, type ContainerResult, } from '../container.ts';
 
 /** Container result bundled with its wall-clock duration */
 export type TimedContainerResult = ContainerResult & {
@@ -47,9 +45,13 @@ export type PerfTestConfig = {
 
 /**
  * Runs a container and records wall-clock duration alongside the result.
+ *
  * @param source - TypeScript source to execute
+ *
  * @param input - stdin data
+ *
  * @param signal - abort signal
+ *
  * @returns container result with durationMs attached
  */
 export async function runInContainerTimed(
@@ -66,8 +68,11 @@ export async function runInContainerTimed(
  * Converts a timed container result into a 0-1 perf score.
  * Only checks that the process completed successfully (exit 0, no timeout).
  * Output correctness is the responsibility of the correctness container.
+ *
  * @param perfResult - timed container result from the perf test
+ *
  * @param config - timing thresholds
+ *
  * @returns perf score between 0 (crashed/slow) and 1 (fast)
  *
  * @example
@@ -87,8 +92,11 @@ export function computePerfScore(perfResult: TimedContainerResult, config: PerfT
 
 /**
  * Builds a perf diagnostics section for the fix prompt.
+ *
  * @param perfResult - timed container result
+ *
  * @param config - timing thresholds
+ *
  * @returns diagnostic text, or undefined if perf was acceptable
  */
 export function buildPerfDiagnostic(perfResult: TimedContainerResult, config: PerfTestConfig): string | undefined {

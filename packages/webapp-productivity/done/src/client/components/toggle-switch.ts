@@ -1,6 +1,7 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
 
+/** Shadow DOM styles for the `\<toggle-switch\>` component. */
 const STYLES = css(`
   :host {
     display: inline-flex;
@@ -45,23 +46,36 @@ const STYLES = css(`
 `);
 
 /**
- * `<toggle-switch>` -- boolean toggle with animated thumb.
+ * `\<toggle-switch\>` -- boolean toggle with animated thumb.
  * Reflects state via the `on` attribute and dispatches a `change` event on toggle.
  */
 class ToggleSwitch extends HTMLElement {
+  /** Attributes to observe for re-rendering. */
   static observedAttributes = ["on"];
 
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
 
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
   }
 
+  /**
+   * Whether the toggle is currently in the "on" state.
+   *
+   * @returns True when the `on` attribute is present
+   */
   get on(): boolean {
     return this.hasAttribute("on");
   }
 
+  /**
+   * Sets or removes the `on` attribute to reflect toggle state.
+   *
+   * @param value - New toggle state
+   */
   set on(value: boolean) {
     if (value) {
       this.setAttribute("on", "");
@@ -70,24 +84,30 @@ class ToggleSwitch extends HTMLElement {
     }
   }
 
+  /** Renders initial content and attaches the click handler. */
   connectedCallback(): void {
     this.#render();
     this.addEventListener("click", this.#handleClick);
   }
 
+  /** Removes the click handler on disconnect. */
   disconnectedCallback(): void {
     this.removeEventListener("click", this.#handleClick);
   }
 
+  /** Re-renders when observed attributes change. */
   attributeChangedCallback(): void {
     this.#render();
   }
 
+  /** Toggles state and dispatches a change event. */
+  // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow required to preserve `this` binding for addEventListener
   #handleClick = (): void => {
     this.on = !this.on;
     this.dispatchEvent(new CustomEvent("change", { detail: { on: this.on }, bubbles: true }));
   };
 
+  /** Renders the track and thumb into the shadow root. */
   #render(): void {
     const isOn = this.on;
     this.#shadow.replaceChildren(

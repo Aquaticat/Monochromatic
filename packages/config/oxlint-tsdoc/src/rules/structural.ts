@@ -2,6 +2,7 @@ import type {
   Comment,
   Context,
   CreateOnceRule,
+  Fixer,
   Span,
   VisitorWithHooks,
 } from '@oxlint/plugins';
@@ -210,6 +211,7 @@ export const noMultiAsterisks: CreateOnceRule = {
 export const tagLines: CreateOnceRule = {
   meta: {
     type: 'layout',
+    fixable: 'whitespace',
     docs: {
       description: 'Enforce consistent spacing between TSDoc tags.',
       recommended: true,
@@ -226,6 +228,13 @@ export const tagLines: CreateOnceRule = {
       if (lines.length < minContentLines) {
         return;
       }
+
+      /**
+       * Indentation for blank comment lines: spaces + `*`.
+       * Matches the opener's `*` column (column of `/*` + 1).
+       */
+      const blankLineIndent = ' '.repeat(comment.loc.start.column + 1);
+      const blankCommentLine = `${blankLineIndent}*`;
 
       // Check each content line (skip opener and closer)
       const contentLines = lines.slice(1, -1);
@@ -246,12 +255,34 @@ export const tagLines: CreateOnceRule = {
         if (prevTrimmed.length > 0) {
           const tagMatch = trimmed.match(/^(@\w+)/);
           const tag = tagMatch !== null ? tagMatch[1] ?? '@unknown' : '@unknown';
+
+          /**
+           * Line number of the tag line in the source file (1-based).
+           * `index` is 0-based within contentLines; +1 for the opener line, +1 for 1-based.
+           */
+          const tagLineNumber = comment.loc.start.line + index + 1;
+
           context.report({
             loc: {
-              start: { line: comment.loc.start.line + index + 1, column: 0 },
+              start: { line: tagLineNumber, column: 0 },
             },
             messageId: 'noBlankBefore',
             data: { tag },
+            fix(fixer: Fixer) {
+              /**
+               * Insert a blank comment line (`\n *`) just before the tag line.
+               * Use `getIndexFromLoc` to find the byte offset of the tag line start,
+               * then insert the blank line text ending with a newline.
+               */
+              const insertOffset = context.sourceCode.getIndexFromLoc({
+                line: tagLineNumber,
+                column: 0,
+              });
+              return fixer.insertTextBeforeRange(
+                [insertOffset, insertOffset],
+                `${blankCommentLine}\n`,
+              );
+            },
           });
         }
       });

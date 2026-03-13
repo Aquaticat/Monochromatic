@@ -25,8 +25,8 @@ type StopInput = HookInputBase & {
    */
   stop_hook_active: boolean;
 
-  /** Text content of Claude's final response. */
-  last_assistant_message: string;
+  /** Text content of Claude's final response. May be absent if the stop was triggered before any message was generated. */
+  last_assistant_message?: string;
 };
 
 /**
@@ -101,8 +101,8 @@ type SubagentStopInput = HookInputBase & {
    */
   agent_transcript_path: string;
 
-  /** Text content of the subagent's final response. */
-  last_assistant_message: string;
+  /** Text content of the subagent's final response. May be absent if the stop was triggered before any message was generated. */
+  last_assistant_message?: string;
 };
 
 /**

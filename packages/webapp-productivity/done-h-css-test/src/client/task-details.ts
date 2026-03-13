@@ -10,9 +10,11 @@ import { api } from "./lib/api.ts";
 import { injectCSS } from "./lib/inject-css.ts";
 import { globalStyles } from "./styles.ts";
 import { readPageData } from "./lib/page-data.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/side-drawer.ts";
 import type { TaskDetail } from "./components/task-detail.ts";
 // Side-effect import: registers the `<task-detail>` custom element
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/task-detail.ts";
 
 /** Minimal task info shown in the blocker picker dropdown. */
@@ -38,9 +40,9 @@ type TaskDetailsPageData = {
 injectCSS(globalStyles);
 
 const pageData = readPageData<TaskDetailsPageData>();
-const task = pageData.task;
+const {task} = pageData;
 
-const appElement = document.getElementById("app");
+const appElement = document.querySelector("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
@@ -62,7 +64,7 @@ detail.addEventListener("action", async (event) => {
 
   switch (action) {
     case "close":
-      window.location.href = "/";
+      globalThis.location.href = "/";
       break;
     case "save": {
       const metadata = detail.getMetadata();
@@ -80,24 +82,24 @@ detail.addEventListener("action", async (event) => {
         method: "PUT",
         body: JSON.stringify(payload),
       });
-      window.location.reload();
+      globalThis.location.reload();
       break;
     }
     case "start":
       await api(`/api/tasks/${task.id}/start`, { method: "POST" });
-      window.location.reload();
+      globalThis.location.reload();
       break;
     case "stop":
       await api(`/api/tasks/${task.id}/stop`, { method: "POST" });
-      window.location.reload();
+      globalThis.location.reload();
       break;
     case "complete":
       await api(`/api/tasks/${task.id}/complete`, { method: "POST" });
-      window.location.href = "/";
+      globalThis.location.href = "/";
       break;
     case "delete":
       await api(`/api/tasks/${task.id}`, { method: "DELETE" });
-      window.location.href = "/";
+      globalThis.location.href = "/";
       break;
   }
 });

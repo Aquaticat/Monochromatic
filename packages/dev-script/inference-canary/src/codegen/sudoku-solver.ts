@@ -60,18 +60,20 @@ const PROMPT = [
 
 //endregion Prompt
 
-/** {@inheritDoc Probe} */
+/**
+ * {@inheritDoc Probe}
+ */
 export const sudokuSolver = createCodeGenProbe({
   name: 'sudoku-solver',
   testInput: NORMAL_INPUT,
   prompt: PROMPT,
-  verify: (result) => ({ correctness: verifyNormal(result.stdout), }),
+  verify: function verifyNormalResult(result): { correctness: number; } { return { correctness: verifyNormal(result.stdout), }; },
   additionalRuns: [
     {
       name: '--all mode',
       input: ALL_INPUT,
-      transformSource: (source) => `process.argv.push("--all");\n${source}`,
-      verify: (result) => ({ correctness: verifyAll(result.stdout), }),
+      transformSource: function prependAllFlag(source): string { return `process.argv.push("--all");\n${source}`; },
+      verify: function verifyAllResult(result): { correctness: number; } { return { correctness: verifyAll(result.stdout), }; },
     },
   ],
 });

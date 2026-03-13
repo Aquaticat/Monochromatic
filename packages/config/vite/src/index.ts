@@ -1,5 +1,5 @@
-import {
-  type UserConfigFnObject,
+import type {
+  UserConfigFnObject,
 } from 'vite';
 
 // Import from internal modules
@@ -9,17 +9,23 @@ import { createModeConfig, } from './config-modifiers.ts';
 //region Public API -- Exported configuration factories
 
 /**
- @remarks
- Use it like this:
-
-```ts
- import { getShared, UserConfigFnObject } from '@monochromatic-dev/config-vite/.ts';
-
- export default getShared(import.meta.dirname) satisfies UserConfigFnObject;
-```
+ * Returns a Vite config function with mode-based enhancements applied
+ * to the shared base configuration.
+ *
+ * @param configDir - absolute path to the consuming package directory
+ *
+ * @returns Vite config function that applies mode-specific transformations
+ *
+ * @remarks
+ * Use it like this:
+ *
+ * ```ts
+ * import { getShared, UserConfigFnObject } from '\@monochromatic-dev/config-vite/.ts';
+ *
+ * export default getShared(import.meta.dirname) satisfies UserConfigFnObject;
+ * ```
  */
-export const getShared = (configDir: string,): UserConfigFnObject =>
-  createModeConfig(configDir, createBaseConfig,);
+export function getShared(configDir: string,): UserConfigFnObject { return createModeConfig(configDir, createBaseConfig,) }
 
 //endregion Public API
 

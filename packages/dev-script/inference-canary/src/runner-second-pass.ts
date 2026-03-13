@@ -22,11 +22,17 @@ export type SecondPassResult = {
 /**
  * Runs the second pass: sends the model its code + linter/type-checker diagnostics
  * and scores whether it can fix the issues in one follow-up turn.
+ *
  * @param probe - probe that produced the first-pass response
+ *
  * @param config - runner configuration
+ *
  * @param client - OpenAI SDK client (reused from first pass)
+ *
  * @param firstResponse - raw model output from the first pass
+ *
  * @param context - score context for artifact organization (includes abort signal)
+ *
  * @returns second-pass result with score, completion data, and fix prompt; or undefined if skipped
  */
 export async function runSecondPass(

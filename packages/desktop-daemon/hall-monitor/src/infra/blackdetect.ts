@@ -5,8 +5,11 @@ import { once } from "node:events";
  * Detects whether a JPEG frame is essentially all-black (e.g. webcam privacy
  * cover is down) using ffmpeg's blackdetect filter.
  * Thresholds: 98% of pixels must be below 10% luminance to count as black.
+ *
  * @param jpegBuf - raw JPEG image bytes to analyze
+ *
  * @returns `true` when the frame is considered black
+ *
  * @example
  * ```ts
  * if (await isBlackFrame(webcamBuffer)) {
@@ -24,9 +27,9 @@ export async function isBlackFrame(jpegBuf: Buffer): Promise<boolean> {
     ],
     { stdio: ["pipe", "pipe", "pipe"] },
   );
-  proc.stdin!.end(jpegBuf);
+  proc.stdin.end(jpegBuf);
   const stderrChunks: Buffer[] = [];
-  proc.stderr!.on("data", function collectChunk(chunk: Buffer) { stderrChunks.push(chunk); });
+  proc.stderr.on("data", function collectChunk(chunk: Buffer) { stderrChunks.push(chunk); });
   await once(proc, "close");
   const stderr = Buffer.concat(stderrChunks).toString("utf8");
   // blackdetect emits "black_start:..." lines on stderr when a black frame is found

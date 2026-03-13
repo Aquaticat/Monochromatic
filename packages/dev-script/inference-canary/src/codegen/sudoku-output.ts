@@ -9,7 +9,9 @@
 /**
  * Splits combined output into per-puzzle result sections.
  * Puzzles are separated by a line matching one or more dashes (e.g. "---").
+ *
  * @param output - raw stdout from the container
+ *
  * @returns array of trimmed result sections, one per puzzle
  *
  * @example
@@ -18,5 +20,5 @@
  * ```
  */
 export function splitOutputSections(output: string): string[] {
-  return output.trim().split(/\n-+\n/).map((puzzleSection) => puzzleSection.trim());
+  return output.trim().split(/\n-+\n/).map(function trimSection(puzzleSection): string { return puzzleSection.trim(); });
 }

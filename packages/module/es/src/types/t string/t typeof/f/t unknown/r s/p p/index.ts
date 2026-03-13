@@ -6,7 +6,9 @@ import type { $ as TypeOf, } from '../../../../t/index.ts';
  * providing more granular type information for runtime type checking and debugging.
  *
  * @param obj - Value to determine type for
+ *
  * @returns String literal representing specific type of input value
+ *
  * @example
  * ```ts
  * typeOf(null); // 'null'

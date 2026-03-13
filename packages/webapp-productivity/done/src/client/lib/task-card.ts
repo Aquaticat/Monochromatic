@@ -1,5 +1,5 @@
 /**
- * `<task-card>` web component and its factory function `createTaskCard()`.
+ * `\<task-card\>` web component and its factory function `createTaskCard()`.
  *
  * Unlike other web components that live in `components/`, task-card is in `lib/`
  * because it's always created programmatically (never placed in server HTML).
@@ -18,7 +18,7 @@ import type { Task } from "../../lib/types.ts";
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
 
-/** Configuration for a `<task-card>` instance, passed via `createTaskCard`. */
+/** Configuration for a `\<task-card\>` instance, passed via `createTaskCard`. */
 type TaskCardOptions = {
   /** Whether to show a red "blocked" badge chip. */
   showBlockedBadge?: boolean;
@@ -28,32 +28,48 @@ type TaskCardOptions = {
   onToggleComplete?: (taskId: string) => Promise<void>;
 };
 
+/** Seconds per minute. */
+const SECONDS_PER_MINUTE = 60;
+
+/** Seconds per hour. */
+const SECONDS_PER_HOUR = 3_600;
+
+/** Hours per day. */
+const HOURS_PER_DAY = 24;
+
+/** Milliseconds per second. */
+const MS_PER_SECOND = 1_000;
+
 /**
  * Formats a duration in seconds as a human-readable string (e.g. "1h30min15s").
+ *
  * @param seconds - Non-negative duration in seconds
+ *
+ * @returns Formatted duration string
  */
 function formatTrackedTime(seconds: number): string {
   const totalSeconds = Math.max(0, Math.floor(seconds));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const remainingSeconds = totalSeconds % 60;
+  const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR);
+  const minutes = Math.floor((totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE);
+  const remainingSeconds = totalSeconds % SECONDS_PER_MINUTE;
 
   if (hours > 0) {
-    const dayHours = Math.floor(hours / 24);
-    const remainHours = hours % 24;
+    const dayHours = Math.floor(hours / HOURS_PER_DAY);
+    const remainHours = hours % HOURS_PER_DAY;
     if (dayHours > 0) {
-      return `${dayHours}d${remainHours}h${minutes}min${remainingSeconds}s`;
+      return `${String(dayHours)}d${String(remainHours)}h${String(minutes)}min${String(remainingSeconds)}s`;
     }
-    return `${hours}h${minutes}min${remainingSeconds}s`;
+    return `${String(hours)}h${String(minutes)}min${String(remainingSeconds)}s`;
   }
 
   if (minutes > 0) {
-    return `${minutes}min${remainingSeconds}s`;
+    return `${String(minutes)}min${String(remainingSeconds)}s`;
   }
 
-  return `${totalSeconds}s`;
+  return `${String(totalSeconds)}s`;
 }
 
+/** Shadow DOM styles for the `\<task-card\>` component. */
 const TASK_CARD_STYLES = css(`
   :host {
     @apply --flex-column;
@@ -112,7 +128,11 @@ const TASK_CARD_STYLES = css(`
 
 /**
  * Collects all metadata chip labels for a task (tags, tracked time, location, etc.).
- * Each entry becomes a `<span class="chip">` in the card's shadow DOM.
+ * Each entry becomes a `\<span class="chip"\>` in the card's shadow DOM.
+ *
+ * @param task - Task whose metadata to extract
+ *
+ * @returns Array of chip label strings
  */
 function buildChipTexts(task: Task): string[] {
   const chips: string[] = [];
@@ -137,7 +157,7 @@ function buildChipTexts(task: Task): string[] {
     chips.push(`reminders: ${task.reminders[0]}`);
   }
   if (task.blockedBy.length > 0) {
-    chips.push(`blockedBy: ${task.blockedBy.length}`);
+    chips.push(`blockedBy: ${String(task.blockedBy.length)}`);
   } else {
     chips.push("blockedBy: none");
   }
@@ -146,14 +166,20 @@ function buildChipTexts(task: Task): string[] {
 }
 
 /**
- * `<task-card>` -- displays a task as a clickable card with checkbox, title, and metadata chips.
+ * `\<task-card\>` -- displays a task as a clickable card with checkbox, title, and metadata chips.
  * Created programmatically via `createTaskCard()`, not placed in server HTML.
  */
 class TaskCard extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
+
+  /** Currently displayed task, or null before configuration. */
   #task: Task | null = null;
+
+  /** Current rendering options, or null before configuration. */
   #options: TaskCardOptions | null = null;
 
+  /** Initializes the shadow root for encapsulated rendering. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
@@ -161,7 +187,9 @@ class TaskCard extends HTMLElement {
 
   /**
    * Sets the task data and rendering options, then triggers a full render.
+   *
    * @param task - Task to display
+   *
    * @param options - Callbacks and display flags
    */
   configure(task: Task, options: TaskCardOptions): void {
@@ -173,24 +201,31 @@ class TaskCard extends HTMLElement {
   /**
    * Finds a chip element whose text starts with the given prefix.
    * Used by the in-progress timer to update the "tracked:" chip live.
+   *
    * @param prefix - Text prefix to match (e.g. `"tracked:"`)
+   *
+   * @returns Matching chip element, or null if not found
    */
   getChipElement(prefix: string): HTMLSpanElement | null {
     for (const chip of this.#shadow.querySelectorAll(".chip")) {
-      if (chip.textContent?.startsWith(prefix)) {
+      if (chip.textContent !== null && chip.textContent !== undefined && chip.textContent.startsWith(prefix)) {
+        // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- querySelectorAll(".chip") returns span elements created by buildChipTexts
         return chip as HTMLSpanElement;
       }
     }
     return null;
   }
 
+  /** Renders the full card content into the shadow root. */
   #render(): void {
     const task = this.#task;
     const options = this.#options;
     if (task === null || options === null) return;
 
     const chipTexts = buildChipTexts(task);
-    const chipElements: HTMLElement[] = chipTexts.map((text) => h({ tag: "span", class: "chip", text }));
+    const chipElements: HTMLElement[] = chipTexts.map(function createChip(text) {
+      return h({ tag: "span", class: "chip", text });
+    });
     if (options.showBlockedBadge === true) {
       chipElements.push(h({ tag: "span", class: "chip blocked", text: "blocked" }));
     }
@@ -207,7 +242,8 @@ class TaskCard extends HTMLElement {
           attrs: { title: "Complete task" },
           children: [h({ tag: "span", class: "checkbox-box" })],
           on: {
-            click: async (event) => {
+            // oxlint-disable-next-line @typescript-eslint/no-misused-promises -- DOM event handler; fire-and-forget async
+            click: async function onCheckboxClick(event) {
               event.stopPropagation();
               if (options.onToggleComplete !== undefined) {
                 await options.onToggleComplete(task.id);
@@ -218,7 +254,7 @@ class TaskCard extends HTMLElement {
         h({ tag: "span", class: "title", text: task.title }),
       ],
       on: {
-        click: () => {
+        click: function onRowClick() {
           options.onOpen(task.id);
         },
       },
@@ -233,11 +269,16 @@ class TaskCard extends HTMLElement {
 customElements.define("task-card", TaskCard);
 
 /**
- * Factory: creates and configures a `<task-card>` element ready for DOM insertion.
+ * Factory: creates and configures a `\<task-card\>` element ready for DOM insertion.
+ *
  * @param task - Task data to display
+ *
  * @param options - Callbacks for open/complete interactions
+ *
+ * @returns Configured TaskCard element
  */
 export function createTaskCard(task: Task, options: TaskCardOptions): TaskCard {
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- custom element registered as "task-card" returns TaskCard
   const card = document.createElement("task-card") as TaskCard;
   card.configure(task, options);
   return card;
@@ -246,12 +287,16 @@ export function createTaskCard(task: Task, options: TaskCardOptions): TaskCard {
 /**
  * Formats tracked time including elapsed seconds from a running timer.
  * If no timer is active, returns the static `trackedTime` formatted.
+ *
+ * @param task - Task with optional running timer
+ *
+ * @returns Formatted duration string
  */
 export function formatRunningTrackedTime(task: Task): string {
   if (task.timerStartedAt === null) {
     return formatTrackedTime(task.trackedTime);
   }
 
-  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - Date.parse(task.timerStartedAt)) / 1000));
+  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - Date.parse(task.timerStartedAt)) / MS_PER_SECOND));
   return formatTrackedTime(task.trackedTime + elapsedSeconds);
 }

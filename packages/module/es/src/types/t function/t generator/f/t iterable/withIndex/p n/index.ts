@@ -11,6 +11,7 @@ import type { $ as MaybeAsyncIterable, } from '@_/types/t object/t iterable/t/in
  * such as processing arrays while tracking indices, or creating indexed views of data.
  *
  * @param myIterable - The iterable to be enumerated with indices
+ *
  * @returns Generator yielding objects with `element` and `index` properties
  *
  * @example

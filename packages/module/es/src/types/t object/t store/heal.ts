@@ -4,7 +4,9 @@ import type { BackendResult, } from './consensus.ts';
  * Heal async backends to the canonical serialized value by deleting or setting mismatches.
  *
  * @param results - all backend results
+ *
  * @param canonicalSerialized - canonical serialized value (or undefined)
+ *
  * @param key - key to heal
  *
  * @example
@@ -37,7 +39,9 @@ export async function healBackends(
  * Heal sync backends to the canonical serialized value by deleting or setting mismatches.
  *
  * @param results - all backend results
+ *
  * @param canonicalSerialized - canonical serialized value (or undefined)
+ *
  * @param key - key to heal
  *
  * @example

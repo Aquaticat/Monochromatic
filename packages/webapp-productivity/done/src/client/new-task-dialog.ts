@@ -1,7 +1,7 @@
 /**
  * New-task panel module for the Inbox page.
  *
- * The FAB button transforms into a fixed panel containing `<task-detail>`
+ * The FAB button transforms into a fixed panel containing `\<task-detail\>`
  * in create mode. Uses the Popover API for top-layer stacking without a
  * blocking backdrop, so the side-drawer remains visible and interactive.
  *
@@ -13,7 +13,7 @@ import type { Task } from "../lib/types.ts";
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { api } from "./lib/api.ts";
 import type { TaskDetail } from "./components/task-detail.ts";
-// Side-effect import: registers the `<task-detail>` custom element
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: registers the task-detail custom element
 import "./components/task-detail.ts";
 
 /** Blank task template used when creating a new task. */
@@ -38,7 +38,7 @@ const emptyTask: Task = {
   updatedAt: "",
 };
 
-/** Return value of {@link createNewTaskDialog}. */
+/** Return value of `createNewTaskDialog`. */
 type NewTaskDialog = {
   /** Fixed panel element to append to the document body. */
   panel: HTMLElement;
@@ -57,6 +57,7 @@ type NewTaskDialog = {
  * @returns panel and fab elements ready for DOM insertion
  */
 export function createNewTaskDialog(): NewTaskDialog {
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- custom element registered as "task-detail" returns TaskDetail
   const detail = document.createElement("task-detail") as TaskDetail;
 
   const panel = h({ tag: "div", class: "new-task-panel" });
@@ -74,8 +75,10 @@ export function createNewTaskDialog(): NewTaskDialog {
     }
   }
 
-  detail.addEventListener("action", async (event) => {
+  // oxlint-disable-next-line @typescript-eslint/no-misused-promises -- addEventListener does not await the handler
+  detail.addEventListener("action", async function onAction(event) {
     if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent for 'action' listener");
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload
     const { action, title, description } = event.detail as {
       action: string;
       title: string;
@@ -103,7 +106,7 @@ export function createNewTaskDialog(): NewTaskDialog {
           complexity: metadata.complexity,
         }),
       });
-      window.location.reload();
+      globalThis.location.reload();
     }
   });
 
@@ -118,8 +121,9 @@ export function createNewTaskDialog(): NewTaskDialog {
     // Restart the expand animation by toggling the data attribute
     delete panel.dataset["animating"];
     panel.showPopover();
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function focusTitleInput() {
       panel.dataset["animating"] = "";
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- shadowRoot querySelector returns the input we created
       const titleInput = detail.shadowRoot?.querySelector(".title-input") as HTMLInputElement | null;
       titleInput?.focus();
     });

@@ -14,7 +14,7 @@ export const IMAGES_DIR = join(DATA_DIR, 'images');
 export const VMS_DIR = join(DATA_DIR, 'vms');
 
 /** Default VM memory allocation in MiB. Making it large for builds. */
-export const DEFAULT_MEMORY_MIB = 8192;
+export const DEFAULT_MEMORY_MIB = 8_192;
 
 /** Default number of virtual CPUs. */
 export const DEFAULT_VCPUS = 4;
@@ -32,6 +32,7 @@ export const LIBVIRT_URI = 'qemu:///session';
  * Validates a VM name contains only safe characters.
  *
  * @param name - VM name to validate
+ *
  * @throws Error when name contains invalid characters
  *
  * @example

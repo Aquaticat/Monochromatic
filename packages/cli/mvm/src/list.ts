@@ -17,7 +17,7 @@ export type VmInfo = { name: string; state: string };
  * // [{ name: 'dev-01', state: 'running' }, { name: 'dev-02', state: 'shut off' }]
  * ```
  */
-export async function list(): Promise<ReadonlyArray<VmInfo>> {
+export async function list(): Promise<readonly VmInfo[]> {
   const rl = tagged({ tag: list.name, l, });
   rl.debug('querying virsh for all VMs');
 
@@ -27,9 +27,11 @@ export async function list(): Promise<ReadonlyArray<VmInfo>> {
   const vms: VmInfo[] = [];
 
   for (const line of lines) {
-    const match = /\s+(?:\d+|-)\s+(\S+)\s+(.+)/.exec(line);
-    if (match !== null && match[1]!.startsWith(VM_PREFIX)) {
-      vms.push({ name: match[1]!.slice(VM_PREFIX.length), state: match[2]!.trim(), });
+    const match = line.match(/\s+(?:\d+|-)\s+(\S+)\s+(.+)/);
+    const vmName = match?.[1];
+    const vmState = match?.[2];
+    if (vmName !== undefined && vmState !== undefined && vmName.startsWith(VM_PREFIX)) {
+      vms.push({ name: vmName.slice(VM_PREFIX.length), state: vmState.trim(), });
     }
   }
 

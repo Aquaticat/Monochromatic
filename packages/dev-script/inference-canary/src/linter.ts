@@ -66,7 +66,9 @@ export type LintResult = {
  * runs for debugging (gitignored, do not accumulate meaningfully).
  *
  * @param source - TypeScript source code to analyze
+ *
  * @param meta - artifact metadata for directory naming and traceability
+ *
  * @returns combined lint + type-check results
  */
 export async function lintSource(
@@ -85,7 +87,7 @@ export async function lintSource(
   const rawParts = [
     oxlintResult.rawOutput.length > 0 ? `=== oxlint ===\n${oxlintResult.rawOutput}` : '',
     typeResult.rawOutput.length > 0 ? `=== tsgo ===\n${typeResult.rawOutput}` : '',
-  ].filter((part) => part.length > 0);
+  ].filter(function hasContent(part): boolean { return part.length > 0; });
 
   return {
     severity: { errors: oxlintResult.errors, warnings: oxlintResult.warnings, },

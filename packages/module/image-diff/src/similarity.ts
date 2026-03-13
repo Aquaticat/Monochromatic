@@ -3,8 +3,11 @@
  * Voyage AI embeddings are unit-normalized, so the dot product equals cosine similarity.
  *
  * @param a - first embedding vector
+ *
  * @param b - second embedding vector
+ *
  * @returns dot product (cosine similarity for unit vectors)
+ *
  * @throws when vectors have different lengths
  *
  * @example
@@ -13,7 +16,7 @@
  * const same = dotProduct([1, 0], [1, 0]); // 1
  * ```
  */
-export function dotProduct(a: ReadonlyArray<number>, b: ReadonlyArray<number>): number {
+export function dotProduct(a: readonly number[], b: readonly number[]): number {
   if (a.length !== b.length) {
     throw new Error(`Vector length mismatch: ${String(a.length)} vs ${String(b.length)}`);
   }
@@ -32,8 +35,11 @@ export function dotProduct(a: ReadonlyArray<number>, b: ReadonlyArray<number>): 
  * This function handles arbitrary vectors by normalizing them first.
  *
  * @param a - first embedding vector
+ *
  * @param b - second embedding vector
+ *
  * @returns cosine similarity between -1 and 1
+ *
  * @throws when vectors have different lengths or either has zero magnitude
  *
  * @example
@@ -41,7 +47,7 @@ export function dotProduct(a: ReadonlyArray<number>, b: ReadonlyArray<number>): 
  * const sim = cosineSimilarity([3, 4], [4, 3]); // ~0.96
  * ```
  */
-export function cosineSimilarity(a: ReadonlyArray<number>, b: ReadonlyArray<number>): number {
+export function cosineSimilarity(a: readonly number[], b: readonly number[]): number {
   if (a.length !== b.length) {
     throw new Error(`Vector length mismatch: ${String(a.length)} vs ${String(b.length)}`);
   }

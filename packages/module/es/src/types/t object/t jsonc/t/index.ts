@@ -1,5 +1,6 @@
 import type { JsonValue, } from 'type-fest';
 
+/** Branded string type for JSONC fragments (partial JSONC content). */
 export type FragmentStringJsonc = string & { __brand: { jsonc: 'fragment'; }; };
 
 /**
@@ -65,6 +66,7 @@ export type RecordKey = StringBase & ValueBase;
  */
 export type RecordBase = { value: Map<RecordKey, Value>; };
 
+/** Wrapper for plain JSON values that passed through without JSONC-specific parsing. */
 export type PlainJsonBase = {
   json: JsonValue;
 };
@@ -84,13 +86,20 @@ export type Value =
   )
   & ValueBase;
 
+/** Union of all parsed JSONC value types. */
 export type $ = Value;
 
-// Narrowed variant aliases for ergonomic typing of specific JSONC node kinds
+/** Narrowed JSONC string node. */
 export type String = StringBase & ValueBase;
+/** Narrowed JSONC number node. */
 export type Number = NumberBase & ValueBase;
+/** Narrowed JSONC boolean node. */
 export type Boolean = BooleanBase & ValueBase;
+/** Narrowed JSONC null node. */
 export type Null = NullBase & ValueBase;
+/** Narrowed JSONC array node. */
 export type Array = ArrayBase & ValueBase;
+/** Narrowed JSONC record (object) node. */
 export type Record = RecordBase & ValueBase;
+/** Narrowed JSONC plain JSON node. */
 export type PlainJson = PlainJsonBase & ValueBase;

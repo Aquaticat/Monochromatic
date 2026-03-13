@@ -122,7 +122,7 @@ console.error(`[validate] parallel CPU: ${parallelMs.toFixed(1)}ms`);
 
 /** Allocation size in megabytes */
 const ALLOC_MB = 256;
-const ALLOC_BYTES = ALLOC_MB * 1024 * 1024;
+const ALLOC_BYTES = ALLOC_MB * 1_024 * 1_024;
 console.error(`[validate] memory: allocating ${String(ALLOC_MB)}MB...`);
 
 const memStart = performance.now();
@@ -161,7 +161,7 @@ for (let fileIndex = 0; fileIndex < IO_FILE_COUNT; fileIndex++) {
 }
 const ioMs = performance.now() - ioStart;
 await rm(IO_DIR, { recursive: true, force: true });
-console.error(`[validate] IO: ${ioMs.toFixed(1)}ms (${(IO_FILE_COUNT / ioMs * 1000).toFixed(0)} files/sec)`);
+console.error(`[validate] IO: ${ioMs.toFixed(1)}ms (${(IO_FILE_COUNT / ioMs * 1_000).toFixed(0)} files/sec)`);
 
 //endregion IO benchmark
 
@@ -186,24 +186,24 @@ const result = {
   serial: {
     iterations: SERIAL_HASH_COUNT,
     ms: round1(serialMs),
-    hashesPerSec: Math.round(SERIAL_HASH_COUNT / serialMs * 1000),
+    hashesPerSec: Math.round(SERIAL_HASH_COUNT / serialMs * 1_000),
   },
   parallel: {
     workers: WORKER_COUNT,
     hashesPerWorker: HASHES_PER_WORKER,
     totalHashes: WORKER_COUNT * HASHES_PER_WORKER,
     ms: round1(parallelMs),
-    hashesPerSec: Math.round((WORKER_COUNT * HASHES_PER_WORKER) / parallelMs * 1000),
+    hashesPerSec: Math.round((WORKER_COUNT * HASHES_PER_WORKER) / parallelMs * 1_000),
   },
   memory: {
     allocatedMB: ALLOC_MB,
     ms: round1(memMs),
-    mbPerSec: Math.round(ALLOC_MB / memMs * 1000),
+    mbPerSec: Math.round(ALLOC_MB / memMs * 1_000),
   },
   io: {
     fileCount: IO_FILE_COUNT,
     ms: round1(ioMs),
-    filesPerSec: Math.round(IO_FILE_COUNT / ioMs * 1000),
+    filesPerSec: Math.round(IO_FILE_COUNT / ioMs * 1_000),
   },
 };
 

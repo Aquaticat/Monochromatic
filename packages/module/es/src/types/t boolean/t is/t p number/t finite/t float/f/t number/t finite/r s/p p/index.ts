@@ -8,11 +8,12 @@ import type { $ as Finite, } from '@_/types/t number/t finite/t/index.ts';
  * distinguishing floats from integers within the finite number domain.
  *
  * @param value - Finite number to check for floating-point representation
+ *
  * @returns Type predicate indicating whether value has fractional component
  *
  * @example
  * ```ts
- * import { types } from '@monochromatic-dev/module-es';
+ * import { types } from '\@monochromatic-dev/module-es';
  *
  * const $ = types.boolean.is.p.number.finite.float.f.number.finite.r.s.p.p.$;
  *

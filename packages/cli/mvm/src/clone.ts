@@ -20,7 +20,12 @@ import { defineVm, startVm, waitForGuestAgent } from './virsh.ts';
  * For Windows VMs, hostname is set via guest agent after boot instead of
  * cloud-init since Windows does not support the NoCloud datasource.
  *
- * @param options - Source VM name and destination VM name
+ * @param destination - Destination VM name
+ *
+ * @param source - Source VM name to clone from
+ *
+ * @returns Resolves when the clone is ready
+ *
  * @throws Error when source disk is missing or clone fails
  *
  * @example

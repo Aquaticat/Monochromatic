@@ -17,13 +17,15 @@ export type EventKind = 'source' | 'protected' | 'ignore';
  * Derives the unique set of parent directories that need `fs.watch` watchers,
  * covering every tracked read path, every tracked write path (for protection),
  * and the config file itself.
+ *
  * @param configPath - Absolute path to the config file
+ *
  * @returns Set of absolute directory paths to watch
  */
 export function watchDirs(configPath: string): Set<string> {
   /** All paths that need monitoring: reads, writes, and the config */
   const allPaths = [...reads, ...writes, resolve(configPath)];
-  return new Set(allPaths.map((filePath) => dirname(filePath)));
+  return new Set(allPaths.map(function toDir(filePath): string { return dirname(filePath); }));
 }
 
 /**
@@ -33,10 +35,14 @@ export function watchDirs(configPath: string): Set<string> {
  * - `ignore`: unrelated file or our own write echo -- skip
  *
  * For write paths, uses `stat()` to compare the file's mtime against our
- * recorded write timestamp. If mtime > our timestamp, the edit is external.
+ * recorded write timestamp. If mtime \> our timestamp, the edit is external.
+ *
  * @param filename - Filename from the fs.watch event (relative to watched dir)
+ *
  * @param watchedDir - Absolute path of the directory being watched
+ *
  * @param configPath - Absolute path of the config file
+ *
  * @returns Classification of the event
  */
 export async function classifyEvent(
@@ -82,9 +88,13 @@ export async function classifyEvent(
 
 /**
  * Backwards-compatible wrapper that returns true for any actionable event.
+ *
  * @param filename - Filename from the fs.watch event (relative to watched dir)
+ *
  * @param watchedDir - Absolute path of the directory being watched
+ *
  * @param configPath - Absolute path of the config file
+ *
  * @returns Whether this event should trigger a re-run
  */
 export async function shouldTrigger(

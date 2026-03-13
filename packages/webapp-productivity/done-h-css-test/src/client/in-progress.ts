@@ -11,7 +11,9 @@ import { injectCSS } from "./lib/inject-css.ts";
 import { globalStyles } from "./styles.ts";
 import { readPageData } from "./lib/page-data.ts";
 import { createTaskCard, formatRunningTrackedTime } from "./lib/task-card.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/side-drawer.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/top-nav.ts";
 
 /** Shape of the JSON blob embedded in the in-progress page by the server. */
@@ -22,7 +24,7 @@ type InProgressPageData = {
 injectCSS(globalStyles);
 
 const pageData = readPageData<InProgressPageData>();
-const appElement = document.getElementById("app");
+const appElement = document.querySelector("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
@@ -38,11 +40,11 @@ for (const task of pageData.tasks) {
   list.append(
     createTaskCard(task, {
       onOpen: (taskId) => {
-        window.location.href = `/tasks/${taskId}`;
+        globalThis.location.href = `/tasks/${taskId}`;
       },
       onToggleComplete: async (taskId) => {
         await api(`/api/tasks/${taskId}/stop`, { method: "POST" });
-        window.location.reload();
+        globalThis.location.reload();
       },
     }),
   );
@@ -63,4 +65,4 @@ setInterval(() => {
       chipEl.textContent = `tracked: ${formatRunningTrackedTime(task)}`;
     }
   });
-}, 1000);
+}, 1_000);

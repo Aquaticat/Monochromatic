@@ -12,7 +12,7 @@ import { match, } from 'ts-pattern';
 
 const client = new MeiliSearch({
   host: 'https://meilisearch.local.aquati.cat:3001',
-  apiKey: process.env.MEILISEARCH_API_KEY || process.env.MEILI_MASTER_KEY || '',
+  apiKey: (process.env.MEILISEARCH_API_KEY ?? process.env.MEILI_MASTER_KEY) ?? '',
 },);
 
 const index = client.index('claudeCodeUserMessages',);
@@ -48,7 +48,7 @@ function readClaudeConfig(): any {
         error instanceof Error
           ? error.message
           : String(error,)
-      }`,
+      }`, { cause: error },
     );
   }
 }
@@ -59,8 +59,8 @@ function extractMessages(config: any,): IndexedMessage[] {
   const timestamp = new Date().toISOString();
 
   // Process each project
-  for (const [projectPath, project,] of Object.entries(config.projects || {},)) {
-    const history = (project as any).history || [];
+  for (const [projectPath, project,] of Object.entries(config.projects ?? {},)) {
+    const history = (project as any).history ?? [];
 
     history.forEach((entry: any, historyIndex: number,) => {
       if (entry.display) {
@@ -72,7 +72,7 @@ function extractMessages(config: any,): IndexedMessage[] {
           messageId,
           content: entry.display,
           conversationId: projectPath,
-          conversationTitle: projectPath.split('/',).pop() || 'Unknown Project',
+          conversationTitle: projectPath.split('/',).pop() ?? 'Unknown Project',
           timestamp,
           projectPath,
         },);
@@ -86,7 +86,7 @@ function extractMessages(config: any,): IndexedMessage[] {
 /** Clear history from Claude configuration */
 function clearHistory(config: any,): any {
   // Clear history for all projects
-  for (const projectPath in config.projects || {}) {
+  for (const projectPath in config.projects ?? {}) {
     if (config.projects[projectPath].history)
       config.projects[projectPath].history = [];
   }

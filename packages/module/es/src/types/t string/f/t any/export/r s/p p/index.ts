@@ -7,6 +7,7 @@ import {
   $ as unknownToTypeOfString,
 } from '../../../../../t typeof/f/t unknown/r s/p p/index.ts';
 
+/** Frozen tuple of primitive type discriminants handled by direct serialization. */
 const primitive = Object.freeze(
   ['boolean', 'string', 'number', 'date', 'bigint', 'null', 'undefined', 'NaN',
     'symbol',] as const,
@@ -27,8 +28,10 @@ const primitive = Object.freeze(
  * original symbols.
  *
  * @param obj - Value to convert to export string representation
+ *
  * @returns String representation of the value as frozen export code
- * @throws {TypeError} When an unknown object type is encountered
+ *
+ * @throws When an unknown object type is encountered
  *
  * @example
  * ```ts
@@ -90,7 +93,7 @@ export function $(obj: unknown,): string {
       },)
       .with('symbol', function handler() {
         const symbolObj = obj as symbol;
-        const description = symbolObj.description;
+        const {description} = symbolObj;
         return description !== undefined
           ? `Symbol(${JSON.stringify(description,)})`
           : 'Symbol()';

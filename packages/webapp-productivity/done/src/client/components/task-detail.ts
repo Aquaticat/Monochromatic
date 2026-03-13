@@ -1,5 +1,5 @@
 /**
- * `<task-detail>` web component for viewing and editing a single task.
+ * `\<task-detail\>` web component for viewing and editing a single task.
  *
  * Exceeds 100 lines: the component bundles its Shadow DOM styles, autofill
  * debounce/fetch logic, and the full render tree in one class because the
@@ -14,16 +14,23 @@ import { css } from "../css.ts";
 
 /** Blocker task summary displayed as a pill in the task detail view. */
 type BlockerSummary = {
+  /** UUID of the blocking task. */
   id: string;
+  /** Title of the blocking task. */
   title: string;
+  /** Current status of the blocking task. */
   status: string;
 };
 
 /** Shape of the JSON response from the `/api/ai/autofill` endpoint. */
 type AutofillResult = {
+  /** Suggested tags for the task. */
   tags: string[];
+  /** Suggested locations for the task. */
   locations: string[];
+  /** Suggested priority level. */
   priority: TaskPriority | null;
+  /** Suggested complexity level. */
   complexity: TaskComplexity | null;
 };
 
@@ -32,11 +39,15 @@ type TaskDetailMode = "create" | "edit";
 
 /** Configuration payload passed to `TaskDetail.configure()`. */
 type TaskDetailData = {
+  /** Task being viewed or edited. */
   task: Task;
+  /** Summaries of tasks that block this one. */
   blockerSummaries: BlockerSummary[];
+  /** Display mode: "create" for new tasks, "edit" for existing. */
   mode?: TaskDetailMode;
 };
 
+/** Shadow DOM styles for the `\<task-detail\>` component. */
 const STYLES = css(`
   :host {
     @apply --flex-column;
@@ -168,28 +179,45 @@ const STYLES = css(`
 const AUTOFILL_DEBOUNCE_MS = 500;
 
 /**
- * `<task-detail>` -- full-page task editor with title, description, metadata pills,
+ * `\<task-detail\>` -- full-page task editor with title, description, metadata pills,
  * action buttons (start/stop/complete/delete), and debounced AI autofill.
  * Used in both "edit" and "create" modes (controlled by `TaskDetailData.mode`).
  */
 class TaskDetail extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
+
+  /** Current task configuration data, or null before configuration. */
   #data: TaskDetailData | null = null;
+
+  /** Current display mode. */
   #mode: TaskDetailMode = "edit";
 
   /** Mutable metadata state -- updated by autofill, read on save. */
   #tags: string[] = [];
+
+  /** Mutable locations state. */
   #locations: string[] = [];
+
+  /** Mutable priority state. */
   #priority: TaskPriority | null = null;
+
+  /** Mutable complexity state. */
   #complexity: TaskComplexity | null = null;
 
   /** Tracks which fields were filled by the AI (for accent styling). */
   #autofilled = new Set<string>();
 
+  /** Handle for the autofill debounce timer. */
   #autofillTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Abort controller for in-flight autofill requests. */
   #autofillAbort: AbortController | null = null;
+
+  /** Whether an autofill request is currently in flight. */
   #autofillLoading = false;
 
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
@@ -198,6 +226,8 @@ class TaskDetail extends HTMLElement {
   /**
    * Sets task data, resets metadata state, and triggers a full render.
    * Called by the parent page to initialize or reconfigure the component.
+   *
+   * @param data - Task data and configuration
    */
   configure(data: TaskDetailData): void {
     console.log("[task-detail] configure() called, mode:", data.mode ?? "edit");
@@ -214,6 +244,8 @@ class TaskDetail extends HTMLElement {
   /**
    * Returns the current metadata state so the parent can include it in save payloads.
    * Exposed alongside the "action" custom event detail.
+   *
+   * @returns Current metadata values for tags, locations, priority, and complexity
    */
   getMetadata(): { tags: string[]; locations: string[]; priority: TaskPriority | null; complexity: TaskComplexity | null } {
     return {
@@ -226,7 +258,13 @@ class TaskDetail extends HTMLElement {
 
   //region Pill display -- builds and updates the metadata pill row
 
-  /** Applies autofill/loading data attributes to a pill element based on field state. */
+  /**
+   * Applies autofill/loading data attributes to a pill element based on field state.
+   *
+   * @param element - Pill element to decorate
+   *
+   * @param field - Metadata field name for autofill tracking
+   */
   #applyPillAttrs(element: HTMLElement, field: string): void {
     if (this.#autofillLoading) {
       element.dataset["loading"] = "";
@@ -254,6 +292,7 @@ class TaskDetail extends HTMLElement {
       { field: "blockedBy", text: task.blockedBy.length > 0 ? `blockedBy: ${String(task.blockedBy.length)}` : "blockedBy: none" },
     ];
 
+    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: closure over private `this.#applyPillAttrs`
     const pillElements = pillData.map((pill) => {
       const element = h({ tag: "span", class: "pill", text: pill.text });
       this.#applyPillAttrs(element, pill.field);
@@ -267,7 +306,11 @@ class TaskDetail extends HTMLElement {
 
   //region Autofill -- debounced AI metadata suggestion
 
-  /** Debounces autofill requests so rapid typing does not flood the endpoint. */
+  /**
+   * Debounces autofill requests so rapid typing does not flood the endpoint.
+   *
+   * @param title - Current title input value
+   */
   #requestAutofill(title: string): void {
     if (this.#autofillTimer !== null) {
       clearTimeout(this.#autofillTimer);
@@ -280,7 +323,9 @@ class TaskDetail extends HTMLElement {
 
     if (title.trim().length === 0) return;
 
+    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: closure over private `this.#fetchAutofill`
     this.#autofillTimer = setTimeout(() => {
+      // oxlint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; errors handled inside #fetchAutofill
       this.#fetchAutofill(title.trim());
     }, AUTOFILL_DEBOUNCE_MS);
   }
@@ -288,6 +333,8 @@ class TaskDetail extends HTMLElement {
   /**
    * Sends an autofill request to the server and merges results into empty metadata fields.
    * Abortable: a new request cancels any in-flight one.
+   *
+   * @param title - Trimmed title text to send for autofill
    */
   async #fetchAutofill(title: string): Promise<void> {
     const controller = new AbortController();
@@ -305,6 +352,7 @@ class TaskDetail extends HTMLElement {
 
       if (!response.ok) return;
 
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- API response shape matches AutofillResult
       const result = (await response.json()) as AutofillResult;
       // Only apply autofill fields that currently have no user-set value
       this.#autofilled.clear();
@@ -345,7 +393,7 @@ class TaskDetail extends HTMLElement {
   #render(): void {
     const data = this.#data;
     if (data === null) return;
-    const task = data.task;
+    const {task} = data;
     const isCreate = this.#mode === "create";
 
     // Close button uses innerHTML for SVG because h() creates HTML-namespace
@@ -420,15 +468,19 @@ class TaskDetail extends HTMLElement {
     this.#updatePillsDisplay();
 
     // Debounced autofill on title input
+    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: closure over private `this.#requestAutofill`
     titleInput.addEventListener("input", () => {
       this.#requestAutofill(titleInput.value);
     });
 
+    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: closure over `this.dispatchEvent`
     this.#shadow.addEventListener("click", (event) => {
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- event.target is always an Element in shadow DOM click handlers
       const target = event.target as HTMLElement;
-      const button = target.closest("[data-action]") as HTMLElement | null;
+      const button = target.closest("[data-action]");
       if (button === null) return;
-      const action = button.dataset["action"];
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- closest returns HTMLElement with dataset
+      const {action} = (button as HTMLElement).dataset;
 
       this.dispatchEvent(new CustomEvent("action", {
         bubbles: true,

@@ -7,7 +7,7 @@
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 /**
- * Renders the toolbar with upload and clear controls.
+ * Renders the toolbar with tool selection, upload, and clear controls.
  *
  * @returns toolbar HTML string
  */
@@ -17,6 +17,8 @@ function renderToolbar(): string {
     class: 'toolbar',
     children: [
       h({ tag: 'span', class: 'toolbar-title', text: 'Doodle', }),
+      h({ tag: 'button', attrs: { id: 'tool-draw', type: 'button', class: 'tool-active', }, text: 'Draw', }),
+      h({ tag: 'button', attrs: { id: 'tool-text', type: 'button', }, text: 'Text', }),
       h({ tag: 'button', attrs: { id: 'upload-btn', type: 'button', }, text: 'Upload background', }),
       h({ tag: 'input', attrs: { type: 'file', id: 'upload-input', accept: 'image/*,.svg', hidden: '', }, }),
       h({ tag: 'button', attrs: { id: 'clear-btn', type: 'button', }, text: 'Clear', }),
@@ -38,6 +40,7 @@ function renderCanvasContainer(svgContent: string): string {
     children: [
       h({ tag: 'canvas', attrs: { id: 'draw-canvas', }, }),
       h({ tag: 'div', attrs: { id: 'svg-overlay', }, html: svgContent, }),
+      h({ tag: 'input', attrs: { type: 'text', id: 'text-input', autocomplete: 'off', }, }),
     ],
   });
 }

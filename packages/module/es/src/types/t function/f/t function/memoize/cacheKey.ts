@@ -2,7 +2,9 @@
  * Build the full cache key from keyFn output and resolved salt.
  *
  * @param argKey - key derived from function arguments via keyFn
+ *
  * @param salt - salt value to append
+ *
  * @returns composite cache key
  *
  * @example

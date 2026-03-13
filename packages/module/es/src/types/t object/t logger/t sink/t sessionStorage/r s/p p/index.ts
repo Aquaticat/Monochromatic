@@ -19,7 +19,7 @@ let available = true;
 /**
  * Verifies sessionStorage actually persists data.
  */
-export const verify: Verify = (): boolean => {
+export function verify(): boolean {
   if (verified) return available;
   verified = true;
 
@@ -34,12 +34,12 @@ export const verify: Verify = (): boolean => {
     available = false;
   }
   return available;
-};
+}
 
 /**
  * SessionStorage sink that writes log records to browser sessionStorage.
  */
-export const $: Sink = (record: LogRecord): void => {
+export function $(record: LogRecord): void {
   if (!available) return;
 
   try {
@@ -48,4 +48,4 @@ export const $: Sink = (record: LogRecord): void => {
   } catch {
     // Silently fail if storage is full or unavailable
   }
-};
+}

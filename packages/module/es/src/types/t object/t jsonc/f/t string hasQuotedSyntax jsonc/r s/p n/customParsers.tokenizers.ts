@@ -33,7 +33,9 @@ export const NO_LITERAL: symbol = Symbol('jsonc:parseLiteralToken:no-match',);
  * Returns {@link NO_LITERAL} when no literal matched; handle using category-first symbol narrowing.
  *
  * @param value - Input fragment to parse from the start
+ *
  * @returns Parsed literal token with remaining fragment, or {@link NO_LITERAL} when no literal matched
+ *
  * @example
  * ```ts
  * parseLiteralToken({ value: 'null,1' as FragmentStringJsonc })
@@ -67,8 +69,11 @@ export function parseLiteralToken(
  * The regex matches the JSON number grammar and returns the longest valid numeric prefix.
  *
  * @param value - Input fragment starting at a potential number token
+ *
  * @returns Consumed span, parsed number node, and remaining fragment after the number
+ *
  * @throws Error - When the start does not match a valid JSON number grammar
+ *
  * @example
  * ```ts
  * parseNumberToken({ value: '-12.3e+4, x' as FragmentStringJsonc })

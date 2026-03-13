@@ -49,14 +49,14 @@ export const noRestParams: CreateOnceRule = {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const fnNode = node as Span & Record<string, unknown>;
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      const params = fnNode['params'] as Record<string, unknown> | undefined;
+      const params = fnNode['params'] as Record<string, unknown> | null | undefined;
       if (params === undefined || params === null) {
         return;
       }
 
       /* oxc wraps parameters in a `FormalParameters` node with an `items` array and a `rest` property. */
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      const rest = params['rest'] as (Span & Record<string, unknown>) | undefined;
+      const rest = params['rest'] as (Span & Record<string, unknown>) | null | undefined;
       if (rest !== undefined && rest !== null) {
         context.report({
           node: rest,
@@ -67,7 +67,7 @@ export const noRestParams: CreateOnceRule = {
 
       /* Fallback: check if params has an `items` array with a RestElement. */
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      const items = params['items'] as Array<Record<string, unknown>> | undefined;
+      const items = params['items'] as Record<string, unknown>[] | null | undefined;
       if (items === undefined || items === null) {
         return;
       }

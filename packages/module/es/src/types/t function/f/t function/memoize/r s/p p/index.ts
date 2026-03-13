@@ -11,10 +11,15 @@ import { $ as named, } from '../p n/index.ts';
  * Positional-parameter wrapper around the named-parameter variant.
  *
  * @typeParam TArgs - tuple of function argument types
+ *
  * @typeParam TReturn - function return type
+ *
  * @param fn - pure synchronous function to memoize
+ *
  * @param keyFn - computes cache key from arguments; must be deterministic
+ *
  * @param store - sync store backend (defaults to fresh in-memory SyncStore)
+ *
  * @returns memoized function with `.store`, `.clear()`, `.delete()`, `.size`
  *
  * @example

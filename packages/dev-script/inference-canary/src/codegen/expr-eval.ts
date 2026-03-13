@@ -17,7 +17,9 @@ const EXPR_EXPECTED = ['14', '20', 'ERR', '-11', '21', '8.5'] as const;
 /** Allowed floating-point comparison tolerance */
 const FLOAT_TOLERANCE = 0.001;
 
-/** {@inheritDoc Probe} */
+/**
+ * {@inheritDoc Probe}
+ */
 export const expressionEvaluator = createCodeGenProbe({
   name: 'expr-eval',
   testInput: EXPR_TEST_INPUT,
@@ -52,9 +54,9 @@ export const expressionEvaluator = createCodeGenProbe({
     '-11',
     '21',
   ].join('\n'),
-  verify: (result) => {
-    const lines = result.stdout.trim().split('\n').map((line) => line.trim());
-    const correctCount = EXPR_EXPECTED.filter((exp, index) => {
+  verify: function verifyExprEval(result): { correctness: number; } {
+    const lines = result.stdout.trim().split('\n').map(function trimLine(line): string { return line.trim(); });
+    const correctCount = EXPR_EXPECTED.filter(function checkLine(exp, index): boolean {
       const actual = lines[index];
       if (actual === undefined) return false;
       if (exp === 'ERR') return actual === 'ERR';

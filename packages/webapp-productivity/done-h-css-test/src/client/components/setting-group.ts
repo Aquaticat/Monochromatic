@@ -2,6 +2,7 @@ import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlEle
 import { cssCalc, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { buttonOutlined, flexColumn, flexRow, focusOutline } from "../mixins.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./toggle-switch.ts";
 
 const STYLES = [

@@ -13,14 +13,14 @@ export const REFERENCE_PATH =
 
 /** Pixel region of the front view within the reference sheet. */
 export const FRONT_VIEW_CROP = {
-  x: 1440,
+  x: 1_440,
   y: 60,
   width: 290,
   height: 880,
 } as const
 
 /** Target SVG viewBox for all part files. */
-export const VIEWBOX = { width: 800, height: 1200 } as const
+export const VIEWBOX = { width: 800, height: 1_200 } as const
 
 /**
  * Approximate background color of the reference sheet.
@@ -107,4 +107,4 @@ export const JOINTS: Record<string, readonly [number, number]> = {
   ankle_R: [444, 900],
 }
 
-export {}
+

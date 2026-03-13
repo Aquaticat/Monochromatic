@@ -1,3 +1,4 @@
+/** Power-of-two probe lengths used for binary-search-style length testing. */
 export const numberLengthsToTestFirst = [1, 2, 4, 8, 16,] as const;
 
 /**

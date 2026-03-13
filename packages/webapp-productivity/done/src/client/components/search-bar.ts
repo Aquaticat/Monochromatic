@@ -1,6 +1,7 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
 
+/** Shadow DOM styles for the `\<search-bar\>` component. */
 const STYLES = css(`
   :host {
     @apply --sticky-bar;
@@ -40,26 +41,38 @@ const STYLES = css(`
   }
 `);
 
-/** Debounce delay for search input in milliseconds */
+/** Debounce delay for search input in milliseconds. */
 const SEARCH_DEBOUNCE_MS = 300;
 
 /**
- * `<search-bar>` -- sticky bar with a back button and debounced search input.
- * Dispatches a `search` event with `{ query }` after the debounce delay.
+ * `\<search-bar\>` -- sticky bar with a back button and debounced search input.
+ * Dispatches a `search` event with `\{ query \}` after the debounce delay.
  */
 class SearchBar extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
 
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
   }
 
+  /**
+   * Current search input value.
+   *
+   * @returns Text content of the input, or empty string if not rendered
+   */
   get value(): string {
     const input = this.#shadow.querySelector("input");
     return input?.value ?? "";
   }
 
+  /**
+   * Sets the search input value programmatically.
+   *
+   * @param text - New input value
+   */
   set value(text: string) {
     const input = this.#shadow.querySelector("input");
     if (input !== null) {
@@ -67,6 +80,7 @@ class SearchBar extends HTMLElement {
     }
   }
 
+  /** Renders the search bar with back button and debounced input. */
   connectedCallback(): void {
     const query = this.getAttribute("value") ?? "";
 
@@ -76,7 +90,7 @@ class SearchBar extends HTMLElement {
       tag: "button",
       class: "back",
       attrs: { "aria-label": "Go back" },
-      on: { click: () => { history.back(); } },
+      on: { click: function onBackClick() { history.back(); } },
     });
     backButton.innerHTML = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 10,16 20,26"/></svg>`;
 
@@ -86,9 +100,11 @@ class SearchBar extends HTMLElement {
     });
 
     // Debounced search dispatch
-    let timeout: ReturnType<typeof setTimeout>;
+    let timeout: ReturnType<typeof setTimeout> = setTimeout(function noop() { /* initial */ }, 0);
+    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: debounced callback must reference `this`
     input.addEventListener("input", () => {
       clearTimeout(timeout);
+      // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: setTimeout callback must reference outer `this`
       timeout = setTimeout(() => {
         this.dispatchEvent(new CustomEvent("search", { detail: { query: input.value.trim() }, bubbles: true }));
       }, SEARCH_DEBOUNCE_MS);

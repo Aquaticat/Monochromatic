@@ -8,6 +8,7 @@
 
 //region Configuration
 
+/** Default URL for the chat completions endpoint. */
 const DEFAULT_COMPLETIONS_URL = "http://localhost:8080/v1/chat/completions";
 
 /** Resolved endpoint URL, evaluated once at import time. */
@@ -17,8 +18,14 @@ const completionsUrl = process.env.CHAT_COMPLETIONS_URL ?? DEFAULT_COMPLETIONS_U
 
 //region Rate limiter -- sliding-window counter
 
+/** Maximum requests allowed within the sliding window. */
 const MAX_REQUESTS_PER_WINDOW = 30;
+
+/** Sliding window duration in milliseconds (60 seconds). */
 const WINDOW_DURATION_MS = 60_000;
+
+/** Request timeout in milliseconds (30 seconds). */
+const REQUEST_TIMEOUT_MS = 30_000;
 
 /**
  * Timestamps of requests within the current window.
@@ -30,12 +37,14 @@ const requestTimestamps: number[] = [];
 
 /**
  * Removes expired entries and checks whether the limit has been reached.
+ *
  * @returns `true` when the request should be rejected
  */
 function isRateLimited(): boolean {
   const cutoff = Date.now() - WINDOW_DURATION_MS;
 
   // Discard entries older than the window
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- array index 0 is checked via length guard
   while (requestTimestamps.length > 0 && (requestTimestamps[0] as number) < cutoff) {
     requestTimestamps.shift();
   }
@@ -52,11 +61,15 @@ function recordRequest(): void {
 
 //region Types
 
+/** Message in a chat conversation. */
 export type ChatMessage = {
+  /** Role of the message author. */
   role: "system" | "user" | "assistant";
+  /** Text content of the message. */
   content: string;
 };
 
+/** Options for a chat completion request. */
 export type ChatCompletionOptions = {
   /** Messages in the conversation. */
   messages: ChatMessage[];
@@ -64,18 +77,23 @@ export type ChatCompletionOptions = {
   temperature?: number;
   /** Maximum tokens to generate. */
   maxTokens?: number;
-  /** When `true`, request `response_format: { type: "json_object" }`. */
+  /** When `true`, request `response_format: \{ type: "json_object" \}`. */
   jsonMode?: boolean;
 };
 
+/** Single choice from a chat completion response. */
 type ChatCompletionResponseChoice = {
+  /** Message content of the choice. */
   message: { role: string; content: string };
 };
 
+/** Full chat completion response from the API. */
 type ChatCompletionResponse = {
+  /** Array of completion choices. */
   choices: ChatCompletionResponseChoice[];
 };
 
+/** Discriminated union result of a chat completion attempt. */
 export type ChatCompletionResult =
   | { ok: true; content: string }
   | { ok: false; error: string };
@@ -91,11 +109,12 @@ export type ChatCompletionResult =
  * gracefully (e.g. skip autofill when the AI is unavailable).
  *
  * @param options - Messages, temperature, and format controls
+ *
  * @returns Completion text on success, or a descriptive error string
  */
 export async function chatCompletion(options: ChatCompletionOptions): Promise<ChatCompletionResult> {
   if (isRateLimited()) {
-    return { ok: false, error: "Rate limit exceeded — try again in a moment" };
+    return { ok: false, error: "Rate limit exceeded -- try again in a moment" };
   }
 
   recordRequest();
@@ -118,14 +137,20 @@ export async function chatCompletion(options: ChatCompletionOptions): Promise<Ch
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(30_000),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
 
     if (!response.ok) {
-      const errorText = await response.text().catch(() => "unknown error");
+      let errorText = "unknown error";
+      try {
+        errorText = await response.text();
+      } catch {
+        // Ignore text parsing failure
+      }
       return { ok: false, error: `AI endpoint returned ${String(response.status)}: ${errorText}` };
     }
 
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- API response shape matches ChatCompletionResponse
     const data = (await response.json()) as ChatCompletionResponse;
     const firstChoice = data.choices[0];
     if (firstChoice === undefined) {

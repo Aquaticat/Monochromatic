@@ -6,12 +6,11 @@
  * in the conversation as a native assistant message (see runner-second-pass.ts),
  * so the fix prompt references it without repeating the source.
  */
-import { lintSource, } from '../linter.ts';
+import { lintSource, type LintResult, } from '../linter.ts';
 
 import { extractCode, } from './extract-code.ts';
 
 import type { ContainerResult, } from '../container.ts';
-import type { LintResult, } from '../linter.ts';
 import type { ScoreContext, } from '../probes.ts';
 
 /** Maximum bytes of runtime stderr to include in the fix prompt to avoid token waste */
@@ -19,7 +18,9 @@ const MAX_RUNTIME_STDERR_LENGTH = 500;
 
 /**
  * Formats a failed container result into a diagnostic section string.
+ *
  * @param container - container result with non-zero exit code or timeout flag
+ *
  * @returns formatted runtime error section
  */
 function buildRuntimeSection(container: ContainerResult): string {
@@ -35,10 +36,15 @@ function buildRuntimeSection(container: ContainerResult): string {
  *
  * The model's first-pass response is already in the conversation as a native
  * assistant message, so this prompt only carries diagnostics -- no code echo.
+ *
  * @param response - raw model output from the first pass (used to extract source for linting)
+ *
  * @param context - model identity and pass for artifact organization
+ *
  * @param priorLint - lint result already computed by score(); if provided, skips re-linting
+ *
  * @param priorContainer - container result already computed by score(); runtime errors are included when present
+ *
  * @returns follow-up user message, or undefined to skip
  */
 export async function buildCodeGenFixPrompt(
@@ -76,11 +82,11 @@ export async function buildCodeGenFixPrompt(
   const diagnosticParts = [
     failedContainer !== undefined ? buildRuntimeSection(failedContainer) : '',
     lint.rawDiagnostics.length > 0 ? lint.rawDiagnostics : '',
-  ].filter((part) => part.length > 0);
+  ].filter(function hasContent(part): boolean { return part.length > 0; });
 
   return [
     'Your code from the previous response has issues.',
-    [lintSummary, runtimeSummary].filter((line) => line !== undefined).join(' '),
+    [lintSummary, runtimeSummary].filter(function isDefined(line): line is string { return line !== undefined; }).join(' '),
     'Here are the diagnostics:',
     '',
     diagnosticParts.join('\n\n'),

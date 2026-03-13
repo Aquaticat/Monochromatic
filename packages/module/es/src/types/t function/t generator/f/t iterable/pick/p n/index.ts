@@ -6,13 +6,17 @@
  *
  * Handles both synchronous and asynchronous iterables.
  *
- * @param params - Configuration object
- * @param params.iterable - Source iterable or async iterable to filter
- * @param params.toPick - Set of items to include in the output
- * @param params.strict - When true (default), throws if any key in toPick is not found in the iterable.
+ * @param iterable - Source iterable or async iterable to filter
+ *
+ * @param toPick - Set of items to include in the output
+ *
+ * @param strict - When true (default), throws if any key in toPick is not found in the iterable.
  *   When false, silently ignores missing keys.
+ *
  * @yields Items from the iterable that are in the inclusion set
+ *
  * @throws Error if strict is true and any key in toPick is not found in the iterable
+ *
  * @example
  * ```ts
  * const numbers = [1, 2, 3, 4, 5];
@@ -23,6 +27,7 @@
  * }
  * // result: [2, 4]
  * ```
+ *
  * @example
  * ```ts
  * async function* asyncNumbers() {
@@ -33,6 +38,7 @@
  *   console.log(n); // 2
  * }
  * ```
+ *
  * @example Lenient mode ignores missing keys
  * ```ts
  * const numbers = [1, 2, 3];

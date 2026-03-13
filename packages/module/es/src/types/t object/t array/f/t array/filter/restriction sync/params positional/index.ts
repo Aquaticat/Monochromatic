@@ -5,9 +5,12 @@
  * Supports both synchronous and asynchronous iterables, as well as sync and async predicates.
  * Memory-efficient processing for large datasets through streaming iteration.
  *
- * @template T_i - Type of elements in the iterable
+ * @typeParam T_i - Type of elements in the iterable
+ *
  * @param predicate - Function that returns boolean indicating whether to keep element
+ *
  * @param arrayLike - Synchronous iterable to filter
+ *
  * @returns Array containing elements that satisfy the predicate
  *
  * @example
@@ -41,9 +44,9 @@
  * @example
  * String filtering with complex predicates:
  * ```ts
- * const emails = ['valid@test.com', 'invalid-email', 'another@test.com'];
- * const validEmails = $((email) => email.includes('@') && email.includes('.'), emails);
- * console.log(validEmails); // ['valid@test.com', 'another@test.com']
+ * const emails = ['valid\@test.com', 'invalid-email', 'another\@test.com'];
+ * const validEmails = $((email) => email.includes('\@') && email.includes('.'), emails);
+ * console.log(validEmails); // ['valid\@test.com', 'another\@test.com']
  * ```
  *
  * @example

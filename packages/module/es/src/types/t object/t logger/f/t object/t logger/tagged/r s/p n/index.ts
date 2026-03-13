@@ -7,7 +7,9 @@ import { $ as defaultLogger } from '../../../../../../f/t never/r s/p p/index.ts
  * in sync with refactors.
  *
  * @param tag - Prefix string inserted before each message
+ *
  * @param l - Base logger to wrap; defaults to the module-level singleton
+ *
  * @returns Logger whose methods prepend `[tag] ` to every message
  *
  * @example
@@ -34,11 +36,11 @@ import { $ as defaultLogger } from '../../../../../../f/t never/r s/p p/index.ts
 export function $({ tag, l = defaultLogger }: { l?: Logger; tag: string }): Logger {
   const prefix = `[${tag}] `;
   return {
-    debug: (message: string): void => l.debug(`${prefix}${message}`),
-    error: (message: string): void => l.error(`${prefix}${message}`),
-    fatal: (message: string): void => l.fatal(`${prefix}${message}`),
-    info: (message: string): void => l.info(`${prefix}${message}`),
-    trace: (message: string): void => l.trace(`${prefix}${message}`),
-    warn: (message: string): void => l.warn(`${prefix}${message}`),
+    debug: function debug(message: string): void { l.debug(`${prefix}${message}`); },
+    error: function error(message: string): void { l.error(`${prefix}${message}`); },
+    fatal: function fatal(message: string): void { l.fatal(`${prefix}${message}`); },
+    info: function info(message: string): void { l.info(`${prefix}${message}`); },
+    trace: function trace(message: string): void { l.trace(`${prefix}${message}`); },
+    warn: function warn(message: string): void { l.warn(`${prefix}${message}`); },
   };
 }

@@ -17,12 +17,12 @@ import {
   resolve,
   sep,
 } from '@monochromatic-dev/module-es/ts/path/index.ts';
-import type {
-  AtRule,
-  Plugin,
-  Root,
+import {
+  type AtRule,
+  parse,
+  type Plugin,
+  type Root,
 } from 'postcss';
-import postcss from 'postcss';
 import {
   existsSync,
   readCssFileSync,
@@ -33,17 +33,22 @@ import {
 /**
  * Strips quotes and `url()` wrapper from a CSS \@import specifier.
  * Handles: `'foo.css'`, `"foo.css"`, `url('foo.css')`, `url("foo.css")`, `url(foo.css)`
+ *
  * @param raw - Raw \@import params string
+ *
  * @returns Bare specifier without quotes or url() wrapper
  */
 function stripImportSpecifier(raw: string): string {
   /** Trimmed input for consistent handling */
   const trimmed = raw.trim();
 
+  /** Length of the "url(" prefix. */
+  const URL_PREFIX_LENGTH = 4;
+
   // url(...) wrapper
   if (trimmed.startsWith('url(') && trimmed.endsWith(')')) {
     /** Inner content of url() */
-    const inner = trimmed.slice(4, -1).trim();
+    const inner = trimmed.slice(URL_PREFIX_LENGTH, -1).trim();
     // Strip inner quotes if present
     if ((inner.startsWith("'") && inner.endsWith("'")) ||
         (inner.startsWith('"') && inner.endsWith('"'))) {
@@ -63,7 +68,9 @@ function stripImportSpecifier(raw: string): string {
 
 /**
  * Whether a specifier looks like a package reference (not relative or absolute).
+ *
  * @param specifier - Bare import specifier
+ *
  * @returns True for package-like specifiers (`\@scope/pkg/...` or `pkg/...`)
  */
 function isPackageSpecifier(specifier: string): boolean {
@@ -77,13 +84,17 @@ function isPackageSpecifier(specifier: string): boolean {
 /**
  * Splits a package specifier into package name and subpath.
  * Handles scoped (`\@scope/pkg/sub.css`) and unscoped (`pkg/sub.css`) packages.
+ *
  * @param specifier - Bare package specifier
+ *
  * @returns Tuple of [packageName, subpath] where subpath starts with `./` or is `.`
  */
 function splitPackageSpecifier(specifier: string): [string, string] {
   if (specifier.startsWith('@')) {
     // Scoped: @scope/pkg or @scope/pkg/sub/path.css
-    /** Index of the second slash (after @scope/pkg) */
+    /**
+     * Index of the second slash (after \@scope/pkg).
+     */
     const secondSlash = specifier.indexOf('/', specifier.indexOf('/') + 1);
     if (secondSlash === -1) {
       return [specifier, '.'];
@@ -103,8 +114,11 @@ function splitPackageSpecifier(specifier: string): [string, string] {
 /**
  * Walks up from `startDir` looking for a `node_modules/<packageName>` directory.
  * Mimics Node's module resolution algorithm.
+ *
  * @param startDir - Directory to start searching from
+ *
  * @param packageName - Package name (e.g. `\@scope/pkg`)
+ *
  * @returns Absolute path to the package directory, or undefined if not found
  */
 function findPackageDir(startDir: string, packageName: string): string | undefined {
@@ -131,7 +145,9 @@ function findPackageDir(startDir: string, packageName: string): string | undefin
 
 /**
  * Reads and parses a package.json from the given directory.
+ *
  * @param packageDir - Absolute path to the package directory
+ *
  * @returns Parsed package.json or undefined if not found
  */
 function readPackageJson(packageDir: string): Record<string, unknown> | undefined {
@@ -140,6 +156,7 @@ function readPackageJson(packageDir: string): Record<string, unknown> | undefine
   try {
     /** Raw JSON text */
     const raw = readCssFileSync(packageJsonPath);
+    // oxlint-disable-next-line no-unsafe-type-assertion -- JSON.parse returns unknown; package.json shape is Record<string, unknown>
     return JSON.parse(raw) as Record<string, unknown>;
   } catch {
     return undefined;
@@ -149,8 +166,11 @@ function readPackageJson(packageDir: string): Record<string, unknown> | undefine
 /**
  * Resolves a subpath using package.json `exports` field.
  * Supports simple string mappings and condition objects with `style`, `import`, `default` keys.
+ *
  * @param exports - The `exports` field value from package.json
+ *
  * @param subpath - Subpath to resolve (e.g. `./index.css` or `.`)
+ *
  * @returns Resolved relative path or undefined if no match
  */
 function resolveExports(exports: unknown, subpath: string): string | undefined {
@@ -159,6 +179,7 @@ function resolveExports(exports: unknown, subpath: string): string | undefined {
   }
 
   /** Exports object keyed by subpath pattern */
+  // oxlint-disable-next-line no-unsafe-type-assertion -- narrowing from object to Record for property access
   const exportsMap = exports as Record<string, unknown>;
   /** Value for the requested subpath */
   const entry = exportsMap[subpath];
@@ -170,10 +191,11 @@ function resolveExports(exports: unknown, subpath: string): string | undefined {
   // Condition object: check style → import → default
   if (typeof entry === 'object' && entry !== null) {
     /** Condition map for this subpath */
+    // oxlint-disable-next-line no-unsafe-type-assertion -- narrowing from object to Record for condition access
     const conditions = entry as Record<string, unknown>;
     for (const key of ['style', 'import', 'default']) {
       if (typeof conditions[key] === 'string') {
-        return conditions[key] as string;
+        return conditions[key];
       }
     }
   }
@@ -185,9 +207,13 @@ function resolveExports(exports: unknown, subpath: string): string | undefined {
  * Resolves a package specifier to an absolute file path.
  * Tries `exports` field first, then falls back to `style`/`main` fields,
  * then to the direct file path within the package.
+ *
  * @param specifier - Full package specifier (e.g. `\@scope/pkg/index.css`)
+ *
  * @param fromDir - Directory of the importing file
+ *
  * @returns Absolute resolved path
+ *
  * @throws When the package or file cannot be found
  */
 function resolvePackage(specifier: string, fromDir: string): string {
@@ -255,9 +281,13 @@ function resolvePackage(specifier: string, fromDir: string): string {
 
 /**
  * Resolves a CSS \@import specifier to an absolute file path.
+ *
  * @param specifier - Bare import specifier (quotes/url() already stripped)
+ *
  * @param fromFile - Absolute path of the importing file
+ *
  * @returns Absolute path to the resolved CSS file
+ *
  * @throws When the specifier cannot be resolved
  */
 function resolveSpecifier(specifier: string, fromFile: string): string {
@@ -319,21 +349,26 @@ export const postcssInlineImport: Plugin = {
       imported.add(rootFrom);
     }
 
-    inlineImports(root, rootFrom ?? process.cwd() + sep + 'input.css', imported);
+    inlineImports(root, rootFrom ?? `${process.cwd()}${sep}input.css`, imported);
   },
 };
 
 /**
  * Recursively inlines \@import rules in a PostCSS root.
+ *
  * @param root - PostCSS root node to process
+ *
  * @param fromFile - Absolute path of the file being processed
+ *
  * @param imported - Set of already-imported absolute paths (prevents cycles)
  */
 function inlineImports(root: Root, fromFile: string, imported: Set<string>): void {
   // Collect @import nodes first to avoid mutating the tree while walking
-  /** All \@import at-rules in the current root */
+  /**
+   * All \@import at-rules in the current root.
+   */
   const importNodes: AtRule[] = [];
-  root.walkAtRules('import', (node: AtRule) => {
+  root.walkAtRules('import', function collectImportNode(node: AtRule) {
     importNodes.push(node);
   });
 
@@ -354,7 +389,7 @@ function inlineImports(root: Root, fromFile: string, imported: Set<string>): voi
     /** Raw CSS content of the imported file */
     const content = readCssFileSync(resolvedPath);
     /** Parsed AST of the imported file */
-    const importedRoot = postcss.parse(content, { from: resolvedPath, });
+    const importedRoot = parse(content, { from: resolvedPath, });
 
     // Recursively process nested @import rules
     inlineImports(importedRoot, resolvedPath, imported);

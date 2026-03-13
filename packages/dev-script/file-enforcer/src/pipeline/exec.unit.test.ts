@@ -46,7 +46,7 @@ describe('exec', () => {
   test('preserves newlines in stdout', async () => {
     expect.assertions(1);
     /** printf outputs exact bytes without a trailing newline */
-    const result = await exec('printf', ['line1\\nline2\\nline3']);
+    const result = await exec('printf', [String.raw`line1\nline2\nline3`]);
     expect(result).toBe('line1\nline2\nline3');
   });
 
@@ -55,7 +55,7 @@ describe('exec', () => {
     /** Generate 1000 lines of output */
     const result = await exec('seq', ['1', '1000']);
     /** Should have 1000 lines (seq output ends with newline) */
-    const lineCount = 1000;
+    const lineCount = 1_000;
     expect(result.trim().split('\n').length).toBe(lineCount);
   });
 });

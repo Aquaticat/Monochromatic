@@ -23,12 +23,16 @@ type LayoutOptions = {
 };
 
 /**
- * Escapes `<` to prevent `</script>` injection inside the JSON blob.
+ * Escapes `\<` to prevent `\</script\>` injection inside the JSON blob.
  * Used by page handlers that render their own HTML shell (search, task-details)
  * in addition to the shared `renderPage()` layout.
+ *
+ * @param data - Arbitrary data to serialize as JSON
+ *
+ * @returns Escaped JSON string safe for embedding in HTML
  */
 export function serializePageData(data: unknown): string {
-  return JSON.stringify(data).replaceAll("<", "\\u003c");
+  return JSON.stringify(data).replaceAll("<", String.raw`\u003C`);
 }
 
 /** Inline script that wires the top-nav hamburger menu to the side-drawer */
@@ -37,6 +41,13 @@ const MENU_OPEN_SCRIPT = `document.addEventListener('menu-open', function() {
       if (drawer) drawer.open = true;
     });`;
 
+/**
+ * Renders a full HTML page with the standard layout shell.
+ *
+ * @param options - Page title, heading, script path, and serialized data
+ *
+ * @returns HTML response with the rendered page
+ */
 export function renderPage(options: LayoutOptions): Response {
   const topNav = options.hideTopNav
     ? ""

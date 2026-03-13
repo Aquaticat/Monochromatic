@@ -1,12 +1,16 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
 
+/** Z-index for the floating action button above page content. */
+const FAB_Z_INDEX = 50;
+
+/** Shadow DOM styles for the `\<fab-button\>` component. */
 const STYLES = css(`
   :host {
     position: fixed;
     inset-block-end: 1rem;
     inset-inline-end: 1rem;
-    z-index: 50;
+    z-index: ${String(FAB_Z_INDEX)};
   }
   button {
     @apply --flex-center;
@@ -34,17 +38,20 @@ const STYLES = css(`
 `);
 
 /**
- * `<fab-button>` -- floating action button pinned to the bottom-right.
- * Reads the `label` attribute for accessibility and renders a `<slot>` for custom content.
+ * `\<fab-button\>` -- floating action button pinned to the bottom-right.
+ * Reads the `label` attribute for accessibility and renders a `\<slot\>` for custom content.
  */
 class FabButton extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
 
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
   }
 
+  /** Renders the button with aria-label and slot for content. */
   connectedCallback(): void {
     const label = this.getAttribute("label") ?? "Action";
     this.#shadow.replaceChildren(

@@ -5,7 +5,9 @@
 /**
  * Computes the arithmetic mean of a numeric array.
  * Returns 0 for empty arrays to avoid NaN propagation.
+ *
  * @param values - numbers to average
+ *
  * @returns arithmetic mean, or 0 when the array is empty
  *
  * @example
@@ -16,5 +18,5 @@
  */
 export function mean(values: readonly number[]): number {
   if (values.length === 0) return 0;
-  return values.reduce((sum, value) => sum + value, 0) / values.length;
+  return values.reduce(function accumulate(sum, value): number { return sum + value; }, 0) / values.length;
 }

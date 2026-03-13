@@ -28,7 +28,9 @@ export type FormattableDiagnostic = {
  * Includes source and code when available, with optional indentation.
  *
  * @param diagnostic - Diagnostic to format.
+ *
  * @param indent - Whitespace prefix for each line. Defaults to empty string.
+ *
  * @returns Formatted single-line string.
  *
  * @example
@@ -38,6 +40,6 @@ export type FormattableDiagnostic = {
  * ```
  */
 export function formatDiagnostic(diagnostic: FormattableDiagnostic, indent: string = ''): string {
-  const source = diagnostic.source ? ` [${diagnostic.source}${diagnostic.code ? ` ${diagnostic.code}` : ''}]` : '';
+  const source = diagnostic.source !== null && diagnostic.source !== '' ? ` [${diagnostic.source}${diagnostic.code !== null ? ` ${String(diagnostic.code)}` : ''}]` : '';
   return `${indent}${diagnostic.severity} ${diagnostic.lnum}:${diagnostic.col}${source} ${diagnostic.message}`;
 }

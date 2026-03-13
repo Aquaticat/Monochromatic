@@ -3,7 +3,10 @@ import spawn from 'nano-spawn';
 /**
  * Sends a write-protection warning to both terminal and desktop notification.
  * Called when an external process modifies a file that file-enforcer manages.
+ *
  * @param filePath - Absolute path of the externally modified managed file
+ *
+ * @returns resolves after the warning is logged and desktop notification attempted
  */
 export async function notifyWriteProtection(filePath: string): Promise<void> {
   /** Human-readable warning for the terminal */

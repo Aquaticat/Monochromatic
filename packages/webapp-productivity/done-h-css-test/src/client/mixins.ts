@@ -216,6 +216,7 @@ export function stickyBar(): CssDeclarations {
  * Standard focus-visible outline declarations.
  *
  * @param offset - Outline offset value (default `cssRem(0.125)`)
+ *
  * @returns Declarations for focus outline
  */
 export function focusOutline({ offset = cssRem(0.125) }: { offset?: CssValue } = {}): CssDeclarations {

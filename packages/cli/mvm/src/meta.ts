@@ -2,8 +2,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { l, tagged } from './log.ts';
-import type { GuestConfig, OsFamily } from './registry.ts';
-import { CUSTOM_GUEST_DEFAULTS, DEFAULT_IMAGE, resolveImage } from './registry.ts';
+import { CUSTOM_GUEST_DEFAULTS, DEFAULT_IMAGE, resolveImage, type GuestConfig, type OsFamily } from './registry.ts';
 
 //region VM metadata type
 
@@ -39,13 +38,22 @@ export type VmMeta = {
  * Writes VM metadata to `meta.json` in the VM directory.
  * Also writes the legacy `image` text file for backwards compatibility.
  *
- * @param options - VM directory path, image identifier, and guest config
+ * @param guest - Guest config for OS family, shell, and default user
+ *
+ * @param image - Registry image identifier
+ *
+ * @param vmDir - VM directory to write metadata into
+ *
+ * @returns Resolves when metadata is written
  *
  * @example
  * ```ts
  * await writeVmMeta({
+ *
  *   vmDir: '/home/user/.local/share/mvm/vms/dev-01',
+ *
  *   image: 'ubuntu',
+ *
  *   guest: IMAGES['ubuntu'],
  * });
  * ```
@@ -82,12 +90,14 @@ export async function writeVmMeta({ guest, image, vmDir }: {
  * from the registry for VMs created before meta.json was introduced.
  *
  * @param vmDir - Absolute path to the VM directory
+ *
  * @returns Resolved VM metadata
  *
  * @example
  * ```ts
  * const meta = await readVmMeta('/home/user/.local/share/mvm/vms/dev-01');
  * if (meta.osFamily === 'windows') {
+ *
  *   // use PowerShell for exec
  * }
  * ```
@@ -98,6 +108,7 @@ export async function readVmMeta(vmDir: string): Promise<VmMeta> {
   // Try meta.json first
   try {
     const content = await readFile(join(vmDir, 'meta.json'), 'utf8');
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted local meta.json written by writeVmMeta
     const meta = JSON.parse(content) as VmMeta;
     rl.debug(`read VM metadata from ${vmDir}/meta.json`);
     return meta;

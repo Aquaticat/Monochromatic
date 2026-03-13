@@ -1,3 +1,4 @@
+// oxlint-disable typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-call, typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-argument, typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-return, typescript-eslint/strict-boolean-expressions, eslint/no-magic-numbers, tsdoc/require-tsdoc, typescript-eslint/no-confusing-void-expression, eslint/no-shadow, eslint/no-warning-comments -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
 import {
   createObservable,
   identity,
@@ -193,13 +194,13 @@ nonPromiseAll([
             nonPromiseAll([
               link.href = result.url,
               link.textContent = result.title,
-              void (function updatePublishedDate(): void {
+               (function updatePublishedDate(): void {
                 if (result.publishedDate) {
                   publishedDate.dateTime = result.publishedDate;
                   publishedDate.textContent = result.publishedDate;
                 }
               })(),
-              void (function updateAuthor(): void {
+               (function updateAuthor(): void {
                 if (result.author)
                   author.textContent = result.author;
               })(),
@@ -218,7 +219,7 @@ nonPromiseAll([
                   currentHighlight.textContent = highlight;
                 },
               ),
-              void (function updateImage(): void {
+               (function updateImage(): void {
                 if (result.image)
                   image.src = result.image;
               })(),

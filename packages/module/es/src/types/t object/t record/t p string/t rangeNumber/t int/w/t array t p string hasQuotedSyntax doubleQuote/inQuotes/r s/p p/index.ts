@@ -17,8 +17,11 @@ import { $ as named, } from '../p n/index.ts';
  * Assumes all input strings are well-formed with even total number of effective quotes (all quotes properly paired).
  *
  * @param value - Range object with startInclusive position to check
+ *
  * @param strs - Array of double-quoted syntax strings to analyze
+ *
  * @returns Updated Value object with merged quote status information in the inQuotes map
+ *
  * @example
  * ```ts
  * const range = { startInclusive: 1, endInclusive: 1, __brand: { rangeNumber: true } };

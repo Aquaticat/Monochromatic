@@ -2,7 +2,7 @@ import {
   join,
   resolve,
 } from 'node:path';
-import { type UserConfig, } from 'vite';
+import type { UserConfig, } from 'vite';
 import { json5Plugin, } from 'vite-plugin-json5';
 import {
   FIREFOX_ESR_VERSION,
@@ -10,7 +10,15 @@ import {
 } from './constants.ts';
 import { rolldownExternal, } from './utilities.ts';
 
-const createBaseConfig = (configDir: string,): UserConfig => ({
+/**
+ * Creates the base Vite configuration shared across all packages.
+ * Configures CSS processing, OXC transpilation, build output, and common plugins.
+ *
+ * @param configDir - absolute path to the package directory
+ *
+ * @returns base Vite user config
+ */
+function createBaseConfig(configDir: string,): UserConfig { return {
   plugins: [
     // Allows importing JSON5 files directly.
     json5Plugin(),
@@ -110,6 +118,6 @@ const createBaseConfig = (configDir: string,): UserConfig => ({
   experimental: {
     enableNativePlugin: true,
   },
-});
+} }
 
 export { createBaseConfig };

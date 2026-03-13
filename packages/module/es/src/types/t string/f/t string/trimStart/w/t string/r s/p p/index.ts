@@ -7,8 +7,11 @@ import { $ as named, } from '../p n/index.ts';
  * Case-sensitive matching is used for trimmer detection.
  *
  * @param str - to trim from the start
+ *
  * @param trimmer - substring to remove from the start
+ *
  * @returns String with all leading occurrences of trimmer removed
+ *
  * @throws Error If trimmer is an empty string
  *
  * @example

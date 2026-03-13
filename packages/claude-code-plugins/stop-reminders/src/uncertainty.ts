@@ -21,7 +21,7 @@
  * - Uncertainty markers: not sure, not certain, not entirely sure, hard to say, difficult to tell
  * - Approximation markers: if I recall, if I remember, from what I recall
  */
-const UNCERTAINTY_PATTERNS: ReadonlyArray<RegExp> = [
+const UNCERTAINTY_PATTERNS: readonly RegExp[] = [
   /\bprobably\b/i,
   /\bmaybe\b/i,
   /\bmay be\b/i,
@@ -59,6 +59,7 @@ const UNCERTAINTY_PATTERNS: ReadonlyArray<RegExp> = [
  * Matches triple-backtick blocks with optional language tags.
  *
  * @param text - Raw message text that may contain fenced code blocks.
+ *
  * @returns Text with all fenced code blocks replaced by empty strings.
  *
  * @example
@@ -75,6 +76,7 @@ function stripCodeBlocks(text: string): string {
  * Strips inline code spans from text to avoid matching uncertainty words inside code.
  *
  * @param text - Text that may contain inline code spans.
+ *
  * @returns Text with all inline code spans replaced by empty strings.
  *
  * @example
@@ -92,6 +94,7 @@ function stripInlineCode(text: string): string {
  * that Claude is quoting from source material.
  *
  * @param text - Text that may contain markdown blockquotes.
+ *
  * @returns Text with all blockquote lines removed.
  *
  * @example
@@ -112,6 +115,7 @@ function stripBlockquotes(text: string): string {
  * Does not match across newlines to avoid stripping multi-line content.
  *
  * @param text - Text that may contain inline quoted strings.
+ *
  * @returns Text with all inline quoted strings replaced by empty strings.
  *
  * @example
@@ -135,6 +139,7 @@ function stripQuotedStrings(text: string): string {
  * then inline code, then blockquotes, then quoted strings.
  *
  * @param text - Raw assistant message text.
+ *
  * @returns Cleaned text ready for pattern matching.
  *
  * @example
@@ -173,6 +178,7 @@ type QuestionMatch = {
  * Scans prose text for the first uncertainty marker match.
  *
  * @param prose - Text with code blocks and quotes already stripped.
+ *
  * @returns Match details if uncertain language was found, `undefined` otherwise.
  *
  * @example
@@ -184,7 +190,7 @@ type QuestionMatch = {
 function findUncertainty(prose: string): UncertaintyMatch | undefined {
   for (const pattern of UNCERTAINTY_PATTERNS) {
     const match = pattern.exec(prose);
-    if (match !== null && match !== undefined) {
+    if (match !== null) {
       return { phrase: match[0], pattern };
     }
   }
@@ -199,6 +205,7 @@ function findUncertainty(prose: string): UncertaintyMatch | undefined {
  * Skips sentences that start with common rhetorical/conditional patterns.
  *
  * @param prose - Text with code blocks and quotes already stripped.
+ *
  * @returns Match details if a trailing question was found, `undefined` otherwise.
  *
  * @example
@@ -207,9 +214,12 @@ function findUncertainty(prose: string): UncertaintyMatch | undefined {
  * // => { sentence: 'Want me to run the tests?' }
  * ```
  */
+/** Maximum characters from the end of the message to scan for trailing questions. */
+const TRAILING_QUESTION_SCAN_LENGTH = 500;
+
 function findTrailingQuestion(prose: string): QuestionMatch | undefined {
   /** Only scan the tail of the message where user-directed questions appear. */
-  const tail = prose.slice(-500);
+  const tail = prose.slice(-TRAILING_QUESTION_SCAN_LENGTH);
 
   /**
    * Match sentences ending with `?`.
@@ -219,7 +229,7 @@ function findTrailingQuestion(prose: string): QuestionMatch | undefined {
   const questionPattern = /(?:^|[.!?]\s+)([A-Z][^.!?]*\?)\s*$/;
   const match = questionPattern.exec(tail);
 
-  if (match === null || match === undefined) {
+  if (match === null) {
     return undefined;
   }
 

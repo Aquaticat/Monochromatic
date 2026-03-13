@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const $ = types.function.generator.from.iterable.pick.sync.named.$;
+const {$} = types.function.generator.from.iterable.pick.sync.named;
 
 describe($, () => {
   test('picks items in the inclusion set', () => {

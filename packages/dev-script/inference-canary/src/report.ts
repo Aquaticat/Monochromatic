@@ -7,7 +7,9 @@ import type { CanaryReport, } from './runner-types.ts';
 
 /**
  * Formats an ISO timestamp as a human-readable UTC string.
+ *
  * @param isoTimestamp - ISO 8601 timestamp string
+ *
  * @returns formatted string like "2026-02-23 18:12:24 UTC"
  */
 function formatTimestamp(isoTimestamp: string): string {
@@ -24,29 +26,31 @@ function formatTimestamp(isoTimestamp: string): string {
 
 /**
  * Formats a multi-model canary report as a terminal-friendly summary.
+ *
  * @param reports - completed reports for each model
+ *
  * @returns formatted multi-line report
  */
 export function formatMultiModelReport(
   reports: readonly CanaryReport[],
 ): string {
   const timestamp = formatTimestamp(reports[0]?.timestamp ?? new Date().toISOString());
-  const successful = reports.filter((report) => !report.failed);
-  const failed = reports.filter((report) => report.failed);
-  const belowTarget = successful.filter((report) => scoreLabel(report.overallScore) !== 'PASS');
+  const successful = reports.filter(function isSuccess(report): boolean { return !report.failed; });
+  const failed = reports.filter(function isFailed(report): boolean { return report.failed; });
+  const belowTarget = successful.filter(function isBelowTarget(report): boolean { return scoreLabel(report.overallScore) !== 'PASS'; });
 
   const summary = failed.length > 0
     ? `${String(failed.length)} model(s) failed, ${String(successful.length)} passed.`
-    : belowTarget.length > 0
+    : (belowTarget.length > 0
       ? `${String(belowTarget.length)} of ${String(successful.length)} model(s) below target score.`
-      : 'All models healthy.';
+      : 'All models healthy.');
 
   const successSection = successful.length > 0
-    ? ['--- Results ---', ...successful.map((report) => formatModelReport(report)), '']
+    ? ['--- Results ---', ...successful.map(function fmtSuccess(report): string { return formatModelReport(report); }), '']
     : [];
 
   const failSection = failed.length > 0
-    ? ['--- Failed ---', ...failed.map((report) => formatModelReport(report)), '']
+    ? ['--- Failed ---', ...failed.map(function fmtFailed(report): string { return formatModelReport(report); }), '']
     : [];
 
   return [

@@ -1,3 +1,4 @@
+// oxlint-disable no-magic-numbers, tsdoc/require-tsdoc -- comparison script with many dimensional constants and inline variables
 /**
  * Compares the composite render against the reference character sheet.
  *
@@ -27,7 +28,7 @@ execSync(`bun run ${join(import.meta.dirname, 'mise.build-composite.ts')}`, { st
  * Crop region for front-view character from the reference sheet.
  * Tighter crop to exclude text annotations.
  */
-const REF_CROP = { width: 290, height: 880, x: 1440, y: 60 }
+const REF_CROP = { width: 290, height: 880, x: 1_440, y: 60 }
 
 /**
  * Common comparison size.
@@ -40,10 +41,11 @@ const CMP = { width: 400, height: 700 }
  * Runs a shell command and returns stdout trimmed.
  *
  * @param cmd - shell command string
+ *
  * @returns trimmed stdout
  */
 function run(cmd: string): string {
-  return execSync(cmd, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim()
+  return execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }).trim()
 }
 
 if (!existsSync(COMPOSITE_SVG)) {
@@ -88,6 +90,7 @@ console.error('--- Running metrics ---')
  * Output format is like "54939.1 (0.838317)".
  *
  * @param raw - raw output string from magick compare
+ *
  * @returns parsed normalized value or the raw string if parsing fails
  */
 function parseMetric(raw: string): string {
@@ -151,12 +154,13 @@ try {
   let anyRan = false
 
   for (const { name, envKey } of providers) {
-    if (process.env[envKey] === undefined && process.env[envKey] !== '') {
+    if (process.env[envKey] === undefined || process.env[envKey] === '') {
       console.error(`${name}:  skipped (${envKey} not set)`)
       continue
     }
 
     try {
+      // oxlint-disable-next-line no-await-in-loop -- sequential provider fallback; later providers only run if earlier ones fail
       const result = await aiCompare(refInput, cmpInput, { provider: name })
       console.error(`${name}:  similarity=${result.similarity.toFixed(4)}  distance=${result.distance.toFixed(4)}  (1.0 = identical)`)
       anyRan = true

@@ -4,9 +4,7 @@ import { createMcpServer, defineTool, serve } from "@monochromatic-dev/mcp-stdio
 import { dedupDiagnostics } from "./dedup.ts";
 import { formatDiagnostic } from "./format.ts";
 import { runOxlint } from "./lint-runner.ts";
-import { getAllDiagnostics, getCurrentFiles } from "./nvim-client.ts";
-
-import type { CurrentFile, Diagnostic, FileDiagnostics } from "./nvim-client.ts";
+import { getAllDiagnostics, getCurrentFiles, type CurrentFile, type Diagnostic, type FileDiagnostics } from "./nvim-client.ts";
 
 /**
  * Builds a caveat note when any current buffer has unsaved changes.
@@ -41,9 +39,10 @@ function formatNotes(notes: readonly string[]): string {
   if (notes.length === 0) {
     return "";
   }
-  return "\n\n" + notes.map(function prefixNote(note) {
+  const formattedNotes = notes.map(function prefixNote(note) {
     return `(note: ${note})`;
   }).join("\n");
+  return `\n\n${formattedNotes}`;
 }
 
 /**
@@ -54,9 +53,9 @@ function formatNotes(notes: readonly string[]): string {
  * @returns Multi-line header string.
  */
 function buildHeader(files: readonly CurrentFile[]): string {
-  if (files.length === 1) {
-    const file = files[0]!;
-    return `path: ${file.path}\nfiletype: ${file.filetype}\nmodified: ${file.modified}`;
+  const [firstFile] = files;
+  if (files.length === 1 && firstFile !== undefined) {
+    return `path: ${firstFile.path}\nfiletype: ${firstFile.filetype}\nmodified: ${firstFile.modified}`;
   }
 
   return files.map(function formatEntry(file, index) {
@@ -78,9 +77,7 @@ const server = createMcpServer(
           const files = await getCurrentFiles();
           const header = buildHeader(files);
 
-          const uniquePaths = Array.from(new Set(
-            files.map(function getPath(file) { return file.path; }),
-          ));
+          const uniquePaths = [...new Set(files.map(function getPath(file) { return file.path; }))];
 
           // Query all editor diagnostics and lint in parallel, then filter to current files.
           // Using getAllDiagnostics gives us per-file grouping across all instances.
@@ -120,7 +117,7 @@ const server = createMcpServer(
             allNotes.push(caveat);
           }
 
-          const allMerged = Array.from(mergedByPath.values()).flat();
+          const allMerged = [...mergedByPath.values()].flat();
 
           if (allMerged.length === 0) {
             return {
@@ -144,7 +141,7 @@ const server = createMcpServer(
             };
           }
 
-          const sections = Array.from(mergedByPath.entries()).map(
+          const sections = [...mergedByPath.entries()].map(
             function formatSection([path, diagnostics]) {
               const lines = diagnostics.map(function formatLine(diagnostic) {
                 return formatDiagnostic(diagnostic, "  ");
@@ -200,7 +197,7 @@ const server = createMcpServer(
           }
           //endregion Merge editor and lint diagnostics per file
 
-          const result: FileDiagnostics[] = Array.from(mergedByPath.entries()).map(
+          const result: FileDiagnostics[] = [...mergedByPath.entries()].map(
             function toFileDiagnostics([path, diagnostics]) {
               return { path, diagnostics };
             },

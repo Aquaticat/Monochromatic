@@ -1,3 +1,4 @@
+// oxlint-disable no-magic-numbers, tsdoc/require-tsdoc, no-non-null-assertion -- measurement script with many dimensional constants, inline variables, and PGM index access where bounds are verified by loop
 /**
  * Measures body proportions from the composite SVG and reference image.
  *
@@ -22,19 +23,20 @@ const REF_IMAGE = '/home/user/Nextcloud/Text/Docs/Algonquin/MTM6403/teto_sv_3vie
 const TMP = '/tmp/claude-1000'
 
 /** Crop region for front-view character from the reference sheet. */
-const REF_CROP = { width: 290, height: 880, x: 1440, y: 60 }
+const REF_CROP = { width: 290, height: 880, x: 1_440, y: 60 }
 
 /** Height to normalize both images to for consistent measurement. */
-const NORM_HEIGHT = 1000
+const NORM_HEIGHT = 1_000
 
 /**
  * Runs a shell command and returns stdout trimmed.
  *
  * @param cmd - shell command string
+ *
  * @returns trimmed stdout
  */
 function run(cmd: string): string {
-  return execSync(cmd, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim()
+  return execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }).trim()
 }
 
 /** Always rebuild composite first. */
@@ -92,12 +94,13 @@ run(
  * to find the leftmost and rightmost non-zero pixel.
  *
  * @param imagePath - path to the silhouette PNG
+ *
  * @returns object with dimensions and per-row width data
  */
 function measureWidthProfile(imagePath: string): {
   imageWidth: number
   imageHeight: number
-  rows: Array<{ y: number; left: number; right: number; width: number }>
+  rows: { y: number; left: number; right: number; width: number }[]
 } {
   /** Get image dimensions. */
   const dims = run(`magick identify -format "%w %h" "${imagePath}"`)
@@ -113,7 +116,7 @@ function measureWidthProfile(imagePath: string): {
   )
 
   /** Read the PGM file directly -- it's a simple text format. */
-  const pgmData = readFileSync(`${TMP}/measure_dump.pgm`, 'utf-8')
+  const pgmData = readFileSync(`${TMP}/measure_dump.pgm`, 'utf8')
   const pgmLines = pgmData.split('\n')
 
   /**
@@ -136,7 +139,7 @@ function measureWidthProfile(imagePath: string): {
     }
   }
 
-  const rows: Array<{ y: number; left: number; right: number; width: number }> = []
+  const rows: { y: number; left: number; right: number; width: number }[] = []
 
   for (let y = 0; y < height; y++) {
     const rowStart = y * width
@@ -169,7 +172,9 @@ const cmpProfile = measureWidthProfile(`${TMP}/measure_cmp_silhouette.png`)
  * Finds the width at a given relative vertical position (0 = top, 1 = bottom).
  *
  * @param profile - width profile data
+ *
  * @param relY - relative y position (0-1)
+ *
  * @returns width in pixels at that position, or 0 if no data
  */
 function widthAtRelY(
@@ -187,8 +192,11 @@ function widthAtRelY(
  * Finds the maximum width within a relative y range.
  *
  * @param profile - width profile data
+ *
  * @param relYStart - start of range (0-1)
+ *
  * @param relYEnd - end of range (0-1)
+ *
  * @returns maximum width in that range
  */
 function maxWidthInRange(
@@ -215,8 +223,11 @@ function maxWidthInRange(
  * Finds the minimum width within a relative y range.
  *
  * @param profile - width profile data
+ *
  * @param relYStart - start of range (0-1)
+ *
  * @param relYEnd - end of range (0-1)
+ *
  * @returns minimum width in that range
  */
 function minWidthInRange(
@@ -243,6 +254,7 @@ function minWidthInRange(
  * Finds the topmost and bottommost rows with content.
  *
  * @param profile - width profile data
+ *
  * @returns top and bottom y positions (relative 0-1)
  */
 function contentBounds(profile: ReturnType<typeof measureWidthProfile>): {
@@ -252,7 +264,7 @@ function contentBounds(profile: ReturnType<typeof measureWidthProfile>): {
 } {
   if (profile.rows.length === 0) return { top: 0, bottom: 0, totalHeight: 0 }
   const top = profile.rows[0]!.y
-  const bottom = profile.rows[profile.rows.length - 1]!.y
+  const bottom = profile.rows.at(-1)!.y
   return {
     top: top / profile.imageHeight,
     bottom: bottom / profile.imageHeight,
@@ -275,19 +287,19 @@ console.error('')
  * These approximate where key body parts fall vertically.
  */
 const LANDMARKS = {
-  headTop: 0.0,
+  headTop: 0,
   headCenter: 0.05,
   chin: 0.12,
   shoulders: 0.17,
   chest: 0.22,
-  waist: 0.30,
+  waist: 0.3,
   hips: 0.36,
   skirtBottom: 0.46,
   midThigh: 0.52,
-  knees: 0.60,
+  knees: 0.6,
   midCalf: 0.72,
-  ankles: 0.80,
-  feet: 0.90,
+  ankles: 0.8,
+  feet: 0.9,
 } as const
 
 type MeasurementRow = {
@@ -346,7 +358,9 @@ console.error('')
  * Converts a relative content position to an absolute image y fraction.
  *
  * @param bounds - content bounds from contentBounds()
+ *
  * @param relContent - relative position within content (0-1)
+ *
  * @returns absolute y fraction (0-1) in image coordinates
  */
 function contentToAbsY(
@@ -368,14 +382,16 @@ const waistCmp = minWidthInRange(cmpProfile, contentToAbsY(cmpBounds, 0.25), con
 const hipRef = maxWidthInRange(refProfile, contentToAbsY(refBounds, 0.34), contentToAbsY(refBounds, 0.48))
 const hipCmp = maxWidthInRange(cmpProfile, contentToAbsY(cmpBounds, 0.34), contentToAbsY(cmpBounds, 0.48))
 
-const headRef = maxWidthInRange(refProfile, contentToAbsY(refBounds, 0.0), contentToAbsY(refBounds, 0.10))
-const headCmp = maxWidthInRange(cmpProfile, contentToAbsY(cmpBounds, 0.0), contentToAbsY(cmpBounds, 0.10))
+const headRef = maxWidthInRange(refProfile, contentToAbsY(refBounds, 0), contentToAbsY(refBounds, 0.1))
+const headCmp = maxWidthInRange(cmpProfile, contentToAbsY(cmpBounds, 0), contentToAbsY(cmpBounds, 0.1))
 
 /**
  * Formats a ratio safely, handling zero denominators.
  *
  * @param cmpVal - composite normalized value
+ *
  * @param refVal - reference normalized value
+ *
  * @returns formatted ratio string
  */
 function fmtRatio(cmpVal: number, refVal: number): string {

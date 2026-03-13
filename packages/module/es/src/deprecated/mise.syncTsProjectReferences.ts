@@ -69,7 +69,7 @@ async function discoverPackages(): Promise<PackageInfo[]> {
       const packageJsonPath = join(packagePath, 'package.json',);
 
       try {
-        const packageJsonContent = await readFile(packageJsonPath, 'utf-8',);
+        const packageJsonContent = await readFile(packageJsonPath, 'utf8',);
         const packageJson = JSON.parse(packageJsonContent,) as {
           name: string;
           dependencies?: Record<string, string>;
@@ -128,14 +128,14 @@ async function updateTsConfig(
   const tsconfigPath = join(pkg.path, 'tsconfig.json',);
 
   try {
-    const tsconfigContent = await readFile(tsconfigPath, 'utf-8',);
+    const tsconfigContent = await readFile(tsconfigPath, 'utf8',);
     const tsconfig = JSON.parse(tsconfigContent,) as {
-      references?: Array<{ path: string; }>;
+      references?: { path: string; }[];
       [key: string]: unknown;
     };
 
     // Build new references based on dependencies
-    const references: Array<{ path: string; }> = [];
+    const references: { path: string; }[] = [];
 
     for (const dep of pkg.dependencies) {
       const depPath = packageMap.get(dep,);
@@ -158,7 +158,7 @@ async function updateTsConfig(
 
       // Write back with proper formatting
       const newContent = JSON.stringify(tsconfig, null, 2,) + '\n';
-      await writeFile(tsconfigPath, newContent, 'utf-8',);
+      await writeFile(tsconfigPath, newContent, 'utf8',);
       console.log(`Updated ${pkg.name}`,);
     }
     else {

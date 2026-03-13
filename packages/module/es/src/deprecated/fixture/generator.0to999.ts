@@ -53,7 +53,7 @@
  * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export function* gen0to999(): Generator<number> {
-  for (let value = 0; value < 1000; value++)
+  for (let value = 0; value < 1_000; value++)
     yield value;
 }
 
@@ -169,7 +169,7 @@
 /* @__NO_SIDE_EFFECTS__ */ export async function* gen0to999Async(): AsyncGenerator<
   number
 > {
-  for (let value = 0; value < 1000; value++)
+  for (let value = 0; value < 1_000; value++)
     yield value;
 }
 
@@ -317,7 +317,7 @@
 /* @__NO_SIDE_EFFECTS__ */ export async function* gen0to999AsyncSlow(): AsyncGenerator<
   number
 > {
-  for (let delayMilliseconds = 0; delayMilliseconds < 1000; delayMilliseconds++) {
+  for (let delayMilliseconds = 0; delayMilliseconds < 1_000; delayMilliseconds++) {
     await (new Promise(resolve => setTimeout(resolve, delayMilliseconds,)));
     yield delayMilliseconds;
   }

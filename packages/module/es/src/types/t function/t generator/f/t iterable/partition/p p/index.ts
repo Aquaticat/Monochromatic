@@ -11,7 +11,9 @@ import { $ as partitionNamed, } from '../p n/index.ts';
  * Items are evaluated in order, with the predicate awaited for each item.
  *
  * @param predicate - Function to test each item, can return boolean or Promise<boolean>
+ *
  * @param iterable - Iterable or AsyncIterable to partition
+ *
  * @yields Objects with decision ('pass', 'fail', or ['thrown', error]) and the item
  *
  * @example

@@ -7,7 +7,9 @@ import type {
 
 /**
  * Type guard to check if an object is a RangeNumberInt.
+ *
  * @param value - Object to check
+ *
  * @returns True if the object is a RangeNumberInt with integer bounds
  */
 export function $(value: RangeNumber,): value is RangeNumberInt {

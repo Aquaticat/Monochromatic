@@ -3,7 +3,9 @@ import spawn from 'nano-spawn';
 /**
  * Checks whether the desktop session is locked via the freedesktop
  * ScreenSaver D-Bus interface (works on KDE, GNOME, and other compliant DEs).
+ *
  * @returns `true` when the session is locked
+ *
  * @example
  * ```ts
  * if (await isScreenLocked()) {

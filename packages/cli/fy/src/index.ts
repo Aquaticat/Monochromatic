@@ -27,7 +27,7 @@ const argParser = string({ metavar: 'ARG' });
 type CliArgs = {
   specifier: string;
   exportName: string;
-  callArgs: ReadonlyArray<string>;
+  callArgs: readonly string[];
 };
 
 /** Top-level parser: <specifier> <export> [args...] */
@@ -37,7 +37,7 @@ const parser = map(
     exportName: argument(exportParser),
     callArgs: multiple(argument(argParser)),
   }),
-  (v): CliArgs => v,
+  function toCliArgs(v: CliArgs): CliArgs { return v; },
 );
 
 /** Parsed result from process.argv */
@@ -48,12 +48,13 @@ const args = runSync(parser, {
   aboveError: 'help',
   brief: message`cli-fy - call any ESM export from the command line`,
   footer: message`Examples:\n  cli-fy lodash add 1 1\n  cli-fy @scope/pkg myFn arg1 arg2\n  cli-fy lodash-es/add default 1 1`,
-}) as CliArgs;
+});
 
 //endregion Arg parsing
 
 //region Main execution -- resolve, import, call, print
 
+/** Tagged logger for the main execution flow. */
 const rl = tagged({ tag: 'main', l });
 
 rl.info(`specifier="${args.specifier}" export="${args.exportName}" args=[${args.callArgs.join(', ')}]`);
@@ -63,6 +64,7 @@ const resolvedPath = await resolveSpecifier({ specifier: args.specifier });
 rl.info(`resolved to ${resolvedPath}`);
 
 /** Dynamically imported module */
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- dynamic import yields unknown module shape
 const mod = await import(resolvedPath) as Record<string, unknown>;
 
 /** Target export value from the module */
@@ -85,8 +87,8 @@ if (typeof exportValue === 'function') {
   rl.info(`calling ${args.exportName}(${coercedArgs.map(String).join(', ')})`);
 
   /** Return value from calling the exported function */
-  // oxlint-disable-next-line typescript/no-unsafe-assignment
-  const result: unknown = await (exportValue as (...fnArgs: ReadonlyArray<unknown>) => unknown)(...coercedArgs);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/no-unsafe-assignment -- dynamic module call with unknown signature
+  const result: unknown = await (exportValue as (...fnArgs: readonly unknown[]) => unknown)(...coercedArgs);
   console.log(result);
 } else {
   if (args.callArgs.length > 0) {

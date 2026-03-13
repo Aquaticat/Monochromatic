@@ -6,7 +6,7 @@ import {
   test,
 } from 'bun:test';
 
-const $ = types.object.record.from.record.pick.named.$;
+const {$} = types.object.record.from.record.pick.named;
 
 describe($, () => {
   test('picks specified keys from object', () => {

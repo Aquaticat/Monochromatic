@@ -16,8 +16,11 @@ export type GlobResults = readonly GlobResult[] & {
 /**
  * Creates a {@link GlobResults} array from a source glob and its matched files.
  * Useful for constructing results outside of `cat()` (e.g. in tests).
+ *
  * @param sourceGlob - Glob pattern that produced the results
+ *
  * @param results - Matched files with paths and contents
+ *
  * @returns Branded array with the source glob attached
  *
  * @example
@@ -49,6 +52,7 @@ export async function cat(glob: string): Promise<GlobResults>;
  */
 export async function cat(files: readonly string[]): Promise<string>;
 
+/** {@inheritDoc cat} */
 export async function cat(input: string | readonly string[]): Promise<string | GlobResults> {
   if (typeof input === 'string') {
     /** Paths matched by the glob pattern */
@@ -65,9 +69,9 @@ export async function cat(input: string | readonly string[]): Promise<string | G
 
   /** Expand any glob patterns in the array, then flatten */
   const expandedGroups = await Promise.all(
-    input.map(async function expandOnePath(path: string): Promise<readonly string[]> {
+    input.map(function expandOnePath(path: string): Promise<readonly string[]> | readonly string[] {
       if (GLOB_CHARS.test(path)) {
-        return await expandGlob(path);
+        return expandGlob(path);
       }
       return [path];
     }),
@@ -75,9 +79,9 @@ export async function cat(input: string | readonly string[]): Promise<string | G
 
   /** File contents read in parallel */
   const contents = await Promise.all(
-    expandedGroups.flat().map(async function readOneFile(filePath: string): Promise<string> {
+    expandedGroups.flat().map(function readOneFile(filePath: string): Promise<string> {
       trackRead(filePath);
-      return await readCached(filePath);
+      return readCached(filePath);
     }),
   );
   return contents.join('\n');

@@ -40,11 +40,13 @@ export type OxlintResult = {
 
 /**
  * Formats oxlint JSON diagnostics into human-readable lines for model feedback.
+ *
  * @param diagnostics - parsed diagnostic objects
+ *
  * @returns one-line-per-violation string
  */
 function formatOxlintDiagnostics(diagnostics: readonly OxlintDiagnostic[]): string {
-  return diagnostics.map((diagnostic) => {
+  return diagnostics.map(function formatDiag(diagnostic): string {
     const line = diagnostic.labels?.[0]?.span?.line ?? '?';
     const severity = diagnostic.severity ?? 'error';
     const code = diagnostic.code ?? 'unknown';
@@ -66,24 +68,27 @@ const LINT_WARNING_PENALTY = 0.05;
 
 /**
  * Parses oxlint JSON output, counting violations by severity.
+ *
  * @param jsonOutput - raw JSON string from oxlint --format json
+ *
  * @returns parsed result with severity breakdown and raw diagnostic text
  */
 function parseOxlintJson(jsonOutput: string): OxlintResult {
   try {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint JSON output has known structure
     const parsed = JSON.parse(jsonOutput.trim()) as {
       diagnostics?: readonly OxlintDiagnostic[];
     };
     const diagnostics = parsed.diagnostics ?? [];
-    const errors = diagnostics.filter((d) => d.severity === 'error').length;
-    const warnings = diagnostics.filter((d) => d.severity === 'warning').length;
+    const errors = diagnostics.filter(function isError(d): boolean { return d.severity === 'error'; }).length;
+    const warnings = diagnostics.filter(function isWarning(d): boolean { return d.severity === 'warning'; }).length;
     const violatedRules = [
-      ...new Set(diagnostics.map((d) => d.code ?? 'unknown').filter((code) => code !== 'unknown')),
+      ...new Set(diagnostics.map(function getCode(d): string { return d.code ?? 'unknown'; }).filter(function notUnknown(code): boolean { return code !== 'unknown'; })),
     ];
 
     // Compute uncapped penalty per rule from per-rule violation counts and severity
     const penaltyAccumulator = new Map<string, number>();
-    diagnostics.forEach((diagnostic) => {
+    diagnostics.forEach(function accumPenalty(diagnostic): void {
       const rule = diagnostic.code ?? 'unknown';
       const penaltyPerOccurrence = diagnostic.severity === 'warning'
         ? LINT_WARNING_PENALTY
@@ -114,7 +119,9 @@ function parseOxlintJson(jsonOutput: string): OxlintResult {
 /**
  * Runs oxlint --format json on a file, returns parsed severity breakdown.
  * oxlint exits non-zero on violations; stdout still contains valid JSON.
+ *
  * @param filePath - absolute path to the file to lint
+ *
  * @returns parsed oxlint result
  */
 export async function runAndParseOxlint(filePath: string): Promise<OxlintResult> {

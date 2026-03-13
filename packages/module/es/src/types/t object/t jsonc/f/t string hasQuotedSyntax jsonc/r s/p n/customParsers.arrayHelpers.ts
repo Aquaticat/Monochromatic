@@ -10,8 +10,11 @@ import { startsWithComment, } from './customParsers.startsWithComment.ts';
  * After the opening '[', compute the array-level comment (if any) and return the tail at the first element or ']'.
  *
  * @param valueAfterBracket - Substring immediately following '['
+ *
  * @param context - Optional value whose `comment` represents the array-level comment
+ *
  * @returns Array-level comment (when present) and the unparsed tail within the array
+ *
  * @example
  * ```ts
  * parseArrayHeader('[ /* c *\/ 1,2]TAIL'.slice(1) as FragmentStringJsonc)
@@ -35,7 +38,9 @@ export function parseArrayHeader(
  * Given the raw tail after an element, consume comments/whitespace once and decide next action.
  *
  * @param value - Tail beginning after an element value
+ *
  * @returns Discriminated union: `'end'` with tail after ']' or `'next'` with the next element's start
+ *
  * @throws Error - When neither ',' nor ']' is found in a valid position
  */
 export function expectArraySeparatorOrEnd(

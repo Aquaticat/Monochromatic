@@ -6,7 +6,9 @@
  * elements, starting from 0 and incrementing by 1 for each subsequent element.
  *
  * @param length - Number of consecutive integers to generate (array length)
+ *
  * @returns Array containing integers from 0 to length-1, empty array for length 0
+ *
  * @throws RangeError When length is negative
  *
  * @example
@@ -82,5 +84,5 @@ export function $<const Length extends number,>(
   }
 
   // oxlint-disable-next-line typescript/no-unsafe-return -- Return type is a type TS can't auto infer
-  return Array.from({ length, }, (_, index,) => index,) as any;
+  return Array.from({ length, }, function getIndex(_, index,) { return index; },) as any;
 }

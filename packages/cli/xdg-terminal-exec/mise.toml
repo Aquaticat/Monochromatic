@@ -1,0 +1,13 @@
+[tasks.run]
+description = "Run xdg-terminal-exec"
+usage = 'arg "[args]" var=#true help="Command and arguments to execute in the terminal"'
+run = "bun src/index.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks.'lint:types']
+extends = "lint:types"
+
+[tasks.'lint:oxlint']
+extends = "lint:oxlint"

@@ -5,7 +5,9 @@
  * data integrity verification, unique identifiers, or security applications.
  *
  * @param value - string to hash
+ *
  * @returns hexadecimal string representation of the SHA-256 hash
+ *
  * @example
  * ```ts
  * const hash = await hashString('hello world');
@@ -20,8 +22,8 @@ export async function hashString(value: string,): Promise<string> {
   /** SHA-256 hash digest as ArrayBuffer */
   const hashBuffer = await crypto.subtle.digest('SHA-256', data,);
   /** Convert ArrayBuffer to array of bytes for processing */
-  const hashArray = Array.from(new Uint8Array(hashBuffer,),);
+  const hashArray = [...new Uint8Array(hashBuffer)];
   /** Convert bytes to hexadecimal string with zero-padding */
-  const hashHex = hashArray.map(b => b.toString(16,).padStart(2, '0',)).join('',);
+  const hashHex = hashArray.map(function toHex(b) { return b.toString(16,).padStart(2, '0',); }).join('',);
   return hashHex;
 }

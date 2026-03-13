@@ -22,6 +22,8 @@ import { ensureTemplate } from './template.ts';
  * - Pick up new cloud image releases for Linux distros
  * - Rebuild templates after a virtio-win driver update
  *
+ * @returns Resolves when all templates are rebuilt
+ *
  * @throws Error when any download or template creation fails
  *
  * @example
@@ -35,20 +37,23 @@ export async function update(): Promise<void> {
   rl.info('updating all template images unconditionally');
 
   // Delete all cached base images and templates
-  for (const [name, spec] of Object.entries(IMAGES)) {
+  const removePromises = Object.entries(IMAGES).flatMap(function buildRemoveOps([name, spec]) {
+    const ops: Promise<void>[] = [];
     const imagePath = join(IMAGES_DIR, spec.fileName);
     const templatePath = join(IMAGES_DIR, spec.templateFileName);
 
     if (existsSync(imagePath)) {
       rl.info(`removing cached base image for ${name}: ${spec.fileName}`);
-      await rm(imagePath);
+      ops.push(rm(imagePath));
     }
 
     if (existsSync(templatePath)) {
       rl.info(`removing cached template for ${name}: ${spec.templateFileName}`);
-      await rm(templatePath);
+      ops.push(rm(templatePath));
     }
-  }
+    return ops;
+  });
+  await Promise.all(removePromises);
 
   // Delete cached virtio-win ISO (shared across Windows versions)
   const virtioPath = join(IMAGES_DIR, VIRTIO_WIN_FILENAME);
@@ -57,10 +62,11 @@ export async function update(): Promise<void> {
     await rm(virtioPath);
   }
 
-  // Rebuild all templates (downloads happen inside ensureTemplate)
+  // Rebuild all templates sequentially (each may spawn a VM that occupies shared resources)
   const imageEntries = Object.entries(IMAGES);
   for (const [name, spec] of imageEntries) {
     rl.info(`rebuilding template for ${name}...`);
+    // oxlint-disable-next-line eslint(no-await-in-loop) -- templates must build sequentially to avoid resource contention
     await ensureTemplate(spec);
     rl.info(`template for ${name} rebuilt successfully`);
   }

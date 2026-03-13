@@ -1,7 +1,10 @@
 /**
  * Checks if a value is numeric (number or bigint).
+ *
  * @param value - Value to check
+ *
  * @returns True if value is a number or bigint
+ *
  * @example
  * ```ts
  * $(5); // true

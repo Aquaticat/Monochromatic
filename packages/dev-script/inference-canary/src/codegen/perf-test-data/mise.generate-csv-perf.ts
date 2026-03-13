@@ -13,7 +13,7 @@
  */
 
 /** Number of data rows (excluding header) */
-const ROW_COUNT = 2000;
+const ROW_COUNT = 2_000;
 
 /** CSV header row */
 const header = 'id,name,bio,score';
@@ -71,8 +71,8 @@ const csvInput = rows.join('\n') + '\n';
 const expectedOutput = JSON.stringify(expected, null, 2) + '\n';
 
 const { writeFile } = await import('node:fs/promises');
-await writeFile(new URL('./csv-perf-input.txt', import.meta.url).pathname, csvInput);
-await writeFile(new URL('./csv-perf-expected.txt', import.meta.url).pathname, expectedOutput);
+await writeFile(new URL('csv-perf-input.txt', import.meta.url).pathname, csvInput);
+await writeFile(new URL('csv-perf-expected.txt', import.meta.url).pathname, expectedOutput);
 
 console.log(`Generated CSV perf test: ${String(ROW_COUNT)} rows, ${String(csvInput.length)} bytes input, ${String(expectedOutput.length)} bytes expected output`);
 

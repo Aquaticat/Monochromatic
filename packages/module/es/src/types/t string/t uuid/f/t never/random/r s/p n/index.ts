@@ -9,7 +9,9 @@ import {
  * in the library, even though crypto.randomUUID takes no parameters.
  *
  * @param _options - Empty object (no parameters needed, provided for API consistency)
+ *
  * @returns Cryptographically secure random UUID v4 string
+ *
  * @throws Error If crypto.randomUUID is not available in the environment
  *
  * @example Basic usage
@@ -24,6 +26,6 @@ import {
  * console.log(uuid); // 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
  * ```
  */
-export function $(_options?: {}): string {
+export function $(_options?: Record<string, never>): string {
   return positional();
 }

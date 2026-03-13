@@ -39,7 +39,7 @@ function stripLogLines({ raw }: { raw: string }): string {
  * // result.stdout === '/tmp/test'
  * ```
  */
-async function runCliFy({ args }: { args: ReadonlyArray<string> }): Promise<{
+async function runCliFy({ args }: { args: readonly string[] }): Promise<{
   stdout: string;
   stderr: string;
   exitCode: number;

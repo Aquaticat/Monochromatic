@@ -14,9 +14,11 @@ const MAX_ERROR_PREVIEW_LENGTH = 48;
 
 /**
  * Sentinel indicating fast-path optimization cannot be applied.
+ *
  * @remarks
  * Narrow by category first using `typeof result === 'symbol'` before identity comparison to avoid incorrect
  * narrowing with symbol unions.
+ *
  * @example
  * ```ts
  * const result = tryArrayFastPath({ value: '[1, 2,]', context });
@@ -43,8 +45,11 @@ export const NO_FAST_PATH: symbol = Symbol('jsonc:no-fast-path',);
  * Returns sentinel if optimization cannot be applied (e.g., contains comments).
  *
  * @param value - Container string starting with `[` or `{`
+ *
  * @param context - Leading comment context from pre-scan
+ *
  * @param closingChar - Expected closing character (`]` for arrays, `}` for objects)
+ *
  * @returns Parsed JSONC value on success, or NO_FAST_PATH sentinel when fast-path cannot be used
  *
  * @example
@@ -158,7 +163,9 @@ export function tryObjectFastPath(
  * Prevents silent acceptance of malformed JSONC with extra data after the main structure.
  *
  * @param remainingContent - Content after parsing the main structure
+ *
  * @param containerType - Type of container that was parsed ('array' or 'object')
+ *
  * @throws Error when non-whitespace/non-comment content remains
  *
  * @example
@@ -204,10 +211,15 @@ export function validateNoTrailingContent(
  * if JSONC features are detected. Validates no trailing content remains after parsing.
  *
  * @param value - Container string to parse
+ *
  * @param context - Leading comment context from pre-scan
+ *
  * @param containerType - Type of container ('array' or 'object')
+ *
  * @param tryFastPathFn - Fast-path optimization function
+ *
  * @param customParserFn - Custom parser for JSONC features
+ *
  * @returns Parsed JSONC value with comments preserved
  */
 export function parseWithFallback({

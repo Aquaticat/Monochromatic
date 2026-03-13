@@ -15,12 +15,20 @@ import type { Probe, } from './probes.ts';
  *
  * Results are persisted as enriched artifacts (meta.json + response.txt) during
  * probe execution. No separate history file is written.
+ *
  * @param selectedModels - models to test
+ *
  * @param probes - probes to run on each model
+ *
  * @param recentModelProbePairs - model:probe pairs to skip (tested recently)
+ *
  * @param recentlyFailedModels - model labels that had a whole-model failure recently (e.g. 429)
+ *
  * @param apiKey - OpenRouter API key
+ *
  * @param runsOverride - optional override for the number of consistency runs (already parsed as integer)
+ *
+ * @returns resolves after all models complete and the report is printed
  */
 export async function runAndReport(
   selectedModels: readonly ModelConfig[],
@@ -35,7 +43,7 @@ export async function runAndReport(
 
   // Skip models that had a whole-model failure (e.g. 429, auth error) within the last 24 hours.
   // Their failure artifacts are already recorded; retesting would just hit the same error.
-  const modelsToRun = selectedModels.filter((model) => {
+  const modelsToRun = selectedModels.filter(function shouldRun(model): boolean {
     if (recentlyFailedModels.has(model.label)) {
       console.log(`[${model.label}] skipping all probes (recent whole-model failure)`);
       return false;
@@ -44,20 +52,20 @@ export async function runAndReport(
   });
 
   const reports: readonly CanaryReport[] = await Promise.all(
-    modelsToRun.map((model) =>
-      runCanary(probes, {
+    modelsToRun.map(function runModel(model): Promise<CanaryReport> {
+      return runCanary(probes, {
         model: model.openrouterId,
         label: model.label,
         verbosity: model.verbosity,
         apiKey,
         skipProbes: recentModelProbePairs,
         ...consistencyRunsOverride,
-      }),
-    ),
+      });
+    }),
   );
 
-  const reportsWithResults = reports.filter((report) => report.results.length > 0);
-  const failedReports = reports.filter((report) => report.failed);
+  const reportsWithResults = reports.filter(function hasResults(report): boolean { return report.results.length > 0; });
+  const failedReports = reports.filter(function isFailed(report): boolean { return report.failed; });
 
   // Only skip the report when all probes were cached and nothing actually ran or failed.
   // Probe-level timeouts now produce zero-score results rather than failing the model,

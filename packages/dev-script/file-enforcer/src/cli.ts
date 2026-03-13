@@ -13,7 +13,7 @@ const args = process.argv.slice(2);
 const watchMode = args.includes('--watch');
 
 /** Positional args with flags stripped, used as an optional config path override */
-const positionalArgs = args.filter((arg) => !arg.startsWith('--'));
+const positionalArgs = args.filter(function isPositional(arg): boolean { return !arg.startsWith('--'); });
 
 /** Config path from CLI arg, or found by walking up from cwd */
 const configPath = positionalArgs[0] ?? await findUp(CONFIG_NAME);

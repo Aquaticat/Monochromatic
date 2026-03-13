@@ -13,9 +13,7 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 import { renderYAxis, renderXAxis, } from './axis.ts';
 import { renderThresholdLine, } from './threshold-line.ts';
-import { renderDataTable, } from './data-table.ts';
-
-import type { TableRow, TableDisplayOptions, } from './data-table.ts';
+import { renderDataTable, type TableRow, type TableDisplayOptions, } from './data-table.ts';
 
 /** Single data point for the scatter plot */
 export type ScatterPoint = {
@@ -43,13 +41,20 @@ export type ScatterPoint = {
 
 /**
  * Renders a complete scatter chart: plot area, axes, threshold line, and backing table.
- * @param options - chart rendering options
- * @param options.points - data points to render
- * @param options.threshold - degradation threshold value (0-1), 0 to hide
- * @param options.thresholdLabel - label for the threshold line
- * @param options.caption - accessible caption for the chart and table
- * @param options.hideTable - when true, omit the backing data table entirely
- * @param options.tableDisplay - column visibility options forwarded to the data table
+ *
+ *
+ * @param points - data points to render
+ *
+ * @param threshold - degradation threshold value (0-1), 0 to hide
+ *
+ * @param thresholdLabel - label for the threshold line
+ *
+ * @param caption - accessible caption for the chart and table
+ *
+ * @param hideTable - when true, omit the backing data table entirely
+ *
+ * @param tableDisplay - column visibility options forwarded to the data table
+ *
  * @returns HTML string
  */
 export function renderScatterChart({

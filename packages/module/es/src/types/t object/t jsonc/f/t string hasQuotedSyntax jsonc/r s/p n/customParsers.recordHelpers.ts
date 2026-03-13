@@ -11,8 +11,11 @@ import { startsWithComment, } from './customParsers.startsWithComment.ts';
  * After the opening '{', extract the record-level comment (if any) from context.
  *
  * @param valueAfterBrace - Substring immediately following '{'
+ *
  * @param context - Optional value whose `comment` represents the record-level comment
+ *
  * @returns Record-level comment (when present) and the unparsed tail within the record
+ *
  * @example
  * ```ts
  * parseRecordHeader('{ /* c *\/ "a":1}TAIL'.slice(1) as FragmentStringJsonc)
@@ -35,7 +38,9 @@ export function parseRecordHeader(
  * After a record value, consume comments/whitespace once and decide next action.
  *
  * @param tail - Tail beginning after a value token
+ *
  * @returns Discriminated union: `'end'` with tail after '}' or `'next'` with the next member's start
+ *
  * @throws Error - When neither ',' nor '}' is found in a valid position
  */
 export function expectRecordSeparatorOrEnd(
@@ -74,7 +79,9 @@ export function expectRecordSeparatorOrEnd(
  * Parse a single record key with its leading comment.
  *
  * @param tail - Tail positioned at potential key start (may have leading comment/whitespace)
+ *
  * @returns Key node with optional comment, and remaining tail after the key
+ *
  * @throws Error - When the tail does not start with a quoted string
  */
 export function parseRecordKey(
@@ -104,7 +111,9 @@ export function parseRecordKey(
  * Consume comments/whitespace after key and verify ':' is present.
  *
  * @param tail - Tail after the key
+ *
  * @returns Tail after the ':' token
+ *
  * @throws Error - When ':' is not found after consuming comments/whitespace
  */
 export function expectColonAfterKey(

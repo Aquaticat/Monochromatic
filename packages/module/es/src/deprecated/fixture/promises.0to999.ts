@@ -160,8 +160,8 @@
  * ```
  */
 /* @__NO_SIDE_EFFECTS__ */ export const promises0to999: Promise<number>[] = Array.from(
-  { length: 1000, },
-  (_, index,) => new Promise(resolve => setTimeout(() => resolve(index,), index,)),
+  { length: 1_000, },
+  (_, index,) => new Promise(resolve => setTimeout(() =>{  resolve(index,); }, index,)),
 );
 
 //endregion Promise Test Fixtures

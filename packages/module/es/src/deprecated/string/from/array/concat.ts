@@ -201,7 +201,7 @@ export function concatStringsAsync(...strings: string[]): Promise<string>;
  * ```
  */
 export async function concatStringsAsync(...strings: any): Promise<string> {
-  return await concatStringsBaseAsync('', ...strings,);
+  return concatStringsBaseAsync('', ...strings,);
 }
 
 export function concatStringsAsyncWithSpace(
@@ -238,7 +238,7 @@ export function concatStringsAsyncWithSpace(...strings: string[]): Promise<strin
  * ```
  */
 export async function concatStringsAsyncWithSpace(...strings: any): Promise<string> {
-  return await concatStringsBaseAsync(' ', ...strings,);
+  return concatStringsBaseAsync(' ', ...strings,);
 }
 
 export function concatStringsAsyncWithNewline(
@@ -277,5 +277,5 @@ export function concatStringsAsyncWithNewline(...strings: string[]): Promise<str
  * ```
  */
 export async function concatStringsAsyncWithNewline(...strings: any): Promise<string> {
-  return await concatStringsBaseAsync('\n', ...strings,);
+  return concatStringsBaseAsync('\n', ...strings,);
 }

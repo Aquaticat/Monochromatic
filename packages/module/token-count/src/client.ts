@@ -32,6 +32,7 @@ const API_KEY_ENV_VARS = [
  * Resolve an API key from an explicit value or env var fallback chain.
  *
  * @param explicit - caller-provided API key, checked first
+ *
  * @returns resolved API key, or `undefined` to let the SDK try its own default
  *
  * @example
@@ -55,6 +56,7 @@ function resolveApiKey(explicit: string | undefined): string | undefined {
  * `ANTHROPIC_API_KEY` env vars when no explicit key is provided.
  *
  * @param options - optional API key for client construction
+ *
  * @returns configured Anthropic client
  *
  * @example
@@ -71,8 +73,11 @@ function resolveClient({ apiKey }: { readonly apiKey: string | undefined }): Ant
  * Count input tokens for a text string using the Anthropic token counting API.
  *
  * @param options - content to count and optional config
+ *
  * @returns token count and model used
+ *
  * @throws {Anthropic.AuthenticationError} when API key is invalid or missing
+ *
  * @throws {Anthropic.BadRequestError} when model is invalid
  *
  * @example
@@ -106,8 +111,11 @@ export async function countTokens({ content, config = {} }: {
  * to the Anthropic token counting API.
  *
  * @param options - file path and optional config
+ *
  * @returns token count, model used, and file path
+ *
  * @throws {Error} when file cannot be read (ENOENT, EACCES, etc.)
+ *
  * @throws {Anthropic.AuthenticationError} when API key is invalid or missing
  *
  * @example
@@ -123,7 +131,7 @@ export async function countFileTokens({ filePath, config = {} }: {
   const rl = tagged({ tag: countFileTokens.name, l });
   rl.debug(`reading file path=${filePath}`);
 
-  const content = await readFile(filePath, 'utf-8');
+  const content = await readFile(filePath, 'utf8');
   const result = await countTokens({ content, config });
 
   return { ...result, filePath };

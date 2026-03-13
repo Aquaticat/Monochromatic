@@ -1,3 +1,4 @@
+// oxlint-disable tsdoc/require-tsdoc -- Astro content config with framework-dictated structure
 // 1. Import utilities from `astro:content`
 import type {
   BaseSchema,

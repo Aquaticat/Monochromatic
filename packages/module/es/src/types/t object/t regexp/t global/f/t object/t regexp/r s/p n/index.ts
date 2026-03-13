@@ -8,6 +8,7 @@ import type { $ as Global, } from '../../../../../t/index.ts';
  * rather than stopping after the first match.
  *
  * @param regexp - Regular expression to convert to global
+ *
  * @returns New RegExp instance with global flag enabled
  *
  * @example

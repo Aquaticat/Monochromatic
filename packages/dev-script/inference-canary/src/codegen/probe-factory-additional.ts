@@ -8,9 +8,8 @@
  * computing per-run correctness, and formatting diagnostic sections for
  * the fix prompt.
  */
-import { runInContainer, } from '../container.ts';
+import { runInContainer, type ContainerResult, } from '../container.ts';
 
-import type { ContainerResult, } from '../container.ts';
 import type { AdditionalRun, VerifyResult, } from './additional-run-types.ts';
 
 //region Diagnostics -- formats runtime failures and incorrect output for fix prompts
@@ -23,11 +22,17 @@ const MAX_ADDITIONAL_OUTPUT = 500;
  *
  * Includes runtime errors (crash/timeout) and incorrect output summaries for runs
  * that succeeded at runtime but failed verification. Skips runs that passed.
+ *
  * @param base - base fix prompt from buildCodeGenFixPrompt (may be undefined)
+ *
  * @param runs - additional run configurations
+ *
  * @param containerCaches - per-run container result caches
+ *
  * @param verifyCaches - per-run verification result caches
+ *
  * @param label - model label for cache lookups
+ *
  * @returns augmented fix prompt, or base unchanged when no additional diagnostics exist
  *
  * @example
@@ -46,7 +51,7 @@ export function appendAdditionalRunDiagnostics(
 
   /** Diagnostic text sections for runs that failed or produced incorrect output */
   const diagSections = runs
-    .map((run, index) => {
+    .map(function buildDiagSection(run, index): string | undefined {
       /** Cached container result for this run and model */
       const container = containerCaches[index]?.get(label);
       if (container === undefined) return undefined;
@@ -61,7 +66,7 @@ export function appendAdditionalRunDiagnostics(
       }
       return undefined;
     })
-    .filter((diagSection): diagSection is string => diagSection !== undefined);
+    .filter(function isDefined(diagSection): diagSection is string { return diagSection !== undefined; });
 
   if (diagSections.length === 0) return base;
   /** Combined diagnostic text from all failing additional runs */
@@ -84,9 +89,13 @@ export function appendAdditionalRunDiagnostics(
 /**
  * Launches additional container runs in parallel.
  * Applies per-run source transforms before execution.
+ *
  * @param source - base TypeScript source (after main transformSource)
+ *
  * @param runs - additional run configurations
+ *
  * @param signal - abort signal for cancellation
+ *
  * @returns promise resolving to container results in the same order as runs
  *
  * @example
@@ -100,7 +109,7 @@ export function executeAdditionalRuns(
   signal: AbortSignal | undefined,
 ): Promise<ContainerResult[]> {
   /** Per-run container promises with optional source transforms applied */
-  const promises = runs.map((run) => {
+  const promises = runs.map(function launchRun(run): Promise<ContainerResult> {
     /** Source with per-run transform applied (e.g. injected CLI flags) */
     const runSource = run.transformSource !== undefined ? run.transformSource(source) : source;
     return runInContainer(runSource, run.input, signal);
@@ -112,10 +121,15 @@ export function executeAdditionalRuns(
  * Caches additional run container results and verifies successful ones.
  * Populates both the container and verify caches for downstream use
  * by diagnostics and correctness scoring.
+ *
  * @param results - container results from executeAdditionalRuns
+ *
  * @param runs - additional run configurations (for verify functions)
+ *
  * @param containerCaches - per-run container result caches to populate
+ *
  * @param verifyCaches - per-run verification result caches to populate
+ *
  * @param label - model label for cache keys
  */
 export function cacheAdditionalResults(
@@ -138,11 +152,17 @@ export function cacheAdditionalResults(
 /**
  * Computes per-run correctness fractions from cached additional run results.
  * Returns 0 for runs that crashed or timed out, logging the failure.
+ *
  * @param results - container results from executeAdditionalRuns
+ *
  * @param runs - additional run configurations (for names in log messages)
+ *
  * @param verifyCaches - per-run verification caches populated by cacheAdditionalResults
+ *
  * @param label - model label for cache lookups and log prefixes
+ *
  * @param probeName - probe name for log prefixes
+ *
  * @returns array of correctness fractions (0-1) in the same order as runs
  */
 export function computeAdditionalCorrectnesses(
@@ -152,7 +172,7 @@ export function computeAdditionalCorrectnesses(
   label: string,
   probeName: string,
 ): number[] {
-  return results.map((result, index) => {
+  return results.map(function scoreRun(result, index): number {
     if (result.timedOut || result.exitCode !== 0) {
       /** Run name for the log message, falls back to numeric index */
       const runName = runs[index]?.name ?? String(index);

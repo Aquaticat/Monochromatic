@@ -23,7 +23,16 @@ export function scanQuotedString(
   if (!value.startsWith('"',))
     throw new Error('expected a double quote to start a JSON string',);
 
-  const findTerminatingQuote = (input: string, fromIndex: number,): number => {
+  /**
+   * Finds the index of the terminating unescaped double quote in a JSON string.
+   *
+   * @param input - source string to scan
+   *
+   * @param fromIndex - position to begin scanning from
+   *
+   * @returns index of the closing double quote
+   */
+  function findTerminatingQuote(input: string, fromIndex: number,): number {
     // Mutable scan index and counter required for allocation-free O(n) traversal
     let consecutiveBackslashes = 0;
     for (let charIndex = fromIndex; charIndex < input.length; charIndex++) {
@@ -44,7 +53,7 @@ export function scanQuotedString(
       consecutiveBackslashes = 0;
     }
     throw new Error('malformed jsonc, unterminated string',);
-  };
+  }
 
   const closingIndex = findTerminatingQuote(value, 1,);
   const consumed = value.slice(0, closingIndex + 1,) as FragmentStringJsonc;

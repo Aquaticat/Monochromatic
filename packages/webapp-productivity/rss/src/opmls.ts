@@ -3,6 +3,7 @@ import { findUp, } from 'find-up';
 import { z, } from 'zod/v4-mini';
 import { l as parentLogger, } from './log.ts';
 
+/** Tagged logger for the opmls module. */
 const l = tagged({ tag: 'opmls', l: parentLogger, },);
 
 /**
@@ -22,13 +23,16 @@ export const OPMLS_SCHEMA: z.ZodMiniArray<
   .array(z.union([
     z.url({ protocol: /^https?$/, hostname: z.regexes.domain, },),
     z
-      .url({ protocol: /file/, pattern: DOT_ENV_PATH ? /./ : /^file:\/{3}/, },),
+      .url({ protocol: /file/, pattern: DOT_ENV_PATH !== undefined ? /./ : /^file:\/{3}/, },),
   ],),);
 
 /**
  * Reads and validates OPML source URLs from the `OPMLS` environment variable.
+ *
  * @returns Validated array of OPML source URLs
- * @throws {@link z.ZodError} If any URL fails schema validation
+ *
+ * @throws `z.ZodError` if any URL fails schema validation
+ *
  * @example
  * ```ts
  * const opmls = getOpmls();

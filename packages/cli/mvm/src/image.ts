@@ -1,5 +1,4 @@
-import { existsSync } from 'node:fs';
-import { createWriteStream } from 'node:fs';
+import { createWriteStream, existsSync } from 'node:fs';
 import { mkdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
@@ -7,8 +6,26 @@ import { pipeline } from 'node:stream/promises';
 
 import { IMAGES_DIR } from './config.ts';
 import { l, tagged } from './log.ts';
-import type { ImageSpec } from './registry.ts';
-import { VIRTIO_WIN_FILENAME, VIRTIO_WIN_URL } from './registry.ts';
+import { VIRTIO_WIN_FILENAME, VIRTIO_WIN_URL, type ImageSpec } from './registry.ts';
+
+//region Byte size formatting constants
+
+/** Bytes per kibibyte. */
+const KIB = 1_024;
+
+/** Bytes per mebibyte. */
+const MIB = KIB * KIB;
+
+/** Bytes per gibibyte. */
+const GIB = KIB * KIB * KIB;
+
+/** Multiplier for converting a ratio to a percentage. */
+const PERCENT = 100;
+
+/** Number of trailing spaces to overwrite stale progress line characters. */
+const PROGRESS_LINE_PAD = 20;
+
+//endregion Byte size formatting constants
 
 //region Download progress
 
@@ -16,6 +33,7 @@ import { VIRTIO_WIN_FILENAME, VIRTIO_WIN_URL } from './registry.ts';
  * Formats a byte count as a human-readable string (e.g. "123.4 MiB").
  *
  * @param bytes - Raw byte count
+ *
  * @returns Formatted string with appropriate unit
  *
  * @example
@@ -24,27 +42,65 @@ import { VIRTIO_WIN_FILENAME, VIRTIO_WIN_URL } from './registry.ts';
  * ```
  */
 function formatBytes(bytes: number): string {
-  const GIB = 1024 * 1024 * 1024;
   if (bytes >= GIB) {
     return `${(bytes / GIB).toFixed(1)} GiB`;
   }
-  const MIB = 1024 * 1024;
   if (bytes >= MIB) {
     return `${(bytes / MIB).toFixed(1)} MiB`;
   }
-  const KIB = 1024;
   return `${(bytes / KIB).toFixed(0)} KiB`;
 }
 
 /**
- * Prints download progress to stderr by polling the destination file size
- * while a concurrent write streams the response to disk.
- * Resolves when the write completes; rejects if it fails.
+ * Polls the destination file size and prints download progress to stderr.
+ * Runs until the `signal` is aborted by the caller after the download completes.
  *
- * Streams the response body to disk via `node:stream/promises` pipeline
- * for cross-runtime compatibility.
+ * @param destPath - Destination file path being written to
  *
- * @param options - Response to write, destination file path, and logger instance
+ * @param contentLength - Expected total bytes (0 when unknown)
+ *
+ * @param totalStr - Pre-formatted total size string for display
+ *
+ * @param signal - AbortSignal that stops the polling loop
+ *
+ * @returns Resolves when polling stops
+ */
+async function pollProgress(destPath: string, contentLength: number, totalStr: string, signal: AbortSignal): Promise<void> {
+  /** Milliseconds between file size polls for progress display. */
+  const POLL_INTERVAL_MS = 500;
+
+  while (!signal.aborted) {
+    // oxlint-disable-next-line eslint(no-await-in-loop), eslint-plugin-promise(avoid-new) -- deliberate serial polling loop
+    await new Promise(function pollDelay(resolve) { setTimeout(resolve, POLL_INTERVAL_MS); });
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- signal can be aborted during the await above
+    if (signal.aborted) break;
+    try {
+      // oxlint-disable-next-line eslint(no-await-in-loop) -- deliberate serial polling loop
+      const { size } = await stat(destPath);
+      const downloadedStr = formatBytes(size);
+      if (contentLength > 0) {
+        const pct = Math.round((size / contentLength) * PERCENT);
+        process.stderr.write(`\r  downloading: ${downloadedStr} / ${totalStr} (${String(pct)}%)`);
+      } else {
+        process.stderr.write(`\r  downloading: ${downloadedStr}`);
+      }
+    } catch {
+      // File may not exist yet during initial write setup
+    }
+  }
+}
+
+/**
+ * Streams a fetch response body to disk while printing download progress to stderr.
+ * Uses AbortController to coordinate between the progress poller and the pipeline.
+ *
+ * @param destPath - Destination file path to write to
+ *
+ * @param response - Fetch response with a body to stream
+ *
+ * @param rl - Logger for status messages
+ *
+ * @returns Resolves when the download and progress display are complete
  *
  * @example
  * ```ts
@@ -59,42 +115,27 @@ async function writeWithProgress({ destPath, response, rl }: {
   const contentLength = Number(response.headers.get('content-length') ?? 0);
   const totalStr = contentLength > 0 ? formatBytes(contentLength) : 'unknown';
 
-  /** Milliseconds between file size polls for progress display. */
-  const POLL_INTERVAL_MS = 500;
+  const controller = new AbortController();
 
-  let done = false;
-
-  // Poll file size in the background for progress reporting
-  const progressLoop = (async () => {
-    while (!done) {
-      await new Promise(function pollDelay(resolve) { setTimeout(resolve, POLL_INTERVAL_MS); });
-      if (done) break;
-      try {
-        const { size } = await stat(destPath);
-        const downloadedStr = formatBytes(size);
-        if (contentLength > 0) {
-          const pct = Math.round((size / contentLength) * 100);
-          process.stderr.write(`\r  downloading: ${downloadedStr} / ${totalStr} (${String(pct)}%)`);
-        } else {
-          process.stderr.write(`\r  downloading: ${downloadedStr}`);
-        }
-      } catch {
-        // File may not exist yet during initial write setup
-      }
-    }
-  })();
+  // Start progress polling in the background
+  const progressDone = pollProgress(destPath, contentLength, totalStr, controller.signal);
 
   // Stream response body to disk via node:stream pipeline
-  const body = response.body;
+  const {body} = response;
   if (body === null) {
+    controller.abort();
+    await progressDone;
     throw new Error(`response body is null for ${destPath}`);
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Response.body is ReadableStream<Uint8Array> but typed as ReadableStream | null
   await pipeline(Readable.fromWeb(body as ReadableStream), createWriteStream(destPath));
-  done = true;
-  await progressLoop;
+
+  // Stop progress polling
+  controller.abort();
+  await progressDone;
 
   const { size } = await stat(destPath);
-  process.stderr.write(`\r  downloaded: ${formatBytes(size)} total${' '.repeat(20)}\n`);
+  process.stderr.write(`\r  downloaded: ${formatBytes(size)} total${' '.repeat(PROGRESS_LINE_PAD)}\n`);
   rl.info(`saved to ${destPath}`);
 }
 
@@ -106,8 +147,14 @@ async function writeWithProgress({ destPath, response, rl }: {
  * Downloads a file from a URL to a destination path if not already cached.
  * Shows download progress on stderr when fetching.
  *
- * @param options - URL to download, destination file path, logger tag, and cache check
+ * @param destPath - Destination file path
+ *
+ * @param tag - Logger tag for status messages
+ *
+ * @param url - URL to download from
+ *
  * @returns Absolute path to the downloaded file
+ *
  * @throws Error when the download fails
  *
  * @example
@@ -152,7 +199,9 @@ async function downloadIfMissing({ destPath, tag, url }: {
  * Shows download progress on stderr when fetching.
  *
  * @param spec - Image specification from the registry
+ *
  * @returns Absolute path to the cached image file
+ *
  * @throws Error when the download fails
  *
  * @example
@@ -164,7 +213,7 @@ async function downloadIfMissing({ destPath, tag, url }: {
  * // => /home/user/.local/share/mvm/images/windows-server-2025-eval.iso
  * ```
  */
-export async function ensureImage(spec: ImageSpec): Promise<string> {
+export function ensureImage(spec: ImageSpec): Promise<string> {
   return downloadIfMissing({
     destPath: join(IMAGES_DIR, spec.fileName),
     tag: ensureImage.name,
@@ -178,6 +227,7 @@ export async function ensureImage(spec: ImageSpec): Promise<string> {
  * guest agent installer, required for Windows template creation.
  *
  * @returns Absolute path to the cached virtio-win ISO
+ *
  * @throws Error when the download fails
  *
  * @example
@@ -186,7 +236,7 @@ export async function ensureImage(spec: ImageSpec): Promise<string> {
  * // => /home/user/.local/share/mvm/images/virtio-win.iso
  * ```
  */
-export async function ensureVirtioWin(): Promise<string> {
+export function ensureVirtioWin(): Promise<string> {
   return downloadIfMissing({
     destPath: join(IMAGES_DIR, VIRTIO_WIN_FILENAME),
     tag: ensureVirtioWin.name,

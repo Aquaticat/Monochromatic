@@ -8,17 +8,23 @@ import { $ as omitFromIterable, } from '../../../../../../t function/t generator
  * The inverse of pick - removes properties instead of selecting them.
  *
  * @param original - Source object to omit properties from
+ *
  * @param toOmit - Set of keys to exclude from the result
+ *
  * @param strict - When true (default), throws if any key in toOmit is not found in the original object.
  *   When false, silently ignores missing keys.
+ *
  * @returns New object without the omitted properties
+ *
  * @throws Error if strict is true and any key in toOmit is not found in original
+ *
  * @example
  * ```ts
  * const user = { id: 1, name: 'Alice', password: 'secret' };
  * const safe = $({ original: user, toOmit: new Set(['password']) });
  * // { id: 1, name: 'Alice' }
  * ```
+ *
  * @example Lenient mode ignores missing keys
  * ```ts
  * const user = { id: 1, name: 'Alice' };

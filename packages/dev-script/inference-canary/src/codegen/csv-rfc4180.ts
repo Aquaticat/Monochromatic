@@ -13,7 +13,9 @@ const CSV_TEST_INPUT = 'name,bio,age\n"O\'Brien, ""Bob""","likes\ntravel",30\nJa
 /** Number of correctness checks in the output verifier */
 const TOTAL_CHECKS = 5;
 
-/** {@inheritDoc Probe} */
+/**
+ * {@inheritDoc Probe}
+ */
 export const csvRfc4180 = createCodeGenProbe({
   name: 'csv-rfc4180',
   testInput: CSV_TEST_INPUT,
@@ -29,16 +31,17 @@ export const csvRfc4180 = createCodeGenProbe({
     '- Handle quoted fields containing commas, newlines, and escaped quotes (doubled: "")',
     '- Handle fields that are NOT quoted alongside fields that ARE quoted in the same row',
     '- Trim whitespace from unquoted values only (preserve whitespace in quoted values)',
-    '- Handle both \\r\\n and \\n line endings',
+    String.raw`- Handle both \r\n and \n line endings`,
     '- Print the JSON array with 2-space indentation',
     '',
     'Example input (note the escaped quote and newline inside a quoted field):',
     'name,bio,age',
-    '"O\'Brien, ""Bob""","likes\\ntravel",30',
+    String.raw`"O'Brien, ""Bob""","likes\ntravel",30`,
     'Jane,simple,25',
   ].join('\n'),
-  verify: (result) => {
+  verify: function verifyCsv(result): { correctness: number; } {
     try {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse output matched against known test input shape
       const parsed = JSON.parse(result.stdout.trim()) as Record<string, string>[];
       if (!Array.isArray(parsed) || parsed.length !== 2) return { correctness: 0.1, };
 

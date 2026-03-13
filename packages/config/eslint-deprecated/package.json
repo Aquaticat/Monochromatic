@@ -6,22 +6,8 @@
     "monochromatic",
     "deprecated"
   ],
-  "dependencies": {
-    "typescript-eslint": "catalog:",
-    "eslint-plugin-unicorn": "catalog:",
-    "eslint-plugin-tsdoc": "catalog:",
-    "@eslint/js": "catalog:",
-    "eslint-plugin-n": "catalog:",
-    "@vitest/eslint-plugin": "catalog:",
-    "eslint-plugin-oxlint": "catalog:",
-    "@typescript-eslint/scope-manager": "catalog:",
-    "@typescript-eslint/parser": "catalog:",
-    "@typescript-eslint/types": "catalog:",
-    "@typescript-eslint/utils": "catalog:",
-    "@eslint/config-helpers": "catalog:"
-  },
+  "dependencies": {},
   "peerDependencies": {
-    "eslint": "catalog:",
     "vite": "catalog:"
   },
   "devDependencies": {

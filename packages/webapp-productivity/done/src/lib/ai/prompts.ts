@@ -17,8 +17,11 @@ import type { ChatMessage } from "./client.ts";
  * Existing tags and locations are provided so the model prefers consistency.
  *
  * @param title - Raw task title typed by the user
+ *
  * @param existingTags - Tags already used in the database
+ *
  * @param existingLocations - Locations already used in the database
+ *
  * @returns Chat messages ready for {@link chatCompletion}
  */
 export function buildAutofillMessages(
@@ -60,8 +63,11 @@ For consistency, prefer these existing locations when applicable: ${JSON.stringi
  * The AI returns an ordered array of task IDs, most relevant first.
  *
  * @param tasks - Serializable task summaries (id, title, tags, locations, priority, dueDate, complexity)
+ *
  * @param currentLocation - User's current or pinned location, or null
+ *
  * @param focusDirective - Free-text focus instruction, or null
+ *
  * @returns Chat messages ready for {@link chatCompletion}
  */
 export function buildSuggestionMessages(

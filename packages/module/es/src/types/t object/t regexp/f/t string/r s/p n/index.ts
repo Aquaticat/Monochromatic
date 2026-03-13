@@ -6,6 +6,7 @@
  * when you need to match literal text that may contain special regex characters.
  *
  * @param str - to convert to regex pattern
+ *
  * @returns RegExp that matches the exact input string
  *
  * @example

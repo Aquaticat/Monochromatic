@@ -16,19 +16,21 @@ const STAK_CODEGEN_TOTAL_CHECKS = 5;
 
 /**
  * Wall-clock duration (ms) at or below which the perf test incurs no penalty.
- * At 10M iterations, fast implementations (125ms/1M -> 1.25s/10M) finish well under this.
+ * At 10M iterations, fast implementations (125ms/1M -\> 1.25s/10M) finish well under this.
  * Leaves margin for container startup variance (~150-400ms observed).
  */
 const PERF_FAST_MS = 3_000;
 
 /**
  * Wall-clock duration (ms) at or above which the perf test incurs maximum penalty.
- * Slowest observed implementation at 1M was 623ms -> ~6.23s at 10M, which falls
+ * Slowest observed implementation at 1M was 623ms -\> ~6.23s at 10M, which falls
  * between PERF_FAST_MS and here, creating a graded penalty across the real range.
  */
 const PERF_SLOW_MS = 10_000;
 
-/** {@inheritDoc Probe} */
+/**
+ * {@inheritDoc Probe}
+ */
 export const stakInterpreter = createCodeGenProbe({
   name: 'stak-interpreter',
   testInput: CODEGEN_TEST_INPUT,
@@ -95,7 +97,7 @@ export const stakInterpreter = createCodeGenProbe({
     '- Stack underflow must throw an Error',
     '- LOAD on an undefined variable must throw an Error',
   ].join('\n'),
-  verify: (result) => {
+  verify: function verifyStak(result): { correctness: number; } {
     const output = result.stdout;
     const checks = [
       // Floor division: -7 DIV 2 must be -4 (floor), not -3 (truncation)

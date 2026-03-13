@@ -158,7 +158,7 @@ test.describe('sessionStorage sink', () => {
           keysToRemove.push(key);
         }
       }
-      keysToRemove.forEach((key) => globalThis.sessionStorage.removeItem(key));
+      keysToRemove.forEach((key) =>{  globalThis.sessionStorage.removeItem(key); });
 
       verify();
 

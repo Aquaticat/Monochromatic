@@ -1,6 +1,5 @@
 #!/usr/bin/env bun
-import { build, } from './index.ts';
-import type { BuildOptions, } from './index.ts';
+import { build, type BuildOptions, } from './index.ts';
 import { object, } from '@optique/core/constructs';
 import { argument, } from '@optique/core/primitives';
 import { string, } from '@optique/core/valueparser';

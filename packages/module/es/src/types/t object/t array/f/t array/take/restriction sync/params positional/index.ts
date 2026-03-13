@@ -5,7 +5,9 @@
  * Handles both synchronous and asynchronous iterables seamlessly.
  *
  * @param count - Number of elements to take from the beginning (must be non-negative)
+ *
  * @param iterable - Iterable to take elements from
+ *
  * @returns Array containing up to count elements from the beginning
  *
  * @example

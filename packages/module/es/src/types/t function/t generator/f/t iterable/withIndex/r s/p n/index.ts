@@ -10,6 +10,7 @@ import type { $ as Positive, } from '@_/types/t number/t positive/t/index.ts';
  * such as processing arrays while tracking indices, or creating indexed views of data.
  *
  * @param myIterable - The iterable to be enumerated with indices
+ *
  * @returns Generator yielding objects with `element` and `index` properties
  *
  * @example

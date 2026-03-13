@@ -92,7 +92,7 @@ type HOptions = {
   /** Inline style properties (camelCase or kebab-case keys) */
   style?: Record<string, string>;
   /** Child HTML strings to concatenate inside the element */
-  children?: ReadonlyArray<string>;
+  children?: readonly string[];
 };
 
 /**
@@ -106,9 +106,26 @@ type HOptions = {
  * ```
  */
 function camelToKebab(property: string,): string {
-  return property.replaceAll(/[A-Z]/g, (match,) => `-${match.toLowerCase()}`,);
+  return property.replaceAll(/[A-Z]/g, function toLower(match,) { return `-${match.toLowerCase()}`; },);
 }
 
+/**
+ * Builds an HTML element string from declarative options.
+ *
+ * @param tag - HTML tag name
+ *
+ * @param text - text content (HTML-escaped automatically)
+ *
+ * @param html - raw inner HTML (NOT escaped)
+ *
+ * @param attrs - HTML attributes as key-value pairs
+ *
+ * @param style - inline CSS styles as camelCase property-value pairs
+ *
+ * @param children - child HTML strings to concatenate
+ *
+ * @returns well-formed HTML element string
+ */
 /* @__NO_SIDE_EFFECTS__ */ export function $(
   { tag, class: className, text, html, attrs, style, children, }: HOptions,
 ): string {
@@ -126,7 +143,7 @@ function camelToKebab(property: string,): string {
 
   if (style !== undefined) {
     const declarations = Object.entries(style,)
-      .map(([property, value,],) => `${camelToKebab(property,)}:${value}`,)
+      .map(function toDecl([property, value,],) { return `${camelToKebab(property,)}:${value}`; },)
       .join(';',);
     parts.push(` style="${escapeHtml(declarations,)}"`,);
   }

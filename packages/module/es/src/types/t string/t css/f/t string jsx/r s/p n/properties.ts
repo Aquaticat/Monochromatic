@@ -207,7 +207,7 @@ export type StrictCssDeclarations = {
  *
  * @example
  * ```ts
- * type Name = StripAtPrefix<'@media'>; // 'media'
+ * type Name = StripAtPrefix<'\@media'>; // 'media'
  * ```
  */
 type StripAtPrefix<T> = T extends `@${infer Name}` ? Name : never;

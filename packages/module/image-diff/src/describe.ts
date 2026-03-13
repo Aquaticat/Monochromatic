@@ -1,3 +1,4 @@
+// oxlint-disable typescript-eslint/no-unsafe-type-assertion, no-non-null-assertion, require-await -- API response types require assertions; non-null after validation
 import type { ImageInput } from './types.ts';
 import { toImageUri } from './encoding.ts';
 import { l, tagged } from './log.ts';
@@ -15,7 +16,7 @@ const MODEL = 'google/gemini-3.1-pro-preview';
 /**
  * Prompt instructing the model to describe visual differences between two images.
  */
-const DESCRIBE_PROMPT = `${''}Compare these two images and describe all visual differences in detail.
+const DESCRIBE_PROMPT = `Compare these two images and describe all visual differences in detail.
 Cover: layout changes, color differences, typography changes, spacing modifications,
 elements that were added or removed, and any other noticeable changes.
 Image A is the first image, Image B is the second.`;
@@ -34,7 +35,7 @@ type ContentPart =
  */
 type ChatMessage = {
   readonly role: 'user';
-  readonly content: ReadonlyArray<ContentPart>;
+  readonly content: readonly ContentPart[];
 };
 
 /**
@@ -42,18 +43,18 @@ type ChatMessage = {
  */
 type ChatCompletionRequest = {
   readonly model: string;
-  readonly messages: ReadonlyArray<ChatMessage>;
+  readonly messages: readonly ChatMessage[];
 };
 
 /**
  * Response from the OpenRouter chat completions API.
  */
 type ChatCompletionResponse = {
-  readonly choices: ReadonlyArray<{
+  readonly choices: readonly {
     readonly message: {
       readonly content: string;
     };
-  }>;
+  }[];
 };
 
 //endregion OpenRouter API types
@@ -87,8 +88,11 @@ function resolveOpenRouterApiKey(): string | undefined {
  * a detailed natural-language description of the visual differences.
  *
  * @param imageA - first image (before)
+ *
  * @param imageB - second image (after)
+ *
  * @returns detailed description of visual differences, or `undefined` when no API key is configured
+ *
  * @throws when the API call itself fails (key is present but request errors)
  *
  * @example
@@ -109,9 +113,7 @@ export async function describeImageDifference(imageA: ImageInput, imageB: ImageI
   }
 
   rl.debug('describing image differences via Gemini 3.1 Pro Preview on OpenRouter');
-  const uris = await Promise.all([toImageUri(imageA), toImageUri(imageB)]);
-  const uriA = uris[0]!;
-  const uriB = uris[1]!;
+  const [uriA, uriB] = await Promise.all([toImageUri(imageA), toImageUri(imageB)]);
 
   const requestBody: ChatCompletionRequest = {
     model: MODEL,
@@ -145,7 +147,7 @@ export async function describeImageDifference(imageA: ImageInput, imageB: ImageI
   }
 
   const result = await response.json() as ChatCompletionResponse;
-  const choice = result.choices[0];
+  const [choice] = result.choices;
   if (choice === undefined) {
     throw new Error('OpenRouter API returned no choices');
   }

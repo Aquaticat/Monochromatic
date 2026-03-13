@@ -41,15 +41,15 @@ const VIRTIO_DRIVER_OS_DIR = 'w11';
 function pnpDriverPaths(): string {
   const driverDirs = ['viostor', 'NetKVM'];
   let keyValue = 1;
-  const paths = driverDirs.flatMap((driver) =>
-    VIRTIO_DRIVE_CANDIDATES.map((letter) => {
+  const paths = driverDirs.flatMap(function mapDriver(driver) {
+    return VIRTIO_DRIVE_CANDIDATES.map(function mapLetter(letter) {
       const entry = `      <PathAndCredentials wcm:action="add" wcm:keyValue="${String(keyValue)}">
         <Path>${letter}:\\${driver}\\${VIRTIO_DRIVER_OS_DIR}\\amd64</Path>
       </PathAndCredentials>`;
       keyValue++;
       return entry;
-    }),
-  );
+    });
+  });
 
   return `    <component name="Microsoft-Windows-PnpCustomizationsWinPE" ${COMPONENT_ATTRS}>
       <DriverPaths>
@@ -69,6 +69,7 @@ const VIRTIO_DRIVER_DIRS = ['viostor', 'NetKVM', 'vioserial', 'qemufwcfg'];
  * Generates a PowerShell command that:
  * 1. Finds the virtio-win CDROM among candidate drive letters
  * 2. Imports the Red Hat signing certificate into Trusted Publishers
+ *
  *    to suppress driver signing prompts
  * 3. Installs VirtIO drivers for the correct OS version via `pnputil`
  * 4. Installs the QEMU guest agent from the standalone MSI
@@ -85,11 +86,11 @@ const VIRTIO_DRIVER_DIRS = ['viostor', 'NetKVM', 'vioserial', 'qemufwcfg'];
  * ```
  */
 function virtioInstallCommand(): string {
-  const driveList = VIRTIO_DRIVE_CANDIDATES.map((d) => `'${d}:\\'`).join(',');
+  const driveList = VIRTIO_DRIVE_CANDIDATES.map(function formatDriveLetter(d) { return `'${d}:\\'`; }).join(',');
   /** pnputil calls for each driver directory, targeting the correct OS version. */
-  const pnputilCalls = VIRTIO_DRIVER_DIRS.map((dir) =>
-    `pnputil /add-driver (Join-Path $root '${dir}\\${VIRTIO_DRIVER_OS_DIR}\\amd64\\*.inf') /install`,
-  ).join('; ');
+  const pnputilCalls = VIRTIO_DRIVER_DIRS.map(function formatPnputilCall(dir) {
+    return `pnputil /add-driver (Join-Path $root '${dir}\\${VIRTIO_DRIVER_OS_DIR}\\amd64\\*.inf') /install`;
+  }).join('; ');
   return `powershell -NoProfile -Command "${ // find the virtio-win CDROM by looking for the viostor directory
     ''
   }$vd = Get-ChildItem -Path ${driveList} -Directory -Filter 'viostor' -ErrorAction SilentlyContinue | Select-Object -First 1; ${ // proceed only if virtio-win ISO is found
@@ -120,7 +121,10 @@ function virtioInstallCommand(): string {
  * - QEMU guest agent installation via FirstLogonCommands
  * - OOBE bypass for fully automated setup
  *
- * @param options - WIM image index for edition selection and hostname for the VM
+ * @param hostname - VM hostname for the specialize pass
+ *
+ * @param imageIndex - WIM image index for edition selection
+ *
  * @returns Complete Autounattend.xml content string
  *
  * @example
@@ -274,7 +278,10 @@ ${pnpDriverPaths()}
  * this file during setup. The ISO is attached as a secondary CDROM during
  * Windows template creation.
  *
- * @param options - WIM image index and hostname passed to {@link generateAutounattend}
+ * @param hostname - VM hostname
+ *
+ * @param imageIndex - WIM image index for edition selection
+ *
  * @returns ISO9660 image bytes ready to write to disk
  *
  * @example

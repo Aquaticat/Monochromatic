@@ -1,3 +1,4 @@
+// oxlint-disable typescript-eslint/no-unsafe-type-assertion, prefer-destructuring -- API response types require assertions
 import type {
   BatchEmbeddingResult,
   EmbeddingProvider,
@@ -25,7 +26,9 @@ const DEFAULT_VOYAGE_MODEL: VoyageModel = 'voyage-multimodal-3.5';
  * Resolve the Voyage AI API key from config or environment.
  *
  * @param configKey - explicitly provided API key, if any
+ *
  * @returns resolved API key
+ *
  * @throws when no API key is available from either source
  *
  * @example
@@ -49,8 +52,11 @@ function resolveVoyageApiKey(configKey: string | undefined): string {
  * Send a request to the Voyage AI multimodal embeddings API.
  *
  * @param requestBody - serializable request payload
+ *
  * @param apiKey - Voyage AI API key for authorization
+ *
  * @returns parsed API response
+ *
  * @throws on non-OK HTTP status with the error body
  *
  * @example
@@ -87,7 +93,9 @@ async function callVoyageApi(requestBody: VoyageApiRequest, apiKey: string): Pro
  * Compute a single image embedding via the Voyage AI API.
  *
  * @param input - image to embed, in any supported format
+ *
  * @param config - client configuration
+ *
  * @returns embedding vector and usage metadata
  *
  * @example
@@ -130,7 +138,9 @@ async function voyageEmbed(input: ImageInput, config: ImageDiffConfig): Promise<
  * Compute embeddings for multiple images in a single batch via the Voyage AI API.
  *
  * @param inputs - array of images to embed
+ *
  * @param config - client configuration
+ *
  * @returns embedding vectors (in input order) and aggregate usage metadata
  *
  * @example
@@ -139,7 +149,7 @@ async function voyageEmbed(input: ImageInput, config: ImageDiffConfig): Promise<
  * ```
  */
 async function voyageEmbedBatch(
-  inputs: ReadonlyArray<ImageInput>,
+  inputs: readonly ImageInput[],
   config: ImageDiffConfig,
 ): Promise<BatchEmbeddingResult> {
   const rl = tagged({ tag: voyageEmbedBatch.name, l });
@@ -149,7 +159,7 @@ async function voyageEmbedBatch(
   const model = (config.model as VoyageModel | undefined) ?? DEFAULT_VOYAGE_MODEL;
 
   const contentItems = await Promise.all(
-    inputs.map(async function convertInput(input) {
+    inputs.map(function convertInput(input) {
       return toVoyageContentItem(input);
     }),
   );
@@ -166,7 +176,7 @@ async function voyageEmbedBatch(
   const response = await callVoyageApi(request, apiKey);
 
   /** Sort by index to guarantee input order. */
-  const sorted = [...response.data].sort(function byIndex(a, b) {
+  const sorted = [...response.data].toSorted(function byIndex(a, b) {
     return a.index - b.index;
   });
 

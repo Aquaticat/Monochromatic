@@ -34,7 +34,9 @@ const RAW_SVGS: Record<string, string> = {
 
 /**
  * Extracts the inner content and viewBox from a raw SVG string.
+ *
  * @param raw - full `<svg>...</svg>` string
+ *
  * @returns viewBox attribute value and inner markup
  *
  * @example
@@ -54,7 +56,9 @@ function parseSvg(raw: string): { viewBox: string; inner: string } {
  * Separates `<defs>` blocks from SVG inner content so gradients
  * can be hoisted to the sprite root for reliable cross-reference
  * from `<use>` shadow trees.
+ *
  * @param inner - SVG inner markup
+ *
  * @returns extracted defs content and remaining markup
  *
  * @example
@@ -65,7 +69,7 @@ function parseSvg(raw: string): { viewBox: string; inner: string } {
  */
 function extractDefs(inner: string): { defs: string; content: string } {
   let defs = '';
-  const content = inner.replace(/<defs>([\s\S]*?)<\/defs>/g, (_match, defsContent: string) => {
+  const content = inner.replaceAll(/<defs>([\s\S]*?)<\/defs>/g, (_match, defsContent: string) => {
     defs += defsContent;
     return '';
   });
@@ -99,6 +103,7 @@ const VENDOR_SYMBOLS: ReadonlyMap<string, VendorSymbol> = new Map(
  * Gradient `<defs>` are hoisted to the sprite root so `url(#id)` references
  * resolve correctly when symbols are instantiated via `<use>`.
  * Must be included once in the document before any `<use>` references.
+ *
  * @returns hidden `<svg>` element with `<defs>` and `<symbol>` definitions
  *
  * @example
@@ -119,7 +124,9 @@ export function renderSvgSprite(): string {
 
 /**
  * Builds an `<svg><use href>` reference to a vendor symbol in the sprite.
+ *
  * @param symbolId - symbol ID to reference (e.g. `icon-anthropic`)
+ *
  * @returns SVG element string with `<use>` reference
  *
  * @example
@@ -135,8 +142,11 @@ function useRef(symbolId: string): string {
 /**
  * Returns a `color-swatch` span containing a vendor icon `<use>` reference.
  * Falls back to a plain colored dot when no icon is available.
+ *
  * @param modelId - full OpenRouter model ID
+ *
  * @param color - CSS color for the dot background/fallback
+ *
  * @returns HTML string for the icon dot
  *
  * @example
@@ -157,7 +167,9 @@ export function iconDot(modelId: string, color: string): string {
 /**
  * Returns an `<svg><use>` reference for a vendor icon, or `undefined` when unavailable.
  * Used to embed icons inside chart data points.
+ *
  * @param modelId - full OpenRouter model ID
+ *
  * @returns SVG use-reference string or `undefined`
  *
  * @example

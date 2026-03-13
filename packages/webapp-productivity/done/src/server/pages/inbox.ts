@@ -8,11 +8,17 @@
 import { listBlockedInboxTasks, listInboxUnblockedTasks } from "../../lib/db/tasks.ts";
 import { renderPage } from "./layout.ts";
 
-/** Renders the inbox page with unblocked and blocked task lists. */
+/**
+ * Renders the inbox page with unblocked and blocked task lists.
+ *
+ * @returns HTML response for the inbox page
+ */
 export async function inboxPage(): Promise<Response> {
   const inboxTasks = await listInboxUnblockedTasks();
   const blockedLinks = await listBlockedInboxTasks();
-  const blockedTasksByBlocker = Object.groupBy(blockedLinks, (link) => link.blockerId);
+  const blockedTasksByBlocker = Object.groupBy(blockedLinks, function byBlocker(link) {
+    return link.blockerId;
+  });
 
   return renderPage({
     title: "Inbox - Done",

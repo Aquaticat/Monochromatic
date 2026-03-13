@@ -73,7 +73,7 @@ const STALE_DIST_ARTIFACTS = [
  * ```
  */
 async function cleanDistArtifacts(workspaceRoot: string): Promise<void> {
-  const removals: Array<Promise<void>> = [];
+  const removals: Promise<void>[] = [];
 
   for await (const finalDir of glob('packages/*/*/dist/final', { cwd: workspaceRoot, })) {
     for (const artifact of STALE_DIST_ARTIFACTS) {

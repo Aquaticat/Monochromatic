@@ -18,7 +18,9 @@ export type ObservableAsync<T,> = {
  * top-level module code, even though the observable itself is created synchronously.
  *
  * @param initialValue - Starting value for the observable
+ *
  * @param onChange - Callback invoked after each value change (may return a Promise)
+ *
  * @returns Promise resolving to an observable container
  *
  * @example
@@ -41,13 +43,15 @@ export async function $<T,>(
 ): Promise<ObservableAsync<T>> {
   let current: T = initialValue;
   return {
+    /** Retrieves the current observed value. */
     get value(): T {
       return current;
     },
+    /** Sets the observed value and triggers the onChange callback. */
     set value(newValue: T,) {
       const old = current;
       current = newValue;
-      onChange(newValue, old,);
+      void onChange(newValue, old,);
     },
   };
 }

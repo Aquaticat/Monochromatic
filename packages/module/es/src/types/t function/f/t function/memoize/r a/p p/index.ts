@@ -11,10 +11,15 @@ import { $ as named, } from '../p n/index.ts';
  * Positional-parameter wrapper around the named-parameter variant.
  *
  * @typeParam TArgs - tuple of function argument types
+ *
  * @typeParam TReturn - resolved return type (not wrapped in Promise)
+ *
  * @param fn - pure async function to memoize
+ *
  * @param keyFn - computes cache key from arguments; must be deterministic
+ *
  * @param store - store backend (defaults to fresh in-memory Store)
+ *
  * @returns memoized async function with `.store`, `.clear()`, `.delete()`
  *
  * @example
@@ -36,5 +41,5 @@ export async function $<
   keyFn: (this: void, ...args: TArgs) => string,
   store?: Store,
 ): Promise<MemoizedAsyncFunction<TArgs, TReturn>> {
-  return await named({ fn, keyFn, ...(store !== undefined ? { store, } : {}), },);
+  return named({ fn, keyFn, ...(store !== undefined ? { store, } : {}), },);
 }

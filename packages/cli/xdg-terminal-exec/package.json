@@ -1,0 +1,24 @@
+{
+  "name": "@monochromatic-dev/cli-xdg-terminal-exec",
+  "description": "XDG terminal emulator launcher with KDE kdeglobals fallback, replacing the reference POSIX shell implementation.",
+  "type": "module",
+  "private": true,
+  "main": "src/index.ts",
+  "bin": {
+    "xdg-terminal-exec": "src/index.ts"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/cli/xdg-terminal-exec"
+  },
+  "sideEffects": true
+}

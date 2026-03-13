@@ -4,7 +4,9 @@
  * different execution contexts or when dealing with RegExp objects from different realms.
  *
  * @param value - Value to test for RegExp type
+ *
  * @returns True if value is a RegExp object, false otherwise
+ *
  * @example
  * ```ts
  * const pattern = /[a-z]+/;

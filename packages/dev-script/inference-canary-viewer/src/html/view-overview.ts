@@ -10,15 +10,12 @@
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
-import { renderScatterChart, } from '../chart/scatter.ts';
+import { renderScatterChart, type ScatterPoint, } from '../chart/scatter.ts';
 import { vendorColor, } from '../data/model-colors.ts';
 import { iconDot, vendorIcon, } from '../data/model-icons.ts';
 import { SHAPE_LEGEND, } from '../chart/legend.ts';
 
-import type { ScatterPoint, } from '../chart/scatter.ts';
-import type { ViewerEntry, } from '../data/viewer-types.ts';
-
-import { hasMultipleProbes, } from '../data/viewer-types.ts';
+import { hasMultipleProbes, type ViewerEntry, } from '../data/viewer-types.ts';
 
 /** Aggregated model summary for the overview table */
 export type ModelSummary = {
@@ -34,7 +31,9 @@ export type ModelSummary = {
 
 /**
  * Resolves a model summary to its status level data attribute value.
+ *
  * @param summary - model summary to check
+ *
  * @returns "failed", "degraded", or empty string for healthy models
  */
 function statusLevel(summary: ModelSummary): string {
@@ -45,9 +44,11 @@ function statusLevel(summary: ModelSummary): string {
 
 /**
  * Renders the overview section with a scatter chart of all models and a summary table.
- * @param options - overview rendering options
- * @param options.summaries - per-model summaries sorted by model name
- * @param options.entries - all history entries (for the combined chart)
+ *
+ * @param summaries - per-model summaries sorted by model name
+ *
+ * @param entries - all history entries (for the combined chart)
+ *
  * @returns HTML string
  */
 export function renderOverview({ summaries, entries, }: {
@@ -64,16 +65,16 @@ export function renderOverview({ summaries, entries, }: {
   const chart = renderScatterChart({ points: chartPoints, threshold: 0, thresholdLabel: '', caption: 'All models overall score', hideTable: true, });
 
   // Summary table — status is shown inline rather than in its own column
-  const rows = summaries.map((summary) => {
+  const rows = summaries.map(function buildRow(summary): string {
     const color = vendorColor(summary.model);
     /** Data attribute value for row-level status styling */
     const statusClass = statusLevel(summary);
 
     const inlineStatus = summary.failed
-      ? ' ' + h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'failed', }, text: '(timeout)', })
-      : summary.degraded
-        ? ' ' + h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'degraded', }, text: '(degraded)', })
-        : '';
+      ? ` ${h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'failed', }, text: '(timeout)', })}`
+      : (summary.degraded
+        ? ` ${h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'degraded', }, text: '(degraded)', })}`
+        : '');
 
     return h({
       tag: 'tr',
@@ -123,13 +124,15 @@ export function renderOverview({ summaries, entries, }: {
 
 /**
  * Builds scatter points for all models' overall scores, ordered by timestamp.
+ *
  * @param entries - all history entries
+ *
  * @returns scatter points array
  */
 function buildAllModelPoints(
   entries: readonly ViewerEntry[],
 ): readonly ScatterPoint[] {
-  return entries.filter((entry) => entry.overallScore > 0 && hasMultipleProbes(entry)).map((entry, index) => {
+  return entries.filter(function hasScore(entry): boolean { return entry.overallScore > 0 && hasMultipleProbes(entry); }).map(function toPoint(entry, index): ScatterPoint {
     const color = vendorColor(entry.model);
     const runId = `${entry.label}-${entry.timestamp}`;
     const tableRow = {
@@ -155,7 +158,9 @@ function buildAllModelPoints(
 
 /**
  * Renders a color legend for the overview chart.
+ *
  * @param summaries - model summaries
+ *
  * @returns HTML legend string
  */
 function buildLegend(summaries: readonly ModelSummary[],): string {

@@ -5,6 +5,14 @@ import type {
   $ as StringUnknownRecord,
 } from '@_/types/t object/t record/t p string/t/index.ts';
 
+/**
+ * Type guard checking whether a record represents a valid numeric range
+ * where `startInclusive` is less than or equal to `endInclusive`.
+ *
+ * @param value - record to validate as a numeric range
+ *
+ * @returns `true` when both bounds are numbers and start does not exceed end
+ */
 export function $(value: StringUnknownRecord,): value is RangeNumber {
   const { startInclusive, endInclusive, } = value;
   if (typeof startInclusive === 'number' && typeof endInclusive === 'number')

@@ -10,7 +10,9 @@ import type {
  * between escaped quotes and quotes following escaped backslashes.
  *
  * @param value - String to check for backtick-quoted syntax
+ *
  * @returns True if the first effective quote is a backtick
+ *
  * @example
  * ```ts
  * $('`hello`'); // true - starts with backtick

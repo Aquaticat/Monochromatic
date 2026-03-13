@@ -14,7 +14,9 @@ export type Observable<T,> = {
  * value and invokes the change handler with the new and previous values.
  *
  * @param initialValue - Starting value for the observable
+ *
  * @param onChange - Synchronous callback invoked after each value change
+ *
  * @returns Observable container whose `value` property triggers onChange on assignment
  *
  * @example
@@ -38,9 +40,11 @@ export function $<T,>(
 ): Observable<T> {
   let current: T = initialValue;
   return {
+    /** Retrieves the current observed value. */
     get value(): T {
       return current;
     },
+    /** Sets the observed value and triggers the onChange callback. */
     set value(newValue: T,) {
       const old = current;
       current = newValue;

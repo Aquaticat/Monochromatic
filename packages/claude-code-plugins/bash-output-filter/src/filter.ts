@@ -74,7 +74,7 @@ const HOME_DIR = process.env['HOME'] ?? ''
  * REAL_HOME_DIR = "/var/home/user"
  * ```
  */
-const REAL_HOME_DIR = (() => {
+const REAL_HOME_DIR = (function resolveRealHome(): string {
   try {
     if (HOME_DIR === '') {
       return ''
@@ -101,7 +101,7 @@ const REAL_HOME_DIR = (() => {
  * "/home/user/project/src/index.ts" → "src/index.ts"
  * ```
  */
-const CWD_PREFIX = (() => {
+const CWD_PREFIX = (function resolveCwdPrefix(): string {
   try {
     const cwd = process.cwd()
     return cwd.endsWith('/') ? cwd : `${cwd}/`
@@ -123,7 +123,7 @@ const CWD_PREFIX = (() => {
  * ALT_CWD_PREFIX = "/home/user/project/"      (symlink form via $HOME)
  * ```
  */
-const ALT_CWD_PREFIX = (() => {
+const ALT_CWD_PREFIX = (function resolveAltCwdPrefix(): string {
   if (CWD_PREFIX === '' || REAL_HOME_DIR === '' || HOME_DIR === '') {
     return ''
   }
@@ -224,6 +224,7 @@ const SANDBOX_NOISE_PATTERNS = [
  * Whether a line should be removed entirely.
  *
  * @param line - Trimmed line to check.
+ *
  * @returns `true` if the line is noise that should be stripped.
  */
 function shouldStripLine(line: string): boolean {
@@ -250,6 +251,7 @@ function shouldStripLine(line: string): boolean {
  * runs like ASCII table borders (`+---------+` has 9 dashes).
  *
  * @param line - Line to process.
+ *
  * @returns Line with long character runs collapsed.
  *
  * @example
@@ -279,6 +281,7 @@ function collapseRepeatedChars(line: string): string {
  * The longer path is replaced first to avoid partial replacements.
  *
  * @param line - Line to process.
+ *
  * @returns Line with CWD-prefixed paths converted to relative paths.
  *
  * @example
@@ -322,6 +325,7 @@ function collapseCwdPaths(line: string): string {
  * when one is a prefix of the other.
  *
  * @param line - Line to process.
+ *
  * @returns Line with home directory paths collapsed to `~`.
  *
  * @example
@@ -362,6 +366,7 @@ function collapseHomePaths(line: string): string {
  * Truncates a line that exceeds {@link MAX_LINE_LENGTH}.
  *
  * @param line - Line to potentially truncate.
+ *
  * @returns Original line if short enough, or truncated with a length marker.
  */
 function truncateLine(line: string): string {
@@ -376,7 +381,9 @@ function truncateLine(line: string): string {
  * Collapses runs of {@link DEDUP_THRESHOLD}+ identical lines to `line (xN)`.
  *
  * @param result - Accumulator array to push onto.
+ *
  * @param line - The repeated line content.
+ *
  * @param count - How many consecutive times `line` appeared.
  */
 function flushRepeated({
@@ -404,6 +411,7 @@ function flushRepeated({
  * Applies all filter transformations to raw tool output.
  *
  * @param input - Raw stdout/stderr text from the Bash tool.
+ *
  * @returns Filtered text with boilerplate, long lines, duplicates, and trailing whitespace removed.
  */
 function filterOutput(input: string): string {
@@ -465,6 +473,7 @@ try {
    * Losing output is worse than failing to filter.
    */
   try {
+    /** Unfiltered stdin content passed through as-is on error. */
     const fallback = await text(process.stdin)
     process.stdout.write(fallback)
   } catch {

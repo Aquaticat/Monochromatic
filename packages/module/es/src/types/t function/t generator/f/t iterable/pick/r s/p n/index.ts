@@ -4,13 +4,17 @@
  * Filters an iterable by including only items present in the provided set.
  * Uses set membership for O(1) lookups per item.
  *
- * @param params - Configuration object
- * @param params.iterable - Source iterable to filter
- * @param params.toPick - Set of items to include in the output
- * @param params.strict - When true (default), throws if any key in toPick is not found in the iterable.
+ * @param iterable - Source iterable to filter
+ *
+ * @param toPick - Set of items to include in the output
+ *
+ * @param strict - When true (default), throws if any key in toPick is not found in the iterable.
  *   When false, silently ignores missing keys.
+ *
  * @yields Items from the iterable that are in the inclusion set
+ *
  * @throws Error if strict is true and any key in toPick is not found in the iterable
+ *
  * @example
  * ```ts
  * const numbers = [1, 2, 3, 4, 5];
@@ -18,6 +22,7 @@
  * const result = [...$({ iterable: numbers, toPick: included })];
  * // [2, 4]
  * ```
+ *
  * @example
  * ```ts
  * const words = ['apple', 'banana', 'cherry'];
@@ -26,6 +31,7 @@
  *   console.log(word); // 'banana', 'cherry'
  * }
  * ```
+ *
  * @example Lenient mode ignores missing keys
  * ```ts
  * const numbers = [1, 2, 3];

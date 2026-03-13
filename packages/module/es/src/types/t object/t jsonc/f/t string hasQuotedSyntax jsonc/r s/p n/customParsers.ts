@@ -30,6 +30,7 @@ import {
 } from './customParsers.tokenizers.ts';
 /**
  * Alias for intrinsic freeze to emphasize immutability when capturing values.
+ *
  * @remarks Present for parity with modules that capture intrinsics; avoids repeated lookups.
  */
 const f = Object.freeze;
@@ -44,9 +45,13 @@ const f = Object.freeze;
  * MUTUALLY RECURSIVE with customParserForArray and customParserForRecord.
  *
  * @param value - Input fragment to parse from the start
+ *
  * @param context - Optional value base whose `comment` is attached to the produced node
+ *
  * @returns Parsed value node and remaining fragment starting at the next token
+ *
  * @throws Error - When no valid JSONC value start token is present
+ *
  * @example
  * ```ts
  * parseValueFromStart({ value: '"x" ,', }) // → parsed string, remaining ' ,'
@@ -98,9 +103,9 @@ export function parseValueFromStart(
     return { parsed: parsed as Jsonc.Value, remaining: remainingContent, };
   }
 
-  if (['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',].some(m =>
-    value.startsWith(m,)
-  )) {
+  if (['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',].some(function startsWithDigit(m) {
+    return value.startsWith(m,);
+  })) {
     /** Delegated number token parse; ensures JSON numeric semantics. */
     const out = parseNumberToken({ value, },);
     /** Final value node for number branch with optional comment propagation. */
@@ -119,7 +124,9 @@ export function parseValueFromStart(
  * Parse one or more array elements starting from a tail, returning accumulated items and the tail after ']'.
  *
  * @param tail - Input tail positioned at the start of the next element or closing bracket
+ *
  * @param items - Collected items so far; treated immutably during recursion
+ *
  * @returns Items parsed up to ']' and the remaining tail after the closing bracket
  */
 export function parseArrayElements(
@@ -150,8 +157,11 @@ export function parseArrayElements(
  * Why: Global regex edits are unsafe in the presence of quotes and comments; advancing token-by-token preserves intent.
  *
  * @param value - Input fragment beginning with '['
+ *
  * @param context - Optional value base whose `comment` becomes the array-level comment
+ *
  * @returns Parsed array node and `remainingContent` positioned after the closing ']'
+ *
  * @example
  * ```ts
  * customParserForArray({ value: '[1, /* c *\/ 2]X' as FragmentStringJsonc })
@@ -203,6 +213,7 @@ export function customParserForArray(
  * Parse a record value with its leading comment after the colon.
  *
  * @param tail - Tail after the ':' token
+ *
  * @returns Value node with optional comment, and remaining tail after the value
  */
 export function parseRecordValue(
@@ -225,6 +236,7 @@ export function parseRecordValue(
  * Parse one complete record member (key:value pair) from the current position.
  *
  * @param tail - Tail at the start of a member (may have leading comment)
+ *
  * @returns Entry tuple [key, value] and remaining tail after the value
  */
 export function parseOneRecordMember(
@@ -242,7 +254,9 @@ export function parseOneRecordMember(
  * Parse key:value members immutably, propagating comments on keys/values, and return tail after '}'.
  *
  * @param tail - Input positioned at the next member or closing brace
+ *
  * @param entries - Accumulated entries; treated immutably during recursion
+ *
  * @returns Entries parsed up to '}' and the remaining tail after the closing brace
  */
 export function parseRecordMembers(
@@ -276,7 +290,9 @@ export function parseRecordMembers(
  * Accepts a trailing comma before the closing '}' and returns `remainingContent` after the '}'.
  *
  * @param value - Input fragment beginning with '{'
+ *
  * @param context - Optional value base used for comment propagation
+ *
  * @returns Parsed record node and `remainingContent` after the closing '}'
  */
 export function customParserForRecord(

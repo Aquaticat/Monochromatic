@@ -72,8 +72,10 @@ export type FailureArtifactMeta = {
 /**
  * Converts an ISO timestamp to a filesystem-safe string.
  * Replaces colons with hyphens so the directory name works on all platforms.
- * "2026-02-28T12:00:00.000Z" -> "2026-02-28T12-00-00.000Z"
+ * "2026-02-28T12:00:00.000Z" -\> "2026-02-28T12-00-00.000Z"
+ *
  * @param timestamp - ISO 8601 timestamp string
+ *
  * @returns filesystem-safe timestamp slug
  *
  * @example
@@ -87,7 +89,9 @@ function timestampSlug(timestamp: string): string {
 
 /**
  * Computes the deterministic artifact directory path for a given metadata set.
+ *
  * @param meta - artifact metadata (model, probe, pass, timestamp)
+ *
  * @returns absolute directory path
  */
 export function artifactDir(meta: ArtifactMeta): string {
@@ -107,7 +111,9 @@ export function artifactDir(meta: ArtifactMeta): string {
  * Directory structure: `src/canary-lint/<model>/<probe>-<pass>-<timestamp>/`
  *
  * @param source - TypeScript source to analyze
+ *
  * @param meta - artifact metadata (model, probe, pass, timestamp)
+ *
  * @returns file path and lint subdirectory path
  */
 export async function writeLintFile(source: string, meta: ArtifactMeta): Promise<{
@@ -135,6 +141,7 @@ export async function writeLintFile(source: string, meta: ArtifactMeta): Promise
  * and writes meta.json + response.txt as the sole outputs.
  *
  * @param enriched - full enriched metadata including score and completion data
+ *
  * @param rawResponse - raw model output text
  */
 export async function writeEnrichedArtifact(enriched: EnrichedArtifactMeta, rawResponse: string): Promise<void> {
@@ -175,7 +182,7 @@ const MINUTES_PER_HOUR = 60;
 const SECONDS_PER_MINUTE = 60;
 
 /** Milliseconds per second */
-const MS_PER_SECOND = 1000;
+const MS_PER_SECOND = 1_000;
 
 /** 24 hours in milliseconds */
 const TWENTY_FOUR_HOURS_MS = HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MS_PER_SECOND;
@@ -221,7 +228,9 @@ const FAILURE_DIR_PATTERN = /^failure-(?<timestamp>\d{4}-.+)$/;
  * Restores an ISO timestamp from its filesystem-safe slug form.
  * Reverses the transformation done by {@link timestampSlug}: hyphens back to colons,
  * then fixes the date portion (year-MM-DD) which was incorrectly colonized.
+ *
  * @param rawTimestamp - filesystem-safe timestamp slug (e.g. "2026-03-06T12-00-00.000Z")
+ *
  * @returns ISO 8601 timestamp string, or undefined if parsing fails
  */
 function restoreTimestamp(rawTimestamp: string): string {
@@ -235,8 +244,11 @@ function restoreTimestamp(rawTimestamp: string): string {
 
 /**
  * Checks whether a filesystem-safe timestamp slug falls within the recent cutoff.
+ *
  * @param rawTimestamp - filesystem-safe timestamp slug
+ *
  * @param cutoff - cutoff time in milliseconds since epoch
+ *
  * @returns true if the timestamp is recent (after the cutoff)
  */
 function isRecentTimestamp(rawTimestamp: string, cutoff: number): boolean {
@@ -253,6 +265,7 @@ function isRecentTimestamp(rawTimestamp: string, cutoff: number): boolean {
  * Only considers initial-pass artifacts (fix-pass artifacts always accompany an initial).
  * Also detects whole-model failure artifacts (`failure-<timestamp>`) so the runner
  * can skip all probes for models that recently failed entirely (e.g. 429 errors).
+ *
  * @returns scan result with per-probe pairs and whole-model failure labels
  */
 export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
@@ -260,7 +273,7 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
   const probePairs = new Map<string, Set<string>>();
   const failedModels = new Set<string>();
 
-  let modelDirs: string[];
+  let modelDirs: string[] = [];
   try {
     modelDirs = await readdir(LINT_DIR);
   } catch {
@@ -269,7 +282,7 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
 
   for (const modelDir of modelDirs) {
     const modelPath = join(LINT_DIR, modelDir);
-    let artifactDirs: string[];
+    let artifactDirs: string[] = [];
     try {
       artifactDirs = await readdir(modelPath);
     } catch {
@@ -286,6 +299,7 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
           const metaPath = join(modelPath, dirName, 'meta.json');
           try {
             const metaRaw = await readFile(metaPath, 'utf8');
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON from meta.json has known shape
             const meta = JSON.parse(metaRaw) as Partial<FailureArtifactMeta>;
             const label = meta.label ?? modelDir;
             if (meta.failed === true) {
@@ -312,9 +326,10 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
       const metaPath = join(modelPath, dirName, 'meta.json');
       try {
         const metaRaw = await readFile(metaPath, 'utf8');
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON from meta.json has known shape
         const meta = JSON.parse(metaRaw) as Partial<ArtifactMeta>;
         const label = meta.label ?? modelDir;
-        const probe = meta.probe;
+        const {probe} = meta;
         if (probe === undefined) continue;
         const existing = probePairs.get(label) ?? new Set<string>();
         existing.add(probe);

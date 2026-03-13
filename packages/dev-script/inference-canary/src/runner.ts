@@ -16,23 +16,28 @@ export type { RunnerConfig, VerbosityLevel, } from './runner-config.ts';
 
 /**
  * Computes per-category mean scores from probe results.
+ *
  * @param results - completed probe results
+ *
  * @returns mean score per category
  */
 function computeCategoryScores(results: readonly ProbeResult[]): Record<string, number> {
-  const categories = [...new Set(results.map((result) => result.category))];
+  const categories = [...new Set(results.map(function getCategory(result): string { return result.category; }))];
   return Object.fromEntries(
-    categories.map((category) => {
-      const categoryResults = results.filter((result) => result.category === category);
-      return [category, mean(categoryResults.map((result) => result.meanScore))];
+    categories.map(function categoryEntry(category): [string, number] {
+      const categoryResults = results.filter(function matchCategory(result): boolean { return result.category === category; });
+      return [category, mean(categoryResults.map(function getScore(result): number { return result.meanScore; }))];
     }),
   );
 }
 
 /**
  * Runs all provided probes and produces a diagnostic report.
+ *
  * @param probes - canary probes to execute
+ *
  * @param config - runner configuration (merged with defaults)
+ *
  * @returns full canary report with degradation assessment
  */
 export async function runCanary(
@@ -43,7 +48,7 @@ export async function runCanary(
   const timestamp = await fetchServerTimestamp();
 
   const probesToRun = probes.filter(
-    (probe) => !mergedConfig.skipProbes?.get(mergedConfig.label)?.has(probe.name),
+    function notSkipped(probe): boolean { return !mergedConfig.skipProbes?.get(mergedConfig.label)?.has(probe.name); },
   );
 
   if (probesToRun.length < probes.length) {
@@ -53,14 +58,14 @@ export async function runCanary(
 
   try {
     const results = await Promise.all(
-      probesToRun.map(async (probe) => {
+      probesToRun.map(async function runOne(probe): Promise<ProbeResult> {
         const result = await runProbe(probe, mergedConfig, timestamp);
         console.log(`  [${mergedConfig.label}:${probe.name}] => mean=${String(result.meanScore.toFixed(2))}`);
         return result;
       }),
     );
 
-    const overallScore = mean(results.map((result) => result.meanScore));
+    const overallScore = mean(results.map(function getScore(result): number { return result.meanScore; }));
 
     return {
       model: mergedConfig.model,

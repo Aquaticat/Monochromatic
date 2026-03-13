@@ -1,3 +1,4 @@
+// oxlint-disable no-restricted-syntax/no-arrow-function, no-non-null-assertion, typescript-eslint/no-unsafe-type-assertion, tsdoc/require-returns -- Astro config uses arrow callbacks in integration hooks; non-null assertion is safe for known config shape
 import mdx from '@astrojs/mdx';
 import { createBaseConfig, } from '@monochromatic-dev/config-vite';
 import {
@@ -22,8 +23,12 @@ import { unified, } from 'unified';
 
 /**
  * Creates a new object with specified keys omitted.
+ *
  * @param source - Object to omit keys from
+ *
  * @param keys - Keys to exclude from the result
+ *
+ * @returns new object without the specified keys
  */
 function omit<
   const T extends object,

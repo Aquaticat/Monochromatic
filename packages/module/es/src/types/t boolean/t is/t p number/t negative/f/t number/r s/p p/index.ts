@@ -6,6 +6,7 @@ import type { $ as Negative, } from '@_/types/t number/t negative/t/index.ts';
  * Rejects `NaN` values as they fail the comparison check.
  *
  * @param value - Number to check
+ *
  * @returns `true` if the value is negative (less than 0), `false` otherwise
  *
  * @example

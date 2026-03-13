@@ -32,12 +32,13 @@ type TaskCardOptions = {
 
 /**
  * Formats a duration in seconds as a human-readable string (e.g. "1h30min15s").
+ *
  * @param seconds - Non-negative duration in seconds
  */
 function formatTrackedTime(seconds: number): string {
   const totalSeconds = Math.max(0, Math.floor(seconds));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const hours = Math.floor(totalSeconds / 3_600);
+  const minutes = Math.floor((totalSeconds % 3_600) / 60);
   const remainingSeconds = totalSeconds % 60;
 
   if (hours > 0) {
@@ -152,7 +153,9 @@ class TaskCard extends HTMLElement {
 
   /**
    * Sets the task data and rendering options, then triggers a full render.
+   *
    * @param task - Task to display
+   *
    * @param options - Callbacks and display flags
    */
   configure(task: Task, options: TaskCardOptions): void {
@@ -164,6 +167,7 @@ class TaskCard extends HTMLElement {
   /**
    * Finds a chip element whose text starts with the given prefix.
    * Used by the in-progress timer to update the "tracked:" chip live.
+   *
    * @param prefix - Text prefix to match (e.g. `"tracked:"`)
    */
   getChipElement(prefix: string): HTMLSpanElement | null {
@@ -225,7 +229,9 @@ customElements.define("task-card", TaskCard);
 
 /**
  * Factory: creates and configures a `<task-card>` element ready for DOM insertion.
+ *
  * @param task - Task data to display
+ *
  * @param options - Callbacks for open/complete interactions
  */
 export function createTaskCard(task: Task, options: TaskCardOptions): TaskCard {
@@ -243,6 +249,6 @@ export function formatRunningTrackedTime(task: Task): string {
     return formatTrackedTime(task.trackedTime);
   }
 
-  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - Date.parse(task.timerStartedAt)) / 1000));
+  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - Date.parse(task.timerStartedAt)) / 1_000));
   return formatTrackedTime(task.trackedTime + elapsedSeconds);
 }

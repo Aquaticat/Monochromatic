@@ -6,6 +6,7 @@
  * Uses `setTimeout` internally to create the delay mechanism.
  *
  * @param timeInMs - Time to wait in milliseconds before resolving
+ *
  * @returns Promise that resolves to undefined after the specified delay
  *
  * @example

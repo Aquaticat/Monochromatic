@@ -1,7 +1,10 @@
 /**
  * Checks if a bigint value is zero.
+ *
  * @param value - Bigint value to check
+ *
  * @returns True if the value is 0n, false otherwise
+ *
  * @example
  * ```ts
  * console.log($(0n)); // true

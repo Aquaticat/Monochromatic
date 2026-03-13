@@ -16,7 +16,7 @@ let available = false;
 /**
  * Verifies OPFS is available and can write/read data.
  */
-export const verify: Verify = async (): Promise<boolean> => {
+export async function verify(): Promise<boolean> {
   if (verified) return available;
   verified = true;
 
@@ -41,12 +41,12 @@ export const verify: Verify = async (): Promise<boolean> => {
   }
 
   return available;
-};
+}
 
 /**
  * OPFS sink that writes log records to Origin Private File System.
  */
-export const $: Sink = async (record: LogRecord): Promise<void> => {
+export async function $(record: LogRecord): Promise<void> {
   if (!available || !writable) return;
 
   try {
@@ -54,4 +54,4 @@ export const $: Sink = async (record: LogRecord): Promise<void> => {
   } catch {
     // Silently fail
   }
-};
+}

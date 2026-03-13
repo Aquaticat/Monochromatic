@@ -5,7 +5,9 @@ const INSPECT_PREVIEW_LENGTH = 200;
  * Logs the current value and returns it unchanged (a debug tap).
  * Preserves the input type so it can be inserted anywhere in a pipeline
  * without breaking type inference.
+ *
  * @param value - Value to log and pass through
+ *
  * @returns Same value, unmodified
  */
 export function inspect<const TValue>(value: TValue): TValue {

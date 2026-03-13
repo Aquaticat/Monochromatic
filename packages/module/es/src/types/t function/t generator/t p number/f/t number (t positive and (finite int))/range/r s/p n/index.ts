@@ -9,8 +9,10 @@ import type { $ as Positive, } from '@_/types/t number/t positive/t/index.ts';
  * partial iteration is needed. Supports early termination and lazy evaluation.
  *
  * @param length - Number of consecutive integers to generate
+ *
  * @returns Generator yielding integers from 0 to length-1
- * @throws {RangeError} When length is negative
+ *
+ * @throws RangeError when length is negative
  *
  * @example
  * Basic generator usage:

@@ -11,20 +11,22 @@
  * // Valid single character with type assertion
  * const char: $ = 'a' as $;
  *
- * // @ts-expect-error - Multiple characters are not assignable
+ * // \@ts-expect-error - Multiple characters are not assignable
  * const invalid: $ = 'ab';
  *
- * // @ts-expect-error - Empty string is not assignable
+ * // \@ts-expect-error - Empty string is not assignable
  * const empty: $ = '';
  * ```
  */
 export type $ = string & { length: 1; };
 
-// Type assertion required because TypeScript cannot statically verify string length
+/** Compile-time test: single character passes via type assertion. */
 const _one: $ = '1' as $;
 
+/** Compile-time test: multi-character string fails assignment. */
 // @ts-expect-error -- Type 'string' is not assignable to type '$'. Type 'string' is not assignable to type '{ length: 1; }'.ts(2322)
 const _two: $ = '12';
 
+/** Compile-time test: empty string fails assignment. */
 // @ts-expect-error -- Type 'string' is not assignable to type '$'. Type 'string' is not assignable to type '{ length: 1; }'.ts(2322)
 const _empty: $ = '';

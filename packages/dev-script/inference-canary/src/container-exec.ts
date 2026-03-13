@@ -25,13 +25,16 @@ export type ContainerResult = {
  * Executes the container command and captures stdout/stderr/exit-code.
  *
  * Resolves on any exit code (including non-zero) -- callers check exitCode/timedOut.
+ *
  * @param containerArgs - fully-formed arguments for the container runtime binary
+ *
  * @param signal - optional abort signal; kills the container process immediately on abort
+ *
  * @returns container execution result
  */
 export async function execContainer(containerArgs: readonly string[], signal?: AbortSignal): Promise<ContainerResult> {
   /** Milliseconds per second for timeout computation */
-  const MS_PER_SECOND = 1000;
+  const MS_PER_SECOND = 1_000;
   /** Maximum stderr characters to include in error log */
   const STDERR_PREVIEW_LENGTH = 200;
   /** Total host-side timeout: container limit plus a buffer for startup/teardown */

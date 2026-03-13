@@ -9,7 +9,9 @@ const GLOB_META = /[*?{[]/;
  * and the original static prefix string (for reconstructing output paths).
  * Everything before the first wildcard segment becomes `cwd`;
  * the remainder becomes the pattern passed to the matcher.
+ *
  * @param pattern - Glob pattern, absolute or relative (e.g., `/tmp/foo/*.ts` or `./src/**​/*.md`)
+ *
  * @returns Tuple of `[resolvedCwd, relativeGlob, originalPrefix]`
  *
  * @example
@@ -55,7 +57,9 @@ function splitGlob(pattern: string): readonly [cwd: string, relativeGlob: string
  * relative patterns produce relative paths, absolute patterns produce absolute paths.
  * Uses `tiny-readdir-glob` (backed by zeptomatch) for matching,
  * which always includes dot files without configuration.
+ *
  * @param pattern - Glob pattern (e.g., `./packages/*​/src/*.ts`)
+ *
  * @returns Array of matched paths with the same prefix style as the input pattern
  *
  * @example
@@ -93,9 +97,13 @@ export async function expandGlob(pattern: string): Promise<readonly string[]> {
  * values are inserted positionally into the `*` slots of the dest pattern.
  *
  * @param sourcePattern - Glob pattern used to match the source (e.g., `packages/*​/src/*.ts`)
+ *
  * @param destPattern - Glob pattern for the destination (e.g., `temp/*​/src/*.ts`)
+ *
  * @param sourcePath - Concrete path that matched sourcePattern
+ *
  * @returns Concrete destination path with wildcards filled in
+ *
  * @throws When wildcard counts don't match between source and dest patterns
  */
 export function mirrorGlobPath(
@@ -125,7 +133,8 @@ export function mirrorGlobPath(
   let remainder = sourcePath;
   for (let partIndex = 0; partIndex < sourceParts.length; partIndex++) {
     /** Fixed text before (or after) the current wildcard */
-    const fixedPart = sourceParts[partIndex]!;
+    const fixedPart = sourceParts[partIndex];
+    if (fixedPart === undefined) break;
     if (!remainder.startsWith(fixedPart)) {
       throw new Error(
         `Source path "${sourcePath}" does not match pattern "${sourcePattern}" at segment "${fixedPart}"`,
@@ -135,7 +144,7 @@ export function mirrorGlobPath(
 
     if (partIndex < sourceWildcardCount) {
       /** Position of the next fixed segment, marking the end of this wildcard capture */
-      const nextFixed = sourceParts[partIndex + 1]!;
+      const nextFixed = sourceParts[partIndex + 1] ?? '';
       const nextFixedPos = nextFixed === '' ? remainder.length : remainder.indexOf(nextFixed);
       if (nextFixedPos === -1) {
         throw new Error(
@@ -150,9 +159,9 @@ export function mirrorGlobPath(
   /** Reconstructed destination path with wildcards replaced by captured values */
   const result: string[] = [];
   for (let destIndex = 0; destIndex < destParts.length; destIndex++) {
-    result.push(destParts[destIndex]!);
+    result.push(destParts[destIndex] ?? '');
     if (destIndex < destWildcardCount) {
-      result.push(captured[destIndex]!);
+      result.push(captured[destIndex] ?? '');
     }
   }
   return result.join('');

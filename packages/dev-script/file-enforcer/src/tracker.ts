@@ -31,7 +31,11 @@ export function reset(): void {
   writes.clear();
 }
 
-/** Records a read path, resolving to absolute for reliable watch comparisons. */
+/**
+ * Records a read path, resolving to absolute for reliable watch comparisons.
+ *
+ * @param filePath - path to register as a tracked read
+ */
 export function trackRead(filePath: string): void {
   reads.add(resolve(filePath));
 }
@@ -40,6 +44,8 @@ export function trackRead(filePath: string): void {
  * Registers a path as a managed destination without recording a write timestamp.
  * Called unconditionally in write functions so watch mode knows to protect the
  * file, even when content was unchanged and the actual write was skipped.
+ *
+ * @param filePath - path to register as a managed destination
  */
 export function trackDest(filePath: string): void {
   writes.add(resolve(filePath));
@@ -48,7 +54,9 @@ export function trackDest(filePath: string): void {
 /**
  * Records the timestamp of an actual file write for echo suppression.
  * Must be called **after** the write completes so the file's mtime
- * is guaranteed to be <= the recorded timestamp.
+ * is guaranteed to be \<= the recorded timestamp.
+ *
+ * @param filePath - path that was just written
  */
 export function trackWriteTime(filePath: string): void {
   writeTimestamps.set(resolve(filePath), Date.now());
@@ -59,8 +67,9 @@ export function trackWriteTime(filePath: string): void {
  * should monitor. Useful for dependencies that `cat()` cannot track
  * automatically -- for example, files consumed by `exec()` or external
  * tools whose inputs are opaque to the enforcer.
+ *
  * @param paths - Array of file paths (resolved to absolute) to add to the read set
  */
 export function addWatchedPaths(paths: readonly string[]): void {
-  paths.forEach((filePath) => reads.add(resolve(filePath)));
+  paths.forEach(function addPath(filePath): void { reads.add(resolve(filePath)); });
 }

@@ -8,7 +8,7 @@ import spawn from "nano-spawn";
 const FFMPEG = "/usr/bin/ffmpeg";
 
 /** Maximum long-edge resolution for downscaled screenshots. */
-const SCREENSHOT_LONG_EDGE = 1440;
+const SCREENSHOT_LONG_EDGE = 1_440;
 
 /** Maximum long-edge resolution for downscaled webcam frames. */
 const WEBCAM_LONG_EDGE = 720;
@@ -16,8 +16,11 @@ const WEBCAM_LONG_EDGE = 720;
 /**
  * Builds an ffmpeg scale filter that constrains the longer edge to
  * {@link longEdge} pixels while preserving aspect ratio.
+ *
  * @param longEdge - target pixel count for the longer dimension
+ *
  * @returns ffmpeg `-vf` filter string
+ *
  * @example
  * ```ts
  * scaleFilter(1440); // "scale='if(gt(iw,ih),1440,-2)':'if(gt(iw,ih),-2,1440)'"
@@ -30,8 +33,11 @@ function scaleFilter(longEdge: number): string {
 /**
  * Captures a full-screen screenshot via Spectacle, downscales it with ffmpeg,
  * and returns the result as a JPEG buffer.
+ *
  * @returns JPEG-encoded screenshot buffer
+ *
  * @throws when Spectacle or ffmpeg produces empty output
+ *
  * @example
  * ```ts
  * const screenshot = await captureScreenshot();
@@ -40,29 +46,36 @@ function scaleFilter(longEdge: number): string {
  */
 export async function captureScreenshot(): Promise<Buffer> {
   const tmp = `/tmp/hall-monitor-screen-${Date.now()}.png`;
-  try {
-    await spawn("spectacle", ["-f", "-b", "-n", "-o", tmp], { stdout: "ignore", stderr: "ignore" });
-    const proc = cpSpawn(
-      FFMPEG,
-      ["-y", "-i", tmp, "-vf", scaleFilter(SCREENSHOT_LONG_EDGE), "-q:v", "2", "-f", "image2", "-vcodec", "mjpeg", "pipe:1"],
-      { stdio: ["ignore", "pipe", "inherit"] },
-    );
-    const chunks: Buffer[] = [];
-    proc.stdout!.on("data", function collectChunk(chunk: Buffer) { chunks.push(chunk); });
-    await once(proc, "close");
-    const buf = Buffer.concat(chunks);
-    if (buf.length === 0) throw new Error("Screenshot resize produced empty output");
-    return buf;
-  } finally {
-    await unlink(tmp).catch(() => {});
-  }
+  /** Disposable wrapper for temp file cleanup. */
+  // oxlint-disable-next-line no-unsafe-type-assertion -- disposable resource pattern
+  await using _cleanup = {
+    [Symbol.asyncDispose]: async function cleanupTempFile(): Promise<void> {
+      try { await unlink(tmp); } catch { /* temp file cleanup is best-effort */ }
+    },
+  } as AsyncDisposable;
+
+  await spawn("spectacle", ["-f", "-b", "-n", "-o", tmp], { stdout: "ignore", stderr: "ignore" });
+  const proc = cpSpawn(
+    FFMPEG,
+    ["-y", "-i", tmp, "-vf", scaleFilter(SCREENSHOT_LONG_EDGE), "-q:v", "2", "-f", "image2", "-vcodec", "mjpeg", "pipe:1"],
+    { stdio: ["ignore", "pipe", "inherit"] },
+  );
+  const chunks: Buffer[] = [];
+  proc.stdout.on("data", function collectChunk(chunk: Buffer) { chunks.push(chunk); });
+  await once(proc, "close");
+  const buf = Buffer.concat(chunks);
+  if (buf.length === 0) throw new Error("Screenshot resize produced empty output");
+  return buf;
 }
 
 /**
  * Captures a single webcam frame from `/dev/video0` via ffmpeg v4l2,
  * downscales it, and returns the result as a JPEG buffer.
+ *
  * @returns JPEG-encoded webcam frame buffer
+ *
  * @throws when ffmpeg produces empty output
+ *
  * @example
  * ```ts
  * const webcam = await captureWebcam();
@@ -80,7 +93,7 @@ export async function captureWebcam(): Promise<Buffer> {
     { stdio: ["ignore", "pipe", "inherit"] },
   );
   const chunks: Buffer[] = [];
-  proc.stdout!.on("data", function collectChunk(chunk: Buffer) { chunks.push(chunk); });
+  proc.stdout.on("data", function collectChunk(chunk: Buffer) { chunks.push(chunk); });
   await once(proc, "close");
   const buf = Buffer.concat(chunks);
   if (buf.length === 0) throw new Error("Webcam capture produced empty output");

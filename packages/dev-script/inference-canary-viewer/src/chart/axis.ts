@@ -11,11 +11,12 @@
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 /** Fixed Y axis tick values for score plots (0 to 1) */
-export const Y_TICKS: readonly number[] = [0, 0.25, 0.5, 0.75, 1.0];
+export const Y_TICKS: readonly number[] = [0, 0.25, 0.5, 0.75, 1];
 
 /**
  * Generates HTML for Y axis tick labels positioned absolutely within a chart container.
  * Each tick is a `<span>` positioned at the corresponding bottom percentage.
+ *
  * @returns HTML string for Y axis ticks
  */
 export function renderYAxis(): string {
@@ -37,7 +38,9 @@ export function renderYAxis(): string {
  * Shows date labels at evenly spaced intervals to avoid overcrowding.
  * Adapts granularity: shows HH:MM when all points fall on the same day,
  * MM-DD for same-year multi-day ranges, or YYYY-MM-DD across years.
+ *
  * @param timestamps - ordered array of ISO timestamp strings corresponding to data points
+ *
  * @returns HTML string for X axis ticks
  */
 export function renderXAxis(timestamps: readonly string[],): string {
@@ -75,7 +78,9 @@ export function renderXAxis(timestamps: readonly string[],): string {
 /**
  * Chooses a label formatter based on the time span of the data.
  * Same-day data gets HH:MM labels; multi-day gets date labels.
+ *
  * @param timestamps - all timestamps in the chart
+ *
  * @returns formatter function mapping ISO timestamp to display label
  */
 function chooseFormatter(timestamps: readonly string[],): (ts: string) => string {
@@ -88,7 +93,9 @@ function chooseFormatter(timestamps: readonly string[],): (ts: string) => string
 
 /**
  * Formats an ISO timestamp as HH:MM for same-day axis labels.
+ *
  * @param timestamp - ISO 8601 timestamp string
+ *
  * @returns time string like "14:30"
  *
  * @example
@@ -107,7 +114,9 @@ function formatTime(timestamp: string,): string {
 /**
  * Formats an ISO timestamp into a short date label for axis display.
  * Shows month-day for dates within the current year, or year-month-day otherwise.
+ *
  * @param timestamp - ISO 8601 timestamp string
+ *
  * @returns short date string like "03-01" or "2025-12-15"
  *
  * @example

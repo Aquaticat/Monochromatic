@@ -24,8 +24,11 @@ import { buildCacheKey, } from '../../cacheKey.ts';
  * where `this` binding would cause incorrect caching.
  *
  * @typeParam TArgs - tuple of function argument types
+ *
  * @typeParam TReturn - resolved return type (not wrapped in Promise)
+ *
  * @param options - function and memoization configuration
+ *
  * @returns memoized async function with `.store`, `.clear()`, `.delete()`
  *
  * @remarks
@@ -89,6 +92,7 @@ export async function $<
    * Create a disposable that removes a key from the inflight map on dispose.
    *
    * @param cacheKey - key to remove from inflight on disposal
+   *
    * @returns disposable that cleans inflight entry
    *
    * @example
@@ -108,7 +112,9 @@ export async function $<
    * Core computation: checks Store, then calls fn. Manages inflight map.
    *
    * @param cacheKey - full cache key
+   *
    * @param args - original function arguments
+   *
    * @returns cached or freshly computed result
    */
   async function resolveValue(cacheKey: string, args: TArgs,): Promise<TReturn> {
@@ -129,7 +135,9 @@ export async function $<
    * If an inflight promise already exists for this key, returns it (deduplication).
    *
    * @param cacheKey - full cache key
+   *
    * @param args - original function arguments
+   *
    * @returns promise resolving to the cached or computed value
    */
   function dispatch(cacheKey: string, args: TArgs,): Promise<TReturn> {

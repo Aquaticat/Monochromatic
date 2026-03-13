@@ -48,11 +48,16 @@ export type ObjectsMergeRules = {
  * - Functions: checks parameter compatibility then applies function rule or default behavior
  *
  * @param objs - Array of objects to merge
+ *
  * @param rules - Type-specific rules for handling conflicts
+ *
  * @returns Merged object with all properties from input objects
- * @throws {TypeError} When no rule provided for conflicting values
- * @throws {TypeError} When functions have incompatible parameters
- * @throws {TypeError} When objs array is empty
+ *
+ * @throws TypeError when no rule provided for conflicting values
+ *
+ * @throws TypeError when functions have incompatible parameters
+ *
+ * @throws TypeError when objs array is empty
  *
  * @example
  * Default behavior (throws on conflicts without rules):
@@ -119,7 +124,7 @@ export type ObjectsMergeRules = {
   // Collect all unique property names
   const allKeys = new Set<string>();
   for (const obj of objs)
-    Object.keys(obj,).forEach(key => allKeys.add(key,));
+    Object.keys(obj,).forEach(function addKey(key) { allKeys.add(key,); });
 
   const result: Record<string, unknown> = {};
 
@@ -139,20 +144,22 @@ export type ObjectsMergeRules = {
       const valueType = typeof value;
       if (!valuesByType.has(valueType,))
         valuesByType.set(valueType, [],);
-      valuesByType.get(valueType,)!.push(value,);
+      const typeValues = valuesByType.get(valueType,);
+      if (typeValues !== undefined)
+        typeValues.push(value,);
     }
 
     // Check if we have multiple types for the same property
     if (valuesByType.size > 1) {
       throw new TypeError(
         `Cannot merge property "${key}": mixed types found: ${
-          Array.from(valuesByType.keys(),).join(', ',)
+          [...valuesByType.keys()].join(', ',)
         }`,
       );
     }
 
     // Get the single type and its values
-    const entryArray = Array.from(valuesByType.entries(),);
+    const entryArray = [...valuesByType.entries()];
     const firstEntry = entryArray[0];
     if (!firstEntry)
       continue;
@@ -167,9 +174,9 @@ export type ObjectsMergeRules = {
       // Multiple values of the same type
       // Check for consensus (all values equal)
       const firstValue = values[0];
-      const allEqual = values.every(value =>
-        JSON.stringify(value,) === JSON.stringify(firstValue,)
-      );
+      const allEqual = values.every(function checkEqual(value) {
+        return JSON.stringify(value,) === JSON.stringify(firstValue,);
+      });
 
       if (allEqual)
         result[key] = firstValue;

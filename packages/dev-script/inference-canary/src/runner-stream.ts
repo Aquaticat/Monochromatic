@@ -12,7 +12,7 @@ import type { RunnerConfig, } from './runner-config.ts';
 import type { ChatMessage, CompletionResult, StreamTiming, StreamUsage, } from './runner-types.ts';
 
 /** Milliseconds per second for human-readable timing display */
-const MS_PER_SECOND = 1000;
+const MS_PER_SECOND = 1_000;
 
 //region PartialCompletionError -- thrown on stream abort, carries whatever data was collected before cancellation
 
@@ -39,6 +39,7 @@ export class PartialCompletionError extends Error {
 
   /**
    * @param message - human-readable error description
+   *
    * @param partialResult - completion data collected before abort
    */
   constructor(message: string, partialResult: CompletionResult) {
@@ -55,7 +56,9 @@ export class PartialCompletionError extends Error {
  * Only ttfc and total are shown -- chunk count and inter-chunk gaps are too granular
  * for routine human inspection and are preserved in the StreamTiming object for callers
  * that need them.
+ *
  * @param label - probe/call label for log prefix
+ *
  * @param timing - collected timing data
  */
 function logTiming(label: string, timing: StreamTiming): void {
@@ -69,7 +72,9 @@ function logTiming(label: string, timing: StreamTiming): void {
 /**
  * Extracts a {@link StreamUsage} from the SDK's CompletionUsage shape.
  * Returns undefined when the input is nullish (API did not include usage).
+ *
  * @param raw - raw usage object from the OpenAI SDK
+ *
  * @returns normalized usage, or undefined
  */
 function parseUsage(raw: OpenAI.CompletionUsage | null | undefined): StreamUsage | undefined {
@@ -84,11 +89,17 @@ function parseUsage(raw: OpenAI.CompletionUsage | null | undefined): StreamUsage
 
 /**
  * Builds a {@link CompletionResult} from accumulated stream data.
+ *
  * @param chunks - collected content deltas
+ *
  * @param reasoningChunks - collected reasoning deltas
+ *
  * @param timing - computed timing breakdown
+ *
  * @param usage - raw usage from the API (may be nullish)
+ *
  * @param finishReason - stop reason from the final chunk
+ *
  * @returns assembled completion result
  */
 function buildResult(
@@ -113,12 +124,19 @@ function buildResult(
  *
  * On abort, throws {@link PartialCompletionError} carrying whatever data was
  * collected before cancellation so callers can persist partial responses.
+ *
  * @param client - OpenAI SDK client
+ *
  * @param messages - conversation messages
+ *
  * @param config - runner configuration
+ *
  * @param label - label for timing logs
+ *
  * @param signal - optional abort signal; cancels the HTTP stream when aborted
+ *
  * @returns full completion result with all captured data
+ *
  * @throws {PartialCompletionError} when the stream is aborted, carrying partial data
  */
 export async function streamCompletion(
@@ -138,7 +156,7 @@ export async function streamCompletion(
   // without throwing), so we use a listener-set flag that tsgo cannot narrow away.
   // let: assigned true by the abort listener callback below
   let streamWasAborted = false;
-  const onAbort = (): void => { streamWasAborted = true; };
+  function onAbort(): void { streamWasAborted = true; }
   signal?.addEventListener('abort', onAbort, { once: true, });
 
   const startMs = Date.now();
@@ -183,15 +201,17 @@ export async function streamCompletion(
 
     const choice = chunk.choices[0];
     if (choice !== undefined) {
-      const delta = choice.delta;
+      const {delta} = choice;
       if (delta.content !== undefined && delta.content !== null) chunks.push(delta.content);
 
       // OpenRouter surfaces reasoning via `reasoning_details` on the delta -- an array of
       // objects with `type` ("reasoning.text" | "reasoning.summary" | "reasoning.encrypted")
       // and a type-specific text field (`text`, `summary`, or `data`).
       // The field is not typed in OpenAI SDK v6.22, so access it dynamically.
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenRouter extends the SDK delta with reasoning_details
       const reasoningDetails = (delta as Record<string, unknown>)['reasoning_details'];
       if (Array.isArray(reasoningDetails)) {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenRouter reasoning_details items have known shape
         for (const detail of reasoningDetails as readonly Record<string, unknown>[]) {
           if (detail['type'] === 'reasoning.text' && typeof detail['text'] === 'string') {
             reasoningChunks.push(detail['text']);

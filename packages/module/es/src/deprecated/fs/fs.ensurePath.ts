@@ -20,10 +20,10 @@ export async function ensurePath(path: string,): Promise<string> {
 
   if (parsedPath.ext) {
     l.info`path ${path} is a file.`;
-    return await ensureFile(path,);
+    return ensureFile(path,);
   }
 
-  return await ensureDir(path,);
+  return ensureDir(path,);
 }
 
 export async function ensureDir(path: string,): Promise<string> {

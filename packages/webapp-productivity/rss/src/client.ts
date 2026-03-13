@@ -4,22 +4,35 @@ import { z, } from 'zod/v4-mini';
 
 //region Scroll event observer -- Tracks element visibility and dispatches custom scroll lifecycle events
 
+/** Intersection ratio threshold: one quarter visible. */
+const QUARTER_THRESHOLD = 0.25;
+
+/** Intersection ratio threshold: half visible. */
+const HALF_THRESHOLD = 0.5;
+
+/** Intersection ratio threshold: three quarters visible. */
+const THREE_QUARTER_THRESHOLD = 0.75;
+
 /**
  * Attaches an IntersectionObserver to an element, dispatching custom events
  * for scroll lifecycle transitions (enter, leave, half-visible, fully visible, scrolled out).
- * @param options - Element to observe and optional IntersectionObserver configuration
+ *
+ * @param scrollOptions - Element to observe and optional IntersectionObserver configuration
+ *
  * @returns IntersectionObserver instance controlling the observation
+ *
  * @example
  * ```ts
  * const observer = addScrollEvents({ element: myDiv });
  * ```
  */
-function addScrollEvents({ element, options = {}, }: {
+function addScrollEvents(scrollOptions: {
   element: HTMLElement;
   options?: IntersectionObserverInit;
 }): IntersectionObserver {
+  const { element, options = {}, } = scrollOptions;
   const config: IntersectionObserverInit = {
-    threshold: [0, 0.25, 0.5, 0.75, 1,],
+    threshold: [0, QUARTER_THRESHOLD, HALF_THRESHOLD, THREE_QUARTER_THRESHOLD, 1,],
     rootMargin: '0px',
     ...options,
   };
@@ -28,7 +41,7 @@ function addScrollEvents({ element, options = {}, }: {
   let lastRatio = 0;
 
   const observer = new IntersectionObserver(function onIntersect(entries,) {
-    const entry = entries[0];
+    const [entry] = entries;
     if (!entry) {
       console.error(`empty entries for observer`, entries, observer,);
       return;
@@ -51,8 +64,7 @@ function addScrollEvents({ element, options = {}, }: {
     if (lastRatio > 0 && ratio === 0)
       element.dispatchEvent(new CustomEvent('leaveViewport',),);
 
-    const halfVisibleThreshold = 0.5;
-    if (ratio >= halfVisibleThreshold && lastRatio < halfVisibleThreshold)
+    if (ratio >= HALF_THRESHOLD && lastRatio < HALF_THRESHOLD)
       element.dispatchEvent(new CustomEvent('halfVisible',),);
 
     lastRatio = ratio;
@@ -66,10 +78,15 @@ function addScrollEvents({ element, options = {}, }: {
 
 //region Feed element binding -- Connects scroll events to the ignore API for auto-dismissal
 
-/** @see {@link addScrollEvents} for the scroll lifecycle that triggers ignore calls */
+/**
+ * All feed elements on the page, bound to scroll-based ignore behavior.
+ *
+ * @see `addScrollEvents` for the scroll lifecycle that triggers ignore calls
+ */
 const elements: NodeListOf<HTMLElement> = document.querySelectorAll('.feed',);
 elements.forEach(function bindScrollIgnore(element,) {
   addScrollEvents({ element, },);
+  // oxlint-disable-next-line @typescript-eslint/no-misused-promises -- addEventListener does not await the handler
   element.addEventListener('scrolledOut', async function onScrolledOut() {
     console.error('scrolledOut',);
     const metadata = notNullishOrThrow(element.querySelector('.feed__metadata',),);

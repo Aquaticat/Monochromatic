@@ -16,10 +16,9 @@ import { join, } from 'node:path';
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 import { highlightTs, } from '../highlight/glow.ts';
-import { computeDiff, } from '../data/diff.ts';
+import { computeDiff, type DiffLine, } from '../data/diff.ts';
 import { probeKey, } from '../data/read-artifacts.ts';
 
-import type { DiffLine, } from '../data/diff.ts';
 import type { ProbeDetail, ViewerEntry, } from '../data/viewer-types.ts';
 
 import { renderBadges, renderCollapsibles, renderPassMeta, } from './overlay-meta.ts';
@@ -28,9 +27,12 @@ import { renderBadges, renderCollapsibles, renderPassMeta, } from './overlay-met
  * Renders all run detail overlays for every viewer entry.
  *
  * Each overlay is a `<div popover="auto" id="run-{id}">` opened by `popovertarget` buttons.
- * @param options - overlay rendering options
- * @param options.entries - all viewer entries
- * @param options.probeDetails - per-probe enriched data keyed by composite key
+ *
+ *
+ * @param entries - all viewer entries
+ *
+ * @param probeDetails - per-probe enriched data keyed by composite key
+ *
  * @returns HTML string containing all overlay sections
  */
 export async function renderAllOverlays({ entries, probeDetails, }: {
@@ -57,16 +59,19 @@ export async function renderAllOverlays({ entries, probeDetails, }: {
 /**
  * Renders a simple overlay for an overall run (no source code).
  * Shows a probe grid with clickable cards linking to per-probe overlays.
- * @param options - overlay rendering options
- * @param options.id - unique overlay ID
- * @param options.entry - viewer entry
+ *
+ *
+ * @param id - unique overlay ID
+ *
+ * @param entry - viewer entry
+ *
  * @returns HTML string
  */
 function renderRunOverlay({ id, entry, }: {
   id: string;
   entry: ViewerEntry;
 }): string {
-  const label = entry.label;
+  const {label} = entry;
 
   const probeCards = Object.entries(entry.probeScores)
     .map(([name, score]) => {
@@ -103,11 +108,16 @@ function renderRunOverlay({ id, entry, }: {
 
 /**
  * Renders a probe-specific overlay with source code, diff, and enriched metadata.
- * @param options - overlay rendering options
- * @param options.id - unique overlay ID
- * @param options.entry - viewer entry
- * @param options.probe - probe name
- * @param options.detail - enriched probe detail (may be undefined for missing artifacts)
+ *
+ *
+ * @param id - unique overlay ID
+ *
+ * @param entry - viewer entry
+ *
+ * @param probe - probe name
+ *
+ * @param detail - enriched probe detail (may be undefined for missing artifacts)
+ *
  * @returns HTML string
  */
 async function renderProbeOverlay({ id, entry, probe, detail, }: {
@@ -116,7 +126,7 @@ async function renderProbeOverlay({ id, entry, probe, detail, }: {
   probe: string;
   detail: ProbeDetail | undefined;
 }): Promise<string> {
-  const label = entry.label;
+  const {label} = entry;
   const score = entry.probeScores[probe] ?? 0;
   const pass2Score = entry.pass2Scores?.[probe];
 
@@ -189,7 +199,9 @@ async function renderProbeOverlay({ id, entry, probe, detail, }: {
  * Left column: initial pass (removed lines highlighted).
  * Right column: fix pass (added lines highlighted).
  * Unchanged lines appear in both columns.
+ *
  * @param diffLines - computed diff lines
+ *
  * @returns HTML string for the diff view
  */
 function renderSideBySideDiff(

@@ -63,7 +63,7 @@ const REF_RED = [190, 72, 88] as const
 const HAIR_PARTS: readonly PartDef[] = [
   {
     name: 'hair_back',
-    bbox: [0.08, 0.00, 0.84, 0.23],
+    bbox: [0.08, 0, 0.84, 0.23],
     colors: [c(PALETTE.red, 55), c(PALETTE.darkRed, 50), c(REF_RED, 45)],
     fill: '#cc2244',
     morphClose: 7,
@@ -71,7 +71,7 @@ const HAIR_PARTS: readonly PartDef[] = [
   },
   {
     name: 'hair_bangs',
-    bbox: [0.22, 0.00, 0.56, 0.12],
+    bbox: [0.22, 0, 0.56, 0.12],
     colors: [c(PALETTE.red, 55), c(PALETTE.darkRed, 50), c(REF_RED, 45)],
     fill: '#cc2244',
     morphClose: 5,
@@ -79,7 +79,7 @@ const HAIR_PARTS: readonly PartDef[] = [
   },
   {
     name: 'hair_drill_L',
-    bbox: [0.00, 0.04, 0.35, 0.26],
+    bbox: [0, 0.04, 0.35, 0.26],
     colors: [c(PALETTE.red, 55), c(PALETTE.darkRed, 50), c(REF_RED, 45)],
     fill: '#cc2244',
     morphClose: 5,
@@ -96,7 +96,7 @@ const HAIR_PARTS: readonly PartDef[] = [
   {
     // White horn/ribbon accents - same color as background, use foreground only
     name: 'hair_accessory_L',
-    bbox: [0.18, 0.00, 0.20, 0.10],
+    bbox: [0.18, 0, 0.2, 0.1],
     colors: [],
     fill: '#f0ede8',
     morphClose: 3,
@@ -104,7 +104,7 @@ const HAIR_PARTS: readonly PartDef[] = [
   },
   {
     name: 'hair_accessory_R',
-    bbox: [0.62, 0.00, 0.20, 0.10],
+    bbox: [0.62, 0, 0.2, 0.1],
     colors: [],
     fill: '#f0ede8',
     morphClose: 3,
@@ -118,7 +118,7 @@ const HAIR_PARTS: readonly PartDef[] = [
 const HEAD_PARTS: readonly PartDef[] = [
   {
     name: 'head_face',
-    bbox: [0.30, 0.06, 0.40, 0.12],
+    bbox: [0.3, 0.06, 0.4, 0.12],
     colors: [c(PALETTE.skin, 45), c([246, 231, 210], 35)],
     fill: '#f0ddd0',
     morphClose: 7,
@@ -150,7 +150,7 @@ const HEAD_PARTS: readonly PartDef[] = [
 const TORSO_PARTS: readonly PartDef[] = [
   {
     name: 'torso_front',
-    bbox: [0.20, 0.16, 0.60, 0.20],
+    bbox: [0.2, 0.16, 0.6, 0.2],
     colors: [
       c(PALETTE.midGray, 50), c(PALETTE.lightGray, 45), c(PALETTE.dark, 40),
       c(REF_GRAY_WARM, 40), c(REF_GRAY_DARK, 35),
@@ -171,7 +171,7 @@ const TORSO_PARTS: readonly PartDef[] = [
   },
   {
     name: 'epaulette_R',
-    bbox: [0.70, 0.16, 0.16, 0.05],
+    bbox: [0.7, 0.16, 0.16, 0.05],
     colors: [],
     fill: '#c8c4be',
     morphClose: 3,
@@ -185,7 +185,7 @@ const TORSO_PARTS: readonly PartDef[] = [
 const ARM_PARTS: readonly PartDef[] = [
   {
     name: 'upper_arm_L',
-    bbox: [0.05, 0.18, 0.20, 0.15],
+    bbox: [0.05, 0.18, 0.2, 0.15],
     colors: [c(PALETTE.midGray, 50), c(REF_GRAY_WARM, 40), c(REF_GRAY_DARK, 35)],
     fill: '#9a9a9a',
     morphClose: 5,
@@ -193,7 +193,7 @@ const ARM_PARTS: readonly PartDef[] = [
   },
   {
     name: 'upper_arm_R',
-    bbox: [0.75, 0.18, 0.20, 0.15],
+    bbox: [0.75, 0.18, 0.2, 0.15],
     colors: [c(PALETTE.midGray, 50), c(REF_GRAY_WARM, 40), c(REF_GRAY_DARK, 35)],
     fill: '#9a9a9a',
     morphClose: 5,
@@ -201,7 +201,7 @@ const ARM_PARTS: readonly PartDef[] = [
   },
   {
     name: 'forearm_L',
-    bbox: [0.02, 0.30, 0.20, 0.14],
+    bbox: [0.02, 0.3, 0.2, 0.14],
     colors: [c(PALETTE.midGray, 50), c(PALETTE.dark, 40), c(REF_GRAY_WARM, 40)],
     fill: '#9a9a9a',
     morphClose: 5,
@@ -209,7 +209,7 @@ const ARM_PARTS: readonly PartDef[] = [
   },
   {
     name: 'forearm_R',
-    bbox: [0.78, 0.30, 0.20, 0.14],
+    bbox: [0.78, 0.3, 0.2, 0.14],
     colors: [c(PALETTE.midGray, 50), c(PALETTE.dark, 40), c(REF_GRAY_WARM, 40)],
     fill: '#9a9a9a',
     morphClose: 5,
@@ -217,7 +217,7 @@ const ARM_PARTS: readonly PartDef[] = [
   },
   {
     name: 'hand_L',
-    bbox: [0.00, 0.42, 0.18, 0.08],
+    bbox: [0, 0.42, 0.18, 0.08],
     colors: [c(PALETTE.skin, 45), c([246, 231, 210], 35)],
     fill: '#f0ddd0',
     morphClose: 3,
@@ -249,7 +249,7 @@ const LOWER_PARTS: readonly PartDef[] = [
   },
   {
     name: 'skirt_front',
-    bbox: [0.10, 0.32, 0.80, 0.20],
+    bbox: [0.1, 0.32, 0.8, 0.2],
     colors: [
       c(PALETTE.midGray, 50), c(PALETTE.lightGray, 45), c(PALETTE.dark, 40),
       c(REF_GRAY_WARM, 40), c(REF_GRAY_DARK, 35),
@@ -307,7 +307,7 @@ const LOWER_PARTS: readonly PartDef[] = [
   {
     // Boots start at y≈0.89, below the visible skin
     name: 'boot_L',
-    bbox: [0.30, 0.87, 0.20, 0.12],
+    bbox: [0.3, 0.87, 0.2, 0.12],
     colors: [c(PALETTE.dark, 45), c(PALETTE.red, 50), c(REF_RED, 45)],
     fill: '#2a2a2a',
     morphClose: 5,
@@ -315,7 +315,7 @@ const LOWER_PARTS: readonly PartDef[] = [
   },
   {
     name: 'boot_R',
-    bbox: [0.42, 0.87, 0.20, 0.12],
+    bbox: [0.42, 0.87, 0.2, 0.12],
     colors: [c(PALETTE.dark, 45), c(PALETTE.red, 50), c(REF_RED, 45)],
     fill: '#2a2a2a',
     morphClose: 5,
@@ -333,4 +333,4 @@ export const PARTS: readonly PartDef[] = [
   ...LOWER_PARTS,
 ]
 
-export {}
+

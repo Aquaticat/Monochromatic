@@ -11,8 +11,7 @@
 import { readdir, readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { LINT_DIR, } from '@monochromatic-dev/dev-script-inference-canary/src/linter-artifacts.ts';
-import type { ArtifactMeta, EnrichedArtifactMeta, FailureArtifactMeta, } from '@monochromatic-dev/dev-script-inference-canary/src/linter-artifacts.ts';
+import { LINT_DIR, type ArtifactMeta, type EnrichedArtifactMeta, type FailureArtifactMeta, } from '@monochromatic-dev/dev-script-inference-canary/src/linter-artifacts.ts';
 
 import type { ArtifactData, ProbeDetail, ViewerEntry, } from './viewer-types.ts';
 
@@ -20,12 +19,24 @@ export { LINT_DIR, };
 
 //region Type guards -- distinguish enriched, failure, and basic artifact metadata
 
-/** Whether a parsed meta.json is an enriched artifact (has score field) */
+/**
+ * Whether a parsed meta.json is an enriched artifact (has score field).
+ *
+ * @param meta - artifact metadata to check
+ *
+ * @returns true when the metadata includes score (enriched form)
+ */
 function isEnriched(meta: ArtifactMeta): meta is EnrichedArtifactMeta {
   return 'score' in meta;
 }
 
-/** Whether a parsed meta.json is a whole-model failure artifact */
+/**
+ * Whether a parsed meta.json is a whole-model failure artifact.
+ *
+ * @param meta - parsed JSON object from meta.json
+ *
+ * @returns true when the metadata indicates a whole-model failure
+ */
 function isFailure(meta: Record<string, unknown>): meta is FailureArtifactMeta {
   return meta['failed'] === true;
 }
@@ -34,7 +45,9 @@ function isFailure(meta: Record<string, unknown>): meta is FailureArtifactMeta {
 
 /**
  * Reads a file, returning undefined on any error.
+ *
  * @param path - absolute file path
+ *
  * @returns file contents or undefined
  */
 async function readOptional(path: string): Promise<string | undefined> {
@@ -59,9 +72,13 @@ type ParsedArtifact = {
 
 /**
  * Composite key for grouping probe details: `label::probe::timestamp`.
+ *
  * @param label - model label
+ *
  * @param probe - probe name
+ *
  * @param timestamp - ISO timestamp
+ *
  * @returns composite key string
  *
  * @example
@@ -79,6 +96,7 @@ export function probeKey(label: string, probe: string, timestamp: string): strin
  *
  * Groups artifacts by (model, timestamp) to reconstruct per-run entries.
  * Computes overall scores as the mean of per-probe initial-pass scores.
+ *
  * @returns entries for charts/tables and per-probe details for overlays
  */
 export async function readArtifacts(): Promise<ArtifactData> {
@@ -149,9 +167,13 @@ export async function readArtifacts(): Promise<ArtifactData> {
 
 /**
  * Assembles viewer entries and probe details from grouped artifacts.
+ *
  * @param initialByRun - initial-pass artifacts grouped by run key
+ *
  * @param fixByRun - fix-pass artifacts grouped by run key
+ *
  * @param failures - whole-model failure metadata
+ *
  * @returns assembled viewer data
  */
 function buildViewerData(
@@ -164,7 +186,7 @@ function buildViewerData(
 
   for (const [runKey, probes] of initialByRun) {
     const fixes = fixByRun.get(runKey) ?? new Map<string, ParsedArtifact>();
-    const firstProbe = probes.values().next().value as ParsedArtifact | undefined;
+    const firstProbe = probes.values().next().value;
     if (firstProbe === undefined) continue;
 
     const { model, label, timestamp, } = firstProbe.meta;
@@ -176,7 +198,7 @@ function buildViewerData(
     for (const [probeName, artifact] of probes) {
       const enriched = isEnriched(artifact.meta) ? artifact.meta : undefined;
       probeScores[probeName] = enriched?.score ?? 0;
-      if (enriched?.config !== undefined) config = enriched.config;
+      if (enriched?.config !== undefined) ({ config } = enriched);
 
       const fix = fixes.get(probeName);
       const fixEnriched = fix !== undefined && isEnriched(fix.meta) ? fix.meta : undefined;

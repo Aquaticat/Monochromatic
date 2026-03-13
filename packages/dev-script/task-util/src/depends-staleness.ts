@@ -37,7 +37,7 @@ import { outdent, } from '@cspotcode/outdent';
 import spawn from 'nano-spawn';
 import readdirGlob from 'tiny-readdir-glob';
 
-export {};
+
 
 //region Constants
 
@@ -95,6 +95,7 @@ export type TimeStrategy = BuiltinTimeStrategy | `sh:${string}`;
  * Checks whether an item is a shell command (prefixed with `sh:`).
  *
  * @param item - Source or output item string
+ *
  * @returns `true` when the item starts with `sh:`
  *
  * @example
@@ -111,6 +112,7 @@ function isShellCommand(item: string,): boolean {
  * Strips the `sh:` prefix from a shell command item.
  *
  * @param item - Shell command item with `sh:` prefix
+ *
  * @returns Command string without prefix
  *
  * @example
@@ -134,6 +136,7 @@ function extractCommand(item: string,): string {
  * Numbers >= 1e12 are treated as milliseconds; smaller numbers as seconds.
  *
  * @param value - Trimmed stdout from a shell command
+ *
  * @returns Timestamp in milliseconds (possibly `Infinity` or `-Infinity`),
  * or `undefined` when not parseable
  *
@@ -152,7 +155,7 @@ function parseTimestamp(value: string,): number | undefined {
 
   const num = Number(value,);
   if (!Number.isNaN(num,) && Number.isFinite(num,)) {
-    return num >= SECONDS_MS_BOUNDARY ? num : num * 1000;
+    return num >= SECONDS_MS_BOUNDARY ? num : num * 1_000;
   }
 
   const date = new Date(value,);
@@ -171,6 +174,7 @@ function parseTimestamp(value: string,): number | undefined {
  * Computes the arithmetic mean of an array of numbers.
  *
  * @param values - Non-empty array of timestamps
+ *
  * @returns Arithmetic mean
  *
  * @example
@@ -193,6 +197,7 @@ function computeMean(values: readonly number[],): number {
  * to avoid fractional timestamps.
  *
  * @param values - Non-empty array of timestamps
+ *
  * @returns Median value
  *
  * @example
@@ -202,13 +207,13 @@ function computeMean(values: readonly number[],): number {
  * ```
  */
 function computeMedian(values: readonly number[],): number {
-  const sorted = [...values,].sort(function ascending(a, b,) { return a - b; },);
+  const sorted = [...values,].toSorted(function ascending(a, b,) { return a - b; },);
   const mid = Math.floor(sorted.length / 2,);
   // Even length: use lower middle to avoid fractional timestamps
   if (sorted.length % 2 === 0) {
-    return sorted[mid - 1]!;
+    return sorted[mid - 1] ?? 0;
   }
-  return sorted[mid]!;
+  return sorted[mid] ?? 0;
 }
 
 /**
@@ -244,9 +249,13 @@ const builtinStrategies: Readonly<Record<BuiltinTimeStrategy, (values: readonly 
  * - `sort -rn | head -1` for maximum (newest)
  *
  * @param command - Shell command (without `sh:` prefix)
+ *
  * @param timestamps - Resolved timestamps to pipe via stdin
+ *
  * @param verbose - Whether to log diagnostic messages
+ *
  * @returns Aggregated timestamp from command stdout
+ *
  * @throws {Error} When command fails or returns unparseable output
  *
  * @example
@@ -265,7 +274,8 @@ async function runStrategyCommand(
     console.error(`[task-depends] running strategy command: ${fullCommand}`,);
   }
 
-  let stdout: string;
+  /** Raw stdout from the command */
+  let stdout = '';
   try {
     const result = await spawn(fullCommand, { shell: true, },);
     stdout = result.stdout.trim();
@@ -282,7 +292,8 @@ async function runStrategyCommand(
 
   // Strategy commands receive and return millisecond timestamps.
   // Parse as raw number (no seconds/ms heuristic) or Infinity/-Infinity.
-  let result: number;
+  /** Aggregated timestamp parsed from stdout */
+  let result = 0;
   if (stdout === 'Infinity') {
     result = Infinity;
   }
@@ -318,8 +329,11 @@ async function runStrategyCommand(
  * Dispatches to a builtin function or runs a custom shell command.
  *
  * @param timestamps - Resolved timestamps to aggregate
+ *
  * @param strategy - Builtin strategy name or `sh:` command
+ *
  * @param verbose - Whether to log diagnostic messages
+ *
  * @returns Single aggregated timestamp
  *
  * @example
@@ -331,6 +345,7 @@ async function aggregateTimestamps(
   timestamps: readonly number[], strategy: TimeStrategy, verbose: boolean,
 ): Promise<number> {
   if (strategy in builtinStrategies) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'in' check above narrows strategy to BuiltinTimeStrategy
     return builtinStrategies[strategy as BuiltinTimeStrategy](timestamps,);
   }
 
@@ -356,6 +371,7 @@ const GLOB_META = /[*?{[]/;
  * the remainder becomes the pattern passed to the matcher.
  *
  * @param pattern - Glob pattern, absolute or relative
+ *
  * @returns Tuple of `[resolvedCwd, relativeGlob]`
  *
  * @example
@@ -385,6 +401,7 @@ function splitGlob(pattern: string,): readonly [cwd: string, relativeGlob: strin
  * Resolves a glob pattern into file paths using `tiny-readdir-glob`.
  *
  * @param pattern - Glob pattern to expand
+ *
  * @returns Array of matched absolute file paths
  *
  * @example
@@ -415,8 +432,11 @@ async function resolveGlobFiles(pattern: string,): Promise<string[]> {
  * which returns `-Infinity` ("no information") for empty input.
  *
  * @param pattern - File glob pattern
+ *
  * @param position - Whether this is a source or output item (for logging)
+ *
  * @param verbose - Whether to log diagnostic messages
+ *
  * @returns Array of file mtimes in milliseconds, or empty when no files match
  *
  * @example
@@ -459,9 +479,13 @@ async function resolveGlob(
  * interpreted, preventing subtle bugs when commands fail unexpectedly.
  *
  * @param command - Shell command to execute (without `sh:` prefix)
+ *
  * @param position - Whether this is a source or output item (for error messages)
+ *
  * @param verbose - Whether to log diagnostic messages
+ *
  * @returns Resolved timestamp in milliseconds (possibly `Infinity` or `-Infinity`)
+ *
  * @throws {Error} When command exits with non-zero code or stdout is not a parseable timestamp
  *
  * @example
@@ -475,7 +499,8 @@ async function resolveGlob(
 async function resolveShellCommand(
   command: string, position: 'source' | 'output', verbose: boolean,
 ): Promise<number> {
-  let stdout: string;
+  /** Raw stdout from the command */
+  let stdout = '';
 
   try {
     const result = await spawn(command, { shell: true, },);
@@ -521,8 +546,11 @@ async function resolveShellCommand(
  * shell command (resolved to a single timestamp from stdout).
  *
  * @param items - Array of glob patterns and/or `sh:` commands
+ *
  * @param position - Whether these are source or output items
+ *
  * @param verbose - Whether to log diagnostic messages
+ *
  * @returns Flat array of all resolved timestamps
  *
  * @example
@@ -557,6 +585,7 @@ async function resolveItems(
  * Formats a timestamp for verbose output.
  *
  * @param t - Timestamp in milliseconds (possibly `Infinity` or `-Infinity`)
+ *
  * @returns ISO 8601 string for finite values, `"Infinity"` or `"-Infinity"` for sentinels
  *
  * @example
@@ -585,7 +614,9 @@ function formatTimestamp(t: number,): string {
  * sources, use an explicit `sh:` source like `-s "sh:echo Infinity"`.
  *
  * @param options - Sources, outputs, strategies, and verbose flag
+ *
  * @returns `true` when stale (command needs to run)
+ *
  * @throws {Error} When a `sh:` command fails or returns unparseable output
  *
  * @example

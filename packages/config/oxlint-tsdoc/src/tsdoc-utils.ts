@@ -243,7 +243,7 @@ function extractRawParams(node: Record<string, unknown>): readonly Record<string
     return [];
   }
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-  return target.params as Array<Record<string, unknown>> | undefined ?? [];
+  return target.params as Record<string, unknown>[] | undefined ?? [];
 }
 
 /**
@@ -276,34 +276,26 @@ export function extractParamNames(node: Span & Record<string, unknown>): readonl
  * @returns array of extracted name strings
  */
 function extractBindingName(pattern: Record<string, unknown>): readonly string[] {
-  switch (pattern.type) {
-    case 'Identifier': {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      const name = pattern.name as string;
-      // Skip `this` parameter in TypeScript
-      return name === 'this' ? [] : [name];
-    }
-    case 'AssignmentPattern': {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      return extractBindingName(pattern.left as Record<string, unknown>);
-    }
-    case 'RestElement': {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      return extractBindingName(pattern.argument as Record<string, unknown>);
-    }
-    case 'TSParameterProperty': {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      return extractBindingName(pattern.parameter as Record<string, unknown>);
-    }
-    case 'ObjectPattern':
-    case 'ArrayPattern': {
-      // Destructured params don't map to individual @param names
-      return [];
-    }
-    default: {
-      return [];
-    }
+  if (pattern.type === 'Identifier') {
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    const name = pattern.name as string;
+    // Skip `this` parameter in TypeScript
+    return name === 'this' ? [] : [name];
   }
+  if (pattern.type === 'AssignmentPattern') {
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    return extractBindingName(pattern.left as Record<string, unknown>);
+  }
+  if (pattern.type === 'RestElement') {
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    return extractBindingName(pattern.argument as Record<string, unknown>);
+  }
+  if (pattern.type === 'TSParameterProperty') {
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    return extractBindingName(pattern.parameter as Record<string, unknown>);
+  }
+  // ObjectPattern, ArrayPattern, and other types don't map to individual @param names
+  return [];
 }
 
 /**
@@ -347,68 +339,63 @@ export function extractDestructuredParamNames(node: Span & Record<string, unknow
  * @param names - mutable set to collect names into
  */
 function collectDestructuredNames(pattern: Record<string, unknown>, names: Set<string>): void {
-  switch (pattern.type) {
-    case 'Identifier': {
-      // Named params are handled by extractParamNames, skip here
+  if (pattern.type === 'Identifier') {
+    // Named params are handled by extractParamNames, skip here
+    return;
+  }
+  if (pattern.type === 'AssignmentPattern') {
+    // `{ a = defaultValue }` -- unwrap to the left side
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    collectDestructuredNames(pattern.left as Record<string, unknown>, names);
+    return;
+  }
+  if (pattern.type === 'RestElement') {
+    // `...rest` inside destructuring
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    collectDestructuredNames(pattern.argument as Record<string, unknown>, names);
+    return;
+  }
+  if (pattern.type === 'TSParameterProperty') {
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    collectDestructuredNames(pattern.parameter as Record<string, unknown>, names);
+    return;
+  }
+  if (pattern.type === 'ObjectPattern') {
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    const properties = pattern.properties as Record<string, unknown>[] | undefined;
+    if (properties === undefined) {
       return;
     }
-    case 'AssignmentPattern': {
-      // `{ a = defaultValue }` -- unwrap to the left side
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      collectDestructuredNames(pattern.left as Record<string, unknown>, names);
-      return;
-    }
-    case 'RestElement': {
-      // `...rest` inside destructuring
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      collectDestructuredNames(pattern.argument as Record<string, unknown>, names);
-      return;
-    }
-    case 'TSParameterProperty': {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      collectDestructuredNames(pattern.parameter as Record<string, unknown>, names);
-      return;
-    }
-    case 'ObjectPattern': {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      const properties = pattern.properties as Array<Record<string, unknown>> | undefined;
-      if (properties === undefined) {
-        return;
-      }
-      for (const prop of properties) {
-        if (prop.type === 'RestElement') {
-          // `{ ...rest }` inside object destructuring
-          collectDestructuredNames(prop, names);
-        } else {
-          // Property node -- extract the key name
+    for (const prop of properties) {
+      if (prop.type === 'RestElement') {
+        // `{ ...rest }` inside object destructuring
+        collectDestructuredNames(prop, names);
+      } else {
+        // Property node -- extract the key name
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+        const key = prop.key as Record<string, unknown> | undefined;
+        if (key !== undefined && key.type === 'Identifier') {
           // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-          const key = prop.key as Record<string, unknown> | undefined;
-          if (key !== undefined && key.type === 'Identifier') {
-            // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-            names.add(key.name as string);
-          }
+          names.add(key.name as string);
         }
       }
+    }
+    return;
+  }
+  if (pattern.type === 'ArrayPattern') {
+    // Array destructuring: `[a, b]` -- elements are binding patterns
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    const elements = pattern.elements as (Record<string, unknown> | null)[] | undefined;
+    if (elements === undefined) {
       return;
     }
-    case 'ArrayPattern': {
-      // Array destructuring: `[a, b]` -- elements are binding patterns
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      const elements = pattern.elements as Array<Record<string, unknown> | null> | undefined;
-      if (elements === undefined) {
-        return;
+    for (const element of elements) {
+      if (element !== null) {
+        collectDestructuredNames(element, names);
       }
-      for (const element of elements) {
-        if (element !== null) {
-          collectDestructuredNames(element, names);
-        }
-      }
-      return;
-    }
-    default: {
-      // Unknown pattern type, nothing to collect
     }
   }
+  // Unknown pattern types are silently ignored
 }
 
 /**
@@ -465,6 +452,30 @@ export function functionReturnsValue(node: Span & Record<string, unknown>): bool
       const tsType = typeAnnotation.type as string | undefined;
       if (tsType === 'TSVoidKeyword' || tsType === 'TSNeverKeyword') {
         return false;
+      }
+      /**
+       * Handle `Promise<void>` and `Promise<never>` return types.
+       * The AST represents these as `TSTypeReference` with `typeName.name === 'Promise'`
+       * and a single type parameter of `TSVoidKeyword` or `TSNeverKeyword`.
+       */
+      if (tsType === 'TSTypeReference') {
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+        const typeName = (typeAnnotation).typeName as Record<string, unknown> | undefined;
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+        const name = typeName?.name as string | undefined;
+        if (name === 'Promise') {
+          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+          const typeParams = (typeAnnotation).typeParameters as Record<string, unknown> | undefined;
+          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+          const params = typeParams?.params as Record<string, unknown>[] | undefined;
+          if (params !== undefined && params.length === 1) {
+            // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+            const innerType = params[0]?.type as string | undefined;
+            if (innerType === 'TSVoidKeyword' || innerType === 'TSNeverKeyword') {
+              return false;
+            }
+          }
+        }
       }
     }
   }

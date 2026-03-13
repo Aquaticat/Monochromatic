@@ -24,6 +24,7 @@ const DEFAULT_DATABASE_PATH = "./data/done.db";
 
 /**
  * Strips the `file:` URI prefix if present, returning a plain filesystem path.
+ *
  * @param value - Raw path that may use `file:` scheme
  */
 function normalizeDatabasePath(value: string): string {
@@ -48,6 +49,7 @@ function resolveDatabasePath(): string {
 /**
  * Creates the parent directory for the database file if it does not exist.
  * Skips creation for `:memory:` databases.
+ *
  * @param databasePath - Resolved filesystem path
  */
 function ensureDatabaseDirectoryExists(databasePath: string): void {
@@ -145,6 +147,7 @@ const MIGRATION_FTS_BACKFILL = `
 
 /**
  * Executes all schema migrations (tables, indexes, FTS, triggers, backfill).
+ *
  * @param database - Connected Turso database instance
  */
 async function runMigrations(database: Database): Promise<void> {

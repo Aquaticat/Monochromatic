@@ -32,7 +32,8 @@ import {
  *
  * commentEnd (starSlash) markers are escaped to *\/ in comments because they would be prematurely ending the comment block otherwise.
  *
- * @param input - JSONC string to parse with comment support
+ * @param value - JSONC string to parse with comment support
+ *
  * @returns Parsed JSONC structure with preserved comments and type information
  *
  * @example

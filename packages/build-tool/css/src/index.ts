@@ -1,11 +1,12 @@
 // Side-effect: shims globalThis.process for browser environments.
 // Must precede postcss import because postcss references process.env without guards.
+// oxlint-disable-next-line no-unassigned-import -- side-effect shim for browser process global
 import './process-shim.ts';
 import {
   dirname,
   resolve,
 } from '@monochromatic-dev/module-es/ts/path/index.ts';
-import postcss from 'postcss';
+import postcss, { parse, } from 'postcss';
 import { readCssFile, } from './fs.ts';
 import { postcssInlineImport, } from './import.ts';
 import {
@@ -46,21 +47,29 @@ export {
  * have CSS text in memory (e.g. web component Shadow DOM styles). It
  * encapsulates the full postcss parse → collect → expand → serialize
  * pipeline so callers never touch postcss directly.
+ *
  * @param cssText - CSS string containing \@apply references to expand
+ *
  * @param mixinCssText - CSS string containing \@mixin definitions
+ *
  * @returns Expanded CSS with all \@apply rules replaced by mixin bodies
+ *
  * @throws When an \@apply references an unknown mixin
  */
 export function applyMixins(cssText: string, mixinCssText: string): string {
   mixins.clear();
 
-  /** PostCSS AST of mixin definitions, parsed to extract \@mixin rules */
-  const mixinRoot = postcss.parse(mixinCssText, { from: 'mixins.css', });
+  /**
+   * PostCSS AST of mixin definitions, parsed to extract \@mixin rules.
+   */
+  const mixinRoot = parse(mixinCssText, { from: 'mixins.css', });
   collectMixins(mixinRoot);
   expandMixinBodies();
 
-  /** PostCSS AST of the consumer CSS, parsed for \@apply expansion */
-  const root = postcss.parse(cssText);
+  /**
+   * PostCSS AST of the consumer CSS, parsed for \@apply expansion.
+   */
+  const root = parse(cssText);
   expandApplyRules(root);
 
   return root.toString();
@@ -74,8 +83,11 @@ export function applyMixins(cssText: string, mixinCssText: string): string {
  * inline \@apply rules → write output.
  *
  * Uses only PostCSS (pure JS) — no native binary dependencies.
+ *
  * @param options - Build configuration
+ *
  * @returns Processed CSS string
+ *
  * @throws When an import cannot be resolved or a mixin reference is invalid
  */
 export async function build(options: BuildOptions): Promise<string> {
@@ -91,11 +103,13 @@ export async function build(options: BuildOptions): Promise<string> {
   const cssText = await readCssFile(inputPath);
 
   // Phase 1: inline @import rules using our custom PostCSS plugin
-  /** PostCSS result after resolving and inlining all @import rules */
+  /**
+   * PostCSS result after resolving and inlining all \@import rules.
+   */
   const bundled = postcss([postcssInlineImport]).process(cssText, { from: inputPath, });
 
   /** PostCSS AST with all imports inlined, ready for mixin processing */
-  const root = bundled.root;
+  const {root} = bundled;
 
   // Phase 2: process @mixin/@apply
   collectMixins(root);

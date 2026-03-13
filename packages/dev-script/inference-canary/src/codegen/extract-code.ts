@@ -20,7 +20,9 @@ export type ExtractResult = {
  *
  * When no fenced code block is found, returns the raw response with `fenced: false`
  * so callers can distinguish "model wrote bad code" from "model didn't write code at all."
+ *
  * @param response - raw model output that may contain markdown code blocks
+ *
  * @returns extraction result with source and whether a code block was found
  *
  * @example
@@ -33,12 +35,12 @@ export type ExtractResult = {
  * ```
  */
 export function tryExtractCode(response: string): ExtractResult {
-  const closedFence = /```(?:typescript|ts)?\n([\s\S]*?)```/.exec(response);
+  const closedFence = response.match(/```(?:typescript|ts)?\n([\s\S]*?)```/);
   if (closedFence !== null && closedFence[1] !== undefined) {
     return { source: closedFence[1], fenced: true, };
   }
 
-  const openFence = /```(?:typescript|ts)?\n([\s\S]*)/.exec(response);
+  const openFence = response.match(/```(?:typescript|ts)?\n([\s\S]*)/);
   if (openFence !== null && openFence[1] !== undefined) {
     return { source: openFence[1], fenced: true, };
   }
@@ -51,7 +53,9 @@ export function tryExtractCode(response: string): ExtractResult {
  * Handles both closed fences and unclosed fences (model truncated its output).
  *
  * Use {@link tryExtractCode} when you need to know whether extraction succeeded.
+ *
  * @param response - raw model output that may contain markdown code blocks
+ *
  * @returns extracted TypeScript source, or the raw response if no fences found
  */
 export function extractCode(response: string): string {

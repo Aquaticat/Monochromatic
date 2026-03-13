@@ -6,7 +6,7 @@
  * The type combines both [AsyncIterable] and [Iterable] interfaces, allowing developers to work
  * with a unified abstraction regardless of the iteration mechanism.
  *
- * @template element - The type of elements yielded by the iterable, consistent across both sync and async variants.
+ * @typeParam element - The type of elements yielded by the iterable, consistent across both sync and async variants.
  */
 export type $<element = unknown,> =
   | AsyncIterable<element>

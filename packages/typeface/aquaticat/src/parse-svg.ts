@@ -25,7 +25,15 @@ export type Cell = {
 
 //endregion Types
 
-/** Extract an XML attribute value by name from a raw attribute string. */
+/**
+ * Extracts an XML attribute value by name from a raw attribute string.
+ *
+ * @param attrs - raw XML attribute string to search
+ *
+ * @param name - attribute name to extract
+ *
+ * @returns attribute value, or undefined if not found
+ */
 function attr(attrs: string, name: string): string | undefined {
   const match = attrs.match(new RegExp(`${name}="([^"]*)"`));
   return match?.[1];
@@ -35,7 +43,9 @@ function attr(attrs: string, name: string): string | undefined {
  * Parse the master glyph strip SVG and return one {@link Cell} per glyph position.
  * Cells are delimited by `<rect>` elements; all `<path>` elements between two
  * consecutive rects belong to the preceding cell.
+ *
  * @param svgContent - full SVG file content
+ *
  * @returns array of cells in strip order (left to right)
  */
 export function parseSvg(svgContent: string): Cell[] {
@@ -63,7 +73,7 @@ export function parseSvg(svgContent: string): Cell[] {
     const strokeWidthStr = attr(attrs, "stroke-width");
     const strokeWidth = isStroked && strokeWidthStr !== undefined ? Number(strokeWidthStr) : 0;
 
-    const currentCell = cells[cells.length - 1];
+    const currentCell = cells.at(-1);
     if (currentCell !== undefined) {
       currentCell.paths.push({ d, isStroked, strokeWidth });
     }
@@ -85,7 +95,9 @@ export type SVGPathCommand =
 /**
  * Tokenize an SVG path `d` attribute into absolute commands.
  * Only handles M, L, H, V, Z (the commands used in the Aquaticat glyph SVG).
+ *
  * @param d - SVG path data string
+ *
  * @returns ordered list of path commands
  */
 export function parseSvgPathD(d: string): SVGPathCommand[] {
@@ -98,8 +110,9 @@ export function parseSvgPathD(d: string): SVGPathCommand[] {
 
   // oxlint-disable-next-line no-restricted-syntax -- regex exec loop
   for (let tok = tokenRegex.exec(d); tok !== null; tok = tokenRegex.exec(d)) {
-    if (tok[1] !== undefined) {
-      currentCmd = tok[1];
+    const [, commandLetter] = tok;
+    if (commandLetter !== undefined) {
+      currentCmd = commandLetter;
       if (currentCmd === "Z") commands.push({ type: "Z" });
       continue;
     }

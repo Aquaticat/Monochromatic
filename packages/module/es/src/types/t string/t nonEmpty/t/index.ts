@@ -2,20 +2,24 @@
 /**
  * Type representing any non-empty string.
  * Template literal type that ensures string contains at least one character.
+ *
  * @example
  * ```ts
  * const valid: $ = 'a'; // Valid - non-empty string
  * const alsoValid: $ = 'hello'; // Valid - non-empty string
  *
- * // @ts-expect-error - Empty string is not assignable
+ * // \@ts-expect-error - Empty string is not assignable
  * const invalid: $ = '';
  * ```
  */
 export type $ = `${any}${string}`;
 
+/** Compile-time test: single character passes. */
 const _one: $ = '1';
+/** Compile-time test: multi-character string passes. */
 const _two: $ = '12';
 
+/** Compile-time test: empty string fails assignment. */
 // @ts-expect-error -- Type '""' is not assignable to type '`${any}${string}`'.ts(2322)
 const _empty: $ = '';
 

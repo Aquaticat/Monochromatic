@@ -1,6 +1,7 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { css } from "../css.ts";
 
+/** Shadow DOM styles for the `\<section-heading\>` component. */
 const STYLES = css(`
   :host {
     @apply --flex-column;
@@ -29,44 +30,59 @@ const STYLES = css(`
 `);
 
 /**
- * `<section-heading>` -- collapsible section with icon, label, and toggle indicator.
- * Dispatches a `toggle` event with `{ open }` when the heading is clicked.
+ * `\<section-heading\>` -- collapsible section with icon, label, and toggle indicator.
+ * Dispatches a `toggle` event with `\{ open \}` when the heading is clicked.
  */
 class SectionHeading extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
+
+  /** Whether the section content is currently expanded. */
   #open = true;
 
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
   }
 
+  /**
+   * Whether the section is currently expanded.
+   *
+   * @returns True when the section content is visible
+   */
   get open(): boolean {
     return this.#open;
   }
 
+  /** Renders the heading and attaches the toggle click handler. */
   connectedCallback(): void {
     this.#render();
     this.#shadow.querySelector(".heading")?.addEventListener("click", this.#toggle);
   }
 
+  /** Toggles the open state and dispatches a toggle event. */
+  // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow required to preserve `this` binding for addEventListener
   #toggle = (): void => {
     this.#open = !this.#open;
     this.#updateToggle();
     this.dispatchEvent(new CustomEvent("toggle", { detail: { open: this.#open }, bubbles: true }));
   };
 
+  /** Updates the toggle indicator and content visibility. */
   #updateToggle(): void {
     const toggle = this.#shadow.querySelector(".toggle");
     if (toggle instanceof HTMLElement) {
       toggle.textContent = this.#open ? "\u25B2" : "\u25BC";
     }
-    const content = this.#shadow.querySelector(".content") as HTMLElement | null;
+    const content = this.#shadow.querySelector(".content");
     if (content !== null) {
-      content.style.display = this.#open ? "flex" : "none";
+      // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- querySelector returns Element; style access needs HTMLElement
+      (content as HTMLElement).style.display = this.#open ? "flex" : "none";
     }
   }
 
+  /** Renders the heading, toggle indicator, and content slot into the shadow root. */
   #render(): void {
     const icon = this.getAttribute("icon") ?? "";
     const label = this.getAttribute("label") ?? "";

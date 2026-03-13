@@ -82,7 +82,7 @@ function generateSettingsJson(pkgIndex: number): string {
       version: '1.0.0',
       config: {
         debug: pkgIndex % 2 === 0,
-        timeout: 1000 + pkgIndex * 100,
+        timeout: 1_000 + pkgIndex * 100,
         features: Array.from(
           { length: FEATURES_PER_PACKAGE },
           (_, featureIndex) => `feature-${String(featureIndex)}`,

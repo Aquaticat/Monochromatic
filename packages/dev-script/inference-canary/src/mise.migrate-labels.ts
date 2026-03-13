@@ -33,7 +33,8 @@ const DIR_RENAMES: Record<string, string> = {
  */
 const DIR_LABELS: Record<string, string> = DIR_RENAMES;
 
-let modelDirs: string[];
+/** Top-level model directories from the canary-lint artifact root */
+let modelDirs: string[] = [];
 try {
   modelDirs = await readdir(LINT_DIR);
 } catch {
@@ -42,27 +43,34 @@ try {
   throw new Error('No canary-lint directory');
 }
 
-for (const modelDir of modelDirs) {
+for (const /** Current model directory name being processed */ modelDir of modelDirs) {
+  /** Label for this model from the mapping, undefined if no mapping exists */
   const label = DIR_LABELS[modelDir];
   if (label === undefined) {
     console.log(`  skip: ${modelDir} (no mapping)`);
     continue;
   }
 
+  /** Absolute path to this model's artifact directory */
   const modelPath = join(LINT_DIR, modelDir);
 
   // Update meta.json files inside this model dir
-  let subdirs: string[];
+  /** Artifact subdirectories for this model */
+  let subdirs: string[] = [];
   try {
     subdirs = await readdir(modelPath);
   } catch {
     continue;
   }
 
-  for (const subdir of subdirs) {
+  for (const /** Current artifact subdirectory */ subdir of subdirs) {
+    /** Absolute path to the meta.json file in this artifact */
     const metaPath = join(modelPath, subdir, 'meta.json');
     try {
+      /** Raw JSON content of the meta.json file */
       const raw = await readFile(metaPath, 'utf8');
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- meta.json structure is known
+      /** Parsed meta.json contents for label injection */
       const meta = JSON.parse(raw) as Record<string, unknown>;
       if (meta['label'] !== undefined) continue;
       meta['label'] = label;
@@ -74,14 +82,18 @@ for (const modelDir of modelDirs) {
   }
 
   // Rename directory if needed
+  /** New directory name from the rename mapping */
   const newName = DIR_RENAMES[modelDir];
   if (newName !== undefined) {
+    /** Absolute path for the renamed directory */
     const newPath = join(LINT_DIR, newName);
     try {
       await rename(modelPath, newPath);
       console.log(`  renamed: ${modelDir} -> ${newName}`);
     } catch (error) {
-      console.error(`  failed to rename ${modelDir}: ${error instanceof Error ? error.message : String(error)}`);
+      /** Human-readable error message for rename failures */
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error(`  failed to rename ${modelDir}: ${errorMsg}`);
     }
   }
 }

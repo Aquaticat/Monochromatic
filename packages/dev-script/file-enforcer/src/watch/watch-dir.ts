@@ -1,6 +1,5 @@
 import { watch, } from 'node:fs/promises';
-import { classifyEvent, } from './watch-filter.ts';
-import type { EventKind, } from './watch-filter.ts';
+import { classifyEvent, type EventKind, } from './watch-filter.ts';
 
 /** Minimum delay between re-runs to avoid overlapping executions from rapid saves */
 export const DEBOUNCE_MS = 100;
@@ -11,10 +10,16 @@ export const DEBOUNCE_MS = 100;
  *
  * Runs until the abort signal fires. AbortError is silently caught since
  * it is the expected teardown mechanism.
+ *
  * @param dir - Absolute directory path to watch
+ *
  * @param signal - AbortSignal for teardown
+ *
  * @param configPath - Absolute config path for event classification
+ *
  * @param onEvent - Callback receiving the event kind and the changed filename
+ *
+ * @returns resolves when the watcher is torn down (via abort signal)
  */
 export async function watchDirectory(
   dir: string,

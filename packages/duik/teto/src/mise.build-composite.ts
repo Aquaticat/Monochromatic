@@ -1,3 +1,4 @@
+// oxlint-disable tsdoc/require-tsdoc -- build script with many inline temporary variables
 /**
  * Generates an inline composite SVG from individual body part SVGs.
  *
@@ -53,10 +54,11 @@ const OUTPUT_PNG = '/tmp/claude-1000/teto_composite.png'
  * Extracts inner content from an SVG file, separating defs from body content.
  *
  * @param filePath - absolute path to the SVG file
+ *
  * @returns object with defs content and body content strings
  */
 function extractSvgContent(filePath: string): { defs: string; body: string } {
-  const raw = readFileSync(filePath, 'utf-8')
+  const raw = readFileSync(filePath, 'utf8')
 
   /** Strip the outer `<svg ...>` and `</svg>` wrapper. */
   const innerMatch = raw.match(/<svg[^>]*>([\s\S]*)<\/svg>/i)
@@ -64,7 +66,7 @@ function extractSvgContent(filePath: string): { defs: string; body: string } {
     return { defs: '', body: '' }
   }
 
-  const inner = innerMatch[1]
+  const [, inner] = innerMatch
 
   /** Extract all `<defs>...</defs>` blocks. */
   let defs = ''
@@ -73,7 +75,7 @@ function extractSvgContent(filePath: string): { defs: string; body: string } {
   const defsRegex = /<defs>([\s\S]*?)<\/defs>/gi
   let defsMatch = defsRegex.exec(inner)
   while (defsMatch !== null) {
-    defs += defsMatch[1] + '\n'
+    defs += `${defsMatch[1]}\n`
     defsMatch = defsRegex.exec(inner)
   }
 

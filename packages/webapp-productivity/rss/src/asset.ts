@@ -8,23 +8,27 @@ l.debug(`asset module loading`);
 /**
  * CSS source for the RSS reader interface.
  * Imported at build time via static asset import.
- * Also used by {@link itemToFeed} in html.ts for iframe content styling.
- * @see {@link indexHtmlStart} for where it is inlined into the page
+ * Also used by `itemToFeed` in html.ts for iframe content styling.
+ *
+ * @see `indexHtmlStart` for where it is inlined into the page
  */
 export const css: string = clientCss;
 
 /**
  * Bundled client-side JavaScript for the RSS reader interface.
  * Pre-built by tsdown via `mise run build:js:client` and read from disk at startup.
- * @see {@link indexHtmlStart} for where it is inlined into the page
+ *
+ * @see `indexHtmlStart` for where it is inlined into the page
  */
 export const js: string = await readFile('./dist/client/client.js', 'utf8',);
 
 /**
  * Opening HTML fragment (doctype through body start) with inlined CSS and JS.
  * Served as the beginning of every page response.
- * @see {@link css} for the inlined stylesheet
- * @see {@link js} for the inlined client bundle
+ *
+ * @see `css` for the inlined stylesheet
+ *
+ * @see `js` for the inlined client bundle
  */
 export const indexHtmlStart: string = `<!DOCTYPE html>
     <html lang=en>
@@ -32,7 +36,7 @@ export const indexHtmlStart: string = `<!DOCTYPE html>
     <meta charset=UTF-8>
     <meta name=viewport content='width=device-width,initial-scale=1.0'>
     <style>${css}</style>
-    <script type=module>${js.replaceAll(/<\/script>/gvi, '<\\/script>',)}</script>
+    <script type=module>${js.replaceAll(/<\/script>/gvi, String.raw`<\/script>`,)}</script>
     </head>
     <body>`;
 

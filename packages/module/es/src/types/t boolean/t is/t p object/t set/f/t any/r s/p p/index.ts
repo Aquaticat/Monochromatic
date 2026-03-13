@@ -6,6 +6,7 @@ import type { $ as Is, } from '@_/types/t function/t is/t/r s/p p/index.ts';
  * Special handling in includesArrayLike for performance optimization.
  *
  * @param value - Value to check for Set type
+ *
  * @returns True if value is a Set instance, false otherwise
  *
  * @example
@@ -37,4 +38,5 @@ export function $<const MyValue,>(
   return Object.prototype.toString.call(value,) === '[object Set]';
 }
 
+/** Compile-time test: function satisfies the type guard interface. */
 const _$: Is = $;

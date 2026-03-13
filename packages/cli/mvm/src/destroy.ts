@@ -9,7 +9,12 @@ import { destroyVm, listVms, undefineVm } from './virsh.ts';
  * Destroys a single VM by force-stopping it, removing its libvirt definition,
  * and deleting all associated storage and metadata.
  *
- * @param options - VM name without the mvm- prefix and a tagged logger
+ * @param name - VM name without the mvm- prefix
+ *
+ * @param rl - Tagged logger for status messages
+ *
+ * @returns Resolves when the VM is fully destroyed
+ *
  * @throws Error when the VM cannot be undefined (e.g. does not exist)
  *
  * @example
@@ -38,7 +43,10 @@ async function destroyOne({ name, rl }: { name: string; rl: { debug: (msg: strin
  * Destroys a VM by force-stopping it, removing its libvirt definition,
  * and deleting all associated storage and metadata.
  *
- * @param options - VM name without the mvm- prefix
+ * @param name - VM name without the mvm- prefix
+ *
+ * @returns Resolves when the VM is fully destroyed
+ *
  * @throws Error when the VM cannot be undefined (e.g. does not exist)
  *
  * @example
@@ -54,6 +62,8 @@ export async function destroy({ name }: { name: string }): Promise<void> {
 
 /**
  * Destroys all managed VMs.
+ *
+ * @returns Resolves when all VMs are destroyed
  *
  * @throws Error when any VM cannot be destroyed
  *
@@ -72,7 +82,9 @@ export async function destroyAll(): Promise<void> {
   }
 
   rl.info(`destroying all ${String(vms.length)} VMs`);
+  // Destroy sequentially to avoid overwhelming libvirt with concurrent operations
   for (const name of vms) {
+    // oxlint-disable-next-line eslint(no-await-in-loop) -- intentionally sequential to avoid libvirt contention
     await destroyOne({ name, rl, });
   }
 }

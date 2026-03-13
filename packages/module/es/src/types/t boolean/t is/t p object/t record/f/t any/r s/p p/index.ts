@@ -3,6 +3,7 @@
  * Uses Object.prototype.toString to check for '[object Object]' which indicates a plain object.
  *
  * @param value - Value to check for plain object type
+ *
  * @returns True if value is a plain object, false otherwise
  *
  * @example

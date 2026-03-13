@@ -6,6 +6,7 @@ import type { $ as Positive, } from '@_/types/t number/t positive/t/index.ts';
  * Rejects NaN values by design, as NaN comparisons always return false.
  *
  * @param value - Numeric value to check for positivity
+ *
  * @returns Type predicate narrowing value to positive number
  *
  * @example

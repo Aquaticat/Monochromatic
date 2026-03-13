@@ -19,7 +19,11 @@ import { defineVm, startVm, waitForGuestAgent } from './virsh.ts';
  * Windows VMs do not use cloud-init, so hostname must be configured
  * after boot using PowerShell via guest-exec.
  *
- * @param options - VM name (for guest agent addressing) and desired hostname
+ * @param hostname - Desired hostname
+ *
+ * @param name - VM name for guest agent addressing
+ *
+ * @returns Resolves when hostname is set
  *
  * @example
  * ```ts
@@ -54,7 +58,12 @@ async function setWindowsHostname({ hostname, name }: {
  * For Linux guests, a cloud-init seed ISO configures hostname and autologin.
  * For Windows guests, the hostname is set via guest agent after boot.
  *
- * @param options - VM name and optional image identifier (defaults to `ubuntu`)
+ * @param image - Image identifier (defaults to `ubuntu`)
+ *
+ * @param name - VM name (alphanumeric, hyphens, underscores)
+ *
+ * @returns Resolves when the VM is created and ready
+ *
  * @throws Error on invalid name, unknown image, or disk creation failure
  *
  * @example

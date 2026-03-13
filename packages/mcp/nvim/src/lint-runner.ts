@@ -40,12 +40,19 @@ type OxlintLabel = {
  * @example
  * ```ts
  * const entry: OxlintDiagnostic = {
+ *
  *   message: "Missing TSDoc comment.",
+ *
  *   code: "tsdoc(require-tsdoc)",
+ *
  *   severity: "error",
+ *
  *   causes: [],
+ *
  *   filename: "src/index.ts",
+ *
  *   labels: [{ span: { offset: 0, length: 10, line: 1, column: 1 } }],
+ *
  *   related: [],
  * };
  * ```
@@ -68,10 +75,15 @@ export type OxlintDiagnostic = {
  * @example
  * ```ts
  * const output: OxlintJsonOutput = {
+ *
  *   diagnostics: [],
+ *
  *   number_of_files: 1,
+ *
  *   number_of_rules: 300,
+ *
  *   threads_count: 8,
+ *
  *   start_time: 0.05,
  * };
  * ```
@@ -102,6 +114,7 @@ const OXLINT_SEVERITY_MAP: Record<string, string> = {
  * Walks up from a starting directory to find a file by name.
  *
  * @param startDir - Directory to begin searching from.
+ *
  * @param filename - File to locate in ancestor directories.
  *
  * @returns Absolute path to the directory containing the file, or null if not found.
@@ -136,6 +149,7 @@ function findAncestorWithFile(startDir: string, filename: string): string | null
  * Pure function extracted for testability.
  *
  * @param output - Parsed oxlint JSON output.
+ *
  * @param cwd - Working directory used to resolve relative filenames.
  *
  * @returns Map from absolute file path to diagnostics found in that file.
@@ -194,7 +208,9 @@ const OXLINT_TIMEOUT_MS = 10_000;
  * @example
  * ```ts
  * const result: LintResult = {
+ *
  *   diagnostics: new Map(),
+ *
  *   notes: ["oxlint ran without --type-aware; some rules may not report."],
  * };
  * ```
@@ -210,8 +226,7 @@ export type LintResult = {
  * Falls back to non-type-aware mode with a caveat note when no `tsconfig.json` is found.
  * Returns empty results gracefully when oxlint is unavailable.
  *
- * @param options - Files to lint.
- * @param options.files - Absolute paths to lint.
+ * @param files - Absolute paths to lint.
  *
  * @returns Diagnostics grouped by absolute file path, plus any caveat notes.
  *
@@ -225,7 +240,12 @@ export async function runOxlint({ files }: { files: readonly string[] }): Promis
     return { diagnostics: new Map(), notes: [] };
   }
 
-  const configDir = findAncestorWithFile(dirname(files[0]!), ".oxlintrc.json");
+  /** First file's directory as starting point for config search. */
+  const [firstFile] = files;
+  if (firstFile === undefined) {
+    return { diagnostics: new Map(), notes: [] };
+  }
+  const configDir = findAncestorWithFile(dirname(firstFile), ".oxlintrc.json");
   if (configDir === null) {
     console.error("[mcp-nvim] Could not find .oxlintrc.json in any ancestor directory");
     return { diagnostics: new Map(), notes: [] };
@@ -255,8 +275,8 @@ export async function runOxlint({ files }: { files: readonly string[] }): Promis
   const notes: string[] = [];
 
   //region Run per-package-root invocations with --type-aware
-  const packageRuns = Array.from(groupsByPackageRoot.entries()).map(
-    async function runPackageOxlint([packageRoot, packageFiles]) {
+  const packageRuns = [...groupsByPackageRoot.entries()].map(
+    function runPackageOxlint([packageRoot, packageFiles]) {
       return spawnOxlint({
         configPath,
         cwd: packageRoot,
@@ -268,6 +288,7 @@ export async function runOxlint({ files }: { files: readonly string[] }): Promis
   //endregion Run per-package-root invocations with --type-aware
 
   //region Run fallback invocation without --type-aware for orphaned files
+  // oxlint-disable-next-line eslint-plugin-promise(prefer-await-to-then) -- initial value for conditional Promise.all
   let fallbackRun: Promise<Map<string, Diagnostic[]> | null> = Promise.resolve(null);
   if (filesWithoutTsconfig.length > 0) {
     notes.push(
@@ -305,11 +326,13 @@ export async function runOxlint({ files }: { files: readonly string[] }): Promis
 /**
  * Spawns a single oxlint process and returns parsed diagnostics.
  *
- * @param options - Spawn configuration.
- * @param options.configPath - Absolute path to `.oxlintrc.json`.
- * @param options.cwd - Working directory for the oxlint process.
- * @param options.files - Absolute file paths to lint.
- * @param options.typeAware - Whether to pass `--type-aware`.
+ * @param configPath - Absolute path to `.oxlintrc.json`.
+ *
+ * @param cwd - Working directory for the oxlint process.
+ *
+ * @param files - Absolute file paths to lint.
+ *
+ * @param typeAware - Whether to pass `--type-aware`.
  *
  * @returns Diagnostics grouped by absolute file path.
  */
@@ -328,13 +351,14 @@ async function spawnOxlint({ configPath, cwd, files, typeAware }: {
 
   try {
     const result = await spawn("oxlint", args, { cwd, timeout: OXLINT_TIMEOUT_MS });
-    const stdout = result.stdout;
+    const {stdout} = result;
 
     if (stdout.trim().length === 0) {
       console.error("[mcp-nvim] oxlint produced no output (exit code 0)");
       return new Map();
     }
 
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint JSON output conforms to OxlintJsonOutput schema
     const parsed = JSON.parse(stdout) as OxlintJsonOutput;
     return parseOxlintOutput(parsed, cwd);
   } catch (err: unknown) {
@@ -342,10 +366,11 @@ async function spawnOxlint({ configPath, cwd, files, typeAware }: {
     if (err !== null && err !== undefined && typeof err === "object" && "stdout" in err) {
       const stdout = String(err.stdout);
       if (stdout.trim().length > 0) {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint JSON output conforms to OxlintJsonOutput schema
         const parsed = JSON.parse(stdout) as OxlintJsonOutput;
         return parseOxlintOutput(parsed, cwd);
       }
-      const exitCode = "exitCode" in err ? err.exitCode : "unknown";
+      const exitCode = "exitCode" in err ? String(err.exitCode) : "unknown";
       console.error(`[mcp-nvim] oxlint produced no output (exit code ${exitCode})`);
       return new Map();
     }
@@ -363,6 +388,7 @@ async function spawnOxlint({ configPath, cwd, files, typeAware }: {
  * Merges diagnostics from a source map into a target map, mutating target in place.
  *
  * @param target - Map to merge into.
+ *
  * @param source - Map to merge from.
  */
 function mergeInto(target: Map<string, Diagnostic[]>, source: Map<string, Diagnostic[]>): void {

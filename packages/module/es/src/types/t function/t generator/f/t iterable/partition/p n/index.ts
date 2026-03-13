@@ -8,9 +8,10 @@
  * Handles both synchronous and asynchronous predicates and iterables.
  * Items are evaluated in order, with the predicate awaited for each item.
  *
- * @param params - Configuration object
- * @param params.predicate - Function to test each item, can return boolean or Promise<boolean>
- * @param params.iterable - Iterable or AsyncIterable to partition
+ * @param predicate - Function to test each item, can return boolean or Promise of boolean
+ *
+ * @param iterable - Iterable or AsyncIterable to partition
+ *
  * @yields Objects with decision ('pass', 'fail', or ['thrown', error]) and the item
  *
  * @example

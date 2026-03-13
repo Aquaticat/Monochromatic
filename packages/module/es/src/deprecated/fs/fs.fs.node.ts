@@ -38,7 +38,7 @@ import {
 
 /* v8 ignore next -- Somehow not picking up @preserve */
 async function readTextFile(path: string,): Promise<string> {
-  return await readFile(path, { encoding: 'utf8', },);
+  return readFile(path, { encoding: 'utf8', },);
 }
 
 export {

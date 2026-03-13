@@ -30,7 +30,14 @@
     "**/bak",
     "**/*.js",
     "**/*.cjs",
-    "**/deprecated.*"
+    "**/deprecated.*",
+    "**/deprecated/**",
+    "**/eslint-deprecated/**",
+    "**/fixture/**",
+    "**/test-fixture/**",
+    "**/perf-test-data/**",
+    "**/teto-generated/**",
+    "**/sudoku-puzzles*"
   ],
   "plugins": [
     "unicorn",
@@ -491,6 +498,22 @@
             "ts-expect-error": "allow-with-description"
           }
         ],
+
+        // Test assertions commonly use `as Type` for test data shaping.
+        "typescript/no-unsafe-type-assertion": "off",
+        // Tests use `any` for mocking and edge-case coverage.
+        "typescript/no-explicit-any": "off",
+        // Test helpers don't need TSDoc.
+        "tsdoc/require-tsdoc": "off",
+        // Test TSDoc doesn't need full tag formatting.
+        "tsdoc/tag-lines": "off",
+        "tsdoc/require-param": "off",
+        "tsdoc/require-returns": "off",
+        "tsdoc/check-param-names": "off",
+        // Tests may use arrow functions in callbacks freely.
+        "no-restricted-syntax/no-arrow-function": "off",
+        // Test setup/teardown may use init without assignment.
+        "eslint/init-declarations": "off",
 
         "no-empty-pattern": "allow"
       }

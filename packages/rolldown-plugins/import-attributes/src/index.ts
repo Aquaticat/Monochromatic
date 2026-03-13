@@ -40,7 +40,9 @@ export { importAttributesPlugin, };
  * Handler that transforms raw file content into a JavaScript module source string.
  *
  * @param content - Raw file content as a string
+ *
  * @param id - Resolved file path (without query parameters)
+ *
  * @returns JavaScript module source code
  */
 type AttributeTypeHandler = (content: string, id: string) => string;
@@ -61,6 +63,7 @@ const ATTR_QUERY_KEY = '__importattr';
  * Exports the raw file content as a default string export.
  *
  * @param content - Raw file content
+ *
  * @returns JavaScript module that default-exports the content string
  */
 function textHandler(content: string): string {
@@ -95,23 +98,23 @@ const HANDLERS: Record<string, AttributeTypeHandler> = {
 const STATIC_IMPORT_WITH_RE = new RegExp(
   '('
   + '(?:import|export)'
-  + '\\s+'
+  + String.raw`\s+`
   + '(?:'
-  + '(?:type\\s+)?'
+  + String.raw`(?:type\s+)?`
   + '(?:'
-  + '(?:[\\w$*{}\\s,]+)\\s+from'
+  + String.raw`(?:[\w$*{}\s,]+)\s+from`
   + '|'
   + ')'
-  + '\\s+'
+  + String.raw`\s+`
   + ')'
   + ')'
   + '([\'"])'
   + '([^\'"]+'
   + ')'
-  + '(\\2'
-  + '\\s+with\\s*\\{\\s*type\\s*:\\s*[\'"]'
-  + '(\\w+)'
-  + '[\'"]\\s*\\}'
+  + String.raw`(\2`
+  + String.raw`\s+with\s*\{\s*type\s*:\s*['"]`
+  + String.raw`(\w+)`
+  + String.raw`['"]\s*\}`
   + ')',
   'g',
 );
@@ -130,16 +133,16 @@ const STATIC_IMPORT_WITH_RE = new RegExp(
  */
 const DYNAMIC_IMPORT_WITH_RE = new RegExp(
   '('
-  + 'import\\s*\\('
-  + '\\s*'
+  + String.raw`import\s*\(`
+  + String.raw`\s*`
   + ')'
   + '([\'"])'
   + '([^\'"]+'
   + ')'
-  + '(\\2'
-  + '\\s*,\\s*\\{\\s*with\\s*:\\s*\\{\\s*type\\s*:\\s*[\'"]'
-  + '(\\w+)'
-  + '[\'"]\\s*\\}\\s*\\}'
+  + String.raw`(\2`
+  + String.raw`\s*,\s*\{\s*with\s*:\s*\{\s*type\s*:\s*['"]`
+  + String.raw`(\w+)`
+  + String.raw`['"]\s*\}\s*\}`
   + ')',
   'g',
 );
@@ -152,6 +155,7 @@ const DYNAMIC_IMPORT_WITH_RE = new RegExp(
  * Extracts the attribute type from a module ID's query parameter.
  *
  * @param id - Module ID potentially containing `?__importattr=<type>`
+ *
  * @returns Attribute type string if present, `undefined` otherwise
  *
  * @example
@@ -178,6 +182,7 @@ function extractAttrType(id: string): string | undefined {
  * returning the clean file path.
  *
  * @param id - Module ID with `?__importattr=<type>`
+ *
  * @returns File path without the attribute query parameter
  *
  * @example
@@ -205,8 +210,11 @@ function stripAttrQuery(id: string): string {
  * dependencies before the `transform` hook can rewrite them.
  *
  * @param specifier - Import specifier to look for (e.g. `./sample.sql`)
+ *
  * @param importerPath - Absolute path to the importing file
+ *
  * @param importerSourceCache - Cache to avoid re-reading the same file
+ *
  * @returns Attribute type string if found and supported, `undefined` otherwise
  */
 function scanImporterForAttribute(
@@ -232,7 +240,7 @@ function scanImporterForAttribute(
    * Build a regex that matches the specific specifier with a `with { type: '...' }` clause.
    * Handles both static (`with { type: '...' }`) and dynamic (`{ with: { type: '...' } }`) forms.
    */
-  const escapedSpecifier = specifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escapedSpecifier = specifier.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
   const specificAttrRe = new RegExp(
     `['"]${escapedSpecifier}['"]`
     + `(?:`

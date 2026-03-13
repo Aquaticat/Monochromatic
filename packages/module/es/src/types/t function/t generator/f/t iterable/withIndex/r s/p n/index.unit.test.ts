@@ -11,7 +11,7 @@ import type { $ as Positive, } from '@_/types/t number/t positive/t/index.ts';
 /** Shorthand for the branded index type yielded by withIndex. */
 type Index = Int & (Positive | 0);
 
-const $ = types.function.generator.from.iterable.withIndex.sync.named.$;
+const {$} = types.function.generator.from.iterable.withIndex.sync.named;
 
 describe($, () => {
   test('yields elements with their indices for arrays', () => {

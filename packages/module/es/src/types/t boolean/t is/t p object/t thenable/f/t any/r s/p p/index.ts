@@ -4,6 +4,7 @@
  * of a `then` method, which is the standard approach for thenable detection.
  *
  * @param value - Value to check for Promise compatibility
+ *
  * @returns True if value has a `then` method (is thenable), false otherwise
  *
  * @example

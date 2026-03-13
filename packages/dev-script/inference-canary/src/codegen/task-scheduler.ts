@@ -24,7 +24,9 @@ const EXPECTED_C_TIME = 150;
 /** Total number of timing/ordering checks */
 const TOTAL_CHECKS = 4;
 
-/** {@inheritDoc Probe} */
+/**
+ * {@inheritDoc Probe}
+ */
 export const taskScheduler = createCodeGenProbe({
   name: 'task-scheduler',
   slow: true,
@@ -55,23 +57,29 @@ export const taskScheduler = createCodeGenProbe({
     'DONE C @150',
     'TOTAL 150',
   ].join('\n'),
-  verify: (result) => {
-    const lines = result.stdout.trim().split('\n').map((line) => line.trim());
+  verify: function verifyTaskScheduler(result): { correctness: number; } {
+    const lines = result.stdout.trim().split('\n').map(function trimLine(line): string { return line.trim(); });
 
-    if (!lines.some((line) => line.startsWith('DONE A'))
-      || !lines.some((line) => line.startsWith('DONE B'))
-      || !lines.some((line) => line.startsWith('DONE C'))
-      || !lines.some((line) => line.startsWith('TOTAL'))) {
+    if (!lines.some(function hasDoneA(line): boolean { return line.startsWith('DONE A'); })
+      || !lines.some(function hasDoneB(line): boolean { return line.startsWith('DONE B'); })
+      || !lines.some(function hasDoneC(line): boolean { return line.startsWith('DONE C'); })
+      || !lines.some(function hasTotal(line): boolean { return line.startsWith('TOTAL'); })) {
       return { correctness: 0.1, };
     }
 
-    /** Extracts the @<ms> timestamp from a DONE line */
-    const extractTime = (prefix: string): number | undefined => {
-      const line = lines.find((lineItem) => lineItem.startsWith(`DONE ${prefix}`));
+    /**
+     * Extracts the \@\<ms\> timestamp from a DONE line.
+     *
+     * @param prefix - task name prefix to search for
+     *
+     * @returns parsed timestamp in ms, or undefined when not found
+     */
+    function extractTime(prefix: string): number | undefined {
+      const line = lines.find(function matchPrefix(lineItem): boolean { return lineItem.startsWith(`DONE ${prefix}`); });
       if (line === undefined) return undefined;
-      const match = /@(\d+)/.exec(line);
+      const match = line.match(/@(\d+)/);
       return match !== null ? Number(match[1]) : undefined;
-    };
+    }
 
     const timeA = extractTime('A');
     const timeB = extractTime('B');

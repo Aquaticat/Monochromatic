@@ -4,6 +4,7 @@
  * Special handling in includesArrayLike for performance optimization.
  *
  * @param value - Value to check for Map type
+ *
  * @returns True if value is a Map instance, false otherwise
  *
  * @example

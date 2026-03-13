@@ -1,3 +1,4 @@
+// oxlint-disable typescript-eslint/no-unsafe-type-assertion, prefer-destructuring, require-await -- API response types require assertions; provider interface requires async
 import type {
   BatchEmbeddingResult,
   EmbeddingProvider,
@@ -27,7 +28,9 @@ const DEFAULT_GEMINI_MODEL: GeminiModel = 'gemini-embedding-2-preview';
  * Resolve the Gemini API key from config or environment.
  *
  * @param configKey - explicitly provided API key, if any
+ *
  * @returns resolved API key
+ *
  * @throws when no API key is available from either source
  *
  * @example
@@ -51,7 +54,9 @@ function resolveGeminiApiKey(configKey: string | undefined): string {
  * Compute a single image embedding via the Gemini embedContent API.
  *
  * @param input - image to embed, in any supported format
+ *
  * @param config - client configuration
+ *
  * @returns embedding vector and usage metadata
  *
  * @example
@@ -108,7 +113,9 @@ async function geminiEmbed(input: ImageInput, config: ImageDiffConfig): Promise<
  * Compute embeddings for multiple images via the Gemini batchEmbedContents API.
  *
  * @param inputs - array of images to embed
+ *
  * @param config - client configuration
+ *
  * @returns embedding vectors (in input order) and aggregate usage metadata
  *
  * @example
@@ -117,7 +124,7 @@ async function geminiEmbed(input: ImageInput, config: ImageDiffConfig): Promise<
  * ```
  */
 async function geminiEmbedBatch(
-  inputs: ReadonlyArray<ImageInput>,
+  inputs: readonly ImageInput[],
   config: ImageDiffConfig,
 ): Promise<BatchEmbeddingResult> {
   const rl = tagged({ tag: geminiEmbedBatch.name, l });

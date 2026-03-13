@@ -7,7 +7,9 @@
  * the order of the input iterable.
  *
  * @param fn - Async function applied to each element
+ *
  * @param iterable - Sync or async iterable of input elements
+ *
  * @returns Promise resolving to an array of mapped results
  *
  * @example

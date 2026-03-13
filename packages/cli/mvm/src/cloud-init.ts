@@ -10,6 +10,7 @@ import type { GuestConfig, InitSystem, LinuxGuestConfig } from './registry.ts';
  * has already ruled out Windows guests via an early return.
  *
  * @param guest - Guest config known to be Linux at this call site
+ *
  * @returns The same config narrowed to LinuxGuestConfig
  *
  * @example
@@ -20,6 +21,7 @@ import type { GuestConfig, InitSystem, LinuxGuestConfig } from './registry.ts';
  * ```
  */
 function asLinux(guest: GuestConfig): LinuxGuestConfig {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- caller has already ruled out Windows via early return
   return guest as LinuxGuestConfig;
 }
 
@@ -46,6 +48,7 @@ function templateRuncmdSystemd(): string {
  * Overrides the serial-getty service for ttyS0 with autologin for the given user.
  *
  * @param user - Login username for autologin
+ *
  * @returns Cloud-init write_files and runcmd blocks
  *
  * @example
@@ -98,6 +101,7 @@ function templateRuncmdOpenrc(): string {
  * Appends an agetty entry to `/etc/inittab` and sends SIGHUP to init.
  *
  * @param user - Login username for autologin
+ *
  * @returns Cloud-init write_files and runcmd blocks
  *
  * @example
@@ -129,6 +133,7 @@ runcmd:
  * Dispatches to the correct template runcmd generator for the given init system.
  *
  * @param initSystem - Target init system
+ *
  * @returns Cloud-init runcmd block
  *
  * @example
@@ -147,7 +152,9 @@ function templateRuncmd(initSystem: InitSystem): string {
  * Dispatches to the correct autologin generator for the given init system.
  *
  * @param initSystem - Target init system
+ *
  * @param user - Login username
+ *
  * @returns Cloud-init write_files and runcmd blocks
  *
  * @example
@@ -170,7 +177,10 @@ function vmAutologin(initSystem: InitSystem, user: string): string {
  * Generates cloud-init user-data for VM instances.
  * Sets up the default user with passwordless sudo and serial console autologin.
  *
- * @param options - VM hostname and image spec for distro-specific configuration
+ * @param guest - Guest config for distro-specific cloud-init settings
+ *
+ * @param name - VM hostname
+ *
  * @returns Cloud-init user-data string
  *
  * @example
@@ -194,7 +204,10 @@ ${vmAutologin(linux.initSystem, linux.defaultUser)}`;
  * Installs qemu-guest-agent so the template image has it pre-baked,
  * avoiding package downloads on every VM boot.
  *
- * @param options - Template VM hostname and image spec for distro-specific configuration
+ * @param guest - Guest config for distro-specific cloud-init settings
+ *
+ * @param name - Template VM hostname
+ *
  * @returns Cloud-init user-data string with qemu-guest-agent installation
  *
  * @example
@@ -229,8 +242,16 @@ ${templateRuncmd(linux.initSystem)}`;
  * Windows guests return `undefined` because they do not use cloud-init.
  * Hostname is set via the QEMU guest agent after boot instead.
  *
- * @param options - VM directory for writing the ISO, VM name for hostname configuration,
  *   guest config for distro-specific cloud-init, and whether this is for template creation
+ *
+ * @param guest - Guest config for distro-specific cloud-init settings
+ *
+ * @param name - VM name used as hostname
+ *
+ * @param template - Whether this is a template creation (installs qemu-guest-agent)
+ *
+ * @param vmDir - Directory to write the seed ISO into
+ *
  * @returns Absolute path to the generated seed ISO, or `undefined` for Windows guests
  *
  * @example

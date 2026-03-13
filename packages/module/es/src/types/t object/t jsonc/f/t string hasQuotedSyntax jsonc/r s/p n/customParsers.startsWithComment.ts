@@ -6,6 +6,15 @@ import type {
 import type * as Jsonc from '../../../../t/index.ts';
 import { mergeComments, } from './customParsers.startsWithComment.mergeComments.ts';
 
+/**
+ * Locates the position of the closing `*\/` delimiter for a block comment that starts at position 0.
+ *
+ * @param value - string beginning with `/*` to scan for the block comment end
+ *
+ * @returns character index of the `*` in the closing `*\/` delimiter
+ *
+ * @throws When no valid block comment end is found (incomplete block comment)
+ */
 function findBlockEndPosition({ value, }: { value: string; },): number {
   // If it's on the first line, we've hit the jackpot.
   //       How do we know if it's on the first line?

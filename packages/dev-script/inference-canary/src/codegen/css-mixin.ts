@@ -20,7 +20,9 @@ const regexViolationCache = new Map<string, boolean>();
 /**
  * Detects regular expression usage in generated source code.
  * Matches regex literals (`/.../flags`) and the `new RegExp(...)` constructor.
+ *
  * @param source - TypeScript source to check
+ *
  * @returns true when regex usage is detected
  *
  * @example
@@ -50,7 +52,9 @@ const REGEX_CONSTRAINT_MSG = [
  * CSS later properties override earlier ones, so `display: grid` (from the rule)
  * must be the winning declaration over `display: flex` (from the mixin).
  * Accepts both keeping all declarations in source order and collapsing to the winner.
+ *
  * @param output - normalized transpiler output
+ *
  * @returns true when the last `display:` in the override-test block resolves to `grid`
  *
  * @example
@@ -69,7 +73,9 @@ function verifyOverrideTest(output: string): boolean {
   return lastDisplay !== -1 && block.slice(lastDisplay).includes('grid');
 }
 
-/** {@inheritDoc Probe} */
+/**
+ * {@inheritDoc Probe}
+ */
 export const cssMixinTranspiler = createCodeGenProbe({
   name: 'css-mixin-transpiler',
   testInput: CSS_MIXIN_TEST_CSS,
@@ -78,12 +84,12 @@ export const cssMixinTranspiler = createCodeGenProbe({
     fastMs: 3_000,
     slowMs: 12_000,
   },
-  transformSource: (source, context) => {
+  transformSource: function checkRegex(source, context): { reject: boolean; source: string; } {
     const usesRegex = detectsRegexUsage(source);
     regexViolationCache.set(context.label, usesRegex);
     return { reject: usesRegex, source, };
   },
-  customizeFixPrompt: (base, context) => {
+  customizeFixPrompt: function addRegexWarning(base, context): string | undefined {
     if (regexViolationCache.get(context.label) !== true) return base;
     // Prepend constraint violation to existing fix prompt, or create a standalone prompt
     return base !== undefined ? `${REGEX_CONSTRAINT_MSG}\n${base}` : REGEX_CONSTRAINT_MSG;
@@ -130,9 +136,9 @@ export const cssMixinTranspiler = createCodeGenProbe({
     'body { margin: 0; }',
     '```',
   ].join('\n'),
-  verify: (result) => {
+  verify: function verifyCssMixin(result): { correctness: number; } {
     // Normalize whitespace so cosmetic formatting differences don't affect scoring
-    const output = result.stdout.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n');
+    const output = result.stdout.replaceAll(/[ \t]+/g, ' ').replaceAll(/\n{3,}/g, '\n\n');
 
     const flexOccurrences = output.split('display: flex').length - 1;
     const checks = [

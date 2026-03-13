@@ -38,7 +38,7 @@ function extractNodeName(node: Span): string {
   // VariableDeclaration: dig into declarators[0].id.name
   if (typed.type === 'VariableDeclaration') {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
-    const declarations = typed.declarations as Array<Record<string, unknown>> | undefined;
+    const declarations = typed.declarations as Record<string, unknown>[] | undefined;
     if (declarations !== undefined && declarations.length > 0) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const id = declarations[0]?.id as Record<string, unknown> | undefined;

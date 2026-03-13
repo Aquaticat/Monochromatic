@@ -3,11 +3,11 @@ import { api } from "./lib/api";
 import { injectCSS } from "./lib/inject-css";
 // build-css processes src/client/styles.css -> dist/css/styles.css
 import styles from "../../dist/css/styles.css" with { type: "text" };
-import { FlashCardElement } from "./components/flash-card";
+import type { FlashCardElement } from "./components/flash-card";
 
 injectCSS(styles);
 
-interface Card {
+type Card = {
   id: string;
   front: string;
   back: string;
@@ -15,13 +15,13 @@ interface Card {
   wrong_count: number;
 }
 
-interface Deck {
+type Deck = {
   id: string;
   name: string;
 }
 
 const data: { deck: Deck; cards: Card[] } = JSON.parse(
-  document.getElementById("page-data")!.textContent!
+  document.querySelector("#page-data")!.textContent!
 );
 
 const app = document.createElement("main");
@@ -32,17 +32,17 @@ const backLink = document.createElement("a");
 backLink.className = "back-link";
 backLink.href = "/";
 backLink.textContent = "\u2190 All decks";
-app.appendChild(backLink);
+app.append(backLink);
 
 const h1 = document.createElement("h1");
 h1.textContent = data.deck.name;
-app.appendChild(h1);
+app.append(h1);
 
 if (data.cards.length === 0) {
   const empty = document.createElement("p");
   empty.className = "empty";
   empty.textContent = "No cards in this deck. Add some below.";
-  app.appendChild(empty);
+  app.append(empty);
 } else {
   // Quiz state
   let currentIndex = 0;
@@ -51,10 +51,10 @@ if (data.cards.length === 0) {
 
   const scoreEl = document.createElement("div");
   scoreEl.className = "score";
-  app.appendChild(scoreEl);
+  app.append(scoreEl);
 
   const cardEl = document.createElement("flash-card") as FlashCardElement;
-  app.appendChild(cardEl);
+  app.append(cardEl);
 
   const controls = document.createElement("div");
   controls.className = "quiz-controls";
@@ -62,18 +62,18 @@ if (data.cards.length === 0) {
   const correctBtn = document.createElement("button");
   correctBtn.className = "correct";
   correctBtn.textContent = "Got it";
-  controls.appendChild(correctBtn);
+  controls.append(correctBtn);
 
   const wrongBtn = document.createElement("button");
   wrongBtn.className = "wrong";
   wrongBtn.textContent = "Wrong";
-  controls.appendChild(wrongBtn);
+  controls.append(wrongBtn);
 
-  app.appendChild(controls);
+  app.append(controls);
 
   const doneMsg = document.createElement("div");
   doneMsg.className = "done-message hidden";
-  app.appendChild(doneMsg);
+  app.append(doneMsg);
 
   function updateUI() {
     scoreEl.textContent = `Card ${currentIndex + 1} of ${data.cards.length} | Correct: ${correctCount} | Wrong: ${wrongCount}`;
@@ -123,18 +123,18 @@ const frontInput = document.createElement("input");
 frontInput.type = "text";
 frontInput.placeholder = "Front (question)";
 frontInput.required = true;
-addForm.appendChild(frontInput);
+addForm.append(frontInput);
 
 const backInput = document.createElement("input");
 backInput.type = "text";
 backInput.placeholder = "Back (answer)";
 backInput.required = true;
-addForm.appendChild(backInput);
+addForm.append(backInput);
 
 const addBtn = document.createElement("button");
 addBtn.type = "submit";
 addBtn.textContent = "Add Card";
-addForm.appendChild(addBtn);
+addForm.append(addBtn);
 
 addForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -148,8 +148,8 @@ addForm.addEventListener("submit", async (e) => {
   window.location.reload();
 });
 
-addSection.appendChild(addForm);
-app.appendChild(addSection);
+addSection.append(addForm);
+app.append(addSection);
 
 // Card list
 if (data.cards.length > 0) {
@@ -169,9 +169,9 @@ if (data.cards.length > 0) {
       await api(`/api/cards/${card.id}`, { method: "DELETE" });
       window.location.reload();
     });
-    li.appendChild(del);
-    ul.appendChild(li);
+    li.append(del);
+    ul.append(li);
   }
-  listSection.appendChild(ul);
-  app.appendChild(listSection);
+  listSection.append(ul);
+  app.append(listSection);
 }

@@ -8,9 +8,9 @@
  * Synchronous-only variant optimized for performance when all operations are synchronous.
  * Use this when both the predicate and iterable are guaranteed to be synchronous.
  *
- * @param params - Configuration object
- * @param params.predicate - Synchronous function to test each item
- * @param params.iterable - Synchronous iterable to partition
+ * @param params - Configuration object with `predicate` (synchronous function to test each item)
+ *   and `iterable` (synchronous iterable to partition)
+ *
  * @yields Objects with decision ('pass', 'fail', or ['thrown', error]) and the item
  *
  * @example

@@ -21,6 +21,7 @@ import {
 const path = runSync(argument(string(),), { programName: 'backup-path', help: 'option', },);
 
 console.log(`Backing up ${path}`,);
+/** Current ISO timestamp with colons removed, used as the backup subdirectory name */
 const now = new Date().toISOString().replaceAll(':', '',);
 await mkdir(join('bak', now,),);
 await cp(path, join('bak', now, basename(path,),), {

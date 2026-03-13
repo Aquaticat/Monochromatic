@@ -39,7 +39,7 @@ import { wait, } from '../promise.wait.ts';
  */
 const client = new MeiliSearch({
   host: 'https://meilisearch.local.aquati.cat:3001',
-  apiKey: process.env.MEILISEARCH_API_KEY || process.env.MEILI_MASTER_KEY || '',
+  apiKey: (process.env.MEILISEARCH_API_KEY ?? process.env.MEILI_MASTER_KEY) ?? '',
 },);
 
 const index = client.index('claudeCodeMcpServerLogs',);
@@ -128,7 +128,7 @@ function parseLogFile(filePath: string, server: string,
 
   try {
     const content = readFileSync(filePath, 'utf8',);
-    const fileName = filePath.split('/',).pop() || '';
+    const fileName = filePath.split('/',).pop() ?? '';
 
     // Track this file for deletion
     filesToDelete.push(filePath,);
@@ -171,7 +171,7 @@ function parseLogFile(filePath: string, server: string,
             logId,
             server,
             projectPath,
-            timestamp: entry.timestamp || fileTimestamp,
+            timestamp: entry.timestamp ?? fileTimestamp,
             logFile: fileName,
             sessionId: entry.sessionId,
           };
@@ -545,7 +545,7 @@ async function indexMcpLogs(): Promise<void> {
       console.log(`✅ Deleted ${deletedCount} log files for security`,);
       match(failedDeletes,)
         .with(0, () => {},)
-        .otherwise(count => console.log(`⚠️  Failed to delete ${count} files`,));
+        .otherwise(count =>{  console.log(`⚠️  Failed to delete ${count} files`,); });
     },)
     .with(false, () => {
       console.error('❌ Some indexing tasks failed. Log files not deleted for safety.',);
@@ -560,7 +560,7 @@ async function indexMcpLogs(): Promise<void> {
 
   console.log('\nExample search for "tool call":',);
   searchResults.hits.forEach(hit => {
-    const preview = hit.debug || hit.plainText || JSON.stringify(hit.response || {},);
+    const preview = (hit.debug ?? hit.plainText) ?? JSON.stringify(hit.response ?? {},);
     console.log(`- [${hit.server}] ${hit.logFile}: ${preview.slice(0, 100,)}...`,);
   },);
 }

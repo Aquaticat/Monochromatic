@@ -72,7 +72,7 @@ async function initialize(): Promise<void> {
   }
 }
 
-// Eager initialization - throws at module load if no backends available
+/** Eager initialization promise -- throws at module load if no backends available. */
 const initPromise: Promise<void> = initialize();
 
 /**
@@ -81,34 +81,37 @@ const initPromise: Promise<void> = initialize();
  */
 /**
  * Marks a sink entry as failed and recalculates global availability.
+ *
  * @param entry - Sink entry that encountered an error
  */
 function markFailed(entry: SinkEntry): void {
   entry.available = false;
-  hasAvailableSink = sinkEntries.some((sinkEntry) => sinkEntry.available === true);
+  hasAvailableSink = sinkEntries.some(function isAvailable(sinkEntry) { return sinkEntry.available === true; });
 }
 
 /**
  * Creates a logging method for the specified severity level.
+ *
  * @param level - Log severity level for messages from this method
  */
 function createMethod(level: Level): (message: string) => void {
-  return (message: string): void => {
+  return function logAtLevel(message: string): void {
     if (!hasAvailableSink && initialized) {
       throw new Error('No logging backends available');
     }
 
-    const available = sinkEntries.filter((entry) => entry.available === true);
+    const available = sinkEntries.filter(function isAvailable(entry) { return entry.available === true; });
     if (available.length === 0) return;
 
     const record: LogRecord = { level, message, timestamp: Date.now() };
 
-    available.forEach((entry) => {
+    available.forEach(function writeToSink(entry) {
       try {
         const result = entry.sink(record);
         if (result instanceof Promise) {
-          // oxlint-disable-next-line prefer-await-to-then -- Fire-and-forget: awaiting would make the logger blocking
-          result.catch(() => { markFailed(entry); });
+          // Fire-and-forget: awaiting would make the logger blocking
+          // oxlint-disable-next-line prefer-await-to-then -- intentional fire-and-forget
+          void result.then(function noop() { /* success */ }, function onReject() { markFailed(entry); });
         }
       } catch {
         markFailed(entry);

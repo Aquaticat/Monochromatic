@@ -8,8 +8,11 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 /**
  * Renders a threshold line as a positioned `<div>` inside a chart container.
+ *
  * @param threshold - score threshold value (0-1)
+ *
  * @param label - descriptive label (e.g. "threshold: 0.42")
+ *
  * @returns HTML string for the threshold line, or empty string if threshold is 0
  */
 export function renderThresholdLine(threshold: number, label: string,): string {

@@ -25,7 +25,8 @@ export {};
 
 /**
  * Parsed `>=` range from a catalog entry.
- * @example `{ prefix: "npm:@jsr/zod__zod@", range: ">=4.1.8" }` for `"npm:@jsr/zod__zod@>=4.1.8"`
+ *
+ * @example `{ prefix: "npm:\@jsr/zod__zod\@", range: ">=4.1.8" }` for `"npm:\@jsr/zod__zod\@>=4.1.8"`
  */
 type ParsedRange = {
   /** Everything before the `>=` token, including any `npm:` alias prefix. Empty string for plain `>=x.y.z`. */
@@ -56,20 +57,24 @@ const RANGE_RE = /^(?<prefix>.*?)>=(?<version>.+)$/;
 /**
  * Extracts the `>=` version and any alias prefix from a catalog value.
  * Returns `undefined` for values that are not `>=` ranges.
+ *
  * @param value - raw catalog entry value, e.g. `">=1.2.3"` or `"npm:@jsr/foo@>=1.0.0"`
+ *
  * @returns parsed prefix and version, or `undefined`
+ *
  * @example
  * ```ts
  * parseRange(">=1.2.3") // { prefix: "", version: "1.2.3" }
- * parseRange("npm:@jsr/zod__zod@>=4.1.8") // { prefix: "npm:@jsr/zod__zod@", version: "4.1.8" }
+ * parseRange("npm:\@jsr/zod__zod\@>=4.1.8") // { prefix: "npm:\@jsr/zod__zod\@", version: "4.1.8" }
  * parseRange("*") // undefined
  * ```
  */
 function parseRange(value: string): ParsedRange | undefined {
   const match = RANGE_RE.exec(value);
-  if (match === undefined || match === null) {
+  if (match === null) {
     return undefined;
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- regex named groups are guaranteed by RANGE_RE pattern
   const { prefix, version } = match.groups as { prefix: string; version: string };
   return { prefix, version };
 }
@@ -77,8 +82,11 @@ function parseRange(value: string): ParsedRange | undefined {
 /**
  * Splits a semver string into `[major, minor, patch, prerelease]`.
  * Prerelease is everything after the first `-`, or empty string.
+ *
  * @param version - semver string, e.g. `"1.2.3"` or `"7.0.0-dev.20250311"`
+ *
  * @returns tuple of `[major, minor, patch, prerelease]`
+ *
  * @example
  * ```ts
  * splitSemver("1.2.3") // [1, 2, 3, ""]
@@ -100,11 +108,15 @@ function splitSemver(version: string): [number, number, number, string] {
 
 /**
  * Determines whether `installed` is strictly greater than `cataloged`.
- * Follows semver ordering: major > minor > patch > prerelease (lexicographic).
+ * Follows semver ordering: major \> minor \> patch \> prerelease (lexicographic).
  * A release version (no prerelease) is greater than any prerelease of the same triple.
+ *
  * @param cataloged - version from the catalog range
+ *
  * @param installed - version from node_modules
+ *
  * @returns `true` if `installed` is strictly newer
+ *
  * @example
  * ```ts
  * isStrictlyGreater("1.2.0", "1.3.0") // true
@@ -148,18 +160,24 @@ function isStrictlyGreater(cataloged: string, installed: string): boolean {
  * Bun installs `npm:` aliased packages under the **key** name (e.g. `zod`),
  * not the registry target (e.g. `@jsr/zod__zod`). Returns the key first,
  * then the alias target as fallback.
+ *
  * @param catalogKey - package name key in catalog, e.g. `"zod"`
+ *
  * @param catalogValue - raw catalog value, e.g. `"npm:@jsr/zod__zod@>=4.1.8"`
+ *
  * @returns ordered list of npm names to try resolving
+ *
  * @example
  * ```ts
- * resolveNpmNames("zod", "npm:@jsr/zod__zod@>=4.1.8") // ["zod", "@jsr/zod__zod"]
+ * resolveNpmNames("zod", "npm:\@jsr/zod__zod\@>=4.1.8") // ["zod", "\@jsr/zod__zod"]
  * resolveNpmNames("eslint", ">=9.29.0") // ["eslint"]
  * ```
  */
 function resolveNpmNames(catalogKey: string, catalogValue: string): string[] {
+  /** Length of the `npm:` prefix */
+  const NPM_PREFIX_LENGTH = 4;
   if (catalogValue.startsWith('npm:')) {
-    const withoutNpm = catalogValue.slice(4);
+    const withoutNpm = catalogValue.slice(NPM_PREFIX_LENGTH);
     // Find the last @ that isn't position 0 (scoped package)
     const lastAt = withoutNpm.lastIndexOf('@');
     const aliasTarget = lastAt > 0 ? withoutNpm.slice(0, lastAt) : withoutNpm;
@@ -175,8 +193,11 @@ function resolveNpmNames(catalogKey: string, catalogValue: string): string[] {
 /**
  * Discovers all workspace package directories under `packages/{category}/{pkg}`.
  * Cached after first call.
+ *
  * @param monorepoRoot - absolute path to the monorepo root
+ *
  * @returns array of absolute paths to workspace package directories
+ *
  * @example
  * ```ts
  * discoverWorkspaceRoots("/home/user/Monochromatic")
@@ -215,7 +236,8 @@ function discoverWorkspaceRoots(monorepoRoot: string): string[] {
 }
 
 /** Cached workspace root directories. */
-let workspaceRootsCache: string[] | undefined;
+// oxlint-disable-next-line unicorn/no-useless-undefined -- init-declarations requires explicit initialization
+let workspaceRootsCache: string[] | undefined = undefined;
 
 /**
  * Reads the installed version of a package from node_modules.
@@ -224,9 +246,13 @@ let workspaceRootsCache: string[] | undefined;
  * 2. `createRequire().resolve()` from monorepo root
  * 3. `createRequire().resolve()` from each workspace package directory
  * 4. Bun store (`node_modules/.bun/`) directory name scan for transitive deps
+ *
  * @param npmName - npm package name to look up
+ *
  * @param monorepoRoot - absolute path to the monorepo root
+ *
  * @returns installed version string, or `undefined` if not found
+ *
  * @example
  * ```ts
  * readInstalledVersion("eslint", "/home/user/Monochromatic") // "10.0.0"
@@ -276,12 +302,16 @@ function readInstalledVersion(npmName: string, monorepoRoot: string): string | u
  * Bun stores packages as `name@version` (unscoped) or `@scope+name@version` (scoped),
  * optionally with a `+hash` dedup suffix. When multiple versions exist, returns
  * the highest by reading each candidate's `package.json`.
+ *
  * @param npmName - npm package name, e.g. `"@eslint/core"` or `"chokidar"`
+ *
  * @param monorepoRoot - absolute path to the monorepo root
+ *
  * @returns installed version string, or `undefined` if not found in store
+ *
  * @example
  * ```ts
- * readVersionFromBunStore("@eslint/core", "/home/user/Monochromatic") // "1.1.0"
+ * readVersionFromBunStore("\@eslint/core", "/home/user/Monochromatic") // "1.1.0"
  * readVersionFromBunStore("chokidar", "/home/user/Monochromatic") // "5.0.0"
  * ```
  */
@@ -292,7 +322,7 @@ function readVersionFromBunStore(npmName: string, monorepoRoot: string): string 
     ? npmName.replace('/', '+')
     : npmName;
 
-  let entries: string[];
+  let entries: string[] = [];
   try {
     entries = readdirSync(bunStoreDir);
   } catch {
@@ -310,7 +340,7 @@ function readVersionFromBunStore(npmName: string, monorepoRoot: string): string 
   }
 
   // Read package.json from each candidate and pick the highest version
-  let bestVersion: string | undefined;
+  let bestVersion: string | undefined = undefined;
   for (const candidate of candidates) {
     const pkgJsonPath = join(bunStoreDir, candidate, 'node_modules', npmName, 'package.json');
     const candidateVersion = readVersionFromPackageJson(pkgJsonPath);
@@ -327,8 +357,11 @@ function readVersionFromBunStore(npmName: string, monorepoRoot: string): string 
 
 /**
  * Reads the `version` field from a `package.json` file path.
+ *
  * @param pkgJsonPath - absolute path to a package.json file
+ *
  * @returns version string, or `undefined` if file does not exist or has no version
+ *
  * @example
  * ```ts
  * readVersionFromPackageJson("/path/to/node_modules/eslint/package.json") // "10.0.0"
@@ -336,7 +369,8 @@ function readVersionFromBunStore(npmName: string, monorepoRoot: string): string 
  */
 function readVersionFromPackageJson(pkgJsonPath: string): string | undefined {
   try {
-    const content = readFileSync(pkgJsonPath, 'utf-8');
+    const content = readFileSync(pkgJsonPath, 'utf8');
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON structure from package.json is well-known
     const parsed = JSON.parse(content) as { version?: string };
     return parsed.version;
   } catch {
@@ -358,9 +392,10 @@ const monorepoRoot = resolve('.');
 const packageJsonPath = join(monorepoRoot, 'package.json');
 
 /** Raw content of package.json, preserved for minimal-diff rewriting. */
-const packageJsonContent = readFileSync(packageJsonPath, 'utf-8');
+const packageJsonContent = readFileSync(packageJsonPath, 'utf8');
 
 /** Parsed root package.json. */
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- root package.json structure is well-known
 const packageJson = JSON.parse(packageJsonContent) as {
   workspaces?: {
     catalog?: Record<string, string>;
@@ -368,7 +403,7 @@ const packageJson = JSON.parse(packageJsonContent) as {
 };
 
 const catalog = packageJson.workspaces?.catalog;
-if (catalog === undefined || catalog === null) {
+if (catalog === undefined) {
   console.error('No workspaces.catalog found in package.json');
   process.exitCode = 1;
   throw new Error('No workspaces.catalog found in package.json');
@@ -395,8 +430,10 @@ for (const [name, value] of Object.entries(catalog)) {
   }
 
   const npmNames = resolveNpmNames(name, value);
-  let installedVersion: string | undefined;
-  let resolvedNpmName: string | undefined;
+  // oxlint-disable-next-line unicorn/no-useless-undefined -- init-declarations requires explicit initialization
+  let installedVersion: string | undefined = undefined;
+  // oxlint-disable-next-line unicorn/no-useless-undefined -- init-declarations requires explicit initialization
+  let resolvedNpmName: string | undefined = undefined;
   for (const candidate of npmNames) {
     installedVersion = readInstalledVersion(candidate, monorepoRoot);
     if (installedVersion !== undefined) {

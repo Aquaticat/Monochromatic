@@ -82,7 +82,7 @@ const LEVEL_TO_CONSOLE: Record<string, ((...args: readonly unknown[]) => void) |
 /**
  * Verifies console is available and methods don't throw.
  */
-export const verify: Verify = (): boolean => {
+export function verify(): boolean {
   if (verified) return available;
   verified = true;
 
@@ -108,7 +108,7 @@ export const verify: Verify = (): boolean => {
   }
 
   return available;
-};
+}
 
 /**
  * Console sink that writes log records to console methods.
@@ -116,7 +116,7 @@ export const verify: Verify = (): boolean => {
  * is active (via `DEBUG=true` env var, `--verbose` argv, or
  * `import.meta.env.DEBUG === 'true'`).
  */
-export const $: Sink = (record: LogRecord): void => {
+export function $(record: LogRecord): void {
   if (!available) return;
 
   // Silently discard debug/trace unless verbose mode is active
@@ -130,4 +130,4 @@ export const $: Sink = (record: LogRecord): void => {
   } catch {
     // Silently fail if console throws
   }
-};
+}

@@ -128,14 +128,14 @@ describe($, () => {
   });
 
   test('handles very long comment values', () => {
-    const longComment = 'A'.repeat(1000,);
+    const longComment = 'A'.repeat(1_000,);
     const first = { type: 'inline' as const, commentValue: longComment, };
-    const second = { type: 'inline' as const, commentValue: 'B'.repeat(1000,), };
+    const second = { type: 'inline' as const, commentValue: 'B'.repeat(1_000,), };
     const result = $({ value: first, value2: second, },);
 
     expect(result,).toEqual({
       type: 'inline',
-      commentValue: `${longComment}\n${'B'.repeat(1000,)}`,
+      commentValue: `${longComment}\n${'B'.repeat(1_000,)}`,
     },);
   });
 

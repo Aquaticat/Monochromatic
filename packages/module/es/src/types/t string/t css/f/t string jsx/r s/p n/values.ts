@@ -147,6 +147,7 @@ export type StrictValue<T> =
  * `rem` is the primary length unit — relative to root font size, predictable across contexts.
  *
  * @param n - numeric value
+ *
  * @returns branded CSS length string (e.g. `'1.5rem'`)
  *
  * @example
@@ -165,6 +166,7 @@ export function cssRem(n: number,): CssValue {
  * `em` is relative to the element's font size — use for font-relative spacing.
  *
  * @param n - numeric value
+ *
  * @returns branded CSS length string (e.g. `'1em'`)
  */
 export function cssEm(n: number,): CssValue {
@@ -175,6 +177,7 @@ export function cssEm(n: number,): CssValue {
  * Creates a percentage value.
  *
  * @param n - numeric value (e.g. `50` for `50%`)
+ *
  * @returns branded CSS percentage string (e.g. `'50%'`)
  */
 export function cssPercent(n: number,): CssValue {
@@ -185,6 +188,7 @@ export function cssPercent(n: number,): CssValue {
  * Creates an `fr` flex fraction value (for CSS Grid).
  *
  * @param n - numeric value
+ *
  * @returns branded CSS flex string (e.g. `'1fr'`)
  */
 export function cssFr(n: number,): CssValue {
@@ -195,6 +199,7 @@ export function cssFr(n: number,): CssValue {
  * Creates an `lh` line-height-relative length value.
  *
  * @param n - numeric value
+ *
  * @returns branded CSS length string (e.g. `'1.5lh'`)
  */
 export function cssLh(n: number,): CssValue {
@@ -205,6 +210,7 @@ export function cssLh(n: number,): CssValue {
  * Creates a `vi` viewport-inline length value (logical viewport unit).
  *
  * @param n - numeric value
+ *
  * @returns branded CSS length string (e.g. `'100vi'`)
  */
 export function cssVi(n: number,): CssValue {
@@ -215,6 +221,7 @@ export function cssVi(n: number,): CssValue {
  * Creates a `vb` viewport-block length value (logical viewport unit).
  *
  * @param n - numeric value
+ *
  * @returns branded CSS length string (e.g. `'100vb'`)
  */
 export function cssVb(n: number,): CssValue {
@@ -225,6 +232,7 @@ export function cssVb(n: number,): CssValue {
  * Creates a `cqi` container-query-inline length value (logical container unit).
  *
  * @param n - numeric value
+ *
  * @returns branded CSS length string (e.g. `'50cqi'`)
  */
 export function cssCqi(n: number,): CssValue {
@@ -235,6 +243,7 @@ export function cssCqi(n: number,): CssValue {
  * Creates a `cqb` container-query-block length value (logical container unit).
  *
  * @param n - numeric value
+ *
  * @returns branded CSS length string (e.g. `'50cqb'`)
  */
 export function cssCqb(n: number,): CssValue {
@@ -253,6 +262,7 @@ export function cssCqb(n: number,): CssValue {
  * in horizontal writing modes.
  *
  * @param n - numeric value
+ *
  * @returns branded CSS length string (e.g. `'100dvb'`)
  *
  * @example
@@ -271,6 +281,7 @@ export function cssDvb(n: number,): CssValue {
  * in horizontal writing modes.
  *
  * @param n - numeric value
+ *
  * @returns branded CSS length string (e.g. `'100dvi'`)
  *
  * @example
@@ -292,6 +303,7 @@ export function cssDvi(n: number,): CssValue {
  * `s` is the only allowed time unit (milliseconds are banned).
  *
  * @param n - numeric value
+ *
  * @returns branded CSS time string (e.g. `'0.3s'`)
  */
 export function cssS(n: number,): CssValue {
@@ -308,6 +320,7 @@ export function cssS(n: number,): CssValue {
  * `turn` is the only allowed angle unit (`deg` and `rad` are banned).
  *
  * @param n - numeric value (1 = full rotation)
+ *
  * @returns branded CSS angle string (e.g. `'0.25turn'`)
  */
 export function cssTurn(n: number,): CssValue {
@@ -324,11 +337,14 @@ export function cssTurn(n: number,): CssValue {
  * `oklch()` is the primary color function — perceptually uniform, wide gamut.
  * All other color functions (`rgb`, `hsl`, `hwb`, `lab`, `lch`, `oklab`) are banned.
  *
- * @param options - oklch color channels
- * @param options.l - lightness (0 to 1)
- * @param options.c - chroma (0 to ~0.4)
- * @param options.h - hue (0 to 360)
- * @param options.a - alpha (0 to 1, optional)
+ * @param l - lightness (0 to 1)
+ *
+ * @param c - chroma (0 to ~0.4)
+ *
+ * @param h - hue (0 to 360)
+ *
+ * @param a - alpha (0 to 1, optional)
+ *
  * @returns branded CSS color string (e.g. `'oklch(0.5 0.2 250)'`)
  *
  * @example
@@ -351,10 +367,12 @@ export function cssOklch({ l, c, h, a, }: { l: number; c: number; h: number; a?:
  * Use when `oklch()` is insufficient and a specific color space is needed
  * (e.g. `display-p3`, `srgb-linear`, `a98-rgb`).
  *
- * @param options - color space and channels
- * @param options.space - color space name (e.g. `'display-p3'`, `'srgb'`)
- * @param options.channels - space-separated channel values
- * @param options.a - alpha (0 to 1, optional)
+ * @param space - color space name (e.g. `'display-p3'`, `'srgb'`)
+ *
+ * @param channels - space-separated channel values
+ *
+ * @param a - alpha (0 to 1, optional)
+ *
  * @returns branded CSS color string
  *
  * @example
@@ -379,6 +397,7 @@ export function cssColorFn({ space, channels, a, }: { space: string; channels: s
  * Creates a `var()` custom property reference.
  *
  * @param name - custom property name WITHOUT the `--` prefix
+ *
  * @returns branded CSS var reference (e.g. `'var(--fg)'`)
  *
  * @example
@@ -398,6 +417,7 @@ export function cssVar(name: string,): CssValue {
  * for the operands, then wrap with `cssCalc()`.
  *
  * @param expr - calc expression (e.g. `'1rem + 2rem'`, `'100% - 3rem'`)
+ *
  * @returns branded CSS calc expression
  *
  * @example
@@ -419,6 +439,7 @@ export function cssCalc(expr: string,): CssValue {
  * Creates a unitless number value (for properties like `opacity`, `flex-grow`, `line-height`).
  *
  * @param n - numeric value
+ *
  * @returns branded CSS number string (e.g. `'0.5'`)
  */
 export function cssNum(n: number,): CssValue {
@@ -429,6 +450,7 @@ export function cssNum(n: number,): CssValue {
  * Creates a unitless integer value (for properties like `z-index`, `order`, `column-count`).
  *
  * @param n - integer value
+ *
  * @returns branded CSS integer string (e.g. `'10'`)
  */
 export function cssInt(n: number,): CssValue {
@@ -443,6 +465,7 @@ export function cssInt(n: number,): CssValue {
  * Creates a `translateX()` transform value.
  *
  * @param offset - horizontal translation (branded CSS value from a length/percentage constructor)
+ *
  * @returns branded CSS transform string (e.g. `'translateX(-50%)'`)
  *
  * @example
@@ -459,6 +482,7 @@ export function cssTranslateX(offset: CssValue,): CssValue {
  * Creates a `translateY()` transform value.
  *
  * @param offset - vertical translation (branded CSS value from a length/percentage constructor)
+ *
  * @returns branded CSS transform string (e.g. `'translateY(-50%)'`)
  *
  * @example
@@ -474,6 +498,7 @@ export function cssTranslateY(offset: CssValue,): CssValue {
  * Creates a `rotate()` transform value.
  *
  * @param angle - rotation angle (branded CSS value from `cssTurn` or another angle constructor)
+ *
  * @returns branded CSS transform string (e.g. `'rotate(-0.125turn)'`)
  *
  * @example
@@ -490,6 +515,7 @@ export function cssRotate(angle: CssValue,): CssValue {
  * Creates a `scale()` transform value.
  *
  * @param factor - scale factor (unitless number)
+ *
  * @returns branded CSS transform string (e.g. `'scale(0.15)'`)
  *
  * @example
@@ -513,6 +539,7 @@ export function cssScale(factor: number,): CssValue {
  * The four values are the x/y coordinates of the two control points (P1 and P2).
  *
  * @param values - four control point coordinates `[x1, y1, x2, y2]`
+ *
  * @returns branded CSS timing function string (e.g. `'cubic-bezier(0.4, 0, 0.2, 1)'`)
  *
  * @example
@@ -521,7 +548,7 @@ export function cssScale(factor: number,): CssValue {
  * cssCubicBezier([0, 0, 0.2, 1])    // 'cubic-bezier(0, 0, 0.2, 1)'
  * ```
  */
-export function cssCubicBezier(values: ReadonlyArray<number>,): CssValue {
+export function cssCubicBezier(values: readonly number[],): CssValue {
   return `cubic-bezier(${values.join(', ')})` as CssValue;
 }
 
@@ -532,6 +559,7 @@ export function cssCubicBezier(values: ReadonlyArray<number>,): CssValue {
  * `transition-property`, `animation-name` (multiple), or `background-image`.
  *
  * @param values - list items (branded CSS values or plain identifier strings)
+ *
  * @returns branded CSS comma-separated list
  *
  * @example
@@ -543,7 +571,7 @@ export function cssCubicBezier(values: ReadonlyArray<number>,): CssValue {
  * // 'inset-inline-start, inset-inline-end'
  * ```
  */
-export function cssCommaList(values: ReadonlyArray<CssValue | string>,): CssValue {
+export function cssCommaList(values: readonly (CssValue | string)[],): CssValue {
   return values.join(', ') as CssValue;
 }
 
@@ -555,6 +583,7 @@ export function cssCommaList(values: ReadonlyArray<CssValue | string>,): CssValu
  * space-separated components.
  *
  * @param values - value parts (branded CSS values, keyword strings, or numbers)
+ *
  * @returns branded CSS compound value
  *
  * @example
@@ -566,7 +595,7 @@ export function cssCommaList(values: ReadonlyArray<CssValue | string>,): CssValu
  * // '0 -0.25rem 1rem oklch(0 0 0 / 0.2)'
  * ```
  */
-export function cssCompounded(values: ReadonlyArray<CssValue | string | number>,): CssValue {
+export function cssCompounded(values: readonly (CssValue | string | number)[],): CssValue {
   return values.join(' ') as CssValue;
 }
 

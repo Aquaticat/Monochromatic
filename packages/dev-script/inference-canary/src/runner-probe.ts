@@ -8,11 +8,10 @@ import { mean, } from './math.ts';
 import { createProbeClient, executeProbe, } from './runner-client.ts';
 import { runSecondPass, } from './runner-second-pass.ts';
 import { PartialCompletionError, } from './runner-stream.ts';
-import { writeEnrichedArtifact, } from './linter-artifacts.ts';
+import { writeEnrichedArtifact, type EnrichedArtifactMeta, } from './linter-artifacts.ts';
 
 import type { CompletionResult, ConfigSnapshot, ProbeResult, } from './runner-types.ts';
 import type { RunnerConfig, } from './runner-config.ts';
-import type { EnrichedArtifactMeta, } from './linter-artifacts.ts';
 import type { Probe, ScoreContext, } from './probes.ts';
 
 /** Minutes before a probe is considered timed out */
@@ -22,14 +21,16 @@ const PROBE_TIMEOUT_MINUTES = 5;
 const SECONDS_PER_MINUTE = 60;
 
 /** Milliseconds per second for timeout computation */
-const MS_PER_SECOND = 1000;
+const MS_PER_SECOND = 1_000;
 
 /** 5 minutes per probe (all consistency runs + fix pass) -- slower inference is unusable */
 const PROBE_TIMEOUT_MS = PROBE_TIMEOUT_MINUTES * SECONDS_PER_MINUTE * MS_PER_SECOND;
 
 /**
  * Builds a {@link ConfigSnapshot} from the runner configuration.
+ *
  * @param config - full runner configuration
+ *
  * @returns snapshot of the fields relevant for reproducibility
  */
 function snapshotConfig(config: RunnerConfig): ConfigSnapshot {
@@ -43,13 +44,22 @@ function snapshotConfig(config: RunnerConfig): ConfigSnapshot {
 
 /**
  * Writes an enriched artifact for a single probe execution (initial or fix pass).
+ *
  * @param probe - probe that produced the response
+ *
  * @param config - runner configuration
+ *
  * @param timestamp - authoritative server timestamp
+ *
  * @param pass - which pass produced the response
+ *
  * @param completion - full completion result from the API
+ *
  * @param score - computed score for this response
+ *
  * @param options - optional fields for fix prompt, partial flag, and error message
+ *
+ * @returns resolves after the artifact is written
  */
 async function enrichArtifact(
   probe: Probe,
@@ -82,7 +92,9 @@ async function enrichArtifact(
 /**
  * Extracts a {@link CompletionResult} from an error if it is a
  * {@link PartialCompletionError}, otherwise returns undefined.
+ *
  * @param error - caught error value
+ *
  * @returns partial completion result, or undefined for non-partial errors
  */
 function extractPartialCompletion(error: unknown): CompletionResult | undefined {
@@ -96,13 +108,21 @@ function extractPartialCompletion(error: unknown): CompletionResult | undefined 
  * For completed consistency runs, the last run's completion is already enriched
  * during the normal flow. This function handles the partial/failed case: it writes
  * the partial completion (if any) with `partial: true` and the error message.
+ *
  * @param probe - probe being executed
+ *
  * @param config - runner configuration
+ *
  * @param timestamp - authoritative server timestamp
+ *
  * @param error - the caught error
+ *
  * @param lastCompletion - completion from the last successful consistency run (if any)
+ *
  * @param partialCompletion - partial completion extracted from a PartialCompletionError
+ *
  * @param lastScore - score from the last successful consistency run
+ *
  * @param enrichedInitial - whether the initial-pass artifact was already enriched
  */
 async function saveFailureArtifacts(
@@ -141,10 +161,15 @@ async function saveFailureArtifacts(
  *
  * On failure, persists whatever partial data was collected (completed runs,
  * partial stream responses) before re-throwing.
+ *
  * @param probe - canary probe to execute
+ *
  * @param config - runner configuration
+ *
  * @param timestamp - authoritative server timestamp for artifact naming
+ *
  * @param signal - abort signal from the timeout controller; cancels HTTP streams and containers
+ *
  * @returns scored result with consistency information
  */
 async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: string, signal: AbortSignal): Promise<ProbeResult> {
@@ -181,7 +206,7 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: strin
     }
 
     const meanScore = mean(scores);
-    const consistent = scores.every((score) => score === scores[0]);
+    const consistent = scores.every(function sameScore(score): boolean { return score === scores[0]; });
 
     // Fix pass has its own error handling: a failed fix should not discard
     // valid initial-pass results. Partial fix data is saved before continuing.
@@ -273,7 +298,7 @@ export async function runProbe(probe: Probe, config: RunnerConfig, timestamp: st
   // Suppress unhandled-rejection warning: after the timeout wins the race,
   // corePromise may still reject (via AbortError) with no observer.
   // oxlint-disable-next-line promise/prefer-await-to-then -- catch handler on a racing promise; await is not viable here
-  corePromise.catch(() => { /* expected: abort-triggered rejection after timeout */ });
+  corePromise.catch(function suppressAbortRejection(): void { /* expected: abort-triggered rejection after timeout */ });
   // Zero-score sentinel returned when the timeout fires; score 0 is recorded in history
   // so the overall model score reflects the failure without discarding other probe results.
   const timedOutResult: ProbeResult = {
@@ -289,11 +314,11 @@ export async function runProbe(probe: Probe, config: RunnerConfig, timestamp: st
   let timer: ReturnType<typeof setTimeout> | undefined = undefined;
   return Promise.race([
     // oxlint-disable-next-line promise/prefer-await-to-then -- finally on a racing promise; await is not viable here
-    corePromise.finally(() => { if (timer !== undefined) clearTimeout(timer); }),
+    corePromise.finally(function clearTimer(): void { if (timer !== undefined) clearTimeout(timer); }),
     // oxlint-disable-next-line promise/avoid-new -- timeout racing requires manual Promise construction
-    new Promise<ProbeResult>((resolve) => {
+    new Promise<ProbeResult>(function setupTimeout(resolve): void {
       timer = setTimeout(
-        () => {
+        function onTimeout(): void {
           controller.abort();
           console.error(`  [${config.label}:${probe.name}] timed out after ${String(PROBE_TIMEOUT_MINUTES)} minutes`);
           resolve(timedOutResult);

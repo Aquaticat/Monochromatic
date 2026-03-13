@@ -1,9 +1,9 @@
 /**
  * Client entry script for the Search page.
  *
- * Same hydration pattern as inbox.ts: injectCSS → readPageData → build DOM into #app.
+ * Same hydration pattern as inbox.ts: injectCSS -\> readPageData -\> build DOM into #app.
  * The search page's HTML shell (rendered inline by the server, not via renderPage)
- * places a `<search-bar>` above `<main id="app">` instead of a `<top-nav>`.
+ * places a `\<search-bar\>` above `\<main id="app"\>` instead of a `\<top-nav\>`.
  */
 import type { SearchTask } from "../lib/types.ts";
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
@@ -12,13 +12,21 @@ import { api } from "./lib/api.ts";
 import { injectCSS } from "./lib/inject-css.ts";
 import { readPageData } from "./lib/page-data.ts";
 import { createTaskCard } from "./lib/task-card.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/side-drawer.ts";
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/search-bar.ts";
+
+/** Large border-radius value for pill-shaped tag chips. */
+const PILL_BORDER_RADIUS_REM = 62.5;
 
 /** Shape of the JSON blob embedded in the search page by the server. */
 type SearchPageData = {
+  /** Current search query string. */
   query: string;
+  /** Matching tasks from search. */
   results: SearchTask[];
+  /** All unique tags for category browsing. */
   availableTags: string[];
 };
 
@@ -45,7 +53,7 @@ injectCSS(`
   border-width: calc(1 / 16 * 1rem);
   border-style: solid;
   border-color: var(--fg);
-  border-radius: 62.5rem;
+  border-radius: ${String(PILL_BORDER_RADIUS_REM)}rem;
   padding-block: 0.5rem;
   padding-inline: 0.5rem;
   gap: 0.25rem;
@@ -68,56 +76,63 @@ injectCSS(`
 }
 `);
 
+/** Deserialized page data from the server-rendered JSON blob. */
 const pageData = readPageData<SearchPageData>();
-const appElement = document.getElementById("app");
+
+/** Root app container element. */
+const appElement = document.querySelector("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
+
+/** Typed reference to the app container. */
 const app = appElement;
 
 // Listen for search events from the search-bar component
-document.querySelector("search-bar")?.addEventListener("search", ((event: CustomEvent) => {
-  const query = event.detail.query as string;
-  window.location.href = query.length === 0 ? "/search" : `/search?q=${encodeURIComponent(query)}`;
-}) as EventListener);
+document.querySelector("search-bar")?.addEventListener("search", function onSearch(event) {
+  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- CustomEvent detail contains query string
+  const query = (event as CustomEvent).detail.query as string;
+  globalThis.location.href = query.length === 0 ? "/search" : `/search?q=${encodeURIComponent(query)}`;
+} as EventListener);
 
 if (pageData.query.length === 0) {
   app.append(h({ tag: "p", class: "search-hint", text: "Type something...or select one of the categories." }));
 
-  const availableTags = pageData.availableTags ?? [];
+  const availableTags = pageData.availableTags;
   if (availableTags.length > 0) {
     app.append(
       h({
         tag: "div",
         class: "tag-chips",
-        children: availableTags.map((tag) =>
-          h({
+        children: availableTags.map(function createTagChip(tag) {
+          return h({
             tag: "button",
             class: "tag-chip",
             text: `# ${tag}`,
             on: {
-              click: () => {
-                window.location.href = `/search?q=${encodeURIComponent(`#${tag}`)}`;
+              click: function onTagClick() {
+                globalThis.location.href = `/search?q=${encodeURIComponent(`#${tag}`)}`;
               },
             },
-          }),
-        ),
+          });
+        }),
       }),
     );
   }
 } else {
+  /** List element for search results. */
   const resultList = h({ tag: "ul", class: "task-list" });
 
   for (const result of pageData.results) {
     resultList.append(
       createTaskCard(result, {
         showBlockedBadge: result.isBlocked,
-        onOpen: (taskId) => {
-          window.location.href = `/tasks/${taskId}`;
+        onOpen: function openTask(taskId) {
+          globalThis.location.href = `/tasks/${taskId}`;
         },
-        onToggleComplete: async (taskId) => {
+        onToggleComplete: async function completeTask(taskId) {
           await api(`/api/tasks/${taskId}/complete`, { method: "POST" });
-          window.location.reload();
+          globalThis.location.reload();
         },
       }),
     );

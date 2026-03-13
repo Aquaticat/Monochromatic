@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const $ = types.function.generator.from.iterable.partition.named.$;
+const {$} = types.function.generator.from.iterable.partition.named;
 
 describe($, () => {
   test('yields items with pass decision for items that pass the predicate', async () => {

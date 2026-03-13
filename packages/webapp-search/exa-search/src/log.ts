@@ -11,6 +11,7 @@ await initPromise;
  * Root tagged logger for all exa-search subsystems.
  * Tagged with `exa-search` so every log line carries the subsystem prefix.
  * Sub-modules should compose deeper tags via `tagged({ tag, l })`.
- * @see {@link tagged} for composing nested tags
+ *
+ * @see `tagged` for composing nested tags
  */
 export const l: Logger = tagged({ tag: 'exa-search', l: $, },);

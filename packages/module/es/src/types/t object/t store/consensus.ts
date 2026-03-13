@@ -31,7 +31,9 @@ export type BackendResult<TBackend = unknown,> = {
  * Pick the majority bucket by size from a grouping map.
  *
  * @param buckets - map from serialized value to result records
+ *
  * @param totalCount - total number of results for majority threshold
+ *
  * @returns majority presence flag and the candidate serialized value
  *
  * @example
@@ -45,8 +47,7 @@ export function pickMajority<TBackend = unknown,>(
   totalCount: number,
 ): { hasMajority: boolean; value?: string | undefined; } {
   /** Leader candidate and its bucket after sorting by descending bucket size. */
-  const sorted = Array
-    .from(buckets.entries(),)
+  const sorted = [...buckets.entries()]
     .toSorted(function byDescCount(
       [, bucketA,],
       [, bucketB,],
@@ -67,9 +68,13 @@ export function pickMajority<TBackend = unknown,>(
  * Throws when there is no majority within the highest tier.
  *
  * @param groupedHighest - buckets of highest tier results by value
+ *
  * @param highestResults - array of highest priority tier results
+ *
  * @param key - key for error context
+ *
  * @returns canonical serialized value (can be undefined)
+ *
  * @throws Error when no majority in highest tier
  *
  * @example
@@ -95,9 +100,13 @@ export function computeFromHighestTier<TBackend = unknown,>(
  * Compute canonical serialized value across all tiers with fallback to highest tier.
  *
  * @param results - all tier results
+ *
  * @param groupedHighest - buckets for highest tier only
+ *
  * @param highestResults - highest tier array
+ *
  * @param key - key for error context
+ *
  * @returns canonical serialized value (can be undefined)
  *
  * @example
@@ -129,9 +138,13 @@ export function computeCanonical<TBackend = unknown,>(
  * to {@link computeCanonical} for majority-based resolution.
  *
  * @typeParam TBackend - storage backend type
+ *
  * @param results - backend query results (at least one)
+ *
  * @param key - lookup key for error messages
+ *
  * @returns canonical serialized value or `undefined`
+ *
  * @throws Error when no backend results exist for the key
  *
  * @example
@@ -147,8 +160,7 @@ export function resolveConsensus<TBackend = unknown,>(
     return priority;
   },);
 
-  const sortedTiers = Array
-    .from(grouped.entries(),)
+  const sortedTiers = [...grouped.entries()]
     .toSorted(function byAscPriority([priorityA,], [priorityB,],) {
       return priorityA - priorityB;
     },)

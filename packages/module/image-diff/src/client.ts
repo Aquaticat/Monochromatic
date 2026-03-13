@@ -1,3 +1,4 @@
+// oxlint-disable typescript-eslint/no-unsafe-type-assertion, no-non-null-assertion, eslint/require-await -- Promise.allSettled values require type assertions; non-null assertions are used after length checks; async functions return provider promises directly
 import type {
   BatchEmbeddingResult,
   ComparisonResult,
@@ -24,12 +25,13 @@ const PROVIDERS: Record<Provider, EmbeddingProvider> = {
 /**
  * All available provider names, used when dispatching to all providers.
  */
-const ALL_PROVIDERS: ReadonlyArray<Provider> = ['voyage', 'gemini'];
+const ALL_PROVIDERS: readonly Provider[] = ['voyage', 'gemini'];
 
 /**
  * Resolve a single provider from config.
  *
  * @param provider - provider name
+ *
  * @returns provider implementation
  *
  * @example
@@ -48,7 +50,9 @@ function getProvider(provider: Provider): EmbeddingProvider {
  * When no provider is specified, defaults to Voyage.
  *
  * @param input - image to embed, in any supported format
+ *
  * @param config - optional client configuration (provider, API key, model)
+ *
  * @returns embedding vector and usage metadata
  *
  * @example
@@ -67,7 +71,9 @@ export async function embed(input: ImageInput, config: ImageDiffConfig = {}): Pr
  * When no provider is specified, defaults to Voyage.
  *
  * @param inputs - array of images to embed
+ *
  * @param config - optional client configuration (provider, API key, model)
+ *
  * @returns embedding vectors (in input order) and aggregate usage metadata
  *
  * @example
@@ -79,7 +85,7 @@ export async function embed(input: ImageInput, config: ImageDiffConfig = {}): Pr
  * ```
  */
 export async function embedBatch(
-  inputs: ReadonlyArray<ImageInput>,
+  inputs: readonly ImageInput[],
   config: ImageDiffConfig = {},
 ): Promise<BatchEmbeddingResult> {
   const provider = config.provider ?? 'voyage';
@@ -92,8 +98,11 @@ export async function embedBatch(
  * duplicate description calls when comparing across multiple providers.
  *
  * @param imageA - first image
+ *
  * @param imageB - second image
+ *
  * @param config - client configuration (provider, API key, model)
+ *
  * @returns similarity, distance, and both embedding vectors (no description)
  */
 async function compareEmbeddings(
@@ -106,8 +115,7 @@ async function compareEmbeddings(
   rl.debug(`comparing embeddings via ${provider}`);
 
   const { embeddings } = await getProvider(provider).embedBatch([imageA, imageB], config);
-  const embeddingA = embeddings[0];
-  const embeddingB = embeddings[1];
+  const [embeddingA, embeddingB] = embeddings;
   if (embeddingA === undefined || embeddingB === undefined) {
     throw new Error('Expected exactly 2 embeddings from batch call');
   }
@@ -127,8 +135,11 @@ async function compareEmbeddings(
  * When no provider is specified, defaults to Voyage.
  *
  * @param imageA - first image
+ *
  * @param imageB - second image
+ *
  * @param config - optional client configuration (provider, API key, model)
+ *
  * @returns similarity score, distance, both embedding vectors, and description
  *
  * @example
@@ -152,8 +163,7 @@ export async function compare(
     compareEmbeddings(imageA, imageB, config),
     describeImageDifference(imageA, imageB),
   ]);
-  const embeddingResult = results[0];
-  const description = results[1];
+  const [embeddingResult, description] = results;
   if (description === undefined) {
     throw new Error(
       'OpenRouter API key is required for image comparison. Set IMAGE_DIFF_OPENROUTER_API_KEY (or OPENROUTER_API_KEY) environment variable.',
@@ -225,7 +235,9 @@ export type MultiProviderBatchEmbedEntry = {
  * Each provider uses its own API key (from env vars) and default latest model.
  *
  * @param imageA - first image
+ *
  * @param imageB - second image
+ *
  * @returns array of results, one per provider
  *
  * @example
@@ -242,7 +254,7 @@ export type MultiProviderBatchEmbedEntry = {
 export async function compareAll(
   imageA: ImageInput,
   imageB: ImageInput,
-): Promise<ReadonlyArray<MultiProviderComparisonEntry>> {
+): Promise<readonly MultiProviderComparisonEntry[]> {
   const rl = tagged({ tag: compareAll.name, l });
   rl.debug(`comparing two images across all ${String(ALL_PROVIDERS.length)} providers with description`);
 
@@ -255,14 +267,14 @@ export async function compareAll(
   ]);
 
   /** Last settlement is the description call. */
-  const descriptionSettlement = allResults[allResults.length - 1]!;
+  const descriptionSettlement = allResults.at(-1)!;
   const description = descriptionSettlement.status === 'fulfilled'
     ? descriptionSettlement.value as string | undefined
     : undefined;
 
   /** All settlements before the last are provider results. */
   const providerSettlements = allResults.slice(0, -1);
-  const successfulEntries: Array<MultiProviderComparisonEntry> = [];
+  const successfulEntries: MultiProviderComparisonEntry[] = [];
   for (const settlement of providerSettlements) {
     if (settlement.status === 'fulfilled') {
       const entry = settlement.value as { provider: Provider; result: Omit<ComparisonResult, 'description'> };
@@ -290,6 +302,7 @@ export async function compareAll(
  * Each provider uses its own API key (from env vars) and default latest model.
  *
  * @param input - image to embed
+ *
  * @returns array of results, one per provider
  *
  * @example
@@ -302,7 +315,7 @@ export async function compareAll(
  */
 export async function embedAll(
   input: ImageInput,
-): Promise<ReadonlyArray<MultiProviderEmbedEntry>> {
+): Promise<readonly MultiProviderEmbedEntry[]> {
   const rl = tagged({ tag: embedAll.name, l });
   rl.debug(`embedding image across all ${String(ALL_PROVIDERS.length)} providers`);
 
@@ -322,6 +335,7 @@ export async function embedAll(
  * Each provider uses its own API key (from env vars) and default latest model.
  *
  * @param inputs - array of images to embed
+ *
  * @returns array of results, one per provider
  *
  * @example
@@ -330,8 +344,8 @@ export async function embedAll(
  * ```
  */
 export async function embedBatchAll(
-  inputs: ReadonlyArray<ImageInput>,
-): Promise<ReadonlyArray<MultiProviderBatchEmbedEntry>> {
+  inputs: readonly ImageInput[],
+): Promise<readonly MultiProviderBatchEmbedEntry[]> {
   const rl = tagged({ tag: embedBatchAll.name, l });
   rl.debug(`batch embedding ${String(inputs.length)} image(s) across all ${String(ALL_PROVIDERS.length)} providers`);
 

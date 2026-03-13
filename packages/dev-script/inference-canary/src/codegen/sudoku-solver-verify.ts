@@ -40,7 +40,9 @@ const PARTIAL_CREDIT = 0.1;
  *
  * Checks: solvable solved correctly, both unsolvables rejected, multi-solution
  * returns exactly one valid solution (proving early exit).
+ *
  * @param stdout - raw container stdout
+ *
  * @returns correctness fraction (correct checks / total checks)
  */
 export function verifyNormal(stdout: string): number {
@@ -48,14 +50,8 @@ export function verifyNormal(stdout: string): number {
   const sections = splitOutputSections(stdout);
   if (sections.length < NORMAL_CHECKS) return PARTIAL_CREDIT;
 
-  /** Solvable puzzle output for grid parsing and validation */
-  const solvableSection = sections[0];
-  /** Box-conflict unsolvable output, expected to be "UNSOLVABLE" */
-  const unsolvableBoxSection = sections[1];
-  /** Column-conflict unsolvable output, expected to be "UNSOLVABLE" */
-  const unsolvableColSection = sections[2];
-  /** Multi-solution puzzle output, expected to contain exactly one solution grid */
-  const multiSection = sections[3];
+  /** Destructured puzzle output sections: solvable, two unsolvables, and multi-solution */
+  const [solvableSection, unsolvableBoxSection, unsolvableColSection, multiSection] = sections;
   if (solvableSection === undefined || unsolvableBoxSection === undefined
     || unsolvableColSection === undefined || multiSection === undefined) {
     return PARTIAL_CREDIT;
@@ -90,10 +86,15 @@ export function verifyNormal(stdout: string): number {
 /**
  * Checks whether a puzzle section contains the expected number of valid, distinct
  * solutions that all match the given clues.
+ *
  * @param section - raw output section for one puzzle
+ *
  * @param clues - clue grid to verify solutions against
+ *
  * @param expectedCount - exact number of solutions expected, or undefined for "at least min"
+ *
  * @param minCount - minimum number of solutions when expectedCount is undefined
+ *
  * @returns true when all constraints are satisfied
  */
 function verifySolutionSet(
@@ -105,16 +106,16 @@ function verifySolutionSet(
   /** Raw solution text blocks split on blank lines within the section */
   const solutionBlocks = splitSolutions(section);
   /** Parsed grids from solution blocks, filtering out unparseable ones */
-  const grids = solutionBlocks.map((sol) => parseGrid(sol)).filter((grid): grid is number[][] => grid !== undefined);
+  const grids = solutionBlocks.map(function parseSol(sol): number[][] | undefined { return parseGrid(sol); }).filter(function isGrid(grid): grid is number[][] { return grid !== undefined; });
   /** Whether the solution count matches the expected or minimum threshold */
   const countOk = expectedCount !== undefined
     ? grids.length === expectedCount
     : grids.length >= minCount;
   if (!countOk) return false;
   /** Whether every parsed grid is a valid complete sudoku matching the original clues */
-  const allValid = grids.every((grid) => isValidSolution(grid) && matchesClues(grid, clues));
+  const allValid = grids.every(function validateGrid(grid): boolean { return isValidSolution(grid) && matchesClues(grid, clues); });
   if (!allValid) return false;
-  return new Set(grids.map(gridToString)).size === grids.length;
+  return new Set(grids.map(function toStr(grid): string { return gridToString(grid); })).size === grids.length;
 }
 
 /**
@@ -122,7 +123,9 @@ function verifySolutionSet(
  *
  * Checks: 2-solution puzzle produces exactly 2 valid distinct solutions, many-solution
  * puzzle produces multiple valid distinct solutions, and unsolvable is still rejected.
+ *
  * @param stdout - raw container stdout
+ *
  * @returns correctness fraction (correct checks / total checks)
  */
 export function verifyAll(stdout: string): number {
@@ -130,12 +133,8 @@ export function verifyAll(stdout: string): number {
   const sections = splitOutputSections(stdout);
   if (sections.length < ALL_CHECKS) return PARTIAL_CREDIT;
 
-  /** 2-solution puzzle output, expected to contain exactly 2 valid distinct grids */
-  const twoSolSection = sections[0];
-  /** Many-solution puzzle output, expected to contain >= 2 valid distinct grids */
-  const manySolSection = sections[1];
-  /** Unsolvable puzzle output under --all, expected to be "UNSOLVABLE" */
-  const unsolvableSection = sections[2];
+  /** Destructured --all mode output sections: 2-solution, many-solution, unsolvable */
+  const [twoSolSection, manySolSection, unsolvableSection] = sections;
   if (twoSolSection === undefined || manySolSection === undefined
     || unsolvableSection === undefined) {
     return PARTIAL_CREDIT;

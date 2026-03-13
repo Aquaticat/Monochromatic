@@ -37,7 +37,11 @@ let server: ChildProcess | null = null;
  * Starts llama-server inside a distrobox container with AMD GPU overrides.
  * No-ops if the server is already running. Blocks until the health endpoint
  * reports ready or the timeout expires.
+ *
+ * @returns when the server is ready for inference
+ *
  * @throws when llama-server fails to become healthy within {@link HEALTH_TIMEOUT_MS}
+ *
  * @example
  * ```ts
  * await start();
@@ -72,6 +76,9 @@ export async function start(): Promise<void> {
 /**
  * Gracefully stops llama-server by killing the wrapped process by name
  * (distrobox prevents direct PID signalling), then awaits subprocess exit.
+ *
+ * @returns when the server process has exited and the port is freed
+ *
  * @example
  * ```ts
  * await stop();
@@ -89,20 +96,28 @@ export async function stop(): Promise<void> {
     // process may already be gone, or pkill exits non-zero if no match
   }
 
-  server.kill();
+  /** Milliseconds to wait after server exit for the port to be freed. */
+  const PORT_FREE_DELAY_MS = 500;
+
+  const currentServer = server;
+  currentServer.kill();
+  // oxlint-disable-next-line avoid-new -- wrapping Node.js event-based ChildProcess API
   await new Promise<void>(function awaitExit(resolve) {
-    server!.on("exit", resolve);
+    currentServer.on("exit", resolve);
   });
   server = null;
 
   // Wait briefly for port to free up
-  await setTimeout(500);
+  await setTimeout(PORT_FREE_DELAY_MS);
   log.debug("[llama] Server stopped.");
 }
 
 /**
  * Forcefully kills any llama-server process matching the configured port.
  * Used during shutdown to ensure no orphaned GPU processes remain.
+ *
+ * @returns when the kill signal has been sent
+ *
  * @example
  * ```ts
  * process.on("SIGTERM", () => forceCleanup());
@@ -122,19 +137,25 @@ const MAX_HEALTH_POLLS = Math.ceil(HEALTH_TIMEOUT_MS / HEALTH_POLL_MS);
 
 /**
  * Polls the llama-server health endpoint until it reports ready.
+ *
+ * @returns when the health check passes
+ *
  * @throws when the server does not become healthy within {@link MAX_HEALTH_POLLS} attempts
  */
 async function waitForHealth(): Promise<void> {
   for (let attempt = 0; attempt < MAX_HEALTH_POLLS; attempt++) {
     try {
+      // oxlint-disable-next-line no-await-in-loop -- sequential health polling by design
       const res = await fetch(HEALTH_URL);
       if (res.ok) {
+        // oxlint-disable-next-line no-await-in-loop, no-unsafe-type-assertion -- sequential poll; JSON response shape is known
         const body = (await res.json()) as { status: string };
         if (body.status === "ok") return;
       }
     } catch {
       // server not up yet
     }
+    // oxlint-disable-next-line no-await-in-loop -- sequential poll delay
     await setTimeout(HEALTH_POLL_MS);
   }
   throw new Error(`llama-server failed to become healthy within ${MAX_HEALTH_POLLS} polls`);

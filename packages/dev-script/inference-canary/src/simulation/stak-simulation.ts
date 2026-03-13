@@ -27,10 +27,11 @@ const INTERPRETER_SOURCE = await readFile(
 
 /**
  * Builds the simulation probe prompt with the interpreter source and all five programs.
+ *
  * @returns formatted prompt string
  */
 function buildSimulationPrompt(): string {
-  const programBlocks = SIMULATION_CASES.map((testCase, index) => {
+  const programBlocks = SIMULATION_CASES.map(function formatCase(testCase, index): string {
     const lines = [
       `Program ${String(index + 1)}:`,
       '```',
@@ -50,7 +51,7 @@ function buildSimulationPrompt(): string {
     'Trace the exact output of each program below.',
     'Separate the five results with "---" on its own line.',
     '',
-    ...programBlocks.flatMap((block) => [block, '']),
+    ...programBlocks.flatMap(function addSeparator(block): string[] { return [block, '']; }),
   ].join('\n');
 }
 
@@ -60,23 +61,27 @@ function buildSimulationPrompt(): string {
  * Normalizes before splitting: inserts a newline before any `---` that is directly
  * appended to content (e.g. `Hi---`) so the split works regardless of whether the
  * model placed the separator on its own line.
+ *
  * @param response - raw model output
+ *
  * @returns array of trimmed output sections, one per program
  */
 function parseSections(response: string): readonly string[] {
-  const normalized = response.replace(/([^\n])---/g, '$1\n---');
+  const normalized = response.replaceAll(/([^\n])---/g, '$1\n---');
   return normalized
     .split(/^---$/m)
-    .map((section) => section.trim());
+    .map(function trimSection(section): string { return section.trim(); });
 }
 
-/** {@inheritDoc Probe} */
+/**
+ * {@inheritDoc Probe}
+ */
 export const stakSimulation: Probe = {
   name: 'stak-simulation',
   category: 'simulation',
   system: SIMULATION_SYSTEM,
   prompt: buildSimulationPrompt(),
-  score: (response, context) => {
+  score: function scoreStakSimulation(response, context): number {
     const sections = parseSections(response);
     let allCorrect = true;
     for (const [index, testCase] of SIMULATION_CASES.entries()) {

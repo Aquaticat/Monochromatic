@@ -1,3 +1,4 @@
+// oxlint-disable prefer-destructuring, no-regexp-exec, no-unnecessary-template-expression, no-magic-numbers -- utility module with array access patterns and MIME type detection
 import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 
@@ -28,6 +29,7 @@ const EXTENSION_FORMAT_MAP: Record<string, ImageFormat> = {
  * Type guard for {@link ImageBuffer} inputs.
  *
  * @param input - image input to test
+ *
  * @returns whether the input contains a `buffer` property
  *
  * @example
@@ -45,6 +47,7 @@ export function isImageBuffer(input: ImageInput): input is ImageBuffer {
  * Type guard for {@link ImagePath} inputs.
  *
  * @param input - image input to test
+ *
  * @returns whether the input contains a `path` property
  *
  * @example
@@ -62,6 +65,7 @@ export function isImagePath(input: ImageInput): input is ImagePath {
  * Type guard for {@link ImageUrl} inputs.
  *
  * @param input - image input to test
+ *
  * @returns whether the input contains a `url` property
  *
  * @example
@@ -79,6 +83,7 @@ export function isImageUrl(input: ImageInput): input is ImageUrl {
  * Type guard for {@link ImageBase64} inputs.
  *
  * @param input - image input to test
+ *
  * @returns whether the input contains a `base64` property
  *
  * @example
@@ -96,7 +101,9 @@ export function isImageBase64(input: ImageInput): input is ImageBase64 {
  * Infer the {@link ImageFormat} from a file extension.
  *
  * @param filePath - path whose extension determines the format
+ *
  * @returns inferred format
+ *
  * @throws when the extension is not a recognized image format
  *
  * @example
@@ -119,6 +126,7 @@ export function inferFormat(filePath: string): ImageFormat {
  * Convert an {@link ArrayBuffer} to a raw base64 string (no data URI prefix).
  *
  * @param buffer - raw image bytes
+ *
  * @returns base64-encoded string
  *
  * @example
@@ -130,7 +138,7 @@ export function bufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binary = '';
   for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
+    binary += String.fromCodePoint(byte);
   }
   return btoa(binary);
 }
@@ -139,7 +147,9 @@ export function bufferToBase64(buffer: ArrayBuffer): string {
  * Convert an {@link ArrayBuffer} to a base64-encoded data URI string.
  *
  * @param buffer - raw image bytes
+ *
  * @param format - image format for the media type prefix
+ *
  * @returns data URI like `data:image/png;base64,...`
  *
  * @example
@@ -159,7 +169,9 @@ export function bufferToDataUri(buffer: ArrayBuffer, format: ImageFormat): strin
  * Parse a data URI string into its raw base64 data and MIME type.
  *
  * @param dataUri - full data URI (e.g. `data:image/png;base64,iVBOR...`)
+ *
  * @returns parsed mime type and raw base64 data
+ *
  * @throws when the data URI format is not recognized
  *
  * @example
@@ -169,11 +181,11 @@ export function bufferToDataUri(buffer: ArrayBuffer, format: ImageFormat): strin
  * ```
  */
 export function parseDataUri(dataUri: string): { mimeType: string; data: string } {
-  const match = /^data:([^;]+);base64,(.+)$/.exec(dataUri);
-  if (match === null) {
+  const match = dataUri.match(/^data:([^;]+);base64,(.+)$/);
+  if (match === null || match[1] === undefined || match[2] === undefined) {
     throw new Error(`Invalid data URI format: expected "data:<mime>;base64,<data>", got "${dataUri.slice(0, 50)}..."`);
   }
-  return { mimeType: match[1]!, data: match[2]! };
+  return { mimeType: match[1], data: match[2] };
 }
 
 /**
@@ -186,6 +198,7 @@ export function parseDataUri(dataUri: string): { mimeType: string; data: string 
  * - {@link ImagePath} is read from disk, base64-encoded, and maps to `image_base64`
  *
  * @param input - image in any supported format
+ *
  * @returns content item ready for the API request
  *
  * @example
@@ -217,7 +230,7 @@ export async function toVoyageContentItem(input: ImageInput): Promise<VoyageCont
     rl.debug(`reading file: ${input.path}`);
     const format = inferFormat(input.path);
     const fileBuffer = await readFile(input.path);
-    const dataUri = bufferToDataUri(fileBuffer.buffer as ArrayBuffer, format);
+    const dataUri = bufferToDataUri(fileBuffer.buffer, format);
     return { type: 'image_base64', image_base64: dataUri };
   }
 
@@ -232,6 +245,7 @@ export async function toVoyageContentItem(input: ImageInput): Promise<VoyageCont
  * URL inputs are fetched and converted to inline data.
  *
  * @param input - image in any supported format
+ *
  * @returns inline data ready for the Gemini API request
  *
  * @example
@@ -271,7 +285,7 @@ export async function toGeminiInlineData(input: ImageInput): Promise<GeminiInlin
     rl.debug(`reading file for Gemini: ${input.path}`);
     const format = inferFormat(input.path);
     const fileBuffer = await readFile(input.path);
-    const data = bufferToBase64(fileBuffer.buffer as ArrayBuffer);
+    const data = bufferToBase64(fileBuffer.buffer);
     return { mime_type: `image/${format}`, data };
   }
 
@@ -288,6 +302,7 @@ export async function toGeminiInlineData(input: ImageInput): Promise<GeminiInlin
  * - {@link ImagePath} is read from disk and base64-encoded into a data URI
  *
  * @param input - image in any supported format
+ *
  * @returns URL or data URI string
  *
  * @example
@@ -318,7 +333,7 @@ export async function toImageUri(input: ImageInput): Promise<string> {
     rl.debug(`reading file as data URI: ${input.path}`);
     const format = inferFormat(input.path);
     const fileBuffer = await readFile(input.path);
-    return bufferToDataUri(fileBuffer.buffer as ArrayBuffer, format);
+    return bufferToDataUri(fileBuffer.buffer, format);
   }
 
   throw new Error('Unrecognized ImageInput variant: expected one of buffer, path, url, or base64');
