@@ -8,7 +8,7 @@ const CHUNK_SIZE_BYTES = 256 * 1024 * 1024;
  */
 const chunks: Buffer[] = [];
 
-// eslint-disable-next-line no-constant-condition -- intentional infinite loop to exhaust memory
+// oxlint-disable-next-line no-constant-condition -- intentional infinite loop to exhaust memory
 while (true) {
   chunks.push(Buffer.alloc(CHUNK_SIZE_BYTES));
   console.log(`Allocated ${chunks.length * CHUNK_SIZE_BYTES / 1024 / 1024} MB`);

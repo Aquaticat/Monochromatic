@@ -1,5 +1,11 @@
+[tasks.lint]
+extends = "lint"
+
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"
 
 [tasks."prepare:tracer"]
 description = "Build tracer container image (potrace only); skipped if host has potrace"

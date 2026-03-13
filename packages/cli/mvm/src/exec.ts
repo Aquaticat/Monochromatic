@@ -119,7 +119,7 @@ export async function exec({ command, name }: { command: string; name: string })
     arguments: { pid, },
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- polling loop
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- polling loop
   while (true) {
     const statusResult = await virsh({ args: ['qemu-agent-command', fullName, statusPayload], });
     const status = JSON.parse(statusResult).return as {

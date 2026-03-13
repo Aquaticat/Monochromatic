@@ -35,10 +35,10 @@ const DEFAULT_VOYAGE_MODEL: VoyageModel = 'voyage-multimodal-3.5';
  */
 function resolveVoyageApiKey(configKey: string | undefined): string {
   const rl = tagged({ tag: resolveVoyageApiKey.name, l });
-  const key = configKey ?? process.env['IMAGE_DIFF_VOYAGE_API_KEY'];
+  const key = configKey ?? process.env['IMAGE_DIFF_VOYAGE_API_KEY'] ?? process.env['VOYAGE_API_KEY'];
   if (key === undefined || key === '') {
     throw new Error(
-      'Voyage AI API key is required. Provide it via config.apiKey or set IMAGE_DIFF_VOYAGE_API_KEY environment variable.',
+      'Voyage AI API key is required. Provide it via config.apiKey or set IMAGE_DIFF_VOYAGE_API_KEY (or VOYAGE_API_KEY) environment variable.',
     );
   }
   rl.debug('Voyage API key resolved');

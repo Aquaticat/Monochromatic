@@ -164,10 +164,10 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: strin
 
   try {
     for (const runIndex of Array.from({ length: config.consistencyRuns, }).keys()) {
-      // eslint-disable-next-line no-await-in-loop -- sequential to avoid rate limits
+      // oxlint-disable-next-line no-await-in-loop -- sequential to avoid rate limits
       lastCompletion = await executeProbe(probe, config, client, signal);
       const scoreContext: ScoreContext = { label: config.label, pass: 'initial', timestamp, signal, };
-      // eslint-disable-next-line no-await-in-loop -- score may involve container execution
+      // oxlint-disable-next-line no-await-in-loop -- score may involve container execution
       const runScore = await probe.score(lastCompletion.text, scoreContext);
       scores.push(runScore);
       lastScore = runScore;
@@ -263,7 +263,7 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: strin
  * @param timestamp - authoritative server timestamp for artifact naming
  * @returns scored result; on timeout, a zero-score result with `timedOut: true`
  */
-// eslint-disable-next-line require-await -- returns Promise.race directly; async needed for callers expecting Promise<ProbeResult>
+// oxlint-disable-next-line require-await -- returns Promise.race directly; async needed for callers expecting Promise<ProbeResult>
 export async function runProbe(probe: Probe, config: RunnerConfig, timestamp: string): Promise<ProbeResult> {
   // new Promise required: no standard promisified API exists for time-based resolution,
   // and @monochromatic-dev/module-es is not a dependency of this package.
@@ -272,7 +272,7 @@ export async function runProbe(probe: Probe, config: RunnerConfig, timestamp: st
   const corePromise = runProbeCore(probe, config, timestamp, controller.signal);
   // Suppress unhandled-rejection warning: after the timeout wins the race,
   // corePromise may still reject (via AbortError) with no observer.
-  // eslint-disable-next-line promise/prefer-await-to-then -- catch handler on a racing promise; await is not viable here
+  // oxlint-disable-next-line promise/prefer-await-to-then -- catch handler on a racing promise; await is not viable here
   corePromise.catch(() => { /* expected: abort-triggered rejection after timeout */ });
   // Zero-score sentinel returned when the timeout fires; score 0 is recorded in history
   // so the overall model score reflects the failure without discarding other probe results.
@@ -288,9 +288,9 @@ export async function runProbe(probe: Probe, config: RunnerConfig, timestamp: st
   // preventing a misleading "timed out" log for probes that complete before the deadline.
   let timer: ReturnType<typeof setTimeout> | undefined = undefined;
   return Promise.race([
-    // eslint-disable-next-line promise/prefer-await-to-then -- finally on a racing promise; await is not viable here
+    // oxlint-disable-next-line promise/prefer-await-to-then -- finally on a racing promise; await is not viable here
     corePromise.finally(() => { if (timer !== undefined) clearTimeout(timer); }),
-    // eslint-disable-next-line promise/avoid-new -- timeout racing requires manual Promise construction
+    // oxlint-disable-next-line promise/avoid-new -- timeout racing requires manual Promise construction
     new Promise<ProbeResult>((resolve) => {
       timer = setTimeout(
         () => {

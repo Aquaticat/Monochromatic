@@ -30,6 +30,9 @@ run = "bun src/uncaught-throw.ts"
 description = "Trigger SIGABRT via process.abort()"
 run = "bun src/abort.ts"
 
+[tasks.lint]
+extends = "lint"
+
 [tasks.'lint:types']
 extends = "lint:types"
 

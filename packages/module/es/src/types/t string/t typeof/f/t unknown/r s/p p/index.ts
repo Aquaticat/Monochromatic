@@ -61,7 +61,7 @@ export function $(
   if (typeof obj === 'object') {
     // Check for null-prototype objects first (like Object.create(null))
     console.log('hello',);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Checking prototype
+    // oxlint-disable-next-line typescript/no-unsafe-assignment -- Checking prototype
     const prototype = Object.getPrototypeOf(obj,);
     if (prototype === null)
       return 'object';

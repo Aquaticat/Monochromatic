@@ -85,7 +85,7 @@ if (typeof exportValue === 'function') {
   rl.info(`calling ${args.exportName}(${coercedArgs.map(String).join(', ')})`);
 
   /** Return value from calling the exported function */
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  // oxlint-disable-next-line typescript/no-unsafe-assignment
   const result: unknown = await (exportValue as (...fnArgs: ReadonlyArray<unknown>) => unknown)(...coercedArgs);
   console.log(result);
 } else {

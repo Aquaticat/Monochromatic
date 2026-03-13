@@ -42,7 +42,7 @@ export function parseSvg(svgContent: string): Cell[] {
   const cells: Cell[] = [];
   const elementRegex = /<(rect|path)\s+([^>]*?)\/>/g;
 
-  // eslint-disable-next-line no-restricted-syntax -- regex exec loop is the idiomatic way to iterate matches
+  // oxlint-disable-next-line no-restricted-syntax -- regex exec loop is the idiomatic way to iterate matches
   for (let match = elementRegex.exec(svgContent); match !== null; match = elementRegex.exec(svgContent)) {
     const [, tag, attrs] = match;
 
@@ -96,7 +96,7 @@ export function parseSvgPathD(d: string): SVGPathCommand[] {
   // -- let needed because the regex loop reassigns on each command letter encountered
   let currentCmd = "";
 
-  // eslint-disable-next-line no-restricted-syntax -- regex exec loop
+  // oxlint-disable-next-line no-restricted-syntax -- regex exec loop
   for (let tok = tokenRegex.exec(d); tok !== null; tok = tokenRegex.exec(d)) {
     if (tok[1] !== undefined) {
       currentCmd = tok[1];

@@ -138,7 +138,7 @@ describe('cat(string)', () => {
     /** Pattern with no matches */
     const results = await cat(join(tempDir, '*.xyz'));
     expectTypeOf(results).toEqualTypeOf<GlobResults>();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- value equality separate from type check above
+    // oxlint-disable-next-line typescript/no-explicit-any -- value equality separate from type check above
     expect(results).toEqual([] as any);
   });
 

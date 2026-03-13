@@ -46,7 +46,7 @@ const raw = await readStdin();
  *
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
  */
-/* eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
+/* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
 const event = JSON.parse(raw) as StopInput;
 
 /**

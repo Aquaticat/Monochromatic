@@ -154,9 +154,9 @@ const ioStart = performance.now();
 // Sequential write + read to measure per-operation latency
 for (let fileIndex = 0; fileIndex < IO_FILE_COUNT; fileIndex++) {
   const filePath = join(IO_DIR, `file-${String(fileIndex)}.txt`);
-  // eslint-disable-next-line no-await-in-loop -- sequential IO benchmark
+  // oxlint-disable-next-line no-await-in-loop -- sequential IO benchmark
   await writeFile(filePath, `content-${String(fileIndex)}-padding`.repeat(10));
-  // eslint-disable-next-line no-await-in-loop -- sequential IO benchmark
+  // oxlint-disable-next-line no-await-in-loop -- sequential IO benchmark
   await readFile(filePath, 'utf8');
 }
 const ioMs = performance.now() - ioStart;

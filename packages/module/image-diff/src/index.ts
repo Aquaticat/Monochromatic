@@ -47,6 +47,7 @@ export type {
   MultiProviderComparisonEntry,
   MultiProviderEmbedEntry,
 } from './client.ts';
+export { describeImageDifference } from './describe.ts';
 export { dotProduct, cosineSimilarity } from './similarity.ts';
 export { voyageProvider } from './voyage.ts';
 export { geminiProvider } from './gemini.ts';

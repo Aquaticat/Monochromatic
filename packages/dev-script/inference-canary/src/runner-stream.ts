@@ -6,7 +6,7 @@
  * - "Calibrating LLMs with Sample Consistency" (AAAI 2025)
  * - "Confidence Improves Self-Consistency in LLMs" (arxiv 2502.06233)
  */
-// eslint-disable-next-line import/no-named-as-default -- OpenAI SDK canonical usage is `import OpenAI from 'openai'`
+// oxlint-disable-next-line import/no-named-as-default -- OpenAI SDK canonical usage is `import OpenAI from 'openai'`
 import type OpenAI from 'openai';
 import type { RunnerConfig, } from './runner-config.ts';
 import type { ChatMessage, CompletionResult, StreamTiming, StreamUsage, } from './runner-types.ts';

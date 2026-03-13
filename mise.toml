@@ -120,9 +120,6 @@ for result in [(mise install | complete) (mise upgrade | complete)] {
 """
 
 [env]
-# Uses native Node.js TypeScript loader for eslint.config.ts (instead of jiti).
-ESLINT_FLAGS = "unstable_native_nodejs_ts_config"
-
 # Too verbose
 # BUN_CONFIG_VERBOSE_FETCH = "1"
 
@@ -358,20 +355,9 @@ run = [{ tasks = ["watch:build", "watch:test"] }]
 
 #region Linting Tasks
 
-[tasks.lint]
-description = "Run all linters"
-extends = "lint"
-
-[tasks."lint:eslint"]
-hide = true
-description = "Lint with ESLint"
-run = "timeout 10 bunx eslint --cache --report-unused-disable-directives --report-unused-inline-configs warn --exit-on-fatal-error 'packages/**/*.*'"
-
-# Runs lint:oxlint across all package config roots via monorepo glob syntax.
-[tasks."lint:oxlint"]
-hide = true
-description = "Lint with Oxlint"
-run = "mise '//packages/...:lint:oxlint'"
+[tasks."lint"]
+description = "Lint"
+run = ["mise '//packages/...:lint'", {tasks=["lint:dprint", "lint:stylelint"]}]
 
 [tasks."lint:dprint"]
 hide = true
@@ -383,19 +369,13 @@ hide = true
 description = "Lint CSS with Stylelint"
 run = 'stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
 
-# Runs lint:types across all package config roots via monorepo glob syntax.
-[tasks."lint:types"]
-hide = true
-description = "TypeScript"
-run = "mise '//packages/...:lint:types'"
-
 #endregion Linting Tasks
 
 # Formatter Orchestration via dprint
 # dprint orchestrates all formatters using dprint-plugin-exec plugin.
 # Sequential execution per file type (documented in packages/config/dprint/index.json):
 #   CSS/Astro/HTML: dprint built-in plugins → stylelint --fix
-#   TS/JS files:     dprint built-in plugins → oxlint --fix → eslint --fix
+#   TS/JS files:     dprint built-in plugins → oxlint --fix
 # Each formatter's output becomes the next formatter's input, as proven in:
 # https://github.com/dprint/dprint/blob/370a23d8e2ae22789972e6574a00070f05b46287/crates/dprint/src/resolution.rs#L343-L365
 [tasks.format]

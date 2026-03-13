@@ -31,7 +31,7 @@ const regexViolationCache = new Map<string, boolean>();
  * ```
  */
 function detectsRegexUsage(source: string): boolean {
-  // eslint-disable-next-line prefer-named-capture-group -- detection heuristic, not data extraction
+  // oxlint-disable-next-line prefer-named-capture-group -- detection heuristic, not data extraction
   return /\/(\\.|[^/\n])\/[gimsuy]*|new\s+RegExp\s*\(/.test(source);
 }
 

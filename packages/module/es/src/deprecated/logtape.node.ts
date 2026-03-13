@@ -26,7 +26,7 @@ async function createFileSink(appName: string,): Promise<Sink & AsyncDisposable>
 
     await ensureFile(filePath,);
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- Not really a misused promise. An async function assigned to a variable.
+    // oxlint-disable-next-line typescript/no-misused-promises -- Not really a misused promise. An async function assigned to a variable.
     const fileSink: Sink & AsyncDisposable = async function logToFile(
       record: LogRecord,
     ): Promise<void> {

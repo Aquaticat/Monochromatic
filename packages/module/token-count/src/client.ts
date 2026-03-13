@@ -1,0 +1,130 @@
+import Anthropic from '@anthropic-ai/sdk';
+import { readFile } from 'node:fs/promises';
+
+import type { CountTokensConfig, FileTokenCountResult, TokenCountResult } from './types.ts';
+import { l, tagged } from './log.ts';
+
+/**
+ * Default Claude model used when no model is specified in config.
+ * The API requires a model to select the tokenizer, but all current Claude
+ * models share the same tokenizer so the choice has no effect on the count.
+ * No inference is performed -- only the dedicated token counting endpoint is called.
+ *
+ * @example
+ * ```ts
+ * console.log(DEFAULT_MODEL); // 'claude-sonnet-4-6'
+ * ```
+ */
+export const DEFAULT_MODEL = 'claude-sonnet-4-6';
+
+/**
+ * Env var names checked in priority order when no explicit API key is provided.
+ * `TOKEN_COUNT_CLAUDE_API_KEY` takes precedence, then `CLAUDE_API_KEY`,
+ * then the SDK default `ANTHROPIC_API_KEY`.
+ */
+const API_KEY_ENV_VARS = [
+  'TOKEN_COUNT_CLAUDE_API_KEY',
+  'CLAUDE_API_KEY',
+  'ANTHROPIC_API_KEY',
+] as const;
+
+/**
+ * Resolve an API key from an explicit value or env var fallback chain.
+ *
+ * @param explicit - caller-provided API key, checked first
+ * @returns resolved API key, or `undefined` to let the SDK try its own default
+ *
+ * @example
+ * ```ts
+ * const key = resolveApiKey(undefined); // checks env vars
+ * const key2 = resolveApiKey('sk-ant-...'); // uses explicit value
+ * ```
+ */
+function resolveApiKey(explicit: string | undefined): string | undefined {
+  if (explicit !== undefined) return explicit;
+  for (const envVar of API_KEY_ENV_VARS) {
+    const value = process.env[envVar];
+    if (value !== undefined && value !== '') return value;
+  }
+  return undefined;
+}
+
+/**
+ * Resolve an Anthropic client from an optional API key.
+ * Checks `TOKEN_COUNT_CLAUDE_API_KEY`, `CLAUDE_API_KEY`, then
+ * `ANTHROPIC_API_KEY` env vars when no explicit key is provided.
+ *
+ * @param options - optional API key for client construction
+ * @returns configured Anthropic client
+ *
+ * @example
+ * ```ts
+ * const client = resolveClient({ apiKey: 'sk-ant-...' });
+ * ```
+ */
+function resolveClient({ apiKey }: { readonly apiKey: string | undefined }): Anthropic {
+  const resolved = resolveApiKey(apiKey);
+  return new Anthropic(resolved !== undefined ? { apiKey: resolved } : undefined);
+}
+
+/**
+ * Count input tokens for a text string using the Anthropic token counting API.
+ *
+ * @param options - content to count and optional config
+ * @returns token count and model used
+ * @throws {Anthropic.AuthenticationError} when API key is invalid or missing
+ * @throws {Anthropic.BadRequestError} when model is invalid
+ *
+ * @example
+ * ```ts
+ * const result = await countTokens({ content: 'Hello, world!' });
+ * console.log(result.inputTokens); // e.g. 4
+ * ```
+ */
+export async function countTokens({ content, config = {} }: {
+  readonly content: string
+  readonly config?: CountTokensConfig
+}): Promise<TokenCountResult> {
+  const rl = tagged({ tag: countTokens.name, l });
+  const model = config.model ?? DEFAULT_MODEL;
+  const client = resolveClient({ apiKey: config.apiKey });
+
+  rl.debug(`counting tokens model=${model} contentLength=${String(content.length)}`);
+
+  const response = await client.messages.countTokens({
+    model,
+    messages: [{ role: 'user', content }],
+  });
+
+  rl.debug(`counted inputTokens=${String(response.input_tokens)}`);
+
+  return { inputTokens: response.input_tokens, model };
+}
+
+/**
+ * Count input tokens for a file by reading it and passing its content
+ * to the Anthropic token counting API.
+ *
+ * @param options - file path and optional config
+ * @returns token count, model used, and file path
+ * @throws {Error} when file cannot be read (ENOENT, EACCES, etc.)
+ * @throws {Anthropic.AuthenticationError} when API key is invalid or missing
+ *
+ * @example
+ * ```ts
+ * const result = await countFileTokens({ filePath: './CLAUDE.md' });
+ * console.log(`${result.filePath}: ${result.inputTokens} tokens`);
+ * ```
+ */
+export async function countFileTokens({ filePath, config = {} }: {
+  readonly filePath: string
+  readonly config?: CountTokensConfig
+}): Promise<FileTokenCountResult> {
+  const rl = tagged({ tag: countFileTokens.name, l });
+  rl.debug(`reading file path=${filePath}`);
+
+  const content = await readFile(filePath, 'utf-8');
+  const result = await countTokens({ content, config });
+
+  return { ...result, filePath };
+}

@@ -53,7 +53,7 @@ function detectVerbose(): boolean {
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- import.meta.env may not exist in all runtimes
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- import.meta.env may not exist in all runtimes
     if (import.meta?.env?.['DEBUG'] === 'true') {
       return true;
     }

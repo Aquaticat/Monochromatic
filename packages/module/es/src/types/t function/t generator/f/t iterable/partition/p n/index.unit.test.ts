@@ -233,7 +233,7 @@ describe($, () => {
     for await (const result of $({
       predicate: (n: number,) => {
         if (n === 2) {
-          // eslint-disable-next-line @typescript-eslint/only-throw-error -- Testing non-Error throws
+          // oxlint-disable-next-line typescript/only-throw-error -- Testing non-Error throws
           throw thrownValue;
         }
         return n > 2;

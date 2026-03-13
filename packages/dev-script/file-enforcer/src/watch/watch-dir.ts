@@ -32,7 +32,7 @@ export async function watchDirectory(
         continue;
       }
       /** Classification determines whether this event triggers action */
-      // eslint-disable-next-line no-await-in-loop -- sequential event processing required by async iterator
+      // oxlint-disable-next-line no-await-in-loop -- sequential event processing required by async iterator
       const kind = await classifyEvent(event.filename, dir, configPath);
       if (kind === 'ignore') {
         continue;

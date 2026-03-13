@@ -21,5 +21,11 @@ extends = "watch:build:js"
 [tasks."watch:build:js:client"]
 extends = "watch:build:js:client"
 
+[tasks.lint]
+extends = "lint"
+
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"

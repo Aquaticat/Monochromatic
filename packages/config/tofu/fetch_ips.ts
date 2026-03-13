@@ -36,7 +36,7 @@ async function run() {
     let ips: string[] = [];
     let leftover = "";
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- streaming read loop
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- streaming read loop
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;

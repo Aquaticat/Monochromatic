@@ -40,6 +40,6 @@
 export function $<const MyValue,>(
   value: MyValue,
 ): value is MyValue extends Iterable<infer T> ? MyValue & Iterable<T> : never {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Might be Iterable
+  // oxlint-disable-next-line typescript/no-unsafe-member-access -- Might be Iterable
   return typeof (value as any)?.[Symbol.iterator] === 'function';
 }

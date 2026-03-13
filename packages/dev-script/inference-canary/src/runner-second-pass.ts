@@ -3,7 +3,7 @@
  */
 import { streamCompletion, } from './runner-stream.ts';
 
-// eslint-disable-next-line import/no-named-as-default -- OpenAI SDK canonical usage is `import OpenAI from 'openai'`
+// oxlint-disable-next-line import/no-named-as-default -- OpenAI SDK canonical usage is `import OpenAI from 'openai'`
 import type OpenAI from 'openai';
 import type { ChatMessage, CompletionResult, } from './runner-types.ts';
 import type { RunnerConfig, } from './runner-config.ts';

@@ -221,7 +221,7 @@ export function generateProgressivePromises(
   return Array.from(
     { length: count, },
     (_, index,) =>
-      // eslint-disable-next-line promise/avoid-new -- Creating promise for test fixture
+      // oxlint-disable-next-line promise/avoid-new -- Creating promise for test fixture
       new Promise<number>(resolve => setTimeout(() => resolve(index,), index,)),
   );
 }

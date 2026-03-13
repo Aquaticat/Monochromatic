@@ -69,7 +69,7 @@ export const createBaseConfig = (
         const values: unknown[] = [];
         for (let messageIndex = 0; messageIndex < record.message.length; messageIndex++) {
           if (messageIndex % 2 === 0) {
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands -- Good enough for defaultConsoleFormatter in logtape library, good enough for the library.
+            // oxlint-disable-next-line typescript/restrict-plus-operands -- Good enough for defaultConsoleFormatter in logtape library, good enough for the library.
             msg += record.message[messageIndex];
           }
           else {
@@ -186,7 +186,7 @@ export const createMemorySink = (): Sink & AsyncDisposable => {
     lines.push(JSON.stringify(record, null, 2,),);
   };
 
-  // eslint-disable-next-line @typescript-eslint/require-await -- To keep the signature consistent, we've to make it an async function.
+  // oxlint-disable-next-line typescript/require-await -- To keep the signature consistent, we've to make it an async function.
   memorySink[Symbol.asyncDispose] = async function disposeMemorySink(): Promise<void> {
     console.log('disposing in memory array sink',);
     const content = lines.join('\n',);

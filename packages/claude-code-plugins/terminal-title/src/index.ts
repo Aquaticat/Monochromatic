@@ -241,7 +241,7 @@ const TOOL_TITLES: Record<string, ToolTitleEntry> = {
       if (!Array.isArray(questions)) {
         return undefined;
       }
-      /* eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- untyped tool_input; structure verified by Array.isArray guard */
+      /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- untyped tool_input; structure verified by Array.isArray guard */
       const first = (questions as Array<Record<string, unknown>>)[0];
       if (first === undefined) {
         return undefined;
@@ -413,7 +413,7 @@ const raw = await readStdin();
  *
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
  */
-/* eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
+/* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
 const event = JSON.parse(raw) as HookInput;
 
 /**

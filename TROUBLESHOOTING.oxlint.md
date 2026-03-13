@@ -11,7 +11,9 @@ The `lint:oxlint` task template in `mise.toml` handles this automatically --
 the root `lint:oxlint` task fans out via `mise '/packages/...:lint:oxlint'`
 so every package runs with its own `tsconfig.json` in scope.
 
-## Integration with ESLint
+## ESLint removed (2026-03-13)
 
-Oxlint is used alongside ESLint in this project.
-See [ESLint Troubleshooting](./TROUBLESHOOTING.eslint.md) for configuration details when both linters are used together.
+ESLint was fully replaced by oxlint.
+The old config is preserved at `packages/config/eslint-deprecated/`
+with re-adoption instructions in its README.
+See [ESLint Troubleshooting](./TROUBLESHOOTING.eslint.md) for historical configuration notes.

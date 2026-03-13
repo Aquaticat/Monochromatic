@@ -14,7 +14,7 @@ describe(isBigint, () => {
     expect(isBigint(-1n,),).toBe(true,);
     expect(isBigint(BigInt(Number.MAX_SAFE_INTEGER,) + 1n,),).toBe(true,);
     expect(isBigint(BigInt(Number.MIN_SAFE_INTEGER,) - 1n,),).toBe(true,);
-    // eslint-disable-next-line unicorn/prefer-bigint-literals -- testing
+    // oxlint-disable-next-line unicorn/prefer-bigint-literals -- testing
     expect(isBigint(BigInt('123456789012345678901234567890',),),).toBe(true,);
   });
 

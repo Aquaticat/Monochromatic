@@ -119,7 +119,7 @@ describe('perf: micro-benchmarks', () => {
     const elapsed = await measureAsync(async () => {
       // Sequential: measure per-iteration latency, not throughput
       for (let iterIndex = 0; iterIndex < IO_ITERATIONS; iterIndex++) {
-        // eslint-disable-next-line no-await-in-loop -- sequential benchmark timing required
+        // oxlint-disable-next-line no-await-in-loop -- sequential benchmark timing required
         const matches = await expandGlob(join(tempDir, '**/*.ts'));
         resultCount += matches.length;
       }
@@ -144,7 +144,7 @@ describe('perf: micro-benchmarks', () => {
     let totalLength = 0;
     const elapsed = await measureAsync(async () => {
       for (let iterIndex = 0; iterIndex < IO_ITERATIONS; iterIndex++) {
-        // eslint-disable-next-line no-await-in-loop -- sequential benchmark
+        // oxlint-disable-next-line no-await-in-loop -- sequential benchmark
         const result = await cat(paths);
         totalLength += result.length;
       }
@@ -174,7 +174,7 @@ describe('perf: micro-benchmarks', () => {
     let totalFiles = 0;
     const elapsed = await measureAsync(async () => {
       for (let iterIndex = 0; iterIndex < EXPENSIVE_ITERATIONS; iterIndex++) {
-        // eslint-disable-next-line no-await-in-loop -- sequential benchmark
+        // oxlint-disable-next-line no-await-in-loop -- sequential benchmark
         const results = await cat(join(tempDir, 'pkg-*/lib/*.ts'));
         totalFiles += results.length;
       }
@@ -193,7 +193,7 @@ describe('perf: micro-benchmarks', () => {
 
     const elapsed = await measureAsync(async () => {
       for (let iterIndex = 0; iterIndex < IO_ITERATIONS; iterIndex++) {
-        // eslint-disable-next-line no-await-in-loop -- sequential benchmark
+        // oxlint-disable-next-line no-await-in-loop -- sequential benchmark
         await overwrite(filePath, content);
       }
     });
@@ -208,7 +208,7 @@ describe('perf: micro-benchmarks', () => {
 
     const elapsed = await measureAsync(async () => {
       for (let iterIndex = 0; iterIndex < IO_ITERATIONS; iterIndex++) {
-        // eslint-disable-next-line no-await-in-loop -- sequential benchmark
+        // oxlint-disable-next-line no-await-in-loop -- sequential benchmark
         await overwrite(filePath, `iteration ${String(iterIndex)}`);
       }
     });
@@ -292,7 +292,7 @@ describe('perf: micro-benchmarks', () => {
     let classificationCount = 0;
     const elapsed = await measureAsync(async () => {
       for (let iterIndex = 0; iterIndex < FAST_ITERATIONS; iterIndex++) {
-        // eslint-disable-next-line no-await-in-loop -- sequential benchmark
+        // oxlint-disable-next-line no-await-in-loop -- sequential benchmark
         const kind = await classifyEvent('tracked.txt', tempDir, join(tempDir, 'config.ts'));
         if (kind !== 'ignore') classificationCount++;
       }
@@ -321,7 +321,7 @@ describe('perf: micro-benchmarks', () => {
     let matchCount = 0;
     const elapsed = await measureAsync(async () => {
       for (let iterIndex = 0; iterIndex < EXPENSIVE_ITERATIONS; iterIndex++) {
-        // eslint-disable-next-line no-await-in-loop -- sequential benchmark
+        // oxlint-disable-next-line no-await-in-loop -- sequential benchmark
         const matches = await expandGlob(join(tempDir, 'pkg-*/lib/deep/nested/very/deep/module.ts'));
         matchCount += matches.length;
       }
@@ -362,7 +362,7 @@ describe('perf: micro-benchmarks', () => {
     let totalMatches = 0;
     const elapsed = await measureAsync(async () => {
       for (let iterIndex = 0; iterIndex < EXPENSIVE_ITERATIONS; iterIndex++) {
-        // eslint-disable-next-line no-await-in-loop -- sequential benchmark
+        // oxlint-disable-next-line no-await-in-loop -- sequential benchmark
         const results = await Promise.all(patterns.map(expandGlob));
         totalMatches += results.reduce((sum, matches) => sum + matches.length, 0);
       }

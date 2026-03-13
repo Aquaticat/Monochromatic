@@ -8,7 +8,7 @@ import { fetchServerTimestamp, } from './server-time.ts';
 import { writeFailureArtifact, } from './linter-artifacts.ts';
 
 import type { Probe, } from './probes.ts';
-// eslint-disable-next-line no-duplicate-imports -- local type use; re-exported below for consumers
+// oxlint-disable-next-line no-duplicate-imports -- local type use; re-exported below for consumers
 import type { CanaryReport, ProbeResult, } from './runner-types.ts';
 
 export type { CanaryReport, ProbeResult, } from './runner-types.ts';

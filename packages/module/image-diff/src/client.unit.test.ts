@@ -24,7 +24,7 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number): string
   for (let n = 0; n < 256; n++) {
     let c = n;
     for (let k = 0; k < 8; k++) {
-      // eslint-disable-next-line no-bitwise -- CRC32 requires bitwise ops
+      // oxlint-disable-next-line no-bitwise -- CRC32 requires bitwise ops
       c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
     }
     crcTable.push(c);
@@ -34,23 +34,23 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number): string
   function crc32(bytes: Array<number>): number {
     let crc = 0xffffffff;
     for (const byte of bytes) {
-      // eslint-disable-next-line no-bitwise, @typescript-eslint/no-non-null-assertion -- CRC32 requires bitwise; table is fully populated
+      // oxlint-disable-next-line no-bitwise, typescript/no-non-null-assertion -- CRC32 requires bitwise; table is fully populated
       crc = crcTable[(crc ^ byte) & 0xff]! ^ (crc >>> 8);
     }
-    // eslint-disable-next-line no-bitwise -- final XOR
+    // oxlint-disable-next-line no-bitwise -- final XOR
     return (crc ^ 0xffffffff) >>> 0;
   }
 
   /** Encode a 4-byte big-endian unsigned integer. */
   function uint32be(value: number): Array<number> {
     return [
-      // eslint-disable-next-line no-bitwise -- byte extraction
+      // oxlint-disable-next-line no-bitwise -- byte extraction
       (value >>> 24) & 0xff,
-      // eslint-disable-next-line no-bitwise
+      // oxlint-disable-next-line no-bitwise
       (value >>> 16) & 0xff,
-      // eslint-disable-next-line no-bitwise
+      // oxlint-disable-next-line no-bitwise
       (value >>> 8) & 0xff,
-      // eslint-disable-next-line no-bitwise
+      // oxlint-disable-next-line no-bitwise
       value & 0xff,
     ];
   }
@@ -76,14 +76,14 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number): string
    * BFINAL=1, BTYPE=00 (no compression), LEN=5, NLEN=~5.
    */
   const len = rawScanline.length;
-  // eslint-disable-next-line no-bitwise -- complement for deflate NLEN
+  // oxlint-disable-next-line no-bitwise -- complement for deflate NLEN
   const nlen = len ^ 0xffff;
   const deflateBlock = [
     0x78, 0x01,
     0x01,
-    // eslint-disable-next-line no-bitwise
+    // oxlint-disable-next-line no-bitwise
     len & 0xff, (len >>> 8) & 0xff,
-    // eslint-disable-next-line no-bitwise
+    // oxlint-disable-next-line no-bitwise
     nlen & 0xff, (nlen >>> 8) & 0xff,
     ...rawScanline,
   ];
@@ -95,7 +95,7 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number): string
     a = (a + byte) % 65521;
     b = (b + a) % 65521;
   }
-  // eslint-disable-next-line no-bitwise -- Adler-32 packing
+  // oxlint-disable-next-line no-bitwise -- Adler-32 packing
   const adler32 = ((b << 16) | a) >>> 0;
   deflateBlock.push(...uint32be(adler32));
 

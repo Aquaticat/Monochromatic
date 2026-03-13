@@ -1,2 +1,8 @@
+[tasks.lint]
+extends = "lint"
+
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"

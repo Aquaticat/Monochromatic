@@ -22,6 +22,9 @@ run = "mise watch -w src/styles --exts css -r -- bun ../../build-tool/css/src/cl
 [tasks."watch:build:site:astro"]
 run = "bun exec astro build --watch"
 
+[tasks.lint]
+extends = "lint"
+
 [tasks."lint:types"]
 extends = "lint:types"
 hide = true

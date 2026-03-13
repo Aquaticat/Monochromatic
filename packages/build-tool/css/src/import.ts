@@ -111,7 +111,7 @@ function findPackageDir(startDir: string, packageName: string): string | undefin
   let current = startDir;
 
   // Walk up to filesystem root looking for node_modules
-  // eslint-disable-next-line no-constant-condition
+  // oxlint-disable-next-line no-constant-condition
   while (true) {
     /** Candidate node_modules/<pkg> directory */
     const candidate = join(current, 'node_modules', packageName);

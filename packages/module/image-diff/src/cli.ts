@@ -63,8 +63,9 @@ Options:
   --model      Model override (voyage-multimodal-3, voyage-multimodal-3.5, gemini-embedding-2-preview)
 
 Environment:
-  IMAGE_DIFF_VOYAGE_API_KEY    Voyage AI API key
-  IMAGE_DIFF_GEMINI_API_KEY    Gemini API key
+  IMAGE_DIFF_VOYAGE_API_KEY       Voyage AI API key (fallback: VOYAGE_API_KEY)
+  IMAGE_DIFF_GEMINI_API_KEY       Gemini API key (fallback: GEMINI_API_KEY)
+  IMAGE_DIFF_OPENROUTER_API_KEY   OpenRouter API key (fallback: OPENROUTER_API_KEY)
 
 Examples:
   image-diff compare before.png after.png
@@ -186,6 +187,7 @@ async function handleCompare(args: Array<string>): Promise<void> {
       similarity: result.similarity,
       distance: result.distance,
       embeddingDimensions: result.embeddingA.length,
+      description: result.description,
     }, null, 2));
   } else {
     rl.debug('comparing via all providers');
@@ -198,6 +200,7 @@ async function handleCompare(args: Array<string>): Promise<void> {
           similarity: entry.result.similarity,
           distance: entry.result.distance,
           embeddingDimensions: entry.result.embeddingA.length,
+          description: entry.result.description,
         };
       }),
       null,

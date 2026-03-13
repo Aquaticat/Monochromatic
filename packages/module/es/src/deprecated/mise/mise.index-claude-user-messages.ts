@@ -114,10 +114,10 @@ async function indexUserMessages(): Promise<void> {
   const BATCH_SIZE = 100;
   let allTasksSuccessful = true;
 
-  // eslint-disable-next-line no-await-in-loop -- Batches must be processed sequentially
+  // oxlint-disable-next-line no-await-in-loop -- Batches must be processed sequentially
   for (let batchStart = 0; batchStart < messages.length; batchStart += BATCH_SIZE) {
     const batch = messages.slice(batchStart, batchStart + BATCH_SIZE,);
-    // eslint-disable-next-line no-await-in-loop -- Tasks must be submitted one at a time
+    // oxlint-disable-next-line no-await-in-loop -- Tasks must be submitted one at a time
     const task = await index.addDocuments(batch,);
     console.log(
       `Indexed batch ${Math.floor(batchStart / BATCH_SIZE,) + 1}/${
@@ -126,12 +126,12 @@ async function indexUserMessages(): Promise<void> {
     );
 
     // Wait for task to complete
-    // eslint-disable-next-line no-await-in-loop -- Need to wait for task completion
+    // oxlint-disable-next-line no-await-in-loop -- Need to wait for task completion
     let taskStatus = await client.tasks.getTask(task.taskUid,);
     while (taskStatus.status === 'enqueued' || taskStatus.status === 'processing') {
-      // eslint-disable-next-line no-await-in-loop -- Polling for task status
+      // oxlint-disable-next-line no-await-in-loop -- Polling for task status
       await wait(TASK_POLL_INTERVAL_MS,);
-      // eslint-disable-next-line no-await-in-loop -- Checking task status
+      // oxlint-disable-next-line no-await-in-loop -- Checking task status
       taskStatus = await client.tasks.getTask(task.taskUid,);
     }
 

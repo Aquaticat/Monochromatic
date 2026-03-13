@@ -11,7 +11,7 @@ import { runAndParseOxlint, } from './linter-oxlint.ts';
 import { runAndParseTypeCheck, } from './linter-tsgo.ts';
 import { writeLintFile, } from './linter-artifacts.ts';
 
-// eslint-disable-next-line no-duplicate-imports -- re-export requires a separate import for local use
+// oxlint-disable-next-line no-duplicate-imports -- re-export requires a separate import for local use
 import type { ArtifactMeta, } from './linter-artifacts.ts';
 
 export type { ArtifactMeta, } from './linter-artifacts.ts';

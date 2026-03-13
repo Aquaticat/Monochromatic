@@ -77,10 +77,10 @@ export function $<const Length extends number,>(
     throw new RangeError('Length must be non-negative',);
 
   if (length === 0) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Return type is a type TS can't auto infer
+    // oxlint-disable-next-line typescript/no-unsafe-return -- Return type is a type TS can't auto infer
     return [] as any;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Return type is a type TS can't auto infer
+  // oxlint-disable-next-line typescript/no-unsafe-return -- Return type is a type TS can't auto infer
   return Array.from({ length, }, (_, index,) => index,) as any;
 }

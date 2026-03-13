@@ -37,7 +37,7 @@ analysis of h3 vs Elysia vs Hono.
 **Custom Oxlint plugins** --
 [`oxlint-tsdoc`](packages/config/oxlint-tsdoc/) enforces TSDoc correctness
 across 20+ rules with 23 fixture-based tests, replacing the slow
-ESLint + eslint-plugin-jsdoc integration.
+eslint-plugin-jsdoc integration that previously required ESLint.
 [`oxlint-no-restricted-syntax`](packages/config/oxlint-no-restricted-syntax/)
 encodes 13 monorepo-specific AST rules (no arrow functions, no switch statements,
 require destructured params for 2+ args) that Oxlint's lack of AST selectors
@@ -146,7 +146,7 @@ packages/
   build-tool/               Build tooling (CSS processor)
   claude-code-plugins/      Claude Code IDE plugins (7 packages)
   cli/                      CLI tools (mvm -- KVM virtual machine manager)
-  config/                   Shared configurations (dprint, eslint, oxlint,
+  config/                   Shared configurations (dprint, oxlint,
                               stylelint, tofu, tsdown, typescript, vite)
   desktop-daemon/           Background services (hall-monitor)
   dev-script/               Developer utilities (file-enforcer, inference-canary,
@@ -171,8 +171,8 @@ packages/
 - **Package manager**: Bun workspaces with `catalog:` dependency management
 - **Bundler**: [tsdown](https://tsdown.dev/) (Rolldown-based, replacing Vite for library builds)
 - **Language**: TypeScript with `tsgo` for type checking
-- **Linters**: ESLint, Oxlint, Stylelint, Harper (prose)
-- **Formatter**: dprint (orchestrates all formatters including oxlint and eslint auto-fix)
+- **Linters**: Oxlint (with custom JS plugins for TSDoc and restricted syntax), Stylelint, Harper (prose)
+- **Formatter**: dprint (orchestrates all formatters including oxlint auto-fix)
 - **Testing**: Bun test runner for unit tests, Playwright in Podman for browser and e2e tests
 - **HTTP framework**: [h3](https://h3.dev/) for server applications
 - **Infrastructure**: OpenTofu, Hetzner Cloud, Caddy, Podman

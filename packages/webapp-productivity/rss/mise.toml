@@ -20,5 +20,11 @@ extends = "watch:build:js:client"
 description = "Start RSS reader in watch mode"
 run = "mise watch -w src -r -- bun src/index.ts"
 
+[tasks.lint]
+extends = "lint"
+
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"

@@ -18,6 +18,9 @@ run = "bun ./dist/final/index.html"
 description = "Watch and serve the dashboard"
 run = [{tasks = ["dev:*"]}]
 
+[tasks.lint]
+extends = "lint"
+
 [tasks.'lint:types']
 extends = "lint:types"
 

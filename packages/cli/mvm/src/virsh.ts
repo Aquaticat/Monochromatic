@@ -96,7 +96,7 @@ export async function waitForGuestAgent({ name, timeoutMs = DEFAULT_AGENT_TIMEOU
 
   rl.info(`waiting for guest agent on ${name}...`);
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- polling loop
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- polling loop
   while (true) {
     try {
       await virsh({ args: ['qemu-agent-command', fullName, pingPayload] });
@@ -156,7 +156,7 @@ export async function waitForShutdown({ name }: { name: string }): Promise<void>
 
   rl.info(`waiting for VM ${name} to shut down...`);
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- polling loop
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- polling loop
   while (true) {
     const state = await virsh({ args: ['domstate', fullName] });
     if (state === 'shut off') {

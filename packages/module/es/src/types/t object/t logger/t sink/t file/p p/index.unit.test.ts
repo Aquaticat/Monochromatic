@@ -47,7 +47,7 @@ describe('file sink', () => {
         message: `test ${level} message`,
         timestamp: Date.now(),
       };
-      // eslint-disable-next-line no-await-in-loop -- Ensuring each level works sequentially
+      // oxlint-disable-next-line no-await-in-loop -- Ensuring each level works sequentially
       await Promise.resolve($(record,),);
     }
   });

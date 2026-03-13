@@ -43,6 +43,6 @@ export function $<const MyValue,>(
 ): value is MyValue extends Promise<infer T> ? MyValue & Promise<T>
   : MyValue & Promise<unknown>
 {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- could be thenable
+  // oxlint-disable-next-line typescript/no-unsafe-member-access -- could be thenable
   return typeof (value as any)?.then === 'function';
 }

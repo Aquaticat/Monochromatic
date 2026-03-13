@@ -1,0 +1,27 @@
+{
+  "name": "@monochromatic-dev/module-token-count",
+  "description": "Token counting for Claude models using the Anthropic API.",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "module": "src/index.ts",
+  "bin": {
+    "token-count": "./src/cli.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "catalog:",
+    "@monochromatic-dev/module-es": "workspace:*",
+    "@optique/core": "catalog:",
+    "@optique/run": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  }
+}

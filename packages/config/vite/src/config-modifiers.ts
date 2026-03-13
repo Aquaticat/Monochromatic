@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-duplicate-type-constituents -- vitest and vite right now has the exact same types, but may not be sometimes */
+/* oxlint-disable typescript/no-duplicate-type-constituents -- vitest and vite right now has the exact same types, but may not be sometimes */
 
 import {
   mergeConfig,

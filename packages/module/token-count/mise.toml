@@ -1,0 +1,13 @@
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"
+
+[tasks.count]
+description = "Count tokens in files"
+usage = 'arg "[args]" var=#true help="Files to count tokens in"'
+run = "bun src/cli.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"

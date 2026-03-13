@@ -20,7 +20,7 @@ export function dotProduct(a: ReadonlyArray<number>, b: ReadonlyArray<number>): 
 
   let sum = 0;
   for (let i = 0; i < a.length; i++) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked above
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- bounds checked above
     sum += a[i]! * b[i]!;
   }
   return sum;
@@ -51,9 +51,9 @@ export function cosineSimilarity(a: ReadonlyArray<number>, b: ReadonlyArray<numb
   let magB = 0;
 
   for (let i = 0; i < a.length; i++) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked above
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- bounds checked above
     const ai = a[i]!;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- bounds checked above
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- bounds checked above
     const bi = b[i]!;
     dot += ai * bi;
     magA += ai * ai;

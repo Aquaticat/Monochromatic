@@ -304,7 +304,7 @@ describe('createMcpServer', () => {
       const throwStringTool: ToolEntry = {
         name: 'throw-string',
         description: 'Throws a string.',
-        // eslint-disable-next-line @typescript-eslint/only-throw-error -- testing non-Error throw
+        // oxlint-disable-next-line typescript/only-throw-error -- testing non-Error throw
         handler: async () => { throw 'string-error'; },
       };
       const server = createMcpServer({ name: 'srv', version: '0.1.0' }, [throwStringTool]);

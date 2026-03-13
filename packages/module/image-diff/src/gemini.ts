@@ -37,10 +37,10 @@ const DEFAULT_GEMINI_MODEL: GeminiModel = 'gemini-embedding-2-preview';
  */
 function resolveGeminiApiKey(configKey: string | undefined): string {
   const rl = tagged({ tag: resolveGeminiApiKey.name, l });
-  const key = configKey ?? process.env['IMAGE_DIFF_GEMINI_API_KEY'];
+  const key = configKey ?? process.env['IMAGE_DIFF_GEMINI_API_KEY'] ?? process.env['GEMINI_API_KEY'];
   if (key === undefined || key === '') {
     throw new Error(
-      'Gemini API key is required. Provide it via config.apiKey or set IMAGE_DIFF_GEMINI_API_KEY environment variable.',
+      'Gemini API key is required. Provide it via config.apiKey or set IMAGE_DIFF_GEMINI_API_KEY (or GEMINI_API_KEY) environment variable.',
     );
   }
   rl.debug('Gemini API key resolved');

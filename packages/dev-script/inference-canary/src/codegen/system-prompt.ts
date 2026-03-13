@@ -1,7 +1,7 @@
 /**
  * Builds the system prompt for code-generation probes at module load time.
  *
- * Reads the actual project configs (oxlintrc, tsconfig, eslint) at runtime so the
+ * Reads the actual project configs (oxlintrc, tsconfig) at runtime so the
  * model is graded against the exact same rules that are in force for the project.
  */
 import { readFile, } from 'node:fs/promises';
@@ -24,10 +24,9 @@ async function readConfig(relativePath: string): Promise<string> {
  * @returns complete system prompt with embedded config contents
  */
 async function buildSystemPrompt(): Promise<string> {
-  const [oxlintrc, tsconfig, eslintConfig] = await Promise.all([
+  const [oxlintrc, tsconfig] = await Promise.all([
     readConfig('.oxlintrc.json'),
     readConfig('node_modules/@monochromatic-dev/config-typescript/tsconfig.options.json'),
-    readConfig('packages/config/eslint/src/index.ts'),
   ]);
 
   return [
@@ -44,9 +43,6 @@ async function buildSystemPrompt(): Promise<string> {
     '',
     '=== TypeScript compiler options (tsconfig) ===',
     tsconfig,
-    '',
-    '=== ESLint configuration (eslint.config.ts) ===',
-    eslintConfig,
     '',
     'Key rules to pay attention to:',
     '- explicit-function-return-type: error (all functions need explicit return types)',

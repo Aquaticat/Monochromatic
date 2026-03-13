@@ -62,7 +62,7 @@ export type DefaultBackendsBuilder = (args: {
 
 /** Module-level builder set by platform entry files. */
 // Intentional let: configured once at module load by platform entry
-// eslint-disable-next-line prefer-const
+// oxlint-disable-next-line prefer-const
 let defaultBackendsBuilder: DefaultBackendsBuilder | undefined;
 
 /**

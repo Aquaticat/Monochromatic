@@ -36,7 +36,7 @@ export function $(value: unknown,): boolean {
   const stack: unknown[] = [value,];
 
   // Intentional mutation: stack is consumed during traversal
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- stack shrinks via pop
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- stack shrinks via pop
   while (stack.length > 0) {
     const current = stack.pop();
     if (typeof current !== 'object' || current === null) {

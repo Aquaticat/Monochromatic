@@ -114,7 +114,7 @@ const OXLINT_SEVERITY_MAP: Record<string, string> = {
  */
 function findAncestorWithFile(startDir: string, filename: string): string | null {
   let current = startDir;
-  // eslint-disable-next-line no-constant-condition -- walk up until filesystem root
+  // oxlint-disable-next-line no-constant-condition -- walk up until filesystem root
   while (true) {
     if (existsSync(resolve(current, filename))) {
       return current;

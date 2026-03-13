@@ -5,7 +5,7 @@
  * `<sup>` for comments, `<strong>` for tag names, `<i>` for operators).
  * Styled via glow.css -- no client-side JavaScript required.
  */
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment -- nue-glow ships without type declarations
+// oxlint-disable-next-line typescript/ban-ts-comment -- nue-glow ships without type declarations
 // @ts-expect-error -- nue-glow has no TypeScript type declarations
 import { glow, } from 'nue-glow';
 

@@ -15,7 +15,7 @@ import { execContainer, } from './container-exec.ts';
 import { CONTAINER_IMAGE, CONTAINER_TIMEOUT_SECONDS, } from './container-runtime.ts';
 import { LINT_DIR, } from './linter-artifacts.ts';
 
-// eslint-disable-next-line no-duplicate-imports -- re-export requires a separate import for local use
+// oxlint-disable-next-line no-duplicate-imports -- re-export requires a separate import for local use
 import type { ContainerResult, } from './container-exec.ts';
 
 export type { ContainerResult, } from './container-exec.ts';

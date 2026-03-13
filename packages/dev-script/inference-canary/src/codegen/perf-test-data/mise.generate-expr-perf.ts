@@ -90,7 +90,7 @@ for (const index of Array.from({ length: EXPR_COUNT, }).keys()) {
     const evalStr = expressions[expressions.length - 1];
     if (evalStr === undefined) throw new Error('Expression disappeared');
     // Safe: we constructed this expression ourselves from known integers
-    // eslint-disable-next-line no-eval -- generating expected output for test data
+    // oxlint-disable-next-line no-eval -- generating expected output for test data
     const evalResult = eval(evalStr) as number;
     if (!Number.isFinite(evalResult)) {
       results.push('ERR');

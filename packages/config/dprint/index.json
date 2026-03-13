@@ -132,18 +132,6 @@
         "cacheKeyFiles": [
           ".oxlintrc.json"
         ]
-      },
-      {
-        "command": "pnpm exec eslint --fix-dry-run --stdin --stdin-filename {{file_path}}",
-        "exts": [
-          "ts",
-          "tsx",
-          "js",
-          "jsx"
-        ],
-        "cacheKeyFiles": [
-          "eslint.config.ts"
-        ]
       }
     ]
   }

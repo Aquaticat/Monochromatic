@@ -1,4 +1,4 @@
-/* eslint-disable unicorn/better-regex -- Testing */
+/* oxlint-disable unicorn/better-regex -- Testing */
 
 import { types, } from '@monochromatic-dev/module-es';
 import {

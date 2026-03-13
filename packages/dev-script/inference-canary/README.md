@@ -26,7 +26,7 @@ Correctness is a hard gate: anything below a perfect 1.0 zeroes the entire score
 Code that produces the right output but has lint errors scores 0, the same as code that crashes.
 This is intentional -- a submission full of lint violations and type errors is not production-quality code,
 regardless of whether it happens to work.
-The system prompt gives the model the exact oxlint, tsgo, and eslint configs it will be graded against,
+The system prompt gives the model the exact oxlint and tsgo configs it will be graded against,
 so there is no ambiguity about what the rules are.
 
 When correctness is perfect, the score starts at 1.0 and each quality issue applies a flat deduction.

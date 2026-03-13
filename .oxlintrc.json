@@ -39,16 +39,17 @@
     "import",
 
     // Using TSDoc, not JSDoc, but it should support TSDoc anyway. Investigate.
-    // Update: Seems like oxlint doesn't support TSDoc. Disabling, enabled in Eslint.
+    // Update: Seems like oxlint doesn't support TSDoc. Disabling, using custom oxlint-tsdoc JS plugin.
     //    "jsdoc",
 
     "promise",
 
     "node",
 
-    // Dropped vitest for bun:test. Keeping it commented out rather than removed
+    // Dropped vitest for bun:test. Keeping commented out rather than removed
     // because oxlint leaks jest rules globally when vitest is enabled (even in overrides).
     // See https://github.com/oxc-project/oxc/issues/18518
+    // Re-evaluate after the upstream fix lands.
     //"vitest"
 
     // oxlint currently can't lint jsx in non-jsx files. See https://oxc.rs/docs/guide/usage/linter/config#specifying-files-to-process
@@ -111,6 +112,12 @@
     "jest/valid-expect": "off",
     "jest/valid-title": "off",
     //endregion jest
+
+    // Nursery rule: not enabled by category, must be listed explicitly.
+    // Matches ESLint's @typescript-eslint/no-unnecessary-condition config.
+    "typescript/no-unnecessary-condition": ["error", {
+      "allowConstantLoopConditions": "only-allowed-literals"
+    }],
 
     //region correctness
 

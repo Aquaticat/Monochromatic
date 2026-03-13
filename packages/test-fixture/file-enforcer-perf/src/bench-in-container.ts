@@ -108,7 +108,7 @@ const WARM_RUN_COUNT = 10;
 // next to measure individual run timing accurately.
 for (let warmIndex = 0; warmIndex < WARM_RUN_COUNT; warmIndex++) {
   const warmStart = performance.now();
-  // eslint-disable-next-line no-await-in-loop -- sequential benchmark timing required
+  // oxlint-disable-next-line no-await-in-loop -- sequential benchmark timing required
   await import(`${CONFIG_PATH}?v=warm-${String(warmIndex)}`);
   const warmMs = performance.now() - warmStart;
   timings.push({ label: `warm-${String(warmIndex)}`, ms: warmMs });

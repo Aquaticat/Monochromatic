@@ -1,9 +1,10 @@
 {
-  "name": "@monochromatic-dev/config-eslint",
+  "name": "@monochromatic-dev/config-eslint-deprecated",
   "keywords": [
     "eslint",
     "config",
-    "monochromatic"
+    "monochromatic",
+    "deprecated"
   ],
   "dependencies": {
     "typescript-eslint": "catalog:",
@@ -41,7 +42,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/config/eslint"
+    "directory": "packages/config/eslint-deprecated"
   },
   "exports": {
     ".": {
@@ -51,5 +52,6 @@
       "default": "./src/index.ts"
     }
   },
-  "description": "Shared ESLint configuration for Monochromatic TypeScript projects."
+  "private": true,
+  "description": "DEPRECATED: Shared ESLint configuration, preserved for re-adoption reference. Replaced by oxlint."
 }

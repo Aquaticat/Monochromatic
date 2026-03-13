@@ -10,6 +10,9 @@ run = "bun src/index.ts"
 description = "Run hall-monitor with file-watch auto-restart"
 run = "mise watch -w src -r -- bun src/index.ts"
 
+[tasks.lint]
+extends = "lint"
+
 [tasks.'lint:types']
 extends = "lint:types"
 

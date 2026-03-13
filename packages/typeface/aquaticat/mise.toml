@@ -2,5 +2,11 @@
 description = "Build Aquaticat font from SVG glyphs"
 run = "bun src/build-font.ts"
 
+[tasks.lint]
+extends = "lint"
+
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"

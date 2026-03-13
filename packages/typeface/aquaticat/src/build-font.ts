@@ -10,7 +10,7 @@ import { dirname, resolve } from "node:path";
 
 import spawn from 'nano-spawn';
 
-// eslint-disable-next-line import/no-namespace -- opentype.js requires namespace import for its constructor API
+// oxlint-disable-next-line import/no-namespace -- opentype.js requires namespace import for its constructor API
 import * as opentype from "opentype.js";
 
 import { offsetPolygon } from "./expand-stroke.ts";

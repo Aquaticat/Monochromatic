@@ -1,5 +1,11 @@
+[tasks.lint]
+extends = "lint"
+
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"
 
 [tasks.composite]
 description = "Build inline composite SVG from parts and render PNG preview"

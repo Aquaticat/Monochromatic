@@ -3,6 +3,9 @@ description = "Run the inference canary against all configured models"
 depends = ["prepare"]
 run = "bun src/index.ts"
 
+[tasks.lint]
+extends = "lint"
+
 [tasks.'lint:types']
 extends = "lint:types"
 

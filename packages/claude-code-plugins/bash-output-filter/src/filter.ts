@@ -79,7 +79,7 @@ const REAL_HOME_DIR = (() => {
     if (HOME_DIR === '') {
       return ''
     }
-    /* eslint-disable-next-line n/no-sync -- one-shot startup cost, avoids async complexity in a filter script */
+    /* oxlint-disable-next-line node/no-sync -- one-shot startup cost, avoids async complexity in a filter script */
     const resolved = realpathSync(HOME_DIR)
     return resolved === HOME_DIR ? '' : resolved
   } catch {

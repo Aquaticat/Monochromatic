@@ -1,4 +1,4 @@
-/* eslint-disable unicorn/prefer-export-from -- Need to both access imported functions and maybe modify them and export them. */
+/* oxlint-disable unicorn/prefer-export-from -- Need to both access imported functions and maybe modify them and export them. */
 
 import {
   constants as fsConstants,

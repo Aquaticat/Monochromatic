@@ -185,13 +185,13 @@ const raw = await readStdin();
  *
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
  */
-/* eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
+/* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
 const event = JSON.parse(raw) as PreToolUseInput;
 
 if (event.tool_name !== 'Bash') {
   writeOutput({});
 } else {
-  /* eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- tool_input shape matches BashToolInput when tool_name is "Bash" */
+  /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tool_input shape matches BashToolInput when tool_name is "Bash" */
   const bashInput = event.tool_input as BashToolInput;
 
   if (!isAllowed(bashInput.command) || shouldSkip(bashInput.command)) {

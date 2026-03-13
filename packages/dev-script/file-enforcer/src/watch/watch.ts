@@ -64,7 +64,7 @@ export async function startWatching(configPath: string): Promise<never> {
     clearTimeout(debounceTimer);
     if (kind === 'protected') {
       debounceTimer = setTimeout(() => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises -- debounced async protection
+        // oxlint-disable-next-line typescript/no-floating-promises -- debounced async protection
         (async (): Promise<void> => {
           await notifyWriteProtection(changedPath);
           await rerun(changedPath);
@@ -73,7 +73,7 @@ export async function startWatching(configPath: string): Promise<never> {
       return;
     }
     debounceTimer = setTimeout(() => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- debounced async re-run
+      // oxlint-disable-next-line typescript/no-floating-promises -- debounced async re-run
       rerun(changedPath);
     }, DEBOUNCE_MS);
   }
@@ -89,7 +89,7 @@ export async function startWatching(configPath: string): Promise<never> {
       const controller = new AbortController();
       controllers.set(dir, controller);
 
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises -- intentional fire-and-forget watcher loop
+      // oxlint-disable-next-line typescript/no-floating-promises -- intentional fire-and-forget watcher loop
       watchDirectory(dir, controller.signal, absoluteConfig, (kind, filename) => {
         handleEvent(kind, filename, dir);
       });
@@ -99,6 +99,6 @@ export async function startWatching(configPath: string): Promise<never> {
   setupWatchers();
 
   // Block forever -- watch mode runs until the process is killed.
-  // eslint-disable-next-line @typescript-eslint/no-empty-function -- intentional infinite block
+  // oxlint-disable-next-line typescript/no-empty-function -- intentional infinite block
   return await new Promise<never>(() => {});
 }

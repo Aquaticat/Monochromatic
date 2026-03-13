@@ -43,13 +43,13 @@ function elapsedPrefix(): string {
   return `[+${elapsed.padStart(ELAPSED_PAD_WIDTH)}s]`;
 }
 
-// eslint-disable-next-line no-console -- intentional override to inject timestamps
+// oxlint-disable-next-line no-console -- intentional override to inject timestamps
 const originalLog = console.log;
-// eslint-disable-next-line no-console -- intentional override to inject timestamps
+// oxlint-disable-next-line no-console -- intentional override to inject timestamps
 const originalError = console.error;
-// eslint-disable-next-line no-console -- intentional override
+// oxlint-disable-next-line no-console -- intentional override
 console.log = (...args: unknown[]): void => originalLog(elapsedPrefix(), ...args);
-// eslint-disable-next-line no-console -- intentional override
+// oxlint-disable-next-line no-console -- intentional override
 console.error = (...args: unknown[]): void => originalError(elapsedPrefix(), ...args);
 
 //endregion Elapsed-time log prefix
@@ -95,7 +95,7 @@ const { probePairs: recentModelProbePairs, failedModels: recentlyFailedModels, }
 if (selectedModels.length === 0) {
   console.log('[canary] no models selected for testing.');
 } else {
-  // eslint-disable-next-line no-nested-ternary -- three-way probe tier selection; simulation runs alongside code-gen by default
+  // oxlint-disable-next-line no-nested-ternary -- three-way probe tier selection; simulation runs alongside code-gen by default
   const codeGenSet = includeSlow ? codeGenProbesAll : codeGenProbes;
   const allProbes = useSimple ? simpleProbes : [...codeGenSet, ...simulationProbes];
 
@@ -138,7 +138,7 @@ const WATCHDOG_TIMEOUT_SECONDS = 5;
 const watchdog = setTimeout(() => {
   console.error('[canary] process did not exit naturally after all work completed, dumping active handles:');
   whyIsNodeRunning();
-  // eslint-disable-next-line unicorn/no-process-exit -- required: fallback for intermittent async resource leaks
+  // oxlint-disable-next-line unicorn/no-process-exit -- required: fallback for intermittent async resource leaks
   process.exit(0);
 }, WATCHDOG_TIMEOUT_SECONDS * MS_PER_SECOND);
 watchdog.unref();

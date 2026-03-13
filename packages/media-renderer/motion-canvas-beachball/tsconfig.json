@@ -1,13 +1,8 @@
 {
+  "extends": "@monochromatic-dev/config-typescript/dom",
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "jsxImportSource": "@motion-canvas/2d/lib",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "strict": true
+    "jsxImportSource": "@motion-canvas/2d/lib"
   },
   "include": ["src"]
 }

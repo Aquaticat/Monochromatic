@@ -48,7 +48,7 @@ const raw = await readStdin();
  *
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
  */
-/* eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
+/* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
 const event = JSON.parse(raw) as PreToolUseInput;
 
 /**
@@ -59,7 +59,7 @@ const event = JSON.parse(raw) as PreToolUseInput;
 if (event.tool_name !== 'Agent') {
   writeOutput({});
 } else {
-  /* eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- tool_input shape matches AgentToolInput when tool_name is "Agent" */
+  /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tool_input shape matches AgentToolInput when tool_name is "Agent" */
   const agentInput = event.tool_input as AgentToolInput;
 
   if (agentInput.resume !== null && agentInput.resume !== undefined) {

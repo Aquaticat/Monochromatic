@@ -1,2 +1,11 @@
-# Static audit document -- no tasks needed.
+# Static audit document.
 # Open src/index.html directly in a browser (all assets are embedded).
+
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+[tasks."lint:types"]
+extends = "lint:types"

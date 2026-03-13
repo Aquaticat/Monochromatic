@@ -9,6 +9,7 @@ import type {
 } from './types.ts';
 import { voyageProvider } from './voyage.ts';
 import { geminiProvider } from './gemini.ts';
+import { describeImageDifference } from './describe.ts';
 import { dotProduct } from './similarity.ts';
 import { l, tagged } from './log.ts';
 
@@ -86,31 +87,23 @@ export async function embedBatch(
 }
 
 /**
- * Compare two images using a single provider by computing their multimodal embeddings
- * and returning cosine similarity and perceptual distance.
- * When no provider is specified, defaults to Voyage.
+ * Embedding-only comparison without the natural-language description.
+ * Used internally by {@link compare} and {@link compareAll} to avoid
+ * duplicate description calls when comparing across multiple providers.
  *
  * @param imageA - first image
  * @param imageB - second image
- * @param config - optional client configuration (provider, API key, model)
- * @returns similarity score, distance, and both embedding vectors
- *
- * @example
- * ```ts
- * const result = await compare(
- *   { path: './before.png' },
- *   { path: './after.png' },
- * );
- * ```
+ * @param config - client configuration (provider, API key, model)
+ * @returns similarity, distance, and both embedding vectors (no description)
  */
-export async function compare(
+async function compareEmbeddings(
   imageA: ImageInput,
   imageB: ImageInput,
   config: ImageDiffConfig = {},
-): Promise<ComparisonResult> {
-  const rl = tagged({ tag: compare.name, l });
+): Promise<Omit<ComparisonResult, 'description'>> {
+  const rl = tagged({ tag: compareEmbeddings.name, l });
   const provider = config.provider ?? 'voyage';
-  rl.debug(`comparing two images via ${provider}`);
+  rl.debug(`comparing embeddings via ${provider}`);
 
   const { embeddings } = await getProvider(provider).embedBatch([imageA, imageB], config);
   const embeddingA = embeddings[0];
@@ -122,9 +115,54 @@ export async function compare(
   const similarity = dotProduct(embeddingA, embeddingB);
   const distance = 1 - similarity;
 
-  rl.debug(`comparison complete (${provider}): similarity=${String(similarity)}, distance=${String(distance)}`);
+  rl.debug(`embedding comparison complete (${provider}): similarity=${String(similarity)}, distance=${String(distance)}`);
 
   return { similarity, distance, embeddingA, embeddingB };
+}
+
+/**
+ * Compare two images using a single provider by computing their multimodal embeddings
+ * and returning cosine similarity, perceptual distance, and a natural-language
+ * description of the visual differences via Gemini 3.1 Pro Preview.
+ * When no provider is specified, defaults to Voyage.
+ *
+ * @param imageA - first image
+ * @param imageB - second image
+ * @param config - optional client configuration (provider, API key, model)
+ * @returns similarity score, distance, both embedding vectors, and description
+ *
+ * @example
+ * ```ts
+ * const result = await compare(
+ *   { path: './before.png' },
+ *   { path: './after.png' },
+ * );
+ * console.log(result.description);
+ * ```
+ */
+export async function compare(
+  imageA: ImageInput,
+  imageB: ImageInput,
+  config: ImageDiffConfig = {},
+): Promise<ComparisonResult> {
+  const rl = tagged({ tag: compare.name, l });
+  rl.debug('running embedding comparison and description concurrently');
+
+  const results = await Promise.all([
+    compareEmbeddings(imageA, imageB, config),
+    describeImageDifference(imageA, imageB),
+  ]);
+  const embeddingResult = results[0];
+  const description = results[1];
+  if (description === undefined) {
+    throw new Error(
+      'OpenRouter API key is required for image comparison. Set IMAGE_DIFF_OPENROUTER_API_KEY (or OPENROUTER_API_KEY) environment variable.',
+    );
+  }
+
+  rl.debug('comparison with description complete');
+
+  return { ...embeddingResult, description };
 }
 
 //endregion Single-provider functions
@@ -206,17 +244,45 @@ export async function compareAll(
   imageB: ImageInput,
 ): Promise<ReadonlyArray<MultiProviderComparisonEntry>> {
   const rl = tagged({ tag: compareAll.name, l });
-  rl.debug(`comparing two images across all ${String(ALL_PROVIDERS.length)} providers`);
+  rl.debug(`comparing two images across all ${String(ALL_PROVIDERS.length)} providers with description`);
 
-  const results = await Promise.all(
-    ALL_PROVIDERS.map(async function compareWithProvider(provider) {
-      const result = await compare(imageA, imageB, { provider });
+  const allResults = await Promise.allSettled([
+    ...ALL_PROVIDERS.map(async function compareWithProvider(provider) {
+      const result = await compareEmbeddings(imageA, imageB, { provider });
       return { provider, result };
     }),
-  );
+    describeImageDifference(imageA, imageB),
+  ]);
 
-  rl.debug('all provider comparisons complete');
-  return results;
+  /** Last settlement is the description call. */
+  const descriptionSettlement = allResults[allResults.length - 1]!;
+  const description = descriptionSettlement.status === 'fulfilled'
+    ? descriptionSettlement.value as string | undefined
+    : undefined;
+
+  /** All settlements before the last are provider results. */
+  const providerSettlements = allResults.slice(0, -1);
+  const successfulEntries: Array<MultiProviderComparisonEntry> = [];
+  for (const settlement of providerSettlements) {
+    if (settlement.status === 'fulfilled') {
+      const entry = settlement.value as { provider: Provider; result: Omit<ComparisonResult, 'description'> };
+      successfulEntries.push({
+        provider: entry.provider,
+        result: { ...entry.result, description },
+      });
+    } else {
+      rl.debug(`provider skipped: ${String(settlement.reason)}`);
+    }
+  }
+
+  if (successfulEntries.length === 0 && description === undefined) {
+    throw new Error(
+      'No results: all embedding providers failed and no description was generated. Check that at least one API key is configured.',
+    );
+  }
+
+  rl.debug(`${String(successfulEntries.length)} provider(s) succeeded, description ${description !== undefined ? 'available' : 'unavailable'}`);
+  return successfulEntries;
 }
 
 /**

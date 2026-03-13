@@ -55,7 +55,7 @@ async function initialize(): Promise<void> {
   for (const entry of sinkEntries) {
     try {
       const result = entry.verify();
-      // eslint-disable-next-line no-await-in-loop -- Sinks must be verified sequentially to avoid race conditions
+      // oxlint-disable-next-line no-await-in-loop -- Sinks must be verified sequentially to avoid race conditions
       entry.available = result instanceof Promise ? await result : result;
       if (entry.available) {
         hasAvailableSink = true;
