@@ -1,11 +1,10 @@
 [tasks.build]
 description = "Generate static dashboard from canary history and artifacts"
-# FIXME: I mis-understood how Mise's "depends" work. I thought it would run once but apparently it runs every time. Need a proper "depends" that runs the depended tasks once until the depended tasks themselves' dependencies changed or output not proper.
-# depends = ["inference-canary-run"]
-run = ["bun src/build.ts"]
-
-[tasks.inference-canary-run]
-run =  ["mise run //packages/dev-script/inference-canary:run"]
+# canary-lint/ is the output directory and must not appear in sources.
+run = """
+task-depends -s "../inference-canary/src/*.ts" -s "../inference-canary/src/codegen/**/*" -s "../inference-canary/src/simulation/**/*" -s "../inference-canary/src/stak/**/*" -o "../inference-canary/src/canary-lint/**/*" -- mise run //packages/dev-script/inference-canary:run
+bun src/build.ts
+"""
 
 [tasks.'dev:watch']
 description = "Rebuild dashboard on source or canary-lint changes"
