@@ -40,7 +40,7 @@ export function execvp({ command }: { command: ReadonlyArray<string> }): void {
   proc.exited.then(function onExit(code) {
     process.exitCode = code;
   }).catch(function onError(err: unknown) {
-    console.error(`xdg-terminal-exec: failed to execute '${executable}': ${String(err)}`);
+    console.error(`terminal-exec: failed to execute '${executable}': ${String(err)}`);
     process.exitCode = 127;
   });
 }

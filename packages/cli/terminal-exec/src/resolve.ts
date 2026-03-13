@@ -1,9 +1,15 @@
 /**
  * Main terminal resolution algorithm.
- * Finds the preferred terminal emulator by checking:
+ * Dispatches to platform-specific resolution:
+ *
+ * **Linux/FreeBSD** (XDG):
  * 1. Explicit entries from `xdg-terminals.list` config files
  * 2. KDE `kdeglobals` TerminalService fallback (when no explicit entries exist)
  * 3. All `TerminalEmulator`-category desktop entries as fallback
+ *
+ * **Windows**:
+ * 1. Windows Terminal (`wt.exe`)
+ * 2. `cmd.exe`
  *
  * @module
  */
@@ -15,6 +21,7 @@ import { l as parentLogger, tagged } from './log.ts';
 import { scanEntries } from './scan.ts';
 import type { ValidatedEntry } from './validate.ts';
 import { validateEntry } from './validate.ts';
+import { resolveWindowsTerminal } from './windows.ts';
 import { applicationDirs, configPaths, currentDesktops } from './xdg-paths.ts';
 
 const l = tagged({ tag: 'resolve', l: parentLogger });
@@ -23,24 +30,39 @@ const l = tagged({ tag: 'resolve', l: parentLogger });
  * Successful terminal resolution result.
  */
 export type ResolvedTerminal = ValidatedEntry & {
-  /** Desktop entry ID that was selected. */
+  /** Desktop entry ID (Linux) or executable name (Windows) that was selected. */
   readonly entryId: string;
 };
 
 /**
- * Resolves the preferred terminal emulator.
+ * Resolves the preferred terminal emulator for the current platform.
  *
  * @returns Resolved terminal entry, or `null` if no valid terminal is found.
- * @throws {Error} When no terminal emulator can be found at all.
  *
  * @example
  * ```ts
  * const terminal = await resolveTerminal()
- * // terminal.entryId === 'com.mitchellh.ghostty.desktop'
- * // terminal.execTokens === ['/usr/bin/ghostty', '--gtk-single-instance=true']
+ * // Linux: terminal.entryId === 'com.mitchellh.ghostty.desktop'
+ * // Windows: terminal.entryId === 'wt.exe'
  * ```
  */
 export async function resolveTerminal(): Promise<ResolvedTerminal | null> {
+  if (process.platform === 'win32') {
+    l.debug('platform: win32');
+    return resolveWindowsTerminal();
+  }
+
+  l.debug(`platform: ${process.platform} (XDG)`);
+  return resolveXdgTerminal();
+}
+
+/**
+ * Resolves the terminal emulator using the XDG Desktop Entry Specification.
+ * Used on Linux, FreeBSD, and other Unix-like systems.
+ *
+ * @returns Resolved terminal entry, or `null` if no valid terminal is found.
+ */
+async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
   const desktops = currentDesktops();
   const configs = configPaths({ desktops });
   const config = await parseConfigFiles({ paths: configs });

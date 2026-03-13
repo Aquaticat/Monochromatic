@@ -1,6 +1,6 @@
 import { join, } from 'node:path';
 import { readFile, rm, } from 'node:fs/promises';
-import postcss from 'postcss';
+import { type Root, parse as postcssParse, } from 'postcss';
 import {
   afterEach,
   describe,
@@ -39,8 +39,8 @@ const tempOutput = join(import.meta.dirname, '..', 'dist', 'test-output.css');
  * @param css - Raw CSS string
  * @returns PostCSS Root node
  */
-function parse(css: string): postcss.Root {
-  return postcss.parse(css);
+function parse(css: string): Root {
+  return postcssParse(css);
 }
 
 //endregion Test Helpers
@@ -109,7 +109,7 @@ describe('expandApplyRules', () => {
   test('expands a simple @apply', () => {
     expect.assertions(2);
 
-    mixins.set('--center', postcss.parse('display: flex; align-items: center;').nodes);
+    mixins.set('--center', parse('display: flex; align-items: center;').nodes);
 
     const root = parse('.box { @apply --center; }');
     expandApplyRules(root);
@@ -158,8 +158,8 @@ describe('expandMixinBodies', () => {
     expect.assertions(1);
 
     // --inner defines styles, --outer references --inner via @apply
-    mixins.set('--inner', postcss.parse('display: flex;').nodes);
-    mixins.set('--outer', postcss.parse('@apply --inner; padding: 1rem;').nodes);
+    mixins.set('--inner', parse('display: flex;').nodes);
+    mixins.set('--outer', parse('@apply --inner; padding: 1rem;').nodes);
 
     expandMixinBodies();
 
@@ -171,9 +171,9 @@ describe('expandMixinBodies', () => {
   test('handles deeply nested references', () => {
     expect.assertions(1);
 
-    mixins.set('--a', postcss.parse('color: red;').nodes);
-    mixins.set('--b', postcss.parse('@apply --a; margin: 0;').nodes);
-    mixins.set('--c', postcss.parse('@apply --b; padding: 0;').nodes);
+    mixins.set('--a', parse('color: red;').nodes);
+    mixins.set('--b', parse('@apply --a; margin: 0;').nodes);
+    mixins.set('--c', parse('@apply --b; padding: 0;').nodes);
 
     expandMixinBodies();
 

@@ -197,6 +197,9 @@ function findUncertainty(prose: string): UncertaintyMatch | undefined {
   return undefined;
 }
 
+/** Maximum characters from the end of the message to scan for trailing questions. */
+const TRAILING_QUESTION_SCAN_LENGTH = 500;
+
 /**
  * Detects sentences ending with `?` near the end of the assistant message.
  *
@@ -211,12 +214,9 @@ function findUncertainty(prose: string): UncertaintyMatch | undefined {
  * @example
  * ```ts
  * const match = findTrailingQuestion('I finished the refactor. Want me to run the tests?')
- * // => { sentence: 'Want me to run the tests?' }
+ * // =\> \{ sentence: 'Want me to run the tests?' \}
  * ```
  */
-/** Maximum characters from the end of the message to scan for trailing questions. */
-const TRAILING_QUESTION_SCAN_LENGTH = 500;
-
 function findTrailingQuestion(prose: string): QuestionMatch | undefined {
   /** Only scan the tail of the message where user-directed questions appear. */
   const tail = prose.slice(-TRAILING_QUESTION_SCAN_LENGTH);

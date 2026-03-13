@@ -146,10 +146,11 @@ export const requireTsdoc: CreateOnceRule = {
 
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      before(): false | undefined {
+      before() {
         if (shouldIgnoreFile(context.filename)) {
           return false;
         }
+        return undefined;
       },
       FunctionDeclaration(node): void {
         reportMissing(node, context);

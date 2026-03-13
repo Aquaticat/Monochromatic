@@ -55,10 +55,10 @@ const event = JSON.parse(raw) as StopInput;
  * Re-blocking would create an endless cycle, so allow the stop unconditionally.
  */
 if (event.stop_hook_active) {
+  /** Pass-through output allowing the stop when hook is already active. */
   const output: StopOutput = {};
   process.stdout.write(JSON.stringify(output));
 } else {
-  /** Prose content with code blocks, inline code, blockquotes, and quoted strings stripped out. */
   /** Prose content with code blocks, inline code, blockquotes, and quoted strings stripped out. */
   const prose = stripNonProseRegions(event.last_assistant_message ?? '');
 

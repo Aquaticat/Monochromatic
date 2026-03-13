@@ -8,7 +8,7 @@ import type { $ as Logger } from '@monochromatic-dev/module-es/ts/types/t object
 await initPromise;
 
 /**
- * Root tagged logger for xdg-terminal-exec subsystems.
+ * Root tagged logger for terminal-exec subsystems.
  * Sub-modules compose deeper tags via `tagged({ tag, l })`.
  *
  * @example
@@ -17,7 +17,7 @@ await initPromise;
  * rl.info('starting resolution');
  * ```
  */
-export const l: Logger = tagged({ tag: 'xdg-terminal-exec', l: $ });
+export const l: Logger = tagged({ tag: 'terminal-exec', l: $ });
 
 export type { Logger };
 export { tagged };

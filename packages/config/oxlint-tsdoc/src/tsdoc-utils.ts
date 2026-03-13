@@ -134,7 +134,7 @@ export function findTsdocComment(node: Span, context: Context): Comment | undefi
   const comments = context.sourceCode.getCommentsBefore(node);
   for (let i = comments.length - 1; i >= 0; i--) {
     const c = comments[i];
-    if (isTsdocBlock(c)) {
+    if (c !== undefined && isTsdocBlock(c)) {
       return c;
     }
   }

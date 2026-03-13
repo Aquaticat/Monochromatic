@@ -236,7 +236,7 @@ const TOOL_TITLES: Record<string, ToolTitleEntry> = {
   },
   WebSearch: { extract: field('query'), format: quotedFormat({ pre: 'Searching', post: 'Searched' }), fallback: { pre: 'Web search', post: 'Web search done' } },
   AskUserQuestion: {
-    extract(input) {
+    extract(input): string | undefined {
       const {questions} = input;
       if (!Array.isArray(questions)) {
         return;

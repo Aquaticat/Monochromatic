@@ -1,29 +1,37 @@
-# xdg-terminal-exec
+# terminal-exec
 
-TypeScript replacement for the [reference POSIX shell implementation](https://github.com/Vladimir-csp/xdg-terminal-exec) of the proposed Default Terminal Execution Specification.
+Cross-platform terminal emulator launcher.
+On Linux/FreeBSD, implements the proposed [Default Terminal Execution Specification](https://gitlab.freedesktop.org/terminal-wg/specifications/-/merge_requests/3)
+with a KDE `kdeglobals` fallback.
+On Windows, detects Windows Terminal or falls back to `cmd.exe`.
 
 ## Motivation
 
-The reference implementation ignores desktop environment settings.
+The reference `xdg-terminal-exec` shell script ignores desktop environment settings.
 On KDE Plasma, users configure their default terminal in System Settings,
 which writes `TerminalService` to `~/.config/kdeglobals`.
 The reference script does not read `kdeglobals`, falling back to scanning all `.desktop` entries
 with `Categories=TerminalEmulator` -- often selecting the wrong one.
 
-This implementation adds a **KDE `kdeglobals` fallback**: when no `xdg-terminals.list` config
-explicitly lists a terminal, `TerminalService` from `kdeglobals` is consulted before the
-category-based fallback scan.
+On Windows, no equivalent of `xdg-terminal-exec` exists at all.
 
 ## Resolution order
+
+### Linux / FreeBSD (XDG)
 
 1. Explicit entries from `xdg-terminals.list` config files (desktop-specific variants checked first)
 2. KDE `TerminalService` from `~/.config/kdeglobals` (when no explicit entries exist)
 3. All `TerminalEmulator`-category desktop entries as fallback
 
+### Windows
+
+1. Windows Terminal (`wt.exe`) -- default on Windows 11, widely installed on Windows 10
+2. `cmd.exe` -- always available
+
 ## Usage
 
 ```sh
-xdg-terminal-exec [options] [--] [command [args...]]
+terminal-exec [options] [--] [command [args...]]
 ```
 
 **Options:**
@@ -38,16 +46,16 @@ xdg-terminal-exec [options] [--] [command [args...]]
 
 ```sh
 # Open default terminal
-xdg-terminal-exec
+terminal-exec
 
 # Open terminal running a command
-xdg-terminal-exec bash -l
+terminal-exec bash -l
 
 # Open terminal with title and working directory
-xdg-terminal-exec --title="Build logs" --dir=/tmp -- tail -f build.log
+terminal-exec --title="Build logs" --dir=/tmp -- tail -f build.log
 ```
 
-## Configuration
+## Configuration (Linux)
 
 Create `~/.config/xdg-terminals.list` to explicitly set preferred terminals:
 

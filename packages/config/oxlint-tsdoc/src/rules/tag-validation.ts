@@ -46,10 +46,11 @@ function createTsdocVisitor(
 
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
   return {
-    before(): false | undefined {
+    before() {
       if (shouldIgnoreFile(context.filename)) {
         return false;
       }
+      return undefined;
     },
     FunctionDeclaration: check,
     FunctionExpression: check,
@@ -286,10 +287,11 @@ export const validTypes: CreateOnceRule = {
 
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      before(): false | undefined {
+      before() {
         if (shouldIgnoreFile(context.filename)) {
           return false;
         }
+        return undefined;
       },
       FunctionDeclaration: check,
       FunctionExpression: check,

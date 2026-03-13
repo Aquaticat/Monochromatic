@@ -1,8 +1,2 @@
-[tasks.lint]
-extends = "lint"
-
-[tasks."lint:oxlint"]
-extends = "lint:oxlint"
-
-[tasks."lint:types"]
-extends = "lint:types"
+# No lint tasks -- this package contains deprecated ESLint code
+# that is excluded from the monorepo lint pipeline.

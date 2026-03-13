@@ -77,6 +77,7 @@ export async function run({ command, from }: { command: string; from: string | u
   function onSignal(signal: NodeJS.Signals): void {
     rl.info(`received ${signal}, cleaning up...`);
     // Signal handlers must re-raise after cleanup; using/await using not applicable
+    /* oxlint-disable-next-line no-restricted-syntax/no-promise-finally, eslint-plugin-promise/prefer-await-to-then -- signal handler cannot await; must re-raise synchronously after cleanup */
     void cleanup().finally(function reraiseSignal() {
       process.kill(process.pid, signal);
     });
@@ -86,6 +87,7 @@ export async function run({ command, from }: { command: string; from: string | u
   process.on('SIGTERM', onSignal);
 
   // Signal handler cleanup requires try/finally; Symbol.dispose cannot remove process listeners
+  /* oxlint-disable-next-line no-restricted-syntax/no-try-finally -- process listener removal requires try/finally; Symbol.dispose cannot target specific listeners */
   try {
     await (from !== undefined
       ? clone({ destination: name, source: from })
