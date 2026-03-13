@@ -155,6 +155,129 @@ regardless of the package's target runtime.
 }
 ```
 
+## Narrowing not preserved inside function declarations
+
+### Problem
+
+A `const` variable narrowed by a null check before a function declaration
+still reports the nullable type inside the function body:
+
+```ts
+const el = document.querySelector<HTMLDivElement>('#app');
+if (el === null) {
+  throw new Error('missing');
+}
+
+// TS18047: 'el' is possibly 'null'.
+function setup(): void {
+  console.log(el.clientWidth);
+}
+```
+
+Replacing the function declaration with a function expression or arrow eliminates the error:
+
+```ts
+const setup = function (): void {
+  console.log(el.clientWidth); // OK
+};
+```
+
+### Root cause
+
+TypeScript's control flow analysis extends narrowing across closure boundaries
+only for certain node kinds.
+The `while` loop in `checker.ts` (around line 31181 in the tsc 6.0 source) checks:
+
+```ts
+// checker.ts — getTypeOfSymbolAtLocation, inner narrowing loop
+while (
+    flowContainer !== declarationContainer && (
+        flowContainer.kind === SyntaxKind.FunctionExpression ||
+        flowContainer.kind === SyntaxKind.ArrowFunction ||
+        isObjectLiteralOrClassExpressionMethodOrAccessor(flowContainer)
+    ) && (
+        isConstantVariable(localOrExportSymbol) && type !== autoArrayType ||
+        isParameterOrMutableLocalVariable(localOrExportSymbol) && isPastLastAssignment(localOrExportSymbol, node)
+    )
+) {
+    flowContainer = getControlFlowContainer(flowContainer);
+}
+```
+
+`SyntaxKind.FunctionDeclaration` is intentionally absent.
+Function declarations are hoisted,
+so a call site can appear **before** the narrowing guard in source order:
+
+```ts
+const el = document.querySelector<HTMLDivElement>('#app');
+
+setup(); // runs before the null check below
+
+if (el === null) { throw new Error('missing'); }
+
+function setup(): void {
+  // el is genuinely nullable here at runtime
+  console.log(el.clientWidth);
+}
+```
+
+Because hoisting makes the call-before-guard pattern legal,
+TypeScript conservatively refuses to narrow inside function declarations.
+Function expressions and arrows are bound to a `const`,
+so they cannot be invoked before their definition,
+making narrowing safe to propagate.
+
+This behavior is the same in tsc (6.0.1-rc) and tsgo (7.0.0-dev).
+
+### Solutions
+
+**Return non-null from a helper function.**
+The return type carries the narrowed type into all callers
+regardless of declaration kind:
+
+```ts
+function requireElement<T extends Element>(selector: string): T {
+  const element = document.querySelector<T>(selector);
+  if (element === null) {
+    throw new Error(`Missing required element: ${selector}`);
+  }
+  return element;
+}
+
+const el = requireElement<HTMLDivElement>('#app');
+// el is HTMLDivElement (non-null) everywhere
+function setup(): void {
+  console.log(el.clientWidth); // OK
+}
+```
+
+**Reassign to a new `const` with an explicit type annotation**
+after the null check.
+The explicit annotation becomes the variable's declared type,
+which is non-null regardless of closure context:
+
+```ts
+const maybeEl = document.querySelector<HTMLDivElement>('#app');
+if (maybeEl === null) {
+  throw new Error('missing');
+}
+const el: HTMLDivElement = maybeEl;
+
+function setup(): void {
+  console.log(el.clientWidth); // OK
+}
+```
+
+### What does not work
+
+- Combining multiple null checks into one `if` guard --
+  the same hoisting concern applies per-variable
+- `asserts` functions -- they narrow the **parameter**
+  in the caller's flow, but the narrowed binding is still a `const`
+  subject to the same closure rules
+- Adding `as HTMLDivElement` --
+  suppresses the error but is flagged by `no-unsafe-type-assertion`
+
 ## Related Documentation
 
 - [ESLint Configuration](./TROUBLESHOOTING.eslint.md) - ESLint and TypeScript parser issues

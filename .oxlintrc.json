@@ -400,6 +400,59 @@
       }
     },
     {
+      "files": ["**/*.d.{ts,mts,cts}"],
+      "rules": {
+        //region import -- Declaration files are ambient; module-system rules don't apply.
+        // Ambient modules don't need import/export to be unambiguous.
+        "import/unambiguous": "off",
+        // CJS type definitions legitimately use `export =` syntax.
+        "import/no-commonjs": "off",
+        //endregion import
+
+        //region typescript -- Declaration files describe external shapes that violate source conventions.
+        // Declaration merging requires `interface`, not `type`.
+        "typescript/consistent-type-definitions": "off",
+        // `declare namespace` is standard in ambient declarations.
+        "typescript/no-namespace": "off",
+        // Empty interfaces serve as declaration merging stubs.
+        "typescript/no-empty-object-type": "off",
+        // CJS type definitions use `import x = require()` syntax.
+        "typescript/no-var-requires": "off",
+        // All imports in declaration files are type-level; the distinction is meaningless.
+        "typescript/consistent-type-imports": "off",
+        // External API types sometimes require `any`.
+        "typescript/no-explicit-any": "off",
+        //endregion typescript
+
+        //region eslint -- No runtime code exists in declaration files.
+        // `declare var` is standard for global augmentation.
+        "eslint/no-var": "off",
+        // Numeric literal types are not magic numbers.
+        "eslint/no-magic-numbers": "off",
+        //endregion eslint
+
+        //region no-restricted-syntax -- External API signatures don't follow source conventions.
+        // External APIs describe enums with `declare enum`.
+        "no-restricted-syntax/no-enum": "off",
+        // External function signatures may use rest parameters.
+        "no-restricted-syntax/no-rest-params": "off",
+        // External function signatures use positional parameters.
+        "no-restricted-syntax/require-destructured-params": "off",
+        //endregion no-restricted-syntax
+
+        //region tsdoc -- Ambient declarations are often trivial stubs.
+        // Requiring TSDoc on every `declare` statement is excessive.
+        "tsdoc/require-tsdoc": "off",
+        // External API parameters don't need @param tags.
+        "tsdoc/require-param": "off",
+        // External API functions don't need @returns tags.
+        "tsdoc/require-returns": "off",
+        // External API generators don't need @yields tags.
+        "tsdoc/require-yields": "off"
+        //endregion tsdoc
+      }
+    },
+    {
       "files": ["**/*.{test,bench}.ts"],
       "rules": {
         // Test files themselves don't require good traces.

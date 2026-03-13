@@ -1,25 +1,14 @@
 {
   "name": "monochromatic",
-  "private": true,
   "author": {
     "name": "Aquaticat",
     "email": "an@aquati.cat",
     "url": "https://aquati.cat"
   },
-  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git"
   },
-  "trustedDependencies": [
-    "sharp",
-    "dprint",
-    "esbuild"
-  ],
-  "engines": {
-    "bun": ">=1.2.9"
-  },
-  "type": "module",
   "devDependencies": {
     "h3": "catalog:",
     "@monochromatic-dev/cli-mvm": "workspace:*",
@@ -103,6 +92,45 @@
     "remark-lint-table-pipes": "catalog:",
     "remark-lint-unordered-list-marker-style": "catalog:"
   },
+  "cpu": [
+    "x64",
+    "arm64",
+    "current"
+  ],
+  "engines": {
+    "bun": ">=1.2.9"
+  },
+  "libc": [
+    "glibc",
+    "musl",
+    "current"
+  ],
+  "license": "Apache-2.0",
+  "os": [
+    "linux",
+    "darwin",
+    "win32",
+    "current"
+  ],
+  "overrides": {
+    "@shikijs/types": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "astro": "catalog:",
+    "esbuild": "catalog:",
+    "react": "catalog:",
+    "rollup": "catalog:",
+    "sugarss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vue": "catalog:"
+  },
+  "private": true,
+  "trustedDependencies": [
+    "sharp",
+    "dprint",
+    "esbuild"
+  ],
+  "type": "module",
   "workspaces": {
     "packages": [
       "packages/*/*"
@@ -148,7 +176,7 @@
       "@typescript-eslint/scope-manager": ">=8.54.0",
       "@typescript-eslint/types": ">=8.54.0",
       "@typescript-eslint/utils": "*",
-      "@typescript/native-preview": ">=7.0.0-dev.20260206.1",
+      "@typescript/native-preview": ">=7.0.0-dev.20260313.1",
       "@ungap/structured-clone": ">=1.3.0",
       "@vitejs/plugin-basic-ssl": ">=2.1.4",
       "@vitest/eslint-plugin": ">=1.6.6",
@@ -280,7 +308,7 @@
       "tinyglobby": ">=0.2.15",
       "to-vfile": ">=8.0.0",
       "ts-pattern": ">=5.9.0",
-      "tsdown": ">=0.20.3",
+      "tsdown": ">=0.21.2",
       "type-fest": ">=5.4.3",
       "typescript": ">=6.0.1-rc",
       "typescript-eslint": ">=8.54.0",
@@ -302,33 +330,5 @@
         "vite": "^5.4.0"
       }
     }
-  },
-  "overrides": {
-    "@shikijs/types": "catalog:",
-    "@typescript/native-preview": "catalog:",
-    "astro": "catalog:",
-    "esbuild": "catalog:",
-    "react": "catalog:",
-    "rollup": "catalog:",
-    "sugarss": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:",
-    "vue": "catalog:"
-  },
-  "os": [
-    "linux",
-    "darwin",
-    "win32",
-    "current"
-  ],
-  "cpu": [
-    "x64",
-    "arm64",
-    "current"
-  ],
-  "libc": [
-    "glibc",
-    "musl",
-    "current"
-  ]
+  }
 }

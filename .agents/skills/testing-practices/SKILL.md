@@ -1,3 +1,11 @@
+---
+name: testing-practices
+description: >
+  Testing practices for the monorepo covering bun:test unit tests,
+  Playwright browser and e2e tests, test file conventions, coverage,
+  parameterized tests, async patterns, and bun:test quirks.
+---
+
 # Testing practices
 
 ## Test framework
@@ -64,8 +72,8 @@ import { describe, expect, test } from 'bun:test';
 
 import { coerceArg } from './coerce.ts';
 
-describe('coerceArg', () => {
-  test('coerces integer string to number', () => {
+describe('coerceArg', function coerceArgSuite() {
+  test('coerces integer string to number', function coercesInteger() {
     expect(coerceArg({ arg: '42' })).toBe(42);
   });
 });
@@ -75,7 +83,7 @@ Import the function or module under test directly. Use the function name or modu
 
 ## Coverage requirements
 
-Aim for 100% test coverage. When certain lines or branches cannot be tested (e.g. error handling for impossible states), use V8 ignore comments:
+Target 100% test coverage. When certain lines or branches cannot be tested (e.g. error handling for impossible states), use V8 ignore comments:
 
 ```ts
 /* v8 ignore next -- @preserve */
@@ -95,24 +103,51 @@ if (untestableCondition) {
 
 - Use descriptive test names that explain expected behavior
 - Group related tests using `describe` blocks
-- Keep one top-level `describe` per subject per file
+- Keep `describe` titles unique at the same scope within a file -- duplicate titles cause misattributed results (see `TROUBLESHOOTING.testing.md`)
 - Use `test.each` for parameterized tests
 - Test both happy path and error scenarios
 - Mock external dependencies using `spyOn` and `mock` from `bun:test`
+
+### Parameterized tests with `test.each`
+
+```ts
+describe('pathParse', function pathParseSuite() {
+  test.each([
+    { s: '' },
+    { s: '/' },
+    { s: 'foo' },
+    { s: 'foo/bar' },
+    { s: '/foo' },
+  ] as const)('pathParse($s)', function parsesPath({ s }) {
+    expect(pathParse(s)).toStrictEqual(posix.parse(s));
+  });
+});
+```
+
+### Test timeouts
+
+For tests that involve network calls or slow operations, pass a timeout option as the third argument:
+
+```ts
+test('fetches embeddings from external API', async function fetchesEmbeddings() {
+  const result = await embed({ input: 'test' });
+  expect(result).toBeDefined();
+}, { timeout: 30_000 });
+```
 
 ### Region markers
 
 Use `//region` and `//endregion` markers to organize test groups within a `describe` block:
 
 ```ts
-describe('coerceArg', () => {
+describe('coerceArg', function coerceArgSuite() {
   //region Numeric coercion
 
-  test('coerces integer string to number', () => {
+  test('coerces integer string to number', function coercesInteger() {
     expect(coerceArg({ arg: '42' })).toBe(42);
   });
 
-  test('coerces negative integer string to number', () => {
+  test('coerces negative integer string to number', function coercesNegative() {
     expect(coerceArg({ arg: '-7' })).toBe(-7);
   });
 
@@ -120,7 +155,7 @@ describe('coerceArg', () => {
 
   //region Boolean and null coercion
 
-  test('coerces "true" to boolean true', () => {
+  test('coerces "true" to boolean true', function coercesTrue() {
     expect(coerceArg({ arg: 'true' })).toBe(true);
   });
 
@@ -136,7 +171,7 @@ They also prevent accidental duplicate `describe` blocks at the same scope.
 For async tests where assertions run inside callbacks or after async operations, declare the expected assertion count:
 
 ```ts
-test('config file that copies one file to another', async () => {
+test('config file that copies one file to another', async function copiesFile() {
   expect.assertions(2);
   await writeFile(join(tempDir, 'source.md'), '# Source Content');
 
@@ -154,18 +189,18 @@ Use `beforeEach`/`afterEach` with module-scoped variables for integration tests 
 ```ts
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 
-describe('integration: config execution', () => {
+describe('integration: config execution', function configExecutionSuite() {
   let tempDir: string;
 
-  beforeEach(async () => {
+  beforeEach(async function createTempDir() {
     tempDir = await mkdtemp(join(tmpdir(), 'my-test-'));
   });
 
-  afterEach(async () => {
+  afterEach(async function removeTempDir() {
     await rm(tempDir, { recursive: true, force: true });
   });
 
-  test('writes output to temp dir', async () => {
+  test('writes output to temp dir', async function writesOutput() {
     // ... uses tempDir
   });
 });
@@ -185,8 +220,8 @@ import {
   test,
 } from 'bun:test';
 
-describe('ArrayFixedLength', () => {
-  test('IsArrayFixedLength', () => {
+describe('ArrayFixedLength', function arrayFixedLengthSuite() {
+  test('IsArrayFixedLength', function isArrayFixedLength() {
     expectTypeOf<IsArrayFixedLength<[number, string]>>().toEqualTypeOf<true>();
   });
 });
@@ -199,6 +234,9 @@ describe('ArrayFixedLength', () => {
 - `test.extend` (fixtures) is not available — use `beforeEach`/`afterEach` with module-scoped variables
 - `test('name', { skip: condition }, fn)` options object is not available — use `test.skipIf(condition)('name', fn)`
 - `vi.spyOn` becomes `spyOn` (imported from `bun:test`)
+
+For known bun:test issues (duplicate describe blocks, missing test output, misattributed logs),
+see `TROUBLESHOOTING.testing.md` in the repository root.
 
 ## Linting test code
 

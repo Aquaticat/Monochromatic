@@ -1,11 +1,7 @@
 ---
 name: code-review
 description: >
-  Use when reviewing code changes, diffs, pull requests, or when the user asks
-  for a code review, quality check, or feedback on their implementation.
-  Use when examining staged changes, feature branches, or specific files
-  for correctness, style, security, and maintainability issues.
-  Also reviews commit messages in PRs and multi-commit bundles.
+  Review code
 ---
 
 # Code review
@@ -936,7 +932,7 @@ When changes include CSS, check:
 - Colors via CSS custom properties; no `var()` fallbacks (exception: user-configurable)
 - No `!important`
 - `:focus-visible` on interactive elements; `48px` minimum touch targets
-- Shallow native nesting (1-2 levels)
+- Shallow native nesting (3 levels max)
 - Data attributes for state/variant styling, not BEM modifiers
 
 #### Logical properties

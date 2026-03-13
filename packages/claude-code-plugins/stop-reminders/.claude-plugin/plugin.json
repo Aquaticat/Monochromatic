@@ -11,7 +11,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/dist/final/ccsr.js"
+            "command": "${CLAUDE_PLUGIN_ROOT}/dist/final/node/index.mjs"
           }
         ]
       }

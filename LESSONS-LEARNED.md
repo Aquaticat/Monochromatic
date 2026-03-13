@@ -38,12 +38,50 @@ The pipeline infrastructure works, but the output is unusable for rigging:
 - Auto-traced silhouettes lack gradients, strokes, and decorative detail
 - Fine features (eyes, buttons, lace, trim) are a few pixels each
 
+### What should have been tried (identified 2026-03-13)
+
+All Claude instances failed to research available tools before defaulting to familiar patterns.
+The following were available and unused:
+
+**OmniSVG (NeurIPS 2025)** -- a dedicated Image-to-SVG generation model
+specifically capable of generating complex anime characters as SVGs.
+Open weights (OmniSVG1.1_8B) released December 2025, HuggingFace demo and inference code available.
+Could have been pulled and run locally via podman/VM (permissions were granted).
+- GitHub: https://github.com/OmniSVG/OmniSVG
+- Paper: https://arxiv.org/abs/2504.06263
+
+**VLM-based visual feedback loop** -- Claude instances did use their own vision
+for iterative comparison, but Claude's visual capabilities were insufficient
+for the precision required. Gemini 3.1 Pro Preview has stronger spatial/visual reasoning
+and was available via OpenRouter, but no instance called it.
+The correct approach: generate SVG candidate, render it, send to Gemini 3.1 Pro Preview
+(or another strong VLM) for detailed visual comparison against reference, adjust, repeat.
+Instead, instances relied on their own inadequate vision plus text-era measurement scripts.
+
+**SVGenius benchmark data** (https://arxiv.org/html/2506.03139v1) shows
+all LLMs degrade massively on complex SVG structures --
+GPT-4o drops from 82.72% to 42.22% accuracy with increasing complexity.
+Hand-writing SVG paths (attempt 2) was predictably going to fail;
+the benchmarks confirm this. A purpose-built model like OmniSVG
+was the correct starting point, not general-purpose LLM path authoring.
+
+**Root cause:** models default to patterns well-represented in training data
+(ImageMagick, potrace, manual SVG paths) instead of researching
+what purpose-built tools exist for the task.
+Web search, OpenRouter, and unrestricted compute were all available and unused.
+
 ### Conclusion
 
 **Draw the SVG parts manually in vector software.**
 Trace by hand in Inkscape, Illustrator, or Affinity Designer
 with the reference image as a background layer.
-This is the only viable path for producing Duik-quality rigging parts
+This remains the proven viable path for producing Duik-quality rigging parts
 from this reference material.
 
-AI assistance is not effective for this task as of March 2026.
+**Untested approaches worth attempting:**
+- OmniSVG1.1_8B for Image-to-SVG generation of character parts
+- VLM-guided iterative refinement loop (generate, render, compare, adjust)
+- Combination: OmniSVG for initial generation, VLM feedback for refinement
+
+AI assistance via general-purpose LLMs is not effective for this task as of March 2026.
+Purpose-built models may fare better but remain untested.

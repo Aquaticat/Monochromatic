@@ -19,7 +19,9 @@ const _default_1: UserConfig = defineConfig({
   dts: true,
   target: 'firefox140',
   platform: 'node',
-  noExternal: [/^@monochromatic-dev\//,],
+  deps: {
+    alwaysBundle: [/^@monochromatic-dev\//,],
+  },
   minify: {
     compress: true,
     mangle: false,

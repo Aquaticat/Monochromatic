@@ -16,6 +16,7 @@ The Glob tool is denylisted and disabled because it currently doesn't respect .g
 User input might include raw `\n` which you should consider as newlines since newline is broken sometimes.
 
 Clone entire git repo of a package to a temp dir whenever investigating source code is needed.
+Use `gh repo clone` instead of `git clone` -- `gh` handles authentication and fork remotes automatically.
 
 Sandbox breaks `bun install` despite proper allowlisting, so run it outside sandbox until this is fixed.
 
@@ -30,8 +31,12 @@ Prefer cross-runtime patterns instead of Bun-specific implementations.
 2. Add `mise.toml` with task definitions mirroring sibling packages
 3. Configure `package.json` with workspace dependencies
 4. For CLI packages with a `bin` entry, add `#!/usr/bin/env bun` shebang as the first line of the entry point -- without it, Unix falls back to `/bin/sh` and the script hangs or errors
+5. For packages with client-side bundling, add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`, a `build:js:client` mise task, and `@monochromatic-dev/config-tsdown` as a devDependency
 
 ## Essential commands
+
+Mise task `run` commands use nushell, not bash.
+Use `;` to chain commands sequentially (`mise run foo; mise run bar`), not `&&`.
 
 All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts.
 Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly -- use the corresponding mise task instead.
@@ -73,6 +78,24 @@ In spec mode, keep researching and gathering context until the user explicitly a
 
 Be direct and honest.
 Search for evidence before responding to opinions, guesses, or analysis requests.
+Identify implicit questions, requests for estimates, or gaps in user input
+and research them before responding.
+When a user's message contains an embedded question (e.g. "month? year?"),
+treat it as a research task: use web search, read relevant code, or check documentation
+to give an informed answer rather than deflecting with "genuinely unknown."
+
+When the user says "I was expecting you to..." or similar unmet-expectation feedback,
+treat it as a documentation gap.
+Propose a concrete AGENTS.md change (what rule, where it goes, exact wording)
+so future sessions don't repeat the same failure.
+Do both: perform the expected action **and** propose the AGENTS.md edit.
+
+### Document non-obvious findings
+
+When discovering something that would not be immediately obvious to a future reader,
+document it in the relevant readme or doc file right away.
+This includes implementation details, behavioral quirks, implicit constraints,
+and any context that required investigation or experimentation to uncover.
 
 ### Documentation standards
 - No emojis in human-readable content
@@ -171,6 +194,8 @@ Only pin versions with clear justification and a comment explaining why.
 - Check actual type definitions before using APIs
 - Pay attention to CLI tool command patterns across examples; test the simplest case first
 - Never modify files in cloned third-party repositories -- use configuration, env vars, or wrapper scripts
+- When encountering unexpected behavior from an external tool, clone its source and trace the exact code path to pinpoint the root cause before assuming a limitation or working around it
+- After investigating, write a detailed entry in the appropriate `TROUBLESHOOTING.*.md` file covering: minimal repro, root cause with exact source locations, verified solutions, and what does not work
 
 # Code Quality
 
@@ -218,7 +243,7 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - Minimal declarations; no `!important`; fluid approaches over breakpoints
 - `:focus-visible` on all interactive elements; `48px` minimum touch targets via `min-inline-size`/`min-block-size`
 - Small composable mixins named by what they do (not what they style)
-- Native CSS nesting; shallow depth (1-2 levels max)
+- Native CSS nesting; shallow depth (3 levels max)
 - Data attributes for state/variant styling instead of BEM modifiers
 
 # TypeScript Standards
@@ -246,6 +271,7 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - `const` generic parameters; `readonly` array parameters; meaningful constraint names (e.g. `TData`)
 - Prefer `as` over angle bracket syntax; use type guards for runtime checking; avoid deep nesting in conditional types
 - Use assertion functions (`asserts value is T`) for runtime type narrowing
+- TypeScript does not propagate `const` narrowing into **function declarations** (both tsc and tsgo); `checker.ts:31181-31192` only extends flow analysis across `FunctionExpression`, `ArrowFunction`, and method/accessor closures because declarations are hoisted and could be called before the narrowing guard. Fix: use a helper that returns non-null (`function requireElement<T>(sel): T { ... throw ... }`), or reassign to a new `const` with an explicit type annotation after the null check
 - Generator overloads: remove `*` (sync) or `async *` (async) from non-implementation signatures
 
 ## Variables and values
@@ -256,7 +282,7 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - Functional approaches over loops; `for...of` when iteration is unavoidable
 - Avoid deprecated features (`substring()`/`slice()` over `substr()`)
 - `satisfies` for type checking without widening; separate destructuring blocks for dependent values
-- Magic literals as named `const` (exception: `-2` through `2`)
+- Magic literals as named `const` (exception: `-2` through `2`); for fractional values, compose from exempt range: `HALF = 1 / 2`, `QUARTER = HALF / 2`, `THREE_QUARTERS = HALF + QUARTER`
 
 ## Programming patterns
 

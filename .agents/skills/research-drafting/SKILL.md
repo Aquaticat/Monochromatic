@@ -51,6 +51,17 @@ If the user asks for "marketing," research all channels (editorial, social, emai
 If the user asks for "target audience," consider all audience segments (creators, consumers, partners), not just the obvious one.
 Ask yourself: "Am I only thinking about one angle?" before drafting each section.
 
+### Padding with filler
+
+If removing a sentence does not reduce the information content of a paragraph, the sentence does not belong.
+Common forms: restating what was just said in different words, circular definitions ("X is defined as something that does X"),
+truisms that apply to any topic ("understanding the landscape is important for stakeholders"),
+and throat-clearing transitions ("It is worth noting that...").
+
+Filler is harder to detect than missing sources because it reads fluently.
+Check each paragraph by asking: "What does the reader know after this paragraph that they did not know before?"
+If the answer is nothing, cut it.
+
 ### Tone-fixing without substance-fixing
 
 Removing AI-sounding vocabulary ("empowering," "vibrant," "community-driven") is necessary but not sufficient.
@@ -73,6 +84,7 @@ Fix substance first, then tone.
 - When using secondary sources, attribute them explicitly and rate their reliability
 - Never treat an SEO blog citing a shipping company's marketing page as authoritative demographic data
 - If a number cannot be traced to a primary source, say so: "No primary source available; estimate from [blog name]"
+- When two sources disagree on a number or claim, present both, attribute each, and note the discrepancy -- do not silently pick one
 - Include full URLs inline after factual claims
 
 ### 3. Drafting
