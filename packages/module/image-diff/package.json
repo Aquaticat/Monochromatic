@@ -1,0 +1,25 @@
+{
+  "name": "@monochromatic-dev/module-image-diff",
+  "description": "Perceptual image difference comparison using Voyage AI multimodal embeddings.",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "module": "src/index.ts",
+  "bin": {
+    "image-diff": "./src/cli.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "zod": "catalog:"
+  }
+}

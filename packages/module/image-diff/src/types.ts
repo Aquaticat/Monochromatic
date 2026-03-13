@@ -1,0 +1,311 @@
+/**
+ * Supported image input formats for embedding APIs.
+ */
+export type ImageFormat = 'png' | 'jpeg' | 'webp' | 'gif';
+
+/**
+ * Image provided as raw bytes with explicit format.
+ *
+ * @example
+ * ```ts
+ * const input: ImageBuffer = {
+ *   buffer: await Bun.file('photo.png').arrayBuffer(),
+ *   format: 'png',
+ * };
+ * ```
+ */
+export type ImageBuffer = {
+  /** Raw image bytes. */
+  readonly buffer: ArrayBuffer;
+  /** Image format for the data URI media type. */
+  readonly format: ImageFormat;
+};
+
+/**
+ * Image provided as a file path on disk.
+ *
+ * @example
+ * ```ts
+ * const input: ImagePath = { path: '/tmp/screenshot.png' };
+ * ```
+ */
+export type ImagePath = {
+  /** Absolute or relative file path to an image. */
+  readonly path: string;
+};
+
+/**
+ * Image provided as a publicly accessible URL.
+ *
+ * @example
+ * ```ts
+ * const input: ImageUrl = { url: 'https://example.com/photo.jpg' };
+ * ```
+ */
+export type ImageUrl = {
+  /** URL pointing to an image. */
+  readonly url: string;
+};
+
+/**
+ * Image provided as a base64-encoded data URI string.
+ *
+ * @example
+ * ```ts
+ * const input: ImageBase64 = { base64: 'data:image/png;base64,iVBOR...' };
+ * ```
+ */
+export type ImageBase64 = {
+  /** Base64-encoded data URI (e.g. `data:image/png;base64,...`). */
+  readonly base64: string;
+};
+
+/**
+ * Any supported way to specify an image for comparison.
+ */
+export type ImageInput = ImageBuffer | ImagePath | ImageUrl | ImageBase64;
+
+//region Provider models
+
+/**
+ * Supported Voyage AI multimodal embedding models.
+ */
+export type VoyageModel = 'voyage-multimodal-3' | 'voyage-multimodal-3.5';
+
+/**
+ * Supported Gemini multimodal embedding models.
+ */
+export type GeminiModel = 'gemini-embedding-2-preview';
+
+/**
+ * Union of all supported embedding models across providers.
+ */
+export type EmbeddingModel = VoyageModel | GeminiModel;
+
+/**
+ * Supported embedding provider backends.
+ */
+export type Provider = 'voyage' | 'gemini';
+
+//endregion Provider models
+
+//region Configuration
+
+/**
+ * Configuration for the image diff client.
+ *
+ * @example
+ * ```ts
+ * // Voyage (default)
+ * const config: ImageDiffConfig = {
+ *   provider: 'voyage',
+ *   apiKey: process.env.IMAGE_DIFF_VOYAGE_API_KEY,
+ *   model: 'voyage-multimodal-3.5',
+ * };
+ *
+ * // Gemini
+ * const config: ImageDiffConfig = {
+ *   provider: 'gemini',
+ *   apiKey: process.env.IMAGE_DIFF_GEMINI_API_KEY,
+ *   model: 'gemini-embedding-2-preview',
+ * };
+ * ```
+ */
+export type ImageDiffConfig = {
+  /** Embedding provider backend. Defaults to `'voyage'`. */
+  readonly provider?: Provider;
+  /**
+   * API key for the selected provider.
+   * Falls back to `IMAGE_DIFF_VOYAGE_API_KEY` for Voyage
+   * or `IMAGE_DIFF_GEMINI_API_KEY` for Gemini.
+   */
+  readonly apiKey?: string;
+  /** Model to use for embeddings. Defaults to the latest model for the selected provider. */
+  readonly model?: EmbeddingModel;
+};
+
+//endregion Configuration
+
+//region Result types
+
+/**
+ * Result of comparing two images.
+ *
+ * @example
+ * ```ts
+ * if (result.similarity > 0.95) {
+ *   console.log('Images are perceptually identical');
+ * }
+ * ```
+ */
+export type ComparisonResult = {
+  /** Cosine similarity between the two image embeddings, ranging from -1 to 1. Higher means more similar. */
+  readonly similarity: number;
+  /** Perceptual distance derived as `1 - similarity`, ranging from 0 to 2. Lower means more similar. */
+  readonly distance: number;
+  /** Embedding vector for the first image. */
+  readonly embeddingA: ReadonlyArray<number>;
+  /** Embedding vector for the second image. */
+  readonly embeddingB: ReadonlyArray<number>;
+};
+
+/**
+ * Result of computing a single image embedding.
+ *
+ * @example
+ * ```ts
+ * const { embedding } = await embed(image);
+ * ```
+ */
+export type EmbeddingResult = {
+  /** Embedding vector for the image. */
+  readonly embedding: ReadonlyArray<number>;
+  /** Token usage reported by the API. */
+  readonly usage: {
+    readonly textTokens: number;
+    readonly imagePixels: number;
+    readonly totalTokens: number;
+  };
+};
+
+/**
+ * Result of computing embeddings for multiple images in a single batch request.
+ *
+ * @example
+ * ```ts
+ * const { embeddings } = await embedBatch(images);
+ * ```
+ */
+export type BatchEmbeddingResult = {
+  /** Embedding vectors, one per input image, in the same order. */
+  readonly embeddings: ReadonlyArray<ReadonlyArray<number>>;
+  /** Token usage reported by the API for the entire batch. */
+  readonly usage: {
+    readonly textTokens: number;
+    readonly imagePixels: number;
+    readonly totalTokens: number;
+  };
+};
+
+//endregion Result types
+
+//region Voyage API types
+
+/**
+ * Shape of the Voyage AI multimodal embeddings API response.
+ */
+export type VoyageApiResponse = {
+  readonly object: 'list';
+  readonly data: ReadonlyArray<{
+    readonly object: 'embedding';
+    readonly embedding: ReadonlyArray<number>;
+    readonly index: number;
+  }>;
+  readonly model: string;
+  readonly usage: {
+    readonly text_tokens: number;
+    readonly image_pixels: number;
+    readonly video_pixels: number;
+    readonly total_tokens: number;
+  };
+};
+
+/**
+ * Content item for the Voyage AI multimodal embeddings API request.
+ */
+export type VoyageContentItem =
+  | { readonly type: 'image_url'; readonly image_url: string }
+  | { readonly type: 'image_base64'; readonly image_base64: string };
+
+/**
+ * Single input entry for the Voyage AI multimodal embeddings API request.
+ */
+export type VoyageInput = {
+  readonly content: ReadonlyArray<VoyageContentItem>;
+};
+
+/**
+ * Request body for the Voyage AI multimodal embeddings API.
+ */
+export type VoyageApiRequest = {
+  readonly inputs: ReadonlyArray<VoyageInput>;
+  readonly model: VoyageModel;
+  readonly input_type: 'document';
+  readonly truncation: boolean;
+};
+
+//endregion Voyage API types
+
+//region Gemini API types
+
+/**
+ * Inline image data for the Gemini embedContent API.
+ */
+export type GeminiInlineData = {
+  /** MIME type (e.g. `image/png`, `image/jpeg`). */
+  readonly mime_type: string;
+  /** Raw base64-encoded image data (no data URI prefix). */
+  readonly data: string;
+};
+
+/**
+ * A content part for the Gemini API -- either inline image data or text.
+ */
+export type GeminiPart = {
+  readonly inline_data: GeminiInlineData;
+};
+
+/**
+ * Request body for the Gemini embedContent API.
+ * The `model` field is optional for single-embed (inferred from URL path)
+ * but required in each entry of a batchEmbedContents request.
+ */
+export type GeminiEmbedContentRequest = {
+  readonly model?: string;
+  readonly content: {
+    readonly parts: ReadonlyArray<GeminiPart>;
+  };
+};
+
+/**
+ * Response from the Gemini embedContent API.
+ */
+export type GeminiEmbedContentResponse = {
+  readonly embedding: {
+    readonly values: ReadonlyArray<number>;
+  };
+};
+
+/**
+ * Request body for the Gemini batchEmbedContents API.
+ */
+export type GeminiBatchEmbedRequest = {
+  readonly requests: ReadonlyArray<GeminiEmbedContentRequest>;
+};
+
+/**
+ * Response from the Gemini batchEmbedContents API.
+ */
+export type GeminiBatchEmbedResponse = {
+  readonly embeddings: ReadonlyArray<{
+    readonly values: ReadonlyArray<number>;
+  }>;
+};
+
+//endregion Gemini API types
+
+//region Provider interface
+
+/**
+ * Common interface that both Voyage and Gemini provider modules implement.
+ * Each provider converts {@link ImageInput} into its native API format,
+ * calls the embedding API, and returns normalized results.
+ */
+export type EmbeddingProvider = {
+  /** Compute a single image embedding. */
+  readonly embed: (input: ImageInput, config: ImageDiffConfig) => Promise<EmbeddingResult>;
+  /** Compute embeddings for multiple images in a batch. */
+  readonly embedBatch: (inputs: ReadonlyArray<ImageInput>, config: ImageDiffConfig) => Promise<BatchEmbeddingResult>;
+};
+
+//endregion Provider interface
