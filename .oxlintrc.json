@@ -292,7 +292,8 @@
     // Sometimes the type-checking if-statement isn't for checking type.
     "unicorn/prefer-type-error": "off",
     "import/max-dependencies": "off",
-    "eslint/max-lines": ["error", { "max": 200, "skipBlankLines": true, "skipComments": true }],
+    // Since we're skipping blank lines and comments, 100 is generous enough that splitting up code files is always feasible.
+    "eslint/max-lines": ["error", { "max": 100, "skipBlankLines": true, "skipComments": true }],
     "eslint/max-params": "off",
     "eslint/max-depth": "off",
     "eslint/max-lines-per-function": "off",
