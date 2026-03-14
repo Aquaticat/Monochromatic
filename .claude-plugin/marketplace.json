@@ -1,11 +1,11 @@
 {
-  "name": "monochromatic-hooks",
+  "name": "Monochromatic",
   "owner": {
     "name": "Aquaticat",
-    "email": "niconiconico@aquaticat.com"
+    "email": "an@aquati.cat"
   },
   "metadata": {
-    "description": "Claude Code hook plugins for terminal titles, uncertainty detection, session housekeeping, and agent resume guards.",
+    "description": "Claude Code plugins for terminal titles, uncertainty detection, session housekeeping, agent resume guards, and child session spawning.",
     "version": "0.0.1"
   },
   "plugins": [
@@ -48,6 +48,14 @@
       "version": "0.0.1",
       "category": "productivity",
       "tags": ["bash", "filter", "tokens", "optimization"]
+    },
+    {
+      "name": "claude-spawn",
+      "source": "./packages/claude-code-plugins/claude-spawn",
+      "description": "Spawns steerable child Claude Code sessions in terminal windows with automatic result forwarding via hooks.",
+      "version": "0.0.1",
+      "category": "productivity",
+      "tags": ["spawn", "subagent", "terminal", "mcp", "hooks"]
     }
   ]
 }

@@ -16,13 +16,13 @@ with automatic result forwarding via hooks.
 If this plugin is published to a marketplace:
 
 ```bash
-claude plugin install claude-spawn@marketplace-name
+claude plugin install claude-spawn@Monochromatic
 ```
 
 Or from within a Claude Code session:
 
 ```
-/plugin install claude-spawn@marketplace-name
+/plugin install claude-spawn@Monochromatic
 ```
 
 Choose a scope:
@@ -44,13 +44,14 @@ Or install permanently by adding to settings:
 claude plugin install ./packages/claude-code-plugins/claude-spawn --scope user
 ```
 
-### From a Git repository
+### From the Monochromatic GitHub marketplace
+
+First add the marketplace, then install:
 
 ```bash
-claude plugin install claude-spawn@owner/repo
+claude plugin marketplace add Aquaticat/Monochromatic
+claude plugin install claude-spawn@Monochromatic
 ```
-
-Where `owner/repo` is a GitHub repository with a `marketplace.json` that includes this plugin.
 
 ## Building
 
@@ -77,33 +78,15 @@ Look for `spawn_claude` (or `mcp__claude-spawn__spawn_claude` if prefixed).
 
 ## Publishing
 
-### To a GitHub marketplace
+### To the Monochromatic marketplace
 
-1.  Create a repository (or use an existing one) with a `.claude-plugin/marketplace.json` at the root:
+This plugin is already registered in `.claude-plugin/marketplace.json` at the repo root
+under the `Monochromatic` marketplace. After pushing, users install with:
 
-    ```json
-    {
-      "name": "your-marketplace",
-      "owner": { "name": "Your Name" },
-      "plugins": [
-        {
-          "name": "claude-spawn",
-          "source": { "source": "git-subdir", "url": "https://github.com/owner/repo.git", "path": "packages/claude-code-plugins/claude-spawn" },
-          "description": "Spawn steerable child Claude sessions with automatic result forwarding.",
-          "version": "0.0.1"
-        }
-      ]
-    }
-    ```
-
-2.  Push to GitHub.
-
-3.  Users add your marketplace and install:
-
-    ```bash
-    claude plugin marketplace add owner/repo
-    claude plugin install claude-spawn@your-marketplace
-    ```
+```bash
+claude plugin marketplace add Aquaticat/Monochromatic
+claude plugin install claude-spawn@Monochromatic
+```
 
 ### To npm
 
@@ -115,7 +98,7 @@ Look for `spawn_claude` (or `mcp__claude-spawn__spawn_claude` if prefixed).
     ```json
     {
       "name": "claude-spawn",
-      "source": { "source": "npm", "package": "@your-scope/claude-code-plugins-claude-spawn" },
+      "source": { "source": "npm", "package": "@monochromatic-dev/claude-code-plugins-claude-spawn" },
       "description": "Spawn steerable child Claude sessions with automatic result forwarding.",
       "version": "0.0.1"
     }
