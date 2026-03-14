@@ -8,6 +8,7 @@
  * Exceeds 100 lines: single cohesive reader pipeline; splitting would scatter
  * the grouping logic across files with no clear ownership boundary.
  */
+import type { Dirent } from 'node:fs';
 import { readdir, readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
@@ -107,7 +108,7 @@ export async function readArtifacts(): Promise<ArtifactData> {
   /** Whole-model failure artifacts */
   const failures: FailureArtifactMeta[] = [];
 
-  let modelDirents: import('node:fs').Dirent[];
+  let modelDirents: Dirent[];
   try {
     modelDirents = await readdir(LINT_DIR, { withFileTypes: true, });
   } catch {
@@ -117,7 +118,7 @@ export async function readArtifacts(): Promise<ArtifactData> {
 
   for (const modelDirent of modelDirents.filter(function isDir(dirent) { return dirent.isDirectory(); })) {
     const modelPath = join(LINT_DIR, modelDirent.name);
-    let subdirents: import('node:fs').Dirent[];
+    let subdirents: Dirent[];
     try {
       subdirents = await readdir(modelPath, { withFileTypes: true, });
     } catch (error) {
@@ -146,6 +147,7 @@ export async function readArtifacts(): Promise<ArtifactData> {
       // Old artifacts without label fall back to the directory name
       const meta: ArtifactMeta | EnrichedArtifactMeta = {
         ...(parsed as ArtifactMeta | EnrichedArtifactMeta),
+        /* oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- label is typed as required but old artifacts may omit it; ?? fallback is intentional */
         label: (parsed as ArtifactMeta).label ?? modelDirent.name,
       };
       const [source, response] = await Promise.all([
@@ -261,7 +263,7 @@ function buildViewerData(
     });
   }
 
-  entries.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  entries.sort(function byTimestamp(a, b) { return a.timestamp.localeCompare(b.timestamp); });
 
   console.error(`[viewer] loaded ${String(entries.length)} runs, ${String(probeDetails.size)} probe details`);
   return { entries, probeDetails, };

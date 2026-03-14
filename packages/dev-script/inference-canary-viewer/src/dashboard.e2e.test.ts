@@ -5,15 +5,16 @@
  * probe card navigation, and collapsible detail sections. Tests run against
  * the pre-built `dist/final/index.html` — build the dashboard first.
  */
+/* oxlint-disable typescript-eslint/no-non-null-assertion -- e2e test assertions: getAttribute('popovertarget') is always present on tested elements */
+
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import {
   expect,
   test,
+  type Page,
 } from '@playwright/test';
-
-import type { Page } from '@playwright/test';
 
 /** Absolute file URL to the built dashboard */
 const DASHBOARD_URL = pathToFileURL(

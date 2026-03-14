@@ -33,6 +33,7 @@ const DIST_DIR = join(PACKAGE_DIR, 'dist', 'final');
 const CSS_DIR = join(PACKAGE_DIR, 'src', 'css');
 
 console.error('[viewer] reading artifacts...');
+/** All run entries and per-probe detail data loaded from artifact directories. */
 const { entries, probeDetails, } = await readArtifacts();
 
 console.error(`[viewer] ${String(entries.length)} runs, ${String(probeDetails.size)} probe details`);

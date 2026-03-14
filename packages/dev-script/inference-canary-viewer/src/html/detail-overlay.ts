@@ -74,7 +74,7 @@ function renderRunOverlay({ id, entry, }: {
   const {label} = entry;
 
   const probeCards = Object.entries(entry.probeScores)
-    .map(([name, score]) => {
+    .map(function renderProbeCard([name, score]) {
       const probeOverlayId = `run-${entry.label}-${name}-${entry.timestamp}`;
       return h({
         tag: 'button',
@@ -211,22 +211,15 @@ function renderSideBySideDiff(
   const rightLines: string[] = [];
 
   for (const line of diffLines) {
-    switch (line.type) {
-      case 'removed': {
-        leftLines.push(h({ tag: 'span', class: 'diff-removed', text: line.content, }));
-        rightLines.push(h({ tag: 'span', class: 'diff-spacer', }));
-        break;
-      }
-      case 'added': {
-        leftLines.push(h({ tag: 'span', class: 'diff-spacer', }));
-        rightLines.push(h({ tag: 'span', class: 'diff-added', text: line.content, }));
-        break;
-      }
-      case 'unchanged': {
-        leftLines.push(h({ tag: 'span', text: line.content, }));
-        rightLines.push(h({ tag: 'span', text: line.content, }));
-        break;
-      }
+    if (line.type === 'removed') {
+      leftLines.push(h({ tag: 'span', class: 'diff-removed', text: line.content, }));
+      rightLines.push(h({ tag: 'span', class: 'diff-spacer', }));
+    } else if (line.type === 'added') {
+      leftLines.push(h({ tag: 'span', class: 'diff-spacer', }));
+      rightLines.push(h({ tag: 'span', class: 'diff-added', text: line.content, }));
+    } else {
+      leftLines.push(h({ tag: 'span', text: line.content, }));
+      rightLines.push(h({ tag: 'span', text: line.content, }));
     }
   }
 

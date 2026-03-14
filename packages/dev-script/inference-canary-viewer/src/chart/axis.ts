@@ -22,7 +22,7 @@ export const Y_TICKS: readonly number[] = [0, 0.25, 0.5, 0.75, 1];
 export function renderYAxis(): string {
   /** Percentage multiplier to convert 0-1 score to 0-100% CSS bottom offset */
   const PERCENT = 100;
-  return Y_TICKS.map((tick) => {
+  return Y_TICKS.map(function renderTick(tick) {
     const bottom = tick * PERCENT;
     return h({
       tag: 'span',
@@ -84,7 +84,7 @@ export function renderXAxis(timestamps: readonly string[],): string {
  * @returns formatter function mapping ISO timestamp to display label
  */
 function chooseFormatter(timestamps: readonly string[],): (ts: string) => string {
-  const uniqueDates = new Set(timestamps.map((ts) => ts.slice(0, 10)));
+  const uniqueDates = new Set(timestamps.map(function extractDate(ts) { return ts.slice(0, 10); }));
   if (uniqueDates.size <= 1) {
     return formatTime;
   }

@@ -80,7 +80,7 @@ export function renderScatterChart({
   /** Percentage multiplier */
   const PERCENT = 100;
 
-  const pointElements = points.map((point) => {
+  const pointElements = points.map(function renderPoint(point) {
     const left = totalRuns === 1 ? 50 : (point.index / (totalRuns - 1)) * PERCENT;
     const bottom = point.score * PERCENT;
 
@@ -131,12 +131,12 @@ export function renderScatterChart({
     return `${pass1}\n${pass2}`;
   }).join('\n');
 
-  const timestamps = points.map((point) => point.timestamp);
+  const timestamps = points.map(function getTimestamp(point) { return point.timestamp; });
 
   const tableHtml = hideTable === true
     ? ''
     : renderDataTable(
-      points.map((point) => point.tableRow),
+      points.map(function getTableRow(point) { return point.tableRow; }),
       caption,
       tableDisplay,
     );

@@ -64,7 +64,7 @@ export function renderDataTable(
   }
 
   /** Only show the fix score column when at least one row has pass2 data */
-  const hasFixScores = rows.some((row) => row.pass2Score !== undefined);
+  const hasFixScores = rows.some(function hasPass2(row) { return row.pass2Score !== undefined; });
 
   const headerRow = h({
     tag: 'tr',
@@ -77,7 +77,7 @@ export function renderDataTable(
     ],
   });
 
-  const bodyRows = rows.map((row) => {
+  const bodyRows = rows.map(function renderRow(row) {
     /** Timestamp cell with inline "(timeout)" for failed runs */
     const timestampTd = row.failed
       ? h({
@@ -147,9 +147,9 @@ function renderDataGrid(
   caption: string,
 ): string {
   /** Show fix scores when at least one row has pass-2 data */
-  const hasFixScores = rows.some((row) => row.pass2Score !== undefined);
+  const hasFixScores = rows.some(function hasPass2(row) { return row.pass2Score !== undefined; });
 
-  const cards = rows.map((row) => {
+  const cards = rows.map(function renderCard(row) {
     const score = row.score.toFixed(2);
 
     /** Timestamp line with optional "(timeout)" suffix */
