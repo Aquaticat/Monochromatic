@@ -1,4 +1,4 @@
-// oxlint-disable no-magic-numbers, tsdoc/require-tsdoc -- SVG transform script with many dimensional constants and inline variables
+// oxlint-disable no-magic-numbers -- SVG transform script with many dimensional constants
 /**
  * Narrows SVG body parts by scaling x-coordinates toward center (x=400).
  *
@@ -15,6 +15,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+/** Directory containing individual body part SVG files. */
 const PARTS_DIR = join(import.meta.dirname, '..', 'parts')
 
 /** Center x-coordinate for the character in the 800x1200 viewBox. */

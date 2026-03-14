@@ -76,28 +76,31 @@ export async function run({ command, from }: { command: string; from: string | u
    */
   function onSignal(signal: NodeJS.Signals): void {
     rl.info(`received ${signal}, cleaning up...`);
-    // Signal handlers must re-raise after cleanup; using/await using not applicable
-    /* oxlint-disable-next-line no-restricted-syntax/no-promise-finally, eslint-plugin-promise/prefer-await-to-then -- signal handler cannot await; must re-raise synchronously after cleanup */
-    void cleanup().finally(function reraiseSignal() {
+    void (async function cleanupAndReraise(): Promise<void> {
+      try {
+        await cleanup();
+      } catch {
+        // cleanup() already logs errors internally
+      }
       process.kill(process.pid, signal);
-    });
+    })();
   }
 
   process.on('SIGINT', onSignal);
   process.on('SIGTERM', onSignal);
 
-  // Signal handler cleanup requires try/finally; Symbol.dispose cannot remove process listeners
-  /* oxlint-disable-next-line no-restricted-syntax/no-try-finally -- process listener removal requires try/finally; Symbol.dispose cannot target specific listeners */
-  try {
-    await (from !== undefined
-      ? clone({ destination: name, source: from })
-      : create({ name }));
+  await using _guard = {
+    async [Symbol.asyncDispose](): Promise<void> {
+      process.removeListener('SIGINT', onSignal);
+      process.removeListener('SIGTERM', onSignal);
+      await cleanup();
+    },
+  };
 
-    const result = await exec({ command, name });
-    return result;
-  } finally {
-    process.removeListener('SIGINT', onSignal);
-    process.removeListener('SIGTERM', onSignal);
-    await cleanup();
-  }
+  await (from !== undefined
+    ? clone({ destination: name, source: from })
+    : create({ name }));
+
+  const result = await exec({ command, name });
+  return result;
 }

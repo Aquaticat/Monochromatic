@@ -1,9 +1,9 @@
-// oxlint-disable tsdoc/require-tsdoc, no-restricted-syntax/no-arrow-function -- prototype script with inline variables; Elysia API requires arrow callbacks
 import Anthropic from '@anthropic-ai/sdk';
 import { swagger, } from '@elysiajs/swagger';
 import { Elysia, } from 'elysia';
 import { z, } from 'zod/v4-mini';
 
+/** Pre-configured Anthropic client with extended beta features enabled. */
 const anthropic = new Anthropic({
   maxRetries: 0,
   logLevel: 'info',
@@ -21,6 +21,7 @@ const anthropic = new Anthropic({
   },
 },);
 
+/** Streaming message response from the Claude API with tool use. */
 const stream = await anthropic
   .messages
   .create({
@@ -59,12 +60,15 @@ const stream = await anthropic
 for await (const messageStreamEvent of stream)
   console.log(messageStreamEvent,);
 
+/** Default port when AI_TREE_PORT environment variable is not set. */
 const DEFAULT_PORT = 4_111;
+/** Parsed server port from the AI_TREE_PORT environment variable. */
 const PORT = z.coerce.number().parse(process.env.AI_TREE_PORT ?? DEFAULT_PORT,);
 
+/** Elysia HTTP server instance with Swagger documentation. */
 const app = new Elysia()
   .use(swagger(),)
-  .get('/', () => 'Hello Elysia',)
+  .get('/', function handleRoot() { return 'Hello Elysia'; },)
   .listen(PORT,);
 
 console.log(

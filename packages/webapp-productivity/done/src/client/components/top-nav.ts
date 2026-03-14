@@ -117,10 +117,9 @@ class TopNav extends HTMLElement {
           }),
         ],
         on: {
-          // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: event handler must reference `this`
-          click: () => {
+          click: function openMenu() {
             this.dispatchEvent(new CustomEvent("menu-open", { bubbles: true, composed: true }));
-          },
+          }.bind(this),
         },
       }),
       h({ tag: "h1", text: heading }),

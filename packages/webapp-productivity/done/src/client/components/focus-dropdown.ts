@@ -100,21 +100,19 @@ class FocusDropdown extends HTMLElement {
       tag: "ul",
       class: "menu",
       attrs: { popover: "auto" },
-      // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: closures over `this.#value` and `this.dispatchEvent`
-      children: DEFAULT_PRESETS.map((preset) => h({
+      children: DEFAULT_PRESETS.map(function buildOption(preset) { return h({
         tag: "li",
         class: "option",
         text: preset,
         on: {
-          // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: click handler must reference outer `this`
-          click: () => {
+          click: function selectPreset() {
             this.#value = preset;
             textSpan.textContent = preset;
             menu.hidePopover();
             this.dispatchEvent(new CustomEvent("change", { bubbles: true, detail: { value: preset } }));
-          },
+          }.bind(this),
         },
-      })),
+      }); }.bind(this)),
     });
 
     this.#shadow.replaceChildren(

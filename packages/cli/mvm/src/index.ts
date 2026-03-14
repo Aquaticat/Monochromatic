@@ -194,10 +194,9 @@ if (args.cmd === 'create') {
   } else {
     /** Column width for aligned output. */
     const NAME_COL_WIDTH = 24;
-    // oxlint-disable-next-line tsdoc/require-tsdoc -- loop variable
-    for (const vm of vms) {
+    vms.forEach(function printVm(vm) {
       console.log(`${vm.name.padEnd(NAME_COL_WIDTH)} ${vm.state}`);
-    }
+    });
   }
 } else if (args.cmd === 'update') {
   await update();

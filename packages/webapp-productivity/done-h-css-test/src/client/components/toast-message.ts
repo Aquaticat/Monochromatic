@@ -51,10 +51,9 @@ class ToastMessage extends HTMLElement {
   /** Renders content and schedules auto-removal after `DISMISS_MS`. */
   connectedCallback(): void {
     this.#render();
-    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: setTimeout callback must reference `this` for self-removal
-    this.#timer = setTimeout(() => {
+    this.#timer = setTimeout(function dismiss() {
       this.remove();
-    }, DISMISS_MS);
+    }.bind(this), DISMISS_MS);
   }
 
   /** Cancels the auto-dismiss timer when the element is removed early. */

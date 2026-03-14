@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// oxlint-disable no-non-null-assertion, typescript-eslint/no-unsafe-type-assertion, tsdoc/require-tsdoc, tsdoc/require-returns, init-declarations, prefer-destructuring -- CLI script with argument parsing; non-null after validation; type assertions for parsed JSON
+// oxlint-disable typescript-eslint/no-unsafe-type-assertion, init-declarations, prefer-destructuring -- CLI script with argument parsing; type assertions for parsed JSON
 /**
  * CLI for perceptual image difference comparison using multimodal embeddings.
  * Supports Voyage AI and Google Gemini backends.
@@ -260,8 +260,11 @@ async function handleEmbed(args: string[]): Promise<void> {
   }
 }
 
+/** Raw CLI arguments after the Node/Bun binary and script path. */
 const args = process.argv.slice(2);
+/** First positional argument selecting the subcommand (`compare` or `embed`). */
 const subcommand = args[0];
+/** Remaining arguments passed through to the subcommand handler. */
 const subArgs = args.slice(1);
 
 if (subcommand === 'compare') {

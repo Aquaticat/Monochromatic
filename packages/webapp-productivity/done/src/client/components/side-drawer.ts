@@ -304,18 +304,16 @@ class SideDrawer extends HTMLElement {
     // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- querySelector returns the panel div we created
     this.#panel = this.#shadow.querySelector(".panel") as HTMLDivElement;
 
-    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: addEventListener callback must reference `this`
-    this.#shadow.querySelector(".panel-close")?.addEventListener("click", () => {
+    this.#shadow.querySelector(".panel-close")?.addEventListener("click", function closeDrawer() {
       this.open = false;
-    });
+    }.bind(this));
 
     // Light-dismiss: close when clicking the backdrop area (outside the drawer)
-    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: addEventListener callback must reference `this`
-    this.#panel.addEventListener("click", (event) => {
+    this.#panel.addEventListener("click", function lightDismiss(event) {
       if (event.target === this.#panel) {
         this.open = false;
       }
-    });
+    }.bind(this));
   }
 
   /** Toggles popover visibility when the open attribute changes. */

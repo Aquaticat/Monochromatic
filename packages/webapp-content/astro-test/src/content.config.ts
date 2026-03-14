@@ -1,4 +1,3 @@
-// oxlint-disable tsdoc/require-tsdoc -- Astro content config with framework-dictated structure
 // 1. Import utilities from `astro:content`
 import type {
   BaseSchema,
@@ -22,6 +21,7 @@ import {
 /* vale Microsoft.Plurals = NO */
 // 4. Export a single `collections` object to register your collections
 /* vale Microsoft.Plurals = YES */
+/** Astro content collections with blog schema using glob loader for MDX files. */
 export const collections: {
   blog: CollectionConfig<z.ZodObject<{
     title: z.ZodString;

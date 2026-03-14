@@ -73,29 +73,29 @@ function detectRuntime(): string {
   return `Node.js ${process.version}`;
 }
 
-// oxlint-disable no-restricted-syntax/no-arrow-function, typescript-eslint/no-unsafe-type-assertion -- Elysia's fluent API requires arrow callbacks and adapter type is opaque
+// oxlint-disable typescript-eslint/no-unsafe-type-assertion -- adapter type is opaque
 /** Elysia application instance with all routes configured. */
 const app = new Elysia({ adapter: adapter as never })
-  .get('/', () => ({
+  .get('/', function handleRoot() { return {
     message: 'Elysia universal PoC',
     runtime: detectRuntime(),
-  }))
-  .get('/tasks', () => tasks)
-  .get('/tasks/:id', ({ params }) => {
+  }; })
+  .get('/tasks', function listTasks() { return tasks; })
+  .get('/tasks/:id', function getTask({ params }) {
     const task = tasks.find(function findById(t) { return t.id === params.id; });
     if (task === undefined) {
       return new Response('Not found', { status: 404 });
     }
     return task;
   })
-  .post('/tasks', ({ body }) => {
+  .post('/tasks', function createTask({ body }) {
     const { title } = body as { title: string };
     const task = { id: String(nextId), title, done: false };
     nextId += 1;
     tasks.push(task);
     return task;
   })
-  .post('/tasks/:id/complete', ({ params }) => {
+  .post('/tasks/:id/complete', function completeTask({ params }) {
     const task = tasks.find(function findById(t) { return t.id === params.id; });
     if (task === undefined) {
       return new Response('Not found', { status: 404 });

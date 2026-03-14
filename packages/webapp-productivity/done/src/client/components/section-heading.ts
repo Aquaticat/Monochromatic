@@ -62,12 +62,12 @@ class SectionHeading extends HTMLElement {
   }
 
   /** Toggles the open state and dispatches a toggle event. */
-  // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow required to preserve `this` binding for addEventListener
-  #toggle = (): void => {
+  /** @see {@link connectedCallback} where this is registered as a click handler */
+  #toggle = function toggle(this: SectionHeading): void {
     this.#open = !this.#open;
     this.#updateToggle();
     this.dispatchEvent(new CustomEvent("toggle", { detail: { open: this.#open }, bubbles: true }));
-  };
+  }.bind(this);
 
   /** Updates the toggle indicator and content visibility. */
   #updateToggle(): void {

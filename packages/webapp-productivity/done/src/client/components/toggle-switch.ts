@@ -101,11 +101,11 @@ class ToggleSwitch extends HTMLElement {
   }
 
   /** Toggles state and dispatches a change event. */
-  // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow required to preserve `this` binding for addEventListener
-  #handleClick = (): void => {
+  /** @see {@link connectedCallback} where this is registered as a click handler */
+  #handleClick = function handleClick(this: ToggleSwitch): void {
     this.on = !this.on;
     this.dispatchEvent(new CustomEvent("change", { detail: { on: this.on }, bubbles: true }));
-  };
+  }.bind(this);
 
   /** Renders the track and thumb into the shadow root. */
   #render(): void {

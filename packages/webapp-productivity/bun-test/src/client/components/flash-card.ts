@@ -9,11 +9,10 @@ export class FlashCardElement extends HTMLElement {
   /** Renders the card and attaches the click-to-flip handler. */
   connectedCallback(): void {
     this.render();
-    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: addEventListener callback must reference `this`
-    this.addEventListener("click", () => {
+    this.addEventListener("click", function flip() {
       this.flipped = !this.flipped;
       this.render();
-    });
+    }.bind(this));
   }
 
   /** Renders both faces with visibility toggled by the flipped state. */

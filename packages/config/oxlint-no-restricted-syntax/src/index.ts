@@ -1,6 +1,22 @@
 import { eslintCompatPlugin } from '@oxlint/plugins';
 
 import { noArrowFunction } from './rules/no-arrow-function.ts';
+import { noDisableNoArrowFunction } from './rules/no-disable-no-arrow-function.ts';
+import { noDisableNoEnum } from './rules/no-disable-no-enum.ts';
+import { noDisableNoNonNullAssertion } from './rules/no-disable-no-non-null-assertion.ts';
+import { noDisableNoForIn } from './rules/no-disable-no-for-in.ts';
+import { noDisableNoHasownproperty } from './rules/no-disable-no-hasownproperty.ts';
+import { noDisableNoPromiseCatch } from './rules/no-disable-no-promise-catch.ts';
+import { noDisableNoPromiseFinally } from './rules/no-disable-no-promise-finally.ts';
+import { noDisableNoRegexpExec } from './rules/no-disable-no-regexp-exec.ts';
+import { noDisableNoRestParams } from './rules/no-disable-no-rest-params.ts';
+import { noDisableNoSwitch } from './rules/no-disable-no-switch.ts';
+import { noDisableNoTrimLeftRight } from './rules/no-disable-no-trim-left-right.ts';
+import { noDisableNoTryFinally } from './rules/no-disable-no-try-finally.ts';
+import { noDisableNoVariableFunctionExpression } from './rules/no-disable-no-variable-function-expression.ts';
+import { noDisableRequireDestructuredParams } from './rules/no-disable-require-destructured-params.ts';
+import { noDisableRequireReturns } from './rules/no-disable-require-returns.ts';
+import { noDisableRequireTsdoc } from './rules/no-disable-require-tsdoc.ts';
 import { noEnum } from './rules/no-enum.ts';
 import { noForIn } from './rules/no-for-in.ts';
 import { noHasownproperty } from './rules/no-hasownproperty.ts';
@@ -22,6 +38,10 @@ import { noTryFinally } from './rules/no-try-finally.ts';
  * a full AST selector engine. This plugin provides individual rules
  * for each banned syntax pattern instead.
  *
+ * Also includes `no-disable-*` rules that prevent inline `oxlint-disable`
+ * comments from suppressing specific rules. These enforce that certain
+ * conventions cannot be sidestepped with disable comments.
+ *
  * @example
  * ```jsonc
  * // .oxlintrc.json
@@ -35,6 +55,7 @@ const plugin = eslintCompatPlugin({
     name: 'no-restricted-syntax',
   },
   rules: {
+    //region Syntax rules
     'no-arrow-function': noArrowFunction,
     'no-enum': noEnum,
     'no-for-in': noForIn,
@@ -48,6 +69,26 @@ const plugin = eslintCompatPlugin({
     'no-try-finally': noTryFinally,
     'no-variable-function-expression': noVariableFunctionExpression,
     'require-destructured-params': requireDestructuredParams,
+    //endregion Syntax rules
+
+    //region Ban-disable rules -- prevent inline oxlint-disable for specific rules
+    'no-disable-no-arrow-function': noDisableNoArrowFunction,
+    'no-disable-no-enum': noDisableNoEnum,
+    'no-disable-no-for-in': noDisableNoForIn,
+    'no-disable-no-hasownproperty': noDisableNoHasownproperty,
+    'no-disable-no-promise-catch': noDisableNoPromiseCatch,
+    'no-disable-no-promise-finally': noDisableNoPromiseFinally,
+    'no-disable-no-regexp-exec': noDisableNoRegexpExec,
+    'no-disable-no-rest-params': noDisableNoRestParams,
+    'no-disable-no-switch': noDisableNoSwitch,
+    'no-disable-no-trim-left-right': noDisableNoTrimLeftRight,
+    'no-disable-no-try-finally': noDisableNoTryFinally,
+    'no-disable-no-variable-function-expression': noDisableNoVariableFunctionExpression,
+    'no-disable-no-non-null-assertion': noDisableNoNonNullAssertion,
+    'no-disable-require-destructured-params': noDisableRequireDestructuredParams,
+    'no-disable-require-returns': noDisableRequireReturns,
+    'no-disable-require-tsdoc': noDisableRequireTsdoc,
+    //endregion Ban-disable rules
   },
 });
 

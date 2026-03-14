@@ -1,4 +1,4 @@
-// oxlint-disable no-magic-numbers, tsdoc/require-tsdoc -- comparison script with many dimensional constants and inline variables
+// oxlint-disable no-magic-numbers -- comparison script with many dimensional constants
 /**
  * Compares the composite render against the reference character sheet.
  *
@@ -15,9 +15,13 @@ import { execSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 
+/** Directory containing individual body part SVG files. */
 const PARTS_DIR = join(import.meta.dirname, '..', 'parts')
+/** Path to the assembled composite SVG from the build step. */
 const COMPOSITE_SVG = join(PARTS_DIR, '_composite_inline.svg')
+/** Path to the reference character sheet image for comparison. */
 const REF_IMAGE = '/home/user/Nextcloud/Text/Docs/Algonquin/MTM6403/teto_sv_3views.jpg'
+/** Temporary directory for intermediate comparison images. */
 const TMP = '/tmp/claude-1000'
 
 /** Always rebuild composite first. */
@@ -101,22 +105,22 @@ function parseMetric(raw: string): string {
   return raw
 }
 
-/** DSSIM (perceptual; 0 = identical, higher = worse). */
+/** Raw DSSIM output (perceptual; 0 = identical, higher = worse). */
 const dssimRaw = run(
   `magick compare -metric DSSIM "${TMP}/cmp_reference.png" "${TMP}/cmp_composite.png" "${TMP}/diff_dssim.png" 2>&1 || true`,
 )
 
-/** SSIM (structural similarity; 1 = identical, lower = worse). */
+/** Raw SSIM output (structural similarity; 1 = identical, lower = worse). */
 const ssimRaw = run(
   `magick compare -metric SSIM "${TMP}/cmp_reference.png" "${TMP}/cmp_composite.png" "${TMP}/diff_ssim.png" 2>&1 || true`,
 )
 
-/** PHASH (perceptual hash distance; 0 = identical). */
+/** Raw PHASH output (perceptual hash distance; 0 = identical). */
 const phashRaw = run(
   `magick compare -metric PHASH "${TMP}/cmp_reference.png" "${TMP}/cmp_composite.png" null: 2>&1 || true`,
 )
 
-/** RMSE (root mean square error; 0 = identical). */
+/** Raw RMSE output (root mean square error; 0 = identical). */
 const rmseRaw = run(
   `magick compare -metric RMSE "${TMP}/cmp_reference.png" "${TMP}/cmp_composite.png" null: 2>&1 || true`,
 )

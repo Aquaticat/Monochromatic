@@ -1,66 +1,84 @@
-// oxlint-disable typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-call, typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-argument, typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-return, no-non-null-assertion, tsdoc/require-tsdoc, no-restricted-syntax/no-arrow-function, typescript-eslint/strict-boolean-expressions, typescript-eslint/no-explicit-any -- Astro content system types are inherently untyped; arrow callbacks are dictated by the Astro API
+// oxlint-disable typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-call, typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-argument, typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-return, no-non-null-assertion, typescript-eslint/strict-boolean-expressions, typescript-eslint/no-explicit-any -- Astro content system types are inherently untyped
 import {
   getCollection,
   type InferEntrySchema,
   type RenderedContent,
 } from 'astro:content';
 
+/** Single blog post with extracted language and name from the content ID. */
 export type Post = {
+  /** Two-letter language code extracted from the post ID path. */
   lang: string;
+  /** Post slug extracted from the post ID path. */
   name: string;
+  /** Full content collection ID (e.g. `en/my-post`). */
   id: string;
+  /** Raw markdown body of the post. */
   body?: string;
+  /** Content collection this post belongs to. */
   collection: 'blog';
+  /** Frontmatter schema data inferred from the blog collection. */
   data: InferEntrySchema<'blog'>;
+  /** Rendered HTML content of the post. */
   rendered?: RenderedContent;
+  /** Filesystem path to the source file. */
   filePath?: string;
 };
 
-export const posts = (await getCollection('blog',)).map((post: any,) => ({
+/** All blog posts with extracted `lang` and `name` fields from the collection ID. */
+export const posts = (await getCollection('blog',)).map(function extractPost(post: any,) { return {
   ...post,
   lang: post.id.split('/',)[0]!,
   name: post.id.split('/',)[1]!,
-})) as [Post, ...Post[],];
+}; }) as [Post, ...Post[],];
 
-export const postsGroupedByLang = Object.groupBy(posts, post => post.lang,) as Record<
+/** Posts grouped by language code (e.g. `{ en: [...], zh: [...] }`). */
+export const postsGroupedByLang = Object.groupBy(posts, function byLang(post) { return post.lang; },) as Record<
   string,
   [Post, ...Post[],]
 >;
 
+/** All available language codes across blog posts. */
 export const langs = Object.keys(postsGroupedByLang,) as [string, ...string[],];
 
-export const postsGroupedByName = Object.groupBy(posts, post => post.name,) as Record<
+/** Posts grouped by slug name across all languages. */
+export const postsGroupedByName = Object.groupBy(posts, function byName(post) { return post.name; },) as Record<
   string,
   [Post, ...Post[],]
 >;
 
+/** All unique post slug names across all languages. */
 export const names = Object.keys(postsGroupedByName,) as [
   string,
   ...string[],
 ];
 
+/** All unique tags used across all blog posts. */
 export const tags = [
-  ...new Set(posts.flatMap(post => post.data.tags),),
+  ...new Set(posts.flatMap(function getTags(post) { return post.data.tags; }),),
 ] as [string, ...string[],];
 
+/** Posts grouped by tag, each tag mapping to its matching posts. */
 export const postsGroupedByTag = Object.fromEntries(
-  tags.map(tag => [tag, posts.filter(post => post.data.tags.includes(tag,)),]),
+  tags.map(function tagEntry(tag) { return [tag, posts.filter(function hasTag(post) { return post.data.tags.includes(tag,); }),]; }),
 ) as Record<string, [Post, ...Post[],]>;
 
+/** Posts grouped first by language, then by tag within each language. */
 export const postsGroupedByLangThenTag: Record<string, Record<string, Post[]>> = Object.fromEntries(
   langs.map(
-    lang => [
+    function langEntry(lang) { return [
       lang,
       Object.fromEntries(
-        Object.entries(postsGroupedByTag,).map(([tag, tagPosts,],) => [
+        Object.entries(postsGroupedByTag,).map(function filterByLang([tag, tagPosts,],) { return [
           tag,
-          tagPosts.filter(tagPost => tagPost.lang === lang),
-        ]),
+          tagPosts.filter(function matchLang(tagPost) { return tagPost.lang === lang; }),
+        ]; }),
       ),
-    ],
+    ]; },
   ),
 );
 
+/** Internationalization strings keyed by message ID then language code. */
 export const i18n: Map<string, Map<string, string>> = new Map<string, Map<string, string>>(
   [
     [

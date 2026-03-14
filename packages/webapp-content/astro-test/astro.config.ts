@@ -1,4 +1,4 @@
-// oxlint-disable no-restricted-syntax/no-arrow-function, no-non-null-assertion, typescript-eslint/no-unsafe-type-assertion, tsdoc/require-returns -- Astro config uses arrow callbacks in integration hooks; non-null assertion is safe for known config shape
+// oxlint-disable typescript-eslint/no-unsafe-type-assertion -- adapter type is opaque
 import mdx from '@astrojs/mdx';
 import { createBaseConfig, } from '@monochromatic-dev/config-vite';
 import {
@@ -40,7 +40,7 @@ function omit<
   const keysSet = new Set<PropertyKey>(keys,);
   return Object.fromEntries(
     Object.entries(source,).filter(
-      ([key,],) => !keysSet.has(key,),
+      function notExcluded([key,],) { return !keysSet.has(key,); },
     ),
   ) as Omit<T, K>;
 }
@@ -86,10 +86,10 @@ export default defineConfig({
     {
       name: 'astro-rehype',
       hooks: {
-        'astro:build:done': async ({ dir, logger, },): Promise<void> => {
+        async 'astro:build:done'({ dir, logger, }): Promise<void> {
           const relativeDir = relative(process.cwd(), fileURLToPath(dir,),);
           const htmlFilePaths = await glob(`${relativeDir}/**/*.html`,);
-          await Promise.all(htmlFilePaths.map(async htmlFilePath => {
+          await Promise.all(htmlFilePaths.map(async function minifyHtml(htmlFilePath) {
             await writeFile(htmlFilePath, String(await unified()
               .use(rehypeParse,)
               .use(rehypePresetMinify,)
@@ -103,7 +103,7 @@ export default defineConfig({
     {
       name: 'astro-zstd',
       hooks: {
-        'astro:build:done': async ({ dir, logger, },): Promise<void> => {
+        async 'astro:build:done'({ dir, logger, }): Promise<void> {
           const relativeDir = relative(process
             .cwd(), fileURLToPath(dir,),);
           try {

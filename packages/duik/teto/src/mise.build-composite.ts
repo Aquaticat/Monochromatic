@@ -1,4 +1,3 @@
-// oxlint-disable tsdoc/require-tsdoc -- build script with many inline temporary variables
 /**
  * Generates an inline composite SVG from individual body part SVGs.
  *
@@ -46,8 +45,11 @@ const LAYER_ORDER = [
   'mouth',
 ] as const
 
+/** Directory containing individual body part SVG files. */
 const PARTS_DIR = join(import.meta.dirname, '..', 'parts')
+/** Output path for the assembled composite SVG. */
 const OUTPUT_SVG = join(PARTS_DIR, '_composite_inline.svg')
+/** Output path for the rasterized PNG preview. */
 const OUTPUT_PNG = '/tmp/claude-1000/teto_composite.png'
 
 /**
@@ -96,6 +98,7 @@ const availableNames = new Set(partFiles.map(function toName(f) {
   return basename(f, '.svg')
 }))
 
+/** Layer names that are expected but have no corresponding SVG file. */
 const missingParts = LAYER_ORDER.filter(function findMissing(name) {
   return !availableNames.has(name)
 })
@@ -104,8 +107,9 @@ if (missingParts.length > 0) {
   throw new Error(`Missing part SVG files: ${missingParts.join(', ')}`)
 }
 
-/** Extract content from each part. */
+/** Accumulated `<defs>` blocks extracted from each part's SVG. */
 const allDefs: string[] = []
+/** Assembled `<g>` layer groups in back-to-front render order. */
 const layerGroups: string[] = []
 
 for (const layerName of LAYER_ORDER) {

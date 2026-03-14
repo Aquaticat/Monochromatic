@@ -292,12 +292,11 @@ class TaskDetail extends HTMLElement {
       { field: "blockedBy", text: task.blockedBy.length > 0 ? `blockedBy: ${String(task.blockedBy.length)}` : "blockedBy: none" },
     ];
 
-    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: closure over private `this.#applyPillAttrs`
-    const pillElements = pillData.map((pill) => {
+    const pillElements = pillData.map(function buildPill(pill) {
       const element = h({ tag: "span", class: "pill", text: pill.text });
       this.#applyPillAttrs(element, pill.field);
       return element;
-    });
+    }.bind(this));
 
     pillsContainer.replaceChildren(...pillElements);
   }
@@ -323,11 +322,10 @@ class TaskDetail extends HTMLElement {
 
     if (title.trim().length === 0) return;
 
-    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: closure over private `this.#fetchAutofill`
-    this.#autofillTimer = setTimeout(() => {
+    this.#autofillTimer = setTimeout(function triggerAutofill() {
       // oxlint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; errors handled inside #fetchAutofill
       this.#fetchAutofill(title.trim());
-    }, AUTOFILL_DEBOUNCE_MS);
+    }.bind(this), AUTOFILL_DEBOUNCE_MS);
   }
 
   /**
@@ -468,13 +466,11 @@ class TaskDetail extends HTMLElement {
     this.#updatePillsDisplay();
 
     // Debounced autofill on title input
-    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: closure over private `this.#requestAutofill`
-    titleInput.addEventListener("input", () => {
+    titleInput.addEventListener("input", function onTitleInput() {
       this.#requestAutofill(titleInput.value);
-    });
+    }.bind(this));
 
-    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: closure over `this.dispatchEvent`
-    this.#shadow.addEventListener("click", (event) => {
+    this.#shadow.addEventListener("click", function onAction(event) {
       // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- event.target is always an Element in shadow DOM click handlers
       const target = event.target as HTMLElement;
       const button = target.closest("[data-action]");

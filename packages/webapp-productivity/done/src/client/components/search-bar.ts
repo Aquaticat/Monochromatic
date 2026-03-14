@@ -101,14 +101,12 @@ class SearchBar extends HTMLElement {
 
     // Debounced search dispatch
     let timeout: ReturnType<typeof setTimeout> = setTimeout(function noop() { /* initial */ }, 0);
-    // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: debounced callback must reference `this`
-    input.addEventListener("input", () => {
+    input.addEventListener("input", function onInput() {
       clearTimeout(timeout);
-      // oxlint-disable-next-line no-restricted-syntax/no-arrow-function -- arrow needed: setTimeout callback must reference outer `this`
-      timeout = setTimeout(() => {
+      timeout = setTimeout(function dispatchSearch() {
         this.dispatchEvent(new CustomEvent("search", { detail: { query: input.value.trim() }, bubbles: true }));
-      }, SEARCH_DEBOUNCE_MS);
-    });
+      }.bind(this), SEARCH_DEBOUNCE_MS);
+    }.bind(this));
 
     this.#shadow.replaceChildren(
       h({ tag: "style", text: STYLES }),

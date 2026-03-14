@@ -1,4 +1,4 @@
-// oxlint-disable no-magic-numbers, tsdoc/require-tsdoc, no-non-null-assertion -- measurement script with many dimensional constants, inline variables, and PGM index access where bounds are verified by loop
+// oxlint-disable no-magic-numbers, no-non-null-assertion -- measurement script with many dimensional constants and PGM index access where bounds are verified by loop
 /**
  * Measures body proportions from the composite SVG and reference image.
  *
@@ -17,9 +17,13 @@ import { execSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+/** Directory containing individual body part SVG files. */
 const PARTS_DIR = join(import.meta.dirname, '..', 'parts')
+/** Path to the assembled composite SVG from the build step. */
 const COMPOSITE_SVG = join(PARTS_DIR, '_composite_inline.svg')
+/** Path to the reference character sheet image for comparison. */
 const REF_IMAGE = '/home/user/Nextcloud/Text/Docs/Algonquin/MTM6403/teto_sv_3views.jpg'
+/** Temporary directory for intermediate measurement images. */
 const TMP = '/tmp/claude-1000'
 
 /** Crop region for front-view character from the reference sheet. */
@@ -163,9 +167,11 @@ function measureWidthProfile(imagePath: string): {
 }
 
 console.error('--- Measuring reference ---')
+/** Per-row width profile of the reference silhouette. */
 const refProfile = measureWidthProfile(`${TMP}/measure_ref_silhouette.png`)
 
 console.error('--- Measuring composite ---')
+/** Per-row width profile of the composite silhouette. */
 const cmpProfile = measureWidthProfile(`${TMP}/measure_cmp_silhouette.png`)
 
 /**
@@ -275,7 +281,9 @@ function contentBounds(profile: ReturnType<typeof measureWidthProfile>): {
 console.error('--- Proportion Analysis ---')
 console.error('')
 
+/** Content bounds (top/bottom y, total height) of the reference silhouette. */
 const refBounds = contentBounds(refProfile)
+/** Content bounds (top/bottom y, total height) of the composite silhouette. */
 const cmpBounds = contentBounds(cmpProfile)
 
 console.error(`Image dimensions:  ref=${refProfile.imageWidth}x${refProfile.imageHeight}  cmp=${cmpProfile.imageWidth}x${cmpProfile.imageHeight}`)
@@ -302,15 +310,23 @@ const LANDMARKS = {
   feet: 0.9,
 } as const
 
+/** Single row in the proportion comparison table. */
 type MeasurementRow = {
+  /** Anatomical landmark name (e.g. `shoulders`, `waist`). */
   landmark: string
+  /** Relative vertical position within body content (0 = top, 1 = bottom). */
   relY: number
+  /** Pixel width of the reference silhouette at this landmark. */
   refWidth: number
+  /** Pixel width of the composite silhouette at this landmark. */
   cmpWidth: number
+  /** Composite-to-reference width ratio as a formatted string. */
   ratio: string
+  /** Percentage difference from reference as a formatted string. */
   diff: string
 }
 
+/** Collected measurement rows for the proportion comparison table. */
 const measurements: MeasurementRow[] = []
 
 for (const [name, relY] of Object.entries(LANDMARKS)) {
@@ -372,17 +388,24 @@ function contentToAbsY(
   return topFrac + relContent * (bottomFrac - topFrac)
 }
 
-/** Aggregate measurements using proper range conversion. */
+/** Maximum width in the reference shoulder region (y 0.14-0.22). */
 const shoulderRef = maxWidthInRange(refProfile, contentToAbsY(refBounds, 0.14), contentToAbsY(refBounds, 0.22))
+/** Maximum width in the composite shoulder region (y 0.14-0.22). */
 const shoulderCmp = maxWidthInRange(cmpProfile, contentToAbsY(cmpBounds, 0.14), contentToAbsY(cmpBounds, 0.22))
 
+/** Minimum width in the reference waist region (y 0.25-0.35). */
 const waistRef = minWidthInRange(refProfile, contentToAbsY(refBounds, 0.25), contentToAbsY(refBounds, 0.35))
+/** Minimum width in the composite waist region (y 0.25-0.35). */
 const waistCmp = minWidthInRange(cmpProfile, contentToAbsY(cmpBounds, 0.25), contentToAbsY(cmpBounds, 0.35))
 
+/** Maximum width in the reference hip/skirt region (y 0.34-0.48). */
 const hipRef = maxWidthInRange(refProfile, contentToAbsY(refBounds, 0.34), contentToAbsY(refBounds, 0.48))
+/** Maximum width in the composite hip/skirt region (y 0.34-0.48). */
 const hipCmp = maxWidthInRange(cmpProfile, contentToAbsY(cmpBounds, 0.34), contentToAbsY(cmpBounds, 0.48))
 
+/** Maximum width in the reference head region (y 0-0.1). */
 const headRef = maxWidthInRange(refProfile, contentToAbsY(refBounds, 0), contentToAbsY(refBounds, 0.1))
+/** Maximum width in the composite head region (y 0-0.1). */
 const headCmp = maxWidthInRange(cmpProfile, contentToAbsY(cmpBounds, 0), contentToAbsY(cmpBounds, 0.1))
 
 /**
@@ -400,7 +423,9 @@ function fmtRatio(cmpVal: number, refVal: number): string {
 }
 
 console.error('Key proportions (normalized to content height):')
+/** Reference content height in pixels for normalizing widths. */
 const refH = refBounds.totalHeight
+/** Composite content height in pixels for normalizing widths. */
 const cmpH = cmpBounds.totalHeight
 console.error(`  Max head width:      ref=${(headRef.width / refH).toFixed(3)}  cmp=${(headCmp.width / cmpH).toFixed(3)}  ratio=${fmtRatio(headCmp.width / cmpH, headRef.width / refH)}`)
 console.error(`  Max shoulder width:  ref=${(shoulderRef.width / refH).toFixed(3)}  cmp=${(shoulderCmp.width / cmpH).toFixed(3)}  ratio=${fmtRatio(shoulderCmp.width / cmpH, shoulderRef.width / refH)}`)
@@ -426,15 +451,19 @@ writeFileSync(`${TMP}/width_profile.csv`, csvLines.join('\n'))
 console.error(`Width profile CSV: ${TMP}/width_profile.csv`)
 
 /**
- * Generate visual width profile chart as an SVG.
+ * Width of the SVG width-profile chart in pixels.
  * Draws ref profile in blue and composite in red, plotted vertically
  * (y = body position top-to-bottom, x = width).
  */
 const CHART_W = 600
+/** Height of the SVG width-profile chart in pixels. */
 const CHART_H = 800
+/** Horizontal scale multiplier converting normalized widths to chart pixels. */
 const SCALE_X = CHART_W * 2
 
+/** SVG polyline coordinate pairs for the reference width profile. */
 const refPoints: string[] = []
+/** SVG polyline coordinate pairs for the composite width profile. */
 const cmpPoints: string[] = []
 
 for (let i = 0; i <= 100; i++) {
@@ -450,6 +479,7 @@ for (let i = 0; i <= 100; i++) {
   cmpPoints.push(`${Math.round(cmpW * SCALE_X)},${chartY}`)
 }
 
+/** Assembled SVG markup for the side-by-side width profile chart. */
 const chartSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CHART_W} ${CHART_H}" width="${CHART_W}" height="${CHART_H}">
   <rect width="${CHART_W}" height="${CHART_H}" fill="white"/>
   <text x="10" y="20" font-size="14" fill="blue">Reference</text>

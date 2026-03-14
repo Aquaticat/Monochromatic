@@ -37,7 +37,8 @@
     "**/test-fixture/**",
     "**/perf-test-data/**",
     "**/teto-generated/**",
-    "**/sudoku-puzzles*"
+    "**/sudoku-puzzles*",
+    "**/*.astro"
   ],
   "plugins": [
     "unicorn",
@@ -99,10 +100,10 @@
     "tsdoc/require-returns-check": "error",
     // @returns tags should include a description.
     "tsdoc/require-returns-description": "warn",
-    // Generator functions should have @yields.
-    "tsdoc/require-yields": "warn",
-    // @yields must match actual yield behavior.
-    "tsdoc/require-yields-check": "error",
+    // @yields is not part of the TSDoc specification. Disabled to keep the plugin TSDoc-compliant.
+    // Generator return types should be documented via @returns instead.
+    "tsdoc/require-yields": "off",
+    "tsdoc/require-yields-check": "off",
 
     //region jest -- Suppress leaked jest rules from vitest plugin internals.
     // oxlint re-uses jest rule implementations for vitest and leaks them globally.
@@ -176,6 +177,24 @@
     "no-restricted-syntax/no-trim-left-right": "error",
     "no-restricted-syntax/no-variable-function-expression": "error",
     "no-restricted-syntax/require-destructured-params": "error",
+    //region no-disable -- prevent inline oxlint-disable for rules with no legitimate exceptions
+    "no-restricted-syntax/no-disable-require-tsdoc": "error",
+    "no-restricted-syntax/no-disable-no-switch": "error",
+    "no-restricted-syntax/no-disable-no-for-in": "error",
+    "no-restricted-syntax/no-disable-no-enum": "error",
+    "no-restricted-syntax/no-disable-no-hasownproperty": "error",
+    "no-restricted-syntax/no-disable-no-regexp-exec": "error",
+    "no-restricted-syntax/no-disable-no-trim-left-right": "error",
+    "no-restricted-syntax/no-disable-no-promise-catch": "error",
+    "no-restricted-syntax/no-disable-no-promise-finally": "error",
+    "no-restricted-syntax/no-disable-no-variable-function-expression": "error",
+    "no-restricted-syntax/no-disable-require-destructured-params": "error",
+    "no-restricted-syntax/no-disable-no-rest-params": "error",
+    "no-restricted-syntax/no-disable-no-arrow-function": "error",
+    "no-restricted-syntax/no-disable-no-try-finally": "error",
+    "no-restricted-syntax/no-disable-no-non-null-assertion": "error",
+    "no-restricted-syntax/no-disable-require-returns": "error",
+    //endregion no-disable
     // Never process.exit() -- throw errors instead.
     "unicorn/no-process-exit": "error",
     // Ban non-null assertion (!) -- use notNullishOrThrow instead.
@@ -503,9 +522,10 @@
         "typescript/no-unsafe-type-assertion": "off",
         // Tests use `any` for mocking and edge-case coverage.
         "typescript/no-explicit-any": "off",
-        // Test helpers don't need TSDoc.
-        "tsdoc/require-tsdoc": "off",
-        // Test TSDoc doesn't need full tag formatting.
+        // Test TSDoc doesn't need full tag formatting but declarations still require TSDoc.
+        // Test helpers benefit from TSDoc for the same reasons as production code:
+        // they define shared utilities, custom matchers, and fixture builders that
+        // other test files consume. Without TSDoc, test helpers become opaque.
         "tsdoc/tag-lines": "off",
         "tsdoc/require-param": "off",
         "tsdoc/require-returns": "off",

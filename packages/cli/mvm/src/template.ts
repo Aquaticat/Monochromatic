@@ -78,35 +78,32 @@ async function ensureLinuxTemplate(spec: LinuxImageSpec): Promise<string> {
 
   const diskPath = join(vmDir, 'disk.qcow2');
 
-  /* oxlint-disable-next-line no-restricted-syntax/no-try-finally -- Symbol.asyncDispose not supported by nano-spawn/virsh subprocess lifecycle; try/finally is required here */
-  try {
-    rl.info('creating overlay disk from base image...');
-    await spawn({
-      command: 'qemu-img',
-      args: ['create', '-f', 'qcow2', '-b', baseImage, '-F', 'qcow2', diskPath, DEFAULT_DISK_SIZE],
-    });
+  await using _cleanup = templateVmGuard(rl);
 
-    const seedIsoPath = await createSeedIso({ guest: spec, name: TEMPLATE_VM_NAME, template: true, vmDir });
-    const xml = domainXml({ diskPath, name: TEMPLATE_VM_NAME, seedIsoPath });
+  rl.info('creating overlay disk from base image...');
+  await spawn({
+    command: 'qemu-img',
+    args: ['create', '-f', 'qcow2', '-b', baseImage, '-F', 'qcow2', diskPath, DEFAULT_DISK_SIZE],
+  });
 
-    await defineVm({ vmDir, xml });
-    await startVm({ name: TEMPLATE_VM_NAME });
-    await waitForGuestAgent({ name: TEMPLATE_VM_NAME, timeoutMs: LINUX_TEMPLATE_AGENT_TIMEOUT_MS });
+  const seedIsoPath = await createSeedIso({ guest: spec, name: TEMPLATE_VM_NAME, template: true, vmDir });
+  const xml = domainXml({ diskPath, name: TEMPLATE_VM_NAME, seedIsoPath });
 
-    rl.info('guest agent ready, shutting down template VM...');
-    await shutdownVm({ name: TEMPLATE_VM_NAME });
-    await waitForShutdown({ name: TEMPLATE_VM_NAME });
+  await defineVm({ vmDir, xml });
+  await startVm({ name: TEMPLATE_VM_NAME });
+  await waitForGuestAgent({ name: TEMPLATE_VM_NAME, timeoutMs: LINUX_TEMPLATE_AGENT_TIMEOUT_MS });
 
-    rl.info('converting overlay to standalone template image...');
-    await spawn({
-      command: 'qemu-img',
-      args: ['convert', '-O', 'qcow2', diskPath, templatePath],
-    });
+  rl.info('guest agent ready, shutting down template VM...');
+  await shutdownVm({ name: TEMPLATE_VM_NAME });
+  await waitForShutdown({ name: TEMPLATE_VM_NAME });
 
-    rl.info(`template image saved to ${templatePath}`);
-  } finally {
-    await cleanupTemplateVm(rl);
-  }
+  rl.info('converting overlay to standalone template image...');
+  await spawn({
+    command: 'qemu-img',
+    args: ['convert', '-O', 'qcow2', diskPath, templatePath],
+  });
+
+  rl.info(`template image saved to ${templatePath}`);
 
   return templatePath;
 }
@@ -153,74 +150,71 @@ async function ensureWindowsTemplate(spec: WindowsImageSpec): Promise<string> {
 
   const diskPath = join(vmDir, 'disk.qcow2');
 
-  /* oxlint-disable-next-line no-restricted-syntax/no-try-finally -- Symbol.asyncDispose not supported by nano-spawn/virsh subprocess lifecycle; try/finally is required here */
-  try {
-    rl.info('creating empty disk for Windows installation...');
-    await spawn({
-      command: 'qemu-img',
-      args: ['create', '-f', 'qcow2', diskPath, WINDOWS_DISK_SIZE],
-    });
+  await using _cleanup = templateVmGuard(rl);
 
-    // Generate autounattend ISO with answer file for unattended install
-    const autounattendIso = createAutounattendIso({
-      hostname: TEMPLATE_VM_NAME,
-      imageIndex: spec.imageIndex,
-    });
-    const autounattendIsoPath = join(vmDir, 'autounattend.iso');
-    await writeFile(autounattendIsoPath, autounattendIso);
+  rl.info('creating empty disk for Windows installation...');
+  await spawn({
+    command: 'qemu-img',
+    args: ['create', '-f', 'qcow2', diskPath, WINDOWS_DISK_SIZE],
+  });
 
-    const xml = domainXml({
-      bootDev: 'cdrom',
-      cdroms: [
-        { path: windowsIsoPath },
-        { path: autounattendIsoPath },
-        { path: virtioWinPath },
-      ],
-      diskBus: 'sata',
-      diskPath,
-      name: TEMPLATE_VM_NAME,
-      osFamily: 'windows',
-    });
+  // Generate autounattend ISO with answer file for unattended install
+  const autounattendIso = createAutounattendIso({
+    hostname: TEMPLATE_VM_NAME,
+    imageIndex: spec.imageIndex,
+  });
+  const autounattendIsoPath = join(vmDir, 'autounattend.iso');
+  await writeFile(autounattendIsoPath, autounattendIso);
 
-    await defineVm({ vmDir, xml });
-    await startVm({ name: TEMPLATE_VM_NAME });
+  const xml = domainXml({
+    bootDev: 'cdrom',
+    cdroms: [
+      { path: windowsIsoPath },
+      { path: autounattendIsoPath },
+      { path: virtioWinPath },
+    ],
+    diskBus: 'sata',
+    diskPath,
+    name: TEMPLATE_VM_NAME,
+    osFamily: 'windows',
+  });
 
-    rl.info('Windows installation in progress (waiting for guest agent)...');
-    await waitForGuestAgent({ name: TEMPLATE_VM_NAME, timeoutMs: WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS });
+  await defineVm({ vmDir, xml });
+  await startVm({ name: TEMPLATE_VM_NAME });
 
-    // Phase 1 complete: Windows installed with SATA disk, VirtIO drivers installed.
-    // Now switch to VirtIO disk bus and verify Windows boots with VirtIO storage.
-    rl.info('guest agent ready on SATA, switching to VirtIO disk bus...');
-    await shutdownVm({ name: TEMPLATE_VM_NAME });
-    await waitForShutdown({ name: TEMPLATE_VM_NAME });
+  rl.info('Windows installation in progress (waiting for guest agent)...');
+  await waitForGuestAgent({ name: TEMPLATE_VM_NAME, timeoutMs: WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS });
 
-    // Redefine VM with VirtIO disk (no CDROMs needed, boot from hard disk)
-    await undefineVm({ name: TEMPLATE_VM_NAME });
-    const virtioXml = domainXml({
-      diskPath,
-      name: TEMPLATE_VM_NAME,
-      osFamily: 'windows',
-    });
-    await defineVm({ vmDir, xml: virtioXml });
-    await startVm({ name: TEMPLATE_VM_NAME });
+  // Phase 1 complete: Windows installed with SATA disk, VirtIO drivers installed.
+  // Now switch to VirtIO disk bus and verify Windows boots with VirtIO storage.
+  rl.info('guest agent ready on SATA, switching to VirtIO disk bus...');
+  await shutdownVm({ name: TEMPLATE_VM_NAME });
+  await waitForShutdown({ name: TEMPLATE_VM_NAME });
 
-    rl.info('verifying Windows boots with VirtIO disk (waiting for guest agent)...');
-    await waitForGuestAgent({ name: TEMPLATE_VM_NAME, timeoutMs: VIRTIO_VERIFY_AGENT_TIMEOUT_MS });
+  // Redefine VM with VirtIO disk (no CDROMs needed, boot from hard disk)
+  await undefineVm({ name: TEMPLATE_VM_NAME });
+  const virtioXml = domainXml({
+    diskPath,
+    name: TEMPLATE_VM_NAME,
+    osFamily: 'windows',
+  });
+  await defineVm({ vmDir, xml: virtioXml });
+  await startVm({ name: TEMPLATE_VM_NAME });
 
-    rl.info('VirtIO boot verified, shutting down for template capture...');
-    await shutdownVm({ name: TEMPLATE_VM_NAME });
-    await waitForShutdown({ name: TEMPLATE_VM_NAME });
+  rl.info('verifying Windows boots with VirtIO disk (waiting for guest agent)...');
+  await waitForGuestAgent({ name: TEMPLATE_VM_NAME, timeoutMs: VIRTIO_VERIFY_AGENT_TIMEOUT_MS });
 
-    rl.info('converting disk to standalone template image...');
-    await spawn({
-      command: 'qemu-img',
-      args: ['convert', '-O', 'qcow2', diskPath, templatePath],
-    });
+  rl.info('VirtIO boot verified, shutting down for template capture...');
+  await shutdownVm({ name: TEMPLATE_VM_NAME });
+  await waitForShutdown({ name: TEMPLATE_VM_NAME });
 
-    rl.info(`Windows template image saved to ${templatePath}`);
-  } finally {
-    await cleanupTemplateVm(rl);
-  }
+  rl.info('converting disk to standalone template image...');
+  await spawn({
+    command: 'qemu-img',
+    args: ['convert', '-O', 'qcow2', diskPath, templatePath],
+  });
+
+  rl.info(`Windows template image saved to ${templatePath}`);
 
   return templatePath;
 }
@@ -228,6 +222,29 @@ async function ensureWindowsTemplate(spec: WindowsImageSpec): Promise<string> {
 //endregion Windows template baking
 
 //region Cleanup
+
+/**
+ * Creates an `AsyncDisposable` guard that cleans up the template VM
+ * when the enclosing `await using` block exits (normally or via error).
+ *
+ * @param rl - Logger for status messages
+ *
+ * @returns disposable that calls {@link cleanupTemplateVm} on dispose
+ *
+ * @example
+ * ```ts
+ * await using _guard = templateVmGuard(rl);
+ * // ... VM operations ...
+ * // cleanupTemplateVm runs automatically on block exit
+ * ```
+ */
+function templateVmGuard(rl: { debug: (msg: string) => void }): AsyncDisposable {
+  return {
+    async [Symbol.asyncDispose](): Promise<void> {
+      await cleanupTemplateVm(rl);
+    },
+  };
+}
 
 /**
  * Cleans up the temporary template VM and its directory.

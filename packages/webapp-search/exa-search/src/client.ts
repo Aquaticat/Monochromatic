@@ -1,4 +1,4 @@
-// oxlint-disable typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-call, typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-argument, typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-return, typescript-eslint/strict-boolean-expressions, eslint/no-magic-numbers, tsdoc/require-tsdoc, typescript-eslint/no-confusing-void-expression, eslint/no-shadow, eslint/no-warning-comments -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
+// oxlint-disable typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-call, typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-argument, typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-return, typescript-eslint/strict-boolean-expressions, eslint/no-magic-numbers, typescript-eslint/no-confusing-void-expression, eslint/no-shadow, eslint/no-warning-comments -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
 import {
   createObservable,
   identity,
@@ -10,8 +10,13 @@ import {
 import { Exa, } from 'exa-js';
 import { z, } from 'zod/v4-mini';
 
+/** Exa API proxy configuration with base URL. */
 const { baseUrl, } = { baseUrl: 'https://exa.aquati.cat/api/proxy', };
 
+/**
+ * DOM elements and reactive state for the search interface.
+ * Bindings are resolved eagerly at module load via `querySelector` assertions.
+ */
 const {
   searchForm,
   costDollarsSpan,
@@ -69,6 +74,10 @@ const {
   ),),
 };
 
+/**
+ * Derived DOM elements and reactive counters that depend on the first binding group.
+ * Includes the search input, result template, range constraints, and persisted counters.
+ */
 const {
   searchInput,
   firstResult,
@@ -108,6 +117,7 @@ const {
 // TODO: Use logic of replicating element inside fetch result to avoid errors on subsequent searches.
 replicateElementAsContentOf(firstResult, resultsSection, exaMaxResults,);
 
+/** Live HTMLCollection of result article elements inside the results section. */
 const resultArticles = resultsSection.children;
 
 nonPromiseAll([
