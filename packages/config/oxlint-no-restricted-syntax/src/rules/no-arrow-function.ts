@@ -1,4 +1,4 @@
-// oxlint-disable typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-argument, typescript-eslint/no-unsafe-return, typescript-eslint/strict-boolean-expressions -- ArrowFunctionExpression from @oxlint/plugins has error-typed and any-typed properties; all member access is inherently unsafe
+// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-argument, typescript/no-unsafe-return, typescript/strict-boolean-expressions -- ArrowFunctionExpression from @oxlint/plugins has error-typed and any-typed properties; all member access is inherently unsafe
 import type {
   ArrowFunctionExpression,
   Context,
@@ -44,7 +44,7 @@ export const noArrowFunction: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       ArrowFunctionExpression(node: ArrowFunctionExpression): void {
         /**

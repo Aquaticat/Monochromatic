@@ -140,7 +140,7 @@ export function findTsdocComment(node: Span, context: Context): Comment | undefi
   }
 
   // Only fall back for declaration-level nodes, not expressions inside them
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const nodeType = (node as unknown as Record<string, unknown>).type as string | undefined;
   if (nodeType === undefined || !FALLBACK_ELIGIBLE_TYPES.has(nodeType)) {
     return undefined;
@@ -222,7 +222,7 @@ export function parseTsdocForNode(
  */
 function unwrapMethodDefinition(node: Record<string, unknown>): Record<string, unknown> | undefined {
   if (node.type === 'MethodDefinition' || node.type === 'TSAbstractMethodDefinition') {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return node.value as Record<string, unknown> | undefined;
   }
   return node;
@@ -242,7 +242,7 @@ function extractRawParams(node: Record<string, unknown>): readonly Record<string
   if (target === undefined) {
     return [];
   }
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   return target.params as Record<string, unknown>[] | undefined ?? [];
 }
 
@@ -277,21 +277,21 @@ export function extractParamNames(node: Span & Record<string, unknown>): readonl
  */
 function extractBindingName(pattern: Record<string, unknown>): readonly string[] {
   if (pattern.type === 'Identifier') {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const name = pattern.name as string;
     // Skip `this` parameter in TypeScript
     return name === 'this' ? [] : [name];
   }
   if (pattern.type === 'AssignmentPattern') {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return extractBindingName(pattern.left as Record<string, unknown>);
   }
   if (pattern.type === 'RestElement') {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return extractBindingName(pattern.argument as Record<string, unknown>);
   }
   if (pattern.type === 'TSParameterProperty') {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return extractBindingName(pattern.parameter as Record<string, unknown>);
   }
   // ObjectPattern, ArrayPattern, and other types don't map to individual @param names
@@ -345,23 +345,23 @@ function collectDestructuredNames(pattern: Record<string, unknown>, names: Set<s
   }
   if (pattern.type === 'AssignmentPattern') {
     // `{ a = defaultValue }` -- unwrap to the left side
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     collectDestructuredNames(pattern.left as Record<string, unknown>, names);
     return;
   }
   if (pattern.type === 'RestElement') {
     // `...rest` inside destructuring
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     collectDestructuredNames(pattern.argument as Record<string, unknown>, names);
     return;
   }
   if (pattern.type === 'TSParameterProperty') {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     collectDestructuredNames(pattern.parameter as Record<string, unknown>, names);
     return;
   }
   if (pattern.type === 'ObjectPattern') {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const properties = pattern.properties as Record<string, unknown>[] | undefined;
     if (properties === undefined) {
       return;
@@ -372,10 +372,10 @@ function collectDestructuredNames(pattern: Record<string, unknown>, names: Set<s
         collectDestructuredNames(prop, names);
       } else {
         // Property node -- extract the key name
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const key = prop.key as Record<string, unknown> | undefined;
         if (key !== undefined && key.type === 'Identifier') {
-          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
           names.add(key.name as string);
         }
       }
@@ -384,7 +384,7 @@ function collectDestructuredNames(pattern: Record<string, unknown>, names: Set<s
   }
   if (pattern.type === 'ArrayPattern') {
     // Array destructuring: `[a, b]` -- elements are binding patterns
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const elements = pattern.elements as (Record<string, unknown> | null)[] | undefined;
     if (elements === undefined) {
       return;
@@ -428,7 +428,7 @@ export function functionReturnsValue(node: Span & Record<string, unknown>): bool
   // because `kind` ("constructor", "get", "set", "method") is a property
   // of MethodDefinition, not of the inner FunctionExpression.
   if (node.type === 'MethodDefinition' || node.type === 'TSAbstractMethodDefinition') {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const kind = (node as Record<string, unknown>).kind as string | undefined;
     if (kind === 'constructor' || kind === 'set') {
       return false;
@@ -442,13 +442,13 @@ export function functionReturnsValue(node: Span & Record<string, unknown>): bool
   }
 
   // Check for explicit void/never return type annotation
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const returnType = target.returnType as Record<string, unknown> | undefined | null;
   if (returnType !== undefined && returnType !== null) {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const typeAnnotation = returnType.typeAnnotation as Record<string, unknown> | undefined;
     if (typeAnnotation !== undefined) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const tsType = typeAnnotation.type as string | undefined;
       if (tsType === 'TSVoidKeyword' || tsType === 'TSNeverKeyword') {
         return false;
@@ -459,17 +459,17 @@ export function functionReturnsValue(node: Span & Record<string, unknown>): bool
        * and a single type parameter of `TSVoidKeyword` or `TSNeverKeyword`.
        */
       if (tsType === 'TSTypeReference') {
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const typeName = (typeAnnotation).typeName as Record<string, unknown> | undefined;
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const name = typeName?.name as string | undefined;
         if (name === 'Promise') {
-          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
           const typeParams = (typeAnnotation).typeParameters as Record<string, unknown> | undefined;
-          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
           const params = typeParams?.params as Record<string, unknown>[] | undefined;
           if (params !== undefined && params.length === 1) {
-            // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
             const innerType = params[0]?.type as string | undefined;
             if (innerType === 'TSVoidKeyword' || innerType === 'TSNeverKeyword') {
               return false;

@@ -26,7 +26,7 @@ const nodeFsSpecifier = `node:fs`;
  * {@link readCssFileSync} and {@link existsSync} cannot await.
  */
 const nodeFs: typeof NodeFs | undefined = hasNodeFs
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- dynamic import lacks static type
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- dynamic import lacks static type
   ? await import(nodeFsSpecifier) as typeof NodeFs
   : undefined;
 

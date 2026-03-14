@@ -57,7 +57,7 @@ type NewTaskDialog = {
  * @returns panel and fab elements ready for DOM insertion
  */
 export function createNewTaskDialog(): NewTaskDialog {
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- custom element registered as "task-detail" returns TaskDetail
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element registered as "task-detail" returns TaskDetail
   const detail = document.createElement("task-detail") as TaskDetail;
 
   const panel = h({ tag: "div", class: "new-task-panel" });
@@ -75,10 +75,10 @@ export function createNewTaskDialog(): NewTaskDialog {
     }
   }
 
-  // oxlint-disable-next-line @typescript-eslint/no-misused-promises -- addEventListener does not await the handler
+  // oxlint-disable-next-line typescript/no-misused-promises -- addEventListener does not await the handler
   detail.addEventListener("action", async function onAction(event) {
     if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent for 'action' listener");
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload
     const { action, title, description } = event.detail as {
       action: string;
       title: string;
@@ -123,7 +123,7 @@ export function createNewTaskDialog(): NewTaskDialog {
     panel.showPopover();
     requestAnimationFrame(function focusTitleInput() {
       panel.dataset["animating"] = "";
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- shadowRoot querySelector returns the input we created
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- shadowRoot querySelector returns the input we created
       const titleInput = detail.shadowRoot?.querySelector(".title-input") as HTMLInputElement | null;
       titleInput?.focus();
     });

@@ -58,7 +58,7 @@ async function lint(fixturePath: string): Promise<readonly OxlintDiagnostic[]> {
     ({ stdout } = (error as { stdout: string }));
   }
 
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-assignment -- JSON.parse returns any
+  // oxlint-disable-next-line typescript/no-unsafe-assignment -- JSON.parse returns any
   const output: OxlintOutput = JSON.parse(stdout);
 
   // Filter to only tsdoc plugin diagnostics so built-in rules don't interfere

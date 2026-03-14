@@ -12,6 +12,12 @@
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/claude-code-plugins/claude-spawn"
   },
+  "contributors": [
+    {
+      "name": "Claude (Anthropic)",
+      "url": "https://claude.ai"
+    }
+  ],
   "sideEffects": true,
   "dependencies": {
     "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*",

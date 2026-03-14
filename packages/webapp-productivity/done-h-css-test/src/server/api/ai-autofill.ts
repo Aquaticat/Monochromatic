@@ -68,7 +68,7 @@ function parseAutofillResponse(raw: string): AutofillResult {
   const empty: AutofillResult = { tags: [], locations: [], priority: null, complexity: null };
 
   try {
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; shape validated below
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; shape validated below
     const parsed = JSON.parse(raw) as RawAutofillResponse;
     if (typeof parsed !== "object" || parsed === null) {
       return empty;
@@ -88,13 +88,13 @@ function parseAutofillResponse(raw: string): AutofillResult {
 
     const priority =
       typeof parsed.priority === "string" && VALID_PRIORITIES.has(parsed.priority)
-        // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated by Set.has check
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
         ? (parsed.priority as TaskPriority)
         : null;
 
     const complexity =
       typeof parsed.complexity === "string" && VALID_COMPLEXITIES.has(parsed.complexity)
-        // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated by Set.has check
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
         ? (parsed.complexity as TaskComplexity)
         : null;
 
@@ -114,7 +114,7 @@ function parseAutofillResponse(raw: string): AutofillResult {
  * @returns Sorted array of unique location strings
  */
 async function listAllLocations(): Promise<string[]> {
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- database query returns rows with loc column
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns rows with loc column
   const rows = await db
     .prepare("SELECT DISTINCT loc.value AS loc FROM tasks, json_each(tasks.locations) AS loc ORDER BY loc.value ASC")
     .all() as { loc: string }[];
@@ -136,7 +136,7 @@ async function listAllLocations(): Promise<string[]> {
  */
 export async function handleAutofill(req: Request): Promise<Response> {
   try {
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- request body is expected to be a JSON object
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- request body is expected to be a JSON object
     const body = (await req.json()) as Record<string, unknown>;
     const title = typeof body.title === "string" ? body.title.trim() : "";
 

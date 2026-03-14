@@ -1,4 +1,4 @@
-// oxlint-disable typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-call, typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-argument, typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-return, typescript-eslint/strict-boolean-expressions, eslint/no-magic-numbers, typescript-eslint/no-confusing-void-expression, eslint/no-shadow, eslint/no-warning-comments -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
+// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, typescript/strict-boolean-expressions, eslint/no-magic-numbers, typescript/no-confusing-void-expression, eslint/no-shadow, eslint/no-warning-comments -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
 import {
   createObservable,
   identity,

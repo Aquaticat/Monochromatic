@@ -301,7 +301,7 @@ class SideDrawer extends HTMLElement {
   /** Renders content and attaches event handlers for closing the drawer. */
   connectedCallback(): void {
     this.#render();
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- querySelector returns the panel div we created
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelector returns the panel div we created
     this.#panel = this.#shadow.querySelector(".panel") as HTMLDivElement;
 
     this.#shadow.querySelector(".panel-close")?.addEventListener("click", function closeDrawer() {

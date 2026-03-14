@@ -106,11 +106,11 @@ async function fetchAndParseFeeds(
 function extractDate(feedWOutline: FeedWOutline,): Date {
   const { feed, outline, } = feedWOutline;
   if (outline.type === 'atom') {
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type
     const atomFeed = feed as ReturnType<typeof parseAtomFeed>;
     return z.coerce.date().parse(atomFeed.updated ?? new Date(0,),);
   }
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- non-atom feeds are RSS
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-atom feeds are RSS
   const rssFeed = feed as ReturnType<typeof parseRssFeed>;
   return z.coerce.date().parse(rssFeed.pubDate ?? new Date(0,),);
 }

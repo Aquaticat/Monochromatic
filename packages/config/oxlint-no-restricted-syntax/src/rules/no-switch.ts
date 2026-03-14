@@ -43,7 +43,7 @@ export const noSwitch: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       SwitchStatement(node: Span): void {
         context.report({

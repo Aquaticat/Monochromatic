@@ -13,6 +13,7 @@ import { noDisableNoRestParams } from './rules/no-disable-no-rest-params.ts';
 import { noDisableNoSwitch } from './rules/no-disable-no-switch.ts';
 import { noDisableNoTrimLeftRight } from './rules/no-disable-no-trim-left-right.ts';
 import { noDisableNoTryFinally } from './rules/no-disable-no-try-finally.ts';
+import { noDisableNoUselessReturn } from './rules/no-disable-no-useless-return.ts';
 import { noDisableNoVariableFunctionExpression } from './rules/no-disable-no-variable-function-expression.ts';
 import { noDisableRequireDestructuredParams } from './rules/no-disable-require-destructured-params.ts';
 import { noDisableRequireReturns } from './rules/no-disable-require-returns.ts';
@@ -83,6 +84,7 @@ const plugin = eslintCompatPlugin({
     'no-disable-no-switch': noDisableNoSwitch,
     'no-disable-no-trim-left-right': noDisableNoTrimLeftRight,
     'no-disable-no-try-finally': noDisableNoTryFinally,
+    'no-disable-no-useless-return': noDisableNoUselessReturn,
     'no-disable-no-variable-function-expression': noDisableNoVariableFunctionExpression,
     'no-disable-no-non-null-assertion': noDisableNoNonNullAssertion,
     'no-disable-require-destructured-params': noDisableRequireDestructuredParams,

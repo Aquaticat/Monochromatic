@@ -76,7 +76,7 @@ function buildImageEntry(buf: Buffer): { type: "image_url"; image_url: { url: st
 export function parseVerdict(result: string): "PRODUCTIVE" | "UNPRODUCTIVE" {
   const upper = result.toUpperCase();
   const match = upper.match(/VERDICT:\s*(PRODUCTIVE|UNPRODUCTIVE)/);
-  // oxlint-disable-next-line no-unsafe-type-assertion -- regex capture group matches the union exactly
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- regex capture group matches the union exactly
   if (match !== null) return match[1] as "PRODUCTIVE" | "UNPRODUCTIVE";
   if (upper.includes("UNPRODUCTIVE")) return "UNPRODUCTIVE";
   return "PRODUCTIVE";
@@ -152,7 +152,7 @@ export async function analyze(sets: CaptureSet[]): Promise<string> {
   /** Milliseconds per second, for elapsed time formatting. */
   const MS_PER_SECOND = 1_000;
 
-  // oxlint-disable-next-line no-unsafe-type-assertion -- response shape is defined by the OpenAI-compatible API
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- response shape is defined by the OpenAI-compatible API
   const data = (await res.json()) as CompletionResponse;
   const elapsed = ((performance.now() - start) / MS_PER_SECOND).toFixed(1);
   const { prompt_tokens, completion_tokens } = data.usage;

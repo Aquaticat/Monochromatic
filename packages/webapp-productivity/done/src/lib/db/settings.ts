@@ -19,7 +19,7 @@ type SettingRow = {
  * @returns Stored value, or `null` when the key does not exist
  */
 export async function getSetting(key: string): Promise<string | null> {
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- database query returns the SettingRow shape
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns the SettingRow shape
   const row = await db.prepare("SELECT value FROM settings WHERE key = ?").get(key) as Pick<SettingRow, "value"> | undefined;
   return row?.value ?? null;
 }
@@ -56,7 +56,7 @@ export async function deleteSetting(key: string): Promise<boolean> {
  * @returns All settings as key-value pairs
  */
 export async function getAllSettings(): Promise<Record<string, string>> {
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- database query returns SettingRow shape
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns SettingRow shape
   const rows = await db.prepare("SELECT key, value FROM settings ORDER BY key ASC").all() as SettingRow[];
   return Object.fromEntries(rows.map(function toEntry(row) {
     return [row.key, row.value];

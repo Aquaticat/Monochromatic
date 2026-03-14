@@ -323,7 +323,7 @@ class TaskDetail extends HTMLElement {
     if (title.trim().length === 0) return;
 
     this.#autofillTimer = setTimeout(function triggerAutofill() {
-      // oxlint-disable-next-line @typescript-eslint/no-floating-promises -- fire-and-forget; errors handled inside #fetchAutofill
+      // oxlint-disable-next-line typescript/no-floating-promises -- fire-and-forget; errors handled inside #fetchAutofill
       this.#fetchAutofill(title.trim());
     }.bind(this), AUTOFILL_DEBOUNCE_MS);
   }
@@ -350,7 +350,7 @@ class TaskDetail extends HTMLElement {
 
       if (!response.ok) return;
 
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- API response shape matches AutofillResult
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- API response shape matches AutofillResult
       const result = (await response.json()) as AutofillResult;
       // Only apply autofill fields that currently have no user-set value
       this.#autofilled.clear();
@@ -471,11 +471,11 @@ class TaskDetail extends HTMLElement {
     }.bind(this));
 
     this.#shadow.addEventListener("click", function onAction(event) {
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- event.target is always an Element in shadow DOM click handlers
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event.target is always an Element in shadow DOM click handlers
       const target = event.target as HTMLElement;
       const button = target.closest("[data-action]");
       if (button === null) return;
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- closest returns HTMLElement with dataset
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- closest returns HTMLElement with dataset
       const {action} = (button as HTMLElement).dataset;
 
       this.dispatchEvent(new CustomEvent("action", {

@@ -147,7 +147,7 @@ export async function readArtifacts(): Promise<ArtifactData> {
       // Old artifacts without label fall back to the directory name
       const meta: ArtifactMeta | EnrichedArtifactMeta = {
         ...(parsed as ArtifactMeta | EnrichedArtifactMeta),
-        /* oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- label is typed as required but old artifacts may omit it; ?? fallback is intentional */
+        /* oxlint-disable-next-line typescript/no-unnecessary-condition -- label is typed as required but old artifacts may omit it; ?? fallback is intentional */
         label: (parsed as ArtifactMeta).label ?? modelDirent.name,
       };
       const [source, response] = await Promise.all([

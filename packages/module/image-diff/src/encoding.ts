@@ -1,4 +1,4 @@
-// oxlint-disable prefer-destructuring, no-regexp-exec, no-unnecessary-template-expression, no-magic-numbers -- utility module with array access patterns and MIME type detection
+// oxlint-disable prefer-destructuring, no-unnecessary-template-expression, no-magic-numbers -- utility module with array access patterns and MIME type detection
 import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 

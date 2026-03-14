@@ -51,7 +51,7 @@ let buffer: CaptureBuffer = [];
  * ```
  */
 export function store(set: CaptureSet): void {
-  // oxlint-disable-next-line no-unsafe-type-assertion -- bounded tuple enforced by MAX_ENTRIES slice
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- bounded tuple enforced by MAX_ENTRIES slice
   const next = [...buffer, set].slice(-MAX_ENTRIES) as CaptureBuffer;
   buffer = next;
   prune();
@@ -91,6 +91,6 @@ function isAfterCutoff(cutoff: number, s: CaptureSet): boolean {
  */
 function prune(): void {
   const cutoff = Date.now() - RETENTION_MS;
-  // oxlint-disable-next-line no-unsafe-type-assertion -- bounded tuple enforced by filter subset
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- bounded tuple enforced by filter subset
   buffer = buffer.filter(function checkRetention(s) { return isAfterCutoff(cutoff, s); }) as CaptureBuffer;
 }

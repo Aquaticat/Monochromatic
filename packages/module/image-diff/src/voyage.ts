@@ -1,4 +1,4 @@
-// oxlint-disable typescript-eslint/no-unsafe-type-assertion, prefer-destructuring -- API response types require assertions
+// oxlint-disable typescript/no-unsafe-type-assertion, prefer-destructuring -- API response types require assertions
 import type {
   BatchEmbeddingResult,
   EmbeddingProvider,

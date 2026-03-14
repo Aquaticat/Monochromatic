@@ -44,7 +44,7 @@ function isRateLimited(): boolean {
   const cutoff = Date.now() - WINDOW_DURATION_MS;
 
   // Discard entries older than the window
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- array index 0 is checked via length guard
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- array index 0 is checked via length guard
   while (requestTimestamps.length > 0 && (requestTimestamps[0] as number) < cutoff) {
     requestTimestamps.shift();
   }
@@ -150,7 +150,7 @@ export async function chatCompletion(options: ChatCompletionOptions): Promise<Ch
       return { ok: false, error: `AI endpoint returned ${String(response.status)}: ${errorText}` };
     }
 
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- API response shape matches ChatCompletionResponse
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- API response shape matches ChatCompletionResponse
     const data = (await response.json()) as ChatCompletionResponse;
     const firstChoice = data.choices[0];
     if (firstChoice === undefined) {

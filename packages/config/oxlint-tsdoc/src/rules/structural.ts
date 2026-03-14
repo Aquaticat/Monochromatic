@@ -54,7 +54,7 @@ function createTsdocVisitor(
     }
   }
 
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
   return {
     before() {
       if (shouldIgnoreFile(context.filename)) {

@@ -47,7 +47,7 @@ function scaleFilter(longEdge: number): string {
 export async function captureScreenshot(): Promise<Buffer> {
   const tmp = `/tmp/hall-monitor-screen-${Date.now()}.png`;
   /** Disposable wrapper for temp file cleanup. */
-  // oxlint-disable-next-line no-unsafe-type-assertion -- disposable resource pattern
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- disposable resource pattern
   await using _cleanup = {
     [Symbol.asyncDispose]: async function cleanupTempFile(): Promise<void> {
       try { await unlink(tmp); } catch { /* temp file cleanup is best-effort */ }

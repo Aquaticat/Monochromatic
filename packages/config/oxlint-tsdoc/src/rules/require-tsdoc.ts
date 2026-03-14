@@ -32,15 +32,15 @@ const NODE_KIND_LABELS: Readonly<Record<string, string>> = {
  * @returns declaration name, or "anonymous" when no name is available
  */
 function extractNodeName(node: Span): string {
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const typed = node as Span & Record<string, unknown>;
 
   // VariableDeclaration: dig into declarators[0].id.name
   if (typed.type === 'VariableDeclaration') {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const declarations = typed.declarations as Record<string, unknown>[] | undefined;
     if (declarations !== undefined && declarations.length > 0) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const id = declarations[0]?.id as Record<string, unknown> | undefined;
       if (id !== undefined && typeof id.name === 'string') {
         return id.name;
@@ -51,7 +51,7 @@ function extractNodeName(node: Span): string {
 
   // MethodDefinition / PropertyDefinition / Property: key.name
   if (typed.type === 'MethodDefinition' || typed.type === 'PropertyDefinition' || typed.type === 'Property') {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const key = typed.key as Record<string, unknown> | undefined;
     if (key !== undefined && typeof key.name === 'string') {
       return key.name;
@@ -60,7 +60,7 @@ function extractNodeName(node: Span): string {
   }
 
   // Most declarations: .id.name
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const id = typed.id as Record<string, unknown> | undefined;
   if (id !== undefined && typeof id.name === 'string') {
     return id.name;
@@ -82,7 +82,7 @@ function extractNodeName(node: Span): string {
  * @returns kind label like "function", "class", "variable"
  */
 function extractNodeKind(node: Span): string {
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const nodeType = (node as Span & Record<string, unknown>).type as string | undefined;
   if (nodeType === undefined) {
     return 'declaration';
@@ -144,7 +144,7 @@ export const requireTsdoc: CreateOnceRule = {
     /** Tracks nesting depth inside function-like scopes. */
     let scopeDepth = 0;
 
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       before() {
         if (shouldIgnoreFile(context.filename)) {

@@ -108,7 +108,7 @@ function parseEnumValue<T extends string>(value: unknown, validValues: Set<strin
   if (typeof value !== "string") {
     return undefined;
   }
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated by Set.has check
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
   return validValues.has(value) ? (value as T) : undefined;
 }
 
@@ -126,7 +126,7 @@ function parseStatus(value: unknown): TaskStatus | undefined {
   if (typeof value !== "string") {
     return undefined;
   }
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated by Set.has check
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
   return statuses.has(value as TaskStatus) ? (value as TaskStatus) : undefined;
 }
 
@@ -155,7 +155,7 @@ function parseTaskUpdateInput(value: unknown): TaskUpdateInput | null {
     if (typeof value.description !== "string" && value.description !== null) {
       return null;
     }
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated above: string | null
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated above: string | null
     taskUpdateInput.description = value.description;
   }
 
@@ -211,7 +211,7 @@ function parseTaskUpdateInput(value: unknown): TaskUpdateInput | null {
     if (typeof value.dueDate !== "string" && value.dueDate !== null) {
       return null;
     }
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated above: string | null
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated above: string | null
     taskUpdateInput.dueDate = value.dueDate;
   }
 

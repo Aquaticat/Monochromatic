@@ -28,7 +28,7 @@ export async function api<T = unknown>(
     showToast(err.error ?? "Something went wrong");
     throw new Error(err.error);
   }
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- response JSON matches the T shape by API contract
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- response JSON matches the T shape by API contract
   return res.json() as Promise<T>;
 }
 

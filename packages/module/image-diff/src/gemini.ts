@@ -1,4 +1,4 @@
-// oxlint-disable typescript-eslint/no-unsafe-type-assertion, prefer-destructuring, require-await -- API response types require assertions; provider interface requires async
+// oxlint-disable typescript/no-unsafe-type-assertion, prefer-destructuring, require-await -- API response types require assertions; provider interface requires async
 import type {
   BatchEmbeddingResult,
   EmbeddingProvider,

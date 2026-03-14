@@ -77,7 +77,7 @@ class SectionHeading extends HTMLElement {
     }
     const content = this.#shadow.querySelector(".content");
     if (content !== null) {
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- querySelector returns Element; style access needs HTMLElement
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelector returns Element; style access needs HTMLElement
       (content as HTMLElement).style.display = this.#open ? "flex" : "none";
     }
   }

@@ -66,14 +66,14 @@ function detectRuntime(): string {
   // oxlint-disable-next-line no-unnecessary-condition -- Deno global only exists at runtime in Deno
   if (globalThis.Deno !== undefined) {
     // @ts-expect-error -- Deno global exists at runtime but not in Bun/Node types
-    // oxlint-disable-next-line no-unsafe-member-access, no-unsafe-type-assertion -- Deno global is untyped in non-Deno environments
+    // oxlint-disable-next-line typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- Deno global is untyped in non-Deno environments
     return `Deno ${Deno.version.deno as string}`;
   }
 
   return `Node.js ${process.version}`;
 }
 
-// oxlint-disable typescript-eslint/no-unsafe-type-assertion -- adapter type is opaque
+// oxlint-disable typescript/no-unsafe-type-assertion -- adapter type is opaque
 /** Elysia application instance with all routes configured. */
 const app = new Elysia({ adapter: adapter as never })
   .get('/', function handleRoot() { return {

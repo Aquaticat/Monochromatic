@@ -1,7 +1,6 @@
 // Async iterator that yields complete newline-delimited lines from any async byte source.
 // MCP stdio transport requires messages delimited by newlines with no embedded newlines.
 
-// oxlint-disable-next-line tsdoc/require-yields -- TSDoc does not define @yields; use @returns for generator return type
 /**
  * Yields complete lines from a byte stream, buffering partial reads across chunk boundaries.
  * Each yielded string has the trailing newline stripped.

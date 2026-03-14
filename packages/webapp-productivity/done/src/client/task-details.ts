@@ -59,17 +59,17 @@ if (!(appElement instanceof HTMLElement)) {
 /** Typed reference to the app container. */
 const app = appElement;
 
-// oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- custom element registered as "task-detail" returns TaskDetail
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element registered as "task-detail" returns TaskDetail
 const detail = document.createElement("task-detail") as TaskDetail;
 detail.configure({
   task,
   blockerSummaries: pageData.blockerSummaries,
 });
 
-// oxlint-disable-next-line @typescript-eslint/no-misused-promises -- addEventListener does not await the handler
+// oxlint-disable-next-line typescript/no-misused-promises -- addEventListener does not await the handler
 detail.addEventListener("action", async function onAction(event) {
   if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent for 'action' listener");
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload
   const { action, title, description } = event.detail as {
     action: string;
     title: string;

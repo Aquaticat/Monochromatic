@@ -73,11 +73,11 @@ async function main(): Promise<void> {
 
   // Not needed because we don't allow configuring interval: defense-in-depth — add a floor (e.g. Math.max(INTERVAL_MS, 60_000))
   // so a misconfigured or zero interval cannot cause a tight spin loop.
-  // oxlint-disable-next-line eslint/no-unmodified-loop-condition, typescript-eslint/no-unnecessary-condition -- running is mutated by signal handler
+  // oxlint-disable-next-line eslint/no-unmodified-loop-condition, typescript/no-unnecessary-condition -- running is mutated by signal handler
   while (running) {
     // oxlint-disable-next-line eslint/no-await-in-loop, eslint-plugin-promise/avoid-new -- sequential timer loop; setTimeout wrapper for delay
     await new Promise(function intervalDelay(resolve) { setTimeout(resolve, INTERVAL_MS); });
-    // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition, eslint/no-await-in-loop -- running is mutated by signal handler; sequential loop
+    // oxlint-disable-next-line typescript/no-unnecessary-condition, eslint/no-await-in-loop -- running is mutated by signal handler; sequential loop
     if (running) await cycle();
   }
 }

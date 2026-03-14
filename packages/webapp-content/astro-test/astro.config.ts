@@ -1,4 +1,4 @@
-// oxlint-disable typescript-eslint/no-unsafe-type-assertion -- adapter type is opaque
+// oxlint-disable typescript/no-unsafe-type-assertion -- adapter type is opaque
 import mdx from '@astrojs/mdx';
 import { createBaseConfig, } from '@monochromatic-dev/config-vite';
 import {

@@ -43,10 +43,10 @@ export async function api<TResponse = unknown>(path: string, options?: RequestIn
   }
 
   if (response.status === HTTP_NO_CONTENT) {
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- 204 responses have no body; caller expects TResponse
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 204 responses have no body; caller expects TResponse
     return undefined as TResponse;
   }
 
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- response JSON matches the TResponse shape by API contract
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- response JSON matches the TResponse shape by API contract
   return (await response.json()) as TResponse;
 }

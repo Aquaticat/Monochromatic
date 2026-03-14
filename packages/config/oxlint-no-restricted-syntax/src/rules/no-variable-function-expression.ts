@@ -40,12 +40,12 @@ export const noVariableFunctionExpression: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       VariableDeclaration(node: Span): void {
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const declNode = node as Span & Record<string, unknown>;
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const declarations = declNode['declarations'] as
           | Record<string, unknown>[]
           | null
@@ -55,7 +55,7 @@ export const noVariableFunctionExpression: CreateOnceRule = {
         }
 
         for (const declarator of declarations) {
-          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
           const init = declarator['init'] as Record<string, unknown> | null | undefined;
           if (init === undefined || init === null) {
             continue;

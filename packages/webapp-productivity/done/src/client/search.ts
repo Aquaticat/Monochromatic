@@ -90,7 +90,7 @@ const app = appElement;
 
 // Listen for search events from the search-bar component
 document.querySelector("search-bar")?.addEventListener("search", function onSearch(event) {
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- CustomEvent detail contains query string
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CustomEvent detail contains query string
   const query = (event as CustomEvent).detail.query as string;
   globalThis.location.href = query.length === 0 ? "/search" : `/search?q=${encodeURIComponent(query)}`;
 } as EventListener);

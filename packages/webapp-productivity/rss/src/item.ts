@@ -99,7 +99,7 @@ function extractItems(feeds: FeedWOutline[],): Item[] {
   const innerL = tagged({ tag: extractItems.name, l, },);
   const result: Item[] = feeds.flatMap(function extractFeedItems({ feed, outline, },) {
     if (outline.type === 'atom') {
-      // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type
       const atomFeed = feed as ReturnType<typeof parseAtomFeed>;
       const { entries, ...feedWithoutEntries } = atomFeed;
       if (entries === undefined || entries === null || entries.length === 0) {
@@ -110,7 +110,7 @@ function extractItems(feeds: FeedWOutline[],): Item[] {
         return { feed: feedWithoutEntries, outline, item: entry, };
       },);
     }
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- non-atom feeds are RSS
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-atom feeds are RSS
     const rssFeed = feed as ReturnType<typeof parseRssFeed>;
     const { items, ...feedWithoutItems } = rssFeed;
     if (items === undefined || items === null || items.length === 0) {
@@ -134,10 +134,10 @@ function extractItems(feeds: FeedWOutline[],): Item[] {
  * @returns Normalized item in RSS-compatible format
  */
 function getNormalizedItem(item: Item,): NormalizedItem {
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- non-atom items already match NormalizedItem shape
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-atom items already match NormalizedItem shape
   if (item.outline.type !== 'atom') return item as NormalizedItem;
 
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- outline.type === 'atom' narrows the item
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outline.type === 'atom' narrows the item
   const atomItem = item as AtomItem;
   const { title, subtitle, } = atomItem.feed;
   const newFeed: Record<string, string> = {};

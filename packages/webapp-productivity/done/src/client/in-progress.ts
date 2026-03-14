@@ -70,7 +70,7 @@ setInterval(function updateTimers() {
   cards.forEach(function updateCard(card, cardIndex) {
     const task = pageData.tasks[cardIndex];
     if (task === undefined) return;
-    // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- custom element has getChipElement method
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element has getChipElement method
     const chipEl = (card as unknown as { getChipElement?: (prefix: string) => HTMLSpanElement | null }).getChipElement?.("tracked:");
     if (chipEl instanceof HTMLSpanElement) {
       chipEl.textContent = `tracked: ${formatRunningTrackedTime(task)}`;

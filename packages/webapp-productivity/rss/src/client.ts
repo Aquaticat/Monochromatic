@@ -86,7 +86,7 @@ function addScrollEvents(scrollOptions: {
 const elements: NodeListOf<HTMLElement> = document.querySelectorAll('.feed',);
 elements.forEach(function bindScrollIgnore(element,) {
   addScrollEvents({ element, },);
-  // oxlint-disable-next-line @typescript-eslint/no-misused-promises -- addEventListener does not await the handler
+  // oxlint-disable-next-line typescript/no-misused-promises -- addEventListener does not await the handler
   element.addEventListener('scrolledOut', async function onScrolledOut() {
     console.error('scrolledOut',);
     const metadata = notNullishOrThrow(element.querySelector('.feed__metadata',),);

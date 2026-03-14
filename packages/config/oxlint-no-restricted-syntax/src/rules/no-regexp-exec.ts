@@ -19,7 +19,7 @@ function isRegExpNode(node: Record<string, unknown>): boolean {
     return true;
   }
   if (type === 'NewExpression') {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const callee = node['callee'] as Record<string, unknown> | null | undefined;
     if (callee !== null && callee !== undefined) {
       return callee['type'] === 'Identifier' && callee['name'] === 'RegExp';
@@ -67,12 +67,12 @@ export const noRegexpExec: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       CallExpression(node: Span): void {
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const callNode = node as Span & Record<string, unknown>;
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const callee = callNode['callee'] as Record<string, unknown> | null | undefined;
         if (callee === undefined || callee === null) {
           return;
@@ -83,13 +83,13 @@ export const noRegexpExec: CreateOnceRule = {
           return;
         }
 
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const property = callee['property'] as Record<string, unknown> | null | undefined;
         if (property === undefined || property === null || property['name'] !== 'exec') {
           return;
         }
 
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const object = callee['object'] as Record<string, unknown> | null | undefined;
         if (object === undefined || object === null) {
           return;

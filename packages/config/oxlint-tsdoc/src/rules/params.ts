@@ -36,7 +36,7 @@ const FUNCTION_LIKE_TYPES = new Set([
  * @returns true for function-like nodes
  */
 function isFunctionLike(node: Span & Record<string, unknown>): boolean {
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   return FUNCTION_LIKE_TYPES.has(node.type as string);
 }
 
@@ -59,7 +59,7 @@ function createFunctionTsdocVisitor(
    * @param node - AST node to check
    */
   function check(node: Span): void {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint plugin API is untyped
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const typedNode = node as Span & Record<string, unknown>;
     if (!isFunctionLike(typedNode)) {
       return;
@@ -71,7 +71,7 @@ function createFunctionTsdocVisitor(
     handler(typedNode, result);
   }
 
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
   return {
     before() {
       if (shouldIgnoreFile(context.filename)) {

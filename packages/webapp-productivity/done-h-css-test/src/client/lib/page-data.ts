@@ -19,6 +19,6 @@ export function readPageData<TData>(): TData {
     throw new Error("Page data element is empty");
   }
 
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; caller provides the expected shape via TData
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; caller provides the expected shape via TData
   return JSON.parse(text) as TData;
 }

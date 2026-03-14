@@ -33,7 +33,7 @@ export const noEnum: CreateOnceRule = {
     },
   },
   createOnce(context: Context): VisitorWithHooks {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       TSEnumDeclaration(node: Span): void {
         context.report({

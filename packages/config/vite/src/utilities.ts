@@ -142,7 +142,7 @@ async function readFileWithRetry(
   delayMs = 10,
 ): Promise<string> {
   try {
-    // oxlint-disable-next-line no-unsafe-type-assertion -- readFile with utf8 encoding returns string
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- readFile with utf8 encoding returns string
     return await readFile(path, options,) as string;
   }
   catch (error) {

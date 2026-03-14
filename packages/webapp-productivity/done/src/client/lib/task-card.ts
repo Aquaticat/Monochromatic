@@ -209,7 +209,7 @@ class TaskCard extends HTMLElement {
   getChipElement(prefix: string): HTMLSpanElement | null {
     for (const chip of this.#shadow.querySelectorAll(".chip")) {
       if (chip.textContent !== null && chip.textContent !== undefined && chip.textContent.startsWith(prefix)) {
-        // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- querySelectorAll(".chip") returns span elements created by buildChipTexts
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelectorAll(".chip") returns span elements created by buildChipTexts
         return chip as HTMLSpanElement;
       }
     }
@@ -242,7 +242,7 @@ class TaskCard extends HTMLElement {
           attrs: { title: "Complete task" },
           children: [h({ tag: "span", class: "checkbox-box" })],
           on: {
-            // oxlint-disable-next-line @typescript-eslint/no-misused-promises -- DOM event handler; fire-and-forget async
+            // oxlint-disable-next-line typescript/no-misused-promises -- DOM event handler; fire-and-forget async
             click: async function onCheckboxClick(event) {
               event.stopPropagation();
               if (options.onToggleComplete !== undefined) {
@@ -278,7 +278,7 @@ customElements.define("task-card", TaskCard);
  * @returns Configured TaskCard element
  */
 export function createTaskCard(task: Task, options: TaskCardOptions): TaskCard {
-  // oxlint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- custom element registered as "task-card" returns TaskCard
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element registered as "task-card" returns TaskCard
   const card = document.createElement("task-card") as TaskCard;
   card.configure(task, options);
   return card;

@@ -148,7 +148,7 @@ async function waitForHealth(): Promise<void> {
       // oxlint-disable-next-line no-await-in-loop -- sequential health polling by design
       const res = await fetch(HEALTH_URL);
       if (res.ok) {
-        // oxlint-disable-next-line no-await-in-loop, no-unsafe-type-assertion -- sequential poll; JSON response shape is known
+        // oxlint-disable-next-line no-await-in-loop, typescript/no-unsafe-type-assertion -- sequential poll; JSON response shape is known
         const body = (await res.json()) as { status: string };
         if (body.status === "ok") return;
       }

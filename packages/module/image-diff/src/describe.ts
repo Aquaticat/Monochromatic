@@ -1,4 +1,4 @@
-// oxlint-disable typescript-eslint/no-unsafe-type-assertion, require-await -- API response types require assertions
+// oxlint-disable typescript/no-unsafe-type-assertion, require-await -- API response types require assertions
 import type { ImageInput } from './types.ts';
 import { toImageUri } from './encoding.ts';
 import { l, tagged } from './log.ts';

@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// oxlint-disable typescript-eslint/no-unsafe-type-assertion, init-declarations, prefer-destructuring -- CLI script with argument parsing; type assertions for parsed JSON
+// oxlint-disable typescript/no-unsafe-type-assertion, init-declarations, prefer-destructuring -- CLI script with argument parsing; type assertions for parsed JSON
 /**
  * CLI for perceptual image difference comparison using multimodal embeddings.
  * Supports Voyage AI and Google Gemini backends.

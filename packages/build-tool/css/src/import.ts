@@ -156,7 +156,7 @@ function readPackageJson(packageDir: string): Record<string, unknown> | undefine
   try {
     /** Raw JSON text */
     const raw = readCssFileSync(packageJsonPath);
-    // oxlint-disable-next-line no-unsafe-type-assertion -- JSON.parse returns unknown; package.json shape is Record<string, unknown>
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; package.json shape is Record<string, unknown>
     return JSON.parse(raw) as Record<string, unknown>;
   } catch {
     return undefined;
@@ -179,7 +179,7 @@ function resolveExports(exports: unknown, subpath: string): string | undefined {
   }
 
   /** Exports object keyed by subpath pattern */
-  // oxlint-disable-next-line no-unsafe-type-assertion -- narrowing from object to Record for property access
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from object to Record for property access
   const exportsMap = exports as Record<string, unknown>;
   /** Value for the requested subpath */
   const entry = exportsMap[subpath];
@@ -191,7 +191,7 @@ function resolveExports(exports: unknown, subpath: string): string | undefined {
   // Condition object: check style → import → default
   if (typeof entry === 'object' && entry !== null) {
     /** Condition map for this subpath */
-    // oxlint-disable-next-line no-unsafe-type-assertion -- narrowing from object to Record for condition access
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from object to Record for condition access
     const conditions = entry as Record<string, unknown>;
     for (const key of ['style', 'import', 'default']) {
       if (typeof conditions[key] === 'string') {

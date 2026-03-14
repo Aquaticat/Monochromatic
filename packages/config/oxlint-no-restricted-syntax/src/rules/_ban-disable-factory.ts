@@ -48,7 +48,7 @@ export function banDisableRule({ ruleId, description, message }: {
       },
     },
     createOnce(context: Context): VisitorWithHooks {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
       return {
         Program(_node: Span): void {
           context.sourceCode.getAllComments().forEach(function checkComment(comment) {
