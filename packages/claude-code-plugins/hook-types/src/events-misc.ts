@@ -74,15 +74,12 @@ type NotificationInput = HookInputBase & {
 /**
  * Output for `Notification` hooks.
  * Cannot block or modify notifications.
+ *
+ * **Note**: despite being documented, `additionalContext` for Notification hooks
+ * is not implemented in Claude Code v2.1.76 — the `hookSpecificOutput` switch
+ * statement has no `case "Notification"`, so any provided context is silently dropped.
  */
-type NotificationOutput = HookOutputBase & {
-  hookSpecificOutput?: {
-    hookEventName: 'Notification';
-
-    /** Context added to Claude's conversation. */
-    additionalContext?: string;
-  };
-};
+type NotificationOutput = HookOutputBase;
 
 //endregion
 

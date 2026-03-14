@@ -4,10 +4,10 @@
  *
  * Called from hook handlers with two modes:
  * - **Consuming** (`consume: true`): renames `.json` to `.reported`, preventing future reads.
- *   Used by hooks with reliable delivery (UserPromptSubmit stdout, Stop blocking reason).
+ *   Used by all delivery hooks — first one to fire wins.
  * - **Non-consuming** (`consume: false`): reads but does not rename.
- *   Used by hooks where `additionalContext` may be silently dropped (plugin-defined
- *   PreToolUse/PostToolUse hooks — see anthropics/claude-code#18427).
+ *   Reserved for diagnostic or observability use cases where the result
+ *   should remain available for a consuming hook to pick up later.
  *
  * @module
  */

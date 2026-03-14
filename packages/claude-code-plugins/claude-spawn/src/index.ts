@@ -10,9 +10,9 @@
  * - **Stop**: updates child's `lastMessage` (child sessions); **consumes** completed
  *   children by blocking with reason text (parent sessions)
  * - **SessionEnd**: no-op (kept for future use)
- * - **Best-effort hooks** (PreToolUse, PostToolUse, etc.): reads completed children
- *   without consuming and returns `additionalContext` — may be silently dropped by
- *   Claude Code for plugin-defined hooks (anthropics/claude-code#18427)
+ * - **Other hooks** (PreToolUse, PostToolUse, etc.): consumes completed children
+ *   and returns `additionalContext` — confirmed working for native tools in
+ *   Claude Code v2.1.76; first hook to fire after child completion delivers
  *
  * @module
  */
@@ -248,16 +248,23 @@ if (event.hook_event_name === 'SessionStart') {
 
 //endregion
 
-//region Best-effort hooks — non-consuming additionalContext injection
+//region Other hooks — consuming additionalContext injection
 
 } else {
   /**
-   * Non-consuming read: returns completed children without renaming files.
-   * If Claude Code actually processes the `additionalContext` (not guaranteed for
-   * plugin-defined hooks), the result will be surfaced early. The consuming hooks
-   * (UserPromptSubmit, Stop) will still pick up and consume the same results later.
+   * Consuming read: checks for completed children and renames files to `.reported`.
+   *
+   * `additionalContext` via `hookSpecificOutput` is confirmed working for
+   * PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, SessionStart,
+   * Setup, and SubagentStart in Claude Code v2.1.76 source (switch at ~10039418
+   * in unpacked JS). **Notification** is missing from the switch — context is
+   * silently dropped despite being documented.
+   *
+   * The first hook to fire after a child completes will consume and deliver.
+   * UserPromptSubmit (stdout) and Stop (blocking reason) provide redundant
+   * delivery paths if `additionalContext` is ever broken for plugin hooks.
    */
-  const context = checkCompletedChildren({ parentSessionId: event.session_id, consume: false });
+  const context = checkCompletedChildren({ parentSessionId: event.session_id, consume: true });
 
   if (context !== null) {
     /** Hook output carrying completed child results as additional context (best-effort). */
