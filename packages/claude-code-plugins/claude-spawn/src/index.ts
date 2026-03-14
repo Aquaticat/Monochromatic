@@ -5,8 +5,8 @@
  *
  * A single binary that handles all hook events:
  * - **SessionStart**: writes PID-to-session mapping; registers child spawn state
- * - **Stop**: updates child's `lastMessage` with the latest assistant response
- * - **SessionEnd**: marks child as `"stopped"` so the parent can pick up the result
+ * - **Stop**: updates child's `lastMessage` and marks it as `"stopped"` so the parent can pick up the result
+ * - **SessionEnd**: no-op (kept for future use)
  * - **All `additionalContext` hooks**: checks for completed children and injects results
  *
  * @module
@@ -48,7 +48,7 @@ const event = JSON.parse(raw) as HookInput;
 if (event.hook_event_name === 'SessionStart') {
   mkdirSync(BY_PID_DIR, { recursive: true });
 
-  /** Maps this Claude process's PID to the session identity for MCP server coordination. */
+  /** Maps this Claude process's PID to the session identity for CLI coordination. */
   const mapping: PidMapping = {
     sessionId: event.session_id,
     transcriptPath: event.transcript_path,
@@ -59,7 +59,7 @@ if (event.hook_event_name === 'SessionStart') {
     JSON.stringify(mapping),
   );
 
-  /** Register as a child session if spawned by the MCP tool. */
+  /** Register as a child session if spawned by the CLI tool. */
   const spawnId = process.env.CLAUDE_SPAWN_ID;
   const parentSessionId = process.env.CLAUDE_SPAWNED_BY_SESSION;
 
@@ -105,7 +105,7 @@ if (event.hook_event_name === 'SessionStart') {
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
       const state = JSON.parse(existing) as SpawnState;
 
-      const updated: SpawnState = { ...state, lastMessage: event.last_assistant_message };
+      const updated: SpawnState = { ...state, lastMessage: event.last_assistant_message, status: 'stopped' };
       writeFileSync(filePath, JSON.stringify(updated));
     } catch {
       /** File missing or unreadable — SessionStart hook may not have run yet. */
@@ -118,26 +118,9 @@ if (event.hook_event_name === 'SessionStart') {
 
 //endregion
 
-//region SessionEnd — mark child as stopped
+//region SessionEnd — no-op (status already set by Stop hook)
 
 } else if (event.hook_event_name === 'SessionEnd') {
-  const spawnId = process.env.CLAUDE_SPAWN_ID;
-
-  if (spawnId !== undefined) {
-    const filePath = join(SPAWNS_DIR, `${spawnId}.json`);
-
-    try {
-      const existing = readFileSync(filePath, 'utf8');
-      /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own hooks */
-      const state = JSON.parse(existing) as SpawnState;
-
-      const updated: SpawnState = { ...state, status: 'stopped' };
-      writeFileSync(filePath, JSON.stringify(updated));
-    } catch {
-      /** File missing or unreadable. */
-    }
-  }
-
   const output: HookOutputBase = {};
   process.stdout.write(JSON.stringify(output));
 

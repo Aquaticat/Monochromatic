@@ -58,7 +58,7 @@ const thresholds = new Map<string, number>(
 const summaries: ModelSummary[] = uniqueLabels.flatMap(function buildSummary(label) {
   const modelEntries = entries.filter(function matchLabel(entry) { return entry.label === label; });
   /** Latest multi-probe run for meaningful overall score; fall back to latest run */
-  /* oxlint-disable-next-line eslint-plugin-unicorn/no-array-callback-reference -- hasMultipleProbes is a type-compatible predicate */
+  /* oxlint-disable-next-line unicorn/no-array-callback-reference -- hasMultipleProbes is a type-compatible predicate */
   const latestMultiProbe = modelEntries.filter(hasMultipleProbes).at(-1);
   const latest = latestMultiProbe ?? modelEntries.at(-1);
   if (latest === undefined) return [];

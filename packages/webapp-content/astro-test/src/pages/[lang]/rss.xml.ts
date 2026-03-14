@@ -1,4 +1,4 @@
-// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-assignment, typescript/no-unsafe-call, typescript/no-unsafe-type-assertion, typescript/explicit-function-return-type, eslint/require-await, typescript/no-unsafe-argument, typescript/no-unsafe-return -- Astro RSS endpoint with framework-dictated patterns
+// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-assignment, typescript/no-unsafe-call, typescript/no-unsafe-type-assertion, typescript/explicit-function-return-type, require-await, typescript/no-unsafe-argument, typescript/no-unsafe-return -- Astro RSS endpoint with framework-dictated patterns
 import { generateRssFeed, } from 'feedsmith';
 import type {
   APIRoute,

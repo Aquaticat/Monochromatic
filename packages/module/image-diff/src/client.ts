@@ -1,4 +1,4 @@
-// oxlint-disable typescript/no-unsafe-type-assertion, eslint/require-await -- Promise.allSettled values require type assertions; async functions return provider promises directly
+// oxlint-disable typescript/no-unsafe-type-assertion, require-await -- Promise.allSettled values require type assertions; async functions return provider promises directly
 import type {
   BatchEmbeddingResult,
   ComparisonResult,

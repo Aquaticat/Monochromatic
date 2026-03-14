@@ -5,12 +5,6 @@
   "author": {
     "name": "Aquaticat"
   },
-  "mcpServers": {
-    "claude-spawn": {
-      "command": "bun",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/src/mcp.ts"]
-    }
-  },
   "hooks": {
     "SessionStart": [
       {

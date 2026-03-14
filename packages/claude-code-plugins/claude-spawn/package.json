@@ -4,7 +4,7 @@
   "type": "module",
   "bin": {
     "cccs": "./dist/final/node/index.mjs",
-    "mcp-claude-spawn": "./src/mcp.ts"
+    "spawn-claude": "./src/cli.ts"
   },
   "version": "0.0.1",
   "repository": {
@@ -22,7 +22,8 @@
   "dependencies": {
     "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*",
     "@monochromatic-dev/claude-code-plugins-hook-utils": "workspace:*",
-    "@monochromatic-dev/mcp-stdio": "workspace:*"
+    "@optique/core": "catalog:",
+    "@optique/run": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

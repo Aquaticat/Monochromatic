@@ -144,7 +144,7 @@ function addFilledPath(
     else if (cmd.type === "L") { cx = cmd.x; cy = cmd.y; otPath.lineTo(cx - cellX + xShift, fontY(cy)); }
     else if (cmd.type === "H") { cx = cmd.x; otPath.lineTo(cx - cellX + xShift, fontY(cy)); }
     else if (cmd.type === "V") { cy = cmd.y; otPath.lineTo(cx - cellX + xShift, fontY(cy)); }
-    // oxlint-disable-next-line no-unnecessary-condition -- SVG command type discriminant is checked exhaustively
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- SVG command type discriminant is checked exhaustively
     else if (cmd.type === "Z") { otPath.close(); }
   });
 }

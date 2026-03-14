@@ -52,7 +52,7 @@ async function findDesktopFiles({ dir }: { dir: string }): Promise<readonly stri
     for (const entry of entries) {
       const fullPath = join(current, entry.name);
       if (entry.isDirectory()) {
-        /* oxlint-disable-next-line eslint/no-await-in-loop -- recursive directory walk must be sequential */
+        /* oxlint-disable-next-line no-await-in-loop -- recursive directory walk must be sequential */
         await walk({ current: fullPath });
       } else if (entry.name.endsWith('.desktop')) {
         results.push(fullPath);
@@ -89,7 +89,7 @@ export async function scanEntries({ dirs }: { dirs: readonly string[] }): Promis
   const allIds: string[] = [];
 
   for (const dir of dirs) {
-    /* oxlint-disable-next-line eslint/no-await-in-loop -- sequential: later dirs override earlier for same ID */
+    /* oxlint-disable-next-line no-await-in-loop -- sequential: later dirs override earlier for same ID */
     const files = await findDesktopFiles({ dir });
     for (const filePath of files) {
       const rel = relative(dir, filePath);

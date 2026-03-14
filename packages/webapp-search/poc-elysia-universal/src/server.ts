@@ -14,7 +14,7 @@
  */
 
 /** Whether the current runtime is Bun. */
-// oxlint-disable-next-line no-unnecessary-condition -- Bun global only exists at runtime in Bun
+// oxlint-disable-next-line typescript/no-unnecessary-condition -- Bun global only exists at runtime in Bun
 const isBun = globalThis.Bun !== undefined;
 
 /**
@@ -63,7 +63,7 @@ function detectRuntime(): string {
     return `Bun ${Bun.version}`;
   }
 
-  // oxlint-disable-next-line no-unnecessary-condition -- Deno global only exists at runtime in Deno
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- Deno global only exists at runtime in Deno
   if (globalThis.Deno !== undefined) {
     // @ts-expect-error -- Deno global exists at runtime but not in Bun/Node types
     // oxlint-disable-next-line typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- Deno global is untyped in non-Deno environments

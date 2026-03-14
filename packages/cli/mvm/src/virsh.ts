@@ -116,7 +116,7 @@ export async function waitForGuestAgent({ name, timeoutMs = DEFAULT_AGENT_TIMEOU
 
   rl.info(`waiting for guest agent on ${name}...`);
 
-  // oxlint-disable typescript/no-unnecessary-condition, eslint(no-await-in-loop), eslint-plugin-promise(avoid-new) -- polling loop
+  // oxlint-disable typescript/no-unnecessary-condition, no-await-in-loop, promise/avoid-new -- polling loop
   while (true) {
     try {
       await virsh({ args: ['qemu-agent-command', fullName, pingPayload] });
@@ -133,7 +133,7 @@ export async function waitForGuestAgent({ name, timeoutMs = DEFAULT_AGENT_TIMEOU
       await new Promise(function agentPollDelay(resolve) { setTimeout(resolve, AGENT_POLL_INTERVAL_MS); });
     }
   }
-  // oxlint-enable typescript/no-unnecessary-condition, eslint(no-await-in-loop), eslint-plugin-promise(avoid-new)
+  // oxlint-enable typescript/no-unnecessary-condition, no-await-in-loop, promise/avoid-new
 }
 
 /**
@@ -182,7 +182,7 @@ export async function waitForShutdown({ name }: { name: string }): Promise<void>
 
   rl.info(`waiting for VM ${name} to shut down...`);
 
-  // oxlint-disable typescript/no-unnecessary-condition, eslint(no-await-in-loop), eslint-plugin-promise(avoid-new) -- polling loop
+  // oxlint-disable typescript/no-unnecessary-condition, no-await-in-loop, promise/avoid-new -- polling loop
   while (true) {
     const state = await virsh({ args: ['domstate', fullName] });
     if (state === 'shut off') {
@@ -200,7 +200,7 @@ export async function waitForShutdown({ name }: { name: string }): Promise<void>
     rl.debug(`VM state: ${state} (${String(Math.round(elapsed / MS_PER_SECOND))}s elapsed)`);
     await new Promise(function shutdownPollDelay(resolve) { setTimeout(resolve, SHUTDOWN_POLL_INTERVAL_MS); });
   }
-  // oxlint-enable typescript/no-unnecessary-condition, eslint(no-await-in-loop), eslint-plugin-promise(avoid-new)
+  // oxlint-enable typescript/no-unnecessary-condition, no-await-in-loop, promise/avoid-new
 }
 
 /**

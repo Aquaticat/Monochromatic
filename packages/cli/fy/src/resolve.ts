@@ -56,7 +56,7 @@ async function findMonorepoRoot({ startDir }: { startDir: string }): Promise<str
   while (dir !== ROOT) {
     const pkgPath = join(dir, 'package.json');
     try {
-      // oxlint-disable-next-line eslint(no-await-in-loop) -- intentionally sequential directory walk
+      // oxlint-disable-next-line no-await-in-loop -- intentionally sequential directory walk
       const content = await Bun.file(pkgPath).text();
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown
       const pkg = JSON.parse(content) as Record<string, unknown>;

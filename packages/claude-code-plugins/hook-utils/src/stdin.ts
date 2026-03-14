@@ -25,7 +25,7 @@ import { text } from 'node:stream/consumers';
  * const event = JSON.parse(raw) as StopInput
  * ```
  */
-/* oxlint-disable-next-line eslint/require-await -- async for explicit Promise<string> return type; text() already returns Promise */
+/* oxlint-disable-next-line require-await -- async for explicit Promise<string> return type; text() already returns Promise */
 async function readStdin(): Promise<string> {
   return text(process.stdin);
 }

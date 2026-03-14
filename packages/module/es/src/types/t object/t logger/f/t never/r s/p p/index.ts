@@ -110,7 +110,7 @@ function createMethod(level: Level): (message: string) => void {
         const result = entry.sink(record);
         if (result instanceof Promise) {
           // Fire-and-forget: awaiting would make the logger blocking
-          // oxlint-disable-next-line prefer-await-to-then -- intentional fire-and-forget
+          // oxlint-disable-next-line promise/prefer-await-to-then -- intentional fire-and-forget
           void result.then(function noop() { /* success */ }, function onReject() { markFailed(entry); });
         }
       } catch {

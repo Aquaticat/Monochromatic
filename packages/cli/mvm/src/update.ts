@@ -66,7 +66,7 @@ export async function update(): Promise<void> {
   const imageEntries = Object.entries(IMAGES);
   for (const [name, spec] of imageEntries) {
     rl.info(`rebuilding template for ${name}...`);
-    // oxlint-disable-next-line eslint(no-await-in-loop) -- templates must build sequentially to avoid resource contention
+    // oxlint-disable-next-line no-await-in-loop -- templates must build sequentially to avoid resource contention
     await ensureTemplate(spec);
     rl.info(`template for ${name} rebuilt successfully`);
   }

@@ -22,6 +22,21 @@ Sandbox breaks `bun install` despite proper allowlisting, so run it outside sand
 
 Prefer cross-runtime patterns instead of Bun-specific implementations.
 
+## Spawning child Claude sessions
+
+Use `spawn-claude` to launch steerable child Claude Code sessions in visible terminal windows.
+The child session runs independently; results are forwarded back to the parent automatically via hooks.
+
+```bash
+spawn-claude "implement feature X"
+spawn-claude --cwd /some/path "fix the bug in module Y"
+spawn-claude --extra-arguments "--model sonnet" "refactor this module"
+```
+
+The command prints `{"spawnId":"<uuid>"}` on success.
+Completed child results are injected into context automatically between tool calls.
+To check on a child manually, read `~/.claude/spawn-results/spawns/{spawnId}.json`.
+
 ## Dependency management
 - Use `workspace:*` for internal dependencies
 - Dependencies managed via Bun catalog in root `package.json`

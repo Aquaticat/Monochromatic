@@ -101,7 +101,7 @@ export async function stop(): Promise<void> {
 
   const currentServer = server;
   currentServer.kill();
-  // oxlint-disable-next-line avoid-new -- wrapping Node.js event-based ChildProcess API
+  // oxlint-disable-next-line promise/avoid-new -- wrapping Node.js event-based ChildProcess API
   await new Promise<void>(function awaitExit(resolve) {
     currentServer.on("exit", resolve);
   });

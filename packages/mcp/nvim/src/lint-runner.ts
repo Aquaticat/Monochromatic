@@ -288,7 +288,7 @@ export async function runOxlint({ files }: { files: readonly string[] }): Promis
   //endregion Run per-package-root invocations with --type-aware
 
   //region Run fallback invocation without --type-aware for orphaned files
-  // oxlint-disable-next-line eslint-plugin-promise(prefer-await-to-then) -- initial value for conditional Promise.all
+  // oxlint-disable-next-line promise/prefer-await-to-then -- initial value for conditional Promise.all
   let fallbackRun: Promise<Map<string, Diagnostic[]> | null> = Promise.resolve(null);
   if (filesWithoutTsconfig.length > 0) {
     notes.push(

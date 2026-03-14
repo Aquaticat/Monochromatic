@@ -168,7 +168,7 @@ async function readFileWithRetry(
  * @returns promise that resolves after the specified delay
  */
 function wait(timeInMs: number,): Promise<undefined> {
-  // oxlint-disable-next-line avoid-new
+  // oxlint-disable-next-line promise/avoid-new
   return new Promise(function createTimeout(resolve,) {
     setTimeout(resolve, timeInMs,);
   },);

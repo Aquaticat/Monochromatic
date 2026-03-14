@@ -1,6 +1,6 @@
 // deprecated: Use https://www.npmjs.com/package/serialize-javascript
 
-// oxlint-disable-next-line no-unassigned-import -- For side effects.
+// oxlint-disable-next-line import/no-unassigned-import -- For side effects.
 import '@total-typescript/ts-reset/array-includes';
 import { match, } from 'ts-pattern';
 import { unknownToTypeOfString, } from './typeOfString.ts';

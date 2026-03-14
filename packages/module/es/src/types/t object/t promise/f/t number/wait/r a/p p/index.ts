@@ -69,7 +69,7 @@
  * ```
  */
 export function $(timeInMs: number,): Promise<undefined> {
-  // oxlint-disable-next-line avoid-new -- Promise constructor pattern
+  // oxlint-disable-next-line promise/avoid-new -- Promise constructor pattern
   return new Promise(function createTimeout(resolve,) {
     return setTimeout(resolve, timeInMs,);
   },);

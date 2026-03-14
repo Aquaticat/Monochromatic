@@ -84,7 +84,7 @@ export async function destroyAll(): Promise<void> {
   rl.info(`destroying all ${String(vms.length)} VMs`);
   // Destroy sequentially to avoid overwhelming libvirt with concurrent operations
   for (const name of vms) {
-    // oxlint-disable-next-line eslint(no-await-in-loop) -- intentionally sequential to avoid libvirt contention
+    // oxlint-disable-next-line no-await-in-loop -- intentionally sequential to avoid libvirt contention
     await destroyOne({ name, rl, });
   }
 }

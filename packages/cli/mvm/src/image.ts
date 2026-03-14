@@ -70,12 +70,12 @@ async function pollProgress(destPath: string, contentLength: number, totalStr: s
   const POLL_INTERVAL_MS = 500;
 
   while (!signal.aborted) {
-    // oxlint-disable-next-line eslint(no-await-in-loop), eslint-plugin-promise(avoid-new) -- deliberate serial polling loop
+    // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- deliberate serial polling loop
     await new Promise(function pollDelay(resolve) { setTimeout(resolve, POLL_INTERVAL_MS); });
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- signal can be aborted during the await above
     if (signal.aborted) break;
     try {
-      // oxlint-disable-next-line eslint(no-await-in-loop) -- deliberate serial polling loop
+      // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling loop
       const { size } = await stat(destPath);
       const downloadedStr = formatBytes(size);
       if (contentLength > 0) {

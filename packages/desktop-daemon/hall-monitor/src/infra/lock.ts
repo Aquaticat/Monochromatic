@@ -51,7 +51,7 @@ export function getLockServer(): Server {
  * ```
  */
 export function acquireLock(): Promise<boolean> {
-  // oxlint-disable-next-line avoid-new -- wrapping Node.js callback-based Server API
+  // oxlint-disable-next-line promise/avoid-new -- wrapping Node.js callback-based Server API
   return new Promise(function tryListen(resolve) {
     lockServer = createServer();
     lockServer.on("error", function handleSocketError(err: NodeJS.ErrnoException) {
@@ -123,7 +123,7 @@ export async function killExisting(): Promise<void> {
   process.kill(pid, "SIGTERM");
 
   for (let i = 0; i < SIGTERM_RETRIES; i++) {
-    // oxlint-disable-next-line no-await-in-loop, avoid-new -- sequential retry loop with delay
+    // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- sequential retry loop with delay
     await new Promise(function retryDelay(resolve) { setTimeout(resolve, RETRY_DELAY_MS); });
     // oxlint-disable-next-line no-await-in-loop -- sequential retry loop
     if (await acquireLock()) return;
@@ -137,7 +137,7 @@ export async function killExisting(): Promise<void> {
   }
 
   for (let i = 0; i < SIGKILL_RETRIES; i++) {
-    // oxlint-disable-next-line no-await-in-loop, avoid-new -- sequential retry loop with delay
+    // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- sequential retry loop with delay
     await new Promise(function retryDelay(resolve) { setTimeout(resolve, RETRY_DELAY_MS); });
     // oxlint-disable-next-line no-await-in-loop -- sequential retry loop
     if (await acquireLock()) return;

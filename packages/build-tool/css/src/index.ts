@@ -1,6 +1,6 @@
 // Side-effect: shims globalThis.process for browser environments.
 // Must precede postcss import because postcss references process.env without guards.
-// oxlint-disable-next-line no-unassigned-import -- side-effect shim for browser process global
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect shim for browser process global
 import './process-shim.ts';
 import {
   dirname,

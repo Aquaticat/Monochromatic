@@ -133,7 +133,7 @@ export async function exec({ command, name }: { command: string; name: string })
 
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- polling loop
   while (true) {
-    // oxlint-disable-next-line eslint(no-await-in-loop) -- deliberate serial polling loop
+    // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling loop
     const statusResult = await virsh({ args: ['qemu-agent-command', fullName, statusPayload], });
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
     const statusParsed = JSON.parse(statusResult) as { return: {
@@ -145,7 +145,7 @@ export async function exec({ command, name }: { command: string; name: string })
     const status = statusParsed.return;
 
     if (!status.exited) {
-      // oxlint-disable-next-line eslint(no-await-in-loop), eslint-plugin-promise(avoid-new) -- deliberate serial polling with setTimeout
+      // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- deliberate serial polling with setTimeout
       await new Promise(function execPollDelay(resolve) { setTimeout(resolve, POLL_INTERVAL_MS); });
       continue;
     }

@@ -34,7 +34,7 @@ export type ResolvedTerminal = ValidatedEntry & {
   readonly entryId: string;
 };
 
-/* oxlint-disable eslint/require-await -- resolveTerminal delegates to async resolveXdgTerminal; async needed for uniform Promise return */
+/* oxlint-disable require-await -- resolveTerminal delegates to async resolveXdgTerminal; async needed for uniform Promise return */
 /**
  * Resolves the preferred terminal emulator for the current platform.
  *
@@ -56,7 +56,7 @@ export async function resolveTerminal(): Promise<ResolvedTerminal | null> {
   l.debug(`platform: ${process.platform} (XDG)`);
   return resolveXdgTerminal();
 }
-/* oxlint-enable eslint/require-await */
+/* oxlint-enable require-await */
 
 /**
  * Resolves the terminal emulator using the XDG Desktop Entry Specification.
@@ -92,7 +92,7 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
 
   //region Try explicit entries first (bypass OnlyShowIn/NotShowIn)
   for (const entryId of explicitIds) {
-    /* oxlint-disable-next-line eslint/no-await-in-loop -- sequential: first valid entry wins */
+    /* oxlint-disable-next-line no-await-in-loop -- sequential: first valid entry wins */
     const result = await tryEntry({ entryId, registry, desktops, isFallback: false, config });
     if (result !== null) {
       return { ...result, entryId };
@@ -102,7 +102,7 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
 
   //region Try fallback entries
   for (const entryId of filteredFallbackIds) {
-    /* oxlint-disable-next-line eslint/no-await-in-loop -- sequential: first valid entry wins */
+    /* oxlint-disable-next-line no-await-in-loop -- sequential: first valid entry wins */
     const result = await tryEntry({ entryId, registry, desktops, isFallback: true, config });
     if (result !== null) {
       return { ...result, entryId };
