@@ -464,10 +464,11 @@ export function functionReturnsValue(node: Span & Record<string, unknown>): bool
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const name = typeName?.name as string | undefined;
         if (name === 'Promise') {
+          // oxc AST uses `typeArguments` (not `typeParameters`) for generic type arguments
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-          const typeParams = (typeAnnotation).typeParameters as Record<string, unknown> | undefined;
+          const typeArgs = (typeAnnotation).typeArguments as Record<string, unknown> | undefined;
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-          const params = typeParams?.params as Record<string, unknown>[] | undefined;
+          const params = typeArgs?.params as Record<string, unknown>[] | undefined;
           if (params !== undefined && params.length === 1) {
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
             const innerType = params[0]?.type as string | undefined;
