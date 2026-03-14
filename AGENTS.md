@@ -6,10 +6,10 @@ Don't use "plan mode" since they currently just bug out. Waiting for upstream fi
 
 Don't use pipes in bash tool since they're broken for now. Workarounds like redirecting to file then reading the file works.
 
-Always pass an explicit path (`.` or absolute) to `rg` and `fd` in the Bash tool.
-Without a path argument, these tools detect non-TTY stdin in the sandbox and switch to stdin-reading mode.
+Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool.
+Without a path argument, `rg` detects non-TTY stdin in the sandbox and switches to stdin-reading mode.
 Combined with command chains (`&&`, `;`), the `< /dev/null` redirect misapplies to the last command in the chain,
-leaving `rg`/`fd` blocking forever on a socket that never sends EOF. See `PIPE-BUG.md` for details.
+leaving `rg` blocking forever on a socket that never sends EOF. See `PIPE-BUG.md` for details.
 
 The Glob tool is denylisted and disabled because it currently doesn't respect .gitignore .
 
@@ -79,8 +79,7 @@ In spec mode, keep researching and gathering context until the user explicitly a
 
 ## Research tools
 
-- `fd` -- fast file finder; use instead of `find` or `ls`
-- `rg` -- fast text search; use directly rather than navigating directory trees
+- `rg` -- fast text search; use directly rather than navigating directory trees; `rg --files` to find files by glob
 - `agent-browser` -- headless browser automation CLI; use for fetching rendered web pages, taking screenshots, interacting with web UIs, and verifying deployed web applications
 - `FetchUrl` -- fetch documentation sites, npm pages, GitHub READMEs; raw source is still useful when docs are incomplete
 - `gh` -- query GitHub for issues, PRs, release notes, and repository metadata

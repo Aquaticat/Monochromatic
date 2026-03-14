@@ -14,8 +14,20 @@
  */
 
 import { execSync } from 'node:child_process'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+
+import {
+  contentBounds,
+  contentToAbsY,
+  fmtRatio,
+  maxWidthInRange,
+  measureWidthProfile,
+  minWidthInRange,
+  widthAtRelY,
+} from './measure-profile.ts'
+
+import type { MeasurementRow } from './measure-profile.ts'
 
 /** Directory containing individual body part SVG files. */
 const PARTS_DIR = join(import.meta.dirname, '..', 'parts')
@@ -91,201 +103,14 @@ run(
   `"${TMP}/measure_cmp_silhouette.png"`,
 )
 
-/**
- * Scans a grayscale/binary image row by row to build a width profile.
- *
- * Uses ImageMagick to dump pixel values as text, then parses each row
- * to find the leftmost and rightmost non-zero pixel.
- *
- * @param imagePath - path to the silhouette PNG
- *
- * @returns object with dimensions and per-row width data
- */
-function measureWidthProfile(imagePath: string): {
-  imageWidth: number
-  imageHeight: number
-  rows: { y: number; left: number; right: number; width: number }[]
-} {
-  /** Get image dimensions. */
-  const dims = run(`magick identify -format "%w %h" "${imagePath}"`)
-  const [imgW, imgH] = dims.split(' ').map(Number)
-
-  /**
-   * Dump as single-channel gray values.
-   * Output format: "col,row: (value)"
-   * We sample every 2nd row for speed.
-   */
-  const rawDump = run(
-    `magick "${imagePath}" -colorspace Gray -depth 8 -compress none PGM:- 2>/dev/null > "${TMP}/measure_dump.pgm" && echo done`,
-  )
-
-  /** Read the PGM file directly -- it's a simple text format. */
-  const pgmData = readFileSync(`${TMP}/measure_dump.pgm`, 'utf8')
-  const pgmLines = pgmData.split('\n')
-
-  /**
-   * PGM format: P2, then width height, then max value, then pixel values.
-   * Skip comment lines starting with #.
-   */
-  const dataLines = pgmLines.filter(function skipComments(line) {
-    return line.trim().length > 0 && !line.startsWith('#') && line.trim() !== 'P2'
-  })
-
-  /** First data line is "width height", second is max value. */
-  const firstLine = dataLines[0];
-  if (firstLine === undefined) throw new Error('PGM file has no data lines');
-  const [width, height] = firstLine.trim().split(/\s+/).map(Number)
-  if (width === undefined || height === undefined) throw new Error('PGM header missing dimensions')
-
-  /** Collect all pixel values into a flat array. */
-  const pixelValues: number[] = []
-  for (let i = 2; i < dataLines.length; i++) {
-    const line = dataLines[i];
-    if (line === undefined) continue;
-    const vals = line.trim().split(/\s+/).map(Number)
-    for (const v of vals) {
-      pixelValues.push(v)
-    }
-  }
-
-  const rows: { y: number; left: number; right: number; width: number }[] = []
-
-  for (let y = 0; y < height; y++) {
-    const rowStart = y * width
-    let left = -1
-    let right = -1
-
-    for (let x = 0; x < width; x++) {
-      const val = pixelValues[rowStart + x]
-      if (val !== undefined && val > 128) {
-        if (left === -1) left = x
-        right = x
-      }
-    }
-
-    if (left !== -1) {
-      rows.push({ y, left, right, width: right - left + 1 })
-    }
-  }
-
-  return { imageWidth: width, imageHeight: height, rows }
-}
 
 console.error('--- Measuring reference ---')
 /** Per-row width profile of the reference silhouette. */
-const refProfile = measureWidthProfile(`${TMP}/measure_ref_silhouette.png`)
+const refProfile = measureWidthProfile(`${TMP}/measure_ref_silhouette.png`, TMP)
 
 console.error('--- Measuring composite ---')
 /** Per-row width profile of the composite silhouette. */
-const cmpProfile = measureWidthProfile(`${TMP}/measure_cmp_silhouette.png`)
-
-/**
- * Finds the width at a given relative vertical position (0 = top, 1 = bottom).
- *
- * @param profile - width profile data
- *
- * @param relY - relative y position (0-1)
- *
- * @returns width in pixels at that position, or 0 if no data
- */
-function widthAtRelY(
-  profile: ReturnType<typeof measureWidthProfile>,
-  relY: number,
-): number {
-  const targetY = Math.round(relY * profile.imageHeight)
-  const row = profile.rows.find(function matchRow(r) {
-    return r.y === targetY
-  })
-  return row?.width ?? 0
-}
-
-/**
- * Finds the maximum width within a relative y range.
- *
- * @param profile - width profile data
- *
- * @param relYStart - start of range (0-1)
- *
- * @param relYEnd - end of range (0-1)
- *
- * @returns maximum width in that range
- */
-function maxWidthInRange(
-  profile: ReturnType<typeof measureWidthProfile>,
-  relYStart: number,
-  relYEnd: number,
-): { width: number; relY: number } {
-  const yStart = Math.round(relYStart * profile.imageHeight)
-  const yEnd = Math.round(relYEnd * profile.imageHeight)
-  let maxW = 0
-  let maxY = yStart
-
-  for (const row of profile.rows) {
-    if (row.y >= yStart && row.y <= yEnd && row.width > maxW) {
-      maxW = row.width
-      maxY = row.y
-    }
-  }
-
-  return { width: maxW, relY: maxY / profile.imageHeight }
-}
-
-/**
- * Finds the minimum width within a relative y range.
- *
- * @param profile - width profile data
- *
- * @param relYStart - start of range (0-1)
- *
- * @param relYEnd - end of range (0-1)
- *
- * @returns minimum width in that range
- */
-function minWidthInRange(
-  profile: ReturnType<typeof measureWidthProfile>,
-  relYStart: number,
-  relYEnd: number,
-): { width: number; relY: number } {
-  const yStart = Math.round(relYStart * profile.imageHeight)
-  const yEnd = Math.round(relYEnd * profile.imageHeight)
-  let minW = Infinity
-  let minY = yStart
-
-  for (const row of profile.rows) {
-    if (row.y >= yStart && row.y <= yEnd && row.width < minW) {
-      minW = row.width
-      minY = row.y
-    }
-  }
-
-  return { width: minW === Infinity ? 0 : minW, relY: minY / profile.imageHeight }
-}
-
-/**
- * Finds the topmost and bottommost rows with content.
- *
- * @param profile - width profile data
- *
- * @returns top and bottom y positions (relative 0-1)
- */
-function contentBounds(profile: ReturnType<typeof measureWidthProfile>): {
-  top: number
-  bottom: number
-  totalHeight: number
-} {
-  if (profile.rows.length === 0) return { top: 0, bottom: 0, totalHeight: 0 }
-  const firstRow = profile.rows[0];
-  if (firstRow === undefined) return { top: 0, bottom: 0, totalHeight: 0 };
-  const top = firstRow.y
-  const lastRow = profile.rows.at(-1);
-  if (lastRow === undefined) return { top: 0, bottom: 0, totalHeight: 0 };
-  const bottom = lastRow.y
-  return {
-    top: top / profile.imageHeight,
-    bottom: bottom / profile.imageHeight,
-    totalHeight: bottom - top,
-  }
-}
+const cmpProfile = measureWidthProfile(`${TMP}/measure_cmp_silhouette.png`, TMP)
 
 console.error('--- Proportion Analysis ---')
 console.error('')
@@ -318,22 +143,6 @@ const LANDMARKS = {
   ankles: 0.8,
   feet: 0.9,
 } as const
-
-/** Single row in the proportion comparison table. */
-type MeasurementRow = {
-  /** Anatomical landmark name (e.g. `shoulders`, `waist`). */
-  landmark: string
-  /** Relative vertical position within body content (0 = top, 1 = bottom). */
-  relY: number
-  /** Pixel width of the reference silhouette at this landmark. */
-  refWidth: number
-  /** Pixel width of the composite silhouette at this landmark. */
-  cmpWidth: number
-  /** Composite-to-reference width ratio as a formatted string. */
-  ratio: string
-  /** Percentage difference from reference as a formatted string. */
-  diff: string
-}
 
 /** Collected measurement rows for the proportion comparison table. */
 const measurements: MeasurementRow[] = []
@@ -379,24 +188,6 @@ for (const m of measurements) {
 
 console.error('')
 
-/**
- * Converts a relative content position to an absolute image y fraction.
- *
- * @param bounds - content bounds from contentBounds()
- *
- * @param relContent - relative position within content (0-1)
- *
- * @returns absolute y fraction (0-1) in image coordinates
- */
-function contentToAbsY(
-  bounds: ReturnType<typeof contentBounds>,
-  relContent: number,
-): number {
-  const topFrac = bounds.top
-  const bottomFrac = bounds.bottom
-  return topFrac + relContent * (bottomFrac - topFrac)
-}
-
 /** Maximum width in the reference shoulder region (y 0.14-0.22). */
 const shoulderRef = maxWidthInRange(refProfile, contentToAbsY(refBounds, 0.14), contentToAbsY(refBounds, 0.22))
 /** Maximum width in the composite shoulder region (y 0.14-0.22). */
@@ -416,20 +207,6 @@ const hipCmp = maxWidthInRange(cmpProfile, contentToAbsY(cmpBounds, 0.34), conte
 const headRef = maxWidthInRange(refProfile, contentToAbsY(refBounds, 0), contentToAbsY(refBounds, 0.1))
 /** Maximum width in the composite head region (y 0-0.1). */
 const headCmp = maxWidthInRange(cmpProfile, contentToAbsY(cmpBounds, 0), contentToAbsY(cmpBounds, 0.1))
-
-/**
- * Formats a ratio safely, handling zero denominators.
- *
- * @param cmpVal - composite normalized value
- *
- * @param refVal - reference normalized value
- *
- * @returns formatted ratio string
- */
-function fmtRatio(cmpVal: number, refVal: number): string {
-  if (refVal === 0) return 'N/A'
-  return (cmpVal / refVal).toFixed(2)
-}
 
 console.error('Key proportions (normalized to content height):')
 /** Reference content height in pixels for normalizing widths. */

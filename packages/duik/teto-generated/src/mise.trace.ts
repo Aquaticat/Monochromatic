@@ -117,6 +117,7 @@ async function traceInContainer({
   ])
 }
 
+/** Traces binary masks to SVG paths using potrace. */
 async function main(): Promise<void> {
   console.log('Tracing masks to SVG with potrace')
 

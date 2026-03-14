@@ -98,6 +98,7 @@ function buildPartSvg({
   ].join('\n')
 }
 
+/** Assembles traced SVGs into final part files with viewBox transforms. */
 async function main(): Promise<void> {
   console.log('Assembling traced SVGs into final part files')
 

@@ -49,6 +49,7 @@ async function run(cmd: readonly string[]): Promise<void> {
   }
 }
 
+/** Compares the composite SVG rendering against the reference image. */
 async function main(): Promise<void> {
   console.log('Comparing composite against reference')
 

@@ -30,6 +30,7 @@ async function run(cmd: readonly string[]): Promise<void> {
   }
 }
 
+/** Crops the front view from the reference sheet and saves to tmp. */
 async function main(): Promise<void> {
   console.log('Cropping front view from reference sheet')
 

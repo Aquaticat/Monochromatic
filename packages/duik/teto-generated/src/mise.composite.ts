@@ -29,6 +29,7 @@ function extractInnerSvg(svgText: string): string | null {
   return svgText.slice(openEnd + 1, closeStart).trim()
 }
 
+/** Builds a composite SVG by inlining all individual part SVGs. */
 async function main(): Promise<void> {
   console.log('Building composite SVG')
 

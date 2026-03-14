@@ -38,6 +38,7 @@
     "**/perf-test-data/**",
     "**/teto-generated/**",
     "**/sudoku-puzzles*",
+    "**/perf-expected-output*",
     "**/*.astro"
   ],
   "plugins": [
