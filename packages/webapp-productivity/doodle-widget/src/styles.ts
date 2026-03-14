@@ -185,8 +185,8 @@ export function renderStyles(): string {
       decls: {
         position: 'relative',
         'flex-grow': cssNum(1),
-        'overflow-x': 'hidden',
-        'overflow-y': 'hidden',
+        'overflow-x': 'clip',
+        'overflow-y': 'clip',
         'background-color': cssOklch({ l: 1, c: 0, h: 0, }),
       },
     }),

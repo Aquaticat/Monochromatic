@@ -1,4 +1,4 @@
-// oxlint-disable no-non-null-assertion, typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-call, typescript-eslint/no-unsafe-type-assertion, typescript-eslint/explicit-function-return-type, eslint/require-await, typescript-eslint/no-unsafe-argument, typescript-eslint/no-unsafe-return -- Astro RSS endpoint with framework-dictated patterns
+// oxlint-disable typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-call, typescript-eslint/no-unsafe-type-assertion, typescript-eslint/explicit-function-return-type, eslint/require-await, typescript-eslint/no-unsafe-argument, typescript-eslint/no-unsafe-return -- Astro RSS endpoint with framework-dictated patterns
 import { generateRssFeed, } from 'feedsmith';
 import type {
   APIRoute,
@@ -26,11 +26,11 @@ export function GET({ site, params, },) {
   const siteUrl = site?.toString() ?? 'https://example.com';
 
   const rssXml = generateRssFeed({
-    title: i18n.get('siteName',)!.get(lang,)!,
+    title: i18n.get('siteName',)?.get(lang,) ?? '',
     link: siteUrl,
-    description: i18n.get('siteDescription',)!.get(lang,)!,
+    description: i18n.get('siteDescription',)?.get(lang,) ?? '',
     language: lang,
-    items: postsGroupedByLang[lang]!.map(function toRssItem(langPost: Post,) { return {
+    items: (postsGroupedByLang[lang] ?? []).map(function toRssItem(langPost: Post,) { return {
       title: langPost.data.title,
       link: `${siteUrl}/${langPost.id}`,
       description: langPost.data.description,

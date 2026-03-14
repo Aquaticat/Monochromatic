@@ -1,4 +1,4 @@
-// oxlint-disable no-magic-numbers, no-non-null-assertion -- measurement script with many dimensional constants and PGM index access where bounds are verified by loop
+// oxlint-disable no-magic-numbers -- measurement script with many dimensional constants
 /**
  * Measures body proportions from the composite SVG and reference image.
  *
@@ -132,12 +132,16 @@ function measureWidthProfile(imagePath: string): {
   })
 
   /** First data line is "width height", second is max value. */
-  const [width, height] = dataLines[0]!.trim().split(/\s+/).map(Number)
+  const firstLine = dataLines[0];
+  if (firstLine === undefined) throw new Error('PGM file has no data lines');
+  const [width, height] = firstLine.trim().split(/\s+/).map(Number)
 
   /** Collect all pixel values into a flat array. */
   const pixelValues: number[] = []
   for (let i = 2; i < dataLines.length; i++) {
-    const vals = dataLines[i]!.trim().split(/\s+/).map(Number)
+    const line = dataLines[i];
+    if (line === undefined) continue;
+    const vals = line.trim().split(/\s+/).map(Number)
     for (const v of vals) {
       pixelValues.push(v)
     }
@@ -269,8 +273,12 @@ function contentBounds(profile: ReturnType<typeof measureWidthProfile>): {
   totalHeight: number
 } {
   if (profile.rows.length === 0) return { top: 0, bottom: 0, totalHeight: 0 }
-  const top = profile.rows[0]!.y
-  const bottom = profile.rows.at(-1)!.y
+  const firstRow = profile.rows[0];
+  if (firstRow === undefined) return { top: 0, bottom: 0, totalHeight: 0 };
+  const top = firstRow.y
+  const lastRow = profile.rows.at(-1);
+  if (lastRow === undefined) return { top: 0, bottom: 0, totalHeight: 0 };
+  const bottom = lastRow.y
   return {
     top: top / profile.imageHeight,
     bottom: bottom / profile.imageHeight,

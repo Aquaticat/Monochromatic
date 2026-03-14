@@ -141,6 +141,16 @@ syncCursorToTool();
 
 canvas.addEventListener('pointerdown', function handlePointerDown(event: PointerEvent): void {
   if (!isDrawMode()) {
+    /**
+     * Suppress the browser's default pointerdown focus-management.
+     *
+     * Without this, the sequence is: pointerdown fires → placeTextInput
+     * creates an input and calls focus() → the browser's *default*
+     * pointerdown handling then moves focus back to the canvas target →
+     * blur fires on the still-empty input → finalizeActiveInput removes
+     * it. The input appears and disappears within a single click.
+     */
+    event.preventDefault();
     /** Bounding rect of the canvas element */
     const rect = canvas.getBoundingClientRect();
     placeTextInput([

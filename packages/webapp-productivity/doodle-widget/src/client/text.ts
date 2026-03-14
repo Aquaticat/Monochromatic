@@ -80,7 +80,11 @@ export function placeTextInput(position: NormalizedPoint): void {
 
   activeInput = input;
   layerElement.appendChild(input);
-  input.focus();
+  /**
+   * preventScroll stops the browser from scrolling the overflow-hidden
+   * canvas container to reveal the input when it extends past the edge.
+   */
+  input.focus({ preventScroll: true, });
 }
 
 /**

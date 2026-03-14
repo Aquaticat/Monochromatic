@@ -23,8 +23,10 @@ export function dotProduct(a: readonly number[], b: readonly number[]): number {
 
   let sum = 0;
   for (let i = 0; i < a.length; i++) {
-    // oxlint-disable-next-line typescript/no-non-null-assertion -- bounds checked above
-    sum += a[i]! * b[i]!;
+    const ai = a[i];
+    const bi = b[i];
+    if (ai === undefined || bi === undefined) break;
+    sum += ai * bi;
   }
   return sum;
 }
@@ -57,10 +59,9 @@ export function cosineSimilarity(a: readonly number[], b: readonly number[]): nu
   let magB = 0;
 
   for (let i = 0; i < a.length; i++) {
-    // oxlint-disable-next-line typescript/no-non-null-assertion -- bounds checked above
-    const ai = a[i]!;
-    // oxlint-disable-next-line typescript/no-non-null-assertion -- bounds checked above
-    const bi = b[i]!;
+    const ai = a[i];
+    const bi = b[i];
+    if (ai === undefined || bi === undefined) break;
     dot += ai * bi;
     magA += ai * ai;
     magB += bi * bi;

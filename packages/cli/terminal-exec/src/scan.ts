@@ -37,6 +37,7 @@ export type EntryRegistration = {
 async function findDesktopFiles({ dir }: { dir: string }): Promise<readonly string[]> {
   const results: string[] = [];
 
+  /* oxlint-disable tsdoc/require-returns -- false positive: rule doesn't detect Promise<void> on nested async functions */
   /**
    * Recursively collects `.desktop` file paths under `current`.
    *
@@ -59,6 +60,7 @@ async function findDesktopFiles({ dir }: { dir: string }): Promise<readonly stri
       }
     }
   }
+  /* oxlint-enable tsdoc/require-returns */
   await walk({ current: dir });
   return results;
 }

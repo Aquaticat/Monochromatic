@@ -1,4 +1,4 @@
-// oxlint-disable typescript-eslint/no-unsafe-type-assertion, no-non-null-assertion, eslint/require-await -- Promise.allSettled values require type assertions; non-null assertions are used after length checks; async functions return provider promises directly
+// oxlint-disable typescript-eslint/no-unsafe-type-assertion, eslint/require-await -- Promise.allSettled values require type assertions; async functions return provider promises directly
 import type {
   BatchEmbeddingResult,
   ComparisonResult,
@@ -267,7 +267,8 @@ export async function compareAll(
   ]);
 
   /** Last settlement is the description call. */
-  const descriptionSettlement = allResults.at(-1)!;
+  const descriptionSettlement = allResults.at(-1);
+  if (descriptionSettlement === undefined) throw new Error('unreachable — allResults is non-empty');
   const description = descriptionSettlement.status === 'fulfilled'
     ? descriptionSettlement.value as string | undefined
     : undefined;

@@ -1,4 +1,4 @@
-// oxlint-disable typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-call, typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-argument, typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-return, no-non-null-assertion, typescript-eslint/strict-boolean-expressions, typescript-eslint/no-explicit-any -- Astro content system types are inherently untyped
+// oxlint-disable typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-call, typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-argument, typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-return, typescript-eslint/strict-boolean-expressions, typescript-eslint/no-explicit-any -- Astro content system types are inherently untyped
 import {
   getCollection,
   type InferEntrySchema,
@@ -28,8 +28,8 @@ export type Post = {
 /** All blog posts with extracted `lang` and `name` fields from the collection ID. */
 export const posts = (await getCollection('blog',)).map(function extractPost(post: any,) { return {
   ...post,
-  lang: post.id.split('/',)[0]!,
-  name: post.id.split('/',)[1]!,
+  lang: post.id.split('/',)[0] ?? '',
+  name: post.id.split('/',)[1] ?? '',
 }; }) as [Post, ...Post[],];
 
 /** Posts grouped by language code (e.g. `{ en: [...], zh: [...] }`). */

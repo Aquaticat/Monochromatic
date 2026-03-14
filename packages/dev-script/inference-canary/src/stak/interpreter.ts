@@ -44,8 +44,9 @@ export function runStak(source: string): string {
    */
   function pop(): number {
     if (stack.length === 0) throw new Error('stack underflow');
-    // oxlint-disable-next-line typescript/no-non-null-assertion -- length check above guarantees element exists
-    return stack.pop()!;
+    const value = stack.pop();
+    if (value === undefined) throw new Error('stack underflow — unreachable');
+    return value;
   }
 
   while (ip < tokens.length) {

@@ -34,8 +34,8 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number): string
   function crc32(bytes: number[]): number {
     let crc = 0xFF_FF_FF_FF;
     for (const byte of bytes) {
-      // oxlint-disable-next-line no-bitwise, typescript/no-non-null-assertion -- CRC32 requires bitwise; table is fully populated
-      crc = crcTable[(crc ^ byte) & 0xFF]! ^ (crc >>> 8);
+      // oxlint-disable-next-line no-bitwise -- CRC32 requires bitwise operations
+      crc = (crcTable[(crc ^ byte) & 0xFF] ?? 0) ^ (crc >>> 8);
     }
     // oxlint-disable-next-line no-bitwise -- final XOR
     return (crc ^ 0xFF_FF_FF_FF) >>> 0;

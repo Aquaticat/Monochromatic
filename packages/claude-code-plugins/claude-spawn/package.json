@@ -1,0 +1,26 @@
+{
+  "name": "@monochromatic-dev/claude-code-plugins-claude-spawn",
+  "description": "Claude Code plugin that spawns steerable child Claude sessions in terminal windows with automatic result forwarding via hooks.",
+  "type": "module",
+  "bin": {
+    "cccs": "./dist/final/node/index.mjs",
+    "mcp-claude-spawn": "./src/mcp.ts"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/claude-code-plugins/claude-spawn"
+  },
+  "sideEffects": true,
+  "dependencies": {
+    "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*",
+    "@monochromatic-dev/claude-code-plugins-hook-utils": "workspace:*",
+    "@monochromatic-dev/mcp-stdio": "workspace:*"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}

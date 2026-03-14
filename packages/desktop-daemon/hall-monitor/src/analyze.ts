@@ -160,6 +160,7 @@ export async function analyze(sets: CaptureSet[]): Promise<string> {
   log.debug(
     `[analyze] ${prompt_tokens} prompt + ${completion_tokens} completion tokens, ${elapsed}s`,
   );
-  /* oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- OpenAI API always returns at least one choice for n=1 */
-  return data.choices[0]!.message.content;
+  const firstChoice = data.choices[0];
+  if (firstChoice === undefined) throw new Error('OpenAI API returned empty choices array');
+  return firstChoice.message.content;
 }

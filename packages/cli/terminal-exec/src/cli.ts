@@ -35,8 +35,8 @@ export function parseArgs({ argv }: { argv: readonly string[] }): UserOptions {
   let i = 0;
 
   while (i < argv.length) {
-    /* oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- bounds checked by while condition */
-    const arg = argv[i]!;
+    const arg = argv[i];
+    if (arg === undefined) break;
 
     if (arg === '--' || arg === '-e') {
       l.debug(`found delimiter '${arg}'`);

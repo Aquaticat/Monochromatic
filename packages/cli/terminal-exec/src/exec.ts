@@ -31,8 +31,8 @@ export function execvp({ command }: { command: readonly string[] }): void {
     throw new Error('execvp: empty command array');
   }
 
-  /* oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- length checked above */
-  const executable = command[0]!;
+  const executable = command[0];
+  if (executable === undefined) throw new Error('execvp: unreachable — length checked above');
   const args = command.slice(1);
 
   l.debug(`exec: ${executable} ${args.join(' ')}`);

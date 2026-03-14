@@ -37,8 +37,8 @@ export function tokenizeExec({ exec }: { exec: string }): readonly string[] | nu
   let i = 0;
 
   while (i < exec.length) {
-    /* oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- bounds checked by while condition */
-    const ch = exec[i]!;
+    const ch = exec[i];
+    if (ch === undefined) break;
 
     if (inQuote) {
       if (ch === '"') {
@@ -47,8 +47,8 @@ export function tokenizeExec({ exec }: { exec: string }): readonly string[] | nu
         continue;
       }
       if (ch === '\\' && i + 1 < exec.length) {
-        /* oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- bounds checked by if condition */
-        const next = exec[i + 1]!;
+        const next = exec[i + 1];
+        if (next === undefined) break;  // unreachable — length checked above
         if (next === '"' || next === '`' || next === '$' || next === '\\') {
           current += next;
           i += 2;
@@ -82,8 +82,8 @@ export function tokenizeExec({ exec }: { exec: string }): readonly string[] | nu
 
     //region % field code stripping
     if (ch === '%' && i + 1 < exec.length) {
-      /* oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- bounds checked by if condition */
-      const next = exec[i + 1]!;
+      const next = exec[i + 1];
+      if (next === undefined) break;  // unreachable — length checked above
       if (next === '%') {
         current += '%';
         i += 2;

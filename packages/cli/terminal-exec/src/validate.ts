@@ -110,8 +110,8 @@ export function validateEntry({ entry, entryId, desktops, isFallback, execArgDef
     return null;
   }
 
-  /* oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- length checked above */
-  const firstToken = execTokens[0]!;
+  const firstToken = execTokens[0];
+  if (firstToken === undefined) throw new Error('unreachable — length checked above');
   if (!executableExists({ name: firstToken })) {
     l.debug(`${entryId}: Exec[0] '${firstToken}' not found in PATH`);
     return null;

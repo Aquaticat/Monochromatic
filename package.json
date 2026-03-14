@@ -18,6 +18,7 @@
     "@monochromatic-dev/claude-code-plugins-stop-reminders": "workspace:*",
     "@monochromatic-dev/claude-code-plugins-agent-resume-guard": "workspace:*",
     "@monochromatic-dev/claude-code-plugins-bash-output-filter": "workspace:*",
+    "@monochromatic-dev/claude-code-plugins-claude-spawn": "workspace:*",
     "@monochromatic-dev/module-image-diff": "workspace:*",
     "@monochromatic-dev/dev-script-task-util": "workspace:*",
     "@oxlint/plugins": "catalog:",

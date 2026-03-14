@@ -5,7 +5,6 @@
  * probe card navigation, and collapsible detail sections. Tests run against
  * the pre-built `dist/final/index.html` — build the dashboard first.
  */
-/* oxlint-disable typescript-eslint/no-non-null-assertion -- e2e test assertions: getAttribute('popovertarget') is always present on tested elements */
 
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -90,7 +89,7 @@ test.describe('overview', () => {
 
     const point = page.locator('.view-section:has(> summary:text("Overview")) .chart-point').first();
     const targetId = await point.getAttribute('popovertarget');
-    const overlay = popoverById(page, targetId!);
+    const overlay = popoverById(page, targetId ?? '');
 
     await expect(overlay).not.toBeVisible();
     await point.click();
@@ -109,7 +108,7 @@ test.describe('run overlay to probe overlay', () => {
     // Click a scatter point to open the run overlay
     const point = page.locator('.view-section:has(> summary:text("Overview")) .chart-point').first();
     const targetId = await point.getAttribute('popovertarget');
-    const runOverlay = popoverById(page, targetId!);
+    const runOverlay = popoverById(page, targetId ?? '');
 
     await point.click();
     await expect(runOverlay).toBeVisible();
@@ -120,7 +119,7 @@ test.describe('run overlay to probe overlay', () => {
 
     // Click probe card to open probe overlay
     const probeTargetId = await probeCard.getAttribute('popovertarget');
-    const probeOverlay = popoverById(page, probeTargetId!);
+    const probeOverlay = popoverById(page, probeTargetId ?? '');
 
     await probeCard.click();
     await expect(probeOverlay).toBeVisible();
@@ -133,12 +132,12 @@ test.describe('run overlay to probe overlay', () => {
     await point.click();
 
     const targetId = await point.getAttribute('popovertarget');
-    const runOverlay = popoverById(page, targetId!);
+    const runOverlay = popoverById(page, targetId ?? '');
     const probeCard = runOverlay.locator('.probe-card').first();
     await probeCard.click();
 
     const probeTargetId = await probeCard.getAttribute('popovertarget');
-    const probeOverlay = popoverById(page, probeTargetId!);
+    const probeOverlay = popoverById(page, probeTargetId ?? '');
     const title = probeOverlay.locator('.detail-popover-title');
 
     await expect(title).toBeVisible();
@@ -159,12 +158,12 @@ test.describe('probe overlay collapsible sections', () => {
     await point.click();
 
     const targetId = await point.getAttribute('popovertarget');
-    const runOverlay = popoverById(page, targetId!);
+    const runOverlay = popoverById(page, targetId ?? '');
     const probeCard = runOverlay.locator('.probe-card').first();
     await probeCard.click();
 
     const probeTargetId = await probeCard.getAttribute('popovertarget');
-    const probeOverlay = popoverById(page, probeTargetId!);
+    const probeOverlay = popoverById(page, probeTargetId ?? '');
 
     // Find any collapsible section inside the probe overlay
     const collapsible = probeOverlay.locator('.collapsible-section').first();
@@ -205,7 +204,7 @@ test.describe('by model deep navigation', () => {
     const targetId = await point.getAttribute('popovertarget');
     await point.click();
 
-    const overlay = popoverById(page, targetId!);
+    const overlay = popoverById(page, targetId ?? '');
     await expect(overlay).toBeVisible();
   });
 });
@@ -237,7 +236,7 @@ test.describe('by probe deep navigation', () => {
     const targetId = await point.getAttribute('popovertarget');
     await point.click();
 
-    const overlay = popoverById(page, targetId!);
+    const overlay = popoverById(page, targetId ?? '');
     await expect(overlay).toBeVisible();
   });
 });
