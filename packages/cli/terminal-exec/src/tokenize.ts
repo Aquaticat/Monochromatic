@@ -7,6 +7,7 @@
 
 import { l as parentLogger, tagged } from './log.ts';
 
+/** Tagged logger for this module. */
 const l = tagged({ tag: 'tokenize', l: parentLogger });
 
 /** Shell metacharacters that are invalid unquoted in Exec values. */
@@ -36,6 +37,7 @@ export function tokenizeExec({ exec }: { exec: string }): readonly string[] | nu
   let i = 0;
 
   while (i < exec.length) {
+    /* oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- bounds checked by while condition */
     const ch = exec[i]!;
 
     if (inQuote) {
@@ -45,6 +47,7 @@ export function tokenizeExec({ exec }: { exec: string }): readonly string[] | nu
         continue;
       }
       if (ch === '\\' && i + 1 < exec.length) {
+        /* oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- bounds checked by if condition */
         const next = exec[i + 1]!;
         if (next === '"' || next === '`' || next === '$' || next === '\\') {
           current += next;
@@ -79,6 +82,7 @@ export function tokenizeExec({ exec }: { exec: string }): readonly string[] | nu
 
     //region % field code stripping
     if (ch === '%' && i + 1 < exec.length) {
+      /* oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- bounds checked by if condition */
       const next = exec[i + 1]!;
       if (next === '%') {
         current += '%';

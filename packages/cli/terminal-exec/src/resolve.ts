@@ -19,11 +19,11 @@ import { parseDesktopEntry } from './desktop-entry.ts';
 import { kdeTerminalService } from './kde.ts';
 import { l as parentLogger, tagged } from './log.ts';
 import { scanEntries } from './scan.ts';
-import type { ValidatedEntry } from './validate.ts';
-import { validateEntry } from './validate.ts';
+import { type ValidatedEntry, validateEntry } from './validate.ts';
 import { resolveWindowsTerminal } from './windows.ts';
 import { applicationDirs, configPaths, currentDesktops } from './xdg-paths.ts';
 
+/** Tagged logger for this module. */
 const l = tagged({ tag: 'resolve', l: parentLogger });
 
 /**
@@ -46,6 +46,7 @@ export type ResolvedTerminal = ValidatedEntry & {
  * // Windows: terminal.entryId === 'wt.exe'
  * ```
  */
+// oxlint-disable-next-line eslint/require-await -- delegates to async resolveXdgTerminal; async needed for uniform Promise return
 export async function resolveTerminal(): Promise<ResolvedTerminal | null> {
   if (process.platform === 'win32') {
     l.debug('platform: win32');
@@ -90,6 +91,7 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
 
   //region Try explicit entries first (bypass OnlyShowIn/NotShowIn)
   for (const entryId of explicitIds) {
+    /* oxlint-disable-next-line eslint/no-await-in-loop -- sequential: first valid entry wins */
     const result = await tryEntry({ entryId, registry, desktops, isFallback: false, config });
     if (result !== null) {
       return { ...result, entryId };
@@ -99,6 +101,7 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
 
   //region Try fallback entries
   for (const entryId of filteredFallbackIds) {
+    /* oxlint-disable-next-line eslint/no-await-in-loop -- sequential: first valid entry wins */
     const result = await tryEntry({ entryId, registry, desktops, isFallback: true, config });
     if (result !== null) {
       return { ...result, entryId };

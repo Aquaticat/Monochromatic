@@ -7,6 +7,7 @@
 
 import { l as parentLogger, tagged } from './log.ts';
 
+/** Tagged logger for this module. */
 const l = tagged({ tag: 'kde', l: parentLogger });
 
 /**

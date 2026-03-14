@@ -9,6 +9,7 @@ import type { DesktopEntry } from './desktop-entry.ts';
 import { l as parentLogger, tagged } from './log.ts';
 import { tokenizeExec } from './tokenize.ts';
 
+/** Tagged logger for this module. */
 const l = tagged({ tag: 'validate', l: parentLogger });
 
 /**
@@ -109,13 +110,14 @@ export function validateEntry({ entry, entryId, desktops, isFallback, execArgDef
     return null;
   }
 
+  /* oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- length checked above */
   const firstToken = execTokens[0]!;
   if (!executableExists({ name: firstToken })) {
     l.debug(`${entryId}: Exec[0] '${firstToken}' not found in PATH`);
     return null;
   }
 
-  /** Resolve TerminalArgExec: entry value > config default > `-e`. */
+  /** Resolve TerminalArgExec: entry value \> config default \> `-e`. */
   const resolvedExecArg = entry.execArg.length > 0
     ? entry.execArg
     : (execArgDefault.length > 0

@@ -7,6 +7,7 @@
 
 import { l as parentLogger, tagged } from './log.ts';
 
+/** Tagged logger for this module. */
 const l = tagged({ tag: 'config', l: parentLogger });
 
 /**
@@ -47,11 +48,13 @@ export async function parseConfigFiles({ paths }: { paths: readonly string[] }):
 
   for (const path of paths) {
     const file = Bun.file(path);
+    /* oxlint-disable-next-line eslint/no-await-in-loop -- sequential: config files override in priority order */
     if (!await file.exists()) {
       continue;
     }
 
     l.debug(`reading config '${path}'`);
+    /* oxlint-disable-next-line eslint/no-await-in-loop -- sequential: config files override in priority order */
     const text = await file.text();
 
     for (const rawLine of text.split('\n')) {

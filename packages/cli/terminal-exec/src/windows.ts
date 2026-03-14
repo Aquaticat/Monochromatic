@@ -8,6 +8,7 @@
 import { l as parentLogger, tagged } from './log.ts';
 import type { ResolvedTerminal } from './resolve.ts';
 
+/** Tagged logger for this module. */
 const l = tagged({ tag: 'windows', l: parentLogger });
 
 /**

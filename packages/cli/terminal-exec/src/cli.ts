@@ -9,6 +9,7 @@
 import type { UserOptions } from './build-command.ts';
 import { l as parentLogger, tagged } from './log.ts';
 
+/** Tagged logger for this module. */
 const l = tagged({ tag: 'cli', l: parentLogger });
 
 /**
@@ -34,6 +35,7 @@ export function parseArgs({ argv }: { argv: readonly string[] }): UserOptions {
   let i = 0;
 
   while (i < argv.length) {
+    /* oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- bounds checked by while condition */
     const arg = argv[i]!;
 
     if (arg === '--' || arg === '-e') {

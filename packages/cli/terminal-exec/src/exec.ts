@@ -7,19 +7,23 @@
 
 import { l as parentLogger, tagged } from './log.ts';
 
+/** Tagged logger for this module. */
 const l = tagged({ tag: 'exec', l: parentLogger });
+
+/** Exit code for command-not-found errors. */
+const EXIT_NOT_FOUND = 127;
 
 /**
  * Spawns the terminal command, inheriting all stdio, and exits with its exit code.
- * This replaces the shell script's `exec "$@"` pattern.
+ * This replaces the shell script's `exec "$\@"` pattern.
  *
  * @param command - Complete command array where `command[0]` is the executable.
  *
- * @throws {Error} When the command array is empty.
+ * @throws Error when the command array is empty.
  *
  * @example
  * ```ts
- * execvp({ command: ['/usr/bin/ghostty', '--gtk-single-instance=true', '-e', 'bash'] })
+ * execvp(\{ command: ['/usr/bin/ghostty', '--gtk-single-instance=true', '-e', 'bash'] \})
  * ```
  */
 export function execvp({ command }: { command: readonly string[] }): void {
@@ -27,8 +31,7 @@ export function execvp({ command }: { command: readonly string[] }): void {
     throw new Error('execvp: empty command array');
   }
 
-  const executable = command[0]!;
-  const args = command.slice(1);
+  const [executable, ...args] = command;
 
   l.debug(`exec: ${executable} ${args.join(' ')}`);
 
@@ -38,10 +41,12 @@ export function execvp({ command }: { command: readonly string[] }): void {
     stderr: 'inherit',
   });
 
+  /* oxlint-disable-next-line eslint-plugin-promise/prefer-await-to-then, eslint-plugin-promise/always-return -- fire-and-forget: process exits with spawned command's code */
   proc.exited.then(function onExit(code) {
     process.exitCode = code;
-  }).catch(function onError(err: unknown) {
+    return;
+  }, function onError(err: unknown) {
     console.error(`terminal-exec: failed to execute '${executable}': ${String(err)}`);
-    process.exitCode = 127;
+    process.exitCode = EXIT_NOT_FOUND;
   });
 }
