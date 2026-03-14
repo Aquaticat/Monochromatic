@@ -68,28 +68,36 @@ if (event.hook_event_name === 'SessionStart') {
     JSON.stringify(mapping),
   );
 
-  /** Spawn identifier set by the CLI when launching a child session. */
+  /**
+   * Claim ownership of the spawn file if this is a genuine child session.
+   *
+   * The CLI pre-creates `{spawnId}.json` with `sessionId: ""`. The first
+   * SessionStart that sees an empty `sessionId` fills it in. Sessions with
+   * stale `CLAUDE_SPAWN_ID` env vars (inherited from the terminal after a
+   * previous child exited) see a non-empty `sessionId` and skip.
+   */
   const spawnId = process.env.CLAUDE_SPAWN_ID;
-  /** Session ID of the parent that spawned this child session. */
-  const parentSessionId = process.env.CLAUDE_SPAWNED_BY_SESSION;
 
-  if (spawnId !== undefined && parentSessionId !== undefined) {
-    mkdirSync(SPAWNS_DIR, { recursive: true });
+  if (spawnId !== undefined) {
+    const jsonPath = join(SPAWNS_DIR, `${spawnId}.json`);
 
-    /** Initial spawn state persisted for parent session coordination. */
-    const state: SpawnState = {
-      spawnId,
-      sessionId: event.session_id,
-      transcriptPath: event.transcript_path,
-      parentSessionId,
-      status: 'running',
-      lastMessage: '',
-    };
+    try {
+      const raw = readFileSync(jsonPath, 'utf8');
+      /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
+      const state = JSON.parse(raw) as SpawnState;
 
-    writeFileSync(
-      join(SPAWNS_DIR, `${spawnId}.json`),
-      JSON.stringify(state),
-    );
+      if (state.sessionId === '') {
+        /** Genuine child — claim ownership by filling in session identity. */
+        const updated: SpawnState = {
+          ...state,
+          sessionId: event.session_id,
+          transcriptPath: event.transcript_path,
+        };
+        writeFileSync(jsonPath, JSON.stringify(updated));
+      }
+    } catch {
+      /** File missing (stale env, already `.reported`) or unreadable — skip. */
+    }
   }
 
   /** Auto-setup spawn-claude CLI if not already on PATH. */
@@ -201,15 +209,20 @@ if (event.hook_event_name === 'SessionStart') {
     try {
       /** Raw JSON content of the existing spawn state file. */
       const existing = readFileSync(filePath, 'utf8');
-      /** Previously persisted spawn state to update with the final message. */
-      /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
+      /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
       const state = JSON.parse(existing) as SpawnState;
 
-      /** Updated spawn state with the final assistant message and stopped status. */
-      const updated: SpawnState = { ...state, lastMessage: event.last_assistant_message, status: 'stopped' };
-      writeFileSync(filePath, JSON.stringify(updated));
+      /**
+       * Only update if this session owns the spawn file.
+       * Sessions with stale `CLAUDE_SPAWN_ID` env vars will have a different
+       * `session_id` than the one registered by the genuine child's SessionStart.
+       */
+      if (state.sessionId === event.session_id) {
+        const updated: SpawnState = { ...state, lastMessage: event.last_assistant_message, status: 'stopped' };
+        writeFileSync(filePath, JSON.stringify(updated));
+      }
     } catch {
-      /** File missing or unreadable — SessionStart hook may not have run yet. */
+      /** File missing (already `.reported`) or unreadable — skip. */
     }
   }
 

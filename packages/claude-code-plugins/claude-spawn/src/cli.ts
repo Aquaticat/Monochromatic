@@ -3,9 +3,9 @@
 /**
  * CLI tool that spawns steerable child Claude Code sessions in terminal windows.
  *
- * Launches a child Claude session via `terminal-exec`, passing environment
- * variables that enable the companion hooks to forward results
- * back to the parent session automatically.
+ * Launches a child Claude session via `terminal-exec` with a pre-created spawn
+ * state file. Only `CLAUDE_SPAWN_ID` is passed as an env var — the child's
+ * SessionStart and Stop hooks use it to fill in session info and report completion.
  *
  * Replaces the MCP server approach with a direct CLI invocation via Bash.
  *
@@ -14,7 +14,7 @@
 
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { readFileSync, readdirSync, statSync, mkdirSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { object } from '@optique/core/constructs';
@@ -24,7 +24,7 @@ import { argument, option } from '@optique/core/primitives';
 import { string } from '@optique/core/valueparser';
 import { runSync } from '@optique/run';
 
-import { BY_PID_DIR, SPAWNS_DIR, type PidMapping } from './paths.ts';
+import { BY_PID_DIR, SPAWNS_DIR, type PidMapping, type SpawnState } from './paths.ts';
 
 export {};
 
@@ -205,6 +205,29 @@ if (identity === null) {
 
   mkdirSync(SPAWNS_DIR, { recursive: true });
 
+  /**
+   * Pre-create the spawn state file before launching the child.
+   * The child's SessionStart hook fills in `sessionId` and `transcriptPath`.
+   * The child's Stop hook updates `lastMessage` and `status`.
+   *
+   * `sessionId` starts empty — the first SessionStart that sees it empty
+   * claims ownership. Subsequent sessions with stale `CLAUDE_SPAWN_ID`
+   * env vars see a non-empty `sessionId` and skip registration.
+   */
+  const initialState: SpawnState = {
+    spawnId,
+    sessionId: '',
+    transcriptPath: '',
+    parentSessionId: identity.sessionId,
+    status: 'running',
+    lastMessage: '',
+  };
+
+  writeFileSync(
+    join(SPAWNS_DIR, `${spawnId}.json`),
+    JSON.stringify(initialState),
+  );
+
   /** Detached child process running the spawned Claude session in a terminal window. */
   const proc = spawn(
     'terminal-exec',
@@ -214,7 +237,6 @@ if (identity === null) {
       env: {
         ...process.env,
         CLAUDE_SPAWN_ID: spawnId,
-        CLAUDE_SPAWNED_BY_SESSION: identity.sessionId,
       },
       detached: true,
       stdio: 'ignore',
