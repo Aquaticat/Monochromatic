@@ -279,6 +279,11 @@
 
     // unicorn/no-negated-condition isn't enabled because early fail is the practice
     "unicorn/no-negated-condition": "off",
+    // Three-way conflict: bare `return;` triggers TS7030 + no-useless-return;
+    // omitting return triggers TS7030; `return undefined;` triggers this rule.
+    // Disabling no-useless-undefined is the least wrong option because the
+    // return IS meaningful (it satisfies the type checker's control-flow analysis).
+    "unicorn/no-useless-undefined": "off",
     /* unicorn/no-object-as-default-parameter isn't enabled
        because sometimes obj destructuring just can't. */
     "unicorn/no-object-as-default-parameter": "off",
@@ -495,8 +500,6 @@
         "eslint/no-magic-numbers": "off",
         // Many functions that don't need explicit return types.
         "typescript/explicit-function-return-type": "off",
-        // Sometimes testing undefined is necessary.
-        "unicorn/no-useless-undefined": "off",
         // Many functions are created as needed.
         "unicorn/consistent-function-scoping": "off",
         // May need to create promises dynamically.

@@ -236,7 +236,6 @@ function discoverWorkspaceRoots(monorepoRoot: string): string[] {
 }
 
 /** Cached workspace root directories. */
-// oxlint-disable-next-line unicorn/no-useless-undefined -- init-declarations requires explicit initialization
 let workspaceRootsCache: string[] | undefined = undefined;
 
 /**

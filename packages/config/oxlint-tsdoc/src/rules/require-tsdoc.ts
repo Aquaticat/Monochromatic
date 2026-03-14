@@ -150,7 +150,6 @@ export const requireTsdoc: CreateOnceRule = {
         if (shouldIgnoreFile(context.filename)) {
           return false;
         }
-        /* oxlint-disable-next-line eslint-plugin-unicorn/no-useless-undefined -- explicit undefined needed; bare return triggers TS7030 and no-useless-return */
         return undefined;
       },
       FunctionDeclaration(node): void {
