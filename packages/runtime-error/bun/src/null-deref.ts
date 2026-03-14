@@ -3,6 +3,9 @@
  * accessing a property on a `null` value. The double-cast bypasses TypeScript's
  * static null check so the error surfaces at runtime rather than compile time.
  */
+export {};
+
+/** Null value cast to an object type to bypass static null checks. */
 const value = null as unknown as Record<string, unknown>;
 
 console.log(value["property"]);

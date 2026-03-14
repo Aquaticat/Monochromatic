@@ -15,8 +15,6 @@ import { watchDirs, type EventKind, } from './watch-filter.ts';
  * This function never returns under normal operation (it loops forever watching).
  *
  * @param configPath - Path to the file-enforcer config file
- *
- * @returns never resolves; blocks until the process is killed
  */
 export function startWatching(configPath: string): Promise<never> {
   /** Absolute config path for reliable comparisons */
@@ -41,8 +39,6 @@ export function startWatching(configPath: string): Promise<never> {
    *
    * @param changedPath - Absolute path of the file that triggered the re-run,
    *   invalidated from the read cache so only that file is re-read from disk
-   *
-   * @returns resolves after the config re-execution completes
    */
   async function rerun(changedPath: string): Promise<void> {
     console.log('[file-enforcer] re-running config...');

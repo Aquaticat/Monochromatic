@@ -1,8 +1,7 @@
 import { banDisableRule } from './_ban-disable-factory.ts';
 
 /**
- * Bans `oxlint-disable` comments that suppress
- * `no-restricted-syntax/no-variable-function-expression`.
+ * Bans inline suppression of `no-restricted-syntax/no-variable-function-expression`.
  * Use function declarations instead of `const fn = function() {}`.
  */
 export const noDisableNoVariableFunctionExpression = banDisableRule({

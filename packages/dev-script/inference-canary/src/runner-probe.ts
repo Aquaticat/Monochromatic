@@ -58,8 +58,6 @@ function snapshotConfig(config: RunnerConfig): ConfigSnapshot {
  * @param score - computed score for this response
  *
  * @param options - optional fields for fix prompt, partial flag, and error message
- *
- * @returns resolves after the artifact is written
  */
 async function enrichArtifact(
   probe: Probe,
@@ -288,7 +286,6 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: strin
  * @param timestamp - authoritative server timestamp for artifact naming
  * @returns scored result; on timeout, a zero-score result with `timedOut: true`
  */
-// oxlint-disable-next-line require-await -- returns Promise.race directly; async needed for callers expecting Promise<ProbeResult>
 export async function runProbe(probe: Probe, config: RunnerConfig, timestamp: string): Promise<ProbeResult> {
   // new Promise required: no standard promisified API exists for time-based resolution,
   // and @monochromatic-dev/module-es is not a dependency of this package.
@@ -312,7 +309,8 @@ export async function runProbe(probe: Probe, config: RunnerConfig, timestamp: st
   // timer is let so corePromise's finally handler can clear it before the callback fires,
   // preventing a misleading "timed out" log for probes that complete before the deadline.
   let timer: ReturnType<typeof setTimeout> | undefined = undefined;
-  return Promise.race([
+  // oxlint-disable-next-line no-return-await -- await needed to satisfy require-await; return await is intentional here
+  return await Promise.race([
     // oxlint-disable-next-line promise/prefer-await-to-then -- finally on a racing promise; await is not viable here
     corePromise.finally(function clearTimer(): void { if (timer !== undefined) clearTimeout(timer); }),
     // oxlint-disable-next-line promise/avoid-new -- timeout racing requires manual Promise construction

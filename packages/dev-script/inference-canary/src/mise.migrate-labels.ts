@@ -43,7 +43,7 @@ try {
   throw new Error('No canary-lint directory');
 }
 
-for (const /** Current model directory name being processed */ modelDir of modelDirs) {
+for (const modelDir of modelDirs) {
   /** Label for this model from the mapping, undefined if no mapping exists */
   const label = DIR_LABELS[modelDir];
   if (label === undefined) {
@@ -63,7 +63,7 @@ for (const /** Current model directory name being processed */ modelDir of model
     continue;
   }
 
-  for (const /** Current artifact subdirectory */ subdir of subdirs) {
+  for (const subdir of subdirs) {
     /** Absolute path to the meta.json file in this artifact */
     const metaPath = join(modelPath, subdir, 'meta.json');
     try {

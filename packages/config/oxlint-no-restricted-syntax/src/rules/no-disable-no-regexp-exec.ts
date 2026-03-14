@@ -1,7 +1,7 @@
 import { banDisableRule } from './_ban-disable-factory.ts';
 
 /**
- * Bans `oxlint-disable` comments that suppress `no-restricted-syntax/no-regexp-exec`.
+ * Bans inline suppression of `no-restricted-syntax/no-regexp-exec`.
  * Use `String.prototype.match()` or `String.prototype.matchAll()` instead of `RegExp.exec()`.
  */
 export const noDisableNoRegexpExec = banDisableRule({

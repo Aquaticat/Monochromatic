@@ -63,7 +63,6 @@ function formatBytes(bytes: number): string {
  *
  * @param signal - AbortSignal that stops the polling loop
  *
- * @returns Resolves when polling stops
  */
 async function pollProgress(destPath: string, contentLength: number, totalStr: string, signal: AbortSignal): Promise<void> {
   /** Milliseconds between file size polls for progress display. */
@@ -99,8 +98,6 @@ async function pollProgress(destPath: string, contentLength: number, totalStr: s
  * @param response - Fetch response with a body to stream
  *
  * @param rl - Logger for status messages
- *
- * @returns Resolves when the download and progress display are complete
  *
  * @example
  * ```ts

@@ -24,8 +24,6 @@ import { defineVm, startVm, waitForGuestAgent } from './virsh.ts';
  *
  * @param source - Source VM name to clone from
  *
- * @returns Resolves when the clone is ready
- *
  * @throws Error when source disk is missing or clone fails
  *
  * @example

@@ -1,7 +1,7 @@
 import { banDisableRule } from './_ban-disable-factory.ts';
 
 /**
- * Bans `oxlint-disable` comments that suppress `no-restricted-syntax/no-trim-left-right`.
+ * Bans inline suppression of `no-restricted-syntax/no-trim-left-right`.
  * Use `trimStart()` and `trimEnd()` instead of the deprecated `trimLeft()` / `trimRight()`.
  */
 export const noDisableNoTrimLeftRight = banDisableRule({

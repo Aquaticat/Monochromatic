@@ -7,7 +7,7 @@ with automatic result forwarding via hooks.
 
 - [terminal-exec](../../cli/terminal-exec/) must be installed and on `PATH`
   (resolves the preferred terminal emulator on Linux/Windows)
-- [Bun](https://bun.sh/) runtime (hooks and CLI run via `bun`)
+- [Bun](https://bun.sh/) runtime (hooks run via `bun`; CLI uses `node:child_process` and is runtime-neutral)
 
 ## Installing
 
@@ -137,6 +137,8 @@ Sets environment variables on the child (`CLAUDE_SPAWN_ID`, `CLAUDE_SPAWNED_BY_S
 that identify it as a spawned session and link it to its parent.
 Resolves the calling Claude session by walking the process tree upward,
 matching ancestor PIDs against `.by-pid/` coordination files.
+Falls back to the most recently modified `.by-pid/` file when the walk
+fails (inside the Bash tool sandbox, which uses a separate PID namespace).
 Returns a `spawnId` immediately without waiting for the child to finish.
 
 ### Hooks (automatic result forwarding)
@@ -174,8 +176,16 @@ All coordination files live under `~/.claude/spawn-results/`:
 
 ## Limitations
 
-- The process tree walk reads `/proc/{pid}/status` to find ancestor PIDs,
-  which requires Linux; macOS and Windows would need platform-specific alternatives
+- **Sandbox incompatible**: `spawn-claude` must run outside the Bash tool sandbox.
+  The sandbox kills detached child processes when the parent command exits,
+  so the terminal window never opens. Claude will prompt for permission to
+  bypass the sandbox on first use; approve it once and future invocations
+  are allowed automatically
+- The process tree walk reads `/proc/{pid}/status` (Linux-only); inside the Bash
+  tool sandbox (separate PID namespace), it falls back to the most recently modified
+  `.by-pid/` file, which is correct when running a single Claude session
+- macOS and Windows would need platform-specific alternatives for the process tree walk
+  (the most-recent fallback still works on all platforms)
 - Results are delivered on the next hook event that supports `additionalContext`;
   if the parent is completely idle with no hook activity, delivery waits until the
   next user message

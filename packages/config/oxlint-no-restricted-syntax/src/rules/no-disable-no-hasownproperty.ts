@@ -1,7 +1,7 @@
 import { banDisableRule } from './_ban-disable-factory.ts';
 
 /**
- * Bans `oxlint-disable` comments that suppress `no-restricted-syntax/no-hasownproperty`.
+ * Bans inline suppression of `no-restricted-syntax/no-hasownproperty`.
  * Use `Object.hasOwn()` or the `in` operator instead of `.hasOwnProperty()`.
  */
 export const noDisableNoHasownproperty = banDisableRule({

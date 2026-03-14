@@ -124,7 +124,8 @@ function parseFlags(args: string[]): ParsedFlags {
 
   let i = 0;
   while (i < args.length) {
-    const arg = args[i]!;
+    const arg = args[i];
+    if (arg === undefined) break;
 
     if (arg === '--provider') {
       const value = args[i + 1];
@@ -173,8 +174,14 @@ async function handleCompare(args: string[]): Promise<void> {
     printUsageAndExit();
   }
 
-  const imageA = parseImageArg(remaining[0]!);
-  const imageB = parseImageArg(remaining[1]!);
+  const argA = remaining[0];
+  const argB = remaining[1];
+  if (argA === undefined || argB === undefined) {
+    console.error('Error: compare requires exactly 2 image arguments');
+    printUsageAndExit();
+  }
+  const imageA = parseImageArg(argA);
+  const imageB = parseImageArg(argB);
 
   if (provider !== undefined) {
     rl.debug(`comparing via ${provider}`);
@@ -225,7 +232,12 @@ async function handleEmbed(args: string[]): Promise<void> {
     printUsageAndExit();
   }
 
-  const image = parseImageArg(remaining[0]!);
+  const embedArg = remaining[0];
+  if (embedArg === undefined) {
+    console.error('Error: embed requires exactly 1 image argument');
+    printUsageAndExit();
+  }
+  const image = parseImageArg(embedArg);
 
   if (provider !== undefined) {
     rl.debug(`embedding via ${provider}`);

@@ -10,8 +10,6 @@ import { l, tagged } from './log.ts';
  *
  * @param name - VM name without the mvm- prefix
  *
- * @returns Resolves when console session ends
- *
  * @example
  * ```ts
  * await shell({ name: 'dev-01' });

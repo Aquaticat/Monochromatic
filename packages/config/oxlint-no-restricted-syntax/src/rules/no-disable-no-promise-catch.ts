@@ -1,7 +1,7 @@
 import { banDisableRule } from './_ban-disable-factory.ts';
 
 /**
- * Bans `oxlint-disable` comments that suppress `no-restricted-syntax/no-promise-catch`.
+ * Bans inline suppression of `no-restricted-syntax/no-promise-catch`.
  * Use `async`/`await` with `try`/`catch` instead of `.catch()`.
  */
 export const noDisableNoPromiseCatch = banDisableRule({

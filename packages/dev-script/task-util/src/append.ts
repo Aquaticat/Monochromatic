@@ -84,7 +84,7 @@ async function validateFile(filePath: string,): Promise<void> {
  * await appendLinesToFile('./output.md', ['line 1', 'line 2']);
  * ```
  */
-async function appendLinesToFile(filePath: string, lines: string[],): Promise<void> {
+async function appendLinesToFile(filePath: string, lines: readonly string[],): Promise<void> {
   const content = lines.join('\n',) + '\n';
   await appendFile(filePath, content,);
 }

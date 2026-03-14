@@ -129,8 +129,11 @@ describe('embedBatch (voyage)', function embedBatchVoyageSuite() {
     const result = await embedBatch([{ base64: red }, { base64: blue }], { provider: 'voyage' });
 
     expect(result.embeddings.length).toBe(2);
-    expect(result.embeddings[0]!.length).toBeGreaterThan(0);
-    expect(result.embeddings[1]!.length).toBeGreaterThan(0);
+    const first = result.embeddings[0];
+    const second = result.embeddings[1];
+    if (first === undefined || second === undefined) throw new Error('missing embeddings');
+    expect(first.length).toBeGreaterThan(0);
+    expect(second.length).toBeGreaterThan(0);
   }, { timeout: 30_000 });
 });
 
@@ -174,8 +177,11 @@ describe('embedBatch (gemini)', function embedBatchGeminiSuite() {
     const result = await embedBatch([{ base64: red }, { base64: blue }], { provider: 'gemini' });
 
     expect(result.embeddings.length).toBe(2);
-    expect(result.embeddings[0]!.length).toBeGreaterThan(0);
-    expect(result.embeddings[1]!.length).toBeGreaterThan(0);
+    const first = result.embeddings[0];
+    const second = result.embeddings[1];
+    if (first === undefined || second === undefined) throw new Error('missing embeddings');
+    expect(first.length).toBeGreaterThan(0);
+    expect(second.length).toBeGreaterThan(0);
   }, { timeout: 30_000 });
 });
 

@@ -1,7 +1,7 @@
 import { banDisableRule } from './_ban-disable-factory.ts';
 
 /**
- * Bans `oxlint-disable` comments that suppress `no-restricted-syntax/no-switch`.
+ * Bans inline suppression of `no-restricted-syntax/no-switch`.
  * Use if/else chains or `Record` lookups instead of switch statements.
  */
 export const noDisableNoSwitch = banDisableRule({

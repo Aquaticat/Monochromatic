@@ -1,3 +1,5 @@
+export {};
+
 /** Size of each allocation in bytes -- large enough to exhaust memory in a few iterations */
 const CHUNK_SIZE_BYTES = 256 * 1_024 * 1_024;
 

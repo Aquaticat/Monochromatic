@@ -12,9 +12,10 @@
  * @module
  */
 
+import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { readFileSync, readdirSync, statSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { randomUUID } from 'node:crypto';
 
 import { object } from '@optique/core/constructs';
 import { message } from '@optique/core/message';
@@ -23,8 +24,7 @@ import { argument, option } from '@optique/core/primitives';
 import { string } from '@optique/core/valueparser';
 import { runSync } from '@optique/run';
 
-import { BY_PID_DIR, SPAWNS_DIR } from './paths.ts';
-import type { PidMapping } from './paths.ts';
+import { BY_PID_DIR, SPAWNS_DIR, type PidMapping } from './paths.ts';
 
 export {};
 
@@ -52,6 +52,7 @@ const parser = object({
   }),
 });
 
+/** Parsed CLI arguments from the spawn-claude command invocation. */
 const args = runSync(parser, {
   programName: 'spawn-claude',
   help: 'option',
@@ -60,7 +61,7 @@ const args = runSync(parser, {
 
 //endregion
 
-//region Session identity resolution via process tree walk
+//region Session identity resolution
 
 /**
  * Walks up the process tree from the current process to find the
@@ -76,12 +77,11 @@ const args = runSync(parser, {
  *
  * @example
  * ```ts
- * const identity = findCallingSession();
- * if (identity === null) throw new Error('No Claude session found');
- * console.log(identity.sessionId);
+ * const identity = findByProcessTree();
+ * if (identity !== null) console.log(identity.sessionId);
  * ```
  */
-function findCallingSession(): PidMapping | null {
+function findByProcessTree(): PidMapping | null {
   let pid = process.ppid;
 
   // Walk up the process tree, checking each ancestor PID.
@@ -107,7 +107,7 @@ function findCallingSession(): PidMapping | null {
         return null;
       }
 
-      pid = parseInt(ppidLine.split(/\s+/)[1] ?? '0', 10);
+      pid = Number.parseInt(ppidLine.split(/\s+/)[1] ?? '0', 10);
     } catch {
       // Cannot read /proc — platform limitation or process already exited.
       return null;
@@ -117,17 +117,85 @@ function findCallingSession(): PidMapping | null {
   return null;
 }
 
+/**
+ * Scans all `.by-pid/` files and returns the most recently written one.
+ *
+ * Fallback for when the process tree walk fails, which happens inside
+ * the Bash tool sandbox (separate PID namespace, so host PIDs from
+ * `.by-pid/` don't appear in `/proc`).
+ *
+ * @returns Session identity from the most recently modified PID file, or `null` if none exist.
+ *
+ * @example
+ * ```ts
+ * const identity = findByMostRecent();
+ * if (identity !== null) console.log(identity.sessionId);
+ * ```
+ */
+function findByMostRecent(): PidMapping | null {
+  let entries: string[] = [];
+
+  try {
+    entries = readdirSync(BY_PID_DIR);
+  } catch {
+    return null;
+  }
+
+  let newest: { mapping: PidMapping; mtime: number } | null = null;
+
+  for (const filename of entries) {
+    const filePath = join(BY_PID_DIR, filename);
+
+    try {
+      const mtime = statSync(filePath).mtimeMs;
+      const raw = readFileSync(filePath, 'utf8');
+      /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
+      const mapping = JSON.parse(raw) as PidMapping;
+
+      if (newest === null || mtime > newest.mtime) {
+        newest = { mapping, mtime };
+      }
+    } catch {
+      // Skip unreadable files.
+    }
+  }
+
+  return newest?.mapping ?? null;
+}
+
+/**
+ * Finds the calling Claude session identity.
+ *
+ * Tries the process tree walk first (precise, works outside sandbox),
+ * then falls back to the most recently modified `.by-pid/` file
+ * (works inside sandbox where PIDs don't match the host namespace).
+ *
+ * @returns Session identity, or `null` if no coordination files exist.
+ *
+ * @example
+ * ```ts
+ * const identity = findCallingSession();
+ * if (identity === null) throw new Error('No Claude session found');
+ * ```
+ */
+function findCallingSession(): PidMapping | null {
+  return findByProcessTree() ?? findByMostRecent();
+}
+
 //endregion
 
 //region Spawn execution
 
+/** Resolved session identity of the calling Claude instance. */
 const identity = findCallingSession();
 
 if (identity === null) {
   console.error('Error: Could not find calling Claude session. Ensure the claude-spawn plugin hooks are active and SessionStart has fired.');
   process.exitCode = 1;
 } else {
+  /** Unique identifier for this spawn, used to coordinate state between parent and child. */
   const spawnId = randomUUID();
+  /** Working directory for the child session, defaulting to the current directory. */
   const cwd = args.cwd ?? process.cwd();
 
   /** Extra args split on whitespace, filtering empty strings. */
@@ -137,8 +205,10 @@ if (identity === null) {
 
   mkdirSync(SPAWNS_DIR, { recursive: true });
 
-  const proc = Bun.spawn(
-    ['terminal-exec', '--', 'claude', ...extraArgs, args.prompt],
+  /** Detached child process running the spawned Claude session in a terminal window. */
+  const proc = spawn(
+    'terminal-exec',
+    ['--', 'claude', ...extraArgs, args.prompt],
     {
       cwd,
       env: {
@@ -146,9 +216,8 @@ if (identity === null) {
         CLAUDE_SPAWN_ID: spawnId,
         CLAUDE_SPAWNED_BY_SESSION: identity.sessionId,
       },
-      stdin: 'ignore',
-      stdout: 'ignore',
-      stderr: 'ignore',
+      detached: true,
+      stdio: 'ignore',
     },
   );
 

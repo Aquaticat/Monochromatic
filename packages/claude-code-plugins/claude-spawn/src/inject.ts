@@ -15,8 +15,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 
-import { SPAWNS_DIR } from './paths.ts';
-import type { SpawnState } from './paths.ts';
+import { SPAWNS_DIR, type SpawnState } from './paths.ts';
 
 /**
  * Scans the spawns directory for children of the given session
@@ -38,7 +37,7 @@ import type { SpawnState } from './paths.ts';
  * ```
  */
 function checkCompletedChildren({ parentSessionId }: { parentSessionId: string }): string | null {
-  let entries: string[];
+  let entries: string[] = [];
   try {
     entries = readdirSync(SPAWNS_DIR);
   } catch {
@@ -55,40 +54,39 @@ function checkCompletedChildren({ parentSessionId }: { parentSessionId: string }
     const filePath = join(SPAWNS_DIR, filename);
     const reportedPath = join(SPAWNS_DIR, filename.replace(/\.json$/, '.reported'));
 
-    let state: SpawnState;
     try {
       const raw = readFileSync(filePath, 'utf8');
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own hooks */
-      state = JSON.parse(raw) as SpawnState;
+      const state = JSON.parse(raw) as SpawnState;
+
+      if (state.parentSessionId !== parentSessionId) {
+        continue;
+      }
+
+      if (state.status !== 'stopped') {
+        continue;
+      }
+
+      //region Atomic rename to prevent double injection
+      try {
+        renameSync(filePath, reportedPath);
+      } catch {
+        /** Another hook invocation already renamed this file. */
+        continue;
+      }
+      //endregion
+
+      results.push([
+        `Spawned Claude session completed (spawnId: ${state.spawnId}):`,
+        `Session ID: ${state.sessionId}`,
+        `Transcript: ${state.transcriptPath}`,
+        state.lastMessage.length > 0
+          ? `Last assistant message:\n${state.lastMessage}`
+          : 'No assistant message was produced.',
+      ].join('\n'));
     } catch {
       continue;
     }
-
-    if (state.parentSessionId !== parentSessionId) {
-      continue;
-    }
-
-    if (state.status !== 'stopped') {
-      continue;
-    }
-
-    //region Atomic rename to prevent double injection
-    try {
-      renameSync(filePath, reportedPath);
-    } catch {
-      /** Another hook invocation already renamed this file. */
-      continue;
-    }
-    //endregion
-
-    results.push([
-      `Spawned Claude session completed (spawnId: ${state.spawnId}):`,
-      `Session ID: ${state.sessionId}`,
-      `Transcript: ${state.transcriptPath}`,
-      state.lastMessage.length > 0
-        ? `Last assistant message:\n${state.lastMessage}`
-        : 'No assistant message was produced.',
-    ].join('\n'));
   }
 
   if (results.length === 0) {

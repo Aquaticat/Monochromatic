@@ -52,7 +52,7 @@
     {
       "name": "claude-spawn",
       "source": "./packages/claude-code-plugins/claude-spawn",
-      "description": "Spawns steerable child Claude Code sessions in terminal windows with automatic result forwarding via hooks.",
+      "description": "Spawns steerable child Claude Code sessions in terminal windows with automatic result forwarding via hooks. Requires the spawn-claude CLI to be on PATH.",
       "version": "0.0.1",
       "category": "productivity",
       "tags": ["spawn", "subagent", "terminal", "mcp", "hooks"]

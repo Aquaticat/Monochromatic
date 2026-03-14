@@ -8,8 +8,6 @@ import { log } from "../log.ts";
  *
  * @param summary - LLM-generated analysis summary shown in the notification body
  *
- * @returns when the notification has been sent or the error has been logged
- *
  * @example
  * ```ts
  * await sendNotification("User has been browsing Reddit for 25 minutes.");

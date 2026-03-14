@@ -9,25 +9,24 @@ import type {
 const DISABLE_DIRECTIVE_PATTERN = /oxlint-disable(?:-next-line)?\b/;
 
 /**
- * Creates an oxlint rule that bans inline `oxlint-disable` comments
+ * Creates an oxlint rule that bans inline disable directives
  * targeting a specific rule ID. Config-level overrides in `.oxlintrc.json`
- * are unaffected — only inline `// oxlint-disable` and
- * `// oxlint-disable-next-line` comments are flagged.
+ * are unaffected -- only inline suppression comments are flagged.
  *
- * @param ruleId - full rule ID to ban disabling (e.g. `tsdoc/require-tsdoc`)
+ * @param ruleId - full rule ID to ban (e.g. `tsdoc/require-tsdoc`)
  *
  * @param description - human-readable description for the rule's docs
  *
- * @param message - error message shown when the banned disable is found
+ * @param message - error message shown when the banned suppression is found
  *
- * @returns oxlint `CreateOnceRule` that scans all comments for the banned disable
+ * @returns oxlint `CreateOnceRule` that scans all comments for the banned suppression
  *
  * @example
  * ```ts
  * export const noDisableNoSwitch = banDisableRule({
  *   ruleId: 'no-restricted-syntax/no-switch',
- *   description: 'Disallow disabling no-switch. Use if/else or Record lookups.',
- *   message: 'Disabling no-switch is not allowed. Use if/else chains or Record lookups.',
+ *   description: 'Disallow disabling no-switch.',
+ *   message: 'Disabling no-switch is not allowed.',
  * });
  * ```
  */

@@ -1,5 +1,4 @@
-import { join, } from 'node:path';
-import { resolve, } from 'node:path';
+import { join, resolve, } from 'node:path';
 import {
   mkdtemp,
   readFile,

@@ -4,4 +4,6 @@
  * systems) produces a core dump. Unlike a thrown error, this bypasses all
  * JavaScript error handlers and exits unconditionally.
  */
+export {};
+
 process.abort();

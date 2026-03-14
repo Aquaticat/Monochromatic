@@ -1,7 +1,7 @@
 import { banDisableRule } from './_ban-disable-factory.ts';
 
 /**
- * Bans `oxlint-disable` comments that suppress `tsdoc/require-returns`.
+ * Bans inline suppression of `tsdoc/require-returns`.
  * Functions that return a value must document it with `\@returns`.
  * The rule already skips `void`, `never`, `Promise<void>`, and `Promise<never>`.
  */

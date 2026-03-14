@@ -22,8 +22,6 @@ import { ensureTemplate } from './template.ts';
  * - Pick up new cloud image releases for Linux distros
  * - Rebuild templates after a virtio-win driver update
  *
- * @returns Resolves when all templates are rebuilt
- *
  * @throws Error when any download or template creation fails
  *
  * @example

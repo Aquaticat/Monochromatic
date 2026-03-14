@@ -9,8 +9,6 @@ import { trackDest, trackWriteTime, } from '../tracker.ts';
  * Ensures the parent directory of a file path exists before writing.
  *
  * @param filePath - Path to the file about to be written
- *
- * @returns resolves after the directory is created
  */
 async function ensureDir(filePath: string): Promise<void> {
   await mkdir(dirname(filePath), { recursive: true, });
@@ -39,8 +37,6 @@ async function readExisting(filePath: string): Promise<string | undefined> {
  * @param dest - Destination file path
  *
  * @param content - Content string to write
- *
- * @returns resolves after the write completes or is skipped
  */
 export async function overwrite(dest: string, content: string): Promise<void> {
   trackDest(dest);
@@ -63,8 +59,6 @@ export async function overwrite(dest: string, content: string): Promise<void> {
  * @param dest - Destination file path
  *
  * @param content - Content string to write
- *
- * @returns resolves after the write completes or is skipped
  */
 export async function overwriteIfNotExists(dest: string, content: string): Promise<void> {
   if (await exists(dest)) {
@@ -88,8 +82,6 @@ export async function overwriteIfNotExists(dest: string, content: string): Promi
  * ```ts
  * await overwriteEach('./dest/*​/*.md', await cat('./src/*​/*.md'));
  * ```
- *
- * @returns resolves after all files are written
  */
 export async function overwriteEach(
   destGlob: string,

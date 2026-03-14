@@ -4,6 +4,9 @@
  * double-cast bypasses TypeScript's static type check so the error surfaces
  * at runtime rather than compile time.
  */
+export {};
+
+/** String value cast to a callable type to trigger a runtime TypeError. */
 const notAFunction = "I am a string" as unknown as () => void;
 
 notAFunction();

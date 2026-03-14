@@ -103,8 +103,6 @@ async function findSocketOwnerPid(): Promise<number | null> {
  * Sends SIGTERM first, escalates to SIGKILL if the process does not exit
  * within the retry window.
  *
- * @returns when the lock is acquired
- *
  * @throws when the lock cannot be acquired after killing the existing instance
  *
  * @example

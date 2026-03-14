@@ -32,6 +32,14 @@ import { readFile, } from 'node:fs/promises';
 import { dirname, resolve, } from 'node:path';
 import type { Plugin, } from 'rolldown';
 
+import {
+  ATTR_QUERY_KEY,
+  DYNAMIC_IMPORT_WITH_RE,
+  STATIC_IMPORT_WITH_RE,
+  extractAttrType,
+  stripAttrQuery,
+} from './patterns.ts';
+
 export { importAttributesPlugin, };
 
 //region Types
@@ -48,13 +56,6 @@ export { importAttributesPlugin, };
 type AttributeTypeHandler = (content: string, id: string) => string;
 
 //endregion Types
-
-//region Constants
-
-/** Query parameter name used to encode the attribute type in rewritten specifiers. */
-const ATTR_QUERY_KEY = '__importattr';
-
-//endregion Constants
 
 //region Built-in handlers
 
@@ -79,126 +80,6 @@ const HANDLERS: Record<string, AttributeTypeHandler> = {
 };
 
 //endregion Built-in handlers
-
-//region Transform patterns
-
-/**
- * Matches static import/export declarations with `with { type: '...' }` attributes.
- *
- * Captures:
- * - Group 1: Everything before the specifier (e.g. `import x from `)
- * - Group 2: Quote character used for the specifier
- * - Group 3: The specifier string (e.g. `./file.sql`)
- * - Group 4: The quote + `with` clause including the type value
- * - Group 5: The attribute type value (e.g. `text`)
- *
- * Handles both single and double quotes, and optional semicolons.
- * Does not match dynamic `import()` expressions (handled separately).
- */
-const STATIC_IMPORT_WITH_RE = new RegExp(
-  '('
-  + '(?:import|export)'
-  + String.raw`\s+`
-  + '(?:'
-  + String.raw`(?:type\s+)?`
-  + '(?:'
-  + String.raw`(?:[\w$*{}\s,]+)\s+from`
-  + '|'
-  + ')'
-  + String.raw`\s+`
-  + ')'
-  + ')'
-  + '([\'"])'
-  + '([^\'"]+'
-  + ')'
-  + String.raw`(\2`
-  + String.raw`\s+with\s*\{\s*type\s*:\s*['"]`
-  + String.raw`(\w+)`
-  + String.raw`['"]\s*\}`
-  + ')',
-  'g',
-);
-
-/**
- * Matches dynamic `import()` expressions with attribute options containing `with: { type: '...' }`.
- *
- * Captures:
- * - Group 1: `import(`
- * - Group 2: Quote character
- * - Group 3: The specifier string
- * - Group 4: Everything after the specifier up through the `with` clause
- * - Group 5: The attribute type value
- *
- * @example Matches `import('./file.sql', { with: { type: 'text' } })`
- */
-const DYNAMIC_IMPORT_WITH_RE = new RegExp(
-  '('
-  + String.raw`import\s*\(`
-  + String.raw`\s*`
-  + ')'
-  + '([\'"])'
-  + '([^\'"]+'
-  + ')'
-  + String.raw`(\2`
-  + String.raw`\s*,\s*\{\s*with\s*:\s*\{\s*type\s*:\s*['"]`
-  + String.raw`(\w+)`
-  + String.raw`['"]\s*\}\s*\}`
-  + ')',
-  'g',
-);
-
-//endregion Transform patterns
-
-//region Query helpers
-
-/**
- * Extracts the attribute type from a module ID's query parameter.
- *
- * @param id - Module ID potentially containing `?__importattr=<type>`
- *
- * @returns Attribute type string if present, `undefined` otherwise
- *
- * @example
- * ```ts
- * extractAttrType('./file.sql?__importattr=text'); // 'text'
- * extractAttrType('./file.sql'); // undefined
- * ```
- */
-function extractAttrType(id: string): string | undefined {
-  const queryIndex = id.indexOf(`?${ATTR_QUERY_KEY}=`);
-  if (queryIndex === -1) {
-    return undefined;
-  }
-  const valueStart = queryIndex + ATTR_QUERY_KEY.length + 2;
-  const ampIndex = id.indexOf('&', valueStart);
-  if (ampIndex === -1) {
-    return id.slice(valueStart);
-  }
-  return id.slice(valueStart, ampIndex);
-}
-
-/**
- * Strips the `__importattr` query parameter from a module ID,
- * returning the clean file path.
- *
- * @param id - Module ID with `?__importattr=<type>`
- *
- * @returns File path without the attribute query parameter
- *
- * @example
- * ```ts
- * stripAttrQuery('./file.sql?__importattr=text'); // './file.sql'
- * ```
- */
-function stripAttrQuery(id: string): string {
-  const queryIndex = id.indexOf(`?${ATTR_QUERY_KEY}=`);
-  if (queryIndex === -1) {
-    return id;
-  }
-  return id.slice(0, queryIndex);
-}
-
-//endregion Query helpers
 
 //region Importer scanning
 
@@ -279,7 +160,7 @@ function scanImporterForAttribute(
  *
  * @example
  * ```ts
- * import { importAttributesPlugin } from '@monochromatic-dev/rolldown-plugin-import-attributes/ts';
+ * import { importAttributesPlugin } from '\@monochromatic-dev/rolldown-plugin-import-attributes/ts';
  * import { defineConfig } from 'tsdown';
  *
  * export default defineConfig({
@@ -342,6 +223,7 @@ function importAttributesPlugin(): Plugin {
       );
       //endregion Dynamic imports
 
+      // oxlint-disable-next-line typescript/no-unnecessary-condition -- didTransform is mutated inside replace callbacks; linter cannot follow callback side effects
       if (!didTransform) {
         return null;
       }
@@ -367,14 +249,14 @@ function importAttributesPlugin(): Plugin {
           skipSelf: true,
         });
 
-        if (resolved !== null && resolved !== undefined) {
+        if (resolved !== null) {
           return {
             id: `${resolved.id}?${ATTR_QUERY_KEY}=${queryAttrType}`,
             external: false,
           };
         }
 
-        if (importer !== undefined && importer !== null && cleanSource.startsWith('.')) {
+        if (importer !== undefined && cleanSource.startsWith('.')) {
           const importerDir = dirname(importer.split('?')[0] ?? importer);
           const absolutePath = resolve(importerDir, cleanSource);
           return {
@@ -392,7 +274,7 @@ function importAttributesPlugin(): Plugin {
        * This catches dynamic imports that rolldown's scanner discovered
        * from the original AST before `transform` could rewrite them.
        */
-      if (importer !== undefined && importer !== null) {
+      if (importer !== undefined) {
         const cleanImporter = importer.split('?')[0] ?? importer;
         const attrType = scanImporterForAttribute(
           source,
@@ -406,7 +288,7 @@ function importAttributesPlugin(): Plugin {
             skipSelf: true,
           });
 
-          if (resolved !== null && resolved !== undefined) {
+          if (resolved !== null) {
             return {
               id: `${resolved.id}?${ATTR_QUERY_KEY}=${attrType}`,
               external: false,

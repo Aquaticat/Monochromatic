@@ -51,8 +51,6 @@ function isUnproductive(d: Decision): boolean {
  *
  * Skips the cycle when the screen is locked or the webcam cover is down.
  *
- * @returns when the cycle completes
- *
  * @example
  * ```ts
  * await cycle();

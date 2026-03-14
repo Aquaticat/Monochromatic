@@ -46,7 +46,6 @@ export function virsh({ args }: { args: readonly string[] }): Promise<string> {
  *
  * @param xml - XML content for the domain definition
  *
- * @returns Resolves when the VM is defined
  */
 export async function defineVm({ vmDir, xml }: { vmDir: string; xml: string }): Promise<void> {
   const xmlPath = join(vmDir, 'domain.xml');
@@ -59,7 +58,6 @@ export async function defineVm({ vmDir, xml }: { vmDir: string; xml: string }): 
  *
  * @param name - VM name without the mvm- prefix
  *
- * @returns Resolves when the VM is started
  */
 export async function startVm({ name }: { name: string }): Promise<void> {
   await virsh({ args: ['start', `${VM_PREFIX}${name}`], });
@@ -70,7 +68,6 @@ export async function startVm({ name }: { name: string }): Promise<void> {
  *
  * @param name - VM name without the mvm- prefix
  *
- * @returns Resolves when the VM is force-stopped
  */
 export async function destroyVm({ name }: { name: string }): Promise<void> {
   await virsh({ args: ['destroy', `${VM_PREFIX}${name}`], });
@@ -81,7 +78,6 @@ export async function destroyVm({ name }: { name: string }): Promise<void> {
  *
  * @param name - VM name without the mvm- prefix
  *
- * @returns Resolves when the VM is undefined
  */
 export async function undefineVm({ name }: { name: string }): Promise<void> {
   await virsh({ args: ['undefine', `${VM_PREFIX}${name}`, '--remove-all-storage'], });
@@ -94,8 +90,6 @@ export async function undefineVm({ name }: { name: string }): Promise<void> {
  * @param name - VM name without the mvm- prefix
  *
  * @param timeoutMs - Maximum milliseconds to wait (defaults to 15s)
- *
- * @returns Resolves when the guest agent responds
  *
  * @throws Error when the guest agent does not respond within the timeout
  *
@@ -141,8 +135,6 @@ export async function waitForGuestAgent({ name, timeoutMs = DEFAULT_AGENT_TIMEOU
  *
  * @param name - VM name without the mvm- prefix
  *
- * @returns Resolves after sending the shutdown command
- *
  * @example
  * ```ts
  * await shutdownVm({ name: 'dev-01' });
@@ -165,8 +157,6 @@ export async function shutdownVm({ name }: { name: string }): Promise<void> {
  * Polls VM state until it reaches "shut off", indicating graceful shutdown completed.
  *
  * @param name - VM name without the mvm- prefix
- *
- * @returns Resolves when the VM reaches "shut off" state
  *
  * @throws Error when the VM does not shut down within the timeout
  *

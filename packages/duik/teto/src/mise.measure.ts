@@ -135,6 +135,7 @@ function measureWidthProfile(imagePath: string): {
   const firstLine = dataLines[0];
   if (firstLine === undefined) throw new Error('PGM file has no data lines');
   const [width, height] = firstLine.trim().split(/\s+/).map(Number)
+  if (width === undefined || height === undefined) throw new Error('PGM header missing dimensions')
 
   /** Collect all pixel values into a flat array. */
   const pixelValues: number[] = []

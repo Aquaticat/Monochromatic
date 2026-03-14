@@ -143,6 +143,10 @@ export const requireTsdoc: CreateOnceRule = {
   createOnce(context: Context): VisitorWithHooks {
     /** Tracks nesting depth inside function-like scopes. */
     let scopeDepth = 0;
+    /** Tracks nesting depth inside block scopes (for-loop bodies, if-else, try-catch). */
+    let blockDepth = 0;
+    /** True when the next VariableDeclaration is a for-loop binding (for/for-of/for-in init). */
+    let inForLoopInit = false;
 
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
@@ -186,8 +190,17 @@ export const requireTsdoc: CreateOnceRule = {
       TSEnumDeclaration(node): void {
         reportMissing(node, context);
       },
+      BlockStatement(): void { blockDepth++; },
+      'BlockStatement:exit'(): void { blockDepth--; },
+      ForStatement(): void { inForLoopInit = true; },
+      ForOfStatement(): void { inForLoopInit = true; },
+      ForInStatement(): void { inForLoopInit = true; },
       VariableDeclaration(node): void {
-        if (scopeDepth === 0) {
+        if (inForLoopInit) {
+          inForLoopInit = false;
+          return;
+        }
+        if (scopeDepth === 0 && blockDepth === 0) {
           reportMissing(node, context);
         }
       },

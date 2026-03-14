@@ -252,8 +252,6 @@ function templateVmGuard(rl: { debug: (msg: string) => void }): AsyncDisposable 
  *
  * @param rl - Logger for status messages
  *
- * @returns Resolves when cleanup is complete
- *
  * @example
  * ```ts
  * await cleanupTemplateVm(rl);

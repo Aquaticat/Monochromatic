@@ -91,7 +91,7 @@ function filterNullish(values: readonly (string | null | undefined)[],): string[
 }
 
 /** Valid builtin time strategy names */
-const BUILTIN_STRATEGIES: readonly BuiltinTimeStrategy[] = new Set(['newest', 'oldest', 'mean', 'median',]);
+const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set(['newest', 'oldest', 'mean', 'median',]);
 
 /**
  * Validates and defaults a time strategy option.

@@ -1,6 +1,6 @@
 {
   "name": "claude-spawn",
-  "description": "Spawns steerable child Claude Code sessions in terminal windows with automatic result forwarding.",
+  "description": "Spawns steerable child Claude Code sessions in terminal windows with automatic result forwarding. Requires the spawn-claude CLI (from @monochromatic-dev/claude-code-plugins-claude-spawn) on PATH.",
   "version": "0.0.1",
   "author": {
     "name": "Aquaticat"

@@ -18,8 +18,6 @@ export const DEBOUNCE_MS = 100;
  * @param configPath - Absolute config path for event classification
  *
  * @param onEvent - Callback receiving the event kind and the changed filename
- *
- * @returns resolves when the watcher is torn down (via abort signal)
  */
 export async function watchDirectory(
   dir: string,

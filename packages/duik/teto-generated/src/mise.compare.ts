@@ -25,7 +25,7 @@ import { FRONT_VIEW_CROP, PARTS_DIR, REFERENCE_PATH, TMP_DIR } from './config.ts
  * @throws Error on non-zero exit
  */
 async function capture(cmd: readonly string[]): Promise<string> {
-  const proc = Bun.spawn(cmd, { stdout: 'pipe', stderr: 'pipe' })
+  const proc = Bun.spawn([...cmd], { stdout: 'pipe', stderr: 'pipe' })
   const stdout = await new Response(proc.stdout).text()
   const code = await proc.exited
   if (code !== 0) {
@@ -42,7 +42,7 @@ async function capture(cmd: readonly string[]): Promise<string> {
  * @throws Error on non-zero exit
  */
 async function run(cmd: readonly string[]): Promise<void> {
-  const proc = Bun.spawn(cmd, { stdout: 'inherit', stderr: 'inherit' })
+  const proc = Bun.spawn([...cmd], { stdout: 'inherit', stderr: 'inherit' })
   const code = await proc.exited
   if (code !== 0) {
     throw new Error(`Command failed (exit ${code}): ${cmd.join(' ')}`)

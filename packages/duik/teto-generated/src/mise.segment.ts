@@ -27,7 +27,7 @@ import type { ColorSpec, PartDef } from './parts.ts'
  * @throws Error when the subprocess exits with non-zero status
  */
 async function run(cmd: readonly string[]): Promise<void> {
-  const proc = Bun.spawn(cmd, { stdout: 'inherit', stderr: 'inherit' })
+  const proc = Bun.spawn([...cmd], { stdout: 'inherit', stderr: 'inherit' })
   const code = await proc.exited
   if (code !== 0) {
     throw new Error(`Command failed (exit ${code}): ${cmd.join(' ')}`)

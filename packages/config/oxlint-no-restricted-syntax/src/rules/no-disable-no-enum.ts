@@ -1,7 +1,7 @@
 import { banDisableRule } from './_ban-disable-factory.ts';
 
 /**
- * Bans `oxlint-disable` comments that suppress `no-restricted-syntax/no-enum`.
+ * Bans inline suppression of `no-restricted-syntax/no-enum`.
  * Use union types with `as const` instead of TypeScript enums.
  */
 export const noDisableNoEnum = banDisableRule({

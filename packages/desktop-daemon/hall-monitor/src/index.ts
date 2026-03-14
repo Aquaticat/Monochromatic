@@ -49,7 +49,6 @@ process.on("SIGTERM", shutdown);
  * Main daemon entry point.
  * Acquires the lock, runs the first cycle, then loops at the configured interval.
  *
- * @returns when the daemon stops running
  */
 // Async IIFE required because `bun build --compile` does not support top-level await.
 // oxlint-disable-next-line typescript/no-floating-promises -- top-level entry point

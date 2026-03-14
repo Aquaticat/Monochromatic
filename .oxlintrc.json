@@ -291,7 +291,7 @@
     // Sometimes the type-checking if-statement isn't for checking type.
     "unicorn/prefer-type-error": "off",
     "import/max-dependencies": "off",
-    "eslint/max-lines": "off",
+    "eslint/max-lines": ["error", { "max": 200, "skipBlankLines": true, "skipComments": true }],
     "eslint/max-params": "off",
     "eslint/max-depth": "off",
     "eslint/max-lines-per-function": "off",
@@ -422,7 +422,9 @@
       "files": ["**/fixture.*"],
       "rules": {
         // Fixture files can use magic numbers.
-        "eslint/no-magic-numbers": "off"
+        "eslint/no-magic-numbers": "off",
+        // Fixture files are exempt from line limits.
+        "eslint/max-lines": "off"
       }
     },
     {
@@ -492,8 +494,17 @@
       }
     },
     {
+      "files": ["**/*.config.*"],
+      "rules": {
+        // Config files are exempt from line limits.
+        "eslint/max-lines": "off"
+      }
+    },
+    {
       "files": ["**/*.{test,bench}.ts"],
       "rules": {
+        // Test files are exempt from line limits.
+        "eslint/max-lines": "off",
         // Test files themselves don't require good traces.
         "eslint/func-names": ["warn", "as-needed"],
 
@@ -538,6 +549,10 @@
         "no-restricted-syntax/no-arrow-function": "off",
         // Test setup/teardown may use init without assignment.
         "eslint/init-declarations": "off",
+        // bun:test expect().rejects/resolves return Promises that oxlint's type analysis doesn't recognize.
+        "typescript/await-thenable": "off",
+        // bun:test expect() chains produce void-in-expression patterns that are intentional.
+        "typescript/no-confusing-void-expression": "off",
 
         "no-empty-pattern": "allow"
       }

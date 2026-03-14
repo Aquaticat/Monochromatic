@@ -27,8 +27,6 @@ import type { Probe, } from './probes.ts';
  * @param apiKey - OpenRouter API key
  *
  * @param runsOverride - optional override for the number of consistency runs (already parsed as integer)
- *
- * @returns resolves after all models complete and the report is printed
  */
 export async function runAndReport(
   selectedModels: readonly ModelConfig[],

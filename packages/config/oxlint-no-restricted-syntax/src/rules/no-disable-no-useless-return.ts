@@ -1,7 +1,7 @@
 import { banDisableRule } from './_ban-disable-factory.ts';
 
 /**
- * Bans `oxlint-disable` comments that suppress `no-useless-return`.
+ * Bans inline suppression of `no-useless-return`.
  *
  * Since `unicorn/no-useless-undefined` is globally off, the correct fix
  * for the three-way conflict (TS7030 / no-useless-return / no-useless-undefined)

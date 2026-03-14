@@ -13,8 +13,6 @@ import { destroyVm, listVms, undefineVm } from './virsh.ts';
  *
  * @param rl - Tagged logger for status messages
  *
- * @returns Resolves when the VM is fully destroyed
- *
  * @throws Error when the VM cannot be undefined (e.g. does not exist)
  *
  * @example
@@ -45,8 +43,6 @@ async function destroyOne({ name, rl }: { name: string; rl: { debug: (msg: strin
  *
  * @param name - VM name without the mvm- prefix
  *
- * @returns Resolves when the VM is fully destroyed
- *
  * @throws Error when the VM cannot be undefined (e.g. does not exist)
  *
  * @example
@@ -62,8 +58,6 @@ export async function destroy({ name }: { name: string }): Promise<void> {
 
 /**
  * Destroys all managed VMs.
- *
- * @returns Resolves when all VMs are destroyed
  *
  * @throws Error when any VM cannot be destroyed
  *

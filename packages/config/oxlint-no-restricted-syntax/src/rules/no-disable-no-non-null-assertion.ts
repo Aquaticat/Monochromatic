@@ -1,7 +1,7 @@
 import { banDisableRule } from './_ban-disable-factory.ts';
 
 /**
- * Bans `oxlint-disable` comments that suppress `no-non-null-assertion`
+ * Bans inline suppression of `no-non-null-assertion`
  * (including `typescript/no-non-null-assertion` and
  * `typescript-eslint/no-non-null-assertion` variants).
  *

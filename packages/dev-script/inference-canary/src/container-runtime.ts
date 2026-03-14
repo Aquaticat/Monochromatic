@@ -46,7 +46,10 @@ const WHICH_CMD = process.platform === 'win32' ? 'where.exe' : 'which';
 function whichSync(name: string): string | null {
   try {
     // `where.exe` may return multiple lines; take the first match
-    return execFileSync(WHICH_CMD, [name], { encoding: 'utf8' }).trim().split('\n')[0]!.trim();
+    /** First line of which output, containing the resolved binary path. */
+    const firstLine = execFileSync(WHICH_CMD, [name], { encoding: 'utf8' }).trim().split('\n')[0];
+    if (firstLine === undefined) return null;
+    return firstLine.trim();
   } catch {
     return null;
   }

@@ -55,7 +55,7 @@ function resolveApiKey(explicit: string | undefined): string | undefined {
  * Checks `TOKEN_COUNT_CLAUDE_API_KEY`, `CLAUDE_API_KEY`, then
  * `ANTHROPIC_API_KEY` env vars when no explicit key is provided.
  *
- * @param options - optional API key for client construction
+ * @param apiKey - optional API key for client construction
  *
  * @returns configured Anthropic client
  *
@@ -72,13 +72,15 @@ function resolveClient({ apiKey }: { readonly apiKey: string | undefined }): Ant
 /**
  * Count input tokens for a text string using the Anthropic token counting API.
  *
- * @param options - content to count and optional config
+ * @param content - text string whose tokens to count
+ *
+ * @param config - optional configuration (model, apiKey)
  *
  * @returns token count and model used
  *
- * @throws {Anthropic.AuthenticationError} when API key is invalid or missing
+ * @throws Anthropic.AuthenticationError when API key is invalid or missing
  *
- * @throws {Anthropic.BadRequestError} when model is invalid
+ * @throws Anthropic.BadRequestError when model is invalid
  *
  * @example
  * ```ts
@@ -110,13 +112,15 @@ export async function countTokens({ content, config = {} }: {
  * Count input tokens for a file by reading it and passing its content
  * to the Anthropic token counting API.
  *
- * @param options - file path and optional config
+ * @param filePath - path to the file to read and count tokens for
+ *
+ * @param config - optional configuration (model, apiKey)
  *
  * @returns token count, model used, and file path
  *
- * @throws {Error} when file cannot be read (ENOENT, EACCES, etc.)
+ * @throws Error when file cannot be read (ENOENT, EACCES, etc.)
  *
- * @throws {Anthropic.AuthenticationError} when API key is invalid or missing
+ * @throws Anthropic.AuthenticationError when API key is invalid or missing
  *
  * @example
  * ```ts

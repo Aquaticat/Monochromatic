@@ -38,8 +38,6 @@ let server: ChildProcess | null = null;
  * No-ops if the server is already running. Blocks until the health endpoint
  * reports ready or the timeout expires.
  *
- * @returns when the server is ready for inference
- *
  * @throws when llama-server fails to become healthy within {@link HEALTH_TIMEOUT_MS}
  *
  * @example
@@ -76,8 +74,6 @@ export async function start(): Promise<void> {
 /**
  * Gracefully stops llama-server by killing the wrapped process by name
  * (distrobox prevents direct PID signalling), then awaits subprocess exit.
- *
- * @returns when the server process has exited and the port is freed
  *
  * @example
  * ```ts
@@ -116,8 +112,6 @@ export async function stop(): Promise<void> {
  * Forcefully kills any llama-server process matching the configured port.
  * Used during shutdown to ensure no orphaned GPU processes remain.
  *
- * @returns when the kill signal has been sent
- *
  * @example
  * ```ts
  * process.on("SIGTERM", () => forceCleanup());
@@ -137,8 +131,6 @@ const MAX_HEALTH_POLLS = Math.ceil(HEALTH_TIMEOUT_MS / HEALTH_POLL_MS);
 
 /**
  * Polls the llama-server health endpoint until it reports ready.
- *
- * @returns when the health check passes
  *
  * @throws when the server does not become healthy within {@link MAX_HEALTH_POLLS} attempts
  */

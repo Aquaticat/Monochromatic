@@ -1,7 +1,7 @@
 import { banDisableRule } from './_ban-disable-factory.ts';
 
 /**
- * Bans `oxlint-disable` comments that suppress `no-restricted-syntax/no-try-finally`.
+ * Bans inline suppression of `no-restricted-syntax/no-try-finally`.
  * Use `using` / `await using` with `Symbol.dispose` / `Symbol.asyncDispose` instead.
  */
 export const noDisableNoTryFinally = banDisableRule({

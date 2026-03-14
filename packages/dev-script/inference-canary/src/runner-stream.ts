@@ -137,7 +137,7 @@ function buildResult(
  *
  * @returns full completion result with all captured data
  *
- * @throws {PartialCompletionError} when the stream is aborted, carrying partial data
+ * @throws when the stream is aborted, carrying partial data as PartialCompletionError
  */
 export async function streamCompletion(
   client: OpenAI,
@@ -156,6 +156,7 @@ export async function streamCompletion(
   // without throwing), so we use a listener-set flag that tsgo cannot narrow away.
   // let: assigned true by the abort listener callback below
   let streamWasAborted = false;
+  /** Sets the abort flag when the signal fires during streaming. */
   function onAbort(): void { streamWasAborted = true; }
   signal?.addEventListener('abort', onAbort, { once: true, });
 
@@ -221,7 +222,7 @@ export async function streamCompletion(
         }
       }
 
-      if (choice.finish_reason !== undefined && choice.finish_reason !== null) {
+      if (choice.finish_reason !== null) {
         lastFinishReason = choice.finish_reason;
       }
     }
@@ -243,6 +244,7 @@ export async function streamCompletion(
   // The SDK ends the stream gracefully on abort (returns partial data) rather than throwing.
   // Throw PartialCompletionError so callers can distinguish abort from success while still
   // having access to whatever chunks arrived before cancellation.
+  // oxlint-disable-next-line typescript/no-unnecessary-condition -- mutated by addEventListener callback; oxlint can't track cross-function mutation
   if (streamWasAborted) {
     throw new PartialCompletionError('Stream aborted by probe timeout signal', result);
   }

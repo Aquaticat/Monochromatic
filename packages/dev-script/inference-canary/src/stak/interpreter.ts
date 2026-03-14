@@ -15,7 +15,7 @@ type Env = Map<string, number>;
  *
  * @returns concatenated output from PRINT and PRINTC instructions
  *
- * @throws {Error} on stack underflow, undefined variable read, or unknown instruction
+ * @throws on stack underflow, undefined variable read, or unknown instruction
  */
 export function runStak(source: string): string {
   const tokens = source.split('\n').map(function trimLine(l): string { return l.trim(); }).filter(function nonEmpty(l): boolean { return l !== ''; });
@@ -40,7 +40,7 @@ export function runStak(source: string): string {
    *
    * @returns top value from the stack
    *
-   * @throws {Error} if the stack is empty
+   * @throws if the stack is empty
    */
   function pop(): number {
     if (stack.length === 0) throw new Error('stack underflow');

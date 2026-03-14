@@ -1,7 +1,7 @@
 import { banDisableRule } from './_ban-disable-factory.ts';
 
 /**
- * Bans `oxlint-disable` comments that suppress `no-restricted-syntax/no-rest-params`.
+ * Bans inline suppression of `no-restricted-syntax/no-rest-params`.
  * Accept an array parameter instead of using rest parameters (`...args`).
  */
 export const noDisableNoRestParams = banDisableRule({

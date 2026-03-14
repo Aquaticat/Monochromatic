@@ -44,8 +44,6 @@ export type VmMeta = {
  *
  * @param vmDir - VM directory to write metadata into
  *
- * @returns Resolves when metadata is written
- *
  * @example
  * ```ts
  * await writeVmMeta({

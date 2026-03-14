@@ -61,8 +61,6 @@ function processStdoutWriter(): StdoutWriter {
  *
  * @param output - Writer for outgoing messages. Defaults to a `process.stdout.write` wrapper.
  *
- * @returns Resolves when stdin closes.
- *
  * @example
  * ```ts
  * import { createMcpServer, defineTool, serve } from '\@monochromatic-dev/mcp-stdio';
@@ -137,8 +135,6 @@ export async function serve(
  * @param encoder - Reusable TextEncoder instance.
  *
  * @param message - JSON-RPC response to serialize and write.
- *
- * @returns Resolves when the message has been written.
  */
 async function writeMessage(
   writer: StdoutWriter,

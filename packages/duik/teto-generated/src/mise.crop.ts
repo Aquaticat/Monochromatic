@@ -23,7 +23,7 @@ import { FRONT_VIEW_CROP, REFERENCE_PATH, TMP_DIR } from './config.ts'
  */
 async function run(cmd: readonly string[]): Promise<void> {
   console.log(`  $ ${cmd.join(' ')}`)
-  const proc = Bun.spawn(cmd, { stdout: 'inherit', stderr: 'inherit' })
+  const proc = Bun.spawn([...cmd], { stdout: 'inherit', stderr: 'inherit' })
   const code = await proc.exited
   if (code !== 0) {
     throw new Error(`Command failed (exit ${code}): ${cmd.join(' ')}`)

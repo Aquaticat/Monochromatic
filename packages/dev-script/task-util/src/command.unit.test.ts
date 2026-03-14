@@ -2,7 +2,7 @@ import { exec, } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
-  rmdirSync,
+  rmSync,
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
@@ -66,7 +66,7 @@ afterEach(() => {
 
   // Clean up test directory
   if (existsSync(testDir,))
-    rmdirSync(testDir, { recursive: true, },);
+    rmSync(testDir, { recursive: true, },);
 });
 
 //endregion Fixture Setup

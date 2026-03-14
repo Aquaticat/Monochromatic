@@ -30,11 +30,14 @@ if (args.files.length === 0) {
   throw new Error('At least one FILE argument is required');
 }
 
+/** Model override from `--model` flag, or `undefined` for the default. */
 const model = typeof args.model === 'string' ? args.model : undefined;
+/** Configuration object passed to each `countFileTokens` call. */
 const config = model !== undefined ? { model } : {};
 
+/** Token count results for all files, resolved concurrently. */
 const results = await Promise.all(
-  args.files.map((filePath: string) => countFileTokens({ filePath, config })),
+  args.files.map(function countFile(filePath: string) { return countFileTokens({ filePath, config }); }),
 );
 
 for (const result of results) {
@@ -42,7 +45,7 @@ for (const result of results) {
 }
 
 if (results.length > 1) {
-  const total = results.reduce((sum, r) => sum + r.inputTokens, 0);
+  const total = results.reduce(function sumTokens(sum, r) { return sum + r.inputTokens; }, 0);
   console.log(`${String(total).padStart(8)} total`);
 }
 

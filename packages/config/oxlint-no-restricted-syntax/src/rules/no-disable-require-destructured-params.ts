@@ -1,8 +1,7 @@
 import { banDisableRule } from './_ban-disable-factory.ts';
 
 /**
- * Bans `oxlint-disable` comments that suppress
- * `no-restricted-syntax/require-destructured-params`.
+ * Bans inline suppression of `no-restricted-syntax/require-destructured-params`.
  * Functions with 2+ parameters must use a single destructured object parameter.
  */
 export const noDisableRequireDestructuredParams = banDisableRule({

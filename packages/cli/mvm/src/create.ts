@@ -23,8 +23,6 @@ import { defineVm, startVm, waitForGuestAgent } from './virsh.ts';
  *
  * @param name - VM name for guest agent addressing
  *
- * @returns Resolves when hostname is set
- *
  * @example
  * ```ts
  * await setWindowsHostname({ name: 'win-01', hostname: 'win-01' });
@@ -61,8 +59,6 @@ async function setWindowsHostname({ hostname, name }: {
  * @param image - Image identifier (defaults to `ubuntu`)
  *
  * @param name - VM name (alphanumeric, hyphens, underscores)
- *
- * @returns Resolves when the VM is created and ready
  *
  * @throws Error on invalid name, unknown image, or disk creation failure
  *

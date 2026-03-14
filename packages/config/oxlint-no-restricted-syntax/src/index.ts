@@ -2,6 +2,7 @@ import { eslintCompatPlugin } from '@oxlint/plugins';
 
 import { noArrowFunction } from './rules/no-arrow-function.ts';
 import { noDisableNoArrowFunction } from './rules/no-disable-no-arrow-function.ts';
+import { noDisableMaxLines } from './rules/no-disable-max-lines.ts';
 import { noDisableNoEnum } from './rules/no-disable-no-enum.ts';
 import { noDisableNoNonNullAssertion } from './rules/no-disable-no-non-null-assertion.ts';
 import { noDisableNoForIn } from './rules/no-disable-no-for-in.ts';
@@ -73,6 +74,7 @@ const plugin = eslintCompatPlugin({
     //endregion Syntax rules
 
     //region Ban-disable rules -- prevent inline oxlint-disable for specific rules
+    'no-disable-max-lines': noDisableMaxLines,
     'no-disable-no-arrow-function': noDisableNoArrowFunction,
     'no-disable-no-enum': noDisableNoEnum,
     'no-disable-no-for-in': noDisableNoForIn,

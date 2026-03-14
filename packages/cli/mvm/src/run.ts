@@ -58,7 +58,6 @@ export async function run({ command, from }: { command: string; from: string | u
   /**
    * Destroys the ephemeral VM, logging but not re-throwing errors.
    *
-   * @returns Resolves when cleanup is complete
    */
   async function cleanup(): Promise<void> {
     rl.info(`destroying ephemeral VM ${name}`);
