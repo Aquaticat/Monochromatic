@@ -5,71 +5,10 @@ import {
   DEFAULT_VCPUS,
   VM_PREFIX,
 } from './config.ts';
+import { clockElement, commonDevices, hypervFeatures, ideCdromDevices } from './domain-xml-builders.ts';
 import type { OsFamily } from './registry.ts';
 
-//region Hyper-V enlightenments
-
-/**
- * Generates libvirt XML elements for Hyper-V enlightenments.
- * These are performance optimizations recognized by the Windows kernel
- * that reduce virtualization overhead for timer handling, interrupt
- * processing, and spinlock contention.
- *
- * @returns Array of XML element strings for the `<features>` block
- *
- * @example
- * ```ts
- * hypervFeatures(); // => [h({ tag: 'hyperv', children: [...] })]
- * ```
- */
-function hypervFeatures(): string {
-  return h({
-    tag: 'hyperv',
-    attrs: { mode: 'custom' },
-    children: [
-      h({ tag: 'relaxed', attrs: { state: 'on' } }),
-      h({ tag: 'vapic', attrs: { state: 'on' } }),
-      h({ tag: 'spinlocks', attrs: { state: 'on', retries: '8191' } }),
-    ],
-  });
-}
-
-//endregion Hyper-V enlightenments
-
-//region Clock configuration
-
-/**
- * Generates the clock XML element appropriate for the guest OS.
- * Linux uses UTC offset; Windows expects localtime with a Hyper-V
- * reference clock for accurate timekeeping.
- *
- * @param osFamily - Guest OS family
- *
- * @returns XML string for the `<clock>` element
- *
- * @example
- * ```ts
- * clockElement('windows'); // => '<clock offset="localtime">...'
- * clockElement('linux');   // => '<clock offset="utc"/>'
- * ```
- */
-function clockElement(osFamily: OsFamily): string {
-  if (osFamily === 'windows') {
-    return h({
-      tag: 'clock',
-      attrs: { offset: 'localtime' },
-      children: [
-        h({ tag: 'timer', attrs: { name: 'hypervclock', present: 'yes' } }),
-        h({ tag: 'timer', attrs: { name: 'hpet', present: 'no' } }),
-      ],
-    });
-  }
-  return h({ tag: 'clock', attrs: { offset: 'utc' } });
-}
-
-//endregion Clock configuration
-
-//region CDROM devices
+//region CDROM type
 
 /**
  * Path to a CDROM ISO to attach as an IDE device.
@@ -88,41 +27,7 @@ export type CdromSpec = {
   path: string;
 };
 
-/**
- * Generates IDE CDROM device elements for the given ISO paths.
- * Assigns sequential IDE device names (hda, hdb, hdc, hdd).
- *
- * @param cdroms - Array of CDROM specs with ISO paths
- *
- * @returns Array of XML strings for disk elements
- *
- * @example
- * ```ts
- * ideCdromDevices([{ path: '/tmp/win.iso' }]); // => ['<disk type="file" device="cdrom">...']
- * ```
- */
-function ideCdromDevices(cdroms: readonly CdromSpec[]): readonly string[] {
-  /** IDE device name sequence: hda through hdd. */
-  const ideDevNames = ['hda', 'hdb', 'hdc', 'hdd'];
-  return cdroms.map(function buildCdromElement(cdrom, index) {
-    const devName = ideDevNames[index];
-    if (devName === undefined) {
-      throw new Error(`Too many CDROMs: maximum ${String(ideDevNames.length)} supported`);
-    }
-    return h({
-      tag: 'disk',
-      attrs: { type: 'file', device: 'cdrom' },
-      children: [
-        h({ tag: 'driver', attrs: { name: 'qemu', type: 'raw' } }),
-        h({ tag: 'source', attrs: { file: cdrom.path } }),
-        h({ tag: 'target', attrs: { dev: devName, bus: 'ide' } }),
-        h({ tag: 'readonly' }),
-      ],
-    });
-  });
-}
-
-//endregion CDROM devices
+//endregion CDROM type
 
 //region Domain XML generator
 
@@ -236,64 +141,7 @@ export function domainXml({ bootDev = 'hd', cdroms = [], diskBus = 'virtio', dis
 
   // IDE CDROMs for Windows template creation (Windows ISO, autounattend, virtio-win)
   devices.push(...ideCdromDevices(cdroms));
-
-  // SLIRP user-mode networking for outbound internet without bridge setup
-  devices.push(
-    h({
-      tag: 'interface',
-      attrs: { type: 'user' },
-      children: [
-        h({ tag: 'model', attrs: { type: 'virtio' } }),
-      ],
-    }),
-  );
-
-  // Guest agent channel for command execution via `virsh qemu-agent-command`
-  devices.push(
-    h({
-      tag: 'channel',
-      attrs: { type: 'unix' },
-      children: [
-        h({ tag: 'target', attrs: { type: 'virtio', name: 'org.qemu.guest_agent.0' } }),
-      ],
-    }),
-  );
-
-  // Serial console for interactive shell via `virsh console` (primarily for Linux)
-  devices.push(
-    h({
-      tag: 'serial',
-      attrs: { type: 'pty' },
-      children: [
-        h({ tag: 'target', attrs: { port: '0' } }),
-      ],
-    }),
-    h({
-      tag: 'console',
-      attrs: { type: 'pty' },
-      children: [
-        h({ tag: 'target', attrs: { type: 'serial', port: '0' } }),
-      ],
-    }),
-  );
-
-  // Windows requires a VGA device for the WinPE installer and OOBE
-  // Also useful for debugging via `virsh screenshot`
-  if (osFamily === 'windows') {
-    devices.push(
-      h({
-        tag: 'video',
-        children: [
-          h({ tag: 'model', attrs: { type: 'vga', vram: '16384' } }),
-        ],
-      }),
-      // Tablet input device to prevent mouse pointer offset
-      h({
-        tag: 'input',
-        attrs: { type: 'tablet', bus: 'usb' },
-      }),
-    );
-  }
+  devices.push(...commonDevices(osFamily));
 
   return h({
     tag: 'domain',

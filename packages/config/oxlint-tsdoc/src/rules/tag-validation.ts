@@ -1,209 +1,16 @@
-import { StandardTags } from '@microsoft/tsdoc';
+/**
+ * TSDoc access modifier validation rule.
+ *
+ * @module
+ */
 
 import type {
-  Comment,
   Context,
   CreateOnceRule,
-  Span,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import {
-  findTsdocComment,
-  shouldIgnoreFile,
-} from '../tsdoc-utils.ts';
-
-//region Shared
-
-/** Regex matching a TSDoc block comment line prefix ` * `. */
-const COMMENT_LINE_PREFIX = /^ *\*/;
-
-/**
- * Creates a visitor for all documentable nodes, calling handler with parsed TSDoc.
- *
- * @param context - oxlint rule context
- *
- * @param handler - invoked for each (node, comment) pair where TSDoc exists
- *
- * @returns visitor with hooks
- */
-function createTsdocVisitor(
-  context: Context,
-  handler: (node: Span, comment: Comment) => void,
-): VisitorWithHooks {
-  /**
-   * Checks node for TSDoc and fires handler.
-   *
-   * @param node - AST node to check
-   */
-  function check(node: Span): void {
-    const comment = findTsdocComment(node, context);
-    if (comment !== undefined) {
-      handler(node, comment);
-    }
-  }
-
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
-  return {
-    before() {
-      if (shouldIgnoreFile(context.filename)) {
-        return false;
-      }
-      return undefined;
-    },
-    FunctionDeclaration: check,
-    FunctionExpression: check,
-    ArrowFunctionExpression: check,
-    ClassDeclaration: check,
-    MethodDefinition: check,
-    TSInterfaceDeclaration: check,
-    TSTypeAliasDeclaration: check,
-    TSEnumDeclaration: check,
-    VariableDeclaration: check,
-    PropertyDefinition: check,
-    TSEnumMember: check,
-    Property(node): void {
-      if (node.kind === 'get' || node.kind === 'set') {
-        check(node);
-      }
-    },
-  } as VisitorWithHooks;
-}
-
-//endregion Shared
-
-/**
- * Valid TSDoc tag names from the TSDoc standard, plus custom tags
- * supported by this plugin (yields).
- *
- * Built dynamically from microsoft/tsdoc StandardTags so the set stays
- * current with spec updates.
- */
-const VALID_TSDOC_TAGS: ReadonlySet<string> = new Set([
-  ...StandardTags.allDefinitions.map(function getTagName(def): string {
-    return def.tagName;
-  }),
-  '@yields',
-]);
-
-/** Regex matching a fenced code block delimiter inside a TSDoc comment. */
-const CODE_FENCE_PATTERN = /^\s*```/;
-
-/** Regex matching backtick-wrapped inline code segments. */
-const INLINE_CODE_PATTERN = /`[^`]*`/g;
-
-/** Regex matching backslash-escaped at signs. */
-const ESCAPED_AT_PATTERN = /\\@/g;
-
-/**
- * Strips inline code and backslash-escaped at signs from a line so that
- * tag scanning does not produce false positives on package names or
- * escaped tag references.
- *
- * @param line - raw TSDoc comment line
- *
- * @returns line with inline code and escaped at signs removed
- */
-function stripInlineCodeAndEscapes(line: string): string {
-  return line.replace(INLINE_CODE_PATTERN, '').replace(ESCAPED_AT_PATTERN, '');
-}
-
-/**
- * Validates that all tags in a TSDoc comment are recognized TSDoc standard tags.
- *
- * Reports JSDoc-only tags and any other unrecognized tags.
- *
- * Skips tag scanning inside fenced code blocks and backtick-wrapped inline
- * code to avoid false positives on package names or escaped tag references.
- */
-export const checkTagNames: CreateOnceRule = {
-  meta: {
-    type: 'suggestion',
-    docs: {
-      description: 'Validate TSDoc tag names against the TSDoc standard.',
-      recommended: true,
-    },
-    messages: {
-      unknown: String.raw`Unknown TSDoc tag "{{tag}}". If this is not a tag, escape the @ as \@.`,
-      jsdocOnly: '"{{tag}}" is a JSDoc tag, not valid in TSDoc. {{suggestion}}',
-    },
-  },
-  createOnce(context: Context): VisitorWithHooks {
-    /** JSDoc tags that have no TSDoc equivalent or have a different name. */
-    const jsdocToTsdocMap: ReadonlyMap<string, string> = new Map([
-      ['@type', 'Remove @type -- TypeScript handles types.'],
-      ['@typedef', 'Remove @typedef -- use TypeScript type alias instead.'],
-      ['@callback', 'Remove @callback -- use TypeScript type alias instead.'],
-      ['@property', 'Remove @property -- use TypeScript type members instead.'],
-      ['@prop', 'Remove @prop -- use TypeScript type members instead.'],
-      ['@memberof', 'Remove @memberof -- not needed in TSDoc.'],
-      ['@augments', 'Remove @augments -- use TypeScript extends instead.'],
-      ['@extends', 'Remove @extends -- use TypeScript extends instead.'],
-      ['@class', 'Remove @class -- use TypeScript class syntax instead.'],
-      ['@constructor', 'Remove @constructor -- use TypeScript class syntax instead.'],
-      ['@function', 'Remove @function -- not needed in TSDoc.'],
-      ['@method', 'Remove @method -- not needed in TSDoc.'],
-      ['@namespace', 'Remove @namespace -- use TypeScript namespace instead.'],
-      ['@module', 'Remove @module -- use @packageDocumentation instead.'],
-      ['@member', 'Remove @member -- not needed in TSDoc.'],
-      ['@var', 'Remove @var -- not needed in TSDoc.'],
-      ['@global', 'Remove @global -- not needed in TSDoc.'],
-      ['@enum', 'Remove @enum -- use TypeScript enum instead.'],
-      ['@lends', 'Remove @lends -- not needed in TSDoc.'],
-      ['@fires', 'Remove @fires -- not needed in TSDoc.'],
-      ['@listens', 'Remove @listens -- not needed in TSDoc.'],
-      ['@mixes', 'Remove @mixes -- not needed in TSDoc.'],
-      ['@mixin', 'Remove @mixin -- not needed in TSDoc.'],
-      ['@interface', 'Remove @interface -- use TypeScript interface instead.'],
-      ['@return', 'Use @returns (with "s") instead.'],
-      ['@yield', 'Use @yields (with "s") instead.'],
-      ['@template', 'Use @typeParam instead.'],
-      ['@access', 'Use @public, @internal, @alpha, or @beta modifier tags instead.'],
-    ]);
-
-    return createTsdocVisitor(context, function checkTagNamesHandler(_node, comment): void {
-      const lines = comment.value.split('\n');
-      let insideCodeFence = false;
-
-      lines.forEach(function checkLine(line, index): void {
-        // Track fenced code block boundaries to skip tag scanning inside them
-        if (CODE_FENCE_PATTERN.test(line)) {
-          insideCodeFence = !insideCodeFence;
-          return;
-        }
-        if (insideCodeFence) {
-          return;
-        }
-
-        // Strip inline code and escaped @ to avoid false positives on
-        // package names like `@microsoft/tsdoc` or escaped tag references
-        const stripped = stripInlineCodeAndEscapes(line);
-        const tagMatches = stripped.matchAll(/@(\w+)/g);
-        for (const match of tagMatches) {
-          const tag = `@${match[1]}`;
-          const suggestion = jsdocToTsdocMap.get(tag);
-          if (suggestion !== undefined) {
-            context.report({
-              loc: {
-                start: { line: comment.loc.start.line + index, column: 0 },
-              },
-              messageId: 'jsdocOnly',
-              data: { tag, suggestion },
-            });
-          } else if (!VALID_TSDOC_TAGS.has(tag)) {
-            context.report({
-              loc: {
-                start: { line: comment.loc.start.line + index, column: 0 },
-              },
-              messageId: 'unknown',
-              data: { tag },
-            });
-          }
-        }
-      });
-    });
-  },
-};
+import { createTsdocVisitor } from './tsdoc-visitors.ts';
 
 /**
  * Validates access modifier tags in TSDoc comments.
@@ -246,6 +53,10 @@ export const checkAccess: CreateOnceRule = {
     });
   },
 };
+
+export {
+  checkTagNames,
+} from './tag-names.ts';
 
 export {
   validTypes,

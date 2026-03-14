@@ -81,7 +81,7 @@ To check on a child manually, read `~/.claude/spawn-results/spawns/{spawnId}.jso
 ## Verifying installation
 
 After installing, start a new Claude Code session.
-The plugin registers hooks on 9 events automatically.
+The plugin registers hooks on 6 events (SessionStart, Stop, SessionEnd, PreToolUse, PostToolUse, PostToolUseFailure).
 
 Test the CLI:
 
@@ -133,8 +133,7 @@ The plugin has two components: a CLI tool and a set of hooks.
 ### CLI tool (`spawn-claude`)
 
 Launches a child Claude session in a new terminal window via `terminal-exec`.
-Sets environment variables on the child (`CLAUDE_SPAWN_ID`, `CLAUDE_SPAWNED_BY_SESSION`)
-that identify it as a spawned session and link it to its parent.
+Sets `CLAUDE_SPAWN_ID` on the child to link it to a pre-created spawn state file.
 Resolves the calling Claude session by walking the process tree upward,
 matching ancestor PIDs against `.by-pid/` coordination files.
 Falls back to the most recently modified `.by-pid/` file when the walk
@@ -146,16 +145,21 @@ Returns a `spawnId` immediately without waiting for the child to finish.
 Since all Claude sessions in the workspace share the same hooks, the child session
 self-reports its state through the shared hook infrastructure:
 
-- **SessionStart**: writes a PID-to-session mapping (for CLI coordination)
-  and registers child sessions in `~/.claude/spawn-results/spawns/`
-- **Stop**: updates the child's `lastMessage` with the latest assistant response
-- **SessionEnd**: marks the child as `"stopped"`
-- **PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Notification,
-  SubagentStart, SessionStart**: checks for completed children and injects their
-  results into the parent's context via `additionalContext`
+- **SessionStart**: writes a PID-to-session mapping (for CLI coordination);
+  claims spawn ownership by filling in `sessionId` on the pre-created spawn file
+  (only if `sessionId` is empty, preventing stale `CLAUDE_SPAWN_ID` env vars
+  from hijacking unrelated sessions); auto-symlinks `spawn-claude` CLI
+- **Stop**: updates the child's `lastMessage` and sets `status: "stopped"` (child sessions,
+  guarded by `sessionId` match); **consumes** completed children by blocking with
+  `decision: "block"` + `reason` text (parent sessions)
+- **SessionEnd**: no-op pass-through (kept for future use)
+- **PreToolUse/PostToolUse/PostToolUseFailure**: **consumes** completed children
+  and injects results via `additionalContext` — confirmed working in Claude Code v2.1.76
 
-Results appear in the parent at the earliest possible moment: between tool calls
-if the parent is actively working, or on the next user message if idle.
+Results appear in the parent at the earliest possible moment: the first tool-use
+hook to fire after child completion delivers the result.
+If the parent is stopping (no more tool calls), the Stop hook's blocking mechanism
+delivers instead.
 
 ## Nesting
 
@@ -186,6 +190,7 @@ All coordination files live under `~/.claude/spawn-results/`:
   `.by-pid/` file, which is correct when running a single Claude session
 - macOS and Windows would need platform-specific alternatives for the process tree walk
   (the most-recent fallback still works on all platforms)
-- Results are delivered on the next hook event that supports `additionalContext`;
-  if the parent is completely idle with no hook activity, delivery waits until the
-  next user message
+- Results are delivered on the next hook event that supports `additionalContext`
+  (PreToolUse, PostToolUse, PostToolUseFailure) or via Stop hook blocking;
+  if the parent is completely idle with no hook activity, delivery waits until
+  the parent's next tool call or stop attempt

@@ -4,25 +4,10 @@
  * Each type describes the `tool_input` object for a specific built-in tool.
  * MCP tool inputs are opaque `Record<string, unknown>` since they vary by server.
  *
+ * Union and map types live in `tool-inputs-union.ts`.
+ *
  * @module
  */
-
-import type {
-  AskUserQuestionToolInput,
-  CronCreateToolInput,
-  CronDeleteToolInput,
-  EnterWorktreeToolInput,
-  ExitPlanModeToolInput,
-  LspToolInput,
-  NotebookEditToolInput,
-  SkillToolInput,
-  TaskCreateToolInput,
-  TaskGetToolInput,
-  TaskOutputToolInput,
-  TaskStopToolInput,
-  TaskUpdateToolInput,
-  ToolSearchToolInput,
-} from './tool-inputs-extended.ts';
 
 //region Built-in tool inputs
 
@@ -36,7 +21,7 @@ import type {
  * }
  * ```
  */
-type BashToolInput = {
+export type BashToolInput = {
   /** Shell command to execute. */
   command: string;
 
@@ -53,7 +38,7 @@ type BashToolInput = {
 /**
  * Input shape for the `Write` tool.
  */
-type WriteToolInput = {
+export type WriteToolInput = {
   /** Absolute path to the file to write. */
   file_path: string;
 
@@ -64,7 +49,7 @@ type WriteToolInput = {
 /**
  * Input shape for the `Edit` tool.
  */
-type EditToolInput = {
+export type EditToolInput = {
   /** Absolute path to the file to edit. */
   file_path: string;
 
@@ -81,7 +66,7 @@ type EditToolInput = {
 /**
  * Input shape for the `Read` tool.
  */
-type ReadToolInput = {
+export type ReadToolInput = {
   /** Absolute path to the file to read. */
   file_path: string;
 
@@ -95,7 +80,7 @@ type ReadToolInput = {
 /**
  * Input shape for the `Glob` tool.
  */
-type GlobToolInput = {
+export type GlobToolInput = {
   /** Glob pattern to match files against. */
   pattern: string;
 
@@ -106,7 +91,7 @@ type GlobToolInput = {
 /**
  * Input shape for the `Grep` tool.
  */
-type GrepToolInput = {
+export type GrepToolInput = {
   /** Regular expression pattern to search for. */
   pattern: string;
 
@@ -129,7 +114,7 @@ type GrepToolInput = {
 /**
  * Input shape for the `WebFetch` tool.
  */
-type WebFetchToolInput = {
+export type WebFetchToolInput = {
   /** URL to fetch content from. */
   url: string;
 
@@ -140,7 +125,7 @@ type WebFetchToolInput = {
 /**
  * Input shape for the `WebSearch` tool.
  */
-type WebSearchToolInput = {
+export type WebSearchToolInput = {
   /** Search query. */
   query: string;
 
@@ -154,7 +139,7 @@ type WebSearchToolInput = {
 /**
  * Input shape for the `Agent` tool.
  */
-type AgentToolInput = {
+export type AgentToolInput = {
   /** Task for the agent to perform. */
   prompt: string;
 
@@ -179,78 +164,13 @@ type AgentToolInput = {
 
 //endregion
 
-//region Union
-
-/**
- * Map from built-in tool name to its input type.
- */
-type BuiltInToolInputMap = {
-  Bash: BashToolInput;
-  Write: WriteToolInput;
-  Edit: EditToolInput;
-  Read: ReadToolInput;
-  Glob: GlobToolInput;
-  Grep: GrepToolInput;
-  WebFetch: WebFetchToolInput;
-  WebSearch: WebSearchToolInput;
-  Agent: AgentToolInput;
-  AskUserQuestion: AskUserQuestionToolInput;
-  NotebookEdit: NotebookEditToolInput;
-  LSP: LspToolInput;
-  EnterPlanMode: Record<string, never>;
-  ExitPlanMode: ExitPlanModeToolInput;
-  EnterWorktree: EnterWorktreeToolInput;
-  TaskCreate: TaskCreateToolInput;
-  TaskGet: TaskGetToolInput;
-  TaskList: Record<string, never>;
-  TaskOutput: TaskOutputToolInput;
-  TaskStop: TaskStopToolInput;
-  TaskUpdate: TaskUpdateToolInput;
-  CronCreate: CronCreateToolInput;
-  CronDelete: CronDeleteToolInput;
-  CronList: Record<string, never>;
-  Skill: SkillToolInput;
-  ToolSearch: ToolSearchToolInput;
-};
-
-/**
- * Names of all built-in tools that have typed inputs.
- */
-type BuiltInToolName = keyof BuiltInToolInputMap;
-
-/**
- * Opaque input for MCP or unknown tools.
- */
-type GenericToolInput = Record<string, unknown>;
-
-//endregion
+//region Re-exports
 
 export type {
-  AgentToolInput,
-  BashToolInput,
-  BuiltInToolInputMap,
-  BuiltInToolName,
-  EditToolInput,
-  GenericToolInput,
-  GlobToolInput,
-  GrepToolInput,
-  ReadToolInput,
-  WebFetchToolInput,
-  WebSearchToolInput,
-  WriteToolInput,
-};
-
-export type {
-  AskUserQuestionEntry,
-  AskUserQuestionOption,
-  AskUserQuestionToolInput,
   CronCreateToolInput,
   CronDeleteToolInput,
   EnterWorktreeToolInput,
   ExitPlanModeToolInput,
-  LspOperation,
-  LspToolInput,
-  NotebookEditToolInput,
   SkillToolInput,
   TaskCreateToolInput,
   TaskGetToolInput,
@@ -260,3 +180,17 @@ export type {
   TaskUpdateToolInput,
   ToolSearchToolInput,
 } from './tool-inputs-extended.ts';
+
+export type {
+  AskUserQuestionEntry,
+  AskUserQuestionOption,
+  AskUserQuestionToolInput,
+} from './tool-inputs-questions.ts';
+
+export type {
+  LspOperation,
+  LspToolInput,
+  NotebookEditToolInput,
+} from './tool-inputs-notebook-lsp.ts';
+
+//endregion

@@ -304,6 +304,10 @@
     "eslint/no-nested-ternary": "off",
     // Conflicts with TypeScript function overloading.
     "eslint/no-redeclare": "off",
+    // The unnecessary microtask tick from `return await` is negligible;
+    // disabling avoids a three-way conflict with require-await and await-thenable
+    // when an async function's only await sites are tail-position returns.
+    "typescript/return-await": "off",
     // Doesn't support eslint parameter allow when intersecting.
     "typescript/ban-types": "off",
     // Sometimes a generic Function type is necessary.

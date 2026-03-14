@@ -7,6 +7,8 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
+import { extractParamsText } from './arrow-function-params.ts';
+
 /**
  * Minimal local type for `ArrowFunctionExpression` AST nodes.
  *
@@ -113,7 +115,7 @@ export const noArrowFunction: CreateOnceRule = {
          * Extracted from the range between params start and body/returnType start,
          * stripping the `=>` arrow token.
          */
-        const paramsText = extractParamsText(context.sourceCode.getText(node), node);
+        const paramsText = extractParamsText({ fullText: context.sourceCode.getText(node), node });
 
         /** Return type annotation if present. */
         const returnTypeText = node.returnType !== null && node.returnType !== undefined
@@ -142,86 +144,3 @@ export const noArrowFunction: CreateOnceRule = {
     } as VisitorWithHooks;
   },
 };
-
-/**
- * Extracts the parameter list text (including parentheses) from the arrow function's source.
- *
- * The arrow function node text may start with `async `, then optional type parameters `<T>`,
- * then the parameter list `(...)`. This function finds the parenthesized parameter list
- * by scanning for balanced parentheses while ignoring string content.
- *
- * @param fullText - complete source text of the ArrowFunctionExpression node
- *
- * @param node - the arrow function AST node, used for the `async` flag
- *
- * @returns parameter list text including surrounding parentheses
- */
-function extractParamsText(fullText: string, node: ArrowFunctionExpression): string {
-  /** Skip `async ` prefix if present. */
-  let start = 0;
-  if (node.async) {
-    const asyncMatch = fullText.match(/^async\s+/);
-    if (asyncMatch !== null) {
-      start = asyncMatch[0].length;
-    }
-  }
-
-  /**
-   * Skip type parameters `<...>` if present.
-   * Count angle bracket depth to handle nested generics.
-   */
-  if (node.typeParameters !== null && node.typeParameters !== undefined) {
-    const tpText = fullText.slice(start);
-    if (tpText.startsWith('<')) {
-      let depth = 0;
-      for (let i = 0; i < tpText.length; i++) {
-        if (tpText[i] === '<') {
-          depth++;
-        } else if (tpText[i] === '>') {
-          depth--;
-          if (depth === 0) {
-            start += i + 1;
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  /** Now find the balanced parenthesized params. */
-  const rest = fullText.slice(start);
-  let depth = 0;
-  let inString: string | null = null;
-
-  for (let i = 0; i < rest.length; i++) {
-    const ch = rest[i];
-
-    if (inString !== null) {
-      if (ch === '\\') {
-        i++;
-        continue;
-      }
-      if (ch === inString) {
-        inString = null;
-      }
-      continue;
-    }
-
-    if (ch === '"' || ch === "'" || ch === '`') {
-      inString = ch;
-      continue;
-    }
-
-    if (ch === '(') {
-      depth++;
-    } else if (ch === ')') {
-      depth--;
-      if (depth === 0) {
-        return rest.slice(0, i + 1);
-      }
-    }
-  }
-
-  /** Fallback: return the whole rest (should not happen for valid arrow functions). */
-  return rest;
-}

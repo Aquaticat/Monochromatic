@@ -1,64 +1,18 @@
-import { PlainTextEmitter } from '@microsoft/tsdoc';
+/**
+ * TSDoc returns tag validation rules.
+ *
+ * @module
+ */
 
 import type {
   Context,
   CreateOnceRule,
-  Span,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import {
-  functionReturnsValue,
-  parseTsdocForNode,
-  shouldIgnoreFile,
-  type TsdocParseResult,
-} from '../tsdoc-utils.ts';
+import { functionReturnsValue } from '../tsdoc-utils.ts';
 
-//region Shared
-
-/**
- * Creates a visitor for function-like nodes with TSDoc comments.
- *
- * @param context - oxlint rule context
- *
- * @param handler - invoked with node and parsed TSDoc
- *
- * @returns visitor with hooks
- */
-function createFunctionTsdocVisitor(
-  context: Context,
-  handler: (node: Span & Record<string, unknown>, result: TsdocParseResult) => void,
-): VisitorWithHooks {
-  /**
-   * Checks a function-like node for TSDoc and invokes handler.
-   *
-   * @param node - AST node to check
-   */
-  function check(node: Span): void {
-    const result = parseTsdocForNode(node, context);
-    if (result === undefined) {
-      return;
-    }
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-    handler(node as Span & Record<string, unknown>, result);
-  }
-
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
-  return {
-    before() {
-      if (shouldIgnoreFile(context.filename)) {
-        return false;
-      }
-      return undefined;
-    },
-    FunctionDeclaration: check,
-    FunctionExpression: check,
-    ArrowFunctionExpression: check,
-    MethodDefinition: check,
-  } as VisitorWithHooks;
-}
-
-//endregion Shared
+import { createFunctionTsdocVisitor } from './tsdoc-visitors.ts';
 
 /**
  * Requires returns tag for functions that return a value.
@@ -135,47 +89,6 @@ export const requireReturnsCheck: CreateOnceRule = {
   },
 };
 
-/**
- * Requires that returns tags have a description.
- *
- * Uses `PlainTextEmitter.hasAnyTextContent` to detect empty returns
- * tags where the TSDoc parser creates a paragraph node containing only
- * whitespace or soft breaks.
- *
- * @example
- * ```ts
- * // Bad -- empty returns tag
- * /\** @returns *\/
- * function getName(): string { return 'name'; }
- *
- * // Good
- * /\** @returns display name of current user *\/
- * function getName(): string { return 'name'; }
- * ```
- */
-export const requireReturnsDescription: CreateOnceRule = {
-  meta: {
-    type: 'suggestion',
-    docs: {
-      description: 'Require descriptions for @returns tags.',
-      recommended: true,
-    },
-    messages: {
-      missingDescription: '@returns tag is missing a description.',
-    },
-  },
-  createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireReturnsDescHandler(_node, result): void {
-      const { returnsBlock } = result.docComment;
-      if (returnsBlock === undefined) {
-        return;
-      }
-      if (!PlainTextEmitter.hasAnyTextContent(returnsBlock.content)) {
-        context.report({
-          node: result.comment,
-          messageId: 'missingDescription',
-        });
-      }
-    });
-  },
-};
+export {
+  requireReturnsDescription,
+} from './returns-description.ts';

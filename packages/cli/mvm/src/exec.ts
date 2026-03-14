@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 
 import { VM_PREFIX, VMS_DIR, validateName } from './config.ts';
+import { decodeBase64, execArgs } from './exec-shell.ts';
 import { l, tagged } from './log.ts';
 import { readVmMeta } from './meta.ts';
 import { virsh } from './virsh.ts';
@@ -14,65 +15,6 @@ export type ExecResult = {
   stderr: string;
   exitCode: number;
 };
-
-/**
- * Decodes a base64-encoded string to UTF-8 text.
- *
- * @param encoded - base64 string from guest agent response
- *
- * @returns Decoded UTF-8 string
- *
- * @example
- * ```ts
- * decodeBase64('aGVsbG8='); // => "hello"
- * ```
- */
-function decodeBase64(encoded: string): string {
-  return Buffer.from(encoded, 'base64').toString('utf8');
-}
-
-//region Shell dispatch
-
-/**
- * Builds the guest-exec path and arguments for the given OS family and command.
- * Linux uses the configured shell (bash/ash) with `-c`; Windows uses
- * `powershell.exe` with `-NoProfile -NonInteractive -Command`.
- *
- * @param command - Shell command string to execute
- *
- * @param osFamily - Guest OS family (`linux` or `windows`)
- *
- * @param shell - Shell executable path or name
- *
- * @returns Object with `path` and `arg` array for the guest-exec payload
- *
- * @example
- * ```ts
- * execArgs({ osFamily: 'linux', shell: '/bin/bash', command: 'uname -a' });
- * // => { path: '/bin/bash', arg: ['-c', 'uname -a'] }
- *
- * execArgs({ osFamily: 'windows', shell: 'powershell.exe', command: 'hostname' });
- * // => { path: 'powershell.exe', arg: ['-NoProfile', '-NonInteractive', '-Command', 'hostname'] }
- * ```
- */
-function execArgs({ command, osFamily, shell }: {
-  command: string;
-  osFamily: string;
-  shell: string;
-}): { arg: readonly string[]; path: string } {
-  if (osFamily === 'windows') {
-    return {
-      arg: ['-NoProfile', '-NonInteractive', '-Command', command],
-      path: shell,
-    };
-  }
-  return {
-    arg: ['-c', command],
-    path: shell,
-  };
-}
-
-//endregion Shell dispatch
 
 /**
  * Executes a command inside a running VM via the QEMU guest agent.

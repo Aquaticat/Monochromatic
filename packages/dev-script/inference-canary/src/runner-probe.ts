@@ -309,7 +309,6 @@ export async function runProbe(probe: Probe, config: RunnerConfig, timestamp: st
   // timer is let so corePromise's finally handler can clear it before the callback fires,
   // preventing a misleading "timed out" log for probes that complete before the deadline.
   let timer: ReturnType<typeof setTimeout> | undefined = undefined;
-  // oxlint-disable-next-line no-return-await -- await needed to satisfy require-await; return await is intentional here
   return await Promise.race([
     // oxlint-disable-next-line promise/prefer-await-to-then -- finally on a racing promise; await is not viable here
     corePromise.finally(function clearTimer(): void { if (timer !== undefined) clearTimeout(timer); }),

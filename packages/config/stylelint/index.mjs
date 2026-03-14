@@ -1,3 +1,6 @@
+import { propertyDisallowedList } from './property-disallowed-list.mjs';
+import { unitDisallowedList } from './unit-disallowed-list.mjs';
+
 /** @type {import('stylelint').Config} */
 export default {
   extends: 'stylelint-config-standard',
@@ -94,155 +97,13 @@ export default {
 
     //region Property
 
-    'property-disallowed-list': [
-      //region Pointless
-
-      'clear',
-
-      'float',
-
-      //endregion
-
-      //region deprecated and non-standard
-
-      'clip',
-
-      'font-smooth',
-
-      //endregion
-
-      //region Shorthands - Always use full form.
-
-      'animation',
-
-      'background',
-
-      'border',
-
-      'border-block',
-
-      'border-inline',
-
-      'container',
-
-      'flex',
-
-      'font',
-
-      'font-synthesis',
-
-      'font-variant',
-
-      'grid',
-
-      'grid-area',
-
-      'grid-template',
-
-      'inset',
-
-      'list-style',
-
-      /margin$/,
-
-      'mask',
-
-      'offset',
-
-      'outline',
-
-      'overflow',
-
-      'overscroll-behavior',
-
-      /padding$/,
-
-      /^place-[\w-]+$/,
-
-      'scroll-timeline',
-
-      'transition',
-
-      'view-timeline',
-
-      //endregion Shorthands
-
-      //region Non-logical
-
-      'width',
-
-      'height',
-
-      // Can't use that here: false positive: *-inline-width, *-width
-      // /^[\w\-]+-width$/,
-      'contain-intrinsic-width',
-      'max-width',
-
-      // Can't use that here: false positive: line-height
-      // /^[\w\-]+-height$/,
-      'contain-intrinsic-height',
-      'max-height',
-
-      /^[\w-]+-top$/,
-
-      /^[\w-]+-left$/,
-
-      /[\w-]+-right/,
-
-      /[\w-]+-bottom/,
-      //endregion Non-logical
-    ],
+    'property-disallowed-list': propertyDisallowedList,
 
     //endregion
 
     //region Unit
 
-    'unit-disallowed-list': [
-      //region angle - Use turn
-
-      'rad',
-      'deg',
-
-      //endregion angle
-
-      //region length
-
-      /* The font-based units vary wildly depending on the font.
-           This is as intended, but could make layout unpredictable.
-           Use 1em or 0.5em instead. */
-      'ch',
-      'rch',
-      'ex',
-      'rex',
-      'cap',
-      'rcap',
-      'ic',
-      'ric',
-      // lh is not banned.
-
-      // Use logical
-      'vh',
-      'vw',
-      'cqw',
-      'cqh',
-
-      // Do not use absolute length
-      'px',
-      'cm',
-      'mm',
-      'Q',
-      'in',
-      'pc',
-      'pt',
-
-      //endregion length
-
-      //region Other
-
-      // Always use s
-      'ms',
-      //endregion Other
-    ],
+    'unit-disallowed-list': unitDisallowedList,
 
     //endregion Unit
 

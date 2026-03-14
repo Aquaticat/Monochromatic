@@ -32,10 +32,12 @@ import type {
 } from './events-session.ts';
 import type {
   PermissionRequestInput,
-  PostToolUseFailureInput,
-  PostToolUseInput,
   PreToolUseInput,
 } from './events-tool.ts';
+import type {
+  PostToolUseFailureInput,
+  PostToolUseInput,
+} from './events-tool-post.ts';
 import type {
   StopInput,
   SubagentStartInput,
@@ -53,101 +55,14 @@ import type {
 
 //region Re-exports
 
-export type {
-  HookEventName,
-  HookInputBase,
-  HookOutputBase,
-  PermissionMode,
-} from './common.ts';
-
-export type {
-  AgentToolInput,
-  AskUserQuestionEntry,
-  AskUserQuestionOption,
-  AskUserQuestionToolInput,
-  BashToolInput,
-  BuiltInToolInputMap,
-  BuiltInToolName,
-  CronCreateToolInput,
-  CronDeleteToolInput,
-  EditToolInput,
-  EnterWorktreeToolInput,
-  ExitPlanModeToolInput,
-  GenericToolInput,
-  GlobToolInput,
-  GrepToolInput,
-  LspOperation,
-  LspToolInput,
-  NotebookEditToolInput,
-  ReadToolInput,
-  SkillToolInput,
-  TaskCreateToolInput,
-  TaskGetToolInput,
-  TaskOutputToolInput,
-  TaskStatus,
-  TaskStopToolInput,
-  TaskUpdateToolInput,
-  ToolSearchToolInput,
-  WebFetchToolInput,
-  WebSearchToolInput,
-  WriteToolInput,
-} from './tool-inputs.ts';
-
-export type {
-  ConfigChangeInput,
-  ConfigChangeOutput,
-  ConfigChangeSource,
-  InstructionsLoadReason,
-  InstructionsLoadedInput,
-  InstructionsLoadedOutput,
-  InstructionsMemoryType,
-  SessionEndInput,
-  SessionEndOutput,
-  SessionEndReason,
-  SessionStartInput,
-  SessionStartOutput,
-  SessionStartSource,
-} from './events-session.ts';
-
-export type {
-  PermissionRequestInput,
-  PermissionRequestOutput,
-  PermissionSuggestion,
-  PostToolUseFailureInput,
-  PostToolUseFailureOutput,
-  PostToolUseInput,
-  PostToolUseOutput,
-  PreToolUseInput,
-  PreToolUseOutput,
-  PreToolUsePermissionDecision,
-} from './events-tool.ts';
-
-export type {
-  StopInput,
-  StopOutput,
-  SubagentStartInput,
-  SubagentStartOutput,
-  SubagentStopInput,
-  SubagentStopOutput,
-  TaskCompletedInput,
-  TaskCompletedOutput,
-  TeammateIdleInput,
-  TeammateIdleOutput,
-} from './events-agent.ts';
-
-export type {
-  NotificationInput,
-  NotificationOutput,
-  NotificationType,
-  PreCompactInput,
-  PreCompactOutput,
-  PreCompactTrigger,
-  UserPromptSubmitInput,
-  UserPromptSubmitOutput,
-  WorktreeCreateInput,
-  WorktreeRemoveInput,
-  WorktreeRemoveOutput,
-} from './events-misc.ts';
+export type * from './common.ts';
+export type * from './tool-inputs.ts';
+export type * from './tool-inputs-union.ts';
+export type * from './events-session.ts';
+export type * from './events-tool.ts';
+export type * from './events-tool-post.ts';
+export type * from './events-agent.ts';
+export type * from './events-misc.ts';
 
 //endregion
 

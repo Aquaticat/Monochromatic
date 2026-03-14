@@ -1,86 +1,19 @@
+/**
+ * Structural TSDoc rules for comment alignment and multiline format.
+ *
+ * @module
+ */
+
 import type {
-  Comment,
   Context,
   CreateOnceRule,
-  Span,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
 import {
-  findTsdocComment,
-  shouldIgnoreFile,
-} from '../tsdoc-utils.ts';
-
-//region Shared helpers for structural rules
-
-/** Regex matching a TSDoc block comment line with leading ` * `. */
-const COMMENT_LINE_PREFIX = /^ *\*/;
-
-/**
- * Splits a block comment value into its constituent lines.
- *
- * @param comment - block comment AST node
- *
- * @returns array of lines (without the opening `/*` and closing `*\/`)
- */
-function getCommentLines(comment: Comment): readonly string[] {
-  return comment.value.split('\n');
-}
-
-/**
- * Creates a visitor that iterates over all nodes requiring TSDoc
- * and calls the provided handler when a TSDoc comment is found.
- *
- * @param context - oxlint rule context
- *
- * @param handler - invoked for each (node, comment) pair
- *
- * @returns visitor with hooks
- */
-function createTsdocVisitor(
-  context: Context,
-  handler: (node: Span, comment: Comment) => void,
-): VisitorWithHooks {
-  /**
-   * Checks node and fires handler when TSDoc exists.
-   *
-   * @param node - AST node to check
-   */
-  function check(node: Span): void {
-    const comment = findTsdocComment(node, context);
-    if (comment !== undefined) {
-      handler(node, comment);
-    }
-  }
-
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
-  return {
-    before() {
-      if (shouldIgnoreFile(context.filename)) {
-        return false;
-      }
-      return undefined;
-    },
-    FunctionDeclaration: check,
-    FunctionExpression: check,
-    ArrowFunctionExpression: check,
-    ClassDeclaration: check,
-    MethodDefinition: check,
-    TSInterfaceDeclaration: check,
-    TSTypeAliasDeclaration: check,
-    TSEnumDeclaration: check,
-    VariableDeclaration: check,
-    PropertyDefinition: check,
-    TSEnumMember: check,
-    Property(node): void {
-      if (node.kind === 'get' || node.kind === 'set') {
-        check(node);
-      }
-    },
-  } as VisitorWithHooks;
-}
-
-//endregion Shared helpers
+  createTsdocVisitor,
+  getCommentLines,
+} from './tsdoc-visitors.ts';
 
 /**
  * Enforces consistent alignment of asterisks in TSDoc block comments.
@@ -167,41 +100,9 @@ export const multilineBlocks: CreateOnceRule = {
   },
 };
 
-/**
- * Disallows multiple consecutive asterisks in TSDoc comment lines.
- *
- * Lines like ` ** text` are not valid TSDoc.
- */
-export const noMultiAsterisks: CreateOnceRule = {
-  meta: {
-    type: 'suggestion',
-    docs: {
-      description: 'Disallow extra asterisks at the start of TSDoc comment lines.',
-      recommended: true,
-    },
-    messages: {
-      extra: 'Extra asterisk at start of TSDoc comment line.',
-    },
-  },
-  createOnce(context: Context): VisitorWithHooks {
-    return createTsdocVisitor(context, function noMultiHandler(_node, comment): void {
-      const lines = getCommentLines(comment);
-      // Skip first line (opening) and last line (closing)
-      lines.slice(1, -1).forEach(function checkLine(line, index): void {
-        const trimmed = line.trimStart();
-        // After the leading *, check for immediate additional *
-        if (trimmed.startsWith('**') && !trimmed.startsWith('*/')) {
-          context.report({
-            loc: {
-              start: { line: comment.loc.start.line + index + 1, column: 0 },
-            },
-            messageId: 'extra',
-          });
-        }
-      });
-    });
-  },
-};
+export {
+  noMultiAsterisks,
+} from './asterisk-validation.ts';
 
 export {
   tagLines,
