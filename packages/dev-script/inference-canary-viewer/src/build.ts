@@ -40,7 +40,7 @@ console.error(`[viewer] ${String(entries.length)} runs, ${String(probeDetails.si
 //region Build model labels and thresholds from the canonical model registry
 
 /** Unique model labels across all entries */
-const uniqueLabels = [...new Set(entries.map((entry) => entry.label))];
+const uniqueLabels = [...new Set(entries.map(function getLabel(entry) { return entry.label; }))];
 
 /** Map from model label to computed degradation threshold */
 const thresholds = new Map<string, number>(
@@ -55,8 +55,9 @@ const thresholds = new Map<string, number>(
 
 /** Summaries for the overview table, one per model */
 const summaries: ModelSummary[] = uniqueLabels.flatMap(function buildSummary(label) {
-  const modelEntries = entries.filter((entry) => entry.label === label);
+  const modelEntries = entries.filter(function matchLabel(entry) { return entry.label === label; });
   /** Latest multi-probe run for meaningful overall score; fall back to latest run */
+  /* oxlint-disable-next-line eslint-plugin-unicorn/no-array-callback-reference -- hasMultipleProbes is a type-compatible predicate */
   const latestMultiProbe = modelEntries.filter(hasMultipleProbes).at(-1);
   const latest = latestMultiProbe ?? modelEntries.at(-1);
   if (latest === undefined) return [];
@@ -80,13 +81,20 @@ const summaries: ModelSummary[] = uniqueLabels.flatMap(function buildSummary(lab
 
 console.error('[viewer] rendering HTML...');
 
+/** Overview table HTML for the dashboard. */
 const overviewHtml = renderOverview({ summaries, entries, });
+/** By-model charts HTML for the dashboard. */
 const byModelHtml = renderByModel({ entries, thresholds, });
+/** By-probe charts HTML for the dashboard. */
 const byProbeHtml = renderByProbe({ entries, });
+/** Detail overlay popovers HTML for all entries. */
 const overlaysHtml = await renderAllOverlays({ entries, probeDetails, });
 
+/** Assembled dashboard HTML combining all sections. */
 const dashboardHtml = renderDashboard({ overviewHtml, byModelHtml, byProbeHtml, overlaysHtml, });
+/** Inline SVG icon sprite sheet. */
 const spriteHtml = renderSvgSprite();
+/** Complete page HTML ready to write to disk. */
 const pageHtml = renderPage({ body: spriteHtml + dashboardHtml, title: 'Inference canary dashboard', });
 
 //endregion Render all HTML sections
@@ -95,6 +103,7 @@ const pageHtml = renderPage({ body: spriteHtml + dashboardHtml, title: 'Inferenc
 
 await mkdir(DIST_DIR, { recursive: true, });
 
+/** Destructured CSS build result; HTML write result is discarded. */
 const [, cssResult] = await Promise.all([
   writeFile(join(DIST_DIR, 'index.html'), pageHtml, 'utf8'),
   buildCss({ input: join(CSS_DIR, 'index.css'), output: join(DIST_DIR, 'style.css'), }),

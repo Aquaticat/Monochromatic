@@ -78,7 +78,7 @@ async function ensureLinuxTemplate(spec: LinuxImageSpec): Promise<string> {
 
   const diskPath = join(vmDir, 'disk.qcow2');
 
-  // Symbol.asyncDispose not supported by nano-spawn/virsh subprocess lifecycle; try/finally is required here
+  /* oxlint-disable-next-line no-restricted-syntax/no-try-finally -- Symbol.asyncDispose not supported by nano-spawn/virsh subprocess lifecycle; try/finally is required here */
   try {
     rl.info('creating overlay disk from base image...');
     await spawn({
@@ -153,7 +153,7 @@ async function ensureWindowsTemplate(spec: WindowsImageSpec): Promise<string> {
 
   const diskPath = join(vmDir, 'disk.qcow2');
 
-  // Symbol.asyncDispose not supported by nano-spawn/virsh subprocess lifecycle; try/finally is required here
+  /* oxlint-disable-next-line no-restricted-syntax/no-try-finally -- Symbol.asyncDispose not supported by nano-spawn/virsh subprocess lifecycle; try/finally is required here */
   try {
     rl.info('creating empty disk for Windows installation...');
     await spawn({
@@ -287,7 +287,7 @@ async function cleanupTemplateVm(rl: { debug: (msg: string) => void }): Promise<
  * const windowsTemplate = await ensureTemplate(IMAGES['windows']);
  * ```
  */
-export function ensureTemplate(spec: ImageSpec): Promise<string> {
+export async function ensureTemplate(spec: ImageSpec): Promise<string> {
   const rl = tagged({ tag: ensureTemplate.name, l });
   const templatePath = join(IMAGES_DIR, spec.templateFileName);
 
@@ -297,9 +297,9 @@ export function ensureTemplate(spec: ImageSpec): Promise<string> {
   }
 
   if (spec.osFamily === 'windows') {
-    return ensureWindowsTemplate(spec);
+    return await ensureWindowsTemplate(spec);
   }
-  return ensureLinuxTemplate(spec);
+  return await ensureLinuxTemplate(spec);
 }
 
 //endregion Public API

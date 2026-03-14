@@ -10,7 +10,7 @@ import { defineConfig, type UserConfig, } from 'tsdown';
  * @example
  * ```ts
  * // tsdown.browser.config.ts
- * import base from '@monochromatic-dev/config-tsdown/.client.ts';
+ * import base from '\@monochromatic-dev/config-tsdown/.client.ts';
  * import { defineConfig } from 'tsdown';
  *
  * export default defineConfig({

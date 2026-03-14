@@ -10,7 +10,7 @@ import {
 } from './tsdoc-utils.ts';
 
 describe('shouldIgnoreFile', () => {
-  test.each(IGNORED_EXTENSIONS)('returns true for %s extension', (ext) => {
+  test.each([...IGNORED_EXTENSIONS])('returns true for %s extension', (ext) => {
     expect(shouldIgnoreFile(`/some/path/file${String(ext)}`)).toBe(true);
   });
 

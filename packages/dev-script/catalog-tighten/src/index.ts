@@ -402,6 +402,7 @@ const packageJson = JSON.parse(packageJsonContent) as {
   };
 };
 
+/** Workspace catalog mapping package names to version ranges. */
 const catalog = packageJson.workspaces?.catalog;
 if (catalog === undefined) {
   console.error('No workspaces.catalog found in package.json');
@@ -421,43 +422,42 @@ let alreadyTightCount = 0;
 /** Count of entries where the package was not found in node_modules. */
 let notFoundCount = 0;
 
-for (const [name, value] of Object.entries(catalog)) {
+/** Classifies and processes each catalog entry for tightening. */
+Object.entries(catalog).forEach(function processEntry([name, value]) {
+  /** Parsed range prefix and version, or `undefined` if not a `>=` range. */
   const parsed = parseRange(value);
   if (parsed === undefined) {
     skippedCount += 1;
     console.info(`SKIP  ${name}: ${value} (not a >= range)`);
-    continue;
+    return;
   }
 
+  /** Candidate npm package names to probe in node_modules. */
   const npmNames = resolveNpmNames(name, value);
-  // oxlint-disable-next-line unicorn/no-useless-undefined -- init-declarations requires explicit initialization
-  let installedVersion: string | undefined = undefined;
-  // oxlint-disable-next-line unicorn/no-useless-undefined -- init-declarations requires explicit initialization
-  let resolvedNpmName: string | undefined = undefined;
-  for (const candidate of npmNames) {
-    installedVersion = readInstalledVersion(candidate, monorepoRoot);
-    if (installedVersion !== undefined) {
-      resolvedNpmName = candidate;
-      break;
-    }
-  }
+  /** First npm name candidate whose installed version resolves. */
+  const resolved = npmNames
+    .map(function probeCandidate(candidate) {
+      return { name: candidate, version: readInstalledVersion(candidate, monorepoRoot) };
+    })
+    .find(function hasVersion(r) { return r.version !== undefined; });
 
-  if (installedVersion === undefined || resolvedNpmName === undefined) {
+  if (resolved === undefined || resolved.version === undefined) {
     notFoundCount += 1;
     console.warn(`MISS  ${name}: not found in node_modules (tried ${npmNames.join(', ')})`);
-    continue;
+    return;
   }
 
-  if (!isStrictlyGreater(parsed.version, installedVersion)) {
+  if (!isStrictlyGreater(parsed.version, resolved.version)) {
     alreadyTightCount += 1;
-    console.info(`OK    ${name}: >=${parsed.version} -- installed ${installedVersion} (already tight)`);
-    continue;
+    console.info(`OK    ${name}: >=${parsed.version} -- installed ${resolved.version} (already tight)`);
+    return;
   }
 
-  const newRange = `${parsed.prefix}>=${installedVersion}`;
+  /** Tightened version range using the installed version as the lower bound. */
+  const newRange = `${parsed.prefix}>=${resolved.version}`;
   results.push({ name, oldRange: value, newRange });
-  console.info(`TIGHT ${name}: ${value} -> ${newRange} (installed ${installedVersion})`);
-}
+  console.info(`TIGHT ${name}: ${value} -> ${newRange} (installed ${resolved.version})`);
+});
 
 //region Write results
 
@@ -470,13 +470,9 @@ if (results.length === 0) {
    * Rewrite package.json using string replacement to preserve formatting.
    * Each catalog entry is replaced individually to avoid touching unrelated content.
    */
-  let rewritten = packageJsonContent;
-  for (const { name, oldRange, newRange } of results) {
-    // Match the exact JSON key-value pair in the catalog
-    const oldEntry = `"${name}": "${oldRange}"`;
-    const newEntry = `"${name}": "${newRange}"`;
-    rewritten = rewritten.replace(oldEntry, newEntry);
-  }
+  const rewritten = results.reduce(function applyTightening(acc, { name, oldRange, newRange }) {
+    return acc.replace(`"${name}": "${oldRange}"`, `"${name}": "${newRange}"`);
+  }, packageJsonContent);
 
   writeFileSync(packageJsonPath, rewritten);
   console.info(`\nWrote ${String(results.length)} tightened entries to package.json.`);

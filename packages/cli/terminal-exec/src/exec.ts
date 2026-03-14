@@ -31,7 +31,9 @@ export function execvp({ command }: { command: readonly string[] }): void {
     throw new Error('execvp: empty command array');
   }
 
-  const [executable, ...args] = command;
+  /* oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- length checked above */
+  const executable = command[0]!;
+  const args = command.slice(1);
 
   l.debug(`exec: ${executable} ${args.join(' ')}`);
 
@@ -41,12 +43,12 @@ export function execvp({ command }: { command: readonly string[] }): void {
     stderr: 'inherit',
   });
 
-  /* oxlint-disable-next-line eslint-plugin-promise/prefer-await-to-then, eslint-plugin-promise/always-return -- fire-and-forget: process exits with spawned command's code */
+  /* oxlint-disable eslint-plugin-promise/prefer-await-to-then, eslint-plugin-promise/always-return, eslint-plugin-promise/prefer-await-to-callbacks, eslint-plugin-promise/prefer-catch -- fire-and-forget: process exits with spawned command's code; .then(onSuccess, onError) is intentional for non-async exit handling */
   proc.exited.then(function onExit(code) {
     process.exitCode = code;
-    return;
   }, function onError(err: unknown) {
     console.error(`terminal-exec: failed to execute '${executable}': ${String(err)}`);
     process.exitCode = EXIT_NOT_FOUND;
   });
+  /* oxlint-enable eslint-plugin-promise/prefer-await-to-then, eslint-plugin-promise/always-return, eslint-plugin-promise/prefer-await-to-callbacks, eslint-plugin-promise/prefer-catch */
 }

@@ -7,6 +7,44 @@
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 /**
+ * Renders a single radio toggle option inside the toggle group.
+ *
+ * @param id - unique element id for the radio input
+ *
+ * @param name - shared radio group name
+ *
+ * @param label - visible label text
+ *
+ * @param checked - whether this option is initially selected
+ *
+ * @returns label-wrapped radio input HTML string
+ */
+function renderToggleOption({ id, name, label, checked }: {
+  id: string;
+  name: string;
+  label: string;
+  checked: boolean;
+}): string {
+  return h({
+    tag: 'label',
+    class: 'toggle-option',
+    children: [
+      h({
+        tag: 'input',
+        attrs: {
+          type: 'radio',
+          name,
+          id,
+          value: id,
+          ...(checked ? { checked: '' } : {}),
+        },
+      }),
+      h({ tag: 'span', text: label, }),
+    ],
+  });
+}
+
+/**
  * Renders the toolbar with tool selection, upload, and clear controls.
  *
  * @returns toolbar HTML string
@@ -17,8 +55,14 @@ function renderToolbar(): string {
     class: 'toolbar',
     children: [
       h({ tag: 'span', class: 'toolbar-title', text: 'Doodle', }),
-      h({ tag: 'button', attrs: { id: 'tool-draw', type: 'button', class: 'tool-active', }, text: 'Draw', }),
-      h({ tag: 'button', attrs: { id: 'tool-text', type: 'button', }, text: 'Text', }),
+      h({
+        tag: 'div',
+        class: 'toggle-group',
+        children: [
+          renderToggleOption({ id: 'tool-draw', name: 'tool', label: 'Draw', checked: true, }),
+          renderToggleOption({ id: 'tool-text', name: 'tool', label: 'Text', checked: false, }),
+        ],
+      }),
       h({ tag: 'button', attrs: { id: 'upload-btn', type: 'button', }, text: 'Upload background', }),
       h({ tag: 'input', attrs: { type: 'file', id: 'upload-input', accept: 'image/*,.svg', hidden: '', }, }),
       h({ tag: 'button', attrs: { id: 'clear-btn', type: 'button', }, text: 'Clear', }),
@@ -40,7 +84,7 @@ function renderCanvasContainer(svgContent: string): string {
     children: [
       h({ tag: 'canvas', attrs: { id: 'draw-canvas', }, }),
       h({ tag: 'div', attrs: { id: 'svg-overlay', }, html: svgContent, }),
-      h({ tag: 'input', attrs: { type: 'text', id: 'text-input', autocomplete: 'off', }, }),
+      h({ tag: 'div', attrs: { id: 'text-layer', }, }),
     ],
   });
 }

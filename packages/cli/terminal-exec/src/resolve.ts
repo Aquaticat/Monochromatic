@@ -34,6 +34,7 @@ export type ResolvedTerminal = ValidatedEntry & {
   readonly entryId: string;
 };
 
+/* oxlint-disable eslint/require-await -- resolveTerminal delegates to async resolveXdgTerminal; async needed for uniform Promise return */
 /**
  * Resolves the preferred terminal emulator for the current platform.
  *
@@ -46,7 +47,6 @@ export type ResolvedTerminal = ValidatedEntry & {
  * // Windows: terminal.entryId === 'wt.exe'
  * ```
  */
-// oxlint-disable-next-line eslint/require-await -- delegates to async resolveXdgTerminal; async needed for uniform Promise return
 export async function resolveTerminal(): Promise<ResolvedTerminal | null> {
   if (process.platform === 'win32') {
     l.debug('platform: win32');
@@ -56,6 +56,7 @@ export async function resolveTerminal(): Promise<ResolvedTerminal | null> {
   l.debug(`platform: ${process.platform} (XDG)`);
   return resolveXdgTerminal();
 }
+/* oxlint-enable eslint/require-await */
 
 /**
  * Resolves the terminal emulator using the XDG Desktop Entry Specification.

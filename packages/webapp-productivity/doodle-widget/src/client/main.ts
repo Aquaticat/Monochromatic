@@ -1,13 +1,13 @@
 /**
  * Entry point for the doodle widget client-side application.
  *
- * Queries DOM elements, configures event listeners for drawing, text
- * placement, and background upload, and sets up canvas resize handling
- * via ResizeObserver.
+ * Queries DOM elements, configures event listeners for drawing and
+ * background upload, reads tool mode from radio inputs, and sets up
+ * canvas resize handling via ResizeObserver.
  *
  * Exceeds 100 lines: entry-point wiring between drawing state, text
  * state, background management, and DOM event handlers that must share
- * canvas dimension variables and tool mode.
+ * canvas dimension variables.
  */
 
 import { setRasterBackground, setSvgBackground, } from './background.ts';
@@ -21,20 +21,11 @@ import {
   startStroke,
 } from './drawing.ts';
 import {
-  addTextEntry,
   clearTextEntries,
-  redrawTexts,
+  discardActiveInput,
+  placeTextInput,
+  setTextLayer,
 } from './text.ts';
-
-//region Tool mode
-
-/** Active drawing tool */
-type ToolMode = 'draw' | 'text';
-
-/** Currently selected tool mode */
-let toolMode: ToolMode = 'draw';
-
-//endregion Tool mode
 
 /**
  * Queries a required DOM element by CSS selector.
@@ -79,14 +70,11 @@ const clearBtn = requireElement<HTMLButtonElement>('#clear-btn');
 /** SVG overlay element for displaying SVG backgrounds */
 const svgOverlay = requireElement<HTMLDivElement>('#svg-overlay');
 
-/** Draw tool button */
-const drawToolBtn = requireElement<HTMLButtonElement>('#tool-draw');
+/** Draw tool radio input */
+const drawRadio = requireElement<HTMLInputElement>('#tool-draw');
 
-/** Text tool button */
-const textToolBtn = requireElement<HTMLButtonElement>('#tool-text');
-
-/** Text input overlay for entering text content */
-const textInput = requireElement<HTMLInputElement>('#text-input');
+/** Text label overlay layer */
+const textLayer = requireElement<HTMLDivElement>('#text-layer');
 
 //endregion DOM element references
 
@@ -106,7 +94,16 @@ let canvasWidth = 0;
 let canvasHeight = 0;
 
 /**
- * Resizes the canvas to match its container and redraws all content.
+ * Reads the currently selected tool from the radio group.
+ *
+ * @returns `true` when draw mode is active, `false` for text mode
+ */
+function isDrawMode(): boolean {
+  return drawRadio.checked;
+}
+
+/**
+ * Resizes the canvas to match its container and redraws all strokes.
  */
 function sizeCanvas(): void {
   canvasWidth = container.clientWidth;
@@ -114,126 +111,42 @@ function sizeCanvas(): void {
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
   redraw({ ctx, cw: canvasWidth, ch: canvasHeight, });
-  redrawTexts({ ctx, cw: canvasWidth, ch: canvasHeight, });
 }
 
 //region Tool mode switching
 
-/** CSS class applied to the currently active tool button */
-const ACTIVE_TOOL_CLASS = 'tool-active';
-
 /**
- * Switches the active tool mode and updates toolbar button states.
- *
- * @param mode - tool to activate
+ * Updates canvas cursor based on the selected tool radio.
  */
-function setToolMode(mode: ToolMode): void {
-  toolMode = mode;
-
-  drawToolBtn.classList.toggle(ACTIVE_TOOL_CLASS, mode === 'draw');
-  textToolBtn.classList.toggle(ACTIVE_TOOL_CLASS, mode === 'text');
-
-  if (mode === 'draw') {
+function syncCursorToTool(): void {
+  if (isDrawMode()) {
     canvas.style.cursor = 'crosshair';
-    hideTextInput();
+    discardActiveInput();
   } else {
     canvas.style.cursor = 'text';
   }
 }
 
-drawToolBtn.addEventListener('click', function handleDrawToolClick(): void {
-  setToolMode('draw');
-});
+/** Toggle group container holding tool radios */
+const toggleGroup = requireElement<HTMLDivElement>('.toggle-group');
 
-textToolBtn.addEventListener('click', function handleTextToolClick(): void {
-  setToolMode('text');
-});
+toggleGroup.addEventListener('change', syncCursorToTool);
 
-/** Initialize draw mode as active */
-setToolMode('draw');
+/** Set initial cursor */
+syncCursorToTool();
 
 //endregion Tool mode switching
-
-//region Text input management
-
-/**
- * Hides the text input overlay and clears its value.
- */
-function hideTextInput(): void {
-  textInput.style.display = 'none';
-  textInput.value = '';
-}
-
-/**
- * Shows the text input at the given canvas-relative pixel position.
- *
- * @param x - horizontal offset in CSS pixels from canvas left edge
- *
- * @param y - vertical offset in CSS pixels from canvas top edge
- */
-function showTextInput({ x, y }: { x: number; y: number }): void {
-  textInput.style.display = 'block';
-  textInput.style.insetInlineStart = `${String(x)}px`;
-  textInput.style.insetBlockStart = `${String(y)}px`;
-  textInput.value = '';
-  textInput.focus();
-}
-
-/**
- * Commits the current text input content as a text entry and hides the input.
- */
-function commitTextInput(): void {
-  /** Trimmed input value */
-  const content = textInput.value.trim();
-  if (content === '') {
-    hideTextInput();
-    return;
-  }
-
-  /** Pixel position of the text input relative to canvas container */
-  const x = Number.parseFloat(textInput.style.insetInlineStart);
-  const y = Number.parseFloat(textInput.style.insetBlockStart);
-
-  if (canvasWidth === 0 || canvasHeight === 0) {
-    hideTextInput();
-    return;
-  }
-
-  addTextEntry({
-    position: [x / canvasWidth, y / canvasHeight],
-    content,
-  });
-
-  hideTextInput();
-  redraw({ ctx, cw: canvasWidth, ch: canvasHeight, });
-  redrawTexts({ ctx, cw: canvasWidth, ch: canvasHeight, });
-}
-
-textInput.addEventListener('keydown', function handleTextKeydown(event: KeyboardEvent): void {
-  if (event.key === 'Enter') {
-    event.preventDefault();
-    commitTextInput();
-  } else if (event.key === 'Escape') {
-    hideTextInput();
-  }
-});
-
-textInput.addEventListener('blur', function handleTextBlur(): void {
-  commitTextInput();
-});
-
-//endregion Text input management
 
 //region Pointer event handlers
 
 canvas.addEventListener('pointerdown', function handlePointerDown(event: PointerEvent): void {
-  if (toolMode === 'text') {
+  if (!isDrawMode()) {
     /** Bounding rect of the canvas element */
     const rect = canvas.getBoundingClientRect();
-    showTextInput({
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    });
+    placeTextInput([
+      (event.clientX - rect.left) / canvasWidth,
+      (event.clientY - rect.top) / canvasHeight,
+    ]);
     return;
   }
 
@@ -244,7 +157,7 @@ canvas.addEventListener('pointerdown', function handlePointerDown(event: Pointer
 });
 
 canvas.addEventListener('pointermove', function handlePointerMove(event: PointerEvent): void {
-  if (toolMode === 'text') {
+  if (!isDrawMode()) {
     return;
   }
 
@@ -263,13 +176,13 @@ canvas.addEventListener('pointermove', function handlePointerMove(event: Pointer
 });
 
 canvas.addEventListener('pointerup', function handlePointerUp(): void {
-  if (toolMode !== 'text') {
+  if (isDrawMode()) {
     endStroke();
   }
 });
 
 canvas.addEventListener('pointercancel', function handlePointerCancel(): void {
-  if (toolMode !== 'text') {
+  if (isDrawMode()) {
     endStroke();
   }
 });
@@ -281,7 +194,6 @@ canvas.addEventListener('pointercancel', function handlePointerCancel(): void {
 clearBtn.addEventListener('click', function handleClear(): void {
   clearStrokes();
   clearTextEntries();
-  hideTextInput();
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 });
 
@@ -302,7 +214,6 @@ uploadBtn.addEventListener('click', function handleUploadClick(): void {
 async function processBackgroundFile(file: File): Promise<void> {
   clearStrokes();
   clearTextEntries();
-  hideTextInput();
   if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
     /** Raw SVG markup read from the uploaded file */
     const svgMarkup = await file.text();
@@ -326,6 +237,7 @@ uploadInput.addEventListener('change', function handleFileChange(): void {
 
 //region Initialization
 
+setTextLayer(textLayer);
 new ResizeObserver(sizeCanvas).observe(container);
 sizeCanvas();
 

@@ -29,11 +29,13 @@ describe('resolveSpecifier', () => {
   //region Error cases
 
   test('throws for a specifier that does not exist anywhere', async () => {
+    /* oxlint-disable-next-line typescript-eslint/await-thenable, typescript-eslint/no-confusing-void-expression -- bun:test .rejects.toThrow() pattern */
     await expect(resolveSpecifier({ specifier: 'this-package-definitely-does-not-exist-anywhere-12345' }))
       .rejects.toThrow('Cannot resolve');
   });
 
   test('includes search locations in error message', async () => {
+    /* oxlint-disable-next-line typescript-eslint/await-thenable, typescript-eslint/no-confusing-void-expression -- bun:test .rejects.toThrow() pattern */
     await expect(resolveSpecifier({ specifier: 'nonexistent-pkg-98765' }))
       .rejects.toThrow('CWD');
   });

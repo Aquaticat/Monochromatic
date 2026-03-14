@@ -60,7 +60,8 @@ function createTsdocVisitor(
       if (shouldIgnoreFile(context.filename)) {
         return false;
       }
-      return;
+      /* oxlint-disable-next-line eslint-plugin-unicorn/no-useless-undefined -- explicit undefined needed; bare return triggers TS7030 and no-useless-return */
+      return undefined;
     },
     FunctionDeclaration: check,
     FunctionExpression: check,

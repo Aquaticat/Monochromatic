@@ -239,17 +239,18 @@ const TOOL_TITLES: Record<string, ToolTitleEntry> = {
     extract(input): string | undefined {
       const {questions} = input;
       if (!Array.isArray(questions)) {
-        return;
+        return undefined;
       }
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- untyped tool_input; structure verified by Array.isArray guard */
       const [first] = questions as Record<string, unknown>[];
       if (first === undefined) {
-        return;
+        return undefined;
       }
       const {question} = first;
       if (typeof question === 'string') {
         return question;
       }
+      return undefined;
     },
     format(v, tense) { return `${tense === 'pre' ? 'Asking' : 'Asked'}: ${truncate(v, MAX_PATTERN_LENGTH)}`; },
     fallback: { pre: 'Asking question', post: 'Asked question' },

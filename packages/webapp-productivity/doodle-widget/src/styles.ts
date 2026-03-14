@@ -61,6 +61,9 @@ const BUTTON_PADDING_INLINE: CssValue = cssRem(THREE_QUARTERS);
 /** Button corner radius */
 const BUTTON_RADIUS: CssValue = cssRem(QUARTER);
 
+/** Shared border color for toolbar controls */
+const BORDER_COLOR: CssValue = cssOklch({ l: 0.8, c: 0, h: 0, });
+
 //endregion Design tokens
 
 /**
@@ -87,7 +90,7 @@ export function renderStyles(): string {
         'padding-inline': TOOLBAR_PADDING_INLINE,
         'background-color': cssOklch({ l: 0.95, c: 0, h: 0, }),
         'border-block-end-style': 'solid',
-        'border-block-end-color': cssOklch({ l: 0.8, c: 0, h: 0, }),
+        'border-block-end-color': BORDER_COLOR,
       },
       raw: ';border-block-end-width:1px',
     }),
@@ -106,9 +109,9 @@ export function renderStyles(): string {
         'border-radius': BUTTON_RADIUS,
         'background-color': cssOklch({ l: 0.97, c: 0, h: 0, }),
         'border-block-style': 'solid',
-        'border-block-color': cssOklch({ l: 0.8, c: 0, h: 0, }),
+        'border-block-color': BORDER_COLOR,
         'border-inline-style': 'solid',
-        'border-inline-color': cssOklch({ l: 0.8, c: 0, h: 0, }),
+        'border-inline-color': BORDER_COLOR,
       },
       raw: ';border-block-width:1px;border-inline-width:1px',
     }),
@@ -118,14 +121,64 @@ export function renderStyles(): string {
       decls: { 'background-color': cssOklch({ l: 0.92, c: 0, h: 0, }), },
     }),
 
+    //region Toggle button group (radio-based exclusive selection)
+
     $({
-      rule: '.toolbar button.tool-active',
-      decls: {
-        'background-color': cssOklch({ l: 0.88, c: 0.02, h: 250, }),
-        'border-block-color': cssOklch({ l: 0.65, c: 0.05, h: 250, }),
-        'border-inline-color': cssOklch({ l: 0.65, c: 0.05, h: 250, }),
-      },
+      rule: '.toggle-group',
+      decls: { display: 'flex', },
     }),
+
+    /** Hide the native radio circle */
+    $({
+      rule: '.toggle-option input',
+      decls: { position: 'absolute', },
+      raw: ';appearance:none;width:0;height:0;opacity:0',
+    }),
+
+    $({
+      rule: '.toggle-option',
+      decls: {
+        display: 'flex',
+        'align-items': 'center',
+        'padding-block': BUTTON_PADDING_BLOCK,
+        'padding-inline': BUTTON_PADDING_INLINE,
+        cursor: 'pointer',
+        'background-color': cssOklch({ l: 0.97, c: 0, h: 0, }),
+        'border-block-style': 'solid',
+        'border-block-color': BORDER_COLOR,
+        'border-inline-start-style': 'solid',
+        'border-inline-start-color': BORDER_COLOR,
+      },
+      raw: ';border-block-width:1px;border-inline-start-width:1px;border-inline-end-width:0;border-radius:0',
+    }),
+
+    $({
+      rule: '.toggle-option:first-child',
+      raw: 'border-start-start-radius:0.25rem;border-end-start-radius:0.25rem',
+    }),
+
+    $({
+      rule: '.toggle-option:last-child',
+      raw: 'border-start-end-radius:0.25rem;border-end-end-radius:0.25rem;border-inline-end-width:1px;border-inline-end-style:solid;border-inline-end-color:' + String(BORDER_COLOR),
+    }),
+
+    $({
+      rule: '.toggle-option:hover',
+      decls: { 'background-color': cssOklch({ l: 0.92, c: 0, h: 0, }), },
+    }),
+
+    /** Active state driven by native :checked pseudo-class */
+    $({
+      rule: '.toggle-option:has(input:checked)',
+      decls: { 'background-color': cssOklch({ l: 0.82, c: 0, h: 0, }), },
+    }),
+
+    $({
+      rule: '.toggle-option:has(input:checked):hover',
+      decls: { 'background-color': cssOklch({ l: 0.78, c: 0, h: 0, }), },
+    }),
+
+    //endregion Toggle button group
 
     $({
       rule: '#canvas-container',
@@ -168,15 +221,39 @@ export function renderStyles(): string {
         'max-block-size': FULL_PERCENT,
       },
     }),
+
+    //region Text overlay layer
+
     $({
-      rule: '#text-input',
+      rule: '#text-layer',
       decls: {
         position: 'absolute',
-        display: 'none',
+        'pointer-events': 'none',
+      },
+      raw: ';inset-block:0;inset-inline:0',
+    }),
+
+    $({
+      rule: '.text-input',
+      decls: {
+        position: 'absolute',
         'background-color': cssOklch({ l: 1, c: 0, h: 0, a: 0.85, }),
         color: cssOklch({ l: 0.3, c: 0, h: 0, }),
+        'pointer-events': 'auto',
       },
-      raw: ';border:none;outline:none;font:inherit;font-size:1.25rem;padding-block:0.125rem;padding-inline:0.25rem;min-inline-size:8rem;z-index:10',
+      raw: ';border:none;outline:none;font-family:system-ui,sans-serif;font-size:1.25rem;line-height:1.4;padding-block:0;padding-inline:0;min-inline-size:8rem',
     }),
+
+    /** Finalized inputs look like plain text */
+    $({
+      rule: '.text-input:read-only',
+      decls: {
+        'background-color': 'transparent' as CssValue,
+        'pointer-events': 'none',
+      },
+      raw: ';min-inline-size:0;cursor:default',
+    }),
+
+    //endregion Text overlay layer
   ].join('');
 }

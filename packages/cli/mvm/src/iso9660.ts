@@ -119,6 +119,7 @@ const PATH_TABLE_SIZE = 10;
  */
 function writeStr(buf: Uint8Array, offset: number, str: string, len: number): void {
   for (let idx = 0; idx < len; idx++) {
+    /* oxlint-disable-next-line eslint-plugin-unicorn/prefer-code-point -- ISO 9660 uses single-byte ASCII; charCodeAt is correct for byte-level buffer operations */
     buf[offset + idx] = idx < str.length ? str.charCodeAt(idx) : ASCII_SPACE;
   }
 }

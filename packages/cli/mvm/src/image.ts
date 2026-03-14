@@ -92,7 +92,7 @@ async function pollProgress(destPath: string, contentLength: number, totalStr: s
 
 /**
  * Streams a fetch response body to disk while printing download progress to stderr.
- * Uses AbortController to coordinate between the progress poller and the pipeline.
+ * Uses AbortController to coordinate between the progress poller and the stream pipeline.
  *
  * @param destPath - Destination file path to write to
  *
@@ -120,15 +120,14 @@ async function writeWithProgress({ destPath, response, rl }: {
   // Start progress polling in the background
   const progressDone = pollProgress(destPath, contentLength, totalStr, controller.signal);
 
-  // Stream response body to disk via node:stream pipeline
+  // Stream response body to disk via AsyncIterable protocol (runtime-neutral)
   const {body} = response;
   if (body === null) {
     controller.abort();
     await progressDone;
     throw new Error(`response body is null for ${destPath}`);
   }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Response.body is ReadableStream<Uint8Array> but typed as ReadableStream | null
-  await pipeline(Readable.fromWeb(body as ReadableStream), createWriteStream(destPath));
+  await pipeline(Readable.from(body), createWriteStream(destPath));
 
   // Stop progress polling
   controller.abort();

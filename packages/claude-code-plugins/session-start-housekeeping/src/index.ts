@@ -31,6 +31,8 @@ import {
 
 export {}
 
+/* oxlint-disable tsdoc/require-returns -- async void utility functions; @returns is not meaningful for Promise<void> */
+
 //region Housekeeping tasks
 
 /**

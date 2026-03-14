@@ -100,18 +100,20 @@ export function parseVerdict(result: string): "PRODUCTIVE" | "UNPRODUCTIVE" {
  * ```
  */
 export async function analyze(sets: CaptureSet[]): Promise<string> {
-  const content: ChatMessage["content"] = [];
   const capped = sets.slice(0, MAX_CAPTURE_SETS);
   const numSets = capped.length;
 
-  for (let i = 0; i < numSets; i++) {
-    const ts = new Date(capped[i].timestamp).toLocaleTimeString();
-    content.push({ type: "text", text: `--- Capture at ${ts} ---` });
-    content.push({ type: "text", text: "Desktop screenshot:" });
-    content.push(buildImageEntry(capped[i].screenshot));
-    content.push({ type: "text", text: "Webcam:" });
-    content.push(buildImageEntry(capped[i].webcam));
-  }
+  /** Build content array by flat-mapping each capture into its message entries. */
+  const content: ChatMessage["content"] = capped.flatMap(function captureEntries(capture) {
+    const ts = new Date(capture.timestamp).toLocaleTimeString();
+    return [
+      { type: "text" as const, text: `--- Capture at ${ts} ---` },
+      { type: "text" as const, text: "Desktop screenshot:" },
+      buildImageEntry(capture.screenshot),
+      { type: "text" as const, text: "Webcam:" },
+      buildImageEntry(capture.webcam),
+    ];
+  });
   // Release references to raw Buffers so they can be GC'd during inference
   sets.length = 0;
 
@@ -158,5 +160,6 @@ export async function analyze(sets: CaptureSet[]): Promise<string> {
   log.debug(
     `[analyze] ${prompt_tokens} prompt + ${completion_tokens} completion tokens, ${elapsed}s`,
   );
-  return data.choices[0].message.content;
+  /* oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- OpenAI API always returns at least one choice for n=1 */
+  return data.choices[0]!.message.content;
 }

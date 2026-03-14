@@ -16,7 +16,7 @@ const MMPROJ = "/var/home/user/models/lfm25-vl-1.6b/mmproj-LFM2.5-VL-1.6b-Q8_0.g
 const LLAMA_SERVER = "/var/home/user/llama-cpp-build/build/bin/llama-server";
 
 /** Port for the local llama-server HTTP API. */
-const PORT = 8787;
+const PORT = 8_787;
 
 /** Health endpoint URL for readiness polling. */
 const HEALTH_URL = `http://127.0.0.1:${PORT}/health`;

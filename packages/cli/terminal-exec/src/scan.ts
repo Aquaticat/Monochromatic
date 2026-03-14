@@ -6,6 +6,7 @@
  * @module
  */
 
+import type { Dirent } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
@@ -36,9 +37,14 @@ export type EntryRegistration = {
 async function findDesktopFiles({ dir }: { dir: string }): Promise<readonly string[]> {
   const results: string[] = [];
 
-  /** Recursively collects `.desktop` file paths under `current`. */
+  /* oxlint-disable tsdoc/require-returns -- async void function; @returns not meaningful for Promise<void> */
+  /**
+   * Recursively collects `.desktop` file paths under `current`.
+   *
+   * @param current - Directory to walk.
+   */
   async function walk({ current }: { current: string }): Promise<void> {
-    let entries: Awaited<ReturnType<typeof readdir>> = [];
+    let entries: Dirent[] = [];
     try {
       entries = await readdir(current, { withFileTypes: true });
     } catch {
@@ -54,6 +60,7 @@ async function findDesktopFiles({ dir }: { dir: string }): Promise<readonly stri
       }
     }
   }
+  /* oxlint-enable tsdoc/require-returns */
 
   await walk({ current: dir });
   return results;

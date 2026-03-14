@@ -11,8 +11,7 @@ import { micromark, } from 'micromark';
 
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
-import type { ConfigSnapshot, StreamTiming, StreamUsage, } from '../data/viewer-types.ts';
-import type { ProbeDetail, } from '../data/viewer-types.ts';
+import type { ConfigSnapshot, ProbeDetail, StreamTiming, StreamUsage, } from '../data/viewer-types.ts';
 
 /** Milliseconds per second for display formatting */
 const MS_PER_SECOND = 1_000;
@@ -22,7 +21,7 @@ const MS_PER_SECOND = 1_000;
  *
  * @param ms - milliseconds
  *
- * @returns "1.2s" for >= 1000ms, "123ms" otherwise
+ * @returns "1.2s" for \>= 1000ms, "123ms" otherwise
  *
  * @example
  * ```ts
