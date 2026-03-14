@@ -4,15 +4,14 @@
  * Claude Code hook handler for the claude-spawn plugin.
  *
  * A single binary that handles all hook events:
- * - **SessionStart**: writes PID-to-session mapping; registers child spawn state;
- *   auto-symlinks `spawn-claude` CLI; **consumes** completed children via stdout text
- * - **UserPromptSubmit**: **consumes** completed children via stdout text
+ * - **SessionStart**: writes PID-to-session mapping; claims spawn ownership;
+ *   auto-symlinks `spawn-claude` CLI
  * - **Stop**: updates child's `lastMessage` (child sessions); **consumes** completed
  *   children by blocking with reason text (parent sessions)
  * - **SessionEnd**: no-op (kept for future use)
- * - **Other hooks** (PreToolUse, PostToolUse, etc.): consumes completed children
- *   and returns `additionalContext` — confirmed working for native tools in
- *   Claude Code v2.1.76; first hook to fire after child completion delivers
+ * - **PreToolUse/PostToolUse/PostToolUseFailure**: **consumes** completed children
+ *   via `additionalContext` — confirmed working in Claude Code v2.1.76;
+ *   first hook to fire after child completion delivers
  *
  * @module
  */
@@ -159,37 +158,13 @@ if (event.hook_event_name === 'SessionStart') {
   }
 
   /**
-   * Consume completed children via stdout text — reliable delivery path.
-   * SessionStart supports both stdout text and `additionalContext`; stdout is preferred
-   * because plugin-defined hooks may silently drop `additionalContext`.
+   * No child injection from SessionStart.
+   * A parent session is always past its own SessionStart by the time a child
+   * completes, so there is nothing to pick up here. The CLI setup warning
+   * (if any) is still emitted as stdout text.
    */
-  const childContext = checkCompletedChildren({ parentSessionId: event.session_id, consume: true });
-
-  /** Combined context from CLI setup warnings and completed children. */
-  const contexts = [cliWarning, childContext].filter(function nonNull(v): v is string { return v !== null; });
-
-  if (contexts.length > 0) {
-    /** Output as plain stdout text for reliable delivery. */
-    process.stdout.write(contexts.join('\n\n---\n\n'));
-  } else {
-    process.stdout.write(JSON.stringify({}));
-  }
-
-//endregion
-
-//region UserPromptSubmit — consume via stdout text
-
-} else if (event.hook_event_name === 'UserPromptSubmit') {
-  /**
-   * Consume completed children via stdout text — reliable delivery path.
-   * UserPromptSubmit supports both stdout text and `additionalContext`; stdout is preferred
-   * because plugin-defined hooks may silently drop `additionalContext`.
-   */
-  const context = checkCompletedChildren({ parentSessionId: event.session_id, consume: true });
-
-  if (context !== null) {
-    /** Output as plain stdout text for reliable delivery. */
-    process.stdout.write(context);
+  if (cliWarning !== null) {
+    process.stdout.write(cliWarning);
   } else {
     process.stdout.write(JSON.stringify({}));
   }
