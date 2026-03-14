@@ -1,9 +1,13 @@
 /**
  * Shared inject check that scans for completed child sessions
- * and returns `additionalContext` for the parent.
+ * and returns context text for the parent.
  *
- * Called from every hook that supports `additionalContext` injection
- * to ensure results appear at the earliest possible moment.
+ * Called from hook handlers with two modes:
+ * - **Consuming** (`consume: true`): renames `.json` to `.reported`, preventing future reads.
+ *   Used by hooks with reliable delivery (UserPromptSubmit stdout, Stop blocking reason).
+ * - **Non-consuming** (`consume: false`): reads but does not rename.
+ *   Used by hooks where `additionalContext` may be silently dropped (plugin-defined
+ *   PreToolUse/PostToolUse hooks — see anthropics/claude-code#18427).
  *
  * @module
  */
@@ -18,25 +22,56 @@ import { join } from 'node:path';
 import { SPAWNS_DIR, type SpawnState } from './paths.ts';
 
 /**
- * Scans the spawns directory for children of the given session
- * that have stopped and not yet been reported.
+ * Formats a completed spawn state into a human-readable context string.
  *
- * For each match, atomically renames `{spawnId}.json` to `{spawnId}.reported`
- * to prevent duplicate injection across concurrent hook invocations.
+ * @param state - Spawn state to format.
  *
- * @param parentSessionId - Session identifier of the calling session.
- *
- * @returns Combined `additionalContext` string, or `null` if nothing to report.
+ * @returns Multi-line context string describing the completed child session.
  *
  * @example
  * ```ts
- * const context = checkCompletedChildren({ parentSessionId: 'abc-123' })
- * if (context !== null) {
- *   // inject into hook output
- * }
+ * const text = formatSpawnResult(state)
+ * // "Spawned Claude session completed (spawnId: abc-123):\n..."
  * ```
  */
-function checkCompletedChildren({ parentSessionId }: { parentSessionId: string }): string | null {
+function formatSpawnResult(state: SpawnState): string {
+  return [
+    `Spawned Claude session completed (spawnId: ${state.spawnId}):`,
+    `Session ID: ${state.sessionId}`,
+    `Transcript: ${state.transcriptPath}`,
+    state.lastMessage.length > 0
+      ? `Last assistant message:\n${state.lastMessage}`
+      : 'No assistant message was produced.',
+  ].join('\n');
+}
+
+/**
+ * Scans the spawns directory for children of the given session
+ * that have stopped and not yet been reported.
+ *
+ * When `consume` is true, atomically renames `{spawnId}.json` to `{spawnId}.reported`
+ * to prevent duplicate injection across concurrent hook invocations.
+ * When `consume` is false, reads the state without renaming — callers should
+ * treat the result as best-effort since the file may be consumed by a later
+ * reliable hook invocation.
+ *
+ * @param parentSessionId - Session identifier of the calling session.
+ * @param consume - Whether to rename matched files to `.reported`.
+ *   Use `true` from reliable delivery hooks (UserPromptSubmit, Stop),
+ *   `false` from best-effort hooks (PreToolUse, PostToolUse, etc.).
+ *
+ * @returns Combined context string, or `null` if nothing to report.
+ *
+ * @example
+ * ```ts
+ * // Reliable hook — consume the results
+ * const context = checkCompletedChildren({ parentSessionId: 'abc-123', consume: true })
+ *
+ * // Best-effort hook — read without consuming
+ * const context = checkCompletedChildren({ parentSessionId: 'abc-123', consume: false })
+ * ```
+ */
+function checkCompletedChildren({ parentSessionId, consume }: { parentSessionId: string; consume: boolean }): string | null {
   let entries: string[] = [];
   try {
     entries = readdirSync(SPAWNS_DIR);
@@ -67,23 +102,18 @@ function checkCompletedChildren({ parentSessionId }: { parentSessionId: string }
         continue;
       }
 
-      //region Atomic rename to prevent double injection
-      try {
-        renameSync(filePath, reportedPath);
-      } catch {
-        /** Another hook invocation already renamed this file. */
-        continue;
+      //region Consume: atomic rename to prevent double reliable injection
+      if (consume) {
+        try {
+          renameSync(filePath, reportedPath);
+        } catch {
+          /** Another hook invocation already renamed this file. */
+          continue;
+        }
       }
       //endregion
 
-      results.push([
-        `Spawned Claude session completed (spawnId: ${state.spawnId}):`,
-        `Session ID: ${state.sessionId}`,
-        `Transcript: ${state.transcriptPath}`,
-        state.lastMessage.length > 0
-          ? `Last assistant message:\n${state.lastMessage}`
-          : 'No assistant message was produced.',
-      ].join('\n'));
+      results.push(formatSpawnResult(state));
     } catch {
       continue;
     }

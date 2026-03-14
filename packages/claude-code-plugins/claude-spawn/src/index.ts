@@ -4,10 +4,15 @@
  * Claude Code hook handler for the claude-spawn plugin.
  *
  * A single binary that handles all hook events:
- * - **SessionStart**: writes PID-to-session mapping; registers child spawn state; auto-symlinks `spawn-claude` CLI to `~/.local/bin/` if not on PATH
- * - **Stop**: updates child's `lastMessage` and marks it as `"stopped"` so the parent can pick up the result
+ * - **SessionStart**: writes PID-to-session mapping; registers child spawn state;
+ *   auto-symlinks `spawn-claude` CLI; **consumes** completed children via stdout text
+ * - **UserPromptSubmit**: **consumes** completed children via stdout text
+ * - **Stop**: updates child's `lastMessage` (child sessions); **consumes** completed
+ *   children by blocking with reason text (parent sessions)
  * - **SessionEnd**: no-op (kept for future use)
- * - **All `additionalContext` hooks**: checks for completed children and injects results
+ * - **Best-effort hooks** (PreToolUse, PostToolUse, etc.): reads completed children
+ *   without consuming and returns `additionalContext` — may be silently dropped by
+ *   Claude Code for plugin-defined hooks (anthropics/claude-code#18427)
  *
  * @module
  */
@@ -47,7 +52,7 @@ const event = JSON.parse(raw) as HookInput;
 
 //endregion
 
-//region SessionStart — write PID mapping and register child
+//region SessionStart — write PID mapping, register child, consume via stdout
 
 if (event.hook_event_name === 'SessionStart') {
   mkdirSync(BY_PID_DIR, { recursive: true });
@@ -145,22 +150,45 @@ if (event.hook_event_name === 'SessionStart') {
     }
   }
 
-  /** Additional context from completed child sessions, if any. */
-  const childContext = checkCompletedChildren({ parentSessionId: event.session_id });
+  /**
+   * Consume completed children via stdout text — reliable delivery path.
+   * SessionStart supports both stdout text and `additionalContext`; stdout is preferred
+   * because plugin-defined hooks may silently drop `additionalContext`.
+   */
+  const childContext = checkCompletedChildren({ parentSessionId: event.session_id, consume: true });
 
-  /** Combined additional context from CLI setup and completed children. */
+  /** Combined context from CLI setup warnings and completed children. */
   const contexts = [cliWarning, childContext].filter(function nonNull(v): v is string { return v !== null; });
 
-  /** Hook output, optionally carrying setup warnings and child results as additional context. */
-  const output = contexts.length > 0
-    ? { hookSpecificOutput: { hookEventName: 'SessionStart' as const, additionalContext: contexts.join('\n\n---\n\n') } }
-    : {};
-
-  process.stdout.write(JSON.stringify(output));
+  if (contexts.length > 0) {
+    /** Output as plain stdout text for reliable delivery. */
+    process.stdout.write(contexts.join('\n\n---\n\n'));
+  } else {
+    process.stdout.write(JSON.stringify({}));
+  }
 
 //endregion
 
-//region Stop — update lastMessage on child sessions
+//region UserPromptSubmit — consume via stdout text
+
+} else if (event.hook_event_name === 'UserPromptSubmit') {
+  /**
+   * Consume completed children via stdout text — reliable delivery path.
+   * UserPromptSubmit supports both stdout text and `additionalContext`; stdout is preferred
+   * because plugin-defined hooks may silently drop `additionalContext`.
+   */
+  const context = checkCompletedChildren({ parentSessionId: event.session_id, consume: true });
+
+  if (context !== null) {
+    /** Output as plain stdout text for reliable delivery. */
+    process.stdout.write(context);
+  } else {
+    process.stdout.write(JSON.stringify({}));
+  }
+
+//endregion
+
+//region Stop — update child lastMessage; consume via blocking reason on parent
 
 } else if (event.hook_event_name === 'Stop') {
   /** Spawn identifier from the environment, present only in child sessions. */
@@ -185,7 +213,27 @@ if (event.hook_event_name === 'SessionStart') {
     }
   }
 
-  /** Pass-through: never block stops from this hook. */
+  /**
+   * On parent sessions: consume completed children by blocking with reason text.
+   * The `reason` field is reliably delivered to Claude as feedback.
+   * Skip when `stop_hook_active` is true to prevent infinite block loops.
+   */
+  if (!event.stop_hook_active) {
+    const context = checkCompletedChildren({ parentSessionId: event.session_id, consume: true });
+
+    if (context !== null) {
+      /** Block the stop and deliver spawn results as the reason. */
+      const output = {
+        decision: 'block' as const,
+        reason: context,
+      };
+      process.stdout.write(JSON.stringify(output));
+      /* Return early — do not emit empty pass-through. */
+      process.exit(0);
+    }
+  }
+
+  /** Pass-through: no completed children or already in a stop-hook continuation. */
   const output: HookOutputBase = {};
   process.stdout.write(JSON.stringify(output));
 
@@ -200,14 +248,19 @@ if (event.hook_event_name === 'SessionStart') {
 
 //endregion
 
-//region All other hooks — inject completed children
+//region Best-effort hooks — non-consuming additionalContext injection
 
 } else {
-  /** Additional context from completed child sessions, if any. */
-  const context = checkCompletedChildren({ parentSessionId: event.session_id });
+  /**
+   * Non-consuming read: returns completed children without renaming files.
+   * If Claude Code actually processes the `additionalContext` (not guaranteed for
+   * plugin-defined hooks), the result will be surfaced early. The consuming hooks
+   * (UserPromptSubmit, Stop) will still pick up and consume the same results later.
+   */
+  const context = checkCompletedChildren({ parentSessionId: event.session_id, consume: false });
 
   if (context !== null) {
-    /** Hook output carrying completed child results as additional context. */
+    /** Hook output carrying completed child results as additional context (best-effort). */
     const output = {
       hookSpecificOutput: {
         hookEventName: event.hook_event_name,
