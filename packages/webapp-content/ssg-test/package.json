@@ -1,0 +1,33 @@
+{
+  "name": "@monochromatic-dev/webapp-content-ssg-test",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*",
+    "@shikijs/rehype": "catalog:",
+    "@shikijs/transformers": "catalog:",
+    "feedsmith": "catalog:",
+    "gray-matter": "catalog:",
+    "h3": "catalog:",
+    "nano-spawn": "catalog:",
+    "rehype-autolink-headings": "catalog:",
+    "rehype-parse": "catalog:",
+    "rehype-preset-minify": "catalog:",
+    "rehype-slug-custom-id": "catalog:",
+    "rehype-stringify": "catalog:",
+    "remark-gfm": "catalog:",
+    "remark-github-blockquote-alert": "catalog:",
+    "remark-mdx": "catalog:",
+    "remark-parse": "catalog:",
+    "remark-rehype": "catalog:",
+    "remark-sectionize": "catalog:",
+    "sharp": "catalog:",
+    "tiny-readdir-glob": "catalog:",
+    "unified": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -96,7 +96,8 @@
   // Handle iterable of keys (including arrays)
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime guard for non-TS callers
   if (typeof keys === 'object' && keys !== null && Symbol.iterator in keys) {
-    const keysArray = [...keys,];
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runtime Symbol.iterator check above guarantees iterability, but generic constraint doesn't narrow
+    const keysArray = [...keys as Iterable<keyof TObject>,];
     const result: Record<string, unknown> = {};
 
     for (const key of keysArray) {

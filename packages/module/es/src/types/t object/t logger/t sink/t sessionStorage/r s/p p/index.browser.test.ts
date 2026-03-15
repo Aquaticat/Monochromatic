@@ -5,13 +5,9 @@ import {
   test,
 } from '@playwright/test';
 
-import type * as ModuleEs from '@monochromatic-dev/module-es';
-
 declare global {
-  // oxlint-disable-next-line typescript/consistent-type-definitions -- global augmentation requires interface
-  interface Window {
-    moduleEs: ModuleEs;
-  }
+  // oxlint-disable-next-line no-var -- global augmentation requires var declaration
+  var moduleEs: typeof import('@monochromatic-dev/module-es');
 }
 
 test.describe('sessionStorage sink', () => {

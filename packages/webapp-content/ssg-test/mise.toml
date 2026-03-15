@@ -1,0 +1,35 @@
+[tasks.build]
+extends = "build"
+
+[tasks."build:site"]
+description = "Build static site"
+run = "bun src/build.ts"
+
+[tasks."build:site:clean"]
+description = "Build static site from scratch (no cache)"
+run = "rm -rf .cache; bun src/build.ts"
+
+[tasks."dev:site"]
+description = "Start development server with watch rebuild"
+run = "mise watch -w src -r -- bun src/dev.ts"
+
+[tasks."format:images"]
+description = "Convert non-AVIF raster images to AVIF counterparts"
+run = "bun src/images/format.ts"
+
+[tasks."watch:build"]
+extends = "watch:build"
+
+[tasks."watch:build:site"]
+description = "Rebuild site on source changes"
+run = "mise watch -w src -r -- bun src/build.ts"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:types"]
+extends = "lint:types"
+hide = true
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
