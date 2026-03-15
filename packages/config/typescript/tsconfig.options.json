@@ -99,8 +99,6 @@
 
     "jsx": "preserve",
     "jsxImportSource": "vue",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment",
 
     "lib": ["ESNext"],
 
