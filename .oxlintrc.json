@@ -407,7 +407,9 @@
     // Those vars are often left as code for syntax highlighting or testing purposes,
     // or they're part of work-in-progress.
     // The bundler will remove them in the final bundle.
-    "eslint/no-unused-vars": "off"
+    "eslint/no-unused-vars": "off",
+    // TODO comments are tracked via issues, not lint.
+    "eslint/no-warning-comments": "off"
   },
   "overrides": [
     {
@@ -430,6 +432,13 @@
         // Fixture files can use magic numbers.
         "eslint/no-magic-numbers": "off",
         // Fixture files are exempt from line limits.
+        "eslint/max-lines": "off"
+      }
+    },
+    {
+      "files": ["**/canary-lint/**"],
+      "rules": {
+        // Model-generated artifacts have no meaningful line budget.
         "eslint/max-lines": "off"
       }
     },

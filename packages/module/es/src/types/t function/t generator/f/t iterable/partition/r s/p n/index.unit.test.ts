@@ -46,11 +46,14 @@ describe($, () => {
 
     expect(results,).toHaveLength(3,);
     expect(results[0],).toEqual({ decision: 'fail', item: '1', },);
-    expect(results[1]?.item,).toBe('invalid',);
-    expect(Array.isArray(results[1]?.decision,),).toBe(true,);
-    expect((results[1]?.decision as unknown[])?.[0],).toBe('thrown',);
-    expect((results[1]?.decision as unknown[])?.[1],).toBeInstanceOf(Error,);
-    expect(((results[1]?.decision as unknown[])?.[1] as Error).message,).toBe(
+    const thrownResult = results[1];
+    if (thrownResult === undefined) throw new Error('expected result at index 1');
+    expect(thrownResult.item,).toBe('invalid',);
+    expect(Array.isArray(thrownResult.decision,),).toBe(true,);
+    const decisionTuple = thrownResult.decision as unknown[];
+    expect(decisionTuple[0],).toBe('thrown',);
+    expect(decisionTuple[1],).toBeInstanceOf(Error,);
+    expect((decisionTuple[1] as Error).message,).toBe(
       'Invalid number',
     );
     expect(results[2],).toEqual({ decision: 'pass', item: '3', },);
@@ -125,11 +128,13 @@ describe($, () => {
 
     for (const [resultIndex, item,] of items.entries()) {
       const result = results[resultIndex];
-      expect(result?.item,).toBe(item,);
-      expect(Array.isArray(result?.decision,),).toBe(true,);
-      expect((result?.decision as unknown[])?.[0],).toBe('thrown',);
-      expect((result?.decision as unknown[])?.[1],).toBeInstanceOf(Error,);
-      expect(((result?.decision as unknown[])?.[1] as Error).message,).toBe('Invalid',);
+      if (result === undefined) throw new Error(`expected result at index ${String(resultIndex)}`);
+      expect(result.item,).toBe(item,);
+      expect(Array.isArray(result.decision,),).toBe(true,);
+      const decision = result.decision as unknown[];
+      expect(decision[0],).toBe('thrown',);
+      expect(decision[1],).toBeInstanceOf(Error,);
+      expect((decision[1] as Error).message,).toBe('Invalid',);
     }
   });
 
@@ -215,10 +220,13 @@ describe($, () => {
 
     expect(results,).toHaveLength(3,);
     expect(results[0],).toEqual({ decision: 'fail', item: 1, },);
-    expect(results[1]?.item,).toBe(2,);
-    expect(Array.isArray(results[1]?.decision,),).toBe(true,);
-    expect((results[1]?.decision as unknown[])?.[0],).toBe('thrown',);
-    expect((results[1]?.decision as unknown[])?.[1],).toBe(customError,);
+    const errorResult = results[1];
+    if (errorResult === undefined) throw new Error('expected result at index 1');
+    expect(errorResult.item,).toBe(2,);
+    expect(Array.isArray(errorResult.decision,),).toBe(true,);
+    const errorDecision = errorResult.decision as unknown[];
+    expect(errorDecision[0],).toBe('thrown',);
+    expect(errorDecision[1],).toBe(customError,);
     expect(results[2],).toEqual({ decision: 'pass', item: 3, },);
   });
 
@@ -242,10 +250,13 @@ describe($, () => {
 
     expect(results,).toHaveLength(3,);
     expect(results[0],).toEqual({ decision: 'fail', item: 1, },);
-    expect(results[1]?.item,).toBe(2,);
-    expect(Array.isArray(results[1]?.decision,),).toBe(true,);
-    expect((results[1]?.decision as unknown[])?.[0],).toBe('thrown',);
-    expect((results[1]?.decision as unknown[])?.[1],).toBe(thrownValue,);
+    const strErrorResult = results[1];
+    if (strErrorResult === undefined) throw new Error('expected result at index 1');
+    expect(strErrorResult.item,).toBe(2,);
+    expect(Array.isArray(strErrorResult.decision,),).toBe(true,);
+    const strDecision = strErrorResult.decision as unknown[];
+    expect(strDecision[0],).toBe('thrown',);
+    expect(strDecision[1],).toBe(thrownValue,);
     expect(results[2],).toEqual({ decision: 'pass', item: 3, },);
   });
 },);

@@ -3,9 +3,12 @@ import {
   test,
 } from '@playwright/test';
 
+import type * as ModuleEs from '@monochromatic-dev/module-es';
+
 declare global {
+  // oxlint-disable-next-line typescript/consistent-type-definitions -- global augmentation requires interface
   interface Window {
-    moduleEs: typeof import('@monochromatic-dev/module-es');
+    moduleEs: ModuleEs;
   }
 }
 

@@ -62,8 +62,11 @@ describe($, () => {
   test('nested containers', () => {
     const out = $({ value: '{"a": [1], "b": {}}' as FragmentStringJsonc, },);
     const entries = [...out.value.entries(),];
-    const aVal = entries[0]![1] as Jsonc.Array;
-    const bVal = entries[1]![1] as Jsonc.Record;
+    const aEntry = entries[0];
+    const bEntry = entries[1];
+    if (aEntry === undefined || bEntry === undefined) throw new Error('expected 2 entries');
+    const aVal = aEntry[1] as Jsonc.Array;
+    const bVal = bEntry[1] as Jsonc.Record;
     expect(Array.isArray(aVal.value,),).toBe(true,);
     expect((aVal.value[0] as Jsonc.Number).value,).toBe(1,);
     expect(bVal.value instanceof Map,).toBe(true,);

@@ -104,7 +104,7 @@ const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set(['newest', 
  *
  * @returns Validated strategy, defaulting to `'newest'`
  *
- * @throws {Error} When value is not a valid builtin and does not start with `sh:`
+ * @throws When value is not a valid builtin and does not start with `sh:`
  *
  * @example
  * ```ts
@@ -133,6 +133,7 @@ const args = {
   rest: rawArgs.rest,
 };
 
+/** Destructured command and its arguments from the rest args after `--` */
 const [command, ...commandArgs] = args.rest;
 
 if (!command) {
@@ -155,6 +156,7 @@ if (args.outputs.length === 0) {
 
 //region Staleness check and execution
 
+/** Whether sources are newer than outputs, indicating the command needs to run */
 const stale = await checkStaleness({
   sources: args.sources,
   outputs: args.outputs,

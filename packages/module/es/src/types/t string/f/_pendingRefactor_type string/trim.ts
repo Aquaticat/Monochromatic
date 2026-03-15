@@ -23,16 +23,10 @@
 export function trimEndWith(str: string, trimmer: string,): string {
   if (trimmer === '')
     throw new Error('trimmer cannot be empty',);
-  if (!str.endsWith(trimmer,))
-    return str;
-  const reversedTrimmer = [...trimmer].toReversed().join('',);
-  let modifyingString = str;
-  while (modifyingString.endsWith(trimmer,)) {
-    modifyingString = [...Array.from(modifyingString).toReversed().join('').replace(reversedTrimmer, '')]
-      .toReversed()
-      .join('',);
-  }
-  return modifyingString;
+  let result = str;
+  while (result.endsWith(trimmer,))
+    result = result.slice(0, -trimmer.length,);
+  return result;
 }
 
 /**

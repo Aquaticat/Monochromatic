@@ -98,7 +98,9 @@ export const stakInterpreter = createCodeGenProbe({
     '- LOAD on an undefined variable must throw an Error',
   ].join('\n'),
   verify: function verifyStak(result): { correctness: number; } {
-    const output = result.stdout;
+    // nano-spawn strips the trailing newline from captured stdout;
+    // trimEnd normalizes so the checks work regardless of trailing whitespace
+    const output = result.stdout.trimEnd();
     const checks = [
       // Floor division: -7 DIV 2 must be -4 (floor), not -3 (truncation)
       output.startsWith('-4\n'),
@@ -107,7 +109,7 @@ export const stakInterpreter = createCodeGenProbe({
       // PRINTC with explicit newline code point: 72='H', 105='i', 10=LF
       output.includes('Hi\n5\n'),
       // Full countdown loop produces correct sequence
-      output.includes('5\n4\n3\n2\n1\n'),
+      output.endsWith('5\n4\n3\n2\n1'),
       // Exact match covers all of the above together
       output === CODEGEN_EXPECTED_OUTPUT,
     ];

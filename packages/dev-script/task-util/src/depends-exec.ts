@@ -57,7 +57,13 @@ export type ExecuteOptions = {
  * written to the parent's stdout/stderr before the error is propagated
  * (or swallowed when `allowFailure` is true).
  *
- * @param options - Command, arguments, and behavior flags
+ * @param command - Executable to run
+ *
+ * @param commandArgs - Arguments passed to the command
+ *
+ * @param verbose - Whether to log diagnostic messages
+ *
+ * @param allowFailure - Whether to suppress command failures (exit 0 regardless)
  *
  * @example
  * ```ts

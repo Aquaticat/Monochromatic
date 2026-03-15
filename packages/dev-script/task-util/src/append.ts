@@ -43,8 +43,8 @@ export {};
 
 /** Error messages for append operations */
 const ERROR_MESSAGES = {
-  fileNotFound: (path: string,) => `File not found: ${path}`,
-  noWritePermission: (path: string,) => `No write permission for file: ${path}`,
+  fileNotFound: function fileNotFound(path: string,): string { return `File not found: ${path}`; },
+  noWritePermission: function noWritePermission(path: string,): string { return `No write permission for file: ${path}`; },
   noTextProvided: 'No text provided to append',
 } as const;
 

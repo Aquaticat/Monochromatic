@@ -18,7 +18,7 @@ const MONOREPO_ROOT = new URL('../../../../../', import.meta.url).pathname;
  * @returns file content
  */
 async function readConfig(relativePath: string): Promise<string> {
-  return readFile(join(MONOREPO_ROOT, relativePath), 'utf8');
+  return await readFile(join(MONOREPO_ROOT, relativePath), 'utf8');
 }
 
 /**
@@ -47,16 +47,7 @@ async function buildSystemPrompt(): Promise<string> {
     '=== TypeScript compiler options (tsconfig) ===',
     tsconfig,
     '',
-    'Key rules to pay attention to:',
-    '- explicit-function-return-type: error (all functions need explicit return types)',
-    '- require-tsdoc: error (all declarations need TSDoc comments)',
-    '- import/unambiguous: error (files need import/export to be parsed as modules)',
-    '- no-magic-numbers: warn (except -2, -1, 0, 1, 2, 255, 0.1, 10)',
-    '- consistent-type-definitions: type aliases, not interfaces',
-    '- strict TypeScript: noUncheckedIndexedAccess, exactOptionalPropertyTypes',
-    '- verbatimModuleSyntax: use `import type` for type-only imports',
-    '- prefer const over let, functional patterns over imperative loops',
-    '- never use single-letter variable names',
+    'Note: the eslint/max-lines rule is disabled for your output. There is no line count limit.',
   ].join('\n');
 }
 

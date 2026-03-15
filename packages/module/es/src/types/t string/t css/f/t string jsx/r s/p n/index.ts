@@ -222,7 +222,7 @@ function serializeDecls(decls: object,): string {
   const parts: string[] = [];
 
   for (const [property, value,] of Object.entries(decls,) as readonly [string, CssValue | string | number | undefined][]) {
-    if (value === undefined || value === null) {
+    if (value === undefined) {
       continue;
     }
 

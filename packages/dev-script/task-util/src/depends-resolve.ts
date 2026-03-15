@@ -236,7 +236,7 @@ async function resolveGlob(
  *
  * @returns Resolved timestamp in milliseconds (possibly `Infinity` or `-Infinity`)
  *
- * @throws {Error} When command exits with non-zero code or stdout is not a parseable timestamp
+ * @throws When command exits with non-zero code or stdout is not a parseable timestamp
  *
  * @example
  * ```ts

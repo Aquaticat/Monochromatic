@@ -272,6 +272,22 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: strin
 }
 
 /**
+ * Creates a disposable timeout that auto-clears via `Symbol.dispose`.
+ * Calling `unref()` on the timer prevents it from keeping the event loop alive.
+ *
+ * @param callback - function to execute when the timeout fires
+ *
+ * @param ms - timeout duration in milliseconds
+ *
+ * @returns disposable handle; timer is cleared when disposed
+ */
+function createDisposableTimeout(callback: () => void, ms: number): Disposable {
+  const id = setTimeout(callback, ms);
+  id.unref();
+  return { [Symbol.dispose](): void { clearTimeout(id); }, };
+}
+
+/**
  * Runs a single probe with a 5-minute timeout covering all turns (consistency + fix).
  *
  * Uses `AbortController` so the timeout doesn't just cancel the promise -- it also
@@ -281,21 +297,18 @@ async function runProbeCore(probe: Probe, config: RunnerConfig, timestamp: strin
  *
  * On timeout the probe resolves with score=0 and `timedOut: true` rather than throwing,
  * so partial results from other probes can still be collected and written to history.
+ *
  * @param probe - canary probe to execute
+ *
  * @param config - runner configuration
+ *
  * @param timestamp - authoritative server timestamp for artifact naming
+ *
  * @returns scored result; on timeout, a zero-score result with `timedOut: true`
  */
 export async function runProbe(probe: Probe, config: RunnerConfig, timestamp: string): Promise<ProbeResult> {
-  // new Promise required: no standard promisified API exists for time-based resolution,
-  // and @monochromatic-dev/module-es is not a dependency of this package.
-  // timer.unref() prevents the timer from keeping the process alive after the probe finishes.
   const controller = new AbortController();
   const corePromise = runProbeCore(probe, config, timestamp, controller.signal);
-  // Suppress unhandled-rejection warning: after the timeout wins the race,
-  // corePromise may still reject (via AbortError) with no observer.
-  // oxlint-disable-next-line promise/prefer-await-to-then -- catch handler on a racing promise; await is not viable here
-  corePromise.catch(function suppressAbortRejection(): void { /* expected: abort-triggered rejection after timeout */ });
   // Zero-score sentinel returned when the timeout fires; score 0 is recorded in history
   // so the overall model score reflects the failure without discarding other probe results.
   const timedOutResult: ProbeResult = {
@@ -306,23 +319,35 @@ export async function runProbe(probe: Probe, config: RunnerConfig, timestamp: st
     consistent: true,
     timedOut: true,
   };
-  // timer is let so corePromise's finally handler can clear it before the callback fires,
-  // preventing a misleading "timed out" log for probes that complete before the deadline.
-  let timer: ReturnType<typeof setTimeout> | undefined = undefined;
-  return await Promise.race([
-    // oxlint-disable-next-line promise/prefer-await-to-then -- finally on a racing promise; await is not viable here
-    corePromise.finally(function clearTimer(): void { if (timer !== undefined) clearTimeout(timer); }),
-    // oxlint-disable-next-line promise/avoid-new -- timeout racing requires manual Promise construction
-    new Promise<ProbeResult>(function setupTimeout(resolve): void {
-      timer = setTimeout(
-        function onTimeout(): void {
-          controller.abort();
-          console.error(`  [${config.label}:${probe.name}] timed out after ${String(PROBE_TIMEOUT_MINUTES)} minutes`);
-          resolve(timedOutResult);
-        },
-        PROBE_TIMEOUT_MS,
-      );
-      timer.unref();
-    }),
-  ]);
+
+  /**
+   * Wraps `corePromise` to absorb abort-triggered rejections.
+   * After timeout wins the race, `controller.abort()` causes `corePromise` to reject
+   * with no observer. This wrapper catches that expected rejection and returns
+   * the timeout sentinel so the promise settles cleanly.
+   *
+   * @returns probe result, or the timeout sentinel if the abort was expected
+   */
+  async function observedCore(): Promise<ProbeResult> {
+    try {
+      return await corePromise;
+    } catch (error) {
+      if (controller.signal.aborted) return timedOutResult;
+      throw error;
+    }
+  }
+
+  const { promise: timeoutPromise, resolve: resolveTimeout, } = Promise.withResolvers<ProbeResult>();
+
+  // Timer auto-clears when the function returns via Symbol.dispose.
+  using _timer = createDisposableTimeout(
+    function onTimeout(): void {
+      controller.abort();
+      console.error(`  [${config.label}:${probe.name}] timed out after ${String(PROBE_TIMEOUT_MINUTES)} minutes`);
+      resolveTimeout(timedOutResult);
+    },
+    PROBE_TIMEOUT_MS,
+  );
+
+  return await Promise.race([observedCore(), timeoutPromise]);
 }

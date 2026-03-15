@@ -37,7 +37,7 @@ const SILENT_LEVELS: ReadonlySet<string> = new Set(['debug', 'trace']);
  */
 function detectVerbose(): boolean {
   try {
-    if (typeof process !== 'undefined' && process.env && process.env['DEBUG'] === 'true') {
+    if (typeof process !== 'undefined' && process.env['DEBUG'] === 'true') {
       return true;
     }
   } catch {

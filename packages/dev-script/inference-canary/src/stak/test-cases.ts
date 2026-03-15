@@ -77,8 +77,11 @@ export const CODEGEN_TEST_INPUT: string = [
 /**
  * Expected stdout from running CODEGEN_TEST_INPUT through a correct Stak interpreter.
  * Breakdown: floor-div=-4, floor-mod=1, PRINTC(72,105,10)="Hi LF", loop prints 5..1.
+ *
+ * Trailing newline is omitted because nano-spawn strips the final newline from
+ * captured stdout (see nano-spawn `getOutput` in source/result.js).
  */
-export const CODEGEN_EXPECTED_OUTPUT: string = '-4\n1\nHi\n5\n4\n3\n2\n1\n';
+export const CODEGEN_EXPECTED_OUTPUT: string = '-4\n1\nHi\n5\n4\n3\n2\n1';
 
 /**
  * Performance test program: 10,000,000 iterations of an LCG, printing every 1000th state.

@@ -66,6 +66,7 @@ const parser = object({
 /** Parsed CLI arguments from process.argv */
 const args = runSync(parser, { programName: 'task-command', help: 'option', },);
 
+/** Destructured command and its arguments from the rest args after `--` */
 const [command, ...commandArgs] = args.rest;
 
 if (!command) {
@@ -93,40 +94,41 @@ catch (error) {
   // nano-spawn throws SubprocessError when the process fails
   match(error,)
     .when(
-      (
+      function isSubprocessError(
         error,
-      ): error is { exitCode?: number; signalName?: string; message: string; } =>
-        error !== null && typeof error === 'object' && 'exitCode' in error,
-      subprocessError => {
+      ): error is { exitCode?: number; signalName?: string; message: string; } {
+        return error !== null && typeof error === 'object' && 'exitCode' in error;
+      },
+      function handleSubprocessError(subprocessError): void {
         match(subprocessError.signalName,)
           .when(
-            (signal,): signal is string => signal !== undefined,
-            signal => {
+            function hasSignal(signal): signal is string { return signal !== undefined; },
+            function logSignal(signal): void {
               console.error(`Command terminated by signal: ${signal}`,);
             },
           );
 
         // Exit with 0 if allowFailure is true, otherwise use the command's exit code
         match(args.allowFailure,)
-          .with(false, () => {
+          .with(false, function exitWithCode(): void {
             process.exitCode = subprocessError.exitCode ?? 1;
           },)
-          .with(true, () => {
+          .with(true, function allowFailureNoop(): void {
             // Let script end naturally with exit code 0
           },);
       },
     )
-    .otherwise(() => {
+    .otherwise(function handleUnknownError(): void {
       console.error(
         `Failed to execute command: ${
           error instanceof Error ? error.message : String(error,)
         }`,
       );
       match(args.allowFailure,)
-        .with(false, () => {
+        .with(false, function rethrowError(): void {
           throw error;
         },)
-        .with(true, () => {
+        .with(true, function allowFailureNoop(): void {
           // Let script end naturally with exit code 0
         },);
     },);

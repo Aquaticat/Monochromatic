@@ -156,7 +156,7 @@ const builtinStrategies: Readonly<Record<BuiltinTimeStrategy, (values: readonly 
  *
  * @returns Aggregated timestamp from command stdout
  *
- * @throws {Error} When command fails or returns unparseable output
+ * @throws When command fails or returns unparseable output
  *
  * @example
  * ```ts
@@ -295,11 +295,19 @@ function formatTimestamp(t: number,): string {
  * comparison always false (fresh). To trigger rebuilds without file
  * sources, use an explicit `sh:` source like `-s "sh:echo Infinity"`.
  *
- * @param options - Sources, outputs, strategies, and verbose flag
+ * @param sources - File globs or `sh:` commands for source timestamps
+ *
+ * @param outputs - File globs or `sh:` commands for output timestamps
+ *
+ * @param verbose - Whether to log diagnostic messages
+ *
+ * @param sourceTimeStrategy - Strategy for aggregating source timestamps
+ *
+ * @param outputTimeStrategy - Strategy for aggregating output timestamps
  *
  * @returns `true` when stale (command needs to run)
  *
- * @throws {Error} When a `sh:` command fails or returns unparseable output
+ * @throws When a `sh:` command fails or returns unparseable output
  *
  * @example
  * ```ts
