@@ -33,6 +33,7 @@ export async function handleAnswer(
   _deckId: string,
 ): Promise<Response> {
   try {
+    // oxlint-disable-next-line typescript/no-unsafe-assignment -- req.json() returns any; validated by Zod schema below
     const body = await req.json();
     const parsed = AnswerSchema.safeParse(body,);
     if (!parsed.success) {

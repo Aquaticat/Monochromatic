@@ -14,7 +14,7 @@ import { $ as partitionNamed, } from '../p n/index.ts';
  *
  * @param iterable - Iterable or AsyncIterable to partition
  *
- * @yields Objects with decision ('pass', 'fail', or ['thrown', error]) and the item
+ * @returns Objects with decision ('pass', 'fail', or ['thrown', error]) and the item
  *
  * @example
  * ```ts

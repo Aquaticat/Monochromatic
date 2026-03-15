@@ -89,6 +89,7 @@ export function $(options: SerializeOptions,): string {
   const { value, serializer, lossyForCircular, } = options;
 
   if (hasCycle(value,)) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- hasCycle verified value is an object with cycles
     const decycled = decircular(value as object,);
     const serialized = serializer(decycled,);
     if (!lossyForCircular) {

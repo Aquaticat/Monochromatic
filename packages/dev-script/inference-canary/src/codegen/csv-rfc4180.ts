@@ -48,11 +48,10 @@ export const csvRfc4180 = createCodeGenProbe({
       if (!Array.isArray(parsed,) || parsed.length !== 2)
         return { correctness: 0.1, };
 
-      const first = parsed[0];
+      const [first, second,] = parsed;
       if (first === undefined)
         return { correctness: 0.1, };
 
-      const second = parsed[1];
       if (second === undefined)
         return { correctness: 0.2, };
 

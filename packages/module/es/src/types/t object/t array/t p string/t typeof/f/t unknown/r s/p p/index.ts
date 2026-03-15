@@ -26,20 +26,24 @@ export function $(value: unknown,): TypeOf {
   const typeOf = typeof value;
 
   if (noFurtherTypeOf.includes(typeOf,))
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeOf verified to be in noFurtherTypeOf tuple
     return typeOf as (typeof noFurtherTypeOf)[number];
 
   if (typeOf === 'bigint') {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeof guard ensures value is bigint
     const myValue = value as bigint;
     const sign = myValue === 0n ? 0 : (myValue > 0n ? 'positive' : 'negative');
     return [typeOf, { sign, },];
   }
 
   if (typeOf === 'boolean') {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeof guard ensures value is boolean
     const myValue = value as boolean;
     return [typeOf, { true: myValue, },];
   }
 
   if (typeOf === 'number') {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeof guard ensures value is number
     const myValue = value as number;
     if (Number.isNaN(myValue,))
       return [typeOf, { NaN: true, },];
@@ -50,6 +54,7 @@ export function $(value: unknown,): TypeOf {
   }
 
   if (typeOf === 'string') {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeof guard ensures value is string
     const myValue = value as string;
     if (myValue.length === 0)
       return [typeOf, { empty: true, },];
@@ -98,10 +103,12 @@ export function $(value: unknown,): TypeOf {
     if (prototypeString === '[object Promise]')
       return [typeOf, { prototype: 'Promise', },];
     if (prototypeString === '[object RegExp]') {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- prototype string check confirms RegExp
       const regexp = value as RegExp;
       return [typeOf, { prototype: ['RegExp', { global: regexp.global, },], },];
     }
 
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeof guard ensures value is object
     const myValue = value as object;
 
     // Default plain object

@@ -27,6 +27,15 @@ type InProgressPageData = {
   tasks: Task[];
 };
 
+/**
+ * Navigates to the task detail page.
+ *
+ * @param taskId - UUID of the task to open
+ */
+function openTask(taskId: string,): void {
+  globalThis.location.href = `/tasks/${taskId}`;
+}
+
 injectCSS(styles,);
 
 /** Deserialized page data from the server-rendered JSON blob. */
@@ -49,9 +58,7 @@ const list = h({ tag: 'ul', class: 'task-list', },);
 for (const task of pageData.tasks) {
   list.append(
     createTaskCard(task, {
-      onOpen: function openTask(taskId,) {
-        globalThis.location.href = `/tasks/${taskId}`;
-      },
+      onOpen: openTask,
       onToggleComplete: async function stopTimer(taskId,) {
         await api(`/api/tasks/${taskId}/stop`, { method: 'POST', },);
         globalThis.location.reload();

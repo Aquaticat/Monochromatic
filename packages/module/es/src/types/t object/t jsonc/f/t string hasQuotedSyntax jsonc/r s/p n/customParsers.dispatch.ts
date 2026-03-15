@@ -21,6 +21,7 @@ type ParseValueFn = (
 /** Late-bound reference, set once before any parsing call. */
 // Intentional let: configured once during module initialization by the parseValue module
 // oxlint-disable-next-line prefer-const
+// oxlint-disable-next-line eslint/init-declarations -- configured once during module initialization
 let ref: ParseValueFn;
 
 /**

@@ -2,6 +2,7 @@ import type { $ as Store, } from '../../../../../../t object/t store/t/r a/index
 import type { MemoizedAsyncFunction, } from '../../t/index.ts';
 import { $ as named, } from '../p n/index.ts';
 
+// oxlint-disable eslint/require-await -- async signature matches the named variant's Promise return type
 /**
  * Wraps an async function with memoization using LRU eviction, per-call salt-based
  * cache keys, and in-flight Promise deduplication.

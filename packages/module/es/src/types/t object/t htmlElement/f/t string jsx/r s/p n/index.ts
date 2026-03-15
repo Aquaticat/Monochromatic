@@ -81,6 +81,7 @@ type HOptions<TTag extends string,> = {
     [K in keyof HTMLElementEventMap]?: (
       event: HTMLElementEventMap[K],
     ) => void | Promise<void>;
+  // oxlint-disable-next-line typescript/no-explicit-any -- event parameter type varies by listener
   } & Partial<Record<string, (event: any,) => void | Promise<void>>>;
   /** Child nodes to append */
   children?: readonly (Node | string)[];
@@ -108,6 +109,7 @@ type HOptions<TTag extends string,> = {
 /* @__NO_SIDE_EFFECTS__ */ export function $<const TTag extends string,>(
   { tag, class: className, text, html, attrs, style, on, children, }: HOptions<TTag>,
 ): ElementFromTag<TTag> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement, narrowed via tag generic
   const element = document.createElement(tag,) as ElementFromTag<TTag>;
 
   if (className !== undefined)
@@ -127,12 +129,14 @@ type HOptions<TTag extends string,> = {
   if (style !== undefined) {
     for (const [property, value,] of Object.entries(style,)) {
       // Accepts both camelCase (flexDirection) and kebab-case (flex-direction)
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CSSStyleDeclaration indexed by string property name
       (element.style as unknown as Record<string, string>)[property] = value;
     }
   }
 
   if (on !== undefined) {
     for (const [eventName, handler,] of Object.entries(on,))
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event handler union cast to EventListener for addEventListener
       element.addEventListener(eventName, handler as EventListener,);
   }
 

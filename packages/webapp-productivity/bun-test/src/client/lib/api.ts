@@ -27,6 +27,7 @@ export async function api<T = unknown,>(
   if (!res.ok) {
     let err: { error?: string; } = { error: 'Request failed', };
     try {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- error response JSON shape validated by optional chaining below
       err = await res.json() as { error?: string; };
     }
     catch {

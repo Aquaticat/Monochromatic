@@ -4,6 +4,12 @@
 import { cssRem, } from '@monochromatic-dev/module-es/h-css';
 import { $ as css, } from './css.ts';
 
+/** Minimum touch target size in rem. */
+const MIN_TARGET = 3;
+
+/** Minimum spacing padding in rem (1/2). */
+const MIN_PADDING = 1 / 2;
+
 //region Primitive color tokens -- Raw color values that never change between modes.
 
 /** Raw color values that never change between light and dark modes. */
@@ -69,9 +75,9 @@ export const semanticTokens = css({
     '--orange-bg': 'var(--orange-light)',
     '--overlay-bg': 'rgb(0 0 0 / 0.3)',
     '--hover-bg': 'rgb(0 0 0 / 0.05)',
-    '--min-target': cssRem(3,),
+    '--min-target': cssRem(MIN_TARGET,),
     '--min-gap': cssRem(1,),
-    '--min-padding': cssRem(0.5,),
+    '--min-padding': cssRem(MIN_PADDING,),
     '--gap': cssRem(2,),
   },
 },);

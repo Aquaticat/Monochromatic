@@ -4,11 +4,11 @@
  * Encapsulates the timer, abort controller, and autofill state so the main
  * component class stays focused on rendering and event wiring.
  */
-import type {
-  AutofillResult,
-  MetadataState,
+import {
+  type AutofillResult,
+  type MetadataState,
+  AUTOFILL_DEBOUNCE_MS,
 } from './task-detail-types.ts';
-import { AUTOFILL_DEBOUNCE_MS, } from './task-detail-types.ts';
 
 /** Options for an autofill request. */
 type AutofillRequestOptions = {
@@ -68,9 +68,9 @@ export class AutofillManager {
     if (options.title.trim().length === 0)
       return;
 
-    const self = this;
-    this.#timer = setTimeout(function triggerFetch() {
-      void self.#fetch(options,);
+    const fetchFn = this.#fetch.bind(this,);
+    this.#timer = setTimeout(function triggerFetch(): void {
+      void fetchFn(options,);
     }, AUTOFILL_DEBOUNCE_MS,);
   }
 
@@ -84,15 +84,13 @@ export class AutofillManager {
     this.loading = true;
     onUpdate();
 
-    const self = this;
-
     /** Disposable guard that resets loading state on scope exit. */
     // oxlint-disable-next-line prefer-const -- using binding must be let-like per spec
     await using _loadingGuard = {
-      async [Symbol.asyncDispose](): Promise<void> {
-        self.loading = false;
+      [Symbol.asyncDispose]: function resetLoading(this: AutofillManager): void {
+        this.loading = false;
         onUpdate();
-      },
+      }.bind(this),
     };
 
     try {
@@ -106,6 +104,7 @@ export class AutofillManager {
       if (!response.ok)
         return;
 
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- response JSON matches AutofillResult by API contract
       const result = (await response.json()) as AutofillResult;
       this.autofilled.clear();
 

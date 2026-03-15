@@ -14,16 +14,25 @@ import {
   minTouchTarget,
 } from '../mixins.ts';
 
+/** Host gap in rem (1/2). */
+const HOST_GAP = 1 / 2;
+
+/** Heading and toggle size in rem (1 1/4). */
+const HEADING_SIZE = 1 + 1 / 2 / 2;
+
+/** Normal font weight. */
+const FONT_WEIGHT_NORMAL = 400;
+
 /** Compiled CSS string for `<section-heading>` Shadow DOM. */
 const STYLES = [
   css({
     rule: ':host',
-    decls: { ...flexColumn(), gap: cssRem(0.5,), },
+    decls: { ...flexColumn(), gap: cssRem(HOST_GAP,), },
   },),
   css({
     rule: '.heading',
-    decls: { ...flexRow(), gap: cssRem(1,), 'font-size': cssRem(1.25,),
-      'font-weight': cssInt(400,), cursor: 'pointer', },
+    decls: { ...flexRow(), gap: cssRem(1,), 'font-size': cssRem(HEADING_SIZE,),
+      'font-weight': cssInt(FONT_WEIGHT_NORMAL,), cursor: 'pointer', },
   },),
   css({
     rule: '.icon',
@@ -31,7 +40,7 @@ const STYLES = [
   },),
   css({
     rule: '.toggle',
-    decls: { 'inline-size': cssRem(1.25,), 'block-size': cssRem(1.25,), },
+    decls: { 'inline-size': cssRem(HEADING_SIZE,), 'block-size': cssRem(HEADING_SIZE,), },
   },),
   css({
     rule: '.content',
@@ -57,7 +66,11 @@ class SectionHeading extends HTMLElement {
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Whether the section content is currently visible. */
+  /**
+   * Whether the section content is currently visible.
+   *
+   * @returns Current open state
+   */
   get open(): boolean {
     return this.#open;
   }

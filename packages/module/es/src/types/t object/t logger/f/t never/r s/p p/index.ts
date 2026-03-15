@@ -73,6 +73,7 @@ async function initialize(): Promise<void> {
 }
 
 /** Eager initialization promise -- throws at module load if no backends available. */
+// oxlint-disable-next-line unicorn/prefer-top-level-await -- fire-and-forget initialization, not awaited
 const initPromise: Promise<void> = initialize();
 
 /**
@@ -95,6 +96,8 @@ function markFailed(entry: SinkEntry,): void {
  * Creates a logging method for the specified severity level.
  *
  * @param level - Log severity level for messages from this method
+ *
+ * @returns logging function for the given level
  */
 function createMethod(level: Level,): (message: string,) => void {
   return function logAtLevel(message: string,): void {
@@ -114,7 +117,7 @@ function createMethod(level: Level,): (message: string,) => void {
         const result = entry.sink(record,);
         if (result instanceof Promise) {
           // Fire-and-forget: awaiting would make the logger blocking
-          // oxlint-disable-next-line promise/prefer-await-to-then -- intentional fire-and-forget
+          // oxlint-disable-next-line promise/prefer-await-to-then, promise/always-return -- intentional fire-and-forget
           void result.then(function noop() {/* success */}, function onReject() {
             markFailed(entry,);
           },);

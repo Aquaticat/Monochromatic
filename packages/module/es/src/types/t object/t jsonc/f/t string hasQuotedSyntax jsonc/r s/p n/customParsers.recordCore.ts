@@ -1,3 +1,6 @@
+// oxlint-disable typescript/no-unsafe-type-assertion -- JSONC parser casts string slices to branded fragment types
+// oxlint-disable tsdoc/valid-types -- TSDoc braces in JSONC context descriptions are intentional
+// oxlint-disable eslint/init-declarations -- conditional assignment in record parsing
 /**
  * JSONC record (object) parsing — member recursion and record container parser.
  *

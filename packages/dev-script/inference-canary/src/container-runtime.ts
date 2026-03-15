@@ -47,9 +47,9 @@ function whichSync(name: string,): string | null {
   try {
     // `where.exe` may return multiple lines; take the first match
     /** First line of which output, containing the resolved binary path. */
-    const firstLine = execFileSync(WHICH_CMD, [name,], { encoding: 'utf8', },)
+    const [firstLine,] = execFileSync(WHICH_CMD, [name,], { encoding: 'utf8', },)
       .trim()
-      .split('\n',)[0];
+      .split('\n',);
     if (firstLine === undefined)
       return null;
     return firstLine.trim();

@@ -41,7 +41,9 @@ const emptyTask: Task = {
   updatedAt: '',
 };
 
-/** Return value of {@link createNewTaskDialog}. */
+/**
+ * Return value of {@link createNewTaskDialog}.
+ */
 type NewTaskDialog = {
   /** Fixed panel element to append to the document body. */
   panel: HTMLElement;
@@ -60,6 +62,7 @@ type NewTaskDialog = {
  * @returns panel and fab elements ready for DOM insertion
  */
 export function createNewTaskDialog(): NewTaskDialog {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-detail is registered as TaskDetail
   const detail = document.createElement('task-detail',) as TaskDetail;
 
   const panel = h({ tag: 'div', class: 'new-task-panel', },);
@@ -76,9 +79,10 @@ export function createNewTaskDialog(): NewTaskDialog {
       fabElement.hidden = false;
   }
 
-  detail.addEventListener('action', async function handleAction(event,) {
+  detail.addEventListener('action', function handleAction(event,) {
     if (!(event instanceof CustomEvent))
       throw new TypeError("Expected CustomEvent for 'action' listener",);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component
     const { action, title, description, } = event.detail as {
       action: string;
       title: string;
@@ -96,18 +100,20 @@ export function createNewTaskDialog(): NewTaskDialog {
         return;
 
       const metadata = detail.getMetadata();
-      await api('/api/tasks', {
-        method: 'POST',
-        body: JSON.stringify({
-          title: trimmedTitle,
-          description: description.length === 0 ? null : description,
-          tags: metadata.tags,
-          locations: metadata.locations,
-          priority: metadata.priority,
-          complexity: metadata.complexity,
-        },),
-      },);
-      globalThis.location.reload();
+      void (async function saveTask(): Promise<void> {
+        await api('/api/tasks', {
+          method: 'POST',
+          body: JSON.stringify({
+            title: trimmedTitle,
+            description: description.length === 0 ? null : description,
+            tags: metadata.tags,
+            locations: metadata.locations,
+            priority: metadata.priority,
+            complexity: metadata.complexity,
+          },),
+        },);
+        globalThis.location.reload();
+      })();
     }
   },);
 

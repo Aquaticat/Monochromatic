@@ -31,7 +31,9 @@ export function buildOverallPoints(
   openrouterId: string,
   color: string,
 ): readonly ScatterPoint[] {
-  return entries.filter(hasMultipleProbes,).map(
+  return entries.filter(function filterMultipleProbes(entry,) {
+    return hasMultipleProbes(entry,);
+  },).map(
     function toPoint(entry, index,): ScatterPoint {
       const runId = `${label}-${entry.timestamp}`;
       return {

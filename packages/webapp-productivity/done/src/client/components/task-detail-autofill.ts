@@ -65,7 +65,7 @@ export class AutofillController {
     if (title.trim().length === 0)
       return;
 
-    this.#timer = setTimeout(function triggerAutofill(): void {
+    this.#timer = setTimeout(function triggerAutofill(this: AutofillController,): void {
       // oxlint-disable-next-line typescript/no-floating-promises -- fire-and-forget
       this.#fetch(title.trim(),);
     }

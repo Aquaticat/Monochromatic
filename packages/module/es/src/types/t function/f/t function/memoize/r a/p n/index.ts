@@ -3,12 +3,12 @@ import {
 } from '../../../../../../t object/t store/f/t store/r a/p n/index.ts';
 import type { $ as Store, } from '../../../../../../t object/t store/t/r a/index.ts';
 import { buildCacheKey, } from '../../cacheKey.ts';
-import type {
-  MemoizeAsyncNamedOptions,
-  MemoizedAsyncFunction,
-  MemoizedCallOptions,
+import {
+  type MemoizeAsyncNamedOptions,
+  type MemoizedAsyncFunction,
+  type MemoizedCallOptions,
+  DEFAULT_MAX_CACHE_SIZE,
 } from '../../t/index.ts';
-import { DEFAULT_MAX_CACHE_SIZE, } from '../../t/index.ts';
 
 /**
  * Wraps an async function with memoization using LRU eviction, per-call salt-based
@@ -154,6 +154,8 @@ export async function $<
   /**
    * Memoized async wrapper.
    * Salt is provided per-call to enable dynamic cache invalidation.
+   *
+   * @returns cached or freshly computed result
    */
   function memoized(this: void,
     { args, salt, }: MemoizedCallOptions<TArgs>,): Promise<TReturn>
@@ -174,5 +176,6 @@ export async function $<
     await store.delete(key,);
   };
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- memoized function is extended with store/clear/delete properties
   return memoized as MemoizedAsyncFunction<TArgs, TReturn>;
 }

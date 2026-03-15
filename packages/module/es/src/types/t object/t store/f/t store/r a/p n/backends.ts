@@ -33,6 +33,7 @@ export async function queryAllBackends(
       };
     },),
   );
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-empty backends guarantees non-empty results
   return results as [BackendResult<StorageBackend>, ...BackendResult<StorageBackend>[],];
 }
 

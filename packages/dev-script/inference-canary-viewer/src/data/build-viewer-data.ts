@@ -48,7 +48,7 @@ export function buildViewerData(
     const { model, label, timestamp, } = firstProbe.meta;
     const probeScores: Record<string, number> = {};
     const pass2Scores: Record<string, number> = {};
-    let config: ViewerEntry['config'];
+    let config: ViewerEntry['config'] = undefined;
     let hasPass2 = false;
 
     for (const [probeName, artifact,] of probes) {
@@ -97,7 +97,7 @@ export function buildViewerData(
     entries.push({
       timestamp: failure.timestamp,
       model: failure.model,
-      label: (failure as unknown as { label?: string; }).label ?? failure.model,
+      label: failure.label,
       overallScore: 0,
       probeScores: {},
       failed: true,

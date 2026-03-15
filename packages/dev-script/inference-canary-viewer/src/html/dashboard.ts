@@ -27,7 +27,7 @@ export function renderDashboard(
     overlaysHtml: string;
   },
 ): string {
-  return h({
+  return `${h({
     tag: 'nav',
     class: 'view-switcher',
     children: [
@@ -57,5 +57,5 @@ export function renderDashboard(
         ],
       },),
     ],
-  },) + `\n${overlaysHtml}`;
+  },)}\n${overlaysHtml}`;
 }

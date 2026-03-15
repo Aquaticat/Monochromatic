@@ -26,7 +26,7 @@ class TopNav extends HTMLElement {
   /** Renders the hamburger, heading, and search link into the shadow root. */
   connectedCallback(): void {
     const heading = this.getAttribute('heading',) ?? '';
-    const self = this;
+    const dispatchFn = this.dispatchEvent.bind(this,);
 
     this.#shadow.replaceChildren(
       h({ tag: 'style', text: TOP_NAV_STYLES, },),
@@ -46,8 +46,8 @@ class TopNav extends HTMLElement {
           },),
         ],
         on: {
-          click: function handleMenuOpen() {
-            self.dispatchEvent(
+          click: function handleMenuOpen(): void {
+            dispatchFn(
               new CustomEvent('menu-open', { bubbles: true, composed: true, },),
             );
           },

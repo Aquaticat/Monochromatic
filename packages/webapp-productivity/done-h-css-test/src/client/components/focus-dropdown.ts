@@ -40,29 +40,42 @@ class FocusDropdown extends HTMLElement {
     this.#render();
   }
 
+  /**
+   * Selects a preset, updates the display, and dispatches a change event.
+   *
+   * @param preset - Preset label
+   *
+   * @param textSpan - Text element to update
+   *
+   * @param menu - Popover menu to hide
+   */
+  #selectPreset(preset: string, textSpan: HTMLElement, menu: HTMLElement,): void {
+    this.#value = preset;
+    textSpan.textContent = preset;
+    menu.hidePopover();
+    this.dispatchEvent(
+      new CustomEvent('change', { bubbles: true,
+        detail: { value: preset, }, },),
+    );
+  }
+
   /** Renders the trigger button, divider, and popover menu into the shadow root. */
   #render(): void {
     const textSpan = h({ tag: 'span', class: 'text', text: this.#value, },);
-    const self = this;
+    const selectFn = this.#selectPreset.bind(this,);
 
     const menu = h({
       tag: 'ul',
       class: 'menu',
       attrs: { popover: 'auto', },
-      children: DEFAULT_PRESETS.map(function buildOption(preset,) {
+      children: DEFAULT_PRESETS.map(function buildOption(preset,): HTMLElement {
         return h({
           tag: 'li',
           class: 'option',
           text: preset,
           on: {
-            click: function handleOptionClick() {
-              self.#value = preset;
-              textSpan.textContent = preset;
-              menu.hidePopover();
-              self.dispatchEvent(
-                new CustomEvent('change', { bubbles: true,
-                  detail: { value: preset, }, },),
-              );
+            click: function handleOptionClick(): void {
+              selectFn(preset, textSpan, menu,);
             },
           },
         },);
@@ -79,7 +92,7 @@ class FocusDropdown extends HTMLElement {
           h({ tag: 'span', class: 'divider', },),
           h({ tag: 'span', text: '\u25BC', },),
         ],
-        on: { click: function handleTriggerClick() {
+        on: { click: function handleTriggerClick(): void {
           menu.togglePopover();
         }, },
       },),

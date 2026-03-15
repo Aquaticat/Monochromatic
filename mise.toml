@@ -185,7 +185,7 @@ run = "{{vars.fanout}}"
 
 [task_templates."lint:oxlint"]
 description = "Lint with Oxlint"
-run = "oxlint --type-aware -c {{vars.monorepo_root}}/.oxlintrc.json"
+run = "task-oxlint --type-aware -c {{vars.monorepo_root}}/.oxlintrc.json"
 
 [task_templates."lint:types"]
 description = "TypeScript"

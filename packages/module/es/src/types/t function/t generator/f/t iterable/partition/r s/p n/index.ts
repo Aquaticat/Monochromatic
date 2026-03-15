@@ -11,7 +11,7 @@
  * @param params - Configuration object with `predicate` (synchronous function to test each item)
  *   and `iterable` (synchronous iterable to partition)
  *
- * @yields Objects with decision ('pass', 'fail', or ['thrown', error]) and the item
+ * @returns Objects with decision ('pass', 'fail', or ['thrown', error]) and the item
  *
  * @example
  * ```ts
@@ -75,6 +75,7 @@ export function* $<T,>(params: {
   for (const item of iterable) {
     try {
       const result = predicate(item,);
+      // oxlint-disable-next-line unicorn/prefer-ternary -- yield cannot be used in ternary expression
       if (result)
         yield { decision: 'pass', item, };
       else

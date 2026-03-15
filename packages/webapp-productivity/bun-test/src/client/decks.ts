@@ -21,7 +21,18 @@ if (pageDataEl === null)
   throw new Error('Missing #page-data element',);
 
 /** Parsed deck list from server-embedded JSON. */
+// oxlint-disable-next-line typescript/no-unsafe-assignment -- JSON.parse returns any; shape validated by typed consumer
 const data: { decks: Deck[]; } = JSON.parse(pageDataEl.textContent,);
+
+/**
+ * Deletes a deck via API and reloads the page.
+ *
+ * @param deckId - UUID of the deck to delete
+ */
+async function removeDeckById(deckId: string,): Promise<void> {
+  await api(`/api/decks/${deckId}`, { method: 'DELETE', },);
+  globalThis.location.reload();
+}
 
 /** Root application element. */
 const app = document.createElement('main',);
@@ -58,18 +69,9 @@ else {
     del.className = 'danger';
     del.textContent = 'Delete';
 
-    /** Deletes the deck via API and reloads the page. */
-    async function removeDeck(): Promise<void> {
-      await api(`/api/decks/${deck.id}`, { method: 'DELETE', },);
-      globalThis.location.reload();
-    }
-
-    /** Wraps async delete to satisfy void-returning event listener contract. */
-    function handleDelete(): void {
-      void removeDeck();
-    }
-
-    del.addEventListener('click', handleDelete,);
+    del.addEventListener('click', function onDelete(): void {
+      void removeDeckById(deck.id,);
+    },);
     li.append(del,);
 
     ul.append(li,);
@@ -113,7 +115,11 @@ async function submitNewDeck(event: Event,): Promise<void> {
   globalThis.location.reload();
 }
 
-/** Wraps async submit to satisfy void-returning event listener contract. */
+/**
+ * Wraps async submit to satisfy void-returning event listener contract.
+ *
+ * @param event - Form submission event forwarded to async handler
+ */
 function handleSubmit(event: Event,): void {
   void submitNewDeck(event,);
 }

@@ -14,6 +14,7 @@ export type Deck = {
  * @returns All decks with aggregated `card_count`
  */
 export function listDecks(): Promise<Deck[]> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- db driver returns untyped rows matching Deck schema
   return db
     .prepare(
       `SELECT d.*, COUNT(c.id) AS card_count
@@ -33,6 +34,7 @@ export function listDecks(): Promise<Deck[]> {
  * @returns Deck record, or `null` if not found
  */
 export async function getDeck(id: string,): Promise<Deck | null> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- db driver returns untyped row matching Deck schema
   const row = await db.prepare('SELECT * FROM decks WHERE id = ?',).get(id,) as
     | Deck
     | undefined;

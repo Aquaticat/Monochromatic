@@ -26,7 +26,7 @@ export const staticHandler = defineHandler(function handleStaticAsset(event,) {
       return readFile(join('.', id,),);
     },
     getMeta: async function getMetadata(id,) {
-      let stats: Awaited<ReturnType<typeof stat>> | undefined;
+      let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
       try {
         stats = await stat(join('.', id,),);
       }

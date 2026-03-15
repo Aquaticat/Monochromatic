@@ -41,7 +41,8 @@ class TopNav extends HTMLElement {
           },),
         ],
         on: {
-          click: function openMenu(): void {
+          // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
+          click: function openMenu(this: TopNav,): void {
             this.dispatchEvent(
               new CustomEvent('menu-open', { bubbles: true, composed: true, },),
             );

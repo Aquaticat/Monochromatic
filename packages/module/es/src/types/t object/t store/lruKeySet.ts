@@ -47,6 +47,7 @@ export function createLruKeySet(
 
       if (keys.size > maxSize) {
         const oldest = keys.values().next();
+        // oxlint-disable-next-line typescript/strict-boolean-expressions -- IteratorResult.done is boolean|undefined
         if (!oldest.done) {
           keys.delete(oldest.value,);
           return oldest.value;

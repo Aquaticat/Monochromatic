@@ -3,8 +3,8 @@
  *
  * Separated to keep `mixins.ts` under the line budget.
  */
-import type { CssDeclarations, } from '@monochromatic-dev/module-es/h-css';
 import {
+  type CssDeclarations,
   cssCalc,
   cssInt,
   cssRem,
@@ -15,6 +15,15 @@ import {
   flexRow,
   minTouchTarget,
 } from './mixins.ts';
+
+/** Button gap and padding in rem (1/2). */
+const BTN_PADDING = 1 / 2;
+
+/** Sticky bar height in rem. */
+const BAR_HEIGHT = 3;
+
+/** Z-index for sticky navigation bars. */
+const Z_INDEX_STICKY = 10;
 
 /**
  * Outlined interactive button with token-based colors.
@@ -30,12 +39,12 @@ export function buttonOutlined(): CssDeclarations {
   return {
     ...flexCenter(),
     ...minTouchTarget(),
-    gap: cssRem(0.5,),
+    gap: cssRem(BTN_PADDING,),
     'border-width': cssCalc(`${cssRem(1,)} / 16`,),
     'border-style': 'solid',
     'border-color': cssVar('fg',),
-    'padding-block': cssRem(0.5,),
-    'padding-inline': cssRem(0.5,),
+    'padding-block': cssRem(BTN_PADDING,),
+    'padding-inline': cssRem(BTN_PADDING,),
     'background-color': 'transparent',
     color: cssVar('fg',),
     'font-family': 'inherit',
@@ -61,12 +70,12 @@ export function stickyBar(): CssDeclarations {
   return {
     ...flexRow(),
     gap: cssVar('min-gap',),
-    'block-size': cssRem(3,),
+    'block-size': cssRem(BAR_HEIGHT,),
     'padding-block': 0,
     'padding-inline': cssVar('min-padding',),
     'background-color': cssVar('bg',),
     position: 'sticky',
     'inset-block-start': 0,
-    'z-index': cssInt(10,),
+    'z-index': cssInt(Z_INDEX_STICKY,),
   };
 }

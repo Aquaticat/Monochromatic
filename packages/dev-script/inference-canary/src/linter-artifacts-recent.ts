@@ -54,6 +54,7 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
     const modelPath = join(LINT_DIR, modelDir,);
     let artifactDirs: string[] = [];
     try {
+      // oxlint-disable-next-line no-await-in-loop -- sequential directory reads per model
       artifactDirs = await readdir(modelPath,);
     }
     catch {
@@ -69,6 +70,7 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
           // Read meta.json to get the model label (fall back to directory name)
           const metaPath = join(modelPath, dirName, 'meta.json',);
           try {
+            // oxlint-disable-next-line no-await-in-loop -- sequential meta.json reads within nested artifact scan
             const metaRaw = await readFile(metaPath, 'utf8',);
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON from meta.json has known shape
             const meta = JSON.parse(metaRaw,) as Partial<FailureArtifactMeta>;
@@ -100,6 +102,7 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
       // Read meta.json to get the model label (old artifacts without label fall back to directory name)
       const metaPath = join(modelPath, dirName, 'meta.json',);
       try {
+        // oxlint-disable-next-line no-await-in-loop -- sequential meta.json reads within nested artifact scan
         const metaRaw = await readFile(metaPath, 'utf8',);
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON from meta.json has known shape
         const meta = JSON.parse(metaRaw,) as Partial<ArtifactMeta>;

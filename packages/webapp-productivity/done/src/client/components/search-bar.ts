@@ -46,6 +46,11 @@ const STYLES = css(`
 /** Debounce delay for search input in milliseconds. */
 const SEARCH_DEBOUNCE_MS = 300;
 
+/** Navigates back one entry in browser history. */
+function onBackClick(): void {
+  history.back();
+}
+
 /**
  * `\<search-bar\>` -- sticky bar with a back button and debounced search input.
  * Dispatches a `search` event with `\{ query \}` after the debounce delay.
@@ -91,9 +96,7 @@ class SearchBar extends HTMLElement {
       tag: 'button',
       class: 'back',
       attrs: { 'aria-label': 'Go back', },
-      on: { click: function onBackClick() {
-        history.back();
-      }, },
+      on: { click: onBackClick, },
     },);
     backButton.innerHTML =
       `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 10,16 20,26"/></svg>`;
@@ -109,9 +112,9 @@ class SearchBar extends HTMLElement {
       function noop() {/* initial */},
       0,
     );
-    input.addEventListener('input', function onInput(): void {
+    input.addEventListener('input', function onInput(this: SearchBar,): void {
       clearTimeout(timeout,);
-      timeout = setTimeout(function dispatchSearch(): void {
+      timeout = setTimeout(function dispatchSearch(this: SearchBar,): void {
         this.dispatchEvent(
           new CustomEvent('search', { detail: { query: input.value.trim(), },
             bubbles: true, },),

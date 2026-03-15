@@ -4,7 +4,7 @@ import type {
 } from '../index.ts';
 
 /**
- * Synchronous backend storage interface for {@link $}.
+ * Synchronous backend storage interface for SyncStore.
  * All operations return synchronously.
  * Compatible with `Map<string, string>`.
  *
@@ -46,7 +46,7 @@ export type SyncStorageBackend = {
 };
 
 /**
- * Configuration for constructing a sync {@link $}.
+ * Configuration for constructing a sync SyncStore.
  *
  * @example
  * ```ts

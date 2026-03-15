@@ -49,8 +49,11 @@ export async function run(cmd: readonly string[],): Promise<void> {
  * @returns Fuzz percentage string like "12%"
  */
 export function toleranceToFuzz(tolerance: number,): string {
-  const maxDist = Math.sqrt(3,) * 255;
-  const pct = Math.round((tolerance / maxDist) * 100,);
+  const RGB_CHANNELS = 3;
+  const MAX_CHANNEL = 255;
+  const PERCENT = 100;
+  const maxDist = Math.sqrt(RGB_CHANNELS,) * MAX_CHANNEL;
+  const pct = Math.round((tolerance / maxDist) * PERCENT,);
   return `${pct}%`;
 }
 

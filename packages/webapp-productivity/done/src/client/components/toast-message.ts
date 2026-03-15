@@ -46,7 +46,8 @@ class ToastMessage extends HTMLElement {
   /** Renders content and schedules auto-removal after `DISMISS_MS`. */
   connectedCallback(): void {
     this.#render();
-    this.#timer = setTimeout(function dismiss(): void {
+    // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
+    this.#timer = setTimeout(function dismiss(this: ToastMessage,): void {
       this.remove();
     }
       .bind(this,), DISMISS_MS,);

@@ -1,7 +1,7 @@
 /**
  * Client entry script for the Task Detail page.
  *
- * Same hydration pattern as inbox.ts: injectCSS → readPageData → build DOM into #app.
+ * Same hydration pattern as inbox.ts: injectCSS -> readPageData -> build DOM into #app.
  * The server renders its own HTML shell (not via renderPage) without `<top-nav>`,
  * because the `<task-detail>` component provides its own back-button header.
  */
@@ -54,15 +54,17 @@ if (!(appElement instanceof HTMLElement))
 const app = appElement;
 
 /** Task detail web component configured with server-provided data. */
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-detail is registered as TaskDetail
 const detail = document.createElement('task-detail',) as TaskDetail;
 detail.configure({
   task,
   blockerSummaries: pageData.blockerSummaries,
 },);
 
-detail.addEventListener('action', async function handleAction(event,) {
+detail.addEventListener('action', function handleAction(event,) {
   if (!(event instanceof CustomEvent))
     throw new TypeError("Expected CustomEvent for 'action' listener",);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component
   const { action, title, description, } = event.detail as {
     action: string;
     title: string;
@@ -83,27 +85,37 @@ detail.addEventListener('action', async function handleAction(event,) {
       dueDate: task.dueDate,
       blockedBy: task.blockedBy,
     };
-    await api(`/api/tasks/${task.id}`, {
-      method: 'PUT',
-      body: JSON.stringify(payload,),
-    },);
-    globalThis.location.reload();
+    void (async function saveTask(): Promise<void> {
+      await api(`/api/tasks/${task.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload,),
+      },);
+      globalThis.location.reload();
+    })();
   }
   else if (action === 'start') {
-    await api(`/api/tasks/${task.id}/start`, { method: 'POST', },);
-    globalThis.location.reload();
+    void (async function startTask(): Promise<void> {
+      await api(`/api/tasks/${task.id}/start`, { method: 'POST', },);
+      globalThis.location.reload();
+    })();
   }
   else if (action === 'stop') {
-    await api(`/api/tasks/${task.id}/stop`, { method: 'POST', },);
-    globalThis.location.reload();
+    void (async function stopTask(): Promise<void> {
+      await api(`/api/tasks/${task.id}/stop`, { method: 'POST', },);
+      globalThis.location.reload();
+    })();
   }
   else if (action === 'complete') {
-    await api(`/api/tasks/${task.id}/complete`, { method: 'POST', },);
-    globalThis.location.href = '/';
+    void (async function completeTask(): Promise<void> {
+      await api(`/api/tasks/${task.id}/complete`, { method: 'POST', },);
+      globalThis.location.href = '/';
+    })();
   }
   else if (action === 'delete') {
-    await api(`/api/tasks/${task.id}`, { method: 'DELETE', },);
-    globalThis.location.href = '/';
+    void (async function deleteTask(): Promise<void> {
+      await api(`/api/tasks/${task.id}`, { method: 'DELETE', },);
+      globalThis.location.href = '/';
+    })();
   }
 },);
 

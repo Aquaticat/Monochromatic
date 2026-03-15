@@ -6,6 +6,7 @@
  * import { REFERENCE_PATH, VIEWBOX, PALETTE, cropToViewBox } from './config.ts'
  * ```
  */
+/* eslint-disable no-magic-numbers -- pixel coordinates, RGB values, and joint positions are inherently numeric configuration data */
 
 /** Absolute path to the 3-view reference sheet (1920x1080 JPEG). */
 export const REFERENCE_PATH =

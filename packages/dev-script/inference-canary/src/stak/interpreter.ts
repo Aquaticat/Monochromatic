@@ -38,7 +38,7 @@ export function runStak(source: string,): string {
   }
 
   const stack: number[] = [];
-  const env: Map<string, number> = new Map();
+  const env = new Map<string, number>();
   // ip and out are let because they are mutated on every instruction
   let ip = 0;
   let out = '';

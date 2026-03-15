@@ -10,6 +10,7 @@
  */
 // Side-effect: shims `globalThis.process` for PostCSS and node:path polyfill.
 // Must be imported before build-css so the shim exists when postcss evaluates.
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: process shim
 import '@monochromatic-dev/build-tool-css/ts/process-shim';
 import { applyMixins, } from '@monochromatic-dev/build-tool-css/ts';
 // Bun inlines the CSS file content as a string at bundle time

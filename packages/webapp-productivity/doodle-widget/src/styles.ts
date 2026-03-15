@@ -8,7 +8,6 @@ import {
   $,
   cssNum,
   cssOklch,
-  type CssValue,
 } from '@monochromatic-dev/module-es/h-css';
 import {
   BORDER_COLOR,
@@ -103,7 +102,7 @@ export function renderStyles(): string {
     $({
       rule: '.text-input:read-only',
       decls: {
-        'background-color': 'transparent' as CssValue,
+        'background-color': 'transparent',
         'pointer-events': 'none',
       },
       raw: ';min-inline-size:0;cursor:default',

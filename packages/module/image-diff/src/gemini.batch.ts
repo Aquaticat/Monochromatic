@@ -47,7 +47,7 @@ export async function geminiEmbedBatch(
   const model = (config.model as GeminiModel | undefined) ?? DEFAULT_GEMINI_MODEL;
 
   const inlineDataItems = await Promise.all(
-    inputs.map(async function convertInput(input,) {
+    inputs.map(function convertInput(input,) {
       return toGeminiInlineData(input,);
     },),
   );

@@ -40,6 +40,28 @@ import {
   shouldSkip,
 } from './validation.ts';
 
+//region Type guard
+
+/**
+ * Type guard that narrows a generic tool input to {@link BashToolInput}.
+ *
+ * @param input - tool input to check
+ *
+ * @returns `true` when `input` has a string `command` property
+ *
+ * @example
+ * ```ts
+ * if (isBashToolInput(event.tool_input)) {
+ *   console.log(event.tool_input.command);
+ * }
+ * ```
+ */
+function isBashToolInput(input: Record<string, unknown>,): input is BashToolInput {
+  return typeof input.command === 'string';
+}
+
+//endregion
+
 //region Main
 
 /** Raw JSON string read from stdin containing the hook event payload. */
@@ -53,12 +75,11 @@ const raw = await readStdin();
 /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
 const event = JSON.parse(raw,) as PreToolUseInput;
 
-if (event.tool_name !== 'Bash')
+if (event.tool_name !== 'Bash' || !isBashToolInput(event.tool_input,))
   writeOutput({},);
 else {
-  /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tool_input shape matches BashToolInput when tool_name is "Bash" */
-  /** Typed tool input after verifying tool_name is "Bash". */
-  const bashInput = event.tool_input as BashToolInput;
+  /** Typed tool input after verifying tool_name is "Bash" and input shape. */
+  const bashInput = event.tool_input;
 
   if (!isAllowed(bashInput.command,) || shouldSkip(bashInput.command,))
     writeOutput({},);

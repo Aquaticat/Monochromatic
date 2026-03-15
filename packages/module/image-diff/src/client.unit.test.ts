@@ -47,8 +47,8 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number,): strin
       // oxlint-disable-next-line no-bitwise -- CRC32 requires bitwise operations
       crc = (crcTable[(crc ^ byte) & 0xFF] ?? 0) ^ (crc >>> 8);
     }
-    // oxlint-disable-next-line no-bitwise -- final XOR
-    return (crc ^ 0xFF_FF_FF_FF) >>> 0;
+    // oxlint-disable-next-line no-bitwise, prefer-math-trunc -- final XOR; bitwise truncation is intentional for CRC32
+    return Math.trunc((crc ^ 0xFF_FF_FF_FF) >>> 0);
   }
 
   /** Encode a 4-byte big-endian unsigned integer. */
@@ -109,8 +109,8 @@ function makeMinimalPngDataUri(red: number, green: number, blue: number,): strin
     a = (a + byte) % 65_521;
     b = (b + a) % 65_521;
   }
-  // oxlint-disable-next-line no-bitwise -- Adler-32 packing
-  const adler32 = ((b << 16) | a) >>> 0;
+  // oxlint-disable-next-line no-bitwise, prefer-math-trunc -- Adler-32 packing; bitwise truncation is intentional
+  const adler32 = Math.trunc(((b << 16) | a) >>> 0);
   deflateBlock.push(...uint32be(adler32,),);
 
   const idat = makeChunk([0x49, 0x44, 0x41, 0x54,], deflateBlock,);
@@ -145,8 +145,7 @@ describe('embedBatch (voyage)', function embedBatchVoyageSuite() {
     },);
 
     expect(result.embeddings.length,).toBe(2,);
-    const first = result.embeddings[0];
-    const second = result.embeddings[1];
+    const [first, second,] = result.embeddings;
     if (first === undefined || second === undefined)
       throw new Error('missing embeddings',);
     expect(first.length,).toBeGreaterThan(0,);
@@ -202,8 +201,7 @@ describe('embedBatch (gemini)', function embedBatchGeminiSuite() {
     },);
 
     expect(result.embeddings.length,).toBe(2,);
-    const first = result.embeddings[0];
-    const second = result.embeddings[1];
+    const [first, second,] = result.embeddings;
     if (first === undefined || second === undefined)
       throw new Error('missing embeddings',);
     expect(first.length,).toBeGreaterThan(0,);

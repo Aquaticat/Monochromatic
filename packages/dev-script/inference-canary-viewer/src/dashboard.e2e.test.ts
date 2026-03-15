@@ -266,7 +266,7 @@ test.describe('popover ID wiring', () => {
       for (const button of buttons) {
         const targetId = button.getAttribute('popovertarget',);
         if (targetId !== null
-          && document.querySelector<Element>(`#${targetId}`,) === null)
+          && document.querySelector<HTMLElement>(`#${targetId}`,) === null)
         {
           broken.push(targetId,);
         }
@@ -310,6 +310,7 @@ test.describe('data visibility', () => {
 
     for (let i = 0; i < count; i++) {
       const scoreCell = rows.nth(i,).locator('td',).nth(1,);
+      // oxlint-disable-next-line no-await-in-loop -- Playwright locator calls must be sequential within a loop
       const text = await scoreCell.textContent();
       expect(text?.trim(),).not.toBe('',);
     }

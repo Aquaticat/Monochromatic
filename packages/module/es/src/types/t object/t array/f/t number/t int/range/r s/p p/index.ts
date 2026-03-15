@@ -79,12 +79,13 @@ export function $<const Length extends number,>(
     throw new RangeError('Length must be non-negative',);
 
   if (length === 0) {
-    // oxlint-disable-next-line typescript/no-unsafe-return -- Return type is a type TS can't auto infer
+    // oxlint-disable-next-line typescript/no-unsafe-return, typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- branded tuple return type requires cast
     return [] as any;
   }
 
-  // oxlint-disable-next-line typescript/no-unsafe-return -- Return type is a type TS can't auto infer
+  // oxlint-disable typescript/no-unsafe-return, typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- branded tuple return type requires cast
   return Array.from({ length, }, function getIndex(_, index,) {
     return index;
   },) as any;
+  // oxlint-enable typescript/no-unsafe-return, typescript/no-explicit-any, typescript/no-unsafe-type-assertion
 }

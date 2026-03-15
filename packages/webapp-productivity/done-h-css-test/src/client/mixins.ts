@@ -6,15 +6,25 @@
  *
  * Composed patterns (buttonOutlined, stickyBar) are in `mixins-composed.ts`.
  */
-import type {
-  CssDeclarations,
-  CssValue,
-} from '@monochromatic-dev/module-es/h-css';
 import {
+  type CssDeclarations,
+  type CssValue,
   cssRem,
   cssVar,
 } from '@monochromatic-dev/module-es/h-css';
 import { $ as css, } from './css.ts';
+
+/** Large border-radius for pill/circle shape in rem. */
+const PILL_RADIUS = 62.5;
+
+/** Minimum touch target size in rem (48px). */
+const TOUCH_TARGET = 3;
+
+/** Disabled button opacity. */
+const DISABLED_OPACITY = 0.45;
+
+/** Focus outline width in rem (1/8). */
+const OUTLINE_WIDTH = 1 / 2 / 2 / 2;
 
 //region Layout primitives
 
@@ -71,7 +81,7 @@ export function flexColumn(): CssDeclarations {
  */
 export function borderRadiusFull(): CssDeclarations {
   return {
-    'border-radius': cssRem(62.5,),
+    'border-radius': cssRem(PILL_RADIUS,),
   };
 }
 
@@ -130,8 +140,8 @@ export function appearanceNone(): CssDeclarations {
  */
 export function minTouchTarget(): CssDeclarations {
   return {
-    'min-inline-size': cssRem(3,),
-    'min-block-size': cssRem(3,),
+    'min-inline-size': cssRem(TOUCH_TARGET,),
+    'min-block-size': cssRem(TOUCH_TARGET,),
   };
 }
 
@@ -142,7 +152,7 @@ export function minTouchTarget(): CssDeclarations {
  */
 export function shadowDomGlobals(): string[] {
   return [
-    css({ rule: 'button:disabled', decls: { opacity: 0.45, cursor: 'not-allowed', }, },),
+    css({ rule: 'button:disabled', decls: { opacity: DISABLED_OPACITY, cursor: 'not-allowed', }, },),
     css({ rule: 'input::placeholder,textarea::placeholder',
       decls: { color: cssVar('medium',), }, },),
   ];
@@ -180,10 +190,10 @@ export function scrollRow(): CssDeclarations {
  * @returns Declarations for focus outline
  */
 export function focusOutline(
-  { offset = cssRem(0.125,), }: { offset?: CssValue; } = {},
+  { offset = cssRem(OUTLINE_WIDTH,), }: { offset?: CssValue; } = {},
 ): CssDeclarations {
   return {
-    'outline-width': cssRem(0.125,),
+    'outline-width': cssRem(OUTLINE_WIDTH,),
     'outline-style': 'solid',
     'outline-color': cssVar('fg',),
     'outline-offset': offset,

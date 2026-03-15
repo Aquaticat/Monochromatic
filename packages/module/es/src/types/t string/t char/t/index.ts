@@ -21,6 +21,7 @@
 export type $ = string & { length: 1; };
 
 /** Compile-time test: single character passes via type assertion. */
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- compile-time test narrowing string literal to branded Char type
 const _one: $ = '1' as $;
 
 /** Compile-time test: multi-character string fails assignment. */

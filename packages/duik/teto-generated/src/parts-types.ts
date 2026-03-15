@@ -6,6 +6,7 @@
  *
  * @module
  */
+/* eslint-disable no-magic-numbers -- RGB color channel values are inherently numeric data, not magic constants */
 
 /** RGB color with matching tolerance for segmentation. */
 export type ColorSpec = {

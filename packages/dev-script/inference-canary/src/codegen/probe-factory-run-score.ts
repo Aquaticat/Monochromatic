@@ -93,13 +93,11 @@ export async function scoreImpl(
     ? executeAdditionalRuns(source, config.additionalRuns, context.signal,)
     : undefined;
 
-  const [result, lint, perfResult, additionalResults,] = await Promise.all([
-    correctnessPromise,
-    lintPromise,
-    ...(perfPromise !== undefined ? [perfPromise,] : []),
-    ...(additionalPromise !== undefined ? [additionalPromise,] : []),
-  ],) as [ContainerResult, LintResult, TimedContainerResult | undefined,
-    ContainerResult[] | undefined,];
+  const [result, lint,] = await Promise.all([correctnessPromise, lintPromise,],);
+  const perfResult = perfPromise !== undefined ? await perfPromise : undefined;
+  const additionalResults = additionalPromise !== undefined
+    ? await additionalPromise
+    : undefined;
 
   caches.lint.set(context.label, lint,);
   caches.container.set(context.label, result,);

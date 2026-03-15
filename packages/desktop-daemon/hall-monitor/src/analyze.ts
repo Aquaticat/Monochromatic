@@ -79,8 +79,8 @@ function buildImageEntry(
 export function parseVerdict(result: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' {
   const upper = result.toUpperCase();
   const match = upper.match(/VERDICT:\s*(PRODUCTIVE|UNPRODUCTIVE)/,);
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- regex capture group matches the union exactly
   if (match !== null)
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- regex capture group matches the union exactly
     return match[1] as 'PRODUCTIVE' | 'UNPRODUCTIVE';
   if (upper.includes('UNPRODUCTIVE',))
     return 'UNPRODUCTIVE';
@@ -166,7 +166,7 @@ export async function analyze(sets: CaptureSet[],): Promise<string> {
   log.debug(
     `[analyze] ${prompt_tokens} prompt + ${completion_tokens} completion tokens, ${elapsed}s`,
   );
-  const firstChoice = data.choices[0];
+  const [firstChoice] = data.choices;
   if (firstChoice === undefined)
     throw new Error('OpenAI API returned empty choices array',);
   return firstChoice.message.content;

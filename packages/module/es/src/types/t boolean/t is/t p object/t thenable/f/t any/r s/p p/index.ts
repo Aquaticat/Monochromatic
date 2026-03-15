@@ -44,6 +44,6 @@ export function $<const MyValue,>(
 ): value is MyValue extends Promise<infer T> ? MyValue & Promise<T>
   : MyValue & Promise<unknown>
 {
-  // oxlint-disable-next-line typescript/no-unsafe-member-access -- could be thenable
+  // oxlint-disable-next-line typescript/no-unsafe-member-access, typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime check on unknown value shape
   return typeof (value as any)?.then === 'function';
 }

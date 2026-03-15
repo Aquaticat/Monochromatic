@@ -5,13 +5,13 @@
  *
  * @module
  */
+/* eslint-disable no-magic-numbers -- bbox fractions, color tolerances, and morph kernel sizes are inherently numeric part definitions */
 import { PALETTE, } from './config.ts';
 import {
   c,
   REF_RED,
+  type PartDef,
 } from './parts-types.ts';
-
-import type { PartDef, } from './parts-types.ts';
 
 /** All six hair parts: back, bangs, drills, accessories. */
 export const HAIR_PARTS: readonly PartDef[] = [

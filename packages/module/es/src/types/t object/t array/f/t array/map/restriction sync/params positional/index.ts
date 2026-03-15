@@ -75,5 +75,6 @@
   arrayLike: Iterable<T_element>,
 ): T_mappedElement[] {
   const arr: T_element[] = [...arrayLike,];
+  // oxlint-disable-next-line unicorn/no-array-callback-reference -- mappingFn union signature handles all Array.map callback arities
   return arr.map(mappingFn,);
 }

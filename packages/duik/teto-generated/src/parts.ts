@@ -13,6 +13,7 @@
  * for (const part of PARTS) console.log(part.name, part.fill)
  * ```
  */
+/* eslint-disable no-magic-numbers -- bbox fractions, color tolerances, and morph kernel sizes are inherently numeric part definitions */
 import { PALETTE, } from './config.ts';
 import { ARM_PARTS, } from './parts-arms.ts';
 import { HAIR_PARTS, } from './parts-hair.ts';
@@ -22,9 +23,8 @@ import {
   REF_GRAY_DARK,
   REF_GRAY_WARM,
   REF_RED,
+  type PartDef,
 } from './parts-types.ts';
-
-import type { PartDef, } from './parts-types.ts';
 
 export type {
   ColorSpec,

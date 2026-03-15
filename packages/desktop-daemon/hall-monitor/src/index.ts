@@ -81,8 +81,9 @@ async function main(): Promise<void> {
     await new Promise(function intervalDelay(resolve,) {
       setTimeout(resolve, INTERVAL_MS,);
     },);
-    // oxlint-disable-next-line typescript/no-unnecessary-condition, no-await-in-loop -- running is mutated by signal handler; sequential loop
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- running is mutated by signal handler
     if (running)
+      // oxlint-disable-next-line no-await-in-loop -- sequential polling loop; each cycle must complete before the next
       await cycle();
   }
 }

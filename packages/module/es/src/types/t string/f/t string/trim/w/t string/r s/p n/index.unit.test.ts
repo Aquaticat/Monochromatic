@@ -211,7 +211,7 @@ describe('trim with string - synchronous named', () => {
   });
 
   test('handles very long strings efficiently', () => {
-    const longStr = 'a'.repeat(1_000,) + 'text' + 'a'.repeat(1_000,);
+    const longStr = `${'a'.repeat(1_000,)}text${'a'.repeat(1_000,)}`;
     expect($({ str: longStr, trimmer: 'a', },),).toBe('text',);
   });
 

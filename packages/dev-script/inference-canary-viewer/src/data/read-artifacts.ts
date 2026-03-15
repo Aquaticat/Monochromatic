@@ -42,6 +42,17 @@ function isFailure(meta: Record<string, unknown>,): meta is FailureArtifactMeta 
 }
 
 /**
+ * Type guard narrowing an unknown caught value to `NodeJS.ErrnoException`.
+ *
+ * @param error - caught error value
+ *
+ * @returns true when error is an Error with a `code` property
+ */
+function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
+  return error instanceof Error && 'code' in error;
+}
+
+/**
  * Reads a file, returning undefined on any error.
  *
  * @param path - absolute file path
@@ -52,9 +63,9 @@ async function readOptional(path: string,): Promise<string | undefined> {
   try {
     return await readFile(path, 'utf8',);
   }
-  catch (error) {
+  catch (error: unknown) {
     // ENOENT is expected for optional files (e.g. canary.ts not saved in old artifacts)
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
+    if (!isErrnoException(error,) || error.code !== 'ENOENT')
       console.error(`[viewer] failed to read ${path}:`, error,);
     return undefined;
   }
@@ -76,7 +87,7 @@ export async function readArtifacts(): Promise<ArtifactData> {
   /** Whole-model failure artifacts */
   const failures: FailureArtifactMeta[] = [];
 
-  let modelDirents: Dirent[];
+  let modelDirents: Dirent[] = [];
   try {
     modelDirents = await readdir(LINT_DIR, { withFileTypes: true, },);
   }
@@ -89,8 +100,9 @@ export async function readArtifacts(): Promise<ArtifactData> {
     return dirent.isDirectory();
   },)) {
     const modelPath = join(LINT_DIR, modelDirent.name,);
-    let subdirents: Dirent[];
+    let subdirents: Dirent[] = [];
     try {
+      // oxlint-disable-next-line no-await-in-loop -- sequential directory reads with per-iteration error handling
       subdirents = await readdir(modelPath, { withFileTypes: true, },);
     }
     catch (error) {
@@ -102,12 +114,14 @@ export async function readArtifacts(): Promise<ArtifactData> {
       return dirent.isDirectory();
     },)) {
       const dirPath = join(modelPath, subdirent.name,);
+      // oxlint-disable-next-line no-await-in-loop -- sequential per-artifact reads with individual error handling
       const metaRaw = await readOptional(join(dirPath, 'meta.json',),);
       if (metaRaw === undefined)
         continue;
 
-      let parsed: Record<string, unknown>;
+      let parsed: Record<string, unknown> = {};
       try {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns any; shape validated by isFailure guard and field access below
         parsed = JSON.parse(metaRaw,) as Record<string, unknown>;
       }
       catch (error) {
@@ -121,11 +135,14 @@ export async function readArtifacts(): Promise<ArtifactData> {
       }
 
       // Old artifacts without label fall back to the directory name
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated via isFailure guard; shape matches ArtifactMeta
+      const parsedMeta = parsed as ArtifactMeta;
       const meta: ArtifactMeta = {
-        ...(parsed as ArtifactMeta),
-        /* oxlint-disable-next-line typescript/no-unnecessary-condition -- label is typed as required but old artifacts may omit it; ?? fallback is intentional */
-        label: (parsed as ArtifactMeta).label ?? modelDirent.name,
+        ...parsedMeta,
+        // oxlint-disable-next-line typescript/no-unnecessary-condition -- label is typed as required but old artifacts may omit it; ?? fallback is intentional
+        label: parsedMeta.label ?? modelDirent.name,
       };
+      // oxlint-disable-next-line no-await-in-loop -- sequential per-artifact reads grouped by run
       const [source, response,] = await Promise.all([
         readOptional(join(dirPath, 'canary.ts',),),
         readOptional(join(dirPath, 'response.txt',),),

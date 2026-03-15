@@ -88,7 +88,7 @@ export type McpServerConfig = {
 export type McpServerHandle = {
   readonly handleMessage: (
     message: JsonRpcInbound,
-  ) => Promise<JsonRpcOutbound | undefined>;
+  ) => JsonRpcOutbound | undefined | Promise<JsonRpcOutbound | undefined>;
 };
 
 //endregion

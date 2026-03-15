@@ -25,6 +25,7 @@ import {
  * Extract the inner content of an SVG file (everything between root `<svg>` tags).
  *
  * @param svgText - Full SVG document string
+ *
  * @returns Inner content string, or null if parsing fails
  */
 function extractInnerSvg(svgText: string,): string | null {
@@ -49,6 +50,7 @@ async function main(): Promise<void> {
       continue;
     }
 
+    // eslint-disable-next-line no-await-in-loop -- sequential file reads in layer order; each must be read before compositing
     const svgText = await Bun.file(path,).text();
     const inner = extractInnerSvg(svgText,);
     if (inner === null) {

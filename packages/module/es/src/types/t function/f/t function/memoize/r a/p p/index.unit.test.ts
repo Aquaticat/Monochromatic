@@ -1,3 +1,6 @@
+// oxlint-disable unicorn/prefer-native-coercion-functions -- keyFn wrappers intentionally narrow parameter types
+// oxlint-disable typescript/require-await, typescript/no-misused-promises -- async test callbacks and arrow functions
+
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,

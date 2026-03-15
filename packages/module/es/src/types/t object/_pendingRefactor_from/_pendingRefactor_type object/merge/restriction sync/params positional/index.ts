@@ -85,6 +85,7 @@ export type { ObjectsMergeRules, } from './rules.ts';
     throw new TypeError('objs array cannot be empty',);
 
   if (objs.length === 1)
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single-element array guaranteed by length check
     return objs[0] as UnknownRecord;
 
   // Collect all unique property names
@@ -129,7 +130,7 @@ export type { ObjectsMergeRules, } from './rules.ts';
 
     // Get the single type and its values
     const entryArray = [...valuesByType.entries(),];
-    const firstEntry = entryArray[0];
+    const [firstEntry,] = entryArray;
     if (!firstEntry)
       continue;
 
@@ -137,12 +138,13 @@ export type { ObjectsMergeRules, } from './rules.ts';
 
     if (values.length === 1) {
       // Only one value, use it directly
-      result[key] = values[0];
+      const [singleValue,] = values;
+      result[key] = singleValue;
     }
     else {
       // Multiple values of the same type
       // Check for consensus (all values equal)
-      const firstValue = values[0];
+      const [firstValue,] = values;
       const allEqual = values.every(function checkEqual(value,) {
         return JSON.stringify(value,) === JSON.stringify(firstValue,);
       },);
@@ -151,6 +153,7 @@ export type { ObjectsMergeRules, } from './rules.ts';
         result[key] = firstValue;
       else {
         // Handle conflicts based on type
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runtime typeof string narrowed to ObjectsMergeRules key
         const rule = rules?.[valueType as keyof ObjectsMergeRules];
         if (!rule) {
           throw new TypeError(
@@ -158,6 +161,7 @@ export type { ObjectsMergeRules, } from './rules.ts';
           );
         }
 
+        // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion, typescript/no-unsafe-assignment -- values array type depends on runtime typeof check
         result[key] = rule({ key, values: values as any, },);
       }
     }

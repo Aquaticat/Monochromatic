@@ -52,7 +52,7 @@ const MENU_OPEN_SCRIPT = `document.addEventListener('menu-open', function() {
  * @returns HTML response with the rendered page
  */
 export function renderPage(options: LayoutOptions,): Response {
-  const topNav = options.hideTopNav
+  const topNav = options.hideTopNav === true
     ? ''
     : h({ tag: 'top-nav', attrs: { heading: options.heading, }, },);
 

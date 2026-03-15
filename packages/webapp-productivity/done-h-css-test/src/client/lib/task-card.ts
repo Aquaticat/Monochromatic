@@ -8,12 +8,15 @@ import {
   $ as h,
 } from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
 import type { Task, } from '../../lib/types.ts';
-import type { TaskCardOptions, } from './task-card-helpers.ts';
 import {
+  type TaskCardOptions,
   buildChipTexts,
   formatTrackedTime,
 } from './task-card-helpers.ts';
 import { TASK_CARD_STYLES, } from './task-card-styles.ts';
+
+/** Milliseconds per second for timer elapsed calculation. */
+const MS_PER_SECOND = 1_000;
 
 /**
  * `<task-card>` -- displays a task as a clickable card with checkbox, title, and metadata chips.
@@ -53,6 +56,8 @@ class TaskCard extends HTMLElement {
    * Used by the in-progress timer to update the "tracked:" chip live.
    *
    * @param prefix - Text prefix to match (e.g. `"tracked:"`)
+   *
+   * @returns Matching chip span, or null if not found
    */
   getChipElement(prefix: string,): HTMLSpanElement | null {
     for (const chip of this.#shadow.querySelectorAll<HTMLSpanElement>('.chip',)) {
@@ -116,8 +121,11 @@ customElements.define('task-card', TaskCard,);
  * @param task - Task data to display
  *
  * @param options - Callbacks for open/complete interactions
+ *
+ * @returns Configured task-card element
  */
 export function createTaskCard(task: Task, options: TaskCardOptions,): TaskCard {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-card is registered as TaskCard
   const card = document.createElement('task-card',) as TaskCard;
   card.configure(task, options,);
   return card;
@@ -128,12 +136,14 @@ export function createTaskCard(task: Task, options: TaskCardOptions,): TaskCard 
  * If no timer is active, returns the static `trackedTime` formatted.
  *
  * @param task - Task with optional running timer
+ *
+ * @returns Formatted tracked time string
  */
 export function formatRunningTrackedTime(task: Task,): string {
   if (task.timerStartedAt === null)
     return formatTrackedTime(task.trackedTime,);
 
   const elapsedSeconds = Math.max(0,
-    Math.floor((Date.now() - Date.parse(task.timerStartedAt,)) / 1_000,),);
+    Math.floor((Date.now() - Date.parse(task.timerStartedAt,)) / MS_PER_SECOND,),);
   return formatTrackedTime(task.trackedTime + elapsedSeconds,);
 }

@@ -11,9 +11,13 @@ import { run, } from './segment-utils.ts';
  * Apply spatial bounding box: zero out pixels outside the part's region.
  *
  * @param mask - Input mask path
+ *
  * @param output - Output mask path
+ *
  * @param bbox - Fractional bounding box [x, y, w, h]
+ *
  * @param imgWidth - Image width in pixels
+ *
  * @param imgHeight - Image height in pixels
  */
 export async function applyBBox({
@@ -29,10 +33,14 @@ export async function applyBBox({
   readonly imgWidth: number;
   readonly imgHeight: number;
 },): Promise<void> {
-  const bx = Math.round(bbox[0] * imgWidth,);
-  const by = Math.round(bbox[1] * imgHeight,);
-  const bw = Math.round(bbox[2] * imgWidth,);
-  const bh = Math.round(bbox[3] * imgHeight,);
+  const BBOX_X = 0;
+  const BBOX_Y = 1;
+  const BBOX_W = 2;
+  const BBOX_H = 3;
+  const bx = Math.round(bbox[BBOX_X] * imgWidth,);
+  const by = Math.round(bbox[BBOX_Y] * imgHeight,);
+  const bw = Math.round(bbox[BBOX_W] * imgWidth,);
+  const bh = Math.round(bbox[BBOX_H] * imgHeight,);
 
   // Draw a white rectangle on black canvas, then AND with mask
   // This zeros everything outside the bbox
@@ -59,9 +67,12 @@ export async function applyBBox({
  * Apply morphological close (dilate then erode) and open (erode then dilate).
  *
  * @param mask - Input mask path
+ *
  * @param output - Output mask path
- * @param closeK - Close kernel radius; skipped if < 2
- * @param openK - Open kernel radius; skipped if < 2
+ *
+ * @param closeK - Close kernel radius; skipped if less than 2
+ *
+ * @param openK - Open kernel radius; skipped if less than 2
  */
 export async function applyMorphology({
   mask,

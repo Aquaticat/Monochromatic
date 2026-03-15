@@ -39,11 +39,13 @@ export function $(value: Jsonc,): value is HasNoTrailingCommas {
   const potentialTrailingCommas = value.matchAll(/,\s{0,}[\}\]]/gv,);
 
   for (const potentialTrailingComma of potentialTrailingCommas) {
-    const rangeInt = {
-      startInclusive: potentialTrailingComma.index as Int,
-      endInclusive: (potentialTrailingComma
-        .index + potentialTrailingComma[0].length) as Int,
-    } as RangeInt;
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing regex match index to branded Int type
+    const startInclusive = potentialTrailingComma.index as Int;
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing computed end index to branded Int type
+    const endInclusive = (potentialTrailingComma
+      .index + potentialTrailingComma[0].length) as Int;
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- constructing branded RangeInt from verified Int values
+    const rangeInt = { startInclusive, endInclusive, } as RangeInt;
 
     const rangeIntWInQuotesInfo = inQuotes({ value: rangeInt, strs: [value,], },);
 

@@ -18,6 +18,7 @@ export type Card = {
  * @returns Cards belonging to the deck
  */
 export function listCards(deckId: string,): Promise<Card[]> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- db driver returns untyped rows matching Card schema
   return db
     .prepare('SELECT * FROM cards WHERE deck_id = ? ORDER BY rowid',)
     .all(deckId,) as Promise<Card[]>;
@@ -31,6 +32,7 @@ export function listCards(deckId: string,): Promise<Card[]> {
  * @returns Card record, or `null` if not found
  */
 export async function getCard(id: string,): Promise<Card | null> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- db driver returns untyped row matching Card schema
   const row = await db.prepare('SELECT * FROM cards WHERE id = ?',).get(id,) as
     | Card
     | undefined;

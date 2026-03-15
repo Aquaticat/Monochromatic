@@ -30,26 +30,7 @@ export const ATTR_QUERY_KEY = '__importattr';
  * Does not match dynamic `import()` expressions (handled separately).
  */
 export const STATIC_IMPORT_WITH_RE = new RegExp(
-  '('
-    + '(?:import|export)'
-    + String.raw`\s+`
-    + '(?:'
-    + String.raw`(?:type\s+)?`
-    + '(?:'
-    + String.raw`(?:[\w$*{}\s,]+)\s+from`
-    + '|'
-    + ')'
-    + String.raw`\s+`
-    + ')'
-    + ')'
-    + '([\'"])'
-    + '([^\'"]+'
-    + ')'
-    + String.raw`(\2`
-    + String.raw`\s+with\s*\{\s*type\s*:\s*['"]`
-    + String.raw`(\w+)`
-    + String.raw`['"]\s*\}`
-    + ')',
+  String.raw`((?:import|export)\s+(?:(?:type\s+)?(?:(?:[\w$*{}\s,]+)\s+from|)\s+))(['"])([^'"]+)(\2\s+with\s*\{\s*type\s*:\s*['"](\w+)['"]\s*\})`,
   'g',
 );
 
@@ -66,18 +47,7 @@ export const STATIC_IMPORT_WITH_RE = new RegExp(
  * @example Matches `import('./file.sql', { with: { type: 'text' } })`
  */
 export const DYNAMIC_IMPORT_WITH_RE = new RegExp(
-  '('
-    + String.raw`import\s*\(`
-    + String.raw`\s*`
-    + ')'
-    + '([\'"])'
-    + '([^\'"]+'
-    + ')'
-    + String.raw`(\2`
-    + String.raw`\s*,\s*\{\s*with\s*:\s*\{\s*type\s*:\s*['"]`
-    + String.raw`(\w+)`
-    + String.raw`['"]\s*\}\s*\}`
-    + ')',
+  String.raw`(import\s*\(\s*)(['"])([^'"]+)(\2\s*,\s*\{\s*with\s*:\s*\{\s*type\s*:\s*['"](\w+)['"]\s*\}\s*\})`,
   'g',
 );
 

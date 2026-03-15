@@ -64,7 +64,7 @@ function collectingWriter(): { writer: StdoutWriter; lines: string[]; } {
  */
 function mockServer(response: JsonRpcOutbound | undefined,): McpServerHandle {
   return {
-    handleMessage: async () => response,
+    handleMessage: () => response,
   };
 }
 
@@ -147,7 +147,7 @@ describe('serve', () => {
     /** Counter to give each response a unique id. */
     let callCount = 0;
     const server: McpServerHandle = {
-      handleMessage: async () => {
+      handleMessage: () => {
         callCount += 1;
         return { jsonrpc: '2.0' as const, id: callCount, result: {}, };
       },

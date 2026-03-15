@@ -68,6 +68,7 @@ class SectionHeading extends HTMLElement {
    * Toggles the open state and dispatches a toggle event.
    * Registered as a click handler in connectedCallback.
    */
+  // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
   #toggle = function toggle(this: SectionHeading,): void {
     this.#open = !this.#open;
     this.#updateToggle();

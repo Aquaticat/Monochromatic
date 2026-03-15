@@ -3,12 +3,12 @@ import {
 } from '../../../../../../t object/t store/f/t store/r s/p n/index.ts';
 import type { $ as SyncStore, } from '../../../../../../t object/t store/t/r s/index.ts';
 import { buildCacheKey, } from '../../cacheKey.ts';
-import type {
-  MemoizedCallOptions,
-  MemoizedFunction,
-  MemoizeNamedOptions,
+import {
+  type MemoizedCallOptions,
+  type MemoizedFunction,
+  type MemoizeNamedOptions,
+  DEFAULT_MAX_CACHE_SIZE,
 } from '../../t/index.ts';
-import { DEFAULT_MAX_CACHE_SIZE, } from '../../t/index.ts';
 
 /**
  * Wraps a synchronous function with memoization using a SyncStore backend,
@@ -89,6 +89,8 @@ export function $<
   /**
    * Memoized wrapper that checks the store before calling the original function.
    * Salt is provided per-call to enable dynamic cache invalidation.
+   *
+   * @returns cached or freshly computed result
    */
   function memoized(this: void, { args, salt, }: MemoizedCallOptions<TArgs>,): TReturn {
     const cacheKey = buildCacheKey(keyFn(...args,), salt,);
@@ -120,5 +122,6 @@ export function $<
     configurable: false,
   },);
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- memoized function is extended with store/clear/delete/size properties
   return memoized as MemoizedFunction<TArgs, TReturn>;
 }

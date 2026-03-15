@@ -72,7 +72,7 @@ export const useSimple = cliArgs.simple;
 /** Whether to include slow probes */
 export const includeSlow = cliArgs.slow;
 
-/** Retest all models even if they have recent (<24h) results */
+/** Retest all models even if they have recent (less than 24h) results */
 export const { retestAll, } = cliArgs;
 
 //endregion Parsed arguments

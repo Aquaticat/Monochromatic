@@ -56,8 +56,8 @@
  * ```
  */
 
-import type { CssOptions, } from './index.builders.ts';
 import {
+  type CssOptions,
   buildAtRule,
   buildRule,
 } from './index.builders.ts';
@@ -105,7 +105,7 @@ export {
  * Accepts either a style rule (`rule` key) or an at-rule (`at` key).
  * Returns a minified CSS string with no trailing newlines.
  *
- * @param options - {@link CssOptions}
+ * @param options - style rule or at-rule configuration
  *
  * @returns CSS string
  */

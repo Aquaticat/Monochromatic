@@ -24,9 +24,13 @@ import type { PartDef, } from './parts-types.ts';
  * Process a single body part: color mask, bbox crop, morphology, save.
  *
  * @param part - Part definition
+ *
  * @param inputImage - Cropped front view path
+ *
  * @param imgWidth - Image width
+ *
  * @param imgHeight - Image height
+ *
  * @param fgMask - Path to foreground mask
  */
 export async function processPart({
@@ -62,6 +66,7 @@ export async function processPart({
       const color = part.colors[i];
       if (color === undefined)
         continue;
+      // eslint-disable-next-line no-await-in-loop -- sequential ImageMagick invocations; each must finish before the next
       await createColorMask({ input: inputImage, output: colorPath, color, },);
       colorPaths.push(colorPath,);
     }
@@ -97,19 +102,25 @@ export async function processPart({
     imgHeight, },);
 
   // Step 6: Morphological cleanup
+  const DEFAULT_CLOSE_K = 5;
+  const DEFAULT_OPEN_K = 3;
   const cleaned = `${base}_clean.pgm`;
   await applyMorphology({
     mask: bboxed,
     output: cleaned,
-    closeK: part.morphClose ?? 5,
-    openK: part.morphOpen ?? 3,
+    closeK: part.morphClose ?? DEFAULT_CLOSE_K,
+    openK: part.morphOpen ?? DEFAULT_OPEN_K,
   },);
 
   // Step 7: Filter out small noise blobs via area threshold.
   // Cannot use keep-top=1 because the black background is the largest component.
   // Instead, remove components smaller than 1% of the bbox area.
-  const bboxArea = Math.round(part.bbox[2] * imgWidth * part.bbox[3] * imgHeight,);
-  const areaThreshold = Math.max(20, Math.round(bboxArea * 0.01,),);
+  const BBOX_W_IDX = 2;
+  const BBOX_H_IDX = 3;
+  const MIN_BLOB_AREA = 20;
+  const AREA_FRACTION = 0.01;
+  const bboxArea = Math.round(part.bbox[BBOX_W_IDX] * imgWidth * part.bbox[BBOX_H_IDX] * imgHeight,);
+  const areaThreshold = Math.max(MIN_BLOB_AREA, Math.round(bboxArea * AREA_FRACTION,),);
   const final = `${masksDir}/${part.name}.pgm`;
   await run([
     'magick',

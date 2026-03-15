@@ -10,6 +10,18 @@ import {
 } from '@monochromatic-dev/module-es/h-css';
 import { $ as css, } from './css.ts';
 
+/** Disabled button opacity. */
+const DISABLED_OPACITY = 0.45;
+
+/** Sidebar flex-basis in rem. */
+const SIDEBAR_BASIS = 22;
+
+/** Body max-inline-size numerator in px (1194/16 rem). */
+const BODY_MAX_WIDTH_PX = 1_194;
+
+/** Full viewport block-size in dvb units. */
+const FULL_DVB = 100;
+
 //region Resets
 
 /** Box-model reset and form element font inheritance. */
@@ -36,7 +48,7 @@ export const resets = [
   },),
   css({
     rule: 'button:disabled',
-    decls: { opacity: 0.45, cursor: 'not-allowed', },
+    decls: { opacity: DISABLED_OPACITY, cursor: 'not-allowed', },
   },),
   css({
     rule: 'input::placeholder, textarea::placeholder',
@@ -51,17 +63,17 @@ export const resets = [
 
 /** Body, sidebar, page-wrapper, and app container layout rules. */
 export const layoutShell = [
-  css({ rule: ':root', decls: { '--sidebar-basis': cssRem(22,), }, },),
+  css({ rule: ':root', decls: { '--sidebar-basis': cssRem(SIDEBAR_BASIS,), }, },),
   css({
     rule: 'body',
     decls: {
       'font-family': cssCommaList(['Inter', 'system-ui', 'sans-serif',],),
       color: cssVar('fg',),
       'background-color': cssVar('bg',),
-      'max-inline-size': cssCalc(`${cssRem(1_194,)} / 16`,),
+      'max-inline-size': cssCalc(`${cssRem(BODY_MAX_WIDTH_PX,)} / 16`,),
       'margin-inline': 'auto',
       'overflow-x': 'hidden',
-      'min-block-size': cssDvb(100,),
+      'min-block-size': cssDvb(FULL_DVB,),
       display: 'flex',
       'flex-direction': 'row',
     },
@@ -74,7 +86,7 @@ export const layoutShell = [
       position: 'sticky',
       'inset-block-start': 0,
       'align-self': 'flex-start',
-      'max-block-size': cssDvb(100,),
+      'max-block-size': cssDvb(FULL_DVB,),
     },
   },),
   css({
@@ -89,7 +101,7 @@ export const layoutShell = [
     decls: {
       display: 'flex',
       'flex-direction': 'column',
-      'min-block-size': cssDvb(100,),
+      'min-block-size': cssDvb(FULL_DVB,),
       'flex-grow': 1,
       'min-inline-size': 0,
     },

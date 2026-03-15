@@ -30,6 +30,15 @@ type SearchPageData = {
   availableTags: string[];
 };
 
+/**
+ * Navigates to the task detail page.
+ *
+ * @param taskId - UUID of the task to open
+ */
+function openTask(taskId: string,): void {
+  globalThis.location.href = `/tasks/${taskId}`;
+}
+
 injectCSS(styles,);
 injectCSS(searchStyles,);
 
@@ -48,7 +57,7 @@ const app = appElement;
 document.querySelector<HTMLElement>('search-bar',)?.addEventListener('search',
   function onSearch(event,) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CustomEvent detail contains query string
-    const query = (event as CustomEvent).detail.query as string;
+    const { query, } = (event as CustomEvent<{ query: string; }>).detail;
     globalThis.location.href = query.length === 0
       ? '/search'
       : `/search?q=${encodeURIComponent(query,)}`;
@@ -90,9 +99,7 @@ else {
     resultList.append(
       createTaskCard(result, {
         showBlockedBadge: result.isBlocked,
-        onOpen: function openTask(taskId,): void {
-          globalThis.location.href = `/tasks/${taskId}`;
-        },
+        onOpen: openTask,
         onToggleComplete: async function completeTask(taskId,): Promise<void> {
           await api(`/api/tasks/${taskId}/complete`, { method: 'POST', },);
           globalThis.location.reload();

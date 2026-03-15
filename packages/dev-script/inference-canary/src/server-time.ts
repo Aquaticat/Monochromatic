@@ -46,6 +46,7 @@ export async function fetchServerTimestamp(): Promise<ISOTimestamp> {
     if (dateHeader !== null) {
       const parsed = new Date(dateHeader,);
       if (!Number.isNaN(parsed.getTime(),))
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ISOTimestamp is a branded string; toISOString() always produces a valid ISO 8601 value
         return parsed.toISOString() as ISOTimestamp;
     }
     console.warn(
@@ -57,5 +58,6 @@ export async function fetchServerTimestamp(): Promise<ISOTimestamp> {
       `[server-time] HEAD request failed, falling back to local clock: ${String(error,)}`,
     );
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ISOTimestamp is a branded string; toISOString() always produces a valid ISO 8601 value
   return new Date().toISOString() as ISOTimestamp;
 }

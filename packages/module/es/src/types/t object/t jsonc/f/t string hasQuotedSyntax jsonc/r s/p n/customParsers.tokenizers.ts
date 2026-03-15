@@ -1,3 +1,5 @@
+// oxlint-disable typescript/no-unsafe-type-assertion -- JSONC parser casts string slices to branded fragment types
+
 import type {
   $ as StringJsonc,
   FragmentStringJsonc,
@@ -51,15 +53,15 @@ export function parseLiteralToken(
 {
   if (value.startsWith('null',)) {
     return { consumed: 'null' as FragmentStringJsonc, parsed: { value: null, },
-      remaining: value.slice(4,) as FragmentStringJsonc, };
+      remaining: value.slice('null'.length,) as FragmentStringJsonc, };
   }
   if (value.startsWith('true',)) {
     return { consumed: 'true' as FragmentStringJsonc, parsed: { value: true, },
-      remaining: value.slice(4,) as FragmentStringJsonc, };
+      remaining: value.slice('true'.length,) as FragmentStringJsonc, };
   }
   if (value.startsWith('false',)) {
     return { consumed: 'false' as FragmentStringJsonc, parsed: { value: false, },
-      remaining: value.slice(5,) as FragmentStringJsonc, };
+      remaining: value.slice('false'.length,) as FragmentStringJsonc, };
   }
   return NO_LITERAL;
 }

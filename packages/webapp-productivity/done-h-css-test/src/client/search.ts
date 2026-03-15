@@ -28,6 +28,15 @@ type SearchPageData = {
   availableTags: string[];
 };
 
+/**
+ * Navigates to the task detail page.
+ *
+ * @param taskId - ID of task to open
+ */
+function handleOpen(taskId: string,): void {
+  globalThis.location.href = `/tasks/${taskId}`;
+}
+
 injectCSS(globalStyles,);
 injectCSS(searchStyles,);
 
@@ -44,8 +53,9 @@ const app = appElement;
 
 // Listen for search events from the search-bar component
 document.querySelector<HTMLElement>('search-bar',)?.addEventListener('search',
-  (function handleSearch(event: CustomEvent,) {
-    const query = event.detail.query as string;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- search-bar dispatches CustomEvent with { query } detail
+  (function handleSearch(event: CustomEvent<{ query: string; }>,) {
+    const { query, } = event.detail;
     globalThis.location.href = query.length === 0
       ? '/search'
       : `/search?q=${encodeURIComponent(query,)}`;
@@ -57,7 +67,7 @@ if (pageData.query.length === 0) {
       text: 'Type something...or select one of the categories.', },),
   );
 
-  const availableTags = pageData.availableTags;
+  const { availableTags, } = pageData;
   if (availableTags.length > 0) {
     app.append(
       h({
@@ -86,9 +96,7 @@ else {
     resultList.append(
       createTaskCard(result, {
         showBlockedBadge: result.isBlocked,
-        onOpen: function handleOpen(taskId,) {
-          globalThis.location.href = `/tasks/${taskId}`;
-        },
+        onOpen: handleOpen,
         onToggleComplete: async function handleComplete(taskId,) {
           await api(`/api/tasks/${taskId}/complete`, { method: 'POST', },);
           globalThis.location.reload();

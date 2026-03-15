@@ -12,15 +12,24 @@ import { $ as css, } from '../css.ts';
 import { buttonOutlined, } from '../mixins-composed.ts';
 import { focusOutline, } from '../mixins.ts';
 
+/** Full percentage for width declarations. */
+const FULL_PERCENT = 100;
+
+/** Menu vertical padding in rem. */
+const MENU_PADDING = 1 / 2 / 2;
+
+/** Option padding in rem. */
+const OPTION_PADDING = 1 / 2;
+
 /** Compiled CSS string for `<focus-dropdown>` Shadow DOM. */
 export const FOCUS_DROPDOWN_STYLES = [
   css({
     rule: ':host',
-    decls: { display: 'block', 'inline-size': cssPercent(100,), position: 'relative', },
+    decls: { display: 'block', 'inline-size': cssPercent(FULL_PERCENT,), position: 'relative', },
   },),
   css({
     rule: '.trigger',
-    decls: { ...buttonOutlined(), 'inline-size': cssPercent(100,),
+    decls: { ...buttonOutlined(), 'inline-size': cssPercent(FULL_PERCENT,),
       'text-align': 'start', },
     children: [
       css({ rule: '&:focus-visible', decls: focusOutline(), },),
@@ -34,7 +43,7 @@ export const FOCUS_DROPDOWN_STYLES = [
     rule: '.divider',
     decls: {
       'inline-size': cssCalc(`${cssRem(1,)} / 16`,),
-      'block-size': cssPercent(100,),
+      'block-size': cssPercent(FULL_PERCENT,),
       'background-color': cssVar('fg-weaker',),
     },
   },),
@@ -42,14 +51,14 @@ export const FOCUS_DROPDOWN_STYLES = [
     rule: '.menu',
     decls: {
       position: 'absolute',
-      'inset-block-start': cssPercent(100,),
+      'inset-block-start': cssPercent(FULL_PERCENT,),
       'inset-inline-start': 0,
-      'inline-size': cssPercent(100,),
+      'inline-size': cssPercent(FULL_PERCENT,),
       'border-width': cssCalc(`${cssRem(1,)} / 16`,),
       'border-style': 'solid',
       'border-color': cssVar('fg',),
       'background-color': cssVar('bg',),
-      'padding-block': cssRem(0.25,),
+      'padding-block': cssRem(MENU_PADDING,),
       'padding-inline': 0,
       'margin-block': 0,
       'margin-inline': 0,
@@ -62,7 +71,7 @@ export const FOCUS_DROPDOWN_STYLES = [
   },),
   css({
     rule: '.option',
-    decls: { 'padding-block': cssRem(0.5,), 'padding-inline': cssRem(0.5,),
+    decls: { 'padding-block': cssRem(OPTION_PADDING,), 'padding-inline': cssRem(OPTION_PADDING,),
       cursor: 'pointer', },
     children: [
       css({ rule: '&:hover', decls: { 'background-color': cssVar('hover-bg',), }, },),

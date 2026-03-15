@@ -16,6 +16,9 @@ import {
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './toggle-switch.ts';
 
+/** Font size numerator for description text (15/16 rem). */
+const DESC_FONT_SIZE_PX = 15;
+
 /** Compiled CSS string for `<setting-group>` Shadow DOM. */
 const STYLES = [
   css({
@@ -32,7 +35,7 @@ const STYLES = [
   },),
   css({
     rule: '.desc',
-    decls: { 'font-size': cssCalc(`${cssRem(15,)} / 16`,), 'line-height': 1.5,
+    decls: { 'font-size': cssCalc(`${cssRem(DESC_FONT_SIZE_PX,)} / 16`,), 'line-height': 1.5,
       color: cssVar('fg-weaker',), },
   },),
   css({

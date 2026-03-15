@@ -67,7 +67,7 @@ export async function runCanary(
 
   const probesToRun = probes.filter(
     function notSkipped(probe,): boolean {
-      return !mergedConfig.skipProbes?.get(mergedConfig.label,)?.has(probe.name,);
+      return mergedConfig.skipProbes?.get(mergedConfig.label,)?.has(probe.name,) !== true;
     },
   );
 

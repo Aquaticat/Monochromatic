@@ -14,6 +14,15 @@ import {
   minTouchTarget,
 } from '../mixins.ts';
 
+/** Z-index for FAB positioning. */
+const Z_INDEX_FAB = 50;
+
+/** FAB button size in rem. */
+const FAB_SIZE = 4;
+
+/** FAB border width in rem (1/4). */
+const FAB_BORDER = 1 / 2 / 2;
+
 /** Compiled CSS string for `<fab-button>` Shadow DOM. */
 const STYLES = [
   css({
@@ -22,7 +31,7 @@ const STYLES = [
       position: 'fixed',
       'inset-block-end': cssRem(1,),
       'inset-inline-end': cssRem(1,),
-      'z-index': cssInt(50,),
+      'z-index': cssInt(Z_INDEX_FAB,),
     },
   },),
   css({
@@ -30,11 +39,11 @@ const STYLES = [
     decls: {
       ...flexCenter(),
       ...minTouchTarget(),
-      'inline-size': cssRem(4,),
-      'block-size': cssRem(4,),
+      'inline-size': cssRem(FAB_SIZE,),
+      'block-size': cssRem(FAB_SIZE,),
       ...borderRadiusFull(),
       'background-color': cssVar('fg',),
-      'border-width': cssRem(0.25,),
+      'border-width': cssRem(FAB_BORDER,),
       'border-style': 'solid',
       'border-color': cssVar('bg',),
       color: cssVar('bg',),

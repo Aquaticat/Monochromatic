@@ -5,6 +5,8 @@
  * `CssDeclarations` type accepts in any property value position.
  */
 
+// oxlint-disable typescript/no-unsafe-type-assertion -- all constructors cast template literal strings to branded CssValue type
+
 import type { CssValue, } from './values.ts';
 
 //region Length constructors

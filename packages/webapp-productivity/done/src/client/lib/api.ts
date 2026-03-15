@@ -36,7 +36,7 @@ export async function api<TResponse = unknown,>(path: string,
   },);
 
   if (!response.ok) {
-    let error: unknown;
+    let error: unknown = undefined;
     try {
       error = await response.json();
     }

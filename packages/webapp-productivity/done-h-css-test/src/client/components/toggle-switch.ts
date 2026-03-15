@@ -21,12 +21,20 @@ class ToggleSwitch extends HTMLElement {
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Whether the toggle is currently in the "on" position. */
+  /**
+   * Whether the toggle is currently in the "on" position.
+   *
+   * @returns Current toggle state
+   */
   get on(): boolean {
     return this.hasAttribute('on',);
   }
 
-  /** Sets the toggle state by adding or removing the `on` attribute. */
+  /**
+   * Sets the toggle state by adding or removing the `on` attribute.
+   *
+   * @param value - Whether the toggle should be on
+   */
   set on(value: boolean,) {
     if (value)
       this.setAttribute('on', '',);

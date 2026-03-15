@@ -15,6 +15,8 @@ let available = false;
 
 /**
  * Verifies file system is available (Node.js) and can write/read data.
+ *
+ * @returns whether file system logging is available
  */
 export async function verify(): Promise<boolean> {
   if (verified)
@@ -47,8 +49,11 @@ export async function verify(): Promise<boolean> {
 
 /**
  * File sink that writes log records to node_modules/.monochromatic/.
+ *
+ * @param record - log record to write
  */
 export async function $(record: LogRecord,): Promise<void> {
+  // oxlint-disable-next-line typescript/strict-boolean-expressions -- filePath is string|undefined, checking both conditions
   if (!available || !filePath)
     return;
 
@@ -56,7 +61,7 @@ export async function $(record: LogRecord,): Promise<void> {
   const { appendFile, } = await import('node:fs/promises');
 
   try {
-    await appendFile(filePath, JSON.stringify(record,) + '\n',);
+    await appendFile(filePath, `${JSON.stringify(record,)}\n`,);
   }
   catch (error) {
     console.error(

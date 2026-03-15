@@ -1,0 +1,78 @@
+#!/usr/bin/env bun
+
+/**
+ * CLI wrapper for `oxlint` that augments diagnostic output.
+ *
+ * Runs `oxlint` with all provided arguments, captures the output,
+ * augments diagnostics with enhanced guidance via {@link augmentOxlintOutput},
+ * and preserves the original exit code.
+ *
+ * @example
+ * ```bash
+ * task-oxlint --type-aware -c .oxlintrc.json
+ * ```
+ */
+
+import spawn from 'nano-spawn';
+
+import { augmentOxlintOutput, } from './oxlint-augment.ts';
+
+//region Main execution
+
+/** Arguments forwarded to oxlint. */
+const oxlintArgs = process.argv.slice(2,);
+
+try {
+  const result = await spawn('oxlint', [...oxlintArgs,],);
+
+  // oxlint succeeded (exit 0, no diagnostics) -- pass output through
+  if (result.stdout.length > 0)
+    process.stdout.write(augmentOxlintOutput(result.stdout,),);
+  if (result.stderr.length > 0)
+    process.stderr.write(result.stderr,);
+}
+catch (error) {
+  if (error !== null && typeof error === 'object' && 'exitCode' in error) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'exitCode' in check narrows to subprocess shape
+    const subprocessError = error as {
+      stdout?: string;
+      stderr?: string;
+      exitCode?: number;
+      signalName?: string;
+    };
+
+    const augmentedStdout = augmentOxlintOutput(subprocessError.stdout ?? '',);
+
+    if (augmentedStdout.length > 0) {
+      process.stdout.write(augmentedStdout,);
+      if (!augmentedStdout.endsWith('\n',))
+        process.stdout.write('\n',);
+    }
+
+    if ((subprocessError.stderr ?? '').length > 0) {
+      process.stderr.write(subprocessError.stderr ?? '',);
+      if (!(subprocessError.stderr ?? '').endsWith('\n',))
+        process.stderr.write('\n',);
+    }
+
+    // Preserve oxlint's exit code
+    process.exitCode = subprocessError.exitCode ?? 1;
+
+    if (subprocessError.signalName !== undefined && subprocessError.signalName !== '') {
+      console.error(
+        `[task-oxlint] oxlint terminated by signal: ${subprocessError.signalName}`,
+      );
+      process.exitCode = 1;
+    }
+  }
+  else {
+    console.error(
+      `[task-oxlint] failed to execute oxlint: ${
+        error instanceof Error ? error.message : String(error,)
+      }`,
+    );
+    process.exitCode = 1;
+  }
+}
+
+//endregion Main execution

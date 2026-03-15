@@ -29,22 +29,27 @@ export function serializePrimitive(
 ): string {
   return match(primitiveObjType,)
     .with('boolean', function handler() {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms boolean
       const boolObj = obj as boolean;
       return String(boolObj,);
     },)
     .with('number', function handler() {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms number
       const numberObj = obj as number;
       return String(numberObj,);
     },)
     .with('string', function handler() {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms string
       const stringObj = obj as string;
       return JSON.stringify(stringObj,);
     },)
     .with('date', function handler() {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms Date
       const dateObj = obj as Date;
       return `new Date(${JSON.stringify(dateObj,)})`;
     },)
     .with('bigint', function handler() {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms bigint
       const bigintObj = obj as bigint;
       return `${String(bigintObj,)}n`;
     },)
@@ -58,6 +63,7 @@ export function serializePrimitive(
       return 'NaN';
     },)
     .with('symbol', function handler() {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms symbol
       const symbolObj = obj as symbol;
       const { description, } = symbolObj;
       return description !== undefined

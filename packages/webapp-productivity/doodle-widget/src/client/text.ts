@@ -8,9 +8,14 @@
 
 import type { NormalizedPoint, } from './drawing.ts';
 
+/** Multiplier converting a 0..1 normalized coordinate to a percentage */
+const PERCENT_SCALE = 100;
+
 //region State
 
-/** Text layer container, set via {@link setTextLayer} */
+/**
+ * Text layer container, set via {@link setTextLayer}
+ */
 let layerElement: HTMLDivElement | null = null;
 
 /** Currently focused text input, or null when idle */
@@ -61,8 +66,8 @@ export function placeTextInput(position: NormalizedPoint,): void {
   input.type = 'text';
   input.className = 'text-input';
   input.autocomplete = 'off';
-  input.style.insetInlineStart = `${String(position[0] * 100,)}%`;
-  input.style.insetBlockStart = `${String(position[1] * 100,)}%`;
+  input.style.insetInlineStart = `${String(position[0] * PERCENT_SCALE,)}%`;
+  input.style.insetBlockStart = `${String(position[1] * PERCENT_SCALE,)}%`;
 
   input.addEventListener('keydown', function handleKeydown(event: KeyboardEvent,): void {
     if (event.key === 'Enter') {
@@ -77,7 +82,7 @@ export function placeTextInput(position: NormalizedPoint,): void {
   input.addEventListener('blur', finalizeActiveInput,);
 
   activeInput = input;
-  layerElement.appendChild(input,);
+  layerElement.append(input,);
   /**
    * preventScroll stops the browser from scrolling the overflow-hidden
    * canvas container to reveal the input when it extends past the edge.

@@ -15,6 +15,8 @@ let available = false;
 
 /**
  * Verifies OPFS is available and can write/read data.
+ *
+ * @returns whether OPFS logging is available
  */
 export async function verify(): Promise<boolean> {
   if (verified)
@@ -47,13 +49,15 @@ export async function verify(): Promise<boolean> {
 
 /**
  * OPFS sink that writes log records to Origin Private File System.
+ *
+ * @param record - log record to write
  */
 export async function $(record: LogRecord,): Promise<void> {
   if (!available || !writable)
     return;
 
   try {
-    await writable.write(JSON.stringify(record,) + '\n',);
+    await writable.write(`${JSON.stringify(record,)}\n`,);
   }
   catch {
     // Silently fail

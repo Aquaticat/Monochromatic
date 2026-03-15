@@ -45,13 +45,13 @@ class FocusDropdown extends HTMLElement {
       tag: 'ul',
       class: 'menu',
       attrs: { popover: 'auto', },
-      children: DEFAULT_PRESETS.map(function buildOption(preset: string,): HTMLElement {
+      children: DEFAULT_PRESETS.map(function buildOption(this: FocusDropdown, preset: string,): HTMLElement {
         return h({
           tag: 'li',
           class: 'option',
           text: preset,
           on: {
-            click: function selectPreset(): void {
+            click: function selectPreset(this: FocusDropdown,): void {
               this.#value = preset;
               textSpan.textContent = preset;
               menu.hidePopover();

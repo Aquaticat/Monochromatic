@@ -13,10 +13,21 @@ export type TaskCardOptions = {
   onToggleComplete?: (taskId: string,) => Promise<void>;
 };
 
+/** Seconds in one hour. */
+const SECONDS_PER_HOUR = 3_600;
+
+/** Seconds in one minute. */
+const SECONDS_PER_MINUTE = 60;
+
+/** Hours in one day. */
+const HOURS_PER_DAY = 24;
+
 /**
  * Formats a duration in seconds as a human-readable string (e.g. "1h30min15s").
  *
  * @param seconds - Non-negative duration in seconds
+ *
+ * @returns Formatted duration string
  *
  * @example
  * ```ts
@@ -25,13 +36,13 @@ export type TaskCardOptions = {
  */
 export function formatTrackedTime(seconds: number,): string {
   const totalSeconds = Math.max(0, Math.floor(seconds,),);
-  const hours = Math.floor(totalSeconds / 3_600,);
-  const minutes = Math.floor((totalSeconds % 3_600) / 60,);
-  const remainingSeconds = totalSeconds % 60;
+  const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR,);
+  const minutes = Math.floor((totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE,);
+  const remainingSeconds = totalSeconds % SECONDS_PER_MINUTE;
 
   if (hours > 0) {
-    const dayHours = Math.floor(hours / 24,);
-    const remainHours = hours % 24;
+    const dayHours = Math.floor(hours / HOURS_PER_DAY,);
+    const remainHours = hours % HOURS_PER_DAY;
     if (dayHours > 0)
       return `${dayHours}d${remainHours}h${minutes}min${remainingSeconds}s`;
     return `${hours}h${minutes}min${remainingSeconds}s`;

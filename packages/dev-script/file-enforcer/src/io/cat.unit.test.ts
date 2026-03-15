@@ -144,8 +144,7 @@ describe('cat(string)', () => {
     /** Pattern with no matches */
     const results = await cat(join(tempDir, '*.xyz',),);
     expectTypeOf(results,).toEqualTypeOf<GlobResults>();
-    // oxlint-disable-next-line typescript/no-explicit-any -- value equality separate from type check above
-    expect(results,).toEqual([] as any,);
+    expect(results,).toHaveLength(0,);
   });
 
   test('includes the matched file path in each result', async () => {

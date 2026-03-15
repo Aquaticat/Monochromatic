@@ -26,7 +26,6 @@
  */
 
 import type {
-  AgentToolInput,
   PreToolUseInput,
   PreToolUseOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
@@ -59,18 +58,19 @@ const event = JSON.parse(raw,) as PreToolUseInput;
 if (event.tool_name !== 'Agent')
   writeOutput({},);
 else {
-  /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tool_input shape matches AgentToolInput when tool_name is "Agent" */
-  /** Typed tool input after verifying tool_name is "Agent". */
-  const agentInput = event.tool_input as AgentToolInput;
+  /** Resume field from tool input, narrowed via `in` check on the generic record. */
+  const resume = 'resume' in event.tool_input
+    ? event.tool_input['resume']
+    : undefined;
 
-  if (agentInput.resume !== undefined) {
+  if (typeof resume === 'string') {
     /** Denial response blocking the resume attempt with an explanatory reason. */
     const output: PreToolUseOutput = {
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',
         permissionDecision: 'deny',
         permissionDecisionReason: [
-          `Blocked: Agent resume call (agent ID: ${agentInput.resume}).`,
+          `Blocked: Agent resume call (agent ID: ${resume}).`,
           'Background agents notify automatically on completion.',
           'Do not poll or resume running agents -- wait for the notification.',
           "If you need the result now, use TaskOutput to check the agent's status.",

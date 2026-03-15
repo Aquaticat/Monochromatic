@@ -32,6 +32,34 @@ export type TableDisplayOptions = {
 };
 
 /**
+ * Produces the fix-score `<td>` cell for a table row.
+ *
+ * Returns the rendered score when present, a "(not run)" label for failed runs
+ * that never attempted the fix pass, or a "(data error)" label for missing data.
+ * Returns an empty string when the table has no fix-score column at all.
+ *
+ * @param hasFixScores - whether the table includes a fix-score column
+ *
+ * @param row - data row to render
+ *
+ * @returns HTML string for the cell, or empty string when column is hidden
+ */
+function fixScoreCell(hasFixScores: boolean, row: TableRow,): string {
+  if (!hasFixScores)
+    return '';
+  if (row.pass2Score !== undefined)
+    return h({ tag: 'td', text: row.pass2Score.toFixed(2,), },);
+  if (row.failed) {
+    return h({ tag: 'td', children: [
+      h({ tag: 'span', class: 'missing-data-label', text: '(not run)', },),
+    ], },);
+  }
+  return h({ tag: 'td', children: [
+    h({ tag: 'span', class: 'missing-data-label', text: '(data error)', },),
+  ], },);
+}
+
+/**
  * Renders a `<table>` element containing chart data.
  * Hidden visually but accessible to screen readers and present
  * when CSS fails to load.
@@ -99,17 +127,7 @@ export function renderDataTable(
         : h({ tag: 'td', text: row.timestamp, },);
 
       /** Fix score cell: present, "(not run)" for failed, or "(data error)" */
-      const fixScoreTd = hasFixScores
-        ? row.pass2Score !== undefined
-          ? h({ tag: 'td', text: row.pass2Score.toFixed(2,), },)
-          : row.failed
-          ? h({ tag: 'td', children: [
-            h({ tag: 'span', class: 'missing-data-label', text: '(not run)', },),
-          ], },)
-          : h({ tag: 'td', children: [
-            h({ tag: 'span', class: 'missing-data-label', text: '(data error)', },),
-          ], },)
-        : '';
+      const fixScoreTd = fixScoreCell(hasFixScores, row,);
 
       return h({
         tag: 'tr',

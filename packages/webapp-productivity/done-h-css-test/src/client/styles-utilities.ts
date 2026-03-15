@@ -9,6 +9,9 @@ import {
 } from '@monochromatic-dev/module-es/h-css';
 import { $ as css, } from './css.ts';
 
+/** Full percentage for divider inline-size. */
+const FULL_PERCENT = 100;
+
 /** Task list, divider, and empty-state utility styles. */
 export const utilities = [
   css({
@@ -21,7 +24,7 @@ export const utilities = [
     decls: {
       'block-size': cssCalc(`${cssRem(1,)} / 16`,),
       'background-color': cssVar('fg',),
-      'inline-size': cssPercent(100,),
+      'inline-size': cssPercent(FULL_PERCENT,),
     },
   },),
   css({ rule: '.empty', decls: { color: cssVar('medium',), }, },),

@@ -25,6 +25,7 @@ const METRICS = ['RMSE', 'SSIM', 'PHASH',] as const;
  * when images differ, which is normal behavior.
  *
  * @param compositeNorm - Path to normalized composite image
+ *
  * @param refNormalized - Path to normalized reference image
  */
 export async function runComparisonMetrics(
@@ -57,7 +58,9 @@ export async function runComparisonMetrics(
  * Generate side-by-side comparison and difference map images.
  *
  * @param compositeNorm - Path to normalized composite image
+ *
  * @param refNormalized - Path to normalized reference image
+ *
  * @param tmpDir - Output directory for comparison images
  */
 export async function generateComparisonImages(

@@ -52,13 +52,12 @@ const MENU_OPEN_SCRIPT = `document.addEventListener('menu-open', function() {
  * @returns HTML response with the rendered page
  */
 export function renderPage(options: LayoutOptions,): Response {
-  const topNav = options.hideTopNav
+  const topNav = options.hideTopNav === true
     ? ''
     : h({ tag: 'top-nav', attrs: { heading: options.heading, }, },);
 
   const html = `<!DOCTYPE html>
-`
-    + h({
+${h({
       tag: 'html',
       attrs: { lang: 'en', },
       children: [
@@ -92,7 +91,7 @@ export function renderPage(options: LayoutOptions,): Response {
           ],
         },),
       ],
-    },);
+    },)}`;
 
   return new Response(html, {
     headers: { 'Content-Type': 'text/html; charset=utf-8', },

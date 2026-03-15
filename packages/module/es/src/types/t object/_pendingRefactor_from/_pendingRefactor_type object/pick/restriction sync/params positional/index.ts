@@ -106,9 +106,11 @@
 
       // Convert key to string and add to result
       const stringKey = String(key,);
+      // oxlint-disable-next-line typescript/no-unsafe-member-access -- dynamically accessing object properties by computed key
       result[stringKey] = object[key];
     }
 
+    // oxlint-disable-next-line typescript/no-unsafe-return, typescript/no-unsafe-type-assertion, typescript/no-explicit-any -- generic conditional return type requires cast
     return result as any;
   }
 

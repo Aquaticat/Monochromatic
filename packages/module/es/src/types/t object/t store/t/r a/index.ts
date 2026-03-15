@@ -6,7 +6,7 @@ import type {
 } from '../index.ts';
 
 /**
- * Backend storage interface for {@link $}.
+ * Backend storage interface for Store.
  * Compatible with `Map<string, string>` and the Web Storage API shape.
  *
  * @example
@@ -47,7 +47,7 @@ export type StorageBackend = {
 };
 
 /**
- * Configuration for constructing an async {@link $}.
+ * Configuration for constructing an async Store.
  *
  * @example
  * ```ts

@@ -15,6 +15,7 @@ if (pageDataEl === null)
   throw new Error('Missing #page-data element',);
 
 /** Parsed quiz page data from server-embedded JSON. */
+// oxlint-disable-next-line typescript/no-unsafe-assignment -- JSON.parse returns any; shape validated by typed consumer
 const data: PageData = JSON.parse(pageDataEl.textContent,);
 
 /** Root application element. */

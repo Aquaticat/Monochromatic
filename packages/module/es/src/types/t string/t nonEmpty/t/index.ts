@@ -1,4 +1,5 @@
 // See https://stackoverflow.com/a/79468119
+// oxlint-disable typescript/no-explicit-any -- template literal type requires any for first position
 /**
  * Type representing any non-empty string.
  * Template literal type that ensures string contains at least one character.
@@ -13,6 +14,7 @@
  * ```
  */
 export type $ = `${any}${string}`;
+// oxlint-enable typescript/no-explicit-any
 
 /** Compile-time test: single character passes. */
 const _one: $ = '1';

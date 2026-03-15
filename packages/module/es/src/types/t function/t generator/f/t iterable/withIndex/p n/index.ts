@@ -54,6 +54,7 @@ export async function* $<const T,>(
   for await (const element of myIterable) {
     yield {
       element,
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- index is a non-negative integer
       index: index as Int & (Positive | 0),
     };
     index++;

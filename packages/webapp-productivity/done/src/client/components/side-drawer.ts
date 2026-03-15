@@ -72,13 +72,15 @@ class SideDrawer extends HTMLElement {
     this.#panel = this.#shadow.querySelector<HTMLDivElement>('.panel',) as HTMLDivElement;
 
     this.#shadow.querySelector<HTMLElement>('.panel-close',)?.addEventListener('click',
-      function closeDrawer(): void {
+      // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
+      function closeDrawer(this: SideDrawer,): void {
         this.open = false;
       }
         .bind(this,),);
 
     // Light-dismiss: close when clicking the backdrop area (outside the drawer)
-    this.#panel.addEventListener('click', function lightDismiss(event: Event,): void {
+    // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
+    this.#panel.addEventListener('click', function lightDismiss(this: SideDrawer, event: Event,): void {
       if (event.target === this.#panel)
         this.open = false;
     }

@@ -13,6 +13,15 @@ import {
   whitespaceNowrap,
 } from './mixins.ts';
 
+/** Tag chip padding in rem (1/2). */
+const CHIP_PADDING = 1 / 2;
+
+/** Tag chip gap in rem (1/4). */
+const CHIP_GAP = 1 / 2 / 2;
+
+/** Desktop search hint font size in rem (3/2). */
+const HINT_FONT_SIZE_DESKTOP = (2 + 1) / 2;
+
 /** Compiled CSS string for search page styling. */
 export const searchStyles = [
   css({
@@ -32,9 +41,9 @@ export const searchStyles = [
       'border-width': cssCalc(`${cssRem(1,)} / 16`,),
       'border-style': 'solid',
       'border-color': cssVar('fg',),
-      'padding-block': cssRem(0.5,),
-      'padding-inline': cssRem(0.5,),
-      gap: cssRem(0.25,),
+      'padding-block': cssRem(CHIP_PADDING,),
+      'padding-inline': cssRem(CHIP_PADDING,),
+      gap: cssRem(CHIP_GAP,),
       cursor: 'pointer',
       'background-color': 'transparent',
       'font-family': 'inherit',
@@ -51,7 +60,7 @@ export const searchStyles = [
     at: 'media',
     params: '(min-width: 48rem)',
     children: [
-      css({ rule: '.search-hint', decls: { 'font-size': cssRem(1.5,), }, },),
+      css({ rule: '.search-hint', decls: { 'font-size': cssRem(HINT_FONT_SIZE_DESKTOP,), }, },),
     ],
   },),
 ]

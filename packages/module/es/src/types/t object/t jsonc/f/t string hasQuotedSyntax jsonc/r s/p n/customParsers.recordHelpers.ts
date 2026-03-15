@@ -1,3 +1,6 @@
+// oxlint-disable typescript/no-unsafe-type-assertion -- JSONC parser casts string slices to branded fragment types
+// oxlint-disable tsdoc/valid-types -- TSDoc braces in JSONC context descriptions are intentional
+
 import type {
   $ as StringJsonc,
   FragmentStringJsonc,
@@ -69,7 +72,9 @@ export function expectRecordSeparatorOrEnd(
   }
 
   /** Preview snippet used for error reporting context. */
-  const preview = rc.slice(0, 32,);
+  /** Maximum characters for error preview snippet */
+  const ERROR_PREVIEW_LENGTH = 32;
+  const preview = rc.slice(0, ERROR_PREVIEW_LENGTH,);
   throw new Error(`malformed jsonc object: expected ',' or '}' near: ${preview}`,);
 }
 //endregion Record separators

@@ -87,6 +87,7 @@ export function $(
 
   // For everything else (class instances, functions, etc.), throw an error
   const objType = typeof obj;
+  // oxlint-disable-next-line eslint/init-declarations -- assigned in try/catch below
   let objStringified: string;
   try {
     objStringified = JSON.stringify(obj,);

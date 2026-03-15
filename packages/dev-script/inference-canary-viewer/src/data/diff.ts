@@ -36,7 +36,7 @@ export async function computeDiff({ initialPath, fixPath, }: {
    * git diff --no-index exits with 1 when files differ (not an error).
    * --unified=99999 requests enough context lines to include the entire file.
    */
-  let stdout: string;
+  let stdout = '';
   try {
     const result = await spawn('git', ['diff', '--no-index', '--unified=99999',
       '--no-color', initialPath, fixPath,],);
@@ -44,7 +44,8 @@ export async function computeDiff({ initialPath, fixPath, }: {
   }
   catch (error: unknown) {
     // Exit code 1 means files differ -- expected behavior
-    ({ stdout, } = error as { stdout: string; });
+    if (typeof error === 'object' && error !== null && 'stdout' in error)
+      stdout = String(error.stdout,);
   }
 
   return parseDiffOutput(stdout,);

@@ -60,6 +60,7 @@ function formatSpawnResult(state: SpawnState,): string {
  * reliable hook invocation.
  *
  * @param parentSessionId - Session identifier of the calling session.
+ *
  * @param consume - Whether to rename matched files to `.reported`.
  *   Use `true` from reliable delivery hooks (UserPromptSubmit, Stop),
  *   `false` from best-effort hooks (PreToolUse, PostToolUse, etc.).

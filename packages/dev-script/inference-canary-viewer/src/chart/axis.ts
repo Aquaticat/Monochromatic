@@ -10,8 +10,17 @@
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
+/** Half of the unit interval (0.5) */
+const HALF = 1 / 2;
+
+/** Quarter of the unit interval (0.25) */
+const QUARTER = HALF / 2;
+
+/** Three-quarters of the unit interval (0.75) */
+const THREE_QUARTERS = HALF + QUARTER;
+
 /** Fixed Y axis tick values for score plots (0 to 1) */
-export const Y_TICKS: readonly number[] = [0, 0.25, 0.5, 0.75, 1,];
+export const Y_TICKS: readonly number[] = [0, QUARTER, HALF, THREE_QUARTERS, 1,];
 
 /**
  * Generates HTML for Y axis tick labels positioned absolutely within a chart container.
@@ -60,7 +69,9 @@ export function renderXAxis(timestamps: readonly string[],): string {
   const ticks: string[] = [];
   let lastLabel = '';
   for (let i = 0; i < timestamps.length; i += step) {
-    const left = timestamps.length === 1 ? 50 : (i / (timestamps.length - 1)) * PERCENT;
+    /** Center position when a single data point exists */
+    const CENTER_PERCENT = HALF * PERCENT;
+    const left = timestamps.length === 1 ? CENTER_PERCENT : (i / (timestamps.length - 1)) * PERCENT;
     const label = formatter(timestamps[i] ?? '',);
     /** Suppress consecutive duplicate labels so the axis stays readable */
     const displayLabel = label === lastLabel ? '' : label;
@@ -136,8 +147,9 @@ function formatDate(timestamp: string,): string {
   const datePart = timestamp.slice(0, 10,);
   const currentYear = new Date().getFullYear().toString();
   if (datePart.startsWith(currentYear,)) {
-    // Same year: show MM-DD only
-    return datePart.slice(5,);
+    // Same year: show MM-DD only — skip "YYYY-" prefix
+    const YEAR_PREFIX_LENGTH = 5;
+    return datePart.slice(YEAR_PREFIX_LENGTH,);
   }
   return datePart;
 }

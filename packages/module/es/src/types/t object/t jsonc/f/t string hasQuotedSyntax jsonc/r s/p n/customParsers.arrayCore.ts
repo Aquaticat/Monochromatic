@@ -1,3 +1,4 @@
+// oxlint-disable typescript/no-unsafe-type-assertion -- JSONC parser casts string slices to branded fragment types
 /**
  * JSONC array parsing — element recursion and array container parser.
  *

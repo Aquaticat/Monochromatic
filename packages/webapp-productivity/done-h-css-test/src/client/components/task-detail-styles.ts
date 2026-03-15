@@ -19,6 +19,30 @@ import {
 } from '../mixins.ts';
 import { TASK_DETAIL_INTERACTIVE_STYLES, } from './task-detail-styles-interactive.ts';
 
+/** Focus outline offset in rem (-1/8). */
+const FOCUS_OFFSET = -(1 / 2 / 2 / 2);
+
+/** SVG stroke width for close icon. */
+const STROKE_WIDTH = 4;
+
+/** Heading and title-input font size in rem. */
+const HEADING_FONT_SIZE = 1 + 1 / 2;
+
+/** Normal font weight for headings and inputs. */
+const FONT_WEIGHT_NORMAL = 400;
+
+/** Full percentage for input inline-size. */
+const FULL_PERCENT = 100;
+
+/** Padding for title-input and description blocks in rem (1/4). */
+const SMALL_PADDING = 1 / 2 / 2;
+
+/** Padding for description input in rem (1/2). */
+const DESC_PADDING = 1 / 2;
+
+/** Minimum block-size for description textarea in rem. */
+const TEXTAREA_MIN_HEIGHT = 4.5;
+
 /** Compiled CSS string for `<task-detail>` Shadow DOM. */
 export const TASK_DETAIL_STYLES = [
   css({
@@ -35,30 +59,30 @@ export const TASK_DETAIL_STYLES = [
     decls: { ...appearanceNone(), ...flexCenter(), ...minTouchTarget(), },
     children: [
       css({ rule: '&:focus-visible',
-        decls: focusOutline({ offset: cssRem(-0.125,), },), },),
+        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },), },),
       css({
         rule: '& svg',
         decls: { 'inline-size': cssRem(2,), 'block-size': cssRem(2,),
-          stroke: cssVar('fg',), 'stroke-width': cssInt(4,), },
+          stroke: cssVar('fg',), 'stroke-width': cssInt(STROKE_WIDTH,), },
       },),
     ],
   },),
   css({
     rule: '.heading',
-    decls: { 'font-size': cssRem(1.5,), 'font-weight': cssInt(400,), },
+    decls: { 'font-size': cssRem(HEADING_FONT_SIZE,), 'font-weight': cssInt(FONT_WEIGHT_NORMAL,), },
   },),
   css({
     rule: '.title-input',
     decls: {
-      'font-size': cssRem(1.5,),
-      'font-weight': cssInt(400,),
+      'font-size': cssRem(HEADING_FONT_SIZE,),
+      'font-weight': cssInt(FONT_WEIGHT_NORMAL,),
       'border-style': 'none',
       'border-block-end-width': cssCalc(`${cssRem(1,)} / 16`,),
       'border-block-end-style': 'solid',
       'border-block-end-color': cssVar('fg',),
       'background-color': 'transparent',
-      'inline-size': cssPercent(100,),
-      'padding-block': cssRem(0.25,),
+      'inline-size': cssPercent(FULL_PERCENT,),
+      'padding-block': cssRem(SMALL_PADDING,),
       'padding-inline': 0,
       'outline-style': 'none',
       'font-family': 'inherit',
@@ -71,9 +95,9 @@ export const TASK_DETAIL_STYLES = [
       'border-width': cssCalc(`${cssRem(1,)} / 16`,),
       'border-style': 'solid',
       'border-color': cssVar('fg',),
-      'padding-block': cssRem(0.5,),
-      'padding-inline': cssRem(0.5,),
-      'min-block-size': cssRem(4.5,),
+      'padding-block': cssRem(DESC_PADDING,),
+      'padding-inline': cssRem(DESC_PADDING,),
+      'min-block-size': cssRem(TEXTAREA_MIN_HEIGHT,),
       resize: 'vertical',
       'font-family': 'inherit',
       'font-size': 'inherit',

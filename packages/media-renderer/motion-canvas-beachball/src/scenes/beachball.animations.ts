@@ -2,8 +2,8 @@ import type {
   Circle,
   Node,
 } from '@motion-canvas/2d';
-import type { ThreadGenerator, } from '@motion-canvas/core';
 import {
+  type ThreadGenerator,
   all,
   chain,
   easeInQuad,
@@ -42,9 +42,10 @@ export type SceneRefs = {
  * Animates the ball entering the scene from offscreen with a high arc and impact squash.
  *
  * @param refs - scene element references
+ *
  * @param ballRestY - resting Y position of the ball on the ground
+ *
  * @returns motion-canvas thread generator
- * @yields animation frames
  */
 export function* animateEntry(refs: SceneRefs, ballRestY: number,): ThreadGenerator {
   const firstLandX = -(WIDTH / QUARTER_DIVISOR);

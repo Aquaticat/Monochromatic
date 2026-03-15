@@ -26,7 +26,9 @@ export async function hashString(value: string,): Promise<string> {
   /** Convert bytes to hexadecimal string with zero-padding */
   const hashHex = hashArray
     .map(function toHex(b,) {
-      return b.toString(16,).padStart(2, '0',);
+      /** Hexadecimal base for byte-to-hex conversion */
+      const HEX_BASE = 16;
+      return b.toString(HEX_BASE,).padStart(2, '0',);
     },)
     .join('',);
   return hashHex;

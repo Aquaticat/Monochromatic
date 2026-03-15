@@ -27,6 +27,7 @@ import { TMP_DIR, } from './config.ts';
  * Run a shell command and throw on non-zero exit.
  *
  * @param cmd - Command tokens to execute
+ *
  * @throws Error when the subprocess exits with non-zero status
  */
 async function run(cmd: readonly string[],): Promise<void> {
@@ -62,7 +63,9 @@ const POTRACE_FLAGS = ['-i', '-b', 'svg', '--turdsize', '4', '--alphamax', '1.0'
  * Trace all masks using host-installed potrace.
  *
  * @param masks - PGM file names
+ *
  * @param masksDir - Directory containing the masks
+ *
  * @param tracedDir - Output directory for SVG files
  */
 async function traceOnHost({
@@ -77,6 +80,7 @@ async function traceOnHost({
   console.log('  Using host potrace',);
   for (const mask of masks) {
     const name = mask.replace('.pgm', '',);
+    // eslint-disable-next-line no-await-in-loop -- sequential potrace invocations; each must finish before the next
     await run([
       'potrace',
       ...POTRACE_FLAGS,
@@ -92,7 +96,9 @@ async function traceOnHost({
  * Batches all traces into a single container invocation.
  *
  * @param masks - PGM file names
+ *
  * @param masksDir - Directory containing the masks
+ *
  * @param tracedDir - Output directory for SVG files
  */
 async function traceInContainer({
@@ -154,10 +160,9 @@ async function main(): Promise<void> {
 
   const useHost = await hasHostPotrace();
 
-  if (useHost)
-    await traceOnHost({ masks, masksDir, tracedDir, },);
-  else
-    await traceInContainer({ masks, masksDir, tracedDir, },);
+  await (useHost
+    ? traceOnHost({ masks, masksDir, tracedDir, },)
+    : traceInContainer({ masks, masksDir, tracedDir, },));
 
   console.log(`Traced ${masks.length} parts to ${tracedDir}/`,);
 }

@@ -12,6 +12,9 @@ import type { ScatterPoint, } from './scatter.ts';
 /** Percentage multiplier */
 const PERCENT = 100;
 
+/** Center position percentage for single-point charts */
+const CENTER_PERCENT = 50;
+
 /**
  * Renders all scatter point button elements as a single HTML string.
  *
@@ -33,7 +36,7 @@ export function renderPointElements(points: readonly ScatterPoint[],): string {
 
   return points
     .map(function renderPoint(point,) {
-      const left = totalRuns === 1 ? 50 : (point.index / (totalRuns - 1)) * PERCENT;
+      const left = totalRuns === 1 ? CENTER_PERCENT : (point.index / (totalRuns - 1)) * PERCENT;
       const bottom = point.score * PERCENT;
 
       const hasIcon = point.icon !== undefined && point.icon !== '' && !point.failed;

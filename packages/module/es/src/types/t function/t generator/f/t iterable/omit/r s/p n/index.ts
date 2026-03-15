@@ -11,7 +11,7 @@
  * @param strict - When true (default), throws if any key in toOmit is not found in the iterable.
  *   When false, silently ignores missing keys.
  *
- * @yields Items from the iterable that are not in the exclusion set
+ * @returns Items from the iterable that are not in the exclusion set
  *
  * @throws Error if strict is true and any key in toOmit is not found in the iterable
  *

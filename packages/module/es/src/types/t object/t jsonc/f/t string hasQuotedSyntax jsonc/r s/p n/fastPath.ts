@@ -1,3 +1,5 @@
+// oxlint-disable typescript/no-unsafe-type-assertion -- JSONC parser casts string slices to branded fragment types
+
 import type {
   $ as StringJsonc,
   FragmentStringJsonc,
@@ -138,6 +140,8 @@ function tryContainerFastPath(
 
 /**
  * {@inheritDoc tryContainerFastPath}
+ *
+ * @returns parsed array value or NO_FAST_PATH sentinel
  */
 export function tryArrayFastPath(
   { value, context, }: { value: string; context: ReturnType<typeof startsWithComment>; },
@@ -147,6 +151,8 @@ export function tryArrayFastPath(
 
 /**
  * {@inheritDoc tryContainerFastPath}
+ *
+ * @returns parsed object value or NO_FAST_PATH sentinel
  */
 export function tryObjectFastPath(
   { value, context, }: { value: string; context: ReturnType<typeof startsWithComment>; },

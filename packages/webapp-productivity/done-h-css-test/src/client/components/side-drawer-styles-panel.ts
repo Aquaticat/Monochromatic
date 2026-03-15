@@ -21,6 +21,30 @@ import {
   shadowDomGlobals,
 } from '../mixins.ts';
 
+/** Full percentage value for sizing declarations. */
+const FULL_PERCENT = 100;
+
+/** Negative full percentage for offscreen slide-out positioning. */
+const NEG_FULL_PERCENT = -100;
+
+/** Z-index for the popover panel overlay. */
+const Z_INDEX_PANEL = 100;
+
+/** Scrim fade-in animation duration in seconds. */
+const SCRIM_FADE_S = 0.2;
+
+/** Drawer slide-in animation duration in seconds. */
+const DRAWER_SLIDE_S = 1 / 2 / 2;
+
+/** Cubic-bezier x-coordinate for the decelerate easing control point. */
+const EASE_CONTROL_X = 0.2;
+
+/** Fixed inline-size of the drawer panel in rem. */
+const DRAWER_WIDTH = 20;
+
+/** Maximum inline-size of the drawer panel in vi units. */
+const DRAWER_MAX_VI = 85;
+
 /** Popover panel styles and animations for `<side-drawer>`. */
 export const SIDE_DRAWER_PANEL_STYLES = [
   css({
@@ -34,11 +58,11 @@ export const SIDE_DRAWER_PANEL_STYLES = [
       'padding-block': 0,
       'padding-inline': 0,
       'border-style': 'none',
-      'inline-size': cssPercent(100,),
-      'max-inline-size': cssPercent(100,),
-      'block-size': cssPercent(100,),
-      'max-block-size': cssPercent(100,),
-      'z-index': cssInt(100,),
+      'inline-size': cssPercent(FULL_PERCENT,),
+      'max-inline-size': cssPercent(FULL_PERCENT,),
+      'block-size': cssPercent(FULL_PERCENT,),
+      'max-block-size': cssPercent(FULL_PERCENT,),
+      'z-index': cssInt(Z_INDEX_PANEL,),
       display: 'flex',
       'background-color': 'transparent',
       'overflow-x': 'visible',
@@ -51,7 +75,7 @@ export const SIDE_DRAWER_PANEL_STYLES = [
     params: 'drawer-slide-in',
     children: [
       css({ rule: 'from',
-        decls: { transform: cssTranslateX(cssPercent(-100,),), opacity: 0, }, },),
+        decls: { transform: cssTranslateX(cssPercent(NEG_FULL_PERCENT,),), opacity: 0, }, },),
       css({ rule: 'to',
         decls: { transform: cssTranslateX(cssNum(0,),), opacity: 1, }, },),
     ],
@@ -68,7 +92,7 @@ export const SIDE_DRAWER_PANEL_STYLES = [
     rule: '.panel:popover-open',
     decls: {
       'animation-name': 'scrim-fade-in',
-      'animation-duration': cssS(0.2,),
+      'animation-duration': cssS(SCRIM_FADE_S,),
       'animation-timing-function': 'ease-out',
       'animation-fill-mode': 'both',
     },
@@ -77,8 +101,8 @@ export const SIDE_DRAWER_PANEL_STYLES = [
     rule: '.panel:popover-open > .panel-drawer',
     decls: {
       'animation-name': 'drawer-slide-in',
-      'animation-duration': cssS(0.25,),
-      'animation-timing-function': cssCubicBezier([0, 0, 0.2, 1,],),
+      'animation-duration': cssS(DRAWER_SLIDE_S,),
+      'animation-timing-function': cssCubicBezier([0, 0, EASE_CONTROL_X, 1,],),
       'animation-fill-mode': 'both',
     },
   },),
@@ -86,9 +110,9 @@ export const SIDE_DRAWER_PANEL_STYLES = [
     rule: '.panel-drawer',
     decls: {
       'background-color': cssVar('bg',),
-      'inline-size': cssRem(20,),
-      'max-inline-size': cssVi(85,),
-      'block-size': cssPercent(100,),
+      'inline-size': cssRem(DRAWER_WIDTH,),
+      'max-inline-size': cssVi(DRAWER_MAX_VI,),
+      'block-size': cssPercent(FULL_PERCENT,),
       ...flexColumn(),
     },
   },),

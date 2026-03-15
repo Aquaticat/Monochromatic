@@ -1,7 +1,7 @@
 /**
  * Client entry script for the In-Progress page.
  *
- * Same hydration pattern as inbox.ts: injectCSS → readPageData → build DOM into #app.
+ * Same hydration pattern as inbox.ts: injectCSS -> readPageData -> build DOM into #app.
  * Additionally runs a 1-second interval to live-update tracked-time chip text.
  */
 import {
@@ -26,6 +26,18 @@ type InProgressPageData = {
   tasks: Task[];
 };
 
+/** Timer tick interval in milliseconds. */
+const TIMER_INTERVAL_MS = 1_000;
+
+/**
+ * Navigates to the task detail page.
+ *
+ * @param taskId - ID of task to open
+ */
+function handleOpen(taskId: string,): void {
+  globalThis.location.href = `/tasks/${taskId}`;
+}
+
 injectCSS(globalStyles,);
 
 /** Deserialized page data containing in-progress tasks. */
@@ -48,9 +60,7 @@ const list = h({ tag: 'ul', class: 'task-list', },);
 for (const task of pageData.tasks) {
   list.append(
     createTaskCard(task, {
-      onOpen: function handleOpen(taskId,) {
-        globalThis.location.href = `/tasks/${taskId}`;
-      },
+      onOpen: handleOpen,
       onToggleComplete: async function handleStop(taskId,) {
         await api(`/api/tasks/${taskId}/stop`, { method: 'POST', },);
         globalThis.location.reload();
@@ -69,6 +79,7 @@ setInterval(function updateTimers() {
     const task = pageData.tasks[cardIndex];
     if (task === undefined)
       return;
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- TaskCard has getChipElement but querySelectorAll returns generic HTMLElement
     const chipEl = (card as unknown as {
       getChipElement?: (prefix: string,) => HTMLSpanElement | null;
     })
@@ -76,4 +87,4 @@ setInterval(function updateTimers() {
     if (chipEl instanceof HTMLSpanElement)
       chipEl.textContent = `tracked: ${formatRunningTrackedTime(task,)}`;
   },);
-}, 1_000,);
+}, TIMER_INTERVAL_MS,);

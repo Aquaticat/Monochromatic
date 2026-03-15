@@ -1,3 +1,5 @@
+// oxlint-disable unicorn/prefer-native-coercion-functions -- keyFn wrappers intentionally narrow parameter types
+
 import { types, } from '@monochromatic-dev/module-es';
 import {
   describe,

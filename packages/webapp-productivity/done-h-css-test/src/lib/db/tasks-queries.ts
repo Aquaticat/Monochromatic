@@ -7,8 +7,8 @@ import type {
   SearchTask,
   Task,
 } from '../types.ts';
-import type { TaskRow, } from './tasks-helpers.ts';
 import {
+  type TaskRow,
   getTaskRowById,
   mapTask,
 } from './tasks-helpers.ts';

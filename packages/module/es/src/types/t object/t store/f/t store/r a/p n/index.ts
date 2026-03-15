@@ -70,7 +70,9 @@ export { configureDefaultBackendsBuilder, } from './backends.ts';
  */
 export async function $(config: StoreConfig = {},): Promise<Store> {
   const storeId = config.storeId ?? crypto.randomUUID();
+  // oxlint-disable-next-line import/no-named-as-default-member -- superjson default export provides stringify/parse as methods
   const serializer: Serializer = config.serializer ?? superjson.stringify;
+  // oxlint-disable-next-line import/no-named-as-default-member -- superjson default export provides stringify/parse as methods
   const deserializer: Deserializer = config.deserializer ?? superjson.parse;
   const lossyForCircular = config.lossyForCircular ?? true;
 
@@ -150,6 +152,7 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
         backends.map(async function clearBackend(backend,) {
           // Map and similar backends support clear()
           if ('clear' in backend && typeof backend.clear === 'function')
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runtime check confirms clear is a function
             await (backend.clear as () => unknown)();
         },),
       );

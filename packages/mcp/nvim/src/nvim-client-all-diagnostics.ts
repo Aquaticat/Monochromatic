@@ -42,8 +42,8 @@ export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
         >[];
         return raw.map(function mapFileEntry(file,) {
           const filePath = typeof file.path === 'string' ? file.path : '';
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim msgpack array narrowed via Array.isArray
           const fileDiags = Array.isArray(file.diagnostics,)
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim msgpack array narrowed via Array.isArray
             ? file.diagnostics as Record<string, unknown>[]
             : [];
           return {

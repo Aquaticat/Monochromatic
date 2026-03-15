@@ -33,6 +33,7 @@ export type GlobResults = readonly GlobResult[] & {
 export function globResults(sourceGlob: string,
   results: readonly GlobResult[],): GlobResults
 {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- branded type construction requires double assertion
   return Object.assign([...results,], { sourceGlob, },) as unknown as GlobResults;
 }
 
@@ -54,7 +55,13 @@ export async function cat(glob: string,): Promise<GlobResults>;
  */
 export async function cat(files: readonly string[],): Promise<string>;
 
-/** {@inheritDoc cat} */
+/**
+ * {@inheritDoc cat}
+ *
+ * @param input - Glob pattern string or array of file paths to read
+ *
+ * @returns Matched files as {@link GlobResults} for glob mode, or concatenated contents for array mode
+ */
 export async function cat(
   input: string | readonly string[],
 ): Promise<string | GlobResults> {

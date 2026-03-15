@@ -51,6 +51,7 @@ import type { $ as Positive, } from '@_/types/t number/t positive/t/index.ts';
 export function* $(
   { length, }: { length: Int & Positive; },
 ): Generator<Int & (Positive | 0), void, undefined> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 0 satisfies Int & (Positive | 0) at runtime
   for (let index: Int & (Positive | 0) = 0 as Int & (Positive | 0); index < length;
     index++)
   {

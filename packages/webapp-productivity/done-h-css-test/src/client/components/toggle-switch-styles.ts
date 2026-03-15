@@ -16,6 +16,21 @@ import {
   flexCenter,
 } from '../mixins.ts';
 
+/** Track inline-size in rem. */
+const TRACK_WIDTH = 3;
+
+/** Full percentage for track sizing. */
+const FULL_PERCENT = 100;
+
+/** Half percentage for centering the thumb. */
+const HALF_PERCENT = 50;
+
+/** Negative half percentage for translateY centering. */
+const NEG_HALF_PERCENT = -50;
+
+/** Transition duration for thumb slide in seconds. */
+const THUMB_TRANSITION_S = 0.15;
+
 /** Compiled CSS string for `<toggle-switch>` Shadow DOM. */
 export const TOGGLE_SWITCH_STYLES = [
   css({
@@ -23,15 +38,15 @@ export const TOGGLE_SWITCH_STYLES = [
     decls: {
       display: 'inline-flex',
       cursor: 'pointer',
-      'inline-size': cssRem(3,),
+      'inline-size': cssRem(TRACK_WIDTH,),
       'block-size': cssRem(2,),
     },
   },),
   css({
     rule: '.track',
     decls: {
-      'inline-size': cssPercent(100,),
-      'block-size': cssPercent(100,),
+      'inline-size': cssPercent(FULL_PERCENT,),
+      'block-size': cssPercent(FULL_PERCENT,),
       'border-width': cssCalc(`${cssRem(1,)} / 16`,),
       'border-style': 'solid',
       'border-color': cssVar('fg',),
@@ -46,8 +61,8 @@ export const TOGGLE_SWITCH_STYLES = [
     rule: '.thumb',
     decls: {
       position: 'absolute',
-      'inset-block-start': cssPercent(50,),
-      transform: cssTranslateY(cssPercent(-50,),),
+      'inset-block-start': cssPercent(HALF_PERCENT,),
+      transform: cssTranslateY(cssPercent(NEG_HALF_PERCENT,),),
       'inline-size': cssRem(2,),
       'block-size': cssRem(2,),
       ...borderRadiusFull(),
@@ -58,7 +73,7 @@ export const TOGGLE_SWITCH_STYLES = [
       ...flexCenter(),
       'font-size': cssRem(1,),
       'transition-property': cssCommaList(['inset-inline-start', 'inset-inline-end',],),
-      'transition-duration': cssS(0.15,),
+      'transition-duration': cssS(THUMB_TRANSITION_S,),
     },
   },),
   css({

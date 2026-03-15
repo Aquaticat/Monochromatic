@@ -62,6 +62,7 @@ export function parseGrid(text: string,): number[][] | undefined {
   /** Parsed digit rows, undefined entries indicate parse failure */
   const grid = lines.map(function parseLine(line,): number[] | undefined {
     /** Digits extracted by stripping whitespace and converting each character */
+    // oxlint-disable-next-line unicorn/prefer-spread -- spreading a string triggers no-misused-spread; Array.from is correct for ASCII digit iteration
     const digits = Array.from(line.replaceAll(/\s/g, '',),).map(Number,);
     return digits.length === GRID_SIZE
         && digits.every(function validDigit(digit,): boolean {
@@ -138,13 +139,21 @@ function extractBox(grid: number[][], originRow: number, originCol: number,): nu
  * ```
  */
 export function isValidSolution(grid: number[][],): boolean {
-  /** Checks whether nums contains exactly GRID_SIZE distinct values (1-9) */
+  /**
+   * Checks whether nums contains exactly GRID_SIZE distinct values (1-9).
+   *
+   * @param nums - array of digits to validate
+   *
+   * @returns true when the set of digits has exactly GRID_SIZE unique values
+   */
   function hasAllDigits(nums: number[],): boolean {
     return new Set(nums,).size === GRID_SIZE;
   }
 
   // Rows
-  if (!grid.every(hasAllDigits,))
+  if (!grid.every(function checkRow(row,): boolean {
+    return hasAllDigits(row,);
+  },))
     return false;
 
   // Columns

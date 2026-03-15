@@ -79,7 +79,13 @@ const VOID_ELEMENTS = new Set([
   'wbr',
 ],);
 
-/** Escapes characters that have special meaning in HTML attribute values and text content */
+/**
+ * Escapes characters that have special meaning in HTML attribute values and text content.
+ *
+ * @param raw - unescaped string
+ *
+ * @returns HTML-safe escaped string
+ */
 function escapeHtml(raw: string,): string {
   return raw
     .replaceAll('&', '&amp;',)
@@ -109,6 +115,10 @@ type HOptions = {
 
 /**
  * Converts a camelCase CSS property name to kebab-case for inline style attributes.
+ *
+ * @param property - camelCase CSS property name
+ *
+ * @returns kebab-case CSS property name
  *
  * @example
  * ```ts

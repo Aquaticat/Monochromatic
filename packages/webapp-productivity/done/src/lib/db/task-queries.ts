@@ -11,8 +11,8 @@ import type {
   Task,
 } from '../types.ts';
 import { mapTask, } from './task-mapping.ts';
-import type { TaskRow, } from './task-sql.ts';
 import {
+  type TaskRow,
   SQL_SEARCH_FTS,
   SQL_SEARCH_LIKE,
   SQL_SELECT_ALL_TAGS,

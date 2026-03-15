@@ -31,6 +31,9 @@ const TYPE_ERROR_PENALTY = 0.1;
 /** Maximum penalty any single lint rule can contribute */
 const MAX_PENALTY_PER_RULE = 0.3;
 
+/** Maximum number of violated rules to display in the log summary */
+const MAX_DISPLAYED_RULES = 5;
+
 //endregion Scoring penalties
 
 /**
@@ -96,7 +99,7 @@ export async function lintAndLog(source: string, probeName: string,
       ? `type=${String(lint.typeErrors,)}err`
       : 'type=skipped';
     const rulesSummary = lint.violatedRules.length > 0
-      ? ` (${lint.violatedRules.slice(0, 5,).join(', ',)})`
+      ? ` (${lint.violatedRules.slice(0, MAX_DISPLAYED_RULES,).join(', ',)})`
       : '';
     console.log(
       `    [${context.label}:${probeName}] ${lintSummary} ${typeSummary}${rulesSummary}`,

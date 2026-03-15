@@ -126,7 +126,7 @@ export function buildRule(
  * Produces either a block at-rule (`@media (...) { ... }`) or a statement
  * at-rule (`@layer tokens;`) depending on whether block content is present.
  *
- * @param options - {@link AtRuleOptions}
+ * @param options - at-rule configuration with keyword, params, and optional block content
  *
  * @returns CSS at-rule string
  */

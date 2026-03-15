@@ -1,3 +1,5 @@
+// oxlint-disable typescript/no-unsafe-type-assertion -- JSONC parser casts string slices to branded fragment types
+
 import type {
   $ as StringJsonc,
   FragmentStringJsonc,
@@ -73,6 +75,8 @@ function findBlockEndPosition({ value, }: { value: string; },): number {
 
 /**
  * Finds all comments before something and returns both allComments and something.
+ *
+ * @returns remaining content after comments and accumulated comment value
  */
 export function startsWithComment<const Value extends StringJsonc | FragmentStringJsonc,>(
   { value, context, }: { value: Value; context?: Jsonc.ValueBase; },

@@ -13,7 +13,7 @@
  * @param strict - When true (default), throws if any key in toPick is not found in the iterable.
  *   When false, silently ignores missing keys.
  *
- * @yields Items from the iterable that are in the inclusion set
+ * @returns Items from the iterable that are in the inclusion set
  *
  * @throws Error if strict is true and any key in toPick is not found in the iterable
  *

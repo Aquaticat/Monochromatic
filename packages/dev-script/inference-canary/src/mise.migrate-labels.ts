@@ -64,6 +64,7 @@ for (const modelDir of modelDirs) {
   /** Artifact subdirectories for this model */
   let subdirs: string[] = [];
   try {
+    // oxlint-disable-next-line no-await-in-loop -- sequential directory reads; each iteration depends on prior rename results
     subdirs = await readdir(modelPath,);
   }
   catch {
@@ -75,13 +76,15 @@ for (const modelDir of modelDirs) {
     const metaPath = join(modelPath, subdir, 'meta.json',);
     try {
       /** Raw JSON content of the meta.json file */
+      // oxlint-disable-next-line no-await-in-loop -- sequential meta.json updates within a model directory
       const raw = await readFile(metaPath, 'utf8',);
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- meta.json structure is known
       /** Parsed meta.json contents for label injection */
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- meta.json structure is known
       const meta = JSON.parse(raw,) as Record<string, unknown>;
       if (meta['label'] !== undefined)
         continue;
       meta['label'] = label;
+      // oxlint-disable-next-line no-await-in-loop -- must finish writing before renaming the parent directory
       await writeFile(metaPath, JSON.stringify(meta, null, 2,), 'utf8',);
       console.log(`  updated: ${modelDir}/${subdir}/meta.json`,);
     }
@@ -97,6 +100,7 @@ for (const modelDir of modelDirs) {
     /** Absolute path for the renamed directory */
     const newPath = join(LINT_DIR, newName,);
     try {
+      // oxlint-disable-next-line no-await-in-loop -- directory renames must be sequential to avoid path conflicts
       await rename(modelPath, newPath,);
       console.log(`  renamed: ${modelDir} -> ${newName}`,);
     }

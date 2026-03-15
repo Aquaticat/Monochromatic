@@ -3,8 +3,8 @@
  */
 import db from '../db.ts';
 import type { Task, } from '../types.ts';
-import type { CompleteTaskResult, } from './tasks-helpers.ts';
 import {
+  type CompleteTaskResult,
   MS_PER_SECOND,
   nowIso,
 } from './tasks-helpers.ts';

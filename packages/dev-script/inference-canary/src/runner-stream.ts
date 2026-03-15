@@ -107,7 +107,7 @@ export async function streamCompletion(
       interChunkMs.push(now - lastChunkMs,);
     lastChunkMs = now;
 
-    const choice = chunk.choices[0];
+    const [choice,] = chunk.choices;
     if (choice !== undefined) {
       const { delta, } = choice;
       if (delta.content !== undefined && delta.content !== null)

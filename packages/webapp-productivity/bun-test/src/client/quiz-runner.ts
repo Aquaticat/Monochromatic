@@ -29,6 +29,7 @@ export function buildQuizRunner({ parent, cards, deckId, }: {
   scoreEl.className = 'score';
   parent.append(scoreEl,);
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement; flash-card is a registered custom element
   const cardEl = document.createElement('flash-card',) as FlashCardElement;
   parent.append(cardEl,);
 

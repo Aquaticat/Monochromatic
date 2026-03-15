@@ -127,10 +127,13 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
   //endregion Pre-scan for comments
 
   //region Top-level dispatch and heuristics -- Select array/object path; attempt simple trailing-comma fix, else fallback
+  // oxlint-disable-next-line eslint/no-shadow -- inner outStartsComment parameter deliberately shadows outer for scoped dispatch
   const result = (function getResult({ outStartsComment, },): Jsonc.Value {
+    // oxlint-disable-next-line eslint/no-shadow -- inner value from destructuring deliberately shadows outer parameter
     const { remainingContent: value, } = outStartsComment;
     if (value.startsWith('[',)) {
       return parseWithFallback({
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing StringJsonc to FragmentStringJsonc after comment stripping
         value: value as unknown as FragmentStringJsonc,
         context: outStartsComment,
         containerType: 'array',
@@ -140,6 +143,7 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
     }
     else if (value.startsWith('{',)) {
       return parseWithFallback({
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing StringJsonc to FragmentStringJsonc after comment stripping
         value: value as unknown as FragmentStringJsonc,
         context: outStartsComment,
         containerType: 'object',

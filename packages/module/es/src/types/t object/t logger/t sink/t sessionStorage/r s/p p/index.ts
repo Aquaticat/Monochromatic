@@ -18,6 +18,8 @@ let available = true;
 
 /**
  * Verifies sessionStorage actually persists data.
+ *
+ * @returns whether sessionStorage is available and functional
  */
 export function verify(): boolean {
   if (verified)
@@ -40,6 +42,8 @@ export function verify(): boolean {
 
 /**
  * SessionStorage sink that writes log records to browser sessionStorage.
+ *
+ * @param record - log record to persist
  */
 export function $(record: LogRecord,): void {
   if (!available)

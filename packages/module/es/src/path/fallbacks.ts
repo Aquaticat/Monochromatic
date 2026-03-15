@@ -17,10 +17,12 @@ export function normalize(filePath: string,): string {
   if (filePath === '')
     return '.';
 
+  /** Unicode code point for `/` */
+  const SLASH_CODE_POINT = 47;
   /** Whether the input is rooted */
-  const isRoot = filePath.codePointAt(0,) === 47;
+  const isRoot = filePath.codePointAt(0,) === SLASH_CODE_POINT;
   /** Whether the input ends with a trailing slash */
-  const trailingSlash = filePath.codePointAt(filePath.length - 1,) === 47;
+  const trailingSlash = filePath.codePointAt(filePath.length - 1,) === SLASH_CODE_POINT;
 
   /** Path segments split on `/` */
   const parts = filePath.split('/',);
@@ -46,7 +48,7 @@ export function normalize(filePath: string,): string {
   let result = resolved.join('/',);
 
   if (isRoot)
-    result = '/' + result;
+    result = `/${result}`;
   if (result === '' || result === '/')
     return isRoot ? '/' : '.';
   if (trailingSlash)
@@ -69,14 +71,16 @@ export function dirnameFallback(filePath: string,): string {
   if (filePath === '')
     return '.';
 
+  /** Unicode code point for `/` */
+  const SLASH_CODE_POINT = 47;
   /** Whether the input path is rooted */
-  const isRoot = filePath.codePointAt(0,) === 47;
+  const isRoot = filePath.codePointAt(0,) === SLASH_CODE_POINT;
   /** Index of the last slash, ignoring a trailing slash */
   let lastSlash = -1;
 
   // Walk backwards to find the last separator, skipping a trailing slash
   for (let charIndex = filePath.length - 1; charIndex >= 1; charIndex--) {
-    if (filePath.codePointAt(charIndex,) === 47) {
+    if (filePath.codePointAt(charIndex,) === SLASH_CODE_POINT) {
       if (charIndex === filePath.length - 1)
         continue;
       lastSlash = charIndex;
@@ -141,8 +145,10 @@ export function resolveFallback(...segments: string[]): string {
     const segment = segments[segmentIndex];
     if (segment === undefined || segment === '')
       continue;
-    resolved = resolved === '' ? segment : segment + '/' + resolved;
-    resolvedAbsolute = segment.codePointAt(0,) === 47;
+    /** Unicode code point for `/` */
+    const SLASH_CODE_POINT = 47;
+    resolved = resolved === '' ? segment : `${segment}/${resolved}`;
+    resolvedAbsolute = segment.codePointAt(0,) === SLASH_CODE_POINT;
   }
 
   // If still not absolute, prepend cwd (unavailable in browser, default to '/')
@@ -151,13 +157,15 @@ export function resolveFallback(...segments: string[]): string {
     const cwd = typeof process !== 'undefined' && typeof process.cwd === 'function'
       ? process.cwd()
       : '/';
-    resolved = cwd + '/' + resolved;
+    resolved = `${cwd}/${resolved}`;
   }
 
   /** Normalized absolute path */
   const normalized = normalize(resolved,);
   // resolve() never returns trailing slashes except for root '/'
-  if (normalized.length > 1 && normalized.codePointAt(normalized.length - 1,) === 47)
+  /** Unicode code point for `/` */
+  const SLASH_CODE_POINT = 47;
+  if (normalized.length > 1 && normalized.codePointAt(normalized.length - 1,) === SLASH_CODE_POINT)
     return normalized.slice(0, -1,);
   return normalized;
 }

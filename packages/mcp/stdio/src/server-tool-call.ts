@@ -40,11 +40,11 @@ export async function handleToolCall(
 
   // Validate arguments is a plain object when present, default to empty object otherwise.
   const rawArgs = params?.arguments;
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowed from unknown to non-array object above
   const toolArgs: Record<string, unknown> = rawArgs !== undefined
       && rawArgs !== null
       && typeof rawArgs === 'object'
       && !Array.isArray(rawArgs,)
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowed from unknown to non-array object above
     ? (rawArgs as Record<string, unknown>)
     : {};
 

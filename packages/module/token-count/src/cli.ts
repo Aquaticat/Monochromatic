@@ -15,6 +15,9 @@ import { countFileTokens, } from './client.ts';
 
 //region CLI -- parses args and counts tokens in files
 
+/** Column width for right-aligning token counts in output. */
+const PAD_WIDTH = 8;
+
 /**
  * Optique parser for the token-count CLI.
  *
@@ -48,13 +51,13 @@ const results = await Promise.all(
 );
 
 for (const result of results)
-  console.log(`${String(result.inputTokens,).padStart(8,)} ${result.filePath}`,);
+  console.log(`${String(result.inputTokens,).padStart(PAD_WIDTH,)} ${result.filePath}`,);
 
 if (results.length > 1) {
   const total = results.reduce(function sumTokens(sum, r,) {
     return sum + r.inputTokens;
   }, 0,);
-  console.log(`${String(total,).padStart(8,)} total`,);
+  console.log(`${String(total,).padStart(PAD_WIDTH,)} total`,);
 }
 
 //endregion CLI

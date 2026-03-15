@@ -1,3 +1,5 @@
+// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-return, typescript/require-await, eslint/no-await-in-loop -- browser evaluate callbacks lose type info across page boundary
+
 import {
   expect,
   test,
@@ -15,12 +17,12 @@ declare global {
 test.describe('OPFS sink', () => {
   test.beforeEach(async ({ page, },) => {
     await page.goto('/',);
-    await page.waitForFunction(() => window.moduleEs !== undefined);
+    await page.waitForFunction(() => globalThis.moduleEs !== undefined);
   },);
 
   test('verify function exists and is callable', async ({ page, },) => {
     const typeofVerify = await page.evaluate(() => {
-      const { verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
+      const { verify, } = globalThis.moduleEs.types.object.logger.sink.opfs.positional;
       return typeof verify;
     },);
     expect(typeofVerify,).toBe('function',);
@@ -28,7 +30,7 @@ test.describe('OPFS sink', () => {
 
   test('verify returns boolean or promise', async ({ page, },) => {
     const resultType = await page.evaluate(async () => {
-      const { verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
+      const { verify, } = globalThis.moduleEs.types.object.logger.sink.opfs.positional;
       const result = verify();
       const resolved = result instanceof Promise ? await result : result;
       return typeof resolved;
@@ -38,7 +40,7 @@ test.describe('OPFS sink', () => {
 
   test('verify detects OPFS availability', async ({ page, },) => {
     const result = await page.evaluate(async () => {
-      const { verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
+      const { verify, } = globalThis.moduleEs.types.object.logger.sink.opfs.positional;
       return verify();
     },);
     expect(result,).toBe(true,);
@@ -46,7 +48,7 @@ test.describe('OPFS sink', () => {
 
   test('sink function exists and is callable', async ({ page, },) => {
     const typeofSink = await page.evaluate(() => {
-      const { $, } = window.moduleEs.types.object.logger.sink.opfs.positional;
+      const { $, } = globalThis.moduleEs.types.object.logger.sink.opfs.positional;
       return typeof $;
     },);
     expect(typeofSink,).toBe('function',);
@@ -54,7 +56,7 @@ test.describe('OPFS sink', () => {
 
   test('sink writes valid LogRecord', async ({ page, },) => {
     const didNotThrow = await page.evaluate(async () => {
-      const { $, verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
+      const { $, verify, } = globalThis.moduleEs.types.object.logger.sink.opfs.positional;
       await verify();
       const record = {
         level: 'info' as const,
@@ -74,7 +76,7 @@ test.describe('OPFS sink', () => {
 
   test('sink handles all log levels', async ({ page, },) => {
     const allSucceeded = await page.evaluate(async () => {
-      const { $, verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
+      const { $, verify, } = globalThis.moduleEs.types.object.logger.sink.opfs.positional;
       await verify();
       const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal',] as const;
       for (const level of levels) {
@@ -97,7 +99,7 @@ test.describe('OPFS sink', () => {
 
   test('sink handles unicode in message', async ({ page, },) => {
     const didNotThrow = await page.evaluate(async () => {
-      const { $, verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
+      const { $, verify, } = globalThis.moduleEs.types.object.logger.sink.opfs.positional;
       await verify();
       const record = {
         level: 'info' as const,
@@ -117,7 +119,7 @@ test.describe('OPFS sink', () => {
 
   test('sink handles empty message', async ({ page, },) => {
     const didNotThrow = await page.evaluate(async () => {
-      const { $, verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
+      const { $, verify, } = globalThis.moduleEs.types.object.logger.sink.opfs.positional;
       await verify();
       const record = {
         level: 'info' as const,
@@ -137,7 +139,7 @@ test.describe('OPFS sink', () => {
 
   test('sink handles JSON in message', async ({ page, },) => {
     const didNotThrow = await page.evaluate(async () => {
-      const { $, verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
+      const { $, verify, } = globalThis.moduleEs.types.object.logger.sink.opfs.positional;
       await verify();
       const record = {
         level: 'info' as const,
@@ -157,7 +159,7 @@ test.describe('OPFS sink', () => {
 
   test('sink handles multiline message', async ({ page, },) => {
     const didNotThrow = await page.evaluate(async () => {
-      const { $, verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
+      const { $, verify, } = globalThis.moduleEs.types.object.logger.sink.opfs.positional;
       await verify();
       const record = {
         level: 'info' as const,

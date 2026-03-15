@@ -86,6 +86,8 @@ const LEVEL_TO_CONSOLE: Record<string,
 
 /**
  * Verifies console is available and methods don't throw.
+ *
+ * @returns whether console logging is available
  */
 export function verify(): boolean {
   if (verified)
@@ -122,6 +124,8 @@ export function verify(): boolean {
  * Silently swallows debug and trace logs unless verbose mode
  * is active (via `DEBUG=true` env var, `--verbose` argv, or
  * `import.meta.env.DEBUG === 'true'`).
+ *
+ * @param record - log record to write
  */
 export function $(record: LogRecord,): void {
   if (!available)

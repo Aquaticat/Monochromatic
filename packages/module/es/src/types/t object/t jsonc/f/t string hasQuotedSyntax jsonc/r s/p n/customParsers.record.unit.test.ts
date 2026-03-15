@@ -62,8 +62,7 @@ describe($, () => {
   test('nested containers', () => {
     const out = $({ value: '{"a": [1], "b": {}}' as FragmentStringJsonc, },);
     const entries = [...out.value.entries(),];
-    const aEntry = entries[0];
-    const bEntry = entries[1];
+    const [aEntry, bEntry,] = entries;
     if (aEntry === undefined || bEntry === undefined)
       throw new Error('expected 2 entries',);
     const aVal = aEntry[1] as Jsonc.Array;

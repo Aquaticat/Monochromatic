@@ -21,6 +21,24 @@ import {
   minTouchTarget,
 } from '../mixins.ts';
 
+/** Full percentage for inline-size. */
+const FULL_PERCENT = 100;
+
+/** Minimum block-size for anchor link rows in rem. */
+const LINK_HEIGHT = 3;
+
+/** Font size for navigation links in rem. */
+const NAV_FONT_SIZE = 1 + 1 / 2 / 2;
+
+/** Font weight for navigation text. */
+const FONT_WEIGHT_NORMAL = 400;
+
+/** Focus outline offset in rem. */
+const FOCUS_OFFSET = -(1 / 2 / 2 / 2);
+
+/** Minimum block-size for the header bar in rem. */
+const HEADER_HEIGHT = 4;
+
 /** Compiled CSS rules for shared `<side-drawer>` navigation elements. */
 export const SIDE_DRAWER_NAV_STYLES = [
   css({
@@ -28,7 +46,7 @@ export const SIDE_DRAWER_NAV_STYLES = [
     decls: {
       'block-size': cssCalc(`${cssRem(1,)} / 16`,),
       'background-color': cssVar('bg-weaker',),
-      'inline-size': cssPercent(100,),
+      'inline-size': cssPercent(FULL_PERCENT,),
     },
   },),
   css({
@@ -41,18 +59,18 @@ export const SIDE_DRAWER_NAV_STYLES = [
     decls: {
       ...flexRow(),
       gap: cssVar('min-gap',),
-      'min-block-size': cssRem(3,),
+      'min-block-size': cssRem(LINK_HEIGHT,),
       'padding-block': 0,
       'padding-inline': cssVar('min-gap',),
       color: cssVar('fg',),
       'text-decoration': 'none',
-      'font-size': cssRem(1.25,),
-      'font-weight': cssInt(400,),
+      'font-size': cssRem(NAV_FONT_SIZE,),
+      'font-weight': cssInt(FONT_WEIGHT_NORMAL,),
     },
     children: [
       css({ rule: '&:hover', decls: { 'background-color': cssVar('hover-bg',), }, },),
       css({ rule: '&:focus-visible',
-        decls: focusOutline({ offset: cssRem(-0.125,), },), },),
+        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },), },),
     ],
   },),
   css({
@@ -64,7 +82,7 @@ export const SIDE_DRAWER_NAV_STYLES = [
       'padding-block-end': cssVar('min-padding',),
       'padding-inline-start': cssVar('min-gap',),
       'padding-inline-end': cssVar('min-padding',),
-      'min-block-size': cssRem(4,),
+      'min-block-size': cssRem(HEADER_HEIGHT,),
     },
   },),
   css({
@@ -72,7 +90,7 @@ export const SIDE_DRAWER_NAV_STYLES = [
     decls: { ...appearanceNone(), ...flexCenter(), ...minTouchTarget(), },
     children: [
       css({ rule: '&:focus-visible',
-        decls: focusOutline({ offset: cssRem(-0.125,), },), },),
+        decls: focusOutline({ offset: cssRem(FOCUS_OFFSET,), },), },),
       css({ rule: '& svg',
         decls: { 'inline-size': cssRem(2,), 'block-size': cssRem(2,), }, },),
     ],

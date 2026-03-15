@@ -45,12 +45,20 @@ if (!(appElement instanceof HTMLElement))
 /** Validated `#app` container element. */
 const app = appElement;
 
-/** Navigates to the task detail page for the given task. */
+/**
+ * Navigates to the task detail page for the given task.
+ *
+ * @param taskId - ID of task to open
+ */
 function openTask(taskId: string,): void {
   globalThis.location.href = `/tasks/${taskId}`;
 }
 
-/** Sends a complete-task API call and reloads the page on success. */
+/**
+ * Sends a complete-task API call and reloads the page on success.
+ *
+ * @param taskId - ID of task to complete
+ */
 async function completeTask(taskId: string,): Promise<void> {
   await api(`/api/tasks/${taskId}/complete`, { method: 'POST', },);
   globalThis.location.reload();

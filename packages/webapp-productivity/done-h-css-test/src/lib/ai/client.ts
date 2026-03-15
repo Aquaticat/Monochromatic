@@ -153,7 +153,7 @@ export async function chatCompletion(
 
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- API response shape matches ChatCompletionResponse
     const data = (await response.json()) as ChatCompletionResponse;
-    const firstChoice = data.choices[0];
+    const [firstChoice,] = data.choices;
     if (firstChoice === undefined)
       return { ok: false, error: 'AI returned no choices', };
 

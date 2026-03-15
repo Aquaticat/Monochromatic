@@ -36,12 +36,20 @@ class SideDrawer extends HTMLElement {
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Whether the popover panel is currently visible. */
+  /**
+   * Whether the popover panel is currently visible.
+   *
+   * @returns Current open state
+   */
   get open(): boolean {
     return this.hasAttribute('open',);
   }
 
-  /** Sets the open state by adding or removing the `open` attribute. */
+  /**
+   * Sets the open state by adding or removing the `open` attribute.
+   *
+   * @param value - Whether the drawer should be open
+   */
   set open(value: boolean,) {
     if (value)
       this.setAttribute('open', '',);
@@ -49,21 +57,27 @@ class SideDrawer extends HTMLElement {
       this.removeAttribute('open',);
   }
 
+  /** Closes the drawer by removing the open attribute. */
+  #closeDrawer(): void {
+    this.open = false;
+  }
+
   /** Renders content, sets up panel reference, and wires event listeners. */
   connectedCallback(): void {
     this.#render();
     this.#panel = this.#shadow.querySelector<HTMLDivElement>('.panel',);
-    const self = this;
+    const closeFn = this.#closeDrawer.bind(this,);
+    const panel = this.#panel;
 
     this.#shadow.querySelector<HTMLElement>('.panel-close',)?.addEventListener('click',
-      function handleClose() {
-        self.open = false;
+      function handleClose(): void {
+        closeFn();
       },);
 
     // Light-dismiss: close when clicking the backdrop area (outside the drawer)
-    this.#panel.addEventListener('click', function handleBackdropClick(event,) {
-      if (event.target === self.#panel)
-        self.open = false;
+    panel?.addEventListener('click', function handleBackdropClick(event: Event,): void {
+      if (event.target === panel)
+        closeFn();
     },);
   }
 

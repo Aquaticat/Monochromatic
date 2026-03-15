@@ -84,7 +84,7 @@ export function displayResult(
   result.highlights.forEach(
     function populateHighlight(highlight: string, highlightIndex: number,) {
       const currentHighlight = notNullishOrThrow(
-        highlights.querySelector<Element>(`:nth-child(${highlightIndex + 1})`,),
+        highlights.querySelector<HTMLElement>(`:nth-child(${highlightIndex + 1})`,),
       );
       currentHighlight.textContent = highlight;
     },

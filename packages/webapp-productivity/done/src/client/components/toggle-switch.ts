@@ -105,6 +105,7 @@ class ToggleSwitch extends HTMLElement {
    * Toggles state and dispatches a change event.
    * Registered as a click handler in connectedCallback.
    */
+  // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
   #handleClick = function handleClick(this: ToggleSwitch,): void {
     this.on = !this.on;
     this.dispatchEvent(

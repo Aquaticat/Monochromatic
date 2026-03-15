@@ -1,3 +1,5 @@
+// oxlint-disable typescript/no-unsafe-type-assertion -- JSONC parser casts string slices to branded fragment types
+
 import type {
   $ as StringJsonc,
   FragmentStringJsonc,
@@ -69,7 +71,9 @@ export function expectArraySeparatorOrEnd(
   }
 
   /** Preview snippet used for error reporting context. */
-  const preview = rc.slice(0, 32,);
+  /** Maximum characters for error preview snippet */
+  const ERROR_PREVIEW_LENGTH = 32;
+  const preview = rc.slice(0, ERROR_PREVIEW_LENGTH,);
   throw new Error(`malformed jsonc array: expected ',' or ']' near: ${preview}`,);
 }
 //endregion Array separators

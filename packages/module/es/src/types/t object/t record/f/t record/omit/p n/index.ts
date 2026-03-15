@@ -66,5 +66,6 @@ import {
     result[key] = (original as Record<typeof key, unknown>)[key];
   }
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- constructed result matches Omit<TObject, TKeys> shape
   return result as Omit<TObject, TKeys>;
 }

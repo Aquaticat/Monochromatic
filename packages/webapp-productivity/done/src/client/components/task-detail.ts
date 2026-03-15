@@ -50,25 +50,31 @@ class TaskDetail extends HTMLElement {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
     this.#autofill = new AutofillController({
-      getState: function getState(): { tags: string[]; locations: string[];
+      // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
+      getState: function getState(this: TaskDetail,): { tags: string[]; locations: string[];
         priority: string | null; complexity: string | null; }
       {
         return { tags: this.#tags, locations: this.#locations, priority: this.#priority,
           complexity: this.#complexity, };
       }
         .bind(this,),
-      setState: function setState(update,): void {
+      setState: function setState(this: TaskDetail, update: { tags?: string[];
+        locations?: string[]; priority?: string | null;
+        complexity?: string | null; },): void {
         if (update.tags !== undefined)
           this.#tags = update.tags as string[];
         if (update.locations !== undefined)
           this.#locations = update.locations as string[];
         if (update.priority !== undefined)
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from string to TaskPriority union
           this.#priority = update.priority as TaskPriority | null;
         if (update.complexity !== undefined)
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from string to TaskComplexity union
           this.#complexity = update.complexity as TaskComplexity | null;
       }
         .bind(this,),
-      updateDisplay: function updateDisplay(): void {
+      // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
+      updateDisplay: function updateDisplay(this: TaskDetail,): void {
         this.#updatePillsDisplay();
       }
         .bind(this,),
@@ -129,7 +135,7 @@ class TaskDetail extends HTMLElement {
     const { titleInput, } = renderTaskDetail({ shadow: this.#shadow, task: data.task,
       mode: this.#mode, host: this, },);
     this.#updatePillsDisplay();
-    titleInput.addEventListener('input', function onTitleInput(): void {
+    titleInput.addEventListener('input', function onTitleInput(this: TaskDetail,): void {
       this.#autofill.request(titleInput.value,);
     }
       .bind(this,),);

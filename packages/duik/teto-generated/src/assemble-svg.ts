@@ -56,8 +56,11 @@ export function extractPotraceContent(svg: string,): PotraceContent {
  * Build a final part SVG with the viewBox transform applied.
  *
  * @param groupTransform - Potrace's y-flip transform
+ *
  * @param paths - SVG path d-attribute strings
+ *
  * @param fill - Fill color hex string
+ *
  * @param name - Part name for the comment
  *
  * @returns Complete SVG document string
@@ -85,8 +88,10 @@ export function buildPartSvg({
   //   3. Translate to center horizontally
   //
   // Combined: translate(X_OFFSET, 0) scale(SCALE) [potrace transform]
-  const outerTransform = `translate(${X_OFFSET.toFixed(2,)}, 0) scale(${
-    SCALE.toFixed(4,)
+  const TRANSLATE_PRECISION = 2;
+  const SCALE_PRECISION = 4;
+  const outerTransform = `translate(${X_OFFSET.toFixed(TRANSLATE_PRECISION,)}, 0) scale(${
+    SCALE.toFixed(SCALE_PRECISION,)
   })`;
 
   return [

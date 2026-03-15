@@ -1,3 +1,5 @@
+// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-return, typescript/strict-boolean-expressions -- browser evaluate callbacks lose type info across page boundary
+
 import {
   expect,
   test,
@@ -15,13 +17,13 @@ declare global {
 test.describe('sessionStorage sink', () => {
   test.beforeEach(async ({ page, },) => {
     await page.goto('/',);
-    await page.waitForFunction(() => window.moduleEs !== undefined);
+    await page.waitForFunction(() => globalThis.moduleEs !== undefined);
   },);
 
   test('verify function exists and is callable', async ({ page, },) => {
     const typeofVerify = await page.evaluate(() => {
       const { verify, } =
-        window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+        globalThis.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
       return typeof verify;
     },);
     expect(typeofVerify,).toBe('function',);
@@ -30,7 +32,7 @@ test.describe('sessionStorage sink', () => {
   test('verify returns boolean', async ({ page, },) => {
     const resultType = await page.evaluate(() => {
       const { verify, } =
-        window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+        globalThis.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
       return typeof verify();
     },);
     expect(resultType,).toBe('boolean',);
@@ -39,7 +41,7 @@ test.describe('sessionStorage sink', () => {
   test('verify detects sessionStorage availability', async ({ page, },) => {
     const result = await page.evaluate(() => {
       const { verify, } =
-        window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+        globalThis.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
       return verify();
     },);
     expect(result,).toBe(true,);
@@ -48,7 +50,7 @@ test.describe('sessionStorage sink', () => {
   test('sink function exists and is callable', async ({ page, },) => {
     const typeofSink = await page.evaluate(() => {
       const { $, } =
-        window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+        globalThis.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
       return typeof $;
     },);
     expect(typeofSink,).toBe('function',);
@@ -57,7 +59,7 @@ test.describe('sessionStorage sink', () => {
   test('sink writes valid LogRecord', async ({ page, },) => {
     const didNotThrow = await page.evaluate(() => {
       const { $, verify, } =
-        window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+        globalThis.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
       verify();
       const record = {
         level: 'info' as const,
@@ -78,7 +80,7 @@ test.describe('sessionStorage sink', () => {
   test('sink handles all log levels', async ({ page, },) => {
     const allSucceeded = await page.evaluate(() => {
       const { $, verify, } =
-        window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+        globalThis.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
       verify();
       const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal',] as const;
       for (const level of levels) {
@@ -102,7 +104,7 @@ test.describe('sessionStorage sink', () => {
   test('sink handles unicode in message', async ({ page, },) => {
     const didNotThrow = await page.evaluate(() => {
       const { $, verify, } =
-        window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+        globalThis.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
       verify();
       const record = {
         level: 'info' as const,
@@ -123,7 +125,7 @@ test.describe('sessionStorage sink', () => {
   test('sink handles empty message', async ({ page, },) => {
     const didNotThrow = await page.evaluate(() => {
       const { $, verify, } =
-        window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+        globalThis.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
       verify();
       const record = {
         level: 'info' as const,
@@ -144,7 +146,7 @@ test.describe('sessionStorage sink', () => {
   test('sink handles JSON in message', async ({ page, },) => {
     const didNotThrow = await page.evaluate(() => {
       const { $, verify, } =
-        window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+        globalThis.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
       verify();
       const record = {
         level: 'info' as const,
@@ -165,7 +167,7 @@ test.describe('sessionStorage sink', () => {
   test('written records can be retrieved from sessionStorage', async ({ page, },) => {
     const result = await page.evaluate(() => {
       const { $, verify, } =
-        window.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
+        globalThis.moduleEs.types.object.logger.sink.sessionStorage.sync.positional;
 
       // Clear any existing logs first
       const keysToRemove: string[] = [];

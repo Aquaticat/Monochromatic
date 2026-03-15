@@ -41,6 +41,7 @@ export async function handleCreateCard(
     if (deck === null)
       return Response.json({ error: 'Deck not found', }, { status: HTTP_NOT_FOUND, },);
 
+    // oxlint-disable-next-line typescript/no-unsafe-assignment -- req.json() returns any; validated by Zod schema below
     const body = await req.json();
     const parsed = CreateCardSchema.safeParse(body,);
     if (!parsed.success) {

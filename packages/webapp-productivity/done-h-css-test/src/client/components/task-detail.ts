@@ -103,25 +103,30 @@ class TaskDetail extends HTMLElement {
     this.#shadow.replaceChildren(...elements,);
     this.#updatePillsDisplay();
 
-    const self = this;
+    const requestAutofill = this.#autofill.request.bind(this.#autofill,);
+    const metadata = this.#metadata;
+    const updatePills = this.#updatePillsDisplay.bind(this,);
+    const dispatchFn = this.dispatchEvent.bind(this,);
 
-    refs.titleInput.addEventListener('input', function handleTitleInput() {
-      self.#autofill.request({
+    refs.titleInput.addEventListener('input', function handleTitleInput(): void {
+      requestAutofill({
         title: refs.titleInput.value,
-        metadata: self.#metadata,
-        onUpdate: function onAutofillUpdate() {
-          self.#updatePillsDisplay();
+        metadata,
+        onUpdate: function onAutofillUpdate(): void {
+          updatePills();
         },
       },);
     },);
 
-    this.#shadow.addEventListener('click', function handleActionClick(event,) {
-      const target = event.target as HTMLElement;
+    this.#shadow.addEventListener('click', function handleActionClick(event: Event,): void {
+      const { target, } = event;
+      if (!(target instanceof HTMLElement))
+        return;
       const button = target.closest<HTMLElement>('[data-action]',);
       if (button === null)
         return;
       const { action, } = button.dataset;
-      self.dispatchEvent(new CustomEvent('action', {
+      dispatchFn(new CustomEvent('action', {
         bubbles: true,
         detail: { action, title: refs.titleInput.value,
           description: refs.descInput.value, },

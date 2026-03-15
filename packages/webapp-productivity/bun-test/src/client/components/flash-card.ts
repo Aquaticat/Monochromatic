@@ -9,11 +9,13 @@ export class FlashCardElement extends HTMLElement {
   /** Renders the card and attaches the click-to-flip handler. */
   connectedCallback(): void {
     this.render();
-    this.addEventListener('click', function flip(this: FlashCardElement,): void {
-      this.flipped = !this.flipped;
-      this.render();
-    }
-      .bind(this,),);
+    this.addEventListener('click', this.flip.bind(this,),);
+  }
+
+  /** Toggles between front and back faces. */
+  private flip(): void {
+    this.flipped = !this.flipped;
+    this.render();
   }
 
   /** Renders both faces with visibility toggled by the flipped state. */

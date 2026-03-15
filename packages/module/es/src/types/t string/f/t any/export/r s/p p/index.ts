@@ -61,13 +61,16 @@ const primitive = Object.freeze(
 export function $(obj: unknown,): string {
   const objType = unknownToTypeOfString(obj,);
   if (primitive.includes(objType,))
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- objType verified in primitive tuple
     return serializePrimitive(obj, objType as typeof primitive[number],);
 
   return match(objType,)
     .with('set', function handler() {
+      // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms Set
       const setObj = obj as Set<any>;
       return `Object.freeze(new Set([${
         [...setObj,]
+          // oxlint-disable-next-line typescript/no-explicit-any -- Set element type is unknown at runtime
           .map(function eachSetItem(element: any,) {
             return $(element,);
           },)
@@ -75,6 +78,7 @@ export function $(obj: unknown,): string {
       }]))`;
     },)
     .with('map', function handler() {
+      // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms Map
       const mapObj = obj as Map<any, any>;
       return `Object.freeze(new Map([${
         [...mapObj,]
@@ -85,9 +89,11 @@ export function $(obj: unknown,): string {
       }]))`;
     },)
     .with('array', function handler() {
+      // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms array
       const arrayObj = obj as any[];
       return `Object.freeze([${
         arrayObj
+          // oxlint-disable-next-line typescript/no-explicit-any -- array element type is unknown at runtime
           .map(function eachArrayItem(element: any,) {
             return $(element,);
           },)
@@ -96,6 +102,7 @@ export function $(obj: unknown,): string {
     },)
     // FIXME: Possible bug here
     .with('object', function handler() {
+      // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms plain object
       const objectObj = obj as Record<string, any>;
       return `Object.freeze(Object.fromEntries([${
         Object

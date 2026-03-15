@@ -26,6 +26,7 @@ import {
  * Run a shell command and throw on non-zero exit.
  *
  * @param cmd - Command tokens to execute
+ *
  * @throws Error when the subprocess exits with non-zero status
  */
 async function run(cmd: readonly string[],): Promise<void> {

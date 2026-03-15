@@ -10,6 +10,11 @@ import { SEARCH_BAR_STYLES, } from './search-bar-styles.ts';
 /** Debounce delay for search input in milliseconds */
 const SEARCH_DEBOUNCE_MS = 300;
 
+/** Navigates one step back in the browser history. */
+function handleBack(): void {
+  history.back();
+}
+
 /** Sticky search bar with a back button and debounced search input. */
 class SearchBar extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
@@ -21,13 +26,21 @@ class SearchBar extends HTMLElement {
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Current search input value, or empty string when not yet rendered. */
+  /**
+   * Current search input value, or empty string when not yet rendered.
+   *
+   * @returns Search input value
+   */
   get value(): string {
     const input = this.#shadow.querySelector<HTMLInputElement>('input',);
     return input?.value ?? '';
   }
 
-  /** Sets the search input value. */
+  /**
+   * Sets the search input value.
+   *
+   * @param text - New value to display
+   */
   set value(text: string,) {
     const input = this.#shadow.querySelector<HTMLInputElement>('input',);
     if (input !== null)
@@ -44,9 +57,7 @@ class SearchBar extends HTMLElement {
       tag: 'button',
       class: 'back',
       attrs: { 'aria-label': 'Go back', },
-      on: { click: function handleBack() {
-        history.back();
-      }, },
+      on: { click: handleBack, },
     },);
     backButton.innerHTML =
       `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 10,16 20,26"/></svg>`;
@@ -58,12 +69,12 @@ class SearchBar extends HTMLElement {
     },);
 
     // Debounced search dispatch
-    const self = this;
-    let timeout: ReturnType<typeof setTimeout>;
-    input.addEventListener('input', function handleInput() {
+    const dispatchFn = this.dispatchEvent.bind(this,);
+    let timeout: ReturnType<typeof setTimeout> | undefined = undefined;
+    input.addEventListener('input', function handleInput(): void {
       clearTimeout(timeout,);
-      timeout = setTimeout(function emitSearch() {
-        self.dispatchEvent(
+      timeout = setTimeout(function emitSearch(): void {
+        dispatchFn(
           new CustomEvent('search', { detail: { query: input.value.trim(), },
             bubbles: true, },),
         );

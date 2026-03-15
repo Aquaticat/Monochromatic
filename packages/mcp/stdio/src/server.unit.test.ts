@@ -25,7 +25,7 @@ describe('defineTool', () => {
     expect.assertions(2,);
     const entry = defineTool('greet', {
       description: 'Greets by name.',
-      handler: async () => ({ content: [{ type: 'text', text: 'hello', },], }),
+      handler: () => ({ content: [{ type: 'text', text: 'hello', },], }),
     },);
     expect(entry.name,).toBe('greet',);
     expect(entry.description,).toBe('Greets by name.',);
@@ -38,7 +38,7 @@ describe('defineTool', () => {
     const entry = defineTool('test', {
       description: 'Test tool.',
       inputSchema: schema,
-      handler: async () => ({ content: [{ type: 'text', text: 'ok', },], }),
+      handler: () => ({ content: [{ type: 'text', text: 'ok', },], }),
     },);
     expect(entry.inputSchema,).toEqual(schema,);
   });
@@ -47,7 +47,7 @@ describe('defineTool', () => {
     expect.assertions(1,);
     const entry = defineTool('test', {
       description: 'Test tool.',
-      handler: async () => ({ content: [{ type: 'text', text: 'ok', },], }),
+      handler: () => ({ content: [{ type: 'text', text: 'ok', },], }),
     },);
     expect(entry.inputSchema,).toBeUndefined();
   });
@@ -63,7 +63,7 @@ describe('createMcpServer', () => {
     name: 'echo',
     description: 'Echoes arguments.',
     inputSchema: { type: 'object', properties: { text: { type: 'string', }, }, },
-    handler: async (args: Record<string, unknown>,) => ({
+    handler: (args: Record<string, unknown>,) => ({
       content: [{ type: 'text', text: JSON.stringify(args,), },],
     }),
   };
@@ -145,7 +145,7 @@ describe('createMcpServer', () => {
       const tool: ToolEntry = {
         name: 'no-schema',
         description: 'No explicit schema.',
-        handler: async () => ({ content: [{ type: 'text', text: 'ok', },], }),
+        handler: () => ({ content: [{ type: 'text', text: 'ok', },], }),
       };
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [tool,],);
       const request: JsonRpcInbound = { jsonrpc: '2.0', id: 5, method: 'tools/list', };
@@ -161,12 +161,12 @@ describe('createMcpServer', () => {
       const toolA: ToolEntry = {
         name: 'alpha',
         description: 'First tool.',
-        handler: async () => ({ content: [{ type: 'text', text: 'a', },], }),
+        handler: () => ({ content: [{ type: 'text', text: 'a', },], }),
       };
       const toolB: ToolEntry = {
         name: 'beta',
         description: 'Second tool.',
-        handler: async () => ({ content: [{ type: 'text', text: 'b', },], }),
+        handler: () => ({ content: [{ type: 'text', text: 'b', },], }),
       };
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [toolA,
         toolB,],);
@@ -291,7 +291,7 @@ describe('createMcpServer', () => {
       const failingTool: ToolEntry = {
         name: 'fail',
         description: 'Always fails.',
-        handler: async () => {
+        handler: () => {
           throw new Error('deliberate failure',);
         },
       };
@@ -312,8 +312,8 @@ describe('createMcpServer', () => {
       const throwStringTool: ToolEntry = {
         name: 'throw-string',
         description: 'Throws a string.',
-        // oxlint-disable-next-line typescript/only-throw-error -- testing non-Error throw
-        handler: async () => {
+        handler: () => {
+          // oxlint-disable-next-line eslint/no-throw-literal, typescript/only-throw-error -- testing non-Error throw
           throw 'string-error';
         },
       };

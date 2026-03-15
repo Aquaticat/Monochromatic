@@ -24,5 +24,6 @@ import { glow, } from 'nue-glow';
  * ```
  */
 export function highlightTs(source: string,): string {
+  // oxlint-disable-next-line typescript/no-unsafe-call, typescript/no-unsafe-type-assertion -- nue-glow ships without type declarations; call and return type are both untyped
   return glow(source, { language: 'js', numbered: true, },) as string;
 }

@@ -128,9 +128,10 @@ export function buildTaskDetailTree(
     btnRow,
   ];
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- h() returns generic HTMLElement but titleInput is an <input>
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- h() returns generic HTMLElement but these are known input/textarea elements */
   return { elements,
     refs: { titleInput: titleInput as unknown as HTMLInputElement,
       descInput: descInput as unknown as HTMLTextAreaElement, pillsContainer,
       btnRow, }, };
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
 }

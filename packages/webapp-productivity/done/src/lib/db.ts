@@ -9,8 +9,7 @@
  *
  * The default export (`db`) is the open Database instance used by `lib/db/tasks.ts`.
  */
-import { connect, } from '@tursodatabase/database';
-import type { Database, } from '@tursodatabase/database';
+import { type Database, connect, } from '@tursodatabase/database';
 import { mkdirSync, } from 'node:fs';
 import { dirname, } from 'node:path';
 import { getArgumentValue, } from './args.ts';

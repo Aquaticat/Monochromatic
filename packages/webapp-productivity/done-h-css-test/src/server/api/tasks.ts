@@ -57,7 +57,7 @@ function jsonResponse(payload: unknown, status: number = HTTP_OK,): Response {
  */
 export async function handleCreateTask(req: Request,): Promise<Response> {
   try {
-    const body = await req.json();
+    const body: unknown = await req.json();
     if (!isRecord(body,))
       return jsonResponse({ error: 'Invalid request body', }, HTTP_BAD_REQUEST,);
 
@@ -92,7 +92,7 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
  */
 export async function handleUpdateTask(req: Request, id: string,): Promise<Response> {
   try {
-    const body = await req.json();
+    const body: unknown = await req.json();
     const taskUpdateInput = parseTaskUpdateInput(body,);
     if (taskUpdateInput === null)
       return jsonResponse({ error: 'Invalid update payload', }, HTTP_BAD_REQUEST,);

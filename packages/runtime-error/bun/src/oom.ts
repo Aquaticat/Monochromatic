@@ -1,7 +1,16 @@
 export {};
 
-/** Size of each allocation in bytes -- large enough to exhaust memory in a few iterations */
-const CHUNK_SIZE_BYTES = 256 * 1_024 * 1_024;
+/** Bytes in one kibibyte. */
+const BYTES_PER_KIB = 1_024;
+
+/** Bytes in one mebibyte. */
+const BYTES_PER_MIB = BYTES_PER_KIB * BYTES_PER_KIB;
+
+/** Number of mebibytes per allocation chunk -- large enough to exhaust memory in a few iterations. */
+const CHUNK_SIZE_MIB = 256;
+
+/** Size of each allocation in bytes. */
+const CHUNK_SIZE_BYTES = CHUNK_SIZE_MIB * BYTES_PER_MIB;
 
 /**
  * Intentionally triggers an out-of-memory crash by pushing 256 MB `Buffer`
@@ -13,5 +22,5 @@ const chunks: Buffer[] = [];
 // oxlint-disable-next-line no-constant-condition -- intentional infinite loop to exhaust memory
 while (true) {
   chunks.push(Buffer.alloc(CHUNK_SIZE_BYTES,),);
-  console.log(`Allocated ${chunks.length * CHUNK_SIZE_BYTES / 1_024 / 1_024} MB`,);
+  console.log(`Allocated ${chunks.length * CHUNK_SIZE_MIB} MB`,);
 }

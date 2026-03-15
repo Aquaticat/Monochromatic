@@ -21,7 +21,9 @@ import type { ColorSpec, } from './parts-types.ts';
  * all others become black (0).
  *
  * @param input - Source image path
+ *
  * @param output - Output PGM path
+ *
  * @param color - Target color specification
  */
 export async function createColorMask({
@@ -62,6 +64,7 @@ export async function createColorMask({
  * Uses ImageMagick Lighten compositing (max of each pixel).
  *
  * @param masks - Paths to mask images to combine
+ *
  * @param output - Output combined mask path
  */
 export async function combineMasks({
@@ -73,7 +76,7 @@ export async function combineMasks({
 },): Promise<void> {
   if (masks.length === 0)
     return;
-  const firstMask = masks[0];
+  const [firstMask,] = masks;
   if (firstMask === undefined)
     return;
   if (masks.length === 1) {
@@ -98,8 +101,11 @@ export async function combineMasks({
  * Pixels matching any exclude color are set to black.
  *
  * @param mask - Input mask path (modified in place via output)
+ *
  * @param input - Original color image for color matching
+ *
  * @param output - Output mask path
+ *
  * @param excludes - Colors to subtract
  */
 export async function subtractColors({
@@ -125,6 +131,7 @@ export async function subtractColors({
     const excludeColor = excludes[i];
     if (excludeColor === undefined)
       continue;
+    // eslint-disable-next-line no-await-in-loop -- sequential ImageMagick invocations; each must finish before the next
     await createColorMask({ input, output: excPath, color: excludeColor, },);
     excPaths.push(excPath,);
   }

@@ -71,7 +71,9 @@ import { queryAllBackendsSync, } from './backends.ts';
  */
 export function $(config: SyncStoreConfig = {},): SyncStore {
   const storeId = config.storeId ?? crypto.randomUUID();
+  // oxlint-disable-next-line import/no-named-as-default-member -- superjson default export provides stringify/parse as methods
   const serializer: Serializer = config.serializer ?? superjson.stringify;
+  // oxlint-disable-next-line import/no-named-as-default-member -- superjson default export provides stringify/parse as methods
   const deserializer: Deserializer = config.deserializer ?? superjson.parse;
   const lossyForCircular = config.lossyForCircular ?? true;
   const backends: readonly [SyncStorageBackend, ...SyncStorageBackend[],] =
@@ -100,7 +102,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
 
     /** Number of entries in the primary backend, or `0` when unavailable. */
     get size(): number {
-      const first = backends[0];
+      const [first,] = backends;
       if ('size' in first && typeof first.size === 'number')
         return first.size;
       return 0;
@@ -160,6 +162,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
         lru.clear();
       for (const backend of backends) {
         if ('clear' in backend && typeof backend.clear === 'function')
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runtime check confirms clear is a function
           (backend.clear as () => unknown)();
       }
     },

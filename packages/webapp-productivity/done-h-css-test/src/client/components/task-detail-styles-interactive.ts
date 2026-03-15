@@ -18,6 +18,15 @@ import {
   whitespaceNowrap,
 } from '../mixins.ts';
 
+/** Pill padding in rem (1/2). */
+const PILL_PADDING = 1 / 2;
+
+/** Pill gap in rem (1/4). */
+const PILL_GAP = 1 / 2 / 2;
+
+/** Button row gap in rem (1/2). */
+const BTN_ROW_GAP = 1 / 2;
+
 /** Pill, button row, and shadow DOM global styles for `<task-detail>`. */
 export const TASK_DETAIL_INTERACTIVE_STYLES = [
   css({
@@ -33,9 +42,9 @@ export const TASK_DETAIL_INTERACTIVE_STYLES = [
       'border-style': 'solid',
       'border-color': cssVar('fg',),
       ...borderRadiusFull(),
-      'padding-block': cssRem(0.5,),
-      'padding-inline': cssRem(0.5,),
-      gap: cssRem(0.25,),
+      'padding-block': cssRem(PILL_PADDING,),
+      'padding-inline': cssRem(PILL_PADDING,),
+      gap: cssRem(PILL_GAP,),
       'font-size': cssRem(1,),
       'line-height': 1.5,
     },
@@ -47,7 +56,7 @@ export const TASK_DETAIL_INTERACTIVE_STYLES = [
   },),
   css({
     rule: '.btn-row',
-    decls: { ...flexRow(), gap: cssRem(0.5,), 'flex-wrap': 'wrap',
+    decls: { ...flexRow(), gap: cssRem(BTN_ROW_GAP,), 'flex-wrap': 'wrap',
       'margin-block-start': cssRem(1,), },
     children: [
       css({ rule: '&[data-hidden]', decls: { display: 'none', }, },),

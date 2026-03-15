@@ -46,7 +46,7 @@ describe($, () => {
 
     expect(results,).toHaveLength(3,);
     expect(results[0],).toEqual({ decision: 'fail', item: '1', },);
-    const thrownResult = results[1];
+    const [, thrownResult,] = results;
     if (thrownResult === undefined)
       throw new Error('expected result at index 1',);
     expect(thrownResult.item,).toBe('invalid',);
@@ -96,6 +96,7 @@ describe($, () => {
   });
 
   test('works with async iterables', async () => {
+    // oxlint-disable-next-line typescript/require-await -- async generator yields without await
     async function* asyncNumbers() {
       yield 1;
       yield 2;
@@ -225,7 +226,7 @@ describe($, () => {
 
     expect(results,).toHaveLength(3,);
     expect(results[0],).toEqual({ decision: 'fail', item: 1, },);
-    const errorResult = results[1];
+    const [, errorResult,] = results;
     if (errorResult === undefined)
       throw new Error('expected result at index 1',);
     expect(errorResult.item,).toBe(2,);
@@ -244,7 +245,7 @@ describe($, () => {
     for await (const result of $({
       predicate: (n: number,) => {
         if (n === 2) {
-          // oxlint-disable-next-line typescript/only-throw-error -- Testing non-Error throws
+          // oxlint-disable-next-line typescript/only-throw-error, eslint/no-throw-literal -- Testing non-Error throws
           throw thrownValue;
         }
         return n > 2;
@@ -256,7 +257,7 @@ describe($, () => {
 
     expect(results,).toHaveLength(3,);
     expect(results[0],).toEqual({ decision: 'fail', item: 1, },);
-    const strErrorResult = results[1];
+    const [, strErrorResult,] = results;
     if (strErrorResult === undefined)
       throw new Error('expected result at index 1',);
     expect(strErrorResult.item,).toBe(2,);

@@ -103,8 +103,8 @@ function extractItems(feeds: FeedWOutline[],): Item[] {
  * @returns Normalized item in RSS-compatible format
  */
 function getNormalizedItem(item: Item,): NormalizedItem {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-atom items already match NormalizedItem shape
   if (item.outline.type !== 'atom')
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-atom items already match NormalizedItem shape
     return item as NormalizedItem;
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outline.type === 'atom' narrows the item

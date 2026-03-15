@@ -73,5 +73,6 @@ import {
     result[key] = (original as Record<typeof key, unknown>)[key];
   }
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- constructed result matches Pick<TObject, TKeys> shape
   return result as Pick<TObject, TKeys>;
 }

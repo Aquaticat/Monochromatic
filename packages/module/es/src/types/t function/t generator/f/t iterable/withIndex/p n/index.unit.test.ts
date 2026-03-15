@@ -75,6 +75,7 @@ describe($, () => {
   });
 
   test('handles async generators', async () => {
+    // oxlint-disable-next-line typescript/require-await -- async generator yields without await
     async function* asyncGen(): AsyncGenerator<string> {
       yield 'first';
       yield 'second';
@@ -135,6 +136,7 @@ describe($, () => {
     const firstItem = await gen.next();
 
     expect(firstItem.done,).toBe(false,);
+    // oxlint-disable-next-line typescript/strict-boolean-expressions -- IteratorResult.done is boolean|undefined
     if (firstItem.done)
       throw new Error('Generator unexpectedly done',);
 

@@ -1,5 +1,6 @@
+// oxlint-disable eslint/require-await, typescript/require-await -- async wrapper enables top-level await construction
 /**
- * Observable value container type returned by {@link $}.
+ * Observable value container type returned by the $ function.
  *
  * Setting `value` triggers the registered change handler.
  */
@@ -55,3 +56,4 @@ export async function $<T,>(
     },
   };
 }
+// oxlint-enable eslint/require-await, typescript/require-await

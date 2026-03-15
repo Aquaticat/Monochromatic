@@ -26,7 +26,7 @@ searchForm.addEventListener('submit', async function onSearch(event,) {
 
   numTotalSearches.value++;
   resultsSection.setAttribute('hidden', 'true',);
-  resultsSection.querySelectorAll<Element>(':scope > *',).forEach(function hide(result,) {
+  resultsSection.querySelectorAll<HTMLElement>(':scope > *',).forEach(function hide(result,) {
     result.setAttribute('hidden', 'true',);
   },);
 

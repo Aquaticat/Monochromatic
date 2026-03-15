@@ -82,13 +82,13 @@ export function createCodeGenProbe(config: CodeGenProbeConfig,): Probe {
     prompt: config.prompt,
     ...slowProp,
 
-    buildFixPrompt: async function buildFixPrompt(response,
+    buildFixPrompt: function buildFixPrompt(response,
       context,): Promise<string | undefined>
     {
       return buildFixPromptImpl(config, response, context, caches,);
     },
 
-    score: async function score(response, context,): Promise<number> {
+    score: function score(response, context,): Promise<number> {
       return scoreImpl(config, response, context, caches,);
     },
   };

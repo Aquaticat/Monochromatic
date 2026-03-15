@@ -13,6 +13,18 @@ import { $ as css, } from '../css.ts';
 /** Z-index for toast positioning above page content. */
 const TOAST_Z_INDEX = 1_000;
 
+/** Center position percentage for inline-start. */
+const CENTER_PERCENT = 50;
+
+/** Negative center offset for translateX centering. */
+const NEG_CENTER_PERCENT = -50;
+
+/** Toast block padding in rem. */
+const TOAST_PADDING_BLOCK = 0.55;
+
+/** Toast inline padding in rem. */
+const TOAST_PADDING_INLINE = 0.85;
+
 /** Shadow DOM styles for the `\<toast-message\>` component. */
 const STYLES = [
   css({
@@ -20,8 +32,8 @@ const STYLES = [
     decls: {
       position: 'fixed',
       'inset-block-end': cssRem(1,),
-      'inset-inline-start': cssPercent(50,),
-      transform: cssTranslateX(cssPercent(-50,),),
+      'inset-inline-start': cssPercent(CENTER_PERCENT,),
+      transform: cssTranslateX(cssPercent(NEG_CENTER_PERCENT,),),
       'z-index': cssInt(TOAST_Z_INDEX,),
     },
   },),
@@ -30,8 +42,8 @@ const STYLES = [
     decls: {
       'background-color': cssVar('red-bg',),
       color: cssVar('bg-stronger',),
-      'padding-block': cssRem(0.55,),
-      'padding-inline': cssRem(0.85,),
+      'padding-block': cssRem(TOAST_PADDING_BLOCK,),
+      'padding-inline': cssRem(TOAST_PADDING_INLINE,),
     },
   },),
 ]
@@ -60,9 +72,9 @@ class ToastMessage extends HTMLElement {
   /** Renders content and schedules auto-removal after `DISMISS_MS`. */
   connectedCallback(): void {
     this.#render();
-    const self = this;
+    const removeFn = this.remove.bind(this,);
     this.#timer = setTimeout(function dismiss(): void {
-      self.remove();
+      removeFn();
     }, DISMISS_MS,);
   }
 

@@ -1,5 +1,5 @@
 /**
- * Observable value container type returned by {@link $}.
+ * Observable value container type returned by the $ function.
  *
  * Setting `value` triggers the registered change handler synchronously.
  */

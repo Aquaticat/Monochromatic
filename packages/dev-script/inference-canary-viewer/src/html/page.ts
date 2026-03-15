@@ -16,7 +16,7 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
  * @returns complete HTML document string
  */
 export function renderPage({ body, title, }: { body: string; title: string; },): string {
-  return '<!DOCTYPE html>\n' + h({
+  return `<!DOCTYPE html>\n${h({
     tag: 'html',
     attrs: { lang: 'en', },
     children: [
@@ -46,5 +46,5 @@ export function renderPage({ body, title, }: { body: string; title: string; },):
         ],
       },),
     ],
-  },);
+  },)}`;
 }

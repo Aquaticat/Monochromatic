@@ -26,7 +26,11 @@ export function mergeComments(
     value2: Jsonc.Comment;
   },
 ): Jsonc.Comment;
-/** {@inheritDoc mergeComments} */
+/**
+ * {@inheritDoc mergeComments}
+ *
+ * @returns merged comment, single comment, or `undefined`
+ */
 export function mergeComments(
   { value, value2, }: { value?: Jsonc.Comment | undefined;
     value2?: Jsonc.Comment | undefined; },

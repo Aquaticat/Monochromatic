@@ -128,6 +128,6 @@ export type ToolCallResult = {
  * });
  * ```
  */
-export type ToolHandler = (args: Record<string, unknown>,) => Promise<ToolCallResult>;
+export type ToolHandler = (args: Record<string, unknown>,) => ToolCallResult | Promise<ToolCallResult>;
 
 //endregion

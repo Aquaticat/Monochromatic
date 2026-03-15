@@ -1,5 +1,5 @@
-import type { ThreadGenerator, } from '@motion-canvas/core';
 import {
+  type ThreadGenerator,
   all,
   chain,
   easeInQuad,
@@ -38,9 +38,10 @@ import {
  * Animates the bounce-and-roll sequence after the initial entry.
  *
  * @param refs - scene element references
+ *
  * @param ballRestY - resting Y position of the ball on the ground
+ *
  * @returns motion-canvas thread generator
- * @yields animation frames
  */
 export function* animateBounces(refs: SceneRefs, ballRestY: number,): ThreadGenerator {
   const { ballGroup, ballBody, shadow, } = refs;

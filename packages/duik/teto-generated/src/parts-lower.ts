@@ -5,15 +5,15 @@
  *
  * @module
  */
+/* eslint-disable no-magic-numbers -- bbox fractions, color tolerances, and morph kernel sizes are inherently numeric part definitions */
 import { PALETTE, } from './config.ts';
 import {
   c,
   REF_GRAY_DARK,
   REF_GRAY_WARM,
   REF_RED,
+  type PartDef,
 } from './parts-types.ts';
-
-import type { PartDef, } from './parts-types.ts';
 
 /** Skirts, legs, and boots. */
 export const LOWER_PARTS: readonly PartDef[] = [
