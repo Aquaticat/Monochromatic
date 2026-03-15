@@ -17,22 +17,27 @@ Partial progress on `mise run lint`. This document tracks remaining work.
 ## Remaining: `max-lines` violations
 
 All remaining errors are `eslint(max-lines)` — files exceeding the 100-line limit.
-Each file needs to be split into smaller modules.
+The rule counts only code lines (blank lines and comments are excluded),
+so the reported count is the number of **code lines**, not total lines.
+Files whose total line count looks high may actually be close to the limit
+once blanks and comments are stripped — check before splitting.
 
 ### Packages with violations
 
-- **config/vite** — 1 file (101 lines)
-- **dev-script/catalog-tighten** — 1 file (157 lines)
-- **dev-script/inference-canary** — 4 files (118, 123, 150, 183 lines)
-- **dev-script/inference-canary-viewer** — 8 files (112, 120, 121, 137, 158, 164, 169 lines)
-- **dev-script/task-util** — 2 files (111, 121 lines)
-- **duik/teto** — 3 files (109, 133, 170 lines)
-- **duik/teto-generated** — 4 files (111, 136, 139, 150 lines)
-- **mcp/mvm** — 1 file (164 lines)
-- **mcp/nvim** — 3 files (179, 196, 198 lines)
-- **mcp/stdio** — 1 file (113 lines)
-- **module/es** — 7 files (104, 113, 119, 129, 137, 144, 179 lines)
-- **module/image-diff** — 6 files (104, 111, 119, 141, 150, 185 lines)
+Line counts below are **code lines** (blank/comment lines excluded by the rule).
+
+- **config/vite** — 1 file (101 code lines)
+- **dev-script/catalog-tighten** — 1 file (157 code lines)
+- **dev-script/inference-canary** — 4 files (118, 123, 150, 183 code lines)
+- **dev-script/inference-canary-viewer** — 8 files (112, 120, 121, 137, 158, 164, 169 code lines)
+- **dev-script/task-util** — 2 files (111, 121 code lines)
+- **duik/teto** — 3 files (109, 133, 170 code lines)
+- **duik/teto-generated** — 4 files (111, 136, 139, 150 code lines)
+- **mcp/mvm** — 1 file (164 code lines)
+- **mcp/nvim** — 3 files (179, 196, 198 code lines)
+- **mcp/stdio** — 1 file (113 code lines)
+- **module/es** — 7 files (104, 113, 119, 129, 137, 144, 179 code lines)
+- **module/image-diff** — 6 files (104, 111, 119, 141, 150, 185 code lines)
 
 ### Approach for each file
 
@@ -44,7 +49,9 @@ Each file needs to be split into smaller modules.
 
 ### Notes
 
-- `config/vite` is 101 lines — might be solved by removing a blank line or moving one declaration
-- `mcp/nvim` has the largest files (196, 198 lines) and will need the most substantial splits
+- The max-lines rule excludes blank lines and comments, so adding TSDoc or spacing
+  will not push a file over the limit — only code lines count
+- `config/vite` is 101 code lines — may only need one small extraction
+- `mcp/nvim` has the largest files (196, 198 code lines) and will need the most substantial splits
 - `module/es` files are deeply nested in the type system; splitting requires careful import management
 - Pre-existing tsgo warnings in motion-canvas (`?scene` import, `no-unsafe-*`) are not lint errors
