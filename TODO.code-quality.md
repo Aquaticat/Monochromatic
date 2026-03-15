@@ -179,23 +179,6 @@ if (untestableCondition) {
 }
 ```
 
-### Test File Setup
-Always start Vitest files with:
-```typescript
-import {
-  // members to test
-  logtapeConfiguration,
-  logtapeConfigure,
-} from '@monochromatic-dev/module-es';
-import {
-  describe,
-  expect,
-  test,
-} from 'vitest';
-
-await logtapeConfigure(await logtapeConfiguration());
-```
-
 ### Testing Intentional Violations
 When tests intentionally violate a rule to verify behavior:
 ```typescript

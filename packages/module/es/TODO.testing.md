@@ -232,11 +232,6 @@ describe('Type Constant Testing', () => {
 - [ ] **[`dirent.path.ts`](src/dirent.path.ts:5)** - Directory entry path utilities
 - [ ] **[`testLogger.index.ts`](src/testLogger.index.ts:1)** - Test logging utilities
 
-#### Logging Missing Tests
-- [ ] **[`logtape.default.ts`](src/logtape.default.ts:1)** - Default logging configuration
-- [ ] **[`logtape.node.ts`](src/logtape.node.ts:1)** - Node.js logging configuration
-- [ ] **[`logtape.shared.ts`](src/logtape.shared.ts:1)** - Shared logging utilities
-
 #### Utilities Missing Tests
 - [ ] **[`iterable.toString.ts`](src/iterable.toString.ts:1)** - Iterable string conversion
 - [ ] **[`iterable.trim.ts`](src/iterable.trim.ts:25)** - Iterable trimming utilities

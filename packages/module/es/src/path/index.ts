@@ -6,8 +6,13 @@
  * environments where `node:path` does not exist.
  *
  * Exports: {@link dirname}, {@link join}, {@link resolve}, {@link isAbsolute},
- * and {@link sep}.
+ * {@link sep}, and fs-ensuring utilities from `./ensure.ts`, `./empty.ts`,
+ * and `./trim.ts`.
  */
+
+export { emptyDir, emptyFile, emptyPath, removeEmptyFilesInDir, } from './empty.ts';
+export { ensureDir, ensureFile, ensurePath, } from './ensure.ts';
+export { trimLeadingSlash, trimTrailingSlash, } from './trim.ts';
 
 //region Node delegation -- use real node:path/posix when the runtime has it
 

@@ -281,8 +281,6 @@ import {
   test,
 } from 'vitest';
 
-await logtapeConfigure(await logtapeConfiguration());
-
 describe('Function Type Testing', () => {
   test('identity preserves input type exactly', () => {
     expectTypeOf(identity).parameter(0).toEqualTypeOf<unknown>();

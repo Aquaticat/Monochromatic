@@ -129,11 +129,7 @@
   - Missing TSDoc for all exported functions
   - Need Node.js-specific examples and platform limitations
 
-- [ ] **[`logtape.node.ts`](src/logtape.node.ts:1)** - Node.js logging
-  - Missing documentation completely
-  - Need logging configuration examples
-
-#### Browser Platform Functions  
+#### Browser Platform Functions
 - [ ] **[`fs.fs.default.ts`](src/fs.fs.default.ts:18)** - Browser filesystem polyfill
   - [`getFsPromises()`](src/fs.fs.default.ts:18) - Missing complete documentation
   - Document browser limitations and fallback behavior

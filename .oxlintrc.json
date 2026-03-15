@@ -177,7 +177,7 @@
 
     "eslint/no-iterator": "error",
 
-    // logtape logs aren't unused expressions.
+    // Tagged template expressions (css``, html``, etc.) aren't unused expressions.
     "eslint/no-unused-expressions": ["error", { "allowTaggedTemplates": true }],
 
     "eslint/no-void": "error",

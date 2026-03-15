@@ -38,8 +38,6 @@
     "vite": "catalog:",
     "vue-tsc": "catalog:",
     "typescript": "catalog:",
-    "@logtape/logtape": "catalog:",
-    "@logtape/file": "catalog:",
     "serialize-error": "catalog:",
     "lfi": "catalog:",
     "nano-spawn": "catalog:",
