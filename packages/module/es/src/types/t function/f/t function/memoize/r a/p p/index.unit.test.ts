@@ -1,5 +1,5 @@
 // oxlint-disable unicorn/prefer-native-coercion-functions -- keyFn wrappers intentionally narrow parameter types
-// oxlint-disable typescript/require-await, typescript/no-misused-promises -- async test callbacks and arrow functions
+// oxlint-disable typescript/require-await -- async test callbacks and arrow functions
 
 import { types, } from '@monochromatic-dev/module-es';
 import {
@@ -11,7 +11,7 @@ import {
 const { $, } = types.function.from.function.memoize.async.positional;
 const createStore = types.object.store.from.store.async.named.$;
 
-describe($, () => {
+describe($.name, () => {
   test('returns computed value on first call', async () => {
     const fn = async (x: number,): Promise<number> => x * 2;
     const memoized = await $(fn, (x: number,) => String(x,),);

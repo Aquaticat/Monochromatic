@@ -7,6 +7,9 @@ import { noDisableNoEnum, } from './rules/no-disable-no-enum.ts';
 import { noDisableNoForIn, } from './rules/no-disable-no-for-in.ts';
 import { noDisableNoHasownproperty, } from './rules/no-disable-no-hasownproperty.ts';
 import {
+  noDisableNoMisusedPromises,
+} from './rules/no-disable-no-misused-promises.ts';
+import {
   noDisableNoNonNullAssertion,
 } from './rules/no-disable-no-non-null-assertion.ts';
 import { noDisableNoPromiseCatch, } from './rules/no-disable-no-promise-catch.ts';
@@ -89,6 +92,7 @@ const plugin = eslintCompatPlugin({
     'no-disable-no-enum': noDisableNoEnum,
     'no-disable-no-for-in': noDisableNoForIn,
     'no-disable-no-hasownproperty': noDisableNoHasownproperty,
+    'no-disable-no-misused-promises': noDisableNoMisusedPromises,
     'no-disable-no-promise-catch': noDisableNoPromiseCatch,
     'no-disable-no-promise-finally': noDisableNoPromiseFinally,
     'no-disable-no-regexp-exec': noDisableNoRegexpExec,

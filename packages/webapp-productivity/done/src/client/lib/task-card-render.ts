@@ -85,11 +85,18 @@ export function renderTaskCardContent(
           attrs: { title: 'Complete task', },
           children: [h({ tag: 'span', class: 'checkbox-box', },),],
           on: {
-            // oxlint-disable-next-line typescript/no-misused-promises -- DOM event handler
-            click: async function onCheckboxClick(event,): Promise<void> {
+            click: function onCheckboxClick(event,): void {
               event.stopPropagation();
-              if (options.onToggleComplete !== undefined)
-                await options.onToggleComplete(task.id,);
+              if (options.onToggleComplete !== undefined) {
+                void (async function onCheckboxClickAsync() {
+                  try {
+                    await options.onToggleComplete(task.id,);
+                  }
+                  catch (error: unknown) {
+                    console.error('toggle complete failed', error,);
+                  }
+                })();
+              }
             },
           },
         },),

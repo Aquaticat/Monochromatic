@@ -7,8 +7,7 @@ import {
 
 const { $, } = types.object.store.from.store.async.named;
 
-// oxlint-disable-next-line typescript/no-misused-promises -- bun:test describe accepts async function
-describe($, () => {
+describe($.name, () => {
   test('creates a store with default configuration', async () => {
     const store = await $();
     expect(store.storeId,).toBeDefined();

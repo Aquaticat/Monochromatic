@@ -68,6 +68,7 @@ export const RULE_GUIDANCE: Record<string, string> = {
     'Async callbacks silently drop Promise rejections because the caller ignores the return value.',
     'Fix: make the outer listener synchronous, call `void (async function name() { try { ... } catch (e) { console.error(e); } })()` inside it.',
     'Adding `void` alone only silences the type error without handling rejections.',
+    'For bun:test `describe($, ...)` where `$` is async, pass `$.name` instead -- bun only reads the `.name` property.',
   ].join(' ',),
 };
 

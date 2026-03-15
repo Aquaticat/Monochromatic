@@ -1,4 +1,4 @@
-// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression, no-shadow, no-warning-comments, typescript/no-misused-promises -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
+// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression, no-shadow, no-warning-comments -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
 import {
   $ as notNullishOrThrow,
 } from '@monochromatic-dev/module-es/not-nullish-or-throw';
@@ -21,46 +21,59 @@ import {
   searchInput,
 } from './client-dom.ts';
 
-searchForm.addEventListener('submit', async function onSearch(event,) {
+searchForm.addEventListener('submit', function onSearch(event,) {
   event.preventDefault();
+  void (async function onSearchAsync() {
+    try {
+      numTotalSearches.value++;
+      resultsSection.setAttribute('hidden', 'true',);
+      resultsSection.querySelectorAll<HTMLElement>(':scope > *',).forEach(function hide(result,) {
+        result.setAttribute('hidden', 'true',);
+      },);
 
-  numTotalSearches.value++;
-  resultsSection.setAttribute('hidden', 'true',);
-  resultsSection.querySelectorAll<HTMLElement>(':scope > *',).forEach(function hide(result,) {
-    result.setAttribute('hidden', 'true',);
-  },);
+      processingParagraph.removeAttribute('hidden',);
 
-  processingParagraph.removeAttribute('hidden',);
+      const results = await exa.value[0].search(searchInput.value.trim(), {
+        type: 'auto',
+        numResults: numResults.value,
+        contents: {
+          text: true,
+          summary: true,
+          subpages: 1,
+          extras: {
+            links: 1,
+            imageLinks: 1,
+          },
+          highlights: true,
+        },
+      },);
 
-  const results = await exa.value[0].search(searchInput.value.trim(), {
-    type: 'auto',
-    numResults: numResults.value,
-    contents: {
-      text: true,
-      summary: true,
-      subpages: 1,
-      extras: {
-        links: 1,
-        imageLinks: 1,
-      },
-      highlights: true,
-    },
-  },);
+      processingParagraph.setAttribute('hidden', 'true',);
 
-  processingParagraph.setAttribute('hidden', 'true',);
+      costDollarsSpan.textContent = String(results.costDollars?.total ?? 0,);
 
-  costDollarsSpan.textContent = String(results.costDollars?.total ?? 0,);
+      results.results.forEach(function forEachResult(result, resultIndex,) {
+        displayResult(resultArticles, result, resultIndex,);
+      },);
 
-  results.results.forEach(function forEachResult(result, resultIndex,) {
-    displayResult(resultArticles, result, resultIndex,);
-  },);
-
-  resultsSection.removeAttribute('hidden',);
+      resultsSection.removeAttribute('hidden',);
+    }
+    catch (error: unknown) {
+      console.error('search failed', error,);
+    }
+  })();
 },);
 
-changeApiKeyButton.addEventListener('click', async function promptForNewApiKey() {
-  const inputApiKey = notNullishOrThrow(await prompt('Change api key',),);
-  exa.value = [new Exa(inputApiKey, baseUrl,), { apiKey: inputApiKey, },];
+changeApiKeyButton.addEventListener('click', function onChangeApiKey() {
+  void (async function promptForNewApiKey() {
+    try {
+      const inputApiKey = notNullishOrThrow(await prompt('Change api key',),);
+      exa.value = [new Exa(inputApiKey, baseUrl,), { apiKey: inputApiKey, },];
+    }
+    catch (error: unknown) {
+      console.error('api key change failed', error,);
+    }
+  })();
 },);
 
 numResultsInput.addEventListener('input', function setNewNumResults() {

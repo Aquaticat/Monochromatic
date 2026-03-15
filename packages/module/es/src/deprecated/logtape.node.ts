@@ -26,14 +26,26 @@ async function createFileSink(appName: string,): Promise<Sink & AsyncDisposable>
 
     await ensureFile(filePath,);
 
-    // oxlint-disable-next-line typescript/no-misused-promises -- Not really a misused promise. An async function assigned to a variable.
-    const fileSink: Sink & AsyncDisposable = async function logToFile(
+    /** Appends a log record to the file as pretty-printed JSON. */
+    async function logToFile(
       record: LogRecord,
     ): Promise<void> {
       const log = JSON.stringify(record, null, 2,) + '\n';
-
-      // It's, in fact, working correctly.
       await appendFile(filePath, log,);
+    }
+
+    /** Sync wrapper that fires the async write without blocking the caller. */
+    const fileSink: Sink & AsyncDisposable = function fileSinkSync(
+      record: LogRecord,
+    ): void {
+      void (async function writeLog() {
+        try {
+          await logToFile(record,);
+        }
+        catch (error: unknown) {
+          console.error('log write failed', error,);
+        }
+      })();
     };
 
     fileSink[Symbol.asyncDispose] = disposeFileSink;

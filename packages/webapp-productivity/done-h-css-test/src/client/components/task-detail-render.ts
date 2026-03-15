@@ -128,10 +128,7 @@ export function buildTaskDetailTree(
     btnRow,
   ];
 
-  /* oxlint-disable typescript/no-unsafe-type-assertion -- h() returns generic HTMLElement but these are known input/textarea elements */
   return { elements,
-    refs: { titleInput: titleInput as unknown as HTMLInputElement,
-      descInput: descInput as unknown as HTMLTextAreaElement, pillsContainer,
+    refs: { titleInput, descInput, pillsContainer,
       btnRow, }, };
-  /* oxlint-enable typescript/no-unsafe-type-assertion */
 }

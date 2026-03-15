@@ -90,36 +90,37 @@ const elements: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>
 );
 elements.forEach(function bindScrollIgnore(element,) {
   addScrollEvents({ element, },);
-  // oxlint-disable-next-line typescript/no-misused-promises -- addEventListener does not await the handler
-  element.addEventListener('scrolledOut', async function onScrolledOut() {
-    console.error('scrolledOut',);
-    const metadata = notNullishOrThrow(
-      element.querySelector<HTMLElement>('.feed__metadata',),
-    );
-    const anchor: HTMLAnchorElement = notNullishOrThrow(
-      metadata.querySelector<HTMLAnchorElement>('.feed__link',),
-    );
+  element.addEventListener('scrolledOut', function onScrolledOut() {
+    void (async function onScrolledOutAsync() {
+      try {
+        console.error('scrolledOut',);
+        const metadata = notNullishOrThrow(
+          element.querySelector<HTMLElement>('.feed__metadata',),
+        );
+        const anchor: HTMLAnchorElement = notNullishOrThrow(
+          metadata.querySelector<HTMLAnchorElement>('.feed__link',),
+        );
 
-    const body: Record<string, string> = z.url().safeParse(anchor.href,).success
-      ? { link: anchor.href, }
-      : { metadataOuterHtml: metadata.outerHTML, };
+        const body: Record<string, string> = z.url().safeParse(anchor.href,).success
+          ? { link: anchor.href, }
+          : { metadataOuterHtml: metadata.outerHTML, };
 
-    const response = await fetch(`/api/ignore/new`, {
-      method: 'POST',
-      body: JSON.stringify(body,),
-    },);
-    if (!response.ok) {
-      console.error(`ignore request failed`, response,);
-      return;
-    }
-    try {
-      const text = await response.text();
-      console.error(`ignored: ${text}`,);
-      element.dataset.ignored = '';
-    }
-    catch (error: unknown) {
-      console.error(`failed to read ignore response`, error,);
-    }
+        const response = await fetch(`/api/ignore/new`, {
+          method: 'POST',
+          body: JSON.stringify(body,),
+        },);
+        if (!response.ok) {
+          console.error(`ignore request failed`, response,);
+          return;
+        }
+        const text = await response.text();
+        console.error(`ignored: ${text}`,);
+        element.dataset.ignored = '';
+      }
+      catch (error: unknown) {
+        console.error(`scrolledOut handler failed`, error,);
+      }
+    })();
   },);
 },);
 

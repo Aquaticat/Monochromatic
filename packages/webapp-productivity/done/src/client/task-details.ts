@@ -67,53 +67,59 @@ detail.configure({
   blockerSummaries: pageData.blockerSummaries,
 },);
 
-// oxlint-disable-next-line typescript/no-misused-promises -- addEventListener does not await the handler
-detail.addEventListener('action', async function onAction(event,) {
-  if (!(event instanceof CustomEvent))
-    throw new TypeError("Expected CustomEvent for 'action' listener",);
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload
-  const { action, title, description, } = event.detail as {
-    action: string;
-    title: string;
-    description: string;
-  };
+detail.addEventListener('action', function onAction(event,) {
+  void (async function onActionAsync() {
+    try {
+      if (!(event instanceof CustomEvent))
+        throw new TypeError("Expected CustomEvent for 'action' listener",);
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload
+      const { action, title, description, } = event.detail as {
+        action: string;
+        title: string;
+        description: string;
+      };
 
-  if (action === 'close')
-    globalThis.location.href = '/';
-  else if (action === 'save') {
-    const metadata = detail.getMetadata();
-    const payload = {
-      title,
-      description: description.length === 0 ? null : description,
-      tags: metadata.tags,
-      locations: metadata.locations,
-      priority: metadata.priority,
-      complexity: metadata.complexity,
-      dueDate: task.dueDate,
-      blockedBy: task.blockedBy,
-    };
-    await api(`/api/tasks/${task.id}`, {
-      method: 'PUT',
-      body: JSON.stringify(payload,),
-    },);
-    globalThis.location.reload();
-  }
-  else if (action === 'start') {
-    await api(`/api/tasks/${task.id}/start`, { method: 'POST', },);
-    globalThis.location.reload();
-  }
-  else if (action === 'stop') {
-    await api(`/api/tasks/${task.id}/stop`, { method: 'POST', },);
-    globalThis.location.reload();
-  }
-  else if (action === 'complete') {
-    await api(`/api/tasks/${task.id}/complete`, { method: 'POST', },);
-    globalThis.location.href = '/';
-  }
-  else if (action === 'delete') {
-    await api(`/api/tasks/${task.id}`, { method: 'DELETE', },);
-    globalThis.location.href = '/';
-  }
+      if (action === 'close')
+        globalThis.location.href = '/';
+      else if (action === 'save') {
+        const metadata = detail.getMetadata();
+        const payload = {
+          title,
+          description: description.length === 0 ? null : description,
+          tags: metadata.tags,
+          locations: metadata.locations,
+          priority: metadata.priority,
+          complexity: metadata.complexity,
+          dueDate: task.dueDate,
+          blockedBy: task.blockedBy,
+        };
+        await api(`/api/tasks/${task.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload,),
+        },);
+        globalThis.location.reload();
+      }
+      else if (action === 'start') {
+        await api(`/api/tasks/${task.id}/start`, { method: 'POST', },);
+        globalThis.location.reload();
+      }
+      else if (action === 'stop') {
+        await api(`/api/tasks/${task.id}/stop`, { method: 'POST', },);
+        globalThis.location.reload();
+      }
+      else if (action === 'complete') {
+        await api(`/api/tasks/${task.id}/complete`, { method: 'POST', },);
+        globalThis.location.href = '/';
+      }
+      else if (action === 'delete') {
+        await api(`/api/tasks/${task.id}`, { method: 'DELETE', },);
+        globalThis.location.href = '/';
+      }
+    }
+    catch (error: unknown) {
+      console.error('task detail action handler failed', error,);
+    }
+  })();
 },);
 
 app.append(detail,);
