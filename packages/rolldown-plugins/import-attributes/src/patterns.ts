@@ -1,8 +1,8 @@
 /**
- * Regex patterns and query parameter helpers for import attribute rewriting.
+ * Query parameter helpers for import attribute rewriting.
  *
- * Contains the static/dynamic import matching patterns and functions
- * to encode/decode the `__importattr` query parameter.
+ * Encodes and decodes the `__importattr` query parameter
+ * used to tag rewritten specifiers.
  *
  * @module
  */
@@ -13,45 +13,6 @@
 export const ATTR_QUERY_KEY = '__importattr';
 
 //endregion Constants
-
-//region Transform patterns
-
-/**
- * Matches static import/export declarations with `with { type: '...' }` attributes.
- *
- * Captures:
- * - Group 1: Everything before the specifier (e.g. `import x from `)
- * - Group 2: Quote character used for the specifier
- * - Group 3: The specifier string (e.g. `./file.sql`)
- * - Group 4: The quote + `with` clause including the type value
- * - Group 5: The attribute type value (e.g. `text`)
- *
- * Handles both single and double quotes, and optional semicolons.
- * Does not match dynamic `import()` expressions (handled separately).
- */
-export const STATIC_IMPORT_WITH_RE = new RegExp(
-  String.raw`((?:import|export)\s+(?:(?:type\s+)?(?:(?:[\w$*{}\s,]+)\s+from|)\s+))(['"])([^'"]+)(\2\s+with\s*\{\s*type\s*:\s*['"](\w+)['"]\s*\})`,
-  'g',
-);
-
-/**
- * Matches dynamic `import()` expressions with attribute options containing `with: { type: '...' }`.
- *
- * Captures:
- * - Group 1: `import(`
- * - Group 2: Quote character
- * - Group 3: The specifier string
- * - Group 4: Everything after the specifier up through the `with` clause
- * - Group 5: The attribute type value
- *
- * @example Matches `import('./file.sql', { with: { type: 'text' } })`
- */
-export const DYNAMIC_IMPORT_WITH_RE = new RegExp(
-  String.raw`(import\s*\(\s*)(['"])([^'"]+)(\2\s*,\s*\{\s*with\s*:\s*\{\s*type\s*:\s*['"](\w+)['"]\s*\}\s*\})`,
-  'g',
-);
-
-//endregion Transform patterns
 
 //region Query helpers
 

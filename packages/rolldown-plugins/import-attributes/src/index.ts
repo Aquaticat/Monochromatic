@@ -78,8 +78,8 @@ function importAttributesPlugin(): Plugin {
      * Delegates to {@link transformImportAttributes} to rewrite
      * `with { type: '...' }` clauses into query-parameter-tagged specifiers.
      */
-    transform(code,) {
-      return transformImportAttributes(code,);
+    transform(code, id,) {
+      return transformImportAttributes(code, id,);
     },
 
     /**

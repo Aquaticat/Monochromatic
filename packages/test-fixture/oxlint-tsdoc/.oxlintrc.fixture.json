@@ -1,0 +1,36 @@
+{
+  "$schema": "../../../node_modules/oxlint/configuration_schema.json",
+  // Dedicated config for fixture linting: all tsdoc rules enabled,
+  // no ignorePatterns that would skip invalid/ or test-fixture/ paths.
+  // Used by the lint-fixture mise task and the oxlint-tsdoc unit tests.
+  "jsPlugins": [
+    "../../config/oxlint-tsdoc/src/index.ts"
+  ],
+  "ignorePatterns": [
+    "**/dist",
+    "**/node_modules"
+  ],
+  "rules": {
+    "tsdoc/require-tsdoc": "error",
+    "tsdoc/check-alignment": "error",
+    "tsdoc/multiline-blocks": "warn",
+    "tsdoc/no-multi-asterisks": "error",
+    "tsdoc/tag-lines": "warn",
+    "tsdoc/empty-tags": "error",
+    "tsdoc/escape-inline-tags": "error",
+    "tsdoc/check-tag-names": "error",
+    "tsdoc/check-access": "error",
+    "tsdoc/valid-types": "warn",
+    "tsdoc/no-types": "error",
+    "tsdoc/check-param-names": "error",
+    "tsdoc/require-param": "warn",
+    "tsdoc/require-param-name": "error",
+    "tsdoc/require-param-description": "warn",
+    "tsdoc/require-returns": "warn",
+    "tsdoc/require-returns-check": "error",
+    "tsdoc/require-returns-description": "warn",
+    // Enabled here for plugin validation even though production config disables them.
+    "tsdoc/require-yields": "warn",
+    "tsdoc/require-yields-check": "error"
+  }
+}

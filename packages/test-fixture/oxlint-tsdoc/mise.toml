@@ -8,3 +8,7 @@ extends = "lint"
 
 [tasks."lint:types"]
 extends = "lint:types"
+
+[tasks."lint-fixture"]
+description = "Lint fixture files with all tsdoc rules enabled (for plugin validation)"
+run = "oxlint -c .oxlintrc.fixture.json src/"

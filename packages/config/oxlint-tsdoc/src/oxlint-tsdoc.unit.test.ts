@@ -34,8 +34,17 @@ type OxlintOutput = {
 /** Workspace root. */
 const ROOT = resolve(import.meta.dirname, '..', '..', '..', '..',);
 
-/** Fixture root. */
-const FIXTURES = resolve(ROOT, 'packages', 'test-fixture', 'oxlint-tsdoc', 'src',);
+/** Fixture package root. */
+const FIXTURE_PKG = resolve(ROOT, 'packages', 'test-fixture', 'oxlint-tsdoc',);
+
+/** Fixture source root. */
+const FIXTURES = resolve(FIXTURE_PKG, 'src',);
+
+/**
+ * Fixture-specific oxlint config with all tsdoc rules enabled and no ignorePatterns
+ * that would skip test-fixture or invalid paths.
+ */
+const FIXTURE_CONFIG = resolve(FIXTURE_PKG, '.oxlintrc.fixture.json',);
 
 /**
  * Runs oxlint with the project config against a fixture path and returns parsed diagnostics.
@@ -51,7 +60,7 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
   let stdout: string;
   try {
     const result = await spawn('oxlint', ['--format', 'json', '-c',
-      resolve(ROOT, '.oxlintrc.json',), target,], {
+      FIXTURE_CONFIG, target,], {
       cwd: ROOT,
     },);
     ({ stdout, } = result);

@@ -3,12 +3,21 @@
  * for dynamic imports that rolldown's Rust scanner processes
  * before `transform` runs.
  *
+ * Uses AST parsing via rolldown's `parseSync` instead of regex
+ * for robust, formatting-independent matching.
+ *
  * @module
  */
 
 import { readFileSync, } from 'node:fs';
 
-import { HANDLERS, } from './handlers.ts';
+import {
+  type ESTree,
+  parseSync,
+  Visitor,
+} from 'rolldown/utils';
+
+import { extractTypeFromAttributes, extractTypeFromOptions, getStringLiteralValue, } from './ast-extract.ts';
 
 /**
  * Scans an importer file's source code to find the import attribute type
@@ -17,13 +26,13 @@ import { HANDLERS, } from './handlers.ts';
  * This is used for dynamic imports where rolldown's Rust scanner discovers
  * dependencies before the `transform` hook can rewrite them.
  *
- * @param specifier - Import specifier to look for (e.g. `./sample.sql`)
+ * @param specifier - import specifier to look for (e.g. `./sample.sql`)
  *
- * @param importerPath - Absolute path to the importing file
+ * @param importerPath - absolute path to the importing file
  *
- * @param importerSourceCache - Cache to avoid re-reading the same file
+ * @param importerSourceCache - cache to avoid re-reading the same file
  *
- * @returns Attribute type string if found and supported, `undefined` otherwise
+ * @returns attribute type string if found and supported, `undefined` otherwise
  */
 export function scanImporterForAttribute(
   specifier: string,
@@ -44,31 +53,46 @@ export function scanImporterForAttribute(
   if (!source.includes(specifier,))
     return undefined;
 
-  /**
-   * Build a regex that matches the specific specifier with a `with { type: '...' }` clause.
-   * Handles both static (`with { type: '...' }`) and dynamic (`{ with: { type: '...' } }`) forms.
-   */
-  const escapedSpecifier = specifier.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`,);
-  const specificAttrRe = new RegExp(
-    `['"]${escapedSpecifier}['"]`
-      + `(?:`
-      + `\\s+with\\s*\\{\\s*type\\s*:\\s*['"]`
-      + `(\\w+)`
-      + `['"]\\s*\\}`
-      + `|`
-      + `\\s*,\\s*\\{\\s*with\\s*:\\s*\\{\\s*type\\s*:\\s*['"]`
-      + `(\\w+)`
-      + `['"]\\s*\\}\\s*\\}`
-      + `)`,
-  );
+  const result = parseSync(importerPath, source,);
+  let found: string | undefined = undefined;
 
-  const match = specificAttrRe.exec(source,);
-  if (match === null)
-    return undefined;
+  const visitor = new Visitor({
+    ImportDeclaration(node: ESTree.ImportDeclaration,): void {
+      if (found !== undefined)
+        return;
+      if (node.source.value !== specifier || node.attributes.length === 0)
+        return;
+      found = extractTypeFromAttributes(node.attributes,);
+    },
 
-  const attrType = match[1] ?? match[2];
-  if (attrType === undefined || HANDLERS[attrType] === undefined)
-    return undefined;
+    ExportNamedDeclaration(node: ESTree.ExportNamedDeclaration,): void {
+      if (found !== undefined)
+        return;
+      if (node.source === null || node.source.value !== specifier || node.attributes.length === 0)
+        return;
+      found = extractTypeFromAttributes(node.attributes,);
+    },
 
-  return attrType;
+    ExportAllDeclaration(node: ESTree.ExportAllDeclaration,): void {
+      if (found !== undefined)
+        return;
+      if (node.source.value !== specifier || node.attributes.length === 0)
+        return;
+      found = extractTypeFromAttributes(node.attributes,);
+    },
+
+    ImportExpression(node: ESTree.ImportExpression,): void {
+      if (found !== undefined)
+        return;
+      if (node.options === null)
+        return;
+      const sourceValue = getStringLiteralValue(node.source,);
+      if (sourceValue !== specifier)
+        return;
+      found = extractTypeFromOptions(node.options,);
+    },
+  },);
+
+  visitor.visit(result.program,);
+  return found;
 }

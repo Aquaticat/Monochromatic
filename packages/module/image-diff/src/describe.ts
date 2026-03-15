@@ -1,4 +1,5 @@
 // oxlint-disable typescript/no-unsafe-type-assertion, require-await -- API response types require assertions
+import { describeViaGemini, } from './describe.gemini.ts';
 import { toImageUri, } from './encoding.uri.ts';
 import {
   l,
@@ -89,8 +90,9 @@ function resolveOpenRouterApiKey(): string | undefined {
 }
 
 /**
- * Send two images to Gemini 3.1 Pro Preview via OpenRouter and return
- * a detailed natural-language description of the visual differences.
+ * Describe visual differences between two images using the native Gemini API
+ * (preferred) or OpenRouter as a fallback. Returns `undefined` when no API key
+ * is configured for either backend.
  *
  * @param imageA - first image (before)
  *
@@ -114,6 +116,14 @@ export async function describeImageDifference(imageA: ImageInput,
 {
   const rl = tagged({ tag: describeImageDifference.name, l, },);
 
+  // Prefer the native Gemini API -- avoids the OpenRouter proxy overhead
+  const geminiResult = await describeViaGemini(imageA, imageB,);
+  if (geminiResult !== undefined) {
+    rl.debug('description obtained via native Gemini API',);
+    return geminiResult;
+  }
+
+  // Fall back to OpenRouter when no Gemini API key is available
   const apiKey = resolveOpenRouterApiKey();
   if (apiKey === undefined)
     return undefined;
