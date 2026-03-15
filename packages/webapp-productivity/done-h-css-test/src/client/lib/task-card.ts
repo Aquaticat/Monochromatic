@@ -15,10 +15,16 @@ import { buildChipTexts, formatTrackedTime } from "./task-card-helpers.ts";
  * Created programmatically via `createTaskCard()`, not placed in server HTML.
  */
 class TaskCard extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
+
+  /** Task data to display, set via `configure()`. */
   #task: Task | null = null;
+
+  /** Interaction callbacks and display flags, set via `configure()`. */
   #options: TaskCardOptions | null = null;
 
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
@@ -44,21 +50,22 @@ class TaskCard extends HTMLElement {
    * @param prefix - Text prefix to match (e.g. `"tracked:"`)
    */
   getChipElement(prefix: string): HTMLSpanElement | null {
-    for (const chip of this.#shadow.querySelectorAll(".chip")) {
-      if (chip.textContent?.startsWith(prefix)) {
-        return chip as HTMLSpanElement;
+    for (const chip of this.#shadow.querySelectorAll<HTMLSpanElement>(".chip")) {
+      if (chip.textContent.startsWith(prefix)) {
+        return chip;
       }
     }
     return null;
   }
 
+  /** Renders the card content (checkbox, title, chips) into the shadow root. */
   #render(): void {
     const task = this.#task;
     const options = this.#options;
     if (task === null || options === null) return;
 
     const chipTexts = buildChipTexts(task);
-    const chipElements: HTMLElement[] = chipTexts.map((text) => h({ tag: "span", class: "chip", text }));
+    const chipElements: HTMLElement[] = chipTexts.map(function toChipElement(text) { return h({ tag: "span", class: "chip", text }); });
     if (options.showBlockedBadge === true) {
       chipElements.push(h({ tag: "span", class: "chip blocked", text: "blocked" }));
     }
@@ -75,7 +82,7 @@ class TaskCard extends HTMLElement {
             attrs: { title: "Complete task" },
             children: [h({ tag: "span", class: "checkbox-box" })],
             on: {
-              click: async (event) => {
+              click: async function handleCheckboxClick(event) {
                 event.stopPropagation();
                 if (options.onToggleComplete !== undefined) {
                   await options.onToggleComplete(task.id);
@@ -86,7 +93,7 @@ class TaskCard extends HTMLElement {
           h({ tag: "span", class: "title", text: task.title }),
         ],
         on: {
-          click: () => {
+          click: function handleCardClick() {
             options.onOpen(task.id);
           },
         },

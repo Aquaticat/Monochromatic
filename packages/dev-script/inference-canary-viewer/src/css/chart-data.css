@@ -4,17 +4,26 @@
 
 .chart-threshold {
   position: absolute;
+
   inset-inline: 0;
+
   border-block-start: var(--border-width) dashed var(--red);
+
   z-index: 0;
 
   & > .label {
     position: absolute;
+
     inset-inline-end: 0;
+
     inset-block-start: calc(var(--space-4) * -1 - var(--border-width) * 2);
+
     font-size: var(--font-size-2xs);
+
     color: var(--red);
+
     background-color: var(--bg);
+
     padding-inline: var(--space-1);
   }
 }
@@ -25,8 +34,11 @@
 
 .score-card-grid {
   display: grid;
+
   grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+
   margin-block-start: var(--space-2);
+
   @apply --border-grid;
 }
 
@@ -44,19 +56,25 @@
 
 .chart-data-table {
   margin-block-start: var(--space-2);
+
   font-size: var(--font-size-sm);
+
   color: var(--fg-muted);
 
   & caption {
     text-align: start;
+
     font-size: var(--font-size-xs);
+
     color: var(--fg-faint);
+
     margin-block-end: var(--space-1);
   }
 }
 
 .chart-empty-state {
   color: var(--fg-faint);
+
   font-style: italic;
 }
 
@@ -66,58 +84,85 @@
 
 .color-swatch {
   display: inline-block;
+
   inline-size: calc(var(--space-2) + var(--border-width) * 2);
+
   block-size: calc(var(--space-2) + var(--border-width) * 2);
+
   border-radius: 50%;
+
   background-color: var(--point-color, var(--fg-faint));
+
   vertical-align: middle;
 
   /* Icon swatch: contains an inline SVG instead of a solid color */
-  &[data-shape="icon"] {
+  &[data-shape='icon'] {
     background-color: transparent;
+
     border-radius: 0;
+
     inline-size: 1em;
+
     block-size: 1em;
+
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     & svg {
       inline-size: 1em;
+
       block-size: 1em;
     }
 
     /* Kimi icon is nearly invisible on white -- add a filled gray frame */
-    &[data-vendor="moonshotai"] {
+    &[data-vendor='moonshotai'] {
       background-color: var(--fg-faint);
+
       border-radius: calc(var(--border-width) * 2);
+
       padding-block: var(--border-width);
+
       padding-inline: var(--border-width);
     }
   }
 
   /* Diamond swatch for fix-score legend entries */
-  &[data-shape="diamond"] {
+  &[data-shape='diamond'] {
     border-radius: 0;
-    transform: rotate(45deg);
+
+    transform: rotate(0.125turn);
+
     opacity: 0.6;
+
     inline-size: var(--space-2);
+
     block-size: var(--space-2);
   }
 }
 
 .chart-legend {
   display: flex;
+
   flex-wrap: wrap;
+
   row-gap: var(--space-3);
+
   column-gap: var(--space-3);
+
   margin-block: var(--space-2);
+
   font-size: var(--font-size-md);
 
   & > .item {
     display: inline-flex;
+
     align-items: center;
+
     row-gap: var(--space-1);
+
     column-gap: var(--space-1);
   }
 }

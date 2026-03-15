@@ -19,30 +19,38 @@ pre.glow {
   --glow-comment: #6f7a7d;
   --glow-annotation: #fff;
   --glow-error: #ef4444;
-  --glow-mark-bg: rgb(45 212 191 / 0.15);
+  --glow-mark-bg: oklch(77.7% 0.152 0.475turn / 15%);
   --glow-line-num: #475569;
-}
 
-/*endregion Glow theme tokens */
+  /*endregion Glow theme tokens */
 
-/*region Glow base */
-
-pre.glow {
+  /*region Glow base */
   background-color: var(--glow-bg);
+
   color: var(--glow-fg);
+
   padding-block: var(--space-4);
+
   padding-inline: var(--space-4);
+
   border-radius: var(--radius-sm);
-  font-family: ui-monospace, "Cascadia Code", "JetBrains Mono", monospace;
+
+  font-family: ui-monospace, 'Cascadia Code', 'JetBrains Mono', monospace;
+
   font-size: var(--font-size-md);
+
   line-height: 1.7;
+
   overflow-x: auto;
+
   counter-reset: line-counter 0;
 }
 
 pre.glow * {
-  font-weight: 400;
+  font-weight: normal;
+
   font-style: inherit;
+
   text-decoration: inherit;
 }
 
@@ -73,32 +81,44 @@ pre.glow i {
 /* Comments */
 pre.glow sup {
   color: var(--glow-comment);
+
   font-size: inherit;
+
   vertical-align: inherit;
+
   font-style: italic;
 }
 
 /* Annotations (@param, @returns) */
 pre.glow label {
   font-weight: bold;
+
   color: var(--glow-annotation);
 }
 
 /* Wavy underline for errors */
 pre.glow u {
   text-decoration: underline wavy var(--glow-error);
+
   text-decoration-thickness: 0.15em;
+
   text-underline-offset: 0.5em;
 }
 
 /* Marked/highlighted code */
 pre.glow mark {
   background-color: var(--glow-mark-bg);
+
   color: unset;
+
   border-radius: 0.2em;
+
   padding-block: 0.3em;
+
   padding-inline: 0.4em;
+
   margin-block: -0.3em;
+
   margin-inline: -0.4em;
 }
 
@@ -112,11 +132,17 @@ pre.glow span {
 
 pre.glow span::before {
   color: var(--glow-line-num);
+
   content: counter(line-counter);
+
   display: inline-block;
+
   text-align: end;
+
   padding-inline-end: 1em;
+
   margin-inline-end: 1em;
+
   inline-size: 2.5em;
 }
 

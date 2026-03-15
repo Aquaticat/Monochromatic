@@ -142,6 +142,10 @@
     "jest/valid-title": "off",
     //endregion jest
 
+    // False positives on generic functions with nullable params (e.g. notNullishOrThrow).
+    // See TROUBLESHOOTING.tsgolint-no-unnecessary-type-assertion.md
+    "typescript/no-unnecessary-type-assertion": "off",
+
     // Nursery rule: not enabled by category, must be listed explicitly.
     // Matches ESLint's @typescript-eslint/no-unnecessary-condition config.
     "typescript/no-unnecessary-condition": ["error", {
@@ -198,6 +202,7 @@
     "no-restricted-syntax/no-trim-left-right": "error",
     "no-restricted-syntax/no-variable-function-expression": "error",
     "no-restricted-syntax/require-destructured-params": "error",
+    "no-restricted-syntax/require-queryselector-generic": "error",
     //region no-disable -- prevent inline oxlint-disable for rules with no legitimate exceptions
     "no-restricted-syntax/no-disable-require-tsdoc": "error",
     "no-restricted-syntax/no-disable-no-switch": "error",

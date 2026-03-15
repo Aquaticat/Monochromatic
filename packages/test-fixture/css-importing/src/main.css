@@ -3,6 +3,7 @@
 
 .component {
   @apply --flex-center;
+
   background: var(--primary);
 }
 

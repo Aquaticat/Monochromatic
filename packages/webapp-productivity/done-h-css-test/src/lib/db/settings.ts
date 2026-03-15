@@ -6,6 +6,7 @@
  */
 import db from "../db.ts";
 
+/** Database row shape for the settings table. */
 type SettingRow = {
   key: string;
   value: string;

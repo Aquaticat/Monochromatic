@@ -8,54 +8,81 @@
 
   & > figcaption {
     font-weight: 600;
+
     font-size: var(--font-size-lg);
+
     margin-block-end: var(--space-2);
   }
 }
 
 .chart-area {
   position: relative;
+
   display: grid;
+
   grid-template-columns: 3rem 1fr;
+
   grid-template-rows: 1fr var(--space-6);
+
   block-size: 16rem;
 }
 
 .chart-y-axis {
   position: relative;
+
   grid-column: 1;
+
   grid-row: 1;
 
   & > .tick {
     position: absolute;
+
     inset-inline-end: var(--space-1);
+
     font-size: var(--font-size-xs);
+
     color: var(--fg-faint);
+
     transform: translateY(50%);
   }
 }
 
 .chart-plot {
   position: relative;
+
   grid-column: 2;
+
   grid-row: 1;
+
   border-inline-start: var(--border-width) solid var(--border-strong);
+
   border-block-end: var(--border-width) solid var(--border-strong);
-  background-image:
-    linear-gradient(to top, var(--grid-line) var(--border-width), transparent var(--border-width));
+
+  background-image: linear-gradient(
+    to top,
+    var(--grid-line) var(--border-width),
+    transparent var(--border-width)
+  );
+
   background-size: 100% 25%;
 }
 
 .chart-x-axis {
   position: relative;
+
   grid-column: 2;
+
   grid-row: 2;
 
   & > .tick {
     position: absolute;
+
     inset-block-start: calc(var(--border-width) * 2);
+
     font-size: var(--font-size-xs);
+
     color: var(--fg-faint);
+
     transform: translateX(-50%);
   }
 }
@@ -66,38 +93,67 @@
 
 .chart-point {
   position: absolute;
+
   display: block;
+
   inline-size: var(--space-2);
+
   block-size: var(--space-2);
+
   border-radius: 50%;
+
   background-color: var(--point-color, var(--fg-faint));
+
   transform: translate(-50%, 50%);
+
   transition-property: transform;
+
   transition-duration: 0.1s;
 
   &:hover,
   &:focus-visible {
     transform: translate(-50%, 50%) scale(1.8);
+
     z-index: 1;
+
     outline-width: calc(var(--border-width) * 2);
+
     outline-style: solid;
+
     outline-color: var(--point-color, var(--fg-faint));
+
     outline-offset: var(--border-width);
   }
 
   /* Data points with vendor icon inside */
-  &[data-shape="icon"] {
+  &[data-shape='icon'] {
     inline-size: var(--space-4);
+
     block-size: var(--space-4);
+
     background-color: var(--bg-surface);
-    border-block: var(--border-width) solid var(--point-color, var(--fg-faint));
-    border-inline: var(--border-width) solid var(--point-color, var(--fg-faint));
+
+    border-block-width: var(--border-width);
+
+    border-block-style: solid;
+
+    border-block-color: var(--point-color, var(--fg-faint));
+
+    border-inline-width: var(--border-width);
+
+    border-inline-style: solid;
+
+    border-inline-color: var(--point-color, var(--fg-faint));
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     & svg {
       inline-size: var(--space-3);
+
       block-size: var(--space-3);
     }
 
@@ -108,47 +164,72 @@
   }
 
   /* Pass-2 (fix) points: diamond shape, slightly larger */
-  &[data-pass="fix"] {
+  &[data-pass='fix'] {
     background-color: var(--point-color, var(--fg-faint));
+
     opacity: 0.6;
+
     inline-size: calc(var(--space-2) + var(--border-width) * 2);
+
     block-size: calc(var(--space-2) + var(--border-width) * 2);
+
     border-radius: 0;
-    transform: translate(-50%, 50%) rotate(45deg);
+
+    transform: translate(-50%, 50%) rotate(0.125turn);
 
     &:hover,
     &:focus-visible {
-      transform: translate(-50%, 50%) rotate(45deg) scale(1.8);
+      transform: translate(-50%, 50%) rotate(0.125turn) scale(1.8);
+
       opacity: 1;
     }
 
     /* Pass-2 points with vendor icon: circular with dashed border */
-    &[data-shape="icon"] {
+    &[data-shape='icon'] {
       border-radius: 50%;
+
       border-block-style: dashed;
+
       border-inline-style: dashed;
+
       background-color: var(--bg-surface);
+
       opacity: 0.8;
+
       inline-size: var(--space-4);
+
       block-size: var(--space-4);
+
       transform: translate(-50%, 50%);
 
       &:hover,
       &:focus-visible {
         transform: translate(-50%, 50%) scale(1.5);
+
         opacity: 1;
       }
     }
   }
 
   /* Failed runs: X-shaped via clip-path */
-  &[data-status="failed"] {
+  &[data-status='failed'] {
     background-color: var(--red);
+
     border-radius: 0;
+
     clip-path: polygon(
-      20% 0%, 50% 30%, 80% 0%, 100% 20%, 70% 50%,
-      100% 80%, 80% 100%, 50% 70%, 20% 100%, 0% 80%,
-      30% 50%, 0% 20%
+      20% 0%,
+      50% 30%,
+      80% 0%,
+      100% 20%,
+      70% 50%,
+      100% 80%,
+      80% 100%,
+      50% 70%,
+      20% 100%,
+      0% 80%,
+      30% 50%,
+      0% 20%
     );
   }
 }

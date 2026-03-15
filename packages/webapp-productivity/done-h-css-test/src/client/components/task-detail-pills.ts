@@ -9,8 +9,6 @@ import { formatRunningTrackedTime } from "../lib/task-card.ts";
 /**
  * Builds pill elements from current metadata state and autofill status.
  *
- * @param options - Task data, metadata values, and autofill state
- *
  * @returns Array of pill span elements
  */
 export function buildPillElements({ task, metadata, autofillLoading, autofilled }: {

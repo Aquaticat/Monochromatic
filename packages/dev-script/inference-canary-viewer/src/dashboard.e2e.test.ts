@@ -254,7 +254,7 @@ test.describe('popover ID wiring', () => {
       const broken: string[] = [];
       for (const button of buttons) {
         const targetId = button.getAttribute('popovertarget');
-        if (targetId !== null && document.querySelector(`#${targetId}`) === null) {
+        if (targetId !== null && document.querySelector<Element>(`#${targetId}`) === null) {
           broken.push(targetId);
         }
       }

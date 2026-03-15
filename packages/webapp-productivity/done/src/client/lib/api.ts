@@ -21,9 +21,16 @@ const HTTP_NO_CONTENT = 204;
  * @returns Parsed JSON response body, or undefined for 204 responses
  */
 export async function api<TResponse = unknown>(path: string, options?: RequestInit): Promise<TResponse> {
+  const mergedHeaders = new Headers({ "Content-Type": "application/json" });
+  if (options?.headers !== undefined) {
+    const extra = new Headers(options.headers);
+    extra.forEach(function applyHeader(value: string, key: string): void {
+      mergedHeaders.set(key, value);
+    });
+  }
   const response = await fetch(path, {
     ...options,
-    headers: { "Content-Type": "application/json", ...options?.headers },
+    headers: mergedHeaders,
   });
 
   if (!response.ok) {

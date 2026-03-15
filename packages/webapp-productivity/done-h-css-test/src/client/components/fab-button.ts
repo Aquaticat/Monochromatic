@@ -3,6 +3,7 @@ import { cssInt, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
 import { borderRadiusFull, flexCenter, focusOutline, minTouchTarget } from "../mixins.ts";
 
+/** Compiled CSS string for `<fab-button>` Shadow DOM. */
 const STYLES = [
   css({
     rule: ':host',
@@ -42,13 +43,16 @@ const STYLES = [
  * Reads the `label` attribute for accessibility and renders a `<slot>` for custom content.
  */
 class FabButton extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
 
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
   }
 
+  /** Renders the action button with label and slot into the shadow root. */
   connectedCallback(): void {
     const label = this.getAttribute("label") ?? "Action";
     this.#shadow.replaceChildren(

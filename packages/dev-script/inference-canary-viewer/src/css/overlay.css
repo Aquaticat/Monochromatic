@@ -8,18 +8,31 @@
 .detail-popover {
   &:popover-open {
     margin-block: auto;
+
     margin-inline: auto;
+
     background-color: var(--bg-surface);
+
     border-radius: var(--radius-lg);
-    border-block: none;
-    border-inline: none;
+
+    border-block-style: none;
+
+    border-inline-style: none;
+
     padding-block: var(--space-6);
+
     padding-inline: var(--space-6);
+
     max-inline-size: min(72rem, calc(100% - var(--space-2) * 4));
+
     max-block-size: calc(100dvb - var(--space-4) * 4);
+
     overflow-y: auto;
+
     overflow-x: auto;
+
     box-shadow: 0 var(--space-1) var(--space-6) var(--shadow);
+
     color: var(--fg);
   }
 
@@ -32,27 +45,41 @@
  * The popovertarget button is the implicit anchor -- no anchor-name needed.
  * Falls back to centered viewport positioning when unsupported. */
 @supports (position-area: block-end) {
-  .detail-popover:popover-open:not([data-layout="centered"]) {
-    inset: auto;
+  .detail-popover:popover-open:not([data-layout='centered']) {
+    inset-block: auto;
+
+    inset-inline: auto;
+
     margin-block: 0;
+
     margin-inline: 0;
+
     position-area: block-end span-inline-end;
+
     position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+
     max-inline-size: min(40rem, calc(100vi - var(--space-2) * 4));
   }
 
   /* Source overlays opt out of implicit anchor positioning -- stay viewport-centered */
-  .detail-popover[data-layout="centered"]:popover-open {
+  .detail-popover[data-layout='centered']:popover-open {
     position-anchor: none;
-    inset: 0;
+
+    inset-block: 0;
+
+    inset-inline: 0;
+
     margin-block: auto;
+
     margin-inline: auto;
   }
 }
 
 .detail-popover-title {
   font-size: 1rem;
+
   font-weight: 600;
+
   margin-block-end: var(--space-3);
 }
 
@@ -62,8 +89,11 @@
 
 .probe-grid {
   display: grid;
+
   grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+
   margin-block: var(--space-3);
+
   @apply --border-grid;
 }
 
@@ -81,7 +111,9 @@
 
 .detail-popover-empty {
   color: var(--fg-faint);
+
   font-style: italic;
+
   margin-block: var(--space-4);
 }
 
@@ -91,32 +123,44 @@
 
 .detail-popover-badges {
   display: flex;
+
   flex-wrap: wrap;
+
   row-gap: calc(var(--space-2) - var(--border-width) * 2);
+
   column-gap: calc(var(--space-2) - var(--border-width) * 2);
+
   margin-block-end: var(--space-3);
 }
 
 .run-indicator {
   display: inline-block;
+
   padding-block: calc(var(--border-width) * 2);
+
   padding-inline: var(--space-2);
+
   border-radius: var(--radius-sm);
+
   font-size: var(--font-size-sm);
+
   font-weight: 500;
 
-  &[data-severity="warning"] {
+  &[data-severity='warning'] {
     background-color: var(--warn-bg);
+
     color: var(--warn-fg);
   }
 
-  &[data-severity="error"] {
+  &[data-severity='error'] {
     background-color: var(--error-bg);
+
     color: var(--error-fg);
   }
 
-  &[data-severity="neutral"] {
+  &[data-severity='neutral'] {
     background-color: var(--badge-neutral-bg);
+
     color: var(--badge-neutral-fg);
   }
 }

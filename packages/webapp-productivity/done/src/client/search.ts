@@ -12,13 +12,11 @@ import { api } from "./lib/api.ts";
 import { injectCSS } from "./lib/inject-css.ts";
 import { readPageData } from "./lib/page-data.ts";
 import { createTaskCard } from "./lib/task-card.ts";
+import { searchStyles } from "./search-styles.ts";
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/side-drawer.ts";
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/search-bar.ts";
-
-/** Large border-radius value for pill-shaped tag chips. */
-const PILL_BORDER_RADIUS_REM = 62.5;
 
 /** Shape of the JSON blob embedded in the search page by the server. */
 type SearchPageData = {
@@ -31,56 +29,13 @@ type SearchPageData = {
 };
 
 injectCSS(styles);
-
-// Page-scoped styles for search (not shared with other pages)
-injectCSS(`
-.search-hint {
-  color: var(--fg-weaker);
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-.tag-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--min-gap);
-}
-
-.tag-chip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-width: calc(1 / 16 * 1rem);
-  border-style: solid;
-  border-color: var(--fg);
-  border-radius: ${String(PILL_BORDER_RADIUS_REM)}rem;
-  padding-block: 0.5rem;
-  padding-inline: 0.5rem;
-  gap: 0.25rem;
-  white-space: nowrap;
-  font-size: 1rem;
-  line-height: 1.5;
-  cursor: pointer;
-  background-color: transparent;
-  font: inherit;
-
-  &:hover {
-    background-color: var(--hover-bg);
-  }
-}
-
-@media (min-width: 48rem) {
-  .search-hint {
-    font-size: 1.5rem;
-  }
-}
-`);
+injectCSS(searchStyles);
 
 /** Deserialized page data from the server-rendered JSON blob. */
 const pageData = readPageData<SearchPageData>();
 
 /** Root app container element. */
-const appElement = document.querySelector("#app");
+const appElement = document.querySelector<HTMLElement>("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
@@ -89,7 +44,7 @@ if (!(appElement instanceof HTMLElement)) {
 const app = appElement;
 
 // Listen for search events from the search-bar component
-document.querySelector("search-bar")?.addEventListener("search", function onSearch(event) {
+document.querySelector<HTMLElement>("search-bar")?.addEventListener("search", function onSearch(event) {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CustomEvent detail contains query string
   const query = (event as CustomEvent).detail.query as string;
   globalThis.location.href = query.length === 0 ? "/search" : `/search?q=${encodeURIComponent(query)}`;
@@ -110,7 +65,7 @@ if (pageData.query.length === 0) {
             class: "tag-chip",
             text: `# ${tag}`,
             on: {
-              click: function onTagClick() {
+              click: function onTagClick(): void {
                 globalThis.location.href = `/search?q=${encodeURIComponent(`#${tag}`)}`;
               },
             },
@@ -127,10 +82,10 @@ if (pageData.query.length === 0) {
     resultList.append(
       createTaskCard(result, {
         showBlockedBadge: result.isBlocked,
-        onOpen: function openTask(taskId) {
+        onOpen: function openTask(taskId): void {
           globalThis.location.href = `/tasks/${taskId}`;
         },
-        onToggleComplete: async function completeTask(taskId) {
+        onToggleComplete: async function completeTask(taskId): Promise<void> {
           await api(`/api/tasks/${taskId}/complete`, { method: "POST" });
           globalThis.location.reload();
         },

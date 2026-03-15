@@ -14,9 +14,15 @@ export async function api<T = unknown>(
   path: string,
   options?: RequestInit
 ): Promise<T> {
+  const headers = new Headers({ "Content-Type": "application/json" });
+  if (options?.headers !== undefined) {
+    new Headers(options.headers).forEach(function mergeHeader(value, key) {
+      headers.set(key, value);
+    });
+  }
   const res = await fetch(path, {
     ...options,
-    headers: { "Content-Type": "application/json", ...options?.headers },
+    headers,
   });
   if (!res.ok) {
     let err: { error?: string } = { error: "Request failed" };
@@ -39,7 +45,7 @@ export async function api<T = unknown>(
  * @param message - Text to display in the toast
  */
 export function showToast(message: string): void {
-  const existing = document.querySelector(".toast");
+  const existing = document.querySelector<HTMLElement>(".toast");
   if (existing !== null) existing.remove();
 
   const el = document.createElement("div");

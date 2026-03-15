@@ -29,11 +29,16 @@ import "./components/fab-button.ts";
 injectCSS(globalStyles);
 injectCSS(inboxStyles);
 
+/** Deserialized page data containing suggested and all inbox tasks. */
 const pageData = readPageData<InboxPageData>();
-const appElement = document.querySelector("#app");
+
+/** Raw DOM element for the `#app` container. */
+const appElement = document.querySelector<HTMLElement>("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
+
+/** Validated `#app` container element. */
 const app = appElement;
 
 /** Navigates to the task detail page for the given task. */
@@ -49,8 +54,10 @@ async function completeTask(taskId: string): Promise<void> {
 
 //region Suggested section
 
+/** Collapsible section heading for the suggested tasks block. */
 const suggestedSection = h({ tag: "section-heading", attrs: { icon: "\u2728", label: "Suggested" } });
 
+/** Content container for the suggested tasks section. */
 const suggestedContent = h({
   tag: "div",
   style: { display: "flex", flexDirection: "column", gap: "var(--gap)" },
@@ -107,8 +114,10 @@ app.append(h({ tag: "div", class: "divider" }));
 
 //region All section
 
+/** Collapsible section heading for the "All" tasks block. */
 const allSection = h({ tag: "section-heading", attrs: { icon: "\u221E", label: "All" } });
 
+/** Content container for the all tasks section. */
 const allContent = h({
   tag: "div",
   style: { display: "flex", flexDirection: "column", gap: "var(--gap)" },
@@ -126,6 +135,7 @@ app.append(allSection);
 
 //region New-task dialog -- FAB opens a modal <dialog> with task-detail in create mode
 
+/** New-task dialog panel and trigger FAB button. */
 const { panel: newTaskPanel, fab: newTaskFab } = createNewTaskDialog();
 document.body.append(newTaskPanel);
 document.body.append(newTaskFab);

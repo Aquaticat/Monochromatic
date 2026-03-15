@@ -4,19 +4,26 @@
 
 .metadata-grid {
   display: grid;
+
   grid-template-columns: max-content 1fr;
+
   row-gap: var(--space-1);
+
   column-gap: var(--space-3);
+
   margin-block: var(--space-2);
+
   font-size: var(--font-size-md);
 
   & dt {
     color: var(--fg-muted);
+
     font-weight: 500;
   }
 
   & dd {
     margin-inline-start: 0;
+
     font-variant-numeric: tabular-nums;
   }
 }
@@ -27,14 +34,28 @@
 
 .collapsible-section {
   margin-block: var(--space-2);
-  border-block: var(--border-width) solid var(--border);
-  border-inline: var(--border-width) solid var(--border);
+
+  border-block-width: var(--border-width);
+
+  border-block-style: solid;
+
+  border-block-color: var(--border);
+
+  border-inline-width: var(--border-width);
+
+  border-inline-style: solid;
+
+  border-inline-color: var(--border);
+
   border-radius: var(--radius-md);
 
   & > summary {
     padding-block: var(--space-2);
+
     padding-inline: var(--space-3);
+
     font-size: var(--font-size-md);
+
     font-weight: 500;
 
     &:hover {
@@ -45,8 +66,11 @@
   /* Nested metadata grid within collapsible sections */
   & > .metadata-grid {
     margin-block: 0;
+
     padding-block: var(--space-2);
+
     padding-inline: var(--space-3);
+
     border-block-start: var(--border-width) solid var(--border);
   }
 }
@@ -54,11 +78,17 @@
 /* Markdown-rendered text within collapsible sections */
 .rendered-markdown {
   padding-block: var(--space-3);
+
   padding-inline: var(--space-3);
+
   font-size: var(--font-size-sm);
+
   line-height: 1.5;
+
   overflow-x: auto;
-  word-break: break-word;
+
+  overflow-wrap: break-word;
+
   border-block-start: var(--border-width) solid var(--border);
 
   & > :first-child {
@@ -71,9 +101,13 @@
 
   & pre {
     padding-block: var(--space-2);
+
     padding-inline: var(--space-3);
+
     overflow-x: auto;
+
     background-color: var(--bg-hover);
+
     border-radius: var(--radius-sm);
   }
 

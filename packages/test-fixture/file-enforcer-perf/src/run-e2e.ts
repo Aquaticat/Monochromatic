@@ -22,10 +22,12 @@ const CONFIG = resolve(import.meta.dirname, 'perf.config.ts');
 
 /** Fixture root and subdirectories, respects $TMPDIR for sandbox compatibility */
 const FIXTURE_DIR = join(tmpdir(), 'file-enforcer-perf');
+/** Absolute path to the destination subdirectory within the fixture */
 const DEST_DIR = `${FIXTURE_DIR}/dest`;
 
 /** Files modified by hyperfine --prepare for changed-file scenarios */
 const SOURCE_FILE = `${FIXTURE_DIR}/src/pkg-00/docs/readme.md`;
+/** Destination file modified by hyperfine --prepare for the dest-changed scenario */
 const DEST_FILE = `${DEST_DIR}/combined-0.md`;
 
 //endregion Setup
@@ -34,8 +36,11 @@ const DEST_FILE = `${DEST_DIR}/combined-0.md`;
 
 /**
  * Runs a hyperfine benchmark with the given arguments.
+ *
  * @param label - Human-readable scenario name for logging
+ *
  * @param args - Arguments passed to hyperfine
+ *
  * @throws When hyperfine exits with a non-zero code
  */
 async function runHyperfine(label: string, args: readonly string[]): Promise<void> {

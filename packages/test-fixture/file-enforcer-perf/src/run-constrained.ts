@@ -21,90 +21,39 @@
 
 import { resolve, } from 'node:path';
 
-import type { ContainerBenchResult } from './run-constrained-utils.ts';
+import {
+  CONTAINERFILE,
+  CONTAINER_COUNT,
+  CPUSET_CPU,
+  IMAGE_NAME,
+  MONOREPO_ROOT,
+  RESOURCE_FLAGS,
+  VPS_SYSBENCH_BASELINE,
+} from './run-constrained-config.ts';
 import {
   collectTimings,
   formatTimingSummary,
+} from './run-constrained-timing.ts';
+import {
+  type ContainerBenchResult,
+  type HostBenchResult,
+  extractSysbenchScore,
   parseLastJsonLine,
   runCapture,
   runInherit,
 } from './run-constrained-utils.ts';
 
-/** Absolute path to the monorepo root */
-const MONOREPO_ROOT = resolve(import.meta.dirname, '..', '..', '..', '..');
-
-/** Containerfile location */
-const CONTAINERFILE = resolve(import.meta.dirname, '..', 'Containerfile');
-
-/** Container image name */
-const IMAGE_NAME = 'file-enforcer-perf';
-
-/**
- * The user's cheapest VPS scored 1605 events/sec in sysbench cpu.
- * Even the PEAK score across all contending containers must stay below this.
- */
-const VPS_SYSBENCH_BASELINE = 1_605;
-
-/**
- * Number of containers to run simultaneously on the same CPU core.
- * With 5+ containers sharing 1 core of a Ryzen 7 8700F (~5300 events/sec),
- * each gets ~20% throughput (~1060 events/sec), well below the 1605 baseline.
- * Extra containers ensure peak performance during brief idle windows
- * (when some containers are between benchmark phases) stays below baseline.
- */
-const CONTAINER_COUNT = 5;
-
-/**
- * CPU core to pin all containers to via taskset inside the container.
- * All containers compete for this single core via EEVDF scheduler,
- * creating contention at sub-millisecond timeslice granularity
- * rather than CFS bandwidth throttling's 10-100ms stall periods.
- */
-const CPUSET_CPU = '0';
-
-/**
- * Block device that backs the volume mount.
- * Determined by tracing /var/home -> LUKS dm-0 -> nvme0n1p6 -> nvme0n1.
- * IO throttle cgroup rules apply at the device mapper level.
- */
-const BLOCK_DEVICE = '/dev/dm-0';
-
-/**
- * HDD-like IO limits.
- * Cheap shared HDD: ~75-150 random IOPS, ~80-120 MB/s sequential.
- * Using conservative end: 100 IOPS, 80 MB/s.
- */
-const READ_BPS = '80mb';
-const WRITE_BPS = '80mb';
-const READ_IOPS = '100';
-const WRITE_IOPS = '100';
-
-/**
- * Podman flags for memory and IO constraints.
- * CPU pinning is done via taskset inside the container rather than
- * --cpuset-cpus, avoiding the need for sudo or cpuset delegation.
- */
-const RESOURCE_FLAGS = [
-  '--memory=1g',
-  `--device-read-bps=${BLOCK_DEVICE}:${READ_BPS}`,
-  `--device-write-bps=${BLOCK_DEVICE}:${WRITE_BPS}`,
-  `--device-read-iops=${BLOCK_DEVICE}:${READ_IOPS}`,
-  `--device-write-iops=${BLOCK_DEVICE}:${WRITE_IOPS}`,
-] as const;
-
 //region Host baseline
 
 console.log('=== HOST BASELINE ===');
+/** Raw JSON output from the host baseline benchmark */
 const hostJson = await runCapture(
   ['bun', resolve(import.meta.dirname, 'validate-resources.ts')],
   'Running host baseline benchmark',
 );
-const hostResult = JSON.parse(hostJson) as {
-  sysbench: { eventsPerSec: number };
-  serial: { ms: number };
-  parallel: { ms: number };
-  io: { ms: number; filesPerSec: number };
-};
+/** Parsed host baseline benchmark results */
+// oxlint-disable-next-line no-unsafe-type-assertion -- JSON structure matches the known validate-resources.ts output format
+const hostResult = JSON.parse(hostJson) as HostBenchResult;
 console.log(`Host sysbench: ${String(hostResult.sysbench.eventsPerSec)} events/sec`);
 console.log(`Host serial CPU: ${String(hostResult.serial.ms)}ms`);
 console.log(`Host parallel CPU: ${String(hostResult.parallel.ms)}ms`);
@@ -126,25 +75,38 @@ await runInherit(
 
 console.log(`\n=== PARALLEL CONTENTION BENCHMARK (${String(CONTAINER_COUNT)} containers on core ${CPUSET_CPU}) ===`);
 
+/**
+ * Runs a single container benchmark and parses the JSON result.
+ *
+ * @param _unused - Unused array element placeholder
+ *
+ * @param containerIndex - Index of the container (0-based)
+ *
+ * @returns Parsed benchmark result from the container
+ */
+async function runContainerBench(_unused: unknown, containerIndex: number): Promise<ContainerBenchResult> {
+  const output = await runCapture(
+    [
+      'podman', 'run', '--rm',
+      // Disable SELinux labeling: the :Z volume flag relabels files for
+      // one container's context, conflicting when multiple containers
+      // mount the same volume simultaneously.
+      '--security-opt', 'label=disable',
+      ...RESOURCE_FLAGS,
+      '-v', `${MONOREPO_ROOT}:/app`,
+      IMAGE_NAME,
+      'taskset', '-c', CPUSET_CPU,
+      'bun', 'packages/fixture/file-enforcer-perf/src/bench-in-container.ts',
+    ],
+    `Container ${String(containerIndex)}`,
+  );
+  // oxlint-disable-next-line no-unsafe-type-assertion -- JSON structure matches ContainerBenchResult from bench-in-container.ts
+  return parseLastJsonLine(output) as ContainerBenchResult;
+}
+
+/** Benchmark results from all containers run in parallel */
 const containerResults = await Promise.all(
-  Array.from({ length: CONTAINER_COUNT }, async (_, containerIndex) => {
-    const output = await runCapture(
-      [
-        'podman', 'run', '--rm',
-        // Disable SELinux labeling: the :Z volume flag relabels files for
-        // one container's context, conflicting when multiple containers
-        // mount the same volume simultaneously.
-        '--security-opt', 'label=disable',
-        ...RESOURCE_FLAGS,
-        '-v', `${MONOREPO_ROOT}:/app`,
-        IMAGE_NAME,
-        'taskset', '-c', CPUSET_CPU,
-        'bun', 'packages/fixture/file-enforcer-perf/src/bench-in-container.ts',
-      ],
-      `Container ${String(containerIndex)}`,
-    );
-    return parseLastJsonLine(output) as ContainerBenchResult;
-  }),
+  Array.from({ length: CONTAINER_COUNT }, runContainerBench),
 );
 
 //endregion Parallel contention benchmark
@@ -152,11 +114,15 @@ const containerResults = await Promise.all(
 //region Sysbench validation
 
 console.log('\n=== SYSBENCH VALIDATION ===');
-containerResults.forEach((result, containerIndex) => {
-  console.log(`  Container ${String(containerIndex)}: ${String(result.sysbench.eventsPerSec)} events/sec`);
-});
+for (let containerIndex = 0; containerIndex < containerResults.length; containerIndex++) {
+  const result = containerResults[containerIndex];
+  if (result !== undefined) {
+    console.log(`  Container ${String(containerIndex)}: ${String(result.sysbench.eventsPerSec)} events/sec`);
+  }
+}
 
-const peakSysbench = Math.max(...containerResults.map((result) => result.sysbench.eventsPerSec));
+/** Peak sysbench score across all containers */
+const peakSysbench = Math.max(...containerResults.map(function getScore(result) { return extractSysbenchScore(result); }));
 console.log(`  Peak: ${String(peakSysbench)} events/sec`);
 console.log(`  VPS baseline: ${String(VPS_SYSBENCH_BASELINE)} events/sec`);
 
@@ -174,14 +140,17 @@ if (peakSysbench <= VPS_SYSBENCH_BASELINE) {
 
 //region Cgroup limit verification
 
-containerResults.forEach((result, containerIndex) => {
-  if (!result.limits.cpuAffinityValid) {
-    console.warn(`  WARNING: Container ${String(containerIndex)} CPU affinity unexpected: "${result.limits.cpuAffinity}"`);
+for (let containerIndex = 0; containerIndex < containerResults.length; containerIndex++) {
+  const result = containerResults[containerIndex];
+  if (result !== undefined) {
+    if (!result.limits.cpuAffinityValid) {
+      console.warn(`  WARNING: Container ${String(containerIndex)} CPU affinity unexpected: "${result.limits.cpuAffinity}"`);
+    }
+    if (!result.limits.memoryValid) {
+      console.warn(`  WARNING: Container ${String(containerIndex)} memory unexpected: "${result.limits.memoryMax}"`);
+    }
   }
-  if (!result.limits.memoryValid) {
-    console.warn(`  WARNING: Container ${String(containerIndex)} memory unexpected: "${result.limits.memoryMax}"`);
-  }
-});
+}
 
 //endregion Cgroup limit verification
 
@@ -192,12 +161,12 @@ console.log('\n=== BENCHMARK RESULTS ===');
 /** Timing categories to aggregate: label prefix maps to display name */
 const TIMING_CATEGORIES = ['cold', 'warm', 'source-changed', 'dest-changed'] as const;
 
-TIMING_CATEGORIES.forEach((category) => {
+for (const category of TIMING_CATEGORIES) {
   const values = collectTimings(containerResults, category);
   if (values.length > 0) {
     console.log(formatTimingSummary(category, values));
   }
-});
+}
 
 //endregion Benchmark results
 

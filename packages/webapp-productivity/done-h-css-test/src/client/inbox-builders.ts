@@ -18,8 +18,6 @@ export type InboxPageData = {
 /**
  * Builds a task list with optional blocked-child nesting.
  *
- * @param options - Tasks to display, blocker map, and interaction callbacks
- *
  * @returns UL element containing task cards with nested blocker children
  */
 export function buildTaskList({ tasks, blockedTasksByBlocker, onOpen, onToggleComplete }: {
@@ -43,9 +41,9 @@ export function buildTaskList({ tasks, blockedTasksByBlocker, onOpen, onToggleCo
             h({
               tag: "ul",
               class: "task-list",
-              children: childLinks.map((childLink) =>
-                createTaskCard(childLink.task, { showBlockedBadge: true, onOpen, onToggleComplete }),
-              ),
+              children: childLinks.map(function buildBlockedCard(childLink) {
+                return createTaskCard(childLink.task, { showBlockedBadge: true, onOpen, onToggleComplete });
+              }),
             }),
           ],
         }),

@@ -100,8 +100,10 @@ class ToggleSwitch extends HTMLElement {
     this.#render();
   }
 
-  /** Toggles state and dispatches a change event. */
-  /** @see {@link connectedCallback} where this is registered as a click handler */
+  /**
+   * Toggles state and dispatches a change event.
+   * Registered as a click handler in connectedCallback.
+   */
   #handleClick = function handleClick(this: ToggleSwitch): void {
     this.on = !this.on;
     this.dispatchEvent(new CustomEvent("change", { detail: { on: this.on }, bubbles: true }));

@@ -4,26 +4,14 @@
  * Queries DOM elements, configures event listeners for drawing and
  * background upload, reads tool mode from radio inputs, and sets up
  * canvas resize handling via ResizeObserver.
- *
- * Exceeds 100 lines: entry-point wiring between drawing state, text
- * state, background management, and DOM event handlers that must share
- * canvas dimension variables.
  */
 
 import { setRasterBackground, setSvgBackground, } from './background.ts';
-import {
-  clearStrokes,
-  configureCtx,
-  continueStroke,
-  endStroke,
-  normalizePointer,
-  redraw,
-  startStroke,
-} from './drawing.ts';
+import { clearStrokes, redraw, } from './drawing.ts';
+import { setupPointerHandlers, } from './pointer-handlers.ts';
 import {
   clearTextEntries,
   discardActiveInput,
-  placeTextInput,
   setTextLayer,
 } from './text.ts';
 
@@ -137,69 +125,16 @@ syncCursorToTool();
 
 //endregion Tool mode switching
 
-//region Pointer event handlers
+//region Pointer & toolbar handlers
 
-canvas.addEventListener('pointerdown', function handlePointerDown(event: PointerEvent): void {
-  if (!isDrawMode()) {
-    /**
-     * Suppress the browser's default pointerdown focus-management.
-     *
-     * Without this, the sequence is: pointerdown fires → placeTextInput
-     * creates an input and calls focus() → the browser's *default*
-     * pointerdown handling then moves focus back to the canvas target →
-     * blur fires on the still-empty input → finalizeActiveInput removes
-     * it. The input appears and disappears within a single click.
-     */
-    event.preventDefault();
-    /** Bounding rect of the canvas element */
-    const rect = canvas.getBoundingClientRect();
-    placeTextInput([
-      (event.clientX - rect.left) / canvasWidth,
-      (event.clientY - rect.top) / canvasHeight,
-    ]);
-    return;
-  }
-
-  canvas.setPointerCapture(event.pointerId);
-  /** Normalized pointer position at stroke start */
-  const point = normalizePointer({ event, canvas, cw: canvasWidth, ch: canvasHeight, });
-  startStroke(point);
+setupPointerHandlers({
+  canvas,
+  ctx,
+  isDrawMode,
+  getCanvasSize: function getCanvasSize(): { cw: number; ch: number } {
+    return { cw: canvasWidth, ch: canvasHeight, };
+  },
 });
-
-canvas.addEventListener('pointermove', function handlePointerMove(event: PointerEvent): void {
-  if (!isDrawMode()) {
-    return;
-  }
-
-  /** Normalized pointer position for stroke continuation */
-  const point = normalizePointer({ event, canvas, cw: canvasWidth, ch: canvasHeight, });
-  /** Line segment to draw incrementally, or null if not drawing */
-  const segment = continueStroke(point);
-  if (segment === null) {
-    return;
-  }
-  configureCtx(ctx);
-  ctx.beginPath();
-  ctx.moveTo(segment.from[0] * canvasWidth, segment.from[1] * canvasHeight);
-  ctx.lineTo(segment.to[0] * canvasWidth, segment.to[1] * canvasHeight);
-  ctx.stroke();
-});
-
-canvas.addEventListener('pointerup', function handlePointerUp(): void {
-  if (isDrawMode()) {
-    endStroke();
-  }
-});
-
-canvas.addEventListener('pointercancel', function handlePointerCancel(): void {
-  if (isDrawMode()) {
-    endStroke();
-  }
-});
-
-//endregion Pointer event handlers
-
-//region Toolbar handlers
 
 clearBtn.addEventListener('click', function handleClear(): void {
   clearStrokes();
@@ -218,8 +153,6 @@ uploadBtn.addEventListener('click', function handleUploadClick(): void {
  * Raster images are set as a CSS background via object URL.
  *
  * @param file - uploaded image file
- *
- * @returns once background is applied and canvas is resized
  */
 async function processBackgroundFile(file: File): Promise<void> {
   clearStrokes();
@@ -243,7 +176,7 @@ uploadInput.addEventListener('change', function handleFileChange(): void {
   void processBackgroundFile(file);
 });
 
-//endregion Toolbar handlers
+//endregion Pointer & toolbar handlers
 
 //region Initialization
 

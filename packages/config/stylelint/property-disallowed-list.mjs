@@ -61,7 +61,8 @@ export const propertyDisallowedList = [
 
   'list-style',
 
-  /margin$/,
+  /* Anchored to exclude custom properties (--*-margin) */
+  /^(?!--)[\w-]*margin$/,
 
   'mask',
 
@@ -73,7 +74,8 @@ export const propertyDisallowedList = [
 
   'overscroll-behavior',
 
-  /padding$/,
+  /* Anchored to exclude custom properties (--*-padding) */
+  /^(?!--)[\w-]*padding$/,
 
   /^place-[\w-]+$/,
 
@@ -101,12 +103,12 @@ export const propertyDisallowedList = [
   'contain-intrinsic-height',
   'max-height',
 
-  /^[\w-]+-top$/,
+  /^(?!--)[\w-]+-top$/,
 
-  /^[\w-]+-left$/,
+  /^(?!--)[\w-]+-left$/,
 
-  /[\w-]+-right/,
+  /^(?!--)[\w-]+-right$/,
 
-  /[\w-]+-bottom/,
+  /^(?!--)[\w-]+-bottom$/,
   //endregion Non-logical
 ];

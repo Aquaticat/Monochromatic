@@ -37,7 +37,7 @@ export async function handleAnswer(
     }
 
     const card = await getCard(parsed.data.cardId);
-    if (card === null || card === undefined) {
+    if (card === null) {
       return Response.json({ error: "Card not found" }, { status: HTTP_NOT_FOUND });
     }
 

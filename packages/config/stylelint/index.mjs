@@ -1,5 +1,5 @@
-import { propertyDisallowedList } from './property-disallowed-list.mjs';
-import { unitDisallowedList } from './unit-disallowed-list.mjs';
+import { propertyDisallowedList, } from './property-disallowed-list.mjs';
+import { unitDisallowedList, } from './unit-disallowed-list.mjs';
 
 /** @type {import('stylelint').Config} */
 export default {
@@ -166,6 +166,8 @@ export default {
      This way of ignoring files is too slow.
      Update: turns out stylelint can directly use gitignore if the command argument is passed in.
      */
+  /* ignoreFiles paths resolve relative to the consuming config's location,
+     not to this shared config, so this must be set in the root stylelint config. */
   // ignoreFiles: [],
 
   overrides: [{

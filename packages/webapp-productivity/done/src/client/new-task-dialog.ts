@@ -124,7 +124,7 @@ export function createNewTaskDialog(): NewTaskDialog {
     requestAnimationFrame(function focusTitleInput() {
       panel.dataset["animating"] = "";
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- shadowRoot querySelector returns the input we created
-      const titleInput = detail.shadowRoot?.querySelector(".title-input") as HTMLInputElement | null;
+      const titleInput = detail.shadowRoot?.querySelector<HTMLInputElement>(".title-input") as HTMLInputElement | null;
       titleInput?.focus();
     });
   }

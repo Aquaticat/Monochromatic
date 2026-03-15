@@ -44,7 +44,7 @@ class ToastMessage extends HTMLElement {
   /** Renders content and schedules auto-removal after `DISMISS_MS`. */
   connectedCallback(): void {
     this.#render();
-    this.#timer = setTimeout(function dismiss() {
+    this.#timer = setTimeout(function dismiss(): void {
       this.remove();
     }.bind(this), DISMISS_MS);
   }
@@ -76,7 +76,7 @@ customElements.define("toast-message", ToastMessage);
  * @param message - Text to display in the toast
  */
 export function showToast(message: string): void {
-  document.querySelector("toast-message")?.remove();
+  document.querySelector<HTMLElement>("toast-message")?.remove();
 
   const toast = document.createElement("toast-message");
   toast.setAttribute("message", message);

@@ -12,6 +12,7 @@
  */
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t string/t html/f/t string jsx/r s/p n/index.ts";
 
+/** Options for rendering a full HTML page with the standard layout shell. */
 type LayoutOptions = {
   title: string;
   heading: string;

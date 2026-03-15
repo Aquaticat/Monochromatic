@@ -1,16 +1,21 @@
 @mixin --flex-center {
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 }
 
 @mixin --bold-text {
   font-weight: bold;
+
   color: black;
 }
 
 @mixin --card {
   @apply --flex-center;
+
   padding: 1rem;
+
   border: 1px solid gray;
 }

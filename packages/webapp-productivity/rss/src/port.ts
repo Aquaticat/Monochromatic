@@ -5,7 +5,7 @@ import { z, } from 'zod/v4-mini';
  *
  * @see `PORT` for the actual port used by the server
  */
-const DEFAULT_PORT = 4112;
+const DEFAULT_PORT = 4_112;
 
 /**
  * Port number on which the RSS server will listen for incoming requests.

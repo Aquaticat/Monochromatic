@@ -19,42 +19,49 @@ const DEFAULT_PRESETS = [
  * Popover-based dropdown that lets users select a focus preset.
  */
 class FocusDropdown extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
+
+  /** Currently selected preset value. */
   #value: string;
 
+  /** Initializes the shadow root with empty value. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
     this.#value = "";
   }
 
+  /** Reads the `value` attribute and renders the dropdown. */
   connectedCallback(): void {
     this.#value = this.getAttribute("value") ?? "Select focus...";
     this.#render();
   }
 
+  /** Renders the trigger button, divider, and popover menu into the shadow root. */
   #render(): void {
     const textSpan = h({ tag: "span", class: "text", text: this.#value });
+    const self = this;
 
     const menu = h({
       tag: "ul",
       class: "menu",
       attrs: { popover: "auto" },
-      children: DEFAULT_PRESETS.map((preset) =>
-        h({
+      children: DEFAULT_PRESETS.map(function buildOption(preset) {
+        return h({
           tag: "li",
           class: "option",
           text: preset,
           on: {
-            click: () => {
-              this.#value = preset;
+            click: function handleOptionClick() {
+              self.#value = preset;
               textSpan.textContent = preset;
               menu.hidePopover();
-              this.dispatchEvent(new CustomEvent("change", { bubbles: true, detail: { value: preset } }));
+              self.dispatchEvent(new CustomEvent("change", { bubbles: true, detail: { value: preset } }));
             },
           },
-        }),
-      ),
+        });
+      }),
     });
 
     this.#shadow.replaceChildren(
@@ -67,7 +74,7 @@ class FocusDropdown extends HTMLElement {
           h({ tag: "span", class: "divider" }),
           h({ tag: "span", text: "\u25BC" }),
         ],
-        on: { click: () => { menu.togglePopover(); } },
+        on: { click: function handleTriggerClick() { menu.togglePopover(); } },
       }),
       menu,
     );

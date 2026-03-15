@@ -1,8 +1,10 @@
+# lint:oxlint omitted -- root .oxlintrc.json ignorePatterns includes **/test-fixture/**
+# but per-package tasks run oxlint from within the package directory where
+# CWD-relative paths no longer contain "test-fixture/".
+# See BUGREPORT.oxlint-ignorePatterns-cwd.md
+
 [tasks.lint]
 extends = "lint"
-
-[tasks."lint:oxlint"]
-extends = "lint:oxlint"
 
 [tasks."lint:types"]
 extends = "lint:types"

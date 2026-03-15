@@ -7,17 +7,21 @@
 
 @mixin --flex-center {
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 }
 
 @mixin --flex-row {
   display: flex;
+
   align-items: center;
 }
 
 @mixin --flex-column {
   display: flex;
+
   flex-direction: column;
 }
 
@@ -45,11 +49,23 @@
 /* Strips all browser-default button/anchor chrome */
 @mixin --appearance-none {
   background-color: transparent;
+
   border-style: none;
+
   cursor: pointer;
+
   padding-block: 0;
+
   padding-inline: 0;
-  font: inherit;
+
+  font-family: inherit;
+
+  font-size: inherit;
+
+  font-weight: inherit;
+
+  line-height: inherit;
+
   color: inherit;
 }
 
@@ -57,6 +73,7 @@
    (Material Design) while allowing it to grow if content demands. */
 @mixin --min-touch-target {
   min-inline-size: 3rem;
+
   min-block-size: 3rem;
 }
 
@@ -65,8 +82,16 @@
    so every shadow tree gets consistent disabled and placeholder styling
    without repeating the declarations in every component. */
 @mixin --shadow-dom-globals {
-  button:disabled { opacity: 0.45; cursor: not-allowed; }
-  input::placeholder, textarea::placeholder { color: var(--medium); }
+  button:disabled {
+    opacity: 0.45;
+
+    cursor: not-allowed;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--medium);
+  }
 }
 
 /*endregion Interactive primitives */
@@ -76,10 +101,15 @@
 /* Horizontally scrollable row of inline items */
 @mixin --scroll-row {
   display: flex;
+
   gap: var(--min-gap);
+
   align-items: flex-start;
+
   overflow-x: auto;
+
   overflow-y: clip;
+
   @apply --scrollbar-hidden;
 }
 
@@ -87,28 +117,52 @@
 @mixin --button-outlined {
   @apply --flex-center;
   @apply --min-touch-target;
+
   gap: 0.5rem;
+
   border-width: calc(1 / 16 * 1rem);
+
   border-style: solid;
+
   border-color: var(--fg);
+
   padding-block: 0.5rem;
+
   padding-inline: 0.5rem;
+
   background-color: transparent;
+
   color: var(--fg);
-  font: inherit;
+
+  font-family: inherit;
+
+  font-size: inherit;
+
+  font-weight: inherit;
+
+  line-height: inherit;
+
   cursor: pointer;
 }
 
 /* Top-anchored sticky navigation bar */
 @mixin --sticky-bar {
   @apply --flex-row;
+
   gap: var(--min-gap);
+
   block-size: 3rem;
+
   padding-block: 0;
+
   padding-inline: var(--min-padding);
+
   background-color: var(--bg);
+
   position: sticky;
+
   inset-block-start: 0;
+
   z-index: 10;
 }
 

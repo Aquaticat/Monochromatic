@@ -46,7 +46,7 @@ export function removeSvgWhiteBackground(svgMarkup: string): string {
   const parser = new DOMParser();
   const doc = parser.parseFromString(svgMarkup, 'image/svg+xml');
   const svg = doc.documentElement;
-  const rects = svg.querySelectorAll(':scope > rect');
+  const rects = svg.querySelectorAll<SVGRectElement>(':scope > rect');
   for (const rect of rects) {
     const fill = (rect.getAttribute('fill') ?? '').toLowerCase().replaceAll(/\s/gu, '');
     if (WHITE_FILLS.has(fill)) {

@@ -33,6 +33,7 @@
 
   display: -webkit-box;
 
+  /* stylelint-disable-next-line property-no-deprecated -- required for -webkit-line-clamp */
   -webkit-box-orient: block-axis;
 
   -webkit-line-clamp: 2;
@@ -41,6 +42,7 @@
 .description {
   display: -webkit-box;
 
+  /* stylelint-disable-next-line property-no-deprecated -- required for -webkit-line-clamp */
   -webkit-box-orient: block-axis;
 
   -webkit-line-clamp: 4;

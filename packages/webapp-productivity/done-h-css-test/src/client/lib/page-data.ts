@@ -9,13 +9,13 @@
  * @returns Parsed page data of the requested type
  */
 export function readPageData<TData>(): TData {
-  const element = document.querySelector("#page-data");
+  const element = document.querySelector<HTMLScriptElement>("#page-data");
   if (!(element instanceof HTMLScriptElement)) {
     throw new Error("Missing page data script element");
   }
 
   const text = element.textContent;
-  if (text === null) {
+  if (text.length === 0) {
     throw new Error("Page data element is empty");
   }
 

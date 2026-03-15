@@ -21,11 +21,16 @@ type SettingsPageData = {
 
 injectCSS(globalStyles);
 
+/** Deserialized page data (currently unused but kept for future features). */
 const _pageData = readPageData<SettingsPageData>();
-const appElement = document.querySelector("#app");
+
+/** Raw DOM element for the `#app` container. */
+const appElement = document.querySelector<HTMLElement>("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
+
+/** Validated `#app` container element. */
 const app = appElement;
 
 //region Calendar connect

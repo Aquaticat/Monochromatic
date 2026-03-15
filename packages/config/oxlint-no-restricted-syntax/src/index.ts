@@ -31,6 +31,7 @@ import { noVariableFunctionExpression } from './rules/no-variable-function-expre
 import { requireDestructuredParams } from './rules/require-destructured-params.ts';
 import { noTrimLeftRight } from './rules/no-trim-left-right.ts';
 import { noTryFinally } from './rules/no-try-finally.ts';
+import { requireQueryselectorGeneric } from './rules/require-queryselector-generic.ts';
 
 /**
  * Oxlint JS plugin implementing `no-restricted-syntax` rules
@@ -71,6 +72,7 @@ const plugin = eslintCompatPlugin({
     'no-try-finally': noTryFinally,
     'no-variable-function-expression': noVariableFunctionExpression,
     'require-destructured-params': requireDestructuredParams,
+    'require-queryselector-generic': requireQueryselectorGeneric,
     //endregion Syntax rules
 
     //region Ban-disable rules -- prevent inline oxlint-disable for specific rules

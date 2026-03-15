@@ -64,7 +64,7 @@ class SearchBar extends HTMLElement {
    * @returns Text content of the input, or empty string if not rendered
    */
   get value(): string {
-    const input = this.#shadow.querySelector("input");
+    const input = this.#shadow.querySelector<HTMLInputElement>("input");
     return input?.value ?? "";
   }
 
@@ -74,7 +74,7 @@ class SearchBar extends HTMLElement {
    * @param text - New input value
    */
   set value(text: string) {
-    const input = this.#shadow.querySelector("input");
+    const input = this.#shadow.querySelector<HTMLInputElement>("input");
     if (input !== null) {
       input.value = text;
     }
@@ -101,9 +101,9 @@ class SearchBar extends HTMLElement {
 
     // Debounced search dispatch
     let timeout: ReturnType<typeof setTimeout> = setTimeout(function noop() { /* initial */ }, 0);
-    input.addEventListener("input", function onInput() {
+    input.addEventListener("input", function onInput(): void {
       clearTimeout(timeout);
-      timeout = setTimeout(function dispatchSearch() {
+      timeout = setTimeout(function dispatchSearch(): void {
         this.dispatchEvent(new CustomEvent("search", { detail: { query: input.value.trim() }, bubbles: true }));
       }.bind(this), SEARCH_DEBOUNCE_MS);
     }.bind(this));

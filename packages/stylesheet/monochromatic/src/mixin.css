@@ -2,7 +2,7 @@
    Note that since I'm using this class as a pure composition class :not(:focus) and :not(:active) needs to be accounted for everywhere it's used.
  */
 @mixin --sr-only {
-  /* stylelint-disable-next-line property-disallowed-list -- copypaste */
+  /* stylelint-disable-next-line property-disallowed-list,property-no-deprecated -- copypaste */
   clip: rect(0 0 0 0);
 
   position: absolute;

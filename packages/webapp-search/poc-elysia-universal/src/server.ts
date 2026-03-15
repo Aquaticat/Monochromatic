@@ -64,7 +64,7 @@ function detectRuntime(): string {
   }
 
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- Deno global only exists at runtime in Deno
-  if (globalThis.Deno !== undefined) {
+  if ((globalThis as Record<string, unknown>).Deno !== undefined) {
     // @ts-expect-error -- Deno global exists at runtime but not in Bun/Node types
     // oxlint-disable-next-line typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- Deno global is untyped in non-Deno environments
     return `Deno ${Deno.version.deno as string}`;
@@ -104,7 +104,7 @@ const app = new Elysia({ adapter: adapter as never })
     return task;
   })
   // oxlint-disable-next-line no-magic-numbers -- PoC server port
-  .listen(3099);
+  .listen(3_099);
 // oxlint-enable
 
 console.log(`Listening on http://localhost:3099 (${detectRuntime()})`);

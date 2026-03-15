@@ -12,6 +12,7 @@
  */
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t string/t html/f/t string jsx/r s/p n/index.ts";
 
+/** Configuration for rendering a page with the standard HTML shell. */
 type LayoutOptions = {
   title: string;
   heading: string;
@@ -54,7 +55,7 @@ export function renderPage(options: LayoutOptions): Response {
     : h({ tag: "top-nav", attrs: { heading: options.heading } });
 
   const html = `<!DOCTYPE html>
-` + h({
+${h({
     tag: "html",
     attrs: { lang: "en" },
     children: [
@@ -84,7 +85,7 @@ export function renderPage(options: LayoutOptions): Response {
         ],
       }),
     ],
-  });
+  })}`;
 
   return new Response(html, {
     headers: { "Content-Type": "text/html; charset=utf-8" },

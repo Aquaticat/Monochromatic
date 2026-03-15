@@ -24,7 +24,9 @@ Prefer cross-runtime patterns instead of Bun-specific implementations.
 
 ## Spawning child Claude sessions
 
-Use `spawn-claude` to launch steerable child Claude Code sessions in visible terminal windows.
+General purpose agents are banned because of bugs.
+
+Use `spawn-claude` outside sandbox to launch steerable child Claude Code sessions in visible terminal windows.
 The child session runs independently; results are forwarded back to the parent automatically via hooks.
 
 ```bash
@@ -58,8 +60,6 @@ Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly --
 When no suitable mise task exists for an operation, add one to the target package's `mise.toml` before running it.
 Read `mise.toml` files in root and package directories for available commands.
 To run a task in a specific package, use `mise run //packages/path:task` (not `mise run -C`).
-Do not run linters or formatters -- the user runs them.
-No TypeScript LSP diagnostics are available in this environment.
 A `PostToolUse` hook for Edit/Write on `.ts` files will run the package-specific `lint:types` task automatically;
 until that hook exists, run `mise run //packages/<path>:lint:types` manually after editing TypeScript.
 

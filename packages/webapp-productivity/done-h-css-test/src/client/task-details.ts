@@ -39,22 +39,29 @@ type TaskDetailsPageData = {
 
 injectCSS(globalStyles);
 
+/** Deserialized page data containing task, blocker candidates, and summaries. */
 const pageData = readPageData<TaskDetailsPageData>();
+
+/** Task record from the deserialized page data. */
 const {task} = pageData;
 
-const appElement = document.querySelector("#app");
+/** Raw DOM element for the `#app` container. */
+const appElement = document.querySelector<HTMLElement>("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
+
+/** Validated `#app` container element. */
 const app = appElement;
 
+/** Task detail web component configured with server-provided data. */
 const detail = document.createElement("task-detail") as TaskDetail;
 detail.configure({
   task,
   blockerSummaries: pageData.blockerSummaries,
 });
 
-detail.addEventListener("action", async (event) => {
+detail.addEventListener("action", async function handleAction(event) {
   if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent for 'action' listener");
   const { action, title, description } = event.detail as {
     action: string;
@@ -62,45 +69,37 @@ detail.addEventListener("action", async (event) => {
     description: string;
   };
 
-  switch (action) {
-    case "close":
-      globalThis.location.href = "/";
-      break;
-    case "save": {
-      const metadata = detail.getMetadata();
-      const payload = {
-        title,
-        description: description.length === 0 ? null : description,
-        tags: metadata.tags,
-        locations: metadata.locations,
-        priority: metadata.priority,
-        complexity: metadata.complexity,
-        dueDate: task.dueDate,
-        blockedBy: task.blockedBy,
-      };
-      await api(`/api/tasks/${task.id}`, {
-        method: "PUT",
-        body: JSON.stringify(payload),
-      });
-      globalThis.location.reload();
-      break;
-    }
-    case "start":
-      await api(`/api/tasks/${task.id}/start`, { method: "POST" });
-      globalThis.location.reload();
-      break;
-    case "stop":
-      await api(`/api/tasks/${task.id}/stop`, { method: "POST" });
-      globalThis.location.reload();
-      break;
-    case "complete":
-      await api(`/api/tasks/${task.id}/complete`, { method: "POST" });
-      globalThis.location.href = "/";
-      break;
-    case "delete":
-      await api(`/api/tasks/${task.id}`, { method: "DELETE" });
-      globalThis.location.href = "/";
-      break;
+  if (action === "close") {
+    globalThis.location.href = "/";
+  } else if (action === "save") {
+    const metadata = detail.getMetadata();
+    const payload = {
+      title,
+      description: description.length === 0 ? null : description,
+      tags: metadata.tags,
+      locations: metadata.locations,
+      priority: metadata.priority,
+      complexity: metadata.complexity,
+      dueDate: task.dueDate,
+      blockedBy: task.blockedBy,
+    };
+    await api(`/api/tasks/${task.id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+    globalThis.location.reload();
+  } else if (action === "start") {
+    await api(`/api/tasks/${task.id}/start`, { method: "POST" });
+    globalThis.location.reload();
+  } else if (action === "stop") {
+    await api(`/api/tasks/${task.id}/stop`, { method: "POST" });
+    globalThis.location.reload();
+  } else if (action === "complete") {
+    await api(`/api/tasks/${task.id}/complete`, { method: "POST" });
+    globalThis.location.href = "/";
+  } else if (action === "delete") {
+    await api(`/api/tasks/${task.id}`, { method: "DELETE" });
+    globalThis.location.href = "/";
   }
 });
 

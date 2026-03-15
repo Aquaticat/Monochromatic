@@ -70,7 +70,7 @@ function parseAutofillResponse(raw: string): AutofillResult {
   try {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; shape validated below
     const parsed = JSON.parse(raw) as RawAutofillResponse;
-    if (typeof parsed !== "object" || parsed === null) {
+    if (typeof parsed !== "object") {
       return empty;
     }
 

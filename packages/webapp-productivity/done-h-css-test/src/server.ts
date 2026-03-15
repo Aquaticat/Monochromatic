@@ -69,7 +69,7 @@ function resolvePort(): number {
  *
  * @returns Parameter value
  *
- * @throws {HTTPError} 400 when parameter is missing
+ * @throws HTTPError 400 when parameter is missing
  */
 function requireParam(event: Parameters<typeof getRouterParam>[0], name: string): string {
   const value = getRouterParam(event, name,);
@@ -150,10 +150,13 @@ app.get('/dist/client/**', defineHandler(function handleStaticAsset(event) {
       return readFile(join('.', id,),);
     },
     getMeta: async function getMetadata(id) {
-      const stats = await stat(join('.', id,),).catch(function onStatError() {
+      let stats: Awaited<ReturnType<typeof stat>> | undefined;
+      try {
+        stats = await stat(join('.', id,),);
+      } catch {
         return;
-      },);
-      if (stats === undefined || !stats.isFile()) {
+      }
+      if (!stats.isFile()) {
         return;
       }
       return { size: stats.size, mtime: stats.mtimeMs, };

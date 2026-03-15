@@ -49,9 +49,9 @@ export const checkParamNames: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      mismatch: '@param "{{docName}}" does not match parameter "{{paramName}}".',
-      extra: '@param "{{docName}}" does not match any function parameter.',
-      order: '@param tags are not in the same order as the function parameters.',
+      mismatch: '@param "{{docName}}" does not match parameter "{{paramName}}". For destructured parameters, document each destructured parameter.',
+      extra: '@param "{{docName}}" does not match any function parameter. For destructured parameters, document each destructured parameter.',
+      order: '@param tags are not in the same order as the function parameters. For destructured parameters, document each destructured parameter.',
     },
   },
   createOnce(context: Context): VisitorWithHooks {

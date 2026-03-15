@@ -6,6 +6,7 @@ import { buttonOutlined } from "../mixins-composed.ts";
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./toggle-switch.ts";
 
+/** Compiled CSS string for `<setting-group>` Shadow DOM. */
 const STYLES = [
   css({
     rule: ':host',
@@ -37,13 +38,16 @@ const STYLES = [
  * and an action control (toggle switch or button) determined by the `mode` attribute.
  */
 class SettingGroup extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
 
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
   }
 
+  /** Renders the setting label, optional description, and action control. */
   connectedCallback(): void {
     const label = this.getAttribute("label") ?? "";
     const description = this.getAttribute("description") ?? "";

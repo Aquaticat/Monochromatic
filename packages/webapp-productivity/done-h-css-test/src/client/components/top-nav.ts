@@ -12,15 +12,19 @@ import { TOP_NAV_STYLES } from "./top-nav-styles.ts";
  * and a search link.
  */
 class TopNav extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
 
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
   }
 
+  /** Renders the hamburger, heading, and search link into the shadow root. */
   connectedCallback(): void {
     const heading = this.getAttribute("heading") ?? "";
+    const self = this;
 
     this.#shadow.replaceChildren(
       h({ tag: "style", text: TOP_NAV_STYLES }),
@@ -40,8 +44,8 @@ class TopNav extends HTMLElement {
           }),
         ],
         on: {
-          click: () => {
-            this.dispatchEvent(new CustomEvent("menu-open", { bubbles: true, composed: true }));
+          click: function handleMenuOpen() {
+            self.dispatchEvent(new CustomEvent("menu-open", { bubbles: true, composed: true }));
           },
         },
       }),

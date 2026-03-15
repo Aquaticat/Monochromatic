@@ -32,7 +32,7 @@
  */
 export function $(delayTime: number = 5_000,): void {
   const potentialRedirectingToElement: HTMLAnchorElement | null = document
-    .querySelector('a.redirectingTo',);
+    .querySelector<HTMLAnchorElement>('a.redirectingTo',);
   if (potentialRedirectingToElement) {
     setTimeout(function redirect() {
       globalThis.location.replace(

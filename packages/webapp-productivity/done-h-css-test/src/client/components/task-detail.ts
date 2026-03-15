@@ -13,12 +13,22 @@ import { buildPillElements } from "./task-detail-pills.ts";
  * action buttons (start/stop/complete/delete), and debounced AI autofill.
  */
 class TaskDetail extends HTMLElement {
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
+
+  /** Current task data and display configuration, or `null` before configure. */
   #data: TaskDetailData | null = null;
+
+  /** Whether the component is in edit or create mode. */
   #mode: TaskDetailMode = "edit";
+
+  /** Mutable metadata state updated by autofill and user edits. */
   #metadata: MetadataState = { tags: [], locations: [], priority: null, complexity: null };
+
+  /** Debounced AI autofill manager. */
   #autofill = new AutofillManager();
 
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
@@ -54,7 +64,7 @@ class TaskDetail extends HTMLElement {
 
   /** Rebuilds pill elements in the `.pills` container from current metadata state. */
   #updatePillsDisplay(): void {
-    const pillsContainer = this.#shadow.querySelector(".pills");
+    const pillsContainer = this.#shadow.querySelector<HTMLElement>(".pills");
     if (pillsContainer === null) return;
     const task = this.#data?.task;
     if (task === undefined) return;
@@ -79,20 +89,22 @@ class TaskDetail extends HTMLElement {
     this.#shadow.replaceChildren(...elements);
     this.#updatePillsDisplay();
 
-    refs.titleInput.addEventListener("input", () => {
-      this.#autofill.request({
+    const self = this;
+
+    refs.titleInput.addEventListener("input", function handleTitleInput() {
+      self.#autofill.request({
         title: refs.titleInput.value,
-        metadata: this.#metadata,
-        onUpdate: () => { this.#updatePillsDisplay(); },
+        metadata: self.#metadata,
+        onUpdate: function onAutofillUpdate() { self.#updatePillsDisplay(); },
       });
     });
 
-    this.#shadow.addEventListener("click", (event) => {
+    this.#shadow.addEventListener("click", function handleActionClick(event) {
       const target = event.target as HTMLElement;
-      const button = target.closest("[data-action]");
+      const button = target.closest<HTMLElement>("[data-action]");
       if (button === null) return;
       const { action } = button.dataset;
-      this.dispatchEvent(new CustomEvent("action", {
+      self.dispatchEvent(new CustomEvent("action", {
         bubbles: true,
         detail: { action, title: refs.titleInput.value, description: refs.descInput.value },
       }));

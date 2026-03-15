@@ -35,7 +35,7 @@ export async function handleCreateCard(
 ): Promise<Response> {
   try {
     const deck = await getDeck(deckId);
-    if (deck === null || deck === undefined) {
+    if (deck === null) {
       return Response.json({ error: "Deck not found" }, { status: HTTP_NOT_FOUND });
     }
 

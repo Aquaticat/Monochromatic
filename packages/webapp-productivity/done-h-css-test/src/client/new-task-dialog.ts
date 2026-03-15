@@ -75,7 +75,7 @@ export function createNewTaskDialog(): NewTaskDialog {
     }
   }
 
-  detail.addEventListener("action", async (event) => {
+  detail.addEventListener("action", async function handleAction(event) {
     if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent for 'action' listener");
     const { action, title, description } = event.detail as {
       action: string;
@@ -119,9 +119,9 @@ export function createNewTaskDialog(): NewTaskDialog {
     // Restart the expand animation by toggling the data attribute
     delete panel.dataset["animating"];
     panel.showPopover();
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function animatePanel() {
       panel.dataset["animating"] = "";
-      const titleInput = detail.shadowRoot?.querySelector(".title-input") as HTMLInputElement | null;
+      const titleInput = detail.shadowRoot?.querySelector<HTMLInputElement>(".title-input") ?? null;
       titleInput?.focus();
     });
   }

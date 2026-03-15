@@ -22,6 +22,8 @@ const DEFAULT_DATABASE_PATH = "./data/done.db";
  * Strips the `file:` URI prefix if present, returning a plain filesystem path.
  *
  * @param value - Raw path that may use `file:` scheme
+ *
+ * @returns Plain filesystem path without URI prefix
  */
 function normalizeDatabasePath(value: string): string {
   if (!value.startsWith("file:")) {
@@ -32,7 +34,9 @@ function normalizeDatabasePath(value: string): string {
 
 /**
  * Resolves the database file path from CLI arguments, environment, or default.
- * Priority: `--db=PATH` > `DB_PATH` env var > `DEFAULT_DATABASE_PATH`.
+ * Priority: `--db=PATH` \> `DB_PATH` env var \> `DEFAULT_DATABASE_PATH`.
+ *
+ * @returns Resolved filesystem path to the database file
  */
 function resolveDatabasePath(): string {
   const argumentPath = getArgumentValue("db");
@@ -55,9 +59,11 @@ function ensureDatabaseDirectoryExists(databasePath: string): void {
   mkdirSync(directoryPath, { recursive: true });
 }
 
+/** Resolved database file path. */
 const databasePath = resolveDatabasePath();
 ensureDatabaseDirectoryExists(databasePath);
 
+/** Open SQLite database connection with WAL mode and foreign keys. */
 const db = await connect(databasePath, { experimental: ["triggers"] });
 await db.exec("PRAGMA journal_mode = WAL");
 await db.exec("PRAGMA foreign_keys = ON");

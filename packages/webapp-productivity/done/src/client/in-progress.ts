@@ -28,7 +28,7 @@ injectCSS(styles);
 const pageData = readPageData<InProgressPageData>();
 
 /** Root app container element. */
-const appElement = document.querySelector("#app");
+const appElement = document.querySelector<HTMLElement>("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
@@ -66,7 +66,7 @@ const TIMER_UPDATE_MS = 1_000;
 
 // Live timer updates -- correlate each card with its task by DOM order
 setInterval(function updateTimers() {
-  const cards = list.querySelectorAll("task-card");
+  const cards = list.querySelectorAll<HTMLElement>("task-card");
   cards.forEach(function updateCard(card, cardIndex) {
     const task = pageData.tasks[cardIndex];
     if (task === undefined) return;

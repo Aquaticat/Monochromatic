@@ -58,11 +58,13 @@ class SectionHeading extends HTMLElement {
   /** Renders the heading and attaches the toggle click handler. */
   connectedCallback(): void {
     this.#render();
-    this.#shadow.querySelector(".heading")?.addEventListener("click", this.#toggle);
+    this.#shadow.querySelector<HTMLElement>(".heading")?.addEventListener("click", this.#toggle);
   }
 
-  /** Toggles the open state and dispatches a toggle event. */
-  /** @see {@link connectedCallback} where this is registered as a click handler */
+  /**
+   * Toggles the open state and dispatches a toggle event.
+   * Registered as a click handler in connectedCallback.
+   */
   #toggle = function toggle(this: SectionHeading): void {
     this.#open = !this.#open;
     this.#updateToggle();
@@ -71,11 +73,11 @@ class SectionHeading extends HTMLElement {
 
   /** Updates the toggle indicator and content visibility. */
   #updateToggle(): void {
-    const toggle = this.#shadow.querySelector(".toggle");
+    const toggle = this.#shadow.querySelector<HTMLElement>(".toggle");
     if (toggle instanceof HTMLElement) {
       toggle.textContent = this.#open ? "\u25B2" : "\u25BC";
     }
-    const content = this.#shadow.querySelector(".content");
+    const content = this.#shadow.querySelector<HTMLElement>(".content");
     if (content !== null) {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelector returns Element; style access needs HTMLElement
       (content as HTMLElement).style.display = this.#open ? "flex" : "none";

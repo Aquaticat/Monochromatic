@@ -6,7 +6,8 @@ import {
   ignore,
   serveIndex,
 } from './handler.ts';
-import { getIgnoreContent, getIndexHtmlBody, } from './html.ts';
+import { getIndexHtmlBody, } from './html.ts';
+import { getIgnoreContent, } from './ignore.ts';
 import { getFetchSalt, } from './interval.ts';
 import { getSortedItems, } from './item.ts';
 import { l as parentLogger, } from './log.ts';
@@ -85,7 +86,7 @@ const app = new H3();
  */
 app.get(
   '/',
-  defineHandler(async function handleIndex() {
+  defineHandler(function handleIndex() {
     return serveIndex({ getHtmlBody, },);
   }),
 );
@@ -95,7 +96,7 @@ app.get(
  */
 app.post(
   '/api/ignore/new',
-  defineHandler(async function handleIgnore(event) {
+  defineHandler(function handleIgnore(event) {
     return ignore(event.req,);
   }),
 );

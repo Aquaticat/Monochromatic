@@ -1,12 +1,13 @@
 // Reads server-embedded deck data, builds DOM. No fetch on load.
-import { api } from "./lib/api";
-import { injectCSS } from "./lib/inject-css";
+import { api } from "./lib/api.ts";
+import { injectCSS } from "./lib/inject-css.ts";
 // build-css processes src/client/styles.css -> dist/css/styles.css
 // (resolves @import, expands @mixin/@apply). tsdown inlines this as a text string.
 import styles from "../../dist/css/styles.css" with { type: "text" };
 
 injectCSS(styles);
 
+/** Deck summary with card count for the deck list page. */
 type Deck = {
   id: string;
   name: string;
@@ -14,13 +15,18 @@ type Deck = {
   created_at: string;
 }
 
-const data: { decks: Deck[] } = JSON.parse(
-  document.querySelector("#page-data")!.textContent!
-);
+/** Server-embedded deck list page data element. */
+const pageDataEl = document.querySelector<HTMLElement>("#page-data");
+if (pageDataEl === null) throw new Error("Missing #page-data element");
 
+/** Parsed deck list from server-embedded JSON. */
+const data: { decks: Deck[] } = JSON.parse(pageDataEl.textContent);
+
+/** Root application element. */
 const app = document.createElement("main");
 document.body.prepend(app);
 
+/** Page heading. */
 const h1 = document.createElement("h1");
 h1.textContent = "Flashcard Quiz";
 app.append(h1);
@@ -49,10 +55,17 @@ if (data.decks.length === 0) {
     const del = document.createElement("button");
     del.className = "danger";
     del.textContent = "Delete";
-    del.addEventListener("click", async () => {
+
+    /** Deletes the deck via API and reloads the page. */
+    async function removeDeck(): Promise<void> {
       await api(`/api/decks/${deck.id}`, { method: "DELETE" });
-      window.location.reload();
-    });
+      globalThis.location.reload();
+    }
+
+    /** Wraps async delete to satisfy void-returning event listener contract. */
+    function handleDelete(): void { void removeDeck(); }
+
+    del.addEventListener("click", handleDelete);
     li.append(del);
 
     ul.append(li);
@@ -61,7 +74,11 @@ if (data.decks.length === 0) {
 }
 
 // New deck form
+
+/** Deck creation form element. */
 const form = document.createElement("form");
+
+/** Text input for the new deck name. */
 const input = document.createElement("input");
 input.type = "text";
 input.name = "name";
@@ -69,20 +86,31 @@ input.placeholder = "New deck name...";
 input.required = true;
 form.append(input);
 
+/** Submit button for creating a new deck. */
 const submit = document.createElement("button");
 submit.type = "submit";
 submit.textContent = "Create Deck";
 form.append(submit);
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+/**
+ * Submits a new deck to the server and reloads the page.
+ *
+ * @param event - Form submission event to prevent default navigation
+ */
+async function submitNewDeck(event: Event): Promise<void> {
+  event.preventDefault();
   const name = input.value.trim();
   if (!name) return;
   await api("/api/decks", {
     method: "POST",
     body: JSON.stringify({ name }),
   });
-  window.location.reload();
-});
+  globalThis.location.reload();
+}
+
+/** Wraps async submit to satisfy void-returning event listener contract. */
+function handleSubmit(event: Event): void { void submitNewDeck(event); }
+
+form.addEventListener("submit", handleSubmit);
 
 app.append(form);

@@ -1,256 +1,68 @@
-// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression, no-shadow, no-warning-comments -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
-import {
-  createObservable,
-  identity,
-  nonPromiseAll,
-  notFalsyOrThrow,
-  prompt,
-  replicateElementAsContentOf,
-} from '@monochromatic-dev/module-es';
+// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression, no-shadow, no-warning-comments, typescript/no-misused-promises -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
+import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
+import { prompt, } from '@monochromatic-dev/module-es/ts/deprecated/dom/prompt.ts';
 import { Exa, } from 'exa-js';
-import { z, } from 'zod/v4-mini';
 
-/** Exa API proxy configuration with base URL. */
-const { baseUrl, } = { baseUrl: 'https://exa.aquati.cat/api/proxy', };
-
-/**
- * DOM elements and reactive state for the search interface.
- * Bindings are resolved eagerly at module load via `querySelector` assertions.
- */
-const {
-  searchForm,
-  costDollarsSpan,
-  resultsSection,
-  exa,
-  numResultsInput,
-  numTotalSearchesSpan,
+import { displayResult, } from './client-display-result.ts';
+import {
+  baseUrl,
   changeApiKeyButton,
-  processingParagraph,
-} = {
-  exa: identity<{ value: [Exa, { apiKey: string; },]; }>(createObservable(
-    await (async function createExaExtra(): Promise<[Exa, { apiKey: string; },]> {
-      const apiKey = await z
-        .pipe(z
-          .pipe(z.nullable(z.uuid(),), z.transform(async function promptSet(val,) {
-            if (val)
-              return val;
-            const inputApiKey = notFalsyOrThrow(await prompt('Set api key',),);
-            localStorage.setItem('exaApiKey', inputApiKey,);
-            return inputApiKey;
-          },),), z.uuid(),)
-        .parseAsync(localStorage.getItem('exaApiKey',),);
-      const exa = new Exa(apiKey, baseUrl,);
-      return [exa, { apiKey, },];
-    })(),
-    function updateStorage(val,) {
-      localStorage.setItem('exaApiKey', val[1].apiKey,);
-    },
-  ),),
-  searchForm: identity<HTMLFormElement>(notFalsyOrThrow(
-    document.querySelector('.searchForm',),
-  ),),
-
-  processingParagraph: identity<HTMLParagraphElement>(
-    notFalsyOrThrow(document.querySelector('.processing',),),
-  ),
-
-  costDollarsSpan: identity<HTMLSpanElement>(notFalsyOrThrow(
-    document.querySelector('.costDollars',),
-  ),),
-  numResultsInput: identity<HTMLInputElement>(
-    notFalsyOrThrow(document.querySelector('.numResults input',),),
-  ),
-
-  resultsSection: identity<HTMLElement>(
-    notFalsyOrThrow(document.querySelector('.results',),),
-  ),
-
-  numTotalSearchesSpan: identity<HTMLSpanElement>(notFalsyOrThrow(
-    document.querySelector('.numTotalSearches',),
-  ),),
-
-  changeApiKeyButton: identity<HTMLButtonElement>(notFalsyOrThrow(
-    document.querySelector('.changeApiKey',),
-  ),),
-};
-
-/**
- * Derived DOM elements and reactive counters that depend on the first binding group.
- * Includes the search input, result template, range constraints, and persisted counters.
- */
-const {
-  searchInput,
-  firstResult,
-  exaMinResults,
-  exaMaxResults,
-  numTotalSearches,
+  costDollarsSpan,
+  exa,
   numResults,
-} = {
-  searchInput: identity<HTMLInputElement>(notFalsyOrThrow(
-    searchForm.querySelector('input',),
-  ),),
-  firstResult: identity<HTMLElement>(notFalsyOrThrow(
-    resultsSection.querySelector('.result',),
-  ),),
-  exaMinResults: z.coerce.number().parse(numResultsInput.min,),
-  exaMaxResults: z.coerce.number().parse(numResultsInput.max,),
+  numResultsInput,
+  numTotalSearches,
+  processingParagraph,
+  resultArticles,
+  resultsSection,
+  searchForm,
+  searchInput,
+} from './client-dom.ts';
 
-  numTotalSearches: identity<{ value: number; }>(
-    createObservable(z
-      ._default(z.coerce.number(), 0,)
-      .parse(localStorage.getItem('numTotalSearches',),), function updateDisplay(val,) {
-      numTotalSearchesSpan.textContent = String(val,);
-    },),
-  ),
+searchForm.addEventListener('submit', async function onSearch(event,) {
+  event.preventDefault();
 
-  numResults: createObservable(
-    z.coerce.number().parse(
-      localStorage.getItem('numResults',) ?? numResultsInput.value,
-    ),
-    function updateStored(val,) {
-      localStorage.setItem('numResults', String(val,),);
-      numResultsInput.value = String(val,);
+  numTotalSearches.value++;
+  resultsSection.setAttribute('hidden', 'true',);
+  resultsSection.querySelectorAll<Element>(':scope > *',).forEach(function hide(result,) {
+    result.setAttribute('hidden', 'true',);
+  },);
+
+  processingParagraph.removeAttribute('hidden',);
+
+  const results = await exa.value[0].search(searchInput.value.trim(), {
+    type: 'auto',
+    numResults: numResults.value,
+    contents: {
+      text: true,
+      summary: true,
+      subpages: 1,
+      extras: {
+        links: 1,
+        imageLinks: 1,
+      },
+      highlights: true,
     },
-  ),
-};
+  },);
 
-// TODO: Use logic of replicating element inside fetch result to avoid errors on subsequent searches.
-replicateElementAsContentOf(firstResult, resultsSection, exaMaxResults,);
+  processingParagraph.setAttribute('hidden', 'true',);
 
-/** Live HTMLCollection of result article elements inside the results section. */
-const resultArticles = resultsSection.children;
+  costDollarsSpan.textContent = String(results.costDollars?.total ?? 0,);
 
-nonPromiseAll([
-  void searchForm.addEventListener('submit', async function onSearch(event,) {
-    event.preventDefault();
+  results.results.forEach(function forEachResult(result, resultIndex,) {
+    displayResult(resultArticles, result, resultIndex,);
+  },);
 
-    await Promise.all([
-      numTotalSearches.value++,
+  resultsSection.removeAttribute('hidden',);
+},);
 
-      void resultsSection.setAttribute('hidden', 'true',),
+changeApiKeyButton.addEventListener('click', async function promptForNewApiKey() {
+  const inputApiKey = notNullishOrThrow(await prompt('Change api key',),);
+  exa.value = [new Exa(inputApiKey, baseUrl,), { apiKey: inputApiKey, },];
+},);
 
-      void resultsSection.querySelectorAll(':scope > *',).forEach(function hide(result,) {
-        result.setAttribute('hidden', 'true',);
-      },),
-
-      (async function processResults(): Promise<void> {
-        processingParagraph.removeAttribute('hidden',);
-
-        const results = await exa.value[0].searchAndContents(searchInput.value.trim(), {
-          type: 'auto',
-          // category: 'research paper',
-          numResults: numResults.value,
-          text: true,
-          summary: true,
-          subpages: 1,
-          extras: {
-            links: 1,
-            imageLinks: 1,
-          },
-          highlights: true,
-        },);
-
-        processingParagraph.setAttribute('hidden', 'true',);
-
-        nonPromiseAll([
-          costDollarsSpan.textContent = String(results.costDollars?.total ?? 0,),
-
-          void results.results.forEach(function displayResult(result, resultIndex,) {
-            const currentResultArticle: HTMLLIElement = notFalsyOrThrow(
-              resultArticles[resultIndex],
-            ) as HTMLLIElement;
-
-            const {
-              favicon,
-              link,
-              publishedDate,
-              author,
-              summary,
-              text,
-              highlights,
-              firstHighlight,
-              image,
-            } = {
-              favicon: identity<HTMLImageElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__favicon',),
-              ),),
-              link: identity<HTMLAnchorElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__link',),
-              ),),
-              publishedDate: identity<HTMLTimeElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__publishedDate',),
-              ),),
-              author: identity<HTMLElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__author',),
-              ),),
-              summary: identity<HTMLParagraphElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__summary',),
-              ),),
-              text: identity<HTMLParagraphElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__text',),
-              ),),
-              highlights: identity<HTMLUListElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__highlights',),
-              ),),
-              firstHighlight: identity<HTMLLIElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__highlight',),
-              ),),
-              image: identity<HTMLImageElement>(notFalsyOrThrow(
-                currentResultArticle.querySelector('.result__image',),
-              ),),
-            };
-            if (result.favicon)
-              favicon.src = result.favicon;
-            nonPromiseAll([
-              link.href = result.url,
-              link.textContent = result.title,
-               (function updatePublishedDate(): void {
-                if (result.publishedDate) {
-                  publishedDate.dateTime = result.publishedDate;
-                  publishedDate.textContent = result.publishedDate;
-                }
-              })(),
-               (function updateAuthor(): void {
-                if (result.author)
-                  author.textContent = result.author;
-              })(),
-              summary.textContent = result.summary,
-              text.textContent = result.text,
-              void replicateElementAsContentOf(
-                firstHighlight,
-                highlights,
-                result.highlights.length,
-              ),
-              void result.highlights.forEach(
-                function populateHighlight(highlight, highlightIndex,) {
-                  const currentHighlight: HTMLLIElement = notFalsyOrThrow(
-                    highlights.querySelector(`:nth-child(${highlightIndex + 1})`,),
-                  );
-                  currentHighlight.textContent = highlight;
-                },
-              ),
-               (function updateImage(): void {
-                if (result.image)
-                  image.src = result.image;
-              })(),
-            ],);
-
-            currentResultArticle.removeAttribute('hidden',);
-          },),
-        ],);
-      })(),
-    ],);
-
-    resultsSection.removeAttribute('hidden',);
-  },),
-  void changeApiKeyButton.addEventListener('click', async function promptForNewApiKey() {
-    const inputApiKey = notFalsyOrThrow(await prompt('Change api key',),);
-    exa.value = [new Exa(inputApiKey, baseUrl,), { apiKey: inputApiKey, },];
-  },),
-
-  void numResultsInput.addEventListener('input', function setNewNumResults() {
-    numResults.value = Number(numResultsInput.value,);
-  },),
-],);
+numResultsInput.addEventListener('input', function setNewNumResults() {
+  numResults.value = Number(numResultsInput.value,);
+},);
 
 export {};

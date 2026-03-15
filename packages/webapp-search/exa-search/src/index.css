@@ -39,7 +39,7 @@ body {
 }
 
 [data-sr-only] {
-  /* stylelint-disable-next-line property-disallowed-list -- special use */
+  /* stylelint-disable-next-line property-disallowed-list,property-no-deprecated -- special use */
   clip: rect(0 0 0 0);
 
   position: absolute;
@@ -144,6 +144,7 @@ details {
       content: '';
     }
 
+    /* stylelint-disable-next-line no-descending-specificity -- nested context differs from .result__link ::after */
     &::after {
       color: var(--fg-weaker);
 

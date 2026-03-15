@@ -4,6 +4,7 @@
    children get bottom+right border to form a seamless grid. */
 @mixin --border-grid {
   border-block-start: var(--border-width) solid var(--border);
+
   border-inline-start: var(--border-width) solid var(--border);
 }
 
@@ -11,20 +12,36 @@
    Flex column, centered content, grid-cell borders, hover feedback. */
 @mixin --grid-card {
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
+
   justify-content: center;
+
   row-gap: var(--space-1);
+
   column-gap: var(--space-1);
+
   padding-block: var(--space-3);
+
   padding-inline: var(--space-4);
+
   border-block-end: var(--border-width) solid var(--border);
+
   border-inline-end: var(--border-width) solid var(--border);
+
   border-block-start: none;
+
   border-inline-start: none;
+
   background-color: transparent;
+
   color: inherit;
+
   font-size: var(--font-size-md);
+
   transition-property: background-color;
+
   transition-duration: 0.1s;
 }

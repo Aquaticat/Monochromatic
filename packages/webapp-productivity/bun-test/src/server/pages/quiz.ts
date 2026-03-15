@@ -1,7 +1,13 @@
-import { getDeck } from "../../lib/db/decks";
-import { listCards } from "../../lib/db/cards";
+import { getDeck } from "../../lib/db/decks.ts";
+import { listCards } from "../../lib/db/cards.ts";
 
-// Renders quiz page for a specific deck with all cards embedded as JSON.
+/**
+ * Renders quiz page for a specific deck with all cards embedded as JSON.
+ *
+ * @param deckId - Deck UUID to build the quiz for
+ *
+ * @returns HTML response with quiz page, or 404 if deck not found
+ */
 export async function quizPage(deckId: string): Promise<Response> {
   const deck = await getDeck(deckId);
   if (!deck) {

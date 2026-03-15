@@ -22,10 +22,11 @@ type SettingsPageData = {
 
 injectCSS(styles);
 
+/** Deserialized settings page data (reserved for future use). */
 const _pageData = readPageData<SettingsPageData>();
 
 /** Root app container element. */
-const appElement = document.querySelector("#app");
+const appElement = document.querySelector<HTMLElement>("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }

@@ -5,8 +5,6 @@
 */
 
 html {
-  -moz-text-size-adjust: none;
-  -webkit-text-size-adjust: none;
   text-size-adjust: none;
 }
 
@@ -35,7 +33,9 @@ table,
 caption,
 form,
 fieldset {
-  margin: 0;
+  margin-block: 0;
+
+  margin-inline: 0;
 }
 
 input,
@@ -43,6 +43,7 @@ button,
 textarea,
 select {
   font-family: inherit;
+
   font-size: inherit;
 }
 
@@ -92,7 +93,9 @@ select {
 body {
   /* line-height: 1.5; */
   text-decoration-skip-ink: auto;
+
   font-optical-sizing: auto;
+
   /*   font-variant-ligatures: common-ligatures no-discretionary-ligatures
       no-historical-ligatures contextual; */
   font-kerning: normal;
@@ -119,6 +122,7 @@ label {
 /*
 5. OpenType utility classes
 */
+
 /*
 .dlig {
   font-variant-ligatures: discretionary-ligatures;
@@ -176,7 +180,9 @@ label {
 } */
 
 /* Match font-family webfont name */
+
 /* All features are font-specific. The names 'cursive', 'swoopy', etc are user-defined. */
+
 /* @font-feature-values 'Fancy Font Name' {
   @styleset {
     cursive: 1;
@@ -203,6 +209,7 @@ label {
     boxed: 2;
   }
 } */
+
 /*
 .ss01 {
   font-variant-alternates: styleset(cursive);
@@ -250,6 +257,7 @@ label {
   --opentype-case: off;
   --opentype-sinf: off;
 } */
+
 /* .case {
   --opentype-case: on;
 }
@@ -304,6 +312,7 @@ th {
 8. Headings
    check if h1/font-size-adjust changes with an optical sizing axis
 */
+
 /*
 h1,
 h2,
@@ -331,17 +340,24 @@ h1.uppercase {
   sub,
   .sub {
     vertical-align: baseline;
+
     font-size: 100%;
+
     line-height: inherit;
+
     font-variant-position: sub;
   }
 }
+
 @supports (font-variant-position: super) {
   sup,
   .sup {
     vertical-align: baseline;
+
     font-size: 100%;
+
     line-height: inherit;
+
     font-variant-position: super;
   }
 }
@@ -375,9 +391,11 @@ time[datetime*=':'] {
 q::before {
   content: open-quote;
 }
+
 q::after {
   content: close-quote;
 }
+
 /*
 .quoted p:first-of-type::before {
   content: '“';
@@ -449,6 +467,7 @@ Remember to set lang
   --vf-grad: -100;
 } */
 
+/* stylelint-disable-next-line no-descending-specificity -- intentional universal selector after :lang selectors */
 * {
   font-variation-settings: 'GRAD' var(--vf-grad, 0);
 }

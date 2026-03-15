@@ -23,26 +23,32 @@ type InProgressPageData = {
 
 injectCSS(globalStyles);
 
+/** Deserialized page data containing in-progress tasks. */
 const pageData = readPageData<InProgressPageData>();
-const appElement = document.querySelector("#app");
+
+/** Raw DOM element for the `#app` container. */
+const appElement = document.querySelector<HTMLElement>("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
+
+/** Validated `#app` container element. */
 const app = appElement;
 
 if (pageData.tasks.length === 0) {
   app.append(h({ tag: "p", class: "empty", text: "No active timers." }));
 }
 
+/** UL container for in-progress task cards. */
 const list = h({ tag: "ul", class: "task-list" });
 
 for (const task of pageData.tasks) {
   list.append(
     createTaskCard(task, {
-      onOpen: (taskId) => {
+      onOpen: function handleOpen(taskId) {
         globalThis.location.href = `/tasks/${taskId}`;
       },
-      onToggleComplete: async (taskId) => {
+      onToggleComplete: async function handleStop(taskId) {
         await api(`/api/tasks/${taskId}/stop`, { method: "POST" });
         globalThis.location.reload();
       },
@@ -55,9 +61,9 @@ if (pageData.tasks.length > 0) {
 }
 
 // Live timer updates -- correlate each card with its task by DOM order
-setInterval(() => {
-  const cards = list.querySelectorAll("task-card");
-  cards.forEach((card, cardIndex) => {
+setInterval(function updateTimers() {
+  const cards = list.querySelectorAll<HTMLElement>("task-card");
+  cards.forEach(function updateCard(card, cardIndex) {
     const task = pageData.tasks[cardIndex];
     if (task === undefined) return;
     const chipEl = (card as unknown as { getChipElement?: (prefix: string) => HTMLSpanElement | null }).getChipElement?.("tracked:");

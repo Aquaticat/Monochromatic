@@ -40,8 +40,6 @@ type RenderResult = {
  * Returns both the element list and refs to interactive elements
  * so the caller can wire up event listeners without querying the DOM.
  *
- * @param options - Task data, mode, and styles
- *
  * @returns Elements and refs
  */
 export function buildTaskDetailTree({ task, isCreate, styles }: RenderOptions): RenderResult {

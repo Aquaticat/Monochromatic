@@ -29,15 +29,20 @@ type SearchPageData = {
 injectCSS(globalStyles);
 injectCSS(searchStyles);
 
+/** Deserialized page data containing search query, results, and available tags. */
 const pageData = readPageData<SearchPageData>();
-const appElement = document.querySelector("#app");
+
+/** Raw DOM element for the `#app` container. */
+const appElement = document.querySelector<HTMLElement>("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
+
+/** Validated `#app` container element. */
 const app = appElement;
 
 // Listen for search events from the search-bar component
-document.querySelector("search-bar")?.addEventListener("search", ((event: CustomEvent) => {
+document.querySelector<HTMLElement>("search-bar")?.addEventListener("search", (function handleSearch(event: CustomEvent) {
   const query = event.detail.query as string;
   globalThis.location.href = query.length === 0 ? "/search" : `/search?q=${encodeURIComponent(query)}`;
 }) as EventListener);
@@ -45,24 +50,24 @@ document.querySelector("search-bar")?.addEventListener("search", ((event: Custom
 if (pageData.query.length === 0) {
   app.append(h({ tag: "p", class: "search-hint", text: "Type something...or select one of the categories." }));
 
-  const availableTags = pageData.availableTags ?? [];
+  const availableTags = pageData.availableTags;
   if (availableTags.length > 0) {
     app.append(
       h({
         tag: "div",
         class: "tag-chips",
-        children: availableTags.map((tag) =>
-          h({
+        children: availableTags.map(function buildTagChip(tag) {
+          return h({
             tag: "button",
             class: "tag-chip",
             text: `# ${tag}`,
             on: {
-              click: () => {
+              click: function handleTagClick() {
                 globalThis.location.href = `/search?q=${encodeURIComponent(`#${tag}`)}`;
               },
             },
-          }),
-        ),
+          });
+        }),
       }),
     );
   }
@@ -73,10 +78,10 @@ if (pageData.query.length === 0) {
     resultList.append(
       createTaskCard(result, {
         showBlockedBadge: result.isBlocked,
-        onOpen: (taskId) => {
+        onOpen: function handleOpen(taskId) {
           globalThis.location.href = `/tasks/${taskId}`;
         },
-        onToggleComplete: async (taskId) => {
+        onToggleComplete: async function handleComplete(taskId) {
           await api(`/api/tasks/${taskId}/complete`, { method: "POST" });
           globalThis.location.reload();
         },

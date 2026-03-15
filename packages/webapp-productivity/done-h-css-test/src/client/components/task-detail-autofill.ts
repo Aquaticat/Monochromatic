@@ -24,7 +24,10 @@ type AutofillRequestOptions = {
  * can style autofilled pills differently.
  */
 export class AutofillManager {
+  /** Handle for the autofill debounce timer. */
   #timer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Abort controller for in-flight autofill requests. */
   #abort: AbortController | null = null;
 
   /** Whether an autofill request is currently in flight. */
@@ -62,8 +65,9 @@ export class AutofillManager {
     }
     if (options.title.trim().length === 0) return;
 
-    this.#timer = setTimeout(() => {
-      this.#fetch(options);
+    const self = this;
+    this.#timer = setTimeout(function triggerFetch() {
+      void self.#fetch(options);
     }, AUTOFILL_DEBOUNCE_MS);
   }
 
@@ -76,6 +80,17 @@ export class AutofillManager {
     this.#abort = controller;
     this.loading = true;
     onUpdate();
+
+    const self = this;
+
+    /** Disposable guard that resets loading state on scope exit. */
+    // oxlint-disable-next-line prefer-const -- using binding must be let-like per spec
+    await using _loadingGuard = {
+      async [Symbol.asyncDispose](): Promise<void> {
+        self.loading = false;
+        onUpdate();
+      },
+    };
 
     try {
       const response = await fetch("/api/ai/autofill", {
@@ -109,9 +124,6 @@ export class AutofillManager {
     } catch (error: unknown) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       console.error("Autofill request failed:", error);
-    } finally {
-      this.loading = false;
-      onUpdate();
     }
   }
 }

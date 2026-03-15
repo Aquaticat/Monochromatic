@@ -1,8 +1,2 @@
-[tasks.lint]
-extends = "lint"
-
-[tasks."lint:oxlint"]
-extends = "lint:oxlint"
-
-[tasks."lint:types"]
-extends = "lint:types"
+# lint omitted -- CSS-only package with no TypeScript inputs;
+# lint:oxlint ineffective due to BUGREPORT.oxlint-ignorePatterns-cwd.md

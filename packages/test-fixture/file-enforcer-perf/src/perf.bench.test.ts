@@ -104,11 +104,11 @@ describe('perf: micro-benchmarks', () => {
     const FILES_PER_DIR = 10;
 
     await Promise.all(
-      Array.from({ length: DIR_COUNT }, async (_, dirIndex) => {
+      Array.from({ length: DIR_COUNT }, async (_unused, dirIndex) => {
         const dir = join(tempDir, `dir-${String(dirIndex).padStart(2, '0')}`);
         await mkdir(dir, { recursive: true });
         await Promise.all(
-          Array.from({ length: FILES_PER_DIR }, (_, fileIndex) =>
+          Array.from({ length: FILES_PER_DIR }, (_inner, fileIndex) =>
             writeFile(join(dir, `file-${String(fileIndex)}.ts`), `content-${String(dirIndex)}-${String(fileIndex)}`),
           ),
         );
@@ -363,7 +363,7 @@ describe('perf: micro-benchmarks', () => {
     const elapsed = await measureAsync(async () => {
       for (let iterIndex = 0; iterIndex < EXPENSIVE_ITERATIONS; iterIndex++) {
         // oxlint-disable-next-line no-await-in-loop -- sequential benchmark
-        const results = await Promise.all(patterns.map(expandGlob));
+        const results = await Promise.all(patterns.map(function expandPattern(pattern) { return expandGlob(pattern); }));
         totalMatches += results.reduce((sum, matches) => sum + matches.length, 0);
       }
     });

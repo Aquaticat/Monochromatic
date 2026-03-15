@@ -1,7 +1,11 @@
-import { listDecks } from "../../lib/db/decks";
+import { listDecks } from "../../lib/db/decks.ts";
 
-// Renders deck list page with embedded JSON data.
-// Client JS reads #page-data and builds DOM -- no client-side fetch on load.
+/**
+ * Renders deck list page with embedded JSON data.
+ * Client JS reads `#page-data` and builds DOM -- no client-side fetch on load.
+ *
+ * @returns HTML response containing the deck list page
+ */
 export async function decksPage(): Promise<Response> {
   const decks = await listDecks();
 

@@ -1,6 +1,6 @@
 import { connect } from "@tursodatabase/database";
 
-// In-memory SQLite -- no persistence needed for this test app.
+/** In-memory SQLite connection -- no persistence needed for this test app. */
 const db = await connect(":memory:");
 await db.exec("PRAGMA journal_mode = WAL");
 await db.exec("PRAGMA foreign_keys = ON");

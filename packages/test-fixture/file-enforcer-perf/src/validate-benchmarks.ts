@@ -9,9 +9,19 @@ import { join } from 'node:path';
 
 import spawn from 'nano-spawn';
 
+/** Pattern to extract events per second from sysbench output */
+const SYSBENCH_EVENTS_PATTERN = /events per second:\s+([\d.]+)/;
+
+/** Bytes in one kilobyte */
+const BYTES_PER_KILOBYTE = 1_024;
+
+/** Bytes in one megabyte */
+const BYTES_PER_MEGABYTE = BYTES_PER_KILOBYTE * BYTES_PER_KILOBYTE;
+
 /**
  * Runs sysbench cpu benchmark and parses events per second.
  * Falls back to -1 if sysbench is not installed.
+ *
  * @returns Events per second from sysbench cpu run
  */
 export async function runSysbench(): Promise<number> {
@@ -19,9 +29,9 @@ export async function runSysbench(): Promise<number> {
     const { stdout } = await spawn('sysbench', ['cpu', '--threads=1', 'run']);
 
     /** Parse "events per second: NNNN.NN" from sysbench output */
-    const match = /events per second:\s+([\d.]+)/.exec(stdout);
-    if (match !== null) {
-      return Number.parseFloat(match[1]!);
+    const match = stdout.match(SYSBENCH_EVENTS_PATTERN);
+    if (match !== null && match[1] !== undefined) {
+      return Number.parseFloat(match[1]);
     }
     return -1;
   } catch {
@@ -40,7 +50,9 @@ export type SerialCpuResult = {
 
 /**
  * Runs serial CPU benchmark computing sequential SHA-256 hashes.
+ *
  * @param hashCount - Number of SHA-256 hashes to compute
+ *
  * @returns Elapsed time and iteration count
  */
 export function runSerialCpuBenchmark(hashCount: number): SerialCpuResult {
@@ -61,8 +73,11 @@ export function runSerialCpuBenchmark(hashCount: number): SerialCpuResult {
 
 /**
  * Runs parallel CPU benchmark spawning multiple worker processes.
+ *
  * @param workerCount - Number of parallel worker processes
+ *
  * @param hashesPerWorker - SHA-256 hashes each worker computes
+ *
  * @returns Elapsed wall-clock time in milliseconds
  */
 export async function runParallelCpuBenchmark(workerCount: number, hashesPerWorker: number): Promise<number> {
@@ -79,7 +94,7 @@ export async function runParallelCpuBenchmark(workerCount: number, hashesPerWork
 
   const start = performance.now();
   await Promise.all(
-    Array.from({ length: workerCount }, async () => {
+    Array.from({ length: workerCount }, async function runWorker() {
       await spawn(process.execPath, ['-e', workerScript]);
     }),
   );
@@ -96,16 +111,24 @@ export type MemoryBenchResult = {
 
 /**
  * Runs memory benchmark allocating and filling a buffer.
+ *
  * @param allocMb - Megabytes to allocate
+ *
  * @returns Elapsed time and sink byte for dead code elimination prevention
  */
 export function runMemoryBenchmark(allocMb: number): MemoryBenchResult {
-  const allocBytes = allocMb * 1_024 * 1_024;
+  /** Non-zero fill value to prevent sparse array optimizations */
+  const FILL_BYTE = 42;
+  const allocBytes = allocMb * BYTES_PER_MEGABYTE;
   const start = performance.now();
   const buffer = new Uint8Array(allocBytes);
-  buffer.fill(42);
+  buffer.fill(FILL_BYTE);
   const ms = performance.now() - start;
-  return { ms, sinkByte: buffer[0] as number };
+  const [sinkByte] = buffer;
+  if (sinkByte === undefined) {
+    throw new Error('Buffer is unexpectedly empty');
+  }
+  return { ms, sinkByte };
 }
 
 /** Result from IO benchmark */
@@ -118,7 +141,9 @@ export type IoBenchResult = {
 
 /**
  * Runs IO benchmark writing and reading small files sequentially.
+ *
  * @param fileCount - Number of files to write and read back
+ *
  * @returns Elapsed time and file count
  */
 export async function runIoBenchmark(fileCount: number): Promise<IoBenchResult> {
@@ -144,7 +169,9 @@ export async function runIoBenchmark(fileCount: number): Promise<IoBenchResult> 
 
 /**
  * Rounds to one decimal place for readable output.
+ *
  * @param value - Number to round
+ *
  * @returns Rounded value
  */
 export function round1(value: number): number {

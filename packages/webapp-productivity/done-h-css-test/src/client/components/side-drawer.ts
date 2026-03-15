@@ -15,11 +15,16 @@ import { buildCloseButton, buildHeader, buildNav } from "./side-drawer-helpers.t
  * Toggle the popover via the `open` attribute (set by the top-nav hamburger).
  */
 class SideDrawer extends HTMLElement {
+  /** Attributes that trigger `attributeChangedCallback`. */
   static observedAttributes = ["open"];
 
+  /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
+
+  /** Reference to the popover panel element, set after first render. */
   #panel: HTMLDivElement | null = null;
 
+  /** Initializes the shadow root. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: "open" });
@@ -30,6 +35,7 @@ class SideDrawer extends HTMLElement {
     return this.hasAttribute("open");
   }
 
+  /** Sets the open state by adding or removing the `open` attribute. */
   set open(value: boolean) {
     if (value) {
       this.setAttribute("open", "");
@@ -38,22 +44,25 @@ class SideDrawer extends HTMLElement {
     }
   }
 
+  /** Renders content, sets up panel reference, and wires event listeners. */
   connectedCallback(): void {
     this.#render();
-    this.#panel = this.#shadow.querySelector(".panel") as HTMLDivElement;
+    this.#panel = this.#shadow.querySelector<HTMLDivElement>(".panel");
+    const self = this;
 
-    this.#shadow.querySelector(".panel-close")?.addEventListener("click", () => {
-      this.open = false;
+    this.#shadow.querySelector<HTMLElement>(".panel-close")?.addEventListener("click", function handleClose() {
+      self.open = false;
     });
 
     // Light-dismiss: close when clicking the backdrop area (outside the drawer)
-    this.#panel.addEventListener("click", (event) => {
-      if (event.target === this.#panel) {
-        this.open = false;
+    this.#panel.addEventListener("click", function handleBackdropClick(event) {
+      if (event.target === self.#panel) {
+        self.open = false;
       }
     });
   }
 
+  /** Syncs the popover visibility when the `open` attribute changes. */
   attributeChangedCallback(): void {
     if (this.#panel === null) return;
 
@@ -64,6 +73,7 @@ class SideDrawer extends HTMLElement {
     }
   }
 
+  /** Renders the inline sidebar and popover panel into the shadow root. */
   #render(): void {
     const panelClose = buildCloseButton("Close menu");
     panelClose.classList.add("panel-close");

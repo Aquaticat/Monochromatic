@@ -9,10 +9,12 @@ import { buildCardList } from "./quiz-card-list.ts";
 
 injectCSS(styles);
 
-/** Server-embedded quiz page data. */
-const data: PageData = JSON.parse(
-  document.querySelector("#page-data")!.textContent!
-);
+/** Server-embedded quiz page data element. */
+const pageDataEl = document.querySelector<HTMLElement>("#page-data");
+if (pageDataEl === null) throw new Error("Missing #page-data element");
+
+/** Parsed quiz page data from server-embedded JSON. */
+const data: PageData = JSON.parse(pageDataEl.textContent);
 
 /** Root application element. */
 const app = document.createElement("main");

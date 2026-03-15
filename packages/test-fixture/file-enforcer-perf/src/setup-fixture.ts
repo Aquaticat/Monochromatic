@@ -15,17 +15,17 @@ import {
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
+import {
+  generateDocContent,
+  generateSettingsJson,
+  generateTsContent,
+} from './setup-fixture-generators.ts';
+
 /** Root directory for all fixture files, respects $TMPDIR for sandbox compatibility */
 const FIXTURE_DIR = join(tmpdir(), 'file-enforcer-perf');
 
 /** Number of simulated packages to create */
 const PACKAGE_COUNT = 20;
-
-/** Lines per documentation file (~3KB each at 100 lines) */
-const LINES_PER_DOC = 100;
-
-/** Lines per TypeScript source file (~2KB each at 50 lines) */
-const LINES_PER_TS = 50;
 
 /** Document file basenames inside each package's docs/ directory */
 const DOC_NAMES = ['readme', 'guide', 'api', 'changelog', 'contributing'] as const;
@@ -34,74 +34,34 @@ const DOC_NAMES = ['readme', 'guide', 'api', 'changelog', 'contributing'] as con
 const LIB_NAMES = ['index', 'utils', 'helpers'] as const;
 
 /**
- * Generates deterministic documentation content for a package.
- * First line is shared across all packages (for dedup testing).
+ * Writes a single documentation file for a package.
+ *
+ * @param pkgDir - Absolute path to the package directory
+ *
  * @param pkgIndex - Package index (0-19)
+ *
  * @param docName - Document basename
- * @returns Multi-line markdown content
  */
-function generateDocContent(pkgIndex: number, docName: string): string {
-  /** Shared header enables meaningful dedup testing across packages */
-  const sharedHeader = '# Package Documentation\n\nThis is shared boilerplate across all packages.';
-  const uniqueLines = Array.from(
-    { length: LINES_PER_DOC - 2 },
-    (_, lineIndex) =>
-      `Line ${String(lineIndex)} of ${docName} in package-${String(pkgIndex).padStart(2, '0')}`,
-  );
-  return `${sharedHeader}\n${uniqueLines.join('\n')}`;
+function writeDocFile(pkgDir: string, pkgIndex: number, docName: string): Promise<void> {
+  return writeFile(join(pkgDir, 'docs', `${docName}.md`), generateDocContent(pkgIndex, docName));
 }
 
 /**
- * Generates deterministic TypeScript source content.
+ * Writes a single library TypeScript file for a package.
+ *
+ * @param pkgDir - Absolute path to the package directory
+ *
  * @param pkgIndex - Package index (0-19)
- * @param fileName - Source file basename
- * @returns Multi-line TypeScript content
+ *
+ * @param libName - Library file basename
  */
-function generateTsContent(pkgIndex: number, fileName: string): string {
-  return Array.from(
-    { length: LINES_PER_TS },
-    (_, lineIndex) =>
-      `export const pkg${String(pkgIndex).padStart(2, '0')}_${fileName}_line${String(lineIndex)} = ${String(lineIndex)};`,
-  ).join('\n');
-}
-
-/**
- * Generates a settings.json with nested structure for getProperty testing.
- * @param pkgIndex - Package index (0-19)
- * @returns Formatted JSON string (~500 bytes)
- */
-function generateSettingsJson(pkgIndex: number): string {
-  /** Feature count per package, enough to test array extraction */
-  const FEATURES_PER_PACKAGE = 10;
-  /** Dependency count per package */
-  const DEPS_PER_PACKAGE = 5;
-
-  return JSON.stringify(
-    {
-      name: `package-${String(pkgIndex).padStart(2, '0')}`,
-      version: '1.0.0',
-      config: {
-        debug: pkgIndex % 2 === 0,
-        timeout: 1_000 + pkgIndex * 100,
-        features: Array.from(
-          { length: FEATURES_PER_PACKAGE },
-          (_, featureIndex) => `feature-${String(featureIndex)}`,
-        ),
-      },
-      dependencies: Object.fromEntries(
-        Array.from(
-          { length: DEPS_PER_PACKAGE },
-          (_, depIndex) => [`dep-${String(depIndex)}`, `^${String(depIndex + 1)}.0.0`],
-        ),
-      ),
-    },
-    null,
-    2,
-  );
+function writeLibFile(pkgDir: string, pkgIndex: number, libName: string): Promise<void> {
+  return writeFile(join(pkgDir, 'lib', `${libName}.ts`), generateTsContent(pkgIndex, libName));
 }
 
 /**
  * Creates all files for a single simulated package.
+ *
  * @param pkgIndex - Package index (0-19)
  */
 async function createPackage(pkgIndex: number): Promise<void> {
@@ -119,12 +79,8 @@ async function createPackage(pkgIndex: number): Promise<void> {
   // Write all files for this package in parallel
   await Promise.all([
     writeFile(join(pkgDir, 'config', 'settings.json'), generateSettingsJson(pkgIndex)),
-    ...DOC_NAMES.map((docName) =>
-      writeFile(join(pkgDir, 'docs', `${docName}.md`), generateDocContent(pkgIndex, docName)),
-    ),
-    ...LIB_NAMES.map((libName) =>
-      writeFile(join(pkgDir, 'lib', `${libName}.ts`), generateTsContent(pkgIndex, libName)),
-    ),
+    ...DOC_NAMES.map(function writeDoc(docName) { return writeDocFile(pkgDir, pkgIndex, docName); }),
+    ...LIB_NAMES.map(function writeLib(libName) { return writeLibFile(pkgDir, pkgIndex, libName); }),
     writeFile(
       join(pkgDir, 'lib', 'deep', 'nested', 'very', 'deep', 'module.ts'),
       generateTsContent(pkgIndex, 'deep-module'),
@@ -140,12 +96,23 @@ async function createPackage(pkgIndex: number): Promise<void> {
   ]);
 }
 
+/**
+ * Creates a package for a given array index.
+ *
+ * @param _unused - Unused array element placeholder
+ *
+ * @param index - Package index (0-19)
+ */
+function createPackageByIndex(_unused: unknown, index: number): Promise<void> {
+  return createPackage(index);
+}
+
 // Clean any previous fixture
 await rm(FIXTURE_DIR, { recursive: true, force: true });
 
 // Create all packages in parallel
 await Promise.all(
-  Array.from({ length: PACKAGE_COUNT }, (_, index) => createPackage(index)),
+  Array.from({ length: PACKAGE_COUNT }, createPackageByIndex),
 );
 
 // Create empty dest directory

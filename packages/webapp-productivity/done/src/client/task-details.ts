@@ -48,10 +48,11 @@ injectCSS(styles);
 
 /** Deserialized page data from the server-rendered JSON blob. */
 const pageData = readPageData<TaskDetailsPageData>();
+/** Task being viewed, extracted from the page data blob. */
 const {task} = pageData;
 
 /** Root app container element. */
-const appElement = document.querySelector("#app");
+const appElement = document.querySelector<HTMLElement>("#app");
 if (!(appElement instanceof HTMLElement)) {
   throw new Error("Missing app element");
 }
@@ -59,6 +60,7 @@ if (!(appElement instanceof HTMLElement)) {
 /** Typed reference to the app container. */
 const app = appElement;
 
+/** Task detail web component instance for displaying/editing the task. */
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element registered as "task-detail" returns TaskDetail
 const detail = document.createElement("task-detail") as TaskDetail;
 detail.configure({

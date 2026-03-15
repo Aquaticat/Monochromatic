@@ -83,15 +83,15 @@ function addScrollEvents(scrollOptions: {
  *
  * @see `addScrollEvents` for the scroll lifecycle that triggers ignore calls
  */
-const elements: NodeListOf<HTMLElement> = document.querySelectorAll('.feed',);
+const elements: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>('.feed',);
 elements.forEach(function bindScrollIgnore(element,) {
   addScrollEvents({ element, },);
   // oxlint-disable-next-line typescript/no-misused-promises -- addEventListener does not await the handler
   element.addEventListener('scrolledOut', async function onScrolledOut() {
     console.error('scrolledOut',);
-    const metadata = notNullishOrThrow(element.querySelector('.feed__metadata',),);
+    const metadata = notNullishOrThrow(element.querySelector<HTMLElement>('.feed__metadata',),);
     const anchor: HTMLAnchorElement = notNullishOrThrow(
-      metadata.querySelector('.feed__link',),
+      metadata.querySelector<HTMLAnchorElement>('.feed__link',),
     );
 
     const body: Record<string, string> = z.url().safeParse(anchor.href,).success
