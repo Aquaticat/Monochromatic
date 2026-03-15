@@ -6,7 +6,7 @@ import {
   test,
 } from 'bun:test';
 
-const {$} = types.object.record.from.record.pick.named;
+const { $, } = types.object.record.from.record.pick.named;
 
 describe($, () => {
   test('picks specified keys from object', () => {
@@ -32,15 +32,18 @@ describe($, () => {
 
   test('throws when picking non-existent key', () => {
     const user = { id: 1, name: 'Alice', };
-    expect(() => $({
-      original: user,
-      // @ts-expect-error -- intentionally passing non-existent key to test runtime error
-      toPick: new Set(['id', 'nonexistent',] as const,),
-    },),).toThrow('Key not found in iterable: nonexistent',);
+    expect(() =>
+      $({
+        original: user,
+        // @ts-expect-error -- intentionally passing non-existent key to test runtime error
+        toPick: new Set(['id', 'nonexistent',] as const,),
+      },)
+    )
+      .toThrow('Key not found in iterable: nonexistent',);
   });
 
   test('handles symbol keys', () => {
-    const symKey = Symbol('secret');
+    const symKey = Symbol('secret',);
     const obj = { id: 1, [symKey]: 'hidden', };
     const result = $({ original: obj, toPick: new Set([symKey,] as const,), },);
 
@@ -75,9 +78,10 @@ describe($, () => {
   });
 
   test('handles mixed key types', () => {
-    const symKey = Symbol('sym');
+    const symKey = Symbol('sym',);
     const obj = { str: 'string', 42: 'numeric', [symKey]: 'symbol', };
-    const result = $({ original: obj, toPick: new Set(['str', 42, symKey,] as const,), },);
+    const result = $({ original: obj,
+      toPick: new Set(['str', 42, symKey,] as const,), },);
 
     expect(result,).toEqual({ str: 'string', 42: 'numeric', [symKey]: 'symbol', },);
   });

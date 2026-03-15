@@ -16,7 +16,8 @@
  * Bun and Node both set `process.versions.node`.
  */
 // oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime guard for browser environments where process is undefined
-const hasNodePath = typeof process !== 'undefined' && process.versions?.node !== undefined;
+const hasNodePath = typeof process !== 'undefined'
+  && process.versions?.node !== undefined;
 
 /**
  * Lazily loaded `node:path/posix` module, or undefined in browser.
@@ -32,7 +33,11 @@ const nodePath: typeof import('node:path/posix') | undefined = hasNodePath
 
 //endregion Node delegation
 
-import { dirnameFallback, joinFallback, resolveFallback, } from './fallbacks.ts';
+import {
+  dirnameFallback,
+  joinFallback,
+  resolveFallback,
+} from './fallbacks.ts';
 
 /** POSIX path separator */
 export const sep = '/';
@@ -52,11 +57,10 @@ export const sep = '/';
  * dirname('foo');               // '.'
  * ```
  */
-export function dirname(filePath: string): string {
-  if (nodePath !== undefined) {
-    return nodePath.dirname(filePath);
-  }
-  return dirnameFallback(filePath);
+export function dirname(filePath: string,): string {
+  if (nodePath !== undefined)
+    return nodePath.dirname(filePath,);
+  return dirnameFallback(filePath,);
 }
 
 /**
@@ -67,11 +71,10 @@ export function dirname(filePath: string): string {
  *
  * @returns True when the path starts with `/`
  */
-export function isAbsolute(filePath: string): boolean {
-  if (nodePath !== undefined) {
-    return nodePath.isAbsolute(filePath);
-  }
-  return filePath.length > 0 && filePath.codePointAt(0) === 47;
+export function isAbsolute(filePath: string,): boolean {
+  if (nodePath !== undefined)
+    return nodePath.isAbsolute(filePath,);
+  return filePath.length > 0 && filePath.codePointAt(0,) === 47;
 }
 
 /**
@@ -89,10 +92,9 @@ export function isAbsolute(filePath: string): boolean {
  * ```
  */
 export function join(...segments: string[]): string {
-  if (nodePath !== undefined) {
-    return nodePath.join(...segments);
-  }
-  return joinFallback(...segments);
+  if (nodePath !== undefined)
+    return nodePath.join(...segments,);
+  return joinFallback(...segments,);
 }
 
 /**
@@ -114,8 +116,7 @@ export function join(...segments: string[]): string {
  * ```
  */
 export function resolve(...segments: string[]): string {
-  if (nodePath !== undefined) {
-    return nodePath.resolve(...segments);
-  }
-  return resolveFallback(...segments);
+  if (nodePath !== undefined)
+    return nodePath.resolve(...segments,);
+  return resolveFallback(...segments,);
 }

@@ -16,8 +16,10 @@ export const readCache = new Map<string, string>();
  *
  * @param paths - File paths to invalidate (resolved to absolute internally)
  */
-export function invalidatePaths(paths: readonly string[]): void {
-  paths.forEach(function deletePath(filePath): void { readCache.delete(resolve(filePath)); });
+export function invalidatePaths(paths: readonly string[],): void {
+  paths.forEach(function deletePath(filePath,): void {
+    readCache.delete(resolve(filePath,),);
+  },);
 }
 
 /**
@@ -28,15 +30,14 @@ export function invalidatePaths(paths: readonly string[]): void {
  *
  * @returns File content as a string
  */
-export async function readCached(filePath: string): Promise<string> {
+export async function readCached(filePath: string,): Promise<string> {
   /** Absolute path used as the cache key for reliable lookups */
-  const absPath = resolve(filePath);
-  const cached = readCache.get(absPath);
-  if (cached !== undefined) {
+  const absPath = resolve(filePath,);
+  const cached = readCache.get(absPath,);
+  if (cached !== undefined)
     return cached;
-  }
-  const content = await readFile(absPath, 'utf8');
-  readCache.set(absPath, content);
+  const content = await readFile(absPath, 'utf8',);
+  readCache.set(absPath, content,);
   return content;
 }
 
@@ -49,6 +50,6 @@ export async function readCached(filePath: string): Promise<string> {
  *
  * @param content - Content that was written to the file
  */
-export function updateCache(filePath: string, content: string): void {
-  readCache.set(resolve(filePath), content);
+export function updateCache(filePath: string, content: string,): void {
+  readCache.set(resolve(filePath,), content,);
 }

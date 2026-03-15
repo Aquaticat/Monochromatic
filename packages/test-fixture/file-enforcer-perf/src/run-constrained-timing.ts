@@ -3,7 +3,7 @@
  * Handles median computation, timing collection, and summary formatting.
  */
 
-import type { ContainerBenchResult } from './run-constrained-utils.ts';
+import type { ContainerBenchResult, } from './run-constrained-utils.ts';
 
 /**
  * Numeric comparator for ascending sort order.
@@ -14,7 +14,7 @@ import type { ContainerBenchResult } from './run-constrained-utils.ts';
  *
  * @returns Negative if a \< b, positive if a \> b, zero if equal
  */
-function numericAsc(a: number, b: number): number {
+function numericAsc(a: number, b: number,): number {
   return a - b;
 }
 
@@ -27,26 +27,23 @@ function numericAsc(a: number, b: number): number {
  *
  * @throws When array is empty
  */
-export function median(values: readonly number[]): number {
-  if (values.length === 0) {
-    throw new Error('Cannot compute median of empty array');
-  }
-  const sorted = [...values].toSorted(numericAsc);
-  const mid = Math.floor(sorted.length / 2);
+export function median(values: readonly number[],): number {
+  if (values.length === 0)
+    throw new Error('Cannot compute median of empty array',);
+  const sorted = [...values,].toSorted(numericAsc,);
+  const mid = Math.floor(sorted.length / 2,);
   // Indices guaranteed in-bounds: length > 0 ensures mid >= 0,
   // and mid < length by construction of Math.floor(length / 2).
   if (sorted.length % 2 === 0) {
     const lower = sorted[mid - 1];
     const upper = sorted[mid];
-    if (lower === undefined || upper === undefined) {
-      throw new Error('Unexpected undefined in sorted array');
-    }
+    if (lower === undefined || upper === undefined)
+      throw new Error('Unexpected undefined in sorted array',);
     return (lower + upper) / 2;
   }
   const midValue = sorted[mid];
-  if (midValue === undefined) {
-    throw new Error('Unexpected undefined in sorted array');
-  }
+  if (midValue === undefined)
+    throw new Error('Unexpected undefined in sorted array',);
   return midValue;
 }
 
@@ -59,8 +56,10 @@ export function median(values: readonly number[]): number {
  *
  * @returns Whether the entry's label matches
  */
-function matchesLabel(labelOrPrefix: string, entry: { readonly label: string }): boolean {
-  return entry.label === labelOrPrefix || entry.label.startsWith(`${labelOrPrefix}-`);
+function matchesLabel(labelOrPrefix: string,
+  entry: { readonly label: string; },): boolean
+{
+  return entry.label === labelOrPrefix || entry.label.startsWith(`${labelOrPrefix}-`,);
 }
 
 /**
@@ -70,7 +69,7 @@ function matchesLabel(labelOrPrefix: string, entry: { readonly label: string }):
  *
  * @returns Milliseconds value
  */
-function extractMs(entry: { readonly ms: number }): number {
+function extractMs(entry: { readonly ms: number; },): number {
   return entry.ms;
 }
 
@@ -94,13 +93,20 @@ export function collectTimings(
    *
    * @returns Array of ms values matching the label or prefix
    */
-  function extractMatchingTimings(result: ContainerBenchResult): number[] {
-    return result.timings
-      .filter(function checkLabel(entry) { return matchesLabel(labelOrPrefix, entry); })
-      .map(function getMs(entry) { return extractMs(entry); });
+  function extractMatchingTimings(result: ContainerBenchResult,): number[] {
+    return result
+      .timings
+      .filter(function checkLabel(entry,) {
+        return matchesLabel(labelOrPrefix, entry,);
+      },)
+      .map(function getMs(entry,) {
+        return extractMs(entry,);
+      },);
   }
 
-  return results.flatMap(function getTimings(result) { return extractMatchingTimings(result); });
+  return results.flatMap(function getTimings(result,) {
+    return extractMatchingTimings(result,);
+  },);
 }
 
 /**
@@ -112,11 +118,13 @@ export function collectTimings(
  *
  * @returns Formatted summary string
  */
-export function formatTimingSummary(label: string, values: readonly number[]): string {
-  const min = Math.min(...values);
-  const med = median(values);
-  const max = Math.max(...values);
+export function formatTimingSummary(label: string, values: readonly number[],): string {
+  const min = Math.min(...values,);
+  const med = median(values,);
+  const max = Math.max(...values,);
   /** Pad label to 16 chars for aligned output */
   const LABEL_PAD = 16;
-  return `  ${label.padEnd(LABEL_PAD)} min=${min.toFixed(1)}ms  median=${med.toFixed(1)}ms  max=${max.toFixed(1)}ms  (n=${String(values.length)})`;
+  return `  ${label.padEnd(LABEL_PAD,)} min=${min.toFixed(1,)}ms  median=${
+    med.toFixed(1,)
+  }ms  max=${max.toFixed(1,)}ms  (n=${String(values.length,)})`;
 }

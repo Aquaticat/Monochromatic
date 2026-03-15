@@ -33,22 +33,22 @@ export const noMultiAsterisks: CreateOnceRule = {
       extra: 'Extra asterisk at start of TSDoc comment line.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
-    return createTsdocVisitor(context, function noMultiHandler(_node, comment): void {
-      const lines = getCommentLines(comment);
+  createOnce(context: Context,): VisitorWithHooks {
+    return createTsdocVisitor(context, function noMultiHandler(_node, comment,): void {
+      const lines = getCommentLines(comment,);
       // Skip first line (opening) and last line (closing)
-      lines.slice(1, -1).forEach(function checkLine(line, index): void {
+      lines.slice(1, -1,).forEach(function checkLine(line, index,): void {
         const trimmed = line.trimStart();
         // After the leading *, check for immediate additional *
-        if (trimmed.startsWith('**') && !trimmed.startsWith('*/')) {
+        if (trimmed.startsWith('**',) && !trimmed.startsWith('*/',)) {
           context.report({
             loc: {
-              start: { line: comment.loc.start.line + index + 1, column: 0 },
+              start: { line: comment.loc.start.line + index + 1, column: 0, },
             },
             messageId: 'extra',
-          });
+          },);
         }
-      });
-    });
+      },);
+    },);
   },
 };

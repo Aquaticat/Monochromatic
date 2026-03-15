@@ -8,7 +8,10 @@ import { micromark, } from 'micromark';
 
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
-import type { ConfigSnapshot, ProbeDetail, } from '../data/viewer-types.ts';
+import type {
+  ConfigSnapshot,
+  ProbeDetail,
+} from '../data/viewer-types.ts';
 
 import { formatNumber, } from './overlay-meta.ts';
 
@@ -26,7 +29,7 @@ import { formatNumber, } from './overlay-meta.ts';
  * // '<details class="collapsible-section">...'
  * ```
  */
-export function renderCollapsibles(detail: ProbeDetail): string {
+export function renderCollapsibles(detail: ProbeDetail,): string {
   const sections: string[] = [];
 
   if (detail.reasoning !== undefined && detail.reasoning !== '') {
@@ -34,10 +37,15 @@ export function renderCollapsibles(detail: ProbeDetail): string {
       tag: 'details',
       class: 'collapsible-section',
       children: [
-        h({ tag: 'summary', text: `Thinking (${formatNumber(detail.reasoning.length)} chars)`, }),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.reasoning), }),
+        h({ tag: 'summary', text: `Thinking (${
+          formatNumber(detail
+            .reasoning
+            .length,)
+        } chars)`, },),
+        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail
+          .reasoning,), },),
       ],
-    }));
+    },),);
   }
 
   if (detail.initialResponse !== undefined && detail.initialResponse !== '') {
@@ -45,10 +53,15 @@ export function renderCollapsibles(detail: ProbeDetail): string {
       tag: 'details',
       class: 'collapsible-section',
       children: [
-        h({ tag: 'summary', text: `Response (${formatNumber(detail.initialResponse.length)} chars)`, }),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.initialResponse), }),
+        h({ tag: 'summary', text: `Response (${
+          formatNumber(detail
+            .initialResponse
+            .length,)
+        } chars)`, },),
+        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail
+          .initialResponse,), },),
       ],
-    }));
+    },),);
   }
 
   if (detail.fixReasoning !== undefined && detail.fixReasoning !== '') {
@@ -56,10 +69,15 @@ export function renderCollapsibles(detail: ProbeDetail): string {
       tag: 'details',
       class: 'collapsible-section',
       children: [
-        h({ tag: 'summary', text: `Fix thinking (${formatNumber(detail.fixReasoning.length)} chars)`, }),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.fixReasoning), }),
+        h({ tag: 'summary', text: `Fix thinking (${
+          formatNumber(detail
+            .fixReasoning
+            .length,)
+        } chars)`, },),
+        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail
+          .fixReasoning,), },),
       ],
-    }));
+    },),);
   }
 
   if (detail.fixResponse !== undefined && detail.fixResponse !== '') {
@@ -67,10 +85,15 @@ export function renderCollapsibles(detail: ProbeDetail): string {
       tag: 'details',
       class: 'collapsible-section',
       children: [
-        h({ tag: 'summary', text: `Fix response (${formatNumber(detail.fixResponse.length)} chars)`, }),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.fixResponse), }),
+        h({ tag: 'summary', text: `Fix response (${
+          formatNumber(detail
+            .fixResponse
+            .length,)
+        } chars)`, },),
+        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail
+          .fixResponse,), },),
       ],
-    }));
+    },),);
   }
 
   if (detail.fixPrompt !== undefined && detail.fixPrompt !== '') {
@@ -78,17 +101,17 @@ export function renderCollapsibles(detail: ProbeDetail): string {
       tag: 'details',
       class: 'collapsible-section',
       children: [
-        h({ tag: 'summary', text: 'Fix prompt', }),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.fixPrompt), }),
+        h({ tag: 'summary', text: 'Fix prompt', },),
+        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail
+          .fixPrompt,), },),
       ],
-    }));
+    },),);
   }
 
-  if (detail.config !== undefined) {
-    sections.push(renderConfig(detail.config));
-  }
+  if (detail.config !== undefined)
+    sections.push(renderConfig(detail.config,),);
 
-  return sections.join('\n');
+  return sections.join('\n',);
 }
 
 /**
@@ -98,26 +121,26 @@ export function renderCollapsibles(detail: ProbeDetail): string {
  *
  * @returns HTML `<details>` element
  */
-function renderConfig(config: ConfigSnapshot): string {
+function renderConfig(config: ConfigSnapshot,): string {
   return h({
     tag: 'details',
     class: 'collapsible-section',
     children: [
-      h({ tag: 'summary', text: 'Config', }),
+      h({ tag: 'summary', text: 'Config', },),
       h({
         tag: 'dl',
         class: 'metadata-grid',
         children: [
-          h({ tag: 'dt', text: 'Verbosity', }),
-          h({ tag: 'dd', text: config.verbosity, }),
-          h({ tag: 'dt', text: 'Reasoning', }),
-          h({ tag: 'dd', text: String(config.reasoning), }),
-          h({ tag: 'dt', text: 'Max tokens', }),
-          h({ tag: 'dd', text: formatNumber(config.maxTokens), }),
-          h({ tag: 'dt', text: 'Consistency runs', }),
-          h({ tag: 'dd', text: String(config.consistencyRuns), }),
+          h({ tag: 'dt', text: 'Verbosity', },),
+          h({ tag: 'dd', text: config.verbosity, },),
+          h({ tag: 'dt', text: 'Reasoning', },),
+          h({ tag: 'dd', text: String(config.reasoning,), },),
+          h({ tag: 'dt', text: 'Max tokens', },),
+          h({ tag: 'dd', text: formatNumber(config.maxTokens,), },),
+          h({ tag: 'dt', text: 'Consistency runs', },),
+          h({ tag: 'dd', text: String(config.consistencyRuns,), },),
         ],
-      }),
+      },),
     ],
-  });
+  },);
 }

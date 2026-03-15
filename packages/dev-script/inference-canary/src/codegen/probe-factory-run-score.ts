@@ -6,19 +6,32 @@
  * combined score. Extracted from the probe factory to keep each module under
  * the line limit.
  */
-import { runInContainer, type ContainerResult, } from '../container.ts';
-import { computePerfScore, runInContainerTimed, } from './perf.ts';
+import {
+  type ContainerResult,
+  runInContainer,
+} from '../container.ts';
+import {
+  computePerfScore,
+  runInContainerTimed,
+} from './perf.ts';
 import {
   cacheAdditionalResults,
   computeAdditionalCorrectnesses,
   executeAdditionalRuns,
 } from './probe-factory-additional.ts';
-import { combinedScore, lintAndLog, tryExtractCode, } from './scoring.ts';
+import {
+  combinedScore,
+  lintAndLog,
+  tryExtractCode,
+} from './scoring.ts';
 
 import type { LintResult, } from '../linter.ts';
 import type { ScoreContext, } from '../probes.ts';
 import type { TimedContainerResult, } from './perf.ts';
-import type { CodeGenProbeConfig, ProbeFactoryCaches, } from './probe-factory-types.ts';
+import type {
+  CodeGenProbeConfig,
+  ProbeFactoryCaches,
+} from './probe-factory-types.ts';
 
 /**
  * Executes the full scoring pipeline for a code-generation probe.
@@ -45,12 +58,14 @@ export async function scoreImpl(
   caches: ProbeFactoryCaches,
 ): Promise<number> {
   /** Extraction result: source code and whether a fenced block was found */
-  const extraction = tryExtractCode(response);
+  const extraction = tryExtractCode(response,);
   if (!extraction.fenced) {
-    console.log(`  [${context.label}:${config.name}] no fenced code block found in response`);
+    console.log(
+      `  [${context.label}:${config.name}] no fenced code block found in response`,
+    );
     // Still lint the raw response so artifacts are written for debugging,
     // but score is forced to 0 since the model didn't follow the output format.
-    await lintAndLog(extraction.source, config.name, context);
+    await lintAndLog(extraction.source, config.name, context,);
     return 0;
   }
 
@@ -58,41 +73,45 @@ export async function scoreImpl(
   const rawSource = extraction.source;
   /** Source after probe-level transform, with reject flag for constraint violations */
   const transformed = config.transformSource !== undefined
-    ? config.transformSource(rawSource, context)
+    ? config.transformSource(rawSource, context,)
     : { reject: false, source: rawSource, };
 
   /** Final source to execute in containers */
-  const {source} = transformed;
+  const { source, } = transformed;
 
   // Launch all container runs in parallel: correctness + lint + perf + additional
   /** Main correctness container promise */
-  const correctnessPromise = runInContainer(source, config.testInput, context.signal);
+  const correctnessPromise = runInContainer(source, config.testInput, context.signal,);
   /** Lint analysis promise */
-  const lintPromise = lintAndLog(source, config.name, context);
+  const lintPromise = lintAndLog(source, config.name, context,);
   /** Perf container promise (undefined when no perfTest configured) */
   const perfPromise = config.perfTest !== undefined
-    ? runInContainerTimed(source, config.perfTest.input, context.signal)
+    ? runInContainerTimed(source, config.perfTest.input, context.signal,)
     : undefined;
   /** Additional run container promises (empty array when no additional runs) */
   const additionalPromise = config.additionalRuns !== undefined
-    ? executeAdditionalRuns(source, config.additionalRuns, context.signal)
+    ? executeAdditionalRuns(source, config.additionalRuns, context.signal,)
     : undefined;
 
-  const [result, lint, perfResult, additionalResults] = await Promise.all([
+  const [result, lint, perfResult, additionalResults,] = await Promise.all([
     correctnessPromise,
     lintPromise,
-    ...(perfPromise !== undefined ? [perfPromise] : []),
-    ...(additionalPromise !== undefined ? [additionalPromise] : []),
-  ]) as [ContainerResult, LintResult, TimedContainerResult | undefined, ContainerResult[] | undefined];
+    ...(perfPromise !== undefined ? [perfPromise,] : []),
+    ...(additionalPromise !== undefined ? [additionalPromise,] : []),
+  ],) as [ContainerResult, LintResult, TimedContainerResult | undefined,
+    ContainerResult[] | undefined,];
 
-  caches.lint.set(context.label, lint);
-  caches.container.set(context.label, result);
+  caches.lint.set(context.label, lint,);
+  caches.container.set(context.label, result,);
 
   // Cache and verify additional runs
   if (additionalResults !== undefined && config.additionalRuns !== undefined) {
     cacheAdditionalResults(
-      additionalResults, config.additionalRuns,
-      caches.additionalContainers, caches.additionalVerify, context.label,
+      additionalResults,
+      config.additionalRuns,
+      caches.additionalContainers,
+      caches.additionalVerify,
+      context.label,
     );
   }
 
@@ -101,32 +120,43 @@ export async function scoreImpl(
   // conditionally reassigned when a perf test produces a result
   let perfMultiplier = 1;
   if (config.perfTest !== undefined && perfResult !== undefined) {
-    caches.perf.set(context.label, perfResult);
-    perfMultiplier = computePerfScore(perfResult, config.perfTest);
+    caches.perf.set(context.label, perfResult,);
+    perfMultiplier = computePerfScore(perfResult, config.perfTest,);
     console.log(
-      `  [${context.label}:${config.name}] perf: ${String(perfResult.durationMs)}ms score=${perfMultiplier.toFixed(2)}`,
+      `  [${context.label}:${config.name}] perf: ${
+        String(perfResult.durationMs,)
+      }ms score=${perfMultiplier.toFixed(2,)}`,
     );
   }
 
-  if (transformed.reject) return combinedScore(0, lint) * perfMultiplier;
+  if (transformed.reject)
+    return combinedScore(0, lint,) * perfMultiplier;
   if (result.timedOut || result.exitCode !== 0) {
-    console.log(`  [${context.label}:${config.name}] container failed: exit=${String(result.exitCode)} timedOut=${String(result.timedOut)}`);
-    return combinedScore(0, lint) * perfMultiplier;
+    console.log(
+      `  [${context.label}:${config.name}] container failed: exit=${
+        String(result.exitCode,)
+      } timedOut=${String(result.timedOut,)}`,
+    );
+    return combinedScore(0, lint,) * perfMultiplier;
   }
 
-  const { correctness: mainCorrectness, } = config.verify(result);
+  const { correctness: mainCorrectness, } = config.verify(result,);
 
   // Combine main and additional run correctness via Math.min --
   // every run must achieve perfect correctness for a non-zero final score
   /** Per-run correctness fractions from additional runs (empty when none configured) */
-  const additionalCorrectnesses = additionalResults !== undefined && config.additionalRuns !== undefined
-    ? computeAdditionalCorrectnesses(
-      additionalResults, config.additionalRuns,
-      caches.additionalVerify, context.label, config.name,
-    )
-    : [];
+  const additionalCorrectnesses =
+    additionalResults !== undefined && config.additionalRuns !== undefined
+      ? computeAdditionalCorrectnesses(
+        additionalResults,
+        config.additionalRuns,
+        caches.additionalVerify,
+        context.label,
+        config.name,
+      )
+      : [];
 
   /** Combined correctness: minimum of main and all additional runs */
-  const overallCorrectness = Math.min(mainCorrectness, ...additionalCorrectnesses);
-  return combinedScore(overallCorrectness, lint) * perfMultiplier;
+  const overallCorrectness = Math.min(mainCorrectness, ...additionalCorrectnesses,);
+  return combinedScore(overallCorrectness, lint,) * perfMultiplier;
 }

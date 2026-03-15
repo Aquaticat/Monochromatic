@@ -15,9 +15,13 @@
  * mise run //packages/duik/teto-generated:trace
  * ```
  */
-import { existsSync, mkdirSync, readdirSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+} from 'node:fs';
 
-import { TMP_DIR } from './config.ts'
+import { TMP_DIR, } from './config.ts';
 
 /**
  * Run a shell command and throw on non-zero exit.
@@ -25,13 +29,12 @@ import { TMP_DIR } from './config.ts'
  * @param cmd - Command tokens to execute
  * @throws Error when the subprocess exits with non-zero status
  */
-async function run(cmd: readonly string[]): Promise<void> {
-  console.log(`  $ ${cmd.join(' ')}`)
-  const proc = Bun.spawn([...cmd], { stdout: 'inherit', stderr: 'inherit' })
-  const code = await proc.exited
-  if (code !== 0) {
-    throw new Error(`Command failed (exit ${code}): ${cmd.join(' ')}`)
-  }
+async function run(cmd: readonly string[],): Promise<void> {
+  console.log(`  $ ${cmd.join(' ',)}`,);
+  const proc = Bun.spawn([...cmd,], { stdout: 'inherit', stderr: 'inherit', },);
+  const code = await proc.exited;
+  if (code !== 0)
+    throw new Error(`Command failed (exit ${code}): ${cmd.join(' ',)}`,);
 }
 
 /**
@@ -40,19 +43,20 @@ async function run(cmd: readonly string[]): Promise<void> {
  * @returns True if the host has potrace
  */
 async function hasHostPotrace(): Promise<boolean> {
-  const proc = Bun.spawn(['which', 'potrace'], {
+  const proc = Bun.spawn(['which', 'potrace',], {
     stdout: 'pipe',
     stderr: 'pipe',
-  })
-  const code = await proc.exited
-  return code === 0
+  },);
+  const code = await proc.exited;
+  return code === 0;
 }
 
 /**
  * Potrace argument list shared between host and container invocations.
  * -i: invert (masks have white=foreground, but potrace traces dark regions)
  */
-const POTRACE_FLAGS = ['-i', '-b', 'svg', '--turdsize', '4', '--alphamax', '1.0', '--opttolerance', '0.2'] as const
+const POTRACE_FLAGS = ['-i', '-b', 'svg', '--turdsize', '4', '--alphamax', '1.0',
+  '--opttolerance', '0.2',] as const;
 
 /**
  * Trace all masks using host-installed potrace.
@@ -66,18 +70,20 @@ async function traceOnHost({
   masksDir,
   tracedDir,
 }: {
-  readonly masks: readonly string[]
-  readonly masksDir: string
-  readonly tracedDir: string
-}): Promise<void> {
-  console.log('  Using host potrace')
+  readonly masks: readonly string[];
+  readonly masksDir: string;
+  readonly tracedDir: string;
+},): Promise<void> {
+  console.log('  Using host potrace',);
   for (const mask of masks) {
-    const name = mask.replace('.pgm', '')
+    const name = mask.replace('.pgm', '',);
     await run([
-      'potrace', ...POTRACE_FLAGS,
-      '-o', `${tracedDir}/${name}.svg`,
+      'potrace',
+      ...POTRACE_FLAGS,
+      '-o',
+      `${tracedDir}/${name}.svg`,
       `${masksDir}/${mask}`,
-    ])
+    ],);
   }
 }
 
@@ -94,64 +100,68 @@ async function traceInContainer({
   masksDir,
   tracedDir,
 }: {
-  readonly masks: readonly string[]
-  readonly masksDir: string
-  readonly tracedDir: string
-}): Promise<void> {
-  console.log('  Using container potrace (host binary not found)')
+  readonly masks: readonly string[];
+  readonly masksDir: string;
+  readonly tracedDir: string;
+},): Promise<void> {
+  console.log('  Using container potrace (host binary not found)',);
 
-  const traceCommands = masks.map(function buildTraceCmd(mask) {
-    const name = mask.replace('.pgm', '')
-    const flags = POTRACE_FLAGS.join(' ')
-    return `potrace ${flags} -o /work/${tracedDir}/${name}.svg /work/${masksDir}/${mask}`
-  })
+  const traceCommands = masks.map(function buildTraceCmd(mask,) {
+    const name = mask.replace('.pgm', '',);
+    const flags = POTRACE_FLAGS.join(' ',);
+    return `potrace ${flags} -o /work/${tracedDir}/${name}.svg /work/${masksDir}/${mask}`;
+  },);
 
-  const script = traceCommands.join(' && ')
-  const cwd = process.cwd()
+  const script = traceCommands.join(' && ',);
+  const cwd = process.cwd();
 
   await run([
-    'podman', 'run', '--rm',
-    '-v', `${cwd}:/work:Z`,
+    'podman',
+    'run',
+    '--rm',
+    '-v',
+    `${cwd}:/work:Z`,
     'monochromatic-tracer',
-    'sh', '-c', script,
-  ])
+    'sh',
+    '-c',
+    script,
+  ],);
 }
 
 /** Traces binary masks to SVG paths using potrace. */
 async function main(): Promise<void> {
-  console.log('Tracing masks to SVG with potrace')
+  console.log('Tracing masks to SVG with potrace',);
 
-  const masksDir = `${TMP_DIR}/masks`
-  if (!existsSync(masksDir)) {
-    throw new Error(`Masks directory not found: ${masksDir} — run the segment task first`)
+  const masksDir = `${TMP_DIR}/masks`;
+  if (!existsSync(masksDir,)) {
+    throw new Error(
+      `Masks directory not found: ${masksDir} — run the segment task first`,
+    );
   }
 
-  const tracedDir = `${TMP_DIR}/traced`
-  if (!existsSync(tracedDir)) {
-    mkdirSync(tracedDir, { recursive: true })
-  }
+  const tracedDir = `${TMP_DIR}/traced`;
+  if (!existsSync(tracedDir,))
+    mkdirSync(tracedDir, { recursive: true, },);
 
-  const masks = readdirSync(masksDir).filter(function isPgm(f) {
-    return f.endsWith('.pgm')
-  })
+  const masks = readdirSync(masksDir,).filter(function isPgm(f,) {
+    return f.endsWith('.pgm',);
+  },);
 
-  if (masks.length === 0) {
-    throw new Error('No PGM masks found — segmentation may have failed')
-  }
+  if (masks.length === 0)
+    throw new Error('No PGM masks found — segmentation may have failed',);
 
-  console.log(`  Found ${masks.length} masks`)
+  console.log(`  Found ${masks.length} masks`,);
 
-  const useHost = await hasHostPotrace()
+  const useHost = await hasHostPotrace();
 
-  if (useHost) {
-    await traceOnHost({ masks, masksDir, tracedDir })
-  } else {
-    await traceInContainer({ masks, masksDir, tracedDir })
-  }
+  if (useHost)
+    await traceOnHost({ masks, masksDir, tracedDir, },);
+  else
+    await traceInContainer({ masks, masksDir, tracedDir, },);
 
-  console.log(`Traced ${masks.length} parts to ${tracedDir}/`)
+  console.log(`Traced ${masks.length} parts to ${tracedDir}/`,);
 }
 
-await main()
+await main();
 
-export {}
+export {};

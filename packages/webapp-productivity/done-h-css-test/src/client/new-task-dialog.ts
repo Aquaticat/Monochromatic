@@ -9,18 +9,20 @@
  * with save/close branches, and panel open/close logic form a single cohesive
  * unit -- splitting further would scatter the lifecycle across files.
  */
-import type { Task } from "../lib/types.ts";
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { api } from "./lib/api.ts";
-import type { TaskDetail } from "./components/task-detail.ts";
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+import type { Task, } from '../lib/types.ts';
+import type { TaskDetail, } from './components/task-detail.ts';
+import { api, } from './lib/api.ts';
 // Side-effect import: registers the `<task-detail>` custom element
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import "./components/task-detail.ts";
+import './components/task-detail.ts';
 
 /** Blank task template used when creating a new task. */
 const emptyTask: Task = {
-  id: "",
-  title: "",
+  id: '',
+  title: '',
   description: null,
   tags: [],
   locations: [],
@@ -31,12 +33,12 @@ const emptyTask: Task = {
   blockedBy: [],
   trackedTime: 0,
   timerStartedAt: null,
-  status: "inbox",
-  source: "local",
+  status: 'inbox',
+  source: 'local',
   sourceId: null,
   sourceMeta: null,
-  createdAt: "",
-  updatedAt: "",
+  createdAt: '',
+  updatedAt: '',
 };
 
 /** Return value of {@link createNewTaskDialog}. */
@@ -58,11 +60,11 @@ type NewTaskDialog = {
  * @returns panel and fab elements ready for DOM insertion
  */
 export function createNewTaskDialog(): NewTaskDialog {
-  const detail = document.createElement("task-detail") as TaskDetail;
+  const detail = document.createElement('task-detail',) as TaskDetail;
 
-  const panel = h({ tag: "div", class: "new-task-panel" });
-  panel.setAttribute("popover", "manual");
-  panel.append(detail);
+  const panel = h({ tag: 'div', class: 'new-task-panel', },);
+  panel.setAttribute('popover', 'manual',);
+  panel.append(detail,);
 
   /** Reference to the FAB so open/close can toggle its visibility. */
   let fabElement: HTMLElement | null = null;
@@ -70,31 +72,32 @@ export function createNewTaskDialog(): NewTaskDialog {
   /** Hides the panel popover and restores the FAB. */
   function closePanel(): void {
     panel.hidePopover();
-    if (fabElement !== null) {
+    if (fabElement !== null)
       fabElement.hidden = false;
-    }
   }
 
-  detail.addEventListener("action", async function handleAction(event) {
-    if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent for 'action' listener");
-    const { action, title, description } = event.detail as {
+  detail.addEventListener('action', async function handleAction(event,) {
+    if (!(event instanceof CustomEvent))
+      throw new TypeError("Expected CustomEvent for 'action' listener",);
+    const { action, title, description, } = event.detail as {
       action: string;
       title: string;
       description: string;
     };
 
-    if (action === "close") {
+    if (action === 'close') {
       closePanel();
       return;
     }
 
-    if (action === "save") {
+    if (action === 'save') {
       const trimmedTitle = title.trim();
-      if (trimmedTitle.length === 0) return;
+      if (trimmedTitle.length === 0)
+        return;
 
       const metadata = detail.getMetadata();
-      await api("/api/tasks", {
-        method: "POST",
+      await api('/api/tasks', {
+        method: 'POST',
         body: JSON.stringify({
           title: trimmedTitle,
           description: description.length === 0 ? null : description,
@@ -102,37 +105,38 @@ export function createNewTaskDialog(): NewTaskDialog {
           locations: metadata.locations,
           priority: metadata.priority,
           complexity: metadata.complexity,
-        }),
-      });
+        },),
+      },);
       globalThis.location.reload();
     }
-  });
+  },);
 
   /** Opens the panel with a fresh empty task, hiding the FAB and playing the expand animation. */
   function openPanel(): void {
-    console.log("[new-task-dialog] openPanel(), detail.configure is:", typeof detail.configure);
-    detail.configure({ task: emptyTask, blockerSummaries: [], mode: "create" });
-    if (fabElement !== null) {
+    console.log('[new-task-dialog] openPanel(), detail.configure is:',
+      typeof detail.configure,);
+    detail.configure({ task: emptyTask, blockerSummaries: [], mode: 'create', },);
+    if (fabElement !== null)
       fabElement.hidden = true;
-    }
 
     // Restart the expand animation by toggling the data attribute
-    delete panel.dataset["animating"];
+    delete panel.dataset['animating'];
     panel.showPopover();
     requestAnimationFrame(function animatePanel() {
-      panel.dataset["animating"] = "";
-      const titleInput = detail.shadowRoot?.querySelector<HTMLInputElement>(".title-input") ?? null;
+      panel.dataset['animating'] = '';
+      const titleInput =
+        detail.shadowRoot?.querySelector<HTMLInputElement>('.title-input',) ?? null;
       titleInput?.focus();
-    });
+    },);
   }
 
   const fab = h({
-    tag: "fab-button",
-    attrs: { label: "Add task" },
-    on: { click: openPanel },
-  });
+    tag: 'fab-button',
+    attrs: { label: 'Add task', },
+    on: { click: openPanel, },
+  },);
   // let bindings justified: fabElement is set once after creation, read in open/close callbacks
   fabElement = fab;
 
-  return { panel, fab };
+  return { panel, fab, };
 }

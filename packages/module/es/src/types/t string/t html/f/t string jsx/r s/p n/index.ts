@@ -63,8 +63,20 @@
 
 /** HTML void elements that must not have a closing tag */
 const VOID_ELEMENTS = new Set([
-  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
-  'link', 'meta', 'param', 'source', 'track', 'wbr',
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
 ],);
 
 /** Escapes characters that have special meaning in HTML attribute values and text content */
@@ -106,7 +118,9 @@ type HOptions = {
  * ```
  */
 function camelToKebab(property: string,): string {
-  return property.replaceAll(/[A-Z]/g, function toLower(match,) { return `-${match.toLowerCase()}`; },);
+  return property.replaceAll(/[A-Z]/g, function toLower(match,) {
+    return `-${match.toLowerCase()}`;
+  },);
 }
 
 /**
@@ -131,41 +145,38 @@ function camelToKebab(property: string,): string {
 ): string {
   const parts: string[] = [`<${tag}`,];
 
-  if (className !== undefined) {
+  if (className !== undefined)
     parts.push(` class="${escapeHtml(className,)}"`,);
-  }
 
   if (attrs !== undefined) {
-    for (const [key, value,] of Object.entries(attrs,)) {
+    for (const [key, value,] of Object.entries(attrs,))
       parts.push(` ${key}="${escapeHtml(value,)}"`,);
-    }
   }
 
   if (style !== undefined) {
-    const declarations = Object.entries(style,)
-      .map(function toDecl([property, value,],) { return `${camelToKebab(property,)}:${value}`; },)
+    const declarations = Object
+      .entries(style,)
+      .map(function toDecl([property, value,],) {
+        return `${camelToKebab(property,)}:${value}`;
+      },)
       .join(';',);
     parts.push(` style="${escapeHtml(declarations,)}"`,);
   }
 
   parts.push('>',);
 
-  if (VOID_ELEMENTS.has(tag,)) {
+  if (VOID_ELEMENTS.has(tag,))
     return parts.join('',);
-  }
 
-  if (text !== undefined) {
+  if (text !== undefined)
     parts.push(escapeHtml(text,),);
-  }
 
-  if (html !== undefined) {
+  if (html !== undefined)
     parts.push(html,);
-  }
 
   if (children !== undefined) {
-    for (const child of children) {
+    for (const child of children)
       parts.push(child,);
-    }
   }
 
   parts.push(`</${tag}>`,);

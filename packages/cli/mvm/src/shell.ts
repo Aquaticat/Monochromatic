@@ -1,7 +1,14 @@
 import nanoSpawn from 'nano-spawn';
 
-import { LIBVIRT_URI, VM_PREFIX, validateName } from './config.ts';
-import { l, tagged } from './log.ts';
+import {
+  LIBVIRT_URI,
+  validateName,
+  VM_PREFIX,
+} from './config.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
 
 /**
  * Opens an interactive serial console session to a running VM via `virsh console`.
@@ -15,25 +22,29 @@ import { l, tagged } from './log.ts';
  * await shell({ name: 'dev-01' });
  * ```
  */
-export async function shell({ name }: { name: string }): Promise<void> {
-  validateName(name);
-  const rl = tagged({ tag: shell.name, l, });
+export async function shell({ name, }: { name: string; },): Promise<void> {
+  validateName(name,);
+  const rl = tagged({ tag: shell.name, l, },);
   const fullName = `${VM_PREFIX}${name}`;
 
-  rl.info(`connecting to VM ${name} via console (press Ctrl+] to disconnect, not exit)`);
+  rl.info(`connecting to VM ${name} via console (press Ctrl+] to disconnect, not exit)`,);
 
   try {
-    await nanoSpawn('virsh', ['--connect', LIBVIRT_URI, 'console', fullName], {
+    await nanoSpawn('virsh', ['--connect', LIBVIRT_URI, 'console', fullName,], {
       stderr: 'inherit',
       stdin: 'inherit',
       stdout: 'inherit',
-    });
-  } catch (error: unknown) {
-    if (error !== null && error !== undefined && typeof error === 'object' && 'exitCode' in error) {
+    },);
+  }
+  catch (error: unknown) {
+    if (error !== null
+      && error !== undefined
+      && typeof error === 'object'
+      && 'exitCode' in error)
+    {
       const exitCode = typeof error.exitCode === 'number' ? error.exitCode : undefined;
-      if (exitCode !== undefined) {
+      if (exitCode !== undefined)
         process.exitCode = exitCode;
-      }
     }
   }
 }

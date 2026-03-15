@@ -1,4 +1,4 @@
-import { banDisableRule } from './_ban-disable-factory.ts';
+import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
  * Bans inline suppression of `no-restricted-syntax/no-hasownproperty`.
@@ -7,5 +7,6 @@ import { banDisableRule } from './_ban-disable-factory.ts';
 export const noDisableNoHasownproperty = banDisableRule({
   ruleId: 'no-restricted-syntax/no-hasownproperty',
   description: 'Disallow disabling no-hasownproperty. Use Object.hasOwn() instead.',
-  message: 'Disabling no-hasownproperty is not allowed. Use Object.hasOwn() or the in operator.',
-});
+  message:
+    'Disabling no-hasownproperty is not allowed. Use Object.hasOwn() or the in operator.',
+},);

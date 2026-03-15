@@ -11,10 +11,10 @@
 
 /** Maps vim.diagnostic.severity integer codes to uppercase labels. */
 export const SEVERITY_MAP: Record<number, string> = {
-  1: "ERROR",
-  2: "WARN",
-  3: "INFO",
-  4: "HINT",
+  1: 'ERROR',
+  2: 'WARN',
+  3: 'INFO',
+  4: 'HINT',
 };
 
 //endregion Severity mapping
@@ -89,12 +89,11 @@ export type FileDiagnostics = {
  * // => "Empty exports do nothing (help: Remove this.)"
  * ```
  */
-export function normalizeMessage(message: string): string {
-  const helpIndex = message.indexOf("\nhelp: ");
-  if (helpIndex === -1) {
+export function normalizeMessage(message: string,): string {
+  const helpIndex = message.indexOf('\nhelp: ',);
+  if (helpIndex === -1)
     return message;
-  }
-  const mainMessage = message.slice(0, helpIndex);
-  const helpText = message.slice(helpIndex + "\nhelp: ".length);
+  const mainMessage = message.slice(0, helpIndex,);
+  const helpText = message.slice(helpIndex + '\nhelp: '.length,);
   return `${mainMessage} (help: ${helpText})`;
 }

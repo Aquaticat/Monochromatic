@@ -1,5 +1,7 @@
 // 104 lines: scroll observer + feed binding are tightly coupled; splitting loses the shared closure context
-import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
+import {
+  $ as notNullishOrThrow,
+} from '@monochromatic-dev/module-es/not-nullish-or-throw';
 import { z, } from 'zod/v4-mini';
 
 //region Scroll event observer -- Tracks element visibility and dispatches custom scroll lifecycle events
@@ -29,7 +31,7 @@ const THREE_QUARTER_THRESHOLD = 0.75;
 function addScrollEvents(scrollOptions: {
   element: HTMLElement;
   options?: IntersectionObserverInit;
-}): IntersectionObserver {
+},): IntersectionObserver {
   const { element, options = {}, } = scrollOptions;
   const config: IntersectionObserverInit = {
     threshold: [0, QUARTER_THRESHOLD, HALF_THRESHOLD, THREE_QUARTER_THRESHOLD, 1,],
@@ -41,7 +43,7 @@ function addScrollEvents(scrollOptions: {
   let lastRatio = 0;
 
   const observer = new IntersectionObserver(function onIntersect(entries,) {
-    const [entry] = entries;
+    const [entry,] = entries;
     if (!entry) {
       console.error(`empty entries for observer`, entries, observer,);
       return;
@@ -83,13 +85,17 @@ function addScrollEvents(scrollOptions: {
  *
  * @see `addScrollEvents` for the scroll lifecycle that triggers ignore calls
  */
-const elements: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>('.feed',);
+const elements: NodeListOf<HTMLElement> = document.querySelectorAll<HTMLElement>(
+  '.feed',
+);
 elements.forEach(function bindScrollIgnore(element,) {
   addScrollEvents({ element, },);
   // oxlint-disable-next-line typescript/no-misused-promises -- addEventListener does not await the handler
   element.addEventListener('scrolledOut', async function onScrolledOut() {
     console.error('scrolledOut',);
-    const metadata = notNullishOrThrow(element.querySelector<HTMLElement>('.feed__metadata',),);
+    const metadata = notNullishOrThrow(
+      element.querySelector<HTMLElement>('.feed__metadata',),
+    );
     const anchor: HTMLAnchorElement = notNullishOrThrow(
       metadata.querySelector<HTMLAnchorElement>('.feed__link',),
     );

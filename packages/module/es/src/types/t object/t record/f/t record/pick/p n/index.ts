@@ -1,7 +1,9 @@
 /** Generic record type alias for objects with any key type. */
 import type { $ as Record$, } from '../../../../t/index.ts';
 
-import { $ as pickFromIterable, } from '../../../../../../t function/t generator/f/t iterable/pick/r s/p n/index.ts';
+import {
+  $ as pickFromIterable,
+} from '../../../../../../t function/t generator/f/t iterable/pick/r s/p n/index.ts';
 
 /**
  * Creates a new object by picking only specified keys from the original object.
@@ -55,9 +57,8 @@ import { $ as pickFromIterable, } from '../../../../../../t function/t generator
     // Add numeric representation for string keys that are valid numbers so they match user-provided numeric keys.
     if (typeof key === 'string') {
       const numericKey = Number(key,);
-      if (!Number.isNaN(numericKey,)) {
+      if (!Number.isNaN(numericKey,))
         normalizedOriginalKeys.add(numericKey,);
-      }
     }
   }
 
@@ -66,7 +67,9 @@ import { $ as pickFromIterable, } from '../../../../../../t function/t generator
   // key from normalizedOriginalKeys is missing from toPick. We need the reverse: throw if toPick has
   // keys missing from normalizedOriginalKeys. So we swap: iterate normalizedOriginalKeys, filter by toPick.
   // However, this defeats the O(M) optimization. Instead, manually validate and iterate.
-  for (const key of pickFromIterable({ iterable: normalizedOriginalKeys, toPick, strict, },)) {
+  for (const key of pickFromIterable({ iterable: normalizedOriginalKeys, toPick,
+    strict, },))
+  {
     result[key] = (original as Record<typeof key, unknown>)[key];
   }
 

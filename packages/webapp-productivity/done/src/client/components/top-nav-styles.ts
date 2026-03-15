@@ -1,7 +1,7 @@
 /**
  * Shadow DOM styles for the `\<top-nav\>` component.
  */
-import { css } from "../css.ts";
+import { css, } from '../css.ts';
 
 /** Shadow DOM styles for `\<top-nav\>` -- hamburger, heading, search icon, responsive layout. */
 export const TOP_NAV_STYLES = css(`
@@ -82,4 +82,4 @@ export const TOP_NAV_STYLES = css(`
     .menu-toggle { display: none; }
     h1 { text-align: start; }
   }
-`);
+`,);

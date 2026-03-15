@@ -18,8 +18,6 @@
 
 import spawn from 'nano-spawn';
 
-
-
 //region Types
 
 /**
@@ -81,17 +79,15 @@ export async function executeWithCollapsedOutput({
   verbose,
   allowFailure,
 }: ExecuteOptions,): Promise<void> {
-  if (verbose) {
-    console.error(`[task-depends] running: ${command} ${commandArgs.join(' ')}`,);
-  }
+  if (verbose)
+    console.error(`[task-depends] running: ${command} ${commandArgs.join(' ',)}`,);
 
   try {
     // nano-spawn defaults to 'pipe', capturing stdout/stderr
     await spawn(command, [...commandArgs,],);
 
-    if (verbose) {
+    if (verbose)
       console.error('[task-depends] command completed successfully',);
-    }
   }
   catch (error) {
     dumpAndHandleError(error, allowFailure,);
@@ -126,20 +122,19 @@ function dumpAndHandleError(error: unknown, allowFailure: boolean,): void {
     };
 
     // Dump captured output so the user can see what happened
-    if (subprocessError.stdout !== undefined && subprocessError.stdout !== '') {
+    if (subprocessError.stdout !== undefined && subprocessError.stdout !== '')
       process.stdout.write(`${subprocessError.stdout}\n`,);
-    }
-    if (subprocessError.stderr !== undefined && subprocessError.stderr !== '') {
+    if (subprocessError.stderr !== undefined && subprocessError.stderr !== '')
       process.stderr.write(`${subprocessError.stderr}\n`,);
-    }
 
     if (subprocessError.signalName !== undefined && subprocessError.signalName !== '') {
-      console.error(`[task-depends] command terminated by signal: ${subprocessError.signalName}`,);
+      console.error(
+        `[task-depends] command terminated by signal: ${subprocessError.signalName}`,
+      );
     }
 
-    if (!allowFailure) {
+    if (!allowFailure)
       process.exitCode = subprocessError.exitCode ?? 1;
-    }
     return;
   }
 
@@ -150,9 +145,8 @@ function dumpAndHandleError(error: unknown, allowFailure: boolean,): void {
     }`,
   );
 
-  if (!allowFailure) {
+  if (!allowFailure)
     throw error;
-  }
 }
 
 //endregion Execution

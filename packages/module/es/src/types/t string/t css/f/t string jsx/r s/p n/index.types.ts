@@ -4,9 +4,12 @@
  * Separated from the builders to stay within the line budget.
  */
 
-import type { AtRule } from "csstype";
+import type { AtRule, } from 'csstype';
 
-import type { StrictAtRuleName, StrictCssDeclarations } from "./properties.ts";
+import type {
+  StrictAtRuleName,
+  StrictCssDeclarations,
+} from './properties.ts';
 
 //region Types
 
@@ -20,8 +23,8 @@ import type { StrictAtRuleName, StrictCssDeclarations } from "./properties.ts";
 type AtRuleDeclsMap = {
   'counter-style': AtRule.CounterStyleHyphen;
   'font-face': AtRule.FontFaceHyphen;
-  'page': AtRule.PageHyphen;
-  'property': AtRule.PropertyHyphen;
+  page: AtRule.PageHyphen;
+  property: AtRule.PropertyHyphen;
   'view-transition': AtRule.ViewTransitionHyphen;
 };
 

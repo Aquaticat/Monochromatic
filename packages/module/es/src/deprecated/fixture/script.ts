@@ -222,7 +222,11 @@ export function generateProgressivePromises(
     { length: count, },
     (_, index,) =>
       // oxlint-disable-next-line promise/avoid-new -- Creating promise for test fixture
-      new Promise<number>(resolve => setTimeout(() =>{  resolve(index,); }, index,)),
+      new Promise<number>(resolve =>
+        setTimeout(() => {
+          resolve(index,);
+        }, index,)
+      ),
   );
 }
 

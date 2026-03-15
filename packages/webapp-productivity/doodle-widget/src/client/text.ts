@@ -6,7 +6,7 @@
  * no conversion to a different element type is needed.
  */
 
-import type { NormalizedPoint } from './drawing.ts';
+import type { NormalizedPoint, } from './drawing.ts';
 
 //region State
 
@@ -23,7 +23,7 @@ let activeInput: HTMLInputElement | null = null;
  *
  * @param layer - div element that holds text overlays
  */
-export function setTextLayer(layer: HTMLDivElement): void {
+export function setTextLayer(layer: HTMLDivElement,): void {
   layerElement = layer;
 }
 
@@ -32,15 +32,13 @@ export function setTextLayer(layer: HTMLDivElement): void {
  * removes it if empty.
  */
 function finalizeActiveInput(): void {
-  if (activeInput === null) {
+  if (activeInput === null)
     return;
-  }
 
-  if (activeInput.value.trim() === '') {
+  if (activeInput.value.trim() === '')
     activeInput.remove();
-  } else {
+  else
     activeInput.readOnly = true;
-  }
 
   activeInput = null;
 }
@@ -53,38 +51,38 @@ function finalizeActiveInput(): void {
  *
  * @param position - normalized [0..1] coordinate for placement
  */
-export function placeTextInput(position: NormalizedPoint): void {
+export function placeTextInput(position: NormalizedPoint,): void {
   finalizeActiveInput();
 
-  if (layerElement === null) {
+  if (layerElement === null)
     return;
-  }
 
-  const input = document.createElement('input');
+  const input = document.createElement('input',);
   input.type = 'text';
   input.className = 'text-input';
   input.autocomplete = 'off';
-  input.style.insetInlineStart = `${String(position[0] * 100)}%`;
-  input.style.insetBlockStart = `${String(position[1] * 100)}%`;
+  input.style.insetInlineStart = `${String(position[0] * 100,)}%`;
+  input.style.insetBlockStart = `${String(position[1] * 100,)}%`;
 
-  input.addEventListener('keydown', function handleKeydown(event: KeyboardEvent): void {
+  input.addEventListener('keydown', function handleKeydown(event: KeyboardEvent,): void {
     if (event.key === 'Enter') {
       event.preventDefault();
       finalizeActiveInput();
-    } else if (event.key === 'Escape') {
+    }
+    else if (event.key === 'Escape') {
       discardActiveInput();
     }
-  });
+  },);
 
-  input.addEventListener('blur', finalizeActiveInput);
+  input.addEventListener('blur', finalizeActiveInput,);
 
   activeInput = input;
-  layerElement.appendChild(input);
+  layerElement.appendChild(input,);
   /**
    * preventScroll stops the browser from scrolling the overflow-hidden
    * canvas container to reveal the input when it extends past the edge.
    */
-  input.focus({ preventScroll: true, });
+  input.focus({ preventScroll: true, },);
 }
 
 /**
@@ -102,7 +100,6 @@ export function discardActiveInput(): void {
  */
 export function clearTextEntries(): void {
   discardActiveInput();
-  if (layerElement !== null) {
+  if (layerElement !== null)
     layerElement.replaceChildren();
-  }
 }

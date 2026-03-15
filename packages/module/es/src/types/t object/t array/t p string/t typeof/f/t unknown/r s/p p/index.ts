@@ -63,8 +63,8 @@ export function $(value: unknown,): TypeOf {
           /\p{Upper}/v.test(myValue,)
             ? 'uppercaseLetter'
             : (/\p{Lower}/v.test(myValue,)
-            ? 'lowercaseLetter'
-            : 'nonLetter'),
+              ? 'lowercaseLetter'
+              : 'nonLetter'),
         ], },],
     },];
   }
@@ -116,8 +116,8 @@ export function $(value: unknown,): TypeOf {
               // @ts-expect-error -- Might be Iterable
               myValue[Symbol.iterator]
             ) === 'function'
-          ? [true, { async: false, },]
-          : false),
+            ? [true, { async: false, },]
+            : false),
       },],
     },];
   }

@@ -5,7 +5,11 @@
  * Degradation detection against historical baselines is the viewer's responsibility.
  */
 import { formatMultiModelReport, } from './report.ts';
-import { runCanary, type CanaryReport, type RunnerConfig, } from './runner.ts';
+import {
+  type CanaryReport,
+  runCanary,
+  type RunnerConfig,
+} from './runner.ts';
 
 import type { ModelConfig, } from './models.ts';
 import type { Probe, } from './probes.ts';
@@ -41,16 +45,16 @@ export async function runAndReport(
 
   // Skip models that had a whole-model failure (e.g. 429, auth error) within the last 24 hours.
   // Their failure artifacts are already recorded; retesting would just hit the same error.
-  const modelsToRun = selectedModels.filter(function shouldRun(model): boolean {
-    if (recentlyFailedModels.has(model.label)) {
-      console.log(`[${model.label}] skipping all probes (recent whole-model failure)`);
+  const modelsToRun = selectedModels.filter(function shouldRun(model,): boolean {
+    if (recentlyFailedModels.has(model.label,)) {
+      console.log(`[${model.label}] skipping all probes (recent whole-model failure)`,);
       return false;
     }
     return true;
-  });
+  },);
 
   const reports: readonly CanaryReport[] = await Promise.all(
-    modelsToRun.map(function runModel(model): Promise<CanaryReport> {
+    modelsToRun.map(function runModel(model,): Promise<CanaryReport> {
       return runCanary(probes, {
         model: model.openrouterId,
         label: model.label,
@@ -58,24 +62,30 @@ export async function runAndReport(
         apiKey,
         skipProbes: recentModelProbePairs,
         ...consistencyRunsOverride,
-      });
-    }),
+      },);
+    },),
   );
 
-  const reportsWithResults = reports.filter(function hasResults(report): boolean { return report.results.length > 0; });
-  const failedReports = reports.filter(function isFailed(report): boolean { return report.failed; });
+  const reportsWithResults = reports.filter(function hasResults(report,): boolean {
+    return report.results.length > 0;
+  },);
+  const failedReports = reports.filter(function isFailed(report,): boolean {
+    return report.failed;
+  },);
 
   // Only skip the report when all probes were cached and nothing actually ran or failed.
   // Probe-level timeouts now produce zero-score results rather than failing the model,
   // so they appear in reportsWithResults and are never silently dropped.
   if (reportsWithResults.length === 0 && failedReports.length === 0) {
-    console.log('[canary] all probes skipped due to recent results. Use --retest-all to force re-run.');
+    console.log(
+      '[canary] all probes skipped due to recent results. Use --retest-all to force re-run.',
+    );
     return;
   }
 
   // reportsWithResults covers timed-out models (they now have zero-score results);
   // failedReports covers whole-model failures (API errors, auth failures, etc.).
-  const reportsToDisplay = [...reportsWithResults, ...failedReports];
-  console.log('');
-  console.log(formatMultiModelReport(reportsToDisplay));
+  const reportsToDisplay = [...reportsWithResults, ...failedReports,];
+  console.log('',);
+  console.log(formatMultiModelReport(reportsToDisplay,),);
 }

@@ -5,11 +5,14 @@
  * @module
  */
 
-import { l as parentLogger, tagged } from './log.ts';
-import type { ResolvedTerminal } from './resolve.ts';
+import {
+  l as parentLogger,
+  tagged,
+} from './log.ts';
+import type { ResolvedTerminal, } from './resolve.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'windows', l: parentLogger });
+const l = tagged({ tag: 'windows', l: parentLogger, },);
 
 /**
  * Resolves the terminal emulator on Windows.
@@ -27,11 +30,11 @@ const l = tagged({ tag: 'windows', l: parentLogger });
  * ```
  */
 export function resolveWindowsTerminal(): ResolvedTerminal {
-  if (Bun.which('wt.exe') !== null) {
-    l.debug('found Windows Terminal (wt.exe)');
+  if (Bun.which('wt.exe',) !== null) {
+    l.debug('found Windows Terminal (wt.exe)',);
     return {
       entryId: 'wt.exe',
-      execTokens: ['wt.exe'],
+      execTokens: ['wt.exe',],
       execArg: '--',
       appIdArg: '',
       titleArg: '--title',
@@ -40,10 +43,10 @@ export function resolveWindowsTerminal(): ResolvedTerminal {
     };
   }
 
-  l.debug('Windows Terminal not found, falling back to cmd.exe');
+  l.debug('Windows Terminal not found, falling back to cmd.exe',);
   return {
     entryId: 'cmd.exe',
-    execTokens: ['cmd.exe'],
+    execTokens: ['cmd.exe',],
     execArg: '/c',
     appIdArg: '',
     titleArg: '',

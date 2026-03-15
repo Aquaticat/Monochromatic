@@ -1,8 +1,15 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { readFile } from 'node:fs/promises';
+import { readFile, } from 'node:fs/promises';
 
-import type { CountTokensConfig, FileTokenCountResult, TokenCountResult } from './types.ts';
-import { l, tagged } from './log.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
+import type {
+  CountTokensConfig,
+  FileTokenCountResult,
+  TokenCountResult,
+} from './types.ts';
 
 /**
  * Default Claude model used when no model is specified in config.
@@ -41,11 +48,13 @@ const API_KEY_ENV_VARS = [
  * const key2 = resolveApiKey('sk-ant-...'); // uses explicit value
  * ```
  */
-function resolveApiKey(explicit: string | undefined): string | undefined {
-  if (explicit !== undefined) return explicit;
+function resolveApiKey(explicit: string | undefined,): string | undefined {
+  if (explicit !== undefined)
+    return explicit;
   for (const envVar of API_KEY_ENV_VARS) {
     const value = process.env[envVar];
-    if (value !== undefined && value !== '') return value;
+    if (value !== undefined && value !== '')
+      return value;
   }
   return undefined;
 }
@@ -64,9 +73,11 @@ function resolveApiKey(explicit: string | undefined): string | undefined {
  * const client = resolveClient({ apiKey: 'sk-ant-...' });
  * ```
  */
-function resolveClient({ apiKey }: { readonly apiKey: string | undefined }): Anthropic {
-  const resolved = resolveApiKey(apiKey);
-  return new Anthropic(resolved !== undefined ? { apiKey: resolved } : undefined);
+function resolveClient(
+  { apiKey, }: { readonly apiKey: string | undefined; },
+): Anthropic {
+  const resolved = resolveApiKey(apiKey,);
+  return new Anthropic(resolved !== undefined ? { apiKey: resolved, } : undefined,);
 }
 
 /**
@@ -88,24 +99,24 @@ function resolveClient({ apiKey }: { readonly apiKey: string | undefined }): Ant
  * console.log(result.inputTokens); // e.g. 4
  * ```
  */
-export async function countTokens({ content, config = {} }: {
-  readonly content: string
-  readonly config?: CountTokensConfig
-}): Promise<TokenCountResult> {
-  const rl = tagged({ tag: countTokens.name, l });
+export async function countTokens({ content, config = {}, }: {
+  readonly content: string;
+  readonly config?: CountTokensConfig;
+},): Promise<TokenCountResult> {
+  const rl = tagged({ tag: countTokens.name, l, },);
   const model = config.model ?? DEFAULT_MODEL;
-  const client = resolveClient({ apiKey: config.apiKey });
+  const client = resolveClient({ apiKey: config.apiKey, },);
 
-  rl.debug(`counting tokens model=${model} contentLength=${String(content.length)}`);
+  rl.debug(`counting tokens model=${model} contentLength=${String(content.length,)}`,);
 
   const response = await client.messages.countTokens({
     model,
-    messages: [{ role: 'user', content }],
-  });
+    messages: [{ role: 'user', content, },],
+  },);
 
-  rl.debug(`counted inputTokens=${String(response.input_tokens)}`);
+  rl.debug(`counted inputTokens=${String(response.input_tokens,)}`,);
 
-  return { inputTokens: response.input_tokens, model };
+  return { inputTokens: response.input_tokens, model, };
 }
 
 /**
@@ -128,15 +139,15 @@ export async function countTokens({ content, config = {} }: {
  * console.log(`${result.filePath}: ${result.inputTokens} tokens`);
  * ```
  */
-export async function countFileTokens({ filePath, config = {} }: {
-  readonly filePath: string
-  readonly config?: CountTokensConfig
-}): Promise<FileTokenCountResult> {
-  const rl = tagged({ tag: countFileTokens.name, l });
-  rl.debug(`reading file path=${filePath}`);
+export async function countFileTokens({ filePath, config = {}, }: {
+  readonly filePath: string;
+  readonly config?: CountTokensConfig;
+},): Promise<FileTokenCountResult> {
+  const rl = tagged({ tag: countFileTokens.name, l, },);
+  rl.debug(`reading file path=${filePath}`,);
 
-  const content = await readFile(filePath, 'utf8');
-  const result = await countTokens({ content, config });
+  const content = await readFile(filePath, 'utf8',);
+  const result = await countTokens({ content, config, },);
 
-  return { ...result, filePath };
+  return { ...result, filePath, };
 }

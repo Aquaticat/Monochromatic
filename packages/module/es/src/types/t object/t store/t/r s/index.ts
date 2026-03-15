@@ -1,4 +1,7 @@
-import type { BaseStoreConfig, BaseStoreFields, } from '../index.ts';
+import type {
+  BaseStoreConfig,
+  BaseStoreFields,
+} from '../index.ts';
 
 /**
  * Synchronous backend storage interface for {@link $}.

@@ -45,7 +45,8 @@ describe('fastPath', () => {
 
     test('array with internal comments returns NO_FAST_PATH', () => {
       const context = { remainingContent: '[1, /* comment */ 2, ]' as StringJsonc, };
-      const result = $({ value: '[1, /* comment */ 2, ]' as FragmentStringJsonc, context, },);
+      const result = $({ value: '[1, /* comment */ 2, ]' as FragmentStringJsonc,
+        context, },);
 
       expect(result,).toBe(NO_FAST_PATH,);
     });
@@ -67,7 +68,8 @@ describe('fastPath', () => {
 
     test('malformed JSON returns NO_FAST_PATH', () => {
       const context = { remainingContent: '[1, 2, undefined, ]' as StringJsonc, };
-      const result = $({ value: '[1, 2, undefined, ]' as FragmentStringJsonc, context, },);
+      const result = $({ value: '[1, 2, undefined, ]' as FragmentStringJsonc,
+        context, },);
 
       expect(result,).toBe(NO_FAST_PATH,);
     });

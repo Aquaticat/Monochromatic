@@ -40,7 +40,9 @@ function omit<
   const keysSet = new Set<PropertyKey>(keys,);
   return Object.fromEntries(
     Object.entries(source,).filter(
-      function notExcluded([key,],) { return !keysSet.has(key,); },
+      function notExcluded([key,],) {
+        return !keysSet.has(key,);
+      },
     ),
   ) as Omit<T, K>;
 }
@@ -54,7 +56,9 @@ const baseViteConfig = createBaseConfig(import.meta.dirname,);
  */
 const astroViteConfig = {
   ...baseViteConfig,
-  build: baseViteConfig.build !== undefined ? omit(baseViteConfig.build, 'rolldownOptions',) : {},
+  build: baseViteConfig.build !== undefined
+    ? omit(baseViteConfig.build, 'rolldownOptions',)
+    : {},
 };
 
 // https://astro.build/config
@@ -86,10 +90,10 @@ export default defineConfig({
     {
       name: 'astro-rehype',
       hooks: {
-        async 'astro:build:done'({ dir, logger, }): Promise<void> {
+        async 'astro:build:done'({ dir, logger, },): Promise<void> {
           const relativeDir = relative(process.cwd(), fileURLToPath(dir,),);
           const htmlFilePaths = await glob(`${relativeDir}/**/*.html`,);
-          await Promise.all(htmlFilePaths.map(async function minifyHtml(htmlFilePath) {
+          await Promise.all(htmlFilePaths.map(async function minifyHtml(htmlFilePath,) {
             await writeFile(htmlFilePath, String(await unified()
               .use(rehypeParse,)
               .use(rehypePresetMinify,)
@@ -103,7 +107,7 @@ export default defineConfig({
     {
       name: 'astro-zstd',
       hooks: {
-        async 'astro:build:done'({ dir, logger, }): Promise<void> {
+        async 'astro:build:done'({ dir, logger, },): Promise<void> {
           const relativeDir = relative(process
             .cwd(), fileURLToPath(dir,),);
           try {

@@ -11,8 +11,8 @@ import spawn from 'nano-spawn';
  *
  * @throws When the command exits with a non-zero code
  */
-export async function exec(cmd: string, args: readonly string[] = []): Promise<string> {
-  console.log(`[file-enforcer] exec: ${cmd} ${args.join(' ')}`);
-  const { stdout } = await spawn(cmd, [...args]);
+export async function exec(cmd: string, args: readonly string[] = [],): Promise<string> {
+  console.log(`[file-enforcer] exec: ${cmd} ${args.join(' ',)}`,);
+  const { stdout, } = await spawn(cmd, [...args,],);
   return stdout;
 }

@@ -6,10 +6,19 @@
  *   PUT    /api/tasks/:id   -> handleUpdateTask
  *   DELETE /api/tasks/:id   -> handleDeleteTask
  */
-import type { TaskPriority } from "../../lib/types.ts";
-import { createTask, deleteTask, updateTask } from "../../lib/db/tasks.ts";
-import { getPriorities, isRecord, parseEnumValue, parseStringArray } from "./tasks-parse.ts";
-import { parseTaskUpdateInput } from "./tasks-parse-update.ts";
+import {
+  createTask,
+  deleteTask,
+  updateTask,
+} from '../../lib/db/tasks.ts';
+import type { TaskPriority, } from '../../lib/types.ts';
+import { parseTaskUpdateInput, } from './tasks-parse-update.ts';
+import {
+  getPriorities,
+  isRecord,
+  parseEnumValue,
+  parseStringArray,
+} from './tasks-parse.ts';
 
 /** HTTP status code for successful responses. */
 const HTTP_OK = 200;
@@ -35,8 +44,8 @@ const HTTP_INTERNAL_ERROR = 500;
  *
  * @returns JSON response with content-type header
  */
-function jsonResponse(payload: unknown, status: number = HTTP_OK): Response {
-  return Response.json(payload, { status });
+function jsonResponse(payload: unknown, status: number = HTTP_OK,): Response {
+  return Response.json(payload, { status, },);
 }
 
 /**
@@ -46,30 +55,29 @@ function jsonResponse(payload: unknown, status: number = HTTP_OK): Response {
  *
  * @returns 201 with the created task, or 400/500 on validation/server error
  */
-export async function handleCreateTask(req: Request): Promise<Response> {
+export async function handleCreateTask(req: Request,): Promise<Response> {
   try {
     const body = await req.json();
-    if (!isRecord(body)) {
-      return jsonResponse({ error: "Invalid request body" }, HTTP_BAD_REQUEST);
-    }
+    if (!isRecord(body,))
+      return jsonResponse({ error: 'Invalid request body', }, HTTP_BAD_REQUEST,);
 
-    const title = typeof body.title === "string" ? body.title.trim() : "";
-    if (title.length === 0) {
-      return jsonResponse({ error: "Task title is required" }, HTTP_BAD_REQUEST);
-    }
+    const title = typeof body.title === 'string' ? body.title.trim() : '';
+    if (title.length === 0)
+      return jsonResponse({ error: 'Task title is required', }, HTTP_BAD_REQUEST,);
 
     const priorities = getPriorities();
     const task = await createTask({
       title,
-      description: typeof body.description === "string" ? body.description : null,
-      tags: parseStringArray(body.tags) ?? [],
-      locations: parseStringArray(body.locations) ?? [],
-      priority: parseEnumValue<TaskPriority>(body.priority, priorities) ?? null,
-      complexity: parseEnumValue<TaskPriority>(body.complexity, priorities) ?? null,
-    });
-    return jsonResponse(task, HTTP_CREATED);
-  } catch (error) {
-    return jsonResponse({ error: String(error) }, HTTP_INTERNAL_ERROR);
+      description: typeof body.description === 'string' ? body.description : null,
+      tags: parseStringArray(body.tags,) ?? [],
+      locations: parseStringArray(body.locations,) ?? [],
+      priority: parseEnumValue<TaskPriority>(body.priority, priorities,) ?? null,
+      complexity: parseEnumValue<TaskPriority>(body.complexity, priorities,) ?? null,
+    },);
+    return jsonResponse(task, HTTP_CREATED,);
+  }
+  catch (error) {
+    return jsonResponse({ error: String(error,), }, HTTP_INTERNAL_ERROR,);
   }
 }
 
@@ -82,22 +90,21 @@ export async function handleCreateTask(req: Request): Promise<Response> {
  *
  * @returns 200 with updated task, 400 on bad payload, 404 when missing
  */
-export async function handleUpdateTask(req: Request, id: string): Promise<Response> {
+export async function handleUpdateTask(req: Request, id: string,): Promise<Response> {
   try {
     const body = await req.json();
-    const taskUpdateInput = parseTaskUpdateInput(body);
-    if (taskUpdateInput === null) {
-      return jsonResponse({ error: "Invalid update payload" }, HTTP_BAD_REQUEST);
-    }
+    const taskUpdateInput = parseTaskUpdateInput(body,);
+    if (taskUpdateInput === null)
+      return jsonResponse({ error: 'Invalid update payload', }, HTTP_BAD_REQUEST,);
 
-    const task = await updateTask(id, taskUpdateInput);
-    if (task === null) {
-      return jsonResponse({ error: "Task not found" }, HTTP_NOT_FOUND);
-    }
+    const task = await updateTask(id, taskUpdateInput,);
+    if (task === null)
+      return jsonResponse({ error: 'Task not found', }, HTTP_NOT_FOUND,);
 
-    return jsonResponse(task);
-  } catch (error) {
-    return jsonResponse({ error: String(error) }, HTTP_INTERNAL_ERROR);
+    return jsonResponse(task,);
+  }
+  catch (error) {
+    return jsonResponse({ error: String(error,), }, HTTP_INTERNAL_ERROR,);
   }
 }
 
@@ -108,11 +115,10 @@ export async function handleUpdateTask(req: Request, id: string): Promise<Respon
  *
  * @returns 200 on success, 404 when the task does not exist
  */
-export async function handleDeleteTask(id: string): Promise<Response> {
-  const deleted = await deleteTask(id);
-  if (!deleted) {
-    return jsonResponse({ error: "Task not found" }, HTTP_NOT_FOUND);
-  }
+export async function handleDeleteTask(id: string,): Promise<Response> {
+  const deleted = await deleteTask(id,);
+  if (!deleted)
+    return jsonResponse({ error: 'Task not found', }, HTTP_NOT_FOUND,);
 
-  return jsonResponse({ ok: true });
+  return jsonResponse({ ok: true, },);
 }

@@ -17,20 +17,17 @@
  * @module
  */
 
+import type {
+  SessionStartInput,
+} from '@monochromatic-dev/claude-code-plugins-hook-types';
+import { readStdin, } from '@monochromatic-dev/claude-code-plugins-hook-utils';
 import {
   glob,
   mkdir,
   rm,
 } from 'node:fs/promises';
-import type {
-  SessionStartInput,
-} from '@monochromatic-dev/claude-code-plugins-hook-types';
-import {
-  readStdin,
-} from '@monochromatic-dev/claude-code-plugins-hook-utils';
 
-export {}
-
+export {};
 
 //region Housekeeping tasks
 
@@ -45,8 +42,8 @@ export {}
  * await ensureDir('/tmp/claude')
  * ```
  */
-async function ensureDir(dirPath: string): Promise<void> {
-  await mkdir(dirPath, { recursive: true });
+async function ensureDir(dirPath: string,): Promise<void> {
+  await mkdir(dirPath, { recursive: true, },);
 }
 
 /**
@@ -73,18 +70,21 @@ const STALE_DIST_ARTIFACTS = [
  * await cleanDistArtifacts('/var/home/user/Monochromatic')
  * ```
  */
-async function cleanDistArtifacts(workspaceRoot: string): Promise<void> {
+async function cleanDistArtifacts(workspaceRoot: string,): Promise<void> {
   const removals: Promise<void>[] = [];
 
-  for await (const finalDir of glob('packages/*/*/dist/final', { cwd: workspaceRoot, })) {
+  for await (const finalDir of glob('packages/*/*/dist/final', {
+    cwd: workspaceRoot,
+  },)) {
     for (const artifact of STALE_DIST_ARTIFACTS) {
       removals.push(
-        rm(`${workspaceRoot}/${finalDir}/${artifact}`, { recursive: true, force: true }),
+        rm(`${workspaceRoot}/${finalDir}/${artifact}`, { recursive: true,
+          force: true, },),
       );
     }
   }
 
-  await Promise.all(removals);
+  await Promise.all(removals,);
 }
 
 /**
@@ -98,8 +98,8 @@ async function cleanDistArtifacts(workspaceRoot: string): Promise<void> {
  * await removeMcpJson('/var/home/user/Monochromatic')
  * ```
  */
-async function removeMcpJson(workspaceRoot: string): Promise<void> {
-  await rm(`${workspaceRoot}/.mcp.json`, { force: true });
+async function removeMcpJson(workspaceRoot: string,): Promise<void> {
+  await rm(`${workspaceRoot}/.mcp.json`, { force: true, },);
 }
 
 //endregion
@@ -115,16 +115,16 @@ const raw = await readStdin();
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
  */
 /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
-const event = JSON.parse(raw) as SessionStartInput;
+const event = JSON.parse(raw,) as SessionStartInput;
 
 /** Workspace root derived from the session's working directory. */
 const workspaceRoot = event.cwd;
 
 await Promise.all([
-  ensureDir('/tmp/claude'),
-  ensureDir('/tmp/claude-1000'),
-  cleanDistArtifacts(workspaceRoot),
-  removeMcpJson(workspaceRoot),
-]);
+  ensureDir('/tmp/claude',),
+  ensureDir('/tmp/claude-1000',),
+  cleanDistArtifacts(workspaceRoot,),
+  removeMcpJson(workspaceRoot,),
+],);
 
 //endregion

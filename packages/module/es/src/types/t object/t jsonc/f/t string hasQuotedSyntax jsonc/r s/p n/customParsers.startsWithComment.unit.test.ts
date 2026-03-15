@@ -129,7 +129,9 @@ describe($, () => {
     });
 
     test('inline comment without newline treats rest as comment (end-of-input)', () => {
-      const result = $({ value: '// comment without newline{}' as FragmentStringJsonc, },);
+      const result = $({
+        value: '// comment without newline{}' as FragmentStringJsonc,
+      },);
       expect(result,).toEqual({
         remainingContent: '' as FragmentStringJsonc,
         comment: {
@@ -417,7 +419,8 @@ describe($, () => {
       },);
       // KNOWN LIMITATION: Similar to the previous test, this doesn't work as expected
       expect(result,).toEqual({
-        remainingContent: 'end\n// second line with */ also\nfinal\n*/{}' as FragmentStringJsonc,
+        remainingContent:
+          'end\n// second line with */ also\nfinal\n*/{}' as FragmentStringJsonc,
         comment: {
           type: 'block',
           commentValue: '\nstart\n// first line with',

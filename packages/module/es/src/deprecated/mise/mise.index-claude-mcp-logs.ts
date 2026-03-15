@@ -545,7 +545,9 @@ async function indexMcpLogs(): Promise<void> {
       console.log(`✅ Deleted ${deletedCount} log files for security`,);
       match(failedDeletes,)
         .with(0, () => {},)
-        .otherwise(count =>{  console.log(`⚠️  Failed to delete ${count} files`,); });
+        .otherwise(count => {
+          console.log(`⚠️  Failed to delete ${count} files`,);
+        },);
     },)
     .with(false, () => {
       console.error('❌ Some indexing tasks failed. Log files not deleted for safety.',);

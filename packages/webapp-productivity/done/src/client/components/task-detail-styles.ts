@@ -1,8 +1,8 @@
 /**
  * Shadow DOM styles for the `\<task-detail\>` component.
  */
-import { css } from "../css.ts";
-import { TASK_DETAIL_BUTTON_STYLES } from "./task-detail-button-styles.ts";
+import { css, } from '../css.ts';
+import { TASK_DETAIL_BUTTON_STYLES, } from './task-detail-button-styles.ts';
 
 /** Shadow DOM styles for `\<task-detail\>`. */
 export const TASK_DETAIL_STYLES = css(`
@@ -74,4 +74,4 @@ export const TASK_DETAIL_STYLES = css(`
   ${TASK_DETAIL_BUTTON_STYLES}
 
   @apply --shadow-dom-globals;
-`);
+`,);

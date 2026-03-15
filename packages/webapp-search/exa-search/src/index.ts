@@ -1,8 +1,12 @@
-import { H3, defineHandler, serve, } from 'h3';
+import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+import {
+  defineHandler,
+  H3,
+  serve,
+} from 'h3';
 import { indexHtml, } from './asset.ts';
 import { l as parentLogger, } from './log.ts';
 import { PORT, } from './port.ts';
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 
 /** Tagged logger for the server subsystem. */
 const l = tagged({ tag: 'server', l: parentLogger, },);
@@ -27,10 +31,10 @@ function serveIndexHtml(): Response {
  */
 app.get(
   '/',
-  defineHandler(serveIndexHtml),
+  defineHandler(serveIndexHtml,),
 );
 
 /** Running HTTP server instance. */
 const server = serve(app, { port: PORT, },);
 
-l.info(`listening on ${server.url}`);
+l.info(`listening on ${server.url}`,);

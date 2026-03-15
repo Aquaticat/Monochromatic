@@ -1,4 +1,4 @@
-import spawn from "nano-spawn";
+import spawn from 'nano-spawn';
 
 /**
  * Emits a syslog message via the `logger` CLI utility.
@@ -14,9 +14,9 @@ import spawn from "nano-spawn";
  * emit("info", "capture cycle complete");
  * ```
  */
-function emit(priority: string, message: string): void {
+function emit(priority: string, message: string,): void {
   // Fire-and-forget: ignore spawn errors to avoid blocking the main flow
-  void spawn("logger", ["-t", "hall-monitor", "-p", `user.${priority}`, "--", message]);
+  void spawn('logger', ['-t', 'hall-monitor', '-p', `user.${priority}`, '--', message,],);
 }
 
 /**
@@ -24,28 +24,36 @@ function emit(priority: string, message: string): void {
  *
  * @param msg - log message body
  */
-function logDebug(msg: string): void { emit("debug", msg); }
+function logDebug(msg: string,): void {
+  emit('debug', msg,);
+}
 
 /**
  * Logs a message at info priority.
  *
  * @param msg - log message body
  */
-function logInfo(msg: string): void { emit("info", msg); }
+function logInfo(msg: string,): void {
+  emit('info', msg,);
+}
 
 /**
  * Logs a message at warning priority.
  *
  * @param msg - log message body
  */
-function logWarn(msg: string): void { emit("warning", msg); }
+function logWarn(msg: string,): void {
+  emit('warning', msg,);
+}
 
 /**
  * Logs a message at err priority.
  *
  * @param msg - log message body
  */
-function logError(msg: string): void { emit("err", msg); }
+function logError(msg: string,): void {
+  emit('err', msg,);
+}
 
 /**
  * Syslog-backed logger for hall-monitor.

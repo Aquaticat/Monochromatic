@@ -14,7 +14,10 @@
  *
  * Final score is clamped to [0, 1].
  */
-import { lintSource, type LintResult, } from '../linter.ts';
+import {
+  type LintResult,
+  lintSource,
+} from '../linter.ts';
 
 import { extractCode, } from './extract-code.ts';
 
@@ -50,15 +53,18 @@ const MAX_PENALTY_PER_RULE = 0.3;
  * combinedScore(1.0, lint);
  * ```
  */
-export function combinedScore(correctness: number, lint: LintResult): number {
-  if (correctness < 1) return 0;
+export function combinedScore(correctness: number, lint: LintResult,): number {
+  if (correctness < 1)
+    return 0;
 
   // Sum lint penalties with per-rule cap
-  const lintPenalty = [...lint.perRulePenalty.values()]
-    .reduce(function capAndSum(sum, uncapped): number { return sum + Math.min(uncapped, MAX_PENALTY_PER_RULE); }, 0);
+  const lintPenalty = [...lint.perRulePenalty.values(),]
+    .reduce(function capAndSum(sum, uncapped,): number {
+      return sum + Math.min(uncapped, MAX_PENALTY_PER_RULE,);
+    }, 0,);
 
   const typePenalty = lint.typeErrors * TYPE_ERROR_PENALTY;
-  return Math.max(0, 1 - lintPenalty - typePenalty);
+  return Math.max(0, 1 - lintPenalty - typePenalty,);
 }
 
 /**
@@ -72,28 +78,35 @@ export function combinedScore(correctness: number, lint: LintResult): number {
  *
  * @returns full lint result for scoring
  */
-export async function lintAndLog(source: string, probeName: string, context: ScoreContext): Promise<LintResult> {
+export async function lintAndLog(source: string, probeName: string,
+  context: ScoreContext,): Promise<LintResult>
+{
   const lint = await lintSource(source, {
     model: context.label,
     label: context.label,
     probe: probeName,
     pass: context.pass,
     timestamp: context.timestamp,
-  });
+  },);
   if (lint.linterRan || lint.typeCheckerRan) {
     const lintSummary = lint.linterRan
-      ? `lint=${String(lint.severity.errors)}err/${String(lint.severity.warnings)}warn`
+      ? `lint=${String(lint.severity.errors,)}err/${String(lint.severity.warnings,)}warn`
       : 'lint=skipped';
     const typeSummary = lint.typeCheckerRan
-      ? `type=${String(lint.typeErrors)}err`
+      ? `type=${String(lint.typeErrors,)}err`
       : 'type=skipped';
     const rulesSummary = lint.violatedRules.length > 0
-      ? ` (${lint.violatedRules.slice(0, 5).join(', ')})`
+      ? ` (${lint.violatedRules.slice(0, 5,).join(', ',)})`
       : '';
-    console.log(`    [${context.label}:${probeName}] ${lintSummary} ${typeSummary}${rulesSummary}`);
+    console.log(
+      `    [${context.label}:${probeName}] ${lintSummary} ${typeSummary}${rulesSummary}`,
+    );
   }
   return lint;
 }
 
-export { extractCode, tryExtractCode, } from './extract-code.ts';
+export {
+  extractCode,
+  tryExtractCode,
+} from './extract-code.ts';
 export { buildCodeGenFixPrompt, } from './fix-prompt.ts';

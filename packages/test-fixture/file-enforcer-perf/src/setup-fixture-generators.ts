@@ -26,16 +26,19 @@ const TIMEOUT_INCREMENT_MS = 100;
  *
  * @returns Multi-line markdown content
  */
-export function generateDocContent(pkgIndex: number, docName: string): string {
+export function generateDocContent(pkgIndex: number, docName: string,): string {
   /** Shared header enables meaningful dedup testing across packages */
-  const sharedHeader = '# Package Documentation\n\nThis is shared boilerplate across all packages.';
+  const sharedHeader =
+    '# Package Documentation\n\nThis is shared boilerplate across all packages.';
   const uniqueLines = Array.from(
-    { length: LINES_PER_DOC - 2 },
-    function mapDocLine(_unused: unknown, lineIndex: number) {
-      return `Line ${String(lineIndex)} of ${docName} in package-${String(pkgIndex).padStart(2, '0')}`;
+    { length: LINES_PER_DOC - 2, },
+    function mapDocLine(_unused: unknown, lineIndex: number,) {
+      return `Line ${String(lineIndex,)} of ${docName} in package-${
+        String(pkgIndex,).padStart(2, '0',)
+      }`;
     },
   );
-  return `${sharedHeader}\n${uniqueLines.join('\n')}`;
+  return `${sharedHeader}\n${uniqueLines.join('\n',)}`;
 }
 
 /**
@@ -47,13 +50,17 @@ export function generateDocContent(pkgIndex: number, docName: string): string {
  *
  * @returns Multi-line TypeScript content
  */
-export function generateTsContent(pkgIndex: number, fileName: string): string {
-  return Array.from(
-    { length: LINES_PER_TS },
-    function mapTsLine(_unused: unknown, lineIndex: number) {
-      return `export const pkg${String(pkgIndex).padStart(2, '0')}_${fileName}_line${String(lineIndex)} = ${String(lineIndex)};`;
-    },
-  ).join('\n');
+export function generateTsContent(pkgIndex: number, fileName: string,): string {
+  return Array
+    .from(
+      { length: LINES_PER_TS, },
+      function mapTsLine(_unused: unknown, lineIndex: number,) {
+        return `export const pkg${String(pkgIndex,).padStart(2, '0',)}_${fileName}_line${
+          String(lineIndex,)
+        } = ${String(lineIndex,)};`;
+      },
+    )
+    .join('\n',);
 }
 
 /**
@@ -65,8 +72,8 @@ export function generateTsContent(pkgIndex: number, fileName: string): string {
  *
  * @returns Feature name string
  */
-function generateFeatureName(_unused: unknown, featureIndex: number): string {
-  return `feature-${String(featureIndex)}`;
+function generateFeatureName(_unused: unknown, featureIndex: number,): string {
+  return `feature-${String(featureIndex,)}`;
 }
 
 /**
@@ -78,8 +85,8 @@ function generateFeatureName(_unused: unknown, featureIndex: number): string {
  *
  * @returns Tuple of dependency name and version
  */
-function generateDepEntry(_unused: unknown, depIndex: number): [string, string] {
-  return [`dep-${String(depIndex)}`, `^${String(depIndex + 1)}.0.0`];
+function generateDepEntry(_unused: unknown, depIndex: number,): [string, string,] {
+  return [`dep-${String(depIndex,)}`, `^${String(depIndex + 1,)}.0.0`,];
 }
 
 /**
@@ -89,7 +96,7 @@ function generateDepEntry(_unused: unknown, depIndex: number): [string, string] 
  *
  * @returns Formatted JSON string (~500 bytes)
  */
-export function generateSettingsJson(pkgIndex: number): string {
+export function generateSettingsJson(pkgIndex: number,): string {
   /** Feature count per package, enough to test array extraction */
   const FEATURES_PER_PACKAGE = 10;
   /** Dependency count per package */
@@ -97,19 +104,19 @@ export function generateSettingsJson(pkgIndex: number): string {
 
   return JSON.stringify(
     {
-      name: `package-${String(pkgIndex).padStart(2, '0')}`,
+      name: `package-${String(pkgIndex,).padStart(2, '0',)}`,
       version: '1.0.0',
       config: {
         debug: pkgIndex % 2 === 0,
         timeout: BASE_TIMEOUT_MS + pkgIndex * TIMEOUT_INCREMENT_MS,
         features: Array.from(
-          { length: FEATURES_PER_PACKAGE },
+          { length: FEATURES_PER_PACKAGE, },
           generateFeatureName,
         ),
       },
       dependencies: Object.fromEntries(
         Array.from(
-          { length: DEPS_PER_PACKAGE },
+          { length: DEPS_PER_PACKAGE, },
           generateDepEntry,
         ),
       ),

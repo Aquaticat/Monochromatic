@@ -1,5 +1,7 @@
 import base from '@monochromatic-dev/config-tsdown/.client.ts';
-import { importAttributesPlugin, } from '@monochromatic-dev/rolldown-plugin-import-attributes/ts';
+import {
+  importAttributesPlugin,
+} from '@monochromatic-dev/rolldown-plugin-import-attributes/ts';
 import { defineConfig, } from 'tsdown';
 
 /**
@@ -18,4 +20,4 @@ export default defineConfig({
     './src/client/settings.ts',
   ],
   plugins: [importAttributesPlugin(),],
-});
+},);

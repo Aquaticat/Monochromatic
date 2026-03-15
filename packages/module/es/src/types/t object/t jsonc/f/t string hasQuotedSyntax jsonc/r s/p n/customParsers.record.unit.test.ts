@@ -64,7 +64,8 @@ describe($, () => {
     const entries = [...out.value.entries(),];
     const aEntry = entries[0];
     const bEntry = entries[1];
-    if (aEntry === undefined || bEntry === undefined) throw new Error('expected 2 entries');
+    if (aEntry === undefined || bEntry === undefined)
+      throw new Error('expected 2 entries',);
     const aVal = aEntry[1] as Jsonc.Array;
     const bVal = bEntry[1] as Jsonc.Record;
     expect(Array.isArray(aVal.value,),).toBe(true,);

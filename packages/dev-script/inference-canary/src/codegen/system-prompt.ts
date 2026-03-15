@@ -8,7 +8,7 @@ import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 /** Monorepo root, resolved from this file's location (src/codegen/ → 5 levels up) */
-const MONOREPO_ROOT = new URL('../../../../../', import.meta.url).pathname;
+const MONOREPO_ROOT = new URL('../../../../../', import.meta.url,).pathname;
 
 /**
  * Reads a project config file relative to the monorepo root.
@@ -17,8 +17,8 @@ const MONOREPO_ROOT = new URL('../../../../../', import.meta.url).pathname;
  *
  * @returns file content
  */
-async function readConfig(relativePath: string): Promise<string> {
-  return await readFile(join(MONOREPO_ROOT, relativePath), 'utf8');
+async function readConfig(relativePath: string,): Promise<string> {
+  return await readFile(join(MONOREPO_ROOT, relativePath,), 'utf8',);
 }
 
 /**
@@ -27,10 +27,12 @@ async function readConfig(relativePath: string): Promise<string> {
  * @returns complete system prompt with embedded config contents
  */
 async function buildSystemPrompt(): Promise<string> {
-  const [oxlintrc, tsconfig] = await Promise.all([
-    readConfig('.oxlintrc.json'),
-    readConfig('node_modules/@monochromatic-dev/config-typescript/tsconfig.options.json'),
-  ]);
+  const [oxlintrc, tsconfig,] = await Promise.all([
+    readConfig('.oxlintrc.json',),
+    readConfig(
+      'node_modules/@monochromatic-dev/config-typescript/tsconfig.options.json',
+    ),
+  ],);
 
   return [
     'You are a senior TypeScript developer writing production-quality code.',
@@ -48,7 +50,8 @@ async function buildSystemPrompt(): Promise<string> {
     tsconfig,
     '',
     'Note: the eslint/max-lines rule is disabled for your output. There is no line count limit.',
-  ].join('\n');
+  ]
+    .join('\n',);
 }
 
 /**
@@ -56,4 +59,4 @@ async function buildSystemPrompt(): Promise<string> {
  * Contains the full project configs so the model knows exactly what rules apply.
  */
 export const CODE_GEN_SYSTEM = await buildSystemPrompt();
-console.log(`[canary] system prompt loaded (${String(CODE_GEN_SYSTEM.length)} chars)`);
+console.log(`[canary] system prompt loaded (${String(CODE_GEN_SYSTEM.length,)} chars)`,);

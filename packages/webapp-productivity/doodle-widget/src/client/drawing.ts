@@ -13,7 +13,7 @@
 //region Types
 
 /** Normalized coordinate pair [x, y] in [0..1] range */
-export type NormalizedPoint = readonly [number, number];
+export type NormalizedPoint = readonly [number, number,];
 
 /** Sequence of normalized points forming one continuous stroke */
 export type NormalizedStroke = NormalizedPoint[];
@@ -67,7 +67,7 @@ let drawing = false;
  *
  * @param ctx - canvas rendering context to configure
  */
-export function configureCtx(ctx: CanvasRenderingContext2D): void {
+export function configureCtx(ctx: CanvasRenderingContext2D,): void {
   ctx.strokeStyle = STROKE_COLOR;
   ctx.lineWidth = STROKE_WIDTH;
   ctx.lineCap = 'round';
@@ -86,20 +86,20 @@ export function configureCtx(ctx: CanvasRenderingContext2D): void {
  *
  * @param ch - current canvas height in CSS pixels
  */
-export function redraw({ ctx, cw, ch }: { ctx: CanvasRenderingContext2D; cw: number; ch: number }): void {
-  ctx.clearRect(0, 0, cw, ch);
-  configureCtx(ctx);
+export function redraw(
+  { ctx, cw, ch, }: { ctx: CanvasRenderingContext2D; cw: number; ch: number; },
+): void {
+  ctx.clearRect(0, 0, cw, ch,);
+  configureCtx(ctx,);
   for (const stroke of strokes) {
-    if (stroke.length < 2) {
+    if (stroke.length < 2)
       continue;
-    }
     ctx.beginPath();
-    for (const [index, point] of stroke.entries()) {
-      if (index === 0) {
-        ctx.moveTo(point[0] * cw, point[1] * ch);
-      } else {
-        ctx.lineTo(point[0] * cw, point[1] * ch);
-      }
+    for (const [index, point,] of stroke.entries()) {
+      if (index === 0)
+        ctx.moveTo(point[0] * cw, point[1] * ch,);
+      else
+        ctx.lineTo(point[0] * cw, point[1] * ch,);
     }
     ctx.stroke();
   }
@@ -118,14 +118,14 @@ export function redraw({ ctx, cw, ch }: { ctx: CanvasRenderingContext2D; cw: num
  *
  * @returns normalized [x, y] coordinate pair
  */
-export function normalizePointer({ event, canvas, cw, ch }: {
+export function normalizePointer({ event, canvas, cw, ch, }: {
   event: PointerEvent;
   canvas: HTMLCanvasElement;
   cw: number;
   ch: number;
-}): NormalizedPoint {
+},): NormalizedPoint {
   const rect = canvas.getBoundingClientRect();
-  return [(event.clientX - rect.left) / cw, (event.clientY - rect.top) / ch];
+  return [(event.clientX - rect.left) / cw, (event.clientY - rect.top) / ch,];
 }
 
 /**
@@ -133,10 +133,10 @@ export function normalizePointer({ event, canvas, cw, ch }: {
  *
  * @param point - starting coordinate in normalized [0..1] space
  */
-export function startStroke(point: NormalizedPoint): void {
+export function startStroke(point: NormalizedPoint,): void {
   drawing = true;
-  current = [point];
-  strokes.push(current);
+  current = [point,];
+  strokes.push(current,);
 }
 
 /**
@@ -147,16 +147,14 @@ export function startStroke(point: NormalizedPoint): void {
  * @returns segment from previous to current point for incremental
  *   rendering, or null if no drawing gesture is active
  */
-export function continueStroke(point: NormalizedPoint): StrokeSegment | null {
-  if (!drawing || current === null) {
+export function continueStroke(point: NormalizedPoint,): StrokeSegment | null {
+  if (!drawing || current === null)
     return null;
-  }
-  const previous = current.at(-1);
-  if (previous === undefined) {
+  const previous = current.at(-1,);
+  if (previous === undefined)
     return null;
-  }
-  current.push(point);
-  return { from: previous, to: point };
+  current.push(point,);
+  return { from: previous, to: point, };
 }
 
 /**

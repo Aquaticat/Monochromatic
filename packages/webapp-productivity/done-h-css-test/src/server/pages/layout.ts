@@ -10,7 +10,9 @@
  * Some pages (search, task-details) render their own HTML inline instead of calling `renderPage`,
  * because they need a different shell structure (e.g. search-bar replaces top-nav).
  */
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t string/t html/f/t string jsx/r s/p n/index.ts";
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t string/t html/f/t string jsx/r s/p n/index.ts';
 
 /** Options for rendering a full HTML page with the standard layout shell. */
 type LayoutOptions = {
@@ -32,8 +34,8 @@ type LayoutOptions = {
  *
  * @returns Escaped JSON string safe for embedding in HTML
  */
-export function serializePageData(data: unknown): string {
-  return JSON.stringify(data).replaceAll("<", String.raw`\u003C`);
+export function serializePageData(data: unknown,): string {
+  return JSON.stringify(data,).replaceAll('<', String.raw`\u003C`,);
 }
 
 /** Inline script that wires the top-nav hamburger menu to the side-drawer */
@@ -49,45 +51,50 @@ const MENU_OPEN_SCRIPT = `document.addEventListener('menu-open', function() {
  *
  * @returns HTML response with the rendered page
  */
-export function renderPage(options: LayoutOptions): Response {
+export function renderPage(options: LayoutOptions,): Response {
   const topNav = options.hideTopNav
-    ? ""
-    : h({ tag: "top-nav", attrs: { heading: options.heading } });
+    ? ''
+    : h({ tag: 'top-nav', attrs: { heading: options.heading, }, },);
 
   const html = `<!DOCTYPE html>
-` + h({
-    tag: "html",
-    attrs: { lang: "en" },
-    children: [
-      h({
-        tag: "head",
-        children: [
-          h({ tag: "meta", attrs: { charset: "utf8" } }),
-          h({ tag: "meta", attrs: { name: "viewport", content: "width=device-width, initial-scale=1" } }),
-          h({ tag: "title", text: options.title }),
-        ],
-      }),
-      h({
-        tag: "body",
-        children: [
-          h({ tag: "side-drawer", attrs: { id: "drawer" } }),
-          h({
-            tag: "div",
-            class: "page-wrapper",
-            children: [
-              topNav,
-              h({ tag: "main", attrs: { id: "app" } }),
-            ],
-          }),
-          h({ tag: "script", attrs: { type: "application/json", id: "page-data" }, html: serializePageData(options.pageData) }),
-          h({ tag: "script", attrs: { type: "module", src: options.entryScriptPath } }),
-          h({ tag: "script", html: MENU_OPEN_SCRIPT }),
-        ],
-      }),
-    ],
-  });
+`
+    + h({
+      tag: 'html',
+      attrs: { lang: 'en', },
+      children: [
+        h({
+          tag: 'head',
+          children: [
+            h({ tag: 'meta', attrs: { charset: 'utf8', }, },),
+            h({ tag: 'meta',
+              attrs: { name: 'viewport',
+                content: 'width=device-width, initial-scale=1', }, },),
+            h({ tag: 'title', text: options.title, },),
+          ],
+        },),
+        h({
+          tag: 'body',
+          children: [
+            h({ tag: 'side-drawer', attrs: { id: 'drawer', }, },),
+            h({
+              tag: 'div',
+              class: 'page-wrapper',
+              children: [
+                topNav,
+                h({ tag: 'main', attrs: { id: 'app', }, },),
+              ],
+            },),
+            h({ tag: 'script', attrs: { type: 'application/json', id: 'page-data', },
+              html: serializePageData(options.pageData,), },),
+            h({ tag: 'script',
+              attrs: { type: 'module', src: options.entryScriptPath, }, },),
+            h({ tag: 'script', html: MENU_OPEN_SCRIPT, },),
+          ],
+        },),
+      ],
+    },);
 
   return new Response(html, {
-    headers: { "Content-Type": "text/html; charset=utf-8" },
-  });
+    headers: { 'Content-Type': 'text/html; charset=utf-8', },
+  },);
 }

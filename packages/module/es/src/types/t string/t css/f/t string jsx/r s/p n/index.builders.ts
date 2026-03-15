@@ -4,10 +4,18 @@
  * Separated from the main index to stay within the line budget.
  */
 
-import type { CssValue } from "./values.ts";
-import type { AtRuleOptions, CssOptions, RuleOptions } from "./index.types.ts";
+import type {
+  AtRuleOptions,
+  CssOptions,
+  RuleOptions,
+} from './index.types.ts';
+import type { CssValue, } from './values.ts';
 
-export type { AtRuleOptions, CssOptions, RuleOptions } from "./index.types.ts";
+export type {
+  AtRuleOptions,
+  CssOptions,
+  RuleOptions,
+} from './index.types.ts';
 
 //region Helpers
 
@@ -31,10 +39,11 @@ export type { AtRuleOptions, CssOptions, RuleOptions } from "./index.types.ts";
 function serializeDecls(decls: object,): string {
   const parts: string[] = [];
 
-  for (const [property, value,] of Object.entries(decls,) as readonly [string, CssValue | string | number | undefined][]) {
-    if (value === undefined) {
+  for (const [property, value,] of Object.entries(decls,) as readonly [string,
+    CssValue | string | number | undefined,][])
+  {
+    if (value === undefined)
       continue;
-    }
 
     parts.push(`${property}:${value}`,);
   }
@@ -52,17 +61,14 @@ function serializeDecls(decls: object,): string {
  * @returns `true` when the at-rule should produce a `{ }` block
  */
 function hasBlock(options: AtRuleOptions,): boolean {
-  if (options.decls !== undefined) {
+  if (options.decls !== undefined)
     return true;
-  }
 
-  if (options.raw !== undefined) {
+  if (options.raw !== undefined)
     return true;
-  }
 
-  if (options.children !== undefined && options.children.length > 0) {
+  if (options.children !== undefined && options.children.length > 0)
     return true;
-  }
 
   return false;
 }
@@ -89,13 +95,11 @@ export function buildRule(
 ): string {
   const parts: string[] = [`${rule}{`,];
 
-  if (decls !== undefined) {
+  if (decls !== undefined)
     parts.push(serializeDecls(decls,),);
-  }
 
-  if (raw !== undefined) {
+  if (raw !== undefined)
     parts.push(raw,);
-  }
 
   if (children !== undefined) {
     for (const child of children) {
@@ -104,9 +108,8 @@ export function buildRule(
       // so `display:flex` + `&:hover{...}` produces `display:flex;&:hover{...}`
       // rather than `display:flex&:hover{...}`.
       //endregion
-      if (decls !== undefined && child === children[0]) {
+      if (decls !== undefined && child === children[0])
         parts.push(';',);
-      }
 
       parts.push(child,);
     }
@@ -138,25 +141,21 @@ export function buildAtRule(
   //region Statement at-rule
   // At-rules with no block content are statements terminated by a semicolon.
   //endregion
-  if (!hasBlock(options,)) {
+  if (!hasBlock(options,))
     return `${head};`;
-  }
 
   const parts: string[] = [`${head}{`,];
 
-  if (decls !== undefined) {
+  if (decls !== undefined)
     parts.push(serializeDecls(decls,),);
-  }
 
-  if (raw !== undefined) {
+  if (raw !== undefined)
     parts.push(raw,);
-  }
 
   if (children !== undefined) {
     for (const child of children) {
-      if (decls !== undefined && child === children[0]) {
+      if (decls !== undefined && child === children[0])
         parts.push(';',);
-      }
 
       parts.push(child,);
     }

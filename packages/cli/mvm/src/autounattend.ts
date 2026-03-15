@@ -1,7 +1,13 @@
-import { COMPONENT_ATTRS, virtioInstallCommand } from './autounattend-virtio.ts';
-import { windowsPeSection } from './autounattend-winpe.ts';
-import { createIso } from './iso9660.ts';
-import { l, tagged } from './log.ts';
+import {
+  COMPONENT_ATTRS,
+  virtioInstallCommand,
+} from './autounattend-virtio.ts';
+import { windowsPeSection, } from './autounattend-winpe.ts';
+import { createIso, } from './iso9660.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
 
 //region Autounattend XML generation
 
@@ -29,13 +35,13 @@ import { l, tagged } from './log.ts';
  * const xml = generateAutounattend({ imageIndex: 1, hostname: 'template-setup' });
  * ```
  */
-export function generateAutounattend({ hostname, imageIndex }: {
+export function generateAutounattend({ hostname, imageIndex, }: {
   hostname: string;
   imageIndex: number;
-}): string {
+},): string {
   return `<?xml version="1.0" encoding="utf-8"?>
 <unattend xmlns="urn:schemas-microsoft-com:unattend">
-${windowsPeSection({ imageIndex })}
+${windowsPeSection({ imageIndex, },)}
   <settings pass="specialize">
     <component name="Microsoft-Windows-Shell-Setup" ${COMPONENT_ATTRS}>
       <ComputerName>${hostname}</ComputerName>
@@ -122,22 +128,22 @@ ${windowsPeSection({ imageIndex })}
  * await Bun.write('/path/to/autounattend.iso', iso);
  * ```
  */
-export function createAutounattendIso({ hostname, imageIndex }: {
+export function createAutounattendIso({ hostname, imageIndex, }: {
   hostname: string;
   imageIndex: number;
-}): Uint8Array {
-  const rl = tagged({ tag: createAutounattendIso.name, l });
-  const xml = generateAutounattend({ hostname, imageIndex });
+},): Uint8Array {
+  const rl = tagged({ tag: createAutounattendIso.name, l, },);
+  const xml = generateAutounattend({ hostname, imageIndex, },);
   const encoder = new TextEncoder();
 
   const iso = createIso({
     files: [
-      { data: encoder.encode(xml), name: 'Autounattend.xml' },
+      { data: encoder.encode(xml,), name: 'Autounattend.xml', },
     ],
     volumeId: 'OEMDRV',
-  });
+  },);
 
-  rl.info('created Autounattend ISO');
+  rl.info('created Autounattend ISO',);
   return iso;
 }
 

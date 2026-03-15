@@ -3,9 +3,14 @@
  * Each benchmark returns structured results for JSON aggregation.
  */
 
-import { createHash } from 'node:crypto';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { createHash, } from 'node:crypto';
+import {
+  mkdir,
+  readFile,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { join, } from 'node:path';
 
 import spawn from 'nano-spawn';
 
@@ -26,15 +31,15 @@ const BYTES_PER_MEGABYTE = BYTES_PER_KILOBYTE * BYTES_PER_KILOBYTE;
  */
 export async function runSysbench(): Promise<number> {
   try {
-    const { stdout } = await spawn('sysbench', ['cpu', '--threads=1', 'run']);
+    const { stdout, } = await spawn('sysbench', ['cpu', '--threads=1', 'run',],);
 
     /** Parse "events per second: NNNN.NN" from sysbench output */
-    const match = stdout.match(SYSBENCH_EVENTS_PATTERN);
-    if (match !== null && match[1] !== undefined) {
-      return Number.parseFloat(match[1]);
-    }
+    const match = stdout.match(SYSBENCH_EVENTS_PATTERN,);
+    if (match !== null && match[1] !== undefined)
+      return Number.parseFloat(match[1],);
     return -1;
-  } catch {
+  }
+  catch {
     // sysbench not installed
     return -1;
   }
@@ -55,20 +60,20 @@ export type SerialCpuResult = {
  *
  * @returns Elapsed time and iteration count
  */
-export function runSerialCpuBenchmark(hashCount: number): SerialCpuResult {
+export function runSerialCpuBenchmark(hashCount: number,): SerialCpuResult {
   const start = performance.now();
   /** Accumulator consumed at the end to prevent JIT dead code elimination */
   let accumulator = 0;
   // Imperative loop required: sequential hash computation for timing accuracy.
   for (let hashIndex = 0; hashIndex < hashCount; hashIndex++) {
-    const hasher = createHash('sha256');
-    hasher.update(`benchmark-serial-${String(hashIndex)}`);
-    accumulator += hasher.digest('hex').length;
+    const hasher = createHash('sha256',);
+    hasher.update(`benchmark-serial-${String(hashIndex,)}`,);
+    accumulator += hasher.digest('hex',).length;
   }
   const ms = performance.now() - start;
   /** Prevent dead code elimination by reading accumulator */
   void accumulator;
-  return { ms, iterations: hashCount };
+  return { ms, iterations: hashCount, };
 }
 
 /**
@@ -80,23 +85,26 @@ export function runSerialCpuBenchmark(hashCount: number): SerialCpuResult {
  *
  * @returns Elapsed wall-clock time in milliseconds
  */
-export async function runParallelCpuBenchmark(workerCount: number, hashesPerWorker: number): Promise<number> {
+export async function runParallelCpuBenchmark(workerCount: number,
+  hashesPerWorker: number,): Promise<number>
+{
   /** Inline script executed by each worker process using node:crypto */
   const workerScript = [
     'const { createHash } = require("node:crypto");',
     'let acc = 0;',
-    `for (let i = 0; i < ${String(hashesPerWorker)}; i++) {`,
+    `for (let i = 0; i < ${String(hashesPerWorker,)}; i++) {`,
     '  const h = createHash("sha256");',
     '  h.update("parallel-" + String(i));',
     '  acc += h.digest("hex").length;',
     '}',
-  ].join('\n');
+  ]
+    .join('\n',);
 
   const start = performance.now();
   await Promise.all(
-    Array.from({ length: workerCount }, async function runWorker() {
-      await spawn(process.execPath, ['-e', workerScript]);
-    }),
+    Array.from({ length: workerCount, }, async function runWorker() {
+      await spawn(process.execPath, ['-e', workerScript,],);
+    },),
   );
   return performance.now() - start;
 }
@@ -116,19 +124,18 @@ export type MemoryBenchResult = {
  *
  * @returns Elapsed time and sink byte for dead code elimination prevention
  */
-export function runMemoryBenchmark(allocMb: number): MemoryBenchResult {
+export function runMemoryBenchmark(allocMb: number,): MemoryBenchResult {
   /** Non-zero fill value to prevent sparse array optimizations */
   const FILL_BYTE = 42;
   const allocBytes = allocMb * BYTES_PER_MEGABYTE;
   const start = performance.now();
-  const buffer = new Uint8Array(allocBytes);
-  buffer.fill(FILL_BYTE);
+  const buffer = new Uint8Array(allocBytes,);
+  buffer.fill(FILL_BYTE,);
   const ms = performance.now() - start;
-  const [sinkByte] = buffer;
-  if (sinkByte === undefined) {
-    throw new Error('Buffer is unexpectedly empty');
-  }
-  return { ms, sinkByte };
+  const [sinkByte,] = buffer;
+  if (sinkByte === undefined)
+    throw new Error('Buffer is unexpectedly empty',);
+  return { ms, sinkByte, };
 }
 
 /** Result from IO benchmark */
@@ -146,25 +153,25 @@ export type IoBenchResult = {
  *
  * @returns Elapsed time and file count
  */
-export async function runIoBenchmark(fileCount: number): Promise<IoBenchResult> {
+export async function runIoBenchmark(fileCount: number,): Promise<IoBenchResult> {
   const ioDir = '/tmp/fe-io-bench';
 
-  await rm(ioDir, { recursive: true, force: true });
-  await mkdir(ioDir, { recursive: true });
+  await rm(ioDir, { recursive: true, force: true, },);
+  await mkdir(ioDir, { recursive: true, },);
 
   const start = performance.now();
   // Sequential write + read to measure per-operation latency
   for (let fileIndex = 0; fileIndex < fileCount; fileIndex++) {
-    const filePath = join(ioDir, `file-${String(fileIndex)}.txt`);
+    const filePath = join(ioDir, `file-${String(fileIndex,)}.txt`,);
     // oxlint-disable-next-line no-await-in-loop -- sequential IO benchmark
-    await writeFile(filePath, `content-${String(fileIndex)}-padding`.repeat(10));
+    await writeFile(filePath, `content-${String(fileIndex,)}-padding`.repeat(10,),);
     // oxlint-disable-next-line no-await-in-loop -- sequential IO benchmark
-    await readFile(filePath, 'utf8');
+    await readFile(filePath, 'utf8',);
   }
   const ms = performance.now() - start;
-  await rm(ioDir, { recursive: true, force: true });
+  await rm(ioDir, { recursive: true, force: true, },);
 
-  return { ms, fileCount };
+  return { ms, fileCount, };
 }
 
 /**
@@ -174,6 +181,6 @@ export async function runIoBenchmark(fileCount: number): Promise<IoBenchResult> 
  *
  * @returns Rounded value
  */
-export function round1(value: number): number {
-  return Math.round(value * 10) / 10;
+export function round1(value: number,): number {
+  return Math.round(value * 10,) / 10;
 }

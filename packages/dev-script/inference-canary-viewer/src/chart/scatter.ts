@@ -8,10 +8,17 @@
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
-import { renderYAxis, renderXAxis, } from './axis.ts';
-import { renderThresholdLine, } from './threshold-line.ts';
-import { renderDataTable, type TableRow, type TableDisplayOptions, } from './data-table.ts';
+import {
+  renderXAxis,
+  renderYAxis,
+} from './axis.ts';
+import {
+  renderDataTable,
+  type TableDisplayOptions,
+  type TableRow,
+} from './data-table.ts';
 import { renderPointElements, } from './scatter-point.ts';
+import { renderThresholdLine, } from './threshold-line.ts';
 
 /** Single data point for the scatter plot */
 export type ScatterPoint = {
@@ -39,7 +46,6 @@ export type ScatterPoint = {
 
 /**
  * Renders a complete scatter chart: plot area, axes, threshold line, and backing table.
- *
  *
  * @param points - data points to render
  *
@@ -69,19 +75,22 @@ export function renderScatterChart({
   caption: string;
   hideTable?: boolean;
   tableDisplay?: TableDisplayOptions;
-}): string {
-  if (points.length === 0) {
-    return h({ tag: 'p', class: 'chart-empty-state', text: 'No data available.', });
-  }
+},): string {
+  if (points.length === 0)
+    return h({ tag: 'p', class: 'chart-empty-state', text: 'No data available.', },);
 
-  const pointElements = renderPointElements(points);
+  const pointElements = renderPointElements(points,);
 
-  const timestamps = points.map(function getTimestamp(point) { return point.timestamp; });
+  const timestamps = points.map(function getTimestamp(point,) {
+    return point.timestamp;
+  },);
 
   const tableHtml = hideTable === true
     ? ''
     : renderDataTable(
-      points.map(function getTableRow(point) { return point.tableRow; }),
+      points.map(function getTableRow(point,) {
+        return point.tableRow;
+      },),
       caption,
       tableDisplay,
     );
@@ -90,22 +99,22 @@ export function renderScatterChart({
     tag: 'figure',
     class: 'chart-figure',
     children: [
-      h({ tag: 'figcaption', text: caption, }),
+      h({ tag: 'figcaption', text: caption, },),
       h({
         tag: 'div',
         class: 'chart-area',
         attrs: { role: 'img', 'aria-label': caption, },
         children: [
-          h({ tag: 'div', class: 'chart-y-axis', html: renderYAxis(), }),
+          h({ tag: 'div', class: 'chart-y-axis', html: renderYAxis(), },),
           h({
             tag: 'div',
             class: 'chart-plot',
-            children: [renderThresholdLine(threshold, thresholdLabel), pointElements],
-          }),
-          h({ tag: 'div', class: 'chart-x-axis', html: renderXAxis(timestamps), }),
+            children: [renderThresholdLine(threshold, thresholdLabel,), pointElements,],
+          },),
+          h({ tag: 'div', class: 'chart-x-axis', html: renderXAxis(timestamps,), },),
         ],
-      }),
+      },),
       tableHtml,
     ],
-  });
+  },);
 }

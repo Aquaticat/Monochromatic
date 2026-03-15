@@ -1,4 +1,4 @@
-import { banDisableRule } from './_ban-disable-factory.ts';
+import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
  * Bans inline suppression of `no-restricted-syntax/no-for-in`.
@@ -7,5 +7,6 @@ import { banDisableRule } from './_ban-disable-factory.ts';
 export const noDisableNoForIn = banDisableRule({
   ruleId: 'no-restricted-syntax/no-for-in',
   description: 'Disallow disabling no-for-in. Use Object.entries/keys/values.',
-  message: 'Disabling no-for-in is not allowed. Use Object.entries, Object.keys, or Object.values instead.',
-});
+  message:
+    'Disabling no-for-in is not allowed. Use Object.entries, Object.keys, or Object.values instead.',
+},);

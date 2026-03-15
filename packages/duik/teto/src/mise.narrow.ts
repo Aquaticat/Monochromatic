@@ -12,13 +12,16 @@
  * ```
  */
 
-import { readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import {
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
+import { join, } from 'node:path';
 
-import { transformSvg } from './narrow-svg.ts'
+import { transformSvg, } from './narrow-svg.ts';
 
 /** Directory containing individual body part SVG files. */
-const PARTS_DIR = join(import.meta.dirname, '..', 'parts')
+const PARTS_DIR = join(import.meta.dirname, '..', 'parts',);
 
 /**
  * Single-pass narrowing factors from original coordinates.
@@ -57,23 +60,25 @@ const PART_FACTORS: Record<string, number> = {
   /** Boots are 17% too wide. */
   boot_L: 0.88,
   boot_R: 0.88,
-}
+};
 
-console.error('--- Narrowing SVG parts ---')
-console.error('')
+console.error('--- Narrowing SVG parts ---',);
+console.error('',);
 
-for (const [partName, factor] of Object.entries(PART_FACTORS)) {
-  const filePath = join(PARTS_DIR, `${partName}.svg`)
-  const original = readFileSync(filePath, 'utf8')
-  const transformed = transformSvg(original, factor)
+for (const [partName, factor,] of Object.entries(PART_FACTORS,)) {
+  const filePath = join(PARTS_DIR, `${partName}.svg`,);
+  const original = readFileSync(filePath, 'utf8',);
+  const transformed = transformSvg(original, factor,);
 
   /** Count how many coordinates changed. */
-  const origNums = original.match(/[-\d.]+/g)?.length ?? 0
-  const transNums = transformed.match(/[-\d.]+/g)?.length ?? 0
+  const origNums = original.match(/[-\d.]+/g,)?.length ?? 0;
+  const transNums = transformed.match(/[-\d.]+/g,)?.length ?? 0;
 
-  writeFileSync(filePath, transformed)
-  console.error(`  ${partName}: factor=${factor}  (${origNums} nums -> ${transNums} nums)`)
+  writeFileSync(filePath, transformed,);
+  console.error(
+    `  ${partName}: factor=${factor}  (${origNums} nums -> ${transNums} nums)`,
+  );
 }
 
-console.error('')
-console.error('Done. Run `bun run src/mise.measure.ts` to verify.')
+console.error('',);
+console.error('Done. Run `bun run src/mise.measure.ts` to verify.',);

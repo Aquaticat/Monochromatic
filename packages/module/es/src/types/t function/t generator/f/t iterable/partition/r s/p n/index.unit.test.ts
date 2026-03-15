@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const {$} = types.function.generator.from.iterable.partition.sync.named;
+const { $, } = types.function.generator.from.iterable.partition.sync.named;
 
 describe($, () => {
   test('yields items with pass decision for items that pass the predicate', () => {
@@ -47,7 +47,8 @@ describe($, () => {
     expect(results,).toHaveLength(3,);
     expect(results[0],).toEqual({ decision: 'fail', item: '1', },);
     const thrownResult = results[1];
-    if (thrownResult === undefined) throw new Error('expected result at index 1');
+    if (thrownResult === undefined)
+      throw new Error('expected result at index 1',);
     expect(thrownResult.item,).toBe('invalid',);
     expect(Array.isArray(thrownResult.decision,),).toBe(true,);
     const decisionTuple = thrownResult.decision as unknown[];
@@ -128,7 +129,8 @@ describe($, () => {
 
     for (const [resultIndex, item,] of items.entries()) {
       const result = results[resultIndex];
-      if (result === undefined) throw new Error(`expected result at index ${String(resultIndex)}`);
+      if (result === undefined)
+        throw new Error(`expected result at index ${String(resultIndex,)}`,);
       expect(result.item,).toBe(item,);
       expect(Array.isArray(result.decision,),).toBe(true,);
       const decision = result.decision as unknown[];
@@ -221,7 +223,8 @@ describe($, () => {
     expect(results,).toHaveLength(3,);
     expect(results[0],).toEqual({ decision: 'fail', item: 1, },);
     const errorResult = results[1];
-    if (errorResult === undefined) throw new Error('expected result at index 1');
+    if (errorResult === undefined)
+      throw new Error('expected result at index 1',);
     expect(errorResult.item,).toBe(2,);
     expect(Array.isArray(errorResult.decision,),).toBe(true,);
     const errorDecision = errorResult.decision as unknown[];
@@ -251,7 +254,8 @@ describe($, () => {
     expect(results,).toHaveLength(3,);
     expect(results[0],).toEqual({ decision: 'fail', item: 1, },);
     const strErrorResult = results[1];
-    if (strErrorResult === undefined) throw new Error('expected result at index 1');
+    if (strErrorResult === undefined)
+      throw new Error('expected result at index 1',);
     expect(strErrorResult.item,).toBe(2,);
     expect(Array.isArray(strErrorResult.decision,),).toBe(true,);
     const strDecision = strErrorResult.decision as unknown[];

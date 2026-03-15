@@ -5,10 +5,13 @@
  * @module
  */
 
-import { l as parentLogger, tagged } from './log.ts';
+import {
+  l as parentLogger,
+  tagged,
+} from './log.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'kde', l: parentLogger });
+const l = tagged({ tag: 'kde', l: parentLogger, },);
 
 /**
  * Reads `TerminalService` from `~/.config/kdeglobals`.
@@ -28,25 +31,25 @@ export async function kdeTerminalService(): Promise<string | null> {
   const configHome = Bun.env['XDG_CONFIG_HOME'] ?? `${home}/.config`;
   const path = `${configHome}/kdeglobals`;
 
-  const file = Bun.file(path);
+  const file = Bun.file(path,);
   if (!await file.exists()) {
-    l.debug('kdeglobals not found');
+    l.debug('kdeglobals not found',);
     return null;
   }
 
   const text = await file.text();
 
-  for (const rawLine of text.split('\n')) {
+  for (const rawLine of text.split('\n',)) {
     const line = rawLine.trim();
-    if (line.startsWith('TerminalService=')) {
-      const value = line.slice('TerminalService='.length).trim();
+    if (line.startsWith('TerminalService=',)) {
+      const value = line.slice('TerminalService='.length,).trim();
       if (value.length > 0) {
-        l.debug(`kdeglobals TerminalService='${value}'`);
+        l.debug(`kdeglobals TerminalService='${value}'`,);
         return value;
       }
     }
   }
 
-  l.debug('no TerminalService in kdeglobals');
+  l.debug('no TerminalService in kdeglobals',);
   return null;
 }

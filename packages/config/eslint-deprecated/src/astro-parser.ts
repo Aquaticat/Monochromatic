@@ -127,7 +127,8 @@ function extractScriptTags(code: string,): CodeSegment[] {
    * @param targetIndex - Character index in source code.
    * @returns Line number (1-based).
    */
-  const getLineNumber = (targetIndex: number,): number => code.slice(0, targetIndex,).split('\n',).length;
+  const getLineNumber = (targetIndex: number,): number =>
+    code.slice(0, targetIndex,).split('\n',).length;
 
   /** Scan through the entire source code looking for script tags */
   while (currentIndex < code.length - SCRIPT_TAG_OPEN.length) {

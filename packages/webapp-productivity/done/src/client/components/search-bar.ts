@@ -1,5 +1,7 @@
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { css } from "../css.ts";
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+import { css, } from '../css.ts';
 
 /** Shadow DOM styles for the `\<search-bar\>` component. */
 const STYLES = css(`
@@ -39,7 +41,7 @@ const STYLES = css(`
     .back { display: none; }
     input { font-size: 1.5rem; }
   }
-`);
+`,);
 
 /** Debounce delay for search input in milliseconds. */
 const SEARCH_DEBOUNCE_MS = 300;
@@ -55,7 +57,7 @@ class SearchBar extends HTMLElement {
   /** Initializes the shadow root. */
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: "open" });
+    this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
   /**
@@ -64,8 +66,8 @@ class SearchBar extends HTMLElement {
    * @returns Text content of the input, or empty string if not rendered
    */
   get value(): string {
-    const input = this.#shadow.querySelector<HTMLInputElement>("input");
-    return input?.value ?? "";
+    const input = this.#shadow.querySelector<HTMLInputElement>('input',);
+    return input?.value ?? '';
   }
 
   /**
@@ -73,47 +75,58 @@ class SearchBar extends HTMLElement {
    *
    * @param text - New input value
    */
-  set value(text: string) {
-    const input = this.#shadow.querySelector<HTMLInputElement>("input");
-    if (input !== null) {
+  set value(text: string,) {
+    const input = this.#shadow.querySelector<HTMLInputElement>('input',);
+    if (input !== null)
       input.value = text;
-    }
   }
 
   /** Renders the search bar with back button and debounced input. */
   connectedCallback(): void {
-    const query = this.getAttribute("value") ?? "";
+    const query = this.getAttribute('value',) ?? '';
 
     // SVG back arrow built via innerHTML on a container because h() targets
     // HTMLElement creation -- SVG elements require the SVG namespace.
     const backButton = h({
-      tag: "button",
-      class: "back",
-      attrs: { "aria-label": "Go back" },
-      on: { click: function onBackClick() { history.back(); } },
-    });
-    backButton.innerHTML = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 10,16 20,26"/></svg>`;
+      tag: 'button',
+      class: 'back',
+      attrs: { 'aria-label': 'Go back', },
+      on: { click: function onBackClick() {
+        history.back();
+      }, },
+    },);
+    backButton.innerHTML =
+      `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 10,16 20,26"/></svg>`;
 
     const input = h({
-      tag: "input",
-      attrs: { type: "search", placeholder: "Search titles, tags, ...", value: query, autofocus: "" },
-    });
+      tag: 'input',
+      attrs: { type: 'search', placeholder: 'Search titles, tags, ...', value: query,
+        autofocus: '', },
+    },);
 
     // Debounced search dispatch
-    let timeout: ReturnType<typeof setTimeout> = setTimeout(function noop() { /* initial */ }, 0);
-    input.addEventListener("input", function onInput(): void {
-      clearTimeout(timeout);
+    let timeout: ReturnType<typeof setTimeout> = setTimeout(
+      function noop() {/* initial */},
+      0,
+    );
+    input.addEventListener('input', function onInput(): void {
+      clearTimeout(timeout,);
       timeout = setTimeout(function dispatchSearch(): void {
-        this.dispatchEvent(new CustomEvent("search", { detail: { query: input.value.trim() }, bubbles: true }));
-      }.bind(this), SEARCH_DEBOUNCE_MS);
-    }.bind(this));
+        this.dispatchEvent(
+          new CustomEvent('search', { detail: { query: input.value.trim(), },
+            bubbles: true, },),
+        );
+      }
+        .bind(this,), SEARCH_DEBOUNCE_MS,);
+    }
+      .bind(this,),);
 
     this.#shadow.replaceChildren(
-      h({ tag: "style", text: STYLES }),
+      h({ tag: 'style', text: STYLES, },),
       backButton,
       input,
     );
   }
 }
 
-customElements.define("search-bar", SearchBar);
+customElements.define('search-bar', SearchBar,);

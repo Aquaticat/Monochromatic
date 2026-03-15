@@ -1,4 +1,4 @@
-import { banDisableRule } from './_ban-disable-factory.ts';
+import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
  * Bans inline suppression of `no-useless-return`.
@@ -10,5 +10,6 @@ import { banDisableRule } from './_ban-disable-factory.ts';
 export const noDisableNoUselessReturn = banDisableRule({
   ruleId: 'no-useless-return',
   description: 'Disallow disabling no-useless-return. Use return undefined instead.',
-  message: 'Disabling no-useless-return is not allowed. Use `return undefined;` instead of bare `return;`.',
-});
+  message:
+    'Disabling no-useless-return is not allowed. Use `return undefined;` instead of bare `return;`.',
+},);

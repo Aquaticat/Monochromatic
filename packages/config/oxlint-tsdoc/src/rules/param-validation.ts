@@ -6,7 +6,7 @@
  * @module
  */
 
-import { PlainTextEmitter } from '@microsoft/tsdoc';
+import { PlainTextEmitter, } from '@microsoft/tsdoc';
 
 import type {
   Context,
@@ -14,7 +14,7 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import { createFunctionTsdocVisitor } from './tsdoc-visitors.ts';
+import { createFunctionTsdocVisitor, } from './tsdoc-visitors.ts';
 
 /**
  * Requires that every `\@param` tag has a parameter name.
@@ -32,17 +32,18 @@ export const requireParamName: CreateOnceRule = {
       missingName: '@param tag is missing a parameter name.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireParamNameHandler(_node, result): void {
-      result.docComment.params.blocks.forEach(function checkBlock(block): void {
-        if (block.parameterName.trim().length === 0) {
-          context.report({
-            node: result.comment,
-            messageId: 'missingName',
-          });
-        }
-      });
-    });
+  createOnce(context: Context,): VisitorWithHooks {
+    return createFunctionTsdocVisitor(context,
+      function requireParamNameHandler(_node, result,): void {
+        result.docComment.params.blocks.forEach(function checkBlock(block,): void {
+          if (block.parameterName.trim().length === 0) {
+            context.report({
+              node: result.comment,
+              messageId: 'missingName',
+            },);
+          }
+        },);
+      },);
   },
 };
 
@@ -75,17 +76,18 @@ export const requireParamDescription: CreateOnceRule = {
       missingDescription: '@param "{{paramName}}" is missing a description.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireParamDescHandler(_node, result): void {
-      result.docComment.params.blocks.forEach(function checkBlock(block): void {
-        if (!PlainTextEmitter.hasAnyTextContent(block.content)) {
-          context.report({
-            node: result.comment,
-            messageId: 'missingDescription',
-            data: { paramName: block.parameterName },
-          });
-        }
-      });
-    });
+  createOnce(context: Context,): VisitorWithHooks {
+    return createFunctionTsdocVisitor(context,
+      function requireParamDescHandler(_node, result,): void {
+        result.docComment.params.blocks.forEach(function checkBlock(block,): void {
+          if (!PlainTextEmitter.hasAnyTextContent(block.content,)) {
+            context.report({
+              node: result.comment,
+              messageId: 'missingDescription',
+              data: { paramName: block.parameterName, },
+            },);
+          }
+        },);
+      },);
   },
 };

@@ -4,11 +4,16 @@
  * Unlike other web components that live in `components/`, task-card is in `lib/`
  * because it's always created programmatically (never placed in server HTML).
  */
-import type { Task } from "../../lib/types.ts";
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { TASK_CARD_STYLES } from "./task-card-styles.ts";
-import type { TaskCardOptions } from "./task-card-helpers.ts";
-import { buildChipTexts, formatTrackedTime } from "./task-card-helpers.ts";
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+import type { Task, } from '../../lib/types.ts';
+import type { TaskCardOptions, } from './task-card-helpers.ts';
+import {
+  buildChipTexts,
+  formatTrackedTime,
+} from './task-card-helpers.ts';
+import { TASK_CARD_STYLES, } from './task-card-styles.ts';
 
 /**
  * `<task-card>` -- displays a task as a clickable card with checkbox, title, and metadata chips.
@@ -27,7 +32,7 @@ class TaskCard extends HTMLElement {
   /** Initializes the shadow root. */
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: "open" });
+    this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
   /**
@@ -37,7 +42,7 @@ class TaskCard extends HTMLElement {
    *
    * @param options - Callbacks and display flags
    */
-  configure(task: Task, options: TaskCardOptions): void {
+  configure(task: Task, options: TaskCardOptions,): void {
     this.#task = task;
     this.#options = options;
     this.#render();
@@ -49,11 +54,10 @@ class TaskCard extends HTMLElement {
    *
    * @param prefix - Text prefix to match (e.g. `"tracked:"`)
    */
-  getChipElement(prefix: string): HTMLSpanElement | null {
-    for (const chip of this.#shadow.querySelectorAll<HTMLSpanElement>(".chip")) {
-      if (chip.textContent.startsWith(prefix)) {
+  getChipElement(prefix: string,): HTMLSpanElement | null {
+    for (const chip of this.#shadow.querySelectorAll<HTMLSpanElement>('.chip',)) {
+      if (chip.textContent.startsWith(prefix,))
         return chip;
-      }
     }
     return null;
   }
@@ -62,48 +66,49 @@ class TaskCard extends HTMLElement {
   #render(): void {
     const task = this.#task;
     const options = this.#options;
-    if (task === null || options === null) return;
+    if (task === null || options === null)
+      return;
 
-    const chipTexts = buildChipTexts(task);
-    const chipElements: HTMLElement[] = chipTexts.map(function toChipElement(text) { return h({ tag: "span", class: "chip", text }); });
-    if (options.showBlockedBadge === true) {
-      chipElements.push(h({ tag: "span", class: "chip blocked", text: "blocked" }));
-    }
+    const chipTexts = buildChipTexts(task,);
+    const chipElements: HTMLElement[] = chipTexts.map(function toChipElement(text,) {
+      return h({ tag: 'span', class: 'chip', text, },);
+    },);
+    if (options.showBlockedBadge === true)
+      chipElements.push(h({ tag: 'span', class: 'chip blocked', text: 'blocked', },),);
 
     this.#shadow.replaceChildren(
-      h({ tag: "style", text: TASK_CARD_STYLES }),
+      h({ tag: 'style', text: TASK_CARD_STYLES, },),
       h({
-        tag: "div",
-        class: "row",
+        tag: 'div',
+        class: 'row',
         children: [
           h({
-            tag: "button",
-            class: "checkbox",
-            attrs: { title: "Complete task" },
-            children: [h({ tag: "span", class: "checkbox-box" })],
+            tag: 'button',
+            class: 'checkbox',
+            attrs: { title: 'Complete task', },
+            children: [h({ tag: 'span', class: 'checkbox-box', },),],
             on: {
-              click: async function handleCheckboxClick(event) {
+              click: async function handleCheckboxClick(event,) {
                 event.stopPropagation();
-                if (options.onToggleComplete !== undefined) {
-                  await options.onToggleComplete(task.id);
-                }
+                if (options.onToggleComplete !== undefined)
+                  await options.onToggleComplete(task.id,);
               },
             },
-          }),
-          h({ tag: "span", class: "title", text: task.title }),
+          },),
+          h({ tag: 'span', class: 'title', text: task.title, },),
         ],
         on: {
           click: function handleCardClick() {
-            options.onOpen(task.id);
+            options.onOpen(task.id,);
           },
         },
-      }),
-      h({ tag: "div", class: "chips", children: chipElements }),
+      },),
+      h({ tag: 'div', class: 'chips', children: chipElements, },),
     );
   }
 }
 
-customElements.define("task-card", TaskCard);
+customElements.define('task-card', TaskCard,);
 
 /**
  * Factory: creates and configures a `<task-card>` element ready for DOM insertion.
@@ -112,9 +117,9 @@ customElements.define("task-card", TaskCard);
  *
  * @param options - Callbacks for open/complete interactions
  */
-export function createTaskCard(task: Task, options: TaskCardOptions): TaskCard {
-  const card = document.createElement("task-card") as TaskCard;
-  card.configure(task, options);
+export function createTaskCard(task: Task, options: TaskCardOptions,): TaskCard {
+  const card = document.createElement('task-card',) as TaskCard;
+  card.configure(task, options,);
   return card;
 }
 
@@ -124,11 +129,11 @@ export function createTaskCard(task: Task, options: TaskCardOptions): TaskCard {
  *
  * @param task - Task with optional running timer
  */
-export function formatRunningTrackedTime(task: Task): string {
-  if (task.timerStartedAt === null) {
-    return formatTrackedTime(task.trackedTime);
-  }
+export function formatRunningTrackedTime(task: Task,): string {
+  if (task.timerStartedAt === null)
+    return formatTrackedTime(task.trackedTime,);
 
-  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - Date.parse(task.timerStartedAt)) / 1_000));
-  return formatTrackedTime(task.trackedTime + elapsedSeconds);
+  const elapsedSeconds = Math.max(0,
+    Math.floor((Date.now() - Date.parse(task.timerStartedAt,)) / 1_000,),);
+  return formatTrackedTime(task.trackedTime + elapsedSeconds,);
 }

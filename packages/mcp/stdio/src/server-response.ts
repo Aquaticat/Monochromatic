@@ -16,8 +16,10 @@ import type {
  *
  * @returns Formatted JSON-RPC response.
  */
-export function respondSuccess(id: JsonRpcRequest['id'], result: unknown): JsonRpcResponse {
-  return { jsonrpc: '2.0', id, result };
+export function respondSuccess(id: JsonRpcRequest['id'],
+  result: unknown,): JsonRpcResponse
+{
+  return { jsonrpc: '2.0', id, result, };
 }
 
 /**
@@ -31,8 +33,10 @@ export function respondSuccess(id: JsonRpcRequest['id'], result: unknown): JsonR
  *
  * @returns Formatted JSON-RPC error response.
  */
-export function respondError(id: JsonRpcRequest['id'], code: number, message: string): JsonRpcErrorResponse {
-  return { jsonrpc: '2.0', id, error: { code, message } };
+export function respondError(id: JsonRpcRequest['id'], code: number,
+  message: string,): JsonRpcErrorResponse
+{
+  return { jsonrpc: '2.0', id, error: { code, message, }, };
 }
 
 /**
@@ -42,9 +46,8 @@ export function respondError(id: JsonRpcRequest['id'], code: number, message: st
  *
  * @returns Always `undefined` since notifications produce no response.
  */
-export function handleNotification(notification: JsonRpcNotification): undefined {
-  if (notification.method !== 'notifications/initialized') {
-    console.error(`[mcp-stdio] unexpected notification method: ${notification.method}`);
-  }
+export function handleNotification(notification: JsonRpcNotification,): undefined {
+  if (notification.method !== 'notifications/initialized')
+    console.error(`[mcp-stdio] unexpected notification method: ${notification.method}`,);
   return undefined;
 }

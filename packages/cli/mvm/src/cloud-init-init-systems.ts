@@ -4,7 +4,7 @@
  * and configuring serial console autologin on Linux guests.
  */
 
-import type { InitSystem } from './registry.ts';
+import type { InitSystem, } from './registry.ts';
 
 //region Systemd user-data helpers
 
@@ -37,7 +37,7 @@ function templateRuncmdSystemd(): string {
  * vmAutologinSystemd('ubuntu');
  * ```
  */
-function vmAutologinSystemd(user: string): string {
+function vmAutologinSystemd(user: string,): string {
   return `write_files:
   - path: /etc/systemd/system/serial-getty@ttyS0.service.d/autologin.conf
     content: |
@@ -90,7 +90,7 @@ function templateRuncmdOpenrc(): string {
  * vmAutologinOpenrc('alpine');
  * ```
  */
-function vmAutologinOpenrc(user: string): string {
+function vmAutologinOpenrc(user: string,): string {
   return `write_files:
   - path: /etc/inittab
     append: true
@@ -122,10 +122,9 @@ runcmd:
  * templateRuncmd('systemd');
  * ```
  */
-export function templateRuncmd(initSystem: InitSystem): string {
-  if (initSystem === 'openrc') {
+export function templateRuncmd(initSystem: InitSystem,): string {
+  if (initSystem === 'openrc')
     return templateRuncmdOpenrc();
-  }
   return templateRuncmdSystemd();
 }
 
@@ -143,11 +142,10 @@ export function templateRuncmd(initSystem: InitSystem): string {
  * vmAutologin('systemd', 'ubuntu');
  * ```
  */
-export function vmAutologin(initSystem: InitSystem, user: string): string {
-  if (initSystem === 'openrc') {
-    return vmAutologinOpenrc(user);
-  }
-  return vmAutologinSystemd(user);
+export function vmAutologin(initSystem: InitSystem, user: string,): string {
+  if (initSystem === 'openrc')
+    return vmAutologinOpenrc(user,);
+  return vmAutologinSystemd(user,);
 }
 
 //endregion Init system dispatch

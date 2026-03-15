@@ -7,7 +7,7 @@
  * @module
  */
 
-import type { CurrentFile } from "./nvim-types.ts";
+import type { CurrentFile, } from './nvim-types.ts';
 
 //region Helper functions -- build response text for tool handlers
 
@@ -19,18 +19,25 @@ import type { CurrentFile } from "./nvim-types.ts";
  *
  * @returns Caveat string or empty string when no buffers are modified.
  */
-export function modifiedCaveat(files: readonly CurrentFile[]): string {
+export function modifiedCaveat(files: readonly CurrentFile[],): string {
   const modifiedPaths = files
-    .filter(function isModified(file) { return file.modified; })
-    .map(function getPath(file) { return file.path; });
+    .filter(function isModified(file,) {
+      return file.modified;
+    },)
+    .map(function getPath(file,) {
+      return file.path;
+    },);
 
-  if (modifiedPaths.length === 0) {
-    return "";
-  }
+  if (modifiedPaths.length === 0)
+    return '';
   if (modifiedPaths.length === 1) {
-    return `buffer has unsaved changes; CLI lint results reflect the saved file, not the current buffer: ${modifiedPaths[0]}`;
+    return `buffer has unsaved changes; CLI lint results reflect the saved file, not the current buffer: ${
+      modifiedPaths[0]
+    }`;
   }
-  return `some buffers have unsaved changes; CLI lint results reflect saved files, not current buffers: ${modifiedPaths.join(", ")}`;
+  return `some buffers have unsaved changes; CLI lint results reflect saved files, not current buffers: ${
+    modifiedPaths.join(', ',)
+  }`;
 }
 
 /**
@@ -40,13 +47,14 @@ export function modifiedCaveat(files: readonly CurrentFile[]): string {
  *
  * @returns Formatted notes block or empty string when no notes.
  */
-export function formatNotes(notes: readonly string[]): string {
-  if (notes.length === 0) {
-    return "";
-  }
-  const formattedNotes = notes.map(function prefixNote(note) {
-    return `(note: ${note})`;
-  }).join("\n");
+export function formatNotes(notes: readonly string[],): string {
+  if (notes.length === 0)
+    return '';
+  const formattedNotes = notes
+    .map(function prefixNote(note,) {
+      return `(note: ${note})`;
+    },)
+    .join('\n',);
   return `\n\n${formattedNotes}`;
 }
 
@@ -57,15 +65,18 @@ export function formatNotes(notes: readonly string[]): string {
  *
  * @returns Multi-line header string.
  */
-export function buildHeader(files: readonly CurrentFile[]): string {
-  const [firstFile] = files;
-  if (files.length === 1 && firstFile !== undefined) {
+export function buildHeader(files: readonly CurrentFile[],): string {
+  const [firstFile,] = files;
+  if (files.length === 1 && firstFile !== undefined)
     return `path: ${firstFile.path}\nfiletype: ${firstFile.filetype}\nmodified: ${firstFile.modified}`;
-  }
 
-  return files.map(function formatEntry(file, index) {
-    return `[instance ${index + 1}] path: ${file.path} | filetype: ${file.filetype} | modified: ${file.modified}`;
-  }).join("\n");
+  return files
+    .map(function formatEntry(file, index,) {
+      return `[instance ${
+        index + 1
+      }] path: ${file.path} | filetype: ${file.filetype} | modified: ${file.modified}`;
+    },)
+    .join('\n',);
 }
 
 //endregion Helper functions

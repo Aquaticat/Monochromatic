@@ -4,8 +4,8 @@
  * Queries tasks with active timers, then delegates to the shared `renderPage()` shell.
  * Client entry: `/dist/client/in-progress.js` (src/client/in-progress.ts)
  */
-import { listInProgressTasks } from "../../lib/db/tasks.ts";
-import { renderPage } from "./layout.ts";
+import { listInProgressTasks, } from '../../lib/db/tasks.ts';
+import { renderPage, } from './layout.ts';
 
 /**
  * Renders the in-progress page listing tasks with active timers.
@@ -16,9 +16,9 @@ export async function inProgressPage(): Promise<Response> {
   const tasks = await listInProgressTasks();
 
   return renderPage({
-    title: "In Progress - Done",
-    heading: "In Progress",
-    entryScriptPath: "/dist/client/in-progress.js",
-    pageData: { tasks },
-  });
+    title: 'In Progress - Done',
+    heading: 'In Progress',
+    entryScriptPath: '/dist/client/in-progress.js',
+    pageData: { tasks, },
+  },);
 }

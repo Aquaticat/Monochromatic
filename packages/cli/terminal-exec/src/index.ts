@@ -16,19 +16,19 @@
  * @module
  */
 
-import { execvp } from './exec.ts';
-import { buildCommand } from './build-command.ts';
-import { parseArgs } from './cli.ts';
-import { l } from './log.ts';
-import { resolveTerminal } from './resolve.ts';
+import { buildCommand, } from './build-command.ts';
+import { parseArgs, } from './cli.ts';
+import { execvp, } from './exec.ts';
+import { l, } from './log.ts';
+import { resolveTerminal, } from './resolve.ts';
 
 /** Parsed CLI options from process arguments. */
-const options = parseArgs({ argv: process.argv.slice(2) });
+const options = parseArgs({ argv: process.argv.slice(2,), },);
 /** Resolved terminal emulator entry, or `null` if none found. */
 const terminal = await resolveTerminal();
 
 if (terminal === null) {
-  console.error('terminal-exec: no terminal emulator found');
+  console.error('terminal-exec: no terminal emulator found',);
   process.exitCode = 1;
   throw new Error(
     process.platform === 'win32'
@@ -37,18 +37,18 @@ if (terminal === null) {
   );
 }
 
-l.info(`resolved terminal: ${terminal.entryId}`);
+l.info(`resolved terminal: ${terminal.entryId}`,);
 
 /** Final command array built from resolved terminal and user options. */
-const command = buildCommand({ terminal, options });
+const command = buildCommand({ terminal, options, },);
 
 /**
  * If `--dir` was provided but the terminal has no dir argument support,
  * change the working directory before exec.
  */
 if (options.dir.length > 0 && terminal.dirArg.length === 0) {
-  l.info(`terminal has no TerminalArgDir, cd to '${options.dir}'`);
-  process.chdir(options.dir);
+  l.info(`terminal has no TerminalArgDir, cd to '${options.dir}'`,);
+  process.chdir(options.dir,);
 }
 
-execvp({ command });
+execvp({ command, },);

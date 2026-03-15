@@ -1,9 +1,9 @@
 // oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-assignment, typescript/no-unsafe-call, typescript/no-unsafe-type-assertion, typescript/explicit-function-return-type, require-await, typescript/no-unsafe-argument, typescript/no-unsafe-return -- Astro RSS endpoint with framework-dictated patterns
-import { generateRssFeed, } from 'feedsmith';
 import type {
   APIRoute,
   GetStaticPaths,
 } from 'astro';
+import { generateRssFeed, } from 'feedsmith';
 
 import {
   i18n,
@@ -20,9 +20,13 @@ type StaticPath = { params: { lang: string; }; };
  *
  * @returns static path entries with language params
  */
-export async function getStaticPaths(): Promise<StaticPath[]> { return langs.map(function langPath(lang: string,) { return {
-    params: { lang, },
-  }; }) }
+export async function getStaticPaths(): Promise<StaticPath[]> {
+  return langs.map(function langPath(lang: string,) {
+    return {
+      params: { lang, },
+    };
+  },);
+}
 
 /**
  * Astro API route handler that generates an RSS XML feed for a given language.
@@ -38,13 +42,17 @@ export function GET({ site, params, },) {
     link: siteUrl,
     description: i18n.get('siteDescription',)?.get(lang,) ?? '',
     language: lang,
-    items: (postsGroupedByLang[lang] ?? []).map(function toRssItem(langPost: Post,) { return {
-      title: langPost.data.title,
-      link: `${siteUrl}/${langPost.id}`,
-      description: langPost.data.description,
-      pubDate: langPost.data.published,
-      categories: langPost.data.tags.map(function toCategory(tag: string,) { return { name: tag, }; }),
-    }; }),
+    items: (postsGroupedByLang[lang] ?? []).map(function toRssItem(langPost: Post,) {
+      return {
+        title: langPost.data.title,
+        link: `${siteUrl}/${langPost.id}`,
+        description: langPost.data.description,
+        pubDate: langPost.data.published,
+        categories: langPost.data.tags.map(function toCategory(tag: string,) {
+          return { name: tag, };
+        },),
+      };
+    },),
   },);
 
   return new Response(rssXml, {

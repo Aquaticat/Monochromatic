@@ -68,7 +68,9 @@ const PORT = z.coerce.number().parse(process.env.AI_TREE_PORT ?? DEFAULT_PORT,);
 /** Elysia HTTP server instance with Swagger documentation. */
 const app = new Elysia()
   .use(swagger(),)
-  .get('/', function handleRoot() { return 'Hello Elysia'; },)
+  .get('/', function handleRoot() {
+    return 'Hello Elysia';
+  },)
   .listen(PORT,);
 
 console.log(

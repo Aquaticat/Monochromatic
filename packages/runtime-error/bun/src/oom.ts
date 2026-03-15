@@ -12,6 +12,6 @@ const chunks: Buffer[] = [];
 
 // oxlint-disable-next-line no-constant-condition -- intentional infinite loop to exhaust memory
 while (true) {
-  chunks.push(Buffer.alloc(CHUNK_SIZE_BYTES));
-  console.log(`Allocated ${chunks.length * CHUNK_SIZE_BYTES / 1_024 / 1_024} MB`);
+  chunks.push(Buffer.alloc(CHUNK_SIZE_BYTES,),);
+  console.log(`Allocated ${chunks.length * CHUNK_SIZE_BYTES / 1_024 / 1_024} MB`,);
 }

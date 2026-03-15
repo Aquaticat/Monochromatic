@@ -1,11 +1,11 @@
-import { spawn as cpSpawn } from "node:child_process";
-import { once } from "node:events";
-import { unlink } from "node:fs/promises";
+import { spawn as cpSpawn, } from 'node:child_process';
+import { once, } from 'node:events';
+import { unlink, } from 'node:fs/promises';
 
-import spawn from "nano-spawn";
+import spawn from 'nano-spawn';
 
 /** Path to the ffmpeg binary. */
-const FFMPEG = "/usr/bin/ffmpeg";
+const FFMPEG = '/usr/bin/ffmpeg';
 
 /** Maximum long-edge resolution for downscaled screenshots. */
 const SCREENSHOT_LONG_EDGE = 1_440;
@@ -26,7 +26,7 @@ const WEBCAM_LONG_EDGE = 720;
  * scaleFilter(1440); // "scale='if(gt(iw,ih),1440,-2)':'if(gt(iw,ih),-2,1440)'"
  * ```
  */
-function scaleFilter(longEdge: number): string {
+function scaleFilter(longEdge: number,): string {
   return `scale='if(gt(iw,ih),${longEdge},-2)':'if(gt(iw,ih),-2,${longEdge})'`;
 }
 
@@ -50,21 +50,29 @@ export async function captureScreenshot(): Promise<Buffer> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- disposable resource pattern
   await using _cleanup = {
     [Symbol.asyncDispose]: async function cleanupTempFile(): Promise<void> {
-      try { await unlink(tmp); } catch { /* temp file cleanup is best-effort */ }
+      try {
+        await unlink(tmp,);
+      }
+      catch { /* temp file cleanup is best-effort */ }
     },
   } as AsyncDisposable;
 
-  await spawn("spectacle", ["-f", "-b", "-n", "-o", tmp], { stdout: "ignore", stderr: "ignore" });
+  await spawn('spectacle', ['-f', '-b', '-n', '-o', tmp,], { stdout: 'ignore',
+    stderr: 'ignore', },);
   const proc = cpSpawn(
     FFMPEG,
-    ["-y", "-i", tmp, "-vf", scaleFilter(SCREENSHOT_LONG_EDGE), "-q:v", "2", "-f", "image2", "-vcodec", "mjpeg", "pipe:1"],
-    { stdio: ["ignore", "pipe", "inherit"] },
+    ['-y', '-i', tmp, '-vf', scaleFilter(SCREENSHOT_LONG_EDGE,), '-q:v', '2', '-f',
+      'image2', '-vcodec', 'mjpeg', 'pipe:1',],
+    { stdio: ['ignore', 'pipe', 'inherit',], },
   );
   const chunks: Buffer[] = [];
-  proc.stdout.on("data", function collectChunk(chunk: Buffer) { chunks.push(chunk); });
-  await once(proc, "close");
-  const buf = Buffer.concat(chunks);
-  if (buf.length === 0) throw new Error("Screenshot resize produced empty output");
+  proc.stdout.on('data', function collectChunk(chunk: Buffer,) {
+    chunks.push(chunk,);
+  },);
+  await once(proc, 'close',);
+  const buf = Buffer.concat(chunks,);
+  if (buf.length === 0)
+    throw new Error('Screenshot resize produced empty output',);
   return buf;
 }
 
@@ -86,16 +94,31 @@ export async function captureWebcam(): Promise<Buffer> {
   const proc = cpSpawn(
     FFMPEG,
     [
-      "-f", "v4l2", "-i", "/dev/video0", "-frames:v", "1",
-      "-vf", scaleFilter(WEBCAM_LONG_EDGE), "-q:v", "2",
-      "-f", "image2", "-vcodec", "mjpeg", "pipe:1",
+      '-f',
+      'v4l2',
+      '-i',
+      '/dev/video0',
+      '-frames:v',
+      '1',
+      '-vf',
+      scaleFilter(WEBCAM_LONG_EDGE,),
+      '-q:v',
+      '2',
+      '-f',
+      'image2',
+      '-vcodec',
+      'mjpeg',
+      'pipe:1',
     ],
-    { stdio: ["ignore", "pipe", "inherit"] },
+    { stdio: ['ignore', 'pipe', 'inherit',], },
   );
   const chunks: Buffer[] = [];
-  proc.stdout.on("data", function collectChunk(chunk: Buffer) { chunks.push(chunk); });
-  await once(proc, "close");
-  const buf = Buffer.concat(chunks);
-  if (buf.length === 0) throw new Error("Webcam capture produced empty output");
+  proc.stdout.on('data', function collectChunk(chunk: Buffer,) {
+    chunks.push(chunk,);
+  },);
+  await once(proc, 'close',);
+  const buf = Buffer.concat(chunks,);
+  if (buf.length === 0)
+    throw new Error('Webcam capture produced empty output',);
   return buf;
 }

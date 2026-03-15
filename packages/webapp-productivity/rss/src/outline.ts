@@ -6,9 +6,7 @@ import {
 import { z, } from 'zod/v4-mini';
 import { l as parentLogger, } from './log.ts';
 import { getOPMLTexts, } from './opml-text.ts';
-import type {
-  OPMLS_SCHEMA,
-} from './opmls.ts';
+import type { OPMLS_SCHEMA, } from './opmls.ts';
 
 /** Tagged logger for the outline module. */
 const l = tagged({ tag: 'outline', l: parentLogger, },);
@@ -52,9 +50,9 @@ export async function getOutlinesFromOpmls(
     function hasValidXmlUrl(
       outline,
     ): outline is InnerOutlineWUrl {
-      const {xmlUrl} = outline;
+      const { xmlUrl, } = outline;
       if (xmlUrl === undefined || xmlUrl === '') {
-        innerL.warn(`outline ${outline.text ?? 'unnamed'} has no xmlUrl`);
+        innerL.warn(`outline ${outline.text ?? 'unnamed'} has no xmlUrl`,);
         return false;
       }
       try {
@@ -62,12 +60,12 @@ export async function getOutlinesFromOpmls(
         return true;
       }
       catch (error) {
-        innerL.warn(`${xmlUrl} failed validation: ${JSON.stringify(error,)}`);
+        innerL.warn(`${xmlUrl} failed validation: ${JSON.stringify(error,)}`,);
         return false;
       }
     },
   );
-  innerL.debug(`${String(result.length)} valid inner outlines`);
+  innerL.debug(`${String(result.length,)} valid inner outlines`,);
   return result;
 }
 
@@ -78,14 +76,14 @@ export async function getOutlinesFromOpmls(
  *
  * @returns Successfully parsed OPML documents
  */
-function parseSafe(texts: string[]): Opml.Document<string>[] {
+function parseSafe(texts: string[],): Opml.Document<string>[] {
   const innerL = tagged({ tag: parseSafe.name, l, },);
   return texts.flatMap(function tryParse(text,) {
     try {
       return [parseOpml(text,),];
     }
     catch (error) {
-      innerL.warn(`OPML parse failed: ${JSON.stringify(error,)}`);
+      innerL.warn(`OPML parse failed: ${JSON.stringify(error,)}`,);
       return [];
     }
   },);

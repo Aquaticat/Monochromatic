@@ -11,4 +11,4 @@ export default defineConfig({
   ...base,
   entry: ['./src/client/main.ts',],
   minify: true,
-});
+},);

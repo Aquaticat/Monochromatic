@@ -28,7 +28,10 @@
  */
 
 import { readFile, } from 'node:fs/promises';
-import { dirname, resolve, } from 'node:path';
+import {
+  dirname,
+  resolve,
+} from 'node:path';
 import type { Plugin, } from 'rolldown';
 
 import { HANDLERS, } from './handlers.ts';
@@ -75,8 +78,8 @@ function importAttributesPlugin(): Plugin {
      * Delegates to {@link transformImportAttributes} to rewrite
      * `with { type: '...' }` clauses into query-parameter-tagged specifiers.
      */
-    transform(code) {
-      return transformImportAttributes(code);
+    transform(code,) {
+      return transformImportAttributes(code,);
     },
 
     /**
@@ -87,16 +90,16 @@ function importAttributesPlugin(): Plugin {
      * For untagged specifiers, scans the importer's source to check whether
      * the import had a `with { type: '...' }` clause.
      */
-    async resolveId(source, importer, options) {
+    async resolveId(source, importer, options,) {
       /** Check for query-param-tagged specifiers (from static imports after transform). */
-      const queryAttrType = extractAttrType(source);
+      const queryAttrType = extractAttrType(source,);
       if (queryAttrType !== undefined) {
-        const cleanSource = stripAttrQuery(source);
+        const cleanSource = stripAttrQuery(source,);
 
         const resolved = await this.resolve(cleanSource, importer, {
           ...options,
           skipSelf: true,
-        });
+        },);
 
         if (resolved !== null) {
           return {
@@ -105,9 +108,9 @@ function importAttributesPlugin(): Plugin {
           };
         }
 
-        if (importer !== undefined && cleanSource.startsWith('.')) {
-          const importerDir = dirname(importer.split('?')[0] ?? importer);
-          const absolutePath = resolve(importerDir, cleanSource);
+        if (importer !== undefined && cleanSource.startsWith('.',)) {
+          const importerDir = dirname(importer.split('?',)[0] ?? importer,);
+          const absolutePath = resolve(importerDir, cleanSource,);
           return {
             id: `${absolutePath}?${ATTR_QUERY_KEY}=${queryAttrType}`,
             external: false,
@@ -124,7 +127,7 @@ function importAttributesPlugin(): Plugin {
        * from the original AST before `transform` could rewrite them.
        */
       if (importer !== undefined) {
-        const cleanImporter = importer.split('?')[0] ?? importer;
+        const cleanImporter = importer.split('?',)[0] ?? importer;
         const attrType = scanImporterForAttribute(
           source,
           cleanImporter,
@@ -135,7 +138,7 @@ function importAttributesPlugin(): Plugin {
           const resolved = await this.resolve(source, importer, {
             ...options,
             skipSelf: true,
-          });
+          },);
 
           if (resolved !== null) {
             return {
@@ -144,9 +147,9 @@ function importAttributesPlugin(): Plugin {
             };
           }
 
-          if (source.startsWith('.')) {
-            const importerDir = dirname(cleanImporter);
-            const absolutePath = resolve(importerDir, source);
+          if (source.startsWith('.',)) {
+            const importerDir = dirname(cleanImporter,);
+            const absolutePath = resolve(importerDir, source,);
             return {
               id: `${absolutePath}?${ATTR_QUERY_KEY}=${attrType}`,
               external: false,
@@ -162,20 +165,18 @@ function importAttributesPlugin(): Plugin {
      * Loads modules tagged with `?__importattr=<type>` by reading the file
      * and passing its content through the registered handler.
      */
-    async load(id) {
-      const attrType = extractAttrType(id);
-      if (attrType === undefined) {
+    async load(id,) {
+      const attrType = extractAttrType(id,);
+      if (attrType === undefined)
         return null;
-      }
 
       const handler = HANDLERS[attrType];
-      if (handler === undefined) {
+      if (handler === undefined)
         return null;
-      }
 
-      const filePath = stripAttrQuery(id);
-      const content = await readFile(filePath, 'utf8');
-      const moduleCode = handler(content, filePath);
+      const filePath = stripAttrQuery(id,);
+      const content = await readFile(filePath, 'utf8',);
+      const moduleCode = handler(content, filePath,);
 
       return { code: moduleCode, };
     },

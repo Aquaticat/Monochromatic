@@ -6,9 +6,12 @@ import OpenAI from 'openai';
 
 import { streamCompletion, } from './runner-stream.ts';
 
-import type { RunnerConfig, } from './runner-config.ts';
-import type { ChatMessage, CompletionResult, } from './runner-types.ts';
 import type { Probe, } from './probes.ts';
+import type { RunnerConfig, } from './runner-config.ts';
+import type {
+  ChatMessage,
+  CompletionResult,
+} from './runner-types.ts';
 
 /**
  * Creates a new OpenAI client configured for this runner.
@@ -18,11 +21,11 @@ import type { Probe, } from './probes.ts';
  *
  * @returns configured OpenAI SDK client
  */
-export function createProbeClient(config: RunnerConfig): OpenAI {
+export function createProbeClient(config: RunnerConfig,): OpenAI {
   return new OpenAI({
     apiKey: config.apiKey ?? '',
     baseURL: config.baseURL ?? 'https://openrouter.ai/api/v1',
-  });
+  },);
 }
 
 /**
@@ -39,10 +42,12 @@ export function createProbeClient(config: RunnerConfig): OpenAI {
  *
  * @returns full completion result from the model
  */
-export function executeProbe(probe: Probe, config: RunnerConfig, client: OpenAI, signal?: AbortSignal): Promise<CompletionResult> {
+export function executeProbe(probe: Probe, config: RunnerConfig, client: OpenAI,
+  signal?: AbortSignal,): Promise<CompletionResult>
+{
   const messages: ChatMessage[] = [
     { role: 'system', content: probe.system, },
     { role: 'user', content: probe.prompt, },
   ];
-  return streamCompletion(client, messages, config, probe.name, signal);
+  return streamCompletion(client, messages, config, probe.name, signal,);
 }

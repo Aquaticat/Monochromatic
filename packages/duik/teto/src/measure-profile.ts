@@ -9,8 +9,8 @@
 
 // oxlint-disable no-magic-numbers -- measurement utilities use dimensional constants
 
-import { execSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { execSync, } from 'node:child_process';
+import { readFileSync, } from 'node:fs';
 
 /**
  * Per-row width data from a silhouette scan.
@@ -23,38 +23,38 @@ import { readFileSync } from 'node:fs'
  */
 export type WidthProfile = {
   /** Image width in pixels. */
-  imageWidth: number
+  imageWidth: number;
   /** Image height in pixels. */
-  imageHeight: number
+  imageHeight: number;
   /** Per-row width measurements, only for rows with content. */
-  rows: { y: number; left: number; right: number; width: number }[]
-}
+  rows: { y: number; left: number; right: number; width: number; }[];
+};
 
 /** Single row in the proportion comparison table. */
 export type MeasurementRow = {
   /** Anatomical landmark name (e.g. `shoulders`, `waist`). */
-  landmark: string
+  landmark: string;
   /** Relative vertical position within body content (0 = top, 1 = bottom). */
-  relY: number
+  relY: number;
   /** Pixel width of the reference silhouette at this landmark. */
-  refWidth: number
+  refWidth: number;
   /** Pixel width of the composite silhouette at this landmark. */
-  cmpWidth: number
+  cmpWidth: number;
   /** Composite-to-reference width ratio as a formatted string. */
-  ratio: string
+  ratio: string;
   /** Percentage difference from reference as a formatted string. */
-  diff: string
-}
+  diff: string;
+};
 
 /** Content bounds of a silhouette profile. */
 export type ContentBoundsResult = {
   /** Relative y position of topmost content row (0-1). */
-  top: number
+  top: number;
   /** Relative y position of bottommost content row (0-1). */
-  bottom: number
+  bottom: number;
   /** Absolute pixel height of content region. */
-  totalHeight: number
-}
+  totalHeight: number;
+};
 
 /**
  * Runs a shell command and returns stdout trimmed.
@@ -63,8 +63,8 @@ export type ContentBoundsResult = {
  *
  * @returns trimmed stdout
  */
-function run(cmd: string): string {
-  return execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }).trim()
+function run(cmd: string,): string {
+  return execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe',], },).trim();
 }
 
 /**
@@ -79,10 +79,10 @@ function run(cmd: string): string {
  *
  * @returns object with dimensions and per-row width data
  */
-export function measureWidthProfile(imagePath: string, tmpDir: string): WidthProfile {
+export function measureWidthProfile(imagePath: string, tmpDir: string,): WidthProfile {
   /** Get image dimensions. */
-  const dims = run(`magick identify -format "%w %h" "${imagePath}"`)
-  const [imgW, imgH] = dims.split(' ').map(Number)
+  const dims = run(`magick identify -format "%w %h" "${imagePath}"`,);
+  const [imgW, imgH,] = dims.split(' ',).map(Number,);
 
   /**
    * Dump as single-channel gray values.
@@ -90,56 +90,58 @@ export function measureWidthProfile(imagePath: string, tmpDir: string): WidthPro
    */
   run(
     `magick "${imagePath}" -colorspace Gray -depth 8 -compress none PGM:- 2>/dev/null > "${tmpDir}/measure_dump.pgm" && echo done`,
-  )
+  );
 
   /** Read the PGM file directly -- it's a simple text format. */
-  const pgmData = readFileSync(`${tmpDir}/measure_dump.pgm`, 'utf8')
-  const pgmLines = pgmData.split('\n')
+  const pgmData = readFileSync(`${tmpDir}/measure_dump.pgm`, 'utf8',);
+  const pgmLines = pgmData.split('\n',);
 
   /**
    * PGM format: P2, then width height, then max value, then pixel values.
    * Skip comment lines starting with #.
    */
-  const dataLines = pgmLines.filter(function skipComments(line) {
-    return line.trim().length > 0 && !line.startsWith('#') && line.trim() !== 'P2'
-  })
+  const dataLines = pgmLines.filter(function skipComments(line,) {
+    return line.trim().length > 0 && !line.startsWith('#',) && line.trim() !== 'P2';
+  },);
 
   /** First data line is "width height", second is max value. */
   const firstLine = dataLines[0];
-  if (firstLine === undefined) throw new Error('PGM file has no data lines');
-  const [width, height] = firstLine.trim().split(/\s+/).map(Number)
-  if (width === undefined || height === undefined) throw new Error('PGM header missing dimensions')
+  if (firstLine === undefined)
+    throw new Error('PGM file has no data lines',);
+  const [width, height,] = firstLine.trim().split(/\s+/,).map(Number,);
+  if (width === undefined || height === undefined)
+    throw new Error('PGM header missing dimensions',);
 
   /** Collect all pixel values into a flat array. */
-  const pixelValues: number[] = []
+  const pixelValues: number[] = [];
   for (let i = 2; i < dataLines.length; i++) {
     const line = dataLines[i];
-    if (line === undefined) continue;
-    const vals = line.trim().split(/\s+/).map(Number)
-    for (const v of vals) {
-      pixelValues.push(v)
-    }
+    if (line === undefined)
+      continue;
+    const vals = line.trim().split(/\s+/,).map(Number,);
+    for (const v of vals)
+      pixelValues.push(v,);
   }
 
-  const rows: WidthProfile['rows'] = []
+  const rows: WidthProfile['rows'] = [];
 
   for (let y = 0; y < height; y++) {
-    const rowStart = y * width
-    let left = -1
-    let right = -1
+    const rowStart = y * width;
+    let left = -1;
+    let right = -1;
 
     for (let x = 0; x < width; x++) {
-      const val = pixelValues[rowStart + x]
+      const val = pixelValues[rowStart + x];
       if (val !== undefined && val > 128) {
-        if (left === -1) left = x
-        right = x
+        if (left === -1)
+          left = x;
+        right = x;
       }
     }
 
-    if (left !== -1) {
-      rows.push({ y, left, right, width: right - left + 1 })
-    }
+    if (left !== -1)
+      rows.push({ y, left, right, width: right - left + 1, },);
   }
 
-  return { imageWidth: width, imageHeight: height, rows }
+  return { imageWidth: width, imageHeight: height, rows, };
 }

@@ -5,12 +5,15 @@
  * @module
  */
 
-import type { DesktopEntry } from './desktop-entry.ts';
-import { l as parentLogger, tagged } from './log.ts';
-import { tokenizeExec } from './tokenize.ts';
+import type { DesktopEntry, } from './desktop-entry.ts';
+import {
+  l as parentLogger,
+  tagged,
+} from './log.ts';
+import { tokenizeExec, } from './tokenize.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'validate', l: parentLogger });
+const l = tagged({ tag: 'validate', l: parentLogger, },);
 
 /**
  * Checks if an executable exists in `$PATH` using Bun's `which`.
@@ -19,11 +22,10 @@ const l = tagged({ tag: 'validate', l: parentLogger });
  *
  * @returns `true` if the executable is found.
  */
-function executableExists({ name }: { name: string }): boolean {
-  if (name.startsWith('/')) {
-    return Bun.file(name).size > 0;
-  }
-  return Bun.which(name) !== null;
+function executableExists({ name, }: { name: string; },): boolean {
+  if (name.startsWith('/',))
+    return Bun.file(name,).size > 0;
+  return Bun.which(name,) !== null;
 }
 
 /**
@@ -59,61 +61,62 @@ export type ValidatedEntry = {
  *
  * @returns Validated entry with tokenized Exec, or `null` if the entry fails validation.
  */
-export function validateEntry({ entry, entryId, desktops, isFallback, execArgDefault }: {
+export function validateEntry({ entry, entryId, desktops, isFallback, execArgDefault, }: {
   entry: DesktopEntry;
   entryId: string;
   desktops: readonly string[];
   isFallback: boolean;
   execArgDefault: string;
-}): ValidatedEntry | null {
+},): ValidatedEntry | null {
   if (!entry.isTerminal) {
-    l.debug(`${entryId}: not a TerminalEmulator`);
+    l.debug(`${entryId}: not a TerminalEmulator`,);
     return null;
   }
 
   if (entry.hidden) {
-    l.debug(`${entryId}: hidden`);
+    l.debug(`${entryId}: hidden`,);
     return null;
   }
 
   //region OnlyShowIn / NotShowIn (fallback entries only)
   if (isFallback) {
     if (entry.onlyShowIn.length > 0) {
-      const shown = entry.onlyShowIn.some(function matchDesktop(d) {
-        return desktops.includes(d.toLowerCase());
-      });
+      const shown = entry.onlyShowIn.some(function matchDesktop(d,) {
+        return desktops.includes(d.toLowerCase(),);
+      },);
       if (!shown) {
-        l.debug(`${entryId}: OnlyShowIn does not match current desktops`);
+        l.debug(`${entryId}: OnlyShowIn does not match current desktops`,);
         return null;
       }
     }
     if (entry.notShowIn.length > 0) {
-      const hidden = entry.notShowIn.some(function matchDesktop(d) {
-        return desktops.includes(d.toLowerCase());
-      });
+      const hidden = entry.notShowIn.some(function matchDesktop(d,) {
+        return desktops.includes(d.toLowerCase(),);
+      },);
       if (hidden) {
-        l.debug(`${entryId}: NotShowIn matches current desktop`);
+        l.debug(`${entryId}: NotShowIn matches current desktop`,);
         return null;
       }
     }
   }
   //endregion
 
-  if (entry.tryExec.length > 0 && !executableExists({ name: entry.tryExec })) {
-    l.debug(`${entryId}: TryExec '${entry.tryExec}' not found`);
+  if (entry.tryExec.length > 0 && !executableExists({ name: entry.tryExec, },)) {
+    l.debug(`${entryId}: TryExec '${entry.tryExec}' not found`,);
     return null;
   }
 
-  const execTokens = tokenizeExec({ exec: entry.exec });
+  const execTokens = tokenizeExec({ exec: entry.exec, },);
   if (execTokens === null || execTokens.length === 0) {
-    l.debug(`${entryId}: Exec tokenization failed or empty`);
+    l.debug(`${entryId}: Exec tokenization failed or empty`,);
     return null;
   }
 
   const firstToken = execTokens[0];
-  if (firstToken === undefined) throw new Error('unreachable — length checked above');
-  if (!executableExists({ name: firstToken })) {
-    l.debug(`${entryId}: Exec[0] '${firstToken}' not found in PATH`);
+  if (firstToken === undefined)
+    throw new Error('unreachable — length checked above',);
+  if (!executableExists({ name: firstToken, },)) {
+    l.debug(`${entryId}: Exec[0] '${firstToken}' not found in PATH`,);
     return null;
   }
 
@@ -124,7 +127,7 @@ export function validateEntry({ entry, entryId, desktops, isFallback, execArgDef
       ? execArgDefault
       : '-e');
 
-  l.debug(`${entryId}: validated, execArg='${resolvedExecArg}'`);
+  l.debug(`${entryId}: validated, execArg='${resolvedExecArg}'`,);
 
   return {
     execTokens,

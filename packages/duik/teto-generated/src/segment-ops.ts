@@ -5,7 +5,7 @@
  *
  * @module
  */
-import { run } from './segment-utils.ts'
+import { run, } from './segment-utils.ts';
 
 /**
  * Apply spatial bounding box: zero out pixels outside the part's region.
@@ -23,27 +23,36 @@ export async function applyBBox({
   imgWidth,
   imgHeight,
 }: {
-  readonly mask: string
-  readonly output: string
-  readonly bbox: readonly [number, number, number, number]
-  readonly imgWidth: number
-  readonly imgHeight: number
-}): Promise<void> {
-  const bx = Math.round(bbox[0] * imgWidth)
-  const by = Math.round(bbox[1] * imgHeight)
-  const bw = Math.round(bbox[2] * imgWidth)
-  const bh = Math.round(bbox[3] * imgHeight)
+  readonly mask: string;
+  readonly output: string;
+  readonly bbox: readonly [number, number, number, number,];
+  readonly imgWidth: number;
+  readonly imgHeight: number;
+},): Promise<void> {
+  const bx = Math.round(bbox[0] * imgWidth,);
+  const by = Math.round(bbox[1] * imgHeight,);
+  const bw = Math.round(bbox[2] * imgWidth,);
+  const bh = Math.round(bbox[3] * imgHeight,);
 
   // Draw a white rectangle on black canvas, then AND with mask
   // This zeros everything outside the bbox
   await run([
-    'magick', mask,
-    '(', '-size', `${imgWidth}x${imgHeight}`, 'xc:black',
-    '-fill', 'white', '-draw', `rectangle ${bx},${by} ${bx + bw},${by + bh}`,
+    'magick',
+    mask,
+    '(',
+    '-size',
+    `${imgWidth}x${imgHeight}`,
+    'xc:black',
+    '-fill',
+    'white',
+    '-draw',
+    `rectangle ${bx},${by} ${bx + bw},${by + bh}`,
     ')',
-    '-compose', 'Darken', '-composite',
+    '-compose',
+    'Darken',
+    '-composite',
     output,
-  ])
+  ],);
 }
 
 /**
@@ -60,20 +69,18 @@ export async function applyMorphology({
   closeK,
   openK,
 }: {
-  readonly mask: string
-  readonly output: string
-  readonly closeK: number
-  readonly openK: number
-}): Promise<void> {
-  const args: string[] = ['magick', mask]
+  readonly mask: string;
+  readonly output: string;
+  readonly closeK: number;
+  readonly openK: number;
+},): Promise<void> {
+  const args: string[] = ['magick', mask,];
 
-  if (closeK >= 2) {
-    args.push('-morphology', `Close:${closeK}`, 'Disk')
-  }
-  if (openK >= 2) {
-    args.push('-morphology', `Open:${openK}`, 'Disk')
-  }
+  if (closeK >= 2)
+    args.push('-morphology', `Close:${closeK}`, 'Disk',);
+  if (openK >= 2)
+    args.push('-morphology', `Open:${openK}`, 'Disk',);
 
-  args.push(output)
-  await run(args)
+  args.push(output,);
+  await run(args,);
 }

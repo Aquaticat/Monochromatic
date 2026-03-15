@@ -1,8 +1,10 @@
 /**
  * DOM building helpers for the `<task-detail>` render method.
  */
-import type { Task } from "../../lib/types.ts";
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+import type { Task, } from '../../lib/types.ts';
 
 /** Options for building the task detail DOM tree. */
 type RenderOptions = {
@@ -42,78 +44,93 @@ type RenderResult = {
  *
  * @returns Elements and refs
  */
-export function buildTaskDetailTree({ task, isCreate, styles }: RenderOptions): RenderResult {
+export function buildTaskDetailTree(
+  { task, isCreate, styles, }: RenderOptions,
+): RenderResult {
   // Close button uses innerHTML for SVG because h() creates HTML-namespace
   // elements -- SVG requires the SVG namespace.
   const closeButton = h({
-    tag: "button",
-    class: "close",
-    attrs: { "data-action": "close", "aria-label": "Close" },
-  });
-  closeButton.innerHTML = `<svg viewBox="0 0 48 48" fill="none"><line x1="14" y1="14" x2="34" y2="34"/><line x1="34" y1="14" x2="14" y2="34"/></svg>`;
+    tag: 'button',
+    class: 'close',
+    attrs: { 'data-action': 'close', 'aria-label': 'Close', },
+  },);
+  closeButton.innerHTML =
+    `<svg viewBox="0 0 48 48" fill="none"><line x1="14" y1="14" x2="34" y2="34"/><line x1="34" y1="14" x2="14" y2="34"/></svg>`;
 
   const titleInput = h({
-    tag: "input",
-    class: "title-input",
-    attrs: { type: "text", value: task.title, placeholder: "Title", required: "" },
-  });
+    tag: 'input',
+    class: 'title-input',
+    attrs: { type: 'text', value: task.title, placeholder: 'Title', required: '', },
+  },);
 
-  const descInput = h({ tag: "textarea", class: "desc-input", attrs: { placeholder: "description" } });
-  if (task.description !== null) {
+  const descInput = h({ tag: 'textarea', class: 'desc-input',
+    attrs: { placeholder: 'description', }, },);
+  if (task.description !== null)
     descInput.textContent = task.description;
-  }
 
-  const startAttrs: Record<string, string> = { "data-action": "start" };
-  if (task.timerStartedAt !== null) startAttrs["disabled"] = "";
-  const stopAttrs: Record<string, string> = { "data-action": "stop" };
-  if (task.timerStartedAt === null) stopAttrs["disabled"] = "";
-  const completeAttrs: Record<string, string> = { "data-action": "complete" };
-  if (task.blockedBy.length > 0) completeAttrs["disabled"] = "";
+  const startAttrs: Record<string, string> = { 'data-action': 'start', };
+  if (task.timerStartedAt !== null)
+    startAttrs['disabled'] = '';
+  const stopAttrs: Record<string, string> = { 'data-action': 'stop', };
+  if (task.timerStartedAt === null)
+    stopAttrs['disabled'] = '';
+  const completeAttrs: Record<string, string> = { 'data-action': 'complete', };
+  if (task.blockedBy.length > 0)
+    completeAttrs['disabled'] = '';
 
   const btnRow = h({
-    tag: "div",
-    class: "btn-row",
+    tag: 'div',
+    class: 'btn-row',
     children: [
-      h({ tag: "button", class: "btn-outline", attrs: startAttrs, text: "Start" }),
-      h({ tag: "button", class: "btn-outline", attrs: stopAttrs, text: "Stop" }),
-      h({ tag: "button", class: "btn-primary", attrs: completeAttrs, text: "Complete" }),
-      h({ tag: "button", class: "btn-outline", attrs: { "data-action": "delete" }, text: "Delete" }),
+      h({ tag: 'button', class: 'btn-outline', attrs: startAttrs, text: 'Start', },),
+      h({ tag: 'button', class: 'btn-outline', attrs: stopAttrs, text: 'Stop', },),
+      h({ tag: 'button', class: 'btn-primary', attrs: completeAttrs,
+        text: 'Complete', },),
+      h({ tag: 'button', class: 'btn-outline', attrs: { 'data-action': 'delete', },
+        text: 'Delete', },),
     ],
-  });
-  if (isCreate) btnRow.dataset["hidden"] = "";
+  },);
+  if (isCreate)
+    btnRow.dataset['hidden'] = '';
 
-  const pillsContainer = h({ tag: "div", class: "pills" });
+  const pillsContainer = h({ tag: 'div', class: 'pills', },);
 
   const elements = [
-    h({ tag: "style", text: styles }),
+    h({ tag: 'style', text: styles, },),
     h({
-      tag: "div",
-      class: "header",
+      tag: 'div',
+      class: 'header',
       children: [
         closeButton,
-        h({ tag: "span", class: "heading", text: isCreate ? "New task" : "Task details" }),
+        h({ tag: 'span', class: 'heading',
+          text: isCreate ? 'New task' : 'Task details', },),
         h({
-          tag: "button",
-          class: isCreate ? "btn-primary" : "btn-outline",
-          attrs: { "data-action": "save" },
-          text: isCreate ? "Create" : "Save",
-        }),
+          tag: 'button',
+          class: isCreate ? 'btn-primary' : 'btn-outline',
+          attrs: { 'data-action': 'save', },
+          text: isCreate ? 'Create' : 'Save',
+        },),
       ],
-    }),
+    },),
     titleInput,
     descInput,
     h({
-      tag: "div",
-      class: "actions",
+      tag: 'div',
+      class: 'actions',
       children: [
-        h({ tag: "button", class: "btn-outline", attrs: { "data-action": "attach" }, text: "Attach file" }),
-        h({ tag: "button", class: "btn-outline", attrs: { "data-action": "photo" }, text: "Take photo" }),
+        h({ tag: 'button', class: 'btn-outline', attrs: { 'data-action': 'attach', },
+          text: 'Attach file', },),
+        h({ tag: 'button', class: 'btn-outline', attrs: { 'data-action': 'photo', },
+          text: 'Take photo', },),
       ],
-    }),
+    },),
     pillsContainer,
     btnRow,
   ];
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- h() returns generic HTMLElement but titleInput is an <input>
-  return { elements, refs: { titleInput: titleInput as unknown as HTMLInputElement, descInput: descInput as unknown as HTMLTextAreaElement, pillsContainer, btnRow } };
+  return { elements,
+    refs: { titleInput: titleInput as unknown as HTMLInputElement,
+      descInput: descInput as unknown as HTMLTextAreaElement, pillsContainer,
+      btnRow, }, };
 }

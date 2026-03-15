@@ -30,11 +30,11 @@ const DISABLE_DIRECTIVE_PATTERN = /oxlint-disable(?:-next-line)?\b/;
  * });
  * ```
  */
-export function banDisableRule({ ruleId, description, message }: {
+export function banDisableRule({ ruleId, description, message, }: {
   ruleId: string;
   description: string;
   message: string;
-}): CreateOnceRule {
+},): CreateOnceRule {
   return {
     meta: {
       type: 'problem',
@@ -46,18 +46,20 @@ export function banDisableRule({ ruleId, description, message }: {
         forbidden: message,
       },
     },
-    createOnce(context: Context): VisitorWithHooks {
+    createOnce(context: Context,): VisitorWithHooks {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
       return {
-        Program(_node: Span): void {
-          context.sourceCode.getAllComments().forEach(function checkComment(comment) {
-            if (DISABLE_DIRECTIVE_PATTERN.test(comment.value) && comment.value.includes(ruleId)) {
+        Program(_node: Span,): void {
+          context.sourceCode.getAllComments().forEach(function checkComment(comment,) {
+            if (DISABLE_DIRECTIVE_PATTERN.test(comment.value,)
+              && comment.value.includes(ruleId,))
+            {
               context.report({
                 node: comment,
                 messageId: 'forbidden',
-              });
+              },);
             }
-          });
+          },);
         },
       } as VisitorWithHooks;
     },

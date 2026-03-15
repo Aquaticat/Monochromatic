@@ -1,7 +1,5 @@
-import type {
-  MemoizedFunction,
-} from '../../t/index.ts';
 import type { $ as SyncStore, } from '../../../../../../t object/t store/t/r s/index.ts';
+import type { MemoizedFunction, } from '../../t/index.ts';
 import { $ as named, } from '../p n/index.ts';
 
 /**

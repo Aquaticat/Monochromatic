@@ -1,6 +1,10 @@
 // oxlint-disable prefer-destructuring, no-unnecessary-template-expression, no-magic-numbers -- utility module with array access patterns and MIME type detection
-import { extname } from 'node:path';
+import { extname, } from 'node:path';
 
+import {
+  l,
+  tagged,
+} from './log.ts';
 import type {
   ImageBase64,
   ImageBuffer,
@@ -9,7 +13,6 @@ import type {
   ImagePath,
   ImageUrl,
 } from './types.ts';
-import { l, tagged } from './log.ts';
 
 /**
  * Extension-to-format mapping for inferring image format from file paths.
@@ -36,7 +39,7 @@ const EXTENSION_FORMAT_MAP: Record<string, ImageFormat> = {
  * }
  * ```
  */
-export function isImageBuffer(input: ImageInput): input is ImageBuffer {
+export function isImageBuffer(input: ImageInput,): input is ImageBuffer {
   return 'buffer' in input;
 }
 
@@ -54,7 +57,7 @@ export function isImageBuffer(input: ImageInput): input is ImageBuffer {
  * }
  * ```
  */
-export function isImagePath(input: ImageInput): input is ImagePath {
+export function isImagePath(input: ImageInput,): input is ImagePath {
   return 'path' in input;
 }
 
@@ -72,7 +75,7 @@ export function isImagePath(input: ImageInput): input is ImagePath {
  * }
  * ```
  */
-export function isImageUrl(input: ImageInput): input is ImageUrl {
+export function isImageUrl(input: ImageInput,): input is ImageUrl {
   return 'url' in input;
 }
 
@@ -90,7 +93,7 @@ export function isImageUrl(input: ImageInput): input is ImageUrl {
  * }
  * ```
  */
-export function isImageBase64(input: ImageInput): input is ImageBase64 {
+export function isImageBase64(input: ImageInput,): input is ImageBase64 {
   return 'base64' in input;
 }
 
@@ -108,14 +111,20 @@ export function isImageBase64(input: ImageInput): input is ImageBase64 {
  * const fmt = inferFormat('/tmp/photo.png'); // 'png'
  * ```
  */
-export function inferFormat(filePath: string): ImageFormat {
-  const rl = tagged({ tag: inferFormat.name, l });
-  const ext = extname(filePath).toLowerCase();
+export function inferFormat(filePath: string,): ImageFormat {
+  const rl = tagged({ tag: inferFormat.name, l, },);
+  const ext = extname(filePath,).toLowerCase();
   const format = EXTENSION_FORMAT_MAP[ext];
   if (format === undefined) {
-    throw new Error(`Unsupported image extension "${ext}" for path "${filePath}". Supported: ${Object.keys(EXTENSION_FORMAT_MAP).join(', ')}`);
+    throw new Error(
+      `Unsupported image extension "${ext}" for path "${filePath}". Supported: ${
+        Object
+          .keys(EXTENSION_FORMAT_MAP,)
+          .join(', ',)
+      }`,
+    );
   }
-  rl.debug(`inferred format "${format}" from extension "${ext}"`);
+  rl.debug(`inferred format "${format}" from extension "${ext}"`,);
   return format;
 }
 
@@ -131,13 +140,12 @@ export function inferFormat(filePath: string): ImageFormat {
  * const b64 = bufferToBase64(bytes);
  * ```
  */
-export function bufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
+export function bufferToBase64(buffer: ArrayBuffer,): string {
+  const bytes = new Uint8Array(buffer,);
   let binary = '';
-  for (const byte of bytes) {
-    binary += String.fromCodePoint(byte);
-  }
-  return btoa(binary);
+  for (const byte of bytes)
+    binary += String.fromCodePoint(byte,);
+  return btoa(binary,);
 }
 
 /**
@@ -155,10 +163,12 @@ export function bufferToBase64(buffer: ArrayBuffer): string {
  * // 'data:image/png;base64,iVBOR...'
  * ```
  */
-export function bufferToDataUri(buffer: ArrayBuffer, format: ImageFormat): string {
-  const rl = tagged({ tag: bufferToDataUri.name, l });
-  const base64 = bufferToBase64(buffer);
-  rl.debug(`encoded ${String(new Uint8Array(buffer).length)} bytes as base64 data URI`);
+export function bufferToDataUri(buffer: ArrayBuffer, format: ImageFormat,): string {
+  const rl = tagged({ tag: bufferToDataUri.name, l, },);
+  const base64 = bufferToBase64(buffer,);
+  rl.debug(
+    `encoded ${String(new Uint8Array(buffer,).length,)} bytes as base64 data URI`,
+  );
   return `data:image/${format};base64,${base64}`;
 }
 
@@ -177,10 +187,14 @@ export function bufferToDataUri(buffer: ArrayBuffer, format: ImageFormat): strin
  * // mimeType === 'image/png', data === 'iVBOR...'
  * ```
  */
-export function parseDataUri(dataUri: string): { mimeType: string; data: string } {
-  const match = dataUri.match(/^data:([^;]+);base64,(.+)$/);
+export function parseDataUri(dataUri: string,): { mimeType: string; data: string; } {
+  const match = dataUri.match(/^data:([^;]+);base64,(.+)$/,);
   if (match === null || match[1] === undefined || match[2] === undefined) {
-    throw new Error(`Invalid data URI format: expected "data:<mime>;base64,<data>", got "${dataUri.slice(0, 50)}..."`);
+    throw new Error(
+      `Invalid data URI format: expected "data:<mime>;base64,<data>", got "${
+        dataUri.slice(0, 50,)
+      }..."`,
+    );
   }
-  return { mimeType: match[1], data: match[2] };
+  return { mimeType: match[1], data: match[2], };
 }

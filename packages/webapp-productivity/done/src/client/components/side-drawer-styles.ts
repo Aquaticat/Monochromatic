@@ -4,11 +4,11 @@
  * Covers two display modes: an inline sidebar (visible beside main content)
  * and a popover panel (hamburger-triggered overlay for stacked/narrow layouts).
  */
-import { css } from "../css.ts";
-import { SIDE_DRAWER_PANEL_STYLES } from "./side-drawer-panel-styles.ts";
+import { css, } from '../css.ts';
+import { SIDE_DRAWER_PANEL_STYLES, } from './side-drawer-panel-styles.ts';
 
 /** Viewport breakpoint matching the body flex-wrap threshold. */
-const DESKTOP_BREAKPOINT = "48rem";
+const DESKTOP_BREAKPOINT = '48rem';
 
 /** Shadow DOM styles for `\<side-drawer\>` -- inline sidebar, shared nav, and panel. */
 export const SIDE_DRAWER_STYLES = css(`
@@ -93,4 +93,4 @@ export const SIDE_DRAWER_STYLES = css(`
   ${SIDE_DRAWER_PANEL_STYLES}
 
   @apply --shadow-dom-globals;
-`);
+`,);

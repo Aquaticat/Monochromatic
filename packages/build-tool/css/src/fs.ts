@@ -41,18 +41,19 @@ const nodeFs: typeof NodeFs | undefined = hasNodeFs
  *
  * @throws When the file is missing from both the registry and disk
  */
-export async function readCssFile(absolutePath: string): Promise<string> {
-  const cached = fsRegistry.get(absolutePath);
-  if (cached !== undefined) {
+export async function readCssFile(absolutePath: string,): Promise<string> {
+  const cached = fsRegistry.get(absolutePath,);
+  if (cached !== undefined)
     return cached;
-  }
 
   if (nodeFs !== undefined) {
     const { readFile, } = await import('node:fs/promises');
-    return readFile(absolutePath, 'utf8');
+    return readFile(absolutePath, 'utf8',);
   }
 
-  throw new Error(`File not found in registry and no filesystem available: ${absolutePath}`);
+  throw new Error(
+    `File not found in registry and no filesystem available: ${absolutePath}`,
+  );
 }
 
 /**
@@ -65,17 +66,17 @@ export async function readCssFile(absolutePath: string): Promise<string> {
  *
  * @throws When the file is missing from both the registry and disk
  */
-export function readCssFileSync(absolutePath: string): string {
-  const cached = fsRegistry.get(absolutePath);
-  if (cached !== undefined) {
+export function readCssFileSync(absolutePath: string,): string {
+  const cached = fsRegistry.get(absolutePath,);
+  if (cached !== undefined)
     return cached;
-  }
 
-  if (nodeFs !== undefined) {
-    return nodeFs.readFileSync(absolutePath, 'utf8');
-  }
+  if (nodeFs !== undefined)
+    return nodeFs.readFileSync(absolutePath, 'utf8',);
 
-  throw new Error(`File not found in registry and no filesystem available: ${absolutePath}`);
+  throw new Error(
+    `File not found in registry and no filesystem available: ${absolutePath}`,
+  );
 }
 
 /**
@@ -86,14 +87,12 @@ export function readCssFileSync(absolutePath: string): string {
  *
  * @returns Whether the file exists
  */
-export function existsSync(absolutePath: string): boolean {
-  if (fsRegistry.has(absolutePath)) {
+export function existsSync(absolutePath: string,): boolean {
+  if (fsRegistry.has(absolutePath,))
     return true;
-  }
 
-  if (nodeFs !== undefined) {
-    return nodeFs.existsSync(absolutePath);
-  }
+  if (nodeFs !== undefined)
+    return nodeFs.existsSync(absolutePath,);
 
   return false;
 }

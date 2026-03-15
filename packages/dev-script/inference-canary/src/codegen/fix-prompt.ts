@@ -6,7 +6,10 @@
  * in the conversation as a native assistant message (see runner-second-pass.ts),
  * so the fix prompt references it without repeating the source.
  */
-import { lintSource, type LintResult, } from '../linter.ts';
+import {
+  type LintResult,
+  lintSource,
+} from '../linter.ts';
 
 import { extractCode, } from './extract-code.ts';
 
@@ -23,11 +26,16 @@ const MAX_RUNTIME_STDERR_LENGTH = 500;
  *
  * @returns formatted runtime error section
  */
-function buildRuntimeSection(container: ContainerResult): string {
-  if (container.timedOut) return '=== runtime error ===\nProcess timed out.';
-  const truncated = container.stderr.slice(0, MAX_RUNTIME_STDERR_LENGTH);
-  const suffix = container.stderr.length > MAX_RUNTIME_STDERR_LENGTH ? '\n...(truncated)' : '';
-  return `=== runtime error ===\nProcess exited with code ${String(container.exitCode)}.\n${truncated}${suffix}`;
+function buildRuntimeSection(container: ContainerResult,): string {
+  if (container.timedOut)
+    return '=== runtime error ===\nProcess timed out.';
+  const truncated = container.stderr.slice(0, MAX_RUNTIME_STDERR_LENGTH,);
+  const suffix = container.stderr.length > MAX_RUNTIME_STDERR_LENGTH
+    ? '\n...(truncated)'
+    : '';
+  return `=== runtime error ===\nProcess exited with code ${
+    String(container.exitCode,)
+  }.\n${truncated}${suffix}`;
 }
 
 /**
@@ -53,7 +61,7 @@ export async function buildCodeGenFixPrompt(
   priorLint?: LintResult,
   priorContainer?: ContainerResult,
 ): Promise<string | undefined> {
-  const source = extractCode(response);
+  const source = extractCode(response,);
   // Reuse the lint result from score() if available to avoid linting the same code twice.
   // Falls back to running lintSource if called without a prior result (e.g. in tests).
   const lint = priorLint ?? await lintSource(source, {
@@ -62,35 +70,51 @@ export async function buildCodeGenFixPrompt(
     probe: 'fix-prompt',
     pass: context.pass,
     timestamp: context.timestamp,
-  });
+  },);
 
   // Narrow to a failed container only when exit was non-zero or process was killed
-  const failedContainer = priorContainer !== undefined && (priorContainer.exitCode !== 0 || priorContainer.timedOut)
+  const failedContainer = priorContainer !== undefined
+      && (priorContainer.exitCode !== 0 || priorContainer.timedOut)
     ? priorContainer
     : undefined;
 
-  const hasLintDiagnostics = lint.violationCount + lint.typeErrors > 0 && lint.rawDiagnostics.length > 0;
-  if (failedContainer === undefined && !hasLintDiagnostics) return undefined;
+  const hasLintDiagnostics = lint.violationCount + lint.typeErrors > 0
+    && lint.rawDiagnostics.length > 0;
+  if (failedContainer === undefined && !hasLintDiagnostics)
+    return undefined;
 
-  const lintSummary = lint.severity.errors > 0 || lint.severity.warnings > 0 || lint.typeErrors > 0
-    ? `It has ${String(lint.severity.errors)} lint errors, ${String(lint.severity.warnings)} lint warnings, and ${String(lint.typeErrors)} type errors.`
-    : undefined;
+  const lintSummary =
+    lint.severity.errors > 0 || lint.severity.warnings > 0 || lint.typeErrors > 0
+      ? `It has ${String(lint.severity.errors,)} lint errors, ${
+        String(lint.severity.warnings,)
+      } lint warnings, and ${String(lint.typeErrors,)} type errors.`
+      : undefined;
   const runtimeSummary = failedContainer !== undefined
-    ? (failedContainer.timedOut ? 'It timed out at runtime.' : `It crashed at runtime (exit code ${String(failedContainer.exitCode)}).`)
+    ? (failedContainer.timedOut
+      ? 'It timed out at runtime.'
+      : `It crashed at runtime (exit code ${String(failedContainer.exitCode,)}).`)
     : undefined;
 
   const diagnosticParts = [
-    failedContainer !== undefined ? buildRuntimeSection(failedContainer) : '',
+    failedContainer !== undefined ? buildRuntimeSection(failedContainer,) : '',
     lint.rawDiagnostics.length > 0 ? lint.rawDiagnostics : '',
-  ].filter(function hasContent(part): boolean { return part.length > 0; });
+  ]
+    .filter(function hasContent(part,): boolean {
+      return part.length > 0;
+    },);
 
   return [
     'Your code from the previous response has issues.',
-    [lintSummary, runtimeSummary].filter(function isDefined(line): line is string { return line !== undefined; }).join(' '),
+    [lintSummary, runtimeSummary,]
+      .filter(function isDefined(line,): line is string {
+        return line !== undefined;
+      },)
+      .join(' ',),
     'Here are the diagnostics:',
     '',
-    diagnosticParts.join('\n\n'),
+    diagnosticParts.join('\n\n',),
     '',
     'Fix all the issues. Output ONLY the complete fixed TypeScript source in a single fenced code block.',
-  ].join('\n');
+  ]
+    .join('\n',);
 }

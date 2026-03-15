@@ -1,7 +1,7 @@
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, } from 'node:fs';
+import { join, } from 'node:path';
 
-import { IMAGES_DIR } from './config.ts';
+import { IMAGES_DIR, } from './config.ts';
 
 //region OS family and guest config types
 
@@ -161,7 +161,8 @@ export type ImageSpec = LinuxImageSpec | WindowsImageSpec;
  * Contains VirtIO storage/network drivers and the QEMU guest agent installer
  * for Windows guests. Redirects to the latest versioned filename on download.
  */
-export const VIRTIO_WIN_URL = 'https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso';
+export const VIRTIO_WIN_URL =
+  'https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso';
 
 /** Cached filename for the virtio-win ISO under `~/.local/share/mvm/images/`. */
 export const VIRTIO_WIN_FILENAME = 'virtio-win.iso';
@@ -189,7 +190,8 @@ export const IMAGES: Readonly<Record<string, ImageSpec>> = {
     initSystem: 'openrc',
     shell: '/bin/ash',
     templateFileName: 'template-alpine.qcow2',
-    url: 'https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/cloud/nocloud_alpine-3.23.3-x86_64-bios-cloudinit-r0.qcow2',
+    url:
+      'https://dl-cdn.alpinelinux.org/alpine/v3.23/releases/cloud/nocloud_alpine-3.23.3-x86_64-bios-cloudinit-r0.qcow2',
   },
   fedora: {
     osFamily: 'linux',
@@ -198,7 +200,8 @@ export const IMAGES: Readonly<Record<string, ImageSpec>> = {
     initSystem: 'systemd',
     shell: '/bin/bash',
     templateFileName: 'template-fedora.qcow2',
-    url: 'https://download.fedoraproject.org/pub/fedora/linux/releases/43/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-43-1.6.x86_64.qcow2',
+    url:
+      'https://download.fedoraproject.org/pub/fedora/linux/releases/43/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-43-1.6.x86_64.qcow2',
   },
   ubuntu: {
     osFamily: 'linux',
@@ -216,7 +219,8 @@ export const IMAGES: Readonly<Record<string, ImageSpec>> = {
     imageIndex: 1,
     shell: 'powershell.exe',
     templateFileName: 'template-windows.qcow2',
-    url: 'https://go.microsoft.com/fwlink/?linkid=2293312&clcid=0x409&culture=en-us&country=us',
+    url:
+      'https://go.microsoft.com/fwlink/?linkid=2293312&clcid=0x409&culture=en-us&country=us',
   },
 };
 
@@ -266,21 +270,19 @@ export const CUSTOM_GUEST_DEFAULTS: LinuxGuestConfig = {
  * // => { kind: 'custom', customTemplatePath: '/home/user/.local/share/mvm/images/my-custom.qcow2' }
  * ```
  */
-export function resolveImage(identifier: string): ResolvedImage {
+export function resolveImage(identifier: string,): ResolvedImage {
   const spec = IMAGES[identifier];
-  if (spec !== undefined) {
-    return { kind: 'registry', spec };
-  }
+  if (spec !== undefined)
+    return { kind: 'registry', spec, };
 
-  const customPath = join(IMAGES_DIR, `${identifier}.qcow2`);
-  if (existsSync(customPath)) {
-    return { customTemplatePath: customPath, kind: 'custom' };
-  }
+  const customPath = join(IMAGES_DIR, `${identifier}.qcow2`,);
+  if (existsSync(customPath,))
+    return { customTemplatePath: customPath, kind: 'custom', };
 
-  const available = Object.keys(IMAGES).join(', ');
+  const available = Object.keys(IMAGES,).join(', ',);
   throw new Error(
     `unknown image "${identifier}". Built-in images: ${available}. `
-    + `For custom images, place a qcow2 template at ${customPath}`,
+      + `For custom images, place a qcow2 template at ${customPath}`,
   );
 }
 
@@ -298,7 +300,7 @@ export function resolveImage(identifier: string): ResolvedImage {
  * ```
  */
 export type ResolvedImage =
-  | { customTemplatePath: string; kind: 'custom' }
-  | { kind: 'registry'; spec: ImageSpec };
+  | { customTemplatePath: string; kind: 'custom'; }
+  | { kind: 'registry'; spec: ImageSpec; };
 
 //endregion Resolution

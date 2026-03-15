@@ -1,8 +1,12 @@
 /**
  * Desktop media-query styles for the `<top-nav>` web component.
  */
-import { cssCalc, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
-import { $ as css } from "../css.ts";
+import {
+  cssCalc,
+  cssRem,
+  cssVar,
+} from '@monochromatic-dev/module-es/h-css';
+import { $ as css, } from '../css.ts';
 
 /** Desktop breakpoint overrides for `<top-nav>`: shows full nav, hides hamburger. */
 export const TOP_NAV_MEDIA_STYLES = css({
@@ -13,13 +17,13 @@ export const TOP_NAV_MEDIA_STYLES = css({
       rule: ':host',
       decls: {
         'justify-content': 'space-between',
-        'padding-inline-start': cssVar('min-gap'),
-        'border-block-end-width': cssCalc(`${cssRem(1)} / 16`),
+        'padding-inline-start': cssVar('min-gap',),
+        'border-block-end-width': cssCalc(`${cssRem(1,)} / 16`,),
         'border-block-end-style': 'solid',
-        'border-block-end-color': cssVar('bg-weaker'),
+        'border-block-end-color': cssVar('bg-weaker',),
       },
-    }),
-    css({ rule: '.menu-toggle', decls: { display: 'none' } }),
-    css({ rule: 'h1', decls: { 'text-align': 'start' } }),
+    },),
+    css({ rule: '.menu-toggle', decls: { display: 'none', }, },),
+    css({ rule: 'h1', decls: { 'text-align': 'start', }, },),
   ],
-});
+},);

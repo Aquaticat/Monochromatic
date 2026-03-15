@@ -10,7 +10,7 @@ import type {
   HookInputBase,
   HookOutputBase,
 } from './common.ts';
-import type { GenericToolInput } from './tool-inputs-union.ts';
+import type { GenericToolInput, } from './tool-inputs-union.ts';
 
 //region PostToolUse
 

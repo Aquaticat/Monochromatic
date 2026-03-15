@@ -8,9 +8,15 @@
  * computing per-run correctness, and formatting diagnostic sections for
  * the fix prompt.
  */
-import { runInContainer, type ContainerResult, } from '../container.ts';
+import {
+  type ContainerResult,
+  runInContainer,
+} from '../container.ts';
 
-import type { AdditionalRun, VerifyResult, } from './additional-run-types.ts';
+import type {
+  AdditionalRun,
+  VerifyResult,
+} from './additional-run-types.ts';
 
 //region Diagnostics -- formats runtime failures and incorrect output for fix prompts
 
@@ -47,31 +53,42 @@ export function appendAdditionalRunDiagnostics(
   verifyCaches: readonly Map<string, VerifyResult>[],
   label: string,
 ): string | undefined {
-  if (runs === undefined || runs.length === 0) return base;
+  if (runs === undefined || runs.length === 0)
+    return base;
 
   /** Diagnostic text sections for runs that failed or produced incorrect output */
   const diagSections = runs
-    .map(function buildDiagSection(run, index): string | undefined {
+    .map(function buildDiagSection(run, index,): string | undefined {
       /** Cached container result for this run and model */
-      const container = containerCaches[index]?.get(label);
-      if (container === undefined) return undefined;
-      if (container.timedOut) return `=== ${run.name} ===\nProcess timed out.`;
+      const container = containerCaches[index]?.get(label,);
+      if (container === undefined)
+        return undefined;
+      if (container.timedOut)
+        return `=== ${run.name} ===\nProcess timed out.`;
       if (container.exitCode !== 0) {
-        return `=== ${run.name} ===\nExited with code ${String(container.exitCode)}.\n${container.stderr.slice(0, MAX_ADDITIONAL_OUTPUT)}`;
+        return `=== ${run.name} ===\nExited with code ${String(container.exitCode,)}.\n${
+          container.stderr.slice(0, MAX_ADDITIONAL_OUTPUT,)
+        }`;
       }
       /** Cached verification result for this run and model */
-      const verify = verifyCaches[index]?.get(label);
+      const verify = verifyCaches[index]?.get(label,);
       if (verify !== undefined && verify.correctness < 1) {
-        return `=== ${run.name} (incorrect output) ===\n${container.stdout.slice(0, MAX_ADDITIONAL_OUTPUT)}`;
+        return `=== ${run.name} (incorrect output) ===\n${
+          container.stdout.slice(0, MAX_ADDITIONAL_OUTPUT,)
+        }`;
       }
       return undefined;
-    })
-    .filter(function isDefined(diagSection): diagSection is string { return diagSection !== undefined; });
+    },)
+    .filter(function isDefined(diagSection,): diagSection is string {
+      return diagSection !== undefined;
+    },);
 
-  if (diagSections.length === 0) return base;
+  if (diagSections.length === 0)
+    return base;
   /** Combined diagnostic text from all failing additional runs */
-  const combined = diagSections.join('\n\n');
-  if (base !== undefined) return `${base}\n\n${combined}`;
+  const combined = diagSections.join('\n\n',);
+  if (base !== undefined)
+    return `${base}\n\n${combined}`;
 
   // Main run was fine but additional runs failed -- build standalone prompt
   return [
@@ -79,7 +96,8 @@ export function appendAdditionalRunDiagnostics(
     combined,
     '',
     'Fix all the issues. Output ONLY the complete fixed TypeScript source in a single fenced code block.',
-  ].join('\n');
+  ]
+    .join('\n',);
 }
 
 //endregion Diagnostics
@@ -109,12 +127,14 @@ export function executeAdditionalRuns(
   signal: AbortSignal | undefined,
 ): Promise<ContainerResult[]> {
   /** Per-run container promises with optional source transforms applied */
-  const promises = runs.map(function launchRun(run): Promise<ContainerResult> {
+  const promises = runs.map(function launchRun(run,): Promise<ContainerResult> {
     /** Source with per-run transform applied (e.g. injected CLI flags) */
-    const runSource = run.transformSource !== undefined ? run.transformSource(source) : source;
-    return runInContainer(runSource, run.input, signal);
-  });
-  return Promise.all(promises);
+    const runSource = run.transformSource !== undefined
+      ? run.transformSource(source,)
+      : source;
+    return runInContainer(runSource, run.input, signal,);
+  },);
+  return Promise.all(promises,);
 }
 
 /**
@@ -139,13 +159,12 @@ export function cacheAdditionalResults(
   verifyCaches: Map<string, VerifyResult>[],
   label: string,
 ): void {
-  for (const [index, result] of results.entries()) {
-    containerCaches[index]?.set(label, result);
+  for (const [index, result,] of results.entries()) {
+    containerCaches[index]?.set(label, result,);
     /** Run configuration for this index, used to call verify on successful containers */
     const run = runs[index];
-    if (run !== undefined && result.exitCode === 0 && !result.timedOut) {
-      verifyCaches[index]?.set(label, run.verify(result));
-    }
+    if (run !== undefined && result.exitCode === 0 && !result.timedOut)
+      verifyCaches[index]?.set(label, run.verify(result,),);
   }
 }
 
@@ -172,17 +191,19 @@ export function computeAdditionalCorrectnesses(
   label: string,
   probeName: string,
 ): number[] {
-  return results.map(function scoreRun(result, index): number {
+  return results.map(function scoreRun(result, index,): number {
     if (result.timedOut || result.exitCode !== 0) {
       /** Run name for the log message, falls back to numeric index */
-      const runName = runs[index]?.name ?? String(index);
+      const runName = runs[index]?.name ?? String(index,);
       console.log(
-        `  [${label}:${probeName}:${runName}] container failed: exit=${String(result.exitCode)} timedOut=${String(result.timedOut)}`,
+        `  [${label}:${probeName}:${runName}] container failed: exit=${
+          String(result.exitCode,)
+        } timedOut=${String(result.timedOut,)}`,
       );
       return 0;
     }
-    return verifyCaches[index]?.get(label)?.correctness ?? 0;
-  });
+    return verifyCaches[index]?.get(label,)?.correctness ?? 0;
+  },);
 }
 
 //endregion Execution

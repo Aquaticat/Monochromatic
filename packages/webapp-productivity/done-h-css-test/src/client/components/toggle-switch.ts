@@ -2,13 +2,15 @@
  * `<toggle-switch>` -- boolean toggle with animated thumb.
  * Reflects state via the `on` attribute and dispatches a `change` event on toggle.
  */
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { TOGGLE_SWITCH_STYLES } from "./toggle-switch-styles.ts";
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+import { TOGGLE_SWITCH_STYLES, } from './toggle-switch-styles.ts';
 
 /** `<toggle-switch>` web component. */
 class ToggleSwitch extends HTMLElement {
   /** Attributes that trigger `attributeChangedCallback`. */
-  static observedAttributes = ["on"];
+  static observedAttributes = ['on',];
 
   /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
@@ -16,32 +18,31 @@ class ToggleSwitch extends HTMLElement {
   /** Initializes the shadow root. */
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: "open" });
+    this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
   /** Whether the toggle is currently in the "on" position. */
   get on(): boolean {
-    return this.hasAttribute("on");
+    return this.hasAttribute('on',);
   }
 
   /** Sets the toggle state by adding or removing the `on` attribute. */
-  set on(value: boolean) {
-    if (value) {
-      this.setAttribute("on", "");
-    } else {
-      this.removeAttribute("on");
-    }
+  set on(value: boolean,) {
+    if (value)
+      this.setAttribute('on', '',);
+    else
+      this.removeAttribute('on',);
   }
 
   /** Renders initial content and wires up the click listener. */
   connectedCallback(): void {
     this.#render();
-    this.addEventListener("click", this.#handleClick);
+    this.addEventListener('click', this.#handleClick,);
   }
 
   /** Removes the click listener when the element is disconnected. */
   disconnectedCallback(): void {
-    this.removeEventListener("click", this.#handleClick);
+    this.removeEventListener('click', this.#handleClick,);
   }
 
   /** Re-renders when the `on` attribute changes. */
@@ -50,28 +51,31 @@ class ToggleSwitch extends HTMLElement {
   }
 
   /** Bound click handler that toggles state and dispatches a `change` event. */
-  #handleClick = this.#onHandleClick.bind(this);
+  #handleClick = this.#onHandleClick.bind(this,);
 
   /** Toggles state and dispatches a change event. */
   #onHandleClick(): void {
     this.on = !this.on;
-    this.dispatchEvent(new CustomEvent("change", { detail: { on: this.on }, bubbles: true }));
+    this.dispatchEvent(
+      new CustomEvent('change', { detail: { on: this.on, }, bubbles: true, },),
+    );
   }
 
   /** Renders the track and thumb elements into the shadow root. */
   #render(): void {
     const isOn = this.on;
     this.#shadow.replaceChildren(
-      h({ tag: "style", text: TOGGLE_SWITCH_STYLES }),
+      h({ tag: 'style', text: TOGGLE_SWITCH_STYLES, },),
       h({
-        tag: "div",
-        class: "track",
+        tag: 'div',
+        class: 'track',
         children: [
-          h({ tag: "span", class: `thumb ${isOn ? "on" : "off"}`, text: isOn ? "\u2713" : "\u2717" }),
+          h({ tag: 'span', class: `thumb ${isOn ? 'on' : 'off'}`,
+            text: isOn ? '\u2713' : '\u2717', },),
         ],
-      }),
+      },),
     );
   }
 }
 
-customElements.define("toggle-switch", ToggleSwitch);
+customElements.define('toggle-switch', ToggleSwitch,);

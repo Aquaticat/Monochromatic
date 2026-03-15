@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const {$} = types.object.store.from.store.async.named;
+const { $, } = types.object.store.from.store.async.named;
 
 describe($, () => {
   test('creates a store with default configuration', async () => {
@@ -215,4 +215,4 @@ describe($, () => {
     expect(await store.get('a',),).toBeDefined();
     expect(await store.get('e',),).toBeDefined();
   });
-});
+},);

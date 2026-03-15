@@ -4,9 +4,7 @@
  * @module
  */
 
-import type {
-  HookOutputBase,
-} from '@monochromatic-dev/claude-code-plugins-hook-types';
+import type { HookOutputBase, } from '@monochromatic-dev/claude-code-plugins-hook-types';
 
 //region Stdout writing
 
@@ -27,12 +25,10 @@ import type {
  * writeOutput(output)
  * ```
  */
-function writeOutput(output: HookOutputBase): void {
-  process.stdout.write(JSON.stringify(output));
+function writeOutput(output: HookOutputBase,): void {
+  process.stdout.write(JSON.stringify(output,),);
 }
 
 //endregion
 
-export {
-  writeOutput,
-};
+export { writeOutput, };

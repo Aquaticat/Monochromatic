@@ -1,12 +1,18 @@
-import { join, } from 'node:path';
-import { readFile, rm, } from 'node:fs/promises';
-import { type Root, parse as postcssParse, } from 'postcss';
 import {
   afterEach,
   describe,
   expect,
   test,
 } from 'bun:test';
+import {
+  readFile,
+  rm,
+} from 'node:fs/promises';
+import { join, } from 'node:path';
+import {
+  parse as postcssParse,
+  type Root,
+} from 'postcss';
 import {
   build,
   collectMixins,
@@ -19,7 +25,7 @@ import {
 
 // import.meta.dirname is a Bun-specific API (equivalent to __dirname in CJS)
 /** Root fixture directory for all CSS integration tests */
-const fixtureRoot = join(import.meta.dirname, '..', '..', '..', 'test-fixture');
+const fixtureRoot = join(import.meta.dirname, '..', '..', '..', 'test-fixture',);
 
 /**
  * Each entry exercises a different CSS import resolution strategy.
@@ -27,77 +33,86 @@ const fixtureRoot = join(import.meta.dirname, '..', '..', '..', 'test-fixture');
  * - direct file path: resolved by reaching into the package's file tree (no `exports` field)
  */
 const integrationFixtures = [
-  { label: 'exports field', dir: join(fixtureRoot, 'css-importing'), },
-  { label: 'direct file path', dir: join(fixtureRoot, 'css-importing-filepath'), },
+  { label: 'exports field', dir: join(fixtureRoot, 'css-importing',), },
+  { label: 'direct file path', dir: join(fixtureRoot, 'css-importing-filepath',), },
 ] as const;
 
 /** Temporary output path for build tests */
-const tempOutput = join(import.meta.dirname, '..', 'dist', 'test-output.css');
+const tempOutput = join(import.meta.dirname, '..', 'dist', 'test-output.css',);
 
 /**
  * Parses a CSS string into a PostCSS Root for unit testing mixin functions.
  * @param css - Raw CSS string
  * @returns PostCSS Root node
  */
-function parse(css: string): Root {
-  return postcssParse(css);
+function parse(css: string,): Root {
+  return postcssParse(css,);
 }
 
 //endregion Test Helpers
 
 afterEach(async () => {
   mixins.clear();
-  await rm(tempOutput, { force: true, });
-});
+  await rm(tempOutput, { force: true, },);
+},);
 
 //region collectMixins
 
 describe('collectMixins', () => {
   test('collects a mixin definition with body', () => {
-    expect.assertions(2);
+    expect.assertions(2,);
 
     const root = parse(`
       @mixin --center {
         display: flex;
         align-items: center;
       }
-    `);
+    `,);
 
-    collectMixins(root);
+    collectMixins(root,);
 
-    expect(mixins.has('--center')).toBe(true);
+    expect(mixins.has('--center',),).toBe(true,);
     // Definition should be removed from the tree
-    expect(root.toString().trim()).toBe('');
+    expect(root.toString().trim(),).toBe('',);
   });
 
   test('throws on bodyless @mixin (definitions require content)', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
 
     const root = parse(`
       .btn { @mixin --touch-target; }
-    `);
+    `,);
 
-    expect(() =>{  collectMixins(root); }).toThrow('mixin definition must include body');
+    expect(() => {
+      collectMixins(root,);
+    },)
+      .toThrow('mixin definition must include body',);
   });
 
   test('throws on mixed definition followed by bodyless invocation', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
 
     const root = parse(`
       @mixin --bold { font-weight: bold; }
       .title { @mixin --bold; }
-    `);
+    `,);
 
     // The bodyless @mixin --bold; inside .title triggers the error
-    expect(() =>{  collectMixins(root); }).toThrow('mixin definition must include body');
+    expect(() => {
+      collectMixins(root,);
+    },)
+      .toThrow('mixin definition must include body',);
   });
 
   test('throws on @mixin with empty name', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
 
-    const root = parse('@mixin {}');
+    const root = parse('@mixin {}',);
 
-    expect(() =>{  collectMixins(root); }).toThrow('@mixin requires a name');
+    expect(() => {
+      collectMixins(root,);
+    },)
+      .toThrow('@mixin requires a name',);
   });
 });
 
@@ -107,45 +122,51 @@ describe('collectMixins', () => {
 
 describe('expandApplyRules', () => {
   test('expands a simple @apply', () => {
-    expect.assertions(2);
+    expect.assertions(2,);
 
-    mixins.set('--center', parse('display: flex; align-items: center;').nodes);
+    mixins.set('--center', parse('display: flex; align-items: center;',).nodes,);
 
-    const root = parse('.box { @apply --center; }');
-    expandApplyRules(root);
+    const root = parse('.box { @apply --center; }',);
+    expandApplyRules(root,);
 
     const output = root.toString();
-    expect(output).toContain('display: flex');
-    expect(output).toContain('align-items: center');
+    expect(output,).toContain('display: flex',);
+    expect(output,).toContain('align-items: center',);
   });
 
   test('throws on unknown mixin reference', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
 
-    const root = parse('.box { @apply --nonexistent; }');
+    const root = parse('.box { @apply --nonexistent; }',);
 
-    expect(() =>{  expandApplyRules(root); }).toThrow('Unknown mixin: --nonexistent');
+    expect(() => {
+      expandApplyRules(root,);
+    },)
+      .toThrow('Unknown mixin: --nonexistent',);
   });
 
   test('throws on @apply without a name', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
 
-    const root = parse('.box { @apply ; }');
+    const root = parse('.box { @apply ; }',);
 
-    expect(() =>{  expandApplyRules(root); }).toThrow('Mixin name is required');
+    expect(() => {
+      expandApplyRules(root,);
+    },)
+      .toThrow('Mixin name is required',);
   });
 
   test('removes @apply for empty mixin', () => {
-    expect.assertions(2);
+    expect.assertions(2,);
 
-    mixins.set('--empty', []);
+    mixins.set('--empty', [],);
 
-    const root = parse('.box { @apply --empty; color: red; }');
-    expandApplyRules(root);
+    const root = parse('.box { @apply --empty; color: red; }',);
+    expandApplyRules(root,);
 
     const output = root.toString();
-    expect(output).not.toContain('@apply');
-    expect(output).toContain('color: red');
+    expect(output,).not.toContain('@apply',);
+    expect(output,).toContain('color: red',);
   });
 });
 
@@ -155,31 +176,31 @@ describe('expandApplyRules', () => {
 
 describe('expandMixinBodies', () => {
   test('expands nested @apply in mixin bodies', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
 
     // --inner defines styles, --outer references --inner via @apply
-    mixins.set('--inner', parse('display: flex;').nodes);
-    mixins.set('--outer', parse('@apply --inner; padding: 1rem;').nodes);
+    mixins.set('--inner', parse('display: flex;',).nodes,);
+    mixins.set('--outer', parse('@apply --inner; padding: 1rem;',).nodes,);
 
     expandMixinBodies();
 
-    const outerNodes = mixins.get('--outer');
-    const outerStr = (outerNodes ?? []).map((node) => node.toString()).join('');
-    expect(outerStr).toContain('display: flex');
+    const outerNodes = mixins.get('--outer',);
+    const outerStr = (outerNodes ?? []).map(node => node.toString()).join('',);
+    expect(outerStr,).toContain('display: flex',);
   });
 
   test('handles deeply nested references', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
 
-    mixins.set('--a', parse('color: red;').nodes);
-    mixins.set('--b', parse('@apply --a; margin: 0;').nodes);
-    mixins.set('--c', parse('@apply --b; padding: 0;').nodes);
+    mixins.set('--a', parse('color: red;',).nodes,);
+    mixins.set('--b', parse('@apply --a; margin: 0;',).nodes,);
+    mixins.set('--c', parse('@apply --b; padding: 0;',).nodes,);
 
     expandMixinBodies();
 
-    const cNodes = mixins.get('--c');
-    const cStr = (cNodes ?? []).map((node) => node.toString()).join('');
-    expect(cStr).toContain('color: red');
+    const cNodes = mixins.get('--c',);
+    const cStr = (cNodes ?? []).map(node => node.toString()).join('',);
+    expect(cStr,).toContain('color: red',);
   });
 });
 
@@ -189,56 +210,56 @@ describe('expandMixinBodies', () => {
 
 for (const { label, dir, } of integrationFixtures) {
   /** Path to the main CSS entry point for this fixture */
-  const fixtureMainCss = join(dir, 'src', 'main.css');
+  const fixtureMainCss = join(dir, 'src', 'main.css',);
 
   describe(`build (${label})`, () => {
     test('builds fixture CSS with import resolution and mixin expansion', async () => {
-      expect.assertions(5);
+      expect.assertions(5,);
 
       const result = await build({
         input: fixtureMainCss,
         output: tempOutput,
-      });
+      },);
 
       // Imports should be resolved and inlined
-      expect(result).toContain('--primary: rebeccapurple');
+      expect(result,).toContain('--primary: rebeccapurple',);
 
       // @mixin definitions should be removed
-      expect(result).not.toContain('@mixin');
+      expect(result,).not.toContain('@mixin',);
 
       // @apply should be expanded
-      expect(result).not.toContain('@apply');
+      expect(result,).not.toContain('@apply',);
 
       // Mixin content should be inlined
-      expect(result).toContain('display: flex');
-      expect(result).toContain('font-weight: bold');
+      expect(result,).toContain('display: flex',);
+      expect(result,).toContain('font-weight: bold',);
     });
 
     test('writes output file to disk', async () => {
-      expect.assertions(1);
+      expect.assertions(1,);
 
       await build({
         input: fixtureMainCss,
         output: tempOutput,
-      });
+      },);
 
-      const written = await readFile(tempOutput, 'utf8');
-      expect(written).toContain('--primary: rebeccapurple');
+      const written = await readFile(tempOutput, 'utf8',);
+      expect(written,).toContain('--primary: rebeccapurple',);
     });
 
     test('expands nested mixin references in build output', async () => {
-      expect.assertions(2);
+      expect.assertions(2,);
 
       const result = await build({
         input: fixtureMainCss,
         output: tempOutput,
-      });
+      },);
 
       // --card uses @apply --flex-center, so .nested-card should have flex styles
-      expect(result).toContain('.nested-card');
+      expect(result,).toContain('.nested-card',);
       // The flex-center content should appear inside .nested-card
-      const nestedCardMatch = result.slice(result.indexOf('.nested-card'));
-      expect(nestedCardMatch).toContain('display: flex');
+      const nestedCardMatch = result.slice(result.indexOf('.nested-card',),);
+      expect(nestedCardMatch,).toContain('display: flex',);
     });
   });
 }

@@ -56,13 +56,16 @@
  * ```
  */
 
-import type { CssOptions, } from "./index.builders.ts";
-import { buildAtRule, buildRule, } from "./index.builders.ts";
+import type { CssOptions, } from './index.builders.ts';
+import {
+  buildAtRule,
+  buildRule,
+} from './index.builders.ts';
 
 //region Re-exports
 
-export type { StrictCssDeclarations as CssDeclarations } from "./properties.ts";
-export type { CssValue } from "./values.ts";
+export type { StrictCssDeclarations as CssDeclarations, } from './properties.ts';
+export type { CssValue, } from './values.ts';
 export {
   cssCalc,
   cssColorFn,
@@ -90,7 +93,7 @@ export {
   cssVar,
   cssVb,
   cssVi,
-} from "./values.ts";
+} from './values.ts';
 
 //endregion
 
@@ -109,9 +112,8 @@ export {
 /* @__NO_SIDE_EFFECTS__ */ export function $(
   options: CssOptions,
 ): string {
-  if ('rule' in options) {
+  if ('rule' in options)
     return buildRule(options,);
-  }
 
   return buildAtRule(options,);
 }

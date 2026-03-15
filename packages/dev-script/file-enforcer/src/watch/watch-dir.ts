@@ -1,5 +1,8 @@
 import { watch, } from 'node:fs/promises';
-import { classifyEvent, type EventKind, } from './watch-filter.ts';
+import {
+  classifyEvent,
+  type EventKind,
+} from './watch-filter.ts';
 
 /** Minimum delay between re-runs to avoid overlapping executions from rapid saves */
 export const DEBOUNCE_MS = 100;
@@ -23,30 +26,28 @@ export async function watchDirectory(
   dir: string,
   signal: AbortSignal,
   configPath: string,
-  onEvent: (kind: EventKind, filename: string) => void,
+  onEvent: (kind: EventKind, filename: string,) => void,
 ): Promise<void> {
   try {
     /** Async iterator yielding filesystem events in this directory */
-    const watcher = watch(dir, { signal, });
+    const watcher = watch(dir, { signal, },);
     // for-await is the only way to consume an AsyncIterable from fs.watch --
     // there is no functional alternative for an unbounded event stream.
     for await (const event of watcher) {
-      if (event.filename === null) {
+      if (event.filename === null)
         continue;
-      }
       /** Classification determines whether this event triggers action */
       // oxlint-disable-next-line no-await-in-loop -- sequential event processing required by async iterator
-      const kind = await classifyEvent(event.filename, dir, configPath);
-      if (kind === 'ignore') {
+      const kind = await classifyEvent(event.filename, dir, configPath,);
+      if (kind === 'ignore')
         continue;
-      }
-      onEvent(kind, event.filename);
+      onEvent(kind, event.filename,);
     }
-  } catch (watchError: unknown) {
+  }
+  catch (watchError: unknown) {
     // AbortError is expected when closing watchers during re-setup
-    if (watchError instanceof Error && watchError.name === 'AbortError') {
+    if (watchError instanceof Error && watchError.name === 'AbortError')
       return;
-    }
-    console.error(`[file-enforcer] watcher error in ${dir}:`, watchError);
+    console.error(`[file-enforcer] watcher error in ${dir}:`, watchError,);
   }
 }

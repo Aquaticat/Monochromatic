@@ -123,8 +123,11 @@ export type ObjectsMergeRules = {
 
   // Collect all unique property names
   const allKeys = new Set<string>();
-  for (const obj of objs)
-    Object.keys(obj,).forEach(function addKey(key) { allKeys.add(key,); });
+  for (const obj of objs) {
+    Object.keys(obj,).forEach(function addKey(key,) {
+      allKeys.add(key,);
+    },);
+  }
 
   const result: Record<string, unknown> = {};
 
@@ -153,13 +156,13 @@ export type ObjectsMergeRules = {
     if (valuesByType.size > 1) {
       throw new TypeError(
         `Cannot merge property "${key}": mixed types found: ${
-          [...valuesByType.keys()].join(', ',)
+          [...valuesByType.keys(),].join(', ',)
         }`,
       );
     }
 
     // Get the single type and its values
-    const entryArray = [...valuesByType.entries()];
+    const entryArray = [...valuesByType.entries(),];
     const firstEntry = entryArray[0];
     if (!firstEntry)
       continue;
@@ -174,9 +177,9 @@ export type ObjectsMergeRules = {
       // Multiple values of the same type
       // Check for consensus (all values equal)
       const firstValue = values[0];
-      const allEqual = values.every(function checkEqual(value) {
+      const allEqual = values.every(function checkEqual(value,) {
         return JSON.stringify(value,) === JSON.stringify(firstValue,);
-      });
+      },);
 
       if (allEqual)
         result[key] = firstValue;

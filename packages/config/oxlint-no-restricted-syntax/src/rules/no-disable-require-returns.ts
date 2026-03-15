@@ -1,4 +1,4 @@
-import { banDisableRule } from './_ban-disable-factory.ts';
+import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
  * Bans inline suppression of `tsdoc/require-returns`.
@@ -8,5 +8,6 @@ import { banDisableRule } from './_ban-disable-factory.ts';
 export const noDisableRequireReturns = banDisableRule({
   ruleId: 'tsdoc/require-returns',
   description: 'Disallow disabling tsdoc/require-returns. Add @returns tag instead.',
-  message: 'Disabling tsdoc/require-returns is not allowed. Add a @returns tag to the function.',
-});
+  message:
+    'Disabling tsdoc/require-returns is not allowed. Add a @returns tag to the function.',
+},);

@@ -38,34 +38,31 @@ export const requireDestructuredParams: CreateOnceRule = {
         'Function declarations with 2+ parameters must use a single destructured object parameter.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      FunctionDeclaration(node: Span): void {
+      FunctionDeclaration(node: Span,): void {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const fnNode = node as Span & Record<string, unknown>;
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const params = fnNode['params'] as Record<string, unknown> | null | undefined;
-        if (params === undefined || params === null) {
+        if (params === undefined || params === null)
           return;
-        }
 
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const items = params['items'] as Record<string, unknown>[] | null | undefined;
-        if (items === undefined || items === null) {
+        if (items === undefined || items === null)
           return;
-        }
 
         /** Minimum parameter count that triggers the rule. */
         const minParams = 2;
-        if (items.length < minParams) {
+        if (items.length < minParams)
           return;
-        }
 
         context.report({
           node,
           messageId: 'required',
-        });
+        },);
       },
     } as VisitorWithHooks;
   },

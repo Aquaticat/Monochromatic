@@ -1,6 +1,12 @@
-import { H3, HTTPError, defineHandler, getRouterParam, serve, } from 'h3';
 import { $ as memoizeAsync, } from '@monochromatic-dev/module-es/memoize-async';
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+import {
+  defineHandler,
+  getRouterParam,
+  H3,
+  HTTPError,
+  serve,
+} from 'h3';
 import { getSortedFeeds, } from './feed.ts';
 import {
   ignore,
@@ -29,12 +35,12 @@ const memoizedGetSortedItems = await memoizeAsync({
     ReturnType<typeof getSortedItems>
   > {
     const innerL = tagged({ tag: fetchPipeline.name, l, },);
-    innerL.debug('running feed pipeline');
+    innerL.debug('running feed pipeline',);
     const opmls = getOpmls();
     const outlines = await getOutlinesFromOpmls(opmls,);
     const feeds = await getSortedFeeds(outlines,);
     const items = getSortedItems(feeds,);
-    innerL.debug(`pipeline complete: ${String(items.length)} items`);
+    innerL.debug(`pipeline complete: ${String(items.length,)} items`,);
     return items;
   },
   keyFn: function emptyKey() {
@@ -49,11 +55,11 @@ const memoizedGetSortedItems = await memoizeAsync({
 const memoizedGetHtmlBody = await memoizeAsync({
   fn: async function renderPipeline(): Promise<string> {
     const innerL = tagged({ tag: renderPipeline.name, l, },);
-    innerL.debug('rendering HTML body');
+    innerL.debug('rendering HTML body',);
     const fetchSalt = getFetchSalt();
     const items = await memoizedGetSortedItems({ args: [], salt: fetchSalt, },);
     const body = await getIndexHtmlBody({ items, },);
-    innerL.debug(`rendered ${String(body.length)} chars`);
+    innerL.debug(`rendered ${String(body.length,)} chars`,);
     return body;
   },
   keyFn: function emptyKey() {
@@ -88,7 +94,7 @@ app.get(
   '/',
   defineHandler(function handleIndex() {
     return serveIndex({ getHtmlBody, },);
-  }),
+  },),
 );
 
 /**
@@ -96,9 +102,9 @@ app.get(
  */
 app.post(
   '/api/ignore/new',
-  defineHandler(function handleIgnore(event) {
+  defineHandler(function handleIgnore(event,) {
     return ignore(event.req,);
-  }),
+  },),
 );
 
 //endregion h3 application
@@ -106,4 +112,4 @@ app.post(
 /** Running HTTP server instance listening on the configured port. */
 const server = serve(app, { port: PORT, },);
 
-l.info(`listening on ${server.url}`);
+l.info(`listening on ${server.url}`,);

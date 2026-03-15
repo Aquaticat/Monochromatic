@@ -3,10 +3,17 @@
  *
  * Imported by page entry scripts and passed to `injectCSS()`.
  */
-import { primitiveTokens, semanticTokens, darkMode } from "./styles-tokens.ts";
-import { resets, layoutShell } from "./styles-layout.ts";
-import { utilities } from "./styles-utilities.ts";
-import { newTaskPanel } from "./styles-panel.ts";
+import {
+  layoutShell,
+  resets,
+} from './styles-layout.ts';
+import { newTaskPanel, } from './styles-panel.ts';
+import {
+  darkMode,
+  primitiveTokens,
+  semanticTokens,
+} from './styles-tokens.ts';
+import { utilities, } from './styles-utilities.ts';
 
 /** Complete global stylesheet string. */
 export const globalStyles = [
@@ -17,4 +24,5 @@ export const globalStyles = [
   layoutShell,
   utilities,
   newTaskPanel,
-].join('');
+]
+  .join('',);

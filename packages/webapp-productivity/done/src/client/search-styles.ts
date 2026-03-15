@@ -29,7 +29,7 @@ export const searchStyles = `
   border-width: calc(1 / 16 * 1rem);
   border-style: solid;
   border-color: var(--fg);
-  border-radius: ${String(PILL_BORDER_RADIUS_REM)}rem;
+  border-radius: ${String(PILL_BORDER_RADIUS_REM,)}rem;
   padding-block: 0.5rem;
   padding-inline: 0.5rem;
   gap: 0.25rem;

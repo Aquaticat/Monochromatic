@@ -35,32 +35,30 @@ export const validTypes: CreateOnceRule = {
       parseError: 'TSDoc: {{message}}',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     /**
      * Checks node for TSDoc parse errors.
      *
      * @param node - AST node to check
      */
-    function check(node: Span): void {
-      const result = parseTsdocForNode(node, context);
-      if (result === undefined) {
+    function check(node: Span,): void {
+      const result = parseTsdocForNode(node, context,);
+      if (result === undefined)
         return;
-      }
-      result.messages.forEach(function reportMessage(message): void {
+      result.messages.forEach(function reportMessage(message,): void {
         context.report({
           node: result.comment,
           messageId: 'parseError',
-          data: { message: `${message.messageId}: ${message.unformattedText}` },
-        });
-      });
+          data: { message: `${message.messageId}: ${message.unformattedText}`, },
+        },);
+      },);
     }
 
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       before() {
-        if (shouldIgnoreFile(context.filename)) {
+        if (shouldIgnoreFile(context.filename,))
           return false;
-        }
         return undefined;
       },
       FunctionDeclaration: check,
@@ -74,15 +72,12 @@ export const validTypes: CreateOnceRule = {
       VariableDeclaration: check,
       PropertyDefinition: check,
       TSEnumMember: check,
-      Property(node): void {
-        if (node.kind === 'get' || node.kind === 'set') {
-          check(node);
-        }
+      Property(node,): void {
+        if (node.kind === 'get' || node.kind === 'set')
+          check(node,);
       },
     } as VisitorWithHooks;
   },
 };
 
-export {
-  noTypes,
-} from './type-annotations.ts';
+export { noTypes, } from './type-annotations.ts';

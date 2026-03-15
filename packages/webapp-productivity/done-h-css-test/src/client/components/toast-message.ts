@@ -1,6 +1,14 @@
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { cssInt, cssPercent, cssRem, cssTranslateX, cssVar } from "@monochromatic-dev/module-es/h-css";
-import { $ as css } from "../css.ts";
+import {
+  cssInt,
+  cssPercent,
+  cssRem,
+  cssTranslateX,
+  cssVar,
+} from '@monochromatic-dev/module-es/h-css';
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+import { $ as css, } from '../css.ts';
 
 /** Z-index for toast positioning above page content. */
 const TOAST_Z_INDEX = 1_000;
@@ -11,22 +19,23 @@ const STYLES = [
     rule: ':host',
     decls: {
       position: 'fixed',
-      'inset-block-end': cssRem(1),
-      'inset-inline-start': cssPercent(50),
-      transform: cssTranslateX(cssPercent(-50)),
-      'z-index': cssInt(TOAST_Z_INDEX),
+      'inset-block-end': cssRem(1,),
+      'inset-inline-start': cssPercent(50,),
+      transform: cssTranslateX(cssPercent(-50,),),
+      'z-index': cssInt(TOAST_Z_INDEX,),
     },
-  }),
+  },),
   css({
     rule: '.content',
     decls: {
-      'background-color': cssVar('red-bg'),
-      color: cssVar('bg-stronger'),
-      'padding-block': cssRem(0.55),
-      'padding-inline': cssRem(0.85),
+      'background-color': cssVar('red-bg',),
+      color: cssVar('bg-stronger',),
+      'padding-block': cssRem(0.55,),
+      'padding-inline': cssRem(0.85,),
     },
-  }),
-].join('');
+  },),
+]
+  .join('',);
 
 /** Auto-dismiss duration in milliseconds. */
 const DISMISS_MS = 3_000;
@@ -45,7 +54,7 @@ class ToastMessage extends HTMLElement {
   /** Initializes the shadow root. */
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: "open" });
+    this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
   /** Renders content and schedules auto-removal after `DISMISS_MS`. */
@@ -54,28 +63,28 @@ class ToastMessage extends HTMLElement {
     const self = this;
     this.#timer = setTimeout(function dismiss(): void {
       self.remove();
-    }, DISMISS_MS);
+    }, DISMISS_MS,);
   }
 
   /** Cancels the auto-dismiss timer when the element is removed early. */
   disconnectedCallback(): void {
     if (this.#timer !== null) {
-      clearTimeout(this.#timer);
+      clearTimeout(this.#timer,);
       this.#timer = null;
     }
   }
 
   /** Renders the toast content into the shadow root. */
   #render(): void {
-    const message = this.getAttribute("message") ?? "";
+    const message = this.getAttribute('message',) ?? '';
     this.#shadow.replaceChildren(
-      h({ tag: "style", text: STYLES }),
-      h({ tag: "div", class: "content", text: message }),
+      h({ tag: 'style', text: STYLES, },),
+      h({ tag: 'div', class: 'content', text: message, },),
     );
   }
 }
 
-customElements.define("toast-message", ToastMessage);
+customElements.define('toast-message', ToastMessage,);
 
 /**
  * Shows a toast notification that auto-dismisses after 3 seconds.
@@ -83,10 +92,10 @@ customElements.define("toast-message", ToastMessage);
  *
  * @param message - Text to display in the toast
  */
-export function showToast(message: string): void {
-  document.querySelector<HTMLElement>("toast-message")?.remove();
+export function showToast(message: string,): void {
+  document.querySelector<HTMLElement>('toast-message',)?.remove();
 
-  const toast = document.createElement("toast-message");
-  toast.setAttribute("message", message);
-  document.body.append(toast);
+  const toast = document.createElement('toast-message',);
+  toast.setAttribute('message', message,);
+  document.body.append(toast,);
 }

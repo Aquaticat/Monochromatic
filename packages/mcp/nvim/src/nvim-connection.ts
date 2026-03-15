@@ -7,9 +7,12 @@
  * @module
  */
 
-import { attach, type NeovimClient } from "neovim";
-import { readdirSync } from "node:fs";
-import { connect } from "node:net";
+import {
+  attach,
+  type NeovimClient,
+} from 'neovim';
+import { readdirSync, } from 'node:fs';
+import { connect, } from 'node:net';
 
 //region Connection management -- discover and cache connections to all Neovim instances
 
@@ -32,26 +35,25 @@ const clients = new Map<string, NeovimClient>();
 export function findAllSocketPaths(): string[] {
   const found = new Set<string>();
 
-  if (process.env.NVIM !== undefined && process.env.NVIM !== '') {
-    found.add(process.env.NVIM);
-  }
+  if (process.env.NVIM !== undefined && process.env.NVIM !== '')
+    found.add(process.env.NVIM,);
 
   const uid = process.getuid?.();
   if (uid !== undefined) {
     const dir = `/run/user/${uid}`;
     try {
-      const entries = readdirSync(dir).filter(function isNvimSocket(entry) {
-        return entry.startsWith("nvim.");
-      });
-      for (const name of entries) {
-        found.add(`${dir}/${name}`);
-      }
-    } catch {
+      const entries = readdirSync(dir,).filter(function isNvimSocket(entry,) {
+        return entry.startsWith('nvim.',);
+      },);
+      for (const name of entries)
+        found.add(`${dir}/${name}`,);
+    }
+    catch {
       // Directory may not exist or be unreadable; not an error
     }
   }
 
-  return [...found];
+  return [...found,];
 }
 
 /**
@@ -67,15 +69,14 @@ export function findAllSocketPaths(): string[] {
  * const client = connectToSocket("/run/user/1000/nvim.12345.0");
  * ```
  */
-function connectToSocket(socketPath: string): NeovimClient {
-  const cached = clients.get(socketPath);
-  if (cached !== undefined) {
+function connectToSocket(socketPath: string,): NeovimClient {
+  const cached = clients.get(socketPath,);
+  if (cached !== undefined)
     return cached;
-  }
 
-  const socket = connect(socketPath);
-  const nvim = attach({ reader: socket, writer: socket });
-  clients.set(socketPath, nvim);
+  const socket = connect(socketPath,);
+  const nvim = attach({ reader: socket, writer: socket, },);
+  clients.set(socketPath, nvim,);
   return nvim;
 }
 
@@ -99,7 +100,9 @@ export function getAllClients(): NeovimClient[] {
     );
   }
 
-  return paths.map(function connectSocket(socketPath) { return connectToSocket(socketPath); });
+  return paths.map(function connectSocket(socketPath,) {
+    return connectToSocket(socketPath,);
+  },);
 }
 
 //endregion Connection management

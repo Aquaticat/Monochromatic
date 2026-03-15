@@ -5,9 +5,9 @@
  * {@link domainXml} generator.
  */
 
-import { $ as h } from '@monochromatic-dev/module-es/h-xml';
+import { $ as h, } from '@monochromatic-dev/module-es/h-xml';
 
-import type { OsFamily } from './registry.ts';
+import type { OsFamily, } from './registry.ts';
 
 //region Hyper-V enlightenments
 
@@ -27,13 +27,13 @@ import type { OsFamily } from './registry.ts';
 export function hypervFeatures(): string {
   return h({
     tag: 'hyperv',
-    attrs: { mode: 'custom' },
+    attrs: { mode: 'custom', },
     children: [
-      h({ tag: 'relaxed', attrs: { state: 'on' } }),
-      h({ tag: 'vapic', attrs: { state: 'on' } }),
-      h({ tag: 'spinlocks', attrs: { state: 'on', retries: '8191' } }),
+      h({ tag: 'relaxed', attrs: { state: 'on', }, },),
+      h({ tag: 'vapic', attrs: { state: 'on', }, },),
+      h({ tag: 'spinlocks', attrs: { state: 'on', retries: '8191', }, },),
     ],
-  });
+  },);
 }
 
 //endregion Hyper-V enlightenments
@@ -55,18 +55,18 @@ export function hypervFeatures(): string {
  * clockElement('linux');   // => '<clock offset="utc"/>'
  * ```
  */
-export function clockElement(osFamily: OsFamily): string {
+export function clockElement(osFamily: OsFamily,): string {
   if (osFamily === 'windows') {
     return h({
       tag: 'clock',
-      attrs: { offset: 'localtime' },
+      attrs: { offset: 'localtime', },
       children: [
-        h({ tag: 'timer', attrs: { name: 'hypervclock', present: 'yes' } }),
-        h({ tag: 'timer', attrs: { name: 'hpet', present: 'no' } }),
+        h({ tag: 'timer', attrs: { name: 'hypervclock', present: 'yes', }, },),
+        h({ tag: 'timer', attrs: { name: 'hpet', present: 'no', }, },),
       ],
-    });
+    },);
   }
-  return h({ tag: 'clock', attrs: { offset: 'utc' } });
+  return h({ tag: 'clock', attrs: { offset: 'utc', }, },);
 }
 
 //endregion Clock configuration
@@ -86,25 +86,29 @@ export function clockElement(osFamily: OsFamily): string {
  * ideCdromDevices([{ path: '/tmp/win.iso' }]); // => ['<disk type="file" device="cdrom">...']
  * ```
  */
-export function ideCdromDevices(cdroms: readonly { path: string }[]): readonly string[] {
+export function ideCdromDevices(
+  cdroms: readonly { path: string; }[],
+): readonly string[] {
   /** IDE device name sequence: hda through hdd. */
-  const ideDevNames = ['hda', 'hdb', 'hdc', 'hdd'];
-  return cdroms.map(function buildCdromElement(cdrom, index) {
+  const ideDevNames = ['hda', 'hdb', 'hdc', 'hdd',];
+  return cdroms.map(function buildCdromElement(cdrom, index,) {
     const devName = ideDevNames[index];
     if (devName === undefined) {
-      throw new Error(`Too many CDROMs: maximum ${String(ideDevNames.length)} supported`);
+      throw new Error(
+        `Too many CDROMs: maximum ${String(ideDevNames.length,)} supported`,
+      );
     }
     return h({
       tag: 'disk',
-      attrs: { type: 'file', device: 'cdrom' },
+      attrs: { type: 'file', device: 'cdrom', },
       children: [
-        h({ tag: 'driver', attrs: { name: 'qemu', type: 'raw' } }),
-        h({ tag: 'source', attrs: { file: cdrom.path } }),
-        h({ tag: 'target', attrs: { dev: devName, bus: 'ide' } }),
-        h({ tag: 'readonly' }),
+        h({ tag: 'driver', attrs: { name: 'qemu', type: 'raw', }, },),
+        h({ tag: 'source', attrs: { file: cdrom.path, }, },),
+        h({ tag: 'target', attrs: { dev: devName, bus: 'ide', }, },),
+        h({ tag: 'readonly', },),
       ],
-    });
-  });
+    },);
+  },);
 }
 
 //endregion CDROM devices
@@ -126,39 +130,40 @@ export function ideCdromDevices(cdroms: readonly { path: string }[]): readonly s
  * commonDevices('windows'); // => [network, channel, serial, console, video, tablet]
  * ```
  */
-export function commonDevices(osFamily: OsFamily): readonly string[] {
+export function commonDevices(osFamily: OsFamily,): readonly string[] {
   const devices: string[] = [
     // SLIRP user-mode networking for outbound internet without bridge setup
     h({
       tag: 'interface',
-      attrs: { type: 'user' },
+      attrs: { type: 'user', },
       children: [
-        h({ tag: 'model', attrs: { type: 'virtio' } }),
+        h({ tag: 'model', attrs: { type: 'virtio', }, },),
       ],
-    }),
+    },),
     // Guest agent channel for command execution via `virsh qemu-agent-command`
     h({
       tag: 'channel',
-      attrs: { type: 'unix' },
+      attrs: { type: 'unix', },
       children: [
-        h({ tag: 'target', attrs: { type: 'virtio', name: 'org.qemu.guest_agent.0' } }),
+        h({ tag: 'target',
+          attrs: { type: 'virtio', name: 'org.qemu.guest_agent.0', }, },),
       ],
-    }),
+    },),
     // Serial console for interactive shell via `virsh console` (primarily for Linux)
     h({
       tag: 'serial',
-      attrs: { type: 'pty' },
+      attrs: { type: 'pty', },
       children: [
-        h({ tag: 'target', attrs: { port: '0' } }),
+        h({ tag: 'target', attrs: { port: '0', }, },),
       ],
-    }),
+    },),
     h({
       tag: 'console',
-      attrs: { type: 'pty' },
+      attrs: { type: 'pty', },
       children: [
-        h({ tag: 'target', attrs: { type: 'serial', port: '0' } }),
+        h({ tag: 'target', attrs: { type: 'serial', port: '0', }, },),
       ],
-    }),
+    },),
   ];
 
   // Windows requires a VGA device for the WinPE installer and OOBE
@@ -168,14 +173,14 @@ export function commonDevices(osFamily: OsFamily): readonly string[] {
       h({
         tag: 'video',
         children: [
-          h({ tag: 'model', attrs: { type: 'vga', vram: '16384' } }),
+          h({ tag: 'model', attrs: { type: 'vga', vram: '16384', }, },),
         ],
-      }),
+      },),
       // Tablet input device to prevent mouse pointer offset
       h({
         tag: 'input',
-        attrs: { type: 'tablet', bus: 'usb' },
-      }),
+        attrs: { type: 'tablet', bus: 'usb', },
+      },),
     );
   }
 

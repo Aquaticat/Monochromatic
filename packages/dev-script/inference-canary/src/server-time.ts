@@ -40,18 +40,22 @@ export async function fetchServerTimestamp(): Promise<ISOTimestamp> {
   try {
     const response = await fetch(OPENROUTER_MODELS_URL, {
       method: 'HEAD',
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
-    const dateHeader = response.headers.get('date');
+      signal: AbortSignal.timeout(TIMEOUT_MS,),
+    },);
+    const dateHeader = response.headers.get('date',);
     if (dateHeader !== null) {
-      const parsed = new Date(dateHeader);
-      if (!Number.isNaN(parsed.getTime())) {
+      const parsed = new Date(dateHeader,);
+      if (!Number.isNaN(parsed.getTime(),))
         return parsed.toISOString() as ISOTimestamp;
-      }
     }
-    console.warn('[server-time] Date header missing or unparseable, falling back to local clock');
-  } catch (error) {
-    console.warn(`[server-time] HEAD request failed, falling back to local clock: ${String(error)}`);
+    console.warn(
+      '[server-time] Date header missing or unparseable, falling back to local clock',
+    );
+  }
+  catch (error) {
+    console.warn(
+      `[server-time] HEAD request failed, falling back to local clock: ${String(error,)}`,
+    );
   }
   return new Date().toISOString() as ISOTimestamp;
 }

@@ -1,3 +1,10 @@
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  test,
+} from 'bun:test';
 import { exec, } from 'node:child_process';
 import {
   existsSync,
@@ -9,13 +16,6 @@ import {
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import { promisify, } from 'node:util';
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  test,
-} from 'bun:test';
 
 const execAsync = promisify(exec,);
 
@@ -43,7 +43,7 @@ beforeEach(() => {
   // testFile fixture
   testFile = join(testDir, 'test.txt',);
   writeFileSync(testFile, 'Initial content\n',);
-});
+},);
 
 afterEach(() => {
   // Clean up test file
@@ -53,7 +53,7 @@ afterEach(() => {
   // Clean up test directory
   if (existsSync(testDir,))
     rmSync(testDir, { recursive: true, },);
-});
+},);
 
 //endregion Fixture Setup
 
@@ -117,23 +117,26 @@ describe('task-append', () => {
       .toThrow();
   });
 
-  test.skipIf(process.platform === 'win32',)('fails when file has no write permissions', async () => {
-    // Make file read-only
-    writeFileSync(testFile, 'read only content\n', { mode: 0o444, },);
+  test.skipIf(process.platform === 'win32',)('fails when file has no write permissions',
+    async () => {
+      // Make file read-only
+      writeFileSync(testFile, 'read only content\n', { mode: 0o444, },);
 
-    // Bun's appendFile may bypass POSIX permissions in some environments; skip when that happens
-    try {
-      const { appendFile: nodeAppendFile, } = await import('node:fs/promises');
-      await nodeAppendFile(testFile, 'probe',);
-      // If we get here, permissions aren't enforced — skip assertion
-      return;
-    }
-    catch {
-      // Permissions enforced, proceed with test
-    }
+      // Bun's appendFile may bypass POSIX permissions in some environments; skip when that happens
+      try {
+        const { appendFile: nodeAppendFile, } = await import('node:fs/promises');
+        await nodeAppendFile(testFile, 'probe',);
+        // If we get here, permissions aren't enforced — skip assertion
+        return;
+      }
+      catch {
+        // Permissions enforced, proceed with test
+      }
 
-    await expect(execAsync(`bun ${cliPath} "text" --to ${testFile}`,),).rejects.toThrow();
-  },);
+      await expect(execAsync(`bun ${cliPath} "text" --to ${testFile}`,),)
+        .rejects
+        .toThrow();
+    },);
 
   test('preserves existing file content', async () => {
     // Add some initial content

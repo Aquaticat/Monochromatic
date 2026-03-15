@@ -1,8 +1,19 @@
-import {Circle, makeScene2D, Node, Rect} from '@motion-canvas/2d';
-import {createRef, waitFor} from '@motion-canvas/core';
+import {
+  Circle,
+  makeScene2D,
+  Node,
+  Rect,
+} from '@motion-canvas/2d';
+import {
+  createRef,
+  waitFor,
+} from '@motion-canvas/core';
 
-import {type SceneRefs, animateEntry} from './beachball.animations.ts';
-import {animateBounces} from './beachball.bounces.ts';
+import {
+  animateEntry,
+  type SceneRefs,
+} from './beachball.animations.ts';
+import { animateBounces, } from './beachball.bounces.ts';
 import {
   BALL_RADIUS,
   FINAL_WAIT_DURATION,
@@ -15,7 +26,7 @@ import {
   WIDTH,
 } from './beachball.constants.ts';
 
-export default makeScene2D(function* beachballScene(view) {
+export default makeScene2D(function* beachballScene(view,) {
   const refs: SceneRefs = {
     ballGroup: createRef<Node>(),
     ballBody: createRef<Circle>(),
@@ -33,14 +44,13 @@ export default makeScene2D(function* beachballScene(view) {
       width={BALL_RADIUS * 2}
       height={BALL_RADIUS * SHADOW_HEIGHT_RATIO}
       fill={'#000000'}
-      opacity={SHADOW_OPACITY_GROUND}
-    />,
+      opacity={SHADOW_OPACITY_GROUND} />,
   );
 
   view.add(
     <Node ref={refs.ballGroup} x={startX} y={ballRestY}>
       <Circle ref={refs.ballBody} width={BALL_RADIUS * 2} height={BALL_RADIUS * 2} clip>
-        {STRIPE_COLORS.map(function renderStripe(color, stripeIndex) {
+        {STRIPE_COLORS.map(function renderStripe(color, stripeIndex,) {
           const stripeWidth = (BALL_RADIUS * 2) / STRIPE_COUNT;
           const stripeX = -BALL_RADIUS + stripeWidth * stripeIndex + stripeWidth / 2;
           return (
@@ -50,15 +60,14 @@ export default makeScene2D(function* beachballScene(view) {
               y={0}
               width={stripeWidth + 1}
               height={BALL_RADIUS * 2 + 2}
-              fill={color}
-            />
+              fill={color} />
           );
-        })}
+        },)}
       </Circle>
     </Node>,
   );
 
-  yield* animateEntry(refs, ballRestY);
-  yield* animateBounces(refs, ballRestY);
-  yield* waitFor(FINAL_WAIT_DURATION);
-});
+  yield* animateEntry(refs, ballRestY,);
+  yield* animateBounces(refs, ballRestY,);
+  yield* waitFor(FINAL_WAIT_DURATION,);
+},);

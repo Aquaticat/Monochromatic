@@ -117,10 +117,12 @@ export const PATH_TABLE_SIZE = 10;
  *
  * @param len - Fixed-width field length to fill (padded with spaces)
  */
-export function writeStr(buf: Uint8Array, offset: number, str: string, len: number): void {
+export function writeStr(buf: Uint8Array, offset: number, str: string,
+  len: number,): void
+{
   for (let idx = 0; idx < len; idx++) {
     /* oxlint-disable-next-line unicorn/prefer-code-point -- ISO 9660 uses single-byte ASCII; charCodeAt is correct for byte-level buffer operations */
-    buf[offset + idx] = idx < str.length ? str.charCodeAt(idx) : ASCII_SPACE;
+    buf[offset + idx] = idx < str.length ? str.charCodeAt(idx,) : ASCII_SPACE;
   }
 }
 
@@ -133,9 +135,9 @@ export function writeStr(buf: Uint8Array, offset: number, str: string, len: numb
  *
  * @param value - 16-bit unsigned integer to write
  */
-export function writeBoth16(view: DataView, offset: number, value: number): void {
-  view.setUint16(offset, value, true);
-  view.setUint16(offset + 2, value, false);
+export function writeBoth16(view: DataView, offset: number, value: number,): void {
+  view.setUint16(offset, value, true,);
+  view.setUint16(offset + 2, value, false,);
 }
 
 /**
@@ -147,9 +149,9 @@ export function writeBoth16(view: DataView, offset: number, value: number): void
  *
  * @param value - 32-bit unsigned integer to write
  */
-export function writeBoth32(view: DataView, offset: number, value: number): void {
-  view.setUint32(offset, value, true);
-  view.setUint32(offset + DUAL_32_SIZE, value, false);
+export function writeBoth32(view: DataView, offset: number, value: number,): void {
+  view.setUint32(offset, value, true,);
+  view.setUint32(offset + DUAL_32_SIZE, value, false,);
 }
 
 /**
@@ -159,7 +161,7 @@ export function writeBoth32(view: DataView, offset: number, value: number): void
  *
  * @param offset - Byte offset to start writing at
  */
-export function writeTimestamp7(buf: Uint8Array, offset: number): void {
+export function writeTimestamp7(buf: Uint8Array, offset: number,): void {
   buf[offset] = TIMESTAMP_YEAR_SINCE_1900;
   buf[offset + 1] = 1; // month
   buf[offset + 2] = 1; // day
@@ -172,8 +174,8 @@ export function writeTimestamp7(buf: Uint8Array, offset: number): void {
  *
  * @param offset - Byte offset to start writing at
  */
-export function writeTimestamp17(buf: Uint8Array, offset: number): void {
-  writeStr(buf, offset, '2026010100000000', TIMESTAMP_17_STR_LENGTH);
+export function writeTimestamp17(buf: Uint8Array, offset: number,): void {
+  writeStr(buf, offset, '2026010100000000', TIMESTAMP_17_STR_LENGTH,);
 }
 
 //endregion Binary format helpers

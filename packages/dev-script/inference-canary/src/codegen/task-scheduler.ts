@@ -56,14 +56,26 @@ export const taskScheduler = createCodeGenProbe({
     'DONE B @100',
     'DONE C @150',
     'TOTAL 150',
-  ].join('\n'),
-  verify: function verifyTaskScheduler(result): { correctness: number; } {
-    const lines = result.stdout.trim().split('\n').map(function trimLine(line): string { return line.trim(); });
+  ]
+    .join('\n',),
+  verify: function verifyTaskScheduler(result,): { correctness: number; } {
+    const lines = result.stdout.trim().split('\n',).map(function trimLine(line,): string {
+      return line.trim();
+    },);
 
-    if (!lines.some(function hasDoneA(line): boolean { return line.startsWith('DONE A'); })
-      || !lines.some(function hasDoneB(line): boolean { return line.startsWith('DONE B'); })
-      || !lines.some(function hasDoneC(line): boolean { return line.startsWith('DONE C'); })
-      || !lines.some(function hasTotal(line): boolean { return line.startsWith('TOTAL'); })) {
+    if (!lines.some(function hasDoneA(line,): boolean {
+      return line.startsWith('DONE A',);
+    },)
+      || !lines.some(function hasDoneB(line,): boolean {
+        return line.startsWith('DONE B',);
+      },)
+      || !lines.some(function hasDoneC(line,): boolean {
+        return line.startsWith('DONE C',);
+      },)
+      || !lines.some(function hasTotal(line,): boolean {
+        return line.startsWith('TOTAL',);
+      },))
+    {
       return { correctness: 0.1, };
     }
 
@@ -74,28 +86,32 @@ export const taskScheduler = createCodeGenProbe({
      *
      * @returns parsed timestamp in ms, or undefined when not found
      */
-    function extractTime(prefix: string): number | undefined {
-      const line = lines.find(function matchPrefix(lineItem): boolean { return lineItem.startsWith(`DONE ${prefix}`); });
-      if (line === undefined) return undefined;
-      const match = line.match(/@(\d+)/);
-      return match !== null ? Number(match[1]) : undefined;
+    function extractTime(prefix: string,): number | undefined {
+      const line = lines.find(function matchPrefix(lineItem,): boolean {
+        return lineItem.startsWith(`DONE ${prefix}`,);
+      },);
+      if (line === undefined)
+        return undefined;
+      const match = line.match(/@(\d+)/,);
+      return match !== null ? Number(match[1],) : undefined;
     }
 
-    const timeA = extractTime('A');
-    const timeB = extractTime('B');
-    const timeC = extractTime('C');
+    const timeA = extractTime('A',);
+    const timeB = extractTime('B',);
+    const timeC = extractTime('C',);
 
-    if (timeA === undefined || timeB === undefined || timeC === undefined) {
+    if (timeA === undefined || timeB === undefined || timeC === undefined)
       return { correctness: 0.2, };
-    }
 
     const correctCount = [
-      Math.abs(timeA - EXPECTED_AB_TIME) < TIMING_TOLERANCE,
-      Math.abs(timeB - EXPECTED_AB_TIME) < TIMING_TOLERANCE,
-      Math.abs(timeC - EXPECTED_C_TIME) < TIMING_TOLERANCE,
+      Math.abs(timeA - EXPECTED_AB_TIME,) < TIMING_TOLERANCE,
+      Math.abs(timeB - EXPECTED_AB_TIME,) < TIMING_TOLERANCE,
+      Math.abs(timeC - EXPECTED_C_TIME,) < TIMING_TOLERANCE,
       timeC > timeA && timeC > timeB,
-    ].filter(Boolean).length;
+    ]
+      .filter(Boolean,)
+      .length;
 
     return { correctness: correctCount / TOTAL_CHECKS, };
   },
-});
+},);

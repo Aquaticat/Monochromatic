@@ -1,4 +1,4 @@
-import { listDecks } from "../../lib/db/decks.ts";
+import { listDecks, } from '../../lib/db/decks.ts';
 
 /**
  * Renders deck list page with embedded JSON data.
@@ -17,12 +17,12 @@ export async function decksPage(): Promise<Response> {
   <title>Flashcard Quiz</title>
 </head>
 <body>
-  <script type="application/json" id="page-data">${JSON.stringify({ decks })}</script>
+  <script type="application/json" id="page-data">${JSON.stringify({ decks, },)}</script>
   <script type="module" src="/dist/client/decks.js"></script>
 </body>
 </html>`;
 
   return new Response(html, {
-    headers: { "Content-Type": "text/html; charset=utf-8" },
-  });
+    headers: { 'Content-Type': 'text/html; charset=utf-8', },
+  },);
 }

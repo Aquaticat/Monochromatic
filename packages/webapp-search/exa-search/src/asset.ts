@@ -2,13 +2,16 @@
 import { readFile, } from 'node:fs/promises';
 
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
-import clientCss from './index.css' with { type: 'text' };
 import { buildHeader, } from './asset-header.ts';
-import { buildSearchForm, buildStatusSection, } from './asset-page-sections.ts';
+import {
+  buildSearchForm,
+  buildStatusSection,
+} from './asset-page-sections.ts';
 import { buildResultTemplate, } from './asset-result-template.ts';
+import clientCss from './index.css' with { type: 'text', };
 import { l, } from './log.ts';
 
-l.debug(`asset module loading`);
+l.debug(`asset module loading`,);
 
 /**
  * CSS source for the exa-search interface.
@@ -41,7 +44,9 @@ export const indexHtml: string = [
         tag: 'head',
         children: [
           h({ tag: 'meta', attrs: { charset: 'utf8', }, },),
-          h({ tag: 'meta', attrs: { name: 'viewport', content: 'width=device-width, initial-scale=1.0', }, },),
+          h({ tag: 'meta',
+            attrs: { name: 'viewport',
+              content: 'width=device-width, initial-scale=1.0', }, },),
           h({ tag: 'title', text: 'Exa Search', },),
           h({ tag: 'style', html: css, },),
           h({ tag: 'script', attrs: { type: 'module', }, html: safeJs, },),
@@ -69,8 +74,9 @@ export const indexHtml: string = [
       },),
     ],
   },),
-].join('',);
+]
+  .join('',);
 
 //endregion HTML structure
 
-l.debug(`asset module loaded, css ${css.length} chars, js ${js.length} chars`);
+l.debug(`asset module loaded, css ${css.length} chars, js ${js.length} chars`,);

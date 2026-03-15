@@ -1,4 +1,19 @@
 // oxlint-disable typescript/no-unsafe-type-assertion, prefer-destructuring, require-await -- API response types require assertions; provider interface requires async
+import { toGeminiInlineData, } from './encoding.gemini.ts';
+import { geminiEmbedBatch, } from './gemini.batch.ts';
+import {
+  DEFAULT_GEMINI_MODEL,
+  GEMINI_API_BASE,
+  resolveGeminiApiKey,
+} from './gemini.config.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
+import type {
+  GeminiEmbedContentRequest,
+  GeminiEmbedContentResponse,
+} from './types.gemini-api.ts';
 import type {
   EmbeddingProvider,
   EmbeddingResult,
@@ -6,14 +21,6 @@ import type {
   ImageDiffConfig,
   ImageInput,
 } from './types.ts';
-import type {
-  GeminiEmbedContentRequest,
-  GeminiEmbedContentResponse,
-} from './types.gemini-api.ts';
-import { toGeminiInlineData } from './encoding.gemini.ts';
-import { GEMINI_API_BASE, DEFAULT_GEMINI_MODEL, resolveGeminiApiKey } from './gemini.config.ts';
-import { geminiEmbedBatch } from './gemini.batch.ts';
-import { l, tagged } from './log.ts';
 
 /**
  * Compute a single image embedding via the Gemini embedContent API.
@@ -29,22 +36,24 @@ import { l, tagged } from './log.ts';
  * const { embedding } = await geminiEmbed({ path: './photo.png' }, {});
  * ```
  */
-async function geminiEmbed(input: ImageInput, config: ImageDiffConfig): Promise<EmbeddingResult> {
-  const rl = tagged({ tag: geminiEmbed.name, l });
-  rl.debug('computing single image embedding via Gemini');
+async function geminiEmbed(input: ImageInput,
+  config: ImageDiffConfig,): Promise<EmbeddingResult>
+{
+  const rl = tagged({ tag: geminiEmbed.name, l, },);
+  rl.debug('computing single image embedding via Gemini',);
 
-  const apiKey = resolveGeminiApiKey(config.apiKey);
+  const apiKey = resolveGeminiApiKey(config.apiKey,);
   const model = (config.model as GeminiModel | undefined) ?? DEFAULT_GEMINI_MODEL;
-  const inlineData = await toGeminiInlineData(input);
+  const inlineData = await toGeminiInlineData(input,);
 
   const requestBody: GeminiEmbedContentRequest = {
     content: {
-      parts: [{ inline_data: inlineData }],
+      parts: [{ inline_data: inlineData, },],
     },
   };
 
   const url = `${GEMINI_API_BASE}/${model}:embedContent`;
-  rl.debug(`calling Gemini API: ${url}`);
+  rl.debug(`calling Gemini API: ${url}`,);
 
   const response = await fetch(url, {
     method: 'POST',
@@ -52,17 +61,19 @@ async function geminiEmbed(input: ImageInput, config: ImageDiffConfig): Promise<
       'Content-Type': 'application/json',
       'x-goog-api-key': apiKey,
     },
-    body: JSON.stringify(requestBody),
-  });
+    body: JSON.stringify(requestBody,),
+  },);
 
   if (!response.ok) {
     const errorBody = await response.text();
-    rl.error(`Gemini API returned ${String(response.status)}: ${errorBody}`);
-    throw new Error(`Gemini API error (${String(response.status)}): ${errorBody}`);
+    rl.error(`Gemini API returned ${String(response.status,)}: ${errorBody}`,);
+    throw new Error(`Gemini API error (${String(response.status,)}): ${errorBody}`,);
   }
 
   const result = await response.json() as GeminiEmbedContentResponse;
-  rl.debug(`received embedding with ${String(result.embedding.values.length)} dimensions`);
+  rl.debug(
+    `received embedding with ${String(result.embedding.values.length,)} dimensions`,
+  );
 
   return {
     embedding: result.embedding.values,

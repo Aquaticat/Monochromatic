@@ -5,11 +5,14 @@
  * across node_modules, workspace roots, and the Bun store.
  */
 
-import { readdirSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { join } from 'node:path';
+import { readdirSync, } from 'node:fs';
+import { createRequire, } from 'node:module';
+import { join, } from 'node:path';
 
-import { readVersionFromBunStore, readVersionFromPackageJson } from './version-read.ts';
+import {
+  readVersionFromBunStore,
+  readVersionFromPackageJson,
+} from './version-read.ts';
 
 //region Version resolution
 
@@ -31,21 +34,20 @@ import { readVersionFromBunStore, readVersionFromPackageJson } from './version-r
  * resolveNpmNames("eslint", ">=9.29.0") // ["eslint"]
  * ```
  */
-export function resolveNpmNames(catalogKey: string, catalogValue: string): string[] {
+export function resolveNpmNames(catalogKey: string, catalogValue: string,): string[] {
   /** Length of the `npm:` prefix */
   const NPM_PREFIX_LENGTH = 4;
-  if (catalogValue.startsWith('npm:')) {
-    const withoutNpm = catalogValue.slice(NPM_PREFIX_LENGTH);
+  if (catalogValue.startsWith('npm:',)) {
+    const withoutNpm = catalogValue.slice(NPM_PREFIX_LENGTH,);
     // Find the last @ that isn't position 0 (scoped package)
-    const lastAt = withoutNpm.lastIndexOf('@');
-    const aliasTarget = lastAt > 0 ? withoutNpm.slice(0, lastAt) : withoutNpm;
+    const lastAt = withoutNpm.lastIndexOf('@',);
+    const aliasTarget = lastAt > 0 ? withoutNpm.slice(0, lastAt,) : withoutNpm;
     // Key first (bun installs under alias name), then registry target as fallback
-    if (aliasTarget !== catalogKey) {
-      return [catalogKey, aliasTarget];
-    }
-    return [catalogKey];
+    if (aliasTarget !== catalogKey)
+      return [catalogKey, aliasTarget,];
+    return [catalogKey,];
   }
-  return [catalogKey];
+  return [catalogKey,];
 }
 
 /** Cached workspace root directories. */
@@ -65,30 +67,28 @@ let workspaceRootsCache: string[] | undefined = undefined;
  * // ["/home/user/Monochromatic/packages/dev-script/file-enforcer", ...]
  * ```
  */
-function discoverWorkspaceRoots(monorepoRoot: string): string[] {
-  if (workspaceRootsCache !== undefined) {
+function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
+  if (workspaceRootsCache !== undefined)
     return workspaceRootsCache;
-  }
 
-  const packagesDir = join(monorepoRoot, 'packages');
+  const packagesDir = join(monorepoRoot, 'packages',);
   const roots: string[] = [];
 
   try {
-    const categories = readdirSync(packagesDir, { withFileTypes: true });
+    const categories = readdirSync(packagesDir, { withFileTypes: true, },);
     for (const cat of categories) {
-      if (!cat.isDirectory()) {
+      if (!cat.isDirectory())
         continue;
-      }
-      const catPath = join(packagesDir, cat.name);
-      const pkgs = readdirSync(catPath, { withFileTypes: true });
+      const catPath = join(packagesDir, cat.name,);
+      const pkgs = readdirSync(catPath, { withFileTypes: true, },);
       for (const pkg of pkgs) {
-        if (!pkg.isDirectory()) {
+        if (!pkg.isDirectory())
           continue;
-        }
-        roots.push(join(catPath, pkg.name));
+        roots.push(join(catPath, pkg.name,),);
       }
     }
-  } catch {
+  }
+  catch {
     // packages/ dir not found -- return empty
   }
 
@@ -115,43 +115,45 @@ function discoverWorkspaceRoots(monorepoRoot: string): string[] {
  * readInstalledVersion("eslint", "/home/user/Monochromatic") // "10.0.0"
  * ```
  */
-export function readInstalledVersion(npmName: string, monorepoRoot: string): string | undefined {
+export function readInstalledVersion(npmName: string, monorepoRoot: string,):
+  | string
+  | undefined
+{
   // Try root node_modules first
-  const rootPkgJson = join(monorepoRoot, 'node_modules', npmName, 'package.json');
-  const version = readVersionFromPackageJson(rootPkgJson);
-  if (version !== undefined) {
+  const rootPkgJson = join(monorepoRoot, 'node_modules', npmName, 'package.json',);
+  const version = readVersionFromPackageJson(rootPkgJson,);
+  if (version !== undefined)
     return version;
-  }
 
   // Try resolving from monorepo root via createRequire
   try {
-    const require = createRequire(join(monorepoRoot, 'package.json'));
-    const resolved = require.resolve(`${npmName}/package.json`);
-    const rootVersion = readVersionFromPackageJson(resolved);
-    if (rootVersion !== undefined) {
+    const require = createRequire(join(monorepoRoot, 'package.json',),);
+    const resolved = require.resolve(`${npmName}/package.json`,);
+    const rootVersion = readVersionFromPackageJson(resolved,);
+    if (rootVersion !== undefined)
       return rootVersion;
-    }
-  } catch {
+  }
+  catch {
     // Not resolvable from root
   }
 
   // Walk workspace packages and try resolving from each
-  const workspaceRoots = discoverWorkspaceRoots(monorepoRoot);
+  const workspaceRoots = discoverWorkspaceRoots(monorepoRoot,);
   for (const wsRoot of workspaceRoots) {
     try {
-      const require = createRequire(join(wsRoot, 'package.json'));
-      const resolved = require.resolve(`${npmName}/package.json`);
-      const wsVersion = readVersionFromPackageJson(resolved);
-      if (wsVersion !== undefined) {
+      const require = createRequire(join(wsRoot, 'package.json',),);
+      const resolved = require.resolve(`${npmName}/package.json`,);
+      const wsVersion = readVersionFromPackageJson(resolved,);
+      if (wsVersion !== undefined)
         return wsVersion;
-      }
-    } catch {
+    }
+    catch {
       // Not resolvable from this workspace root
     }
   }
 
   // Last resort: scan bun store directory names for transitive deps
-  return readVersionFromBunStore(npmName, monorepoRoot);
+  return readVersionFromBunStore(npmName, monorepoRoot,);
 }
 
 //endregion Version resolution

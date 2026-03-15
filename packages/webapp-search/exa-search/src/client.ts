@@ -1,5 +1,7 @@
 // oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return, typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression, no-shadow, no-warning-comments, typescript/no-misused-promises -- client-side DOM script with untyped external APIs (Exa, Zod, DOM)
-import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
+import {
+  $ as notNullishOrThrow,
+} from '@monochromatic-dev/module-es/not-nullish-or-throw';
 import { prompt, } from '@monochromatic-dev/module-es/ts/deprecated/dom/prompt.ts';
 import { Exa, } from 'exa-js';
 

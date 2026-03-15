@@ -6,7 +6,7 @@
  * - User data is always delimited inside XML-style tags
  * - Output is constrained to JSON so we can validate with a schema
  */
-import type { ChatMessage } from "./client.ts";
+import type { ChatMessage, } from './client.ts';
 
 //region Autofill -- infer metadata from a task title
 
@@ -27,9 +27,10 @@ import type { ChatMessage } from "./client.ts";
 export function buildAutofillMessages(
   title: string,
   existingTags: readonly string[],
-  existingLocations: readonly string[]
+  existingLocations: readonly string[],
 ): ChatMessage[] {
-  const systemPrompt = `You are a task metadata assistant. Given a task title, infer metadata.
+  const systemPrompt =
+    `You are a task metadata assistant. Given a task title, infer metadata.
 Return ONLY valid JSON matching this schema, no other text:
 {
   "tags": string[],
@@ -44,12 +45,16 @@ Rules:
 - priority: null unless clearly implied by urgency words
 - complexity: null unless clearly implied by scope
 
-For consistency, prefer these existing tags when applicable: ${JSON.stringify(existingTags)}
-For consistency, prefer these existing locations when applicable: ${JSON.stringify(existingLocations)}`;
+For consistency, prefer these existing tags when applicable: ${
+      JSON.stringify(existingTags,)
+    }
+For consistency, prefer these existing locations when applicable: ${
+      JSON.stringify(existingLocations,)
+    }`;
 
   return [
-    { role: "system", content: systemPrompt },
-    { role: "user", content: `<task_title>${title}</task_title>` },
+    { role: 'system', content: systemPrompt, },
+    { role: 'user', content: `<task_title>${title}</task_title>`, },
   ];
 }
 
@@ -71,13 +76,15 @@ For consistency, prefer these existing locations when applicable: ${JSON.stringi
  * @returns Chat messages ready for {@link chatCompletion}
  */
 export function buildSuggestionMessages(
-  tasks: readonly { id: string; title: string; tags: string[]; locations: string[]; priority: string | null; dueDate: string | null; complexity: string | null }[],
+  tasks: readonly { id: string; title: string; tags: string[]; locations: string[];
+    priority: string | null; dueDate: string | null; complexity: string | null; }[],
   currentLocation: string | null,
-  focusDirective: string | null
+  focusDirective: string | null,
 ): ChatMessage[] {
   const currentTime = new Date().toISOString();
 
-  const systemPrompt = `You are a task prioritization assistant. Given a list of tasks and the user's current context, return the task IDs ranked by what the user should do next.
+  const systemPrompt =
+    `You are a task prioritization assistant. Given a list of tasks and the user's current context, return the task IDs ranked by what the user should do next.
 Return ONLY a JSON array of task ID strings, most important first. No other text.
 
 Ranking factors (in rough priority order):
@@ -88,18 +95,18 @@ Ranking factors (in rough priority order):
 5. Complexity: prefer lower-complexity tasks when other factors are equal`;
 
   const userContent = `<user_context>
-Location: ${currentLocation ?? "unknown"}
-Focus: ${focusDirective ?? "none"}
+Location: ${currentLocation ?? 'unknown'}
+Focus: ${focusDirective ?? 'none'}
 Time: ${currentTime}
 </user_context>
 
 <user_tasks>
-${JSON.stringify(tasks)}
+${JSON.stringify(tasks,)}
 </user_tasks>`;
 
   return [
-    { role: "system", content: systemPrompt },
-    { role: "user", content: userContent },
+    { role: 'system', content: systemPrompt, },
+    { role: 'user', content: userContent, },
   ];
 }
 

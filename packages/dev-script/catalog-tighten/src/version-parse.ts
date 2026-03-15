@@ -41,14 +41,13 @@ const RANGE_RE = /^(?<prefix>.*?)>=(?<version>.+)$/;
  * parseRange("*") // undefined
  * ```
  */
-export function parseRange(value: string): ParsedRange | undefined {
-  const match = RANGE_RE.exec(value);
-  if (match === null) {
+export function parseRange(value: string,): ParsedRange | undefined {
+  const match = RANGE_RE.exec(value,);
+  if (match === null)
     return undefined;
-  }
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- regex named groups are guaranteed by RANGE_RE pattern
-  const { prefix, version } = match.groups as { prefix: string; version: string };
-  return { prefix, version };
+  const { prefix, version, } = match.groups as { prefix: string; version: string; };
+  return { prefix, version, };
 }
 
 /**
@@ -65,15 +64,15 @@ export function parseRange(value: string): ParsedRange | undefined {
  * splitSemver("7.0.0-dev.20250311") // [7, 0, 0, "dev.20250311"]
  * ```
  */
-function splitSemver(version: string): [number, number, number, string] {
-  const dashIndex = version.indexOf('-');
-  const prerelease = dashIndex === -1 ? '' : version.slice(dashIndex + 1);
-  const coreStr = dashIndex === -1 ? version : version.slice(0, dashIndex);
-  const parts = coreStr.split('.');
+function splitSemver(version: string,): [number, number, number, string,] {
+  const dashIndex = version.indexOf('-',);
+  const prerelease = dashIndex === -1 ? '' : version.slice(dashIndex + 1,);
+  const coreStr = dashIndex === -1 ? version : version.slice(0, dashIndex,);
+  const parts = coreStr.split('.',);
   return [
-    Number(parts[0]),
-    Number(parts[1]),
-    Number(parts[2]),
+    Number(parts[0],),
+    Number(parts[1],),
+    Number(parts[2],),
     prerelease,
   ];
 }
@@ -96,25 +95,21 @@ function splitSemver(version: string): [number, number, number, string] {
  * isStrictlyGreater("7.0.0-dev.1", "7.0.0-dev.2") // true
  * ```
  */
-export function isStrictlyGreater(cataloged: string, installed: string): boolean {
-  const [cMaj, cMin, cPat, cPre] = splitSemver(cataloged);
-  const [iMaj, iMin, iPat, iPre] = splitSemver(installed);
+export function isStrictlyGreater(cataloged: string, installed: string,): boolean {
+  const [cMaj, cMin, cPat, cPre,] = splitSemver(cataloged,);
+  const [iMaj, iMin, iPat, iPre,] = splitSemver(installed,);
 
-  if (iMaj !== cMaj) {
+  if (iMaj !== cMaj)
     return iMaj > cMaj;
-  }
-  if (iMin !== cMin) {
+  if (iMin !== cMin)
     return iMin > cMin;
-  }
-  if (iPat !== cPat) {
+  if (iPat !== cPat)
     return iPat > cPat;
-  }
 
   // Same major.minor.patch -- compare prerelease
   // No prerelease > any prerelease (release is "greater" than prerelease of same triple)
-  if (cPre !== '' && iPre === '') {
+  if (cPre !== '' && iPre === '')
     return true;
-  }
   if (cPre === '' && iPre !== '') {
     // Installed is a prerelease of the same triple -- not greater
     return false;

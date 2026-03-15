@@ -22,8 +22,8 @@
  * @packageDocumentation
  */
 
-import { handleCompare } from './cli.compare.ts';
-import { handleEmbed } from './cli.embed.ts';
+import { handleCompare, } from './cli.compare.ts';
+import { handleEmbed, } from './cli.embed.ts';
 
 /**
  * Exit code for usage errors (missing args, bad flags).
@@ -56,25 +56,24 @@ Examples:
   image-diff compare before.png after.png
   image-diff compare --provider gemini a.png b.png
   image-diff embed photo.png
-  image-diff embed --provider voyage --model voyage-multimodal-3.5 photo.png`);
+  image-diff embed --provider voyage --model voyage-multimodal-3.5 photo.png`,);
   process.exitCode = EXIT_USAGE;
-  throw new Error('Missing or invalid arguments');
+  throw new Error('Missing or invalid arguments',);
 }
 
 /** Raw CLI arguments after the Node/Bun binary and script path. */
-const args = process.argv.slice(2);
+const args = process.argv.slice(2,);
 /** First positional argument selecting the subcommand (`compare` or `embed`). */
 const subcommand = args[0];
 /** Remaining arguments passed through to the subcommand handler. */
-const subArgs = args.slice(1);
+const subArgs = args.slice(1,);
 
-if (subcommand === 'compare') {
-  await handleCompare(subArgs, printUsageAndExit);
-} else if (subcommand === 'embed') {
-  await handleEmbed(subArgs, printUsageAndExit);
-} else {
-  if (subcommand !== undefined) {
-    console.error(`Error: unknown subcommand "${subcommand}"`);
-  }
+if (subcommand === 'compare')
+  await handleCompare(subArgs, printUsageAndExit,);
+else if (subcommand === 'embed')
+  await handleEmbed(subArgs, printUsageAndExit,);
+else {
+  if (subcommand !== undefined)
+    console.error(`Error: unknown subcommand "${subcommand}"`,);
   printUsageAndExit();
 }

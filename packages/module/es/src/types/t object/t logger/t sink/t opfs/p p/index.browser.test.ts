@@ -13,46 +13,46 @@ declare global {
 }
 
 test.describe('OPFS sink', () => {
-  test.beforeEach(async ({ page, }) => {
-    await page.goto('/');
+  test.beforeEach(async ({ page, },) => {
+    await page.goto('/',);
     await page.waitForFunction(() => window.moduleEs !== undefined);
-  });
+  },);
 
-  test('verify function exists and is callable', async ({ page, }) => {
+  test('verify function exists and is callable', async ({ page, },) => {
     const typeofVerify = await page.evaluate(() => {
       const { verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
       return typeof verify;
-    });
-    expect(typeofVerify).toBe('function');
+    },);
+    expect(typeofVerify,).toBe('function',);
   });
 
-  test('verify returns boolean or promise', async ({ page, }) => {
+  test('verify returns boolean or promise', async ({ page, },) => {
     const resultType = await page.evaluate(async () => {
       const { verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
       const result = verify();
       const resolved = result instanceof Promise ? await result : result;
       return typeof resolved;
-    });
-    expect(resultType).toBe('boolean');
+    },);
+    expect(resultType,).toBe('boolean',);
   });
 
-  test('verify detects OPFS availability', async ({ page, }) => {
+  test('verify detects OPFS availability', async ({ page, },) => {
     const result = await page.evaluate(async () => {
       const { verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
       return verify();
-    });
-    expect(result).toBe(true);
+    },);
+    expect(result,).toBe(true,);
   });
 
-  test('sink function exists and is callable', async ({ page, }) => {
+  test('sink function exists and is callable', async ({ page, },) => {
     const typeofSink = await page.evaluate(() => {
       const { $, } = window.moduleEs.types.object.logger.sink.opfs.positional;
       return typeof $;
-    });
-    expect(typeofSink).toBe('function');
+    },);
+    expect(typeofSink,).toBe('function',);
   });
 
-  test('sink writes valid LogRecord', async ({ page, }) => {
+  test('sink writes valid LogRecord', async ({ page, },) => {
     const didNotThrow = await page.evaluate(async () => {
       const { $, verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
       await verify();
@@ -62,20 +62,21 @@ test.describe('OPFS sink', () => {
         timestamp: Date.now(),
       };
       try {
-        await Promise.resolve($(record));
+        await Promise.resolve($(record,),);
         return true;
-      } catch {
+      }
+      catch {
         return false;
       }
-    });
-    expect(didNotThrow).toBe(true);
+    },);
+    expect(didNotThrow,).toBe(true,);
   });
 
-  test('sink handles all log levels', async ({ page, }) => {
+  test('sink handles all log levels', async ({ page, },) => {
     const allSucceeded = await page.evaluate(async () => {
       const { $, verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
       await verify();
-      const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'] as const;
+      const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal',] as const;
       for (const level of levels) {
         const record = {
           level,
@@ -83,17 +84,18 @@ test.describe('OPFS sink', () => {
           timestamp: Date.now(),
         };
         try {
-          await Promise.resolve($(record));
-        } catch {
+          await Promise.resolve($(record,),);
+        }
+        catch {
           return false;
         }
       }
       return true;
-    });
-    expect(allSucceeded).toBe(true);
+    },);
+    expect(allSucceeded,).toBe(true,);
   });
 
-  test('sink handles unicode in message', async ({ page, }) => {
+  test('sink handles unicode in message', async ({ page, },) => {
     const didNotThrow = await page.evaluate(async () => {
       const { $, verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
       await verify();
@@ -103,16 +105,17 @@ test.describe('OPFS sink', () => {
         timestamp: Date.now(),
       };
       try {
-        await Promise.resolve($(record));
+        await Promise.resolve($(record,),);
         return true;
-      } catch {
+      }
+      catch {
         return false;
       }
-    });
-    expect(didNotThrow).toBe(true);
+    },);
+    expect(didNotThrow,).toBe(true,);
   });
 
-  test('sink handles empty message', async ({ page, }) => {
+  test('sink handles empty message', async ({ page, },) => {
     const didNotThrow = await page.evaluate(async () => {
       const { $, verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
       await verify();
@@ -122,16 +125,17 @@ test.describe('OPFS sink', () => {
         timestamp: Date.now(),
       };
       try {
-        await Promise.resolve($(record));
+        await Promise.resolve($(record,),);
         return true;
-      } catch {
+      }
+      catch {
         return false;
       }
-    });
-    expect(didNotThrow).toBe(true);
+    },);
+    expect(didNotThrow,).toBe(true,);
   });
 
-  test('sink handles JSON in message', async ({ page, }) => {
+  test('sink handles JSON in message', async ({ page, },) => {
     const didNotThrow = await page.evaluate(async () => {
       const { $, verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
       await verify();
@@ -141,16 +145,17 @@ test.describe('OPFS sink', () => {
         timestamp: Date.now(),
       };
       try {
-        await Promise.resolve($(record));
+        await Promise.resolve($(record,),);
         return true;
-      } catch {
+      }
+      catch {
         return false;
       }
-    });
-    expect(didNotThrow).toBe(true);
+    },);
+    expect(didNotThrow,).toBe(true,);
   });
 
-  test('sink handles multiline message', async ({ page, }) => {
+  test('sink handles multiline message', async ({ page, },) => {
     const didNotThrow = await page.evaluate(async () => {
       const { $, verify, } = window.moduleEs.types.object.logger.sink.opfs.positional;
       await verify();
@@ -160,12 +165,13 @@ test.describe('OPFS sink', () => {
         timestamp: Date.now(),
       };
       try {
-        await Promise.resolve($(record));
+        await Promise.resolve($(record,),);
         return true;
-      } catch {
+      }
+      catch {
         return false;
       }
-    });
-    expect(didNotThrow).toBe(true);
+    },);
+    expect(didNotThrow,).toBe(true,);
   });
 });

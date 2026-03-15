@@ -8,17 +8,15 @@
  *
  * @returns Parsed page data of the requested type
  */
-export function readPageData<TData>(): TData {
-  const element = document.querySelector<HTMLScriptElement>("#page-data");
-  if (!(element instanceof HTMLScriptElement)) {
-    throw new Error("Missing page data script element");
-  }
+export function readPageData<TData,>(): TData {
+  const element = document.querySelector<HTMLScriptElement>('#page-data',);
+  if (!(element instanceof HTMLScriptElement))
+    throw new Error('Missing page data script element',);
 
   const text = element.textContent;
-  if (text.length === 0) {
-    throw new Error("Page data element is empty");
-  }
+  if (text.length === 0)
+    throw new Error('Page data element is empty',);
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; caller provides the expected shape via TData
-  return JSON.parse(text) as TData;
+  return JSON.parse(text,) as TData;
 }

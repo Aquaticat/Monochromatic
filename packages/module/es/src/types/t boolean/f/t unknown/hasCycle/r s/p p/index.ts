@@ -26,9 +26,8 @@
  * ```
  */
 export function $(value: unknown,): boolean {
-  if (typeof value !== 'object' || value === null) {
+  if (typeof value !== 'object' || value === null)
     return false;
-  }
 
   /** Tracks visited object references. */
   const seen = new WeakSet();
@@ -40,16 +39,13 @@ export function $(value: unknown,): boolean {
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- stack shrinks via pop
   while (stack.length > 0) {
     const current = stack.pop();
-    if (typeof current !== 'object' || current === null) {
+    if (typeof current !== 'object' || current === null)
       continue;
-    }
-    if (seen.has(current,)) {
+    if (seen.has(current,))
       return true;
-    }
     seen.add(current,);
-    for (const child of Object.values(current,)) {
+    for (const child of Object.values(current,))
       stack.push(child,);
-    }
   }
 
   return false;

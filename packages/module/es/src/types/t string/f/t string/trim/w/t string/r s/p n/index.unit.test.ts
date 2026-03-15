@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const {$} = types.string.from.string.trim.with.string.sync.named;
+const { $, } = types.string.from.string.trim.with.string.sync.named;
 
 describe('trim with string - synchronous named', () => {
   test('trims single character from both ends', () => {
@@ -93,15 +93,21 @@ describe('trim with string - synchronous named', () => {
   });
 
   test('removes repeated file extensions from end only when start has different prefix', () => {
-    expect($({ str: '.backup.document.backup', trimmer: '.backup', },),).toBe('.document',);
+    expect($({ str: '.backup.document.backup', trimmer: '.backup', },),).toBe(
+      '.document',
+    );
   });
 
   test('removes trailing slashes from URLs', () => {
-    expect($({ str: 'https://example.com/', trimmer: '/', },),).toBe('https://example.com',);
+    expect($({ str: 'https://example.com/', trimmer: '/', },),).toBe(
+      'https://example.com',
+    );
   });
 
   test('removes multiple trailing slashes from URLs', () => {
-    expect($({ str: 'path/to/directory///', trimmer: '/', },),).toBe('path/to/directory',);
+    expect($({ str: 'path/to/directory///', trimmer: '/', },),).toBe(
+      'path/to/directory',
+    );
   });
 
   test('removes repeated suffixes', () => {

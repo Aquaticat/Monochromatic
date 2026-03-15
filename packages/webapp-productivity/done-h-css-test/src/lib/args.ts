@@ -12,10 +12,10 @@
  *
  * @returns Extracted value, or `undefined` when the argument is absent
  */
-export function getArgumentValue(name: string): string | undefined {
+export function getArgumentValue(name: string,): string | undefined {
   const prefix = `--${name}=`;
-  const argument = process.argv.find(function hasPrefix(entry) {
-    return entry.startsWith(prefix);
-  });
-  return argument?.slice(prefix.length);
+  const argument = process.argv.find(function hasPrefix(entry,) {
+    return entry.startsWith(prefix,);
+  },);
+  return argument?.slice(prefix.length,);
 }

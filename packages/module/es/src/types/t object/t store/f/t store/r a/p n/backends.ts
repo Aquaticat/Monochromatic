@@ -2,10 +2,8 @@
  * Backend querying and default-backend configuration for async stores.
  */
 
-import type {
-  StorageBackend,
-} from '../../../../t/r a/index.ts';
 import type { BackendResult, } from '../../../../consensus.ts';
+import type { StorageBackend, } from '../../../../t/r a/index.ts';
 
 /**
  * Query all backends for a key and return typed results with priority info.
@@ -99,15 +97,17 @@ export function getDefaultBackendsBuilder(): DefaultBackendsBuilder | undefined 
  */
 export async function evictLruEntry(
   { lru, key, backends, logger, }: {
-    lru: { touch(key: string): string | undefined; } | undefined;
+    lru: { touch(key: string,): string | undefined; } | undefined;
     key: string;
     backends: readonly [StorageBackend, ...StorageBackend[],];
-    logger: { debug(msg: string): void; };
+    logger: { debug(msg: string,): void; };
   },
 ): Promise<void> {
-  if (lru === undefined) return;
+  if (lru === undefined)
+    return;
   const evicted = lru.touch(key,);
-  if (evicted === undefined) return;
+  if (evicted === undefined)
+    return;
   logger.debug(`Store.evict: "${evicted}"`,);
   await Promise.all(
     backends.map(async function evictFromBackend(backend,) {

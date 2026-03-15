@@ -8,6 +8,6 @@
   font-display: swap;
 
   src:
-    url("../dist/Aquaticat-Regular.woff2") format("woff2"),
-    url("../dist/Aquaticat-Regular.otf") format("opentype");
+    url('../dist/Aquaticat-Regular.woff2') format('woff2'),
+    url('../dist/Aquaticat-Regular.otf') format('opentype');
 }

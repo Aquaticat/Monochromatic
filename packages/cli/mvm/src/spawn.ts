@@ -1,6 +1,9 @@
 import nanoSpawn from 'nano-spawn';
 
-import { l, tagged } from './log.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
 
 /**
  * Spawns a command and returns its trimmed stdout.
@@ -19,11 +22,13 @@ import { l, tagged } from './log.ts';
  * const output = await spawn({ command: 'virsh', args: ['list', '--all'] });
  * ```
  */
-export async function spawn({ args, command }: { args: readonly string[]; command: string }): Promise<string> {
-  const rl = tagged({ tag: spawn.name, l, });
-  rl.debug(`${command} ${args.join(' ')}`);
+export async function spawn(
+  { args, command, }: { args: readonly string[]; command: string; },
+): Promise<string> {
+  const rl = tagged({ tag: spawn.name, l, },);
+  rl.debug(`${command} ${args.join(' ',)}`,);
 
-  const { stdout } = await nanoSpawn(command, [...args]);
+  const { stdout, } = await nanoSpawn(command, [...args,],);
 
   return stdout.trim();
 }

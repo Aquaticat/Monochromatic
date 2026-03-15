@@ -1,4 +1,4 @@
-import { banDisableRule } from './_ban-disable-factory.ts';
+import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
  * Bans inline suppression of `no-non-null-assertion`
@@ -10,6 +10,8 @@ import { banDisableRule } from './_ban-disable-factory.ts';
  */
 export const noDisableNoNonNullAssertion = banDisableRule({
   ruleId: 'no-non-null-assertion',
-  description: 'Disallow disabling no-non-null-assertion. Use notNullishOrThrow() instead.',
-  message: 'Disabling no-non-null-assertion is not allowed. Use notNullishOrThrow() or an explicit null check.',
-});
+  description:
+    'Disallow disabling no-non-null-assertion. Use notNullishOrThrow() instead.',
+  message:
+    'Disabling no-non-null-assertion is not allowed. Use notNullishOrThrow() or an explicit null check.',
+},);

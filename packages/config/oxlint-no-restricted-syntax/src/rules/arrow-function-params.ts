@@ -36,14 +36,15 @@ type ArrowParamsNode = {
  * // params === '(x: T)'
  * ```
  */
-export function extractParamsText({ fullText, node }: { fullText: string; node: ArrowParamsNode }): string {
+export function extractParamsText(
+  { fullText, node, }: { fullText: string; node: ArrowParamsNode; },
+): string {
   /** Skip `async ` prefix if present. */
   let start = 0;
   if (node.async) {
-    const asyncMatch = fullText.match(/^async\s+/);
-    if (asyncMatch !== null) {
+    const asyncMatch = fullText.match(/^async\s+/,);
+    if (asyncMatch !== null)
       start = asyncMatch[0].length;
-    }
   }
 
   /**
@@ -51,13 +52,13 @@ export function extractParamsText({ fullText, node }: { fullText: string; node: 
    * Count angle bracket depth to handle nested generics.
    */
   if (node.typeParameters !== null && node.typeParameters !== undefined) {
-    const tpText = fullText.slice(start);
-    if (tpText.startsWith('<')) {
+    const tpText = fullText.slice(start,);
+    if (tpText.startsWith('<',)) {
       let depth = 0;
       for (let i = 0; i < tpText.length; i++) {
-        if (tpText[i] === '<') {
+        if (tpText[i] === '<')
           depth++;
-        } else if (tpText[i] === '>') {
+        else if (tpText[i] === '>') {
           depth--;
           if (depth === 0) {
             start += i + 1;
@@ -69,7 +70,7 @@ export function extractParamsText({ fullText, node }: { fullText: string; node: 
   }
 
   /** Now find the balanced parenthesized params. */
-  const rest = fullText.slice(start);
+  const rest = fullText.slice(start,);
   let depth = 0;
   let inString: string | null = null;
 
@@ -81,9 +82,8 @@ export function extractParamsText({ fullText, node }: { fullText: string; node: 
         i++;
         continue;
       }
-      if (ch === inString) {
+      if (ch === inString)
         inString = null;
-      }
       continue;
     }
 
@@ -92,13 +92,12 @@ export function extractParamsText({ fullText, node }: { fullText: string; node: 
       continue;
     }
 
-    if (ch === '(') {
+    if (ch === '(')
       depth++;
-    } else if (ch === ')') {
+    else if (ch === ')') {
       depth--;
-      if (depth === 0) {
-        return rest.slice(0, i + 1);
-      }
+      if (depth === 0)
+        return rest.slice(0, i + 1,);
     }
   }
 

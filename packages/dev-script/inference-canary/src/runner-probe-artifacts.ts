@@ -5,12 +5,18 @@
  * directories, extracting partial completion data from aborted streams, and
  * saving whatever data was collected before a probe failure.
  */
+import {
+  type EnrichedArtifactMeta,
+  writeEnrichedArtifact,
+} from './linter-artifacts.ts';
 import { PartialCompletionError, } from './runner-stream-helpers.ts';
-import { writeEnrichedArtifact, type EnrichedArtifactMeta, } from './linter-artifacts.ts';
 
-import type { CompletionResult, ConfigSnapshot, } from './runner-types.ts';
-import type { RunnerConfig, } from './runner-config.ts';
 import type { Probe, } from './probes.ts';
+import type { RunnerConfig, } from './runner-config.ts';
+import type {
+  CompletionResult,
+  ConfigSnapshot,
+} from './runner-types.ts';
 
 /**
  * Builds a {@link ConfigSnapshot} from the runner configuration.
@@ -19,7 +25,7 @@ import type { Probe, } from './probes.ts';
  *
  * @returns snapshot of the fields relevant for reproducibility
  */
-function snapshotConfig(config: RunnerConfig): ConfigSnapshot {
+function snapshotConfig(config: RunnerConfig,): ConfigSnapshot {
   return {
     verbosity: config.verbosity,
     reasoning: config.reasoning,
@@ -65,12 +71,12 @@ export async function enrichArtifact(
     timing: completion.timing,
     usage: completion.usage,
     finishReason: completion.finishReason,
-    config: snapshotConfig(config),
+    config: snapshotConfig(config,),
     ...(options?.fixPrompt !== undefined ? { fixPrompt: options.fixPrompt, } : {}),
     ...(options?.partial === true ? { partial: true, } : {}),
     ...(options?.error !== undefined ? { error: options.error, } : {}),
   };
-  await writeEnrichedArtifact(enriched, completion.text);
+  await writeEnrichedArtifact(enriched, completion.text,);
 }
 
 /**
@@ -81,8 +87,9 @@ export async function enrichArtifact(
  *
  * @returns partial completion result, or undefined for non-partial errors
  */
-export function extractPartialCompletion(error: unknown): CompletionResult | undefined {
-  if (error instanceof PartialCompletionError) return error.partialResult;
+export function extractPartialCompletion(error: unknown,): CompletionResult | undefined {
+  if (error instanceof PartialCompletionError)
+    return error.partialResult;
   return undefined;
 }
 
@@ -119,7 +126,7 @@ export async function saveFailureArtifacts(
   lastScore: number,
   enrichedInitial: boolean,
 ): Promise<void> {
-  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorMessage = error instanceof Error ? error.message : String(error,);
 
   // If we have a partial completion from an aborted stream, save it.
   // This captures the mid-stream response that would otherwise be lost.
@@ -127,7 +134,7 @@ export async function saveFailureArtifacts(
     await enrichArtifact(probe, config, timestamp, 'initial', partialCompletion, 0, {
       partial: true,
       error: errorMessage,
-    });
+    },);
     return;
   }
 
@@ -135,6 +142,6 @@ export async function saveFailureArtifacts(
   if (lastCompletion !== undefined && !enrichedInitial) {
     await enrichArtifact(probe, config, timestamp, 'initial', lastCompletion, lastScore, {
       error: errorMessage,
-    });
+    },);
   }
 }

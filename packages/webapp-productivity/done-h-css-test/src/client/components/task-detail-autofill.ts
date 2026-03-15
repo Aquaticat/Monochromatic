@@ -4,8 +4,11 @@
  * Encapsulates the timer, abort controller, and autofill state so the main
  * component class stays focused on rendering and event wiring.
  */
-import type { AutofillResult, MetadataState } from "./task-detail-types.ts";
-import { AUTOFILL_DEBOUNCE_MS } from "./task-detail-types.ts";
+import type {
+  AutofillResult,
+  MetadataState,
+} from './task-detail-types.ts';
+import { AUTOFILL_DEBOUNCE_MS, } from './task-detail-types.ts';
 
 /** Options for an autofill request. */
 type AutofillRequestOptions = {
@@ -41,7 +44,7 @@ export class AutofillManager {
     this.autofilled.clear();
     this.loading = false;
     if (this.#timer !== null) {
-      clearTimeout(this.#timer);
+      clearTimeout(this.#timer,);
       this.#timer = null;
     }
     if (this.#abort !== null) {
@@ -55,27 +58,27 @@ export class AutofillManager {
    *
    * @param options - Title, metadata state, and update callback
    */
-  request(options: AutofillRequestOptions): void {
-    if (this.#timer !== null) {
-      clearTimeout(this.#timer);
-    }
+  request(options: AutofillRequestOptions,): void {
+    if (this.#timer !== null)
+      clearTimeout(this.#timer,);
     if (this.#abort !== null) {
       this.#abort.abort();
       this.#abort = null;
     }
-    if (options.title.trim().length === 0) return;
+    if (options.title.trim().length === 0)
+      return;
 
     const self = this;
     this.#timer = setTimeout(function triggerFetch() {
-      void self.#fetch(options);
-    }, AUTOFILL_DEBOUNCE_MS);
+      void self.#fetch(options,);
+    }, AUTOFILL_DEBOUNCE_MS,);
   }
 
   /**
    * Sends an autofill request and merges results into empty metadata fields.
    * Abortable: a new request cancels any in-flight one.
    */
-  async #fetch({ title, metadata, onUpdate }: AutofillRequestOptions): Promise<void> {
+  async #fetch({ title, metadata, onUpdate, }: AutofillRequestOptions,): Promise<void> {
     const controller = new AbortController();
     this.#abort = controller;
     this.loading = true;
@@ -93,37 +96,40 @@ export class AutofillManager {
     };
 
     try {
-      const response = await fetch("/api/ai/autofill", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: title.trim() }),
+      const response = await fetch('/api/ai/autofill', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', },
+        body: JSON.stringify({ title: title.trim(), },),
         signal: controller.signal,
-      });
+      },);
 
-      if (!response.ok) return;
+      if (!response.ok)
+        return;
 
       const result = (await response.json()) as AutofillResult;
       this.autofilled.clear();
 
       if (result.tags.length > 0 && metadata.tags.length === 0) {
         metadata.tags = result.tags;
-        this.autofilled.add("tags");
+        this.autofilled.add('tags',);
       }
       if (result.locations.length > 0 && metadata.locations.length === 0) {
         metadata.locations = result.locations;
-        this.autofilled.add("locations");
+        this.autofilled.add('locations',);
       }
       if (result.priority !== null && metadata.priority === null) {
         metadata.priority = result.priority;
-        this.autofilled.add("priority");
+        this.autofilled.add('priority',);
       }
       if (result.complexity !== null && metadata.complexity === null) {
         metadata.complexity = result.complexity;
-        this.autofilled.add("complexity");
+        this.autofilled.add('complexity',);
       }
-    } catch (error: unknown) {
-      if (error instanceof DOMException && error.name === "AbortError") return;
-      console.error("Autofill request failed:", error);
+    }
+    catch (error: unknown) {
+      if (error instanceof DOMException && error.name === 'AbortError')
+        return;
+      console.error('Autofill request failed:', error,);
     }
   }
 }

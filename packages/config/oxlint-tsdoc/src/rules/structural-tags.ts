@@ -36,40 +36,39 @@ export const tagLines: CreateOnceRule = {
       noBlankBefore: 'Expected a blank line before "{{tag}}".',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
-    return createTsdocVisitor(context, function tagLinesHandler(_node, comment): void {
-      const lines = getCommentLines(comment);
+  createOnce(context: Context,): VisitorWithHooks {
+    return createTsdocVisitor(context, function tagLinesHandler(_node, comment,): void {
+      const lines = getCommentLines(comment,);
       /** Minimum line count for a comment that can contain tag spacing issues. */
       const minContentLines = 3;
-      if (lines.length < minContentLines) {
+      if (lines.length < minContentLines)
         return;
-      }
 
       /**
        * Indentation for blank comment lines: spaces + `*`.
        * Matches the opener's `*` column (column of `/*` + 1).
        */
-      const blankLineIndent = ' '.repeat(comment.loc.start.column + 1);
+      const blankLineIndent = ' '.repeat(comment.loc.start.column + 1,);
       const blankCommentLine = `${blankLineIndent}*`;
 
       // Check each content line (skip opener and closer)
-      const contentLines = lines.slice(1, -1);
-      contentLines.forEach(function checkTagLine(line, index): void {
-        if (index === 0) {
+      const contentLines = lines.slice(1, -1,);
+      contentLines.forEach(function checkTagLine(line, index,): void {
+        if (index === 0)
           return;
-        }
-        const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '').trimStart();
-        if (!trimmed.startsWith('@')) {
+        const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '',).trimStart();
+        if (!trimmed.startsWith('@',))
           return;
-        }
         // Check if previous line is blank
         const prevLine = contentLines[index - 1];
-        if (prevLine === undefined) {
+        if (prevLine === undefined)
           return;
-        }
-        const prevTrimmed = prevLine.trimStart().replace(COMMENT_LINE_PREFIX, '').trimStart();
+        const prevTrimmed = prevLine
+          .trimStart()
+          .replace(COMMENT_LINE_PREFIX, '',)
+          .trimStart();
         if (prevTrimmed.length > 0) {
-          const tagMatch = trimmed.match(/^(@\w+)/);
+          const tagMatch = trimmed.match(/^(@\w+)/,);
           const tag = tagMatch !== null ? tagMatch[1] ?? '@unknown' : '@unknown';
 
           /**
@@ -80,11 +79,11 @@ export const tagLines: CreateOnceRule = {
 
           context.report({
             loc: {
-              start: { line: tagLineNumber, column: 0 },
+              start: { line: tagLineNumber, column: 0, },
             },
             messageId: 'noBlankBefore',
-            data: { tag },
-            fix(fixer: Fixer) {
+            data: { tag, },
+            fix(fixer: Fixer,) {
               /**
                * Insert a blank comment line (`\n *`) just before the tag line.
                * Use `getIndexFromLoc` to find the byte offset of the tag line start,
@@ -93,23 +92,19 @@ export const tagLines: CreateOnceRule = {
               const insertOffset = context.sourceCode.getIndexFromLoc({
                 line: tagLineNumber,
                 column: 0,
-              });
+              },);
               return fixer.insertTextBeforeRange(
-                [insertOffset, insertOffset],
+                [insertOffset, insertOffset,],
                 `${blankCommentLine}\n`,
               );
             },
-          });
+          },);
         }
-      });
-    });
+      },);
+    },);
   },
 };
 
-export {
-  emptyTags,
-} from './empty-tags.ts';
+export { emptyTags, } from './empty-tags.ts';
 
-export {
-  escapeInlineTags,
-} from './tag-escaping.ts';
+export { escapeInlineTags, } from './tag-escaping.ts';

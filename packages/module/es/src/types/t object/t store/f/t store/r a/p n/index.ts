@@ -1,27 +1,32 @@
 import superjson from 'superjson';
 
-import type {
-  $  as Store,
-  StoreConfig,
-  StorageBackend,
-} from '../../../../t/r a/index.ts';
-import type { Serializer, Deserializer, } from '../../../../t/index.ts';
-import { $ as defaultLogger, } from '../../../../../t logger/f/t never/r s/p p/index.ts';
 import {
-  resolveConsensus,
-} from '../../../../consensus.ts';
+  hashString,
+} from '../../../../../../t string/f/_pendingRefactor_type string/hash.ts';
+import {
+  $ as serializeValue,
+} from '../../../../../../t string/f/t unknown/serialize/r s/p n/index.ts';
+import { $ as defaultLogger, } from '../../../../../t logger/f/t never/r s/p p/index.ts';
+import { resolveConsensus, } from '../../../../consensus.ts';
 import { healBackends, } from '../../../../heal.ts';
-import { hashString, } from '../../../../../../t string/f/_pendingRefactor_type string/hash.ts';
-import { $ as serializeValue, } from '../../../../../../t string/f/t unknown/serialize/r s/p n/index.ts';
 import { createLruKeySet, } from '../../../../lruKeySet.ts';
+import type {
+  Deserializer,
+  Serializer,
+} from '../../../../t/index.ts';
+import type {
+  $ as Store,
+  StorageBackend,
+  StoreConfig,
+} from '../../../../t/r a/index.ts';
 import {
   evictLruEntry,
   getDefaultBackendsBuilder,
   queryAllBackends,
 } from './backends.ts';
 
-export type { DefaultBackendsBuilder } from './backends.ts';
-export { configureDefaultBackendsBuilder } from './backends.ts';
+export type { DefaultBackendsBuilder, } from './backends.ts';
+export { configureDefaultBackendsBuilder, } from './backends.ts';
 
 /**
  * Creates a Store instance, using platform-specific default backends
@@ -77,12 +82,16 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
 
   const policies = config.eviction ?? [];
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- future-proofing: more eviction policies will be added
-  const lruPolicy = policies.find(function isLru(p,) { return p.policy === 'lru'; },);
+  const lruPolicy = policies.find(function isLru(p,) {
+    return p.policy === 'lru';
+  },);
   const lru = lruPolicy !== undefined
     ? createLruKeySet(lruPolicy.maxSize,)
     : undefined;
 
-  defaultLogger.debug(`Store "${storeId}" created with ${String(backends.length)} backend(s)`,);
+  defaultLogger.debug(
+    `Store "${storeId}" created with ${String(backends.length,)} backend(s)`,
+  );
 
   const store: Store = {
     storeId,
@@ -114,9 +123,8 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
 
       await healBackends(results, canonicalSerialized, key,);
 
-      if (canonicalSerialized !== undefined) {
+      if (canonicalSerialized !== undefined)
         await evictLruEntry({ lru, key, backends, logger: defaultLogger, },);
-      }
 
       return canonicalSerialized === undefined
         ? undefined
@@ -125,9 +133,8 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
 
     async delete(key: string,): Promise<void> {
       defaultLogger.debug(`Store.delete: "${key}"`,);
-      if (lru !== undefined) {
+      if (lru !== undefined)
         lru.remove(key,);
-      }
       await Promise.all(
         backends.map(async function deleteFromBackend(backend,) {
           await backend.delete(key,);
@@ -137,15 +144,13 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
 
     async clear(): Promise<void> {
       defaultLogger.debug(`Store.clear`,);
-      if (lru !== undefined) {
+      if (lru !== undefined)
         lru.clear();
-      }
       await Promise.all(
         backends.map(async function clearBackend(backend,) {
           // Map and similar backends support clear()
-          if ('clear' in backend && typeof backend.clear === 'function') {
+          if ('clear' in backend && typeof backend.clear === 'function')
             await (backend.clear as () => unknown)();
-          }
         },),
       );
     },

@@ -35,7 +35,10 @@ import {
   writeOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-utils';
 
-import { isAllowed, shouldSkip } from './validation.ts';
+import {
+  isAllowed,
+  shouldSkip,
+} from './validation.ts';
 
 //region Main
 
@@ -48,18 +51,18 @@ const raw = await readStdin();
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
  */
 /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
-const event = JSON.parse(raw) as PreToolUseInput;
+const event = JSON.parse(raw,) as PreToolUseInput;
 
-if (event.tool_name !== 'Bash') {
-  writeOutput({});
-} else {
+if (event.tool_name !== 'Bash')
+  writeOutput({},);
+else {
   /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tool_input shape matches BashToolInput when tool_name is "Bash" */
   /** Typed tool input after verifying tool_name is "Bash". */
   const bashInput = event.tool_input as BashToolInput;
 
-  if (!isAllowed(bashInput.command) || shouldSkip(bashInput.command)) {
-    writeOutput({});
-  } else {
+  if (!isAllowed(bashInput.command,) || shouldSkip(bashInput.command,))
+    writeOutput({},);
+  else {
     /**
      * Absolute path to the filter script, resolved relative to this hook script.
      *
@@ -71,11 +74,11 @@ if (event.tool_name !== 'Bash') {
      * regardless of how it was invoked.
      */
     /** Whether running from the built artifact vs source. */
-    const isBuilt = import.meta.url.endsWith('.mjs')
+    const isBuilt = import.meta.url.endsWith('.mjs',);
     /** Resolved path to the filter script. */
     const filterPath = isBuilt
       ? `${import.meta.dirname}/filter.mjs`
-      : `${import.meta.dirname}/filter.ts`
+      : `${import.meta.dirname}/filter.ts`;
 
     /**
      * Rewritten command that pipes output through the filter.
@@ -132,7 +135,8 @@ if (event.tool_name !== 'Bash') {
      * The filter is designed to always exit 0 (catches all errors internally),
      * so `pipefail` reliably surfaces the original command's exit code.
      */
-    const wrappedCommand = `set -o pipefail && ${bashInput.command} 2>&1 | bun ${filterPath} && true`
+    const wrappedCommand =
+      `set -o pipefail && ${bashInput.command} 2>&1 | bun ${filterPath} && true`;
 
     /** Hook output that rewrites the Bash command to pipe through the filter. */
     const output: PreToolUseOutput = {
@@ -145,7 +149,7 @@ if (event.tool_name !== 'Bash') {
       },
     };
 
-    writeOutput(output);
+    writeOutput(output,);
   }
 }
 

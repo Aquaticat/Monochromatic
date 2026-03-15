@@ -16,16 +16,19 @@
  * const same = dotProduct([1, 0], [1, 0]); // 1
  * ```
  */
-export function dotProduct(a: readonly number[], b: readonly number[]): number {
+export function dotProduct(a: readonly number[], b: readonly number[],): number {
   if (a.length !== b.length) {
-    throw new Error(`Vector length mismatch: ${String(a.length)} vs ${String(b.length)}`);
+    throw new Error(
+      `Vector length mismatch: ${String(a.length,)} vs ${String(b.length,)}`,
+    );
   }
 
   let sum = 0;
   for (let i = 0; i < a.length; i++) {
     const ai = a[i];
     const bi = b[i];
-    if (ai === undefined || bi === undefined) break;
+    if (ai === undefined || bi === undefined)
+      break;
     sum += ai * bi;
   }
   return sum;
@@ -49,9 +52,11 @@ export function dotProduct(a: readonly number[], b: readonly number[]): number {
  * const sim = cosineSimilarity([3, 4], [4, 3]); // ~0.96
  * ```
  */
-export function cosineSimilarity(a: readonly number[], b: readonly number[]): number {
+export function cosineSimilarity(a: readonly number[], b: readonly number[],): number {
   if (a.length !== b.length) {
-    throw new Error(`Vector length mismatch: ${String(a.length)} vs ${String(b.length)}`);
+    throw new Error(
+      `Vector length mismatch: ${String(a.length,)} vs ${String(b.length,)}`,
+    );
   }
 
   let dot = 0;
@@ -61,15 +66,18 @@ export function cosineSimilarity(a: readonly number[], b: readonly number[]): nu
   for (let i = 0; i < a.length; i++) {
     const ai = a[i];
     const bi = b[i];
-    if (ai === undefined || bi === undefined) break;
+    if (ai === undefined || bi === undefined)
+      break;
     dot += ai * bi;
     magA += ai * ai;
     magB += bi * bi;
   }
 
-  const magnitude = Math.sqrt(magA) * Math.sqrt(magB);
+  const magnitude = Math.sqrt(magA,) * Math.sqrt(magB,);
   if (magnitude === 0) {
-    throw new Error('Cannot compute cosine similarity: one or both vectors have zero magnitude');
+    throw new Error(
+      'Cannot compute cosine similarity: one or both vectors have zero magnitude',
+    );
   }
 
   return dot / magnitude;

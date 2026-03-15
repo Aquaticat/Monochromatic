@@ -25,16 +25,14 @@ import type {
   StopOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
 
-import {
-  readStdin,
-} from '@monochromatic-dev/claude-code-plugins-hook-utils';
+import { readStdin, } from '@monochromatic-dev/claude-code-plugins-hook-utils';
 import {
   findTrailingQuestion,
   findUncertainty,
   stripNonProseRegions,
 } from './uncertainty.ts';
 
-export {}
+export {};
 
 //region Main
 
@@ -47,7 +45,7 @@ const raw = await readStdin();
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
  */
 /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
-const event = JSON.parse(raw) as StopInput;
+const event = JSON.parse(raw,) as StopInput;
 
 /**
  * Guard against infinite loops.
@@ -57,16 +55,17 @@ const event = JSON.parse(raw) as StopInput;
 if (event.stop_hook_active) {
   /** Pass-through output allowing the stop when hook is already active. */
   const output: StopOutput = {};
-  process.stdout.write(JSON.stringify(output));
-} else {
+  process.stdout.write(JSON.stringify(output,),);
+}
+else {
   /** Prose content with code blocks, inline code, blockquotes, and quoted strings stripped out. */
-  const prose = stripNonProseRegions(event.last_assistant_message ?? '');
+  const prose = stripNonProseRegions(event.last_assistant_message ?? '',);
 
   /** First uncertainty marker found in the prose, if any. */
-  const match = findUncertainty(prose);
+  const match = findUncertainty(prose,);
 
   /** First trailing question found in the prose, if any. */
-  const question = findTrailingQuestion(prose);
+  const question = findTrailingQuestion(prose,);
 
   /** Collect all applicable reminders into a single block reason. */
   const reasons: string[] = [];
@@ -95,13 +94,14 @@ if (event.stop_hook_active) {
     /** Blocking output with concatenated reason from all matched reminders. */
     const output: StopOutput = {
       decision: 'block',
-      reason: reasons.join(' '),
+      reason: reasons.join(' ',),
     };
-    process.stdout.write(JSON.stringify(output));
-  } else {
+    process.stdout.write(JSON.stringify(output,),);
+  }
+  else {
     /** Pass-through output allowing the stop to proceed. */
     const output: StopOutput = {};
-    process.stdout.write(JSON.stringify(output));
+    process.stdout.write(JSON.stringify(output,),);
   }
 }
 

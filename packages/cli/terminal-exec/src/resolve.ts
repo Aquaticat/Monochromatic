@@ -14,17 +14,27 @@
  * @module
  */
 
-import { parseConfigFiles } from './config.ts';
-import { parseDesktopEntry } from './desktop-entry.ts';
-import { kdeTerminalService } from './kde.ts';
-import { l as parentLogger, tagged } from './log.ts';
-import { scanEntries } from './scan.ts';
-import { type ValidatedEntry, validateEntry } from './validate.ts';
-import { resolveWindowsTerminal } from './windows.ts';
-import { applicationDirs, configPaths, currentDesktops } from './xdg-paths.ts';
+import { parseConfigFiles, } from './config.ts';
+import { parseDesktopEntry, } from './desktop-entry.ts';
+import { kdeTerminalService, } from './kde.ts';
+import {
+  l as parentLogger,
+  tagged,
+} from './log.ts';
+import { scanEntries, } from './scan.ts';
+import {
+  type ValidatedEntry,
+  validateEntry,
+} from './validate.ts';
+import { resolveWindowsTerminal, } from './windows.ts';
+import {
+  applicationDirs,
+  configPaths,
+  currentDesktops,
+} from './xdg-paths.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'resolve', l: parentLogger });
+const l = tagged({ tag: 'resolve', l: parentLogger, },);
 
 /**
  * Successful terminal resolution result.
@@ -49,11 +59,11 @@ export type ResolvedTerminal = ValidatedEntry & {
  */
 export async function resolveTerminal(): Promise<ResolvedTerminal | null> {
   if (process.platform === 'win32') {
-    l.debug('platform: win32');
+    l.debug('platform: win32',);
     return resolveWindowsTerminal();
   }
 
-  l.debug(`platform: ${process.platform} (XDG)`);
+  l.debug(`platform: ${process.platform} (XDG)`,);
   return resolveXdgTerminal();
 }
 /* oxlint-enable require-await */
@@ -66,51 +76,51 @@ export async function resolveTerminal(): Promise<ResolvedTerminal | null> {
  */
 async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
   const desktops = currentDesktops();
-  const configs = configPaths({ desktops });
-  const config = await parseConfigFiles({ paths: configs });
+  const configs = configPaths({ desktops, },);
+  const config = await parseConfigFiles({ paths: configs, },);
 
   const dirs = applicationDirs();
-  const { registry, fallbackIds } = await scanEntries({ dirs });
+  const { registry, fallbackIds, } = await scanEntries({ dirs, },);
 
   //region Build candidate list: explicit entries, then KDE fallback, then fallback scan
-  let explicitIds = [...config.entryIds];
+  let explicitIds = [...config.entryIds,];
 
   if (explicitIds.length === 0) {
-    l.debug('no explicit entries in config, checking kdeglobals');
+    l.debug('no explicit entries in config, checking kdeglobals',);
     const kdeId = await kdeTerminalService();
     if (kdeId !== null) {
-      explicitIds = [kdeId];
-      l.debug(`using KDE TerminalService '${kdeId}' as explicit entry`);
+      explicitIds = [kdeId,];
+      l.debug(`using KDE TerminalService '${kdeId}' as explicit entry`,);
     }
   }
 
   /** Fallback IDs with exclusions applied. */
-  const filteredFallbackIds = fallbackIds.filter(function notExcluded(id) {
-    return !config.excludedIds.has(id);
-  });
+  const filteredFallbackIds = fallbackIds.filter(function notExcluded(id,) {
+    return !config.excludedIds.has(id,);
+  },);
   //endregion
 
   //region Try explicit entries first (bypass OnlyShowIn/NotShowIn)
   for (const entryId of explicitIds) {
     /* oxlint-disable-next-line no-await-in-loop -- sequential: first valid entry wins */
-    const result = await tryEntry({ entryId, registry, desktops, isFallback: false, config });
-    if (result !== null) {
-      return { ...result, entryId };
-    }
+    const result = await tryEntry({ entryId, registry, desktops, isFallback: false,
+      config, },);
+    if (result !== null)
+      return { ...result, entryId, };
   }
   //endregion
 
   //region Try fallback entries
   for (const entryId of filteredFallbackIds) {
     /* oxlint-disable-next-line no-await-in-loop -- sequential: first valid entry wins */
-    const result = await tryEntry({ entryId, registry, desktops, isFallback: true, config });
-    if (result !== null) {
-      return { ...result, entryId };
-    }
+    const result = await tryEntry({ entryId, registry, desktops, isFallback: true,
+      config, },);
+    if (result !== null)
+      return { ...result, entryId, };
   }
   //endregion
 
-  l.debug('no valid terminal emulator found');
+  l.debug('no valid terminal emulator found',);
   return null;
 }
 
@@ -129,29 +139,28 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
  *
  * @returns Validated entry or `null`.
  */
-async function tryEntry({ entryId, registry, desktops, isFallback, config }: {
+async function tryEntry({ entryId, registry, desktops, isFallback, config, }: {
   entryId: string;
-  registry: ReadonlyMap<string, { readonly id: string; readonly path: string }>;
+  registry: ReadonlyMap<string, { readonly id: string; readonly path: string; }>;
   desktops: readonly string[];
   isFallback: boolean;
-  config: { readonly execArgDefaults: ReadonlyMap<string, string> };
-}): Promise<ValidatedEntry | null> {
-  const reg = registry.get(entryId);
+  config: { readonly execArgDefaults: ReadonlyMap<string, string>; };
+},): Promise<ValidatedEntry | null> {
+  const reg = registry.get(entryId,);
   if (reg === undefined) {
-    l.debug(`entry '${entryId}' not found in registry`);
+    l.debug(`entry '${entryId}' not found in registry`,);
     return null;
   }
 
-  const entry = await parseDesktopEntry({ path: reg.path });
-  if (entry === null) {
+  const entry = await parseDesktopEntry({ path: reg.path, },);
+  if (entry === null)
     return null;
-  }
 
   return validateEntry({
     entry,
     entryId,
     desktops,
     isFallback,
-    execArgDefault: config.execArgDefaults.get(entryId) ?? '',
-  });
+    execArgDefault: config.execArgDefaults.get(entryId,) ?? '',
+  },);
 }

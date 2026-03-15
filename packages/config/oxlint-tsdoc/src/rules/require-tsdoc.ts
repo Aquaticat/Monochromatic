@@ -4,9 +4,9 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import { shouldIgnoreFile } from '../tsdoc-utils.ts';
+import { shouldIgnoreFile, } from '../tsdoc-utils.ts';
 
-import { reportMissing } from './node-extraction.ts';
+import { reportMissing, } from './node-extraction.ts';
 
 /**
  * Requires TSDoc comments on module-level documentable declarations.
@@ -41,7 +41,7 @@ export const requireTsdoc: CreateOnceRule = {
       missing: 'Missing TSDoc comment on {{kind}} "{{name}}".',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     /** Tracks nesting depth inside function-like scopes. */
     let scopeDepth = 0;
     /** Tracks nesting depth inside block scopes (for-loop bodies, if-else, try-catch). */
@@ -52,13 +52,12 @@ export const requireTsdoc: CreateOnceRule = {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       before() {
-        if (shouldIgnoreFile(context.filename)) {
+        if (shouldIgnoreFile(context.filename,))
           return false;
-        }
         return undefined;
       },
-      FunctionDeclaration(node): void {
-        reportMissing(node, context);
+      FunctionDeclaration(node,): void {
+        reportMissing(node, context,);
         scopeDepth++;
       },
       'FunctionDeclaration:exit'(): void {
@@ -76,45 +75,53 @@ export const requireTsdoc: CreateOnceRule = {
       'ArrowFunctionExpression:exit'(): void {
         scopeDepth--;
       },
-      ClassDeclaration(node): void {
-        reportMissing(node, context);
+      ClassDeclaration(node,): void {
+        reportMissing(node, context,);
       },
-      MethodDefinition(node): void {
-        reportMissing(node, context);
+      MethodDefinition(node,): void {
+        reportMissing(node, context,);
       },
-      TSInterfaceDeclaration(node): void {
-        reportMissing(node, context);
+      TSInterfaceDeclaration(node,): void {
+        reportMissing(node, context,);
       },
-      TSTypeAliasDeclaration(node): void {
-        reportMissing(node, context);
+      TSTypeAliasDeclaration(node,): void {
+        reportMissing(node, context,);
       },
-      TSEnumDeclaration(node): void {
-        reportMissing(node, context);
+      TSEnumDeclaration(node,): void {
+        reportMissing(node, context,);
       },
-      BlockStatement(): void { blockDepth++; },
-      'BlockStatement:exit'(): void { blockDepth--; },
-      ForStatement(): void { inForLoopInit = true; },
-      ForOfStatement(): void { inForLoopInit = true; },
-      ForInStatement(): void { inForLoopInit = true; },
-      VariableDeclaration(node): void {
+      BlockStatement(): void {
+        blockDepth++;
+      },
+      'BlockStatement:exit'(): void {
+        blockDepth--;
+      },
+      ForStatement(): void {
+        inForLoopInit = true;
+      },
+      ForOfStatement(): void {
+        inForLoopInit = true;
+      },
+      ForInStatement(): void {
+        inForLoopInit = true;
+      },
+      VariableDeclaration(node,): void {
         if (inForLoopInit) {
           inForLoopInit = false;
           return;
         }
-        if (scopeDepth === 0 && blockDepth === 0) {
-          reportMissing(node, context);
-        }
+        if (scopeDepth === 0 && blockDepth === 0)
+          reportMissing(node, context,);
       },
-      PropertyDefinition(node): void {
-        reportMissing(node, context);
+      PropertyDefinition(node,): void {
+        reportMissing(node, context,);
       },
-      TSEnumMember(node): void {
-        reportMissing(node, context);
+      TSEnumMember(node,): void {
+        reportMissing(node, context,);
       },
-      Property(node): void {
-        if (node.kind === 'get' || node.kind === 'set') {
-          reportMissing(node, context);
-        }
+      Property(node,): void {
+        if (node.kind === 'get' || node.kind === 'set')
+          reportMissing(node, context,);
       },
     } as VisitorWithHooks;
   },

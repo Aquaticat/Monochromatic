@@ -24,7 +24,8 @@ import { match, } from 'ts-pattern';
  */
 export function serializePrimitive(
   obj: unknown,
-  primitiveObjType: 'boolean' | 'string' | 'number' | 'date' | 'bigint' | 'null' | 'undefined' | 'NaN' | 'symbol',
+  primitiveObjType: 'boolean' | 'string' | 'number' | 'date' | 'bigint' | 'null'
+    | 'undefined' | 'NaN' | 'symbol',
 ): string {
   return match(primitiveObjType,)
     .with('boolean', function handler() {
@@ -58,7 +59,7 @@ export function serializePrimitive(
     },)
     .with('symbol', function handler() {
       const symbolObj = obj as symbol;
-      const {description} = symbolObj;
+      const { description, } = symbolObj;
       return description !== undefined
         ? `Symbol(${JSON.stringify(description,)})`
         : 'Symbol()';

@@ -20,19 +20,20 @@ import {
   readFileSync,
   writeFileSync,
 } from 'node:fs';
-import { join } from 'node:path';
+import { join, } from 'node:path';
 
 import type {
   HookInput,
   HookOutputBase,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
-import {
-  readStdin,
-} from '@monochromatic-dev/claude-code-plugins-hook-utils';
+import { readStdin, } from '@monochromatic-dev/claude-code-plugins-hook-utils';
 
-import { handleSessionStart } from './hook-session-start.ts';
-import { checkCompletedChildren } from './inject.ts';
-import { SPAWNS_DIR, type SpawnState } from './paths.ts';
+import { handleSessionStart, } from './hook-session-start.ts';
+import { checkCompletedChildren, } from './inject.ts';
+import {
+  SPAWNS_DIR,
+  type SpawnState,
+} from './paths.ts';
 
 export {};
 
@@ -43,7 +44,7 @@ const raw = await readStdin();
 
 /** Parsed hook event payload deserialized from stdin. */
 /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
-const event = JSON.parse(raw) as HookInput;
+const event = JSON.parse(raw,) as HookInput;
 
 //endregion
 
@@ -54,26 +55,26 @@ if (event.hook_event_name === 'SessionStart') {
     sessionId: event.session_id,
     transcriptPath: event.transcript_path,
     hookDir: import.meta.dir,
-  });
-  process.stdout.write(output);
+  },);
+  process.stdout.write(output,);
 
-//endregion
+  //endregion
 
-//region Stop — update child lastMessage; consume via blocking reason on parent
-
-} else if (event.hook_event_name === 'Stop') {
+  //region Stop — update child lastMessage; consume via blocking reason on parent
+}
+else if (event.hook_event_name === 'Stop') {
   /** Spawn identifier from the environment, present only in child sessions. */
   const spawnId = process.env.CLAUDE_SPAWN_ID;
 
   if (spawnId !== undefined && event.last_assistant_message !== undefined) {
     /** Path to this child's spawn state JSON file. */
-    const filePath = join(SPAWNS_DIR, `${spawnId}.json`);
+    const filePath = join(SPAWNS_DIR, `${spawnId}.json`,);
 
     try {
       /** Raw JSON content of the existing spawn state file. */
-      const existing = readFileSync(filePath, 'utf8');
+      const existing = readFileSync(filePath, 'utf8',);
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
-      const state = JSON.parse(existing) as SpawnState;
+      const state = JSON.parse(existing,) as SpawnState;
 
       /**
        * Only update if this session owns the spawn file.
@@ -81,10 +82,12 @@ if (event.hook_event_name === 'SessionStart') {
        * `session_id` than the one registered by the genuine child's SessionStart.
        */
       if (state.sessionId === event.session_id) {
-        const updated: SpawnState = { ...state, lastMessage: event.last_assistant_message, status: 'stopped' };
-        writeFileSync(filePath, JSON.stringify(updated));
+        const updated: SpawnState = { ...state, lastMessage: event.last_assistant_message,
+          status: 'stopped', };
+        writeFileSync(filePath, JSON.stringify(updated,),);
       }
-    } catch {
+    }
+    catch {
       /** File missing (already `.reported`) or unreadable — skip. */
     }
   }
@@ -95,7 +98,8 @@ if (event.hook_event_name === 'SessionStart') {
    * Skip when `stop_hook_active` is true to prevent infinite block loops.
    */
   if (!event.stop_hook_active) {
-    const context = checkCompletedChildren({ parentSessionId: event.session_id, consume: true });
+    const context = checkCompletedChildren({ parentSessionId: event.session_id,
+      consume: true, },);
 
     if (context !== null) {
       /** Block the stop and deliver spawn results as the reason. */
@@ -103,30 +107,30 @@ if (event.hook_event_name === 'SessionStart') {
         decision: 'block' as const,
         reason: context,
       };
-      process.stdout.write(JSON.stringify(output));
+      process.stdout.write(JSON.stringify(output,),);
       /* Return early — do not emit empty pass-through. */
-      process.exit(0);
+      process.exit(0,);
     }
   }
 
   /** Pass-through: no completed children or already in a stop-hook continuation. */
   const output: HookOutputBase = {};
-  process.stdout.write(JSON.stringify(output));
+  process.stdout.write(JSON.stringify(output,),);
 
-//endregion
+  //endregion
 
-//region SessionEnd — no-op (status already set by Stop hook)
-
-} else if (event.hook_event_name === 'SessionEnd') {
+  //region SessionEnd — no-op (status already set by Stop hook)
+}
+else if (event.hook_event_name === 'SessionEnd') {
   /** Empty pass-through output for the session end event. */
   const output: HookOutputBase = {};
-  process.stdout.write(JSON.stringify(output));
+  process.stdout.write(JSON.stringify(output,),);
 
-//endregion
+  //endregion
 
-//region Other hooks — consuming additionalContext injection
-
-} else {
+  //region Other hooks — consuming additionalContext injection
+}
+else {
   /**
    * Consuming read: checks for completed children and renames files to `.reported`.
    *
@@ -140,7 +144,8 @@ if (event.hook_event_name === 'SessionStart') {
    * UserPromptSubmit (stdout) and Stop (blocking reason) provide redundant
    * delivery paths if `additionalContext` is ever broken for plugin hooks.
    */
-  const context = checkCompletedChildren({ parentSessionId: event.session_id, consume: true });
+  const context = checkCompletedChildren({ parentSessionId: event.session_id,
+    consume: true, },);
 
   if (context !== null) {
     /** Hook output carrying completed child results as additional context (best-effort). */
@@ -150,11 +155,12 @@ if (event.hook_event_name === 'SessionStart') {
         additionalContext: context,
       },
     };
-    process.stdout.write(JSON.stringify(output));
-  } else {
+    process.stdout.write(JSON.stringify(output,),);
+  }
+  else {
     /** Empty pass-through output when no children have completed. */
     const output: HookOutputBase = {};
-    process.stdout.write(JSON.stringify(output));
+    process.stdout.write(JSON.stringify(output,),);
   }
 }
 

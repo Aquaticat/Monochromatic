@@ -4,7 +4,9 @@
  * Pure functions that construct `\<nav\>`, `\<header\>`, and close-button elements.
  * Used by both the inline sidebar and popover panel trees.
  */
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
 
 /**
  * Builds a nav element with the standard link set.
@@ -13,14 +15,14 @@ import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlEle
  */
 export function buildNav(): HTMLElement {
   return h({
-    tag: "nav",
+    tag: 'nav',
     children: [
-      h({ tag: "a", attrs: { href: "/" }, text: "Inbox" }),
-      h({ tag: "a", attrs: { href: "/in-progress" }, text: "In Progress" }),
-      h({ tag: "a", attrs: { href: "/settings" }, text: "Settings" }),
-      h({ tag: "a", attrs: { href: "#" }, text: "Contact" }),
+      h({ tag: 'a', attrs: { href: '/', }, text: 'Inbox', },),
+      h({ tag: 'a', attrs: { href: '/in-progress', }, text: 'In Progress', },),
+      h({ tag: 'a', attrs: { href: '/settings', }, text: 'Settings', },),
+      h({ tag: 'a', attrs: { href: '#', }, text: 'Contact', },),
     ],
-  });
+  },);
 }
 
 /**
@@ -30,14 +32,13 @@ export function buildNav(): HTMLElement {
  *
  * @returns Header element
  */
-export function buildHeader(closeButton: HTMLElement | null): HTMLElement {
+export function buildHeader(closeButton: HTMLElement | null,): HTMLElement {
   const children: HTMLElement[] = [
-    h({ tag: "span", style: { fontSize: "1.25rem" }, text: "Firstname" }),
+    h({ tag: 'span', style: { fontSize: '1.25rem', }, text: 'Firstname', },),
   ];
-  if (closeButton !== null) {
-    children.push(closeButton);
-  }
-  return h({ tag: "div", class: "header", children });
+  if (closeButton !== null)
+    children.push(closeButton,);
+  return h({ tag: 'div', class: 'header', children, },);
 }
 
 /**
@@ -47,13 +48,14 @@ export function buildHeader(closeButton: HTMLElement | null): HTMLElement {
  *
  * @returns Close button element
  */
-export function buildCloseButton(label: string): HTMLElement {
+export function buildCloseButton(label: string,): HTMLElement {
   const button = h({
-    tag: "button",
-    class: "close",
-    attrs: { "aria-label": label },
-  });
+    tag: 'button',
+    class: 'close',
+    attrs: { 'aria-label': label, },
+  },);
   // innerHTML for SVG: h() creates HTML-namespace elements, SVG needs SVG namespace
-  button.innerHTML = `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4"><line x1="14" y1="14" x2="34" y2="34"/><line x1="34" y1="14" x2="14" y2="34"/></svg>`;
+  button.innerHTML =
+    `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4"><line x1="14" y1="14" x2="34" y2="34"/><line x1="34" y1="14" x2="14" y2="34"/></svg>`;
   return button;
 }

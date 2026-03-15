@@ -32,9 +32,9 @@ export type CaptureSet = {
  */
 type CaptureBuffer =
   | []
-  | [CaptureSet]
-  | [CaptureSet, CaptureSet]
-  | [CaptureSet, CaptureSet, CaptureSet];
+  | [CaptureSet,]
+  | [CaptureSet, CaptureSet,]
+  | [CaptureSet, CaptureSet, CaptureSet,];
 
 /** Rolling in-memory buffer of recent capture sets. */
 let buffer: CaptureBuffer = [];
@@ -50,9 +50,9 @@ let buffer: CaptureBuffer = [];
  * store({ timestamp: Date.now(), screenshot, webcam });
  * ```
  */
-export function store(set: CaptureSet): void {
+export function store(set: CaptureSet,): void {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- bounded tuple enforced by MAX_ENTRIES slice
-  const next = [...buffer, set].slice(-MAX_ENTRIES) as CaptureBuffer;
+  const next = [...buffer, set,].slice(-MAX_ENTRIES,) as CaptureBuffer;
   buffer = next;
   prune();
 }
@@ -70,7 +70,7 @@ export function store(set: CaptureSet): void {
  */
 export function getRecent(): CaptureSet[] {
   prune();
-  return [...buffer];
+  return [...buffer,];
 }
 
 /**
@@ -82,7 +82,7 @@ export function getRecent(): CaptureSet[] {
  *
  * @returns true when the set should be kept
  */
-function isAfterCutoff(cutoff: number, s: CaptureSet): boolean {
+function isAfterCutoff(cutoff: number, s: CaptureSet,): boolean {
   return s.timestamp >= cutoff;
 }
 
@@ -92,5 +92,7 @@ function isAfterCutoff(cutoff: number, s: CaptureSet): boolean {
 function prune(): void {
   const cutoff = Date.now() - RETENTION_MS;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- bounded tuple enforced by filter subset
-  buffer = buffer.filter(function checkRetention(s) { return isAfterCutoff(cutoff, s); }) as CaptureBuffer;
+  buffer = buffer.filter(function checkRetention(s,) {
+    return isAfterCutoff(cutoff, s,);
+  },) as CaptureBuffer;
 }

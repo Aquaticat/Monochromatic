@@ -6,12 +6,18 @@
  * Also detects whole-model failure artifacts so the runner can skip all probes
  * for models that recently failed entirely (e.g. 429 errors).
  */
-import { readdir, readFile, } from 'node:fs/promises';
+import {
+  readdir,
+  readFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { LINT_DIR, } from './linter-artifacts.ts';
 
-import type { ArtifactMeta, FailureArtifactMeta, } from './linter-artifacts.ts';
+import type {
+  ArtifactMeta,
+  FailureArtifactMeta,
+} from './linter-artifacts.ts';
 
 /** Hours in a day */
 const HOURS_PER_DAY = 24;
@@ -26,7 +32,10 @@ const SECONDS_PER_MINUTE = 60;
 const MS_PER_SECOND = 1_000;
 
 /** 24 hours in milliseconds */
-const TWENTY_FOUR_HOURS_MS = HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MS_PER_SECOND;
+const TWENTY_FOUR_HOURS_MS = HOURS_PER_DAY
+  * MINUTES_PER_HOUR
+  * SECONDS_PER_MINUTE
+  * MS_PER_SECOND;
 
 /**
  * Regex to parse artifact directory names into (probe, pass, timestamp) components.
@@ -74,8 +83,8 @@ const FAILURE_DIR_PATTERN = /^failure-(?<timestamp>\d{4}-.+)$/;
  *
  * @returns ISO 8601 timestamp string, or undefined if parsing fails
  */
-function restoreTimestamp(rawTimestamp: string): string {
-  const withColons = rawTimestamp.replaceAll('-', ':').replace('T:', 'T');
+function restoreTimestamp(rawTimestamp: string,): string {
+  const withColons = rawTimestamp.replaceAll('-', ':',).replace('T:', 'T',);
   // Fix the date part: year:MM:DD -> year-MM-DD (first two colons after year are date separators)
   return withColons.replace(
     /^(\d{4}):(\d{2}):(\d{2})/,
@@ -92,10 +101,10 @@ function restoreTimestamp(rawTimestamp: string): string {
  *
  * @returns true if the timestamp is recent (after the cutoff)
  */
-function isRecentTimestamp(rawTimestamp: string, cutoff: number): boolean {
-  const fixed = restoreTimestamp(rawTimestamp);
-  const entryTime = new Date(fixed).getTime();
-  return !Number.isNaN(entryTime) && entryTime >= cutoff;
+function isRecentTimestamp(rawTimestamp: string, cutoff: number,): boolean {
+  const fixed = restoreTimestamp(rawTimestamp,);
+  const entryTime = new Date(fixed,).getTime();
+  return !Number.isNaN(entryTime,) && entryTime >= cutoff;
 }
 
 /**
@@ -115,37 +124,39 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
 
   let modelDirs: string[] = [];
   try {
-    modelDirs = await readdir(LINT_DIR);
-  } catch {
+    modelDirs = await readdir(LINT_DIR,);
+  }
+  catch {
     return { probePairs, failedModels, };
   }
 
   for (const modelDir of modelDirs) {
-    const modelPath = join(LINT_DIR, modelDir);
+    const modelPath = join(LINT_DIR, modelDir,);
     let artifactDirs: string[] = [];
     try {
-      artifactDirs = await readdir(modelPath);
-    } catch {
+      artifactDirs = await readdir(modelPath,);
+    }
+    catch {
       continue;
     }
 
     for (const dirName of artifactDirs) {
       //region Failure artifact detection -- whole-model failures like 429 or auth errors
-      const failureMatch = FAILURE_DIR_PATTERN.exec(dirName);
+      const failureMatch = FAILURE_DIR_PATTERN.exec(dirName,);
       if (failureMatch !== null && failureMatch.groups !== undefined) {
         const rawTimestamp = failureMatch.groups['timestamp'];
-        if (rawTimestamp !== undefined && isRecentTimestamp(rawTimestamp, cutoff)) {
+        if (rawTimestamp !== undefined && isRecentTimestamp(rawTimestamp, cutoff,)) {
           // Read meta.json to get the model label (fall back to directory name)
-          const metaPath = join(modelPath, dirName, 'meta.json');
+          const metaPath = join(modelPath, dirName, 'meta.json',);
           try {
-            const metaRaw = await readFile(metaPath, 'utf8');
+            const metaRaw = await readFile(metaPath, 'utf8',);
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON from meta.json has known shape
-            const meta = JSON.parse(metaRaw) as Partial<FailureArtifactMeta>;
+            const meta = JSON.parse(metaRaw,) as Partial<FailureArtifactMeta>;
             const label = meta.label ?? modelDir;
-            if (meta.failed === true) {
-              failedModels.add(label);
-            }
-          } catch {
+            if (meta.failed === true)
+              failedModels.add(label,);
+          }
+          catch {
             // Missing or malformed meta.json -- skip
           }
         }
@@ -154,27 +165,33 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
       //endregion Failure artifact detection
 
       //region Per-probe artifact detection -- individual probe results
-      const match = ARTIFACT_DIR_PATTERN.exec(dirName);
-      if (match === null || match.groups === undefined) continue;
-      if (match.groups['pass'] !== 'initial') continue;
+      const match = ARTIFACT_DIR_PATTERN.exec(dirName,);
+      if (match === null || match.groups === undefined)
+        continue;
+      if (match.groups['pass'] !== 'initial')
+        continue;
 
       const rawTimestamp = match.groups['timestamp'];
-      if (rawTimestamp === undefined) continue;
-      if (!isRecentTimestamp(rawTimestamp, cutoff)) continue;
+      if (rawTimestamp === undefined)
+        continue;
+      if (!isRecentTimestamp(rawTimestamp, cutoff,))
+        continue;
 
       // Read meta.json to get the model label (old artifacts without label fall back to directory name)
-      const metaPath = join(modelPath, dirName, 'meta.json');
+      const metaPath = join(modelPath, dirName, 'meta.json',);
       try {
-        const metaRaw = await readFile(metaPath, 'utf8');
+        const metaRaw = await readFile(metaPath, 'utf8',);
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON from meta.json has known shape
-        const meta = JSON.parse(metaRaw) as Partial<ArtifactMeta>;
+        const meta = JSON.parse(metaRaw,) as Partial<ArtifactMeta>;
         const label = meta.label ?? modelDir;
-        const {probe} = meta;
-        if (probe === undefined) continue;
-        const existing = probePairs.get(label) ?? new Set<string>();
-        existing.add(probe);
-        probePairs.set(label, existing);
-      } catch {
+        const { probe, } = meta;
+        if (probe === undefined)
+          continue;
+        const existing = probePairs.get(label,) ?? new Set<string>();
+        existing.add(probe,);
+        probePairs.set(label, existing,);
+      }
+      catch {
         // Missing or malformed meta.json -- skip
       }
       //endregion Per-probe artifact detection

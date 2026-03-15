@@ -1,6 +1,17 @@
-import { eslintCompatPlugin } from '@oxlint/plugins';
+import { eslintCompatPlugin, } from '@oxlint/plugins';
 
-import { requireTsdoc } from './rules/require-tsdoc.ts';
+import {
+  checkParamNames,
+  requireParam,
+  requireParamDescription,
+  requireParamName,
+} from './rules/params.ts';
+import { requireTsdoc, } from './rules/require-tsdoc.ts';
+import {
+  requireReturns,
+  requireReturnsCheck,
+  requireReturnsDescription,
+} from './rules/returns.ts';
 import {
   checkAlignment,
   emptyTags,
@@ -15,17 +26,6 @@ import {
   noTypes,
   validTypes,
 } from './rules/tag-validation.ts';
-import {
-  checkParamNames,
-  requireParam,
-  requireParamDescription,
-  requireParamName,
-} from './rules/params.ts';
-import {
-  requireReturns,
-  requireReturnsCheck,
-  requireReturnsDescription,
-} from './rules/returns.ts';
 import {
   requireYields,
   requireYieldsCheck,
@@ -89,6 +89,6 @@ const plugin = eslintCompatPlugin({
     'require-yields-check': requireYieldsCheck,
     //endregion Yield documentation
   },
-});
+},);
 
 export default plugin;

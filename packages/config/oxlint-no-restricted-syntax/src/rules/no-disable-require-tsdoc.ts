@@ -1,4 +1,4 @@
-import { banDisableRule } from './_ban-disable-factory.ts';
+import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
  * Bans inline suppression of `tsdoc/require-tsdoc`.
@@ -11,5 +11,6 @@ import { banDisableRule } from './_ban-disable-factory.ts';
 export const noDisableRequireTsdoc = banDisableRule({
   ruleId: 'tsdoc/require-tsdoc',
   description: 'Disallow disabling tsdoc/require-tsdoc. Add proper TSDoc instead.',
-  message: 'Disabling tsdoc/require-tsdoc is not allowed. Add proper TSDoc to the declaration instead.',
-});
+  message:
+    'Disabling tsdoc/require-tsdoc is not allowed. Add proper TSDoc to the declaration instead.',
+},);

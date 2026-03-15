@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const {$} = types.object.store.from.store.sync.named;
+const { $, } = types.object.store.from.store.sync.named;
 
 describe($, () => {
   test('creates a store with default configuration', () => {
@@ -112,7 +112,7 @@ describe($, () => {
     const circular: Record<string, unknown> = {};
     circular.self = circular;
 
-    expect(() => store.set('cyc', circular,),).toThrow(TypeError,);
+    expect(() => store.set('cyc', circular,)).toThrow(TypeError,);
   });
 
   test('stores decycled value when lossyForCircular is true', () => {
@@ -242,4 +242,4 @@ describe($, () => {
     store.delete('k',);
     store.clear();
   });
-});
+},);

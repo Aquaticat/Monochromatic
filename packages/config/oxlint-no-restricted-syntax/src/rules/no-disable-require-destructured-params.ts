@@ -1,4 +1,4 @@
-import { banDisableRule } from './_ban-disable-factory.ts';
+import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
  * Bans inline suppression of `no-restricted-syntax/require-destructured-params`.
@@ -7,5 +7,6 @@ import { banDisableRule } from './_ban-disable-factory.ts';
 export const noDisableRequireDestructuredParams = banDisableRule({
   ruleId: 'no-restricted-syntax/require-destructured-params',
   description: 'Disallow disabling require-destructured-params. Use object parameters.',
-  message: 'Disabling require-destructured-params is not allowed. Use a destructured object parameter.',
-});
+  message:
+    'Disabling require-destructured-params is not allowed. Use a destructured object parameter.',
+},);

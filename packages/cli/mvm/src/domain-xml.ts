@@ -1,12 +1,17 @@
-import { $ as h } from '@monochromatic-dev/module-es/h-xml';
+import { $ as h, } from '@monochromatic-dev/module-es/h-xml';
 
 import {
   DEFAULT_MEMORY_MIB,
   DEFAULT_VCPUS,
   VM_PREFIX,
 } from './config.ts';
-import { clockElement, commonDevices, hypervFeatures, ideCdromDevices } from './domain-xml-builders.ts';
-import type { OsFamily } from './registry.ts';
+import {
+  clockElement,
+  commonDevices,
+  hypervFeatures,
+  ideCdromDevices,
+} from './domain-xml-builders.ts';
+import type { OsFamily, } from './registry.ts';
 
 //region CDROM type
 
@@ -81,32 +86,34 @@ export type CdromSpec = {
  * });
  * ```
  */
-export function domainXml({ bootDev = 'hd', cdroms = [], diskBus = 'virtio', diskPath, name, osFamily = 'linux', seedIsoPath }: {
-  /** Boot device: `hd` for normal operation, `cdrom` for ISO-based installation. */
-  bootDev?: 'cdrom' | 'hd';
-  /** Additional IDE CDROMs (Windows ISO, autounattend, virtio-win). */
-  cdroms?: readonly CdromSpec[];
-  /**
-   * Bus type for the primary disk.
-   * Use `virtio` for production VMs (best performance).
-   * Use `sata` during Windows template creation to avoid the Server 2025
-   * SAN policy (policy 4: offline shared bus) which makes VirtIO disks
-   * appear offline in WinPE, blocking unattended installation.
-   */
-  diskBus?: 'sata' | 'virtio';
-  /** Absolute path to the VM disk image. */
-  diskPath: string;
-  /** VM name without the mvm- prefix. */
-  name: string;
-  /** Guest OS family for platform-specific optimizations. */
-  osFamily?: OsFamily;
-  /** Absolute path to the cloud-init seed ISO (Linux only, omitted for Windows). */
-  seedIsoPath?: string | undefined;
-}): string {
-  const features = [h({ tag: 'acpi' })];
-  if (osFamily === 'windows') {
-    features.push(hypervFeatures());
-  }
+export function domainXml(
+  { bootDev = 'hd', cdroms = [], diskBus = 'virtio', diskPath, name, osFamily = 'linux',
+    seedIsoPath, }: {
+      /** Boot device: `hd` for normal operation, `cdrom` for ISO-based installation. */
+      bootDev?: 'cdrom' | 'hd';
+      /** Additional IDE CDROMs (Windows ISO, autounattend, virtio-win). */
+      cdroms?: readonly CdromSpec[];
+      /**
+       * Bus type for the primary disk.
+       * Use `virtio` for production VMs (best performance).
+       * Use `sata` during Windows template creation to avoid the Server 2025
+       * SAN policy (policy 4: offline shared bus) which makes VirtIO disks
+       * appear offline in WinPE, blocking unattended installation.
+       */
+      diskBus?: 'sata' | 'virtio';
+      /** Absolute path to the VM disk image. */
+      diskPath: string;
+      /** VM name without the mvm- prefix. */
+      name: string;
+      /** Guest OS family for platform-specific optimizations. */
+      osFamily?: OsFamily;
+      /** Absolute path to the cloud-init seed ISO (Linux only, omitted for Windows). */
+      seedIsoPath?: string | undefined;
+    },
+): string {
+  const features = [h({ tag: 'acpi', },),];
+  if (osFamily === 'windows')
+    features.push(hypervFeatures(),);
 
   /** Device name prefix depends on bus type: vda for virtio, sda for sata. */
   const diskDev = diskBus === 'virtio' ? 'vda' : 'sda';
@@ -114,13 +121,13 @@ export function domainXml({ bootDev = 'hd', cdroms = [], diskBus = 'virtio', dis
   const devices: string[] = [
     h({
       tag: 'disk',
-      attrs: { type: 'file', device: 'disk' },
+      attrs: { type: 'file', device: 'disk', },
       children: [
-        h({ tag: 'driver', attrs: { name: 'qemu', type: 'qcow2' } }),
-        h({ tag: 'source', attrs: { file: diskPath } }),
-        h({ tag: 'target', attrs: { dev: diskDev, bus: diskBus } }),
+        h({ tag: 'driver', attrs: { name: 'qemu', type: 'qcow2', }, },),
+        h({ tag: 'source', attrs: { file: diskPath, }, },),
+        h({ tag: 'target', attrs: { dev: diskDev, bus: diskBus, }, },),
       ],
-    }),
+    },),
   ];
 
   // Cloud-init NoCloud seed ISO for Linux VMs
@@ -128,49 +135,49 @@ export function domainXml({ bootDev = 'hd', cdroms = [], diskBus = 'virtio', dis
     devices.push(
       h({
         tag: 'disk',
-        attrs: { type: 'file', device: 'cdrom' },
+        attrs: { type: 'file', device: 'cdrom', },
         children: [
-          h({ tag: 'driver', attrs: { name: 'qemu', type: 'raw' } }),
-          h({ tag: 'source', attrs: { file: seedIsoPath } }),
-          h({ tag: 'target', attrs: { dev: 'sdb', bus: 'sata' } }),
-          h({ tag: 'readonly' }),
+          h({ tag: 'driver', attrs: { name: 'qemu', type: 'raw', }, },),
+          h({ tag: 'source', attrs: { file: seedIsoPath, }, },),
+          h({ tag: 'target', attrs: { dev: 'sdb', bus: 'sata', }, },),
+          h({ tag: 'readonly', },),
         ],
-      }),
+      },),
     );
   }
 
   // IDE CDROMs for Windows template creation (Windows ISO, autounattend, virtio-win)
-  devices.push(...ideCdromDevices(cdroms));
-  devices.push(...commonDevices(osFamily));
+  devices.push(...ideCdromDevices(cdroms,),);
+  devices.push(...commonDevices(osFamily,),);
 
   return h({
     tag: 'domain',
-    attrs: { type: 'kvm' },
+    attrs: { type: 'kvm', },
     children: [
-      h({ tag: 'name', text: `${VM_PREFIX}${name}` }),
-      h({ tag: 'memory', attrs: { unit: 'MiB' }, text: String(DEFAULT_MEMORY_MIB) }),
-      h({ tag: 'vcpu', text: String(DEFAULT_VCPUS) }),
+      h({ tag: 'name', text: `${VM_PREFIX}${name}`, },),
+      h({ tag: 'memory', attrs: { unit: 'MiB', }, text: String(DEFAULT_MEMORY_MIB,), },),
+      h({ tag: 'vcpu', text: String(DEFAULT_VCPUS,), },),
       h({
         tag: 'os',
         children: [
-          h({ tag: 'type', attrs: { arch: 'x86_64' }, text: 'hvm' }),
-          h({ tag: 'boot', attrs: { dev: bootDev } }),
+          h({ tag: 'type', attrs: { arch: 'x86_64', }, text: 'hvm', },),
+          h({ tag: 'boot', attrs: { dev: bootDev, }, },),
         ],
-      }),
+      },),
       // Bun requires AVX
-      h({ tag: 'cpu', attrs: { mode: 'host-passthrough' } }),
+      h({ tag: 'cpu', attrs: { mode: 'host-passthrough', }, },),
       // ACPI enables graceful shutdown during template baking (template.ts)
       h({
         tag: 'features',
         children: features,
-      }),
-      clockElement(osFamily),
+      },),
+      clockElement(osFamily,),
       h({
         tag: 'devices',
         children: devices,
-      }),
+      },),
     ],
-  });
+  },);
 }
 
 //endregion Domain XML generator

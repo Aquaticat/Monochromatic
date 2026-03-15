@@ -1,4 +1,4 @@
-import { banDisableRule } from './_ban-disable-factory.ts';
+import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
  * Bans inline suppression of `no-restricted-syntax/no-trim-left-right`.
@@ -7,5 +7,6 @@ import { banDisableRule } from './_ban-disable-factory.ts';
 export const noDisableNoTrimLeftRight = banDisableRule({
   ruleId: 'no-restricted-syntax/no-trim-left-right',
   description: 'Disallow disabling no-trim-left-right. Use trimStart/trimEnd instead.',
-  message: 'Disabling no-trim-left-right is not allowed. Use trimStart() and trimEnd() instead.',
-});
+  message:
+    'Disabling no-trim-left-right is not allowed. Use trimStart() and trimEnd() instead.',
+},);

@@ -20,17 +20,19 @@ let available = true;
  * Verifies sessionStorage actually persists data.
  */
 export function verify(): boolean {
-  if (verified) return available;
+  if (verified)
+    return available;
   verified = true;
 
   try {
     const testKey = '__monochromatic_verify__';
     const testValue = `test-${Date.now()}`;
-    globalThis.sessionStorage.setItem(testKey, testValue);
-    const readBack = globalThis.sessionStorage.getItem(testKey);
-    globalThis.sessionStorage.removeItem(testKey);
+    globalThis.sessionStorage.setItem(testKey, testValue,);
+    const readBack = globalThis.sessionStorage.getItem(testKey,);
+    globalThis.sessionStorage.removeItem(testKey,);
     available = readBack === testValue;
-  } catch {
+  }
+  catch {
     available = false;
   }
   return available;
@@ -39,13 +41,15 @@ export function verify(): boolean {
 /**
  * SessionStorage sink that writes log records to browser sessionStorage.
  */
-export function $(record: LogRecord): void {
-  if (!available) return;
+export function $(record: LogRecord,): void {
+  if (!available)
+    return;
 
   try {
     const key = `${STORAGE_KEY_PREFIX}.${lineCounter++}`;
-    globalThis.sessionStorage.setItem(key, JSON.stringify(record));
-  } catch {
+    globalThis.sessionStorage.setItem(key, JSON.stringify(record,),);
+  }
+  catch {
     // Silently fail if storage is full or unavailable
   }
 }

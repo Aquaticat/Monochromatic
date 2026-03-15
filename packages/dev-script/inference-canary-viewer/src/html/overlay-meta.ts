@@ -6,7 +6,11 @@
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
-import type { ProbeDetail, StreamTiming, StreamUsage, } from '../data/viewer-types.ts';
+import type {
+  ProbeDetail,
+  StreamTiming,
+  StreamUsage,
+} from '../data/viewer-types.ts';
 
 /** Milliseconds per second for display formatting */
 const MS_PER_SECOND = 1_000;
@@ -24,11 +28,10 @@ const MS_PER_SECOND = 1_000;
  * formatMs(50); // "50ms"
  * ```
  */
-function formatMs(ms: number): string {
-  if (ms >= MS_PER_SECOND) {
-    return `${(ms / MS_PER_SECOND).toFixed(1)}s`;
-  }
-  return `${Math.round(ms)}ms`;
+function formatMs(ms: number,): string {
+  if (ms >= MS_PER_SECOND)
+    return `${(ms / MS_PER_SECOND).toFixed(1,)}s`;
+  return `${Math.round(ms,)}ms`;
 }
 
 /**
@@ -43,8 +46,8 @@ function formatMs(ms: number): string {
  * formatNumber(12345); // "12,345"
  * ```
  */
-export function formatNumber(num: number): string {
-  return num.toLocaleString('en-US');
+export function formatNumber(num: number,): string {
+  return num.toLocaleString('en-US',);
 }
 
 /**
@@ -60,27 +63,36 @@ export function formatNumber(num: number): string {
  * // '<div class="detail-popover-badges">...'
  * ```
  */
-export function renderBadges(detail: ProbeDetail): string {
+export function renderBadges(detail: ProbeDetail,): string {
   const badges: string[] = [];
 
   if (detail.partial === true) {
-    badges.push(h({ tag: 'span', class: 'run-indicator', attrs: { 'data-severity': 'warning', }, text: 'partial', }));
+    badges.push(
+      h({ tag: 'span', class: 'run-indicator', attrs: { 'data-severity': 'warning', },
+        text: 'partial', },),
+    );
   }
   if (detail.error !== undefined && detail.error !== '') {
-    badges.push(h({ tag: 'span', class: 'run-indicator', attrs: { 'data-severity': 'error', }, text: detail.error, }));
+    badges.push(
+      h({ tag: 'span', class: 'run-indicator', attrs: { 'data-severity': 'error', },
+        text: detail.error, },),
+    );
   }
   if (detail.finishReason !== undefined && detail.finishReason !== 'stop') {
-    badges.push(h({ tag: 'span', class: 'run-indicator', attrs: { 'data-severity': 'neutral', }, text: detail.finishReason, }));
+    badges.push(
+      h({ tag: 'span', class: 'run-indicator', attrs: { 'data-severity': 'neutral', },
+        text: detail.finishReason, },),
+    );
   }
 
-  if (badges.length === 0) return '';
-  return h({ tag: 'div', class: 'detail-popover-badges', children: badges, });
+  if (badges.length === 0)
+    return '';
+  return h({ tag: 'div', class: 'detail-popover-badges', children: badges, },);
 }
 
 /**
  * Renders a compact metadata grid for one pass (initial or fix).
  * Shows timing and token usage as a collapsed `<details>` element.
- *
  *
  * @param label - section label ("Initial pass" or "Fix pass")
  *
@@ -103,54 +115,55 @@ export function renderPassMeta({ label, timing, usage, finishReason, }: {
   timing: StreamTiming | undefined;
   usage: StreamUsage | undefined;
   finishReason: string | undefined;
-}): string {
+},): string {
   const items: string[] = [];
 
   if (timing !== undefined) {
     items.push(
-      h({ tag: 'dt', text: 'TTFC', }),
-      h({ tag: 'dd', text: formatMs(timing.timeToFirstChunkMs), }),
-      h({ tag: 'dt', text: 'Total time', }),
-      h({ tag: 'dd', text: formatMs(timing.totalMs), }),
-      h({ tag: 'dt', text: 'Chunks', }),
-      h({ tag: 'dd', text: formatNumber(timing.chunkCount), }),
+      h({ tag: 'dt', text: 'TTFC', },),
+      h({ tag: 'dd', text: formatMs(timing.timeToFirstChunkMs,), },),
+      h({ tag: 'dt', text: 'Total time', },),
+      h({ tag: 'dd', text: formatMs(timing.totalMs,), },),
+      h({ tag: 'dt', text: 'Chunks', },),
+      h({ tag: 'dd', text: formatNumber(timing.chunkCount,), },),
     );
   }
 
   if (usage !== undefined) {
     items.push(
-      h({ tag: 'dt', text: 'Prompt tokens', }),
-      h({ tag: 'dd', text: formatNumber(usage.promptTokens), }),
-      h({ tag: 'dt', text: 'Completion tokens', }),
-      h({ tag: 'dd', text: formatNumber(usage.completionTokens), }),
+      h({ tag: 'dt', text: 'Prompt tokens', },),
+      h({ tag: 'dd', text: formatNumber(usage.promptTokens,), },),
+      h({ tag: 'dt', text: 'Completion tokens', },),
+      h({ tag: 'dd', text: formatNumber(usage.completionTokens,), },),
     );
     if (usage.reasoningTokens !== undefined) {
       items.push(
-        h({ tag: 'dt', text: 'Reasoning tokens', }),
-        h({ tag: 'dd', text: formatNumber(usage.reasoningTokens), }),
+        h({ tag: 'dt', text: 'Reasoning tokens', },),
+        h({ tag: 'dd', text: formatNumber(usage.reasoningTokens,), },),
       );
     }
     items.push(
-      h({ tag: 'dt', text: 'Total tokens', }),
-      h({ tag: 'dd', text: formatNumber(usage.totalTokens), }),
+      h({ tag: 'dt', text: 'Total tokens', },),
+      h({ tag: 'dd', text: formatNumber(usage.totalTokens,), },),
     );
   }
 
   if (finishReason !== undefined) {
     items.push(
-      h({ tag: 'dt', text: 'Finish reason', }),
-      h({ tag: 'dd', text: finishReason, }),
+      h({ tag: 'dt', text: 'Finish reason', },),
+      h({ tag: 'dd', text: finishReason, },),
     );
   }
 
-  if (items.length === 0) return '';
+  if (items.length === 0)
+    return '';
 
   return h({
     tag: 'details',
     class: 'collapsible-section',
     children: [
-      h({ tag: 'summary', text: label, }),
-      h({ tag: 'dl', class: 'metadata-grid', children: items, }),
+      h({ tag: 'summary', text: label, },),
+      h({ tag: 'dl', class: 'metadata-grid', children: items, },),
     ],
-  });
+  },);
 }

@@ -1,22 +1,29 @@
 /**
  * Shared utility CSS classes used across multiple pages.
  */
-import { cssCalc, cssPercent, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
-import { $ as css } from "./css.ts";
+import {
+  cssCalc,
+  cssPercent,
+  cssRem,
+  cssVar,
+} from '@monochromatic-dev/module-es/h-css';
+import { $ as css, } from './css.ts';
 
 /** Task list, divider, and empty-state utility styles. */
 export const utilities = [
   css({
     rule: '.task-list',
-    decls: { display: 'flex', 'flex-direction': 'column', gap: cssVar('gap'), 'list-style': 'none' },
-  }),
+    decls: { display: 'flex', 'flex-direction': 'column', gap: cssVar('gap',),
+      'list-style': 'none', },
+  },),
   css({
     rule: '.divider',
     decls: {
-      'block-size': cssCalc(`${cssRem(1)} / 16`),
-      'background-color': cssVar('fg'),
-      'inline-size': cssPercent(100),
+      'block-size': cssCalc(`${cssRem(1,)} / 16`,),
+      'background-color': cssVar('fg',),
+      'inline-size': cssPercent(100,),
     },
-  }),
-  css({ rule: '.empty', decls: { color: cssVar('medium') } }),
-].join('');
+  },),
+  css({ rule: '.empty', decls: { color: cssVar('medium',), }, },),
+]
+  .join('',);

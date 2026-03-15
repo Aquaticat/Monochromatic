@@ -84,5 +84,7 @@ export function $<const Length extends number,>(
   }
 
   // oxlint-disable-next-line typescript/no-unsafe-return -- Return type is a type TS can't auto infer
-  return Array.from({ length, }, function getIndex(_, index,) { return index; },) as any;
+  return Array.from({ length, }, function getIndex(_, index,) {
+    return index;
+  },) as any;
 }

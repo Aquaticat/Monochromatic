@@ -7,13 +7,17 @@
  * @module
  */
 
-import { describe, expect, test, } from 'bun:test';
+import {
+  describe,
+  expect,
+  test,
+} from 'bun:test';
 import { join, } from 'node:path';
 import { rolldown, } from 'rolldown';
 import { importAttributesPlugin, } from './index.ts';
 
 /** Absolute path to the fixtures directory. */
-const FIXTURES_DIR = join(import.meta.dirname, 'fixtures');
+const FIXTURES_DIR = join(import.meta.dirname, 'fixtures',);
 
 /**
  * Builds a fixture entry file with the import attributes plugin
@@ -22,55 +26,55 @@ const FIXTURES_DIR = join(import.meta.dirname, 'fixtures');
  * @param entryName - Fixture entry file name (without directory)
  * @returns Concatenated output chunk code
  */
-async function buildFixture(entryName: string): Promise<string> {
+async function buildFixture(entryName: string,): Promise<string> {
   const build = await rolldown({
-    input: join(FIXTURES_DIR, entryName),
-    plugins: [importAttributesPlugin()],
-  });
-  const { output, } = await build.generate({ format: 'esm', });
-  return output.map(function joinChunks(chunk) {
-    if (chunk.type === 'chunk') {
-      return chunk.code;
-    }
-    return '';
-  }).join('');
+    input: join(FIXTURES_DIR, entryName,),
+    plugins: [importAttributesPlugin(),],
+  },);
+  const { output, } = await build.generate({ format: 'esm', },);
+  return output
+    .map(function joinChunks(chunk,) {
+      if (chunk.type === 'chunk')
+        return chunk.code;
+      return '';
+    },)
+    .join('',);
 }
 
 describe('importAttributesPlugin', function importAttributesPluginSuite() {
   test('transforms static import with { type: "text" }', async function staticImportTest() {
-    const code = await buildFixture('entry-static.ts');
-    expect(code).toContain('SELECT * FROM users WHERE id = ?;');
-    expect(code).not.toContain('with');
+    const code = await buildFixture('entry-static.ts',);
+    expect(code,).toContain('SELECT * FROM users WHERE id = ?;',);
+    expect(code,).not.toContain('with',);
   });
 
   test('transforms dynamic import() with { with: { type: "text" } }', async function dynamicImportTest() {
-    const code = await buildFixture('entry-dynamic.ts');
-    expect(code).toContain('SELECT * FROM users WHERE id = ?;');
+    const code = await buildFixture('entry-dynamic.ts',);
+    expect(code,).toContain('SELECT * FROM users WHERE id = ?;',);
   });
 
   test('transforms re-export with { type: "text" }', async function reexportTest() {
-    const code = await buildFixture('entry-reexport.ts');
-    expect(code).toContain('SELECT * FROM users WHERE id = ?;');
+    const code = await buildFixture('entry-reexport.ts',);
+    expect(code,).toContain('SELECT * FROM users WHERE id = ?;',);
   });
 
   test('ignores imports without with clause', async function noAttributeTest() {
     const build = await rolldown({
-      input: join(FIXTURES_DIR, 'entry-static.ts'),
+      input: join(FIXTURES_DIR, 'entry-static.ts',),
       plugins: [
         importAttributesPlugin(),
         {
           name: 'test-spy',
-          transform(code) {
+          transform(code,) {
             /** Verify the transform only fires when `with` is present. */
-            if (!code.includes(' with ')) {
+            if (!code.includes(' with ',))
               return null;
-            }
             return null;
           },
         },
       ],
-    });
-    const { output, } = await build.generate({ format: 'esm', });
-    expect(output.length).toBeGreaterThan(0);
+    },);
+    const { output, } = await build.generate({ format: 'esm', },);
+    expect(output.length,).toBeGreaterThan(0,);
   });
 });

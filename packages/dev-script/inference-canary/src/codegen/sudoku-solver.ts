@@ -8,8 +8,14 @@
  * code path entirely. The `--all` flag tests exhaustive search vs early-exit behavior.
  */
 import { createCodeGenProbe, } from './probe-factory.ts';
-import { ALL_INPUT, NORMAL_INPUT, } from './sudoku-puzzles.ts';
-import { verifyAll, verifyNormal, } from './sudoku-solver-verify.ts';
+import {
+  ALL_INPUT,
+  NORMAL_INPUT,
+} from './sudoku-puzzles.ts';
+import {
+  verifyAll,
+  verifyNormal,
+} from './sudoku-solver-verify.ts';
 
 //region Prompt -- instructs the model to build a backtracking solver with --all support
 
@@ -56,7 +62,8 @@ const PROMPT = [
   '372689514',
   '814253769',
   '695417382',
-].join('\n');
+]
+  .join('\n',);
 
 //endregion Prompt
 
@@ -67,13 +74,19 @@ export const sudokuSolver = createCodeGenProbe({
   name: 'sudoku-solver',
   testInput: NORMAL_INPUT,
   prompt: PROMPT,
-  verify: function verifyNormalResult(result): { correctness: number; } { return { correctness: verifyNormal(result.stdout), }; },
+  verify: function verifyNormalResult(result,): { correctness: number; } {
+    return { correctness: verifyNormal(result.stdout,), };
+  },
   additionalRuns: [
     {
       name: '--all mode',
       input: ALL_INPUT,
-      transformSource: function prependAllFlag(source): string { return `process.argv.push("--all");\n${source}`; },
-      verify: function verifyAllResult(result): { correctness: number; } { return { correctness: verifyAll(result.stdout), }; },
+      transformSource: function prependAllFlag(source,): string {
+        return `process.argv.push("--all");\n${source}`;
+      },
+      verify: function verifyAllResult(result,): { correctness: number; } {
+        return { correctness: verifyAll(result.stdout,), };
+      },
     },
   ],
-});
+},);

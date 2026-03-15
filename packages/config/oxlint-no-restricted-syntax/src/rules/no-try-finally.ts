@@ -33,17 +33,19 @@ export const noTryFinally: CreateOnceRule = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Disallow try...finally blocks. Use using/await using for cleanup instead.',
+      description:
+        'Disallow try...finally blocks. Use using/await using for cleanup instead.',
       recommended: true,
     },
     messages: {
-      forbidden: 'try...finally is banned. Use using/await using with Symbol.dispose for cleanup instead.',
+      forbidden:
+        'try...finally is banned. Use using/await using with Symbol.dispose for cleanup instead.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      TryStatement(node: Span): void {
+      TryStatement(node: Span,): void {
         /* Only report when a finalizer (finally block) is present. */
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const tryNode = node as Span & Record<string, unknown>;
@@ -51,7 +53,7 @@ export const noTryFinally: CreateOnceRule = {
           context.report({
             node,
             messageId: 'forbidden',
-          });
+          },);
         }
       },
     } as VisitorWithHooks;

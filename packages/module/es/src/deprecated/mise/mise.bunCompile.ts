@@ -151,7 +151,8 @@ async function compileScript(scriptPath: string, target: string,
     throw new Error(
       `✗ Failed to compile ${basename(scriptPath,)} for ${target}: ${
         serializeError(error,)
-      }`, { cause: error },
+      }`,
+      { cause: error, },
     );
   }
 }

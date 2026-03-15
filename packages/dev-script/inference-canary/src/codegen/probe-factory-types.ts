@@ -7,8 +7,14 @@
  */
 import type { LintResult, } from '../linter.ts';
 import type { ScoreContext, } from '../probes.ts';
-import type { PerfTestConfig, TimedContainerResult, } from './perf.ts';
-import type { AdditionalRun, VerifyResult, } from './additional-run-types.ts';
+import type {
+  AdditionalRun,
+  VerifyResult,
+} from './additional-run-types.ts';
+import type {
+  PerfTestConfig,
+  TimedContainerResult,
+} from './perf.ts';
 
 import type { ContainerResult, } from '../container.ts';
 
@@ -31,7 +37,7 @@ export type CodeGenProbeConfig = {
    * @param result - container execution result with stdout/stderr
    * @returns correctness score between 0 and 1
    */
-  readonly verify: (result: ContainerResult) => VerifyResult;
+  readonly verify: (result: ContainerResult,) => VerifyResult;
   /** Whether this probe involves long-running execution */
   readonly slow?: boolean;
   /**
@@ -48,7 +54,8 @@ export type CodeGenProbeConfig = {
    * @param context - model identity and pass info
    * @returns transformed source or rejection signal
    */
-  readonly transformSource?: (source: string, context: ScoreContext) => { readonly reject: boolean; readonly source: string };
+  readonly transformSource?: (source: string,
+    context: ScoreContext,) => { readonly reject: boolean; readonly source: string; };
   /**
    * Optional hook to customize the fix prompt beyond the standard buildCodeGenFixPrompt.
    * Receives the base fix prompt (or undefined if no diagnostics) and returns
@@ -57,7 +64,9 @@ export type CodeGenProbeConfig = {
    * @param context - model identity and pass info
    * @returns modified fix prompt, or undefined to skip
    */
-  readonly customizeFixPrompt?: (base: string | undefined, context: ScoreContext) => string | undefined;
+  readonly customizeFixPrompt?: (base: string | undefined, context: ScoreContext,) =>
+    | string
+    | undefined;
   /**
    * Optional additional container runs for testing the generated code under different
    * conditions. Each run can transform the source (e.g. inject CLI flags) and use

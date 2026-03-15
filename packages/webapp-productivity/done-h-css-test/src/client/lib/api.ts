@@ -4,9 +4,9 @@
  *
  * Automatically sets `Content-Type: application/json` and shows a toast on error.
  */
-import { showToast } from "../components/toast-message.ts";
+import { showToast, } from '../components/toast-message.ts';
 
-export { showToast };
+export { showToast, };
 
 /** HTTP status code indicating no content in response body. */
 const HTTP_NO_CONTENT = 204;
@@ -20,17 +20,19 @@ const HTTP_NO_CONTENT = 204;
  *
  * @returns Parsed JSON response body, or undefined for 204 responses
  */
-export async function api<TResponse = unknown>(path: string, options?: RequestInit): Promise<TResponse> {
-  const headers = new Headers({ "Content-Type": "application/json" });
+export async function api<TResponse = unknown,>(path: string,
+  options?: RequestInit,): Promise<TResponse>
+{
+  const headers = new Headers({ 'Content-Type': 'application/json', },);
   if (options?.headers !== undefined) {
-    new Headers(options.headers).forEach(function applyHeader(value, key) {
-      headers.set(key, value);
-    });
+    new Headers(options.headers,).forEach(function applyHeader(value, key,) {
+      headers.set(key, value,);
+    },);
   }
   const response = await fetch(path, {
     ...options,
     headers,
-  });
+  },);
 
   if (!response.ok) {
     let error: unknown;
@@ -38,14 +40,16 @@ export async function api<TResponse = unknown>(path: string, options?: RequestIn
       error = await response.json();
     }
     catch {
-      error = { error: "Request failed" };
+      error = { error: 'Request failed', };
     }
     const message =
-      typeof error === "object" && error !== null && "error" in error && typeof error.error === "string"
-        ? error.error
-        : "Request failed";
-    showToast(message);
-    throw new Error(message);
+      typeof error === 'object' && error !== null && 'error' in error && typeof error
+            .error === 'string'
+        ? error
+          .error
+        : 'Request failed';
+    showToast(message,);
+    throw new Error(message,);
   }
 
   if (response.status === HTTP_NO_CONTENT) {

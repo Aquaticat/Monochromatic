@@ -5,15 +5,26 @@
  * run entries. Enriched artifacts provide scores, reasoning, timing, and usage.
  * Old pre-enrichment artifacts degrade gracefully with score defaulting to 0.
  */
-import type { Dirent } from 'node:fs';
-import { readdir, readFile, } from 'node:fs/promises';
+import type { Dirent, } from 'node:fs';
+import {
+  readdir,
+  readFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { LINT_DIR, type ArtifactMeta, type FailureArtifactMeta, } from '@monochromatic-dev/dev-script-inference-canary/src/linter-artifacts.ts';
+import {
+  type ArtifactMeta,
+  type FailureArtifactMeta,
+  LINT_DIR,
+} from '@monochromatic-dev/dev-script-inference-canary/src/linter-artifacts.ts';
 
 import type { ArtifactData, } from './viewer-types.ts';
 
-import { buildViewerData, isEnriched, type ParsedArtifact, } from './build-viewer-data.ts';
+import {
+  buildViewerData,
+  isEnriched,
+  type ParsedArtifact,
+} from './build-viewer-data.ts';
 
 export { LINT_DIR, };
 
@@ -26,7 +37,7 @@ export { probeKey, } from './build-viewer-data.ts';
  *
  * @returns true when the metadata indicates a whole-model failure
  */
-function isFailure(meta: Record<string, unknown>): meta is FailureArtifactMeta {
+function isFailure(meta: Record<string, unknown>,): meta is FailureArtifactMeta {
   return meta['failed'] === true;
 }
 
@@ -37,14 +48,14 @@ function isFailure(meta: Record<string, unknown>): meta is FailureArtifactMeta {
  *
  * @returns file contents or undefined
  */
-async function readOptional(path: string): Promise<string | undefined> {
+async function readOptional(path: string,): Promise<string | undefined> {
   try {
-    return await readFile(path, 'utf8');
-  } catch (error) {
+    return await readFile(path, 'utf8',);
+  }
+  catch (error) {
     // ENOENT is expected for optional files (e.g. canary.ts not saved in old artifacts)
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      console.error(`[viewer] failed to read ${path}:`, error);
-    }
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
+      console.error(`[viewer] failed to read ${path}:`, error,);
     return undefined;
   }
 }
@@ -67,37 +78,45 @@ export async function readArtifacts(): Promise<ArtifactData> {
 
   let modelDirents: Dirent[];
   try {
-    modelDirents = await readdir(LINT_DIR, { withFileTypes: true, });
-  } catch {
-    console.error('[viewer] no artifact directory found, skipping artifact loading');
+    modelDirents = await readdir(LINT_DIR, { withFileTypes: true, },);
+  }
+  catch {
+    console.error('[viewer] no artifact directory found, skipping artifact loading',);
     return { entries: [], probeDetails: new Map(), };
   }
 
-  for (const modelDirent of modelDirents.filter(function isDir(dirent) { return dirent.isDirectory(); })) {
-    const modelPath = join(LINT_DIR, modelDirent.name);
+  for (const modelDirent of modelDirents.filter(function isDir(dirent,) {
+    return dirent.isDirectory();
+  },)) {
+    const modelPath = join(LINT_DIR, modelDirent.name,);
     let subdirents: Dirent[];
     try {
-      subdirents = await readdir(modelPath, { withFileTypes: true, });
-    } catch (error) {
-      console.error(`[viewer] failed to read model directory ${modelPath}:`, error);
+      subdirents = await readdir(modelPath, { withFileTypes: true, },);
+    }
+    catch (error) {
+      console.error(`[viewer] failed to read model directory ${modelPath}:`, error,);
       continue;
     }
 
-    for (const subdirent of subdirents.filter(function isDir(dirent) { return dirent.isDirectory(); })) {
-      const dirPath = join(modelPath, subdirent.name);
-      const metaRaw = await readOptional(join(dirPath, 'meta.json'));
-      if (metaRaw === undefined) continue;
+    for (const subdirent of subdirents.filter(function isDir(dirent,) {
+      return dirent.isDirectory();
+    },)) {
+      const dirPath = join(modelPath, subdirent.name,);
+      const metaRaw = await readOptional(join(dirPath, 'meta.json',),);
+      if (metaRaw === undefined)
+        continue;
 
       let parsed: Record<string, unknown>;
       try {
-        parsed = JSON.parse(metaRaw) as Record<string, unknown>;
-      } catch (error) {
-        console.error(`[viewer] malformed meta.json in ${dirPath}:`, error);
+        parsed = JSON.parse(metaRaw,) as Record<string, unknown>;
+      }
+      catch (error) {
+        console.error(`[viewer] malformed meta.json in ${dirPath}:`, error,);
         continue;
       }
 
-      if (isFailure(parsed)) {
-        failures.push(parsed);
+      if (isFailure(parsed,)) {
+        failures.push(parsed,);
         continue;
       }
 
@@ -107,19 +126,19 @@ export async function readArtifacts(): Promise<ArtifactData> {
         /* oxlint-disable-next-line typescript/no-unnecessary-condition -- label is typed as required but old artifacts may omit it; ?? fallback is intentional */
         label: (parsed as ArtifactMeta).label ?? modelDirent.name,
       };
-      const [source, response] = await Promise.all([
-        readOptional(join(dirPath, 'canary.ts')),
-        readOptional(join(dirPath, 'response.txt')),
-      ]);
+      const [source, response,] = await Promise.all([
+        readOptional(join(dirPath, 'canary.ts',),),
+        readOptional(join(dirPath, 'response.txt',),),
+      ],);
       const artifact: ParsedArtifact = { meta, source, response, dir: dirPath, };
       const runKey = `${meta.label}::${meta.timestamp}`;
 
       const target = meta.pass === 'initial' ? initialByRun : fixByRun;
-      const probes = target.get(runKey) ?? new Map<string, ParsedArtifact>();
-      probes.set(meta.probe, artifact);
-      target.set(runKey, probes);
+      const probes = target.get(runKey,) ?? new Map<string, ParsedArtifact>();
+      probes.set(meta.probe, artifact,);
+      target.set(runKey, probes,);
     }
   }
 
-  return buildViewerData(initialByRun, fixByRun, failures);
+  return buildViewerData(initialByRun, fixByRun, failures,);
 }

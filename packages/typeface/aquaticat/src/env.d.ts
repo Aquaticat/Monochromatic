@@ -1,10 +1,10 @@
 // oxlint-disable -- ambient module declaration for untyped opentype.js library
-declare module "opentype.js" {
+declare module 'opentype.js' {
   export class Path {
-    moveTo(x: number, y: number): void;
-    lineTo(x: number, y: number): void;
+    moveTo(x: number, y: number,): void;
+    lineTo(x: number, y: number,): void;
     close(): void;
-    toPathData(decimalPlaces?: number): string;
+    toPathData(decimalPlaces?: number,): string;
   }
 
   export class Glyph {
@@ -13,7 +13,7 @@ declare module "opentype.js" {
       unicode: number;
       advanceWidth: number;
       path: Path;
-    });
+    },);
     name: string;
     unicode: number;
     advanceWidth: number;
@@ -28,10 +28,10 @@ declare module "opentype.js" {
       ascender: number;
       descender: number;
       glyphs: Glyph[];
-    });
+    },);
     download(): void;
     toArrayBuffer(): ArrayBuffer;
   }
 
-  export function parse(buffer: ArrayBuffer): Font;
+  export function parse(buffer: ArrayBuffer,): Font;
 }

@@ -1,7 +1,11 @@
 /**
  * Type definitions for the `\<task-detail\>` component.
  */
-import type { Task, TaskComplexity, TaskPriority } from "../../lib/types.ts";
+import type {
+  Task,
+  TaskComplexity,
+  TaskPriority,
+} from '../../lib/types.ts';
 
 /** Blocker task summary displayed as a pill in the task detail view. */
 export type BlockerSummary = {
@@ -26,7 +30,7 @@ export type AutofillResult = {
 };
 
 /** Determines whether the component renders as a new-task creator or an editor. */
-export type TaskDetailMode = "create" | "edit";
+export type TaskDetailMode = 'create' | 'edit';
 
 /** Configuration payload passed to `TaskDetail.configure()`. */
 export type TaskDetailData = {

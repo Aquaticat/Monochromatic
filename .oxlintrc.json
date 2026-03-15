@@ -54,8 +54,7 @@
 
     "promise",
 
-    "node",
-
+    "node"
     // Dropped vitest for bun:test. Keeping commented out rather than removed
     // because oxlint leaks jest rules globally when vitest is enabled (even in overrides).
     // See https://github.com/oxc-project/oxc/issues/18518
@@ -318,7 +317,10 @@
     "unicorn/prefer-type-error": "off",
     "import/max-dependencies": "off",
     // Since we're skipping blank lines and comments, 100 is generous enough that splitting up code files is always feasible.
-    "eslint/max-lines": ["error", { "max": 100, "skipBlankLines": true, "skipComments": true }],
+    "eslint/max-lines": [
+      "error",
+      { "max": 100, "skipBlankLines": true, "skipComments": true }
+    ],
     "eslint/max-params": "off",
     "eslint/max-depth": "off",
     "eslint/max-lines-per-function": "off",

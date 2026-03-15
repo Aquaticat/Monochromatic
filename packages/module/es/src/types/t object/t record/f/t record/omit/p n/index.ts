@@ -1,7 +1,9 @@
 /** Generic record type alias for objects with any key type. */
 import type { $ as Record$, } from '../../../../t/index.ts';
 
-import { $ as omitFromIterable, } from '../../../../../../t function/t generator/f/t iterable/omit/r s/p n/index.ts';
+import {
+  $ as omitFromIterable,
+} from '../../../../../../t function/t generator/f/t iterable/omit/r s/p n/index.ts';
 
 /**
  * Creates a new object by omitting specified keys from the original object.
@@ -50,17 +52,17 @@ import { $ as omitFromIterable, } from '../../../../../../t function/t generator
   // Only store ONE representation per key to ensure the stricter omitFromIterable validation passes.
   const normalizedOmitSet = new Set<string | symbol>();
   for (const key of toOmit) {
-    if (typeof key === 'number') {
+    if (typeof key === 'number')
       normalizedOmitSet.add(String(key,),);
-    }
-    else {
+    else
       normalizedOmitSet.add(key,);
-    }
   }
 
   // Reflect.ownKeys returns all own property keys including symbols, unlike Object.keys which only returns enumerable string keys.
   // This ensures symbol-keyed properties are handled correctly when toOmit contains symbols.
-  for (const key of omitFromIterable({ iterable: Reflect.ownKeys(original,), toOmit: normalizedOmitSet, strict, },)) {
+  for (const key of omitFromIterable({ iterable: Reflect.ownKeys(original,),
+    toOmit: normalizedOmitSet, strict, },))
+  {
     result[key] = (original as Record<typeof key, unknown>)[key];
   }
 

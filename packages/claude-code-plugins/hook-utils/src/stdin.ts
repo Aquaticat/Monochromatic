@@ -4,7 +4,7 @@
  * @module
  */
 
-import { text } from 'node:stream/consumers';
+import { text, } from 'node:stream/consumers';
 
 //region Stdin reading
 
@@ -27,11 +27,9 @@ import { text } from 'node:stream/consumers';
  */
 /* oxlint-disable-next-line require-await -- async for explicit Promise<string> return type; text() already returns Promise */
 async function readStdin(): Promise<string> {
-  return text(process.stdin);
+  return text(process.stdin,);
 }
 
 //endregion
 
-export {
-  readStdin,
-};
+export { readStdin, };

@@ -1,8 +1,11 @@
 /**
  * Primitive and semantic color tokens plus dark-mode overrides.
  */
-import { cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
-import { $ as css } from "./css.ts";
+import {
+  cssRem,
+  cssVar,
+} from '@monochromatic-dev/module-es/h-css';
+import { $ as css, } from './css.ts';
 
 //region Primitive color tokens -- Raw color values that never change between modes.
 
@@ -34,7 +37,7 @@ export const primitiveTokens = css({
     '--orange-dark': '#90511e',
     '--orange-light': '#fca',
   },
-});
+},);
 
 //endregion Primitive color tokens
 
@@ -69,12 +72,12 @@ export const semanticTokens = css({
     '--orange-bg': 'var(--orange-light)',
     '--overlay-bg': 'rgb(0 0 0 / 0.3)',
     '--hover-bg': 'rgb(0 0 0 / 0.05)',
-    '--min-target': cssRem(3),
-    '--min-gap': cssRem(1),
-    '--min-padding': cssRem(0.5),
-    '--gap': cssRem(2),
+    '--min-target': cssRem(3,),
+    '--min-gap': cssRem(1,),
+    '--min-padding': cssRem(0.5,),
+    '--gap': cssRem(2,),
   },
-});
+},);
 
 //endregion Semantic color tokens
 
@@ -113,8 +116,8 @@ export const darkMode = css({
         '--overlay-bg': 'rgb(255 255 255 / 0.15)',
         '--hover-bg': 'rgb(255 255 255 / 0.08)',
       },
-    }),
+    },),
   ],
-});
+},);
 
 //endregion Dark mode

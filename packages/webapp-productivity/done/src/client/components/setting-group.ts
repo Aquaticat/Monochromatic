@@ -1,7 +1,9 @@
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { css } from "../css.ts";
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+import { css, } from '../css.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: registers the toggle-switch custom element
-import "./toggle-switch.ts";
+import './toggle-switch.ts';
 
 /** Shadow DOM styles for the `\<setting-group\>` component. */
 const STYLES = css(`
@@ -31,7 +33,7 @@ const STYLES = css(`
     outline-color: var(--fg);
     outline-offset: 0.125rem;
   }
-`);
+`,);
 
 /**
  * `\<setting-group\>` -- a single settings row with a label, description,
@@ -44,38 +46,39 @@ class SettingGroup extends HTMLElement {
   /** Initializes the shadow root. */
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: "open" });
+    this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
   /** Renders the setting group with label, optional description, and action control. */
   connectedCallback(): void {
-    const label = this.getAttribute("label") ?? "";
-    const description = this.getAttribute("description") ?? "";
-    const mode = this.getAttribute("mode") ?? "toggle";
-    const on = this.hasAttribute("on");
+    const label = this.getAttribute('label',) ?? '';
+    const description = this.getAttribute('description',) ?? '';
+    const mode = this.getAttribute('mode',) ?? 'toggle';
+    const on = this.hasAttribute('on',);
 
-    const actionElement = mode === "button"
-      ? h({ tag: "button", attrs: { part: "action" }, children: [h({ tag: "slot", attrs: { name: "action" }, text: "connect?" })] })
-      : h({ tag: "toggle-switch", attrs: on ? { on: "" } : {} });
+    const actionElement = mode === 'button'
+      ? h({ tag: 'button', attrs: { part: 'action', }, children: [
+        h({ tag: 'slot', attrs: { name: 'action', }, text: 'connect?', },),
+      ], },)
+      : h({ tag: 'toggle-switch', attrs: on ? { on: '', } : {}, },);
 
     const children: (HTMLElement)[] = [
-      h({ tag: "style", text: STYLES }),
+      h({ tag: 'style', text: STYLES, },),
       h({
-        tag: "div",
-        class: "header",
+        tag: 'div',
+        class: 'header',
         children: [
-          h({ tag: "span", class: "label", text: label }),
+          h({ tag: 'span', class: 'label', text: label, },),
           actionElement,
         ],
-      }),
+      },),
     ];
 
-    if (description.length > 0) {
-      children.push(h({ tag: "p", class: "desc", text: description }));
-    }
+    if (description.length > 0)
+      children.push(h({ tag: 'p', class: 'desc', text: description, },),);
 
-    this.#shadow.replaceChildren(...children);
+    this.#shadow.replaceChildren(...children,);
   }
 }
 
-customElements.define("setting-group", SettingGroup);
+customElements.define('setting-group', SettingGroup,);

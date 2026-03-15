@@ -4,17 +4,22 @@
  * Same hydration pattern as inbox.ts: injectCSS -\> readPageData -\> build DOM into #app.
  * Additionally runs a 1-second interval to live-update tracked-time chip text.
  */
-import type { Task } from "../lib/types.ts";
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import styles from "../../dist/css/styles.css" with { type: "text" };
-import { api } from "./lib/api.ts";
-import { injectCSS } from "./lib/inject-css.ts";
-import { readPageData } from "./lib/page-data.ts";
-import { createTaskCard, formatRunningTrackedTime } from "./lib/task-card.ts";
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+import styles from '../../dist/css/styles.css' with { type: 'text', };
+import type { Task, } from '../lib/types.ts';
+import { api, } from './lib/api.ts';
+import { injectCSS, } from './lib/inject-css.ts';
+import { readPageData, } from './lib/page-data.ts';
+import {
+  createTaskCard,
+  formatRunningTrackedTime,
+} from './lib/task-card.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import "./components/side-drawer.ts";
+import './components/side-drawer.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import "./components/top-nav.ts";
+import './components/top-nav.ts';
 
 /** Shape of the JSON blob embedded in the in-progress page by the server. */
 type InProgressPageData = {
@@ -22,58 +27,58 @@ type InProgressPageData = {
   tasks: Task[];
 };
 
-injectCSS(styles);
+injectCSS(styles,);
 
 /** Deserialized page data from the server-rendered JSON blob. */
 const pageData = readPageData<InProgressPageData>();
 
 /** Root app container element. */
-const appElement = document.querySelector<HTMLElement>("#app");
-if (!(appElement instanceof HTMLElement)) {
-  throw new Error("Missing app element");
-}
+const appElement = document.querySelector<HTMLElement>('#app',);
+if (!(appElement instanceof HTMLElement))
+  throw new Error('Missing app element',);
 
 /** Typed reference to the app container. */
 const app = appElement;
 
-if (pageData.tasks.length === 0) {
-  app.append(h({ tag: "p", class: "empty", text: "No active timers." }));
-}
+if (pageData.tasks.length === 0)
+  app.append(h({ tag: 'p', class: 'empty', text: 'No active timers.', },),);
 
 /** Task card list for in-progress tasks. */
-const list = h({ tag: "ul", class: "task-list" });
+const list = h({ tag: 'ul', class: 'task-list', },);
 
 for (const task of pageData.tasks) {
   list.append(
     createTaskCard(task, {
-      onOpen: function openTask(taskId) {
+      onOpen: function openTask(taskId,) {
         globalThis.location.href = `/tasks/${taskId}`;
       },
-      onToggleComplete: async function stopTimer(taskId) {
-        await api(`/api/tasks/${taskId}/stop`, { method: "POST" });
+      onToggleComplete: async function stopTimer(taskId,) {
+        await api(`/api/tasks/${taskId}/stop`, { method: 'POST', },);
         globalThis.location.reload();
       },
-    }),
+    },),
   );
 }
 
-if (pageData.tasks.length > 0) {
-  app.append(list);
-}
+if (pageData.tasks.length > 0)
+  app.append(list,);
 
 /** Timer update interval in milliseconds. */
 const TIMER_UPDATE_MS = 1_000;
 
 // Live timer updates -- correlate each card with its task by DOM order
 setInterval(function updateTimers() {
-  const cards = list.querySelectorAll<HTMLElement>("task-card");
-  cards.forEach(function updateCard(card, cardIndex) {
+  const cards = list.querySelectorAll<HTMLElement>('task-card',);
+  cards.forEach(function updateCard(card, cardIndex,) {
     const task = pageData.tasks[cardIndex];
-    if (task === undefined) return;
+    if (task === undefined)
+      return;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element has getChipElement method
-    const chipEl = (card as unknown as { getChipElement?: (prefix: string) => HTMLSpanElement | null }).getChipElement?.("tracked:");
-    if (chipEl instanceof HTMLSpanElement) {
-      chipEl.textContent = `tracked: ${formatRunningTrackedTime(task)}`;
-    }
-  });
-}, TIMER_UPDATE_MS);
+    const chipEl = (card as unknown as {
+      getChipElement?: (prefix: string,) => HTMLSpanElement | null;
+    })
+      .getChipElement?.('tracked:',);
+    if (chipEl instanceof HTMLSpanElement)
+      chipEl.textContent = `tracked: ${formatRunningTrackedTime(task,)}`;
+  },);
+}, TIMER_UPDATE_MS,);

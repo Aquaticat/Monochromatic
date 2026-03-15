@@ -31,28 +31,28 @@ export const noRestParams: CreateOnceRule = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Disallow rest parameters (...args). Accept an array parameter instead.',
+      description:
+        'Disallow rest parameters (...args). Accept an array parameter instead.',
       recommended: true,
     },
     messages: {
       forbidden: 'Rest parameters are banned. Accept an array parameter instead.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     /**
      * Checks whether a function node has a rest parameter as its last param
      * and reports it.
      *
      * @param node - AST node for a function declaration or expression
      */
-    function checkFunction(node: Span): void {
+    function checkFunction(node: Span,): void {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const fnNode = node as Span & Record<string, unknown>;
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const params = fnNode['params'] as Record<string, unknown> | null | undefined;
-      if (params === undefined || params === null) {
+      if (params === undefined || params === null)
         return;
-      }
 
       /* oxc wraps parameters in a `FormalParameters` node with an `items` array and a `rest` property. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
@@ -61,23 +61,22 @@ export const noRestParams: CreateOnceRule = {
         context.report({
           node: rest,
           messageId: 'forbidden',
-        });
+        },);
         return;
       }
 
       /* Fallback: check if params has an `items` array with a RestElement. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const items = params['items'] as Record<string, unknown>[] | null | undefined;
-      if (items === undefined || items === null) {
+      if (items === undefined || items === null)
         return;
-      }
       for (const param of items) {
         if (param['type'] === 'RestElement') {
           context.report({
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
             node: param as unknown as Span,
             messageId: 'forbidden',
-          });
+          },);
         }
       }
     }

@@ -1,9 +1,13 @@
 // Stdio transport: reads JSON-RPC from stdin, dispatches through server handle, writes responses to stdout.
 
-import { readLines } from './line-reader.ts';
-import { isJsonRpcMessage, JSON_RPC_PARSE_ERROR, type JsonRpcOutbound } from './json-rpc.ts';
+import {
+  isJsonRpcMessage,
+  JSON_RPC_PARSE_ERROR,
+  type JsonRpcOutbound,
+} from './json-rpc.ts';
+import { readLines, } from './line-reader.ts';
 
-import type { McpServerHandle } from './server-types.ts';
+import type { McpServerHandle, } from './server-types.ts';
 
 //region Output writer abstraction -- supports both Bun FileSink and standard WritableStream
 
@@ -20,7 +24,7 @@ import type { McpServerHandle } from './server-types.ts';
  * ```
  */
 export type StdoutWriter = {
-  write(data: Uint8Array): number | Promise<number>;
+  write(data: Uint8Array,): number | Promise<number>;
 };
 
 /**
@@ -37,8 +41,8 @@ export type StdoutWriter = {
  */
 function processStdoutWriter(): StdoutWriter {
   return {
-    write(data: Uint8Array): number {
-      process.stdout.write(data);
+    write(data: Uint8Array,): number {
+      process.stdout.write(data,);
       return data.byteLength;
     },
   };
@@ -76,50 +80,53 @@ export async function serve(
 ): Promise<void> {
   const encoder = new TextEncoder();
 
-  for await (const line of readLines(input)) {
-    if (line.trim().length === 0) {
+  for await (const line of readLines(input,)) {
+    if (line.trim().length === 0)
       continue;
-    }
 
     // Parse step: reject malformed JSON before any further processing.
     let parsed: unknown = undefined;
     try {
-      parsed = JSON.parse(line);
-    } catch (error: unknown) {
-      console.error('[mcp-stdio] failed to parse JSON from stdin:', error);
+      parsed = JSON.parse(line,);
+    }
+    catch (error: unknown) {
+      console.error('[mcp-stdio] failed to parse JSON from stdin:', error,);
       const errorResponse: JsonRpcOutbound = {
         jsonrpc: '2.0',
         id: null,
-        error: { code: JSON_RPC_PARSE_ERROR, message: 'Failed to parse JSON' },
+        error: { code: JSON_RPC_PARSE_ERROR, message: 'Failed to parse JSON', },
       };
-      await writeMessage(output, encoder, errorResponse);
+      await writeMessage(output, encoder, errorResponse,);
       continue;
     }
 
     // Validate step: ensure the parsed value is a valid JSON-RPC 2.0 message
     // before dispatching. Catches non-object values, missing jsonrpc field, etc.
-    if (!isJsonRpcMessage(parsed)) {
-      console.error('[mcp-stdio] received invalid JSON-RPC message (missing jsonrpc or method):', parsed);
+    if (!isJsonRpcMessage(parsed,)) {
+      console.error(
+        '[mcp-stdio] received invalid JSON-RPC message (missing jsonrpc or method):',
+        parsed,
+      );
       const errorResponse: JsonRpcOutbound = {
         jsonrpc: '2.0',
         id: null,
-        error: { code: JSON_RPC_PARSE_ERROR, message: 'Invalid JSON-RPC message: missing jsonrpc or method field' },
+        error: { code: JSON_RPC_PARSE_ERROR,
+          message: 'Invalid JSON-RPC message: missing jsonrpc or method field', },
       };
-      await writeMessage(output, encoder, errorResponse);
+      await writeMessage(output, encoder, errorResponse,);
       continue;
     }
 
-    console.error(`[mcp-stdio] <- ${line}`);
+    console.error(`[mcp-stdio] <- ${line}`,);
 
-    const response = await server.handleMessage(parsed);
+    const response = await server.handleMessage(parsed,);
 
     // Notifications produce no response.
-    if (response === undefined) {
+    if (response === undefined)
       continue;
-    }
 
-    console.error(`[mcp-stdio] -> ${JSON.stringify(response)}`);
-    await writeMessage(output, encoder, response);
+    console.error(`[mcp-stdio] -> ${JSON.stringify(response,)}`,);
+    await writeMessage(output, encoder, response,);
   }
 }
 
@@ -141,8 +148,8 @@ async function writeMessage(
   encoder: TextEncoder,
   message: JsonRpcOutbound,
 ): Promise<void> {
-  const serialized = `${JSON.stringify(message)}\n`;
-  await writer.write(encoder.encode(serialized));
+  const serialized = `${JSON.stringify(message,)}\n`;
+  await writer.write(encoder.encode(serialized,),);
 }
 
 //endregion

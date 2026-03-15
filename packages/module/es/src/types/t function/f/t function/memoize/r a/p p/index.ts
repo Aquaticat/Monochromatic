@@ -1,7 +1,5 @@
-import type {
-  MemoizedAsyncFunction,
-} from '../../t/index.ts';
 import type { $ as Store, } from '../../../../../../t object/t store/t/r a/index.ts';
+import type { MemoizedAsyncFunction, } from '../../t/index.ts';
 import { $ as named, } from '../p n/index.ts';
 
 /**

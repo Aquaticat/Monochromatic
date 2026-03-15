@@ -21,8 +21,12 @@ const checkResults = buildChecks.map(check => {
   const exists = existsSync(fullPath,);
 
   match(exists,)
-    .with(true, () =>{  console.log(`✅ ${check.name} exist`,); },)
-    .with(false, () =>{  console.error(`❌ ${check.name} missing`,); },)
+    .with(true, () => {
+      console.log(`✅ ${check.name} exist`,);
+    },)
+    .with(false, () => {
+      console.error(`❌ ${check.name} missing`,);
+    },)
     .exhaustive();
 
   return { check, exists, };
@@ -31,7 +35,9 @@ const checkResults = buildChecks.map(check => {
 const missingArtifacts = checkResults.filter(result => !result.exists);
 
 match(missingArtifacts.length,)
-  .with(0, () =>{  console.log('\n✨ All build artifacts exist!',); },)
+  .with(0, () => {
+    console.log('\n✨ All build artifacts exist!',);
+  },)
   .otherwise(() => {
     throw new Error(outdent`
       ❌ Build artifacts missing!

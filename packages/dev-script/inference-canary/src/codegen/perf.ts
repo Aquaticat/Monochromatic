@@ -16,7 +16,10 @@
  * - At or above `slowMs`: score = 0.0 (maximum penalty)
  * - Between: linear decay
  */
-import { runInContainer, type ContainerResult, } from '../container.ts';
+import {
+  type ContainerResult,
+  runInContainer,
+} from '../container.ts';
 
 /** Container result bundled with its wall-clock duration */
 export type TimedContainerResult = ContainerResult & {
@@ -60,7 +63,7 @@ export async function runInContainerTimed(
   signal: AbortSignal | undefined,
 ): Promise<TimedContainerResult> {
   const start = Date.now();
-  const result = await runInContainer(source, input, signal);
+  const result = await runInContainer(source, input, signal,);
   return { ...result, durationMs: Date.now() - start, };
 }
 
@@ -83,10 +86,15 @@ export async function runInContainerTimed(
  * computePerfScore(result, { fastMs: 3000, slowMs: 10000 }); // durationMs=6500 -> 0.5
  * ```
  */
-export function computePerfScore(perfResult: TimedContainerResult, config: PerfTestConfig): number {
-  if (perfResult.timedOut || perfResult.exitCode !== 0) return 0;
-  if (perfResult.durationMs <= config.fastMs) return 1;
-  if (perfResult.durationMs >= config.slowMs) return 0;
+export function computePerfScore(perfResult: TimedContainerResult,
+  config: PerfTestConfig,): number
+{
+  if (perfResult.timedOut || perfResult.exitCode !== 0)
+    return 0;
+  if (perfResult.durationMs <= config.fastMs)
+    return 1;
+  if (perfResult.durationMs >= config.slowMs)
+    return 0;
   return 1 - (perfResult.durationMs - config.fastMs) / (config.slowMs - config.fastMs);
 }
 
@@ -99,12 +107,18 @@ export function computePerfScore(perfResult: TimedContainerResult, config: PerfT
  *
  * @returns diagnostic text, or undefined if perf was acceptable
  */
-export function buildPerfDiagnostic(perfResult: TimedContainerResult, config: PerfTestConfig): string | undefined {
-  const score = computePerfScore(perfResult, config);
-  if (score >= 1) return undefined;
+export function buildPerfDiagnostic(perfResult: TimedContainerResult,
+  config: PerfTestConfig,): string | undefined
+{
+  const score = computePerfScore(perfResult, config,);
+  if (score >= 1)
+    return undefined;
   return [
     '=== performance issue ===',
-    `Your implementation took ${String(perfResult.durationMs)}ms on the performance test (target: under ${String(config.fastMs)}ms).`,
+    `Your implementation took ${
+      String(perfResult.durationMs,)
+    }ms on the performance test (target: under ${String(config.fastMs,)}ms).`,
     'Optimize for throughput on large inputs.',
-  ].join('\n');
+  ]
+    .join('\n',);
 }

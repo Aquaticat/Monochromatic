@@ -65,12 +65,10 @@ export async function* $<T,>(
   const matched = new Set<T>();
 
   for await (const item of iterable) {
-    if (toOmit.has(item,)) {
+    if (toOmit.has(item,))
       matched.add(item,);
-    }
-    else {
+    else
       yield item;
-    }
   }
 
   // Size comparison short-circuits validation when all keys matched.
@@ -78,9 +76,8 @@ export async function* $<T,>(
   // Skip validation entirely when strict mode is disabled.
   if (strict && matched.size !== toOmit.size) {
     for (const key of toOmit) {
-      if (!matched.has(key,)) {
+      if (!matched.has(key,))
         throw new Error(`Key not found in iterable: ${String(key,)}`,);
-      }
     }
   }
 }

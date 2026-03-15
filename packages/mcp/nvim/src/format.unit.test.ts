@@ -4,13 +4,16 @@ import {
   test,
 } from 'bun:test';
 
-import { formatDiagnostic, type FormattableDiagnostic } from './format.ts';
+import {
+  formatDiagnostic,
+  type FormattableDiagnostic,
+} from './format.ts';
 
 //region formatDiagnostic -- formats a diagnostic into a human-readable line
 
 describe('formatDiagnostic', () => {
   test('formats diagnostic with source and code', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'ERROR',
       lnum: 10,
@@ -19,11 +22,13 @@ describe('formatDiagnostic', () => {
       code: 2_345,
       message: 'Type mismatch',
     };
-    expect(formatDiagnostic(diagnostic)).toBe('ERROR 10:5 [typescript 2345] Type mismatch');
+    expect(formatDiagnostic(diagnostic,),).toBe(
+      'ERROR 10:5 [typescript 2345] Type mismatch',
+    );
   });
 
   test('formats diagnostic with source but no code', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'WARN',
       lnum: 3,
@@ -32,11 +37,11 @@ describe('formatDiagnostic', () => {
       code: null,
       message: 'Unused variable',
     };
-    expect(formatDiagnostic(diagnostic)).toBe('WARN 3:1 [eslint] Unused variable');
+    expect(formatDiagnostic(diagnostic,),).toBe('WARN 3:1 [eslint] Unused variable',);
   });
 
   test('formats diagnostic without source', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'INFO',
       lnum: 1,
@@ -45,11 +50,11 @@ describe('formatDiagnostic', () => {
       code: null,
       message: 'Some info',
     };
-    expect(formatDiagnostic(diagnostic)).toBe('INFO 1:1 Some info');
+    expect(formatDiagnostic(diagnostic,),).toBe('INFO 1:1 Some info',);
   });
 
   test('formats diagnostic without source but with code (code is ignored)', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'HINT',
       lnum: 20,
@@ -58,11 +63,11 @@ describe('formatDiagnostic', () => {
       code: 'some-code',
       message: 'Consider refactoring',
     };
-    expect(formatDiagnostic(diagnostic)).toBe('HINT 20:15 Consider refactoring');
+    expect(formatDiagnostic(diagnostic,),).toBe('HINT 20:15 Consider refactoring',);
   });
 
   test('applies indent prefix', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'ERROR',
       lnum: 5,
@@ -71,11 +76,13 @@ describe('formatDiagnostic', () => {
       code: 1_000,
       message: 'Missing semicolon',
     };
-    expect(formatDiagnostic(diagnostic, '  ')).toBe('  ERROR 5:3 [ts 1000] Missing semicolon');
+    expect(formatDiagnostic(diagnostic, '  ',),).toBe(
+      '  ERROR 5:3 [ts 1000] Missing semicolon',
+    );
   });
 
   test('defaults indent to empty string', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'WARN',
       lnum: 1,
@@ -84,12 +91,12 @@ describe('formatDiagnostic', () => {
       code: null,
       message: 'Test',
     };
-    const result = formatDiagnostic(diagnostic);
-    expect(result.startsWith('WARN')).toBe(true);
+    const result = formatDiagnostic(diagnostic,);
+    expect(result.startsWith('WARN',),).toBe(true,);
   });
 
   test('handles string code', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'ERROR',
       lnum: 7,
@@ -98,11 +105,13 @@ describe('formatDiagnostic', () => {
       code: 'no-unused-vars',
       message: 'Variable is unused',
     };
-    expect(formatDiagnostic(diagnostic)).toBe('ERROR 7:12 [oxlint no-unused-vars] Variable is unused');
+    expect(formatDiagnostic(diagnostic,),).toBe(
+      'ERROR 7:12 [oxlint no-unused-vars] Variable is unused',
+    );
   });
 
   test('handles zero-based line and column', () => {
-    expect.assertions(1);
+    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'ERROR',
       lnum: 0,
@@ -111,7 +120,7 @@ describe('formatDiagnostic', () => {
       code: null,
       message: 'At origin',
     };
-    expect(formatDiagnostic(diagnostic)).toBe('ERROR 0:0 At origin');
+    expect(formatDiagnostic(diagnostic,),).toBe('ERROR 0:0 At origin',);
   });
 });
 

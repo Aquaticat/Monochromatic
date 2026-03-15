@@ -5,16 +5,16 @@
  * The server renders its own HTML shell (not via renderPage) without `\<top-nav\>`,
  * because the `\<task-detail\>` component provides its own back-button header.
  */
-import type { Task } from "../lib/types.ts";
-import styles from "../../dist/css/styles.css" with { type: "text" };
-import { api } from "./lib/api.ts";
-import { injectCSS } from "./lib/inject-css.ts";
-import { readPageData } from "./lib/page-data.ts";
+import styles from '../../dist/css/styles.css' with { type: 'text', };
+import type { Task, } from '../lib/types.ts';
+import { api, } from './lib/api.ts';
+import { injectCSS, } from './lib/inject-css.ts';
+import { readPageData, } from './lib/page-data.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import "./components/side-drawer.ts";
-import type { TaskDetail } from "./components/task-detail.ts";
+import './components/side-drawer.ts';
+import type { TaskDetail, } from './components/task-detail.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: registers the task-detail custom element
-import "./components/task-detail.ts";
+import './components/task-detail.ts';
 
 /** Minimal task info shown in the blocker picker dropdown. */
 type BlockerCandidate = {
@@ -44,43 +44,43 @@ type TaskDetailsPageData = {
   blockerSummaries: BlockerSummary[];
 };
 
-injectCSS(styles);
+injectCSS(styles,);
 
 /** Deserialized page data from the server-rendered JSON blob. */
 const pageData = readPageData<TaskDetailsPageData>();
 /** Task being viewed, extracted from the page data blob. */
-const {task} = pageData;
+const { task, } = pageData;
 
 /** Root app container element. */
-const appElement = document.querySelector<HTMLElement>("#app");
-if (!(appElement instanceof HTMLElement)) {
-  throw new Error("Missing app element");
-}
+const appElement = document.querySelector<HTMLElement>('#app',);
+if (!(appElement instanceof HTMLElement))
+  throw new Error('Missing app element',);
 
 /** Typed reference to the app container. */
 const app = appElement;
 
 /** Task detail web component instance for displaying/editing the task. */
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- custom element registered as "task-detail" returns TaskDetail
-const detail = document.createElement("task-detail") as TaskDetail;
+const detail = document.createElement('task-detail',) as TaskDetail;
 detail.configure({
   task,
   blockerSummaries: pageData.blockerSummaries,
-});
+},);
 
 // oxlint-disable-next-line typescript/no-misused-promises -- addEventListener does not await the handler
-detail.addEventListener("action", async function onAction(event) {
-  if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent for 'action' listener");
+detail.addEventListener('action', async function onAction(event,) {
+  if (!(event instanceof CustomEvent))
+    throw new TypeError("Expected CustomEvent for 'action' listener",);
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- CustomEvent detail shape matches the action payload
-  const { action, title, description } = event.detail as {
+  const { action, title, description, } = event.detail as {
     action: string;
     title: string;
     description: string;
   };
 
-  if (action === "close") {
-    globalThis.location.href = "/";
-  } else if (action === "save") {
+  if (action === 'close')
+    globalThis.location.href = '/';
+  else if (action === 'save') {
     const metadata = detail.getMetadata();
     const payload = {
       title,
@@ -93,23 +93,27 @@ detail.addEventListener("action", async function onAction(event) {
       blockedBy: task.blockedBy,
     };
     await api(`/api/tasks/${task.id}`, {
-      method: "PUT",
-      body: JSON.stringify(payload),
-    });
+      method: 'PUT',
+      body: JSON.stringify(payload,),
+    },);
     globalThis.location.reload();
-  } else if (action === "start") {
-    await api(`/api/tasks/${task.id}/start`, { method: "POST" });
-    globalThis.location.reload();
-  } else if (action === "stop") {
-    await api(`/api/tasks/${task.id}/stop`, { method: "POST" });
-    globalThis.location.reload();
-  } else if (action === "complete") {
-    await api(`/api/tasks/${task.id}/complete`, { method: "POST" });
-    globalThis.location.href = "/";
-  } else if (action === "delete") {
-    await api(`/api/tasks/${task.id}`, { method: "DELETE" });
-    globalThis.location.href = "/";
   }
-});
+  else if (action === 'start') {
+    await api(`/api/tasks/${task.id}/start`, { method: 'POST', },);
+    globalThis.location.reload();
+  }
+  else if (action === 'stop') {
+    await api(`/api/tasks/${task.id}/stop`, { method: 'POST', },);
+    globalThis.location.reload();
+  }
+  else if (action === 'complete') {
+    await api(`/api/tasks/${task.id}/complete`, { method: 'POST', },);
+    globalThis.location.href = '/';
+  }
+  else if (action === 'delete') {
+    await api(`/api/tasks/${task.id}`, { method: 'DELETE', },);
+    globalThis.location.href = '/';
+  }
+},);
 
-app.append(detail);
+app.append(detail,);

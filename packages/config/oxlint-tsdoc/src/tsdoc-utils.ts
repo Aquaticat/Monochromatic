@@ -32,23 +32,23 @@ export const IGNORED_EXTENSIONS: readonly string[] = [
  * if (shouldIgnoreFile(context.filename)) return false;
  * ```
  */
-export function shouldIgnoreFile(filename: string): boolean {
-  return IGNORED_EXTENSIONS.some(function endsWithIgnored(ext): boolean {
-    return filename.endsWith(ext);
-  });
+export function shouldIgnoreFile(filename: string,): boolean {
+  return IGNORED_EXTENSIONS.some(function endsWithIgnored(ext,): boolean {
+    return filename.endsWith(ext,);
+  },);
 }
 
 export {
-  type TsdocParseResult,
   FALLBACK_ELIGIBLE_TYPES,
   findTsdocComment,
   parseTsdocForNode,
+  type TsdocParseResult,
 } from './tsdoc-comments.ts';
 
 export {
-  extractParamNames,
   extractDestructuredParamNames,
   extractDocParamNames,
+  extractParamNames,
   functionReturnsValue,
   isGeneratorFunction,
 } from './tsdoc-params.ts';

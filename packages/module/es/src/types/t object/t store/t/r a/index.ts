@@ -1,6 +1,9 @@
 import type { Promisable, } from 'type-fest';
 
-import type { BaseStoreConfig, BaseStoreFields, } from '../index.ts';
+import type {
+  BaseStoreConfig,
+  BaseStoreFields,
+} from '../index.ts';
 
 /**
  * Backend storage interface for {@link $}.

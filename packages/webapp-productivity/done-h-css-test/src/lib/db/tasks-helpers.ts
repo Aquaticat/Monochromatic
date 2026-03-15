@@ -1,9 +1,14 @@
 /**
  * Shared types and helper functions for the task data-access layer.
  */
-import type { Task, TaskComplexity, TaskPriority, TaskStatus } from "../types.ts";
-import db from "../db.ts";
-import { SQL_SELECT_TASK_BY_ID } from "./tasks-sql.ts";
+import db from '../db.ts';
+import type {
+  Task,
+  TaskComplexity,
+  TaskPriority,
+  TaskStatus,
+} from '../types.ts';
+import { SQL_SELECT_TASK_BY_ID, } from './tasks-sql.ts';
 
 /** Milliseconds per second, used for timer elapsed-time calculations. */
 export const MS_PER_SECOND = 1_000;
@@ -37,7 +42,7 @@ export type TaskRow = {
   /** Current task workflow status. */
   status: TaskStatus;
   /** Source system that created this task. */
-  source: Task["source"];
+  source: Task['source'];
   /** External source identifier. */
   source_id: string | null;
   /** Additional source metadata as JSON. */
@@ -83,16 +88,16 @@ export function nowIso(): string {
  *
  * @returns Parsed string array, or empty array on failure
  */
-export function parseStringArray(value: string): string[] {
+export function parseStringArray(value: string,): string[] {
   try {
-    const parsed = JSON.parse(value) as unknown;
-    if (!Array.isArray(parsed)) {
+    const parsed = JSON.parse(value,) as unknown;
+    if (!Array.isArray(parsed,))
       return [];
-    }
-    return parsed.filter(function isString(entry): entry is string {
-      return typeof entry === "string";
-    });
-  } catch {
+    return parsed.filter(function isString(entry,): entry is string {
+      return typeof entry === 'string';
+    },);
+  }
+  catch {
     return [];
   }
 }
@@ -105,15 +110,16 @@ export function parseStringArray(value: string): string[] {
  *
  * @returns Normalized deduplicated array
  */
-export function normalizeStringArray(values: readonly string[] | undefined): string[] {
-  if (values === undefined) {
+export function normalizeStringArray(values: readonly string[] | undefined,): string[] {
+  if (values === undefined)
     return [];
-  }
-  return [...new Set(values.map(function trimValue(value) {
-    return value.trim();
-  }).filter(function isNonEmpty(value) {
-    return value.length > 0;
-  }))];
+  return [...new Set(values
+    .map(function trimValue(value,) {
+      return value.trim();
+    },)
+    .filter(function isNonEmpty(value,) {
+      return value.length > 0;
+    },),),];
 }
 
 /**
@@ -124,18 +130,18 @@ export function normalizeStringArray(values: readonly string[] | undefined): str
  *
  * @returns Mapped task object
  */
-export function mapTask(row: TaskRow): Task {
+export function mapTask(row: TaskRow,): Task {
   return {
     id: row.id,
     title: row.title,
     description: row.description,
-    tags: parseStringArray(row.tags),
-    locations: parseStringArray(row.locations),
+    tags: parseStringArray(row.tags,),
+    locations: parseStringArray(row.locations,),
     priority: row.priority,
     dueDate: row.due_date,
     complexity: row.complexity,
-    reminders: parseStringArray(row.reminders),
-    blockedBy: parseStringArray(row.blocked_by),
+    reminders: parseStringArray(row.reminders,),
+    blockedBy: parseStringArray(row.blocked_by,),
     trackedTime: row.tracked_time,
     timerStartedAt: row.timer_started_at,
     status: row.status,
@@ -154,8 +160,10 @@ export function mapTask(row: TaskRow): Task {
  *
  * @returns Raw task row, or null when not found
  */
-export async function getTaskRowById(id: string): Promise<TaskRow | null> {
+export async function getTaskRowById(id: string,): Promise<TaskRow | null> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database prepare().get() returns the row shape we defined
-  const taskRow = await db.prepare(SQL_SELECT_TASK_BY_ID).get(id) as TaskRow | undefined;
+  const taskRow = await db.prepare(SQL_SELECT_TASK_BY_ID,).get(id,) as
+    | TaskRow
+    | undefined;
   return taskRow ?? null;
 }

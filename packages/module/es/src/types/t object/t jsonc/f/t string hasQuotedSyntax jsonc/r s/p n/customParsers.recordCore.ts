@@ -9,6 +9,7 @@ import type {
   FragmentStringJsonc,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
 import type * as Jsonc from '../../../../t/index.ts';
+import { callParseValue, } from './customParsers.dispatch.ts';
 import {
   expectColonAfterKey,
   expectRecordSeparatorOrEnd,
@@ -16,7 +17,6 @@ import {
 } from './customParsers.recordHelpers.ts';
 import { mergeComments, } from './customParsers.startsWithComment.mergeComments.ts';
 import { startsWithComment, } from './customParsers.startsWithComment.ts';
-import { callParseValue, } from './customParsers.dispatch.ts';
 
 //region Record value parsing -- Parse value with leading comment after colon (MUTUALLY RECURSIVE)
 /**

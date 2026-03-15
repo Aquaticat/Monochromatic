@@ -16,7 +16,7 @@
  *
  * @returns Bare specifier without quotes or url() wrapper
  */
-export function stripImportSpecifier(raw: string): string {
+export function stripImportSpecifier(raw: string,): string {
   /** Trimmed input for consistent handling */
   const trimmed = raw.trim();
 
@@ -24,21 +24,23 @@ export function stripImportSpecifier(raw: string): string {
   const URL_PREFIX_LENGTH = 4;
 
   // url(...) wrapper
-  if (trimmed.startsWith('url(') && trimmed.endsWith(')')) {
+  if (trimmed.startsWith('url(',) && trimmed.endsWith(')',)) {
     /** Inner content of url() */
-    const inner = trimmed.slice(URL_PREFIX_LENGTH, -1).trim();
+    const inner = trimmed.slice(URL_PREFIX_LENGTH, -1,).trim();
     // Strip inner quotes if present
-    if ((inner.startsWith("'") && inner.endsWith("'")) ||
-        (inner.startsWith('"') && inner.endsWith('"'))) {
-      return inner.slice(1, -1);
+    if ((inner.startsWith("'",) && inner.endsWith("'",))
+      || (inner.startsWith('"',) && inner.endsWith('"',)))
+    {
+      return inner.slice(1, -1,);
     }
     return inner;
   }
 
   // Quoted string
-  if ((trimmed.startsWith("'") && trimmed.endsWith("'")) ||
-      (trimmed.startsWith('"') && trimmed.endsWith('"'))) {
-    return trimmed.slice(1, -1);
+  if ((trimmed.startsWith("'",) && trimmed.endsWith("'",))
+    || (trimmed.startsWith('"',) && trimmed.endsWith('"',)))
+  {
+    return trimmed.slice(1, -1,);
   }
 
   return trimmed;
@@ -51,8 +53,8 @@ export function stripImportSpecifier(raw: string): string {
  *
  * @returns True for package-like specifiers (`\@scope/pkg/...` or `pkg/...`)
  */
-export function isPackageSpecifier(specifier: string): boolean {
-  return !specifier.startsWith('.') && !specifier.startsWith('/');
+export function isPackageSpecifier(specifier: string,): boolean {
+  return !specifier.startsWith('.',) && !specifier.startsWith('/',);
 }
 
 /**
@@ -63,26 +65,24 @@ export function isPackageSpecifier(specifier: string): boolean {
  *
  * @returns Tuple of [packageName, subpath] where subpath starts with `./` or is `.`
  */
-export function splitPackageSpecifier(specifier: string): [string, string] {
-  if (specifier.startsWith('@')) {
+export function splitPackageSpecifier(specifier: string,): [string, string,] {
+  if (specifier.startsWith('@',)) {
     // Scoped: @scope/pkg or @scope/pkg/sub/path.css
     /**
      * Index of the second slash (after \@scope/pkg).
      */
-    const secondSlash = specifier.indexOf('/', specifier.indexOf('/') + 1);
-    if (secondSlash === -1) {
-      return [specifier, '.'];
-    }
-    return [specifier.slice(0, secondSlash), `./${specifier.slice(secondSlash + 1)}`];
+    const secondSlash = specifier.indexOf('/', specifier.indexOf('/',) + 1,);
+    if (secondSlash === -1)
+      return [specifier, '.',];
+    return [specifier.slice(0, secondSlash,), `./${specifier.slice(secondSlash + 1,)}`,];
   }
 
   // Unscoped: pkg or pkg/sub/path.css
   /** Index of the first slash */
-  const firstSlash = specifier.indexOf('/');
-  if (firstSlash === -1) {
-    return [specifier, '.'];
-  }
-  return [specifier.slice(0, firstSlash), `./${specifier.slice(firstSlash + 1)}`];
+  const firstSlash = specifier.indexOf('/',);
+  if (firstSlash === -1)
+    return [specifier, '.',];
+  return [specifier.slice(0, firstSlash,), `./${specifier.slice(firstSlash + 1,)}`,];
 }
 
 //endregion Specifier Parsing

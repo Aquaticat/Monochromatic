@@ -104,8 +104,8 @@ export type OxlintJsonOutput = {
 
 /** Maps oxlint severity strings to the uppercase format used by editor diagnostics. */
 export const OXLINT_SEVERITY_MAP: Record<string, string> = {
-  error: "ERROR",
-  warning: "WARN",
+  error: 'ERROR',
+  warning: 'WARN',
 };
 
 //endregion Severity mapping

@@ -1,13 +1,19 @@
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, } from 'node:fs';
+import { join, } from 'node:path';
 
-import { IMAGES_DIR } from './config.ts';
-import { l, tagged } from './log.ts';
-import type { ImageSpec } from './registry.ts';
-import { ensureLinuxTemplate } from './template-linux.ts';
-import { ensureWindowsTemplate } from './template-windows.ts';
+import { IMAGES_DIR, } from './config.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
+import type { ImageSpec, } from './registry.ts';
+import { ensureLinuxTemplate, } from './template-linux.ts';
+import { ensureWindowsTemplate, } from './template-windows.ts';
 
-export { TEMPLATE_VM_NAME, templateVmGuard } from './template-shared.ts';
+export {
+  TEMPLATE_VM_NAME,
+  templateVmGuard,
+} from './template-shared.ts';
 
 /**
  * Ensures a template image exists for the given image spec, creating it
@@ -35,17 +41,16 @@ export { TEMPLATE_VM_NAME, templateVmGuard } from './template-shared.ts';
  * const windowsTemplate = await ensureTemplate(IMAGES['windows']);
  * ```
  */
-export async function ensureTemplate(spec: ImageSpec): Promise<string> {
-  const rl = tagged({ tag: ensureTemplate.name, l });
-  const templatePath = join(IMAGES_DIR, spec.templateFileName);
+export async function ensureTemplate(spec: ImageSpec,): Promise<string> {
+  const rl = tagged({ tag: ensureTemplate.name, l, },);
+  const templatePath = join(IMAGES_DIR, spec.templateFileName,);
 
-  if (existsSync(templatePath)) {
-    rl.info(`using cached template ${templatePath}`);
+  if (existsSync(templatePath,)) {
+    rl.info(`using cached template ${templatePath}`,);
     return templatePath;
   }
 
-  if (spec.osFamily === 'windows') {
-    return await ensureWindowsTemplate(spec);
-  }
-  return await ensureLinuxTemplate(spec);
+  if (spec.osFamily === 'windows')
+    return await ensureWindowsTemplate(spec,);
+  return await ensureLinuxTemplate(spec,);
 }

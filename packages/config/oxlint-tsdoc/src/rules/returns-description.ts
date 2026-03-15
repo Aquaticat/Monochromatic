@@ -6,7 +6,7 @@
  * @module
  */
 
-import { PlainTextEmitter } from '@microsoft/tsdoc';
+import { PlainTextEmitter, } from '@microsoft/tsdoc';
 
 import type {
   Context,
@@ -14,7 +14,7 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import { createFunctionTsdocVisitor } from './tsdoc-visitors.ts';
+import { createFunctionTsdocVisitor, } from './tsdoc-visitors.ts';
 
 /**
  * Requires that returns tags have a description.
@@ -45,18 +45,18 @@ export const requireReturnsDescription: CreateOnceRule = {
       missingDescription: '@returns tag is missing a description.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireReturnsDescHandler(_node, result): void {
-      const { returnsBlock } = result.docComment;
-      if (returnsBlock === undefined) {
-        return;
-      }
-      if (!PlainTextEmitter.hasAnyTextContent(returnsBlock.content)) {
-        context.report({
-          node: result.comment,
-          messageId: 'missingDescription',
-        });
-      }
-    });
+  createOnce(context: Context,): VisitorWithHooks {
+    return createFunctionTsdocVisitor(context,
+      function requireReturnsDescHandler(_node, result,): void {
+        const { returnsBlock, } = result.docComment;
+        if (returnsBlock === undefined)
+          return;
+        if (!PlainTextEmitter.hasAnyTextContent(returnsBlock.content,)) {
+          context.report({
+            node: result.comment,
+            messageId: 'missingDescription',
+          },);
+        }
+      },);
   },
 };

@@ -20,7 +20,7 @@ export async function hashString(value: string,): Promise<string> {
   /** SHA-256 hash digest as ArrayBuffer */
   const hashBuffer = await crypto.subtle.digest('SHA-256', data,);
   /** Convert ArrayBuffer to array of bytes for processing */
-  const hashArray = [...new Uint8Array(hashBuffer)];
+  const hashArray = [...new Uint8Array(hashBuffer,),];
   /** Convert bytes to hexadecimal string with zero-padding */
   const hashHex = hashArray.map(b => b.toString(16,).padStart(2, '0',)).join('',);
   return hashHex;

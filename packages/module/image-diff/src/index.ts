@@ -35,11 +35,6 @@
  */
 
 export {
-  compare,
-  embed,
-  embedBatch,
-} from './client.ts';
-export {
   compareAll,
   embedAll,
   embedBatchAll,
@@ -49,10 +44,17 @@ export type {
   MultiProviderComparisonEntry,
   MultiProviderEmbedEntry,
 } from './client.multi.ts';
-export { describeImageDifference } from './describe.ts';
-export { dotProduct, cosineSimilarity } from './similarity.ts';
-export { voyageProvider } from './voyage.ts';
-export { geminiProvider } from './gemini.ts';
+export {
+  compare,
+  embed,
+  embedBatch,
+} from './client.ts';
+export { describeImageDifference, } from './describe.ts';
+export { geminiProvider, } from './gemini.ts';
+export {
+  cosineSimilarity,
+  dotProduct,
+} from './similarity.ts';
 export type {
   BatchEmbeddingResult,
   ComparisonResult,
@@ -70,3 +72,4 @@ export type {
   Provider,
   VoyageModel,
 } from './types.ts';
+export { voyageProvider, } from './voyage.ts';

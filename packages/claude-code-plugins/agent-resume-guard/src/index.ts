@@ -36,7 +36,7 @@ import {
   writeOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-utils';
 
-export {}
+export {};
 
 //region Main
 
@@ -49,16 +49,16 @@ const raw = await readStdin();
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
  */
 /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
-const event = JSON.parse(raw) as PreToolUseInput;
+const event = JSON.parse(raw,) as PreToolUseInput;
 
 /**
  * Only act on Agent tool calls.
  * The `matcher` in settings.json should already filter for this,
  * but guard defensively in case the hook is registered without a matcher.
  */
-if (event.tool_name !== 'Agent') {
-  writeOutput({});
-} else {
+if (event.tool_name !== 'Agent')
+  writeOutput({},);
+else {
   /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tool_input shape matches AgentToolInput when tool_name is "Agent" */
   /** Typed tool input after verifying tool_name is "Agent". */
   const agentInput = event.tool_input as AgentToolInput;
@@ -73,13 +73,15 @@ if (event.tool_name !== 'Agent') {
           `Blocked: Agent resume call (agent ID: ${agentInput.resume}).`,
           'Background agents notify automatically on completion.',
           'Do not poll or resume running agents -- wait for the notification.',
-          'If you need the result now, use TaskOutput to check the agent\'s status.',
-        ].join(' '),
+          "If you need the result now, use TaskOutput to check the agent's status.",
+        ]
+          .join(' ',),
       },
     };
-    writeOutput(output);
-  } else {
-    writeOutput({});
+    writeOutput(output,);
+  }
+  else {
+    writeOutput({},);
   }
 }
 

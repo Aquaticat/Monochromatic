@@ -17,9 +17,12 @@ import {
   readFileSync,
   renameSync,
 } from 'node:fs';
-import { join } from 'node:path';
+import { join, } from 'node:path';
 
-import { SPAWNS_DIR, type SpawnState } from './paths.ts';
+import {
+  SPAWNS_DIR,
+  type SpawnState,
+} from './paths.ts';
 
 /**
  * Formats a completed spawn state into a human-readable context string.
@@ -34,7 +37,7 @@ import { SPAWNS_DIR, type SpawnState } from './paths.ts';
  * // "Spawned Claude session completed (spawnId: abc-123):\n..."
  * ```
  */
-function formatSpawnResult(state: SpawnState): string {
+function formatSpawnResult(state: SpawnState,): string {
   return [
     `Spawned Claude session completed (spawnId: ${state.spawnId}):`,
     `Session ID: ${state.sessionId}`,
@@ -42,7 +45,8 @@ function formatSpawnResult(state: SpawnState): string {
     state.lastMessage.length > 0
       ? `Last assistant message:\n${state.lastMessage}`
       : 'No assistant message was produced.',
-  ].join('\n');
+  ]
+    .join('\n',);
 }
 
 /**
@@ -71,59 +75,60 @@ function formatSpawnResult(state: SpawnState): string {
  * const context = checkCompletedChildren({ parentSessionId: 'abc-123', consume: false })
  * ```
  */
-function checkCompletedChildren({ parentSessionId, consume }: { parentSessionId: string; consume: boolean }): string | null {
+function checkCompletedChildren(
+  { parentSessionId, consume, }: { parentSessionId: string; consume: boolean; },
+): string | null {
   let entries: string[] = [];
   try {
-    entries = readdirSync(SPAWNS_DIR);
-  } catch {
+    entries = readdirSync(SPAWNS_DIR,);
+  }
+  catch {
     return null;
   }
 
   const results: string[] = [];
 
   for (const filename of entries) {
-    if (!filename.endsWith('.json')) {
+    if (!filename.endsWith('.json',))
       continue;
-    }
 
-    const filePath = join(SPAWNS_DIR, filename);
-    const reportedPath = join(SPAWNS_DIR, filename.replace(/\.json$/, '.reported'));
+    const filePath = join(SPAWNS_DIR, filename,);
+    const reportedPath = join(SPAWNS_DIR, filename.replace(/\.json$/, '.reported',),);
 
     try {
-      const raw = readFileSync(filePath, 'utf8');
+      const raw = readFileSync(filePath, 'utf8',);
       /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own hooks */
-      const state = JSON.parse(raw) as SpawnState;
+      const state = JSON.parse(raw,) as SpawnState;
 
-      if (state.parentSessionId !== parentSessionId) {
+      if (state.parentSessionId !== parentSessionId)
         continue;
-      }
 
-      if (state.status !== 'stopped') {
+      if (state.status !== 'stopped')
         continue;
-      }
 
       //region Consume: atomic rename to prevent double reliable injection
       if (consume) {
         try {
-          renameSync(filePath, reportedPath);
-        } catch {
+          renameSync(filePath, reportedPath,);
+        }
+        catch {
           /** Another hook invocation already renamed this file. */
           continue;
         }
       }
       //endregion
 
-      results.push(formatSpawnResult(state));
-    } catch {
+      results.push(formatSpawnResult(state,),);
+    }
+    catch {
       continue;
     }
   }
 
-  if (results.length === 0) {
+  if (results.length === 0)
     return null;
-  }
 
-  return results.join('\n\n---\n\n');
+  return results.join('\n\n---\n\n',);
 }
 
-export { checkCompletedChildren };
+export { checkCompletedChildren, };

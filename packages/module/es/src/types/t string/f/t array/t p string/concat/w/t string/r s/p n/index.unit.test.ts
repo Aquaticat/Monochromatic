@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const {$} = types.string.from.array.string.concat.with.string.sync.named;
+const { $, } = types.string.from.array.string.concat.with.string.sync.named;
 
 describe('concat with string - synchronous named', () => {
   test('joins multiple strings with a separator', () => {

@@ -7,6 +7,6 @@
 export {};
 
 /** String value cast to a callable type to trigger a runtime TypeError. */
-const notAFunction = "I am a string" as unknown as () => void;
+const notAFunction = 'I am a string' as unknown as () => void;
 
 notAFunction();

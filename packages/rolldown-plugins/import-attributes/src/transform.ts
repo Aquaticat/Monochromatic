@@ -24,10 +24,9 @@ import {
  *
  * @returns Transformed code object, or `null` if no attributes were found
  */
-export function transformImportAttributes(code: string): { code: string } | null {
-  if (!code.includes(' with ') && !code.includes(' with{')) {
+export function transformImportAttributes(code: string,): { code: string; } | null {
+  if (!code.includes(' with ',) && !code.includes(' with{',))
     return null;
-  }
 
   let transformed = code;
   let didTransform = false;
@@ -35,10 +34,11 @@ export function transformImportAttributes(code: string): { code: string } | null
   //region Static imports/exports
   transformed = transformed.replace(
     STATIC_IMPORT_WITH_RE,
-    function staticReplacer(_match: string, prefix: string, quote: string, specifier: string, _withClause: string, attrType: string) {
-      if (HANDLERS[attrType] === undefined) {
+    function staticReplacer(_match: string, prefix: string, quote: string,
+      specifier: string, _withClause: string, attrType: string,)
+    {
+      if (HANDLERS[attrType] === undefined)
         return _match;
-      }
       didTransform = true;
       return `${prefix}${quote}${specifier}?${ATTR_QUERY_KEY}=${attrType}${quote}`;
     },
@@ -48,10 +48,11 @@ export function transformImportAttributes(code: string): { code: string } | null
   //region Dynamic imports
   transformed = transformed.replace(
     DYNAMIC_IMPORT_WITH_RE,
-    function dynamicReplacer(_match: string, prefix: string, quote: string, specifier: string, _withClause: string, attrType: string) {
-      if (HANDLERS[attrType] === undefined) {
+    function dynamicReplacer(_match: string, prefix: string, quote: string,
+      specifier: string, _withClause: string, attrType: string,)
+    {
+      if (HANDLERS[attrType] === undefined)
         return _match;
-      }
       didTransform = true;
       return `${prefix}${quote}${specifier}?${ATTR_QUERY_KEY}=${attrType}${quote}`;
     },
@@ -59,8 +60,7 @@ export function transformImportAttributes(code: string): { code: string } | null
   //endregion Dynamic imports
 
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- didTransform is mutated inside replace callbacks; linter cannot follow callback side effects
-  if (!didTransform) {
+  if (!didTransform)
     return null;
-  }
   return { code: transformed, };
 }

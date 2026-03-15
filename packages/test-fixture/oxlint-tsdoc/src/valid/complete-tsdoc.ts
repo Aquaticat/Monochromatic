@@ -15,8 +15,8 @@
  * greet('Alice', 2);
  * ```
  */
-function greet(name: string, count: number): string {
-  return `Hello ${name}!`.repeat(count);
+function greet(name: string, count: number,): string {
+  return `Hello ${name}!`.repeat(count,);
 }
 
 /**
@@ -24,8 +24,8 @@ function greet(name: string, count: number): string {
  *
  * @param message - text to log
  */
-function log(message: string): void {
-  console.error(message);
+function log(message: string,): void {
+  console.error(message,);
 }
 
 /**
@@ -48,7 +48,7 @@ function withEscapedClose(): void {}
  * @returns joined path
  */
 function join(...parts: string[]): string {
-  return parts.join('/');
+  return parts.join('/',);
 }
 
 /** Options for the process function. */
@@ -68,8 +68,8 @@ type ProcessOptions = {
  *
  * @returns processed result
  */
-function processDestructured({ value, count }: ProcessOptions): string {
-  return value.repeat(count);
+function processDestructured({ value, count, }: ProcessOptions,): string {
+  return value.repeat(count,);
 }
 
 /**
@@ -83,16 +83,16 @@ function processDestructured({ value, count }: ProcessOptions): string {
  *
  * @returns processed result with prefix
  */
-function mixedParams(prefix: string, { value, count }: ProcessOptions): string {
-  return prefix + value.repeat(count);
+function mixedParams(prefix: string, { value, count, }: ProcessOptions,): string {
+  return prefix + value.repeat(count,);
 }
 
 export {
   greet,
-  log,
   internalHelper,
-  withEscapedClose,
   join,
-  processDestructured,
+  log,
   mixedParams,
+  processDestructured,
+  withEscapedClose,
 };

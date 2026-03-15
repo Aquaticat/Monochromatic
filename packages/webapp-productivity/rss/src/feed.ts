@@ -45,7 +45,7 @@ export async function getSortedFeeds(
   const result = feeds.toSorted(function byDate(feedA, feedB,) {
     return extractDate(feedB,).getTime() - extractDate(feedA,).getTime();
   },);
-  innerL.debug(`sorted ${String(result.length)} feeds`);
+  innerL.debug(`sorted ${String(result.length,)} feeds`,);
   return result;
 }
 
@@ -62,19 +62,22 @@ async function fetchAndParseFeeds(
   const innerL = tagged({ tag: fetchAndParseFeeds.name, l, },);
   const DISCARD = Symbol('discard',);
   /** Fetched OPML text paired with its source outline for later parsing. */
-  type TextWOutline = { text: string; outline: Opml.Outline<string> & { xmlUrl: string; }; };
+  type TextWOutline = { text: string;
+    outline: Opml.Outline<string> & { xmlUrl: string; }; };
   const textsWOutline: TextWOutline[] = (await mapIterableAsync(
     async function fetchFeed(outline: Opml.Outline<string> & { xmlUrl: string; },) {
       const response = await fetch(outline.xmlUrl,);
       if (!response.ok) {
-        innerL.warn(`${outline.xmlUrl} responded ${String(response.status)}`);
+        innerL.warn(`${outline.xmlUrl} responded ${String(response.status,)}`,);
         return DISCARD;
       }
       try {
         return { text: await response.text(), outline, };
       }
       catch (error) {
-        innerL.warn(`text conversion failed for ${outline.xmlUrl}: ${JSON.stringify(error,)}`);
+        innerL.warn(
+          `text conversion failed for ${outline.xmlUrl}: ${JSON.stringify(error,)}`,
+        );
         return DISCARD;
       }
     },
@@ -83,14 +86,14 @@ async function fetchAndParseFeeds(
     .filter(function notDiscard(value,): value is TextWOutline {
       return value !== DISCARD;
     },);
-  innerL.debug(`fetched ${String(textsWOutline.length)} feed texts`);
+  innerL.debug(`fetched ${String(textsWOutline.length,)} feed texts`,);
   return textsWOutline.flatMap(function parse({ text, outline, },) {
     const parser = outline.type === 'atom' ? parseAtomFeed : parseRssFeed;
     try {
       return [{ feed: parser(text,), outline, },];
     }
     catch (error) {
-      innerL.warn(`parse failed for ${outline.xmlUrl}: ${JSON.stringify(error,)}`);
+      innerL.warn(`parse failed for ${outline.xmlUrl}: ${JSON.stringify(error,)}`,);
       return [];
     }
   },);

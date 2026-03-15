@@ -1,16 +1,19 @@
 #!/usr/bin/env bun
-import { message } from '@optique/core/message';
-import { runSync } from '@optique/run';
+import { message, } from '@optique/core/message';
+import { runSync, } from '@optique/run';
 
-import { clone } from './clone.ts';
-import { create } from './create.ts';
-import { destroy, destroyAll } from './destroy.ts';
-import { exec } from './exec.ts';
-import { parser } from './index-parsers.ts';
-import { list } from './list.ts';
-import { run } from './run.ts';
-import { shell } from './shell.ts';
-import { update } from './update.ts';
+import { clone, } from './clone.ts';
+import { create, } from './create.ts';
+import {
+  destroy,
+  destroyAll,
+} from './destroy.ts';
+import { exec, } from './exec.ts';
+import { parser, } from './index-parsers.ts';
+import { list, } from './list.ts';
+import { run, } from './run.ts';
+import { shell, } from './shell.ts';
+import { update, } from './update.ts';
 
 export {};
 
@@ -26,16 +29,16 @@ export {};
  * INFRA_FLAGS.has('--verbose'); // true
  * ```
  */
-const INFRA_FLAGS: ReadonlySet<string> = new Set(['--verbose']);
+const INFRA_FLAGS: ReadonlySet<string> = new Set(['--verbose',],);
 
 /** Raw args after the script name. */
-const rawArgs = process.argv.slice(2);
+const rawArgs = process.argv.slice(2,);
 
 /**
  * Index of the `--` separator, or end-of-args when absent.
  * Infrastructure flags are only stripped before this boundary.
  */
-const doubleDashIndex = rawArgs.indexOf('--');
+const doubleDashIndex = rawArgs.indexOf('--',);
 
 /** Boundary past which tokens belong to the VM command and must not be touched. */
 const boundary = doubleDashIndex === -1 ? rawArgs.length : doubleDashIndex;
@@ -45,7 +48,9 @@ const boundary = doubleDashIndex === -1 ? rawArgs.length : doubleDashIndex;
  * The logger caches its own `process.argv` check at module load time
  * (before this runs), so stripping here only affects the \@optique parser.
  */
-const filteredArgs = rawArgs.filter(function keepNonInfraArgs(arg, i) { return i >= boundary || !INFRA_FLAGS.has(arg); });
+const filteredArgs = rawArgs.filter(function keepNonInfraArgs(arg, i,) {
+  return i >= boundary || !INFRA_FLAGS.has(arg,);
+},);
 
 //endregion Verbose flag
 
@@ -59,60 +64,57 @@ const args = runSync(parser, {
   aboveError: 'help',
   brief: message`mvm - ephemeral VM manager`,
   footer: message`Pass --verbose before the subcommand to enable debug logging.`,
-});
+},);
 
 if (args.cmd === 'create') {
   await (args.from !== undefined
-    ? clone({ destination: args.name, source: args.from })
-    : create({ image: args.image, name: args.name }));
-} else if (args.cmd === 'shell') {
-  await shell({ name: args.name });
-} else if (args.cmd === 'list') {
+    ? clone({ destination: args.name, source: args.from, },)
+    : create({ image: args.image, name: args.name, },));
+}
+else if (args.cmd === 'shell')
+  await shell({ name: args.name, },);
+else if (args.cmd === 'list') {
   /** All managed VMs queried from libvirt. */
   const vms = await list();
-  if (vms.length === 0) {
-    console.error('no VMs found');
-  } else {
+  if (vms.length === 0)
+    console.error('no VMs found',);
+  else {
     /** Column width for aligned output. */
     const NAME_COL_WIDTH = 24;
-    vms.forEach(function printVm(vm) {
-      console.log(`${vm.name.padEnd(NAME_COL_WIDTH)} ${vm.state}`);
-    });
+    vms.forEach(function printVm(vm,) {
+      console.log(`${vm.name.padEnd(NAME_COL_WIDTH,)} ${vm.state}`,);
+    },);
   }
-} else if (args.cmd === 'update') {
+}
+else if (args.cmd === 'update')
   await update();
-} else if (args.cmd === 'destroy') {
-  if (args.all) {
+else if (args.cmd === 'destroy') {
+  if (args.all)
     await destroyAll();
-  } else if (args.name !== undefined) {
-    await destroy({ name: args.name });
-  } else {
-    throw new Error('usage: mvm destroy <name> | --all');
-  }
-} else if (args.cmd === 'exec') {
+  else if (args.name !== undefined)
+    await destroy({ name: args.name, },);
+  else
+    throw new Error('usage: mvm destroy <name> | --all',);
+}
+else if (args.cmd === 'exec') {
   /** Execution result with stdout, stderr, and exit code. */
-  const result = await exec({ command: args.command, name: args.name });
-  if (result.stdout.length > 0) {
-    process.stdout.write(result.stdout);
-  }
-  if (result.stderr.length > 0) {
-    process.stderr.write(result.stderr);
-  }
-  if (result.exitCode !== 0) {
+  const result = await exec({ command: args.command, name: args.name, },);
+  if (result.stdout.length > 0)
+    process.stdout.write(result.stdout,);
+  if (result.stderr.length > 0)
+    process.stderr.write(result.stderr,);
+  if (result.exitCode !== 0)
     process.exitCode = result.exitCode;
-  }
-} else {
+}
+else {
   /** Execution result from the ephemeral VM. */
-  const result = await run({ command: args.command, from: args.from });
-  if (result.stdout.length > 0) {
-    process.stdout.write(result.stdout);
-  }
-  if (result.stderr.length > 0) {
-    process.stderr.write(result.stderr);
-  }
-  if (result.exitCode !== 0) {
+  const result = await run({ command: args.command, from: args.from, },);
+  if (result.stdout.length > 0)
+    process.stdout.write(result.stdout,);
+  if (result.stderr.length > 0)
+    process.stderr.write(result.stderr,);
+  if (result.exitCode !== 0)
     process.exitCode = result.exitCode;
-  }
 }
 
 //endregion Dispatch

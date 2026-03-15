@@ -6,7 +6,7 @@ import {
   test,
 } from 'bun:test';
 
-const {$} = types.object.record.from.record.omit.named;
+const { $, } = types.object.record.from.record.omit.named;
 
 describe($, () => {
   test('omits specified keys from object', () => {
@@ -31,7 +31,7 @@ describe($, () => {
   });
 
   test('handles symbol keys', () => {
-    const symKey = Symbol('secret');
+    const symKey = Symbol('secret',);
     const obj = { id: 1, [symKey]: 'hidden', };
     const result = $({ original: obj, toOmit: new Set([symKey,] as const,), },);
 
@@ -48,11 +48,14 @@ describe($, () => {
 
   test('throws when omitting non-existent key', () => {
     const user = { id: 1, name: 'Alice', };
-    expect(() => $({
-      original: user,
-      // @ts-expect-error -- intentionally passing non-existent key to test runtime error
-      toOmit: new Set(['nonexistent',] as const,),
-    },),).toThrow('Key not found in iterable: nonexistent',);
+    expect(() =>
+      $({
+        original: user,
+        // @ts-expect-error -- intentionally passing non-existent key to test runtime error
+        toOmit: new Set(['nonexistent',] as const,),
+      },)
+    )
+      .toThrow('Key not found in iterable: nonexistent',);
   });
 
   test('preserves non-omitted value types in result', () => {
@@ -76,9 +79,10 @@ describe($, () => {
   });
 
   test('handles mixed key types', () => {
-    const symKey = Symbol('sym');
+    const symKey = Symbol('sym',);
     const obj = { str: 'string', 42: 'numeric', [symKey]: 'symbol', other: 'keep', };
-    const result = $({ original: obj, toOmit: new Set(['str', 42, symKey,] as const,), },);
+    const result = $({ original: obj,
+      toOmit: new Set(['str', 42, symKey,] as const,), },);
 
     expect(result,).toEqual({ other: 'keep', },);
     expect(Object.getOwnPropertySymbols(result,),).toEqual([],);

@@ -23,7 +23,8 @@ function reportTsdoc(node: Span, context: Context,): void {
 }
 
 /** File extensions that should be excluded from the require-tsdoc rule. */
-const IGNORED_EXTENSIONS = ['.test.ts', '.spec.ts', '.js', '.d.ts', '.mjs', '.cjs', '.d.mts', '.d.cts',];
+const IGNORED_EXTENSIONS = ['.test.ts', '.spec.ts', '.js', '.d.ts', '.mjs', '.cjs',
+  '.d.mts', '.d.cts',];
 
 /**
  * Oxlint JS plugin that requires TSDoc comments on all documentable declarations.

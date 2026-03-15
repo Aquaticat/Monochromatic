@@ -1,18 +1,21 @@
 import superjson from 'superjson';
 
+import {
+  $ as serializeValue,
+} from '../../../../../../t string/f/t unknown/serialize/r s/p n/index.ts';
+import { $ as defaultLogger, } from '../../../../../t logger/f/t never/r s/p p/index.ts';
+import { resolveConsensus, } from '../../../../consensus.ts';
+import { healBackendsSync, } from '../../../../heal.ts';
+import { createLruKeySet, } from '../../../../lruKeySet.ts';
 import type {
-  $  as SyncStore,
+  Deserializer,
+  Serializer,
+} from '../../../../t/index.ts';
+import type {
+  $ as SyncStore,
   SyncStorageBackend,
   SyncStoreConfig,
 } from '../../../../t/r s/index.ts';
-import type { Serializer, Deserializer, } from '../../../../t/index.ts';
-import { $ as defaultLogger, } from '../../../../../t logger/f/t never/r s/p p/index.ts';
-import {
-  resolveConsensus,
-} from '../../../../consensus.ts';
-import { healBackendsSync, } from '../../../../heal.ts';
-import { $ as serializeValue, } from '../../../../../../t string/f/t unknown/serialize/r s/p n/index.ts';
-import { createLruKeySet, } from '../../../../lruKeySet.ts';
 import { queryAllBackendsSync, } from './backends.ts';
 
 /**
@@ -71,17 +74,22 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
   const serializer: Serializer = config.serializer ?? superjson.stringify;
   const deserializer: Deserializer = config.deserializer ?? superjson.parse;
   const lossyForCircular = config.lossyForCircular ?? true;
-  const backends: readonly [SyncStorageBackend, ...SyncStorageBackend[],] = config.backends
-    ?? [new Map<string, string>(),];
+  const backends: readonly [SyncStorageBackend, ...SyncStorageBackend[],] =
+    config.backends
+      ?? [new Map<string, string>(),];
 
   const policies = config.eviction ?? [];
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- future-proofing: more eviction policies will be added
-  const lruPolicy = policies.find(function isLru(p,) { return p.policy === 'lru'; },);
+  const lruPolicy = policies.find(function isLru(p,) {
+    return p.policy === 'lru';
+  },);
   const lru = lruPolicy !== undefined
     ? createLruKeySet(lruPolicy.maxSize,)
     : undefined;
 
-  defaultLogger.debug(`SyncStore "${storeId}" created with ${String(backends.length)} backend(s)`,);
+  defaultLogger.debug(
+    `SyncStore "${storeId}" created with ${String(backends.length,)} backend(s)`,
+  );
 
   const store: SyncStore = {
     storeId,
@@ -93,9 +101,8 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
     /** Number of entries in the primary backend, or `0` when unavailable. */
     get size(): number {
       const first = backends[0];
-      if ('size' in first && typeof first.size === 'number') {
+      if ('size' in first && typeof first.size === 'number')
         return first.size;
-      }
       return 0;
     },
 
@@ -103,17 +110,15 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
       defaultLogger.debug(`SyncStore.set: "${key}"`,);
       const serialized = serializeValue({ value, serializer, lossyForCircular, },);
 
-      for (const backend of backends) {
+      for (const backend of backends)
         backend.set(key, serialized,);
-      }
 
       if (lru !== undefined) {
         const evicted = lru.touch(key,);
         if (evicted !== undefined) {
           defaultLogger.debug(`SyncStore.evict: "${evicted}"`,);
-          for (const backend of backends) {
+          for (const backend of backends)
             backend.delete(evicted,);
-          }
         }
       }
 
@@ -131,9 +136,8 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
         const evicted = lru.touch(key,);
         if (evicted !== undefined) {
           defaultLogger.debug(`SyncStore.evict: "${evicted}"`,);
-          for (const backend of backends) {
+          for (const backend of backends)
             backend.delete(evicted,);
-          }
         }
       }
 
@@ -144,23 +148,19 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
 
     delete(key: string,): void {
       defaultLogger.debug(`SyncStore.delete: "${key}"`,);
-      if (lru !== undefined) {
+      if (lru !== undefined)
         lru.remove(key,);
-      }
-      for (const backend of backends) {
+      for (const backend of backends)
         backend.delete(key,);
-      }
     },
 
     clear(): void {
       defaultLogger.debug(`SyncStore.clear`,);
-      if (lru !== undefined) {
+      if (lru !== undefined)
         lru.clear();
-      }
       for (const backend of backends) {
-        if ('clear' in backend && typeof backend.clear === 'function') {
+        if ('clear' in backend && typeof backend.clear === 'function')
           (backend.clear as () => unknown)();
-        }
       }
     },
   };

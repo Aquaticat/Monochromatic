@@ -4,4 +4,4 @@
  * Replaces the PostCSS-based `@apply` mixin expansion with pure
  * TypeScript function composition via `mixins.ts`.
  */
-export { $ } from "@monochromatic-dev/module-es/h-css";
+export { $, } from '@monochromatic-dev/module-es/h-css';

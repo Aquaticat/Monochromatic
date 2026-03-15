@@ -802,7 +802,7 @@ const testRealGenericPromisableBehavior = (function testRealGenericPromisableBeh
   }
 
   // Promisable returning schema
-  const {promisableSchema} = realGenericTestValues;
+  const { promisableSchema, } = realGenericTestValues;
 
   if (isRealSchema_Generic(promisableSchema,)) {
     const result = promisableSchema.parse('test',); // Should be Promisable<number>

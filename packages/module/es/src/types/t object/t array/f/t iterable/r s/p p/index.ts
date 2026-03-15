@@ -12,5 +12,5 @@ export function $<const MyIterable extends $,>(
 ): MyIterable extends $<infer T> ? T[] : never {
   if (Array.isArray(iterable,))
     return iterable as any;
-  return [...iterable] as any;
+  return [...iterable,] as any;
 }

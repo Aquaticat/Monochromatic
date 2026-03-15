@@ -5,10 +5,13 @@
  * @module
  */
 
-import { l as parentLogger, tagged } from './log.ts';
+import {
+  l as parentLogger,
+  tagged,
+} from './log.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'config', l: parentLogger });
+const l = tagged({ tag: 'config', l: parentLogger, },);
 
 /**
  * Result of parsing all config files.
@@ -39,7 +42,9 @@ export type ConfigResult = {
  * // config.entryIds === ['com.mitchellh.ghostty.desktop']
  * ```
  */
-export async function parseConfigFiles({ paths }: { paths: readonly string[] }): Promise<ConfigResult> {
+export async function parseConfigFiles(
+  { paths, }: { paths: readonly string[]; },
+): Promise<ConfigResult> {
   const entryIds: string[] = [];
   const excludedIds = new Set<string>();
   /** Tracks IDs that have been explicitly included via `+`, preventing later `-` from excluding them. */
@@ -47,49 +52,47 @@ export async function parseConfigFiles({ paths }: { paths: readonly string[] }):
   const execArgDefaults = new Map<string, string>();
 
   for (const path of paths) {
-    const file = Bun.file(path);
+    const file = Bun.file(path,);
     /* oxlint-disable-next-line no-await-in-loop -- sequential: config files override in priority order */
-    if (!await file.exists()) {
+    if (!await file.exists())
       continue;
-    }
 
-    l.debug(`reading config '${path}'`);
+    l.debug(`reading config '${path}'`,);
     /* oxlint-disable-next-line no-await-in-loop -- sequential: config files override in priority order */
     const text = await file.text();
 
-    for (const rawLine of text.split('\n')) {
+    for (const rawLine of text.split('\n',)) {
       const line = rawLine.trim();
-      if (line.length === 0 || line.startsWith('#')) {
+      if (line.length === 0 || line.startsWith('#',))
+        continue;
+
+      if (line.startsWith('/',)) {
+        parseDirective({ line, execArgDefaults, },);
         continue;
       }
 
-      if (line.startsWith('/')) {
-        parseDirective({ line, execArgDefaults });
-        continue;
-      }
-
-      if (line.startsWith('-')) {
-        const id = line.slice(1);
-        if (!includedIds.has(id)) {
-          excludedIds.add(id);
-          l.debug(`excluding entry '${id}' from fallback`);
+      if (line.startsWith('-',)) {
+        const id = line.slice(1,);
+        if (!includedIds.has(id,)) {
+          excludedIds.add(id,);
+          l.debug(`excluding entry '${id}' from fallback`,);
         }
         continue;
       }
 
-      if (line.startsWith('+')) {
-        const id = line.slice(1);
-        includedIds.add(id);
-        excludedIds.delete(id);
+      if (line.startsWith('+',)) {
+        const id = line.slice(1,);
+        includedIds.add(id,);
+        excludedIds.delete(id,);
         continue;
       }
 
-      entryIds.push(line);
-      l.debug(`explicit entry '${line}'`);
+      entryIds.push(line,);
+      l.debug(`explicit entry '${line}'`,);
     }
   }
 
-  return { entryIds, excludedIds, execArgDefaults };
+  return { entryIds, excludedIds, execArgDefaults, };
 }
 
 /**
@@ -99,16 +102,18 @@ export async function parseConfigFiles({ paths }: { paths: readonly string[] }):
  *
  * @param execArgDefaults - Mutable map to populate with `/execarg_default` entries.
  */
-function parseDirective({ line, execArgDefaults }: { line: string; execArgDefaults: Map<string, string> }): void {
+function parseDirective(
+  { line, execArgDefaults, }: { line: string; execArgDefaults: Map<string, string>; },
+): void {
   const EXECARG_PREFIX = '/execarg_default:';
-  if (line.startsWith(EXECARG_PREFIX)) {
-    const rest = line.slice(EXECARG_PREFIX.length);
-    const colonIdx = rest.indexOf(':');
+  if (line.startsWith(EXECARG_PREFIX,)) {
+    const rest = line.slice(EXECARG_PREFIX.length,);
+    const colonIdx = rest.indexOf(':',);
     if (colonIdx !== -1) {
-      const entryId = rest.slice(0, colonIdx);
-      const defaultArg = rest.slice(colonIdx + 1);
-      execArgDefaults.set(entryId, defaultArg);
-      l.debug(`added TerminalArgExec default '${defaultArg}' for '${entryId}'`);
+      const entryId = rest.slice(0, colonIdx,);
+      const defaultArg = rest.slice(colonIdx + 1,);
+      execArgDefaults.set(entryId, defaultArg,);
+      l.debug(`added TerminalArgExec default '${defaultArg}' for '${entryId}'`,);
     }
   }
 }

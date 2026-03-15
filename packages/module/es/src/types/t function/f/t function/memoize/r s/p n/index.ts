@@ -1,12 +1,14 @@
+import {
+  $ as createSyncStore,
+} from '../../../../../../t object/t store/f/t store/r s/p n/index.ts';
+import type { $ as SyncStore, } from '../../../../../../t object/t store/t/r s/index.ts';
+import { buildCacheKey, } from '../../cacheKey.ts';
 import type {
-  MemoizeNamedOptions,
   MemoizedCallOptions,
   MemoizedFunction,
+  MemoizeNamedOptions,
 } from '../../t/index.ts';
 import { DEFAULT_MAX_CACHE_SIZE, } from '../../t/index.ts';
-import type { $ as SyncStore, } from '../../../../../../t object/t store/t/r s/index.ts';
-import { $ as createSyncStore, } from '../../../../../../t object/t store/f/t store/r s/p n/index.ts';
-import { buildCacheKey, } from '../../cacheKey.ts';
 
 /**
  * Wraps a synchronous function with memoization using a SyncStore backend,
@@ -92,9 +94,8 @@ export function $<
     const cacheKey = buildCacheKey(keyFn(...args,), salt,);
 
     const cached = store.get<TReturn>(cacheKey,);
-    if (cached !== undefined) {
+    if (cached !== undefined)
       return cached;
-    }
 
     const result = fn(...args,);
     store.set(cacheKey, result,);

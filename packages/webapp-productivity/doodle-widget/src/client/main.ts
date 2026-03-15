@@ -6,8 +6,14 @@
  * canvas resize handling via ResizeObserver.
  */
 
-import { setRasterBackground, setSvgBackground, } from './background.ts';
-import { clearStrokes, redraw, } from './drawing.ts';
+import {
+  setRasterBackground,
+  setSvgBackground,
+} from './background.ts';
+import {
+  clearStrokes,
+  redraw,
+} from './drawing.ts';
 import { setupPointerHandlers, } from './pointer-handlers.ts';
 import {
   clearTextEntries,
@@ -29,48 +35,46 @@ import {
  * const btn = requireElement<HTMLButtonElement>('#my-btn');
  * ```
  */
-function requireElement<T extends Element>(selector: string): T {
+function requireElement<T extends Element,>(selector: string,): T {
   /** Query result, possibly null if selector has no match */
-  const element = document.querySelector<T>(selector);
-  if (element === null) {
-    throw new Error(`Missing required element: ${selector}`);
-  }
+  const element = document.querySelector<T>(selector,);
+  if (element === null)
+    throw new Error(`Missing required element: ${selector}`,);
   return element;
 }
 
 //region DOM element references
 
 /** Canvas container element */
-const container = requireElement<HTMLDivElement>('#canvas-container');
+const container = requireElement<HTMLDivElement>('#canvas-container',);
 
 /** Drawing canvas element */
-const canvas = requireElement<HTMLCanvasElement>('#draw-canvas');
+const canvas = requireElement<HTMLCanvasElement>('#draw-canvas',);
 
 /** Hidden file input for background image upload */
-const uploadInput = requireElement<HTMLInputElement>('#upload-input');
+const uploadInput = requireElement<HTMLInputElement>('#upload-input',);
 
 /** Button that triggers the file upload dialog */
-const uploadBtn = requireElement<HTMLButtonElement>('#upload-btn');
+const uploadBtn = requireElement<HTMLButtonElement>('#upload-btn',);
 
 /** Button that clears all drawn strokes and text */
-const clearBtn = requireElement<HTMLButtonElement>('#clear-btn');
+const clearBtn = requireElement<HTMLButtonElement>('#clear-btn',);
 
 /** SVG overlay element for displaying SVG backgrounds */
-const svgOverlay = requireElement<HTMLDivElement>('#svg-overlay');
+const svgOverlay = requireElement<HTMLDivElement>('#svg-overlay',);
 
 /** Draw tool radio input */
-const drawRadio = requireElement<HTMLInputElement>('#tool-draw');
+const drawRadio = requireElement<HTMLInputElement>('#tool-draw',);
 
 /** Text label overlay layer */
-const textLayer = requireElement<HTMLDivElement>('#text-layer');
+const textLayer = requireElement<HTMLDivElement>('#text-layer',);
 
 //endregion DOM element references
 
 /** Maybe-null canvas rendering context before validation */
-const maybeCtx = canvas.getContext('2d');
-if (maybeCtx === null) {
-  throw new Error('Canvas 2D context unavailable');
-}
+const maybeCtx = canvas.getContext('2d',);
+if (maybeCtx === null)
+  throw new Error('Canvas 2D context unavailable',);
 
 /** 2D rendering context for the drawing canvas */
 const ctx: CanvasRenderingContext2D = maybeCtx;
@@ -98,7 +102,7 @@ function sizeCanvas(): void {
   canvasHeight = container.clientHeight;
   canvas.width = canvasWidth;
   canvas.height = canvasHeight;
-  redraw({ ctx, cw: canvasWidth, ch: canvasHeight, });
+  redraw({ ctx, cw: canvasWidth, ch: canvasHeight, },);
 }
 
 //region Tool mode switching
@@ -110,15 +114,16 @@ function syncCursorToTool(): void {
   if (isDrawMode()) {
     canvas.style.cursor = 'crosshair';
     discardActiveInput();
-  } else {
+  }
+  else {
     canvas.style.cursor = 'text';
   }
 }
 
 /** Toggle group container holding tool radios */
-const toggleGroup = requireElement<HTMLDivElement>('.toggle-group');
+const toggleGroup = requireElement<HTMLDivElement>('.toggle-group',);
 
-toggleGroup.addEventListener('change', syncCursorToTool);
+toggleGroup.addEventListener('change', syncCursorToTool,);
 
 /** Set initial cursor */
 syncCursorToTool();
@@ -131,20 +136,20 @@ setupPointerHandlers({
   canvas,
   ctx,
   isDrawMode,
-  getCanvasSize: function getCanvasSize(): { cw: number; ch: number } {
+  getCanvasSize: function getCanvasSize(): { cw: number; ch: number; } {
     return { cw: canvasWidth, ch: canvasHeight, };
   },
-});
+},);
 
 clearBtn.addEventListener('click', function handleClear(): void {
   clearStrokes();
   clearTextEntries();
-  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-});
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight,);
+},);
 
 uploadBtn.addEventListener('click', function handleUploadClick(): void {
   uploadInput.click();
-});
+},);
 
 /**
  * Processes a user-selected background file.
@@ -154,34 +159,34 @@ uploadBtn.addEventListener('click', function handleUploadClick(): void {
  *
  * @param file - uploaded image file
  */
-async function processBackgroundFile(file: File): Promise<void> {
+async function processBackgroundFile(file: File,): Promise<void> {
   clearStrokes();
   clearTextEntries();
-  if (file.type === 'image/svg+xml' || file.name.endsWith('.svg')) {
+  if (file.type === 'image/svg+xml' || file.name.endsWith('.svg',)) {
     /** Raw SVG markup read from the uploaded file */
     const svgMarkup = await file.text();
-    setSvgBackground({ svgMarkup, overlay: svgOverlay, container, });
-  } else {
-    setRasterBackground({ file, overlay: svgOverlay, container, });
+    setSvgBackground({ svgMarkup, overlay: svgOverlay, container, },);
+  }
+  else {
+    setRasterBackground({ file, overlay: svgOverlay, container, },);
   }
   sizeCanvas();
 }
 
 uploadInput.addEventListener('change', function handleFileChange(): void {
   /** Selected file from the upload input */
-  const file = uploadInput.files?.item(0) ?? null;
-  if (file === null) {
+  const file = uploadInput.files?.item(0,) ?? null;
+  if (file === null)
     return;
-  }
-  void processBackgroundFile(file);
-});
+  void processBackgroundFile(file,);
+},);
 
 //endregion Pointer & toolbar handlers
 
 //region Initialization
 
-setTextLayer(textLayer);
-new ResizeObserver(sizeCanvas).observe(container);
+setTextLayer(textLayer,);
+new ResizeObserver(sizeCanvas,).observe(container,);
 sizeCanvas();
 
 //endregion Initialization

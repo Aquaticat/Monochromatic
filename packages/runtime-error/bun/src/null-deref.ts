@@ -8,4 +8,4 @@ export {};
 /** Null value cast to an object type to bypass static null checks. */
 const value = null as unknown as Record<string, unknown>;
 
-console.log(value["property"]);
+console.log(value['property'],);

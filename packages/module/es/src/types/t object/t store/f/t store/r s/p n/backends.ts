@@ -2,10 +2,8 @@
  * Backend querying for synchronous stores.
  */
 
-import type {
-  SyncStorageBackend,
-} from '../../../../t/r s/index.ts';
 import type { BackendResult, } from '../../../../consensus.ts';
+import type { SyncStorageBackend, } from '../../../../t/r s/index.ts';
 
 /**
  * Query all sync backends for a key and return typed results with priority info.
@@ -33,5 +31,6 @@ export function queryAllBackendsSync(
       backend,
     };
   },);
-  return results as [BackendResult<SyncStorageBackend>, ...BackendResult<SyncStorageBackend>[],];
+  return results as [BackendResult<SyncStorageBackend>,
+    ...BackendResult<SyncStorageBackend>[],];
 }

@@ -31,8 +31,8 @@ export const COMMENT_LINE_PREFIX = /^ *\*/;
  *
  * @returns array of lines (without the opening `/*` and closing `*\/`)
  */
-export function getCommentLines(comment: Comment): readonly string[] {
-  return comment.value.split('\n');
+export function getCommentLines(comment: Comment,): readonly string[] {
+  return comment.value.split('\n',);
 }
 
 /**
@@ -47,26 +47,24 @@ export function getCommentLines(comment: Comment): readonly string[] {
  */
 export function createTsdocVisitor(
   context: Context,
-  handler: (node: Span, comment: Comment) => void,
+  handler: (node: Span, comment: Comment,) => void,
 ): VisitorWithHooks {
   /**
    * Checks node and fires handler when TSDoc exists.
    *
    * @param node - AST node to check
    */
-  function check(node: Span): void {
-    const comment = findTsdocComment(node, context);
-    if (comment !== undefined) {
-      handler(node, comment);
-    }
+  function check(node: Span,): void {
+    const comment = findTsdocComment(node, context,);
+    if (comment !== undefined)
+      handler(node, comment,);
   }
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
   return {
     before() {
-      if (shouldIgnoreFile(context.filename)) {
+      if (shouldIgnoreFile(context.filename,))
         return false;
-      }
       return undefined;
     },
     FunctionDeclaration: check,
@@ -80,10 +78,9 @@ export function createTsdocVisitor(
     VariableDeclaration: check,
     PropertyDefinition: check,
     TSEnumMember: check,
-    Property(node): void {
-      if (node.kind === 'get' || node.kind === 'set') {
-        check(node);
-      }
+    Property(node,): void {
+      if (node.kind === 'get' || node.kind === 'set')
+        check(node,);
     },
   } as VisitorWithHooks;
 }
@@ -102,28 +99,26 @@ export function createTsdocVisitor(
  */
 export function createFunctionTsdocVisitor(
   context: Context,
-  handler: (node: Span & Record<string, unknown>, result: TsdocParseResult) => void,
+  handler: (node: Span & Record<string, unknown>, result: TsdocParseResult,) => void,
 ): VisitorWithHooks {
   /**
    * Checks a function-like node for TSDoc and invokes handler.
    *
    * @param node - AST node to check
    */
-  function check(node: Span): void {
-    const result = parseTsdocForNode(node, context);
-    if (result === undefined) {
+  function check(node: Span,): void {
+    const result = parseTsdocForNode(node, context,);
+    if (result === undefined)
       return;
-    }
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-    handler(node as Span & Record<string, unknown>, result);
+    handler(node as Span & Record<string, unknown>, result,);
   }
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
   return {
     before() {
-      if (shouldIgnoreFile(context.filename)) {
+      if (shouldIgnoreFile(context.filename,))
         return false;
-      }
       return undefined;
     },
     FunctionDeclaration: check,

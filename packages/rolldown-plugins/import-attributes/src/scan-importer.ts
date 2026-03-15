@@ -30,47 +30,45 @@ export function scanImporterForAttribute(
   importerPath: string,
   importerSourceCache: Map<string, string>,
 ): string | undefined {
-  let source = importerSourceCache.get(importerPath);
+  let source = importerSourceCache.get(importerPath,);
   if (source === undefined) {
     try {
-      source = readFileSync(importerPath, 'utf8');
-      importerSourceCache.set(importerPath, source);
-    } catch {
+      source = readFileSync(importerPath, 'utf8',);
+      importerSourceCache.set(importerPath, source,);
+    }
+    catch {
       return undefined;
     }
   }
 
-  if (!source.includes(specifier)) {
+  if (!source.includes(specifier,))
     return undefined;
-  }
 
   /**
    * Build a regex that matches the specific specifier with a `with { type: '...' }` clause.
    * Handles both static (`with { type: '...' }`) and dynamic (`{ with: { type: '...' } }`) forms.
    */
-  const escapedSpecifier = specifier.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+  const escapedSpecifier = specifier.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`,);
   const specificAttrRe = new RegExp(
     `['"]${escapedSpecifier}['"]`
-    + `(?:`
-    + `\\s+with\\s*\\{\\s*type\\s*:\\s*['"]`
-    + `(\\w+)`
-    + `['"]\\s*\\}`
-    + `|`
-    + `\\s*,\\s*\\{\\s*with\\s*:\\s*\\{\\s*type\\s*:\\s*['"]`
-    + `(\\w+)`
-    + `['"]\\s*\\}\\s*\\}`
-    + `)`,
+      + `(?:`
+      + `\\s+with\\s*\\{\\s*type\\s*:\\s*['"]`
+      + `(\\w+)`
+      + `['"]\\s*\\}`
+      + `|`
+      + `\\s*,\\s*\\{\\s*with\\s*:\\s*\\{\\s*type\\s*:\\s*['"]`
+      + `(\\w+)`
+      + `['"]\\s*\\}\\s*\\}`
+      + `)`,
   );
 
-  const match = specificAttrRe.exec(source);
-  if (match === null) {
+  const match = specificAttrRe.exec(source,);
+  if (match === null)
     return undefined;
-  }
 
   const attrType = match[1] ?? match[2];
-  if (attrType === undefined || HANDLERS[attrType] === undefined) {
+  if (attrType === undefined || HANDLERS[attrType] === undefined)
     return undefined;
-  }
 
   return attrType;
 }

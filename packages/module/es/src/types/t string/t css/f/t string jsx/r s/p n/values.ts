@@ -23,7 +23,7 @@
  * const color: CssValue = cssVar('fg'); // OK
  * ```
  */
-export type CssValue = string & { readonly __cssValue: unique symbol };
+export type CssValue = string & { readonly __cssValue: unique symbol; };
 
 //endregion
 
@@ -42,15 +42,11 @@ export type CssValue = string & { readonly __cssValue: unique symbol };
  * // T = 'flex' | 'grid'
  * ```
  */
-export type ExtractLiteral<T> = T extends string
-  ? string extends T
-    ? never
+export type ExtractLiteral<T,> = T extends string ? string extends T ? never
+  : T
+  : T extends number ? number extends T ? never
     : T
-  : T extends number
-    ? number extends T
-      ? never
-      : T
-    : never;
+  : never;
 
 /**
  * CSS named colors (the 148 CSS Color Level 4 keywords).
@@ -59,36 +55,31 @@ export type ExtractLiteral<T> = T extends string
  * `transparent` and `currentColor` are NOT named colors per the CSS spec — they are
  * special color keywords and remain allowed.
  */
-export type CssNamedColor =
-  | 'aliceblue' | 'antiquewhite' | 'aqua' | 'aquamarine' | 'azure'
-  | 'beige' | 'bisque' | 'black' | 'blanchedalmond' | 'blue' | 'blueviolet' | 'brown' | 'burlywood'
-  | 'cadetblue' | 'chartreuse' | 'chocolate' | 'coral' | 'cornflowerblue' | 'cornsilk' | 'crimson' | 'cyan'
-  | 'darkblue' | 'darkcyan' | 'darkgoldenrod' | 'darkgray' | 'darkgreen' | 'darkgrey' | 'darkkhaki'
-  | 'darkmagenta' | 'darkolivegreen' | 'darkorange' | 'darkorchid' | 'darkred' | 'darksalmon'
-  | 'darkseagreen' | 'darkslateblue' | 'darkslategray' | 'darkslategrey' | 'darkturquoise' | 'darkviolet'
-  | 'deeppink' | 'deepskyblue' | 'dimgray' | 'dimgrey' | 'dodgerblue'
-  | 'firebrick' | 'floralwhite' | 'forestgreen' | 'fuchsia'
-  | 'gainsboro' | 'ghostwhite' | 'gold' | 'goldenrod' | 'gray' | 'green' | 'greenyellow' | 'grey'
-  | 'honeydew' | 'hotpink'
-  | 'indianred' | 'indigo' | 'ivory'
-  | 'khaki'
-  | 'lavender' | 'lavenderblush' | 'lawngreen' | 'lemonchiffon' | 'lightblue' | 'lightcoral' | 'lightcyan'
-  | 'lightgoldenrodyellow' | 'lightgray' | 'lightgreen' | 'lightgrey' | 'lightpink' | 'lightsalmon'
-  | 'lightseagreen' | 'lightskyblue' | 'lightslategray' | 'lightslategrey' | 'lightsteelblue' | 'lightyellow'
-  | 'lime' | 'limegreen' | 'linen'
-  | 'magenta' | 'maroon' | 'mediumaquamarine' | 'mediumblue' | 'mediumorchid' | 'mediumpurple'
-  | 'mediumseagreen' | 'mediumslateblue' | 'mediumspringgreen' | 'mediumturquoise' | 'mediumvioletred'
-  | 'midnightblue' | 'mintcream' | 'mistyrose' | 'moccasin'
-  | 'navajowhite' | 'navy'
-  | 'oldlace' | 'olive' | 'olivedrab' | 'orange' | 'orangered' | 'orchid'
-  | 'palegoldenrod' | 'palegreen' | 'paleturquoise' | 'palevioletred' | 'papayawhip' | 'peachpuff' | 'peru'
-  | 'pink' | 'plum' | 'powderblue' | 'purple'
-  | 'rebeccapurple' | 'red' | 'rosybrown' | 'royalblue'
-  | 'saddlebrown' | 'salmon' | 'sandybrown' | 'seagreen' | 'seashell' | 'sienna' | 'silver' | 'skyblue'
-  | 'slateblue' | 'slategray' | 'slategrey' | 'snow' | 'springgreen' | 'steelblue'
-  | 'tan' | 'teal' | 'thistle' | 'tomato' | 'turquoise'
-  | 'violet'
-  | 'wheat' | 'white' | 'whitesmoke'
+export type CssNamedColor = 'aliceblue' | 'antiquewhite' | 'aqua' | 'aquamarine' | 'azure'
+  | 'beige' | 'bisque' | 'black' | 'blanchedalmond' | 'blue' | 'blueviolet' | 'brown'
+  | 'burlywood' | 'cadetblue' | 'chartreuse' | 'chocolate' | 'coral' | 'cornflowerblue'
+  | 'cornsilk' | 'crimson' | 'cyan' | 'darkblue' | 'darkcyan' | 'darkgoldenrod'
+  | 'darkgray' | 'darkgreen' | 'darkgrey' | 'darkkhaki' | 'darkmagenta' | 'darkolivegreen'
+  | 'darkorange' | 'darkorchid' | 'darkred' | 'darksalmon' | 'darkseagreen'
+  | 'darkslateblue' | 'darkslategray' | 'darkslategrey' | 'darkturquoise' | 'darkviolet'
+  | 'deeppink' | 'deepskyblue' | 'dimgray' | 'dimgrey' | 'dodgerblue' | 'firebrick'
+  | 'floralwhite' | 'forestgreen' | 'fuchsia' | 'gainsboro' | 'ghostwhite' | 'gold'
+  | 'goldenrod' | 'gray' | 'green' | 'greenyellow' | 'grey' | 'honeydew' | 'hotpink'
+  | 'indianred' | 'indigo' | 'ivory' | 'khaki' | 'lavender' | 'lavenderblush'
+  | 'lawngreen' | 'lemonchiffon' | 'lightblue' | 'lightcoral' | 'lightcyan'
+  | 'lightgoldenrodyellow' | 'lightgray' | 'lightgreen' | 'lightgrey' | 'lightpink'
+  | 'lightsalmon' | 'lightseagreen' | 'lightskyblue' | 'lightslategray' | 'lightslategrey'
+  | 'lightsteelblue' | 'lightyellow' | 'lime' | 'limegreen' | 'linen' | 'magenta'
+  | 'maroon' | 'mediumaquamarine' | 'mediumblue' | 'mediumorchid' | 'mediumpurple'
+  | 'mediumseagreen' | 'mediumslateblue' | 'mediumspringgreen' | 'mediumturquoise'
+  | 'mediumvioletred' | 'midnightblue' | 'mintcream' | 'mistyrose' | 'moccasin'
+  | 'navajowhite' | 'navy' | 'oldlace' | 'olive' | 'olivedrab' | 'orange' | 'orangered'
+  | 'orchid' | 'palegoldenrod' | 'palegreen' | 'paleturquoise' | 'palevioletred'
+  | 'papayawhip' | 'peachpuff' | 'peru' | 'pink' | 'plum' | 'powderblue' | 'purple'
+  | 'rebeccapurple' | 'red' | 'rosybrown' | 'royalblue' | 'saddlebrown' | 'salmon'
+  | 'sandybrown' | 'seagreen' | 'seashell' | 'sienna' | 'silver' | 'skyblue' | 'slateblue'
+  | 'slategray' | 'slategrey' | 'snow' | 'springgreen' | 'steelblue' | 'tan' | 'teal'
+  | 'thistle' | 'tomato' | 'turquoise' | 'violet' | 'wheat' | 'white' | 'whitesmoke'
   | 'yellow' | 'yellowgreen';
 
 /**
@@ -96,14 +87,11 @@ export type CssNamedColor =
  *
  * Excluded alongside named colors for strictness.
  */
-export type CssDeprecatedSystemColor =
-  | 'ActiveBorder' | 'ActiveCaption' | 'AppWorkspace' | 'Background'
-  | 'ButtonHighlight' | 'ButtonShadow' | 'CaptionText'
-  | 'InactiveBorder' | 'InactiveCaption' | 'InactiveCaptionText' | 'InfoBackground' | 'InfoText'
-  | 'Menu' | 'MenuText'
-  | 'Scrollbar'
-  | 'ThreeDDarkShadow' | 'ThreeDFace' | 'ThreeDHighlight' | 'ThreeDLightShadow' | 'ThreeDShadow'
-  | 'Window' | 'WindowFrame' | 'WindowText';
+export type CssDeprecatedSystemColor = 'ActiveBorder' | 'ActiveCaption' | 'AppWorkspace'
+  | 'Background' | 'ButtonHighlight' | 'ButtonShadow' | 'CaptionText' | 'InactiveBorder'
+  | 'InactiveCaption' | 'InactiveCaptionText' | 'InfoBackground' | 'InfoText' | 'Menu'
+  | 'MenuText' | 'Scrollbar' | 'ThreeDDarkShadow' | 'ThreeDFace' | 'ThreeDHighlight'
+  | 'ThreeDLightShadow' | 'ThreeDShadow' | 'Window' | 'WindowFrame' | 'WindowText';
 
 /**
  * Converts a csstype property value type to a strict value type.
@@ -132,10 +120,10 @@ export type CssDeprecatedSystemColor =
  * // StrictValue<Property.Gap> = Globals | 0 | CssValue  (number excluded)
  * ```
  */
-export type StrictValue<T> =
+export type StrictValue<T,> =
   | Exclude<ExtractLiteral<T>, CssNamedColor | CssDeprecatedSystemColor>
   | CssValue
-  | ([number] extends [T] ? number : never);
+  | ([number,] extends [T,] ? number : never);
 
 //endregion
 

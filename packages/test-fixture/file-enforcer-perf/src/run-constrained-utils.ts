@@ -13,16 +13,16 @@ export type ContainerBenchResult = {
     readonly cpuAffinityValid: boolean;
     readonly memoryValid: boolean;
   };
-  readonly sysbench: { readonly eventsPerSec: number };
-  readonly timings: readonly { readonly label: string; readonly ms: number }[];
+  readonly sysbench: { readonly eventsPerSec: number; };
+  readonly timings: readonly { readonly label: string; readonly ms: number; }[];
 };
 
 /** Shape of host baseline benchmark results parsed from JSON */
 export type HostBenchResult = {
-  readonly sysbench: { readonly eventsPerSec: number };
-  readonly serial: { readonly ms: number };
-  readonly parallel: { readonly ms: number };
-  readonly io: { readonly ms: number; readonly filesPerSec: number };
+  readonly sysbench: { readonly eventsPerSec: number; };
+  readonly serial: { readonly ms: number; };
+  readonly parallel: { readonly ms: number; };
+  readonly io: { readonly ms: number; readonly filesPerSec: number; };
 };
 
 /**
@@ -37,13 +37,14 @@ export type HostBenchResult = {
  *
  * @throws When the process exits with a non-zero code
  */
-export async function runCapture(cmd: readonly string[], label: string): Promise<string> {
-  console.log(`[constrained] ${label}...`);
+export async function runCapture(cmd: readonly string[],
+  label: string,): Promise<string>
+{
+  console.log(`[constrained] ${label}...`,);
   const [command, ...args] = cmd;
-  if (command === undefined) {
-    throw new Error(`Empty command array for ${label}`);
-  }
-  const { stdout } = await nanoSpawn(command, [...args]);
+  if (command === undefined)
+    throw new Error(`Empty command array for ${label}`,);
+  const { stdout, } = await nanoSpawn(command, [...args,],);
   return stdout;
 }
 
@@ -54,7 +55,7 @@ export async function runCapture(cmd: readonly string[], label: string): Promise
  *
  * @returns Whether the line has non-whitespace content
  */
-function isNonEmptyLine(line: string): boolean {
+function isNonEmptyLine(line: string,): boolean {
   return line.trim().length > 0;
 }
 
@@ -71,17 +72,20 @@ const ERROR_OUTPUT_PREVIEW_LENGTH = 500;
  *
  * @throws When no valid JSON line is found
  */
-export function parseLastJsonLine(output: string): unknown {
-  const lines = output.trim().split('\n').filter(function checkNonEmpty(line) { return isNonEmptyLine(line); });
+export function parseLastJsonLine(output: string,): unknown {
+  const lines = output.trim().split('\n',).filter(function checkNonEmpty(line,) {
+    return isNonEmptyLine(line,);
+  },);
   // Walk backwards to find the JSON line -- it starts with '{'
   // let needed: iterating from the end until valid JSON found
   for (let lineIndex = lines.length - 1; lineIndex >= 0; lineIndex--) {
     const line = lines[lineIndex];
-    if (line !== undefined && line.trim().startsWith('{')) {
-      return JSON.parse(line);
-    }
+    if (line !== undefined && line.trim().startsWith('{',))
+      return JSON.parse(line,);
   }
-  throw new Error(`No JSON object found in output:\n${output.slice(0, ERROR_OUTPUT_PREVIEW_LENGTH)}`);
+  throw new Error(
+    `No JSON object found in output:\n${output.slice(0, ERROR_OUTPUT_PREVIEW_LENGTH,)}`,
+  );
 }
 
 /**
@@ -93,16 +97,15 @@ export function parseLastJsonLine(output: string): unknown {
  *
  * @throws When the process exits with a non-zero code
  */
-export async function runInherit(cmd: readonly string[], label: string): Promise<void> {
-  console.log(`[constrained] ${label}...`);
+export async function runInherit(cmd: readonly string[], label: string,): Promise<void> {
+  console.log(`[constrained] ${label}...`,);
   const [command, ...args] = cmd;
-  if (command === undefined) {
-    throw new Error(`Empty command array for ${label}`);
-  }
-  await nanoSpawn(command, [...args], {
+  if (command === undefined)
+    throw new Error(`Empty command array for ${label}`,);
+  await nanoSpawn(command, [...args,], {
     stdout: 'inherit',
     stderr: 'inherit',
-  });
+  },);
 }
 
 /**
@@ -112,6 +115,6 @@ export async function runInherit(cmd: readonly string[], label: string): Promise
  *
  * @returns Events per second value
  */
-export function extractSysbenchScore(result: ContainerBenchResult): number {
+export function extractSysbenchScore(result: ContainerBenchResult,): number {
   return result.sysbench.eventsPerSec;
 }

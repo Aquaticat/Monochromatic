@@ -1,4 +1,4 @@
-import { banDisableRule } from './_ban-disable-factory.ts';
+import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
  * Bans inline suppression of `no-restricted-syntax/no-promise-finally`.
@@ -7,5 +7,6 @@ import { banDisableRule } from './_ban-disable-factory.ts';
 export const noDisableNoPromiseFinally = banDisableRule({
   ruleId: 'no-restricted-syntax/no-promise-finally',
   description: 'Disallow disabling no-promise-finally. Use async/await or using.',
-  message: 'Disabling no-promise-finally is not allowed. Use async/await with using or restructure the flow.',
-});
+  message:
+    'Disabling no-promise-finally is not allowed. Use async/await with using or restructure the flow.',
+},);

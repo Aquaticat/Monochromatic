@@ -15,7 +15,11 @@ import { outdent, } from '@cspotcode/outdent';
 import spawn from 'nano-spawn';
 import readdirGlob from 'tiny-readdir-glob';
 
-import { extractCommand, isShellCommand, parseTimestamp, } from './depends-parse.ts';
+import {
+  extractCommand,
+  isShellCommand,
+  parseTimestamp,
+} from './depends-parse.ts';
 
 //region Glob resolution
 
@@ -38,19 +42,17 @@ const GLOB_META = /[*?{[]/;
  * splitGlob('src/**') // ['/abs/path/src', '**']
  * ```
  */
-function splitGlob(pattern: string,): readonly [cwd: string, relativeGlob: string] {
+function splitGlob(pattern: string,): readonly [cwd: string, relativeGlob: string,] {
   const metaIndex = pattern.search(GLOB_META,);
 
-  if (metaIndex === -1) {
+  if (metaIndex === -1)
     return [resolve(pattern,), '',];
-  }
 
   const staticPrefix = pattern.slice(0, metaIndex,);
   const lastSep = staticPrefix.lastIndexOf('/',);
 
-  if (lastSep === -1) {
+  if (lastSep === -1)
     return [resolve('.',), pattern,];
-  }
 
   return [resolve(staticPrefix.slice(0, lastSep,),), pattern.slice(lastSep + 1,),];
 }
@@ -70,9 +72,8 @@ function splitGlob(pattern: string,): readonly [cwd: string, relativeGlob: strin
 async function resolveGlobFiles(pattern: string,): Promise<string[]> {
   const [cwd, relativeGlob,] = splitGlob(pattern,);
 
-  if (relativeGlob === '') {
+  if (relativeGlob === '')
     return [cwd,];
-  }
 
   const { files, } = await readdirGlob(relativeGlob, { cwd, },);
   return files;
@@ -103,22 +104,29 @@ async function resolveGlobFiles(pattern: string,): Promise<string[]> {
  * ```
  */
 async function resolveGlob(
-  pattern: string, position: 'source' | 'output', verbose: boolean,
+  pattern: string,
+  position: 'source' | 'output',
+  verbose: boolean,
 ): Promise<number[]> {
   const files = await resolveGlobFiles(pattern,);
 
   if (files.length === 0) {
-    if (verbose) {
+    if (verbose)
       console.error(`[task-depends] ${position} glob "${pattern}" matched no files`,);
-    }
     return [];
   }
 
-  const stats = await Promise.all(files.map(function statFile(file,) { return stat(file,); },),);
-  const mtimes = stats.map(function extractMtime(fileStat,) { return fileStat.mtimeMs; },);
+  const stats = await Promise.all(files.map(function statFile(file,) {
+    return stat(file,);
+  },),);
+  const mtimes = stats.map(function extractMtime(fileStat,) {
+    return fileStat.mtimeMs;
+  },);
 
   if (verbose) {
-    console.error(`[task-depends] ${position} glob "${pattern}" matched ${files.length} files`,);
+    console.error(
+      `[task-depends] ${position} glob "${pattern}" matched ${files.length} files`,
+    );
   }
 
   return mtimes;
@@ -152,7 +160,9 @@ async function resolveGlob(
  * ```
  */
 async function resolveShellCommand(
-  command: string, position: 'source' | 'output', verbose: boolean,
+  command: string,
+  position: 'source' | 'output',
+  verbose: boolean,
 ): Promise<number> {
   /** Raw stdout from the command */
   let stdout = '';
@@ -214,15 +224,19 @@ async function resolveShellCommand(
  * ```
  */
 export async function resolveItems(
-  items: readonly string[], position: 'source' | 'output', verbose: boolean,
+  items: readonly string[],
+  position: 'source' | 'output',
+  verbose: boolean,
 ): Promise<number[]> {
-  const results = await Promise.all(items.map(async function resolveItem(item,): Promise<number[]> {
-    if (isShellCommand(item,)) {
-      const ts = await resolveShellCommand(extractCommand(item,), position, verbose,);
-      return [ts,];
-    }
-    return resolveGlob(item, position, verbose,);
-  },),);
+  const results = await Promise.all(
+    items.map(async function resolveItem(item,): Promise<number[]> {
+      if (isShellCommand(item,)) {
+        const ts = await resolveShellCommand(extractCommand(item,), position, verbose,);
+        return [ts,];
+      }
+      return resolveGlob(item, position, verbose,);
+    },),
+  );
 
   return results.flat();
 }

@@ -1,6 +1,4 @@
-import type {
-  UserConfigFnObject,
-} from 'vite';
+import type { UserConfigFnObject, } from 'vite';
 
 // Import from internal modules
 import { createBaseConfig, } from './base-configs.ts';
@@ -25,14 +23,14 @@ import { createModeConfig, } from './config-modifiers.ts';
  * export default getShared(import.meta.dirname) satisfies UserConfigFnObject;
  * ```
  */
-export function getShared(configDir: string,): UserConfigFnObject { return createModeConfig(configDir, createBaseConfig,) }
+export function getShared(configDir: string,): UserConfigFnObject {
+  return createModeConfig(configDir, createBaseConfig,);
+}
 
 //endregion Public API
 
 // Re-export everything that was publicly exported before
-export {
-  createBaseConfig,
-} from './base-configs.ts';
+export { createBaseConfig, } from './base-configs.ts';
 
 export {
   rolldownExternal,

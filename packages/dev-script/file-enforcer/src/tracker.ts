@@ -36,8 +36,8 @@ export function reset(): void {
  *
  * @param filePath - path to register as a tracked read
  */
-export function trackRead(filePath: string): void {
-  reads.add(resolve(filePath));
+export function trackRead(filePath: string,): void {
+  reads.add(resolve(filePath,),);
 }
 
 /**
@@ -47,8 +47,8 @@ export function trackRead(filePath: string): void {
  *
  * @param filePath - path to register as a managed destination
  */
-export function trackDest(filePath: string): void {
-  writes.add(resolve(filePath));
+export function trackDest(filePath: string,): void {
+  writes.add(resolve(filePath,),);
 }
 
 /**
@@ -58,8 +58,8 @@ export function trackDest(filePath: string): void {
  *
  * @param filePath - path that was just written
  */
-export function trackWriteTime(filePath: string): void {
-  writeTimestamps.set(resolve(filePath), Date.now());
+export function trackWriteTime(filePath: string,): void {
+  writeTimestamps.set(resolve(filePath,), Date.now(),);
 }
 
 /**
@@ -70,6 +70,8 @@ export function trackWriteTime(filePath: string): void {
  *
  * @param paths - Array of file paths (resolved to absolute) to add to the read set
  */
-export function addWatchedPaths(paths: readonly string[]): void {
-  paths.forEach(function addPath(filePath): void { reads.add(resolve(filePath)); });
+export function addWatchedPaths(paths: readonly string[],): void {
+  paths.forEach(function addPath(filePath,): void {
+    reads.add(resolve(filePath,),);
+  },);
 }

@@ -4,9 +4,18 @@
  * Replaces the runner's deleted `HistoryEntry` and `HistoryFile` types
  * with types that match the artifact-based data model.
  */
-import type { ConfigSnapshot, StreamTiming, StreamUsage, } from '@monochromatic-dev/dev-script-inference-canary/src/runner-types.ts';
+import type {
+  ConfigSnapshot,
+  StreamTiming,
+  StreamUsage,
+} from '@monochromatic-dev/dev-script-inference-canary/src/runner-types.ts';
 
-export type { ConfigSnapshot, OpenRouterModelId, StreamTiming, StreamUsage, } from '@monochromatic-dev/dev-script-inference-canary/src/runner-types.ts';
+export type {
+  ConfigSnapshot,
+  OpenRouterModelId,
+  StreamTiming,
+  StreamUsage,
+} from '@monochromatic-dev/dev-script-inference-canary/src/runner-types.ts';
 
 /**
  * A single run entry derived from artifact metadata.
@@ -119,8 +128,8 @@ export type ProbeDetail = {
  * entries.filter(hasMultipleProbes); // only runs with meaningful overall scores
  * ```
  */
-export function hasMultipleProbes(entry: ViewerEntry): boolean {
-  return Object.keys(entry.probeScores).length >= 2;
+export function hasMultipleProbes(entry: ViewerEntry,): boolean {
+  return Object.keys(entry.probeScores,).length >= 2;
 }
 
 /** Result of reading all artifacts */

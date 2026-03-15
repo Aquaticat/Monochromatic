@@ -1,9 +1,9 @@
 import { readFile, } from 'node:fs/promises';
 
-import clientCss from './client.css' with { type: 'text' };
+import clientCss from './client.css' with { type: 'text', };
 import { l, } from './log.ts';
 
-l.debug(`asset module loading`);
+l.debug(`asset module loading`,);
 
 /**
  * CSS source for the RSS reader interface.
@@ -40,4 +40,4 @@ export const indexHtmlStart: string = `<!DOCTYPE html>
     </head>
     <body>`;
 
-l.debug(`asset module loaded, css ${css.length} chars, js ${js.length} chars`);
+l.debug(`asset module loaded, css ${css.length} chars, js ${js.length} chars`,);

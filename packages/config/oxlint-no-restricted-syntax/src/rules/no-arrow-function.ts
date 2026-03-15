@@ -7,7 +7,7 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import { extractParamsText } from './arrow-function-params.ts';
+import { extractParamsText, } from './arrow-function-params.ts';
 
 /**
  * Minimal local type for `ArrowFunctionExpression` AST nodes.
@@ -63,17 +63,19 @@ export const noArrowFunction: CreateOnceRule = {
     type: 'suggestion',
     fixable: 'code',
     docs: {
-      description: 'Disallow arrow function expressions. Use named function declarations or named function expressions instead.',
+      description:
+        'Disallow arrow function expressions. Use named function declarations or named function expressions instead.',
       recommended: true,
     },
     messages: {
-      forbidden: 'Arrow functions are banned. Use named function declarations or named function expressions instead.',
+      forbidden:
+        'Arrow functions are banned. Use named function declarations or named function expressions instead.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      ArrowFunctionExpression(node: ArrowFunctionExpression): void {
+      ArrowFunctionExpression(node: ArrowFunctionExpression,): void {
         /**
          * Only auto-fix when the arrow is the direct initializer of a variable declaration:
          * `const name = (...) => ...` or `export const name = (...) => ...`.
@@ -81,19 +83,19 @@ export const noArrowFunction: CreateOnceRule = {
          * Callbacks, object properties, and other contexts are too context-dependent
          * to auto-fix reliably.
          */
-        const {parent} = node;
+        const { parent, } = node;
         if (
           parent.type !== 'VariableDeclarator'
           || parent.id.type !== 'Identifier'
           || parent.parent.type !== 'VariableDeclaration'
           || parent.parent.declarations.length !== 1
         ) {
-          context.report({ node, messageId: 'forbidden' });
+          context.report({ node, messageId: 'forbidden', },);
           return;
         }
 
         /** Variable name from the declarator (e.g. `foo` in `const foo = ...`). */
-        const {name} = parent.id;
+        const { name, } = parent.id;
 
         /** Whether the grandparent declaration is exported. */
         const grandparent = parent.parent.parent;
@@ -106,40 +108,45 @@ export const noArrowFunction: CreateOnceRule = {
         const asyncPrefix = node.async ? 'async ' : '';
 
         /** Generic type parameters if present. */
-        const typeParamsText = node.typeParameters !== null && node.typeParameters !== undefined
-          ? context.sourceCode.getText(node.typeParameters)
-          : '';
+        const typeParamsText =
+          node.typeParameters !== null && node.typeParameters !== undefined
+            ? context.sourceCode.getText(node.typeParameters,)
+            : '';
 
         /**
          * Source text of the parameter list including parentheses.
          * Extracted from the range between params start and body/returnType start,
          * stripping the `=>` arrow token.
          */
-        const paramsText = extractParamsText({ fullText: context.sourceCode.getText(node), node });
+        const paramsText = extractParamsText({
+          fullText: context.sourceCode.getText(node,),
+          node,
+        },);
 
         /** Return type annotation if present. */
         const returnTypeText = node.returnType !== null && node.returnType !== undefined
-          ? context.sourceCode.getText(node.returnType)
+          ? context.sourceCode.getText(node.returnType,)
           : '';
 
         /** Body text, wrapping expression bodies in `{ return ...; }`. */
         const bodyText = node.expression
-          ? `{ return ${context.sourceCode.getText(node.body)} }`
-          : context.sourceCode.getText(node.body);
+          ? `{ return ${context.sourceCode.getText(node.body,)} }`
+          : context.sourceCode.getText(node.body,);
 
         /** Export keyword prefix. */
         const exportPrefix = isExported ? 'export ' : '';
 
         /** Assembled function declaration. */
-        const replacement = `${exportPrefix}${asyncPrefix}function ${name}${typeParamsText}${paramsText}${returnTypeText} ${bodyText}`;
+        const replacement =
+          `${exportPrefix}${asyncPrefix}function ${name}${typeParamsText}${paramsText}${returnTypeText} ${bodyText}`;
 
         context.report({
           node,
           messageId: 'forbidden',
-          fix(fixer: Fixer) {
-            return fixer.replaceText(replaceNode, replacement);
+          fix(fixer: Fixer,) {
+            return fixer.replaceText(replaceNode, replacement,);
           },
-        });
+        },);
       },
     } as VisitorWithHooks;
   },

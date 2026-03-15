@@ -8,15 +8,15 @@
  * @module
  */
 
-import { realpathSync } from 'node:fs';
+import { realpathSync, } from 'node:fs';
 
 //region Constants
 
 /** Lines beyond this length are truncated with an ellipsis marker. */
-export const MAX_LINE_LENGTH = 500
+export const MAX_LINE_LENGTH = 500;
 
 /** Minimum consecutive identical lines before collapsing to `(xN)` notation. */
-export const DEDUP_THRESHOLD = 3
+export const DEDUP_THRESHOLD = 3;
 
 /**
  * Maximum consecutive repetitions of a single character before collapsing.
@@ -29,7 +29,7 @@ export const DEDUP_THRESHOLD = 3
  * "+---------+---------+"                       → unchanged (9 < threshold)
  * ```
  */
-export const MAX_REPEATED_CHARS = 3
+export const MAX_REPEATED_CHARS = 3;
 
 /**
  * Resolved absolute path to the user's home directory.
@@ -40,7 +40,7 @@ export const MAX_REPEATED_CHARS = 3
  * Falls back to empty string if `$HOME` is unset, which disables path collapsing
  * without breaking the filter.
  */
-export const HOME_DIR = process.env['HOME'] ?? ''
+export const HOME_DIR = process.env['HOME'] ?? '';
 
 /**
  * Canonical (real) path to the home directory, following symlinks.
@@ -58,16 +58,16 @@ export const HOME_DIR = process.env['HOME'] ?? ''
  */
 export const REAL_HOME_DIR = (function resolveRealHome(): string {
   try {
-    if (HOME_DIR === '') {
-      return ''
-    }
+    if (HOME_DIR === '')
+      return '';
     /* oxlint-disable-next-line node/no-sync -- one-shot startup cost, avoids async complexity in a filter script */
-    const resolved = realpathSync(HOME_DIR)
-    return resolved === HOME_DIR ? '' : resolved
-  } catch {
-    return ''
+    const resolved = realpathSync(HOME_DIR,);
+    return resolved === HOME_DIR ? '' : resolved;
   }
-})()
+  catch {
+    return '';
+  }
+})();
 
 /**
  * Current working directory with trailing slash.
@@ -85,12 +85,13 @@ export const REAL_HOME_DIR = (function resolveRealHome(): string {
  */
 export const CWD_PREFIX = (function resolveCwdPrefix(): string {
   try {
-    const cwd = process.cwd()
-    return cwd.endsWith('/') ? cwd : `${cwd}/`
-  } catch {
-    return ''
+    const cwd = process.cwd();
+    return cwd.endsWith('/',) ? cwd : `${cwd}/`;
   }
-})()
+  catch {
+    return '';
+  }
+})();
 
 /**
  * Alternate CWD prefix using the other home directory form.
@@ -106,23 +107,20 @@ export const CWD_PREFIX = (function resolveCwdPrefix(): string {
  * ```
  */
 export const ALT_CWD_PREFIX = (function resolveAltCwdPrefix(): string {
-  if (CWD_PREFIX === '' || REAL_HOME_DIR === '' || HOME_DIR === '') {
-    return ''
-  }
+  if (CWD_PREFIX === '' || REAL_HOME_DIR === '' || HOME_DIR === '')
+    return '';
 
   /**
    * `process.cwd()` typically returns the real path.
    * If CWD starts with REAL_HOME_DIR, the alternate form uses HOME_DIR.
    * If CWD starts with HOME_DIR, the alternate form uses REAL_HOME_DIR.
    */
-  if (CWD_PREFIX.startsWith(`${REAL_HOME_DIR}/`)) {
-    return `${HOME_DIR}${CWD_PREFIX.slice(REAL_HOME_DIR.length)}`
-  }
-  if (CWD_PREFIX.startsWith(`${HOME_DIR}/`)) {
-    return `${REAL_HOME_DIR}${CWD_PREFIX.slice(HOME_DIR.length)}`
-  }
-  return ''
-})()
+  if (CWD_PREFIX.startsWith(`${REAL_HOME_DIR}/`,))
+    return `${HOME_DIR}${CWD_PREFIX.slice(REAL_HOME_DIR.length,)}`;
+  if (CWD_PREFIX.startsWith(`${HOME_DIR}/`,))
+    return `${REAL_HOME_DIR}${CWD_PREFIX.slice(HOME_DIR.length,)}`;
+  return '';
+})();
 
 //endregion
 
@@ -141,7 +139,7 @@ export const ALT_CWD_PREFIX = (function resolveAltCwdPrefix(): string {
  *  mode change 100644 => 100755 scripts/run.sh
  * ```
  */
-export const GIT_FILE_MODE_PATTERN = /^ (create|delete|copy|rename|mode change) mode /
+export const GIT_FILE_MODE_PATTERN = /^ (create|delete|copy|rename|mode change) mode /;
 
 /**
  * Patterns matching git transport progress lines from push/pull/fetch/clone.
@@ -171,7 +169,7 @@ export const GIT_TRANSPORT_PROGRESS_PATTERNS = [
   /^Resolving deltas:/,
   /^Unpacking objects:/,
   /^remote: (Enumerating|Counting|Compressing|Resolving|Writing|Total|Unpacking)/,
-]
+];
 
 //endregion
 
@@ -201,6 +199,6 @@ export const SANDBOX_NOISE_PATTERNS = [
    * ```
    */
   /^\s*(\[.*?\]\s+)?mise WARN\s+failed to write cache file:.*Read-only file system/,
-]
+];
 
 //endregion

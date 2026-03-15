@@ -10,9 +10,11 @@ import Html from '@_/layouts/Html.astro';
 import type { GetStaticPaths, } from 'astro';
 import { render, } from 'astro:content';
 
-export async function getStaticPaths() { return langs.flatMap(lang => (names.map(name => ({
+export async function getStaticPaths() {
+  return langs.flatMap(lang => (names.map(name => ({
     params: { lang, name, },
-  })))) }
+  }))));
+}
 
 const { lang, name, } = Astro.params;
 const potentialPost = posts.find(post => post.name === name && post.lang === lang);

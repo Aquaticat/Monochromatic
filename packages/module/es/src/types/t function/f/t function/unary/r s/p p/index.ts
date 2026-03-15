@@ -16,5 +16,7 @@
 export function $<const Fn extends (arg: Parameters<Fn>[0],) => ReturnType<Fn>,>(
   fn: Fn,
 ): (arg: Parameters<Fn>[0],) => ReturnType<Fn> {
-  return function unary(arg: Parameters<Fn>[0],): ReturnType<Fn> { return fn(arg,); };
+  return function unary(arg: Parameters<Fn>[0],): ReturnType<Fn> {
+    return fn(arg,);
+  };
 }

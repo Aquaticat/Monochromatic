@@ -99,7 +99,7 @@ export type MemoizedFunction<
   TArgs extends readonly unknown[],
   TReturn,
 > = {
-  (this: void, options: MemoizedCallOptions<TArgs>): TReturn;
+  (this: void, options: MemoizedCallOptions<TArgs>,): TReturn;
   /** Read-only access to the underlying SyncStore. */
   readonly store: SyncStore;
   /** Wipe all cached entries. */
@@ -129,7 +129,7 @@ export type MemoizedAsyncFunction<
   TArgs extends readonly unknown[],
   TReturn,
 > = {
-  (this: void, options: MemoizedCallOptions<TArgs>): Promise<TReturn>;
+  (this: void, options: MemoizedCallOptions<TArgs>,): Promise<TReturn>;
   /** Read-only access to the underlying Store. */
   readonly store: Store;
   /** Wipe all cached entries. */

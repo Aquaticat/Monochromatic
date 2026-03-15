@@ -33,7 +33,10 @@ import {
 } from '@optique/core/primitives';
 import { string, } from '@optique/core/valueparser';
 import { runSync, } from '@optique/run';
-import { existsSync, constants, } from 'node:fs';
+import {
+  constants,
+  existsSync,
+} from 'node:fs';
 import {
   access,
   appendFile,
@@ -43,8 +46,12 @@ export {};
 
 /** Error messages for append operations */
 const ERROR_MESSAGES = {
-  fileNotFound: function fileNotFound(path: string,): string { return `File not found: ${path}`; },
-  noWritePermission: function noWritePermission(path: string,): string { return `No write permission for file: ${path}`; },
+  fileNotFound: function fileNotFound(path: string,): string {
+    return `File not found: ${path}`;
+  },
+  noWritePermission: function noWritePermission(path: string,): string {
+    return `No write permission for file: ${path}`;
+  },
   noTextProvided: 'No text provided to append',
 } as const;
 
@@ -84,7 +91,9 @@ async function validateFile(filePath: string,): Promise<void> {
  * await appendLinesToFile('./output.md', ['line 1', 'line 2']);
  * ```
  */
-async function appendLinesToFile(filePath: string, lines: readonly string[],): Promise<void> {
+async function appendLinesToFile(filePath: string,
+  lines: readonly string[],): Promise<void>
+{
   const content = `${lines.join('\n',)}\n`;
   await appendFile(filePath, content,);
 }

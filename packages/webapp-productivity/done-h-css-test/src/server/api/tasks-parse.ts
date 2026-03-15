@@ -3,10 +3,13 @@
  *
  * The large `parseTaskUpdateInput` function lives in `tasks-parse-update.ts`.
  */
-import { TASK_PRIORITIES, type TaskPriority } from "../../lib/types.ts";
+import {
+  TASK_PRIORITIES,
+  type TaskPriority,
+} from '../../lib/types.ts';
 
 /** Recognized priority/complexity values for input validation. */
-const priorities = new Set<string>(TASK_PRIORITIES);
+const priorities = new Set<string>(TASK_PRIORITIES,);
 
 /**
  * Narrows `unknown` to a plain object for property access.
@@ -15,8 +18,8 @@ const priorities = new Set<string>(TASK_PRIORITIES);
  *
  * @returns True when value is a non-null object
  */
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
+export function isRecord(value: unknown,): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
 }
 
 /**
@@ -26,20 +29,19 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
  *
  * @returns Parsed array, or `null` when the input is not an array
  */
-export function parseStringArray(value: unknown): string[] | null {
-  if (!Array.isArray(value)) {
+export function parseStringArray(value: unknown,): string[] | null {
+  if (!Array.isArray(value,))
     return null;
-  }
   const parsedValues = value
-    .filter(function isString(entry): entry is string {
-      return typeof entry === "string";
-    })
-    .map(function trimEntry(entry) {
+    .filter(function isString(entry,): entry is string {
+      return typeof entry === 'string';
+    },)
+    .map(function trimEntry(entry,) {
       return entry.trim();
-    })
-    .filter(function isNonEmpty(entry) {
+    },)
+    .filter(function isNonEmpty(entry,) {
       return entry.length > 0;
-    });
+    },);
   return parsedValues;
 }
 
@@ -54,18 +56,17 @@ export function parseStringArray(value: unknown): string[] | null {
  *
  * @returns Validated enum value, null, or undefined
  */
-export function parseEnumValue<T extends string>(value: unknown, validValues: Set<string>): T | null | undefined {
-  if (value === undefined) {
+export function parseEnumValue<T extends string,>(value: unknown,
+  validValues: Set<string>,): T | null | undefined
+{
+  if (value === undefined)
     return undefined;
-  }
-  if (value === null) {
+  if (value === null)
     return null;
-  }
-  if (typeof value !== "string") {
+  if (typeof value !== 'string')
     return undefined;
-  }
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
-  return validValues.has(value) ? (value as T) : undefined;
+  return validValues.has(value,) ? (value as T) : undefined;
 }
 
 /**

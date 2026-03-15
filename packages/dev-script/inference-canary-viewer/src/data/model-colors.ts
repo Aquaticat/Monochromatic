@@ -20,8 +20,8 @@
  * vendorColor('unknown/model'); // "#6B7280"
  * ```
  */
-export function vendorColor(modelId: string): string {
-  const vendor = modelId.split('/')[0] ?? '';
+export function vendorColor(modelId: string,): string {
+  const vendor = modelId.split('/',)[0] ?? '';
   return VENDOR_COLORS[vendor] ?? FALLBACK_COLOR;
 }
 
@@ -40,11 +40,11 @@ const FALLBACK_COLOR = '#6B7280';
  * - qwen: Qwen purple (#615CED)
  */
 const VENDOR_COLORS: Record<string, string> = {
-  'anthropic': '#D97757',
-  'google': '#3186FF',
-  'openai': '#F86AA4',
-  'moonshotai': '#027AFF',
-  'minimax': '#F23F5D',
+  anthropic: '#D97757',
+  google: '#3186FF',
+  openai: '#F86AA4',
+  moonshotai: '#027AFF',
+  minimax: '#F23F5D',
   'z-ai': '#3859FF',
-  'qwen': '#615CED',
+  qwen: '#615CED',
 };

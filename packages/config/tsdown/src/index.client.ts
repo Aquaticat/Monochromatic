@@ -1,4 +1,7 @@
-import { defineConfig, type UserConfig, } from 'tsdown';
+import {
+  defineConfig,
+  type UserConfig,
+} from 'tsdown';
 
 /**
  * Shared tsdown configuration for browser client bundles.
@@ -27,5 +30,5 @@ const _default_1: UserConfig = defineConfig({
   minify: process.env.NODE_ENV === 'production',
   report: false,
   outDir: 'dist/client',
-});
+},);
 export default _default_1;

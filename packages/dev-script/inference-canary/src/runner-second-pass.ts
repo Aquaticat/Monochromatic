@@ -5,9 +5,15 @@ import { streamCompletion, } from './runner-stream.ts';
 
 // oxlint-disable-next-line import/no-named-as-default -- OpenAI SDK canonical usage is `import OpenAI from 'openai'`
 import type OpenAI from 'openai';
-import type { ChatMessage, CompletionResult, } from './runner-types.ts';
+import type {
+  Probe,
+  ScoreContext,
+} from './probes.ts';
 import type { RunnerConfig, } from './runner-config.ts';
-import type { Probe, ScoreContext, } from './probes.ts';
+import type {
+  ChatMessage,
+  CompletionResult,
+} from './runner-types.ts';
 
 /** Result from a second-pass fix attempt, bundling score with completion data and the prompt used */
 export type SecondPassResult = {
@@ -42,15 +48,18 @@ export async function runSecondPass(
   firstResponse: string,
   context: ScoreContext,
 ): Promise<SecondPassResult | undefined> {
-  if (probe.buildFixPrompt === undefined) return undefined;
+  if (probe.buildFixPrompt === undefined)
+    return undefined;
 
-  const fixPrompt = await probe.buildFixPrompt(firstResponse, context);
+  const fixPrompt = await probe.buildFixPrompt(firstResponse, context,);
   if (fixPrompt === undefined) {
-    console.log(`  [${config.label}:${probe.name}] pass2: skipped (no diagnostics to fix)`);
+    console.log(
+      `  [${config.label}:${probe.name}] pass2: skipped (no diagnostics to fix)`,
+    );
     return undefined;
   }
 
-  console.log(`  [${config.label}:${probe.name}] pass2: sending fix prompt...`);
+  console.log(`  [${config.label}:${probe.name}] pass2: sending fix prompt...`,);
 
   const messages: ChatMessage[] = [
     { role: 'system', content: probe.system, },
@@ -58,7 +67,8 @@ export async function runSecondPass(
     { role: 'assistant', content: firstResponse, },
     { role: 'user', content: fixPrompt, },
   ];
-  const completion = await streamCompletion(client, messages, config, `${probe.name}:fix`, context.signal);
-  const score = await probe.score(completion.text, context);
+  const completion = await streamCompletion(client, messages, config, `${probe.name}:fix`,
+    context.signal,);
+  const score = await probe.score(completion.text, context,);
   return { score, completion, fixPrompt, };
 }

@@ -39,8 +39,7 @@ export async function $<T, R,>(
   // `Array.fromAsync` is not suitable here: it awaits each mapped value sequentially,
   // which would serialize the work and lose concurrency.
   const promises: Promise<R>[] = [];
-  for await (const item of iterable) {
+  for await (const item of iterable)
     promises.push(fn(item,),);
-  }
   return Promise.all(promises,);
 }

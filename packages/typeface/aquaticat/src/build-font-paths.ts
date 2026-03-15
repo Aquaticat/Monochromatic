@@ -9,11 +9,15 @@
  */
 
 // oxlint-disable-next-line import/no-namespace -- opentype.js requires namespace import for its Path type
-import type * as opentype from "opentype.js";
+import type * as opentype from 'opentype.js';
 
-import { offsetPolygon } from "./expand-stroke.ts";
-import { fontY } from "./build-font-metrics.ts";
-import { parseSvgPathD, type CellPath, type SVGPathCommand } from "./parse-svg.ts";
+import { fontY, } from './build-font-metrics.ts';
+import { offsetPolygon, } from './expand-stroke.ts';
+import {
+  type CellPath,
+  parseSvgPathD,
+  type SVGPathCommand,
+} from './parse-svg.ts';
 
 //region Coordinate helpers
 
@@ -30,17 +34,29 @@ import { parseSvgPathD, type CellPath, type SVGPathCommand } from "./parse-svg.t
  * // [[10, 20], [30, 20], [30, 40]]
  * ```
  */
-function resolveAbsolutePoints(commands: readonly SVGPathCommand[]): [number, number][] {
-  const points: [number, number][] = [];
+function resolveAbsolutePoints(
+  commands: readonly SVGPathCommand[],
+): [number, number,][] {
+  const points: [number, number,][] = [];
   // Mutable cursor tracking the current pen position while replaying path commands
   // -- let needed because M/L/H/V each update different axes of the cursor
   let cx = 0;
   let cy = 0;
-  commands.forEach(function resolveCommand(cmd) {
-    if (cmd.type === "M" || cmd.type === "L") { cx = cmd.x; cy = cmd.y; points.push([cx, cy]); }
-    else if (cmd.type === "H") { cx = cmd.x; points.push([cx, cy]); }
-    else if (cmd.type === "V") { cy = cmd.y; points.push([cx, cy]); }
-  });
+  commands.forEach(function resolveCommand(cmd,) {
+    if (cmd.type === 'M' || cmd.type === 'L') {
+      cx = cmd.x;
+      cy = cmd.y;
+      points.push([cx, cy,],);
+    }
+    else if (cmd.type === 'H') {
+      cx = cmd.x;
+      points.push([cx, cy,],);
+    }
+    else if (cmd.type === 'V') {
+      cy = cmd.y;
+      points.push([cx, cy,],);
+    }
+  },);
   return points;
 }
 
@@ -66,25 +82,25 @@ function resolveAbsolutePoints(commands: readonly SVGPathCommand[]): [number, nu
 export function computeLocalXBounds(
   paths: readonly CellPath[],
   cellX: number,
-): { minX: number; maxX: number } {
+): { minX: number; maxX: number; } {
   // Mutable accumulators narrowed across all path points
   // -- let needed because we reduce across multiple paths and their points
   let minX = Infinity;
   let maxX = -Infinity;
 
-  paths.forEach(function measurePath(pathData) {
-    const commands = parseSvgPathD(pathData.d);
-    const points = resolveAbsolutePoints(commands);
+  paths.forEach(function measurePath(pathData,) {
+    const commands = parseSvgPathD(pathData.d,);
+    const points = resolveAbsolutePoints(commands,);
     const halfStroke = pathData.strokeWidth / 2;
 
-    points.forEach(function updateBounds([px]) {
+    points.forEach(function updateBounds([px,],) {
       const localX = px - cellX;
-      minX = Math.min(minX, localX - halfStroke);
-      maxX = Math.max(maxX, localX + halfStroke);
-    });
-  });
+      minX = Math.min(minX, localX - halfStroke,);
+      maxX = Math.max(maxX, localX + halfStroke,);
+    },);
+  },);
 
-  return { minX, maxX };
+  return { minX, maxX, };
 }
 
 /**
@@ -108,14 +124,30 @@ export function addFilledPath(
   let cx = 0;
   let cy = 0;
 
-  commands.forEach(function traceFilledCommand(cmd) {
-    if (cmd.type === "M") { cx = cmd.x; cy = cmd.y; otPath.moveTo(cx - cellX + xShift, fontY(cy)); }
-    else if (cmd.type === "L") { cx = cmd.x; cy = cmd.y; otPath.lineTo(cx - cellX + xShift, fontY(cy)); }
-    else if (cmd.type === "H") { cx = cmd.x; otPath.lineTo(cx - cellX + xShift, fontY(cy)); }
-    else if (cmd.type === "V") { cy = cmd.y; otPath.lineTo(cx - cellX + xShift, fontY(cy)); }
+  commands.forEach(function traceFilledCommand(cmd,) {
+    if (cmd.type === 'M') {
+      cx = cmd.x;
+      cy = cmd.y;
+      otPath.moveTo(cx - cellX + xShift, fontY(cy,),);
+    }
+    else if (cmd.type === 'L') {
+      cx = cmd.x;
+      cy = cmd.y;
+      otPath.lineTo(cx - cellX + xShift, fontY(cy,),);
+    }
+    else if (cmd.type === 'H') {
+      cx = cmd.x;
+      otPath.lineTo(cx - cellX + xShift, fontY(cy,),);
+    }
+    else if (cmd.type === 'V') {
+      cy = cmd.y;
+      otPath.lineTo(cx - cellX + xShift, fontY(cy,),);
+    }
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- SVG command type discriminant is checked exhaustively
-    else if (cmd.type === "Z") { otPath.close(); }
-  });
+    else if (cmd.type === 'Z') {
+      otPath.close();
+    }
+  },);
 }
 
 /**
@@ -139,42 +171,44 @@ export function addStrokedPath(
   xShift: number,
 ): void {
   const halfWidth = strokeWidth / 2;
-  const points = resolveAbsolutePoints(commands);
+  const points = resolveAbsolutePoints(commands,);
   // Drop the closing duplicate vertex if present (the Z command closes implicitly)
   const first = points[0];
-  const last = points.at(-1);
+  const last = points.at(-1,);
   const vertices = (
-    first !== undefined &&
-    last !== undefined &&
-    points.length > 1 &&
-    first[0] === last[0] &&
-    first[1] === last[1]
-  )
-    ? points.slice(0, -1)
+      first !== undefined
+      && last !== undefined
+      && points.length > 1
+      && first[0] === last[0]
+      && first[1] === last[1]
+    )
+    ? points.slice(0, -1,)
     : points;
 
-  const outerVerts = offsetPolygon(vertices, halfWidth);
-  const innerVerts = offsetPolygon(vertices, -halfWidth);
+  const outerVerts = offsetPolygon(vertices, halfWidth,);
+  const innerVerts = offsetPolygon(vertices, -halfWidth,);
 
   /**
    * Traces a polygon contour onto the opentype path.
    *
    * @param verts - ordered vertices of the contour polygon
    */
-  function traceContour(verts: readonly [number, number][]): void {
-    verts.forEach(function traceVertex(vert, vertIndex) {
+  function traceContour(verts: readonly [number, number,][],): void {
+    verts.forEach(function traceVertex(vert, vertIndex,) {
       const fx = vert[0] - cellX + xShift;
-      const fy = fontY(vert[1]);
-      if (vertIndex === 0) otPath.moveTo(fx, fy);
-      else otPath.lineTo(fx, fy);
-    });
+      const fy = fontY(vert[1],);
+      if (vertIndex === 0)
+        otPath.moveTo(fx, fy,);
+      else
+        otPath.lineTo(fx, fy,);
+    },);
     otPath.close();
   }
 
   // Outer contour (forward order)
-  traceContour(outerVerts);
+  traceContour(outerVerts,);
   // Inner contour (reversed to create the hole via opposite winding)
-  traceContour([...innerVerts].toReversed());
+  traceContour([...innerVerts,].toReversed(),);
 }
 
 //endregion Path construction

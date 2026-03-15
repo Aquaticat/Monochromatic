@@ -23,6 +23,6 @@ import { glow, } from 'nue-glow';
  * // '<code language="js"><span><b>const</b> ...</span></code>'
  * ```
  */
-export function highlightTs(source: string): string {
-  return glow(source, { language: 'js', numbered: true, }) as string;
+export function highlightTs(source: string,): string {
+  return glow(source, { language: 'js', numbered: true, },) as string;
 }

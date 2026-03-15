@@ -57,9 +57,8 @@ export type TimeStrategy = BuiltinTimeStrategy | `sh:${string}`;
  */
 function computeMean(values: readonly number[],): number {
   let sum = 0;
-  for (const v of values) {
+  for (const v of values)
     sum += v;
-  }
   return sum / values.length;
 }
 
@@ -80,12 +79,13 @@ function computeMean(values: readonly number[],): number {
  * ```
  */
 function computeMedian(values: readonly number[],): number {
-  const sorted = [...values,].toSorted(function ascending(a, b,) { return a - b; },);
+  const sorted = [...values,].toSorted(function ascending(a, b,) {
+    return a - b;
+  },);
   const mid = Math.floor(sorted.length / 2,);
   // Even length: use lower middle to avoid fractional timestamps
-  if (sorted.length % 2 === 0) {
+  if (sorted.length % 2 === 0)
     return sorted[mid - 1] ?? 0;
-  }
   return sorted[mid] ?? 0;
 }
 
@@ -105,11 +105,21 @@ function computeMedian(values: readonly number[],): number {
  * builtinStrategies.newest([]) // -Infinity
  * ```
  */
-export const builtinStrategies: Readonly<Record<BuiltinTimeStrategy, (values: readonly number[],) => number>> = {
-  newest: function newest(values,) { return values.length === 0 ? -Infinity : Math.max(...values,); },
-  oldest: function oldest(values,) { return values.length === 0 ? -Infinity : Math.min(...values,); },
-  mean: function mean(values,) { return values.length === 0 ? -Infinity : computeMean(values,); },
-  median: function median(values,) { return values.length === 0 ? -Infinity : computeMedian(values,); },
+export const builtinStrategies: Readonly<
+  Record<BuiltinTimeStrategy, (values: readonly number[],) => number>
+> = {
+  newest: function newest(values,) {
+    return values.length === 0 ? -Infinity : Math.max(...values,);
+  },
+  oldest: function oldest(values,) {
+    return values.length === 0 ? -Infinity : Math.min(...values,);
+  },
+  mean: function mean(values,) {
+    return values.length === 0 ? -Infinity : computeMean(values,);
+  },
+  median: function median(values,) {
+    return values.length === 0 ? -Infinity : computeMedian(values,);
+  },
 };
 
 //endregion Strategy functions

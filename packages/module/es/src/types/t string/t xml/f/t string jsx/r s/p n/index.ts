@@ -116,14 +116,15 @@ type XmlOptions = {
   const parts: string[] = [`<${tag}`,];
 
   if (attrs !== undefined) {
-    for (const [key, value,] of Object.entries(attrs,)) {
+    for (const [key, value,] of Object.entries(attrs,))
       parts.push(` ${key}="${escapeXml(value,)}"`,);
-    }
   }
 
   //region Self-closing check
   // XML has no void elements — instead, childless elements self-close.
-  const hasContent = text !== undefined || raw !== undefined || (children !== undefined && children.length > 0);
+  const hasContent = text !== undefined
+    || raw !== undefined
+    || (children !== undefined && children.length > 0);
 
   if (!hasContent) {
     parts.push(' />',);
@@ -133,18 +134,15 @@ type XmlOptions = {
 
   parts.push('>',);
 
-  if (text !== undefined) {
+  if (text !== undefined)
     parts.push(escapeXml(text,),);
-  }
 
-  if (raw !== undefined) {
+  if (raw !== undefined)
     parts.push(raw,);
-  }
 
   if (children !== undefined) {
-    for (const child of children) {
+    for (const child of children)
       parts.push(child,);
-    }
   }
 
   parts.push(`</${tag}>`,);

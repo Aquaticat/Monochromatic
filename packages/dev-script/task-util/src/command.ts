@@ -97,13 +97,17 @@ catch (error) {
       function isSubprocessError(
         candidate,
       ): candidate is { exitCode?: number; signalName?: string; message: string; } {
-        return candidate !== null && typeof candidate === 'object' && 'exitCode' in candidate;
+        return candidate !== null
+          && typeof candidate === 'object'
+          && 'exitCode' in candidate;
       },
-      function handleSubprocessError(subprocessError): void {
+      function handleSubprocessError(subprocessError,): void {
         match(subprocessError.signalName,)
           .when(
-            function hasSignal(signal): signal is string { return signal !== undefined; },
-            function logSignal(signal): void {
+            function hasSignal(signal,): signal is string {
+              return signal !== undefined;
+            },
+            function logSignal(signal,): void {
               console.error(`Command terminated by signal: ${signal}`,);
             },
           );

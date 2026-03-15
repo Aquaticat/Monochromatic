@@ -7,4 +7,4 @@ const alsoUndocumented = (): number => 42;
 
 class NoDocNeeded {}
 
-type UndocumentedType = { value: string };
+type UndocumentedType = { value: string; };

@@ -56,7 +56,8 @@ export const SHADOW_SCALE_GROUND = 1;
 export const SHADOW_SCALE_AIR = 0.5;
 
 /** Stripe colors for a beachball look. */
-export const STRIPE_COLORS = ['#e13238', '#ffffff', '#2563eb', '#ffffff', '#f59e0b', '#ffffff'];
+export const STRIPE_COLORS = ['#e13238', '#ffffff', '#2563eb', '#ffffff', '#f59e0b',
+  '#ffffff',];
 
 /** Number of stripes derived from color array length. */
 export const STRIPE_COUNT = STRIPE_COLORS.length;

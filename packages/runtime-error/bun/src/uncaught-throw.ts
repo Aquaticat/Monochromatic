@@ -4,4 +4,4 @@
  */
 export {};
 
-throw new Error("Intentional uncaught throw");
+throw new Error('Intentional uncaught throw',);

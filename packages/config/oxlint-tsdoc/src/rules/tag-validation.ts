@@ -10,7 +10,7 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import { createTsdocVisitor } from './tsdoc-visitors.ts';
+import { createTsdocVisitor, } from './tsdoc-visitors.ts';
 
 /**
  * Validates access modifier tags in TSDoc comments.
@@ -28,37 +28,37 @@ export const checkAccess: CreateOnceRule = {
       conflict: 'Conflicting access modifiers: {{tags}}. Use only one.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     /** Access-level tags that are mutually exclusive. */
-    const accessTags = ['@public', '@internal', '@alpha', '@beta', '@experimental'];
+    const accessTags = ['@public', '@internal', '@alpha', '@beta', '@experimental',];
 
-    return createTsdocVisitor(context, function checkAccessHandler(_node, comment): void {
-      const found: string[] = [];
-      const text = comment.value;
-      accessTags.forEach(function findTag(tag): void {
-        // Match tag at word boundary to avoid false positives
-        const pattern = new RegExp(String.raw`(?:^|\s)${tag.replace('@', String.raw`\@`)}(?:\s|$|\*)`);
-        if (pattern.test(text)) {
-          found.push(tag);
+    return createTsdocVisitor(context,
+      function checkAccessHandler(_node, comment,): void {
+        const found: string[] = [];
+        const text = comment.value;
+        accessTags.forEach(function findTag(tag,): void {
+          // Match tag at word boundary to avoid false positives
+          const pattern = new RegExp(
+            String.raw`(?:^|\s)${tag.replace('@', String.raw`\@`,)}(?:\s|$|\*)`,
+          );
+          if (pattern.test(text,))
+            found.push(tag,);
+        },);
+
+        if (found.length > 1) {
+          context.report({
+            node: comment,
+            messageId: 'conflict',
+            data: { tags: found.join(', ',), },
+          },);
         }
-      });
-
-      if (found.length > 1) {
-        context.report({
-          node: comment,
-          messageId: 'conflict',
-          data: { tags: found.join(', ') },
-        });
-      }
-    });
+      },);
   },
 };
 
-export {
-  checkTagNames,
-} from './tag-names.ts';
+export { checkTagNames, } from './tag-names.ts';
 
 export {
-  validTypes,
   noTypes,
+  validTypes,
 } from './tag-types.ts';

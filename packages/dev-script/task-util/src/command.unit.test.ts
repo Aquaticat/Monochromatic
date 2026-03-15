@@ -1,3 +1,10 @@
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  test,
+} from 'bun:test';
 import { exec, } from 'node:child_process';
 import {
   existsSync,
@@ -8,13 +15,6 @@ import {
 } from 'node:fs';
 import { join, } from 'node:path';
 import { promisify, } from 'node:util';
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  test,
-} from 'bun:test';
 
 const execAsync = promisify(exec,);
 
@@ -57,7 +57,7 @@ beforeEach(() => {
   // testScript fixture
   testScript = join(testDir, 'test-script.js',);
   writeFileSync(testScript, createTestScript(),);
-});
+},);
 
 afterEach(() => {
   // Clean up test script
@@ -67,7 +67,7 @@ afterEach(() => {
   // Clean up test directory
   if (existsSync(testDir,))
     rmSync(testDir, { recursive: true, },);
-});
+},);
 
 //endregion Fixture Setup
 

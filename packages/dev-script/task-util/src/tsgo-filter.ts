@@ -61,8 +61,8 @@ const DIAGNOSTIC_PATTERN = /\(\d+,\d+\): error TS\d+:/;
  * // false
  * ```
  */
-export function isDiagnosticLine(line: string): boolean {
-  return DIAGNOSTIC_PATTERN.test(line);
+export function isDiagnosticLine(line: string,): boolean {
+  return DIAGNOSTIC_PATTERN.test(line,);
 }
 
 /**
@@ -80,8 +80,8 @@ export function isDiagnosticLine(line: string): boolean {
  * // false
  * ```
  */
-export function isNodeModulesDiagnostic(line: string): boolean {
-  return line.includes('node_modules/') || line.includes('node_modules\\');
+export function isNodeModulesDiagnostic(line: string,): boolean {
+  return line.includes('node_modules/',) || line.includes('node_modules\\',);
 }
 
 /**
@@ -102,7 +102,7 @@ export function isNodeModulesDiagnostic(line: string): boolean {
  * // false
  * ```
  */
-export function isContinuationLine(line: string): boolean {
+export function isContinuationLine(line: string,): boolean {
   return line.length > 0 && (line[0] === ' ' || line[0] === '\t');
 }
 
@@ -131,40 +131,42 @@ export function isContinuationLine(line: string): boolean {
  * // result.hasRemainingErrors === true
  * ```
  */
-export function filterTsgoOutput(output: string): {
+export function filterTsgoOutput(output: string,): {
   readonly filtered: string;
   readonly hasRemainingErrors: boolean;
 } {
-  if (output.length === 0) {
+  if (output.length === 0)
     return { filtered: '', hasRemainingErrors: false, };
-  }
 
-  const lines = output.split('\n');
+  const lines = output.split('\n',);
   const kept: string[] = [];
   let droppingContinuation = false;
   let hasRemainingErrors = false;
 
   for (const line of lines) {
-    if (isDiagnosticLine(line)) {
-      if (isNodeModulesDiagnostic(line)) {
+    if (isDiagnosticLine(line,)) {
+      if (isNodeModulesDiagnostic(line,)) {
         // Drop this diagnostic and mark that following continuation lines should be dropped
         droppingContinuation = true;
-      } else {
+      }
+      else {
         // Keep this diagnostic
         droppingContinuation = false;
         hasRemainingErrors = true;
-        kept.push(line);
+        kept.push(line,);
       }
-    } else if (isContinuationLine(line) && droppingContinuation) {
+    }
+    else if (isContinuationLine(line,) && droppingContinuation) {
       // Drop continuation of a node_modules diagnostic
-    } else {
+    }
+    else {
       // Non-diagnostic, non-continuation line (e.g. summary, blank line)
       droppingContinuation = false;
-      kept.push(line);
+      kept.push(line,);
     }
   }
 
-  return { filtered: kept.join('\n'), hasRemainingErrors, };
+  return { filtered: kept.join('\n',), hasRemainingErrors, };
 }
 
 //endregion Output filtering
@@ -173,20 +175,19 @@ export function filterTsgoOutput(output: string): {
 
 /** Arguments forwarded to tsgo, defaulting to `--build` when none are provided */
 const tsgoArgs = process.argv.length > 2
-  ? process.argv.slice(2)
-  : ['--build'];
+  ? process.argv.slice(2,)
+  : ['--build',];
 
 try {
-  const result = await spawn('tsgo', [...tsgoArgs]);
+  const result = await spawn('tsgo', [...tsgoArgs,],);
 
   // tsgo succeeded (exit 0) -- pass output through unfiltered
-  if (result.stdout.length > 0) {
-    process.stdout.write(result.stdout);
-  }
-  if (result.stderr.length > 0) {
-    process.stderr.write(result.stderr);
-  }
-} catch (error) {
+  if (result.stdout.length > 0)
+    process.stdout.write(result.stdout,);
+  if (result.stderr.length > 0)
+    process.stderr.write(result.stderr,);
+}
+catch (error) {
   if (error !== null && typeof error === 'object' && 'exitCode' in error) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows to subprocess shape
     const subprocessError = error as {
@@ -197,39 +198,39 @@ try {
     };
 
     // Filter stdout (where tsgo writes diagnostics)
-    const stdoutResult = filterTsgoOutput(subprocessError.stdout ?? '');
+    const stdoutResult = filterTsgoOutput(subprocessError.stdout ?? '',);
     // Filter stderr as well in case tsgo writes diagnostics there
-    const stderrResult = filterTsgoOutput(subprocessError.stderr ?? '');
+    const stderrResult = filterTsgoOutput(subprocessError.stderr ?? '',);
 
     if (stdoutResult.filtered.length > 0) {
-      process.stdout.write(stdoutResult.filtered);
+      process.stdout.write(stdoutResult.filtered,);
       // Ensure trailing newline for clean terminal output
-      if (!stdoutResult.filtered.endsWith('\n')) {
-        process.stdout.write('\n');
-      }
+      if (!stdoutResult.filtered.endsWith('\n',))
+        process.stdout.write('\n',);
     }
 
     if (stderrResult.filtered.length > 0) {
-      process.stderr.write(stderrResult.filtered);
-      if (!stderrResult.filtered.endsWith('\n')) {
-        process.stderr.write('\n');
-      }
+      process.stderr.write(stderrResult.filtered,);
+      if (!stderrResult.filtered.endsWith('\n',))
+        process.stderr.write('\n',);
     }
 
     // Exit non-zero only if non-node_modules errors remain
-    if (stdoutResult.hasRemainingErrors || stderrResult.hasRemainingErrors) {
+    if (stdoutResult.hasRemainingErrors || stderrResult.hasRemainingErrors)
       process.exitCode = subprocessError.exitCode ?? 1;
-    }
 
     if (subprocessError.signalName !== undefined && subprocessError.signalName !== '') {
-      console.error(`[task-tsgo] tsgo terminated by signal: ${subprocessError.signalName}`);
+      console.error(
+        `[task-tsgo] tsgo terminated by signal: ${subprocessError.signalName}`,
+      );
       process.exitCode = 1;
     }
-  } else {
+  }
+  else {
     // Non-subprocess error (e.g. tsgo not found)
     console.error(
       `[task-tsgo] failed to execute tsgo: ${
-        error instanceof Error ? error.message : String(error)
+        error instanceof Error ? error.message : String(error,)
       }`,
     );
     process.exitCode = 1;

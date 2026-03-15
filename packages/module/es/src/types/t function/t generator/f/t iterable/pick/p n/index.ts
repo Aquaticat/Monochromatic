@@ -76,9 +76,8 @@ export async function* $<T,>(
   // Skip validation entirely when strict mode is disabled.
   if (strict && matched.size !== toPick.size) {
     for (const key of toPick) {
-      if (!matched.has(key,)) {
+      if (!matched.has(key,))
         throw new Error(`Key not found in iterable: ${String(key,)}`,);
-      }
     }
   }
 }

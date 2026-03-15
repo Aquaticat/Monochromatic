@@ -16,7 +16,7 @@ import {
   extractParamNames,
 } from '../tsdoc-utils.ts';
 
-import { createFunctionTsdocVisitor } from './tsdoc-visitors.ts';
+import { createFunctionTsdocVisitor, } from './tsdoc-visitors.ts';
 
 /**
  * Validates that `\@param` tag names match the function's actual parameter names.
@@ -49,48 +49,53 @@ export const checkParamNames: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      mismatch: '@param "{{docName}}" does not match parameter "{{paramName}}". For destructured parameters, document each destructured parameter.',
-      extra: '@param "{{docName}}" does not match any function parameter. For destructured parameters, document each destructured parameter.',
-      order: '@param tags are not in the same order as the function parameters. For destructured parameters, document each destructured parameter.',
+      mismatch:
+        '@param "{{docName}}" does not match parameter "{{paramName}}". For destructured parameters, document each destructured parameter.',
+      extra:
+        '@param "{{docName}}" does not match any function parameter. For destructured parameters, document each destructured parameter.',
+      order:
+        '@param tags are not in the same order as the function parameters. For destructured parameters, document each destructured parameter.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function checkParamNamesHandler(node, result): void {
-      const paramNames = extractParamNames(node);
-      const docParamNames = extractDocParamNames(result.docComment);
-      const destructuredNames = extractDestructuredParamNames(node);
+  createOnce(context: Context,): VisitorWithHooks {
+    return createFunctionTsdocVisitor(context,
+      function checkParamNamesHandler(node, result,): void {
+        const paramNames = extractParamNames(node,);
+        const docParamNames = extractDocParamNames(result.docComment,);
+        const destructuredNames = extractDestructuredParamNames(node,);
 
-      // Check each documented param exists in the function signature
-      docParamNames.forEach(function checkDocParam(docName, index): void {
-        // Allow @param tags that match destructured property names
-        if (destructuredNames.has(docName)) {
-          return;
-        }
+        // Check each documented param exists in the function signature
+        docParamNames.forEach(function checkDocParam(docName, index,): void {
+          // Allow @param tags that match destructured property names
+          if (destructuredNames.has(docName,))
+            return;
 
-        const correspondingParam = paramNames[index];
-        if (correspondingParam === undefined) {
-          // Extra @param with no matching parameter
-          if (!paramNames.includes(docName)) {
-            context.report({
-              node: result.comment,
-              messageId: 'extra',
-              data: { docName },
-            });
-          } else {
-            context.report({
-              node: result.comment,
-              messageId: 'order',
-            });
+          const correspondingParam = paramNames[index];
+          if (correspondingParam === undefined) {
+            // Extra @param with no matching parameter
+            if (!paramNames.includes(docName,)) {
+              context.report({
+                node: result.comment,
+                messageId: 'extra',
+                data: { docName, },
+              },);
+            }
+            else {
+              context.report({
+                node: result.comment,
+                messageId: 'order',
+              },);
+            }
           }
-        } else if (docName !== correspondingParam) {
-          context.report({
-            node: result.comment,
-            messageId: 'mismatch',
-            data: { docName, paramName: correspondingParam },
-          });
-        }
-      });
-    });
+          else if (docName !== correspondingParam) {
+            context.report({
+              node: result.comment,
+              messageId: 'mismatch',
+              data: { docName, paramName: correspondingParam, },
+            },);
+          }
+        },);
+      },);
   },
 };
 
@@ -122,25 +127,26 @@ export const requireParam: CreateOnceRule = {
       missing: 'Missing @param tag for "{{paramName}}".',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireParamHandler(node, result): void {
-      const paramNames = extractParamNames(node);
-      const docParamNames = new Set(extractDocParamNames(result.docComment));
+  createOnce(context: Context,): VisitorWithHooks {
+    return createFunctionTsdocVisitor(context,
+      function requireParamHandler(node, result,): void {
+        const paramNames = extractParamNames(node,);
+        const docParamNames = new Set(extractDocParamNames(result.docComment,),);
 
-      paramNames.forEach(function checkParam(paramName): void {
-        if (!docParamNames.has(paramName)) {
-          context.report({
-            node: result.comment,
-            messageId: 'missing',
-            data: { paramName },
-          });
-        }
-      });
-    });
+        paramNames.forEach(function checkParam(paramName,): void {
+          if (!docParamNames.has(paramName,)) {
+            context.report({
+              node: result.comment,
+              messageId: 'missing',
+              data: { paramName, },
+            },);
+          }
+        },);
+      },);
   },
 };
 
 export {
-  requireParamName,
   requireParamDescription,
+  requireParamName,
 } from './param-validation.ts';

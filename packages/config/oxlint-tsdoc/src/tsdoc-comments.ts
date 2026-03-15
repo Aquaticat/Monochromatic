@@ -46,7 +46,7 @@ export type TsdocParseResult = {
 const tsdocConfiguration: TSDocConfiguration = new TSDocConfiguration();
 
 /** Shared TSDoc parser instance reused across all rule invocations. */
-const tsdocParser: TSDocParser = new TSDocParser(tsdocConfiguration);
+const tsdocParser: TSDocParser = new TSDocParser(tsdocConfiguration,);
 
 /**
  * Checks whether a block comment is a TSDoc comment (starts with `*`).
@@ -55,8 +55,8 @@ const tsdocParser: TSDocParser = new TSDocParser(tsdocConfiguration);
  *
  * @returns true for `/** ... *\/` style comments
  */
-function isTsdocBlock(comment: Comment): boolean {
-  return comment.type === 'Block' && comment.value.startsWith('*');
+function isTsdocBlock(comment: Comment,): boolean {
+  return comment.type === 'Block' && comment.value.startsWith('*',);
 }
 
 /**
@@ -78,7 +78,7 @@ export const FALLBACK_ELIGIBLE_TYPES: ReadonlySet<string> = new Set([
   'TSEnumMember',
   'TSTypeAliasDeclaration',
   'TSInterfaceDeclaration',
-]);
+],);
 
 /**
  * Finds the TSDoc block comment associated with a node.
@@ -105,22 +105,22 @@ export const FALLBACK_ELIGIBLE_TYPES: ReadonlySet<string> = new Set([
  * const comment = findTsdocComment(node, context);
  * ```
  */
-export function findTsdocComment(node: Span, context: Context): Comment | undefined {
+export function findTsdocComment(node: Span, context: Context,): Comment | undefined {
   // Fast path: getCommentsBefore works for most declarations
-  const comments = context.sourceCode.getCommentsBefore(node);
+  const comments = context.sourceCode.getCommentsBefore(node,);
   for (let i = comments.length - 1; i >= 0; i--) {
     const c = comments[i];
-    if (c !== undefined && isTsdocBlock(c)) {
+    if (c !== undefined && isTsdocBlock(c,))
       return c;
-    }
   }
 
   // Only fall back for declaration-level nodes, not expressions inside them
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-  const nodeType = (node as unknown as Record<string, unknown>).type as string | undefined;
-  if (nodeType === undefined || !FALLBACK_ELIGIBLE_TYPES.has(nodeType)) {
+  const nodeType = (node as unknown as Record<string, unknown>).type as
+    | string
+    | undefined;
+  if (nodeType === undefined || !FALLBACK_ELIGIBLE_TYPES.has(nodeType,))
     return undefined;
-  }
 
   // Fallback: scan all comments for the closest TSDoc ending on the line
   // immediately before this node. Handles exported declarations where
@@ -131,19 +131,15 @@ export function findTsdocComment(node: Span, context: Context): Comment | undefi
 
   let best: Comment | undefined = undefined;
   for (const candidate of allComments) {
-    if (!isTsdocBlock(candidate)) {
+    if (!isTsdocBlock(candidate,))
       continue;
-    }
     const candidateEndLine = candidate.loc.end.line;
-    if (candidateEndLine >= nodeStartLine) {
+    if (candidateEndLine >= nodeStartLine)
       continue;
-    }
-    if (nodeStartLine - candidateEndLine > 1) {
+    if (nodeStartLine - candidateEndLine > 1)
       continue;
-    }
-    if (best === undefined || candidate.loc.end.line > best.loc.end.line) {
+    if (best === undefined || candidate.loc.end.line > best.loc.end.line)
       best = candidate;
-    }
   }
 
   return best;
@@ -171,14 +167,13 @@ export function parseTsdocForNode(
   node: Span,
   context: Context,
 ): TsdocParseResult | undefined {
-  const comment = findTsdocComment(node, context);
-  if (comment === undefined) {
+  const comment = findTsdocComment(node, context,);
+  if (comment === undefined)
     return undefined;
-  }
 
   // Reconstruct full comment text as the parser expects `/** ... */`
   const commentText = `/*${comment.value}*/`;
-  const parserContext = tsdocParser.parseString(commentText);
+  const parserContext = tsdocParser.parseString(commentText,);
 
   return {
     comment,

@@ -29,21 +29,23 @@ export const noForIn: CreateOnceRule = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Disallow for...in loops. Use Object.entries/keys/values with functional methods instead.',
+      description:
+        'Disallow for...in loops. Use Object.entries/keys/values with functional methods instead.',
       recommended: true,
     },
     messages: {
-      forbidden: 'for...in loops are banned. Use Object.entries/keys/values with functional methods instead.',
+      forbidden:
+        'for...in loops are banned. Use Object.entries/keys/values with functional methods instead.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      ForInStatement(node: Span): void {
+      ForInStatement(node: Span,): void {
         context.report({
           node,
           messageId: 'forbidden',
-        });
+        },);
       },
     } as VisitorWithHooks;
   },

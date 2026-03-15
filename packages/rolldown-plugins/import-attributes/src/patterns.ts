@@ -31,25 +31,25 @@ export const ATTR_QUERY_KEY = '__importattr';
  */
 export const STATIC_IMPORT_WITH_RE = new RegExp(
   '('
-  + '(?:import|export)'
-  + String.raw`\s+`
-  + '(?:'
-  + String.raw`(?:type\s+)?`
-  + '(?:'
-  + String.raw`(?:[\w$*{}\s,]+)\s+from`
-  + '|'
-  + ')'
-  + String.raw`\s+`
-  + ')'
-  + ')'
-  + '([\'"])'
-  + '([^\'"]+'
-  + ')'
-  + String.raw`(\2`
-  + String.raw`\s+with\s*\{\s*type\s*:\s*['"]`
-  + String.raw`(\w+)`
-  + String.raw`['"]\s*\}`
-  + ')',
+    + '(?:import|export)'
+    + String.raw`\s+`
+    + '(?:'
+    + String.raw`(?:type\s+)?`
+    + '(?:'
+    + String.raw`(?:[\w$*{}\s,]+)\s+from`
+    + '|'
+    + ')'
+    + String.raw`\s+`
+    + ')'
+    + ')'
+    + '([\'"])'
+    + '([^\'"]+'
+    + ')'
+    + String.raw`(\2`
+    + String.raw`\s+with\s*\{\s*type\s*:\s*['"]`
+    + String.raw`(\w+)`
+    + String.raw`['"]\s*\}`
+    + ')',
   'g',
 );
 
@@ -67,17 +67,17 @@ export const STATIC_IMPORT_WITH_RE = new RegExp(
  */
 export const DYNAMIC_IMPORT_WITH_RE = new RegExp(
   '('
-  + String.raw`import\s*\(`
-  + String.raw`\s*`
-  + ')'
-  + '([\'"])'
-  + '([^\'"]+'
-  + ')'
-  + String.raw`(\2`
-  + String.raw`\s*,\s*\{\s*with\s*:\s*\{\s*type\s*:\s*['"]`
-  + String.raw`(\w+)`
-  + String.raw`['"]\s*\}\s*\}`
-  + ')',
+    + String.raw`import\s*\(`
+    + String.raw`\s*`
+    + ')'
+    + '([\'"])'
+    + '([^\'"]+'
+    + ')'
+    + String.raw`(\2`
+    + String.raw`\s*,\s*\{\s*with\s*:\s*\{\s*type\s*:\s*['"]`
+    + String.raw`(\w+)`
+    + String.raw`['"]\s*\}\s*\}`
+    + ')',
   'g',
 );
 
@@ -98,17 +98,15 @@ export const DYNAMIC_IMPORT_WITH_RE = new RegExp(
  * extractAttrType('./file.sql'); // undefined
  * ```
  */
-export function extractAttrType(id: string): string | undefined {
-  const queryIndex = id.indexOf(`?${ATTR_QUERY_KEY}=`);
-  if (queryIndex === -1) {
+export function extractAttrType(id: string,): string | undefined {
+  const queryIndex = id.indexOf(`?${ATTR_QUERY_KEY}=`,);
+  if (queryIndex === -1)
     return undefined;
-  }
   const valueStart = queryIndex + ATTR_QUERY_KEY.length + 2;
-  const ampIndex = id.indexOf('&', valueStart);
-  if (ampIndex === -1) {
-    return id.slice(valueStart);
-  }
-  return id.slice(valueStart, ampIndex);
+  const ampIndex = id.indexOf('&', valueStart,);
+  if (ampIndex === -1)
+    return id.slice(valueStart,);
+  return id.slice(valueStart, ampIndex,);
 }
 
 /**
@@ -124,12 +122,11 @@ export function extractAttrType(id: string): string | undefined {
  * stripAttrQuery('./file.sql?__importattr=text'); // './file.sql'
  * ```
  */
-export function stripAttrQuery(id: string): string {
-  const queryIndex = id.indexOf(`?${ATTR_QUERY_KEY}=`);
-  if (queryIndex === -1) {
+export function stripAttrQuery(id: string,): string {
+  const queryIndex = id.indexOf(`?${ATTR_QUERY_KEY}=`,);
+  if (queryIndex === -1)
     return id;
-  }
-  return id.slice(0, queryIndex);
+  return id.slice(0, queryIndex,);
 }
 
 //endregion Query helpers

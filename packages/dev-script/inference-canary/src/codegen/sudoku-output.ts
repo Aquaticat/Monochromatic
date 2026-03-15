@@ -19,6 +19,8 @@
  * splitOutputSections('534678912\n...\n---\nUNSOLVABLE'); // ['534678912\n...', 'UNSOLVABLE']
  * ```
  */
-export function splitOutputSections(output: string): string[] {
-  return output.trim().split(/\n-+\n/).map(function trimSection(puzzleSection): string { return puzzleSection.trim(); });
+export function splitOutputSections(output: string,): string[] {
+  return output.trim().split(/\n-+\n/,).map(function trimSection(puzzleSection,): string {
+    return puzzleSection.trim();
+  },);
 }

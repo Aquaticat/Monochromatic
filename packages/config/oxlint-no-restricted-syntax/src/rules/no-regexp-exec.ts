@@ -12,18 +12,16 @@ import type {
  *
  * @returns true when node is clearly a RegExp
  */
-function isRegExpNode(node: Record<string, unknown>): boolean {
-  const {type} = node;
+function isRegExpNode(node: Record<string, unknown>,): boolean {
+  const { type, } = node;
   /* oxc serializes RegExpLiteral as ESTree `Literal` with a `regex` property. */
-  if (type === 'Literal' && node['regex'] !== undefined && node['regex'] !== null) {
+  if (type === 'Literal' && node['regex'] !== undefined && node['regex'] !== null)
     return true;
-  }
   if (type === 'NewExpression') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const callee = node['callee'] as Record<string, unknown> | null | undefined;
-    if (callee !== null && callee !== undefined) {
+    if (callee !== null && callee !== undefined)
       return callee['type'] === 'Identifier' && callee['name'] === 'RegExp';
-    }
   }
   return false;
 }
@@ -59,47 +57,45 @@ export const noRegexpExec: CreateOnceRule = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Disallow RegExp.prototype.exec(). Use String.prototype.match() or matchAll() instead.',
+      description:
+        'Disallow RegExp.prototype.exec(). Use String.prototype.match() or matchAll() instead.',
       recommended: true,
     },
     messages: {
-      forbidden: 'RegExp.exec() is banned. Use str.match(regexp) or str.matchAll(regexp) instead.',
+      forbidden:
+        'RegExp.exec() is banned. Use str.match(regexp) or str.matchAll(regexp) instead.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      CallExpression(node: Span): void {
+      CallExpression(node: Span,): void {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const callNode = node as Span & Record<string, unknown>;
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const callee = callNode['callee'] as Record<string, unknown> | null | undefined;
-        if (callee === undefined || callee === null) {
+        if (callee === undefined || callee === null)
           return;
-        }
 
         /* oxc uses `MemberExpression` with a `computed` boolean, not separate Static/Computed types. */
-        if (callee['type'] !== 'MemberExpression' || callee['computed'] === true) {
+        if (callee['type'] !== 'MemberExpression' || callee['computed'] === true)
           return;
-        }
 
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const property = callee['property'] as Record<string, unknown> | null | undefined;
-        if (property === undefined || property === null || property['name'] !== 'exec') {
+        if (property === undefined || property === null || property['name'] !== 'exec')
           return;
-        }
 
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const object = callee['object'] as Record<string, unknown> | null | undefined;
-        if (object === undefined || object === null) {
+        if (object === undefined || object === null)
           return;
-        }
 
-        if (isRegExpNode(object)) {
+        if (isRegExpNode(object,)) {
           context.report({
             node,
             messageId: 'forbidden',
-          });
+          },);
         }
       },
     } as VisitorWithHooks;

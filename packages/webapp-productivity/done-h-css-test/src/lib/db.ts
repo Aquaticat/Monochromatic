@@ -9,14 +9,14 @@
  *
  * The default export (`db`) is the open Database instance used by `lib/db/tasks.ts`.
  */
-import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
-import { connect } from "@tursodatabase/database";
-import { getArgumentValue } from "./args.ts";
-import { runMigrations } from "./db-migrations.ts";
+import { connect, } from '@tursodatabase/database';
+import { mkdirSync, } from 'node:fs';
+import { dirname, } from 'node:path';
+import { getArgumentValue, } from './args.ts';
+import { runMigrations, } from './db-migrations.ts';
 
 /** Default database file path when neither `--db=` nor `DB_PATH` env var is provided. */
-const DEFAULT_DATABASE_PATH = "./data/done.db";
+const DEFAULT_DATABASE_PATH = './data/done.db';
 
 /**
  * Strips the `file:` URI prefix if present, returning a plain filesystem path.
@@ -25,11 +25,10 @@ const DEFAULT_DATABASE_PATH = "./data/done.db";
  *
  * @returns Plain filesystem path without URI prefix
  */
-function normalizeDatabasePath(value: string): string {
-  if (!value.startsWith("file:")) {
+function normalizeDatabasePath(value: string,): string {
+  if (!value.startsWith('file:',))
     return value;
-  }
-  return value.slice("file:".length);
+  return value.slice('file:'.length,);
 }
 
 /**
@@ -39,10 +38,10 @@ function normalizeDatabasePath(value: string): string {
  * @returns Resolved filesystem path to the database file
  */
 function resolveDatabasePath(): string {
-  const argumentPath = getArgumentValue("db");
+  const argumentPath = getArgumentValue('db',);
   const environmentPath = process.env.DB_PATH;
   const rawPath = argumentPath ?? environmentPath ?? DEFAULT_DATABASE_PATH;
-  return normalizeDatabasePath(rawPath);
+  return normalizeDatabasePath(rawPath,);
 }
 
 /**
@@ -51,23 +50,22 @@ function resolveDatabasePath(): string {
  *
  * @param databasePath - Resolved filesystem path
  */
-function ensureDatabaseDirectoryExists(databasePath: string): void {
-  if (databasePath === ":memory:") {
+function ensureDatabaseDirectoryExists(databasePath: string,): void {
+  if (databasePath === ':memory:')
     return;
-  }
-  const directoryPath = dirname(databasePath);
-  mkdirSync(directoryPath, { recursive: true });
+  const directoryPath = dirname(databasePath,);
+  mkdirSync(directoryPath, { recursive: true, },);
 }
 
 /** Resolved database file path. */
 const databasePath = resolveDatabasePath();
-ensureDatabaseDirectoryExists(databasePath);
+ensureDatabaseDirectoryExists(databasePath,);
 
 /** Open SQLite database connection with WAL mode and foreign keys. */
-const db = await connect(databasePath, { experimental: ["triggers"] });
-await db.exec("PRAGMA journal_mode = WAL");
-await db.exec("PRAGMA foreign_keys = ON");
+const db = await connect(databasePath, { experimental: ['triggers',], },);
+await db.exec('PRAGMA journal_mode = WAL',);
+await db.exec('PRAGMA foreign_keys = ON',);
 
-await runMigrations(db);
+await runMigrations(db,);
 
 export default db;

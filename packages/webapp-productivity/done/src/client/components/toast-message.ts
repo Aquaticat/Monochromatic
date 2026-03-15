@@ -1,5 +1,7 @@
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { css } from "../css.ts";
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+import { css, } from '../css.ts';
 
 /** Z-index for toast positioning above page content. */
 const TOAST_Z_INDEX = 1_000;
@@ -11,7 +13,7 @@ const STYLES = css(`
     inset-block-end: 1rem;
     inset-inline-start: 50%;
     transform: translateX(-50%);
-    z-index: ${String(TOAST_Z_INDEX)};
+    z-index: ${String(TOAST_Z_INDEX,)};
   }
   .content {
     background-color: var(--red-bg);
@@ -19,7 +21,7 @@ const STYLES = css(`
     padding-block: 0.55rem;
     padding-inline: 0.85rem;
   }
-`);
+`,);
 
 /** Auto-dismiss duration in milliseconds. */
 const DISMISS_MS = 3_000;
@@ -38,7 +40,7 @@ class ToastMessage extends HTMLElement {
   /** Initializes the shadow root. */
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: "open" });
+    this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
   /** Renders content and schedules auto-removal after `DISMISS_MS`. */
@@ -46,28 +48,29 @@ class ToastMessage extends HTMLElement {
     this.#render();
     this.#timer = setTimeout(function dismiss(): void {
       this.remove();
-    }.bind(this), DISMISS_MS);
+    }
+      .bind(this,), DISMISS_MS,);
   }
 
   /** Cancels the auto-dismiss timer when the element is removed early. */
   disconnectedCallback(): void {
     if (this.#timer !== null) {
-      clearTimeout(this.#timer);
+      clearTimeout(this.#timer,);
       this.#timer = null;
     }
   }
 
   /** Renders the toast content into the shadow root. */
   #render(): void {
-    const message = this.getAttribute("message") ?? "";
+    const message = this.getAttribute('message',) ?? '';
     this.#shadow.replaceChildren(
-      h({ tag: "style", text: STYLES }),
-      h({ tag: "div", class: "content", text: message }),
+      h({ tag: 'style', text: STYLES, },),
+      h({ tag: 'div', class: 'content', text: message, },),
     );
   }
 }
 
-customElements.define("toast-message", ToastMessage);
+customElements.define('toast-message', ToastMessage,);
 
 /**
  * Shows a toast notification that auto-dismisses after 3 seconds.
@@ -75,10 +78,10 @@ customElements.define("toast-message", ToastMessage);
  *
  * @param message - Text to display in the toast
  */
-export function showToast(message: string): void {
-  document.querySelector<HTMLElement>("toast-message")?.remove();
+export function showToast(message: string,): void {
+  document.querySelector<HTMLElement>('toast-message',)?.remove();
 
-  const toast = document.createElement("toast-message");
-  toast.setAttribute("message", message);
-  document.body.append(toast);
+  const toast = document.createElement('toast-message',);
+  toast.setAttribute('message', message,);
+  document.body.append(toast,);
 }

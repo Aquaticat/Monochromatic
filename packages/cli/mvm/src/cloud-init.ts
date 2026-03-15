@@ -1,10 +1,19 @@
-import { writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { writeFile, } from 'node:fs/promises';
+import { join, } from 'node:path';
 
-import { templateRuncmd, vmAutologin } from './cloud-init-init-systems.ts';
-import { createIso } from './iso9660.ts';
-import { l, tagged } from './log.ts';
-import type { GuestConfig, LinuxGuestConfig } from './registry.ts';
+import {
+  templateRuncmd,
+  vmAutologin,
+} from './cloud-init-init-systems.ts';
+import { createIso, } from './iso9660.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
+import type {
+  GuestConfig,
+  LinuxGuestConfig,
+} from './registry.ts';
 
 /**
  * Narrows a {@link GuestConfig} to {@link LinuxGuestConfig} after the caller
@@ -21,7 +30,7 @@ import type { GuestConfig, LinuxGuestConfig } from './registry.ts';
  * linux.initSystem; // safe
  * ```
  */
-function asLinux(guest: GuestConfig): LinuxGuestConfig {
+function asLinux(guest: GuestConfig,): LinuxGuestConfig {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- caller has already ruled out Windows via early return
   return guest as LinuxGuestConfig;
 }
@@ -43,15 +52,15 @@ function asLinux(guest: GuestConfig): LinuxGuestConfig {
  * vmUserData({ name: 'my-vm', guest: IMAGES['ubuntu'] });
  * ```
  */
-function vmUserData({ guest, name }: { guest: GuestConfig; name: string }): string {
-  const linux = asLinux(guest);
+function vmUserData({ guest, name, }: { guest: GuestConfig; name: string; },): string {
+  const linux = asLinux(guest,);
   return `#cloud-config
 hostname: ${name}
 users:
   - name: ${linux.defaultUser}
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: ${linux.shell}
-${vmAutologin(linux.initSystem, linux.defaultUser)}`;
+${vmAutologin(linux.initSystem, linux.defaultUser,)}`;
 }
 
 /**
@@ -70,8 +79,10 @@ ${vmAutologin(linux.initSystem, linux.defaultUser)}`;
  * templateUserData({ name: 'template-setup', guest: IMAGES['ubuntu'] });
  * ```
  */
-function templateUserData({ guest, name }: { guest: GuestConfig; name: string }): string {
-  const linux = asLinux(guest);
+function templateUserData(
+  { guest, name, }: { guest: GuestConfig; name: string; },
+): string {
+  const linux = asLinux(guest,);
   return `#cloud-config
 hostname: ${name}
 users:
@@ -80,7 +91,7 @@ users:
     shell: ${linux.shell}
 packages:
   - qemu-guest-agent
-${templateRuncmd(linux.initSystem)}`;
+${templateRuncmd(linux.initSystem,)}`;
 }
 
 //endregion User-data generators
@@ -118,25 +129,25 @@ ${templateRuncmd(linux.initSystem)}`;
  * // winSeed => undefined
  * ```
  */
-export async function createSeedIso({ guest, name, template = false, vmDir }: {
+export async function createSeedIso({ guest, name, template = false, vmDir, }: {
   guest: GuestConfig;
   name: string;
   template?: boolean;
   vmDir: string;
-}): Promise<string | undefined> {
+},): Promise<string | undefined> {
   if (guest.osFamily === 'windows') {
-    const rl = tagged({ tag: createSeedIso.name, l });
-    rl.info('skipping seed ISO for Windows guest (uses guest agent for provisioning)');
+    const rl = tagged({ tag: createSeedIso.name, l, },);
+    rl.info('skipping seed ISO for Windows guest (uses guest agent for provisioning)',);
     return undefined;
   }
 
-  const rl = tagged({ tag: createSeedIso.name, l, });
+  const rl = tagged({ tag: createSeedIso.name, l, },);
 
   const encoder = new TextEncoder();
   const userData = encoder.encode(
     template
-      ? templateUserData({ guest, name })
-      : vmUserData({ guest, name }),
+      ? templateUserData({ guest, name, },)
+      : vmUserData({ guest, name, },),
   );
 
   const metaData = encoder.encode(
@@ -151,11 +162,11 @@ local-hostname: ${name}
       { data: metaData, name: 'meta-data', },
     ],
     volumeId: 'cidata',
-  });
+  },);
 
-  const seedPath = join(vmDir, 'seed.iso');
-  await writeFile(seedPath, iso);
-  rl.info(`created seed ISO at ${seedPath}`);
+  const seedPath = join(vmDir, 'seed.iso',);
+  await writeFile(seedPath, iso,);
+  rl.info(`created seed ISO at ${seedPath}`,);
   return seedPath;
 }
 

@@ -8,10 +8,13 @@
  * @module
  */
 
-import { l as parentLogger, tagged } from './log.ts';
+import {
+  l as parentLogger,
+  tagged,
+} from './log.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'xdg-paths', l: parentLogger });
+const l = tagged({ tag: 'xdg-paths', l: parentLogger, },);
 
 /**
  * Builds ordered list of xdg-terminals.list config file paths to search.
@@ -28,33 +31,35 @@ const l = tagged({ tag: 'xdg-paths', l: parentLogger });
  * // ~/.config/kde-xdg-terminals.list, ~/.config/xdg-terminals.list, ...
  * ```
  */
-export function configPaths({ desktops }: { desktops: readonly string[] }): readonly string[] {
+export function configPaths(
+  { desktops, }: { desktops: readonly string[]; },
+): readonly string[] {
   const home = Bun.env['HOME'] ?? '/tmp';
   const configHome = Bun.env['XDG_CONFIG_HOME'] ?? `${home}/.config`;
-  const configDirs = (Bun.env['XDG_CONFIG_DIRS'] ?? '/etc/xdg').split(':');
-  const dataDirs = (Bun.env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share').split(':');
+  const configDirs = (Bun.env['XDG_CONFIG_DIRS'] ?? '/etc/xdg').split(':',);
+  const dataDirs = (Bun.env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share').split(
+    ':',
+  );
 
   const paths: string[] = [];
 
   //region Config directories (XDG_CONFIG_HOME + XDG_CONFIG_DIRS)
-  for (const dir of [configHome, ...configDirs]) {
-    for (const desktop of desktops) {
-      paths.push(`${dir}/${desktop}-xdg-terminals.list`);
-    }
-    paths.push(`${dir}/xdg-terminals.list`);
+  for (const dir of [configHome, ...configDirs,]) {
+    for (const desktop of desktops)
+      paths.push(`${dir}/${desktop}-xdg-terminals.list`,);
+    paths.push(`${dir}/xdg-terminals.list`,);
   }
   //endregion
 
   //region Data directories (XDG_DATA_DIRS/xdg-terminal-exec/)
   for (const dir of dataDirs) {
-    for (const desktop of desktops) {
-      paths.push(`${dir}/xdg-terminal-exec/${desktop}-xdg-terminals.list`);
-    }
-    paths.push(`${dir}/xdg-terminal-exec/xdg-terminals.list`);
+    for (const desktop of desktops)
+      paths.push(`${dir}/xdg-terminal-exec/${desktop}-xdg-terminals.list`,);
+    paths.push(`${dir}/xdg-terminal-exec/xdg-terminals.list`,);
   }
   //endregion
 
-  l.debug(`config paths: ${JSON.stringify(paths)}`);
+  l.debug(`config paths: ${JSON.stringify(paths,)}`,);
   return paths;
 }
 
@@ -74,17 +79,19 @@ export function configPaths({ desktops }: { desktops: readonly string[] }): read
 export function applicationDirs(): readonly string[] {
   const home = Bun.env['HOME'] ?? '/tmp';
   const dataHome = Bun.env['XDG_DATA_HOME'] ?? `${home}/.local/share`;
-  const dataDirs = (Bun.env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share').split(':');
+  const dataDirs = (Bun.env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share').split(
+    ':',
+  );
 
   /** Ascending priority: system dirs first, user dir last */
   const dirs = [
-    ...dataDirs.toReversed().map(function ensureTrailingSlash(dir) {
-      return `${dir.replace(/\/+$/, '')}/applications/`;
-    }),
+    ...dataDirs.toReversed().map(function ensureTrailingSlash(dir,) {
+      return `${dir.replace(/\/+$/, '',)}/applications/`;
+    },),
     `${dataHome}/applications/`,
   ];
 
-  l.debug(`application dirs: ${JSON.stringify(dirs)}`);
+  l.debug(`application dirs: ${JSON.stringify(dirs,)}`,);
   return dirs;
 }
 
@@ -95,5 +102,12 @@ export function applicationDirs(): readonly string[] {
  */
 export function currentDesktops(): readonly string[] {
   const raw = Bun.env['XDG_CURRENT_DESKTOP'] ?? '';
-  return raw.split(':').filter(function nonEmpty(s) { return s.length > 0; }).map(function lower(s) { return s.toLowerCase(); });
+  return raw
+    .split(':',)
+    .filter(function nonEmpty(s,) {
+      return s.length > 0;
+    },)
+    .map(function lower(s,) {
+      return s.toLowerCase();
+    },);
 }

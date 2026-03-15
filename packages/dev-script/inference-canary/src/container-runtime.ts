@@ -5,7 +5,7 @@
  * Other container submodules import the resolved CONTAINER_RUNTIME from here.
  */
 
-import { execFileSync } from 'node:child_process';
+import { execFileSync, } from 'node:child_process';
 
 //region Configuration -- timeout, image tag, and buffer size shared by container-exec.ts
 
@@ -43,14 +43,18 @@ const WHICH_CMD = process.platform === 'win32' ? 'where.exe' : 'which';
  * whichSync('podman'); // => "/usr/bin/podman" or null
  * ```
  */
-function whichSync(name: string): string | null {
+function whichSync(name: string,): string | null {
   try {
     // `where.exe` may return multiple lines; take the first match
     /** First line of which output, containing the resolved binary path. */
-    const firstLine = execFileSync(WHICH_CMD, [name], { encoding: 'utf8' }).trim().split('\n')[0];
-    if (firstLine === undefined) return null;
+    const firstLine = execFileSync(WHICH_CMD, [name,], { encoding: 'utf8', },)
+      .trim()
+      .split('\n',)[0];
+    if (firstLine === undefined)
+      return null;
     return firstLine.trim();
-  } catch {
+  }
+  catch {
     return null;
   }
 }
@@ -63,15 +67,17 @@ function whichSync(name: string): string | null {
  * @throws if neither podman nor docker is found on PATH
  */
 function detectRuntime(): string {
-  for (const runtime of ['podman', 'docker'] as const) {
-    const resolved = whichSync(runtime);
+  for (const runtime of ['podman', 'docker',] as const) {
+    const resolved = whichSync(runtime,);
     if (resolved !== null) {
-      console.log(`    [container] using runtime: ${resolved}`);
+      console.log(`    [container] using runtime: ${resolved}`,);
       return runtime;
     }
-    console.log(`    [container] ${runtime} not found on PATH`);
+    console.log(`    [container] ${runtime} not found on PATH`,);
   }
-  throw new Error('Neither podman nor docker found. Install one to run code-gen probes.');
+  throw new Error(
+    'Neither podman nor docker found. Install one to run code-gen probes.',
+  );
 }
 
 /** Resolved container runtime binary name, detected at module load time */

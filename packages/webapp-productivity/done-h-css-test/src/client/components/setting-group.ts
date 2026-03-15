@@ -1,37 +1,49 @@
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { cssCalc, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
-import { $ as css } from "../css.ts";
-import { flexColumn, flexRow, focusOutline } from "../mixins.ts";
-import { buttonOutlined } from "../mixins-composed.ts";
+import {
+  cssCalc,
+  cssRem,
+  cssVar,
+} from '@monochromatic-dev/module-es/h-css';
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+import { $ as css, } from '../css.ts';
+import { buttonOutlined, } from '../mixins-composed.ts';
+import {
+  flexColumn,
+  flexRow,
+  focusOutline,
+} from '../mixins.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import "./toggle-switch.ts";
+import './toggle-switch.ts';
 
 /** Compiled CSS string for `<setting-group>` Shadow DOM. */
 const STYLES = [
   css({
     rule: ':host',
-    decls: { ...flexColumn(), gap: cssVar('min-padding') },
-  }),
+    decls: { ...flexColumn(), gap: cssVar('min-padding',), },
+  },),
   css({
     rule: '.header',
-    decls: { ...flexRow(), gap: cssVar('min-gap') },
-  }),
+    decls: { ...flexRow(), gap: cssVar('min-gap',), },
+  },),
   css({
     rule: '.label',
-    decls: { 'font-size': cssRem(1), 'flex-grow': 1 },
-  }),
+    decls: { 'font-size': cssRem(1,), 'flex-grow': 1, },
+  },),
   css({
     rule: '.desc',
-    decls: { 'font-size': cssCalc(`${cssRem(15)} / 16`), 'line-height': 1.5, color: cssVar('fg-weaker') },
-  }),
+    decls: { 'font-size': cssCalc(`${cssRem(15,)} / 16`,), 'line-height': 1.5,
+      color: cssVar('fg-weaker',), },
+  },),
   css({
     rule: 'button',
     decls: buttonOutlined(),
     children: [
-      css({ rule: '&:focus-visible', decls: focusOutline() }),
+      css({ rule: '&:focus-visible', decls: focusOutline(), },),
     ],
-  }),
-].join('');
+  },),
+]
+  .join('',);
 
 /**
  * `<setting-group>` -- a single settings row with a label, description,
@@ -44,38 +56,39 @@ class SettingGroup extends HTMLElement {
   /** Initializes the shadow root. */
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: "open" });
+    this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
   /** Renders the setting label, optional description, and action control. */
   connectedCallback(): void {
-    const label = this.getAttribute("label") ?? "";
-    const description = this.getAttribute("description") ?? "";
-    const mode = this.getAttribute("mode") ?? "toggle";
-    const on = this.hasAttribute("on");
+    const label = this.getAttribute('label',) ?? '';
+    const description = this.getAttribute('description',) ?? '';
+    const mode = this.getAttribute('mode',) ?? 'toggle';
+    const on = this.hasAttribute('on',);
 
-    const actionElement = mode === "button"
-      ? h({ tag: "button", attrs: { part: "action" }, children: [h({ tag: "slot", attrs: { name: "action" }, text: "connect?" })] })
-      : h({ tag: "toggle-switch", attrs: on ? { on: "" } : {} });
+    const actionElement = mode === 'button'
+      ? h({ tag: 'button', attrs: { part: 'action', }, children: [
+        h({ tag: 'slot', attrs: { name: 'action', }, text: 'connect?', },),
+      ], },)
+      : h({ tag: 'toggle-switch', attrs: on ? { on: '', } : {}, },);
 
     const children: (HTMLElement)[] = [
-      h({ tag: "style", text: STYLES }),
+      h({ tag: 'style', text: STYLES, },),
       h({
-        tag: "div",
-        class: "header",
+        tag: 'div',
+        class: 'header',
         children: [
-          h({ tag: "span", class: "label", text: label }),
+          h({ tag: 'span', class: 'label', text: label, },),
           actionElement,
         ],
-      }),
+      },),
     ];
 
-    if (description.length > 0) {
-      children.push(h({ tag: "p", class: "desc", text: description }));
-    }
+    if (description.length > 0)
+      children.push(h({ tag: 'p', class: 'desc', text: description, },),);
 
-    this.#shadow.replaceChildren(...children);
+    this.#shadow.replaceChildren(...children,);
   }
 }
 
-customElements.define("setting-group", SettingGroup);
+customElements.define('setting-group', SettingGroup,);

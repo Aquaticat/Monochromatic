@@ -5,7 +5,7 @@
  * `CssDeclarations` type accepts in any property value position.
  */
 
-import type { CssValue } from './values.ts';
+import type { CssValue, } from './values.ts';
 
 //region Length constructors
 
@@ -221,10 +221,11 @@ export function cssTurn(n: number,): CssValue {
  * cssOklch({ l: 0.5, c: 0.2, h: 250, a: 0.5 }) // 'oklch(0.5 0.2 250 / 0.5)'
  * ```
  */
-export function cssOklch({ l, c, h, a, }: { l: number; c: number; h: number; a?: number },): CssValue {
-  if (a !== undefined) {
+export function cssOklch(
+  { l, c, h, a, }: { l: number; c: number; h: number; a?: number; },
+): CssValue {
+  if (a !== undefined)
     return `oklch(${l} ${c} ${h} / ${a})` as CssValue;
-  }
 
   return `oklch(${l} ${c} ${h})` as CssValue;
 }
@@ -249,10 +250,11 @@ export function cssOklch({ l, c, h, a, }: { l: number; c: number; h: number; a?:
  * // 'color(display-p3 1 0 0)'
  * ```
  */
-export function cssColorFn({ space, channels, a, }: { space: string; channels: string; a?: number },): CssValue {
-  if (a !== undefined) {
+export function cssColorFn(
+  { space, channels, a, }: { space: string; channels: string; a?: number; },
+): CssValue {
+  if (a !== undefined)
     return `color(${space} ${channels} / ${a})` as CssValue;
-  }
 
   return `color(${space} ${channels})` as CssValue;
 }
@@ -322,7 +324,7 @@ export function cssNum(n: number,): CssValue {
  * @returns branded CSS integer string (e.g. `'10'`)
  */
 export function cssInt(n: number,): CssValue {
-  return `${Math.round(n)}` as CssValue;
+  return `${Math.round(n,)}` as CssValue;
 }
 
 //endregion
@@ -417,7 +419,7 @@ export function cssScale(factor: number,): CssValue {
  * ```
  */
 export function cssCubicBezier(values: readonly number[],): CssValue {
-  return `cubic-bezier(${values.join(', ')})` as CssValue;
+  return `cubic-bezier(${values.join(', ',)})` as CssValue;
 }
 
 /**
@@ -440,7 +442,7 @@ export function cssCubicBezier(values: readonly number[],): CssValue {
  * ```
  */
 export function cssCommaList(values: readonly (CssValue | string)[],): CssValue {
-  return values.join(', ') as CssValue;
+  return values.join(', ',) as CssValue;
 }
 
 /**
@@ -463,8 +465,10 @@ export function cssCommaList(values: readonly (CssValue | string)[],): CssValue 
  * // '0 -0.25rem 1rem oklch(0 0 0 / 0.2)'
  * ```
  */
-export function cssCompounded(values: readonly (CssValue | string | number)[],): CssValue {
-  return values.join(' ') as CssValue;
+export function cssCompounded(
+  values: readonly (CssValue | string | number)[],
+): CssValue {
+  return values.join(' ',) as CssValue;
 }
 
 //endregion

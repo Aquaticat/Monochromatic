@@ -26,14 +26,18 @@ export type Post = {
 };
 
 /** All blog posts with extracted `lang` and `name` fields from the collection ID. */
-export const posts = (await getCollection('blog',)).map(function extractPost(post: any,) { return {
-  ...post,
-  lang: post.id.split('/',)[0] ?? '',
-  name: post.id.split('/',)[1] ?? '',
-}; }) as [Post, ...Post[],];
+export const posts = (await getCollection('blog',)).map(function extractPost(post: any,) {
+  return {
+    ...post,
+    lang: post.id.split('/',)[0] ?? '',
+    name: post.id.split('/',)[1] ?? '',
+  };
+},) as [Post, ...Post[],];
 
 /** Posts grouped by language code (e.g. `{ en: [...], zh: [...] }`). */
-export const postsGroupedByLang = Object.groupBy(posts, function byLang(post) { return post.lang; },) as Record<
+export const postsGroupedByLang = Object.groupBy(posts, function byLang(post,) {
+  return post.lang;
+},) as Record<
   string,
   [Post, ...Post[],]
 >;
@@ -42,7 +46,9 @@ export const postsGroupedByLang = Object.groupBy(posts, function byLang(post) { 
 export const langs = Object.keys(postsGroupedByLang,) as [string, ...string[],];
 
 /** Posts grouped by slug name across all languages. */
-export const postsGroupedByName = Object.groupBy(posts, function byName(post) { return post.name; },) as Record<
+export const postsGroupedByName = Object.groupBy(posts, function byName(post,) {
+  return post.name;
+},) as Record<
   string,
   [Post, ...Post[],]
 >;
@@ -55,27 +61,42 @@ export const names = Object.keys(postsGroupedByName,) as [
 
 /** All unique tags used across all blog posts. */
 export const tags = [
-  ...new Set(posts.flatMap(function getTags(post) { return post.data.tags; }),),
+  ...new Set(posts.flatMap(function getTags(post,) {
+    return post.data.tags;
+  },),),
 ] as [string, ...string[],];
 
 /** Posts grouped by tag, each tag mapping to its matching posts. */
 export const postsGroupedByTag = Object.fromEntries(
-  tags.map(function tagEntry(tag) { return [tag, posts.filter(function hasTag(post) { return post.data.tags.includes(tag,); }),]; }),
+  tags.map(function tagEntry(tag,) {
+    return [tag, posts.filter(function hasTag(post,) {
+      return post.data.tags.includes(tag,);
+    },),];
+  },),
 ) as Record<string, [Post, ...Post[],]>;
 
 /** Posts grouped first by language, then by tag within each language. */
-export const postsGroupedByLangThenTag: Record<string, Record<string, Post[]>> = Object.fromEntries(
-  langs.map(
-    function langEntry(lang) { return [
-      lang,
-      Object.fromEntries(
-        Object.entries(postsGroupedByTag,).map(function filterByLang([tag, tagPosts,],) { return [
-          tag,
-          tagPosts.filter(function matchLang(tagPost) { return tagPost.lang === lang; }),
-        ]; }),
-      ),
-    ]; },
-  ),
-);
+export const postsGroupedByLangThenTag: Record<string, Record<string, Post[]>> = Object
+  .fromEntries(
+    langs.map(
+      function langEntry(lang,) {
+        return [
+          lang,
+          Object.fromEntries(
+            Object.entries(postsGroupedByTag,).map(
+              function filterByLang([tag, tagPosts,],) {
+                return [
+                  tag,
+                  tagPosts.filter(function matchLang(tagPost,) {
+                    return tagPost.lang === lang;
+                  },),
+                ];
+              },
+            ),
+          ),
+        ];
+      },
+    ),
+  );
 
-export { i18n } from './i18n.ts';
+export { i18n, } from './i18n.ts';

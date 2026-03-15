@@ -9,7 +9,7 @@
 //region Configuration
 
 /** Default URL for the chat completions endpoint. */
-const DEFAULT_COMPLETIONS_URL = "http://localhost:8080/v1/chat/completions";
+const DEFAULT_COMPLETIONS_URL = 'http://localhost:8080/v1/chat/completions';
 
 /** Resolved endpoint URL, evaluated once at import time. */
 const completionsUrl = process.env.CHAT_COMPLETIONS_URL ?? DEFAULT_COMPLETIONS_URL;
@@ -45,16 +45,15 @@ function isRateLimited(): boolean {
 
   // Discard entries older than the window
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- array index 0 is checked via length guard
-  while (requestTimestamps.length > 0 && (requestTimestamps[0] as number) < cutoff) {
+  while (requestTimestamps.length > 0 && (requestTimestamps[0] as number) < cutoff)
     requestTimestamps.shift();
-  }
 
   return requestTimestamps.length >= MAX_REQUESTS_PER_WINDOW;
 }
 
 /** Records the current timestamp in the sliding window. */
 function recordRequest(): void {
-  requestTimestamps.push(Date.now());
+  requestTimestamps.push(Date.now(),);
 }
 
 //endregion Rate limiter
@@ -64,7 +63,7 @@ function recordRequest(): void {
 /** Message in a chat conversation. */
 export type ChatMessage = {
   /** Role of the message author. */
-  role: "system" | "user" | "assistant";
+  role: 'system' | 'user' | 'assistant';
   /** Text content of the message. */
   content: string;
 };
@@ -84,7 +83,7 @@ export type ChatCompletionOptions = {
 /** Single choice from a chat completion response. */
 type ChatCompletionResponseChoice = {
   /** Message content of the choice. */
-  message: { role: string; content: string };
+  message: { role: string; content: string; };
 };
 
 /** Full chat completion response from the API. */
@@ -95,8 +94,8 @@ type ChatCompletionResponse = {
 
 /** Discriminated union result of a chat completion attempt. */
 export type ChatCompletionResult =
-  | { ok: true; content: string }
-  | { ok: false; error: string };
+  | { ok: true; content: string; }
+  | { ok: false; error: string; };
 
 //endregion Types
 
@@ -112,10 +111,11 @@ export type ChatCompletionResult =
  *
  * @returns Completion text on success, or a descriptive error string
  */
-export async function chatCompletion(options: ChatCompletionOptions): Promise<ChatCompletionResult> {
-  if (isRateLimited()) {
-    return { ok: false, error: "Rate limit exceeded -- try again in a moment" };
-  }
+export async function chatCompletion(
+  options: ChatCompletionOptions,
+): Promise<ChatCompletionResult> {
+  if (isRateLimited())
+    return { ok: false, error: 'Rate limit exceeded -- try again in a moment', };
 
   recordRequest();
 
@@ -124,44 +124,47 @@ export async function chatCompletion(options: ChatCompletionOptions): Promise<Ch
     temperature: options.temperature ?? 0,
   };
 
-  if (options.maxTokens !== undefined) {
+  if (options.maxTokens !== undefined)
     body.max_tokens = options.maxTokens;
-  }
 
-  if (options.jsonMode === true) {
-    body.response_format = { type: "json_object" };
-  }
+  if (options.jsonMode === true)
+    body.response_format = { type: 'json_object', };
 
   try {
     const response = await fetch(completionsUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-    });
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', },
+      body: JSON.stringify(body,),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS,),
+    },);
 
     if (!response.ok) {
-      let errorText = "unknown error";
+      let errorText = 'unknown error';
       try {
         errorText = await response.text();
-      } catch {
+      }
+      catch {
         // Ignore text parsing failure
       }
-      return { ok: false, error: `AI endpoint returned ${String(response.status)}: ${errorText}` };
+      return { ok: false, error: `AI endpoint returned ${
+        String(response.status,)
+      }: ${errorText}`, };
     }
 
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- API response shape matches ChatCompletionResponse
     const data = (await response.json()) as ChatCompletionResponse;
     const firstChoice = data.choices[0];
-    if (firstChoice === undefined) {
-      return { ok: false, error: "AI returned no choices" };
-    }
+    if (firstChoice === undefined)
+      return { ok: false, error: 'AI returned no choices', };
 
-    return { ok: true, content: firstChoice.message.content };
-  } catch (caughtError: unknown) {
-    const message = caughtError instanceof Error ? caughtError.message : String(caughtError);
-    console.error("AI chat completion failed:", caughtError);
-    return { ok: false, error: `AI request failed: ${message}` };
+    return { ok: true, content: firstChoice.message.content, };
+  }
+  catch (caughtError: unknown) {
+    const message = caughtError instanceof Error
+      ? caughtError.message
+      : String(caughtError,);
+    console.error('AI chat completion failed:', caughtError,);
+    return { ok: false, error: `AI request failed: ${message}`, };
   }
 }
 

@@ -14,12 +14,16 @@ import spawn from 'nano-spawn';
  * ```
  */
 export async function isScreenLocked(): Promise<boolean> {
-  const { stdout } = await spawn("gdbus", [
-    "call", "--session",
-    "--dest", "org.freedesktop.ScreenSaver",
-    "--object-path", "/org/freedesktop/ScreenSaver",
-    "--method", "org.freedesktop.ScreenSaver.GetActive",
-  ]);
+  const { stdout, } = await spawn('gdbus', [
+    'call',
+    '--session',
+    '--dest',
+    'org.freedesktop.ScreenSaver',
+    '--object-path',
+    '/org/freedesktop/ScreenSaver',
+    '--method',
+    'org.freedesktop.ScreenSaver.GetActive',
+  ],);
   // gdbus returns "(true,)\n" or "(false,)\n"
-  return stdout.includes("true");
+  return stdout.includes('true',);
 }

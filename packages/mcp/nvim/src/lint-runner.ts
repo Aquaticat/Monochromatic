@@ -7,11 +7,14 @@
  * @module
  */
 
-import { dirname, resolve } from "node:path";
+import {
+  dirname,
+  resolve,
+} from 'node:path';
 
-import type { Diagnostic } from "./nvim-client.ts";
-import { findAncestorWithFile } from "./oxlint-parse.ts";
-import { spawnOxlint } from "./oxlint-spawn.ts";
+import type { Diagnostic, } from './nvim-client.ts';
+import { findAncestorWithFile, } from './oxlint-parse.ts';
+import { spawnOxlint, } from './oxlint-spawn.ts';
 
 //region Types -- lint result shape
 
@@ -52,38 +55,38 @@ export type LintResult = {
  * const result = await runOxlint({ files: ["/home/user/project/src/index.ts"] });
  * ```
  */
-export async function runOxlint({ files }: { files: readonly string[] }): Promise<LintResult> {
-  if (files.length === 0) {
-    return { diagnostics: new Map(), notes: [] };
-  }
+export async function runOxlint(
+  { files, }: { files: readonly string[]; },
+): Promise<LintResult> {
+  if (files.length === 0)
+    return { diagnostics: new Map(), notes: [], };
 
   /** First file's directory as starting point for config search. */
-  const [firstFile] = files;
-  if (firstFile === undefined) {
-    return { diagnostics: new Map(), notes: [] };
-  }
-  const configDir = findAncestorWithFile(dirname(firstFile), ".oxlintrc.json");
+  const [firstFile,] = files;
+  if (firstFile === undefined)
+    return { diagnostics: new Map(), notes: [], };
+  const configDir = findAncestorWithFile(dirname(firstFile,), '.oxlintrc.json',);
   if (configDir === null) {
-    console.error("[mcp-nvim] Could not find .oxlintrc.json in any ancestor directory");
-    return { diagnostics: new Map(), notes: [] };
+    console.error('[mcp-nvim] Could not find .oxlintrc.json in any ancestor directory',);
+    return { diagnostics: new Map(), notes: [], };
   }
-  const configPath = resolve(configDir, ".oxlintrc.json");
+  const configPath = resolve(configDir, '.oxlintrc.json',);
 
   //region Group files by tsconfig ancestor -- each group runs in its own cwd
   const groupsByPackageRoot = new Map<string, string[]>();
   const filesWithoutTsconfig: string[] = [];
 
   for (const filePath of files) {
-    const packageRoot = findAncestorWithFile(dirname(filePath), "tsconfig.json");
+    const packageRoot = findAncestorWithFile(dirname(filePath,), 'tsconfig.json',);
     if (packageRoot !== null) {
-      const existing = groupsByPackageRoot.get(packageRoot);
-      if (existing !== undefined) {
-        existing.push(filePath);
-      } else {
-        groupsByPackageRoot.set(packageRoot, [filePath]);
-      }
-    } else {
-      filesWithoutTsconfig.push(filePath);
+      const existing = groupsByPackageRoot.get(packageRoot,);
+      if (existing !== undefined)
+        existing.push(filePath,);
+      else
+        groupsByPackageRoot.set(packageRoot, [filePath,],);
+    }
+    else {
+      filesWithoutTsconfig.push(filePath,);
     }
   }
   //endregion Group files by tsconfig ancestor
@@ -92,48 +95,46 @@ export async function runOxlint({ files }: { files: readonly string[] }): Promis
   const notes: string[] = [];
 
   //region Run per-package-root invocations with --type-aware
-  const packageRuns = [...groupsByPackageRoot.entries()].map(
-    function runPackageOxlint([packageRoot, packageFiles]) {
+  const packageRuns = [...groupsByPackageRoot.entries(),].map(
+    function runPackageOxlint([packageRoot, packageFiles,],) {
       return spawnOxlint({
         configPath,
         cwd: packageRoot,
         files: packageFiles,
         typeAware: true,
-      });
+      },);
     },
   );
   //endregion Run per-package-root invocations with --type-aware
 
   //region Run fallback invocation without --type-aware for orphaned files
   // oxlint-disable-next-line promise/prefer-await-to-then -- initial value for conditional Promise.all
-  let fallbackRun: Promise<Map<string, Diagnostic[]> | null> = Promise.resolve(null);
+  let fallbackRun: Promise<Map<string, Diagnostic[]> | null> = Promise.resolve(null,);
   if (filesWithoutTsconfig.length > 0) {
     notes.push(
-      "Some files have no tsconfig.json in any ancestor directory; "
-      + "oxlint ran without --type-aware for those files and some type-aware rules may not report.",
+      'Some files have no tsconfig.json in any ancestor directory; '
+        + 'oxlint ran without --type-aware for those files and some type-aware rules may not report.',
     );
     fallbackRun = spawnOxlint({
       configPath,
       cwd: configDir,
       files: filesWithoutTsconfig,
       typeAware: false,
-    });
+    },);
   }
   //endregion Run fallback invocation without --type-aware for orphaned files
 
-  const [packageResults, fallbackResult] = await Promise.all([
-    Promise.all(packageRuns),
+  const [packageResults, fallbackResult,] = await Promise.all([
+    Promise.all(packageRuns,),
     fallbackRun,
-  ]);
+  ],);
 
-  for (const resultMap of packageResults) {
-    mergeInto(merged, resultMap);
-  }
-  if (fallbackResult !== null) {
-    mergeInto(merged, fallbackResult);
-  }
+  for (const resultMap of packageResults)
+    mergeInto(merged, resultMap,);
+  if (fallbackResult !== null)
+    mergeInto(merged, fallbackResult,);
 
-  return { diagnostics: merged, notes };
+  return { diagnostics: merged, notes, };
 }
 
 //endregion Runner
@@ -147,14 +148,15 @@ export async function runOxlint({ files }: { files: readonly string[] }): Promis
  *
  * @param source - Map to merge from.
  */
-function mergeInto(target: Map<string, Diagnostic[]>, source: Map<string, Diagnostic[]>): void {
-  for (const [filePath, diagnostics] of source) {
-    const existing = target.get(filePath);
-    if (existing !== undefined) {
-      existing.push(...diagnostics);
-    } else {
-      target.set(filePath, [...diagnostics]);
-    }
+function mergeInto(target: Map<string, Diagnostic[]>,
+  source: Map<string, Diagnostic[]>,): void
+{
+  for (const [filePath, diagnostics,] of source) {
+    const existing = target.get(filePath,);
+    if (existing !== undefined)
+      existing.push(...diagnostics,);
+    else
+      target.set(filePath, [...diagnostics,],);
   }
 }
 

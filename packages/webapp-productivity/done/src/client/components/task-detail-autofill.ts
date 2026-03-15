@@ -4,7 +4,7 @@
  * Manages debounced AI metadata suggestion requests with
  * abort support and loading state tracking.
  */
-import type { AutofillResult } from "./task-detail-types.ts";
+import type { AutofillResult, } from './task-detail-types.ts';
 
 /** Delay before triggering AI autofill after the user stops typing. */
 const AUTOFILL_DEBOUNCE_MS = 500;
@@ -12,9 +12,13 @@ const AUTOFILL_DEBOUNCE_MS = 500;
 /** Callback interface for the autofill controller to update the host component. */
 export type AutofillCallbacks = {
   /** Returns current metadata values. */
-  getState: () => { tags: string[]; locations: string[]; priority: string | null; complexity: string | null };
+  getState: () => { tags: string[]; locations: string[]; priority: string | null;
+    complexity: string | null; };
   /** Applies new metadata values. */
-  setState: (update: { tags?: string[]; locations?: string[]; priority?: string | null; complexity?: string | null }) => void;
+  setState: (
+    update: { tags?: string[]; locations?: string[]; priority?: string | null;
+      complexity?: string | null; },
+  ) => void;
   /** Refreshes the pill display. */
   updateDisplay: () => void;
 };
@@ -42,7 +46,7 @@ export class AutofillController {
   /**
    * @param callbacks - Host component callbacks
    */
-  constructor(callbacks: AutofillCallbacks) {
+  constructor(callbacks: AutofillCallbacks,) {
     this.#callbacks = callbacks;
   }
 
@@ -51,15 +55,21 @@ export class AutofillController {
    *
    * @param title - Current title input value
    */
-  request(title: string): void {
-    if (this.#timer !== null) clearTimeout(this.#timer);
-    if (this.#abort !== null) { this.#abort.abort(); this.#abort = null; }
-    if (title.trim().length === 0) return;
+  request(title: string,): void {
+    if (this.#timer !== null)
+      clearTimeout(this.#timer,);
+    if (this.#abort !== null) {
+      this.#abort.abort();
+      this.#abort = null;
+    }
+    if (title.trim().length === 0)
+      return;
 
     this.#timer = setTimeout(function triggerAutofill(): void {
       // oxlint-disable-next-line typescript/no-floating-promises -- fire-and-forget
-      this.#fetch(title.trim());
-    }.bind(this), AUTOFILL_DEBOUNCE_MS);
+      this.#fetch(title.trim(),);
+    }
+      .bind(this,), AUTOFILL_DEBOUNCE_MS,);
   }
 
   /**
@@ -67,19 +77,19 @@ export class AutofillController {
    *
    * @param title - Trimmed title text
    */
-  async #fetch(title: string): Promise<void> {
+  async #fetch(title: string,): Promise<void> {
     const controller = new AbortController();
     this.#abort = controller;
     this.loading = true;
     this.#callbacks.updateDisplay();
 
     try {
-      const response = await fetch("/api/ai/autofill", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title }),
+      const response = await fetch('/api/ai/autofill', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', },
+        body: JSON.stringify({ title, },),
         signal: controller.signal,
-      });
+      },);
 
       if (response.ok) {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- API response shape
@@ -88,17 +98,29 @@ export class AutofillController {
         const state = this.#callbacks.getState();
         const update: Record<string, unknown> = {};
 
-        if (result.tags.length > 0 && state.tags.length === 0) { update.tags = result.tags; this.autofilled.add("tags"); }
-        if (result.locations.length > 0 && state.locations.length === 0) { update.locations = result.locations; this.autofilled.add("locations"); }
-        if (result.priority !== null && state.priority === null) { update.priority = result.priority; this.autofilled.add("priority"); }
-        if (result.complexity !== null && state.complexity === null) { update.complexity = result.complexity; this.autofilled.add("complexity"); }
+        if (result.tags.length > 0 && state.tags.length === 0) {
+          update.tags = result.tags;
+          this.autofilled.add('tags',);
+        }
+        if (result.locations.length > 0 && state.locations.length === 0) {
+          update.locations = result.locations;
+          this.autofilled.add('locations',);
+        }
+        if (result.priority !== null && state.priority === null) {
+          update.priority = result.priority;
+          this.autofilled.add('priority',);
+        }
+        if (result.complexity !== null && state.complexity === null) {
+          update.complexity = result.complexity;
+          this.autofilled.add('complexity',);
+        }
 
-        this.#callbacks.setState(update);
+        this.#callbacks.setState(update,);
       }
-    } catch (error: unknown) {
-      if (!(error instanceof DOMException && error.name === "AbortError")) {
-        console.error("Autofill request failed:", error);
-      }
+    }
+    catch (error: unknown) {
+      if (!(error instanceof DOMException && error.name === 'AbortError'))
+        console.error('Autofill request failed:', error,);
     }
 
     this.loading = false;

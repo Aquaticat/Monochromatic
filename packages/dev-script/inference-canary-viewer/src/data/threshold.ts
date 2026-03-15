@@ -4,7 +4,10 @@
  * Reimplemented from the runner's deleted `history-stats.ts`.
  * Uses mean - 2*stddev floored at 0.3, requiring at least 3 samples.
  */
-import { hasMultipleProbes, type ViewerEntry, } from './viewer-types.ts';
+import {
+  hasMultipleProbes,
+  type ViewerEntry,
+} from './viewer-types.ts';
 
 /** Minimum non-failed samples required before computing a meaningful threshold */
 const MIN_SAMPLES = 3;
@@ -48,17 +51,26 @@ export function computeThreshold(
   entries: readonly ViewerEntry[],
 ): ModelThreshold {
   const scores = entries
-    .filter(function matchLabel(entry): boolean { return entry.label === label && !entry.failed && hasMultipleProbes(entry); })
-    .map(function getScore(entry): number { return entry.overallScore; });
+    .filter(function matchLabel(entry,): boolean {
+      return entry.label === label && !entry.failed && hasMultipleProbes(entry,);
+    },)
+    .map(function getScore(entry,): number {
+      return entry.overallScore;
+    },);
 
   if (scores.length < MIN_SAMPLES) {
-    return { model: label, mean: 0, stddev: 0, threshold: THRESHOLD_FLOOR, sampleCount: scores.length, };
+    return { model: label, mean: 0, stddev: 0, threshold: THRESHOLD_FLOOR,
+      sampleCount: scores.length, };
   }
 
-  const mean = scores.reduce(function add(sum, score): number { return sum + score; }, 0) / scores.length;
-  const variance = scores.reduce(function addVariance(sum, score): number { return sum + (score - mean) ** 2; }, 0) / scores.length;
-  const stddev = Math.sqrt(variance);
-  const threshold = Math.max(THRESHOLD_FLOOR, mean - STDDEV_MULTIPLIER * stddev);
+  const mean = scores.reduce(function add(sum, score,): number {
+    return sum + score;
+  }, 0,) / scores.length;
+  const variance = scores.reduce(function addVariance(sum, score,): number {
+    return sum + (score - mean) ** 2;
+  }, 0,) / scores.length;
+  const stddev = Math.sqrt(variance,);
+  const threshold = Math.max(THRESHOLD_FLOOR, mean - STDDEV_MULTIPLIER * stddev,);
 
   return { model: label, mean, stddev, threshold, sampleCount: scores.length, };
 }

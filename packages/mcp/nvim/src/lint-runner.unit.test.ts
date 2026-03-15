@@ -2,25 +2,25 @@ import {
   describe,
   expect,
   test,
-} from "bun:test";
+} from 'bun:test';
 
-import { parseOxlintOutput } from "./oxlint-parse.ts";
-import type { OxlintJsonOutput } from "./oxlint-types.ts";
+import { parseOxlintOutput, } from './oxlint-parse.ts';
+import type { OxlintJsonOutput, } from './oxlint-types.ts';
 
 //region parseOxlintOutput -- converts oxlint JSON to grouped Diagnostic maps
 
-describe("parseOxlintOutput", () => {
-  test("parses a single diagnostic with all fields", () => {
-    expect.assertions(1);
+describe('parseOxlintOutput', () => {
+  test('parses a single diagnostic with all fields', () => {
+    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
-          message: "Missing TSDoc comment.",
-          code: "tsdoc(require-tsdoc)",
-          severity: "error",
+          message: 'Missing TSDoc comment.',
+          code: 'tsdoc(require-tsdoc)',
+          severity: 'error',
           causes: [],
-          filename: "src/index.ts",
-          labels: [{ span: { offset: 100, length: 20, line: 5, column: 3 } }],
+          filename: 'src/index.ts',
+          labels: [{ span: { offset: 100, length: 20, line: 5, column: 3, }, },],
           related: [],
         },
       ],
@@ -30,34 +30,34 @@ describe("parseOxlintOutput", () => {
       start_time: 0.05,
     };
 
-    const result = parseOxlintOutput(output, "/home/user/project");
-    const diags = result.get("/home/user/project/src/index.ts");
+    const result = parseOxlintOutput(output, '/home/user/project',);
+    const diags = result.get('/home/user/project/src/index.ts',);
 
-    expect(diags).toEqual([
+    expect(diags,).toEqual([
       {
-        severity: "ERROR",
+        severity: 'ERROR',
         lnum: 5,
         col: 3,
         end_lnum: 5,
         end_col: 3,
-        message: "Missing TSDoc comment.",
-        source: "oxlint",
-        code: "tsdoc(require-tsdoc)",
+        message: 'Missing TSDoc comment.',
+        source: 'oxlint',
+        code: 'tsdoc(require-tsdoc)',
       },
-    ]);
+    ],);
   });
 
-  test("maps warning severity to WARN", () => {
-    expect.assertions(1);
+  test('maps warning severity to WARN', () => {
+    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
-          message: "Unused variable.",
-          code: "no-unused-vars",
-          severity: "warning",
+          message: 'Unused variable.',
+          code: 'no-unused-vars',
+          severity: 'warning',
           causes: [],
-          filename: "src/foo.ts",
-          labels: [{ span: { offset: 0, length: 10, line: 1, column: 1 } }],
+          filename: 'src/foo.ts',
+          labels: [{ span: { offset: 0, length: 10, line: 1, column: 1, }, },],
           related: [],
         },
       ],
@@ -67,22 +67,22 @@ describe("parseOxlintOutput", () => {
       start_time: 0.05,
     };
 
-    const result = parseOxlintOutput(output, "/tmp");
-    const diags = result.get("/tmp/src/foo.ts");
-    expect(diags?.[0]?.severity).toBe("WARN");
+    const result = parseOxlintOutput(output, '/tmp',);
+    const diags = result.get('/tmp/src/foo.ts',);
+    expect(diags?.[0]?.severity,).toBe('WARN',);
   });
 
-  test("handles unknown severity gracefully", () => {
-    expect.assertions(1);
+  test('handles unknown severity gracefully', () => {
+    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
-          message: "Something.",
-          code: "rule",
-          severity: "info",
+          message: 'Something.',
+          code: 'rule',
+          severity: 'info',
           causes: [],
-          filename: "a.ts",
-          labels: [{ span: { offset: 0, length: 5, line: 1, column: 1 } }],
+          filename: 'a.ts',
+          labels: [{ span: { offset: 0, length: 5, line: 1, column: 1, }, },],
           related: [],
         },
       ],
@@ -92,39 +92,39 @@ describe("parseOxlintOutput", () => {
       start_time: 0,
     };
 
-    const result = parseOxlintOutput(output, "/tmp");
-    expect(result.get("/tmp/a.ts")?.[0]?.severity).toBe("UNKNOWN(info)");
+    const result = parseOxlintOutput(output, '/tmp',);
+    expect(result.get('/tmp/a.ts',)?.[0]?.severity,).toBe('UNKNOWN(info)',);
   });
 
-  test("groups multiple diagnostics by file path", () => {
-    expect.assertions(2);
+  test('groups multiple diagnostics by file path', () => {
+    expect.assertions(2,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
-          message: "First.",
-          code: "rule-a",
-          severity: "error",
+          message: 'First.',
+          code: 'rule-a',
+          severity: 'error',
           causes: [],
-          filename: "src/a.ts",
-          labels: [{ span: { offset: 0, length: 5, line: 1, column: 1 } }],
+          filename: 'src/a.ts',
+          labels: [{ span: { offset: 0, length: 5, line: 1, column: 1, }, },],
           related: [],
         },
         {
-          message: "Second.",
-          code: "rule-b",
-          severity: "warning",
+          message: 'Second.',
+          code: 'rule-b',
+          severity: 'warning',
           causes: [],
-          filename: "src/a.ts",
-          labels: [{ span: { offset: 50, length: 10, line: 10, column: 5 } }],
+          filename: 'src/a.ts',
+          labels: [{ span: { offset: 50, length: 10, line: 10, column: 5, }, },],
           related: [],
         },
         {
-          message: "Third.",
-          code: "rule-c",
-          severity: "error",
+          message: 'Third.',
+          code: 'rule-c',
+          severity: 'error',
           causes: [],
-          filename: "src/b.ts",
-          labels: [{ span: { offset: 0, length: 5, line: 2, column: 3 } }],
+          filename: 'src/b.ts',
+          labels: [{ span: { offset: 0, length: 5, line: 2, column: 3, }, },],
           related: [],
         },
       ],
@@ -134,21 +134,21 @@ describe("parseOxlintOutput", () => {
       start_time: 0.05,
     };
 
-    const result = parseOxlintOutput(output, "/project");
-    expect(result.get("/project/src/a.ts")).toHaveLength(2);
-    expect(result.get("/project/src/b.ts")).toHaveLength(1);
+    const result = parseOxlintOutput(output, '/project',);
+    expect(result.get('/project/src/a.ts',),).toHaveLength(2,);
+    expect(result.get('/project/src/b.ts',),).toHaveLength(1,);
   });
 
-  test("skips diagnostics with no labels", () => {
-    expect.assertions(1);
+  test('skips diagnostics with no labels', () => {
+    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
-          message: "No location.",
-          code: "rule",
-          severity: "error",
+          message: 'No location.',
+          code: 'rule',
+          severity: 'error',
           causes: [],
-          filename: "src/a.ts",
+          filename: 'src/a.ts',
           labels: [],
           related: [],
         },
@@ -159,12 +159,12 @@ describe("parseOxlintOutput", () => {
       start_time: 0,
     };
 
-    const result = parseOxlintOutput(output, "/tmp");
-    expect(result.size).toBe(0);
+    const result = parseOxlintOutput(output, '/tmp',);
+    expect(result.size,).toBe(0,);
   });
 
-  test("returns empty map for zero diagnostics", () => {
-    expect.assertions(1);
+  test('returns empty map for zero diagnostics', () => {
+    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [],
       number_of_files: 1,
@@ -173,21 +173,21 @@ describe("parseOxlintOutput", () => {
       start_time: 0.05,
     };
 
-    const result = parseOxlintOutput(output, "/tmp");
-    expect(result.size).toBe(0);
+    const result = parseOxlintOutput(output, '/tmp',);
+    expect(result.size,).toBe(0,);
   });
 
-  test("resolves relative filenames against cwd", () => {
-    expect.assertions(2);
+  test('resolves relative filenames against cwd', () => {
+    expect.assertions(2,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
-          message: "Error.",
-          code: "rule",
-          severity: "error",
+          message: 'Error.',
+          code: 'rule',
+          severity: 'error',
           causes: [],
-          filename: "../other/file.ts",
-          labels: [{ span: { offset: 0, length: 5, line: 1, column: 1 } }],
+          filename: '../other/file.ts',
+          labels: [{ span: { offset: 0, length: 5, line: 1, column: 1, }, },],
           related: [],
         },
       ],
@@ -197,24 +197,24 @@ describe("parseOxlintOutput", () => {
       start_time: 0,
     };
 
-    const result = parseOxlintOutput(output, "/project/packages/foo");
-    expect(result.has("/project/packages/other/file.ts")).toBe(true);
-    expect(result.has("/project/packages/foo/../other/file.ts")).toBe(false);
+    const result = parseOxlintOutput(output, '/project/packages/foo',);
+    expect(result.has('/project/packages/other/file.ts',),).toBe(true,);
+    expect(result.has('/project/packages/foo/../other/file.ts',),).toBe(false,);
   });
 
-  test("appends help text to message when present", () => {
-    expect.assertions(1);
+  test('appends help text to message when present', () => {
+    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
-          message: "Empty exports do nothing in module files",
-          code: "typescript-eslint(no-useless-empty-export)",
-          severity: "error",
+          message: 'Empty exports do nothing in module files',
+          code: 'typescript-eslint(no-useless-empty-export)',
+          severity: 'error',
           causes: [],
-          filename: "src/a.ts",
-          labels: [{ span: { offset: 0, length: 9, line: 12, column: 1 } }],
+          filename: 'src/a.ts',
+          labels: [{ span: { offset: 0, length: 9, line: 12, column: 1, }, },],
           related: [],
-          help: "Remove this empty export.",
+          help: 'Remove this empty export.',
         },
       ],
       number_of_files: 1,
@@ -223,23 +223,23 @@ describe("parseOxlintOutput", () => {
       start_time: 0.05,
     };
 
-    const result = parseOxlintOutput(output, "/tmp");
-    expect(result.get("/tmp/src/a.ts")?.[0]?.message).toBe(
-      "Empty exports do nothing in module files (help: Remove this empty export.)",
+    const result = parseOxlintOutput(output, '/tmp',);
+    expect(result.get('/tmp/src/a.ts',)?.[0]?.message,).toBe(
+      'Empty exports do nothing in module files (help: Remove this empty export.)',
     );
   });
 
-  test("does not append help suffix when help is absent", () => {
-    expect.assertions(1);
+  test('does not append help suffix when help is absent', () => {
+    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
-          message: "Missing TSDoc comment.",
-          code: "tsdoc(require-tsdoc)",
-          severity: "error",
+          message: 'Missing TSDoc comment.',
+          code: 'tsdoc(require-tsdoc)',
+          severity: 'error',
           causes: [],
-          filename: "src/a.ts",
-          labels: [{ span: { offset: 0, length: 5, line: 1, column: 1 } }],
+          filename: 'src/a.ts',
+          labels: [{ span: { offset: 0, length: 5, line: 1, column: 1, }, },],
           related: [],
         },
       ],
@@ -249,23 +249,23 @@ describe("parseOxlintOutput", () => {
       start_time: 0.05,
     };
 
-    const result = parseOxlintOutput(output, "/tmp");
-    expect(result.get("/tmp/src/a.ts")?.[0]?.message).toBe("Missing TSDoc comment.");
+    const result = parseOxlintOutput(output, '/tmp',);
+    expect(result.get('/tmp/src/a.ts',)?.[0]?.message,).toBe('Missing TSDoc comment.',);
   });
 
-  test("does not append help suffix when help is empty string", () => {
-    expect.assertions(1);
+  test('does not append help suffix when help is empty string', () => {
+    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
-          message: "Some error.",
-          code: "rule",
-          severity: "error",
+          message: 'Some error.',
+          code: 'rule',
+          severity: 'error',
           causes: [],
-          filename: "src/a.ts",
-          labels: [{ span: { offset: 0, length: 5, line: 1, column: 1 } }],
+          filename: 'src/a.ts',
+          labels: [{ span: { offset: 0, length: 5, line: 1, column: 1, }, },],
           related: [],
-          help: "",
+          help: '',
         },
       ],
       number_of_files: 1,
@@ -274,21 +274,21 @@ describe("parseOxlintOutput", () => {
       start_time: 0,
     };
 
-    const result = parseOxlintOutput(output, "/tmp");
-    expect(result.get("/tmp/src/a.ts")?.[0]?.message).toBe("Some error.");
+    const result = parseOxlintOutput(output, '/tmp',);
+    expect(result.get('/tmp/src/a.ts',)?.[0]?.message,).toBe('Some error.',);
   });
 
-  test("always sets source to oxlint", () => {
-    expect.assertions(1);
+  test('always sets source to oxlint', () => {
+    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
-          message: "Error.",
-          code: "typescript(strict-boolean-expressions)",
-          severity: "error",
+          message: 'Error.',
+          code: 'typescript(strict-boolean-expressions)',
+          severity: 'error',
           causes: [],
-          filename: "x.ts",
-          labels: [{ span: { offset: 0, length: 5, line: 1, column: 1 } }],
+          filename: 'x.ts',
+          labels: [{ span: { offset: 0, length: 5, line: 1, column: 1, }, },],
           related: [],
         },
       ],
@@ -298,8 +298,8 @@ describe("parseOxlintOutput", () => {
       start_time: 0,
     };
 
-    const result = parseOxlintOutput(output, "/tmp");
-    expect(result.get("/tmp/x.ts")?.[0]?.source).toBe("oxlint");
+    const result = parseOxlintOutput(output, '/tmp',);
+    expect(result.get('/tmp/x.ts',)?.[0]?.source,).toBe('oxlint',);
   });
 });
 

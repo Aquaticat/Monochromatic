@@ -1,5 +1,5 @@
-import type { $ as Logger } from '../../../../../../t/index.ts';
-import { $ as defaultLogger } from '../../../../../../f/t never/r s/p p/index.ts';
+import { $ as defaultLogger, } from '../../../../../../f/t never/r s/p p/index.ts';
+import type { $ as Logger, } from '../../../../../../t/index.ts';
 
 /**
  * Wraps a logger so every message is prefixed with `[tag] `.
@@ -33,14 +33,26 @@ import { $ as defaultLogger } from '../../../../../../f/t never/r s/p p/index.ts
  * // logs: [retry] [http] attempt 3
  * ```
  */
-export function $({ tag, l = defaultLogger }: { l?: Logger; tag: string }): Logger {
+export function $({ tag, l = defaultLogger, }: { l?: Logger; tag: string; },): Logger {
   const prefix = `[${tag}] `;
   return {
-    debug: function debug(message: string): void { l.debug(`${prefix}${message}`); },
-    error: function error(message: string): void { l.error(`${prefix}${message}`); },
-    fatal: function fatal(message: string): void { l.fatal(`${prefix}${message}`); },
-    info: function info(message: string): void { l.info(`${prefix}${message}`); },
-    trace: function trace(message: string): void { l.trace(`${prefix}${message}`); },
-    warn: function warn(message: string): void { l.warn(`${prefix}${message}`); },
+    debug: function debug(message: string,): void {
+      l.debug(`${prefix}${message}`,);
+    },
+    error: function error(message: string,): void {
+      l.error(`${prefix}${message}`,);
+    },
+    fatal: function fatal(message: string,): void {
+      l.fatal(`${prefix}${message}`,);
+    },
+    info: function info(message: string,): void {
+      l.info(`${prefix}${message}`,);
+    },
+    trace: function trace(message: string,): void {
+      l.trace(`${prefix}${message}`,);
+    },
+    warn: function warn(message: string,): void {
+      l.warn(`${prefix}${message}`,);
+    },
   };
 }

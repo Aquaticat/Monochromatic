@@ -3,9 +3,18 @@
  *
  * Separated to keep `mixins.ts` under the line budget.
  */
-import type { CssDeclarations } from "@monochromatic-dev/module-es/h-css";
-import { cssCalc, cssInt, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
-import { flexCenter, flexRow, minTouchTarget } from "./mixins.ts";
+import type { CssDeclarations, } from '@monochromatic-dev/module-es/h-css';
+import {
+  cssCalc,
+  cssInt,
+  cssRem,
+  cssVar,
+} from '@monochromatic-dev/module-es/h-css';
+import {
+  flexCenter,
+  flexRow,
+  minTouchTarget,
+} from './mixins.ts';
 
 /**
  * Outlined interactive button with token-based colors.
@@ -21,14 +30,14 @@ export function buttonOutlined(): CssDeclarations {
   return {
     ...flexCenter(),
     ...minTouchTarget(),
-    gap: cssRem(0.5),
-    'border-width': cssCalc(`${cssRem(1)} / 16`),
+    gap: cssRem(0.5,),
+    'border-width': cssCalc(`${cssRem(1,)} / 16`,),
     'border-style': 'solid',
-    'border-color': cssVar('fg'),
-    'padding-block': cssRem(0.5),
-    'padding-inline': cssRem(0.5),
+    'border-color': cssVar('fg',),
+    'padding-block': cssRem(0.5,),
+    'padding-inline': cssRem(0.5,),
     'background-color': 'transparent',
-    color: cssVar('fg'),
+    color: cssVar('fg',),
     'font-family': 'inherit',
     'font-size': 'inherit',
     'font-style': 'inherit',
@@ -51,13 +60,13 @@ export function buttonOutlined(): CssDeclarations {
 export function stickyBar(): CssDeclarations {
   return {
     ...flexRow(),
-    gap: cssVar('min-gap'),
-    'block-size': cssRem(3),
+    gap: cssVar('min-gap',),
+    'block-size': cssRem(3,),
     'padding-block': 0,
-    'padding-inline': cssVar('min-padding'),
-    'background-color': cssVar('bg'),
+    'padding-inline': cssVar('min-padding',),
+    'background-color': cssVar('bg',),
     position: 'sticky',
     'inset-block-start': 0,
-    'z-index': cssInt(10),
+    'z-index': cssInt(10,),
   };
 }

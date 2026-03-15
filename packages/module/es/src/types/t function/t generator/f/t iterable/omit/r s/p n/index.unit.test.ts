@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const {$} = types.function.generator.from.iterable.omit.sync.named;
+const { $, } = types.function.generator.from.iterable.omit.sync.named;
 
 describe($, () => {
   test('omits items in the exclusion set', () => {
@@ -43,7 +43,9 @@ describe($, () => {
     const numbers = [1, 2, 3,];
     const toOmit = new Set([4, 5,],);
 
-    expect(() => [...$({ iterable: numbers, toOmit, },),],).toThrow('Key not found in iterable: 4',);
+    expect(() => [...$({ iterable: numbers, toOmit, },),]).toThrow(
+      'Key not found in iterable: 4',
+    );
   });
 
   test('does not throw when strict is false and toOmit contains missing items', () => {

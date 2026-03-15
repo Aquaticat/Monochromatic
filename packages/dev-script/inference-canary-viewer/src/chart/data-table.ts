@@ -58,66 +58,83 @@ export function renderDataTable(
   const showProbe = options.showProbe ?? true;
 
   /** When only timestamp + score remain, render as a compact grid instead of a table */
-  if (!showModel && !showProbe) {
-    return renderDataGrid(rows, caption);
-  }
+  if (!showModel && !showProbe)
+    return renderDataGrid(rows, caption,);
 
   /** Only show the fix score column when at least one row has pass2 data */
-  const hasFixScores = rows.some(function hasPass2(row) { return row.pass2Score !== undefined; });
+  const hasFixScores = rows.some(function hasPass2(row,) {
+    return row.pass2Score !== undefined;
+  },);
 
   const headerRow = h({
     tag: 'tr',
     children: [
-      h({ tag: 'th', attrs: { scope: 'col', }, text: 'Timestamp', }),
-      ...(showModel ? [h({ tag: 'th', attrs: { scope: 'col', }, text: 'Model', })] : []),
-      ...(showProbe ? [h({ tag: 'th', attrs: { scope: 'col', }, text: 'Probe', })] : []),
-      h({ tag: 'th', attrs: { scope: 'col', }, text: 'Score', }),
-      ...(hasFixScores ? [h({ tag: 'th', attrs: { scope: 'col', }, text: 'Fix score', })] : []),
+      h({ tag: 'th', attrs: { scope: 'col', }, text: 'Timestamp', },),
+      ...(showModel
+        ? [h({ tag: 'th', attrs: { scope: 'col', }, text: 'Model', },),]
+        : []),
+      ...(showProbe
+        ? [h({ tag: 'th', attrs: { scope: 'col', }, text: 'Probe', },),]
+        : []),
+      h({ tag: 'th', attrs: { scope: 'col', }, text: 'Score', },),
+      ...(hasFixScores
+        ? [h({ tag: 'th', attrs: { scope: 'col', }, text: 'Fix score', },),]
+        : []),
     ],
-  });
+  },);
 
-  const bodyRows = rows.map(function renderRow(row) {
-    /** Timestamp cell with inline "(timeout)" for failed runs */
-    const timestampTd = row.failed
-      ? h({
-        tag: 'td',
+  const bodyRows = rows
+    .map(function renderRow(row,) {
+      /** Timestamp cell with inline "(timeout)" for failed runs */
+      const timestampTd = row.failed
+        ? h({
+          tag: 'td',
+          children: [
+            h({ tag: 'span', text: row.timestamp, },),
+            ' ',
+            h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'failed', },
+              text: '(timeout)', },),
+          ],
+        },)
+        : h({ tag: 'td', text: row.timestamp, },);
+
+      /** Fix score cell: present, "(not run)" for failed, or "(data error)" */
+      const fixScoreTd = hasFixScores
+        ? row.pass2Score !== undefined
+          ? h({ tag: 'td', text: row.pass2Score.toFixed(2,), },)
+          : row.failed
+          ? h({ tag: 'td', children: [
+            h({ tag: 'span', class: 'missing-data-label', text: '(not run)', },),
+          ], },)
+          : h({ tag: 'td', children: [
+            h({ tag: 'span', class: 'missing-data-label', text: '(data error)', },),
+          ], },)
+        : '';
+
+      return h({
+        tag: 'tr',
+        ...(row.failed
+          ? { class: 'run-status', attrs: { 'data-level': 'failed', }, }
+          : {}),
         children: [
-          h({ tag: 'span', text: row.timestamp, }),
-          ' ',
-          h({ tag: 'span', class: 'run-status', attrs: { 'data-level': 'failed', }, text: '(timeout)', }),
-        ],
-      })
-      : h({ tag: 'td', text: row.timestamp, });
-
-    /** Fix score cell: present, "(not run)" for failed, or "(data error)" */
-    const fixScoreTd = hasFixScores
-      ? row.pass2Score !== undefined
-        ? h({ tag: 'td', text: row.pass2Score.toFixed(2), })
-        : row.failed
-          ? h({ tag: 'td', children: [h({ tag: 'span', class: 'missing-data-label', text: '(not run)', })], })
-          : h({ tag: 'td', children: [h({ tag: 'span', class: 'missing-data-label', text: '(data error)', })], })
-      : '';
-
-    return h({
-      tag: 'tr',
-      ...(row.failed ? { class: 'run-status', attrs: { 'data-level': 'failed', }, } : {}),
-      children: [
-        timestampTd,
-        ...(showModel ? [h({ tag: 'td', text: row.model, })] : []),
-        ...(showProbe ? [h({ tag: 'td', text: row.probe, })] : []),
-        h({ tag: 'td', text: row.score.toFixed(2), }),
-        fixScoreTd,
-      ].filter(Boolean),
-    });
-  }).join('\n');
+          timestampTd,
+          ...(showModel ? [h({ tag: 'td', text: row.model, },),] : []),
+          ...(showProbe ? [h({ tag: 'td', text: row.probe, },),] : []),
+          h({ tag: 'td', text: row.score.toFixed(2,), },),
+          fixScoreTd,
+        ]
+          .filter(Boolean,),
+      },);
+    },)
+    .join('\n',);
 
   return h({
     tag: 'table',
     class: 'chart-data-table',
     children: [
-      h({ tag: 'caption', text: caption, }),
-      h({ tag: 'thead', children: [headerRow], }),
-      h({ tag: 'tbody', html: bodyRows, }),
+      h({ tag: 'caption', text: caption, },),
+      h({ tag: 'thead', children: [headerRow,], },),
+      h({ tag: 'tbody', html: bodyRows, },),
     ],
-  });
+  },);
 }

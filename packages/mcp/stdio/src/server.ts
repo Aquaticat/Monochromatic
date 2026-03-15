@@ -10,14 +10,23 @@ import {
 } from './json-rpc.ts';
 
 import {
-  PROTOCOL_VERSION,
   type InitializeResult,
+  PROTOCOL_VERSION,
   type ToolCallResult,
   type ToolDefinition,
 } from './protocol.ts';
 
-import type { McpServerConfig, McpServerHandle, RegisteredTool, ToolEntry } from './server-types.ts';
-import { handleNotification, respondError, respondSuccess } from './server-response.ts';
+import {
+  handleNotification,
+  respondError,
+  respondSuccess,
+} from './server-response.ts';
+import type {
+  McpServerConfig,
+  McpServerHandle,
+  RegisteredTool,
+  ToolEntry,
+} from './server-types.ts';
 
 //region defineTool -- convenience for declaring tool entries
 
@@ -41,8 +50,8 @@ import { handleNotification, respondError, respondSuccess } from './server-respo
  * });
  * ```
  */
-export function defineTool(name: string, entry: Omit<ToolEntry, 'name'>): ToolEntry {
-  return { name, ...entry };
+export function defineTool(name: string, entry: Omit<ToolEntry, 'name'>,): ToolEntry {
+  return { name, ...entry, };
 }
 
 //endregion
@@ -85,19 +94,19 @@ export function createMcpServer(
   // MCP clients (including Factory Droid) require `inputSchema` on every tool,
   // even when the tool accepts no arguments. Default to an empty object schema.
   const toolMap: ReadonlyMap<string, RegisteredTool> = new Map(
-    tools.map(function buildRegisteredTool(entry) {
+    tools.map(function buildRegisteredTool(entry,) {
       return [
         entry.name,
         {
           definition: {
             name: entry.name,
             description: entry.description,
-            inputSchema: entry.inputSchema ?? { type: 'object' },
+            inputSchema: entry.inputSchema ?? { type: 'object', },
           },
           handler: entry.handler,
         },
       ] as const;
-    }),
+    },),
   );
 
   //region Protocol payloads -- initialization and tool listing
@@ -110,8 +119,8 @@ export function createMcpServer(
   function buildInitializeResult(): InitializeResult {
     return {
       protocolVersion: PROTOCOL_VERSION,
-      capabilities: { tools: {} },
-      serverInfo: { name: config.name, version: config.version },
+      capabilities: { tools: {}, },
+      serverInfo: { name: config.name, version: config.version, },
     };
   }
 
@@ -120,9 +129,11 @@ export function createMcpServer(
    *
    * @returns Object containing array of tool definitions.
    */
-  function buildToolsList(): { tools: readonly ToolDefinition[] } {
+  function buildToolsList(): { tools: readonly ToolDefinition[]; } {
     return {
-      tools: [...toolMap.values()].map(function getDefinition(registered) { return registered.definition; }),
+      tools: [...toolMap.values(),].map(function getDefinition(registered,) {
+        return registered.definition;
+      },),
     };
   }
 
@@ -138,37 +149,41 @@ export function createMcpServer(
    *
    * @returns Tool result wrapped in a JSON-RPC response, or an error if the tool is unknown.
    */
-  async function handleToolCall(request: JsonRpcRequest): Promise<JsonRpcOutbound> {
-    const { id, params } = request;
+  async function handleToolCall(request: JsonRpcRequest,): Promise<JsonRpcOutbound> {
+    const { id, params, } = request;
 
     // Validate tool name is a string rather than blindly casting untrusted input.
     const toolName = typeof params?.name === 'string' ? params.name : undefined;
     if (toolName === undefined) {
-      return respondError(id, JSON_RPC_INVALID_PARAMS, 'Missing or non-string tool name in tools/call');
+      return respondError(id, JSON_RPC_INVALID_PARAMS,
+        'Missing or non-string tool name in tools/call',);
     }
 
     // Validate arguments is a plain object when present, default to empty object otherwise.
     const rawArgs = params?.arguments;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowed from unknown to non-array object above
-    const toolArgs: Record<string, unknown> =
-      rawArgs !== undefined && rawArgs !== null && typeof rawArgs === 'object' && !Array.isArray(rawArgs)
-        ? (rawArgs as Record<string, unknown>)
-        : {};
+    const toolArgs: Record<string, unknown> = rawArgs !== undefined
+        && rawArgs !== null
+        && typeof rawArgs === 'object'
+        && !Array.isArray(rawArgs,)
+      ? (rawArgs as Record<string, unknown>)
+      : {};
 
-    const registered = toolMap.get(toolName);
-    if (registered === undefined) {
-      return respondError(id, JSON_RPC_INVALID_PARAMS, `Unknown tool: ${toolName}`);
-    }
+    const registered = toolMap.get(toolName,);
+    if (registered === undefined)
+      return respondError(id, JSON_RPC_INVALID_PARAMS, `Unknown tool: ${toolName}`,);
 
     // Deliberate catch-and-return: in a server context, tool handler errors must be
     // reported as JSON-RPC error responses rather than crashing the server process.
     try {
-      const result: ToolCallResult = await registered.handler(toolArgs);
-      return respondSuccess(id, result);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error(`[mcp-stdio] tool "${toolName}" threw:`, error);
-      return respondError(id, JSON_RPC_INTERNAL_ERROR, `Tool execution failed: ${message}`);
+      const result: ToolCallResult = await registered.handler(toolArgs,);
+      return respondSuccess(id, result,);
+    }
+    catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error,);
+      console.error(`[mcp-stdio] tool "${toolName}" threw:`, error,);
+      return respondError(id, JSON_RPC_INTERNAL_ERROR,
+        `Tool execution failed: ${message}`,);
     }
   }
 
@@ -182,22 +197,20 @@ export function createMcpServer(
    *
    * @returns JSON-RPC success or error response.
    */
-  function handleRequest(request: JsonRpcRequest): Promise<JsonRpcOutbound> {
-    const { id, method } = request;
+  function handleRequest(request: JsonRpcRequest,): Promise<JsonRpcOutbound> {
+    const { id, method, } = request;
 
-    if (method === 'initialize') {
-      return Promise.resolve(respondSuccess(id, buildInitializeResult()));
-    }
-    if (method === 'ping') {
-      return Promise.resolve(respondSuccess(id, {}));
-    }
-    if (method === 'tools/list') {
-      return Promise.resolve(respondSuccess(id, buildToolsList()));
-    }
-    if (method === 'tools/call') {
-      return handleToolCall(request);
-    }
-    return Promise.resolve(respondError(id, JSON_RPC_METHOD_NOT_FOUND, `Method not found: ${method}`));
+    if (method === 'initialize')
+      return Promise.resolve(respondSuccess(id, buildInitializeResult(),),);
+    if (method === 'ping')
+      return Promise.resolve(respondSuccess(id, {},),);
+    if (method === 'tools/list')
+      return Promise.resolve(respondSuccess(id, buildToolsList(),),);
+    if (method === 'tools/call')
+      return handleToolCall(request,);
+    return Promise.resolve(
+      respondError(id, JSON_RPC_METHOD_NOT_FOUND, `Method not found: ${method}`,),
+    );
   }
 
   //endregion
@@ -212,16 +225,16 @@ export function createMcpServer(
    *
    * @returns JSON-RPC response for requests; `undefined` for notifications.
    */
-  function handleMessage(message: JsonRpcInbound): Promise<JsonRpcOutbound | undefined> {
+  function handleMessage(message: JsonRpcInbound,): Promise<JsonRpcOutbound | undefined> {
     if (!('id' in message)) {
-      handleNotification(message);
+      handleNotification(message,);
       // oxlint-disable-next-line unicorn/no-useless-undefined -- explicit undefined needed to satisfy Promise<JsonRpcOutbound | undefined> return type
-      return Promise.resolve(undefined);
+      return Promise.resolve(undefined,);
     }
-    return handleRequest(message);
+    return handleRequest(message,);
   }
 
-  return { handleMessage };
+  return { handleMessage, };
 
   //endregion
 }

@@ -22,19 +22,20 @@ export const SOLVABLE = [
   '060000280',
   '000419005',
   '000080079',
-].join('\n');
+]
+  .join('\n',);
 
 /** Clue cells for the solvable puzzle, used by verifiers to confirm solutions match */
 export const SOLVABLE_CLUES: readonly (readonly number[])[] = [
-  [5, 3, 0, 0, 7, 0, 0, 0, 0],
-  [6, 0, 0, 1, 9, 5, 0, 0, 0],
-  [0, 9, 8, 0, 0, 0, 0, 6, 0],
-  [8, 0, 0, 0, 6, 0, 0, 0, 3],
-  [4, 0, 0, 8, 0, 3, 0, 0, 1],
-  [7, 0, 0, 0, 2, 0, 0, 0, 6],
-  [0, 6, 0, 0, 0, 0, 2, 8, 0],
-  [0, 0, 0, 4, 1, 9, 0, 0, 5],
-  [0, 0, 0, 0, 8, 0, 0, 7, 9],
+  [5, 3, 0, 0, 7, 0, 0, 0, 0,],
+  [6, 0, 0, 1, 9, 5, 0, 0, 0,],
+  [0, 9, 8, 0, 0, 0, 0, 6, 0,],
+  [8, 0, 0, 0, 6, 0, 0, 0, 3,],
+  [4, 0, 0, 8, 0, 3, 0, 0, 1,],
+  [7, 0, 0, 0, 2, 0, 0, 0, 6,],
+  [0, 6, 0, 0, 0, 0, 2, 8, 0,],
+  [0, 0, 0, 4, 1, 9, 0, 0, 5,],
+  [0, 0, 0, 0, 8, 0, 0, 7, 9,],
 ];
 
 /**
@@ -52,7 +53,8 @@ export const UNSOLVABLE_BOX = [
   '060000280',
   '000419005',
   '000080079',
-].join('\n');
+]
+  .join('\n',);
 
 /**
  * Unsolvable puzzle -- column conflict in column 8.
@@ -69,7 +71,8 @@ export const UNSOLVABLE_COL = [
   '060000280',
   '000419005',
   '000080073',
-].join('\n');
+]
+  .join('\n',);
 
 /**
  * Multi-solution puzzle -- first band (rows 0-2) from the Wikipedia solution, rest empty.
@@ -88,19 +91,20 @@ export const MULTI_SOLUTION = [
   '000000000',
   '000000000',
   '000000000',
-].join('\n');
+]
+  .join('\n',);
 
 /** Clue cells for the multi-solution puzzle, used to verify the single returned solution */
 export const MULTI_CLUES: readonly (readonly number[])[] = [
-  [5, 3, 4, 6, 7, 8, 9, 1, 2],
-  [6, 7, 2, 1, 9, 5, 3, 4, 8],
-  [1, 9, 8, 3, 4, 2, 5, 6, 7],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [5, 3, 4, 6, 7, 8, 9, 1, 2,],
+  [6, 7, 2, 1, 9, 5, 3, 4, 8,],
+  [1, 9, 8, 3, 4, 2, 5, 6, 7,],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0,],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0,],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0,],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0,],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0,],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0,],
 ];
 
 //endregion Normal mode puzzles
@@ -128,19 +132,20 @@ export const TWO_SOLUTION = [
   '961537284',
   '287419635',
   '345286179',
-].join('\n');
+]
+  .join('\n',);
 
 /** Clue cells for the 2-solution puzzle, used to verify both solutions match */
 export const TWO_SOLUTION_CLUES: readonly (readonly number[])[] = [
-  [5, 3, 4, 0, 0, 8, 9, 1, 2],
-  [6, 7, 2, 1, 9, 5, 3, 4, 8],
-  [1, 9, 8, 3, 4, 2, 5, 6, 7],
-  [8, 5, 9, 0, 0, 1, 4, 2, 3],
-  [4, 2, 6, 8, 5, 3, 7, 9, 1],
-  [7, 1, 3, 9, 2, 4, 8, 5, 6],
-  [9, 6, 1, 5, 3, 7, 2, 8, 4],
-  [2, 8, 7, 4, 1, 9, 6, 3, 5],
-  [3, 4, 5, 2, 8, 6, 1, 7, 9],
+  [5, 3, 4, 0, 0, 8, 9, 1, 2,],
+  [6, 7, 2, 1, 9, 5, 3, 4, 8,],
+  [1, 9, 8, 3, 4, 2, 5, 6, 7,],
+  [8, 5, 9, 0, 0, 1, 4, 2, 3,],
+  [4, 2, 6, 8, 5, 3, 7, 9, 1,],
+  [7, 1, 3, 9, 2, 4, 8, 5, 6,],
+  [9, 6, 1, 5, 3, 7, 2, 8, 4,],
+  [2, 8, 7, 4, 1, 9, 6, 3, 5,],
+  [3, 4, 5, 2, 8, 6, 1, 7, 9,],
 ];
 
 /** Expected number of solutions for the 2-solution puzzle */
@@ -167,19 +172,20 @@ export const MANY_SOLUTION = [
   '000000000',
   '000000000',
   '000000000',
-].join('\n');
+]
+  .join('\n',);
 
 /** Clue cells for the many-solution puzzle, used to verify all enumerated solutions match */
 export const MANY_SOLUTION_CLUES: readonly (readonly number[])[] = [
-  [5, 3, 4, 6, 7, 8, 9, 1, 2],
-  [6, 7, 2, 1, 9, 5, 3, 4, 8],
-  [1, 9, 8, 3, 4, 2, 5, 6, 7],
-  [8, 5, 9, 7, 6, 1, 4, 2, 3],
-  [4, 2, 6, 8, 5, 3, 7, 9, 1],
-  [7, 1, 3, 9, 2, 4, 8, 5, 6],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [5, 3, 4, 6, 7, 8, 9, 1, 2,],
+  [6, 7, 2, 1, 9, 5, 3, 4, 8,],
+  [1, 9, 8, 3, 4, 2, 5, 6, 7,],
+  [8, 5, 9, 7, 6, 1, 4, 2, 3,],
+  [4, 2, 6, 8, 5, 3, 7, 9, 1,],
+  [7, 1, 3, 9, 2, 4, 8, 5, 6,],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0,],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0,],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0,],
 ];
 
 /** Minimum number of solutions expected for the many-solution puzzle */
@@ -193,7 +199,8 @@ export const MIN_MANY_SOLUTIONS = 2;
  * Stdin for normal mode: 4 puzzles separated by blank lines.
  * Order: solvable, unsolvable (box), unsolvable (column), multi-solution.
  */
-export const NORMAL_INPUT = [SOLVABLE, UNSOLVABLE_BOX, UNSOLVABLE_COL, MULTI_SOLUTION].join('\n\n') + '\n';
+export const NORMAL_INPUT =
+  [SOLVABLE, UNSOLVABLE_BOX, UNSOLVABLE_COL, MULTI_SOLUTION,].join('\n\n',) + '\n';
 
 /** Number of independent correctness checks in normal mode */
 export const NORMAL_CHECKS = 4;
@@ -202,7 +209,8 @@ export const NORMAL_CHECKS = 4;
  * Stdin for --all mode: 3 puzzles (2-solution + many-solution + unsolvable).
  * Tests exact enumeration, many-solution enumeration, and unsolvable rejection under --all.
  */
-export const ALL_INPUT = [TWO_SOLUTION, MANY_SOLUTION, UNSOLVABLE_BOX].join('\n\n') + '\n';
+export const ALL_INPUT = [TWO_SOLUTION, MANY_SOLUTION, UNSOLVABLE_BOX,].join('\n\n',)
+  + '\n';
 
 /** Number of independent correctness checks in --all mode */
 export const ALL_CHECKS = 3;

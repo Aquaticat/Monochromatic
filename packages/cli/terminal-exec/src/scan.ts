@@ -6,14 +6,20 @@
  * @module
  */
 
-import type { Dirent } from 'node:fs';
-import { readdir } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import type { Dirent, } from 'node:fs';
+import { readdir, } from 'node:fs/promises';
+import {
+  join,
+  relative,
+} from 'node:path';
 
-import { l as parentLogger, tagged } from './log.ts';
+import {
+  l as parentLogger,
+  tagged,
+} from './log.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'scan', l: parentLogger });
+const l = tagged({ tag: 'scan', l: parentLogger, },);
 
 /**
  * Registry entry mapping an entry ID to its filesystem path.
@@ -34,7 +40,7 @@ export type EntryRegistration = {
  *
  * @returns Array of absolute file paths.
  */
-async function findDesktopFiles({ dir }: { dir: string }): Promise<readonly string[]> {
+async function findDesktopFiles({ dir, }: { dir: string; },): Promise<readonly string[]> {
   const results: string[] = [];
 
   /**
@@ -42,24 +48,26 @@ async function findDesktopFiles({ dir }: { dir: string }): Promise<readonly stri
    *
    * @param current - Directory to walk.
    */
-  async function walk({ current }: { current: string }): Promise<void> {
+  async function walk({ current, }: { current: string; },): Promise<void> {
     let entries: Dirent[] = [];
     try {
-      entries = await readdir(current, { withFileTypes: true });
-    } catch {
+      entries = await readdir(current, { withFileTypes: true, },);
+    }
+    catch {
       return;
     }
     for (const entry of entries) {
-      const fullPath = join(current, entry.name);
+      const fullPath = join(current, entry.name,);
       if (entry.isDirectory()) {
         /* oxlint-disable-next-line no-await-in-loop -- recursive directory walk must be sequential */
-        await walk({ current: fullPath });
-      } else if (entry.name.endsWith('.desktop')) {
-        results.push(fullPath);
+        await walk({ current: fullPath, },);
+      }
+      else if (entry.name.endsWith('.desktop',)) {
+        results.push(fullPath,);
       }
     }
   }
-  await walk({ current: dir });
+  await walk({ current: dir, },);
   return results;
 }
 
@@ -79,7 +87,7 @@ async function findDesktopFiles({ dir }: { dir: string }): Promise<readonly stri
  * })
  * ```
  */
-export async function scanEntries({ dirs }: { dirs: readonly string[] }): Promise<{
+export async function scanEntries({ dirs, }: { dirs: readonly string[]; },): Promise<{
   readonly registry: ReadonlyMap<string, EntryRegistration>;
   readonly fallbackIds: readonly string[];
 }> {
@@ -90,23 +98,26 @@ export async function scanEntries({ dirs }: { dirs: readonly string[] }): Promis
 
   for (const dir of dirs) {
     /* oxlint-disable-next-line no-await-in-loop -- sequential: later dirs override earlier for same ID */
-    const files = await findDesktopFiles({ dir });
+    const files = await findDesktopFiles({ dir, },);
     for (const filePath of files) {
-      const rel = relative(dir, filePath);
-      const id = rel.replaceAll('/', '-');
-      registry.set(id, { id, path: filePath });
+      const rel = relative(dir, filePath,);
+      const id = rel.replaceAll('/', '-',);
+      registry.set(id, { id, path: filePath, },);
       /** Remove previous occurrence so re-adding puts it at the end (higher priority). */
-      const prevIdx = allIds.indexOf(id);
-      if (prevIdx !== -1) {
-        allIds.splice(prevIdx, 1);
-      }
-      allIds.push(id);
+      const prevIdx = allIds.indexOf(id,);
+      if (prevIdx !== -1)
+        allIds.splice(prevIdx, 1,);
+      allIds.push(id,);
     }
   }
 
   /** Reverse so highest-priority entries come first in fallback ordering. */
   const fallbackIds = allIds.toReversed();
 
-  l.debug(`scanned ${String(registry.size)} entries, ${String(fallbackIds.length)} fallback candidates`);
-  return { registry, fallbackIds };
+  l.debug(
+    `scanned ${String(registry.size,)} entries, ${
+      String(fallbackIds.length,)
+    } fallback candidates`,
+  );
+  return { registry, fallbackIds, };
 }

@@ -1,8 +1,15 @@
 // Type definitions for MCP server configuration, tool entries, and the server handle.
 
-import type { ToolDefinition, ToolHandler, ToolInputSchema } from './protocol.ts';
+import type {
+  ToolDefinition,
+  ToolHandler,
+  ToolInputSchema,
+} from './protocol.ts';
 
-import type { JsonRpcInbound, JsonRpcOutbound } from './json-rpc.ts';
+import type {
+  JsonRpcInbound,
+  JsonRpcOutbound,
+} from './json-rpc.ts';
 
 //region Tool entry -- pairs a name with its options for immutable registration
 
@@ -79,7 +86,9 @@ export type McpServerConfig = {
  * ```
  */
 export type McpServerHandle = {
-  readonly handleMessage: (message: JsonRpcInbound) => Promise<JsonRpcOutbound | undefined>;
+  readonly handleMessage: (
+    message: JsonRpcInbound,
+  ) => Promise<JsonRpcOutbound | undefined>;
 };
 
 //endregion

@@ -1,11 +1,17 @@
 #!/usr/bin/env bun
-import { object } from '@optique/core/constructs';
-import { multiple, optional } from '@optique/core/modifiers';
-import { argument, option } from '@optique/core/primitives';
-import { string } from '@optique/core/valueparser';
-import { runSync } from '@optique/run';
+import { object, } from '@optique/core/constructs';
+import {
+  multiple,
+  optional,
+} from '@optique/core/modifiers';
+import {
+  argument,
+  option,
+} from '@optique/core/primitives';
+import { string, } from '@optique/core/valueparser';
+import { runSync, } from '@optique/run';
 
-import { countFileTokens } from './client.ts';
+import { countFileTokens, } from './client.ts';
 
 //region CLI -- parses args and counts tokens in files
 
@@ -19,34 +25,36 @@ import { countFileTokens } from './client.ts';
  * ```
  */
 const parser = object({
-  model: optional(option('--model', string({ metavar: 'MODEL' }))),
-  files: multiple(argument(string({ metavar: 'FILE' }))),
-});
+  model: optional(option('--model', string({ metavar: 'MODEL', },),),),
+  files: multiple(argument(string({ metavar: 'FILE', },),),),
+},);
 
 /** Parsed CLI arguments */
-const args = runSync(parser, { programName: 'token-count', help: 'option' });
+const args = runSync(parser, { programName: 'token-count', help: 'option', },);
 
-if (args.files.length === 0) {
-  throw new Error('At least one FILE argument is required');
-}
+if (args.files.length === 0)
+  throw new Error('At least one FILE argument is required',);
 
 /** Model override from `--model` flag, or `undefined` for the default. */
 const model = typeof args.model === 'string' ? args.model : undefined;
 /** Configuration object passed to each `countFileTokens` call. */
-const config = model !== undefined ? { model } : {};
+const config = model !== undefined ? { model, } : {};
 
 /** Token count results for all files, resolved concurrently. */
 const results = await Promise.all(
-  args.files.map(function countFile(filePath: string) { return countFileTokens({ filePath, config }); }),
+  args.files.map(function countFile(filePath: string,) {
+    return countFileTokens({ filePath, config, },);
+  },),
 );
 
-for (const result of results) {
-  console.log(`${String(result.inputTokens).padStart(8)} ${result.filePath}`);
-}
+for (const result of results)
+  console.log(`${String(result.inputTokens,).padStart(8,)} ${result.filePath}`,);
 
 if (results.length > 1) {
-  const total = results.reduce(function sumTokens(sum, r) { return sum + r.inputTokens; }, 0);
-  console.log(`${String(total).padStart(8)} total`);
+  const total = results.reduce(function sumTokens(sum, r,) {
+    return sum + r.inputTokens;
+  }, 0,);
+  console.log(`${String(total,).padStart(8,)} total`,);
 }
 
 //endregion CLI

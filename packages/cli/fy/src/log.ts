@@ -2,8 +2,10 @@ import {
   $,
   initPromise,
 } from '@monochromatic-dev/module-es/logger';
-import { $ as tagged } from '@monochromatic-dev/module-es/tagged';
-import type { $ as Logger } from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
+import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
+import type {
+  $ as Logger,
+} from '@monochromatic-dev/module-es/ts/types/t object/t logger/t/index.ts';
 
 await initPromise;
 
@@ -17,7 +19,7 @@ await initPromise;
  * rl.info('starting operation');
  * ```
  */
-export const l: Logger = tagged({ tag: 'cli-fy', l: $ });
+export const l: Logger = tagged({ tag: 'cli-fy', l: $, },);
 
-export type { Logger };
-export { tagged };
+export type { Logger, };
+export { tagged, };

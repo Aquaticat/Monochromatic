@@ -4,8 +4,8 @@
  *
  * @param css - Compiled CSS text to inject
  */
-export function injectCSS(css: string): void {
-  const style = document.createElement("style");
+export function injectCSS(css: string,): void {
+  const style = document.createElement('style',);
   style.textContent = css;
-  document.head.append(style);
+  document.head.append(style,);
 }

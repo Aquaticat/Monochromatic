@@ -34,16 +34,14 @@ export type ExtractResult = {
  * // { source: 'Sorry, I cannot write code.', fenced: false }
  * ```
  */
-export function tryExtractCode(response: string): ExtractResult {
-  const closedFence = response.match(/```(?:typescript|ts)?\n([\s\S]*?)```/);
-  if (closedFence !== null && closedFence[1] !== undefined) {
+export function tryExtractCode(response: string,): ExtractResult {
+  const closedFence = response.match(/```(?:typescript|ts)?\n([\s\S]*?)```/,);
+  if (closedFence !== null && closedFence[1] !== undefined)
     return { source: closedFence[1], fenced: true, };
-  }
 
-  const openFence = response.match(/```(?:typescript|ts)?\n([\s\S]*)/);
-  if (openFence !== null && openFence[1] !== undefined) {
+  const openFence = response.match(/```(?:typescript|ts)?\n([\s\S]*)/,);
+  if (openFence !== null && openFence[1] !== undefined)
     return { source: openFence[1], fenced: true, };
-  }
 
   return { source: response, fenced: false, };
 }
@@ -58,6 +56,6 @@ export function tryExtractCode(response: string): ExtractResult {
  *
  * @returns extracted TypeScript source, or the raw response if no fences found
  */
-export function extractCode(response: string): string {
-  return tryExtractCode(response).source;
+export function extractCode(response: string,): string {
+  return tryExtractCode(response,).source;
 }

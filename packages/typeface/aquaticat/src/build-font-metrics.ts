@@ -29,9 +29,26 @@ export const SPACE_ADVANCE = 300;
 
 /** Maps cell index in the strip to Unicode code point. Cells 0-16 = A-Q, 17-19 = X-Z. */
 export const CELL_UNICODE: Record<number, number> = {
-  0: 65, 1: 66, 2: 67, 3: 68, 4: 69, 5: 70, 6: 71, 7: 72, 8: 73, 9: 74,
-  10: 75, 11: 76, 12: 77, 13: 78, 14: 79, 15: 80, 16: 81,
-  17: 88, 18: 89, 19: 90,
+  0: 65,
+  1: 66,
+  2: 67,
+  3: 68,
+  4: 69,
+  5: 70,
+  6: 71,
+  7: 72,
+  8: 73,
+  9: 74,
+  10: 75,
+  11: 76,
+  12: 77,
+  13: 78,
+  14: 79,
+  15: 80,
+  16: 81,
+  17: 88,
+  18: 89,
+  19: 90,
 };
 
 //endregion Font metrics and glyph mapping
@@ -51,7 +68,7 @@ export const CELL_UNICODE: Record<number, number> = {
  * fontY(0);   // 750 (top of em square)
  * ```
  */
-export function fontY(svgY: number): number {
+export function fontY(svgY: number,): number {
   return BASELINE_Y - svgY;
 }
 

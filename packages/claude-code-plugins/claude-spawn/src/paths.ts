@@ -12,7 +12,7 @@
  * @module
  */
 
-import { join } from 'node:path';
+import { join, } from 'node:path';
 
 /**
  * Root directory for all spawn coordination files.
@@ -27,14 +27,14 @@ const SPAWN_RESULTS_DIR = join(
  * Directory for PID-to-session-identity mapping files.
  * Written by SessionStart hook, read by CLI tool.
  */
-const BY_PID_DIR = join(SPAWN_RESULTS_DIR, '.by-pid');
+const BY_PID_DIR = join(SPAWN_RESULTS_DIR, '.by-pid',);
 
 /**
  * Directory for spawn state files.
  * Created by SessionStart hook, updated by Stop and SessionEnd hooks,
  * read and renamed by the inject check.
  */
-const SPAWNS_DIR = join(SPAWN_RESULTS_DIR, 'spawns');
+const SPAWNS_DIR = join(SPAWN_RESULTS_DIR, 'spawns',);
 
 /**
  * JSON structure for PID-to-session mapping files in `.by-pid/`.

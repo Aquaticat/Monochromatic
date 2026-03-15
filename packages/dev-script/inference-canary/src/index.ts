@@ -16,11 +16,26 @@
  *   INFERENCE_VALIDATION_OPENROUTER_API_KEY -- OpenRouter API key
  */
 import whyIsNodeRunning from 'why-is-node-running';
-import { getRecentArtifactPairs, } from './linter-artifacts-recent.ts';
-import { modelOverride, retestAll, runsOverride, useSimple, includeSlow, probeFilter, } from './index-cli.ts';
+import {
+  includeSlow,
+  modelOverride,
+  probeFilter,
+  retestAll,
+  runsOverride,
+  useSimple,
+} from './index-cli.ts';
 import { runAndReport, } from './index-run.ts';
-import { models, type ModelConfig, } from './models.ts';
-import { codeGenProbes, codeGenProbesAll, simpleProbes, simulationProbes, } from './probes.ts';
+import { getRecentArtifactPairs, } from './linter-artifacts-recent.ts';
+import {
+  type ModelConfig,
+  models,
+} from './models.ts';
+import {
+  codeGenProbes,
+  codeGenProbesAll,
+  simpleProbes,
+  simulationProbes,
+} from './probes.ts';
 
 //region Elapsed-time log prefix -- prepends "+Xs" to every console.log/error line so interleaved output is easy to timeline
 
@@ -39,9 +54,9 @@ const PROCESS_START_MS = Date.now();
  * @returns elapsed time string like "+  4.2s"
  */
 function elapsedPrefix(): string {
-  const elapsed = ((Date.now() - PROCESS_START_MS) / MS_PER_SECOND).toFixed(1);
+  const elapsed = ((Date.now() - PROCESS_START_MS) / MS_PER_SECOND).toFixed(1,);
   // Pad to 6 chars so columns align up to 999.9s
-  return `[+${elapsed.padStart(ELAPSED_PAD_WIDTH)}s]`;
+  return `[+${elapsed.padStart(ELAPSED_PAD_WIDTH,)}s]`;
 }
 
 /** Original console.log preserved before timestamp injection override. */
@@ -51,9 +66,13 @@ const originalLog = console.log;
 // oxlint-disable-next-line no-console -- intentional override to inject timestamps
 const originalError = console.error;
 // oxlint-disable-next-line no-console -- intentional override
-console.log = function logWithTimestamp(...args: unknown[]): void { originalLog(elapsedPrefix(), ...args); };
+console.log = function logWithTimestamp(...args: unknown[]): void {
+  originalLog(elapsedPrefix(), ...args,);
+};
 // oxlint-disable-next-line no-console -- intentional override
-console.error = function errorWithTimestamp(...args: unknown[]): void { originalError(elapsedPrefix(), ...args); };
+console.error = function errorWithTimestamp(...args: unknown[]): void {
+  originalError(elapsedPrefix(), ...args,);
+};
 
 //endregion Elapsed-time log prefix
 
@@ -61,9 +80,8 @@ console.error = function errorWithTimestamp(...args: unknown[]): void { original
 
 /** OpenRouter API key from environment, required for all inference calls. */
 const apiKey = process.env['INFERENCE_VALIDATION_OPENROUTER_API_KEY'];
-if (apiKey === undefined || apiKey === '') {
-  throw new Error('INFERENCE_VALIDATION_OPENROUTER_API_KEY not set in environment');
-}
+if (apiKey === undefined || apiKey === '')
+  throw new Error('INFERENCE_VALIDATION_OPENROUTER_API_KEY not set in environment',);
 
 //endregion API key resolution
 
@@ -76,14 +94,19 @@ if (apiKey === undefined || apiKey === '') {
  */
 function selectModels(): readonly ModelConfig[] {
   if (modelOverride !== undefined) {
-    const found = models.find(function matchModel(model): boolean { return model.openrouterId === modelOverride || model.label === modelOverride; });
-    if (found !== undefined) return [found];
-    if (!modelOverride.includes('/')) {
-      throw new Error(`Invalid model ID "${modelOverride}": must be in "provider/name" format`);
+    const found = models.find(function matchModel(model,): boolean {
+      return model.openrouterId === modelOverride || model.label === modelOverride;
+    },);
+    if (found !== undefined)
+      return [found,];
+    if (!modelOverride.includes('/',)) {
+      throw new Error(
+        `Invalid model ID "${modelOverride}": must be in "provider/name" format`,
+      );
     }
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- includes('/') ensures provider/model format
     const modelId = modelOverride as `${string}/${string}`;
-    return [{ openrouterId: modelId, label: modelId, verbosity: 'low', }];
+    return [{ openrouterId: modelId, label: modelId, verbosity: 'low', },];
   }
   return models;
 }
@@ -91,35 +114,43 @@ function selectModels(): readonly ModelConfig[] {
 /** Models selected for this run based on CLI flags. */
 const selectedModels = selectModels();
 /** Recent probe results and failures used to skip recently-tested pairs. */
-const { probePairs: recentModelProbePairs, failedModels: recentlyFailedModels, } = retestAll
-  ? { probePairs: new Map<string, ReadonlySet<string>>(), failedModels: new Set<string>(), }
-  : await getRecentArtifactPairs();
+const { probePairs: recentModelProbePairs, failedModels: recentlyFailedModels, } =
+  retestAll
+    ? { probePairs: new Map<string, ReadonlySet<string>>(),
+      failedModels: new Set<string>(), }
+    : await getRecentArtifactPairs();
 
 //endregion Model selection
 
 //region Execution -- selects probe tier (simple/fast/slow), runs canary, throws on degradation
 
-if (selectedModels.length === 0) {
-  console.log('[canary] no models selected for testing.');
-} else {
+if (selectedModels.length === 0)
+  console.log('[canary] no models selected for testing.',);
+else {
   // oxlint-disable-next-line no-nested-ternary -- three-way probe tier selection; simulation runs alongside code-gen by default
   /** Code generation probe set, including slow probes when `--slow` is passed. */
   const codeGenSet = includeSlow ? codeGenProbesAll : codeGenProbes;
   /** Combined probe list from selected code-gen tier and simulation probes. */
-  const allProbes = useSimple ? simpleProbes : [...codeGenSet, ...simulationProbes];
+  const allProbes = useSimple ? simpleProbes : [...codeGenSet, ...simulationProbes,];
 
   /** Local copy of probe filter for TypeScript narrowing inside callbacks. */
   const activeProbeFilter = probeFilter;
 
   /** Probes to run, filtered by `--probe` if specified. */
   const probes = activeProbeFilter !== undefined
-    ? allProbes.filter(function matchFilter(probe): boolean { return activeProbeFilter.has(probe.name); })
+    ? allProbes.filter(function matchFilter(probe,): boolean {
+      return activeProbeFilter.has(probe.name,);
+    },)
     : allProbes;
 
   if (probes.length === 0) {
     /** Comma-separated list of all available probe names for the error message. */
-    const available = allProbes.map(function getName(probe): string { return probe.name; }).join(', ');
-    throw new Error(`--probe matched no probes. Available: ${available}`);
+    const available = allProbes
+      .map(function getName(probe,): string {
+        return probe.name;
+      },)
+      .join(', ',);
+    throw new Error(`--probe matched no probes. Available: ${available}`,);
   }
 
   // When targeting specific probes, bypass the recent-result cache for those probes so
@@ -127,19 +158,30 @@ if (selectedModels.length === 0) {
   /** Recent pairs with targeted probes excluded so they always re-run. */
   const effectiveRecentPairs = activeProbeFilter !== undefined
     ? new Map(
-      [...recentModelProbePairs.entries()].map(function filterPair([model, skipped]): [string, Set<string>] {
-        return [
-          model,
-          new Set([...skipped].filter(function keepName(name): boolean { return !activeProbeFilter.has(name); })),
-        ];
-      }),
+      [...recentModelProbePairs.entries(),].map(
+        function filterPair([model, skipped,],): [string, Set<string>,] {
+          return [
+            model,
+            new Set([...skipped,].filter(function keepName(name,): boolean {
+              return !activeProbeFilter.has(name,);
+            },),),
+          ];
+        },
+      ),
     )
     : recentModelProbePairs;
 
-  console.log(`[canary] testing ${String(selectedModels.length)} model(s) in parallel`);
-  console.log(`[canary] probes: ${probes.map(function getName(probe): string { return probe.name; }).join(', ')}`);
-  console.log('');
-  await runAndReport(selectedModels, probes, effectiveRecentPairs, recentlyFailedModels, apiKey, runsOverride);
+  console.log(`[canary] testing ${String(selectedModels.length,)} model(s) in parallel`,);
+  console.log(`[canary] probes: ${
+    probes
+      .map(function getName(probe,): string {
+        return probe.name;
+      },)
+      .join(', ',)
+  }`,);
+  console.log('',);
+  await runAndReport(selectedModels, probes, effectiveRecentPairs, recentlyFailedModels,
+    apiKey, runsOverride,);
 }
 
 // Intermittently, Bun's fetch connection pool or other async resources prevent the
@@ -151,11 +193,13 @@ const WATCHDOG_TIMEOUT_SECONDS = 5;
 
 /** Watchdog timer that force-exits after stale async resources prevent natural shutdown. */
 const watchdog = setTimeout(function watchdogTimeout(): void {
-  console.error('[canary] process did not exit naturally after all work completed, dumping active handles:');
+  console.error(
+    '[canary] process did not exit naturally after all work completed, dumping active handles:',
+  );
   whyIsNodeRunning();
   // oxlint-disable-next-line unicorn/no-process-exit -- required: fallback for intermittent async resource leaks
-  process.exit(0);
-}, WATCHDOG_TIMEOUT_SECONDS * MS_PER_SECOND);
+  process.exit(0,);
+}, WATCHDOG_TIMEOUT_SECONDS * MS_PER_SECOND,);
 watchdog.unref();
 
 //endregion Execution

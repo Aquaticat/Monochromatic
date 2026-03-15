@@ -5,17 +5,17 @@
  * The server renders its own HTML shell (not via renderPage) without `<top-nav>`,
  * because the `<task-detail>` component provides its own back-button header.
  */
-import type { Task } from "../lib/types.ts";
-import { api } from "./lib/api.ts";
-import { injectCSS } from "./lib/inject-css.ts";
-import { globalStyles } from "./styles.ts";
-import { readPageData } from "./lib/page-data.ts";
+import type { Task, } from '../lib/types.ts';
+import { api, } from './lib/api.ts';
+import { injectCSS, } from './lib/inject-css.ts';
+import { readPageData, } from './lib/page-data.ts';
+import { globalStyles, } from './styles.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import "./components/side-drawer.ts";
-import type { TaskDetail } from "./components/task-detail.ts";
+import './components/side-drawer.ts';
+import type { TaskDetail, } from './components/task-detail.ts';
 // Side-effect import: registers the `<task-detail>` custom element
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
-import "./components/task-detail.ts";
+import './components/task-detail.ts';
 
 /** Minimal task info shown in the blocker picker dropdown. */
 type BlockerCandidate = {
@@ -37,41 +37,41 @@ type TaskDetailsPageData = {
   blockerSummaries: BlockerSummary[];
 };
 
-injectCSS(globalStyles);
+injectCSS(globalStyles,);
 
 /** Deserialized page data containing task, blocker candidates, and summaries. */
 const pageData = readPageData<TaskDetailsPageData>();
 
 /** Task record from the deserialized page data. */
-const {task} = pageData;
+const { task, } = pageData;
 
 /** Raw DOM element for the `#app` container. */
-const appElement = document.querySelector<HTMLElement>("#app");
-if (!(appElement instanceof HTMLElement)) {
-  throw new Error("Missing app element");
-}
+const appElement = document.querySelector<HTMLElement>('#app',);
+if (!(appElement instanceof HTMLElement))
+  throw new Error('Missing app element',);
 
 /** Validated `#app` container element. */
 const app = appElement;
 
 /** Task detail web component configured with server-provided data. */
-const detail = document.createElement("task-detail") as TaskDetail;
+const detail = document.createElement('task-detail',) as TaskDetail;
 detail.configure({
   task,
   blockerSummaries: pageData.blockerSummaries,
-});
+},);
 
-detail.addEventListener("action", async function handleAction(event) {
-  if (!(event instanceof CustomEvent)) throw new TypeError("Expected CustomEvent for 'action' listener");
-  const { action, title, description } = event.detail as {
+detail.addEventListener('action', async function handleAction(event,) {
+  if (!(event instanceof CustomEvent))
+    throw new TypeError("Expected CustomEvent for 'action' listener",);
+  const { action, title, description, } = event.detail as {
     action: string;
     title: string;
     description: string;
   };
 
-  if (action === "close") {
-    globalThis.location.href = "/";
-  } else if (action === "save") {
+  if (action === 'close')
+    globalThis.location.href = '/';
+  else if (action === 'save') {
     const metadata = detail.getMetadata();
     const payload = {
       title,
@@ -84,23 +84,27 @@ detail.addEventListener("action", async function handleAction(event) {
       blockedBy: task.blockedBy,
     };
     await api(`/api/tasks/${task.id}`, {
-      method: "PUT",
-      body: JSON.stringify(payload),
-    });
+      method: 'PUT',
+      body: JSON.stringify(payload,),
+    },);
     globalThis.location.reload();
-  } else if (action === "start") {
-    await api(`/api/tasks/${task.id}/start`, { method: "POST" });
-    globalThis.location.reload();
-  } else if (action === "stop") {
-    await api(`/api/tasks/${task.id}/stop`, { method: "POST" });
-    globalThis.location.reload();
-  } else if (action === "complete") {
-    await api(`/api/tasks/${task.id}/complete`, { method: "POST" });
-    globalThis.location.href = "/";
-  } else if (action === "delete") {
-    await api(`/api/tasks/${task.id}`, { method: "DELETE" });
-    globalThis.location.href = "/";
   }
-});
+  else if (action === 'start') {
+    await api(`/api/tasks/${task.id}/start`, { method: 'POST', },);
+    globalThis.location.reload();
+  }
+  else if (action === 'stop') {
+    await api(`/api/tasks/${task.id}/stop`, { method: 'POST', },);
+    globalThis.location.reload();
+  }
+  else if (action === 'complete') {
+    await api(`/api/tasks/${task.id}/complete`, { method: 'POST', },);
+    globalThis.location.href = '/';
+  }
+  else if (action === 'delete') {
+    await api(`/api/tasks/${task.id}`, { method: 'DELETE', },);
+    globalThis.location.href = '/';
+  }
+},);
 
-app.append(detail);
+app.append(detail,);

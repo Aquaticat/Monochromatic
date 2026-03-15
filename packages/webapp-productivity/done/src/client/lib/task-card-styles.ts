@@ -1,7 +1,7 @@
 /**
  * Shadow DOM styles for the `\<task-card\>` component.
  */
-import { css } from "../css.ts";
+import { css, } from '../css.ts';
 
 /** Shadow DOM styles for `\<task-card\>` -- card layout, checkbox, title, and metadata chips. */
 export const TASK_CARD_STYLES = css(`
@@ -58,4 +58,4 @@ export const TASK_CARD_STYLES = css(`
     border-color: var(--red-fg);
     color: var(--red-fg);
   }
-`);
+`,);

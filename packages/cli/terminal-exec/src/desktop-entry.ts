@@ -6,10 +6,13 @@
  * @module
  */
 
-import { l as parentLogger, tagged } from './log.ts';
+import {
+  l as parentLogger,
+  tagged,
+} from './log.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'desktop-entry', l: parentLogger });
+const l = tagged({ tag: 'desktop-entry', l: parentLogger, },);
 
 /**
  * Parsed result from a `.desktop` file containing terminal-relevant fields.
@@ -41,10 +44,10 @@ export type DesktopEntry = {
 
 /** Desktop entry string escapes per the spec. */
 const ESCAPE_MAP: Record<string, string> = {
-  's': ' ',
-  'n': '\n',
-  't': '\t',
-  'r': '\r',
+  s: ' ',
+  n: '\n',
+  t: '\t',
+  r: '\r',
   '\\': '\\',
 };
 
@@ -55,10 +58,10 @@ const ESCAPE_MAP: Record<string, string> = {
  *
  * @returns Expanded string with escapes resolved.
  */
-export function expandEscapes({ s }: { s: string }): string {
-  return s.replaceAll(/\\(.)/g, function replaceEscape(_match, char: string) {
+export function expandEscapes({ s, }: { s: string; },): string {
+  return s.replaceAll(/\\(.)/g, function replaceEscape(_match, char: string,) {
     return ESCAPE_MAP[char] ?? char;
-  });
+  },);
 }
 
 /**
@@ -76,52 +79,68 @@ export function expandEscapes({ s }: { s: string }): string {
  * // entry.isTerminal === true
  * ```
  */
-export async function parseDesktopEntry({ path }: { path: string }): Promise<DesktopEntry | null> {
-  const file = Bun.file(path);
-  if (!await file.exists()) {
+export async function parseDesktopEntry(
+  { path, }: { path: string; },
+): Promise<DesktopEntry | null> {
+  const file = Bun.file(path,);
+  if (!await file.exists())
     return null;
-  }
 
   const text = await file.text();
   const result: {
-    exec: string; isTerminal: boolean; hidden: boolean; tryExec: string;
-    onlyShowIn: string[]; notShowIn: string[];
-    execArg: string; appIdArg: string; titleArg: string; dirArg: string; holdArg: string;
+    exec: string;
+    isTerminal: boolean;
+    hidden: boolean;
+    tryExec: string;
+    onlyShowIn: string[];
+    notShowIn: string[];
+    execArg: string;
+    appIdArg: string;
+    titleArg: string;
+    dirArg: string;
+    holdArg: string;
   } = {
-    exec: '', isTerminal: false, hidden: false, tryExec: '',
-    onlyShowIn: [], notShowIn: [],
-    execArg: '', appIdArg: '', titleArg: '', dirArg: '', holdArg: '',
+    exec: '',
+    isTerminal: false,
+    hidden: false,
+    tryExec: '',
+    onlyShowIn: [],
+    notShowIn: [],
+    execArg: '',
+    appIdArg: '',
+    titleArg: '',
+    dirArg: '',
+    holdArg: '',
   };
 
   let inDesktopEntry = false;
 
-  for (const rawLine of text.split('\n')) {
+  for (const rawLine of text.split('\n',)) {
     const line = rawLine.trim();
 
-    if (line.startsWith('[')) {
+    if (line.startsWith('[',)) {
       inDesktopEntry = line === '[Desktop Entry]';
-      if (!inDesktopEntry && result.exec.length > 0) {
+      if (!inDesktopEntry && result.exec.length > 0)
         break;
-      }
       continue;
     }
 
-    if (!inDesktopEntry) {
+    if (!inDesktopEntry)
       continue;
-    }
 
-    const eqIdx = line.indexOf('=');
-    if (eqIdx === -1) {
+    const eqIdx = line.indexOf('=',);
+    if (eqIdx === -1)
       continue;
-    }
 
-    const key = line.slice(0, eqIdx).trim();
-    const value = line.slice(eqIdx + 1).trim();
+    const key = line.slice(0, eqIdx,).trim();
+    const value = line.slice(eqIdx + 1,).trim();
 
-    applyKey({ key, value, result });
+    applyKey({ key, value, result, },);
   }
 
-  l.debug(`parsed '${path}': exec='${result.exec}', isTerminal=${String(result.isTerminal)}`);
+  l.debug(
+    `parsed '${path}': exec='${result.exec}', isTerminal=${String(result.isTerminal,)}`,
+  );
   return result;
 }
 
@@ -134,35 +153,52 @@ export async function parseDesktopEntry({ path }: { path: string }): Promise<Des
  *
  * @param result - Mutable result object to populate.
  */
-function applyKey({ key, value, result }: {
-  key: string; value: string;
+function applyKey({ key, value, result, }: {
+  key: string;
+  value: string;
   result: {
-    exec: string; isTerminal: boolean; hidden: boolean; tryExec: string;
-    onlyShowIn: string[]; notShowIn: string[];
-    execArg: string; appIdArg: string; titleArg: string; dirArg: string; holdArg: string;
+    exec: string;
+    isTerminal: boolean;
+    hidden: boolean;
+    tryExec: string;
+    onlyShowIn: string[];
+    notShowIn: string[];
+    execArg: string;
+    appIdArg: string;
+    titleArg: string;
+    dirArg: string;
+    holdArg: string;
   };
-}): void {
-  if (key === 'Exec') {
+},): void {
+  if (key === 'Exec')
     result.exec = value;
-  } else if (key === 'Categories') {
-    result.isTerminal = value.split(';').some(function matchTerminal(cat) { return cat === 'TerminalEmulator'; });
-  } else if (key === 'Hidden') {
-    result.hidden = value.toLowerCase() === 'true';
-  } else if (key === 'TryExec') {
-    result.tryExec = expandEscapes({ s: value });
-  } else if (key === 'OnlyShowIn') {
-    result.onlyShowIn = value.split(';').filter(function nonEmpty(s) { return s.length > 0; });
-  } else if (key === 'NotShowIn') {
-    result.notShowIn = value.split(';').filter(function nonEmpty(s) { return s.length > 0; });
-  } else if (key === 'X-TerminalArgExec' || key === 'TerminalArgExec') {
-    result.execArg = expandEscapes({ s: value });
-  } else if (key === 'X-TerminalArgAppId' || key === 'TerminalArgAppId') {
-    result.appIdArg = expandEscapes({ s: value });
-  } else if (key === 'X-TerminalArgTitle' || key === 'TerminalArgTitle') {
-    result.titleArg = expandEscapes({ s: value });
-  } else if (key === 'X-TerminalArgDir' || key === 'TerminalArgDir') {
-    result.dirArg = expandEscapes({ s: value });
-  } else if (key === 'X-TerminalArgHold' || key === 'TerminalArgHold') {
-    result.holdArg = expandEscapes({ s: value });
+  else if (key === 'Categories') {
+    result.isTerminal = value.split(';',).some(function matchTerminal(cat,) {
+      return cat === 'TerminalEmulator';
+    },);
   }
+  else if (key === 'Hidden')
+    result.hidden = value.toLowerCase() === 'true';
+  else if (key === 'TryExec')
+    result.tryExec = expandEscapes({ s: value, },);
+  else if (key === 'OnlyShowIn') {
+    result.onlyShowIn = value.split(';',).filter(function nonEmpty(s,) {
+      return s.length > 0;
+    },);
+  }
+  else if (key === 'NotShowIn') {
+    result.notShowIn = value.split(';',).filter(function nonEmpty(s,) {
+      return s.length > 0;
+    },);
+  }
+  else if (key === 'X-TerminalArgExec' || key === 'TerminalArgExec')
+    result.execArg = expandEscapes({ s: value, },);
+  else if (key === 'X-TerminalArgAppId' || key === 'TerminalArgAppId')
+    result.appIdArg = expandEscapes({ s: value, },);
+  else if (key === 'X-TerminalArgTitle' || key === 'TerminalArgTitle')
+    result.titleArg = expandEscapes({ s: value, },);
+  else if (key === 'X-TerminalArgDir' || key === 'TerminalArgDir')
+    result.dirArg = expandEscapes({ s: value, },);
+  else if (key === 'X-TerminalArgHold' || key === 'TerminalArgHold')
+    result.holdArg = expandEscapes({ s: value, },);
 }

@@ -6,9 +6,15 @@
  *
  * Composed patterns (buttonOutlined, stickyBar) are in `mixins-composed.ts`.
  */
-import type { CssDeclarations, CssValue } from "@monochromatic-dev/module-es/h-css";
-import { cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
-import { $ as css } from "./css.ts";
+import type {
+  CssDeclarations,
+  CssValue,
+} from '@monochromatic-dev/module-es/h-css';
+import {
+  cssRem,
+  cssVar,
+} from '@monochromatic-dev/module-es/h-css';
+import { $ as css, } from './css.ts';
 
 //region Layout primitives
 
@@ -65,7 +71,7 @@ export function flexColumn(): CssDeclarations {
  */
 export function borderRadiusFull(): CssDeclarations {
   return {
-    'border-radius': cssRem(62.5),
+    'border-radius': cssRem(62.5,),
   };
 }
 
@@ -124,8 +130,8 @@ export function appearanceNone(): CssDeclarations {
  */
 export function minTouchTarget(): CssDeclarations {
   return {
-    'min-inline-size': cssRem(3),
-    'min-block-size': cssRem(3),
+    'min-inline-size': cssRem(3,),
+    'min-block-size': cssRem(3,),
   };
 }
 
@@ -136,8 +142,9 @@ export function minTouchTarget(): CssDeclarations {
  */
 export function shadowDomGlobals(): string[] {
   return [
-    css({ rule: 'button:disabled', decls: { opacity: 0.45, cursor: 'not-allowed' } }),
-    css({ rule: 'input::placeholder,textarea::placeholder', decls: { color: cssVar('medium') } }),
+    css({ rule: 'button:disabled', decls: { opacity: 0.45, cursor: 'not-allowed', }, },),
+    css({ rule: 'input::placeholder,textarea::placeholder',
+      decls: { color: cssVar('medium',), }, },),
   ];
 }
 
@@ -153,7 +160,7 @@ export function shadowDomGlobals(): string[] {
 export function scrollRow(): CssDeclarations {
   return {
     display: 'flex',
-    gap: cssVar('min-gap'),
+    gap: cssVar('min-gap',),
     'align-items': 'flex-start',
     'overflow-x': 'auto',
     'overflow-y': 'clip',
@@ -172,11 +179,13 @@ export function scrollRow(): CssDeclarations {
  *
  * @returns Declarations for focus outline
  */
-export function focusOutline({ offset = cssRem(0.125) }: { offset?: CssValue } = {}): CssDeclarations {
+export function focusOutline(
+  { offset = cssRem(0.125,), }: { offset?: CssValue; } = {},
+): CssDeclarations {
   return {
-    'outline-width': cssRem(0.125),
+    'outline-width': cssRem(0.125,),
     'outline-style': 'solid',
-    'outline-color': cssVar('fg'),
+    'outline-color': cssVar('fg',),
     'outline-offset': offset,
   };
 }

@@ -33,10 +33,9 @@ type LintExecOptions = {
  * catch (error) { const output = getStdoutFromError(error); }
  * ```
  */
-export function getStdoutFromError(error: unknown): string {
-  if (error instanceof Error && 'stdout' in error) {
-    return String((error as { stdout: unknown }).stdout);
-  }
+export function getStdoutFromError(error: unknown,): string {
+  if (error instanceof Error && 'stdout' in error)
+    return String((error as { stdout: unknown; }).stdout,);
   return '';
 }
 
@@ -63,11 +62,17 @@ export async function execPromise(
   options: LintExecOptions = {},
 ): Promise<string> {
   const execOptions = options.timeout !== undefined ? { timeout: options.timeout, } : {};
-  const result = await execBun(command, args, execOptions);
+  const result = await execBun(command, args, execOptions,);
 
   if (result.exitCode !== 0) {
     throw Object.assign(
-      new Error(`${command} exited ${String(result.exitCode)}${result.killed ? ' (killed)' : ''}: ${result.stderr}`),
+      new Error(
+        `${command} exited ${String(result.exitCode,)}${
+          result.killed
+            ? ' (killed)'
+            : ''
+        }: ${result.stderr}`,
+      ),
       { stdout: result.stdout, stderr: result.stderr, },
     );
   }

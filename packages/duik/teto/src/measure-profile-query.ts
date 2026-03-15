@@ -8,7 +8,10 @@
  * @module
  */
 
-import type { ContentBoundsResult, WidthProfile } from './measure-profile.ts'
+import type {
+  ContentBoundsResult,
+  WidthProfile,
+} from './measure-profile.ts';
 
 /**
  * Finds the width at a given relative vertical position (0 = top, 1 = bottom).
@@ -23,11 +26,11 @@ export function widthAtRelY(
   profile: WidthProfile,
   relY: number,
 ): number {
-  const targetY = Math.round(relY * profile.imageHeight)
-  const row = profile.rows.find(function matchRow(r) {
-    return r.y === targetY
-  })
-  return row?.width ?? 0
+  const targetY = Math.round(relY * profile.imageHeight,);
+  const row = profile.rows.find(function matchRow(r,) {
+    return r.y === targetY;
+  },);
+  return row?.width ?? 0;
 }
 
 /**
@@ -45,20 +48,20 @@ export function maxWidthInRange(
   profile: WidthProfile,
   relYStart: number,
   relYEnd: number,
-): { width: number; relY: number } {
-  const yStart = Math.round(relYStart * profile.imageHeight)
-  const yEnd = Math.round(relYEnd * profile.imageHeight)
-  let maxW = 0
-  let maxY = yStart
+): { width: number; relY: number; } {
+  const yStart = Math.round(relYStart * profile.imageHeight,);
+  const yEnd = Math.round(relYEnd * profile.imageHeight,);
+  let maxW = 0;
+  let maxY = yStart;
 
   for (const row of profile.rows) {
     if (row.y >= yStart && row.y <= yEnd && row.width > maxW) {
-      maxW = row.width
-      maxY = row.y
+      maxW = row.width;
+      maxY = row.y;
     }
   }
 
-  return { width: maxW, relY: maxY / profile.imageHeight }
+  return { width: maxW, relY: maxY / profile.imageHeight, };
 }
 
 /**
@@ -76,20 +79,20 @@ export function minWidthInRange(
   profile: WidthProfile,
   relYStart: number,
   relYEnd: number,
-): { width: number; relY: number } {
-  const yStart = Math.round(relYStart * profile.imageHeight)
-  const yEnd = Math.round(relYEnd * profile.imageHeight)
-  let minW = Infinity
-  let minY = yStart
+): { width: number; relY: number; } {
+  const yStart = Math.round(relYStart * profile.imageHeight,);
+  const yEnd = Math.round(relYEnd * profile.imageHeight,);
+  let minW = Infinity;
+  let minY = yStart;
 
   for (const row of profile.rows) {
     if (row.y >= yStart && row.y <= yEnd && row.width < minW) {
-      minW = row.width
-      minY = row.y
+      minW = row.width;
+      minY = row.y;
     }
   }
 
-  return { width: minW === Infinity ? 0 : minW, relY: minY / profile.imageHeight }
+  return { width: minW === Infinity ? 0 : minW, relY: minY / profile.imageHeight, };
 }
 
 /**
@@ -99,19 +102,22 @@ export function minWidthInRange(
  *
  * @returns top and bottom y positions (relative 0-1)
  */
-export function contentBounds(profile: WidthProfile): ContentBoundsResult {
-  if (profile.rows.length === 0) return { top: 0, bottom: 0, totalHeight: 0 }
+export function contentBounds(profile: WidthProfile,): ContentBoundsResult {
+  if (profile.rows.length === 0)
+    return { top: 0, bottom: 0, totalHeight: 0, };
   const firstRow = profile.rows[0];
-  if (firstRow === undefined) return { top: 0, bottom: 0, totalHeight: 0 };
-  const top = firstRow.y
-  const lastRow = profile.rows.at(-1);
-  if (lastRow === undefined) return { top: 0, bottom: 0, totalHeight: 0 };
-  const bottom = lastRow.y
+  if (firstRow === undefined)
+    return { top: 0, bottom: 0, totalHeight: 0, };
+  const top = firstRow.y;
+  const lastRow = profile.rows.at(-1,);
+  if (lastRow === undefined)
+    return { top: 0, bottom: 0, totalHeight: 0, };
+  const bottom = lastRow.y;
   return {
     top: top / profile.imageHeight,
     bottom: bottom / profile.imageHeight,
     totalHeight: bottom - top,
-  }
+  };
 }
 
 /**
@@ -127,7 +133,7 @@ export function contentToAbsY(
   bounds: ContentBoundsResult,
   relContent: number,
 ): number {
-  return bounds.top + relContent * (bounds.bottom - bounds.top)
+  return bounds.top + relContent * (bounds.bottom - bounds.top);
 }
 
 /**
@@ -139,7 +145,8 @@ export function contentToAbsY(
  *
  * @returns formatted ratio string
  */
-export function fmtRatio(cmpVal: number, refVal: number): string {
-  if (refVal === 0) return 'N/A'
-  return (cmpVal / refVal).toFixed(2)
+export function fmtRatio(cmpVal: number, refVal: number,): string {
+  if (refVal === 0)
+    return 'N/A';
+  return (cmpVal / refVal).toFixed(2,);
 }

@@ -1,10 +1,17 @@
-import { createServer, type Server } from "node:net";
-import { readdir, readlink, readFile } from "node:fs/promises";
+import {
+  readdir,
+  readFile,
+  readlink,
+} from 'node:fs/promises';
+import {
+  createServer,
+  type Server,
+} from 'node:net';
 
-import { log } from "../log.ts";
+import { log, } from '../log.ts';
 
 /** Abstract Unix socket name used for single-instance enforcement. */
-const SOCKET_NAME = "\0hall-monitor";
+const SOCKET_NAME = '\0hall-monitor';
 
 /** Index of the inode field in /proc/net/unix output lines. */
 const INODE_FIELD_INDEX = 6;
@@ -52,18 +59,20 @@ export function getLockServer(): Server {
  */
 export function acquireLock(): Promise<boolean> {
   // oxlint-disable-next-line promise/avoid-new -- wrapping Node.js callback-based Server API
-  return new Promise(function tryListen(resolve) {
+  return new Promise(function tryListen(resolve,) {
     lockServer = createServer();
-    lockServer.on("error", function handleSocketError(err: NodeJS.ErrnoException) {
-      if (err.code === "EADDRINUSE") {
-        resolve(false);
-      } else {
-        log.error(`[lock] Socket error: ${err.message}`);
-        resolve(false);
+    lockServer.on('error', function handleSocketError(err: NodeJS.ErrnoException,) {
+      if (err.code === 'EADDRINUSE')
+        resolve(false,);
+      else {
+        log.error(`[lock] Socket error: ${err.message}`,);
+        resolve(false,);
       }
-    });
-    lockServer.listen(SOCKET_NAME, function onListening() { resolve(true); });
-  });
+    },);
+    lockServer.listen(SOCKET_NAME, function onListening() {
+      resolve(true,);
+    },);
+  },);
 }
 
 /**
@@ -73,25 +82,29 @@ export function acquireLock(): Promise<boolean> {
  * @returns PID of the socket owner, or null if not found
  */
 async function findSocketOwnerPid(): Promise<number | null> {
-  const unix = await readFile("/proc/net/unix", "utf8");
-  const line = unix.split("\n").find(function matchHallMonitor(l) { return l.includes("@hall-monitor"); });
-  if (line === undefined) {
+  const unix = await readFile('/proc/net/unix', 'utf8',);
+  const line = unix.split('\n',).find(function matchHallMonitor(l,) {
+    return l.includes('@hall-monitor',);
+  },);
+  if (line === undefined)
     return null;
-  }
-  const fields = line.trim().split(/\s+/);
+  const fields = line.trim().split(/\s+/,);
   const inode = fields[INODE_FIELD_INDEX];
 
-  for (const pid of await readdir("/proc")) {
-    if (!/^\d+$/.test(pid)) continue;
+  for (const pid of await readdir('/proc',)) {
+    if (!/^\d+$/.test(pid,))
+      continue;
     try {
       // oxlint-disable-next-line no-await-in-loop -- sequential /proc traversal; parallel reads would race with process exits
-      const fds = await readdir(`/proc/${pid}/fd`);
+      const fds = await readdir(`/proc/${pid}/fd`,);
       for (const fd of fds) {
         // oxlint-disable-next-line no-await-in-loop -- sequential readlink for each fd
-        const link = await readlink(`/proc/${pid}/fd/${fd}`);
-        if (link === `socket:[${inode}]`) return Number.parseInt(pid, 10);
+        const link = await readlink(`/proc/${pid}/fd/${fd}`,);
+        if (link === `socket:[${inode}]`)
+          return Number.parseInt(pid, 10,);
       }
-    } catch {
+    }
+    catch {
       // permission denied or process exited between readdir and readlink
     }
   }
@@ -113,33 +126,39 @@ async function findSocketOwnerPid(): Promise<number | null> {
  */
 export async function killExisting(): Promise<void> {
   const pid = await findSocketOwnerPid();
-  if (pid === null) {
-    throw new Error("Socket in use but could not find owner PID.");
-  }
+  if (pid === null)
+    throw new Error('Socket in use but could not find owner PID.',);
 
-  log.debug(`[lock] Sending SIGTERM to existing instance (PID ${pid})...`);
-  process.kill(pid, "SIGTERM");
+  log.debug(`[lock] Sending SIGTERM to existing instance (PID ${pid})...`,);
+  process.kill(pid, 'SIGTERM',);
 
   for (let i = 0; i < SIGTERM_RETRIES; i++) {
     // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- sequential retry loop with delay
-    await new Promise(function retryDelay(resolve) { setTimeout(resolve, RETRY_DELAY_MS); });
+    await new Promise(function retryDelay(resolve,) {
+      setTimeout(resolve, RETRY_DELAY_MS,);
+    },);
     // oxlint-disable-next-line no-await-in-loop -- sequential retry loop
-    if (await acquireLock()) return;
+    if (await acquireLock())
+      return;
   }
 
-  log.debug(`[lock] Sending SIGKILL to PID ${pid}...`);
+  log.debug(`[lock] Sending SIGKILL to PID ${pid}...`,);
   try {
-    process.kill(pid, "SIGKILL");
-  } catch {
+    process.kill(pid, 'SIGKILL',);
+  }
+  catch {
     // process may already be gone
   }
 
   for (let i = 0; i < SIGKILL_RETRIES; i++) {
     // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- sequential retry loop with delay
-    await new Promise(function retryDelay(resolve) { setTimeout(resolve, RETRY_DELAY_MS); });
+    await new Promise(function retryDelay(resolve,) {
+      setTimeout(resolve, RETRY_DELAY_MS,);
+    },);
     // oxlint-disable-next-line no-await-in-loop -- sequential retry loop
-    if (await acquireLock()) return;
+    if (await acquireLock())
+      return;
   }
 
-  throw new Error("Failed to take over lock after killing existing instance.");
+  throw new Error('Failed to take over lock after killing existing instance.',);
 }

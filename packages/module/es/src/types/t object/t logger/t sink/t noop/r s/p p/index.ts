@@ -7,11 +7,13 @@ import type {
 /**
  * Noop sink is always available.
  */
-export function verify(): boolean { return true }
+export function verify(): boolean {
+  return true;
+}
 
 /**
  * Noop sink that discards all log records.
  */
-export function $(_record: LogRecord): void {
+export function $(_record: LogRecord,): void {
   // Intentionally empty - discards all logs
 }

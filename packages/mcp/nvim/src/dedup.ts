@@ -1,4 +1,4 @@
-import type { Diagnostic } from "./nvim-client.ts";
+import type { Diagnostic, } from './nvim-client.ts';
 
 //region Dedup key -- builds a string key for comparing diagnostics across sources
 
@@ -17,10 +17,9 @@ import type { Diagnostic } from "./nvim-client.ts";
  * // => "10:5:no-unused-vars"
  * ```
  */
-export function dedupKey(diagnostic: Diagnostic): string {
-  if (diagnostic.code !== null) {
+export function dedupKey(diagnostic: Diagnostic,): string {
+  if (diagnostic.code !== null)
     return `${diagnostic.lnum}:${diagnostic.col}:${diagnostic.code}`;
-  }
   return `${diagnostic.lnum}:${diagnostic.col}:${diagnostic.message}`;
 }
 
@@ -43,16 +42,15 @@ export function dedupKey(diagnostic: Diagnostic): string {
  * // => [diagA, diagB]
  * ```
  */
-export function uniqueDiagnostics(diagnostics: readonly Diagnostic[]): Diagnostic[] {
+export function uniqueDiagnostics(diagnostics: readonly Diagnostic[],): Diagnostic[] {
   const seen = new Set<string>();
-  return diagnostics.filter(function isFirstOccurrence(diagnostic) {
-    const key = dedupKey(diagnostic);
-    if (seen.has(key)) {
+  return diagnostics.filter(function isFirstOccurrence(diagnostic,) {
+    const key = dedupKey(diagnostic,);
+    if (seen.has(key,))
       return false;
-    }
-    seen.add(key);
+    seen.add(key,);
     return true;
-  });
+  },);
 }
 
 /**
@@ -76,15 +74,17 @@ export function uniqueDiagnostics(diagnostics: readonly Diagnostic[]): Diagnosti
  * // => editor diagnostic kept, lint duplicate removed
  * ```
  */
-export function dedupDiagnostics({ editor, lint }: {
+export function dedupDiagnostics({ editor, lint, }: {
   editor: readonly Diagnostic[];
   lint: readonly Diagnostic[];
-}): Diagnostic[] {
-  const editorKeys = new Set(editor.map(function buildKey(d) { return dedupKey(d); }));
-  const lintOnly = lint.filter(function isNotDuplicate(diagnostic) {
-    return !editorKeys.has(dedupKey(diagnostic));
-  });
-  return [...editor, ...lintOnly];
+},): Diagnostic[] {
+  const editorKeys = new Set(editor.map(function buildKey(d,) {
+    return dedupKey(d,);
+  },),);
+  const lintOnly = lint.filter(function isNotDuplicate(diagnostic,) {
+    return !editorKeys.has(dedupKey(diagnostic,),);
+  },);
+  return [...editor, ...lintOnly,];
 }
 
 //endregion Public API

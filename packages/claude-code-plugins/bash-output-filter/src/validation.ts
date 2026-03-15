@@ -33,7 +33,7 @@ export const ALLOW_PATTERNS = [
    * or containing constructs caught by the denylist.
    */
   /^[a-zA-Z0-9_/.~"'-]/,
-]
+];
 
 /**
  * Whether a command looks like a normal text command that is safe to pipe.
@@ -42,10 +42,10 @@ export const ALLOW_PATTERNS = [
  *
  * @returns `true` if the command matches the allowlist patterns.
  */
-export function isAllowed(command: string): boolean {
-  return ALLOW_PATTERNS.some(function patternTest(pattern) {
-    return pattern.test(command)
-  })
+export function isAllowed(command: string,): boolean {
+  return ALLOW_PATTERNS.some(function patternTest(pattern,) {
+    return pattern.test(command,);
+  },);
 }
 
 //endregion
@@ -131,7 +131,7 @@ export const SKIP_PATTERNS = [
   /\b(cd|pushd|popd|export|unset|source)\b/,
   /^\.\s/,
   /\beval\b/,
-]
+];
 
 /**
  * Whether a command should be skipped (not piped through the filter).
@@ -140,10 +140,10 @@ export const SKIP_PATTERNS = [
  *
  * @returns `true` if the command matches any denylist pattern and should not be filtered.
  */
-export function shouldSkip(command: string): boolean {
-  return SKIP_PATTERNS.some(function patternTest(pattern) {
-    return pattern.test(command)
-  })
+export function shouldSkip(command: string,): boolean {
+  return SKIP_PATTERNS.some(function patternTest(pattern,) {
+    return pattern.test(command,);
+  },);
 }
 
 //endregion

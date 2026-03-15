@@ -5,5 +5,12 @@
  * installed-version resolution lives in `version-resolve.ts`.
  */
 
-export { type ParsedRange, isStrictlyGreater, parseRange } from './version-parse.ts';
-export { readInstalledVersion, resolveNpmNames } from './version-resolve.ts';
+export {
+  isStrictlyGreater,
+  type ParsedRange,
+  parseRange,
+} from './version-parse.ts';
+export {
+  readInstalledVersion,
+  resolveNpmNames,
+} from './version-resolve.ts';

@@ -1,5 +1,5 @@
-import { getDeck } from "../../lib/db/decks.ts";
-import { listCards } from "../../lib/db/cards.ts";
+import { listCards, } from '../../lib/db/cards.ts';
+import { getDeck, } from '../../lib/db/decks.ts';
 
 /**
  * Renders quiz page for a specific deck with all cards embedded as JSON.
@@ -8,13 +8,12 @@ import { listCards } from "../../lib/db/cards.ts";
  *
  * @returns HTML response with quiz page, or 404 if deck not found
  */
-export async function quizPage(deckId: string): Promise<Response> {
-  const deck = await getDeck(deckId);
-  if (!deck) {
-    return new Response("Deck not found", { status: 404 });
-  }
+export async function quizPage(deckId: string,): Promise<Response> {
+  const deck = await getDeck(deckId,);
+  if (!deck)
+    return new Response('Deck not found', { status: 404, },);
 
-  const cards = await listCards(deckId);
+  const cards = await listCards(deckId,);
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -24,12 +23,14 @@ export async function quizPage(deckId: string): Promise<Response> {
   <title>Quiz: ${deck.name}</title>
 </head>
 <body>
-  <script type="application/json" id="page-data">${JSON.stringify({ deck, cards })}</script>
+  <script type="application/json" id="page-data">${
+    JSON.stringify({ deck, cards, },)
+  }</script>
   <script type="module" src="/dist/client/quiz.js"></script>
 </body>
 </html>`;
 
   return new Response(html, {
-    headers: { "Content-Type": "text/html; charset=utf-8" },
-  });
+    headers: { 'Content-Type': 'text/html; charset=utf-8', },
+  },);
 }

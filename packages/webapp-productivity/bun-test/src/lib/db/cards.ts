@@ -1,4 +1,4 @@
-import db from "../db.ts";
+import db from '../db.ts';
 
 /** Flash card record from the `cards` table with answer statistics. */
 export type Card = {
@@ -8,7 +8,7 @@ export type Card = {
   back: string;
   correct_count: number;
   wrong_count: number;
-}
+};
 
 /**
  * Lists all cards in a deck ordered by insertion order.
@@ -17,10 +17,10 @@ export type Card = {
  *
  * @returns Cards belonging to the deck
  */
-export function listCards(deckId: string): Promise<Card[]> {
+export function listCards(deckId: string,): Promise<Card[]> {
   return db
-    .prepare("SELECT * FROM cards WHERE deck_id = ? ORDER BY rowid")
-    .all(deckId) as Promise<Card[]>;
+    .prepare('SELECT * FROM cards WHERE deck_id = ? ORDER BY rowid',)
+    .all(deckId,) as Promise<Card[]>;
 }
 
 /**
@@ -30,8 +30,10 @@ export function listCards(deckId: string): Promise<Card[]> {
  *
  * @returns Card record, or `null` if not found
  */
-export async function getCard(id: string): Promise<Card | null> {
-  const row = await db.prepare("SELECT * FROM cards WHERE id = ?").get(id) as Card | undefined;
+export async function getCard(id: string,): Promise<Card | null> {
+  const row = await db.prepare('SELECT * FROM cards WHERE id = ?',).get(id,) as
+    | Card
+    | undefined;
   return row ?? null;
 }
 
@@ -46,12 +48,16 @@ export async function getCard(id: string): Promise<Card | null> {
  *
  * @returns Newly created card record with zero counters
  */
-export async function createCard(deckId: string, front: string, back: string): Promise<Card> {
+export async function createCard(deckId: string, front: string,
+  back: string,): Promise<Card>
+{
   const id = crypto.randomUUID();
-  await db.prepare(
-    "INSERT INTO cards (id, deck_id, front, back) VALUES (?, ?, ?, ?)"
-  ).run(id, deckId, front, back);
-  return { id, deck_id: deckId, front, back, correct_count: 0, wrong_count: 0 };
+  await db
+    .prepare(
+      'INSERT INTO cards (id, deck_id, front, back) VALUES (?, ?, ?, ?)',
+    )
+    .run(id, deckId, front, back,);
+  return { id, deck_id: deckId, front, back, correct_count: 0, wrong_count: 0, };
 }
 
 /**
@@ -61,8 +67,8 @@ export async function createCard(deckId: string, front: string, back: string): P
  *
  * @returns `true` if the card was found and deleted
  */
-export async function deleteCard(id: string): Promise<boolean> {
-  const result = await db.prepare("DELETE FROM cards WHERE id = ?").run(id);
+export async function deleteCard(id: string,): Promise<boolean> {
+  const result = await db.prepare('DELETE FROM cards WHERE id = ?',).run(id,);
   return result.changes > 0;
 }
 
@@ -73,7 +79,7 @@ export async function deleteCard(id: string): Promise<boolean> {
  *
  * @param correct - Whether the answer was correct
  */
-export async function recordAnswer(cardId: string, correct: boolean): Promise<void> {
-  const col = correct ? "correct_count" : "wrong_count";
-  await db.prepare(`UPDATE cards SET ${col} = ${col} + 1 WHERE id = ?`).run(cardId);
+export async function recordAnswer(cardId: string, correct: boolean,): Promise<void> {
+  const col = correct ? 'correct_count' : 'wrong_count';
+  await db.prepare(`UPDATE cards SET ${col} = ${col} + 1 WHERE id = ?`,).run(cardId,);
 }

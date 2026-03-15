@@ -7,7 +7,11 @@
  * @module
  */
 
-import { SEVERITY_MAP, normalizeMessage, type Diagnostic } from "./nvim-types.ts";
+import {
+  type Diagnostic,
+  normalizeMessage,
+  SEVERITY_MAP,
+} from './nvim-types.ts';
 
 //region Raw diagnostic mapping -- converts Lua msgpack output to typed Diagnostics
 
@@ -18,7 +22,7 @@ import { SEVERITY_MAP, normalizeMessage, type Diagnostic } from "./nvim-types.ts
  *
  * @returns Typed Diagnostic with 1-indexed line/column.
  */
-export function mapRawDiagnostic(d: Record<string, unknown>): Diagnostic {
+export function mapRawDiagnostic(d: Record<string, unknown>,): Diagnostic {
   // Fields come from Neovim's Lua msgpack bridge; types are guaranteed by the Lua code above.
   const severity = typeof d.severity === 'number' ? d.severity : 0;
   const lnum = typeof d.lnum === 'number' ? d.lnum : 0;
@@ -30,12 +34,12 @@ export function mapRawDiagnostic(d: Record<string, unknown>): Diagnostic {
   const code = typeof d.code === 'string' || typeof d.code === 'number' ? d.code : null;
 
   return {
-    severity: SEVERITY_MAP[severity] ?? `UNKNOWN(${String(severity)})`,
+    severity: SEVERITY_MAP[severity] ?? `UNKNOWN(${String(severity,)})`,
     lnum: lnum + 1,
     col: col + 1,
     end_lnum: endLnum + 1,
     end_col: endCol + 1,
-    message: normalizeMessage(message),
+    message: normalizeMessage(message,),
     source,
     code,
   };

@@ -7,11 +7,17 @@
  * @module
  */
 
-import { existsSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { existsSync, } from 'node:fs';
+import {
+  dirname,
+  resolve,
+} from 'node:path';
 
-import type { Diagnostic } from "./nvim-client.ts";
-import { OXLINT_SEVERITY_MAP, type OxlintJsonOutput } from "./oxlint-types.ts";
+import type { Diagnostic, } from './nvim-client.ts';
+import {
+  OXLINT_SEVERITY_MAP,
+  type OxlintJsonOutput,
+} from './oxlint-types.ts';
 
 //region Directory walking -- find config files by walking up the filesystem
 
@@ -30,17 +36,15 @@ import { OXLINT_SEVERITY_MAP, type OxlintJsonOutput } from "./oxlint-types.ts";
  * // => "/home/user/project"
  * ```
  */
-export function findAncestorWithFile(startDir: string, filename: string): string | null {
+export function findAncestorWithFile(startDir: string, filename: string,): string | null {
   let current = startDir;
   // oxlint-disable-next-line no-constant-condition -- walk up until filesystem root
   while (true) {
-    if (existsSync(resolve(current, filename))) {
+    if (existsSync(resolve(current, filename,),))
       return current;
-    }
-    const parent = dirname(current);
-    if (parent === current) {
+    const parent = dirname(current,);
+    if (parent === current)
       return null;
-    }
     current = parent;
   }
 }
@@ -65,16 +69,17 @@ export function findAncestorWithFile(startDir: string, filename: string): string
  * // => Map { "/home/user/project/src/index.ts" => [{ severity: "ERROR", ... }] }
  * ```
  */
-export function parseOxlintOutput(output: OxlintJsonOutput, cwd: string): Map<string, Diagnostic[]> {
+export function parseOxlintOutput(output: OxlintJsonOutput,
+  cwd: string,): Map<string, Diagnostic[]>
+{
   const result = new Map<string, Diagnostic[]>();
 
   for (const entry of output.diagnostics) {
     const span = entry.labels[0]?.span;
-    if (span === undefined) {
+    if (span === undefined)
       continue;
-    }
 
-    const absolutePath = resolve(cwd, entry.filename);
+    const absolutePath = resolve(cwd, entry.filename,);
     const message = entry.help !== undefined && entry.help.length > 0
       ? `${entry.message} (help: ${entry.help})`
       : entry.message;
@@ -85,16 +90,15 @@ export function parseOxlintOutput(output: OxlintJsonOutput, cwd: string): Map<st
       end_lnum: span.line,
       end_col: span.column,
       message,
-      source: "oxlint",
+      source: 'oxlint',
       code: entry.code,
     };
 
-    const existing = result.get(absolutePath);
-    if (existing !== undefined) {
-      existing.push(diagnostic);
-    } else {
-      result.set(absolutePath, [diagnostic]);
-    }
+    const existing = result.get(absolutePath,);
+    if (existing !== undefined)
+      existing.push(diagnostic,);
+    else
+      result.set(absolutePath, [diagnostic,],);
   }
 
   return result;

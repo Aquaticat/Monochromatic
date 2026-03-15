@@ -15,7 +15,9 @@ const SECONDS_PER_MINUTE = 60;
 const MS_PER_SECOND = 1_000;
 
 /** Default fetch cache interval: 5 minutes in milliseconds. */
-const DEFAULT_FETCH_INTERVAL_MS = MINUTES_PER_INTERVAL * SECONDS_PER_MINUTE * MS_PER_SECOND;
+const DEFAULT_FETCH_INTERVAL_MS = MINUTES_PER_INTERVAL
+  * SECONDS_PER_MINUTE
+  * MS_PER_SECOND;
 
 /**
  * Duration in milliseconds for which fetched feed data is cached.
@@ -28,7 +30,7 @@ export const FETCH_INTERVAL_MS: number = z.coerce.number().parse(
   process.env.RSS_FETCH_INTERVAL_MS ?? DEFAULT_FETCH_INTERVAL_MS,
 );
 
-l.debug(`fetch interval: ${String(FETCH_INTERVAL_MS)}ms`);
+l.debug(`fetch interval: ${String(FETCH_INTERVAL_MS,)}ms`,);
 
 /**
  * Computes a time-bucketed salt for fetch memoization.
@@ -38,5 +40,5 @@ l.debug(`fetch interval: ${String(FETCH_INTERVAL_MS)}ms`);
  * @returns String representation of the current time bucket
  */
 export function getFetchSalt(): string {
-  return String(Math.floor(Date.now() / FETCH_INTERVAL_MS),);
+  return String(Math.floor(Date.now() / FETCH_INTERVAL_MS,),);
 }

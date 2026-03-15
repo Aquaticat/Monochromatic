@@ -1,16 +1,32 @@
-import { mkdir } from 'node:fs/promises';
-import { join } from 'node:path';
+import { mkdir, } from 'node:fs/promises';
+import { join, } from 'node:path';
 
-import { createSeedIso } from './cloud-init.ts';
-import { DEFAULT_DISK_SIZE, VMS_DIR, WINDOWS_DISK_SIZE, validateName } from './config.ts';
-import { domainXml } from './domain-xml.ts';
-import { exec } from './exec.ts';
-import { l, tagged } from './log.ts';
-import { writeVmMeta } from './meta.ts';
-import { CUSTOM_GUEST_DEFAULTS, DEFAULT_IMAGE, resolveImage } from './registry.ts';
-import { spawn } from './spawn.ts';
-import { ensureTemplate } from './template.ts';
-import { defineVm, startVm, waitForGuestAgent } from './virsh.ts';
+import { createSeedIso, } from './cloud-init.ts';
+import {
+  DEFAULT_DISK_SIZE,
+  validateName,
+  VMS_DIR,
+  WINDOWS_DISK_SIZE,
+} from './config.ts';
+import { domainXml, } from './domain-xml.ts';
+import { exec, } from './exec.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
+import { writeVmMeta, } from './meta.ts';
+import {
+  CUSTOM_GUEST_DEFAULTS,
+  DEFAULT_IMAGE,
+  resolveImage,
+} from './registry.ts';
+import { spawn, } from './spawn.ts';
+import { ensureTemplate, } from './template.ts';
+import {
+  defineVm,
+  startVm,
+  waitForGuestAgent,
+} from './virsh.ts';
 
 //region Windows post-boot provisioning
 
@@ -28,18 +44,20 @@ import { defineVm, startVm, waitForGuestAgent } from './virsh.ts';
  * await setWindowsHostname({ name: 'win-01', hostname: 'win-01' });
  * ```
  */
-async function setWindowsHostname({ hostname, name }: {
+async function setWindowsHostname({ hostname, name, }: {
   hostname: string;
   name: string;
-}): Promise<void> {
-  const rl = tagged({ tag: setWindowsHostname.name, l });
-  rl.info(`setting Windows hostname to ${hostname}`);
+},): Promise<void> {
+  const rl = tagged({ tag: setWindowsHostname.name, l, },);
+  rl.info(`setting Windows hostname to ${hostname}`,);
   const result = await exec({
     command: `Rename-Computer -NewName '${hostname}' -Force`,
     name,
-  });
+  },);
   if (result.exitCode !== 0) {
-    rl.info(`hostname change returned exit code ${String(result.exitCode)}: ${result.stderr}`);
+    rl.info(
+      `hostname change returned exit code ${String(result.exitCode,)}: ${result.stderr}`,
+    );
   }
 }
 
@@ -70,48 +88,48 @@ async function setWindowsHostname({ hostname, name }: {
  * await create({ image: 'my-custom', name: 'special' });
  * ```
  */
-export async function create({ image = DEFAULT_IMAGE, name }: {
+export async function create({ image = DEFAULT_IMAGE, name, }: {
   image?: string | undefined;
   name: string;
-}): Promise<void> {
-  validateName(name);
-  const rl = tagged({ tag: create.name, l, });
-  const vmDir = join(VMS_DIR, name);
+},): Promise<void> {
+  validateName(name,);
+  const rl = tagged({ tag: create.name, l, },);
+  const vmDir = join(VMS_DIR, name,);
 
-  const resolved = resolveImage(image);
-  rl.info(`creating VM ${name} (image: ${image})`);
-  await mkdir(vmDir, { recursive: true, });
+  const resolved = resolveImage(image,);
+  rl.info(`creating VM ${name} (image: ${image})`,);
+  await mkdir(vmDir, { recursive: true, },);
 
   const templateImage = resolved.kind === 'registry'
-    ? await ensureTemplate(resolved.spec)
+    ? await ensureTemplate(resolved.spec,)
     : resolved.customTemplatePath;
 
   const guest = resolved.kind === 'registry'
     ? resolved.spec
     : CUSTOM_GUEST_DEFAULTS;
 
-  const diskPath = join(vmDir, 'disk.qcow2');
+  const diskPath = join(vmDir, 'disk.qcow2',);
   const diskSize = guest.osFamily === 'windows' ? WINDOWS_DISK_SIZE : DEFAULT_DISK_SIZE;
 
-  rl.info('creating disk from template image...');
+  rl.info('creating disk from template image...',);
   await spawn({
     command: 'qemu-img',
-    args: ['create', '-f', 'qcow2', '-b', templateImage, '-F', 'qcow2', diskPath, diskSize],
-  });
+    args: ['create', '-f', 'qcow2', '-b', templateImage, '-F', 'qcow2', diskPath,
+      diskSize,],
+  },);
 
-  const seedIsoPath = await createSeedIso({ guest, name, vmDir, });
-  const xml = domainXml({ diskPath, name, osFamily: guest.osFamily, seedIsoPath });
+  const seedIsoPath = await createSeedIso({ guest, name, vmDir, },);
+  const xml = domainXml({ diskPath, name, osFamily: guest.osFamily, seedIsoPath, },);
 
-  await defineVm({ vmDir, xml, });
-  await writeVmMeta({ guest, image, vmDir });
-  await startVm({ name, });
-  await waitForGuestAgent({ name, });
+  await defineVm({ vmDir, xml, },);
+  await writeVmMeta({ guest, image, vmDir, },);
+  await startVm({ name, },);
+  await waitForGuestAgent({ name, },);
 
   // Windows VMs do not use cloud-init; set hostname via guest agent
-  if (guest.osFamily === 'windows') {
-    await setWindowsHostname({ hostname: name, name });
-  }
-  rl.info(`VM ${name} is ready. Connect with: mvm shell ${name}`);
+  if (guest.osFamily === 'windows')
+    await setWindowsHostname({ hostname: name, name, },);
+  rl.info(`VM ${name} is ready. Connect with: mvm shell ${name}`,);
 }
 
 //endregion Create

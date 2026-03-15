@@ -1,8 +1,12 @@
 import decircular from 'decircular';
 
+import {
+  $ as hasCycle,
+} from '../../../../../../t boolean/f/t unknown/hasCycle/r s/p p/index.ts';
+import {
+  $ as defaultLogger,
+} from '../../../../../../t object/t logger/f/t never/r s/p p/index.ts';
 import type { Serializer, } from '../../../../../../t object/t store/t/index.ts';
-import { $ as hasCycle, } from '../../../../../../t boolean/f/t unknown/hasCycle/r s/p p/index.ts';
-import { $ as defaultLogger, } from '../../../../../../t object/t logger/f/t never/r s/p p/index.ts';
 
 /** Max characters for value previews in log messages. */
 const DEFAULT_LOG_LIMIT = 100;
@@ -89,11 +93,15 @@ export function $(options: SerializeOptions,): string {
     const serialized = serializer(decycled,);
     if (!lossyForCircular) {
       throw new TypeError(
-        `Cannot store value perfectly because it has cycles: ${serialized.slice(0, DEFAULT_LOG_LIMIT,)}`,
+        `Cannot store value perfectly because it has cycles: ${
+          serialized.slice(0, DEFAULT_LOG_LIMIT,)
+        }`,
       );
     }
     defaultLogger.warn(
-      `Value has cycles, storing decycled version: ${serialized.slice(0, DEFAULT_LOG_LIMIT,)}`,
+      `Value has cycles, storing decycled version: ${
+        serialized.slice(0, DEFAULT_LOG_LIMIT,)
+      }`,
     );
     return serialized;
   }

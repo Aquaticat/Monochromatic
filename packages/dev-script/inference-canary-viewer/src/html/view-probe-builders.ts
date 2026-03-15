@@ -8,7 +8,10 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 import type { ScatterPoint, } from '../chart/scatter.ts';
 import { vendorColor, } from '../data/model-colors.ts';
-import { iconDot, vendorIcon, } from '../data/model-icons.ts';
+import {
+  iconDot,
+  vendorIcon,
+} from '../data/model-icons.ts';
 
 import type { ViewerEntry, } from '../data/viewer-types.ts';
 
@@ -28,12 +31,14 @@ export function buildCrossModelPoints(
   entries: readonly ViewerEntry[],
   probe: string,
 ): readonly ScatterPoint[] {
-  const relevant = entries.filter(function hasProbe(entry): boolean { return probe in entry.probeScores; });
+  const relevant = entries.filter(function hasProbe(entry,): boolean {
+    return probe in entry.probeScores;
+  },);
 
-  return relevant.map(function toPoint(entry, index): ScatterPoint {
+  return relevant.map(function toPoint(entry, index,): ScatterPoint {
     const score = entry.probeScores[probe] ?? 0;
     const pass2Score = entry.pass2Scores?.[probe];
-    const color = vendorColor(entry.model);
+    const color = vendorColor(entry.model,);
     const runId = `${entry.label}-${probe}-${entry.timestamp}`;
     return {
       runId,
@@ -42,8 +47,10 @@ export function buildCrossModelPoints(
       score,
       pass2Score,
       color,
-      icon: vendorIcon(entry.model),
-      title: `${entry.label} ${entry.timestamp.slice(0, 10)}: ${score.toFixed(2)}${pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2)})` : ''}`,
+      icon: vendorIcon(entry.model,),
+      title: `${entry.label} ${entry.timestamp.slice(0, 10,)}: ${score.toFixed(2,)}${
+        pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
+      }`,
       failed: entry.failed,
       tableRow: {
         timestamp: entry.timestamp,
@@ -55,7 +62,7 @@ export function buildCrossModelPoints(
         runId,
       },
     };
-  });
+  },);
 }
 
 /**
@@ -80,9 +87,11 @@ export function buildSingleModelPoints(
   openrouterId: string,
   color: string,
 ): readonly ScatterPoint[] {
-  const relevant = entries.filter(function matchLabelAndProbe(entry): boolean { return entry.label === label && probe in entry.probeScores; });
+  const relevant = entries.filter(function matchLabelAndProbe(entry,): boolean {
+    return entry.label === label && probe in entry.probeScores;
+  },);
 
-  return relevant.map(function toPoint(entry, index): ScatterPoint {
+  return relevant.map(function toPoint(entry, index,): ScatterPoint {
     const score = entry.probeScores[probe] ?? 0;
     const pass2Score = entry.pass2Scores?.[probe];
     const runId = `${label}-${probe}-${entry.timestamp}`;
@@ -93,8 +102,10 @@ export function buildSingleModelPoints(
       score,
       pass2Score,
       color,
-      icon: vendorIcon(openrouterId),
-      title: `${entry.timestamp.slice(0, 10)}: ${score.toFixed(2)}${pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2)})` : ''}`,
+      icon: vendorIcon(openrouterId,),
+      title: `${entry.timestamp.slice(0, 10,)}: ${score.toFixed(2,)}${
+        pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
+      }`,
       failed: entry.failed,
       tableRow: {
         timestamp: entry.timestamp,
@@ -106,7 +117,7 @@ export function buildSingleModelPoints(
         runId,
       },
     };
-  });
+  },);
 }
 
 /**
@@ -122,19 +133,21 @@ export function buildProbeLegend(
   /** Deduplicate by label, keeping first occurrence for model ID */
   const seen = new Map<string, string>();
   for (const entry of entries) {
-    if (!seen.has(entry.label)) {
-      seen.set(entry.label, entry.model);
-    }
+    if (!seen.has(entry.label,))
+      seen.set(entry.label, entry.model,);
   }
 
-  const items = [...seen.entries()].map(function buildItem([label, openrouterId]): string {
-    const color = vendorColor(openrouterId);
-    return h({
-      tag: 'span',
-      class: 'item',
-      children: [iconDot(openrouterId, color), ' ', h({ tag: 'span', text: label, })],
-    });
-  }).join('\n');
+  const items = [...seen.entries(),]
+    .map(function buildItem([label, openrouterId,],): string {
+      const color = vendorColor(openrouterId,);
+      return h({
+        tag: 'span',
+        class: 'item',
+        children: [iconDot(openrouterId, color,), ' ',
+          h({ tag: 'span', text: label, },),],
+      },);
+    },)
+    .join('\n',);
 
-  return h({ tag: 'div', class: 'chart-legend', html: items, });
+  return h({ tag: 'div', class: 'chart-legend', html: items, },);
 }

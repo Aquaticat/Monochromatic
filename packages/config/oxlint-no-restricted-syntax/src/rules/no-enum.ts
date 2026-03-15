@@ -32,14 +32,14 @@ export const noEnum: CreateOnceRule = {
       forbidden: 'enum declarations are banned. Use union types with as const instead.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      TSEnumDeclaration(node: Span): void {
+      TSEnumDeclaration(node: Span,): void {
         context.report({
           node,
           messageId: 'forbidden',
-        });
+        },);
       },
     } as VisitorWithHooks;
   },

@@ -14,7 +14,9 @@ export function buildStatusSection(): string {
         tag: 'p',
         class: 'metrics',
         attrs: { hidden: '', },
-        html: `${h({ tag: 'span', class: 'number numTotalSearches', text: '0', },)} searches total`,
+        html: `${
+          h({ tag: 'span', class: 'number numTotalSearches', text: '0', },)
+        } searches total`,
       },),
       h({ tag: 'p', class: 'processing', attrs: { hidden: '', }, text: 'Searching', },),
       h({
@@ -28,7 +30,8 @@ export function buildStatusSection(): string {
           ' costing ',
           h({ tag: 'span', class: 'number costDollars', },),
           ' USD',
-        ].join('',),
+        ]
+          .join('',),
       },),
       h({
         tag: 'p',
@@ -68,7 +71,8 @@ export function buildSearchForm(): string {
               id: 'search',
             },
           },),
-          h({ tag: 'button', class: 'search-button', attrs: { type: 'submit', }, text: 'Search', },),
+          h({ tag: 'button', class: 'search-button', attrs: { type: 'submit', },
+            text: 'Search', },),
         ],
       },),
     ],

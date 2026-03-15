@@ -14,14 +14,14 @@
  */
 import { readFile, } from 'node:fs/promises';
 
-import { SIMULATION_SYSTEM, } from './system-prompt.ts';
 import { SIMULATION_CASES, } from '../stak/test-cases.ts';
+import { SIMULATION_SYSTEM, } from './system-prompt.ts';
 
 import type { Probe, } from '../probes.ts';
 
 /** Interpreter TypeScript source, read at module load time and embedded in every probe invocation */
 const INTERPRETER_SOURCE = await readFile(
-  new URL('../stak/interpreter.ts', import.meta.url),
+  new URL('../stak/interpreter.ts', import.meta.url,),
   'utf8',
 );
 
@@ -31,15 +31,17 @@ const INTERPRETER_SOURCE = await readFile(
  * @returns formatted prompt string
  */
 function buildSimulationPrompt(): string {
-  const programBlocks = SIMULATION_CASES.map(function formatCase(testCase, index): string {
-    const lines = [
-      `Program ${String(index + 1)}:`,
-      '```',
-      testCase.program,
-      '```',
-    ];
-    return lines.join('\n');
-  });
+  const programBlocks = SIMULATION_CASES.map(
+    function formatCase(testCase, index,): string {
+      const lines = [
+        `Program ${String(index + 1,)}:`,
+        '```',
+        testCase.program,
+        '```',
+      ];
+      return lines.join('\n',);
+    },
+  );
 
   return [
     'Here is the TypeScript source of the Stak interpreter:',
@@ -51,8 +53,11 @@ function buildSimulationPrompt(): string {
     'Trace the exact output of each program below.',
     'Separate the five results with "---" on its own line.',
     '',
-    ...programBlocks.flatMap(function addSeparator(block): string[] { return [block, '']; }),
-  ].join('\n');
+    ...programBlocks.flatMap(function addSeparator(block,): string[] {
+      return [block, '',];
+    },),
+  ]
+    .join('\n',);
 }
 
 /**
@@ -66,11 +71,13 @@ function buildSimulationPrompt(): string {
  *
  * @returns array of trimmed output sections, one per program
  */
-function parseSections(response: string): readonly string[] {
-  const normalized = response.replaceAll(/([^\n])---/g, '$1\n---');
+function parseSections(response: string,): readonly string[] {
+  const normalized = response.replaceAll(/([^\n])---/g, '$1\n---',);
   return normalized
-    .split(/^---$/m)
-    .map(function trimSection(section): string { return section.trim(); });
+    .split(/^---$/m,)
+    .map(function trimSection(section,): string {
+      return section.trim();
+    },);
 }
 
 /**
@@ -81,16 +88,18 @@ export const stakSimulation: Probe = {
   category: 'simulation',
   system: SIMULATION_SYSTEM,
   prompt: buildSimulationPrompt(),
-  score: function scoreStakSimulation(response, context): number {
-    const sections = parseSections(response);
+  score: function scoreStakSimulation(response, context,): number {
+    const sections = parseSections(response,);
     let allCorrect = true;
-    for (const [index, testCase] of SIMULATION_CASES.entries()) {
+    for (const [index, testCase,] of SIMULATION_CASES.entries()) {
       const section = sections[index] ?? '';
       const match = section === testCase.expected;
       if (!match) {
         allCorrect = false;
         console.log(
-          `  [${context.label}:stak-simulation] case ${testCase.label}: expected ${JSON.stringify(testCase.expected)}, got ${JSON.stringify(section)}`,
+          `  [${context.label}:stak-simulation] case ${testCase.label}: expected ${
+            JSON.stringify(testCase.expected,)
+          }, got ${JSON.stringify(section,)}`,
         );
       }
     }

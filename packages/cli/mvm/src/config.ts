@@ -1,17 +1,17 @@
-import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { homedir, } from 'node:os';
+import { join, } from 'node:path';
 
 /** Prefix applied to all VM names in libvirt to avoid collisions. */
 export const VM_PREFIX = 'mvm-';
 
 /** Root data directory for VM images and disks. */
-export const DATA_DIR = join(homedir(), '.local', 'share', 'mvm');
+export const DATA_DIR = join(homedir(), '.local', 'share', 'mvm',);
 
 /** Directory for cached base cloud images. */
-export const IMAGES_DIR = join(DATA_DIR, 'images');
+export const IMAGES_DIR = join(DATA_DIR, 'images',);
 
 /** Directory containing per-VM subdirectories with disks and metadata. */
-export const VMS_DIR = join(DATA_DIR, 'vms');
+export const VMS_DIR = join(DATA_DIR, 'vms',);
 
 /** Default VM memory allocation in MiB. Making it large for builds. */
 export const DEFAULT_MEMORY_MIB = 8_192;
@@ -41,8 +41,8 @@ export const LIBVIRT_URI = 'qemu:///session';
  * validateName('../evil');  // throws
  * ```
  */
-export function validateName(name: string): void {
-  if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(name)) {
+export function validateName(name: string,): void {
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(name,)) {
     throw new Error(
       `invalid VM name: ${name} (must start with alphanumeric, contain only alphanumerics, hyphens, underscores)`,
     );

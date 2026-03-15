@@ -1,9 +1,15 @@
 /**
  * Static asset serving handler for bundled JS and CSS from dist/client/.
  */
-import { readFile, stat } from "node:fs/promises";
-import { join } from "node:path";
-import { defineHandler, serveStatic } from "h3";
+import {
+  defineHandler,
+  serveStatic,
+} from 'h3';
+import {
+  readFile,
+  stat,
+} from 'node:fs/promises';
+import { join, } from 'node:path';
 
 /**
  * h3 handler that serves static files from the `dist/` directory.
@@ -14,22 +20,22 @@ import { defineHandler, serveStatic } from "h3";
  * app.get('/dist/client/**', staticHandler);
  * ```
  */
-export const staticHandler = defineHandler(function handleStaticAsset(event) {
+export const staticHandler = defineHandler(function handleStaticAsset(event,) {
   return serveStatic(event, {
-    getContents: function readContents(id) {
-      return readFile(join('.', id));
+    getContents: function readContents(id,) {
+      return readFile(join('.', id,),);
     },
-    getMeta: async function getMetadata(id) {
+    getMeta: async function getMetadata(id,) {
       let stats: Awaited<ReturnType<typeof stat>> | undefined;
       try {
-        stats = await stat(join('.', id));
-      } catch {
+        stats = await stat(join('.', id,),);
+      }
+      catch {
         // File not found or inaccessible
       }
-      if (stats === undefined || !stats.isFile()) {
+      if (stats === undefined || !stats.isFile())
         return;
-      }
-      return { size: stats.size, mtime: stats.mtimeMs };
+      return { size: stats.size, mtime: stats.mtimeMs, };
     },
-  });
-});
+  },);
+},);

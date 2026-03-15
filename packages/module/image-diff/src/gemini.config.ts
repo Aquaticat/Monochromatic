@@ -1,5 +1,8 @@
-import type { GeminiModel } from './types.ts';
-import { l, tagged } from './log.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
+import type { GeminiModel, } from './types.ts';
 
 /**
  * Gemini API base URL for embedding endpoints.
@@ -25,14 +28,16 @@ export const DEFAULT_GEMINI_MODEL: GeminiModel = 'gemini-embedding-2-preview';
  * const key = resolveGeminiApiKey(undefined);
  * ```
  */
-export function resolveGeminiApiKey(configKey: string | undefined): string {
-  const rl = tagged({ tag: resolveGeminiApiKey.name, l });
-  const key = configKey ?? process.env['IMAGE_DIFF_GEMINI_API_KEY'] ?? process.env['GEMINI_API_KEY'];
+export function resolveGeminiApiKey(configKey: string | undefined,): string {
+  const rl = tagged({ tag: resolveGeminiApiKey.name, l, },);
+  const key = configKey
+    ?? process.env['IMAGE_DIFF_GEMINI_API_KEY']
+    ?? process.env['GEMINI_API_KEY'];
   if (key === undefined || key === '') {
     throw new Error(
       'Gemini API key is required. Provide it via config.apiKey or set IMAGE_DIFF_GEMINI_API_KEY (or GEMINI_API_KEY) environment variable.',
     );
   }
-  rl.debug('Gemini API key resolved');
+  rl.debug('Gemini API key resolved',);
   return key;
 }

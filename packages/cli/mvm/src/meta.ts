@@ -1,8 +1,20 @@
-import { readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import {
+  readFile,
+  writeFile,
+} from 'node:fs/promises';
+import { join, } from 'node:path';
 
-import { l, tagged } from './log.ts';
-import { CUSTOM_GUEST_DEFAULTS, DEFAULT_IMAGE, resolveImage, type GuestConfig, type OsFamily } from './registry.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
+import {
+  CUSTOM_GUEST_DEFAULTS,
+  DEFAULT_IMAGE,
+  type GuestConfig,
+  type OsFamily,
+  resolveImage,
+} from './registry.ts';
 
 //region VM metadata type
 
@@ -56,12 +68,12 @@ export type VmMeta = {
  * });
  * ```
  */
-export async function writeVmMeta({ guest, image, vmDir }: {
+export async function writeVmMeta({ guest, image, vmDir, }: {
   guest: GuestConfig;
   image: string;
   vmDir: string;
-}): Promise<void> {
-  const rl = tagged({ tag: writeVmMeta.name, l });
+},): Promise<void> {
+  const rl = tagged({ tag: writeVmMeta.name, l, },);
   const meta: VmMeta = {
     createdAt: new Date().toISOString(),
     defaultUser: guest.defaultUser,
@@ -70,12 +82,12 @@ export async function writeVmMeta({ guest, image, vmDir }: {
     shell: guest.shell,
   };
 
-  const metaPath = join(vmDir, 'meta.json');
-  await writeFile(metaPath, JSON.stringify(meta, null, 2));
-  rl.debug(`wrote VM metadata to ${metaPath}`);
+  const metaPath = join(vmDir, 'meta.json',);
+  await writeFile(metaPath, JSON.stringify(meta, null, 2,),);
+  rl.debug(`wrote VM metadata to ${metaPath}`,);
 
   // Legacy compatibility: also write the image text file
-  await writeFile(join(vmDir, 'image'), image);
+  await writeFile(join(vmDir, 'image',), image,);
 }
 
 //endregion Write
@@ -100,30 +112,32 @@ export async function writeVmMeta({ guest, image, vmDir }: {
  * }
  * ```
  */
-export async function readVmMeta(vmDir: string): Promise<VmMeta> {
-  const rl = tagged({ tag: readVmMeta.name, l });
+export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
+  const rl = tagged({ tag: readVmMeta.name, l, },);
 
   // Try meta.json first
   try {
-    const content = await readFile(join(vmDir, 'meta.json'), 'utf8');
+    const content = await readFile(join(vmDir, 'meta.json',), 'utf8',);
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted local meta.json written by writeVmMeta
-    const meta = JSON.parse(content) as VmMeta;
-    rl.debug(`read VM metadata from ${vmDir}/meta.json`);
+    const meta = JSON.parse(content,) as VmMeta;
+    rl.debug(`read VM metadata from ${vmDir}/meta.json`,);
     return meta;
-  } catch {
-    rl.debug('meta.json not found, falling back to legacy image file');
+  }
+  catch {
+    rl.debug('meta.json not found, falling back to legacy image file',);
   }
 
   // Fall back to legacy image text file
   let image = DEFAULT_IMAGE;
   try {
-    const content = await readFile(join(vmDir, 'image'), 'utf8');
+    const content = await readFile(join(vmDir, 'image',), 'utf8',);
     image = content.trim();
-  } catch {
-    rl.debug('legacy image file not found, assuming ubuntu');
+  }
+  catch {
+    rl.debug('legacy image file not found, assuming ubuntu',);
   }
 
-  const resolved = resolveImage(image);
+  const resolved = resolveImage(image,);
   const guest = resolved.kind === 'registry'
     ? resolved.spec
     : CUSTOM_GUEST_DEFAULTS;

@@ -5,9 +5,15 @@
  * banned at-rules from the at-rule name union, enforcing the project's
  * CSS conventions at the type level (replacing stylelint's runtime checks).
  */
-import type { AtRules, PropertiesHyphen } from "csstype";
+import type {
+  AtRules,
+  PropertiesHyphen,
+} from 'csstype';
 
-import type { CssValue, StrictValue } from "./values.ts";
+import type {
+  CssValue,
+  StrictValue,
+} from './values.ts';
 
 //region Disallowed properties
 
@@ -34,11 +40,9 @@ export type DisallowedProperties =
   // Pointless properties
   | 'clear'
   | 'float'
-
   // Deprecated / non-standard
   | 'clip'
   | 'font-smooth'
-
   // Shorthand properties — always use longhand
   | 'animation'
   | 'background'
@@ -70,7 +74,6 @@ export type DisallowedProperties =
   | 'scroll-timeline'
   | 'transition'
   | 'view-timeline'
-
   // Non-logical dimension properties — use inline-size / block-size equivalents
   | 'width'
   | 'height'
@@ -80,7 +83,6 @@ export type DisallowedProperties =
   | 'max-height'
   | 'contain-intrinsic-width'
   | 'contain-intrinsic-height'
-
   // Non-logical direction properties — use logical equivalents
   | 'top'
   | 'left'
@@ -189,10 +191,9 @@ type IdentifierProperties = 'animation-name';
  * ```
  */
 export type StrictCssDeclarations = {
-  [K in Exclude<keyof PropertiesHyphen, DisallowedProperties>]?:
-    K extends IdentifierProperties
-      ? StrictValue<PropertiesHyphen[K]> | (string & {})
-      : StrictValue<PropertiesHyphen[K]>;
+  [K in Exclude<keyof PropertiesHyphen, DisallowedProperties>]?: K extends
+    IdentifierProperties ? StrictValue<PropertiesHyphen[K]> | (string & {})
+    : StrictValue<PropertiesHyphen[K]>;
 } & Record<`--${string}`, CssValue | string>;
 
 //endregion
@@ -210,7 +211,7 @@ export type StrictCssDeclarations = {
  * type Name = StripAtPrefix<'\@media'>; // 'media'
  * ```
  */
-type StripAtPrefix<T> = T extends `@${infer Name}` ? Name : never;
+type StripAtPrefix<T,> = T extends `@${infer Name}` ? Name : never;
 
 /**
  * All standard CSS at-rule names without the `@` prefix, minus {@link DisallowedAtRules}.

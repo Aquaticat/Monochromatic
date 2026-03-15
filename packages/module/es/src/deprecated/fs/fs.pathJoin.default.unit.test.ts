@@ -1,10 +1,10 @@
 // Have to import the source ts file here because we don't want to run tests twice to test both default and node.
-import { posix, } from 'node:path';
 import {
   describe,
   expect,
   test,
 } from 'bun:test';
+import { posix, } from 'node:path';
 import { pathJoin, } from './fs.pathJoin.default.ts';
 import { trimPathTrailingSlash, } from './fs.pathJoin.shared.ts';
 

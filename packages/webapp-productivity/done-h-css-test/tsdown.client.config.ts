@@ -15,4 +15,4 @@ export default defineConfig({
     './src/client/search.ts',
     './src/client/settings.ts',
   ],
-});
+},);

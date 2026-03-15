@@ -1,5 +1,7 @@
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { css } from "../css.ts";
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+import { css, } from '../css.ts';
 
 /** Z-index for the floating action button above page content. */
 const FAB_Z_INDEX = 50;
@@ -10,7 +12,7 @@ const STYLES = css(`
     position: fixed;
     inset-block-end: 1rem;
     inset-inline-end: 1rem;
-    z-index: ${String(FAB_Z_INDEX)};
+    z-index: ${String(FAB_Z_INDEX,)};
   }
   button {
     @apply --flex-center;
@@ -35,7 +37,7 @@ const STYLES = css(`
     outline-offset: 0.125rem;
   }
 
-`);
+`,);
 
 /**
  * `\<fab-button\>` -- floating action button pinned to the bottom-right.
@@ -48,21 +50,21 @@ class FabButton extends HTMLElement {
   /** Initializes the shadow root. */
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: "open" });
+    this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
   /** Renders the button with aria-label and slot for content. */
   connectedCallback(): void {
-    const label = this.getAttribute("label") ?? "Action";
+    const label = this.getAttribute('label',) ?? 'Action';
     this.#shadow.replaceChildren(
-      h({ tag: "style", text: STYLES }),
+      h({ tag: 'style', text: STYLES, },),
       h({
-        tag: "button",
-        attrs: { part: "button", "aria-label": label },
-        children: [h({ tag: "slot", text: "+" })],
-      }),
+        tag: 'button',
+        attrs: { part: 'button', 'aria-label': label, },
+        children: [h({ tag: 'slot', text: '+', },),],
+      },),
     );
   }
 }
 
-customElements.define("fab-button", FabButton);
+customElements.define('fab-button', FabButton,);

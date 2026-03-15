@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const {$} = types.object.regexp.global.from.object.regexp.sync.named;
+const { $, } = types.object.regexp.global.from.object.regexp.sync.named;
 
 describe('ensure regexp has global flag', () => {
   test('adds global flag to regexp without flags', () => {
@@ -113,7 +113,7 @@ describe('ensure regexp has global flag', () => {
     const globalRegexp = $({ regexp, },);
 
     const text = 'test123 foo456 bar789';
-    const matches = [...text.matchAll(globalRegexp)];
+    const matches = [...text.matchAll(globalRegexp,),];
 
     expect(matches.length,).toBe(3,);
     expect(matches[0]?.[0],).toBe('123',);

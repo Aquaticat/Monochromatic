@@ -75,7 +75,6 @@ hcloud = "latest"
 deno = "latest"
 
 [settings]
-
 env_shell_expand = false
 
 # Enable automatic tool installation when entering directory
@@ -357,7 +356,7 @@ run = [{ tasks = ["watch:build", "watch:test"] }]
 
 [tasks."lint"]
 description = "Lint"
-run = ["mise '//packages/...:lint'", {tasks=["lint:dprint", "lint:stylelint"]}]
+run = ["mise '//packages/...:lint'", { tasks = ["lint:dprint", "lint:stylelint"] }]
 
 [tasks."lint:dprint"]
 hide = true
@@ -399,7 +398,7 @@ description = "Prepare environment (install Playwright browsers, etc.)"
 extends = "prepare"
 
 [tasks."prepare:bun"]
-run = [{ tasks = ["prepare:bun:bun"] }, {tasks=["prepare:bun:others:*"]}]
+run = [{ tasks = ["prepare:bun:bun"] }, { tasks = ["prepare:bun:others:*"] }]
 
 [tasks."prepare:bun:bun"]
 run = "bun install"

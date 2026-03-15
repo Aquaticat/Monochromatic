@@ -91,17 +91,17 @@ function createModeConfig(configDir: string,
       currentConfig: UserConfig | VitestUserConfig,
       currentMode: string,
     ): UserConfig | VitestUserConfig {
-      if (currentMode === 'development') {
+      if (currentMode === 'development')
         return withNoMinify(currentConfig,);
-      }
-      if (currentMode === 'node') {
+      if (currentMode === 'node')
         return withNodeResolveConditions(currentConfig,);
-      }
       return currentConfig;
     }
 
     // Apply mode-specific transformations using reduce for immutability
-    const config = modes.reduce(function applyMode(currentConfig, currentMode) { return applyModeTransform(currentConfig, currentMode); }, sharedFactory(configDir,),);
+    const config = modes.reduce(function applyMode(currentConfig, currentMode,) {
+      return applyModeTransform(currentConfig, currentMode,);
+    }, sharedFactory(configDir,),);
 
     return config;
   };

@@ -7,7 +7,10 @@
 import type { ScatterPoint, } from '../chart/scatter.ts';
 import { vendorIcon, } from '../data/model-icons.ts';
 
-import { hasMultipleProbes, type ViewerEntry, } from '../data/viewer-types.ts';
+import {
+  hasMultipleProbes,
+  type ViewerEntry,
+} from '../data/viewer-types.ts';
 
 /**
  * Builds scatter points from overall scores for one model.
@@ -28,27 +31,33 @@ export function buildOverallPoints(
   openrouterId: string,
   color: string,
 ): readonly ScatterPoint[] {
-  return entries.filter(hasMultipleProbes).map(function toPoint(entry, index): ScatterPoint {
-    const runId = `${label}-${entry.timestamp}`;
-    return {
-      runId,
-      index,
-      timestamp: entry.timestamp,
-      score: entry.overallScore,
-      color,
-      icon: vendorIcon(openrouterId),
-      title: `${label} ${entry.timestamp.slice(0, 10)}: ${entry.overallScore.toFixed(2)}`,
-      failed: entry.failed,
-      tableRow: {
-        timestamp: entry.timestamp,
-        model: label,
-        probe: 'overall',
-        score: entry.overallScore,
-        failed: entry.failed,
+  return entries.filter(hasMultipleProbes,).map(
+    function toPoint(entry, index,): ScatterPoint {
+      const runId = `${label}-${entry.timestamp}`;
+      return {
         runId,
-      },
-    };
-  });
+        index,
+        timestamp: entry.timestamp,
+        score: entry.overallScore,
+        color,
+        icon: vendorIcon(openrouterId,),
+        title: `${label} ${entry.timestamp.slice(0, 10,)}: ${
+          entry
+            .overallScore
+            .toFixed(2,)
+        }`,
+        failed: entry.failed,
+        tableRow: {
+          timestamp: entry.timestamp,
+          model: label,
+          probe: 'overall',
+          score: entry.overallScore,
+          failed: entry.failed,
+          runId,
+        },
+      };
+    },
+  );
 }
 
 /**
@@ -74,8 +83,10 @@ export function buildProbePoints(
   color: string,
 ): readonly ScatterPoint[] {
   return entries
-    .filter(function hasProbe(entry): boolean { return probe in entry.probeScores; })
-    .map(function toPoint(entry, index): ScatterPoint {
+    .filter(function hasProbe(entry,): boolean {
+      return probe in entry.probeScores;
+    },)
+    .map(function toPoint(entry, index,): ScatterPoint {
       const score = entry.probeScores[probe] ?? 0;
       const pass2Score = entry.pass2Scores?.[probe];
       const runId = `${label}-${probe}-${entry.timestamp}`;
@@ -86,8 +97,10 @@ export function buildProbePoints(
         score,
         pass2Score,
         color,
-        icon: vendorIcon(openrouterId),
-        title: `${probe} ${entry.timestamp.slice(0, 10)}: ${score.toFixed(2)}${pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2)})` : ''}`,
+        icon: vendorIcon(openrouterId,),
+        title: `${probe} ${entry.timestamp.slice(0, 10,)}: ${score.toFixed(2,)}${
+          pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
+        }`,
         failed: entry.failed,
         tableRow: {
           timestamp: entry.timestamp,
@@ -99,5 +112,5 @@ export function buildProbePoints(
           runId,
         },
       };
-    });
+    },);
 }

@@ -5,13 +5,13 @@ import {
   test,
 } from 'bun:test';
 
-const {$} = types.function.from.function.memoize.async.positional;
+const { $, } = types.function.from.function.memoize.async.positional;
 const createStore = types.object.store.from.store.async.named.$;
 
 describe($, () => {
   test('returns computed value on first call', async () => {
     const fn = async (x: number,): Promise<number> => x * 2;
-    const memoized = await $(fn, (x: number,) => String(x),);
+    const memoized = await $(fn, (x: number,) => String(x,),);
 
     expect(await memoized({ args: [5,], salt: 'v1', },),).toBe(10,);
   });
@@ -22,7 +22,7 @@ describe($, () => {
       callCount += 1;
       return x * 2;
     };
-    const memoized = await $(fn, (x: number,) => String(x),);
+    const memoized = await $(fn, (x: number,) => String(x,),);
 
     expect(await memoized({ args: [5,], salt: 'v1', },),).toBe(10,);
     expect(await memoized({ args: [5,], salt: 'v1', },),).toBe(10,);
@@ -38,7 +38,7 @@ describe($, () => {
       },);
       return x * 2;
     };
-    const memoized = await $(fn, (x: number,) => String(x),);
+    const memoized = await $(fn, (x: number,) => String(x,),);
 
     const [result1, result2,] = await Promise.all([
       memoized({ args: [5,], salt: 'v1', },),
@@ -53,14 +53,15 @@ describe($, () => {
     let callCount = 0;
     const fn = async (x: number,): Promise<number> => {
       callCount += 1;
-      if (callCount === 1) {
+      if (callCount === 1)
         throw new Error('first call fails',);
-      }
       return x * 2;
     };
-    const memoized = await $(fn, (x: number,) => String(x),);
+    const memoized = await $(fn, (x: number,) => String(x,),);
 
-    await expect(memoized({ args: [5,], salt: 'v1', },),).rejects.toThrow('first call fails',);
+    await expect(memoized({ args: [5,], salt: 'v1', },),).rejects.toThrow(
+      'first call fails',
+    );
 
     const result = await memoized({ args: [5,], salt: 'v1', },);
     expect(result,).toBe(10,);
@@ -73,7 +74,7 @@ describe($, () => {
       callCount += 1;
       return x;
     };
-    const memoized = await $(fn, (x: number,) => String(x),);
+    const memoized = await $(fn, (x: number,) => String(x,),);
 
     expect(await memoized({ args: [1,], salt: 'a', },),).toBe(1,);
     expect(await memoized({ args: [1,], salt: 'a', },),).toBe(1,);
@@ -88,7 +89,7 @@ describe($, () => {
       callCount += 1;
       return x;
     };
-    const memoized = await $(fn, (x: number,) => String(x),);
+    const memoized = await $(fn, (x: number,) => String(x,),);
 
     await memoized({ args: [1,], salt: 'v1', },);
     await memoized.clear();
@@ -103,7 +104,7 @@ describe($, () => {
       callCount += 1;
       return x;
     };
-    const memoized = await $(fn, (x: number,) => String(x),);
+    const memoized = await $(fn, (x: number,) => String(x,),);
 
     await memoized({ args: [1,], salt: 'v1', },);
     await memoized.delete('1:v1',);
@@ -114,7 +115,7 @@ describe($, () => {
 
   test('.store provides access to the underlying Store', async () => {
     const fn = async (x: number,): Promise<number> => x;
-    const memoized = await $(fn, (x: number,) => String(x),);
+    const memoized = await $(fn, (x: number,) => String(x,),);
 
     expect(memoized.store,).toBeDefined();
     expect(memoized.store.storeId,).toBeDefined();
@@ -126,7 +127,7 @@ describe($, () => {
       callCount += 1;
       return x * 2;
     };
-    const memoized = await $(fn, (x: number,) => String(x),);
+    const memoized = await $(fn, (x: number,) => String(x,),);
 
     expect(await memoized({ args: [1,], salt: 'v1', },),).toBe(2,);
     expect(await memoized({ args: [2,], salt: 'v1', },),).toBe(4,);
@@ -143,7 +144,7 @@ describe($, () => {
       storeId: 'lru-async-test',
       eviction: [{ policy: 'lru', maxSize: 2, },],
     },);
-    const memoized = await $(fn, (x: number,) => String(x), store,);
+    const memoized = await $(fn, (x: number,) => String(x,), store,);
 
     await memoized({ args: [1,], salt: 'v1', },);
     await memoized({ args: [2,], salt: 'v1', },);
@@ -153,4 +154,4 @@ describe($, () => {
     await memoized({ args: [1,], salt: 'v1', },);
     expect(callCount,).toBe(1,);
   });
-});
+},);

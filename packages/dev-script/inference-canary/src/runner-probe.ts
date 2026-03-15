@@ -7,9 +7,9 @@
  */
 import { runProbeCore, } from './runner-probe-core.ts';
 
-import type { ProbeResult, } from './runner-types.ts';
-import type { RunnerConfig, } from './runner-config.ts';
 import type { Probe, } from './probes.ts';
+import type { RunnerConfig, } from './runner-config.ts';
+import type { ProbeResult, } from './runner-types.ts';
 
 /** Minutes before a probe is considered timed out */
 const PROBE_TIMEOUT_MINUTES = 5;
@@ -33,10 +33,12 @@ const PROBE_TIMEOUT_MS = PROBE_TIMEOUT_MINUTES * SECONDS_PER_MINUTE * MS_PER_SEC
  *
  * @returns disposable handle; timer is cleared when disposed
  */
-function createDisposableTimeout(callback: () => void, ms: number): Disposable {
-  const id = setTimeout(callback, ms);
+function createDisposableTimeout(callback: () => void, ms: number,): Disposable {
+  const id = setTimeout(callback, ms,);
   id.unref();
-  return { [Symbol.dispose](): void { clearTimeout(id); }, };
+  return { [Symbol.dispose](): void {
+    clearTimeout(id,);
+  }, };
 }
 
 /**
@@ -58,9 +60,11 @@ function createDisposableTimeout(callback: () => void, ms: number): Disposable {
  *
  * @returns scored result; on timeout, a zero-score result with `timedOut: true`
  */
-export async function runProbe(probe: Probe, config: RunnerConfig, timestamp: string): Promise<ProbeResult> {
+export async function runProbe(probe: Probe, config: RunnerConfig,
+  timestamp: string,): Promise<ProbeResult>
+{
   const controller = new AbortController();
-  const corePromise = runProbeCore(probe, config, timestamp, controller.signal);
+  const corePromise = runProbeCore(probe, config, timestamp, controller.signal,);
   // Zero-score sentinel returned when the timeout fires; score 0 is recorded in history
   // so the overall model score reflects the failure without discarding other probe results.
   const timedOutResult: ProbeResult = {
@@ -83,23 +87,31 @@ export async function runProbe(probe: Probe, config: RunnerConfig, timestamp: st
   async function observedCore(): Promise<ProbeResult> {
     try {
       return await corePromise;
-    } catch (error) {
-      if (controller.signal.aborted) return timedOutResult;
+    }
+    catch (error) {
+      if (controller.signal.aborted)
+        return timedOutResult;
       throw error;
     }
   }
 
-  const { promise: timeoutPromise, resolve: resolveTimeout, } = Promise.withResolvers<ProbeResult>();
+  const { promise: timeoutPromise, resolve: resolveTimeout, } = Promise.withResolvers<
+    ProbeResult
+  >();
 
   // Timer auto-clears when the function returns via Symbol.dispose.
   using _timer = createDisposableTimeout(
     function onTimeout(): void {
       controller.abort();
-      console.error(`  [${config.label}:${probe.name}] timed out after ${String(PROBE_TIMEOUT_MINUTES)} minutes`);
-      resolveTimeout(timedOutResult);
+      console.error(
+        `  [${config.label}:${probe.name}] timed out after ${
+          String(PROBE_TIMEOUT_MINUTES,)
+        } minutes`,
+      );
+      resolveTimeout(timedOutResult,);
     },
     PROBE_TIMEOUT_MS,
   );
 
-  return await Promise.race([observedCore(), timeoutPromise]);
+  return await Promise.race([observedCore(), timeoutPromise,],);
 }

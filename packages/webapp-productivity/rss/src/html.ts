@@ -1,7 +1,10 @@
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import { css, } from './asset.ts';
-import { getIgnoreContent, parseIgnoredLinks, } from './ignore.ts';
+import {
+  getIgnoreContent,
+  parseIgnoredLinks,
+} from './ignore.ts';
 import type { ItemWDate, } from './item-type.ts';
 import { l as parentLogger, } from './log.ts';
 
@@ -28,18 +31,23 @@ export const INDEX_HTML_END = '</body></html>';
  * const body = await getIndexHtmlBody({ items });
  * ```
  */
-export async function getIndexHtmlBody(options: { items: ItemWDate[]; }): Promise<string> {
+export async function getIndexHtmlBody(
+  options: { items: ItemWDate[]; },
+): Promise<string> {
   const { items, } = options;
   const innerL = tagged({ tag: getIndexHtmlBody.name, l, },);
 
   const ignoreContent = await getIgnoreContent();
   const ignoredLinks = parseIgnoredLinks(ignoreContent,);
   const filteredItems = items.filter(function notIgnored(item,) {
-    if (item.item.link === undefined || item.item.link === '') return true;
+    if (item.item.link === undefined || item.item.link === '')
+      return true;
     return !ignoredLinks.has(item.item.link,);
   },);
 
-  innerL.debug(`${String(filteredItems.length)} of ${String(items.length)} items after filtering`);
+  innerL.debug(
+    `${String(filteredItems.length,)} of ${String(items.length,)} items after filtering`,
+  );
 
   return h({
     tag: 'ol',
@@ -68,7 +76,7 @@ function itemToFeed(itemWDate: ItemWDate, index: number,): string {
       attrs: {
         src: `data:text/html;charset=utf-8,${
           encodeURIComponent(
-            `<style>${css}</style>${String(item.description)}`,
+            `<style>${css}</style>${String(item.description,)}`,
           )
         }`,
         sandbox: '',
@@ -125,9 +133,10 @@ function itemToFeed(itemWDate: ItemWDate, index: number,): string {
         ],
       },),
       descriptionIframe,
-    ].filter(function isTruthy(value,) {
-      return value !== '';
-    },),
+    ]
+      .filter(function isTruthy(value,) {
+        return value !== '';
+      },),
   },);
 }
 

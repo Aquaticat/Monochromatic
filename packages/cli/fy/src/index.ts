@@ -1,27 +1,33 @@
 #!/usr/bin/env bun
-import { object } from '@optique/core/constructs';
-import { message } from '@optique/core/message';
-import { map, multiple } from '@optique/core/modifiers';
-import { argument } from '@optique/core/primitives';
-import { string } from '@optique/core/valueparser';
-import { runSync } from '@optique/run';
+import { object, } from '@optique/core/constructs';
+import { message, } from '@optique/core/message';
+import {
+  map,
+  multiple,
+} from '@optique/core/modifiers';
+import { argument, } from '@optique/core/primitives';
+import { string, } from '@optique/core/valueparser';
+import { runSync, } from '@optique/run';
 
-import { coerceArg } from './coerce.ts';
-import { l, tagged } from './log.ts';
-import { resolveSpecifier } from './resolve.ts';
+import { coerceArg, } from './coerce.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
+import { resolveSpecifier, } from './resolve.ts';
 
 export {};
 
 //region Arg parsing -- positional: <specifier> <export> [args...]
 
 /** Value parser for the import specifier, displayed as SPECIFIER in help */
-const specifierParser = string({ metavar: 'SPECIFIER' });
+const specifierParser = string({ metavar: 'SPECIFIER', },);
 
 /** Value parser for the export name, displayed as EXPORT in help */
-const exportParser = string({ metavar: 'EXPORT' });
+const exportParser = string({ metavar: 'EXPORT', },);
 
 /** Value parser for trailing call arguments, displayed as ARG in help */
-const argParser = string({ metavar: 'ARG' });
+const argParser = string({ metavar: 'ARG', },);
 
 /** Parsed CLI arguments */
 type CliArgs = {
@@ -33,35 +39,44 @@ type CliArgs = {
 /** Top-level parser: <specifier> <export> [args...] */
 const parser = map(
   object({
-    specifier: argument(specifierParser),
-    exportName: argument(exportParser),
-    callArgs: multiple(argument(argParser)),
-  }),
-  function toCliArgs(v: CliArgs): CliArgs { return v; },
+    specifier: argument(specifierParser,),
+    exportName: argument(exportParser,),
+    callArgs: multiple(argument(argParser,),),
+  },),
+  function toCliArgs(v: CliArgs,): CliArgs {
+    return v;
+  },
 );
 
 /** Parsed result from process.argv */
 const args = runSync(parser, {
   programName: 'cli-fy',
-  args: process.argv.slice(2),
+  args: process.argv.slice(2,),
   help: 'option',
   aboveError: 'help',
   brief: message`cli-fy - call any ESM export from the command line`,
-  footer: message`Examples:\n  cli-fy lodash add 1 1\n  cli-fy @scope/pkg myFn arg1 arg2\n  cli-fy lodash-es/add default 1 1`,
-});
+  footer:
+    message`Examples:\n  cli-fy lodash add 1 1\n  cli-fy @scope/pkg myFn arg1 arg2\n  cli-fy lodash-es/add default 1 1`,
+},);
 
 //endregion Arg parsing
 
 //region Main execution -- resolve, import, call, print
 
 /** Tagged logger for the main execution flow. */
-const rl = tagged({ tag: 'main', l });
+const rl = tagged({ tag: 'main', l, },);
 
-rl.info(`specifier="${args.specifier}" export="${args.exportName}" args=[${args.callArgs.join(', ')}]`);
+rl.info(
+  `specifier="${args.specifier}" export="${args.exportName}" args=[${
+    args
+      .callArgs
+      .join(', ',)
+  }]`,
+);
 
 /** Resolved file path for the import specifier */
-const resolvedPath = await resolveSpecifier({ specifier: args.specifier });
-rl.info(`resolved to ${resolvedPath}`);
+const resolvedPath = await resolveSpecifier({ specifier: args.specifier, },);
+rl.info(`resolved to ${resolvedPath}`,);
 
 /** Dynamically imported module */
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- dynamic import yields unknown module shape
@@ -72,32 +87,34 @@ const exportValue: unknown = mod[args.exportName];
 
 if (exportValue === undefined) {
   /** Available export names for error message */
-  const available = Object.keys(mod).join(', ');
+  const available = Object.keys(mod,).join(', ',);
   throw new Error(
     `Export "${args.exportName}" not found in "${args.specifier}".\n`
-    + `Available exports: ${available}`,
+      + `Available exports: ${available}`,
   );
 }
 
 if (typeof exportValue === 'function') {
   /** Coerced arguments for the function call */
-  const coercedArgs = args.callArgs.map(function coerceCallArg(arg) {
-    return coerceArg({ arg });
-  });
-  rl.info(`calling ${args.exportName}(${coercedArgs.map(String).join(', ')})`);
+  const coercedArgs = args.callArgs.map(function coerceCallArg(arg,) {
+    return coerceArg({ arg, },);
+  },);
+  rl.info(`calling ${args.exportName}(${coercedArgs.map(String,).join(', ',)})`,);
 
   /** Return value from calling the exported function */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/no-unsafe-assignment -- dynamic module call with unknown signature
-  const result: unknown = await (exportValue as (...fnArgs: readonly unknown[]) => unknown)(...coercedArgs);
-  console.log(result);
-} else {
+  const result: unknown =
+    await (exportValue as (...fnArgs: readonly unknown[]) => unknown)(...coercedArgs,);
+  console.log(result,);
+}
+else {
   if (args.callArgs.length > 0) {
     throw new Error(
       `Export "${args.exportName}" from "${args.specifier}" is not a function (got ${typeof exportValue}), `
-      + `but ${String(args.callArgs.length)} argument(s) were provided.`,
+        + `but ${String(args.callArgs.length,)} argument(s) were provided.`,
     );
   }
-  console.log(exportValue);
+  console.log(exportValue,);
 }
 
 //endregion Main execution

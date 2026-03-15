@@ -7,9 +7,14 @@
  *
  * Client entry: `/dist/client/search.js` (src/client/search.ts)
  */
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t string/t html/f/t string jsx/r s/p n/index.ts";
-import { listAllTags, searchTasks } from "../../lib/db/tasks-queries.ts";
-import { serializePageData } from "./layout.ts";
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t string/t html/f/t string jsx/r s/p n/index.ts';
+import {
+  listAllTags,
+  searchTasks,
+} from '../../lib/db/tasks-queries.ts';
+import { serializePageData, } from './layout.ts';
 
 /**
  * Renders the search page with FTS results when a query is present.
@@ -18,46 +23,51 @@ import { serializePageData } from "./layout.ts";
  *
  * @returns HTML response for the search page
  */
-export async function searchPage(url: URL): Promise<Response> {
-  const query = url.searchParams.get("q") ?? "";
-  const results = await searchTasks(query);
+export async function searchPage(url: URL,): Promise<Response> {
+  const query = url.searchParams.get('q',) ?? '';
+  const results = await searchTasks(query,);
   const availableTags = await listAllTags();
 
-  const pageData = { query, results, availableTags };
+  const pageData = { query, results, availableTags, };
 
   const html = `<!DOCTYPE html>
-` + h({
-    tag: "html",
-    attrs: { lang: "en" },
-    children: [
-      h({
-        tag: "head",
-        children: [
-          h({ tag: "meta", attrs: { charset: "utf8" } }),
-          h({ tag: "meta", attrs: { name: "viewport", content: "width=device-width, initial-scale=1" } }),
-          h({ tag: "title", text: "Search - Done" }),
-        ],
-      }),
-      h({
-        tag: "body",
-        children: [
-          h({ tag: "side-drawer", attrs: { id: "drawer" } }),
-          h({
-            tag: "div",
-            class: "page-wrapper",
-            children: [
-              h({ tag: "search-bar", attrs: { value: query } }),
-              h({ tag: "main", attrs: { id: "app" } }),
-            ],
-          }),
-          h({ tag: "script", attrs: { type: "application/json", id: "page-data" }, html: serializePageData(pageData) }),
-          h({ tag: "script", attrs: { type: "module", src: "/dist/client/search.js" } }),
-        ],
-      }),
-    ],
-  });
+`
+    + h({
+      tag: 'html',
+      attrs: { lang: 'en', },
+      children: [
+        h({
+          tag: 'head',
+          children: [
+            h({ tag: 'meta', attrs: { charset: 'utf8', }, },),
+            h({ tag: 'meta',
+              attrs: { name: 'viewport',
+                content: 'width=device-width, initial-scale=1', }, },),
+            h({ tag: 'title', text: 'Search - Done', },),
+          ],
+        },),
+        h({
+          tag: 'body',
+          children: [
+            h({ tag: 'side-drawer', attrs: { id: 'drawer', }, },),
+            h({
+              tag: 'div',
+              class: 'page-wrapper',
+              children: [
+                h({ tag: 'search-bar', attrs: { value: query, }, },),
+                h({ tag: 'main', attrs: { id: 'app', }, },),
+              ],
+            },),
+            h({ tag: 'script', attrs: { type: 'application/json', id: 'page-data', },
+              html: serializePageData(pageData,), },),
+            h({ tag: 'script',
+              attrs: { type: 'module', src: '/dist/client/search.js', }, },),
+          ],
+        },),
+      ],
+    },);
 
   return new Response(html, {
-    headers: { "Content-Type": "text/html; charset=utf-8" },
-  });
+    headers: { 'Content-Type': 'text/html; charset=utf-8', },
+  },);
 }

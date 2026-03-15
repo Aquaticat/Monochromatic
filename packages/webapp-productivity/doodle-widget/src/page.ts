@@ -19,12 +19,12 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
  *
  * @returns label-wrapped radio input HTML string
  */
-function renderToggleOption({ id, name, label, checked }: {
+function renderToggleOption({ id, name, label, checked, }: {
   id: string;
   name: string;
   label: string;
   checked: boolean;
-}): string {
+},): string {
   return h({
     tag: 'label',
     class: 'toggle-option',
@@ -36,12 +36,12 @@ function renderToggleOption({ id, name, label, checked }: {
           name,
           id,
           value: id,
-          ...(checked ? { checked: '' } : {}),
+          ...(checked ? { checked: '', } : {}),
         },
-      }),
-      h({ tag: 'span', text: label, }),
+      },),
+      h({ tag: 'span', text: label, },),
     ],
-  });
+  },);
 }
 
 /**
@@ -54,20 +54,25 @@ function renderToolbar(): string {
     tag: 'div',
     class: 'toolbar',
     children: [
-      h({ tag: 'span', class: 'toolbar-title', text: 'Doodle', }),
+      h({ tag: 'span', class: 'toolbar-title', text: 'Doodle', },),
       h({
         tag: 'div',
         class: 'toggle-group',
         children: [
-          renderToggleOption({ id: 'tool-draw', name: 'tool', label: 'Draw', checked: true, }),
-          renderToggleOption({ id: 'tool-text', name: 'tool', label: 'Text', checked: false, }),
+          renderToggleOption({ id: 'tool-draw', name: 'tool', label: 'Draw',
+            checked: true, },),
+          renderToggleOption({ id: 'tool-text', name: 'tool', label: 'Text',
+            checked: false, },),
         ],
-      }),
-      h({ tag: 'button', attrs: { id: 'upload-btn', type: 'button', }, text: 'Upload background', }),
-      h({ tag: 'input', attrs: { type: 'file', id: 'upload-input', accept: 'image/*,.svg', hidden: '', }, }),
-      h({ tag: 'button', attrs: { id: 'clear-btn', type: 'button', }, text: 'Clear', }),
+      },),
+      h({ tag: 'button', attrs: { id: 'upload-btn', type: 'button', },
+        text: 'Upload background', },),
+      h({ tag: 'input',
+        attrs: { type: 'file', id: 'upload-input', accept: 'image/*,.svg',
+          hidden: '', }, },),
+      h({ tag: 'button', attrs: { id: 'clear-btn', type: 'button', }, text: 'Clear', },),
     ],
-  });
+  },);
 }
 
 /**
@@ -77,16 +82,16 @@ function renderToolbar(): string {
  *
  * @returns canvas container HTML string
  */
-function renderCanvasContainer(svgContent: string): string {
+function renderCanvasContainer(svgContent: string,): string {
   return h({
     tag: 'div',
     attrs: { id: 'canvas-container', },
     children: [
-      h({ tag: 'canvas', attrs: { id: 'draw-canvas', }, }),
-      h({ tag: 'div', attrs: { id: 'svg-overlay', }, html: svgContent, }),
-      h({ tag: 'div', attrs: { id: 'text-layer', }, }),
+      h({ tag: 'canvas', attrs: { id: 'draw-canvas', }, },),
+      h({ tag: 'div', attrs: { id: 'svg-overlay', }, html: svgContent, },),
+      h({ tag: 'div', attrs: { id: 'text-layer', }, },),
     ],
-  });
+  },);
 }
 
 /**
@@ -100,32 +105,38 @@ function renderCanvasContainer(svgContent: string): string {
  *
  * @returns complete HTML document string
  */
-export function renderPage({ css, js, svgContent, }: { css: string; js: string; svgContent: string }): string {
-  return `<!DOCTYPE html>\n${h({
-    tag: 'html',
-    attrs: { lang: 'en', },
-    children: [
-      h({
-        tag: 'head',
-        children: [
-          h({ tag: 'meta', attrs: { charset: 'utf8', }, }),
-          h({ tag: 'meta', attrs: { name: 'viewport', content: 'width=device-width, initial-scale=1', }, }),
-          h({ tag: 'meta', attrs: { name: 'color-scheme', content: 'light', }, }),
-          h({ tag: 'title', text: 'Doodle Widget', }),
-          h({ tag: 'style', html: css, }),
-        ],
-      }),
-      h({
-        tag: 'body',
-        children: [
-          h({
-            tag: 'div',
-            attrs: { id: 'app', },
-            children: [renderToolbar(), renderCanvasContainer(svgContent)],
-          }),
-          h({ tag: 'script', attrs: { type: 'module', }, html: js, }),
-        ],
-      }),
-    ],
-  })}`;
+export function renderPage(
+  { css, js, svgContent, }: { css: string; js: string; svgContent: string; },
+): string {
+  return `<!DOCTYPE html>\n${
+    h({
+      tag: 'html',
+      attrs: { lang: 'en', },
+      children: [
+        h({
+          tag: 'head',
+          children: [
+            h({ tag: 'meta', attrs: { charset: 'utf8', }, },),
+            h({ tag: 'meta',
+              attrs: { name: 'viewport',
+                content: 'width=device-width, initial-scale=1', }, },),
+            h({ tag: 'meta', attrs: { name: 'color-scheme', content: 'light', }, },),
+            h({ tag: 'title', text: 'Doodle Widget', },),
+            h({ tag: 'style', html: css, },),
+          ],
+        },),
+        h({
+          tag: 'body',
+          children: [
+            h({
+              tag: 'div',
+              attrs: { id: 'app', },
+              children: [renderToolbar(), renderCanvasContainer(svgContent,),],
+            },),
+            h({ tag: 'script', attrs: { type: 'module', }, html: js, },),
+          ],
+        },),
+      ],
+    },)
+  }`;
 }

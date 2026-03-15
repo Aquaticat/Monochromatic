@@ -1,5 +1,7 @@
-import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
-import { css } from "../css.ts";
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+import { css, } from '../css.ts';
 
 /** Shadow DOM styles for the `\<section-heading\>` component. */
 const STYLES = css(`
@@ -27,7 +29,7 @@ const STYLES = css(`
     @apply --flex-column;
     gap: var(--gap);
   }
-`);
+`,);
 
 /**
  * `\<section-heading\>` -- collapsible section with icon, label, and toggle indicator.
@@ -43,7 +45,7 @@ class SectionHeading extends HTMLElement {
   /** Initializes the shadow root. */
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: "open" });
+    this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
   /**
@@ -58,55 +60,58 @@ class SectionHeading extends HTMLElement {
   /** Renders the heading and attaches the toggle click handler. */
   connectedCallback(): void {
     this.#render();
-    this.#shadow.querySelector<HTMLElement>(".heading")?.addEventListener("click", this.#toggle);
+    this.#shadow.querySelector<HTMLElement>('.heading',)?.addEventListener('click',
+      this.#toggle,);
   }
 
   /**
    * Toggles the open state and dispatches a toggle event.
    * Registered as a click handler in connectedCallback.
    */
-  #toggle = function toggle(this: SectionHeading): void {
+  #toggle = function toggle(this: SectionHeading,): void {
     this.#open = !this.#open;
     this.#updateToggle();
-    this.dispatchEvent(new CustomEvent("toggle", { detail: { open: this.#open }, bubbles: true }));
-  }.bind(this);
+    this.dispatchEvent(
+      new CustomEvent('toggle', { detail: { open: this.#open, }, bubbles: true, },),
+    );
+  }
+    .bind(this,);
 
   /** Updates the toggle indicator and content visibility. */
   #updateToggle(): void {
-    const toggle = this.#shadow.querySelector<HTMLElement>(".toggle");
-    if (toggle instanceof HTMLElement) {
-      toggle.textContent = this.#open ? "\u25B2" : "\u25BC";
-    }
-    const content = this.#shadow.querySelector<HTMLElement>(".content");
+    const toggle = this.#shadow.querySelector<HTMLElement>('.toggle',);
+    if (toggle instanceof HTMLElement)
+      toggle.textContent = this.#open ? '\u25B2' : '\u25BC';
+    const content = this.#shadow.querySelector<HTMLElement>('.content',);
     if (content !== null) {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelector returns Element; style access needs HTMLElement
-      (content as HTMLElement).style.display = this.#open ? "flex" : "none";
+      (content as HTMLElement).style.display = this.#open ? 'flex' : 'none';
     }
   }
 
   /** Renders the heading, toggle indicator, and content slot into the shadow root. */
   #render(): void {
-    const icon = this.getAttribute("icon") ?? "";
-    const label = this.getAttribute("label") ?? "";
+    const icon = this.getAttribute('icon',) ?? '';
+    const label = this.getAttribute('label',) ?? '';
 
     this.#shadow.replaceChildren(
-      h({ tag: "style", text: STYLES }),
+      h({ tag: 'style', text: STYLES, },),
       h({
-        tag: "div",
-        class: "heading",
+        tag: 'div',
+        class: 'heading',
         children: [
-          h({ tag: "span", class: "icon", text: icon }),
-          h({ tag: "span", text: label }),
-          h({ tag: "span", class: "toggle", text: this.#open ? "\u25B2" : "\u25BC" }),
+          h({ tag: 'span', class: 'icon', text: icon, },),
+          h({ tag: 'span', text: label, },),
+          h({ tag: 'span', class: 'toggle', text: this.#open ? '\u25B2' : '\u25BC', },),
         ],
-      }),
+      },),
       h({
-        tag: "div",
-        class: "content",
-        children: [h({ tag: "slot" })],
-      }),
+        tag: 'div',
+        class: 'content',
+        children: [h({ tag: 'slot', },),],
+      },),
     );
   }
 }
 
-customElements.define("section-heading", SectionHeading);
+customElements.define('section-heading', SectionHeading,);

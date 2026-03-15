@@ -32,9 +32,9 @@ const regexViolationCache = new Map<string, boolean>();
  * detectsRegexUsage('source.indexOf("foo")'); // false
  * ```
  */
-function detectsRegexUsage(source: string): boolean {
+function detectsRegexUsage(source: string,): boolean {
   // oxlint-disable-next-line prefer-named-capture-group -- detection heuristic, not data extraction
-  return /\/(\\.|[^/\n])\/[gimsuy]*|new\s+RegExp\s*\(/.test(source);
+  return /\/(\\.|[^/\n])\/[gimsuy]*|new\s+RegExp\s*\(/.test(source,);
 }
 
 /** Number of correctness checks in the css-mixin scoring function */
@@ -45,7 +45,8 @@ const REGEX_CONSTRAINT_MSG = [
   'CONSTRAINT VIOLATION: Your solution used regular expressions, which is explicitly forbidden by the prompt.',
   'Your score was 0. Rewrite the solution using character-by-character parsing or string index operations instead.',
   '',
-].join('\n');
+]
+  .join('\n',);
 
 /**
  * Checks that the `.override-test` block resolves property override correctly.
@@ -64,13 +65,14 @@ const REGEX_CONSTRAINT_MSG = [
  * verifyOverrideTest('.override-test { display: flex; }'); // false (wrong winner)
  * ```
  */
-function verifyOverrideTest(output: string): boolean {
-  const start = output.indexOf('.override-test');
-  if (start === -1) return false;
-  const blockEnd = output.indexOf('}', start);
-  const block = output.slice(start, blockEnd);
-  const lastDisplay = block.lastIndexOf('display:');
-  return lastDisplay !== -1 && block.slice(lastDisplay).includes('grid');
+function verifyOverrideTest(output: string,): boolean {
+  const start = output.indexOf('.override-test',);
+  if (start === -1)
+    return false;
+  const blockEnd = output.indexOf('}', start,);
+  const block = output.slice(start, blockEnd,);
+  const lastDisplay = block.lastIndexOf('display:',);
+  return lastDisplay !== -1 && block.slice(lastDisplay,).includes('grid',);
 }
 
 /**
@@ -84,13 +86,16 @@ export const cssMixinTranspiler = createCodeGenProbe({
     fastMs: 3_000,
     slowMs: 12_000,
   },
-  transformSource: function checkRegex(source, context): { reject: boolean; source: string; } {
-    const usesRegex = detectsRegexUsage(source);
-    regexViolationCache.set(context.label, usesRegex);
+  transformSource: function checkRegex(source,
+    context,): { reject: boolean; source: string; }
+  {
+    const usesRegex = detectsRegexUsage(source,);
+    regexViolationCache.set(context.label, usesRegex,);
     return { reject: usesRegex, source, };
   },
-  customizeFixPrompt: function addRegexWarning(base, context): string | undefined {
-    if (regexViolationCache.get(context.label) !== true) return base;
+  customizeFixPrompt: function addRegexWarning(base, context,): string | undefined {
+    if (regexViolationCache.get(context.label,) !== true)
+      return base;
     // Prepend constraint violation to existing fix prompt, or create a standalone prompt
     return base !== undefined ? `${REGEX_CONSTRAINT_MSG}\n${base}` : REGEX_CONSTRAINT_MSG;
   },
@@ -135,28 +140,30 @@ export const cssMixinTranspiler = createCodeGenProbe({
     '```css',
     'body { margin: 0; }',
     '```',
-  ].join('\n'),
-  verify: function verifyCssMixin(result): { correctness: number; } {
+  ]
+    .join('\n',),
+  verify: function verifyCssMixin(result,): { correctness: number; } {
     // Normalize whitespace so cosmetic formatting differences don't affect scoring
-    const output = result.stdout.replaceAll(/[ \t]+/g, ' ').replaceAll(/\n{3,}/g, '\n\n');
+    const output = result.stdout.replaceAll(/[ \t]+/g, ' ',).replaceAll(/\n{3,}/g,
+      '\n\n',);
 
-    const flexOccurrences = output.split('display: flex').length - 1;
+    const flexOccurrences = output.split('display: flex',).length - 1;
     const checks = [
-      !output.includes('@mixin'),
-      !output.includes('@apply'),
-      output.includes('margin: 0') && output.includes('padding: 0'),
-      output.includes('display: flex') && output.includes('align-items: center'),
-      output.includes('padding-block: 1rem') && output.includes('padding-inline: 2rem'),
-      output.includes('border-radius: 0.5rem'),
-      output.includes('color: var(--link-fg)'),
-      output.includes('background-color: var(--surface-bg)'),
-      output.includes('clip-path: inset(50%)') && output.includes('overflow: hidden'),
+      !output.includes('@mixin',),
+      !output.includes('@apply',),
+      output.includes('margin: 0',) && output.includes('padding: 0',),
+      output.includes('display: flex',) && output.includes('align-items: center',),
+      output.includes('padding-block: 1rem',) && output.includes('padding-inline: 2rem',),
+      output.includes('border-radius: 0.5rem',),
+      output.includes('color: var(--link-fg)',),
+      output.includes('background-color: var(--surface-bg)',),
+      output.includes('clip-path: inset(50%)',) && output.includes('overflow: hidden',),
       // flex-center should expand into .card, .nav .link, and .hero = 3 occurrences
       flexOccurrences >= 3,
       // Later property overrides mixin property -- either both present in order or only winner kept
-      verifyOverrideTest(output),
+      verifyOverrideTest(output,),
     ];
 
-    return { correctness: checks.filter(Boolean).length / CSS_MIXIN_TOTAL_CHECKS, };
+    return { correctness: checks.filter(Boolean,).length / CSS_MIXIN_TOTAL_CHECKS, };
   },
-});
+},);

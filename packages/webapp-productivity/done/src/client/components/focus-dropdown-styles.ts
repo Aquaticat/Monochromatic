@@ -1,7 +1,7 @@
 /**
  * Shadow DOM styles for the `\<focus-dropdown\>` component.
  */
-import { css } from "../css.ts";
+import { css, } from '../css.ts';
 
 /** Z-index for the dropdown menu overlay. */
 const MENU_Z_INDEX = 10;
@@ -48,7 +48,7 @@ export const FOCUS_DROPDOWN_STYLES = css(`
     margin-block: 0;
     margin-inline: 0;
     list-style: none;
-    z-index: ${String(MENU_Z_INDEX)};
+    z-index: ${String(MENU_Z_INDEX,)};
 
     &:not(:popover-open) { display: none; }
   }
@@ -61,4 +61,4 @@ export const FOCUS_DROPDOWN_STYLES = css(`
       background-color: var(--hover-bg);
     }
   }
-`);
+`,);

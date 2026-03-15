@@ -1,4 +1,14 @@
 // oxlint-disable typescript/no-unsafe-type-assertion, require-await -- Promise.allSettled values require type assertions; async functions return provider promises directly
+import {
+  compareEmbeddings,
+  embed,
+  embedBatch,
+} from './client.ts';
+import { describeImageDifference, } from './describe.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
 import type {
   BatchEmbeddingResult,
   ComparisonResult,
@@ -6,14 +16,11 @@ import type {
   ImageInput,
   Provider,
 } from './types.ts';
-import { compareEmbeddings, embed, embedBatch } from './client.ts';
-import { describeImageDifference } from './describe.ts';
-import { l, tagged } from './log.ts';
 
 /**
  * All available provider names, used when dispatching to all providers.
  */
-const ALL_PROVIDERS: readonly Provider[] = ['voyage', 'gemini'];
+const ALL_PROVIDERS: readonly Provider[] = ['voyage', 'gemini',];
 
 /**
  * Result from a single provider in a multi-provider comparison.
@@ -91,36 +98,43 @@ export async function compareAll(
   imageA: ImageInput,
   imageB: ImageInput,
 ): Promise<readonly MultiProviderComparisonEntry[]> {
-  const rl = tagged({ tag: compareAll.name, l });
-  rl.debug(`comparing two images across all ${String(ALL_PROVIDERS.length)} providers with description`);
+  const rl = tagged({ tag: compareAll.name, l, },);
+  rl.debug(
+    `comparing two images across all ${
+      String(ALL_PROVIDERS.length,)
+    } providers with description`,
+  );
 
   const allResults = await Promise.allSettled([
-    ...ALL_PROVIDERS.map(async function compareWithProvider(provider) {
-      const result = await compareEmbeddings(imageA, imageB, { provider });
-      return { provider, result };
-    }),
-    describeImageDifference(imageA, imageB),
-  ]);
+    ...ALL_PROVIDERS.map(async function compareWithProvider(provider,) {
+      const result = await compareEmbeddings(imageA, imageB, { provider, },);
+      return { provider, result, };
+    },),
+    describeImageDifference(imageA, imageB,),
+  ],);
 
   /** Last settlement is the description call. */
-  const descriptionSettlement = allResults.at(-1);
-  if (descriptionSettlement === undefined) throw new Error('unreachable — allResults is non-empty');
+  const descriptionSettlement = allResults.at(-1,);
+  if (descriptionSettlement === undefined)
+    throw new Error('unreachable — allResults is non-empty',);
   const description = descriptionSettlement.status === 'fulfilled'
     ? descriptionSettlement.value as string | undefined
     : undefined;
 
   /** All settlements before the last are provider results. */
-  const providerSettlements = allResults.slice(0, -1);
+  const providerSettlements = allResults.slice(0, -1,);
   const successfulEntries: MultiProviderComparisonEntry[] = [];
   for (const settlement of providerSettlements) {
     if (settlement.status === 'fulfilled') {
-      const entry = settlement.value as { provider: Provider; result: Omit<ComparisonResult, 'description'> };
+      const entry = settlement.value as { provider: Provider;
+        result: Omit<ComparisonResult, 'description'>; };
       successfulEntries.push({
         provider: entry.provider,
-        result: { ...entry.result, description },
-      });
-    } else {
-      rl.debug(`provider skipped: ${String(settlement.reason)}`);
+        result: { ...entry.result, description, },
+      },);
+    }
+    else {
+      rl.debug(`provider skipped: ${String(settlement.reason,)}`,);
     }
   }
 
@@ -130,7 +144,11 @@ export async function compareAll(
     );
   }
 
-  rl.debug(`${String(successfulEntries.length)} provider(s) succeeded, description ${description !== undefined ? 'available' : 'unavailable'}`);
+  rl.debug(
+    `${String(successfulEntries.length,)} provider(s) succeeded, description ${
+      description !== undefined ? 'available' : 'unavailable'
+    }`,
+  );
   return successfulEntries;
 }
 
@@ -153,17 +171,17 @@ export async function compareAll(
 export async function embedAll(
   input: ImageInput,
 ): Promise<readonly MultiProviderEmbedEntry[]> {
-  const rl = tagged({ tag: embedAll.name, l });
-  rl.debug(`embedding image across all ${String(ALL_PROVIDERS.length)} providers`);
+  const rl = tagged({ tag: embedAll.name, l, },);
+  rl.debug(`embedding image across all ${String(ALL_PROVIDERS.length,)} providers`,);
 
   const results = await Promise.all(
-    ALL_PROVIDERS.map(async function embedWithProvider(provider) {
-      const result = await embed(input, { provider });
-      return { provider, result };
-    }),
+    ALL_PROVIDERS.map(async function embedWithProvider(provider,) {
+      const result = await embed(input, { provider, },);
+      return { provider, result, };
+    },),
   );
 
-  rl.debug('all provider embeddings complete');
+  rl.debug('all provider embeddings complete',);
   return results;
 }
 
@@ -183,16 +201,20 @@ export async function embedAll(
 export async function embedBatchAll(
   inputs: readonly ImageInput[],
 ): Promise<readonly MultiProviderBatchEmbedEntry[]> {
-  const rl = tagged({ tag: embedBatchAll.name, l });
-  rl.debug(`batch embedding ${String(inputs.length)} image(s) across all ${String(ALL_PROVIDERS.length)} providers`);
-
-  const results = await Promise.all(
-    ALL_PROVIDERS.map(async function embedBatchWithProvider(provider) {
-      const result = await embedBatch(inputs, { provider });
-      return { provider, result };
-    }),
+  const rl = tagged({ tag: embedBatchAll.name, l, },);
+  rl.debug(
+    `batch embedding ${String(inputs.length,)} image(s) across all ${
+      String(ALL_PROVIDERS.length,)
+    } providers`,
   );
 
-  rl.debug('all provider batch embeddings complete');
+  const results = await Promise.all(
+    ALL_PROVIDERS.map(async function embedBatchWithProvider(provider,) {
+      const result = await embedBatch(inputs, { provider, },);
+      return { provider, result, };
+    },),
+  );
+
+  rl.debug('all provider batch embeddings complete',);
   return results;
 }

@@ -1,3 +1,4 @@
+import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import {
   appendFile,
   exists,
@@ -6,7 +7,6 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
-import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import { indexHtmlStart, } from './asset.ts';
 import { INDEX_HTML_END, } from './html.ts';
 import { l as parentLogger, } from './log.ts';
@@ -26,10 +26,10 @@ const l = tagged({ tag: 'handler', l: parentLogger, },);
  */
 export async function serveIndex(options: {
   getHtmlBody: () => Promise<string>;
-}): Promise<Response> {
+},): Promise<Response> {
   const { getHtmlBody, } = options;
   const innerL = tagged({ tag: serveIndex.name, l, },);
-  innerL.debug('serving index');
+  innerL.debug('serving index',);
   const body = await getHtmlBody();
   return new Response(
     `${indexHtmlStart}${body}${INDEX_HTML_END}`,
@@ -48,11 +48,11 @@ export async function serveIndex(options: {
 export async function ignore(request: Request,): Promise<Response> {
   const innerL = tagged({ tag: ignore.name, l, },);
   const body = await request.text();
-  innerL.debug(`ignore ${body}`);
+  innerL.debug(`ignore ${body}`,);
 
   const filePath = join(IGNORE_PATH, 'api.jsonl',);
   if (!await exists(filePath,)) {
-    innerL.debug('creating api.jsonl');
+    innerL.debug('creating api.jsonl',);
     await mkdir(IGNORE_PATH, { recursive: true, },);
     await writeFile(filePath, '', 'utf8',);
   }

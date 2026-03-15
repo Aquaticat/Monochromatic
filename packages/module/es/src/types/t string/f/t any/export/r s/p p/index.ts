@@ -60,9 +60,8 @@ const primitive = Object.freeze(
  */
 export function $(obj: unknown,): string {
   const objType = unknownToTypeOfString(obj,);
-  if (primitive.includes(objType,)) {
+  if (primitive.includes(objType,))
     return serializePrimitive(obj, objType as typeof primitive[number],);
-  }
 
   return match(objType,)
     .with('set', function handler() {

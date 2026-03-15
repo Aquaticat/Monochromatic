@@ -31,31 +31,32 @@ export const noTypes: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      noType: 'Type annotations in TSDoc are not allowed in TypeScript. Remove the "{{{type}}}" type.',
+      noType:
+        'Type annotations in TSDoc are not allowed in TypeScript. Remove the "{{{type}}}" type.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     /** Regex detecting JSDoc-style type annotations like `{Type}` after a tag. */
     const typePattern = /@\w+\s+\{([^}]+)\}/g;
 
-    return createTsdocVisitor(context, function noTypesHandler(_node, comment): void {
-      const lines = comment.value.split('\n');
-      lines.forEach(function checkLine(line, index): void {
-        const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '').trimStart();
+    return createTsdocVisitor(context, function noTypesHandler(_node, comment,): void {
+      const lines = comment.value.split('\n',);
+      lines.forEach(function checkLine(line, index,): void {
+        const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '',).trimStart();
         // Reset regex state
         typePattern.lastIndex = 0;
-        let match = typePattern.exec(trimmed);
+        let match = typePattern.exec(trimmed,);
         while (match !== null) {
           context.report({
             loc: {
-              start: { line: comment.loc.start.line + index, column: 0 },
+              start: { line: comment.loc.start.line + index, column: 0, },
             },
             messageId: 'noType',
-            data: { type: match[1] ?? 'unknown' },
-          });
-          match = typePattern.exec(trimmed);
+            data: { type: match[1] ?? 'unknown', },
+          },);
+          match = typePattern.exec(trimmed,);
         }
-      });
-    });
+      },);
+    },);
   },
 };

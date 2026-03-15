@@ -17,10 +17,6 @@
  * @module
  */
 
-export {
-  readStdin,
-} from './stdin.ts';
+export { readStdin, } from './stdin.ts';
 
-export {
-  writeOutput,
-} from './stdout.ts';
+export { writeOutput, } from './stdout.ts';

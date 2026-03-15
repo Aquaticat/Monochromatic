@@ -1,12 +1,14 @@
+import {
+  $ as createStore,
+} from '../../../../../../t object/t store/f/t store/r a/p n/index.ts';
+import type { $ as Store, } from '../../../../../../t object/t store/t/r a/index.ts';
+import { buildCacheKey, } from '../../cacheKey.ts';
 import type {
   MemoizeAsyncNamedOptions,
   MemoizedAsyncFunction,
   MemoizedCallOptions,
 } from '../../t/index.ts';
 import { DEFAULT_MAX_CACHE_SIZE, } from '../../t/index.ts';
-import type { $ as Store, } from '../../../../../../t object/t store/t/r a/index.ts';
-import { $ as createStore, } from '../../../../../../t object/t store/f/t store/r a/p n/index.ts';
-import { buildCacheKey, } from '../../cacheKey.ts';
 
 /**
  * Wraps an async function with memoization using LRU eviction, per-call salt-based
@@ -121,9 +123,8 @@ export async function $<
     using _guard = inflightGuard(cacheKey,);
 
     const stored = await store.get<TReturn>(cacheKey,);
-    if (stored !== undefined) {
+    if (stored !== undefined)
       return stored;
-    }
 
     const result = await fn(...args,);
     await store.set(cacheKey, result,);
@@ -142,9 +143,8 @@ export async function $<
    */
   function dispatch(cacheKey: string, args: TArgs,): Promise<TReturn> {
     const existing = inflight.get(cacheKey,);
-    if (existing !== undefined) {
+    if (existing !== undefined)
       return existing;
-    }
 
     const promise = resolveValue(cacheKey, args,);
     inflight.set(cacheKey, promise,);
@@ -155,7 +155,9 @@ export async function $<
    * Memoized async wrapper.
    * Salt is provided per-call to enable dynamic cache invalidation.
    */
-  function memoized(this: void, { args, salt, }: MemoizedCallOptions<TArgs>,): Promise<TReturn> {
+  function memoized(this: void,
+    { args, salt, }: MemoizedCallOptions<TArgs>,): Promise<TReturn>
+  {
     const cacheKey = buildCacheKey(keyFn(...args,), salt,);
     return dispatch(cacheKey, args,);
   }

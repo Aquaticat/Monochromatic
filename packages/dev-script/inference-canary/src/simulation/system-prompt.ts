@@ -13,4 +13,5 @@ export const SIMULATION_SYSTEM: string = [
   'Do not add explanations, labels, or code fences.',
   'Separate the five results with the exact line "---" (three hyphens, nothing else on that line).',
   'If a program produces no output, leave that section empty (two "---" lines in a row).',
-].join('\n');
+]
+  .join('\n',);

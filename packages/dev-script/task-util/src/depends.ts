@@ -46,7 +46,11 @@ import { string, } from '@optique/core/valueparser';
 import { runSync, } from '@optique/run';
 
 import { executeWithCollapsedOutput, } from './depends-exec.ts';
-import { checkStaleness, type BuiltinTimeStrategy, type TimeStrategy, } from './depends-staleness.ts';
+import {
+  type BuiltinTimeStrategy,
+  checkStaleness,
+  type TimeStrategy,
+} from './depends-staleness.ts';
 
 export {};
 
@@ -91,7 +95,8 @@ function filterNullish(values: readonly (string | null | undefined)[],): string[
 }
 
 /** Valid builtin time strategy names */
-const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set(['newest', 'oldest', 'mean', 'median',]);
+const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set(['newest', 'oldest',
+  'mean', 'median',],);
 
 /**
  * Validates and defaults a time strategy option.
@@ -113,8 +118,11 @@ const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set(['newest', 
  * validateTimeStrategy('sh:my-script', '--source-time-strategy') // 'sh:my-script'
  * ```
  */
-function validateTimeStrategy(value: string | null | undefined, flagName: string,): TimeStrategy {
-  if (value === null || value === undefined) return 'newest';
+function validateTimeStrategy(value: string | null | undefined,
+  flagName: string,): TimeStrategy
+{
+  if (value === null || value === undefined)
+    return 'newest';
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
   if (BUILTIN_STRATEGIES.has(value as BuiltinTimeStrategy,)) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- value is a validated BuiltinTimeStrategy
@@ -133,8 +141,10 @@ function validateTimeStrategy(value: string | null | undefined, flagName: string
 const args = {
   sources: filterNullish(rawArgs.sources,),
   outputs: filterNullish(rawArgs.outputs,),
-  sourceTimeStrategy: validateTimeStrategy(rawArgs.sourceTimeStrategy, '--source-time-strategy',),
-  outputTimeStrategy: validateTimeStrategy(rawArgs.outputTimeStrategy, '--output-time-strategy',),
+  sourceTimeStrategy: validateTimeStrategy(rawArgs.sourceTimeStrategy,
+    '--source-time-strategy',),
+  outputTimeStrategy: validateTimeStrategy(rawArgs.outputTimeStrategy,
+    '--output-time-strategy',),
   allowFailure: rawArgs.allowFailure,
   verbose: rawArgs.verbose,
   rest: rawArgs.rest,

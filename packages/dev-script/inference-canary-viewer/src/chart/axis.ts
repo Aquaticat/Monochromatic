@@ -11,7 +11,7 @@
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 /** Fixed Y axis tick values for score plots (0 to 1) */
-export const Y_TICKS: readonly number[] = [0, 0.25, 0.5, 0.75, 1];
+export const Y_TICKS: readonly number[] = [0, 0.25, 0.5, 0.75, 1,];
 
 /**
  * Generates HTML for Y axis tick labels positioned absolutely within a chart container.
@@ -22,15 +22,17 @@ export const Y_TICKS: readonly number[] = [0, 0.25, 0.5, 0.75, 1];
 export function renderYAxis(): string {
   /** Percentage multiplier to convert 0-1 score to 0-100% CSS bottom offset */
   const PERCENT = 100;
-  return Y_TICKS.map(function renderTick(tick) {
-    const bottom = tick * PERCENT;
-    return h({
-      tag: 'span',
-      class: 'tick',
-      style: { bottom: `${String(bottom)}%`, },
-      text: tick.toFixed(2),
-    });
-  }).join('\n');
+  return Y_TICKS
+    .map(function renderTick(tick,) {
+      const bottom = tick * PERCENT;
+      return h({
+        tag: 'span',
+        class: 'tick',
+        style: { bottom: `${String(bottom,)}%`, },
+        text: tick.toFixed(2,),
+      },);
+    },)
+    .join('\n',);
 }
 
 /**
@@ -44,13 +46,14 @@ export function renderYAxis(): string {
  * @returns HTML string for X axis ticks
  */
 export function renderXAxis(timestamps: readonly string[],): string {
-  if (timestamps.length === 0) return '';
+  if (timestamps.length === 0)
+    return '';
 
   /** Maximum number of X axis labels to show before skipping */
   const MAX_LABELS = 12;
-  const step = Math.max(1, Math.ceil(timestamps.length / MAX_LABELS));
+  const step = Math.max(1, Math.ceil(timestamps.length / MAX_LABELS,),);
 
-  const formatter = chooseFormatter(timestamps);
+  const formatter = chooseFormatter(timestamps,);
 
   /** Percentage multiplier */
   const PERCENT = 100;
@@ -58,7 +61,7 @@ export function renderXAxis(timestamps: readonly string[],): string {
   let lastLabel = '';
   for (let i = 0; i < timestamps.length; i += step) {
     const left = timestamps.length === 1 ? 50 : (i / (timestamps.length - 1)) * PERCENT;
-    const label = formatter(timestamps[i] ?? '');
+    const label = formatter(timestamps[i] ?? '',);
     /** Suppress consecutive duplicate labels so the axis stays readable */
     const displayLabel = label === lastLabel ? '' : label;
     lastLabel = label;
@@ -66,13 +69,13 @@ export function renderXAxis(timestamps: readonly string[],): string {
       h({
         tag: 'span',
         class: 'tick',
-        style: { left: `${left.toFixed(2)}%`, },
+        style: { left: `${left.toFixed(2,)}%`, },
         attrs: { title: timestamps[i] ?? '', },
         text: displayLabel,
-      }),
+      },),
     );
   }
-  return ticks.join('\n');
+  return ticks.join('\n',);
 }
 
 /**
@@ -83,11 +86,12 @@ export function renderXAxis(timestamps: readonly string[],): string {
  *
  * @returns formatter function mapping ISO timestamp to display label
  */
-function chooseFormatter(timestamps: readonly string[],): (ts: string) => string {
-  const uniqueDates = new Set(timestamps.map(function extractDate(ts) { return ts.slice(0, 10); }));
-  if (uniqueDates.size <= 1) {
+function chooseFormatter(timestamps: readonly string[],): (ts: string,) => string {
+  const uniqueDates = new Set(timestamps.map(function extractDate(ts,) {
+    return ts.slice(0, 10,);
+  },),);
+  if (uniqueDates.size <= 1)
     return formatTime;
-  }
   return formatDate;
 }
 
@@ -107,8 +111,9 @@ function formatTime(timestamp: string,): string {
   /** ISO format: YYYY-MM-DDTHH:MM:SS — time starts at index 11 */
   const TIME_START = 11;
   const TIME_END = 16;
-  if (timestamp.length < TIME_END) return timestamp;
-  return timestamp.slice(TIME_START, TIME_END);
+  if (timestamp.length < TIME_END)
+    return timestamp;
+  return timestamp.slice(TIME_START, TIME_END,);
 }
 
 /**
@@ -125,13 +130,14 @@ function formatTime(timestamp: string,): string {
  * ```
  */
 function formatDate(timestamp: string,): string {
-  if (timestamp.length < 10) return timestamp;
+  if (timestamp.length < 10)
+    return timestamp;
   /** Extract YYYY-MM-DD from the ISO string */
-  const datePart = timestamp.slice(0, 10);
+  const datePart = timestamp.slice(0, 10,);
   const currentYear = new Date().getFullYear().toString();
-  if (datePart.startsWith(currentYear)) {
+  if (datePart.startsWith(currentYear,)) {
     // Same year: show MM-DD only
-    return datePart.slice(5);
+    return datePart.slice(5,);
   }
   return datePart;
 }

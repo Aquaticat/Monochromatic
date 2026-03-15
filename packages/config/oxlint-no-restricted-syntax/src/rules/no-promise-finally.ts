@@ -32,39 +32,37 @@ export const noPromiseFinally: CreateOnceRule = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Disallow .finally() method calls. Use using/await using for cleanup instead.',
+      description:
+        'Disallow .finally() method calls. Use using/await using for cleanup instead.',
       recommended: true,
     },
     messages: {
       forbidden: '.finally() is banned. Use using/await using for cleanup instead.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      CallExpression(node: Span): void {
+      CallExpression(node: Span,): void {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const callNode = node as Span & Record<string, unknown>;
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const callee = callNode['callee'] as Record<string, unknown> | null | undefined;
-        if (callee === undefined || callee === null) {
+        if (callee === undefined || callee === null)
           return;
-        }
 
-        if (callee['type'] !== 'MemberExpression' || callee['computed'] === true) {
+        if (callee['type'] !== 'MemberExpression' || callee['computed'] === true)
           return;
-        }
 
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const property = callee['property'] as Record<string, unknown> | null | undefined;
-        if (property === undefined || property === null || property['name'] !== 'finally') {
+        if (property === undefined || property === null || property['name'] !== 'finally')
           return;
-        }
 
         context.report({
           node,
           messageId: 'forbidden',
-        });
+        },);
       },
     } as VisitorWithHooks;
   },

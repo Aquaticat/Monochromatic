@@ -3,10 +3,10 @@
  * Used by both Linux and Windows template creation modules.
  */
 
-import { rm } from 'node:fs/promises';
-import { join } from 'node:path';
+import { rm, } from 'node:fs/promises';
+import { join, } from 'node:path';
 
-import { VMS_DIR } from './config.ts';
+import { VMS_DIR, } from './config.ts';
 import {
   destroyVm,
   undefineVm,
@@ -30,10 +30,12 @@ export const TEMPLATE_VM_NAME = 'template-setup';
  * // cleanupTemplateVm runs automatically on block exit
  * ```
  */
-export function templateVmGuard(rl: { debug: (msg: string) => void }): AsyncDisposable {
+export function templateVmGuard(
+  rl: { debug: (msg: string,) => void; },
+): AsyncDisposable {
   return {
     async [Symbol.asyncDispose](): Promise<void> {
-      await cleanupTemplateVm(rl);
+      await cleanupTemplateVm(rl,);
     },
   };
 }
@@ -49,17 +51,19 @@ export function templateVmGuard(rl: { debug: (msg: string) => void }): AsyncDisp
  * await cleanupTemplateVm(rl);
  * ```
  */
-async function cleanupTemplateVm(rl: { debug: (msg: string) => void }): Promise<void> {
-  rl.debug('cleaning up template VM...');
+async function cleanupTemplateVm(rl: { debug: (msg: string,) => void; },): Promise<void> {
+  rl.debug('cleaning up template VM...',);
   try {
-    await destroyVm({ name: TEMPLATE_VM_NAME });
-  } catch {
-    rl.debug('template VM was already stopped');
+    await destroyVm({ name: TEMPLATE_VM_NAME, },);
+  }
+  catch {
+    rl.debug('template VM was already stopped',);
   }
   try {
-    await undefineVm({ name: TEMPLATE_VM_NAME });
-  } catch {
-    rl.debug('template VM was not defined, skipping undefine');
+    await undefineVm({ name: TEMPLATE_VM_NAME, },);
   }
-  await rm(join(VMS_DIR, TEMPLATE_VM_NAME), { force: true, recursive: true });
+  catch {
+    rl.debug('template VM was not defined, skipping undefine',);
+  }
+  await rm(join(VMS_DIR, TEMPLATE_VM_NAME,), { force: true, recursive: true, },);
 }

@@ -5,10 +5,13 @@
  * and from the Bun store directory structure.
  */
 
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import {
+  readdirSync,
+  readFileSync,
+} from 'node:fs';
+import { join, } from 'node:path';
 
-import { isStrictlyGreater } from './version-parse.ts';
+import { isStrictlyGreater, } from './version-parse.ts';
 
 //region Version reading
 
@@ -24,13 +27,14 @@ import { isStrictlyGreater } from './version-parse.ts';
  * readVersionFromPackageJson("/path/to/node_modules/eslint/package.json") // "10.0.0"
  * ```
  */
-export function readVersionFromPackageJson(pkgJsonPath: string): string | undefined {
+export function readVersionFromPackageJson(pkgJsonPath: string,): string | undefined {
   try {
-    const content = readFileSync(pkgJsonPath, 'utf8');
+    const content = readFileSync(pkgJsonPath, 'utf8',);
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON structure from package.json is well-known
-    const parsed = JSON.parse(content) as { version?: string };
+    const parsed = JSON.parse(content,) as { version?: string; };
     return parsed.version;
-  } catch {
+  }
+  catch {
     return undefined;
   }
 }
@@ -53,41 +57,43 @@ export function readVersionFromPackageJson(pkgJsonPath: string): string | undefi
  * readVersionFromBunStore("chokidar", "/home/user/Monochromatic") // "5.0.0"
  * ```
  */
-export function readVersionFromBunStore(npmName: string, monorepoRoot: string): string | undefined {
-  const bunStoreDir = join(monorepoRoot, 'node_modules', '.bun');
+export function readVersionFromBunStore(npmName: string, monorepoRoot: string,):
+  | string
+  | undefined
+{
+  const bunStoreDir = join(monorepoRoot, 'node_modules', '.bun',);
   // Bun encodes `@scope/name` as `@scope+name` in store directory names
-  const storePrefix = npmName.includes('/')
-    ? npmName.replace('/', '+')
+  const storePrefix = npmName.includes('/',)
+    ? npmName.replace('/', '+',)
     : npmName;
 
   let entries: string[] = [];
   try {
-    entries = readdirSync(bunStoreDir);
-  } catch {
+    entries = readdirSync(bunStoreDir,);
+  }
+  catch {
     return undefined;
   }
 
   // Match directories starting with `prefix@` (the @ separates name from version)
   const matchPrefix = `${storePrefix}@`;
-  const candidates = entries.filter(function filterBunStoreEntry(entry) {
-    return entry.startsWith(matchPrefix);
-  });
+  const candidates = entries.filter(function filterBunStoreEntry(entry,) {
+    return entry.startsWith(matchPrefix,);
+  },);
 
-  if (candidates.length === 0) {
+  if (candidates.length === 0)
     return undefined;
-  }
 
   // Read package.json from each candidate and pick the highest version
   let bestVersion: string | undefined = undefined;
   for (const candidate of candidates) {
-    const pkgJsonPath = join(bunStoreDir, candidate, 'node_modules', npmName, 'package.json');
-    const candidateVersion = readVersionFromPackageJson(pkgJsonPath);
-    if (candidateVersion === undefined) {
+    const pkgJsonPath = join(bunStoreDir, candidate, 'node_modules', npmName,
+      'package.json',);
+    const candidateVersion = readVersionFromPackageJson(pkgJsonPath,);
+    if (candidateVersion === undefined)
       continue;
-    }
-    if (bestVersion === undefined || isStrictlyGreater(bestVersion, candidateVersion)) {
+    if (bestVersion === undefined || isStrictlyGreater(bestVersion, candidateVersion,))
       bestVersion = candidateVersion;
-    }
   }
 
   return bestVersion;

@@ -19,13 +19,14 @@ let activeObjectUrl: string | null = null;
  */
 function revokeActiveObjectUrl(): void {
   if (activeObjectUrl !== null) {
-    URL.revokeObjectURL(activeObjectUrl);
+    URL.revokeObjectURL(activeObjectUrl,);
     activeObjectUrl = null;
   }
 }
 
 /** White fill values to detect and remove from SVG backgrounds */
-const WHITE_FILLS: ReadonlySet<string> = new Set(['#fff', '#ffffff', 'white', 'rgb(255,255,255)']);
+const WHITE_FILLS: ReadonlySet<string> = new Set(['#fff', '#ffffff', 'white',
+  'rgb(255,255,255)',],);
 
 /**
  * Removes the white background rectangle from an SVG string.
@@ -42,19 +43,19 @@ const WHITE_FILLS: ReadonlySet<string> = new Set(['#fff', '#ffffff', 'white', 'r
  * const cleaned = removeSvgWhiteBackground('<svg><rect fill="#fff"/><path .../></svg>');
  * ```
  */
-export function removeSvgWhiteBackground(svgMarkup: string): string {
+export function removeSvgWhiteBackground(svgMarkup: string,): string {
   const parser = new DOMParser();
-  const doc = parser.parseFromString(svgMarkup, 'image/svg+xml');
+  const doc = parser.parseFromString(svgMarkup, 'image/svg+xml',);
   const svg = doc.documentElement;
-  const rects = svg.querySelectorAll<SVGRectElement>(':scope > rect');
+  const rects = svg.querySelectorAll<SVGRectElement>(':scope > rect',);
   for (const rect of rects) {
-    const fill = (rect.getAttribute('fill') ?? '').toLowerCase().replaceAll(/\s/gu, '');
-    if (WHITE_FILLS.has(fill)) {
+    const fill = (rect.getAttribute('fill',) ?? '').toLowerCase().replaceAll(/\s/gu, '',);
+    if (WHITE_FILLS.has(fill,)) {
       rect.remove();
       break;
     }
   }
-  return new XMLSerializer().serializeToString(svg);
+  return new XMLSerializer().serializeToString(svg,);
 }
 
 /**
@@ -70,13 +71,13 @@ export function removeSvgWhiteBackground(svgMarkup: string): string {
  *
  * @param container - canvas container element
  */
-export function setSvgBackground({ svgMarkup, overlay, container }: {
+export function setSvgBackground({ svgMarkup, overlay, container, }: {
   svgMarkup: string;
   overlay: HTMLElement;
   container: HTMLElement;
-}): void {
+},): void {
   revokeActiveObjectUrl();
-  const processed = removeSvgWhiteBackground(svgMarkup);
+  const processed = removeSvgWhiteBackground(svgMarkup,);
   overlay.innerHTML = processed;
   overlay.style.display = '';
   container.style.backgroundImage = '';
@@ -96,13 +97,13 @@ export function setSvgBackground({ svgMarkup, overlay, container }: {
  *
  * @param container - canvas container element
  */
-export function setRasterBackground({ file, overlay, container }: {
+export function setRasterBackground({ file, overlay, container, }: {
   file: File;
   overlay: HTMLElement;
   container: HTMLElement;
-}): void {
+},): void {
   revokeActiveObjectUrl();
-  activeObjectUrl = URL.createObjectURL(file);
+  activeObjectUrl = URL.createObjectURL(file,);
   overlay.innerHTML = '';
   overlay.style.display = 'none';
   container.style.backgroundImage = `url("${activeObjectUrl}")`;

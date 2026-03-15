@@ -1,9 +1,12 @@
 // oxlint-disable typescript/no-unsafe-type-assertion -- API response types require assertions
+import {
+  l,
+  tagged,
+} from './log.ts';
 import type {
   VoyageApiRequest,
   VoyageApiResponse,
 } from './types.voyage-api.ts';
-import { l, tagged } from './log.ts';
 
 /**
  * Voyage AI multimodal embeddings API endpoint.
@@ -24,15 +27,17 @@ export const VOYAGE_API_URL = 'https://api.voyageai.com/v1/multimodalembeddings'
  * const key = resolveVoyageApiKey(undefined);
  * ```
  */
-export function resolveVoyageApiKey(configKey: string | undefined): string {
-  const rl = tagged({ tag: resolveVoyageApiKey.name, l });
-  const key = configKey ?? process.env['IMAGE_DIFF_VOYAGE_API_KEY'] ?? process.env['VOYAGE_API_KEY'];
+export function resolveVoyageApiKey(configKey: string | undefined,): string {
+  const rl = tagged({ tag: resolveVoyageApiKey.name, l, },);
+  const key = configKey
+    ?? process.env['IMAGE_DIFF_VOYAGE_API_KEY']
+    ?? process.env['VOYAGE_API_KEY'];
   if (key === undefined || key === '') {
     throw new Error(
       'Voyage AI API key is required. Provide it via config.apiKey or set IMAGE_DIFF_VOYAGE_API_KEY (or VOYAGE_API_KEY) environment variable.',
     );
   }
-  rl.debug('Voyage API key resolved');
+  rl.debug('Voyage API key resolved',);
   return key;
 }
 
@@ -52,27 +57,41 @@ export function resolveVoyageApiKey(configKey: string | undefined): string {
  * const response = await callVoyageApi(request, 'pa-...');
  * ```
  */
-export async function callVoyageApi(requestBody: VoyageApiRequest, apiKey: string): Promise<VoyageApiResponse> {
-  const rl = tagged({ tag: callVoyageApi.name, l });
+export async function callVoyageApi(requestBody: VoyageApiRequest,
+  apiKey: string,): Promise<VoyageApiResponse>
+{
+  const rl = tagged({ tag: callVoyageApi.name, l, },);
 
-  rl.debug(`calling Voyage API with model "${requestBody.model}", ${String(requestBody.inputs.length)} input(s)`);
+  rl.debug(
+    `calling Voyage API with model "${requestBody.model}", ${
+      String(requestBody
+        .inputs
+        .length,)
+    } input(s)`,
+  );
 
   const response = await fetch(VOYAGE_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify(requestBody),
-  });
+    body: JSON.stringify(requestBody,),
+  },);
 
   if (!response.ok) {
     const errorBody = await response.text();
-    rl.error(`API returned ${String(response.status)}: ${errorBody}`);
-    throw new Error(`Voyage AI API error (${String(response.status)}): ${errorBody}`);
+    rl.error(`API returned ${String(response.status,)}: ${errorBody}`,);
+    throw new Error(`Voyage AI API error (${String(response.status,)}): ${errorBody}`,);
   }
 
   const result = await response.json() as VoyageApiResponse;
-  rl.debug(`received ${String(result.data.length)} embedding(s), total tokens: ${String(result.usage.total_tokens)}`);
+  rl.debug(
+    `received ${String(result.data.length,)} embedding(s), total tokens: ${
+      String(result
+        .usage
+        .total_tokens,)
+    }`,
+  );
   return result;
 }

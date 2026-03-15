@@ -10,10 +10,10 @@
  */
 // Side-effect: shims `globalThis.process` for PostCSS and node:path polyfill.
 // Must be imported before build-css so the shim exists when postcss evaluates.
-import "@monochromatic-dev/build-tool-css/ts/process-shim";
-import { applyMixins, } from "@monochromatic-dev/build-tool-css/ts";
+import '@monochromatic-dev/build-tool-css/ts/process-shim';
+import { applyMixins, } from '@monochromatic-dev/build-tool-css/ts';
 // Bun inlines the CSS file content as a string at bundle time
-import mixinSource from "./mixins.css" with { type: "text" };
+import mixinSource from './mixins.css' with { type: 'text', };
 
 /**
  * Expands \@apply references in a CSS string using shared mixin definitions.
@@ -25,6 +25,6 @@ import mixinSource from "./mixins.css" with { type: "text" };
  *
  * @returns Expanded CSS with all \@apply rules replaced by mixin bodies
  */
-export function css(raw: string): string {
-  return applyMixins(raw, mixinSource);
+export function css(raw: string,): string {
+  return applyMixins(raw, mixinSource,);
 }

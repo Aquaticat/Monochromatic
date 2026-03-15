@@ -1,4 +1,4 @@
-import { banDisableRule } from './_ban-disable-factory.ts';
+import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
  * Bans inline suppression of `no-restricted-syntax/no-regexp-exec`.
@@ -7,5 +7,6 @@ import { banDisableRule } from './_ban-disable-factory.ts';
 export const noDisableNoRegexpExec = banDisableRule({
   ruleId: 'no-restricted-syntax/no-regexp-exec',
   description: 'Disallow disabling no-regexp-exec. Use String.match/matchAll instead.',
-  message: 'Disabling no-regexp-exec is not allowed. Use String.match() or String.matchAll() instead.',
-});
+  message:
+    'Disabling no-regexp-exec is not allowed. Use String.match() or String.matchAll() instead.',
+},);

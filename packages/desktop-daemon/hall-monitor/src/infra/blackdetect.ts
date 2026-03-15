@@ -1,5 +1,5 @@
-import { spawn as cpSpawn } from "node:child_process";
-import { once } from "node:events";
+import { spawn as cpSpawn, } from 'node:child_process';
+import { once, } from 'node:events';
 
 /**
  * Detects whether a JPEG frame is essentially all-black (e.g. webcam privacy
@@ -17,21 +17,29 @@ import { once } from "node:events";
  * }
  * ```
  */
-export async function isBlackFrame(jpegBuf: Buffer): Promise<boolean> {
+export async function isBlackFrame(jpegBuf: Buffer,): Promise<boolean> {
   const proc = cpSpawn(
-    "/usr/bin/ffmpeg",
+    '/usr/bin/ffmpeg',
     [
-      "-f", "image2pipe", "-i", "pipe:0",
-      "-vf", "blackdetect=d=0:pix_th=0.10:pic_th=0.98",
-      "-f", "null", "-",
+      '-f',
+      'image2pipe',
+      '-i',
+      'pipe:0',
+      '-vf',
+      'blackdetect=d=0:pix_th=0.10:pic_th=0.98',
+      '-f',
+      'null',
+      '-',
     ],
-    { stdio: ["pipe", "pipe", "pipe"] },
+    { stdio: ['pipe', 'pipe', 'pipe',], },
   );
-  proc.stdin.end(jpegBuf);
+  proc.stdin.end(jpegBuf,);
   const stderrChunks: Buffer[] = [];
-  proc.stderr.on("data", function collectChunk(chunk: Buffer) { stderrChunks.push(chunk); });
-  await once(proc, "close");
-  const stderr = Buffer.concat(stderrChunks).toString("utf8");
+  proc.stderr.on('data', function collectChunk(chunk: Buffer,) {
+    stderrChunks.push(chunk,);
+  },);
+  await once(proc, 'close',);
+  const stderr = Buffer.concat(stderrChunks,).toString('utf8',);
   // blackdetect emits "black_start:..." lines on stderr when a black frame is found
-  return stderr.includes("black_start");
+  return stderr.includes('black_start',);
 }

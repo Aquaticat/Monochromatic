@@ -22,8 +22,8 @@
 import { resolve, } from 'node:path';
 
 import {
-  CONTAINERFILE,
   CONTAINER_COUNT,
+  CONTAINERFILE,
   CPUSET_CPU,
   IMAGE_NAME,
   MONOREPO_ROOT,
@@ -36,8 +36,8 @@ import {
 } from './run-constrained-timing.ts';
 import {
   type ContainerBenchResult,
-  type HostBenchResult,
   extractSysbenchScore,
+  type HostBenchResult,
   parseLastJsonLine,
   runCapture,
   runInherit,
@@ -45,27 +45,33 @@ import {
 
 //region Host baseline
 
-console.log('=== HOST BASELINE ===');
+console.log('=== HOST BASELINE ===',);
 /** Raw JSON output from the host baseline benchmark */
 const hostJson = await runCapture(
-  ['bun', resolve(import.meta.dirname, 'validate-resources.ts')],
+  ['bun', resolve(import.meta.dirname, 'validate-resources.ts',),],
   'Running host baseline benchmark',
 );
 /** Parsed host baseline benchmark results */
 // oxlint-disable-next-line no-unsafe-type-assertion -- JSON structure matches the known validate-resources.ts output format
-const hostResult = JSON.parse(hostJson) as HostBenchResult;
-console.log(`Host sysbench: ${String(hostResult.sysbench.eventsPerSec)} events/sec`);
-console.log(`Host serial CPU: ${String(hostResult.serial.ms)}ms`);
-console.log(`Host parallel CPU: ${String(hostResult.parallel.ms)}ms`);
-console.log(`Host IO: ${String(hostResult.io.ms)}ms (${String(hostResult.io.filesPerSec)} files/sec)`);
+const hostResult = JSON.parse(hostJson,) as HostBenchResult;
+console.log(`Host sysbench: ${String(hostResult.sysbench.eventsPerSec,)} events/sec`,);
+console.log(`Host serial CPU: ${String(hostResult.serial.ms,)}ms`,);
+console.log(`Host parallel CPU: ${String(hostResult.parallel.ms,)}ms`,);
+console.log(
+  `Host IO: ${String(hostResult.io.ms,)}ms (${
+    String(hostResult
+      .io
+      .filesPerSec,)
+  } files/sec)`,
+);
 
 //endregion Host baseline
 
 //region Container build
 
-console.log('\n=== CONTAINER BUILD ===');
+console.log('\n=== CONTAINER BUILD ===',);
 await runInherit(
-  ['podman', 'build', '-t', IMAGE_NAME, '-f', CONTAINERFILE, MONOREPO_ROOT],
+  ['podman', 'build', '-t', IMAGE_NAME, '-f', CONTAINERFILE, MONOREPO_ROOT,],
   'Building container image',
 );
 
@@ -73,7 +79,11 @@ await runInherit(
 
 //region Parallel contention benchmark
 
-console.log(`\n=== PARALLEL CONTENTION BENCHMARK (${String(CONTAINER_COUNT)} containers on core ${CPUSET_CPU}) ===`);
+console.log(
+  `\n=== PARALLEL CONTENTION BENCHMARK (${
+    String(CONTAINER_COUNT,)
+  } containers on core ${CPUSET_CPU}) ===`,
+);
 
 /**
  * Runs a single container benchmark and parses the JSON result.
@@ -84,55 +94,77 @@ console.log(`\n=== PARALLEL CONTENTION BENCHMARK (${String(CONTAINER_COUNT)} con
  *
  * @returns Parsed benchmark result from the container
  */
-async function runContainerBench(_unused: unknown, containerIndex: number): Promise<ContainerBenchResult> {
+async function runContainerBench(_unused: unknown,
+  containerIndex: number,): Promise<ContainerBenchResult>
+{
   const output = await runCapture(
     [
-      'podman', 'run', '--rm',
+      'podman',
+      'run',
+      '--rm',
       // Disable SELinux labeling: the :Z volume flag relabels files for
       // one container's context, conflicting when multiple containers
       // mount the same volume simultaneously.
-      '--security-opt', 'label=disable',
+      '--security-opt',
+      'label=disable',
       ...RESOURCE_FLAGS,
-      '-v', `${MONOREPO_ROOT}:/app`,
+      '-v',
+      `${MONOREPO_ROOT}:/app`,
       IMAGE_NAME,
-      'taskset', '-c', CPUSET_CPU,
-      'bun', 'packages/fixture/file-enforcer-perf/src/bench-in-container.ts',
+      'taskset',
+      '-c',
+      CPUSET_CPU,
+      'bun',
+      'packages/fixture/file-enforcer-perf/src/bench-in-container.ts',
     ],
-    `Container ${String(containerIndex)}`,
+    `Container ${String(containerIndex,)}`,
   );
   // oxlint-disable-next-line no-unsafe-type-assertion -- JSON structure matches ContainerBenchResult from bench-in-container.ts
-  return parseLastJsonLine(output) as ContainerBenchResult;
+  return parseLastJsonLine(output,) as ContainerBenchResult;
 }
 
 /** Benchmark results from all containers run in parallel */
 const containerResults = await Promise.all(
-  Array.from({ length: CONTAINER_COUNT }, runContainerBench),
+  Array.from({ length: CONTAINER_COUNT, }, runContainerBench,),
 );
 
 //endregion Parallel contention benchmark
 
 //region Sysbench validation
 
-console.log('\n=== SYSBENCH VALIDATION ===');
+console.log('\n=== SYSBENCH VALIDATION ===',);
 for (let containerIndex = 0; containerIndex < containerResults.length; containerIndex++) {
   const result = containerResults[containerIndex];
   if (result !== undefined) {
-    console.log(`  Container ${String(containerIndex)}: ${String(result.sysbench.eventsPerSec)} events/sec`);
+    console.log(
+      `  Container ${String(containerIndex,)}: ${
+        String(result
+          .sysbench
+          .eventsPerSec,)
+      } events/sec`,
+    );
   }
 }
 
 /** Peak sysbench score across all containers */
-const peakSysbench = Math.max(...containerResults.map(function getScore(result) { return extractSysbenchScore(result); }));
-console.log(`  Peak: ${String(peakSysbench)} events/sec`);
-console.log(`  VPS baseline: ${String(VPS_SYSBENCH_BASELINE)} events/sec`);
+const peakSysbench = Math.max(...containerResults.map(function getScore(result,) {
+  return extractSysbenchScore(result,);
+},),);
+console.log(`  Peak: ${String(peakSysbench,)} events/sec`,);
+console.log(`  VPS baseline: ${String(VPS_SYSBENCH_BASELINE,)} events/sec`,);
 
 if (peakSysbench <= VPS_SYSBENCH_BASELINE) {
-  console.log(`  PASS: peak (${String(peakSysbench)}) <= baseline (${String(VPS_SYSBENCH_BASELINE)})`);
-} else {
+  console.log(
+    `  PASS: peak (${String(peakSysbench,)}) <= baseline (${
+      String(VPS_SYSBENCH_BASELINE,)
+    })`,
+  );
+}
+else {
   console.warn(
-    `  WARNING: peak sysbench (${String(peakSysbench)})`
-    + ` exceeds VPS baseline (${String(VPS_SYSBENCH_BASELINE)}).`
-    + ' Add more containers or verify contention is sufficient.',
+    `  WARNING: peak sysbench (${String(peakSysbench,)})`
+      + ` exceeds VPS baseline (${String(VPS_SYSBENCH_BASELINE,)}).`
+      + ' Add more containers or verify contention is sufficient.',
   );
 }
 
@@ -144,10 +176,18 @@ for (let containerIndex = 0; containerIndex < containerResults.length; container
   const result = containerResults[containerIndex];
   if (result !== undefined) {
     if (!result.limits.cpuAffinityValid) {
-      console.warn(`  WARNING: Container ${String(containerIndex)} CPU affinity unexpected: "${result.limits.cpuAffinity}"`);
+      console.warn(
+        `  WARNING: Container ${
+          String(containerIndex,)
+        } CPU affinity unexpected: "${result.limits.cpuAffinity}"`,
+      );
     }
     if (!result.limits.memoryValid) {
-      console.warn(`  WARNING: Container ${String(containerIndex)} memory unexpected: "${result.limits.memoryMax}"`);
+      console.warn(
+        `  WARNING: Container ${
+          String(containerIndex,)
+        } memory unexpected: "${result.limits.memoryMax}"`,
+      );
     }
   }
 }
@@ -156,18 +196,17 @@ for (let containerIndex = 0; containerIndex < containerResults.length; container
 
 //region Benchmark results
 
-console.log('\n=== BENCHMARK RESULTS ===');
+console.log('\n=== BENCHMARK RESULTS ===',);
 
 /** Timing categories to aggregate: label prefix maps to display name */
-const TIMING_CATEGORIES = ['cold', 'warm', 'source-changed', 'dest-changed'] as const;
+const TIMING_CATEGORIES = ['cold', 'warm', 'source-changed', 'dest-changed',] as const;
 
 for (const category of TIMING_CATEGORIES) {
-  const values = collectTimings(containerResults, category);
-  if (values.length > 0) {
-    console.log(formatTimingSummary(category, values));
-  }
+  const values = collectTimings(containerResults, category,);
+  if (values.length > 0)
+    console.log(formatTimingSummary(category, values,),);
 }
 
 //endregion Benchmark results
 
-console.log('\n=== COMPLETE ===');
+console.log('\n=== COMPLETE ===',);

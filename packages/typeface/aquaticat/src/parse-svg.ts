@@ -34,8 +34,8 @@ export type Cell = {
  *
  * @returns attribute value, or undefined if not found
  */
-function attr(attrs: string, name: string): string | undefined {
-  const match = attrs.match(new RegExp(`${name}="([^"]*)"`));
+function attr(attrs: string, name: string,): string | undefined {
+  const match = attrs.match(new RegExp(`${name}="([^"]*)"`,),);
   return match?.[1];
 }
 
@@ -48,38 +48,43 @@ function attr(attrs: string, name: string): string | undefined {
  *
  * @returns array of cells in strip order (left to right)
  */
-export function parseSvg(svgContent: string): Cell[] {
+export function parseSvg(svgContent: string,): Cell[] {
   const cells: Cell[] = [];
   const elementRegex = /<(rect|path)\s+([^>]*?)\/>/g;
 
   // oxlint-disable-next-line no-restricted-syntax -- regex exec loop is the idiomatic way to iterate matches
-  for (let match = elementRegex.exec(svgContent); match !== null; match = elementRegex.exec(svgContent)) {
-    const [, tag, attrs] = match;
-    if (attrs === undefined) continue;
+  for (let match = elementRegex.exec(svgContent,); match !== null;
+    match = elementRegex.exec(svgContent,))
+  {
+    const [, tag, attrs,] = match;
+    if (attrs === undefined)
+      continue;
 
-    if (tag === "rect") {
-      const transform = attr(attrs, "transform");
-      const translateMatch = transform?.match(/translate\((\d+(?:\.\d+)?)\)/);
+    if (tag === 'rect') {
+      const transform = attr(attrs, 'transform',);
+      const translateMatch = transform?.match(/translate\((\d+(?:\.\d+)?)\)/,);
       const xOffset = translateMatch !== undefined && translateMatch !== null
-        ? Number(translateMatch[1] ?? "0")
+        ? Number(translateMatch[1] ?? '0',)
         : 0;
-      cells.push({ xOffset, paths: [] });
+      cells.push({ xOffset, paths: [], },);
       continue;
     }
 
     // tag === "path"
-    const d = attr(attrs, "d");
-    if (d === undefined) continue;
+    const d = attr(attrs, 'd',);
+    if (d === undefined)
+      continue;
 
-    const strokeAttr = attr(attrs, "stroke");
-    const isStroked = strokeAttr !== undefined && attr(attrs, "fill") === undefined;
-    const strokeWidthStr = attr(attrs, "stroke-width");
-    const strokeWidth = isStroked && strokeWidthStr !== undefined ? Number(strokeWidthStr) : 0;
+    const strokeAttr = attr(attrs, 'stroke',);
+    const isStroked = strokeAttr !== undefined && attr(attrs, 'fill',) === undefined;
+    const strokeWidthStr = attr(attrs, 'stroke-width',);
+    const strokeWidth = isStroked && strokeWidthStr !== undefined
+      ? Number(strokeWidthStr,)
+      : 0;
 
-    const currentCell = cells.at(-1);
-    if (currentCell !== undefined) {
-      currentCell.paths.push({ d, isStroked, strokeWidth });
-    }
+    const currentCell = cells.at(-1,);
+    if (currentCell !== undefined)
+      currentCell.paths.push({ d, isStroked, strokeWidth, },);
   }
 
   return cells;
@@ -89,11 +94,11 @@ export function parseSvg(svgContent: string): Cell[] {
 
 /** Parsed absolute SVG path command (M/L/H/V/Z only). */
 export type SVGPathCommand =
-  | { type: "M"; x: number; y: number }
-  | { type: "L"; x: number; y: number }
-  | { type: "H"; x: number }
-  | { type: "V"; y: number }
-  | { type: "Z" };
+  | { type: 'M'; x: number; y: number; }
+  | { type: 'L'; x: number; y: number; }
+  | { type: 'H'; x: number; }
+  | { type: 'V'; y: number; }
+  | { type: 'Z'; };
 
 /**
  * Tokenize an SVG path `d` attribute into absolute commands.
@@ -103,34 +108,36 @@ export type SVGPathCommand =
  *
  * @returns ordered list of path commands
  */
-export function parseSvgPathD(d: string): SVGPathCommand[] {
+export function parseSvgPathD(d: string,): SVGPathCommand[] {
   const commands: SVGPathCommand[] = [];
   const tokenRegex = /([MLHVZ])|(-?\d+(?:\.\d+)?)/g;
 
   // Mutable state tracking the current command letter while consuming coordinate tokens
   // -- let needed because the regex loop reassigns on each command letter encountered
-  let currentCmd = "";
+  let currentCmd = '';
 
   // oxlint-disable-next-line no-restricted-syntax -- regex exec loop
-  for (let tok = tokenRegex.exec(d); tok !== null; tok = tokenRegex.exec(d)) {
-    const [, commandLetter] = tok;
+  for (let tok = tokenRegex.exec(d,); tok !== null; tok = tokenRegex.exec(d,)) {
+    const [, commandLetter,] = tok;
     if (commandLetter !== undefined) {
       currentCmd = commandLetter;
-      if (currentCmd === "Z") commands.push({ type: "Z" });
+      if (currentCmd === 'Z')
+        commands.push({ type: 'Z', },);
       continue;
     }
 
-    const num = Number(tok[2]);
+    const num = Number(tok[2],);
 
-    if (currentCmd === "M" || currentCmd === "L") {
-      const yTok = tokenRegex.exec(d);
-      if (yTok === null) break;
-      commands.push({ type: currentCmd, x: num, y: Number(yTok[2]) });
-    } else if (currentCmd === "H") {
-      commands.push({ type: "H", x: num });
-    } else if (currentCmd === "V") {
-      commands.push({ type: "V", y: num });
+    if (currentCmd === 'M' || currentCmd === 'L') {
+      const yTok = tokenRegex.exec(d,);
+      if (yTok === null)
+        break;
+      commands.push({ type: currentCmd, x: num, y: Number(yTok[2],), },);
     }
+    else if (currentCmd === 'H')
+      commands.push({ type: 'H', x: num, },);
+    else if (currentCmd === 'V')
+      commands.push({ type: 'V', y: num, },);
   }
 
   return commands;

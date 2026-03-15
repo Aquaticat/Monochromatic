@@ -6,11 +6,14 @@
  * @module
  */
 
-import type { UserOptions } from './build-command.ts';
-import { l as parentLogger, tagged } from './log.ts';
+import type { UserOptions, } from './build-command.ts';
+import {
+  l as parentLogger,
+  tagged,
+} from './log.ts';
 
 /** Tagged logger for this module. */
-const l = tagged({ tag: 'cli', l: parentLogger });
+const l = tagged({ tag: 'cli', l: parentLogger, },);
 
 /**
  * Parses process arguments into structured user options.
@@ -27,7 +30,7 @@ const l = tagged({ tag: 'cli', l: parentLogger });
  * // { title: 'My Shell', command: ['bash', '-l'], appId: '', dir: '', hold: false }
  * ```
  */
-export function parseArgs({ argv }: { argv: readonly string[] }): UserOptions {
+export function parseArgs({ argv, }: { argv: readonly string[]; },): UserOptions {
   let appId = '';
   let title = '';
   let dir = '';
@@ -36,55 +39,60 @@ export function parseArgs({ argv }: { argv: readonly string[] }): UserOptions {
 
   while (i < argv.length) {
     const arg = argv[i];
-    if (arg === undefined) break;
+    if (arg === undefined)
+      break;
 
     if (arg === '--' || arg === '-e') {
-      l.debug(`found delimiter '${arg}'`);
+      l.debug(`found delimiter '${arg}'`,);
       i++;
       break;
     }
 
-    if (arg.startsWith('--app-id=')) {
-      appId = arg.slice('--app-id='.length);
-      l.debug(`app-id='${appId}'`);
+    if (arg.startsWith('--app-id=',)) {
+      appId = arg.slice('--app-id='.length,);
+      l.debug(`app-id='${appId}'`,);
       i++;
       continue;
     }
 
-    if (arg.startsWith('--title=')) {
-      title = arg.slice('--title='.length);
-      l.debug(`title='${title}'`);
+    if (arg.startsWith('--title=',)) {
+      title = arg.slice('--title='.length,);
+      l.debug(`title='${title}'`,);
       i++;
       continue;
     }
 
-    if (arg.startsWith('--dir=')) {
-      dir = arg.slice('--dir='.length);
-      l.debug(`dir='${dir}'`);
+    if (arg.startsWith('--dir=',)) {
+      dir = arg.slice('--dir='.length,);
+      l.debug(`dir='${dir}'`,);
       i++;
       continue;
     }
 
     if (arg === '--hold') {
       hold = true;
-      l.debug('hold=true');
+      l.debug('hold=true',);
       i++;
       continue;
     }
 
-    if (arg.startsWith('-')) {
-      l.debug(`ignoring unknown option '${arg}'`);
+    if (arg.startsWith('-',)) {
+      l.debug(`ignoring unknown option '${arg}'`,);
       i++;
       continue;
     }
 
     /** First non-option argument starts the command. */
-    l.debug(`found non-option '${arg}', treating as command start`);
+    l.debug(`found non-option '${arg}', treating as command start`,);
     break;
   }
 
-  const command = argv.slice(i);
+  const command = argv.slice(i,);
 
-  l.debug(`parsed: appId='${appId}', title='${title}', dir='${dir}', hold=${String(hold)}, command=${JSON.stringify(command)}`);
-  return { appId, title, dir, hold, command };
+  l.debug(
+    `parsed: appId='${appId}', title='${title}', dir='${dir}', hold=${
+      String(hold,)
+    }, command=${JSON.stringify(command,)}`,
+  );
+  return { appId, title, dir, hold, command, };
 }

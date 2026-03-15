@@ -5,10 +5,10 @@
  * Raw CSS strings handle px values and properties outside the strict type system.
  */
 import {
-  type CssValue,
   $,
   cssNum,
   cssOklch,
+  type CssValue,
 } from '@monochromatic-dev/module-es/h-css';
 import {
   BORDER_COLOR,
@@ -24,12 +24,13 @@ import { renderToolbarStyles, } from './styles-toolbar.ts';
  */
 export function renderStyles(): string {
   return [
-    $({ rule: '*, *::before, *::after', raw: 'box-sizing:border-box;margin-block:0;margin-inline:0', }),
+    $({ rule: '*, *::before, *::after',
+      raw: 'box-sizing:border-box;margin-block:0;margin-inline:0', },),
 
     $({
       rule: '#app',
       decls: { display: 'flex', 'flex-direction': 'column', 'block-size': FULL_DVB, },
-    }),
+    },),
 
     ...renderToolbarStyles(),
 
@@ -37,12 +38,12 @@ export function renderStyles(): string {
       rule: '#canvas-container',
       decls: {
         position: 'relative',
-        'flex-grow': cssNum(1),
+        'flex-grow': cssNum(1,),
         'overflow-x': 'clip',
         'overflow-y': 'clip',
-        'background-color': cssOklch({ l: 1, c: 0, h: 0, }),
+        'background-color': cssOklch({ l: 1, c: 0, h: 0, },),
       },
-    }),
+    },),
 
     $({
       rule: '#draw-canvas',
@@ -53,7 +54,7 @@ export function renderStyles(): string {
         'touch-action': 'none',
       },
       raw: ';inset-block:0;inset-inline:0',
-    }),
+    },),
 
     $({
       rule: '#svg-overlay',
@@ -65,7 +66,7 @@ export function renderStyles(): string {
         'pointer-events': 'none',
       },
       raw: ';inset-block:0;inset-inline:0',
-    }),
+    },),
 
     $({
       rule: '#svg-overlay > svg',
@@ -73,7 +74,7 @@ export function renderStyles(): string {
         'max-inline-size': FULL_PERCENT,
         'max-block-size': FULL_PERCENT,
       },
-    }),
+    },),
 
     //region Text overlay layer
 
@@ -84,18 +85,19 @@ export function renderStyles(): string {
         'pointer-events': 'none',
       },
       raw: ';inset-block:0;inset-inline:0',
-    }),
+    },),
 
     $({
       rule: '.text-input',
       decls: {
         position: 'absolute',
-        'background-color': cssOklch({ l: 1, c: 0, h: 0, a: 0.85, }),
-        color: cssOklch({ l: 0.3, c: 0, h: 0, }),
+        'background-color': cssOklch({ l: 1, c: 0, h: 0, a: 0.85, },),
+        color: cssOklch({ l: 0.3, c: 0, h: 0, },),
         'pointer-events': 'auto',
       },
-      raw: ';border:none;outline:none;font-family:system-ui,sans-serif;font-size:1.25rem;line-height:1.4;padding-block:0;padding-inline:0;min-inline-size:8rem',
-    }),
+      raw:
+        ';border:none;outline:none;font-family:system-ui,sans-serif;font-size:1.25rem;line-height:1.4;padding-block:0;padding-inline:0;min-inline-size:8rem',
+    },),
 
     /** Finalized inputs look like plain text */
     $({
@@ -105,8 +107,8 @@ export function renderStyles(): string {
         'pointer-events': 'none',
       },
       raw: ';min-inline-size:0;cursor:default',
-    }),
-
+    },),
     //endregion Text overlay layer
-  ].join('');
+  ]
+    .join('',);
 }

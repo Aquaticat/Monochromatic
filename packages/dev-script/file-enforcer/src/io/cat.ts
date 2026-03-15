@@ -1,6 +1,6 @@
+import { trackRead, } from '../tracker.ts';
 import { readCached, } from './cache.ts';
 import { expandGlob, } from './glob.ts';
-import { trackRead, } from '../tracker.ts';
 
 /** Result of expanding a glob: each matched file with its path and content */
 export type GlobResult = {
@@ -30,8 +30,10 @@ export type GlobResults = readonly GlobResult[] & {
  * ]);
  * ```
  */
-export function globResults(sourceGlob: string, results: readonly GlobResult[]): GlobResults {
-  return Object.assign([...results], { sourceGlob, }) as unknown as GlobResults;
+export function globResults(sourceGlob: string,
+  results: readonly GlobResult[],): GlobResults
+{
+  return Object.assign([...results,], { sourceGlob, },) as unknown as GlobResults;
 }
 
 /** Glob characters that trigger pattern expansion inside cat-array paths */
@@ -42,7 +44,7 @@ const GLOB_CHARS = /[*?]/;
  * @param glob - Glob pattern to match source files
  * @returns Array of matched files with their paths, contents, and source glob
  */
-export async function cat(glob: string): Promise<GlobResults>;
+export async function cat(glob: string,): Promise<GlobResults>;
 
 /**
  * Reads and concatenates listed files into a single string.
@@ -50,39 +52,44 @@ export async function cat(glob: string): Promise<GlobResults>;
  * @param files - Array of file paths (or glob patterns) to concatenate
  * @returns Concatenated file contents joined by newlines
  */
-export async function cat(files: readonly string[]): Promise<string>;
+export async function cat(files: readonly string[],): Promise<string>;
 
 /** {@inheritDoc cat} */
-export async function cat(input: string | readonly string[]): Promise<string | GlobResults> {
+export async function cat(
+  input: string | readonly string[],
+): Promise<string | GlobResults> {
   if (typeof input === 'string') {
     /** Paths matched by the glob pattern */
-    const paths = await expandGlob(input);
+    const paths = await expandGlob(input,);
     /** Matched files with their contents */
     const results = await Promise.all(
-      paths.map(async function readGlobMatch(path: string): Promise<GlobResult> {
-        trackRead(path);
-        return { path, content: await readCached(path), };
-      }),
+      paths.map(async function readGlobMatch(path: string,): Promise<GlobResult> {
+        trackRead(path,);
+        return { path, content: await readCached(path,), };
+      },),
     );
-    return globResults(input, results);
+    return globResults(input, results,);
   }
 
   /** Expand any glob patterns in the array, then flatten */
   const expandedGroups = await Promise.all(
-    input.map(function expandOnePath(path: string): Promise<readonly string[]> | readonly string[] {
-      if (GLOB_CHARS.test(path)) {
-        return expandGlob(path);
-      }
-      return [path];
-    }),
+    input.map(
+      function expandOnePath(
+        path: string,
+      ): Promise<readonly string[]> | readonly string[] {
+        if (GLOB_CHARS.test(path,))
+          return expandGlob(path,);
+        return [path,];
+      },
+    ),
   );
 
   /** File contents read in parallel */
   const contents = await Promise.all(
-    expandedGroups.flat().map(function readOneFile(filePath: string): Promise<string> {
-      trackRead(filePath);
-      return readCached(filePath);
-    }),
+    expandedGroups.flat().map(function readOneFile(filePath: string,): Promise<string> {
+      trackRead(filePath,);
+      return readCached(filePath,);
+    },),
   );
-  return contents.join('\n');
+  return contents.join('\n',);
 }

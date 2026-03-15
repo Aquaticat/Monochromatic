@@ -31,10 +31,16 @@ import { outdent, } from '@cspotcode/outdent';
 import spawn from 'nano-spawn';
 
 import { resolveItems, } from './depends-resolve.ts';
-import { builtinStrategies, type BuiltinTimeStrategy, type TimeStrategy, } from './depends-strategy.ts';
+import {
+  builtinStrategies,
+  type BuiltinTimeStrategy,
+  type TimeStrategy,
+} from './depends-strategy.ts';
 
-export type { BuiltinTimeStrategy, TimeStrategy, } from './depends-strategy.ts';
-
+export type {
+  BuiltinTimeStrategy,
+  TimeStrategy,
+} from './depends-strategy.ts';
 
 //region Strategy functions
 
@@ -63,15 +69,16 @@ export type { BuiltinTimeStrategy, TimeStrategy, } from './depends-strategy.ts';
  * ```
  */
 async function runStrategyCommand(
-  command: string, timestamps: readonly number[], verbose: boolean,
+  command: string,
+  timestamps: readonly number[],
+  verbose: boolean,
 ): Promise<number> {
   const formattedValues = timestamps.map(String,).join(' ',);
   // Use printf to pipe timestamps (one per line) into the strategy command via stdin
   const fullCommand = `printf '%s\\n' ${formattedValues} | ${command}`;
 
-  if (verbose) {
+  if (verbose)
     console.error(`[task-depends] running strategy command: ${fullCommand}`,);
-  }
 
   /** Raw stdout from the command */
   let stdout = '';
@@ -93,12 +100,10 @@ async function runStrategyCommand(
   // Parse as raw number (no seconds/ms heuristic) or Infinity/-Infinity.
   /** Aggregated timestamp parsed from stdout */
   let result = 0;
-  if (stdout === 'Infinity') {
+  if (stdout === 'Infinity')
     result = Infinity;
-  }
-  else if (stdout === '-Infinity') {
+  else if (stdout === '-Infinity')
     result = -Infinity;
-  }
   else {
     const num = Number(stdout,);
     if (Number.isNaN(num,)) {
@@ -141,7 +146,9 @@ async function runStrategyCommand(
  * ```
  */
 async function aggregateTimestamps(
-  timestamps: readonly number[], strategy: TimeStrategy, verbose: boolean,
+  timestamps: readonly number[],
+  strategy: TimeStrategy,
+  verbose: boolean,
 ): Promise<number> {
   if (strategy in builtinStrategies) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'in' check above narrows strategy to BuiltinTimeStrategy
@@ -151,8 +158,10 @@ async function aggregateTimestamps(
   /** Prefix that identifies a shell command strategy */
   const shPrefix = 'sh:';
   if (strategy.startsWith(shPrefix,)) {
-    if (timestamps.length === 0) return -Infinity;
-    return await runStrategyCommand(strategy.slice(shPrefix.length,), timestamps, verbose,);
+    if (timestamps.length === 0)
+      return -Infinity;
+    return await runStrategyCommand(strategy.slice(shPrefix.length,), timestamps,
+      verbose,);
   }
 
   throw new Error(`Unknown time strategy: "${strategy}"`,);
@@ -176,7 +185,8 @@ async function aggregateTimestamps(
  * ```
  */
 function formatTimestamp(t: number,): string {
-  if (!Number.isFinite(t,)) return String(t,);
+  if (!Number.isFinite(t,))
+    return String(t,);
   return new Date(t,).toISOString();
 }
 
@@ -219,24 +229,32 @@ function formatTimestamp(t: number,): string {
  * });
  * ```
  */
-export async function checkStaleness({ sources, outputs, verbose, sourceTimeStrategy, outputTimeStrategy, }: {
-  readonly sources: readonly string[];
-  readonly outputs: readonly string[];
-  readonly verbose: boolean;
-  readonly sourceTimeStrategy: TimeStrategy;
-  readonly outputTimeStrategy: TimeStrategy;
-},): Promise<boolean> {
+export async function checkStaleness(
+  { sources, outputs, verbose, sourceTimeStrategy, outputTimeStrategy, }: {
+    readonly sources: readonly string[];
+    readonly outputs: readonly string[];
+    readonly verbose: boolean;
+    readonly sourceTimeStrategy: TimeStrategy;
+    readonly outputTimeStrategy: TimeStrategy;
+  },
+): Promise<boolean> {
   const sourceTimestamps = await resolveItems(sources, 'source', verbose,);
   const outputTimestamps = await resolveItems(outputs, 'output', verbose,);
 
-  const sourceTime = await aggregateTimestamps(sourceTimestamps, sourceTimeStrategy, verbose,);
-  const outputTime = await aggregateTimestamps(outputTimestamps, outputTimeStrategy, verbose,);
+  const sourceTime = await aggregateTimestamps(sourceTimestamps, sourceTimeStrategy,
+    verbose,);
+  const outputTime = await aggregateTimestamps(outputTimestamps, outputTimeStrategy,
+    verbose,);
 
   const stale = sourceTime > outputTime;
 
   if (verbose) {
     console.error(
-      `[task-depends] source: ${formatTimestamp(sourceTime,)} (${sourceTimeStrategy}), output: ${formatTimestamp(outputTime,)} (${outputTimeStrategy}) → ${stale ? 'stale' : 'fresh'}`,
+      `[task-depends] source: ${
+        formatTimestamp(sourceTime,)
+      } (${sourceTimeStrategy}), output: ${
+        formatTimestamp(outputTime,)
+      } (${outputTimeStrategy}) → ${stale ? 'stale' : 'fresh'}`,
     );
   }
 

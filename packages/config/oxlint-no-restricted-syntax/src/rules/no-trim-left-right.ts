@@ -28,7 +28,8 @@ export const noTrimLeftRight: CreateOnceRule = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Disallow .trimLeft()/.trimRight(). Use .trimStart()/.trimEnd() instead.',
+      description:
+        'Disallow .trimLeft()/.trimRight(). Use .trimStart()/.trimEnd() instead.',
       recommended: true,
     },
     messages: {
@@ -36,39 +37,37 @@ export const noTrimLeftRight: CreateOnceRule = {
       forbiddenRight: '.trimRight() is deprecated. Use .trimEnd() instead.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      CallExpression(node: Span): void {
+      CallExpression(node: Span,): void {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const callNode = node as Span & Record<string, unknown>;
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const callee = callNode['callee'] as Record<string, unknown> | null | undefined;
-        if (callee === undefined || callee === null) {
+        if (callee === undefined || callee === null)
           return;
-        }
 
-        if (callee['type'] !== 'MemberExpression' || callee['computed'] === true) {
+        if (callee['type'] !== 'MemberExpression' || callee['computed'] === true)
           return;
-        }
 
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const property = callee['property'] as Record<string, unknown> | null | undefined;
-        if (property === undefined || property === null) {
+        if (property === undefined || property === null)
           return;
-        }
 
-        const {name} = property;
+        const { name, } = property;
         if (name === 'trimLeft') {
           context.report({
             node,
             messageId: 'forbiddenLeft',
-          });
-        } else if (name === 'trimRight') {
+          },);
+        }
+        else if (name === 'trimRight') {
           context.report({
             node,
             messageId: 'forbiddenRight',
-          });
+          },);
         }
       },
     } as VisitorWithHooks;

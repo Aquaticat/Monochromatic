@@ -75,8 +75,12 @@ const protoCheck = await (async () => {
 console.log('\nConfiguration files:',);
 const prototoolsExists = existsSync('.prototools',);
 match(prototoolsExists,)
-  .with(true, () =>{  console.log('✅ .prototools file exists',); },)
-  .with(false, () =>{  console.error('❌ .prototools file missing',); },)
+  .with(true, () => {
+    console.log('✅ .prototools file exists',);
+  },)
+  .with(false, () => {
+    console.error('❌ .prototools file missing',);
+  },)
   .exhaustive();
 
 // Check moon workspace
@@ -98,7 +102,9 @@ const hasErrors = requiredToolResults.some(result => !result.success)
   || !moonWorkspaceCheck;
 
 match(hasErrors,)
-  .with(false, () =>{  console.log('\n✨ All required tools are installed!',); },)
+  .with(false, () => {
+    console.log('\n✨ All required tools are installed!',);
+  },)
   .with(true, () => {
     throw new Error(outdent`
       ❌ Some required tools are missing!

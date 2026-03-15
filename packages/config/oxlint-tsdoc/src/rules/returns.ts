@@ -10,9 +10,9 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import { functionReturnsValue } from '../tsdoc-utils.ts';
+import { functionReturnsValue, } from '../tsdoc-utils.ts';
 
-import { createFunctionTsdocVisitor } from './tsdoc-visitors.ts';
+import { createFunctionTsdocVisitor, } from './tsdoc-visitors.ts';
 
 /**
  * Requires returns tag for functions that return a value.
@@ -44,18 +44,18 @@ export const requireReturns: CreateOnceRule = {
       missing: 'Missing @returns tag for function that returns a value.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireReturnsHandler(node, result): void {
-      if (!functionReturnsValue(node)) {
-        return;
-      }
-      if (result.docComment.returnsBlock === undefined) {
-        context.report({
-          node: result.comment,
-          messageId: 'missing',
-        });
-      }
-    });
+  createOnce(context: Context,): VisitorWithHooks {
+    return createFunctionTsdocVisitor(context,
+      function requireReturnsHandler(node, result,): void {
+        if (!functionReturnsValue(node,))
+          return;
+        if (result.docComment.returnsBlock === undefined) {
+          context.report({
+            node: result.comment,
+            messageId: 'missing',
+          },);
+        }
+      },);
   },
 };
 
@@ -77,18 +77,19 @@ export const requireReturnsCheck: CreateOnceRule = {
       voidReturn: 'Function has void/never return type but has @returns tag.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireReturnsCheckHandler(node, result): void {
-      if (!functionReturnsValue(node) && result.docComment.returnsBlock !== undefined) {
-        context.report({
-          node: result.comment,
-          messageId: 'voidReturn',
-        });
-      }
-    });
+  createOnce(context: Context,): VisitorWithHooks {
+    return createFunctionTsdocVisitor(context,
+      function requireReturnsCheckHandler(node, result,): void {
+        if (!functionReturnsValue(node,)
+          && result.docComment.returnsBlock !== undefined)
+        {
+          context.report({
+            node: result.comment,
+            messageId: 'voidReturn',
+          },);
+        }
+      },);
   },
 };
 
-export {
-  requireReturnsDescription,
-} from './returns-description.ts';
+export { requireReturnsDescription, } from './returns-description.ts';

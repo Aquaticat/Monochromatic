@@ -1,5 +1,5 @@
 // oxlint-disable prefer-destructuring -- utility module with array access patterns
-import type { ImageInput } from './types.ts';
+import { readFile, } from 'node:fs/promises';
 import {
   bufferToDataUri,
   inferFormat,
@@ -8,8 +8,11 @@ import {
   isImagePath,
   isImageUrl,
 } from './encoding.ts';
-import { l, tagged } from './log.ts';
-import { readFile } from 'node:fs/promises';
+import {
+  l,
+  tagged,
+} from './log.ts';
+import type { ImageInput, } from './types.ts';
 
 /**
  * Convert any {@link ImageInput} variant into a URI string suitable for
@@ -30,30 +33,38 @@ import { readFile } from 'node:fs/promises';
  * // 'data:image/png;base64,iVBOR...'
  * ```
  */
-export async function toImageUri(input: ImageInput): Promise<string> {
-  const rl = tagged({ tag: toImageUri.name, l });
+export async function toImageUri(input: ImageInput,): Promise<string> {
+  const rl = tagged({ tag: toImageUri.name, l, },);
 
-  if (isImageUrl(input)) {
-    rl.debug(`passing through URL: ${input.url}`);
+  if (isImageUrl(input,)) {
+    rl.debug(`passing through URL: ${input.url}`,);
     return input.url;
   }
 
-  if (isImageBase64(input)) {
-    rl.debug('passing through base64 data URI');
+  if (isImageBase64(input,)) {
+    rl.debug('passing through base64 data URI',);
     return input.base64;
   }
 
-  if (isImageBuffer(input)) {
-    rl.debug(`encoding buffer as data URI (${String(input.buffer.byteLength)} bytes, format: ${input.format})`);
-    return bufferToDataUri(input.buffer, input.format);
+  if (isImageBuffer(input,)) {
+    rl.debug(
+      `encoding buffer as data URI (${
+        String(input
+          .buffer
+          .byteLength,)
+      } bytes, format: ${input.format})`,
+    );
+    return bufferToDataUri(input.buffer, input.format,);
   }
 
-  if (isImagePath(input)) {
-    rl.debug(`reading file as data URI: ${input.path}`);
-    const format = inferFormat(input.path);
-    const fileBuffer = await readFile(input.path);
-    return bufferToDataUri(fileBuffer.buffer, format);
+  if (isImagePath(input,)) {
+    rl.debug(`reading file as data URI: ${input.path}`,);
+    const format = inferFormat(input.path,);
+    const fileBuffer = await readFile(input.path,);
+    return bufferToDataUri(fileBuffer.buffer, format,);
   }
 
-  throw new Error('Unrecognized ImageInput variant: expected one of buffer, path, url, or base64');
+  throw new Error(
+    'Unrecognized ImageInput variant: expected one of buffer, path, url, or base64',
+  );
 }

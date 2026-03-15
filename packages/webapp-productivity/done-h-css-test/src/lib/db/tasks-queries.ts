@@ -1,11 +1,26 @@
 /**
  * Read-only query functions for the task data-access layer.
  */
-import type { BlockedTaskLink, SearchTask, Task } from "../types.ts";
-import db from "../db.ts";
-import type { TaskRow } from "./tasks-helpers.ts";
-import { getTaskRowById, mapTask } from "./tasks-helpers.ts";
-import { SQL_SELECT_ALL_TAGS, SQL_SELECT_BLOCKED_INBOX, SQL_SELECT_FOR_BLOCKER_PICKER, SQL_SELECT_IN_PROGRESS, SQL_SELECT_INBOX_UNBLOCKED, SQL_SEARCH_FTS, SQL_SEARCH_LIKE } from "./tasks-sql.ts";
+import db from '../db.ts';
+import type {
+  BlockedTaskLink,
+  SearchTask,
+  Task,
+} from '../types.ts';
+import type { TaskRow, } from './tasks-helpers.ts';
+import {
+  getTaskRowById,
+  mapTask,
+} from './tasks-helpers.ts';
+import {
+  SQL_SEARCH_FTS,
+  SQL_SEARCH_LIKE,
+  SQL_SELECT_ALL_TAGS,
+  SQL_SELECT_BLOCKED_INBOX,
+  SQL_SELECT_FOR_BLOCKER_PICKER,
+  SQL_SELECT_IN_PROGRESS,
+  SQL_SELECT_INBOX_UNBLOCKED,
+} from './tasks-sql.ts';
 
 /**
  * Retrieves a single task by UUID, mapped to the application type.
@@ -14,9 +29,9 @@ import { SQL_SELECT_ALL_TAGS, SQL_SELECT_BLOCKED_INBOX, SQL_SELECT_FOR_BLOCKER_P
  *
  * @returns Mapped task, or `null` when the ID does not exist
  */
-export async function getTaskById(id: string): Promise<Task | null> {
-  const taskRow = await getTaskRowById(id);
-  return taskRow === null ? null : mapTask(taskRow);
+export async function getTaskById(id: string,): Promise<Task | null> {
+  const taskRow = await getTaskRowById(id,);
+  return taskRow === null ? null : mapTask(taskRow,);
 }
 
 /**
@@ -26,10 +41,10 @@ export async function getTaskById(id: string): Promise<Task | null> {
  */
 export async function listInboxUnblockedTasks(): Promise<Task[]> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns TaskRow shape
-  const rows = await db.prepare(SQL_SELECT_INBOX_UNBLOCKED).all() as TaskRow[];
-  return rows.map(function toTask(row) {
-    return mapTask(row);
-  });
+  const rows = await db.prepare(SQL_SELECT_INBOX_UNBLOCKED,).all() as TaskRow[];
+  return rows.map(function toTask(row,) {
+    return mapTask(row,);
+  },);
 }
 
 /**
@@ -39,10 +54,12 @@ export async function listInboxUnblockedTasks(): Promise<Task[]> {
  */
 export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns TaskRow with blocker_id join column
-  const rows = await db.prepare(SQL_SELECT_BLOCKED_INBOX).all() as (TaskRow & { blocker_id: string })[];
-  return rows.map(function toBlockedLink(row) {
-    return { blockerId: row.blocker_id, task: mapTask(row) };
-  });
+  const rows = await db
+    .prepare(SQL_SELECT_BLOCKED_INBOX,)
+    .all() as (TaskRow & { blocker_id: string; })[];
+  return rows.map(function toBlockedLink(row,) {
+    return { blockerId: row.blocker_id, task: mapTask(row,), };
+  },);
 }
 
 /**
@@ -52,10 +69,10 @@ export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
  */
 export async function listInProgressTasks(): Promise<Task[]> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns TaskRow shape
-  const rows = await db.prepare(SQL_SELECT_IN_PROGRESS).all() as TaskRow[];
-  return rows.map(function toTask(row) {
-    return mapTask(row);
-  });
+  const rows = await db.prepare(SQL_SELECT_IN_PROGRESS,).all() as TaskRow[];
+  return rows.map(function toTask(row,) {
+    return mapTask(row,);
+  },);
 }
 
 /**
@@ -65,12 +82,12 @@ export async function listInProgressTasks(): Promise<Task[]> {
  *
  * @returns Available tasks for blocker selection
  */
-export async function listTasksForBlockerPicker(taskId: string): Promise<Task[]> {
+export async function listTasksForBlockerPicker(taskId: string,): Promise<Task[]> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns TaskRow shape
-  const rows = await db.prepare(SQL_SELECT_FOR_BLOCKER_PICKER).all(taskId) as TaskRow[];
-  return rows.map(function toTask(row) {
-    return mapTask(row);
-  });
+  const rows = await db.prepare(SQL_SELECT_FOR_BLOCKER_PICKER,).all(taskId,) as TaskRow[];
+  return rows.map(function toTask(row,) {
+    return mapTask(row,);
+  },);
 }
 
 /**
@@ -80,10 +97,10 @@ export async function listTasksForBlockerPicker(taskId: string): Promise<Task[]>
  */
 export async function listAllTags(): Promise<string[]> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns rows with tag column
-  const rows = await db.prepare(SQL_SELECT_ALL_TAGS).all() as { tag: string }[];
-  return rows.map(function extractTag(row) {
+  const rows = await db.prepare(SQL_SELECT_ALL_TAGS,).all() as { tag: string; }[];
+  return rows.map(function extractTag(row,) {
     return row.tag;
-  });
+  },);
 }
 
 /**
@@ -94,27 +111,29 @@ export async function listAllTags(): Promise<string[]> {
  *
  * @returns Matching tasks with blocked status
  */
-export async function searchTasks(searchQuery: string): Promise<SearchTask[]> {
+export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
   const normalizedSearchQuery = searchQuery.trim();
-  if (normalizedSearchQuery.length === 0) {
+  if (normalizedSearchQuery.length === 0)
     return [];
-  }
 
   try {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database FTS query returns TaskRow with is_blocked column
-    const rows = await db.prepare(SQL_SEARCH_FTS).all(normalizedSearchQuery) as (TaskRow & { is_blocked: number })[];
-    return rows.map(function toSearchTask(row) {
-      return { ...mapTask(row), isBlocked: row.is_blocked === 1 };
-    });
-  } catch {
+    const rows = await db.prepare(SQL_SEARCH_FTS,).all(
+      normalizedSearchQuery,
+    ) as (TaskRow & { is_blocked: number; })[];
+    return rows.map(function toSearchTask(row,) {
+      return { ...mapTask(row,), isBlocked: row.is_blocked === 1, };
+    },);
+  }
+  catch {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database LIKE query returns TaskRow with is_blocked column
     const rows = await db
-      .prepare(SQL_SEARCH_LIKE)
-      .all(`%${normalizedSearchQuery}%`, `%${normalizedSearchQuery}%`) as (TaskRow & {
-      is_blocked: number;
-    })[];
-    return rows.map(function toSearchTask(row) {
-      return { ...mapTask(row), isBlocked: row.is_blocked === 1 };
-    });
+      .prepare(SQL_SEARCH_LIKE,)
+      .all(`%${normalizedSearchQuery}%`, `%${normalizedSearchQuery}%`,) as (TaskRow & {
+        is_blocked: number;
+      })[];
+    return rows.map(function toSearchTask(row,) {
+      return { ...mapTask(row,), isBlocked: row.is_blocked === 1, };
+    },);
   }
 }

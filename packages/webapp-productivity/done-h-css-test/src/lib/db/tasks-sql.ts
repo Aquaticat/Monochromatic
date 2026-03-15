@@ -5,7 +5,7 @@
  */
 
 /** SQL to select a single task by primary key. */
-export const SQL_SELECT_TASK_BY_ID = "SELECT * FROM tasks WHERE id = ?";
+export const SQL_SELECT_TASK_BY_ID = 'SELECT * FROM tasks WHERE id = ?';
 
 /** SQL to select unblocked inbox tasks ordered by creation date. */
 export const SQL_SELECT_INBOX_UNBLOCKED =
@@ -28,7 +28,7 @@ export const SQL_SELECT_FOR_BLOCKER_PICKER =
 
 /** SQL to select all unique tags across all tasks. */
 export const SQL_SELECT_ALL_TAGS =
-  "SELECT DISTINCT tag.value AS tag FROM tasks, json_each(tasks.tags) AS tag ORDER BY tag.value ASC";
+  'SELECT DISTINCT tag.value AS tag FROM tasks, json_each(tasks.tags) AS tag ORDER BY tag.value ASC';
 
 /** SQL for full-text search across task title, description, and tags. */
 export const SQL_SEARCH_FTS = `
@@ -61,7 +61,7 @@ export const SQL_UPDATE_TASK = `
   WHERE id = ?`;
 
 /** SQL to delete a task by ID. */
-export const SQL_DELETE_TASK = "DELETE FROM tasks WHERE id = ?";
+export const SQL_DELETE_TASK = 'DELETE FROM tasks WHERE id = ?';
 
 /** SQL to start a timer on a task, setting status to in_progress. */
 export const SQL_START_TIMER =

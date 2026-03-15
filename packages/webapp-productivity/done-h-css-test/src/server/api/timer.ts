@@ -6,7 +6,11 @@
  *   POST /api/tasks/:id/stop     -\> handleStopTimer
  *   POST /api/tasks/:id/complete -\> handleCompleteTask
  */
-import { completeTask, startTaskTimer, stopTaskTimer } from "../../lib/db/tasks.ts";
+import {
+  completeTask,
+  startTaskTimer,
+  stopTaskTimer,
+} from '../../lib/db/tasks.ts';
 
 /** HTTP status code for successful responses. */
 const HTTP_OK = 200;
@@ -26,8 +30,8 @@ const HTTP_CONFLICT = 409;
  *
  * @returns JSON response
  */
-function jsonResponse(payload: unknown, status: number = HTTP_OK): Response {
-  return Response.json(payload, { status });
+function jsonResponse(payload: unknown, status: number = HTTP_OK,): Response {
+  return Response.json(payload, { status, },);
 }
 
 /**
@@ -37,13 +41,12 @@ function jsonResponse(payload: unknown, status: number = HTTP_OK): Response {
  *
  * @returns 200 with updated task, or 404 when not found
  */
-export async function handleStartTimer(id: string): Promise<Response> {
-  const task = await startTaskTimer(id);
-  if (task === null) {
-    return jsonResponse({ error: "Task not found" }, HTTP_NOT_FOUND);
-  }
+export async function handleStartTimer(id: string,): Promise<Response> {
+  const task = await startTaskTimer(id,);
+  if (task === null)
+    return jsonResponse({ error: 'Task not found', }, HTTP_NOT_FOUND,);
 
-  return jsonResponse(task);
+  return jsonResponse(task,);
 }
 
 /**
@@ -53,13 +56,12 @@ export async function handleStartTimer(id: string): Promise<Response> {
  *
  * @returns 200 with updated task, or 404 when not found
  */
-export async function handleStopTimer(id: string): Promise<Response> {
-  const task = await stopTaskTimer(id);
-  if (task === null) {
-    return jsonResponse({ error: "Task not found" }, HTTP_NOT_FOUND);
-  }
+export async function handleStopTimer(id: string,): Promise<Response> {
+  const task = await stopTaskTimer(id,);
+  if (task === null)
+    return jsonResponse({ error: 'Task not found', }, HTTP_NOT_FOUND,);
 
-  return jsonResponse(task);
+  return jsonResponse(task,);
 }
 
 /**
@@ -69,21 +71,20 @@ export async function handleStopTimer(id: string): Promise<Response> {
  *
  * @returns 200 on success, 404 when missing, 409 when blocked
  */
-export async function handleCompleteTask(id: string): Promise<Response> {
-  const result = await completeTask(id);
-  if (result.notFound) {
-    return jsonResponse({ error: "Task not found" }, HTTP_NOT_FOUND);
-  }
+export async function handleCompleteTask(id: string,): Promise<Response> {
+  const result = await completeTask(id,);
+  if (result.notFound)
+    return jsonResponse({ error: 'Task not found', }, HTTP_NOT_FOUND,);
 
   if (!result.completed) {
     return jsonResponse(
       {
-        error: "Task is blocked",
+        error: 'Task is blocked',
         blockedBy: result.blockedBy,
       },
-      HTTP_CONFLICT
+      HTTP_CONFLICT,
     );
   }
 
-  return jsonResponse({ ok: true });
+  return jsonResponse({ ok: true, },);
 }

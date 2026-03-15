@@ -1,4 +1,7 @@
-import { defineConfig, type UserConfig, } from 'tsdown';
+import {
+  defineConfig,
+  type UserConfig,
+} from 'tsdown';
 
 /**
  * Shared tsdown configuration for neutral (browser-compatible) platform builds.
@@ -29,5 +32,5 @@ const _default_1: UserConfig = defineConfig({
   report: false,
   outDir: 'dist/final/neutral',
   fixedExtension: true,
-});
+},);
 export default _default_1;

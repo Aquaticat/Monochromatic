@@ -22,7 +22,10 @@ export type OpenRouterModelId = `${string}/${string}`;
 
 //endregion Shared branded types
 
-export type { RunnerConfig, VerbosityLevel, } from './runner-config.ts';
+export type {
+  RunnerConfig,
+  VerbosityLevel,
+} from './runner-config.ts';
 export { defaultConfig, } from './runner-config.ts';
 
 //region Message and timing types -- chat message shape and streaming timing breakdown used by runner-stream.ts

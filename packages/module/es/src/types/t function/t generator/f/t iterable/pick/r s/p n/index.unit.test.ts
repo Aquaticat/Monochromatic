@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const {$} = types.function.generator.from.iterable.pick.sync.named;
+const { $, } = types.function.generator.from.iterable.pick.sync.named;
 
 describe($, () => {
   test('picks items in the inclusion set', () => {
@@ -43,7 +43,9 @@ describe($, () => {
     const numbers = [1, 2, 3,];
     const toPick = new Set([2, 4, 5,],);
 
-    expect(() => [...$({ iterable: numbers, toPick, },),],).toThrow('Key not found in iterable: 4',);
+    expect(() => [...$({ iterable: numbers, toPick, },),]).toThrow(
+      'Key not found in iterable: 4',
+    );
   });
 
   test('does not throw when strict is false and toPick contains missing items', () => {

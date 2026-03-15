@@ -23,7 +23,8 @@ export const OPMLS_SCHEMA: z.ZodMiniArray<
   .array(z.union([
     z.url({ protocol: /^https?$/, hostname: z.regexes.domain, },),
     z
-      .url({ protocol: /file/, pattern: DOT_ENV_PATH !== undefined ? /./ : /^file:\/{3}/, },),
+      .url({ protocol: /file/,
+        pattern: DOT_ENV_PATH !== undefined ? /./ : /^file:\/{3}/, },),
   ],),);
 
 /**
@@ -42,6 +43,6 @@ export function getOpmls(): z.infer<typeof OPMLS_SCHEMA> {
   const innerL = tagged({ tag: getOpmls.name, l, },);
   const result = OPMLS_SCHEMA
     .parse(process.env.OPMLS?.split(',',) ?? [],);
-  innerL.debug(`${String(result.length)} OPML URLs`);
+  innerL.debug(`${String(result.length,)} OPML URLs`,);
   return result;
 }

@@ -30,18 +30,17 @@ import {
  *
  * @returns `true` if the line is noise that should be stripped.
  */
-export function shouldStripLine(line: string): boolean {
-  if (GIT_FILE_MODE_PATTERN.test(line)) {
-    return true
+export function shouldStripLine(line: string,): boolean {
+  if (GIT_FILE_MODE_PATTERN.test(line,))
+    return true;
+  if (SANDBOX_NOISE_PATTERNS.some(function patternTest(pattern,) {
+    return pattern.test(line,);
+  },)) {
+    return true;
   }
-  if (SANDBOX_NOISE_PATTERNS.some(function patternTest(pattern) {
-    return pattern.test(line)
-  })) {
-    return true
-  }
-  return GIT_TRANSPORT_PROGRESS_PATTERNS.some(function patternTest(pattern) {
-    return pattern.test(line)
-  })
+  return GIT_TRANSPORT_PROGRESS_PATTERNS.some(function patternTest(pattern,) {
+    return pattern.test(line,);
+  },);
 }
 
 //endregion
@@ -67,13 +66,13 @@ export function shouldStripLine(line: string): boolean {
  * // → '=== (x5) Header === (x5)'
  * ```
  */
-export function collapseRepeatedChars(line: string): string {
+export function collapseRepeatedChars(line: string,): string {
   return line.replaceAll(
     /([^\w\s])\1{9,}/g,
-    function collapseRun(match, char: string) {
-      return `${char.repeat(MAX_REPEATED_CHARS)} (x${match.length})`
+    function collapseRun(match, char: string,) {
+      return `${char.repeat(MAX_REPEATED_CHARS,)} (x${match.length})`;
     },
-  )
+  );
 }
 
 //endregion
@@ -104,27 +103,28 @@ export function collapseRepeatedChars(line: string): string {
  * // → 'packages/foo/bar.ts'
  * ```
  */
-export function collapseCwdPaths(line: string): string {
-  if (CWD_PREFIX === '') {
-    return line
-  }
+export function collapseCwdPaths(line: string,): string {
+  if (CWD_PREFIX === '')
+    return line;
 
   /**
    * Replace the longer path first (same logic as {@link collapseHomePaths}).
    */
-  let result = line
+  let result = line;
   if (ALT_CWD_PREFIX !== '') {
     if (ALT_CWD_PREFIX.length >= CWD_PREFIX.length) {
-      result = result.replaceAll(ALT_CWD_PREFIX, '')
-      result = result.replaceAll(CWD_PREFIX, '')
-    } else {
-      result = result.replaceAll(CWD_PREFIX, '')
-      result = result.replaceAll(ALT_CWD_PREFIX, '')
+      result = result.replaceAll(ALT_CWD_PREFIX, '',);
+      result = result.replaceAll(CWD_PREFIX, '',);
     }
-  } else {
-    result = result.replaceAll(CWD_PREFIX, '')
+    else {
+      result = result.replaceAll(CWD_PREFIX, '',);
+      result = result.replaceAll(ALT_CWD_PREFIX, '',);
+    }
   }
-  return result
+  else {
+    result = result.replaceAll(CWD_PREFIX, '',);
+  }
+  return result;
 }
 
 /**
@@ -148,29 +148,30 @@ export function collapseCwdPaths(line: string): string {
  * // → '~/.config/bar'
  * ```
  */
-export function collapseHomePaths(line: string): string {
-  if (HOME_DIR === '') {
-    return line
-  }
+export function collapseHomePaths(line: string,): string {
+  if (HOME_DIR === '')
+    return line;
 
   /**
    * Replace the longer path first.
    * If REAL_HOME_DIR is `/var/home/user` and HOME_DIR is `/home/user`,
    * replacing HOME_DIR first would leave `/var` prefixed remnants.
    */
-  let result = line
+  let result = line;
   if (REAL_HOME_DIR !== '') {
     if (REAL_HOME_DIR.length >= HOME_DIR.length) {
-      result = result.replaceAll(REAL_HOME_DIR, '~')
-      result = result.replaceAll(HOME_DIR, '~')
-    } else {
-      result = result.replaceAll(HOME_DIR, '~')
-      result = result.replaceAll(REAL_HOME_DIR, '~')
+      result = result.replaceAll(REAL_HOME_DIR, '~',);
+      result = result.replaceAll(HOME_DIR, '~',);
     }
-  } else {
-    result = result.replaceAll(HOME_DIR, '~')
+    else {
+      result = result.replaceAll(HOME_DIR, '~',);
+      result = result.replaceAll(REAL_HOME_DIR, '~',);
+    }
   }
-  return result
+  else {
+    result = result.replaceAll(HOME_DIR, '~',);
+  }
+  return result;
 }
 
 //endregion
@@ -184,11 +185,10 @@ export function collapseHomePaths(line: string): string {
  *
  * @returns Original line if short enough, or truncated with a length marker.
  */
-export function truncateLine(line: string): string {
-  if (line.length <= MAX_LINE_LENGTH) {
-    return line
-  }
-  return `${line.slice(0, MAX_LINE_LENGTH)}... [${line.length} chars]`
+export function truncateLine(line: string,): string {
+  if (line.length <= MAX_LINE_LENGTH)
+    return line;
+  return `${line.slice(0, MAX_LINE_LENGTH,)}... [${line.length} chars]`;
 }
 
 //endregion
@@ -213,16 +213,14 @@ export function flushRepeated({
   result: string[];
   line: string;
   count: number;
-}): void {
-  if (count === 0) {
-    return
-  }
-  if (count >= DEDUP_THRESHOLD) {
-    result.push(`${line} (x${count})`)
-  } else {
-    for (let i = 0; i < count; i++) {
-      result.push(line)
-    }
+},): void {
+  if (count === 0)
+    return;
+  if (count >= DEDUP_THRESHOLD)
+    result.push(`${line} (x${count})`,);
+  else {
+    for (let i = 0; i < count; i++)
+      result.push(line,);
   }
 }
 

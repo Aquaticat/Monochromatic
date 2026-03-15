@@ -6,9 +6,13 @@
  *
  * @module
  */
-import { rgbString, run, toleranceToFuzz } from './segment-utils.ts'
+import {
+  rgbString,
+  run,
+  toleranceToFuzz,
+} from './segment-utils.ts';
 
-import type { ColorSpec } from './parts-types.ts'
+import type { ColorSpec, } from './parts-types.ts';
 
 /**
  * Create a single-color binary mask using ImageMagick fuzz matching.
@@ -25,23 +29,32 @@ export async function createColorMask({
   output,
   color,
 }: {
-  readonly input: string
-  readonly output: string
-  readonly color: ColorSpec
-}): Promise<void> {
-  const fuzz = toleranceToFuzz(color.tolerance)
-  const rgb = rgbString(color.rgb)
+  readonly input: string;
+  readonly output: string;
+  readonly color: ColorSpec;
+},): Promise<void> {
+  const fuzz = toleranceToFuzz(color.tolerance,);
+  const rgb = rgbString(color.rgb,);
 
   // Fill everything NOT matching the target color with black,
   // then fill the remaining (matching) pixels with white.
   await run([
-    'magick', input,
-    '-fuzz', fuzz,
-    '-fill', 'black', '+opaque', rgb,
-    '-fill', 'white', '-opaque', rgb,
-    '-colorspace', 'Gray',
+    'magick',
+    input,
+    '-fuzz',
+    fuzz,
+    '-fill',
+    'black',
+    '+opaque',
+    rgb,
+    '-fill',
+    'white',
+    '-opaque',
+    rgb,
+    '-colorspace',
+    'Gray',
     output,
-  ])
+  ],);
 }
 
 /**
@@ -55,26 +68,29 @@ export async function combineMasks({
   masks,
   output,
 }: {
-  readonly masks: readonly string[]
-  readonly output: string
-}): Promise<void> {
-  if (masks.length === 0) return
-  const firstMask = masks[0]
-  if (firstMask === undefined) return
+  readonly masks: readonly string[];
+  readonly output: string;
+},): Promise<void> {
+  if (masks.length === 0)
+    return;
+  const firstMask = masks[0];
+  if (firstMask === undefined)
+    return;
   if (masks.length === 1) {
-    await run(['magick', firstMask, output])
-    return
+    await run(['magick', firstMask, output,],);
+    return;
   }
 
   // Stack all masks and flatten with Lighten (OR)
-  const args: string[] = ['magick', firstMask]
+  const args: string[] = ['magick', firstMask,];
   for (let i = 1; i < masks.length; i++) {
-    const mask = masks[i]
-    if (mask === undefined) continue
-    args.push(mask, '-compose', 'Lighten', '-composite')
+    const mask = masks[i];
+    if (mask === undefined)
+      continue;
+    args.push(mask, '-compose', 'Lighten', '-composite',);
   }
-  args.push(output)
-  await run(args)
+  args.push(output,);
+  await run(args,);
 }
 
 /**
@@ -92,34 +108,39 @@ export async function subtractColors({
   output,
   excludes,
 }: {
-  readonly mask: string
-  readonly input: string
-  readonly output: string
-  readonly excludes: readonly ColorSpec[]
-}): Promise<void> {
+  readonly mask: string;
+  readonly input: string;
+  readonly output: string;
+  readonly excludes: readonly ColorSpec[];
+},): Promise<void> {
   if (excludes.length === 0) {
-    await run(['magick', mask, output])
-    return
+    await run(['magick', mask, output,],);
+    return;
   }
 
   // Create an exclusion mask (white = pixels to REMOVE)
-  const excPaths: string[] = []
+  const excPaths: string[] = [];
   for (let i = 0; i < excludes.length; i++) {
-    const excPath = output.replace('.pgm', `_exc${i}.pgm`)
-    const excludeColor = excludes[i]
-    if (excludeColor === undefined) continue
-    await createColorMask({ input, output: excPath, color: excludeColor })
-    excPaths.push(excPath)
+    const excPath = output.replace('.pgm', `_exc${i}.pgm`,);
+    const excludeColor = excludes[i];
+    if (excludeColor === undefined)
+      continue;
+    await createColorMask({ input, output: excPath, color: excludeColor, },);
+    excPaths.push(excPath,);
   }
 
   // Combine exclusion masks
-  const combinedExc = output.replace('.pgm', '_exc_combined.pgm')
-  await combineMasks({ masks: excPaths, output: combinedExc })
+  const combinedExc = output.replace('.pgm', '_exc_combined.pgm',);
+  await combineMasks({ masks: excPaths, output: combinedExc, },);
 
   // Subtract: mask AND (NOT exclusion)
   await run([
-    'magick', mask, combinedExc,
-    '-compose', 'MinusSrc', '-composite',
+    'magick',
+    mask,
+    combinedExc,
+    '-compose',
+    'MinusSrc',
+    '-composite',
     output,
-  ])
+  ],);
 }

@@ -4,7 +4,10 @@
  * partitioning, image selection, and VirtIO driver loading configuration.
  */
 
-import { COMPONENT_ATTRS, pnpDriverPaths } from './autounattend-virtio.ts';
+import {
+  COMPONENT_ATTRS,
+  pnpDriverPaths,
+} from './autounattend-virtio.ts';
 
 /**
  * Generates the windowsPE settings pass for Autounattend.xml.
@@ -20,7 +23,7 @@ import { COMPONENT_ATTRS, pnpDriverPaths } from './autounattend-virtio.ts';
  * windowsPeSection({ imageIndex: 1 }); // => '  <settings pass="windowsPE">...'
  * ```
  */
-export function windowsPeSection({ imageIndex }: { imageIndex: number }): string {
+export function windowsPeSection({ imageIndex, }: { imageIndex: number; },): string {
   return `  <settings pass="windowsPE">
     <component name="Microsoft-Windows-International-Core-WinPE" ${COMPONENT_ATTRS}>
       <SetupUILanguage>
@@ -72,7 +75,7 @@ export function windowsPeSection({ imageIndex }: { imageIndex: number }): string
           <InstallFrom>
             <MetaData wcm:action="add">
               <Key>/IMAGE/INDEX</Key>
-              <Value>${String(imageIndex)}</Value>
+              <Value>${String(imageIndex,)}</Value>
             </MetaData>
           </InstallFrom>
           <InstallTo>

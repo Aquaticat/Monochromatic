@@ -28,24 +28,25 @@ import { splitPackageSpecifier, } from './specifier.ts';
  *
  * @returns Absolute path to the package directory, or undefined if not found
  */
-export function findPackageDir(startDir: string, packageName: string): string | undefined {
+export function findPackageDir(startDir: string, packageName: string,):
+  | string
+  | undefined
+{
   let current = startDir;
 
   // Walk up to filesystem root looking for node_modules
   // oxlint-disable-next-line no-constant-condition
   while (true) {
     /** Candidate node_modules/<pkg> directory */
-    const candidate = join(current, 'node_modules', packageName);
-    if (existsSync(candidate)) {
+    const candidate = join(current, 'node_modules', packageName,);
+    if (existsSync(candidate,))
       return candidate;
-    }
 
     /** Parent directory */
-    const parent = dirname(current);
+    const parent = dirname(current,);
     // Reached filesystem root
-    if (parent === current) {
+    if (parent === current)
       return undefined;
-    }
     current = parent;
   }
 }
@@ -57,15 +58,18 @@ export function findPackageDir(startDir: string, packageName: string): string | 
  *
  * @returns Parsed package.json or undefined if not found
  */
-export function readPackageJson(packageDir: string): Record<string, unknown> | undefined {
+export function readPackageJson(
+  packageDir: string,
+): Record<string, unknown> | undefined {
   /** Path to package.json */
-  const packageJsonPath = join(packageDir, 'package.json');
+  const packageJsonPath = join(packageDir, 'package.json',);
   try {
     /** Raw JSON text */
-    const raw = readCssFileSync(packageJsonPath);
+    const raw = readCssFileSync(packageJsonPath,);
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; package.json shape is Record<string, unknown>
-    return JSON.parse(raw) as Record<string, unknown>;
-  } catch {
+    return JSON.parse(raw,) as Record<string, unknown>;
+  }
+  catch {
     return undefined;
   }
 }
@@ -80,10 +84,9 @@ export function readPackageJson(packageDir: string): Record<string, unknown> | u
  *
  * @returns Resolved relative path or undefined if no match
  */
-export function resolveExports(exports: unknown, subpath: string): string | undefined {
-  if (typeof exports !== 'object' || exports === null) {
+export function resolveExports(exports: unknown, subpath: string,): string | undefined {
+  if (typeof exports !== 'object' || exports === null)
     return undefined;
-  }
 
   /** Exports object keyed by subpath pattern */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from object to Record for property access
@@ -91,19 +94,17 @@ export function resolveExports(exports: unknown, subpath: string): string | unde
   /** Value for the requested subpath */
   const entry = exportsMap[subpath];
 
-  if (typeof entry === 'string') {
+  if (typeof entry === 'string')
     return entry;
-  }
 
   // Condition object: check style -> import -> default
   if (typeof entry === 'object' && entry !== null) {
     /** Condition map for this subpath */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from object to Record for condition access
     const conditions = entry as Record<string, unknown>;
-    for (const key of ['style', 'import', 'default']) {
-      if (typeof conditions[key] === 'string') {
+    for (const key of ['style', 'import', 'default',]) {
+      if (typeof conditions[key] === 'string')
         return conditions[key];
-      }
     }
   }
 
@@ -123,43 +124,40 @@ export function resolveExports(exports: unknown, subpath: string): string | unde
  *
  * @throws When the package or file cannot be found
  */
-export function resolvePackage(specifier: string, fromDir: string): string {
-  const [packageName, subpath] = splitPackageSpecifier(specifier);
+export function resolvePackage(specifier: string, fromDir: string,): string {
+  const [packageName, subpath,] = splitPackageSpecifier(specifier,);
   /** Absolute path to the package directory in node_modules */
-  const packageDir = findPackageDir(fromDir, packageName);
+  const packageDir = findPackageDir(fromDir, packageName,);
 
-  if (packageDir === undefined) {
-    throw new Error(`Cannot find package '${packageName}' from '${fromDir}'`);
-  }
+  if (packageDir === undefined)
+    throw new Error(`Cannot find package '${packageName}' from '${fromDir}'`,);
 
   /** Parsed package.json for exports/main/style lookup */
-  const packageJson = readPackageJson(packageDir);
+  const packageJson = readPackageJson(packageDir,);
 
   if (packageJson !== undefined) {
     // Try exports field
     if (packageJson.exports !== undefined) {
       /** Resolved path from exports map */
-      const resolved = resolveExports(packageJson.exports, subpath);
+      const resolved = resolveExports(packageJson.exports, subpath,);
       if (resolved !== undefined) {
         /** Absolute path from exports resolution */
-        const absolutePath = resolve(packageDir, resolved);
-        if (existsSync(absolutePath)) {
+        const absolutePath = resolve(packageDir, resolved,);
+        if (existsSync(absolutePath,))
           return absolutePath;
-        }
       }
     }
 
     // For bare package reference (subpath is '.'), try style/main fields
     if (subpath === '.') {
-      for (const field of ['style', 'main']) {
+      for (const field of ['style', 'main',]) {
         /** Field value from package.json */
         const value = packageJson[field];
         if (typeof value === 'string') {
           /** Absolute path from style/main field */
-          const absolutePath = resolve(packageDir, value);
-          if (existsSync(absolutePath)) {
+          const absolutePath = resolve(packageDir, value,);
+          if (existsSync(absolutePath,))
             return absolutePath;
-          }
         }
       }
     }
@@ -169,12 +167,11 @@ export function resolvePackage(specifier: string, fromDir: string): string {
   if (subpath !== '.') {
     // subpath starts with './' — strip it for join
     /** Relative portion after stripping leading ./ */
-    const relativePart = subpath.startsWith('./') ? subpath.slice(2) : subpath;
+    const relativePart = subpath.startsWith('./',) ? subpath.slice(2,) : subpath;
     /** Absolute path from direct file reference */
-    const directPath = join(packageDir, relativePart);
-    if (existsSync(directPath)) {
+    const directPath = join(packageDir, relativePart,);
+    if (existsSync(directPath,))
       return directPath;
-    }
   }
 
   throw new Error(

@@ -6,22 +6,28 @@
  * Requires hyperfine to be installed (managed via mise).
  */
 
-import { mkdir, rm, } from 'node:fs/promises';
+import {
+  mkdir,
+  rm,
+} from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
-import { join, resolve, } from 'node:path';
+import {
+  join,
+  resolve,
+} from 'node:path';
 
 import spawn from 'nano-spawn';
 
 //region Setup
 
-console.log('[e2e] setting up fixture...');
-await import(resolve(import.meta.dirname, 'setup-fixture.ts'));
+console.log('[e2e] setting up fixture...',);
+await import(resolve(import.meta.dirname, 'setup-fixture.ts',));
 
 /** Absolute path to the perf config */
-const CONFIG = resolve(import.meta.dirname, 'perf.config.ts');
+const CONFIG = resolve(import.meta.dirname, 'perf.config.ts',);
 
 /** Fixture root and subdirectories, respects $TMPDIR for sandbox compatibility */
-const FIXTURE_DIR = join(tmpdir(), 'file-enforcer-perf');
+const FIXTURE_DIR = join(tmpdir(), 'file-enforcer-perf',);
 /** Absolute path to the destination subdirectory within the fixture */
 const DEST_DIR = `${FIXTURE_DIR}/dest`;
 
@@ -43,12 +49,12 @@ const DEST_FILE = `${DEST_DIR}/combined-0.md`;
  *
  * @throws When hyperfine exits with a non-zero code
  */
-async function runHyperfine(label: string, args: readonly string[]): Promise<void> {
-  console.log(`\n--- ${label} ---`);
-  await spawn('hyperfine', [...args], {
+async function runHyperfine(label: string, args: readonly string[],): Promise<void> {
+  console.log(`\n--- ${label} ---`,);
+  await spawn('hyperfine', [...args,], {
     stdout: 'inherit',
     stderr: 'inherit',
-  });
+  },);
 }
 
 //endregion Hyperfine runner
@@ -57,39 +63,49 @@ async function runHyperfine(label: string, args: readonly string[]): Promise<voi
 
 // 1. Cold run: dest dir empty, everything written fresh
 await runHyperfine('Cold run (all files written)', [
-  '--runs', '5',
-  '--prepare', `rm -rf ${DEST_DIR} && mkdir -p ${DEST_DIR}`,
+  '--runs',
+  '5',
+  '--prepare',
+  `rm -rf ${DEST_DIR} && mkdir -p ${DEST_DIR}`,
   `bun ${CONFIG}`,
-]);
+],);
 
 // 2. Warm run: populate dest first, then re-run (all content-based skips)
-console.log('\n[e2e] populating dest for warm runs...');
-await rm(DEST_DIR, { recursive: true, force: true });
-await mkdir(DEST_DIR, { recursive: true });
-await spawn('bun', [CONFIG]);
+console.log('\n[e2e] populating dest for warm runs...',);
+await rm(DEST_DIR, { recursive: true, force: true, },);
+await mkdir(DEST_DIR, { recursive: true, },);
+await spawn('bun', [CONFIG,],);
 
 await runHyperfine('Warm run (all unchanged)', [
-  '--warmup', '2',
-  '--runs', '10',
+  '--warmup',
+  '2',
+  '--runs',
+  '10',
   `bun ${CONFIG}`,
-]);
+],);
 
 // 3. One source file modified between runs (forces re-read + re-write of affected dests)
 await runHyperfine('1 source changed', [
-  '--warmup', '2',
-  '--runs', '10',
-  '--prepare', `echo "# Modified at $(date +%s%N)" >> ${SOURCE_FILE}`,
+  '--warmup',
+  '2',
+  '--runs',
+  '10',
+  '--prepare',
+  `echo "# Modified at $(date +%s%N)" >> ${SOURCE_FILE}`,
   `bun ${CONFIG}`,
-]);
+],);
 
 // 4. One dest file modified between runs (simulates external edit, triggers re-write)
 await runHyperfine('1 dest changed', [
-  '--warmup', '2',
-  '--runs', '10',
-  '--prepare', `echo "# Externally modified at $(date +%s%N)" >> ${DEST_FILE}`,
+  '--warmup',
+  '2',
+  '--runs',
+  '10',
+  '--prepare',
+  `echo "# Externally modified at $(date +%s%N)" >> ${DEST_FILE}`,
   `bun ${CONFIG}`,
-]);
+],);
 
 //endregion Benchmark scenarios
 
-console.log('\n[e2e] all benchmarks complete.');
+console.log('\n[e2e] all benchmarks complete.',);

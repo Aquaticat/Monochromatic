@@ -7,7 +7,7 @@ import {
   test,
 } from 'bun:test';
 
-const {$} = types.string.from.string.trim.with.object.regexp.global.sync.named;
+const { $, } = types.string.from.string.trim.with.object.regexp.global.sync.named;
 
 type Global = types.object.regexp.global.type.$;
 
@@ -272,11 +272,15 @@ describe('trim with regex global - synchronous named', () => {
 
   test('trims with octal escape sequences', () => {
     // Use modern escape sequences instead of deprecated octal
-    expect($({ str: '\u0041test\u0042', trimmer: /\u0041/g as Global, },),).toBe('test\u0042',);
+    expect($({ str: '\u0041test\u0042', trimmer: /\u0041/g as Global, },),).toBe(
+      'test\u0042',
+    );
   });
 
   test('trims with hexadecimal escape sequences', () => {
-    expect($({ str: '\u0041test\u0042', trimmer: /\u0041/g as Global, },),).toBe('test\u0042',);
+    expect($({ str: '\u0041test\u0042', trimmer: /\u0041/g as Global, },),).toBe(
+      'test\u0042',
+    );
   });
 
   // Control characters test removed - escape sequence doesn't match as expected

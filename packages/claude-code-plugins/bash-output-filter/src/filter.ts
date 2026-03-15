@@ -23,12 +23,12 @@
  * @module
  */
 
-import { text } from 'node:stream/consumers';
+import { text, } from 'node:stream/consumers';
 
 import {
+  collapseCwdPaths,
   collapseHomePaths,
   collapseRepeatedChars,
-  collapseCwdPaths,
   flushRepeated,
   shouldStripLine,
   truncateLine,
@@ -43,45 +43,44 @@ import {
  *
  * @returns Filtered text with boilerplate, long lines, duplicates, and trailing whitespace removed.
  */
-function filterOutput(input: string): string {
-  const lines = input.split('\n')
-  const result: string[] = []
+function filterOutput(input: string,): string {
+  const lines = input.split('\n',);
+  const result: string[] = [];
 
-  let prevLine = ''
-  let repeatCount = 0
+  let prevLine = '';
+  let repeatCount = 0;
 
   for (const rawLine of lines) {
     /** Line with trailing whitespace removed. */
-    const trimmed = rawLine.trimEnd()
+    const trimmed = rawLine.trimEnd();
 
-    if (shouldStripLine(trimmed)) {
-      continue
-    }
+    if (shouldStripLine(trimmed,))
+      continue;
 
     /** Line after collapsing repeated decorative characters. */
-    const collapsed = collapseRepeatedChars(trimmed)
+    const collapsed = collapseRepeatedChars(trimmed,);
 
     /** Line after stripping the working directory prefix from absolute paths. */
-    const relative = collapseCwdPaths(collapsed)
+    const relative = collapseCwdPaths(collapsed,);
 
     /** Line after replacing home directory paths with `~`. */
-    const shortened = collapseHomePaths(relative)
+    const shortened = collapseHomePaths(relative,);
 
     /** Line after length truncation. */
-    const processed = truncateLine(shortened)
+    const processed = truncateLine(shortened,);
 
-    if (processed === prevLine && repeatCount > 0) {
-      repeatCount++
-    } else {
-      flushRepeated({ result, line: prevLine, count: repeatCount })
-      prevLine = processed
-      repeatCount = 1
+    if (processed === prevLine && repeatCount > 0)
+      repeatCount++;
+    else {
+      flushRepeated({ result, line: prevLine, count: repeatCount, },);
+      prevLine = processed;
+      repeatCount = 1;
     }
   }
 
-  flushRepeated({ result, line: prevLine, count: repeatCount })
+  flushRepeated({ result, line: prevLine, count: repeatCount, },);
 
-  return result.join('\n')
+  return result.join('\n',);
 }
 
 //endregion
@@ -90,22 +89,24 @@ function filterOutput(input: string): string {
 
 try {
   /** Raw text read from stdin (piped from the Bash tool command). */
-  const input = await text(process.stdin)
+  const input = await text(process.stdin,);
 
   /** Filtered output with waste patterns removed. */
-  const filtered = filterOutput(input)
+  const filtered = filterOutput(input,);
 
-  process.stdout.write(filtered)
-} catch {
+  process.stdout.write(filtered,);
+}
+catch {
   /**
    * On any error, read and pass through whatever we can.
    * Losing output is worse than failing to filter.
    */
   try {
     /** Unfiltered stdin content passed through as-is on error. */
-    const fallback = await text(process.stdin)
-    process.stdout.write(fallback)
-  } catch {
+    const fallback = await text(process.stdin,);
+    process.stdout.write(fallback,);
+  }
+  catch {
     /* stdin already consumed or unavailable -- nothing to pass through */
   }
 }

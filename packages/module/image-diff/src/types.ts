@@ -205,9 +205,11 @@ export type BatchEmbeddingResult = {
  */
 export type EmbeddingProvider = {
   /** Compute a single image embedding. */
-  readonly embed: (input: ImageInput, config: ImageDiffConfig) => Promise<EmbeddingResult>;
+  readonly embed: (input: ImageInput,
+    config: ImageDiffConfig,) => Promise<EmbeddingResult>;
   /** Compute embeddings for multiple images in a batch. */
-  readonly embedBatch: (inputs: readonly ImageInput[], config: ImageDiffConfig) => Promise<BatchEmbeddingResult>;
+  readonly embedBatch: (inputs: readonly ImageInput[],
+    config: ImageDiffConfig,) => Promise<BatchEmbeddingResult>;
 };
 
 //endregion Provider interface

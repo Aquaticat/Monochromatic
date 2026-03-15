@@ -7,7 +7,11 @@
 // oxlint-disable-next-line import/no-named-as-default -- OpenAI SDK canonical usage is `import OpenAI from 'openai'`
 import type OpenAI from 'openai';
 
-import type { CompletionResult, StreamTiming, StreamUsage, } from './runner-types.ts';
+import type {
+  CompletionResult,
+  StreamTiming,
+  StreamUsage,
+} from './runner-types.ts';
 
 /** Milliseconds per second for human-readable timing display */
 const MS_PER_SECOND = 1_000;
@@ -40,8 +44,8 @@ export class PartialCompletionError extends Error {
    *
    * @param partialResult - completion data collected before abort
    */
-  constructor(message: string, partialResult: CompletionResult) {
-    super(message);
+  constructor(message: string, partialResult: CompletionResult,) {
+    super(message,);
     this.name = 'PartialCompletionError';
     this.partialResult = partialResult;
   }
@@ -59,11 +63,11 @@ export class PartialCompletionError extends Error {
  *
  * @param timing - collected timing data
  */
-export function logTiming(label: string, timing: StreamTiming): void {
-  const totalSeconds = (timing.totalMs / MS_PER_SECOND).toFixed(1);
+export function logTiming(label: string, timing: StreamTiming,): void {
+  const totalSeconds = (timing.totalMs / MS_PER_SECOND).toFixed(1,);
   console.log(
-    `    [timing:${label}] ttfc=${String(timing.timeToFirstChunkMs)}ms`
-    + ` total=${totalSeconds}s`,
+    `    [timing:${label}] ttfc=${String(timing.timeToFirstChunkMs,)}ms`
+      + ` total=${totalSeconds}s`,
   );
 }
 
@@ -75,8 +79,11 @@ export function logTiming(label: string, timing: StreamTiming): void {
  *
  * @returns normalized usage, or undefined
  */
-export function parseUsage(raw: OpenAI.CompletionUsage | null | undefined): StreamUsage | undefined {
-  if (raw === null || raw === undefined) return undefined;
+export function parseUsage(
+  raw: OpenAI.CompletionUsage | null | undefined,
+): StreamUsage | undefined {
+  if (raw === null || raw === undefined)
+    return undefined;
   return {
     promptTokens: raw.prompt_tokens,
     completionTokens: raw.completion_tokens,
@@ -108,10 +115,10 @@ export function buildResult(
   finishReason: string | undefined,
 ): CompletionResult {
   return {
-    text: chunks.join(''),
-    reasoning: reasoningChunks.join(''),
+    text: chunks.join('',),
+    reasoning: reasoningChunks.join('',),
     timing,
-    usage: parseUsage(usage),
+    usage: parseUsage(usage,),
     finishReason,
   };
 }

@@ -58,13 +58,12 @@
  */
 
 /** Resolves a tag name to its element type, falling back to `HTMLElement` for custom elements */
-type ElementFromTag<TTag extends string> =
-  TTag extends keyof HTMLElementTagNameMap
-    ? HTMLElementTagNameMap[TTag]
-    : HTMLElement;
+type ElementFromTag<TTag extends string,> = TTag extends keyof HTMLElementTagNameMap
+  ? HTMLElementTagNameMap[TTag]
+  : HTMLElement;
 
 /** Named parameters for element creation */
-type HOptions<TTag extends string> = {
+type HOptions<TTag extends string,> = {
   /** HTML tag name or custom element tag */
   tag: TTag;
   /** CSS class name(s) */
@@ -79,8 +78,10 @@ type HOptions<TTag extends string> = {
   style?: Record<string, string>;
   /** Event listeners keyed by event name (known DOM events are type-checked, unknown ones accepted as fallback) */
   on?: {
-    [K in keyof HTMLElementEventMap]?: (event: HTMLElementEventMap[K]) => void | Promise<void>;
-  } & Partial<Record<string, (event: any) => void | Promise<void>>>;
+    [K in keyof HTMLElementEventMap]?: (
+      event: HTMLElementEventMap[K],
+    ) => void | Promise<void>;
+  } & Partial<Record<string, (event: any,) => void | Promise<void>>>;
   /** Child nodes to append */
   children?: readonly (Node | string)[];
 };
@@ -104,27 +105,23 @@ type HOptions<TTag extends string> = {
  *
  * @returns created HTML element matching the tag
  */
-/* @__NO_SIDE_EFFECTS__ */ export function $<const TTag extends string>(
+/* @__NO_SIDE_EFFECTS__ */ export function $<const TTag extends string,>(
   { tag, class: className, text, html, attrs, style, on, children, }: HOptions<TTag>,
 ): ElementFromTag<TTag> {
   const element = document.createElement(tag,) as ElementFromTag<TTag>;
 
-  if (className !== undefined) {
+  if (className !== undefined)
     element.className = className;
-  }
 
-  if (text !== undefined) {
+  if (text !== undefined)
     element.textContent = text;
-  }
 
-  if (html !== undefined) {
+  if (html !== undefined)
     element.innerHTML = html;
-  }
 
   if (attrs !== undefined) {
-    for (const [key, value,] of Object.entries(attrs,)) {
+    for (const [key, value,] of Object.entries(attrs,))
       element.setAttribute(key, value,);
-    }
   }
 
   if (style !== undefined) {
@@ -135,14 +132,12 @@ type HOptions<TTag extends string> = {
   }
 
   if (on !== undefined) {
-    for (const [eventName, handler,] of Object.entries(on,)) {
+    for (const [eventName, handler,] of Object.entries(on,))
       element.addEventListener(eventName, handler as EventListener,);
-    }
   }
 
-  if (children !== undefined) {
+  if (children !== undefined)
     element.append(...children,);
-  }
 
   return element;
 }

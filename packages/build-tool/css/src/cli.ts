@@ -1,9 +1,12 @@
 #!/usr/bin/env bun
-import { build, type BuildOptions, } from './index.ts';
 import { object, } from '@optique/core/constructs';
 import { argument, } from '@optique/core/primitives';
 import { string, } from '@optique/core/valueparser';
 import { runSync, } from '@optique/run';
+import {
+  build,
+  type BuildOptions,
+} from './index.ts';
 
 //region CLI -- parses args and runs the build
 
@@ -21,7 +24,8 @@ const parser = object({
 },);
 
 /** Parsed CLI arguments cast to the shared build options type */
-const args: BuildOptions = runSync(parser, { programName: 'build-css', help: 'option', },);
+const args: BuildOptions = runSync(parser, { programName: 'build-css',
+  help: 'option', },);
 
 console.log(`Building CSS: ${args.input} -> ${args.output}`,);
 await build(args,);

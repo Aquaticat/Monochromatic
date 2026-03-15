@@ -4,7 +4,7 @@
  * Pure functions with no component dependencies -- used by both
  * `\<task-card\>` and `\<task-detail\>` to display elapsed time.
  */
-import type { Task } from "../../lib/types.ts";
+import type { Task, } from '../../lib/types.ts';
 
 /** Seconds per minute. */
 const SECONDS_PER_MINUTE = 60;
@@ -25,26 +25,27 @@ const MS_PER_SECOND = 1_000;
  *
  * @returns Formatted duration string
  */
-export function formatTrackedTime(seconds: number): string {
-  const totalSeconds = Math.max(0, Math.floor(seconds));
-  const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR);
-  const minutes = Math.floor((totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE);
+export function formatTrackedTime(seconds: number,): string {
+  const totalSeconds = Math.max(0, Math.floor(seconds,),);
+  const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR,);
+  const minutes = Math.floor((totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE,);
   const remainingSeconds = totalSeconds % SECONDS_PER_MINUTE;
 
   if (hours > 0) {
-    const dayHours = Math.floor(hours / HOURS_PER_DAY);
+    const dayHours = Math.floor(hours / HOURS_PER_DAY,);
     const remainHours = hours % HOURS_PER_DAY;
     if (dayHours > 0) {
-      return `${String(dayHours)}d${String(remainHours)}h${String(minutes)}min${String(remainingSeconds)}s`;
+      return `${String(dayHours,)}d${String(remainHours,)}h${String(minutes,)}min${
+        String(remainingSeconds,)
+      }s`;
     }
-    return `${String(hours)}h${String(minutes)}min${String(remainingSeconds)}s`;
+    return `${String(hours,)}h${String(minutes,)}min${String(remainingSeconds,)}s`;
   }
 
-  if (minutes > 0) {
-    return `${String(minutes)}min${String(remainingSeconds)}s`;
-  }
+  if (minutes > 0)
+    return `${String(minutes,)}min${String(remainingSeconds,)}s`;
 
-  return `${String(totalSeconds)}s`;
+  return `${String(totalSeconds,)}s`;
 }
 
 /**
@@ -55,11 +56,11 @@ export function formatTrackedTime(seconds: number): string {
  *
  * @returns Formatted duration string
  */
-export function formatRunningTrackedTime(task: Task): string {
-  if (task.timerStartedAt === null) {
-    return formatTrackedTime(task.trackedTime);
-  }
+export function formatRunningTrackedTime(task: Task,): string {
+  if (task.timerStartedAt === null)
+    return formatTrackedTime(task.trackedTime,);
 
-  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - Date.parse(task.timerStartedAt)) / MS_PER_SECOND));
-  return formatTrackedTime(task.trackedTime + elapsedSeconds);
+  const elapsedSeconds = Math.max(0,
+    Math.floor((Date.now() - Date.parse(task.timerStartedAt,)) / MS_PER_SECOND,),);
+  return formatTrackedTime(task.trackedTime + elapsedSeconds,);
 }

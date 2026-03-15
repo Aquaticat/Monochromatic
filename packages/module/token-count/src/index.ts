@@ -23,5 +23,13 @@
  * @packageDocumentation
  */
 
-export { countFileTokens, countTokens, DEFAULT_MODEL } from './client.ts';
-export type { CountTokensConfig, FileTokenCountResult, TokenCountResult } from './types.ts';
+export {
+  countFileTokens,
+  countTokens,
+  DEFAULT_MODEL,
+} from './client.ts';
+export type {
+  CountTokensConfig,
+  FileTokenCountResult,
+  TokenCountResult,
+} from './types.ts';

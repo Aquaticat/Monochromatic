@@ -1,5 +1,6 @@
 /** Internationalization strings keyed by message ID then language code. */
-export const i18n: Map<string, Map<string, string>> = new Map<string, Map<string, string>>(
+export const i18n: Map<string, Map<string, string>> = new Map<string,
+  Map<string, string>>(
   [
     [
       'siteName',

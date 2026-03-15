@@ -36,7 +36,7 @@ export const emptyTags: CreateOnceRule = {
       nonEmpty: 'TSDoc modifier tag "{{tag}}" must not have content.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     /** Tags that must be standalone (no content after them). */
     const modifierTags = new Set([
       '@public',
@@ -50,27 +50,30 @@ export const emptyTags: CreateOnceRule = {
       '@experimental',
       '@eventProperty',
       '@packageDocumentation',
-    ]);
+    ],);
 
-    return createTsdocVisitor(context, function emptyTagsHandler(_node, comment): void {
-      const lines = getCommentLines(comment);
-      lines.forEach(function checkLine(line, index): void {
-        const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '').trimStart();
-        const tagMatch = trimmed.match(/^(@\w+)\s+(.+)/);
-        if (tagMatch === null) {
+    return createTsdocVisitor(context, function emptyTagsHandler(_node, comment,): void {
+      const lines = getCommentLines(comment,);
+      lines.forEach(function checkLine(line, index,): void {
+        const trimmed = line.trimStart().replace(COMMENT_LINE_PREFIX, '',).trimStart();
+        const tagMatch = trimmed.match(/^(@\w+)\s+(.+)/,);
+        if (tagMatch === null)
           return;
-        }
-        const { 1: tag, 2: rest } = tagMatch;
-        if (tag !== undefined && modifierTags.has(tag) && rest !== undefined && rest.trim().length > 0) {
+        const { 1: tag, 2: rest, } = tagMatch;
+        if (tag !== undefined
+          && modifierTags.has(tag,)
+          && rest !== undefined
+          && rest.trim().length > 0)
+        {
           context.report({
             loc: {
-              start: { line: comment.loc.start.line + index, column: 0 },
+              start: { line: comment.loc.start.line + index, column: 0, },
             },
             messageId: 'nonEmpty',
-            data: { tag },
-          });
+            data: { tag, },
+          },);
         }
-      });
-    });
+      },);
+    },);
   },
 };

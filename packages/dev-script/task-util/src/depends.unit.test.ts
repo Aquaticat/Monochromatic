@@ -1,3 +1,10 @@
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  test,
+} from 'bun:test';
 import { exec, } from 'node:child_process';
 import {
   existsSync,
@@ -8,13 +15,6 @@ import {
 } from 'node:fs';
 import { join, } from 'node:path';
 import { promisify, } from 'node:util';
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  test,
-} from 'bun:test';
 
 const execAsync = promisify(exec,);
 
@@ -43,12 +43,12 @@ beforeEach(() => {
 
   mkdirSync(srcDir, { recursive: true, },);
   mkdirSync(outDir, { recursive: true, },);
-});
+},);
 
 afterEach(() => {
   if (existsSync(testDir,))
     rmSync(testDir, { recursive: true, },);
-});
+},);
 
 //endregion Fixture Setup
 
@@ -336,7 +336,9 @@ describe('task-depends sh: command errors', () => {
       execAsync(
         `bun ${cliPath} -s "sh:exit 1" -o "${outDir}/**" -- ${writeMarkerCmd()}`,
       ),
-    ).rejects.toThrow();
+    )
+      .rejects
+      .toThrow();
   });
 
   test('throws when sh: command returns unparseable output', async () => {
@@ -344,7 +346,9 @@ describe('task-depends sh: command errors', () => {
       execAsync(
         `bun ${cliPath} -o "sh:echo hello" -- ${writeMarkerCmd()}`,
       ),
-    ).rejects.toThrow();
+    )
+      .rejects
+      .toThrow();
   });
 
   test('throws when sh: command returns empty output', async () => {
@@ -352,7 +356,9 @@ describe('task-depends sh: command errors', () => {
       execAsync(
         `bun ${cliPath} -o "sh:echo" -- ${writeMarkerCmd()}`,
       ),
-    ).rejects.toThrow();
+    )
+      .rejects
+      .toThrow();
   });
 });
 
@@ -410,7 +416,9 @@ describe('task-depends time strategies', () => {
       execAsync(
         `bun ${cliPath} --source-time-strategy invalid -s "${srcDir}/**" -o "${outDir}/**" -- echo test`,
       ),
-    ).rejects.toThrow();
+    )
+      .rejects
+      .toThrow();
   });
 
   test('sh: strategy receives timestamps via stdin and returns aggregated value', async () => {
@@ -564,7 +572,9 @@ describe('task-depends error handling', () => {
       execAsync(
         `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- node -e "process.exit(42)"`,
       ),
-    ).rejects.toThrow();
+    )
+      .rejects
+      .toThrow();
   });
 
   test('allowFailure flag suppresses command failure', async () => {
@@ -580,12 +590,16 @@ describe('task-depends error handling', () => {
   test('fails when no -o provided', async () => {
     await expect(
       execAsync(`bun ${cliPath} -s "${srcDir}/**" -- echo test`,),
-    ).rejects.toThrow();
+    )
+      .rejects
+      .toThrow();
   });
 
   test('fails when no command provided', async () => {
     await expect(
       execAsync(`bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**"`,),
-    ).rejects.toThrow();
+    )
+      .rejects
+      .toThrow();
   });
 });

@@ -7,12 +7,10 @@
  * @module
  */
 
-import {
-  basename,
-} from 'node:path';
 import type {
   GenericToolInput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
+import { basename, } from 'node:path';
 
 /**
  * Maximum length for pattern and query strings displayed in the title.
@@ -34,8 +32,8 @@ export type TenseLabels = {
  * `fallback` provides tense-specific defaults when `extract` returns `undefined`.
  */
 export type ToolTitleEntry = {
-  extract: (input: GenericToolInput) => string | undefined;
-  format: (value: string, tense: 'pre' | 'post') => string;
+  extract: (input: GenericToolInput,) => string | undefined;
+  format: (value: string, tense: 'pre' | 'post',) => string;
   fallback: TenseLabels;
 };
 
@@ -53,11 +51,10 @@ export type ToolTitleEntry = {
  * truncate('a very long string', 10) // 'a very lo…'
  * ```
  */
-export function truncate(value: string, maxLength: number): string {
-  if (value.length <= maxLength) {
+export function truncate(value: string, maxLength: number,): string {
+  if (value.length <= maxLength)
     return value;
-  }
-  return `${value.slice(0, maxLength - 1)}\u2026`;
+  return `${value.slice(0, maxLength - 1,)}\u2026`;
 }
 
 /**
@@ -72,8 +69,8 @@ export function truncate(value: string, maxLength: number): string {
  * shortPath('/var/home/user/project/src/index.ts') // 'index.ts'
  * ```
  */
-export function shortPath(filePath: string): string {
-  return basename(filePath);
+export function shortPath(filePath: string,): string {
+  return basename(filePath,);
 }
 
 /**
@@ -91,11 +88,10 @@ export function shortPath(filePath: string): string {
  * stringField({ count: 5 }, 'file_path') // undefined
  * ```
  */
-export function stringField(input: GenericToolInput, key: string): string | undefined {
+export function stringField(input: GenericToolInput, key: string,): string | undefined {
   const value = input[key];
-  if (typeof value === 'string') {
+  if (typeof value === 'string')
     return value;
-  }
   return undefined;
 }
 
@@ -112,9 +108,9 @@ export function stringField(input: GenericToolInput, key: string): string | unde
  * field('file_path')({ count: 5 }) // undefined
  * ```
  */
-export function field(key: string): (input: GenericToolInput) => string | undefined {
-  return function extractField(input: GenericToolInput) {
-    return stringField(input, key);
+export function field(key: string,): (input: GenericToolInput,) => string | undefined {
+  return function extractField(input: GenericToolInput,) {
+    return stringField(input, key,);
   };
 }
 
@@ -130,9 +126,11 @@ export function field(key: string): (input: GenericToolInput) => string | undefi
  * pathFormat({ pre: 'Editing', post: 'Edited' })('src/index.ts', 'pre') // 'Editing index.ts'
  * ```
  */
-export function pathFormat(labels: TenseLabels): (value: string, tense: 'pre' | 'post') => string {
-  return function formatPath(v: string, tense: 'pre' | 'post') {
-    return `${labels[tense]} ${shortPath(v)}`;
+export function pathFormat(
+  labels: TenseLabels,
+): (value: string, tense: 'pre' | 'post',) => string {
+  return function formatPath(v: string, tense: 'pre' | 'post',) {
+    return `${labels[tense]} ${shortPath(v,)}`;
   };
 }
 
@@ -148,9 +146,11 @@ export function pathFormat(labels: TenseLabels): (value: string, tense: 'pre' | 
  * quotedFormat({ pre: 'Searching', post: 'Searched' })('TODO', 'post') // 'Searched "TODO"'
  * ```
  */
-export function quotedFormat(labels: TenseLabels): (value: string, tense: 'pre' | 'post') => string {
-  return function formatQuoted(v: string, tense: 'pre' | 'post') {
-    return `${labels[tense]} "${truncate(v, MAX_PATTERN_LENGTH)}"`;
+export function quotedFormat(
+  labels: TenseLabels,
+): (value: string, tense: 'pre' | 'post',) => string {
+  return function formatQuoted(v: string, tense: 'pre' | 'post',) {
+    return `${labels[tense]} "${truncate(v, MAX_PATTERN_LENGTH,)}"`;
   };
 }
 
@@ -175,6 +175,6 @@ const COMMAND_NOISE_RE = /^(?:(?!-)\S+=\S*\s+|(?:timeout|env|nice|nohup)\s+\S+\s
  * shortCommand('timeout 10 bun test') // 'bun test'
  * ```
  */
-export function shortCommand(command: string): string {
-  return command.replace(COMMAND_NOISE_RE, '');
+export function shortCommand(command: string,): string {
+  return command.replace(COMMAND_NOISE_RE, '',);
 }

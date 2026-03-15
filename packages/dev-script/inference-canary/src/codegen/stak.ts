@@ -8,8 +8,12 @@
  * Performance is a direct multiplier with no cap -- a slow implementation degrades
  * the full score proportionally, not just a small fraction of it.
  */
+import {
+  CODEGEN_EXPECTED_OUTPUT,
+  CODEGEN_TEST_INPUT,
+  PERF_TEST_INPUT,
+} from '../stak/test-cases.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
-import { CODEGEN_TEST_INPUT, CODEGEN_EXPECTED_OUTPUT, PERF_TEST_INPUT, } from '../stak/test-cases.ts';
 
 /** Number of correctness checks in the Stak codegen scoring function */
 const STAK_CODEGEN_TOTAL_CHECKS = 5;
@@ -40,7 +44,7 @@ export const stakInterpreter = createCodeGenProbe({
     slowMs: PERF_SLOW_MS,
   },
   prompt: [
-    'Write a TypeScript CLI that reads a Stak program from stdin and writes the program\'s output to stdout.',
+    "Write a TypeScript CLI that reads a Stak program from stdin and writes the program's output to stdout.",
     '',
     'Stak is a minimal stack-based language. Each instruction occupies exactly one line.',
     'Blank lines are ignored. Instructions are case-sensitive.',
@@ -96,24 +100,25 @@ export const stakInterpreter = createCodeGenProbe({
     '- Labels are resolved in a first pass before execution begins (forward jumps must work)',
     '- Stack underflow must throw an Error',
     '- LOAD on an undefined variable must throw an Error',
-  ].join('\n'),
-  verify: function verifyStak(result): { correctness: number; } {
+  ]
+    .join('\n',),
+  verify: function verifyStak(result,): { correctness: number; } {
     // nano-spawn strips the trailing newline from captured stdout;
     // trimEnd normalizes so the checks work regardless of trailing whitespace
     const output = result.stdout.trimEnd();
     const checks = [
       // Floor division: -7 DIV 2 must be -4 (floor), not -3 (truncation)
-      output.startsWith('-4\n'),
+      output.startsWith('-4\n',),
       // Floored mod: -7 MOD 2 must be 1 (floored), not -1 (JS remainder)
-      output.includes('\n1\nHi\n'),
+      output.includes('\n1\nHi\n',),
       // PRINTC with explicit newline code point: 72='H', 105='i', 10=LF
-      output.includes('Hi\n5\n'),
+      output.includes('Hi\n5\n',),
       // Full countdown loop produces correct sequence
-      output.endsWith('5\n4\n3\n2\n1'),
+      output.endsWith('5\n4\n3\n2\n1',),
       // Exact match covers all of the above together
       output === CODEGEN_EXPECTED_OUTPUT,
     ];
 
-    return { correctness: checks.filter(Boolean).length / STAK_CODEGEN_TOTAL_CHECKS, };
+    return { correctness: checks.filter(Boolean,).length / STAK_CODEGEN_TOTAL_CHECKS, };
   },
-});
+},);

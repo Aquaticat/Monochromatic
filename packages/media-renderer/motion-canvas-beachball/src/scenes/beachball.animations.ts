@@ -1,6 +1,16 @@
-import type {Circle, Node} from '@motion-canvas/2d';
-import type {ThreadGenerator} from '@motion-canvas/core';
-import {type Reference, all, chain, easeInQuad, easeOutQuad, linear} from '@motion-canvas/core';
+import type {
+  Circle,
+  Node,
+} from '@motion-canvas/2d';
+import type { ThreadGenerator, } from '@motion-canvas/core';
+import {
+  all,
+  chain,
+  easeInQuad,
+  easeOutQuad,
+  linear,
+  type Reference,
+} from '@motion-canvas/core';
 
 import {
   ENTRY_DURATION,
@@ -36,34 +46,36 @@ export type SceneRefs = {
  * @returns motion-canvas thread generator
  * @yields animation frames
  */
-export function* animateEntry(refs: SceneRefs, ballRestY: number): ThreadGenerator {
+export function* animateEntry(refs: SceneRefs, ballRestY: number,): ThreadGenerator {
   const firstLandX = -(WIDTH / QUARTER_DIVISOR);
-  const { ballGroup, ballBody, shadow } = refs;
+  const { ballGroup, ballBody, shadow, } = refs;
   const firstArcHeight = INITIAL_ARC_HEIGHT * FIRST_ARC_HEIGHT_MULTIPLIER;
 
   yield* all(
-    ballGroup().position.x(firstLandX, ENTRY_DURATION, linear),
-    shadow().position.x(firstLandX, ENTRY_DURATION, linear),
+    ballGroup().position.x(firstLandX, ENTRY_DURATION, linear,),
+    shadow().position.x(firstLandX, ENTRY_DURATION, linear,),
     chain(
-      ballGroup().position.y(ballRestY - firstArcHeight, ENTRY_DURATION / 2, easeOutQuad),
-      ballGroup().position.y(ballRestY, ENTRY_DURATION / 2, easeInQuad),
+      ballGroup().position.y(ballRestY - firstArcHeight, ENTRY_DURATION / 2,
+        easeOutQuad,),
+      ballGroup().position.y(ballRestY, ENTRY_DURATION / 2, easeInQuad,),
     ),
     chain(
       all(
-        shadow().scale(SHADOW_SCALE_AIR, ENTRY_DURATION / 2, easeOutQuad),
-        shadow().opacity(SHADOW_OPACITY_AIR, ENTRY_DURATION / 2, easeOutQuad),
+        shadow().scale(SHADOW_SCALE_AIR, ENTRY_DURATION / 2, easeOutQuad,),
+        shadow().opacity(SHADOW_OPACITY_AIR, ENTRY_DURATION / 2, easeOutQuad,),
       ),
       all(
-        shadow().scale(SHADOW_SCALE_GROUND, ENTRY_DURATION / 2, easeInQuad),
-        shadow().opacity(SHADOW_OPACITY_GROUND, ENTRY_DURATION / 2, easeInQuad),
+        shadow().scale(SHADOW_SCALE_GROUND, ENTRY_DURATION / 2, easeInQuad,),
+        shadow().opacity(SHADOW_OPACITY_GROUND, ENTRY_DURATION / 2, easeInQuad,),
       ),
     ),
-    ballBody().rotation(ROTATION_SPEED * ENTRY_DURATION / 2, ENTRY_DURATION, linear),
+    ballBody().rotation(ROTATION_SPEED * ENTRY_DURATION / 2, ENTRY_DURATION, linear,),
   );
 
   yield* all(
-    ballBody().scale.x(SQUASH_SCALE_X, SQUASH_DURATION),
-    ballBody().scale.y(SQUASH_SCALE_Y, SQUASH_DURATION),
+    ballBody().scale.x(SQUASH_SCALE_X, SQUASH_DURATION,),
+    ballBody().scale.y(SQUASH_SCALE_Y, SQUASH_DURATION,),
   );
-  yield* all(ballBody().scale.x(1, SQUASH_DURATION), ballBody().scale.y(1, SQUASH_DURATION));
+  yield* all(ballBody().scale.x(1, SQUASH_DURATION,),
+    ballBody().scale.y(1, SQUASH_DURATION,),);
 }

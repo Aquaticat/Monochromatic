@@ -5,8 +5,11 @@
  * The `entryScriptPath` tells the browser to load `/dist/client/inbox.js`,
  * which reads `pageData` from the embedded JSON blob and builds the UI into `<main id="app">`.
  */
-import { listBlockedInboxTasks, listInboxUnblockedTasks } from "../../lib/db/tasks-queries.ts";
-import { renderPage } from "./layout.ts";
+import {
+  listBlockedInboxTasks,
+  listInboxUnblockedTasks,
+} from '../../lib/db/tasks-queries.ts';
+import { renderPage, } from './layout.ts';
 
 /**
  * Renders the inbox page with unblocked and blocked task lists.
@@ -16,18 +19,18 @@ import { renderPage } from "./layout.ts";
 export async function inboxPage(): Promise<Response> {
   const inboxTasks = await listInboxUnblockedTasks();
   const blockedLinks = await listBlockedInboxTasks();
-  const blockedTasksByBlocker = Object.groupBy(blockedLinks, function byBlocker(link) {
+  const blockedTasksByBlocker = Object.groupBy(blockedLinks, function byBlocker(link,) {
     return link.blockerId;
-  });
+  },);
 
   return renderPage({
-    title: "Inbox - Done",
-    heading: "Inbox",
-    entryScriptPath: "/dist/client/inbox.js",
+    title: 'Inbox - Done',
+    heading: 'Inbox',
+    entryScriptPath: '/dist/client/inbox.js',
     pageData: {
       suggestedTasks: inboxTasks,
       allTasks: inboxTasks,
       blockedTasksByBlocker,
     },
-  });
+  },);
 }

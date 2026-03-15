@@ -6,10 +6,10 @@
 import { resolve, } from 'node:path';
 
 /** Absolute path to the monorepo root */
-export const MONOREPO_ROOT = resolve(import.meta.dirname, '..', '..', '..', '..');
+export const MONOREPO_ROOT = resolve(import.meta.dirname, '..', '..', '..', '..',);
 
 /** Containerfile location */
-export const CONTAINERFILE = resolve(import.meta.dirname, '..', 'Containerfile');
+export const CONTAINERFILE = resolve(import.meta.dirname, '..', 'Containerfile',);
 
 /** Container image name */
 export const IMAGE_NAME = 'file-enforcer-perf';

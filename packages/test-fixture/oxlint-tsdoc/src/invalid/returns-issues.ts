@@ -24,7 +24,7 @@ function returnsOnVoid(): void {}
  * @returns never
  */
 function returnsOnNever(): never {
-  throw new Error('fail');
+  throw new Error('fail',);
 }
 
 /**

@@ -13,9 +13,9 @@ import {
   expectArraySeparatorOrEnd,
   parseArrayHeader,
 } from './customParsers.arrayHelpers.ts';
+import { callParseValue, } from './customParsers.dispatch.ts';
 import { mergeComments, } from './customParsers.startsWithComment.mergeComments.ts';
 import { startsWithComment, } from './customParsers.startsWithComment.ts';
-import { callParseValue, } from './customParsers.dispatch.ts';
 
 //region Array elements -- Recursive, immutable element parsing for arrays (MUTUALLY RECURSIVE)
 /**

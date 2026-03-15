@@ -11,9 +11,9 @@
  */
 export type CountTokensConfig = {
   /** Claude model for tokenization; defaults to `claude-sonnet-4-6`. Only selects the tokenizer -- no inference is performed. */
-  readonly model?: string
+  readonly model?: string;
   /** Anthropic API key; falls back to `TOKEN_COUNT_CLAUDE_API_KEY`, `CLAUDE_API_KEY`, then `ANTHROPIC_API_KEY` env vars */
-  readonly apiKey?: string
+  readonly apiKey?: string;
 };
 
 /**
@@ -26,9 +26,9 @@ export type CountTokensConfig = {
  */
 export type TokenCountResult = {
   /** Number of input tokens in the content */
-  readonly inputTokens: number
+  readonly inputTokens: number;
   /** Model used for tokenization */
-  readonly model: string
+  readonly model: string;
 };
 
 /**
@@ -46,5 +46,5 @@ export type TokenCountResult = {
  */
 export type FileTokenCountResult = TokenCountResult & {
   /** Path of the counted file, as provided to the function */
-  readonly filePath: string
+  readonly filePath: string;
 };

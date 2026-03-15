@@ -5,7 +5,7 @@ import {
   test,
 } from 'bun:test';
 
-const {$} = types.object.regexp.from.string.sync.named;
+const { $, } = types.object.regexp.from.string.sync.named;
 
 describe('string to regex conversion', () => {
   test('converts simple string to regex', () => {

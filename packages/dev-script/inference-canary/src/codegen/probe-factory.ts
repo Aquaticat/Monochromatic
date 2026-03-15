@@ -13,11 +13,17 @@ import { CODE_GEN_SYSTEM, } from './system-prompt.ts';
 
 import type { LintResult, } from '../linter.ts';
 import type { Probe, } from '../probes.ts';
-import type { TimedContainerResult, } from './perf.ts';
 import type { VerifyResult, } from './additional-run-types.ts';
-import type { CodeGenProbeConfig, ProbeFactoryCaches, } from './probe-factory-types.ts';
+import type { TimedContainerResult, } from './perf.ts';
+import type {
+  CodeGenProbeConfig,
+  ProbeFactoryCaches,
+} from './probe-factory-types.ts';
 
-export type { AdditionalRun, VerifyResult, } from './additional-run-types.ts';
+export type {
+  AdditionalRun,
+  VerifyResult,
+} from './additional-run-types.ts';
 export type { CodeGenProbeConfig, } from './probe-factory-types.ts';
 
 /**
@@ -48,16 +54,22 @@ export type { CodeGenProbeConfig, } from './probe-factory-types.ts';
  * });
  * ```
  */
-export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
+export function createCodeGenProbe(config: CodeGenProbeConfig,): Probe {
   /** Per-model caches shared between buildFixPrompt and score closures */
   const caches: ProbeFactoryCaches = {
     lint: new Map<string, LintResult>(),
     container: new Map<string, ContainerResult>(),
     perf: new Map<string, TimedContainerResult>(),
-    additionalContainers:
-      (config.additionalRuns ?? []).map(function createContainerCache(): Map<string, ContainerResult> { return new Map(); }),
-    additionalVerify:
-      (config.additionalRuns ?? []).map(function createVerifyCache(): Map<string, VerifyResult> { return new Map(); }),
+    additionalContainers: (config.additionalRuns ?? []).map(
+      function createContainerCache(): Map<string, ContainerResult> {
+        return new Map();
+      },
+    ),
+    additionalVerify: (config.additionalRuns ?? []).map(
+      function createVerifyCache(): Map<string, VerifyResult> {
+        return new Map();
+      },
+    ),
   };
 
   /** Spread-friendly slow property, omitted when config.slow is undefined */
@@ -70,12 +82,14 @@ export function createCodeGenProbe(config: CodeGenProbeConfig): Probe {
     prompt: config.prompt,
     ...slowProp,
 
-    buildFixPrompt: async function buildFixPrompt(response, context): Promise<string | undefined> {
-      return buildFixPromptImpl(config, response, context, caches);
+    buildFixPrompt: async function buildFixPrompt(response,
+      context,): Promise<string | undefined>
+    {
+      return buildFixPromptImpl(config, response, context, caches,);
     },
 
-    score: async function score(response, context): Promise<number> {
-      return scoreImpl(config, response, context, caches);
+    score: async function score(response, context,): Promise<number> {
+      return scoreImpl(config, response, context, caches,);
     },
   };
 }

@@ -10,14 +10,14 @@ import type {
   FragmentStringJsonc,
 } from '@_/types/t string/t hasQuotedSyntax/t doubleQuote/t jsonc/t/index.ts';
 import type * as Jsonc from '../../../../t/index.ts';
+import { customParserForArray, } from './customParsers.arrayCore.ts';
+import { registerParseValue, } from './customParsers.dispatch.ts';
+import { customParserForRecord, } from './customParsers.recordCore.ts';
 import { scanQuotedString, } from './customParsers.scanQuotedString.ts';
 import {
   parseLiteralToken,
   parseNumberToken,
 } from './customParsers.tokenizers.ts';
-import { customParserForArray, } from './customParsers.arrayCore.ts';
-import { customParserForRecord, } from './customParsers.recordCore.ts';
-import { registerParseValue, } from './customParsers.dispatch.ts';
 
 //region Value dispatcher -- Single entry to parse one value from the start (MUTUALLY RECURSIVE)
 /**
@@ -86,9 +86,11 @@ export function parseValueFromStart(
     return { parsed: parsed as Jsonc.Value, remaining: remainingContent, };
   }
 
-  if (['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',].some(function startsWithDigit(m) {
-    return value.startsWith(m,);
-  })) {
+  if (['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',].some(
+    function startsWithDigit(m,) {
+      return value.startsWith(m,);
+    },
+  )) {
     /** Delegated number token parse; ensures JSON numeric semantics. */
     const out = parseNumberToken({ value, },);
     /** Final value node for number branch with optional comment propagation. */

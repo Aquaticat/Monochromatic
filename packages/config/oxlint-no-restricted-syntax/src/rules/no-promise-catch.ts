@@ -33,39 +33,37 @@ export const noPromiseCatch: CreateOnceRule = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Disallow .catch() method calls. Use try/catch with async/await instead.',
+      description:
+        'Disallow .catch() method calls. Use try/catch with async/await instead.',
       recommended: true,
     },
     messages: {
       forbidden: '.catch() is banned. Use try/catch with async/await instead.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      CallExpression(node: Span): void {
+      CallExpression(node: Span,): void {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const callNode = node as Span & Record<string, unknown>;
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const callee = callNode['callee'] as Record<string, unknown> | null | undefined;
-        if (callee === undefined || callee === null) {
+        if (callee === undefined || callee === null)
           return;
-        }
 
-        if (callee['type'] !== 'MemberExpression' || callee['computed'] === true) {
+        if (callee['type'] !== 'MemberExpression' || callee['computed'] === true)
           return;
-        }
 
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const property = callee['property'] as Record<string, unknown> | null | undefined;
-        if (property === undefined || property === null || property['name'] !== 'catch') {
+        if (property === undefined || property === null || property['name'] !== 'catch')
           return;
-        }
 
         context.report({
           node,
           messageId: 'forbidden',
-        });
+        },);
       },
     } as VisitorWithHooks;
   },

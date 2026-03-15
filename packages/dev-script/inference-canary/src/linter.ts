@@ -7,9 +7,9 @@
  *
  * Both are early degradation signals -- code quality degrades before correctness does.
  */
+import { writeLintFile, } from './linter-artifacts.ts';
 import { runAndParseOxlint, } from './linter-oxlint.ts';
 import { runAndParseTypeCheck, } from './linter-tsgo.ts';
-import { writeLintFile, } from './linter-artifacts.ts';
 
 // oxlint-disable-next-line no-duplicate-imports -- re-export requires a separate import for local use
 import type { ArtifactMeta, } from './linter-artifacts.ts';
@@ -75,19 +75,22 @@ export async function lintSource(
   source: string,
   meta: ArtifactMeta,
 ): Promise<LintResult> {
-  const { filePath, lintDir, } = await writeLintFile(source, meta);
+  const { filePath, lintDir, } = await writeLintFile(source, meta,);
 
   // runAndParseOxlint and runAndParseTypeCheck each catch their own errors and
   // return safe defaults, so no outer catch is needed here.
-  const [oxlintResult, typeResult] = await Promise.all([
-    runAndParseOxlint(filePath),
-    runAndParseTypeCheck(lintDir),
-  ]);
+  const [oxlintResult, typeResult,] = await Promise.all([
+    runAndParseOxlint(filePath,),
+    runAndParseTypeCheck(lintDir,),
+  ],);
 
   const rawParts = [
     oxlintResult.rawOutput.length > 0 ? `=== oxlint ===\n${oxlintResult.rawOutput}` : '',
     typeResult.rawOutput.length > 0 ? `=== tsgo ===\n${typeResult.rawOutput}` : '',
-  ].filter(function hasContent(part): boolean { return part.length > 0; });
+  ]
+    .filter(function hasContent(part,): boolean {
+      return part.length > 0;
+    },);
 
   return {
     severity: { errors: oxlintResult.errors, warnings: oxlintResult.warnings, },
@@ -97,7 +100,7 @@ export async function lintSource(
     typeErrors: typeResult.errorCount,
     linterRan: oxlintResult.linterRan,
     typeCheckerRan: typeResult.ran,
-    rawDiagnostics: rawParts.join('\n\n'),
+    rawDiagnostics: rawParts.join('\n\n',),
   };
 }
 

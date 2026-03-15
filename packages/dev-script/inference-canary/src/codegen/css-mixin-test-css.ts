@@ -63,4 +63,5 @@ export const CSS_MIXIN_TEST_CSS = [
   '  display: grid;',
   '}',
   '',
-].join('\n');
+]
+  .join('\n',);

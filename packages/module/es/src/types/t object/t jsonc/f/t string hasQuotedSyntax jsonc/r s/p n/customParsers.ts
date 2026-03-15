@@ -14,13 +14,13 @@ export {
   customParserForArray,
   parseArrayElements,
 } from './customParsers.arrayCore.ts';
+export { parseValueFromStart, } from './customParsers.parseValue.ts';
 export {
   customParserForRecord,
   parseOneRecordMember,
   parseRecordMembers,
   parseRecordValue,
 } from './customParsers.recordCore.ts';
-export { parseValueFromStart, } from './customParsers.parseValue.ts';
 //endregion Re-exports from core parsers
 
 //region Re-exports from child modules

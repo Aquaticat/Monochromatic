@@ -38,10 +38,12 @@ export function buildHeader(): string {
                   'request ',
                   h({
                     tag: 'input',
-                    attrs: { type: 'number', name: 'numResults', value: '10', max: '100', min: '1', },
+                    attrs: { type: 'number', name: 'numResults', value: '10', max: '100',
+                      min: '1', },
                   },),
                   ' results',
-                ].join('',),
+                ]
+                  .join('',),
               },),
             ],
           },),

@@ -48,7 +48,7 @@ function pickMajority({
   totalCount: number;
 },): { hasMajority: boolean; value?: string | undefined; } {
   /** Leader candidate and its bucket after sorting by descending bucket size. */
-  const [leaderKey, leaderBucket,] = [...buckets.entries()]
+  const [leaderKey, leaderBucket,] = [...buckets.entries(),]
     .toSorted(function byDescCount(
       [, aArray,],
       [, bArray,],
@@ -425,7 +425,7 @@ export class Store {
     },) as Map<number, [StoreValueResult, ...StoreValueResult[],]>;
 
     /** Array of tier buckets ordered by ascending priority (last = highest). */
-    const array = [...grouped.entries()]
+    const array = [...grouped.entries(),]
       .toSorted(function by([aPriority,], [bPriority,],) {
         return aPriority - bPriority;
       },)

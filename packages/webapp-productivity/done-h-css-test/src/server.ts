@@ -18,20 +18,38 @@
  *   browser fetch POST "/api/tasks/:id/complete"
  *   -\> matched by h3 router -\> handler reads/writes DB -\> JSON response
  */
-import { readFile, stat, } from 'node:fs/promises';
+import {
+  defineHandler,
+  getRouterParam,
+  H3,
+  HTTPError,
+  serve,
+  serveStatic,
+} from 'h3';
+import {
+  readFile,
+  stat,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
-import { H3, HTTPError, defineHandler, getRouterParam, serve, serveStatic, } from 'h3';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: opens SQLite database and runs schema migrations
-import "./lib/db.ts";
-import { getArgumentValue } from "./lib/args.ts";
-import { handleAutofill } from "./server/api/ai-autofill.ts";
-import { handleCreateTask, handleDeleteTask, handleUpdateTask } from "./server/api/tasks.ts";
-import { handleCompleteTask, handleStartTimer, handleStopTimer } from "./server/api/timer.ts";
-import { inProgressPage } from "./server/pages/in-progress.ts";
-import { inboxPage } from "./server/pages/inbox.ts";
-import { searchPage } from "./server/pages/search.ts";
-import { settingsPage } from "./server/pages/settings.ts";
-import { taskDetailsPage } from "./server/pages/task-details.ts";
+import './lib/db.ts';
+import { getArgumentValue, } from './lib/args.ts';
+import { handleAutofill, } from './server/api/ai-autofill.ts';
+import {
+  handleCreateTask,
+  handleDeleteTask,
+  handleUpdateTask,
+} from './server/api/tasks.ts';
+import {
+  handleCompleteTask,
+  handleStartTimer,
+  handleStopTimer,
+} from './server/api/timer.ts';
+import { inProgressPage, } from './server/pages/in-progress.ts';
+import { inboxPage, } from './server/pages/inbox.ts';
+import { searchPage, } from './server/pages/search.ts';
+import { settingsPage, } from './server/pages/settings.ts';
+import { taskDetailsPage, } from './server/pages/task-details.ts';
 
 /** Default HTTP port when neither `--port=` nor `PORT` env var is provided. */
 const DEFAULT_PORT = 3_000;
@@ -49,15 +67,14 @@ const DECIMAL_RADIX = 10;
  * @returns Resolved port number
  */
 function resolvePort(): number {
-  const argumentPort = getArgumentValue("port");
+  const argumentPort = getArgumentValue('port',);
   const environmentPort = process.env.PORT;
   const rawPort = argumentPort ?? environmentPort;
-  if (rawPort === undefined) {
+  if (rawPort === undefined)
     return DEFAULT_PORT;
-  }
 
-  const parsedPort = Number.parseInt(rawPort, DECIMAL_RADIX);
-  return Number.isNaN(parsedPort) ? DEFAULT_PORT : parsedPort;
+  const parsedPort = Number.parseInt(rawPort, DECIMAL_RADIX,);
+  return Number.isNaN(parsedPort,) ? DEFAULT_PORT : parsedPort;
 }
 
 /**
@@ -71,10 +88,13 @@ function resolvePort(): number {
  *
  * @throws HTTPError 400 when parameter is missing
  */
-function requireParam(event: Parameters<typeof getRouterParam>[0], name: string): string {
+function requireParam(event: Parameters<typeof getRouterParam>[0],
+  name: string,): string
+{
   const value = getRouterParam(event, name,);
   if (value === undefined) {
-    throw new HTTPError({ status: HTTP_BAD_REQUEST, message: `missing route parameter: ${name}`, },);
+    throw new HTTPError({ status: HTTP_BAD_REQUEST,
+      message: `missing route parameter: ${name}`, },);
   }
   return value;
 }
@@ -86,83 +106,84 @@ const app = new H3();
 
 app.get('/', defineHandler(function handleInbox() {
   return inboxPage();
-}));
+},),);
 app.get('/in-progress', defineHandler(function handleInProgress() {
   return inProgressPage();
-}));
+},),);
 
-app.get('/tasks/:id', defineHandler(function handleTaskDetails(event) {
+app.get('/tasks/:id', defineHandler(function handleTaskDetails(event,) {
   const id = requireParam(event, 'id',);
   return taskDetailsPage(id,);
-}));
+},),);
 
-app.get('/search', defineHandler(function handleSearch(event) {
+app.get('/search', defineHandler(function handleSearch(event,) {
   return searchPage(event.url,);
-}));
+},),);
 app.get('/settings', defineHandler(function handleSettings() {
   return settingsPage();
-}));
+},),);
 
 //endregion Page routes
 
 //region API routes -- return JSON
 
-app.post('/api/tasks', defineHandler(function handleCreateTaskRoute(event) {
+app.post('/api/tasks', defineHandler(function handleCreateTaskRoute(event,) {
   return handleCreateTask(event.req,);
-}));
+},),);
 
-app.put('/api/tasks/:id', defineHandler(function handleUpdateTaskRoute(event) {
+app.put('/api/tasks/:id', defineHandler(function handleUpdateTaskRoute(event,) {
   const id = requireParam(event, 'id',);
   return handleUpdateTask(event.req, id,);
-}));
+},),);
 
-app.delete('/api/tasks/:id', defineHandler(function handleDeleteTaskRoute(event) {
+app.delete('/api/tasks/:id', defineHandler(function handleDeleteTaskRoute(event,) {
   const id = requireParam(event, 'id',);
   return handleDeleteTask(id,);
-}));
+},),);
 
-app.post('/api/tasks/:id/start', defineHandler(function handleStartTimerRoute(event) {
+app.post('/api/tasks/:id/start', defineHandler(function handleStartTimerRoute(event,) {
   const id = requireParam(event, 'id',);
   return handleStartTimer(id,);
-}));
+},),);
 
-app.post('/api/tasks/:id/stop', defineHandler(function handleStopTimerRoute(event) {
+app.post('/api/tasks/:id/stop', defineHandler(function handleStopTimerRoute(event,) {
   const id = requireParam(event, 'id',);
   return handleStopTimer(id,);
-}));
+},),);
 
-app.post('/api/tasks/:id/complete', defineHandler(function handleCompleteTaskRoute(event) {
-  const id = requireParam(event, 'id',);
-  return handleCompleteTask(id,);
-}));
+app.post('/api/tasks/:id/complete',
+  defineHandler(function handleCompleteTaskRoute(event,) {
+    const id = requireParam(event, 'id',);
+    return handleCompleteTask(id,);
+  },),);
 
-app.post('/api/ai/autofill', defineHandler(function handleAutofillRoute(event) {
+app.post('/api/ai/autofill', defineHandler(function handleAutofillRoute(event,) {
   return handleAutofill(event.req,);
-}));
+},),);
 
 //endregion API routes
 
 //region Static asset serving -- bundled JS from dist/client/
 
-app.get('/dist/client/**', defineHandler(function handleStaticAsset(event) {
+app.get('/dist/client/**', defineHandler(function handleStaticAsset(event,) {
   return serveStatic(event, {
-    getContents: function readContents(id) {
+    getContents: function readContents(id,) {
       return readFile(join('.', id,),);
     },
-    getMeta: async function getMetadata(id) {
+    getMeta: async function getMetadata(id,) {
       let stats: Awaited<ReturnType<typeof stat>> | undefined;
       try {
         stats = await stat(join('.', id,),);
-      } catch {
+      }
+      catch {
         return;
       }
-      if (!stats.isFile()) {
+      if (!stats.isFile())
         return;
-      }
       return { size: stats.size, mtime: stats.mtimeMs, };
     },
   },);
-}));
+},),);
 
 //endregion Static asset serving
 
@@ -170,4 +191,4 @@ app.get('/dist/client/**', defineHandler(function handleStaticAsset(event) {
 /** Running HTTP server instance listening on the configured port. */
 const _server = serve(app, { port: resolvePort(), },);
 
-console.log(`Listening on ${_server.url}`);
+console.log(`Listening on ${_server.url}`,);

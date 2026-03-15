@@ -4,15 +4,33 @@
  * Read-only query functions are in `tasks-queries.ts`.
  * Timer and completion operations are in `tasks-timer.ts`.
  */
-import type { Task, TaskCreateInput, TaskUpdateInput } from "../types.ts";
-import db from "../db.ts";
-import { getTaskById } from "./tasks-queries.ts";
-import { normalizeStringArray, nowIso } from "./tasks-helpers.ts";
-import { SQL_DELETE_TASK, SQL_INSERT_TASK, SQL_UPDATE_TASK } from "./tasks-sql.ts";
+import db from '../db.ts';
+import type {
+  Task,
+  TaskCreateInput,
+  TaskUpdateInput,
+} from '../types.ts';
+import {
+  normalizeStringArray,
+  nowIso,
+} from './tasks-helpers.ts';
+import { getTaskById, } from './tasks-queries.ts';
+import {
+  SQL_DELETE_TASK,
+  SQL_INSERT_TASK,
+  SQL_UPDATE_TASK,
+} from './tasks-sql.ts';
 
-export type { BlockerSummary, CompleteTaskResult } from "./tasks-helpers.ts";
-export { getTaskById } from "./tasks-queries.ts";
-export { completeTask, startTaskTimer, stopTaskTimer } from "./tasks-timer.ts";
+export type {
+  BlockerSummary,
+  CompleteTaskResult,
+} from './tasks-helpers.ts';
+export { getTaskById, } from './tasks-queries.ts';
+export {
+  completeTask,
+  startTaskTimer,
+  stopTaskTimer,
+} from './tasks-timer.ts';
 
 /**
  * Inserts a new task with a generated UUID and current timestamp.
@@ -23,35 +41,34 @@ export { completeTask, startTaskTimer, stopTaskTimer } from "./tasks-timer.ts";
  *
  * @throws When the read-back fails (should never happen)
  */
-export async function createTask(input: TaskCreateInput): Promise<Task> {
+export async function createTask(input: TaskCreateInput,): Promise<Task> {
   const id = crypto.randomUUID();
   const timestamp = nowIso();
 
-  await db.prepare(SQL_INSERT_TASK).run(
+  await db.prepare(SQL_INSERT_TASK,).run(
     id,
     input.title.trim(),
     input.description ?? null,
-    JSON.stringify(normalizeStringArray(input.tags)),
-    JSON.stringify(normalizeStringArray(input.locations)),
+    JSON.stringify(normalizeStringArray(input.tags,),),
+    JSON.stringify(normalizeStringArray(input.locations,),),
     input.priority ?? null,
     input.dueDate ?? null,
     input.complexity ?? null,
-    JSON.stringify(normalizeStringArray(input.reminders)),
-    JSON.stringify(normalizeStringArray(input.blockedBy)),
+    JSON.stringify(normalizeStringArray(input.reminders,),),
+    JSON.stringify(normalizeStringArray(input.blockedBy,),),
     0,
     null,
-    "inbox",
-    "local",
+    'inbox',
+    'local',
     null,
     null,
     timestamp,
-    timestamp
+    timestamp,
   );
 
-  const createdTask = await getTaskById(id);
-  if (createdTask === null) {
-    throw new Error("Failed to read created task");
-  }
+  const createdTask = await getTaskById(id,);
+  if (createdTask === null)
+    throw new Error('Failed to read created task',);
 
   return createdTask;
 }
@@ -65,11 +82,12 @@ export async function createTask(input: TaskCreateInput): Promise<Task> {
  *
  * @returns Updated task, or `null` when the ID does not exist
  */
-export async function updateTask(id: string, input: TaskUpdateInput): Promise<Task | null> {
-  const currentTask = await getTaskById(id);
-  if (currentTask === null) {
+export async function updateTask(id: string,
+  input: TaskUpdateInput,): Promise<Task | null>
+{
+  const currentTask = await getTaskById(id,);
+  if (currentTask === null)
     return null;
-  }
 
   const updatedTask: Task = {
     ...currentTask,
@@ -86,22 +104,22 @@ export async function updateTask(id: string, input: TaskUpdateInput): Promise<Ta
     updatedAt: nowIso(),
   };
 
-  await db.prepare(SQL_UPDATE_TASK).run(
+  await db.prepare(SQL_UPDATE_TASK,).run(
     updatedTask.title,
     updatedTask.description,
-    JSON.stringify(normalizeStringArray(updatedTask.tags)),
-    JSON.stringify(normalizeStringArray(updatedTask.locations)),
+    JSON.stringify(normalizeStringArray(updatedTask.tags,),),
+    JSON.stringify(normalizeStringArray(updatedTask.locations,),),
     updatedTask.priority,
     updatedTask.dueDate,
     updatedTask.complexity,
-    JSON.stringify(normalizeStringArray(updatedTask.reminders)),
-    JSON.stringify(normalizeStringArray(updatedTask.blockedBy)),
+    JSON.stringify(normalizeStringArray(updatedTask.reminders,),),
+    JSON.stringify(normalizeStringArray(updatedTask.blockedBy,),),
     updatedTask.status,
     updatedTask.updatedAt,
-    id
+    id,
   );
 
-  return getTaskById(id);
+  return getTaskById(id,);
 }
 
 /**
@@ -111,7 +129,7 @@ export async function updateTask(id: string, input: TaskUpdateInput): Promise<Ta
  *
  * @returns `true` when the task existed and was deleted
  */
-export async function deleteTask(id: string): Promise<boolean> {
-  const result = await db.prepare(SQL_DELETE_TASK).run(id);
+export async function deleteTask(id: string,): Promise<boolean> {
+  const result = await db.prepare(SQL_DELETE_TASK,).run(id,);
   return result.changes > 0;
 }

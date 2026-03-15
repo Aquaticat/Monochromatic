@@ -5,10 +5,17 @@
  * create, update, delete, and timer operations. Re-exports all
  * query functions so existing consumers can import from one place.
  */
-import type { Task, TaskCreateInput, TaskUpdateInput } from "../types.ts";
-import db from "../db.ts";
-import { normalizeStringArray, nowIso } from "./task-mapping.ts";
-import { getTaskById } from "./task-queries.ts";
+import db from '../db.ts';
+import type {
+  Task,
+  TaskCreateInput,
+  TaskUpdateInput,
+} from '../types.ts';
+import {
+  normalizeStringArray,
+  nowIso,
+} from './task-mapping.ts';
+import { getTaskById, } from './task-queries.ts';
 import {
   SQL_DELETE_TASK,
   SQL_INSERT_TASK,
@@ -16,18 +23,18 @@ import {
   SQL_START_TIMER,
   SQL_STOP_TIMER,
   SQL_UPDATE_TASK,
-} from "./task-sql.ts";
+} from './task-sql.ts';
 
 // Re-export all query functions for backward compatibility
 export {
   getTaskById,
   listAllTags,
   listBlockedInboxTasks,
-  listInProgressTasks,
   listInboxUnblockedTasks,
+  listInProgressTasks,
   listTasksForBlockerPicker,
   searchTasks,
-} from "./task-queries.ts";
+} from './task-queries.ts';
 
 /** Milliseconds per second, used for timer elapsed-time calculations. */
 const MS_PER_SECOND = 1_000;
@@ -59,20 +66,34 @@ export type CompleteTaskResult = {
  *
  * @throws When the read-back fails
  */
-export async function createTask(input: TaskCreateInput): Promise<Task> {
+export async function createTask(input: TaskCreateInput,): Promise<Task> {
   const id = crypto.randomUUID();
   const timestamp = nowIso();
 
-  await db.prepare(SQL_INSERT_TASK).run(
-    id, input.title.trim(), input.description ?? null,
-    JSON.stringify(normalizeStringArray(input.tags)), JSON.stringify(normalizeStringArray(input.locations)),
-    input.priority ?? null, input.dueDate ?? null, input.complexity ?? null,
-    JSON.stringify(normalizeStringArray(input.reminders)), JSON.stringify(normalizeStringArray(input.blockedBy)),
-    0, null, "inbox", "local", null, null, timestamp, timestamp
+  await db.prepare(SQL_INSERT_TASK,).run(
+    id,
+    input.title.trim(),
+    input.description ?? null,
+    JSON.stringify(normalizeStringArray(input.tags,),),
+    JSON.stringify(normalizeStringArray(input.locations,),),
+    input.priority ?? null,
+    input.dueDate ?? null,
+    input.complexity ?? null,
+    JSON.stringify(normalizeStringArray(input.reminders,),),
+    JSON.stringify(normalizeStringArray(input.blockedBy,),),
+    0,
+    null,
+    'inbox',
+    'local',
+    null,
+    null,
+    timestamp,
+    timestamp,
   );
 
-  const createdTask = await getTaskById(id);
-  if (createdTask === null) throw new Error("Failed to read created task");
+  const createdTask = await getTaskById(id,);
+  if (createdTask === null)
+    throw new Error('Failed to read created task',);
   return createdTask;
 }
 
@@ -85,9 +106,12 @@ export async function createTask(input: TaskCreateInput): Promise<Task> {
  *
  * @returns Updated task, or `null` when not found
  */
-export async function updateTask(id: string, input: TaskUpdateInput): Promise<Task | null> {
-  const currentTask = await getTaskById(id);
-  if (currentTask === null) return null;
+export async function updateTask(id: string,
+  input: TaskUpdateInput,): Promise<Task | null>
+{
+  const currentTask = await getTaskById(id,);
+  if (currentTask === null)
+    return null;
 
   const updated: Task = {
     ...currentTask,
@@ -104,15 +128,22 @@ export async function updateTask(id: string, input: TaskUpdateInput): Promise<Ta
     updatedAt: nowIso(),
   };
 
-  await db.prepare(SQL_UPDATE_TASK).run(
-    updated.title, updated.description,
-    JSON.stringify(normalizeStringArray(updated.tags)), JSON.stringify(normalizeStringArray(updated.locations)),
-    updated.priority, updated.dueDate, updated.complexity,
-    JSON.stringify(normalizeStringArray(updated.reminders)), JSON.stringify(normalizeStringArray(updated.blockedBy)),
-    updated.status, updated.updatedAt, id
+  await db.prepare(SQL_UPDATE_TASK,).run(
+    updated.title,
+    updated.description,
+    JSON.stringify(normalizeStringArray(updated.tags,),),
+    JSON.stringify(normalizeStringArray(updated.locations,),),
+    updated.priority,
+    updated.dueDate,
+    updated.complexity,
+    JSON.stringify(normalizeStringArray(updated.reminders,),),
+    JSON.stringify(normalizeStringArray(updated.blockedBy,),),
+    updated.status,
+    updated.updatedAt,
+    id,
   );
 
-  return getTaskById(id);
+  return getTaskById(id,);
 }
 
 /**
@@ -122,8 +153,8 @@ export async function updateTask(id: string, input: TaskUpdateInput): Promise<Ta
  *
  * @returns `true` when the task existed and was deleted
  */
-export async function deleteTask(id: string): Promise<boolean> {
-  const result = await db.prepare(SQL_DELETE_TASK).run(id);
+export async function deleteTask(id: string,): Promise<boolean> {
+  const result = await db.prepare(SQL_DELETE_TASK,).run(id,);
   return result.changes > 0;
 }
 
@@ -134,10 +165,10 @@ export async function deleteTask(id: string): Promise<boolean> {
  *
  * @returns Updated task, or `null` when not found
  */
-export async function startTaskTimer(id: string): Promise<Task | null> {
+export async function startTaskTimer(id: string,): Promise<Task | null> {
   const timestamp = nowIso();
-  await db.prepare(SQL_START_TIMER).run(timestamp, timestamp, id);
-  return getTaskById(id);
+  await db.prepare(SQL_START_TIMER,).run(timestamp, timestamp, id,);
+  return getTaskById(id,);
 }
 
 /**
@@ -147,16 +178,20 @@ export async function startTaskTimer(id: string): Promise<Task | null> {
  *
  * @returns Updated task, or `null` when not found
  */
-export async function stopTaskTimer(id: string): Promise<Task | null> {
-  const currentTask = await getTaskById(id);
-  if (currentTask === null) return null;
+export async function stopTaskTimer(id: string,): Promise<Task | null> {
+  const currentTask = await getTaskById(id,);
+  if (currentTask === null)
+    return null;
 
   const elapsedSeconds = currentTask.timerStartedAt === null
     ? 0
-    : Math.max(0, Math.floor((Date.now() - Date.parse(currentTask.timerStartedAt)) / MS_PER_SECOND));
+    : Math.max(0, Math.floor(
+      (Date.now() - Date.parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
+    ),);
   const timestamp = nowIso();
-  await db.prepare(SQL_STOP_TIMER).run(currentTask.trackedTime + elapsedSeconds, timestamp, id);
-  return getTaskById(id);
+  await db.prepare(SQL_STOP_TIMER,).run(currentTask.trackedTime + elapsedSeconds,
+    timestamp, id,);
+  return getTaskById(id,);
 }
 
 /**
@@ -166,16 +201,24 @@ export async function stopTaskTimer(id: string): Promise<Task | null> {
  *
  * @returns Completion result with blocker information
  */
-export async function completeTask(id: string): Promise<CompleteTaskResult> {
-  const currentTask = await getTaskById(id);
-  if (currentTask === null) return { completed: false, notFound: true, blockedBy: [] };
+export async function completeTask(id: string,): Promise<CompleteTaskResult> {
+  const currentTask = await getTaskById(id,);
+  if (currentTask === null)
+    return { completed: false, notFound: true, blockedBy: [], };
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns blocker join columns
-  const blockingRows = await db.prepare(SQL_SELECT_BLOCKERS).all(id) as { blocker_id: string; blocker_title: string }[];
-  const blockedBy = blockingRows.map(function toSummary(row) { return { blockerId: row.blocker_id, blockerTitle: row.blocker_title }; });
-  if (blockedBy.length > 0) return { completed: false, notFound: false, blockedBy };
+  const blockingRows = await db.prepare(SQL_SELECT_BLOCKERS,).all(id,) as {
+    blocker_id: string;
+    blocker_title: string;
+  }[];
+  const blockedBy = blockingRows.map(function toSummary(row,) {
+    return { blockerId: row.blocker_id, blockerTitle: row.blocker_title, };
+  },);
+  if (blockedBy.length > 0)
+    return { completed: false, notFound: false, blockedBy, };
 
-  if (currentTask.timerStartedAt !== null) await stopTaskTimer(id);
-  await db.prepare(SQL_DELETE_TASK).run(id);
-  return { completed: true, notFound: false, blockedBy: [] };
+  if (currentTask.timerStartedAt !== null)
+    await stopTaskTimer(id,);
+  await db.prepare(SQL_DELETE_TASK,).run(id,);
+  return { completed: true, notFound: false, blockedBy: [], };
 }

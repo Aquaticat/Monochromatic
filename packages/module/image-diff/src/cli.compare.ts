@@ -1,8 +1,14 @@
 // oxlint-disable prefer-destructuring -- CLI handler with array access patterns
-import { compare } from './client.ts';
-import { compareAll } from './client.multi.ts';
-import { parseFlags, parseImageArg } from './cli.parse.ts';
-import { l, tagged } from './log.ts';
+import {
+  parseFlags,
+  parseImageArg,
+} from './cli.parse.ts';
+import { compareAll, } from './client.multi.ts';
+import { compare, } from './client.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
 
 /**
  * Handle the `compare` subcommand.
@@ -11,31 +17,33 @@ import { l, tagged } from './log.ts';
  *
  * @param printUsageAndExit - callback to print usage and exit on errors
  */
-export async function handleCompare(args: string[], printUsageAndExit: () => never): Promise<void> {
-  const rl = tagged({ tag: handleCompare.name, l });
-  const { provider, model, remaining } = parseFlags(args, printUsageAndExit);
+export async function handleCompare(args: string[],
+  printUsageAndExit: () => never,): Promise<void>
+{
+  const rl = tagged({ tag: handleCompare.name, l, },);
+  const { provider, model, remaining, } = parseFlags(args, printUsageAndExit,);
 
   if (remaining.length !== 2) {
-    console.error('Error: compare requires exactly 2 image arguments');
+    console.error('Error: compare requires exactly 2 image arguments',);
     printUsageAndExit();
   }
 
   const argA = remaining[0];
   const argB = remaining[1];
   if (argA === undefined || argB === undefined) {
-    console.error('Error: compare requires exactly 2 image arguments');
+    console.error('Error: compare requires exactly 2 image arguments',);
     printUsageAndExit();
   }
-  const imageA = parseImageArg(argA);
-  const imageB = parseImageArg(argB);
+  const imageA = parseImageArg(argA,);
+  const imageB = parseImageArg(argB,);
 
   if (provider !== undefined) {
-    rl.debug(`comparing via ${provider}`);
+    rl.debug(`comparing via ${provider}`,);
     const config = {
       provider,
-      ...(model !== undefined ? { model } : {}),
+      ...(model !== undefined ? { model, } : {}),
     };
-    const result = await compare(imageA, imageB, config);
+    const result = await compare(imageA, imageB, config,);
 
     console.log(JSON.stringify({
       provider,
@@ -43,13 +51,14 @@ export async function handleCompare(args: string[], printUsageAndExit: () => nev
       distance: result.distance,
       embeddingDimensions: result.embeddingA.length,
       description: result.description,
-    }, null, 2));
-  } else {
-    rl.debug('comparing via all providers');
-    const results = await compareAll(imageA, imageB);
+    }, null, 2,),);
+  }
+  else {
+    rl.debug('comparing via all providers',);
+    const results = await compareAll(imageA, imageB,);
 
     console.log(JSON.stringify(
-      results.map(function formatEntry(entry) {
+      results.map(function formatEntry(entry,) {
         return {
           provider: entry.provider,
           similarity: entry.result.similarity,
@@ -57,9 +66,9 @@ export async function handleCompare(args: string[], printUsageAndExit: () => nev
           embeddingDimensions: entry.result.embeddingA.length,
           description: entry.result.description,
         };
-      }),
+      },),
       null,
       2,
-    ));
+    ),);
   }
 }

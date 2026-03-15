@@ -1,6 +1,4 @@
-import {
-  $ as positional,
-} from '../p p/index.ts';
+import { $ as positional, } from '../p p/index.ts';
 
 /**
  * Generates cryptographically secure random UUIDs using the Web Crypto API.
@@ -26,6 +24,6 @@ import {
  * console.log(uuid); // 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
  * ```
  */
-export function $(_options?: Record<string, never>): string {
+export function $(_options?: Record<string, never>,): string {
   return positional();
 }

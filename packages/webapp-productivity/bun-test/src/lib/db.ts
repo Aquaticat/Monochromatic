@@ -1,9 +1,9 @@
-import { connect } from "@tursodatabase/database";
+import { connect, } from '@tursodatabase/database';
 
 /** In-memory SQLite connection -- no persistence needed for this test app. */
-const db = await connect(":memory:");
-await db.exec("PRAGMA journal_mode = WAL");
-await db.exec("PRAGMA foreign_keys = ON");
+const db = await connect(':memory:',);
+await db.exec('PRAGMA journal_mode = WAL',);
+await db.exec('PRAGMA foreign_keys = ON',);
 
 await db.exec(`
   CREATE TABLE decks (
@@ -20,6 +20,6 @@ await db.exec(`
     correct_count INTEGER NOT NULL DEFAULT 0,
     wrong_count INTEGER NOT NULL DEFAULT 0
   );
-`);
+`,);
 
 export default db;

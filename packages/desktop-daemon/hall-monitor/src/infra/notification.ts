@@ -1,6 +1,6 @@
-import spawn from "nano-spawn";
+import spawn from 'nano-spawn';
 
-import { log } from "../log.ts";
+import { log, } from '../log.ts';
 
 /**
  * Sends a critical desktop notification via `notify-send` to alert the user
@@ -13,18 +13,19 @@ import { log } from "../log.ts";
  * await sendNotification("User has been browsing Reddit for 25 minutes.");
  * ```
  */
-export async function sendNotification(summary: string): Promise<void> {
+export async function sendNotification(summary: string,): Promise<void> {
   try {
-    await spawn("notify-send", [
-      "--urgency=critical",
-      "--app-name=Hall Monitor",
+    await spawn('notify-send', [
+      '--urgency=critical',
+      '--app-name=Hall Monitor',
       "Hall Monitor: You've been unproductive!",
       summary,
-    ]);
-    log.info("[notify] Desktop notification sent.");
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error(`[notify] Failed to send notification: ${message}`);
-    log.error(`[notify] Failed to send notification: ${message}`);
+    ],);
+    log.info('[notify] Desktop notification sent.',);
+  }
+  catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err,);
+    console.error(`[notify] Failed to send notification: ${message}`,);
+    log.error(`[notify] Failed to send notification: ${message}`,);
   }
 }

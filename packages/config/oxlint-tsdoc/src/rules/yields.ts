@@ -25,28 +25,26 @@ import {
  */
 function createFunctionTsdocVisitor(
   context: Context,
-  handler: (node: Span & Record<string, unknown>, result: TsdocParseResult) => void,
+  handler: (node: Span & Record<string, unknown>, result: TsdocParseResult,) => void,
 ): VisitorWithHooks {
   /**
    * Checks a function-like node for TSDoc and invokes handler.
    *
    * @param node - AST node to check
    */
-  function check(node: Span): void {
-    const result = parseTsdocForNode(node, context);
-    if (result === undefined) {
+  function check(node: Span,): void {
+    const result = parseTsdocForNode(node, context,);
+    if (result === undefined)
       return;
-    }
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-    handler(node as Span & Record<string, unknown>, result);
+    handler(node as Span & Record<string, unknown>, result,);
   }
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
   return {
     before() {
-      if (shouldIgnoreFile(context.filename)) {
+      if (shouldIgnoreFile(context.filename,))
         return false;
-      }
       return undefined;
     },
     FunctionDeclaration: check,
@@ -67,8 +65,8 @@ function createFunctionTsdocVisitor(
  *
  * @returns true when yielded values are documented
  */
-function hasYieldsTag(result: TsdocParseResult): boolean {
-  return result.comment.value.includes('@yields');
+function hasYieldsTag(result: TsdocParseResult,): boolean {
+  return result.comment.value.includes('@yields',);
 }
 
 /**
@@ -99,18 +97,18 @@ export const requireYields: CreateOnceRule = {
       missing: 'Missing @yields tag for generator function.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireYieldsHandler(node, result): void {
-      if (!isGeneratorFunction(node)) {
-        return;
-      }
-      if (!hasYieldsTag(result)) {
-        context.report({
-          node: result.comment,
-          messageId: 'missing',
-        });
-      }
-    });
+  createOnce(context: Context,): VisitorWithHooks {
+    return createFunctionTsdocVisitor(context,
+      function requireYieldsHandler(node, result,): void {
+        if (!isGeneratorFunction(node,))
+          return;
+        if (!hasYieldsTag(result,)) {
+          context.report({
+            node: result.comment,
+            messageId: 'missing',
+          },);
+        }
+      },);
   },
 };
 
@@ -130,14 +128,15 @@ export const requireYieldsCheck: CreateOnceRule = {
       notGenerator: 'Function is not a generator but has @yields tag.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
-    return createFunctionTsdocVisitor(context, function requireYieldsCheckHandler(node, result): void {
-      if (!isGeneratorFunction(node) && hasYieldsTag(result)) {
-        context.report({
-          node: result.comment,
-          messageId: 'notGenerator',
-        });
-      }
-    });
+  createOnce(context: Context,): VisitorWithHooks {
+    return createFunctionTsdocVisitor(context,
+      function requireYieldsCheckHandler(node, result,): void {
+        if (!isGeneratorFunction(node,) && hasYieldsTag(result,)) {
+          context.report({
+            node: result.comment,
+            messageId: 'notGenerator',
+          },);
+        }
+      },);
   },
 };

@@ -5,8 +5,14 @@ import {
 import { invalidatePaths, } from '../io/cache.ts';
 import { reset, } from '../tracker.ts';
 import { notifyWriteProtection, } from './notify.ts';
-import { DEBOUNCE_MS, watchDirectory, } from './watch-dir.ts';
-import { watchDirs, type EventKind, } from './watch-filter.ts';
+import {
+  DEBOUNCE_MS,
+  watchDirectory,
+} from './watch-dir.ts';
+import {
+  type EventKind,
+  watchDirs,
+} from './watch-filter.ts';
 
 /**
  * Watches source files and managed destinations, re-executing the config
@@ -16,17 +22,19 @@ import { watchDirs, type EventKind, } from './watch-filter.ts';
  *
  * @param configPath - Path to the file-enforcer config file
  */
-export function startWatching(configPath: string): Promise<never> {
+export function startWatching(configPath: string,): Promise<never> {
   /** Absolute config path for reliable comparisons */
-  const absoluteConfig = resolve(configPath);
-  console.log('[file-enforcer] watch mode started');
+  const absoluteConfig = resolve(configPath,);
+  console.log('[file-enforcer] watch mode started',);
 
   /** Active AbortControllers for each watched directory, keyed by dir path */
   const controllers = new Map<string, AbortController>();
 
   /** Tears down all active watchers for re-creation after a re-run. */
   function closeAllWatchers(): void {
-    controllers.forEach(function abortController(controller): void { controller.abort(); });
+    controllers.forEach(function abortController(controller,): void {
+      controller.abort();
+    },);
     controllers.clear();
   }
 
@@ -40,17 +48,18 @@ export function startWatching(configPath: string): Promise<never> {
    * @param changedPath - Absolute path of the file that triggered the re-run,
    *   invalidated from the read cache so only that file is re-read from disk
    */
-  async function rerun(changedPath: string): Promise<void> {
-    console.log('[file-enforcer] re-running config...');
-    invalidatePaths([changedPath]);
+  async function rerun(changedPath: string,): Promise<void> {
+    console.log('[file-enforcer] re-running config...',);
+    invalidatePaths([changedPath,],);
     reset();
     try {
-      await import(`${absoluteConfig}?v=${String(Date.now())}`);
-    } catch (importError: unknown) {
-      console.error('[file-enforcer] config execution failed:', importError);
+      await import(`${absoluteConfig}?v=${String(Date.now(),)}`);
+    }
+    catch (importError: unknown) {
+      console.error('[file-enforcer] config execution failed:', importError,);
       return;
     }
-    console.log('[file-enforcer] re-run complete');
+    console.log('[file-enforcer] re-run complete',);
     closeAllWatchers();
     setupWatchers();
   }
@@ -65,42 +74,43 @@ export function startWatching(configPath: string): Promise<never> {
    *
    * @param dir - directory the event occurred in
    */
-  function handleEvent(kind: EventKind, filename: string, dir: string): void {
+  function handleEvent(kind: EventKind, filename: string, dir: string,): void {
     /** Absolute path of the file that triggered this event */
-    const changedPath = resolve(join(dir, filename));
-    clearTimeout(debounceTimer);
+    const changedPath = resolve(join(dir, filename,),);
+    clearTimeout(debounceTimer,);
     if (kind === 'protected') {
       debounceTimer = setTimeout(function protectedRerun(): void {
         // oxlint-disable-next-line typescript/no-floating-promises -- debounced async protection
         (async function notifyAndRerun(): Promise<void> {
-          await notifyWriteProtection(changedPath);
-          await rerun(changedPath);
+          await notifyWriteProtection(changedPath,);
+          await rerun(changedPath,);
         })();
-      }, DEBOUNCE_MS);
+      }, DEBOUNCE_MS,);
       return;
     }
     debounceTimer = setTimeout(function sourceRerun(): void {
       // oxlint-disable-next-line typescript/no-floating-promises -- debounced async re-run
-      rerun(changedPath);
-    }, DEBOUNCE_MS);
+      rerun(changedPath,);
+    }, DEBOUNCE_MS,);
   }
 
   /** Creates watchers for every directory derived from tracked reads and writes. */
   function setupWatchers(): void {
     /** Directories to watch, derived from current tracked reads + writes */
-    const dirs = watchDirs(absoluteConfig);
-    console.log(`[file-enforcer] watching ${String(dirs.size)} directories`);
+    const dirs = watchDirs(absoluteConfig,);
+    console.log(`[file-enforcer] watching ${String(dirs.size,)} directories`,);
 
-    dirs.forEach(function setupDir(dir): void {
+    dirs.forEach(function setupDir(dir,): void {
       /** Per-directory abort controller for teardown */
       const controller = new AbortController();
-      controllers.set(dir, controller);
+      controllers.set(dir, controller,);
 
       // oxlint-disable-next-line typescript/no-floating-promises -- intentional fire-and-forget watcher loop
-      watchDirectory(dir, controller.signal, absoluteConfig, function onWatchEvent(kind, filename): void {
-        handleEvent(kind, filename, dir);
-      });
-    });
+      watchDirectory(dir, controller.signal, absoluteConfig,
+        function onWatchEvent(kind, filename,): void {
+          handleEvent(kind, filename, dir,);
+        },);
+    },);
   }
 
   setupWatchers();
@@ -108,5 +118,5 @@ export function startWatching(configPath: string): Promise<never> {
   // Block forever -- watch mode runs until the process is killed.
   // oxlint-disable-next-line typescript/no-empty-function -- intentional infinite block
   // oxlint-disable-next-line promise/avoid-new -- intentional infinite block requires explicit Promise
-  return new Promise<never>(function neverResolve(): void { /* intentionally empty */ });
+  return new Promise<never>(function neverResolve(): void {/* intentionally empty */},);
 }

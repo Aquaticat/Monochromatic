@@ -41,12 +41,12 @@ export type AdditionalRun = {
    * transformSource: (source) => `process.argv.push("--all");\n${source}`
    * ```
    */
-  readonly transformSource?: (source: string) => string;
+  readonly transformSource?: (source: string,) => string;
   /**
    * Verifies container output and returns a correctness fraction.
    * Called only when the container exits successfully (exit 0, no timeout).
    * @param result - container execution result with stdout/stderr
    * @returns correctness score between 0 and 1
    */
-  readonly verify: (result: ContainerResult) => VerifyResult;
+  readonly verify: (result: ContainerResult,) => VerifyResult;
 };

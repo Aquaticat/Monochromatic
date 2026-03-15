@@ -19,7 +19,7 @@ let available = true;
  * SILENT_LEVELS.has('info');  // false
  * ```
  */
-const SILENT_LEVELS: ReadonlySet<string> = new Set(['debug', 'trace']);
+const SILENT_LEVELS: ReadonlySet<string> = new Set(['debug', 'trace',],);
 
 /**
  * Detects verbose mode from environment variables and process arguments.
@@ -37,27 +37,31 @@ const SILENT_LEVELS: ReadonlySet<string> = new Set(['debug', 'trace']);
  */
 function detectVerbose(): boolean {
   try {
-    if (typeof process !== 'undefined' && process.env['DEBUG'] === 'true') {
+    if (typeof process !== 'undefined' && process.env['DEBUG'] === 'true')
       return true;
-    }
-  } catch {
+  }
+  catch {
     // process may be restricted or unavailable - intentionally didn't log to reduce noise.
   }
 
   try {
-    if (typeof process !== 'undefined' && Array.isArray(process.argv) && process.argv.includes('--verbose')) {
+    if (typeof process !== 'undefined'
+      && Array.isArray(process.argv,)
+      && process.argv.includes('--verbose',))
+    {
       return true;
     }
-  } catch {
+  }
+  catch {
     // process.argv may be restricted or unavailable - intentionally didn't log to reduce noise.
   }
 
   try {
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- import.meta.env may not exist in all runtimes
-    if (import.meta?.env?.['DEBUG'] === 'true') {
+    if (import.meta?.env?.['DEBUG'] === 'true')
       return true;
-    }
-  } catch {
+  }
+  catch {
     // import.meta.env may be unavailable - intentionally didn't log to reduce noise.
   }
 
@@ -70,20 +74,22 @@ const verbose: boolean = detectVerbose();
 /**
  * Maps log levels to their corresponding console methods.
  */
-const LEVEL_TO_CONSOLE: Record<string, ((...args: readonly unknown[]) => void) | undefined> = {
-  debug: console.debug,
-  error: console.error,
-  fatal: console.error,
-  info: console.info,
-  trace: console.trace,
-  warn: console.warn,
-};
+const LEVEL_TO_CONSOLE: Record<string,
+  ((...args: readonly unknown[]) => void) | undefined> = {
+    debug: console.debug,
+    error: console.error,
+    fatal: console.error,
+    info: console.info,
+    trace: console.trace,
+    warn: console.warn,
+  };
 
 /**
  * Verifies console is available and methods don't throw.
  */
 export function verify(): boolean {
-  if (verified) return available;
+  if (verified)
+    return available;
   verified = true;
 
   try {
@@ -103,7 +109,8 @@ export function verify(): boolean {
     // Edit: This still produces one blank line on the invocation of any program, which is kinda ugly. And in practice this never fails, disabled for now. If some runtime start failing console logs we'll re-enable.
     // testFn('');
     available = true;
-  } catch {
+  }
+  catch {
     available = false;
   }
 
@@ -116,18 +123,26 @@ export function verify(): boolean {
  * is active (via `DEBUG=true` env var, `--verbose` argv, or
  * `import.meta.env.DEBUG === 'true'`).
  */
-export function $(record: LogRecord): void {
-  if (!available) return;
+export function $(record: LogRecord,): void {
+  if (!available)
+    return;
 
   // Silently discard debug/trace unless verbose mode is active
-  if (!verbose && SILENT_LEVELS.has(record.level)) return;
+  if (!verbose && SILENT_LEVELS.has(record.level,))
+    return;
 
   try {
     const consoleFn = LEVEL_TO_CONSOLE[record.level];
     if (typeof consoleFn === 'function') {
-      consoleFn(`[${record.level}] [${new Date(record.timestamp).toISOString()}] ${record.message}`);
+      consoleFn(
+        `[${record.level}] [${
+          new Date(record.timestamp,)
+            .toISOString()
+        }] ${record.message}`,
+      );
     }
-  } catch {
+  }
+  catch {
     // Silently fail if console throws
   }
 }

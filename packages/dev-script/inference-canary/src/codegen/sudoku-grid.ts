@@ -15,16 +15,22 @@ const GRID_SIZE = 9;
 const BOX_SIZE = 3;
 
 /** Column indices [0..8] for functional iteration over grid columns */
-const COLUMN_INDICES = Array.from({ length: GRID_SIZE, }, function indexFromOffset(_, idx): number { return idx; });
+const COLUMN_INDICES = Array.from({ length: GRID_SIZE, },
+  function indexFromOffset(_, idx,): number {
+    return idx;
+  },);
 
 /**
  * Box origin coordinates for all 9 boxes.
  * Each entry is [topRow, leftCol] for one 3x3 box, enabling functional
  * iteration without classic for loops.
  */
-const BOX_ORIGINS: readonly (readonly [number, number])[] = Array.from(
+const BOX_ORIGINS: readonly (readonly [number, number,])[] = Array.from(
   { length: GRID_SIZE, },
-  function boxOrigin(_, idx): readonly [number, number] { return [Math.floor(idx / BOX_SIZE) * BOX_SIZE, (idx % BOX_SIZE) * BOX_SIZE] as const; },
+  function boxOrigin(_, idx,): readonly [number, number,] {
+    return [Math.floor(idx / BOX_SIZE,) * BOX_SIZE,
+      (idx % BOX_SIZE) * BOX_SIZE,] as const;
+  },
 );
 
 /**
@@ -40,20 +46,34 @@ const BOX_ORIGINS: readonly (readonly [number, number])[] = Array.from(
  * parseGrid('534678912\n672195348\n...');
  * ```
  */
-export function parseGrid(text: string): number[][] | undefined {
+export function parseGrid(text: string,): number[][] | undefined {
   /** Non-empty trimmed lines from the text block */
-  const lines = text.trim().split('\n').map(function trimLine(line): string { return line.trim(); }).filter(function nonEmpty(line): boolean { return line.length > 0; });
-  if (lines.length !== GRID_SIZE) return undefined;
+  const lines = text
+    .trim()
+    .split('\n',)
+    .map(function trimLine(line,): string {
+      return line.trim();
+    },)
+    .filter(function nonEmpty(line,): boolean {
+      return line.length > 0;
+    },);
+  if (lines.length !== GRID_SIZE)
+    return undefined;
   /** Parsed digit rows, undefined entries indicate parse failure */
-  const grid = lines.map(function parseLine(line): number[] | undefined {
+  const grid = lines.map(function parseLine(line,): number[] | undefined {
     /** Digits extracted by stripping whitespace and converting each character */
-    const digits = Array.from(line.replaceAll(/\s/g, '')).map(Number);
-    return digits.length === GRID_SIZE && digits.every(function validDigit(digit): boolean { return digit >= 1 && digit <= GRID_SIZE; })
+    const digits = Array.from(line.replaceAll(/\s/g, '',),).map(Number,);
+    return digits.length === GRID_SIZE
+        && digits.every(function validDigit(digit,): boolean {
+          return digit >= 1 && digit <= GRID_SIZE;
+        },)
       ? digits
       : undefined;
-  });
-  return grid.every(function isRow(row): row is number[] { return row !== undefined; })
-    ? (grid)
+  },);
+  return grid.every(function isRow(row,): row is number[] {
+      return row !== undefined;
+    },)
+    ? grid
     : undefined;
 }
 
@@ -71,8 +91,10 @@ export function parseGrid(text: string): number[][] | undefined {
  * extractColumn(grid, 0); // [5, 6, 1, 8, 4, 7, 9, 2, 3]
  * ```
  */
-function extractColumn(grid: number[][], col: number): number[] {
-  return grid.map(function getCol(row): number { return row[col] ?? 0; });
+function extractColumn(grid: number[][], col: number,): number[] {
+  return grid.map(function getCol(row,): number {
+    return row[col] ?? 0;
+  },);
 }
 
 /**
@@ -92,10 +114,13 @@ function extractColumn(grid: number[][], col: number): number[] {
  * extractBox(grid, 0, 0); // top-left box values
  * ```
  */
-function extractBox(grid: number[][], originRow: number, originCol: number): number[] {
+function extractBox(grid: number[][], originRow: number, originCol: number,): number[] {
   return Array.from(
     { length: GRID_SIZE, },
-    function cellValue(_, idx): number { return grid[originRow + Math.floor(idx / BOX_SIZE)]?.[originCol + (idx % BOX_SIZE)] ?? 0; },
+    function cellValue(_, idx,): number {
+      return grid[originRow + Math.floor(idx / BOX_SIZE,)]?.[originCol + (idx % BOX_SIZE)]
+        ?? 0;
+    },
   );
 }
 
@@ -112,18 +137,27 @@ function extractBox(grid: number[][], originRow: number, originCol: number): num
  * isValidSolution(solvedGrid); // true
  * ```
  */
-export function isValidSolution(grid: number[][]): boolean {
+export function isValidSolution(grid: number[][],): boolean {
   /** Checks whether nums contains exactly GRID_SIZE distinct values (1-9) */
-  function hasAllDigits(nums: number[]): boolean { return new Set(nums).size === GRID_SIZE }
+  function hasAllDigits(nums: number[],): boolean {
+    return new Set(nums,).size === GRID_SIZE;
+  }
 
   // Rows
-  if (!grid.every(hasAllDigits)) return false;
+  if (!grid.every(hasAllDigits,))
+    return false;
 
   // Columns
-  if (!COLUMN_INDICES.every(function checkCol(col): boolean { return hasAllDigits(extractColumn(grid, col)); })) return false;
+  if (!COLUMN_INDICES.every(function checkCol(col,): boolean {
+    return hasAllDigits(extractColumn(grid, col,),);
+  },)) {
+    return false;
+  }
 
   // 3x3 boxes
-  return BOX_ORIGINS.every(function checkBox([originRow, originCol]): boolean { return hasAllDigits(extractBox(grid, originRow, originCol)); });
+  return BOX_ORIGINS.every(function checkBox([originRow, originCol,],): boolean {
+    return hasAllDigits(extractBox(grid, originRow, originCol,),);
+  },);
 }
 
 /**
@@ -140,10 +174,14 @@ export function isValidSolution(grid: number[][]): boolean {
  * matchesClues(solvedGrid, SOLVABLE_CLUES); // true
  * ```
  */
-export function matchesClues(grid: number[][], clues: readonly (readonly number[])[]): boolean {
-  return clues.every(function checkRow(row, rowIndex): boolean {
-    return row.every(function checkClue(clue, colIndex): boolean { return clue === 0 || clue === (grid[rowIndex]?.[colIndex] ?? -1); });
-  });
+export function matchesClues(grid: number[][],
+  clues: readonly (readonly number[])[],): boolean
+{
+  return clues.every(function checkRow(row, rowIndex,): boolean {
+    return row.every(function checkClue(clue, colIndex,): boolean {
+      return clue === 0 || clue === (grid[rowIndex]?.[colIndex] ?? -1);
+    },);
+  },);
 }
 
 /**
@@ -159,8 +197,12 @@ export function matchesClues(grid: number[][], clues: readonly (readonly number[
  * gridToString([[5,3,4,...], ...]); // '534...\n672...\n...'
  * ```
  */
-export function gridToString(grid: number[][]): string {
-  return grid.map(function joinRow(row): string { return row.join(''); }).join('\n');
+export function gridToString(grid: number[][],): string {
+  return grid
+    .map(function joinRow(row,): string {
+      return row.join('',);
+    },)
+    .join('\n',);
 }
 
 /**
@@ -176,6 +218,13 @@ export function gridToString(grid: number[][]): string {
  * splitSolutions('534678912\n...\n\n534768912\n...'); // ['534678912\n...', '534768912\n...']
  * ```
  */
-export function splitSolutions(section: string): string[] {
-  return section.split(/\n\s*\n/).map(function trimBlock(block): string { return block.trim(); }).filter(function nonEmpty(block): boolean { return block.length > 0; });
+export function splitSolutions(section: string,): string[] {
+  return section
+    .split(/\n\s*\n/,)
+    .map(function trimBlock(block,): string {
+      return block.trim();
+    },)
+    .filter(function nonEmpty(block,): boolean {
+      return block.length > 0;
+    },);
 }

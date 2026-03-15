@@ -18,5 +18,5 @@ catch (error) {
   throw new Error(outdent`
     ❌ Dependencies check failed
     Run: pnpm install
-  `, { cause: error },);
+  `, { cause: error, },);
 }

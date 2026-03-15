@@ -2,6 +2,6 @@
   "extends": "@monochromatic-dev/config-typescript/dom",
   "compilerOptions": {
     "erasableSyntaxOnly": false,
-    "noUnusedParameters": false
-  }
+    "noUnusedParameters": false,
+  },
 }

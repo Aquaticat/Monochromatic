@@ -1,5 +1,9 @@
 // oxlint-disable typescript/no-unsafe-type-assertion, init-declarations -- CLI script with argument parsing
-import type { EmbeddingModel, ImageInput, Provider } from './types.ts';
+import type {
+  EmbeddingModel,
+  ImageInput,
+  Provider,
+} from './types.ts';
 
 /**
  * All recognized model names across providers.
@@ -13,7 +17,7 @@ const VALID_MODELS: readonly string[] = [
 /**
  * All recognized provider names.
  */
-const VALID_PROVIDERS: readonly string[] = ['voyage', 'gemini'];
+const VALID_PROVIDERS: readonly string[] = ['voyage', 'gemini',];
 
 /**
  * Parse a positional image argument into an {@link ImageInput}.
@@ -30,11 +34,10 @@ const VALID_PROVIDERS: readonly string[] = ['voyage', 'gemini'];
  * parseImageArg('https://example.com/a.jpg') // { url: 'https://...' }
  * ```
  */
-export function parseImageArg(arg: string): ImageInput {
-  if (arg.startsWith('http://') || arg.startsWith('https://')) {
-    return { url: arg };
-  }
-  return { path: arg };
+export function parseImageArg(arg: string,): ImageInput {
+  if (arg.startsWith('http://',) || arg.startsWith('https://',))
+    return { url: arg, };
+  return { path: arg, };
 }
 
 /**
@@ -58,7 +61,7 @@ export type ParsedFlags = {
  *
  * @returns parsed flags and remaining positional args
  */
-export function parseFlags(args: string[], printUsageAndExit: () => never): ParsedFlags {
+export function parseFlags(args: string[], printUsageAndExit: () => never,): ParsedFlags {
   let provider: Provider | undefined;
   let model: EmbeddingModel | undefined;
   const remaining: string[] = [];
@@ -66,37 +69,44 @@ export function parseFlags(args: string[], printUsageAndExit: () => never): Pars
   let i = 0;
   while (i < args.length) {
     const arg = args[i];
-    if (arg === undefined) break;
+    if (arg === undefined)
+      break;
 
     if (arg === '--provider') {
       const value = args[i + 1];
       if (value === undefined) {
-        console.error('Error: --provider requires a value');
+        console.error('Error: --provider requires a value',);
         printUsageAndExit();
       }
-      if (!VALID_PROVIDERS.includes(value)) {
-        console.error(`Error: invalid provider "${value}". Use: ${VALID_PROVIDERS.join(', ')}`);
+      if (!VALID_PROVIDERS.includes(value,)) {
+        console.error(
+          `Error: invalid provider "${value}". Use: ${VALID_PROVIDERS.join(', ',)}`,
+        );
         printUsageAndExit();
       }
       provider = value as Provider;
       i += 2;
-    } else if (arg === '--model') {
+    }
+    else if (arg === '--model') {
       const value = args[i + 1];
       if (value === undefined) {
-        console.error('Error: --model requires a value');
+        console.error('Error: --model requires a value',);
         printUsageAndExit();
       }
-      if (!VALID_MODELS.includes(value)) {
-        console.error(`Error: invalid model "${value}". Use: ${VALID_MODELS.join(', ')}`);
+      if (!VALID_MODELS.includes(value,)) {
+        console.error(
+          `Error: invalid model "${value}". Use: ${VALID_MODELS.join(', ',)}`,
+        );
         printUsageAndExit();
       }
       model = value as EmbeddingModel;
       i += 2;
-    } else {
-      remaining.push(arg);
+    }
+    else {
+      remaining.push(arg,);
       i += 1;
     }
   }
 
-  return { provider, model, remaining };
+  return { provider, model, remaining, };
 }

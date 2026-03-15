@@ -4,7 +4,7 @@
  * Executed once at startup by `db.ts` to create tables, indexes,
  * FTS virtual table, triggers, and backfill the FTS index.
  */
-import type { Database } from "@tursodatabase/database";
+import type { Database, } from '@tursodatabase/database';
 
 /** Core tables, indexes, and CHECK constraints. */
 const MIGRATION_TABLES_AND_INDEXES = `
@@ -91,8 +91,8 @@ const MIGRATION_FTS_BACKFILL = `
  *
  * @param database - Connected Turso database instance
  */
-export async function runMigrations(database: Database): Promise<void> {
-  await database.exec(MIGRATION_TABLES_AND_INDEXES);
-  await database.exec(MIGRATION_FTS_AND_TRIGGERS);
-  await database.exec(MIGRATION_FTS_BACKFILL);
+export async function runMigrations(database: Database,): Promise<void> {
+  await database.exec(MIGRATION_TABLES_AND_INDEXES,);
+  await database.exec(MIGRATION_FTS_AND_TRIGGERS,);
+  await database.exec(MIGRATION_FTS_BACKFILL,);
 }

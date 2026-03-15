@@ -10,7 +10,7 @@
  *
  * @returns sum of a and b
  */
-function add(a: number, b: number): number {
+function add(a: number, b: number,): number {
   return a + b;
 }
 
@@ -24,7 +24,7 @@ type Direction = 'up' | 'down' | 'left' | 'right';
 type Config = {
   /** Enables verbose logging. */
   debug: boolean;
-}
+};
 
 /** Status codes. */
 enum Status {
@@ -39,9 +39,9 @@ const MAX_RETRIES = 3;
 
 export {
   add,
-  log,
-  type Direction,
   type Config,
-  Status,
+  type Direction,
+  log,
   MAX_RETRIES,
+  Status,
 };

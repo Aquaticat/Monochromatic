@@ -7,11 +7,11 @@ const undocumentedArrow = (): void => {};
 
 class UndocumentedClass {}
 
-type UndocumentedType = { value: string };
+type UndocumentedType = { value: string; };
 
 type UndocumentedInterface = {
   name: string;
-}
+};
 
 enum UndocumentedEnum {
   A,

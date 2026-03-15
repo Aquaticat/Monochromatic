@@ -1,37 +1,45 @@
-import { eslintCompatPlugin } from '@oxlint/plugins';
+import { eslintCompatPlugin, } from '@oxlint/plugins';
 
-import { noArrowFunction } from './rules/no-arrow-function.ts';
-import { noDisableNoArrowFunction } from './rules/no-disable-no-arrow-function.ts';
-import { noDisableMaxLines } from './rules/no-disable-max-lines.ts';
-import { noDisableNoEnum } from './rules/no-disable-no-enum.ts';
-import { noDisableNoNonNullAssertion } from './rules/no-disable-no-non-null-assertion.ts';
-import { noDisableNoForIn } from './rules/no-disable-no-for-in.ts';
-import { noDisableNoHasownproperty } from './rules/no-disable-no-hasownproperty.ts';
-import { noDisableNoPromiseCatch } from './rules/no-disable-no-promise-catch.ts';
-import { noDisableNoPromiseFinally } from './rules/no-disable-no-promise-finally.ts';
-import { noDisableNoRegexpExec } from './rules/no-disable-no-regexp-exec.ts';
-import { noDisableNoRestParams } from './rules/no-disable-no-rest-params.ts';
-import { noDisableNoSwitch } from './rules/no-disable-no-switch.ts';
-import { noDisableNoTrimLeftRight } from './rules/no-disable-no-trim-left-right.ts';
-import { noDisableNoTryFinally } from './rules/no-disable-no-try-finally.ts';
-import { noDisableNoUselessReturn } from './rules/no-disable-no-useless-return.ts';
-import { noDisableNoVariableFunctionExpression } from './rules/no-disable-no-variable-function-expression.ts';
-import { noDisableRequireDestructuredParams } from './rules/no-disable-require-destructured-params.ts';
-import { noDisableRequireReturns } from './rules/no-disable-require-returns.ts';
-import { noDisableRequireTsdoc } from './rules/no-disable-require-tsdoc.ts';
-import { noEnum } from './rules/no-enum.ts';
-import { noForIn } from './rules/no-for-in.ts';
-import { noHasownproperty } from './rules/no-hasownproperty.ts';
-import { noPromiseCatch } from './rules/no-promise-catch.ts';
-import { noPromiseFinally } from './rules/no-promise-finally.ts';
-import { noRegexpExec } from './rules/no-regexp-exec.ts';
-import { noRestParams } from './rules/no-rest-params.ts';
-import { noSwitch } from './rules/no-switch.ts';
-import { noVariableFunctionExpression } from './rules/no-variable-function-expression.ts';
-import { requireDestructuredParams } from './rules/require-destructured-params.ts';
-import { noTrimLeftRight } from './rules/no-trim-left-right.ts';
-import { noTryFinally } from './rules/no-try-finally.ts';
-import { requireQueryselectorGeneric } from './rules/require-queryselector-generic.ts';
+import { noArrowFunction, } from './rules/no-arrow-function.ts';
+import { noDisableMaxLines, } from './rules/no-disable-max-lines.ts';
+import { noDisableNoArrowFunction, } from './rules/no-disable-no-arrow-function.ts';
+import { noDisableNoEnum, } from './rules/no-disable-no-enum.ts';
+import { noDisableNoForIn, } from './rules/no-disable-no-for-in.ts';
+import { noDisableNoHasownproperty, } from './rules/no-disable-no-hasownproperty.ts';
+import {
+  noDisableNoNonNullAssertion,
+} from './rules/no-disable-no-non-null-assertion.ts';
+import { noDisableNoPromiseCatch, } from './rules/no-disable-no-promise-catch.ts';
+import { noDisableNoPromiseFinally, } from './rules/no-disable-no-promise-finally.ts';
+import { noDisableNoRegexpExec, } from './rules/no-disable-no-regexp-exec.ts';
+import { noDisableNoRestParams, } from './rules/no-disable-no-rest-params.ts';
+import { noDisableNoSwitch, } from './rules/no-disable-no-switch.ts';
+import { noDisableNoTrimLeftRight, } from './rules/no-disable-no-trim-left-right.ts';
+import { noDisableNoTryFinally, } from './rules/no-disable-no-try-finally.ts';
+import { noDisableNoUselessReturn, } from './rules/no-disable-no-useless-return.ts';
+import {
+  noDisableNoVariableFunctionExpression,
+} from './rules/no-disable-no-variable-function-expression.ts';
+import {
+  noDisableRequireDestructuredParams,
+} from './rules/no-disable-require-destructured-params.ts';
+import { noDisableRequireReturns, } from './rules/no-disable-require-returns.ts';
+import { noDisableRequireTsdoc, } from './rules/no-disable-require-tsdoc.ts';
+import { noEnum, } from './rules/no-enum.ts';
+import { noForIn, } from './rules/no-for-in.ts';
+import { noHasownproperty, } from './rules/no-hasownproperty.ts';
+import { noPromiseCatch, } from './rules/no-promise-catch.ts';
+import { noPromiseFinally, } from './rules/no-promise-finally.ts';
+import { noRegexpExec, } from './rules/no-regexp-exec.ts';
+import { noRestParams, } from './rules/no-rest-params.ts';
+import { noSwitch, } from './rules/no-switch.ts';
+import { noTrimLeftRight, } from './rules/no-trim-left-right.ts';
+import { noTryFinally, } from './rules/no-try-finally.ts';
+import {
+  noVariableFunctionExpression,
+} from './rules/no-variable-function-expression.ts';
+import { requireDestructuredParams, } from './rules/require-destructured-params.ts';
+import { requireQueryselectorGeneric, } from './rules/require-queryselector-generic.ts';
 
 /**
  * Oxlint JS plugin implementing `no-restricted-syntax` rules
@@ -96,6 +104,6 @@ const plugin = eslintCompatPlugin({
     'no-disable-require-tsdoc': noDisableRequireTsdoc,
     //endregion Ban-disable rules
   },
-});
+},);
 
 export default plugin;

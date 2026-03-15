@@ -3,5 +3,5 @@
   // Only covers generated model outputs for the canary type-check pass.
   // Separate from the main tsconfig so the package's own lint:types task
   // is not polluted by intentionally-broken generated code.
-  "include": ["src/canary-lint/**/*.ts"],
+  "include": ["src/canary-lint/**/*.ts"]
 }

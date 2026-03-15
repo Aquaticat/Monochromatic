@@ -1,8 +1,13 @@
 import { $ as mapIterableAsync, } from '@monochromatic-dev/module-es/map-iterable-async';
-import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
+import {
+  $ as notNullishOrThrow,
+} from '@monochromatic-dev/module-es/not-nullish-or-throw';
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import { readFile, } from 'node:fs/promises';
-import { dirname, resolve, } from 'node:path';
+import {
+  dirname,
+  resolve,
+} from 'node:path';
 import { fileURLToPath, } from 'node:url';
 import type { z, } from 'zod/v4-mini';
 import { l as parentLogger, } from './log.ts';
@@ -41,14 +46,16 @@ export async function getOPMLTexts(
       if (opmlLink.startsWith('http',)) {
         const response = await fetch(opmlLink,);
         if (!response.ok) {
-          innerL.warn(`${opmlLink} responded ${String(response.status)}`);
+          innerL.warn(`${opmlLink} responded ${String(response.status,)}`,);
           return DISCARD;
         }
         try {
           return await response.text();
         }
         catch (error) {
-          innerL.warn(`text conversion failed for ${opmlLink}: ${JSON.stringify(error,)}`);
+          innerL.warn(
+            `text conversion failed for ${opmlLink}: ${JSON.stringify(error,)}`,
+          );
           return DISCARD;
         }
       }
@@ -58,7 +65,7 @@ export async function getOPMLTexts(
             return await readFile(fileURLToPath(opmlLink,), 'utf8',);
           }
           catch (error) {
-            innerL.warn(`failed reading ${opmlLink}: ${JSON.stringify(error,)}`);
+            innerL.warn(`failed reading ${opmlLink}: ${JSON.stringify(error,)}`,);
             return DISCARD;
           }
         }
@@ -68,11 +75,13 @@ export async function getOPMLTexts(
           return await readFile(absPath, 'utf8',);
         }
         catch (error) {
-          innerL.warn(`failed reading ${opmlLink} at ${absPath}: ${JSON.stringify(error,)}`);
+          innerL.warn(
+            `failed reading ${opmlLink} at ${absPath}: ${JSON.stringify(error,)}`,
+          );
           return DISCARD;
         }
       }
-      innerL.warn(`${opmlLink} uses unsupported protocol`);
+      innerL.warn(`${opmlLink} uses unsupported protocol`,);
       return DISCARD;
     },
     opmls,
@@ -80,7 +89,7 @@ export async function getOPMLTexts(
     .filter(function notDiscard(text,): text is string {
       return text !== DISCARD;
     },);
-  innerL.debug(`fetched ${String(result.length)} OPML texts`);
+  innerL.debug(`fetched ${String(result.length,)} OPML texts`,);
   return result;
 }
 

@@ -1,17 +1,27 @@
-import { exists, mkdir, writeFile, } from 'node:fs/promises';
+import {
+  exists,
+  mkdir,
+  writeFile,
+} from 'node:fs/promises';
 import { dirname, } from 'node:path';
-import { readCached, updateCache, } from './cache.ts';
+import {
+  trackDest,
+  trackWriteTime,
+} from '../tracker.ts';
+import {
+  readCached,
+  updateCache,
+} from './cache.ts';
 import type { GlobResults, } from './cat.ts';
 import { mirrorGlobPath, } from './glob.ts';
-import { trackDest, trackWriteTime, } from '../tracker.ts';
 
 /**
  * Ensures the parent directory of a file path exists before writing.
  *
  * @param filePath - Path to the file about to be written
  */
-async function ensureDir(filePath: string): Promise<void> {
-  await mkdir(dirname(filePath), { recursive: true, });
+async function ensureDir(filePath: string,): Promise<void> {
+  await mkdir(dirname(filePath,), { recursive: true, },);
 }
 
 /**
@@ -22,10 +32,11 @@ async function ensureDir(filePath: string): Promise<void> {
  *
  * @returns File content as string, or undefined if missing
  */
-async function readExisting(filePath: string): Promise<string | undefined> {
+async function readExisting(filePath: string,): Promise<string | undefined> {
   try {
-    return await readCached(filePath);
-  } catch {
+    return await readCached(filePath,);
+  }
+  catch {
     return undefined;
   }
 }
@@ -38,19 +49,19 @@ async function readExisting(filePath: string): Promise<string | undefined> {
  *
  * @param content - Content string to write
  */
-export async function overwrite(dest: string, content: string): Promise<void> {
-  trackDest(dest);
+export async function overwrite(dest: string, content: string,): Promise<void> {
+  trackDest(dest,);
   /** Current file content, or undefined if file doesn't exist yet */
-  const existing = await readExisting(dest);
+  const existing = await readExisting(dest,);
   if (existing === content) {
-    console.log(`[file-enforcer] skip (unchanged): ${dest}`);
+    console.log(`[file-enforcer] skip (unchanged): ${dest}`,);
     return;
   }
-  await ensureDir(dest);
-  await writeFile(dest, content);
-  updateCache(dest, content);
-  trackWriteTime(dest);
-  console.log(`[file-enforcer] -> ${dest}`);
+  await ensureDir(dest,);
+  await writeFile(dest, content,);
+  updateCache(dest, content,);
+  trackWriteTime(dest,);
+  console.log(`[file-enforcer] -> ${dest}`,);
 }
 
 /**
@@ -60,13 +71,15 @@ export async function overwrite(dest: string, content: string): Promise<void> {
  *
  * @param content - Content string to write
  */
-export async function overwriteIfNotExists(dest: string, content: string): Promise<void> {
-  if (await exists(dest)) {
-    trackDest(dest);
-    console.log(`[file-enforcer] skip (exists): ${dest}`);
+export async function overwriteIfNotExists(dest: string,
+  content: string,): Promise<void>
+{
+  if (await exists(dest,)) {
+    trackDest(dest,);
+    console.log(`[file-enforcer] skip (exists): ${dest}`,);
     return;
   }
-  await overwrite(dest, content);
+  await overwrite(dest, content,);
 }
 
 /**
@@ -87,23 +100,23 @@ export async function overwriteEach(
   destGlob: string,
   files: GlobResults,
 ): Promise<void> {
-  console.log(`[file-enforcer] overwriteEach: ${String(files.length)} files`);
+  console.log(`[file-enforcer] overwriteEach: ${String(files.length,)} files`,);
   await Promise.all(
-    files.map(async function writeOneGlobMatch(file): Promise<void> {
+    files.map(async function writeOneGlobMatch(file,): Promise<void> {
       /** Concrete destination path from the mirror-glob mapping */
-      const dest = mirrorGlobPath(files.sourceGlob, destGlob, file.path);
-      trackDest(dest);
+      const dest = mirrorGlobPath(files.sourceGlob, destGlob, file.path,);
+      trackDest(dest,);
       /** Skip if content is already identical */
-      const existing = await readExisting(dest);
+      const existing = await readExisting(dest,);
       if (existing === file.content) {
-        console.log(`[file-enforcer] skip (unchanged): ${file.path} -> ${dest}`);
+        console.log(`[file-enforcer] skip (unchanged): ${file.path} -> ${dest}`,);
         return;
       }
-      await ensureDir(dest);
-      await writeFile(dest, file.content);
-      updateCache(dest, file.content);
-      trackWriteTime(dest);
-      console.log(`[file-enforcer] ${file.path} -> ${dest}`);
-    }),
+      await ensureDir(dest,);
+      await writeFile(dest, file.content,);
+      updateCache(dest, file.content,);
+      trackWriteTime(dest,);
+      console.log(`[file-enforcer] ${file.path} -> ${dest}`,);
+    },),
   );
 }

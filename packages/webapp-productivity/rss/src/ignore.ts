@@ -1,7 +1,10 @@
 import { $ as mapIterableAsync, } from '@monochromatic-dev/module-es/map-iterable-async';
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import type { Dirent, } from 'node:fs';
-import { readFile, readdir, } from 'node:fs/promises';
+import {
+  readdir,
+  readFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 import { l as parentLogger, } from './log.ts';
 import { IGNORE_PATH, } from './path.ts';
@@ -24,7 +27,7 @@ export async function getIgnoreContent(): Promise<string> {
     filesInDir = await readdir(IGNORE_PATH, { withFileTypes: true, },);
   }
   catch {
-    innerL.debug('ignore directory not found');
+    innerL.debug('ignore directory not found',);
     return '';
   }
   const contents = await mapIterableAsync(
@@ -46,7 +49,8 @@ export async function getIgnoreContent(): Promise<string> {
 export function parseIgnoredLinks(content: string,): Set<string> {
   const innerL = tagged({ tag: parseIgnoredLinks.name, l, },);
   const links = new Set<string>();
-  const lines = content.split('\n',)
+  const lines = content
+    .split('\n',)
     .map(function trimLine(line,) {
       return line.trim();
     },)
@@ -58,14 +62,15 @@ export function parseIgnoredLinks(content: string,): Set<string> {
       const parsed: unknown = JSON.parse(line,);
       if (parsed !== null && typeof parsed === 'object' && 'link' in parsed) {
         const { link, } = parsed;
-        if (typeof link === 'string' && link !== '') links.add(link,);
+        if (typeof link === 'string' && link !== '')
+          links.add(link,);
       }
     }
     catch (error) {
-      innerL.warn(`invalid JSON in ignore file: ${line} ${JSON.stringify(error,)}`);
+      innerL.warn(`invalid JSON in ignore file: ${line} ${JSON.stringify(error,)}`,);
     }
   }
-  innerL.debug(`${String(links.size)} ignored links`);
+  innerL.debug(`${String(links.size,)} ignored links`,);
   return links;
 }
 

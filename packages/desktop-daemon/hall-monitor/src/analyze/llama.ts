@@ -1,19 +1,22 @@
-import { spawn as cpSpawn, type ChildProcess } from "node:child_process";
-import { setTimeout } from "node:timers/promises";
+import {
+  type ChildProcess,
+  spawn as cpSpawn,
+} from 'node:child_process';
+import { setTimeout, } from 'node:timers/promises';
 
-import spawn from "nano-spawn";
+import spawn from 'nano-spawn';
 
-import { log } from "../log.ts";
+import { log, } from '../log.ts';
 
 // LFM2.5-VL-1.6B: smaller/faster than Qwen3-VL-2B while still vision-capable
 /** Path to the quantized LFM2.5-VL model weights. */
-const MODEL = "/var/home/user/models/lfm25-vl-1.6b/LFM2.5-VL-1.6B-Q4_0.gguf";
+const MODEL = '/var/home/user/models/lfm25-vl-1.6b/LFM2.5-VL-1.6B-Q4_0.gguf';
 
 /** Path to the multimodal projection weights for LFM2.5-VL. */
-const MMPROJ = "/var/home/user/models/lfm25-vl-1.6b/mmproj-LFM2.5-VL-1.6b-Q8_0.gguf";
+const MMPROJ = '/var/home/user/models/lfm25-vl-1.6b/mmproj-LFM2.5-VL-1.6b-Q8_0.gguf';
 
 /** Path to the llama-server binary inside the distrobox container. */
-const LLAMA_SERVER = "/var/home/user/llama-cpp-build/build/bin/llama-server";
+const LLAMA_SERVER = '/var/home/user/llama-cpp-build/build/bin/llama-server';
 
 /** Port for the local llama-server HTTP API. */
 const PORT = 8_787;
@@ -47,28 +50,39 @@ let server: ChildProcess | null = null;
  * ```
  */
 export async function start(): Promise<void> {
-  if (server) return;
+  if (server)
+    return;
 
-  log.debug("[llama] Starting llama-server via distrobox...");
+  log.debug('[llama] Starting llama-server via distrobox...',);
   server = cpSpawn(
-    "distrobox",
+    'distrobox',
     [
-      "enter", "llama-build", "--",
-      "env", "HSA_OVERRIDE_GFX_VERSION=11.0.2",
+      'enter',
+      'llama-build',
+      '--',
+      'env',
+      'HSA_OVERRIDE_GFX_VERSION=11.0.2',
       LLAMA_SERVER,
-      "-m", MODEL,
-      "--mmproj", MMPROJ,
-      "-ngl", "99",
-      "-c", "8192",
-      "-b", "4096",
-      "-ub", "4096",
-      "--port", String(PORT),
+      '-m',
+      MODEL,
+      '--mmproj',
+      MMPROJ,
+      '-ngl',
+      '99',
+      '-c',
+      '8192',
+      '-b',
+      '4096',
+      '-ub',
+      '4096',
+      '--port',
+      String(PORT,),
     ],
-    { stdio: ["ignore", "ignore", "ignore"] },
+    { stdio: ['ignore', 'ignore', 'ignore',], },
   );
 
   await waitForHealth();
-  log.debug("[llama] Server ready.");
+  log.debug('[llama] Server ready.',);
 }
 
 /**
@@ -82,13 +96,15 @@ export async function start(): Promise<void> {
  * ```
  */
 export async function stop(): Promise<void> {
-  if (!server) return;
-  log.debug("[llama] Stopping llama-server...");
+  if (!server)
+    return;
+  log.debug('[llama] Stopping llama-server...',);
 
   // Kill the actual llama-server process by name since distrobox wraps it
   try {
-    await spawn("pkill", ["-f", `llama-server.*--port ${PORT}`]);
-  } catch {
+    await spawn('pkill', ['-f', `llama-server.*--port ${PORT}`,],);
+  }
+  catch {
     // process may already be gone, or pkill exits non-zero if no match
   }
 
@@ -98,14 +114,14 @@ export async function stop(): Promise<void> {
   const currentServer = server;
   currentServer.kill();
   // oxlint-disable-next-line promise/avoid-new -- wrapping Node.js event-based ChildProcess API
-  await new Promise<void>(function awaitExit(resolve) {
-    currentServer.on("exit", resolve);
-  });
+  await new Promise<void>(function awaitExit(resolve,) {
+    currentServer.on('exit', resolve,);
+  },);
   server = null;
 
   // Wait briefly for port to free up
-  await setTimeout(PORT_FREE_DELAY_MS);
-  log.debug("[llama] Server stopped.");
+  await setTimeout(PORT_FREE_DELAY_MS,);
+  log.debug('[llama] Server stopped.',);
 }
 
 /**
@@ -119,15 +135,16 @@ export async function stop(): Promise<void> {
  */
 export async function forceCleanup(): Promise<void> {
   try {
-    await spawn("pkill", ["-9", "-f", `llama-server.*--port ${PORT}`]);
-  } catch {
+    await spawn('pkill', ['-9', '-f', `llama-server.*--port ${PORT}`,],);
+  }
+  catch {
     // process may already be gone, or pkill exits non-zero if no match
   }
   server = null;
 }
 
 /** Maximum number of health polls before giving up. */
-const MAX_HEALTH_POLLS = Math.ceil(HEALTH_TIMEOUT_MS / HEALTH_POLL_MS);
+const MAX_HEALTH_POLLS = Math.ceil(HEALTH_TIMEOUT_MS / HEALTH_POLL_MS,);
 
 /**
  * Polls the llama-server health endpoint until it reports ready.
@@ -138,17 +155,21 @@ async function waitForHealth(): Promise<void> {
   for (let attempt = 0; attempt < MAX_HEALTH_POLLS; attempt++) {
     try {
       // oxlint-disable-next-line no-await-in-loop -- sequential health polling by design
-      const res = await fetch(HEALTH_URL);
+      const res = await fetch(HEALTH_URL,);
       if (res.ok) {
         // oxlint-disable-next-line no-await-in-loop, typescript/no-unsafe-type-assertion -- sequential poll; JSON response shape is known
-        const body = (await res.json()) as { status: string };
-        if (body.status === "ok") return;
+        const body = (await res.json()) as { status: string; };
+        if (body.status === 'ok')
+          return;
       }
-    } catch {
+    }
+    catch {
       // server not up yet
     }
     // oxlint-disable-next-line no-await-in-loop -- sequential poll delay
-    await setTimeout(HEALTH_POLL_MS);
+    await setTimeout(HEALTH_POLL_MS,);
   }
-  throw new Error(`llama-server failed to become healthy within ${MAX_HEALTH_POLLS} polls`);
+  throw new Error(
+    `llama-server failed to become healthy within ${MAX_HEALTH_POLLS} polls`,
+  );
 }

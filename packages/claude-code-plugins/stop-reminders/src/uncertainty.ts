@@ -68,8 +68,8 @@ const UNCERTAINTY_PATTERNS: readonly RegExp[] = [
  * // => 'text  more text'
  * ```
  */
-function stripCodeBlocks(text: string): string {
-  return text.replaceAll(/```[\s\S]*?```/g, '');
+function stripCodeBlocks(text: string,): string {
+  return text.replaceAll(/```[\s\S]*?```/g, '',);
 }
 
 /**
@@ -85,8 +85,8 @@ function stripCodeBlocks(text: string): string {
  * // => 'use  function'
  * ```
  */
-function stripInlineCode(text: string): string {
-  return text.replaceAll(/`[^`]+`/g, '');
+function stripInlineCode(text: string,): string {
+  return text.replaceAll(/`[^`]+`/g, '',);
 }
 
 /**
@@ -103,8 +103,8 @@ function stripInlineCode(text: string): string {
  * // => 'normal line\nanother line'
  * ```
  */
-function stripBlockquotes(text: string): string {
-  return text.replaceAll(/^>.*$/gm, '');
+function stripBlockquotes(text: string,): string {
+  return text.replaceAll(/^>.*$/gm, '',);
 }
 
 /**
@@ -124,10 +124,10 @@ function stripBlockquotes(text: string): string {
  * // => 'the word  appears here'
  * ```
  */
-function stripQuotedStrings(text: string): string {
+function stripQuotedStrings(text: string,): string {
   return text
-    .replaceAll(/"[^"\n]+"/g, '')
-    .replaceAll(/'[^'\n]+'/g, '');
+    .replaceAll(/"[^"\n]+"/g, '',)
+    .replaceAll(/'[^'\n]+'/g, '',);
 }
 
 /**
@@ -147,8 +147,8 @@ function stripQuotedStrings(text: string): string {
  * const prose = stripNonProseRegions('Look at ```js\nmaybe()\n``` and "perhaps"')
  * ```
  */
-function stripNonProseRegions(text: string): string {
-  return stripQuotedStrings(stripBlockquotes(stripInlineCode(stripCodeBlocks(text))));
+function stripNonProseRegions(text: string,): string {
+  return stripQuotedStrings(stripBlockquotes(stripInlineCode(stripCodeBlocks(text,),),),);
 }
 
 //endregion
@@ -187,12 +187,11 @@ type QuestionMatch = {
  * // => { phrase: 'probably', pattern: /.../ }
  * ```
  */
-function findUncertainty(prose: string): UncertaintyMatch | undefined {
+function findUncertainty(prose: string,): UncertaintyMatch | undefined {
   for (const pattern of UNCERTAINTY_PATTERNS) {
-    const match = pattern.exec(prose);
-    if (match !== null) {
-      return { phrase: match[0], pattern };
-    }
+    const match = pattern.exec(prose,);
+    if (match !== null)
+      return { phrase: match[0], pattern, };
   }
   return undefined;
 }
@@ -217,9 +216,9 @@ const TRAILING_QUESTION_SCAN_LENGTH = 500;
  * // =\> \{ sentence: 'Want me to run the tests?' \}
  * ```
  */
-function findTrailingQuestion(prose: string): QuestionMatch | undefined {
+function findTrailingQuestion(prose: string,): QuestionMatch | undefined {
   /** Only scan the tail of the message where user-directed questions appear. */
-  const tail = prose.slice(-TRAILING_QUESTION_SCAN_LENGTH);
+  const tail = prose.slice(-TRAILING_QUESTION_SCAN_LENGTH,);
 
   /**
    * Match sentences ending with `?`.
@@ -227,11 +226,10 @@ function findTrailingQuestion(prose: string): QuestionMatch | undefined {
    * through to the `?`.
    */
   const questionPattern = /(?:^|[.!?]\s+)([A-Z][^.!?]*\?)\s*$/;
-  const match = questionPattern.exec(tail);
+  const match = questionPattern.exec(tail,);
 
-  if (match === null) {
+  if (match === null)
     return undefined;
-  }
 
   const sentence = match[1] ?? match[0];
 
@@ -247,12 +245,11 @@ function findTrailingQuestion(prose: string): QuestionMatch | undefined {
     /^have you ever\b/i,
   ];
   for (const prefix of rhetoricalPrefixes) {
-    if (prefix.test(sentence)) {
+    if (prefix.test(sentence,))
       return undefined;
-    }
   }
 
-  return { sentence };
+  return { sentence, };
 }
 
 //endregion

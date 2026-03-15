@@ -1,5 +1,8 @@
-import { z } from "zod/mini";
-import { createDeck, deleteDeck } from "../../lib/db/decks.ts";
+import { z, } from 'zod/mini';
+import {
+  createDeck,
+  deleteDeck,
+} from '../../lib/db/decks.ts';
 
 /** HTTP status code for resource creation. */
 const HTTP_CREATED = 201;
@@ -15,8 +18,8 @@ const HTTP_INTERNAL_ERROR = 500;
 
 /** Zod schema for validating deck creation payloads. */
 const CreateDeckSchema = z.object({
-  name: z.string().check(z.minLength(1)),
-});
+  name: z.string().check(z.minLength(1,),),
+},);
 
 /**
  * POST /api/decks -- creates a new deck.
@@ -25,17 +28,20 @@ const CreateDeckSchema = z.object({
  *
  * @returns JSON response with created deck or error
  */
-export async function handleCreateDeck(req: Request): Promise<Response> {
+export async function handleCreateDeck(req: Request,): Promise<Response> {
   try {
     const body = await req.json();
-    const parsed = CreateDeckSchema.safeParse(body);
+    const parsed = CreateDeckSchema.safeParse(body,);
     if (!parsed.success) {
-      return Response.json({ error: "Name is required" }, { status: HTTP_BAD_REQUEST });
+      return Response.json({ error: 'Name is required', }, {
+        status: HTTP_BAD_REQUEST,
+      },);
     }
-    const deck = await createDeck(parsed.data.name);
-    return Response.json(deck, { status: HTTP_CREATED });
-  } catch (e) {
-    return Response.json({ error: String(e) }, { status: HTTP_INTERNAL_ERROR });
+    const deck = await createDeck(parsed.data.name,);
+    return Response.json(deck, { status: HTTP_CREATED, },);
+  }
+  catch (e) {
+    return Response.json({ error: String(e,), }, { status: HTTP_INTERNAL_ERROR, },);
   }
 }
 
@@ -46,10 +52,9 @@ export async function handleCreateDeck(req: Request): Promise<Response> {
  *
  * @returns JSON response confirming deletion or error
  */
-export async function handleDeleteDeck(id: string): Promise<Response> {
-  const deleted = await deleteDeck(id);
-  if (!deleted) {
-    return Response.json({ error: "Deck not found" }, { status: HTTP_NOT_FOUND });
-  }
-  return Response.json({ ok: true });
+export async function handleDeleteDeck(id: string,): Promise<Response> {
+  const deleted = await deleteDeck(id,);
+  if (!deleted)
+    return Response.json({ error: 'Deck not found', }, { status: HTTP_NOT_FOUND, },);
+  return Response.json({ ok: true, },);
 }

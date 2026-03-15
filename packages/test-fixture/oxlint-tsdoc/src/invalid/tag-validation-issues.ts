@@ -12,7 +12,7 @@ const jsdocTypeTag = 'hello';
 /**
  * @typedef {object} Options
  */
-type JsdocTypedefTag = { debug: boolean };
+type JsdocTypedefTag = { debug: boolean; };
 
 /**
  * @return value
@@ -37,7 +37,7 @@ function conflictingAccess(): void {}
 /**
  * @param {string} name - with type
  */
-function jsdocTypeAnnotation(name: string): void {}
+function jsdocTypeAnnotation(name: string,): void {}
 
 /**
  * @returns {number} the result

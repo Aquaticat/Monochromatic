@@ -13,49 +13,44 @@
  *
  * @returns Normalized path
  */
-export function normalize(filePath: string): string {
-  if (filePath === '') {
+export function normalize(filePath: string,): string {
+  if (filePath === '')
     return '.';
-  }
 
   /** Whether the input is rooted */
-  const isRoot = filePath.codePointAt(0) === 47;
+  const isRoot = filePath.codePointAt(0,) === 47;
   /** Whether the input ends with a trailing slash */
-  const trailingSlash = filePath.codePointAt(filePath.length - 1) === 47;
+  const trailingSlash = filePath.codePointAt(filePath.length - 1,) === 47;
 
   /** Path segments split on `/` */
-  const parts = filePath.split('/');
+  const parts = filePath.split('/',);
   /** Stack of resolved segments built by walking the input */
   const resolved: string[] = [];
 
   for (const part of parts) {
-    if (part === '' || part === '.') {
+    if (part === '' || part === '.')
       continue;
-    }
     if (part === '..') {
       // Don't pop past root
-      if (resolved.length > 0 && resolved.at(-1) !== '..') {
+      if (resolved.length > 0 && resolved.at(-1,) !== '..')
         resolved.pop();
-      } else if (!isRoot) {
-        resolved.push('..');
-      }
-    } else {
-      resolved.push(part);
+      else if (!isRoot)
+        resolved.push('..',);
+    }
+    else {
+      resolved.push(part,);
     }
   }
 
   /** Joined result without root prefix */
-  let result = resolved.join('/');
+  let result = resolved.join('/',);
 
-  if (isRoot) {
+  if (isRoot)
     result = '/' + result;
-  }
-  if (result === '' || result === '/') {
+  if (result === '' || result === '/')
     return isRoot ? '/' : '.';
-  }
-  if (trailingSlash) {
+  if (trailingSlash)
     result += '/';
-  }
   return result;
 }
 
@@ -70,34 +65,30 @@ export function normalize(filePath: string): string {
  *
  * @returns Parent directory path
  */
-export function dirnameFallback(filePath: string): string {
-  if (filePath === '') {
+export function dirnameFallback(filePath: string,): string {
+  if (filePath === '')
     return '.';
-  }
 
   /** Whether the input path is rooted */
-  const isRoot = filePath.codePointAt(0) === 47;
+  const isRoot = filePath.codePointAt(0,) === 47;
   /** Index of the last slash, ignoring a trailing slash */
   let lastSlash = -1;
 
   // Walk backwards to find the last separator, skipping a trailing slash
   for (let charIndex = filePath.length - 1; charIndex >= 1; charIndex--) {
-    if (filePath.codePointAt(charIndex) === 47) {
-      if (charIndex === filePath.length - 1) {
+    if (filePath.codePointAt(charIndex,) === 47) {
+      if (charIndex === filePath.length - 1)
         continue;
-      }
       lastSlash = charIndex;
       break;
     }
   }
 
-  if (lastSlash === -1) {
+  if (lastSlash === -1)
     return isRoot ? '/' : '.';
-  }
-  if (isRoot && lastSlash === 0) {
+  if (isRoot && lastSlash === 0)
     return '/';
-  }
-  return filePath.slice(0, lastSlash);
+  return filePath.slice(0, lastSlash,);
 }
 
 //endregion dirnameFallback
@@ -112,15 +103,17 @@ export function dirnameFallback(filePath: string): string {
  * @returns Joined and normalized path
  */
 export function joinFallback(...segments: string[]): string {
-  if (segments.length === 0) {
+  if (segments.length === 0)
     return '.';
-  }
   /** Raw concatenation of all non-empty segments */
-  const joined = segments.filter(function isNonEmpty(segment) { return segment !== ''; }).join('/');
-  if (joined === '') {
+  const joined = segments
+    .filter(function isNonEmpty(segment,) {
+      return segment !== '';
+    },)
+    .join('/',);
+  if (joined === '')
     return '.';
-  }
-  return normalize(joined);
+  return normalize(joined,);
 }
 
 //endregion joinFallback
@@ -141,14 +134,15 @@ export function resolveFallback(...segments: string[]): string {
   let resolvedAbsolute = false;
 
   // Walk segments right-to-left; stop once we have an absolute path
-  for (let segmentIndex = segments.length - 1; segmentIndex >= 0 && !resolvedAbsolute; segmentIndex--) {
+  for (let segmentIndex = segments.length - 1; segmentIndex >= 0 && !resolvedAbsolute;
+    segmentIndex--)
+  {
     /** Current segment being processed */
     const segment = segments[segmentIndex];
-    if (segment === undefined || segment === '') {
+    if (segment === undefined || segment === '')
       continue;
-    }
     resolved = resolved === '' ? segment : segment + '/' + resolved;
-    resolvedAbsolute = segment.codePointAt(0) === 47;
+    resolvedAbsolute = segment.codePointAt(0,) === 47;
   }
 
   // If still not absolute, prepend cwd (unavailable in browser, default to '/')
@@ -161,11 +155,10 @@ export function resolveFallback(...segments: string[]): string {
   }
 
   /** Normalized absolute path */
-  const normalized = normalize(resolved);
+  const normalized = normalize(resolved,);
   // resolve() never returns trailing slashes except for root '/'
-  if (normalized.length > 1 && normalized.codePointAt(normalized.length - 1) === 47) {
-    return normalized.slice(0, -1);
-  }
+  if (normalized.length > 1 && normalized.codePointAt(normalized.length - 1,) === 47)
+    return normalized.slice(0, -1,);
   return normalized;
 }
 

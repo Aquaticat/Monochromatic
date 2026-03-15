@@ -45,40 +45,41 @@ import {
  *
  * @throws When the specifier cannot be resolved
  */
-function resolveSpecifier(specifier: string, fromFile: string): string {
+function resolveSpecifier(specifier: string, fromFile: string,): string {
   /** Directory containing the importing file */
-  const fromDir = dirname(fromFile);
+  const fromDir = dirname(fromFile,);
 
   // Absolute path (rare but possible)
-  if (isAbsolute(specifier)) {
-    if (existsSync(specifier)) {
+  if (isAbsolute(specifier,)) {
+    if (existsSync(specifier,))
       return specifier;
-    }
-    throw new Error(`CSS @import absolute path not found: '${specifier}'`);
+    throw new Error(`CSS @import absolute path not found: '${specifier}'`,);
   }
 
   // Explicit relative path
-  if (specifier.startsWith('.')) {
+  if (specifier.startsWith('.',)) {
     /** Resolved absolute path from relative specifier */
-    const resolved = resolve(fromDir, specifier);
-    if (existsSync(resolved)) {
+    const resolved = resolve(fromDir, specifier,);
+    if (existsSync(resolved,))
       return resolved;
-    }
-    throw new Error(`CSS @import relative path not found: '${specifier}' from '${fromFile}'`);
+    throw new Error(
+      `CSS @import relative path not found: '${specifier}' from '${fromFile}'`,
+    );
   }
 
   // Could be bare-local (CSS convention) or a package specifier.
   // Try relative first — CSS treats `@import 'foo.css'` as relative.
-  if (!isPackageSpecifier(specifier) || !specifier.includes('/') && !specifier.startsWith('@')) {
+  if (!isPackageSpecifier(specifier,)
+    || !specifier.includes('/',) && !specifier.startsWith('@',))
+  {
     /** Attempt to resolve as relative path */
-    const asRelative = resolve(fromDir, specifier);
-    if (existsSync(asRelative)) {
+    const asRelative = resolve(fromDir, specifier,);
+    if (existsSync(asRelative,))
       return asRelative;
-    }
   }
 
   // Package specifier
-  return resolvePackage(specifier, fromDir);
+  return resolvePackage(specifier, fromDir,);
 }
 
 //endregion Import Resolution
@@ -94,17 +95,16 @@ function resolveSpecifier(specifier: string, fromFile: string): string {
  */
 export const postcssInlineImport: Plugin = {
   postcssPlugin: 'postcss-inline-import',
-  Once(root: Root): void {
+  Once(root: Root,): void {
     /** Set of absolute paths already inlined to prevent circular/duplicate imports */
     const imported = new Set<string>();
 
     /** Source file path for the root stylesheet */
     const rootFrom = root.source?.input.file;
-    if (rootFrom !== undefined) {
-      imported.add(rootFrom);
-    }
+    if (rootFrom !== undefined)
+      imported.add(rootFrom,);
 
-    inlineImports(root, rootFrom ?? `${process.cwd()}${sep}input.css`, imported);
+    inlineImports(root, rootFrom ?? `${process.cwd()}${sep}input.css`, imported,);
   },
 };
 
@@ -117,44 +117,43 @@ export const postcssInlineImport: Plugin = {
  *
  * @param imported - Set of already-imported absolute paths (prevents cycles)
  */
-function inlineImports(root: Root, fromFile: string, imported: Set<string>): void {
+function inlineImports(root: Root, fromFile: string, imported: Set<string>,): void {
   // Collect @import nodes first to avoid mutating the tree while walking
   /**
    * All \@import at-rules in the current root.
    */
   const importNodes: AtRule[] = [];
-  root.walkAtRules('import', function collectImportNode(node: AtRule) {
-    importNodes.push(node);
-  });
+  root.walkAtRules('import', function collectImportNode(node: AtRule,) {
+    importNodes.push(node,);
+  },);
 
   for (const node of importNodes) {
     /** Bare specifier with quotes/url() stripped */
-    const specifier = stripImportSpecifier(node.params);
+    const specifier = stripImportSpecifier(node.params,);
 
     /** Absolute path to the imported file */
-    const resolvedPath = resolveSpecifier(specifier, fromFile);
+    const resolvedPath = resolveSpecifier(specifier, fromFile,);
 
     // Skip already-imported files (prevents circular imports and duplicates)
-    if (imported.has(resolvedPath)) {
+    if (imported.has(resolvedPath,)) {
       node.remove();
       continue;
     }
-    imported.add(resolvedPath);
+    imported.add(resolvedPath,);
 
     /** Raw CSS content of the imported file */
-    const content = readCssFileSync(resolvedPath);
+    const content = readCssFileSync(resolvedPath,);
     /** Parsed AST of the imported file */
-    const importedRoot = parse(content, { from: resolvedPath, });
+    const importedRoot = parse(content, { from: resolvedPath, },);
 
     // Recursively process nested @import rules
-    inlineImports(importedRoot, resolvedPath, imported);
+    inlineImports(importedRoot, resolvedPath, imported,);
 
     // Replace the @import node with the inlined content
-    if (importedRoot.nodes.length > 0) {
-      node.replaceWith(...importedRoot.nodes);
-    } else {
+    if (importedRoot.nodes.length > 0)
+      node.replaceWith(...importedRoot.nodes,);
+    else
       node.remove();
-    }
   }
 }
 

@@ -1,4 +1,4 @@
-import { banDisableRule } from './_ban-disable-factory.ts';
+import { banDisableRule, } from './_ban-disable-factory.ts';
 
 /**
  * Bans inline suppression of `no-restricted-syntax/no-try-finally`.
@@ -7,5 +7,6 @@ import { banDisableRule } from './_ban-disable-factory.ts';
 export const noDisableNoTryFinally = banDisableRule({
   ruleId: 'no-restricted-syntax/no-try-finally',
   description: 'Disallow disabling no-try-finally. Use using/await using instead.',
-  message: 'Disabling no-try-finally is not allowed. Use using/await using with Symbol.dispose instead.',
-});
+  message:
+    'Disabling no-try-finally is not allowed. Use using/await using with Symbol.dispose instead.',
+},);

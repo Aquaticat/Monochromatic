@@ -12,9 +12,7 @@ import type {
   DocParamBlock,
 } from '@microsoft/tsdoc';
 
-import type {
-  Span,
-} from '@oxlint/plugins';
+import type { Span, } from '@oxlint/plugins';
 
 /**
  * Unwraps a MethodDefinition or TSAbstractMethodDefinition to its inner
@@ -24,7 +22,9 @@ import type {
  *
  * @returns inner function node, or undefined when node has no `.value`
  */
-function unwrapMethodDefinition(node: Record<string, unknown>): Record<string, unknown> | undefined {
+function unwrapMethodDefinition(
+  node: Record<string, unknown>,
+): Record<string, unknown> | undefined {
   if (node.type === 'MethodDefinition' || node.type === 'TSAbstractMethodDefinition') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return node.value as Record<string, unknown> | undefined;
@@ -41,11 +41,12 @@ function unwrapMethodDefinition(node: Record<string, unknown>): Record<string, u
  *
  * @returns raw parameter AST nodes, or empty array when absent
  */
-function extractRawParams(node: Record<string, unknown>): readonly Record<string, unknown>[] {
-  const target = unwrapMethodDefinition(node);
-  if (target === undefined) {
+function extractRawParams(
+  node: Record<string, unknown>,
+): readonly Record<string, unknown>[] {
+  const target = unwrapMethodDefinition(node,);
+  if (target === undefined)
     return [];
-  }
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   return target.params as Record<string, unknown>[] | undefined ?? [];
 }
@@ -66,10 +67,12 @@ function extractRawParams(node: Record<string, unknown>): readonly Record<string
  * // ['first', 'second', 'options']
  * ```
  */
-export function extractParamNames(node: Span & Record<string, unknown>): readonly string[] {
-  return extractRawParams(node).flatMap(function extractName(param): readonly string[] {
-    return extractBindingName(param);
-  });
+export function extractParamNames(
+  node: Span & Record<string, unknown>,
+): readonly string[] {
+  return extractRawParams(node,).flatMap(function extractName(param,): readonly string[] {
+    return extractBindingName(param,);
+  },);
 }
 
 /**
@@ -79,24 +82,24 @@ export function extractParamNames(node: Span & Record<string, unknown>): readonl
  *
  * @returns array of extracted name strings
  */
-function extractBindingName(pattern: Record<string, unknown>): readonly string[] {
+function extractBindingName(pattern: Record<string, unknown>,): readonly string[] {
   if (pattern.type === 'Identifier') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const name = pattern.name as string;
     // Skip `this` parameter in TypeScript
-    return name === 'this' ? [] : [name];
+    return name === 'this' ? [] : [name,];
   }
   if (pattern.type === 'AssignmentPattern') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-    return extractBindingName(pattern.left as Record<string, unknown>);
+    return extractBindingName(pattern.left as Record<string, unknown>,);
   }
   if (pattern.type === 'RestElement') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-    return extractBindingName(pattern.argument as Record<string, unknown>);
+    return extractBindingName(pattern.argument as Record<string, unknown>,);
   }
   if (pattern.type === 'TSParameterProperty') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-    return extractBindingName(pattern.parameter as Record<string, unknown>);
+    return extractBindingName(pattern.parameter as Record<string, unknown>,);
   }
   // ObjectPattern, ArrayPattern, and other types don't map to individual @param names
   return [];
@@ -114,15 +117,15 @@ function extractBindingName(pattern: Record<string, unknown>): readonly string[]
  * const docParamNames = extractDocParamNames(result.docComment);
  * ```
  */
-export function extractDocParamNames(docComment: DocComment): readonly string[] {
-  return docComment.params.blocks.map(function getParamName(block: DocParamBlock): string {
-    return block.parameterName;
-  });
+export function extractDocParamNames(docComment: DocComment,): readonly string[] {
+  return docComment.params.blocks.map(
+    function getParamName(block: DocParamBlock,): string {
+      return block.parameterName;
+    },
+  );
 }
 
-export {
-  extractDestructuredParamNames,
-} from './tsdoc-destructured.ts';
+export { extractDestructuredParamNames, } from './tsdoc-destructured.ts';
 
 export {
   functionReturnsValue,

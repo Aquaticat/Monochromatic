@@ -32,19 +32,29 @@ export type ContainerResult = {
  *
  * @returns container execution result
  */
-export async function execContainer(containerArgs: readonly string[], signal?: AbortSignal): Promise<ContainerResult> {
+export async function execContainer(containerArgs: readonly string[],
+  signal?: AbortSignal,): Promise<ContainerResult>
+{
   /** Milliseconds per second for timeout computation */
   const MS_PER_SECOND = 1_000;
   /** Maximum stderr characters to include in error log */
   const STDERR_PREVIEW_LENGTH = 200;
   /** Total host-side timeout: container limit plus a buffer for startup/teardown */
-  const timeoutMs = (CONTAINER_TIMEOUT_SECONDS + HOST_TIMEOUT_BUFFER_SECONDS) * MS_PER_SECOND;
-  const result = await execBun(CONTAINER_RUNTIME, containerArgs, { timeout: timeoutMs, signal, });
+  const timeoutMs = (CONTAINER_TIMEOUT_SECONDS + HOST_TIMEOUT_BUFFER_SECONDS)
+    * MS_PER_SECOND;
+  const result = await execBun(CONTAINER_RUNTIME, containerArgs, { timeout: timeoutMs,
+    signal, },);
 
   if (result.exitCode !== 0 || result.killed) {
-    console.error(`    [container] exit=${String(result.exitCode)} timedOut=${String(result.killed)}`);
+    console.error(
+      `    [container] exit=${String(result.exitCode,)} timedOut=${
+        String(result.killed,)
+      }`,
+    );
     if (result.stderr.length > 0) {
-      console.error(`    [container] stderr: ${result.stderr.slice(0, STDERR_PREVIEW_LENGTH)}`);
+      console.error(
+        `    [container] stderr: ${result.stderr.slice(0, STDERR_PREVIEW_LENGTH,)}`,
+      );
     }
   }
 

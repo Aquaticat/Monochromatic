@@ -85,19 +85,20 @@ export function extractCommand(item: string,): string {
  * ```
  */
 export function parseTimestamp(value: string,): number | undefined {
-  if (value === '') return undefined;
-  if (value === 'Infinity') return Infinity;
-  if (value === '-Infinity') return -Infinity;
+  if (value === '')
+    return undefined;
+  if (value === 'Infinity')
+    return Infinity;
+  if (value === '-Infinity')
+    return -Infinity;
 
   const num = Number(value,);
-  if (!Number.isNaN(num,) && Number.isFinite(num,)) {
+  if (!Number.isNaN(num,) && Number.isFinite(num,))
     return num >= SECONDS_MS_BOUNDARY ? num : num * MS_PER_SECOND;
-  }
 
   const date = new Date(value,);
-  if (!Number.isNaN(date.getTime(),)) {
+  if (!Number.isNaN(date.getTime(),))
     return date.getTime();
-  }
 
   return undefined;
 }

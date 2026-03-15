@@ -3,8 +3,8 @@
  *
  * Shared by both query and mutation modules.
  */
-import type { Task } from "../types.ts";
-import type { TaskRow } from "./task-sql.ts";
+import type { Task, } from '../types.ts';
+import type { TaskRow, } from './task-sql.ts';
 
 /**
  * Returns the current timestamp in ISO 8601 format for database writes.
@@ -23,17 +23,17 @@ export function nowIso(): string {
  *
  * @returns Parsed string array, or empty array on failure
  */
-export function parseStringArray(value: string): string[] {
+export function parseStringArray(value: string,): string[] {
   try {
-    const parsed = JSON.parse(value) as unknown;
-    if (!Array.isArray(parsed)) {
+    const parsed = JSON.parse(value,) as unknown;
+    if (!Array.isArray(parsed,))
       return [];
-    }
 
-    return parsed.filter(function isString(entry): entry is string {
-      return typeof entry === "string";
-    });
-  } catch {
+    return parsed.filter(function isString(entry,): entry is string {
+      return typeof entry === 'string';
+    },);
+  }
+  catch {
     return [];
   }
 }
@@ -45,16 +45,17 @@ export function parseStringArray(value: string): string[] {
  *
  * @returns Normalized deduplicated array
  */
-export function normalizeStringArray(values: readonly string[] | undefined): string[] {
-  if (values === undefined) {
+export function normalizeStringArray(values: readonly string[] | undefined,): string[] {
+  if (values === undefined)
     return [];
-  }
 
-  return [...new Set(values.map(function trimValue(value) {
-    return value.trim();
-  }).filter(function isNonEmpty(value) {
-    return value.length > 0;
-  }))];
+  return [...new Set(values
+    .map(function trimValue(value,) {
+      return value.trim();
+    },)
+    .filter(function isNonEmpty(value,) {
+      return value.length > 0;
+    },),),];
 }
 
 /**
@@ -64,18 +65,18 @@ export function normalizeStringArray(values: readonly string[] | undefined): str
  *
  * @returns Mapped task object
  */
-export function mapTask(row: TaskRow): Task {
+export function mapTask(row: TaskRow,): Task {
   return {
     id: row.id,
     title: row.title,
     description: row.description,
-    tags: parseStringArray(row.tags),
-    locations: parseStringArray(row.locations),
+    tags: parseStringArray(row.tags,),
+    locations: parseStringArray(row.locations,),
     priority: row.priority,
     dueDate: row.due_date,
     complexity: row.complexity,
-    reminders: parseStringArray(row.reminders),
-    blockedBy: parseStringArray(row.blocked_by),
+    reminders: parseStringArray(row.reminders,),
+    blockedBy: parseStringArray(row.blocked_by,),
     trackedTime: row.tracked_time,
     timerStartedAt: row.timer_started_at,
     status: row.status,

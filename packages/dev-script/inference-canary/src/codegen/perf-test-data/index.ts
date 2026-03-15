@@ -18,15 +18,15 @@ import { readFile, } from 'node:fs/promises';
  * @param filename - file name relative to this directory
  * @returns file content as a string
  */
-async function readDataFile(filename: string): Promise<string> {
-  return readFile(new URL(`./${filename}`, import.meta.url), 'utf8');
+async function readDataFile(filename: string,): Promise<string> {
+  return readFile(new URL(`./${filename}`, import.meta.url,), 'utf8',);
 }
 
 /** Large CSV input: 2000 rows with quoted fields, embedded commas, escaped quotes, newlines */
-export const CSV_PERF_INPUT = await readDataFile('csv-perf-input.txt');
+export const CSV_PERF_INPUT = await readDataFile('csv-perf-input.txt',);
 
 /** 5000 arithmetic expressions covering all operator/precedence combinations */
-export const EXPR_PERF_INPUT = await readDataFile('expr-perf-input.txt');
+export const EXPR_PERF_INPUT = await readDataFile('expr-perf-input.txt',);
 
 /** Large CSS with 20 mixins and 500 rule blocks using @apply */
-export const CSS_MIXIN_PERF_INPUT = await readDataFile('css-mixin-perf-input.txt');
+export const CSS_MIXIN_PERF_INPUT = await readDataFile('css-mixin-perf-input.txt',);

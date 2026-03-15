@@ -18,7 +18,8 @@ import {
  * backup-path ./some/file-or-dir
  * ```
  */
-const path = runSync(argument(string(),), { programName: 'backup-path', help: 'option', },);
+const path = runSync(argument(string(),), { programName: 'backup-path',
+  help: 'option', },);
 
 console.log(`Backing up ${path}`,);
 /** Current ISO timestamp with colons removed, used as the backup subdirectory name */

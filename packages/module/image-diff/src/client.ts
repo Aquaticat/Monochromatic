@@ -1,4 +1,11 @@
 // oxlint-disable typescript/no-unsafe-type-assertion, require-await -- Promise.allSettled values require type assertions; async functions return provider promises directly
+import { describeImageDifference, } from './describe.ts';
+import { geminiProvider, } from './gemini.ts';
+import {
+  l,
+  tagged,
+} from './log.ts';
+import { dotProduct, } from './similarity.ts';
 import type {
   BatchEmbeddingResult,
   ComparisonResult,
@@ -8,11 +15,7 @@ import type {
   ImageInput,
   Provider,
 } from './types.ts';
-import { voyageProvider } from './voyage.ts';
-import { geminiProvider } from './gemini.ts';
-import { describeImageDifference } from './describe.ts';
-import { dotProduct } from './similarity.ts';
-import { l, tagged } from './log.ts';
+import { voyageProvider, } from './voyage.ts';
 
 /**
  * Registry mapping provider names to their implementations.
@@ -34,7 +37,7 @@ const PROVIDERS: Record<Provider, EmbeddingProvider> = {
  * const p = getProvider('voyage');
  * ```
  */
-function getProvider(provider: Provider): EmbeddingProvider {
+function getProvider(provider: Provider,): EmbeddingProvider {
   return PROVIDERS[provider];
 }
 
@@ -54,9 +57,11 @@ function getProvider(provider: Provider): EmbeddingProvider {
  * const geminiResult = await embed({ path: './photo.png' }, { provider: 'gemini' });
  * ```
  */
-export async function embed(input: ImageInput, config: ImageDiffConfig = {}): Promise<EmbeddingResult> {
+export async function embed(input: ImageInput,
+  config: ImageDiffConfig = {},): Promise<EmbeddingResult>
+{
   const provider = config.provider ?? 'voyage';
-  return getProvider(provider).embed(input, config);
+  return getProvider(provider,).embed(input, config,);
 }
 
 /**
@@ -82,7 +87,7 @@ export async function embedBatch(
   config: ImageDiffConfig = {},
 ): Promise<BatchEmbeddingResult> {
   const provider = config.provider ?? 'voyage';
-  return getProvider(provider).embedBatch(inputs, config);
+  return getProvider(provider,).embedBatch(inputs, config,);
 }
 
 /**
@@ -103,22 +108,26 @@ export async function compareEmbeddings(
   imageB: ImageInput,
   config: ImageDiffConfig = {},
 ): Promise<Omit<ComparisonResult, 'description'>> {
-  const rl = tagged({ tag: compareEmbeddings.name, l });
+  const rl = tagged({ tag: compareEmbeddings.name, l, },);
   const provider = config.provider ?? 'voyage';
-  rl.debug(`comparing embeddings via ${provider}`);
+  rl.debug(`comparing embeddings via ${provider}`,);
 
-  const { embeddings } = await getProvider(provider).embedBatch([imageA, imageB], config);
-  const [embeddingA, embeddingB] = embeddings;
-  if (embeddingA === undefined || embeddingB === undefined) {
-    throw new Error('Expected exactly 2 embeddings from batch call');
-  }
+  const { embeddings, } = await getProvider(provider,).embedBatch([imageA, imageB,],
+    config,);
+  const [embeddingA, embeddingB,] = embeddings;
+  if (embeddingA === undefined || embeddingB === undefined)
+    throw new Error('Expected exactly 2 embeddings from batch call',);
 
-  const similarity = dotProduct(embeddingA, embeddingB);
+  const similarity = dotProduct(embeddingA, embeddingB,);
   const distance = 1 - similarity;
 
-  rl.debug(`embedding comparison complete (${provider}): similarity=${String(similarity)}, distance=${String(distance)}`);
+  rl.debug(
+    `embedding comparison complete (${provider}): similarity=${
+      String(similarity,)
+    }, distance=${String(distance,)}`,
+  );
 
-  return { similarity, distance, embeddingA, embeddingB };
+  return { similarity, distance, embeddingA, embeddingB, };
 }
 
 /**
@@ -149,21 +158,21 @@ export async function compare(
   imageB: ImageInput,
   config: ImageDiffConfig = {},
 ): Promise<ComparisonResult> {
-  const rl = tagged({ tag: compare.name, l });
-  rl.debug('running embedding comparison and description concurrently');
+  const rl = tagged({ tag: compare.name, l, },);
+  rl.debug('running embedding comparison and description concurrently',);
 
   const results = await Promise.all([
-    compareEmbeddings(imageA, imageB, config),
-    describeImageDifference(imageA, imageB),
-  ]);
-  const [embeddingResult, description] = results;
+    compareEmbeddings(imageA, imageB, config,),
+    describeImageDifference(imageA, imageB,),
+  ],);
+  const [embeddingResult, description,] = results;
   if (description === undefined) {
     throw new Error(
       'OpenRouter API key is required for image comparison. Set IMAGE_DIFF_OPENROUTER_API_KEY (or OPENROUTER_API_KEY) environment variable.',
     );
   }
 
-  rl.debug('comparison with description complete');
+  rl.debug('comparison with description complete',);
 
-  return { ...embeddingResult, description };
+  return { ...embeddingResult, description, };
 }

@@ -3,7 +3,7 @@
  *
  * Executed once at startup to ensure the schema is up to date.
  */
-import type { Database } from "@tursodatabase/database";
+import type { Database, } from '@tursodatabase/database';
 
 //region Migration SQL -- separated for readability; executed once at startup
 
@@ -94,8 +94,8 @@ const MIGRATION_FTS_BACKFILL = `
  *
  * @param database - Connected Turso database instance
  */
-export async function runMigrations(database: Database): Promise<void> {
-  await database.exec(MIGRATION_TABLES_AND_INDEXES);
-  await database.exec(MIGRATION_FTS_AND_TRIGGERS);
-  await database.exec(MIGRATION_FTS_BACKFILL);
+export async function runMigrations(database: Database,): Promise<void> {
+  await database.exec(MIGRATION_TABLES_AND_INDEXES,);
+  await database.exec(MIGRATION_FTS_AND_TRIGGERS,);
+  await database.exec(MIGRATION_FTS_BACKFILL,);
 }

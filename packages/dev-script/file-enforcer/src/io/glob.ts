@@ -1,4 +1,8 @@
-import { join, relative, resolve, } from 'node:path';
+import {
+  join,
+  relative,
+  resolve,
+} from 'node:path';
 import readdirGlob from 'tiny-readdir-glob';
 
 /** Index of the first glob metacharacter in a pattern string */
@@ -23,30 +27,32 @@ const GLOB_META = /[*?{[]/;
  * // ['/abs/path/src/a', '**​/*.md', './src/a']
  * ```
  */
-function splitGlob(pattern: string): readonly [cwd: string, relativeGlob: string, originalPrefix: string] {
+function splitGlob(
+  pattern: string,
+): readonly [cwd: string, relativeGlob: string, originalPrefix: string,] {
   /** Position of the first metacharacter */
-  const metaIndex = pattern.search(GLOB_META);
+  const metaIndex = pattern.search(GLOB_META,);
 
   if (metaIndex === -1) {
     // No wildcards -- treat entire pattern as a literal path
-    return [resolve(pattern), '', pattern];
+    return [resolve(pattern,), '', pattern,];
   }
 
   /** Static prefix up to the last `/` before the first metacharacter */
-  const staticPrefix = pattern.slice(0, metaIndex);
+  const staticPrefix = pattern.slice(0, metaIndex,);
   /** Index of the last separator in the static prefix */
-  const lastSep = staticPrefix.lastIndexOf('/');
+  const lastSep = staticPrefix.lastIndexOf('/',);
 
   if (lastSep === -1) {
     // Metacharacter appears in the first segment; cwd is the current directory
-    return [resolve('.'), pattern, '.'];
+    return [resolve('.',), pattern, '.',];
   }
 
   /** Original prefix as written in the pattern (preserves `./` or absolute form) */
-  const originalPrefix = staticPrefix.slice(0, lastSep);
+  const originalPrefix = staticPrefix.slice(0, lastSep,);
   return [
-    resolve(originalPrefix),
-    pattern.slice(lastSep + 1),
+    resolve(originalPrefix,),
+    pattern.slice(lastSep + 1,),
     originalPrefix,
   ];
 }
@@ -68,25 +74,24 @@ function splitGlob(pattern: string): readonly [cwd: string, relativeGlob: string
  * // ['./src/index.ts', './src/lib/utils.ts']
  * ```
  */
-export async function expandGlob(pattern: string): Promise<readonly string[]> {
-  const [cwd, relativeGlob, originalPrefix] = splitGlob(pattern);
+export async function expandGlob(pattern: string,): Promise<readonly string[]> {
+  const [cwd, relativeGlob, originalPrefix,] = splitGlob(pattern,);
 
-  if (relativeGlob === '') {
-    return [cwd];
-  }
+  if (relativeGlob === '')
+    return [cwd,];
 
-  const { files, } = await readdirGlob(relativeGlob, { cwd, });
+  const { files, } = await readdirGlob(relativeGlob, { cwd, },);
 
   // Reconstruct paths using the original prefix to preserve relative/absolute form.
   // Use string concatenation instead of `join()` to preserve `./` prefixes
   // that `join()` would normalize away (e.g., `./.agents` -> `.agents`).
-  return files.map(function toOriginalForm(absolutePath: string): string {
+  return files.map(function toOriginalForm(absolutePath: string,): string {
     /** Path relative to the resolved cwd */
-    const relPath = relative(cwd, absolutePath);
+    const relPath = relative(cwd, absolutePath,);
     /** Separator between prefix and relative path */
-    const sep = originalPrefix.endsWith('/') ? '' : '/';
+    const sep = originalPrefix.endsWith('/',) ? '' : '/';
     return `${originalPrefix}${sep}${relPath}`;
-  });
+  },);
 }
 
 /**
@@ -112,17 +117,19 @@ export function mirrorGlobPath(
   sourcePath: string,
 ): string {
   /** Segments of the source pattern split by `*` */
-  const sourceParts = sourcePattern.split('*');
+  const sourceParts = sourcePattern.split('*',);
   /** Segments of the dest pattern split by `*` */
-  const destParts = destPattern.split('*');
+  const destParts = destPattern.split('*',);
 
   /** Number of wildcards in source vs dest must match for positional substitution */
   const sourceWildcardCount = sourceParts.length - 1;
   const destWildcardCount = destParts.length - 1;
   if (sourceWildcardCount !== destWildcardCount) {
     throw new Error(
-      `Wildcard count mismatch: source "${sourcePattern}" has ${String(sourceWildcardCount)}`
-      + ` but dest "${destPattern}" has ${String(destWildcardCount)}`,
+      `Wildcard count mismatch: source "${sourcePattern}" has ${
+        String(sourceWildcardCount,)
+      }`
+        + ` but dest "${destPattern}" has ${String(destWildcardCount,)}`,
     );
   }
 
@@ -134,35 +141,37 @@ export function mirrorGlobPath(
   for (let partIndex = 0; partIndex < sourceParts.length; partIndex++) {
     /** Fixed text before (or after) the current wildcard */
     const fixedPart = sourceParts[partIndex];
-    if (fixedPart === undefined) break;
-    if (!remainder.startsWith(fixedPart)) {
+    if (fixedPart === undefined)
+      break;
+    if (!remainder.startsWith(fixedPart,)) {
       throw new Error(
         `Source path "${sourcePath}" does not match pattern "${sourcePattern}" at segment "${fixedPart}"`,
       );
     }
-    remainder = remainder.slice(fixedPart.length);
+    remainder = remainder.slice(fixedPart.length,);
 
     if (partIndex < sourceWildcardCount) {
       /** Position of the next fixed segment, marking the end of this wildcard capture */
       const nextFixed = sourceParts[partIndex + 1] ?? '';
-      const nextFixedPos = nextFixed === '' ? remainder.length : remainder.indexOf(nextFixed);
+      const nextFixedPos = nextFixed === ''
+        ? remainder.length
+        : remainder.indexOf(nextFixed,);
       if (nextFixedPos === -1) {
         throw new Error(
           `Source path "${sourcePath}" does not match pattern "${sourcePattern}"`,
         );
       }
-      captured.push(remainder.slice(0, nextFixedPos));
-      remainder = remainder.slice(nextFixedPos);
+      captured.push(remainder.slice(0, nextFixedPos,),);
+      remainder = remainder.slice(nextFixedPos,);
     }
   }
 
   /** Reconstructed destination path with wildcards replaced by captured values */
   const result: string[] = [];
   for (let destIndex = 0; destIndex < destParts.length; destIndex++) {
-    result.push(destParts[destIndex] ?? '');
-    if (destIndex < destWildcardCount) {
-      result.push(captured[destIndex] ?? '');
-    }
+    result.push(destParts[destIndex] ?? '',);
+    if (destIndex < destWildcardCount)
+      result.push(captured[destIndex] ?? '',);
   }
-  return result.join('');
+  return result.join('',);
 }

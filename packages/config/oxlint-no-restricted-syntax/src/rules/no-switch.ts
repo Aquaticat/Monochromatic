@@ -35,21 +35,23 @@ export const noSwitch: CreateOnceRule = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Disallow switch statements. Use if/else chains or Record lookups instead.',
+      description:
+        'Disallow switch statements. Use if/else chains or Record lookups instead.',
       recommended: true,
     },
     messages: {
-      forbidden: 'Switch statements are banned. Use if/else chains or Record lookups instead.',
+      forbidden:
+        'Switch statements are banned. Use if/else chains or Record lookups instead.',
     },
   },
-  createOnce(context: Context): VisitorWithHooks {
+  createOnce(context: Context,): VisitorWithHooks {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
-      SwitchStatement(node: Span): void {
+      SwitchStatement(node: Span,): void {
         context.report({
           node,
           messageId: 'forbidden',
-        });
+        },);
       },
     } as VisitorWithHooks;
   },

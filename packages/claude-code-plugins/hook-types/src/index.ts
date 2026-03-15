@@ -25,20 +25,6 @@
  */
 
 import type {
-  ConfigChangeInput,
-  InstructionsLoadedInput,
-  SessionEndInput,
-  SessionStartInput,
-} from './events-session.ts';
-import type {
-  PermissionRequestInput,
-  PreToolUseInput,
-} from './events-tool.ts';
-import type {
-  PostToolUseFailureInput,
-  PostToolUseInput,
-} from './events-tool-post.ts';
-import type {
   StopInput,
   SubagentStartInput,
   SubagentStopInput,
@@ -52,17 +38,31 @@ import type {
   WorktreeCreateInput,
   WorktreeRemoveInput,
 } from './events-misc.ts';
+import type {
+  ConfigChangeInput,
+  InstructionsLoadedInput,
+  SessionEndInput,
+  SessionStartInput,
+} from './events-session.ts';
+import type {
+  PostToolUseFailureInput,
+  PostToolUseInput,
+} from './events-tool-post.ts';
+import type {
+  PermissionRequestInput,
+  PreToolUseInput,
+} from './events-tool.ts';
 
 //region Re-exports
 
 export type * from './common.ts';
-export type * from './tool-inputs.ts';
-export type * from './tool-inputs-union.ts';
-export type * from './events-session.ts';
-export type * from './events-tool.ts';
-export type * from './events-tool-post.ts';
 export type * from './events-agent.ts';
 export type * from './events-misc.ts';
+export type * from './events-session.ts';
+export type * from './events-tool-post.ts';
+export type * from './events-tool.ts';
+export type * from './tool-inputs-union.ts';
+export type * from './tool-inputs.ts';
 
 //endregion
 
@@ -101,8 +101,6 @@ type HookInput =
   | PreCompactInput
   | SessionEndInput;
 
-export type {
-  HookInput,
-};
+export type { HookInput, };
 
 //endregion

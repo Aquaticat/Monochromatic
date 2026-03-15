@@ -6,13 +6,13 @@
 //region Types -- response shape definitions
 
 /** Single text content item in an MCP response. */
-type TextContent = { text: string; type: 'text' };
+type TextContent = { text: string; type: 'text'; };
 
 /** Successful MCP response containing text content. */
-type TextResponse = { content: [TextContent] };
+type TextResponse = { content: [TextContent,]; };
 
 /** MCP error response containing text content and an error flag. */
-type ErrorResponse = { content: [TextContent]; isError: true };
+type ErrorResponse = { content: [TextContent,]; isError: true; };
 
 //endregion Types
 
@@ -33,8 +33,8 @@ const TEXT_TYPE = 'text' as const;
  * return textResponse('VM created.');
  * ```
  */
-export function textResponse(text: string): TextResponse {
-  return { content: [{ type: TEXT_TYPE, text }] };
+export function textResponse(text: string,): TextResponse {
+  return { content: [{ type: TEXT_TYPE, text, },], };
 }
 
 /**
@@ -52,10 +52,10 @@ export function textResponse(text: string): TextResponse {
  * catch (err: unknown) { return errorResponse('exec_in_vm', err); }
  * ```
  */
-export function errorResponse(tag: string, err: unknown): ErrorResponse {
-  const message = err instanceof Error ? err.message : String(err);
-  console.error(`[mcp-mvm] ${tag} failed:`, err);
-  return { content: [{ type: TEXT_TYPE, text: `Error: ${message}` }], isError: true };
+export function errorResponse(tag: string, err: unknown,): ErrorResponse {
+  const message = err instanceof Error ? err.message : String(err,);
+  console.error(`[mcp-mvm] ${tag} failed:`, err,);
+  return { content: [{ type: TEXT_TYPE, text: `Error: ${message}`, },], isError: true, };
 }
 
 /**
@@ -71,16 +71,16 @@ export function errorResponse(tag: string, err: unknown): ErrorResponse {
  * return textResponse(formatExecResult(result));
  * ```
  */
-export function formatExecResult(result: { exitCode: number; stderr: string; stdout: string }): string {
+export function formatExecResult(
+  result: { exitCode: number; stderr: string; stdout: string; },
+): string {
   const parts: string[] = [];
-  if (result.stdout.length > 0) {
-    parts.push(`stdout:\n${result.stdout}`);
-  }
-  if (result.stderr.length > 0) {
-    parts.push(`stderr:\n${result.stderr}`);
-  }
-  parts.push(`exit code: ${String(result.exitCode)}`);
-  return parts.join('\n\n');
+  if (result.stdout.length > 0)
+    parts.push(`stdout:\n${result.stdout}`,);
+  if (result.stderr.length > 0)
+    parts.push(`stderr:\n${result.stderr}`,);
+  parts.push(`exit code: ${String(result.exitCode,)}`,);
+  return parts.join('\n\n',);
 }
 
 //endregion Response builders

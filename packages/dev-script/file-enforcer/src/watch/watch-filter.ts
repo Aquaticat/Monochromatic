@@ -6,8 +6,8 @@ import {
 } from 'node:path';
 import {
   reads,
-  writeTimestamps,
   writes,
+  writeTimestamps,
 } from '../tracker.ts';
 
 /** Possible outcomes when classifying a filesystem event */
@@ -22,10 +22,12 @@ export type EventKind = 'source' | 'protected' | 'ignore';
  *
  * @returns Set of absolute directory paths to watch
  */
-export function watchDirs(configPath: string): Set<string> {
+export function watchDirs(configPath: string,): Set<string> {
   /** All paths that need monitoring: reads, writes, and the config */
-  const allPaths = [...reads, ...writes, resolve(configPath)];
-  return new Set(allPaths.map(function toDir(filePath): string { return dirname(filePath); }));
+  const allPaths = [...reads, ...writes, resolve(configPath,),];
+  return new Set(allPaths.map(function toDir(filePath,): string {
+    return dirname(filePath,);
+  },),);
 }
 
 /**
@@ -51,11 +53,11 @@ export async function classifyEvent(
   configPath: string,
 ): Promise<EventKind> {
   /** Absolute path of the changed file */
-  const absolutePath = resolve(join(watchedDir, filename));
+  const absolutePath = resolve(join(watchedDir, filename,),);
 
-  if (writes.has(absolutePath)) {
+  if (writes.has(absolutePath,)) {
     /** Timestamp of our last actual write, if any */
-    const ourWriteTime = writeTimestamps.get(absolutePath);
+    const ourWriteTime = writeTimestamps.get(absolutePath,);
     if (ourWriteTime === undefined) {
       // We registered the dest but never actually wrote (content was unchanged).
       // An fs.watch event for this path must be external.
@@ -63,12 +65,12 @@ export async function classifyEvent(
     }
     try {
       /** File metadata for mtime comparison */
-      const fileStat = await stat(absolutePath);
+      const fileStat = await stat(absolutePath,);
       // External edit: file was modified after our last write
-      if (fileStat.mtimeMs > ourWriteTime) {
+      if (fileStat.mtimeMs > ourWriteTime)
         return 'protected';
-      }
-    } catch {
+    }
+    catch {
       // File may have been deleted externally
       return 'protected';
     }
@@ -77,11 +79,10 @@ export async function classifyEvent(
   }
 
   /** Resolved config path for comparison */
-  const resolvedConfig = resolve(configPath);
+  const resolvedConfig = resolve(configPath,);
 
-  if (reads.has(absolutePath) || absolutePath === resolvedConfig) {
+  if (reads.has(absolutePath,) || absolutePath === resolvedConfig)
     return 'source';
-  }
 
   return 'ignore';
 }
@@ -102,5 +103,5 @@ export async function shouldTrigger(
   watchedDir: string,
   configPath: string,
 ): Promise<boolean> {
-  return (await classifyEvent(filename, watchedDir, configPath)) !== 'ignore';
+  return (await classifyEvent(filename, watchedDir, configPath,)) !== 'ignore';
 }

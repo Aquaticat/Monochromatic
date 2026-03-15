@@ -6,20 +6,23 @@ import spawn from 'nano-spawn';
  *
  * @param filePath - Absolute path of the externally modified managed file
  */
-export async function notifyWriteProtection(filePath: string): Promise<void> {
+export async function notifyWriteProtection(filePath: string,): Promise<void> {
   /** Human-readable warning for the terminal */
-  const terminalMessage = `[file-enforcer] PROTECTED: "${filePath}" was modified externally -- reverting to enforced content`;
-  console.warn(terminalMessage);
+  const terminalMessage =
+    `[file-enforcer] PROTECTED: "${filePath}" was modified externally -- reverting to enforced content`;
+  console.warn(terminalMessage,);
 
   /** Desktop notification body kept short for readability in notification popups */
   const notifyBody = `"${filePath}" was modified externally and has been reverted.`;
   try {
     /** Spawn notify-send as fire-and-forget; failure is non-fatal */
-    await spawn('notify-send', ['--urgency=critical', 'file-enforcer: write protected', notifyBody], {
+    await spawn('notify-send', ['--urgency=critical', 'file-enforcer: write protected',
+      notifyBody,], {
       stdout: 'ignore',
-    });
-  } catch (notifyError: unknown) {
+    },);
+  }
+  catch (notifyError: unknown) {
     // notify-send may not be installed -- log and move on
-    console.warn('[file-enforcer] could not send desktop notification:', notifyError);
+    console.warn('[file-enforcer] could not send desktop notification:', notifyError,);
   }
 }

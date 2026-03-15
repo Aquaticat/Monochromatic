@@ -1,6 +1,5 @@
 // oxlint-disable prefer-destructuring -- utility module with array access patterns
-import type { ImageInput } from './types.ts';
-import type { VoyageContentItem } from './types.voyage-api.ts';
+import { readFile, } from 'node:fs/promises';
 import {
   bufferToDataUri,
   inferFormat,
@@ -9,8 +8,12 @@ import {
   isImagePath,
   isImageUrl,
 } from './encoding.ts';
-import { l, tagged } from './log.ts';
-import { readFile } from 'node:fs/promises';
+import {
+  l,
+  tagged,
+} from './log.ts';
+import type { ImageInput, } from './types.ts';
+import type { VoyageContentItem, } from './types.voyage-api.ts';
 
 /**
  * Normalize any {@link ImageInput} variant into a {@link VoyageContentItem}
@@ -31,32 +34,42 @@ import { readFile } from 'node:fs/promises';
  * // { type: 'image_base64', image_base64: 'data:image/png;base64,...' }
  * ```
  */
-export async function toVoyageContentItem(input: ImageInput): Promise<VoyageContentItem> {
-  const rl = tagged({ tag: toVoyageContentItem.name, l });
+export async function toVoyageContentItem(
+  input: ImageInput,
+): Promise<VoyageContentItem> {
+  const rl = tagged({ tag: toVoyageContentItem.name, l, },);
 
-  if (isImageUrl(input)) {
-    rl.debug(`using URL input: ${input.url}`);
-    return { type: 'image_url', image_url: input.url };
+  if (isImageUrl(input,)) {
+    rl.debug(`using URL input: ${input.url}`,);
+    return { type: 'image_url', image_url: input.url, };
   }
 
-  if (isImageBase64(input)) {
-    rl.debug('using pre-encoded base64 input');
-    return { type: 'image_base64', image_base64: input.base64 };
+  if (isImageBase64(input,)) {
+    rl.debug('using pre-encoded base64 input',);
+    return { type: 'image_base64', image_base64: input.base64, };
   }
 
-  if (isImageBuffer(input)) {
-    rl.debug(`encoding buffer (${String(input.buffer.byteLength)} bytes, format: ${input.format})`);
-    const dataUri = bufferToDataUri(input.buffer, input.format);
-    return { type: 'image_base64', image_base64: dataUri };
+  if (isImageBuffer(input,)) {
+    rl.debug(
+      `encoding buffer (${
+        String(input
+          .buffer
+          .byteLength,)
+      } bytes, format: ${input.format})`,
+    );
+    const dataUri = bufferToDataUri(input.buffer, input.format,);
+    return { type: 'image_base64', image_base64: dataUri, };
   }
 
-  if (isImagePath(input)) {
-    rl.debug(`reading file: ${input.path}`);
-    const format = inferFormat(input.path);
-    const fileBuffer = await readFile(input.path);
-    const dataUri = bufferToDataUri(fileBuffer.buffer, format);
-    return { type: 'image_base64', image_base64: dataUri };
+  if (isImagePath(input,)) {
+    rl.debug(`reading file: ${input.path}`,);
+    const format = inferFormat(input.path,);
+    const fileBuffer = await readFile(input.path,);
+    const dataUri = bufferToDataUri(fileBuffer.buffer, format,);
+    return { type: 'image_base64', image_base64: dataUri, };
   }
 
-  throw new Error('Unrecognized ImageInput variant: expected one of buffer, path, url, or base64');
+  throw new Error(
+    'Unrecognized ImageInput variant: expected one of buffer, path, url, or base64',
+  );
 }

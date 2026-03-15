@@ -21,7 +21,7 @@ export const SIDE_DRAWER_PANEL_STYLES = `
     max-inline-size: 100%;
     block-size: 100%;
     max-block-size: 100%;
-    z-index: ${String(PANEL_Z_INDEX)};
+    z-index: ${String(PANEL_Z_INDEX,)};
     display: flex;
     background-color: transparent;
     overflow: visible;
