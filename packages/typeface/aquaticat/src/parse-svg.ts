@@ -55,11 +55,14 @@ export function parseSvg(svgContent: string): Cell[] {
   // oxlint-disable-next-line no-restricted-syntax -- regex exec loop is the idiomatic way to iterate matches
   for (let match = elementRegex.exec(svgContent); match !== null; match = elementRegex.exec(svgContent)) {
     const [, tag, attrs] = match;
+    if (attrs === undefined) continue;
 
     if (tag === "rect") {
       const transform = attr(attrs, "transform");
       const translateMatch = transform?.match(/translate\((\d+(?:\.\d+)?)\)/);
-      const xOffset = translateMatch ? Number(translateMatch[1]) : 0;
+      const xOffset = translateMatch !== undefined && translateMatch !== null
+        ? Number(translateMatch[1] ?? "0")
+        : 0;
       cells.push({ xOffset, paths: [] });
       continue;
     }

@@ -54,7 +54,7 @@ const baseViteConfig = createBaseConfig(import.meta.dirname,);
  */
 const astroViteConfig = {
   ...baseViteConfig,
-  build: omit(baseViteConfig.build!, 'rolldownOptions',),
+  build: baseViteConfig.build !== undefined ? omit(baseViteConfig.build, 'rolldownOptions',) : {},
 };
 
 // https://astro.build/config

@@ -141,10 +141,14 @@ export function addStrokedPath(
   const halfWidth = strokeWidth / 2;
   const points = resolveAbsolutePoints(commands);
   // Drop the closing duplicate vertex if present (the Z command closes implicitly)
+  const first = points[0];
+  const last = points.at(-1);
   const vertices = (
+    first !== undefined &&
+    last !== undefined &&
     points.length > 1 &&
-    points[0][0] === points.at(-1)[0] &&
-    points[0][1] === points.at(-1)[1]
+    first[0] === last[0] &&
+    first[1] === last[1]
   )
     ? points.slice(0, -1)
     : points;

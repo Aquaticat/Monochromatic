@@ -15,12 +15,20 @@ import {
 /** Static path params for Astro's per-language RSS route generation. */
 type StaticPath = { params: { lang: string; }; };
 
-/** Generates one static path per available language for the RSS feed. */
+/**
+ * Generates one static path per available language for the RSS feed.
+ *
+ * @returns static path entries with language params
+ */
 export async function getStaticPaths(): Promise<StaticPath[]> { return langs.map(function langPath(lang: string,) { return {
     params: { lang, },
   }; }) }
 
-/** Astro API route handler that generates an RSS XML feed for a given language. */
+/**
+ * Astro API route handler that generates an RSS XML feed for a given language.
+ *
+ * @returns Response containing RSS XML content
+ */
 export function GET({ site, params, },) {
   const lang = params.lang as string;
   const siteUrl = site?.toString() ?? 'https://example.com';

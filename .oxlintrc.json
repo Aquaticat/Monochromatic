@@ -34,6 +34,7 @@
     "**/deprecated/**",
     "**/eslint-deprecated/**",
     "**/fixture/**",
+    "**/invalid/**",
     "**/test-fixture/**",
     "**/perf-test-data/**",
     "**/teto-generated/**",

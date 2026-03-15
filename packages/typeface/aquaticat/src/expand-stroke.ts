@@ -46,6 +46,7 @@ export function offsetPolygon(vertices: readonly Point[], offset: number): Point
   // Compute parallel-shifted edges
   const offsetEdges = vertices.map(function shiftEdge(vertex, vertexIndex) {
     const next = vertices[(vertexIndex + 1) % vertexCount];
+    if (next === undefined) throw new Error("unreachable: vertex index out of bounds");
     const dx = next[0] - vertex[0];
     const dy = next[1] - vertex[1];
     const len = Math.hypot(dx, dy);
@@ -61,6 +62,7 @@ export function offsetPolygon(vertices: readonly Point[], offset: number): Point
   // Intersect consecutive offset edges to find new vertices
   return offsetEdges.map(function intersectEdge(edge, edgeIndex) {
     const nextEdge = offsetEdges[(edgeIndex + 1) % vertexCount];
+    if (nextEdge === undefined) throw new Error("unreachable: edge index out of bounds");
     return lineIntersection(edge.point, edge.direction, nextEdge.point, nextEdge.direction);
   });
 }
