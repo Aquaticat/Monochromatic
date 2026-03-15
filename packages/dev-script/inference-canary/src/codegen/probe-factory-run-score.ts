@@ -11,14 +11,15 @@ import {
   runInContainer,
 } from '../container.ts';
 import {
-  computePerfScore,
   runInContainerTimed,
+  type TimedContainerResult,
 } from './perf.ts';
 import {
   cacheAdditionalResults,
   computeAdditionalCorrectnesses,
   executeAdditionalRuns,
 } from './probe-factory-additional.ts';
+import { cacheAndComputePerfMultiplier, } from './probe-factory-run-perf.ts';
 import {
   combinedScore,
   lintAndLog,
@@ -27,7 +28,6 @@ import {
 
 import type { LintResult, } from '../linter.ts';
 import type { ScoreContext, } from '../probes.ts';
-import type { TimedContainerResult, } from './perf.ts';
 import type {
   CodeGenProbeConfig,
   ProbeFactoryCaches,
@@ -115,19 +115,8 @@ export async function scoreImpl(
     );
   }
 
-  // Compute and log perf score when configured
-  // perfMultiplier is let because it starts at 1.0 (no perf test) and is
-  // conditionally reassigned when a perf test produces a result
-  let perfMultiplier = 1;
-  if (config.perfTest !== undefined && perfResult !== undefined) {
-    caches.perf.set(context.label, perfResult,);
-    perfMultiplier = computePerfScore(perfResult, config.perfTest,);
-    console.log(
-      `  [${context.label}:${config.name}] perf: ${
-        String(perfResult.durationMs,)
-      }ms score=${perfMultiplier.toFixed(2,)}`,
-    );
-  }
+  const perfMultiplier = cacheAndComputePerfMultiplier(config, context, caches,
+    perfResult,);
 
   if (transformed.reject)
     return combinedScore(0, lint,) * perfMultiplier;

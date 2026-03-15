@@ -16,65 +16,24 @@
  *   INFERENCE_VALIDATION_OPENROUTER_API_KEY -- OpenRouter API key
  */
 import whyIsNodeRunning from 'why-is-node-running';
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: overrides console.log/error with elapsed-time prefixes
+import './index-log-prefix.ts';
 import {
   includeSlow,
-  modelOverride,
   probeFilter,
   retestAll,
   runsOverride,
   useSimple,
 } from './index-cli.ts';
+import { selectModels, } from './index-models.ts';
 import { runAndReport, } from './index-run.ts';
 import { getRecentArtifactPairs, } from './linter-artifacts-recent.ts';
-import {
-  type ModelConfig,
-  models,
-} from './models.ts';
 import {
   codeGenProbes,
   codeGenProbesAll,
   simpleProbes,
   simulationProbes,
 } from './probes.ts';
-
-//region Elapsed-time log prefix -- prepends "+Xs" to every console.log/error line so interleaved output is easy to timeline
-
-/** Milliseconds per second for elapsed-time display */
-const MS_PER_SECOND = 1_000;
-
-/** Width of the elapsed-time column so values align up to 999.9s */
-const ELAPSED_PAD_WIDTH = 6;
-
-/** Process start time for computing elapsed seconds in log prefixes */
-const PROCESS_START_MS = Date.now();
-
-/**
- * Formats elapsed milliseconds as a right-aligned "+NNs" prefix for log lines.
- *
- * @returns elapsed time string like "+  4.2s"
- */
-function elapsedPrefix(): string {
-  const elapsed = ((Date.now() - PROCESS_START_MS) / MS_PER_SECOND).toFixed(1,);
-  // Pad to 6 chars so columns align up to 999.9s
-  return `[+${elapsed.padStart(ELAPSED_PAD_WIDTH,)}s]`;
-}
-
-/** Original console.log preserved before timestamp injection override. */
-// oxlint-disable-next-line no-console -- intentional override to inject timestamps
-const originalLog = console.log;
-/** Original console.error preserved before timestamp injection override. */
-// oxlint-disable-next-line no-console -- intentional override to inject timestamps
-const originalError = console.error;
-// oxlint-disable-next-line no-console -- intentional override
-console.log = function logWithTimestamp(...args: unknown[]): void {
-  originalLog(elapsedPrefix(), ...args,);
-};
-// oxlint-disable-next-line no-console -- intentional override
-console.error = function errorWithTimestamp(...args: unknown[]): void {
-  originalError(elapsedPrefix(), ...args,);
-};
-
-//endregion Elapsed-time log prefix
 
 //region API key resolution -- validates INFERENCE_VALIDATION_OPENROUTER_API_KEY before any network calls
 
@@ -86,30 +45,6 @@ if (apiKey === undefined || apiKey === '')
 //endregion API key resolution
 
 //region Model selection -- resolves the set of models to test and which probes to skip from recent artifacts
-
-/**
- * Determines which models to test based on CLI flags.
- *
- * @returns models to test
- */
-function selectModels(): readonly ModelConfig[] {
-  if (modelOverride !== undefined) {
-    const found = models.find(function matchModel(model,): boolean {
-      return model.openrouterId === modelOverride || model.label === modelOverride;
-    },);
-    if (found !== undefined)
-      return [found,];
-    if (!modelOverride.includes('/',)) {
-      throw new Error(
-        `Invalid model ID "${modelOverride}": must be in "provider/name" format`,
-      );
-    }
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- includes('/') ensures provider/model format
-    const modelId = modelOverride as `${string}/${string}`;
-    return [{ openrouterId: modelId, label: modelId, verbosity: 'low', },];
-  }
-  return models;
-}
 
 /** Models selected for this run based on CLI flags. */
 const selectedModels = selectModels();
@@ -191,6 +126,9 @@ else {
 /** Seconds to wait before assuming the process is stuck on leaked async resources */
 const WATCHDOG_TIMEOUT_SECONDS = 5;
 
+/** Milliseconds per second for watchdog timeout computation */
+const WATCHDOG_MS_PER_SECOND = 1_000;
+
 /** Watchdog timer that force-exits after stale async resources prevent natural shutdown. */
 const watchdog = setTimeout(function watchdogTimeout(): void {
   console.error(
@@ -199,7 +137,7 @@ const watchdog = setTimeout(function watchdogTimeout(): void {
   whyIsNodeRunning();
   // oxlint-disable-next-line unicorn/no-process-exit -- required: fallback for intermittent async resource leaks
   process.exit(0,);
-}, WATCHDOG_TIMEOUT_SECONDS * MS_PER_SECOND,);
+}, WATCHDOG_TIMEOUT_SECONDS * WATCHDOG_MS_PER_SECOND,);
 watchdog.unref();
 
 //endregion Execution

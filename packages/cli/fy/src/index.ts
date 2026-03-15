@@ -102,8 +102,9 @@ if (typeof exportValue === 'function') {
   rl.info(`calling ${args.exportName}(${coercedArgs.map(String,).join(', ',)})`,);
 
   /** Return value from calling the exported function */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/no-unsafe-assignment -- dynamic module call with unknown signature
+  // oxlint-disable-next-line typescript/no-unsafe-assignment -- dynamic module call with unknown signature
   const result: unknown =
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- dynamic module call with unknown signature
     await (exportValue as (...fnArgs: readonly unknown[]) => unknown)(...coercedArgs,);
   console.log(result,);
 }

@@ -15,6 +15,8 @@ import { execSync, } from 'node:child_process';
 import { existsSync, } from 'node:fs';
 import { join, } from 'node:path';
 
+import { runAiMetrics, } from './compare-ai-metrics.ts';
+
 /** Directory containing individual body part SVG files. */
 const PARTS_DIR = join(import.meta.dirname, '..', 'parts',);
 /** Path to the assembled composite SVG from the build step. */
@@ -135,71 +137,10 @@ console.error(`SSIM:   ${parseMetric(ssimRaw,)}  (1 = identical, higher is bette
 console.error(`PHASH:  ${parseMetric(phashRaw,)}  (0 = identical, lower is better)`,);
 console.error(`RMSE:   ${parseMetric(rmseRaw,)}  (0 = identical, lower is better)`,);
 
-/** AI embedding-based perceptual comparison via multimodal models. */
-console.error('',);
-console.error('--- AI perceptual metrics ---',);
-
-try {
-  const { compare: aiCompare, } = await import('@monochromatic-dev/module-image-diff');
-
-  const refInput = { path: `${TMP}/cmp_reference.png`, };
-  const cmpInput = { path: `${TMP}/cmp_composite.png`, };
-
-  /**
-   * Providers to try, with their env var keys.
-   * Only attempt providers whose API key is present.
-   */
-  const providers = [
-    { name: 'voyage', envKey: 'IMAGE_DIFF_VOYAGE_API_KEY', },
-    { name: 'gemini', envKey: 'IMAGE_DIFF_GEMINI_API_KEY', },
-  ] as const;
-
-  let anyRan = false;
-
-  for (const { name, envKey, } of providers) {
-    if (process.env[envKey] === undefined || process.env[envKey] === '') {
-      console.error(`${name}:  skipped (${envKey} not set)`,);
-      continue;
-    }
-
-    try {
-      // oxlint-disable-next-line no-await-in-loop -- sequential provider fallback; later providers only run if earlier ones fail
-      const result = await aiCompare(refInput, cmpInput, { provider: name, },);
-      console.error(
-        `${name}:  similarity=${result.similarity.toFixed(4,)}  distance=${
-          result
-            .distance
-            .toFixed(4,)
-        }  (1.0 = identical)`,
-      );
-      anyRan = true;
-    }
-    catch (providerError) {
-      console.error(
-        `${name}:  failed - ${
-          providerError instanceof Error
-            ? providerError.message
-            : String(providerError,)
-        }`,
-      );
-    }
-  }
-
-  if (!anyRan) {
-    console.error(
-      'Set IMAGE_DIFF_VOYAGE_API_KEY or IMAGE_DIFF_GEMINI_API_KEY to enable AI comparison.',
-    );
-  }
-}
-catch (importError) {
-  console.error(
-    `AI comparison unavailable: ${
-      importError instanceof Error
-        ? importError.message
-        : String(importError,)
-    }`,
-  );
-}
+await runAiMetrics({
+  refPath: `${TMP}/cmp_reference.png`,
+  cmpPath: `${TMP}/cmp_composite.png`,
+},);
 
 console.error('',);
 console.error(`Outputs:`,);

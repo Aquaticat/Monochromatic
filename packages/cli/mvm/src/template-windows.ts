@@ -16,6 +16,7 @@ import {
   IMAGES_DIR,
   VMS_DIR,
   WINDOWS_DISK_SIZE,
+  WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS,
 } from './config.ts';
 import { domainXml, } from './domain-xml.ts';
 import {
@@ -32,29 +33,12 @@ import {
   TEMPLATE_VM_NAME,
   templateVmGuard,
 } from './template-shared.ts';
+import { verifyVirtioBoot, } from './template-windows-virtio.ts';
+import { waitForGuestAgent, } from './virsh-wait.ts';
 import {
   defineVm,
-  shutdownVm,
   startVm,
-  undefineVm,
-  waitForGuestAgent,
-  waitForShutdown,
 } from './virsh.ts';
-
-/**
- * Timeout for guest agent during Windows template creation.
- * Windows unattended install takes 15-30 minutes: OS installation,
- * first boot, OOBE, and guest agent installation via FirstLogonCommands.
- */
-const WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS = 2_400_000;
-
-/**
- * Timeout for guest agent during VirtIO disk bus verification.
- * After switching from SATA to VirtIO, Windows needs to detect the new
- * disk controller and load the viostor driver on boot. Typically takes
- * 2-5 minutes including the full Windows boot cycle.
- */
-const VIRTIO_VERIFY_AGENT_TIMEOUT_MS = 300_000;
 
 /**
  * Creates a Windows template by booting from an evaluation ISO with an
@@ -131,28 +115,8 @@ export async function ensureWindowsTemplate(spec: WindowsImageSpec,): Promise<st
     timeoutMs: WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS, },);
 
   // Phase 1 complete: Windows installed with SATA disk, VirtIO drivers installed.
-  // Now switch to VirtIO disk bus and verify Windows boots with VirtIO storage.
-  rl.info('guest agent ready on SATA, switching to VirtIO disk bus...',);
-  await shutdownVm({ name: TEMPLATE_VM_NAME, },);
-  await waitForShutdown({ name: TEMPLATE_VM_NAME, },);
-
-  // Redefine VM with VirtIO disk (no CDROMs needed, boot from hard disk)
-  await undefineVm({ name: TEMPLATE_VM_NAME, },);
-  const virtioXml = domainXml({
-    diskPath,
-    name: TEMPLATE_VM_NAME,
-    osFamily: 'windows',
-  },);
-  await defineVm({ vmDir, xml: virtioXml, },);
-  await startVm({ name: TEMPLATE_VM_NAME, },);
-
-  rl.info('verifying Windows boots with VirtIO disk (waiting for guest agent)...',);
-  await waitForGuestAgent({ name: TEMPLATE_VM_NAME,
-    timeoutMs: VIRTIO_VERIFY_AGENT_TIMEOUT_MS, },);
-
-  rl.info('VirtIO boot verified, shutting down for template capture...',);
-  await shutdownVm({ name: TEMPLATE_VM_NAME, },);
-  await waitForShutdown({ name: TEMPLATE_VM_NAME, },);
+  // Switch to VirtIO disk bus and verify Windows boots with VirtIO storage.
+  await verifyVirtioBoot({ vmDir, diskPath, rl, },);
 
   rl.info('converting disk to standalone template image...',);
   await spawn({

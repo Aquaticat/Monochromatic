@@ -9,6 +9,8 @@ import { CSS_MIXIN_TEST_CSS, } from './css-mixin-test-css.ts';
 import { CSS_MIXIN_PERF_INPUT, } from './perf-test-data/index.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';
 
+import { verifyCssMixin, } from './css-mixin-verify.ts';
+
 import type { ScoreContext, } from '../probes.ts';
 
 /**
@@ -37,9 +39,6 @@ function detectsRegexUsage(source: string,): boolean {
   return /\/(\\.|[^/\n])\/[gimsuy]*|new\s+RegExp\s*\(/.test(source,);
 }
 
-/** Number of correctness checks in the css-mixin scoring function */
-const CSS_MIXIN_TOTAL_CHECKS = 11;
-
 /** Constraint violation message prepended to the fix prompt when regex is detected */
 const REGEX_CONSTRAINT_MSG = [
   'CONSTRAINT VIOLATION: Your solution used regular expressions, which is explicitly forbidden by the prompt.',
@@ -47,33 +46,6 @@ const REGEX_CONSTRAINT_MSG = [
   '',
 ]
   .join('\n',);
-
-/**
- * Checks that the `.override-test` block resolves property override correctly.
- * CSS later properties override earlier ones, so `display: grid` (from the rule)
- * must be the winning declaration over `display: flex` (from the mixin).
- * Accepts both keeping all declarations in source order and collapsing to the winner.
- *
- * @param output - normalized transpiler output
- *
- * @returns true when the last `display:` in the override-test block resolves to `grid`
- *
- * @example
- * ```ts
- * verifyOverrideTest('.override-test { display: flex; display: grid; }'); // true (both kept)
- * verifyOverrideTest('.override-test { display: grid; }'); // true (collapsed)
- * verifyOverrideTest('.override-test { display: flex; }'); // false (wrong winner)
- * ```
- */
-function verifyOverrideTest(output: string,): boolean {
-  const start = output.indexOf('.override-test',);
-  if (start === -1)
-    return false;
-  const blockEnd = output.indexOf('}', start,);
-  const block = output.slice(start, blockEnd,);
-  const lastDisplay = block.lastIndexOf('display:',);
-  return lastDisplay !== -1 && block.slice(lastDisplay,).includes('grid',);
-}
 
 /**
  * {@inheritDoc Probe}
@@ -142,28 +114,5 @@ export const cssMixinTranspiler = createCodeGenProbe({
     '```',
   ]
     .join('\n',),
-  verify: function verifyCssMixin(result,): { correctness: number; } {
-    // Normalize whitespace so cosmetic formatting differences don't affect scoring
-    const output = result.stdout.replaceAll(/[ \t]+/g, ' ',).replaceAll(/\n{3,}/g,
-      '\n\n',);
-
-    const flexOccurrences = output.split('display: flex',).length - 1;
-    const checks = [
-      !output.includes('@mixin',),
-      !output.includes('@apply',),
-      output.includes('margin: 0',) && output.includes('padding: 0',),
-      output.includes('display: flex',) && output.includes('align-items: center',),
-      output.includes('padding-block: 1rem',) && output.includes('padding-inline: 2rem',),
-      output.includes('border-radius: 0.5rem',),
-      output.includes('color: var(--link-fg)',),
-      output.includes('background-color: var(--surface-bg)',),
-      output.includes('clip-path: inset(50%)',) && output.includes('overflow: hidden',),
-      // flex-center should expand into .card, .nav .link, and .hero = 3 occurrences
-      flexOccurrences >= 3,
-      // Later property overrides mixin property -- either both present in order or only winner kept
-      verifyOverrideTest(output,),
-    ];
-
-    return { correctness: checks.filter(Boolean,).length / CSS_MIXIN_TOTAL_CHECKS, };
-  },
+  verify: verifyCssMixin,
 },);

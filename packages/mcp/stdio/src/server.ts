@@ -1,8 +1,6 @@
 // MCP server: immutable tool registry and JSON-RPC dispatch.
 
 import {
-  JSON_RPC_INTERNAL_ERROR,
-  JSON_RPC_INVALID_PARAMS,
   JSON_RPC_METHOD_NOT_FOUND,
   type JsonRpcInbound,
   type JsonRpcOutbound,
@@ -12,7 +10,6 @@ import {
 import {
   type InitializeResult,
   PROTOCOL_VERSION,
-  type ToolCallResult,
   type ToolDefinition,
 } from './protocol.ts';
 
@@ -21,40 +18,13 @@ import {
   respondError,
   respondSuccess,
 } from './server-response.ts';
+import { handleToolCall, } from './server-tool-call.ts';
 import type {
   McpServerConfig,
   McpServerHandle,
   RegisteredTool,
   ToolEntry,
 } from './server-types.ts';
-
-//region defineTool -- convenience for declaring tool entries
-
-/**
- * Declares a named tool entry for passing to {@link createMcpServer}.
- * Pure convenience: validates nothing, just bundles name with options.
- *
- * @param name - Unique tool identifier exposed to clients.
- *
- * @param entry - Tool metadata and handler, without the `name` field.
- *
- * @returns Complete tool entry ready for server creation.
- *
- * @example
- * ```ts
- * const tool = defineTool('get_time', {
- *   description: 'Returns current UTC time.',
- *   handler: async () => ({
- *     content: [{ type: 'text', text: new Date().toISOString() }],
- *   }),
- * });
- * ```
- */
-export function defineTool(name: string, entry: Omit<ToolEntry, 'name'>,): ToolEntry {
-  return { name, ...entry, };
-}
-
-//endregion
 
 //region createMcpServer -- builds an immutable server from config and tool entries
 
@@ -142,52 +112,6 @@ export function createMcpServer(
   //region Request dispatch -- routes JSON-RPC methods to handlers
 
   /**
-   * Dispatches a `tools/call` request to the registered handler.
-   * Validates tool name and arguments from untrusted client input before dispatch.
-   *
-   * @param request - Request containing tool `name` and `arguments` in `params`.
-   *
-   * @returns Tool result wrapped in a JSON-RPC response, or an error if the tool is unknown.
-   */
-  async function handleToolCall(request: JsonRpcRequest,): Promise<JsonRpcOutbound> {
-    const { id, params, } = request;
-
-    // Validate tool name is a string rather than blindly casting untrusted input.
-    const toolName = typeof params?.name === 'string' ? params.name : undefined;
-    if (toolName === undefined) {
-      return respondError(id, JSON_RPC_INVALID_PARAMS,
-        'Missing or non-string tool name in tools/call',);
-    }
-
-    // Validate arguments is a plain object when present, default to empty object otherwise.
-    const rawArgs = params?.arguments;
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowed from unknown to non-array object above
-    const toolArgs: Record<string, unknown> = rawArgs !== undefined
-        && rawArgs !== null
-        && typeof rawArgs === 'object'
-        && !Array.isArray(rawArgs,)
-      ? (rawArgs as Record<string, unknown>)
-      : {};
-
-    const registered = toolMap.get(toolName,);
-    if (registered === undefined)
-      return respondError(id, JSON_RPC_INVALID_PARAMS, `Unknown tool: ${toolName}`,);
-
-    // Deliberate catch-and-return: in a server context, tool handler errors must be
-    // reported as JSON-RPC error responses rather than crashing the server process.
-    try {
-      const result: ToolCallResult = await registered.handler(toolArgs,);
-      return respondSuccess(id, result,);
-    }
-    catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error,);
-      console.error(`[mcp-stdio] tool "${toolName}" threw:`, error,);
-      return respondError(id, JSON_RPC_INTERNAL_ERROR,
-        `Tool execution failed: ${message}`,);
-    }
-  }
-
-  /**
    * Routes a JSON-RPC request to the matching method handler.
    * Only the `tools/call` branch is async (awaits the tool handler);
    * all other branches return synchronously but the signature must be
@@ -207,7 +131,7 @@ export function createMcpServer(
     if (method === 'tools/list')
       return Promise.resolve(respondSuccess(id, buildToolsList(),),);
     if (method === 'tools/call')
-      return handleToolCall(request,);
+      return handleToolCall(toolMap, request,);
     return Promise.resolve(
       respondError(id, JSON_RPC_METHOD_NOT_FOUND, `Method not found: ${method}`,),
     );

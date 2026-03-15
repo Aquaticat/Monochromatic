@@ -17,16 +17,14 @@ export type {
   ToolHandler,
   ToolInputSchema,
 } from './protocol.ts';
+export { defineTool, } from './server-define-tool.ts';
 export type {
   McpServerConfig,
   McpServerHandle,
   RegisteredTool,
   ToolEntry,
 } from './server-types.ts';
-export {
-  createMcpServer,
-  defineTool,
-} from './server.ts';
+export { createMcpServer, } from './server.ts';
 export {
   serve,
   type StdoutWriter,

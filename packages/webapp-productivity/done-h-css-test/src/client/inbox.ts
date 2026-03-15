@@ -6,9 +6,12 @@
 import {
   $ as h,
 } from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
-import type { InboxPageData, } from './inbox-builders.ts';
-import { buildTaskList, } from './inbox-builders.ts';
+import {
+  buildTaskList,
+  type InboxPageData,
+} from './inbox-builders.ts';
 import { inboxStyles, } from './inbox-styles.ts';
+import { buildSuggestedSection, } from './inbox-suggested.ts';
 import { api, } from './lib/api.ts';
 import { injectCSS, } from './lib/inject-css.ts';
 import { readPageData, } from './lib/page-data.ts';
@@ -55,64 +58,9 @@ async function completeTask(taskId: string,): Promise<void> {
 
 //region Suggested section
 
-/** Collapsible section heading for the suggested tasks block. */
-const suggestedSection = h({ tag: 'section-heading',
-  attrs: { icon: '\u2728', label: 'Suggested', }, },);
-
-/** Content container for the suggested tasks section. */
-const suggestedContent = h({
-  tag: 'div',
-  style: { display: 'flex', flexDirection: 'column', gap: 'var(--gap)', },
-  children: [
-    h({
-      tag: 'div',
-      class: 'controls',
-      children: [
-        h({
-          tag: 'div',
-          class: 'control-group',
-          children: [
-            h({ tag: 'h3', class: 'subsection-heading', text: 'My location', },),
-            h({ tag: 'p', class: 'subsection-desc',
-              text: 'Suggesting tasks can be done near the location.', },),
-            h({
-              tag: 'div',
-              class: 'location-options',
-              children: [
-                h({
-                  tag: 'button',
-                  class: 'autodetect-toggle',
-                  children: [
-                    h({ tag: 'span', text: 'autodetect', },),
-                    h({ tag: 'toggle-switch', attrs: { on: '', }, },),
-                  ],
-                },),
-              ],
-            },),
-          ],
-        },),
-        h({
-          tag: 'div',
-          class: 'control-group',
-          children: [
-            h({ tag: 'h3', class: 'subsection-heading', text: 'My focus', },),
-            h({ tag: 'p', class: 'subsection-desc',
-              text: 'Additional instructions on which tasks to suggest.', },),
-            h({ tag: 'focus-dropdown', attrs: { value: 'Adulting tasks first', }, },),
-          ],
-        },),
-      ],
-    },),
-    pageData.suggestedTasks.length === 0
-      ? h({ tag: 'p', class: 'empty', text: 'No tasks yet.', },)
-      : buildTaskList({ tasks: pageData.suggestedTasks,
-        blockedTasksByBlocker: pageData.blockedTasksByBlocker, onOpen: openTask,
-        onToggleComplete: completeTask, },),
-  ],
-},);
-
-suggestedSection.append(suggestedContent,);
-app.append(suggestedSection,);
+app.append(
+  buildSuggestedSection({ pageData, onOpen: openTask, onComplete: completeTask, },),
+);
 
 //endregion Suggested section
 

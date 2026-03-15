@@ -13,10 +13,8 @@ import {
   type JsonRpcResponse,
 } from './json-rpc.ts';
 import { PROTOCOL_VERSION, } from './protocol.ts';
-import {
-  createMcpServer,
-  defineTool,
-} from './server.ts';
+import { defineTool, } from './server-define-tool.ts';
+import { createMcpServer, } from './server.ts';
 
 import type { ToolEntry, } from './server-types.ts';
 

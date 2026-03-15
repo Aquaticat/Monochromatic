@@ -325,7 +325,7 @@
     "eslint/max-depth": "off",
     "eslint/max-lines-per-function": "off",
     "eslint/max-nested-callbacks": "off",
-    "eslint/max-class-per-file": "off",
+    "eslint/max-classes-per-file": "off",
     "id-length": "allow",
     // Nested ternaries work great!
     "eslint/no-nested-ternary": "off",
@@ -512,6 +512,8 @@
         "eslint/no-var": "off",
         // Numeric literal types are not magic numbers.
         "eslint/no-magic-numbers": "off",
+        // Declaration files often declare multiple classes from a single external module.
+        "eslint/max-classes-per-file": "off",
         //endregion eslint
 
         //region no-restricted-syntax -- External API signatures don't follow source conventions.

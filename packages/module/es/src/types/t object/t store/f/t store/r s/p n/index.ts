@@ -79,8 +79,8 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
       ?? [new Map<string, string>(),];
 
   const policies = config.eviction ?? [];
-  // oxlint-disable-next-line typescript/no-unnecessary-condition -- future-proofing: more eviction policies will be added
   const lruPolicy = policies.find(function isLru(p,) {
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- future-proofing: more eviction policies will be added
     return p.policy === 'lru';
   },);
   const lru = lruPolicy !== undefined

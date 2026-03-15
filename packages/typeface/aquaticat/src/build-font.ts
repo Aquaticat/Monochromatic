@@ -9,15 +9,12 @@
 import {
   mkdirSync,
   readFileSync,
-  statSync,
   writeFileSync,
 } from 'node:fs';
 import {
   dirname,
   resolve,
 } from 'node:path';
-
-import spawn from 'nano-spawn';
 
 // oxlint-disable-next-line import/no-namespace -- opentype.js requires namespace import for its constructor API
 import * as opentype from 'opentype.js';
@@ -30,11 +27,12 @@ import {
   SPACE_ADVANCE,
   UNITS_PER_EM,
 } from './build-font-metrics.ts';
+import { addStrokedPath, } from './build-font-paths-stroked.ts';
 import {
   addFilledPath,
-  addStrokedPath,
   computeLocalXBounds,
 } from './build-font-paths.ts';
+import { convertToWoff2, } from './build-font-woff2.ts';
 import {
   parseSvg,
   parseSvgPathD,
@@ -127,22 +125,6 @@ const buffer = font.toArrayBuffer();
 writeFileSync(otfPath, Buffer.from(buffer,),);
 console.log(`Wrote ${otfPath} (${buffer.byteLength} bytes)`,);
 
-// Convert OTF to WOFF2 via fonttools (Python, available through uv)
-console.log('Converting to WOFF2 via fonttools...',);
-/** Output path for the WOFF2 font file. */
-const woff2Path = resolve(distDir, 'Aquaticat-Regular.woff2',);
-/** Python one-liner for fonttools WOFF2 conversion. */
-const woff2Script =
-  `from fontTools.ttLib import TTFont; f = TTFont("${otfPath}"); f.flavor = "woff2"; f.save("${woff2Path}")`;
-try {
-  await spawn('uv', ['run', '--with', 'fonttools', '--with', 'brotli', 'python3', '-c',
-    woff2Script,],);
-  /** File stats for the generated WOFF2 file. */
-  const { size, } = statSync(woff2Path,);
-  console.log(`Wrote ${woff2Path} (${size} bytes)`,);
-}
-catch (error: unknown) {
-  console.error('WOFF2 conversion failed:', (error as { stderr: string; }).stderr,);
-}
+await convertToWoff2(otfPath, distDir,);
 
 //endregion Main build

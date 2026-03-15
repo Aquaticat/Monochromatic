@@ -1,5 +1,3 @@
-// Over 100 lines due to TSDoc on locals (per guidelines) and two verify functions
-// that share PARTIAL_CREDIT and verifySolutionSet. Splitting further would duplicate imports.
 /**
  * Verification functions for the sudoku-solver probe.
  *
@@ -8,7 +6,6 @@
  * Returns fractional correctness scores consumed by the probe factory's scoring pipeline.
  */
 import {
-  gridToString,
   isValidSolution,
   matchesClues,
   parseGrid,
@@ -25,6 +22,7 @@ import {
   SOLVABLE_CLUES,
   TWO_SOLUTION_CLUES,
 } from './sudoku-puzzles.ts';
+import { verifySolutionSet, } from './sudoku-solution-set.ts';
 
 /**
  * Fractional score for outputs that produce sections but fail individual checks.
@@ -95,54 +93,6 @@ export function verifyNormal(stdout: string,): number {
 //endregion Normal mode verification
 
 //region --all mode verification -- 3 checks: 2-solution exact, many-solution bounded, unsolvable
-
-/**
- * Checks whether a puzzle section contains the expected number of valid, distinct
- * solutions that all match the given clues.
- *
- * @param section - raw output section for one puzzle
- *
- * @param clues - clue grid to verify solutions against
- *
- * @param expectedCount - exact number of solutions expected, or undefined for "at least min"
- *
- * @param minCount - minimum number of solutions when expectedCount is undefined
- *
- * @returns true when all constraints are satisfied
- */
-function verifySolutionSet(
-  section: string,
-  clues: readonly (readonly number[])[],
-  expectedCount: number | undefined,
-  minCount: number,
-): boolean {
-  /** Raw solution text blocks split on blank lines within the section */
-  const solutionBlocks = splitSolutions(section,);
-  /** Parsed grids from solution blocks, filtering out unparseable ones */
-  const grids = solutionBlocks
-    .map(function parseSol(sol,): number[][] | undefined {
-      return parseGrid(sol,);
-    },)
-    .filter(function isGrid(grid,): grid is number[][] {
-      return grid !== undefined;
-    },);
-  /** Whether the solution count matches the expected or minimum threshold */
-  const countOk = expectedCount !== undefined
-    ? grids.length === expectedCount
-    : grids.length >= minCount;
-  if (!countOk)
-    return false;
-  /** Whether every parsed grid is a valid complete sudoku matching the original clues */
-  const allValid = grids.every(function validateGrid(grid,): boolean {
-    return isValidSolution(grid,) && matchesClues(grid, clues,);
-  },);
-  if (!allValid)
-    return false;
-  return new Set(grids.map(function toStr(grid,): string {
-    return gridToString(grid,);
-  },),)
-    .size === grids.length;
-}
 
 /**
  * Verifies --all mode output against 3 puzzles: 2-solution, many-solution, and unsolvable.

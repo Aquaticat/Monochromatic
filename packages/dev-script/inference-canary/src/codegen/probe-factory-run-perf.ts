@@ -1,0 +1,50 @@
+/**
+ * Performance result caching and multiplier computation for the scoring pipeline.
+ *
+ * Extracted from {@link scoreImpl} to keep the scoring module under the line limit.
+ */
+import {
+  computePerfScore,
+  type TimedContainerResult,
+} from './perf.ts';
+
+import type { ScoreContext, } from '../probes.ts';
+import type {
+  CodeGenProbeConfig,
+  ProbeFactoryCaches,
+} from './probe-factory-types.ts';
+
+/**
+ * Caches the perf result and computes the performance multiplier.
+ *
+ * When no perf test is configured or no result is available, returns 1 (no penalty).
+ * Otherwise caches the result, computes a 0-1 score via {@link computePerfScore},
+ * and logs the duration and score.
+ *
+ * @param config - probe configuration (for perfTest thresholds and probe name)
+ *
+ * @param context - scoring context (for model label in logs and cache keys)
+ *
+ * @param caches - shared caches to populate with the perf result
+ *
+ * @param perfResult - timed container result, undefined when no perf test ran
+ *
+ * @returns performance multiplier in [0, 1]
+ */
+export function cacheAndComputePerfMultiplier(
+  config: CodeGenProbeConfig,
+  context: ScoreContext,
+  caches: ProbeFactoryCaches,
+  perfResult: TimedContainerResult | undefined,
+): number {
+  if (config.perfTest === undefined || perfResult === undefined)
+    return 1;
+  caches.perf.set(context.label, perfResult,);
+  const score = computePerfScore(perfResult, config.perfTest,);
+  console.log(
+    `  [${context.label}:${config.name}] perf: ${
+      String(perfResult.durationMs,)
+    }ms score=${score.toFixed(2,)}`,
+  );
+  return score;
+}

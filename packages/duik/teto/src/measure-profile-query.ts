@@ -11,7 +11,7 @@
 import type {
   ContentBoundsResult,
   WidthProfile,
-} from './measure-profile.ts';
+} from './measure-profile-types.ts';
 
 /**
  * Finds the width at a given relative vertical position (0 = top, 1 = bottom).

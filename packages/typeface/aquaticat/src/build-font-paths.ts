@@ -4,7 +4,7 @@
  *
  * @example
  * ```ts
- * import { computeLocalXBounds, addFilledPath, addStrokedPath } from "./build-font-paths.ts";
+ * import { computeLocalXBounds, addFilledPath } from "./build-font-paths.ts";
  * ```
  */
 
@@ -12,55 +12,12 @@
 import type * as opentype from 'opentype.js';
 
 import { fontY, } from './build-font-metrics.ts';
-import { offsetPolygon, } from './expand-stroke.ts';
+import { resolveAbsolutePoints, } from './build-font-resolve-points.ts';
 import {
   type CellPath,
   parseSvgPathD,
   type SVGPathCommand,
 } from './parse-svg.ts';
-
-//region Coordinate helpers
-
-/**
- * Resolves absolute X/Y positions from SVG path commands (expanding H/V to full coords).
- *
- * @param commands - parsed SVG path commands
- *
- * @returns array of [x, y] coordinate pairs
- *
- * @example
- * ```ts
- * const points = resolveAbsolutePoints(parseSvgPathD("M10 20 H30 V40"));
- * // [[10, 20], [30, 20], [30, 40]]
- * ```
- */
-function resolveAbsolutePoints(
-  commands: readonly SVGPathCommand[],
-): [number, number,][] {
-  const points: [number, number,][] = [];
-  // Mutable cursor tracking the current pen position while replaying path commands
-  // -- let needed because M/L/H/V each update different axes of the cursor
-  let cx = 0;
-  let cy = 0;
-  commands.forEach(function resolveCommand(cmd,) {
-    if (cmd.type === 'M' || cmd.type === 'L') {
-      cx = cmd.x;
-      cy = cmd.y;
-      points.push([cx, cy,],);
-    }
-    else if (cmd.type === 'H') {
-      cx = cmd.x;
-      points.push([cx, cy,],);
-    }
-    else if (cmd.type === 'V') {
-      cy = cmd.y;
-      points.push([cx, cy,],);
-    }
-  },);
-  return points;
-}
-
-//endregion Coordinate helpers
 
 //region Path construction
 
@@ -148,67 +105,6 @@ export function addFilledPath(
       otPath.close();
     }
   },);
-}
-
-/**
- * Adds a stroked polygon to an opentype Path as an expanded filled outline.
- *
- * @param otPath - opentype path to append to
- *
- * @param commands - parsed SVG path commands
- *
- * @param strokeWidth - stroke width in SVG units
- *
- * @param cellX - X offset of the cell in SVG coordinates
- *
- * @param xShift - horizontal shift to apply for proportional spacing
- */
-export function addStrokedPath(
-  otPath: opentype.Path,
-  commands: readonly SVGPathCommand[],
-  strokeWidth: number,
-  cellX: number,
-  xShift: number,
-): void {
-  const halfWidth = strokeWidth / 2;
-  const points = resolveAbsolutePoints(commands,);
-  // Drop the closing duplicate vertex if present (the Z command closes implicitly)
-  const first = points[0];
-  const last = points.at(-1,);
-  const vertices = (
-      first !== undefined
-      && last !== undefined
-      && points.length > 1
-      && first[0] === last[0]
-      && first[1] === last[1]
-    )
-    ? points.slice(0, -1,)
-    : points;
-
-  const outerVerts = offsetPolygon(vertices, halfWidth,);
-  const innerVerts = offsetPolygon(vertices, -halfWidth,);
-
-  /**
-   * Traces a polygon contour onto the opentype path.
-   *
-   * @param verts - ordered vertices of the contour polygon
-   */
-  function traceContour(verts: readonly [number, number,][],): void {
-    verts.forEach(function traceVertex(vert, vertIndex,) {
-      const fx = vert[0] - cellX + xShift;
-      const fy = fontY(vert[1],);
-      if (vertIndex === 0)
-        otPath.moveTo(fx, fy,);
-      else
-        otPath.lineTo(fx, fy,);
-    },);
-    otPath.close();
-  }
-
-  // Outer contour (forward order)
-  traceContour(outerVerts,);
-  // Inner contour (reversed to create the hole via opposite winding)
-  traceContour([...innerVerts,].toReversed(),);
 }
 
 //endregion Path construction

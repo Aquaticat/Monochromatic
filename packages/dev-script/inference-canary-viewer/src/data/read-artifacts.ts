@@ -20,15 +20,15 @@ import {
 
 import type { ArtifactData, } from './viewer-types.ts';
 
+import { buildViewerData, } from './build-viewer-data.ts';
 import {
-  buildViewerData,
   isEnriched,
   type ParsedArtifact,
-} from './build-viewer-data.ts';
+} from './parsed-artifact.ts';
 
 export { LINT_DIR, };
 
-export { probeKey, } from './build-viewer-data.ts';
+export { probeKey, } from './parsed-artifact.ts';
 
 /**
  * Whether a parsed meta.json is a whole-model failure artifact.

@@ -1,14 +1,18 @@
 /**
  * Render function for the `\<task-detail\>` Shadow DOM tree.
  *
- * Builds the complete layout: header with close/save buttons, title input,
+ * Builds the layout: header with close/save buttons, title input,
  * description textarea, attach/photo actions, pills container, and
- * start/stop/complete/delete buttons.
+ * action button row (delegated to task-detail-render-actions.ts).
  */
 import {
   $ as h,
 } from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
 import type { Task, } from '../../lib/types.ts';
+import {
+  attachActionHandler,
+  buildActionButtonRow,
+} from './task-detail-render-actions.ts';
 import { TASK_DETAIL_STYLES, } from './task-detail-styles.ts';
 import type { TaskDetailMode, } from './task-detail-types.ts';
 
@@ -64,31 +68,6 @@ export function renderTaskDetail(
   if (task.description !== null)
     descInput.textContent = task.description;
 
-  const startAttrs: Record<string, string> = { 'data-action': 'start', };
-  if (task.timerStartedAt !== null)
-    startAttrs['disabled'] = '';
-  const stopAttrs: Record<string, string> = { 'data-action': 'stop', };
-  if (task.timerStartedAt === null)
-    stopAttrs['disabled'] = '';
-  const completeAttrs: Record<string, string> = { 'data-action': 'complete', };
-  if (task.blockedBy.length > 0)
-    completeAttrs['disabled'] = '';
-
-  const btnRow = h({
-    tag: 'div',
-    class: 'btn-row',
-    children: [
-      h({ tag: 'button', class: 'btn-outline', attrs: startAttrs, text: 'Start', },),
-      h({ tag: 'button', class: 'btn-outline', attrs: stopAttrs, text: 'Stop', },),
-      h({ tag: 'button', class: 'btn-primary', attrs: completeAttrs,
-        text: 'Complete', },),
-      h({ tag: 'button', class: 'btn-outline', attrs: { 'data-action': 'delete', },
-        text: 'Delete', },),
-    ],
-  },);
-  if (isCreate)
-    btnRow.dataset['hidden'] = '';
-
   shadow.replaceChildren(
     h({ tag: 'style', text: TASK_DETAIL_STYLES, },),
     h({
@@ -119,29 +98,16 @@ export function renderTaskDetail(
       ],
     },),
     h({ tag: 'div', class: 'pills', },),
-    btnRow,
+    buildActionButtonRow({ task, isCreate, },),
   );
 
-  shadow.addEventListener('click', function onAction(event,): void {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- event.target is always an Element in shadow DOM click handlers
-    const target = event.target as HTMLElement;
-    const button = target.closest<HTMLElement>('[data-action]',);
-    if (button === null)
-      return;
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- closest returns HTMLElement with dataset
-    const { action, } = (button as HTMLElement).dataset;
-
-    host.dispatchEvent(new CustomEvent('action', {
-      bubbles: true,
-      detail: {
-        action,
-        title: titleInput.value,
-        description: descInput.value,
-      },
-    },),);
-  },);
-
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- h() created these elements with the correct tag
-  return { titleInput: titleInput as HTMLInputElement,
-    descInput: descInput as HTMLTextAreaElement, };
+  const typedTitleInput = titleInput as HTMLInputElement;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- h() created these elements with the correct tag
+  const typedDescInput = descInput as HTMLTextAreaElement;
+
+  attachActionHandler({ shadow, host, titleInput: typedTitleInput,
+    descInput: typedDescInput, },);
+
+  return { titleInput: typedTitleInput, descInput: typedDescInput, };
 }

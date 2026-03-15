@@ -21,10 +21,10 @@ import {
   resolveImage,
 } from './registry.ts';
 import { spawn, } from './spawn.ts';
+import { waitForGuestAgent, } from './virsh-wait.ts';
 import {
   defineVm,
   startVm,
-  waitForGuestAgent,
 } from './virsh.ts';
 
 /**

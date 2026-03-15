@@ -16,42 +16,19 @@
 import { existsSync, } from 'node:fs';
 
 import {
+  generateComparisonImages,
+  runComparisonMetrics,
+} from './compare-output.ts';
+import {
   FRONT_VIEW_CROP,
   PARTS_DIR,
   REFERENCE_PATH,
   TMP_DIR,
 } from './config.ts';
-
-/**
- * Run a shell command, capture stdout, throw on failure.
- *
- * @param cmd - Command tokens
- * @returns Trimmed stdout string
- * @throws Error on non-zero exit
- */
-async function capture(cmd: readonly string[],): Promise<string> {
-  const proc = Bun.spawn([...cmd,], { stdout: 'pipe', stderr: 'pipe', },);
-  const stdout = await new Response(proc.stdout,).text();
-  const code = await proc.exited;
-  if (code !== 0) {
-    const stderr = await new Response(proc.stderr,).text();
-    throw new Error(`Command failed (exit ${code}): ${cmd.join(' ',)}\n${stderr}`,);
-  }
-  return stdout.trim();
-}
-
-/**
- * Run a shell command and throw on non-zero exit.
- *
- * @param cmd - Command tokens
- * @throws Error on non-zero exit
- */
-async function run(cmd: readonly string[],): Promise<void> {
-  const proc = Bun.spawn([...cmd,], { stdout: 'inherit', stderr: 'inherit', },);
-  const code = await proc.exited;
-  if (code !== 0)
-    throw new Error(`Command failed (exit ${code}): ${cmd.join(' ',)}`,);
-}
+import {
+  capture,
+  run,
+} from './segment-utils.ts';
 
 /** Compares the composite SVG rendering against the reference image. */
 async function main(): Promise<void> {
@@ -113,58 +90,9 @@ async function main(): Promise<void> {
 
   console.log(`  Reference: ${refCropped} → ${compositeSize}`,);
 
-  // Run comparison metrics.
-  // magick compare outputs the metric value to STDERR and exits non-zero
-  // when images differ, which is normal behavior.
-  console.log('\nMetrics:',);
-
-  const metrics = ['RMSE', 'SSIM', 'PHASH',] as const;
-  for (const metric of metrics) {
-    const proc = Bun.spawn([
-      'magick',
-      'compare',
-      '-metric',
-      metric,
-      compositeNorm,
-      refNormalized,
-      'null:',
-    ], { stdout: 'pipe', stderr: 'pipe', },);
-    const stderr = await new Response(proc.stderr,).text();
-    await proc.exited;
-    // The metric value is the first number-like token on stderr
-    const value = stderr.trim().split(/\s/,)[0] ?? 'n/a';
-    console.log(`  ${metric}: ${value}`,);
-  }
-
-  // Side-by-side comparison image
-  const sideBySide = `${TMP_DIR}/comparison.png`;
-  await run([
-    'magick',
-    compositeNorm,
-    refNormalized,
-    '+append',
-    '-bordercolor',
-    'gray',
-    '-border',
-    '2',
-    sideBySide,
-  ],);
-  console.log(`\nSide-by-side: ${sideBySide}`,);
-
-  // Difference map (non-fatal, may fail if sizes still differ slightly)
-  const diffMap = `${TMP_DIR}/diff_map.png`;
-  const diffProc = Bun.spawn([
-    'magick',
-    'compare',
-    compositeNorm,
-    refNormalized,
-    diffMap,
-  ], { stdout: 'inherit', stderr: 'inherit', },);
-  const diffCode = await diffProc.exited;
-  if (diffCode === 0 || diffCode === 1)
-    console.log(`Difference map: ${diffMap}`,);
-  else
-    console.error('  WARN: Difference map generation failed (non-critical)',);
+  // Run comparison metrics and generate visual output
+  await runComparisonMetrics(compositeNorm, refNormalized,);
+  await generateComparisonImages(compositeNorm, refNormalized, TMP_DIR,);
 }
 
 await main();

@@ -1,0 +1,104 @@
+/**
+ * DOM construction and chip building for `\<task-card\>`.
+ *
+ * Extracted from task-card.ts to keep each file under the line-count limit.
+ */
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
+import type { Task, } from '../../lib/types.ts';
+import { formatRunningTrackedTime, } from './format-tracked-time.ts';
+import { TASK_CARD_STYLES, } from './task-card-styles.ts';
+
+/** Configuration for a `\<task-card\>` instance, passed via `createTaskCard`. */
+export type TaskCardOptions = {
+  /** Whether to show a red "blocked" badge chip. */
+  showBlockedBadge?: boolean;
+  /** Callback when the card body is clicked (navigates to task detail). */
+  onOpen: (taskId: string,) => void;
+  /** Callback when the checkbox is clicked (completes the task). */
+  onToggleComplete?: (taskId: string,) => Promise<void>;
+};
+
+/**
+ * Collects all metadata chip labels for a task.
+ *
+ * @param task - Task whose metadata to extract
+ *
+ * @returns Array of chip label strings
+ */
+export function buildChipTexts(task: Task,): string[] {
+  const chips: string[] = [];
+  if (task.tags.length > 0)
+    chips.push(`# ${task.tags.join(', ',)}`,);
+  chips.push(`tracked: ${formatRunningTrackedTime(task,)}`,);
+  if (task.locations.length > 0)
+    chips.push(`where: ${task.locations.join(', ',)}`,);
+  if (task.priority !== null)
+    chips.push(`priority: ${task.priority}`,);
+  if (task.dueDate !== null)
+    chips.push(`due: ${task.dueDate}`,);
+  if (task.complexity !== null)
+    chips.push(`complexity: ${task.complexity}`,);
+  if (task.reminders.length > 0)
+    chips.push(`reminders: ${task.reminders[0]}`,);
+  if (task.blockedBy.length > 0)
+    chips.push(`blockedBy: ${String(task.blockedBy.length,)}`,);
+  else
+    chips.push('blockedBy: none',);
+  return chips;
+}
+
+/**
+ * Renders the full card content into the shadow root.
+ *
+ * @param shadow - Shadow root to render into
+ *
+ * @param task - Task data to display
+ *
+ * @param options - Callbacks and display flags
+ */
+export function renderTaskCardContent(
+  { shadow, task, options, }: {
+    shadow: ShadowRoot;
+    task: Task;
+    options: TaskCardOptions;
+  },
+): void {
+  const chipElements: HTMLElement[] = buildChipTexts(task,).map(
+    function createChip(text,): HTMLElement {
+      return h({ tag: 'span', class: 'chip', text, },);
+    },
+  );
+  if (options.showBlockedBadge === true)
+    chipElements.push(h({ tag: 'span', class: 'chip blocked', text: 'blocked', },),);
+
+  shadow.replaceChildren(
+    h({ tag: 'style', text: TASK_CARD_STYLES, },),
+    h({
+      tag: 'div',
+      class: 'row',
+      children: [
+        h({
+          tag: 'button',
+          class: 'checkbox',
+          attrs: { title: 'Complete task', },
+          children: [h({ tag: 'span', class: 'checkbox-box', },),],
+          on: {
+            // oxlint-disable-next-line typescript/no-misused-promises -- DOM event handler
+            click: async function onCheckboxClick(event,): Promise<void> {
+              event.stopPropagation();
+              if (options.onToggleComplete !== undefined)
+                await options.onToggleComplete(task.id,);
+            },
+          },
+        },),
+        h({ tag: 'span', class: 'title', text: task.title, },),
+      ],
+      on: { click: function onRowClick(): void {
+        options.onOpen(task.id,);
+      }, },
+    },),
+    h({ tag: 'div', class: 'chips', children: chipElements, },),
+  );
+}

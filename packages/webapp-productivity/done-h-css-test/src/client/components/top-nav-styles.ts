@@ -2,24 +2,20 @@
  * Shadow DOM styles for the `<top-nav>` web component.
  */
 import {
-  cssCalc,
-  cssCompounded,
   cssInt,
   cssRem,
-  cssRotate,
-  cssTurn,
   cssVar,
 } from '@monochromatic-dev/module-es/h-css';
 import { $ as css, } from '../css.ts';
 import { stickyBar, } from '../mixins-composed.ts';
 import {
   appearanceNone,
-  borderRadiusFull,
   flexCenter,
   flexColumn,
   focusOutline,
   minTouchTarget,
 } from '../mixins.ts';
+import { TOP_NAV_ICON_STYLES, } from './top-nav-styles-icons.ts';
 import { TOP_NAV_MEDIA_STYLES, } from './top-nav-styles-media.ts';
 
 /** Compiled CSS string for `<top-nav>` Shadow DOM. */
@@ -74,37 +70,7 @@ export const TOP_NAV_STYLES = [
       display: 'block',
     },
   },),
-  css({
-    rule: '.search-icon',
-    decls: { 'inline-size': cssRem(2,), 'block-size': cssRem(2,), position: 'relative', },
-  },),
-  css({
-    rule: '.circle',
-    decls: {
-      position: 'absolute',
-      'inset-block-start': 0,
-      'inset-inline-start': 0,
-      'inline-size': cssRem(1.375,),
-      'block-size': cssRem(1.375,),
-      'border-width': cssRem(0.25,),
-      'border-style': 'solid',
-      'border-color': cssVar('fg',),
-      ...borderRadiusFull(),
-    },
-  },),
-  css({
-    rule: '.handle',
-    decls: {
-      position: 'absolute',
-      'inset-block-start': cssCalc(`${cssRem(19,)} / 16`,),
-      'inset-inline-start': cssCalc(`${cssRem(19,)} / 16`,),
-      'inline-size': cssRem(0.25,),
-      'block-size': cssRem(0.875,),
-      'background-color': cssVar('fg',),
-      transform: cssRotate(cssTurn(-0.125,),),
-      'transform-origin': cssCompounded(['top', 'left',],),
-    },
-  },),
+  ...TOP_NAV_ICON_STYLES,
   TOP_NAV_MEDIA_STYLES,
 ]
   .join('',);

@@ -15,6 +15,8 @@ import {
 import {
   createTool,
   destroyTool,
+} from './tools-lifecycle-mutate.ts';
+import {
   listTool,
   updateTool,
 } from './tools-lifecycle.ts';

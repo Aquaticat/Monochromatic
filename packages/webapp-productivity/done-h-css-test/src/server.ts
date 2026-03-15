@@ -22,7 +22,6 @@ import {
   defineHandler,
   getRouterParam,
   H3,
-  HTTPError,
   serve,
   serveStatic,
 } from 'h3';
@@ -34,17 +33,7 @@ import { join, } from 'node:path';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: opens SQLite database and runs schema migrations
 import './lib/db.ts';
 import { getArgumentValue, } from './lib/args.ts';
-import { handleAutofill, } from './server/api/ai-autofill.ts';
-import {
-  handleCreateTask,
-  handleDeleteTask,
-  handleUpdateTask,
-} from './server/api/tasks.ts';
-import {
-  handleCompleteTask,
-  handleStartTimer,
-  handleStopTimer,
-} from './server/api/timer.ts';
+import { registerApiRoutes, } from './server-api-routes.ts';
 import { inProgressPage, } from './server/pages/in-progress.ts';
 import { inboxPage, } from './server/pages/inbox.ts';
 import { searchPage, } from './server/pages/search.ts';
@@ -53,9 +42,6 @@ import { taskDetailsPage, } from './server/pages/task-details.ts';
 
 /** Default HTTP port when neither `--port=` nor `PORT` env var is provided. */
 const DEFAULT_PORT = 3_000;
-
-/** HTTP status code for bad requests. */
-const HTTP_BAD_REQUEST = 400;
 
 /** Radix for decimal integer parsing. */
 const DECIMAL_RADIX = 10;
@@ -77,28 +63,6 @@ function resolvePort(): number {
   return Number.isNaN(parsedPort,) ? DEFAULT_PORT : parsedPort;
 }
 
-/**
- * Extracts a required route parameter, throwing 400 if missing.
- *
- * @param event - h3 event
- *
- * @param name - Parameter name from the route pattern
- *
- * @returns Parameter value
- *
- * @throws HTTPError 400 when parameter is missing
- */
-function requireParam(event: Parameters<typeof getRouterParam>[0],
-  name: string,): string
-{
-  const value = getRouterParam(event, name,);
-  if (value === undefined) {
-    throw new HTTPError({ status: HTTP_BAD_REQUEST,
-      message: `missing route parameter: ${name}`, },);
-  }
-  return value;
-}
-
 /** h3 application instance routing HTTP requests to handlers. */
 const app = new H3();
 
@@ -112,7 +76,9 @@ app.get('/in-progress', defineHandler(function handleInProgress() {
 },),);
 
 app.get('/tasks/:id', defineHandler(function handleTaskDetails(event,) {
-  const id = requireParam(event, 'id',);
+  const id = getRouterParam(event, 'id',);
+  if (id === undefined)
+    throw new Error('missing route parameter: id',);
   return taskDetailsPage(id,);
 },),);
 
@@ -127,39 +93,7 @@ app.get('/settings', defineHandler(function handleSettings() {
 
 //region API routes -- return JSON
 
-app.post('/api/tasks', defineHandler(function handleCreateTaskRoute(event,) {
-  return handleCreateTask(event.req,);
-},),);
-
-app.put('/api/tasks/:id', defineHandler(function handleUpdateTaskRoute(event,) {
-  const id = requireParam(event, 'id',);
-  return handleUpdateTask(event.req, id,);
-},),);
-
-app.delete('/api/tasks/:id', defineHandler(function handleDeleteTaskRoute(event,) {
-  const id = requireParam(event, 'id',);
-  return handleDeleteTask(id,);
-},),);
-
-app.post('/api/tasks/:id/start', defineHandler(function handleStartTimerRoute(event,) {
-  const id = requireParam(event, 'id',);
-  return handleStartTimer(id,);
-},),);
-
-app.post('/api/tasks/:id/stop', defineHandler(function handleStopTimerRoute(event,) {
-  const id = requireParam(event, 'id',);
-  return handleStopTimer(id,);
-},),);
-
-app.post('/api/tasks/:id/complete',
-  defineHandler(function handleCompleteTaskRoute(event,) {
-    const id = requireParam(event, 'id',);
-    return handleCompleteTask(id,);
-  },),);
-
-app.post('/api/ai/autofill', defineHandler(function handleAutofillRoute(event,) {
-  return handleAutofill(event.req,);
-},),);
+registerApiRoutes(app,);
 
 //endregion API routes
 

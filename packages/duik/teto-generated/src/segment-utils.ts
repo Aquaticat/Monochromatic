@@ -7,6 +7,26 @@
  */
 
 /**
+ * Run a shell command, capture stdout, throw on failure.
+ *
+ * @param cmd - Command tokens
+ *
+ * @returns Trimmed stdout string
+ *
+ * @throws Error on non-zero exit
+ */
+export async function capture(cmd: readonly string[],): Promise<string> {
+  const proc = Bun.spawn([...cmd,], { stdout: 'pipe', stderr: 'pipe', },);
+  const stdout = await new Response(proc.stdout,).text();
+  const code = await proc.exited;
+  if (code !== 0) {
+    const stderr = await new Response(proc.stderr,).text();
+    throw new Error(`Command failed (exit ${code}): ${cmd.join(' ',)}\n${stderr}`,);
+  }
+  return stdout.trim();
+}
+
+/**
  * Run a shell command and throw on non-zero exit.
  *
  * @param cmd - Command tokens to execute

@@ -1,4 +1,4 @@
-import type { Diagnostic, } from './nvim-client.ts';
+import type { Diagnostic, } from './nvim-types.ts';
 
 //region Dedup key -- builds a string key for comparing diagnostics across sources
 

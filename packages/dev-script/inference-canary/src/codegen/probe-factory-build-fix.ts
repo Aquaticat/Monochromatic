@@ -6,7 +6,9 @@
  * Extracted from the probe factory to keep each module under the line limit.
  */
 import { buildPerfDiagnostic, } from './perf.ts';
-import { appendAdditionalRunDiagnostics, } from './probe-factory-additional.ts';
+import {
+  appendAdditionalRunDiagnostics,
+} from './probe-factory-additional-diagnostics.ts';
 import {
   buildCodeGenFixPrompt,
   extractCode,

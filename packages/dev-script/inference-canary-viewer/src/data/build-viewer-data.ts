@@ -4,58 +4,21 @@
  * Takes pre-grouped initial-pass and fix-pass artifacts and produces
  * the final viewer data structure consumed by chart and overlay renderers.
  */
-import {
-  type ArtifactMeta,
-  type EnrichedArtifactMeta,
-  type FailureArtifactMeta,
-  LINT_DIR,
+import type {
+  FailureArtifactMeta,
 } from '@monochromatic-dev/dev-script-inference-canary/src/linter-artifacts.ts';
 
+import {
+  buildProbeDetail,
+  isEnriched,
+  type ParsedArtifact,
+  probeKey,
+} from './parsed-artifact.ts';
 import type {
   ArtifactData,
   ProbeDetail,
   ViewerEntry,
 } from './viewer-types.ts';
-
-/** Parsed artifact with metadata, optional source/response, and directory path */
-export type ParsedArtifact = {
-  readonly meta: ArtifactMeta | EnrichedArtifactMeta;
-  readonly source: string | undefined;
-  readonly response: string | undefined;
-  readonly dir: string;
-};
-
-/**
- * Whether a parsed meta.json is an enriched artifact (has score field).
- *
- * @param meta - artifact metadata to check
- *
- * @returns true when the metadata includes score (enriched form)
- */
-export function isEnriched(meta: ArtifactMeta,): meta is EnrichedArtifactMeta {
-  return 'score' in meta;
-}
-
-/**
- * Composite key for grouping probe details: `label::probe::timestamp`.
- *
- * @param label - model label
- *
- * @param probe - probe name
- *
- * @param timestamp - ISO timestamp
- *
- * @returns composite key string
- *
- * @example
- * ```ts
- * probeKey('Sonnet 4.6', 'csv-rfc4180', '2026-03-06T12:00:00.000Z');
- * // "Sonnet 4.6::csv-rfc4180::2026-03-06T12:00:00.000Z"
- * ```
- */
-export function probeKey(label: string, probe: string, timestamp: string,): string {
-  return `${label}::${probe}::${timestamp}`;
-}
 
 /**
  * Assembles viewer entries and probe details from grouped artifacts.
@@ -103,28 +66,12 @@ export function buildViewerData(
         hasPass2 = true;
       }
 
-      probeDetails.set(probeKey(label, probeName, timestamp,), {
-        score: enriched?.score,
-        pass2Score: fixEnriched?.score,
-        reasoning: enriched?.reasoning,
-        timing: enriched?.timing,
-        usage: enriched?.usage,
-        finishReason: enriched?.finishReason,
-        config: enriched?.config,
-        fixPrompt: fixEnriched?.fixPrompt,
-        fixReasoning: fixEnriched?.reasoning,
-        fixTiming: fixEnriched?.timing,
-        fixUsage: fixEnriched?.usage,
-        fixFinishReason: fixEnriched?.finishReason,
-        initialResponse: artifact.response,
-        fixResponse: fix?.response,
-        initialSource: artifact.source,
-        fixSource: fix?.source,
-        initialDir: artifact.dir,
-        fixDir: fix?.dir,
-        partial: enriched?.partial,
-        error: enriched?.error,
-      },);
+      probeDetails.set(probeKey(label, probeName, timestamp,), buildProbeDetail({
+        enriched,
+        fixEnriched,
+        artifact,
+        fix,
+      },),);
     }
 
     const scores = Object.values(probeScores,);

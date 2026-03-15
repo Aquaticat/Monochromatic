@@ -3,7 +3,7 @@ import {
   parseFlags,
   parseImageArg,
 } from './cli.parse.ts';
-import { compareAll, } from './client.multi.ts';
+import { compareAll, } from './client.multi.compare.ts';
 import { compare, } from './client.ts';
 import {
   l,

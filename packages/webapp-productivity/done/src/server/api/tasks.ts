@@ -22,11 +22,11 @@ import {
   HTTP_NOT_FOUND,
   jsonResponse,
 } from './http-utils.ts';
+import { parseTaskUpdateInput, } from './task-validation-update.ts';
 import {
   isRecord,
   parseEnumValue,
   parseStringArray,
-  parseTaskUpdateInput,
 } from './task-validation.ts';
 
 /** Recognized priority/complexity values for create handler. */

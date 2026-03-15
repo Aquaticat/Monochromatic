@@ -2,15 +2,15 @@
  * `\<task-detail\>` -- full-page task editor with title, description, metadata pills,
  * action buttons (start/stop/complete/delete), and debounced AI autofill.
  */
-import {
-  $ as h,
-} from '@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts';
 import type {
   TaskComplexity,
   TaskPriority,
 } from '../../lib/types.ts';
-import { formatRunningTrackedTime, } from '../lib/format-tracked-time.ts';
 import { AutofillController, } from './task-detail-autofill.ts';
+import {
+  buildPillData,
+  buildPillElements,
+} from './task-detail-pills.ts';
 import { renderTaskDetail, } from './task-detail-render.ts';
 import type {
   TaskDetailData,
@@ -113,36 +113,11 @@ class TaskDetail extends HTMLElement {
     if (task === undefined)
       return;
 
-    const pillData = [
-      { field: 'tags',
-        text: this.#tags.length > 0 ? `# ${this.#tags.join(', ',)}` : '# ?', },
-      { field: 'tracked', text: `tracked: ${formatRunningTrackedTime(task,)}`, },
-      { field: 'locations', text: this.#locations.length > 0
-        ? `where: ${this.#locations.join(', ',)}`
-        : 'where: ?', },
-      { field: 'priority', text: `priority: ${this.#priority ?? '?'}`, },
-      { field: 'due', text: `due: ${task.dueDate ?? '?'}`, },
-      { field: 'complexity', text: `complexity: ${this.#complexity ?? '?'}`, },
-      { field: 'reminders', text: task.reminders.length > 0
-        ? `reminders: ${task.reminders[0]}`
-        : 'reminders: None', },
-      { field: 'blockedBy', text: task.blockedBy.length > 0
-        ? `blockedBy: ${String(task.blockedBy.length,)}`
-        : 'blockedBy: none', },
-    ];
-
-    const af = this.#autofill;
+    const pills = buildPillData({ task, tags: this.#tags, locations: this.#locations,
+      priority: this.#priority, complexity: this.#complexity, },);
     pillsContainer.replaceChildren(
-      ...pillData.map(
-        function buildPill(pill: { field: string; text: string; },): HTMLElement {
-          const element = h({ tag: 'span', class: 'pill', text: pill.text, },);
-          if (af.loading)
-            element.dataset['loading'] = '';
-          else if (af.autofilled.has(pill.field,))
-            element.dataset['autofilled'] = '';
-          return element;
-        },
-      ),
+      ...buildPillElements({ pills, loading: this.#autofill.loading,
+        autofilled: this.#autofill.autofilled, },),
     );
   }
 

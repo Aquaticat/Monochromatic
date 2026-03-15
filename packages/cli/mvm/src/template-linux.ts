@@ -27,11 +27,13 @@ import {
   templateVmGuard,
 } from './template-shared.ts';
 import {
-  defineVm,
   shutdownVm,
-  startVm,
   waitForGuestAgent,
   waitForShutdown,
+} from './virsh-wait.ts';
+import {
+  defineVm,
+  startVm,
 } from './virsh.ts';
 
 /**

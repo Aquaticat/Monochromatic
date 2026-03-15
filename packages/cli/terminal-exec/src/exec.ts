@@ -33,7 +33,7 @@ export function execvp({ command, }: { command: readonly string[]; },): void {
   if (command.length === 0)
     throw new Error('execvp: empty command array',);
 
-  const executable = command[0];
+  const [executable,] = command;
   if (executable === undefined)
     throw new Error('execvp: unreachable — length checked above',);
   const args = command.slice(1,);

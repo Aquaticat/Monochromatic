@@ -19,10 +19,10 @@ import { join, } from 'node:path';
 
 import { generateWidthProfileOutput, } from './measure-chart.ts';
 import {
-  computeLandmarkMeasurements,
   printKeyProportions,
   printMeasurementTable,
-} from './measure-landmarks.ts';
+} from './measure-landmarks-print.ts';
+import { computeLandmarkMeasurements, } from './measure-landmarks.ts';
 import { prepareSilhouettes, } from './measure-prepare.ts';
 import { contentBounds, } from './measure-profile-query.ts';
 import { measureWidthProfile, } from './measure-profile.ts';

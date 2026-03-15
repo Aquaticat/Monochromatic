@@ -18,7 +18,7 @@ import {
   type ViewerEntry,
 } from '../data/viewer-types.ts';
 
-import type { ModelSummary, } from './view-overview.ts';
+import type { ModelSummary, } from './view-overview-types.ts';
 
 /**
  * Builds scatter points for all models' overall scores, ordered by timestamp.

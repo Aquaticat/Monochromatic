@@ -112,7 +112,7 @@ export function validateEntry({ entry, entryId, desktops, isFallback, execArgDef
     return null;
   }
 
-  const firstToken = execTokens[0];
+  const [firstToken,] = execTokens;
   if (firstToken === undefined)
     throw new Error('unreachable — length checked above',);
   if (!executableExists({ name: firstToken, },)) {

@@ -34,8 +34,8 @@
  * @packageDocumentation
  */
 
+export { compareAll, } from './client.multi.compare.ts';
 export {
-  compareAll,
   embedAll,
   embedBatchAll,
 } from './client.multi.ts';
@@ -43,7 +43,7 @@ export type {
   MultiProviderBatchEmbedEntry,
   MultiProviderComparisonEntry,
   MultiProviderEmbedEntry,
-} from './client.multi.ts';
+} from './client.multi.types.ts';
 export {
   compare,
   embed,

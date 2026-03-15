@@ -21,7 +21,7 @@ import {
 import type {
   ContentBoundsResult,
   WidthProfile,
-} from './measure-profile.ts';
+} from './measure-profile-types.ts';
 
 /**
  * Runs a shell command and returns stdout trimmed.

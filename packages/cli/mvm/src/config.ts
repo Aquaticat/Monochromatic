@@ -29,6 +29,20 @@ export const WINDOWS_DISK_SIZE = '40G';
 export const LIBVIRT_URI = 'qemu:///session';
 
 /**
+ * Timeout for guest agent during Windows template creation (40 minutes).
+ * Windows unattended install takes 15-30 minutes: OS installation,
+ * first boot, OOBE, and guest agent installation via FirstLogonCommands.
+ */
+export const WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS = 2_400_000;
+
+/**
+ * Timeout for guest agent during VirtIO disk bus verification (5 minutes).
+ * After switching from SATA to VirtIO, Windows needs to detect the new
+ * disk controller and load the viostor driver on boot.
+ */
+export const VIRTIO_VERIFY_AGENT_TIMEOUT_MS = 300_000;
+
+/**
  * Validates a VM name contains only safe characters.
  *
  * @param name - VM name to validate

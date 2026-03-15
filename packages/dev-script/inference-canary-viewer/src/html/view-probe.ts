@@ -15,9 +15,9 @@ import type { ViewerEntry, } from '../data/viewer-types.ts';
 
 import {
   buildCrossModelPoints,
-  buildProbeLegend,
   buildSingleModelPoints,
 } from './view-probe-builders.ts';
+import { buildProbeLegend, } from './view-probe-legend.ts';
 
 /**
  * Renders the by-probe view: one `<details>` per probe, with all models overlaid

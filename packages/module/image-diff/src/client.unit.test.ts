@@ -4,10 +4,8 @@ import {
   test,
 } from 'bun:test';
 
-import {
-  compareAll,
-  embedAll,
-} from './client.multi.ts';
+import { compareAll, } from './client.multi.compare.ts';
+import { embedAll, } from './client.multi.ts';
 import {
   compare,
   embed,
