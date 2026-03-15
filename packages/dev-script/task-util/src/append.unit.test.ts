@@ -25,7 +25,7 @@ let cliPath: string;
 let testDir: string;
 let testFile: string;
 
-beforeEach(async () => {
+beforeEach(() => {
   // cliPath fixture
   const testFileDir = import.meta.dirname;
   cliPath = join(testFileDir, 'append.ts',);

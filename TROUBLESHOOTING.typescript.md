@@ -278,6 +278,180 @@ function setup(): void {
 - Adding `as HTMLDivElement` --
   suppresses the error but is flagged by `no-unsafe-type-assertion`
 
+## JSR packages ship `.ts` source files that `skipLibCheck` cannot skip
+
+### Problem
+
+`tsgo --build` reports type errors **inside `node_modules`**
+from JSR packages like `@zod/zod`:
+
+```txt
+node_modules/.bun/@jsr+zod__zod@4.3.6/…/src/v4/core/schemas.ts(2088,19): error TS2532: Object is possibly 'undefined'.
+node_modules/.bun/@jsr+zod__zod@4.3.6/…/src/v4/core/schemas.ts(2130,17): error TS2532: Object is possibly 'undefined'.
+node_modules/.bun/@jsr+zod__zod@4.3.6/…/src/v4/core/util.ts(930,41): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+node_modules/.bun/@jsr+zod__zod@4.3.6/…/src/v4/locales/he.ts(44,17): error TS18048: 'TypeNames.unknown' is possibly 'undefined'.
+```
+
+These errors appear despite `skipLibCheck: true` in tsconfig.
+The errors are all `| undefined` narrowing failures --
+the library's code is correct but was not written for `noUncheckedIndexedAccess: true`.
+
+### Root cause
+
+Four things combine to create this problem:
+
+**JSR ships `.ts` source files, not `.d.ts` declarations.**
+The `@jsr/zod__zod` package contains both `.ts` and `.js` for every module.
+The `package.json` exports point to `.js` files,
+but no `.d.ts` declaration files exist:
+
+```jsonc
+// node_modules/@jsr/zod__zod/package.json
+{ "exports": { ".": { "default": "./src/index.js" } } }
+```
+
+```txt
+src/v4/core/
+  schemas.ts   schemas.js   schemas.js.map
+  util.ts      util.js      util.js.map
+  // no .d.ts files anywhere
+```
+
+**TypeScript's bundler resolution prefers `.ts` over `.js`.**
+When an export points to `./src/index.js`,
+the resolver strips the `.js` extension and tries candidates in a fixed priority order.
+From `typescript-go/internal/module/resolver.go` line 1471:
+
+```go
+case tspath.ExtensionTs, tspath.ExtensionDts, tspath.ExtensionJs, "":
+    if extensions&extensionsTypeScript != 0 {
+        r.tryExtension(tspath.ExtensionTs, …)   // 1st: .ts
+        r.tryExtension(tspath.ExtensionTsx, …)  // 2nd: .tsx
+    }
+    if extensions&extensionsDeclaration != 0 {
+        r.tryExtension(tspath.ExtensionDts, …)  // 3rd: .d.ts
+    }
+    if extensions&extensionsJavaScript != 0 {
+        r.tryExtension(tspath.ExtensionJs, …)   // 4th: .js (never reached)
+    }
+```
+
+The `.ts` sibling is found at step 1 and the `.js` export is never used.
+This priority order is hardcoded -- no tsconfig option changes it.
+The `extensionsTypeScript` bit is always set for regular imports
+(line 117: `state.extensions = extensionsTypeScript | extensionsJavaScript | extensionsDeclaration`).
+
+**`skipLibCheck` only covers `.d.ts` files, not `.ts` files.**
+From `typescript-go/internal/compiler/program.go` line 562:
+
+```go
+func (p *Program) SkipTypeChecking(sourceFile *ast.SourceFile, ignoreNoCheck bool) bool {
+    return (!ignoreNoCheck && p.Options().NoCheck.IsTrue()) ||
+        p.Options().SkipLibCheck.IsTrue() && sourceFile.IsDeclarationFile ||
+        // …
+}
+```
+
+`IsDeclarationFile` is only true for `.d.ts` files.
+The `.ts` source files from JSR packages are type-checked
+under the **consumer's** tsconfig settings, not the library's.
+
+**Zod was not written for `noUncheckedIndexedAccess: true`.**
+Array index access like `nonaborted[0]` returns `T | undefined` under this flag.
+Zod's code assumes the index is valid after a `.length` check,
+which TypeScript cannot prove:
+
+```ts
+// schemas.ts:2087-2088 — TS2532 here
+const nonaborted = results.filter((r) => !util.aborted(r));
+if (nonaborted.length === 1) {
+    final.value = nonaborted[0].value; // Object is possibly 'undefined'
+}
+
+// util.ts:930 — TS2345 here
+binaryString += String.fromCharCode(bytes[i]); // Argument of type 'number | undefined'
+```
+
+### TypeScript team's position
+
+The TypeScript team has closed multiple issues about this as **"Working as Intended"**:
+
+- [microsoft/TypeScript#41883](https://github.com/microsoft/TypeScript/issues/41883) --
+  `skipLibCheck` ignored when `types` points to `.ts`.
+  Ryan Cavanaugh: "skipLibCheck causes the 'check each top-level statement or declaration' step
+  to not occur for `.d.ts` files. It has no other effect. It does nothing in `.ts` files."
+- [microsoft/TypeScript#44205](https://github.com/microsoft/TypeScript/issues/44205) --
+  request to not apply strict checks to `node_modules`. **Declined.**
+  "The only correct path forward is to not have a .ts file in your node_modules."
+- [microsoft/TypeScript#48779](https://github.com/microsoft/TypeScript/issues/48779) --
+  `noUncheckedIndexedAccess` errors in `node_modules`.
+  Closed as duplicate of #44205.
+- [microsoft/TypeScript#40426](https://github.com/microsoft/TypeScript/issues/40426) --
+  "Disable type checking for node_modules entirely."
+  Still open, labeled "Awaiting More Feedback", no action.
+
+tsgo inherits the same semantics. No planned fix.
+
+### Solution: wrapper script that strips `node_modules` errors
+
+Since no tsconfig option can suppress these errors,
+the `lint:types` mise task wraps `tsgo --build`
+in a script that filters out diagnostics originating from `node_modules` paths.
+
+The wrapper:
+1. Runs `tsgo --build` (or `tsgo --build --noEmit`, etc.) with all original arguments
+2. Captures stdout/stderr line by line
+3. Drops any line whose file path contains `/node_modules/`
+4. Drops continuation lines (indented lines following a dropped diagnostic)
+5. Preserves the exit code: exits non-zero only if non-`node_modules` errors remain
+
+This is the least invasive option because:
+- It does not modify `node_modules` (unlike `bun patch`)
+- It does not sacrifice type safety (unlike `declare module` with `any`)
+- It does not introduce version-drift risk (unlike installing npm zod alongside JSR zod)
+- It does not require maintaining generated `.d.ts` files across package updates
+- It works for **any** JSR package that ships `.ts`, not just zod
+
+### Alternatives considered
+
+**Switch to npm zod.**
+The npm `zod` package ships `.d.ts` + `.js`, so `skipLibCheck` works.
+This is the simplest fix but ties us to npm
+and loses JSR's advantage of direct `.ts` source for editor go-to-definition.
+
+**`bun patch` to convert `.ts` to `.d.ts`.**
+Patch the JSR package to generate `.d.ts` files and delete `.ts` sources.
+Works in principle, but zod's complex types may fail declaration generation,
+and the patch must be re-applied on every zod update.
+
+**`paths` redirect with explicit `.d.ts` extension.**
+`resolver.go` line 1225 shows that `paths` substitutions with an explicit file extension
+call `tryFile` directly, bypassing the `.ts`-sibling preference:
+
+```go
+if extension := tspath.TryGetExtensionFromPath(subst); extension != "" {
+    if path, ok := r.tryFile(candidate, onlyRecordFailures); ok {
+        return &resolved{path: path, extension: extension}
+    }
+}
+```
+
+So `"paths": { "zod": ["./typings/zod.d.ts"] }` would resolve directly to the `.d.ts`
+and `skipLibCheck` would cover it. But you need a source for the `.d.ts` types --
+either generating them (same fragility as the patch approach)
+or installing npm zod in parallel (version drift).
+
+**`declare module 'zod'` ambient override.**
+Ambient module declarations only take effect when normal resolution fails.
+Since `zod` resolves fine through `node_modules`, the ambient declaration is ignored.
+
+### References
+
+- [JSR @zod/zod](https://jsr.io/@zod/zod) -- the source of the `.ts`-shipping package
+- [TypeScript tsconfig: skipLibCheck](https://www.typescriptlang.org/tsconfig/skipLibCheck.html) -- only `.d.ts`
+- [typescript-go resolver.go](https://github.com/microsoft/typescript-go/blob/main/internal/module/resolver.go) -- extension priority and `paths` bypass
+- [typescript-go program.go](https://github.com/microsoft/typescript-go/blob/main/internal/compiler/program.go) -- `SkipTypeChecking` implementation
+
 ## Related Documentation
 
 - [ESLint Configuration](./TROUBLESHOOTING.eslint.md) - ESLint and TypeScript parser issues

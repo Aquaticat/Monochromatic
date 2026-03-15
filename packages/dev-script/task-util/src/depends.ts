@@ -115,8 +115,15 @@ const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set(['newest', 
  */
 function validateTimeStrategy(value: string | null | undefined, flagName: string,): TimeStrategy {
   if (value === null || value === undefined) return 'newest';
-  if (BUILTIN_STRATEGIES.has(value as BuiltinTimeStrategy,)) return value as TimeStrategy;
-  if (value.startsWith('sh:',)) return value as TimeStrategy;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
+  if (BUILTIN_STRATEGIES.has(value as BuiltinTimeStrategy,)) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- value is a validated BuiltinTimeStrategy
+    return value as TimeStrategy;
+  }
+  if (value.startsWith('sh:',)) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- sh: prefix confirmed above
+    return value as TimeStrategy;
+  }
   throw new Error(
     `Invalid ${flagName}: "${value}". Must be a builtin (newest, oldest, mean, median) or sh:command.`,
   );
@@ -136,7 +143,7 @@ const args = {
 /** Destructured command and its arguments from the rest args after `--` */
 const [command, ...commandArgs] = args.rest;
 
-if (!command) {
+if (command === undefined || command === '') {
   throw new Error(
     outdent`
       No command specified after --

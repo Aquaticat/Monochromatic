@@ -189,13 +189,18 @@ export const SANDBOX_NOISE_PATTERNS = [
    * These appear on nearly every mise invocation and repeat per tool version,
    * producing dozens of identical warning lines.
    *
+   * When commands run via `mise run //packages/path:task`, mise prefixes each
+   * output line with the task label (e.g. `[//packages/build-tool/css:lint]`),
+   * so the pattern must allow optional leading whitespace and a bracketed prefix.
+   *
    * @example
    * ```
    * mise WARN  failed to write cache file: ~/.cache/mise/neovim/0.11.6/exec_env_....msgpack.z Read-only file system (os error 30)
    * mise WARN  failed to write cache file: ~/.cache/mise/ripgrep/15.1.0/bin_paths-....msgpack.z Read-only file system (os error 30)
+   *      [//packages/build-tool/css:lint] mise WARN  failed to write cache file: ~/.cache/mise/neovim/0.11.6/exec_env_....msgpack.z Read-only file system (os error 30)
    * ```
    */
-  /^mise WARN\s+failed to write cache file:.*Read-only file system/,
+  /^\s*(\[.*?\]\s+)?mise WARN\s+failed to write cache file:.*Read-only file system/,
 ]
 
 //endregion

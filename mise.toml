@@ -190,7 +190,7 @@ run = "oxlint --type-aware -c {{vars.monorepo_root}}/.oxlintrc.json"
 
 [task_templates."lint:types"]
 description = "TypeScript"
-run = "tsgo --build"
+run = "task-tsgo --build"
 
 [task_templates."watch:lint:types"]
 description = "Type check in watch mode"

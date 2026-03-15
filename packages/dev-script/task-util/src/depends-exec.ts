@@ -126,14 +126,14 @@ function dumpAndHandleError(error: unknown, allowFailure: boolean,): void {
     };
 
     // Dump captured output so the user can see what happened
-    if (subprocessError.stdout) {
-      process.stdout.write(subprocessError.stdout + '\n',);
+    if (subprocessError.stdout !== undefined && subprocessError.stdout !== '') {
+      process.stdout.write(`${subprocessError.stdout}\n`,);
     }
-    if (subprocessError.stderr) {
-      process.stderr.write(subprocessError.stderr + '\n',);
+    if (subprocessError.stderr !== undefined && subprocessError.stderr !== '') {
+      process.stderr.write(`${subprocessError.stderr}\n`,);
     }
 
-    if (subprocessError.signalName) {
+    if (subprocessError.signalName !== undefined && subprocessError.signalName !== '') {
       console.error(`[task-depends] command terminated by signal: ${subprocessError.signalName}`,);
     }
 

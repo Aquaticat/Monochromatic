@@ -7,7 +7,8 @@
   "bin": {
     "task-command": "src/command.ts",
     "task-append": "src/append.ts",
-    "task-depends": "src/depends.ts"
+    "task-depends": "src/depends.ts",
+    "task-tsgo": "src/tsgo-filter.ts"
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",

@@ -20,6 +20,9 @@ export const SH_PREFIX = 'sh:';
  */
 const SECONDS_MS_BOUNDARY = 1e12;
 
+/** Multiplier for converting seconds to milliseconds */
+const MS_PER_SECOND = 1_000;
+
 //endregion Constants
 
 //region Item classification
@@ -88,7 +91,7 @@ export function parseTimestamp(value: string,): number | undefined {
 
   const num = Number(value,);
   if (!Number.isNaN(num,) && Number.isFinite(num,)) {
-    return num >= SECONDS_MS_BOUNDARY ? num : num * 1_000;
+    return num >= SECONDS_MS_BOUNDARY ? num : num * MS_PER_SECOND;
   }
 
   const date = new Date(value,);

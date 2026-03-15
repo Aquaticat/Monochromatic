@@ -39,7 +39,7 @@ let cliPath: string;
 let testDir: string;
 let testScript: string;
 
-beforeEach(async () => {
+beforeEach(() => {
   // cliPath fixture
   const testFileDir = import.meta.dirname;
   cliPath = join(testFileDir, 'command.ts',);
@@ -89,9 +89,10 @@ describe('task-command', () => {
     try {
       await execAsync(`bun ${cliPath} -- node ${testScript} fail`,);
     }
-    catch (error: any) {
-      expect(error.code,).toBe(1,);
-      expect(error.stderr,).toContain('Error: Test failure',);
+    catch (error: unknown) {
+      const execError = error as { code: number; stderr: string; };
+      expect(execError.code,).toBe(1,);
+      expect(execError.stderr,).toContain('Error: Test failure',);
     }
   });
 
@@ -149,8 +150,9 @@ describe('task-command', () => {
       // Should not reach here
       expect(true,).toBe(false,);
     }
-    catch (error: any) {
-      expect(error.code,).toBeGreaterThan(0,);
+    catch (error: unknown) {
+      const execError = error as { code: number; };
+      expect(execError.code,).toBeGreaterThan(0,);
     }
   });
 
@@ -160,8 +162,9 @@ describe('task-command', () => {
       // Should not reach here
       expect(true,).toBe(false,);
     }
-    catch (error: any) {
-      expect(error.code,).toBeGreaterThan(0,);
+    catch (error: unknown) {
+      const execError = error as { code: number; };
+      expect(execError.code,).toBeGreaterThan(0,);
     }
   });
 
@@ -169,8 +172,9 @@ describe('task-command', () => {
     try {
       await execAsync(`bun ${cliPath} -- node ${testScript} fail-with-code 42`,);
     }
-    catch (error: any) {
-      expect(error.code,).toBe(42,);
+    catch (error: unknown) {
+      const execError = error as { code: number; };
+      expect(execError.code,).toBe(42,);
     }
   });
 
@@ -180,8 +184,9 @@ describe('task-command', () => {
       // Should not reach here
       expect(true,).toBe(false,);
     }
-    catch (error: any) {
-      expect(error.code,).toBeGreaterThan(0,);
+    catch (error: unknown) {
+      const execError = error as { code: number; };
+      expect(execError.code,).toBeGreaterThan(0,);
     }
   });
 
@@ -216,10 +221,11 @@ describe('task-command', () => {
       const childProcess = exec(`bun ${cliPath} -- node ${sleepScript}`,);
 
       // Give it time to start
+      // oxlint-disable-next-line eslint/no-promise-executor-return -- test delay
       await new Promise(resolve => setTimeout(resolve, 100,));
 
       // Kill the process
-      if (childProcess.pid)
+      if (childProcess.pid !== undefined && childProcess.pid !== 0)
         process.kill(childProcess.pid, 'SIGTERM',);
 
       // Wait for the process to finish

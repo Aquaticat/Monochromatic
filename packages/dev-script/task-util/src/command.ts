@@ -69,7 +69,7 @@ const args = runSync(parser, { programName: 'task-command', help: 'option', },);
 /** Destructured command and its arguments from the rest args after `--` */
 const [command, ...commandArgs] = args.rest;
 
-if (!command) {
+if (command === undefined || command === '') {
   throw new Error(
     outdent`
       No command specified after --

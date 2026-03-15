@@ -65,7 +65,7 @@ export type { BuiltinTimeStrategy, TimeStrategy, } from './depends-strategy.ts';
 async function runStrategyCommand(
   command: string, timestamps: readonly number[], verbose: boolean,
 ): Promise<number> {
-  const formattedValues = timestamps.map(function formatForShell(t,) { return String(t,); },).join(' ',);
+  const formattedValues = timestamps.map(String,).join(' ',);
   // Use printf to pipe timestamps (one per line) into the strategy command via stdin
   const fullCommand = `printf '%s\\n' ${formattedValues} | ${command}`;
 
@@ -152,7 +152,7 @@ async function aggregateTimestamps(
   const shPrefix = 'sh:';
   if (strategy.startsWith(shPrefix,)) {
     if (timestamps.length === 0) return -Infinity;
-    return runStrategyCommand(strategy.slice(shPrefix.length,), timestamps, verbose,);
+    return await runStrategyCommand(strategy.slice(shPrefix.length,), timestamps, verbose,);
   }
 
   throw new Error(`Unknown time strategy: "${strategy}"`,);

@@ -1,7 +1,8 @@
 # @monochromatic-dev/dev-script-task-util
 
 CLI utilities for mise task orchestration: a command executor with `allowFailure` support,
-a file append helper, and a make-style dependency checker.
+a file append helper, a make-style dependency checker,
+and a `tsgo` wrapper that filters `node_modules` diagnostics.
 
 ## Binaries
 
@@ -79,6 +80,37 @@ task-depends -v -s "src/**" -o "dist/**" -- mise run build
 # Allow command failure
 task-depends -a -s "src/**" -o "dist/**" -- mise run build
 ```
+
+### task-tsgo
+
+Wrapper for `tsgo` that filters out diagnostics originating from `node_modules/` paths.
+
+JSR packages ship `.ts` source files instead of `.d.ts` declarations.
+TypeScript's resolver prefers `.ts` siblings over `.js` exports,
+and `skipLibCheck` only covers `.d.ts` files.
+This causes `tsgo --build` to type-check JSR package source
+under the consumer's tsconfig, producing false positives
+(e.g. `noUncheckedIndexedAccess` violations in `@jsr/zod__zod`).
+
+The wrapper drops diagnostic lines whose file path contains `/node_modules/`
+along with their continuation lines (indented context lines),
+and exits 0 when only `node_modules` errors were found.
+
+```sh
+# Default: runs tsgo --build with filtering
+task-tsgo --build
+
+# Forward any tsgo arguments
+task-tsgo --build --noEmit
+task-tsgo --noEmit -p tsconfig.json
+
+# Without arguments, defaults to --build
+task-tsgo
+```
+
+See `TROUBLESHOOTING.typescript.md` section
+"JSR packages ship `.ts` source files that `skipLibCheck` cannot skip"
+for the full root cause analysis.
 
 ## Why task-depends over mise native `depends`
 
@@ -164,3 +196,8 @@ Commands run via `/bin/sh` (Node.js `child_process` with `shell: true`).
 - **-v, --verbose** -- log staleness decision details to stderr
 
 Strategies: `newest`, `oldest`, `mean`, `median`, or `sh:command`.
+
+### task-tsgo
+
+No flags of its own. All arguments are forwarded directly to `tsgo`.
+Defaults to `--build` when no arguments are provided.

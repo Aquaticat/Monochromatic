@@ -114,11 +114,8 @@ async function resolveGlob(
     return [];
   }
 
-  const mtimes: number[] = [];
-  for (const file of files) {
-    const fileStat = await stat(file,);
-    mtimes.push(fileStat.mtimeMs,);
-  }
+  const stats = await Promise.all(files.map(function statFile(file,) { return stat(file,); },),);
+  const mtimes = stats.map(function extractMtime(fileStat,) { return fileStat.mtimeMs; },);
 
   if (verbose) {
     console.error(`[task-depends] ${position} glob "${pattern}" matched ${files.length} files`,);
@@ -219,20 +216,15 @@ async function resolveShellCommand(
 export async function resolveItems(
   items: readonly string[], position: 'source' | 'output', verbose: boolean,
 ): Promise<number[]> {
-  const timestamps: number[] = [];
-
-  for (const item of items) {
+  const results = await Promise.all(items.map(async function resolveItem(item,): Promise<number[]> {
     if (isShellCommand(item,)) {
       const ts = await resolveShellCommand(extractCommand(item,), position, verbose,);
-      timestamps.push(ts,);
+      return [ts,];
     }
-    else {
-      const ts = await resolveGlob(item, position, verbose,);
-      timestamps.push(...ts,);
-    }
-  }
+    return resolveGlob(item, position, verbose,);
+  },),);
 
-  return timestamps;
+  return results.flat();
 }
 
 //endregion Item resolution
