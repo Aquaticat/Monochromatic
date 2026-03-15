@@ -1,18 +1,12 @@
 // MCP server: immutable tool registry and JSON-RPC dispatch.
-// Justification for >100 lines: dispatch logic, response builders, and tool call
-// validation form a single cohesive unit; further splitting would scatter functions
-// that share the same closed-over state (config, toolMap).
 
 import {
   JSON_RPC_INTERNAL_ERROR,
   JSON_RPC_INVALID_PARAMS,
   JSON_RPC_METHOD_NOT_FOUND,
-  type JsonRpcErrorResponse,
   type JsonRpcInbound,
-  type JsonRpcNotification,
   type JsonRpcOutbound,
   type JsonRpcRequest,
-  type JsonRpcResponse,
 } from './json-rpc.ts';
 
 import {
@@ -23,52 +17,7 @@ import {
 } from './protocol.ts';
 
 import type { McpServerConfig, McpServerHandle, RegisteredTool, ToolEntry } from './server-types.ts';
-
-//region Module-scope helpers -- pure functions that capture no closure state
-
-/**
- * Constructs a JSON-RPC success response.
- *
- * @param id - Request id to echo back.
- *
- * @param result - Payload for the `result` field.
- *
- * @returns Formatted JSON-RPC response.
- */
-function respondSuccess(id: JsonRpcRequest['id'], result: unknown): JsonRpcResponse {
-  return { jsonrpc: '2.0', id, result };
-}
-
-/**
- * Constructs a JSON-RPC error response.
- *
- * @param id - Request id to echo back.
- *
- * @param code - Standard JSON-RPC error code.
- *
- * @param message - Human-readable error description.
- *
- * @returns Formatted JSON-RPC error response.
- */
-function respondError(id: JsonRpcRequest['id'], code: number, message: string): JsonRpcErrorResponse {
-  return { jsonrpc: '2.0', id, error: { code, message } };
-}
-
-/**
- * Processes notifications. Logs unexpected notification methods for protocol debugging.
- *
- * @param notification - Inbound notification (consumed but not acted upon).
- *
- * @returns Always `undefined` since notifications produce no response.
- */
-function handleNotification(notification: JsonRpcNotification): undefined {
-  if (notification.method !== 'notifications/initialized') {
-    console.error(`[mcp-stdio] unexpected notification method: ${notification.method}`);
-  }
-  return undefined;
-}
-
-//endregion
+import { handleNotification, respondError, respondSuccess } from './server-response.ts';
 
 //region defineTool -- convenience for declaring tool entries
 

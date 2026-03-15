@@ -8,7 +8,7 @@
  * Client entry: `/dist/client/task-details.js` (src/client/task-details.ts)
  */
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t string/t html/f/t string jsx/r s/p n/index.ts";
-import { getTaskById, listTasksForBlockerPicker } from "../../lib/db/tasks.ts";
+import { getTaskById, listTasksForBlockerPicker } from "../../lib/db/tasks-queries.ts";
 import { serializePageData } from "./layout.ts";
 
 /**

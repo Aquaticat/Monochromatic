@@ -15,7 +15,7 @@
 import { chatCompletion } from "../../lib/ai/client.ts";
 import { buildAutofillMessages } from "../../lib/ai/prompts.ts";
 import db from "../../lib/db.ts";
-import { listAllTags } from "../../lib/db/tasks.ts";
+import { listAllTags } from "../../lib/db/tasks-queries.ts";
 import { TASK_COMPLEXITIES, TASK_PRIORITIES, type TaskComplexity, type TaskPriority } from "../../lib/types.ts";
 
 //region Types

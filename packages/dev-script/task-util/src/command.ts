@@ -95,9 +95,9 @@ catch (error) {
   match(error,)
     .when(
       function isSubprocessError(
-        error,
-      ): error is { exitCode?: number; signalName?: string; message: string; } {
-        return error !== null && typeof error === 'object' && 'exitCode' in error;
+        candidate,
+      ): candidate is { exitCode?: number; signalName?: string; message: string; } {
+        return candidate !== null && typeof candidate === 'object' && 'exitCode' in candidate;
       },
       function handleSubprocessError(subprocessError): void {
         match(subprocessError.signalName,)

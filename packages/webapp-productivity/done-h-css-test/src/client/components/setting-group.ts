@@ -1,7 +1,8 @@
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { cssCalc, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "../css.ts";
-import { buttonOutlined, flexColumn, flexRow, focusOutline } from "../mixins.ts";
+import { flexColumn, flexRow, focusOutline } from "../mixins.ts";
+import { buttonOutlined } from "../mixins-composed.ts";
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./toggle-switch.ts";
 

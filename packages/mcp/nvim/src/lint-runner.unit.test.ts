@@ -4,9 +4,8 @@ import {
   test,
 } from "bun:test";
 
-import { parseOxlintOutput } from "./lint-runner.ts";
-
-import type { OxlintJsonOutput } from "./lint-runner.ts";
+import { parseOxlintOutput } from "./oxlint-parse.ts";
+import type { OxlintJsonOutput } from "./oxlint-types.ts";
 
 //region parseOxlintOutput -- converts oxlint JSON to grouped Diagnostic maps
 

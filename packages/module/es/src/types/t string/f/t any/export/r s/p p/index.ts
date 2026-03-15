@@ -6,6 +6,7 @@ import { match, } from 'ts-pattern';
 import {
   $ as unknownToTypeOfString,
 } from '../../../../../t typeof/f/t unknown/r s/p p/index.ts';
+import { serializePrimitive, } from './serializePrimitive.ts';
 
 /** Frozen tuple of primitive type discriminants handled by direct serialization. */
 const primitive = Object.freeze(
@@ -60,45 +61,7 @@ const primitive = Object.freeze(
 export function $(obj: unknown,): string {
   const objType = unknownToTypeOfString(obj,);
   if (primitive.includes(objType,)) {
-    const primitiveObjType = objType as typeof primitive[number];
-    return match(primitiveObjType,)
-      .with('boolean', function handler() {
-        const boolObj = obj as boolean;
-        return String(boolObj,);
-      },)
-      .with('number', function handler() {
-        const numberObj = obj as number;
-        return String(numberObj,);
-      },)
-      .with('string', function handler() {
-        const stringObj = obj as string;
-        return JSON.stringify(stringObj,);
-      },)
-      .with('date', function handler() {
-        const dateObj = obj as Date;
-        return `new Date(${JSON.stringify(dateObj,)})`;
-      },)
-      .with('bigint', function handler() {
-        const bigintObj = obj as bigint;
-        return `${String(bigintObj,)}n`;
-      },)
-      .with('null', function handler() {
-        return 'null';
-      },)
-      .with('undefined', function handler() {
-        return 'undefined';
-      },)
-      .with('NaN', function handler() {
-        return 'NaN';
-      },)
-      .with('symbol', function handler() {
-        const symbolObj = obj as symbol;
-        const {description} = symbolObj;
-        return description !== undefined
-          ? `Symbol(${JSON.stringify(description,)})`
-          : 'Symbol()';
-      },)
-      .exhaustive();
+    return serializePrimitive(obj, objType as typeof primitive[number],);
   }
 
   return match(objType,)

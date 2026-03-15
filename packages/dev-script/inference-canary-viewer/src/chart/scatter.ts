@@ -5,15 +5,13 @@
  * container. Points open run detail popovers via `popovertarget` attributes.
  * Pass-1 points are filled circles; pass-2 points are hollow circles overlaid
  * at the same X position.
- *
- * Exceeds 100 lines: point element generation, axis wiring, and table
- * integration form a single rendering pipeline.
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 import { renderYAxis, renderXAxis, } from './axis.ts';
 import { renderThresholdLine, } from './threshold-line.ts';
 import { renderDataTable, type TableRow, type TableDisplayOptions, } from './data-table.ts';
+import { renderPointElements, } from './scatter-point.ts';
 
 /** Single data point for the scatter plot */
 export type ScatterPoint = {
@@ -76,60 +74,7 @@ export function renderScatterChart({
     return h({ tag: 'p', class: 'chart-empty-state', text: 'No data available.', });
   }
 
-  const totalRuns = points.length;
-  /** Percentage multiplier */
-  const PERCENT = 100;
-
-  const pointElements = points.map(function renderPoint(point) {
-    const left = totalRuns === 1 ? 50 : (point.index / (totalRuns - 1)) * PERCENT;
-    const bottom = point.score * PERCENT;
-
-    const hasIcon = point.icon !== undefined && point.icon !== '' && !point.failed;
-    const iconHtml = hasIcon ? point.icon : '';
-
-    const pass1 = h({
-      tag: 'button',
-      class: 'chart-point',
-      style: {
-        left: `${left.toFixed(2)}%`,
-        bottom: `${bottom.toFixed(2)}%`,
-        '--point-color': point.color,
-      },
-      attrs: {
-        popovertarget: `run-${point.runId}`,
-        title: point.title,
-        'aria-label': point.title,
-        ...(point.failed ? { 'data-status': 'failed', } : {}),
-        ...(hasIcon ? { 'data-shape': 'icon', } : {}),
-      },
-      html: iconHtml,
-    });
-
-    if (point.pass2Score === undefined) return pass1;
-
-    const pass2Bottom = point.pass2Score * PERCENT;
-    const pass2HasIcon = point.icon !== undefined && point.icon !== '';
-    const pass2IconHtml = pass2HasIcon ? point.icon : '';
-    const pass2 = h({
-      tag: 'button',
-      class: 'chart-point',
-      style: {
-        left: `${left.toFixed(2)}%`,
-        bottom: `${pass2Bottom.toFixed(2)}%`,
-        '--point-color': point.color,
-      },
-      attrs: {
-        popovertarget: `run-${point.runId}`,
-        title: `fix: ${point.pass2Score.toFixed(2)}`,
-        'aria-label': `fix score ${point.pass2Score.toFixed(2)}`,
-        'data-pass': 'fix',
-        ...(pass2HasIcon ? { 'data-shape': 'icon', } : {}),
-      },
-      html: pass2IconHtml,
-    });
-
-    return `${pass1}\n${pass2}`;
-  }).join('\n');
+  const pointElements = renderPointElements(points);
 
   const timestamps = points.map(function getTimestamp(point) { return point.timestamp; });
 

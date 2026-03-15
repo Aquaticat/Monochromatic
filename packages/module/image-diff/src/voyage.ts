@@ -5,89 +5,17 @@ import type {
   EmbeddingResult,
   ImageDiffConfig,
   ImageInput,
-  VoyageApiRequest,
-  VoyageApiResponse,
   VoyageModel,
 } from './types.ts';
-import { toVoyageContentItem } from './encoding.ts';
+import type { VoyageApiRequest } from './types.voyage-api.ts';
+import { toVoyageContentItem } from './encoding.voyage.ts';
+import { resolveVoyageApiKey, callVoyageApi } from './voyage.api.ts';
 import { l, tagged } from './log.ts';
-
-/**
- * Voyage AI multimodal embeddings API endpoint.
- */
-const VOYAGE_API_URL = 'https://api.voyageai.com/v1/multimodalembeddings';
 
 /**
  * Default Voyage model -- latest and highest quality.
  */
 const DEFAULT_VOYAGE_MODEL: VoyageModel = 'voyage-multimodal-3.5';
-
-/**
- * Resolve the Voyage AI API key from config or environment.
- *
- * @param configKey - explicitly provided API key, if any
- *
- * @returns resolved API key
- *
- * @throws when no API key is available from either source
- *
- * @example
- * ```ts
- * const key = resolveVoyageApiKey(undefined);
- * ```
- */
-function resolveVoyageApiKey(configKey: string | undefined): string {
-  const rl = tagged({ tag: resolveVoyageApiKey.name, l });
-  const key = configKey ?? process.env['IMAGE_DIFF_VOYAGE_API_KEY'] ?? process.env['VOYAGE_API_KEY'];
-  if (key === undefined || key === '') {
-    throw new Error(
-      'Voyage AI API key is required. Provide it via config.apiKey or set IMAGE_DIFF_VOYAGE_API_KEY (or VOYAGE_API_KEY) environment variable.',
-    );
-  }
-  rl.debug('Voyage API key resolved');
-  return key;
-}
-
-/**
- * Send a request to the Voyage AI multimodal embeddings API.
- *
- * @param requestBody - serializable request payload
- *
- * @param apiKey - Voyage AI API key for authorization
- *
- * @returns parsed API response
- *
- * @throws on non-OK HTTP status with the error body
- *
- * @example
- * ```ts
- * const response = await callVoyageApi(request, 'pa-...');
- * ```
- */
-async function callVoyageApi(requestBody: VoyageApiRequest, apiKey: string): Promise<VoyageApiResponse> {
-  const rl = tagged({ tag: callVoyageApi.name, l });
-
-  rl.debug(`calling Voyage API with model "${requestBody.model}", ${String(requestBody.inputs.length)} input(s)`);
-
-  const response = await fetch(VOYAGE_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(requestBody),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    rl.error(`API returned ${String(response.status)}: ${errorBody}`);
-    throw new Error(`Voyage AI API error (${String(response.status)}): ${errorBody}`);
-  }
-
-  const result = await response.json() as VoyageApiResponse;
-  rl.debug(`received ${String(result.data.length)} embedding(s), total tokens: ${String(result.usage.total_tokens)}`);
-  return result;
-}
 
 /**
  * Compute a single image embedding via the Voyage AI API.

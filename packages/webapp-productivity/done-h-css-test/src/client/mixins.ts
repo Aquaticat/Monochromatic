@@ -3,9 +3,11 @@
  *
  * Replaces the PostCSS `@mixin`/`@apply` pipeline with plain TypeScript
  * functions that return declaration records. Composed via object spread.
+ *
+ * Composed patterns (buttonOutlined, stickyBar) are in `mixins-composed.ts`.
  */
 import type { CssDeclarations, CssValue } from "@monochromatic-dev/module-es/h-css";
-import { cssCalc, cssInt, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
+import { cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
 import { $ as css } from "./css.ts";
 
 //region Layout primitives
@@ -130,10 +132,6 @@ export function minTouchTarget(): CssDeclarations {
 /**
  * Light-DOM global resets that shadow DOM cannot inherit.
  *
- * Applied once at the top level of each component's style string
- * so every shadow tree gets consistent disabled and placeholder styling
- * without repeating the declarations in every component.
- *
  * @returns Array of CSS rule strings for shadow DOM globals
  */
 export function shadowDomGlobals(): string[] {
@@ -160,51 +158,6 @@ export function scrollRow(): CssDeclarations {
     'overflow-x': 'auto',
     'overflow-y': 'clip',
     ...scrollbarHidden(),
-  };
-}
-
-/**
- * Outlined interactive button with token-based colors.
- *
- * @returns Declarations for outlined button
- */
-export function buttonOutlined(): CssDeclarations {
-  return {
-    ...flexCenter(),
-    ...minTouchTarget(),
-    gap: cssRem(0.5),
-    'border-width': cssCalc(`${cssRem(1)} / 16`),
-    'border-style': 'solid',
-    'border-color': cssVar('fg'),
-    'padding-block': cssRem(0.5),
-    'padding-inline': cssRem(0.5),
-    'background-color': 'transparent',
-    color: cssVar('fg'),
-    'font-family': 'inherit',
-    'font-size': 'inherit',
-    'font-style': 'inherit',
-    'font-weight': 'inherit',
-    'line-height': 'inherit',
-    cursor: 'pointer',
-  };
-}
-
-/**
- * Top-anchored sticky navigation bar.
- *
- * @returns Declarations for sticky bar
- */
-export function stickyBar(): CssDeclarations {
-  return {
-    ...flexRow(),
-    gap: cssVar('min-gap'),
-    'block-size': cssRem(3),
-    'padding-block': 0,
-    'padding-inline': cssVar('min-padding'),
-    'background-color': cssVar('bg'),
-    position: 'sticky',
-    'inset-block-start': 0,
-    'z-index': cssInt(10),
   };
 }
 

@@ -1,206 +1,19 @@
-import { existsSync } from "node:fs";
+/**
+ * Oxlint lint runner.
+ *
+ * Orchestrates oxlint invocations across files grouped by their
+ * nearest `tsconfig.json` ancestor for correct `--type-aware` resolution.
+ *
+ * @module
+ */
+
 import { dirname, resolve } from "node:path";
 
-import spawn from "nano-spawn";
-
 import type { Diagnostic } from "./nvim-client.ts";
+import { findAncestorWithFile } from "./oxlint-parse.ts";
+import { spawnOxlint } from "./oxlint-spawn.ts";
 
-//region Types -- oxlint JSON output shape
-
-/**
- * Span location within a single diagnostic label.
- *
- * @example
- * ```ts
- * const span: OxlintSpan = { offset: 100, length: 20, line: 5, column: 3 };
- * ```
- */
-type OxlintSpan = {
-  readonly offset: number;
-  readonly length: number;
-  readonly line: number;
-  readonly column: number;
-};
-
-/**
- * Single label attached to an oxlint diagnostic.
- *
- * @example
- * ```ts
- * const label: OxlintLabel = { span: { offset: 0, length: 10, line: 1, column: 1 } };
- * ```
- */
-type OxlintLabel = {
-  readonly span: OxlintSpan;
-};
-
-/**
- * Single diagnostic entry from oxlint `--format json` output.
- *
- * @example
- * ```ts
- * const entry: OxlintDiagnostic = {
- *
- *   message: "Missing TSDoc comment.",
- *
- *   code: "tsdoc(require-tsdoc)",
- *
- *   severity: "error",
- *
- *   causes: [],
- *
- *   filename: "src/index.ts",
- *
- *   labels: [{ span: { offset: 0, length: 10, line: 1, column: 1 } }],
- *
- *   related: [],
- * };
- * ```
- */
-export type OxlintDiagnostic = {
-  readonly message: string;
-  readonly code: string;
-  readonly severity: string;
-  readonly causes: readonly string[];
-  readonly filename: string;
-  readonly labels: readonly OxlintLabel[];
-  readonly related: readonly unknown[];
-  readonly url?: string;
-  readonly help?: string;
-};
-
-/**
- * Top-level shape of oxlint `--format json` stdout.
- *
- * @example
- * ```ts
- * const output: OxlintJsonOutput = {
- *
- *   diagnostics: [],
- *
- *   number_of_files: 1,
- *
- *   number_of_rules: 300,
- *
- *   threads_count: 8,
- *
- *   start_time: 0.05,
- * };
- * ```
- */
-export type OxlintJsonOutput = {
-  readonly diagnostics: readonly OxlintDiagnostic[];
-  readonly number_of_files: number;
-  readonly number_of_rules: number;
-  readonly threads_count: number;
-  readonly start_time: number;
-};
-
-//endregion Types
-
-//region Severity mapping -- oxlint lowercase to our uppercase format
-
-/** Maps oxlint severity strings to the uppercase format used by editor diagnostics. */
-const OXLINT_SEVERITY_MAP: Record<string, string> = {
-  error: "ERROR",
-  warning: "WARN",
-};
-
-//endregion Severity mapping
-
-//region Directory walking -- find config files by walking up the filesystem
-
-/**
- * Walks up from a starting directory to find a file by name.
- *
- * @param startDir - Directory to begin searching from.
- *
- * @param filename - File to locate in ancestor directories.
- *
- * @returns Absolute path to the directory containing the file, or null if not found.
- *
- * @example
- * ```ts
- * const root = findAncestorWithFile("/home/user/project/packages/foo/src", ".oxlintrc.json");
- * // => "/home/user/project"
- * ```
- */
-function findAncestorWithFile(startDir: string, filename: string): string | null {
-  let current = startDir;
-  // oxlint-disable-next-line no-constant-condition -- walk up until filesystem root
-  while (true) {
-    if (existsSync(resolve(current, filename))) {
-      return current;
-    }
-    const parent = dirname(current);
-    if (parent === current) {
-      return null;
-    }
-    current = parent;
-  }
-}
-
-//endregion Directory walking
-
-//region Parsing -- convert oxlint JSON diagnostics to our Diagnostic type
-
-/**
- * Converts a parsed oxlint JSON output into grouped diagnostics keyed by absolute file path.
- * Pure function extracted for testability.
- *
- * @param output - Parsed oxlint JSON output.
- *
- * @param cwd - Working directory used to resolve relative filenames.
- *
- * @returns Map from absolute file path to diagnostics found in that file.
- *
- * @example
- * ```ts
- * const result = parseOxlintOutput(jsonOutput, "/home/user/project");
- * // => Map { "/home/user/project/src/index.ts" => [{ severity: "ERROR", ... }] }
- * ```
- */
-export function parseOxlintOutput(output: OxlintJsonOutput, cwd: string): Map<string, Diagnostic[]> {
-  const result = new Map<string, Diagnostic[]>();
-
-  for (const entry of output.diagnostics) {
-    const span = entry.labels[0]?.span;
-    if (span === undefined) {
-      continue;
-    }
-
-    const absolutePath = resolve(cwd, entry.filename);
-    const message = entry.help !== undefined && entry.help.length > 0
-      ? `${entry.message} (help: ${entry.help})`
-      : entry.message;
-    const diagnostic: Diagnostic = {
-      severity: OXLINT_SEVERITY_MAP[entry.severity] ?? `UNKNOWN(${entry.severity})`,
-      lnum: span.line,
-      col: span.column,
-      end_lnum: span.line,
-      end_col: span.column,
-      message,
-      source: "oxlint",
-      code: entry.code,
-    };
-
-    const existing = result.get(absolutePath);
-    if (existing !== undefined) {
-      existing.push(diagnostic);
-    } else {
-      result.set(absolutePath, [diagnostic]);
-    }
-  }
-
-  return result;
-}
-
-//endregion Parsing
-
-//region Runner -- spawn oxlint process and collect results
-
-/** Timeout in milliseconds for the oxlint process. */
-const OXLINT_TIMEOUT_MS = 10_000;
+//region Types -- lint result shape
 
 /**
  * Result from a lint run, including diagnostics and any caveat notes.
@@ -219,6 +32,10 @@ export type LintResult = {
   readonly diagnostics: Map<string, Diagnostic[]>;
   readonly notes: readonly string[];
 };
+
+//endregion Types
+
+//region Runner -- orchestrate oxlint across file groups
 
 /**
  * Runs oxlint on the specified files and returns parsed diagnostics.
@@ -320,67 +137,6 @@ export async function runOxlint({ files }: { files: readonly string[] }): Promis
 }
 
 //endregion Runner
-
-//region Process spawning -- low-level oxlint invocation
-
-/**
- * Spawns a single oxlint process and returns parsed diagnostics.
- *
- * @param configPath - Absolute path to `.oxlintrc.json`.
- *
- * @param cwd - Working directory for the oxlint process.
- *
- * @param files - Absolute file paths to lint.
- *
- * @param typeAware - Whether to pass `--type-aware`.
- *
- * @returns Diagnostics grouped by absolute file path.
- */
-async function spawnOxlint({ configPath, cwd, files, typeAware }: {
-  configPath: string;
-  cwd: string;
-  files: readonly string[];
-  typeAware: boolean;
-}): Promise<Map<string, Diagnostic[]>> {
-  const args = [
-    "--format", "json",
-    "-c", configPath,
-    ...(typeAware ? ["--type-aware"] : []),
-    ...files,
-  ];
-
-  try {
-    const result = await spawn("oxlint", args, { cwd, timeout: OXLINT_TIMEOUT_MS });
-    const {stdout} = result;
-
-    if (stdout.trim().length === 0) {
-      console.error("[mcp-nvim] oxlint produced no output (exit code 0)");
-      return new Map();
-    }
-
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint JSON output conforms to OxlintJsonOutput schema
-    const parsed = JSON.parse(stdout) as OxlintJsonOutput;
-    return parseOxlintOutput(parsed, cwd);
-  } catch (err: unknown) {
-    // oxlint exits non-zero when it finds diagnostics, which is expected
-    if (err !== null && err !== undefined && typeof err === "object" && "stdout" in err) {
-      const stdout = String(err.stdout);
-      if (stdout.trim().length > 0) {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint JSON output conforms to OxlintJsonOutput schema
-        const parsed = JSON.parse(stdout) as OxlintJsonOutput;
-        return parseOxlintOutput(parsed, cwd);
-      }
-      const exitCode = "exitCode" in err ? String(err.exitCode) : "unknown";
-      console.error(`[mcp-nvim] oxlint produced no output (exit code ${exitCode})`);
-      return new Map();
-    }
-    const message = err instanceof Error ? err.message : String(err);
-    console.error(`[mcp-nvim] Failed to run oxlint: ${message}`);
-    return new Map();
-  }
-}
-
-//endregion Process spawning
 
 //region Utilities -- map merging
 

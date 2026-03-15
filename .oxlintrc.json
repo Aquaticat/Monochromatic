@@ -67,40 +67,59 @@
   "rules": {
     // Every module-level declaration (function, type, const, class, enum) needs a /** */ comment.
     "tsdoc/require-tsdoc": "error",
+
     // Leading * on each comment line must align vertically with the opener's first *.
     "tsdoc/check-alignment": "error",
+
     // Comments containing tags (@param, @returns, etc.) must use multiline /** */ format.
     "tsdoc/multiline-blocks": "warn",
+
     // No ** at start of comment lines (e.g. ` ** text` is invalid TSDoc).
     "tsdoc/no-multi-asterisks": "error",
+
     // Blank comment line required before each block tag (@param, @returns, @example, etc.).
     "tsdoc/tag-lines": "warn",
+
     // Modifier tags (@public, @readonly, @override, etc.) must stand alone with no content.
     "tsdoc/empty-tags": "error",
+
     // Unescaped */ inside comment content must be written as *\/.
     "tsdoc/escape-inline-tags": "error",
+
     // Only TSDoc-standard tags allowed. Unescaped @ in prose is flagged -- escape as \@.
     "tsdoc/check-tag-names": "error",
+
     // No conflicting access modifiers (e.g. @public and @internal together).
     "tsdoc/check-access": "error",
+
     // TSDoc syntax must parse without errors (malformed inline tags, broken links, etc.).
     "tsdoc/valid-types": "warn",
+
     // No JSDoc-style {Type} annotations in TSDoc -- TypeScript handles types.
     "tsdoc/no-types": "error",
+
     // @param names must match the function signature exactly.
     "tsdoc/check-param-names": "error",
+
     // All function parameters should have a @param tag.
     "tsdoc/require-param": "warn",
+
     // @param tags must include the parameter name.
+    // For destructured params, document each destructured param.
     "tsdoc/require-param-name": "error",
+
     // @param tags should include a description.
     "tsdoc/require-param-description": "warn",
+
     // Functions with return values should have @returns.
     "tsdoc/require-returns": "warn",
+
     // @returns must match actual return behavior (no @returns on void functions).
     "tsdoc/require-returns-check": "error",
+
     // @returns tags should include a description.
     "tsdoc/require-returns-description": "warn",
+
     // @yields is not part of the TSDoc specification. Disabled to keep the plugin TSDoc-compliant.
     // Generator return types should be documented via @returns instead.
     "tsdoc/require-yields": "off",

@@ -1,0 +1,106 @@
+/**
+ * Lua snippets and raw diagnostic mapping for Neovim RPC.
+ *
+ * Contains the Lua code executed via `nvim_exec_lua` and the
+ * function that converts raw msgpack records into typed Diagnostics.
+ *
+ * @module
+ */
+
+import { SEVERITY_MAP, normalizeMessage, type Diagnostic } from "./nvim-types.ts";
+
+//region Raw diagnostic mapping -- converts Lua msgpack output to typed Diagnostics
+
+/**
+ * Maps a raw msgpack diagnostic record to a typed Diagnostic.
+ *
+ * @param d - Raw record from nvim_exec_lua.
+ *
+ * @returns Typed Diagnostic with 1-indexed line/column.
+ */
+export function mapRawDiagnostic(d: Record<string, unknown>): Diagnostic {
+  // Fields come from Neovim's Lua msgpack bridge; types are guaranteed by the Lua code above.
+  const severity = typeof d.severity === 'number' ? d.severity : 0;
+  const lnum = typeof d.lnum === 'number' ? d.lnum : 0;
+  const col = typeof d.col === 'number' ? d.col : 0;
+  const endLnum = typeof d.end_lnum === 'number' ? d.end_lnum : 0;
+  const endCol = typeof d.end_col === 'number' ? d.end_col : 0;
+  const message = typeof d.message === 'string' ? d.message : '';
+  const source = typeof d.source === 'string' ? d.source : null;
+  const code = typeof d.code === 'string' || typeof d.code === 'number' ? d.code : null;
+
+  return {
+    severity: SEVERITY_MAP[severity] ?? `UNKNOWN(${String(severity)})`,
+    lnum: lnum + 1,
+    col: col + 1,
+    end_lnum: endLnum + 1,
+    end_col: endCol + 1,
+    message: normalizeMessage(message),
+    source,
+    code,
+  };
+}
+
+//endregion Raw diagnostic mapping
+
+//region Lua snippets -- shared Lua code executed via nvim_exec_lua
+
+/** Lua code that returns diagnostics for the current buffer. */
+export const LUA_GET_CURRENT_BUF_DIAGNOSTICS = `
+local buf = vim.api.nvim_get_current_buf()
+local diags = vim.diagnostic.get(buf)
+local result = {}
+for _, d in ipairs(diags) do
+  table.insert(result, {
+    severity = d.severity,
+    lnum = d.lnum,
+    col = d.col,
+    end_lnum = d.end_lnum,
+    end_col = d.end_col,
+    message = d.message,
+    source = d.source,
+    code = d.code,
+  })
+end
+return result
+`;
+
+/** Lua code that returns diagnostics across all buffers, grouped by buffer. */
+export const LUA_GET_ALL_DIAGNOSTICS = `
+local diags = vim.diagnostic.get()
+local by_buf = {}
+for _, d in ipairs(diags) do
+  local bufnr = d.bufnr
+  if not by_buf[bufnr] then by_buf[bufnr] = {} end
+  table.insert(by_buf[bufnr], {
+    severity = d.severity,
+    lnum = d.lnum,
+    col = d.col,
+    end_lnum = d.end_lnum,
+    end_col = d.end_col,
+    message = d.message,
+    source = d.source,
+    code = d.code,
+  })
+end
+local result = {}
+for bufnr, buf_diags in pairs(by_buf) do
+  table.insert(result, {
+    path = vim.api.nvim_buf_get_name(bufnr),
+    diagnostics = buf_diags,
+  })
+end
+return result
+`;
+
+/** Lua code that returns metadata about the current buffer. */
+export const LUA_GET_CURRENT_FILE = `
+local buf = vim.api.nvim_get_current_buf()
+return {
+  path = vim.api.nvim_buf_get_name(buf),
+  filetype = vim.bo[buf].filetype,
+  modified = vim.bo[buf].modified,
+}
+`;
+
+//endregion Lua snippets

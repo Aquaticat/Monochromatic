@@ -4,18 +4,17 @@
  * Shows a combined scatter chart with every model's overall score over time,
  * where each point is clickable to open the run detail overlay.
  * Below the chart, a summary table lists each model's latest status.
- *
- * Exceeds 100 lines: chart point builders and legend are tightly coupled
- * to the overview layout and share local types.
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
-import { renderScatterChart, type ScatterPoint, } from '../chart/scatter.ts';
+import { renderScatterChart, } from '../chart/scatter.ts';
 import { vendorColor, } from '../data/model-colors.ts';
-import { iconDot, vendorIcon, } from '../data/model-icons.ts';
+import { iconDot, } from '../data/model-icons.ts';
 import { SHAPE_LEGEND, } from '../chart/legend.ts';
 
-import { hasMultipleProbes, type ViewerEntry, } from '../data/viewer-types.ts';
+import type { ViewerEntry, } from '../data/viewer-types.ts';
+
+import { buildAllModelPoints, buildOverviewLegend, } from './view-overview-builders.ts';
 
 /** Aggregated model summary for the overview table */
 export type ModelSummary = {
@@ -61,7 +60,7 @@ export function renderOverview({ summaries, entries, }: {
 
   // Combined scatter chart: all models' overall scores
   const chartPoints = buildAllModelPoints(entries);
-  const legend = buildLegend(summaries);
+  const legend = buildOverviewLegend(summaries);
   const chart = renderScatterChart({ points: chartPoints, threshold: 0, thresholdLabel: '', caption: 'All models overall score', hideTable: true, });
 
   // Summary table — status is shown inline rather than in its own column
@@ -120,58 +119,4 @@ export function renderOverview({ summaries, entries, }: {
       ],
     }),
   ].join('\n');
-}
-
-/**
- * Builds scatter points for all models' overall scores, ordered by timestamp.
- *
- * @param entries - all history entries
- *
- * @returns scatter points array
- */
-function buildAllModelPoints(
-  entries: readonly ViewerEntry[],
-): readonly ScatterPoint[] {
-  return entries.filter(function hasScore(entry): boolean { return entry.overallScore > 0 && hasMultipleProbes(entry); }).map(function toPoint(entry, index): ScatterPoint {
-    const color = vendorColor(entry.model);
-    const runId = `${entry.label}-${entry.timestamp}`;
-    const tableRow = {
-      timestamp: entry.timestamp,
-      model: entry.label,
-      probe: 'overall',
-      score: entry.overallScore,
-      failed: entry.failed,
-    };
-    return {
-      runId,
-      index,
-      timestamp: entry.timestamp,
-      score: entry.overallScore,
-      color,
-      icon: vendorIcon(entry.model),
-      title: `${entry.label} ${entry.timestamp.slice(0, 10)}: ${entry.overallScore.toFixed(2)}`,
-      failed: entry.failed,
-      tableRow,
-    };
-  });
-}
-
-/**
- * Renders a color legend for the overview chart.
- *
- * @param summaries - model summaries
- *
- * @returns HTML legend string
- */
-function buildLegend(summaries: readonly ModelSummary[],): string {
-  const items = summaries.map(function buildLegendItem(summary) {
-    const color = vendorColor(summary.model);
-    return h({
-      tag: 'span',
-      class: 'item',
-      children: [iconDot(summary.model, color), ' ', h({ tag: 'span', text: summary.label, })],
-    });
-  }).join('\n');
-
-  return h({ tag: 'div', class: 'chart-legend', html: items, });
 }

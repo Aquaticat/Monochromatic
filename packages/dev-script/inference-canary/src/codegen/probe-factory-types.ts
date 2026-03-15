@@ -5,8 +5,9 @@
  * handles caching, container execution, linting, fix prompts, and scoring;
  * probes only supply what varies (name, prompt, test input, verifier, hooks).
  */
+import type { LintResult, } from '../linter.ts';
 import type { ScoreContext, } from '../probes.ts';
-import type { PerfTestConfig, } from './perf.ts';
+import type { PerfTestConfig, TimedContainerResult, } from './perf.ts';
 import type { AdditionalRun, VerifyResult, } from './additional-run-types.ts';
 
 import type { ContainerResult, } from '../container.ts';
@@ -66,4 +67,22 @@ export type CodeGenProbeConfig = {
    * for the probe to score above zero.
    */
   readonly additionalRuns?: readonly AdditionalRun[];
+};
+
+/**
+ * Shared per-model caches used by the probe factory's `buildFixPrompt` and `score` closures.
+ * Both closures read and write these caches, which is why they are bundled together
+ * and passed as a single object rather than individual parameters.
+ */
+export type ProbeFactoryCaches = {
+  /** Per-model lint result cache, populated by score() and read by buildFixPrompt() */
+  readonly lint: Map<string, LintResult>;
+  /** Per-model main container result cache */
+  readonly container: Map<string, ContainerResult>;
+  /** Per-model perf container result cache */
+  readonly perf: Map<string, TimedContainerResult>;
+  /** Per-additional-run container result caches, indexed by run position */
+  readonly additionalContainers: Map<string, ContainerResult>[];
+  /** Per-additional-run verification result caches, indexed by run position */
+  readonly additionalVerify: Map<string, VerifyResult>[];
 };

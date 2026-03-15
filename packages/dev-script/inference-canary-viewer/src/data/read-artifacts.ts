@@ -4,32 +4,20 @@
  * Walks `src/canary-lint/` and groups artifacts by (model, timestamp) to form
  * run entries. Enriched artifacts provide scores, reasoning, timing, and usage.
  * Old pre-enrichment artifacts degrade gracefully with score defaulting to 0.
- *
- * Exceeds 100 lines: single cohesive reader pipeline; splitting would scatter
- * the grouping logic across files with no clear ownership boundary.
  */
 import type { Dirent } from 'node:fs';
 import { readdir, readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { LINT_DIR, type ArtifactMeta, type EnrichedArtifactMeta, type FailureArtifactMeta, } from '@monochromatic-dev/dev-script-inference-canary/src/linter-artifacts.ts';
+import { LINT_DIR, type ArtifactMeta, type FailureArtifactMeta, } from '@monochromatic-dev/dev-script-inference-canary/src/linter-artifacts.ts';
 
-import type { ArtifactData, ProbeDetail, ViewerEntry, } from './viewer-types.ts';
+import type { ArtifactData, } from './viewer-types.ts';
+
+import { buildViewerData, isEnriched, type ParsedArtifact, } from './build-viewer-data.ts';
 
 export { LINT_DIR, };
 
-//region Type guards -- distinguish enriched, failure, and basic artifact metadata
-
-/**
- * Whether a parsed meta.json is an enriched artifact (has score field).
- *
- * @param meta - artifact metadata to check
- *
- * @returns true when the metadata includes score (enriched form)
- */
-function isEnriched(meta: ArtifactMeta): meta is EnrichedArtifactMeta {
-  return 'score' in meta;
-}
+export { probeKey, } from './build-viewer-data.ts';
 
 /**
  * Whether a parsed meta.json is a whole-model failure artifact.
@@ -41,8 +29,6 @@ function isEnriched(meta: ArtifactMeta): meta is EnrichedArtifactMeta {
 function isFailure(meta: Record<string, unknown>): meta is FailureArtifactMeta {
   return meta['failed'] === true;
 }
-
-//endregion Type guards
 
 /**
  * Reads a file, returning undefined on any error.
@@ -61,35 +47,6 @@ async function readOptional(path: string): Promise<string | undefined> {
     }
     return undefined;
   }
-}
-
-/** Parsed artifact with metadata, optional source/response, and directory path */
-type ParsedArtifact = {
-  readonly meta: ArtifactMeta | EnrichedArtifactMeta;
-  readonly source: string | undefined;
-  readonly response: string | undefined;
-  readonly dir: string;
-};
-
-/**
- * Composite key for grouping probe details: `label::probe::timestamp`.
- *
- * @param label - model label
- *
- * @param probe - probe name
- *
- * @param timestamp - ISO timestamp
- *
- * @returns composite key string
- *
- * @example
- * ```ts
- * probeKey('Sonnet 4.6', 'csv-rfc4180', '2026-03-06T12:00:00.000Z');
- * // "Sonnet 4.6::csv-rfc4180::2026-03-06T12:00:00.000Z"
- * ```
- */
-export function probeKey(label: string, probe: string, timestamp: string): string {
-  return `${label}::${probe}::${timestamp}`;
 }
 
 /**
@@ -145,8 +102,8 @@ export async function readArtifacts(): Promise<ArtifactData> {
       }
 
       // Old artifacts without label fall back to the directory name
-      const meta: ArtifactMeta | EnrichedArtifactMeta = {
-        ...(parsed as ArtifactMeta | EnrichedArtifactMeta),
+      const meta: ArtifactMeta = {
+        ...(parsed as ArtifactMeta),
         /* oxlint-disable-next-line typescript/no-unnecessary-condition -- label is typed as required but old artifacts may omit it; ?? fallback is intentional */
         label: (parsed as ArtifactMeta).label ?? modelDirent.name,
       };
@@ -165,106 +122,4 @@ export async function readArtifacts(): Promise<ArtifactData> {
   }
 
   return buildViewerData(initialByRun, fixByRun, failures);
-}
-
-/**
- * Assembles viewer entries and probe details from grouped artifacts.
- *
- * @param initialByRun - initial-pass artifacts grouped by run key
- *
- * @param fixByRun - fix-pass artifacts grouped by run key
- *
- * @param failures - whole-model failure metadata
- *
- * @returns assembled viewer data
- */
-function buildViewerData(
-  initialByRun: ReadonlyMap<string, ReadonlyMap<string, ParsedArtifact>>,
-  fixByRun: ReadonlyMap<string, ReadonlyMap<string, ParsedArtifact>>,
-  failures: readonly FailureArtifactMeta[],
-): ArtifactData {
-  const entries: ViewerEntry[] = [];
-  const probeDetails = new Map<string, ProbeDetail>();
-
-  for (const [runKey, probes] of initialByRun) {
-    const fixes = fixByRun.get(runKey) ?? new Map<string, ParsedArtifact>();
-    const firstProbe = probes.values().next().value;
-    if (firstProbe === undefined) continue;
-
-    const { model, label, timestamp, } = firstProbe.meta;
-    const probeScores: Record<string, number> = {};
-    const pass2Scores: Record<string, number> = {};
-    let config: ViewerEntry['config'];
-    let hasPass2 = false;
-
-    for (const [probeName, artifact] of probes) {
-      const enriched = isEnriched(artifact.meta) ? artifact.meta : undefined;
-      probeScores[probeName] = enriched?.score ?? 0;
-      if (enriched?.config !== undefined) ({ config } = enriched);
-
-      const fix = fixes.get(probeName);
-      const fixEnriched = fix !== undefined && isEnriched(fix.meta) ? fix.meta : undefined;
-      if (fixEnriched?.score !== undefined) {
-        pass2Scores[probeName] = fixEnriched.score;
-        hasPass2 = true;
-      }
-
-      probeDetails.set(probeKey(label, probeName, timestamp), {
-        score: enriched?.score,
-        pass2Score: fixEnriched?.score,
-        reasoning: enriched?.reasoning,
-        timing: enriched?.timing,
-        usage: enriched?.usage,
-        finishReason: enriched?.finishReason,
-        config: enriched?.config,
-        fixPrompt: fixEnriched?.fixPrompt,
-        fixReasoning: fixEnriched?.reasoning,
-        fixTiming: fixEnriched?.timing,
-        fixUsage: fixEnriched?.usage,
-        fixFinishReason: fixEnriched?.finishReason,
-        initialResponse: artifact.response,
-        fixResponse: fix?.response,
-        initialSource: artifact.source,
-        fixSource: fix?.source,
-        initialDir: artifact.dir,
-        fixDir: fix?.dir,
-        partial: enriched?.partial,
-        error: enriched?.error,
-      });
-    }
-
-    const scores = Object.values(probeScores);
-    const overallScore = scores.length > 0
-      ? scores.reduce(function addScore(sum, score) { return sum + score; }, 0) / scores.length
-      : 0;
-
-    entries.push({
-      timestamp,
-      model,
-      label,
-      overallScore,
-      probeScores,
-      ...(hasPass2 ? { pass2Scores, } : {}),
-      failed: false,
-      config,
-    });
-  }
-
-  for (const failure of failures) {
-    entries.push({
-      timestamp: failure.timestamp,
-      model: failure.model,
-      label: (failure as unknown as { label?: string }).label ?? failure.model,
-      overallScore: 0,
-      probeScores: {},
-      failed: true,
-      error: failure.error,
-      config: failure.config,
-    });
-  }
-
-  entries.sort(function byTimestamp(a, b) { return a.timestamp.localeCompare(b.timestamp); });
-
-  console.error(`[viewer] loaded ${String(entries.length)} runs, ${String(probeDetails.size)} probe details`);
-  return { entries, probeDetails, };
 }

@@ -4,12 +4,10 @@ import {
   test,
 } from 'bun:test';
 
-import { JSON_RPC_PARSE_ERROR } from './json-rpc.ts';
-import { serve } from './transport.ts';
+import { JSON_RPC_PARSE_ERROR, type JsonRpcOutbound } from './json-rpc.ts';
+import { serve, type StdoutWriter } from './transport.ts';
 
 import type { McpServerHandle } from './server-types.ts';
-import type { JsonRpcOutbound } from './json-rpc.ts';
-import type { StdoutWriter } from './transport.ts';
 
 //region helpers -- test doubles for stdin/stdout and server handle
 

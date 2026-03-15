@@ -8,41 +8,12 @@ import type {
 import type { Serializer, Deserializer, } from '../../../../t/index.ts';
 import { $ as defaultLogger, } from '../../../../../t logger/f/t never/r s/p p/index.ts';
 import {
-  type BackendResult,
   resolveConsensus,
 } from '../../../../consensus.ts';
 import { healBackendsSync, } from '../../../../heal.ts';
 import { $ as serializeValue, } from '../../../../../../t string/f/t unknown/serialize/r s/p n/index.ts';
 import { createLruKeySet, } from '../../../../lruKeySet.ts';
-
-/**
- * Query all sync backends for a key and return typed results with priority info.
- *
- * @param backends - sync storage backends to query
- *
- * @param key - lookup key
- *
- * @returns results from all backends
- *
- * @example
- * ```ts
- * const results = queryAllBackendsSync(backends, 'my-key');
- * ```
- */
-function queryAllBackendsSync(
-  backends: readonly [SyncStorageBackend, ...SyncStorageBackend[],],
-  key: string,
-): [BackendResult<SyncStorageBackend>, ...BackendResult<SyncStorageBackend>[],] {
-  const results = backends.map(function queryBackend(backend,) {
-    const raw = backend.get(key,);
-    return {
-      value: raw === undefined ? undefined : raw,
-      priority: backend.priority ?? 0,
-      backend,
-    };
-  },);
-  return results as [BackendResult<SyncStorageBackend>, ...BackendResult<SyncStorageBackend>[],];
-}
+import { queryAllBackendsSync, } from './backends.ts';
 
 /**
  * Creates a synchronous Store instance where all operations (get, set, delete, clear)

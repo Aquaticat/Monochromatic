@@ -1,98 +1,15 @@
 /**
- * Arm and lower body part definitions for reference image segmentation.
+ * Lower body part definitions for reference image segmentation.
  *
- * Separated from the main parts module for file size management.
- * Colors sampled from the actual reference JPEG.
+ * Skirts, legs, and boots.
  *
  * @module
  */
-
 import { PALETTE } from './config.ts'
+import { c, REF_GRAY_DARK, REF_GRAY_WARM, REF_RED } from './parts-types.ts'
 
-import type { ColorSpec, PartDef } from './parts.ts'
+import type { PartDef } from './parts-types.ts'
 
-/**
- * Shorthand to avoid repeating palette lookups.
- *
- * @internal
- *
- * @param rgb - RGB values 0-255
- *
- * @param tolerance - Euclidean distance threshold
- *
- * @returns color spec
- */
-function c(rgb: readonly [number, number, number], tolerance: number): ColorSpec {
-  return { rgb, tolerance }
-}
-
-/**
- * Warm gray sampled from the reference JPEG.
- * The reference has a warm-purple tint absent from the design palette.
- */
-const REF_GRAY_WARM = [188, 182, 186] as const
-
-/** Dark gray sampled from the reference JPEG. */
-const REF_GRAY_DARK = [144, 135, 140] as const
-
-/** Red sampled from the reference JPEG. */
-const REF_RED = [190, 72, 88] as const
-
-//region Arm group
-/** Upper arms, forearms, and hands. */
-export const ARM_PARTS: readonly PartDef[] = [
-  {
-    name: 'upper_arm_L',
-    bbox: [0.05, 0.18, 0.2, 0.15],
-    colors: [c(PALETTE.midGray, 50), c(REF_GRAY_WARM, 40), c(REF_GRAY_DARK, 35)],
-    fill: '#9a9a9a',
-    morphClose: 5,
-    morphOpen: 3,
-  },
-  {
-    name: 'upper_arm_R',
-    bbox: [0.75, 0.18, 0.2, 0.15],
-    colors: [c(PALETTE.midGray, 50), c(REF_GRAY_WARM, 40), c(REF_GRAY_DARK, 35)],
-    fill: '#9a9a9a',
-    morphClose: 5,
-    morphOpen: 3,
-  },
-  {
-    name: 'forearm_L',
-    bbox: [0.02, 0.3, 0.2, 0.14],
-    colors: [c(PALETTE.midGray, 50), c(PALETTE.dark, 40), c(REF_GRAY_WARM, 40)],
-    fill: '#9a9a9a',
-    morphClose: 5,
-    morphOpen: 3,
-  },
-  {
-    name: 'forearm_R',
-    bbox: [0.78, 0.3, 0.2, 0.14],
-    colors: [c(PALETTE.midGray, 50), c(PALETTE.dark, 40), c(REF_GRAY_WARM, 40)],
-    fill: '#9a9a9a',
-    morphClose: 5,
-    morphOpen: 3,
-  },
-  {
-    name: 'hand_L',
-    bbox: [0, 0.42, 0.18, 0.08],
-    colors: [c(PALETTE.skin, 45), c([246, 231, 210], 35)],
-    fill: '#f0ddd0',
-    morphClose: 3,
-    morphOpen: 2,
-  },
-  {
-    name: 'hand_R',
-    bbox: [0.82, 0.42, 0.18, 0.08],
-    colors: [c(PALETTE.skin, 45), c([246, 231, 210], 35)],
-    fill: '#f0ddd0',
-    morphClose: 3,
-    morphOpen: 2,
-  },
-]
-//endregion
-
-//region Lower body group
 /** Skirts, legs, and boots. */
 export const LOWER_PARTS: readonly PartDef[] = [
   {
@@ -180,4 +97,3 @@ export const LOWER_PARTS: readonly PartDef[] = [
     morphOpen: 3,
   },
 ]
-//endregion

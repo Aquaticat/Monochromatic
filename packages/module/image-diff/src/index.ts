@@ -36,17 +36,19 @@
 
 export {
   compare,
-  compareAll,
   embed,
-  embedAll,
   embedBatch,
-  embedBatchAll,
 } from './client.ts';
+export {
+  compareAll,
+  embedAll,
+  embedBatchAll,
+} from './client.multi.ts';
 export type {
   MultiProviderBatchEmbedEntry,
   MultiProviderComparisonEntry,
   MultiProviderEmbedEntry,
-} from './client.ts';
+} from './client.multi.ts';
 export { describeImageDifference } from './describe.ts';
 export { dotProduct, cosineSimilarity } from './similarity.ts';
 export { voyageProvider } from './voyage.ts';

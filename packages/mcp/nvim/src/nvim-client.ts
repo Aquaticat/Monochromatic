@@ -1,211 +1,27 @@
-import { attach, type NeovimClient } from "neovim";
-import { readdirSync } from "node:fs";
-import { connect } from "node:net";
+/**
+ * Public API for querying Neovim diagnostics and file metadata.
+ *
+ * Connects to all discoverable Neovim instances and exposes
+ * functions to retrieve diagnostics and current file info.
+ *
+ * @module
+ */
 
 import { uniqueDiagnostics } from "./dedup.ts";
-import { SEVERITY_MAP, normalizeMessage } from "./nvim-types.ts";
-
-import type { CurrentFile, Diagnostic, FileDiagnostics } from "./nvim-types.ts";
+import { getAllClients } from "./nvim-connection.ts";
+import { LUA_GET_ALL_DIAGNOSTICS, LUA_GET_CURRENT_BUF_DIAGNOSTICS, LUA_GET_CURRENT_FILE, mapRawDiagnostic } from "./nvim-lua.ts";
+import { SEVERITY_MAP, normalizeMessage, type CurrentFile, type Diagnostic, type FileDiagnostics } from "./nvim-types.ts";
 
 export {
   SEVERITY_MAP,
   normalizeMessage,
-} from "./nvim-types.ts";
+};
 
 export type {
   CurrentFile,
   Diagnostic,
   FileDiagnostics,
-} from "./nvim-types.ts";
-
-//region Connection management -- discover and cache connections to all Neovim instances
-
-/** Cached clients keyed by socket path. */
-const clients = new Map<string, NeovimClient>();
-
-/**
- * Discovers all Neovim RPC socket paths on this system.
- * Includes `$NVIM` (if set) plus all `nvim.*` entries under `/run/user/<uid>/`.
- * Deduplicates in case `$NVIM` points to a socket that also appears in the scan directory.
- *
- * @returns Array of unique socket paths. May be empty if no Neovim instances are running.
- *
- * @example
- * ```ts
- * const paths = findAllSocketPaths();
- * // => ["/run/user/1000/nvim.12345.0", "/run/user/1000/nvim.67890.0"]
- * ```
- */
-export function findAllSocketPaths(): string[] {
-  const found = new Set<string>();
-
-  if (process.env.NVIM !== undefined && process.env.NVIM !== '') {
-    found.add(process.env.NVIM);
-  }
-
-  const uid = process.getuid?.();
-  if (uid !== undefined) {
-    const dir = `/run/user/${uid}`;
-    try {
-      const entries = readdirSync(dir).filter(function isNvimSocket(entry) {
-        return entry.startsWith("nvim.");
-      });
-      for (const name of entries) {
-        found.add(`${dir}/${name}`);
-      }
-    } catch {
-      // Directory may not exist or be unreadable; not an error
-    }
-  }
-
-  return [...found];
-}
-
-/**
- * Connects to a single Neovim instance by socket path.
- * Returns a cached client if already connected.
- *
- * @param socketPath - Absolute path to the Neovim RPC socket.
- *
- * @returns Connected Neovim client.
- *
- * @example
- * ```ts
- * const client = connectToSocket("/run/user/1000/nvim.12345.0");
- * ```
- */
-function connectToSocket(socketPath: string): NeovimClient {
-  const cached = clients.get(socketPath);
-  if (cached !== undefined) {
-    return cached;
-  }
-
-  const socket = connect(socketPath);
-  const nvim = attach({ reader: socket, writer: socket });
-  clients.set(socketPath, nvim);
-  return nvim;
-}
-
-/**
- * Connects to all discoverable Neovim instances.
- *
- * @returns Array of connected clients. May be empty.
- *
- * @throws When no Neovim sockets are found at all.
- *
- * @example
- * ```ts
- * const clients = getAllClients();
- * ```
- */
-export function getAllClients(): NeovimClient[] {
-  const paths = findAllSocketPaths();
-  if (paths.length === 0) {
-    throw new Error(
-      "No Neovim sockets found. Set $NVIM or run from Neovim's :terminal.",
-    );
-  }
-
-  return paths.map(function connectSocket(socketPath) { return connectToSocket(socketPath); });
-}
-
-//endregion Connection management
-
-//region Raw diagnostic mapping -- converts Lua msgpack output to typed Diagnostics
-
-/**
- * Maps a raw msgpack diagnostic record to a typed Diagnostic.
- *
- * @param d - Raw record from nvim_exec_lua.
- *
- * @returns Typed Diagnostic with 1-indexed line/column.
- */
-function mapRawDiagnostic(d: Record<string, unknown>): Diagnostic {
-  // Fields come from Neovim's Lua msgpack bridge; types are guaranteed by the Lua code above.
-  const severity = typeof d.severity === 'number' ? d.severity : 0;
-  const lnum = typeof d.lnum === 'number' ? d.lnum : 0;
-  const col = typeof d.col === 'number' ? d.col : 0;
-  const endLnum = typeof d.end_lnum === 'number' ? d.end_lnum : 0;
-  const endCol = typeof d.end_col === 'number' ? d.end_col : 0;
-  const message = typeof d.message === 'string' ? d.message : '';
-  const source = typeof d.source === 'string' ? d.source : null;
-  const code = typeof d.code === 'string' || typeof d.code === 'number' ? d.code : null;
-
-  return {
-    severity: SEVERITY_MAP[severity] ?? `UNKNOWN(${String(severity)})`,
-    lnum: lnum + 1,
-    col: col + 1,
-    end_lnum: endLnum + 1,
-    end_col: endCol + 1,
-    message: normalizeMessage(message),
-    source,
-    code,
-  };
-}
-
-//endregion Raw diagnostic mapping
-
-//region Lua snippets -- shared Lua code executed via nvim_exec_lua
-
-/** Lua code that returns diagnostics for the current buffer. */
-const LUA_GET_CURRENT_BUF_DIAGNOSTICS = `
-local buf = vim.api.nvim_get_current_buf()
-local diags = vim.diagnostic.get(buf)
-local result = {}
-for _, d in ipairs(diags) do
-  table.insert(result, {
-    severity = d.severity,
-    lnum = d.lnum,
-    col = d.col,
-    end_lnum = d.end_lnum,
-    end_col = d.end_col,
-    message = d.message,
-    source = d.source,
-    code = d.code,
-  })
-end
-return result
-`;
-
-/** Lua code that returns diagnostics across all buffers, grouped by buffer. */
-const LUA_GET_ALL_DIAGNOSTICS = `
-local diags = vim.diagnostic.get()
-local by_buf = {}
-for _, d in ipairs(diags) do
-  local bufnr = d.bufnr
-  if not by_buf[bufnr] then by_buf[bufnr] = {} end
-  table.insert(by_buf[bufnr], {
-    severity = d.severity,
-    lnum = d.lnum,
-    col = d.col,
-    end_lnum = d.end_lnum,
-    end_col = d.end_col,
-    message = d.message,
-    source = d.source,
-    code = d.code,
-  })
-end
-local result = {}
-for bufnr, buf_diags in pairs(by_buf) do
-  table.insert(result, {
-    path = vim.api.nvim_buf_get_name(bufnr),
-    diagnostics = buf_diags,
-  })
-end
-return result
-`;
-
-/** Lua code that returns metadata about the current buffer. */
-const LUA_GET_CURRENT_FILE = `
-local buf = vim.api.nvim_get_current_buf()
-return {
-  path = vim.api.nvim_buf_get_name(buf),
-  filetype = vim.bo[buf].filetype,
-  modified = vim.bo[buf].modified,
-}
-`;
-
-//endregion Lua snippets
+};
 
 //region Public API -- query diagnostics and file info across all Neovim instances
 

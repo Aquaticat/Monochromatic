@@ -2,30 +2,16 @@
  * Client entry script for the Inbox page.
  *
  * Loaded by the browser as `<script type="module" src="/dist/client/inbox.js">`.
- *
- * Hydration flow:
- * 1. `injectCSS()` inserts the compiled global stylesheet into `<head>`
- * 2. `readPageData()` deserializes the `<script id="page-data">` JSON blob
- *    that the server embedded in the HTML shell (see layout.ts / renderPage)
- * 3. The script builds DOM elements via `h()` and appends them to `<main id="app">`
- *
- * Web component side-effect imports register custom elements with the browser
- * so that tags like `<top-nav>`, `<task-card>`, etc. are recognized.
- *
- * Exceeds 100 lines: the suggested and all section builders are deeply nested
- * `h()` call trees that close over `pageData` -- extracting them into separate
- * modules would require threading that binding through function parameters for
- * no structural gain.
  */
-import type { BlockedTaskLink, Task } from "../lib/types.ts";
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
 import { api } from "./lib/api.ts";
 import { injectCSS } from "./lib/inject-css.ts";
 import { readPageData } from "./lib/page-data.ts";
-import { createTaskCard } from "./lib/task-card.ts";
 import { globalStyles } from "./styles.ts";
 import { inboxStyles } from "./inbox-styles.ts";
 import { createNewTaskDialog } from "./new-task-dialog.ts";
+import type { InboxPageData } from "./inbox-builders.ts";
+import { buildTaskList } from "./inbox-builders.ts";
 // Side-effect imports: register custom elements so the browser recognizes them in the DOM
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/side-drawer.ts";
@@ -39,13 +25,6 @@ import "./components/toggle-switch.ts";
 import "./components/focus-dropdown.ts";
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/fab-button.ts";
-
-/** Shape of the JSON blob embedded in the inbox page by the server. */
-type InboxPageData = {
-  suggestedTasks: Task[];
-  allTasks: Task[];
-  blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>;
-};
 
 injectCSS(globalStyles);
 injectCSS(inboxStyles);
@@ -66,36 +45,6 @@ function openTask(taskId: string): void {
 async function completeTask(taskId: string): Promise<void> {
   await api(`/api/tasks/${taskId}/complete`, { method: "POST" });
   globalThis.location.reload();
-}
-
-/** Builds a task list with optional blocked-child nesting. */
-function buildTaskList(tasks: readonly Task[], blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>): HTMLUListElement {
-  const list = h({ tag: "ul", class: "task-list" });
-
-  for (const task of tasks) {
-    list.append(createTaskCard(task, { onOpen: openTask, onToggleComplete: completeTask }));
-
-    const childLinks = blockedTasksByBlocker[task.id] ?? [];
-    if (childLinks.length > 0) {
-      list.append(
-        h({
-          tag: "div",
-          class: "task-children",
-          children: [
-            h({
-              tag: "ul",
-              class: "task-list",
-              children: childLinks.map((childLink) =>
-                createTaskCard(childLink.task, { showBlockedBadge: true, onOpen: openTask, onToggleComplete: completeTask }),
-              ),
-            }),
-          ],
-        }),
-      );
-    }
-  }
-
-  return list;
 }
 
 //region Suggested section
@@ -145,7 +94,7 @@ const suggestedContent = h({
     }),
     pageData.suggestedTasks.length === 0
       ? h({ tag: "p", class: "empty", text: "No tasks yet." })
-      : buildTaskList(pageData.suggestedTasks, pageData.blockedTasksByBlocker),
+      : buildTaskList({ tasks: pageData.suggestedTasks, blockedTasksByBlocker: pageData.blockedTasksByBlocker, onOpen: openTask, onToggleComplete: completeTask }),
   ],
 });
 
@@ -166,7 +115,7 @@ const allContent = h({
   children: [
     pageData.allTasks.length === 0
       ? h({ tag: "p", class: "empty", text: "No tasks yet." })
-      : buildTaskList(pageData.allTasks, pageData.blockedTasksByBlocker),
+      : buildTaskList({ tasks: pageData.allTasks, blockedTasksByBlocker: pageData.blockedTasksByBlocker, onOpen: openTask, onToggleComplete: completeTask }),
   ],
 });
 

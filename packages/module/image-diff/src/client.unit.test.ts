@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
-import { compare, compareAll, embed, embedAll, embedBatch } from './client.ts';
+import { compare, embed, embedBatch } from './client.ts';
+import { compareAll, embedAll } from './client.multi.ts';
 import type { Provider } from './types.ts';
 
 /**

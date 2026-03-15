@@ -8,81 +8,20 @@ import type {
 import type { Serializer, Deserializer, } from '../../../../t/index.ts';
 import { $ as defaultLogger, } from '../../../../../t logger/f/t never/r s/p p/index.ts';
 import {
-  type BackendResult,
   resolveConsensus,
 } from '../../../../consensus.ts';
 import { healBackends, } from '../../../../heal.ts';
 import { hashString, } from '../../../../../../t string/f/_pendingRefactor_type string/hash.ts';
 import { $ as serializeValue, } from '../../../../../../t string/f/t unknown/serialize/r s/p n/index.ts';
 import { createLruKeySet, } from '../../../../lruKeySet.ts';
+import {
+  evictLruEntry,
+  getDefaultBackendsBuilder,
+  queryAllBackends,
+} from './backends.ts';
 
-/**
- * Query all backends for a key and return typed results with priority info.
- *
- * @param backends - storage backends to query
- *
- * @param key - lookup key
- *
- * @returns results from all backends
- *
- * @example
- * ```ts
- * const results = await queryAllBackends(backends, 'my-key');
- * ```
- */
-async function queryAllBackends(
-  backends: readonly [StorageBackend, ...StorageBackend[],],
-  key: string,
-): Promise<[BackendResult<StorageBackend>, ...BackendResult<StorageBackend>[],]> {
-  const results = await Promise.all(
-    backends.map(async function queryBackend(backend,) {
-      const raw = await backend.get(key,);
-      return {
-        value: raw === null ? undefined : raw,
-        priority: backend.priority ?? 0,
-        backend,
-      };
-    },),
-  );
-  return results as [BackendResult<StorageBackend>, ...BackendResult<StorageBackend>[],];
-}
-
-/**
- * Builder function that produces platform-specific default backends.
- *
- * @example
- * ```ts
- * const builder: DefaultBackendsBuilder = async ({ storeId }) => {
- *   const fileBackend = await createFileBackend(storeId);
- *   return [new Map<string, string>(), fileBackend];
- * };
- * ```
- */
-export type DefaultBackendsBuilder = (args: {
-  storeId: string;
-},) => Promise<readonly [StorageBackend, ...StorageBackend[],]>;
-
-/** Module-level builder set by platform entry files. */
-// Intentional let: configured once at module load by platform entry
-// oxlint-disable-next-line prefer-const
-let defaultBackendsBuilder: DefaultBackendsBuilder | undefined;
-
-/**
- * Configure a platform-specific default backends builder.
- * Call from a platform entry file at module load time.
- *
- * @param builder - function that creates backends for the current platform
- *
- * @example
- * ```ts
- * configureDefaultBackendsBuilder(async ({ storeId }) => {
- *   return [new Map<string, string>(), await createFileBackend(storeId)];
- * });
- * ```
- */
-export function configureDefaultBackendsBuilder(builder: DefaultBackendsBuilder,): void {
-  defaultBackendsBuilder = builder;
-}
+export type { DefaultBackendsBuilder } from './backends.ts';
+export { configureDefaultBackendsBuilder } from './backends.ts';
 
 /**
  * Creates a Store instance, using platform-specific default backends
@@ -130,6 +69,7 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
   const deserializer: Deserializer = config.deserializer ?? superjson.parse;
   const lossyForCircular = config.lossyForCircular ?? true;
 
+  const defaultBackendsBuilder = getDefaultBackendsBuilder();
   const backends: readonly [StorageBackend, ...StorageBackend[],] = config.backends
     ?? (defaultBackendsBuilder !== undefined
       ? await defaultBackendsBuilder({ storeId, },)
@@ -162,17 +102,7 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
         },),
       );
 
-      if (lru !== undefined) {
-        const evicted = lru.touch(resolvedKey,);
-        if (evicted !== undefined) {
-          defaultLogger.debug(`Store.evict: "${evicted}"`,);
-          await Promise.all(
-            backends.map(async function evictFromBackend(backend,) {
-              await backend.delete(evicted,);
-            },),
-          );
-        }
-      }
+      await evictLruEntry({ lru, key: resolvedKey, backends, logger: defaultLogger, },);
 
       return store;
     },
@@ -184,16 +114,8 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
 
       await healBackends(results, canonicalSerialized, key,);
 
-      if (canonicalSerialized !== undefined && lru !== undefined) {
-        const evicted = lru.touch(key,);
-        if (evicted !== undefined) {
-          defaultLogger.debug(`Store.evict: "${evicted}"`,);
-          await Promise.all(
-            backends.map(async function evictFromBackend(backend,) {
-              await backend.delete(evicted,);
-            },),
-          );
-        }
+      if (canonicalSerialized !== undefined) {
+        await evictLruEntry({ lru, key, backends, logger: defaultLogger, },);
       }
 
       return canonicalSerialized === undefined

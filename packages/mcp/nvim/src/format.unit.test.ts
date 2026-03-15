@@ -4,9 +4,7 @@ import {
   test,
 } from 'bun:test';
 
-import { formatDiagnostic } from './format.ts';
-
-import type { FormattableDiagnostic } from './format.ts';
+import { formatDiagnostic, type FormattableDiagnostic } from './format.ts';
 
 //region formatDiagnostic -- formats a diagnostic into a human-readable line
 

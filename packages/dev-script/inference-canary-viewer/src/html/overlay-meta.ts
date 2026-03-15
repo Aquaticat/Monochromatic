@@ -1,17 +1,12 @@
 /**
  * Enriched metadata rendering helpers for probe detail overlays.
  *
- * Renders timing, usage, badges, reasoning traces, fix prompts, and config
- * as compact HTML sections within popover overlays.
- *
- * Exceeds 100 lines: badge, pass-meta, collapsible, and config renderers
- * are cohesive metadata helpers that share formatting utilities.
+ * Renders timing, usage, and badges as compact HTML sections
+ * within popover overlays.
  */
-import { micromark, } from 'micromark';
-
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
-import type { ConfigSnapshot, ProbeDetail, StreamTiming, StreamUsage, } from '../data/viewer-types.ts';
+import type { ProbeDetail, StreamTiming, StreamUsage, } from '../data/viewer-types.ts';
 
 /** Milliseconds per second for display formatting */
 const MS_PER_SECOND = 1_000;
@@ -29,7 +24,7 @@ const MS_PER_SECOND = 1_000;
  * formatMs(50); // "50ms"
  * ```
  */
-function formatMs(ms: number,): string {
+function formatMs(ms: number): string {
   if (ms >= MS_PER_SECOND) {
     return `${(ms / MS_PER_SECOND).toFixed(1)}s`;
   }
@@ -48,7 +43,7 @@ function formatMs(ms: number,): string {
  * formatNumber(12345); // "12,345"
  * ```
  */
-function formatNumber(num: number,): string {
+export function formatNumber(num: number): string {
   return num.toLocaleString('en-US');
 }
 
@@ -65,7 +60,7 @@ function formatNumber(num: number,): string {
  * // '<div class="detail-popover-badges">...'
  * ```
  */
-export function renderBadges(detail: ProbeDetail,): string {
+export function renderBadges(detail: ProbeDetail): string {
   const badges: string[] = [];
 
   if (detail.partial === true) {
@@ -156,116 +151,6 @@ export function renderPassMeta({ label, timing, usage, finishReason, }: {
     children: [
       h({ tag: 'summary', text: label, }),
       h({ tag: 'dl', class: 'metadata-grid', children: items, }),
-    ],
-  });
-}
-
-/**
- * Renders collapsible detail sections for reasoning, fix prompt, and config.
- * Sections with no data are omitted entirely.
- *
- * @param detail - probe detail
- *
- * @returns HTML string with `<details>` elements
- *
- * @example
- * ```ts
- * renderCollapsibles(detail);
- * // '<details class="collapsible-section">...'
- * ```
- */
-export function renderCollapsibles(detail: ProbeDetail,): string {
-  const sections: string[] = [];
-
-  if (detail.reasoning !== undefined && detail.reasoning !== '') {
-    sections.push(h({
-      tag: 'details',
-      class: 'collapsible-section',
-      children: [
-        h({ tag: 'summary', text: `Thinking (${formatNumber(detail.reasoning.length)} chars)`, }),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.reasoning), }),
-      ],
-    }));
-  }
-
-  if (detail.initialResponse !== undefined && detail.initialResponse !== '') {
-    sections.push(h({
-      tag: 'details',
-      class: 'collapsible-section',
-      children: [
-        h({ tag: 'summary', text: `Response (${formatNumber(detail.initialResponse.length)} chars)`, }),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.initialResponse), }),
-      ],
-    }));
-  }
-
-  if (detail.fixReasoning !== undefined && detail.fixReasoning !== '') {
-    sections.push(h({
-      tag: 'details',
-      class: 'collapsible-section',
-      children: [
-        h({ tag: 'summary', text: `Fix thinking (${formatNumber(detail.fixReasoning.length)} chars)`, }),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.fixReasoning), }),
-      ],
-    }));
-  }
-
-  if (detail.fixResponse !== undefined && detail.fixResponse !== '') {
-    sections.push(h({
-      tag: 'details',
-      class: 'collapsible-section',
-      children: [
-        h({ tag: 'summary', text: `Fix response (${formatNumber(detail.fixResponse.length)} chars)`, }),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.fixResponse), }),
-      ],
-    }));
-  }
-
-  if (detail.fixPrompt !== undefined && detail.fixPrompt !== '') {
-    sections.push(h({
-      tag: 'details',
-      class: 'collapsible-section',
-      children: [
-        h({ tag: 'summary', text: 'Fix prompt', }),
-        h({ tag: 'div', class: 'rendered-markdown', html: micromark(detail.fixPrompt), }),
-      ],
-    }));
-  }
-
-  if (detail.config !== undefined) {
-    sections.push(renderConfig(detail.config));
-  }
-
-  return sections.join('\n');
-}
-
-/**
- * Renders a collapsible config snapshot section.
- *
- * @param config - runner configuration snapshot
- *
- * @returns HTML `<details>` element
- */
-function renderConfig(config: ConfigSnapshot,): string {
-  return h({
-    tag: 'details',
-    class: 'collapsible-section',
-    children: [
-      h({ tag: 'summary', text: 'Config', }),
-      h({
-        tag: 'dl',
-        class: 'metadata-grid',
-        children: [
-          h({ tag: 'dt', text: 'Verbosity', }),
-          h({ tag: 'dd', text: config.verbosity, }),
-          h({ tag: 'dt', text: 'Reasoning', }),
-          h({ tag: 'dd', text: String(config.reasoning), }),
-          h({ tag: 'dt', text: 'Max tokens', }),
-          h({ tag: 'dd', text: formatNumber(config.maxTokens), }),
-          h({ tag: 'dt', text: 'Consistency runs', }),
-          h({ tag: 'dd', text: String(config.consistencyRuns), }),
-        ],
-      }),
     ],
   });
 }

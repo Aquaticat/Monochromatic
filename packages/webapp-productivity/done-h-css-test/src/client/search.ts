@@ -1,9 +1,7 @@
 /**
  * Client entry script for the Search page.
  *
- * Same hydration pattern as inbox.ts: injectCSS → readPageData → build DOM into #app.
- * The search page's HTML shell (rendered inline by the server, not via renderPage)
- * places a `<search-bar>` above `<main id="app">` instead of a `<top-nav>`.
+ * Same hydration pattern as inbox.ts: injectCSS -> readPageData -> build DOM into #app.
  */
 import type { SearchTask } from "../lib/types.ts";
 import { $ as h } from "@monochromatic-dev/module-es/ts/types/t object/t htmlElement/f/t string jsx/r s/p n/index.ts";
@@ -12,9 +10,7 @@ import { injectCSS } from "./lib/inject-css.ts";
 import { readPageData } from "./lib/page-data.ts";
 import { createTaskCard } from "./lib/task-card.ts";
 import { globalStyles } from "./styles.ts";
-import { $ as css } from "./css.ts";
-import { cssCalc, cssRem, cssVar } from "@monochromatic-dev/module-es/h-css";
-import { borderRadiusFull, flexCenter, whitespaceNowrap } from "./mixins.ts";
+import { searchStyles } from "./search-styles.ts";
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import "./components/side-drawer.ts";
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
@@ -22,55 +18,16 @@ import "./components/search-bar.ts";
 
 /** Shape of the JSON blob embedded in the search page by the server. */
 type SearchPageData = {
+  /** User's search query string. */
   query: string;
+  /** Task results matching the query. */
   results: SearchTask[];
+  /** All known tags for the tag chip display. */
   availableTags: string[];
 };
 
 injectCSS(globalStyles);
-
-// Page-scoped styles for search (not shared with other pages)
-injectCSS([
-  css({
-    rule: '.search-hint',
-    decls: { color: cssVar('fg-weaker'), 'font-size': cssRem(1), 'line-height': 1.5 },
-  }),
-  css({
-    rule: '.tag-chips',
-    decls: { display: 'flex', 'flex-wrap': 'wrap', gap: cssVar('min-gap') },
-  }),
-  css({
-    rule: '.tag-chip',
-    decls: {
-      ...flexCenter(),
-      ...whitespaceNowrap(),
-      ...borderRadiusFull(),
-      'border-width': cssCalc(`${cssRem(1)} / 16`),
-      'border-style': 'solid',
-      'border-color': cssVar('fg'),
-      'padding-block': cssRem(0.5),
-      'padding-inline': cssRem(0.5),
-      gap: cssRem(0.25),
-      cursor: 'pointer',
-      'background-color': 'transparent',
-      'font-family': 'inherit',
-      'font-size': 'inherit',
-      'font-style': 'inherit',
-      'font-weight': 'inherit',
-      'line-height': 'inherit',
-    },
-    children: [
-      css({ rule: '&:hover', decls: { 'background-color': cssVar('hover-bg') } }),
-    ],
-  }),
-  css({
-    at: 'media',
-    params: '(min-width: 48rem)',
-    children: [
-      css({ rule: '.search-hint', decls: { 'font-size': cssRem(1.5) } }),
-    ],
-  }),
-].join(''));
+injectCSS(searchStyles);
 
 const pageData = readPageData<SearchPageData>();
 const appElement = document.querySelector("#app");

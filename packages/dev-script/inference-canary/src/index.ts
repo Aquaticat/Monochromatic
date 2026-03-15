@@ -16,7 +16,7 @@
  *   INFERENCE_VALIDATION_OPENROUTER_API_KEY -- OpenRouter API key
  */
 import whyIsNodeRunning from 'why-is-node-running';
-import { getRecentArtifactPairs, } from './linter-artifacts.ts';
+import { getRecentArtifactPairs, } from './linter-artifacts-recent.ts';
 import { modelOverride, retestAll, runsOverride, useSimple, includeSlow, probeFilter, } from './index-cli.ts';
 import { runAndReport, } from './index-run.ts';
 import { models, type ModelConfig, } from './models.ts';
