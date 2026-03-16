@@ -3,6 +3,13 @@
  *
  * Reads the actual project configs (oxlintrc, tsconfig) at runtime so the
  * model is graded against the exact same rules that are in force for the project.
+ *
+ * **Design note**: the prompt intentionally omits a human-readable summary of key
+ * lint rules (e.g. "all functions need explicit return types"). An earlier version
+ * included such a summary, but it was removed during the ESLint-to-oxlint migration
+ * because hand-holding models with a curated rule list undermines the benchmark --
+ * the probe should measure whether models can comply with raw project configs, not
+ * whether they can follow a cheat sheet.
  */
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';

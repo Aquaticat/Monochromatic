@@ -19,11 +19,31 @@ import { SIMULATION_SYSTEM, } from './system-prompt.ts';
 
 import type { Probe, } from '../probes.ts';
 
+/**
+ * Reads all interpreter source files and concatenates them into a single string.
+ *
+ * The interpreter was split across three files for max-lines compliance, but the
+ * simulation probe must present the complete source so models can trace execution.
+ * Files are ordered dependency-first so the concatenated source reads top-down.
+ *
+ * @returns concatenated interpreter source
+ */
+async function readInterpreterSource(): Promise<string> {
+  const files = [
+    '../stak/interpreter-jumps.ts',
+    '../stak/interpreter-ops.ts',
+    '../stak/interpreter.ts',
+  ] as const;
+  const sources = await Promise.all(
+    files.map(function readSourceFile(relativePath,): Promise<string> {
+      return readFile(new URL(relativePath, import.meta.url,), 'utf8',);
+    },),
+  );
+  return sources.join('\n',);
+}
+
 /** Interpreter TypeScript source, read at module load time and embedded in every probe invocation */
-const INTERPRETER_SOURCE = await readFile(
-  new URL('../stak/interpreter.ts', import.meta.url,),
-  'utf8',
-);
+const INTERPRETER_SOURCE = await readInterpreterSource();
 
 /**
  * Builds the simulation probe prompt with the interpreter source and all five programs.
