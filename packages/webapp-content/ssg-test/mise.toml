@@ -15,8 +15,8 @@ run = [{tasks = ["build:site"]}, {tasks = ["_dev:site:watch", "dev:site:serve"]}
 
 [tasks."dev:site:serve"]
 hide = true
-description = "Serve dist/ with Caddy file server"
-run = "caddy file-server --root dist --listen :4321"
+description = "Serve dist/ with Caddy (clean URLs via try_files)"
+run = "caddy run --config Caddyfile"
 
 [tasks."_dev:site:watch"]
 hide = true

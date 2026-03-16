@@ -164,7 +164,7 @@ async function generatePages(
       },);
       const html = renderedContent.get(`${lang}/${name}`,);
       writes.push(writePage(
-        `${lang}/${name}/index.html`,
+        `${lang}/${name}.html`,
         postPage({ post, lang, name, renderedHtml: html, },),
       ),);
     }
@@ -172,7 +172,7 @@ async function generatePages(
 
   for (const name of names) {
     const namePosts = byName[name] ?? [];
-    writes.push(writePage(`${name}/index.html`, namePage({ name, posts: namePosts, },),),);
+    writes.push(writePage(`${name}.html`, namePage({ name, posts: namePosts, },),),);
   }
 
   await Promise.all(writes,);
@@ -197,6 +197,15 @@ async function generateAssets(posts: Post[],): Promise<void> {
   for (const [lang, langPosts,] of Object.entries(byLang,)) {
     const rssXml = generateLanguageRss({ lang, posts: langPosts, siteUrl: SITE_URL, },);
     writes.push(writePage(`${lang}/rss.xml`, rssXml,),);
+  }
+
+  /** Content files (images, MDX sources, etc.) copied verbatim to dist preserving directory structure. */
+  const contentFiles = await readdir(`${CONTENT_DIR}/**/*`,);
+  for (const filePath of contentFiles.files) {
+    const relativePath = relative(CONTENT_DIR, filePath,);
+    const destPath = join(DIST, relativePath,);
+    await mkdir(join(destPath, '..',), { recursive: true, },);
+    writes.push(copyFile(filePath, destPath,),);
   }
 
   const publicFiles = await readdir('public/**/*',);
