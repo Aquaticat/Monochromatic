@@ -6,7 +6,7 @@
 import { layoutStyles, resetStyles, typographyStyles, } from './global.ts';
 import { headerStyles, searchAndInteractionStyles, } from './header.ts';
 import { postStyles, } from './posts.ts';
-import { tokenStyles, } from './tokens.ts';
+import { darkModeTokenStyles, tokenStyles, } from './tokens.ts';
 
 /**
  * Generates the complete site CSS as a single string.
@@ -16,6 +16,7 @@ import { tokenStyles, } from './tokens.ts';
 export function generateSiteCss(): string {
   return [
     tokenStyles(),
+    darkModeTokenStyles(),
     resetStyles(),
     layoutStyles(),
     typographyStyles(),

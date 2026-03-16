@@ -13,10 +13,8 @@ import rehypeStringify from 'rehype-stringify';
 import readdir from 'tiny-readdir-glob';
 import { unified, } from 'unified';
 
+import type { Logger, } from '../lib/types.ts';
 import { DIST, } from './write-page.ts';
-
-/** Logger type derived from the tagged factory return type. */
-type Logger = ReturnType<typeof tagged>;
 
 /**
  * Minifies all generated HTML files and compresses with zstd.
@@ -58,6 +56,6 @@ export async function postProcess(
     l.info('compressed with zstd',);
   }
   catch (zstdError) {
-    console.error('zstd compression failed:', zstdError,);
+    l.error(`zstd compression failed: ${String(zstdError,)}`,);
   }
 }

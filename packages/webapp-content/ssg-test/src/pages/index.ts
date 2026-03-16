@@ -15,9 +15,14 @@ import { pageLayout, } from '../templates/layout.ts';
  *
  * @returns complete HTML document for the root index
  */
-export function indexPage(langs: string[],): string {
+export function indexPage(langs: readonly string[],): string {
   /** Page title composed from all language translations of "choose a language". */
-  const title = [...(i18n.get('chooseALang',)?.values() ?? []),]
+  const chooseALangMap = i18n.get('chooseALang',);
+  if (chooseALangMap === undefined) {
+    throw new Error('i18n: missing "chooseALang" message',);
+  }
+
+  const title = [...chooseALangMap.values(),]
     .map(function capitalize(str,) {
       return str.charAt(0,).toUpperCase() + str.slice(1,);
     },)

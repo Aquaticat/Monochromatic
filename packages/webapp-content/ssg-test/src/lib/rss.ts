@@ -27,7 +27,7 @@ import { t, } from './i18n.ts';
 export function generateLanguageRss(
   { lang, posts, siteUrl, }: {
     lang: string;
-    posts: Post[];
+    posts: readonly Post[];
     siteUrl: string;
   },
 ): string {

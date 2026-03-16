@@ -4,7 +4,7 @@
  * Generates CSS, RSS feeds, and copies static assets to dist.
  */
 import { copyFile, mkdir, } from 'node:fs/promises';
-import { join, relative, } from 'node:path';
+import { dirname, join, relative, } from 'node:path';
 
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import readdir from 'tiny-readdir-glob';
@@ -12,11 +12,9 @@ import readdir from 'tiny-readdir-glob';
 import type { Post, } from '../lib/content.ts';
 import { groupByLang, } from '../lib/content-group.ts';
 import { generateLanguageRss, } from '../lib/rss.ts';
+import type { Logger, } from '../lib/types.ts';
 import { generateSiteCss, } from '../styles/base.ts';
 import { DIST, writePage, } from './write-page.ts';
-
-/** Logger type derived from the tagged factory return type. */
-type Logger = ReturnType<typeof tagged>;
 
 /**
  * Generates CSS, RSS feeds, and copies static assets to dist.
@@ -53,10 +51,10 @@ export async function generateAssets(
   /** All target directories that need to exist before copying files. */
   const allTargetDirs = [
     ...contentResult.files.map(function contentTargetDir(filePath,) {
-      return join(DIST, join(relative(contentDir, filePath,), '..',),);
+      return join(DIST, dirname(relative(contentDir, filePath,),),);
     },),
     ...publicResult.files.map(function publicTargetDir(filePath,) {
-      return join(DIST, join(relative('public', filePath,), '..',),);
+      return join(DIST, dirname(relative('public', filePath,),),);
     },),
   ];
 

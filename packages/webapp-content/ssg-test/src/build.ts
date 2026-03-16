@@ -12,7 +12,6 @@
  *
  * Run via `mise run build:site` or `bun src/build.ts`.
  */
-import { readFile, } from 'node:fs/promises';
 import { relative, } from 'node:path';
 
 import {
@@ -31,7 +30,6 @@ import {
   createCacheEntry,
   getCachedEntry,
   readCache,
-  sha256,
   writeCache,
 } from './lib/cache.ts';
 import { loadContent, } from './lib/content.ts';
@@ -62,7 +60,7 @@ l.info('starting',);
 /** Loaded posts, cached manifest, and pipeline hash fetched concurrently. */
 const [posts, cache, pipelineHash,] = await Promise.all([
   loadContent(CONTENT_DIR,),
-  readCache(),
+  readCache({ l, },),
   computePipelineHash(PIPELINE_SOURCE,),
 ],);
 
@@ -82,12 +80,11 @@ const processor = createProcessor();
 
 /** Results from processing each post: rendered HTML and cache entry. */
 const processResults = await Promise.all(posts.map(async function processPost(post,) {
-  const contentHash = sha256(await readFile(post.filePath, 'utf8',),);
   const cacheKey = relative('.', post.filePath,);
   const cached = getCachedEntry({
     manifest: effectiveCache,
     filePath: cacheKey,
-    contentHash,
+    contentHash: post.contentHash,
   },);
 
   if (cached !== undefined) {
@@ -96,7 +93,7 @@ const processResults = await Promise.all(posts.map(async function processPost(po
 
   const result = await processor.process(post.body,);
   const html = String(result,);
-  const entry = createCacheEntry({ contentHash, html, frontmatter: post.data, },);
+  const entry = createCacheEntry({ contentHash: post.contentHash, html, frontmatter: post.data, },);
   return { contentKey: `${post.lang}/${post.name}`, cacheKey, entry, fromCache: false, };
 },),);
 
@@ -122,8 +119,10 @@ const cacheHits = processResults.filter(function wasFromCache({ fromCache, },) {
 l.info(`processed ${posts.length - cacheHits} files, ${cacheHits} from cache`,);
 
 await ensureFavicons({ l, },);
-await generatePages({ posts, renderedContent, l, },);
-await generateAssets({ posts, siteUrl: SITE_URL, contentDir: CONTENT_DIR, l, },);
+await Promise.all([
+  generatePages({ posts, renderedContent, l, },),
+  generateAssets({ posts, siteUrl: SITE_URL, contentDir: CONTENT_DIR, l, },),
+],);
 await postProcess({ l, },);
 
 await writeCache(buildManifest({ pipelineHash, entries: cacheEntries, },),);

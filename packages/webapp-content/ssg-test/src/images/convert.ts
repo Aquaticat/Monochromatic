@@ -33,9 +33,14 @@ function isNodeError(error: unknown,): error is Error & { code: string; } {
  *
  * @param filePath - path to check
  *
+ * @param l - optional logger for unexpected access errors
+ *
  * @returns `true` if accessible, `false` on any access error
  */
-export async function fileExists(filePath: string,): Promise<boolean> {
+export async function fileExists(
+  filePath: string,
+  l?: { error: (message: string,) => void; },
+): Promise<boolean> {
   try {
     await access(filePath,);
     return true;
@@ -43,7 +48,8 @@ export async function fileExists(filePath: string,): Promise<boolean> {
   catch (error) {
     // Expected for missing files; log unexpected access errors for diagnostics
     if (!isNodeError(error,) || error.code !== 'ENOENT') {
-      console.error(`Unexpected error checking file existence for ${filePath}:`, error,);
+      const target = l ?? console;
+      target.error(`Unexpected error checking file existence for ${filePath}: ${String(error,)}`,);
     }
     return false;
   }

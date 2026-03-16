@@ -54,6 +54,8 @@ export function createProcessor(): Processor<Root, Root, Root, Root, string> {
     .use(remarkGfm,)
     .use(remarkAlert,)
     .use(remarkSectionize,)
+    // Content is trusted filesystem input authored by the site owner,
+    // not user-submitted data, so allowing raw HTML is safe here.
     .use(remarkRehype, { allowDangerousHtml: true, },)
     .use(rehypeSlug, {
       enableCustomId: true,
@@ -68,5 +70,5 @@ export function createProcessor(): Processor<Root, Root, Root, Root, string> {
       },
       transformers: [transformerNotationDiff(), transformerNotationHighlight(),],
     },)
-    .use(rehypeStringify, { allowDangerousHtml: true, },);
+    .use(rehypeStringify, { allowDangerousHtml: true, },); // see remark-rehype comment above
 }

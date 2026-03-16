@@ -6,7 +6,7 @@
  *
  * @see https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs
  */
-// File justification: ~130 lines -- single-purpose generation pipeline;
+// File justification: ~185 lines -- single-purpose generation pipeline;
 // ICO encoding, PNG rendering, and orchestration form a cohesive unit.
 import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
@@ -15,6 +15,7 @@ import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import sharp from 'sharp';
 
 import { fileExists, } from '../images/convert.ts';
+import type { Logger, } from '../lib/types.ts';
 
 /** Public directory where favicon files are placed alongside other static assets. */
 const PUBLIC = 'public';
@@ -47,8 +48,6 @@ const TARGETS = [
   'manifest.webmanifest',
 ] as const;
 
-/** Logger type from the tagged factory. */
-type Logger = ReturnType<typeof tagged>;
 
 /**
  * Creates an ICO container wrapping a single 32x32 PNG image.

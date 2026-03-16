@@ -21,7 +21,7 @@ import { postList, } from '../templates/post-list.ts';
  * @returns complete HTML document for the language landing page
  */
 export function langPage(
-  { lang, posts, }: { lang: string; posts: Post[]; },
+  { lang, posts, }: { lang: string; posts: readonly Post[]; },
 ): string {
   const title = t('siteDescription', lang,);
 

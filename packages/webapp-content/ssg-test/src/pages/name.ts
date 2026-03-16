@@ -19,7 +19,7 @@ import { pageLayout, } from '../templates/layout.ts';
  * @returns complete HTML document listing available translations
  */
 export function namePage(
-  { name, posts, }: { name: string; posts: Post[]; },
+  { name, posts, }: { name: string; posts: readonly Post[]; },
 ): string {
   const content = h({
     tag: 'main',

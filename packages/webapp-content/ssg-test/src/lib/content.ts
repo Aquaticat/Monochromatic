@@ -12,6 +12,8 @@ import matter from 'gray-matter';
 import readdir from 'tiny-readdir-glob';
 import { z, } from 'zod';
 
+import { sha256, } from './cache-hash.ts';
+
 //region Schema
 
 /**
@@ -48,6 +50,8 @@ export type Post = {
   body: string;
   /** Absolute path to the source MDX file. */
   filePath: string;
+  /** SHA-256 hex digest of the raw file contents, computed during loading. */
+  contentHash: string;
 };
 
 //endregion Types
@@ -74,12 +78,13 @@ export async function loadContent(contentDir: string,): Promise<Post[]> {
 
   const posts = await Promise.all(filePaths.map(async function parsePost(filePath,) {
     const raw = await readFile(filePath, 'utf8',);
+    const contentHash = sha256(raw,);
     const { data: rawData, content: body, } = matter(raw,);
     const data = postFrontmatterSchema.parse(rawData,);
     const lang = basename(dirname(filePath,),);
     const name = basename(filePath, '.mdx',);
 
-    return { lang, name, data, body, filePath, };
+    return { lang, name, data, body, filePath, contentHash, };
   },),);
 
   return posts;

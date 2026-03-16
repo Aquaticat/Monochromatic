@@ -15,7 +15,7 @@ import { postCard, } from './post-card.ts';
  *
  * @returns HTML string for the post list
  */
-export function postList(posts: Post[],): string {
+export function postList(posts: readonly Post[],): string {
   return h({
     tag: 'ul',
     class: 'Posts',

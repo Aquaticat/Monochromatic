@@ -8,14 +8,12 @@ import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 
 import type { Post, } from '../lib/content.ts';
 import { groupByLang, groupByName, } from '../lib/content-group.ts';
+import type { Logger, } from '../lib/types.ts';
 import { indexPage, } from '../pages/index.ts';
 import { langPage, } from '../pages/lang.ts';
 import { namePage, } from '../pages/name.ts';
 import { postPage, } from '../pages/post.ts';
 import { writePage, } from './write-page.ts';
-
-/** Logger type derived from the tagged factory return type. */
-type Logger = ReturnType<typeof tagged>;
 
 /**
  * Generates all HTML pages from posts and rendered content.
