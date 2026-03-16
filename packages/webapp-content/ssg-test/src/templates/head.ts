@@ -25,7 +25,7 @@ export function headFragment(
   return h({
     tag: 'head',
     children: [
-      h({ tag: 'meta', attrs: { charset: 'utf-8', }, },),
+      h({ tag: 'meta', attrs: { charset: 'utf8', }, },),
       h({ tag: 'meta', attrs: {
         name: 'viewport',
         content: 'width=device-width, initial-scale=1',

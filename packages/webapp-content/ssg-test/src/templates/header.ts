@@ -6,9 +6,16 @@
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
+// File justification: 102 lines -- header and search popover are tightly
+// coupled; the popover is only used inside the header.
 import { t, } from '../lib/i18n.ts';
 
-/** Search icon SVG markup (inline, no external file). */
+/**
+ * Search icon SVG markup.
+ *
+ * Inline rather than imported because the icon is a single path element
+ * too small to warrant a separate file and build-time import.
+ */
 const SEARCH_ICON = [
   '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">',
   '<path d="M18.7441 19.0893L14.03 14.3752M16.8333 9.33333',
@@ -46,7 +53,8 @@ export function headerFragment(lang: string,): string {
             tag: 'button',
             attrs: { popovertarget: 'search', },
             children: [
-              `Search ${SEARCH_ICON}`,
+              h({ tag: 'span', text: 'Search', },),
+              ` ${SEARCH_ICON}`,
             ],
           },),
           searchPopover(lang,),

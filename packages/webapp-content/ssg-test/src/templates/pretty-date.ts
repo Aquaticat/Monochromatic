@@ -11,15 +11,20 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
  *
  * @param date - date to render
  *
+ * @param lang - language code for locale-appropriate formatting
+ *
  * @returns HTML string for the `<time>` element
  *
  * @example
  * ```ts
- * prettyDate(new Date('2022-07-01')) // '<time datetime="...">Jul 01, 2022</time>'
+ * prettyDate({ date: new Date('2022-07-01'), lang: 'en' })
+ * // '<time datetime="...">Jul 01, 2022</time>'
  * ```
  */
-export function prettyDate(date: Date,): string {
-  const formatted = date.toLocaleDateString('en', {
+export function prettyDate(
+  { date, lang, }: { date: Date; lang: string; },
+): string {
+  const formatted = date.toLocaleDateString(lang, {
     year: 'numeric',
     month: 'short',
     day: '2-digit',

@@ -17,8 +17,7 @@ import { pageLayout, } from '../templates/layout.ts';
  */
 export function indexPage(langs: string[],): string {
   /** Page title composed from all language translations of "choose a language". */
-  const title = Array
-    .from(i18n.get('chooseALang',)?.values() ?? [],)
+  const title = [...(i18n.get('chooseALang',)?.values() ?? []),]
     .map(function capitalize(str,) {
       return str.charAt(0,).toUpperCase() + str.slice(1,);
     },)

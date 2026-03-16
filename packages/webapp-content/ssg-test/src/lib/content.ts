@@ -3,7 +3,7 @@
  *
  * Globs MDX files from `src/content/{lang}/`, parses YAML frontmatter with
  * gray-matter, validates with Zod, and provides grouping utilities.
- * Filesystem paths give `lang` and `name` directly — no string splitting needed.
+ * Filesystem paths give `lang` and `name` directly -- no string splitting needed.
  */
 import { readFile, } from 'node:fs/promises';
 import { basename, dirname, } from 'node:path';
@@ -14,12 +14,18 @@ import { z, } from 'zod';
 
 //region Schema
 
-/** Zod schema for MDX post frontmatter validation. */
-const postFrontmatterSchema = z.object({
+/**
+ * Zod schema for MDX post frontmatter validation.
+ *
+ * Uses `z.coerce.date()` so the same schema handles both native `Date`
+ * objects (from gray-matter YAML parsing) and ISO date strings (from
+ * JSON-serialized cache entries).
+ */
+export const postFrontmatterSchema = z.object({
   title: z.string(),
   description: z.string(),
-  published: z.date(),
-  updated: z.date(),
+  published: z.coerce.date(),
+  updated: z.coerce.date(),
   tags: z.array(z.string(),),
 },);
 
@@ -80,96 +86,3 @@ export async function loadContent(contentDir: string,): Promise<Post[]> {
 }
 
 //endregion Loading
-
-//region Grouping
-
-/**
- * Groups posts by language code.
- *
- * @param posts - all loaded posts
- *
- * @returns record mapping language codes to their posts
- */
-export function groupByLang(posts: Post[],): Record<string, Post[]> {
-  return Object.groupBy(posts, function byLang(post,) {
-    return post.lang;
-  },) as Record<string, Post[]>;
-}
-
-/**
- * Groups posts by slug name across all languages.
- *
- * @param posts - all loaded posts
- *
- * @returns record mapping post names to all language variants
- */
-export function groupByName(posts: Post[],): Record<string, Post[]> {
-  return Object.groupBy(posts, function byName(post,) {
-    return post.name;
-  },) as Record<string, Post[]>;
-}
-
-/**
- * Extracts all unique tags across all posts.
- *
- * @param posts - all loaded posts
- *
- * @returns deduplicated array of tag strings
- */
-export function allTags(posts: Post[],): string[] {
-  return [...new Set(posts.flatMap(function getTags(post,) {
-    return post.data.tags;
-  },),),];
-}
-
-/**
- * Groups posts by tag, where each tag maps to its matching posts.
- *
- * @param posts - all loaded posts
- *
- * @returns record mapping tags to posts containing that tag
- */
-export function groupByTag(posts: Post[],): Record<string, Post[]> {
-  const tags = allTags(posts,);
-  return Object.fromEntries(
-    tags.map(function tagEntry(tag,) {
-      return [tag, posts.filter(function hasTag(post,) {
-        return post.data.tags.includes(tag,);
-      },),];
-    },),
-  );
-}
-
-/**
- * Groups posts first by language, then by tag within each language.
- *
- * @param posts - all loaded posts
- *
- * @returns nested record of lang -> tag -> posts
- */
-export function groupByLangThenTag(
-  posts: Post[],
-): Record<string, Record<string, Post[]>> {
-  const byLang = groupByLang(posts,);
-  const tags = allTags(posts,);
-
-  return Object.fromEntries(
-    Object.entries(byLang,).map(function langEntry([lang, langPosts,],) {
-      return [
-        lang,
-        Object.fromEntries(
-          tags.map(function tagEntry(tag,) {
-            return [
-              tag,
-              langPosts.filter(function hasTag(post,) {
-                return post.data.tags.includes(tag,);
-              },),
-            ];
-          },),
-        ),
-      ];
-    },),
-  );
-}
-
-//endregion Grouping

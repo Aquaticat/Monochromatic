@@ -51,9 +51,9 @@ export function postCard(post: Post,): string {
                 tag: 'span',
                 class: 'date',
                 children: [
-                  prettyDate(post.data.published,),
+                  prettyDate({ date: post.data.published, lang: post.lang, },),
                   ' - ',
-                  prettyDate(post.data.updated,),
+                  prettyDate({ date: post.data.updated, lang: post.lang, },),
                 ],
               },),
             ],

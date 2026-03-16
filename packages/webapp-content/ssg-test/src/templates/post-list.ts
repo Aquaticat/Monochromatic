@@ -19,6 +19,6 @@ export function postList(posts: Post[],): string {
   return h({
     tag: 'ul',
     class: 'Posts',
-    children: posts.map(postCard,),
+    children: posts.map(function renderCard(post,) { return postCard(post,); },),
   },);
 }

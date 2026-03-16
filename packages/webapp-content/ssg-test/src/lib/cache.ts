@@ -9,7 +9,6 @@
  * - Pipeline hash change: invalidate all entries (config/plugin change)
  * - File deletion: stale entries cleaned after build
  */
-import { createHash, } from 'node:crypto';
 import {
   mkdir,
   readFile,
@@ -17,78 +16,66 @@ import {
 } from 'node:fs/promises';
 import { dirname, } from 'node:path';
 
-import type { PostFrontmatter, } from './content.ts';
+import { z, } from 'zod';
 
-//region Types
+import { postFrontmatterSchema, } from './content.ts';
+
+// File justification: 164 lines -- schema definitions, I/O, and lookup form a
+// cohesive cache API; splitting into 3+ sub-40-line files adds indirection
+// without improving navigability.
+export { computePipelineHash, sha256, } from './cache-hash.ts';
+
+//region Schema and types
+
+/** Zod schema for a single cache entry. */
+const cacheEntrySchema = z.object({
+  contentHash: z.string(),
+  html: z.string(),
+  frontmatter: postFrontmatterSchema,
+},);
 
 /** Per-file cache entry with content hash and pre-rendered HTML. */
-type CacheEntry = {
-  /** SHA-256 hex digest of the raw MDX file contents. */
-  contentHash: string;
-  /** Pre-rendered HTML from the unified pipeline. */
-  html: string;
-  /** Parsed and validated frontmatter (avoids re-parsing gray-matter + Zod). */
-  frontmatter: PostFrontmatter;
-};
+export type CacheEntry = z.infer<typeof cacheEntrySchema>;
+
+/** Zod schema for the on-disk build manifest. */
+const buildManifestSchema = z.object({
+  pipelineHash: z.string(),
+  content: z.record(z.string(), cacheEntrySchema,),
+},);
 
 /** On-disk cache structure at `.cache/build-manifest.json`. */
-type BuildManifest = {
-  /** SHA-256 of the pipeline configuration file (markdown.ts). */
-  pipelineHash: string;
-  /** Per-file cache entries keyed by relative file path. */
-  content: Record<string, CacheEntry>;
-};
+export type BuildManifest = z.infer<typeof buildManifestSchema>;
 
-//endregion Types
+//endregion Schema and types
 
 /** Default path for the cache manifest file. */
 const CACHE_PATH = '.cache/build-manifest.json';
-
-//region Hash utilities
-
-/**
- * Computes a SHA-256 hex digest of a string.
- *
- * @param input - string to hash
- *
- * @returns hex-encoded SHA-256 digest
- */
-export function sha256(input: string,): string {
-  return createHash('sha256',).update(input,).digest('hex',);
-}
-
-/**
- * Computes the pipeline hash by hashing the markdown.ts source file.
- *
- * When this hash changes, all cached content entries are invalidated
- * because the processing pipeline configuration has changed.
- *
- * @param pipelineSourcePath - absolute path to the pipeline config source
- *
- * @returns hex-encoded SHA-256 digest of the pipeline source
- */
-export async function computePipelineHash(
-  pipelineSourcePath: string,
-): Promise<string> {
-  const source = await readFile(pipelineSourcePath, 'utf8',);
-  return sha256(source,);
-}
-
-//endregion Hash utilities
 
 //region Cache I/O
 
 /**
  * Reads the build manifest from disk.
  *
- * @returns parsed manifest, or `undefined` if the cache file does not exist
+ * Returns `undefined` when the cache file does not exist.
+ * Logs and discards corrupted or invalid manifests rather than
+ * crashing the build, since a missing cache just triggers a full rebuild.
+ *
+ * @returns parsed and validated manifest, or `undefined` on any failure
  */
 export async function readCache(): Promise<BuildManifest | undefined> {
   try {
     const raw = await readFile(CACHE_PATH, 'utf8',);
-    return JSON.parse(raw,) as BuildManifest;
+    return buildManifestSchema.parse(JSON.parse(raw,),);
   }
-  catch {
+  catch (error) {
+    // ENOENT is expected on first build; everything else is worth logging
+    const isFileNotFound = error instanceof Error
+      && 'code' in error
+      && error.code === 'ENOENT';
+
+    if (!isFileNotFound) {
+      console.error('Failed to read or validate build cache, starting fresh:', error,);
+    }
     return undefined;
   }
 }
@@ -153,7 +140,7 @@ export function createCacheEntry(
   { contentHash, html, frontmatter, }: {
     contentHash: string;
     html: string;
-    frontmatter: PostFrontmatter;
+    frontmatter: CacheEntry['frontmatter'];
   },
 ): CacheEntry {
   return { contentHash, html, frontmatter, };

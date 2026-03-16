@@ -43,5 +43,9 @@ export function namePage(
     ],
   },);
 
-  return pageLayout({ title: name, lang: 'en', content, },);
+  /** Default to the first available translation's language, falling back to 'en'. */
+  const [firstPost,] = posts;
+  const lang = firstPost !== undefined ? firstPost.lang : 'en';
+
+  return pageLayout({ title: name, lang, content, },);
 }

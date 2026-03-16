@@ -19,7 +19,9 @@ import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import remarkSectionize from 'remark-sectionize';
-import { unified, } from 'unified';
+import { type Processor, unified, } from 'unified';
+
+import type { Root, } from 'hast';
 
 /**
  * Creates a configured unified processor for MDX-to-HTML conversion.
@@ -45,7 +47,7 @@ import { unified, } from 'unified';
  * const html = String(result);
  * ```
  */
-export function createProcessor(): ReturnType<typeof unified> {
+export function createProcessor(): Processor<Root, Root, Root, Root, string> {
   return unified()
     .use(remarkParse,)
     .use(remarkMdx,)
