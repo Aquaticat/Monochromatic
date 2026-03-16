@@ -10,19 +10,26 @@ description = "Build static site from scratch (no cache)"
 run = "rm -rf .cache; bun src/build.ts"
 
 [tasks."dev:site"]
-description = "Start development server with watch rebuild"
-run = "mise watch -w src -r -- bun src/dev.ts"
+description = "Build then serve dist/ with Caddy, rebuilding on source changes"
+run = [{tasks = ["build:site"]}, {tasks = ["_dev:site:watch", "dev:site:serve"]}]
+
+[tasks."dev:site:serve"]
+hide = true
+description = "Serve dist/ with Caddy file server"
+run = "caddy file-server --root dist --listen :4321"
+
+[tasks."_dev:site:watch"]
+hide = true
+description = "Rebuild on source changes"
+run = "mise watch -w src -r build:site"
 
 [tasks."format:images"]
 description = "Convert non-AVIF raster images to AVIF counterparts"
 run = "bun src/images/format.ts"
 
-[tasks."watch:build"]
-extends = "watch:build"
-
-[tasks."watch:build:site"]
+[tasks."watch:site"]
 description = "Rebuild site on source changes"
-run = "mise watch -w src -r -- bun src/build.ts"
+run = "mise watch -w src -r build:site"
 
 [tasks.lint]
 extends = "lint"

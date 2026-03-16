@@ -8,7 +8,6 @@
     "@shikijs/transformers": "catalog:",
     "feedsmith": "catalog:",
     "gray-matter": "catalog:",
-    "h3": "catalog:",
     "nano-spawn": "catalog:",
     "rehype-autolink-headings": "catalog:",
     "rehype-parse": "catalog:",

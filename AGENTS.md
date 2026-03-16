@@ -311,14 +311,6 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 - No `switch` statements -- use if/else chains or `Record` lookups; if/else avoids `break` boilerplate and fallthrough bugs; `Record` is preferred when mapping a discriminant to a value
 - Composition over inheritance; `readonly` and `#private` by default; `unknown` over `any`
 
-# Testing
-
-Refer to `.agents/skills/testing-practices/SKILL.md`.
-
-# Code Review
-
-Refer to `.agents/skills/code-review/SKILL.md`.
-
 # Architecture Decisions
 
 - Root `package.json` may depend on workspace packages; root configs import by package name

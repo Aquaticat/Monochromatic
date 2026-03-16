@@ -127,6 +127,8 @@ The following categories of content were handled:
 
 ### Moved to code-review skill
 
+The harness should auto pick up skills in skills dirs and therefore even pointers to skills are not documented.
+
 All bad/good code examples were relocated to `.factory/skills/code-review/SKILL.md` where they serve as patterns for the reviewing agent to flag:
 
 - Functional vs imperative loop examples
