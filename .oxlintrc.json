@@ -98,23 +98,27 @@
     // No JSDoc-style {Type} annotations in TSDoc -- TypeScript handles types.
     "tsdoc/no-types": "error",
 
-    // @param names must match the function signature exactly.
+    // @param names must match the function signature.
+    // For destructured parameters ({ value, count }: Options), document each
+    // destructured property by name (@param value, @param count), not the binding pattern.
     "tsdoc/check-param-names": "error",
 
-    // All function parameters should have a @param tag.
+    // Every function parameter needs a @param tag.
+    // For destructured parameters, write one @param per destructured property name.
     "tsdoc/require-param": "warn",
 
     // @param tags must include the parameter name.
-    // For destructured params, document each destructured param.
     "tsdoc/require-param-name": "error",
 
     // @param tags should include a description.
     "tsdoc/require-param-description": "warn",
 
-    // Functions with return values should have @returns.
+    // Functions that return a value need @returns. Skips void, never,
+    // Promise<void>, Promise<never> return types, constructors, and setters.
     "tsdoc/require-returns": "warn",
 
-    // @returns must match actual return behavior (no @returns on void functions).
+    // @returns on a function that returns nothing is an error.
+    // Void, never, Promise<void>, and Promise<never> return types must not have @returns.
     "tsdoc/require-returns-check": "error",
 
     // @returns tags should include a description.
@@ -188,19 +192,39 @@
     "unicorn/no-document-cookie": "error",
     // Switch statements are banned; default-case is moot.
     "eslint/default-case": "off",
+    // Use if/else chains or Record<K, V> lookups instead of switch.
     "no-restricted-syntax/no-switch": "error",
+    // Use Object.entries/Object.keys/Object.values instead of for...in.
     "no-restricted-syntax/no-for-in": "error",
+    // Use using/await using for cleanup instead of try...finally.
     "no-restricted-syntax/no-try-finally": "error",
+    // Use union types with `as const` instead of enum declarations.
     "no-restricted-syntax/no-enum": "error",
+    // Use named function declarations or named function expressions, never arrow functions.
+    // Callbacks still need a name: items.map(function getValue(item) { return item.value; }).
     "no-restricted-syntax/no-arrow-function": "error",
+    // Use str.match()/str.matchAll() instead of RegExp.prototype.exec().
     "no-restricted-syntax/no-regexp-exec": "error",
+    // All .catch() calls are banned. Use try/catch with async/await.
     "no-restricted-syntax/no-promise-catch": "error",
+    // All .finally() calls are banned. Use using/await using for cleanup.
     "no-restricted-syntax/no-promise-finally": "error",
+    // Use Object.hasOwn(obj, key) instead of obj.hasOwnProperty(key).
     "no-restricted-syntax/no-hasownproperty": "error",
+    // Rest parameters (...args) are banned. Accept an explicit array parameter instead.
+    // Spread syntax in call expressions and array literals is not affected.
     "no-restricted-syntax/no-rest-params": "error",
+    // Use .trimStart()/.trimEnd() instead of deprecated .trimLeft()/.trimRight().
     "no-restricted-syntax/no-trim-left-right": "error",
+    // `const fn = function() {}` is banned. Use a function declaration instead.
+    // Function expressions as callbacks (not assigned to variables) are not affected.
     "no-restricted-syntax/no-variable-function-expression": "error",
+    // Function declarations with 2+ params must use a single destructured object parameter.
+    // function createUser({ name, age }: { name: string; age: number }): User {}
+    // Function expressions (callbacks) are exempt since their signatures are often dictated by external APIs.
     "no-restricted-syntax/require-destructured-params": "error",
+    // querySelector(), querySelectorAll(), and closest() must specify a generic type parameter.
+    // e.g. document.querySelector<HTMLInputElement>('.my-input') instead of document.querySelector('.my-input').
     "no-restricted-syntax/require-queryselector-generic": "error",
     //region no-disable -- prevent inline oxlint-disable for rules with no legitimate exceptions
     "no-restricted-syntax/no-disable-require-tsdoc": "error",
