@@ -23,6 +23,10 @@ hide = true
 description = "Rebuild on source changes"
 run = "mise watch -w src -r build:site"
 
+[tasks."generate:favicons"]
+description = "Generate favicon files from SVG source if missing"
+run = "bun src/build/favicon.ts"
+
 [tasks."format:images"]
 description = "Convert non-AVIF raster images to AVIF counterparts"
 run = "bun src/images/format.ts"

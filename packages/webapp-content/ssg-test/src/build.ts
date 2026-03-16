@@ -22,6 +22,7 @@ import {
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 
 import { generateAssets, } from './build/assets.ts';
+import { ensureFavicons, } from './build/favicon.ts';
 import { generatePages, } from './build/pages.ts';
 import { postProcess, } from './build/post-process.ts';
 import {
@@ -120,6 +121,7 @@ const cacheHits = processResults.filter(function wasFromCache({ fromCache, },) {
 
 l.info(`processed ${posts.length - cacheHits} files, ${cacheHits} from cache`,);
 
+await ensureFavicons({ l, },);
 await generatePages({ posts, renderedContent, l, },);
 await generateAssets({ posts, siteUrl: SITE_URL, contentDir: CONTENT_DIR, l, },);
 await postProcess({ l, },);

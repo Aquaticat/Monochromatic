@@ -32,8 +32,21 @@ export function headFragment(
       }, },),
       h({ tag: 'link', attrs: {
         rel: 'icon',
+        href: '/favicon.ico',
+        sizes: '32x32',
+      }, },),
+      h({ tag: 'link', attrs: {
+        rel: 'icon',
         href: '/favicon.svg',
         type: 'image/svg+xml',
+      }, },),
+      h({ tag: 'link', attrs: {
+        rel: 'apple-touch-icon',
+        href: '/apple-touch-icon.png',
+      }, },),
+      h({ tag: 'link', attrs: {
+        rel: 'manifest',
+        href: '/manifest.webmanifest',
       }, },),
       h({ tag: 'link', attrs: {
         rel: 'stylesheet',
