@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>editord</title>
+  <style>
+    :root {
+      --fg: #ccc;
+      --bg: #000;
+      --gutter-fg: #555;
+      --tree-hover-bg: #1a1a1a;
+      --tree-selected-bg: #2a2a2a;
+      --editor-padding: 0.5rem;
+    }
+    :root[data-theme="light"] {
+      --fg: #444;
+      --bg: #fff;
+      --gutter-fg: #aaa;
+      --tree-hover-bg: #f0f0f0;
+      --tree-selected-bg: #e0e0e0;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      block-size: 100%;
+      inline-size: 100%;
+      background-color: var(--bg);
+      color: var(--fg);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    #app {
+      display: flex;
+      block-size: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/dist/client/app.js"></script>
+</body>
+</html>

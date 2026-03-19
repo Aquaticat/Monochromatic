@@ -27,6 +27,9 @@ const _default_1: UserConfig = defineConfig({
   dts: false,
   target: 'firefox140',
   platform: 'neutral',
+  deps: {
+    alwaysBundle: [/^@monochromatic-dev\//,],
+  },
   minify: process.env.NODE_ENV === 'production',
   report: false,
   outDir: 'dist/client',

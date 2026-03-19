@@ -1,0 +1,86 @@
+# editord implementation plan
+
+## Phase 1 -- Edit and save a file (done)
+
+- [x] h3 server on port 4400 with token auth
+- [x] Static file serving for index.html and dist/client/
+- [x] WebSocket via crossws with `open` and `save` operations
+- [x] `<editor-pane>` web component: contenteditable, per-line `<div>`s, paste-as-plain-text
+- [x] Client app: connect WS, open file from `?file=` param, Ctrl+S saves
+- [x] Client bundle via tsdown (fully self-contained, ~15KB)
+- [x] Dark theme (#ccc on #000) in index.html
+
+### Known rough edges from phase 1
+
+- ~~`--editor-padding` CSS variable not defined~~ (fixed: defined as `0.5rem`)
+- No visual feedback on save (console.log only)
+- Errors from WS operations surface as uncaught promise rejections
+- `setText`/`getText` on `<editor-pane>` require runtime cast
+  (`document.createElement` returns `HTMLElement`, not `EditorPane`)
+- File paths resolve relative to server cwd, which may differ from user expectation
+- No favicon, no PWA manifest yet
+
+## Phase 2 -- File tree and tabs
+
+- [x] `resolveRoot` server operation: walk up to highest writable ancestor directory
+- [x] `listDir` server operation: `fs.readdir` with `{ withFileTypes: true }`, sorted entries
+- [x] `<file-tree>` web component: lazy-loading directory tree, expand/collapse, click to open
+- [x] Layout: file tree as a left sidebar, editor pane fills remaining space
+- [x] Root directory sent to client on WebSocket connection
+
+## Phase 3 -- Search and keybindings
+
+- [ ] `search` server operation: spawn `rg` subprocess, collect results as `{ file, line, text }[]`
+- [ ] Double-shift detection: track Shift keyup timestamps, trigger on <400ms gap with no intervening keys
+- [ ] `<search-overlay>` web component: input field, scrollable results list, Enter/click opens file at line
+- [ ] Ctrl+G go-to-line: prompt for line number, scroll `children[n]` into view
+- [ ] JetBrains keybindings:
+  - Ctrl+Shift+F -- find in files (same as double-shift search)
+  - Ctrl+E -- recent files popup
+
+## Phase 4 -- File watching, themes, PWA
+
+- [ ] `fs.watch` wrapper on open file paths, push `fileChanged` events over WebSocket
+- [ ] Frontend handles `fileChanged`: reload file content (MVP: always reload, no conflict UI)
+- [ ] Light theme (#444 on #fff) + toggle keybinding
+- [ ] PWA manifest (`manifest.json`) + service worker (`sw.ts`) for installability
+- [ ] `--editor-padding` CSS variable with a sensible default
+
+## Future (post-MVP)
+
+- Syntax highlighting (options: Tree-sitter WASM on frontend, or server-sent tokens)
+- Over-rendering (3-5x viewport) for compositor-optimized scrolling on very large files
+- Line numbers (CSS `counter()` on line divs, or a gutter column)
+- CodeMirror integration as an optional upgrade path (if raw contenteditable hits limits)
+- LSP proxying through editord
+- Multi-window / multi-project
+- Remote development (connect to editord on another machine)
+- Terminal rendering within the PWA
+
+## Technical notes
+
+### contenteditable behavior with per-line divs
+
+- **Enter** creates a new `<div>` (browser-native, correct behavior)
+- **Backspace at line start** merges current div into previous (correct)
+- **Delete at line end** merges next div into current (correct)
+- **Paste** intercepted: `event.preventDefault()` + `document.execCommand('insertText', false, text)`
+  to force plain text and preserve undo stack
+- **Undo/redo** browser-native; undo stack clears on programmatic `replaceChildren` (acceptable for MVP)
+- **IME** (CJK input) works natively
+- **Ctrl+F** browser-native find works because content is in the DOM
+  (shadow DOM requires `delegatesFocus` or the search to target the shadow root)
+
+### Buffer ownership
+
+Frontend (DOM) owns the canonical buffer.
+editord is stateless for buffer content -- it only reads/writes files on disk.
+No operational transform, no CRDT, no diff protocol.
+Full text sent on `open` (server to client) and `save` (client to server).
+
+### Security model
+
+Per-session random token via `crypto.randomUUID()`.
+Token passed as `?token=` query parameter on both the page URL and the WebSocket URL.
+WebSocket upgrade rejects connections without a valid token.
+Localhost-only by default.

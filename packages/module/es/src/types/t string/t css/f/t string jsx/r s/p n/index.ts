@@ -68,6 +68,7 @@ export type { StrictCssDeclarations as CssDeclarations, } from './properties.ts'
 export type { CssValue, } from './values.ts';
 export {
   cssCalc,
+  cssCh,
   cssColorFn,
   cssCommaList,
   cssCompounded,

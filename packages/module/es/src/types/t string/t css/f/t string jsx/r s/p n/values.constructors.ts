@@ -77,6 +77,27 @@ export function cssLh(n: number,): CssValue {
 }
 
 /**
+ * Creates a `ch` character-width length value.
+ *
+ * `ch` is the advance width of the `0` glyph in the element's font —
+ * use for sizing relative to monospace character cells (gutter widths,
+ * tab stops, column counts).
+ *
+ * @param n - numeric value
+ *
+ * @returns branded CSS length string (e.g. `'6ch'`)
+ *
+ * @example
+ * ```ts
+ * cssCh(6)  // '6ch'
+ * cssCh(80) // '80ch'
+ * ```
+ */
+export function cssCh(n: number,): CssValue {
+  return `${n}ch` as CssValue;
+}
+
+/**
  * Creates a `vi` viewport-inline length value (logical viewport unit).
  *
  * @param n - numeric value

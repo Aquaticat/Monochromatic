@@ -1,0 +1,19 @@
+{
+  "name": "@monochromatic-dev/desktop-daemon-editord",
+  "description": "Local editor daemon serving a contenteditable PWA frontend over WebSocket.",
+  "type": "module",
+  "private": true,
+  "main": "src/server/index.ts",
+  "dependencies": {
+    "@monochromatic-dev/module-es": "workspace:*",
+    "crossws": "catalog:",
+    "h3": "catalog:"
+  },
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@types/bun": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  }
+}

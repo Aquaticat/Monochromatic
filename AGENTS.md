@@ -37,7 +37,6 @@ spawn-claude --extra-arguments "--model sonnet" "refactor this module"
 
 The command prints `{"spawnId":"<uuid>"}` on success.
 Completed child results are injected into context automatically between tool calls.
-To check on a child manually, read `~/.claude/spawn-results/spawns/{spawnId}.json`.
 
 ## Dependency management
 - Use `workspace:*` for internal dependencies
@@ -62,6 +61,11 @@ Read `mise.toml` files in root and package directories for available commands.
 To run a task in a specific package, use `mise run //packages/path:task` (not `mise run -C`).
 A `PostToolUse` hook for Edit/Write on `.ts` files will run the package-specific `lint:types` task automatically;
 until that hook exists, run `mise run //packages/<path>:lint:types` manually after editing TypeScript.
+
+`mise watch -r` takes a bare task name, not a `mise run` invocation.
+Write `mise watch -w src -r -- start:server`, not `mise watch -w src -r -- mise run start:server`.
+When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`)
+so `mise watch -r` can reference it by name.
 
 After modifying source in packages that produce dist output (e.g. `module-es`),
 always verify with `mise run buildAndTest` instead of running tests alone.
