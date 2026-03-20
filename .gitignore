@@ -299,6 +299,7 @@ out/
 .serena/cache/
 .serena/memories/
 .serena/project.local.yml
+.serena/.gitignore
 
 # Claude Code plugin bundles (marketplace distribution requires committed built files)
 !packages/claude-code-plugins/*/dist/
