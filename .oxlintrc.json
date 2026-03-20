@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
+
   // Only the `rules`, `plugins`, and `overrides` properties are supported as of Jun 2025.
   // See https://oxc.rs/docs/guide/usage/linter/nested-config.html
   // So the best option right now is to not think about making a shared oxlint config package.
@@ -10,10 +11,12 @@
     "style": "warn"
   },
   "settings": {},
+
   // Language server still doesn't support js plugins. Waiting for upstream: https://github.com/oxc-project/oxc/issues/14402 https://github.com/oxc-project/oxc/issues/14826
   "jsPlugins": [
     // TSDoc validation rules adapted from eslint-plugin-jsdoc recommended config.
     "./packages/config/oxlint-tsdoc/src/index.ts",
+
     // Banned syntax patterns that oxlint's built-in rules can't express.
     "./packages/config/oxlint-no-restricted-syntax/src/index.ts"
   ],
@@ -190,42 +193,58 @@
     "promise/spec-only": "error",
     "typescript/explicit-function-return-type": "error",
     "unicorn/no-document-cookie": "error",
+
     // Switch statements are banned; default-case is moot.
     "eslint/default-case": "off",
+
     // Use if/else chains or Record<K, V> lookups instead of switch.
     "no-restricted-syntax/no-switch": "error",
+
     // Use Object.entries/Object.keys/Object.values instead of for...in.
     "no-restricted-syntax/no-for-in": "error",
+
     // Use using/await using for cleanup instead of try...finally.
     "no-restricted-syntax/no-try-finally": "error",
+
     // Use union types with `as const` instead of enum declarations.
     "no-restricted-syntax/no-enum": "error",
+
     // Use named function declarations or named function expressions, never arrow functions.
     // Callbacks still need a name: items.map(function getValue(item) { return item.value; }).
     "no-restricted-syntax/no-arrow-function": "error",
+
     // Use str.match()/str.matchAll() instead of RegExp.prototype.exec().
     "no-restricted-syntax/no-regexp-exec": "error",
+
     // All .catch() calls are banned. Use try/catch with async/await.
     "no-restricted-syntax/no-promise-catch": "error",
+
     // All .finally() calls are banned. Use using/await using for cleanup.
     "no-restricted-syntax/no-promise-finally": "error",
+
     // Use Object.hasOwn(obj, key) instead of obj.hasOwnProperty(key).
     "no-restricted-syntax/no-hasownproperty": "error",
+
     // Rest parameters (...args) are banned. Accept an explicit array parameter instead.
     // Spread syntax in call expressions and array literals is not affected.
     "no-restricted-syntax/no-rest-params": "error",
+
     // Use .trimStart()/.trimEnd() instead of deprecated .trimLeft()/.trimRight().
     "no-restricted-syntax/no-trim-left-right": "error",
+
     // `const fn = function() {}` is banned. Use a function declaration instead.
     // Function expressions as callbacks (not assigned to variables) are not affected.
     "no-restricted-syntax/no-variable-function-expression": "error",
+
     // Function declarations with 2+ params must use a single destructured object parameter.
     // function createUser({ name, age }: { name: string; age: number }): User {}
     // Function expressions (callbacks) are exempt since their signatures are often dictated by external APIs.
     "no-restricted-syntax/require-destructured-params": "error",
+
     // querySelector(), querySelectorAll(), and closest() must specify a generic type parameter.
     // e.g. document.querySelector<HTMLInputElement>('.my-input') instead of document.querySelector('.my-input').
     "no-restricted-syntax/require-queryselector-generic": "error",
+
     //region no-disable -- prevent inline oxlint-disable for rules with no legitimate exceptions
     "no-restricted-syntax/no-disable-require-tsdoc": "error",
     "no-restricted-syntax/no-disable-no-switch": "error",
@@ -247,30 +266,43 @@
     //endregion no-disable
     // Never process.exit() -- throw errors instead.
     "unicorn/no-process-exit": "error",
+
     // Ban non-null assertion (!) -- use notNullishOrThrow instead.
     "typescript/no-non-null-assertion": "error",
+
     // Enforce import type for type-only imports.
     "typescript/consistent-type-imports": "error",
+
     // Prefer const over let when variable is never reassigned.
     "eslint/prefer-const": "warn",
+
     // Ban explicit any -- use unknown instead. When any is genuinely needed, use oxlint-disable.
     "typescript/no-explicit-any": "warn",
+
     // No eval() or Function() constructor -- arbitrary code execution.
     "eslint/no-eval": "error",
+
     // No setTimeout/setInterval with string arguments -- implied eval.
     "eslint/no-implied-eval": "error",
+
     // No new Boolean/String/Number wrapper objects -- use primitives.
     "eslint/no-new-wrappers": "error",
+
     // No alert/confirm/prompt -- use promise-based UI alternatives.
     "eslint/no-alert": "error",
+
     // No debugger statements in committed code.
     "eslint/no-debugger": "error",
+
     // No comma operator -- obscures evaluation order.
     "eslint/no-sequences": "error",
+
     // No arguments.caller/arguments.callee -- deprecated and non-optimizable.
     "eslint/no-caller": "error",
+
     // No labels that shadow variable names -- confusing.
     "eslint/no-label-var": "error",
+
     // No instanceof Array -- use Array.isArray() which works across realms.
     "unicorn/no-instanceof-array": "error",
     "eslint/no-empty": "error",
@@ -301,6 +333,7 @@
     "unicorn/no-magic-array-flat-depth": "error",
     "unicorn/prefer-modern-math-apis": "error",
     "unicorn/prefer-node-protocol": "error",
+
     /* TODO: Need observation for this one.
              The intention is to ban the original global number variables
              because they have different behavior with new number properties,
@@ -329,17 +362,21 @@
 
     // unicorn/no-negated-condition isn't enabled because early fail is the practice
     "unicorn/no-negated-condition": "off",
+
     // Three-way conflict: bare `return;` triggers TS7030 + no-useless-return;
     // omitting return triggers TS7030; `return undefined;` triggers this rule.
     // Disabling no-useless-undefined is the least wrong option because the
     // return IS meaningful (it satisfies the type checker's control-flow analysis).
     "unicorn/no-useless-undefined": "off",
+
     /* unicorn/no-object-as-default-parameter isn't enabled
        because sometimes obj destructuring just can't. */
     "unicorn/no-object-as-default-parameter": "off",
+
     // Sometimes the type-checking if-statement isn't for checking type.
     "unicorn/prefer-type-error": "off",
     "import/max-dependencies": "off",
+
     // Since we're skipping blank lines and comments, 100 is generous enough that splitting up code files is always feasible.
     "eslint/max-lines": [
       "error",
@@ -351,16 +388,21 @@
     "eslint/max-nested-callbacks": "off",
     "eslint/max-classes-per-file": "off",
     "id-length": "allow",
+
     // Nested ternaries work great!
     "eslint/no-nested-ternary": "off",
+
     // Conflicts with TypeScript function overloading.
     "eslint/no-redeclare": "off",
+
     // The unnecessary microtask tick from `return await` is negligible;
     // disabling avoids a three-way conflict with require-await and await-thenable
     // when an async function's only await sites are tail-position returns.
     "typescript/return-await": "off",
+
     // Doesn't support eslint parameter allow when intersecting.
     "typescript/ban-types": "off",
+
     // Sometimes a generic Function type is necessary.
     // Use `(...args: any) => any` instead.
     "typescript/no-unsafe-function-type": "error",
@@ -386,9 +428,11 @@
 
     // TypeScript function overloads work better with function declarations.
     "eslint/func-style": "off",
+
     // for...in is banned entirely by no-restricted-syntax/no-for-in; guard-for-in is moot.
     "eslint/guard-for-in": "off",
     "eslint/no-continue": "off",
+
     // oxlint now supports ignoring specific values!
     "eslint/no-magic-numbers": [
       "warn",
@@ -419,11 +463,14 @@
       }
     ],
     "eslint/no-ternary": "off",
+
     // Sometimes method chaining is more concise.
     "eslint/prefer-spread": "off",
+
     // Doesn't matter.
     "eslint/sort-imports": "off",
     "eslint/sort-keys": "off",
+
     // Too many false positives.
     "eslint/yoda": "off",
 
@@ -440,14 +487,19 @@
     "typescript/no-inferrable-types": "off",
     "unicorn/catch-error-name": "off",
     "unicorn/filename-case": "off",
+
     // Some libraries require null.
     "unicorn/no-null": "off",
+
     // This won't be used exactly. Any errors should be logged anyway.
     "unicorn/prefer-optional-catch-binding": "error",
+
     // Always assume property/method not on called.
     "unicorn/prefer-reflect-apply": "error",
+
     // Because JS's default Array join separator isn't an empty string.
     "unicorn/require-array-join-separator": "error",
+
     // Default minimumDigits of 5 rejects separators on 4-digit numbers (e.g. 3_000) while accepting 12_000.
     // Setting to 0 makes grouping consistent for all numeric literals that already contain separators.
     "unicorn/numeric-separators-style": ["warn", { "number": { "minimumDigits": 0 } }],
@@ -459,6 +511,7 @@
     // or they're part of work-in-progress.
     // The bundler will remove them in the final bundle.
     "eslint/no-unused-vars": "off",
+
     // TODO comments are tracked via issues, not lint.
     "eslint/no-warning-comments": "off"
   },
@@ -482,6 +535,7 @@
       "rules": {
         // Fixture files can use magic numbers.
         "eslint/no-magic-numbers": "off",
+
         // Fixture files are exempt from line limits.
         "eslint/max-lines": "off"
       }
@@ -512,6 +566,7 @@
         //region import -- Declaration files are ambient; module-system rules don't apply.
         // Ambient modules don't need import/export to be unambiguous.
         "import/unambiguous": "off",
+
         // CJS type definitions legitimately use `export =` syntax.
         "import/no-commonjs": "off",
         //endregion import
@@ -519,14 +574,19 @@
         //region typescript -- Declaration files describe external shapes that violate source conventions.
         // Declaration merging requires `interface`, not `type`.
         "typescript/consistent-type-definitions": "off",
+
         // `declare namespace` is standard in ambient declarations.
         "typescript/no-namespace": "off",
+
         // Empty interfaces serve as declaration merging stubs.
         "typescript/no-empty-object-type": "off",
+
         // CJS type definitions use `import x = require()` syntax.
         "typescript/no-var-requires": "off",
+
         // All imports in declaration files are type-level; the distinction is meaningless.
         "typescript/consistent-type-imports": "off",
+
         // External API types sometimes require `any`.
         "typescript/no-explicit-any": "off",
         //endregion typescript
@@ -534,8 +594,10 @@
         //region eslint -- No runtime code exists in declaration files.
         // `declare var` is standard for global augmentation.
         "eslint/no-var": "off",
+
         // Numeric literal types are not magic numbers.
         "eslint/no-magic-numbers": "off",
+
         // Declaration files often declare multiple classes from a single external module.
         "eslint/max-classes-per-file": "off",
         //endregion eslint
@@ -543,8 +605,10 @@
         //region no-restricted-syntax -- External API signatures don't follow source conventions.
         // External APIs describe enums with `declare enum`.
         "no-restricted-syntax/no-enum": "off",
+
         // External function signatures may use rest parameters.
         "no-restricted-syntax/no-rest-params": "off",
+
         // External function signatures use positional parameters.
         "no-restricted-syntax/require-destructured-params": "off",
         //endregion no-restricted-syntax
@@ -552,10 +616,13 @@
         //region tsdoc -- Ambient declarations are often trivial stubs.
         // Requiring TSDoc on every `declare` statement is excessive.
         "tsdoc/require-tsdoc": "off",
+
         // External API parameters don't need @param tags.
         "tsdoc/require-param": "off",
+
         // External API functions don't need @returns tags.
         "tsdoc/require-returns": "off",
+
         // External API generators don't need @yields tags.
         "tsdoc/require-yields": "off"
         //endregion tsdoc
@@ -573,21 +640,28 @@
       "rules": {
         // Test files are exempt from line limits.
         "eslint/max-lines": "off",
+
         // Test files themselves don't require good traces.
         "eslint/func-names": ["warn", "as-needed"],
 
         // Sometimes testing a list of numbers is necessary.
         "eslint/no-magic-numbers": "off",
+
         // Many functions that don't need explicit return types.
         "typescript/explicit-function-return-type": "off",
+
         // Many functions are created as needed.
         "unicorn/consistent-function-scoping": "off",
+
         // May need to create promises dynamically.
         "promise/avoid-new": "off",
+
         // May need fake async functions.
         "eslint/require-await": "off",
+
         // Constructing arrays
         "eslint/no-array-constructor": "off",
+
         // Allow using Promise keywords
         "promise/prefer-await-to-then": "off",
 
@@ -603,8 +677,10 @@
 
         // Test assertions commonly use `as Type` for test data shaping.
         "typescript/no-unsafe-type-assertion": "off",
+
         // Tests use `any` for mocking and edge-case coverage.
         "typescript/no-explicit-any": "off",
+
         // Test TSDoc doesn't need full tag formatting but declarations still require TSDoc.
         // Test helpers benefit from TSDoc for the same reasons as production code:
         // they define shared utilities, custom matchers, and fixture builders that
@@ -613,12 +689,16 @@
         "tsdoc/require-param": "off",
         "tsdoc/require-returns": "off",
         "tsdoc/check-param-names": "off",
+
         // Tests may use arrow functions in callbacks freely.
         "no-restricted-syntax/no-arrow-function": "off",
+
         // Test setup/teardown may use init without assignment.
         "eslint/init-declarations": "off",
+
         // bun:test expect().rejects/resolves return Promises that oxlint's type analysis doesn't recognize.
         "typescript/await-thenable": "off",
+
         // bun:test expect() chains produce void-in-expression patterns that are intentional.
         "typescript/no-confusing-void-expression": "off",
 

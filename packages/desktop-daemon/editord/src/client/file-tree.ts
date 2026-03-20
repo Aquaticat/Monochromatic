@@ -1,34 +1,36 @@
 /**
  * `<file-tree>` web component.
  *
- * A directory tree sidebar with one-level-ahead preloading. When a directory
- * is rendered, its child directories' contents are prefetched concurrently.
- * Clicking a file dispatches a `file-select` CustomEvent with the absolute path.
+ * A directory tree sidebar using native `<details><summary>` elements
+ * for expand/collapse. The browser handles toggle state natively;
+ * JS only handles lazy-loading directory contents on first expand
+ * and one-level-ahead preloading.
  *
+ * Clicking a file dispatches a `file-select` CustomEvent with the absolute path.
  * No virtualization — the entire expanded tree is rendered into the DOM.
  */
 
-// oxlint-disable max-lines -- web component class with five lifecycle/render methods; further splitting fractures the component
+// oxlint-disable max-lines -- web component with lazy-loading, preloading, and two element factories; splitting fractures the component
 
 import {
   $ as h,
 } from '@monochromatic-dev/module-es/h-dom';
+
+import type { DirEntry, } from '../protocol.ts';
 import {
   COLLAPSED,
   EXPANDED,
   STYLES,
 } from './file-tree.styles.ts';
+import { l as rootLogger, tagged, } from './log.ts';
 
-/** Entry in a directory listing. */
-export type DirEntry = {
-  /** File or directory name (no path separator). */
-  name: string;
-  /** Whether entry is a directory. */
-  isDirectory: boolean;
-};
+/** Tagged logger for the file tree subsystem. */
+const l = tagged({ tag: 'file-tree', l: rootLogger, },);
+
+export type { DirEntry, };
 
 /**
- * `<file-tree>` — directory tree sidebar with one-level-ahead preloading.
+ * `<file-tree>` — directory tree sidebar with native `<details>` toggle.
  *
  * Set `fetchDir` to a function that returns directory entries for a given path,
  * then call `expandRoot(path)` to populate the tree. Clicking a file dispatches
@@ -46,6 +48,9 @@ export class FileTree extends HTMLElement {
 
   /** Cache of preloaded directory children, keyed by absolute path. */
   #prefetchCache = new Map<string, DirEntry[]>();
+
+  /** Tracks directories whose contents have already been loaded. */
+  #loadedDirs = new Set<string>();
 
   /** Callback to fetch directory contents. Set by the parent application. */
   fetchDir: ((path: string,) => Promise<DirEntry[]>) | null = null;
@@ -76,8 +81,23 @@ export class FileTree extends HTMLElement {
       return;
 
     const entries = await this.fetchDir(rootPath,);
-    this.#renderEntries(this.#tree, rootPath, entries,);
-    void this.#preloadChildren(rootPath, entries,);
+    this.#renderEntries({ container: this.#tree, parentPath: rootPath, entries, },);
+    void this.#preloadChildren({ parentPath: rootPath, entries, },);
+  }
+
+  /**
+   * Builds the full path for a child entry within a parent directory.
+   *
+   * @param parentPath - absolute path of the parent directory
+   *
+   * @param name - child entry name
+   *
+   * @returns absolute path for the child
+   */
+  #childPath({ parentPath, name, }: { parentPath: string; name: string }): string {
+    return parentPath === '/'
+      ? `/${name}`
+      : `${parentPath}/${name}`;
   }
 
   /**
@@ -89,21 +109,19 @@ export class FileTree extends HTMLElement {
    *
    * @param entries - directory entries to render
    */
-  #renderEntries(
-    container: HTMLElement,
-    parentPath: string,
-    entries: DirEntry[],
-  ): void {
+  #renderEntries({ container, parentPath, entries, }: {
+    container: HTMLElement;
+    parentPath: string;
+    entries: DirEntry[];
+  }): void {
     const tree = this;
     const elements = entries.map(function createEntryElement(entry,) {
-      const fullPath = parentPath === '/'
-        ? `/${entry.name}`
-        : `${parentPath}/${entry.name}`;
+      const fullPath = tree.#childPath({ parentPath, name: entry.name, },);
 
       if (entry.isDirectory)
-        return tree.#createDirEntry(fullPath, entry.name,);
+        return tree.#createDirEntry({ path: fullPath, name: entry.name, },);
 
-      return tree.#createFileEntry(fullPath, entry.name,);
+      return tree.#createFileEntry({ path: fullPath, name: entry.name, },);
     },);
 
     container.replaceChildren(...elements,);
@@ -117,24 +135,22 @@ export class FileTree extends HTMLElement {
    *
    * @param entries - directory entries whose subdirectories to preload
    */
-  async #preloadChildren(
-    parentPath: string,
-    entries: DirEntry[],
-  ): Promise<void> {
-    const tree = this;
-    const fetchDir = this.fetchDir;
+  async #preloadChildren({ parentPath, entries, }: {
+    parentPath: string;
+    entries: DirEntry[];
+  }): Promise<void> {
+    const { fetchDir, } = this;
     if (fetchDir === null)
       return;
 
+    const tree = this;
     await Promise.allSettled(
       entries
         .filter(function isDir(entry,) {
           return entry.isDirectory;
         },)
         .map(async function prefetchDir(entry,) {
-          const fullPath = parentPath === '/'
-            ? `/${entry.name}`
-            : `${parentPath}/${entry.name}`;
+          const fullPath = tree.#childPath({ parentPath, name: entry.name, },);
           const children = await fetchDir(fullPath,);
           tree.#prefetchCache.set(fullPath, children,);
         },),
@@ -142,74 +158,59 @@ export class FileTree extends HTMLElement {
   }
 
   /**
-   * Creates an expandable directory entry that loads children from
-   * the prefetch cache or fetches on demand.
+   * Creates a `<details><summary>` directory entry that loads
+   * children from the prefetch cache or fetches on demand.
    *
    * @param path - absolute path of the directory
    *
    * @param name - directory name for display
    *
-   * @returns directory entry element with toggle and children container
+   * @returns directory entry element with native expand/collapse
    */
-  #createDirEntry(path: string, name: string,): HTMLElement {
+  #createDirEntry({ path, name, }: { path: string; name: string }): HTMLElement {
     const tree = this;
-    let isExpanded = false;
-    let isLoaded = false;
-    let isLoading = false;
-
     const toggle = h({ tag: 'span', class: 'toggle', text: COLLAPSED, },);
-    const children = h({ tag: 'div', class: 'children', },);
-    children.hidden = true;
+    const childrenContainer = h({ tag: 'div', class: 'children', },);
 
-    const label = h({
-      tag: 'div',
-      class: 'entry-label',
+    const summary = h({
+      tag: 'summary',
       children: [
         toggle,
         h({ tag: 'span', class: 'name', text: name, },),
       ],
-      on: {
-        click: async function handleDirClick() {
-          if (isLoading)
-            return;
+    },);
 
-          isExpanded = !isExpanded;
-          children.hidden = !isExpanded;
+    const details = h({
+      tag: 'details',
+      children: [summary, childrenContainer,],
+      on: {
+        toggle: async function handleToggle(event,) {
+          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event always fires on the <details> element that owns it
+          const detailsElement = event.currentTarget as HTMLDetailsElement;
+          const isExpanded = detailsElement.open;
           toggle.textContent = isExpanded ? EXPANDED : COLLAPSED;
 
-          if (isExpanded && !isLoaded) {
-            isLoading = true;
-            try {
-              const cached = tree.#prefetchCache.get(path,);
-              let entries: DirEntry[];
-              if (cached !== undefined) {
-                entries = cached;
-                tree.#prefetchCache.delete(path,);
-              }
-              else {
-                const fetchDir = tree.fetchDir;
-                entries = fetchDir !== null
-                  ? await fetchDir(path,)
-                  : [];
-              }
-              tree.#renderEntries(children, path, entries,);
-              isLoaded = true;
-              void tree.#preloadChildren(path, entries,);
-            }
-            catch (error) {
-              console.error(`[file-tree] failed to list ${path}:`, error,);
-            }
-            isLoading = false;
+          if (!isExpanded || tree.#loadedDirs.has(path,))
+            return;
+
+          tree.#loadedDirs.add(path,);
+          try {
+            const cached = tree.#prefetchCache.get(path,);
+            const entries = cached !== undefined
+              ? (tree.#prefetchCache.delete(path,), cached)
+              : await (tree.fetchDir?.(path,) ?? Promise.resolve([],));
+            tree.#renderEntries({ container: childrenContainer, parentPath: path, entries, },);
+            void tree.#preloadChildren({ parentPath: path, entries, },);
+          }
+          catch (error) {
+            l.error(`failed to list ${path}: ${String(error,)}`,);
+            tree.#loadedDirs.delete(path,);
           }
         },
       },
     },);
 
-    return h({
-      tag: 'div',
-      class: 'entry',
-      children: [label, children,],
-    },);
+    return details;
   }
 
   /**
@@ -221,12 +222,12 @@ export class FileTree extends HTMLElement {
    *
    * @returns file entry element
    */
-  #createFileEntry(path: string, name: string,): HTMLElement {
+  #createFileEntry({ path, name, }: { path: string; name: string }): HTMLElement {
     const tree = this;
 
     const label = h({
       tag: 'div',
-      class: 'entry-label',
+      class: 'file-label',
       children: [
         h({ tag: 'span', class: 'toggle', },),
         h({ tag: 'span', class: 'name', text: name, },),
@@ -247,11 +248,7 @@ export class FileTree extends HTMLElement {
       },
     },);
 
-    return h({
-      tag: 'div',
-      class: 'entry',
-      children: [label,],
-    },);
+    return label;
   }
 }
 

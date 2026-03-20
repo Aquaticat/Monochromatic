@@ -2,21 +2,26 @@
  * File save operation.
  *
  * Writes content to a file on disk.
+ * Validates that the file path is within the allowed root directory.
  */
 
 import { writeFile, } from 'node:fs/promises';
-import { resolve, } from 'node:path';
+
+import { assertWithinRoot, } from './assert-within-root.ts';
 
 /**
  * Writes content to a file on disk.
+ * Rejects paths that escape the root directory.
  *
- * @param filePath - path to the file (relative paths resolve against cwd)
+ * @param rootDir - absolute root directory for path containment
+ *
+ * @param path - path to the file (relative paths resolve against cwd)
  *
  * @param content - full file content to write
  *
- * @throws {Error} when the file cannot be written
+ * @throws when the path escapes root or the file cannot be written
  */
-export async function saveFile(filePath: string, content: string,): Promise<void> {
-  const absolutePath = resolve(filePath,);
+export async function saveFile({ rootDir, path, content, }: { rootDir: string; path: string; content: string }): Promise<void> {
+  const absolutePath = assertWithinRoot({ rootDir, path, },);
   await writeFile(absolutePath, content, 'utf8',);
 }

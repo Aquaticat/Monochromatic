@@ -1,21 +1,27 @@
 /**
  * Shadow DOM styles for the `<file-tree>` web component.
+ *
+ * Uses native `<details><summary>` for directory expand/collapse,
+ * so no JS toggle state management is needed.
  */
 
 import {
   $,
+  cssCommaList,
   cssNum,
   cssPercent,
   cssRem,
   cssVar,
-  type CssValue,
 } from '@monochromatic-dev/module-es/h-css';
 
-/** Collapsed directory indicator (▸). */
-export const COLLAPSED = '\u25B8';
+/** Sidebar width in `rem`: 16 = 2 * 2 * 2 * 2. */
+const SIDEBAR_WIDTH = 2 * 2 * 2 * 2;
 
-/** Expanded directory indicator (▾). */
-export const EXPANDED = '\u25BE';
+/** Vertical padding for entry labels and summaries in `rem`: 0.125 = 1 / (2 * 2 * 2). */
+const ENTRY_PADDING_BLOCK = 1 / (2 * 2 * 2);
+
+/** Horizontal padding for entry labels and summaries in `rem`: 0.5 = 1 / 2. */
+const ENTRY_PADDING_INLINE = 1 / 2;
 
 /** Shadow DOM styles for the file tree. */
 export const STYLES = [
@@ -23,35 +29,54 @@ export const STYLES = [
     rule: ':host',
     decls: {
       display: 'block',
-      'inline-size': cssRem(16,),
+      'inline-size': cssRem(SIDEBAR_WIDTH,),
       'block-size': cssPercent(100,),
       overflow: 'auto',
-      'font-family': "'JetBrains Mono', monospace" as CssValue,
-      'font-size': cssRem(0.875,),
-      'line-height': cssNum(1.4,),
+      'font-family': cssCommaList(["'JetBrains Mono'", 'monospace',],),
+      'font-size': cssRem(1,),
+      'line-height': cssNum((2 + 1) / 2,),
       color: cssVar('fg',),
       'user-select': 'none',
     },
   },),
   $({
-    rule: '.entry-label',
+    rule: 'details',
     decls: {
-      display: 'flex',
-      'align-items': 'center',
-      'padding-block': cssRem(0.125,),
-      'padding-inline': cssRem(0.5,),
-      cursor: 'pointer',
-      'white-space': 'nowrap',
+      'padding-inline-start': cssRem(1,),
     },
   },),
   $({
-    rule: '.entry-label:hover',
+    rule: 'summary',
+    decls: {
+      display: 'flex',
+      'align-items': 'center',
+      'padding-block': cssRem(ENTRY_PADDING_BLOCK,),
+      'padding-inline': cssRem(ENTRY_PADDING_INLINE,),
+      cursor: 'pointer',
+      'white-space': 'nowrap',
+      'list-style': 'none',
+    },
+  },),
+  $({
+    rule: 'summary::-webkit-details-marker',
+    decls: {
+      display: 'none',
+    },
+  },),
+  $({
+    rule: 'summary::marker',
+    decls: {
+      display: 'none',
+    },
+  },),
+  $({
+    rule: 'summary:hover, .file-label:hover',
     decls: {
       'background-color': cssVar('tree-hover-bg',),
     },
   },),
   $({
-    rule: '.entry-label.selected',
+    rule: '.selected',
     decls: {
       'background-color': cssVar('tree-selected-bg',),
     },
@@ -65,9 +90,20 @@ export const STYLES = [
     },
   },),
   $({
-    rule: '.children',
+    rule: '.file-label',
     decls: {
-      'padding-inline-start': cssRem(1,),
+      display: 'flex',
+      'align-items': 'center',
+      'padding-block': cssRem(ENTRY_PADDING_BLOCK,),
+      'padding-inline': cssRem(ENTRY_PADDING_INLINE,),
+      cursor: 'pointer',
+      'white-space': 'nowrap',
     },
   },),
 ].join('',);
+
+/** Collapsed directory indicator. */
+export const COLLAPSED = '\u25B8';
+
+/** Expanded directory indicator. */
+export const EXPANDED = '\u25BE';

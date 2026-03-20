@@ -50,12 +50,19 @@ export type DisallowedAtRules = 'charset' | 'font-palette-values';
  * @example
  * ```ts
  * const decls: StrictCssDeclarations = {
- *   'animation-name': 'slide-in',  // plain string — OK, user-defined identifier
- *   gap: '1rem',                   // type error — must use cssRem(1)
+ *   'animation-name': 'slide-in',      // plain string — OK, user-defined identifier
+ *   'counter-reset': 'line',           // plain string — OK, user-defined counter name
+ *   content: 'counter(line)',          // plain string — OK, counter function reference
+ *   gap: '1rem',                       // type error — must use cssRem(1)
  * };
  * ```
  */
-type IdentifierProperties = 'animation-name';
+type IdentifierProperties =
+  | 'animation-name'
+  | 'content'
+  | 'counter-increment'
+  | 'counter-reset'
+  | 'counter-set';
 
 //endregion
 

@@ -3,18 +3,13 @@
  *
  * Reads a directory from disk and returns its entries with type information.
  * Entries are sorted: directories first, then alphabetically within each group.
+ * Validates that the directory path is within the allowed root directory.
  */
 
 import { readdir, } from 'node:fs/promises';
-import { resolve, } from 'node:path';
 
-/** Single entry in a directory listing. */
-type DirEntry = {
-  /** File or directory name (no path separator). */
-  name: string;
-  /** Whether entry is a directory. */
-  isDirectory: boolean;
-};
+import type { DirEntry, } from '../../protocol.ts';
+import { assertWithinRoot, } from './assert-within-root.ts';
 
 /** Result of listing a directory. */
 type ListDirResult = {
@@ -26,18 +21,21 @@ type ListDirResult = {
 
 /**
  * Reads a directory from disk and returns its sorted entries.
+ * Rejects paths that escape the root directory.
  *
  * Directories are listed before files. Within each group, entries
  * are sorted alphabetically by name using locale-aware comparison.
  *
- * @param dirPath - path to the directory (relative paths resolve against cwd)
+ * @param rootDir - absolute root directory for path containment
+ *
+ * @param path - path to the directory (relative paths resolve against cwd)
  *
  * @returns resolved path and sorted directory entries
  *
- * @throws when the directory cannot be read
+ * @throws when the path escapes root or the directory cannot be read
  */
-export async function listDir(dirPath: string,): Promise<ListDirResult> {
-  const absolutePath = resolve(dirPath,);
+export async function listDir({ rootDir, path, }: { rootDir: string; path: string }): Promise<ListDirResult> {
+  const absolutePath = assertWithinRoot({ rootDir, path, },);
   const dirents = await readdir(absolutePath, { withFileTypes: true, },);
 
   /** Directory entries first, then files, both groups alphabetically sorted. */

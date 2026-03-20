@@ -23,6 +23,8 @@ import {
 import { readFile, stat, } from 'node:fs/promises';
 import { join, } from 'node:path';
 import { plugin as ws, } from 'crossws/server';
+
+import { l, tagged, } from './log.ts';
 import { resolveRoot, } from './operations/resolve-root.ts';
 import { createWsHandler, } from './ws.ts';
 
@@ -54,14 +56,21 @@ const AUTH_TOKEN = crypto.randomUUID();
 /** Highest writable ancestor directory, used as the file tree root. */
 const ROOT_DIR = await resolveRoot();
 
+/** Tagged logger for the HTTP subsystem. */
+const httpLog = tagged({ tag: 'http', l, },);
+
 /** h3 application instance. */
 const app = new H3();
 
+/** Base path for resolving dist and source assets relative to this file. */
+const packageRoot = join(import.meta.dirname, '../..',);
+
 //region Static file serving — built client bundles from dist/client/
 
-app.get('/', defineHandler(function handleIndex() {
+app.get('/', defineHandler(async function handleIndex() {
+  const html = await readFile(join(packageRoot, 'src/client/index.html',), 'utf8',);
   return new Response(
-    Bun.file(join(import.meta.dirname, '../../src/client/index.html',),),
+    html,
     { headers: { 'Content-Type': 'text/html; charset=utf-8', }, },
   );
 },),);
@@ -69,14 +78,23 @@ app.get('/', defineHandler(function handleIndex() {
 app.get('/dist/client/**', defineHandler(function handleStaticAsset(event,) {
   return serveStatic(event, {
     getContents: function readContents(id,) {
-      return readFile(join(import.meta.dirname, '../..', id,),);
+      return readFile(join(packageRoot, id,),);
     },
     getMeta: async function getMetadata(id,) {
+      const fullPath = join(packageRoot, id,);
       let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
       try {
-        stats = await stat(join(import.meta.dirname, '../..', id,),);
+        stats = await stat(fullPath,);
       }
-      catch {
+      catch (error) {
+        /** Only swallow ENOENT (file not found); rethrow unexpected errors. */
+        const isNotFound = error instanceof Error
+          && 'code' in error
+          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guarded by instanceof Error and 'code' in error above
+          && (error as NodeJS.ErrnoException).code === 'ENOENT';
+        if (!isNotFound)
+          throw error;
+
         return;
       }
       if (!stats.isFile())
@@ -90,7 +108,7 @@ app.get('/dist/client/**', defineHandler(function handleStaticAsset(event,) {
 
 //region WebSocket — editor communication
 
-app.get('/_ws', createWsHandler(AUTH_TOKEN, ROOT_DIR,),);
+app.get('/_ws', createWsHandler({ authToken: AUTH_TOKEN, rootDir: ROOT_DIR, },),);
 
 //endregion WebSocket
 
@@ -101,11 +119,11 @@ const _server = serve(app, {
     ws({
       resolve: async function resolveWebSocketHooks(request,) {
         const response = await app.fetch(request,);
-        // oxlint-disable-next-line typescript/no-unsafe-member-access, typescript/no-unsafe-return, typescript/no-explicit-any -- crossws attaches hooks as a non-standard property on the Response object
+        // oxlint-disable-next-line typescript/no-unsafe-member-access, typescript/no-unsafe-return, typescript/no-explicit-any, typescript-eslint/no-unsafe-type-assertion -- crossws attaches hooks as a non-standard property on the Response object
         return (response as any).crossws;
       },
     },),
   ],
 },);
 
-console.log(`editord listening on http://localhost:${resolvePort()}?token=${AUTH_TOKEN}`,);
+httpLog.info(`listening on http://localhost:${resolvePort()}?token=${AUTH_TOKEN}`,);

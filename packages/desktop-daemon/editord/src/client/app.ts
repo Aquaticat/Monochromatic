@@ -15,37 +15,47 @@
 import './editor-pane.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register <file-tree> custom element
 import './file-tree.ts';
+
+import {
+  $ as notNullishOrThrow,
+} from '@monochromatic-dev/module-es/not-nullish-or-throw';
+
+import type { DirEntry, } from '../protocol.ts';
+import type { EditorPane, } from './editor-pane.ts';
 import type { FileTree, } from './file-tree.ts';
+import { l, tagged, } from './log.ts';
 import { EditorWsClient, } from './ws-client.ts';
 
-export {};
+/** Tagged logger for the app entry point. */
+const appLog = tagged({ tag: 'app', l, },);
+
+//region Initialization
 
 /** Extracts query parameters from the current page URL. */
-const params = new URLSearchParams(window.location.search,);
+const params = new URLSearchParams(globalThis.location.search,);
 
 /** Auth token passed by editord on startup. */
-const token = params.get('token',);
-if (token === null)
-  throw new Error('missing token in URL query string',);
+const token = notNullishOrThrow(params.get('token',),);
 
 /** File path to open, passed as `?file=...` query parameter. */
 const filePath = params.get('file',);
 
 /** Port derived from the current page origin. */
-const port = window.location.port;
+const { port, } = globalThis.location;
 
 /** WebSocket client instance. */
-const ws = new EditorWsClient(port, token,);
+const ws = new EditorWsClient({ port, token, },);
 
 /** App container element. */
-const appElement = document.querySelector<HTMLElement>('#app',);
-if (appElement === null)
-  throw new Error('missing #app element',);
+const appElement = notNullishOrThrow(document.querySelector<HTMLElement>('#app',),);
+
+//endregion Initialization
 
 //region File tree setup
 
 /** The file tree sidebar web component instance. */
-const fileTree = document.createElement('file-tree',) as unknown as FileTree;
+// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- custom element registered via customElements.define; createElement returns HTMLElement
+const fileTree = document.createElement('file-tree',) as FileTree;
 
 /**
  * Fetches directory contents from the server for the file tree.
@@ -54,7 +64,7 @@ const fileTree = document.createElement('file-tree',) as unknown as FileTree;
  *
  * @returns directory entries
  */
-fileTree.fetchDir = async function fetchDir(path: string,): Promise<{ name: string; isDirectory: boolean; }[]> {
+fileTree.fetchDir = async function fetchDir(path: string,): Promise<DirEntry[]> {
   const response = await ws.request({ type: 'listDir', path, },);
   if ('entries' in response)
     return response.entries;
@@ -67,7 +77,8 @@ fileTree.fetchDir = async function fetchDir(path: string,): Promise<{ name: stri
 //region Editor pane setup
 
 /** The editor pane web component instance. */
-const editorPane = document.createElement('editor-pane',);
+// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- custom element registered via customElements.define; createElement returns HTMLElement
+const editorPane = document.createElement('editor-pane',) as EditorPane;
 
 //endregion Editor pane setup
 
@@ -77,17 +88,10 @@ appElement.append(fileTree, editorPane,);
 
 //endregion Layout
 
-//region File tree events
-
-fileTree.addEventListener('file-select', function handleFileSelect(event,) {
-  const { path, } = (event as CustomEvent<{ path: string; }>).detail;
-  currentFilePath = path;
-  void loadFile(path,);
-},);
-
-//endregion File tree events
-
 //region File loading
+
+/** Path of the currently open file, or null when no file is open. */
+let currentFilePath = filePath;
 
 /**
  * Loads a file from the server and renders it in the editor.
@@ -97,28 +101,56 @@ fileTree.addEventListener('file-select', function handleFileSelect(event,) {
 async function loadFile(path: string,): Promise<void> {
   const response = await ws.request({ type: 'open', path, },);
   if ('content' in response) {
-    editorPane.setText(response.content as string,);
+    editorPane.setText(String(response.content,),);
     document.title = `editord - ${path}`;
+  }
+}
+
+/**
+ * Loads a file and logs errors without propagating them.
+ * Suitable for fire-and-forget contexts like event handlers.
+ *
+ * @param path - file path to open
+ */
+async function loadFileSafe(path: string,): Promise<void> {
+  try {
+    await loadFile(path,);
+  }
+  catch (error) {
+    appLog.error(`failed to load file: ${String(error,)}`,);
   }
 }
 
 //endregion File loading
 
-//region Save handler
+//region File tree events
 
-/** Path of the currently open file, or null when no file is open. */
-let currentFilePath = filePath;
+fileTree.addEventListener('file-select', function handleFileSelect(event,) {
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- file-select is always a CustomEvent dispatched by FileTree
+  const { path, } = (event as CustomEvent<{ path: string }>).detail;
+  currentFilePath = path;
+  void loadFileSafe(path,);
+},);
+
+//endregion File tree events
+
+//region Save handler
 
 /**
  * Saves the current editor content to the server.
+ * Logs errors without propagating them.
  */
 async function saveCurrentFile(): Promise<void> {
   if (currentFilePath === null)
     return;
 
-  const content = editorPane.getText();
-  await ws.request({ type: 'save', path: currentFilePath, content, },);
-  console.log(`[editord] saved ${currentFilePath}`,);
+  try {
+    const content = editorPane.getText();
+    await ws.request({ type: 'save', path: currentFilePath, content, },);
+  }
+  catch (error) {
+    appLog.error(`failed to save file: ${String(error,)}`,);
+  }
 }
 
 //endregion Save handler
@@ -129,7 +161,7 @@ document.addEventListener('keydown', function handleKeydown(event,) {
   // Ctrl+S / Cmd+S — save
   if ((event.ctrlKey || event.metaKey) && event.key === 's') {
     event.preventDefault();
-    saveCurrentFile();
+    void saveCurrentFile();
   }
 },);
 

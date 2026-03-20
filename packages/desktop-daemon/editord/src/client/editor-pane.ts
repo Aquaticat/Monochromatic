@@ -12,72 +12,8 @@
 import {
   $ as h,
 } from '@monochromatic-dev/module-es/h-dom';
-import {
-  $,
-  cssCh,
-  cssLh,
-  cssNum,
-  cssInt,
-  cssPercent,
-  cssRem,
-  cssVar,
-  type CssValue,
-} from '@monochromatic-dev/module-es/h-css';
 
-export {};
-
-/** Shadow DOM styles for the editor pane. */
-const STYLES = [
-  $({
-    rule: ':host',
-    decls: {
-      display: 'block',
-      flex: '1',
-      overflow: 'auto',
-    },
-  },),
-  $({
-    rule: '.editor',
-    decls: {
-      'min-block-size': cssPercent(100,),
-      'padding-block': cssVar('editor-padding',),
-      'padding-inline': cssVar('editor-padding',),
-      outline: 'none',
-      'white-space': 'pre-wrap',
-      'overflow-wrap': 'break-word',
-      'font-family': "'JetBrains Mono', monospace" as CssValue,
-      'font-size': cssRem(1,),
-      'line-height': cssNum(1.5,),
-      'tab-size': cssInt(2,),
-      color: cssVar('fg',),
-      'caret-color': cssVar('fg',),
-      'counter-reset': 'line' as CssValue,
-    },
-  },),
-  $({
-    rule: '.editor > div',
-    decls: {
-      'min-block-size': cssLh(1,),
-      'counter-increment': 'line' as CssValue,
-      position: 'relative',
-      'padding-inline-start': cssCh(6,),
-    },
-  },),
-  $({
-    rule: '.editor > div::before',
-    decls: {
-      content: 'counter(line)' as CssValue,
-      position: 'absolute',
-      'inset-inline-start': cssInt(0,),
-      'inset-block-start': cssInt(0,),
-      'inline-size': cssCh(5,),
-      'text-align': 'end',
-      color: cssVar('gutter-fg',),
-      'user-select': 'none',
-      'pointer-events': 'none',
-    },
-  },),
-].join('',);
+import { STYLES, } from './editor-pane.styles.ts';
 
 /**
  * `<editor-pane>` — contenteditable text editor component.
@@ -85,7 +21,7 @@ const STYLES = [
  * Each line of the file is a child `<div>` of the contenteditable container.
  * The component exposes methods to set and get the full text content.
  */
-class EditorPane extends HTMLElement {
+export class EditorPane extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   #shadow: ShadowRoot;
 
@@ -112,7 +48,7 @@ class EditorPane extends HTMLElement {
     this.#editor.addEventListener('paste', function handlePaste(event,) {
       event.preventDefault();
       const text = event.clipboardData?.getData('text/plain',) ?? '';
-      // execCommand preserves the browser's native undo stack
+      // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand is the only way to insert text while preserving the browser's native undo stack
       document.execCommand('insertText', false, text,);
     },);
 
@@ -132,8 +68,7 @@ class EditorPane extends HTMLElement {
     if (this.#editor === null)
       return;
 
-    const lines = text.split('\n',);
-    const lineElements = lines.map(function createLineDiv(line,) {
+    const lineElements = text.split('\n',).map(function createLineDiv(line,) {
       return h({ tag: 'div', text: line === '' ? '\n' : line, },);
     },);
 
@@ -150,13 +85,11 @@ class EditorPane extends HTMLElement {
     if (this.#editor === null)
       return '';
 
-    const lines: string[] = [];
-    for (const child of this.#editor.children) {
+    return [...this.#editor.children,].map(function readLineText(child,) {
+      // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- textContent is typed as `string | null` in DOM; null when node has no text
       const text = child.textContent ?? '';
-      lines.push(text === '\n' ? '' : text,);
-    }
-
-    return lines.join('\n',);
+      return text === '\n' ? '' : text;
+    },).join('\n',);
   }
 }
 
