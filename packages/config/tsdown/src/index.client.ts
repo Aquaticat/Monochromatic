@@ -28,7 +28,7 @@ const _default_1: UserConfig = defineConfig({
   target: 'firefox140',
   platform: 'neutral',
   deps: {
-    alwaysBundle: [/^@monochromatic-dev\//,],
+    alwaysBundle: [/^@monochromatic-dev\//, /^@lezer\//, /^lezer-/,],
   },
   minify: process.env.NODE_ENV === 'production',
   report: false,

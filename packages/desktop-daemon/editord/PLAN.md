@@ -57,16 +57,20 @@
 - [ ] PWA manifest (`manifest.json`) + service worker (`sw.ts`) for installability
 - [ ] `--editor-padding` CSS variable with a sensible default
 
+## Phase 5 -- Syntax highlighting (done)
+
+- [x] Lezer parser integration: `@lezer/javascript` with TypeScript/JSX dialect configuration
+- [x] `getParserForPath` extension-to-parser mapping: JS/TS, JSON/JSONL, CSS, HTML, Markdown, YAML, TOML
+- [x] CSS Custom Highlight API: token ranges applied via `CSS.highlights` without DOM mutation
+- [x] `::highlight()` CSS rules in shadow DOM stylesheet, colors via CSS custom properties
+- [x] Dark theme colors (One Dark inspired) and light theme colors in `index.html`
+- [x] `requestAnimationFrame` batching: coalesces rapid edits into one parse-and-highlight pass
+- [x] 100KB file size limit: files over 10KB skip highlighting entirely
+- [x] Tag groups: keyword, string, comment, number, type, function, property, heading, link, emphasis
+
 ## Future (post-MVP)
 
-- Syntax highlighting (options: Tree-sitter WASM on frontend, or server-sent tokens)
-- Over-rendering (3-5x viewport) for compositor-optimized scrolling on very large files
-- Line numbers (CSS `counter()` on line divs, or a gutter column)
-- CodeMirror integration as an optional upgrade path (if raw contenteditable hits limits)
 - LSP proxying through editord
-- Multi-window / multi-project
-- Remote development (connect to editord on another machine)
-- Terminal rendering within the PWA
 
 ## Technical notes
 

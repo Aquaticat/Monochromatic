@@ -23,6 +23,7 @@ import {
 import type { DirEntry, } from '../protocol.ts';
 import type { EditorPane, } from './editor-pane.ts';
 import type { FileTree, } from './file-tree.ts';
+import { getParserForPath, } from './languages.ts';
 import { l, tagged, } from './log.ts';
 import { EditorWsClient, } from './ws-client.ts';
 
@@ -101,6 +102,7 @@ let currentFilePath = filePath;
 async function loadFile(path: string,): Promise<void> {
   const response = await ws.request({ type: 'open', path, },);
   if ('content' in response) {
+    editorPane.setParser(getParserForPath({ path, },),);
     editorPane.setText(String(response.content,),);
     document.title = `editord - ${path}`;
   }

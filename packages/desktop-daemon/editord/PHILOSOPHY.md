@@ -34,6 +34,31 @@ for networked editors are unnecessary:
   of `{ name, isDirectory }` objects. Even with hundreds of directories
   preloaded, total memory is negligible.
 
+### No editor framework
+
+editord will never adopt CodeMirror, Monaco, or any other editor framework.
+The entire point is that raw `contenteditable` delegates scrolling to the browser's compositor thread.
+Editor frameworks reimplement scrolling in JavaScript (typically for line virtualization),
+which defeats the compositor optimization that motivates editord's existence.
+
+### Syntax highlighting approach
+
+Syntax highlighting uses the **CSS Custom Highlight API** to style token ranges
+without mutating the DOM.
+`Range` objects point to text nodes inside per-line `<div>`s;
+the browser applies `::highlight()` styles without injecting `<span>` elements,
+preserving native undo/redo, IME, and selection.
+
+Files over 100KB are not highlighted.
+At that size, full re-tokenization on every keystroke completes in well under a frame budget,
+so incremental parsing provides no benefit.
+Tree-sitter's main advantage (incremental reparsing via WASM) is therefore unnecessary,
+and its cost (~400KB+ WASM payload, async initialization, per-grammar `.wasm` hosting)
+is not justified.
+
+The tokenizer/parser must be pure JavaScript with no WASM dependency
+to keep the client bundle small and initialization synchronous.
+
 ### Path containment
 
 All filesystem operations (`openFile`, `saveFile`, `listDir`) validate

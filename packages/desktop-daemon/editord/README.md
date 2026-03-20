@@ -2,6 +2,12 @@
 
 Local editor daemon that serves a contenteditable PWA frontend over WebSocket.
 
+## Browser baseline
+
+Chromium desktop latest.
+editord runs as a PWA in real Chrome, not Electron,
+so it targets only the latest stable Chromium release.
+
 ## Motivation
 
 Smooth scrolling in existing editors is significantly worse than Neovide:
@@ -99,10 +105,13 @@ src/
     index.html                 -- PWA shell with dark/light theme custom properties
     app.ts                     -- entry: connect WS, mount components, Ctrl+S save
     log.ts                     -- root tagged logger for client subsystems
-    editor-pane.ts             -- <editor-pane> web component: contenteditable, paste handler
-    editor-pane.styles.ts      -- shadow DOM styles for editor pane
+    editor-pane.ts             -- <editor-pane> web component: contenteditable, paste handler, highlight scheduling
+    editor-pane.styles.ts      -- shadow DOM styles for editor pane, ::highlight() rules
     file-tree.ts               -- <file-tree> web component: <details> expand, lazy-load, preload
     file-tree.styles.ts        -- shadow DOM styles for file tree
+    highlighter.ts             -- syntax highlighting: Lezer parse, offset-to-Range mapping, CSS.highlights
+    highlight-tags.ts          -- Lezer tag-to-highlight-group mapping (keyword, string, comment, etc.)
+    languages.ts               -- file extension to Lezer parser mapping (JS/TS dialects)
     ws-client.ts               -- typed WebSocket client with request/response correlation
 ```
 

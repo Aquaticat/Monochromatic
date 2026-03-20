@@ -7,19 +7,28 @@
  *
  * Paste events are intercepted to force plain text insertion, preventing
  * rich HTML from corrupting the line-per-div structure.
+ *
+ * Syntax highlighting is applied via the CSS Custom Highlight API.
+ * When a Lezer parser is set via `setParser`, the editor re-highlights
+ * after every content change using `requestAnimationFrame` batching.
  */
 
+// oxlint-disable max-lines -- web component with contenteditable, paste handling, and syntax highlighting scheduling; splitting fractures the component
+
+import type { Parser, } from '@lezer/common';
 import {
   $ as h,
 } from '@monochromatic-dev/module-es/h-dom';
 
+import { applyHighlights, clearHighlights, } from './highlighter.ts';
 import { STYLES, } from './editor-pane.styles.ts';
 
 /**
  * `<editor-pane>` — contenteditable text editor component.
  *
  * Each line of the file is a child `<div>` of the contenteditable container.
- * The component exposes methods to set and get the full text content.
+ * The component exposes methods to set and get the full text content,
+ * and to configure syntax highlighting via a Lezer parser.
  */
 export class EditorPane extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
@@ -27,6 +36,12 @@ export class EditorPane extends HTMLElement {
 
   /** The contenteditable container element. */
   #editor: HTMLDivElement | null = null;
+
+  /** Lezer parser for the current file's language, or null when unsupported. */
+  #parser: Parser | null = null;
+
+  /** Pending `requestAnimationFrame` ID for debounced highlight updates. */
+  #highlightFrame = 0;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -52,6 +67,8 @@ export class EditorPane extends HTMLElement {
       document.execCommand('insertText', false, text,);
     },);
 
+    this.#editor.addEventListener('input', this.#scheduleHighlight.bind(this,),);
+
     this.#shadow.replaceChildren(
       h({ tag: 'style', text: STYLES, },),
       this.#editor,
@@ -59,8 +76,26 @@ export class EditorPane extends HTMLElement {
   }
 
   /**
+   * Sets the Lezer parser for syntax highlighting.
+   * Triggers an immediate re-highlight if the editor has content.
+   * Pass null to disable highlighting (clears existing highlights).
+   *
+   * @param parser - Lezer parser instance, or null to disable
+   */
+  setParser(parser: Parser | null,): void {
+    this.#parser = parser;
+    if (parser === null) {
+      clearHighlights();
+    }
+    else {
+      this.#scheduleHighlight();
+    }
+  }
+
+  /**
    * Sets the editor content from a file's text.
    * Splits on newlines and creates one `<div>` per line.
+   * Triggers re-highlighting after the DOM update.
    *
    * @param text - full file content
    */
@@ -73,6 +108,7 @@ export class EditorPane extends HTMLElement {
     },);
 
     this.#editor.replaceChildren(...lineElements,);
+    this.#scheduleHighlight();
   }
 
   /**
@@ -90,6 +126,27 @@ export class EditorPane extends HTMLElement {
       const text = child.textContent ?? '';
       return text === '\n' ? '' : text;
     },).join('\n',);
+  }
+
+  /**
+   * Schedules a highlight update for the next animation frame.
+   * Cancels any previously scheduled update to coalesce rapid edits
+   * into a single parse-and-highlight pass.
+   */
+  #scheduleHighlight(): void {
+    cancelAnimationFrame(this.#highlightFrame,);
+    const pane = this;
+    this.#highlightFrame = requestAnimationFrame(function applyScheduledHighlight() {
+      if (pane.#editor === null)
+        return;
+
+      if (pane.#parser === null) {
+        clearHighlights();
+        return;
+      }
+
+      applyHighlights({ editor: pane.#editor, parser: pane.#parser, },);
+    },);
   }
 }
 

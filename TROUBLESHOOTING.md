@@ -66,6 +66,11 @@ Issues with C-style comment syntax that affect multiple programming languages:
 - IDE comment features and best practices
 - Language-specific comment syntax differences
 
+### [Bundling](TROUBLESHOOTING.bundling.md)
+Client-side bundling issues where Node.js code leaks into browser bundles:
+- `node:` protocol dynamic imports cause CORS errors in browser consoles
+- Environment guards for dual-target modules
+
 ### [CLI bin entries](TROUBLESHOOTING.cli-bin.md)
 Problems with CLI tools installed via `node_modules/.bin/`:
 - Missing shebang causes Unix to fall back to `/bin/sh`, triggering ImageMagick `import` hangs
@@ -88,6 +93,7 @@ For common issues:
 - **Type errors from `node_modules` JSR packages?** → [JSR `.ts` files and `skipLibCheck`](TROUBLESHOOTING.typescript.md#jsr-packages-ship-ts-source-files-that-skiplibcheck-cannot-skip)
 - **Configuration not working as expected?** → [TOML issues and alternatives](TROUBLESHOOTING.toml.md#silent-overwrites-the-configuration-killer)
 - **Figma automation not working?** → [The WebGL wall](TROUBLESHOOTING.figma-browser-automation.md)
+- **CORS errors for `node:` imports in browser?** → [node: protocol in bundles](TROUBLESHOOTING.bundling.md#node-protocol-imports-cause-cors-errors-in-browser-bundles)
 - **CLI hangs with ImageMagick errors?** → [Missing shebang](TROUBLESHOOTING.cli-bin.md#cli-command-hangs-on-unix-with-imagemagick-errors)
 
 ## Contributing

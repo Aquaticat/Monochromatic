@@ -5,6 +5,17 @@
   "private": true,
   "main": "src/server/index.ts",
   "dependencies": {
+    "@lezer/common": "catalog:",
+    "@lezer/css": "catalog:",
+    "@lezer/highlight": "catalog:",
+    "@lezer/html": "catalog:",
+    "@lezer/javascript": "catalog:",
+    "@lezer/markdown": "catalog:",
+    "@lezer/rust": "catalog:",
+    "@lezer/xml": "catalog:",
+    "@lezer/yaml": "catalog:",
+    "lezer-json5": "catalog:",
+    "lezer-toml": "catalog:",
     "@monochromatic-dev/module-es": "workspace:*",
     "crossws": "catalog:",
     "h3": "catalog:"
