@@ -50,15 +50,36 @@ export const models: readonly ModelConfig[] = [
   // { openrouterId: 'anthropic/claude-sonnet-4.6', label: 'Sonnet 4.6 medium', verbosity: 'medium', },
 
   { openrouterId: 'anthropic/claude-haiku-4.5', label: 'Haiku 4.5', verbosity: 'low', },
-  { openrouterId: 'minimax/minimax-m2.5', label: 'MiniMax M2.5', verbosity: 'low', },
-  { openrouterId: 'moonshotai/kimi-k2.5', label: 'Kimi K2.5', verbosity: 'low', },
-  { openrouterId: 'z-ai/glm-5', label: 'GLM 5', verbosity: 'low', },
-  { openrouterId: 'qwen/qwen3.5-397b-a17b', label: 'Qwen 3.5 OSS', verbosity: 'low', },
+
+  // Scores too low, useless:
+  //   [FAIL] Nvidia Nemotron 3 Super: 0.08
+    // csv-rfc4180           0.00   fix: 0.00 (0.00)
+    // expr-eval             0.00   fix: 0.00 (0.00)
+    // css-mixin-transpiler  0.00   fix: 0.00 (0.00)
+    // sudoku-solver         0.00   fix: 0.00 (0.00)
+    // stak-interpreter      0.00   fix: 0.00 (0.00)
+    // stak-simulation       0.50
+  // { openrouterId: 'nvidia/nemotron-3-super-120b-a12b', label: 'Nvidia Nemotron 3 Super', verbosity: 'low', },
+
+  // Superseded by MiniMax M2.7
+  // { openrouterId: 'minimax/minimax-m2.5', label: 'MiniMax M2.5', verbosity: 'low', },
+  { openrouterId: 'minimax/minimax-m2.7', label: 'MiniMax M2.7', verbosity: 'low', },
+
+  // Keeps timing out.
+  // { openrouterId: 'moonshotai/kimi-k2.5', label: 'Kimi K2.5', verbosity: 'low', },
+  // Keeps timing out.
+  // { openrouterId: 'z-ai/glm-5', label: 'GLM 5', verbosity: 'low', },
+
+  // Keeps timing out.
+  // { openrouterId: 'qwen/qwen3.5-397b-a17b', label: 'Qwen 3.5 OSS', verbosity: 'low', },
 
   { openrouterId: 'google/gemini-3.1-flash-lite-preview',
     label: 'Gemini 3.1 Flash Lite Preview', verbosity: 'low', },
-  { openrouterId: 'google/gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro Preview',
-    verbosity: 'low', },
+
+  // Keeps timing out.
+    // { openrouterId: 'google/gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro Preview',
+    // verbosity: 'low', },
+
   // OpenAI models dropped 2026-02-28. OpenAI signed a classified-network contract with the
   // Pentagon hours after Anthropic was designated a supply chain risk for refusing to allow
   // its models to be used for mass surveillance and autonomous weapons. OpenAI claims its
