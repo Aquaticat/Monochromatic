@@ -295,6 +295,11 @@ out/
 # Crush
 .crush/
 
+# Serena code analysis tool
+.serena/cache/
+.serena/memories/
+.serena/project.local.yml
+
 # Claude Code plugin bundles (marketplace distribution requires committed built files)
 !packages/claude-code-plugins/*/dist/
 !packages/claude-code-plugins/*/dist/final/
