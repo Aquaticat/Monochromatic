@@ -17,6 +17,17 @@ export type DirEntry = {
 
 //endregion Directory types
 
+//region Search types
+
+/**
+ * Single result from a search operation.
+ * File-path matches have no `line` or `text`; content matches include both.
+ */
+export type SearchResult =
+  | { kind: 'file'; path: string }
+  | { kind: 'content'; path: string; line: number; text: string };
+
+
 //region Client messages
 
 /**
@@ -27,7 +38,8 @@ export type DirEntry = {
 export type ClientMessage =
   | { type: 'open'; id: string; path: string }
   | { type: 'save'; id: string; path: string; content: string }
-  | { type: 'listDir'; id: string; path: string };
+  | { type: 'listDir'; id: string; path: string }
+  | { type: 'search'; id: string; query: string; scope: string };
 
 /**
  * Client request payload without the auto-generated `id` field.
@@ -53,6 +65,7 @@ export type ServerMessage =
   | { type: 'fileContent'; id: string; path: string; content: string }
   | { type: 'saved'; id: string; path: string }
   | { type: 'dirListing'; id: string; path: string; entries: DirEntry[] }
+  | { type: 'searchResults'; id: string; results: SearchResult[] }
   | { type: 'fileChanged'; path: string }
   | { type: 'error'; id?: string; message: string };
 

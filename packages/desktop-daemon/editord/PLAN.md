@@ -39,15 +39,13 @@
 - [x] Cross-runtime: `Bun.file()` replaced with `readFile` from `node:fs/promises`
 - [x] Static serving: silent catch narrowed to ENOENT only; unexpected errors rethrow
 
-## Phase 3 -- Search and keybindings
+## Phase 3 -- Search
 
-- [ ] `search` server operation: spawn `rg` subprocess, collect results as `{ file, line, text }[]`
-- [ ] Double-shift detection: track Shift keyup timestamps, trigger on <400ms gap with no intervening keys
-- [ ] `<search-overlay>` web component: input field, scrollable results list, Enter/click opens file at line
-- [ ] Ctrl+G go-to-line: prompt for line number, scroll `children[n]` into view
-- [ ] JetBrains keybindings:
-  - Ctrl+Shift+F -- find in files (same as double-shift search)
-  - Ctrl+E -- recent files popup
+- [x] `search` server operation: spawn `rg` subprocess, return `SearchResult[]` (file-path + content matches)
+- [x] Double-shift detection: track Shift keyup timestamps, trigger on <400ms gap with no intervening keys
+- [x] `<search-overlay>` web component: `<dialog>` modal with input, scrollable results, keyboard navigation
+- [x] File-path results listed before content results; `%` prefix for content-only mode
+- [x] `EditorPane.scrollToLine`: content search results open the file at the matching line
 
 ## Phase 4 -- File watching, themes, PWA
 

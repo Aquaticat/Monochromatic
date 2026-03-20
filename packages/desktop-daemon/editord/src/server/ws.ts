@@ -12,12 +12,20 @@ import {
 
 import type { ClientMessage, } from '../protocol.ts';
 import { l as rootLogger, tagged, } from './log.ts';
+import { assertWithinRoot, } from './operations/assert-within-root.ts';
 import { listDir, } from './operations/list-dir.ts';
 import { openFile, } from './operations/open.ts';
 import { saveFile, } from './operations/save.ts';
+import { search, } from './operations/search.ts';
 
 /** Tagged logger for the WebSocket subsystem. */
 const l = tagged({ tag: 'ws', l: rootLogger, },);
+
+/**
+ * Tracks the `AbortController` for the currently in-flight search per peer.
+ * When a new search arrives, the previous one is aborted so its `rg` processes are killed.
+ */
+const peerSearchControllers = new WeakMap<object, AbortController>();
 
 /**
  * Rejects an unauthenticated peer by sending an error and closing.
@@ -58,6 +66,18 @@ async function dispatchMessage(
   else if (parsed.type === 'listDir') {
     const result = await listDir({ rootDir, path: parsed.path, },);
     peer.send(JSON.stringify({ type: 'dirListing', id: parsed.id, ...result, },),);
+  }
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'search') {
+    peerSearchControllers.get(peer,)?.abort();
+    const controller = new AbortController();
+    peerSearchControllers.set(peer, controller,);
+
+    assertWithinRoot({ rootDir, path: parsed.scope, },);
+    const result = await search({ rootDir: parsed.scope, query: parsed.query, signal: controller.signal, },);
+
+    if (!controller.signal.aborted)
+      peer.send(JSON.stringify({ type: 'searchResults', id: parsed.id, ...result, },),);
   }
   else {
     peer.send(JSON.stringify({
@@ -108,7 +128,8 @@ export function createWsHandler({ authToken, rootDir, }: { authToken: string; ro
         }
       },
 
-      close: function handleClose(_peer,) {
+      close: function handleClose(peer,) {
+        peerSearchControllers.delete(peer,);
         l.info('peer disconnected',);
       },
     };

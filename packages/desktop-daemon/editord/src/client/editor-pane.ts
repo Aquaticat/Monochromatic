@@ -129,6 +129,22 @@ export class EditorPane extends HTMLElement {
   }
 
   /**
+   * Scrolls the editor to bring the specified line number into view.
+   * Line numbers are 1-based. Out-of-range values are clamped.
+   *
+   * @param line - 1-based line number to scroll to
+   */
+  scrollToLine({ line, }: { line: number }): void {
+    if (this.#editor === null)
+      return;
+
+    const index = Math.max(0, Math.min(line - 1, this.#editor.children.length - 1,),);
+    const child = this.#editor.children[index];
+    if (child !== undefined)
+      child.scrollIntoView({ block: 'center', },);
+  }
+
+  /**
    * Schedules a highlight update for the next animation frame.
    * Cancels any previously scheduled update to coalesce rapid edits
    * into a single parse-and-highlight pass.

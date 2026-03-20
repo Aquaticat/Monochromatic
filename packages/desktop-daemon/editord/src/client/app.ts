@@ -4,27 +4,28 @@
  * Boot sequence:
  * 1. Extract auth token from URL query string
  * 2. Connect WebSocket to editord server
- * 3. Render file tree sidebar and editor pane
+ * 3. Render file tree sidebar, editor pane, and search overlay
  * 4. Open the file specified in the `file` query parameter (or a default)
- * 5. Listen for Ctrl+S to save, file tree clicks to open
+ * 5. Listen for Ctrl+S to save, file tree clicks to open, search result selections
  */
-
-// oxlint-disable max-lines -- application entry point wiring file tree, editor, WS client, and keyboard shortcuts
 
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register <editor-pane> custom element
 import './editor-pane.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register <file-tree> custom element
 import './file-tree.ts';
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register <search-overlay> custom element
+import './search-overlay.ts';
 
 import {
   $ as notNullishOrThrow,
 } from '@monochromatic-dev/module-es/not-nullish-or-throw';
 
-import type { DirEntry, } from '../protocol.ts';
+import type { DirEntry, SearchResult, } from '../protocol.ts';
 import type { EditorPane, } from './editor-pane.ts';
 import type { FileTree, } from './file-tree.ts';
 import { getParserForPath, } from './languages.ts';
 import { l, tagged, } from './log.ts';
+import type { ResultSelectDetail, SearchOverlay, } from './search-overlay.ts';
 import { EditorWsClient, } from './ws-client.ts';
 
 /** Tagged logger for the app entry point. */
@@ -83,9 +84,44 @@ const editorPane = document.createElement('editor-pane',) as EditorPane;
 
 //endregion Editor pane setup
 
+//region Search overlay setup
+
+/** The search overlay web component instance. */
+// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- custom element registered via customElements.define; createElement returns HTMLElement
+const searchOverlay = document.createElement('search-overlay',) as SearchOverlay;
+
+/**
+ * Returns the current search scope directory.
+ * Prefers the parent directory of the selected file in the tree;
+ * falls back to the server's root directory.
+ *
+ * @returns absolute directory path for search scope
+ */
+searchOverlay.getRootDir = function getSearchScope(): string {
+  return fileTree.selectedDir !== '' ? fileTree.selectedDir : ws.rootDir;
+};
+
+/**
+ * Performs a search via the WebSocket and returns results.
+ *
+ * @param query - search query string
+ *
+ * @returns search results from the server
+ */
+searchOverlay.onSearch = async function handleSearch(query: string,): Promise<SearchResult[]> {
+  const scope = fileTree.selectedDir !== '' ? fileTree.selectedDir : ws.rootDir;
+  const response = await ws.request({ type: 'search', query, scope, },);
+  if ('results' in response)
+    return response.results;
+
+  return [];
+};
+
+//endregion Search overlay setup
+
 //region Layout
 
-appElement.append(fileTree, editorPane,);
+appElement.append(fileTree, editorPane, searchOverlay,);
 
 //endregion Layout
 
@@ -96,15 +132,21 @@ let currentFilePath = filePath;
 
 /**
  * Loads a file from the server and renders it in the editor.
+ * Optionally scrolls to a specific line after loading.
  *
  * @param path - file path to open
+ *
+ * @param line - optional 1-based line number to scroll to after loading
  */
-async function loadFile(path: string,): Promise<void> {
+async function loadFile(path: string, line?: number,): Promise<void> {
   const response = await ws.request({ type: 'open', path, },);
   if ('content' in response) {
     editorPane.setParser(getParserForPath({ path, },),);
     editorPane.setText(String(response.content,),);
     document.title = `editord - ${path}`;
+
+    if (line !== undefined)
+      editorPane.scrollToLine({ line, },);
   }
 }
 
@@ -113,10 +155,12 @@ async function loadFile(path: string,): Promise<void> {
  * Suitable for fire-and-forget contexts like event handlers.
  *
  * @param path - file path to open
+ *
+ * @param line - optional 1-based line number to scroll to after loading
  */
-async function loadFileSafe(path: string,): Promise<void> {
+async function loadFileSafe(path: string, line?: number,): Promise<void> {
   try {
-    await loadFile(path,);
+    await loadFile(path, line,);
   }
   catch (error) {
     appLog.error(`failed to load file: ${String(error,)}`,);
@@ -135,6 +179,29 @@ fileTree.addEventListener('file-select', function handleFileSelect(event,) {
 },);
 
 //endregion File tree events
+
+//region Search overlay events
+
+searchOverlay.addEventListener('result-select', function handleResultSelect(event,) {
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- result-select is always a CustomEvent dispatched by SearchOverlay
+  const { path, line, } = (event as CustomEvent<ResultSelectDetail>).detail;
+  currentFilePath = path;
+  void loadFileSafe(path, line,);
+},);
+
+//endregion Search overlay events
+
+//region Keyboard shortcuts
+
+document.addEventListener('keydown', function handleKeydown(event,) {
+  // Ctrl+S / Cmd+S -- save
+  if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+    event.preventDefault();
+    void saveCurrentFile();
+  }
+},);
+
+//endregion Keyboard shortcuts
 
 //region Save handler
 
@@ -156,18 +223,6 @@ async function saveCurrentFile(): Promise<void> {
 }
 
 //endregion Save handler
-
-//region Keyboard shortcuts
-
-document.addEventListener('keydown', function handleKeydown(event,) {
-  // Ctrl+S / Cmd+S — save
-  if ((event.ctrlKey || event.metaKey) && event.key === 's') {
-    event.preventDefault();
-    void saveCurrentFile();
-  }
-},);
-
-//endregion Keyboard shortcuts
 
 //region Boot
 

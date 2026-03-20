@@ -61,6 +61,22 @@ export class FileTree extends HTMLElement {
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
+  /**
+   * Parent directory of the currently selected file.
+   * Reads the `data-path` attribute from the selected label element
+   * and returns its parent directory.
+   *
+   * @returns parent directory path, or empty string when nothing is selected
+   */
+  get selectedDir(): string {
+    if (this.#selectedLabel === null)
+      return '';
+
+    const filePath = this.#selectedLabel.dataset['path'] ?? '';
+    const lastSlash = filePath.lastIndexOf('/');
+    return lastSlash > 0 ? filePath.slice(0, lastSlash,) : '';
+  }
+
   /** Renders the tree container and attaches styles. */
   connectedCallback(): void {
     this.#tree = h({ tag: 'div', class: 'tree', },);
@@ -228,6 +244,7 @@ export class FileTree extends HTMLElement {
     const label = h({
       tag: 'div',
       class: 'file-label',
+      attrs: { 'data-path': path, },
       children: [
         h({ tag: 'span', class: 'toggle', },),
         h({ tag: 'span', class: 'name', text: name, },),
