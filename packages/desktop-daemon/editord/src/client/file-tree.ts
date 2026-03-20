@@ -43,8 +43,8 @@ export class FileTree extends HTMLElement {
   /** Tree container element. */
   #tree: HTMLDivElement | null = null;
 
-  /** Currently selected file label element. */
-  #selectedLabel: HTMLElement | null = null;
+  /** Last focused tree item, retained after focus leaves the tree. */
+  #lastFocused: HTMLElement | null = null;
 
   /** Cache of preloaded directory children, keyed by absolute path. */
   #prefetchCache = new Map<string, DirEntry[]>();
@@ -62,28 +62,40 @@ export class FileTree extends HTMLElement {
   }
 
   /**
-   * Parent directory of the currently selected file.
-   * Reads the `data-path` attribute from the selected label element
-   * and returns its parent directory.
+   * Directory scope of the last focused tree item.
+   * For `<summary>` (directory) elements, returns the path directly.
+   * For `.file-label` (file) elements, returns the parent directory.
+   * Persists after focus leaves the tree (e.g. when the search overlay opens).
    *
-   * @returns parent directory path, or empty string when nothing is selected
+   * @returns directory path, or empty string when nothing has been focused
    */
   get selectedDir(): string {
-    if (this.#selectedLabel === null)
+    if (this.#lastFocused === null)
       return '';
 
-    const filePath = this.#selectedLabel.dataset['path'] ?? '';
-    const lastSlash = filePath.lastIndexOf('/');
-    return lastSlash > 0 ? filePath.slice(0, lastSlash,) : '';
+    const itemPath = this.#lastFocused.dataset['path'] ?? '';
+    if (itemPath === '')
+      return '';
+
+    if (this.#lastFocused.tagName === 'SUMMARY')
+      return itemPath;
+
+    const lastSlash = itemPath.lastIndexOf('/');
+    return lastSlash > 0 ? itemPath.slice(0, lastSlash,) : '';
   }
 
-  /** Renders the tree container and attaches styles. */
+  /** Renders the tree container and attaches styles, and listens for focus changes. */
   connectedCallback(): void {
+    const tree = this;
     this.#tree = h({ tag: 'div', class: 'tree', },);
     this.#shadow.replaceChildren(
       h({ tag: 'style', text: STYLES, },),
       this.#tree,
     );
+    this.#shadow.addEventListener('focusin', function handleFocusIn(event,) {
+      if (event.target instanceof HTMLElement)
+        tree.#lastFocused = event.target;
+    },);
   }
 
   /**
@@ -190,6 +202,7 @@ export class FileTree extends HTMLElement {
 
     const summary = h({
       tag: 'summary',
+      attrs: { 'data-path': path, },
       children: [
         toggle,
         h({ tag: 'span', class: 'name', text: name, },),
@@ -244,19 +257,14 @@ export class FileTree extends HTMLElement {
     const label = h({
       tag: 'div',
       class: 'file-label',
-      attrs: { 'data-path': path, },
+      attrs: { 'data-path': path, tabindex: '0', },
       children: [
         h({ tag: 'span', class: 'toggle', },),
         h({ tag: 'span', class: 'name', text: name, },),
       ],
       on: {
         click: function handleFileClick() {
-          if (tree.#selectedLabel !== null)
-            tree.#selectedLabel.classList.remove('selected',);
-
-          tree.#selectedLabel = label;
-          label.classList.add('selected',);
-
+          label.focus();
           tree.dispatchEvent(new CustomEvent('file-select', {
             detail: { path, },
             bubbles: true,

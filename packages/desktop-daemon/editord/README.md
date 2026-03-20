@@ -136,6 +136,12 @@ Client requests include a client-generated `id` for response correlation.
 - `{ type: "fileChanged", path }` -- push notification for external file changes (not yet implemented)
 - `{ type: "error", id?, message }` -- error response
 
+## JetBrains parity
+
+Any behavioral difference between editord and JetBrains IDEs is considered a bug.
+JetBrains is the reference implementation for keybindings, search UX,
+file tree interactions, and general editor behavior.
+
 ## Not in MVP
 
 - Syntax highlighting, minimap, split panes

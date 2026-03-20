@@ -78,9 +78,13 @@ export const STYLES = [
     },
   },),
   $({
-    rule: '.selected',
+    rule: 'summary:focus, .file-label:focus',
     decls: {
       'background-color': cssVar('tree-selected-bg',),
+      'outline-style': 'dashed',
+      'outline-width': cssRem(1 / (2 * 2 * 2),),
+      'outline-color': cssVar('fg',),
+      'outline-offset': cssRem(-(1 / (2 * 2 * 2)),),
     },
   },),
   $({

@@ -118,6 +118,11 @@ export class SearchOverlay extends HTMLElement {
         keydown: function handleInputKeydown(event,) {
           overlay.#handleKeydown(event,);
         },
+        blur: function handleInputBlur(event,) {
+          const related = event.relatedTarget;
+          if (related === null || !(related instanceof Node) || !overlay.#dialog?.contains(related,))
+            overlay.#close();
+        },
       },
     },);
 
@@ -126,6 +131,11 @@ export class SearchOverlay extends HTMLElement {
     this.#dialog = h({
       tag: 'dialog',
       children: [this.#input, this.#resultsContainer,],
+      on: {
+        close: function handleClose() {
+          l.info('overlay closed',);
+        },
+      },
     },);
 
     this.#shadow.replaceChildren(
@@ -185,7 +195,6 @@ export class SearchOverlay extends HTMLElement {
       return;
 
     this.#dialog.close();
-    l.info('overlay closed',);
   }
 
   /**
@@ -408,7 +417,9 @@ export class SearchOverlay extends HTMLElement {
    * Handles keyboard navigation within the overlay.
    * - ArrowDown/ArrowUp: move selection
    * - Enter: confirm selection
-   * - Escape: close overlay
+   *
+   * Escape is handled via input blur (browser blurs the input on first
+   * Escape before dispatching keydown to JS) and native dialog cancel.
    *
    * @param event - keyboard event from the input element
    */
@@ -424,10 +435,6 @@ export class SearchOverlay extends HTMLElement {
     else if (event.key === 'Enter') {
       event.preventDefault();
       this.#confirmSelection();
-    }
-    else if (event.key === 'Escape') {
-      event.preventDefault();
-      this.#close();
     }
   }
 

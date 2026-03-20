@@ -1,5 +1,22 @@
 # editord TODO
 
+## Search (resolved)
+
+- ~~**scoping search to last focused directory**~~ --
+  fixed by tracking `#lastFocused` via `focusin` on the shadow root
+  instead of relying on `activeElement` (which goes null when the overlay steals focus)
+- ~~**Escape requires two presses to close search overlay**~~ --
+  the browser swallows the first Escape keydown entirely (no JS event fires,
+  not even a capture-phase listener on the `<dialog>`) and only blurs the `<input>`.
+  Fixed by closing the overlay on input `blur` when `relatedTarget` is null
+  or outside the dialog.
+  **Approaches that did not work:**
+  - Manual `keydown` Escape handler on the input -- first Escape never reaches JS
+  - `event.preventDefault()` on the dialog's `cancel` event -- cancel doesn't fire on first press
+  - Capture-phase `keydown` listener on the `<dialog>` element -- not fired on first press
+  - Capture-phase `keydown` listener on `document` -- not fired on first press
+  - `autocomplete="off"` on the input -- already set, not the cause
+
 ## Performance
 
 ### File tree
