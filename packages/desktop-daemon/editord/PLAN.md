@@ -13,20 +13,31 @@
 ### Known rough edges from phase 1
 
 - ~~`--editor-padding` CSS variable not defined~~ (fixed: defined as `0.5rem`)
-- No visual feedback on save (console.log only)
-- Errors from WS operations surface as uncaught promise rejections
-- `setText`/`getText` on `<editor-pane>` require runtime cast
-  (`document.createElement` returns `HTMLElement`, not `EditorPane`)
-- File paths resolve relative to server cwd, which may differ from user expectation
+- ~~Errors from WS operations surface as uncaught promise rejections~~ (fixed: try/catch with tagged logging)
+- ~~`setText`/`getText` on `<editor-pane>` require runtime cast~~ (fixed: `EditorPane` class exported, typed cast in app.ts)
+- ~~File paths resolve relative to server cwd, which may differ from user expectation~~ (fixed: path containment via `assertWithinRoot` against `rootDir`)
+- No visual feedback on save (logged via tagged logger, no UI indicator)
 - No favicon, no PWA manifest yet
 
-## Phase 2 -- File tree and tabs
+## Phase 2 -- File tree and navigation (done)
 
 - [x] `resolveRoot` server operation: walk up to highest writable ancestor directory
 - [x] `listDir` server operation: `fs.readdir` with `{ withFileTypes: true }`, sorted entries
-- [x] `<file-tree>` web component: lazy-loading directory tree, expand/collapse, click to open
+- [x] `<file-tree>` web component: native `<details><summary>` expand/collapse, lazy-loading, click to open
 - [x] Layout: file tree as a left sidebar, editor pane fills remaining space
 - [x] Root directory sent to client on WebSocket connection
+- [x] One-level-ahead preloading of subdirectory contents
+
+## Phase 2.5 -- Hardening (done)
+
+- [x] Path containment: `assertWithinRoot` validates all file operations against `rootDir`
+- [x] Shared protocol types: `src/protocol.ts` eliminates type duplication between server and client
+- [x] Tagged loggers: all server and client modules use `tagged()` from `@monochromatic-dev/module-es`
+- [x] Named parameters: all functions with 2+ params use destructured object parameters
+- [x] WebSocket close handling: pending requests rejected on disconnect (prevents promise leaks)
+- [x] Error propagation: fire-and-forget async calls wrapped with try/catch and tagged logging
+- [x] Cross-runtime: `Bun.file()` replaced with `readFile` from `node:fs/promises`
+- [x] Static serving: silent catch narrowed to ENOENT only; unexpected errors rethrow
 
 ## Phase 3 -- Search and keybindings
 
@@ -84,3 +95,5 @@ Per-session random token via `crypto.randomUUID()`.
 Token passed as `?token=` query parameter on both the page URL and the WebSocket URL.
 WebSocket upgrade rejects connections without a valid token.
 Localhost-only by default.
+All filesystem operations validate paths against a root directory
+to prevent traversal attacks even with a valid token.

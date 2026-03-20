@@ -443,6 +443,7 @@
           0,
           2,
           -2,
+          100,
           255,
           0.1,
           10,
@@ -487,6 +488,9 @@
     "typescript/no-inferrable-types": "off",
     "unicorn/catch-error-name": "off",
     "unicorn/filename-case": "off",
+
+    // Arrow functions are banned; capturing `this` in named function closures is the standard pattern.
+    "unicorn/no-this-assignment": "off",
 
     // Some libraries require null.
     "unicorn/no-null": "off",

@@ -29,9 +29,9 @@ editord (Bun + h3)              Chromium PWA
 |   save(path, text)    |       |     IME, copy/paste       |
 |   listDir(path)       |       |                           |
 |   search(query)       |       | <file-tree>               |
-|   fileChanged (push)  |       | <tab-bar>                 |
-|                       |       | <search-overlay>          |
-| fs.watch (inotify)    |       |   (double-shift trigger)  |
+|   fileChanged (push)  |       |   <details><summary>      |
+|                       |       |   lazy-load on expand     |
+| fs.watch (inotify)    |       | <search-overlay>          |
 +-----------------------+       +---------------------------+
 ```
 
@@ -51,7 +51,15 @@ Full text round-trips on open/save.
   This means normal scrolls are pure GPU layer translations on the compositor thread.
 - **Per-line `<div>` elements** -- natural for contenteditable (Enter creates new divs, Backspace merges them);
   enables `children[n]` indexing for go-to-line
+- **Native `<details><summary>`** -- file tree directories use browser-native expand/collapse;
+  JS only handles lazy-loading on first expand and one-level-ahead preloading
 - **Web components with shadow DOM** -- encapsulated styling via h-css, DOM construction via h-dom
+- **Shared protocol types** -- `src/protocol.ts` defines all wire types once;
+  both server and client import from the same module
+- **Path containment** -- all filesystem operations validate paths against the root directory
+  via `assertWithinRoot`, preventing traversal even with a valid auth token
+- **Tagged loggers** -- all server and client modules use structured tagged logging
+  from `@monochromatic-dev/module-es`
 - **WebSocket with token auth** -- token generated per-session via `crypto.randomUUID()`,
   passed as URL query param
 - **JetBrains keymap** -- double-shift for Search Everywhere (replaces command palette)
@@ -76,17 +84,26 @@ mise run //packages/desktop-daemon/editord:dev
 
 ```
 src/
+  protocol.ts                  -- shared wire types (ClientMessage, ServerMessage, DirEntry)
   server/
-    index.ts                 -- entry point: h3 app, static serving, WebSocket, token auth
-    ws.ts                    -- WebSocket handler: auth, message dispatch
+    index.ts                   -- entry point: h3 app, static serving, WebSocket, token auth
+    log.ts                     -- root tagged logger for server subsystems
+    ws.ts                      -- WebSocket handler: auth, message dispatch
     operations/
-      open.ts                -- read file from disk
-      save.ts                -- write file to disk
+      assert-within-root.ts    -- path containment guard against traversal
+      list-dir.ts              -- list directory entries, sorted dirs-first
+      open.ts                  -- read file from disk
+      resolve-root.ts          -- find highest writable ancestor directory
+      save.ts                  -- write file to disk
   client/
-    index.html               -- PWA shell
-    app.ts                   -- entry: connect WS, mount editor, Ctrl+S save
-    editor-pane.ts           -- <editor-pane> web component: contenteditable, paste handler
-    ws-client.ts             -- typed WebSocket client with request/response correlation
+    index.html                 -- PWA shell with dark/light theme custom properties
+    app.ts                     -- entry: connect WS, mount components, Ctrl+S save
+    log.ts                     -- root tagged logger for client subsystems
+    editor-pane.ts             -- <editor-pane> web component: contenteditable, paste handler
+    editor-pane.styles.ts      -- shadow DOM styles for editor pane
+    file-tree.ts               -- <file-tree> web component: <details> expand, lazy-load, preload
+    file-tree.styles.ts        -- shadow DOM styles for file tree
+    ws-client.ts               -- typed WebSocket client with request/response correlation
 ```
 
 ## WebSocket protocol
@@ -98,20 +115,21 @@ Client requests include a client-generated `id` for response correlation.
 
 - `{ type: "open", id, path }` -- read file, responds with `fileContent`
 - `{ type: "save", id, path, content }` -- write file, responds with `saved`
-- `{ type: "listDir", id, path }` -- list directory (not yet implemented)
+- `{ type: "listDir", id, path }` -- list directory, responds with `dirListing`
 - `{ type: "search", id, query }` -- ripgrep search (not yet implemented)
 
 **Server to client:**
 
-- `{ type: "connected" }` -- handshake confirmation
+- `{ type: "connected", rootDir }` -- handshake confirmation with root directory path
 - `{ type: "fileContent", id, path, content }` -- file read result
 - `{ type: "saved", id, path }` -- write confirmation
+- `{ type: "dirListing", id, path, entries }` -- directory listing with `{ name, isDirectory }` entries
 - `{ type: "fileChanged", path }` -- push notification for external file changes (not yet implemented)
 - `{ type: "error", id?, message }` -- error response
 
 ## Not in MVP
 
-- Syntax highlighting, line numbers, minimap, split panes
+- Syntax highlighting, minimap, split panes
 - LSP, completions, diagnostics, hover
 - Terminal, git, extensions, settings UI
 - Command palette (double-shift replaces it)
