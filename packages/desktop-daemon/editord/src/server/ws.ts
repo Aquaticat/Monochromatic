@@ -100,7 +100,7 @@ async function dispatchMessage(
 
     /** Notify LSP servers about the opened file. */
     if (lspManager !== null && 'content' in result) {
-      lspManager.didOpen({ path: parsed.path, text: String(result.content,), },);
+      await lspManager.didOpen({ path: parsed.path, text: String(result.content,), },);
     }
   }
   else if (parsed.type === 'save') {
@@ -109,7 +109,7 @@ async function dispatchMessage(
 
     /** Notify LSP servers about the save. */
     if (lspManager !== null) {
-      lspManager.didSave({ path: parsed.path, },);
+      await lspManager.didSave({ path: parsed.path, },);
     }
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
@@ -133,37 +133,32 @@ async function dispatchMessage(
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'didChange') {
     if (lspManager !== null) {
-      lspManager.didChange({ path: parsed.path, text: parsed.content, },);
+      await lspManager.didChange({ path: parsed.path, text: parsed.content, },);
     }
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'didClose') {
     if (lspManager !== null) {
-      lspManager.didClose({ path: parsed.path, },);
+      await lspManager.didClose({ path: parsed.path, },);
     }
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'hover') {
-    l.info(`hover request: path=${parsed.path} line=${parsed.line} char=${parsed.character}`,);
     if (lspManager === null) {
-      l.info('hover: lspManager is null',);
       peer.send(JSON.stringify({ type: 'hoverResult', id: parsed.id, contents: '', },),);
       return;
     }
 
     const hover = await lspManager.hover({ path: parsed.path, line: parsed.line, character: parsed.character, },);
-    l.info(`hover result: ${hover === null ? 'null' : 'has content'}`,);
     if (hover === null) {
       peer.send(JSON.stringify({ type: 'hoverResult', id: parsed.id, contents: '', },),);
       return;
     }
 
-    const contents = extractHoverContent({ hover, },);
-    l.info(`hover contents: ${contents.slice(0, 80,)}`,);
     peer.send(JSON.stringify({
       type: 'hoverResult',
       id: parsed.id,
-      contents,
+      contents: extractHoverContent({ hover, },),
       range: hover.range,
     },),);
   }

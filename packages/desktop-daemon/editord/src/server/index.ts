@@ -88,7 +88,7 @@ function handleDiagnostics(path: string, diagnostics: WireDiagnostic[],): void {
 
 /** LSP server coordinator managing oxlint, tsgo, and dprint. */
 const lspManager = new LspManager({
-  rootDir: ROOT_DIR,
+  ceiling: ROOT_DIR,
   onDiagnostics: handleDiagnostics,
   l: lspLog,
 },);
@@ -163,7 +163,3 @@ const _server = serve(app, {
 },);
 
 httpLog.info(`listening on http://localhost:${resolvePort()}?token=${AUTH_TOKEN}`,);
-
-/** Wait for LSP servers to finish initializing (non-blocking; server is already listening). */
-await lspManager.ready;
-lspLog.info('all LSP servers initialized',);

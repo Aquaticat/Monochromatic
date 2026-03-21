@@ -8,7 +8,6 @@
 
 import { fileURLToPath, pathToFileURL, } from 'node:url';
 
-import type { Logger, } from '../log.ts';
 import type { LspClient, } from './lsp-client.ts';
 import type {
   LspCompletionItem,
@@ -29,21 +28,18 @@ import type {
  *
  * @returns hover result, or null if unavailable
  */
-export async function requestHover({ client, path, line, character, l, }: {
+export async function requestHover({ client, path, line, character, }: {
   client: LspClient;
   path: string;
   line: number;
   character: number;
-  l?: Logger;
 }): Promise<LspHover | null> {
   const uri = pathToFileURL(path,).href;
-  l?.info(`requestHover: uri=${uri} line=${line} char=${character}`,);
   const result = await client.request({
     method: 'textDocument/hover',
     params: { textDocument: { uri, }, position: { line, character, }, },
   },);
 
-  l?.info(`requestHover: result=${JSON.stringify(result,)?.slice(0, 200,)}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP hover returns LspHover | null
   return result as LspHover | null;
 }
