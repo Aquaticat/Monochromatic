@@ -53,6 +53,9 @@ export class EditorPane extends HTMLElement {
   /** Current inlay hints for the open file. */
   #inlayHints: InlayHint[] = [];
 
+  /** Pending `requestAnimationFrame` ID for debounced resize re-measurement. */
+  #resizeMeasureFrame = 0;
+
   /** Initializes the shadow root. */
   constructor() {
     super();
@@ -79,6 +82,10 @@ export class EditorPane extends HTMLElement {
 
     this.#editor.addEventListener('input', this.#scheduleHighlight.bind(this,),);
     this.#editor.addEventListener('input', this.#dispatchContentChange.bind(this,),);
+
+    /** Re-measure inlay indent positions when the editor resizes (wrapping changes). */
+    const resizeObserver = new ResizeObserver(this.#scheduleInlayMeasure.bind(this,),);
+    resizeObserver.observe(this.#editor,);
 
     this.#shadow.replaceChildren(
       h({ tag: 'style', text: STYLES, },),
@@ -225,6 +232,46 @@ export class EditorPane extends HTMLElement {
   }
 
   /**
+   * Places the cursor at the specified line and character position.
+   * Uses the per-line-div structure to find the target text node
+   * and sets the browser Selection accordingly.
+   *
+   * @param line - 0-based line index
+   *
+   * @param character - 0-based character offset within the line
+   */
+  restoreCursor({ line, character, }: { line: number; character: number }): void {
+    if (this.#editor === null) return;
+
+    const lineDiv = this.#editor.children[line];
+    if (lineDiv === undefined) return;
+
+    const selection = document.getSelection();
+    if (selection === null) return;
+
+    /** Walk text nodes to find the one containing the target offset. */
+    const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
+    let remaining = character;
+    let textNode = walker.nextNode();
+    while (textNode !== null) {
+      const len = textNode.textContent?.length ?? 0;
+      if (remaining <= len) {
+        selection.setBaseAndExtent(textNode, remaining, textNode, remaining,);
+        return;
+      }
+      remaining -= len;
+      textNode = walker.nextNode();
+    }
+
+    /** Offset exceeds line length — place at end of last text node. */
+    const { lastChild, } = lineDiv;
+    if (lastChild !== null) {
+      const lastLen = lastChild.textContent?.length ?? 0;
+      selection.setBaseAndExtent(lastChild, lastLen, lastChild, lastLen,);
+    }
+  }
+
+  /**
    * Dispatches a `contentchange` event when the editor content is modified.
    * Used by the app to trigger debounced content sync to the server.
    */
@@ -285,6 +332,21 @@ export class EditorPane extends HTMLElement {
       requestAnimationFrame(function measureAfterLayout() {
         measureInlayOffsets({ editor: editorRef, },);
       },);
+    },);
+  }
+
+  /**
+   * Schedules a re-measurement of inlay indent positions for the next animation frame.
+   * Called on editor resize to update positions after wrapping changes.
+   */
+  #scheduleInlayMeasure(): void {
+    if (this.#editor === null)
+      return;
+
+    cancelAnimationFrame(this.#resizeMeasureFrame,);
+    const editorRef = this.#editor;
+    this.#resizeMeasureFrame = requestAnimationFrame(function remeasureInlayOffsets() {
+      measureInlayOffsets({ editor: editorRef, },);
     },);
   }
 

@@ -41,7 +41,7 @@ function measureCharX({ div, charOffset, }: {
 
   const charRect = range.getBoundingClientRect();
   const divRect = div.getBoundingClientRect();
-  const paddingInlineStart = parseFloat(getComputedStyle(div,).paddingInlineStart,);
+  const paddingInlineStart = Number.parseFloat(getComputedStyle(div,).paddingInlineStart,);
 
   return charRect.left - divRect.left - paddingInlineStart;
 }

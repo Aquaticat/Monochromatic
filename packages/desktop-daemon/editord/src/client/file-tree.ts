@@ -52,6 +52,9 @@ export class FileTree extends HTMLElement {
   /** Tracks directories whose contents have already been loaded. */
   #loadedDirs = new Set<string>();
 
+  /** In-flight load promises keyed by directory path, awaited by `restoreExpansion`. */
+  #loadPromises = new Map<string, Promise<void>>();
+
   /** Callback to fetch directory contents. Set by the parent application. */
   fetchDir: ((path: string,) => Promise<DirEntry[]>) | null = null;
 
@@ -111,6 +114,62 @@ export class FileTree extends HTMLElement {
     const entries = await this.fetchDir(rootPath,);
     this.#renderEntries({ container: this.#tree, parentPath: rootPath, entries, },);
     void this.#preloadChildren({ parentPath: rootPath, entries, },);
+  }
+
+  /**
+   * Collects the absolute paths of all currently expanded directories.
+   * Walks all open `<details>` elements and reads their `data-path`
+   * attribute from the inner `<summary>`.
+   *
+   * @returns array of absolute directory paths that are expanded
+   */
+  get expandedDirs(): string[] {
+    if (this.#tree === null) return [];
+
+    const dirs: string[] = [];
+    for (const details of this.#tree.querySelectorAll<HTMLDetailsElement>('details[open]',)) {
+      const path = details.querySelector<HTMLElement>('summary',)?.dataset['path'] ?? '';
+      if (path !== '') dirs.push(path,);
+    }
+    return dirs;
+  }
+
+  /**
+   * Restores previously expanded directories by programmatically
+   * opening each `<details>` element from root outward.
+   * Directories are sorted by depth so parents load before children,
+   * ensuring nested directories exist in the DOM before expansion.
+   * Awaits each directory's load promise so child entries are rendered
+   * before attempting to expand the next depth level.
+   *
+   * @param dirs - absolute paths of directories to expand
+   */
+  async restoreExpansion({ dirs, }: { dirs: string[] }): Promise<void> {
+    if (this.#tree === null || this.fetchDir === null || dirs.length === 0)
+      return;
+
+    /** Sort by path depth (fewer separators first) so parents expand before children. */
+    const sorted = dirs.toSorted(function byDepth(a, b,) {
+      return a.split('/').length - b.split('/').length;
+    },);
+
+    for (const dirPath of sorted) {
+      const summary = this.#tree.querySelector<HTMLElement>(`summary[data-path="${CSS.escape(dirPath,)}"]`,);
+      if (summary === null) {
+        l.warn(`skipping expansion of ${dirPath}: not found in tree`,);
+        continue;
+      }
+
+      const details = summary.parentElement;
+      if (details instanceof HTMLDetailsElement && !details.open) {
+        details.open = true;
+        /** Dispatch toggle event to trigger the lazy-load handler. */
+        details.dispatchEvent(new Event('toggle',),);
+        /** Await the in-flight load so children render before expanding the next level. */
+        // oxlint-disable-next-line eslint(no-await-in-loop) -- sequential expansion is intentional: parent directories must render before children can be found in the DOM
+        await this.#loadPromises.get(dirPath,);
+      }
+    }
   }
 
   /**
@@ -213,7 +272,7 @@ export class FileTree extends HTMLElement {
       tag: 'details',
       children: [summary, childrenContainer,],
       on: {
-        toggle: async function handleToggle(event,) {
+        toggle: function handleToggle(event,) {
           // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event always fires on the <details> element that owns it
           const detailsElement = event.currentTarget as HTMLDetailsElement;
           const isExpanded = detailsElement.open;
@@ -223,18 +282,24 @@ export class FileTree extends HTMLElement {
             return;
 
           tree.#loadedDirs.add(path,);
-          try {
-            const cached = tree.#prefetchCache.get(path,);
-            const entries = cached !== undefined
-              ? (tree.#prefetchCache.delete(path,), cached)
-              : await (tree.fetchDir?.(path,) ?? Promise.resolve([],));
-            tree.#renderEntries({ container: childrenContainer, parentPath: path, entries, },);
-            void tree.#preloadChildren({ parentPath: path, entries, },);
-          }
-          catch (error) {
-            l.error(`failed to list ${path}: ${String(error,)}`,);
-            tree.#loadedDirs.delete(path,);
-          }
+
+          /** Store the load promise so `restoreExpansion` can await it. */
+          const loadPromise = (async function loadDir(): Promise<void> {
+            try {
+              const cached = tree.#prefetchCache.get(path,);
+              const entries = cached !== undefined
+                ? (tree.#prefetchCache.delete(path,), cached)
+                : await (tree.fetchDir?.(path,) ?? Promise.resolve([],));
+              tree.#renderEntries({ container: childrenContainer, parentPath: path, entries, },);
+              void tree.#preloadChildren({ parentPath: path, entries, },);
+            }
+            catch (error) {
+              l.error(`failed to list ${path}: ${String(error,)}`,);
+              tree.#loadedDirs.delete(path,);
+            }
+            tree.#loadPromises.delete(path,);
+          })();
+          tree.#loadPromises.set(path, loadPromise,);
         },
       },
     },);

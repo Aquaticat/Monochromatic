@@ -44,6 +44,9 @@ export class EditorWsClient {
   /** Root directory path reported by the server on connection. */
   rootDir = '';
 
+  /** Stable filesystem identifier reported by the server on connection. */
+  fsId = '';
+
   /** Callback invoked when the server pushes a file change notification. */
   onFileChanged: ((path: string,) => void) | null = null;
 
@@ -90,6 +93,7 @@ export class EditorWsClient {
           const data = JSON.parse(String(event.data,),) as ServerMessage;
           if (data.type === 'connected') {
             client.rootDir = data.rootDir;
+            client.fsId = data.fsId;
             resolve();
           }
           else if (data.type === 'error') {

@@ -142,7 +142,7 @@ export type ClientNotification = Extract<ClientMessage, { type: 'didChange' } | 
  * Push notifications (e.g. `fileChanged`, `diagnostics`) have no `id`.
  */
 export type ServerMessage =
-  | { type: 'connected'; rootDir: string }
+  | { type: 'connected'; rootDir: string; fsId: string }
   | { type: 'fileContent'; id: string; path: string; content: string }
   | { type: 'saved'; id: string; path: string }
   | { type: 'dirListing'; id: string; path: string; entries: DirEntry[] }

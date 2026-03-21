@@ -20,6 +20,7 @@ import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullis
 import type { DirEntry, SearchResult, } from '../protocol.ts';
 import { wireKeybindings, } from './app-keybindings.ts';
 import { wireLsp, } from './app-lsp.ts';
+import { restoreSession, wireSessionPersistence, } from './app-session.ts';
 import type { CompletionPopup, } from './completion-popup.ts';
 import type { EditorPane, } from './editor-pane.ts';
 import type { FileTree, } from './file-tree.ts';
@@ -142,8 +143,8 @@ wireKeybindings({
 },);
 
 await ws.ready;
-if (currentFilePath !== null) {
-  await loadFileSafe(currentFilePath,);
-  refreshInlayHints();
-}
-await fileTree.expandRoot(ws.rootDir,);
+
+wireSessionPersistence({ ws, editorPane, fileTree, searchOverlay, getCurrentFilePath, },);
+
+currentFilePath = await restoreSession({ ws, editorPane, fileTree, loadFileSafe, queryFilePath: filePath, },);
+if (currentFilePath !== null) refreshInlayHints();

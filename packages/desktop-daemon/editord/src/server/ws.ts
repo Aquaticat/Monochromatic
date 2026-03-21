@@ -264,13 +264,16 @@ async function dispatchMessage(
  *
  * @param rootDir - root directory path for path containment and client greeting
  *
+ * @param fsId - stable filesystem identifier for the volume containing rootDir
+ *
  * @param lspManager - LSP server coordinator, or null if LSP is disabled
  *
  * @returns h3 event handler that upgrades to WebSocket
  */
-export function createWsHandler({ authToken, rootDir, lspManager, connectedPeers, }: {
+export function createWsHandler({ authToken, rootDir, fsId, lspManager, connectedPeers, }: {
   authToken: string;
   rootDir: string;
+  fsId: string;
   lspManager: LspManager | null;
   connectedPeers: Set<{ send: (data: string) => void }>;
 }): EventHandler {
@@ -286,7 +289,7 @@ export function createWsHandler({ authToken, rootDir, lspManager, connectedPeers
       open: function handleOpen(peer,) {
         l.info('peer connected',);
         connectedPeers.add(peer,);
-        peer.send(JSON.stringify({ type: 'connected', rootDir, },),);
+        peer.send(JSON.stringify({ type: 'connected', rootDir, fsId, },),);
       },
 
       async message(peer, message,) {

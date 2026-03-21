@@ -27,6 +27,7 @@ import { plugin as ws, } from 'crossws/server';
 
 import { l, tagged, } from './log.ts';
 import { LspManager, type WireDiagnostic, } from './lsp/lsp-manager.ts';
+import { resolveFsId, } from './operations/resolve-fs-id.ts';
 import { resolveRoot, } from './operations/resolve-root.ts';
 import { createWsHandler, } from './ws.ts';
 
@@ -57,6 +58,9 @@ const AUTH_TOKEN = crypto.randomUUID();
 
 /** Highest writable ancestor directory, used as the file tree root. */
 const ROOT_DIR = await resolveRoot();
+
+/** Stable filesystem identifier for the volume containing ROOT_DIR. */
+const FS_ID = resolveFsId({ path: ROOT_DIR, },);
 
 /** Tagged logger for the HTTP subsystem. */
 const httpLog = tagged({ tag: 'http', l, },);
@@ -144,7 +148,7 @@ app.get('/dist/client/**', defineHandler(function handleStaticAsset(event,) {
 
 //region WebSocket — editor communication
 
-app.get('/_ws', createWsHandler({ authToken: AUTH_TOKEN, rootDir: ROOT_DIR, lspManager, connectedPeers, },),);
+app.get('/_ws', createWsHandler({ authToken: AUTH_TOKEN, rootDir: ROOT_DIR, fsId: FS_ID, lspManager, connectedPeers, },),);
 
 //endregion WebSocket
 
