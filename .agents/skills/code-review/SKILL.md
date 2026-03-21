@@ -317,7 +317,7 @@ function logMessages({ messages }: { messages: readonly string[] }): void { ... 
 - Functional patterns (`map`/`filter`/`reduce`) over imperative loops
 - `for...of` when iteration is unavoidable, never classic `for` loops
 - No single-letter variables (except math formulas)
-- Magic numbers/strings extracted to named constants (0, 1, 2, -1, -2 exempt)
+- Magic numbers/strings extracted to named constants (0, 1, 2, -1, -2 exempt); when a named constant's value is composed from exempt-range arithmetic (e.g. `1 / (2 * 2)` for 1/4, `(16 - 2 - 1) / 16` for 13/16), do not flag the expression as a readability issue
 - Every source code file must be less than 100 lines unless a justification comment is given; flag unjustified files as WARNING (test, fixture, config, and doc files are exempt)
 - Extract and name complex conditions
 
@@ -354,6 +354,12 @@ const maxRetries = 3;
 const retryDelayMs = 5000;
 if (retries > maxRetries) { ... }
 await wait(retryDelayMs);
+```
+
+```ts
+// OK -- exempt-range composition in a named constant; do NOT flag
+const BORDER_RADIUS = 1 / (2 * 2);
+const FONT_SIZE = (16 - 2 - 1) / 16;
 ```
 
 #### `for...of` over classic `for`
