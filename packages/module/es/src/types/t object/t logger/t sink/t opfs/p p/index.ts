@@ -30,15 +30,19 @@ export async function verify(): Promise<boolean> {
       `monochromatic-${timestamp}.log.jsonl`,
       { create: true, },
     );
-    writable = await fileHandle.createWritable({ keepExistingData: true, },);
-
-    // Verify by writing and reading test data
+    // Write test data and close to flush; getFile() reads stale content
+    // while a FileSystemWritableFileStream is still open
+    const probeWritable = await fileHandle.createWritable({ keepExistingData: true, },);
     const testData = `{"test":true,"timestamp":${Date.now()}}\n`;
-    await writable.write(testData,);
+    await probeWritable.write(testData,);
+    await probeWritable.close();
 
     const file = await fileHandle.getFile();
     const content = await file.text();
     available = content.includes('"test":true',);
+
+    // Reopen for subsequent log writes
+    writable = await fileHandle.createWritable({ keepExistingData: true, },);
   }
   catch {
     available = false;

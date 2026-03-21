@@ -1,5 +1,14 @@
 # Module ES - Testing Todo
 
+## Known browser test failures
+
+- [ ] `redirectingTo.browser.test.ts` fails in both Chromium and Firefox:
+  `window.moduleEs.onLoadRedirectingTo` is not a function.
+  The test harness imports `* as moduleEs` from the neutral bundle,
+  but `onLoadRedirectingTo` is not a direct named export — it is nested
+  under `deprecated.dom`. Either the test needs to access the correct path
+  or the function needs re-exporting at the top level.
+
 ## Testing Coverage Analysis
 
 ### Type Testing Requirements (Critical)
