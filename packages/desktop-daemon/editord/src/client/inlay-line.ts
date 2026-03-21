@@ -7,8 +7,7 @@
 
 import type { Diagnostic, InlayHint, } from '../protocol.ts';
 import {
-  DIAGNOSTIC_SEPARATOR, findWorstSeverity, formatDiagnosticLabel,
-  formatHintLabel, HINT_SEPARATOR, SECTION_SEPARATOR,
+  findWorstSeverity, formatDiagnosticLabel, formatHintLabel,
 } from './inlay-format.ts';
 
 /**
@@ -40,44 +39,42 @@ export function groupByLine<T>({ items, keyFn, }: {
 /**
  * Builds the combined annotation string and sets attributes on a line div.
  *
+ * Each hint and diagnostic occupies its own `\n`-delimited row within the
+ * `::before` content. Leading Inter spaces indent each row to its character
+ * column; `spaceRatio` compensates for the width difference between
+ * Inter spaces and JetBrains Mono characters.
+ *
  * @param div - line div element
  *
  * @param lineHints - inlay hints for this line, or undefined
  *
  * @param lineDiags - diagnostics for this line, or undefined
+ *
+ * @param spaceRatio - mono-to-inter space width ratio from {@link measureSpaceRatio}
  */
-export function applyLineAnnotation({ div, lineHints, lineDiags, }: {
+export function applyLineAnnotation({ div, lineHints, lineDiags, spaceRatio, }: {
   div: HTMLElement;
   lineHints: InlayHint[] | undefined;
   lineDiags: Diagnostic[] | undefined;
+  spaceRatio: number;
 }): void {
-  const hintPart = lineHints !== undefined
-    ? lineHints.map(function fmtHint(hint,) { return formatHintLabel({ hint, },); },).join(HINT_SEPARATOR,)
-    : '';
-  const diagPart = lineDiags !== undefined
-    ? lineDiags.map(function fmtDiag(diagnostic,) { return formatDiagnosticLabel({ diagnostic, },); },).join(DIAGNOSTIC_SEPARATOR,)
-    : '';
+  const rows: string[] = [];
 
-  div.dataset.inlay = hintPart !== '' && diagPart !== ''
-    ? hintPart + SECTION_SEPARATOR + diagPart
-    : (hintPart !== '' ? hintPart : diagPart);
+  if (lineHints !== undefined) {
+    for (const hint of lineHints) {
+      const indent = ' '.repeat(Math.round(hint.position.character * spaceRatio,),);
+      rows.push(`${indent}${formatHintLabel({ hint, },)}`,);
+    }
+  }
 
-  /**
-   * Store target character offset for post-layout measurement in `measureInlayOffsets`.
-   * Set an initial `ch`-based approximation so non-wrapped hints render immediately;
-   * `measureInlayOffsets` corrects with a pixel-measured value after layout.
-   */
-  const indentChar = lineHints !== undefined && lineHints.length > 0
-    ? lineHints[0]?.position.character ?? 0
-    : 0;
-  if (indentChar > 0) {
-    div.dataset.inlayChar = String(indentChar,);
-    div.style.setProperty('--inlay-indent', `${String(indentChar,)}ch`,);
+  if (lineDiags !== undefined) {
+    for (const diagnostic of lineDiags) {
+      const indent = ' '.repeat(Math.round(diagnostic.range.start.character * spaceRatio,),);
+      rows.push(`${indent}${formatDiagnosticLabel({ diagnostic, },)}`,);
+    }
   }
-  else {
-    delete div.dataset.inlayChar;
-    div.style.removeProperty('--inlay-indent',);
-  }
+
+  div.dataset.inlay = rows.join('\n',);
 
   if (lineDiags !== undefined && lineDiags.length > 0)
     div.dataset.inlaySeverity = findWorstSeverity({ diagnostics: lineDiags, },);

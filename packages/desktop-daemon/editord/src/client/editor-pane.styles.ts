@@ -67,7 +67,6 @@ export const STYLES = [
       'counter-increment': 'line',
       position: 'relative',
       'padding-inline-start': cssCh(LINE_PADDING,),
-      '--inlay-indent': cssCh(0,),
     },
   },),
   $({

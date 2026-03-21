@@ -1,56 +1,53 @@
 /**
  * Post-layout measurement for inlay hint positioning.
  *
- * After `::before` hints are rendered, measures two things:
- * 1. The `::before` height, used to offset line numbers via `--line-num-offset`
- * 2. The actual rendered x-position of the target character, used to
- *    correct `--inlay-indent` from the initial `ch` approximation to a
- *    pixel-accurate value that accounts for line wrapping.
+ * After `::before` hints are rendered, measures the `::before` height
+ * and sets `--line-num-offset` so line numbers align with the code text.
+ *
+ * Also provides {@link measureSpaceRatio} to compute how many Inter spaces
+ * equal one JetBrains Mono character width, so leading-space indentation
+ * in the proportional-font `::before` aligns with the monospace code.
  */
 
-/** Node type constant for text nodes. */
-const TEXT_NODE = 3;
+/** Cached ratio of mono character width to Inter space width. */
+let cachedRatio: number | null = null;
 
 /**
- * Measures the rendered x-position of a character in a line div's text node.
- * Uses the Range API to find where the character actually renders,
- * which differs from `ch`-unit estimates when the line wraps.
+ * Computes the ratio `monoSpaceWidth / interSpaceWidth` so that
+ * `Math.round(charOffset * ratio)` Inter spaces span the same pixel
+ * width as `charOffset` JetBrains Mono characters.
  *
- * @param div - line div element
+ * Measured once via an off-screen canvas and cached for the session.
  *
- * @param charOffset - 0-based character offset to measure
+ * @param editor - editor element whose computed font-size is used for measurement
  *
- * @returns pixel offset from the div's content box start, or null if unmeasurable
+ * @returns space count multiplier (defaults to 1 if canvas is unavailable)
  */
-function measureCharX({ div, charOffset, }: {
-  div: HTMLElement;
-  charOffset: number;
-}): number | null {
-  const textNode = div.firstChild;
-  if (textNode === null || textNode.nodeType !== TEXT_NODE)
-    return null;
+export function measureSpaceRatio({ editor, }: { editor: HTMLElement }): number {
+  if (cachedRatio !== null)
+    return cachedRatio;
 
-  const nodeLength = textNode.textContent?.length ?? 0;
-  if (nodeLength === 0)
-    return null;
+  const fontSize = getComputedStyle(editor,).fontSize;
+  const canvas = document.createElement('canvas',);
+  const ctx = canvas.getContext('2d',);
+  if (ctx === null) {
+    cachedRatio = 1;
+    return 1;
+  }
 
-  const clamped = Math.min(charOffset, nodeLength,);
-  const range = document.createRange();
-  range.setStart(textNode, clamped,);
-  range.setEnd(textNode, clamped,);
+  ctx.font = `${fontSize} 'JetBrains Mono', monospace`;
+  const monoSpace = ctx.measureText(' ',).width;
 
-  const charRect = range.getBoundingClientRect();
-  const divRect = div.getBoundingClientRect();
-  const paddingInlineStart = Number.parseFloat(getComputedStyle(div,).paddingInlineStart,);
+  ctx.font = `${fontSize} 'Inter', sans-serif`;
+  const interSpace = ctx.measureText(' ',).width;
 
-  return charRect.left - divRect.left - paddingInlineStart;
+  cachedRatio = interSpace > 0 ? monoSpace / interSpace : 1;
+  return cachedRatio;
 }
 
 /**
- * Measures each annotated div's `::before` height and target character x-position.
- * Sets `--line-num-offset` so the line number aligns with the code text,
- * and corrects `--inlay-indent` from the initial `ch` approximation to a
- * pixel-measured value that follows line wrapping.
+ * Measures each annotated div's `::before` height and sets `--line-num-offset`
+ * so the line number aligns with the code text below the annotation rows.
  *
  * Must be called after layout (e.g. in a follow-up requestAnimationFrame).
  *
@@ -64,15 +61,6 @@ export function measureInlayOffsets({ editor, }: { editor: HTMLElement }): void 
     const beforeHeight = getComputedStyle(child, '::before',).height;
     if (beforeHeight !== 'auto' && beforeHeight !== '0px') {
       child.style.setProperty('--line-num-offset', beforeHeight,);
-    }
-
-    const charAttr = child.dataset.inlayChar;
-    if (charAttr !== undefined) {
-      const charOffset = Number(charAttr,);
-      const xPx = measureCharX({ div: child, charOffset, },);
-      if (xPx !== null) {
-        child.style.setProperty('--inlay-indent', `${String(Math.max(0, xPx,),)}px`,);
-      }
     }
   }
 }

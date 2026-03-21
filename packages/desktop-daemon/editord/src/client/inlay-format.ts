@@ -7,14 +7,6 @@
 
 import type { Diagnostic, InlayHint, } from '../protocol.ts';
 
-/** Separator between inlay hints and diagnostics on the same line. */
-export const SECTION_SEPARATOR = '  \u2502  ';
-
-/** Separator between multiple hints on the same line. */
-export const HINT_SEPARATOR = '   ';
-
-/** Separator between multiple diagnostics on the same line. */
-export const DIAGNOSTIC_SEPARATOR = '   ';
 
 /**
  * Formats a single inlay hint as a display string.

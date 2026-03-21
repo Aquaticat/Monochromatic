@@ -8,6 +8,7 @@
 
 import type { Diagnostic, InlayHint, } from '../protocol.ts';
 import { applyLineAnnotation, groupByLine, } from './inlay-line.ts';
+import { measureSpaceRatio, } from './inlay-measure.ts';
 
 /**
  * Extracts the line number from an inlay hint.
@@ -45,6 +46,7 @@ export function applyInlayAnnotations({ editor, hints, diagnostics, }: {
   hints: InlayHint[];
   diagnostics: Diagnostic[];
 }): void {
+  const spaceRatio = measureSpaceRatio({ editor, },);
   const hintsByLine = groupByLine({ items: hints, keyFn: hintLine, },);
   const diagsByLine = groupByLine({ items: diagnostics, keyFn: diagLine, },);
   const allLines = new Set([...hintsByLine.keys(), ...diagsByLine.keys(),],);
@@ -53,7 +55,7 @@ export function applyInlayAnnotations({ editor, hints, diagnostics, }: {
   for (const line of allLines) {
     const div = children[line];
     if (div !== undefined && div instanceof HTMLElement)
-      applyLineAnnotation({ div, lineHints: hintsByLine.get(line,), lineDiags: diagsByLine.get(line,), },);
+      applyLineAnnotation({ div, lineHints: hintsByLine.get(line,), lineDiags: diagsByLine.get(line,), spaceRatio, },);
   }
 
   /** Clear stale annotations from lines no longer in the set. */
@@ -64,9 +66,7 @@ export function applyInlayAnnotations({ editor, hints, diagnostics, }: {
     const div = children[i];
     if (div instanceof HTMLElement && div.dataset.inlay !== undefined) {
       delete div.dataset.inlay;
-      delete div.dataset.inlayChar;
       delete div.dataset.inlaySeverity;
-      div.style.removeProperty('--inlay-indent',);
       div.style.removeProperty('--line-num-offset',);
     }
   }
@@ -81,9 +81,7 @@ export function clearInlayAnnotations({ editor, }: { editor: HTMLElement }): voi
   for (const child of editor.children) {
     if (child instanceof HTMLElement) {
       delete child.dataset.inlay;
-      delete child.dataset.inlayChar;
       delete child.dataset.inlaySeverity;
-      child.style.removeProperty('--inlay-indent',);
       child.style.removeProperty('--line-num-offset',);
     }
   }
