@@ -4,8 +4,9 @@
  *
  * Boot sequence:
  * 1. Generate a random auth token
- * 2. Start h3 HTTP server with static file serving and WebSocket
- * 3. Print the URL with token for the user to open in Chrome
+ * 2. Start LSP servers (oxlint, tsgo, dprint) in the background
+ * 3. Start h3 HTTP server with static file serving and WebSocket
+ * 4. Print the URL with token for the user to open in Chrome
  *
  * @example
  * ```sh
@@ -25,6 +26,7 @@ import { join, } from 'node:path';
 import { plugin as ws, } from 'crossws/server';
 
 import { l, tagged, } from './log.ts';
+import { LspManager, type WireDiagnostic, } from './lsp/lsp-manager.ts';
 import { resolveRoot, } from './operations/resolve-root.ts';
 import { createWsHandler, } from './ws.ts';
 
@@ -58,6 +60,40 @@ const ROOT_DIR = await resolveRoot();
 
 /** Tagged logger for the HTTP subsystem. */
 const httpLog = tagged({ tag: 'http', l, },);
+
+/** Tagged logger for the LSP subsystem. */
+const lspLog = tagged({ tag: 'lsp', l, },);
+
+//region LSP servers
+
+/**
+ * Set of connected WebSocket peers for broadcasting diagnostics.
+ * Updated by the ws handler on open/close.
+ */
+const connectedPeers = new Set<{ send: (data: string) => void }>();
+
+/**
+ * Pushes diagnostics from LSP servers to all connected WebSocket peers.
+ *
+ * @param path - absolute file path the diagnostics apply to
+ *
+ * @param diagnostics - merged diagnostics from all LSP sources
+ */
+function handleDiagnostics(path: string, diagnostics: WireDiagnostic[],): void {
+  const message = JSON.stringify({ type: 'diagnostics', path, diagnostics, },);
+  for (const peer of connectedPeers) {
+    peer.send(message,);
+  }
+}
+
+/** LSP server coordinator managing oxlint, tsgo, and dprint. */
+const lspManager = new LspManager({
+  rootDir: ROOT_DIR,
+  onDiagnostics: handleDiagnostics,
+  l: lspLog,
+},);
+
+//endregion LSP servers
 
 /** h3 application instance. */
 const app = new H3();
@@ -108,7 +144,7 @@ app.get('/dist/client/**', defineHandler(function handleStaticAsset(event,) {
 
 //region WebSocket — editor communication
 
-app.get('/_ws', createWsHandler({ authToken: AUTH_TOKEN, rootDir: ROOT_DIR, },),);
+app.get('/_ws', createWsHandler({ authToken: AUTH_TOKEN, rootDir: ROOT_DIR, lspManager, connectedPeers, },),);
 
 //endregion WebSocket
 
@@ -127,3 +163,7 @@ const _server = serve(app, {
 },);
 
 httpLog.info(`listening on http://localhost:${resolvePort()}?token=${AUTH_TOKEN}`,);
+
+/** Wait for LSP servers to finish initializing (non-blocking; server is already listening). */
+await lspManager.ready;
+lspLog.info('all LSP servers initialized',);

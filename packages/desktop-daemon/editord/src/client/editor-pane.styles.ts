@@ -119,4 +119,40 @@ export const STYLES = [
     rule: '::highlight(hl-emphasis)',
     decls: { color: cssVar('hl-emphasis',), },
   },),
+  $({
+    rule: '::highlight(diag-error)',
+    decls: {
+      'text-decoration-line': 'underline',
+      'text-decoration-style': 'wavy',
+      'text-decoration-color': cssVar('diag-error',),
+      'text-decoration-skip-ink': 'none',
+    },
+  },),
+  $({
+    rule: '::highlight(diag-warning)',
+    decls: {
+      'text-decoration-line': 'underline',
+      'text-decoration-style': 'wavy',
+      'text-decoration-color': cssVar('diag-warning',),
+      'text-decoration-skip-ink': 'none',
+    },
+  },),
+  $({
+    rule: '::highlight(diag-info)',
+    decls: {
+      'text-decoration-line': 'underline',
+      'text-decoration-style': 'wavy',
+      'text-decoration-color': cssVar('diag-info',),
+      'text-decoration-skip-ink': 'none',
+    },
+  },),
+  $({
+    rule: '::highlight(diag-hint)',
+    decls: {
+      'text-decoration-line': 'underline',
+      'text-decoration-style': 'wavy',
+      'text-decoration-color': cssVar('diag-hint',),
+      'text-decoration-skip-ink': 'none',
+    },
+  },),
 ].join('',);

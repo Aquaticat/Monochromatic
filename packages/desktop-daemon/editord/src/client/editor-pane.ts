@@ -20,6 +20,8 @@ import {
   $ as h,
 } from '@monochromatic-dev/module-es/h-dom';
 
+import type { Diagnostic, TextEdit, } from '../protocol.ts';
+import { applyDiagnosticHighlights, clearDiagnosticHighlights, } from './diagnostics-layer.ts';
 import { applyHighlights, clearHighlights, } from './highlighter.ts';
 import { STYLES, } from './editor-pane.styles.ts';
 
@@ -42,6 +44,9 @@ export class EditorPane extends HTMLElement {
 
   /** Pending `requestAnimationFrame` ID for debounced highlight updates. */
   #highlightFrame = 0;
+
+  /** Current diagnostics for the open file. */
+  #diagnostics: Diagnostic[] = [];
 
   /** Initializes the shadow root. */
   constructor() {
@@ -68,6 +73,7 @@ export class EditorPane extends HTMLElement {
     },);
 
     this.#editor.addEventListener('input', this.#scheduleHighlight.bind(this,),);
+    this.#editor.addEventListener('input', this.#dispatchContentChange.bind(this,),);
 
     this.#shadow.replaceChildren(
       h({ tag: 'style', text: STYLES, },),
@@ -142,6 +148,94 @@ export class EditorPane extends HTMLElement {
     const child = this.#editor.children[index];
     if (child !== undefined)
       child.scrollIntoView({ block: 'center', },);
+  }
+
+  /**
+   * Sets the current diagnostics and renders them as underlines.
+   * Replaces any previously displayed diagnostics.
+   *
+   * @param diagnostics - diagnostics from the language server
+   */
+  setDiagnostics(diagnostics: Diagnostic[],): void {
+    this.#diagnostics = diagnostics;
+    this.#scheduleDiagnosticHighlights();
+  }
+
+  /**
+   * Applies text edits from a formatting operation.
+   * Sorts edits bottom-to-top so earlier edits don't shift later positions.
+   * Replaces the full editor content after applying all edits.
+   *
+   * @param edits - text edits to apply
+   */
+  applyTextEdits(edits: TextEdit[],): void {
+    if (this.#editor === null || edits.length === 0)
+      return;
+
+    const text = this.getText();
+    const lines = text.split('\n',);
+
+    /** Sort edits bottom-to-top to preserve offset stability. */
+    const sorted = edits.toSorted(function compareEditsReverse(a, b,) {
+      const lineDiff = b.range.end.line - a.range.end.line;
+      return lineDiff !== 0 ? lineDiff : b.range.end.character - a.range.end.character;
+    },);
+
+    for (const edit of sorted) {
+      const startLine = edit.range.start.line;
+      const endLine = edit.range.end.line;
+      const startChar = edit.range.start.character;
+      const endChar = edit.range.end.character;
+
+      const before = lines[startLine]?.slice(0, startChar,) ?? '';
+      const after = lines[endLine]?.slice(endChar,) ?? '';
+      const newLines = (before + edit.newText + after).split('\n',);
+      lines.splice(startLine, endLine - startLine + 1, ...newLines,);
+    }
+
+    this.setText(lines.join('\n',),);
+  }
+
+  /**
+   * Returns the underlying contenteditable element for position tracking.
+   * Used by the app to compute cursor/mouse positions relative to line divs.
+   *
+   * @returns the editor container, or null before connected
+   */
+  getEditorElement(): HTMLDivElement | null {
+    return this.#editor;
+  }
+
+  /**
+   * Dispatches a `contentchange` event when the editor content is modified.
+   * Used by the app to trigger debounced content sync to the server.
+   */
+  #dispatchContentChange(): void {
+    this.dispatchEvent(new CustomEvent('contentchange', {
+      bubbles: true,
+      composed: true,
+    },),);
+  }
+
+  /**
+   * Schedules diagnostic highlight rendering for the next animation frame.
+   */
+  #scheduleDiagnosticHighlights(): void {
+    if (this.#editor === null)
+      return;
+
+    const pane = this;
+    requestAnimationFrame(function applyScheduledDiagnostics() {
+      if (pane.#editor === null)
+        return;
+
+      if (pane.#diagnostics.length === 0) {
+        clearDiagnosticHighlights();
+        return;
+      }
+
+      applyDiagnosticHighlights({ editor: pane.#editor, diagnostics: pane.#diagnostics, },);
+    },);
   }
 
   /**

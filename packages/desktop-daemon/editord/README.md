@@ -30,14 +30,18 @@ editord (Bun + h3)              Chromium PWA
 | HTTP: serve index.html|       | <editor-pane>             |
 |       serve dist/     |       |   contenteditable         |
 |                       |       |   one <div> per line      |
-| WebSocket:            | <---> |   browser-native:         |
-|   open(path) -> text  |       |     undo/redo, selection, |
-|   save(path, text)    |       |     IME, copy/paste       |
-|   listDir(path)       |       |                           |
-|   search(query)       |       | <file-tree>               |
-|   fileChanged (push)  |       |   <details><summary>      |
-|                       |       |   lazy-load on expand     |
-| fs.watch (inotify)    |       | <search-overlay>          |
+| WebSocket:            | <---> |   diagnostic underlines   |
+|   open/save/listDir   |       |   browser-native:         |
+|   search(query)       |       |     undo/redo, selection  |
+|   hover/completion    |       |                           |
+|   format/gotoDefn     |       | <file-tree>               |
+|   didChange (sync)    |       | <search-overlay>          |
+|   diagnostics (push)  |       | <hover-popup>             |
+|                       |       | <completion-popup>        |
+| LSP servers:          |       |                           |
+|   oxlint --lsp        |       |                           |
+|   tsgo --lsp --stdio  |       |                           |
+|   dprint lsp          |       |                           |
 +-----------------------+       +---------------------------+
 ```
 
@@ -101,6 +105,12 @@ src/
       open.ts                  -- read file from disk
       resolve-root.ts          -- find highest writable ancestor directory
       save.ts                  -- write file to disk
+    lsp/
+      types.ts                 -- LSP type definitions (Position, Diagnostic, Hover, etc.)
+      json-rpc.ts              -- Content-Length framing for LSP stdio communication
+      lsp-client.ts            -- single LSP server process manager (spawn, init, request/notify)
+      language-id.ts           -- file extension to LSP language ID mapping
+      lsp-manager.ts           -- multi-server coordinator (oxlint, tsgo, dprint)
   client/
     index.html                 -- PWA shell with dark/light theme custom properties
     app.ts                     -- entry: connect WS, mount components, Ctrl+S save
@@ -113,6 +123,12 @@ src/
     highlight-tags.ts          -- Lezer tag-to-highlight-group mapping (keyword, string, comment, etc.)
     languages.ts               -- file extension to Lezer parser mapping (JS/TS dialects)
     ws-client.ts               -- typed WebSocket client with request/response correlation
+    position.ts                -- DOM selection to text position conversion utilities
+    diagnostics-layer.ts       -- CSS Custom Highlight API for diagnostic underlines
+    hover-popup.ts             -- <hover-popup> web component: type info tooltip
+    hover-popup.styles.ts      -- shadow DOM styles for hover popup
+    completion-popup.ts        -- <completion-popup> web component: autocomplete dropdown
+    completion-popup.styles.ts -- shadow DOM styles for completion popup
 ```
 
 ## WebSocket protocol
@@ -125,7 +141,13 @@ Client requests include a client-generated `id` for response correlation.
 - `{ type: "open", id, path }` -- read file, responds with `fileContent`
 - `{ type: "save", id, path, content }` -- write file, responds with `saved`
 - `{ type: "listDir", id, path }` -- list directory, responds with `dirListing`
-- `{ type: "search", id, query }` -- ripgrep search (not yet implemented)
+- `{ type: "search", id, query, scope }` -- ripgrep search scoped to a directory
+- `{ type: "didChange", path, content }` -- notify LSP servers of content change (no response)
+- `{ type: "didClose", path }` -- notify LSP servers file was closed (no response)
+- `{ type: "hover", id, path, line, character }` -- request hover info
+- `{ type: "completion", id, path, line, character }` -- request completions
+- `{ type: "format", id, path }` -- request document formatting
+- `{ type: "gotoDefinition", id, path, line, character }` -- request go-to-definition
 
 **Server to client:**
 
@@ -134,6 +156,11 @@ Client requests include a client-generated `id` for response correlation.
 - `{ type: "saved", id, path }` -- write confirmation
 - `{ type: "dirListing", id, path, entries }` -- directory listing with `{ name, isDirectory }` entries
 - `{ type: "fileChanged", path }` -- push notification for external file changes (not yet implemented)
+- `{ type: "diagnostics", path, diagnostics }` -- push diagnostics from LSP servers
+- `{ type: "hoverResult", id, contents, range? }` -- hover info response
+- `{ type: "completionResult", id, items }` -- completion items response
+- `{ type: "formatResult", id, edits }` -- formatting text edits response
+- `{ type: "definitionResult", id, path, line, character }` -- go-to-definition response
 - `{ type: "error", id?, message }` -- error response
 
 ## JetBrains parity
@@ -142,10 +169,28 @@ Any behavioral difference between editord and JetBrains IDEs is considered a bug
 JetBrains is the reference implementation for keybindings, search UX,
 file tree interactions, and general editor behavior.
 
+## LSP integration
+
+editord proxies three language servers over JSON-RPC/stdio:
+
+- **oxlint** (`oxlint --lsp`) -- linting diagnostics for JS/TS
+- **tsgo** (`tsgo --lsp --stdio`) -- type diagnostics, hover, completions, go-to-definition for JS/TS
+- **dprint** (`dprint lsp`) -- formatting for JS/TS, JSON, CSS, HTML, Markdown, YAML, TOML
+
+The server aggregates diagnostics from oxlint and tsgo into a single push.
+Feature requests (hover, completion, format, definition) are routed to the appropriate server.
+Servers that fail to start are skipped; the editor degrades gracefully.
+
+**Keybindings:**
+
+- **Ctrl+Space** -- trigger completions
+- **Ctrl+Shift+F** / **Ctrl+Alt+L** -- format document (JetBrains parity)
+- **Ctrl+Click** -- go to definition
+- **Mouse hover** -- show type information (300ms debounce)
+
 ## Not in MVP
 
-- Syntax highlighting, minimap, split panes
-- LSP, completions, diagnostics, hover
+- Minimap, split panes
 - Terminal, git, extensions, settings UI
 - Command palette (double-shift replaces it)
 - Multi-window, multi-project, remote development

@@ -3,15 +3,20 @@
  *
  * Authenticates connections via token in the URL query string,
  * then dispatches incoming messages to the appropriate operation handler.
+ * Integrates with the LSP manager for language intelligence features.
  */
+
+// oxlint-disable max-lines -- WebSocket handler with auth, message dispatch, LSP integration, and diagnostics push
 
 import {
   defineWebSocketHandler,
   type EventHandler,
 } from 'h3';
 
-import type { ClientMessage, } from '../protocol.ts';
+import type { ClientMessage, CompletionItem, TextEdit, } from '../protocol.ts';
 import { l as rootLogger, tagged, } from './log.ts';
+import type { LspManager, } from './lsp/lsp-manager.ts';
+import type { LspCompletionItem, LspHover, LspMarkupContent, } from './lsp/types.ts';
 import { assertWithinRoot, } from './operations/assert-within-root.ts';
 import { listDir, } from './operations/list-dir.ts';
 import { openFile, } from './operations/open.ts';
@@ -38,6 +43,38 @@ function rejectUnauthenticated(peer: { send: (data: string) => void; close: () =
 }
 
 /**
+ * Extracts hover content as a plain string from an LSP hover result.
+ * Handles MarkupContent objects and plain strings.
+ *
+ * @param hover - LSP hover result
+ *
+ * @returns string representation of the hover content
+ */
+function extractHoverContent({ hover, }: { hover: LspHover }): string {
+  if (typeof hover.contents === 'string')
+    return hover.contents;
+
+  return (hover.contents as LspMarkupContent).value;
+}
+
+/**
+ * Converts LSP completion items to wire format.
+ *
+ * @param items - LSP completion items
+ *
+ * @returns wire-format completion items
+ */
+function toWireCompletionItems({ items, }: { items: LspCompletionItem[] }): CompletionItem[] {
+  return items.map(function convertItem(item,) {
+    return {
+      label: item.label,
+      detail: item.detail ?? '',
+      insertText: item.insertText ?? item.label,
+    };
+  },);
+}
+
+/**
  * Parses and dispatches a single client message against the operation handlers.
  *
  * @param peer - WebSocket peer that sent the message
@@ -45,11 +82,14 @@ function rejectUnauthenticated(peer: { send: (data: string) => void; close: () =
  * @param messageText - raw message text from the WebSocket frame
  *
  * @param rootDir - root directory for path containment
+ *
+ * @param lspManager - LSP server coordinator
  */
 async function dispatchMessage(
   peer: { send: (data: string) => void },
   messageText: string,
   rootDir: string,
+  lspManager: LspManager | null,
 ): Promise<void> {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; runtime type is validated by discriminant checks below
   const parsed = JSON.parse(messageText,) as ClientMessage;
@@ -57,10 +97,20 @@ async function dispatchMessage(
   if (parsed.type === 'open') {
     const result = await openFile({ rootDir, path: parsed.path, },);
     peer.send(JSON.stringify({ type: 'fileContent', id: parsed.id, ...result, },),);
+
+    /** Notify LSP servers about the opened file. */
+    if (lspManager !== null && 'content' in result) {
+      lspManager.didOpen({ path: parsed.path, text: String(result.content,), },);
+    }
   }
   else if (parsed.type === 'save') {
     await saveFile({ rootDir, path: parsed.path, content: parsed.content, },);
     peer.send(JSON.stringify({ type: 'saved', id: parsed.id, path: parsed.path, },),);
+
+    /** Notify LSP servers about the save. */
+    if (lspManager !== null) {
+      lspManager.didSave({ path: parsed.path, },);
+    }
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'listDir') {
@@ -79,6 +129,93 @@ async function dispatchMessage(
     if (!controller.signal.aborted)
       peer.send(JSON.stringify({ type: 'searchResults', id: parsed.id, ...result, },),);
   }
+  //region LSP message handlers
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'didChange') {
+    if (lspManager !== null) {
+      lspManager.didChange({ path: parsed.path, text: parsed.content, },);
+    }
+  }
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'didClose') {
+    if (lspManager !== null) {
+      lspManager.didClose({ path: parsed.path, },);
+    }
+  }
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'hover') {
+    l.info(`hover request: path=${parsed.path} line=${parsed.line} char=${parsed.character}`,);
+    if (lspManager === null) {
+      l.info('hover: lspManager is null',);
+      peer.send(JSON.stringify({ type: 'hoverResult', id: parsed.id, contents: '', },),);
+      return;
+    }
+
+    const hover = await lspManager.hover({ path: parsed.path, line: parsed.line, character: parsed.character, },);
+    l.info(`hover result: ${hover === null ? 'null' : 'has content'}`,);
+    if (hover === null) {
+      peer.send(JSON.stringify({ type: 'hoverResult', id: parsed.id, contents: '', },),);
+      return;
+    }
+
+    const contents = extractHoverContent({ hover, },);
+    l.info(`hover contents: ${contents.slice(0, 80,)}`,);
+    peer.send(JSON.stringify({
+      type: 'hoverResult',
+      id: parsed.id,
+      contents,
+      range: hover.range,
+    },),);
+  }
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'completion') {
+    if (lspManager === null) {
+      peer.send(JSON.stringify({ type: 'completionResult', id: parsed.id, items: [], },),);
+      return;
+    }
+
+    const items = await lspManager.completion({ path: parsed.path, line: parsed.line, character: parsed.character, },);
+    peer.send(JSON.stringify({
+      type: 'completionResult',
+      id: parsed.id,
+      items: toWireCompletionItems({ items, },),
+    },),);
+  }
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'format') {
+    if (lspManager === null) {
+      peer.send(JSON.stringify({ type: 'formatResult', id: parsed.id, edits: [], },),);
+      return;
+    }
+
+    const lspEdits = await lspManager.format({ path: parsed.path, },);
+    const edits: TextEdit[] = lspEdits.map(function convertEdit(edit,) {
+      return { range: edit.range, newText: edit.newText, };
+    },);
+    peer.send(JSON.stringify({ type: 'formatResult', id: parsed.id, edits, },),);
+  }
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'gotoDefinition') {
+    if (lspManager === null) {
+      peer.send(JSON.stringify({ type: 'definitionResult', id: parsed.id, path: '', line: 0, character: 0, },),);
+      return;
+    }
+
+    const def = await lspManager.gotoDefinition({ path: parsed.path, line: parsed.line, character: parsed.character, },);
+    if (def === null) {
+      peer.send(JSON.stringify({ type: 'definitionResult', id: parsed.id, path: '', line: 0, character: 0, },),);
+      return;
+    }
+
+    peer.send(JSON.stringify({
+      type: 'definitionResult',
+      id: parsed.id,
+      path: def.path,
+      line: def.line,
+      character: def.character,
+    },),);
+  }
+  //endregion LSP message handlers
   else {
     peer.send(JSON.stringify({
       type: 'error',
@@ -97,9 +234,16 @@ async function dispatchMessage(
  *
  * @param rootDir - root directory path for path containment and client greeting
  *
+ * @param lspManager - LSP server coordinator, or null if LSP is disabled
+ *
  * @returns h3 event handler that upgrades to WebSocket
  */
-export function createWsHandler({ authToken, rootDir, }: { authToken: string; rootDir: string }): EventHandler {
+export function createWsHandler({ authToken, rootDir, lspManager, connectedPeers, }: {
+  authToken: string;
+  rootDir: string;
+  lspManager: LspManager | null;
+  connectedPeers: Set<{ send: (data: string) => void }>;
+}): EventHandler {
   return defineWebSocketHandler(function resolveHooks(event,) {
     const url = new URL(event.url, 'http://localhost',);
     const token = url.searchParams.get('token',);
@@ -111,12 +255,13 @@ export function createWsHandler({ authToken, rootDir, }: { authToken: string; ro
     return {
       open: function handleOpen(peer,) {
         l.info('peer connected',);
+        connectedPeers.add(peer,);
         peer.send(JSON.stringify({ type: 'connected', rootDir, },),);
       },
 
       async message(peer, message,) {
         try {
-          await dispatchMessage(peer, message.text(), rootDir,);
+          await dispatchMessage(peer, message.text(), rootDir, lspManager,);
         }
         catch (error) {
           const errorMessage = error instanceof Error ? error.message : String(error,);
@@ -130,6 +275,7 @@ export function createWsHandler({ authToken, rootDir, }: { authToken: string; ro
 
       close: function handleClose(peer,) {
         peerSearchControllers.delete(peer,);
+        connectedPeers.delete(peer,);
         l.info('peer disconnected',);
       },
     };

@@ -66,9 +66,27 @@
 - [x] 100KB file size limit: files over 10KB skip highlighting entirely
 - [x] Tag groups: keyword, string, comment, number, type, function, property, heading, link, emphasis
 
+## Phase 6 -- LSP integration (done)
+
+- [x] JSON-RPC framing over stdio for LSP communication
+- [x] `LspClient` class: spawn, initialize, request/response, notification routing
+- [x] `LspManager` coordinator: oxlint (linting), tsgo (types/hover/completions), dprint (formatting)
+- [x] Document sync: `didOpen`, `didChange` (debounced full-text), `didSave`, `didClose`
+- [x] Diagnostic aggregation: merge diagnostics from oxlint + tsgo, push to client
+- [x] Diagnostic underlines via CSS Custom Highlight API (`::highlight(diag-error)`, etc.)
+- [x] Hover info from tsgo: debounced mouse tracking, `<hover-popup>` tooltip
+- [x] Completions from tsgo: Ctrl+Space / dot trigger, `<completion-popup>` dropdown
+- [x] Formatting from dprint: Ctrl+Shift+F / Ctrl+Alt+L (JetBrains parity)
+- [x] Go-to-definition from tsgo: Ctrl+Click navigates to definition location
+- [x] Graceful degradation: servers that fail to start are skipped; features degrade
+- [x] Late-init recovery: documents opened before LSP ready are re-opened after init
+
 ## Future (post-MVP)
 
-- LSP proxying through editord
+- Completion item kind icons
+- Signature help on function calls
+- Code actions (quick fixes from oxlint/tsgo)
+- Workspace diagnostics (diagnostics for files not currently open)
 
 ## Technical notes
 

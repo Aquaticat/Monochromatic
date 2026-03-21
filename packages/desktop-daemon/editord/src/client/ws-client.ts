@@ -7,7 +7,7 @@
 
 // oxlint-disable max-lines -- WebSocket client with handshake, request correlation, push dispatch, and close cleanup in a single class
 
-import type { ClientRequest, ServerMessage, } from '../protocol.ts';
+import type { ClientNotification, ClientRequest, Diagnostic, ServerMessage, } from '../protocol.ts';
 import { l as rootLogger, tagged, } from './log.ts';
 
 /** Tagged logger for the WebSocket client subsystem. */
@@ -46,6 +46,9 @@ export class EditorWsClient {
 
   /** Callback invoked when the server pushes a file change notification. */
   onFileChanged: ((path: string,) => void) | null = null;
+
+  /** Callback invoked when the server pushes diagnostics for a file. */
+  onDiagnostics: ((path: string, diagnostics: Diagnostic[],) => void) | null = null;
 
   /** Resolves when the WebSocket connection is established and authenticated. */
   readonly ready: Promise<void>;
@@ -135,6 +138,17 @@ export class EditorWsClient {
   }
 
   /**
+   * Sends a notification to the server (fire-and-forget, no response expected).
+   * Does not include an `id` field and does not await a response.
+   *
+   * @param message - notification payload (without `id`)
+   */
+  async notify(message: ClientNotification,): Promise<void> {
+    await this.ready;
+    this.#ws.send(JSON.stringify(message,),);
+  }
+
+  /**
    * Handles all incoming WebSocket messages after the initial handshake.
    * Routes responses to pending requests by ID, and dispatches push notifications.
    *
@@ -156,9 +170,13 @@ export class EditorWsClient {
     if (data.type === 'connected')
       return;
 
-    // Push notification — no request ID
+    // Push notifications — no request ID
     if (data.type === 'fileChanged') {
       this.onFileChanged?.(data.path,);
+      return;
+    }
+    if (data.type === 'diagnostics') {
+      this.onDiagnostics?.(data.path, data.diagnostics,);
       return;
     }
 
