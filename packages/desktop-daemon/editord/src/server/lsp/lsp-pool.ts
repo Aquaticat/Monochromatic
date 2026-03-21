@@ -62,6 +62,13 @@ export class LspPool {
   /** Callback for server-initiated notifications. */
   #onNotification: (source: string, method: string, params: unknown,) => void;
 
+  /**
+   * @param ceiling - highest directory for config-file search (file tree root)
+   *
+   * @param l - parent logger
+   *
+   * @param onNotification - callback for server-initiated notifications
+   */
   constructor({ ceiling, l, onNotification, }: {
     ceiling: string; l: Logger;
     onNotification: (source: string, method: string, params: unknown,) => void;
@@ -71,7 +78,11 @@ export class LspPool {
     this.#onNotification = onNotification;
   }
 
-  /** Finds or creates the LSP client for a server type given a file path. */
+  /**
+   * Finds or creates the LSP client for a server type given a file path.
+   *
+   * @returns promise resolving to the client, or null if no project root is found
+   */
   resolve({ type, filePath, }: { type: ServerType; filePath: string }): Promise<LspClient | null> {
     const root = findProjectRoot({ startDir: dirname(filePath,), configFiles: CONFIG_FILES[type], ceiling: this.#ceiling, },);
     if (root === null) return Promise.resolve(null,);
@@ -83,7 +94,11 @@ export class LspPool {
     return promise;
   }
 
-  /** Resolves all three server types for a given file path. */
+  /**
+   * Resolves all three server types for a given file path.
+   *
+   * @returns server slots with oxlint, tsgo, and dprint clients
+   */
   async resolveAll({ path, }: { path: string }): Promise<ServerSlots> {
     const [oxlint, tsgo, dprint,] = await Promise.all([
       this.resolve({ type: 'oxlint', filePath: path, },),
@@ -93,7 +108,11 @@ export class LspPool {
     return { oxlint, tsgo, dprint, };
   }
 
-  /** Spawns and initializes one LSP client for a given type and project root. */
+  /**
+   * Spawns and initializes one LSP client for a given type and project root.
+   *
+   * @returns initialized client, or null if spawn/init fails
+   */
   async #spawn({ type, root, }: { type: ServerType; root: string }): Promise<LspClient | null> {
     const def = COMMANDS[type];
     const binPath = join(root, 'node_modules/.bin',);
@@ -117,7 +136,13 @@ export class LspPool {
   /** Gracefully shuts down all pooled LSP servers. */
   shutdown(): void {
     for (const promise of this.#pool.values()) {
-      void promise.then(function shutdownClient(c,) { if (c !== null) void c.shutdown(); },);
+      void (async function shutdownClient(): Promise<void> {
+        try {
+          const c = await promise;
+          if (c !== null) await c.shutdown();
+        }
+        catch (error) { console.error('LSP shutdown failed:', error,); }
+      })();
     }
   }
 }

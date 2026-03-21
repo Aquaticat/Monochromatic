@@ -120,7 +120,7 @@ export class SearchOverlay extends HTMLElement {
         },
         blur: function handleInputBlur(event,) {
           const related = event.relatedTarget;
-          if (related === null || !(related instanceof Node) || !overlay.#dialog?.contains(related,))
+          if (related === null || !(related instanceof Node) || overlay.#dialog?.contains(related,) !== true)
             overlay.#close();
         },
       },

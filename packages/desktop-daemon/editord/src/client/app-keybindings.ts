@@ -49,14 +49,16 @@ export function wireKeybindings({ saveCurrentFile, formatDocument, requestComple
       requestCompletions();
       return;
     }
-    if (completionPopup.visible) {
-      if (handleCompletionNav({ event, completionPopup, },)) return;
-    }
+    if (completionPopup.visible && handleCompletionNav({ event, completionPopup, },)) return;
     if (event.key === 'Escape') hoverPopup.hide();
   },);
 }
 
-/** Handles arrow/enter/escape keys when completion popup is visible. */
+/**
+ * Handles arrow/enter/escape keys when completion popup is visible.
+ *
+ * @returns true if the event was consumed, false otherwise
+ */
 function handleCompletionNav({ event, completionPopup, }: {
   event: KeyboardEvent;
   completionPopup: CompletionPopup;

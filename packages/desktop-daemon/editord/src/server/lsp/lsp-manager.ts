@@ -43,7 +43,7 @@ export class LspManager {
     const mgr = this;
     this.#pool = new LspPool({
       ceiling, l: tl,
-      onNotification: function handleNotification(source, method, params,) {
+      onNotification: function handleNotification(source: string, method: string, params: unknown,): void {
         mgr.#onNotification({ source, method, params, },);
       },
     },);
@@ -51,19 +51,27 @@ export class LspManager {
 
   //region Document lifecycle
 
-  /** @param path - absolute file path */
+  /**
+   * @param path - absolute file path
+   */
   async didOpen({ path, text, }: { path: string; text: string }): Promise<void> {
     syncOpen({ path, text, documents: this.#documents, servers: await this.#pool.resolveAll({ path, },), },);
   }
-  /** @param path - absolute file path */
+  /**
+   * @param path - absolute file path
+   */
   async didChange({ path, text, }: { path: string; text: string }): Promise<void> {
     syncChange({ path, text, documents: this.#documents, servers: await this.#pool.resolveAll({ path, },), },);
   }
-  /** @param path - absolute file path */
+  /**
+   * @param path - absolute file path
+   */
   async didSave({ path, }: { path: string }): Promise<void> {
     syncSave({ path, documents: this.#documents, servers: await this.#pool.resolveAll({ path, },), },);
   }
-  /** @param path - absolute file path */
+  /**
+   * @param path - absolute file path
+   */
   async didClose({ path, }: { path: string }): Promise<void> {
     this.#diagnostics.delete({ uri: pathToFileURL(path,).href, },);
     syncClose({ path, documents: this.#documents, servers: await this.#pool.resolveAll({ path, },), },);
@@ -73,27 +81,47 @@ export class LspManager {
 
   //region Feature requests
 
-  /** {@inheritDoc requestHover} */
+  /**
+   * {@inheritDoc requestHover}
+   *
+   * @returns hover content, or null if tsgo is unavailable
+   */
   async hover({ path, line, character, }: { path: string; line: number; character: number }): Promise<LspHover | null> {
     const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
     return c !== null && c.initialized ? requestHover({ client: c, path, line, character, },) : null;
   }
-  /** {@inheritDoc requestCompletion} */
+  /**
+   * {@inheritDoc requestCompletion}
+   *
+   * @returns completion items, or empty array if tsgo is unavailable
+   */
   async completion({ path, line, character, }: { path: string; line: number; character: number }): Promise<LspCompletionItem[]> {
     const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
     return c !== null && c.initialized ? requestCompletion({ client: c, path, line, character, },) : [];
   }
-  /** {@inheritDoc requestFormat} */
+  /**
+   * {@inheritDoc requestFormat}
+   *
+   * @returns text edits, or empty array if dprint is unavailable
+   */
   async format({ path, }: { path: string }): Promise<LspTextEdit[]> {
     const c = await this.#pool.resolve({ type: 'dprint', filePath: path, },);
     return c !== null && c.initialized ? requestFormat({ client: c, path, },) : [];
   }
-  /** {@inheritDoc requestGotoDefinition} */
+  /**
+   * {@inheritDoc requestGotoDefinition}
+   *
+   * @returns definition location, or null if tsgo is unavailable
+   */
   async gotoDefinition({ path, line, character, }: { path: string; line: number; character: number }): Promise<{ path: string; line: number; character: number } | null> {
     const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
     return c !== null && c.initialized ? requestGotoDefinition({ client: c, path, line, character, },) : null;
   }
-  /** {@inheritDoc requestInlayHints} */
+  /**
+   * {@inheritDoc requestInlayHints}
+   *
+   * @returns inlay hints, or empty array if tsgo is unavailable
+   */
   async inlayHints({ path, range, }: {
     path: string;
     range: { start: { line: number; character: number }; end: { line: number; character: number } };

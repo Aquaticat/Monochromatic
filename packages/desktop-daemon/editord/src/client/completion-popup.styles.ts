@@ -17,14 +17,14 @@ const MAX_HEIGHT_REM = 16;
 /** Width of the completion popup in rem. */
 const WIDTH_REM = 20;
 
-/** Border radius in rem. */
-const BORDER_RADIUS = 1 / 4;
+/** Border radius in rem: 1/4. */
+const BORDER_RADIUS = 1 / (2 * 2);
 
-/** Item padding in rem. */
-const ITEM_PADDING = 1 / 4;
+/** Item padding in rem: 1/4. */
+const ITEM_PADDING = 1 / (2 * 2);
 
-/** Font size in rem. */
-const FONT_SIZE = 13 / 16;
+/** Font size in rem: 13/16. */
+const FONT_SIZE = (16 - 2 - 1) / 16;
 
 /** Line height multiplier. */
 const LINE_HEIGHT = (2 + 1) / 2;

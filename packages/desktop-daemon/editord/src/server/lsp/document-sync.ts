@@ -28,7 +28,11 @@ export type ServerSlots = {
   dprint: LspClient | null;
 };
 
-/** Returns initialized LSP clients that handle a given language. */
+/**
+ * Returns initialized LSP clients that handle a given language.
+ *
+ * @returns array of initialized clients relevant to the language
+ */
 function relevantClients({ languageId, oxlint, tsgo, dprint, }: { languageId: string } & ServerSlots): LspClient[] {
   const clients: LspClient[] = [];
   const isJsTs = JS_TS_LANGUAGE_IDS.has(languageId,);
@@ -38,7 +42,11 @@ function relevantClients({ languageId, oxlint, tsgo, dprint, }: { languageId: st
   return clients;
 }
 
-/** @param path - absolute file path */
+/**
+ * Registers a file as open and notifies relevant LSP servers.
+ *
+ * @param path - absolute file path
+ */
 export function didOpen({ path, text, documents, servers, }: {
   path: string; text: string; documents: Map<string, DocumentState>; servers: ServerSlots;
 }): void {
@@ -51,7 +59,11 @@ export function didOpen({ path, text, documents, servers, }: {
   }
 }
 
-/** @param path - absolute file path */
+/**
+ * Pushes a full-content change to relevant LSP servers and bumps the version.
+ *
+ * @param path - absolute file path
+ */
 export function didChange({ path, text, documents, servers, }: {
   path: string; text: string; documents: Map<string, DocumentState>; servers: ServerSlots;
 }): void {
@@ -65,7 +77,11 @@ export function didChange({ path, text, documents, servers, }: {
   }
 }
 
-/** @param path - absolute file path */
+/**
+ * Notifies relevant LSP servers that a file was saved.
+ *
+ * @param path - absolute file path
+ */
 export function didSave({ path, documents, servers, }: {
   path: string; documents: Map<string, DocumentState>; servers: ServerSlots;
 }): void {
@@ -77,7 +93,11 @@ export function didSave({ path, documents, servers, }: {
   }
 }
 
-/** @param path - absolute file path */
+/**
+ * Removes a file from tracking and notifies relevant LSP servers.
+ *
+ * @param path - absolute file path
+ */
 export function didClose({ path, documents, servers, }: {
   path: string; documents: Map<string, DocumentState>; servers: ServerSlots;
 }): void {

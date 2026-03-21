@@ -18,14 +18,14 @@ const MAX_WIDTH_PERCENT = 60;
 /** Maximum height of the hover popup in rem. */
 const MAX_HEIGHT_REM = 20;
 
-/** Border radius in rem. */
-const BORDER_RADIUS = 1 / 4;
+/** Border radius in rem: 1/4. */
+const BORDER_RADIUS = 1 / (2 * 2);
 
 /** Padding in rem. */
 const PADDING = 1 / 2;
 
-/** Font size in rem. */
-const FONT_SIZE = 13 / 16;
+/** Font size in rem: 13/16. */
+const FONT_SIZE = (16 - 2 - 1) / 16;
 
 /** Line height multiplier. */
 const LINE_HEIGHT = (2 + 1) / 2;

@@ -77,10 +77,20 @@ appElement.append(fileTree, editorPane, searchOverlay, hoverPopup, completionPop
 /** Path of the currently open file. */
 let currentFilePath = filePath;
 
-/** Returns the current file path. */
+/**
+ * Returns the current file path.
+ *
+ * @returns absolute path of the currently open file, or null if none is open
+ */
 function getCurrentFilePath(): string | null { return currentFilePath; }
 
-/** Loads a file from the server, scrolls to a line, and logs errors. */
+/**
+ * Loads a file from the server, scrolls to a line, and logs errors.
+ *
+ * @param path - absolute file path to open
+ *
+ * @param line - optional 1-based line number to scroll to after loading
+ */
 async function loadFileSafe(path: string, line?: number,): Promise<void> {
   try {
     const r = await ws.request({ type: 'open', path, },);
@@ -98,7 +108,7 @@ fileTree.addEventListener('file-select', function handleFileSelect(event,) {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from FileTree
   const { path, } = (event as CustomEvent<{ path: string }>).detail;
   currentFilePath = path;
-  void (async function loadAndRefresh() {
+  void (async function loadAndRefresh(): Promise<void> {
     await loadFileSafe(path,);
     refreshInlayHints();
   })();
@@ -107,7 +117,7 @@ searchOverlay.addEventListener('result-select', function handleResultSelect(even
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from SearchOverlay
   const { path, line, } = (event as CustomEvent<ResultSelectDetail>).detail;
   currentFilePath = path;
-  void (async function loadAndRefresh() {
+  void (async function loadAndRefresh(): Promise<void> {
     await loadFileSafe(path, line,);
     refreshInlayHints();
   })();

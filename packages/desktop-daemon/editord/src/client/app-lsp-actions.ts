@@ -4,7 +4,7 @@
 
 import type { EditorPane, } from './editor-pane.ts';
 import { l, tagged, } from './log.ts';
-import { getPositionFromPoint, } from './position.ts';
+import { getPositionFromPoint, } from './position-from-point.ts';
 import type { EditorWsClient, } from './ws-client.ts';
 
 /** Tagged logger for LSP actions. */
