@@ -98,6 +98,36 @@ export type LspTextEdit = {
 
 //endregion Text edits
 
+//region Inlay hints
+
+/**
+ * Inlay hint kind matching the LSP specification.
+ * Type = 1, Parameter = 2.
+ */
+export type InlayHintKind = 1 | 2;
+
+/** Inlay hint from an LSP server. */
+export type LspInlayHint = {
+  /** Position in the document where the hint is displayed. */
+  position: LspPosition;
+  /** Display label (string or structured label parts). */
+  label: string | LspInlayHintLabelPart[];
+  /** Kind of inlay hint (1=Type, 2=Parameter). */
+  kind?: InlayHintKind;
+  /** Whether to insert padding space before the hint. */
+  paddingLeft?: boolean;
+  /** Whether to insert padding space after the hint. */
+  paddingRight?: boolean;
+};
+
+/** Structured label part for an inlay hint. */
+export type LspInlayHintLabelPart = {
+  /** Text value of this label part. */
+  value: string;
+};
+
+//endregion Inlay hints
+
 //region Capabilities
 
 /** Server capabilities returned during LSP initialization. */
@@ -116,6 +146,8 @@ export type LspServerCapabilities = {
   documentFormattingProvider?: boolean;
   /** Whether go-to-definition is supported. */
   definitionProvider?: boolean;
+  /** Whether inlay hints are supported. */
+  inlayHintProvider?: boolean | { resolveProvider?: boolean };
 };
 
 //endregion Capabilities

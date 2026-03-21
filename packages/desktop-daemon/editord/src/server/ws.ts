@@ -13,10 +13,10 @@ import {
   type EventHandler,
 } from 'h3';
 
-import type { ClientMessage, CompletionItem, TextEdit, } from '../protocol.ts';
+import type { ClientMessage, CompletionItem, InlayHint, TextEdit, } from '../protocol.ts';
 import { l as rootLogger, tagged, } from './log.ts';
 import type { LspManager, } from './lsp/lsp-manager.ts';
-import type { LspCompletionItem, LspHover, LspMarkupContent, } from './lsp/types.ts';
+import type { LspCompletionItem, LspHover, LspInlayHint, LspMarkupContent, } from './lsp/types.ts';
 import { assertWithinRoot, } from './operations/assert-within-root.ts';
 import { listDir, } from './operations/list-dir.ts';
 import { openFile, } from './operations/open.ts';
@@ -71,6 +71,27 @@ function toWireCompletionItems({ items, }: { items: LspCompletionItem[] }): Comp
       detail: item.detail ?? '',
       insertText: item.insertText ?? item.label,
     };
+  },);
+}
+
+/**
+ * Converts LSP inlay hints to wire format.
+ * Extracts label text from string or structured label parts.
+ *
+ * @param hints - LSP inlay hints
+ *
+ * @returns wire-format inlay hints
+ */
+function toWireInlayHints({ hints, }: { hints: LspInlayHint[] }): InlayHint[] {
+  return hints.map(function convertHint(hint,) {
+    const label = typeof hint.label === 'string'
+      ? hint.label
+      : hint.label.map(function extractPart(part,) { return part.value; },).join('',);
+    const result: InlayHint = { position: hint.position, label, };
+    if (hint.kind !== undefined) result.kind = hint.kind;
+    if (hint.paddingLeft !== undefined) result.paddingLeft = hint.paddingLeft;
+    if (hint.paddingRight !== undefined) result.paddingRight = hint.paddingRight;
+    return result;
   },);
 }
 
@@ -130,6 +151,20 @@ async function dispatchMessage(
       peer.send(JSON.stringify({ type: 'searchResults', id: parsed.id, ...result, },),);
   }
   //region LSP message handlers
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'inlayHint') {
+    if (lspManager === null) {
+      peer.send(JSON.stringify({ type: 'inlayHintResult', id: parsed.id, hints: [], },),);
+      return;
+    }
+
+    const hints = await lspManager.inlayHints({ path: parsed.path, range: parsed.range, },);
+    peer.send(JSON.stringify({
+      type: 'inlayHintResult',
+      id: parsed.id,
+      hints: toWireInlayHints({ hints, },),
+    },),);
+  }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'didChange') {
     if (lspManager !== null) {

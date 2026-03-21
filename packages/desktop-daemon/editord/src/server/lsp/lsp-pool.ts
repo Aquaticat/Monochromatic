@@ -25,10 +25,28 @@ const CONFIG_FILES: Record<ServerType, readonly string[]> = {
 };
 
 /** Spawn command and arguments for each server type. */
-const COMMANDS: Record<ServerType, { command: string; args: readonly string[] }> = {
-  oxlint: { command: 'oxlint', args: ['--lsp',], },
-  tsgo: { command: 'tsgo', args: ['--lsp', '--stdio',], },
-  dprint: { command: 'dprint', args: ['lsp',], },
+const COMMANDS: Record<ServerType, {
+  command: string;
+  args: readonly string[];
+  initializationOptions: Record<string, unknown>;
+}> = {
+  oxlint: { command: 'oxlint', args: ['--lsp',], initializationOptions: {}, },
+  tsgo: {
+    command: 'tsgo', args: ['--lsp', '--stdio',],
+    initializationOptions: {
+      userPreferences: {
+        inlayHints: {
+          parameterNames: { enabled: 'all', },
+          parameterTypes: { enabled: true, },
+          variableTypes: { enabled: true, },
+          propertyDeclarationTypes: { enabled: true, },
+          functionLikeReturnTypes: { enabled: true, },
+          enumMemberValues: { enabled: true, },
+        },
+      },
+    },
+  },
+  dprint: { command: 'dprint', args: ['lsp',], initializationOptions: {}, },
 };
 
 export { type ServerType, };
@@ -89,7 +107,7 @@ export class LspPool {
           pool.#onNotification(type, method, params,);
         },
       },);
-      await c.initialize({ rootUri, },);
+      await c.initialize({ rootUri, initializationOptions: def.initializationOptions, },);
       this.#l.info(`${type}: ready at ${root}`,);
       return c;
     }

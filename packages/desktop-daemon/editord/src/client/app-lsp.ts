@@ -2,12 +2,13 @@
  * LSP feature coordinator for the editord client.
  *
  * Wires content sync, diagnostics, hover, completions, formatting,
- * and go-to-definition by delegating to focused modules.
+ * go-to-definition, and inlay hints by delegating to focused modules.
  */
 
 import { wireGotoDefinition, formatDocument, } from './app-lsp-actions.ts';
 import { requestCompletions, wireCompletionTrigger, } from './app-lsp-completions.ts';
 import { wireHover, } from './app-lsp-hover.ts';
+import { wireInlayHints, } from './app-lsp-inlay.ts';
 import type { CompletionPopup, } from './completion-popup.ts';
 import type { EditorPane, } from './editor-pane.ts';
 import type { HoverPopup, } from './hover-popup.ts';
@@ -19,7 +20,19 @@ const CONTENT_SYNC_DEBOUNCE_MS = 500;
 /**
  * Wires all LSP features onto the editor components.
  *
- * @returns object with `formatDocument` for keyboard shortcut binding
+ * @param ws - WebSocket client
+ *
+ * @param editorPane - editor pane component
+ *
+ * @param hoverPopup - hover tooltip popup
+ *
+ * @param completionPopup - completion dropdown popup
+ *
+ * @param getCurrentFilePath - returns the current file path
+ *
+ * @param loadFileSafe - loads a file, optionally scrolling to a line
+ *
+ * @returns callbacks for formatting, completions, and inlay hint refresh
  */
 export function wireLsp({ ws, editorPane, hoverPopup, completionPopup, getCurrentFilePath, loadFileSafe, }: {
   ws: EditorWsClient;
@@ -28,8 +41,12 @@ export function wireLsp({ ws, editorPane, hoverPopup, completionPopup, getCurren
   completionPopup: CompletionPopup;
   getCurrentFilePath: () => string | null;
   loadFileSafe: (path: string, line?: number,) => Promise<void>;
-}): { formatDocument: () => Promise<void>; requestCompletions: () => void } {
-  /** Returns the contenteditable container. */
+}): { formatDocument: () => Promise<void>; requestCompletions: () => void; refreshInlayHints: () => void } {
+  /**
+   * Returns the contenteditable container.
+   *
+   * @returns editor element, or null before connected
+   */
   function getEditorElement(): HTMLElement | null { return editorPane.getEditorElement(); }
 
   wireContentSync({ ws, editorPane, getCurrentFilePath, },);
@@ -43,6 +60,8 @@ export function wireLsp({ ws, editorPane, hoverPopup, completionPopup, getCurren
   },);
   wireGotoDefinition({ ws, editorPane, getEditorElement, getCurrentFilePath, loadFileSafe, },);
 
+  const inlayState = wireInlayHints({ ws, editorPane, getCurrentFilePath, },);
+
   return {
     formatDocument: function format(): Promise<void> {
       return formatDocument({ ws, editorPane, getCurrentFilePath, },);
@@ -50,6 +69,7 @@ export function wireLsp({ ws, editorPane, hoverPopup, completionPopup, getCurren
     requestCompletions: function completions(): void {
       void requestCompletions({ ws, completionPopup, getEditorElement, getCurrentFilePath, },);
     },
+    refreshInlayHints: inlayState.refresh,
   };
 }
 

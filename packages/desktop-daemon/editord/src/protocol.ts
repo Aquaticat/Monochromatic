@@ -77,6 +77,23 @@ export type TextEdit = {
   newText: string;
 };
 
+/** Inlay hint kind: 1 = Type, 2 = Parameter. */
+export type InlayHintKind = 1 | 2;
+
+/** Inlay hint from a language server, ready for wire transport. */
+export type InlayHint = {
+  /** Position where the hint is displayed. */
+  position: Position;
+  /** Display label text. */
+  label: string;
+  /** Kind of inlay hint (1=Type, 2=Parameter). */
+  kind?: InlayHintKind;
+  /** Whether to insert padding space before the hint. */
+  paddingLeft?: boolean;
+  /** Whether to insert padding space after the hint. */
+  paddingRight?: boolean;
+};
+
 //endregion LSP types
 
 //region Client messages
@@ -95,6 +112,7 @@ export type ClientMessage =
   | { type: 'completion'; id: string; path: string; line: number; character: number }
   | { type: 'format'; id: string; path: string }
   | { type: 'gotoDefinition'; id: string; path: string; line: number; character: number }
+  | { type: 'inlayHint'; id: string; path: string; range: Range }
   | { type: 'didChange'; path: string; content: string }
   | { type: 'didClose'; path: string };
 
@@ -135,6 +153,7 @@ export type ServerMessage =
   | { type: 'completionResult'; id: string; items: CompletionItem[] }
   | { type: 'formatResult'; id: string; edits: TextEdit[] }
   | { type: 'definitionResult'; id: string; path: string; line: number; character: number }
+  | { type: 'inlayHintResult'; id: string; hints: InlayHint[] }
   | { type: 'error'; id?: string; message: string };
 
 //endregion Server messages

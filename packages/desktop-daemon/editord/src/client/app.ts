@@ -98,17 +98,23 @@ fileTree.addEventListener('file-select', function handleFileSelect(event,) {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from FileTree
   const { path, } = (event as CustomEvent<{ path: string }>).detail;
   currentFilePath = path;
-  void loadFileSafe(path,);
+  void (async function loadAndRefresh() {
+    await loadFileSafe(path,);
+    refreshInlayHints();
+  })();
 },);
 searchOverlay.addEventListener('result-select', function handleResultSelect(event,) {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from SearchOverlay
   const { path, line, } = (event as CustomEvent<ResultSelectDetail>).detail;
   currentFilePath = path;
-  void loadFileSafe(path, line,);
+  void (async function loadAndRefresh() {
+    await loadFileSafe(path, line,);
+    refreshInlayHints();
+  })();
 },);
 
 /** LSP feature callbacks returned from wiring. */
-const { formatDocument, requestCompletions, } = wireLsp({ ws, editorPane, hoverPopup, completionPopup, getCurrentFilePath, loadFileSafe, },);
+const { formatDocument, requestCompletions, refreshInlayHints, } = wireLsp({ ws, editorPane, hoverPopup, completionPopup, getCurrentFilePath, loadFileSafe, },);
 
 /** Saves the current editor content to the server. */
 async function saveCurrentFile(): Promise<void> {
@@ -126,5 +132,8 @@ wireKeybindings({
 },);
 
 await ws.ready;
-if (currentFilePath !== null) await loadFileSafe(currentFilePath,);
+if (currentFilePath !== null) {
+  await loadFileSafe(currentFilePath,);
+  refreshInlayHints();
+}
 await fileTree.expandRoot(ws.rootDir,);

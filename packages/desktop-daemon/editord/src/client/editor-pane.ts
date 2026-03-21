@@ -20,9 +20,11 @@ import {
   $ as h,
 } from '@monochromatic-dev/module-es/h-dom';
 
-import type { Diagnostic, TextEdit, } from '../protocol.ts';
+import type { Diagnostic, InlayHint, TextEdit, } from '../protocol.ts';
 import { applyDiagnosticHighlights, clearDiagnosticHighlights, } from './diagnostics-layer.ts';
 import { applyHighlights, clearHighlights, } from './highlighter.ts';
+import { applyInlayAnnotations, clearInlayAnnotations, } from './inlay-layer.ts';
+import { measureInlayOffsets, } from './inlay-measure.ts';
 import { STYLES, } from './editor-pane.styles.ts';
 
 /**
@@ -47,6 +49,9 @@ export class EditorPane extends HTMLElement {
 
   /** Current diagnostics for the open file. */
   #diagnostics: Diagnostic[] = [];
+
+  /** Current inlay hints for the open file. */
+  #inlayHints: InlayHint[] = [];
 
   /** Initializes the shadow root. */
   constructor() {
@@ -153,12 +158,25 @@ export class EditorPane extends HTMLElement {
   /**
    * Sets the current diagnostics and renders them as underlines.
    * Replaces any previously displayed diagnostics.
+   * Also refreshes inlay annotations since they include diagnostic messages.
    *
    * @param diagnostics - diagnostics from the language server
    */
   setDiagnostics(diagnostics: Diagnostic[],): void {
     this.#diagnostics = diagnostics;
     this.#scheduleDiagnosticHighlights();
+    this.#scheduleInlayAnnotations();
+  }
+
+  /**
+   * Sets the current inlay hints and renders them as line annotations.
+   * Replaces any previously displayed hints.
+   *
+   * @param hints - inlay hints from the language server
+   */
+  setInlayHints(hints: InlayHint[],): void {
+    this.#inlayHints = hints;
+    this.#scheduleInlayAnnotations();
   }
 
   /**
@@ -235,6 +253,38 @@ export class EditorPane extends HTMLElement {
       }
 
       applyDiagnosticHighlights({ editor: pane.#editor, diagnostics: pane.#diagnostics, },);
+    },);
+  }
+
+  /**
+   * Schedules inlay annotation rendering for the next animation frame.
+   * Combines current inlay hints and diagnostics into per-line annotations.
+   */
+  #scheduleInlayAnnotations(): void {
+    if (this.#editor === null)
+      return;
+
+    const pane = this;
+    requestAnimationFrame(function applyScheduledInlayAnnotations() {
+      if (pane.#editor === null)
+        return;
+
+      if (pane.#inlayHints.length === 0 && pane.#diagnostics.length === 0) {
+        clearInlayAnnotations({ editor: pane.#editor, },);
+        return;
+      }
+
+      applyInlayAnnotations({
+        editor: pane.#editor,
+        hints: pane.#inlayHints,
+        diagnostics: pane.#diagnostics,
+      },);
+
+      /** Measure ::before heights after layout to set line number offsets. */
+      const editorRef = pane.#editor;
+      requestAnimationFrame(function measureAfterLayout() {
+        measureInlayOffsets({ editor: editorRef, },);
+      },);
     },);
   }
 

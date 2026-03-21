@@ -119,7 +119,10 @@ export class LspClient {
    *
    * @returns server capabilities
    */
-  async initialize({ rootUri, }: { rootUri: string }): Promise<LspServerCapabilities> {
+  async initialize({ rootUri, initializationOptions, }: {
+    rootUri: string;
+    initializationOptions?: Record<string, unknown>;
+  }): Promise<LspServerCapabilities> {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP initialize always returns { capabilities }
     const result = await this.request({
       method: 'initialize',
@@ -134,8 +137,10 @@ export class LspClient {
             hover: { contentFormat: ['markdown', 'plaintext',], },
             completion: { completionItem: { snippetSupport: false, }, },
             publishDiagnostics: {},
+            inlayHint: {},
           },
         },
+        initializationOptions,
       },
     },) as { capabilities: LspServerCapabilities };
 

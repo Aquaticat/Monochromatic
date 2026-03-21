@@ -81,6 +81,22 @@
 - [x] Graceful degradation: servers that fail to start are skipped; features degrade
 - [x] Late-init recovery: documents opened before LSP ready are re-opened after init
 
+## Phase 7 -- Inlay hints (done)
+
+- [x] Wire protocol: `inlayHint` request with range, `inlayHintResult` response with hints
+- [x] Server: `requestInlayHints` via `textDocument/inlayHint` to tsgo
+- [x] Server: `initializationOptions.userPreferences.inlayHints` enables all hint categories in tsgo
+- [x] Client: `inlay-layer.ts` groups hints + diagnostics by line, sets `data-inlay` attributes
+- [x] Client: `::before` pseudo-element renders hints above code lines with pill background
+- [x] Client: line numbers moved from `::before` to `::after` to free `::before` for hints
+- [x] Client: `--line-num-offset` measured via `getComputedStyle(div, '::before').height`
+  in a follow-up rAF so line numbers align with code even when hints wrap
+- [x] Client: `--inlay-indent` CSS custom property for column-aligned hint positioning
+- [x] Client: parameter hints strip trailing colon for cleaner display
+- [x] Client: severity-colored backgrounds for diagnostic messages in annotations
+- [x] Client: hints soft-wrap via `white-space: pre-wrap`
+- [x] Debounced refresh on content changes (750ms), immediate on file open
+
 ## Future (post-MVP)
 
 - Completion item kind icons

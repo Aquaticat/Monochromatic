@@ -224,6 +224,7 @@ Only pin versions with clear justification and a comment explaining why.
 - Extract and name concepts; start simple, refactor to complexity only when necessary
 - Simplification progression: imperative loop -> while -> for -> recursive -> higher-order functions/async iterators
 - Split production source files over 100 lines (target under 200); add justification comment if splitting is not feasible; exempt: tests, fixtures, configs, docs
+- Never disable, raise, or bypass the max-lines limit; always split into separate files instead of trimming, compressing, or removing content to fit
 
 ## Linting
 

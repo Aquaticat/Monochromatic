@@ -31,10 +31,11 @@ editord (Bun + h3)              Chromium PWA
 |       serve dist/     |       |   contenteditable         |
 |                       |       |   one <div> per line      |
 | WebSocket:            | <---> |   diagnostic underlines   |
-|   open/save/listDir   |       |   browser-native:         |
-|   search(query)       |       |     undo/redo, selection  |
-|   hover/completion    |       |                           |
-|   format/gotoDefn     |       | <file-tree>               |
+|   open/save/listDir   |       |   inlay hints (::before)  |
+|   search(query)       |       |   browser-native:         |
+|   hover/completion    |       |     undo/redo, selection  |
+|   format/gotoDefn     |       |                           |
+|   inlayHint(range)    |       | <file-tree>               |
 |   didChange (sync)    |       | <search-overlay>          |
 |   diagnostics (push)  |       | <hover-popup>             |
 |                       |       | <completion-popup>        |
@@ -73,7 +74,11 @@ Full text round-trips on open/save.
 - **WebSocket with token auth** -- token generated per-session via `crypto.randomUUID()`,
   passed as URL query param
 - **JetBrains keymap** -- double-shift for Search Everywhere (replaces command palette)
-- **Two themes** -- dark (#ccc on #000), light (#444 on #fff), no syntax highlighting
+- **Inlay hints via `::before`** -- type annotations and parameter names rendered as `::before`
+  pseudo-elements on line divs, with line numbers moved to `::after` to free up `::before`;
+  `--line-num-offset` measured via `getComputedStyle` in a follow-up rAF so line numbers
+  stay aligned with code even when hints wrap across multiple visual lines
+- **Two themes** -- dark (#ccc on #000), light (#444 on #fff)
 
 ## Running
 
@@ -106,9 +111,11 @@ src/
       resolve-root.ts          -- find highest writable ancestor directory
       save.ts                  -- write file to disk
     lsp/
-      types.ts                 -- LSP type definitions (Position, Diagnostic, Hover, etc.)
+      types.ts                 -- LSP type definitions (Position, Diagnostic, Hover, InlayHint, etc.)
       json-rpc.ts              -- Content-Length framing for LSP stdio communication
       lsp-client.ts            -- single LSP server process manager (spawn, init, request/notify)
+      lsp-pool.ts              -- lazy pool of LSP clients keyed by (type, projectRoot)
+      lsp-features.ts          -- request handlers (hover, completion, format, definition, inlayHint)
       language-id.ts           -- file extension to LSP language ID mapping
       lsp-manager.ts           -- multi-server coordinator (oxlint, tsgo, dprint)
   client/
@@ -116,7 +123,9 @@ src/
     app.ts                     -- entry: connect WS, mount components, Ctrl+S save
     log.ts                     -- root tagged logger for client subsystems
     editor-pane.ts             -- <editor-pane> web component: contenteditable, paste handler, highlight scheduling
-    editor-pane.styles.ts      -- shadow DOM styles for editor pane, ::highlight() rules
+    editor-pane.styles.ts      -- shadow DOM core layout styles (host, editor, line divs, line numbers)
+    highlight-styles.ts        -- ::highlight() CSS rules for syntax tokens and diagnostic underlines
+    inlay-styles.ts            -- ::before CSS rules for inlay hint pills and severity variants
     file-tree.ts               -- <file-tree> web component: <details> expand, lazy-load, preload
     file-tree.styles.ts        -- shadow DOM styles for file tree
     highlighter.ts             -- syntax highlighting: Lezer parse, offset-to-Range mapping, CSS.highlights
@@ -125,6 +134,12 @@ src/
     ws-client.ts               -- typed WebSocket client with request/response correlation
     position.ts                -- DOM selection to text position conversion utilities
     diagnostics-layer.ts       -- CSS Custom Highlight API for diagnostic underlines
+    inlay-layer.ts             -- applies data-inlay attributes to line divs from hints + diagnostics
+    inlay-line.ts              -- per-line annotation assembly (grouping, formatting, severity)
+    inlay-format.ts            -- hint/diagnostic label formatting and severity ranking
+    inlay-fetch.ts             -- fetches inlay hints from server via textDocument/inlayHint
+    inlay-measure.ts           -- measures ::before height for line number offset alignment
+    app-lsp-inlay.ts           -- wires debounced inlay hint refresh on content changes
     hover-popup.ts             -- <hover-popup> web component: type info tooltip
     hover-popup.styles.ts      -- shadow DOM styles for hover popup
     completion-popup.ts        -- <completion-popup> web component: autocomplete dropdown
@@ -148,6 +163,7 @@ Client requests include a client-generated `id` for response correlation.
 - `{ type: "completion", id, path, line, character }` -- request completions
 - `{ type: "format", id, path }` -- request document formatting
 - `{ type: "gotoDefinition", id, path, line, character }` -- request go-to-definition
+- `{ type: "inlayHint", id, path, range }` -- request inlay hints for a range
 
 **Server to client:**
 
@@ -161,6 +177,7 @@ Client requests include a client-generated `id` for response correlation.
 - `{ type: "completionResult", id, items }` -- completion items response
 - `{ type: "formatResult", id, edits }` -- formatting text edits response
 - `{ type: "definitionResult", id, path, line, character }` -- go-to-definition response
+- `{ type: "inlayHintResult", id, hints }` -- inlay hints with position, label, kind
 - `{ type: "error", id?, message }` -- error response
 
 ## JetBrains parity
@@ -174,7 +191,7 @@ file tree interactions, and general editor behavior.
 editord proxies three language servers over JSON-RPC/stdio:
 
 - **oxlint** (`oxlint --lsp`) -- linting diagnostics for JS/TS
-- **tsgo** (`tsgo --lsp --stdio`) -- type diagnostics, hover, completions, go-to-definition for JS/TS
+- **tsgo** (`tsgo --lsp --stdio`) -- type diagnostics, hover, completions, go-to-definition, inlay hints for JS/TS
 - **dprint** (`dprint lsp`) -- formatting for JS/TS, JSON, CSS, HTML, Markdown, YAML, TOML
 
 The server aggregates diagnostics from oxlint and tsgo into a single push.

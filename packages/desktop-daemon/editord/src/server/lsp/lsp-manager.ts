@@ -15,9 +15,9 @@ import {
   didChange as syncChange, didClose as syncClose,
   didOpen as syncOpen, didSave as syncSave,
 } from './document-sync.ts';
-import { requestCompletion, requestFormat, requestGotoDefinition, requestHover, } from './lsp-features.ts';
+import { requestCompletion, requestFormat, requestGotoDefinition, requestHover, requestInlayHints, } from './lsp-features.ts';
 import { LspPool, } from './lsp-pool.ts';
-import type { LspCompletionItem, LspDiagnostic, LspHover, LspTextEdit, } from './types.ts';
+import type { LspCompletionItem, LspDiagnostic, LspHover, LspInlayHint, LspTextEdit, } from './types.ts';
 
 export type { DiagnosticsHandler, WireDiagnostic, };
 
@@ -92,6 +92,14 @@ export class LspManager {
   async gotoDefinition({ path, line, character, }: { path: string; line: number; character: number }): Promise<{ path: string; line: number; character: number } | null> {
     const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
     return c !== null && c.initialized ? requestGotoDefinition({ client: c, path, line, character, },) : null;
+  }
+  /** {@inheritDoc requestInlayHints} */
+  async inlayHints({ path, range, }: {
+    path: string;
+    range: { start: { line: number; character: number }; end: { line: number; character: number } };
+  }): Promise<LspInlayHint[]> {
+    const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
+    return c !== null && c.initialized ? requestInlayHints({ client: c, path, range, },) : [];
   }
 
   //endregion Feature requests
