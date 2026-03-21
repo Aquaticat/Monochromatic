@@ -99,7 +99,6 @@ describe('perf: micro-benchmarks', () => {
   },);
 
   test('expandGlob: 200 files across 20 directories', async () => {
-    expect.assertions(2,);
     const DIR_COUNT = 20;
     const FILES_PER_DIR = 10;
 
@@ -136,7 +135,6 @@ describe('perf: micro-benchmarks', () => {
   });
 
   test('cat(string[]): concatenate 20 files', async () => {
-    expect.assertions(1,);
     const FILE_COUNT = 20;
     const paths = await Promise.all(
       Array.from({ length: FILE_COUNT, }, async (_, index,) => {
@@ -164,7 +162,6 @@ describe('perf: micro-benchmarks', () => {
   });
 
   test('cat(string): glob-read 60 files', async () => {
-    expect.assertions(2,);
     const DIR_COUNT = 20;
     const FILES_PER_DIR = 3;
 
@@ -199,7 +196,6 @@ describe('perf: micro-benchmarks', () => {
   });
 
   test('overwrite: skip path (content unchanged)', async () => {
-    expect.assertions(1,);
     const filePath = join(tempDir, 'skip-target.txt',);
     const content = 'known content '.repeat(100,);
     await writeFile(filePath, content,);
@@ -220,7 +216,6 @@ describe('perf: micro-benchmarks', () => {
   });
 
   test('overwrite: write path (content different each time)', async () => {
-    expect.assertions(1,);
     const filePath = join(tempDir, 'write-target.txt',);
 
     const elapsed = await measureAsync(async () => {
@@ -239,7 +234,6 @@ describe('perf: micro-benchmarks', () => {
   });
 
   test('mirrorGlobPath: 1000 path transformations', () => {
-    expect.assertions(1,);
     const MIRROR_ITERATIONS = 1_000;
     let resultLength = 0;
 
@@ -265,7 +259,6 @@ describe('perf: micro-benchmarks', () => {
   });
 
   test('dedup: 2000-line content with 50% duplicates', () => {
-    expect.assertions(1,);
     const LINE_COUNT = 2_000;
     const DEDUP_MODULO = 1_000;
     const content = Array
@@ -290,7 +283,6 @@ describe('perf: micro-benchmarks', () => {
   });
 
   test('getProperty: extract from 1KB JSON', () => {
-    expect.assertions(1,);
     const ARRAY_SIZE = 50;
     const jsonContent = JSON.stringify({
       deeply: { nested: { property: { value: 'found-it', }, }, },
@@ -315,7 +307,6 @@ describe('perf: micro-benchmarks', () => {
   });
 
   test('classifyEvent + stat: 100 classifications', async () => {
-    expect.assertions(1,);
     const trackedFile = join(tempDir, 'tracked.txt',);
     await writeFile(trackedFile, 'content',);
     trackRead(trackedFile,);
@@ -344,7 +335,6 @@ describe('perf: micro-benchmarks', () => {
   });
 
   test('deep glob: expand 6-level nested paths across 20 dirs', async () => {
-    expect.assertions(2,);
     const DIR_COUNT = 20;
 
     await Promise.all(
@@ -385,7 +375,6 @@ describe('perf: micro-benchmarks', () => {
   });
 
   test('multiple overlapping globs: 5 patterns across 20 dirs', async () => {
-    expect.assertions(1,);
     const DIR_COUNT = 20;
 
     await Promise.all(

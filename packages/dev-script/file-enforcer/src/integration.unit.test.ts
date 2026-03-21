@@ -38,7 +38,6 @@ describe('integration: config execution', () => {
   },);
 
   test('config file that copies one file to another', async () => {
-    expect.assertions(2,);
     /** Source file with known content */
     await writeFile(join(tempDir, 'source.md',), '# Source Content',);
 
@@ -63,7 +62,6 @@ describe('integration: config execution', () => {
   });
 
   test('config file that concatenates multiple sources', async () => {
-    expect.assertions(1,);
     await writeFile(join(tempDir, 'a.txt',), 'aaa',);
     await writeFile(join(tempDir, 'b.txt',), 'bbb',);
 
@@ -84,7 +82,6 @@ describe('integration: config execution', () => {
   });
 
   test('config file using dedup transform', async () => {
-    expect.assertions(1,);
     await writeFile(join(tempDir, 'dupes.txt',), 'line1\nline2\nline1\nline3',);
 
     /** Config that reads, deduplicates, and writes */
@@ -106,7 +103,6 @@ describe('integration: config execution', () => {
   });
 
   test('config file using getProperty transform', async () => {
-    expect.assertions(1,);
     /** JSON source file */
     const jsonContent = JSON.stringify({ config: { name: 'test-project', }, },);
     await writeFile(join(tempDir, 'data.json',), jsonContent,);
@@ -130,7 +126,6 @@ describe('integration: config execution', () => {
   });
 
   test('config file tracks both reads and writes', async () => {
-    expect.assertions(2,);
     await writeFile(join(tempDir, 'input.md',), 'tracked',);
 
     /** Config with a simple copy to verify tracker state */
@@ -151,7 +146,6 @@ describe('integration: config execution', () => {
   });
 
   test('config using addWatchedPaths for exec dependencies', async () => {
-    expect.assertions(1,);
     await writeFile(join(tempDir, 'dep.json',), '{"version":"1.0"}',);
 
     /** Config that registers a manual dependency via addWatchedPaths */
@@ -176,7 +170,6 @@ describe('integration: config execution', () => {
   });
 
   test('config with overwriteIfNotExists skips existing files', async () => {
-    expect.assertions(1,);
     /** Pre-existing file that should not be overwritten */
     await writeFile(join(tempDir, 'keep.txt',), 'original',);
     await writeFile(join(tempDir, 'src.txt',), 'replacement',);
@@ -201,7 +194,6 @@ describe('integration: config execution', () => {
   });
 
   test('config with glob-based overwriteEach mirrors files', async () => {
-    expect.assertions(2,);
     /** Source directory with files to mirror */
     const srcDir = join(tempDir, 'src',);
     await mkdir(srcDir, { recursive: true, },);

@@ -39,7 +39,6 @@ describe('cat(string[])', () => {
   },);
 
   test('concatenates multiple files with newline separator', async () => {
-    expect.assertions(1,);
     await writeFile(join(tempDir, 'a.txt',), 'hello',);
     await writeFile(join(tempDir, 'b.txt',), 'world',);
 
@@ -49,7 +48,6 @@ describe('cat(string[])', () => {
   });
 
   test('returns single file content when array has one element', async () => {
-    expect.assertions(1,);
     await writeFile(join(tempDir, 'only.txt',), 'solo',);
 
     /** Should return the content without any separator artifacts */
@@ -58,7 +56,6 @@ describe('cat(string[])', () => {
   });
 
   test('auto-expands glob patterns within the array', async () => {
-    expect.assertions(1,);
     await writeFile(join(tempDir, 'x.ts',), 'one',);
     await writeFile(join(tempDir, 'y.ts',), 'two',);
 
@@ -69,7 +66,6 @@ describe('cat(string[])', () => {
   });
 
   test('handles mix of literal paths and globs', async () => {
-    expect.assertions(1,);
     await writeFile(join(tempDir, 'literal.txt',), 'fixed',);
     await writeFile(join(tempDir, 'matched.ts',), 'globbed',);
 
@@ -82,7 +78,6 @@ describe('cat(string[])', () => {
   });
 
   test('preserves file content exactly (no trimming)', async () => {
-    expect.assertions(1,);
     /** Content with leading/trailing whitespace and newlines */
     const content = '  spaces  \n\n  tabs\t\n';
     await writeFile(join(tempDir, 'whitespace.txt',), content,);
@@ -92,7 +87,6 @@ describe('cat(string[])', () => {
   });
 
   test('handles empty file', async () => {
-    expect.assertions(1,);
     await writeFile(join(tempDir, 'empty.txt',), '',);
 
     const result = await cat([join(tempDir, 'empty.txt',),],);
@@ -100,7 +94,6 @@ describe('cat(string[])', () => {
   });
 
   test('tracks read paths in the tracker', async () => {
-    expect.assertions(1,);
     await writeFile(join(tempDir, 'tracked.txt',), 'data',);
 
     await cat([join(tempDir, 'tracked.txt',),],);
@@ -127,7 +120,6 @@ describe('cat(string)', () => {
   },);
 
   test('returns GlobResult array with path and content per match', async () => {
-    expect.assertions(2,);
     await writeFile(join(tempDir, 'file1.md',), 'content1',);
     await writeFile(join(tempDir, 'file2.md',), 'content2',);
 
@@ -140,7 +132,6 @@ describe('cat(string)', () => {
   });
 
   test('returns empty array when glob matches nothing', async () => {
-    expect.assertions(1,);
     /** Pattern with no matches */
     const results = await cat(join(tempDir, '*.xyz',),);
     expectTypeOf(results,).toEqualTypeOf<GlobResults>();
@@ -148,7 +139,6 @@ describe('cat(string)', () => {
   });
 
   test('includes the matched file path in each result', async () => {
-    expect.assertions(1,);
     await writeFile(join(tempDir, 'named.ts',), 'code',);
 
     const results = await cat(join(tempDir, '*.ts',),);
@@ -157,7 +147,6 @@ describe('cat(string)', () => {
   });
 
   test('tracks each matched file in the tracker', async () => {
-    expect.assertions(1,);
     await writeFile(join(tempDir, 'r1.ts',), 'a',);
     await writeFile(join(tempDir, 'r2.ts',), 'b',);
 
@@ -167,7 +156,6 @@ describe('cat(string)', () => {
   });
 
   test('matches files in nested directories', async () => {
-    expect.assertions(1,);
     /** Nested directory with a matching file */
     const subDir = join(tempDir, 'nested',);
     await mkdir(subDir, { recursive: true, },);

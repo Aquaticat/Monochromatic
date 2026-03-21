@@ -34,13 +34,11 @@ describe('watchDirs', () => {
   },);
 
   test('includes config file directory', () => {
-    expect.assertions(1,);
     const dirs = watchDirs('/project/file-enforcer.config.ts',);
     expect(dirs.has('/project',),).toBe(true,);
   });
 
   test('includes parent directories of all tracked reads', () => {
-    expect.assertions(2,);
     trackRead('/repo/AGENTS.md',);
     trackRead('/repo/packages/config/oxlint.json',);
 
@@ -50,7 +48,6 @@ describe('watchDirs', () => {
   });
 
   test('includes parent directories of tracked writes for protection', () => {
-    expect.assertions(1,);
     trackDest('/repo/CLAUDE.md',);
 
     const dirs = watchDirs('/repo/config.ts',);
@@ -58,7 +55,6 @@ describe('watchDirs', () => {
   });
 
   test('deduplicates directories when multiple paths share a parent', () => {
-    expect.assertions(1,);
     trackRead('/repo/a.md',);
     trackDest('/repo/b.md',);
 
@@ -67,7 +63,6 @@ describe('watchDirs', () => {
   });
 
   test('returns only config dir when no reads or writes are tracked', () => {
-    expect.assertions(1,);
     const dirs = watchDirs('/project/config.ts',);
     expect(dirs.size,).toBe(1,);
   });
@@ -92,7 +87,6 @@ describe('classifyEvent', () => {
   },);
 
   test('classifies tracked read file as source', async () => {
-    expect.assertions(1,);
     trackRead('/repo/AGENTS.md',);
     expect(await classifyEvent('AGENTS.md', '/repo', '/repo/config.ts',),).toBe(
       'source',
@@ -100,14 +94,12 @@ describe('classifyEvent', () => {
   });
 
   test('classifies config file itself as source', async () => {
-    expect.assertions(1,);
     expect(await classifyEvent('config.ts', '/repo', '/repo/config.ts',),).toBe(
       'source',
     );
   });
 
   test('classifies our own write echo as ignore (mtime <= writeTimestamp)', async () => {
-    expect.assertions(1,);
     /** Write a real file so stat() works */
     const filePath = join(tempDir, 'managed.md',);
     await writeFile(filePath, 'enforced content',);
@@ -121,7 +113,6 @@ describe('classifyEvent', () => {
   });
 
   test('classifies external edit as protected (mtime > writeTimestamp)', async () => {
-    expect.assertions(1,);
     /** Write the file and record a timestamp in the past */
     const filePath = join(tempDir, 'protected.md',);
     await writeFile(filePath, 'original',);
@@ -140,7 +131,6 @@ describe('classifyEvent', () => {
   });
 
   test('classifies as protected when dest has no write timestamp (content-skip case)', async () => {
-    expect.assertions(1,);
     /** File registered as managed but never actually written (content was unchanged) */
     const filePath = join(tempDir, 'skipcase.md',);
     await writeFile(filePath, 'same',);
@@ -153,7 +143,6 @@ describe('classifyEvent', () => {
   });
 
   test('classifies as protected when file was deleted externally', async () => {
-    expect.assertions(1,);
     /** Register a path that doesn't exist on disk */
     trackDest(join(tempDir, 'deleted.md',),);
     trackWriteTime(join(tempDir, 'deleted.md',),);
@@ -165,7 +154,6 @@ describe('classifyEvent', () => {
   });
 
   test('classifies unrelated file as ignore', async () => {
-    expect.assertions(1,);
     trackRead('/repo/AGENTS.md',);
     expect(await classifyEvent('README.md', '/repo', '/repo/config.ts',),).toBe(
       'ignore',
@@ -173,7 +161,6 @@ describe('classifyEvent', () => {
   });
 
   test('write classification takes precedence over read for dual-tracked paths', async () => {
-    expect.assertions(1,);
     /** A file that is both read and written */
     const filePath = join(tempDir, 'dual.md',);
     await writeFile(filePath, 'content',);
@@ -205,13 +192,11 @@ describe('shouldTrigger', () => {
   },);
 
   test('returns true for source events', async () => {
-    expect.assertions(1,);
     trackRead('/repo/AGENTS.md',);
     expect(await shouldTrigger('AGENTS.md', '/repo', '/repo/config.ts',),).toBe(true,);
   });
 
   test('returns true for protected events', async () => {
-    expect.assertions(1,);
     /** File with a stale write timestamp */
     const filePath = join(tempDir, 'stale.md',);
     await writeFile(filePath, 'old',);
@@ -225,12 +210,10 @@ describe('shouldTrigger', () => {
   });
 
   test('returns false for ignore events', async () => {
-    expect.assertions(1,);
     expect(await shouldTrigger('random.txt', '/repo', '/repo/config.ts',),).toBe(false,);
   });
 
   test('returns false for our own write echoes', async () => {
-    expect.assertions(1,);
     /** File just written by us */
     const filePath = join(tempDir, 'echo.md',);
     await writeFile(filePath, 'ours',);

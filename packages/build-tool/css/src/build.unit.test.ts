@@ -60,7 +60,6 @@ afterEach(async () => {
 
 describe('collectMixins', () => {
   test('collects a mixin definition with body', () => {
-    expect.assertions(2,);
 
     const root = parse(`
       @mixin --center {
@@ -77,7 +76,6 @@ describe('collectMixins', () => {
   });
 
   test('throws on bodyless @mixin (definitions require content)', () => {
-    expect.assertions(1,);
 
     const root = parse(`
       .btn { @mixin --touch-target; }
@@ -90,7 +88,6 @@ describe('collectMixins', () => {
   });
 
   test('throws on mixed definition followed by bodyless invocation', () => {
-    expect.assertions(1,);
 
     const root = parse(`
       @mixin --bold { font-weight: bold; }
@@ -105,7 +102,6 @@ describe('collectMixins', () => {
   });
 
   test('throws on @mixin with empty name', () => {
-    expect.assertions(1,);
 
     const root = parse('@mixin {}',);
 
@@ -122,7 +118,6 @@ describe('collectMixins', () => {
 
 describe('expandApplyRules', () => {
   test('expands a simple @apply', () => {
-    expect.assertions(2,);
 
     mixins.set('--center', parse('display: flex; align-items: center;',).nodes,);
 
@@ -135,7 +130,6 @@ describe('expandApplyRules', () => {
   });
 
   test('throws on unknown mixin reference', () => {
-    expect.assertions(1,);
 
     const root = parse('.box { @apply --nonexistent; }',);
 
@@ -146,7 +140,6 @@ describe('expandApplyRules', () => {
   });
 
   test('throws on @apply without a name', () => {
-    expect.assertions(1,);
 
     const root = parse('.box { @apply ; }',);
 
@@ -157,7 +150,6 @@ describe('expandApplyRules', () => {
   });
 
   test('removes @apply for empty mixin', () => {
-    expect.assertions(2,);
 
     mixins.set('--empty', [],);
 
@@ -176,7 +168,6 @@ describe('expandApplyRules', () => {
 
 describe('expandMixinBodies', () => {
   test('expands nested @apply in mixin bodies', () => {
-    expect.assertions(1,);
 
     // --inner defines styles, --outer references --inner via @apply
     mixins.set('--inner', parse('display: flex;',).nodes,);
@@ -190,7 +181,6 @@ describe('expandMixinBodies', () => {
   });
 
   test('handles deeply nested references', () => {
-    expect.assertions(1,);
 
     mixins.set('--a', parse('color: red;',).nodes,);
     mixins.set('--b', parse('@apply --a; margin: 0;',).nodes,);
@@ -214,7 +204,6 @@ for (const { label, dir, } of integrationFixtures) {
 
   describe(`build (${label})`, () => {
     test('builds fixture CSS with import resolution and mixin expansion', async () => {
-      expect.assertions(5,);
 
       const result = await build({
         input: fixtureMainCss,
@@ -236,7 +225,6 @@ for (const { label, dir, } of integrationFixtures) {
     });
 
     test('writes output file to disk', async () => {
-      expect.assertions(1,);
 
       await build({
         input: fixtureMainCss,
@@ -248,7 +236,6 @@ for (const { label, dir, } of integrationFixtures) {
     });
 
     test('expands nested mixin references in build output', async () => {
-      expect.assertions(2,);
 
       const result = await build({
         input: fixtureMainCss,

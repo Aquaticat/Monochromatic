@@ -63,61 +63,51 @@ async function collectLines(
 
 describe('readLines', () => {
   test('yields single line from newline-terminated input', async () => {
-    expect.assertions(1,);
     const lines = await collectLines(streamFromString('hello\n',),);
     expect(lines,).toEqual(['hello',],);
   });
 
   test('yields multiple lines from single chunk', async () => {
-    expect.assertions(1,);
     const lines = await collectLines(streamFromString('line1\nline2\nline3\n',),);
     expect(lines,).toEqual(['line1', 'line2', 'line3',],);
   });
 
   test('handles line split across chunk boundaries', async () => {
-    expect.assertions(1,);
     const lines = await collectLines(streamFromChunks(['hel', 'lo\nwor', 'ld\n',],),);
     expect(lines,).toEqual(['hello', 'world',],);
   });
 
   test('yields empty array for empty stream', async () => {
-    expect.assertions(1,);
     const lines = await collectLines(streamFromString('',),);
     expect(lines,).toEqual([],);
   });
 
   test('flushes trailing content without final newline', async () => {
-    expect.assertions(1,);
     const lines = await collectLines(streamFromString('no-newline',),);
     expect(lines,).toEqual(['no-newline',],);
   });
 
   test('handles empty lines between content', async () => {
-    expect.assertions(1,);
     const lines = await collectLines(streamFromString('a\n\nb\n',),);
     expect(lines,).toEqual(['a', '', 'b',],);
   });
 
   test('handles multiple consecutive newlines', async () => {
-    expect.assertions(1,);
     const lines = await collectLines(streamFromString('\n\n\n',),);
     expect(lines,).toEqual(['', '', '',],);
   });
 
   test('handles single newline', async () => {
-    expect.assertions(1,);
     const lines = await collectLines(streamFromString('\n',),);
     expect(lines,).toEqual(['',],);
   });
 
   test('handles chunk ending exactly at newline', async () => {
-    expect.assertions(1,);
     const lines = await collectLines(streamFromChunks(['line1\n', 'line2\n',],),);
     expect(lines,).toEqual(['line1', 'line2',],);
   });
 
   test('handles JSON-RPC style messages', async () => {
-    expect.assertions(1,);
     const message1 = '{"jsonrpc":"2.0","id":1,"method":"initialize"}';
     const message2 = '{"jsonrpc":"2.0","method":"notifications/initialized"}';
     const lines = await collectLines(streamFromString(`${message1}\n${message2}\n`,),);

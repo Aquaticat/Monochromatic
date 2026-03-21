@@ -11,7 +11,6 @@ import type { OxlintJsonOutput, } from './oxlint-types.ts';
 
 describe('parseOxlintOutput', () => {
   test('parses a single diagnostic with all fields', () => {
-    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
@@ -48,7 +47,6 @@ describe('parseOxlintOutput', () => {
   });
 
   test('maps warning severity to WARN', () => {
-    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
@@ -73,7 +71,6 @@ describe('parseOxlintOutput', () => {
   });
 
   test('handles unknown severity gracefully', () => {
-    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
@@ -97,7 +94,6 @@ describe('parseOxlintOutput', () => {
   });
 
   test('groups multiple diagnostics by file path', () => {
-    expect.assertions(2,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
@@ -140,7 +136,6 @@ describe('parseOxlintOutput', () => {
   });
 
   test('skips diagnostics with no labels', () => {
-    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
@@ -164,7 +159,6 @@ describe('parseOxlintOutput', () => {
   });
 
   test('returns empty map for zero diagnostics', () => {
-    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [],
       number_of_files: 1,
@@ -178,7 +172,6 @@ describe('parseOxlintOutput', () => {
   });
 
   test('resolves relative filenames against cwd', () => {
-    expect.assertions(2,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
@@ -203,7 +196,6 @@ describe('parseOxlintOutput', () => {
   });
 
   test('appends help text to message when present', () => {
-    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
@@ -230,7 +222,6 @@ describe('parseOxlintOutput', () => {
   });
 
   test('does not append help suffix when help is absent', () => {
-    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
@@ -254,7 +245,6 @@ describe('parseOxlintOutput', () => {
   });
 
   test('does not append help suffix when help is empty string', () => {
-    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {
@@ -279,7 +269,6 @@ describe('parseOxlintOutput', () => {
   });
 
   test('always sets source to oxlint', () => {
-    expect.assertions(1,);
     const output: OxlintJsonOutput = {
       diagnostics: [
         {

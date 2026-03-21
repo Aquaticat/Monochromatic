@@ -74,7 +74,6 @@ function mockServer(response: JsonRpcOutbound | undefined,): McpServerHandle {
 
 describe('serve', () => {
   test('parses valid JSON-RPC message and writes response', async () => {
-    expect.assertions(1,);
     const serverResponse: JsonRpcOutbound = { jsonrpc: '2.0', id: 1,
       result: { tools: [], }, };
     const server = mockServer(serverResponse,);
@@ -87,7 +86,6 @@ describe('serve', () => {
   });
 
   test('skips blank lines without sending them to server', async () => {
-    expect.assertions(1,);
     const serverResponse: JsonRpcOutbound = { jsonrpc: '2.0', id: 1, result: {}, };
     const server = mockServer(serverResponse,);
     const input = stdinFromMessages(['', '  ',
@@ -100,7 +98,6 @@ describe('serve', () => {
   });
 
   test('returns parse error for invalid JSON', async () => {
-    expect.assertions(2,);
     const server = mockServer(undefined,);
     const input = stdinFromMessages(['not-json',],);
     const { writer, lines, } = collectingWriter();
@@ -115,7 +112,6 @@ describe('serve', () => {
   });
 
   test('returns parse error for valid JSON that is not a JSON-RPC message', async () => {
-    expect.assertions(2,);
     const server = mockServer(undefined,);
     const input = stdinFromMessages(['{"not":"jsonrpc"}',],);
     const { writer, lines, } = collectingWriter();
@@ -130,7 +126,6 @@ describe('serve', () => {
   });
 
   test('does not write response for notifications', async () => {
-    expect.assertions(1,);
     const server = mockServer(undefined,);
     const input = stdinFromMessages([
       '{"jsonrpc":"2.0","method":"notifications/initialized"}',
@@ -143,7 +138,6 @@ describe('serve', () => {
   });
 
   test('handles multiple messages in sequence', async () => {
-    expect.assertions(1,);
     /** Counter to give each response a unique id. */
     let callCount = 0;
     const server: McpServerHandle = {
@@ -165,7 +159,6 @@ describe('serve', () => {
   });
 
   test('continues processing after encountering invalid JSON', async () => {
-    expect.assertions(1,);
     const serverResponse: JsonRpcOutbound = { jsonrpc: '2.0', id: 1, result: {}, };
     const server = mockServer(serverResponse,);
     const input = stdinFromMessages([

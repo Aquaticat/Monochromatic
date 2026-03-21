@@ -117,3 +117,57 @@ Recommended commands:
   ```bash
   mise run buildAndTest
   ```
+
+## expect.assertions not supported in concurrent test mode
+
+Symptoms:
+- Tests fail with assertion count mismatches when running in concurrent mode.
+- `expect.assertions(n)` does not reliably validate the expected number of assertions.
+- Tests pass in isolation but fail when run together in concurrent batches.
+
+Root cause:
+- Bun runs tests concurrently by default in recent versions.
+- `expect.assertions(n)` maintains shared state across the test suite to track assertion counts.
+- When tests run concurrently, assertions from different tests can interfere with the count, causing false negatives or positives.
+- `expect.assertions` is a testing utility designed for sequential execution environments.
+
+Impact:
+- Test reliability decreases as concurrency increases.
+- Assertion count validations become unreliable.
+- Tests may pass locally (sequential mode) but fail in CI (concurrent mode).
+
+Detection:
+- Search for all `expect.assertions` usage:
+  ```bash
+  rg 'expect\.assertions' . --type ts
+  ```
+- Run tests in concurrent mode to observe failures:
+  ```bash
+  mise run test
+  ```
+
+Remediation:
+- **Remove all `expect.assertions` calls** and rely on explicit assertions instead.
+- Replace `expect.assertions(n)` with individual assertions that validate the exact behavior expected.
+- Example:
+  ```ts
+  // Before: unreliable in concurrent mode
+  test('example', () => {
+    expect.assertions(2);
+    expect(getValue()).toBe(5);
+    expect(getError()).toBeNull();
+  });
+
+  // After: reliable regardless of concurrency
+  test('example', () => {
+    const value = getValue();
+    const error = getError();
+    expect(value).toBe(5);
+    expect(error).toBeNull();
+  });
+  ```
+
+Best practices:
+- Use explicit assertions instead of assertion counters.
+- Verify the exact expected outcome of each test case without relying on count validation.
+- Structure tests to have a single clear assertion path; if testing multiple outcomes, use nested `test` blocks or separate test cases.

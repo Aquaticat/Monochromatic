@@ -13,7 +13,6 @@ import {
 
 describe('formatDiagnostic', () => {
   test('formats diagnostic with source and code', () => {
-    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'ERROR',
       lnum: 10,
@@ -28,7 +27,6 @@ describe('formatDiagnostic', () => {
   });
 
   test('formats diagnostic with source but no code', () => {
-    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'WARN',
       lnum: 3,
@@ -41,7 +39,6 @@ describe('formatDiagnostic', () => {
   });
 
   test('formats diagnostic without source', () => {
-    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'INFO',
       lnum: 1,
@@ -54,7 +51,6 @@ describe('formatDiagnostic', () => {
   });
 
   test('formats diagnostic without source but with code (code is ignored)', () => {
-    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'HINT',
       lnum: 20,
@@ -67,7 +63,6 @@ describe('formatDiagnostic', () => {
   });
 
   test('applies indent prefix', () => {
-    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'ERROR',
       lnum: 5,
@@ -82,7 +77,6 @@ describe('formatDiagnostic', () => {
   });
 
   test('defaults indent to empty string', () => {
-    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'WARN',
       lnum: 1,
@@ -96,7 +90,6 @@ describe('formatDiagnostic', () => {
   });
 
   test('handles string code', () => {
-    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'ERROR',
       lnum: 7,
@@ -111,7 +104,6 @@ describe('formatDiagnostic', () => {
   });
 
   test('handles zero-based line and column', () => {
-    expect.assertions(1,);
     const diagnostic: FormattableDiagnostic = {
       severity: 'ERROR',
       lnum: 0,

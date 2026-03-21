@@ -22,7 +22,6 @@ import type { ToolEntry, } from './server-types.ts';
 
 describe('defineTool', () => {
   test('returns a ToolEntry with the given name and options', () => {
-    expect.assertions(2,);
     const entry = defineTool('greet', {
       description: 'Greets by name.',
       handler: () => ({ content: [{ type: 'text', text: 'hello', },], }),
@@ -32,7 +31,6 @@ describe('defineTool', () => {
   });
 
   test('preserves inputSchema when provided', () => {
-    expect.assertions(1,);
     const schema = { type: 'object' as const, properties: { name: { type: 'string', }, },
       required: ['name',] as const, };
     const entry = defineTool('test', {
@@ -44,7 +42,6 @@ describe('defineTool', () => {
   });
 
   test('leaves inputSchema undefined when not provided', () => {
-    expect.assertions(1,);
     const entry = defineTool('test', {
       description: 'Test tool.',
       handler: () => ({ content: [{ type: 'text', text: 'ok', },], }),
@@ -72,7 +69,6 @@ describe('createMcpServer', () => {
 
   describe('initialize', () => {
     test('responds with protocol version, capabilities, and server info', async () => {
-      expect.assertions(1,);
       const server = createMcpServer({ name: 'test-server', version: '1.0.0', }, [],);
       const request: JsonRpcInbound = { jsonrpc: '2.0', id: 1, method: 'initialize', };
       const response = await server.handleMessage(request,) as JsonRpcResponse;
@@ -88,7 +84,6 @@ describe('createMcpServer', () => {
     });
 
     test('echoes the request id', async () => {
-      expect.assertions(1,);
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [],);
       const request: JsonRpcInbound = { jsonrpc: '2.0', id: 'string-id',
         method: 'initialize', };
@@ -103,7 +98,6 @@ describe('createMcpServer', () => {
 
   describe('ping', () => {
     test('responds with empty result', async () => {
-      expect.assertions(1,);
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [],);
       const request: JsonRpcInbound = { jsonrpc: '2.0', id: 2, method: 'ping', };
       const response = await server.handleMessage(request,) as JsonRpcResponse;
@@ -117,7 +111,6 @@ describe('createMcpServer', () => {
 
   describe('tools/list', () => {
     test('returns empty tools array when no tools registered', async () => {
-      expect.assertions(1,);
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [],);
       const request: JsonRpcInbound = { jsonrpc: '2.0', id: 3, method: 'tools/list', };
       const response = await server.handleMessage(request,) as JsonRpcResponse;
@@ -125,7 +118,6 @@ describe('createMcpServer', () => {
     });
 
     test('returns all registered tools with definitions', async () => {
-      expect.assertions(1,);
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [echoTool,],);
       const request: JsonRpcInbound = { jsonrpc: '2.0', id: 4, method: 'tools/list', };
       const response = await server.handleMessage(request,) as JsonRpcResponse;
@@ -141,7 +133,6 @@ describe('createMcpServer', () => {
     });
 
     test('defaults inputSchema to empty object schema when not provided', async () => {
-      expect.assertions(1,);
       const tool: ToolEntry = {
         name: 'no-schema',
         description: 'No explicit schema.',
@@ -157,7 +148,6 @@ describe('createMcpServer', () => {
     });
 
     test('lists multiple tools in registration order', async () => {
-      expect.assertions(1,);
       const toolA: ToolEntry = {
         name: 'alpha',
         description: 'First tool.',
@@ -187,7 +177,6 @@ describe('createMcpServer', () => {
 
   describe('tools/call', () => {
     test('calls the correct tool handler and returns result', async () => {
-      expect.assertions(1,);
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [echoTool,],);
       const request: JsonRpcInbound = {
         jsonrpc: '2.0',
@@ -202,7 +191,6 @@ describe('createMcpServer', () => {
     });
 
     test('returns error for unknown tool name', async () => {
-      expect.assertions(2,);
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [echoTool,],);
       const request: JsonRpcInbound = {
         jsonrpc: '2.0',
@@ -216,7 +204,6 @@ describe('createMcpServer', () => {
     });
 
     test('returns error when tool name is missing', async () => {
-      expect.assertions(1,);
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [echoTool,],);
       const request: JsonRpcInbound = {
         jsonrpc: '2.0',
@@ -229,7 +216,6 @@ describe('createMcpServer', () => {
     });
 
     test('returns error when tool name is not a string', async () => {
-      expect.assertions(1,);
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [echoTool,],);
       const request: JsonRpcInbound = {
         jsonrpc: '2.0',
@@ -242,7 +228,6 @@ describe('createMcpServer', () => {
     });
 
     test('defaults arguments to empty object when not provided', async () => {
-      expect.assertions(1,);
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [echoTool,],);
       const request: JsonRpcInbound = {
         jsonrpc: '2.0',
@@ -257,7 +242,6 @@ describe('createMcpServer', () => {
     });
 
     test('defaults arguments to empty object when arguments is null', async () => {
-      expect.assertions(1,);
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [echoTool,],);
       const request: JsonRpcInbound = {
         jsonrpc: '2.0',
@@ -272,7 +256,6 @@ describe('createMcpServer', () => {
     });
 
     test('defaults arguments to empty object when arguments is an array', async () => {
-      expect.assertions(1,);
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [echoTool,],);
       const request: JsonRpcInbound = {
         jsonrpc: '2.0',
@@ -287,7 +270,6 @@ describe('createMcpServer', () => {
     });
 
     test('returns internal error when handler throws', async () => {
-      expect.assertions(2,);
       const failingTool: ToolEntry = {
         name: 'fail',
         description: 'Always fails.',
@@ -308,7 +290,6 @@ describe('createMcpServer', () => {
     });
 
     test('handles non-Error thrown values', async () => {
-      expect.assertions(1,);
       const throwStringTool: ToolEntry = {
         name: 'throw-string',
         description: 'Throws a string.',
@@ -337,7 +318,6 @@ describe('createMcpServer', () => {
 
   describe('unknown method', () => {
     test('returns method not found error', async () => {
-      expect.assertions(2,);
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [],);
       const request: JsonRpcInbound = { jsonrpc: '2.0', id: 16,
         method: 'unknown/method', };
@@ -353,7 +333,6 @@ describe('createMcpServer', () => {
 
   describe('notifications', () => {
     test('returns undefined for notifications/initialized', async () => {
-      expect.assertions(1,);
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [],);
       const notification: JsonRpcInbound = { jsonrpc: '2.0',
         method: 'notifications/initialized', };
@@ -362,7 +341,6 @@ describe('createMcpServer', () => {
     });
 
     test('returns undefined for unexpected notification methods', async () => {
-      expect.assertions(1,);
       const server = createMcpServer({ name: 'srv', version: '0.1.0', }, [],);
       const notification: JsonRpcInbound = { jsonrpc: '2.0',
         method: 'notifications/unknown', };

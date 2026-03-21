@@ -40,14 +40,12 @@ function makeDiag(overrides: Partial<Diagnostic> = {},): Diagnostic {
 
 describe('dedupDiagnostics', () => {
   test('returns editor diagnostics unchanged when lint is empty', () => {
-    expect.assertions(1,);
     const editor = [makeDiag({ lnum: 10, col: 5, source: 'typescript', code: 2_345, },),];
     const result = dedupDiagnostics({ editor, lint: [], },);
     expect(result,).toEqual(editor,);
   });
 
   test('returns lint diagnostics when editor is empty', () => {
-    expect.assertions(1,);
     const lint = [
       makeDiag({ lnum: 3, col: 1, source: 'oxlint', code: 'no-unused-vars', },),
     ];
@@ -56,7 +54,6 @@ describe('dedupDiagnostics', () => {
   });
 
   test('deduplicates by lnum:col:code when both have code', () => {
-    expect.assertions(2,);
     const editor = [makeDiag({
       lnum: 10,
       col: 5,
@@ -83,7 +80,6 @@ describe('dedupDiagnostics', () => {
   });
 
   test('deduplicates by lnum:col:message when code is absent', () => {
-    expect.assertions(2,);
     const editor = [makeDiag({
       lnum: 5,
       col: 1,
@@ -105,7 +101,6 @@ describe('dedupDiagnostics', () => {
   });
 
   test('keeps both when same location but different code', () => {
-    expect.assertions(2,);
     const editor = [makeDiag({ lnum: 10, col: 5, source: 'typescript', code: 2_345, },),];
     const lint = [makeDiag({ lnum: 10, col: 5, source: 'oxlint', code: 'no-any', },),];
 
@@ -115,7 +110,6 @@ describe('dedupDiagnostics', () => {
   });
 
   test('keeps both when same code but different location', () => {
-    expect.assertions(1,);
     const editor = [makeDiag({ lnum: 10, col: 5, code: 'no-unused-vars', },),];
     const lint = [makeDiag({ lnum: 20, col: 3, code: 'no-unused-vars', },),];
 
@@ -124,7 +118,6 @@ describe('dedupDiagnostics', () => {
   });
 
   test('appends lint-only diagnostics after editor diagnostics', () => {
-    expect.assertions(3,);
     const editor = [makeDiag({ lnum: 1, col: 1, source: 'typescript', code: 1_000, },),];
     const lint = [
       makeDiag({ lnum: 50, col: 10, source: 'oxlint', code: 'tsdoc(require-tsdoc)', },),
@@ -137,7 +130,6 @@ describe('dedupDiagnostics', () => {
   });
 
   test('handles multiple duplicates and unique diagnostics', () => {
-    expect.assertions(1,);
     const editor = [
       makeDiag({ lnum: 1, col: 1, code: 'rule-a', },),
       makeDiag({ lnum: 5, col: 3, code: 'rule-b', },),
@@ -154,13 +146,11 @@ describe('dedupDiagnostics', () => {
   });
 
   test('returns empty array when both inputs are empty', () => {
-    expect.assertions(1,);
     const result = dedupDiagnostics({ editor: [], lint: [], },);
     expect(result,).toEqual([],);
   });
 
   test('uses code for dedup key even when messages differ', () => {
-    expect.assertions(1,);
     const editor = [
       makeDiag({ lnum: 10, col: 5, code: 'same-rule', message: 'Editor phrasing', },),
     ];
@@ -179,7 +169,6 @@ describe('dedupDiagnostics', () => {
 
 describe('uniqueDiagnostics', () => {
   test('removes exact duplicates keeping first occurrence', () => {
-    expect.assertions(2,);
     const diag = makeDiag({ lnum: 10, col: 5, source: 'oxc', code: 'no-unused-vars', },);
     const result = uniqueDiagnostics([diag, { ...diag, }, { ...diag, },],);
     expect(result,).toHaveLength(1,);
@@ -187,7 +176,6 @@ describe('uniqueDiagnostics', () => {
   });
 
   test('keeps diagnostics with different locations', () => {
-    expect.assertions(1,);
     const diagA = makeDiag({ lnum: 10, col: 5, code: 'rule-a', },);
     const diagB = makeDiag({ lnum: 20, col: 3, code: 'rule-a', },);
     const result = uniqueDiagnostics([diagA, diagB,],);
@@ -195,7 +183,6 @@ describe('uniqueDiagnostics', () => {
   });
 
   test('keeps diagnostics with different codes at same location', () => {
-    expect.assertions(1,);
     const diagA = makeDiag({ lnum: 10, col: 5, code: 'rule-a', },);
     const diagB = makeDiag({ lnum: 10, col: 5, code: 'rule-b', },);
     const result = uniqueDiagnostics([diagA, diagB,],);
@@ -203,7 +190,6 @@ describe('uniqueDiagnostics', () => {
   });
 
   test('deduplicates across sources at same location and code', () => {
-    expect.assertions(2,);
     const editorDiag = makeDiag({ lnum: 10, col: 5, source: 'oxc', code: 'no-unused-vars',
       message: 'from editor', },);
     const instanceDiag = makeDiag({ lnum: 10, col: 5, source: 'oxc',
@@ -214,12 +200,10 @@ describe('uniqueDiagnostics', () => {
   });
 
   test('returns empty array for empty input', () => {
-    expect.assertions(1,);
     expect(uniqueDiagnostics([],),).toEqual([],);
   });
 
   test('passes through single diagnostic unchanged', () => {
-    expect.assertions(1,);
     const diag = makeDiag({ lnum: 1, col: 1, },);
     expect(uniqueDiagnostics([diag,],),).toEqual([diag,],);
   });
