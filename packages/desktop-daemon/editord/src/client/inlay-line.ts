@@ -62,14 +62,20 @@ export function applyLineAnnotation({ div, lineHints, lineDiags, }: {
     ? hintPart + SECTION_SEPARATOR + diagPart
     : (hintPart !== '' ? hintPart : diagPart);
 
-  /** Set CSS custom property for column-aligned indentation via margin. */
-  const indentCh = lineHints !== undefined && lineHints.length > 0
+  /**
+   * Store target character offset for post-layout measurement in `measureInlayOffsets`.
+   * Set an initial `ch`-based approximation so non-wrapped hints render immediately;
+   * `measureInlayOffsets` corrects with a pixel-measured value after layout.
+   */
+  const indentChar = lineHints !== undefined && lineHints.length > 0
     ? lineHints[0]?.position.character ?? 0
     : 0;
-  if (indentCh > 0) {
-    div.style.setProperty('--inlay-indent', `${String(indentCh,)}ch`,);
+  if (indentChar > 0) {
+    div.dataset.inlayChar = String(indentChar,);
+    div.style.setProperty('--inlay-indent', `${String(indentChar,)}ch`,);
   }
   else {
+    delete div.dataset.inlayChar;
     div.style.removeProperty('--inlay-indent',);
   }
 

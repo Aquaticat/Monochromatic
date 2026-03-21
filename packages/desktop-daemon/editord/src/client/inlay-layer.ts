@@ -64,6 +64,7 @@ export function applyInlayAnnotations({ editor, hints, diagnostics, }: {
     const div = children[i];
     if (div instanceof HTMLElement && div.dataset.inlay !== undefined) {
       delete div.dataset.inlay;
+      delete div.dataset.inlayChar;
       delete div.dataset.inlaySeverity;
       div.style.removeProperty('--inlay-indent',);
       div.style.removeProperty('--line-num-offset',);
@@ -80,6 +81,7 @@ export function clearInlayAnnotations({ editor, }: { editor: HTMLElement }): voi
   for (const child of editor.children) {
     if (child instanceof HTMLElement) {
       delete child.dataset.inlay;
+      delete child.dataset.inlayChar;
       delete child.dataset.inlaySeverity;
       child.style.removeProperty('--inlay-indent',);
       child.style.removeProperty('--line-num-offset',);
