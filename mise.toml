@@ -97,6 +97,11 @@ status.missing_tools = "always"
 # Matches the packages/*/* directory depth (e.g. packages/module/es = 3 segments).
 task.monorepo_depth = 3
 
+# Skip the extra Tera template pass that collects arg()/option()/flag() from run scripts.
+# No tasks in this repo use Tera spec functions; only explicit `usage` fields are needed.
+# Avoids two-pass parsing quirks and will be the default after Tera arguments are removed in 2026.11.0.
+task.disable_spec_from_run_scripts = true
+
 # Nushell for all task execution ensures consistent behavior across platforms.
 unix_default_file_shell_args = "nu"
 windows_default_file_shell_args = "nu"
