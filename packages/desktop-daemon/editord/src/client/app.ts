@@ -23,6 +23,7 @@ import type { DirEntry, SearchResult, } from '../protocol.ts';
 import { wireKeybindings, } from './app-keybindings.ts';
 import { wireLsp, } from './app-lsp.ts';
 import { restoreSession, wireSessionPersistence, } from './app-session.ts';
+import { createRecentFiles, } from './recent-files.ts';
 import type { CompletionPopup, } from './completion-popup.ts';
 import type { EditorPane, } from './editor-pane.ts';
 import type { FileTree, } from './file-tree.ts';
@@ -91,6 +92,23 @@ let currentFilePath = filePath;
  */
 function getCurrentFilePath(): string | null { return currentFilePath; }
 
+/** Tracks recently opened files for recency markers in the file tree. */
+const recentFiles = createRecentFiles();
+
+/**
+ * Records a file open in the recency tracker, refreshes all markers,
+ * and expands ancestor directories to make the file visible in the tree.
+ * Scroll anchoring in {@link FileTree.revealFiles} keeps the user's
+ * current view stable during expansion.
+ *
+ * @param path - absolute file path that was opened
+ */
+function recordFileOpen(path: string,): void {
+  recentFiles.push(path,);
+  fileTree.updateRecency({ paths: recentFiles.paths, },);
+  void fileTree.revealFiles({ paths: [path,], },);
+}
+
 /**
  * Loads a file from the server, scrolls to a line, and logs errors.
  *
@@ -120,6 +138,7 @@ fileTree.addEventListener('file-select', function handleFileSelect(event,) {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from FileTree
   const { path, } = (event as CustomEvent<{ path: string }>).detail;
   currentFilePath = path;
+  recordFileOpen(path,);
   void (async function loadAndRefresh(): Promise<void> {
     await loadFileSafe(path,);
     refreshInlayHints();
@@ -129,6 +148,7 @@ searchOverlay.addEventListener('result-select', function handleResultSelect(even
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from SearchOverlay
   const { path, line, } = (event as CustomEvent<ResultSelectDetail>).detail;
   currentFilePath = path;
+  recordFileOpen(path,);
   void (async function loadAndRefresh(): Promise<void> {
     await loadFileSafe(path, line,);
     refreshInlayHints();
@@ -139,6 +159,7 @@ referencesPopup.addEventListener('reference-select', function handleReferenceSel
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from ReferencesPopup
   const { path, line, character, } = (event as CustomEvent<ReferenceSelectDetail>).detail;
   currentFilePath = path;
+  recordFileOpen(path,);
   void (async function loadAndRefresh(): Promise<void> {
     await loadFileSafe(path, line, character,);
     refreshInlayHints();
@@ -176,6 +197,19 @@ wireKeybindings({
   gotoDefinition: gotoDefinitionAtCursor,
   deleteCurrentLine: editorPane.deleteCurrentLine.bind(editorPane,),
   requestCompletions,
+  navigateToRecentFile: function navigateToRecent(index: number,) {
+    const path = recentFiles.paths[index];
+    if (path === undefined) return;
+    currentFilePath = path;
+    recentFiles.push(path,);
+    fileTree.updateRecency({ paths: recentFiles.paths, },);
+    void (async function revealLoadAndScroll(): Promise<void> {
+      await fileTree.revealFiles({ paths: [path,], },);
+      fileTree.scrollToFile({ path, },);
+      await loadFileSafe(path,);
+      refreshInlayHints();
+    })();
+  },
   completionPopup,
   referencesPopup,
   hoverPopup,
@@ -183,7 +217,18 @@ wireKeybindings({
 
 await ws.ready;
 
-wireSessionPersistence({ ws, editorPane, fileTree, searchOverlay, getCurrentFilePath, },);
+wireSessionPersistence({ ws, editorPane, fileTree, searchOverlay, getCurrentFilePath, getRecentFiles: function getRecentFiles() { return recentFiles.paths; }, },);
 
-currentFilePath = await restoreSession({ ws, editorPane, fileTree, loadFileSafe, queryFilePath: filePath, },);
+/** Restored session state containing boot file path and saved recent files. */
+const restored = await restoreSession({ ws, editorPane, fileTree, loadFileSafe, queryFilePath: filePath, },);
+currentFilePath = restored.filePath;
+
+//region Seed recent files from saved state and reveal in tree
+recentFiles.paths.length = 0;
+recentFiles.paths.push(...restored.recentFiles,);
+if (currentFilePath !== null) recentFiles.push(currentFilePath,);
+await fileTree.revealFiles({ paths: recentFiles.paths, },);
+fileTree.updateRecency({ paths: recentFiles.paths, },);
+//endregion
+
 if (currentFilePath !== null) refreshInlayHints();

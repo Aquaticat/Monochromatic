@@ -29,12 +29,13 @@ import type { EditorWsClient, } from './ws-client.ts';
  *
  * @returns `saveNow` for immediate state persistence
  */
-export function wireSessionPersistence({ ws, editorPane, fileTree, searchOverlay, getCurrentFilePath, }: {
+export function wireSessionPersistence({ ws, editorPane, fileTree, searchOverlay, getCurrentFilePath, getRecentFiles, }: {
   ws: EditorWsClient;
   editorPane: EditorPane;
   fileTree: FileTree;
   searchOverlay: SearchOverlay;
   getCurrentFilePath: () => string | null;
+  getRecentFiles: () => string[];
 }): { saveNow: () => void } {
   /**
    * Captures the current UI state for persistence.
@@ -53,6 +54,7 @@ export function wireSessionPersistence({ ws, editorPane, fileTree, searchOverlay
       expandedDirs: fileTree.expandedDirs,
       cursor: cursor ?? { line: 0, character: 0, },
       scrollTop: editorElement?.scrollTop ?? 0,
+      recentFiles: getRecentFiles(),
     };
   }
 
@@ -93,7 +95,7 @@ export function wireSessionPersistence({ ws, editorPane, fileTree, searchOverlay
  *
  * @param queryFilePath - file path from URL query param (takes precedence)
  *
- * @returns the file path that was opened, or null if none
+ * @returns boot file path (or null) and saved recent files list
  */
 export async function restoreSession({ ws, editorPane, fileTree, loadFileSafe, queryFilePath, }: {
   ws: EditorWsClient;
@@ -101,7 +103,7 @@ export async function restoreSession({ ws, editorPane, fileTree, loadFileSafe, q
   fileTree: FileTree;
   loadFileSafe: (path: string, line?: number, character?: number,) => Promise<void>;
   queryFilePath: string | null;
-}): Promise<string | null> {
+}): Promise<{ filePath: string | null; recentFiles: string[] }> {
   /** Saved session state from a previous visit, if any. */
   const saved = restoreSessionState({ fsId: ws.fsId, rootDir: ws.rootDir, },);
 
@@ -129,5 +131,5 @@ export async function restoreSession({ ws, editorPane, fileTree, loadFileSafe, q
     if (editorEl !== null) editorEl.scrollTop = saved.scrollTop;
   }
 
-  return bootFilePath;
+  return { filePath: bootFilePath, recentFiles: saved?.recentFiles ?? [], };
 }

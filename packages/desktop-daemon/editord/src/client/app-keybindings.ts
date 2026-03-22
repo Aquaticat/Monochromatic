@@ -4,7 +4,8 @@
  * Binds Ctrl+S (save), Ctrl+Shift+F / Ctrl+Alt+L (format),
  * Ctrl+B (go to definition / find references), Ctrl+Z (undo),
  * Ctrl+Shift+Z (redo), Ctrl+Y (delete current line), Ctrl+Space (completions),
- * and popup navigation for completions and references.
+ * Ctrl+0..9 (navigate to recent file), and popup navigation for completions
+ * and references.
  */
 
 import type { CompletionPopup, } from './completion-popup.ts';
@@ -28,14 +29,17 @@ import type { ReferencesPopup, } from './references-popup.ts';
  *
  * @param referencesPopup - references popup for navigation
  *
+ * @param navigateToRecentFile - opens a recent file by recency index (0 = current, 9 = oldest)
+ *
  * @param hoverPopup - hover popup to dismiss on Escape
  */
-export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinition, deleteCurrentLine, requestCompletions, completionPopup, referencesPopup, hoverPopup, }: {
+export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinition, deleteCurrentLine, requestCompletions, navigateToRecentFile, completionPopup, referencesPopup, hoverPopup, }: {
   saveCurrentFile: () => void;
   formatDocument: () => void;
   gotoDefinition: () => void;
   deleteCurrentLine: () => void;
   requestCompletions: () => void;
+  navigateToRecentFile: (index: number) => void;
   completionPopup: CompletionPopup;
   referencesPopup: ReferencesPopup;
   hoverPopup: HoverPopup;
@@ -81,6 +85,11 @@ export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinitio
     if (event.ctrlKey && event.key === ' ') {
       event.preventDefault();
       requestCompletions();
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key >= '0' && event.key <= '9') {
+      event.preventDefault();
+      navigateToRecentFile(Number(event.key,),);
       return;
     }
     if (referencesPopup.visible && handleReferencesNav({ event, referencesPopup, },)) return;

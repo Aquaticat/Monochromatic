@@ -106,6 +106,18 @@ export const STYLES = [
       'white-space': 'nowrap',
     },
   },),
+  $({
+    rule: '.file-label[data-recency] .toggle',
+    decls: {
+      opacity: cssNum(1 / 2,),
+    },
+  },),
+  $({
+    rule: '.file-label[data-recency="0"] .toggle',
+    decls: {
+      opacity: cssNum(1,),
+    },
+  },),
 ].join('',);
 
 /** Collapsed directory indicator. */

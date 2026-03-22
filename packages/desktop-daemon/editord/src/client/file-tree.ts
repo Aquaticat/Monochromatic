@@ -55,6 +55,18 @@ export class FileTree extends HTMLElement {
   /** In-flight load promises keyed by directory path, awaited by `restoreExpansion`. */
   #loadPromises = new Map<string, Promise<void>>();
 
+  /**
+   * Current recent file paths (index 0 = most recent),
+   * set by {@link updateRecency}.
+   */
+  #recentPaths: string[] = [];
+
+  /**
+   * Root directory path, captured by {@link expandRoot}
+   * for ancestor computation.
+   */
+  #rootPath = '';
+
   /** Callback to fetch directory contents. Set by the parent application. */
   fetchDir: ((path: string,) => Promise<DirEntry[]>) | null = null;
 
@@ -111,6 +123,7 @@ export class FileTree extends HTMLElement {
     if (this.#tree === null || this.fetchDir === null)
       return;
 
+    this.#rootPath = rootPath;
     const entries = await this.fetchDir(rootPath,);
     this.#renderEntries({ container: this.#tree, parentPath: rootPath, entries, },);
     void this.#preloadChildren({ parentPath: rootPath, entries, },);
@@ -170,6 +183,120 @@ export class FileTree extends HTMLElement {
         await this.#loadPromises.get(dirPath,);
       }
     }
+  }
+
+  /**
+   * Updates recency markers on all file entries in the tree.
+   * Clears previous markers, then sets `data-recency` and toggle text
+   * for each path in the provided list. Also caches the list so
+   * lazily loaded entries receive correct markers on creation.
+   *
+   * @param paths - ordered recent file paths (index 0 = most recent)
+   */
+  updateRecency({ paths, }: { paths: string[] }): void {
+    this.#recentPaths = paths;
+    if (this.#tree === null) return;
+
+    /** Clear all existing recency markers. */
+    for (const label of this.#tree.querySelectorAll<HTMLElement>('.file-label[data-recency]',)) {
+      delete label.dataset['recency'];
+      const toggle = label.querySelector<HTMLElement>('.toggle',);
+      if (toggle !== null) toggle.textContent = '';
+    }
+
+    /** Apply markers for each recent path found in the current tree. */
+    for (let i = 0; i < paths.length; i++) {
+      const recentPath = paths[i];
+      if (recentPath === undefined) continue;
+      const selector = `.file-label[data-path="${CSS.escape(recentPath,)}"]`;
+      const label = this.#tree.querySelector<HTMLElement>(selector,);
+      if (label === null) continue;
+      label.dataset['recency'] = String(i,);
+      const toggle = label.querySelector<HTMLElement>('.toggle',);
+      if (toggle !== null) toggle.textContent = String(i,);
+    }
+  }
+
+  /**
+   * Expands ancestor directories so that each file path in `paths`
+   * becomes visible in the tree. Collects all intermediate directories
+   * between each file's parent and the root, then delegates to
+   * {@link restoreExpansion} which handles depth-first ordering.
+   *
+   * Preserves the user's scroll context by anchoring to the topmost
+   * visible element before expansion, then restoring its position afterward.
+   *
+   * No-op for files whose parents are already expanded.
+   *
+   * @param paths - absolute file paths to reveal
+   */
+  async revealFiles({ paths, }: { paths: string[] }): Promise<void> {
+    if (this.#tree === null || this.#rootPath === '') return;
+
+    const dirs = new Set<string>();
+    const rootLength = this.#rootPath.length;
+    for (const filePath of paths) {
+      let current = filePath.slice(0, filePath.lastIndexOf('/'),);
+      while (current.length > rootLength) {
+        dirs.add(current,);
+        current = current.slice(0, current.lastIndexOf('/'),);
+      }
+    }
+
+    if (dirs.size === 0) return;
+
+    l.info(`revealing ${String(dirs.size,)} ancestor dirs for ${String(paths.length,)} recent files`,);
+
+    /** Anchor to the topmost visible element so scroll position can be restored after expansion. */
+    const anchor = this.#findScrollAnchor();
+
+    await this.restoreExpansion({ dirs: [...dirs,], },);
+
+    /** Restore scroll so the element the user was looking at stays in place. */
+    if (anchor !== null) {
+      const newTop = anchor.element.getBoundingClientRect().top;
+      this.scrollTop += newTop - anchor.offsetFromViewport;
+    }
+  }
+
+  /**
+   * Finds the first visible element (summary or file-label) at or below
+   * the current scroll position to use as a scroll anchor.
+   *
+   * @returns anchor element and its viewport offset, or null if tree is empty
+   */
+  #findScrollAnchor(): { element: HTMLElement; offsetFromViewport: number } | null {
+    if (this.#tree === null) return null;
+
+    const hostRect = this.getBoundingClientRect();
+    const viewportTop = hostRect.top;
+
+    /**
+     * Walk all interactive entries (summaries and file labels) to find the one
+     * closest to the top of the visible viewport.
+     */
+    for (const candidate of this.#tree.querySelectorAll<HTMLElement>('summary, .file-label',)) {
+      const rect = candidate.getBoundingClientRect();
+      if (rect.bottom > viewportTop) {
+        return { element: candidate, offsetFromViewport: rect.top - viewportTop, };
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Scrolls the tree so that the file entry with the given path is visible.
+   * Uses `scrollIntoView({ block: 'nearest' })` to minimize movement.
+   *
+   * No-op if the file entry is not currently rendered in the tree.
+   *
+   * @param path - absolute file path to scroll into view
+   */
+  scrollToFile({ path, }: { path: string }): void {
+    if (this.#tree === null) return;
+    const label = this.#tree.querySelector<HTMLElement>(`.file-label[data-path="${CSS.escape(path,)}"]`,);
+    if (label !== null) label.scrollIntoView({ block: 'nearest', },);
   }
 
   /**
@@ -318,13 +445,16 @@ export class FileTree extends HTMLElement {
    */
   #createFileEntry({ path, name, }: { path: string; name: string }): HTMLElement {
     const tree = this;
+    const recencyIndex = this.#recentPaths.indexOf(path,);
+    const toggle = h({ tag: 'span', class: 'toggle', },);
+    if (recencyIndex !== -1) toggle.textContent = String(recencyIndex,);
 
     const label = h({
       tag: 'div',
       class: 'file-label',
       attrs: { 'data-path': path, tabindex: '0', },
       children: [
-        h({ tag: 'span', class: 'toggle', },),
+        toggle,
         h({ tag: 'span', class: 'name', text: name, },),
       ],
       on: {
@@ -337,6 +467,8 @@ export class FileTree extends HTMLElement {
         },
       },
     },);
+
+    if (recencyIndex !== -1) label.dataset['recency'] = String(recencyIndex,);
 
     return label;
   }

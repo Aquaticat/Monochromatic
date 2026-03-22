@@ -22,6 +22,8 @@ export type SessionState = {
   cursor: { line: number; character: number };
   /** Vertical scroll offset of the editor pane in pixels. */
   scrollTop: number;
+  /** Recently opened file paths, index 0 = most recent. May be absent in older saved state. */
+  recentFiles?: string[];
 };
 
 /** Minimum interval between debounced saves, in milliseconds. */
