@@ -22,6 +22,7 @@ import { listDir, } from './operations/list-dir.ts';
 import { openFile, } from './operations/open.ts';
 import { saveFile, } from './operations/save.ts';
 import { search, } from './operations/search.ts';
+import type { DirWatcher, } from './operations/watch-filesystem.ts';
 
 /** Tagged logger for the WebSocket subsystem. */
 const l = tagged({ tag: 'ws', l: rootLogger, },);
@@ -105,12 +106,15 @@ function toWireInlayHints({ hints, }: { hints: LspInlayHint[] }): InlayHint[] {
  * @param rootDir - root directory for path containment
  *
  * @param lspManager - LSP server coordinator
+ *
+ * @param dirWatcher - filesystem watcher for save suppression and dir registration
  */
 async function dispatchMessage(
   peer: { send: (data: string) => void },
   messageText: string,
   rootDir: string,
   lspManager: LspManager | null,
+  dirWatcher: DirWatcher | null,
 ): Promise<void> {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; runtime type is validated by discriminant checks below
   const parsed = JSON.parse(messageText,) as ClientMessage;
@@ -125,7 +129,14 @@ async function dispatchMessage(
     }
   }
   else if (parsed.type === 'save') {
+    const absolutePath = assertWithinRoot({ rootDir, path: parsed.path, },);
     await saveFile({ rootDir, path: parsed.path, content: parsed.content, },);
+
+    /** Suppress watcher event for the file we just saved to avoid self-triggered reloads. */
+    if (dirWatcher !== null) {
+      dirWatcher.suppressPath({ path: absolutePath, },);
+    }
+
     peer.send(JSON.stringify({ type: 'saved', id: parsed.id, path: parsed.path, },),);
 
     /** Notify LSP servers about the save. */
@@ -175,6 +186,13 @@ async function dispatchMessage(
   else if (parsed.type === 'didClose') {
     if (lspManager !== null) {
       await lspManager.didClose({ path: parsed.path, },);
+    }
+  }
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'watchDir') {
+    if (dirWatcher !== null) {
+      const absolutePath = assertWithinRoot({ rootDir, path: parsed.path, },);
+      dirWatcher.watchDir({ path: absolutePath, },);
     }
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
@@ -280,12 +298,13 @@ async function dispatchMessage(
  *
  * @returns h3 event handler that upgrades to WebSocket
  */
-export function createWsHandler({ authToken, rootDir, fsId, lspManager, connectedPeers, }: {
+export function createWsHandler({ authToken, rootDir, fsId, lspManager, connectedPeers, dirWatcher, }: {
   authToken: string;
   rootDir: string;
   fsId: string;
   lspManager: LspManager | null;
   connectedPeers: Set<{ send: (data: string) => void }>;
+  dirWatcher: DirWatcher | null;
 }): EventHandler {
   return defineWebSocketHandler(function resolveHooks(event,) {
     const url = new URL(event.url, 'http://localhost',);
@@ -304,7 +323,7 @@ export function createWsHandler({ authToken, rootDir, fsId, lspManager, connecte
 
       async message(peer, message,) {
         try {
-          await dispatchMessage(peer, message.text(), rootDir, lspManager,);
+          await dispatchMessage(peer, message.text(), rootDir, lspManager, dirWatcher,);
         }
         catch (error) {
           const errorMessage = error instanceof Error ? error.message : String(error,);

@@ -33,6 +33,7 @@ import { assertWithinRoot, } from './operations/assert-within-root.ts';
 import { getContentType, } from './operations/file-kind.ts';
 import { resolveFsId, } from './operations/resolve-fs-id.ts';
 import { resolveRoot, } from './operations/resolve-root.ts';
+import { DirWatcher, } from './operations/watch-filesystem.ts';
 import { createWsHandler, } from './ws.ts';
 
 export {};
@@ -103,6 +104,29 @@ const lspManager = new LspManager({
 
 //endregion LSP servers
 
+//region Filesystem watcher
+
+/**
+ * Broadcasts filesystem change events to all connected WebSocket peers.
+ * Watches directories on demand as the client expands them in the tree.
+ */
+const dirWatcher = new DirWatcher({
+  onChange: function handleFsChange(event,): void {
+    const message = JSON.stringify({
+      type: 'fileChanged',
+      path: event.path,
+      changeType: event.changeType,
+      isDirectory: event.isDirectory,
+    },);
+    for (const peer of connectedPeers) {
+      peer.send(message,);
+    }
+  },
+  l,
+},);
+
+//endregion Filesystem watcher
+
 /** h3 application instance. */
 const app = new H3();
 
@@ -171,7 +195,7 @@ app.get('/_raw', defineHandler(async function handleRawFile(event,) {
 
 //region WebSocket — editor communication
 
-app.get('/_ws', createWsHandler({ authToken: AUTH_TOKEN, rootDir: ROOT_DIR, fsId: FS_ID, lspManager, connectedPeers, },),);
+app.get('/_ws', createWsHandler({ authToken: AUTH_TOKEN, rootDir: ROOT_DIR, fsId: FS_ID, lspManager, connectedPeers, dirWatcher, },),);
 
 //endregion WebSocket
 

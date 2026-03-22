@@ -107,6 +107,13 @@ export type FileKind = 'text' | 'image' | 'audio' | 'video' | 'binary';
 
 //endregion File kind
 
+//region Filesystem change types
+
+/** Category of a filesystem change event from the directory watcher. */
+export type FsChangeType = 'created' | 'modified' | 'deleted';
+
+//endregion Filesystem change types
+
 //region Client messages
 
 /**
@@ -126,7 +133,8 @@ export type ClientMessage =
   | { type: 'findReferences'; id: string; path: string; line: number; character: number }
   | { type: 'inlayHint'; id: string; path: string; range: Range }
   | { type: 'didChange'; path: string; content: string }
-  | { type: 'didClose'; path: string };
+  | { type: 'didClose'; path: string }
+  | { type: 'watchDir'; path: string };
 
 /**
  * Client request payload without the auto-generated `id` field.
@@ -142,7 +150,7 @@ export type ClientRequest = ClientMessage extends infer TVariant
 /**
  * Client notification payload (messages without an `id` that expect no response).
  */
-export type ClientNotification = Extract<ClientMessage, { type: 'didChange' } | { type: 'didClose' }>;
+export type ClientNotification = Extract<ClientMessage, { type: 'didChange' } | { type: 'didClose' } | { type: 'watchDir' }>;
 
 //endregion Client messages
 
@@ -159,7 +167,7 @@ export type ServerMessage =
   | { type: 'saved'; id: string; path: string }
   | { type: 'dirListing'; id: string; path: string; entries: DirEntry[] }
   | { type: 'searchResults'; id: string; results: SearchResult[] }
-  | { type: 'fileChanged'; path: string }
+  | { type: 'fileChanged'; path: string; changeType: FsChangeType; isDirectory: boolean }
   | { type: 'diagnostics'; path: string; diagnostics: Diagnostic[] }
   | { type: 'hoverResult'; id: string; contents: string; range?: Range }
   | { type: 'completionResult'; id: string; items: CompletionItem[] }

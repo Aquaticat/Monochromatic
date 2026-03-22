@@ -17,6 +17,7 @@ import {
 } from '@monochromatic-dev/module-es/h-dom';
 
 import type { DirEntry, } from '../protocol.ts';
+import { nameToOrder, } from './file-tree-order.ts';
 import {
   COLLAPSED,
   EXPANDED,
@@ -69,6 +70,9 @@ export class FileTree extends HTMLElement {
 
   /** Callback to fetch directory contents. Set by the parent application. */
   fetchDir: ((path: string,) => Promise<DirEntry[]>) | null = null;
+
+  /** Callback invoked when a directory is expanded for the first time. */
+  onDirExpanded: ((path: string,) => void) | null = null;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -127,6 +131,7 @@ export class FileTree extends HTMLElement {
     const entries = await this.fetchDir(rootPath,);
     this.#renderEntries({ container: this.#tree, parentPath: rootPath, entries, },);
     void this.#preloadChildren({ parentPath: rootPath, entries, },);
+    this.onDirExpanded?.(rootPath,);
   }
 
   /**
@@ -300,6 +305,64 @@ export class FileTree extends HTMLElement {
   }
 
   /**
+   * Re-fetches a directory's listing and updates the DOM.
+   * Preserves expansion state of existing subdirectories by reusing
+   * their `<details>` elements. File entries are recreated.
+   *
+   * No-op if the directory has not been loaded yet or is not in the tree.
+   *
+   * @param path - absolute path of the directory to refresh
+   */
+  async refreshDir({ path, }: { path: string }): Promise<void> {
+    if (this.#tree === null || this.fetchDir === null) return;
+
+    /** Root uses #tree as its container; subdirs use the .children element. */
+    let container: HTMLElement | null = null;
+    if (path === this.#rootPath) {
+      container = this.#tree;
+    }
+    else {
+      const summary = this.#tree.querySelector<HTMLElement>(
+        `summary[data-path="${CSS.escape(path,)}"]`,
+      );
+      if (summary === null) return;
+      container = summary.parentElement?.querySelector<HTMLElement>(':scope > .children',) ?? null;
+    }
+
+    if (container === null) return;
+    if (path !== this.#rootPath && !this.#loadedDirs.has(path,)) return;
+
+    const entries = await this.fetchDir(path,);
+
+    /** Preserve existing <details> elements for subdirs that still exist. */
+    const existingDirs = new Map<string, HTMLDetailsElement>();
+    for (const details of container.querySelectorAll<HTMLDetailsElement>(':scope > details',)) {
+      const summaryEl = details.querySelector<HTMLElement>('summary',);
+      const dirPath = summaryEl?.dataset['path'] ?? '';
+      if (dirPath !== '') existingDirs.set(dirPath, details,);
+    }
+
+    const tree = this;
+    const elements = entries.map(function createOrReuseEntry(entry,) {
+      const fullPath = tree.#childPath({ parentPath: path, name: entry.name, },);
+
+      if (entry.isDirectory) {
+        const existing = existingDirs.get(fullPath,);
+        if (existing !== undefined) {
+          existingDirs.delete(fullPath,);
+          return existing;
+        }
+        return tree.#createDirEntry({ path: fullPath, name: entry.name, },);
+      }
+
+      return tree.#createFileEntry({ path: fullPath, name: entry.name, },);
+    },);
+
+    container.replaceChildren(...elements,);
+    void this.#preloadChildren({ parentPath: path, entries, },);
+  }
+
+  /**
    * Builds the full path for a child entry within a parent directory.
    *
    * @param parentPath - absolute path of the parent directory
@@ -409,6 +472,7 @@ export class FileTree extends HTMLElement {
             return;
 
           tree.#loadedDirs.add(path,);
+          tree.onDirExpanded?.(path,);
 
           /** Store the load promise so `restoreExpansion` can await it. */
           const loadPromise = (async function loadDir(): Promise<void> {
@@ -431,6 +495,7 @@ export class FileTree extends HTMLElement {
       },
     },);
 
+    details.style.order = String(nameToOrder({ name, },),);
     return details;
   }
 
@@ -470,6 +535,7 @@ export class FileTree extends HTMLElement {
 
     if (recencyIndex !== -1) label.dataset['recency'] = String(recencyIndex,);
 
+    label.style.order = String(nameToOrder({ name, },),);
     return label;
   }
 }

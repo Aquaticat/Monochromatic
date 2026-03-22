@@ -42,6 +42,13 @@ export const STYLES = [
     },
   },),
   $({
+    rule: '.tree, .children',
+    decls: {
+      display: 'flex',
+      'flex-direction': 'column',
+    },
+  },),
+  $({
     rule: 'details',
     decls: {
       'padding-inline-start': cssRem(1,),

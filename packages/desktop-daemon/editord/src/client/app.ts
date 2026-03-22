@@ -22,7 +22,7 @@ import './references-popup.ts';
 
 import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
 
-import type { DirEntry, FileKind, SearchResult, } from '../protocol.ts';
+import type { DirEntry, FileKind, FsChangeType, SearchResult, } from '../protocol.ts';
 import type { BinaryViewer, } from './binary-viewer.ts';
 import { wireKeybindings, } from './app-keybindings.ts';
 import { wireLsp, } from './app-lsp.ts';
@@ -261,6 +261,28 @@ wireKeybindings({
   referencesPopup,
   hoverPopup,
 },);
+
+//region File watching — reload open file on external modify, refresh tree on create/delete
+
+fileTree.onDirExpanded = function handleDirExpanded(path: string,): void {
+  void ws.notify({ type: 'watchDir', path, },);
+};
+
+ws.onFileChanged = function handleFileChanged(path: string, changeType: FsChangeType, _isDirectory: boolean,): void {
+  appLog.info(`file changed: ${path} (${changeType})`,);
+
+  if (changeType === 'modified' && path === currentFilePath) {
+    void loadFileSafe(path,);
+    return;
+  }
+
+  if (changeType === 'created' || changeType === 'deleted') {
+    const parentDir = path.slice(0, path.lastIndexOf('/'),);
+    void fileTree.refreshDir({ path: parentDir, },);
+  }
+};
+
+//endregion File watching
 
 await ws.ready;
 

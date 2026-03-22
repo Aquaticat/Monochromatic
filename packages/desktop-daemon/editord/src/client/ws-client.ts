@@ -7,7 +7,7 @@
 
 // oxlint-disable max-lines -- WebSocket client with handshake, request correlation, push dispatch, and close cleanup in a single class
 
-import type { ClientNotification, ClientRequest, Diagnostic, ServerMessage, } from '../protocol.ts';
+import type { ClientNotification, ClientRequest, Diagnostic, FsChangeType, ServerMessage, } from '../protocol.ts';
 import { l as rootLogger, tagged, } from './log.ts';
 
 /** Tagged logger for the WebSocket client subsystem. */
@@ -48,7 +48,7 @@ export class EditorWsClient {
   fsId = '';
 
   /** Callback invoked when the server pushes a file change notification. */
-  onFileChanged: ((path: string,) => void) | null = null;
+  onFileChanged: ((path: string, changeType: FsChangeType, isDirectory: boolean,) => void) | null = null;
 
   /** Callback invoked when the server pushes diagnostics for a file. */
   onDiagnostics: ((path: string, diagnostics: Diagnostic[],) => void) | null = null;
@@ -176,7 +176,7 @@ export class EditorWsClient {
 
     // Push notifications — no request ID
     if (data.type === 'fileChanged') {
-      this.onFileChanged?.(data.path,);
+      this.onFileChanged?.(data.path, data.changeType, data.isDirectory,);
       return;
     }
     if (data.type === 'diagnostics') {
