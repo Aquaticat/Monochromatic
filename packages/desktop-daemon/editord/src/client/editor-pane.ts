@@ -265,6 +265,182 @@ export class EditorPane extends HTMLElement {
   }
 
   /**
+   * Selects and copies the current line when no text is selected.
+   * Mirrors JetBrains behavior: Ctrl+C with an empty selection copies
+   * the entire line (including a trailing newline) to the clipboard
+   * and highlights the line visually.
+   *
+   * @returns true if the line was copied (selection was collapsed),
+   * false if text was already selected (caller should let the browser handle copy)
+   *
+   * @example
+   * ```ts
+   * if (editorPane.selectAndCopyCurrentLine()) {
+   *   event.preventDefault();
+   * }
+   * ```
+   */
+  selectAndCopyCurrentLine(): boolean {
+    if (this.#editor === null) return false;
+
+    const composedRange = this.#getComposedRange();
+    if (composedRange === null) return false;
+    if (!composedRange.collapsed) return false;
+
+    const pos = this.getCursorPosition();
+    if (pos === null) return false;
+
+    const lineDiv = this.#editor.children[pos.line];
+    if (lineDiv === undefined) return false;
+
+    /** Select the full line visually. */
+    const selection = document.getSelection();
+    if (selection === null) return false;
+
+    const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
+    const firstText = walker.nextNode();
+    if (firstText === null) return false;
+
+    let lastText: Node = firstText;
+    let next = walker.nextNode();
+    while (next !== null) {
+      lastText = next;
+      next = walker.nextNode();
+    }
+
+    const lastLen = lastText.textContent?.length ?? 0;
+    selection.setBaseAndExtent(firstText, 0, lastText, lastLen,);
+
+    /** Copy line text with trailing newline, matching VS Code behavior. */
+    const raw = lineDiv.textContent ?? '';
+    const lineText = raw === '\n' ? '' : raw;
+    void navigator.clipboard.writeText(lineText + '\n',);
+
+    return true;
+  }
+
+  /**
+   * Sets the visual selection to a range defined by start and end positions.
+   * Used by expand/shrink selection to apply LSP selection ranges.
+   *
+   * @param startLine - 0-based start line index
+   *
+   * @param startCharacter - 0-based start character offset
+   *
+   * @param endLine - 0-based end line index
+   *
+   * @param endCharacter - 0-based end character offset
+   *
+   * @example
+   * ```ts
+   * editorPane.setSelection({ startLine: 0, startCharacter: 0, endLine: 2, endCharacter: 5 });
+   * ```
+   */
+  setSelection({ startLine, startCharacter, endLine, endCharacter, }: {
+    startLine: number; startCharacter: number; endLine: number; endCharacter: number;
+  }): void {
+    if (this.#editor === null) return;
+
+    const selection = document.getSelection();
+    if (selection === null) return;
+
+    /**
+     * Resolves a text node and offset within a line div for
+     * `setBaseAndExtent`. Walks text nodes to find the one
+     * containing the target character offset.
+     *
+     * @param lineIndex - 0-based line index
+     *
+     * @param character - 0-based character offset within the line
+     *
+     * @returns text node and offset, or null if not resolvable
+     */
+    const resolvePosition = (lineIndex: number, character: number,): { node: Node; offset: number } | null => {
+      // oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- checked #editor above
+      const lineDiv = this.#editor!.children[lineIndex];
+      if (lineDiv === undefined) return null;
+
+      const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
+      let remaining = character;
+      let textNode = walker.nextNode();
+      while (textNode !== null) {
+        const len = textNode.textContent?.length ?? 0;
+        if (remaining <= len) return { node: textNode, offset: remaining, };
+        remaining -= len;
+        textNode = walker.nextNode();
+      }
+
+      /** Offset past end — clamp to last text node's end. */
+      const { lastChild, } = lineDiv;
+      if (lastChild !== null) return { node: lastChild, offset: lastChild.textContent?.length ?? 0, };
+      return null;
+    };
+
+    const start = resolvePosition(startLine, startCharacter,);
+    const end = resolvePosition(endLine, endCharacter,);
+    if (start === null || end === null) return;
+
+    selection.setBaseAndExtent(start.node, start.offset, end.node, end.offset,);
+  }
+
+  /**
+   * Reads the current visual selection as 0-based line/character coordinates.
+   * Returns null if no selection exists or the selection is collapsed.
+   *
+   * @returns selection coordinates, or null
+   */
+  getSelection(): { startLine: number; startCharacter: number; endLine: number; endCharacter: number } | null {
+    if (this.#editor === null) return null;
+
+    const range = this.#getComposedRange();
+    if (range === null) return null;
+
+    /**
+     * Resolves a container node and offset to a line/character position.
+     *
+     * @param container - DOM node from the range boundary
+     *
+     * @param offset - offset within the container node
+     *
+     * @returns 0-based line and character, or null
+     */
+    const resolvePos = (container: Node, offset: number,): { line: number; character: number } | null => {
+      let node: Node | null = container;
+      let lineDiv: HTMLElement | null = null;
+      // oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- checked #editor above
+      const editor = this.#editor!;
+      while (node !== null && node !== editor) {
+        if (node.parentNode === editor && node instanceof HTMLElement) {
+          lineDiv = node;
+          break;
+        }
+        node = node.parentNode;
+      }
+      if (lineDiv === null) return null;
+
+      const line = [...editor.children,].indexOf(lineDiv,);
+      if (line === -1) return null;
+
+      let character = 0;
+      const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
+      let textNode = walker.nextNode();
+      while (textNode !== null) {
+        if (textNode === container) { character += offset; break; }
+        character += textNode.textContent?.length ?? 0;
+        textNode = walker.nextNode();
+      }
+
+      return { line, character, };
+    };
+
+    const start = resolvePos(range.startContainer, range.startOffset,);
+    const end = resolvePos(range.endContainer, range.endOffset,);
+    if (start === null || end === null) return null;
+
+    return { startLine: start.line, startCharacter: start.character, endLine: end.line, endCharacter: end.character, };
+  }
+
+  /**
    * Returns the underlying contenteditable element for position tracking.
    * Used by the app to compute cursor/mouse positions relative to line divs.
    *

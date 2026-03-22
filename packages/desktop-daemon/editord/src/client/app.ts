@@ -31,6 +31,7 @@ import { createRecentFiles, } from './recent-files.ts';
 import type { CompletionPopup, } from './completion-popup.ts';
 import type { EditorPane, } from './editor-pane.ts';
 import { dispatchFsAction, } from './app-context-actions.ts';
+import { wireFullscreen, } from './app-fullscreen.ts';
 import type { ContextAction, FileTree, } from './file-tree.ts';
 import type { HoverPopup, } from './hover-popup.ts';
 import { getParserForPath, } from './languages.ts';
@@ -102,6 +103,8 @@ searchOverlay.onSearch = async function handleSearch(query: string,): Promise<Se
 };
 
 appElement.append(fileTree, editorPane, binaryViewer, searchOverlay, hoverPopup, completionPopup, referencesPopup,);
+
+wireFullscreen({ appElement, },);
 
 /** Path of the currently open file. */
 let currentFilePath = filePath;
@@ -227,7 +230,7 @@ referencesPopup.addEventListener('reference-select', function handleReferenceSel
 },);
 
 /** LSP feature callbacks returned from wiring. */
-const { formatDocument, requestCompletions, refreshInlayHints, gotoDefinitionAtCursor, } = wireLsp({ ws, editorPane, hoverPopup, completionPopup, referencesPopup, getCurrentFilePath, loadFileSafe, },);
+const { formatDocument, requestCompletions, refreshInlayHints, gotoDefinitionAtCursor, expandSelection, shrinkSelection, } = wireLsp({ ws, editorPane, hoverPopup, completionPopup, referencesPopup, getCurrentFilePath, loadFileSafe, },);
 
 /** Saves the current editor content to the server. Skips non-text files. */
 async function saveCurrentFile(): Promise<void> {
@@ -256,7 +259,10 @@ wireKeybindings({
   formatDocument: function format() { void formatDocument(); },
   gotoDefinition: gotoDefinitionAtCursor,
   deleteCurrentLine: editorPane.deleteCurrentLine.bind(editorPane,),
+  selectAndCopyCurrentLine: editorPane.selectAndCopyCurrentLine.bind(editorPane,),
   requestCompletions,
+  expandSelection,
+  shrinkSelection,
   navigateToRecentFile: function navigateToRecent(index: number,) {
     const path = recentFiles.paths[index];
     if (path === undefined) return;

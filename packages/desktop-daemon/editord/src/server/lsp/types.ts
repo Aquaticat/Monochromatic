@@ -128,6 +128,22 @@ export type LspInlayHintLabelPart = {
 
 //endregion Inlay hints
 
+//region Selection ranges
+
+/**
+ * Nested selection range from `textDocument/selectionRange`.
+ * Each range has an optional `parent` pointing to the next larger enclosing range,
+ * forming a chain from the innermost to the outermost syntactic scope.
+ */
+export type LspSelectionRange = {
+  /** Range of this selection level. */
+  range: LspRange;
+  /** Next larger enclosing selection range, or undefined at the outermost scope. */
+  parent?: LspSelectionRange;
+};
+
+//endregion Selection ranges
+
 //region Capabilities
 
 /** Server capabilities returned during LSP initialization. */
@@ -148,6 +164,8 @@ export type LspServerCapabilities = {
   definitionProvider?: boolean;
   /** Whether inlay hints are supported. */
   inlayHintProvider?: boolean | { resolveProvider?: boolean };
+  /** Whether selection range is supported. */
+  selectionRangeProvider?: boolean;
 };
 
 //endregion Capabilities

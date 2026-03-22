@@ -3,7 +3,9 @@
  *
  * Binds Ctrl+S (save), Ctrl+Shift+F / Ctrl+Alt+L (format),
  * Ctrl+B (go to definition / find references), Ctrl+Z (undo),
- * Ctrl+Shift+Z (redo), Ctrl+Y (delete current line), Ctrl+Space (completions),
+ * Ctrl+Shift+Z (redo), Ctrl+Y (delete current line),
+ * Ctrl+C (copy current line when no selection), Ctrl+Space (completions),
+ * Ctrl+W (expand selection), Ctrl+Shift+W (shrink selection),
  * Ctrl+0..9 (navigate to recent file), and popup navigation for completions
  * and references.
  */
@@ -23,22 +25,32 @@ import type { ReferencesPopup, } from './references-popup.ts';
  *
  * @param deleteCurrentLine - deletes the line at the cursor
  *
+ * @param selectAndCopyCurrentLine - selects and copies the current line when no text is selected;
+ * returns true if handled, false when the browser should perform the default copy
+ *
  * @param requestCompletions - triggers completion popup
  *
  * @param completionPopup - completion popup for navigation
  *
  * @param referencesPopup - references popup for navigation
  *
+ * @param expandSelection - expands the selection to the next larger syntactic scope
+ *
+ * @param shrinkSelection - shrinks the selection back to the previous smaller scope
+ *
  * @param navigateToRecentFile - opens a recent file by recency index (0 = current, 9 = oldest)
  *
  * @param hoverPopup - hover popup to dismiss on Escape
  */
-export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinition, deleteCurrentLine, requestCompletions, navigateToRecentFile, completionPopup, referencesPopup, hoverPopup, }: {
+export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinition, deleteCurrentLine, selectAndCopyCurrentLine, requestCompletions, expandSelection, shrinkSelection, navigateToRecentFile, completionPopup, referencesPopup, hoverPopup, }: {
   saveCurrentFile: () => void;
   formatDocument: () => void;
   gotoDefinition: () => void;
   deleteCurrentLine: () => void;
+  selectAndCopyCurrentLine: () => boolean;
   requestCompletions: () => void;
+  expandSelection: () => void;
+  shrinkSelection: () => void;
   navigateToRecentFile: (index: number) => void;
   completionPopup: CompletionPopup;
   referencesPopup: ReferencesPopup;
@@ -82,9 +94,25 @@ export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinitio
       deleteCurrentLine();
       return;
     }
+    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'c') {
+      if (selectAndCopyCurrentLine()) {
+        event.preventDefault();
+        return;
+      }
+    }
     if (event.ctrlKey && event.key === ' ') {
       event.preventDefault();
       requestCompletions();
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'W') {
+      event.preventDefault();
+      shrinkSelection();
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'w') {
+      event.preventDefault();
+      expandSelection();
       return;
     }
     if ((event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key >= '0' && event.key <= '9') {

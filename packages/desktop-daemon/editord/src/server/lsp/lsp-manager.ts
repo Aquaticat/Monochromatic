@@ -15,9 +15,9 @@ import {
   didChange as syncChange, didClose as syncClose,
   didOpen as syncOpen, didSave as syncSave,
 } from './document-sync.ts';
-import { requestCompletion, requestFormat, requestGotoDefinition, requestHover, requestInlayHints, requestReferences, } from './lsp-features.ts';
+import { requestCompletion, requestFormat, requestGotoDefinition, requestHover, requestInlayHints, requestReferences, requestSelectionRange, } from './lsp-features.ts';
 import { LspPool, } from './lsp-pool.ts';
-import type { LspCompletionItem, LspDiagnostic, LspHover, LspInlayHint, LspTextEdit, } from './types.ts';
+import type { LspCompletionItem, LspDiagnostic, LspHover, LspInlayHint, LspSelectionRange, LspTextEdit, } from './types.ts';
 
 export type { DiagnosticsHandler, WireDiagnostic, };
 
@@ -137,6 +137,18 @@ export class LspManager {
   }): Promise<LspInlayHint[]> {
     const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
     return c !== null && c.initialized ? requestInlayHints({ client: c, path, range, },) : [];
+  }
+  /**
+   * {@inheritDoc requestSelectionRange}
+   *
+   * @returns selection ranges (one per position), or empty array if tsgo is unavailable
+   */
+  async selectionRange({ path, positions, }: {
+    path: string;
+    positions: { line: number; character: number }[];
+  }): Promise<LspSelectionRange[]> {
+    const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
+    return c !== null && c.initialized ? requestSelectionRange({ client: c, path, positions, },) : [];
   }
 
   //endregion Feature requests

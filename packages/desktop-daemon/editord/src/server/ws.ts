@@ -13,10 +13,10 @@ import {
   type EventHandler,
 } from 'h3';
 
-import type { ClientMessage, CompletionItem, InlayHint, TextEdit, } from '../protocol.ts';
+import type { ClientMessage, CompletionItem, InlayHint, SelectionRange, TextEdit, } from '../protocol.ts';
 import { l as rootLogger, tagged, } from './log.ts';
 import type { LspManager, } from './lsp/lsp-manager.ts';
-import type { LspCompletionItem, LspHover, LspInlayHint, LspMarkupContent, } from './lsp/types.ts';
+import type { LspCompletionItem, LspHover, LspInlayHint, LspMarkupContent, LspSelectionRange, } from './lsp/types.ts';
 import { assertWithinRoot, } from './operations/assert-within-root.ts';
 import { copyEntry, } from './operations/copy-entry.ts';
 import { deleteEntry, } from './operations/delete-entry.ts';
@@ -113,6 +113,22 @@ function toWireInlayHints({ hints, }: { hints: LspInlayHint[] }): InlayHint[] {
     if (hint.paddingRight !== undefined) result.paddingRight = hint.paddingRight;
     return result;
   },);
+}
+
+/**
+ * Converts an LSP selection range (nested chain) to wire format.
+ * Recursively converts the `parent` chain.
+ *
+ * @param lspRange - LSP selection range with nested parents
+ *
+ * @returns wire-format selection range
+ */
+function toWireSelectionRange({ lspRange, }: { lspRange: LspSelectionRange }): SelectionRange {
+  const result: SelectionRange = { range: lspRange.range, };
+  if (lspRange.parent !== undefined) {
+    result.parent = toWireSelectionRange({ lspRange: lspRange.parent, },);
+  }
+  return result;
 }
 
 /**
@@ -291,6 +307,17 @@ async function dispatchMessage(
 
     const locations = await lspManager.references({ path: parsed.path, line: parsed.line, character: parsed.character, },);
     peer.send(JSON.stringify({ type: 'referencesResult', id: parsed.id, locations, },),);
+  }
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'selectionRange') {
+    if (lspManager === null) {
+      peer.send(JSON.stringify({ type: 'selectionRangeResult', id: parsed.id, ranges: [], },),);
+      return;
+    }
+
+    const lspRanges = await lspManager.selectionRange({ path: parsed.path, positions: parsed.positions, },);
+    const ranges = lspRanges.map(function convertRange(r,) { return toWireSelectionRange({ lspRange: r, },); },);
+    peer.send(JSON.stringify({ type: 'selectionRangeResult', id: parsed.id, ranges, },),);
   }
   //endregion LSP message handlers
   //region Filesystem action handlers

@@ -94,6 +94,18 @@ export type InlayHint = {
   paddingRight?: boolean;
 };
 
+/**
+ * Nested selection range for expand/shrink selection.
+ * Each level has a `range` and an optional `parent` pointing to
+ * the next larger enclosing syntactic scope.
+ */
+export type SelectionRange = {
+  /** Range of this selection level. */
+  range: Range;
+  /** Next larger enclosing range, or undefined at the outermost scope. */
+  parent?: SelectionRange;
+};
+
 //endregion LSP types
 
 //region File kind
@@ -132,6 +144,7 @@ export type ClientMessage =
   | { type: 'gotoDefinition'; id: string; path: string; line: number; character: number }
   | { type: 'findReferences'; id: string; path: string; line: number; character: number }
   | { type: 'inlayHint'; id: string; path: string; range: Range }
+  | { type: 'selectionRange'; id: string; path: string; positions: Position[] }
   | { type: 'deleteEntry'; id: string; path: string }
   | { type: 'copyEntry'; id: string; path: string; destPath: string }
   | { type: 'moveEntry'; id: string; path: string; destPath: string }
@@ -181,6 +194,7 @@ export type ServerMessage =
   | { type: 'definitionResult'; id: string; path: string; line: number; character: number }
   | { type: 'referencesResult'; id: string; locations: (Position & { path: string })[] }
   | { type: 'inlayHintResult'; id: string; hints: InlayHint[] }
+  | { type: 'selectionRangeResult'; id: string; ranges: SelectionRange[] }
   | { type: 'fsActionDone'; id: string }
   | { type: 'error'; id?: string; message: string };
 

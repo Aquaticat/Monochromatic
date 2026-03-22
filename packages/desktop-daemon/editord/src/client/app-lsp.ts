@@ -9,6 +9,7 @@ import { wireGotoDefinition, formatDocument, doGotoDefinition, } from './app-lsp
 import { requestCompletions, wireCompletionTrigger, } from './app-lsp-completions.ts';
 import { wireHover, } from './app-lsp-hover.ts';
 import { wireInlayHints, } from './app-lsp-inlay.ts';
+import { wireSelectionRange, } from './app-lsp-selection.ts';
 import type { CompletionPopup, } from './completion-popup.ts';
 import type { EditorPane, } from './editor-pane.ts';
 import type { HoverPopup, } from './hover-popup.ts';
@@ -50,7 +51,7 @@ export function wireLsp({ ws, editorPane, hoverPopup, completionPopup, reference
   referencesPopup: ReferencesPopup;
   getCurrentFilePath: () => string | null;
   loadFileSafe: (path: string, line?: number, character?: number,) => Promise<void>;
-}): { formatDocument: () => Promise<void>; requestCompletions: () => void; refreshInlayHints: () => void; gotoDefinitionAtCursor: () => void } {
+}): { formatDocument: () => Promise<void>; requestCompletions: () => void; refreshInlayHints: () => void; gotoDefinitionAtCursor: () => void; expandSelection: () => void; shrinkSelection: () => void } {
   /**
    * Returns the contenteditable container.
    *
@@ -70,6 +71,7 @@ export function wireLsp({ ws, editorPane, hoverPopup, completionPopup, reference
   wireGotoDefinition({ ws, editorPane, getEditorElement, getCurrentFilePath, loadFileSafe, },);
 
   const inlayState = wireInlayHints({ ws, editorPane, getCurrentFilePath, },);
+  const { expandSelection, shrinkSelection, } = wireSelectionRange({ ws, editorPane, getCurrentFilePath, },);
 
   return {
     formatDocument: function format(): Promise<void> {
@@ -79,6 +81,8 @@ export function wireLsp({ ws, editorPane, hoverPopup, completionPopup, reference
       void requestCompletions({ ws, completionPopup, getEditorElement, getCurrentFilePath, },);
     },
     refreshInlayHints: inlayState.refresh,
+    expandSelection,
+    shrinkSelection,
     gotoDefinitionAtCursor: function gotoDefAtCursor(): void {
       hoverPopup.hide();
       const pos = editorPane.getCursorPosition();
