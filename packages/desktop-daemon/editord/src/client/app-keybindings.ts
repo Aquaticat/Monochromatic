@@ -2,7 +2,8 @@
  * Keyboard shortcut handler for the editord client.
  *
  * Binds Ctrl+S (save), Ctrl+Shift+F / Ctrl+Alt+L (format),
- * Ctrl+B (go to definition / find references), Ctrl+Space (completions),
+ * Ctrl+B (go to definition / find references), Ctrl+Z (undo),
+ * Ctrl+Shift+Z (redo), Ctrl+Space (completions),
  * and popup navigation for completions and references.
  */
 
@@ -55,6 +56,18 @@ export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinitio
     if ((event.ctrlKey || event.metaKey) && event.key === 'b') {
       event.preventDefault();
       gotoDefinition();
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'z') {
+      event.preventDefault();
+      // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand('undo') is the only way to trigger the browser's native undo stack in contenteditable
+      document.execCommand('undo', false,);
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'Z') {
+      event.preventDefault();
+      // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand('redo') is the only way to trigger the browser's native redo stack in contenteditable
+      document.execCommand('redo', false,);
       return;
     }
     if (event.ctrlKey && event.key === ' ') {
