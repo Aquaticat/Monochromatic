@@ -13,6 +13,7 @@ import type { FileKind, } from '../../protocol.ts';
 import { assertWithinRoot, } from './assert-within-root.ts';
 import { getMediaKind, } from './file-kind.ts';
 import { generateHexDump, } from './hex-dump.ts';
+import { probeMedia, } from './probe-media.ts';
 
 /** Result of opening a file. */
 export type OpenResult = {
@@ -22,6 +23,8 @@ export type OpenResult = {
   path: string;
   /** File content: UTF-8 text, hex dump, or empty string for media. */
   content: string;
+  /** Trimmed ffprobe output for media files, omitting version/build header. */
+  mediaInfo?: string;
 };
 
 /**
@@ -41,7 +44,13 @@ export async function openFile({ rootDir, path, }: { rootDir: string; path: stri
 
   const mediaKind = getMediaKind({ path, },);
   if (mediaKind !== null) {
-    return { kind: mediaKind, path: absolutePath, content: '', };
+    const mediaInfo = await probeMedia({ path: absolutePath, },);
+    return {
+      kind: mediaKind,
+      path: absolutePath,
+      content: '',
+      ...(mediaInfo !== null ? { mediaInfo, } : {}),
+    };
   }
 
   const buffer = await readFile(absolutePath,);

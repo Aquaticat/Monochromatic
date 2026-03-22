@@ -182,7 +182,7 @@ export type ClientNotification = Extract<ClientMessage, { type: 'didChange' } | 
  */
 export type ServerMessage =
   | { type: 'connected'; rootDir: string; fsId: string }
-  | { type: 'fileContent'; id: string; path: string; content: string; kind: FileKind }
+  | { type: 'fileContent'; id: string; path: string; content: string; kind: FileKind; mediaInfo?: string }
   | { type: 'saved'; id: string; path: string }
   | { type: 'dirListing'; id: string; path: string; entries: DirEntry[] }
   | { type: 'searchResults'; id: string; results: SearchResult[] }

@@ -41,7 +41,7 @@ export class HoverPopup extends HTMLElement {
       h({ tag: 'style', text: STYLES, },),
       this.#content,
     );
-    this.setAttribute('popover', 'auto',);
+    this.setAttribute('popover', 'hint',);
   }
 
   /**

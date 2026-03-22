@@ -167,9 +167,12 @@ async function loadFileSafe(path: string, line?: number, character?: number,): P
     if (kind === 'image' || kind === 'audio' || kind === 'video') {
       editorPane.style.display = 'none';
       const mediaUrl = `/_raw?path=${encodeURIComponent(path,)}&token=${token}`;
-      if (kind === 'image') binaryViewer.showImage({ url: mediaUrl, },);
-      else if (kind === 'audio') binaryViewer.showAudio({ url: mediaUrl, },);
-      else binaryViewer.showVideo({ url: mediaUrl, },);
+      const mediaOpts = 'mediaInfo' in r && typeof r.mediaInfo === 'string'
+        ? { url: mediaUrl, mediaInfo: r.mediaInfo, }
+        : { url: mediaUrl, };
+      if (kind === 'image') binaryViewer.showImage(mediaOpts,);
+      else if (kind === 'audio') binaryViewer.showAudio(mediaOpts,);
+      else binaryViewer.showVideo(mediaOpts,);
       return;
     }
 
