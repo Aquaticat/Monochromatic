@@ -5,7 +5,6 @@
 import {
   $,
   cssCommaList,
-  cssInt,
   cssNum,
   cssPercent,
   cssRem,
@@ -30,17 +29,14 @@ const FONT_SIZE = (16 - 2 - 1) / 16;
 /** Line height multiplier. */
 const LINE_HEIGHT = (2 + 1) / 2;
 
-/** Z-index to ensure popup appears above editor content. */
-const Z_INDEX = 100;
-
 /** Shadow DOM styles for the hover popup. */
 export const STYLES = [
   $({
     rule: ':host',
     decls: {
-      display: 'none',
+      inset: 'auto',
+      margin: cssNum(0,),
       position: 'fixed',
-      'z-index': cssInt(Z_INDEX,),
       'max-inline-size': cssPercent(MAX_WIDTH_PERCENT,),
       'max-block-size': cssRem(MAX_HEIGHT_REM,),
       overflow: 'auto',
@@ -60,12 +56,6 @@ export const STYLES = [
       'line-height': cssNum(LINE_HEIGHT,),
       'white-space': 'pre-wrap',
       'word-break': 'break-word',
-    },
-  },),
-  $({
-    rule: ':host([visible])',
-    decls: {
-      display: 'block',
     },
   },),
 ].join('',);

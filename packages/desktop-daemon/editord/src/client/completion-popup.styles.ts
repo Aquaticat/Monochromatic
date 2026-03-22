@@ -5,7 +5,6 @@
 import {
   $,
   cssCommaList,
-  cssInt,
   cssNum,
   cssRem,
   cssVar,
@@ -29,17 +28,14 @@ const FONT_SIZE = (16 - 2 - 1) / 16;
 /** Line height multiplier. */
 const LINE_HEIGHT = (2 + 1) / 2;
 
-/** Z-index above hover popup. */
-const Z_INDEX = 110;
-
 /** Shadow DOM styles for the completion popup. */
 export const STYLES = [
   $({
     rule: ':host',
     decls: {
-      display: 'none',
+      inset: 'auto',
+      margin: cssNum(0,),
       position: 'fixed',
-      'z-index': cssInt(Z_INDEX,),
       'inline-size': cssRem(WIDTH_REM,),
       'max-block-size': cssRem(MAX_HEIGHT_REM,),
       overflow: 'auto',
@@ -55,12 +51,6 @@ export const STYLES = [
       'font-family': cssCommaList(["'JetBrains Mono'", 'monospace',],),
       'font-size': cssRem(FONT_SIZE,),
       'line-height': cssNum(LINE_HEIGHT,),
-    },
-  },),
-  $({
-    rule: ':host([visible])',
-    decls: {
-      display: 'block',
     },
   },),
   $({

@@ -32,10 +32,11 @@ export class CompletionPopup extends HTMLElement {
   /** Initializes the shadow root. */
   constructor() { super(); this.#shadow = this.attachShadow({ mode: 'open', },); }
 
-  /** Renders the container. */
+  /** Renders the container and sets up popover behavior. */
   connectedCallback(): void {
     this.#list = h({ tag: 'div', class: 'list', },);
     this.#shadow.replaceChildren(h({ tag: 'style', text: STYLES, },), this.#list,);
+    this.setAttribute('popover', 'auto',);
   }
 
   /** Shows the popup with items at the given position. */
@@ -46,18 +47,22 @@ export class CompletionPopup extends HTMLElement {
     this.#list.replaceChildren(...renderItems({ items, },),);
     this.style.setProperty('inset-inline-start', `${x}px`,);
     this.style.setProperty('inset-block-start', `${y + VERTICAL_OFFSET}px`,);
-    this.setAttribute('visible', '',);
+    if (!this.matches(':popover-open',)) this.showPopover();
   }
 
   /** Hides the popup and clears items. */
-  hide(): void { this.removeAttribute('visible',); this.#items = []; this.#selectedIndex = -1; }
+  hide(): void {
+    try { this.hidePopover(); } catch { /* already hidden */ }
+    this.#items = [];
+    this.#selectedIndex = -1;
+  }
 
   /**
    * Whether the popup is currently visible.
    *
    * @returns true if visible
    */
-  get visible(): boolean { return this.hasAttribute('visible',); }
+  get visible(): boolean { return this.matches(':popover-open',); }
 
   /** Moves the selection up or down. */
   navigate({ direction, }: { direction: 'up' | 'down' }): void {

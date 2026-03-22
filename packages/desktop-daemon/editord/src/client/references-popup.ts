@@ -64,7 +64,6 @@ export class ReferencesPopup extends HTMLElement {
     this.#anchor.style.setProperty('position', 'fixed',);
     this.#anchor.style.setProperty('anchor-name', '--ref-anchor',);
     this.#anchor.style.setProperty('inline-size', '2px',);
-    this.#anchor.style.setProperty('background-color', 'red',);
     this.#anchor.style.setProperty('pointer-events', 'none',);
     this.#anchor.style.setProperty('z-index', '9999',);
   }
@@ -79,11 +78,7 @@ export class ReferencesPopup extends HTMLElement {
     const popup = this;
     this.addEventListener('toggle', function handleToggle(event,) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event on popover is ToggleEvent
-      if ((event as ToggleEvent).newState === 'closed') {
-        popup.#anchor.remove();
-        popup.#locations = [];
-        popup.#selectedIndex = -1;
-      }
+      if ((event as ToggleEvent).newState === 'closed') popup.#cleanup();
     },);
   }
 
@@ -125,6 +120,11 @@ export class ReferencesPopup extends HTMLElement {
   /** Hides the popup and removes the anchor div. */
   hide(): void {
     try { this.hidePopover(); } catch { /* already hidden */ }
+    this.#cleanup();
+  }
+
+  /** Resets internal state and removes the anchor element. */
+  #cleanup(): void {
     this.#anchor.remove();
     this.#locations = [];
     this.#selectedIndex = -1;

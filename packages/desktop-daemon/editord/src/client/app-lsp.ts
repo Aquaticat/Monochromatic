@@ -60,7 +60,7 @@ export function wireLsp({ ws, editorPane, hoverPopup, completionPopup, reference
 
   wireContentSync({ ws, editorPane, getCurrentFilePath, },);
   wireDiagnostics({ ws, editorPane, getCurrentFilePath, },);
-  wireHover({ ws, editorPane, hoverPopup, getEditorElement, referencesPopup, getCurrentFilePath, },);
+  wireHover({ ws, editorPane, hoverPopup, getEditorElement, completionPopup, referencesPopup, getCurrentFilePath, },);
   wireCompletionTrigger({
     editorPane,
     triggerCompletions: function trigger() {

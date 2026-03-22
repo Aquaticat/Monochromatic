@@ -34,13 +34,14 @@ export class HoverPopup extends HTMLElement {
     this.#shadow = this.attachShadow({ mode: 'open', },);
   }
 
-  /** Renders the hover container. */
+  /** Renders the hover container and sets up popover behavior. */
   connectedCallback(): void {
     this.#content = h({ tag: 'div', class: 'content', },);
     this.#shadow.replaceChildren(
       h({ tag: 'style', text: STYLES, },),
       this.#content,
     );
+    this.setAttribute('popover', 'auto',);
   }
 
   /**
@@ -59,12 +60,12 @@ export class HoverPopup extends HTMLElement {
     this.#content.textContent = text;
     this.style.setProperty('inset-inline-start', `${x}px`,);
     this.style.setProperty('inset-block-start', `${y + VERTICAL_OFFSET}px`,);
-    this.setAttribute('visible', '',);
+    if (!this.matches(':popover-open',)) this.showPopover();
   }
 
   /** Hides the hover popup. */
   hide(): void {
-    this.removeAttribute('visible',);
+    try { this.hidePopover(); } catch { /* already hidden */ }
   }
 
   /**
@@ -73,7 +74,7 @@ export class HoverPopup extends HTMLElement {
    * @returns true if visible
    */
   get visible(): boolean {
-    return this.hasAttribute('visible',);
+    return this.matches(':popover-open',);
   }
 }
 

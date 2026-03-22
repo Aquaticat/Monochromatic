@@ -233,6 +233,19 @@ export class EditorPane extends HTMLElement {
   }
 
   /**
+   * Resolves a composed `StaticRange` from the current selection,
+   * crossing the shadow DOM boundary via `getComposedRanges`.
+   *
+   * @returns the first composed range, or null if unavailable
+   */
+  #getComposedRange(): StaticRange | null {
+    const selection = document.getSelection();
+    if (selection === null) return null;
+    const ranges = selection.getComposedRanges({ shadowRoots: [this.#shadow,], },);
+    return ranges[0] ?? null;
+  }
+
+  /**
    * Resolves the current editor cursor position using `getComposedRanges`
    * to cross the shadow DOM boundary.
    *
@@ -246,12 +259,8 @@ export class EditorPane extends HTMLElement {
   getCursorPosition(): EditorPosition | null {
     if (this.#editor === null) return null;
 
-    const selection = document.getSelection();
-    if (selection === null) return null;
-
-    const ranges = selection.getComposedRanges({ shadowRoots: [this.#shadow,], },);
-    const range = ranges[0];
-    if (range === undefined) return null;
+    const range = this.#getComposedRange();
+    if (range === null) return null;
 
     let node: Node | null = range.startContainer;
 
@@ -295,12 +304,8 @@ export class EditorPane extends HTMLElement {
   getCursorRect(): DOMRect | null {
     if (this.#editor === null) return null;
 
-    const selection = document.getSelection();
-    if (selection === null) return null;
-
-    const ranges = selection.getComposedRanges({ shadowRoots: [this.#shadow,], },);
-    const sRange = ranges[0];
-    if (sRange === undefined) return null;
+    const sRange = this.#getComposedRange();
+    if (sRange === null) return null;
 
     const range = document.createRange();
     range.setStart(sRange.startContainer, sRange.startOffset,);
