@@ -2,13 +2,16 @@
  * External application launch operations.
  *
  * Opens a terminal at a directory path or opens a file in the default application.
- * Uses platform-specific commands: `xdg-open` on Linux, `open` on macOS,
- * `start` on Windows.
+ * On Linux, delegates to `@monochromatic-dev/cli-terminal-exec` which resolves
+ * the preferred terminal and passes `--dir=` so the emulator opens in the correct directory.
+ * Uses `open` on macOS, `start` on Windows.
  */
 
 import { spawn, } from 'node:child_process';
 import { dirname, } from 'node:path';
 import { platform, } from 'node:process';
+
+import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec';
 
 import { assertWithinRoot, } from './assert-within-root.ts';
 
@@ -27,20 +30,7 @@ export async function openInTerminal({ rootDir, path, }: { rootDir: string; path
   const currentPlatform = platform;
 
   if (currentPlatform === 'linux') {
-    /** Try common terminal emulators in preference order; sequential because we stop at the first success. */
-    const terminals = ['xdg-terminal-exec', 'x-terminal-emulator', 'xterm',];
-    // oxlint-disable-next-line eslint(no-await-in-loop) -- sequential fallback: each attempt must complete before trying the next emulator
-    for (const terminal of terminals) {
-      try {
-        // oxlint-disable-next-line eslint(no-await-in-loop) -- sequential fallback: each attempt must complete before trying the next emulator
-        await spawnDetached({ command: terminal, args: [], cwd: absolutePath, },);
-        return;
-      }
-      catch {
-        /** Try next terminal emulator. */
-      }
-    }
-    throw new Error('no terminal emulator found',);
+    await launchTerminal({ dir: absolutePath, },);
   }
   else if (currentPlatform === 'darwin') {
     await spawnDetached({ command: 'open', args: ['-a', 'Terminal', absolutePath,], cwd: absolutePath, },);

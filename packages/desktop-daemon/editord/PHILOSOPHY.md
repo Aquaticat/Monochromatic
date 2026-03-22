@@ -41,6 +41,20 @@ The entire point is that raw `contenteditable` delegates scrolling to the browse
 Editor frameworks reimplement scrolling in JavaScript (typically for line virtualization),
 which defeats the compositor optimization that motivates editord's existence.
 
+### Browser as the platform
+
+Running in real Chrome (not Electron) means editord inherits every browser capability for free:
+
+- **Zoom** -- Ctrl+Plus/Minus scales the entire UI without any custom implementation
+- **Find in page** -- Ctrl+F works natively because content is in the DOM
+- **Accessibility** -- screen readers, high contrast, reduced motion all work out of the box
+- **DevTools** -- full Chrome DevTools for debugging the editor itself
+- **Smooth scrolling** -- `chrome://flags/#smooth-scrolling` controls compositor-driven scroll
+- **Print** -- Ctrl+P prints the file via the browser's native print dialog
+- **Spell check** -- available natively on contenteditable elements
+
+Features that other editors must reimplement from scratch are already present.
+
 ### Syntax highlighting approach
 
 Syntax highlighting uses the **CSS Custom Highlight API** to style token ranges
@@ -61,8 +75,37 @@ to keep the client bundle small and initialization synchronous.
 
 ### Path containment
 
-All filesystem operations (`openFile`, `saveFile`, `listDir`) validate
+All filesystem operations (`openFile`, `saveFile`, `listDir`, `deleteEntry`,
+`copyEntry`, `moveEntry`, `newEntry`) validate
 that the resolved path falls within the server's root directory.
 The root is the highest writable ancestor of the working directory,
 determined at startup by `resolveRoot`.
 Even with a valid auth token, a client cannot read or write outside this boundary.
+
+### Binary file handling
+
+Non-text files are detected by extension and displayed using native browser elements:
+images in `<img>`, audio in `<audio>`, video in `<video>`.
+Unknown binary files show a hex dump (xxd format, truncated at 16KB).
+SVG is intentionally classified as text because it is editable source.
+The `FileKind` discriminant in the `fileContent` response drives viewer routing
+so the client never attempts to render binary content as text.
+
+### Context menu via Popover API
+
+File tree context menus use the browser's Popover API (`popover="auto"`)
+with CSS anchor positioning for placement and `position-try-fallbacks`
+for viewport edge detection.
+This avoids reimplementing dropdown positioning, z-index management,
+and click-outside dismissal -- the browser handles all three natively.
+Inline input items (for rename, copy, move) embed a text input
+directly in the popover, confirmed with Enter.
+
+### Filesystem volume ID
+
+The `connected` handshake includes a filesystem volume identifier (`fsId`)
+derived from the OS-level filesystem UUID (Linux `stat -f`, macOS `stat -f %v`).
+This ensures localStorage keys are stable per physical volume,
+not per mount path -- remounting the same disk at a different path
+preserves session state, while two different volumes mounted at the same path
+do not collide.

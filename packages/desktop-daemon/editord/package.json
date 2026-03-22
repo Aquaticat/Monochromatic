@@ -16,6 +16,7 @@
     "@lezer/yaml": "catalog:",
     "lezer-json5": "catalog:",
     "lezer-toml": "catalog:",
+    "@monochromatic-dev/cli-terminal-exec": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
     "crossws": "catalog:",
     "h3": "catalog:"

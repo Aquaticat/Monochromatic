@@ -11,6 +11,9 @@ import {
   cssVar,
 } from '@monochromatic-dev/module-es/h-css';
 
+/** Invisible bridge that extends upward so the mouse can reach the popup. */
+const BRIDGE_HEIGHT_REM = 1;
+
 /** Maximum width of the hover popup as percentage of viewport. */
 const MAX_WIDTH_PERCENT = 60;
 
@@ -38,8 +41,6 @@ export const STYLES = [
       margin: cssNum(0,),
       position: 'fixed',
       'max-inline-size': cssPercent(MAX_WIDTH_PERCENT,),
-      'max-block-size': cssRem(MAX_HEIGHT_REM,),
-      overflow: 'auto',
       'background-color': cssVar('hover-bg',),
       color: cssVar('fg',),
       'border-radius': cssRem(BORDER_RADIUS,),
@@ -56,6 +57,24 @@ export const STYLES = [
       'line-height': cssNum(LINE_HEIGHT,),
       'white-space': 'pre-wrap',
       'word-break': 'break-word',
+    },
+  },),
+  $({
+    rule: '.content',
+    decls: {
+      'max-block-size': cssRem(MAX_HEIGHT_REM,),
+      overflow: 'auto',
+    },
+  },),
+  $({
+    rule: ':host::before',
+    decls: {
+      content: "''",
+      position: 'absolute',
+      'inset-inline-start': cssNum(0,),
+      'inset-inline-end': cssNum(0,),
+      'inset-block-start': cssRem(-BRIDGE_HEIGHT_REM,),
+      'block-size': cssRem(BRIDGE_HEIGHT_REM,),
     },
   },),
 ].join('',);

@@ -35,3 +35,11 @@
 
 - **No request tracing** -- WS messages have `id` for correlation
   but no timing, no server-side request logs, no latency metrics
+
+## Missing features
+
+- **No visual feedback on save** -- save confirmation is logged
+  but no toast or status bar indicator is shown to the user
+- **No theme toggle keybinding** -- light theme exists via `data-theme="light"`
+  but there is no keybinding to switch themes at runtime
+- **No favicon or PWA manifest** -- the app is not installable as a PWA yet

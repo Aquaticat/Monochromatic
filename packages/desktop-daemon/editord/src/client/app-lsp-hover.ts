@@ -73,8 +73,17 @@ export function wireHover({ ws, editorPane, hoverPopup, getEditorElement, comple
     }, HOVER_DEBOUNCE_MS,) as unknown as number;
   },);
 
-  editorPane.addEventListener('mouseleave', function handleMouseLeave() {
+  editorPane.addEventListener('mouseleave', function handleMouseLeave(event,) {
     clearTimeout(timer,);
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- mouseleave is always a MouseEvent
+    const me = event as MouseEvent;
+    if (me.relatedTarget === hoverPopup || (me.relatedTarget instanceof Node && hoverPopup.contains(me.relatedTarget,))) return;
+    hoverPopup.hide();
+    lastLine = -1;
+    lastChar = -1;
+  },);
+
+  hoverPopup.addEventListener('mouseleave', function handlePopupLeave() {
     hoverPopup.hide();
     lastLine = -1;
     lastChar = -1;

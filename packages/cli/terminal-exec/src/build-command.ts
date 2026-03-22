@@ -115,6 +115,7 @@ export function buildCommand({ terminal, options, }: {
   if (options.command.length > 0)
     args.push(terminal.execArg, ...options.command,);
 
-  l.debug(`final command: ${JSON.stringify(args,)}`,);
+  /** Info-level because the resolved command is user-facing diagnostic output. */
+  l.info(`final command: ${JSON.stringify(args,)}`,);
   return args;
 }

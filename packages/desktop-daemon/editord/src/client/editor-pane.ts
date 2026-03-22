@@ -28,6 +28,9 @@ import { applyInlayAnnotations, clearInlayAnnotations, } from './inlay-layer.ts'
 import { measureInlayOffsets, } from './inlay-measure.ts';
 import { STYLES, } from './editor-pane.styles.ts';
 
+/** Single indent level: two spaces. */
+const INDENT_UNIT = '  ';
+
 /**
  * `<editor-pane>` — contenteditable text editor component.
  *
@@ -317,6 +320,207 @@ export class EditorPane extends HTMLElement {
     void navigator.clipboard.writeText(lineText + '\n',);
 
     return true;
+  }
+
+  /**
+   * Duplicates the current line below and moves the cursor to the new line
+   * at the same character offset.
+   *
+   * @example
+   * ```ts
+   * editorPane.duplicateLineDown();
+   * ```
+   */
+  duplicateLineDown(): void {
+    if (this.#editor === null) return;
+
+    const pos = this.getCursorPosition();
+    if (pos === null) return;
+
+    const lineDiv = this.#editor.children[pos.line];
+    if (lineDiv === undefined) return;
+
+    const clone = lineDiv.cloneNode(true,);
+    lineDiv.after(clone,);
+
+    this.restoreCursor({ line: pos.line + 1, character: pos.character, },);
+
+    this.#dispatchContentChange();
+    this.#scheduleHighlight();
+  }
+
+  /**
+   * Swaps the current line with the next line and moves the cursor down.
+   * No-op when the cursor is on the last line.
+   *
+   * @example
+   * ```ts
+   * editorPane.swapLineDown();
+   * ```
+   */
+  swapLineDown(): void {
+    if (this.#editor === null) return;
+
+    const pos = this.getCursorPosition();
+    if (pos === null) return;
+
+    const { children, } = this.#editor;
+    if (pos.line >= children.length - 1) return;
+
+    const currentDiv = children[pos.line];
+    const nextDiv = children[pos.line + 1];
+    if (currentDiv === undefined || nextDiv === undefined) return;
+
+    /** Insert current line after the next line, effectively swapping them. */
+    nextDiv.after(currentDiv,);
+
+    this.restoreCursor({ line: pos.line + 1, character: pos.character, },);
+
+    this.#dispatchContentChange();
+    this.#scheduleHighlight();
+  }
+
+  /**
+   * Swaps the current line with the previous line and moves the cursor up.
+   * No-op when the cursor is on the first line.
+   *
+   * @example
+   * ```ts
+   * editorPane.swapLineUp();
+   * ```
+   */
+  swapLineUp(): void {
+    if (this.#editor === null) return;
+
+    const pos = this.getCursorPosition();
+    if (pos === null) return;
+
+    if (pos.line <= 0) return;
+
+    const { children, } = this.#editor;
+    const currentDiv = children[pos.line];
+    const prevDiv = children[pos.line - 1];
+    if (currentDiv === undefined || prevDiv === undefined) return;
+
+    /** Insert current line before the previous line, effectively swapping them. */
+    prevDiv.before(currentDiv,);
+
+    this.restoreCursor({ line: pos.line - 1, character: pos.character, },);
+
+    this.#dispatchContentChange();
+    this.#scheduleHighlight();
+  }
+
+  /**
+   * Indents the current line or all lines in the selection by prepending
+   * {@link INDENT_UNIT}. Preserves the selection or cursor position
+   * adjusted for the added indentation.
+   *
+   * @example
+   * ```ts
+   * editorPane.indentLines();
+   * ```
+   */
+  indentLines(): void {
+    if (this.#editor === null) return;
+
+    const pos = this.getCursorPosition();
+    if (pos === null) return;
+
+    const sel = this.getSelection();
+    /** Non-collapsed selection spans at least one character. */
+    const nonCollapsed = sel !== null
+      && !(sel.startLine === sel.endLine && sel.startCharacter === sel.endCharacter);
+
+    const startLine = nonCollapsed ? sel.startLine : pos.line;
+    const endLine = nonCollapsed ? sel.endLine : pos.line;
+
+    for (let i = startLine; i <= endLine; i++) {
+      const lineDiv = this.#editor.children[i];
+      if (lineDiv === undefined) continue;
+      const text = lineDiv.textContent ?? '';
+      lineDiv.textContent = text === '\n' ? INDENT_UNIT : INDENT_UNIT + text;
+    }
+
+    /** Restore selection or cursor with offsets shifted by the indent width. */
+    if (nonCollapsed) {
+      this.setSelection({
+        startLine: sel.startLine,
+        startCharacter: sel.startCharacter + INDENT_UNIT.length,
+        endLine: sel.endLine,
+        endCharacter: sel.endCharacter + INDENT_UNIT.length,
+      },);
+    }
+    else {
+      this.restoreCursor({ line: pos.line, character: pos.character + INDENT_UNIT.length, },);
+    }
+
+    this.#dispatchContentChange();
+    this.#scheduleHighlight();
+  }
+
+  /**
+   * Unindents the current line or all lines in the selection by removing
+   * up to {@link INDENT_UNIT} leading spaces. Preserves the selection
+   * or cursor position adjusted for the removed indentation.
+   *
+   * @example
+   * ```ts
+   * editorPane.unindentLines();
+   * ```
+   */
+  unindentLines(): void {
+    if (this.#editor === null) return;
+
+    const pos = this.getCursorPosition();
+    if (pos === null) return;
+
+    const sel = this.getSelection();
+    /** Non-collapsed selection spans at least one character. */
+    const nonCollapsed = sel !== null
+      && !(sel.startLine === sel.endLine && sel.startCharacter === sel.endCharacter);
+
+    const startLine = nonCollapsed ? sel.startLine : pos.line;
+    const endLine = nonCollapsed ? sel.endLine : pos.line;
+
+    /** Track spaces removed per line for cursor/selection adjustment. */
+    const removedPerLine: number[] = [];
+
+    for (let i = startLine; i <= endLine; i++) {
+      const lineDiv = this.#editor.children[i];
+      if (lineDiv === undefined) { removedPerLine.push(0,); continue; }
+      const text = lineDiv.textContent ?? '';
+      if (text === '\n') { removedPerLine.push(0,); continue; }
+
+      let count = 0;
+      if (text.startsWith('  ',)) count = 2;
+      else if (text.startsWith(' ',)) count = 1;
+
+      if (count > 0) {
+        const newText = text.slice(count,);
+        lineDiv.textContent = newText === '' ? '\n' : newText;
+      }
+      removedPerLine.push(count,);
+    }
+
+    /** Restore selection or cursor with offsets shifted back by removed spaces. */
+    if (nonCollapsed) {
+      const startRemoved = removedPerLine[0] ?? 0;
+      const endRemoved = removedPerLine[removedPerLine.length - 1] ?? 0;
+      this.setSelection({
+        startLine: sel.startLine,
+        startCharacter: Math.max(0, sel.startCharacter - startRemoved,),
+        endLine: sel.endLine,
+        endCharacter: Math.max(0, sel.endCharacter - endRemoved,),
+      },);
+    }
+    else {
+      const lineRemoved = removedPerLine[0] ?? 0;
+      this.restoreCursor({ line: pos.line, character: Math.max(0, pos.character - lineRemoved,), },);
+    }
+
+    this.#dispatchContentChange();
+    this.#scheduleHighlight();
   }
 
   /**

@@ -260,6 +260,17 @@ wireKeybindings({
   gotoDefinition: gotoDefinitionAtCursor,
   deleteCurrentLine: editorPane.deleteCurrentLine.bind(editorPane,),
   selectAndCopyCurrentLine: editorPane.selectAndCopyCurrentLine.bind(editorPane,),
+  indentLines: editorPane.indentLines.bind(editorPane,),
+  unindentLines: editorPane.unindentLines.bind(editorPane,),
+  duplicateLineDown: editorPane.duplicateLineDown.bind(editorPane,),
+  swapLineDown: editorPane.swapLineDown.bind(editorPane,),
+  swapLineUp: editorPane.swapLineUp.bind(editorPane,),
+  openTerminalAtCurrentFile: function openTerminal() {
+    const dir = currentFilePath !== null
+      ? currentFilePath.slice(0, currentFilePath.lastIndexOf('/'),)
+      : ws.rootDir;
+    void ws.request({ type: 'openInTerminal', path: dir, },);
+  },
   requestCompletions,
   expandSelection,
   shrinkSelection,

@@ -39,7 +39,7 @@
 - [x] Cross-runtime: `Bun.file()` replaced with `readFile` from `node:fs/promises`
 - [x] Static serving: silent catch narrowed to ENOENT only; unexpected errors rethrow
 
-## Phase 3 -- Search
+## Phase 3 -- Search (done)
 
 - [x] `search` server operation: spawn `rg` subprocess, return `SearchResult[]` (file-path + content matches)
 - [x] Double-shift detection: track Shift keyup timestamps, trigger on <400ms gap with no intervening keys
@@ -47,13 +47,16 @@
 - [x] File-path results listed before content results; `%` prefix for content-only mode
 - [x] `EditorPane.scrollToLine`: content search results open the file at the matching line
 
-## Phase 4 -- File watching, themes, PWA
+## Phase 4 -- File watching and themes (done)
 
-- [ ] `fs.watch` wrapper on open file paths, push `fileChanged` events over WebSocket
-- [ ] Frontend handles `fileChanged`: reload file content (MVP: always reload, no conflict UI)
-- [ ] Light theme (#444 on #fff) + toggle keybinding
-- [ ] PWA manifest (`manifest.json`) + service worker (`sw.ts`) for installability
-- [ ] `--editor-padding` CSS variable with a sensible default
+- [x] `DirWatcher` class: per-directory non-recursive `fs.watch`, debounced 200ms
+- [x] Event classification via `stat` after debounce (created/modified/deleted)
+- [x] Save suppression: `suppressPath` ignores self-triggered events for 500ms
+- [x] Ignore patterns: `.git`, `node_modules`, `.DS_Store`, swap files, temp files
+- [x] `watchDir` client notification registers directories for watching
+- [x] `fileChanged` server push with `path`, `changeType`, `isDirectory`
+- [x] Light theme (#444 on #fff) via `data-theme="light"` attribute on `:root`
+- [x] `--editor-padding` CSS variable defined as `0.5rem`
 
 ## Phase 5 -- Syntax highlighting (done)
 
@@ -63,7 +66,7 @@
 - [x] `::highlight()` CSS rules in shadow DOM stylesheet, colors via CSS custom properties
 - [x] Dark theme colors (One Dark inspired) and light theme colors in `index.html`
 - [x] `requestAnimationFrame` batching: coalesces rapid edits into one parse-and-highlight pass
-- [x] 100KB file size limit: files over 10KB skip highlighting entirely
+- [x] 100KB file size limit: files over 100KB skip highlighting entirely
 - [x] Tag groups: keyword, string, comment, number, type, function, property, heading, link, emphasis
 
 ## Phase 6 -- LSP integration (done)
@@ -72,12 +75,17 @@
 - [x] `LspClient` class: spawn, initialize, request/response, notification routing
 - [x] `LspManager` coordinator: oxlint (linting), tsgo (types/hover/completions), dprint (formatting)
 - [x] Document sync: `didOpen`, `didChange` (debounced full-text), `didSave`, `didClose`
+- [x] `DiagnosticStore`: multi-source aggregation (URI -> source -> diagnostics[])
+- [x] `document-sync.ts`: routing notifications to relevant servers by language ID
+- [x] `find-project-root.ts`: walk-up config file search for LSP `rootUri`, cached
 - [x] Diagnostic aggregation: merge diagnostics from oxlint + tsgo, push to client
 - [x] Diagnostic underlines via CSS Custom Highlight API (`::highlight(diag-error)`, etc.)
 - [x] Hover info from tsgo: debounced mouse tracking, `<hover-popup>` tooltip
 - [x] Completions from tsgo: Ctrl+Space / dot trigger, `<completion-popup>` dropdown
 - [x] Formatting from dprint: Ctrl+Shift+F / Ctrl+Alt+L (JetBrains parity)
-- [x] Go-to-definition from tsgo: Ctrl+Click navigates to definition location
+- [x] Go-to-definition from tsgo: Ctrl+Click and Ctrl+B navigate to definition location
+- [x] Find references from tsgo: Ctrl+B falls back to references when already at definition;
+  single result navigates directly, multiple results show `<references-popup>`
 - [x] Graceful degradation: servers that fail to start are skipped; features degrade
 - [x] Late-init recovery: documents opened before LSP ready are re-opened after init
 
@@ -97,39 +105,55 @@
 - [x] Client: hints soft-wrap via `white-space: pre-wrap`
 - [x] Debounced refresh on content changes (750ms), immediate on file open
 
+## Phase 8 -- Binary file viewer (done)
+
+- [x] `FileKind` type: `'text' | 'image' | 'audio' | 'video' | 'binary'`
+- [x] `file-kind.ts`: extension-based detection for images, audio, video; SVG excluded (editable text)
+- [x] `hex-dump.ts`: xxd-style format, 16 bytes/line, grouped as two 8-byte halves,
+  ASCII on right, truncated at 16 384 bytes with footer
+- [x] `<binary-viewer>` web component: four modes -- `<img>`, `<audio controls>`, `<video controls>`, `<pre>` hex dump
+- [x] `fileContent` response includes `kind` field for viewer routing
+- [x] Editor pane hidden when binary viewer is active, and vice versa
+
+## Phase 9 -- File tree context menu and filesystem operations (done)
+
+- [x] `<context-menu>` class: Popover API with CSS anchor positioning and `position-try-fallbacks`
+- [x] Button items and inline input items (for rename/copy/move with pre-filled names)
+- [x] Light dismiss via browser-native popover behavior
+- [x] Server operations: `deleteEntry`, `copyEntry`, `moveEntry`, `newEntry`
+- [x] Server operations: `openInTerminal` (xdg-terminal-exec fallback chain), `openInDefaultApp` (xdg-open)
+- [x] `fsActionDone` response for all filesystem mutations
+- [x] `app-context-actions.ts` bridges context menu actions to WebSocket requests
+
+## Phase 10 -- Selection ranges (done)
+
+- [x] Wire protocol: `selectionRange` request with positions, `selectionRangeResult` with nested chains
+- [x] Server: `textDocument/selectionRange` forwarded to tsgo
+- [x] Client: `expandSelection` walks the chain to find the next larger enclosing range
+- [x] Client: `shrinkSelection` walks the chain to find the largest strictly smaller range
+- [x] Ctrl+W expands, Ctrl+Shift+W shrinks; stateless (fresh chain per invocation)
+
+## Phase 11 -- Editor line operations (done)
+
+- [x] Ctrl+C copies entire current line when no text is selected
+- [x] Ctrl+D duplicates current line down (clones DOM node, repositions cursor)
+- [x] Ctrl+Shift+Up / Ctrl+Shift+Down swaps current line with adjacent line
+- [x] Tab / Shift+Tab indents / unindents current line or selection (2-space indent unit)
+- [x] Fullscreen keyboard lock: FAB enters fullscreen, locks Ctrl+W from browser
+
+## Phase 12 -- Infrastructure (done)
+
+- [x] `resolve-fs-id.ts`: stable filesystem volume ID (Linux `stat -f`, macOS `stat -f %v`, Windows `vol`)
+- [x] `connected` message includes `fsId` for localStorage key stability across mounts
+- [x] `file-tree-order.ts`: CSS `order`-based alphabetical sorting (first 4 chars -> base-128 int)
+- [x] `file-tree-entry.styles.ts`: extracted entry styles with custom disclosure arrows
+- [x] `completion-popup-render.ts`: extracted DOM rendering helpers for completion items
+
 ## Future (post-MVP)
 
 - Completion item kind icons
 - Signature help on function calls
 - Code actions (quick fixes from oxlint/tsgo)
 - Workspace diagnostics (diagnostics for files not currently open)
-
-## Technical notes
-
-### contenteditable behavior with per-line divs
-
-- **Enter** creates a new `<div>` (browser-native, correct behavior)
-- **Backspace at line start** merges current div into previous (correct)
-- **Delete at line end** merges next div into current (correct)
-- **Paste** intercepted: `event.preventDefault()` + `document.execCommand('insertText', false, text)`
-  to force plain text and preserve undo stack
-- **Undo/redo** browser-native; undo stack clears on programmatic `replaceChildren` (acceptable for MVP)
-- **IME** (CJK input) works natively
-- **Ctrl+F** browser-native find works because content is in the DOM
-  (shadow DOM requires `delegatesFocus` or the search to target the shadow root)
-
-### Buffer ownership
-
-Frontend (DOM) owns the canonical buffer.
-editord is stateless for buffer content -- it only reads/writes files on disk.
-No operational transform, no CRDT, no diff protocol.
-Full text sent on `open` (server to client) and `save` (client to server).
-
-### Security model
-
-Per-session random token via `crypto.randomUUID()`.
-Token passed as `?token=` query parameter on both the page URL and the WebSocket URL.
-WebSocket upgrade rejects connections without a valid token.
-Localhost-only by default.
-All filesystem operations validate paths against a root directory
-to prevent traversal attacks even with a valid token.
+- PWA manifest and service worker for installability
+- Theme toggle keybinding

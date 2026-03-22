@@ -3,9 +3,12 @@
   "description": "Cross-platform terminal emulator launcher. XDG + KDE kdeglobals on Linux, Windows Terminal / cmd on Windows.",
   "type": "module",
   "private": true,
-  "main": "src/index.ts",
+  "main": "src/launch.ts",
   "bin": {
     "terminal-exec": "src/index.ts"
+  },
+  "exports": {
+    ".": "./src/launch.ts"
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",

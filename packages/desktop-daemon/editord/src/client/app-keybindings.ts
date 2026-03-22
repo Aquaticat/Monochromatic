@@ -6,8 +6,11 @@
  * Ctrl+Shift+Z (redo), Ctrl+Y (delete current line),
  * Ctrl+C (copy current line when no selection), Ctrl+Space (completions),
  * Ctrl+W (expand selection), Ctrl+Shift+W (shrink selection),
- * Ctrl+0..9 (navigate to recent file), and popup navigation for completions
- * and references.
+ * Ctrl+D (duplicate line down), Ctrl+Shift+Down (swap line down),
+ * Ctrl+Shift+Up (swap line up), Ctrl+0..9 (navigate to recent file),
+ * Alt+F12 (open terminal at current file's directory),
+ * Tab (indent), Shift+Tab (unindent), and popup navigation for
+ * completions and references.
  */
 
 import type { CompletionPopup, } from './completion-popup.ts';
@@ -40,9 +43,22 @@ import type { ReferencesPopup, } from './references-popup.ts';
  *
  * @param navigateToRecentFile - opens a recent file by recency index (0 = current, 9 = oldest)
  *
+ * @param indentLines - indents current line or selected lines
+ *
+ * @param unindentLines - unindents current line or selected lines
+ *
+ * @param duplicateLineDown - duplicates current line below and moves cursor down
+ *
+ * @param swapLineDown - swaps current line with next line and moves cursor down
+ *
+ * @param swapLineUp - swaps current line with previous line and moves cursor up
+ *
+ * @param openTerminalAtCurrentFile - opens a terminal at the directory of the currently open file,
+ * or at the project root when no file is open
+ *
  * @param hoverPopup - hover popup to dismiss on Escape
  */
-export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinition, deleteCurrentLine, selectAndCopyCurrentLine, requestCompletions, expandSelection, shrinkSelection, navigateToRecentFile, completionPopup, referencesPopup, hoverPopup, }: {
+export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinition, deleteCurrentLine, selectAndCopyCurrentLine, requestCompletions, expandSelection, shrinkSelection, navigateToRecentFile, indentLines, unindentLines, duplicateLineDown, swapLineDown, swapLineUp, openTerminalAtCurrentFile, completionPopup, referencesPopup, hoverPopup, }: {
   saveCurrentFile: () => void;
   formatDocument: () => void;
   gotoDefinition: () => void;
@@ -52,6 +68,12 @@ export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinitio
   expandSelection: () => void;
   shrinkSelection: () => void;
   navigateToRecentFile: (index: number) => void;
+  indentLines: () => void;
+  unindentLines: () => void;
+  duplicateLineDown: () => void;
+  swapLineDown: () => void;
+  swapLineUp: () => void;
+  openTerminalAtCurrentFile: () => void;
   completionPopup: CompletionPopup;
   referencesPopup: ReferencesPopup;
   hoverPopup: HoverPopup;
@@ -100,6 +122,21 @@ export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinitio
         return;
       }
     }
+    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'd') {
+      event.preventDefault();
+      duplicateLineDown();
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'ArrowDown') {
+      event.preventDefault();
+      swapLineDown();
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'ArrowUp') {
+      event.preventDefault();
+      swapLineUp();
+      return;
+    }
     if (event.ctrlKey && event.key === ' ') {
       event.preventDefault();
       requestCompletions();
@@ -120,8 +157,19 @@ export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinitio
       navigateToRecentFile(Number(event.key,),);
       return;
     }
+    if (event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && event.key === 'F12') {
+      event.preventDefault();
+      openTerminalAtCurrentFile();
+      return;
+    }
     if (referencesPopup.visible && handleReferencesNav({ event, referencesPopup, },)) return;
     if (completionPopup.visible && handleCompletionNav({ event, completionPopup, },)) return;
+    if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      event.preventDefault();
+      if (event.shiftKey) unindentLines();
+      else indentLines();
+      return;
+    }
     if (event.key === 'Escape') hoverPopup.hide();
   },);
 }
