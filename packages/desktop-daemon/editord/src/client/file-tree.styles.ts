@@ -109,13 +109,8 @@ export const STYLES = [
   $({
     rule: '.file-label[data-recency] .toggle',
     decls: {
+      'font-family': cssCommaList(["'Inter'", 'sans-serif',],),
       opacity: cssNum(1 / 2,),
-    },
-  },),
-  $({
-    rule: '.file-label[data-recency="0"] .toggle',
-    decls: {
-      opacity: cssNum(1,),
     },
   },),
 ].join('',);

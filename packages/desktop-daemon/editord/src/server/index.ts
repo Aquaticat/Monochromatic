@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+// oxlint-disable max-lines -- server entry with auth, routes, LSP bootstrap, and WebSocket setup
 /**
  * editord entry point.
  *
@@ -18,6 +19,7 @@
 import {
   H3,
   defineHandler,
+  getQuery,
   serve,
   serveStatic,
 } from 'h3';
@@ -27,6 +29,8 @@ import { plugin as ws, } from 'crossws/server';
 
 import { l, tagged, } from './log.ts';
 import { LspManager, type WireDiagnostic, } from './lsp/lsp-manager.ts';
+import { assertWithinRoot, } from './operations/assert-within-root.ts';
+import { getContentType, } from './operations/file-kind.ts';
 import { resolveFsId, } from './operations/resolve-fs-id.ts';
 import { resolveRoot, } from './operations/resolve-root.ts';
 import { createWsHandler, } from './ws.ts';
@@ -145,6 +149,25 @@ app.get('/dist/client/**', defineHandler(function handleStaticAsset(event,) {
 },),);
 
 //endregion Static file serving
+
+//region Raw file serving — media files served via HTTP for native browser rendering
+
+app.get('/_raw', defineHandler(async function handleRawFile(event,) {
+  const query = getQuery(event,);
+  if (query.token !== AUTH_TOKEN) {
+    return new Response('Unauthorized', { status: 401, },);
+  }
+  const filePath = typeof query.path === 'string' ? query.path : null;
+  if (filePath === null) {
+    return new Response('Missing path', { status: 400, },);
+  }
+  const absolutePath = assertWithinRoot({ rootDir: ROOT_DIR, path: filePath, },);
+  const buffer = await readFile(absolutePath,);
+  const contentType = getContentType({ path: absolutePath, },);
+  return new Response(buffer, { headers: { 'Content-Type': contentType, }, },);
+},),);
+
+//endregion Raw file serving
 
 //region WebSocket — editor communication
 

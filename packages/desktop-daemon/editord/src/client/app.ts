@@ -1,9 +1,12 @@
+// oxlint-disable max-lines -- app entry wiring components, events, session restore, and keybindings; splitting fractures the boot sequence
 /**
  * editord client entry point.
  *
  * Creates components, connects WebSocket, wires events, boots.
  */
 
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
+import './binary-viewer.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './editor-pane.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
@@ -19,7 +22,8 @@ import './references-popup.ts';
 
 import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
 
-import type { DirEntry, SearchResult, } from '../protocol.ts';
+import type { DirEntry, FileKind, SearchResult, } from '../protocol.ts';
+import type { BinaryViewer, } from './binary-viewer.ts';
 import { wireKeybindings, } from './app-keybindings.ts';
 import { wireLsp, } from './app-lsp.ts';
 import { restoreSession, wireSessionPersistence, } from './app-session.ts';
@@ -32,6 +36,7 @@ import { getParserForPath, } from './languages.ts';
 import { l, tagged, } from './log.ts';
 import type { ReferenceSelectDetail, ReferencesPopup, } from './references-popup.ts';
 import type { ResultSelectDetail, SearchOverlay, } from './search-overlay.ts';
+import { showFixedToast, } from './toast.ts';
 import { EditorWsClient, } from './ws-client.ts';
 
 /** Tagged logger for the app. */
@@ -68,6 +73,9 @@ const completionPopup = document.createElement('completion-popup',) as Completio
 /** References list popup. */
 // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- custom element registered via define
 const referencesPopup = document.createElement('references-popup',) as ReferencesPopup;
+/** Binary/media file viewer. */
+// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- custom element registered via define
+const binaryViewer = document.createElement('binary-viewer',) as BinaryViewer;
 
 fileTree.fetchDir = async function fetchDir(path: string,): Promise<DirEntry[]> {
   const r = await ws.request({ type: 'listDir', path, },);
@@ -80,10 +88,13 @@ searchOverlay.onSearch = async function handleSearch(query: string,): Promise<Se
   return 'results' in r ? r.results : [];
 };
 
-appElement.append(fileTree, editorPane, searchOverlay, hoverPopup, completionPopup, referencesPopup,);
+appElement.append(fileTree, editorPane, binaryViewer, searchOverlay, hoverPopup, completionPopup, referencesPopup,);
 
 /** Path of the currently open file. */
 let currentFilePath = filePath;
+
+/** Kind of the currently open file; prevents save/LSP for non-text files. */
+let currentFileKind: FileKind = 'text';
 
 /**
  * Returns the current file path.
@@ -109,8 +120,18 @@ function recordFileOpen(path: string,): void {
   void fileTree.revealFiles({ paths: [path,], },);
 }
 
+/** Bytes per kilobyte. */
+const BYTES_PER_KB = 1_024;
+
+/** Content length threshold for showing a "file too large" warning toast. */
+const FILE_SIZE_WARNING_THRESHOLD = 100 * BYTES_PER_KB;
+
 /**
- * Loads a file from the server, scrolls to a line, and logs errors.
+ * Loads a file from the server and displays it in the appropriate viewer.
+ * Text files go to the editor pane; media files to native browser elements;
+ * generic binaries to a hex dump display.
+ * Shows a warning toast for text files exceeding {@link FILE_SIZE_WARNING_THRESHOLD}
+ * but still loads them.
  *
  * @param path - absolute file path to open
  *
@@ -121,10 +142,36 @@ function recordFileOpen(path: string,): void {
 async function loadFileSafe(path: string, line?: number, character?: number,): Promise<void> {
   try {
     const r = await ws.request({ type: 'open', path, },);
+    if (!('kind' in r)) return;
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'kind' in r; cast needed because ServerMessage union is wide
+    const kind = r.kind as FileKind;
+    currentFileKind = kind;
+    document.title = `editord - ${path}`;
+
+    if (kind === 'image' || kind === 'audio' || kind === 'video') {
+      editorPane.style.display = 'none';
+      const mediaUrl = `/_raw?path=${encodeURIComponent(path,)}&token=${token}`;
+      if (kind === 'image') binaryViewer.showImage({ url: mediaUrl, },);
+      else if (kind === 'audio') binaryViewer.showAudio({ url: mediaUrl, },);
+      else binaryViewer.showVideo({ url: mediaUrl, },);
+      return;
+    }
+
+    if (kind === 'binary' && 'content' in r) {
+      editorPane.style.display = 'none';
+      binaryViewer.showHexDump({ content: String(r.content,), },);
+      return;
+    }
+
+    binaryViewer.hide();
+    editorPane.style.display = '';
     if ('content' in r) {
+      const content = String(r.content,);
+      if (content.length > FILE_SIZE_WARNING_THRESHOLD) {
+        showFixedToast({ message: 'File too large (>100KB)', },);
+      }
       editorPane.setParser(getParserForPath({ path, },),);
-      editorPane.setText(String(r.content,),);
-      document.title = `editord - ${path}`;
+      editorPane.setText(content,);
       if (line !== undefined) {
         editorPane.scrollToLine({ line, },);
         editorPane.restoreCursor({ line: line - 1, character: character ?? 0, },);
@@ -141,7 +188,7 @@ fileTree.addEventListener('file-select', function handleFileSelect(event,) {
   recordFileOpen(path,);
   void (async function loadAndRefresh(): Promise<void> {
     await loadFileSafe(path,);
-    refreshInlayHints();
+    if (currentFileKind === 'text') refreshInlayHints();
   })();
 },);
 searchOverlay.addEventListener('result-select', function handleResultSelect(event,) {
@@ -151,7 +198,7 @@ searchOverlay.addEventListener('result-select', function handleResultSelect(even
   recordFileOpen(path,);
   void (async function loadAndRefresh(): Promise<void> {
     await loadFileSafe(path, line,);
-    refreshInlayHints();
+    if (currentFileKind === 'text') refreshInlayHints();
   })();
 },);
 
@@ -162,16 +209,16 @@ referencesPopup.addEventListener('reference-select', function handleReferenceSel
   recordFileOpen(path,);
   void (async function loadAndRefresh(): Promise<void> {
     await loadFileSafe(path, line, character,);
-    refreshInlayHints();
+    if (currentFileKind === 'text') refreshInlayHints();
   })();
 },);
 
 /** LSP feature callbacks returned from wiring. */
 const { formatDocument, requestCompletions, refreshInlayHints, gotoDefinitionAtCursor, } = wireLsp({ ws, editorPane, hoverPopup, completionPopup, referencesPopup, getCurrentFilePath, loadFileSafe, },);
 
-/** Saves the current editor content to the server. */
+/** Saves the current editor content to the server. Skips non-text files. */
 async function saveCurrentFile(): Promise<void> {
-  if (currentFilePath === null) return;
+  if (currentFilePath === null || currentFileKind !== 'text') return;
   try { await ws.request({ type: 'save', path: currentFilePath, content: editorPane.getText(), },); }
   catch (error) { appLog.error(`save failed: ${String(error,)}`,); }
 }
@@ -207,7 +254,7 @@ wireKeybindings({
       await fileTree.revealFiles({ paths: [path,], },);
       fileTree.scrollToFile({ path, },);
       await loadFileSafe(path,);
-      refreshInlayHints();
+      if (currentFileKind === 'text') refreshInlayHints();
     })();
   },
   completionPopup,
@@ -231,4 +278,5 @@ await fileTree.revealFiles({ paths: recentFiles.paths, },);
 fileTree.updateRecency({ paths: recentFiles.paths, },);
 //endregion
 
-if (currentFilePath !== null) refreshInlayHints();
+// oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- currentFileKind is mutated by loadFileSafe which runs during restoreSession above
+if (currentFilePath !== null && currentFileKind === 'text') refreshInlayHints();

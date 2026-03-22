@@ -119,9 +119,9 @@ async function dispatchMessage(
     const result = await openFile({ rootDir, path: parsed.path, },);
     peer.send(JSON.stringify({ type: 'fileContent', id: parsed.id, ...result, },),);
 
-    /** Notify LSP servers about the opened file. */
-    if (lspManager !== null && 'content' in result) {
-      await lspManager.didOpen({ path: parsed.path, text: String(result.content,), },);
+    /** Notify LSP servers only for text files. */
+    if (lspManager !== null && result.kind === 'text') {
+      await lspManager.didOpen({ path: parsed.path, text: result.content, },);
     }
   }
   else if (parsed.type === 'save') {

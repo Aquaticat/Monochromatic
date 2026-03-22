@@ -96,6 +96,17 @@ export type InlayHint = {
 
 //endregion LSP types
 
+//region File kind
+
+/**
+ * Content category of a file, determined by extension and content inspection.
+ * Drives viewer selection: text files go to the editor, media files to native
+ * elements, and unknown binaries to a hex dump display.
+ */
+export type FileKind = 'text' | 'image' | 'audio' | 'video' | 'binary';
+
+//endregion File kind
+
 //region Client messages
 
 /**
@@ -144,7 +155,7 @@ export type ClientNotification = Extract<ClientMessage, { type: 'didChange' } | 
  */
 export type ServerMessage =
   | { type: 'connected'; rootDir: string; fsId: string }
-  | { type: 'fileContent'; id: string; path: string; content: string }
+  | { type: 'fileContent'; id: string; path: string; content: string; kind: FileKind }
   | { type: 'saved'; id: string; path: string }
   | { type: 'dirListing'; id: string; path: string; entries: DirEntry[] }
   | { type: 'searchResults'; id: string; results: SearchResult[] }
