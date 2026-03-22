@@ -51,7 +51,33 @@ function appendArg(
 }
 
 /**
+ * Tokens to strip from Exec lines because they interfere with programmatic launches.
+ * Single-instance flags cause IPC activation to an existing process, which may not
+ * forward `--working-directory` or other config overrides to the running instance.
+ */
+const STRIPPED_TOKEN_PREFIXES: readonly string[] = [
+  '--gtk-single-instance',
+];
+
+/**
+ * Returns `true` when a token should be kept (not stripped).
+ *
+ * @param token - single exec token to check
+ *
+ * @returns whether to keep the token
+ */
+function keepToken(token: string,): boolean {
+  return STRIPPED_TOKEN_PREFIXES.every(function notMatch(prefix,) {
+    return !token.startsWith(prefix,);
+  },);
+}
+
+/**
  * Builds the final command array from a resolved terminal and user options.
+ *
+ * Strips single-instance flags from the Exec tokens because they cause IPC
+ * activation to a running instance, which does not reliably forward config
+ * overrides like `--working-directory`.
  *
  * @param terminal - Resolved terminal entry with Exec tokens and argument keys.
  *
@@ -62,17 +88,17 @@ function appendArg(
  * @example
  * ```ts
  * const cmd = buildCommand({
- *   terminal: { execTokens: ['/usr/bin/ghostty', '--gtk-single-instance=true'], execArg: '-e', ... },
+ *   terminal: { execTokens: ['/usr/bin/ghostty'], execArg: '-e', ... },
  *   options: { command: ['bash', '-l'], appId: '', title: '', dir: '', hold: false },
  * })
- * // ['/usr/bin/ghostty', '--gtk-single-instance=true', '-e', 'bash', '-l']
+ * // ['/usr/bin/ghostty', '-e', 'bash', '-l']
  * ```
  */
 export function buildCommand({ terminal, options, }: {
   terminal: ResolvedTerminal;
   options: UserOptions;
 },): readonly string[] {
-  const args: string[] = [...terminal.execTokens,];
+  const args: string[] = terminal.execTokens.filter(keepToken,);
 
   if (options.appId.length > 0 && terminal.appIdArg.length > 0)
     appendArg({ args, argKey: terminal.appIdArg, value: options.appId, },);
