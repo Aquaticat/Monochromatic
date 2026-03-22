@@ -301,9 +301,10 @@ fileTree.onDirExpanded = function handleDirExpanded(path: string,): void {
 ws.onFileChanged = function handleFileChanged(path: string, changeType: FsChangeType, _isDirectory: boolean,): void {
   appLog.info(`file changed: ${path} (${changeType})`,);
 
-  if (changeType === 'modified' && path === currentFilePath) {
+  /** Reload the open file on content modification or atomic replace (write-to-temp + rename). */
+  if ((changeType === 'modified' || changeType === 'created') && path === currentFilePath) {
     void loadFileSafe(path,);
-    return;
+    if (changeType === 'modified') return;
   }
 
   if (changeType === 'created' || changeType === 'deleted') {
