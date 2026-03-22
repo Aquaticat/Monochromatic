@@ -357,6 +357,8 @@ run = [{ tasks = ["watch:build", "watch:test"] }]
 [tasks."lint"]
 description = "Lint"
 run = ["mise '//packages/...:lint'", { tasks = ["lint:dprint", "lint:stylelint"] }]
+[tasks."lint".env]
+OXLINT_THREADS = "1"
 
 [tasks."lint:dprint"]
 hide = true

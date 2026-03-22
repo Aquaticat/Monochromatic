@@ -19,8 +19,29 @@ import { augmentOxlintOutput, } from './oxlint-augment.ts';
 
 //region Main execution
 
+/**
+ * Thread count override from environment.
+ *
+ * When set, injects `--threads <value>` into the oxlint arguments.
+ * oxlint ignores `RAYON_NUM_THREADS` because it always passes an explicit
+ * count to rayon's `ThreadPoolBuilder`, so this env var is the only way
+ * to control threads without modifying every call site.
+ *
+ * @example Set in a mise task env block:
+ * ```toml
+ * [tasks.lint.env]
+ * OXLINT_THREADS = "1"
+ * ```
+ */
+const threadOverride = process.env['OXLINT_THREADS'];
+
 /** Arguments forwarded to oxlint. */
-const oxlintArgs = process.argv.slice(2,);
+const oxlintArgs = [
+  ...(threadOverride !== undefined && threadOverride !== ''
+    ? ['--threads', threadOverride,]
+    : []),
+  ...process.argv.slice(2,),
+];
 
 try {
   const result = await spawn('oxlint', [...oxlintArgs,],);
