@@ -82,6 +82,7 @@ export const STYLES = [
   $({
     rule: '.item-path',
     decls: {
+      direction: 'rtl',
       'flex-shrink': cssNum(1,),
       overflow: 'hidden',
       'text-overflow': 'ellipsis',

@@ -99,7 +99,7 @@ export async function restoreSession({ ws, editorPane, fileTree, loadFileSafe, q
   ws: EditorWsClient;
   editorPane: EditorPane;
   fileTree: FileTree;
-  loadFileSafe: (path: string, line?: number) => Promise<void>;
+  loadFileSafe: (path: string, line?: number, character?: number,) => Promise<void>;
   queryFilePath: string | null;
 }): Promise<string | null> {
   /** Saved session state from a previous visit, if any. */

@@ -97,15 +97,20 @@ function getCurrentFilePath(): string | null { return currentFilePath; }
  * @param path - absolute file path to open
  *
  * @param line - optional 1-based line number to scroll to after loading
+ *
+ * @param character - optional 0-based character offset within the line
  */
-async function loadFileSafe(path: string, line?: number,): Promise<void> {
+async function loadFileSafe(path: string, line?: number, character?: number,): Promise<void> {
   try {
     const r = await ws.request({ type: 'open', path, },);
     if ('content' in r) {
       editorPane.setParser(getParserForPath({ path, },),);
       editorPane.setText(String(r.content,),);
       document.title = `editord - ${path}`;
-      if (line !== undefined) editorPane.scrollToLine({ line, },);
+      if (line !== undefined) {
+        editorPane.scrollToLine({ line, },);
+        editorPane.restoreCursor({ line: line - 1, character: character ?? 0, },);
+      }
     }
   }
   catch (error) { appLog.error(`failed to load: ${String(error,)}`,); }
@@ -132,10 +137,10 @@ searchOverlay.addEventListener('result-select', function handleResultSelect(even
 
 referencesPopup.addEventListener('reference-select', function handleReferenceSelect(event,) {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from ReferencesPopup
-  const { path, line, } = (event as CustomEvent<ReferenceSelectDetail>).detail;
+  const { path, line, character, } = (event as CustomEvent<ReferenceSelectDetail>).detail;
   currentFilePath = path;
   void (async function loadAndRefresh(): Promise<void> {
-    await loadFileSafe(path, line,);
+    await loadFileSafe(path, line, character,);
     refreshInlayHints();
   })();
 },);

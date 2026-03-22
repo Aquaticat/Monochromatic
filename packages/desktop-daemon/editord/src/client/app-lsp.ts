@@ -49,7 +49,7 @@ export function wireLsp({ ws, editorPane, hoverPopup, completionPopup, reference
   completionPopup: CompletionPopup;
   referencesPopup: ReferencesPopup;
   getCurrentFilePath: () => string | null;
-  loadFileSafe: (path: string, line?: number,) => Promise<void>;
+  loadFileSafe: (path: string, line?: number, character?: number,) => Promise<void>;
 }): { formatDocument: () => Promise<void>; requestCompletions: () => void; refreshInlayHints: () => void; gotoDefinitionAtCursor: () => void } {
   /**
    * Returns the contenteditable container.
@@ -136,13 +136,13 @@ async function showReferences({ ws, referencesPopup, getCurrentFilePath, line, c
     const rootDir = ws.rootDir;
     const items: ReferenceLocation[] = locations.map(function toItem(loc,) {
       const label = loc.path.startsWith(rootDir,) ? loc.path.slice(rootDir.length + 1,) : loc.path;
-      return { path: loc.path, line: loc.line, label, };
+      return { path: loc.path, line: loc.line, character: loc.character, label, };
     },);
 
     if (items.length === 1) {
       const only = items[0];
       if (only !== undefined) referencesPopup.dispatchEvent(new CustomEvent('reference-select', {
-        detail: { path: only.path, line: only.line + 1, },
+        detail: { path: only.path, line: only.line + 1, character: only.character, },
         bubbles: true, composed: true,
       },),);
       return;

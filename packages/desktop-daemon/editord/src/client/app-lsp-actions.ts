@@ -55,7 +55,7 @@ export function wireGotoDefinition({ ws, editorPane, getEditorElement, getCurren
   editorPane: HTMLElement;
   getEditorElement: () => HTMLElement | null;
   getCurrentFilePath: () => string | null;
-  loadFileSafe: (path: string, line?: number,) => Promise<void>;
+  loadFileSafe: (path: string, line?: number, character?: number,) => Promise<void>;
 }): void {
   editorPane.addEventListener('click', function handleCtrlClick(event,) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- click is always a MouseEvent
@@ -90,7 +90,7 @@ export type GotoDefinitionResult = 'navigated' | 'no-definition' | 'already-at-d
 export async function doGotoDefinition({ ws, getCurrentFilePath, loadFileSafe, line, character, }: {
   ws: EditorWsClient;
   getCurrentFilePath: () => string | null;
-  loadFileSafe: (path: string, line?: number,) => Promise<void>;
+  loadFileSafe: (path: string, line?: number, character?: number,) => Promise<void>;
   line: number; character: number;
 }): Promise<GotoDefinitionResult> {
   const path = getCurrentFilePath();
@@ -101,10 +101,10 @@ export async function doGotoDefinition({ ws, getCurrentFilePath, loadFileSafe, l
     actionLog.info(`definition response: ${JSON.stringify(response,)}`,);
     if ('path' in response && 'line' in response) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response narrowed by discriminant checks
-      const def = response as { path: string; line: number };
+      const def = response as { path: string; line: number; character: number };
       if (def.path !== '') {
         if (def.path === path && def.line === line) return 'already-at-definition';
-        await loadFileSafe(def.path, def.line + 1,);
+        await loadFileSafe(def.path, def.line + 1, def.character,);
         return 'navigated';
       }
     }

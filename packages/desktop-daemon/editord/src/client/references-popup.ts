@@ -12,7 +12,6 @@
 
 import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
 
-import { middleOut, } from './middle-out.ts';
 import { STYLES, } from './references-popup.styles.ts';
 
 /** Single reference location with display label. */
@@ -21,6 +20,8 @@ export type ReferenceLocation = {
   path: string;
   /** 0-based line number. */
   line: number;
+  /** 0-based character offset within the line. */
+  character: number;
   /** Display label (relative path). */
   label: string;
 };
@@ -31,6 +32,8 @@ export type ReferenceSelectDetail = {
   path: string;
   /** 1-based line number for navigation. */
   line: number;
+  /** 0-based character offset within the line. */
+  character: number;
 };
 
 /**
@@ -47,9 +50,6 @@ export class ReferencesPopup extends HTMLElement {
   #locations: ReferenceLocation[] = [];
   /** Index of the selected item (-1 = none). */
   #selectedIndex = -1;
-  /** Measured width of a single monospace character in pixels. */
-  #charWidthPx = 0;
-
   /**
    * Invisible anchor div positioned at the editor cursor.
    * The popup uses CSS `position-anchor` to attach to it.
@@ -111,16 +111,10 @@ export class ReferencesPopup extends HTMLElement {
 
     this.showPopover();
 
-    this.#measureCharWidth();
-    const budget = this.#charBudget();
-
     this.#list.replaceChildren(...locations.map(function renderItem(loc, index,) {
-      const truncated = budget > 0
-        ? middleOut({ text: loc.label, query: loc.label.split('/',).pop() ?? '', budget, },)
-        : loc.label;
       const item = h({ tag: 'div', class: 'item', },);
       item.append(
-        h({ tag: 'span', class: 'item-path', text: truncated, },),
+        h({ tag: 'span', class: 'item-path', text: loc.label, },),
         h({ tag: 'span', class: 'line-num', text: `:${String(loc.line + 1,)}`, },),
       );
       if (index === 0) item.setAttribute('data-selected', '',);
@@ -167,33 +161,12 @@ export class ReferencesPopup extends HTMLElement {
     if (this.#selectedIndex < 0 || this.#selectedIndex >= this.#locations.length) return null;
     const loc = this.#locations[this.#selectedIndex];
     if (loc === undefined) return null;
-    const detail: ReferenceSelectDetail = { path: loc.path, line: loc.line + 1, };
+    const detail: ReferenceSelectDetail = { path: loc.path, line: loc.line + 1, character: loc.character, };
     this.hide();
     this.dispatchEvent(new CustomEvent('reference-select', { detail, bubbles: true, composed: true, },),);
     return detail;
   }
 
-  /**
-   * Measures the width of a single monospace character using canvas text metrics.
-   */
-  #measureCharWidth(): void {
-    const { font, } = getComputedStyle(this,);
-    const canvas = document.createElement('canvas',);
-    const ctx = canvas.getContext('2d',);
-    if (ctx === null) return;
-    ctx.font = font;
-    this.#charWidthPx = ctx.measureText('0',).width;
-  }
-
-  /**
-   * Computes the character budget for middle-out path truncation.
-   *
-   * @returns number of monospace characters that fit in one row
-   */
-  #charBudget(): number {
-    if (this.#charWidthPx <= 0) return 0;
-    return Math.floor(this.clientWidth / this.#charWidthPx,);
-  }
 }
 
 customElements.define('references-popup', ReferencesPopup,);
