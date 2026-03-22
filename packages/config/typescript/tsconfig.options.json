@@ -127,6 +127,9 @@
 
     "composite": true,
 
+    // tsgo bugs. #2666 — tsgo --build fails to invalidate incremental cache after dependency update.
+    "incremental": false,
+
     //endregion
 
     //region Output Formatting
