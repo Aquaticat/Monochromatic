@@ -83,15 +83,27 @@ task-depends -a -s "src/**" -o "dist/**" -- mise run build
 
 ### task-tsgo
 
-Wrapper for `tsgo` that filters out diagnostics originating from `node_modules/` paths.
+Wrapper for `tsgo` that cleans stale incremental caches and
+filters out diagnostics originating from `node_modules/` paths.
 
+**Incremental cache cleanup.**
+The shared tsconfig sets `composite: true`, which implies `incremental: true`.
+This is intentional — `composite` provides valuable constraints
+(rootDir defaults to the tsconfig directory, all source files must be matched by `include`,
+and `declaration` defaults to true).
+However, tsgo's `--build` mode has a cache invalidation bug
+([#2666](https://github.com/nicolo-ribaudo/tc39-proposal-structs/issues/2666))
+where stale `.tsbuildinfo` files cause false negatives after dependency updates.
+To work around this, `task-tsgo` deletes all `dist/**/*.tsbuildinfo` files
+before each invocation, forcing a clean check every time.
+
+**`node_modules` diagnostic filtering.**
 JSR packages ship `.ts` source files instead of `.d.ts` declarations.
 TypeScript's resolver prefers `.ts` siblings over `.js` exports,
 and `skipLibCheck` only covers `.d.ts` files.
 This causes `tsgo --build` to type-check JSR package source
 under the consumer's tsconfig, producing false positives
 (e.g. `noUncheckedIndexedAccess` violations in `@jsr/zod__zod`).
-
 The wrapper drops diagnostic lines whose file path contains `/node_modules/`
 along with their continuation lines (indented context lines),
 and exits 0 when only `node_modules` errors were found.

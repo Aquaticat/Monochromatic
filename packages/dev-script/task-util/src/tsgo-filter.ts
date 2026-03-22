@@ -28,7 +28,38 @@
  * ```
  */
 
+import { glob, unlink, } from 'node:fs/promises';
+
 import spawn from 'nano-spawn';
+
+//region Incremental cache cleanup
+
+/**
+ * Removes all `.tsbuildinfo` files under `dist/` in the current working directory.
+ *
+ * `composite: true` implies `incremental: true`, which produces `.tsbuildinfo` caches.
+ * tsgo's `--build` mode has a cache invalidation bug (#2666) where stale `.tsbuildinfo`
+ * files cause false negatives after dependency updates. Deleting them before each build
+ * forces a clean check while preserving all other `composite` benefits
+ * (rootDir defaulting, include enforcement, declaration defaulting).
+ *
+ * @example
+ * ```ts
+ * await removeStaleBuildInfo();
+ * // All dist/**\/*.tsbuildinfo files in cwd are now deleted
+ * ```
+ */
+async function removeStaleBuildInfo(): Promise<void> {
+  const entries: string[] = [];
+  for await (const entry of glob('dist/**/*.tsbuildinfo',)) {
+    entries.push(entry,);
+  }
+  await Promise.all(entries.map(function unlinkEntry(entry,) {
+    return unlink(entry,);
+  },),);
+}
+
+//endregion Incremental cache cleanup
 
 //region Diagnostic line detection
 
@@ -177,6 +208,9 @@ export function filterTsgoOutput(output: string,): {
 const tsgoArgs = process.argv.length > 2
   ? process.argv.slice(2,)
   : ['--build',];
+
+// tsgo #2666 — stale .tsbuildinfo causes false negatives; clean before each build
+await removeStaleBuildInfo();
 
 try {
   const result = await spawn('tsgo', [...tsgoArgs,],);
