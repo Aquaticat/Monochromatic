@@ -30,7 +30,8 @@ import { restoreSession, wireSessionPersistence, } from './app-session.ts';
 import { createRecentFiles, } from './recent-files.ts';
 import type { CompletionPopup, } from './completion-popup.ts';
 import type { EditorPane, } from './editor-pane.ts';
-import type { FileTree, } from './file-tree.ts';
+import { dispatchFsAction, } from './app-context-actions.ts';
+import type { ContextAction, FileTree, } from './file-tree.ts';
 import type { HoverPopup, } from './hover-popup.ts';
 import { getParserForPath, } from './languages.ts';
 import { l, tagged, } from './log.ts';
@@ -81,6 +82,18 @@ fileTree.fetchDir = async function fetchDir(path: string,): Promise<DirEntry[]> 
   const r = await ws.request({ type: 'listDir', path, },);
   return 'entries' in r ? r.entries : [];
 };
+
+fileTree.onContextAction = function handleContextAction(action: ContextAction,): void {
+  void (async function dispatchContextAction(): Promise<void> {
+    try {
+      await dispatchFsAction({ action, ws, },);
+    }
+    catch (error) {
+      showFixedToast({ message: `Action failed: ${String(error,)}`, },);
+    }
+  })();
+};
+
 searchOverlay.getRootDir = function getScope(): string { return fileTree.selectedDir !== '' ? fileTree.selectedDir : ws.rootDir; };
 searchOverlay.onSearch = async function handleSearch(query: string,): Promise<SearchResult[]> {
   const scope = fileTree.selectedDir !== '' ? fileTree.selectedDir : ws.rootDir;

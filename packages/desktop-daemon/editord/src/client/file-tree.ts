@@ -16,11 +16,10 @@ import {
   $ as h,
 } from '@monochromatic-dev/module-es/h-dom';
 
+import { ContextMenu, type ContextMenuItem, } from './context-menu.ts';
 import type { DirEntry, } from '../protocol.ts';
 import { nameToOrder, } from './file-tree-order.ts';
 import {
-  COLLAPSED,
-  EXPANDED,
   STYLES,
 } from './file-tree.styles.ts';
 import { l as rootLogger, tagged, } from './log.ts';
@@ -29,6 +28,19 @@ import { l as rootLogger, tagged, } from './log.ts';
 const l = tagged({ tag: 'file-tree', l: rootLogger, },);
 
 export type { DirEntry, };
+
+/**
+ * Action dispatched from the file tree context menu.
+ * Each variant carries the full payload for the server to execute;
+ * text input has already been collected via the inline prompt bar.
+ */
+export type ContextAction =
+  | { kind: 'delete'; path: string }
+  | { kind: 'copy'; path: string; destPath: string }
+  | { kind: 'move'; path: string; destPath: string }
+  | { kind: 'new'; parentPath: string; name: string }
+  | { kind: 'openInTerminal'; path: string }
+  | { kind: 'openInDefaultApp'; path: string };
 
 /**
  * `<file-tree>` — directory tree sidebar with native `<details>` toggle.
@@ -68,11 +80,17 @@ export class FileTree extends HTMLElement {
    */
   #rootPath = '';
 
+  /** Context menu manager, initialized on first `connectedCallback`. */
+  #contextMenu: ContextMenu | null = null;
+
   /** Callback to fetch directory contents. Set by the parent application. */
   fetchDir: ((path: string,) => Promise<DirEntry[]>) | null = null;
 
   /** Callback invoked when a directory is expanded for the first time. */
   onDirExpanded: ((path: string,) => void) | null = null;
+
+  /** Callback invoked when a context menu action is selected. */
+  onContextAction: ((action: ContextAction,) => void) | null = null;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -107,6 +125,7 @@ export class FileTree extends HTMLElement {
   connectedCallback(): void {
     const tree = this;
     this.#tree = h({ tag: 'div', class: 'tree', },);
+    this.#contextMenu = new ContextMenu();
     this.#shadow.replaceChildren(
       h({ tag: 'style', text: STYLES, },),
       this.#tree,
@@ -446,16 +465,23 @@ export class FileTree extends HTMLElement {
    */
   #createDirEntry({ path, name, }: { path: string; name: string }): HTMLElement {
     const tree = this;
-    const toggle = h({ tag: 'span', class: 'toggle', text: COLLAPSED, },);
     const childrenContainer = h({ tag: 'div', class: 'children', },);
 
     const summary = h({
       tag: 'summary',
       attrs: { 'data-path': path, },
       children: [
-        toggle,
         h({ tag: 'span', class: 'name', text: name, },),
       ],
+      on: {
+        mouseup: function handleDirContext(event: MouseEvent,) {
+          /** Right mouse button = 2. */
+          if (event.button !== 2) return;
+          event.preventDefault();
+          tree.#showDirContextMenu({ x: event.clientX, y: event.clientY, path, },);
+        },
+        contextmenu: function suppressDirContextMenu(event: MouseEvent,) { event.preventDefault(); },
+      },
     },);
 
     const details = h({
@@ -466,8 +492,6 @@ export class FileTree extends HTMLElement {
           // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event always fires on the <details> element that owns it
           const detailsElement = event.currentTarget as HTMLDetailsElement;
           const isExpanded = detailsElement.open;
-          toggle.textContent = isExpanded ? EXPANDED : COLLAPSED;
-
           if (!isExpanded || tree.#loadedDirs.has(path,))
             return;
 
@@ -530,6 +554,12 @@ export class FileTree extends HTMLElement {
             bubbles: true,
           },),);
         },
+        mouseup: function handleFileContext(event: MouseEvent,) {
+          if (event.button !== 2) return;
+          event.preventDefault();
+          tree.#showFileContextMenu({ x: event.clientX, y: event.clientY, path, },);
+        },
+        contextmenu: function suppressFileContextMenu(event: MouseEvent,) { event.preventDefault(); },
       },
     },);
 
@@ -537,6 +567,53 @@ export class FileTree extends HTMLElement {
 
     label.style.order = String(nameToOrder({ name, },),);
     return label;
+  }
+
+  /**
+   * Shows the context menu for a directory entry.
+   *
+   * @param x - horizontal click position in pixels
+   *
+   * @param y - vertical click position in pixels
+   *
+   * @param path - absolute directory path
+   */
+  #showDirContextMenu({ x, y, path, }: { x: number; y: number; path: string }): void {
+    if (this.#contextMenu === null) return;
+
+    const tree = this;
+    const items: ContextMenuItem[] = [
+      { label: 'New', defaultValue: '', action: function newEntry(name,): void { if (name !== undefined) tree.onContextAction?.({ kind: 'new', parentPath: path, name, },); }, },
+      { label: 'Copy to', defaultValue: path, action: function copy(destPath,): void { if (destPath !== undefined) tree.onContextAction?.({ kind: 'copy', path, destPath, },); }, },
+      { label: 'Move to', defaultValue: path, action: function move(destPath,): void { if (destPath !== undefined) tree.onContextAction?.({ kind: 'move', path, destPath, },); }, },
+      { label: 'Delete', action: function del(): void { tree.onContextAction?.({ kind: 'delete', path, },); }, },
+      { label: 'Open in terminal', action: function openTerm(): void { tree.onContextAction?.({ kind: 'openInTerminal', path, },); }, },
+    ];
+
+    this.#contextMenu.show({ x, y, items, },);
+  }
+
+  /**
+   * Shows the context menu for a file entry.
+   *
+   * @param x - horizontal click position in pixels
+   *
+   * @param y - vertical click position in pixels
+   *
+   * @param path - absolute file path
+   */
+  #showFileContextMenu({ x, y, path, }: { x: number; y: number; path: string }): void {
+    if (this.#contextMenu === null) return;
+
+    const tree = this;
+    const items: ContextMenuItem[] = [
+      { label: 'Copy to', defaultValue: path, action: function copy(destPath,): void { if (destPath !== undefined) tree.onContextAction?.({ kind: 'copy', path, destPath, },); }, },
+      { label: 'Move to', defaultValue: path, action: function move(destPath,): void { if (destPath !== undefined) tree.onContextAction?.({ kind: 'move', path, destPath, },); }, },
+      { label: 'Delete', action: function del(): void { tree.onContextAction?.({ kind: 'delete', path, },); }, },
+      { label: 'Open in default app', action: function openApp(): void { tree.onContextAction?.({ kind: 'openInDefaultApp', path, },); }, },
+    ];
+
+    this.#contextMenu.show({ x, y, items, },);
   }
 }
 

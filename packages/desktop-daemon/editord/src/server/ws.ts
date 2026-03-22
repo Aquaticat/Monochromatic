@@ -18,14 +18,33 @@ import { l as rootLogger, tagged, } from './log.ts';
 import type { LspManager, } from './lsp/lsp-manager.ts';
 import type { LspCompletionItem, LspHover, LspInlayHint, LspMarkupContent, } from './lsp/types.ts';
 import { assertWithinRoot, } from './operations/assert-within-root.ts';
+import { copyEntry, } from './operations/copy-entry.ts';
+import { deleteEntry, } from './operations/delete-entry.ts';
 import { listDir, } from './operations/list-dir.ts';
+import { moveEntry, } from './operations/move-entry.ts';
+import { newEntry, } from './operations/new-entry.ts';
 import { openFile, } from './operations/open.ts';
+import { openInDefaultApp, openInTerminal, } from './operations/open-external.ts';
 import { saveFile, } from './operations/save.ts';
 import { search, } from './operations/search.ts';
 import type { DirWatcher, } from './operations/watch-filesystem.ts';
 
 /** Tagged logger for the WebSocket subsystem. */
 const l = tagged({ tag: 'ws', l: rootLogger, },);
+
+/**
+ * Checks whether an error is a Windows file-lock error (`EBUSY` or `EPERM`).
+ * These occur when an LSP server holds a handle on a file being moved or deleted.
+ *
+ * @param error - caught error value
+ *
+ * @returns whether the error code indicates a file lock
+ */
+function isFileLockError(error: unknown,): boolean {
+  if (typeof error !== 'object' || error === null) return false;
+  const { code, } = error as { code?: string };
+  return code === 'EBUSY' || code === 'EPERM';
+}
 
 /**
  * Tracks the `AbortController` for the currently in-flight search per peer.
@@ -274,6 +293,56 @@ async function dispatchMessage(
     peer.send(JSON.stringify({ type: 'referencesResult', id: parsed.id, locations, },),);
   }
   //endregion LSP message handlers
+  //region Filesystem action handlers
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'deleteEntry') {
+    try {
+      await deleteEntry({ rootDir, path: parsed.path, },);
+    }
+    catch (error) {
+      if (isFileLockError(error,) && lspManager !== null) {
+        await lspManager.shutdownForPath({ path: parsed.path, },);
+        await deleteEntry({ rootDir, path: parsed.path, },);
+      }
+      else { throw error; }
+    }
+    peer.send(JSON.stringify({ type: 'fsActionDone', id: parsed.id, },),);
+  }
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'copyEntry') {
+    await copyEntry({ rootDir, path: parsed.path, destPath: parsed.destPath, },);
+    peer.send(JSON.stringify({ type: 'fsActionDone', id: parsed.id, },),);
+  }
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'moveEntry') {
+    try {
+      await moveEntry({ rootDir, path: parsed.path, destPath: parsed.destPath, },);
+    }
+    catch (error) {
+      if (isFileLockError(error,) && lspManager !== null) {
+        await lspManager.shutdownForPath({ path: parsed.path, },);
+        await moveEntry({ rootDir, path: parsed.path, destPath: parsed.destPath, },);
+      }
+      else { throw error; }
+    }
+    peer.send(JSON.stringify({ type: 'fsActionDone', id: parsed.id, },),);
+  }
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'newEntry') {
+    await newEntry({ rootDir, parentPath: parsed.parentPath, name: parsed.name, isDirectory: parsed.isDirectory, },);
+    peer.send(JSON.stringify({ type: 'fsActionDone', id: parsed.id, },),);
+  }
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'openInTerminal') {
+    await openInTerminal({ rootDir, path: parsed.path, },);
+    peer.send(JSON.stringify({ type: 'fsActionDone', id: parsed.id, },),);
+  }
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'openInDefaultApp') {
+    await openInDefaultApp({ rootDir, path: parsed.path, },);
+    peer.send(JSON.stringify({ type: 'fsActionDone', id: parsed.id, },),);
+  }
+  //endregion Filesystem action handlers
   else {
     peer.send(JSON.stringify({
       type: 'error',

@@ -152,4 +152,15 @@ export class LspManager {
 
   /** Gracefully shuts down all pooled LSP servers. */
   shutdown(): void { this.#pool.shutdown(); }
+
+  /**
+   * Shuts down LSP servers whose project root covers the given path.
+   * Called before retrying move/delete operations that fail due to
+   * file locks held by LSP processes (Windows `EBUSY`/`EPERM`).
+   *
+   * @param path - absolute file or directory path
+   */
+  async shutdownForPath({ path, }: { path: string }): Promise<void> {
+    await this.#pool.shutdownForPath({ path, },);
+  }
 }

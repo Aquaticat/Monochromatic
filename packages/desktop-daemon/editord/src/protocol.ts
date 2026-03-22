@@ -132,6 +132,12 @@ export type ClientMessage =
   | { type: 'gotoDefinition'; id: string; path: string; line: number; character: number }
   | { type: 'findReferences'; id: string; path: string; line: number; character: number }
   | { type: 'inlayHint'; id: string; path: string; range: Range }
+  | { type: 'deleteEntry'; id: string; path: string }
+  | { type: 'copyEntry'; id: string; path: string; destPath: string }
+  | { type: 'moveEntry'; id: string; path: string; destPath: string }
+  | { type: 'newEntry'; id: string; parentPath: string; name: string; isDirectory: boolean }
+  | { type: 'openInTerminal'; id: string; path: string }
+  | { type: 'openInDefaultApp'; id: string; path: string }
   | { type: 'didChange'; path: string; content: string }
   | { type: 'didClose'; path: string }
   | { type: 'watchDir'; path: string };
@@ -175,6 +181,7 @@ export type ServerMessage =
   | { type: 'definitionResult'; id: string; path: string; line: number; character: number }
   | { type: 'referencesResult'; id: string; locations: (Position & { path: string })[] }
   | { type: 'inlayHintResult'; id: string; hints: InlayHint[] }
+  | { type: 'fsActionDone'; id: string }
   | { type: 'error'; id?: string; message: string };
 
 //endregion Server messages

@@ -109,6 +109,34 @@ export class LspPool {
   }
 
   /**
+   * Shuts down and removes all pooled LSP servers whose project root
+   * contains the given path. Used to release file locks on Windows
+   * before move/delete operations.
+   *
+   * @param path - absolute file or directory path
+   */
+  async shutdownForPath({ path, }: { path: string }): Promise<void> {
+    const toRemove: string[] = [];
+    for (const [key, promise,] of this.#pool.entries()) {
+      /** Key format is `"type:root"` — extract the root portion. */
+      const colonIndex = key.indexOf(':');
+      const root = key.slice(colonIndex + 1,);
+      const rootPrefix = root.endsWith('/') ? root : `${root}/`;
+      if (path === root || path.startsWith(rootPrefix,)) {
+        toRemove.push(key,);
+        try {
+          const client = await promise;
+          if (client !== null) await client.shutdown();
+        }
+        catch (error) { this.#l.error(`shutdown for ${key} failed: ${String(error,)}`,); }
+      }
+    }
+    for (const key of toRemove) {
+      this.#pool.delete(key,);
+    }
+  }
+
+  /**
    * Spawns and initializes one LSP client for a given type and project root.
    *
    * @returns initialized client, or null if spawn/init fails
