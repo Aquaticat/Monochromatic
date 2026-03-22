@@ -73,6 +73,9 @@ Full text round-trips on open/save.
   from `@monochromatic-dev/module-es`
 - **WebSocket with token auth** -- token generated per-session via `crypto.randomUUID()`,
   passed as URL query param
+- **Recent files with recency markers** -- file tree shows numbers 0 (current) through 9 (oldest)
+  in the toggle column; Ctrl+0..9 navigates to the Nth recent file, auto-expanding ancestor
+  directories with scroll anchoring to keep the user's view stable; list persists across sessions
 - **JetBrains keymap** -- double-shift for Search Everywhere (replaces command palette)
 - **Inlay hints via `::before`** -- type annotations and parameter names rendered as `::before`
   pseudo-elements on line divs, with line numbers moved to `::after` to free up `::before`;
@@ -120,14 +123,17 @@ src/
       lsp-manager.ts           -- multi-server coordinator (oxlint, tsgo, dprint)
   client/
     index.html                 -- PWA shell with dark/light theme custom properties
-    app.ts                     -- entry: connect WS, mount components, Ctrl+S save
+    app.ts                     -- entry: connect WS, mount components, recent files, session restore
     log.ts                     -- root tagged logger for client subsystems
     editor-pane.ts             -- <editor-pane> web component: contenteditable, paste handler, highlight scheduling
     editor-pane.styles.ts      -- shadow DOM core layout styles (host, editor, line divs, line numbers)
     highlight-styles.ts        -- ::highlight() CSS rules for syntax tokens and diagnostic underlines
     inlay-styles.ts            -- ::before CSS rules for inlay hint pills and severity variants
-    file-tree.ts               -- <file-tree> web component: <details> expand, lazy-load, preload
-    file-tree.styles.ts        -- shadow DOM styles for file tree
+    file-tree.ts               -- <file-tree> web component: <details> expand, lazy-load, preload, recency markers
+    file-tree.styles.ts        -- shadow DOM styles for file tree (incl. recency number opacity)
+    recent-files.ts            -- ordered tracker for 10 most recently opened file paths
+    session-state.ts           -- session persistence to localStorage (file, cursor, scroll, recent files)
+    app-session.ts             -- wires save triggers and restores session state on boot
     highlighter.ts             -- syntax highlighting: Lezer parse, offset-to-Range mapping, CSS.highlights
     highlight-tags.ts          -- Lezer tag-to-highlight-group mapping (keyword, string, comment, etc.)
     languages.ts               -- file extension to Lezer parser mapping (JS/TS dialects)
@@ -144,6 +150,15 @@ src/
     hover-popup.styles.ts      -- shadow DOM styles for hover popup
     completion-popup.ts        -- <completion-popup> web component: autocomplete dropdown
     completion-popup.styles.ts -- shadow DOM styles for completion popup
+    references-popup.ts        -- <references-popup> web component: find-references list
+    references-popup.styles.ts -- shadow DOM styles for references popup
+    app-keybindings.ts         -- global keyboard shortcut handler (Ctrl+S, Ctrl+B, Ctrl+0..9, etc.)
+    search-overlay.ts          -- <search-overlay> web component: project-wide ripgrep search
+    search-overlay.styles.ts   -- shadow DOM styles for search overlay
+    toast.ts                   -- transient status message near the cursor
+    char-from-point.ts         -- DOM caretPositionFromPoint/caretRangeFromPoint cross-browser wrapper
+    position-from-point.ts     -- maps viewport coordinates to line/character position
+    middle-out.ts              -- middle-out range expansion for visible-first rendering
 ```
 
 ## WebSocket protocol
@@ -200,9 +215,14 @@ Servers that fail to start are skipped; the editor degrades gracefully.
 
 **Keybindings:**
 
+- **Ctrl+S** -- save current file
+- **Ctrl+Z** / **Ctrl+Shift+Z** -- undo / redo
+- **Ctrl+Y** -- delete current line
+- **Ctrl+B** -- go to definition (falls back to find references)
+- **Ctrl+Click** -- go to definition at click position
 - **Ctrl+Space** -- trigger completions
 - **Ctrl+Shift+F** / **Ctrl+Alt+L** -- format document (JetBrains parity)
-- **Ctrl+Click** -- go to definition
+- **Ctrl+0..9** -- navigate to recent file by recency index (0 = current, 9 = oldest)
 - **Mouse hover** -- show type information (300ms debounce)
 
 ## Not in MVP
