@@ -223,6 +223,48 @@ export class EditorPane extends HTMLElement {
   }
 
   /**
+   * Deletes the line at the current cursor position.
+   * If the file has only one line, it is cleared rather than removed
+   * so the editor always has at least one child div.
+   * Cursor is placed at the same character offset on the next line
+   * (or the new last line if the deleted line was at the end).
+   *
+   * @example
+   * ```ts
+   * editorPane.deleteCurrentLine();
+   * ```
+   */
+  deleteCurrentLine(): void {
+    if (this.#editor === null) return;
+
+    const pos = this.getCursorPosition();
+    if (pos === null) return;
+
+    const { children, } = this.#editor;
+    if (children.length <= 1) {
+      /** Single line — clear it instead of removing. */
+      const only = children[0];
+      if (only !== undefined) only.textContent = '\n';
+      this.restoreCursor({ line: 0, character: 0, },);
+      this.#dispatchContentChange();
+      this.#scheduleHighlight();
+      return;
+    }
+
+    const lineDiv = children[pos.line];
+    if (lineDiv === undefined) return;
+
+    lineDiv.remove();
+
+    /** Place cursor on the line that now occupies the deleted index, or the new last line. */
+    const nextLine = Math.min(pos.line, children.length - 1,);
+    this.restoreCursor({ line: nextLine, character: pos.character, },);
+
+    this.#dispatchContentChange();
+    this.#scheduleHighlight();
+  }
+
+  /**
    * Returns the underlying contenteditable element for position tracking.
    * Used by the app to compute cursor/mouse positions relative to line divs.
    *

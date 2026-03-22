@@ -3,7 +3,7 @@
  *
  * Binds Ctrl+S (save), Ctrl+Shift+F / Ctrl+Alt+L (format),
  * Ctrl+B (go to definition / find references), Ctrl+Z (undo),
- * Ctrl+Shift+Z (redo), Ctrl+Space (completions),
+ * Ctrl+Shift+Z (redo), Ctrl+Y (delete current line), Ctrl+Space (completions),
  * and popup navigation for completions and references.
  */
 
@@ -20,6 +20,8 @@ import type { ReferencesPopup, } from './references-popup.ts';
  *
  * @param gotoDefinition - navigates to definition or shows references
  *
+ * @param deleteCurrentLine - deletes the line at the cursor
+ *
  * @param requestCompletions - triggers completion popup
  *
  * @param completionPopup - completion popup for navigation
@@ -28,10 +30,11 @@ import type { ReferencesPopup, } from './references-popup.ts';
  *
  * @param hoverPopup - hover popup to dismiss on Escape
  */
-export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinition, requestCompletions, completionPopup, referencesPopup, hoverPopup, }: {
+export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinition, deleteCurrentLine, requestCompletions, completionPopup, referencesPopup, hoverPopup, }: {
   saveCurrentFile: () => void;
   formatDocument: () => void;
   gotoDefinition: () => void;
+  deleteCurrentLine: () => void;
   requestCompletions: () => void;
   completionPopup: CompletionPopup;
   referencesPopup: ReferencesPopup;
@@ -68,6 +71,11 @@ export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinitio
       event.preventDefault();
       // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand('redo') is the only way to trigger the browser's native redo stack in contenteditable
       document.execCommand('redo', false,);
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key === 'y') {
+      event.preventDefault();
+      deleteCurrentLine();
       return;
     }
     if (event.ctrlKey && event.key === ' ') {

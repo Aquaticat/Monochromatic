@@ -155,10 +155,26 @@ async function saveCurrentFile(): Promise<void> {
   catch (error) { appLog.error(`save failed: ${String(error,)}`,); }
 }
 
+//region Auto-save -- debounced save on every content change
+/** Debounce interval for auto-save, in milliseconds. */
+const AUTO_SAVE_DEBOUNCE_MS = 1_000;
+{
+  let autoSaveTimer = 0;
+  editorPane.addEventListener('contentchange', function scheduleAutoSave() {
+    clearTimeout(autoSaveTimer,);
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded
+    autoSaveTimer = globalThis.setTimeout(function autoSave() {
+      void saveCurrentFile();
+    }, AUTO_SAVE_DEBOUNCE_MS,) as unknown as number;
+  },);
+}
+//endregion
+
 wireKeybindings({
   saveCurrentFile: function save() { void saveCurrentFile(); },
   formatDocument: function format() { void formatDocument(); },
   gotoDefinition: gotoDefinitionAtCursor,
+  deleteCurrentLine: editorPane.deleteCurrentLine.bind(editorPane,),
   requestCompletions,
   completionPopup,
   referencesPopup,
