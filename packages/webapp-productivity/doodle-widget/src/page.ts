@@ -68,8 +68,23 @@ function renderToolbar(): string {
       h({ tag: 'button', attrs: { id: 'upload-btn', type: 'button', },
         text: 'Upload background', },),
       h({ tag: 'input',
-        attrs: { type: 'file', id: 'upload-input', accept: 'image/*,.svg',
+        attrs: { type: 'file', id: 'upload-input', accept: '.svg,image/svg+xml',
           hidden: '', }, },),
+      h({
+        tag: 'div',
+        class: 'export-group',
+        children: [
+          h({ tag: 'button', attrs: { id: 'export-btn', type: 'button', },
+            text: 'Export', },),
+          h({ tag: 'select', attrs: { id: 'format-select', },
+            children: [
+              h({ tag: 'option', attrs: { value: 'pdf', selected: '', },
+                text: 'PDF', },),
+              h({ tag: 'option', attrs: { value: 'svg', }, text: 'SVG', },),
+              h({ tag: 'option', attrs: { value: 'png', }, text: 'PNG', },),
+            ], },),
+        ],
+      },),
       h({ tag: 'button', attrs: { id: 'clear-btn', type: 'button', }, text: 'Clear', },),
     ],
   },);

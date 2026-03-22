@@ -5,7 +5,8 @@
   "main": "src/build.ts",
   "version": "0.0.1",
   "dependencies": {
-    "@monochromatic-dev/module-es": "workspace:*"
+    "@monochromatic-dev/module-es": "workspace:*",
+    "jspdf": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

@@ -42,10 +42,10 @@ export type StrokeSegment = {
 //region Constants
 
 /** Stroke color in OKLCH color space */
-const STROKE_COLOR = 'oklch(0.6 0.25 27)';
+export const STROKE_COLOR = 'oklch(0.6 0.25 27)';
 
 /** Stroke width in CSS pixels */
-const STROKE_WIDTH = 10;
+export const STROKE_WIDTH = 10;
 
 //endregion Constants
 
@@ -171,4 +171,19 @@ export function endStroke(): void {
 export function clearStrokes(): void {
   strokes = [];
   current = null;
+}
+
+/**
+ * Returns a readonly snapshot of all stored strokes.
+ *
+ * @returns array of normalized stroke data for export
+ *
+ * @example
+ * ```ts
+ * const allStrokes = getStrokes();
+ * for (const stroke of allStrokes) { ... }
+ * ```
+ */
+export function getStrokes(): readonly NormalizedStroke[] {
+  return strokes;
 }

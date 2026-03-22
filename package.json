@@ -194,6 +194,7 @@
       "happy-rusty": ">=1.9.1",
       "istanbul-lib-report": ">=3.0.1",
       "jiti": ">=2.4.2",
+      "jspdf": ">=2.5.2",
       "lfi": ">=4.1.2",
       "lightningcss": ">=1.31.1",
       "mdx2vast": "*",

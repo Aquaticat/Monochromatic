@@ -6,20 +6,21 @@
  * canvas resize handling via ResizeObserver.
  */
 
-import {
-  setRasterBackground,
-  setSvgBackground,
-} from './background.ts';
+import { setSvgBackground, } from './background.ts';
 import {
   clearStrokes,
   redraw,
 } from './drawing.ts';
+import { exportAsPdf, } from './export-pdf.ts';
+import { exportAsPng, } from './export-png.ts';
+import { exportAsSvg, } from './export-svg.ts';
 import { setupPointerHandlers, } from './pointer-handlers.ts';
 import {
   clearTextEntries,
   discardActiveInput,
   setTextLayer,
 } from './text.ts';
+import type { ExportFormat, } from './export.ts';
 
 /**
  * Queries a required DOM element by CSS selector.
@@ -56,6 +57,12 @@ const uploadInput = requireElement<HTMLInputElement>('#upload-input',);
 
 /** Button that triggers the file upload dialog */
 const uploadBtn = requireElement<HTMLButtonElement>('#upload-btn',);
+
+/** Button that triggers export in the selected format */
+const exportBtn = requireElement<HTMLButtonElement>('#export-btn',);
+
+/** Dropdown selector for export format (PDF, SVG, PNG) */
+const formatSelect = requireElement<HTMLSelectElement>('#format-select',);
 
 /** Button that clears all drawn strokes and text */
 const clearBtn = requireElement<HTMLButtonElement>('#clear-btn',);
@@ -147,29 +154,36 @@ clearBtn.addEventListener('click', function handleClear(): void {
   ctx.clearRect(0, 0, canvasWidth, canvasHeight,);
 },);
 
+/** Format-to-exporter dispatch table */
+const EXPORTERS = {
+  pdf: exportAsPdf,
+  png: exportAsPng,
+  svg: exportAsSvg,
+};
+
+exportBtn.addEventListener('click', function handleExportClick(): void {
+  /** Selected export format from the dropdown */
+  const format = formatSelect.value as ExportFormat;
+  void EXPORTERS[format]({ container, overlay: svgOverlay, drawCanvas: canvas, textLayer, },);
+},);
+
 uploadBtn.addEventListener('click', function handleUploadClick(): void {
   uploadInput.click();
 },);
 
 /**
- * Processes a user-selected background file.
+ * Processes a user-selected SVG background file.
  *
- * SVG files are read as text and rendered in the overlay layer.
- * Raster images are set as a CSS background via object URL.
+ * Reads the file as text and renders it in the SVG overlay layer.
  *
- * @param file - uploaded image file
+ * @param file - uploaded SVG file
  */
 async function processBackgroundFile(file: File,): Promise<void> {
   clearStrokes();
   clearTextEntries();
-  if (file.type === 'image/svg+xml' || file.name.endsWith('.svg',)) {
-    /** Raw SVG markup read from the uploaded file */
-    const svgMarkup = await file.text();
-    setSvgBackground({ svgMarkup, overlay: svgOverlay, container, },);
-  }
-  else {
-    setRasterBackground({ file, overlay: svgOverlay, container, },);
-  }
+  /** Raw SVG markup read from the uploaded file */
+  const svgMarkup = await file.text();
+  setSvgBackground({ svgMarkup, overlay: svgOverlay, },);
   sizeCanvas();
 }
 

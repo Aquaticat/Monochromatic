@@ -73,6 +73,41 @@ export function renderToolbarStyles(): string[] {
       decls: { 'background-color': cssOklch({ l: 0.92, c: 0, h: 0, },), },
     },),
 
+    //region Export group (connected button + select)
+
+    $({
+      rule: '.export-group',
+      decls: { display: 'flex', },
+    },),
+
+    $({
+      rule: '.export-group > button',
+      raw: 'border-start-end-radius:0;border-end-end-radius:0;border-inline-end-width:0',
+    },),
+
+    $({
+      rule: '.export-group > select',
+      decls: {
+        'padding-block': BUTTON_PADDING_BLOCK,
+        'padding-inline': BUTTON_PADDING_INLINE,
+        cursor: 'pointer',
+        'background-color': cssOklch({ l: 0.97, c: 0, h: 0, },),
+        'border-block-style': 'solid',
+        'border-block-color': BORDER_COLOR,
+        'border-inline-style': 'solid',
+        'border-inline-color': BORDER_COLOR,
+        'border-radius': BUTTON_RADIUS,
+      },
+      raw: ';border-block-width:1px;border-inline-width:1px;border-start-start-radius:0;border-end-start-radius:0;font-family:inherit;font-size:inherit',
+    },),
+
+    $({
+      rule: '.export-group > select:hover',
+      decls: { 'background-color': cssOklch({ l: 0.92, c: 0, h: 0, },), },
+    },),
+
+    //endregion Export group
+
     ...renderToggleGroupStyles(),
   ];
 }
