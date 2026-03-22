@@ -58,11 +58,13 @@ export type DisallowedAtRules = 'charset' | 'font-palette-values';
  * ```
  */
 type IdentifierProperties =
+  | 'anchor-name'
   | 'animation-name'
   | 'content'
   | 'counter-increment'
   | 'counter-reset'
-  | 'counter-set';
+  | 'counter-set'
+  | 'position-anchor';
 
 //endregion
 

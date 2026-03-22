@@ -112,6 +112,7 @@ export type ClientMessage =
   | { type: 'completion'; id: string; path: string; line: number; character: number }
   | { type: 'format'; id: string; path: string }
   | { type: 'gotoDefinition'; id: string; path: string; line: number; character: number }
+  | { type: 'findReferences'; id: string; path: string; line: number; character: number }
   | { type: 'inlayHint'; id: string; path: string; range: Range }
   | { type: 'didChange'; path: string; content: string }
   | { type: 'didClose'; path: string };
@@ -153,6 +154,7 @@ export type ServerMessage =
   | { type: 'completionResult'; id: string; items: CompletionItem[] }
   | { type: 'formatResult'; id: string; edits: TextEdit[] }
   | { type: 'definitionResult'; id: string; path: string; line: number; character: number }
+  | { type: 'referencesResult'; id: string; locations: (Position & { path: string })[] }
   | { type: 'inlayHintResult'; id: string; hints: InlayHint[] }
   | { type: 'error'; id?: string; message: string };
 

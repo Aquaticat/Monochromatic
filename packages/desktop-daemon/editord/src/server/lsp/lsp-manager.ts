@@ -15,7 +15,7 @@ import {
   didChange as syncChange, didClose as syncClose,
   didOpen as syncOpen, didSave as syncSave,
 } from './document-sync.ts';
-import { requestCompletion, requestFormat, requestGotoDefinition, requestHover, requestInlayHints, } from './lsp-features.ts';
+import { requestCompletion, requestFormat, requestGotoDefinition, requestHover, requestInlayHints, requestReferences, } from './lsp-features.ts';
 import { LspPool, } from './lsp-pool.ts';
 import type { LspCompletionItem, LspDiagnostic, LspHover, LspInlayHint, LspTextEdit, } from './types.ts';
 
@@ -116,6 +116,15 @@ export class LspManager {
   async gotoDefinition({ path, line, character, }: { path: string; line: number; character: number }): Promise<{ path: string; line: number; character: number } | null> {
     const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
     return c !== null && c.initialized ? requestGotoDefinition({ client: c, path, line, character, },) : null;
+  }
+  /**
+   * {@inheritDoc requestReferences}
+   *
+   * @returns reference locations, or empty array if tsgo is unavailable
+   */
+  async references({ path, line, character, }: { path: string; line: number; character: number }): Promise<{ path: string; line: number; character: number }[]> {
+    const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
+    return c !== null && c.initialized ? requestReferences({ client: c, path, line, character, },) : [];
   }
   /**
    * {@inheritDoc requestInlayHints}

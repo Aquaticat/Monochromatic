@@ -129,6 +129,7 @@ export type StrictValue<T,> =
 
 //region Re-exports from constructors
 export {
+  cssAnchor,
   cssCalc,
   cssCh,
   cssColorFn,

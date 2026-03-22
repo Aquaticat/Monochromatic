@@ -39,10 +39,13 @@ export function groupByLine<T>({ items, keyFn, }: {
 /**
  * Builds the combined annotation string and sets attributes on a line div.
  *
- * Each hint and diagnostic occupies its own `\n`-delimited row within the
- * `::before` content. Leading Inter spaces indent each row to its character
- * column; `spaceRatio` compensates for the width difference between
- * Inter spaces and JetBrains Mono characters.
+ * Hints are sorted by character position and greedily packed onto rows:
+ * if the next hint starts at or past the previous hint's visual end,
+ * it shares the same row with Inter-space padding between them.
+ * Otherwise it starts a new row. Diagnostics always get their own rows.
+ *
+ * `spaceRatio` compensates for the width difference between Inter spaces
+ * and JetBrains Mono characters.
  *
  * @param div - line div element
  *
@@ -61,10 +64,35 @@ export function applyLineAnnotation({ div, lineHints, lineDiags, spaceRatio, }: 
   const rows: string[] = [];
 
   if (lineHints !== undefined) {
-    for (const hint of lineHints) {
-      const indent = ' '.repeat(Math.round(hint.position.character * spaceRatio,),);
-      rows.push(`${indent}${formatHintLabel({ hint, },)}`,);
+    const sorted = [...lineHints,].sort(
+      function byChar(left, right,) { return left.position.character - right.position.character; },
+    );
+
+    let rowText = '';
+    /** Current position in monospace character units. */
+    let cursor = 0;
+
+    for (const hint of sorted) {
+      const label = formatHintLabel({ hint, },);
+      const charPos = hint.position.character;
+
+      if (rowText === '' || charPos >= cursor) {
+        /** Fits on the current row; pad from cursor to this hint's column. */
+        const gap = charPos - cursor;
+        rowText += ' '.repeat(Math.round(gap * spaceRatio,),) + label;
+        cursor = charPos + label.length;
+      }
+      else {
+        /** Overlaps previous hint; flush current row and start fresh. */
+        rows.push(rowText,);
+        const indent = ' '.repeat(Math.round(charPos * spaceRatio,),);
+        rowText = indent + label;
+        cursor = charPos + label.length;
+      }
     }
+
+    if (rowText !== '')
+      rows.push(rowText,);
   }
 
   if (lineDiags !== undefined) {

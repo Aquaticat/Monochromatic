@@ -81,6 +81,10 @@
       display: flex;
       block-size: 100%;
     }
+    /* position-anchor must be in light DOM scope to resolve anchor-name across tree scopes */
+    references-popup {
+      position-anchor: --ref-anchor;
+    }
   </style>
 </head>
 <body>

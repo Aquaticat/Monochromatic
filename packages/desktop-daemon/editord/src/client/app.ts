@@ -14,6 +14,8 @@ import './search-overlay.ts';
 import './hover-popup.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './completion-popup.ts';
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
+import './references-popup.ts';
 
 import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
 
@@ -27,6 +29,7 @@ import type { FileTree, } from './file-tree.ts';
 import type { HoverPopup, } from './hover-popup.ts';
 import { getParserForPath, } from './languages.ts';
 import { l, tagged, } from './log.ts';
+import type { ReferenceSelectDetail, ReferencesPopup, } from './references-popup.ts';
 import type { ResultSelectDetail, SearchOverlay, } from './search-overlay.ts';
 import { EditorWsClient, } from './ws-client.ts';
 
@@ -61,6 +64,9 @@ const hoverPopup = document.createElement('hover-popup',) as HoverPopup;
 /** Completion dropdown popup. */
 // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- custom element registered via define
 const completionPopup = document.createElement('completion-popup',) as CompletionPopup;
+/** References list popup. */
+// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- custom element registered via define
+const referencesPopup = document.createElement('references-popup',) as ReferencesPopup;
 
 fileTree.fetchDir = async function fetchDir(path: string,): Promise<DirEntry[]> {
   const r = await ws.request({ type: 'listDir', path, },);
@@ -73,7 +79,7 @@ searchOverlay.onSearch = async function handleSearch(query: string,): Promise<Se
   return 'results' in r ? r.results : [];
 };
 
-appElement.append(fileTree, editorPane, searchOverlay, hoverPopup, completionPopup,);
+appElement.append(fileTree, editorPane, searchOverlay, hoverPopup, completionPopup, referencesPopup,);
 
 /** Path of the currently open file. */
 let currentFilePath = filePath;
@@ -124,8 +130,18 @@ searchOverlay.addEventListener('result-select', function handleResultSelect(even
   })();
 },);
 
+referencesPopup.addEventListener('reference-select', function handleReferenceSelect(event,) {
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from ReferencesPopup
+  const { path, line, } = (event as CustomEvent<ReferenceSelectDetail>).detail;
+  currentFilePath = path;
+  void (async function loadAndRefresh(): Promise<void> {
+    await loadFileSafe(path, line,);
+    refreshInlayHints();
+  })();
+},);
+
 /** LSP feature callbacks returned from wiring. */
-const { formatDocument, requestCompletions, refreshInlayHints, } = wireLsp({ ws, editorPane, hoverPopup, completionPopup, getCurrentFilePath, loadFileSafe, },);
+const { formatDocument, requestCompletions, refreshInlayHints, gotoDefinitionAtCursor, } = wireLsp({ ws, editorPane, hoverPopup, completionPopup, referencesPopup, getCurrentFilePath, loadFileSafe, },);
 
 /** Saves the current editor content to the server. */
 async function saveCurrentFile(): Promise<void> {
@@ -137,8 +153,10 @@ async function saveCurrentFile(): Promise<void> {
 wireKeybindings({
   saveCurrentFile: function save() { void saveCurrentFile(); },
   formatDocument: function format() { void formatDocument(); },
+  gotoDefinition: gotoDefinitionAtCursor,
   requestCompletions,
   completionPopup,
+  referencesPopup,
   hoverPopup,
 },);
 

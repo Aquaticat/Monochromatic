@@ -69,22 +69,49 @@ export function wireGotoDefinition({ ws, editorPane, getEditorElement, getCurren
   },);
 }
 
-/** Sends a go-to-definition request and navigates. */
-async function doGotoDefinition({ ws, getCurrentFilePath, loadFileSafe, line, character, }: {
+/** Result of a go-to-definition attempt. */
+export type GotoDefinitionResult = 'navigated' | 'no-definition' | 'already-at-definition' | 'error';
+
+/**
+ * Sends a go-to-definition request and navigates to the result.
+ *
+ * @param ws - WebSocket client
+ *
+ * @param getCurrentFilePath - returns the currently open file path
+ *
+ * @param loadFileSafe - loads a file, optionally scrolling to a line
+ *
+ * @param line - 0-based line number
+ *
+ * @param character - 0-based character offset
+ *
+ * @returns result indicating whether navigation succeeded, found nothing, or errored
+ */
+export async function doGotoDefinition({ ws, getCurrentFilePath, loadFileSafe, line, character, }: {
   ws: EditorWsClient;
   getCurrentFilePath: () => string | null;
   loadFileSafe: (path: string, line?: number,) => Promise<void>;
   line: number; character: number;
-}): Promise<void> {
+}): Promise<GotoDefinitionResult> {
   const path = getCurrentFilePath();
-  if (path === null) return;
+  if (path === null) return 'no-definition';
+  actionLog.info(`requesting definition at ${path}:${line}:${character}`,);
   try {
     const response = await ws.request({ type: 'gotoDefinition', path, line, character, },);
+    actionLog.info(`definition response: ${JSON.stringify(response,)}`,);
     if ('path' in response && 'line' in response) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response narrowed by discriminant checks
       const def = response as { path: string; line: number };
-      if (def.path !== '') await loadFileSafe(def.path, def.line + 1,);
+      if (def.path !== '') {
+        if (def.path === path && def.line === line) return 'already-at-definition';
+        await loadFileSafe(def.path, def.line + 1,);
+        return 'navigated';
+      }
     }
+    return 'no-definition';
   }
-  catch { /* definition failures are non-critical */ }
+  catch (error) {
+    actionLog.error(`go-to-definition failed: ${String(error,)}`,);
+    return 'error';
+  }
 }

@@ -21,6 +21,7 @@ import {
 } from '@monochromatic-dev/module-es/h-dom';
 
 import type { Diagnostic, InlayHint, TextEdit, } from '../protocol.ts';
+import type { EditorPosition, } from './position.ts';
 import { applyDiagnosticHighlights, clearDiagnosticHighlights, } from './diagnostics-layer.ts';
 import { applyHighlights, clearHighlights, } from './highlighter.ts';
 import { applyInlayAnnotations, clearInlayAnnotations, } from './inlay-layer.ts';
@@ -229,6 +230,82 @@ export class EditorPane extends HTMLElement {
    */
   getEditorElement(): HTMLDivElement | null {
     return this.#editor;
+  }
+
+  /**
+   * Resolves the current editor cursor position using `getComposedRanges`
+   * to cross the shadow DOM boundary.
+   *
+   * `document.getSelection()` cannot see into shadow roots, so the
+   * standalone `getCursorPosition` utility fails for keyboard-triggered
+   * actions. This method uses the component's own shadow root reference
+   * with `getComposedRanges` to obtain the true caret position.
+   *
+   * @returns 0-based line and character, or null if no caret is inside the editor
+   */
+  getCursorPosition(): EditorPosition | null {
+    if (this.#editor === null) return null;
+
+    const selection = document.getSelection();
+    if (selection === null) return null;
+
+    const ranges = selection.getComposedRanges({ shadowRoots: [this.#shadow,], },);
+    const range = ranges[0];
+    if (range === undefined) return null;
+
+    let node: Node | null = range.startContainer;
+
+    /** Walk up to find the line div (direct child of editor). */
+    let lineDiv: HTMLElement | null = null;
+    while (node !== null && node !== this.#editor) {
+      if (node.parentNode === this.#editor && node instanceof HTMLElement) {
+        lineDiv = node;
+        break;
+      }
+      node = node.parentNode;
+    }
+
+    if (lineDiv === null) return null;
+
+    const line = [...this.#editor.children,].indexOf(lineDiv,);
+    if (line === -1) return null;
+
+    /** Compute character offset by summing text node lengths before the caret. */
+    let character = 0;
+    const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
+    let textNode = walker.nextNode();
+    while (textNode !== null) {
+      if (textNode === range.startContainer) {
+        character += range.startOffset;
+        break;
+      }
+      character += textNode.textContent?.length ?? 0;
+      textNode = walker.nextNode();
+    }
+
+    return { line, character, };
+  }
+
+  /**
+   * Returns the bounding rectangle of the editor cursor using `getComposedRanges`
+   * to cross the shadow DOM boundary.
+   *
+   * @returns DOMRect of the caret, or null if no caret is inside the editor
+   */
+  getCursorRect(): DOMRect | null {
+    if (this.#editor === null) return null;
+
+    const selection = document.getSelection();
+    if (selection === null) return null;
+
+    const ranges = selection.getComposedRanges({ shadowRoots: [this.#shadow,], },);
+    const sRange = ranges[0];
+    if (sRange === undefined) return null;
+
+    const range = document.createRange();
+    range.setStart(sRange.startContainer, sRange.startOffset,);
+    range.setEnd(sRange.endContainer, sRange.endOffset,);
+    return range.getBoundingClientRect();
   }
 
   /**

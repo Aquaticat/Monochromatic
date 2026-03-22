@@ -8,6 +8,7 @@
 import type { HoverPopup, } from './hover-popup.ts';
 import { l, tagged, } from './log.ts';
 import { getPositionFromPoint, } from './position-from-point.ts';
+import type { ReferencesPopup, } from './references-popup.ts';
 import type { EditorWsClient, } from './ws-client.ts';
 
 /** Tagged logger for hover. */
@@ -27,13 +28,16 @@ const HOVER_DEBOUNCE_MS = 350;
  *
  * @param getEditorElement - returns the contenteditable container
  *
+ * @param referencesPopup - references popup; hover is suppressed while it is visible
+ *
  * @param getCurrentFilePath - returns the currently open file path
  */
-export function wireHover({ ws, editorPane, hoverPopup, getEditorElement, getCurrentFilePath, }: {
+export function wireHover({ ws, editorPane, hoverPopup, getEditorElement, referencesPopup, getCurrentFilePath, }: {
   ws: EditorWsClient;
   editorPane: HTMLElement;
   hoverPopup: HoverPopup;
   getEditorElement: () => HTMLElement | null;
+  referencesPopup: ReferencesPopup;
   getCurrentFilePath: () => string | null;
 }): void {
   let timer = 0;
@@ -46,6 +50,7 @@ export function wireHover({ ws, editorPane, hoverPopup, getEditorElement, getCur
     clearTimeout(timer,);
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types are loaded
     timer = globalThis.setTimeout(function doHover() {
+      if (referencesPopup.visible) return;
       const path = getCurrentFilePath();
       if (path === null) { hoverLog.info('hover: no file open',); return; }
       const el = getEditorElement();

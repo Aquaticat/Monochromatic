@@ -21,9 +21,13 @@ export function formatHintLabel({ hint, }: { hint: InlayHint }): string {
   const padRight = hint.paddingRight === true ? ' ' : '';
   /** Parameter hints (kind=2) have a trailing colon that adds noise. */
   const PARAMETER_KIND = 2;
+  /** Type hints (kind=1) carry a leading ` : ` prefix that duplicates the padding. */
+  const TYPE_KIND = 1;
   const label = hint.kind === PARAMETER_KIND
     ? hint.label.replace(/:$/, '',)
-    : hint.label;
+    : hint.kind === TYPE_KIND
+      ? hint.label.replace(/^: /, '',)
+      : hint.label;
   return `${padLeft}${label}${padRight}`;
 }
 

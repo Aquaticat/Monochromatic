@@ -245,6 +245,16 @@ async function dispatchMessage(
       character: def.character,
     },),);
   }
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
+  else if (parsed.type === 'findReferences') {
+    if (lspManager === null) {
+      peer.send(JSON.stringify({ type: 'referencesResult', id: parsed.id, locations: [], },),);
+      return;
+    }
+
+    const locations = await lspManager.references({ path: parsed.path, line: parsed.line, character: parsed.character, },);
+    peer.send(JSON.stringify({ type: 'referencesResult', id: parsed.id, locations, },),);
+  }
   //endregion LSP message handlers
   else {
     peer.send(JSON.stringify({

@@ -152,6 +152,48 @@ export async function requestGotoDefinition({ client, path, line, character, }: 
 }
 
 /**
+ * Requests references (usage sites) from an LSP client.
+ * Excludes the declaration itself so only call sites are returned.
+ *
+ * @param client - LSP client to query (typically tsgo)
+ *
+ * @param path - absolute file path
+ *
+ * @param line - 0-based line number
+ *
+ * @param character - 0-based character offset
+ *
+ * @returns array of reference locations
+ */
+export async function requestReferences({ client, path, line, character, }: {
+  client: LspClient;
+  path: string;
+  line: number;
+  character: number;
+}): Promise<{ path: string; line: number; character: number }[]> {
+  const uri = pathToFileURL(path,).href;
+  const result = await client.request({
+    method: 'textDocument/references',
+    params: {
+      textDocument: { uri, },
+      position: { line, character, },
+      context: { includeDeclaration: false, },
+    },
+  },);
+
+  if (result === null || result === undefined || !Array.isArray(result,))
+    return [];
+
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP references returns Location[]
+  return (result as { uri: string; range: { start: { line: number; character: number } } }[]).map(
+    function convertLocation(loc,) {
+      const refPath = loc.uri.startsWith('file://',) ? fileURLToPath(loc.uri,) : loc.uri;
+      return { path: refPath, line: loc.range.start.line, character: loc.range.start.character, };
+    },
+  );
+}
+
+/**
  * Requests inlay hints from an LSP client for a given range.
  *
  * @param client - LSP client to query (typically tsgo)

@@ -352,6 +352,29 @@ export function cssInt(n: number,): CssValue {
 
 //endregion
 
+//region Anchor positioning constructors
+
+/**
+ * Creates an `anchor()` positional function value for CSS Anchor Positioning.
+ *
+ * Positions elements relative to a named anchor element's edges.
+ *
+ * @param side - anchor reference point (`'start'`, `'end'`, `'center'`, `'top'`, `'bottom'`, etc.)
+ *
+ * @returns branded CSS anchor reference string (e.g. `'anchor(end)'`)
+ *
+ * @example
+ * ```ts
+ * cssAnchor('end')    // 'anchor(end)'
+ * cssAnchor('start')  // 'anchor(start)'
+ * ```
+ */
+export function cssAnchor(side: string,): CssValue {
+  return `anchor(${side})` as CssValue;
+}
+
+//endregion
+
 //region Transform function constructors
 
 /**
