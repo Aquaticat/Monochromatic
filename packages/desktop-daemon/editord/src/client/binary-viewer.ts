@@ -8,13 +8,9 @@
 
 import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
 
+import { createHexDumpContent, } from './binary-viewer-content.ts';
+import { showAudio, showImage, showVideo, } from './binary-viewer-media.ts';
 import { STYLES, } from './binary-viewer.styles.ts';
-
-/**
- * Repeat/loop icon as inline SVG.
- * Single circular arrow indicating track repeat.
- */
-const REPEAT_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>`;
 
 /**
  * `<binary-viewer>` — media and hex dump viewer component.
@@ -42,12 +38,7 @@ export class BinaryViewer extends HTMLElement {
    * @param mediaInfo - optional ffprobe metadata to display below the image
    */
   showImage({ url, mediaInfo, }: { url: string; mediaInfo?: string }): void {
-    this.#clear();
-    this.#shadow.append(
-      h({ tag: 'img', attrs: { src: url, alt: 'Image preview', }, },),
-    );
-    this.#appendMediaInfo(mediaInfo,);
-    this.style.display = 'flex';
+    showImage({ shadow: this.#shadow, host: this, clear: this.#clear.bind(this,), url, mediaInfo, },);
   }
 
   /**
@@ -58,28 +49,7 @@ export class BinaryViewer extends HTMLElement {
    * @param mediaInfo - optional ffprobe metadata to display below the player
    */
   showAudio({ url, mediaInfo, }: { url: string; mediaInfo?: string }): void {
-    this.#clear();
-
-    const audio = h({ tag: 'audio', attrs: { src: url, controls: '', }, },);
-
-    const repeatBtn = h({
-      tag: 'button',
-      class: 'repeat-btn',
-      html: REPEAT_ICON_SVG,
-      attrs: { type: 'button', title: 'Repeat track', },
-      on: {
-        click: function handleRepeatToggle(): void {
-          audio.loop = !audio.loop;
-          repeatBtn.toggleAttribute('data-active', audio.loop,);
-        },
-      },
-    },);
-
-    this.#shadow.append(
-      h({ tag: 'div', class: 'audio-controls', children: [audio, repeatBtn,], },),
-    );
-    this.#appendMediaInfo(mediaInfo,);
-    this.style.display = 'flex';
+    showAudio({ shadow: this.#shadow, host: this, clear: this.#clear.bind(this,), url, mediaInfo, },);
   }
 
   /**
@@ -90,12 +60,7 @@ export class BinaryViewer extends HTMLElement {
    * @param mediaInfo - optional ffprobe metadata to display below the player
    */
   showVideo({ url, mediaInfo, }: { url: string; mediaInfo?: string }): void {
-    this.#clear();
-    this.#shadow.append(
-      h({ tag: 'video', attrs: { src: url, controls: '', }, },),
-    );
-    this.#appendMediaInfo(mediaInfo,);
-    this.style.display = 'flex';
+    showVideo({ shadow: this.#shadow, host: this, clear: this.#clear.bind(this,), url, mediaInfo, },);
   }
 
   /**
@@ -105,19 +70,8 @@ export class BinaryViewer extends HTMLElement {
    */
   showHexDump({ content, }: { content: string }): void {
     this.#clear();
-    this.#shadow.append(h({ tag: 'pre', text: content, },),);
+    this.#shadow.append(createHexDumpContent({ content, },),);
     this.style.display = 'flex';
-  }
-
-  /**
-   * Appends a `<pre>` block with ffprobe metadata below the current content.
-   * Does nothing when `mediaInfo` is undefined.
-   *
-   * @param mediaInfo - trimmed ffprobe output, or undefined to skip
-   */
-  #appendMediaInfo(mediaInfo: string | undefined,): void {
-    if (mediaInfo === undefined) return;
-    this.#shadow.append(h({ tag: 'pre', class: 'media-info', text: mediaInfo, },),);
   }
 
   /** Hides the viewer and removes displayed content. */

@@ -7,6 +7,7 @@
 
 import type { CompletionPopup, } from './completion-popup.ts';
 import type { HoverPopup, } from './hover-popup.ts';
+import { doRequestHover, } from './hover-request.ts';
 import { l, tagged, } from './log.ts';
 import { getPositionFromPoint, } from './position-from-point.ts';
 import type { ReferencesPopup, } from './references-popup.ts';
@@ -88,25 +89,4 @@ export function wireHover({ ws, editorPane, hoverPopup, getEditorElement, comple
     lastLine = -1;
     lastChar = -1;
   },);
-}
-
-/** Sends a hover request and shows the popup. */
-async function doRequestHover({ ws, hoverPopup, path, line, character, x, y, }: {
-  ws: EditorWsClient; hoverPopup: HoverPopup;
-  path: string; line: number; character: number; x: number; y: number;
-}): Promise<void> {
-  try {
-    const response = await ws.request({ type: 'hover', path, line, character, },);
-    if ('contents' in response) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response narrowed by 'contents' check
-      const { contents, } = response as { contents: string };
-      if (contents !== '') {
-        hoverLog.info(`showing hover at ${x},${y}`,);
-        hoverPopup.show({ text: contents, x, y, },);
-      }
-    }
-  }
-  catch (error) {
-    hoverLog.error(`hover request failed: ${String(error,)}`,);
-  }
 }

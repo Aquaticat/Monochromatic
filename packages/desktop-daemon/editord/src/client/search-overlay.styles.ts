@@ -1,4 +1,3 @@
-// oxlint-disable max-lines -- style rules for dialog, input, results, and result variants; splitting by concern loses co-location
 
 /**
  * Shadow DOM styles for the `<search-overlay>` web component.

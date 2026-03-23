@@ -65,7 +65,7 @@ export class HoverPopup extends HTMLElement {
 
   /** Hides the hover popup. */
   hide(): void {
-    try { this.hidePopover(); } catch { /* already hidden */ }
+    if (this.matches(':popover-open',)) this.hidePopover();
   }
 
   /**

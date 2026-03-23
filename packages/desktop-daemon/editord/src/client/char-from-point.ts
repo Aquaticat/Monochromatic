@@ -16,7 +16,7 @@ export function findCharAtX({ lineDiv, x, }: {
   lineDiv: Element;
   x: number;
 }): number {
-  const text = lineDiv.textContent;
+  const text = lineDiv.textContent ?? '';
   if (text.length === 0 || text === '\n')
     return 0;
 

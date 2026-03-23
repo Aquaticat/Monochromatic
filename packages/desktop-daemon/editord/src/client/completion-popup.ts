@@ -52,7 +52,7 @@ export class CompletionPopup extends HTMLElement {
 
   /** Hides the popup and clears items. */
   hide(): void {
-    try { this.hidePopover(); } catch { /* already hidden */ }
+    if (this.matches(':popover-open',)) this.hidePopover();
     this.#items = [];
     this.#selectedIndex = -1;
   }

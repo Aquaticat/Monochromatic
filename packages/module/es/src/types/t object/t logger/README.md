@@ -56,8 +56,10 @@ and keep the logger free of stringify opinions.
 l.info(`status ${code} for ${url}`);
 ```
 
-The console sink silences `debug` and `trace` by default.
+The console sink silences `debug` and `trace` by default in non-browser environments.
 Set `DEBUG=true`, pass `--verbose`, or set `import.meta.env.DEBUG` to `'true'` to enable them.
+In browsers, verbose mode is enabled automatically because DevTools
+already provides its own log-level filtering.
 
 ## Sinks
 

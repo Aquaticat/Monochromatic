@@ -6,18 +6,13 @@
  * document tracking, diagnostic aggregation, and feature dispatch.
  */
 
-import { pathToFileURL, } from 'node:url';
-
 import { tagged, type Logger, } from '../log.ts';
 import { DiagnosticStore, type DiagnosticsHandler, type WireDiagnostic, } from './diagnostic-store.ts';
-import {
-  type DocumentState,
-  didChange as syncChange, didClose as syncClose,
-  didOpen as syncOpen, didSave as syncSave,
-} from './document-sync.ts';
-import { requestCompletion, requestFormat, requestGotoDefinition, requestHover, requestInlayHints, requestReferences, requestSelectionRange, } from './lsp-features.ts';
+import type { DocumentState, } from './document-sync.ts';
+import { managerDidChange, managerDidClose, managerDidOpen, managerDidSave, routeNotification, } from './lsp-manager-lifecycle.ts';
+import { managerCompletion, managerFormat, managerGotoDefinition, managerHover, managerInlayHints, managerReferences, managerSelectionRange, } from './lsp-manager-requests.ts';
 import { LspPool, } from './lsp-pool.ts';
-import type { LspCompletionItem, LspDiagnostic, LspHover, LspInlayHint, LspSelectionRange, LspTextEdit, } from './types.ts';
+import type { LspCompletionItem, LspHover, LspInlayHint, LspSelectionRange, LspTextEdit, } from './types.ts';
 
 export type { DiagnosticsHandler, WireDiagnostic, };
 
@@ -38,137 +33,65 @@ export class LspManager {
    * @param l - parent logger
    */
   constructor({ ceiling, onDiagnostics, l, }: { ceiling: string; onDiagnostics: DiagnosticsHandler; l: Logger }) {
-    const tl = tagged({ tag: 'lsp', l, },);
+    const managerLog = tagged({ tag: 'lsp', l, },);
     this.#diagnostics = new DiagnosticStore({ onDiagnostics, },);
-    const mgr = this;
+    const diagStore = this.#diagnostics;
     this.#pool = new LspPool({
-      ceiling, l: tl,
-      onNotification: function handleNotification(source: string, method: string, params: unknown,): void {
-        mgr.#onNotification({ source, method, params, },);
+      ceiling, l: managerLog,
+      onNotification: function handleNotification(event: { source: string; method: string; params: unknown },): void {
+        routeNotification({ diagnostics: diagStore, ...event, },);
       },
     },);
   }
 
-  //region Document lifecycle
-
-  /**
-   * @param path - absolute file path
-   */
+  /** @param path - absolute file path */
   async didOpen({ path, text, }: { path: string; text: string }): Promise<void> {
-    syncOpen({ path, text, documents: this.#documents, servers: await this.#pool.resolveAll({ path, },), },);
+    await managerDidOpen({ pool: this.#pool, documents: this.#documents, path, text, },);
   }
-  /**
-   * @param path - absolute file path
-   */
+  /** @param path - absolute file path */
   async didChange({ path, text, }: { path: string; text: string }): Promise<void> {
-    syncChange({ path, text, documents: this.#documents, servers: await this.#pool.resolveAll({ path, },), },);
+    await managerDidChange({ pool: this.#pool, documents: this.#documents, path, text, },);
   }
-  /**
-   * @param path - absolute file path
-   */
+  /** @param path - absolute file path */
   async didSave({ path, }: { path: string }): Promise<void> {
-    syncSave({ path, documents: this.#documents, servers: await this.#pool.resolveAll({ path, },), },);
+    await managerDidSave({ pool: this.#pool, documents: this.#documents, path, },);
   }
-  /**
-   * @param path - absolute file path
-   */
+  /** @param path - absolute file path */
   async didClose({ path, }: { path: string }): Promise<void> {
-    this.#diagnostics.delete({ uri: pathToFileURL(path,).href, },);
-    syncClose({ path, documents: this.#documents, servers: await this.#pool.resolveAll({ path, },), },);
+    await managerDidClose({ pool: this.#pool, documents: this.#documents, diagnostics: this.#diagnostics, path, },);
   }
-
-  //endregion Document lifecycle
-
-  //region Feature requests
-
-  /**
-   * {@inheritDoc requestHover}
-   *
-   * @returns hover content, or null if tsgo is unavailable
-   */
+  /** {@inheritDoc managerHover} */
   async hover({ path, line, character, }: { path: string; line: number; character: number }): Promise<LspHover | null> {
-    const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
-    return c !== null && c.initialized ? requestHover({ client: c, path, line, character, },) : null;
+    return managerHover({ pool: this.#pool, path, line, character, },);
   }
-  /**
-   * {@inheritDoc requestCompletion}
-   *
-   * @returns completion items, or empty array if tsgo is unavailable
-   */
+  /** {@inheritDoc managerCompletion} */
   async completion({ path, line, character, }: { path: string; line: number; character: number }): Promise<LspCompletionItem[]> {
-    const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
-    return c !== null && c.initialized ? requestCompletion({ client: c, path, line, character, },) : [];
+    return managerCompletion({ pool: this.#pool, path, line, character, },);
   }
-  /**
-   * {@inheritDoc requestFormat}
-   *
-   * @returns text edits, or empty array if dprint is unavailable
-   */
+  /** {@inheritDoc managerFormat} */
   async format({ path, }: { path: string }): Promise<LspTextEdit[]> {
-    const c = await this.#pool.resolve({ type: 'dprint', filePath: path, },);
-    return c !== null && c.initialized ? requestFormat({ client: c, path, },) : [];
+    return managerFormat({ pool: this.#pool, path, },);
   }
-  /**
-   * {@inheritDoc requestGotoDefinition}
-   *
-   * @returns definition location, or null if tsgo is unavailable
-   */
+  /** {@inheritDoc managerGotoDefinition} */
   async gotoDefinition({ path, line, character, }: { path: string; line: number; character: number }): Promise<{ path: string; line: number; character: number } | null> {
-    const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
-    return c !== null && c.initialized ? requestGotoDefinition({ client: c, path, line, character, },) : null;
+    return managerGotoDefinition({ pool: this.#pool, path, line, character, },);
   }
-  /**
-   * {@inheritDoc requestReferences}
-   *
-   * @returns reference locations, or empty array if tsgo is unavailable
-   */
+  /** {@inheritDoc managerReferences} */
   async references({ path, line, character, }: { path: string; line: number; character: number }): Promise<{ path: string; line: number; character: number }[]> {
-    const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
-    return c !== null && c.initialized ? requestReferences({ client: c, path, line, character, },) : [];
+    return managerReferences({ pool: this.#pool, path, line, character, },);
   }
-  /**
-   * {@inheritDoc requestInlayHints}
-   *
-   * @returns inlay hints, or empty array if tsgo is unavailable
-   */
-  async inlayHints({ path, range, }: {
-    path: string;
-    range: { start: { line: number; character: number }; end: { line: number; character: number } };
-  }): Promise<LspInlayHint[]> {
-    const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
-    return c !== null && c.initialized ? requestInlayHints({ client: c, path, range, },) : [];
+  /** {@inheritDoc managerInlayHints} */
+  async inlayHints({ path, range, }: { path: string; range: { start: { line: number; character: number }; end: { line: number; character: number } } }): Promise<LspInlayHint[]> {
+    return managerInlayHints({ pool: this.#pool, path, range, },);
   }
-  /**
-   * {@inheritDoc requestSelectionRange}
-   *
-   * @returns selection ranges (one per position), or empty array if tsgo is unavailable
-   */
-  async selectionRange({ path, positions, }: {
-    path: string;
-    positions: { line: number; character: number }[];
-  }): Promise<LspSelectionRange[]> {
-    const c = await this.#pool.resolve({ type: 'tsgo', filePath: path, },);
-    return c !== null && c.initialized ? requestSelectionRange({ client: c, path, positions, },) : [];
+  /** {@inheritDoc managerSelectionRange} */
+  async selectionRange({ path, positions, }: { path: string; positions: { line: number; character: number }[] }): Promise<LspSelectionRange[]> {
+    return managerSelectionRange({ pool: this.#pool, path, positions, },);
   }
-
-  //endregion Feature requests
-
-  /** Routes an LSP notification to the diagnostic store. */
-  #onNotification({ source, method, params, }: { source: string; method: string; params: unknown }): void {
-    if (method === 'textDocument/publishDiagnostics') {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP publishDiagnostics shape
-      const p = params as { uri: string; diagnostics: LspDiagnostic[] };
-      this.#diagnostics.update({ source, uri: p.uri, diagnostics: p.diagnostics, },);
-    }
-  }
-
   /** Gracefully shuts down all pooled LSP servers. */
   shutdown(): void { this.#pool.shutdown(); }
-
   /**
    * Shuts down LSP servers whose project root covers the given path.
-   * Called before retrying move/delete operations that fail due to
-   * file locks held by LSP processes (Windows `EBUSY`/`EPERM`).
    *
    * @param path - absolute file or directory path
    */

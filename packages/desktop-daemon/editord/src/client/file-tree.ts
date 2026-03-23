@@ -10,7 +10,6 @@
  * No virtualization — the entire expanded tree is rendered into the DOM.
  */
 
-// oxlint-disable max-lines -- web component with lazy-loading, preloading, and two element factories; splitting fractures the component
 
 import {
   $ as h,

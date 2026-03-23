@@ -14,6 +14,7 @@
  */
 
 import type { KeybindingDeps, } from './keybinding-deps.ts';
+import { handleTextEditKey, } from './keybinding-text-ops.ts';
 import { handleCompletionNav, handleReferencesNav, } from './popup-nav.ts';
 
 /**
@@ -42,44 +43,7 @@ export function wireKeybindings({ saveCurrentFile, formatDocument, gotoDefinitio
       gotoDefinition();
       return;
     }
-    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'z') {
-      event.preventDefault();
-      // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand('undo') is the only way to trigger the browser's native undo stack in contenteditable
-      document.execCommand('undo', false,);
-      return;
-    }
-    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'Z') {
-      event.preventDefault();
-      // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand('redo') is the only way to trigger the browser's native redo stack in contenteditable
-      document.execCommand('redo', false,);
-      return;
-    }
-    if ((event.ctrlKey || event.metaKey) && event.key === 'y') {
-      event.preventDefault();
-      deleteCurrentLine();
-      return;
-    }
-    /** Without combined condition: no-lonely-if lint error for nested if without else. */
-    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'c'
-      && selectAndCopyCurrentLine()) {
-      event.preventDefault();
-      return;
-    }
-    if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'd') {
-      event.preventDefault();
-      duplicateLineDown();
-      return;
-    }
-    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'ArrowDown') {
-      event.preventDefault();
-      swapLineDown();
-      return;
-    }
-    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'ArrowUp') {
-      event.preventDefault();
-      swapLineUp();
-      return;
-    }
+    if (handleTextEditKey({ event, deps: { deleteCurrentLine, selectAndCopyCurrentLine, duplicateLineDown, swapLineDown, swapLineUp, }, },)) return;
     if (event.ctrlKey && event.key === ' ') {
       event.preventDefault();
       requestCompletions();

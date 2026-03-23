@@ -13,7 +13,6 @@
  * - `getRootDir` — returns the current search scope directory for display
  */
 
-// oxlint-disable max-lines -- web component with dialog, double-shift detection, input handling, result rendering, and keyboard navigation; splitting fractures the component
 
 import {
   $ as h,
@@ -27,14 +26,11 @@ import { STYLES, } from './search-overlay.styles.ts';
 /** Tagged logger for the search overlay subsystem. */
 const l = tagged({ tag: 'search-overlay', l: rootLogger, },);
 
-/** Debounce delay for search input in milliseconds: 150 = 2 * 3 * 5 * 5. */
-const DEBOUNCE_MS = 2 * (2 + 1) * (2 * 2 + 1) * (2 * 2 + 1);
+/** Debounce delay for search input in milliseconds. */
+const DEBOUNCE_MS = 150;
 
-/**
- * Maximum milliseconds between two Shift keyup events to count as a double-shift.
- * 400 = 16 * 25 = 2^4 * 5^2.
- */
-const DOUBLE_SHIFT_THRESHOLD_MS = 2 * 2 * 2 * 2 * (2 * 2 + 1) * (2 * 2 + 1);
+/** Maximum milliseconds between two Shift keyup events to count as a double-shift. */
+const DOUBLE_SHIFT_THRESHOLD_MS = 400;
 
 /** Detail payload for the `result-select` custom event. */
 export type ResultSelectDetail = {

@@ -6,35 +6,12 @@
  */
 
 import type { Diagnostic, InlayHint, } from '../protocol.ts';
+import { groupByLine, } from './group-by-line.ts';
 import {
   findWorstSeverity, formatDiagnosticLabel, formatHintLabel,
 } from './inlay-format.ts';
 
-/**
- * Groups items by a numeric key extracted from each item.
- *
- * @param items - items to group
- *
- * @param keyFn - extracts grouping key from each item
- *
- * @returns map from key to grouped items
- */
-export function groupByLine<T>({ items, keyFn, }: {
-  items: T[];
-  keyFn: (item: T,) => number;
-}): Map<number, T[]> {
-  const groups = new Map<number, T[]>();
-  for (const item of items) {
-    const key = keyFn(item,);
-    let group = groups.get(key,);
-    if (group === undefined) {
-      group = [];
-      groups.set(key, group,);
-    }
-    group.push(item,);
-  }
-  return groups;
-}
+export { groupByLine, };
 
 /**
  * Builds the combined annotation string and sets attributes on a line div.

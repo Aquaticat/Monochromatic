@@ -11,17 +11,9 @@
  */
 
 import type { EditorPane, } from './editor-pane.ts';
-import { l, tagged, } from './log.ts';
-import {
-  type FlatRange,
-  fetchChain,
-  strictlyContains,
-  toFlat,
-} from './selection-range-utils.ts';
+import { doExpandSelection, } from './selection-expand.ts';
+import { doShrinkSelection, } from './selection-shrink.ts';
 import type { EditorWsClient, } from './ws-client.ts';
-
-/** Tagged logger for selection range module. */
-const selLog = tagged({ tag: 'selection-range', l, },);
 
 /**
  * Wires expand/shrink selection onto the editor.
@@ -42,97 +34,12 @@ export function wireSelectionRange({ ws, editorPane, getCurrentFilePath, }: {
   editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
 }): { expandSelection: () => void; shrinkSelection: () => void } {
-
-  /** Expands the selection to the next larger syntactic scope. */
-  function expandSelection(): void {
-    const path = getCurrentFilePath();
-    if (path === null) return;
-
-    const pos = editorPane.getCursorPosition();
-    if (pos === null) return;
-
-    void (async function doExpand(): Promise<void> {
-      try {
-        const chain = await fetchChain({ ws, path, line: pos.line, character: pos.character, },);
-        if (chain.length === 0) return;
-
-        const currentSel = editorPane.getSelection();
-
-        /** No selection or collapsed — apply the innermost range. */
-        if (currentSel === null
-          || (currentSel.startLine === currentSel.endLine && currentSel.startCharacter === currentSel.endCharacter)) {
-          const [first,] = chain;
-          if (first !== undefined) {
-            editorPane.setSelection(toFlat({ sr: first, },),);
-            selLog.info(`expand: applied innermost range`,);
-          }
-          return;
-        }
-
-        /** Find the first range strictly larger than the current selection. */
-        for (const entry of chain) {
-          const flat = toFlat({ sr: entry, },);
-          if (strictlyContains({ outer: flat, inner: currentSel, },)) {
-            editorPane.setSelection(flat,);
-            selLog.info(`expand: ${flat.startLine}:${flat.startCharacter}-${flat.endLine}:${flat.endCharacter}`,);
-            return;
-          }
-        }
-
-        selLog.info('expand: already at outermost range',);
-      }
-      catch (error) {
-        selLog.error(`expand failed: ${String(error,)}`,);
-      }
-    })();
-  }
-
-  /** Shrinks the selection back to the previous (smaller) scope. */
-  function shrinkSelection(): void {
-    const path = getCurrentFilePath();
-    if (path === null) return;
-
-    const currentSel = editorPane.getSelection();
-    if (currentSel === null) return;
-
-    const pos = editorPane.getCursorPosition();
-    if (pos === null) return;
-
-    void (async function doShrink(): Promise<void> {
-      try {
-        const chain = await fetchChain({ ws, path, line: pos.line, character: pos.character, },);
-        if (chain.length === 0) return;
-
-        /**
-         * Find the largest range strictly smaller than the current selection.
-         * Walk the chain from outermost to innermost, picking the last one
-         * that is strictly contained within the current selection.
-         */
-        let best: FlatRange | null = null;
-        for (const entry of chain) {
-          const flat = toFlat({ sr: entry, },);
-          /** Without this combined check, the inner `best` comparison would run for non-contained ranges. */
-          if (strictlyContains({ outer: currentSel, inner: flat, },)
-            && (best === null || strictlyContains({ outer: flat, inner: best, },))) {
-            best = flat;
-          }
-        }
-
-        if (best !== null) {
-          editorPane.setSelection(best,);
-          selLog.info(`shrink: ${best.startLine}:${best.startCharacter}-${best.endLine}:${best.endCharacter}`,);
-        }
-        else {
-          /** No smaller range — collapse to cursor. */
-          editorPane.restoreCursor({ line: pos.line, character: pos.character, },);
-          selLog.info('shrink: collapsed to cursor',);
-        }
-      }
-      catch (error) {
-        selLog.error(`shrink failed: ${String(error,)}`,);
-      }
-    })();
-  }
-
-  return { expandSelection, shrinkSelection, };
+  return {
+    expandSelection: function expand(): void {
+      doExpandSelection({ ws, editorPane, getCurrentFilePath, },);
+    },
+    shrinkSelection: function shrink(): void {
+      doShrinkSelection({ ws, editorPane, getCurrentFilePath, },);
+    },
+  };
 }

@@ -22,9 +22,13 @@ let available = true;
 const SILENT_LEVELS: ReadonlySet<string> = new Set(['debug', 'trace',],);
 
 /**
- * Detects verbose mode from environment variables and process arguments.
+ * Detects verbose mode from environment variables, process arguments,
+ * and runtime environment.
  * Checks `process.env.DEBUG`, `process.argv` for `--verbose`,
- * and `import.meta.env.DEBUG`. Each check is individually guarded
+ * `import.meta.env.DEBUG`, and whether the runtime is a browser.
+ * Browser environments enable verbose by default because DevTools
+ * already provides its own log-level filtering, making logger-side
+ * suppression redundant. Each check is individually guarded
  * so unavailable globals never cause throws.
  *
  * @returns Whether verbose output is enabled.
@@ -32,6 +36,12 @@ const SILENT_LEVELS: ReadonlySet<string> = new Set(['debug', 'trace',],);
  * @example
  * ```ts
  * // With DEBUG=true in environment
+ * detectVerbose(); // true
+ * ```
+ *
+ * @example
+ * ```ts
+ * // In a browser environment (window is defined)
  * detectVerbose(); // true
  * ```
  */
@@ -63,6 +73,16 @@ function detectVerbose(): boolean {
   }
   catch {
     // import.meta.env may be unavailable - intentionally didn't log to reduce noise.
+  }
+
+  try {
+    // Browser DevTools already provides log-level filtering,
+    // so suppressing debug/trace at the logger level is redundant.
+    if (typeof window !== 'undefined')
+      return true;
+  }
+  catch {
+    // window access may throw in restricted contexts - intentionally didn't log to reduce noise.
   }
 
   return false;
@@ -122,8 +142,8 @@ export function verify(): boolean {
 /**
  * Console sink that writes log records to console methods.
  * Silently swallows debug and trace logs unless verbose mode
- * is active (via `DEBUG=true` env var, `--verbose` argv, or
- * `import.meta.env.DEBUG === 'true'`).
+ * is active (via `DEBUG=true` env var, `--verbose` argv,
+ * `import.meta.env.DEBUG === 'true'`, or browser environment).
  *
  * @param record - log record to write
  */

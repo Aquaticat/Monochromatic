@@ -13,7 +13,6 @@
  * after every content change using `requestAnimationFrame` batching.
  */
 
-// oxlint-disable max-lines -- web component with contenteditable, paste handling, and syntax highlighting scheduling; splitting fractures the component
 
 import type { Parser, } from '@lezer/common';
 import {

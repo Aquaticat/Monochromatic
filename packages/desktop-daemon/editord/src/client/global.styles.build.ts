@@ -13,6 +13,8 @@
 import { mkdir, writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { STYLES as CTX_MENU_STYLES, } from './context-menu.styles.ts';
+import { STYLES as FAB_STYLES, } from './fullscreen-fab.styles.ts';
 import { STYLES as RESET_STYLES, } from './global-reset.styles.ts';
 import { STYLES as THEME_STYLES, } from './global-theme.styles.ts';
 import { STYLES as TOAST_STYLES, } from './toast.styles.ts';
@@ -26,7 +28,7 @@ const OUT_DIR = join(import.meta.dirname, '../../dist/client',);
 const OUT_FILE = join(OUT_DIR, 'global.css',);
 
 /** Combined CSS from all global style modules. */
-const css = THEME_STYLES + RESET_STYLES + TOAST_STYLES;
+const css = THEME_STYLES + RESET_STYLES + TOAST_STYLES + FAB_STYLES + CTX_MENU_STYLES;
 
 await mkdir(OUT_DIR, { recursive: true, },);
 await writeFile(OUT_FILE, css, 'utf8',);

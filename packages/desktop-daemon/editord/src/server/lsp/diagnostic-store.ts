@@ -31,7 +31,7 @@ export type WireDiagnostic = {
 };
 
 /** Callback signature for pushing merged diagnostics to the client. */
-export type DiagnosticsHandler = (path: string, diagnostics: WireDiagnostic[],) => void;
+export type DiagnosticsHandler = (event: { path: string; diagnostics: WireDiagnostic[] }) => void;
 
 /**
  * Stores diagnostics from multiple LSP sources and merges them per URI.
@@ -83,7 +83,7 @@ export class DiagnosticStore {
     }
 
     const path = uri.startsWith('file://',) ? fileURLToPath(uri,) : uri;
-    this.#onDiagnostics(path, merged,);
+    this.#onDiagnostics({ path, diagnostics: merged, },);
   }
 
   /**

@@ -7,13 +7,13 @@
  * Uses `open` on macOS, `start` on Windows.
  */
 
-import { spawn, } from 'node:child_process';
 import { dirname, } from 'node:path';
 import { platform, } from 'node:process';
 
 import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec';
 
 import { assertWithinRoot, } from './assert-within-root.ts';
+import { spawnDetached, } from './spawn-detached.ts';
 
 /**
  * Opens a terminal emulator at the given directory path.
@@ -71,31 +71,4 @@ export async function openInDefaultApp({ rootDir, path, }: { rootDir: string; pa
   else {
     throw new Error(`unsupported platform: ${currentPlatform}`,);
   }
-}
-
-/**
- * Spawns a detached process that outlives the parent.
- * Resolves once the process has spawned successfully.
- *
- * @param command - executable name or path
- *
- * @param args - arguments to pass to the command
- *
- * @param cwd - working directory for the spawned process
- *
- * @throws when the process fails to spawn
- */
-function spawnDetached({ command, args, cwd, }: { command: string; args: string[]; cwd: string }): Promise<void> {
-  // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- wrapping callback-based child_process.spawn requires manual Promise construction
-  return new Promise<void>(function awaitSpawn(resolve, reject,): void {
-    const child = spawn(command, args, {
-      cwd,
-      detached: true,
-      stdio: 'ignore',
-    },);
-    child.unref();
-    child.on('error', reject,);
-    /** Resolve on next tick — if spawn failed, the error event fires synchronously. */
-    queueMicrotask(resolve,);
-  },);
 }

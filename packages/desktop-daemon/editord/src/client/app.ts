@@ -1,4 +1,4 @@
-// oxlint-disable max-lines -- app entry wiring components, events, session restore, and keybindings; splitting fractures the boot sequence
+
 /**
  * editord client entry point.
  *
@@ -155,7 +155,7 @@ const FILE_SIZE_WARNING_THRESHOLD = 100 * BYTES_PER_KB;
  *
  * @param character - optional 0-based character offset within the line
  */
-async function loadFileSafe(path: string, line?: number, character?: number,): Promise<void> {
+async function loadFileSafe({ path, line, character, }: { path: string; line?: number | undefined; character?: number | undefined }): Promise<void> {
   try {
     const r = await ws.request({ type: 'open', path, },);
     if (!('kind' in r)) return;
@@ -206,7 +206,7 @@ fileTree.addEventListener('file-select', function handleFileSelect(event,) {
   currentFilePath = path;
   recordFileOpen(path,);
   void (async function loadAndRefresh(): Promise<void> {
-    await loadFileSafe(path,);
+    await loadFileSafe({ path, },);
     if (currentFileKind === 'text') refreshInlayHints();
   })();
 },);
@@ -216,7 +216,7 @@ searchOverlay.addEventListener('result-select', function handleResultSelect(even
   currentFilePath = path;
   recordFileOpen(path,);
   void (async function loadAndRefresh(): Promise<void> {
-    await loadFileSafe(path, line,);
+    await loadFileSafe({ path, line, },);
     if (currentFileKind === 'text') refreshInlayHints();
   })();
 },);
@@ -227,7 +227,7 @@ referencesPopup.addEventListener('reference-select', function handleReferenceSel
   currentFilePath = path;
   recordFileOpen(path,);
   void (async function loadAndRefresh(): Promise<void> {
-    await loadFileSafe(path, line, character,);
+    await loadFileSafe({ path, line, character, },);
     if (currentFileKind === 'text') refreshInlayHints();
   })();
 },);
@@ -286,7 +286,7 @@ wireKeybindings({
     void (async function revealLoadAndScroll(): Promise<void> {
       await fileTree.revealFiles({ paths: [path,], },);
       fileTree.scrollToFile({ path, },);
-      await loadFileSafe(path,);
+      await loadFileSafe({ path, },);
       if (currentFileKind === 'text') refreshInlayHints();
     })();
   },
@@ -301,12 +301,12 @@ fileTree.onDirExpanded = function handleDirExpanded(path: string,): void {
   void ws.notify({ type: 'watchDir', path, },);
 };
 
-ws.onFileChanged = function handleFileChanged(path: string, changeType: FsChangeType, _isDirectory: boolean,): void {
+ws.onFileChanged = function handleFileChanged({ path, changeType, }: { path: string; changeType: FsChangeType; isDirectory: boolean },): void {
   appLog.info(`file changed: ${path} (${changeType})`,);
 
   /** Reload the open file on content modification or atomic replace (write-to-temp + rename). */
   if ((changeType === 'modified' || changeType === 'created') && path === currentFilePath) {
-    void loadFileSafe(path,);
+    void loadFileSafe({ path, },);
     if (changeType === 'modified') return;
   }
 

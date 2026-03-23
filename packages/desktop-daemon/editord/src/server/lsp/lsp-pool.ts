@@ -6,49 +6,14 @@
  * from the file being operated on to find its config file.
  */
 
-import { dirname, join, } from 'node:path';
-import { pathToFileURL, } from 'node:url';
+import { dirname, } from 'node:path';
 
 import type { Logger, } from '../log.ts';
 import type { ServerSlots, } from './document-sync.ts';
 import { findProjectRoot, } from './find-project-root.ts';
-import { LspClient, } from './lsp-client.ts';
+import type { LspClient, } from './lsp-client.ts';
+import { CONFIG_FILES, spawnLspClient, type ServerType, } from './lsp-pool-config.ts';
 import { shutdownAllPooled, shutdownPoolForPath, } from './lsp-pool-shutdown.ts';
-
-/** LSP server type identifier. */
-type ServerType = 'oxlint' | 'tsgo' | 'dprint';
-
-/** Config files that define a project root for each server type. */
-const CONFIG_FILES: Record<ServerType, readonly string[]> = {
-  oxlint: ['package.json',],
-  tsgo: ['tsconfig.json',],
-  dprint: ['dprint.json', 'dprint.jsonc',],
-};
-
-/** Spawn command and arguments for each server type. */
-const COMMANDS: Record<ServerType, {
-  command: string;
-  args: readonly string[];
-  initializationOptions: Record<string, unknown>;
-}> = {
-  oxlint: { command: 'oxlint', args: ['--lsp',], initializationOptions: {}, },
-  tsgo: {
-    command: 'tsgo', args: ['--lsp', '--stdio',],
-    initializationOptions: {
-      userPreferences: {
-        inlayHints: {
-          parameterNames: { enabled: 'all', },
-          parameterTypes: { enabled: true, },
-          variableTypes: { enabled: true, },
-          propertyDeclarationTypes: { enabled: true, },
-          functionLikeReturnTypes: { enabled: true, },
-          enumMemberValues: { enabled: true, },
-        },
-      },
-    },
-  },
-  dprint: { command: 'dprint', args: ['lsp',], initializationOptions: {}, },
-};
 
 export { type ServerType, };
 
@@ -61,7 +26,7 @@ export class LspPool {
   /** Highest directory to search for config files (file tree root). */
   #ceiling: string;
   /** Callback for server-initiated notifications. */
-  #onNotification: (source: string, method: string, params: unknown,) => void;
+  #onNotification: (event: { source: string; method: string; params: unknown }) => void;
 
   /**
    * @param ceiling - highest directory for config-file search (file tree root)
@@ -72,7 +37,7 @@ export class LspPool {
    */
   constructor({ ceiling, l, onNotification, }: {
     ceiling: string; l: Logger;
-    onNotification: (source: string, method: string, params: unknown,) => void;
+    onNotification: (event: { source: string; method: string; params: unknown }) => void;
   }) {
     this.#l = l;
     this.#ceiling = ceiling;
@@ -90,7 +55,7 @@ export class LspPool {
     const key = `${type}:${root}`;
     const existing = this.#pool.get(key,);
     if (existing !== undefined) return existing;
-    const promise = this.#spawn({ type, root, },);
+    const promise = spawnLspClient({ type, root, l: this.#l, onNotification: this.#onNotification, },);
     this.#pool.set(key, promise,);
     return promise;
   }
@@ -111,38 +76,12 @@ export class LspPool {
 
   /**
    * Shuts down and removes all pooled LSP servers whose project root
-   * contains the given path. Used to release file locks on Windows
-   * before move/delete operations.
+   * contains the given path.
    *
    * @param path - absolute file or directory path
    */
   async shutdownForPath({ path, }: { path: string }): Promise<void> {
     await shutdownPoolForPath({ pool: this.#pool, path, l: this.#l, },);
-  }
-
-  /**
-   * Spawns and initializes one LSP client for a given type and project root.
-   *
-   * @returns initialized client, or null if spawn/init fails
-   */
-  async #spawn({ type, root, }: { type: ServerType; root: string }): Promise<LspClient | null> {
-    const def = COMMANDS[type];
-    const binPath = join(root, 'node_modules/.bin',);
-    const env = { ...process.env, PATH: `${binPath}:${process.env.PATH ?? ''}`, };
-    const rootUri = pathToFileURL(root,).href;
-    try {
-      const pool = this;
-      const c = new LspClient({
-        command: def.command, args: [...def.args,], name: type, cwd: root, env, l: this.#l,
-        onNotification: function onNotif(method: string, params: unknown,): void {
-          pool.#onNotification(type, method, params,);
-        },
-      },);
-      await c.initialize({ rootUri, initializationOptions: def.initializationOptions, },);
-      this.#l.info(`${type}: ready at ${root}`,);
-      return c;
-    }
-    catch (error) { this.#l.error(`${type} init failed at ${root}: ${String(error,)}`,); return null; }
   }
 
   /** Gracefully shuts down all pooled LSP servers. */

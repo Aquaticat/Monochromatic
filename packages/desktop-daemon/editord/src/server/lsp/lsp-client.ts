@@ -6,7 +6,6 @@
  * typed `request` and `notify` methods for outgoing messages.
  */
 
-// oxlint-disable max-lines -- LSP client with spawn, init handshake, request/response correlation, notification routing, and shutdown in a single class
 
 import { spawn, type ChildProcess, } from 'node:child_process';
 
@@ -49,7 +48,7 @@ export class LspClient {
   #l: Logger;
 
   /** Callback for server-initiated notifications. */
-  #onNotification: (method: string, params: unknown,) => void;
+  #onNotification: (event: { method: string; params: unknown }) => void;
 
   /** Whether the LSP initialize handshake has completed. */
   #initialized = false;
@@ -81,7 +80,7 @@ export class LspClient {
     cwd: string;
     env: Record<string, string | undefined>;
     l: Logger;
-    onNotification: (method: string, params: unknown,) => void;
+    onNotification: (event: { method: string; params: unknown }) => void;
   }) {
     this.#name = name;
     this.#l = tagged({ tag: name, l, },);
@@ -93,15 +92,18 @@ export class LspClient {
       stdio: ['pipe', 'pipe', 'pipe',],
     },);
 
+    const clientLog = this.#l;
     const parser = createLspParser({
       onMessage: this.#handleMessage.bind(this,),
+      onError: function handleParseError(error,) {
+        clientLog.error(`malformed JSON-RPC message: ${String(error,)}`,);
+      },
     },);
 
     this.#proc.stdout?.on('data', function handleStdout(chunk: Buffer,) {
       parser.feed(chunk,);
     },);
 
-    const clientLog = this.#l;
     this.#proc.stderr?.on('data', function handleStderr(chunk: Buffer,) {
       clientLog.error(`stderr: ${chunk.toString('utf8',).trimEnd()}`,);
     },);
@@ -206,7 +208,8 @@ export class LspClient {
       await this.request({ method: 'shutdown', params: null, },);
       this.notify({ method: 'exit', params: null, },);
     }
-    catch {
+    catch (error) {
+      this.#l.error(`shutdown failed, killing process: ${String(error,)}`,);
       this.#proc.kill();
     }
   }
@@ -249,7 +252,7 @@ export class LspClient {
     else if ('method' in message && !('id' in message)) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to notification shape
       const notification = message as { method: string; params?: unknown };
-      this.#onNotification(notification.method, notification.params,);
+      this.#onNotification({ method: notification.method, params: notification.params, },);
     }
     // Server-initiated request (e.g. window/workDoneProgress/create)
     else if ('method' in message && 'id' in message) {

@@ -5,7 +5,6 @@
  * via client-generated request IDs. Rejects pending requests on close.
  */
 
-// oxlint-disable max-lines -- WebSocket client with handshake, request correlation, push dispatch, and close cleanup in a single class
 
 import type { ClientNotification, ClientRequest, Diagnostic, FsChangeType, ServerMessage, } from '../protocol.ts';
 import { l as rootLogger, tagged, } from './log.ts';
@@ -48,10 +47,10 @@ export class EditorWsClient {
   fsId = '';
 
   /** Callback invoked when the server pushes a file change notification. */
-  onFileChanged: ((path: string, changeType: FsChangeType, isDirectory: boolean,) => void) | null = null;
+  onFileChanged: ((event: { path: string; changeType: FsChangeType; isDirectory: boolean }) => void) | null = null;
 
   /** Callback invoked when the server pushes diagnostics for a file. */
-  onDiagnostics: ((path: string, diagnostics: Diagnostic[],) => void) | null = null;
+  onDiagnostics: ((event: { path: string; diagnostics: Diagnostic[] }) => void) | null = null;
 
   /** Resolves when the WebSocket connection is established and authenticated. */
   readonly ready: Promise<void>;
@@ -176,11 +175,11 @@ export class EditorWsClient {
 
     // Push notifications — no request ID
     if (data.type === 'fileChanged') {
-      this.onFileChanged?.(data.path, data.changeType, data.isDirectory,);
+      this.onFileChanged?.({ path: data.path, changeType: data.changeType, isDirectory: data.isDirectory, },);
       return;
     }
     if (data.type === 'diagnostics') {
-      this.onDiagnostics?.(data.path, data.diagnostics,);
+      this.onDiagnostics?.({ path: data.path, diagnostics: data.diagnostics, },);
       return;
     }
 

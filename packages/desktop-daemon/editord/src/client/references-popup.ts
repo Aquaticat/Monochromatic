@@ -12,29 +12,17 @@
 
 import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
 
+import {
+  computeNextIndex,
+  createReferenceAnchor,
+  positionAnchor,
+  renderReferenceItems,
+  updateItemSelection,
+} from './references-popup-behavior.ts';
+import type { ReferenceLocation, ReferenceSelectDetail, } from './references-popup-types.ts';
 import { STYLES, } from './references-popup.styles.ts';
 
-/** Single reference location with display label. */
-export type ReferenceLocation = {
-  /** Absolute file path. */
-  path: string;
-  /** 0-based line number. */
-  line: number;
-  /** 0-based character offset within the line. */
-  character: number;
-  /** Display label (relative path). */
-  label: string;
-};
-
-/** Detail emitted with the `reference-select` event. */
-export type ReferenceSelectDetail = {
-  /** Absolute file path. */
-  path: string;
-  /** 1-based line number for navigation. */
-  line: number;
-  /** 0-based character offset within the line. */
-  character: number;
-};
+export type { ReferenceLocation, ReferenceSelectDetail, };
 
 /**
  * `<references-popup>` -- language server references dropdown.
@@ -50,22 +38,14 @@ export class ReferencesPopup extends HTMLElement {
   #locations: ReferenceLocation[] = [];
   /** Index of the selected item (-1 = none). */
   #selectedIndex = -1;
-  /**
-   * Invisible anchor div positioned at the editor cursor.
-   * The popup uses CSS `position-anchor` to attach to it.
-   */
+  /** Invisible anchor div positioned at the editor cursor. */
   #anchor: HTMLDivElement;
 
   /** Initializes the shadow root and creates the anchor div. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
-    this.#anchor = document.createElement('div',);
-    this.#anchor.style.setProperty('position', 'fixed',);
-    this.#anchor.style.setProperty('anchor-name', '--ref-anchor',);
-    this.#anchor.style.setProperty('inline-size', '2px',);
-    this.#anchor.style.setProperty('pointer-events', 'none',);
-    this.#anchor.style.setProperty('z-index', '9999',);
+    this.#anchor = createReferenceAnchor();
   }
 
   /** Renders the container and sets up popover behavior. */
@@ -97,30 +77,15 @@ export class ReferencesPopup extends HTMLElement {
     if (this.#list === null || locations.length === 0) return;
     this.#locations = locations;
     this.#selectedIndex = 0;
-
-    /** Insert anchor div as sibling and position it to overlay the editor cursor. */
     this.parentElement?.insertBefore(this.#anchor, this,);
-    this.#anchor.style.setProperty('inset-inline-start', `${x}px`,);
-    this.#anchor.style.setProperty('inset-block-start', `${y}px`,);
-    this.#anchor.style.setProperty('block-size', `${cursorHeight}px`,);
-
+    positionAnchor({ anchor: this.#anchor, x, y, cursorHeight, },);
     this.showPopover();
-
-    this.#list.replaceChildren(...locations.map(function renderItem(loc, index,) {
-      const item = h({ tag: 'div', class: 'item', },);
-      item.append(
-        h({ tag: 'span', class: 'item-path', text: loc.label, },),
-        h({ tag: 'span', class: 'line-num', text: `:${String(loc.line + 1,)}`, },),
-      );
-      /** Without dataset: prefer-dom-node-dataset lint error for setAttribute on data- attributes. */
-      if (index === 0) item.dataset.selected = '';
-      return item;
-    },),);
+    this.#list.replaceChildren(...renderReferenceItems({ locations, },),);
   }
 
   /** Hides the popup and removes the anchor div. */
   hide(): void {
-    try { this.hidePopover(); } catch { /* already hidden */ }
+    if (this.matches(':popover-open',)) this.hidePopover();
     this.#cleanup();
   }
 
@@ -131,28 +96,14 @@ export class ReferencesPopup extends HTMLElement {
     this.#selectedIndex = -1;
   }
 
-  /**
-   * Whether the popup is currently visible.
-   *
-   * @returns true if the popover is open
-   */
+  /** Whether the popup is currently visible. */
   get visible(): boolean { return this.matches(':popover-open',); }
 
   /** Moves the selection up or down. */
   navigate({ direction, }: { direction: 'up' | 'down' }): void {
     if (this.#locations.length === 0 || this.#list === null) return;
-    if (direction === 'up') {
-      this.#selectedIndex = this.#selectedIndex <= 0 ? this.#locations.length - 1 : this.#selectedIndex - 1;
-    }
-    else {
-      this.#selectedIndex = this.#selectedIndex >= this.#locations.length - 1 ? 0 : this.#selectedIndex + 1;
-    }
-    /** Without querySelectorAll: unsafe type assertion from Element to HTMLElement on children. */
-    const items = this.#list.querySelectorAll<HTMLElement>('.item',);
-    for (const [i, item,] of [...items,].entries()) {
-      if (i === this.#selectedIndex) { item.dataset.selected = ''; item.scrollIntoView({ block: 'nearest', },); }
-      else delete item.dataset.selected;
-    }
+    this.#selectedIndex = computeNextIndex({ current: this.#selectedIndex, total: this.#locations.length, direction, },);
+    updateItemSelection({ list: this.#list, selectedIndex: this.#selectedIndex, },);
   }
 
   /**
@@ -169,7 +120,6 @@ export class ReferencesPopup extends HTMLElement {
     this.dispatchEvent(new CustomEvent('reference-select', { detail, bubbles: true, composed: true, },),);
     return detail;
   }
-
 }
 
 customElements.define('references-popup', ReferencesPopup,);

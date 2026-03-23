@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// oxlint-disable max-lines -- server entry with auth, routes, LSP bootstrap, and WebSocket setup
+
 /**
  * editord entry point.
  *
@@ -88,7 +88,7 @@ const connectedPeers = new Set<{ send: (data: string) => void }>();
  *
  * @param diagnostics - merged diagnostics from all LSP sources
  */
-function handleDiagnostics(path: string, diagnostics: WireDiagnostic[],): void {
+function handleDiagnostics({ path, diagnostics, }: { path: string; diagnostics: WireDiagnostic[] }): void {
   const message = JSON.stringify({ type: 'diagnostics', path, diagnostics, },);
   for (const peer of connectedPeers) {
     peer.send(message,);

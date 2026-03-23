@@ -10,7 +10,6 @@
  * and presses Enter to confirm.
  */
 
-// oxlint-disable max-lines -- context menu with two item variants (button/input), anchor positioning, and popover lifecycle
 
 import {
   $ as h,
@@ -37,9 +36,6 @@ export type ContextMenuItem = {
 function stopClickPropagation(event: MouseEvent,): void {
   event.stopPropagation();
 }
-
-/** CSS anchor name for the context menu click-point anchor. */
-const ANCHOR_NAME = '--ctx-anchor';
 
 /**
  * Removes the popover element when dismissed by the browser.
@@ -75,17 +71,7 @@ export class ContextMenu {
 
   /** Initializes the invisible anchor div and popover toggle handler. */
   constructor() {
-    this.#anchor = h({
-      tag: 'div',
-      style: {
-        position: 'fixed',
-        'anchor-name': ANCHOR_NAME,
-        'inline-size': '0',
-        'block-size': '0',
-        'pointer-events': 'none',
-      },
-    },);
-
+    this.#anchor = h({ tag: 'div', class: 'ctx-anchor', },);
     this.#onToggleBound = handlePopoverToggle;
   }
 
@@ -126,25 +112,8 @@ export class ContextMenu {
 
     this.#popup = h({
       tag: 'div',
+      class: 'ctx-popup',
       attrs: { popover: 'auto', },
-      style: {
-        inset: 'auto',
-        margin: '0',
-        'position-anchor': ANCHOR_NAME,
-        'inset-block-start': 'anchor(end)',
-        'inset-inline-start': 'anchor(start)',
-        'position-try-fallbacks': 'flip-block, flip-inline, flip-block flip-inline',
-        'min-inline-size': '10rem',
-        'background-color': 'var(--bg)',
-        'border-style': 'solid',
-        'border-width': '0.0625rem',
-        'border-color': 'var(--hover-border)',
-        'border-radius': '0.25rem',
-        'padding-block': '0.25rem',
-        'font-family': "'JetBrains Mono', monospace",
-        'font-size': '1rem',
-        color: 'var(--fg)',
-      },
       children: menuItems,
     },);
 
@@ -211,20 +180,7 @@ export class ContextMenu {
   }): HTMLElement {
     const input = h({
       tag: 'input',
-      style: {
-        'flex-grow': '1',
-        'min-inline-size': '8rem',
-        'background-color': 'transparent',
-        'border-style': 'none',
-        'border-block-end-style': 'solid',
-        'border-block-end-width': '0.0625rem',
-        'border-block-end-color': 'var(--fg)',
-        color: 'var(--fg)',
-        'font-family': 'inherit',
-        'font-size': 'inherit',
-        'outline-style': 'none',
-        opacity: '0.7',
-      },
+      class: 'ctx-input',
       attrs: { type: 'text', value: item.defaultValue ?? '', },
       on: {
         keydown: function handleInputKeydown(event: KeyboardEvent,): void {
@@ -242,16 +198,9 @@ export class ContextMenu {
 
     return h({
       tag: 'div',
-      style: {
-        display: 'flex',
-        'align-items': 'center',
-        gap: '0.5rem',
-        'padding-block': '0.25rem',
-        'padding-inline': '0.5rem',
-        'white-space': 'nowrap',
-      },
+      class: 'ctx-input-row',
       children: [
-        h({ tag: 'span', text: item.label, style: { 'flex-shrink': '0', }, },),
+        h({ tag: 'span', class: 'ctx-label', text: item.label, },),
         input,
       ],
     },);

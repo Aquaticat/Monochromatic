@@ -8,25 +8,11 @@
 
 import { pathToFileURL, } from 'node:url';
 
+import type { DocumentState, ServerSlots, } from './document-sync-types.ts';
 import { getLanguageId, JS_TS_LANGUAGE_IDS, } from './language-id.ts';
 import type { LspClient, } from './lsp-client.ts';
 
-/** State tracked per open document. */
-export type DocumentState = {
-  /** Monotonically increasing version number. */
-  version: number;
-  /** LSP language identifier. */
-  languageId: string;
-  /** Latest full document text. */
-  text: string;
-};
-
-/** Three LSP server slots passed to sync functions. */
-export type ServerSlots = {
-  oxlint: LspClient | null;
-  tsgo: LspClient | null;
-  dprint: LspClient | null;
-};
+export type { DocumentState, ServerSlots, };
 
 /**
  * Returns initialized LSP clients that handle a given language.

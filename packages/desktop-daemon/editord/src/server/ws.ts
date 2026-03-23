@@ -6,7 +6,6 @@
  * Integrates with the LSP manager for language intelligence features.
  */
 
-// oxlint-disable max-lines -- WebSocket handler with auth, message dispatch, LSP integration, and diagnostics push
 
 import {
   defineWebSocketHandler,
