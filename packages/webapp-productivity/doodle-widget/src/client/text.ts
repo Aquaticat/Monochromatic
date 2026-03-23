@@ -43,7 +43,7 @@ export function setTextLayer(layer: HTMLDivElement,): void {
  * Finalizes the active input: makes it readonly if it has content,
  * removes it if empty.
  */
-function finalizeActiveInput(): void {
+export function finalizeActiveInput(): void {
   if (activeInput === null)
     return;
 
@@ -124,3 +124,4 @@ export function clearTextEntries(): void {
   if (layerElement !== null)
     layerElement.replaceChildren();
 }
+

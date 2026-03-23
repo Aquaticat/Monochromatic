@@ -1,30 +1,21 @@
 /**
  * Entry point for the doodle widget client-side application.
  *
- * Queries DOM elements, configures event listeners for drawing and
- * background upload, reads tool mode from radio inputs, and sets up
- * canvas resize handling via ResizeObserver.
+ * Queries DOM elements, delegates toolbar handler setup, configures
+ * page switching, and initializes canvas resize handling.
  */
 
-import { setSvgBackground, } from './background.ts';
+import { redraw, } from './drawing.ts';
 import {
-  setStrokeColor,
-  setStrokeWidth,
-} from './drawing-config.ts';
-import {
-  clearStrokes,
-  redraw,
-} from './drawing.ts';
-import { exportAsPdf, } from './export-pdf.ts';
-import { exportAsPng, } from './export-png.ts';
-import { exportAsSvg, } from './export-svg.ts';
+  initPages,
+  switchToPage,
+} from './pages.ts';
 import { setupPointerHandlers, } from './pointer-handlers.ts';
 import {
-  clearTextEntries,
   discardActiveInput,
   setTextLayer,
 } from './text.ts';
-import type { ExportFormat, } from './export.ts';
+import { setupToolbarHandlers, } from './toolbar-handlers.ts';
 
 /**
  * Queries a required DOM element by CSS selector.
@@ -56,35 +47,23 @@ const container = requireElement<HTMLDivElement>('#canvas-container',);
 /** Drawing canvas element */
 const canvas = requireElement<HTMLCanvasElement>('#draw-canvas',);
 
-/** Hidden file input for background image upload */
-const uploadInput = requireElement<HTMLInputElement>('#upload-input',);
-
-/** Button that triggers the file upload dialog */
-const uploadBtn = requireElement<HTMLButtonElement>('#upload-btn',);
-
-/** Button that triggers export in the selected format */
-const exportBtn = requireElement<HTMLButtonElement>('#export-btn',);
-
-/** Dropdown selector for export format (PDF, SVG, PNG) */
-const formatSelect = requireElement<HTMLSelectElement>('#format-select',);
-
-/** Button that clears all drawn strokes and text */
-const clearBtn = requireElement<HTMLButtonElement>('#clear-btn',);
-
 /** SVG overlay element for displaying SVG backgrounds */
 const svgOverlay = requireElement<HTMLDivElement>('#svg-overlay',);
-
-/** Color picker for stroke color */
-const colorPicker = requireElement<HTMLInputElement>('#color-picker',);
-
-/** Range slider for stroke width */
-const sizeSlider = requireElement<HTMLInputElement>('#size-slider',);
 
 /** Draw tool radio input */
 const drawRadio = requireElement<HTMLInputElement>('#tool-draw',);
 
 /** Text label overlay layer */
 const textLayer = requireElement<HTMLDivElement>('#text-layer',);
+
+/** Tool selection toggle group */
+const toolToggle = requireElement<HTMLDivElement>('#tool-toggle',);
+
+/** Page selection toggle group */
+const pageToggle = requireElement<HTMLDivElement>('#page-toggle',);
+
+/** JSON script element holding page background SVGs */
+const backgroundsScript = requireElement<HTMLScriptElement>('#page-backgrounds',);
 
 //endregion DOM element references
 
@@ -109,6 +88,15 @@ let canvasHeight = 0;
  */
 function isDrawMode(): boolean {
   return drawRadio.checked;
+}
+
+/**
+ * Returns current canvas dimensions in CSS pixels.
+ *
+ * @returns width and height as `cw` and `ch`
+ */
+function getCanvasSize(): { cw: number; ch: number; } {
+  return { cw: canvasWidth, ch: canvasHeight, };
 }
 
 /**
@@ -137,88 +125,54 @@ function syncCursorToTool(): void {
   }
 }
 
-/** Toggle group container holding tool radios */
-const toggleGroup = requireElement<HTMLDivElement>('.toggle-group',);
-
-toggleGroup.addEventListener('change', syncCursorToTool,);
-
-/** Set initial cursor */
+toolToggle.addEventListener('change', syncCursorToTool,);
 syncCursorToTool();
 
 //endregion Tool mode switching
 
-//region Pointer & toolbar handlers
+//region Page switching
 
-setupPointerHandlers({
-  canvas,
-  ctx,
-  isDrawMode,
-  getCanvasSize: function getCanvasSize(): { cw: number; ch: number; } {
-    return { cw: canvasWidth, ch: canvasHeight, };
-  },
-},);
-
-colorPicker.addEventListener('input', function handleColorChange(): void {
-  setStrokeColor(colorPicker.value,);
-},);
-
-sizeSlider.addEventListener('input', function handleSizeChange(): void {
-  setStrokeWidth(Number(sizeSlider.value,),);
-},);
-
-clearBtn.addEventListener('click', function handleClear(): void {
-  clearStrokes();
-  clearTextEntries();
-  ctx.clearRect(0, 0, canvasWidth, canvasHeight,);
-},);
-
-/** Format-to-exporter dispatch table */
-const EXPORTERS = {
-  pdf: exportAsPdf,
-  png: exportAsPng,
-  svg: exportAsSvg,
-};
-
-exportBtn.addEventListener('click', function handleExportClick(): void {
-  /** Selected export format from the dropdown */
-  const format = formatSelect.value as ExportFormat;
-  void EXPORTERS[format]({ container, overlay: svgOverlay, drawCanvas: canvas, textLayer, },);
-},);
-
-uploadBtn.addEventListener('click', function handleUploadClick(): void {
-  uploadInput.click();
-},);
-
-/**
- * Processes a user-selected SVG background file.
- *
- * Reads the file as text and renders it in the SVG overlay layer.
- *
- * @param file - uploaded SVG file
- */
-async function processBackgroundFile(file: File,): Promise<void> {
-  clearStrokes();
-  clearTextEntries();
-  /** Raw SVG markup read from the uploaded file */
-  const svgMarkup = await file.text();
-  setSvgBackground({ svgMarkup, overlay: svgOverlay, },);
-  sizeCanvas();
-}
-
-uploadInput.addEventListener('change', function handleFileChange(): void {
-  /** Selected file from the upload input */
-  const file = uploadInput.files?.item(0,) ?? null;
-  if (file === null)
+pageToggle.addEventListener('change', function handlePageChange(event: Event,): void {
+  const { target, } = event;
+  if (!(target instanceof HTMLInputElement))
     return;
-  void processBackgroundFile(file,);
+  /** Zero-based page index from the radio value */
+  const pageIndex = Number(target.value,);
+  switchToPage({
+    index: pageIndex, ctx,
+    cw: canvasWidth, ch: canvasHeight,
+    overlay: svgOverlay, textLayer,
+  },);
 },);
 
-//endregion Pointer & toolbar handlers
+//endregion Page switching
 
-//region Initialization
+//region Handler setup and initialization
 
+setupPointerHandlers({ canvas, ctx, isDrawMode, getCanvasSize, },);
+
+setupToolbarHandlers({
+  colorPicker: requireElement<HTMLInputElement>('#color-picker',),
+  sizeSlider: requireElement<HTMLInputElement>('#size-slider',),
+  clearBtn: requireElement<HTMLButtonElement>('#clear-btn',),
+  exportBtn: requireElement<HTMLButtonElement>('#export-btn',),
+  formatSelect: requireElement<HTMLSelectElement>('#format-select',),
+  uploadBtn: requireElement<HTMLButtonElement>('#upload-btn',),
+  uploadInput: requireElement<HTMLInputElement>('#upload-input',),
+  container, svgOverlay, drawCanvas: canvas, textLayer,
+  ctx, getCanvasSize, sizeCanvas,
+},);
+
+/** Page background SVGs parsed from the embedded JSON script tag */
+const parsed: unknown = JSON.parse(backgroundsScript.textContent,);
+if (!Array.isArray(parsed,))
+  throw new Error('Page backgrounds data is not an array',);
+/** Validated array of page background SVG markup strings */
+const backgrounds: readonly string[] = parsed;
+
+initPages({ backgrounds, overlay: svgOverlay, },);
 setTextLayer(textLayer,);
 new ResizeObserver(sizeCanvas,).observe(container,);
 sizeCanvas();
 
-//endregion Initialization
+//endregion Handler setup and initialization

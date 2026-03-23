@@ -51,7 +51,7 @@ export async function exportAsPng(deps: ExportDeps,): Promise<void> {
 
   //region Layer 4: text annotations
   /** Default text font size in pixels for inputs without data attributes */
-  const rootFontSize = parseFloat(
+  const rootFontSize = Number.parseFloat(
     getComputedStyle(document.documentElement,).fontSize,
   ) || DEFAULT_ROOT_FONT_SIZE_PX;
   const defaultFontSizePx = TEXT_FONT_SIZE_REM * rootFontSize;
@@ -64,16 +64,16 @@ export async function exportAsPng(deps: ExportDeps,): Promise<void> {
       continue;
     /** Per-input font size, falling back to CSS default */
     const fontSizePx = input.dataset.fontSize !== undefined
-      ? parseFloat(input.dataset.fontSize,)
+      ? Number.parseFloat(input.dataset.fontSize,)
       : defaultFontSizePx;
     /** Per-input color, falling back to CSS default */
     const color = input.dataset.color ?? TEXT_COLOR;
     ctx.font = `${String(fontSizePx,)}px system-ui, sans-serif`;
     ctx.fillStyle = color;
     /** Horizontal position as percentage */
-    const xPercent = parseFloat(input.style.insetInlineStart,);
+    const xPercent = Number.parseFloat(input.style.insetInlineStart,);
     /** Vertical position as percentage */
-    const yPercent = parseFloat(input.style.insetBlockStart,);
+    const yPercent = Number.parseFloat(input.style.insetBlockStart,);
     ctx.fillText(
       input.value,
       (xPercent / PERCENT_DIVISOR) * cw,

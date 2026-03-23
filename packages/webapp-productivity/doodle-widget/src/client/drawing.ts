@@ -198,6 +198,19 @@ export function clearStrokes(): void {
 }
 
 /**
+ * Replaces all stored strokes with the given array.
+ *
+ * Used by page switching to restore a previously saved page's strokes.
+ *
+ * @param newStrokes - stroke data to set as current
+ */
+export function setStrokes(newStrokes: StrokeData[],): void {
+  strokes = newStrokes;
+  current = null;
+  drawing = false;
+}
+
+/**
  * Returns a readonly snapshot of all stored strokes.
  *
  * Each stroke includes its captured color and width alongside

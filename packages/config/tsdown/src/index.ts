@@ -21,6 +21,11 @@ const _default_1: UserConfig = defineConfig({
   dts: true,
   target: 'firefox140',
   platform: 'neutral',
+  inputOptions: {
+    resolve: {
+      mainFields: ['module', 'main',],
+    },
+  },
   deps: {
     alwaysBundle: [/^@monochromatic-dev\//,],
   },

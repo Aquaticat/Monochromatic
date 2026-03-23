@@ -42,9 +42,9 @@ const RED_SHIFT = 16;
 const GREEN_SHIFT = 8;
 
 /** Bit mask for isolating a single 8-bit color channel */
-const CHANNEL_MASK = 0xff;
+const CHANNEL_MASK = 0xFF;
 
-/** Hexadecimal radix for parseInt */
+/** Hexadecimal radix for Number.parseInt */
 const HEX_RADIX = 16;
 
 //endregion Constants
@@ -63,7 +63,7 @@ const HEX_RADIX = 16;
  */
 function hexToRgb(hex: string,): { r: number; g: number; b: number; } {
   /** 24-bit integer parsed from the hex digits */
-  const packed = parseInt(hex.slice(1,), HEX_RADIX,);
+  const packed = Number.parseInt(hex.slice(1,), HEX_RADIX,);
   return {
     r: (packed >> RED_SHIFT) & CHANNEL_MASK,
     g: (packed >> GREEN_SHIFT) & CHANNEL_MASK,
@@ -106,6 +106,7 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
   /** Page height in PDF points */
   const pageH = ch * PX_TO_PT;
 
+  // eslint-disable-next-line new-cap -- jsPDF uses lowercase constructor by convention
   const doc = new jsPDF({
     orientation: pageW >= pageH ? 'l' : 'p',
     unit: 'pt',
@@ -117,7 +118,7 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
 
   //region Overlay text as real PDF text
   /** Default text font size in points for inputs without data attributes */
-  const rootFontSize = parseFloat(
+  const rootFontSize = Number.parseFloat(
     getComputedStyle(document.documentElement,).fontSize,
   ) || DEFAULT_ROOT_FONT_SIZE_PX;
   const defaultFontSizePt = TEXT_FONT_SIZE_REM * rootFontSize * PX_TO_PT;
@@ -129,7 +130,7 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
       continue;
     /** Per-input font size in points, falling back to CSS default */
     const fontSizePt = input.dataset.fontSize !== undefined
-      ? parseFloat(input.dataset.fontSize,) * PX_TO_PT
+      ? Number.parseFloat(input.dataset.fontSize,) * PX_TO_PT
       : defaultFontSizePt;
     doc.setFontSize(fontSizePt,);
     if (input.dataset.color !== undefined) {
@@ -140,9 +141,9 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
       doc.setTextColor(TEXT_COLOR_R, TEXT_COLOR_G, TEXT_COLOR_B,);
     }
     /** Horizontal position in points */
-    const x = (parseFloat(input.style.insetInlineStart,) / PERCENT_DIVISOR) * pageW;
+    const x = (Number.parseFloat(input.style.insetInlineStart,) / PERCENT_DIVISOR) * pageW;
     /** Vertical position in points */
-    const y = (parseFloat(input.style.insetBlockStart,) / PERCENT_DIVISOR) * pageH;
+    const y = (Number.parseFloat(input.style.insetBlockStart,) / PERCENT_DIVISOR) * pageH;
     doc.text(input.value, x, y, { baseline: 'top', },);
   }
   //endregion Overlay text

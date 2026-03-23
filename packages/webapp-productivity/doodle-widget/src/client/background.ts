@@ -1,42 +1,57 @@
 /**
  * Background management for the doodle widget.
  *
- * Handles SVG backgrounds with white background rectangle removal
- * so canvas strokes show through beneath the SVG paths.
+ * Handles SVG backgrounds by making white fills transparent
+ * so canvas strokes show through beneath the SVG linework.
  */
 
-/** White fill values to detect and remove from SVG backgrounds */
-const WHITE_FILLS: ReadonlySet<string> = new Set(['#fff', '#ffffff', 'white',
-  'rgb(255,255,255)',],);
+/**
+ * Regex replacing white fill declarations with transparent in SVG markup.
+ *
+ * Matches `fill:#fff` and `fill:#ffffff` inside inline `style` attributes
+ * (Inkscape convention) as well as `fill` attributes. Replacing with
+ * `fill:none` makes all white-filled shapes (panel backgrounds, speech
+ * bubbles, etc.) transparent while preserving non-white content.
+ */
+const WHITE_FILL_RE = /fill:#fff(?:fff)?/gu;
+
+/** White fill attribute values to detect on elements */
+const WHITE_FILL_ATTRS: ReadonlySet<string> = new Set([
+  '#fff', '#ffffff', 'white', 'rgb(255,255,255)',
+],);
 
 /**
- * Removes the white background rectangle from an SVG string.
+ * Makes white fills transparent in an SVG string.
  *
- * Parses the SVG, finds direct child `<rect>` elements with white fills,
- * removes the first match, and re-serializes the SVG.
+ * Handles both inline `style` attribute fills (`fill:#ffffff`) via regex
+ * and standalone `fill` attributes via DOM traversal. This covers
+ * Inkscape-style SVGs (inline styles) and hand-authored SVGs
+ * (fill attributes).
  *
  * @param svgMarkup - raw SVG markup string
  *
- * @returns SVG markup with white background rectangle removed
+ * @returns SVG markup with white fills replaced by transparent
  *
  * @example
  * ```ts
- * const cleaned = removeSvgWhiteBackground('<svg><rect fill="#fff"/><path .../></svg>');
+ * const cleaned = removeWhiteFills('<svg><rect style="fill:#ffffff"/></svg>');
  * ```
  */
-export function removeSvgWhiteBackground(svgMarkup: string,): string {
+export function removeWhiteFills(svgMarkup: string,): string {
+  /** Replace style-based white fills */
+  let processed = svgMarkup.replaceAll(WHITE_FILL_RE, 'fill:none',);
+
+  /** Also handle fill attributes on elements */
   const parser = new DOMParser();
-  const doc = parser.parseFromString(svgMarkup, 'image/svg+xml',);
-  const svg = doc.documentElement;
-  const rects = svg.querySelectorAll<SVGRectElement>(':scope > rect',);
-  for (const rect of rects) {
-    const fill = (rect.getAttribute('fill',) ?? '').toLowerCase().replaceAll(/\s/gu, '',);
-    if (WHITE_FILLS.has(fill,)) {
-      rect.remove();
-      break;
+  const doc = parser.parseFromString(processed, 'image/svg+xml',);
+  const allElements = doc.querySelectorAll('[fill]',);
+  for (const element of allElements) {
+    const fill = (element.getAttribute('fill',) ?? '').toLowerCase().replaceAll(/\s/gu, '',);
+    if (WHITE_FILL_ATTRS.has(fill,)) {
+      element.setAttribute('fill', 'none',);
     }
   }
-  return new XMLSerializer().serializeToString(svg,);
+  return new XMLSerializer().serializeToString(doc.documentElement,);
 }
 
 /**
@@ -53,6 +68,6 @@ export function setSvgBackground({ svgMarkup, overlay, }: {
   svgMarkup: string;
   overlay: HTMLElement;
 },): void {
-  const processed = removeSvgWhiteBackground(svgMarkup,);
+  const processed = removeWhiteFills(svgMarkup,);
   overlay.innerHTML = processed;
 }

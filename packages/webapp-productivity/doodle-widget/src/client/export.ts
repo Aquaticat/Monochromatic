@@ -92,7 +92,10 @@ export async function renderBaseCanvas({ container, overlay, drawCanvas, }: {
     const offsetY = svgRect.top - containerRect.top;
 
     /** Clone with explicit dimensions so the Image decodes at the correct size */
-    const clone = svgElement.cloneNode(true,) as SVGSVGElement;
+    const cloneNode = svgElement.cloneNode(true,);
+    if (!(cloneNode instanceof SVGSVGElement))
+      throw new Error('SVG clone is not an SVGSVGElement',);
+    const clone = cloneNode;
     clone.setAttribute('width', String(svgRect.width,),);
     clone.setAttribute('height', String(svgRect.height,),);
     /** Re-serialized SVG markup encoded as a data URL for Image loading */

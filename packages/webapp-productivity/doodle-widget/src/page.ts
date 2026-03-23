@@ -2,120 +2,27 @@
  * HTML document structure for the doodle widget.
  *
  * Uses h-html to produce a self-contained page with inlined CSS,
- * JavaScript, and the default SVG background overlay.
+ * JavaScript, and embedded page background data.
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
-/**
- * Renders a single radio toggle option inside the toggle group.
- *
- * @param id - unique element id for the radio input
- *
- * @param name - shared radio group name
- *
- * @param label - visible label text
- *
- * @param checked - whether this option is initially selected
- *
- * @returns label-wrapped radio input HTML string
- */
-function renderToggleOption({ id, name, label, checked, }: {
-  id: string;
-  name: string;
-  label: string;
-  checked: boolean;
-},): string {
-  return h({
-    tag: 'label',
-    class: 'toggle-option',
-    children: [
-      h({
-        tag: 'input',
-        attrs: {
-          type: 'radio',
-          name,
-          id,
-          value: id,
-          ...(checked ? { checked: '', } : {}),
-        },
-      },),
-      h({ tag: 'span', text: label, },),
-    ],
-  },);
-}
+import { renderToolbar, } from './page-toolbar.ts';
 
 /**
- * Renders the toolbar with tool selection, upload, and clear controls.
+ * Renders the canvas container with drawing surface and overlay layers.
  *
- * @returns toolbar HTML string
- */
-function renderToolbar(): string {
-  return h({
-    tag: 'div',
-    class: 'toolbar',
-    children: [
-      h({ tag: 'span', class: 'toolbar-title', text: 'Doodle', },),
-      h({
-        tag: 'div',
-        class: 'toggle-group',
-        children: [
-          renderToggleOption({ id: 'tool-draw', name: 'tool', label: 'Draw',
-            checked: true, },),
-          renderToggleOption({ id: 'tool-text', name: 'tool', label: 'Text',
-            checked: false, },),
-        ],
-      },),
-      h({
-        tag: 'div',
-        class: 'draw-settings',
-        children: [
-          h({ tag: 'input',
-            attrs: { type: 'color', id: 'color-picker',
-              value: '#c24e2e', }, },),
-          h({ tag: 'input',
-            attrs: { type: 'range', id: 'size-slider', min: '1', max: '50',
-              value: '10', }, },),
-        ],
-      },),
-      h({ tag: 'button', attrs: { id: 'upload-btn', type: 'button', },
-        text: 'Upload background', },),
-      h({ tag: 'input',
-        attrs: { type: 'file', id: 'upload-input', accept: '.svg,image/svg+xml',
-          hidden: '', }, },),
-      h({
-        tag: 'div',
-        class: 'export-group',
-        children: [
-          h({ tag: 'button', attrs: { id: 'export-btn', type: 'button', },
-            text: 'Export', },),
-          h({ tag: 'select', attrs: { id: 'format-select', },
-            children: [
-              h({ tag: 'option', attrs: { value: 'pdf', selected: '', },
-                text: 'PDF', },),
-              h({ tag: 'option', attrs: { value: 'svg', }, text: 'SVG', },),
-              h({ tag: 'option', attrs: { value: 'png', }, text: 'PNG', },),
-            ], },),
-        ],
-      },),
-      h({ tag: 'button', attrs: { id: 'clear-btn', type: 'button', }, text: 'Clear', },),
-    ],
-  },);
-}
-
-/**
- * Renders the canvas container with drawing surface and SVG overlay.
- *
- * @param svgContent - processed SVG string (white background removed)
+ * The SVG overlay starts empty; the client populates it from the
+ * embedded page backgrounds JSON on initialization.
  *
  * @returns canvas container HTML string
  */
-function renderCanvasContainer(svgContent: string,): string {
+function renderCanvasContainer(): string {
   return h({
     tag: 'div',
     attrs: { id: 'canvas-container', },
     children: [
       h({ tag: 'canvas', attrs: { id: 'draw-canvas', }, },),
-      h({ tag: 'div', attrs: { id: 'svg-overlay', }, html: svgContent, },),
+      h({ tag: 'div', attrs: { id: 'svg-overlay', }, },),
       h({ tag: 'div', attrs: { id: 'text-layer', }, },),
     ],
   },);
@@ -128,13 +35,21 @@ function renderCanvasContainer(svgContent: string,): string {
  *
  * @param js - client-side JavaScript string
  *
- * @param svgContent - processed SVG background string
+ * @param svgBackgrounds - processed SVG background strings, one per page
  *
  * @returns complete HTML document string
  */
 export function renderPage(
-  { css, js, svgContent, }: { css: string; js: string; svgContent: string; },
+  { css, js, svgBackgrounds, }: {
+    css: string; js: string; svgBackgrounds: readonly string[];
+  },
 ): string {
+  /**
+   * Escape `</` as `<\/` to prevent premature script tag closure.
+   * `\/` is a valid JSON escape for `/`.
+   */
+  const backgroundsJson = JSON.stringify(svgBackgrounds,).replaceAll('</', String.raw`<\/`,);
+
   return `<!DOCTYPE html>\n${
     h({
       tag: 'html',
@@ -158,7 +73,15 @@ export function renderPage(
             h({
               tag: 'div',
               attrs: { id: 'app', },
-              children: [renderToolbar(), renderCanvasContainer(svgContent,),],
+              children: [
+                renderToolbar(svgBackgrounds.length,),
+                renderCanvasContainer(),
+              ],
+            },),
+            h({
+              tag: 'script',
+              attrs: { id: 'page-backgrounds', type: 'application/json', },
+              html: backgroundsJson,
             },),
             h({ tag: 'script', attrs: { type: 'module', }, html: js, },),
           ],

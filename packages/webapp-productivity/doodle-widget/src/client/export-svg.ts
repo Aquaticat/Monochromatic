@@ -44,16 +44,20 @@ const MIN_STROKE_POINTS = 2;
  * strokes, `<text>` elements for annotations (selectable and
  * searchable), and the background SVG embedded as a nested `<svg>`.
  *
- * @param deps - shared export dependencies
+ * @param container - canvas container for sizing
+ *
+ * @param overlay - SVG overlay div
+ *
+ * @param textLayer - div containing text input elements
  *
  * @example
  * ```ts
- * await exportAsSvg({ container, overlay, drawCanvas, textLayer });
+ * exportAsSvg({ container, overlay, drawCanvas, textLayer });
  * ```
  */
-export async function exportAsSvg(
+export function exportAsSvg(
   { container, overlay, textLayer, }: ExportDeps,
-): Promise<void> {
+): void {
   /** Container width in CSS pixels */
   const cw = container.clientWidth;
   /** Container height in CSS pixels */
@@ -81,7 +85,10 @@ export async function exportAsSvg(
     const containerRect = container.getBoundingClientRect();
     /** Rendered SVG position and dimensions */
     const svgRect = svgElement.getBoundingClientRect();
-    const clone = svgElement.cloneNode(true,) as SVGSVGElement;
+    const cloneNode = svgElement.cloneNode(true,);
+    if (!(cloneNode instanceof SVGSVGElement))
+      throw new Error('SVG clone is not an SVGSVGElement',);
+    const clone = cloneNode;
     clone.setAttribute('x', String(svgRect.left - containerRect.left,),);
     clone.setAttribute('y', String(svgRect.top - containerRect.top,),);
     clone.setAttribute('width', String(svgRect.width,),);
@@ -115,7 +122,7 @@ export async function exportAsSvg(
 
   //region Text annotations
   /** Default text font size in pixels for inputs without data attributes */
-  const rootFontSize = parseFloat(
+  const rootFontSize = Number.parseFloat(
     getComputedStyle(document.documentElement,).fontSize,
   ) || DEFAULT_ROOT_FONT_SIZE_PX;
   const defaultFontSizePx = TEXT_FONT_SIZE_REM * rootFontSize;
@@ -127,12 +134,12 @@ export async function exportAsSvg(
       continue;
     const text = document.createElementNS(SVG_NS, 'text',);
     /** Horizontal position in pixels */
-    const x = (parseFloat(input.style.insetInlineStart,) / PERCENT_DIVISOR) * cw;
+    const x = (Number.parseFloat(input.style.insetInlineStart,) / PERCENT_DIVISOR) * cw;
     /** Vertical position in pixels */
-    const y = (parseFloat(input.style.insetBlockStart,) / PERCENT_DIVISOR) * ch;
+    const y = (Number.parseFloat(input.style.insetBlockStart,) / PERCENT_DIVISOR) * ch;
     /** Per-input font size, falling back to CSS default */
     const fontSizePx = input.dataset.fontSize !== undefined
-      ? parseFloat(input.dataset.fontSize,)
+      ? Number.parseFloat(input.dataset.fontSize,)
       : defaultFontSizePx;
     /** Per-input color, falling back to CSS default */
     const color = input.dataset.color ?? TEXT_COLOR;

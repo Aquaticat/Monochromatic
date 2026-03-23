@@ -1,10 +1,9 @@
 /**
  * Build script: generates a single self-contained HTML doodle widget.
  *
- * Reads the default SVG background, removes its white background rect
- * so canvas strokes show through beneath the SVG paths, reads the
- * pre-bundled client JS from tsdown output, then assembles HTML/CSS/JS
- * into a single file.
+ * Reads default SVG backgrounds for each page, removes white background
+ * rects so canvas strokes show through, reads the pre-bundled client JS
+ * from tsdown output, then assembles HTML/CSS/JS into a single file.
  *
  * Requires `mise run build:js:client` to have run first so
  * `dist/client/main.js` exists.
@@ -16,12 +15,25 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import defaultSvg from './assets/default-bg.svg' with { type: 'text', };
+import pageSvg1 from './assets/output_1.svg' with { type: 'text', };
+import pageSvg2 from './assets/output_2.svg' with { type: 'text', };
+import pageSvg3 from './assets/output_3.svg' with { type: 'text', };
 
 import { renderPage, } from './page.ts';
 import { renderStyles, } from './styles.ts';
 
 export {};
+
+/**
+ * Regex replacing `fill:#ffffff` with `fill:none` in SVG style attributes.
+ *
+ * Inkscape SVGs use inline `style` attributes (not `fill` attributes),
+ * so a simple rect-removal regex misses panel backgrounds, speech bubbles,
+ * and other white-filled shapes. Replacing the fill color with `none`
+ * makes all white areas transparent, letting canvas strokes show through
+ * while preserving the SVG linework on top.
+ */
+const WHITE_FILL_RE = /fill:#fff(?:fff)?/gu;
 
 /** Absolute path to this package's root directory */
 const PACKAGE_DIR: string = new URL('..', import.meta.url,).pathname;
@@ -31,8 +43,12 @@ const DIST_DIR = join(PACKAGE_DIR, 'dist', 'final',);
 
 console.error('[doodle-widget] building...',);
 
-/** Remove the white background rect so the canvas layer shows through */
-const processedSvg = defaultSvg.replace(/<rect[^>]*fill="#fff"[^>]*\/?>/u, '',);
+/** Replace white fills with transparent so the canvas layer shows through */
+const svgBackgrounds = [pageSvg1, pageSvg2, pageSvg3,].map(
+  function processBackground(svg,): string {
+    return svg.replaceAll(WHITE_FILL_RE, 'fill:none',);
+  },
+);
 
 /** Minified CSS stylesheet */
 const css = renderStyles();
@@ -41,7 +57,7 @@ const css = renderStyles();
 const js = await readFile(join(PACKAGE_DIR, 'dist', 'client', 'main.js',), 'utf8',);
 
 /** Complete self-contained HTML document */
-const html = renderPage({ css, js, svgContent: processedSvg, },);
+const html = renderPage({ css, js, svgBackgrounds, },);
 
 await mkdir(DIST_DIR, { recursive: true, },);
 await writeFile(join(DIST_DIR, 'index.html',), html, 'utf8',);

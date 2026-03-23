@@ -83,3 +83,73 @@ Their recommendation is to use types from another ESTree-compatible implementati
 
 **Affected code**: Any rolldown plugin using `parseSync` + `Visitor` from `rolldown/utils`
 with TypeScript that needs to inspect literal values or narrow node types.
+
+## `platform: 'neutral'` defaults `mainFields` to empty, breaking package resolution
+
+**Date**: 2026-03-22
+**Rolldown version**: 1.0.0-rc.9
+**tsdown version**: 0.x (using rolldown as bundler)
+
+When `platform` is set to `'neutral'`, rolldown defaults `resolve.mainFields` to `[]` (empty array).
+This means **neither `module` nor `main`** fields in `package.json` are consulted
+when resolving bare specifiers.
+Packages that rely on these fields for entry point resolution silently fail
+with `UNRESOLVED_IMPORT` warnings and are treated as external dependencies.
+
+For comparison, the defaults per platform
+(from `rolldown/dist/shared/define-config-*.d.mts`):
+
+- **`node`**: `['main', 'module']`
+- **`browser`**: `['browser', 'module', 'main']`
+- **`neutral`**: `[]`
+
+**Symptoms**:
+
+- Build warnings: `Could not resolve '<package>'` followed by
+  `"The 'main' field here was ignored. Main fields must be configured explicitly
+  when using the 'neutral' platform."`
+- Packages are left as bare specifier imports in the output bundle
+- At runtime in the browser: `TypeError: The specifier "<package>" was a bare specifier,
+  but was not remapped to anything`
+- Transitive dependencies of bundled packages also fail
+  (e.g. bundling `jspdf` leaves `fast-png`, `canvg`, `stackblur-canvas` unresolved)
+
+**Root cause**: The `mainFields` option controls which `package.json` fields rolldown
+checks to find a package's entry point. With `[]`, rolldown only resolves packages
+that have an `exports` field with matching conditions. Packages without `exports`
+(or whose `exports` conditions don't match the neutral platform) become unresolvable.
+
+**Fix**: Set `resolve.mainFields` explicitly. In tsdown, `resolve` is a rolldown
+`InputOptions` property, **not** a top-level tsdown config option.
+It must be passed through `inputOptions`:
+
+```ts
+// tsdown config
+export default defineConfig({
+  platform: 'neutral',
+  inputOptions: {
+    resolve: {
+      mainFields: ['module', 'main'],
+    },
+  },
+});
+```
+
+**What does not work**:
+
+- Setting `resolve` at the top level of the tsdown config -- tsdown's `UserConfig`
+  type does not include `resolve`, so it is silently dropped
+- Adding every transitive dependency to `deps.alwaysBundle` --
+  `alwaysBundle` controls whether a package is bundled vs externalized,
+  but if the package cannot be **resolved** in the first place,
+  it is treated as external regardless of `alwaysBundle`
+
+**Source locations** (rolldown 1.0.0-rc.9):
+
+- `dist/shared/define-config-*.d.mts:3338-3347` -- `mainFields` type and per-platform defaults
+- `dist/shared/binding-*.d.mts:559` -- native binding `mainFields` field
+
+**Source locations** (tsdown):
+
+- `dist/types-*.d.mts:880-882` -- `inputOptions` pass-through to rolldown `InputOptions`
+- `dist/types-*.d.mts:763` -- `platform` option definition
