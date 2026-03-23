@@ -9,9 +9,11 @@
 import {
   $,
   cssOklch,
+  cssRem,
 } from '@monochromatic-dev/module-es/h-css';
 import {
   BORDER_COLOR,
+  BORDER_WIDTH,
   BUTTON_PADDING_BLOCK,
   BUTTON_PADDING_INLINE,
   BUTTON_RADIUS,
@@ -47,8 +49,10 @@ export function renderToolbarStyles(): string[] {
         'background-color': cssOklch({ l: 0.95, c: 0, h: 0, },),
         'border-block-end-style': 'solid',
         'border-block-end-color': BORDER_COLOR,
+        'border-block-end-width': BORDER_WIDTH,
+        'font-family': 'sans-serif',
+        'font-size': cssRem(1,),
       },
-      raw: ';border-block-end-width:1px',
     },),
 
     $({
@@ -66,10 +70,13 @@ export function renderToolbarStyles(): string[] {
         'background-color': cssOklch({ l: 0.97, c: 0, h: 0, },),
         'border-block-style': 'solid',
         'border-block-color': BORDER_COLOR,
+        'border-block-width': BORDER_WIDTH,
         'border-inline-style': 'solid',
         'border-inline-color': BORDER_COLOR,
+        'border-inline-width': BORDER_WIDTH,
+        'font-family': 'sans-serif',
+        'font-size': cssRem(1,),
       },
-      raw: ';border-block-width:1px;border-inline-width:1px',
     },),
 
     $({

@@ -2,12 +2,13 @@
  * CSS styles for the doodle widget.
  *
  * Uses h-css for type-safe CSS generation with strict property validation.
- * Raw CSS strings handle px values and properties outside the strict type system.
  */
 import {
   $,
+  cssCommaList,
   cssNum,
   cssOklch,
+  cssRem,
 } from '@monochromatic-dev/module-es/h-css';
 import {
   BORDER_COLOR,
@@ -16,6 +17,12 @@ import {
 } from './style-tokens.ts';
 import { renderToolbarStyles, } from './styles-toolbar.ts';
 
+/** Text input minimum inline size in rem */
+const TEXT_INPUT_MIN_INLINE_SIZE = 2 * 2 * 2;
+
+/** Text input line height (wider than CSS normal ~1.2 for readability) */
+const TEXT_INPUT_LINE_HEIGHT = 1 + 2 / (2 + 2 + 1);
+
 /**
  * Generates the complete CSS stylesheet for the doodle widget.
  *
@@ -23,8 +30,14 @@ import { renderToolbarStyles, } from './styles-toolbar.ts';
  */
 export function renderStyles(): string {
   return [
-    $({ rule: '*, *::before, *::after',
-      raw: 'box-sizing:border-box;margin-block:0;margin-inline:0', },),
+    $({
+      rule: '*, *::before, *::after',
+      decls: {
+        'box-sizing': 'border-box',
+        'margin-block': cssNum(0,),
+        'margin-inline': cssNum(0,),
+      },
+    },),
 
     $({
       rule: '#app',
@@ -51,8 +64,9 @@ export function renderStyles(): string {
         display: 'block',
         cursor: 'crosshair',
         'touch-action': 'none',
+        'inset-block': cssNum(0,),
+        'inset-inline': cssNum(0,),
       },
-      raw: ';inset-block:0;inset-inline:0',
     },),
 
     $({
@@ -63,8 +77,9 @@ export function renderStyles(): string {
         'align-items': 'center',
         'justify-content': 'center',
         'pointer-events': 'none',
+        'inset-block': cssNum(0,),
+        'inset-inline': cssNum(0,),
       },
-      raw: ';inset-block:0;inset-inline:0',
     },),
 
     $({
@@ -82,8 +97,9 @@ export function renderStyles(): string {
       decls: {
         position: 'absolute',
         'pointer-events': 'none',
+        'inset-block': cssNum(0,),
+        'inset-inline': cssNum(0,),
       },
-      raw: ';inset-block:0;inset-inline:0',
     },),
 
     $({
@@ -93,9 +109,16 @@ export function renderStyles(): string {
         'background-color': cssOklch({ l: 1, c: 0, h: 0, a: 0.85, },),
         color: cssOklch({ l: 0.3, c: 0, h: 0, },),
         'pointer-events': 'auto',
+        'border-block-style': 'none',
+        'border-inline-style': 'none',
+        'outline-style': 'none',
+        'font-family': cssCommaList(['system-ui', 'sans-serif',],),
+        'font-size': cssRem(1 + 1 / 2 / 2,),
+        'line-height': cssNum(TEXT_INPUT_LINE_HEIGHT,),
+        'padding-block': cssNum(0,),
+        'padding-inline': cssNum(0,),
+        'min-inline-size': cssRem(TEXT_INPUT_MIN_INLINE_SIZE,),
       },
-      raw:
-        ';border:none;outline:none;font-family:system-ui,sans-serif;font-size:1.25rem;line-height:1.4;padding-block:0;padding-inline:0;min-inline-size:8rem',
     },),
 
     /** Finalized inputs look like plain text */
@@ -104,8 +127,9 @@ export function renderStyles(): string {
       decls: {
         'background-color': 'transparent',
         'pointer-events': 'none',
+        'min-inline-size': cssNum(0,),
+        cursor: 'default',
       },
-      raw: ';min-inline-size:0;cursor:default',
     },),
     //endregion Text overlay layer
   ]

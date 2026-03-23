@@ -33,6 +33,12 @@ const THREE_QUARTERS = HALF + QUARTER;
 /** 3/8 */
 const THREE_EIGHTHS = THREE_QUARTERS / 2;
 
+/** 1/8 */
+const EIGHTH = QUARTER / 2;
+
+/** 1/16 */
+const SIXTEENTH = EIGHTH / 2;
+
 //endregion Fractional building blocks
 
 //region Computed CSS values
@@ -63,6 +69,9 @@ export const BUTTON_PADDING_INLINE: CssValue = cssRem(THREE_QUARTERS,);
 
 /** Button corner radius */
 export const BUTTON_RADIUS: CssValue = cssRem(QUARTER,);
+
+/** Shared border width for toolbar controls (1/16 rem ~ 1px at default font size) */
+export const BORDER_WIDTH: CssValue = cssRem(SIXTEENTH,);
 
 /** Shared border color for toolbar controls */
 export const BORDER_COLOR: CssValue = cssOklch({ l: 0.8, c: 0, h: 0, },);

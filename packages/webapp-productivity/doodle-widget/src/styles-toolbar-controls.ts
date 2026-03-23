@@ -6,14 +6,23 @@
  */
 import {
   $,
+  cssNum,
   cssOklch,
+  cssRem,
 } from '@monochromatic-dev/module-es/h-css';
 import {
   BORDER_COLOR,
+  BORDER_WIDTH,
   BUTTON_PADDING_BLOCK,
   BUTTON_PADDING_INLINE,
   BUTTON_RADIUS,
 } from './style-tokens.ts';
+
+/** Color picker square size */
+const COLOR_PICKER_SIZE = 2;
+
+/** Stroke width slider track length */
+const SLIDER_INLINE_SIZE = 2 + 2 + 2;
 
 /**
  * Generates CSS rules for the export group and draw settings controls.
@@ -36,7 +45,11 @@ export function renderToolbarControlStyles(): string[] {
 
     $({
       rule: '.export-group > button',
-      raw: 'border-start-end-radius:0;border-end-end-radius:0;border-inline-end-width:0',
+      decls: {
+        'border-start-end-radius': cssNum(0,),
+        'border-end-end-radius': cssNum(0,),
+        'border-inline-end-width': cssNum(0,),
+      },
     },),
 
     $({
@@ -48,11 +61,16 @@ export function renderToolbarControlStyles(): string[] {
         'background-color': cssOklch({ l: 0.97, c: 0, h: 0, },),
         'border-block-style': 'solid',
         'border-block-color': BORDER_COLOR,
+        'border-block-width': BORDER_WIDTH,
         'border-inline-style': 'solid',
         'border-inline-color': BORDER_COLOR,
+        'border-inline-width': BORDER_WIDTH,
         'border-radius': BUTTON_RADIUS,
+        'border-start-start-radius': cssNum(0,),
+        'border-end-start-radius': cssNum(0,),
+        'font-family': 'inherit',
+        'font-size': 'inherit',
       },
-      raw: ';border-block-width:1px;border-inline-width:1px;border-start-start-radius:0;border-end-start-radius:0;font-family:inherit;font-size:inherit',
     },),
 
     $({
@@ -66,8 +84,11 @@ export function renderToolbarControlStyles(): string[] {
 
     $({
       rule: '.draw-settings',
-      decls: { display: 'flex', 'align-items': 'center', },
-      raw: ';gap:0.5rem',
+      decls: {
+        display: 'flex',
+        'align-items': 'center',
+        gap: cssRem(1 / 2,),
+      },
     },),
 
     $({
@@ -77,16 +98,23 @@ export function renderToolbarControlStyles(): string[] {
         'border-radius': BUTTON_RADIUS,
         'border-block-style': 'solid',
         'border-block-color': BORDER_COLOR,
+        'border-block-width': BORDER_WIDTH,
         'border-inline-style': 'solid',
         'border-inline-color': BORDER_COLOR,
+        'border-inline-width': BORDER_WIDTH,
+        'inline-size': cssRem(COLOR_PICKER_SIZE,),
+        'block-size': cssRem(COLOR_PICKER_SIZE,),
+        'padding-block': cssRem(1 / (2 * 2 * 2),),
+        'padding-inline': cssRem(1 / (2 * 2 * 2),),
       },
-      raw: ';border-block-width:1px;border-inline-width:1px;inline-size:2rem;block-size:2rem;padding-block:0.125rem;padding-inline:0.125rem',
     },),
 
     $({
       rule: '#size-slider',
-      decls: { cursor: 'pointer', },
-      raw: ';inline-size:6rem',
+      decls: {
+        cursor: 'pointer',
+        'inline-size': cssRem(SLIDER_INLINE_SIZE,),
+      },
     },),
 
     //endregion Draw settings

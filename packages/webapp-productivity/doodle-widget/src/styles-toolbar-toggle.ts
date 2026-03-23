@@ -6,12 +6,16 @@
  */
 import {
   $,
+  cssNum,
   cssOklch,
+  cssRem,
 } from '@monochromatic-dev/module-es/h-css';
 import {
   BORDER_COLOR,
+  BORDER_WIDTH,
   BUTTON_PADDING_BLOCK,
   BUTTON_PADDING_INLINE,
+  BUTTON_RADIUS,
 } from './style-tokens.ts';
 
 /**
@@ -34,8 +38,13 @@ export function renderToggleGroupStyles(): string[] {
     /** Hide the native radio circle */
     $({
       rule: '.toggle-option input',
-      decls: { position: 'absolute', },
-      raw: ';appearance:none;width:0;height:0;opacity:0',
+      decls: {
+        position: 'absolute',
+        appearance: 'none',
+        'inline-size': cssNum(0,),
+        'block-size': cssNum(0,),
+        opacity: cssNum(0,),
+      },
     },),
 
     $({
@@ -49,24 +58,34 @@ export function renderToggleGroupStyles(): string[] {
         'background-color': cssOklch({ l: 0.97, c: 0, h: 0, },),
         'border-block-style': 'solid',
         'border-block-color': BORDER_COLOR,
+        'border-block-width': BORDER_WIDTH,
         'border-inline-start-style': 'solid',
         'border-inline-start-color': BORDER_COLOR,
+        'border-inline-start-width': BORDER_WIDTH,
+        'border-inline-end-width': cssNum(0,),
+        'border-radius': cssNum(0,),
+        'font-family': 'sans-serif',
+        'font-size': cssRem(1,),
       },
-      raw:
-        ';border-block-width:1px;border-inline-start-width:1px;border-inline-end-width:0;border-radius:0',
     },),
 
     $({
       rule: '.toggle-option:first-child',
-      raw: 'border-start-start-radius:0.25rem;border-end-start-radius:0.25rem',
+      decls: {
+        'border-start-start-radius': BUTTON_RADIUS,
+        'border-end-start-radius': BUTTON_RADIUS,
+      },
     },),
 
     $({
       rule: '.toggle-option:last-child',
-      raw:
-        `border-start-end-radius:0.25rem;border-end-end-radius:0.25rem;border-inline-end-width:1px;border-inline-end-style:solid;border-inline-end-color:${
-          String(BORDER_COLOR,)
-        }`,
+      decls: {
+        'border-start-end-radius': BUTTON_RADIUS,
+        'border-end-end-radius': BUTTON_RADIUS,
+        'border-inline-end-width': BORDER_WIDTH,
+        'border-inline-end-style': 'solid',
+        'border-inline-end-color': BORDER_COLOR,
+      },
     },),
 
     $({
