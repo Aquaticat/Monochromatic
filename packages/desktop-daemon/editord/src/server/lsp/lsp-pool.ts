@@ -147,6 +147,6 @@ export class LspPool {
 
   /** Gracefully shuts down all pooled LSP servers. */
   shutdown(): void {
-    shutdownAllPooled({ pool: this.#pool, },);
+    shutdownAllPooled({ pool: this.#pool, l: this.#l, },);
   }
 }

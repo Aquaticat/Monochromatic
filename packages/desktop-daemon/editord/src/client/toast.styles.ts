@@ -7,7 +7,6 @@
 
 import {
   $,
-  cssCommaList,
   cssNum,
   cssPercent,
   cssRem,
@@ -15,13 +14,11 @@ import {
   cssVar,
 } from '@monochromatic-dev/module-es/h-css';
 
-/** Font size in rem: 13/16. */
-const FONT_SIZE = (16 - 2 - 1) / 16;
-
-/** Border radius in rem: 1/4. */
-const BORDER_RADIUS = 1 / (2 * 2);
-
-/** Without named constants: no-magic-numbers lint error for 9, 200, 50. */
+import {
+  MONO_FONT_FAMILY,
+  POPUP_BORDER_RADIUS,
+  POPUP_FONT_SIZE,
+} from './style-tokens.ts';
 
 /** Toast opacity: (10-1)/10. */
 const OPACITY = (10 - 1) / 10;
@@ -43,9 +40,9 @@ export const STYLES = $({
     'z-index': cssNum(Z_INDEX,),
     'background-color': cssVar('hover-bg',),
     color: cssVar('fg',),
-    'border-radius': cssRem(BORDER_RADIUS,),
-    'font-family': cssCommaList(["'JetBrains Mono'", 'monospace',],),
-    'font-size': cssRem(FONT_SIZE,),
+    'border-radius': cssRem(POPUP_BORDER_RADIUS,),
+    'font-family': MONO_FONT_FAMILY,
+    'font-size': cssRem(POPUP_FONT_SIZE,),
     'pointer-events': 'none',
     opacity: cssNum(OPACITY,),
   },

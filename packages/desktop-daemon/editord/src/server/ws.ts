@@ -158,13 +158,13 @@ function toWireSelectionRange({ lspRange, }: { lspRange: LspSelectionRange }): S
  *
  * @param dirWatcher - filesystem watcher for save suppression and dir registration
  */
-async function dispatchMessage(
-  peer: Peer,
-  messageText: string,
-  rootDir: string,
-  lspManager: LspManager | null,
-  dirWatcher: DirWatcher | null,
-): Promise<void> {
+async function dispatchMessage({ peer, messageText, rootDir, lspManager, dirWatcher, }: {
+  peer: Peer;
+  messageText: string;
+  rootDir: string;
+  lspManager: LspManager | null;
+  dirWatcher: DirWatcher | null;
+}): Promise<void> {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; runtime type is validated by discriminant checks below
   const parsed = JSON.parse(messageText,) as ClientMessage;
 
@@ -433,7 +433,7 @@ export function createWsHandler({ authToken, rootDir, fsId, lspManager, connecte
 
       async message(peer, message,) {
         try {
-          await dispatchMessage(peer, message.text(), rootDir, lspManager, dirWatcher,);
+          await dispatchMessage({ peer, messageText: message.text(), rootDir, lspManager, dirWatcher, },);
         }
         catch (error) {
           const errorMessage = error instanceof Error ? error.message : String(error,);

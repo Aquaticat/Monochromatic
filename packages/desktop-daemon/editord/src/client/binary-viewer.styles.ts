@@ -7,13 +7,13 @@
 
 import {
   $,
-  cssCommaList,
   cssNum,
   cssRem,
   cssVar,
 } from '@monochromatic-dev/module-es/h-css';
 
 import { MEDIA_STYLES, } from './binary-viewer-media.styles.ts';
+import { CODE_LINE_HEIGHT, MONO_FONT_FAMILY, } from './style-tokens.ts';
 
 /** Shadow DOM styles for the binary viewer. */
 export const STYLES = [
@@ -33,8 +33,8 @@ export const STYLES = [
   $({
     rule: '.media-info',
     decls: {
-      'font-family': cssCommaList(["'JetBrains Mono'", 'monospace',],),
-      'line-height': cssNum((2 + 1) / 2,),
+      'font-family': MONO_FONT_FAMILY,
+      'line-height': cssNum(CODE_LINE_HEIGHT,),
       'padding-block': cssRem(1,),
       'padding-inline': cssRem(1,),
       margin: '0',
@@ -45,9 +45,9 @@ export const STYLES = [
   $({
     rule: 'pre',
     decls: {
-      'font-family': cssCommaList(["'JetBrains Mono'", 'monospace',],),
+      'font-family': MONO_FONT_FAMILY,
       'font-size': cssRem(1,),
-      'line-height': cssNum((2 + 1) / 2,),
+      'line-height': cssNum(CODE_LINE_HEIGHT,),
       'padding-block': cssRem(1,),
       'padding-inline': cssRem(1,),
       margin: '0',

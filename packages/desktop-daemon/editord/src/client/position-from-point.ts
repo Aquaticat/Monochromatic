@@ -32,12 +32,10 @@ export function getPositionFromPoint({ editor, x, y, }: {
   x: number;
   y: number;
 }): EditorPosition | null {
-  /** Find the line div at this y coordinate. */
   const lineResult = findLineAtY({ editor, y, },);
   if (lineResult === null)
     return null;
 
-  /** Find the character offset at this x coordinate within the line. */
   const character = findCharAtX({ lineDiv: lineResult.lineDiv, x, },);
   return { line: lineResult.line, character, };
 }

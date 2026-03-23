@@ -57,8 +57,9 @@ export async function shutdownPoolForPath({ pool, path, l, }: {
  *
  * @param pool - the pool map to shut down
  */
-export function shutdownAllPooled({ pool, }: {
+export function shutdownAllPooled({ pool, l, }: {
   pool: Map<string, Promise<LspClient | null>>;
+  l: Logger;
 }): void {
   for (const promise of pool.values()) {
     void (async function shutdownClient(): Promise<void> {
@@ -66,7 +67,7 @@ export function shutdownAllPooled({ pool, }: {
         const c = await promise;
         if (c !== null) await c.shutdown();
       }
-      catch (error) { console.error('LSP shutdown failed:', error,); }
+      catch (error) { l.error(`LSP shutdown failed: ${String(error,)}`,); }
     })();
   }
 }

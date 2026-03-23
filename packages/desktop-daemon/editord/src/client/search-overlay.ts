@@ -314,6 +314,7 @@ export class SearchOverlay extends HTMLElement {
     const overlay = this;
     const rootPrefix = this.#rootDir.endsWith('/') ? this.#rootDir : `${this.#rootDir}/`;
 
+    const budget = overlay.#charBudget();
     const elements = results.map(function createResultElement(result, index,) {
       /**
        * Computes a display-friendly relative path from the root directory.
@@ -331,7 +332,7 @@ export class SearchOverlay extends HTMLElement {
       const displayPath = middleOut({
         text: relativePath(result.path,),
         query,
-        budget: overlay.#charBudget(),
+        budget,
       },);
 
       const children: (Node | string)[] = [
