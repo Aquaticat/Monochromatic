@@ -81,6 +81,15 @@
       display: flex;
       block-size: 100%;
     }
+    .ctx-item {
+      padding-block: 0.25rem;
+      padding-inline: 0.5rem;
+      cursor: pointer;
+      white-space: nowrap;
+      &:hover, &:focus-visible {
+        background-color: var(--tree-hover-bg);
+      }
+    }
     /* position-anchor must be in light DOM scope to resolve anchor-name across tree scopes */
     references-popup {
       position-anchor: --ref-anchor;

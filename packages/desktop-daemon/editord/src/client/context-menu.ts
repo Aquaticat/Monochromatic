@@ -57,28 +57,6 @@ function handlePopoverToggle(event: Event,): void {
 }
 
 /**
- * Applies hover background on mouse enter.
- * Without hoisting: consistent-function-scoping lint warning.
- *
- * @param event - mouse event on the menu item
- */
-function handleItemOver(event: MouseEvent,): void {
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the div we attached the listener to
-  (event.currentTarget as HTMLElement).style.backgroundColor = 'var(--tree-hover-bg)';
-}
-
-/**
- * Removes hover background on mouse leave.
- * Without hoisting: consistent-function-scoping lint warning.
- *
- * @param event - mouse event on the menu item
- */
-function handleItemOut(event: MouseEvent,): void {
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the div we attached the listener to
-  (event.currentTarget as HTMLElement).style.backgroundColor = '';
-}
-
-/**
  * Manages a single context menu instance.
  *
  * The popup lives in the top layer via `popover="auto"`, escaping
@@ -203,12 +181,7 @@ export class ContextMenu {
   }): HTMLElement {
     return h({
       tag: 'div',
-      style: {
-        'padding-block': '0.25rem',
-        'padding-inline': '0.5rem',
-        cursor: 'pointer',
-        'white-space': 'nowrap',
-      },
+      class: 'ctx-item',
       attrs: { tabindex: '0', },
       text: item.label,
       on: {
@@ -219,8 +192,6 @@ export class ContextMenu {
             onActivate(item.action,);
           }
         },
-        mouseover: handleItemOver,
-        mouseout: handleItemOut,
       },
     },);
   }
