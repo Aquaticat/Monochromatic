@@ -34,10 +34,12 @@ export async function fetchInlayHints({ ws, editorPane, getCurrentFilePath, }: {
     return;
 
   try {
-    const text = editorPane.getText();
-    const lines = text.split('\n',);
-    const lastLineIndex = Math.max(0, lines.length - 1,);
-    const lastLineLength = lines[lastLineIndex]?.length ?? 0;
+    const editor = editorPane.getEditorElement();
+    if (editor === null) return;
+    const lastLineIndex = Math.max(0, editor.children.length - 1,);
+    const lastLineEl = editor.children[lastLineIndex];
+    const lastLineText = lastLineEl?.textContent ?? '';
+    const lastLineLength = lastLineText === '\n' ? 0 : lastLineText.length;
 
     const result = await ws.request({
       type: 'inlayHint',

@@ -5,8 +5,12 @@
  */
 
 import type { CompletionPopup, } from './completion-popup.ts';
+import { l, tagged, } from './log.ts';
 import { getCursorPosition, } from './position.ts';
 import type { EditorWsClient, } from './ws-client.ts';
+
+/** Tagged logger for completions. */
+const completionLog = tagged({ tag: 'completions', l, },);
 
 /**
  * Requests completions from the server and shows the popup.
@@ -38,16 +42,15 @@ export async function requestCompletions({ ws, completionPopup, getEditorElement
     if ('items' in response) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response narrowed by 'items' check
       const { items, } = response as { items: { label: string; detail: string; insertText: string }[] };
-      if (items.length > 0) {
-        const sel = document.getSelection();
-        if (sel !== null && sel.rangeCount > 0) {
-          const rect = sel.getRangeAt(0,).getBoundingClientRect();
-          completionPopup.show({ items, x: rect.left, y: rect.bottom, },);
-        }
+      if (items.length > 0 && selection !== null && selection.rangeCount > 0) {
+        const rect = selection.getRangeAt(0,).getBoundingClientRect();
+        completionPopup.show({ items, x: rect.left, y: rect.bottom, },);
       }
     }
   }
-  catch { /* completion failures are non-critical */ }
+  catch (error) {
+    completionLog.warn(`completion request failed: ${String(error,)}`,);
+  }
 }
 
 /**

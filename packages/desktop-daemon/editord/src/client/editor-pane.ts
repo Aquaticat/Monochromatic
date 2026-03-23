@@ -60,6 +60,9 @@ export class EditorPane extends HTMLElement {
   /** Pending `requestAnimationFrame` ID for debounced resize re-measurement. */
   #resizeMeasureFrame = 0;
 
+  /** Observer for editor resize events; stored for cleanup in disconnectedCallback. */
+  #resizeObserver: ResizeObserver | null = null;
+
   /** Initializes the shadow root. */
   constructor() {
     super();
@@ -88,13 +91,21 @@ export class EditorPane extends HTMLElement {
     this.#editor.addEventListener('input', this.#dispatchContentChange.bind(this,),);
 
     /** Re-measure inlay indent positions when the editor resizes (wrapping changes). */
-    const resizeObserver = new ResizeObserver(this.#scheduleInlayMeasure.bind(this,),);
-    resizeObserver.observe(this.#editor,);
+    this.#resizeObserver = new ResizeObserver(this.#scheduleInlayMeasure.bind(this,),);
+    this.#resizeObserver.observe(this.#editor,);
 
     this.#shadow.replaceChildren(
       h({ tag: 'style', text: STYLES, },),
       this.#editor,
     );
+  }
+
+  /** Cleans up the resize observer and pending animation frames. */
+  disconnectedCallback(): void {
+    this.#resizeObserver?.disconnect();
+    this.#resizeObserver = null;
+    cancelAnimationFrame(this.#highlightFrame,);
+    cancelAnimationFrame(this.#resizeMeasureFrame,);
   }
 
   /**
