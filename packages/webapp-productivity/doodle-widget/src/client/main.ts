@@ -6,9 +6,10 @@
  */
 
 import {
-  backgroundsScript, canvas, container, drawRadio, eraseRadio,
-  pageToggle, redoBtn, requireElement, svgOverlay, textLayer,
-  toolToggle, undoBtn,
+  backgroundsScript, canvas, clearBtn, colorPicker, container,
+  drawRadio, eraseRadio, exportBtn, formatSelect, pageToggle,
+  redoBtn, svgOverlay, sizeSlider, textLayer, toolToggle, undoBtn,
+  uploadBtn, uploadInput,
 } from './dom-refs.ts';
 import { redraw, } from './drawing.ts';
 import {
@@ -19,6 +20,7 @@ import {
   type ToolMode,
   setupPointerHandlers,
 } from './pointer-handlers.ts';
+import { requireCanvasContext, } from './require-context.ts';
 import {
   discardActiveInput,
   setTextLayer,
@@ -27,13 +29,8 @@ import { setupToolbarHandlers, } from './toolbar-handlers.ts';
 import { initHistory, } from './undo-history.ts';
 import { setupUndoHandlers, } from './undo-handlers.ts';
 
-/** Maybe-null canvas rendering context before validation */
-const maybeCtx = canvas.getContext('2d',);
-if (maybeCtx === null)
-  throw new Error('Canvas 2D context unavailable',);
-
 /** 2D rendering context for the drawing canvas */
-const ctx: CanvasRenderingContext2D = maybeCtx;
+const ctx = requireCanvasContext(canvas,);
 
 /** Current canvas width in CSS pixels */
 let canvasWidth = 0;
@@ -124,14 +121,8 @@ setupPointerHandlers({
 },);
 
 setupToolbarHandlers({
-  colorPicker: requireElement<HTMLInputElement>('#color-picker',),
-  sizeSlider: requireElement<HTMLInputElement>('#size-slider',),
-  clearBtn: requireElement<HTMLButtonElement>('#clear-btn',),
-  exportBtn: requireElement<HTMLButtonElement>('#export-btn',),
-  formatSelect: requireElement<HTMLSelectElement>('#format-select',),
-  uploadBtn: requireElement<HTMLButtonElement>('#upload-btn',),
-  uploadInput: requireElement<HTMLInputElement>('#upload-input',),
-  container, svgOverlay, drawCanvas: canvas,
+  colorPicker, sizeSlider, clearBtn, exportBtn, formatSelect,
+  uploadBtn, uploadInput, container, svgOverlay, drawCanvas: canvas,
   textLayer, ctx, getCanvasSize, sizeCanvas, pushSnapshot,
 },);
 

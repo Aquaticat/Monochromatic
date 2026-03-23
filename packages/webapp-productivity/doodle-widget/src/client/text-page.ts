@@ -1,9 +1,9 @@
 /**
- * Text entry serialization for multi-page state persistence.
+ * Text entry serialization and DOM construction for multi-page state.
  *
- * Provides type-safe serialization and restoration of text input
- * elements between page switches. Serialization captures position,
- * style, and content; restoration recreates readonly input elements.
+ * Provides type-safe serialization, restoration, and shared factory
+ * for text input elements. Serialization captures position, style,
+ * and content; the factory creates consistently styled inputs.
  */
 
 /**
@@ -27,6 +27,51 @@ export type TextEntryData = {
   /** Font size in pixels as a numeric string */
   readonly fontSize: string;
 };
+
+/**
+ * Creates a styled text input element with position, color, and font size.
+ *
+ * Sets `type`, `className`, `autocomplete`, inline position styles,
+ * text color, font size, and data attributes. Does not set `value`
+ * or `readOnly` — callers handle those based on context (new input
+ * vs. restored entry).
+ *
+ * @param insetInlineStart - CSS percentage string for horizontal position
+ *
+ * @param insetBlockStart - CSS percentage string for vertical position
+ *
+ * @param color - CSS color string
+ *
+ * @param fontSize - font size in pixels as a numeric string
+ *
+ * @returns configured input element
+ *
+ * @example
+ * ```ts
+ * const input = createTextInput({
+ *   insetInlineStart: '50%', insetBlockStart: '30%',
+ *   color: '#c24e2e', fontSize: '20',
+ * });
+ * ```
+ */
+export function createTextInput({ insetInlineStart, insetBlockStart, color, fontSize, }: {
+  insetInlineStart: string;
+  insetBlockStart: string;
+  color: string;
+  fontSize: string;
+}): HTMLInputElement {
+  const input = document.createElement('input',);
+  input.type = 'text';
+  input.className = 'text-input';
+  input.autocomplete = 'off';
+  input.style.insetInlineStart = insetInlineStart;
+  input.style.insetBlockStart = insetBlockStart;
+  input.style.color = color;
+  input.style.fontSize = `${fontSize}px`;
+  input.dataset.color = color;
+  input.dataset.fontSize = fontSize;
+  return input;
+}
 
 /**
  * Serializes all text entries in a text layer element.
@@ -66,17 +111,13 @@ export function restoreTextEntries({ entries, layer, }: {
   layer: HTMLDivElement;
 }): void {
   for (const entry of entries) {
-    const input = document.createElement('input',);
-    input.type = 'text';
-    input.className = 'text-input';
-    input.autocomplete = 'off';
+    const input = createTextInput({
+      insetInlineStart: entry.insetInlineStart,
+      insetBlockStart: entry.insetBlockStart,
+      color: entry.color,
+      fontSize: entry.fontSize,
+    },);
     input.value = entry.value;
-    input.style.insetInlineStart = entry.insetInlineStart;
-    input.style.insetBlockStart = entry.insetBlockStart;
-    input.style.color = entry.color;
-    input.style.fontSize = `${entry.fontSize}px`;
-    input.dataset.color = entry.color;
-    input.dataset.fontSize = entry.fontSize;
     input.readOnly = true;
     layer.append(input,);
   }

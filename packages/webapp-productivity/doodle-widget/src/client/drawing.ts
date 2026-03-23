@@ -15,6 +15,7 @@ import {
   getStrokeColor,
   getStrokeWidth,
 } from './drawing-config.ts';
+import { renderStrokes, } from './stroke-renderer.ts';
 
 //region Types
 
@@ -77,21 +78,6 @@ let drawing = false;
 //endregion State
 
 /**
- * Configures a 2D rendering context with the active stroke style.
- *
- * Uses the current active color and width from drawing-config,
- * suitable for incremental stroke rendering during pointer events.
- *
- * @param ctx - canvas rendering context to configure
- */
-export function configureCtx(ctx: CanvasRenderingContext2D,): void {
-  ctx.strokeStyle = getStrokeColor();
-  ctx.lineWidth = getStrokeWidth();
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-}
-
-/**
  * Redraws all stored strokes onto the canvas.
  *
  * Clears the canvas and renders each stroke using its captured color
@@ -108,22 +94,7 @@ export function redraw(
   { ctx, cw, ch, }: { ctx: CanvasRenderingContext2D; cw: number; ch: number; },
 ): void {
   ctx.clearRect(0, 0, cw, ch,);
-  for (const stroke of strokes) {
-    if (stroke.points.length < 2)
-      continue;
-    ctx.strokeStyle = stroke.color;
-    ctx.lineWidth = stroke.width;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    for (const [index, point,] of stroke.points.entries()) {
-      if (index === 0)
-        ctx.moveTo(point[0] * cw, point[1] * ch,);
-      else
-        ctx.lineTo(point[0] * cw, point[1] * ch,);
-    }
-    ctx.stroke();
-  }
+  renderStrokes({ ctx, cw, ch, strokes, },);
 }
 
 /**

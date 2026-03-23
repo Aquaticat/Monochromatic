@@ -7,10 +7,7 @@
  */
 
 import type { StrokeData, } from './drawing.ts';
-import {
-  renderStrokesToContext,
-  renderSvgOverlayToContext,
-} from './export.ts';
+import { renderBaseCanvas, } from './export.ts';
 
 /**
  * Renders a single page's layers to an offscreen canvas.
@@ -19,10 +16,6 @@ import {
  * (on top) at device pixel resolution. The SVG overlay element is
  * temporarily set to the page's background markup for CSS layout
  * computation via `getBoundingClientRect`.
- *
- * @param cw - container width in CSS pixels
- *
- * @param ch - container height in CSS pixels
  *
  * @param svgBackground - SVG overlay innerHTML for this page
  *
@@ -37,16 +30,13 @@ import {
  * @example
  * ```ts
  * const canvas = await renderPageCanvas({
- *   cw: 800, ch: 600,
  *   svgBackground: '<svg>...</svg>',
  *   strokes: pageStrokes,
  *   container, overlay,
  * });
  * ```
  */
-export async function renderPageCanvas({ cw, ch, svgBackground, strokes, container, overlay, }: {
-  cw: number;
-  ch: number;
+export async function renderPageCanvas({ svgBackground, strokes, container, overlay, }: {
   svgBackground: string;
   strokes: readonly StrokeData[];
   container: HTMLDivElement;
@@ -57,28 +47,10 @@ export async function renderPageCanvas({ cw, ch, svgBackground, strokes, contain
 
   /** Device pixel ratio for high-DPI rendering */
   const dpr = globalThis.devicePixelRatio;
-  const exportCanvas = new OffscreenCanvas(cw * dpr, ch * dpr,);
-  /** 2D context for the page export canvas */
-  const maybeCtx = exportCanvas.getContext('2d',);
-  if (maybeCtx === null)
-    throw new Error('Export canvas 2D context unavailable',);
-  const ctx = maybeCtx;
 
-  /** Scale context so all drawing uses CSS pixel coordinates */
-  ctx.scale(dpr, dpr,);
+  const { canvas, } = await renderBaseCanvas({
+    container, overlay, strokes, imageScale: dpr,
+  },);
 
-  //region Layer 1: white background
-  ctx.fillStyle = 'white';
-  ctx.fillRect(0, 0, cw, ch,);
-  //endregion Layer 1
-
-  //region Layer 2: strokes (behind SVG linework)
-  renderStrokesToContext({ ctx, cw, ch, strokes, },);
-  //endregion Layer 2
-
-  //region Layer 3: SVG on top (rasterized at device resolution)
-  await renderSvgOverlayToContext({ ctx, container, overlay, imageScale: dpr, },);
-  //endregion Layer 3
-
-  return exportCanvas;
+  return canvas;
 }

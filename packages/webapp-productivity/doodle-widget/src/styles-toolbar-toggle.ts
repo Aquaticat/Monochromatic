@@ -1,20 +1,19 @@
 /**
- * Toggle-group CSS rules for the doodle widget toolbar.
+ * Toggle-group CSS overrides for the doodle widget toolbar.
  *
- * Covers the radio-based exclusive toggle group used for tool selection,
- * including hidden radio inputs, label styling, and checked-state feedback.
+ * Base control styling (padding, cursor, bg, border, radius, font) is
+ * handled by the shared control selector in {@link renderToolbarStyles}.
+ * This module provides toggle-specific overrides: connected border
+ * joining, hidden radio inputs, and checked-state feedback.
  */
 import {
   $,
   cssNum,
   cssOklch,
-  cssRem,
 } from '@monochromatic-dev/module-es/h-css';
 import {
   BORDER_COLOR,
   BORDER_WIDTH,
-  BUTTON_PADDING_BLOCK,
-  BUTTON_PADDING_INLINE,
   BUTTON_RADIUS,
 } from './style-tokens.ts';
 
@@ -47,25 +46,14 @@ export function renderToggleGroupStyles(): string[] {
       },
     },),
 
+    /** Override base border/radius for connected toggle items */
     $({
       rule: '.toggle-option',
       decls: {
         display: 'flex',
         'align-items': 'center',
-        'padding-block': BUTTON_PADDING_BLOCK,
-        'padding-inline': BUTTON_PADDING_INLINE,
-        cursor: 'pointer',
-        'background-color': cssOklch({ l: 0.97, c: 0, h: 0, },),
-        'border-block-style': 'solid',
-        'border-block-color': BORDER_COLOR,
-        'border-block-width': BORDER_WIDTH,
-        'border-inline-start-style': 'solid',
-        'border-inline-start-color': BORDER_COLOR,
-        'border-inline-start-width': BORDER_WIDTH,
         'border-inline-end-width': cssNum(0,),
         'border-radius': cssNum(0,),
-        'font-family': 'sans-serif',
-        'font-size': cssRem(1,),
       },
     },),
 
@@ -86,11 +74,6 @@ export function renderToggleGroupStyles(): string[] {
         'border-inline-end-style': 'solid',
         'border-inline-end-color': BORDER_COLOR,
       },
-    },),
-
-    $({
-      rule: '.toggle-option:hover',
-      decls: { 'background-color': cssOklch({ l: 0.92, c: 0, h: 0, },), },
     },),
 
     /** Active state driven by native :checked pseudo-class */

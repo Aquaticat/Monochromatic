@@ -7,13 +7,16 @@
  */
 import {
   type NormalizedPoint,
-  configureCtx,
   continueStroke,
   endStroke,
   normalizePointer,
   redraw,
   startStroke,
 } from './drawing.ts';
+import {
+  getStrokeColor,
+  getStrokeWidth,
+} from './drawing-config.ts';
 import { eraseStrokesAt, } from './eraser-strokes.ts';
 import { eraseTextAt, } from './eraser-text.ts';
 import type { PointerHandlerDeps, } from './pointer-handler-deps.ts';
@@ -122,7 +125,10 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       const segment = continueStroke(point,);
       if (segment === null)
         return;
-      configureCtx(ctx,);
+      ctx.strokeStyle = getStrokeColor();
+      ctx.lineWidth = getStrokeWidth();
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.beginPath();
       ctx.moveTo(segment.from[0] * cw, segment.from[1] * ch,);
       ctx.lineTo(segment.to[0] * cw, segment.to[1] * ch,);

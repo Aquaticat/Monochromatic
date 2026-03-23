@@ -10,10 +10,10 @@
  * infrastructure that cannot be meaningfully split further.
  */
 
-import {
-  getStrokes,
-  type StrokeData,
-} from './drawing.ts';
+import { getStrokes, } from './drawing.ts';
+import { requireOffscreenContext, } from './require-context.ts';
+import { renderStrokes, } from './stroke-renderer.ts';
+import { measureSvgOverlay, } from './svg-overlay-measure.ts';
 
 //region Types
 
@@ -43,46 +43,14 @@ export type ExportDeps = {
 //endregion Types
 
 /**
- * Renders stroke data onto a 2D canvas context.
+ * Reads the container's CSS pixel dimensions.
  *
- * Each stroke is drawn using its captured color and width,
- * with normalized coordinates denormalized to the given dimensions.
+ * @param container - canvas container element
  *
- * @param ctx - canvas 2D context to draw on
- *
- * @param cw - canvas width in CSS pixels for coordinate denormalization
- *
- * @param ch - canvas height in CSS pixels for coordinate denormalization
- *
- * @param strokes - stroke data with normalized [0..1] coordinates
- *
- * @example
- * ```ts
- * renderStrokesToContext({ ctx, cw: 800, ch: 600, strokes: pageStrokes });
- * ```
+ * @returns width and height as `cw` and `ch`
  */
-export function renderStrokesToContext({ ctx, cw, ch, strokes, }: {
-  ctx: OffscreenCanvasRenderingContext2D;
-  cw: number;
-  ch: number;
-  strokes: readonly StrokeData[];
-},): void {
-  for (const stroke of strokes) {
-    if (stroke.points.length < 2)
-      continue;
-    ctx.strokeStyle = stroke.color;
-    ctx.lineWidth = stroke.width;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    for (const [index, point,] of stroke.points.entries()) {
-      if (index === 0)
-        ctx.moveTo(point[0] * cw, point[1] * ch,);
-      else
-        ctx.lineTo(point[0] * cw, point[1] * ch,);
-    }
-    ctx.stroke();
-  }
+export function getContainerSize(container: HTMLDivElement,): { cw: number; ch: number; } {
+  return { cw: container.clientWidth, ch: container.clientHeight, };
 }
 
 /**
@@ -117,36 +85,23 @@ export async function renderSvgOverlayToContext({ ctx, container, overlay, image
   overlay: HTMLDivElement;
   imageScale?: number;
 },): Promise<void> {
-  /** SVG element from the overlay, if present */
-  const svgElement = overlay.querySelector<SVGSVGElement>(':scope > svg',);
-  if (svgElement === null)
+  const info = measureSvgOverlay({ container, overlay, },);
+  if (info === null)
     return;
-  /** Container position for offset calculation */
-  const containerRect = container.getBoundingClientRect();
-  /** Rendered SVG position and dimensions */
-  const svgRect = svgElement.getBoundingClientRect();
-  /** Horizontal offset of the SVG relative to the container */
-  const offsetX = svgRect.left - containerRect.left;
-  /** Vertical offset of the SVG relative to the container */
-  const offsetY = svgRect.top - containerRect.top;
 
   /** Rasterization scale factor for the SVG Image */
   const scale = imageScale ?? 1;
 
-  /** Clone with explicit dimensions so the Image decodes at the correct size */
-  const cloneNode = svgElement.cloneNode(true,);
-  if (!(cloneNode instanceof SVGSVGElement))
-    throw new Error('SVG clone is not an SVGSVGElement',);
-  const clone = cloneNode;
-  clone.setAttribute('width', String(svgRect.width * scale,),);
-  clone.setAttribute('height', String(svgRect.height * scale,),);
+  /** Set explicit dimensions so the Image decodes at the correct size */
+  info.clone.setAttribute('width', String(info.width * scale,),);
+  info.clone.setAttribute('height', String(info.height * scale,),);
   /** Re-serialized SVG markup encoded as a data URL for Image loading */
-  const svgMarkup = new XMLSerializer().serializeToString(clone,);
+  const svgMarkup = new XMLSerializer().serializeToString(info.clone,);
   const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup,)}`;
   const img = new Image();
   img.src = dataUrl;
   await img.decode();
-  ctx.drawImage(img, offsetX, offsetY, svgRect.width, svgRect.height,);
+  ctx.drawImage(img, info.offsetX, info.offsetY, info.width, info.height,);
 }
 
 /**
@@ -168,21 +123,21 @@ export async function renderSvgOverlayToContext({ ctx, container, overlay, image
  * const { canvas, ctx } = await renderBaseCanvas({ container, overlay });
  * ```
  */
-export async function renderBaseCanvas({ container, overlay, }: {
+export async function renderBaseCanvas({ container, overlay, strokes, imageScale, }: {
   container: HTMLDivElement;
   overlay: HTMLDivElement;
+  strokes?: readonly import('./drawing.ts').StrokeData[];
+  imageScale?: number;
 },): Promise<{ canvas: OffscreenCanvas; ctx: OffscreenCanvasRenderingContext2D; }> {
-  /** Container width in CSS pixels */
-  const cw = container.clientWidth;
-  /** Container height in CSS pixels */
-  const ch = container.clientHeight;
+  const { cw, ch, } = getContainerSize(container,);
+  /** Scale factor for high-DPI rendering (defaults to 1) */
+  const scale = imageScale ?? 1;
 
-  const exportCanvas = new OffscreenCanvas(cw, ch,);
-  /** 2D context for the offscreen export canvas */
-  const maybeCtx = exportCanvas.getContext('2d',);
-  if (maybeCtx === null)
-    throw new Error('Export canvas 2D context unavailable',);
-  const ctx = maybeCtx;
+  const exportCanvas = new OffscreenCanvas(cw * scale, ch * scale,);
+  const ctx = requireOffscreenContext(exportCanvas,);
+
+  if (scale !== 1)
+    ctx.scale(scale, scale,);
 
   //region Layer 1: white background
   ctx.fillStyle = 'white';
@@ -190,11 +145,11 @@ export async function renderBaseCanvas({ container, overlay, }: {
   //endregion Layer 1
 
   //region Layer 2: canvas strokes (behind SVG linework)
-  renderStrokesToContext({ ctx, cw, ch, strokes: getStrokes(), },);
+  renderStrokes({ ctx, cw, ch, strokes: strokes ?? getStrokes(), },);
   //endregion Layer 2
 
   //region Layer 3: SVG background on top
-  await renderSvgOverlayToContext({ ctx, container, overlay, },);
+  await renderSvgOverlayToContext({ ctx, container, overlay, imageScale: scale, },);
   //endregion Layer 3
 
   return { canvas: exportCanvas, ctx, };

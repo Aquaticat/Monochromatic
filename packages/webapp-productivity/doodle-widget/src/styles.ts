@@ -11,9 +11,9 @@ import {
   cssRem,
 } from '@monochromatic-dev/module-es/h-css';
 import {
-  BORDER_COLOR,
   FULL_DVB,
   FULL_PERCENT,
+  INSET_ZERO_DECLS,
 } from './style-tokens.ts';
 import { renderToolbarStyles, } from './styles-toolbar.ts';
 
@@ -60,25 +60,21 @@ export function renderStyles(): string {
     $({
       rule: '#draw-canvas',
       decls: {
-        position: 'absolute',
+        ...INSET_ZERO_DECLS,
         display: 'block',
         cursor: 'crosshair',
         'touch-action': 'none',
-        'inset-block': cssNum(0,),
-        'inset-inline': cssNum(0,),
       },
     },),
 
     $({
       rule: '#svg-overlay',
       decls: {
-        position: 'absolute',
+        ...INSET_ZERO_DECLS,
         display: 'flex',
         'align-items': 'center',
         'justify-content': 'center',
         'pointer-events': 'none',
-        'inset-block': cssNum(0,),
-        'inset-inline': cssNum(0,),
       },
     },),
 
@@ -95,10 +91,8 @@ export function renderStyles(): string {
     $({
       rule: '#text-layer',
       decls: {
-        position: 'absolute',
+        ...INSET_ZERO_DECLS,
         'pointer-events': 'none',
-        'inset-block': cssNum(0,),
-        'inset-inline': cssNum(0,),
       },
     },),
 

@@ -1,22 +1,15 @@
 /**
- * Export group and draw settings CSS rules for the doodle widget toolbar.
+ * Export group and draw settings CSS overrides for the doodle widget toolbar.
  *
- * Covers the connected export button + format select, color picker,
- * and stroke width slider styling.
+ * Base control styling (padding, cursor, bg, border, radius, font) is
+ * handled by the shared control selector in {@link renderToolbarStyles}.
+ * This module only provides layout and element-specific overrides.
  */
 import {
   $,
   cssNum,
-  cssOklch,
   cssRem,
 } from '@monochromatic-dev/module-es/h-css';
-import {
-  BORDER_COLOR,
-  BORDER_WIDTH,
-  BUTTON_PADDING_BLOCK,
-  BUTTON_PADDING_INLINE,
-  BUTTON_RADIUS,
-} from './style-tokens.ts';
 
 /** Color picker square size */
 const COLOR_PICKER_SIZE = 2;
@@ -43,6 +36,7 @@ export function renderToolbarControlStyles(): string[] {
       decls: { display: 'flex', },
     },),
 
+    /** Remove right border and radius to connect with adjacent select */
     $({
       rule: '.export-group > button',
       decls: {
@@ -52,30 +46,13 @@ export function renderToolbarControlStyles(): string[] {
       },
     },),
 
+    /** Remove left radius to connect with adjacent button */
     $({
       rule: '.export-group > select',
       decls: {
-        'padding-block': BUTTON_PADDING_BLOCK,
-        'padding-inline': BUTTON_PADDING_INLINE,
-        cursor: 'pointer',
-        'background-color': cssOklch({ l: 0.97, c: 0, h: 0, },),
-        'border-block-style': 'solid',
-        'border-block-color': BORDER_COLOR,
-        'border-block-width': BORDER_WIDTH,
-        'border-inline-style': 'solid',
-        'border-inline-color': BORDER_COLOR,
-        'border-inline-width': BORDER_WIDTH,
-        'border-radius': BUTTON_RADIUS,
         'border-start-start-radius': cssNum(0,),
         'border-end-start-radius': cssNum(0,),
-        'font-family': 'inherit',
-        'font-size': 'inherit',
       },
-    },),
-
-    $({
-      rule: '.export-group > select:hover',
-      decls: { 'background-color': cssOklch({ l: 0.92, c: 0, h: 0, },), },
     },),
 
     //endregion Export group
@@ -91,17 +68,10 @@ export function renderToolbarControlStyles(): string[] {
       },
     },),
 
+    /** Color picker size override (base border/radius from shared control rule) */
     $({
       rule: '#color-picker',
       decls: {
-        cursor: 'pointer',
-        'border-radius': BUTTON_RADIUS,
-        'border-block-style': 'solid',
-        'border-block-color': BORDER_COLOR,
-        'border-block-width': BORDER_WIDTH,
-        'border-inline-style': 'solid',
-        'border-inline-color': BORDER_COLOR,
-        'border-inline-width': BORDER_WIDTH,
         'inline-size': cssRem(COLOR_PICKER_SIZE,),
         'block-size': cssRem(COLOR_PICKER_SIZE,),
         'padding-block': cssRem(1 / (2 * 2 * 2),),

@@ -12,30 +12,17 @@ import {
 } from './drawing.ts';
 import {
   triggerDownload,
+  getContainerSize,
   type ExportDeps,
 } from './export.ts';
-
-//region Constants
+import {
+  readTextEntries,
+} from './export-text-config.ts';
+import { MIN_STROKE_POINTS, } from './stroke-renderer.ts';
+import { measureSvgOverlay, } from './svg-overlay-measure.ts';
 
 /** SVG XML namespace */
 const SVG_NS = 'http://www.w3.org/2000/svg';
-
-/** Font size for text in rem, matching `.text-input` CSS */
-const TEXT_FONT_SIZE_REM = 1.25;
-
-/** Fallback root font size in pixels */
-const DEFAULT_ROOT_FONT_SIZE_PX = 16;
-
-/** Divisor for percentage-to-fraction conversion */
-const PERCENT_DIVISOR = 100;
-
-/** Text fill color matching `.text-input` CSS */
-const TEXT_COLOR = 'oklch(0.3 0 0)';
-
-/** Minimum number of points in a stroke to be exportable */
-const MIN_STROKE_POINTS = 2;
-
-//endregion Constants
 
 /**
  * Exports the doodle as an SVG file.
@@ -58,10 +45,7 @@ const MIN_STROKE_POINTS = 2;
 export function exportAsSvg(
   { container, overlay, textLayer, }: ExportDeps,
 ): void {
-  /** Container width in CSS pixels */
-  const cw = container.clientWidth;
-  /** Container height in CSS pixels */
-  const ch = container.clientHeight;
+  const { cw, ch, } = getContainerSize(container,);
 
   const svg = document.createElementNS(SVG_NS, 'svg',);
   svg.setAttribute('xmlns', SVG_NS,);
@@ -101,55 +85,27 @@ export function exportAsSvg(
   //endregion Strokes
 
   //region Background SVG (on top of strokes)
-  /** Background SVG element from the overlay, if present */
-  const svgElement = overlay.querySelector<SVGSVGElement>(':scope > svg',);
-  if (svgElement !== null) {
-    /** Container position for offset calculation */
-    const containerRect = container.getBoundingClientRect();
-    /** Rendered SVG position and dimensions */
-    const svgRect = svgElement.getBoundingClientRect();
-    const cloneNode = svgElement.cloneNode(true,);
-    if (!(cloneNode instanceof SVGSVGElement))
-      throw new Error('SVG clone is not an SVGSVGElement',);
-    const clone = cloneNode;
-    clone.setAttribute('x', String(svgRect.left - containerRect.left,),);
-    clone.setAttribute('y', String(svgRect.top - containerRect.top,),);
-    clone.setAttribute('width', String(svgRect.width,),);
-    clone.setAttribute('height', String(svgRect.height,),);
-    svg.append(clone,);
+  const overlayInfo = measureSvgOverlay({ container, overlay, },);
+  if (overlayInfo !== null) {
+    overlayInfo.clone.setAttribute('x', String(overlayInfo.offsetX,),);
+    overlayInfo.clone.setAttribute('y', String(overlayInfo.offsetY,),);
+    overlayInfo.clone.setAttribute('width', String(overlayInfo.width,),);
+    overlayInfo.clone.setAttribute('height', String(overlayInfo.height,),);
+    svg.append(overlayInfo.clone,);
   }
   //endregion Background SVG
 
   //region Text annotations
-  /** Default text font size in pixels for inputs without data attributes */
-  const rootFontSize = Number.parseFloat(
-    getComputedStyle(document.documentElement,).fontSize,
-  ) || DEFAULT_ROOT_FONT_SIZE_PX;
-  const defaultFontSizePx = TEXT_FONT_SIZE_REM * rootFontSize;
-
-  /** All text input elements */
-  const textInputs = textLayer.querySelectorAll<HTMLInputElement>('.text-input',);
-  for (const input of textInputs) {
-    if (input.value.trim() === '')
-      continue;
+  const textEntries = readTextEntries({ textLayer, },);
+  for (const entry of textEntries) {
     const text = document.createElementNS(SVG_NS, 'text',);
-    /** Horizontal position in pixels */
-    const x = (Number.parseFloat(input.style.insetInlineStart,) / PERCENT_DIVISOR) * cw;
-    /** Vertical position in pixels */
-    const y = (Number.parseFloat(input.style.insetBlockStart,) / PERCENT_DIVISOR) * ch;
-    /** Per-input font size, falling back to CSS default */
-    const fontSizePx = input.dataset.fontSize !== undefined
-      ? Number.parseFloat(input.dataset.fontSize,)
-      : defaultFontSizePx;
-    /** Per-input color, falling back to CSS default */
-    const color = input.dataset.color ?? TEXT_COLOR;
-    text.setAttribute('x', String(x,),);
-    text.setAttribute('y', String(y,),);
+    text.setAttribute('x', String(entry.xFraction * cw,),);
+    text.setAttribute('y', String(entry.yFraction * ch,),);
     text.setAttribute('font-family', 'system-ui, sans-serif',);
-    text.setAttribute('font-size', String(fontSizePx,),);
-    text.setAttribute('fill', color,);
+    text.setAttribute('font-size', String(entry.fontSizePx,),);
+    text.setAttribute('fill', entry.color,);
     text.setAttribute('dominant-baseline', 'hanging',);
-    text.textContent = input.value;
+    text.textContent = entry.value;
     svg.append(text,);
   }
   //endregion Text annotations

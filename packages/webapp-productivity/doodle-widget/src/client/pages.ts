@@ -84,6 +84,29 @@ export function getCurrentPageIndex(): number {
 }
 
 /**
+ * Persists the current page's live state (strokes, text, SVG) into
+ * the pages array.
+ *
+ * Finalizes any active text input and copies stroke data before saving.
+ *
+ * @param overlay - SVG overlay element for reading current background
+ *
+ * @param textLayer - text layer element for serializing current text entries
+ */
+function saveCurrentPage({ overlay, textLayer, }: {
+  overlay: HTMLElement;
+  textLayer: HTMLDivElement;
+}): void {
+  const page = pages[currentIndex];
+  if (page === undefined)
+    return;
+  finalizeActiveInput();
+  page.strokes = [...getStrokes(),];
+  page.textEntries = serializeTextEntries(textLayer,);
+  page.svgBackground = overlay.innerHTML;
+}
+
+/**
  * Switches to a different page, saving current state and restoring target.
  *
  * Finalizes any in-progress stroke or text input before saving.
@@ -114,16 +137,7 @@ export function switchToPage({ index, ctx, cw, ch, overlay, textLayer, }: {
   if (index < 0 || index >= pages.length)
     return;
   endStroke();
-
-  //region Save current page
-  const currentPage = pages[currentIndex];
-  if (currentPage === undefined)
-    throw new Error(`Page state missing for current index ${String(currentIndex,)}`,);
-  finalizeActiveInput();
-  currentPage.strokes = [...getStrokes(),];
-  currentPage.textEntries = serializeTextEntries(textLayer,);
-  currentPage.svgBackground = overlay.innerHTML;
-  //endregion Save current page
+  saveCurrentPage({ overlay, textLayer, },);
 
   //region Restore target page
   const targetPage = pages[index];
@@ -165,13 +179,6 @@ export function snapshotAllPages({ overlay, textLayer, }: {
   textLayer: HTMLDivElement;
 }): readonly PageState[] {
   endStroke();
-  /** Current page state to save live data into */
-  const currentPage = pages[currentIndex];
-  if (currentPage !== undefined) {
-    finalizeActiveInput();
-    currentPage.strokes = [...getStrokes(),];
-    currentPage.textEntries = serializeTextEntries(textLayer,);
-    currentPage.svgBackground = overlay.innerHTML;
-  }
+  saveCurrentPage({ overlay, textLayer, },);
   return [...pages,];
 }

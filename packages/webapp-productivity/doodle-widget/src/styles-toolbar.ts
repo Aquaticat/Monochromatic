@@ -1,29 +1,40 @@
 /**
  * Toolbar and button CSS rules for the doodle widget.
  *
- * Covers the top toolbar bar, title, and standalone button styling.
- * Control-specific rules (export group, draw settings) are composed
- * from {@link renderToolbarControlStyles}, and toggle-group rules
- * from {@link renderToggleGroupStyles}.
+ * Covers the top toolbar bar, a shared base rule for all interactive
+ * controls (buttons, selects, toggle labels, color picker), and the
+ * toolbar title. Control-specific overrides live in composed modules:
+ * {@link renderToolbarControlStyles} and {@link renderToggleGroupStyles}.
  */
 import {
   $,
   cssOklch,
-  cssRem,
 } from '@monochromatic-dev/module-es/h-css';
 import {
+  BG_CONTROL,
+  BG_CONTROL_HOVER,
   BORDER_COLOR,
+  BORDER_SOLID_DECLS,
   BORDER_WIDTH,
   BUTTON_PADDING_BLOCK,
   BUTTON_PADDING_INLINE,
   BUTTON_RADIUS,
   FONT_WEIGHT_BOLD,
+  TOOLBAR_FONT_DECLS,
   TOOLBAR_GAP,
   TOOLBAR_PADDING_BLOCK,
   TOOLBAR_PADDING_INLINE,
 } from './style-tokens.ts';
 import { renderToolbarControlStyles, } from './styles-toolbar-controls.ts';
 import { renderToggleGroupStyles, } from './styles-toolbar-toggle.ts';
+
+/**
+ * Selector targeting all interactive controls in the toolbar.
+ *
+ * Buttons, selects, toggle-option labels, and the color picker
+ * share the same base styling.
+ */
+const CONTROL_SELECTOR = '.toolbar button, .toolbar select, .toggle-option, #color-picker';
 
 /**
  * Generates CSS rules for the toolbar, buttons, and composed sub-groups.
@@ -50,8 +61,7 @@ export function renderToolbarStyles(): string[] {
         'border-block-end-style': 'solid',
         'border-block-end-color': BORDER_COLOR,
         'border-block-end-width': BORDER_WIDTH,
-        'font-family': 'sans-serif',
-        'font-size': cssRem(1,),
+        ...TOOLBAR_FONT_DECLS,
       },
     },),
 
@@ -60,28 +70,25 @@ export function renderToolbarStyles(): string[] {
       decls: { 'font-weight': FONT_WEIGHT_BOLD, },
     },),
 
+    /** Base styling shared by all interactive toolbar controls */
     $({
-      rule: '.toolbar button',
+      rule: CONTROL_SELECTOR,
       decls: {
         'padding-block': BUTTON_PADDING_BLOCK,
         'padding-inline': BUTTON_PADDING_INLINE,
         cursor: 'pointer',
         'border-radius': BUTTON_RADIUS,
-        'background-color': cssOklch({ l: 0.97, c: 0, h: 0, },),
-        'border-block-style': 'solid',
-        'border-block-color': BORDER_COLOR,
-        'border-block-width': BORDER_WIDTH,
-        'border-inline-style': 'solid',
-        'border-inline-color': BORDER_COLOR,
-        'border-inline-width': BORDER_WIDTH,
-        'font-family': 'sans-serif',
-        'font-size': cssRem(1,),
+        'background-color': BG_CONTROL,
+        ...BORDER_SOLID_DECLS,
+        ...TOOLBAR_FONT_DECLS,
       },
     },),
 
     $({
-      rule: '.toolbar button:hover',
-      decls: { 'background-color': cssOklch({ l: 0.92, c: 0, h: 0, },), },
+      rule: `${CONTROL_SELECTOR.split(', ',).map(
+        function addHover(sel,): string { return `${sel}:hover`; },
+      ).join(', ',)}`,
+      decls: { 'background-color': BG_CONTROL_HOVER, },
     },),
 
     ...renderToolbarControlStyles(),

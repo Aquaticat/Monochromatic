@@ -10,6 +10,7 @@ import {
   cssOklch,
   cssPercent,
   cssRem,
+  type CssDeclarations,
   type CssValue,
 } from '@monochromatic-dev/module-es/h-css';
 
@@ -77,3 +78,36 @@ export const BORDER_WIDTH: CssValue = cssRem(SIXTEENTH,);
 export const BORDER_COLOR: CssValue = cssOklch({ l: 0.8, c: 0, h: 0, },);
 
 //endregion Computed CSS values
+
+//region Shared declaration fragments
+
+/** Default background color for interactive controls */
+export const BG_CONTROL: CssValue = cssOklch({ l: 0.97, c: 0, h: 0, },);
+
+/** Hover background color for interactive controls */
+export const BG_CONTROL_HOVER: CssValue = cssOklch({ l: 0.92, c: 0, h: 0, },);
+
+/** Solid border on both block and inline axes */
+export const BORDER_SOLID_DECLS = {
+  'border-block-style': 'solid',
+  'border-block-color': BORDER_COLOR,
+  'border-block-width': BORDER_WIDTH,
+  'border-inline-style': 'solid',
+  'border-inline-color': BORDER_COLOR,
+  'border-inline-width': BORDER_WIDTH,
+} as const satisfies CssDeclarations;
+
+/** Toolbar and control font stack */
+export const TOOLBAR_FONT_DECLS = {
+  'font-family': 'sans-serif',
+  'font-size': cssRem(1,),
+} as const satisfies CssDeclarations;
+
+/** Absolute positioning filling parent via zero insets */
+export const INSET_ZERO_DECLS = {
+  position: 'absolute',
+  'inset-block': cssNum(0,),
+  'inset-inline': cssNum(0,),
+} as const satisfies CssDeclarations;
+
+//endregion Shared declaration fragments

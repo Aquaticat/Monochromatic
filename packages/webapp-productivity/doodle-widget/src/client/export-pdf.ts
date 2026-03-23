@@ -9,29 +9,18 @@
 
 import { jsPDF, } from 'jspdf';
 
-import type { ExportDeps, } from './export.ts';
+import {
+  getContainerSize,
+  type ExportDeps,
+} from './export.ts';
+import {
+  TEXT_COLOR_RGB,
+  textEntriesToExport,
+} from './export-text-config.ts';
 import { renderPageCanvas, } from './export-pdf-page.ts';
 import { snapshotAllPages, } from './pages.ts';
 
 //region Constants
-
-/** Font size for text in rem, matching `.text-input` CSS */
-const TEXT_FONT_SIZE_REM = 1.25;
-
-/** Fallback root font size in pixels */
-const DEFAULT_ROOT_FONT_SIZE_PX = 16;
-
-/** Divisor for percentage-to-fraction conversion */
-const PERCENT_DIVISOR = 100;
-
-/** Approximate sRGB red channel for oklch(0.3 0 0) */
-const TEXT_COLOR_R = 46;
-
-/** Approximate sRGB green channel for oklch(0.3 0 0) */
-const TEXT_COLOR_G = 46;
-
-/** Approximate sRGB blue channel for oklch(0.3 0 0) */
-const TEXT_COLOR_B = 46;
 
 /** Conversion factor from CSS pixels to PDF points (72/96) */
 const PX_TO_PT = 0.75;
@@ -88,10 +77,7 @@ function hexToRgb(hex: string,): { r: number; g: number; b: number; } {
  */
 export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
   const { container, overlay, textLayer, } = deps;
-  /** Container width in CSS pixels */
-  const cw = container.clientWidth;
-  /** Container height in CSS pixels */
-  const ch = container.clientHeight;
+  const { cw, ch, } = getContainerSize(container,);
 
   /** Snapshot all pages (saves current page's live state) */
   const allPages = snapshotAllPages({ overlay, textLayer, },);
@@ -112,14 +98,6 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
   },);
   //endregion PDF document setup
 
-  //region Text rendering setup
-  /** Default text font size in points for inputs without data attributes */
-  const rootFontSize = Number.parseFloat(
-    getComputedStyle(document.documentElement,).fontSize,
-  ) || DEFAULT_ROOT_FONT_SIZE_PX;
-  const defaultFontSizePt = TEXT_FONT_SIZE_REM * rootFontSize * PX_TO_PT;
-  //endregion Text rendering setup
-
   //region Render each page
   for (const [pageIndex, page,] of allPages.entries()) {
     if (pageIndex > 0)
@@ -128,7 +106,6 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
     /** Composited raster image for this page */
     // eslint-disable-next-line no-await-in-loop -- pages render sequentially; each mutates the shared overlay element
     const pageCanvas = await renderPageCanvas({
-      cw, ch,
       svgBackground: page.svgBackground,
       strokes: page.strokes,
       container, overlay,
@@ -143,26 +120,19 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
     doc.addImage(imageData, 'PNG', 0, 0, pageW, pageH,);
 
     //region Overlay text as real PDF text
-    for (const entry of page.textEntries) {
-      if (entry.value.trim() === '')
-        continue;
-      /** Per-entry font size in points, falling back to CSS default */
-      const fontSizePt = entry.fontSize !== ''
-        ? Number.parseFloat(entry.fontSize,) * PX_TO_PT
-        : defaultFontSizePt;
+    const textEntries = textEntriesToExport(page.textEntries,);
+    for (const entry of textEntries) {
+      /** Font size in points */
+      const fontSizePt = entry.fontSizePx * PX_TO_PT;
       doc.setFontSize(fontSizePt,);
-      if (entry.color !== '') {
+      if (entry.color.startsWith('#',)) {
         const rgb = hexToRgb(entry.color,);
         doc.setTextColor(rgb.r, rgb.g, rgb.b,);
       }
       else {
-        doc.setTextColor(TEXT_COLOR_R, TEXT_COLOR_G, TEXT_COLOR_B,);
+        doc.setTextColor(TEXT_COLOR_RGB.r, TEXT_COLOR_RGB.g, TEXT_COLOR_RGB.b,);
       }
-      /** Horizontal position in points */
-      const x = (Number.parseFloat(entry.insetInlineStart,) / PERCENT_DIVISOR) * pageW;
-      /** Vertical position in points */
-      const y = (Number.parseFloat(entry.insetBlockStart,) / PERCENT_DIVISOR) * pageH;
-      doc.text(entry.value, x, y, { baseline: 'top', },);
+      doc.text(entry.value, entry.xFraction * pageW, entry.yFraction * pageH, { baseline: 'top', },);
     }
     //endregion Overlay text
   }
