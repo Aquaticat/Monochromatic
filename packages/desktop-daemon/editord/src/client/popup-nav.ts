@@ -5,8 +5,8 @@
  * Split from app-keybindings.ts to stay under max-lines.
  */
 
-import type { CompletionPopup, } from './completion-popup.ts';
-import type { ReferencesPopup, } from './references-popup.ts';
+import type { CompletionPopup, } from './completion/completion-popup.ts';
+import type { ReferencesPopup, } from './references/references-popup.ts';
 
 /**
  * Handles arrow/tab/escape keys when completion popup is visible.

@@ -9,7 +9,11 @@ import { requestCompletion, requestFormat, requestGotoDefinition, requestHover, 
 import type { LspPool, } from './lsp-pool.ts';
 import type { LspCompletionItem, LspHover, LspInlayHint, LspSelectionRange, LspTextEdit, } from './types.ts';
 
-/** {@inheritDoc requestHover} */
+/**
+ * {@inheritDoc requestHover}
+ *
+ * @returns hover content, or null when no client is available
+ */
 export async function managerHover({ pool, path, line, character, }: {
   pool: LspPool; path: string; line: number; character: number;
 }): Promise<LspHover | null> {
@@ -17,7 +21,11 @@ export async function managerHover({ pool, path, line, character, }: {
   return c !== null && c.initialized ? requestHover({ client: c, path, line, character, },) : null;
 }
 
-/** {@inheritDoc requestCompletion} */
+/**
+ * {@inheritDoc requestCompletion}
+ *
+ * @returns completion items, or empty array when no client is available
+ */
 export async function managerCompletion({ pool, path, line, character, }: {
   pool: LspPool; path: string; line: number; character: number;
 }): Promise<LspCompletionItem[]> {
@@ -25,7 +33,11 @@ export async function managerCompletion({ pool, path, line, character, }: {
   return c !== null && c.initialized ? requestCompletion({ client: c, path, line, character, },) : [];
 }
 
-/** {@inheritDoc requestFormat} */
+/**
+ * {@inheritDoc requestFormat}
+ *
+ * @returns text edits, or empty array when no client is available
+ */
 export async function managerFormat({ pool, path, }: {
   pool: LspPool; path: string;
 }): Promise<LspTextEdit[]> {
@@ -33,7 +45,11 @@ export async function managerFormat({ pool, path, }: {
   return c !== null && c.initialized ? requestFormat({ client: c, path, },) : [];
 }
 
-/** {@inheritDoc requestGotoDefinition} */
+/**
+ * {@inheritDoc requestGotoDefinition}
+ *
+ * @returns definition location, or null when no client is available
+ */
 export async function managerGotoDefinition({ pool, path, line, character, }: {
   pool: LspPool; path: string; line: number; character: number;
 }): Promise<{ path: string; line: number; character: number } | null> {
@@ -41,7 +57,11 @@ export async function managerGotoDefinition({ pool, path, line, character, }: {
   return c !== null && c.initialized ? requestGotoDefinition({ client: c, path, line, character, },) : null;
 }
 
-/** {@inheritDoc requestReferences} */
+/**
+ * {@inheritDoc requestReferences}
+ *
+ * @returns reference locations, or empty array when no client is available
+ */
 export async function managerReferences({ pool, path, line, character, }: {
   pool: LspPool; path: string; line: number; character: number;
 }): Promise<{ path: string; line: number; character: number }[]> {
@@ -49,7 +69,11 @@ export async function managerReferences({ pool, path, line, character, }: {
   return c !== null && c.initialized ? requestReferences({ client: c, path, line, character, },) : [];
 }
 
-/** {@inheritDoc requestInlayHints} */
+/**
+ * {@inheritDoc requestInlayHints}
+ *
+ * @returns inlay hints, or empty array when no client is available
+ */
 export async function managerInlayHints({ pool, path, range, }: {
   pool: LspPool; path: string;
   range: { start: { line: number; character: number }; end: { line: number; character: number } };
@@ -58,7 +82,11 @@ export async function managerInlayHints({ pool, path, range, }: {
   return c !== null && c.initialized ? requestInlayHints({ client: c, path, range, },) : [];
 }
 
-/** {@inheritDoc requestSelectionRange} */
+/**
+ * {@inheritDoc requestSelectionRange}
+ *
+ * @returns selection ranges, or empty array when no client is available
+ */
 export async function managerSelectionRange({ pool, path, positions, }: {
   pool: LspPool; path: string;
   positions: { line: number; character: number }[];

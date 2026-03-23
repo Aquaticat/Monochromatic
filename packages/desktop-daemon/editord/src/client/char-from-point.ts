@@ -16,6 +16,7 @@ export function findCharAtX({ lineDiv, x, }: {
   lineDiv: Element;
   x: number;
 }): number {
+  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: textContent is null for Document/DocumentType nodes per spec
   const text = lineDiv.textContent ?? '';
   if (text.length === 0 || text === '\n')
     return 0;

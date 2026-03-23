@@ -1,0 +1,129 @@
+/**
+ * Search overlay result rendering and highlighting.
+ *
+ * Creates result DOM elements and applies CSS Custom Highlight API
+ * marks for query matches. Separated from the main overlay component
+ * to keep each file under the effective line limit.
+ */
+
+import {
+  $ as h,
+} from '@monochromatic-dev/module-es/h-dom';
+
+import type { SearchResult, } from '../../../protocol.ts';
+import { middleOut, } from '../middle-out.ts';
+
+/**
+ * Renders search results into DOM elements.
+ *
+ * @param results - search results to render
+ *
+ * @param query - search query for middle-out path truncation
+ *
+ * @param rootPrefix - root directory prefix for relativizing paths
+ *
+ * @param budget - character budget for middle-out truncation
+ *
+ * @param onSelect - callback invoked when a result is clicked
+ *
+ * @returns array of result DOM elements
+ */
+export function renderResultElements({ results, query, rootPrefix, budget, onSelect, }: {
+  results: SearchResult[];
+  query: string;
+  rootPrefix: string;
+  budget: number;
+  onSelect: (index: number,) => void;
+}): HTMLElement[] {
+  return results.map(function createResultElement(result, index,) {
+    /**
+     * Computes a display-friendly relative path from the root directory.
+     *
+     * @param absolutePath - absolute file path
+     *
+     * @returns path relative to rootDir
+     */
+    function relativePath(absolutePath: string,): string {
+      return absolutePath.startsWith(rootPrefix,)
+        ? absolutePath.slice(rootPrefix.length,)
+        : absolutePath;
+    }
+
+    const displayPath = middleOut({
+      text: relativePath(result.path,),
+      query,
+      budget,
+    },);
+
+    const children: (Node | string)[] = [
+      h({ tag: 'span', class: 'result-path', text: displayPath, },),
+    ];
+
+    if (result.kind === 'content') {
+      children.push(
+        h({ tag: 'span', class: 'result-line', text: `:${String(result.line,)}`, },),
+        h({ tag: 'span', class: 'result-text', text: result.text, },),
+      );
+    }
+
+    return h({
+      tag: 'div',
+      class: 'result',
+      attrs: index === 0 ? { 'data-selected': '', } : {},
+      children,
+      on: {
+        click: function handleClick() {
+          onSelect(index,);
+        },
+      },
+    },);
+  },);
+}
+
+/**
+ * Highlights all occurrences of the query in rendered result text nodes
+ * using the CSS Custom Highlight API. Case-insensitive matching.
+ *
+ * @param query - search query to highlight
+ *
+ * @param container - results container element whose text nodes to scan
+ */
+export function highlightMatches({ query, container, }: { query: string; container: HTMLDivElement }): void {
+  if (query === '') {
+    CSS.highlights.delete('hl-search-match',);
+    return;
+  }
+
+  const lowerQuery = query.toLowerCase();
+  const queryLength = query.length;
+  const ranges: Range[] = [];
+
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT,);
+
+  let node = walker.nextNode();
+  while (node !== null) {
+    const text = node.textContent ?? '';
+    const lowerText = text.toLowerCase();
+    let searchFrom = 0;
+
+    // oxlint-disable-next-line -- indexOf returns -1 when not found; loop terminates correctly
+    for (;;) {
+      const index = lowerText.indexOf(lowerQuery, searchFrom,);
+      if (index === -1)
+        break;
+
+      const range = new Range();
+      range.setStart(node, index,);
+      range.setEnd(node, index + queryLength,);
+      ranges.push(range,);
+      searchFrom = index + queryLength;
+    }
+
+    node = walker.nextNode();
+  }
+
+  if (ranges.length > 0)
+    CSS.highlights.set('hl-search-match', new Highlight(...ranges,),);
+  else
+    CSS.highlights.delete('hl-search-match',);
+}

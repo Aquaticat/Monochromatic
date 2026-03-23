@@ -5,6 +5,8 @@
  * using Content-Length header framing.
  */
 
+import type { JsonRpcMessage, } from './json-rpc-encode.ts';
+
 export {
   encodeLspMessage,
   type JsonRpcMessage,
@@ -12,8 +14,6 @@ export {
   type JsonRpcRequest,
   type JsonRpcResponse,
 } from './json-rpc-encode.ts';
-
-import type { JsonRpcMessage, } from './json-rpc-encode.ts';
 
 //region Parsing
 

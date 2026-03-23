@@ -16,21 +16,13 @@
  * ```
  */
 
-import {
-  H3,
-  defineHandler,
-  getQuery,
-  serve,
-  serveStatic,
-} from 'h3';
-import { readFile, stat, } from 'node:fs/promises';
+import { H3, serve, } from 'h3';
 import { join, } from 'node:path';
 import { plugin as ws, } from 'crossws/server';
 
+import { registerRoutes, } from './index-routes.ts';
 import { l, tagged, } from './log.ts';
 import { LspManager, type WireDiagnostic, } from './lsp/lsp-manager.ts';
-import { assertWithinRoot, } from './operations/assert-within-root.ts';
-import { getContentType, } from './operations/file-kind.ts';
 import { resolveFsId, } from './operations/resolve-fs-id.ts';
 import { resolveRoot, } from './operations/resolve-root.ts';
 import { DirWatcher, } from './operations/watch-filesystem.ts';
@@ -133,65 +125,7 @@ const app = new H3();
 /** Base path for resolving dist and source assets relative to this file. */
 const packageRoot = join(import.meta.dirname, '../..',);
 
-//region Static file serving — built client bundles from dist/client/
-
-app.get('/', defineHandler(async function handleIndex() {
-  const html = await readFile(join(packageRoot, 'src/client/index.html',), 'utf8',);
-  return new Response(
-    html,
-    { headers: { 'Content-Type': 'text/html; charset=utf-8', }, },
-  );
-},),);
-
-app.get('/dist/client/**', defineHandler(function handleStaticAsset(event,) {
-  return serveStatic(event, {
-    getContents: function readContents(id,) {
-      return readFile(join(packageRoot, id,),);
-    },
-    getMeta: async function getMetadata(id,) {
-      const fullPath = join(packageRoot, id,);
-      let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
-      try {
-        stats = await stat(fullPath,);
-      }
-      catch (error) {
-        /** Only swallow ENOENT (file not found); rethrow unexpected errors. */
-        const isNotFound = error instanceof Error
-          && 'code' in error
-          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guarded by instanceof Error and 'code' in error above
-          && (error as NodeJS.ErrnoException).code === 'ENOENT';
-        if (!isNotFound)
-          throw error;
-
-        return;
-      }
-      if (!stats.isFile())
-        return;
-      return { size: stats.size, mtime: stats.mtimeMs, };
-    },
-  },);
-},),);
-
-//endregion Static file serving
-
-//region Raw file serving — media files served via HTTP for native browser rendering
-
-app.get('/_raw', defineHandler(async function handleRawFile(event,) {
-  const query = getQuery(event,);
-  if (query.token !== AUTH_TOKEN) {
-    return new Response('Unauthorized', { status: 401, },);
-  }
-  const filePath = typeof query.path === 'string' ? query.path : null;
-  if (filePath === null) {
-    return new Response('Missing path', { status: 400, },);
-  }
-  const absolutePath = assertWithinRoot({ rootDir: ROOT_DIR, path: filePath, },);
-  const buffer = await readFile(absolutePath,);
-  const contentType = getContentType({ path: absolutePath, },);
-  return new Response(buffer, { headers: { 'Content-Type': contentType, }, },);
-},),);
-
-//endregion Raw file serving
+registerRoutes({ app, packageRoot, authToken: AUTH_TOKEN, rootDir: ROOT_DIR, },);
 
 //region WebSocket — editor communication
 

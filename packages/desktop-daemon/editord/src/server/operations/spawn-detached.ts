@@ -7,6 +7,7 @@
 
 import { spawn, } from 'node:child_process';
 
+// oxlint-disable eslint-plugin-promise/avoid-new -- wrapping callback-based child_process.spawn requires manual Promise construction
 /**
  * Spawns a detached process that outlives the parent.
  * Resolves once the process has spawned successfully.
@@ -19,7 +20,6 @@ import { spawn, } from 'node:child_process';
  *
  * @throws when the process fails to spawn
  */
-// oxlint-disable-next-line eslint-plugin-promise/avoid-new -- wrapping callback-based child_process.spawn requires manual Promise construction
 export function spawnDetached({ command, args, cwd, }: { command: string; args: string[]; cwd: string }): Promise<void> {
   return new Promise<void>(function awaitSpawn(resolve, reject,): void {
     const child = spawn(command, args, {
@@ -33,3 +33,4 @@ export function spawnDetached({ command, args, cwd, }: { command: string; args: 
     queueMicrotask(resolve,);
   },);
 }
+// oxlint-enable eslint-plugin-promise/avoid-new

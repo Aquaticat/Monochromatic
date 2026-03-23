@@ -1,0 +1,114 @@
+/**
+ * Cursor and selection operations for the contenteditable editor.
+ *
+ * Uses `getComposedRanges` to cross the shadow DOM boundary.
+ */
+
+import { resolveLineCharacter, resolveTextPosition, } from './text-resolve.ts';
+
+import type { EditorPosition, } from '../position.ts';
+import type { SelectionCoords, } from './indent.ts';
+
+/**
+ * Resolves a composed `StaticRange` from the current selection.
+ *
+ * @param shadow - shadow root to cross the boundary
+ *
+ * @returns the first composed range, or null
+ */
+export function getComposedRange({ shadow, }: { shadow: ShadowRoot }): StaticRange | null {
+  const selection = document.getSelection();
+  if (selection === null) return null;
+  const ranges = selection.getComposedRanges({ shadowRoots: [shadow,], },);
+  return ranges[0] ?? null;
+}
+
+/**
+ * Resolves the current editor cursor position.
+ *
+ * @param editor - contenteditable container element
+ *
+ * @param shadow - shadow root for composed ranges
+ *
+ * @returns 0-based line and character, or null
+ */
+export function getCursorPosition({ editor, shadow, }: {
+  editor: HTMLDivElement; shadow: ShadowRoot;
+}): EditorPosition | null {
+  const range = getComposedRange({ shadow, },);
+  if (range === null) return null;
+  return resolveLineCharacter({ editor, container: range.startContainer, offset: range.startOffset, },);
+}
+
+/**
+ * Returns the bounding rectangle of the editor cursor.
+ *
+ * @param shadow - shadow root for composed ranges
+ *
+ * @returns DOMRect of the caret, or null
+ */
+export function getCursorRect({ shadow, }: { shadow: ShadowRoot }): DOMRect | null {
+  const sRange = getComposedRange({ shadow, },);
+  if (sRange === null) return null;
+  const range = document.createRange();
+  range.setStart(sRange.startContainer, sRange.startOffset,);
+  range.setEnd(sRange.endContainer, sRange.endOffset,);
+  return range.getBoundingClientRect();
+}
+
+/**
+ * Places the cursor at the specified line and character position.
+ *
+ * @param editor - contenteditable container element
+ *
+ * @param line - 0-based line index
+ *
+ * @param character - 0-based character offset
+ */
+export function restoreCursor({ editor, line, character, }: {
+  editor: HTMLDivElement; line: number; character: number;
+}): void {
+  const selection = document.getSelection();
+  if (selection === null) return;
+  const resolved = resolveTextPosition({ editor, lineIndex: line, character, },);
+  if (resolved === null) return;
+  selection.setBaseAndExtent(resolved.node, resolved.offset, resolved.node, resolved.offset,);
+}
+
+/**
+ * Sets the visual selection to a range.
+ *
+ * @param editor - contenteditable container element
+ *
+ * @param coords - selection start and end coordinates
+ */
+export function setSelection({ editor, coords, }: {
+  editor: HTMLDivElement; coords: SelectionCoords;
+}): void {
+  const selection = document.getSelection();
+  if (selection === null) return;
+  const start = resolveTextPosition({ editor, lineIndex: coords.startLine, character: coords.startCharacter, },);
+  const end = resolveTextPosition({ editor, lineIndex: coords.endLine, character: coords.endCharacter, },);
+  if (start === null || end === null) return;
+  selection.setBaseAndExtent(start.node, start.offset, end.node, end.offset,);
+}
+
+/**
+ * Reads the current visual selection as 0-based coordinates.
+ *
+ * @param editor - contenteditable container element
+ *
+ * @param shadow - shadow root for composed ranges
+ *
+ * @returns selection coordinates, or null
+ */
+export function getSelection({ editor, shadow, }: {
+  editor: HTMLDivElement; shadow: ShadowRoot;
+}): SelectionCoords | null {
+  const range = getComposedRange({ shadow, },);
+  if (range === null) return null;
+  const start = resolveLineCharacter({ editor, container: range.startContainer, offset: range.startOffset, },);
+  const end = resolveLineCharacter({ editor, container: range.endContainer, offset: range.endOffset, },);
+  if (start === null || end === null) return null;
+  return { startLine: start.line, startCharacter: start.character, endLine: end.line, endCharacter: end.character, };
+}

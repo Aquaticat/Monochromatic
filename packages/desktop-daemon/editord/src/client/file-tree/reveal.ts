@@ -1,0 +1,107 @@
+/**
+ * File tree reveal and scroll operations.
+ *
+ * Expands ancestor directories to make files visible
+ * and scrolls entries into view.
+ */
+
+import { l as rootLogger, tagged, } from '../log.ts';
+
+/** Tagged logger for the reveal subsystem. */
+const l = tagged({ tag: 'file-tree-reveal', l: rootLogger, },);
+
+/**
+ * Collects all ancestor directory paths between each file and the root.
+ *
+ * @param paths - absolute file paths to reveal
+ *
+ * @param rootLength - character length of the root path
+ *
+ * @returns set of ancestor directory paths
+ */
+export function collectAncestorDirs({ paths, rootLength, }: {
+  paths: string[];
+  rootLength: number;
+}): Set<string> {
+  const dirs = new Set<string>();
+  for (const filePath of paths) {
+    let current = filePath.slice(0, filePath.lastIndexOf('/'),);
+    while (current.length > rootLength) {
+      dirs.add(current,);
+      current = current.slice(0, current.lastIndexOf('/'),);
+    }
+  }
+  return dirs;
+}
+
+/**
+ * Finds the first visible element at or below the current scroll position.
+ *
+ * @param tree - tree container element
+ *
+ * @param hostElement - host custom element for viewport rect
+ *
+ * @returns anchor element and viewport offset, or null
+ */
+export function findScrollAnchor({ tree, hostElement, }: {
+  tree: HTMLDivElement;
+  hostElement: HTMLElement;
+}): { element: HTMLElement; offsetFromViewport: number } | null {
+  const hostRect = hostElement.getBoundingClientRect();
+  const viewportTop = hostRect.top;
+
+  for (const candidate of tree.querySelectorAll<HTMLElement>('summary, tree-file-entry',)) {
+    const rect = candidate.getBoundingClientRect();
+    if (rect.bottom > viewportTop) {
+      return { element: candidate, offsetFromViewport: rect.top - viewportTop, };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Scrolls the tree so that the file entry with the given path is visible.
+ *
+ * @param tree - tree container element
+ *
+ * @param path - absolute file path to scroll into view
+ */
+export function scrollToFile({ tree, path, }: {
+  tree: HTMLDivElement;
+  path: string;
+}): void {
+  const label = tree.querySelector<HTMLElement>(`tree-file-entry[data-path="${CSS.escape(path,)}"]`,);
+  if (label !== null) label.scrollIntoView({ block: 'nearest', },);
+}
+
+/**
+ * Expands ancestor directories for file paths, preserving scroll context.
+ *
+ * @param tree - tree container element
+ *
+ * @param hostElement - host custom element for scroll anchoring
+ *
+ * @param rootPath - absolute root directory path
+ *
+ * @param paths - absolute file paths to reveal
+ *
+ * @param restoreExpansion - function to restore expansion state
+ */
+export async function revealFiles({ tree, hostElement, rootPath, paths, restoreExpansion, }: {
+  tree: HTMLDivElement;
+  hostElement: HTMLElement;
+  rootPath: string;
+  paths: string[];
+  restoreExpansion: (opts: { dirs: string[] },) => Promise<void>;
+}): Promise<void> {
+  const dirs = collectAncestorDirs({ paths, rootLength: rootPath.length, },);
+  if (dirs.size === 0) return;
+  l.info(`revealing ${String(dirs.size,)} ancestor dirs for ${String(paths.length,)} recent files`,);
+  const anchor = findScrollAnchor({ tree, hostElement, },);
+  await restoreExpansion({ dirs: [...dirs,], },);
+  if (anchor !== null) {
+    const newTop = anchor.element.getBoundingClientRect().top;
+    hostElement.scrollTop += newTop - anchor.offsetFromViewport;
+  }
+}

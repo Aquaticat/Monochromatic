@@ -8,6 +8,6 @@ import { defineConfig, } from 'tsdown';
 export default defineConfig({
   ...base,
   entry: [
-    './src/client/app.ts',
+    './src/client/app/app.ts',
   ],
 },);

@@ -9,7 +9,7 @@ extends = "build:js:client"
 
 [tasks."build:css"]
 description = "Build global CSS from h-css style modules"
-run = "bun src/client/global.styles.build.ts"
+run = "bun src/client/styles/build.ts"
 
 [tasks."watch:build"]
 extends = "watch:build"

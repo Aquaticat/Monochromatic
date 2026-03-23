@@ -15,13 +15,9 @@ import {
   encodeLspMessage,
   type JsonRpcMessage,
 } from './json-rpc.ts';
+import { buildInitializeParams, } from './lsp-client-init.ts';
+import { routeJsonRpcMessage, type PendingLspRequest, } from './lsp-client-routing.ts';
 import type { LspServerCapabilities, } from './types.ts';
-
-/** Pending request awaiting an LSP server response. */
-type PendingLspRequest = {
-  resolve: (value: unknown,) => void;
-  reject: (error: Error,) => void;
-};
 
 /**
  * Client for a single LSP server process.
@@ -93,24 +89,10 @@ export class LspClient {
     },);
 
     const clientLog = this.#l;
-    const parser = createLspParser({
-      onMessage: this.#handleMessage.bind(this,),
-      onError: function handleParseError(error,) {
-        clientLog.error(`malformed JSON-RPC message: ${String(error,)}`,);
-      },
-    },);
-
-    this.#proc.stdout?.on('data', function handleStdout(chunk: Buffer,) {
-      parser.feed(chunk,);
-    },);
-
-    this.#proc.stderr?.on('data', function handleStderr(chunk: Buffer,) {
-      clientLog.error(`stderr: ${chunk.toString('utf8',).trimEnd()}`,);
-    },);
-
-    this.#proc.on('exit', function handleExit(code,) {
-      clientLog.info(`exited with code ${String(code,)}`,);
-    },);
+    const parser = createLspParser({ onMessage: this.#handleMessage.bind(this,), onError: function handleParseError(error,) { clientLog.error(`malformed JSON-RPC message: ${String(error,)}`,); }, },);
+    this.#proc.stdout?.on('data', function handleStdout(chunk: Buffer,) { parser.feed(chunk,); },);
+    this.#proc.stderr?.on('data', function handleStderr(chunk: Buffer,) { clientLog.error(`stderr: ${chunk.toString('utf8',).trimEnd()}`,); },);
+    this.#proc.on('exit', function handleExit(code,) { clientLog.info(`exited with code ${String(code,)}`,); },);
   }
 
   /**
@@ -128,22 +110,7 @@ export class LspClient {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP initialize always returns { capabilities }
     const result = await this.request({
       method: 'initialize',
-      params: {
-        processId: process.pid,
-        clientInfo: { name: 'editord', version: '0.1.0', },
-        rootUri,
-        workspaceFolders: [{ uri: rootUri, name: 'root', },],
-        capabilities: {
-          textDocument: {
-            synchronization: { didSave: true, },
-            hover: { contentFormat: ['markdown', 'plaintext',], },
-            completion: { completionItem: { snippetSupport: false, }, },
-            publishDiagnostics: {},
-            inlayHint: {},
-          },
-        },
-        initializationOptions,
-      },
+      params: buildInitializeParams({ rootUri, initializationOptions, },),
     },) as { capabilities: LspServerCapabilities };
 
     this.capabilities = result.capabilities;
@@ -226,39 +193,18 @@ export class LspClient {
 
   /**
    * Routes an incoming JSON-RPC message to the appropriate handler.
-   * Responses are matched to pending requests by ID.
-   * Notifications are forwarded to the `onNotification` callback.
-   * Server-initiated requests receive a no-op acknowledgment.
+   * Delegates to {@link routeJsonRpcMessage} for response correlation,
+   * notification forwarding, and server-initiated request acknowledgment.
    *
    * @param message - parsed JSON-RPC message
    */
   #handleMessage(message: JsonRpcMessage,): void {
-    // Response to a pending request
-    if ('id' in message && !('method' in message)) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to response shape
-      const response = message as { id: number; result?: unknown; error?: { code: number; message: string } };
-      const pending = this.#pending.get(response.id,);
-      if (pending !== undefined) {
-        this.#pending.delete(response.id,);
-        if (response.error !== undefined) {
-          pending.reject(new Error(`${this.#name}: ${response.error.message}`,),);
-        }
-        else {
-          pending.resolve(response.result,);
-        }
-      }
-    }
-    // Server notification (e.g. textDocument/publishDiagnostics)
-    else if ('method' in message && !('id' in message)) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to notification shape
-      const notification = message as { method: string; params?: unknown };
-      this.#onNotification({ method: notification.method, params: notification.params, },);
-    }
-    // Server-initiated request (e.g. window/workDoneProgress/create)
-    else if ('method' in message && 'id' in message) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to request shape
-      const request = message as { id: number };
-      this.#send({ jsonrpc: '2.0', id: request.id, result: null, },);
-    }
+    routeJsonRpcMessage({
+      message,
+      pending: this.#pending,
+      name: this.#name,
+      send: this.#send.bind(this,),
+      onNotification: this.#onNotification,
+    },);
   }
 }

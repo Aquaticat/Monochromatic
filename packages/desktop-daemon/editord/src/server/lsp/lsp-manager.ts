@@ -44,52 +44,108 @@ export class LspManager {
     },);
   }
 
-  /** @param path - absolute file path */
+  /**
+   * Notifies LSP servers that a file was opened.
+   *
+   * @param path - absolute file path
+   */
   async didOpen({ path, text, }: { path: string; text: string }): Promise<void> {
     await managerDidOpen({ pool: this.#pool, documents: this.#documents, path, text, },);
   }
-  /** @param path - absolute file path */
+
+  /**
+   * Notifies LSP servers that a file's content changed.
+   *
+   * @param path - absolute file path
+   */
   async didChange({ path, text, }: { path: string; text: string }): Promise<void> {
     await managerDidChange({ pool: this.#pool, documents: this.#documents, path, text, },);
   }
-  /** @param path - absolute file path */
+
+  /**
+   * Notifies LSP servers that a file was saved.
+   *
+   * @param path - absolute file path
+   */
   async didSave({ path, }: { path: string }): Promise<void> {
     await managerDidSave({ pool: this.#pool, documents: this.#documents, path, },);
   }
-  /** @param path - absolute file path */
+
+  /**
+   * Notifies LSP servers that a file was closed.
+   *
+   * @param path - absolute file path
+   */
   async didClose({ path, }: { path: string }): Promise<void> {
     await managerDidClose({ pool: this.#pool, documents: this.#documents, diagnostics: this.#diagnostics, path, },);
   }
-  /** {@inheritDoc managerHover} */
-  async hover({ path, line, character, }: { path: string; line: number; character: number }): Promise<LspHover | null> {
+
+  /**
+   * {@inheritDoc managerHover}
+   *
+   * @returns hover content, or null when no client is available
+   */
+  hover({ path, line, character, }: { path: string; line: number; character: number }): Promise<LspHover | null> {
     return managerHover({ pool: this.#pool, path, line, character, },);
   }
-  /** {@inheritDoc managerCompletion} */
-  async completion({ path, line, character, }: { path: string; line: number; character: number }): Promise<LspCompletionItem[]> {
+
+  /**
+   * {@inheritDoc managerCompletion}
+   *
+   * @returns completion items, or empty array when no client is available
+   */
+  completion({ path, line, character, }: { path: string; line: number; character: number }): Promise<LspCompletionItem[]> {
     return managerCompletion({ pool: this.#pool, path, line, character, },);
   }
-  /** {@inheritDoc managerFormat} */
-  async format({ path, }: { path: string }): Promise<LspTextEdit[]> {
+
+  /**
+   * {@inheritDoc managerFormat}
+   *
+   * @returns text edits, or empty array when no client is available
+   */
+  format({ path, }: { path: string }): Promise<LspTextEdit[]> {
     return managerFormat({ pool: this.#pool, path, },);
   }
-  /** {@inheritDoc managerGotoDefinition} */
-  async gotoDefinition({ path, line, character, }: { path: string; line: number; character: number }): Promise<{ path: string; line: number; character: number } | null> {
+
+  /**
+   * {@inheritDoc managerGotoDefinition}
+   *
+   * @returns definition location, or null when no client is available
+   */
+  gotoDefinition({ path, line, character, }: { path: string; line: number; character: number }): Promise<{ path: string; line: number; character: number } | null> {
     return managerGotoDefinition({ pool: this.#pool, path, line, character, },);
   }
-  /** {@inheritDoc managerReferences} */
-  async references({ path, line, character, }: { path: string; line: number; character: number }): Promise<{ path: string; line: number; character: number }[]> {
+
+  /**
+   * {@inheritDoc managerReferences}
+   *
+   * @returns reference locations, or empty array when no client is available
+   */
+  references({ path, line, character, }: { path: string; line: number; character: number }): Promise<{ path: string; line: number; character: number }[]> {
     return managerReferences({ pool: this.#pool, path, line, character, },);
   }
-  /** {@inheritDoc managerInlayHints} */
-  async inlayHints({ path, range, }: { path: string; range: { start: { line: number; character: number }; end: { line: number; character: number } } }): Promise<LspInlayHint[]> {
+
+  /**
+   * {@inheritDoc managerInlayHints}
+   *
+   * @returns inlay hints, or empty array when no client is available
+   */
+  inlayHints({ path, range, }: { path: string; range: { start: { line: number; character: number }; end: { line: number; character: number } } }): Promise<LspInlayHint[]> {
     return managerInlayHints({ pool: this.#pool, path, range, },);
   }
-  /** {@inheritDoc managerSelectionRange} */
-  async selectionRange({ path, positions, }: { path: string; positions: { line: number; character: number }[] }): Promise<LspSelectionRange[]> {
+
+  /**
+   * {@inheritDoc managerSelectionRange}
+   *
+   * @returns selection ranges, or empty array when no client is available
+   */
+  selectionRange({ path, positions, }: { path: string; positions: { line: number; character: number }[] }): Promise<LspSelectionRange[]> {
     return managerSelectionRange({ pool: this.#pool, path, positions, },);
   }
+
   /** Gracefully shuts down all pooled LSP servers. */
   shutdown(): void { this.#pool.shutdown(); }
+
   /**
    * Shuts down LSP servers whose project root covers the given path.
    *
