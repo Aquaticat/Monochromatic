@@ -52,13 +52,27 @@ function isFileLockError(error: unknown,): boolean {
  */
 const peerSearchControllers = new WeakMap<object, AbortController>();
 
+/** Peer type used throughout message dispatch. */
+type Peer = { send: (data: string) => void };
+
+/**
+ * Sends a JSON-serialized message to a WebSocket peer.
+ *
+ * @param peer - WebSocket peer to send to
+ *
+ * @param message - message object to serialize and send
+ */
+function sendJson({ peer, message, }: { peer: Peer; message: Record<string, unknown> }): void {
+  peer.send(JSON.stringify(message,),);
+}
+
 /**
  * Rejects an unauthenticated peer by sending an error and closing.
  *
  * @param peer - WebSocket peer to reject
  */
 function rejectUnauthenticated(peer: { send: (data: string) => void; close: () => void },): void {
-  peer.send(JSON.stringify({ type: 'error', message: 'unauthorized', },),);
+  sendJson({ peer, message: { type: 'error', message: 'unauthorized', }, },);
   peer.close();
 }
 
@@ -145,7 +159,7 @@ function toWireSelectionRange({ lspRange, }: { lspRange: LspSelectionRange }): S
  * @param dirWatcher - filesystem watcher for save suppression and dir registration
  */
 async function dispatchMessage(
-  peer: { send: (data: string) => void },
+  peer: Peer,
   messageText: string,
   rootDir: string,
   lspManager: LspManager | null,
@@ -156,7 +170,7 @@ async function dispatchMessage(
 
   if (parsed.type === 'open') {
     const result = await openFile({ rootDir, path: parsed.path, },);
-    peer.send(JSON.stringify({ type: 'fileContent', id: parsed.id, ...result, },),);
+    sendJson({ peer, message: { type: 'fileContent', id: parsed.id, ...result, }, },);
 
     /** Notify LSP servers only for text files. */
     if (lspManager !== null && result.kind === 'text') {
@@ -172,7 +186,7 @@ async function dispatchMessage(
       dirWatcher.suppressPath({ path: absolutePath, },);
     }
 
-    peer.send(JSON.stringify({ type: 'saved', id: parsed.id, path: parsed.path, },),);
+    sendJson({ peer, message: { type: 'saved', id: parsed.id, path: parsed.path, }, },);
 
     /** Notify LSP servers about the save. */
     if (lspManager !== null) {
@@ -182,7 +196,7 @@ async function dispatchMessage(
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'listDir') {
     const result = await listDir({ rootDir, path: parsed.path, },);
-    peer.send(JSON.stringify({ type: 'dirListing', id: parsed.id, ...result, },),);
+    sendJson({ peer, message: { type: 'dirListing', id: parsed.id, ...result, }, },);
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'search') {
@@ -194,22 +208,22 @@ async function dispatchMessage(
     const result = await search({ rootDir: parsed.scope, query: parsed.query, signal: controller.signal, },);
 
     if (!controller.signal.aborted)
-      peer.send(JSON.stringify({ type: 'searchResults', id: parsed.id, ...result, },),);
+      sendJson({ peer, message: { type: 'searchResults', id: parsed.id, ...result, }, },);
   }
   //region LSP message handlers
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'inlayHint') {
     if (lspManager === null) {
-      peer.send(JSON.stringify({ type: 'inlayHintResult', id: parsed.id, hints: [], },),);
+      sendJson({ peer, message: { type: 'inlayHintResult', id: parsed.id, hints: [], }, },);
       return;
     }
 
     const hints = await lspManager.inlayHints({ path: parsed.path, range: parsed.range, },);
-    peer.send(JSON.stringify({
+    sendJson({ peer, message: {
       type: 'inlayHintResult',
       id: parsed.id,
       hints: toWireInlayHints({ hints, },),
-    },),);
+    }, },);
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'didChange') {
@@ -233,41 +247,41 @@ async function dispatchMessage(
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'hover') {
     if (lspManager === null) {
-      peer.send(JSON.stringify({ type: 'hoverResult', id: parsed.id, contents: '', },),);
+      sendJson({ peer, message: { type: 'hoverResult', id: parsed.id, contents: '', }, },);
       return;
     }
 
     const hover = await lspManager.hover({ path: parsed.path, line: parsed.line, character: parsed.character, },);
     if (hover === null) {
-      peer.send(JSON.stringify({ type: 'hoverResult', id: parsed.id, contents: '', },),);
+      sendJson({ peer, message: { type: 'hoverResult', id: parsed.id, contents: '', }, },);
       return;
     }
 
-    peer.send(JSON.stringify({
+    sendJson({ peer, message: {
       type: 'hoverResult',
       id: parsed.id,
       contents: extractHoverContent({ hover, },),
       range: hover.range,
-    },),);
+    }, },);
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'completion') {
     if (lspManager === null) {
-      peer.send(JSON.stringify({ type: 'completionResult', id: parsed.id, items: [], },),);
+      sendJson({ peer, message: { type: 'completionResult', id: parsed.id, items: [], }, },);
       return;
     }
 
     const items = await lspManager.completion({ path: parsed.path, line: parsed.line, character: parsed.character, },);
-    peer.send(JSON.stringify({
+    sendJson({ peer, message: {
       type: 'completionResult',
       id: parsed.id,
       items: toWireCompletionItems({ items, },),
-    },),);
+    }, },);
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'format') {
     if (lspManager === null) {
-      peer.send(JSON.stringify({ type: 'formatResult', id: parsed.id, edits: [], },),);
+      sendJson({ peer, message: { type: 'formatResult', id: parsed.id, edits: [], }, },);
       return;
     }
 
@@ -275,49 +289,49 @@ async function dispatchMessage(
     const edits: TextEdit[] = lspEdits.map(function convertEdit(edit,) {
       return { range: edit.range, newText: edit.newText, };
     },);
-    peer.send(JSON.stringify({ type: 'formatResult', id: parsed.id, edits, },),);
+    sendJson({ peer, message: { type: 'formatResult', id: parsed.id, edits, }, },);
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'gotoDefinition') {
     if (lspManager === null) {
-      peer.send(JSON.stringify({ type: 'definitionResult', id: parsed.id, path: '', line: 0, character: 0, },),);
+      sendJson({ peer, message: { type: 'definitionResult', id: parsed.id, path: '', line: 0, character: 0, }, },);
       return;
     }
 
     const def = await lspManager.gotoDefinition({ path: parsed.path, line: parsed.line, character: parsed.character, },);
     if (def === null) {
-      peer.send(JSON.stringify({ type: 'definitionResult', id: parsed.id, path: '', line: 0, character: 0, },),);
+      sendJson({ peer, message: { type: 'definitionResult', id: parsed.id, path: '', line: 0, character: 0, }, },);
       return;
     }
 
-    peer.send(JSON.stringify({
+    sendJson({ peer, message: {
       type: 'definitionResult',
       id: parsed.id,
       path: def.path,
       line: def.line,
       character: def.character,
-    },),);
+    }, },);
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'findReferences') {
     if (lspManager === null) {
-      peer.send(JSON.stringify({ type: 'referencesResult', id: parsed.id, locations: [], },),);
+      sendJson({ peer, message: { type: 'referencesResult', id: parsed.id, locations: [], }, },);
       return;
     }
 
     const locations = await lspManager.references({ path: parsed.path, line: parsed.line, character: parsed.character, },);
-    peer.send(JSON.stringify({ type: 'referencesResult', id: parsed.id, locations, },),);
+    sendJson({ peer, message: { type: 'referencesResult', id: parsed.id, locations, }, },);
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'selectionRange') {
     if (lspManager === null) {
-      peer.send(JSON.stringify({ type: 'selectionRangeResult', id: parsed.id, ranges: [], },),);
+      sendJson({ peer, message: { type: 'selectionRangeResult', id: parsed.id, ranges: [], }, },);
       return;
     }
 
     const lspRanges = await lspManager.selectionRange({ path: parsed.path, positions: parsed.positions, },);
     const ranges = lspRanges.map(function convertRange(r,) { return toWireSelectionRange({ lspRange: r, },); },);
-    peer.send(JSON.stringify({ type: 'selectionRangeResult', id: parsed.id, ranges, },),);
+    sendJson({ peer, message: { type: 'selectionRangeResult', id: parsed.id, ranges, }, },);
   }
   //endregion LSP message handlers
   //region Filesystem action handlers
@@ -333,12 +347,12 @@ async function dispatchMessage(
       }
       else { throw error; }
     }
-    peer.send(JSON.stringify({ type: 'fsActionDone', id: parsed.id, },),);
+    sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'copyEntry') {
     await copyEntry({ rootDir, path: parsed.path, destPath: parsed.destPath, },);
-    peer.send(JSON.stringify({ type: 'fsActionDone', id: parsed.id, },),);
+    sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'moveEntry') {
@@ -352,32 +366,32 @@ async function dispatchMessage(
       }
       else { throw error; }
     }
-    peer.send(JSON.stringify({ type: 'fsActionDone', id: parsed.id, },),);
+    sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'newEntry') {
     await newEntry({ rootDir, parentPath: parsed.parentPath, name: parsed.name, isDirectory: parsed.isDirectory, },);
-    peer.send(JSON.stringify({ type: 'fsActionDone', id: parsed.id, },),);
+    sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'openInTerminal') {
     await openInTerminal({ rootDir, path: parsed.path, },);
-    peer.send(JSON.stringify({ type: 'fsActionDone', id: parsed.id, },),);
+    sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
   }
   // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
   else if (parsed.type === 'openInDefaultApp') {
     await openInDefaultApp({ rootDir, path: parsed.path, },);
-    peer.send(JSON.stringify({ type: 'fsActionDone', id: parsed.id, },),);
+    sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
   }
   //endregion Filesystem action handlers
   else {
-    peer.send(JSON.stringify({
+    sendJson({ peer, message: {
       type: 'error',
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- else branch: parsed is an unknown message shape from unvalidated JSON
       id: (parsed as { id?: string }).id,
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- else branch: parsed is an unknown message shape from unvalidated JSON
       message: `unknown message type: ${(parsed as { type: string }).type}`,
-    },),);
+    }, },);
   }
 }
 
@@ -414,7 +428,7 @@ export function createWsHandler({ authToken, rootDir, fsId, lspManager, connecte
       open: function handleOpen(peer,) {
         l.info('peer connected',);
         connectedPeers.add(peer,);
-        peer.send(JSON.stringify({ type: 'connected', rootDir, fsId, },),);
+        sendJson({ peer, message: { type: 'connected', rootDir, fsId, }, },);
       },
 
       async message(peer, message,) {
@@ -424,10 +438,7 @@ export function createWsHandler({ authToken, rootDir, fsId, lspManager, connecte
         catch (error) {
           const errorMessage = error instanceof Error ? error.message : String(error,);
           l.error(`operation failed: ${errorMessage}`,);
-          peer.send(JSON.stringify({
-            type: 'error',
-            message: errorMessage,
-          },),);
+          sendJson({ peer, message: { type: 'error', message: errorMessage, }, },);
         }
       },
 

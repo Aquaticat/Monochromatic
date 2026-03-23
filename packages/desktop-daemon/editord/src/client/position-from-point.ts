@@ -44,6 +44,8 @@ export function getPositionFromPoint({ editor, x, y, }: {
 
 /**
  * Finds the line div whose bounding rect contains the y coordinate.
+ * Uses binary search over the vertically-ordered children to avoid
+ * O(n) layout recalculations on large files.
  *
  * @returns line index and element, or null if y is outside all lines
  */
@@ -51,10 +53,24 @@ function findLineAtY({ editor, y, }: {
   editor: HTMLElement;
   y: number;
 }): { line: number; lineDiv: Element } | null {
-  for (const [lineIndex, child,] of [...editor.children,].entries()) {
+  const { children, } = editor;
+  let lo = 0;
+  let hi = children.length - 1;
+
+  while (lo <= hi) {
+    const mid = (lo + hi) >>> 1;
+    const child = children[mid];
+    if (child === undefined) return null;
     const rect = child.getBoundingClientRect();
-    if (y >= rect.top && y <= rect.bottom) {
-      return { line: lineIndex, lineDiv: child, };
+
+    if (y < rect.top) {
+      hi = mid - 1;
+    }
+    else if (y > rect.bottom) {
+      lo = mid + 1;
+    }
+    else {
+      return { line: mid, lineDiv: child, };
     }
   }
 

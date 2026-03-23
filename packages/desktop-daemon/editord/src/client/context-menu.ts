@@ -42,6 +42,43 @@ function stopClickPropagation(event: MouseEvent,): void {
 const ANCHOR_NAME = '--ctx-anchor';
 
 /**
+ * Removes the popover element when dismissed by the browser.
+ * Without hoisting: consistent-function-scoping lint warning since it captures no parent scope vars.
+ *
+ * @param event - popover toggle event
+ */
+function handlePopoverToggle(event: Event,): void {
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event on popover elements always carries newState
+  if ((event as ToggleEvent).newState === 'closed') {
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the popover div
+    const popup = event.currentTarget as HTMLDivElement;
+    popup.remove();
+  }
+}
+
+/**
+ * Applies hover background on mouse enter.
+ * Without hoisting: consistent-function-scoping lint warning.
+ *
+ * @param event - mouse event on the menu item
+ */
+function handleItemOver(event: MouseEvent,): void {
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the div we attached the listener to
+  (event.currentTarget as HTMLElement).style.backgroundColor = 'var(--tree-hover-bg)';
+}
+
+/**
+ * Removes hover background on mouse leave.
+ * Without hoisting: consistent-function-scoping lint warning.
+ *
+ * @param event - mouse event on the menu item
+ */
+function handleItemOut(event: MouseEvent,): void {
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the div we attached the listener to
+  (event.currentTarget as HTMLElement).style.backgroundColor = '';
+}
+
+/**
  * Manages a single context menu instance.
  *
  * The popup lives in the top layer via `popover="auto"`, escaping
@@ -58,6 +95,7 @@ export class ContextMenu {
   /** Callback fired when the popover is dismissed by the browser. */
   #onToggleBound: (event: Event) => void;
 
+  /** Initializes the invisible anchor div and popover toggle handler. */
   constructor() {
     this.#anchor = h({
       tag: 'div',
@@ -70,14 +108,7 @@ export class ContextMenu {
       },
     },);
 
-    this.#onToggleBound = function handleToggle(event: Event,): void {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event on popover elements always carries newState
-      if ((event as ToggleEvent).newState === 'closed') {
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the popover div
-        const popup = event.currentTarget as HTMLDivElement;
-        popup.remove();
-      }
-    };
+    this.#onToggleBound = handlePopoverToggle;
   }
 
   /**
@@ -188,14 +219,8 @@ export class ContextMenu {
             onActivate(item.action,);
           }
         },
-        mouseover: function handleOver(event: MouseEvent,): void {
-          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the div we attached the listener to
-          (event.currentTarget as HTMLElement).style.backgroundColor = 'var(--tree-hover-bg)';
-        },
-        mouseout: function handleOut(event: MouseEvent,): void {
-          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the div we attached the listener to
-          (event.currentTarget as HTMLElement).style.backgroundColor = '';
-        },
+        mouseover: handleItemOver,
+        mouseout: handleItemOut,
       },
     },);
   }

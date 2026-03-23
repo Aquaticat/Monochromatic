@@ -31,6 +31,86 @@ import { STYLES, } from './editor-pane.styles.ts';
 /** Single indent level: two spaces. */
 const INDENT_UNIT = '  ';
 
+//region Text node resolution helpers
+
+/**
+ * Resolves a text node and offset within a line div for
+ * `setBaseAndExtent`. Walks text nodes to find the one
+ * containing the target character offset.
+ *
+ * @param editor - contenteditable container element
+ *
+ * @param lineIndex - 0-based line index
+ *
+ * @param character - 0-based character offset within the line
+ *
+ * @returns text node and offset, or null if not resolvable
+ */
+function resolveTextPosition({ editor, lineIndex, character, }: {
+  editor: HTMLDivElement; lineIndex: number; character: number;
+}): { node: Node; offset: number } | null {
+  const lineDiv = editor.children[lineIndex];
+  if (lineDiv === undefined) return null;
+
+  const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
+  let remaining = character;
+  let textNode = walker.nextNode();
+  while (textNode !== null) {
+    const len = textNode.textContent?.length ?? 0;
+    if (remaining <= len) return { node: textNode, offset: remaining, };
+    remaining -= len;
+    textNode = walker.nextNode();
+  }
+
+  /** Offset past end — clamp to last text node's end. */
+  const { lastChild, } = lineDiv;
+  if (lastChild !== null) return { node: lastChild, offset: lastChild.textContent?.length ?? 0, };
+  return null;
+}
+
+/**
+ * Resolves a DOM container node and offset to a line/character position.
+ * Walks up the DOM to find the line div, then sums text node lengths.
+ *
+ * @param editor - contenteditable container element
+ *
+ * @param container - DOM node from the range boundary
+ *
+ * @param offset - offset within the container node
+ *
+ * @returns 0-based line and character, or null
+ */
+function resolveLineCharacter({ editor, container, offset, }: {
+  editor: HTMLDivElement; container: Node; offset: number;
+}): { line: number; character: number } | null {
+  let node: Node | null = container;
+  let lineDiv: HTMLElement | null = null;
+  while (node !== null && node !== editor) {
+    if (node.parentNode === editor && node instanceof HTMLElement) {
+      lineDiv = node;
+      break;
+    }
+    node = node.parentNode;
+  }
+  if (lineDiv === null) return null;
+
+  const line = [...editor.children,].indexOf(lineDiv,);
+  if (line === -1) return null;
+
+  let character = 0;
+  const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
+  let textNode = walker.nextNode();
+  while (textNode !== null) {
+    if (textNode === container) { character += offset; break; }
+    character += textNode.textContent?.length ?? 0;
+    textNode = walker.nextNode();
+  }
+
+  return { line, character, };
+}
+
+//endregion Text node resolution helpers
+
 /**
  * `<editor-pane>` — contenteditable text editor component.
  *
@@ -185,6 +265,9 @@ export class EditorPane extends HTMLElement {
    * @param diagnostics - diagnostics from the language server
    */
   setDiagnostics(diagnostics: Diagnostic[],): void {
+    /** Skip re-render when transitioning from empty to empty. */
+    if (diagnostics.length === 0 && this.#diagnostics.length === 0)
+      return;
     this.#diagnostics = diagnostics;
     this.#scheduleDiagnosticHighlights();
     this.#scheduleInlayAnnotations();
@@ -197,6 +280,9 @@ export class EditorPane extends HTMLElement {
    * @param hints - inlay hints from the language server
    */
   setInlayHints(hints: InlayHint[],): void {
+    /** Skip re-render when transitioning from empty to empty. */
+    if (hints.length === 0 && this.#inlayHints.length === 0)
+      return;
     this.#inlayHints = hints;
     this.#scheduleInlayAnnotations();
   }
@@ -257,7 +343,8 @@ export class EditorPane extends HTMLElement {
     const { children, } = this.#editor;
     if (children.length <= 1) {
       /** Single line — clear it instead of removing. */
-      const only = children[0];
+      /** Without destructuring: prefer-destructuring lint error for index-0 access. */
+      const [only,] = children;
       if (only !== undefined) only.textContent = '\n';
       this.restoreCursor({ line: 0, character: 0, },);
       this.#dispatchContentChange();
@@ -326,9 +413,10 @@ export class EditorPane extends HTMLElement {
     selection.setBaseAndExtent(firstText, 0, lastText, lastLen,);
 
     /** Copy line text with trailing newline, matching VS Code behavior. */
-    const raw = lineDiv.textContent ?? '';
+    /** Without non-null trust: textContent is typed string|null on Node, but always string on HTMLElement children. */
+    const raw = lineDiv.textContent;
     const lineText = raw === '\n' ? '' : raw;
-    void navigator.clipboard.writeText(lineText + '\n',);
+    void navigator.clipboard.writeText(`${lineText}\n`,);
 
     return true;
   }
@@ -449,7 +537,8 @@ export class EditorPane extends HTMLElement {
     for (let i = startLine; i <= endLine; i++) {
       const lineDiv = this.#editor.children[i];
       if (lineDiv === undefined) continue;
-      const text = lineDiv.textContent ?? '';
+      /** Without non-null trust: textContent is typed string|null on Node, but always string on HTMLElement children. */
+      const text = lineDiv.textContent;
       lineDiv.textContent = text === '\n' ? INDENT_UNIT : INDENT_UNIT + text;
     }
 
@@ -500,7 +589,8 @@ export class EditorPane extends HTMLElement {
     for (let i = startLine; i <= endLine; i++) {
       const lineDiv = this.#editor.children[i];
       if (lineDiv === undefined) { removedPerLine.push(0,); continue; }
-      const text = lineDiv.textContent ?? '';
+      /** Without non-null trust: textContent is typed string|null on Node, but always string on HTMLElement children. */
+      const text = lineDiv.textContent;
       if (text === '\n') { removedPerLine.push(0,); continue; }
 
       let count = 0;
@@ -516,8 +606,9 @@ export class EditorPane extends HTMLElement {
 
     /** Restore selection or cursor with offsets shifted back by removed spaces. */
     if (nonCollapsed) {
-      const startRemoved = removedPerLine[0] ?? 0;
-      const endRemoved = removedPerLine[removedPerLine.length - 1] ?? 0;
+      /** Without destructuring/at(): prefer-destructuring and prefer-at lint errors. */
+      const [startRemoved = 0,] = removedPerLine;
+      const endRemoved = removedPerLine.at(-1) ?? 0;
       this.setSelection({
         startLine: sel.startLine,
         startCharacter: Math.max(0, sel.startCharacter - startRemoved,),
@@ -559,40 +650,9 @@ export class EditorPane extends HTMLElement {
     const selection = document.getSelection();
     if (selection === null) return;
 
-    /**
-     * Resolves a text node and offset within a line div for
-     * `setBaseAndExtent`. Walks text nodes to find the one
-     * containing the target character offset.
-     *
-     * @param lineIndex - 0-based line index
-     *
-     * @param character - 0-based character offset within the line
-     *
-     * @returns text node and offset, or null if not resolvable
-     */
-    const resolvePosition = (lineIndex: number, character: number,): { node: Node; offset: number } | null => {
-      // oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- checked #editor above
-      const lineDiv = this.#editor!.children[lineIndex];
-      if (lineDiv === undefined) return null;
-
-      const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
-      let remaining = character;
-      let textNode = walker.nextNode();
-      while (textNode !== null) {
-        const len = textNode.textContent?.length ?? 0;
-        if (remaining <= len) return { node: textNode, offset: remaining, };
-        remaining -= len;
-        textNode = walker.nextNode();
-      }
-
-      /** Offset past end — clamp to last text node's end. */
-      const { lastChild, } = lineDiv;
-      if (lastChild !== null) return { node: lastChild, offset: lastChild.textContent?.length ?? 0, };
-      return null;
-    };
-
-    const start = resolvePosition(startLine, startCharacter,);
-    const end = resolvePosition(endLine, endCharacter,);
+    const editor = this.#editor;
+    const start = resolveTextPosition({ editor, lineIndex: startLine, character: startCharacter, },);
+    const end = resolveTextPosition({ editor, lineIndex: endLine, character: endCharacter, },);
     if (start === null || end === null) return;
 
     selection.setBaseAndExtent(start.node, start.offset, end.node, end.offset,);
@@ -610,46 +670,9 @@ export class EditorPane extends HTMLElement {
     const range = this.#getComposedRange();
     if (range === null) return null;
 
-    /**
-     * Resolves a container node and offset to a line/character position.
-     *
-     * @param container - DOM node from the range boundary
-     *
-     * @param offset - offset within the container node
-     *
-     * @returns 0-based line and character, or null
-     */
-    const resolvePos = (container: Node, offset: number,): { line: number; character: number } | null => {
-      let node: Node | null = container;
-      let lineDiv: HTMLElement | null = null;
-      // oxlint-disable-next-line typescript-eslint/no-non-null-assertion -- checked #editor above
-      const editor = this.#editor!;
-      while (node !== null && node !== editor) {
-        if (node.parentNode === editor && node instanceof HTMLElement) {
-          lineDiv = node;
-          break;
-        }
-        node = node.parentNode;
-      }
-      if (lineDiv === null) return null;
-
-      const line = [...editor.children,].indexOf(lineDiv,);
-      if (line === -1) return null;
-
-      let character = 0;
-      const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
-      let textNode = walker.nextNode();
-      while (textNode !== null) {
-        if (textNode === container) { character += offset; break; }
-        character += textNode.textContent?.length ?? 0;
-        textNode = walker.nextNode();
-      }
-
-      return { line, character, };
-    };
-
-    const start = resolvePos(range.startContainer, range.startOffset,);
-    const end = resolvePos(range.endContainer, range.endOffset,);
+    const editor = this.#editor;
+    const start = resolveLineCharacter({ editor, container: range.startContainer, offset: range.startOffset, },);
+    const end = resolveLineCharacter({ editor, container: range.endContainer, offset: range.endOffset, },);
     if (start === null || end === null) return null;
 
     return { startLine: start.line, startCharacter: start.character, endLine: end.line, endCharacter: end.character, };
@@ -695,37 +718,7 @@ export class EditorPane extends HTMLElement {
     const range = this.#getComposedRange();
     if (range === null) return null;
 
-    let node: Node | null = range.startContainer;
-
-    /** Walk up to find the line div (direct child of editor). */
-    let lineDiv: HTMLElement | null = null;
-    while (node !== null && node !== this.#editor) {
-      if (node.parentNode === this.#editor && node instanceof HTMLElement) {
-        lineDiv = node;
-        break;
-      }
-      node = node.parentNode;
-    }
-
-    if (lineDiv === null) return null;
-
-    const line = [...this.#editor.children,].indexOf(lineDiv,);
-    if (line === -1) return null;
-
-    /** Compute character offset by summing text node lengths before the caret. */
-    let character = 0;
-    const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
-    let textNode = walker.nextNode();
-    while (textNode !== null) {
-      if (textNode === range.startContainer) {
-        character += range.startOffset;
-        break;
-      }
-      character += textNode.textContent?.length ?? 0;
-      textNode = walker.nextNode();
-    }
-
-    return { line, character, };
+    return resolveLineCharacter({ editor: this.#editor, container: range.startContainer, offset: range.startOffset, },);
   }
 
   /**
@@ -758,32 +751,13 @@ export class EditorPane extends HTMLElement {
   restoreCursor({ line, character, }: { line: number; character: number }): void {
     if (this.#editor === null) return;
 
-    const lineDiv = this.#editor.children[line];
-    if (lineDiv === undefined) return;
-
     const selection = document.getSelection();
     if (selection === null) return;
 
-    /** Walk text nodes to find the one containing the target offset. */
-    const walker = document.createTreeWalker(lineDiv, NodeFilter.SHOW_TEXT,);
-    let remaining = character;
-    let textNode = walker.nextNode();
-    while (textNode !== null) {
-      const len = textNode.textContent?.length ?? 0;
-      if (remaining <= len) {
-        selection.setBaseAndExtent(textNode, remaining, textNode, remaining,);
-        return;
-      }
-      remaining -= len;
-      textNode = walker.nextNode();
-    }
+    const resolved = resolveTextPosition({ editor: this.#editor, lineIndex: line, character, },);
+    if (resolved === null) return;
 
-    /** Offset exceeds line length — place at end of last text node. */
-    const { lastChild, } = lineDiv;
-    if (lastChild !== null) {
-      const lastLen = lastChild.textContent?.length ?? 0;
-      selection.setBaseAndExtent(lastChild, lastLen, lastChild, lastLen,);
-    }
+    selection.setBaseAndExtent(resolved.node, resolved.offset, resolved.node, resolved.offset,);
   }
 
   /**

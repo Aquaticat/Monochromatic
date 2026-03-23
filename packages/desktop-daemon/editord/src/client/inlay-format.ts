@@ -23,11 +23,12 @@ export function formatHintLabel({ hint, }: { hint: InlayHint }): string {
   const PARAMETER_KIND = 2;
   /** Type hints (kind=1) carry a leading ` : ` prefix that duplicates the padding. */
   const TYPE_KIND = 1;
+  /** Without parentheses: no-nested-ternary lint error for ambiguous precedence. */
   const label = hint.kind === PARAMETER_KIND
     ? hint.label.replace(/:$/, '',)
-    : hint.kind === TYPE_KIND
+    : (hint.kind === TYPE_KIND
       ? hint.label.replace(/^: /, '',)
-      : hint.label;
+      : hint.label);
   return `${padLeft}${label}${padRight}`;
 }
 

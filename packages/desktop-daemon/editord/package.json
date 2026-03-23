@@ -19,7 +19,8 @@
     "@monochromatic-dev/cli-terminal-exec": "workspace:*",
     "@monochromatic-dev/module-es": "workspace:*",
     "crossws": "catalog:",
-    "h3": "catalog:"
+    "h3": "catalog:",
+    "nano-spawn": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",

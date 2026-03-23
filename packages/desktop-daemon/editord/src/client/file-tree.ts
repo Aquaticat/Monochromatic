@@ -30,6 +30,15 @@ const l = tagged({ tag: 'file-tree', l: rootLogger, },);
 export type { DirEntry, };
 
 /**
+ * Prevents the default browser context menu on file tree labels.
+ * Hoisted to module scope to avoid recreating per label.
+ * Without hoisting: closure-in-outer-scope lint warning since it captures nothing.
+ *
+ * @param event - context menu event to suppress
+ */
+function suppressContextMenu(event: MouseEvent,): void { event.preventDefault(); }
+
+/**
  * Action dispatched from the file tree context menu.
  * Each variant carries the full payload for the server to execute;
  * text input has already been collected via the inline prompt bar.
@@ -221,23 +230,27 @@ export class FileTree extends HTMLElement {
     this.#recentPaths = paths;
     if (this.#tree === null) return;
 
-    /** Clear all existing recency markers. */
-    for (const label of this.#tree.querySelectorAll<HTMLElement>('.file-label[data-recency]',)) {
-      delete label.dataset['recency'];
-      const toggle = label.querySelector<HTMLElement>('.toggle',);
-      if (toggle !== null) toggle.textContent = '';
-    }
-
-    /** Apply markers for each recent path found in the current tree. */
+    /** Build a lookup from path to recency index for single-pass update. */
+    const recencyByPath = new Map<string, number>();
     for (let i = 0; i < paths.length; i++) {
       const recentPath = paths[i];
-      if (recentPath === undefined) continue;
-      const selector = `.file-label[data-path="${CSS.escape(recentPath,)}"]`;
-      const label = this.#tree.querySelector<HTMLElement>(selector,);
-      if (label === null) continue;
-      label.dataset['recency'] = String(i,);
+      if (recentPath !== undefined) recencyByPath.set(recentPath, i,);
+    }
+
+    /** Single pass: clear stale markers and apply new ones. */
+    for (const label of this.#tree.querySelectorAll<HTMLElement>('.file-label[data-path]',)) {
+      const labelPath = label.dataset['path'];
+      const recencyIndex = labelPath !== undefined ? recencyByPath.get(labelPath,) : undefined;
       const toggle = label.querySelector<HTMLElement>('.toggle',);
-      if (toggle !== null) toggle.textContent = String(i,);
+
+      if (recencyIndex !== undefined) {
+        label.dataset['recency'] = String(recencyIndex,);
+        if (toggle !== null) toggle.textContent = String(recencyIndex,);
+      }
+      else if (label.dataset['recency'] !== undefined) {
+        delete label.dataset['recency'];
+        if (toggle !== null) toggle.textContent = '';
+      }
     }
   }
 
@@ -480,7 +493,7 @@ export class FileTree extends HTMLElement {
           event.preventDefault();
           tree.#showDirContextMenu({ x: event.clientX, y: event.clientY, path, },);
         },
-        contextmenu: function suppressDirContextMenu(event: MouseEvent,) { event.preventDefault(); },
+        contextmenu: suppressContextMenu,
       },
     },);
 
@@ -559,7 +572,7 @@ export class FileTree extends HTMLElement {
           event.preventDefault();
           tree.#showFileContextMenu({ x: event.clientX, y: event.clientY, path, },);
         },
-        contextmenu: function suppressFileContextMenu(event: MouseEvent,) { event.preventDefault(); },
+        contextmenu: suppressContextMenu,
       },
     },);
 

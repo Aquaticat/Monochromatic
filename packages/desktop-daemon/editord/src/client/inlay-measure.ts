@@ -27,7 +27,8 @@ export function measureSpaceRatio({ editor, }: { editor: HTMLElement }): number 
   if (cachedRatio !== null)
     return cachedRatio;
 
-  const fontSize = getComputedStyle(editor,).fontSize;
+  /** Without destructuring: prefer-destructuring lint error for member access. */
+  const { fontSize, } = getComputedStyle(editor,);
   const canvas = document.createElement('canvas',);
   const ctx = canvas.getContext('2d',);
   if (ctx === null) {

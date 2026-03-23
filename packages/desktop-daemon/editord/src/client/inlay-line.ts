@@ -64,7 +64,8 @@ export function applyLineAnnotation({ div, lineHints, lineDiags, spaceRatio, }: 
   const rows: string[] = [];
 
   if (lineHints !== undefined) {
-    const sorted = [...lineHints,].sort(
+    /** Without toSorted: no-array-sort lint error since sort() mutates in place. */
+    const sorted = lineHints.toSorted(
       function byChar(left, right,) { return left.position.character - right.position.character; },
     );
 

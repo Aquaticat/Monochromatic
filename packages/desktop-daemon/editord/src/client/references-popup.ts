@@ -112,7 +112,8 @@ export class ReferencesPopup extends HTMLElement {
         h({ tag: 'span', class: 'item-path', text: loc.label, },),
         h({ tag: 'span', class: 'line-num', text: `:${String(loc.line + 1,)}`, },),
       );
-      if (index === 0) item.setAttribute('data-selected', '',);
+      /** Without dataset: prefer-dom-node-dataset lint error for setAttribute on data- attributes. */
+      if (index === 0) item.dataset.selected = '';
       return item;
     },),);
   }
@@ -146,9 +147,11 @@ export class ReferencesPopup extends HTMLElement {
     else {
       this.#selectedIndex = this.#selectedIndex >= this.#locations.length - 1 ? 0 : this.#selectedIndex + 1;
     }
-    for (const [i, child,] of [...this.#list.children,].entries()) {
-      if (i === this.#selectedIndex) { (child as HTMLElement).setAttribute('data-selected', '',); child.scrollIntoView({ block: 'nearest', },); }
-      else (child as HTMLElement).removeAttribute('data-selected',);
+    /** Without querySelectorAll: unsafe type assertion from Element to HTMLElement on children. */
+    const items = this.#list.querySelectorAll<HTMLElement>('.item',);
+    for (const [i, item,] of [...items,].entries()) {
+      if (i === this.#selectedIndex) { item.dataset.selected = ''; item.scrollIntoView({ block: 'nearest', },); }
+      else delete item.dataset.selected;
     }
   }
 

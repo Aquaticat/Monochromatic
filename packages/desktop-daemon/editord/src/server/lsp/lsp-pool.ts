@@ -13,6 +13,7 @@ import type { Logger, } from '../log.ts';
 import type { ServerSlots, } from './document-sync.ts';
 import { findProjectRoot, } from './find-project-root.ts';
 import { LspClient, } from './lsp-client.ts';
+import { shutdownAllPooled, shutdownPoolForPath, } from './lsp-pool-shutdown.ts';
 
 /** LSP server type identifier. */
 type ServerType = 'oxlint' | 'tsgo' | 'dprint';
@@ -116,24 +117,7 @@ export class LspPool {
    * @param path - absolute file or directory path
    */
   async shutdownForPath({ path, }: { path: string }): Promise<void> {
-    const toRemove: string[] = [];
-    for (const [key, promise,] of this.#pool.entries()) {
-      /** Key format is `"type:root"` — extract the root portion. */
-      const colonIndex = key.indexOf(':');
-      const root = key.slice(colonIndex + 1,);
-      const rootPrefix = root.endsWith('/') ? root : `${root}/`;
-      if (path === root || path.startsWith(rootPrefix,)) {
-        toRemove.push(key,);
-        try {
-          const client = await promise;
-          if (client !== null) await client.shutdown();
-        }
-        catch (error) { this.#l.error(`shutdown for ${key} failed: ${String(error,)}`,); }
-      }
-    }
-    for (const key of toRemove) {
-      this.#pool.delete(key,);
-    }
+    await shutdownPoolForPath({ pool: this.#pool, path, l: this.#l, },);
   }
 
   /**
@@ -163,14 +147,6 @@ export class LspPool {
 
   /** Gracefully shuts down all pooled LSP servers. */
   shutdown(): void {
-    for (const promise of this.#pool.values()) {
-      void (async function shutdownClient(): Promise<void> {
-        try {
-          const c = await promise;
-          if (c !== null) await c.shutdown();
-        }
-        catch (error) { console.error('LSP shutdown failed:', error,); }
-      })();
-    }
+    shutdownAllPooled({ pool: this.#pool, },);
   }
 }
