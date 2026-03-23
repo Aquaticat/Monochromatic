@@ -11,13 +11,11 @@ import type { HoverPopup, } from '../hover/hover-popup.ts';
 import { doRequestHover, } from '../hover/request.ts';
 import { l, tagged, } from '../log.ts';
 import type { ReferencesPopup, } from '../references/references-popup.ts';
+import { HOVER_DEBOUNCE_MS, } from '../timing.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
 /** Tagged logger for hover. */
 const hoverLog = tagged({ tag: 'hover', l, },);
-
-/** Debounce delay for hover requests (milliseconds). */
-const HOVER_DEBOUNCE_MS = 350;
 
 /**
  * Wires hover tooltips onto the editor pane.

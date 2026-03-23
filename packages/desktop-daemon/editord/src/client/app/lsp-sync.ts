@@ -7,10 +7,8 @@
 
 import { createDebounced, } from '../debounce.ts';
 import type { EditorPane, } from '../editor/editor-pane.ts';
+import { CONTENT_SYNC_DEBOUNCE_MS, } from '../timing.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
-
-/** Debounce delay for content sync to LSP servers (milliseconds). */
-const CONTENT_SYNC_DEBOUNCE_MS = 500;
 
 /**
  * Wires debounced content sync to the server.

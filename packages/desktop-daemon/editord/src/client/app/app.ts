@@ -22,6 +22,7 @@ import '../references/references-popup.ts';
 
 import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
 import { createDebounced, } from '../debounce.ts';
+import { AUTO_SAVE_DEBOUNCE_MS, } from '../timing.ts';
 
 import type { DirEntry, FileKind, SearchResult, } from '../../../protocol.ts';
 import { bootSession, } from './boot.ts';
@@ -119,8 +120,6 @@ async function saveCurrentFile(): Promise<void> {
   catch (error) { appLog.error(`save failed: ${String(error,)}`,); }
 }
 
-/** Debounce interval for auto-save, in milliseconds. */
-const AUTO_SAVE_DEBOUNCE_MS = 1_000;
 editorPane.addEventListener('contentchange', createDebounced({ fn: function autoSave() { void saveCurrentFile(); }, delayMs: AUTO_SAVE_DEBOUNCE_MS, },),);
 
 wireKeybindings({

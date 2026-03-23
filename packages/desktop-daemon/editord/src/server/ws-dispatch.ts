@@ -49,8 +49,13 @@ export async function dispatchMessage({ peer, messageText, rootDir, lspManager, 
   lspManager: LspManager | null;
   dirWatcher: DirWatcher | null;
 }): Promise<void> {
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; runtime type is validated by discriminant checks below
-  const parsed = JSON.parse(messageText,) as ClientMessage;
+  const raw: unknown = JSON.parse(messageText,);
+  if (typeof raw !== 'object' || raw === null || !('type' in raw) || typeof (raw as { type: unknown }).type !== 'string') {
+    sendJson({ peer, message: { type: 'error', message: 'invalid message: missing or non-string "type" field', }, },);
+    return;
+  }
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- shape validated above: object with string `type`; individual handlers check discriminants
+  const parsed = raw as ClientMessage;
 
   if (parsed.type === 'open') {
     const result = await openFile({ rootDir, path: parsed.path, },);

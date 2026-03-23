@@ -46,7 +46,7 @@ export async function requestCompletions({ ws, completionPopup, editorPane, getC
     }
   }
   catch (error) {
-    completionLog.warn(`completion request failed: ${String(error,)}`,);
+    completionLog.error(`completion request failed: ${String(error,)}`,);
   }
 }
 

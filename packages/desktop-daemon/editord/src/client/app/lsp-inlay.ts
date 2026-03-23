@@ -8,10 +8,8 @@
 import { createDebounced, } from '../debounce.ts';
 import type { EditorPane, } from '../editor/editor-pane.ts';
 import { fetchInlayHints, } from '../inlay/fetch.ts';
+import { INLAY_HINT_DEBOUNCE_MS, } from '../timing.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
-
-/** Debounce delay for inlay hint refresh after content changes (milliseconds). */
-const INLAY_HINT_DEBOUNCE_MS = 750;
 
 /**
  * Wires inlay hint fetching on content changes with debouncing.

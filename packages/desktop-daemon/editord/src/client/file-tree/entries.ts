@@ -20,9 +20,30 @@ export function childPath({ parentPath, name, }: { parentPath: string; name: str
   return parentPath === '/' ? `/${name}` : `${parentPath}/${name}`;
 }
 
+/** Maximum number of directory listings to keep in the prefetch cache. */
+const MAX_PREFETCH_CACHE_SIZE = 200;
+
+/**
+ * Evicts the oldest entries from the prefetch cache when it exceeds the size limit.
+ * Map iteration order is insertion order, so the first entries are the oldest.
+ *
+ * @param cache - prefetch cache map to evict from
+ */
+function evictPrefetchCache({ cache, }: { cache: Map<string, DirEntry[]> }): void {
+  if (cache.size <= MAX_PREFETCH_CACHE_SIZE) return;
+  const excess = cache.size - MAX_PREFETCH_CACHE_SIZE;
+  let removed = 0;
+  for (const key of cache.keys()) {
+    if (removed >= excess) break;
+    cache.delete(key,);
+    removed++;
+  }
+}
+
 /**
  * Fetches direct children of all directory entries concurrently
- * and stores them in the prefetch cache.
+ * and stores them in the prefetch cache. Evicts oldest entries
+ * when the cache exceeds {@link MAX_PREFETCH_CACHE_SIZE}.
  *
  * @param parentPath - absolute path of the parent directory
  *
@@ -47,4 +68,5 @@ export async function preloadChildren({ parentPath, entries, fetchDir, prefetchC
         prefetchCache.set(fullPath, children,);
       },),
   );
+  evictPrefetchCache({ cache: prefetchCache, },);
 }
