@@ -3,7 +3,8 @@
  *
  * Translates pointer events into drawing strokes (draw mode),
  * text input placement (text mode), or erasure (erase mode)
- * based on the active tool.
+ * based on the active tool. Zoom is handled separately in
+ * {@link import('./pointer-handlers-zoom.ts')}.
  */
 import {
   type NormalizedPoint,
@@ -26,14 +27,9 @@ export type { ToolMode, } from './pointer-handler-deps.ts';
 
 /**
  * Attaches pointerdown, pointermove, pointerup, and pointercancel
- * handlers to the canvas element.
+ * handlers to the canvas for draw, erase, and text tools.
  *
  * @param deps - shared state and element references
- *
- * @example
- * ```ts
- * setupPointerHandlers({ canvas, ctx, getToolMode, getCanvasSize, textLayer });
- * ```
  */
 export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
   const { canvas, ctx, getToolMode, getCanvasSize, textLayer, pushSnapshot, } = deps;
@@ -50,27 +46,19 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
   canvas.addEventListener('pointerdown',
     function handlePointerDown(event: PointerEvent,): void {
       const mode = getToolMode();
+      if (mode === 'zoom')
+        return;
 
       if (mode === 'text') {
-        /**
-         * Suppress the browser's default pointerdown focus-management.
-         *
-         * Without this, the sequence is: pointerdown fires -> placeTextInput
-         * creates an input and calls focus() -> the browser's *default*
-         * pointerdown handling then moves focus back to the canvas target ->
-         * blur fires on the still-empty input -> finalizeActiveInput removes
-         * it. The input appears and disappears within a single click.
-         */
+        /** Suppress default focus-management so the created input keeps focus */
         event.preventDefault();
-        const { cw, ch, } = getCanvasSize();
-        placeTextInput(normalizePointer({ event, canvas, cw, ch, },),);
+        placeTextInput(normalizePointer({ event, canvas, },),);
         return;
       }
 
       canvas.setPointerCapture(event.pointerId,);
       const { cw, ch, } = getCanvasSize();
-      /** Normalized pointer position */
-      const point = normalizePointer({ event, canvas, cw, ch, },);
+      const point = normalizePointer({ event, canvas, },);
 
       if (mode === 'erase') {
         erasing = true;
@@ -92,19 +80,17 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
   canvas.addEventListener('pointermove',
     function handlePointerMove(event: PointerEvent,): void {
       const mode = getToolMode();
+      if (mode === 'zoom' || mode === 'text')
+        return;
+
       const { cw, ch, } = getCanvasSize();
-      /** Normalized pointer position */
-      const point = normalizePointer({ event, canvas, cw, ch, },);
+      const point = normalizePointer({ event, canvas, },);
 
       if (mode === 'erase') {
         if (!erasing)
           return;
-        const strokeErased = eraseStrokesAt({
-          point, previousPoint: prevErasePoint, cw, ch,
-        },);
-        const textErased = eraseTextAt({
-          point, previousPoint: prevErasePoint, cw, ch, textLayer,
-        },);
+        const strokeErased = eraseStrokesAt({ point, previousPoint: prevErasePoint, cw, ch, },);
+        const textErased = eraseTextAt({ point, previousPoint: prevErasePoint, cw, ch, textLayer, },);
         if (strokeErased || textErased)
           erasedInGesture = true;
         if (strokeErased)
@@ -112,9 +98,6 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
         prevErasePoint = point;
         return;
       }
-
-      if (mode !== 'draw')
-        return;
 
       /** Line segment to draw incrementally, or null if not drawing */
       const segment = continueStroke(point,);
@@ -130,7 +113,7 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       ctx.stroke();
     },);
 
-  /** Resets all gesture state (draw, erase) at pointer release */
+  /** Resets draw/erase gesture state at pointer release */
   function endGesture(): void {
     endStroke();
     erasing = false;
@@ -140,6 +123,8 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
 
   canvas.addEventListener('pointerup', function handlePointerUp(): void {
     const mode = getToolMode();
+    if (mode === 'zoom')
+      return;
     if (mode === 'draw' || (mode === 'erase' && erasedInGesture))
       pushSnapshot();
     endGesture();

@@ -46,23 +46,16 @@ export function wireLsp({ ws, editorPane, hoverPopup, completionPopup, reference
   getCurrentFilePath: () => string | null;
   loadFileSafe: (opts: { path: string; line?: number | undefined; character?: number | undefined }) => Promise<void>;
 }): { formatDocument: () => Promise<void>; requestCompletions: () => void; refreshInlayHints: () => void; gotoDefinitionAtCursor: () => void; expandSelection: () => void; shrinkSelection: () => void } {
-  /**
-   * Returns the contenteditable container.
-   *
-   * @returns editor element, or null before connected
-   */
-  function getEditorElement(): HTMLElement | null { return editorPane.getEditorElement(); }
-
   wireContentSync({ ws, editorPane, getCurrentFilePath, },);
   wireDiagnostics({ ws, editorPane, getCurrentFilePath, },);
-  wireHover({ ws, editorPane, hoverPopup, getEditorElement, completionPopup, referencesPopup, getCurrentFilePath, },);
+  wireHover({ ws, editorPane, hoverPopup, completionPopup, referencesPopup, getCurrentFilePath, },);
   wireCompletionTrigger({
     editorPane,
     triggerCompletions: function trigger() {
-      void requestCompletions({ ws, completionPopup, getEditorElement, getCurrentFilePath, },);
+      void requestCompletions({ ws, completionPopup, editorPane, getCurrentFilePath, },);
     },
   },);
-  wireGotoDefinition({ ws, editorPane, getEditorElement, getCurrentFilePath, loadFileSafe, },);
+  wireGotoDefinition({ ws, editorPane, getCurrentFilePath, loadFileSafe, },);
 
   const inlayState = wireInlayHints({ ws, editorPane, getCurrentFilePath, },);
   const { expandSelection, shrinkSelection, } = wireSelectionRange({ ws, editorPane, getCurrentFilePath, },);
@@ -72,7 +65,7 @@ export function wireLsp({ ws, editorPane, hoverPopup, completionPopup, reference
       return formatDocument({ ws, editorPane, getCurrentFilePath, },);
     },
     requestCompletions: function completions(): void {
-      void requestCompletions({ ws, completionPopup, getEditorElement, getCurrentFilePath, },);
+      void requestCompletions({ ws, completionPopup, editorPane, getCurrentFilePath, },);
     },
     refreshInlayHints: inlayState.refresh,
     expandSelection,

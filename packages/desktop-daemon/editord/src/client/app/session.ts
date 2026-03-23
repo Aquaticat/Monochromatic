@@ -58,8 +58,7 @@ export async function restoreSession({ ws, editorPane, fileTree, loadFileSafe, q
   /** Restore cursor and scroll position after file and tree are loaded. */
   if (saved !== null && bootFilePath !== null && bootFilePath === saved.filePath) {
     editorPane.restoreCursor(saved.cursor,);
-    const editorEl = editorPane.getEditorElement();
-    if (editorEl !== null) editorEl.scrollTop = saved.scrollTop;
+    editorPane.editorScrollTop = saved.scrollTop;
   }
 
   return { filePath: bootFilePath, recentFiles: saved?.recentFiles ?? [], };

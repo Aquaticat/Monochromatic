@@ -35,6 +35,8 @@ export function renderToolbar(pageCount: number,): string {
             checked: false, },),
           renderToggleOption({ id: 'tool-text', name: 'tool', label: 'Text',
             checked: false, },),
+          renderToggleOption({ id: 'tool-zoom', name: 'tool', label: 'Zoom',
+            checked: false, },),
         ],
       },),
       h({

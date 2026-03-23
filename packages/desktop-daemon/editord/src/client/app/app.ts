@@ -21,13 +21,14 @@ import '../completion/completion-popup.ts';
 import '../references/references-popup.ts';
 
 import { $ as notNullishOrThrow, } from '@monochromatic-dev/module-es/not-nullish-or-throw';
+import { createDebounced, } from '../debounce.ts';
 
 import type { DirEntry, FileKind, SearchResult, } from '../../../protocol.ts';
+import { bootSession, } from './boot.ts';
 import { wireSelectEvents, wireFileWatching, type AppState, } from './events.ts';
 import { loadFile, } from './file-loader.ts';
 import { wireKeybindings, } from './keybindings.ts';
 import { wireLsp, } from './lsp.ts';
-import { restoreSession, wireSessionPersistence, } from './session.ts';
 import { createRecentFiles, } from '../recent-files.ts';
 import type { BinaryViewer, } from '../binary-viewer/binary-viewer.ts';
 import type { CompletionPopup, } from '../completion/completion-popup.ts';
@@ -118,12 +119,9 @@ async function saveCurrentFile(): Promise<void> {
   catch (error) { appLog.error(`save failed: ${String(error,)}`,); }
 }
 
-//region Auto-save
 /** Debounce interval for auto-save, in milliseconds. */
 const AUTO_SAVE_DEBOUNCE_MS = 1_000;
-// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- setTimeout returns NodeJS.Timeout in Node types but number in browser
-{ let t = 0; editorPane.addEventListener('contentchange', function scheduleAutoSave() { clearTimeout(t,); t = globalThis.setTimeout(function autoSave() { void saveCurrentFile(); }, AUTO_SAVE_DEBOUNCE_MS,) as unknown as number; },); }
-//endregion
+editorPane.addEventListener('contentchange', createDebounced({ fn: function autoSave() { void saveCurrentFile(); }, delayMs: AUTO_SAVE_DEBOUNCE_MS, },),);
 
 wireKeybindings({
   saveCurrentFile: function save() { void saveCurrentFile(); }, formatDocument: function format() { void formatDocument(); },
@@ -150,14 +148,4 @@ wireKeybindings({
 
 wireFileWatching({ ws, fileTree, state, loadFileSafe, },);
 
-await ws.ready;
-wireSessionPersistence({ ws, editorPane, fileTree, searchOverlay, getCurrentFilePath: function get() { return state.currentFilePath; }, getRecentFiles: function get() { return recentFiles.paths; }, },);
-/** Restored session state containing boot file path and saved recent files. */
-const restored = await restoreSession({ ws, editorPane, fileTree, loadFileSafe, queryFilePath: filePath, },);
-state.currentFilePath = restored.filePath;
-recentFiles.paths.length = 0; recentFiles.paths.push(...restored.recentFiles,);
-if (state.currentFilePath !== null) recentFiles.push(state.currentFilePath,);
-await fileTree.revealFiles({ paths: recentFiles.paths, },);
-fileTree.updateRecency({ paths: recentFiles.paths, },);
-// oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- currentFileKind is mutated by loadFileSafe which runs during restoreSession above
-if (state.currentFilePath !== null && state.currentFileKind === 'text') refreshInlayHints();
+await bootSession({ ws, editorPane, fileTree, searchOverlay, state, recentFiles, loadFileSafe, refreshInlayHints, queryFilePath: filePath, },);

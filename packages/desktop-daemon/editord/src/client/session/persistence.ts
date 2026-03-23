@@ -7,7 +7,6 @@
 
 import type { EditorPane, } from '../editor/editor-pane.ts';
 import type { FileTree, } from '../file-tree/file-tree.ts';
-import { getCursorPosition, } from '../position.ts';
 import type { SearchOverlay, } from '../search/search-overlay.ts';
 import { createDebouncedSave, } from './debounce.ts';
 import type { SessionState, } from './state.ts';
@@ -45,17 +44,12 @@ export function wireSessionPersistence({ ws, editorPane, fileTree, searchOverlay
    * @returns snapshot of file path, expanded dirs, cursor, and scroll offset
    */
   function collectState(): SessionState {
-    const editorElement = editorPane.getEditorElement();
-    const selection = document.getSelection();
-    const cursor = editorElement !== null && selection !== null
-      ? getCursorPosition({ editor: editorElement, selection, },)
-      : null;
-
+    const cursor = editorPane.getCursorPosition();
     return {
       filePath: getCurrentFilePath(),
       expandedDirs: fileTree.expandedDirs,
       cursor: cursor ?? { line: 0, character: 0, },
-      scrollTop: editorElement?.scrollTop ?? 0,
+      scrollTop: editorPane.editorScrollTop,
       recentFiles: getRecentFiles(),
     };
   }
@@ -75,7 +69,7 @@ export function wireSessionPersistence({ ws, editorPane, fileTree, searchOverlay
   searchOverlay.addEventListener('result-select', debouncedSave,);
 
   /** Save state when the user scrolls the editor. */
-  editorPane.getEditorElement()?.addEventListener('scroll', debouncedSave,);
+  editorPane.addScrollListener(debouncedSave,);
 
   /** Save state when a directory is expanded or collapsed. */
   fileTree.addEventListener('toggle', debouncedSave, true,);

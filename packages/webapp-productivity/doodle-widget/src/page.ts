@@ -21,9 +21,15 @@ function renderCanvasContainer(): string {
     tag: 'div',
     attrs: { id: 'canvas-container', },
     children: [
-      h({ tag: 'canvas', attrs: { id: 'draw-canvas', }, },),
-      h({ tag: 'div', attrs: { id: 'svg-overlay', }, },),
-      h({ tag: 'div', attrs: { id: 'text-layer', }, },),
+      h({
+        tag: 'div',
+        attrs: { id: 'zoom-layer', },
+        children: [
+          h({ tag: 'canvas', attrs: { id: 'draw-canvas', }, },),
+          h({ tag: 'div', attrs: { id: 'svg-overlay', }, },),
+          h({ tag: 'div', attrs: { id: 'text-layer', }, },),
+        ],
+      },),
     ],
   },);
 }
@@ -77,6 +83,11 @@ export function renderPage(
                 renderToolbar(svgBackgrounds.length,),
                 renderCanvasContainer(),
               ],
+            },),
+            h({
+              tag: 'div',
+              attrs: { id: 'zoom-toast', popover: 'manual', },
+              text: 'Click to zoom in \u00B7 Shift+click or long-press to zoom out \u00B7 Drag to pan',
             },),
             h({
               tag: 'script',

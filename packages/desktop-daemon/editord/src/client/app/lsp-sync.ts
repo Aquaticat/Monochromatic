@@ -5,6 +5,7 @@
  * Receives diagnostic pushes and renders them on the editor pane.
  */
 
+import { createDebounced, } from '../debounce.ts';
 import type { EditorPane, } from '../editor/editor-pane.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
@@ -23,16 +24,14 @@ const CONTENT_SYNC_DEBOUNCE_MS = 500;
 export function wireContentSync({ ws, editorPane, getCurrentFilePath, }: {
   ws: EditorWsClient; editorPane: EditorPane; getCurrentFilePath: () => string | null;
 }): void {
-  let timer = 0;
-  editorPane.addEventListener('contentchange', function handleContentChange() {
-    clearTimeout(timer,);
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded
-    timer = globalThis.setTimeout(function syncContent() {
+  editorPane.addEventListener('contentchange', createDebounced({
+    fn: function syncContent() {
       const path = getCurrentFilePath();
       if (path === null) return;
       void ws.notify({ type: 'didChange', path, content: editorPane.getText(), },);
-    }, CONTENT_SYNC_DEBOUNCE_MS,) as unknown as number;
-  },);
+    },
+    delayMs: CONTENT_SYNC_DEBOUNCE_MS,
+  },),);
 }
 
 /**

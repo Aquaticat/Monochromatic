@@ -100,24 +100,22 @@ export function redraw(
 /**
  * Converts pointer event coordinates to normalized [0..1] canvas coordinates.
  *
+ * Uses `getBoundingClientRect()` dimensions rather than the raw canvas
+ * pixel size so that CSS transforms (zoom/pan) on ancestor elements
+ * are automatically accounted for.
+ *
  * @param event - pointer event with client coordinates
  *
  * @param canvas - canvas element for bounding rect calculation
  *
- * @param cw - current canvas width in CSS pixels
- *
- * @param ch - current canvas height in CSS pixels
- *
  * @returns normalized [x, y] coordinate pair
  */
-export function normalizePointer({ event, canvas, cw, ch, }: {
+export function normalizePointer({ event, canvas, }: {
   event: PointerEvent;
   canvas: HTMLCanvasElement;
-  cw: number;
-  ch: number;
 },): NormalizedPoint {
   const rect = canvas.getBoundingClientRect();
-  return [(event.clientX - rect.left) / cw, (event.clientY - rect.top) / ch,];
+  return [(event.clientX - rect.left) / rect.width, (event.clientY - rect.top) / rect.height,];
 }
 
 /**

@@ -42,8 +42,14 @@ export const drawRadio = requireElement<HTMLInputElement>('#tool-draw',);
 /** Erase tool radio input */
 export const eraseRadio = requireElement<HTMLInputElement>('#tool-erase',);
 
+/** Zoom tool radio input */
+export const zoomRadio = requireElement<HTMLInputElement>('#tool-zoom',);
+
 /** Text label overlay layer */
 export const textLayer = requireElement<HTMLDivElement>('#text-layer',);
+
+/** Zoom layer wrapper for CSS transform-based zoom and pan */
+export const zoomLayer = requireElement<HTMLDivElement>('#zoom-layer',);
 
 /** Tool selection toggle group */
 export const toolToggle = requireElement<HTMLDivElement>('#tool-toggle',);
@@ -80,3 +86,6 @@ export const uploadBtn = requireElement<HTMLButtonElement>('#upload-btn',);
 
 /** Hidden file upload input */
 export const uploadInput = requireElement<HTMLInputElement>('#upload-input',);
+
+/** Zoom instruction toast popover */
+export const zoomToast = requireElement<HTMLDivElement>('#zoom-toast',);

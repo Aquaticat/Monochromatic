@@ -3,7 +3,7 @@
  */
 
 /** Active tool mode for the doodle widget */
-export type ToolMode = 'draw' | 'erase' | 'text';
+export type ToolMode = 'draw' | 'erase' | 'text' | 'zoom';
 
 /**
  * Dependencies for pointer event handlers.
@@ -31,4 +31,8 @@ export type PointerHandlerDeps = {
   textLayer: HTMLDivElement;
   /** Pushes current state to undo history after a completed action */
   pushSnapshot: () => void;
+  /** Container element for zoom screen-to-content coordinate mapping */
+  container: HTMLDivElement;
+  /** Zoom layer element for CSS transform application */
+  zoomLayer: HTMLDivElement;
 };

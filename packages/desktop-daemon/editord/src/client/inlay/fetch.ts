@@ -34,21 +34,10 @@ export async function fetchInlayHints({ ws, editorPane, getCurrentFilePath, }: {
     return;
 
   try {
-    const editor = editorPane.getEditorElement();
-    if (editor === null) return;
-    const lastLineIndex = Math.max(0, editor.children.length - 1,);
-    const lastLineEl = editor.children[lastLineIndex];
-    const lastLineText = lastLineEl?.textContent ?? '';
-    const lastLineLength = lastLineText === '\n' ? 0 : lastLineText.length;
+    const range = editorPane.getDocumentRange();
+    if (range === null) return;
 
-    const result = await ws.request({
-      type: 'inlayHint',
-      path,
-      range: {
-        start: { line: 0, character: 0, },
-        end: { line: lastLineIndex, character: lastLineLength, },
-      },
-    },);
+    const result = await ws.request({ type: 'inlayHint', path, range, },);
 
     /** Verify the file hasn't changed while awaiting the response. */
     if (path !== getCurrentFilePath())

@@ -5,7 +5,6 @@
 import type { EditorPane, } from '../editor/editor-pane.ts';
 import { l, tagged, } from '../log.ts';
 import { doGotoDefinition, } from './lsp-goto-definition.ts';
-import { getPositionFromPoint, } from '../position-from-point.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
 export { doGotoDefinition, };
@@ -46,18 +45,15 @@ export async function formatDocument({ ws, editorPane, getCurrentFilePath, }: {
  *
  * @param ws - WebSocket client
  *
- * @param editorPane - editor pane to listen for click events
- *
- * @param getEditorElement - returns the contenteditable container
+ * @param editorPane - editor pane component for click events and hit-testing
  *
  * @param getCurrentFilePath - returns the currently open file path
  *
  * @param loadFileSafe - loads a file with error handling
  */
-export function wireGotoDefinition({ ws, editorPane, getEditorElement, getCurrentFilePath, loadFileSafe, }: {
+export function wireGotoDefinition({ ws, editorPane, getCurrentFilePath, loadFileSafe, }: {
   ws: EditorWsClient;
-  editorPane: HTMLElement;
-  getEditorElement: () => HTMLElement | null;
+  editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
   loadFileSafe: (opts: { path: string; line?: number | undefined; character?: number | undefined }) => Promise<void>;
 }): void {
@@ -65,9 +61,7 @@ export function wireGotoDefinition({ ws, editorPane, getEditorElement, getCurren
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- click is always a MouseEvent
     const me = event as MouseEvent;
     if (!me.ctrlKey && !me.metaKey) return;
-    const el = getEditorElement();
-    if (el === null) return;
-    const pos = getPositionFromPoint({ editor: el, x: me.clientX, y: me.clientY, },);
+    const pos = editorPane.getPositionFromPoint({ x: me.clientX, y: me.clientY, },);
     if (pos === null) return;
     void doGotoDefinition({ ws, getCurrentFilePath, loadFileSafe, line: pos.line, character: pos.character, },);
   },);

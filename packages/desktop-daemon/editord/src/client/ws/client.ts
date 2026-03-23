@@ -19,7 +19,12 @@ const l = tagged({ tag: 'ws', l: rootLogger, },);
 type PendingRequest = {
   resolve: (message: ServerMessage,) => void;
   reject: (error: Error,) => void;
+  /** Timeout handle that rejects the request after {@link REQUEST_TIMEOUT_MS}. */
+  timeoutId: number;
 };
+
+/** Maximum time to wait for a server response before rejecting (milliseconds). */
+const REQUEST_TIMEOUT_MS = 30_000;
 
 //endregion Pending request tracking
 
@@ -100,7 +105,11 @@ export class EditorWsClient {
     // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- pending request tracking requires storing resolve/reject callbacks in a map
     const responsePromise = new Promise<ServerMessage>(
       function awaitResponse(resolve, reject,) {
-        pending.set(id, { resolve, reject, },);
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded
+        const timeoutId = globalThis.setTimeout(function rejectStale() {
+          if (pending.delete(id,)) reject(new Error(`request ${id} timed out after ${REQUEST_TIMEOUT_MS}ms`,),);
+        }, REQUEST_TIMEOUT_MS,) as unknown as number;
+        pending.set(id, { resolve, reject, timeoutId, },);
       },
     );
 
@@ -156,6 +165,7 @@ export class EditorWsClient {
       const pending = this.#pending.get(data.id,);
       if (pending !== undefined) {
         this.#pending.delete(data.id,);
+        clearTimeout(pending.timeoutId,);
         if (data.type === 'error') {
           pending.reject(new Error(data.message,),);
         }
@@ -173,6 +183,7 @@ export class EditorWsClient {
   #handleClose(): void {
     const closeError = new Error('WebSocket connection closed',);
     for (const [, pending,] of this.#pending) {
+      clearTimeout(pending.timeoutId,);
       pending.reject(closeError,);
     }
     this.#pending.clear();

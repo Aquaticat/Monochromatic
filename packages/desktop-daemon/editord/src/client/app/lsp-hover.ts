@@ -6,10 +6,10 @@
  */
 
 import type { CompletionPopup, } from '../completion/completion-popup.ts';
+import type { EditorPane, } from '../editor/editor-pane.ts';
 import type { HoverPopup, } from '../hover/hover-popup.ts';
 import { doRequestHover, } from '../hover/request.ts';
 import { l, tagged, } from '../log.ts';
-import { getPositionFromPoint, } from '../position-from-point.ts';
 import type { ReferencesPopup, } from '../references/references-popup.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
@@ -24,11 +24,9 @@ const HOVER_DEBOUNCE_MS = 350;
  *
  * @param ws - WebSocket client
  *
- * @param editorPane - editor pane element to listen for mouse events
+ * @param editorPane - editor pane component for event listening and hit-testing
  *
  * @param hoverPopup - hover popup element to show/hide
- *
- * @param getEditorElement - returns the contenteditable container
  *
  * @param completionPopup - completion popup; hover is suppressed while it is visible
  *
@@ -36,11 +34,10 @@ const HOVER_DEBOUNCE_MS = 350;
  *
  * @param getCurrentFilePath - returns the currently open file path
  */
-export function wireHover({ ws, editorPane, hoverPopup, getEditorElement, completionPopup, referencesPopup, getCurrentFilePath, }: {
+export function wireHover({ ws, editorPane, hoverPopup, completionPopup, referencesPopup, getCurrentFilePath, }: {
   ws: EditorWsClient;
-  editorPane: HTMLElement;
+  editorPane: EditorPane;
   hoverPopup: HoverPopup;
-  getEditorElement: () => HTMLElement | null;
   completionPopup: CompletionPopup;
   referencesPopup: ReferencesPopup;
   getCurrentFilePath: () => string | null;
@@ -57,16 +54,9 @@ export function wireHover({ ws, editorPane, hoverPopup, getEditorElement, comple
     timer = globalThis.setTimeout(function doHover() {
       if (completionPopup.visible || referencesPopup.visible) return;
       const path = getCurrentFilePath();
-      if (path === null) { hoverLog.info('hover: no file open',); return; }
-      const el = getEditorElement();
-      if (el === null) { hoverLog.info('hover: no editor element',); return; }
-      hoverLog.info(`hover: point ${me.clientX},${me.clientY} over editor with ${el.children.length} lines`,);
-      const pos = getPositionFromPoint({ editor: el, x: me.clientX, y: me.clientY, },);
-      if (pos === null) {
-        hoverLog.info('hover: position from point returned null',);
-        return;
-      }
-      hoverLog.info(`hover: resolved position line=${pos.line} char=${pos.character}`,);
+      if (path === null) return;
+      const pos = editorPane.getPositionFromPoint({ x: me.clientX, y: me.clientY, },);
+      if (pos === null) return;
       if (pos.line === lastLine && pos.character === lastChar) return;
       lastLine = pos.line;
       lastChar = pos.character;

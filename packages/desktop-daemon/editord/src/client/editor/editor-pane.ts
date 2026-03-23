@@ -10,13 +10,15 @@
 import type { Parser, } from '@lezer/common';
 import { $ as h, } from '@monochromatic-dev/module-es/h-dom';
 
-import type { Diagnostic, InlayHint, TextEdit, } from '../../../protocol.ts';
+import type { Diagnostic, InlayHint, Range, TextEdit, } from '../../../protocol.ts';
 import type { EditorPosition, } from '../position.ts';
+import { getPositionFromPoint as posFromPoint, } from '../position-from-point.ts';
 import { selectAndCopyLine, } from './copy-line.ts';
 import { indentLines as doIndent, unindentLines as doUnindent, } from './indent.ts';
 import { deleteLineAt, duplicateLineAt, swapLineDown, swapLineUp, } from './line-ops.ts';
 import { getCursorPosition as cursorPos, getCursorRect as cursorRect, getComposedRange, getSelection as getSel, restoreCursor as restoreCur, setSelection as setSel, } from './cursor.ts';
 import { scheduleDiagnosticHighlights, scheduleHighlight, scheduleInlayAnnotations, scheduleInlayMeasure, } from './scheduling.ts';
+import { computeDocumentRange, } from './query.ts';
 import { applyEditsToText, } from './text-edits.ts';
 import { clearHighlights, } from '../highlight/highlighter.ts';
 import { STYLES, } from './editor-pane.styles.ts';
@@ -161,9 +163,54 @@ export class EditorPane extends HTMLElement {
   /**
    * Provides direct access to the contenteditable container.
    *
+   * @deprecated Use focused accessors (`getPositionFromPoint`, `getDocumentRange`, `scrollTop`, `addScrollListener`) instead.
+   *
    * @returns editor container, or null before connected
    */
   getEditorElement(): HTMLDivElement | null { return this.#editor; }
+
+  /**
+   * Resolves a text position from mouse coordinates using geometric hit-testing.
+   *
+   * @param x - horizontal mouse coordinate (client pixels)
+   *
+   * @param y - vertical mouse coordinate (client pixels)
+   *
+   * @returns text position, or null if coordinates are outside text
+   */
+  getPositionFromPoint({ x, y, }: { x: number; y: number }): EditorPosition | null {
+    if (this.#editor === null) return null;
+    return posFromPoint({ editor: this.#editor, x, y, },);
+  }
+
+  /**
+   * Returns a Range covering the entire document, suitable for inlay hint requests.
+   *
+   * @returns document range from (0,0) to end-of-file, or null before connected
+   */
+  getDocumentRange(): Range | null { return this.#editor !== null ? computeDocumentRange({ editor: this.#editor, },) : null; }
+
+  /**
+   * Gets the vertical scroll offset of the editor container.
+   *
+   * @returns scroll offset in pixels, or 0 before connected
+   */
+  get editorScrollTop(): number { return this.#editor?.scrollTop ?? 0; }
+
+  /**
+   * Sets the vertical scroll offset of the editor container.
+   *
+   * @param value - scroll offset in pixels
+   */
+  set editorScrollTop(value: number) { if (this.#editor !== null) this.#editor.scrollTop = value; }
+
+  /**
+   * Attaches a scroll event listener to the editor container.
+   *
+   * @param listener - event handler function
+   */
+  addScrollListener(listener: EventListener,): void { this.#editor?.addEventListener('scroll', listener,); }
+
   /**
    * Resolves the current caret position in the editor.
    *

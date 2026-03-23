@@ -29,6 +29,30 @@ function isFileLockError(error: unknown,): boolean {
 }
 
 /**
+ * Runs an async operation, retrying once after shutting down the LSP server
+ * for the given path if a file-lock error (`EBUSY`/`EPERM`) is encountered.
+ *
+ * @param operation - async operation to attempt
+ *
+ * @param path - file path to pass to `lspManager.shutdownForPath` on retry
+ *
+ * @param lspManager - LSP server coordinator; retry is skipped when null
+ *
+ * @throws re-throws non-file-lock errors and file-lock errors when lspManager is null
+ */
+async function retryOnFileLock({ operation, path, lspManager, }: {
+  operation: () => Promise<void>;
+  path: string;
+  lspManager: LspManager | null;
+}): Promise<void> {
+  try { await operation(); }
+  catch (error) {
+    if (isFileLockError(error,) && lspManager !== null) { await lspManager.shutdownForPath({ path, },); await operation(); }
+    else { throw error; }
+  }
+}
+
+/**
  * Dispatches filesystem action messages to the appropriate handler.
  *
  * @param peer - WebSocket peer that sent the message
@@ -48,11 +72,7 @@ export async function dispatchFsMessage({ peer, parsed, rootDir, lspManager, }: 
   lspManager: LspManager | null;
 }): Promise<boolean> {
   if (parsed.type === 'deleteEntry') {
-    try { await deleteEntry({ rootDir, path: parsed.path, },); }
-    catch (error) {
-      if (isFileLockError(error,) && lspManager !== null) { await lspManager.shutdownForPath({ path: parsed.path, },); await deleteEntry({ rootDir, path: parsed.path, },); }
-      else { throw error; }
-    }
+    await retryOnFileLock({ operation: function del() { return deleteEntry({ rootDir, path: parsed.path, },); }, path: parsed.path, lspManager, },);
     sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
     return true;
   }
@@ -62,11 +82,7 @@ export async function dispatchFsMessage({ peer, parsed, rootDir, lspManager, }: 
     return true;
   }
   if (parsed.type === 'moveEntry') {
-    try { await moveEntry({ rootDir, path: parsed.path, destPath: parsed.destPath, },); }
-    catch (error) {
-      if (isFileLockError(error,) && lspManager !== null) { await lspManager.shutdownForPath({ path: parsed.path, },); await moveEntry({ rootDir, path: parsed.path, destPath: parsed.destPath, },); }
-      else { throw error; }
-    }
+    await retryOnFileLock({ operation: function mv() { return moveEntry({ rootDir, path: parsed.path, destPath: parsed.destPath, },); }, path: parsed.path, lspManager, },);
     sendJson({ peer, message: { type: 'fsActionDone', id: parsed.id, }, },);
     return true;
   }

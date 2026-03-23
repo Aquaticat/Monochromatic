@@ -5,8 +5,8 @@
  */
 
 import type { CompletionPopup, } from '../completion/completion-popup.ts';
+import type { EditorPane, } from '../editor/editor-pane.ts';
 import { l, tagged, } from '../log.ts';
-import { getCursorPosition, } from '../position.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
 
 /** Tagged logger for completions. */
@@ -19,22 +19,19 @@ const completionLog = tagged({ tag: 'completions', l, },);
  *
  * @param completionPopup - completion popup to populate
  *
- * @param getEditorElement - returns the contenteditable container
+ * @param editorPane - editor pane component for cursor position
  *
  * @param getCurrentFilePath - returns the currently open file path
  */
-export async function requestCompletions({ ws, completionPopup, getEditorElement, getCurrentFilePath, }: {
+export async function requestCompletions({ ws, completionPopup, editorPane, getCurrentFilePath, }: {
   ws: EditorWsClient;
   completionPopup: CompletionPopup;
-  getEditorElement: () => HTMLElement | null;
+  editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
 }): Promise<void> {
   const path = getCurrentFilePath();
   if (path === null) return;
-  const el = getEditorElement();
-  if (el === null) return;
-  const selection = document.getSelection();
-  const pos = getCursorPosition({ editor: el, selection, },);
+  const pos = editorPane.getCursorPosition();
   if (pos === null) return;
 
   try {
@@ -42,8 +39,8 @@ export async function requestCompletions({ ws, completionPopup, getEditorElement
     if ('items' in response) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response narrowed by 'items' check
       const { items, } = response as { items: { label: string; detail: string; insertText: string }[] };
-      if (items.length > 0 && selection !== null && selection.rangeCount > 0) {
-        const rect = selection.getRangeAt(0,).getBoundingClientRect();
+      const rect = editorPane.getCursorRect();
+      if (items.length > 0 && rect !== null) {
         completionPopup.show({ items, x: rect.left, y: rect.bottom, },);
       }
     }

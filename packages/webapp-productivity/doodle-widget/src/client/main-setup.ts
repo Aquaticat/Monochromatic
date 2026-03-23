@@ -1,0 +1,96 @@
+/**
+ * Initialization and handler wiring for the doodle widget.
+ *
+ * Parses page backgrounds, sets up pointer/toolbar/undo handlers,
+ * and attaches page switching and resize observers.
+ */
+
+import type { ToolMode, } from './pointer-handler-deps.ts';
+import { initPages, switchToPage, } from './pages.ts';
+import { setupPointerHandlers, } from './pointer-handlers.ts';
+import { setupZoomPointerHandlers, } from './pointer-handlers-zoom.ts';
+import { setTextLayer, } from './text.ts';
+import { setupToolbarHandlers, } from './toolbar-handlers.ts';
+import { initHistory, } from './undo-history.ts';
+import { setupUndoHandlers, } from './undo-handlers.ts';
+import { resetZoom, } from './zoom.ts';
+
+/**
+ * Dependencies for {@link setupWidget}.
+ */
+export type WidgetDeps = {
+  backgroundsScript: HTMLScriptElement;
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+  getToolMode: () => ToolMode;
+  getCanvasSize: () => { cw: number; ch: number; };
+  textLayer: HTMLDivElement;
+  container: HTMLDivElement;
+  zoomLayer: HTMLDivElement;
+  svgOverlay: HTMLDivElement;
+  pageToggle: HTMLDivElement;
+  colorPicker: HTMLInputElement;
+  sizeSlider: HTMLInputElement;
+  clearBtn: HTMLButtonElement;
+  exportBtn: HTMLButtonElement;
+  formatSelect: HTMLSelectElement;
+  uploadBtn: HTMLButtonElement;
+  uploadInput: HTMLInputElement;
+  undoBtn: HTMLButtonElement;
+  redoBtn: HTMLButtonElement;
+  sizeCanvas: () => void;
+};
+
+/**
+ * Initializes page state, handler wiring, and observers.
+ *
+ * @param deps - all DOM elements and state accessors
+ */
+export function setupWidget(deps: WidgetDeps,): void {
+  const {
+    backgroundsScript, canvas, ctx, getToolMode, getCanvasSize,
+    textLayer, container, zoomLayer, svgOverlay, pageToggle,
+    colorPicker, sizeSlider, clearBtn, exportBtn, formatSelect,
+    uploadBtn, uploadInput, undoBtn, redoBtn, sizeCanvas,
+  } = deps;
+
+  const parsed: unknown = JSON.parse(backgroundsScript.textContent,);
+  if (!Array.isArray(parsed,))
+    throw new Error('Page backgrounds data is not an array',);
+  const backgrounds: readonly string[] = parsed;
+
+  initPages({ backgrounds, overlay: svgOverlay, },);
+  initHistory(backgrounds.length,);
+  setTextLayer(textLayer,);
+
+  const { pushSnapshot, updateUndoButtons, } = setupUndoHandlers({
+    undoBtn, redoBtn, ctx, getCanvasSize, textLayer,
+  },);
+  textLayer.addEventListener('textfinalized', pushSnapshot,);
+
+  const pointerDeps = {
+    canvas, ctx, getToolMode, getCanvasSize,
+    textLayer, pushSnapshot, container, zoomLayer,
+  };
+  setupPointerHandlers(pointerDeps,);
+  setupZoomPointerHandlers(pointerDeps,);
+
+  setupToolbarHandlers({
+    colorPicker, sizeSlider, clearBtn, exportBtn, formatSelect,
+    uploadBtn, uploadInput, container, svgOverlay, drawCanvas: canvas,
+    textLayer, ctx, getCanvasSize, sizeCanvas, pushSnapshot,
+  },);
+
+  pageToggle.addEventListener('change', function handlePageChange(event: Event,): void {
+    const { target, } = event;
+    if (!(target instanceof HTMLInputElement))
+      return;
+    resetZoom(zoomLayer,);
+    const { cw, ch, } = getCanvasSize();
+    switchToPage({ index: Number(target.value,), ctx, cw, ch, overlay: svgOverlay, textLayer, },);
+    updateUndoButtons();
+  },);
+
+  new ResizeObserver(sizeCanvas,).observe(container,);
+  sizeCanvas();
+}

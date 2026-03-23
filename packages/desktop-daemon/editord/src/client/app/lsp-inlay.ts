@@ -5,6 +5,7 @@
  * an immediate refresh function for use after file loads.
  */
 
+import { createDebounced, } from '../debounce.ts';
 import type { EditorPane, } from '../editor/editor-pane.ts';
 import { fetchInlayHints, } from '../inlay/fetch.ts';
 import type { EditorWsClient, } from '../ws/client.ts';
@@ -29,18 +30,12 @@ export function wireInlayHints({ ws, editorPane, getCurrentFilePath, }: {
   editorPane: EditorPane;
   getCurrentFilePath: () => string | null;
 }): { refresh: () => void } {
-  let timer = 0;
-
-  /** Schedules a debounced inlay hint refresh. */
-  function scheduleRefresh(): void {
-    clearTimeout(timer,);
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded
-    timer = globalThis.setTimeout(function refreshInlayHints() {
+  editorPane.addEventListener('contentchange', createDebounced({
+    fn: function refreshInlayHints() {
       void fetchInlayHints({ ws, editorPane, getCurrentFilePath, },);
-    }, INLAY_HINT_DEBOUNCE_MS,) as unknown as number;
-  }
-
-  editorPane.addEventListener('contentchange', scheduleRefresh,);
+    },
+    delayMs: INLAY_HINT_DEBOUNCE_MS,
+  },),);
 
   return {
     refresh: function immediateRefresh(): void {

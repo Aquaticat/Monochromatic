@@ -9,31 +9,31 @@
 import { type NormalizedPoint, denormalizePoint, } from './drawing.ts';
 
 /**
- * Checks whether a pixel coordinate falls inside an input's
- * layer-relative bounding rect.
+ * Checks whether a content-space pixel coordinate falls inside an
+ * input's layout bounds.
  *
- * @param px - test point x in pixels
+ * Uses `offsetLeft`/`offsetTop`/`offsetWidth`/`offsetHeight` instead
+ * of `getBoundingClientRect()` so that CSS transforms (zoom/pan) on
+ * ancestor elements do not affect the comparison.
  *
- * @param py - test point y in pixels
+ * @param px - test point x in content-space pixels
  *
- * @param rect - input bounding rect from `getBoundingClientRect()`
+ * @param py - test point y in content-space pixels
  *
- * @param layerRect - text layer bounding rect for offset calculation
+ * @param input - text input element to test against
  *
- * @returns `true` if the point is inside the rect
+ * @returns `true` if the point is inside the input's layout bounds
  */
 function pointInInputRect(
-  { px, py, rect, layerRect, }: {
+  { px, py, input, }: {
     px: number; py: number;
-    rect: DOMRect; layerRect: DOMRect;
+    input: HTMLInputElement;
   },
 ): boolean {
-  const relLeft = rect.left - layerRect.left;
-  const relTop = rect.top - layerRect.top;
-  return px >= relLeft
-    && px <= relLeft + rect.width
-    && py >= relTop
-    && py <= relTop + rect.height;
+  return px >= input.offsetLeft
+    && px <= input.offsetLeft + input.offsetWidth
+    && py >= input.offsetTop
+    && py <= input.offsetTop + input.offsetHeight;
 }
 
 /**
@@ -69,25 +69,21 @@ export function eraseTextAt({ point, previousPoint, cw, ch, textLayer, }: {
   ch: number;
   textLayer: HTMLDivElement;
 }): boolean {
-  /** Current eraser position in CSS pixels */
+  /** Current eraser position in content-space pixels */
   const { px, py, } = denormalizePoint({ point, cw, ch, },);
-  /** Layer bounding rect for converting input rects to layer-relative coords */
-  const layerRect = textLayer.getBoundingClientRect();
 
   const inputs = [...textLayer.querySelectorAll<HTMLInputElement>('.text-input',),];
   let erased = false;
 
   for (const input of inputs) {
-    const rect = input.getBoundingClientRect();
-
     /** Check current eraser position */
-    const hitCurrent = pointInInputRect({ px, py, rect, layerRect, },);
+    const hitCurrent = pointInInputRect({ px, py, input, },);
 
     /** Check previous eraser position when available */
     const hitPrevious = previousPoint !== null
       && pointInInputRect({
         ...denormalizePoint({ point: previousPoint, cw, ch, },),
-        rect, layerRect,
+        input,
       },);
 
     if (hitCurrent || hitPrevious) {

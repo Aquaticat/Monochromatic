@@ -13,6 +13,21 @@ import { extractHoverContent, toWireCompletionItems, toWireInlayHints, toWireSel
 import { sendJson, type Peer, } from './ws-send.ts';
 
 /**
+ * Sends an empty result when no LSP manager is available.
+ * Avoids repeating the null-check + empty-response pattern for each feature.
+ *
+ * @param peer - WebSocket peer to reply to
+ *
+ * @param message - pre-built empty result message
+ *
+ * @returns always true (message handled)
+ */
+function replyEmpty({ peer, message, }: { peer: Peer; message: Record<string, unknown> }): true {
+  sendJson({ peer, message, },);
+  return true;
+}
+
+/**
  * Dispatches LSP-related client messages to the appropriate handler.
  *
  * @param peer - WebSocket peer that sent the message
@@ -35,7 +50,7 @@ export async function dispatchLspMessage({ peer, parsed, rootDir, lspManager, di
   dirWatcher: DirWatcher | null;
 }): Promise<boolean> {
   if (parsed.type === 'inlayHint') {
-    if (lspManager === null) { sendJson({ peer, message: { type: 'inlayHintResult', id: parsed.id, hints: [], }, },); return true; }
+    if (lspManager === null) return replyEmpty({ peer, message: { type: 'inlayHintResult', id: parsed.id, hints: [], }, },);
     const hints = await lspManager.inlayHints({ path: parsed.path, range: parsed.range, },);
     sendJson({ peer, message: { type: 'inlayHintResult', id: parsed.id, hints: toWireInlayHints({ hints, },), }, },);
     return true;
@@ -53,40 +68,40 @@ export async function dispatchLspMessage({ peer, parsed, rootDir, lspManager, di
     return true;
   }
   if (parsed.type === 'hover') {
-    if (lspManager === null) { sendJson({ peer, message: { type: 'hoverResult', id: parsed.id, contents: '', }, },); return true; }
+    if (lspManager === null) return replyEmpty({ peer, message: { type: 'hoverResult', id: parsed.id, contents: '', }, },);
     const hover = await lspManager.hover({ path: parsed.path, line: parsed.line, character: parsed.character, },);
     if (hover === null) { sendJson({ peer, message: { type: 'hoverResult', id: parsed.id, contents: '', }, },); return true; }
     sendJson({ peer, message: { type: 'hoverResult', id: parsed.id, contents: extractHoverContent({ hover, },), range: hover.range, }, },);
     return true;
   }
   if (parsed.type === 'completion') {
-    if (lspManager === null) { sendJson({ peer, message: { type: 'completionResult', id: parsed.id, items: [], }, },); return true; }
+    if (lspManager === null) return replyEmpty({ peer, message: { type: 'completionResult', id: parsed.id, items: [], }, },);
     const items = await lspManager.completion({ path: parsed.path, line: parsed.line, character: parsed.character, },);
     sendJson({ peer, message: { type: 'completionResult', id: parsed.id, items: toWireCompletionItems({ items, },), }, },);
     return true;
   }
   if (parsed.type === 'format') {
-    if (lspManager === null) { sendJson({ peer, message: { type: 'formatResult', id: parsed.id, edits: [], }, },); return true; }
+    if (lspManager === null) return replyEmpty({ peer, message: { type: 'formatResult', id: parsed.id, edits: [], }, },);
     const lspEdits = await lspManager.format({ path: parsed.path, },);
     const edits: TextEdit[] = lspEdits.map(function convertEdit(edit,) { return { range: edit.range, newText: edit.newText, }; },);
     sendJson({ peer, message: { type: 'formatResult', id: parsed.id, edits, }, },);
     return true;
   }
   if (parsed.type === 'gotoDefinition') {
-    if (lspManager === null) { sendJson({ peer, message: { type: 'definitionResult', id: parsed.id, path: '', line: 0, character: 0, }, },); return true; }
+    if (lspManager === null) return replyEmpty({ peer, message: { type: 'definitionResult', id: parsed.id, path: '', line: 0, character: 0, }, },);
     const def = await lspManager.gotoDefinition({ path: parsed.path, line: parsed.line, character: parsed.character, },);
     if (def === null) { sendJson({ peer, message: { type: 'definitionResult', id: parsed.id, path: '', line: 0, character: 0, }, },); return true; }
     sendJson({ peer, message: { type: 'definitionResult', id: parsed.id, path: def.path, line: def.line, character: def.character, }, },);
     return true;
   }
   if (parsed.type === 'findReferences') {
-    if (lspManager === null) { sendJson({ peer, message: { type: 'referencesResult', id: parsed.id, locations: [], }, },); return true; }
+    if (lspManager === null) return replyEmpty({ peer, message: { type: 'referencesResult', id: parsed.id, locations: [], }, },);
     const locations = await lspManager.references({ path: parsed.path, line: parsed.line, character: parsed.character, },);
     sendJson({ peer, message: { type: 'referencesResult', id: parsed.id, locations, }, },);
     return true;
   }
   if (parsed.type === 'selectionRange') {
-    if (lspManager === null) { sendJson({ peer, message: { type: 'selectionRangeResult', id: parsed.id, ranges: [], }, },); return true; }
+    if (lspManager === null) return replyEmpty({ peer, message: { type: 'selectionRangeResult', id: parsed.id, ranges: [], }, },);
     const lspRanges = await lspManager.selectionRange({ path: parsed.path, positions: parsed.positions, },);
     const ranges = lspRanges.map(function convertRange(r,) { return toWireSelectionRange({ lspRange: r, },); },);
     sendJson({ peer, message: { type: 'selectionRangeResult', id: parsed.id, ranges, }, },);
