@@ -1,0 +1,15 @@
+[tasks.build]
+description = "Bundle client JS then generate self-contained HTML"
+run = "mise run build:js:client; bun src/build.ts"
+
+[tasks."build:js:client"]
+extends = "build:js:client"
+
+[tasks.lint]
+extends = "lint"
+
+[tasks.'lint:types']
+extends = "lint:types"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
