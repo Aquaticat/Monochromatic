@@ -20,19 +20,9 @@ import pageSvg2 from './assets/output_2.svg' with { type: 'text', };
 
 import { renderPage, } from './page.ts';
 import { renderStyles, } from './styles.ts';
+import { replaceWhiteFillStyles, } from './white-fill.ts';
 
 export {};
-
-/**
- * Regex replacing `fill:#ffffff` with `fill:none` in SVG style attributes.
- *
- * Inkscape SVGs use inline `style` attributes (not `fill` attributes),
- * so a simple rect-removal regex misses panel backgrounds, speech bubbles,
- * and other white-filled shapes. Replacing the fill color with `none`
- * makes all white areas transparent, letting canvas strokes show through
- * while preserving the SVG linework on top.
- */
-const WHITE_FILL_RE = /fill:#fff(?:fff)?/gu;
 
 /** Absolute path to this package's root directory */
 const PACKAGE_DIR: string = new URL('..', import.meta.url,).pathname;
@@ -43,11 +33,7 @@ const DIST_DIR = join(PACKAGE_DIR, 'dist', 'final',);
 console.error('[doodle-widget] building...',);
 
 /** Replace white fills with transparent so the canvas layer shows through */
-const svgBackgrounds = [pageSvg1, pageSvg2,].map(
-  function processBackground(svg,): string {
-    return svg.replaceAll(WHITE_FILL_RE, 'fill:none',);
-  },
-);
+const svgBackgrounds = [pageSvg1, pageSvg2,].map(replaceWhiteFillStyles,);
 
 /** Minified CSS stylesheet */
 const css = renderStyles();

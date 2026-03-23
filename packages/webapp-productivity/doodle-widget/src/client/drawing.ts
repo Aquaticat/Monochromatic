@@ -121,6 +121,33 @@ export function normalizePointer({ event, canvas, cw, ch, }: {
 }
 
 /**
+ * Converts a normalized [0..1] point to CSS pixel coordinates.
+ *
+ * Inverse of the normalization performed by {@link normalizePointer}.
+ *
+ * @param point - normalized coordinate pair
+ *
+ * @param cw - current canvas width in CSS pixels
+ *
+ * @param ch - current canvas height in CSS pixels
+ *
+ * @returns pixel coordinates as `{ px, py }`
+ *
+ * @example
+ * ```ts
+ * const { px, py } = denormalizePoint({ point: [0.5, 0.5], cw: 800, ch: 600 });
+ * // px === 400, py === 300
+ * ```
+ */
+export function denormalizePoint({ point, cw, ch, }: {
+  point: NormalizedPoint;
+  cw: number;
+  ch: number;
+},): { px: number; py: number; } {
+  return { px: point[0] * cw, py: point[1] * ch, };
+}
+
+/**
  * Begins a new stroke at the given normalized point.
  *
  * Captures the active color and width at stroke creation time so

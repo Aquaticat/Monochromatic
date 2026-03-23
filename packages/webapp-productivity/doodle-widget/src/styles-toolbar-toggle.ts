@@ -9,9 +9,10 @@
 import {
   $,
   cssNum,
-  cssOklch,
 } from '@monochromatic-dev/module-es/h-css';
 import {
+  BG_TOGGLE_CHECKED,
+  BG_TOGGLE_CHECKED_HOVER,
   BORDER_COLOR,
   BORDER_WIDTH,
   BUTTON_RADIUS,
@@ -79,12 +80,12 @@ export function renderToggleGroupStyles(): string[] {
     /** Active state driven by native :checked pseudo-class */
     $({
       rule: '.toggle-option:has(input:checked)',
-      decls: { 'background-color': cssOklch({ l: 0.82, c: 0, h: 0, },), },
+      decls: { 'background-color': BG_TOGGLE_CHECKED, },
     },),
 
     $({
       rule: '.toggle-option:has(input:checked):hover',
-      decls: { 'background-color': cssOklch({ l: 0.78, c: 0, h: 0, },), },
+      decls: { 'background-color': BG_TOGGLE_CHECKED_HOVER, },
     },),
   ];
 }

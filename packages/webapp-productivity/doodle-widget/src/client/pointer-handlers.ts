@@ -62,13 +62,8 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
          * it. The input appears and disappears within a single click.
          */
         event.preventDefault();
-        /** Bounding rect of the canvas element */
-        const rect = canvas.getBoundingClientRect();
         const { cw, ch, } = getCanvasSize();
-        placeTextInput([
-          (event.clientX - rect.left) / cw,
-          (event.clientY - rect.top) / ch,
-        ],);
+        placeTextInput(normalizePointer({ event, canvas, cw, ch, },),);
         return;
       }
 

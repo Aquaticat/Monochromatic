@@ -71,6 +71,80 @@ export type ExportTextEntry = {
 };
 
 /**
+ * Raw text entry fields needed to build an {@link ExportTextEntry}.
+ *
+ * Abstracts over DOM inputs and serialized data so the resolution
+ * logic runs once in {@link resolveExportEntry}.
+ */
+type RawEntryFields = {
+  /** Text content */
+  readonly value: string;
+  /** CSS percentage string for horizontal position */
+  readonly insetInlineStart: string;
+  /** CSS percentage string for vertical position */
+  readonly insetBlockStart: string;
+  /** Font size in pixels as numeric string, or empty/undefined when unset */
+  readonly fontSize: string | undefined;
+  /** CSS color string, or empty/undefined when unset */
+  readonly color: string | undefined;
+};
+
+/**
+ * Resolves raw text entry fields into an export-ready entry.
+ *
+ * Applies font size and color fallbacks, parses percentage positions
+ * to fractions, and returns a normalized {@link ExportTextEntry}.
+ *
+ * @param raw - raw entry fields from DOM or serialized data
+ *
+ * @param defaultFontSizePx - fallback font size in pixels
+ *
+ * @returns resolved export entry
+ */
+function resolveExportEntry(
+  { raw, defaultFontSizePx, }: { raw: RawEntryFields; defaultFontSizePx: number; },
+): ExportTextEntry {
+  /** Per-entry font size, falling back to CSS default */
+  const fontSizePx = raw.fontSize !== undefined && raw.fontSize !== ''
+    ? Number.parseFloat(raw.fontSize,)
+    : defaultFontSizePx;
+  /** Per-entry color, falling back to CSS default */
+  const color = raw.color !== undefined && raw.color !== '' ? raw.color : TEXT_COLOR;
+
+  return {
+    value: raw.value,
+    xFraction: Number.parseFloat(raw.insetInlineStart,) / PERCENT_DIVISOR,
+    yFraction: Number.parseFloat(raw.insetBlockStart,) / PERCENT_DIVISOR,
+    fontSizePx,
+    color,
+  };
+}
+
+/**
+ * Filters and resolves raw entry fields into export-ready entries.
+ *
+ * Computes the default font size once, skips empty entries, and
+ * delegates to {@link resolveExportEntry} for each valid entry.
+ *
+ * @param raws - iterable of raw entry fields
+ *
+ * @returns array of parsed text entries ready for export
+ */
+function resolveExportEntries(raws: Iterable<RawEntryFields>,): ExportTextEntry[] {
+  /** Default text font size in pixels */
+  const defaultFontSizePx = TEXT_FONT_SIZE_REM * getRootFontSizePx();
+  const entries: ExportTextEntry[] = [];
+
+  for (const raw of raws) {
+    if (raw.value.trim() === '')
+      continue;
+    entries.push(resolveExportEntry({ raw, defaultFontSizePx, },),);
+  }
+
+  return entries;
+}
+
+/**
  * Reads finalized text entries from the text layer DOM.
  *
  * Parses percentage positions to fractions, resolves per-input
@@ -89,33 +163,19 @@ export type ExportTextEntry = {
 export function readTextEntries({ textLayer, }: {
   textLayer: HTMLDivElement;
 }): ExportTextEntry[] {
-  /** Default text font size in pixels */
-  const defaultFontSizePx = TEXT_FONT_SIZE_REM * getRootFontSizePx();
-
   const inputs = textLayer.querySelectorAll<HTMLInputElement>('.text-input',);
-  const entries: ExportTextEntry[] = [];
 
-  for (const input of inputs) {
-    if (input.value.trim() === '')
-      continue;
-
-    /** Per-input font size, falling back to CSS default */
-    const fontSizePx = input.dataset.fontSize !== undefined
-      ? Number.parseFloat(input.dataset.fontSize,)
-      : defaultFontSizePx;
-    /** Per-input color, falling back to CSS default */
-    const color = input.dataset.color ?? TEXT_COLOR;
-
-    entries.push({
-      value: input.value,
-      xFraction: Number.parseFloat(input.style.insetInlineStart,) / PERCENT_DIVISOR,
-      yFraction: Number.parseFloat(input.style.insetBlockStart,) / PERCENT_DIVISOR,
-      fontSizePx,
-      color,
-    },);
-  }
-
-  return entries;
+  return resolveExportEntries(
+    Array.from(inputs, function toRaw(input,): RawEntryFields {
+      return {
+        value: input.value,
+        insetInlineStart: input.style.insetInlineStart,
+        insetBlockStart: input.style.insetBlockStart,
+        fontSize: input.dataset.fontSize,
+        color: input.dataset.color,
+      };
+    },),
+  );
 }
 
 /**
@@ -136,31 +196,17 @@ export function readTextEntries({ textLayer, }: {
 export function textEntriesToExport(
   serialized: readonly import('./text-page.ts').TextEntryData[],
 ): ExportTextEntry[] {
-  /** Default text font size in pixels */
-  const defaultFontSizePx = TEXT_FONT_SIZE_REM * getRootFontSizePx();
-  const entries: ExportTextEntry[] = [];
-
-  for (const entry of serialized) {
-    if (entry.value.trim() === '')
-      continue;
-
-    /** Per-entry font size, falling back to CSS default */
-    const fontSizePx = entry.fontSize !== ''
-      ? Number.parseFloat(entry.fontSize,)
-      : defaultFontSizePx;
-    /** Per-entry color, falling back to CSS default */
-    const color = entry.color !== '' ? entry.color : TEXT_COLOR;
-
-    entries.push({
-      value: entry.value,
-      xFraction: Number.parseFloat(entry.insetInlineStart,) / PERCENT_DIVISOR,
-      yFraction: Number.parseFloat(entry.insetBlockStart,) / PERCENT_DIVISOR,
-      fontSizePx,
-      color,
-    },);
-  }
-
-  return entries;
+  return resolveExportEntries(
+    serialized.map(function toRaw(entry,): RawEntryFields {
+      return {
+        value: entry.value,
+        insetInlineStart: entry.insetInlineStart,
+        insetBlockStart: entry.insetBlockStart,
+        fontSize: entry.fontSize || undefined,
+        color: entry.color || undefined,
+      };
+    },),
+  );
 }
 
 //endregion Text entry reading

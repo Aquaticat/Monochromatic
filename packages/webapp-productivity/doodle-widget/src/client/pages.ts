@@ -17,7 +17,7 @@ import {
   finalizeActiveInput,
 } from './text.ts';
 import {
-  restoreTextEntries,
+  replaceTextEntries,
   serializeTextEntries,
   type TextEntryData,
 } from './text-page.ts';
@@ -144,8 +144,7 @@ export function switchToPage({ index, ctx, cw, ch, overlay, textLayer, }: {
   if (targetPage === undefined)
     throw new Error(`Page state missing for target index ${String(index,)}`,);
   setStrokes(targetPage.strokes,);
-  clearTextEntries();
-  restoreTextEntries({ entries: targetPage.textEntries, layer: textLayer, },);
+  replaceTextEntries({ entries: targetPage.textEntries, layer: textLayer, clearFn: clearTextEntries, },);
   overlay.innerHTML = targetPage.svgBackground;
   currentIndex = index;
   //endregion Restore target page

@@ -10,7 +10,7 @@ import { getStrokes, redraw, setStrokes, } from './drawing.ts';
 import { getCurrentPageIndex, } from './pages.ts';
 import { clearTextEntries, } from './text.ts';
 import {
-  restoreTextEntries,
+  replaceTextEntries,
   serializeTextEntries,
 } from './text-page.ts';
 import {
@@ -87,8 +87,7 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
    */
   function restoreSnapshot(snapshot: Snapshot,): void {
     setStrokes([...snapshot.strokes,],);
-    clearTextEntries();
-    restoreTextEntries({ entries: snapshot.textEntries, layer: textLayer, },);
+    replaceTextEntries({ entries: snapshot.textEntries, layer: textLayer, clearFn: clearTextEntries, },);
     const { cw, ch, } = getCanvasSize();
     redraw({ ctx, cw, ch, },);
     updateUndoButtons();

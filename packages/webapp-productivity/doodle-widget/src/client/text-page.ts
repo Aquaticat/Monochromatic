@@ -122,3 +122,33 @@ export function restoreTextEntries({ entries, layer, }: {
     layer.append(input,);
   }
 }
+
+/**
+ * Clears all text entries and restores from serialized data.
+ *
+ * Combines clearing and restoring into a single operation used
+ * by undo/redo and page switching.
+ *
+ * @param entries - serialized text entry data to restore
+ *
+ * @param layer - text layer element to clear and repopulate
+ *
+ * @param clearFn - function that clears existing text entries
+ *
+ * @example
+ * ```ts
+ * replaceTextEntries({
+ *   entries: snapshot.textEntries,
+ *   layer: textLayer,
+ *   clearFn: clearTextEntries,
+ * });
+ * ```
+ */
+export function replaceTextEntries({ entries, layer, clearFn, }: {
+  entries: readonly TextEntryData[];
+  layer: HTMLDivElement;
+  clearFn: () => void;
+}): void {
+  clearFn();
+  restoreTextEntries({ entries, layer, },);
+}

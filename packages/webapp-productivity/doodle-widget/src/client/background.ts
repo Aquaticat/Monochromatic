@@ -5,15 +5,7 @@
  * so canvas strokes show through beneath the SVG linework.
  */
 
-/**
- * Regex replacing white fill declarations with transparent in SVG markup.
- *
- * Matches `fill:#fff` and `fill:#ffffff` inside inline `style` attributes
- * (Inkscape convention) as well as `fill` attributes. Replacing with
- * `fill:none` makes all white-filled shapes (panel backgrounds, speech
- * bubbles, etc.) transparent while preserving non-white content.
- */
-const WHITE_FILL_RE = /fill:#fff(?:fff)?/gu;
+import { replaceWhiteFillStyles, } from '../white-fill.ts';
 
 /** White fill attribute values to detect on elements */
 const WHITE_FILL_ATTRS: ReadonlySet<string> = new Set([
@@ -39,7 +31,7 @@ const WHITE_FILL_ATTRS: ReadonlySet<string> = new Set([
  */
 export function removeWhiteFills(svgMarkup: string,): string {
   /** Replace style-based white fills */
-  const processed = svgMarkup.replaceAll(WHITE_FILL_RE, 'fill:none',);
+  const processed = replaceWhiteFillStyles(svgMarkup,);
 
   /** Also handle fill attributes on elements */
   const parser = new DOMParser();

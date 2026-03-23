@@ -6,7 +6,7 @@
  * positions to avoid missing items during fast drags.
  */
 
-import type { NormalizedPoint, } from './drawing.ts';
+import { type NormalizedPoint, denormalizePoint, } from './drawing.ts';
 
 /**
  * Checks whether a pixel coordinate falls inside an input's
@@ -70,12 +70,11 @@ export function eraseTextAt({ point, previousPoint, cw, ch, textLayer, }: {
   textLayer: HTMLDivElement;
 }): boolean {
   /** Current eraser position in CSS pixels */
-  const px = point[0] * cw;
-  const py = point[1] * ch;
+  const { px, py, } = denormalizePoint({ point, cw, ch, },);
   /** Layer bounding rect for converting input rects to layer-relative coords */
   const layerRect = textLayer.getBoundingClientRect();
 
-  const inputs = [...textLayer.querySelectorAll<HTMLInputElement>('input.text-input',),];
+  const inputs = [...textLayer.querySelectorAll<HTMLInputElement>('.text-input',),];
   let erased = false;
 
   for (const input of inputs) {
@@ -87,8 +86,7 @@ export function eraseTextAt({ point, previousPoint, cw, ch, textLayer, }: {
     /** Check previous eraser position when available */
     const hitPrevious = previousPoint !== null
       && pointInInputRect({
-        px: previousPoint[0] * cw,
-        py: previousPoint[1] * ch,
+        ...denormalizePoint({ point: previousPoint, cw, ch, },),
         rect, layerRect,
       },);
 
