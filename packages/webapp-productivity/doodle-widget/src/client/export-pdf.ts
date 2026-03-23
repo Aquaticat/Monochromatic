@@ -35,7 +35,41 @@ const TEXT_COLOR_B = 46;
 /** Conversion factor from CSS pixels to PDF points (72/96) */
 const PX_TO_PT = 0.75;
 
+/** Bit shift for extracting red channel from packed 24-bit RGB */
+const RED_SHIFT = 16;
+
+/** Bit shift for extracting green channel from packed 24-bit RGB */
+const GREEN_SHIFT = 8;
+
+/** Bit mask for isolating a single 8-bit color channel */
+const CHANNEL_MASK = 0xff;
+
+/** Hexadecimal radix for parseInt */
+const HEX_RADIX = 16;
+
 //endregion Constants
+
+/**
+ * Converts a `#rrggbb` hex color string to RGB components.
+ *
+ * @param hex - color string in `#rrggbb` format
+ *
+ * @returns RGB components as 0-255 integers
+ *
+ * @example
+ * ```ts
+ * const { r, g, b } = hexToRgb('#c24e2e');
+ * ```
+ */
+function hexToRgb(hex: string,): { r: number; g: number; b: number; } {
+  /** 24-bit integer parsed from the hex digits */
+  const packed = parseInt(hex.slice(1,), HEX_RADIX,);
+  return {
+    r: (packed >> RED_SHIFT) & CHANNEL_MASK,
+    g: (packed >> GREEN_SHIFT) & CHANNEL_MASK,
+    b: packed & CHANNEL_MASK,
+  };
+}
 
 /**
  * Exports the doodle as a PDF file.
@@ -82,20 +116,29 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
   //endregion Build PDF document
 
   //region Overlay text as real PDF text
-  /** Computed root font size for rem-to-px conversion */
+  /** Default text font size in points for inputs without data attributes */
   const rootFontSize = parseFloat(
     getComputedStyle(document.documentElement,).fontSize,
   ) || DEFAULT_ROOT_FONT_SIZE_PX;
-  /** Text font size in points */
-  const fontSizePt = TEXT_FONT_SIZE_REM * rootFontSize * PX_TO_PT;
-  doc.setFontSize(fontSizePt,);
-  doc.setTextColor(TEXT_COLOR_R, TEXT_COLOR_G, TEXT_COLOR_B,);
+  const defaultFontSizePt = TEXT_FONT_SIZE_REM * rootFontSize * PX_TO_PT;
 
   /** All text input elements */
   const textInputs = textLayer.querySelectorAll<HTMLInputElement>('.text-input',);
   for (const input of textInputs) {
     if (input.value.trim() === '')
       continue;
+    /** Per-input font size in points, falling back to CSS default */
+    const fontSizePt = input.dataset.fontSize !== undefined
+      ? parseFloat(input.dataset.fontSize,) * PX_TO_PT
+      : defaultFontSizePt;
+    doc.setFontSize(fontSizePt,);
+    if (input.dataset.color !== undefined) {
+      const rgb = hexToRgb(input.dataset.color,);
+      doc.setTextColor(rgb.r, rgb.g, rgb.b,);
+    }
+    else {
+      doc.setTextColor(TEXT_COLOR_R, TEXT_COLOR_G, TEXT_COLOR_B,);
+    }
     /** Horizontal position in points */
     const x = (parseFloat(input.style.insetInlineStart,) / PERCENT_DIVISOR) * pageW;
     /** Vertical position in points */

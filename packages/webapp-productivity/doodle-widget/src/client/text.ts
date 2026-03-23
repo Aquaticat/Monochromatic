@@ -6,10 +6,17 @@
  * no conversion to a different element type is needed.
  */
 
+import {
+  getStrokeColor,
+  getStrokeWidth,
+} from './drawing-config.ts';
 import type { NormalizedPoint, } from './drawing.ts';
 
 /** Multiplier converting a 0..1 normalized coordinate to a percentage */
 const PERCENT_SCALE = 100;
+
+/** Multiplier converting stroke width to text font size in pixels */
+const TEXT_SIZE_FACTOR = 2;
 
 //region State
 
@@ -68,6 +75,15 @@ export function placeTextInput(position: NormalizedPoint,): void {
   input.autocomplete = 'off';
   input.style.insetInlineStart = `${String(position[0] * PERCENT_SCALE,)}%`;
   input.style.insetBlockStart = `${String(position[1] * PERCENT_SCALE,)}%`;
+
+  /** Active color captured at text input creation */
+  const color = getStrokeColor();
+  /** Text font size derived from active stroke width */
+  const textSizePx = getStrokeWidth() * TEXT_SIZE_FACTOR;
+  input.style.color = color;
+  input.style.fontSize = `${String(textSizePx,)}px`;
+  input.dataset.color = color;
+  input.dataset.fontSize = String(textSizePx,);
 
   input.addEventListener('keydown', function handleKeydown(event: KeyboardEvent,): void {
     if (event.key === 'Enter') {

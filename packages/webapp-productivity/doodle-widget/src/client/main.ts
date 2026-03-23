@@ -8,6 +8,10 @@
 
 import { setSvgBackground, } from './background.ts';
 import {
+  setStrokeColor,
+  setStrokeWidth,
+} from './drawing-config.ts';
+import {
   clearStrokes,
   redraw,
 } from './drawing.ts';
@@ -69,6 +73,12 @@ const clearBtn = requireElement<HTMLButtonElement>('#clear-btn',);
 
 /** SVG overlay element for displaying SVG backgrounds */
 const svgOverlay = requireElement<HTMLDivElement>('#svg-overlay',);
+
+/** Color picker for stroke color */
+const colorPicker = requireElement<HTMLInputElement>('#color-picker',);
+
+/** Range slider for stroke width */
+const sizeSlider = requireElement<HTMLInputElement>('#size-slider',);
 
 /** Draw tool radio input */
 const drawRadio = requireElement<HTMLInputElement>('#tool-draw',);
@@ -146,6 +156,14 @@ setupPointerHandlers({
   getCanvasSize: function getCanvasSize(): { cw: number; ch: number; } {
     return { cw: canvasWidth, ch: canvasHeight, };
   },
+},);
+
+colorPicker.addEventListener('input', function handleColorChange(): void {
+  setStrokeColor(colorPicker.value,);
+},);
+
+sizeSlider.addEventListener('input', function handleSizeChange(): void {
+  setStrokeWidth(Number(sizeSlider.value,),);
 },);
 
 clearBtn.addEventListener('click', function handleClear(): void {

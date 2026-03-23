@@ -8,8 +8,6 @@
 
 import {
   getStrokes,
-  STROKE_COLOR,
-  STROKE_WIDTH,
   type NormalizedPoint,
 } from './drawing.ts';
 import {
@@ -95,19 +93,19 @@ export async function exportAsSvg(
   //region Strokes
   const strokes = getStrokes();
   for (const stroke of strokes) {
-    if (stroke.length < MIN_STROKE_POINTS)
+    if (stroke.points.length < MIN_STROKE_POINTS)
       continue;
     const path = document.createElementNS(SVG_NS, 'path',);
     /** SVG path data built from normalized stroke coordinates */
-    const d = stroke.map(
+    const d = stroke.points.map(
       function formatPoint([nx, ny,]: NormalizedPoint, index: number,): string {
         const cmd = index === 0 ? 'M' : 'L';
         return `${cmd}${String(nx * cw,)},${String(ny * ch,)}`;
       },
     ).join(' ',);
     path.setAttribute('d', d,);
-    path.setAttribute('stroke', STROKE_COLOR,);
-    path.setAttribute('stroke-width', String(STROKE_WIDTH,),);
+    path.setAttribute('stroke', stroke.color,);
+    path.setAttribute('stroke-width', String(stroke.width,),);
     path.setAttribute('fill', 'none',);
     path.setAttribute('stroke-linecap', 'round',);
     path.setAttribute('stroke-linejoin', 'round',);
@@ -116,12 +114,11 @@ export async function exportAsSvg(
   //endregion Strokes
 
   //region Text annotations
-  /** Computed root font size for rem-to-px conversion */
+  /** Default text font size in pixels for inputs without data attributes */
   const rootFontSize = parseFloat(
     getComputedStyle(document.documentElement,).fontSize,
   ) || DEFAULT_ROOT_FONT_SIZE_PX;
-  /** Text font size in pixels */
-  const fontSizePx = TEXT_FONT_SIZE_REM * rootFontSize;
+  const defaultFontSizePx = TEXT_FONT_SIZE_REM * rootFontSize;
 
   /** All text input elements */
   const textInputs = textLayer.querySelectorAll<HTMLInputElement>('.text-input',);
@@ -133,11 +130,17 @@ export async function exportAsSvg(
     const x = (parseFloat(input.style.insetInlineStart,) / PERCENT_DIVISOR) * cw;
     /** Vertical position in pixels */
     const y = (parseFloat(input.style.insetBlockStart,) / PERCENT_DIVISOR) * ch;
+    /** Per-input font size, falling back to CSS default */
+    const fontSizePx = input.dataset.fontSize !== undefined
+      ? parseFloat(input.dataset.fontSize,)
+      : defaultFontSizePx;
+    /** Per-input color, falling back to CSS default */
+    const color = input.dataset.color ?? TEXT_COLOR;
     text.setAttribute('x', String(x,),);
     text.setAttribute('y', String(y,),);
     text.setAttribute('font-family', 'system-ui, sans-serif',);
     text.setAttribute('font-size', String(fontSizePx,),);
-    text.setAttribute('fill', TEXT_COLOR,);
+    text.setAttribute('fill', color,);
     text.setAttribute('dominant-baseline', 'hanging',);
     text.textContent = input.value;
     svg.append(text,);

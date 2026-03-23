@@ -50,14 +50,11 @@ export async function exportAsPng(deps: ExportDeps,): Promise<void> {
   const { canvas, ctx, } = await renderBaseCanvas(deps,);
 
   //region Layer 4: text annotations
-  /** Computed root font size for rem-to-px conversion */
+  /** Default text font size in pixels for inputs without data attributes */
   const rootFontSize = parseFloat(
     getComputedStyle(document.documentElement,).fontSize,
   ) || DEFAULT_ROOT_FONT_SIZE_PX;
-  /** Text font size in pixels */
-  const textFontSizePx = TEXT_FONT_SIZE_REM * rootFontSize;
-  ctx.font = `${String(textFontSizePx,)}px system-ui, sans-serif`;
-  ctx.fillStyle = TEXT_COLOR;
+  const defaultFontSizePx = TEXT_FONT_SIZE_REM * rootFontSize;
   ctx.textBaseline = 'top';
 
   /** All text input elements (active and readonly) */
@@ -65,6 +62,14 @@ export async function exportAsPng(deps: ExportDeps,): Promise<void> {
   for (const input of textInputs) {
     if (input.value.trim() === '')
       continue;
+    /** Per-input font size, falling back to CSS default */
+    const fontSizePx = input.dataset.fontSize !== undefined
+      ? parseFloat(input.dataset.fontSize,)
+      : defaultFontSizePx;
+    /** Per-input color, falling back to CSS default */
+    const color = input.dataset.color ?? TEXT_COLOR;
+    ctx.font = `${String(fontSizePx,)}px system-ui, sans-serif`;
+    ctx.fillStyle = color;
     /** Horizontal position as percentage */
     const xPercent = parseFloat(input.style.insetInlineStart,);
     /** Vertical position as percentage */

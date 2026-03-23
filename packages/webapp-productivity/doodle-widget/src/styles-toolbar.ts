@@ -108,6 +108,35 @@ export function renderToolbarStyles(): string[] {
 
     //endregion Export group
 
+    //region Draw settings (color picker + size slider)
+
+    $({
+      rule: '.draw-settings',
+      decls: { display: 'flex', 'align-items': 'center', },
+      raw: ';gap:0.5rem',
+    },),
+
+    $({
+      rule: '#color-picker',
+      decls: {
+        cursor: 'pointer',
+        'border-radius': BUTTON_RADIUS,
+        'border-block-style': 'solid',
+        'border-block-color': BORDER_COLOR,
+        'border-inline-style': 'solid',
+        'border-inline-color': BORDER_COLOR,
+      },
+      raw: ';border-block-width:1px;border-inline-width:1px;inline-size:2rem;block-size:2rem;padding-block:0.125rem;padding-inline:0.125rem',
+    },),
+
+    $({
+      rule: '#size-slider',
+      decls: { cursor: 'pointer', },
+      raw: ';inline-size:6rem',
+    },),
+
+    //endregion Draw settings
+
     ...renderToggleGroupStyles(),
   ];
 }

@@ -2,7 +2,8 @@
  * Canvas drawing state and rendering for the doodle widget.
  *
  * Manages stroke data as normalized [0..1] coordinate pairs so strokes
- * persist through canvas resizes. Provides functions for pointer event
+ * persist through canvas resizes. Each stroke captures its color and
+ * width at creation time. Provides functions for pointer event
  * handling and full canvas redraws.
  *
  * Exceeds 100 lines: cohesive drawing state, type definitions, and
@@ -10,13 +11,36 @@
  * meaningfully split further.
  */
 
+import {
+  getStrokeColor,
+  getStrokeWidth,
+} from './drawing-config.ts';
+
 //region Types
 
 /** Normalized coordinate pair [x, y] in [0..1] range */
 export type NormalizedPoint = readonly [number, number,];
 
-/** Sequence of normalized points forming one continuous stroke */
-export type NormalizedStroke = NormalizedPoint[];
+/**
+ * Stroke data with normalized coordinates, color, and width.
+ *
+ * @example
+ * ```ts
+ * const stroke: StrokeData = {
+ *   points: [[0.1, 0.2], [0.3, 0.4]],
+ *   color: '#c24e2e',
+ *   width: 10,
+ * };
+ * ```
+ */
+export type StrokeData = {
+  /** Sequence of normalized points forming one continuous stroke */
+  readonly points: NormalizedPoint[];
+  /** CSS color string captured at stroke creation */
+  readonly color: string;
+  /** Stroke width in CSS pixels captured at stroke creation */
+  readonly width: number;
+};
 
 /**
  * Line segment between two normalized points for incremental rendering.
@@ -39,23 +63,13 @@ export type StrokeSegment = {
 
 //endregion Types
 
-//region Constants
-
-/** Stroke color in OKLCH color space */
-export const STROKE_COLOR = 'oklch(0.6 0.25 27)';
-
-/** Stroke width in CSS pixels */
-export const STROKE_WIDTH = 10;
-
-//endregion Constants
-
 //region State
 
 /** All completed and in-progress strokes */
-let strokes: NormalizedStroke[] = [];
+let strokes: StrokeData[] = [];
 
 /** Stroke currently being drawn, or null when idle */
-let current: NormalizedStroke | null = null;
+let current: StrokeData | null = null;
 
 /** Whether a pointer-driven drawing gesture is active */
 let drawing = false;
@@ -63,13 +77,16 @@ let drawing = false;
 //endregion State
 
 /**
- * Configures a 2D rendering context with the drawing stroke style.
+ * Configures a 2D rendering context with the active stroke style.
+ *
+ * Uses the current active color and width from drawing-config,
+ * suitable for incremental stroke rendering during pointer events.
  *
  * @param ctx - canvas rendering context to configure
  */
 export function configureCtx(ctx: CanvasRenderingContext2D,): void {
-  ctx.strokeStyle = STROKE_COLOR;
-  ctx.lineWidth = STROKE_WIDTH;
+  ctx.strokeStyle = getStrokeColor();
+  ctx.lineWidth = getStrokeWidth();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 }
@@ -77,8 +94,9 @@ export function configureCtx(ctx: CanvasRenderingContext2D,): void {
 /**
  * Redraws all stored strokes onto the canvas.
  *
- * Clears the canvas and renders each stroke using denormalized
- * coordinates based on current canvas dimensions.
+ * Clears the canvas and renders each stroke using its captured color
+ * and width, with denormalized coordinates based on current canvas
+ * dimensions.
  *
  * @param ctx - canvas rendering context
  *
@@ -90,12 +108,15 @@ export function redraw(
   { ctx, cw, ch, }: { ctx: CanvasRenderingContext2D; cw: number; ch: number; },
 ): void {
   ctx.clearRect(0, 0, cw, ch,);
-  configureCtx(ctx,);
   for (const stroke of strokes) {
-    if (stroke.length < 2)
+    if (stroke.points.length < 2)
       continue;
+    ctx.strokeStyle = stroke.color;
+    ctx.lineWidth = stroke.width;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.beginPath();
-    for (const [index, point,] of stroke.entries()) {
+    for (const [index, point,] of stroke.points.entries()) {
       if (index === 0)
         ctx.moveTo(point[0] * cw, point[1] * ch,);
       else
@@ -131,11 +152,14 @@ export function normalizePointer({ event, canvas, cw, ch, }: {
 /**
  * Begins a new stroke at the given normalized point.
  *
+ * Captures the active color and width at stroke creation time so
+ * each stroke retains its original settings.
+ *
  * @param point - starting coordinate in normalized [0..1] space
  */
 export function startStroke(point: NormalizedPoint,): void {
   drawing = true;
-  current = [point,];
+  current = { points: [point,], color: getStrokeColor(), width: getStrokeWidth(), };
   strokes.push(current,);
 }
 
@@ -150,10 +174,10 @@ export function startStroke(point: NormalizedPoint,): void {
 export function continueStroke(point: NormalizedPoint,): StrokeSegment | null {
   if (!drawing || current === null)
     return null;
-  const previous = current.at(-1,);
+  const previous = current.points.at(-1,);
   if (previous === undefined)
     return null;
-  current.push(point,);
+  current.points.push(point,);
   return { from: previous, to: point, };
 }
 
@@ -176,14 +200,19 @@ export function clearStrokes(): void {
 /**
  * Returns a readonly snapshot of all stored strokes.
  *
- * @returns array of normalized stroke data for export
+ * Each stroke includes its captured color and width alongside
+ * the normalized point data.
+ *
+ * @returns array of stroke data for export
  *
  * @example
  * ```ts
  * const allStrokes = getStrokes();
- * for (const stroke of allStrokes) { ... }
+ * for (const stroke of allStrokes) {
+ *   console.log(stroke.color, stroke.width, stroke.points.length);
+ * }
  * ```
  */
-export function getStrokes(): readonly NormalizedStroke[] {
+export function getStrokes(): readonly StrokeData[] {
   return strokes;
 }

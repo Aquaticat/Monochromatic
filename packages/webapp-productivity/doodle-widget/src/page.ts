@@ -65,6 +65,18 @@ function renderToolbar(): string {
             checked: false, },),
         ],
       },),
+      h({
+        tag: 'div',
+        class: 'draw-settings',
+        children: [
+          h({ tag: 'input',
+            attrs: { type: 'color', id: 'color-picker',
+              value: '#c24e2e', }, },),
+          h({ tag: 'input',
+            attrs: { type: 'range', id: 'size-slider', min: '1', max: '50',
+              value: '10', }, },),
+        ],
+      },),
       h({ tag: 'button', attrs: { id: 'upload-btn', type: 'button', },
         text: 'Upload background', },),
       h({ tag: 'input',
