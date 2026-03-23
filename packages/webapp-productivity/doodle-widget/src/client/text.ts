@@ -31,6 +31,13 @@ let activeInput: HTMLInputElement | null = null;
 //endregion State
 
 /**
+ * Custom event type dispatched on the text layer when a text input
+ * is finalized with content. Subscribers (e.g. undo system) listen
+ * on the text layer element directly.
+ */
+const TEXT_FINALIZED_EVENT = 'textfinalized';
+
+/**
  * Sets the text layer container element.
  *
  * @param layer - div element that holds text overlays
@@ -41,18 +48,24 @@ export function setTextLayer(layer: HTMLDivElement,): void {
 
 /**
  * Finalizes the active input: makes it readonly if it has content,
- * removes it if empty.
+ * removes it if empty. Dispatches a `textfinalized` custom event
+ * on the text layer when content is kept.
  */
 export function finalizeActiveInput(): void {
   if (activeInput === null)
     return;
 
-  if (activeInput.value.trim() === '')
-    activeInput.remove();
-  else
+  /** Whether the input has non-empty content worth keeping */
+  const hasContent = activeInput.value.trim() !== '';
+  if (hasContent)
     activeInput.readOnly = true;
+  else
+    activeInput.remove();
 
   activeInput = null;
+
+  if (hasContent && layerElement !== null)
+    layerElement.dispatchEvent(new CustomEvent(TEXT_FINALIZED_EVENT,),);
 }
 
 /**

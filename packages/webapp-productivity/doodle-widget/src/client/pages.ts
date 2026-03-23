@@ -34,7 +34,7 @@ import {
  * };
  * ```
  */
-type PageState = {
+export type PageState = {
   /** Drawing strokes on this page */
   strokes: StrokeData[];
   /** Serialized text input entries */
@@ -137,4 +137,41 @@ export function switchToPage({ index, ctx, cw, ch, overlay, textLayer, }: {
   //endregion Restore target page
 
   redraw({ ctx, cw, ch, },);
+}
+
+/**
+ * Snapshots all page states, saving the current page's live state first.
+ *
+ * The current page's strokes, text entries, and SVG background are read
+ * from their respective live sources (drawing module, text layer DOM,
+ * SVG overlay DOM) and persisted into the pages array before returning.
+ *
+ * @param overlay - SVG overlay element for reading current background
+ *
+ * @param textLayer - text layer element for serializing current text entries
+ *
+ * @returns shallow copy of all page states
+ *
+ * @example
+ * ```ts
+ * const allPages = snapshotAllPages({ overlay, textLayer });
+ * for (const page of allPages) {
+ *   console.log(page.strokes.length, page.textEntries.length);
+ * }
+ * ```
+ */
+export function snapshotAllPages({ overlay, textLayer, }: {
+  overlay: HTMLElement;
+  textLayer: HTMLDivElement;
+}): readonly PageState[] {
+  endStroke();
+  /** Current page state to save live data into */
+  const currentPage = pages[currentIndex];
+  if (currentPage !== undefined) {
+    finalizeActiveInput();
+    currentPage.strokes = [...getStrokes(),];
+    currentPage.textEntries = serializeTextEntries(textLayer,);
+    currentPage.svgBackground = overlay.innerHTML;
+  }
+  return [...pages,];
 }

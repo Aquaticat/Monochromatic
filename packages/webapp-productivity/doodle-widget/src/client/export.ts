@@ -5,10 +5,15 @@
  * (PNG, PDF), and a common download trigger. Format-specific export
  * functions live in dedicated modules.
  *
- * Exceeds 100 lines: shared compositing, download utility, and type
- * definitions are tightly coupled export infrastructure that cannot
- * be meaningfully split further.
+ * Exceeds 100 lines: shared compositing, download utility, stroke/SVG
+ * rendering helpers, and type definitions are tightly coupled export
+ * infrastructure that cannot be meaningfully split further.
  */
+
+import {
+  getStrokes,
+  type StrokeData,
+} from './drawing.ts';
 
 //region Types
 
@@ -38,28 +43,134 @@ export type ExportDeps = {
 //endregion Types
 
 /**
- * Renders the base composite canvas with white background, SVG
- * background, and drawn strokes. Text is intentionally excluded
- * so that PDF export can handle text separately as real,
- * selectable PDF text content.
+ * Renders stroke data onto a 2D canvas context.
+ *
+ * Each stroke is drawn using its captured color and width,
+ * with normalized coordinates denormalized to the given dimensions.
+ *
+ * @param ctx - canvas 2D context to draw on
+ *
+ * @param cw - canvas width in CSS pixels for coordinate denormalization
+ *
+ * @param ch - canvas height in CSS pixels for coordinate denormalization
+ *
+ * @param strokes - stroke data with normalized [0..1] coordinates
+ *
+ * @example
+ * ```ts
+ * renderStrokesToContext({ ctx, cw: 800, ch: 600, strokes: pageStrokes });
+ * ```
+ */
+export function renderStrokesToContext({ ctx, cw, ch, strokes, }: {
+  ctx: OffscreenCanvasRenderingContext2D;
+  cw: number;
+  ch: number;
+  strokes: readonly StrokeData[];
+},): void {
+  for (const stroke of strokes) {
+    if (stroke.points.length < 2)
+      continue;
+    ctx.strokeStyle = stroke.color;
+    ctx.lineWidth = stroke.width;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    for (const [index, point,] of stroke.points.entries()) {
+      if (index === 0)
+        ctx.moveTo(point[0] * cw, point[1] * ch,);
+      else
+        ctx.lineTo(point[0] * cw, point[1] * ch,);
+    }
+    ctx.stroke();
+  }
+}
+
+/**
+ * Renders the SVG overlay element onto a 2D canvas context.
+ *
+ * Reads the live SVG element from the overlay div, clones it with
+ * explicit dimensions, serializes to a data URL, and draws it at
+ * the correct position relative to the container.
+ *
+ * When `imageScale` is provided, the SVG clone is rasterized at
+ * `width * imageScale` by `height * imageScale` pixels so that
+ * high-DPI exports remain sharp. The drawing coordinates remain
+ * in CSS pixels (the caller's context transform handles scaling).
+ *
+ * @param ctx - canvas 2D context to draw on
+ *
+ * @param container - canvas container for position reference
+ *
+ * @param overlay - SVG overlay div holding the background SVG element
+ *
+ * @param imageScale - rasterization multiplier for the SVG Image
+ *   (defaults to 1; set to `devicePixelRatio` for high-DPI exports)
+ *
+ * @example
+ * ```ts
+ * await renderSvgOverlayToContext({ ctx, container, overlay, imageScale: 2 });
+ * ```
+ */
+export async function renderSvgOverlayToContext({ ctx, container, overlay, imageScale, }: {
+  ctx: OffscreenCanvasRenderingContext2D;
+  container: HTMLDivElement;
+  overlay: HTMLDivElement;
+  imageScale?: number;
+},): Promise<void> {
+  /** SVG element from the overlay, if present */
+  const svgElement = overlay.querySelector<SVGSVGElement>(':scope > svg',);
+  if (svgElement === null)
+    return;
+  /** Container position for offset calculation */
+  const containerRect = container.getBoundingClientRect();
+  /** Rendered SVG position and dimensions */
+  const svgRect = svgElement.getBoundingClientRect();
+  /** Horizontal offset of the SVG relative to the container */
+  const offsetX = svgRect.left - containerRect.left;
+  /** Vertical offset of the SVG relative to the container */
+  const offsetY = svgRect.top - containerRect.top;
+
+  /** Rasterization scale factor for the SVG Image */
+  const scale = imageScale ?? 1;
+
+  /** Clone with explicit dimensions so the Image decodes at the correct size */
+  const cloneNode = svgElement.cloneNode(true,);
+  if (!(cloneNode instanceof SVGSVGElement))
+    throw new Error('SVG clone is not an SVGSVGElement',);
+  const clone = cloneNode;
+  clone.setAttribute('width', String(svgRect.width * scale,),);
+  clone.setAttribute('height', String(svgRect.height * scale,),);
+  /** Re-serialized SVG markup encoded as a data URL for Image loading */
+  const svgMarkup = new XMLSerializer().serializeToString(clone,);
+  const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup,)}`;
+  const img = new Image();
+  img.src = dataUrl;
+  await img.decode();
+  ctx.drawImage(img, offsetX, offsetY, svgRect.width, svgRect.height,);
+}
+
+/**
+ * Renders the base composite canvas with white background, drawn
+ * strokes, and SVG background on top. Strokes are drawn beneath
+ * the SVG linework, matching the on-screen layer order.
+ *
+ * Text is intentionally excluded so that PDF export can handle
+ * text separately as real, selectable PDF text content.
  *
  * @param container - canvas container for sizing
  *
  * @param overlay - SVG overlay div
  *
- * @param drawCanvas - canvas with rendered strokes
- *
  * @returns offscreen canvas and its 2D context for further drawing
  *
  * @example
  * ```ts
- * const { canvas, ctx } = await renderBaseCanvas({ container, overlay, drawCanvas });
+ * const { canvas, ctx } = await renderBaseCanvas({ container, overlay });
  * ```
  */
-export async function renderBaseCanvas({ container, overlay, drawCanvas, }: {
+export async function renderBaseCanvas({ container, overlay, }: {
   container: HTMLDivElement;
   overlay: HTMLDivElement;
-  drawCanvas: HTMLCanvasElement;
 },): Promise<{ canvas: OffscreenCanvas; ctx: OffscreenCanvasRenderingContext2D; }> {
   /** Container width in CSS pixels */
   const cw = container.clientWidth;
@@ -78,38 +189,12 @@ export async function renderBaseCanvas({ container, overlay, drawCanvas, }: {
   ctx.fillRect(0, 0, cw, ch,);
   //endregion Layer 1
 
-  //region Layer 2: SVG background
-  /** SVG element from the overlay, if present */
-  const svgElement = overlay.querySelector<SVGSVGElement>(':scope > svg',);
-  if (svgElement !== null) {
-    /** Container position for offset calculation */
-    const containerRect = container.getBoundingClientRect();
-    /** Rendered SVG position and dimensions */
-    const svgRect = svgElement.getBoundingClientRect();
-    /** Horizontal offset of the SVG relative to the container */
-    const offsetX = svgRect.left - containerRect.left;
-    /** Vertical offset of the SVG relative to the container */
-    const offsetY = svgRect.top - containerRect.top;
-
-    /** Clone with explicit dimensions so the Image decodes at the correct size */
-    const cloneNode = svgElement.cloneNode(true,);
-    if (!(cloneNode instanceof SVGSVGElement))
-      throw new Error('SVG clone is not an SVGSVGElement',);
-    const clone = cloneNode;
-    clone.setAttribute('width', String(svgRect.width,),);
-    clone.setAttribute('height', String(svgRect.height,),);
-    /** Re-serialized SVG markup encoded as a data URL for Image loading */
-    const svgMarkup = new XMLSerializer().serializeToString(clone,);
-    const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup,)}`;
-    const img = new Image();
-    img.src = dataUrl;
-    await img.decode();
-    ctx.drawImage(img, offsetX, offsetY, svgRect.width, svgRect.height,);
-  }
+  //region Layer 2: canvas strokes (behind SVG linework)
+  renderStrokesToContext({ ctx, cw, ch, strokes: getStrokes(), },);
   //endregion Layer 2
 
-  //region Layer 3: canvas strokes
-  ctx.drawImage(drawCanvas, 0, 0,);
+  //region Layer 3: SVG background on top
+  await renderSvgOverlayToContext({ ctx, container, overlay, },);
   //endregion Layer 3
 
   return { canvas: exportCanvas, ctx, };

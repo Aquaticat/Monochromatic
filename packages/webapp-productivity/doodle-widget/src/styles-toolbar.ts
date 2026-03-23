@@ -39,6 +39,7 @@ export function renderToolbarStyles(): string[] {
       rule: '.toolbar',
       decls: {
         display: 'flex',
+        'flex-wrap': 'wrap',
         'align-items': 'center',
         gap: TOOLBAR_GAP,
         'padding-block': TOOLBAR_PADDING_BLOCK,

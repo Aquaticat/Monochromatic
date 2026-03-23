@@ -1,71 +1,31 @@
 /**
  * Entry point for the doodle widget client-side application.
  *
- * Queries DOM elements, delegates toolbar handler setup, configures
+ * Imports DOM references, delegates handler setup, configures
  * page switching, and initializes canvas resize handling.
  */
 
+import {
+  backgroundsScript, canvas, container, drawRadio, eraseRadio,
+  pageToggle, redoBtn, requireElement, svgOverlay, textLayer,
+  toolToggle, undoBtn,
+} from './dom-refs.ts';
 import { redraw, } from './drawing.ts';
 import {
   initPages,
   switchToPage,
 } from './pages.ts';
-import { setupPointerHandlers, } from './pointer-handlers.ts';
+import {
+  type ToolMode,
+  setupPointerHandlers,
+} from './pointer-handlers.ts';
 import {
   discardActiveInput,
   setTextLayer,
 } from './text.ts';
 import { setupToolbarHandlers, } from './toolbar-handlers.ts';
-
-/**
- * Queries a required DOM element by CSS selector.
- *
- * @param selector - CSS selector string
- *
- * @returns matched element, guaranteed non-null
- *
- * @throws Error if no element matches the selector
- *
- * @example
- * ```ts
- * const btn = requireElement<HTMLButtonElement>('#my-btn');
- * ```
- */
-function requireElement<T extends Element,>(selector: string,): T {
-  /** Query result, possibly null if selector has no match */
-  const element = document.querySelector<T>(selector,);
-  if (element === null)
-    throw new Error(`Missing required element: ${selector}`,);
-  return element;
-}
-
-//region DOM element references
-
-/** Canvas container element */
-const container = requireElement<HTMLDivElement>('#canvas-container',);
-
-/** Drawing canvas element */
-const canvas = requireElement<HTMLCanvasElement>('#draw-canvas',);
-
-/** SVG overlay element for displaying SVG backgrounds */
-const svgOverlay = requireElement<HTMLDivElement>('#svg-overlay',);
-
-/** Draw tool radio input */
-const drawRadio = requireElement<HTMLInputElement>('#tool-draw',);
-
-/** Text label overlay layer */
-const textLayer = requireElement<HTMLDivElement>('#text-layer',);
-
-/** Tool selection toggle group */
-const toolToggle = requireElement<HTMLDivElement>('#tool-toggle',);
-
-/** Page selection toggle group */
-const pageToggle = requireElement<HTMLDivElement>('#page-toggle',);
-
-/** JSON script element holding page background SVGs */
-const backgroundsScript = requireElement<HTMLScriptElement>('#page-backgrounds',);
-
-//endregion DOM element references
+import { initHistory, } from './undo-history.ts';
+import { setupUndoHandlers, } from './undo-handlers.ts';
 
 /** Maybe-null canvas rendering context before validation */
 const maybeCtx = canvas.getContext('2d',);
@@ -84,10 +44,14 @@ let canvasHeight = 0;
 /**
  * Reads the currently selected tool from the radio group.
  *
- * @returns `true` when draw mode is active, `false` for text mode
+ * @returns active tool mode based on which radio is checked
  */
-function isDrawMode(): boolean {
-  return drawRadio.checked;
+function getToolMode(): ToolMode {
+  if (drawRadio.checked)
+    return 'draw';
+  if (eraseRadio.checked)
+    return 'erase';
+  return 'text';
 }
 
 /**
@@ -116,7 +80,12 @@ function sizeCanvas(): void {
  * Updates canvas cursor based on the selected tool radio.
  */
 function syncCursorToTool(): void {
-  if (isDrawMode()) {
+  const mode = getToolMode();
+  if (mode === 'draw') {
+    canvas.style.cursor = 'crosshair';
+    discardActiveInput();
+  }
+  else if (mode === 'erase') {
     canvas.style.cursor = 'crosshair';
     discardActiveInput();
   }
@@ -130,7 +99,41 @@ syncCursorToTool();
 
 //endregion Tool mode switching
 
-//region Page switching
+//region Initialization and handler setup
+
+/** Page background SVGs parsed from the embedded JSON script tag */
+const parsed: unknown = JSON.parse(backgroundsScript.textContent,);
+if (!Array.isArray(parsed,))
+  throw new Error('Page backgrounds data is not an array',);
+/** Validated array of page background SVG markup strings */
+const backgrounds: readonly string[] = parsed;
+
+initPages({ backgrounds, overlay: svgOverlay, },);
+initHistory(backgrounds.length,);
+setTextLayer(textLayer,);
+
+/** Undo system functions for snapshot capture and button state refresh */
+const { pushSnapshot, updateUndoButtons, } = setupUndoHandlers({
+  undoBtn, redoBtn, ctx, getCanvasSize, textLayer,
+},);
+
+textLayer.addEventListener('textfinalized', pushSnapshot,);
+
+setupPointerHandlers({
+  canvas, ctx, getToolMode, getCanvasSize, textLayer, pushSnapshot,
+},);
+
+setupToolbarHandlers({
+  colorPicker: requireElement<HTMLInputElement>('#color-picker',),
+  sizeSlider: requireElement<HTMLInputElement>('#size-slider',),
+  clearBtn: requireElement<HTMLButtonElement>('#clear-btn',),
+  exportBtn: requireElement<HTMLButtonElement>('#export-btn',),
+  formatSelect: requireElement<HTMLSelectElement>('#format-select',),
+  uploadBtn: requireElement<HTMLButtonElement>('#upload-btn',),
+  uploadInput: requireElement<HTMLInputElement>('#upload-input',),
+  container, svgOverlay, drawCanvas: canvas,
+  textLayer, ctx, getCanvasSize, sizeCanvas, pushSnapshot,
+},);
 
 pageToggle.addEventListener('change', function handlePageChange(event: Event,): void {
   const { target, } = event;
@@ -143,36 +146,10 @@ pageToggle.addEventListener('change', function handlePageChange(event: Event,): 
     cw: canvasWidth, ch: canvasHeight,
     overlay: svgOverlay, textLayer,
   },);
+  updateUndoButtons();
 },);
 
-//endregion Page switching
-
-//region Handler setup and initialization
-
-setupPointerHandlers({ canvas, ctx, isDrawMode, getCanvasSize, },);
-
-setupToolbarHandlers({
-  colorPicker: requireElement<HTMLInputElement>('#color-picker',),
-  sizeSlider: requireElement<HTMLInputElement>('#size-slider',),
-  clearBtn: requireElement<HTMLButtonElement>('#clear-btn',),
-  exportBtn: requireElement<HTMLButtonElement>('#export-btn',),
-  formatSelect: requireElement<HTMLSelectElement>('#format-select',),
-  uploadBtn: requireElement<HTMLButtonElement>('#upload-btn',),
-  uploadInput: requireElement<HTMLInputElement>('#upload-input',),
-  container, svgOverlay, drawCanvas: canvas, textLayer,
-  ctx, getCanvasSize, sizeCanvas,
-},);
-
-/** Page background SVGs parsed from the embedded JSON script tag */
-const parsed: unknown = JSON.parse(backgroundsScript.textContent,);
-if (!Array.isArray(parsed,))
-  throw new Error('Page backgrounds data is not an array',);
-/** Validated array of page background SVG markup strings */
-const backgrounds: readonly string[] = parsed;
-
-initPages({ backgrounds, overlay: svgOverlay, },);
-setTextLayer(textLayer,);
 new ResizeObserver(sizeCanvas,).observe(container,);
 sizeCanvas();
 
-//endregion Handler setup and initialization
+//endregion Initialization and handler setup

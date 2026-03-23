@@ -67,6 +67,8 @@ type ToolbarHandlerDeps = {
   getCanvasSize: () => { cw: number; ch: number; };
   /** Resizes and redraws the canvas */
   sizeCanvas: () => void;
+  /** Pushes current state to undo history after a completed action */
+  pushSnapshot: () => void;
 };
 
 /**
@@ -78,7 +80,7 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
   const {
     colorPicker, sizeSlider, clearBtn, exportBtn, formatSelect,
     uploadBtn, uploadInput, container, svgOverlay, drawCanvas,
-    textLayer, ctx, getCanvasSize, sizeCanvas,
+    textLayer, ctx, getCanvasSize, sizeCanvas, pushSnapshot,
   } = deps;
 
   colorPicker.addEventListener('input', function handleColorChange(): void {
@@ -94,6 +96,7 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
     clearStrokes();
     clearTextEntries();
     ctx.clearRect(0, 0, cw, ch,);
+    pushSnapshot();
   },);
 
   exportBtn.addEventListener('click', function handleExportClick(): void {
@@ -122,6 +125,7 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
     const svgMarkup = await file.text();
     setSvgBackground({ svgMarkup, overlay: svgOverlay, },);
     sizeCanvas();
+    pushSnapshot();
   }
 
   uploadInput.addEventListener('change', function handleFileChange(): void {

@@ -17,7 +17,6 @@ import { join, } from 'node:path';
 
 import pageSvg1 from './assets/output_1.svg' with { type: 'text', };
 import pageSvg2 from './assets/output_2.svg' with { type: 'text', };
-import pageSvg3 from './assets/output_3.svg' with { type: 'text', };
 
 import { renderPage, } from './page.ts';
 import { renderStyles, } from './styles.ts';
@@ -44,7 +43,7 @@ const DIST_DIR = join(PACKAGE_DIR, 'dist', 'final',);
 console.error('[doodle-widget] building...',);
 
 /** Replace white fills with transparent so the canvas layer shows through */
-const svgBackgrounds = [pageSvg1, pageSvg2, pageSvg3,].map(
+const svgBackgrounds = [pageSvg1, pageSvg2,].map(
   function processBackground(svg,): string {
     return svg.replaceAll(WHITE_FILL_RE, 'fill:none',);
   },

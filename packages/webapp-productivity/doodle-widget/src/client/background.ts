@@ -39,12 +39,12 @@ const WHITE_FILL_ATTRS: ReadonlySet<string> = new Set([
  */
 export function removeWhiteFills(svgMarkup: string,): string {
   /** Replace style-based white fills */
-  let processed = svgMarkup.replaceAll(WHITE_FILL_RE, 'fill:none',);
+  const processed = svgMarkup.replaceAll(WHITE_FILL_RE, 'fill:none',);
 
   /** Also handle fill attributes on elements */
   const parser = new DOMParser();
   const doc = parser.parseFromString(processed, 'image/svg+xml',);
-  const allElements = doc.querySelectorAll('[fill]',);
+  const allElements = doc.querySelectorAll<SVGElement>('[fill]',);
   for (const element of allElements) {
     const fill = (element.getAttribute('fill',) ?? '').toLowerCase().replaceAll(/\s/gu, '',);
     if (WHITE_FILL_ATTRS.has(fill,)) {

@@ -1,41 +1,25 @@
 /**
  * Pointer event handlers for the doodle widget canvas.
  *
- * Translates pointer events into drawing strokes (draw mode)
- * or text input placement (text mode) based on the active tool.
+ * Translates pointer events into drawing strokes (draw mode),
+ * text input placement (text mode), or erasure (erase mode)
+ * based on the active tool.
  */
 import {
+  type NormalizedPoint,
   configureCtx,
   continueStroke,
   endStroke,
   normalizePointer,
+  redraw,
   startStroke,
 } from './drawing.ts';
+import { eraseStrokesAt, } from './eraser-strokes.ts';
+import { eraseTextAt, } from './eraser-text.ts';
+import type { PointerHandlerDeps, } from './pointer-handler-deps.ts';
 import { placeTextInput, } from './text.ts';
 
-/**
- * Dependencies for pointer event handlers.
- *
- * @example
- * ```ts
- * setupPointerHandlers({
- *   canvas,
- *   ctx,
- *   isDrawMode,
- *   getCanvasSize: () => ({ cw: canvasWidth, ch: canvasHeight }),
- * });
- * ```
- */
-export type PointerHandlerDeps = {
-  /** Canvas element receiving pointer events */
-  canvas: HTMLCanvasElement;
-  /** 2D rendering context for immediate stroke rendering */
-  ctx: CanvasRenderingContext2D;
-  /** Returns `true` when draw tool is active, `false` for text tool */
-  isDrawMode: () => boolean;
-  /** Returns current canvas dimensions in CSS pixels */
-  getCanvasSize: () => { cw: number; ch: number; };
-};
+export type { ToolMode, } from './pointer-handler-deps.ts';
 
 /**
  * Attaches pointerdown, pointermove, pointerup, and pointercancel
@@ -45,15 +29,26 @@ export type PointerHandlerDeps = {
  *
  * @example
  * ```ts
- * setupPointerHandlers({ canvas, ctx, isDrawMode, getCanvasSize });
+ * setupPointerHandlers({ canvas, ctx, getToolMode, getCanvasSize, textLayer });
  * ```
  */
 export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
-  const { canvas, ctx, isDrawMode, getCanvasSize, } = deps;
+  const { canvas, ctx, getToolMode, getCanvasSize, textLayer, pushSnapshot, } = deps;
+
+  /** Whether an erase gesture is currently active */
+  let erasing = false;
+
+  /** Whether any content was erased during the current gesture */
+  let erasedInGesture = false;
+
+  /** Previous eraser position for segment-based hit testing */
+  let prevErasePoint: NormalizedPoint | null = null;
 
   canvas.addEventListener('pointerdown',
     function handlePointerDown(event: PointerEvent,): void {
-      if (!isDrawMode()) {
+      const mode = getToolMode();
+
+      if (mode === 'text') {
         /**
          * Suppress the browser's default pointerdown focus-management.
          *
@@ -76,19 +71,53 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
 
       canvas.setPointerCapture(event.pointerId,);
       const { cw, ch, } = getCanvasSize();
-      /** Normalized pointer position at stroke start */
+      /** Normalized pointer position */
       const point = normalizePointer({ event, canvas, cw, ch, },);
+
+      if (mode === 'erase') {
+        erasing = true;
+        erasedInGesture = false;
+        prevErasePoint = null;
+        const strokeErased = eraseStrokesAt({ point, previousPoint: null, cw, ch, },);
+        const textErased = eraseTextAt({ point, previousPoint: null, cw, ch, textLayer, },);
+        if (strokeErased || textErased)
+          erasedInGesture = true;
+        if (strokeErased)
+          redraw({ ctx, cw, ch, },);
+        prevErasePoint = point;
+        return;
+      }
+
       startStroke(point,);
     },);
 
   canvas.addEventListener('pointermove',
     function handlePointerMove(event: PointerEvent,): void {
-      if (!isDrawMode())
+      const mode = getToolMode();
+      const { cw, ch, } = getCanvasSize();
+      /** Normalized pointer position */
+      const point = normalizePointer({ event, canvas, cw, ch, },);
+
+      if (mode === 'erase') {
+        if (!erasing)
+          return;
+        const strokeErased = eraseStrokesAt({
+          point, previousPoint: prevErasePoint, cw, ch,
+        },);
+        const textErased = eraseTextAt({
+          point, previousPoint: prevErasePoint, cw, ch, textLayer,
+        },);
+        if (strokeErased || textErased)
+          erasedInGesture = true;
+        if (strokeErased)
+          redraw({ ctx, cw, ch, },);
+        prevErasePoint = point;
+        return;
+      }
+
+      if (mode !== 'draw')
         return;
 
-      const { cw, ch, } = getCanvasSize();
-      /** Normalized pointer position for stroke continuation */
-      const point = normalizePointer({ event, canvas, cw, ch, },);
       /** Line segment to draw incrementally, or null if not drawing */
       const segment = continueStroke(point,);
       if (segment === null)
@@ -100,13 +129,20 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       ctx.stroke();
     },);
 
+  /** Resets all gesture state (draw, erase) at pointer release */
+  function endGesture(): void {
+    endStroke();
+    erasing = false;
+    erasedInGesture = false;
+    prevErasePoint = null;
+  }
+
   canvas.addEventListener('pointerup', function handlePointerUp(): void {
-    if (isDrawMode())
-      endStroke();
+    const mode = getToolMode();
+    if (mode === 'draw' || (mode === 'erase' && erasedInGesture))
+      pushSnapshot();
+    endGesture();
   },);
 
-  canvas.addEventListener('pointercancel', function handlePointerCancel(): void {
-    if (isDrawMode())
-      endStroke();
-  },);
+  canvas.addEventListener('pointercancel', endGesture,);
 }

@@ -5,74 +5,10 @@
  * toggle, drawing settings, upload, export, and clear controls.
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
-
-/**
- * Renders a single radio toggle option inside a toggle group.
- *
- * @param id - unique element id for the radio input
- *
- * @param name - shared radio group name
- *
- * @param label - visible label text
- *
- * @param checked - whether this option is initially selected
- *
- * @param value - radio value attribute, defaults to id
- *
- * @returns label-wrapped radio input HTML string
- */
-function renderToggleOption({ id, name, label, checked, value, }: {
-  id: string;
-  name: string;
-  label: string;
-  checked: boolean;
-  value?: string;
-},): string {
-  return h({
-    tag: 'label',
-    class: 'toggle-option',
-    children: [
-      h({
-        tag: 'input',
-        attrs: {
-          type: 'radio',
-          name,
-          id,
-          value: value ?? id,
-          ...(checked ? { checked: '', } : {}),
-        },
-      },),
-      h({ tag: 'span', text: label, },),
-    ],
-  },);
-}
-
-/**
- * Renders the page selector toggle group.
- *
- * @param pageCount - number of pages to generate radio buttons for
- *
- * @returns page toggle group HTML string
- */
-function renderPageToggle(pageCount: number,): string {
-  return h({
-    tag: 'div',
-    class: 'toggle-group',
-    attrs: { id: 'page-toggle', },
-    children: Array.from(
-      { length: pageCount, },
-      function renderPageOption(_: unknown, index: number,): string {
-        return renderToggleOption({
-          id: `page-${String(index,)}`,
-          name: 'page',
-          label: String(index + 1,),
-          checked: index === 0,
-          value: String(index,),
-        },);
-      },
-    ),
-  },);
-}
+import {
+  renderPageToggle,
+  renderToggleOption,
+} from './page-toolbar-toggle.ts';
 
 /**
  * Renders the toolbar with tool selection, page navigation, upload,
@@ -95,6 +31,8 @@ export function renderToolbar(pageCount: number,): string {
         children: [
           renderToggleOption({ id: 'tool-draw', name: 'tool', label: 'Draw',
             checked: true, },),
+          renderToggleOption({ id: 'tool-erase', name: 'tool', label: 'Erase',
+            checked: false, },),
           renderToggleOption({ id: 'tool-text', name: 'tool', label: 'Text',
             checked: false, },),
         ],
@@ -111,8 +49,20 @@ export function renderToolbar(pageCount: number,): string {
               value: '10', }, },),
         ],
       },),
+      h({
+        tag: 'div',
+        class: 'undo-group',
+        children: [
+          h({ tag: 'button', attrs: { id: 'undo-btn', type: 'button',
+            disabled: '', }, text: 'Undo', },),
+          h({ tag: 'button', attrs: { id: 'redo-btn', type: 'button',
+            disabled: '', }, text: 'Redo', },),
+        ],
+      },),
       renderPageToggle(pageCount,),
-      h({ tag: 'button', attrs: { id: 'upload-btn', type: 'button', },
+      h({ tag: 'button', attrs: { id: 'upload-btn', type: 'button',
+        // Upload background button hidden by default because it's not needed for the upcoming demo.
+        hidden: '', },
         text: 'Upload background', },),
       h({ tag: 'input',
         attrs: { type: 'file', id: 'upload-input', accept: '.svg,image/svg+xml',

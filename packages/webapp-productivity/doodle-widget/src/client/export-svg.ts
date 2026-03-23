@@ -77,27 +77,7 @@ export function exportAsSvg(
   svg.append(bgRect,);
   //endregion White background
 
-  //region Background SVG
-  /** Background SVG element from the overlay, if present */
-  const svgElement = overlay.querySelector<SVGSVGElement>(':scope > svg',);
-  if (svgElement !== null) {
-    /** Container position for offset calculation */
-    const containerRect = container.getBoundingClientRect();
-    /** Rendered SVG position and dimensions */
-    const svgRect = svgElement.getBoundingClientRect();
-    const cloneNode = svgElement.cloneNode(true,);
-    if (!(cloneNode instanceof SVGSVGElement))
-      throw new Error('SVG clone is not an SVGSVGElement',);
-    const clone = cloneNode;
-    clone.setAttribute('x', String(svgRect.left - containerRect.left,),);
-    clone.setAttribute('y', String(svgRect.top - containerRect.top,),);
-    clone.setAttribute('width', String(svgRect.width,),);
-    clone.setAttribute('height', String(svgRect.height,),);
-    svg.append(clone,);
-  }
-  //endregion Background SVG
-
-  //region Strokes
+  //region Strokes (behind SVG linework)
   const strokes = getStrokes();
   for (const stroke of strokes) {
     if (stroke.points.length < MIN_STROKE_POINTS)
@@ -119,6 +99,26 @@ export function exportAsSvg(
     svg.append(path,);
   }
   //endregion Strokes
+
+  //region Background SVG (on top of strokes)
+  /** Background SVG element from the overlay, if present */
+  const svgElement = overlay.querySelector<SVGSVGElement>(':scope > svg',);
+  if (svgElement !== null) {
+    /** Container position for offset calculation */
+    const containerRect = container.getBoundingClientRect();
+    /** Rendered SVG position and dimensions */
+    const svgRect = svgElement.getBoundingClientRect();
+    const cloneNode = svgElement.cloneNode(true,);
+    if (!(cloneNode instanceof SVGSVGElement))
+      throw new Error('SVG clone is not an SVGSVGElement',);
+    const clone = cloneNode;
+    clone.setAttribute('x', String(svgRect.left - containerRect.left,),);
+    clone.setAttribute('y', String(svgRect.top - containerRect.top,),);
+    clone.setAttribute('width', String(svgRect.width,),);
+    clone.setAttribute('height', String(svgRect.height,),);
+    svg.append(clone,);
+  }
+  //endregion Background SVG
 
   //region Text annotations
   /** Default text font size in pixels for inputs without data attributes */
