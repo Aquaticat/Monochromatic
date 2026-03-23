@@ -7,6 +7,10 @@ extends = "build:js"
 [tasks."build:js:client"]
 extends = "build:js:client"
 
+[tasks."build:css"]
+description = "Build global CSS from h-css style modules"
+run = "bun src/client/global.styles.build.ts"
+
 [tasks."watch:build"]
 extends = "watch:build"
 
@@ -16,9 +20,13 @@ extends = "watch:build:js"
 [tasks."watch:build:js:client"]
 extends = "watch:build:js:client"
 
+[tasks."watch:build:css"]
+description = "Watch h-css style modules and rebuild global CSS on change"
+run = "mise watch -w src/client -g '*.styles.ts' -r -- build:css"
+
 [tasks."dev"]
 description = "Start editord in watch mode (rebuilds client, restarts server)"
-run = [{ tasks = ["watch:build:js:client", "dev:server"] }]
+run = [{ tasks = ["watch:build:js:client", "watch:build:css", "dev:server"] }]
 
 [tasks."dev:server"]
 hide = true

@@ -6,34 +6,19 @@
  * caret; fixed toasts center at the top of the viewport for warnings
  * not tied to a specific location.
  *
- * Visual styles are defined in {@link toast.styles.ts} and injected
- * once into the document head on first use.
+ * Visual styles are loaded at build time via `global.css`;
+ * see {@link toast.styles.ts} for the h-css definitions.
  */
 
 import {
   $ as h,
 } from '@monochromatic-dev/module-es/h-dom';
 
-import { STYLES, } from './toast.styles.ts';
-
 /** Duration in milliseconds before the toast is removed. */
 const DISMISS_MS = 2_000;
 
 /** Vertical gap below the cursor in pixels. */
 const VERTICAL_OFFSET = 4;
-
-/** Whether the global toast stylesheet has been injected. */
-let stylesInjected = false;
-
-/**
- * Injects the global toast stylesheet into the document head once.
- * Subsequent calls are no-ops.
- */
-function ensureStyles(): void {
-  if (stylesInjected) return;
-  document.head.append(h({ tag: 'style', text: STYLES, },),);
-  stylesInjected = true;
-}
 
 /**
  * Shows a brief toast message centered at the top of the viewport.
@@ -48,8 +33,6 @@ function ensureStyles(): void {
  * ```
  */
 export function showFixedToast({ message, }: { message: string }): void {
-  ensureStyles();
-
   const toast = h({ tag: 'div', class: 'toast', text: message, attrs: { 'data-variant': 'fixed', }, },);
   document.body.append(toast,);
 
@@ -73,8 +56,6 @@ export function showFixedToast({ message, }: { message: string }): void {
  * ```
  */
 export function showCursorToast({ message, rect, }: { message: string; rect: DOMRect }): void {
-  ensureStyles();
-
   const toast = h({ tag: 'div', class: 'toast', text: message, attrs: { 'data-variant': 'cursor', }, },);
 
   /** Dynamic position properties that vary per toast instance. */
