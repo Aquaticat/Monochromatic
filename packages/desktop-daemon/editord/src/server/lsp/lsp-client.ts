@@ -35,6 +35,15 @@ import type { LspServerCapabilities, } from './types.ts';
  * notifications (e.g. `textDocument/publishDiagnostics`) are
  * forwarded to the `onNotification` callback.
  */
+/**
+ * Timeout for LSP feature requests such as hover, completion,
+ * inlay hints, and navigation (milliseconds).
+ * Shorter than the client-side WebSocket timeout (30 s) so
+ * the server can reply with an empty result before the client
+ * gives up. Long enough for legitimate slow responses on large files.
+ */
+export const LSP_FEATURE_TIMEOUT_MS = 10_000;
+
 export class LspClient {
   /** Child process handle. */
   #proc: ChildProcess;
@@ -144,19 +153,40 @@ export class LspClient {
    *
    * @param params - method parameters
    *
-   * @returns resolved response result, or rejects on error
+   * @param timeoutMs - optional per-request timeout; when set, the pending
+   *   entry is cleaned up and the promise rejected if no response arrives
+   *   within this duration. Omit for unbounded waits (e.g. `initialize`).
    *
-   * @throws when the server responds with a JSON-RPC error
+   * @returns resolved response result, or rejects on error / timeout
+   *
+   * @throws when the server responds with a JSON-RPC error or the request times out
    */
-  request({ method, params, }: { method: string; params: unknown; },): Promise<unknown> {
+  request({ method, params, timeoutMs, }: {
+    method: string;
+    params: unknown;
+    timeoutMs?: number;
+  },): Promise<unknown> {
     const id = this.#nextId++;
     const message = { jsonrpc: '2.0' as const, id, method, params, };
     const pending = this.#pending;
+    const clientLog = this.#l;
 
     // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- request correlation requires storing resolve/reject in a map
     const responsePromise = new Promise<unknown>(
       function awaitLspResponse(resolve, reject,) {
         pending.set(id, { resolve, reject, },);
+        if (timeoutMs !== undefined) {
+          setTimeout(function rejectOnTimeout() {
+            if (pending.delete(id,)) {
+              clientLog.error(
+                `${method} (id ${id}) timed out after ${timeoutMs}ms`,
+              );
+              reject(
+                new Error(`${method} (id ${id}) timed out after ${timeoutMs}ms`,),
+              );
+            }
+          }, timeoutMs,);
+        }
       },
     );
 

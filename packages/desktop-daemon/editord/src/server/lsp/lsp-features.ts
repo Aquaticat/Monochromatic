@@ -8,7 +8,10 @@
 
 import { pathToFileURL, } from 'node:url';
 
-import type { LspClient, } from './lsp-client.ts';
+import {
+  type LspClient,
+  LSP_FEATURE_TIMEOUT_MS,
+} from './lsp-client.ts';
 import type {
   LspCompletionItem,
   LspHover,
@@ -47,6 +50,7 @@ export async function requestHover({ client, path, line, character, }: {
   const result = await client.request({
     method: 'textDocument/hover',
     params: { textDocument: { uri, }, position: { line, character, }, },
+    timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP hover returns LspHover | null
@@ -76,6 +80,7 @@ export async function requestCompletion({ client, path, line, character, }: {
   const result = await client.request({
     method: 'textDocument/completion',
     params: { textDocument: { uri, }, position: { line, character, }, },
+    timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
   if (result === null || result === undefined)

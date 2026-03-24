@@ -7,7 +7,10 @@
 
 import { pathToFileURL, } from 'node:url';
 
-import type { LspClient, } from './lsp-client.ts';
+import {
+  type LspClient,
+  LSP_FEATURE_TIMEOUT_MS,
+} from './lsp-client.ts';
 import type { LspTextEdit, } from './types.ts';
 
 /**
@@ -30,6 +33,7 @@ export async function requestFormat({ client, path, }: {
       textDocument: { uri, },
       options: { tabSize: 2, insertSpaces: true, },
     },
+    timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP formatting returns TextEdit[] | null

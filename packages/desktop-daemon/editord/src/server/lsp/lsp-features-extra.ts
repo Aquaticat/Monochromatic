@@ -7,7 +7,10 @@
 
 import { pathToFileURL, } from 'node:url';
 
-import type { LspClient, } from './lsp-client.ts';
+import {
+  type LspClient,
+  LSP_FEATURE_TIMEOUT_MS,
+} from './lsp-client.ts';
 import type {
   LspInlayHint,
   LspSelectionRange,
@@ -34,6 +37,7 @@ export async function requestInlayHints({ client, path, range, }: {
   const result = await client.request({
     method: 'textDocument/inlayHint',
     params: { textDocument: { uri, }, range, },
+    timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
   if (result === null || result === undefined)
@@ -65,6 +69,7 @@ export async function requestSelectionRange({ client, path, positions, }: {
   const result = await client.request({
     method: 'textDocument/selectionRange',
     params: { textDocument: { uri, }, positions, },
+    timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
   if (result === null || result === undefined || !Array.isArray(result,))

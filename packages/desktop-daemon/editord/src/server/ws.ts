@@ -86,8 +86,10 @@ export function createWsHandler(
             dirWatcher, },);
         }
         catch (error) {
+          // Only reached for pre-parse errors (malformed JSON) where no request id exists.
+          // Handler-level errors are caught inside dispatchMessage with proper id correlation.
           const errorMessage = error instanceof Error ? error.message : String(error,);
-          l.error(`operation failed: ${errorMessage}`,);
+          l.error(`message handler failed: ${errorMessage}`,);
           sendJson({ peer, message: { type: 'error', message: errorMessage, }, },);
         }
       },

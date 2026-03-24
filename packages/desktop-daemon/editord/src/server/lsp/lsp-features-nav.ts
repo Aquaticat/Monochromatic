@@ -10,7 +10,10 @@ import {
   pathToFileURL,
 } from 'node:url';
 
-import type { LspClient, } from './lsp-client.ts';
+import {
+  type LspClient,
+  LSP_FEATURE_TIMEOUT_MS,
+} from './lsp-client.ts';
 
 /**
  * Requests go-to-definition from an LSP client.
@@ -35,6 +38,7 @@ export async function requestGotoDefinition({ client, path, line, character, }: 
   const result = await client.request({
     method: 'textDocument/definition',
     params: { textDocument: { uri, }, position: { line, character, }, },
+    timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
   if (result === null || result === undefined)
@@ -84,6 +88,7 @@ export async function requestReferences({ client, path, line, character, }: {
       position: { line, character, },
       context: { includeDeclaration: false, },
     },
+    timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
   if (result === null || result === undefined || !Array.isArray(result,))
