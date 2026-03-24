@@ -78,6 +78,13 @@ Client-side bundling issues where Node.js code leaks into browser bundles:
 - `node:` protocol dynamic imports cause CORS errors in browser consoles
 - Environment guards for dual-target modules
 
+### [dprint-plugin-exec](TROUBLESHOOTING.dprint-exec.md)
+Why the exec plugin silently does nothing and why certain tools are incompatible:
+- Plugin name resolution selects only one plugin per extension; chaining requires `associations`
+- Include-only associations exclude extension matches for unlisted extensions
+- Exec reads stdout as formatted content; in-place file modifiers (oxlint --fix) are incompatible
+- `cacheKeyFilesHash: null` in resolved config is expected (hash is moved to global `cacheKey`)
+
 ### [CLI bin entries](TROUBLESHOOTING.cli-bin.md)
 Problems with CLI tools installed via `node_modules/.bin/`:
 - Missing shebang causes Unix to fall back to `/bin/sh`, triggering ImageMagick `import` hangs
@@ -103,6 +110,7 @@ For common issues:
 - **CORS errors for `node:` imports in browser?** → [node: protocol in bundles](TROUBLESHOOTING.bundling.md#node-protocol-imports-cause-cors-errors-in-browser-bundles)
 - **CLI hangs with ImageMagick errors?** → [Missing shebang](TROUBLESHOOTING.cli-bin.md#cli-command-hangs-on-unix-with-imagemagick-errors)
 - **Touch gestures broken on iPhone?** → [iOS Safari touch-action betrayal](TROUBLESHOOTING.ios-safari-touch.md)
+- **dprint exec plugin not running?** → [Plugin silently does nothing](TROUBLESHOOTING.dprint-exec.md#exec-plugin-silently-does-nothing)
 
 ## Contributing
 

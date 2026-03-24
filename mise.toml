@@ -377,16 +377,32 @@ run = 'stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
 
 #endregion Linting Tasks
 
-# Formatter Orchestration via dprint
-# dprint orchestrates all formatters using dprint-plugin-exec plugin.
-# Sequential execution per file type (documented in packages/config/dprint/index.json):
-#   CSS/Astro/HTML: dprint built-in plugins → stylelint --fix
-#   TS/JS files:     dprint built-in plugins → oxlint --fix
-# Each formatter's output becomes the next formatter's input, as proven in:
-# https://github.com/dprint/dprint/blob/370a23d8e2ae22789972e6574a00070f05b46287/crates/dprint/src/resolution.rs#L343-L365
+# Formatter orchestration
+# dprint handles formatting (TypeScript, CSS, JSON, YAML, TOML, HTML, markup).
+# After dprint, stylelint --fix and oxlint --fix run in parallel
+# to apply auto-fixable lint rules that formatters can't cover.
+#
+# Previously attempted dprint-plugin-exec for inline chaining, but exec is
+# incompatible with tools that modify files in-place (oxlint) or exit non-zero
+# on unfixable errors. See dprint-plugin-exec handler.rs:299-314 -- it requires
+# exit code 0 and reads stdout as formatted content, not the file on disk.
 [tasks.format]
 description = "Format all files"
-run = ["dprint fmt"]
+run = ["dprint fmt", { tasks = ["format:stylelint", "format:oxlint"] }]
+
+[tasks."format:stylelint"]
+hide = true
+description = "Auto-fix CSS with Stylelint"
+run = 'stylelint --fix --ignore-path .gitignore "**/*.{css,astro,html}"'
+
+[tasks."format:oxlint"]
+hide = true
+# Runs from the monorepo root without --type-aware, so type-aware rules
+# (e.g. typescript/no-unnecessary-condition) are not auto-fixed.
+# A proper fix would require per-package fan-out like lint:oxlint,
+# but the format task is not the right place for that complexity.
+description = "Auto-fix with Oxlint (non-type-aware only)"
+run = "task-oxlint --fix -c .oxlintrc.json"
 
 #region Validation and Check Tasks
 
