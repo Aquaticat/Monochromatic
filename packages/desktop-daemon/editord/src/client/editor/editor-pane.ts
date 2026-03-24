@@ -67,6 +67,8 @@ export class EditorPane extends HTMLElement {
   #resizeMeasureFrame = 0;
   /** Resize observer for re-measurement. */
   #resizeObserver: ResizeObserver | null = null;
+  /** Detects all DOM mutations inside the editor and dispatches `contentchange`. */
+  #mutationObserver: MutationObserver | null = null;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -85,14 +87,18 @@ export class EditorPane extends HTMLElement {
         event.clipboardData?.getData('text/plain',) ?? '',);
     },);
     this.#editor.addEventListener('input', this.#scheduleHighlight.bind(this,),);
-    this.#editor.addEventListener('input', this.#dispatchContentChange.bind(this,),);
+    this.#mutationObserver = new MutationObserver(this.#onMutation.bind(this,),);
+    this.#mutationObserver.observe(this.#editor, { childList: true, characterData: true,
+      subtree: true, },);
     this.#resizeObserver = new ResizeObserver(this.#scheduleInlayMeasure.bind(this,),);
     this.#resizeObserver.observe(this.#editor,);
     this.#shadow.replaceChildren(h({ tag: 'style', text: STYLES, },), this.#editor,);
   }
 
-  /** Cleans up the resize observer and pending animation frames. */
+  /** Cleans up observers and pending animation frames. */
   disconnectedCallback(): void {
+    this.#mutationObserver?.disconnect();
+    this.#mutationObserver = null;
     this.#resizeObserver?.disconnect();
     this.#resizeObserver = null;
     cancelAnimationFrame(this.#highlightFrame,);
@@ -397,7 +403,6 @@ export class EditorPane extends HTMLElement {
     const result = fn(this.#editor, pos,);
     if (result !== null)
       this.restoreCursor(result,);
-    this.#dispatchContentChange();
     this.#scheduleHighlight();
   }
 
@@ -423,12 +428,11 @@ export class EditorPane extends HTMLElement {
       this.setSelection(result.selection,);
     else
       this.restoreCursor(result.cursor,);
-    this.#dispatchContentChange();
     this.#scheduleHighlight();
   }
 
-  /** Dispatches a `contentchange` event. */
-  #dispatchContentChange(): void {
+  /** MutationObserver callback — dispatches `contentchange` on any editor DOM mutation. */
+  #onMutation(): void {
     this.dispatchEvent(
       new CustomEvent('contentchange', { bubbles: true, composed: true, },),
     );
