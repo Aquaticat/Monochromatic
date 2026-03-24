@@ -6,7 +6,8 @@
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
-import { t, } from '../lib/i18n.ts';
+import type { Locales, } from '../i18n/i18n-types.ts';
+import { i18nObject, } from '../i18n/i18n-util.ts';
 
 /**
  * Renders the `<head>` element with meta, title, and stylesheet link.
@@ -18,9 +19,10 @@ import { t, } from '../lib/i18n.ts';
  * @returns HTML string for the `<head>` element
  */
 export function headFragment(
-  { title, lang, }: { title: string; lang: string; },
+  { title, lang, }: { title: string; lang: Locales; },
 ): string {
-  const fullTitle = `${title} | ${t('siteName', lang,)}`;
+  const t = i18nObject(lang,);
+  const fullTitle = `${title} | ${t.siteName()}`;
 
   return h({
     tag: 'head',

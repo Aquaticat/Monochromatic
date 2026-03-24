@@ -24,6 +24,7 @@ import { generateAssets, } from './build/assets.ts';
 import { ensureFavicons, } from './build/favicon.ts';
 import { generatePages, } from './build/pages.ts';
 import { postProcess, } from './build/post-process.ts';
+import { loadAllLocales, } from './i18n/i18n-util.sync.ts';
 import {
   buildManifest,
   computePipelineHash,
@@ -40,6 +41,8 @@ import { createProcessor, } from './lib/markdown.ts';
 export {}; // eslint module boundary marker
 
 await initPromise;
+
+loadAllLocales();
 
 /** Tagged logger for the build pipeline. */
 const l = tagged({ tag: 'build', l: $, },);

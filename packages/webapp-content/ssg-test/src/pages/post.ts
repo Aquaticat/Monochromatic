@@ -7,8 +7,10 @@
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
+import type { Locales, } from '../i18n/i18n-types.ts';
+import { i18nObject, } from '../i18n/i18n-util.ts';
+
 import type { Post, } from '../lib/content.ts';
-import { t, } from '../lib/i18n.ts';
 import { pageLayout, } from '../templates/layout.ts';
 
 /**
@@ -27,7 +29,7 @@ import { pageLayout, } from '../templates/layout.ts';
 export function postPage(
   { post, lang, name, renderedHtml, }: {
     post: Post | undefined;
-    lang: string;
+    lang: Locales;
     name: string;
     renderedHtml: string | undefined;
   },
@@ -56,9 +58,10 @@ export function postPage(
  * @returns complete HTML document with redirect link
  */
 function postNotFoundPage(
-  { lang, name, }: { lang: string; name: string; },
+  { lang, name, }: { lang: Locales; name: string; },
 ): string {
-  const title = t('postNotInLang', lang,);
+  const t = i18nObject(lang,);
+  const title = t.postNotInLang();
 
   const content = h({
     tag: 'main',
@@ -67,7 +70,7 @@ function postNotFoundPage(
       h({
         tag: 'p',
         children: [
-          `${t('redirectingToLangChooser', lang,)} `,
+          `${t.redirectingToLangChooser()} `,
           h({ tag: 'a', attrs: { href: `/${name}`, }, text: name, },),
         ],
       },),

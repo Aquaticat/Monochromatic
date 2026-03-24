@@ -6,8 +6,10 @@
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
+import type { Locales, } from '../i18n/i18n-types.ts';
+import { i18nObject, } from '../i18n/i18n-util.ts';
+
 import type { Post, } from '../lib/content.ts';
-import { t, } from '../lib/i18n.ts';
 import { pageLayout, } from '../templates/layout.ts';
 import { postList, } from '../templates/post-list.ts';
 
@@ -21,9 +23,10 @@ import { postList, } from '../templates/post-list.ts';
  * @returns complete HTML document for the language landing page
  */
 export function langPage(
-  { lang, posts, }: { lang: string; posts: readonly Post[]; },
+  { lang, posts, }: { lang: Locales; posts: readonly Post[]; },
 ): string {
-  const title = t('siteDescription', lang,);
+  const t = i18nObject(lang,);
+  const title = t.siteDescription();
 
   const content = [
     h({ tag: 'main', children: [h({ tag: 'h1', text: title, },),], },),

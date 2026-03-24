@@ -5,7 +5,7 @@
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
-import { i18n, } from '../lib/i18n.ts';
+import { i18nObject, locales, } from '../i18n/i18n-util.ts';
 import { pageLayout, } from '../templates/layout.ts';
 
 /**
@@ -17,12 +17,9 @@ import { pageLayout, } from '../templates/layout.ts';
  */
 export function indexPage(langs: readonly string[],): string {
   /** Page title composed from all language translations of "choose a language". */
-  const chooseALangMap = i18n.get('chooseALang',);
-  if (chooseALangMap === undefined)
-    throw new Error('i18n: missing "chooseALang" message',);
-
-  const title = [...chooseALangMap.values(),]
-    .map(function capitalize(str,) {
+  const title = locales
+    .map(function capitalize(locale,) {
+      const str = i18nObject(locale,).chooseALang();
       return str.charAt(0,).toUpperCase() + str.slice(1,);
     },)
     .join(' ',);

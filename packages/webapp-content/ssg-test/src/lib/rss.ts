@@ -5,8 +5,10 @@
  */
 import { generateRssFeed, } from 'feedsmith';
 
+import type { Locales, } from '../i18n/i18n-types.ts';
+import { i18nObject, } from '../i18n/i18n-util.ts';
+
 import type { Post, } from './content.ts';
-import { t, } from './i18n.ts';
 
 /**
  * Generates an RSS 2.0 XML feed for a specific language.
@@ -26,15 +28,16 @@ import { t, } from './i18n.ts';
  */
 export function generateLanguageRss(
   { lang, posts, siteUrl, }: {
-    lang: string;
+    lang: Locales;
     posts: readonly Post[];
     siteUrl: string;
   },
 ): string {
+  const t = i18nObject(lang,);
   return generateRssFeed({
-    title: t('siteName', lang,),
+    title: t.siteName(),
     link: siteUrl,
-    description: t('siteDescription', lang,),
+    description: t.siteDescription(),
     language: lang,
     items: posts.map(function toRssItem(post,) {
       return {

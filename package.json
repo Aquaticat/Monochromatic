@@ -322,7 +322,8 @@
       "lezer-toml": ">=1.0.0",
       "crossws": ">=0.4.4",
       "h3": ">=2.0.1-rc.16",
-      "zod-opts": ">=0.2.1"
+      "zod-opts": ">=0.2.1",
+      "typesafe-i18n": ">=5.27.1"
     },
     "catalogs": {
       "legacy": {

@@ -16,6 +16,8 @@ import {
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 import readdir from 'tiny-readdir-glob';
 
+import { isLocale, } from '../i18n/i18n-util.ts';
+
 import { groupByLang, } from '../lib/content-group.ts';
 import type { Post, } from '../lib/content.ts';
 import { generateLanguageRss, } from '../lib/rss.ts';
@@ -48,7 +50,11 @@ export async function generateAssets(
   const l = tagged({ tag: generateAssets.name, l: parentLogger, },);
   const byLang = groupByLang(posts,);
 
-  const rssWrites = Object.entries(byLang,).map(function writeRss([lang, langPosts,],) {
+  const validLangs = Object.keys(byLang,).filter(function filterLocale(key,) {
+    return isLocale(key,);
+  },);
+  const rssWrites = validLangs.map(function writeRss(lang,) {
+    const langPosts = byLang[lang] ?? [];
     const rssXml = generateLanguageRss({ lang, posts: langPosts, siteUrl, },);
     return writePage({ relativePath: `${lang}/rss.xml`, content: rssXml, },);
   },);

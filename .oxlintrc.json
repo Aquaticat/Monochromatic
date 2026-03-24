@@ -43,7 +43,11 @@
     "**/teto-generated/**",
     "**/sudoku-puzzles*",
     "**/perf-expected-output*",
-    "**/*.astro"
+    "**/*.astro",
+    "**/i18n/i18n-types.ts",
+    "**/i18n/i18n-util.ts",
+    "**/i18n/i18n-util.sync.ts",
+    "**/i18n/i18n-util.async.ts"
   ],
   "plugins": [
     "unicorn",

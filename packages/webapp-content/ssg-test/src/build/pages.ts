@@ -6,6 +6,8 @@
  */
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
 
+import { isLocale, } from '../i18n/i18n-util.ts';
+
 import {
   groupByLang,
   groupByName,
@@ -37,7 +39,9 @@ export async function generatePages(
   const l = tagged({ tag: generatePages.name, l: parentLogger, },);
   const byLang = groupByLang(posts,);
   const byName = groupByName(posts,);
-  const langs = Object.keys(byLang,);
+  const langs = Object.keys(byLang,).filter(function filterLocale(key,) {
+    return isLocale(key,);
+  },);
   const names = Object.keys(byName,);
 
   const writes = [

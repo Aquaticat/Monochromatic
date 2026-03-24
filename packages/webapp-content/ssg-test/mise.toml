@@ -1,8 +1,13 @@
 [tasks.build]
 extends = "build"
 
+[tasks."build:i18n"]
+description = "Generate typesafe-i18n types from locale files"
+run = "node_modules/.bin/typesafe-i18n --no-watch"
+
 [tasks."build:site"]
 description = "Build static site"
+depends = ["build:i18n"]
 run = "bun src/build.ts"
 
 [tasks."build:site:clean"]

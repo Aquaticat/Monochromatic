@@ -8,7 +8,8 @@ import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
 // File justification: 102 lines -- header and search popover are tightly
 // coupled; the popover is only used inside the header.
-import { t, } from '../lib/i18n.ts';
+import type { Locales, TranslationFunctions, } from '../i18n/i18n-types.ts';
+import { i18nObject, } from '../i18n/i18n-util.ts';
 
 /**
  * Search icon SVG markup.
@@ -34,7 +35,8 @@ const SEARCH_ICON = [
  *
  * @returns HTML string for the `<header>` element
  */
-export function headerFragment(lang: string,): string {
+export function headerFragment(lang: Locales,): string {
+  const t = i18nObject(lang,);
   return h({
     tag: 'header',
     children: [
@@ -44,7 +46,7 @@ export function headerFragment(lang: string,): string {
         class: 'brand',
         children: [
           h({ tag: 'img', attrs: { src: '/favicon.svg', alt: 'avatar', }, },),
-          h({ tag: 'span', class: 'siteName', text: t('siteName', lang,), },),
+          h({ tag: 'span', class: 'siteName', text: t.siteName(), },),
         ],
       },),
       h({
@@ -58,7 +60,7 @@ export function headerFragment(lang: string,): string {
               ` ${SEARCH_ICON}`,
             ],
           },),
-          searchPopover(lang,),
+          searchPopover(t,),
         ],
       },),
     ],
@@ -68,12 +70,12 @@ export function headerFragment(lang: string,): string {
 /**
  * Renders the search popover with input and empty results stub.
  *
- * @param lang - current language code for localized placeholder
+ * @param t - translation functions for localized placeholder and labels
  *
  * @returns HTML string for the search popover
  */
-function searchPopover(lang: string,): string {
-  const placeholder = t('searchPlaceholder', lang,);
+function searchPopover(t: TranslationFunctions,): string {
+  const placeholder = t.searchPlaceholder();
 
   return h({
     tag: 'div',
@@ -99,7 +101,7 @@ function searchPopover(lang: string,): string {
           },),
         ],
       },),
-      h({ tag: 'p', text: t('noResults', lang,), },),
+      h({ tag: 'p', text: t.noResults(), },),
     ],
   },);
 }

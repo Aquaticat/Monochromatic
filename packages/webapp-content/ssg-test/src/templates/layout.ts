@@ -7,6 +7,8 @@
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
+import type { Locales, } from '../i18n/i18n-types.ts';
+
 import { headFragment, } from './head.ts';
 import { headerFragment, } from './header.ts';
 
@@ -22,7 +24,7 @@ import { headerFragment, } from './header.ts';
  * @returns complete HTML document string including `<!DOCTYPE html>`
  */
 export function pageLayout(
-  { title, lang, content, }: { title: string; lang: string; content: string; },
+  { title, lang, content, }: { title: string; lang: Locales; content: string; },
 ): string {
   return `<!DOCTYPE html>\n${
     h({

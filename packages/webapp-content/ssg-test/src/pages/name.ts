@@ -6,6 +6,9 @@
  */
 import { $ as h, } from '@monochromatic-dev/module-es/h-html';
 
+import type { Locales, } from '../i18n/i18n-types.ts';
+import { isLocale, } from '../i18n/i18n-util.ts';
+
 import type { Post, } from '../lib/content.ts';
 import { pageLayout, } from '../templates/layout.ts';
 
@@ -45,7 +48,8 @@ export function namePage(
 
   /** Default to the first available translation's language, falling back to 'en'. */
   const [firstPost,] = posts;
-  const lang = firstPost !== undefined ? firstPost.lang : 'en';
+  const lang: Locales = firstPost !== undefined && isLocale(firstPost.lang,)
+    ? firstPost.lang : 'en';
 
   return pageLayout({ title: name, lang, content, },);
 }
