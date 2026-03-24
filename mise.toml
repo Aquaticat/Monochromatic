@@ -336,17 +336,30 @@ alias = "tW"
 run = "docker build --progress=plain ."
 
 [tasks.buildAndTest]
-description = "Build all packages (tolerating failures), then run tests (pass -- <file> to run a single test)"
+description = "Build then test; with args, builds only the containing package instead of the entire monorepo"
 alias = "bt"
 usage = 'arg "[args]" var=#true help="Test file path or bun test arguments"'
 run = """
-mise run try -- build
 let args = ($env.usage_args? | default '' | str trim)
 if $args == '' {
+  mise run try -- build
   mise run test
 } else {
   # usage_args shell-escapes values (wraps spaces in quotes); evaluate to recover the original
   let files = (nu -c $"echo ($args)")
+  # Build only the package containing the test file, not every package in the monorepo
+  let clean_path = ($files | str replace --regex '^\\./' '')
+  let parts = ($clean_path | split row '/')
+  if ($parts | length) >= 3 and ($parts | first) == 'packages' {
+    let pkg_path = ($parts | first 3 | str join '/')
+    let build_task = $"//($pkg_path):build"
+    let has_build = (mise tasks ls --all --json | from json | any {|t| $t.name == $build_task })
+    if $has_build {
+      try { mise run $build_task } catch { |e| print -e $e.rendered }
+    }
+  } else {
+    mise run try -- build
+  }
   bun test $files
 }
 """
