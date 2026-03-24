@@ -212,7 +212,13 @@ export class FileTree extends HTMLElement {
   async restoreExpansion({ dirs, }: { dirs: string[]; },): Promise<void> {
     if (this.#tree === null || this.#state.fetchDir === null || dirs.length === 0)
       return;
-    await doRestoreExpansion({ tree: this.#tree, dirs,
+    const rootPrefix = `${this.#rootPath}/`;
+    const validDirs = dirs.filter(function withinRoot(dir,) {
+      return dir.startsWith(rootPrefix,);
+    },);
+    if (validDirs.length === 0)
+      return;
+    await doRestoreExpansion({ tree: this.#tree, dirs: validDirs,
       loadPromises: this.#state.loadPromises, },);
   }
 

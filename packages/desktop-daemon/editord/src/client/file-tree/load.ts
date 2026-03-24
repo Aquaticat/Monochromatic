@@ -1,9 +1,10 @@
 /**
  * Directory loading handler for the file tree.
  *
- * Processes `dir-open` events by fetching entries from the cache
- * or network, creating child web components, and managing
- * the in-flight load promise.
+ * Processes `dir-open` events by rendering cached entries immediately
+ * (when available) and always verifying with a fresh server fetch.
+ * This avoids stale prefetch data when files are created between
+ * the parent directory expansion and subdirectory expansion.
  */
 
 import {
@@ -50,9 +51,18 @@ export function loadDirChildren({ detail, state, }: {
   const loadPromise = (async function load(): Promise<void> {
     try {
       const cached = state.prefetchCache.get(path,);
-      const entries = cached !== undefined
-        ? (state.prefetchCache.delete(path,), cached)
-        : await (state.fetchDir?.(path,) ?? Promise.resolve([],));
+      state.prefetchCache.delete(path,);
+
+      // Render cached entries immediately for responsiveness
+      if (cached !== undefined) {
+        childrenContainer.replaceChildren(
+          ...createEntryElements({ parentPath: path, entries: cached, recentPaths: state
+            .recentPaths, },),);
+      }
+
+      // Always verify with a fresh fetch — prefetch cache can be stale
+      // when files are created after the parent directory was expanded
+      const entries = await (state.fetchDir?.(path,) ?? Promise.resolve([],));
 
       const children = createEntryElements({ parentPath: path, entries, recentPaths: state
         .recentPaths, },);
