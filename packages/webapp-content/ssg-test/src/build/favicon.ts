@@ -6,28 +6,18 @@
  *
  * @see https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs
  */
-// File justification: ~185 lines -- single-purpose generation pipeline;
-// ICO encoding, PNG rendering, and orchestration form a cohesive unit.
 import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { $ as tagged, } from '@monochromatic-dev/module-es/tagged';
-import sharp from 'sharp';
 
 import { fileExists, } from '../images/convert.ts';
 import type { Logger, } from '../lib/types.ts';
+import { createIco, } from './ico.ts';
+import { renderPadded, renderPng, } from './render.ts';
 
 /** Public directory where favicon files are placed alongside other static assets. */
 const PUBLIC = 'public';
-
-/** Path to the SVG favicon source file. */
-const SVG_SOURCE = join(PUBLIC, 'favicon.svg',);
-
-/** Background color for apple-touch-icon and maskable icon (dark purple). */
-const BACKGROUND = { r: 45, g: 27, b: 78, alpha: 1, };
-
-/** SVG render density for high-quality rasterization. */
-const RENDER_DENSITY = 384;
 
 /** Apple touch icon total size (px). */
 const APPLE_SIZE = 180;
@@ -47,75 +37,6 @@ const TARGETS = [
   'icon-mask.png',
   'manifest.webmanifest',
 ] as const;
-
-/**
- * Creates an ICO container wrapping a single 32x32 PNG image.
- *
- * @param pngData - PNG buffer to embed in the ICO container
- *
- * @returns ICO file buffer
- *
- * @example
- * ```ts
- * const ico = createIco({ pngData: png32Buffer });
- * ```
- */
-function createIco({ pngData, }: { pngData: Buffer; },): Buffer {
-  const header = Buffer.alloc(6,);
-  header.writeUInt16LE(1, 2,); // type: 1 = ICO
-  header.writeUInt16LE(1, 4,); // image count
-
-  const entry = Buffer.alloc(16,);
-  entry.writeUInt8(32, 0,); // width
-  entry.writeUInt8(32, 1,); // height
-  entry.writeUInt16LE(1, 4,); // color planes
-  entry.writeUInt16LE(32, 6,); // bits per pixel
-  entry.writeUInt32LE(pngData.length, 8,); // image data size
-  /** ICO header (6 bytes) + directory entry (16 bytes) = 22 bytes before image data. */
-  entry.writeUInt32LE(22, 12,); // data offset
-
-  return Buffer.concat([header, entry, pngData,],);
-}
-
-/**
- * Renders the source SVG to PNG at the specified square dimensions.
- *
- * @param size - target width and height in pixels
- *
- * @returns PNG buffer
- */
-async function renderPng({ size, }: { size: number; },): Promise<Buffer> {
-  return sharp(SVG_SOURCE, { density: RENDER_DENSITY, },)
-    .resize(size, size,)
-    .png()
-    .toBuffer();
-}
-
-/**
- * Renders the source SVG centered on a padded background canvas.
- *
- * @param contentSize - SVG render size for inner content
- *
- * @param canvasSize - final output dimensions
- *
- * @returns PNG buffer with content centered on colored background
- */
-async function renderPadded(
-  { contentSize, canvasSize, }: { contentSize: number; canvasSize: number; },
-): Promise<Buffer> {
-  const content = await renderPng({ size: contentSize, },);
-  return sharp({
-    create: {
-      width: canvasSize,
-      height: canvasSize,
-      channels: 4,
-      background: BACKGROUND,
-    },
-  },)
-    .composite([{ input: content, gravity: 'centre', },],)
-    .png()
-    .toBuffer();
-}
 
 /**
  * Generates all favicon files into `public/` when any target is missing.
